@@ -27,10 +27,10 @@ use kmipkit_protocol::{
     PingResponse, PollRequest, PollResponse, ProcessRequest, ProcessResponse,
     ProtocolCauseCategory, ProtocolError, ProtocolErrorKind, ProtocolVersion,
     QueryAsyncRequestsRequest, QueryAsyncRequestsResponse, QueryRequest, QueryResponse,
-    RecertifyRequest, RecertifyResponse, RecoverRequest, RecoverResponse, RekeyRequest,
-    RekeyResponse, RequestMessage, ResponseBatchItemView, ResponseMessage, ResultStatus,
-    SetAttributeRequest, SetAttributeResponse, SignRequest, SignResponse, SignatureVerifyRequest,
-    SignatureVerifyResponse,
+    RecertifyRequest, RecertifyResponse, RecoverRequest, RecoverResponse, RekeyKeyPairRequest,
+    RekeyKeyPairResponse, RekeyRequest, RekeyResponse, RequestMessage, ResponseBatchItemView,
+    ResponseMessage, ResultStatus, SetAttributeRequest, SetAttributeResponse, SignRequest,
+    SignResponse, SignatureVerifyRequest, SignatureVerifyResponse,
 };
 
 #[cfg(test)]
@@ -123,6 +123,7 @@ const OBTAIN_LEASE_OPERATION: u32 = 0x0000_0010; // KMIP v2.1 §§6.1.35, 11.36.
 const CERTIFY_OPERATION: u32 = 0x0000_0006; // KMIP v2.1 §6.1.6, Table 179.
 const RECERTIFY_OPERATION: u32 = 0x0000_0007; // KMIP v2.1 §6.1.45, Table 300.
 const REKEY_OPERATION: u32 = 0x0000_0004; // KMIP v2.1 §6.1.46, Table 305.
+const REKEY_KEY_PAIR_OPERATION: u32 = 0x0000_001d; // KMIP v2.1 §6.1.47, Table 310.
 const CREATE_KEY_PAIR_OPERATION: u32 = 0x0000_0002;
 const CREATE_SPLIT_KEY_OPERATION: u32 = 0x0000_0028; // KMIP v2.1 §11.36, Table 470.
 const ACTIVATE_OPERATION: u32 = 0x0000_0012; // KMIP v2.1 §6.1.1, Table 164.
@@ -170,6 +171,8 @@ pub enum ClientRequest {
     Recertify(RecertifyRequest),
     /// An explicit client-to-server Re-key request.
     Rekey(RekeyRequest),
+    /// An explicit client-to-server Re-key Key Pair request.
+    RekeyKeyPair(RekeyKeyPairRequest),
     /// An explicit client-to-server Destroy request.
     Destroy(DestroyRequest),
     /// An explicit client-to-server Recover request.
@@ -321,6 +324,12 @@ impl ClientRequest {
         Self::Rekey(request)
     }
 
+    /// Creates a typed client-to-server Re-key Key Pair request variant.
+    #[must_use]
+    pub fn rekey_key_pair(request: RekeyKeyPairRequest) -> Self {
+        Self::RekeyKeyPair(request)
+    }
+
     /// Creates a typed Destroy request variant.
     #[must_use]
     pub fn destroy(request: DestroyRequest) -> Self {
@@ -397,6 +406,7 @@ impl ClientRequest {
             Self::ObtainLease(_) => OBTAIN_LEASE_OPERATION,
             Self::Recertify(_) => RECERTIFY_OPERATION,
             Self::Rekey(_) => REKEY_OPERATION,
+            Self::RekeyKeyPair(_) => REKEY_KEY_PAIR_OPERATION,
             Self::Destroy(_) => DESTROY_OPERATION,
             Self::Recover(_) => RECOVER_OPERATION,
             Self::Get(_) => GET_OPERATION,
@@ -453,6 +463,7 @@ impl ClientRequest {
             Self::ObtainLease(request) => request.unique_identifier().is_none(),
             Self::Recertify(request) => request.unique_identifier().is_none(),
             Self::Rekey(request) => request.unique_identifier().is_none(),
+            Self::RekeyKeyPair(request) => request.private_key_unique_identifier().is_none(),
             Self::Encrypt(request) => request.unique_identifier().is_none(),
             Self::Decrypt(request) => request.unique_identifier().is_none(),
             _ => false,
@@ -468,6 +479,7 @@ impl ClientRequest {
                 | Self::Certify(_)
                 | Self::Recertify(_)
                 | Self::Rekey(_)
+                | Self::RekeyKeyPair(_)
         )
     }
 
@@ -481,6 +493,7 @@ impl ClientRequest {
             Self::ObtainLease(request) => request.into_ttlv_payload(),
             Self::Recertify(request) => request.into_ttlv_payload(),
             Self::Rekey(request) => request.into_ttlv_payload(),
+            Self::RekeyKeyPair(request) => request.into_ttlv_payload(),
             Self::Destroy(request) => request.to_ttlv_payload(),
             Self::Recover(request) => request.to_ttlv_payload(),
             Self::Get(request) => request.to_ttlv_payload(),
@@ -521,6 +534,10 @@ impl fmt::Debug for ClientRequest {
             }
             Self::Recertify(request) => formatter.debug_tuple("Recertify").field(request).finish(),
             Self::Rekey(request) => formatter.debug_tuple("Rekey").field(request).finish(),
+            Self::RekeyKeyPair(request) => formatter
+                .debug_tuple("RekeyKeyPair")
+                .field(request)
+                .finish(),
             Self::Destroy(_) => formatter.write_str("Destroy([REDACTED])"),
             Self::Recover(_) => formatter.write_str("Recover([REDACTED])"),
             Self::Get(_) => formatter.write_str("Get([REDACTED])"),
@@ -811,6 +828,7 @@ enum PendingResponse {
     ObtainLease(ObtainLeaseResponse),
     Recertify(RecertifyResponse),
     Rekey(RekeyResponse),
+    RekeyKeyPair(RekeyKeyPairResponse),
     Encrypt(EncryptResponse),
     Decrypt(DecryptResponse),
     Hash(HashResponse),
@@ -847,6 +865,7 @@ impl PendingResponse {
             Self::ObtainLease(response) => ClientResponseRef::ObtainLease(response),
             Self::Recertify(response) => ClientResponseRef::Recertify(response),
             Self::Rekey(response) => ClientResponseRef::Rekey(response),
+            Self::RekeyKeyPair(response) => ClientResponseRef::RekeyKeyPair(response),
             Self::Encrypt(response) => ClientResponseRef::Encrypt(response),
             Self::Decrypt(response) => ClientResponseRef::Decrypt(response),
             Self::Hash(response) => ClientResponseRef::Hash(response),
@@ -1046,6 +1065,8 @@ pub enum ClientOperation {
     Recertify,
     /// Re-key.
     Rekey,
+    /// Re-key Key Pair.
+    RekeyKeyPair,
     /// Archive.
     Archive,
     /// Destroy.
@@ -1223,6 +1244,7 @@ enum ClientResponseRef<'a> {
     ObtainLease(&'a ObtainLeaseResponse),
     Recertify(&'a RecertifyResponse),
     Rekey(&'a RekeyResponse),
+    RekeyKeyPair(&'a RekeyKeyPairResponse),
     Encrypt(&'a EncryptResponse),
     Decrypt(&'a DecryptResponse),
     Hash(&'a HashResponse),
@@ -1270,6 +1292,7 @@ impl<'a> ClientResponseView<'a> {
             ClientResponseRef::ObtainLease(response) => response.result(),
             ClientResponseRef::Recertify(response) => response.result(),
             ClientResponseRef::Rekey(response) => response.result(),
+            ClientResponseRef::RekeyKeyPair(response) => response.result(),
             ClientResponseRef::Encrypt(response) => response.result(),
             ClientResponseRef::Decrypt(response) => response.result(),
             ClientResponseRef::Hash(response) => response.result(),
@@ -1440,6 +1463,15 @@ impl<'a> ClientResponseView<'a> {
     pub const fn rekey(&self) -> Option<&'a RekeyResponse> {
         match self.response {
             ClientResponseRef::Rekey(response) => Some(response),
+            _ => None,
+        }
+    }
+
+    /// Returns the Re-key Key Pair response when this view represents it.
+    #[must_use]
+    pub const fn rekey_key_pair(&self) -> Option<&'a RekeyKeyPairResponse> {
+        match self.response {
+            ClientResponseRef::RekeyKeyPair(response) => Some(response),
             _ => None,
         }
     }
@@ -1639,6 +1671,10 @@ impl fmt::Debug for ClientResponseView<'_> {
             ClientResponseRef::Rekey(response) => {
                 formatter.debug_tuple("Rekey").field(response).finish()
             }
+            ClientResponseRef::RekeyKeyPair(response) => formatter
+                .debug_tuple("RekeyKeyPair")
+                .field(response)
+                .finish(),
             ClientResponseRef::Activate(_) => formatter.write_str("Activate([REDACTED])"),
             ClientResponseRef::Archive(_) => formatter.write_str("Archive([REDACTED])"),
             ClientResponseRef::Destroy(_) => formatter.write_str("Destroy([REDACTED])"),
@@ -1710,6 +1746,8 @@ pub enum ClientBatchOutcome {
     Recertify(RecertifyResponse),
     /// The server returned a Re-key result.
     Rekey(RekeyResponse),
+    /// The server returned a Re-key Key Pair result.
+    RekeyKeyPair(RekeyKeyPairResponse),
     /// The server returned an Encrypt result.
     Encrypt(EncryptResponse),
     /// The server returned a Decrypt result.
@@ -1775,6 +1813,7 @@ impl ClientBatchOutcome {
             | Self::ObtainLease(_)
             | Self::Recertify(_)
             | Self::Rekey(_)
+            | Self::RekeyKeyPair(_)
             | Self::Encrypt(_)
             | Self::Decrypt(_)
             | Self::Hash(_)
@@ -1814,6 +1853,7 @@ impl ClientBatchOutcome {
             Self::ObtainLease(response) => response.result(),
             Self::Recertify(response) => response.result(),
             Self::Rekey(response) => response.result(),
+            Self::RekeyKeyPair(response) => response.result(),
             Self::Encrypt(response) => response.result(),
             Self::Decrypt(response) => response.result(),
             Self::Hash(response) => response.result(),
@@ -1853,6 +1893,7 @@ impl ClientBatchOutcome {
             Self::ObtainLease(_) => ClientOperation::ObtainLease,
             Self::Recertify(_) => ClientOperation::Recertify,
             Self::Rekey(_) => ClientOperation::Rekey,
+            Self::RekeyKeyPair(_) => ClientOperation::RekeyKeyPair,
             Self::Encrypt(_) => ClientOperation::Encrypt,
             Self::Decrypt(_) => ClientOperation::Decrypt,
             Self::Hash(_) => ClientOperation::Hash,
@@ -1959,6 +2000,21 @@ impl ClientBatchOutcome {
             Self::Pending(pending) => match pending.response() {
                 ClientResponseView {
                     response: ClientResponseRef::Rekey(response),
+                } => Some(response),
+                _ => None,
+            },
+            _ => None,
+        }
+    }
+
+    /// Returns the typed Re-key Key Pair response, including when its result is Pending.
+    #[must_use]
+    pub const fn rekey_key_pair_response(&self) -> Option<&RekeyKeyPairResponse> {
+        match self {
+            Self::RekeyKeyPair(response) => Some(response),
+            Self::Pending(pending) => match pending.response() {
+                ClientResponseView {
+                    response: ClientResponseRef::RekeyKeyPair(response),
                 } => Some(response),
                 _ => None,
             },
@@ -2135,6 +2191,9 @@ impl ClientBatchOutcome {
             Self::Rekey(response) => ClientResponseView {
                 response: ClientResponseRef::Rekey(response),
             },
+            Self::RekeyKeyPair(response) => ClientResponseView {
+                response: ClientResponseRef::RekeyKeyPair(response),
+            },
             Self::Encrypt(response) => ClientResponseView {
                 response: ClientResponseRef::Encrypt(response),
             },
@@ -2231,6 +2290,10 @@ impl fmt::Debug for ClientBatchOutcome {
                 formatter.debug_tuple("Recertify").field(response).finish()
             }
             Self::Rekey(response) => formatter.debug_tuple("Rekey").field(response).finish(),
+            Self::RekeyKeyPair(response) => formatter
+                .debug_tuple("RekeyKeyPair")
+                .field(response)
+                .finish(),
             Self::GetCompleted(response) => formatter
                 .debug_tuple("GetCompleted")
                 .field(response)
@@ -2325,6 +2388,9 @@ impl fmt::Display for ClientBatchOutcome {
                 write!(formatter, "Re-certify({})", response.result())
             }
             Self::Rekey(response) => write!(formatter, "Re-key({})", response.result()),
+            Self::RekeyKeyPair(response) => {
+                write!(formatter, "Re-key Key Pair({})", response.result())
+            }
             Self::Archive(response) => write!(formatter, "Archive({})", response.result()),
             Self::Destroy(response) => write!(formatter, "Destroy({})", response.result()),
             Self::Recover(response) => write!(formatter, "Recover({})", response.result()),
@@ -2891,6 +2957,47 @@ impl Client {
     ) -> Result<ClientBatchItemResponse, ClientError> {
         let response = self.execute_with_options(
             ClientBatch::new(ClientBatchItem::new(ClientRequest::Rekey(request))),
+            limits,
+            request_options,
+        )?;
+        take_single_item_response(response.items)
+    }
+
+    /// Executes one typed Re-key Key Pair request through the shared batch writer.
+    ///
+    /// Use an explicitly ordered multi-item [`ClientBatch`] when the request
+    /// should consume a preceding ID Placeholder. This method performs one
+    /// exchange and never polls or retries implicitly.
+    ///
+    /// # Errors
+    ///
+    /// Returns a sanitized validation, protocol, or transport error with the
+    /// strongest available request-delivery evidence.
+    pub fn rekey_key_pair(
+        &mut self,
+        request: RekeyKeyPairRequest,
+        limits: &CodecLimits,
+    ) -> Result<ClientBatchItemResponse, ClientError> {
+        self.rekey_key_pair_with_options(request, limits, &RequestOptions::default())
+    }
+
+    /// Executes one typed Re-key Key Pair request with timeout overrides.
+    ///
+    /// The server generates the replacement key pair and maintains its links;
+    /// `KMIPKit` performs one exchange and preserves both returned identifiers.
+    ///
+    /// # Errors
+    ///
+    /// Returns a sanitized validation, protocol, or transport error with the
+    /// strongest available request-delivery evidence.
+    pub fn rekey_key_pair_with_options(
+        &mut self,
+        request: RekeyKeyPairRequest,
+        limits: &CodecLimits,
+        request_options: &RequestOptions,
+    ) -> Result<ClientBatchItemResponse, ClientError> {
+        let response = self.execute_with_options(
+            ClientBatch::new(ClientBatchItem::new(ClientRequest::RekeyKeyPair(request))),
             limits,
             request_options,
         )?;
@@ -4051,6 +4158,7 @@ fn request_mutation_is_prohibited(request: &ClientRequest) -> bool {
         | ClientRequest::ObtainLease(_)
         | ClientRequest::Recertify(_)
         | ClientRequest::Rekey(_)
+        | ClientRequest::RekeyKeyPair(_)
         | ClientRequest::Destroy(_)
         | ClientRequest::Recover(_)
         | ClientRequest::Get(_)
@@ -4757,6 +4865,7 @@ const fn is_lifecycle_operation(operation: u32) -> bool {
             | OBTAIN_LEASE_OPERATION
             | RECERTIFY_OPERATION
             | REKEY_OPERATION
+            | REKEY_KEY_PAIR_OPERATION
     )
 }
 
@@ -4770,6 +4879,7 @@ fn lifecycle_response_outcome(
         OBTAIN_LEASE_OPERATION => obtain_lease_response_outcome(item),
         RECERTIFY_OPERATION => recertify_response_outcome(item),
         REKEY_OPERATION => rekey_response_outcome(item),
+        REKEY_KEY_PAIR_OPERATION => rekey_key_pair_response_outcome(item),
         _ => Err(protocol_error(ProtocolErrorKind::UnsupportedValue)),
     }
 }
@@ -4856,6 +4966,19 @@ fn rekey_response_outcome(
         RekeyResponse::result,
         PendingResponse::Rekey,
         ClientBatchOutcome::Rekey,
+    )
+}
+
+fn rekey_key_pair_response_outcome(
+    item: ResponseBatchItemView<'_>,
+) -> Result<ClientBatchOutcome, ProtocolError> {
+    read_operation_outcome(
+        ClientOperation::RekeyKeyPair,
+        item,
+        RekeyKeyPairResponse::try_from_response_item,
+        RekeyKeyPairResponse::result,
+        PendingResponse::RekeyKeyPair,
+        ClientBatchOutcome::RekeyKeyPair,
     )
 }
 

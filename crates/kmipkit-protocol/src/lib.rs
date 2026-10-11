@@ -50,6 +50,7 @@ mod query_async_requests;
 mod recertify;
 mod recover;
 mod rekey;
+mod rekey_key_pair;
 mod result;
 mod set_attribute;
 mod sign;
@@ -118,6 +119,7 @@ pub use query_async_requests::{QueryAsyncRequestsRequest, QueryAsyncRequestsResp
 pub use recertify::{RecertifyError, RecertifyRequest, RecertifyResponse};
 pub use recover::{RecoverError, RecoverRequest, RecoverResponse};
 pub use rekey::{RekeyError, RekeyRequest, RekeyResponse};
+pub use rekey_key_pair::{RekeyKeyPairError, RekeyKeyPairRequest, RekeyKeyPairResponse};
 pub use result::{
     KmipOperationResult, ResultMessage, ResultReason, ResultStatus, ResultValidationError,
 };

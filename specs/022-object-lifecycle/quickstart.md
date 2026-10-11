@@ -38,3 +38,6 @@ Record separate Red, Green, and Refactor commit IDs per operation in the draft P
 
 - RED protocol: `cargo test -p kmipkit-protocol rekey_key_pair_operation_tests --no-fail-fast` failed as expected because `RekeyKeyPairRequest`, `RekeyKeyPairResponse`, and `RekeyKeyPairError` were not yet exported.
 - RED client: `cargo test -p kmipkit-client rekey_key_pair_execution_tests --no-fail-fast` failed as expected because the request type, `ClientRequest::RekeyKeyPair`, `ClientOperation::RekeyKeyPair`, and `Client::rekey_key_pair` were not yet implemented.
+- GREEN focused: `cargo test -p kmipkit-protocol rekey_key_pair_operation_tests --no-fail-fast` and `cargo test -p kmipkit-client rekey_key_pair_execution_tests --no-fail-fast` both passed, six tests each.
+- GREEN package regression: `cargo test -p kmipkit-protocol -p kmipkit-client` passed.
+- Guide examples: `python scripts/test_user_guide_examples.py` compiled all 14 marked Rust examples.

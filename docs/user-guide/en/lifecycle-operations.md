@@ -1,21 +1,24 @@
 # Managed-object lifecycle operations
 
 KMIPKit exposes explicit client calls for Activate, Archive, Destroy, Recover,
-Re-certify, and Re-key. Each call sends one typed request, performs one
-exchange, and returns the server's operation result. The client does not
-simulate remote object state, retry requests, or issue Poll/Get follow-ups
+Re-certify, Re-key, and Re-key Key Pair. Each call sends one typed request,
+performs one exchange, and returns the server's operation result. The client
+does not simulate remote object state, retry requests, or issue Poll/Get follow-ups
 automatically. For connection setup and TLS policy, see the
 [production transport guide](production-transports.md).
 
 The operation payloads follow OASIS KMIP Specification v2.1 §6.1.1 Tables
 164–166 (Activate), §6.1.4 Tables 173–175 (Archive), §6.1.15 Tables 208–210
-(Destroy), §6.1.42 Tables 288–290 (Recover), and §6.1.46 Tables 303–307
-(Re-key). Unique Identifier forms and the assigned tag are defined by §4.58
-Tables 145–146 and §11.56 Table 487.
+(Destroy), §6.1.42 Tables 288–290 (Recover), §6.1.46 Tables 303–307
+(Re-key), and §6.1.47 Tables 308–312 (Re-key Key Pair). Unique Identifier
+forms and the assigned tag are defined by §4.58 Tables 145–146 and §11.56
+Table 487.
 
-All four requests accept an optional typed `UniqueIdentifier`. KMIPKit sends
-the supplied representation as given; omitting it does not select or discover
-an object locally. Successful responses expose the server-returned identifier.
+Activate, Archive, Destroy, and Recover accept an optional typed
+`UniqueIdentifier`. KMIPKit sends the supplied representation as given;
+omitting it does not select or discover an object locally. Successful
+responses expose the server-returned identifier. Re-certify, Re-key, and
+Re-key Key Pair have operation-specific identifier fields described below.
 Non-success responses preserve their result without interpreting a success
 payload as an object state.
 
@@ -236,6 +239,49 @@ fn rekey(
 
 fn main() {
     let _example = rekey;
+}
+```
+
+## Re-key Key Pair
+
+Re-key Key Pair asks the server to create a replacement public/private key
+pair. The caller may identify the existing pair with its Private Key Unique
+Identifier or omit that field to use a preceding batch item's ID Placeholder.
+The caller can set an Offset and separate Common, Private Key, and Public Key
+Attributes and Protection Storage Masks. If Offset is omitted, the server
+copies the existing pair's Activation Date and Deactivation Date. KMIPKit does
+not generate key material or maintain the replacement links; the caller should
+request Re-key Key Pair no more than once for a given pair.
+
+```rust,kmipkit-test
+use kmipkit_client::{Client, ClientOperation};
+use kmipkit_protocol::{RekeyKeyPairRequest, UniqueIdentifier};
+use kmipkit_ttlv::codec::CodecLimits;
+
+fn rekey_key_pair(
+    client: &mut Client,
+    limits: &CodecLimits,
+) -> Result<(), kmipkit_client::ClientError> {
+    let request = RekeyKeyPairRequest::new()
+        .with_private_key_unique_identifier(UniqueIdentifier::TextString(
+            "private-key-42".to_owned(),
+        ))
+        .with_offset(86_400);
+    let item = client.rekey_key_pair(request, limits)?;
+    let outcome = item.outcome();
+    assert_eq!(outcome.operation(), ClientOperation::RekeyKeyPair);
+    let response = outcome
+        .response()
+        .rekey_key_pair()
+        .expect("Re-key Key Pair returns its typed response");
+    let _server_status = response.result().status().raw();
+    let _replacement_private_identifier = response.private_key_unique_identifier();
+    let _replacement_public_identifier = response.public_key_unique_identifier();
+    Ok(())
+}
+
+fn main() {
+    let _example = rekey_key_pair;
 }
 ```
 

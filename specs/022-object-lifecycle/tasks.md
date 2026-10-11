@@ -80,7 +80,7 @@
 **Independent Test**: Tables 308–312; common/private/public fields, result, one exchange, no local key-pair generation.
 
 - [X] T021 [P] [US6] Add failing Re-key Key Pair tests in `crates/kmipkit-protocol/tests/unit/rekey_key_pair_operation_tests.rs` and `crates/kmipkit-client/tests/unit/rekey_key_pair_execution_tests.rs` for §6.1.47 and its traceability rows; commit Red.
-- [ ] T022 [US6] Implement `RekeyKeyPairRequest/Response/Error` in `crates/kmipkit-protocol/src/rekey_key_pair.rs`, export it, and integrate dispatch/client method in `crates/kmipkit-client/src/execute.rs` and `crates/kmipkit-client/src/lib.rs`; commit Green after T021 passes.
+- [X] T022 [US6] Implement `RekeyKeyPairRequest/Response/Error` in `crates/kmipkit-protocol/src/rekey_key_pair.rs`, export it, and integrate dispatch/client method in `crates/kmipkit-client/src/execute.rs` and `crates/kmipkit-client/src/lib.rs`; commit Green after T021 passes.
 - [ ] T023 [US6] Refactor Re-key Key Pair model/dispatch/tests in `crates/kmipkit-protocol/src/rekey_key_pair.rs`, `crates/kmipkit-client/src/execute.rs`, and both test files; commit Refactor separately.
 
 ## Phase 9: User Story 7 — Re-Provision (Priority: P1)
