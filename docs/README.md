@@ -29,8 +29,16 @@ tests, and the conformance matrix.
 - [Operaciones Query y Ping (Español)](user-guide/es/operaciones-query-ping.md)
 - [Managed-object lifecycle operations (English)](user-guide/en/lifecycle-operations.md)
 - [Operaciones de ciclo de vida de objetos (Español)](user-guide/es/operaciones-ciclo-vida.md)
+- [Lifecycle and certificate operations (English)](user-guide/en/lifecycle-and-certificates.md)
+- [Operaciones de ciclo de vida y certificados (Español)](user-guide/es/operaciones-ciclo-vida-y-certificados.md)
+- [Credential sessions (English)](user-guide/en/credential-sessions.md)
+- [Sesiones de credenciales (Español)](user-guide/es/sesiones-credenciales.md)
 - [Inspecting KMIP messages (English)](user-guide/en/message-model.md)
 - [Inspeccionar mensajes KMIP (Español)](user-guide/es/modelo-mensaje.md)
+- [Key derivation and transfer (English)](user-guide/en/key-derivation-and-transfer.md)
+- [Derivación y transferencia de claves (Español)](user-guide/es/derivacion-y-transferencia-de-claves.md)
+- [Policy and usage controls (English)](user-guide/en/policy-controls.md)
+- [Controles de política y uso (Español)](user-guide/es/controles-de-uso.md)
 
 ## Architecture
 

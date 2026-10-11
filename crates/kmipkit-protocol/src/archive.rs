@@ -10,7 +10,7 @@ use crate::{
     ResultValidationError, UniqueIdentifier,
 };
 
-const ARCHIVE_OPERATION: u32 = 0x0000_0013;
+const ARCHIVE_OPERATION: u32 = 0x0000_0015;
 const SUCCESS: u32 = 0;
 
 /// A typed KMIP 2.1 Archive request payload from §6.1.4, Table 173.
@@ -65,7 +65,7 @@ pub struct ArchiveResponse {
 impl ArchiveResponse {
     /// Converts one already validated KMIP response batch item.
     ///
-    /// The item must identify the client-to-server Archive operation (`0x13`).
+    /// The item must identify the client-to-server Archive operation (`0x15`).
     /// Successful payload parsing requires exactly one Unique Identifier in a
     /// form permitted by §4.58 Tables 145–146. Unknown fields remain available
     /// from the original response message.
