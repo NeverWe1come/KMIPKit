@@ -86,4 +86,23 @@ Added focused local XML regressions for swapped response correlations and non-ad
 cargo test -p kmipkit-test-support managed_object_fixture_tests -- --nocapture
 ```
 
-It exited **1** (`test result: FAILED. 8 passed; 2 failed; 0 ignored; 0 measured; 19 filtered out`). The two new tests failed at their explicit outer assertions: `a reordered response correlation must not pair with the request by list order` and `request and response messages must remain adjacent in source order`. This demonstrates that the pre-fix selector accepted both mismatched correlation pairing and non-adjacent messages; the other eight selected fixture tests passed. Green verification and commit evidence will be appended after implementation.
+It exited **1** (`test result: FAILED. 8 passed; 2 failed; 0 ignored; 0 measured; 19 filtered out`). The two new tests failed at their explicit outer assertions: `a reordered response correlation must not pair with the request by list order` and `request and response messages must remain adjacent in source order`. This demonstrates that the pre-fix selector accepted both mismatched correlation pairing and non-adjacent messages; the other eight selected fixture tests passed.
+
+### Green implementation and verification
+
+The selector now reads the source's element messages in document order, requires even-length adjacent `RequestMessage`/`ResponseMessage` pairs, and rejects any response `ClientCorrelationValue` that does not exactly equal the adjacent request value. If that response field is absent, the explicitly verified adjacency in the pinned source determines association. Duplicate response client-correlation elements and a missing/invalid present value are rejected. Correlation comparison uses a boolean assertion with a fixed diagnostic so values are not printed. The regression XML remains local test input; the two pinned OASIS fixtures are unchanged.
+
+The exact post-Green covering command was:
+
+```text
+cargo test -p kmipkit-test-support managed_object_fixture_tests -- --nocapture
+```
+
+It exited **0**. Its unit-test summary was `test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 19 filtered out`; the two integration targets matched zero tests under this filter and also exited 0. The expected caught rejections emitted only fixed diagnostics: `response correlation id matches its adjacent request` and `source request is immediately followed by its response`. `cargo fmt --all --check` exited 0. `git diff --check` exited 0 before the Green commit.
+
+| Phase | DCO-signed commit | Evidence |
+| --- | --- | --- |
+| Red | `6f6ea1b5` — `test: reject invalid Get response pairings` | Added the mismatched correlation and non-adjacent source regressions; recorded the expected failing run above. |
+| Green | `d030e00b` — `test: validate adjacent Get response correlations` | Enforced adjacent source-order pairing and optional exact response correlation validation; focused test suite passed. |
+
+This fix closes only the response-association review finding. It does not add official OASIS response correlation metadata, change OASIS source bytes, or broaden any conformance/profile claim. The independently assigned T043 coverage follow-up remains separate.
