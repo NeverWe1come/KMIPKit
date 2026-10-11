@@ -2,7 +2,7 @@
 
 use std::{error::Error, fmt};
 
-use kmipkit_ttlv::{ModelError, Structure, ValueView};
+use kmipkit_ttlv::{ModelError, Structure, StructureView, ValueView};
 
 use crate::{
     KmipOperationResult, ProtocolError, ResponseBatchItemView, ResultMessage, ResultValidationError,
@@ -38,6 +38,7 @@ impl GetConstraintsRequest {
 pub struct GetConstraintsResponse {
     result: KmipOperationResult,
     constraints: Option<Structure>,
+    response_ttlv: Structure,
 }
 
 impl GetConstraintsResponse {
@@ -59,31 +60,22 @@ impl GetConstraintsResponse {
         let result_message = item.with_result_message(|text| ResultMessage::new(text.to_owned()));
         let result = KmipOperationResult::new(status, item.result_reason(), result_message)
             .map_err(GetConstraintsError::InvalidOperationResult)?;
-        if status.raw() != SUCCESS {
-            return Ok(Self {
-                result,
-                constraints: None,
-            });
-        }
-        let constraints = item
-            .with_response_payload(|payload| {
-                let [field] = payload.children() else {
-                    return Err(GetConstraintsError::MalformedSuccessPayload);
-                };
-                if field.tag().raw() != CONSTRAINTS_TAG {
-                    return Err(GetConstraintsError::MalformedSuccessPayload);
-                }
-                field.with_value(|value| match value {
-                    ValueView::Structure(structure) => structure
-                        .try_clone()
-                        .map_err(GetConstraintsError::TtlvModel),
-                    _ => Err(GetConstraintsError::MalformedSuccessPayload),
-                })
-            })
-            .ok_or(GetConstraintsError::MissingSuccessPayload)??;
+        let response_ttlv = item
+            .with_ttlv(|response| response.try_clone())
+            .ok_or(GetConstraintsError::MalformedResponseItem)?
+            .map_err(GetConstraintsError::TtlvModel)?;
+        let constraints = if status.raw() == SUCCESS {
+            Some(
+                item.with_response_payload(|payload| parse_success_constraints(&payload))
+                    .ok_or(GetConstraintsError::MissingSuccessPayload)??,
+            )
+        } else {
+            None
+        };
         Ok(Self {
             result,
-            constraints: Some(constraints),
+            constraints,
+            response_ttlv,
         })
     }
 
@@ -98,6 +90,36 @@ impl GetConstraintsResponse {
     pub const fn constraints(&self) -> Option<&Structure> {
         self.constraints.as_ref()
     }
+
+    /// Lends the complete ordered response batch item, including unknown fields.
+    ///
+    /// The retained TTLV remains available after the source message is dropped,
+    /// preserving unknown operation payload members and message extensions.
+    pub fn with_ttlv<R>(&self, callback: impl for<'a> FnOnce(StructureView<'a>) -> R) -> R {
+        callback(self.response_ttlv.view())
+    }
+}
+
+fn parse_success_constraints(
+    payload: &StructureView<'_>,
+) -> Result<Structure, GetConstraintsError> {
+    let mut constraints = None;
+    for field in payload.children() {
+        if field.tag().raw() == CONSTRAINTS_TAG {
+            if constraints.is_some() {
+                return Err(GetConstraintsError::MalformedSuccessPayload);
+            }
+            constraints = Some(field.with_value(|value| {
+                match value {
+                    ValueView::Structure(structure) => structure
+                        .try_clone()
+                        .map_err(GetConstraintsError::TtlvModel),
+                    _ => Err(GetConstraintsError::MalformedSuccessPayload),
+                }
+            })?);
+        }
+    }
+    constraints.ok_or(GetConstraintsError::MalformedSuccessPayload)
 }
 
 impl fmt::Debug for GetConstraintsResponse {
@@ -106,6 +128,7 @@ impl fmt::Debug for GetConstraintsResponse {
             .debug_struct("GetConstraintsResponse")
             .field("result", &self.result)
             .field("has_constraints", &self.constraints.is_some())
+            .field("response_ttlv", &"[REDACTED]")
             .finish()
     }
 }
@@ -122,6 +145,8 @@ pub enum GetConstraintsError {
     InvalidOperationResult(ResultValidationError),
     /// A successful response omitted its Response Payload.
     MissingSuccessPayload,
+    /// The response batch item could not be retained as a generic TTLV structure.
+    MalformedResponseItem,
     /// A successful payload lacks exactly one Constraints Structure.
     MalformedSuccessPayload,
     /// The generic TTLV Structure could not be copied safely.
@@ -143,6 +168,9 @@ impl fmt::Display for GetConstraintsError {
             Self::MissingSuccessPayload => {
                 formatter.write_str("successful Get Constraints payload is missing")
             }
+            Self::MalformedResponseItem => {
+                formatter.write_str("Get Constraints response item is malformed")
+            }
             Self::MalformedSuccessPayload => {
                 formatter.write_str("successful Get Constraints payload is malformed")
             }
@@ -161,6 +189,7 @@ impl Error for GetConstraintsError {
             Self::UnexpectedOperation
             | Self::MissingResultStatus
             | Self::MissingSuccessPayload
+            | Self::MalformedResponseItem
             | Self::MalformedSuccessPayload => None,
         }
     }
