@@ -236,10 +236,7 @@ impl RecertifyResponse {
             .map_err(|_| RecertifyError::MalformedResponseItem)?;
 
         let unique_identifier = if status.raw() == SUCCESS {
-            Some(
-                item.with_response_payload(|payload| successful_identifier(&payload))
-                    .ok_or(RecertifyError::MalformedSuccessPayload)??,
-            )
+            Some(parse_success_identifier(item)?)
         } else {
             None
         };
@@ -315,6 +312,13 @@ impl Error for RecertifyError {
 fn successful_identifier(payload: &StructureView<'_>) -> Result<UniqueIdentifier, RecertifyError> {
     super::lifecycle::successful_response_identifier(payload)
         .ok_or(RecertifyError::MalformedSuccessPayload)
+}
+
+fn parse_success_identifier(
+    item: ResponseBatchItemView<'_>,
+) -> Result<UniqueIdentifier, RecertifyError> {
+    item.with_response_payload(|payload| successful_identifier(&payload))
+        .ok_or(RecertifyError::MalformedSuccessPayload)?
 }
 
 fn invalid_request() -> ProtocolError {
