@@ -6966,6 +6966,7 @@ class CatalogValidationTests(unittest.TestCase):
         }
         selected = [row for row in pinned if row["section"] in ("6.1.50", "6.1.50.1")]
         self.assertEqual({row["clause_id"] for row in selected}, set(expected))
+        pinned_by_id = {row["clause_id"]: row for row in selected}
         reviews = {
             row["source_clause_id"]: row
             for row in oracle["source_requirement_reviews"]
@@ -6980,8 +6981,8 @@ class CatalogValidationTests(unittest.TestCase):
             self.assertEqual(review["source_locator"], {"ordinal": ordinal, "block_kind": kind})
             self.assertEqual(review["html_line_range"], line_range)
             self.assertEqual(review["source_excerpt"], pinned_source_excerpt(source_path, line_range))
-            self.assertEqual(review["source_excerpt"], next(row for row in selected if row["clause_id"] == clause_id)["source_text"])
-            self.assertEqual(next(row for row in selected if row["clause_id"] == clause_id)["source_keywords"], keywords)
+            self.assertEqual(review["source_excerpt"], pinned_by_id[clause_id]["source_text"])
+            self.assertEqual(pinned_by_id[clause_id]["source_keywords"], keywords)
 
         seed_behavior = reviews["KMIPKIT-CLAUSE-SPEC-6.1.50-001"]
         self.assertEqual(
