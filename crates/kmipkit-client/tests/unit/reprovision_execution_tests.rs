@@ -150,6 +150,32 @@ fn reprovision_sends_parameterless_server_credential_form() {
 }
 
 #[test]
+fn reprovision_sends_replacement_certificate_form() {
+    let response = asynchronous_response_bytes(
+        REPROVISION_OPERATION,
+        SUCCESS,
+        None,
+        None,
+        Some(test_structure([])),
+    );
+    let (mut client, fake, captured) = client_for(ExchangeScript::Success {
+        response,
+        request_write_chunks: Vec::new(),
+    });
+    client
+        .reprovision(
+            ReProvisionRequest::new().with_certificate(certificate_material("certificate-data")),
+            &CodecLimits::defaults(),
+        )
+        .expect("replacement certificate request is valid");
+    assert_eq!(
+        request_fields(captured.borrow().as_deref().expect("request captured")),
+        (Some(REPROVISION_OPERATION), vec![CERTIFICATE])
+    );
+    assert_eq!(fake.borrow().exchange_count(), 1);
+}
+
+#[test]
 fn reprovision_failure_preserves_table_315_result_without_retry() {
     let response = asynchronous_response_bytes(
         REPROVISION_OPERATION,
@@ -167,7 +193,10 @@ fn reprovision_failure_preserves_table_315_result_without_retry() {
         .expect("Table 315 failure is a KMIP result, not a local error");
     assert_eq!(item.outcome().result().status().raw(), OPERATION_FAILED);
     assert_eq!(
-        item.outcome().result().reason().map(|reason| reason.raw()),
+        item.outcome()
+            .result()
+            .reason()
+            .map(kmipkit_protocol::ResultReason::raw),
         Some(PERMISSION_DENIED)
     );
     assert_eq!(fake.borrow().exchange_count(), 1);
@@ -199,19 +228,24 @@ fn reprovision_pending_preserves_correlation_without_implicit_poll() {
         panic!("Operation Pending remains Pending");
     };
     assert_eq!(pending.operation(), ClientOperation::ReProvision);
-    assert_eq!(pending.asynchronous_correlation_value(), PENDING_CORRELATION);
+    assert_eq!(
+        pending.asynchronous_correlation_value(),
+        PENDING_CORRELATION
+    );
     assert_eq!(fake.borrow().exchange_count(), 1);
 }
 
 #[test]
 fn reprovision_transport_failure_preserves_delivery_state() {
-    let (mut client, fake, _) = client_for(ExchangeScript::FailAfterRequestWrite {
-        request_write_chunks: vec![4],
-    });
+    let (mut client, fake, _) =
+        client_for(ExchangeScript::FailAfterPartialWrite { written_bytes: 4 });
     let error = client
         .reprovision(ReProvisionRequest::new(), &CodecLimits::defaults())
         .expect_err("failed exchange is surfaced");
     assert_eq!(error.category(), ClientErrorCategory::Transport);
-    assert_eq!(error.delivery_state(), RequestDeliveryState::PossiblySent);
+    assert_eq!(
+        error.delivery_state(),
+        Some(RequestDeliveryState::PossiblySent)
+    );
     assert_eq!(fake.borrow().exchange_count(), 1);
 }

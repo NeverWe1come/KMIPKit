@@ -77,7 +77,7 @@ fn request_supports_certificate_request_certificate_or_no_parameters() {
 
     assert_eq!(field_tags(&csr), [CERTIFICATE_REQUEST]);
     assert_eq!(field_tags(&certificate), [CERTIFICATE]);
-    assert!(field_tags(&generated).is_empty());
+    assert_eq!(field_tags(&generated), Vec::<u32>::new());
 }
 
 #[test]
@@ -87,7 +87,10 @@ fn request_rejects_mutually_supplied_certificate_request_and_certificate() {
         .with_certificate(certificate_material("certificate-marker"))
         .into_ttlv_payload();
 
-    assert!(result.is_err(), "§6.1.48 defines three mutually exclusive forms");
+    assert!(
+        result.is_err(),
+        "§6.1.48 defines three mutually exclusive forms"
+    );
 }
 
 #[test]
@@ -109,7 +112,7 @@ fn successful_response_preserves_optional_identifier_and_absence() {
         ))
     );
 
-    let absent = typed_response(SUCCESS, None, None)
+    let absent = typed_response(SUCCESS, None, Some(structure([])))
         .expect("Table 314 marks Unique Identifier optional");
     assert_eq!(absent.unique_identifier(), None);
 }
@@ -155,6 +158,6 @@ fn request_debug_redacts_certificate_and_request_contents() {
 
 #[test]
 fn response_conversion_rejects_a_different_operation() {
-    let message = response_message(0x0000_0001, SUCCESS, None, None, None);
+    let message = response_message(0x0000_0004, OPERATION_FAILED, Some(0x0000_0037), None, None);
     assert!(ReProvisionResponse::try_from_response_item(response_item(&message)).is_err());
 }
