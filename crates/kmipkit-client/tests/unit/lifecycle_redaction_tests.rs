@@ -120,9 +120,9 @@ fn lifecycle_errors_and_debug_never_include_result_text_or_raw_response_body() {
 fn operation_for(request: &ClientRequest) -> u32 {
     match request {
         ClientRequest::Activate(_) => 0x0000_0012,
-        ClientRequest::Archive(_) => 0x0000_0013,
+        ClientRequest::Archive(_) => 0x0000_0015,
         ClientRequest::Destroy(_) => 0x0000_0014,
-        ClientRequest::Recover(_) => 0x0000_002A,
+        ClientRequest::Recover(_) => 0x0000_0016,
         _ => unreachable!("test constructs only lifecycle requests"),
     }
 }

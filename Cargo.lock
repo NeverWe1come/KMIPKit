@@ -359,6 +359,7 @@ version = "0.1.0"
 dependencies = [
  "kmipkit-ttlv",
  "quickcheck",
+ "roxmltree",
  "zeroize",
 ]
 
