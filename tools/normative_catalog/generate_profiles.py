@@ -144,9 +144,11 @@ def compute_profile_closure(
 ) -> ProfileClosure:
     """Expand direct clauses through same-source descendants and normative inclusions.
 
-    Only client-applicable 1.0 and conditionally applicable requirements are
-    included. Server-only and out-of-scope clause records remain in the source
-    clause closure for reporting.
+    Only client-applicable 1.0, mixed client/server, and profile-conditionally
+    applicable requirements are included. A mixed scope is eligible when the
+    requirement's reviewed role identifies a client obligation; server-only
+    and out-of-scope clause records remain in the source clause closure for
+    reporting.
     """
     raw_clauses = catalog.get("source_clauses")
     raw_inclusions = catalog.get("normative_inclusions", [])
@@ -252,7 +254,7 @@ def compute_profile_closure(
         if not isinstance(requirement_id, str) or not requirement_id or not isinstance(linked_clauses, list):
             raise ProfileGenerationError("catalog has an invalid requirement identity or clause links")
         scope_state = requirement.get("scope_state")
-        in_scope = scope_state == "client_1_0" or (
+        in_scope = scope_state in {"client_1_0", "mixed"} or (
             scope_state == "profile_conditional"
             and profile_id in requirement.get("profile_ids", [])
         )
@@ -361,7 +363,7 @@ def render_profiles_source(catalog: Mapping[str, Any], targets: ProfileTargets) 
             for requirement in raw_requirements
             if isinstance(requirement, dict)
             and requirement.get("role") in {"client", "both"}
-            and requirement.get("scope_state") in {"client_1_0", "profile_conditional"}
+            and requirement.get("scope_state") in {"client_1_0", "mixed", "profile_conditional"}
         ),
         key=lambda requirement: requirement.get("requirement_id", ""),
     )

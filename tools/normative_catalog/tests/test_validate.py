@@ -13236,8 +13236,12 @@ class CatalogValidationTests(unittest.TestCase):
                 ),
             )
             aggregate_scopes = list(dict.fromkeys(mapping["scope_state"] for mapping in ordered_mappings))
-            mixed_source_scope = any("(split/shared)" in scope for scope in aggregate_scopes)
-            expected_scope = aggregate_scopes[0] if len(aggregate_scopes) == 1 and not mixed_source_scope else "mixed"
+            if "unresolved" in aggregate_scopes:
+                expected_scope = "unclear"
+            elif "(split/shared)" in " ".join(aggregate_scopes) or len(aggregate_scopes) > 1:
+                expected_scope = "mixed"
+            else:
+                expected_scope = aggregate_scopes[0]
             if requirement["scope_state"] != expected_scope:
                 violations.append(
                     f"{requirement_id} aggregate scope differs from its source atoms: "

@@ -968,7 +968,7 @@ def _check_semantics(
             _fail("requirement keyword is not present in every linked source clause")
         _enum(
             requirement.get("scope_state"),
-            {"client_1_0", "client_1_1", "profile_conditional", "server_only", "out_of_scope", "mixed"},
+            {"client_1_0", "client_1_1", "profile_conditional", "server_only", "out_of_scope", "mixed", "unclear"},
             "requirement scope state",
         )
         if keyword in {"MUST NOT", "SHALL NOT"} and requirement.get("negative_verification_required") is not True:

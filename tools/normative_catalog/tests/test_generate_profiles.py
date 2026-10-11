@@ -669,7 +669,7 @@ class ProfileTargetManifestTests(unittest.TestCase):
             requirement["source_keyword"]
             for requirement in catalog["requirements"]
             if requirement["role"] in {"client", "both"}
-            and requirement["scope_state"] in {"client_1_0", "profile_conditional"}
+            and requirement["scope_state"] in {"client_1_0", "mixed", "profile_conditional"}
         }
         for keyword in expected_keywords:
             with self.subTest(keyword=keyword):
@@ -701,7 +701,7 @@ class ProfileTargetManifestTests(unittest.TestCase):
             requirement["source_keyword"]
             for requirement in catalog["requirements"]
             if requirement["role"] in {"client", "both"}
-            and requirement["scope_state"] in {"client_1_0", "profile_conditional"}
+            and requirement["scope_state"] in {"client_1_0", "mixed", "profile_conditional"}
         }
         template = next(
             requirement
@@ -734,13 +734,13 @@ class ProfileTargetManifestTests(unittest.TestCase):
             requirement["requirement_id"]: expected_categories[requirement["source_keyword"]]
             for requirement in catalog["requirements"]
             if requirement["role"] in {"client", "both"}
-            and requirement["scope_state"] in {"client_1_0", "profile_conditional"}
+            and requirement["scope_state"] in {"client_1_0", "mixed", "profile_conditional"}
         }
         observed_scoped_keywords = {
             requirement["source_keyword"]
             for requirement in catalog["requirements"]
             if requirement["role"] in {"client", "both"}
-            and requirement["scope_state"] in {"client_1_0", "profile_conditional"}
+            and requirement["scope_state"] in {"client_1_0", "mixed", "profile_conditional"}
         }
 
         self.assertEqual(observed_scoped_keywords, set(expected_categories))
