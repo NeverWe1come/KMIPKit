@@ -82,7 +82,7 @@ class CoverageReportTests(unittest.TestCase):
                 "GITHUB_RUN_ATTEMPT": "1",
                 "PROFILE_EVIDENCE_MANIFEST": "",
             }
-            with patch.dict(os.environ, environment, clear=True):
+            with patch.dict(os.environ, environment, clear=False):
                 exit_code = report_module.main(["--readiness", "--repo-root", str(ROOT)])
 
             summary = summary_path.read_text(encoding="utf-8")
@@ -152,7 +152,7 @@ class CoverageReportTests(unittest.TestCase):
                 "GITHUB_RUN_ATTEMPT": context["run_attempt"],
                 "PROFILE_EVIDENCE_MANIFEST": json.dumps(manifest),
             }
-            with patch.dict(os.environ, environment, clear=True):
+            with patch.dict(os.environ, environment, clear=False):
                 exit_code = report_module.main(["--readiness", "--repo-root", str(ROOT)])
 
             summary = summary_path.read_text(encoding="utf-8")

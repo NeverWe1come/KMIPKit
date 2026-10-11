@@ -4,9 +4,13 @@ from __future__ import annotations
 
 import argparse
 from collections import defaultdict
+import json
+import os
 import re
+import subprocess
 import sys
 import unicodedata
+from collections.abc import Mapping
 from pathlib import Path
 from typing import Any
 
@@ -49,6 +53,7 @@ SECTION_ORDER = (
     "Open discrepancies",
     "Project policies",
 )
+BASELINE_PROFILE_ID = "KMIPKIT-PROFILE-BASELINE-CLIENT"
 _RULE_TEST_KIND_BY_CATEGORY = {
     "RequiredBehavior": "PositiveBehavior",
     "ProhibitedBehavior": "NegativeBehavior",
@@ -977,11 +982,114 @@ def write_report(
     return True
 
 
+def _unique_json_object(pairs: list[tuple[str, Any]]) -> dict[str, Any]:
+    result: dict[str, Any] = {}
+    for key, value in pairs:
+        if key in result:
+            raise ValueError("duplicate verification-manifest JSON key")
+        result[key] = value
+    return result
+
+
+def render_readiness_summary(readiness: Mapping[str, Any]) -> str:
+    """Render only stable readiness blockers; never echo the ephemeral manifest."""
+    target_selected = readiness.get("target_selected")
+    selected_text = "yes" if target_selected is True else "no" if target_selected is False else "unknown"
+    runtime_available = "yes" if readiness.get("runtime_validation_available") is True else "no"
+    lines = [
+        "### Current profile readiness (ephemeral)",
+        "",
+        f"- Profile: `{_escape_table_text(readiness.get('profile_id', 'unknown'))}`",
+        f"- Target selected: {selected_text}",
+        f"- Runtime validation available: {runtime_available}",
+        f"- Effective evidence state: `{_escape_table_text(readiness.get('effective_state', 'unknown'))}`",
+        "- Public claim: no",
+        "",
+    ]
+    blockers = readiness.get("blockers")
+    if isinstance(blockers, list) and blockers:
+        lines.extend(("Blockers:", ""))
+        lines.extend(f"- {_escape_table_text(blocker)}" for blocker in blockers)
+        lines.append("")
+    else:
+        lines.extend(("No readiness blockers were reported.", ""))
+    return "\n".join(lines)
+
+
+def evaluate_current_readiness(
+    repository: Path,
+    environment: Mapping[str, str],
+) -> dict[str, Any]:
+    """Evaluate Baseline against current workflow context and an optional same-run manifest."""
+    code_root = Path(__file__).resolve().parents[2]
+    if str(code_root) not in sys.path:
+        sys.path.insert(0, str(code_root))
+    from tools.normative_catalog.validate import load_validated_catalog
+    from tools.normative_catalog.generate_profiles import load_profile_targets
+
+    raw = safe_read_bytes(repository, "specification/catalog/kmip-2.1.json", max_bytes=16 * 1024 * 1024)
+    catalog = load_validated_catalog(raw, repository, require_complete=True)
+    selected_profile_ids = set(load_profile_targets(repository, catalog).profile_ids)
+    typed_rule_mappings = load_typed_rule_mappings(repository)
+    manifest_text = environment.get("PROFILE_EVIDENCE_MANIFEST", "")
+    manifest: dict[str, Any] | None = None
+    if manifest_text:
+        try:
+            if len(manifest_text.encode("utf-8")) > 64 * 1024:
+                raise ValueError("verification manifest exceeds the input limit")
+            parsed = json.loads(manifest_text, object_pairs_hook=_unique_json_object)
+            if not isinstance(parsed, dict):
+                raise ValueError("verification manifest must be an object")
+            manifest = parsed
+        except (UnicodeError, ValueError):
+            # An invalid marker is passed to the strict validator below so the
+            # readiness result is explicitly invalid, never silently absent.
+            manifest = {"invalid_manifest_input": True}
+
+    context = {
+        "event_name": environment.get("GITHUB_EVENT_NAME", ""),
+        "repository": environment.get("GITHUB_REPOSITORY", ""),
+        "ref": environment.get("GITHUB_REF", ""),
+        "ref_protected": environment.get("GITHUB_REF_PROTECTED", "") == "true",
+        "sha": environment.get("GITHUB_SHA", ""),
+        "workflow_ref": environment.get("GITHUB_WORKFLOW_REF", ""),
+        "run_id": environment.get("GITHUB_RUN_ID", ""),
+        "run_attempt": environment.get("GITHUB_RUN_ATTEMPT", ""),
+    }
+    head = subprocess.run(
+        ["git", "rev-parse", "--verify", "HEAD"],
+        cwd=repository,
+        check=True,
+        capture_output=True,
+        text=True,
+    ).stdout.strip()
+    return evaluate_profile_readiness(
+        catalog,
+        BASELINE_PROFILE_ID,
+        selected_profile_ids=selected_profile_ids,
+        typed_rule_mappings=typed_rule_mappings,
+        verification_manifest=manifest,
+        current_context=context,
+        current_head=head,
+        repository_root=repository,
+    )
+
+
+def _append_readiness_summary(summary_path: str | None, readiness: Mapping[str, Any]) -> None:
+    markdown = render_readiness_summary(readiness)
+    if summary_path:
+        with Path(summary_path).open("a", encoding="utf-8", newline="\n") as summary:
+            summary.write(markdown)
+    else:
+        sys.stdout.write(markdown)
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     mode = parser.add_mutually_exclusive_group(required=True)
     mode.add_argument("--write", action="store_true", help="write the generated report")
     mode.add_argument("--check", action="store_true", help="fail if the checked-in report is stale")
+    mode.add_argument("--readiness", action="store_true", help="evaluate current profile evidence ephemerally")
     parser.add_argument("--repo-root", type=Path, default=Path(__file__).resolve().parents[2])
     parser.add_argument(
         "--structural-only",
@@ -996,8 +1104,12 @@ def main(argv: list[str] | None = None) -> int:
             sys.path.insert(0, str(code_root))
         from tools.normative_catalog.validate import load_validated_catalog
 
-        catalog_path = repository / "specification" / "catalog" / "kmip-2.1.json"
         report_path = repository / REPORT_PATH
+        if arguments.readiness:
+            readiness = evaluate_current_readiness(repository, os.environ)
+            _append_readiness_summary(os.environ.get("GITHUB_STEP_SUMMARY"), readiness)
+            return 0
+
         raw = safe_read_bytes(repository, "specification/catalog/kmip-2.1.json", max_bytes=16 * 1024 * 1024)
         catalog = load_validated_catalog(raw, repository, require_complete=not arguments.structural_only)
         selected_profile_ids = None
@@ -1015,8 +1127,9 @@ def main(argv: list[str] | None = None) -> int:
             selected_profile_ids=selected_profile_ids,
             typed_rule_mappings=typed_rule_mappings,
         )
-    except (OSError, ValueError, PathSecurityError):
-        print("coverage report failed: catalog or report input is invalid or unsafe", file=sys.stderr)
+    except (OSError, ValueError, PathSecurityError, subprocess.CalledProcessError):
+        failure = "profile readiness evaluation failed: current evidence or repository input is invalid" if arguments.readiness else "coverage report failed: catalog or report input is invalid or unsafe"
+        print(failure, file=sys.stderr)
         return 1
     if not valid:
         print("coverage report is stale; run report.py --write", file=sys.stderr)
