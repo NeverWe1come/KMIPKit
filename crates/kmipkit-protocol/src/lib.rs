@@ -69,6 +69,9 @@ mod set_constraints;
 #[cfg(test)]
 #[path = "../tests/unit/set_constraints_tests.rs"]
 mod set_constraints_tests;
+#[cfg(test)]
+#[path = "../tests/unit/set_defaults_tests.rs"]
+mod set_defaults_tests;
 mod sign;
 mod signature_verify;
 mod ticket;

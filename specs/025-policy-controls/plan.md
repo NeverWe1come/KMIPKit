@@ -47,7 +47,7 @@ Add typed client request/response models and explicit one-exchange execution for
 | Get Constraints | Specification v2.1 §6.1.22, Tables 229–231; Constraints §7.7 | Empty request, required Constraints response, preserve operation errors. |
 | Get Usage Allocation | Specification v2.1 §6.1.23, Tables 232–234; Usage Limits §4.59/Table 148; Unit §11.60/Table 491 | Optional Unique Identifier; required Usage Limits Count; required response Unique Identifier; apply four catalog requirement IDs through the approved local caller guard. |
 | Set Constraints | Specification v2.1 §6.1.52, Tables 325–327; Constraints §7.7 | Required Constraints request, empty success payload, preserve errors; follow approved DISC-020 interpretation. |
-| Set Defaults | Specification v2.1 §6.1.53, Tables 328–330; Defaults Information §7.11 | Optional Defaults Information; its absence requests removal of all Object Defaults; empty success payload; follow approved DISC-020 interpretation. |
+| Set Defaults | Specification v2.1 §6.1.53, Tables 328–330; Defaults Information §7.11 | Table 328 explicitly states that absent Defaults Information requests removal of all Object Defaults; empty success payload; approved DISC-020 interpretation applies to Table 330's truncated error introduction. |
 | Set Endpoint Role | Specification v2.1 §6.1.54, Tables 331–333; Endpoint Role §11.19 | Required open Enumeration on request and response; only client-to-server direction. |
 | Shared response contract | Constitution and existing batch/client contracts | Preserve Result Status/Reason/Message where permitted, Pending/correlation, unknown extensions, and delivery state. One explicit exchange; no retry or implicit Poll. |
 

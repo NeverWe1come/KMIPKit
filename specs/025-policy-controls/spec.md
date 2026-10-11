@@ -137,7 +137,7 @@ As a KMIPKit caller, I can send the §6.1.53 Set Defaults request and inspect th
 3. Given a Table 330 failure, malformed payload, or transport error, when the call completes, then status/reason or error and delivery state remain available without retry.
 4. Given Pending in a caller-enabled typed batch, when the response arrives, then Pending and the exact correlation bytes remain available without an implicit Poll.
 
-**Specific rules**: Absent Defaults Information explicitly requests removal of all Object Defaults; approved KMIPKIT-DISC-020 applies.
+**Specific rules**: OASIS §6.1.53, Table 328 explicitly states that omitting Defaults Information requests removal of all Object Defaults. KMIPKIT-DISC-020 applies to interpreting the truncated error introduction for Table 330, not to the Table 328 omission semantics.
 
 **Payload schema** (OASIS Specification v2.1 §6.1.53, Tables 328–329):
 
@@ -248,7 +248,7 @@ These are project interpretations, not official OASIS errata. The implementation
 | --- | --- | --- |
 | Get Constraints | KMIPKIT-DISC-016 | Empty request and required Constraints response; approved KMIPKIT-DISC-016 assigns the erroneous error introduction to this operation. |
 | Set Constraints | KMIPKIT-DISC-020 | Constraints is required; approved KMIPKIT-DISC-020 assigns the truncated error introduction to this operation. |
-| Set Defaults | KMIPKIT-DISC-020 | Absent Defaults Information explicitly requests removal of all Object Defaults; approved KMIPKIT-DISC-020 applies. |
+| Set Defaults | KMIPKIT-DISC-020 | Table 328 normatively states that omission removes all Object Defaults. The approved KMIPKIT-DISC-020 disposition assigns the truncated error introduction to §6.1.53/Table 330. |
 
 ### Maintainer-approved interpretation — Usage Allocation guard (2026-10-11)
 

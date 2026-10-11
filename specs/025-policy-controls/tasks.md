@@ -100,7 +100,7 @@ Each task uses `[ ] T### [US#] action in exact/repository/path`. Every implement
 
 ### Red commit
 
-- [ ] T014 [US4] Add failing protocol/client tests in `crates/kmipkit-protocol/tests/unit/set_defaults_tests.rs` and `crates/kmipkit-client/tests/unit/set_defaults_execution_tests.rs`; register modules through protocol/client test module declarations; cite OASIS KMIP Specification v2.1 §6.1.53, Tables 328–330 and §7.11; cover absent vs empty/present Defaults Information, unknown nested elements, approved DISC-020 interpretation, Table 330 errors, malformed payload, Pending, delivery, and no retry; record Red output separately.
+- [x] T014 [US4] Add failing protocol/client tests in `crates/kmipkit-protocol/tests/unit/set_defaults_tests.rs` and `crates/kmipkit-client/tests/unit/set_defaults_execution_tests.rs`; register modules through protocol/client test module declarations; cite OASIS KMIP Specification v2.1 §6.1.53, Tables 328–330 and §7.11; cover absent vs empty/present Defaults Information, unknown nested elements, Table 330's approved DISC-020 assignment, malformed success Response Payload, Pending, delivery, and no retry; record Red output separately. Red evidence: `cargo test -p kmipkit-protocol --lib set_defaults_tests` exited 1 with E0432 for absent `SetDefaultsRequest`/`SetDefaultsResponse`; `cargo test -p kmipkit-client --lib set_defaults_execution_tests` exited 1 with E0432/E0599 for absent request type, `ClientRequest::set_defaults`, and `ClientBatchOutcome::SetDefaults`. `cargo fmt --all --check` and `git diff --check` passed. The malformed Success test builds a raw response and confirms the common §8.6/Table 399 validator rejects missing Response Payload. Independent QA approved the tests and corrected normative attribution: Table 328 defines omission semantics; DISC-020 applies to the Table 330 error introduction.
 
 ### Green commit
 
@@ -155,5 +155,5 @@ Each task uses `[ ] T### [US#] action in exact/repository/path`. Every implement
 - **US2 allocation**: Tables 232–234, exact Integer count, optional/requested identifier behavior, required resolved response ID, and common result/delivery behavior.
 - **US2 guard**: successful result plus explicit exact count/unit/ID context; positive caller cost only; matching ID; no over-budget transmission; delivery reservations; local-only accounting.
 - **US3**: Tables 325–327 and approved KMIPKIT-DISC-020 disposition.
-- **US4**: Tables 328–330; absent Defaults Information remains absent and means removal under the approved interpretation.
+- **US4**: Tables 328–330; Table 328 says absent Defaults Information means removal; DISC-020 applies to Table 330 error attribution.
 - **US5**: Tables 331–333; unknown Endpoint Role values preserved; no server-initiated §6.2.5 behavior.

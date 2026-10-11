@@ -30,7 +30,7 @@ Each operation preserves its specification Table 231, 234, 327, 330, or 333 erro
 
 ## Set Defaults absence
 
-Omission of Defaults Information is semantically meaningful: under the approved interpretation in `spec.md`, it requests removal of all Object Defaults from the server. The encoder must preserve absent field rather than serialize an empty Defaults Information structure.
+OASIS KMIP v2.1 §6.1.53, Table 328 explicitly states that omission of Defaults Information requests removal of all Object Defaults from the server. The encoder must preserve the absent field rather than serialize an empty Defaults Information structure. KMIPKIT-DISC-020 concerns Table 330's truncated error introduction, not this request semantic.
 
 ## Scope limits
 
