@@ -1,5 +1,5 @@
 //! Get request and response tests derived from OASIS KMIP Specification v2.1
-//! §6.1.19, Tables 220–221, and §6.1.19.1, Table 222. Valid Key Compression
+//! §6.1.19, Tables 220–221, §6.1.19.1, Table 222, and §7.18, Table 370. Valid Key Compression
 //! Type, Key Format Type, and Key Wrap Type values come from §§11.24, 11.25
 //! (Table 461), and 11.29; permitted Unique Identifier forms come from §4.58,
 //! Tables 145–146. Any Object remains opaque as defined in §2. These are local
@@ -25,6 +25,8 @@ const KEY_FORMAT_TYPE_TAG: u32 = 0x0042_0042;
 const KEY_WRAP_TYPE_TAG: u32 = 0x0042_00F8;
 const KEY_COMPRESSION_TYPE_TAG: u32 = 0x0042_0041;
 const KEY_WRAPPING_SPECIFICATION_TAG: u32 = 0x0042_0047;
+const ENCRYPTION_KEY_INFORMATION_TAG: u32 = 0x0042_0036;
+const WRAPPING_METHOD_TAG: u32 = 0x0042_009E;
 const OBJECT_TYPE_TAG: u32 = 0x0042_0057;
 const SYMMETRIC_KEY_TAG: u32 = 0x0042_008F;
 const KEY_BLOCK_TAG: u32 = 0x0042_0040;
@@ -436,6 +438,61 @@ fn request_preserves_the_optional_key_wrapping_specification_structure() {
                 && structure.children()[0].tag().raw() == TEST_EXTENSION_TAG
                 && structure.children()[0].with_value(|nested| matches!(nested, ValueView::Integer(7)))
     )));
+}
+
+#[test]
+fn request_encodes_a_valid_wrapped_get_specification() {
+    // §7.18/Table 370 requires Wrapping Method and at least one key-information
+    // Structure; Table 16 requires the Encryption Key Information Unique Identifier.
+    // Table 494 assigns Encrypt the value 1. Omitted Encoding Option defaults to TTLV.
+    let encryption_key_information = structure([unique_identifier_item(Value::text_string(
+        "wrapping-key-id".to_owned(),
+    ))]);
+    let wrapping_specification = structure([
+        item(WRAPPING_METHOD_TAG, Value::enumeration(1)),
+        item(
+            ENCRYPTION_KEY_INFORMATION_TAG,
+            Value::structure(encryption_key_information),
+        ),
+    ]);
+
+    let payload = GetRequest::new()
+        .with_key_wrapping_specification(wrapping_specification)
+        .to_ttlv_payload()
+        .expect("the valid Table 370 request structure is representable");
+    let view = payload.view();
+    let fields = view.children();
+
+    assert_eq!(
+        field_signature(&payload),
+        [(KEY_WRAPPING_SPECIFICATION_TAG, ItemType::Structure)]
+    );
+    assert!(fields[0].with_value(|value| {
+        let ValueView::Structure(specification) = value else {
+            return false;
+        };
+        let children = specification.children();
+        if children.len() != 2 {
+            return false;
+        }
+
+        let valid_method = children[0].tag().raw() == WRAPPING_METHOD_TAG
+            && children[0].with_value(|method| matches!(method, ValueView::Enumeration(1)));
+        let valid_key_information = children[1].tag().raw() == ENCRYPTION_KEY_INFORMATION_TAG
+            && children[1].with_value(|value| {
+                let ValueView::Structure(key_information) = value else {
+                    return false;
+                };
+                let key_fields = key_information.children();
+                key_fields.len() == 1
+                    && key_fields[0].tag().raw() == UNIQUE_IDENTIFIER_TAG
+                    && key_fields[0].with_value(|identifier| {
+                        matches!(identifier, ValueView::TextString("wrapping-key-id"))
+                    })
+            });
+
+        valid_method && valid_key_information
+    }));
 }
 
 #[test]

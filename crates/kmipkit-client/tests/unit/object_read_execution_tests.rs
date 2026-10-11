@@ -9,17 +9,24 @@
 
 use kmipkit_protocol::{
     AttributeSet, CreateRequest, GetRequest, LocateRequest, ObjectGroupMember, ObjectType,
-    StorageStatusMask, UniqueIdentifier,
+    RecoverRequest, StorageStatusMask, UniqueIdentifier,
 };
 use kmipkit_test_support::ExchangeScript;
-use kmipkit_transport::RequestDeliveryState;
+use kmipkit_transport::{
+    RequestDeliveryState, Transport, TransportCauseCategory, TransportError, TransportResponse,
+};
 use kmipkit_ttlv::ValueView;
 use kmipkit_ttlv::codec::{CodecLimits, decode_with_limits};
 use kmipkit_ttlv::{Structure, Value};
+use std::cell::RefCell;
+use std::collections::VecDeque;
+use std::io;
+use std::rc::Rc;
+use zeroize::Zeroize;
 
 use crate::asynchronous_execution_test_support::client_for;
 use crate::execute::{
-    ClientBatch, ClientBatchItem, ClientBatchOutcome, ClientOperation, ClientRequest,
+    Client, ClientBatch, ClientBatchItem, ClientBatchOutcome, ClientOperation, ClientRequest,
 };
 use crate::execute_test_support::{
     asynchronous_response_bytes, one_item_response_bytes, operation_batch_response_bytes,
@@ -29,6 +36,7 @@ use crate::execute_test_support::{
 const CREATE_OPERATION: u32 = 0x0000_0001;
 const GET_OPERATION: u32 = 0x0000_000A;
 const LOCATE_OPERATION: u32 = 0x0000_0008;
+const RECOVER_OPERATION: u32 = 0x0000_002A;
 const RESPONSE_MESSAGE: &str = "GET_RESULT_MESSAGE_SENTINEL";
 const OBJECT_NOT_FOUND: u32 = 0x0000_0037;
 const PENDING_CORRELATION: &[u8] = b"GET_PENDING_CORRELATION_EXACT";
@@ -56,6 +64,9 @@ const GET_BATCH_ID: &[u8] = b"get-placeholder-read";
 // Unique Batch Item IDs identify message frames; they are not KMIP Unique Identifiers.
 const LOCATE_BATCH_ID: &[u8] = b"locate-search-frame";
 const LOCATE_GET_BATCH_ID: &[u8] = b"locate-get-frame";
+const ARCHIVED_LOCATE_BATCH_ID: &[u8] = b"archived-locate-frame";
+const ARCHIVED_RECOVER_BATCH_ID: &[u8] = b"archived-recover-frame";
+const ARCHIVED_GET_BATCH_ID: &[u8] = b"archived-get-frame";
 
 #[derive(Debug, Eq, PartialEq)]
 enum WireValue {
@@ -117,6 +128,46 @@ fn request_item_snapshot(request: &[u8], index: usize) -> Option<RequestItemSnap
             })
         })
     })
+}
+
+struct CallerDirectedArchivedTransport {
+    responses: VecDeque<Vec<u8>>,
+    requests: Rc<RefCell<Vec<RequestItemSnapshot>>>,
+}
+
+impl Transport for CallerDirectedArchivedTransport {
+    fn exchange(
+        &mut self,
+        request: &[u8],
+        _max_response_bytes: usize,
+    ) -> Result<TransportResponse, TransportError> {
+        let snapshot = request_item_snapshot(request, 0).ok_or_else(|| {
+            TransportError::new(
+                RequestDeliveryState::NotSent,
+                TransportCauseCategory::Other,
+                io::Error::other("the archived retrieval request cannot be decoded"),
+            )
+        })?;
+        self.requests.borrow_mut().push(snapshot);
+        self.responses
+            .pop_front()
+            .map(TransportResponse::new)
+            .ok_or_else(|| {
+                TransportError::new(
+                    RequestDeliveryState::NotSent,
+                    TransportCauseCategory::Other,
+                    io::Error::other("the archived retrieval sequence has no scripted response"),
+                )
+            })
+    }
+}
+
+impl Drop for CallerDirectedArchivedTransport {
+    fn drop(&mut self) {
+        for response in &mut self.responses {
+            response.zeroize();
+        }
+    }
 }
 
 fn wire_value_snapshot(value: ValueView<'_>) -> WireValue {
@@ -590,6 +641,165 @@ fn locate_batch_preserves_criteria_results_and_server_placeholder_boundary() {
         get_result.outcome().get_response().is_some(),
         "the subsequent Get response is exposed without a client-selected identifier"
     );
+}
+
+#[test]
+fn caller_directs_archived_locate_recover_then_get_as_three_exchanges() {
+    // OASIS KMIP v2.1 §6.1.28 requires Recover then Get to obtain archived
+    // contents; §6.1.42 and §6.1.19 define those separate operations.
+    let archived_identifier = "caller-selected-archived-object";
+    let responses = [
+        one_item_response_bytes(
+            LOCATE_OPERATION,
+            0,
+            None,
+            None,
+            Some(ARCHIVED_LOCATE_BATCH_ID),
+            None,
+            Some(successful_locate_payload(&[archived_identifier])),
+        ),
+        one_item_response_bytes(
+            RECOVER_OPERATION,
+            0,
+            None,
+            None,
+            Some(ARCHIVED_RECOVER_BATCH_ID),
+            None,
+            Some(test_structure([test_item(
+                UNIQUE_IDENTIFIER,
+                Value::text_string(archived_identifier.to_owned()),
+            )])),
+        ),
+        one_item_response_bytes(
+            GET_OPERATION,
+            0,
+            None,
+            None,
+            Some(ARCHIVED_GET_BATCH_ID),
+            None,
+            Some(successful_get_payload(archived_identifier)),
+        ),
+    ];
+    let requests = Rc::new(RefCell::new(Vec::new()));
+    let mut client = Client::for_test(CallerDirectedArchivedTransport {
+        responses: responses.into_iter().collect(),
+        requests: Rc::clone(&requests),
+    });
+
+    let located_identifier = execute_archived_locate(&mut client, &requests);
+    assert_eq!(
+        located_identifier,
+        UniqueIdentifier::TextString(archived_identifier.to_owned())
+    );
+
+    let recovered_identifier = execute_archived_recover(&mut client, &requests, located_identifier);
+
+    execute_archived_get(&mut client, &requests, recovered_identifier);
+
+    let requests = requests.borrow();
+    assert_eq!(
+        requests
+            .iter()
+            .map(|request| request.operation)
+            .collect::<Vec<_>>(),
+        [LOCATE_OPERATION, RECOVER_OPERATION, GET_OPERATION]
+    );
+    assert_eq!(
+        wire_field(&requests[0].payload, STORAGE_STATUS_MASK),
+        Some(&WireValue::Integer(0x2)),
+        "Locate explicitly requests archived objects"
+    );
+    for request in &requests[1..] {
+        assert_eq!(
+            wire_field(&request.payload, UNIQUE_IDENTIFIER),
+            Some(&WireValue::TextString(archived_identifier.to_owned()))
+        );
+    }
+}
+
+fn execute_archived_locate(
+    client: &mut Client,
+    requests: &Rc<RefCell<Vec<RequestItemSnapshot>>>,
+) -> UniqueIdentifier {
+    let response = client
+        .execute(
+            ClientBatch::new(
+                ClientBatchItem::new(ClientRequest::Locate(
+                    LocateRequest::new(AttributeSet::new())
+                        .with_storage_status_mask(StorageStatusMask::from_raw(0x2)),
+                ))
+                .with_unique_batch_item_id(ARCHIVED_LOCATE_BATCH_ID.to_vec()),
+            ),
+            &CodecLimits::defaults(),
+        )
+        .expect("the caller's archived-object search completes");
+    assert_eq!(
+        requests.borrow().len(),
+        1,
+        "Locate causes one exchange only"
+    );
+    response
+        .get(0)
+        .expect("Locate result item exists")
+        .outcome()
+        .locate_response()
+        .and_then(|response| response.unique_identifiers().first())
+        .cloned()
+        .expect("the server-returned archived identifier is exposed to the caller")
+}
+
+fn execute_archived_recover(
+    client: &mut Client,
+    requests: &Rc<RefCell<Vec<RequestItemSnapshot>>>,
+    located_identifier: UniqueIdentifier,
+) -> UniqueIdentifier {
+    let response = client
+        .execute(
+            ClientBatch::new(
+                ClientBatchItem::new(ClientRequest::Recover(RecoverRequest::new(Some(
+                    located_identifier,
+                ))))
+                .with_unique_batch_item_id(ARCHIVED_RECOVER_BATCH_ID.to_vec()),
+            ),
+            &CodecLimits::defaults(),
+        )
+        .expect("the caller explicitly starts Recover after reading Locate");
+    assert_eq!(
+        requests.borrow().len(),
+        2,
+        "Recover causes one exchange only"
+    );
+    let recover_item = response.get(0).expect("Recover result item exists");
+    assert_eq!(recover_item.outcome().operation(), ClientOperation::Recover);
+    assert_eq!(recover_item.outcome().result().status().raw(), 0);
+    recover_item
+        .outcome()
+        .recover_response()
+        .and_then(|response| response.unique_identifier())
+        .cloned()
+        .expect("successful Recover exposes the identifier for the caller's Get")
+}
+
+fn execute_archived_get(
+    client: &mut Client,
+    requests: &Rc<RefCell<Vec<RequestItemSnapshot>>>,
+    recovered_identifier: UniqueIdentifier,
+) {
+    let response = client
+        .execute(
+            ClientBatch::new(
+                ClientBatchItem::new(ClientRequest::Get(
+                    GetRequest::new().with_unique_identifier(recovered_identifier),
+                ))
+                .with_unique_batch_item_id(ARCHIVED_GET_BATCH_ID.to_vec()),
+            ),
+            &CodecLimits::defaults(),
+        )
+        .expect("the caller explicitly starts Get after Recover Success");
+    assert_eq!(requests.borrow().len(), 3, "Get causes one exchange only");
+    let get_item = response.get(0).expect("Get result item exists");
+    assert_eq!(get_item.outcome().operation(), ClientOperation::Get);
+    assert!(get_item.outcome().get_response().is_some());
 }
 
 #[test]
