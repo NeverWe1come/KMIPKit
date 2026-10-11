@@ -216,6 +216,10 @@ mod rekey_execution_tests;
 mod rekey_key_pair_execution_tests;
 
 #[cfg(test)]
+#[path = "../tests/unit/reprovision_execution_tests.rs"]
+mod reprovision_execution_tests;
+
+#[cfg(test)]
 #[path = "../tests/unit/object_read_execution_tests.rs"]
 mod object_read_execution_tests;
 

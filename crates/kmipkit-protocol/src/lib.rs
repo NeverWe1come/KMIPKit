@@ -49,6 +49,7 @@ mod query;
 mod query_async_requests;
 mod recertify;
 mod recover;
+mod reprovision;
 mod rekey;
 mod rekey_key_pair;
 mod result;
@@ -118,6 +119,7 @@ pub use query::{QueryError, QueryFunction, QueryRequest, QueryResponse, QueryRes
 pub use query_async_requests::{QueryAsyncRequestsRequest, QueryAsyncRequestsResponse};
 pub use recertify::{RecertifyError, RecertifyRequest, RecertifyResponse};
 pub use recover::{RecoverError, RecoverRequest, RecoverResponse};
+pub use reprovision::{ReProvisionError, ReProvisionRequest, ReProvisionResponse};
 pub use rekey::{RekeyError, RekeyRequest, RekeyResponse};
 pub use rekey_key_pair::{RekeyKeyPairError, RekeyKeyPairRequest, RekeyKeyPairResponse};
 pub use result::{
@@ -166,6 +168,10 @@ mod rekey_operation_tests;
 #[cfg(test)]
 #[path = "../tests/unit/rekey_key_pair_operation_tests.rs"]
 mod rekey_key_pair_operation_tests;
+
+#[cfg(test)]
+#[path = "../tests/unit/reprovision_operation_tests.rs"]
+mod reprovision_operation_tests;
 
 #[cfg(test)]
 #[path = "../tests/unit/destroy_operation_tests.rs"]
