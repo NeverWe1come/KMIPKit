@@ -55,7 +55,9 @@ use crate::execute_test_support::TestTransport;
 use crate::extension_registry::{
     self, ClientConfiguration, ClientExtensionRegistry, ClientRequestMessageExtension,
 };
-use crate::{ClientCauseCategory, ClientError};
+use crate::{
+    ClientCauseCategory, ClientError, UsageAllocationContext, UsageAllocationContextError,
+};
 
 #[cfg(test)]
 #[path = "../tests/unit/single_item_response_tests.rs"]
@@ -3424,6 +3426,111 @@ impl Client {
         })
     }
 
+    /// Executes one Encrypt, MAC, or Sign request through an explicit local
+    /// Usage Allocation guard.
+    ///
+    /// The request must name the exact object identifier returned by the
+    /// successful allocation. The caller supplies a positive cost in the
+    /// context's caller-known Usage Limits Unit. Cost is not inferred from
+    /// operation type or input length. This context accounts only for calls
+    /// routed through this method; reservations do not prove server use.
+    ///
+    /// A complete Success or Failure response keeps the reservation. Only
+    /// `NotSent` delivery evidence releases it. No retry or Poll is performed.
+    /// Use [`Self::execute_guarded_protection_with_asynchronous_indicator`]
+    /// when the caller explicitly permits a Pending response.
+    ///
+    /// # Errors
+    ///
+    /// Returns a sanitized `NotSent` validation error for an unsupported
+    /// operation, missing or mismatched identifier, invalid cost, or cost
+    /// above the locally available allocation. Otherwise returns the standard
+    /// execution error with the strongest available delivery evidence.
+    #[allow(clippy::needless_pass_by_value)]
+    pub fn execute_guarded_protection(
+        &mut self,
+        context: &mut UsageAllocationContext,
+        request: ClientRequest,
+        cost: i64,
+        limits: &CodecLimits,
+    ) -> Result<ClientBatchItemResponse, ClientError> {
+        self.execute_guarded_protection_inner(context, request, cost, None, limits)
+    }
+
+    /// Executes one guarded Encrypt, MAC, or Sign request with an explicit
+    /// KMIP Asynchronous Indicator.
+    ///
+    /// This method is the only guarded convenience path that accepts Pending.
+    /// Pending retains the local reservation, preserves its correlation value,
+    /// and never triggers Poll automatically.
+    ///
+    /// # Errors
+    ///
+    /// Returns a sanitized `NotSent` validation error for an unsupported
+    /// operation, missing or mismatched identifier, invalid cost, or cost
+    /// above the locally available allocation. Otherwise returns the standard
+    /// execution error with the strongest available delivery evidence.
+    #[allow(clippy::needless_pass_by_value)]
+    pub fn execute_guarded_protection_with_asynchronous_indicator(
+        &mut self,
+        context: &mut UsageAllocationContext,
+        request: ClientRequest,
+        cost: i64,
+        asynchronous_indicator: u32,
+        limits: &CodecLimits,
+    ) -> Result<ClientBatchItemResponse, ClientError> {
+        self.execute_guarded_protection_inner(
+            context,
+            request,
+            cost,
+            Some(asynchronous_indicator),
+            limits,
+        )
+    }
+
+    fn execute_guarded_protection_inner(
+        &mut self,
+        context: &mut UsageAllocationContext,
+        request: ClientRequest,
+        cost: i64,
+        asynchronous_indicator: Option<u32>,
+        limits: &CodecLimits,
+    ) -> Result<ClientBatchItemResponse, ClientError> {
+        let identifier = match &request {
+            ClientRequest::Encrypt(request) => request.unique_identifier(),
+            ClientRequest::Mac(request) => request.unique_identifier(),
+            ClientRequest::Sign(request) => request.unique_identifier(),
+            _ => {
+                return Err(guard_validation_error(
+                    UsageAllocationContextError::UnsupportedOperation,
+                ));
+            }
+        }
+        .ok_or_else(|| {
+            guard_validation_error(UsageAllocationContextError::MissingUniqueIdentifier)
+        })?;
+        if identifier != context.unique_identifier() {
+            return Err(guard_validation_error(
+                UsageAllocationContextError::MismatchedUniqueIdentifier,
+            ));
+        }
+        context.reserve(cost).map_err(guard_validation_error)?;
+
+        let mut batch = ClientBatch::new(ClientBatchItem::new(request));
+        if let Some(indicator) = asynchronous_indicator {
+            batch = batch.with_asynchronous_indicator(indicator);
+        }
+        match self.execute(batch, limits) {
+            Ok(response) => Ok(take_single_response(response)?),
+            Err(error) => {
+                if error.delivery_state() == Some(RequestDeliveryState::NotSent) {
+                    context.release_not_sent(cost);
+                }
+                Err(error)
+            }
+        }
+    }
+
     /// Executes one typed Certify request through the shared batch writer.
     ///
     /// Use the execute method with a one-item batch and an explicit
@@ -6648,6 +6755,14 @@ fn decode_transport_response(
 
 fn protocol_failure_at(error: ProtocolError, delivery_state: RequestDeliveryState) -> ClientError {
     ClientError::protocol(error, delivery_state)
+}
+
+fn guard_validation_error(error: UsageAllocationContextError) -> ClientError {
+    ClientError::validation(
+        ClientCauseCategory::InvalidInput,
+        RequestDeliveryState::NotSent,
+        error,
+    )
 }
 
 fn decode_response_message(

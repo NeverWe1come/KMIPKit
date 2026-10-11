@@ -50,6 +50,9 @@ mod extension_registry_test_support;
 mod extension_execution_tests;
 
 mod execute;
+mod usage_allocation;
+
+pub use usage_allocation::{UsageAllocationContext, UsageAllocationContextError};
 
 #[cfg(test)]
 #[path = "../tests/unit/execution_tests.rs"]

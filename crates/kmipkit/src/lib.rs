@@ -5,7 +5,7 @@ pub use kmipkit_client::{
     Client, ClientBatch, ClientBatchItem, ClientBatchItemResponse, ClientBatchOutcome,
     ClientBatchResponse, ClientCauseCategory, ClientError, ClientErrorCategory,
     ClientMessageExtension, ClientOperation, ClientOperationOutcome, ClientRequest, PendingOutcome,
-    RequestOptions,
+    RequestOptions, UsageAllocationContext, UsageAllocationContextError,
 };
 pub use kmipkit_protocol::{
     CancelRequest, DelegatedLoginError, DelegatedLoginRequest, DelegatedLoginResponse,

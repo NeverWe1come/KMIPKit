@@ -20,7 +20,7 @@ This context makes no claim that the server granted the allocation because of co
 
 Only typed Encrypt, MAC, and Sign calls are guarded. Decrypt, MAC Verify, Signature Verify, and Hash are excluded. One guarded call accepts one typed operation request; it does not accept an arbitrary batch, generic TTLV Structure, or raw bytes. Multipart operations are charged per explicit request call, and the caller supplies the cost for every part.
 
-Before transport, require an explicit concrete Unique Identifier equal to the context identifier. Reject missing, ID Placeholder, and mismatched IDs. The caller supplies a strictly positive cost in the exact context unit. Reject cost greater than the locally available amount before any request byte is sent. Costs use checked arithmetic and are represented within the positive range of KMIP Integer. Do not infer cost from data length or operation type, round units, or convert between Byte/Object/vendor units. Preserve unknown unit values.
+Before transport, require an explicit concrete Unique Identifier equal to the context identifier. Reject missing, ID Placeholder, and mismatched IDs. The caller supplies a strictly positive `i64` cost in the exact context unit. `Usage Limits Count` is a Long Integer under §4.59/Table 148, so local count and cost use the same signed 64-bit range; cost is local accounting input and is not added to the KMIP request. Reject cost greater than the locally available amount before any request byte is sent. Use checked arithmetic. Do not infer cost from data length or operation type, round units, or convert between Byte/Object/vendor units. Preserve unknown unit values.
 
 ## Reservation transitions
 

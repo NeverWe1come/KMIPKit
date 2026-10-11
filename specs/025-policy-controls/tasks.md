@@ -66,7 +66,7 @@ Each task uses `[ ] T### [US#] action in exact/repository/path`. Every implement
 
 ### Guard Green commit
 
-- [ ] T009 [US2] Implement the non-cloneable caller-owned context and guarded one-item typed protection path in `crates/kmipkit-client/src/usage_allocation.rs`, `crates/kmipkit-client/src/execute.rs`, `crates/kmipkit-client/src/lib.rs`, and `crates/kmipkit/src/lib.rs`; expose only explicit unit/cost inputs, preserve open values, reject invalid context/cost/ID before send, and make T008 pass; commit separately as Green.
+- [x] T009 [US2] Implement the non-cloneable caller-owned context and guarded one-item typed protection path in `crates/kmipkit-client/src/usage_allocation.rs`, `crates/kmipkit-client/src/execute.rs`, `crates/kmipkit-client/src/lib.rs`, `crates/kmipkit-protocol/src/mac.rs`, `crates/kmipkit-protocol/src/sign.rs`, and `crates/kmipkit/src/lib.rs`; expose only explicit unit/cost inputs, preserve open values, reject invalid context/cost/ID before send, use positive `i64` local costs and checked arithmetic consistent with §4.59/Table 148, and make T008 pass; commit separately as Green. Green evidence: all 12 `usage_allocation_guard_tests` pass; `cargo test -p kmipkit-client --test usage_allocation_guard_boundary` passes with a compile-fail specifically proving the context lacks `Clone`; focused Clippy across protocol/client/facade with all targets/features and `-D warnings`, `cargo fmt --all --check`, and `git diff --check` pass. Coverage includes full-range `i64::MAX` reservation and overflow rejection before transport. Independent QA approved with no blockers.
 
 ### Guard Refactor commit
 

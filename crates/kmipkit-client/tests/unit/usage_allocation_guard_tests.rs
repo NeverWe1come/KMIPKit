@@ -13,7 +13,7 @@ use kmipkit_ttlv::codec::CodecLimits;
 
 use crate::asynchronous_execution_test_support::client_for;
 use crate::execute::encode_message_for_test;
-use crate::execute_test_support::{test_item, test_structure};
+use crate::execute_test_support::{asynchronous_response_bytes, test_item, test_structure};
 use crate::{
     ClientBatch, ClientBatchItem, ClientBatchOutcome, ClientBatchResponse, ClientErrorCategory,
     ClientRequest, UsageAllocationContext,
@@ -97,34 +97,32 @@ fn response_bytes(
 }
 
 fn allocate_context() -> UsageAllocationContext {
+    allocate_context_with_count(ALLOCATION)
+}
+
+fn allocate_context_with_count(count: i64) -> UsageAllocationContext {
     let (mut client, _, _) = client_for(ExchangeScript::Success {
         response: response_bytes(GET_USAGE_ALLOCATION, 0, None, None, Some(OBJECT_ID)),
         request_write_chunks: Vec::new(),
     });
     let response = client
         .get_usage_allocation(
-            GetUsageAllocationRequest::new(ALLOCATION),
+            GetUsageAllocationRequest::new(count),
             &CodecLimits::defaults(),
         )
         .expect("the allocation exchange succeeds");
-    let typed_response = response
-        .outcome()
-        .response()
+    let response_view = response.outcome().response();
+    let typed_response = response_view
         .get_usage_allocation()
         .expect("the exchange returns its typed allocation result");
-    UsageAllocationContext::from_successful_allocation(
-        typed_response,
-        ALLOCATION,
-        UNKNOWN_USAGE_UNIT,
-    )
-    .expect("the caller supplies the exact requested count and known unit")
+    UsageAllocationContext::from_successful_allocation(typed_response, count, UNKNOWN_USAGE_UNIT)
+        .expect("the caller supplies the exact requested count and known unit")
 }
 
 fn execute_allocation(
     status: u32,
     correlation: Option<&[u8]>,
     identifier: Option<&str>,
-    asynchronous: bool,
 ) -> Result<ClientBatchResponse, crate::ClientError> {
     let (mut client, _, _) = client_for(ExchangeScript::Success {
         response: response_bytes(
@@ -136,13 +134,12 @@ fn execute_allocation(
         ),
         request_write_chunks: Vec::new(),
     });
-    let mut batch = ClientBatch::new(ClientBatchItem::new(ClientRequest::get_usage_allocation(
-        GetUsageAllocationRequest::new(ALLOCATION),
-    )));
-    if asynchronous {
-        batch = batch.with_asynchronous_indicator(1);
-    }
-    client.execute(batch, &CodecLimits::defaults())
+    client.execute(
+        ClientBatch::new(ClientBatchItem::new(ClientRequest::get_usage_allocation(
+            GetUsageAllocationRequest::new(ALLOCATION),
+        ))),
+        &CodecLimits::defaults(),
+    )
 }
 
 fn protection_request(operation: u32, identifier: Option<UniqueIdentifier>) -> ClientRequest {
@@ -210,14 +207,20 @@ fn successful_allocation_binds_returned_identifier_and_open_caller_unit() {
 }
 
 #[test]
+fn usage_context_debug_redacts_the_object_identifier() {
+    let context = allocate_context();
+
+    assert!(!format!("{context:?}").contains(OBJECT_ID));
+    assert!(format!("{context:?}").contains("has_unique_identifier: true"));
+}
+
+#[test]
 fn unsuccessful_pending_malformed_and_nonpositive_allocations_cannot_create_contexts() {
-    let failure = execute_allocation(1, None, None, false)
-        .expect("Failure remains a typed allocation response");
-    let failure_response = failure
-        .get(0)
-        .expect("one failure response")
-        .outcome()
-        .response()
+    let failure =
+        execute_allocation(1, None, None).expect("Failure remains a typed allocation response");
+    let failure_item = failure.get(0).expect("one failure response");
+    let failure_view = failure_item.outcome().response();
+    let failure_response = failure_view
         .get_usage_allocation()
         .expect("Failure retains its typed operation response");
     assert!(
@@ -229,21 +232,36 @@ fn unsuccessful_pending_malformed_and_nonpositive_allocations_cannot_create_cont
         .is_err()
     );
 
-    let pending = execute_allocation(2, Some(&[0xA5, 0x5A]), None, true)
+    let (mut pending_client, _, _) = client_for(ExchangeScript::Success {
+        response: asynchronous_response_bytes(
+            GET_USAGE_ALLOCATION,
+            2,
+            None,
+            Some(&[0xA5, 0x5A]),
+            Some(test_structure([])),
+        ),
+        request_write_chunks: Vec::new(),
+    });
+    let pending = pending_client
+        .execute(
+            ClientBatch::new(ClientBatchItem::new(ClientRequest::get_usage_allocation(
+                GetUsageAllocationRequest::new(ALLOCATION),
+            )))
+            .with_asynchronous_indicator(1),
+            &CodecLimits::defaults(),
+        )
         .expect("explicitly asynchronous allocation retains Pending");
     let pending = pending.get(0).expect("one pending response").outcome();
     assert!(matches!(pending, ClientBatchOutcome::Pending(_)));
-    assert!(pending.response().get_usage_allocation().is_none());
+    assert!(pending.response().get_usage_allocation().is_some());
 
-    assert!(execute_allocation(0, None, None, false).is_err());
+    assert!(execute_allocation(0, None, None).is_err());
 
-    let success = execute_allocation(0, None, Some(OBJECT_ID), false)
+    let success = execute_allocation(0, None, Some(OBJECT_ID))
         .expect("successful allocation has a resolved identifier");
-    let response = success
-        .get(0)
-        .expect("one success response")
-        .outcome()
-        .response()
+    let success_item = success.get(0).expect("one success response");
+    let success_view = success_item.outcome().response();
+    let response = success_view
         .get_usage_allocation()
         .expect("successful allocation retains its typed response");
     for invalid_count in [0, -1] {
@@ -279,10 +297,6 @@ fn invalid_cost_and_identifier_are_rejected_before_transport() {
         (
             protection_request(0x23, Some(UniqueIdentifier::Enumeration(0x0000_0001))),
             1,
-        ),
-        (
-            protection_request(0x21, Some(UniqueIdentifier::TextString(OBJECT_ID.into()))),
-            i64::MAX,
         ),
     ];
 
@@ -430,10 +444,82 @@ fn exact_budget_is_accepted_and_reserved_as_locally_unavailable() {
 }
 
 #[test]
+fn successful_guarded_protection_retains_local_reservation() {
+    let mut context = allocate_context();
+    let (mut client, fake, _) = client_for(ExchangeScript::Success {
+        response: response_bytes(0x1F, 0, None, None, Some(OBJECT_ID)),
+        request_write_chunks: Vec::new(),
+    });
+    let response = client
+        .execute_guarded_protection(
+            &mut context,
+            protection_request(
+                0x1F,
+                Some(UniqueIdentifier::TextString(OBJECT_ID.to_owned())),
+            ),
+            3,
+            &CodecLimits::defaults(),
+        )
+        .expect("a complete Success response retains the local reservation");
+
+    assert_eq!(fake.borrow().exchange_count(), 1);
+    assert_eq!(response.outcome().response().result().status().raw(), 0);
+    assert_eq!(context.reserved_units(), 3);
+    assert_eq!(context.available_units(), ALLOCATION - 3);
+}
+
+#[test]
+fn full_long_integer_allocation_can_be_reserved_without_overflow() {
+    let mut context = allocate_context_with_count(i64::MAX);
+    let (mut client, fake, _) = client_for(ExchangeScript::Success {
+        response: response_bytes(0x1F, 1, Some(0x05), None, None),
+        request_write_chunks: Vec::new(),
+    });
+    let response = client
+        .execute_guarded_protection(
+            &mut context,
+            protection_request(
+                0x1F,
+                Some(UniqueIdentifier::TextString(OBJECT_ID.to_owned())),
+            ),
+            i64::MAX,
+            &CodecLimits::defaults(),
+        )
+        .expect("the exact positive Long Integer allocation is accepted");
+
+    assert_eq!(fake.borrow().exchange_count(), 1);
+    assert_eq!(response.outcome().response().result().status().raw(), 1);
+    assert_eq!(context.reserved_units(), i64::MAX);
+    assert_eq!(context.available_units(), 0);
+
+    let (mut client, fake, _) = client_for(ExchangeScript::FailBeforeWrite);
+    let error = client
+        .execute_guarded_protection(
+            &mut context,
+            protection_request(
+                0x1F,
+                Some(UniqueIdentifier::TextString(OBJECT_ID.to_owned())),
+            ),
+            1,
+            &CodecLimits::defaults(),
+        )
+        .expect_err("a reservation beyond i64::MAX fails before transport");
+    assert_eq!(error.delivery_state(), Some(RequestDeliveryState::NotSent));
+    assert_eq!(fake.borrow().exchange_count(), 0);
+    assert_eq!(context.reserved_units(), i64::MAX);
+}
+
+#[test]
 fn explicitly_asynchronous_guarded_protection_retains_pending_reservation() {
     let mut context = allocate_context();
     let (mut client, fake, _) = client_for(ExchangeScript::Success {
-        response: response_bytes(0x1F, 2, None, Some(&[0xA5, 0x5A]), None),
+        response: asynchronous_response_bytes(
+            0x1F,
+            2,
+            None,
+            Some(&[0xA5, 0x5A]),
+            Some(test_structure([])),
+        ),
         request_write_chunks: Vec::new(),
     });
     let outcome = client
