@@ -46,8 +46,8 @@ description: "Implementation task list for KMIP 2.1 remote RNG operations"
 
 - [x] T012 [P] [US1] Add failing fake-transport tests in crates/kmipkit-client/tests/unit/rng_retrieve_execution_tests.rs for operation code, exactly one exchange, result/Pending/delivery, output redaction, and no retry; capture expected Red failures.
 - [x] T013 [US1] Commit only the failing client tests in crates/kmipkit-client/tests/unit/rng_retrieve_execution_tests.rs as the distinct Red evidence commit.
-- [ ] T014 [US1] Add RNG Retrieve request selection, response association, explicit client method, and redacted request handling in crates/kmipkit-client/src/execute.rs and crates/kmipkit-client/src/lib.rs; pass the focused suite.
-- [ ] T015 [US1] Commit the minimal passing RNG Retrieve client integration in crates/kmipkit-client/src/execute.rs and crates/kmipkit-client/src/lib.rs as the distinct Green evidence commit; coordinate the shared dispatcher.
+- [x] T014 [US1] Add RNG Retrieve request selection, response association, explicit client method, and redacted request handling in crates/kmipkit-client/src/execute.rs and crates/kmipkit-client/src/lib.rs; pass the focused suite.
+- [x] T015 [US1] Commit the minimal passing RNG Retrieve client integration in crates/kmipkit-client/src/execute.rs and crates/kmipkit-client/src/lib.rs as the distinct Green evidence commit; coordinate the shared dispatcher.
 - [ ] T016 [US1] Refactor RNG Retrieve client handling without changing behavior in crates/kmipkit-client/src/execute.rs and crates/kmipkit-client/tests/unit/rng_retrieve_execution_tests.rs; rerun protocol/client tests.
 - [ ] T017 [US1] Commit client refactoring in crates/kmipkit-client/src/execute.rs and crates/kmipkit-client/tests/unit/rng_retrieve_execution_tests.rs as the distinct Refactor evidence commit.
 
@@ -70,8 +70,8 @@ description: "Implementation task list for KMIP 2.1 remote RNG operations"
 
 - [x] T024 [P] [US2] Add failing fake-transport tests in crates/kmipkit-client/tests/unit/rng_seed_execution_tests.rs for operation code, one exchange, zero-length success, Failure/Pending/delivery, seed redaction, and no retry; retain expected Red failures.
 - [x] T025 [US2] Commit only the failing client tests in crates/kmipkit-client/tests/unit/rng_seed_execution_tests.rs as the distinct Red evidence commit.
-- [ ] T026 [US2] Add RNG Seed request selection, response association, explicit client method, and redacted request handling in crates/kmipkit-client/src/execute.rs and crates/kmipkit-client/src/lib.rs; pass the focused suite.
-- [ ] T027 [US2] Commit the minimal passing RNG Seed client integration in crates/kmipkit-client/src/execute.rs and crates/kmipkit-client/src/lib.rs as the distinct Green evidence commit; coordinate this shared dispatcher edit.
+- [x] T026 [US2] Add RNG Seed request selection, response association, explicit client method, and redacted request handling in crates/kmipkit-client/src/execute.rs and crates/kmipkit-client/src/lib.rs; pass the focused suite.
+- [x] T027 [US2] Commit the minimal passing RNG Seed client integration in crates/kmipkit-client/src/execute.rs and crates/kmipkit-client/src/lib.rs as the distinct Green evidence commit; coordinate this shared dispatcher edit.
 - [ ] T028 [US2] Refactor RNG Seed client handling without behavior changes in crates/kmipkit-client/src/execute.rs and crates/kmipkit-client/tests/unit/rng_seed_execution_tests.rs; rerun both RNG focused suites.
 - [ ] T029 [US2] Commit client refactoring in crates/kmipkit-client/src/execute.rs and crates/kmipkit-client/tests/unit/rng_seed_execution_tests.rs as the distinct Refactor evidence commit.
 

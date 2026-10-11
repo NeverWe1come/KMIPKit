@@ -34,7 +34,8 @@ use kmipkit_protocol::{
     ReProvisionRequest, ReProvisionResponse, RecertifyRequest, RecertifyResponse, RecoverRequest,
     RecoverResponse, RegisterRequest, RegisterResponse, RekeyKeyPairRequest, RekeyKeyPairResponse,
     RekeyRequest, RekeyResponse, RequestMessage, ResponseBatchItemView, ResponseMessage,
-    ResultStatus, RevokeRequest, RevokeResponse, SetAttributeRequest, SetAttributeResponse,
+    ResultStatus, RevokeRequest, RevokeResponse, RngRetrieveRequest, RngRetrieveResponse,
+    RngSeedRequest, RngSeedResponse, SetAttributeRequest, SetAttributeResponse,
     SetConstraintsRequest, SetConstraintsResponse, SetDefaultsRequest, SetDefaultsResponse,
     SignRequest, SignResponse, SignatureVerifyRequest, SignatureVerifyResponse,
 };
@@ -190,6 +191,8 @@ const SET_CONSTRAINTS_OPERATION: u32 = 0x0000_0037; // KMIP v2.1 §6.1.52, Table
 const SET_DEFAULTS_OPERATION: u32 = 0x0000_0036; // KMIP v2.1 §6.1.53, Table 328.
 const GET_USAGE_ALLOCATION_OPERATION: u32 = 0x0000_0011; // §6.1.23, Table 232.
 const QUERY_OPERATION: u32 = 0x0000_0018;
+const RNG_RETRIEVE_OPERATION: u32 = 0x0000_0025; // KMIP v2.1 §6.1.49, Tables 316–318.
+const RNG_SEED_OPERATION: u32 = 0x0000_0026; // KMIP v2.1 §6.1.50, Tables 319–321.
 const ASYNCHRONOUS_MANDATORY: u32 = 1;
 const ASYNCHRONOUS_OPTIONAL: u32 = 2;
 const ASYNCHRONOUS_PROHIBITED: u32 = 3;
@@ -296,6 +299,10 @@ pub enum ClientRequest {
     Sign(SignRequest),
     /// An explicit client-to-server Signature Verify request.
     SignatureVerify(SignatureVerifyRequest),
+    /// An explicit client-to-server RNG Retrieve request.
+    RngRetrieve(RngRetrieveRequest),
+    /// An explicit client-to-server RNG Seed request.
+    RngSeed(RngSeedRequest),
 }
 
 impl ClientRequest {
@@ -333,6 +340,18 @@ impl ClientRequest {
     #[must_use]
     pub fn get_usage_allocation(request: GetUsageAllocationRequest) -> Self {
         Self::GetUsageAllocation(request)
+    }
+
+    /// Creates a typed client-to-server RNG Retrieve request.
+    #[must_use]
+    pub fn rng_retrieve(request: RngRetrieveRequest) -> Self {
+        Self::RngRetrieve(request)
+    }
+
+    /// Creates a typed client-to-server RNG Seed request.
+    #[must_use]
+    pub fn rng_seed(request: RngSeedRequest) -> Self {
+        Self::RngSeed(request)
     }
 
     /// Creates a typed client-to-server Query request variant.
@@ -605,6 +624,8 @@ impl ClientRequest {
             Self::MacVerify(_) => MAC_VERIFY_OPERATION,
             Self::Sign(_) => SIGN_OPERATION,
             Self::SignatureVerify(_) => SIGNATURE_VERIFY_OPERATION,
+            Self::RngRetrieve(_) => RNG_RETRIEVE_OPERATION,
+            Self::RngSeed(_) => RNG_SEED_OPERATION,
         }
     }
 
@@ -710,6 +731,8 @@ impl ClientRequest {
             Self::MacVerify(request) => request.to_ttlv_payload(),
             Self::Sign(request) => request.to_ttlv_payload(),
             Self::SignatureVerify(request) => request.to_ttlv_payload(),
+            Self::RngRetrieve(request) => request.to_ttlv_payload(),
+            Self::RngSeed(request) => request.to_ttlv_payload(),
         }
     }
 }
@@ -793,6 +816,10 @@ impl fmt::Debug for ClientRequest {
                 .debug_tuple("Signature Verify")
                 .field(request)
                 .finish(),
+            Self::RngRetrieve(request) => {
+                formatter.debug_tuple("RngRetrieve").field(request).finish()
+            }
+            Self::RngSeed(_) => formatter.write_str("RngSeed([REDACTED])"),
         }
     }
 }
@@ -1090,6 +1117,8 @@ enum PendingResponse {
     SetConstraints(SetConstraintsResponse),
     SetDefaults(SetDefaultsResponse),
     GetUsageAllocation(GetUsageAllocationResponse),
+    RngRetrieve(RngRetrieveResponse),
+    RngSeed(RngSeedResponse),
     Query(QueryResponse),
 }
 
@@ -1141,6 +1170,8 @@ impl PendingResponse {
             Self::SetConstraints(response) => ClientResponseRef::SetConstraints(response),
             Self::SetDefaults(response) => ClientResponseRef::SetDefaults(response),
             Self::GetUsageAllocation(response) => ClientResponseRef::GetUsageAllocation(response),
+            Self::RngRetrieve(response) => ClientResponseRef::RngRetrieve(response),
+            Self::RngSeed(response) => ClientResponseRef::RngSeed(response),
             Self::Query(response) => ClientResponseRef::Query(response),
         };
         ClientResponseView { response }
@@ -1372,6 +1403,10 @@ pub enum ClientOperation {
     GetUsageAllocation,
     /// Query one server for explicitly requested protocol information.
     Query,
+    /// Retrieve random data from the KMIP server.
+    RngRetrieve,
+    /// Seed random data into the KMIP server.
+    RngSeed,
     /// Encrypt data with the explicitly selected server-side object.
     Encrypt,
     /// Decrypt data with the explicitly selected server-side object.
@@ -1562,6 +1597,8 @@ enum ClientResponseRef<'a> {
     SetConstraints(&'a SetConstraintsResponse),
     SetDefaults(&'a SetDefaultsResponse),
     GetUsageAllocation(&'a GetUsageAllocationResponse),
+    RngRetrieve(&'a RngRetrieveResponse),
+    RngSeed(&'a RngSeedResponse),
     Query(&'a QueryResponse),
 }
 
@@ -1630,6 +1667,8 @@ impl<'a> ClientResponseView<'a> {
             ClientResponseRef::SetConstraints(response) => response.result(),
             ClientResponseRef::SetDefaults(response) => response.result(),
             ClientResponseRef::GetUsageAllocation(response) => response.result(),
+            ClientResponseRef::RngRetrieve(response) => response.result(),
+            ClientResponseRef::RngSeed(response) => response.result(),
             ClientResponseRef::Query(response) => response.result(),
         }
     }
@@ -2052,6 +2091,24 @@ impl<'a> ClientResponseView<'a> {
         }
     }
 
+    /// Returns an RNG Retrieve response when this view represents it.
+    #[must_use]
+    pub const fn rng_retrieve(&self) -> Option<&RngRetrieveResponse> {
+        match self.response {
+            ClientResponseRef::RngRetrieve(response) => Some(response),
+            _ => None,
+        }
+    }
+
+    /// Returns an RNG Seed response when this view represents it.
+    #[must_use]
+    pub const fn rng_seed(&self) -> Option<&RngSeedResponse> {
+        match self.response {
+            ClientResponseRef::RngSeed(response) => Some(response),
+            _ => None,
+        }
+    }
+
     /// Returns the Query response when this view represents it.
     #[must_use]
     pub const fn query(&self) -> Option<&QueryResponse> {
@@ -2183,6 +2240,10 @@ impl fmt::Debug for ClientResponseView<'_> {
             ClientResponseRef::GetUsageAllocation(response) => {
                 debug_response(formatter, "GetUsageAllocation", response)
             }
+            ClientResponseRef::RngRetrieve(response) => {
+                debug_response(formatter, "RngRetrieve", response)
+            }
+            ClientResponseRef::RngSeed(response) => debug_response(formatter, "RngSeed", response),
             ClientResponseRef::Query(response) => debug_response(formatter, "Query", response),
         }
     }
@@ -2285,6 +2346,10 @@ pub enum ClientBatchOutcome {
     GetUsageAllocation(GetUsageAllocationResponse),
     /// The server returned a Query result.
     Query(QueryResponse),
+    /// The server returned an RNG Retrieve result.
+    RngRetrieve(RngRetrieveResponse),
+    /// The server returned an RNG Seed result.
+    RngSeed(RngSeedResponse),
 }
 
 impl ClientBatchOutcome {
@@ -2337,6 +2402,8 @@ impl ClientBatchOutcome {
             | Self::SetConstraints(_)
             | Self::SetDefaults(_)
             | Self::GetUsageAllocation(_)
+            | Self::RngRetrieve(_)
+            | Self::RngSeed(_)
             | Self::Query(_) => None,
             Self::Pending(pending) => Some(pending.asynchronous_correlation_value()),
         }
@@ -2391,6 +2458,8 @@ impl ClientBatchOutcome {
             Self::SetConstraints(response) => response.result(),
             Self::SetDefaults(response) => response.result(),
             Self::GetUsageAllocation(response) => response.result(),
+            Self::RngRetrieve(response) => response.result(),
+            Self::RngSeed(response) => response.result(),
             Self::Query(response) => response.result(),
             Self::Pending(pending) => pending.result(),
         }
@@ -2445,6 +2514,8 @@ impl ClientBatchOutcome {
             Self::SetConstraints(_) => ClientOperation::SetConstraints,
             Self::SetDefaults(_) => ClientOperation::SetDefaults,
             Self::GetUsageAllocation(_) => ClientOperation::GetUsageAllocation,
+            Self::RngRetrieve(_) => ClientOperation::RngRetrieve,
+            Self::RngSeed(_) => ClientOperation::RngSeed,
             Self::Query(_) => ClientOperation::Query,
             Self::Pending(pending) => pending.operation(),
         }
@@ -2843,6 +2914,36 @@ impl ClientBatchOutcome {
         }
     }
 
+    /// Returns the typed RNG Retrieve response when this is one.
+    #[must_use]
+    pub const fn rng_retrieve_response(&self) -> Option<&RngRetrieveResponse> {
+        match self {
+            Self::RngRetrieve(response) => Some(response),
+            Self::Pending(pending) => match pending.response() {
+                ClientResponseView {
+                    response: ClientResponseRef::RngRetrieve(response),
+                } => Some(response),
+                _ => None,
+            },
+            _ => None,
+        }
+    }
+
+    /// Returns the typed RNG Seed response when this is one.
+    #[must_use]
+    pub const fn rng_seed_response(&self) -> Option<&RngSeedResponse> {
+        match self {
+            Self::RngSeed(response) => Some(response),
+            Self::Pending(pending) => match pending.response() {
+                ClientResponseView {
+                    response: ClientResponseRef::RngSeed(response),
+                } => Some(response),
+                _ => None,
+            },
+            _ => None,
+        }
+    }
+
     /// Returns a borrowed view of the typed operation response.
     ///
     /// Existing Discover Versions result access remains available through
@@ -2965,6 +3066,12 @@ impl ClientBatchOutcome {
             }
             Self::GetUsageAllocation(response) => {
                 ClientResponseView::new(ClientResponseRef::GetUsageAllocation(response))
+            }
+            Self::RngRetrieve(response) => {
+                ClientResponseView::new(ClientResponseRef::RngRetrieve(response))
+            }
+            Self::RngSeed(response) => {
+                ClientResponseView::new(ClientResponseRef::RngSeed(response))
             }
             Self::Query(response) => ClientResponseView::new(ClientResponseRef::Query(response)),
         }
@@ -3098,6 +3205,11 @@ impl fmt::Debug for ClientBatchOutcome {
                 .field(response)
                 .finish(),
             Self::Query(response) => formatter.debug_tuple("Query").field(response).finish(),
+            Self::RngRetrieve(response) => formatter
+                .debug_tuple("RngRetrieve")
+                .field(response)
+                .finish(),
+            Self::RngSeed(response) => formatter.debug_tuple("RngSeed").field(response).finish(),
         }
     }
 }
@@ -3198,6 +3310,8 @@ impl fmt::Display for ClientBatchOutcome {
                 write!(formatter, "GetUsageAllocation({})", response.result())
             }
             Self::Query(response) => write!(formatter, "Query({})", response.result()),
+            Self::RngRetrieve(response) => write!(formatter, "RngRetrieve({})", response.result()),
+            Self::RngSeed(response) => write!(formatter, "RngSeed({})", response.result()),
         }
     }
 }
@@ -4228,6 +4342,48 @@ impl Client {
     ) -> Result<ClientBatchItemResponse, ClientError> {
         self.execute_one_typed_request(
             ClientRequest::get_usage_allocation(request),
+            limits,
+            &RequestOptions::default(),
+        )
+    }
+
+    /// Executes one RNG Retrieve request through one transport exchange.
+    ///
+    /// Pending results remain explicit for the caller to resume. This method
+    /// does not poll or retry.
+    ///
+    /// # Errors
+    ///
+    /// Returns a sanitized validation, protocol, or transport error with the
+    /// strongest available request-delivery evidence.
+    pub fn rng_retrieve(
+        &mut self,
+        request: RngRetrieveRequest,
+        limits: &CodecLimits,
+    ) -> Result<ClientBatchItemResponse, ClientError> {
+        self.execute_one_typed_request(
+            ClientRequest::rng_retrieve(request),
+            limits,
+            &RequestOptions::default(),
+        )
+    }
+
+    /// Executes one RNG Seed request through one transport exchange.
+    ///
+    /// Seed bytes are treated as secret material. Pending results remain
+    /// explicit for the caller to resume; this method does not poll or retry.
+    ///
+    /// # Errors
+    ///
+    /// Returns a sanitized validation, protocol, or transport error with the
+    /// strongest available request-delivery evidence.
+    pub fn rng_seed(
+        &mut self,
+        request: RngSeedRequest,
+        limits: &CodecLimits,
+    ) -> Result<ClientBatchItemResponse, ClientError> {
+        self.execute_one_typed_request(
+            ClientRequest::rng_seed(request),
             limits,
             &RequestOptions::default(),
         )
@@ -5380,6 +5536,7 @@ fn request_mutation_is_prohibited(request: &ClientRequest) -> bool {
         | ClientRequest::MacVerify(_)
         | ClientRequest::Sign(_)
         | ClientRequest::SignatureVerify(_) => false,
+        ClientRequest::RngRetrieve(_) | ClientRequest::RngSeed(_) => false,
     }
 }
 
@@ -6024,6 +6181,24 @@ fn response_outcome(
         SET_CONSTRAINTS_OPERATION => set_constraints_response_outcome(item),
         SET_DEFAULTS_OPERATION => set_defaults_response_outcome(item),
         GET_USAGE_ALLOCATION_OPERATION => get_usage_allocation_response_outcome(item),
+        RNG_RETRIEVE_OPERATION => read_crypto_operation_outcome(
+            ClientOperation::RngRetrieve,
+            item,
+            RngRetrieveResponse::try_from_pending_response_item,
+            RngRetrieveResponse::try_from_response_item,
+            RngRetrieveResponse::result,
+            PendingResponse::RngRetrieve,
+            ClientBatchOutcome::RngRetrieve,
+        ),
+        RNG_SEED_OPERATION => read_crypto_operation_outcome(
+            ClientOperation::RngSeed,
+            item,
+            RngSeedResponse::try_from_pending_response_item,
+            RngSeedResponse::try_from_response_item,
+            RngSeedResponse::result,
+            PendingResponse::RngSeed,
+            ClientBatchOutcome::RngSeed,
+        ),
         DISCOVER_VERSIONS_OPERATION => {
             let response = DiscoverVersionsResponse::try_from_response_item(item)
                 .map_err(invalid_typed_response)?;
