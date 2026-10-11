@@ -75,16 +75,16 @@
     "profiles": 18,
     "specification_clause_records": 877,
     "profiles_clause_records": 534,
-    "requirement_crosswalk_records": 213,
+    "requirement_crosswalk_records": 215,
     "requirement_crosswalk_complete": false,
     "common_baseline_official_cases": 16,
     "common_baseline_unavailable_fixtures": 16,
     "profile_test_associations": 365,
     "distinct_profile_test_case_ids": 93,
-    "source_requirement_review_records": 549,
+    "source_requirement_review_records": 555,
     "direct_root_exclusion_records": 4,
-    "source_only_requirement_gaps": 139,
-    "source_only_requirement_gap_proposals": 109,
+    "source_only_requirement_gaps": 140,
+    "source_only_requirement_gap_proposals": 110,
     "profile_unlabeled_source_rows": 22
   },
   "source_clause_crosswalk": [
@@ -20824,6 +20824,40 @@
       "applies_to": "all_client_profiles",
       "review_note": "Specification v2.1 §6.1.43; Register client capability mapped from source obligation 1.",
       "source_obligation_order": 1,
+      "source_actor": "client"
+    },
+    {
+      "requirement_id": "KMIPKIT-REQ-SPEC-6.1.44-003-001",
+      "source_clause_id": "KMIPKIT-CLAUSE-SPEC-6.1.44-003",
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_section": "6.1.44",
+      "source_locator": {
+        "ordinal": 3,
+        "block_kind": "table_row"
+      },
+      "source_keyword": "SHOULD",
+      "role": "client",
+      "scope_state": "client_1_0",
+      "applies_to": "all_client_profiles",
+      "review_note": "Specification v2.1 §6.1.44; client obligation mapped from source obligation 1.",
+      "source_obligation_order": 1,
+      "source_actor": "client"
+    },
+    {
+      "requirement_id": "KMIPKIT-REQ-SPEC-6.1.44-003-002",
+      "source_clause_id": "KMIPKIT-CLAUSE-SPEC-6.1.44-003",
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_section": "6.1.44",
+      "source_locator": {
+        "ordinal": 3,
+        "block_kind": "table_row"
+      },
+      "source_keyword": "SHALL NOT",
+      "role": "client",
+      "scope_state": "client_1_0",
+      "applies_to": "all_client_profiles",
+      "review_note": "Specification v2.1 §6.1.44; client prohibition mapped from source obligation 2.",
+      "source_obligation_order": 2,
       "source_actor": "client"
     }],
   "profiles": [
@@ -62755,6 +62789,245 @@
       "review_note": "This error payload row lists Result Reason enum values. Attestation Required is an enum name and REQUIRED is not normative force in this row.",
       "source_request_rows": [],
       "source_payload_rows": []
+    },
+    {
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+      "source_section": "6.1.44",
+      "source_clause_id": "KMIPKIT-CLAUSE-SPEC-6.1.44-001",
+      "source_locator": {
+        "ordinal": 1,
+        "block_kind": "paragraph"
+      },
+      "html_line_range": [
+        33132,
+        33144
+      ],
+      "source_excerpt": "This operation requests the server to revoke a Managed Cryptographic Object or an Opaque Object. The request contains a reason for the revocation (e.g., “key compromise”, “cessation of operation”, etc.). The operation has one of two effects. If the revocation reason is “key compromise” or “CA compromise”, then the object is placed into the “compromised” state; the Date is set to the current date and time; and the Compromise Occurrence Date is set to the value (if provided) in the Revoke request and if a value is not provided in the Revoke request then Compromise Occurrence Date SHOULD be set to the Initial Date for the object. If the revocation reason is neither “key compromise” nor “CA compromise”, the object is placed into the “deactivated” state, and the Deactivation Date is set to the current date and time.",
+      "source_obligations": [
+        {
+          "source_order": 1,
+          "source_text": "if a value is not provided in the Revoke request then Compromise Occurrence Date SHOULD be set to the Initial Date for the object.",
+          "source_keyword": "SHOULD",
+          "actor": "server",
+          "direction": "set Compromise Occurrence Date to Initial Date on the object when the request omits it",
+          "condition": "The Revoke request does not provide Compromise Occurrence Date.",
+          "scope_disposition": "server_only",
+          "candidate_requirement_id": null
+        }
+      ],
+      "rejected_candidate_mappings": [],
+      "expected_client_requirement_ids": [],
+      "applies_to": "all_client_profiles",
+      "review_note": "The SHOULD about setting Compromise Occurrence Date to Initial Date describes server-side object-state defaulting. The active catalog maps this clause to KMIPKIT-REQ-SPEC-6.1.44-001 as a client SHOULD; preserve this source/catalog discrepancy without creating a client crosswalk. The source's Date label is absent and is not reconstructed.",
+      "source_request_rows": [],
+      "source_payload_rows": []
+    },
+    {
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+      "source_section": "6.1.44",
+      "source_clause_id": "KMIPKIT-CLAUSE-SPEC-6.1.44-002",
+      "source_locator": {
+        "ordinal": 2,
+        "block_kind": "table_row"
+      },
+      "html_line_range": [
+        33158,
+        33175
+      ],
+      "source_excerpt": "Item REQUIRED Description",
+      "source_obligations": [],
+      "rejected_candidate_mappings": [],
+      "expected_client_requirement_ids": [],
+      "applies_to": "all_client_profiles",
+      "review_note": "Item, REQUIRED, and Description are column headings, not independent client obligations. The client request body rows are recorded separately below.",
+      "source_request_rows": [
+        {
+          "row_label": "Unique Identifier",
+          "required": "No",
+          "actor": "client",
+          "disposition": "optional_request_field_with_existing_conditional_capability",
+          "html_line_range": [
+            33179,
+            33192
+          ],
+          "source_excerpt": "Unique Identifier No Determines the object being revoked. If omitted, then the ID Placeholder value is used by the server as the Unique Identifier.",
+          "source_gap_id": null,
+          "reused_requirement_id": "KMIPKIT-REQ-SPEC-6.1-003-002",
+          "source_requirement_ids": [
+            "KMIPKIT-REQ-SPEC-6.1-003-002"
+          ],
+          "reuse_condition": "The Batch Order Option is true or unspecified and the request is a subsequent operation in the batched request; the ID Placeholder must be available for the specified fallback.",
+          "source_note": "The row describes server fallback to ID Placeholder. It does not establish standalone omission; reuse the generic client capability only for an eligible subsequent batched request with the placeholder available."
+        },
+        {
+          "row_label": "Revocation Reason",
+          "required": "Yes",
+          "actor": "client",
+          "disposition": "required_request_field_with_source_only_proposal",
+          "html_line_range": [
+            33198,
+            33210
+          ],
+          "source_excerpt": "Revocation Reason Yes Specifies the reason for revocation.",
+          "source_gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.44-REVOCATION-REASON-REQUIRED",
+          "source_requirement_ids": []
+        },
+        {
+          "row_label": "Compromise Occurrence Date",
+          "required": "No",
+          "actor": "client",
+          "disposition": "optional_request_field",
+          "html_line_range": [
+            33216,
+            33231
+          ],
+          "source_excerpt": "Compromise Occurrence Date No SHOULD be specified if the Revocation Reason is 'key compromise' or ‘CA compromise’ and SHALL NOT be specified for other Revocation Reason enumerations.",
+          "source_gap_id": null,
+          "source_requirement_ids": [
+            "KMIPKIT-REQ-SPEC-6.1.44-003-001",
+            "KMIPKIT-REQ-SPEC-6.1.44-003-002"
+          ],
+          "source_note": "Required=No is retained along with the separate conditional SHOULD and SHALL NOT obligations."
+        }
+      ],
+      "source_payload_rows": []
+    },
+    {
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+      "source_section": "6.1.44",
+      "source_clause_id": "KMIPKIT-CLAUSE-SPEC-6.1.44-003",
+      "source_locator": {
+        "ordinal": 3,
+        "block_kind": "table_row"
+      },
+      "html_line_range": [
+        33216,
+        33231
+      ],
+      "source_excerpt": "Compromise Occurrence Date No SHOULD be specified if the Revocation Reason is 'key compromise' or ‘CA compromise’ and SHALL NOT be specified for other Revocation Reason enumerations.",
+      "source_obligations": [
+        {
+          "source_order": 1,
+          "source_text": "SHOULD be specified if the Revocation Reason is 'key compromise' or ‘CA compromise’",
+          "source_keyword": "SHOULD",
+          "actor": "client",
+          "direction": "include Compromise Occurrence Date in Revoke request",
+          "condition": "The Revocation Reason is key compromise or CA compromise.",
+          "scope_disposition": "client_1_0",
+          "candidate_requirement_id": "KMIPKIT-REQ-SPEC-6.1.44-003-001"
+        },
+        {
+          "source_order": 2,
+          "source_text": "SHALL NOT be specified for other Revocation Reason enumerations",
+          "source_keyword": "SHALL NOT",
+          "actor": "client",
+          "direction": "omit Compromise Occurrence Date from Revoke request for other reasons",
+          "condition": "The Revocation Reason is any other enumeration.",
+          "scope_disposition": "client_1_0",
+          "candidate_requirement_id": "KMIPKIT-REQ-SPEC-6.1.44-003-002"
+        }
+      ],
+      "rejected_candidate_mappings": [],
+      "expected_client_requirement_ids": [
+        "KMIPKIT-REQ-SPEC-6.1.44-003-001",
+        "KMIPKIT-REQ-SPEC-6.1.44-003-002"
+      ],
+      "applies_to": "all_client_profiles",
+      "review_note": "The Table 295 body row contains two client obligations with distinct conditions; do not merge its SHOULD and SHALL NOT atoms.",
+      "source_request_rows": [],
+      "source_payload_rows": []
+    },
+    {
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+      "source_section": "6.1.44",
+      "source_clause_id": "KMIPKIT-CLAUSE-SPEC-6.1.44-004",
+      "source_locator": {
+        "ordinal": 4,
+        "block_kind": "table_row"
+      },
+      "html_line_range": [
+        33253,
+        33270
+      ],
+      "source_excerpt": "Item REQUIRED Description",
+      "source_obligations": [],
+      "rejected_candidate_mappings": [],
+      "expected_client_requirement_ids": [],
+      "applies_to": "all_client_profiles",
+      "review_note": "Item, REQUIRED, and Description are response-table column headings, not independent requirements. The response body value is recorded separately.",
+      "source_request_rows": [],
+      "source_payload_rows": [
+        {
+          "row_label": "Unique Identifier",
+          "required": "Yes",
+          "actor": "server",
+          "disposition": "response_payload_data",
+          "html_line_range": [
+            33271,
+            33288
+          ],
+          "source_excerpt": "Unique Identifier Yes The Unique Identifier of the object."
+        }
+      ]
+    },
+    {
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+      "source_section": "6.1.44.1",
+      "source_clause_id": "KMIPKIT-CLAUSE-SPEC-6.1.44.1-001",
+      "source_locator": {
+        "ordinal": 1,
+        "block_kind": "paragraph"
+      },
+      "html_line_range": [
+        33300,
+        33301
+      ],
+      "source_excerpt": "This section details the specific Result Reasons that SHALL be returned for errors detected in a Revoke Operation.",
+      "source_obligations": [
+        {
+          "source_order": 1,
+          "source_text": "This section details the specific Result Reasons that SHALL be returned for errors detected in a Revoke Operation.",
+          "source_keyword": "SHALL",
+          "actor": "server",
+          "direction": "server→client error response",
+          "condition": "An error is detected in a Revoke Operation.",
+          "scope_disposition": "server_only",
+          "candidate_requirement_id": null
+        }
+      ],
+      "rejected_candidate_mappings": [],
+      "expected_client_requirement_ids": [],
+      "applies_to": "all_client_profiles",
+      "review_note": "The Result Reason SHALL is server response behavior; the client source review records the values but does not claim the server obligation.",
+      "source_request_rows": [],
+      "source_payload_rows": []
+    },
+    {
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+      "source_section": "6.1.44.1",
+      "source_clause_id": "KMIPKIT-CLAUSE-SPEC-6.1.44.1-002",
+      "source_locator": {
+        "ordinal": 2,
+        "block_kind": "table_row"
+      },
+      "html_line_range": [
+        33324,
+        33335
+      ],
+      "source_excerpt": "Operation Failed Invalid Field, Invalid Object Type, Object Not Found, Wrong Key Lifecycle State, Attestation Failed, Attestation Required, Feature Not Supported, Invalid Field, Invalid Message, Operation Not Supported, Permission Denied, Response Too Large",
+      "source_obligations": [],
+      "rejected_candidate_mappings": [],
+      "expected_client_requirement_ids": [],
+      "applies_to": "all_client_profiles",
+      "review_note": "The Result Status and Result Reason entries are enum/value data, not independent REQUIRED-header obligations. Preserve the source's repeated Invalid Field value and do not infer individual error-to-reason mappings.",
+      "source_request_rows": [],
+      "source_payload_rows": []
     }],
   "source_only_requirement_gaps": [
     {
@@ -66998,5 +67271,39 @@
       "proposed_requirement_id": "KMIPKIT-REQ-SPEC-6.1.43-012",
       "status": "stable_label_proposed_not_in_catalog",
       "review_note": "Source-only proposal for the Optional Protection Storage Masks request row. The row has Required=No and no formal keyword or active catalog requirement; do not create a requirement crosswalk."
+    },
+    {
+      "gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.44-REVOCATION-REASON-REQUIRED",
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+      "source_section": "6.1.44",
+      "source_clause_id": null,
+      "source_locator": {
+        "kind": "table_body_row",
+        "section": "6.1.44",
+        "row_label": "Revocation Reason",
+        "table": "request_payload",
+        "html_line_range": [
+          33198,
+          33210
+        ]
+      },
+      "source_locator_description": "§6.1.44 Revoke request payload body row for Revocation Reason (HTML lines 33198-33210)",
+      "html_line_range": [
+        33198,
+        33210
+      ],
+      "source_excerpt": "Revocation Reason Yes Specifies the reason for revocation.",
+      "source_keywords": [],
+      "source_force": "required_table_body_value",
+      "audited_statement": "Table 295 marks Revocation Reason Required=Yes and says it specifies the reason for revocation.",
+      "actor": "client",
+      "direction": "include Revocation Reason in client Revoke request payload",
+      "condition": "Every Revoke request.",
+      "scope_disposition": "client_1_0",
+      "candidate_requirement_id": null,
+      "proposed_requirement_id": "KMIPKIT-REQ-SPEC-6.1.44-004",
+      "status": "stable_label_proposed_not_in_catalog",
+      "review_note": "This source-only proposal maps the Required=Yes Table 295 body value. The catalog's REQUIRED extractor hit for the request column heading is non-applicable; no client requirement ID currently represents this required field."
     }]
 }

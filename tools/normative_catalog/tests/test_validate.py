@@ -6246,8 +6246,14 @@ class CatalogValidationTests(unittest.TestCase):
         identifier_row = request_rows[0]
         self.assertEqual(identifier_row["disposition"], "optional_request_field_with_existing_conditional_capability")
         self.assertEqual(identifier_row["reused_requirement_id"], "KMIPKIT-REQ-SPEC-6.1-003-002")
-        self.assertIn("subsequent", identifier_row["reuse_condition"])
-        self.assertIn("ID Placeholder", identifier_row["source_note"])
+        self.assertEqual(
+            identifier_row["reuse_condition"],
+            "The Batch Order Option is true or unspecified and the request is a subsequent operation in the batched request; the ID Placeholder must be available for the specified fallback.",
+        )
+        self.assertEqual(
+            identifier_row["source_note"],
+            "The row describes server fallback to ID Placeholder. It does not establish standalone omission; reuse the generic client capability only for an eligible subsequent batched request with the placeholder available.",
+        )
         reason_row = request_rows[1]
         self.assertEqual(reason_row["disposition"], "required_request_field_with_source_only_proposal")
         self.assertEqual(reason_row["source_gap_id"], "KMIPKIT-SOURCE-GAP-SPEC-6.1.44-REVOCATION-REASON-REQUIRED")
@@ -6256,8 +6262,8 @@ class CatalogValidationTests(unittest.TestCase):
             reviews["KMIPKIT-CLAUSE-SPEC-6.1.44-004"]["source_payload_rows"],
             [{
                 "row_label": "Unique Identifier", "required": "Yes", "actor": "server",
-                "disposition": "response_payload_data", "html_line_range": [33273, 33289],
-                "source_excerpt": pinned_source_excerpt(source_path, [33273, 33289]),
+                "disposition": "response_payload_data", "html_line_range": [33271, 33288],
+                "source_excerpt": pinned_source_excerpt(source_path, [33271, 33288]),
             }],
         )
         error_text = reviews["KMIPKIT-CLAUSE-SPEC-6.1.44.1-002"]["source_excerpt"]
@@ -6270,10 +6276,23 @@ class CatalogValidationTests(unittest.TestCase):
             row for row in oracle["source_only_requirement_gaps"]
             if row["gap_id"] == "KMIPKIT-SOURCE-GAP-SPEC-6.1.44-REVOCATION-REASON-REQUIRED"
         )
+        self.assertEqual(
+            revocation_reason_gap["source_locator"],
+            {
+                "kind": "table_body_row",
+                "section": "6.1.44",
+                "row_label": "Revocation Reason",
+                "table": "request_payload",
+                "html_line_range": [33198, 33210],
+            },
+        )
         self.assertEqual(revocation_reason_gap["html_line_range"], [33198, 33210])
         self.assertEqual(revocation_reason_gap["source_excerpt"], pinned_source_excerpt(source_path, [33198, 33210]))
         self.assertEqual(revocation_reason_gap["source_force"], "required_table_body_value")
         self.assertEqual(revocation_reason_gap["actor"], "client")
+        self.assertEqual(revocation_reason_gap["direction"], "include Revocation Reason in client Revoke request payload")
+        self.assertEqual(revocation_reason_gap["condition"], "Every Revoke request.")
+        self.assertEqual(revocation_reason_gap["scope_disposition"], "client_1_0")
         self.assertEqual(revocation_reason_gap["candidate_requirement_id"], None)
         self.assertEqual(revocation_reason_gap["proposed_requirement_id"], "KMIPKIT-REQ-SPEC-6.1.44-004")
         self.assertEqual(revocation_reason_gap["status"], "stable_label_proposed_not_in_catalog")
