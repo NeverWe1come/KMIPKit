@@ -33,3 +33,8 @@ Run pinned generation-drift, security/dependency, and supported-platform CI chec
 ## Release evidence
 
 Record separate Red, Green, and Refactor commit IDs per operation in the draft PR. Include focused/full-suite commands, coverage and traceability results, generator status, binding parity state, unavailable fixture notes, risks, and actual test outputs. Update this guide with results only during implementation.
+
+### Re-key Key Pair (US6)
+
+- RED protocol: `cargo test -p kmipkit-protocol rekey_key_pair_operation_tests --no-fail-fast` failed as expected because `RekeyKeyPairRequest`, `RekeyKeyPairResponse`, and `RekeyKeyPairError` were not yet exported.
+- RED client: `cargo test -p kmipkit-client rekey_key_pair_execution_tests --no-fail-fast` failed as expected because the request type, `ClientRequest::RekeyKeyPair`, `ClientOperation::RekeyKeyPair`, and `Client::rekey_key_pair` were not yet implemented.
