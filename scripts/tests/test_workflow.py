@@ -110,8 +110,46 @@ class WorkflowContractTests(unittest.TestCase):
 
     def test_workflow_has_no_secrets_or_repository_writes(self) -> None:
         contents = self.require_workflow()
-        self.assertNotIn("secrets.", contents)
+        jobs_section = contents.split("\njobs:\n", maxsplit=1)[1]
+        jobs = re.findall(r"(?ms)^  ([a-z][\w-]*):\n(.*?)(?=^  [a-z][\w-]*:|\Z)", jobs_section)
+        secret_jobs = [job_id for job_id, body in jobs if "secrets." in body]
+        self.assertEqual(["release-summary"], secret_jobs)
         self.assertNotRegex(contents, r"(?i)gh pr (?:create|merge)|git push|cargo publish")
+
+    def test_protected_release_push_runs_exact_evidence_jobs(self) -> None:
+        contents = self.require_workflow()
+        trigger = re.search(r"(?ms)^on:\s*\n(.*?)(?=^permissions:)", contents)
+        self.assertIsNotNone(trigger, "The workflow must declare push triggers.")
+        push = re.search(r"(?ms)^  push:\s*\n(.*?)(?=^  [a-z][\w-]*:|\Z)", trigger.group(1))
+        self.assertIsNotNone(push, "The workflow must run on release pushes.")
+        self.assertRegex(push.group(1), r"(?m)^\s+- release/1\.0\.0$")
+
+        for job_id in (
+            "core",
+            "script-contracts",
+            "normative-inventory",
+            "coverage",
+            "coverage-gate",
+            "dependency-policy",
+        ):
+            job = self.require_job(contents, job_id)
+            self.assertIn("github.event_name == 'push'", job, job_id)
+            self.assertIn("github.ref == 'refs/heads/release/1.0.0'", job, job_id)
+
+        release_job = self.require_job(contents, "release-summary")
+        self.assertIn("environment: release-evidence", release_job)
+        self.assertIn("permission-administration: read", release_job)
+        self.assertIn("branches/release%2F1.0.0/protection", release_job)
+        self.assertIn("PROFILE_EVIDENCE_MANIFEST", release_job)
+        self.assertIn("--readiness", release_job)
+
+    def test_push_coverage_uses_the_webhook_before_sha(self) -> None:
+        contents = self.require_workflow()
+        self.assertIn("CI_PUSH_BEFORE_SHA: ${{ github.event.before }}", contents)
+        inventory = self.require_job(contents, "normative-inventory")
+        self.assertIn("CI_PUSH_BEFORE_SHA", inventory)
+        gate = self.require_job(contents, "coverage-gate")
+        self.assertIn("CI_PUSH_BEFORE_SHA", gate)
 
     def test_required_platform_toolchain_and_informational_branch_matrices_exist(self) -> None:
         contents = self.require_workflow()
@@ -466,7 +504,6 @@ class WorkflowContractTests(unittest.TestCase):
         contents = self.require_workflow()
         self.assertRegex(contents, r"(?ms)^permissions:\s*\n\s*contents:\s*read\b")
         self.assertNotRegex(contents, r"(?m)^\s*(?:contents|pull-requests|packages):\s*write\b")
-        self.assertNotIn("secrets.", contents)
         self.assertNotRegex(contents, r"(?m)^\s*pull_request_target\s*:")
 
         job = self.require_policy_job(contents, "dependency-policy")

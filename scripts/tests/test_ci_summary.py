@@ -400,8 +400,11 @@ class CiSummaryTests(unittest.TestCase):
 
         self.assertEqual(0, exit_code)
         self.assertIn("CI result: PASS", markdown)
+        self.assertIn("Selected checks passed: 6/6", markdown)
         self.assertIn("Core matrix (3 OS × Rust 1.94 and stable)", markdown)
         self.assertIn("Dependency policy", markdown)
+        self.assertNotIn("Documentation contracts (`docs-contracts`)", markdown)
+        self.assertNotIn("C consumer (3 OS) (`language-c`)", markdown)
 
     def test_protected_release_push_reports_failed_required_job(self) -> None:
         summary_module = self.require_summary()
