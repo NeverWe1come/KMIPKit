@@ -6181,24 +6181,7 @@ fn response_outcome(
         SET_CONSTRAINTS_OPERATION => set_constraints_response_outcome(item),
         SET_DEFAULTS_OPERATION => set_defaults_response_outcome(item),
         GET_USAGE_ALLOCATION_OPERATION => get_usage_allocation_response_outcome(item),
-        RNG_RETRIEVE_OPERATION => read_crypto_operation_outcome(
-            ClientOperation::RngRetrieve,
-            item,
-            RngRetrieveResponse::try_from_pending_response_item,
-            RngRetrieveResponse::try_from_response_item,
-            RngRetrieveResponse::result,
-            PendingResponse::RngRetrieve,
-            ClientBatchOutcome::RngRetrieve,
-        ),
-        RNG_SEED_OPERATION => read_crypto_operation_outcome(
-            ClientOperation::RngSeed,
-            item,
-            RngSeedResponse::try_from_pending_response_item,
-            RngSeedResponse::try_from_response_item,
-            RngSeedResponse::result,
-            PendingResponse::RngSeed,
-            ClientBatchOutcome::RngSeed,
-        ),
+        RNG_RETRIEVE_OPERATION | RNG_SEED_OPERATION => rng_response_outcome(operation, item),
         DISCOVER_VERSIONS_OPERATION => {
             let response = DiscoverVersionsResponse::try_from_response_item(item)
                 .map_err(invalid_typed_response)?;
@@ -6284,6 +6267,33 @@ fn get_usage_allocation_response_outcome(
         PendingResponse::GetUsageAllocation,
         ClientBatchOutcome::GetUsageAllocation,
     )
+}
+
+fn rng_response_outcome(
+    operation: u32,
+    item: ResponseBatchItemView<'_>,
+) -> Result<ClientBatchOutcome, ProtocolError> {
+    match operation {
+        RNG_RETRIEVE_OPERATION => read_crypto_operation_outcome(
+            ClientOperation::RngRetrieve,
+            item,
+            RngRetrieveResponse::try_from_pending_response_item,
+            RngRetrieveResponse::try_from_response_item,
+            RngRetrieveResponse::result,
+            PendingResponse::RngRetrieve,
+            ClientBatchOutcome::RngRetrieve,
+        ),
+        RNG_SEED_OPERATION => read_crypto_operation_outcome(
+            ClientOperation::RngSeed,
+            item,
+            RngSeedResponse::try_from_pending_response_item,
+            RngSeedResponse::try_from_response_item,
+            RngSeedResponse::result,
+            PendingResponse::RngSeed,
+            ClientBatchOutcome::RngSeed,
+        ),
+        _ => Err(protocol_error(ProtocolErrorKind::UnsupportedValue)),
+    }
 }
 
 fn credential_session_response_outcome(
