@@ -10,7 +10,7 @@ This contract defines the typed client surface for the five operations in `spec.
 | `GetUsageAllocationRequest` / `Client::get_usage_allocation` | Optional Unique Identifier; required Usage Limits Count Integer | Required Unique Identifier | Specification §6.1.23, Tables 232–234 |
 | `SetConstraintsRequest` / `Client::set_constraints` | Required Constraints Structure | Empty operation payload | Specification §6.1.52, Tables 325–327; §7.7 |
 | `SetDefaultsRequest` / `Client::set_defaults` | Optional Defaults Information Structure | Empty operation payload | Specification §6.1.53, Tables 328–330; §7.11 |
-| `SetEndpointRoleRequest` / `Client::set_endpoint_role` | Required Endpoint Role Enumeration | Required Endpoint Role Enumeration | Specification §6.1.54, Tables 331–333; §11.39 |
+| `SetEndpointRoleRequest` / `Client::set_endpoint_role` | Required Endpoint Role Enumeration | Required Endpoint Role Enumeration | Specification §6.1.54, Tables 331–333; §11.19 |
 
 The Operation field and operation payload remain distinct in the KMIP request message. Field order, repeated values where permitted, optional omission, and structurally valid unknown elements are preserved. Enumeration values are open raw values, not closed enums that reject future values.
 

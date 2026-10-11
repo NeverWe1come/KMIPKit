@@ -20,7 +20,7 @@ Each task uses `[ ] T### [US#] action in exact/repository/path`. Every implement
 
 **Purpose**: Confirm the approved source and release baseline. No project initialization or new runtime dependency is needed.
 
-- [ ] T001 Verify source checksums in `specification/oasis/kmip-2.1/CHECKSUMS.sha256`; compare the pinned §6.1.22, §6.1.23, §6.1.52, §6.1.53, §6.1.54, §4.59, §7.7, §7.11, §11.39, and §11.60 source passages with `specs/025-policy-controls/spec.md` and `traceability.md`; confirm the approved release baseline and record exact commands before coding.
+- [x] T001 Verify source checksums in `specification/oasis/kmip-2.1/CHECKSUMS.sha256`; compare the pinned §6.1.22, §6.1.23, §6.1.52, §6.1.53, §6.1.54, §4.59, §7.7, §7.11, §11.19, and §11.60 source passages with `specs/025-policy-controls/spec.md` and `traceability.md`; confirm the approved release baseline and record exact commands before coding. Evidence: verified all four entries in CHECKSUMS.sha256 (all OK); python tools/normative_catalog/validate.py returned Catalog valid: sources=4 clauses=1411 records=4044; git merge-base HEAD origin/release/1.0.0 returned af172974cd5c6f56f7f938574e1546d4e295a9ef, matching git show origin/release/1.0.0. Pinned table/section review matched the payload contracts and guard; corrected Endpoint Role Enumeration to §11.19, Table 452.
 
 ## Phase 2: User Story 1 — Get Constraints (Priority: P1)
 
@@ -118,7 +118,7 @@ Each task uses `[ ] T### [US#] action in exact/repository/path`. Every implement
 
 ### Red commit
 
-- [ ] T017 [US5] Add failing protocol/client tests in `crates/kmipkit-protocol/tests/unit/set_endpoint_role_tests.rs` and `crates/kmipkit-client/tests/unit/set_endpoint_role_execution_tests.rs`; register modules via protocol/client test module declarations; cite OASIS KMIP Specification v2.1 §6.1.54, Tables 331–333 and §11.39; cover required fields, open known/unknown/vendor Endpoint Role values, response requiredness, Table 333 errors, malformed payload, Pending, delivery, one exchange, and exclusion of server-initiated §6.2.5; record Red output separately.
+- [ ] T017 [US5] Add failing protocol/client tests in `crates/kmipkit-protocol/tests/unit/set_endpoint_role_tests.rs` and `crates/kmipkit-client/tests/unit/set_endpoint_role_execution_tests.rs`; register modules via protocol/client test module declarations; cite OASIS KMIP Specification v2.1 §6.1.54, Tables 331–333 and §11.19; cover required fields, open known/unknown/vendor Endpoint Role values, response requiredness, Table 333 errors, malformed payload, Pending, delivery, one exchange, and exclusion of server-initiated §6.2.5; record Red output separately.
 
 ### Green commit
 

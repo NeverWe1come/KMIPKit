@@ -18,7 +18,7 @@ The approved spec and this table link normative operation payloads and requireme
 | `KMIPKIT-025-T328-REQUEST` | `KMIPKIT-ELEM-OP-C2S-SET-DEFAULTS`; `KMIPKIT-ELEM-ENUM-VALUE-OPERATION-SET-DEFAULTS-00000036`; `KMIPKIT-ELEM-OPERATION-STRUCTURE-7-11-DEFAULTS-INFORMATION`; `KMIPKIT-ELEM-TAG-420152` | §6.1.53, Table 328; §7.11 | Optional Defaults Information; absent field means remove all Object Defaults | `set_defaults.rs` | Omitted vs empty distinction; approved DISC-020 behavior |
 | `KMIPKIT-025-T329-RESPONSE` | Set Defaults operation ID | §6.1.53, Table 329 | Empty operation success payload | `set_defaults.rs` | Empty success and malformed payload |
 | `KMIPKIT-025-T330-ERROR` | Set Defaults operation ID; common result tags | §6.1.53, Table 330; approved KMIPKIT-DISC-020 | Preserve Failure and listed reasons | `set_defaults.rs`; `execute.rs` | Table reason cases, no fabricated success |
-| `KMIPKIT-025-T331-REQUEST` | `KMIPKIT-ELEM-OP-C2S-SET-ENDPOINT-ROLE`; `KMIPKIT-ELEM-ENUM-VALUE-OPERATION-SET-ENDPOINT-ROLE-00000032`; `KMIPKIT-ELEM-TAG-420151`; `KMIPKIT-ELEM-ENUMERATION-ENDPOINT-ROLE` | §6.1.54, Table 331; §11.39 | Required open Endpoint Role Enumeration | `set_endpoint_role.rs` | Known, unknown, and vendor enum roundtrips; missing-field NotSent |
+| `KMIPKIT-025-T331-REQUEST` | `KMIPKIT-ELEM-OP-C2S-SET-ENDPOINT-ROLE`; `KMIPKIT-ELEM-ENUM-VALUE-OPERATION-SET-ENDPOINT-ROLE-00000032`; `KMIPKIT-ELEM-TAG-420151`; `KMIPKIT-ELEM-ENUMERATION-ENDPOINT-ROLE` | §6.1.54, Table 331; §11.19 | Required open Endpoint Role Enumeration | `set_endpoint_role.rs` | Known, unknown, and vendor enum roundtrips; missing-field NotSent |
 | `KMIPKIT-025-T332-RESPONSE` | Set Endpoint Role C→S operation ID; tag/enum IDs above | §6.1.54, Table 332 | Required accepted Endpoint Role, preserve unknown value | `set_endpoint_role.rs` | Required field and unknown enum value |
 | `KMIPKIT-025-T333-ERROR` | Set Endpoint Role C→S operation ID; common result tags | §6.1.54, Table 333 | Preserve operation failure alternatives | `set_endpoint_role.rs`; `execute.rs` | Table reason cases and result metadata |
 
@@ -39,7 +39,7 @@ The guard covers only typed Encrypt, MAC, and Sign calls routed through one call
 | --- | --- | --- | --- |
 | `KMIPKIT-025-COMMON-RESULT` | Shared KMIP response/batch contract; each operation error table | Preserve Success, Failure, permitted Result Message, Pending, and correlation; no retry/Poll | Fake transport response matrix per operation; unknown result values |
 | `KMIPKIT-025-COMMON-DELIVERY` | AGENTS.md transport delivery invariant | Validation is NotSent; ambiguous delivery remains PossiblySent/ResponseStarted | Fake-transport call-count and error-delivery assertions |
-| `KMIPKIT-025-OPEN-VALUES` | Constitution public API compatibility; §11.39 and §11.60 | Open Enumeration and unknown nested fields survive typed conversions | Property/roundtrip tests over known, unknown, and extension values |
+| `KMIPKIT-025-OPEN-VALUES` | Constitution public API compatibility; §11.19 and §11.60 | Open Enumeration and unknown nested fields survive typed conversions | Property/roundtrip tests over known, unknown, and extension values |
 
 ## Official test-case inventory
 
