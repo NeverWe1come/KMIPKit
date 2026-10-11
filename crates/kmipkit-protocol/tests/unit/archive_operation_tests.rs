@@ -18,7 +18,7 @@ use crate::{
 };
 use kmipkit_ttlv::{Item, Structure, ValueView};
 
-const ARCHIVE_OPERATION: u32 = 0x0000_0013;
+const ARCHIVE_OPERATION: u32 = 0x0000_0015;
 const ACTIVATE_OPERATION: u32 = 0x0000_0012;
 const SUCCESS: u32 = 0;
 const OPERATION_FAILED: u32 = 1;

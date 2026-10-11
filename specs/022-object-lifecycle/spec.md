@@ -59,13 +59,13 @@ As a KMIPKit caller, I can send the §6.1.6 Certify request and inspect the type
 3. Given a Table 181 failure, malformed payload, or transport error, when the call completes, then status/reason or error and delivery state remain available without retry.
 4. Given Pending in a caller-enabled typed batch, when the response arrives, then Pending and the exact correlation bytes remain available without an implicit Poll.
 
-**Specific rules**: One certificate per request. Certificate Request Type is required with Certificate Request; when no request object is supplied, identify the public key and specify Certificate Type as §6.1.6 requires.
+**Specific rules**: One certificate per request. Certificate Request Type is required with Certificate Request. If Certificate Request is omitted, the client MUST explicitly provide the public key's Unique Identifier; KMIPKit does not substitute an ID Placeholder for this input. If both Certificate Request Type and Certificate Request are omitted, specify Certificate Type in Attributes as §6.1.6 requires. The generated certificate's returned identifier may still be consumed by a subsequent Get in the same ordered batch through the ID Placeholder mechanism.
 
 **Payload schema** (OASIS Specification v2.1 §6.1.6, Tables 179–180):
 
 | Side | Field | REQUIRED | Description or condition |
 | --- | --- | --- | --- |
-| Request | Unique Identifier | No | The Unique Identifier of the Public Key or the Certificate Request being certified. If omitted and Certificate Request is not present, then the ID Placeholder value is used by the server as the Unique Identifier. |
+| Request | Unique Identifier | No | The Unique Identifier of the Public Key or Certificate Request being certified. When Certificate Request is omitted, this field MUST explicitly identify the public key. KMIPKit follows the §6.1.6 prose for this condition; it does not apply Table 179's conflicting ID Placeholder sentence to the input identifier. |
 | Request | Certificate Request Type | No | An Enumeration object specifying the type of certificate request. It is REQUIRED if the Certificate Request is present. |
 | Request | Certificate Request Value | No | A Byte String object with the certificate request. |
 | Request | Attributes | No | Specifies desired object attributes. |
@@ -89,7 +89,7 @@ As a KMIPKit caller, I can send the §6.1.7 Check request and inspect the typed 
 3. Given a Table 185 failure, malformed payload, or transport error, when the call completes, then status/reason or error and delivery state remain available without retry.
 4. Given Pending in a caller-enabled typed batch, when the response arrives, then Pending and the exact correlation bytes remain available without an implicit Poll.
 
-**Specific rules**: Expose the recommended ordered batch with Batch Order Option true and Stop or Undo continuation; do not silently alter the caller batch.
+**Specific rules**: Expose the recommended ordered batch with Batch Order Option true and Stop or Undo continuation; do not silently alter the caller batch. Accept and type Usage Limits Count, Cryptographic Usage Mask, and Lease Time whenever the server returns them, including on a failed Check; a failed result does not require Unique Identifier. Per §6.1.7, do not expose a Unique Identifier through the typed accessor for a failed result, even if a nonconforming server includes one; preserve the complete response in generic TTLV for inspection.
 
 **Payload schema** (OASIS Specification v2.1 §6.1.7, Tables 183–184):
 
@@ -300,14 +300,14 @@ As a KMIPKit caller, I can send the §6.1.44 Revoke request and inspect the type
 3. Given a Table 297 failure, malformed payload, or transport error, when the call completes, then status/reason or error and delivery state remain available without retry.
 4. Given Pending in a caller-enabled typed batch, when the response arrives, then Pending and the exact correlation bytes remain available without an implicit Poll.
 
-**Specific rules**: Compromise Occurrence Date SHOULD accompany key/CA compromise and SHALL NOT accompany other reasons.
+**Specific rules**: `Revocation Reason` is the §4.47/Table 123 Structure, with required `Revocation Reason Code` and optional audit-only `Revocation Message`; it is not a direct Enumeration. Compromise Occurrence Date SHOULD accompany key/CA compromise and SHALL NOT accompany other reasons.
 
 **Payload schema** (OASIS Specification v2.1 §6.1.44, Tables 295–296):
 
 | Side | Field | REQUIRED | Description or condition |
 | --- | --- | --- | --- |
 | Request | Unique Identifier | No | Determines the object being revoked. If omitted, then the ID Placeholder value is used by the server as the Unique Identifier. |
-| Request | Revocation Reason | Yes | Specifies the reason for revocation. |
+| Request | Revocation Reason | Yes | §4.47/Table 123 Structure containing the required Revocation Reason Code Enumeration and optional audit-only Revocation Message Text String. |
 | Request | Compromise Occurrence Date | No | SHOULD be specified if the Revocation Reason is 'key compromise' or ‘CA compromise’ and SHALL NOT be specified for other Revocation Reason enumerations . |
 | Response | Unique Identifier | Yes | The Unique Identifier of the object. |
 
@@ -424,11 +424,13 @@ KMIPKIT-DEC-010 treats the one-replacement cardinality in §11.28/Table 464 as a
 | Register | No direct catalog case ID |
 | Revoke | No direct catalog case ID |
 
-### Maintainer-approved interpretations (2026-10-10)
+### Maintainer-approved interpretations (2026-10-11)
 
 These are accepted KMIPKit interpretations, not official OASIS errata. Their decision records are in the checked-in normative catalog; pinned upstream copies remain unchanged.
 
 | Operation | Discrepancy | Disposition |
 | --- | --- | --- |
+| Certify | KMIPKIT-DISC-050 | The §6.1.6 prose requires the public key's Unique Identifier when Certificate Request is omitted; this governs over the conflicting Table 179 ID Placeholder sentence. Decision: KMIPKIT-DEC-013. |
 | Re-Provision | KMIPKIT-DISC-040 | Support certificate-request, certificate, and parameterless server-credential paths. Table 315 has an errant RNG Retrieve caption in the Re-Provision error section. |
+| Re-Provision response | KMIPKIT-DISC-051 | §6.1.48 prose says the server SHALL return Unique Identifier for CSR/certificate forms, while Table 314 says the field is not required. Follow Table 314 for client parsing: allow absence for all three forms and preserve a present identifier. The prose SHALL remains a server-side obligation. Decision: KMIPKIT-DEC-014. |
 | Unique Identifier | KMIPKIT-DISC-025 | The lowercase “may” in §11.58 is descriptive text, not a new normative client keyword. Explicit operation-specific identifier and batch rules remain in force. Decision: KMIPKIT-DEC-009. |

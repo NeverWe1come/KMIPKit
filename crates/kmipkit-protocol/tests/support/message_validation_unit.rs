@@ -481,6 +481,13 @@ mod tests {
             validate_response_batch_item(&failure_with_payload.view(), 1),
             MessageValidationErrorKind::InvalidResult,
         );
+        let check_failure_with_payload = structure([
+            item(OPERATION, Value::enumeration(0x0000_0009)),
+            item(RESULT_STATUS, Value::enumeration(1)),
+            item(RESULT_REASON, Value::enumeration(0x0000_0029)),
+            item(RESPONSE_PAYLOAD, Value::structure(Structure::new())),
+        ]);
+        assert!(validate_response_batch_item(&check_failure_with_payload.view(), 1).is_ok());
         let success_with_message = structure([
             item(RESULT_STATUS, Value::enumeration(0)),
             item(RESULT_MESSAGE, Value::text_string("not allowed".to_owned())),

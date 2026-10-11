@@ -1,20 +1,24 @@
 # KMIPKit threat model
 
 Status: implementation snapshot and design baseline
-Scope: KMIPKit 1.0 architecture, including KMIPKIT-0005 TTLV, KMIPKIT-0007 client execution, and KMIPKIT-0013 production transport
-Last reviewed: 2026-10-08
+Scope: KMIPKit 1.0 architecture, including KMIPKIT-0005 TTLV, KMIPKIT-0007
+client execution, KMIPKIT-0013 production transport, and the Rust lifecycle
+operation additions in KMIPKIT-0036
+Last reviewed: 2026-10-11
 
 This document models risks for the KMIPKit 1.0 architecture and distinguishes
 current executable controls from planned components. The repository includes
 the kmipkit-ttlv in-memory value model and public bounded decoder, typed KMIP
 message execution, the public low-level exchange contract, production raw TLS
 and HTTPS adapters, and a synchronous typed client constructor that owns
-validated production adapters. The typed client currently exposes only its
-implemented request set; this does not establish full KMIP 2.1 operation or
-profile coverage. C ABI, Java, Python, additional operation families, and
-publication remain design scope unless their source and tests establish
-otherwise. Scenarios below remain hypotheses and security requirements unless
-a control is explicitly tied to executable evidence. The model must be
+validated production adapters. The Rust client currently includes Certify,
+Check, Obtain Lease, Re-certify, Re-key, Re-key Key Pair, Re-Provision,
+Register, and Revoke in addition to its earlier typed request set. These
+operations do not establish complete KMIP 2.1 operation or profile coverage.
+C, Java, and Python operation parity for this addition remains assigned to
+KMIPKIT-0043 and is not established by this Rust-only branch. Publication
+remains planned. Scenarios below remain hypotheses and security requirements
+unless a control is explicitly tied to executable evidence. The model must be
 revised as each executable boundary is introduced.
 Independent architecture mapping and a source-level security diff review were
 completed for KMIPKIT-0005 on 2026-10-05. A qualified human security review
@@ -39,7 +43,7 @@ flowchart LR
         KMIP credentials and limits]
     end
     subgraph Native[KMIPKit process boundary]
-        Binding[Rust / C / JNI / CFFI API]
+        Binding[Rust typed API; lifecycle parity in C/Java/Python deferred]
         Core[Protocol model and client]
         Parser[Bounded TTLV codec]
         TLS[TLS 1.3 transport]
@@ -65,15 +69,41 @@ flowchart LR
 The generic TTLV value model, bounded public decoder, typed client execution,
 low-level transport contract, and production raw TLS and HTTPS adapters are
 implemented. KMIPKIT-0013 connects the currently supported typed operations to
-those adapters through a private worker. Other product component rows
-describe target design unless marked implemented; CI validation is implemented
-while package publication remains planned.
+those adapters through a private worker. KMIPKIT-0036 adds the nine listed
+Rust lifecycle operations through that same request path. C, Java, and Python
+parity for those operations is deferred to KMIPKIT-0043. This implementation
+snapshot does not claim OASIS certification, profile support, 1.0 release
+readiness, or completion of cross-platform, C ABI, fuzz, or coverage gates.
+Other product component rows describe target design unless marked implemented;
+CI validation is implemented while package publication remains planned.
+
+Each lifecycle convenience method wraps its typed `ClientRequest` in a
+one-item `ClientBatch`; `Client::execute_with_options` validates the batch and
+request shape, builds the message, encodes it with the private writer, and
+calls the configured transport once. The returned bytes are size-bounded and
+decoded as untrusted TTLV, then response version, correlation, batch count,
+operation, and typed result are checked against the request. Callers may use
+the explicit batch API for multiple operations; these convenience methods do
+not retry, implicitly Poll, or rewrite caller batch policy. Evidence:
+`crates/kmipkit-client/src/execute.rs:2848-2905,2931-3275,3820-3867,4948-4979,5181-5301`;
+`crates/kmipkit-ttlv/src/codec/decoder.rs:29-162`.
+
+For Check, OASIS KMIP v2.1 §6.1.7, Tables 183-185, and the approved
+KMIPKIT-0036 interpretation permit a failed response to include typed optional
+Usage Limits Count, Cryptographic Usage Mask, and Lease Time fields. Such a
+failure does not require Unique Identifier; the typed parser requires that
+identifier on success and retains the optional policy fields on either result.
+Evidence: `specs/022-object-lifecycle/spec.md:80-115`;
+`crates/kmipkit-protocol/src/check.rs:127-222,282-352`;
+`crates/kmipkit-protocol/tests/unit/check_operation_tests.rs:190-211`.
+
 | Component | Responsibility | Security relevance | Evidence |
 |---|---|---|---|
 | Generic TTLV value model (implemented) | Construct and inspect typed in-memory values; preserve ordered Structures; check tag allocation and depth | Payload redaction and zeroization, bounded nesting, tag allocation; this model does not establish wire validity | `crates/kmipkit-ttlv/src/lib.rs:1-11`; `docs/architecture/public-api.md:34-49` |
 | Public TTLV decoder (implemented) | Decode one bounded untrusted item into the public generic tree | Memory and CPU bounds, malformed-input rejection, unknown value preservation, no raw-byte retention | `crates/kmipkit-ttlv/src/codec/decoder.rs:29-162`; `crates/kmipkit-ttlv/src/codec/mod.rs:18-24,181-209` |
-| Private client outbound writer (implemented) | Encodes only the closed typed request set through `Client::execute`; no general-purpose or public encoder | Execute-owned permit, one writer callsite, request owner through synchronous exchange, zeroization on drop, redacted diagnostics; request payload coverage remains limited to implemented operations | `crates/kmipkit-client/src/wire_encoder.rs`; `crates/kmipkit-client/src/execute.rs`; ADR-0012; specs/007-client-execution |
+| Private client outbound writer (implemented) | Encodes the closed typed request set, including the nine KMIPKIT-0036 lifecycle operations, through `Client::execute`; no general-purpose or public encoder | Execute-owned permit, one writer callsite, request owner through synchronous exchange, zeroizing encoded owner, redacted diagnostics | `crates/kmipkit-client/src/wire_encoder.rs:358-368`; `crates/kmipkit-client/src/execute.rs:3820-3867`; ADR-0012; specs/007-client-execution |
 | Typed protocol client (implemented for the current request set) | Validates requests, correlates responses, and invokes one production adapter exchange | Extension-registry provenance, typed response validation, request-delivery evidence, response-size check before decoding, no retry | `crates/kmipkit-client/src/execute.rs`; `crates/kmipkit-client/tests/production_client.rs`; specs/013-production-transport |
+| Managed-object lifecycle operations (Rust implemented) | Typed Certify, Check, Obtain Lease, Re-certify, Re-key, Re-key Key Pair, Re-Provision, Register, and Revoke requests and results | Server responses remain untrusted; the client checks response-to-request correspondence and parses typed results. Each convenience method sends one request batch through one exchange and performs no automatic retry or Poll. Server object state, lifecycle links, lease tracking, and policy decisions remain server-owned | `crates/kmipkit-client/src/execute.rs:161-185,2931-3275,3820-3867,5181-5301`; `crates/kmipkit-protocol/src/check.rs:127-222,282-352`; `specs/022-object-lifecycle/data-model.md:34-43`; C/Java/Python parity: KMIPKIT-0043 |
 | Raw TLS and HTTPS transports (implemented) | Authenticate peers and carry bounded messages | Server/client identity, confidentiality, framing, deadlines, delivery state, response cleanup; HTTPS may reuse a healthy connection and raw TLS closes after one frame | `crates/kmipkit-transport/src/raw_tls.rs`; `crates/kmipkit-transport/src/https.rs`; `crates/kmipkit-transport/src/timeout.rs`; `docs/architecture/transport-security.md` |
 | Private client worker and system resolver (implemented) | Keep the public API synchronous while owning async I/O and system name resolution | Bounded queue, deadline/cancellation ordering, shared resolver admission, late-result isolation; OS resolver behavior remains outside KMIPKit's numeric guarantees | `crates/kmipkit-transport/src/worker.rs`; `crates/kmipkit-transport/src/resolver.rs`; ADR-0015; ADR-0016 |
 | C ABI | Expose native functionality to foreign runtimes | Pointer validity, ownership, panic containment, stable layouts | `docs/architecture/ffi-and-bindings.md:3-33` |
@@ -89,9 +119,9 @@ while package publication remains planned.
 | TLS authentication | Trust roots, server name, client certificate, private key, CRLs, resumption tickets | Caller explicitly selects caller-provided roots or platform trust; configuration owns a per-client ticket cache | TLS 1.3, mandatory chain/validity/name checks on a full handshake, mutual TLS; a resumed session inherits the full-handshake trust/CRL decision for at most one hour locally | Caller and rustls transport | No arbitrary-certificate switch, 0-RTT, key logging, cross-client ticket sharing, or online OCSP/CRL lookup. Platform trust uses `rustls-native-certs`; `SSL_CERT_FILE`, when set, overrides roots for that mode and is controlled by the caller's process environment | `crates/kmipkit-transport/src/config.rs`; `crates/kmipkit-transport/src/tls.rs`; `crates/kmipkit-transport/tests/unit/tls_policy_tests.rs`; ADR-0005 |
 | Name resolution and worker admission | Configured endpoint host/port; DNS activity; bounded work slots | System `ToSocketAddrs`; one shared 32-permit governor per loaded KMIPKit library instance; fail-fast when no permit is available | At most one native resolver call per connection-establishment attempt; KMIPKit retains/tries at most 16 returned addresses in OS order | Caller thread, private worker, OS resolver, configured endpoint | Permit acquired before `spawn_blocking` and held until a started lookup returns; canceled late results cannot start a connection or dispatch KMIP bytes; OS packet retries/cache/routing/search/split-DNS remain OS-owned | `crates/kmipkit-transport/src/resolver.rs`; `crates/kmipkit-transport/tests/resolver.rs`; `crates/kmipkit-transport/tests/worker.rs`; ADR-0016 |
 | HTTP parser and KMIP response body | Untrusted HTTP response headers and body | Hyper HTTP/1 parser limits are independent from caller KMIP codec limits | At most 64 response headers and 64 KiB parser input; typed response body is capped by `CodecLimits::max_message_bytes()` | Remote peer, Hyper, transport, bounded decoder | Status/header/content-length validation; reject unsupported encodings; invalidate malformed/reused connections; check body length before allocation and again before typed decode | `crates/kmipkit-transport/src/https.rs`; `crates/kmipkit-transport/tests/https.rs`; `crates/kmipkit-client/tests/unit/response_boundary_tests.rs` |
-| Request and response memory | Encoded requests, partial network responses, and decoded typed values | KMIPKit owns bounded secret/request/response owners; dependencies and callers may make separate copies | Initialized bytes in current KMIPKit-owned buffers are zeroized before release; this is not a process-wide erasure guarantee | Caller, client, Hyper, rustls, OS, foreign runtimes | Typed client returns decoded results rather than raw response bytes; direct transport exposes a redacted `TransportResponse`; document copies in Hyper/rustls/OS/callers as outside the guarantee | `crates/kmipkit-client/src/execute.rs`; `crates/kmipkit-transport/src/secret.rs`; `crates/kmipkit-transport/src/response.rs`; `docs/architecture/transport-security.md` |
+| Request and response memory | Encoded requests, partial network responses, and decoded typed values, including lifecycle certificate and object payloads | KMIPKit owns bounded secret/request/response owners; dependencies and callers may make separate copies | KMIPKit-owned `Value` payloads, encoded request bytes, and initialized transport response bytes are zeroized on drop; earlier growth allocations, copies made before ownership transfer, spare capacity, and copies outside these owners are not covered | Caller, client, Hyper, rustls, OS, foreign runtimes | Lifecycle request `Debug` implementations omit supplied certificate/object payloads; typed client returns decoded results rather than raw response bytes; direct transport exposes redacted `TransportResponse`; copies in Hyper/rustls/OS/callers remain outside the guarantee | `crates/kmipkit-protocol/src/certify.rs:149-164`; `crates/kmipkit-protocol/src/register.rs:118-132`; `crates/kmipkit-protocol/src/reprovision.rs:83-93`; `crates/kmipkit-ttlv/src/value.rs:42-49,68-71`; `crates/kmipkit-client/src/wire_encoder.rs:358-368`; `crates/kmipkit-transport/src/response.rs:11-16,49-57`; `docs/architecture/transport-security.md` |
 | Exchange deadlines and delivery | Connect, write, read, total deadline, cancellation, and worker startup | Total deadline starts at public exchange entry and is monotonic; finite phase values must be representable by `Instant` | Defaults are 10s connect, 30s write, 30s read, 60s total; explicit unbounded is distinct from zero-duration immediate expiry | Caller thread, private worker, adapter, remote peer | Lazy worker startup and queueing are bounded by total deadline; invalid unrepresentable finite durations return `InvalidInput`/`NotSent`; atomic dispatch/response/finalization gate preserves truthful delivery state | `crates/kmipkit-transport/src/timeout.rs`; `crates/kmipkit-transport/src/worker.rs`; `crates/kmipkit-transport/tests/timeout_delivery.rs`; `crates/kmipkit-transport/tests/worker.rs` |
-| KMIP authentication | Message credentials, OTPs, and tickets | Credentials are modeled but are not added to the current typed operation request payloads | Current typed request paths do not send KMIP credentials; TLS client identity is a separate transport concern | Caller and a configured KMIP peer when a credential-bearing operation is implemented | Redaction and initialized-byte zeroization are implemented for typed execution; later secret-bearing operations require owner-through-transport tests | `crates/kmipkit-protocol`; `crates/kmipkit-client/src/execute.rs`; foreign-runtime copies and external transport copies remain outside current evidence |
+| KMIP authentication | Message credentials, OTPs, and tickets | Credentials are modeled but are not added to the current typed operation request payloads | Current typed request paths do not send KMIP credentials; TLS client identity is a separate transport concern | Caller and a configured KMIP peer when a credential-bearing operation is implemented | Redaction and initialized-byte zeroization are implemented for typed execution; future credential-bearing operations require owner-through-transport evidence | `crates/kmipkit-protocol`; `crates/kmipkit-client/src/execute.rs`; foreign-runtime copies and external transport copies remain outside current evidence |
 | Native bindings | Rust-owned handles and result buffers | ABI version and structure size are checked at entry | Opaque handles; matching KMIPKit release functions own deallocation | C, JNI, CFFI callers | Fixed-width ABI, explicit lengths, panic containment, dedicated free functions | Designed in `docs/architecture/ffi-and-bindings.md:3-24`; implementation and sanitizer evidence pending |
 | Native package loading | Platform binary bundled with Java or Python package | Bundled binary first; explicit administrator path may override | Package-adjacent binary or private atomic extraction directory | Language runtime and current user | Package hash verification and ABI check; no runtime download | Designed in `docs/architecture/ffi-and-bindings.md:73-81`; exact extraction permissions and anti-swap procedure remain to be specified |
 | Vendor extensions | Data-only definitions in an immutable client registry | Explicit registration during client construction | Parsed, size-bounded in-memory schema | Caller, core validator, KMIP peer | Duplicate rejection, deterministic registration, core invariants cannot be disabled | Designed in `docs/architecture/extensions.md:18-59`; manifest format and complexity limits remain to be specified |
@@ -152,12 +182,15 @@ work.
    (`docs/architecture/transport-security.md:14-43,45-52`). A resumed TLS
    session inherits the trust and caller-CRL decision from its verified full
    handshake; rebuilding the client is required to apply changed trust input.
-5. **Response to request.** Protocol version, correlation, batch count,
-   operation, and pending state are validated before delivering a result
-   (`docs/architecture/overview.md:119-122`). Dispatch, first response-byte
-   observation, and timeout finalization share a delivery-state gate. `NotSent`
-   guarantees a canceled or expired request cannot be dispatched later;
-   failures after dispatch are `PossiblySent` until a response byte is observed.
+5. **Response to request.** Network response bytes remain untrusted through
+   bounded decoding and typed parsing. Protocol version, correlation, batch
+   count, operation, and pending state are validated before delivering a
+   result (`docs/architecture/overview.md:119-122`). Dispatch, first
+   response-byte observation, and timeout finalization share a delivery-state
+   gate. `NotSent` guarantees a canceled or expired request cannot be
+   dispatched later; failures after dispatch are `PossiblySent` until a
+   response byte is observed. Check denial responses may carry the three
+   optional typed policy fields described above without a Unique Identifier.
 6. **Secret to diagnostics.** Keys, credentials, OTPs, tickets, private keys,
    raw bodies, and secret parameters never enter logs, errors, snapshots, or
    fixtures (`docs/architecture/transport-security.md:80-92`). KMIPKit-owned

@@ -37,7 +37,7 @@ pub(crate) fn successful_response_identifier(
     identifier
 }
 
-fn parse_unique_identifier(field: &Item) -> Option<UniqueIdentifier> {
+pub(crate) fn parse_unique_identifier(field: &Item) -> Option<UniqueIdentifier> {
     field.with_value(|value| match value {
         ValueView::TextString(value) => Some(UniqueIdentifier::TextString(value.to_owned())),
         ValueView::Enumeration(value) => Some(UniqueIdentifier::Enumeration(*value)),

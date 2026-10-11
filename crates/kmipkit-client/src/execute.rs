@@ -14,7 +14,8 @@ use kmipkit_protocol::{
     ActivateRequest, ActivateResponse, AddAttributeRequest, AddAttributeResponse,
     AdjustAttributeRequest, AdjustAttributeResponse, ArchiveRequest, ArchiveResponse,
     AsynchronousOperationError, AttributeReference, CancelRequest, CancelResponse,
-    CancellationResult, CreateKeyPairRequest, CreateKeyPairResponse, CreateRequest, CreateResponse,
+    CancellationResult, CertifyRequest, CertifyResponse, CheckRequest, CheckResponse,
+    CreateKeyPairRequest, CreateKeyPairResponse, CreateRequest, CreateResponse,
     CreateSplitKeyRequest, CreateSplitKeyResponse, CryptographicOperationResponseContext,
     DecryptRequest, DecryptResponse, DeleteAttributeRequest, DeleteAttributeResponse,
     DestroyRequest, DestroyResponse, DiscoverVersionsRequest, DiscoverVersionsResponse,
@@ -22,12 +23,15 @@ use kmipkit_protocol::{
     GetAttributesRequest, GetAttributesResponse, GetRequest, GetResponse, HashRequest,
     HashResponse, KmipOperationResult, LocateRequest, LocateResponse, MacRequest, MacResponse,
     MacVerifyRequest, MacVerifyResponse, MessageExtensionView, ModifyAttributeRequest,
-    ModifyAttributeResponse, NewAttribute, PingRequest, PingResponse, PollRequest, PollResponse,
-    ProcessRequest, ProcessResponse, ProtocolCauseCategory, ProtocolError, ProtocolErrorKind,
-    ProtocolVersion, QueryAsyncRequestsRequest, QueryAsyncRequestsResponse, QueryRequest,
-    QueryResponse, RecoverRequest, RecoverResponse, RequestMessage, ResponseBatchItemView,
-    ResponseMessage, ResultStatus, SetAttributeRequest, SetAttributeResponse, SignRequest,
-    SignResponse, SignatureVerifyRequest, SignatureVerifyResponse,
+    ModifyAttributeResponse, NewAttribute, ObtainLeaseRequest, ObtainLeaseResponse, PingRequest,
+    PingResponse, PollRequest, PollResponse, ProcessRequest, ProcessResponse,
+    ProtocolCauseCategory, ProtocolError, ProtocolErrorKind, ProtocolVersion,
+    QueryAsyncRequestsRequest, QueryAsyncRequestsResponse, QueryRequest, QueryResponse,
+    ReProvisionRequest, ReProvisionResponse, RecertifyRequest, RecertifyResponse, RecoverRequest,
+    RecoverResponse, RegisterRequest, RegisterResponse, RekeyKeyPairRequest, RekeyKeyPairResponse,
+    RekeyRequest, RekeyResponse, RequestMessage, ResponseBatchItemView, ResponseMessage,
+    ResultStatus, RevokeRequest, RevokeResponse, SetAttributeRequest, SetAttributeResponse,
+    SignRequest, SignResponse, SignatureVerifyRequest, SignatureVerifyResponse,
 };
 
 #[cfg(test)]
@@ -115,10 +119,19 @@ const MAC_VERIFY_OPERATION: u32 = 0x0000_0024; // KMIP v2.1 §6.1.33, Table 262.
 const SIGN_OPERATION: u32 = 0x0000_0021; // KMIP v2.1 §6.1.55, Table 334.
 const SIGNATURE_VERIFY_OPERATION: u32 = 0x0000_0022; // KMIP v2.1 §6.1.56, Table 337.
 const CREATE_OPERATION: u32 = 0x0000_0001;
+const CHECK_OPERATION: u32 = 0x0000_0009; // KMIP v2.1 §§6.1.7, 11.36.
+const OBTAIN_LEASE_OPERATION: u32 = 0x0000_0010; // KMIP v2.1 §§6.1.35, 11.36.
+const CERTIFY_OPERATION: u32 = 0x0000_0006; // KMIP v2.1 §6.1.6, Table 179.
+const RECERTIFY_OPERATION: u32 = 0x0000_0007; // KMIP v2.1 §6.1.45, Table 300.
+const REKEY_OPERATION: u32 = 0x0000_0004; // KMIP v2.1 §6.1.46, Table 305.
+const REKEY_KEY_PAIR_OPERATION: u32 = 0x0000_001d; // KMIP v2.1 §6.1.47, Table 310.
+const REPROVISION_OPERATION: u32 = 0x0000_0035; // KMIP v2.1 §6.1.48, Table 313.
+const REGISTER_OPERATION: u32 = 0x0000_0003; // KMIP v2.1 §6.1.43, Table 291.
+const REVOKE_OPERATION: u32 = 0x0000_0013; // KMIP v2.1 §6.1.44, Table 295.
 const CREATE_KEY_PAIR_OPERATION: u32 = 0x0000_0002;
 const CREATE_SPLIT_KEY_OPERATION: u32 = 0x0000_0028; // KMIP v2.1 §11.36, Table 470.
 const ACTIVATE_OPERATION: u32 = 0x0000_0012; // KMIP v2.1 §6.1.1, Table 164.
-const ARCHIVE_OPERATION: u32 = 0x0000_0013; // KMIP v2.1 §6.1.4, Table 173.
+const ARCHIVE_OPERATION: u32 = 0x0000_0015; // KMIP v2.1 §6.1.4, Table 173.
 const DESTROY_OPERATION: u32 = 0x0000_0014; // KMIP v2.1 §6.1.15, Table 208.
 const RECOVER_OPERATION: u32 = 0x0000_002A; // KMIP v2.1 §6.1.42, Table 288.
 const ADD_ATTRIBUTE_OPERATION: u32 = 0x0000_000D;
@@ -152,6 +165,24 @@ pub enum ClientRequest {
     Activate(ActivateRequest),
     /// An explicit client-to-server Archive request.
     Archive(ArchiveRequest),
+    /// An explicit client-to-server Certify request.
+    Certify(CertifyRequest),
+    /// An explicit client-to-server Check request.
+    Check(CheckRequest),
+    /// An explicit client-to-server Obtain Lease request.
+    ObtainLease(ObtainLeaseRequest),
+    /// An explicit client-to-server Re-certify request.
+    Recertify(RecertifyRequest),
+    /// An explicit client-to-server Re-key request.
+    Rekey(RekeyRequest),
+    /// An explicit client-to-server Re-key Key Pair request.
+    RekeyKeyPair(RekeyKeyPairRequest),
+    /// An explicit client-to-server Re-Provision request.
+    ReProvision(ReProvisionRequest),
+    /// An explicit client-to-server Register request.
+    Register(RegisterRequest),
+    /// An explicit client-to-server Revoke request.
+    Revoke(RevokeRequest),
     /// An explicit client-to-server Destroy request.
     Destroy(DestroyRequest),
     /// An explicit client-to-server Recover request.
@@ -273,6 +304,60 @@ impl ClientRequest {
         Self::Archive(request)
     }
 
+    /// Creates a typed client-to-server Certify request variant.
+    #[must_use]
+    pub fn certify(request: CertifyRequest) -> Self {
+        Self::Certify(request)
+    }
+
+    /// Creates a typed client-to-server Check request variant.
+    #[must_use]
+    pub fn check(request: CheckRequest) -> Self {
+        Self::Check(request)
+    }
+
+    /// Creates a typed client-to-server Obtain Lease request variant.
+    #[must_use]
+    pub fn obtain_lease(request: ObtainLeaseRequest) -> Self {
+        Self::ObtainLease(request)
+    }
+
+    /// Creates a typed client-to-server Re-certify request variant.
+    #[must_use]
+    pub fn recertify(request: RecertifyRequest) -> Self {
+        Self::Recertify(request)
+    }
+
+    /// Creates a typed client-to-server Re-key request variant.
+    #[must_use]
+    pub fn rekey(request: RekeyRequest) -> Self {
+        Self::Rekey(request)
+    }
+
+    /// Creates a typed client-to-server Re-key Key Pair request variant.
+    #[must_use]
+    pub fn rekey_key_pair(request: RekeyKeyPairRequest) -> Self {
+        Self::RekeyKeyPair(request)
+    }
+
+    /// Creates an explicit client-to-server Re-Provision request variant.
+    #[must_use]
+    pub const fn reprovision(request: ReProvisionRequest) -> Self {
+        Self::ReProvision(request)
+    }
+
+    /// Creates an explicit client-to-server Register request variant.
+    #[must_use]
+    pub const fn register(request: RegisterRequest) -> Self {
+        Self::Register(request)
+    }
+
+    /// Creates an explicit client-to-server Revoke request variant.
+    #[must_use]
+    pub const fn revoke(request: RevokeRequest) -> Self {
+        Self::Revoke(request)
+    }
+
     /// Creates a typed Destroy request variant.
     #[must_use]
     pub fn destroy(request: DestroyRequest) -> Self {
@@ -344,6 +429,15 @@ impl ClientRequest {
             Self::DiscoverVersions(_) => DISCOVER_VERSIONS_OPERATION,
             Self::Activate(_) => ACTIVATE_OPERATION,
             Self::Archive(_) => ARCHIVE_OPERATION,
+            Self::Certify(_) => CERTIFY_OPERATION,
+            Self::Check(_) => CHECK_OPERATION,
+            Self::ObtainLease(_) => OBTAIN_LEASE_OPERATION,
+            Self::Recertify(_) => RECERTIFY_OPERATION,
+            Self::Rekey(_) => REKEY_OPERATION,
+            Self::RekeyKeyPair(_) => REKEY_KEY_PAIR_OPERATION,
+            Self::ReProvision(_) => REPROVISION_OPERATION,
+            Self::Register(_) => REGISTER_OPERATION,
+            Self::Revoke(_) => REVOKE_OPERATION,
             Self::Destroy(_) => DESTROY_OPERATION,
             Self::Recover(_) => RECOVER_OPERATION,
             Self::Get(_) => GET_OPERATION,
@@ -396,6 +490,12 @@ impl ClientRequest {
 
     fn omits_identifier_for_id_placeholder(&self) -> bool {
         match self {
+            Self::Check(request) => request.unique_identifier().is_none(),
+            Self::ObtainLease(request) => request.unique_identifier().is_none(),
+            Self::Recertify(request) => request.unique_identifier().is_none(),
+            Self::Rekey(request) => request.unique_identifier().is_none(),
+            Self::RekeyKeyPair(request) => request.private_key_unique_identifier().is_none(),
+            Self::Revoke(request) => request.unique_identifier().is_none(),
             Self::Encrypt(request) => request.unique_identifier().is_none(),
             Self::Decrypt(request) => request.unique_identifier().is_none(),
             _ => false,
@@ -405,7 +505,14 @@ impl ClientRequest {
     const fn is_id_placeholder_producer(&self) -> bool {
         matches!(
             self,
-            Self::Create(_) | Self::CreateKeyPair(_) | Self::Recover(_)
+            Self::Create(_)
+                | Self::CreateKeyPair(_)
+                | Self::Recover(_)
+                | Self::Certify(_)
+                | Self::Recertify(_)
+                | Self::Rekey(_)
+                | Self::RekeyKeyPair(_)
+                | Self::Register(_)
         )
     }
 
@@ -414,6 +521,15 @@ impl ClientRequest {
             Self::DiscoverVersions(request) => request.to_ttlv_payload(),
             Self::Activate(request) => request.to_ttlv_payload(),
             Self::Archive(request) => request.to_ttlv_payload(),
+            Self::Certify(request) => request.into_ttlv_payload(),
+            Self::Check(request) => request.into_ttlv_payload(),
+            Self::ObtainLease(request) => request.into_ttlv_payload(),
+            Self::Recertify(request) => request.into_ttlv_payload(),
+            Self::Rekey(request) => request.into_ttlv_payload(),
+            Self::RekeyKeyPair(request) => request.into_ttlv_payload(),
+            Self::ReProvision(request) => request.into_ttlv_payload(),
+            Self::Register(request) => request.into_ttlv_payload(),
+            Self::Revoke(request) => request.into_ttlv_payload(),
             Self::Destroy(request) => request.to_ttlv_payload(),
             Self::Recover(request) => request.to_ttlv_payload(),
             Self::Get(request) => request.to_ttlv_payload(),
@@ -447,6 +563,22 @@ impl fmt::Debug for ClientRequest {
             Self::DiscoverVersions(_) => formatter.write_str("DiscoverVersions"),
             Self::Activate(_) => formatter.write_str("Activate([REDACTED])"),
             Self::Archive(_) => formatter.write_str("Archive([REDACTED])"),
+            Self::Certify(request) => formatter.debug_tuple("Certify").field(request).finish(),
+            Self::Check(request) => formatter.debug_tuple("Check").field(request).finish(),
+            Self::ObtainLease(request) => {
+                formatter.debug_tuple("ObtainLease").field(request).finish()
+            }
+            Self::Recertify(request) => formatter.debug_tuple("Recertify").field(request).finish(),
+            Self::Rekey(request) => formatter.debug_tuple("Rekey").field(request).finish(),
+            Self::RekeyKeyPair(request) => formatter
+                .debug_tuple("RekeyKeyPair")
+                .field(request)
+                .finish(),
+            Self::ReProvision(request) => {
+                formatter.debug_tuple("ReProvision").field(request).finish()
+            }
+            Self::Register(request) => formatter.debug_tuple("Register").field(request).finish(),
+            Self::Revoke(request) => formatter.debug_tuple("Revoke").field(request).finish(),
             Self::Destroy(_) => formatter.write_str("Destroy([REDACTED])"),
             Self::Recover(_) => formatter.write_str("Recover([REDACTED])"),
             Self::Get(_) => formatter.write_str("Get([REDACTED])"),
@@ -732,6 +864,15 @@ impl fmt::Debug for ClientMessageExtension {
 
 enum PendingResponse {
     DiscoverVersions(DiscoverVersionsResponse),
+    Certify(CertifyResponse),
+    Check(CheckResponse),
+    ObtainLease(ObtainLeaseResponse),
+    Recertify(RecertifyResponse),
+    Rekey(RekeyResponse),
+    RekeyKeyPair(RekeyKeyPairResponse),
+    ReProvision(ReProvisionResponse),
+    Register(RegisterResponse),
+    Revoke(RevokeResponse),
     Encrypt(EncryptResponse),
     Decrypt(DecryptResponse),
     Hash(HashResponse),
@@ -763,6 +904,15 @@ impl PendingResponse {
     const fn view(&self) -> ClientResponseView<'_> {
         let response = match self {
             Self::DiscoverVersions(response) => ClientResponseRef::DiscoverVersions(response),
+            Self::Certify(response) => ClientResponseRef::Certify(response),
+            Self::Check(response) => ClientResponseRef::Check(response),
+            Self::ObtainLease(response) => ClientResponseRef::ObtainLease(response),
+            Self::Recertify(response) => ClientResponseRef::Recertify(response),
+            Self::Rekey(response) => ClientResponseRef::Rekey(response),
+            Self::RekeyKeyPair(response) => ClientResponseRef::RekeyKeyPair(response),
+            Self::ReProvision(response) => ClientResponseRef::ReProvision(response),
+            Self::Register(response) => ClientResponseRef::Register(response),
+            Self::Revoke(response) => ClientResponseRef::Revoke(response),
             Self::Encrypt(response) => ClientResponseRef::Encrypt(response),
             Self::Decrypt(response) => ClientResponseRef::Decrypt(response),
             Self::Hash(response) => ClientResponseRef::Hash(response),
@@ -952,6 +1102,24 @@ pub enum ClientOperation {
     DiscoverVersions,
     /// Activate.
     Activate,
+    /// Certify.
+    Certify,
+    /// Check.
+    Check,
+    /// Obtain Lease.
+    ObtainLease,
+    /// Re-certify.
+    Recertify,
+    /// Re-key.
+    Rekey,
+    /// Re-key Key Pair.
+    RekeyKeyPair,
+    /// Re-Provision.
+    ReProvision,
+    /// Register.
+    Register,
+    /// Revoke.
+    Revoke,
     /// Archive.
     Archive,
     /// Destroy.
@@ -1124,6 +1292,15 @@ impl fmt::Debug for ClientOperationOutcome {
 #[derive(Clone, Copy)]
 enum ClientResponseRef<'a> {
     DiscoverVersions(&'a DiscoverVersionsResponse),
+    Certify(&'a CertifyResponse),
+    Check(&'a CheckResponse),
+    ObtainLease(&'a ObtainLeaseResponse),
+    Recertify(&'a RecertifyResponse),
+    Rekey(&'a RekeyResponse),
+    RekeyKeyPair(&'a RekeyKeyPairResponse),
+    ReProvision(&'a ReProvisionResponse),
+    Register(&'a RegisterResponse),
+    Revoke(&'a RevokeResponse),
     Encrypt(&'a EncryptResponse),
     Decrypt(&'a DecryptResponse),
     Hash(&'a HashResponse),
@@ -1161,11 +1338,26 @@ pub struct ClientResponseView<'a> {
 }
 
 impl<'a> ClientResponseView<'a> {
+    const fn new(response: ClientResponseRef<'a>) -> Self {
+        Self { response }
+    }
+}
+
+impl<'a> ClientResponseView<'a> {
     /// Returns the complete KMIP status, reason, and optional Result Message.
     #[must_use]
     pub const fn result(&self) -> &KmipOperationResult {
         match self.response {
             ClientResponseRef::DiscoverVersions(response) => response.result(),
+            ClientResponseRef::Certify(response) => response.result(),
+            ClientResponseRef::Check(response) => response.result(),
+            ClientResponseRef::ObtainLease(response) => response.result(),
+            ClientResponseRef::Recertify(response) => response.result(),
+            ClientResponseRef::Rekey(response) => response.result(),
+            ClientResponseRef::RekeyKeyPair(response) => response.result(),
+            ClientResponseRef::ReProvision(response) => response.result(),
+            ClientResponseRef::Register(response) => response.result(),
+            ClientResponseRef::Revoke(response) => response.result(),
             ClientResponseRef::Encrypt(response) => response.result(),
             ClientResponseRef::Decrypt(response) => response.result(),
             ClientResponseRef::Hash(response) => response.result(),
@@ -1291,6 +1483,87 @@ impl<'a> ClientResponseView<'a> {
     pub const fn activate(&self) -> Option<&'a ActivateResponse> {
         match self.response {
             ClientResponseRef::Activate(response) => Some(response),
+            _ => None,
+        }
+    }
+
+    /// Returns the Certify response when this view represents it.
+    #[must_use]
+    pub const fn certify(&self) -> Option<&'a CertifyResponse> {
+        match self.response {
+            ClientResponseRef::Certify(response) => Some(response),
+            _ => None,
+        }
+    }
+
+    /// Returns the Check response when this view represents it.
+    #[must_use]
+    pub const fn check(&self) -> Option<&'a CheckResponse> {
+        match self.response {
+            ClientResponseRef::Check(response) => Some(response),
+            _ => None,
+        }
+    }
+
+    /// Returns the Obtain Lease response when this view represents it.
+    #[must_use]
+    pub const fn obtain_lease(&self) -> Option<&'a ObtainLeaseResponse> {
+        match self.response {
+            ClientResponseRef::ObtainLease(response) => Some(response),
+            _ => None,
+        }
+    }
+
+    /// Returns the Re-certify response when this view represents it.
+    #[must_use]
+    pub const fn recertify(&self) -> Option<&'a RecertifyResponse> {
+        match self.response {
+            ClientResponseRef::Recertify(response) => Some(response),
+            _ => None,
+        }
+    }
+
+    /// Returns the Re-key response when this view represents it.
+    #[must_use]
+    pub const fn rekey(&self) -> Option<&'a RekeyResponse> {
+        match self.response {
+            ClientResponseRef::Rekey(response) => Some(response),
+            _ => None,
+        }
+    }
+
+    /// Returns the Re-key Key Pair response when this view represents it.
+    #[must_use]
+    pub const fn rekey_key_pair(&self) -> Option<&'a RekeyKeyPairResponse> {
+        match self.response {
+            ClientResponseRef::RekeyKeyPair(response) => Some(response),
+            _ => None,
+        }
+    }
+
+    /// Returns the Re-Provision response when this view represents it.
+    #[must_use]
+    pub const fn reprovision(&self) -> Option<&'a ReProvisionResponse> {
+        match self.response {
+            ClientResponseRef::ReProvision(response) => Some(response),
+            _ => None,
+        }
+    }
+
+    /// Returns the Register response when this view represents it.
+    #[must_use]
+    pub const fn register(&self) -> Option<&'a RegisterResponse> {
+        match self.response {
+            ClientResponseRef::Register(response) => Some(response),
+            _ => None,
+        }
+    }
+
+    /// Returns the Revoke response when this view represents it.
+    #[must_use]
+    pub const fn revoke(&self) -> Option<&'a RevokeResponse> {
+        match self.response {
+            ClientResponseRef::Revoke(response) => Some(response),
             _ => None,
         }
     }
@@ -1442,89 +1715,113 @@ impl<'a> ClientResponseView<'a> {
     }
 }
 
+fn debug_operation_response<T: fmt::Debug>(
+    formatter: &mut fmt::Formatter<'_>,
+    name: &str,
+    response: &T,
+) -> fmt::Result {
+    formatter.debug_tuple(name).field(response).finish()
+}
+
 impl fmt::Debug for ClientResponseView<'_> {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self.response {
-            ClientResponseRef::DiscoverVersions(response) => formatter
-                .debug_tuple("DiscoverVersions")
-                .field(response)
-                .finish(),
+            ClientResponseRef::DiscoverVersions(response) => {
+                debug_operation_response(formatter, "DiscoverVersions", response)
+            }
             ClientResponseRef::Encrypt(response) => {
-                formatter.debug_tuple("Encrypt").field(response).finish()
+                debug_operation_response(formatter, "Encrypt", response)
             }
             ClientResponseRef::Decrypt(response) => {
-                formatter.debug_tuple("Decrypt").field(response).finish()
+                debug_operation_response(formatter, "Decrypt", response)
             }
             ClientResponseRef::Hash(response) => {
-                formatter.debug_tuple("Hash").field(response).finish()
+                debug_operation_response(formatter, "Hash", response)
             }
             ClientResponseRef::Mac(response) => {
-                formatter.debug_tuple("MAC").field(response).finish()
+                debug_operation_response(formatter, "MAC", response)
             }
             ClientResponseRef::MacVerify(response) => {
-                formatter.debug_tuple("MAC Verify").field(response).finish()
+                debug_operation_response(formatter, "MAC Verify", response)
             }
             ClientResponseRef::Sign(response) => {
-                formatter.debug_tuple("Sign").field(response).finish()
+                debug_operation_response(formatter, "Sign", response)
             }
-            ClientResponseRef::SignatureVerify(response) => formatter
-                .debug_tuple("Signature Verify")
-                .field(response)
-                .finish(),
+            ClientResponseRef::SignatureVerify(response) => {
+                debug_operation_response(formatter, "Signature Verify", response)
+            }
             ClientResponseRef::Create(response) => {
-                formatter.debug_tuple("Create").field(response).finish()
+                debug_operation_response(formatter, "Create", response)
+            }
+            ClientResponseRef::Certify(response) => {
+                debug_operation_response(formatter, "Certify", response)
+            }
+            ClientResponseRef::Check(response) => {
+                debug_operation_response(formatter, "Check", response)
+            }
+            ClientResponseRef::ObtainLease(response) => {
+                debug_operation_response(formatter, "ObtainLease", response)
+            }
+            ClientResponseRef::Recertify(response) => {
+                debug_operation_response(formatter, "Recertify", response)
+            }
+            ClientResponseRef::Rekey(response) => {
+                debug_operation_response(formatter, "Rekey", response)
+            }
+            ClientResponseRef::RekeyKeyPair(response) => {
+                debug_operation_response(formatter, "RekeyKeyPair", response)
+            }
+            ClientResponseRef::ReProvision(response) => {
+                debug_operation_response(formatter, "ReProvision", response)
+            }
+            ClientResponseRef::Register(response) => {
+                debug_operation_response(formatter, "Register", response)
+            }
+            ClientResponseRef::Revoke(response) => {
+                debug_operation_response(formatter, "Revoke", response)
             }
             ClientResponseRef::Activate(_) => formatter.write_str("Activate([REDACTED])"),
             ClientResponseRef::Archive(_) => formatter.write_str("Archive([REDACTED])"),
             ClientResponseRef::Destroy(_) => formatter.write_str("Destroy([REDACTED])"),
             ClientResponseRef::Recover(_) => formatter.write_str("Recover([REDACTED])"),
             ClientResponseRef::Get(response) => {
-                formatter.debug_tuple("Get").field(response).finish()
+                debug_operation_response(formatter, "Get", response)
             }
             ClientResponseRef::Locate(response) => {
-                formatter.debug_tuple("Locate").field(response).finish()
+                debug_operation_response(formatter, "Locate", response)
             }
-            ClientResponseRef::CreateKeyPair(response) => formatter
-                .debug_tuple("CreateKeyPair")
-                .field(response)
-                .finish(),
-            ClientResponseRef::CreateSplitKey(response) => formatter
-                .debug_tuple("CreateSplitKey")
-                .field(response)
-                .finish(),
-            ClientResponseRef::AddAttribute(response) => formatter
-                .debug_tuple("AddAttribute")
-                .field(response)
-                .finish(),
-            ClientResponseRef::AdjustAttribute(response) => formatter
-                .debug_tuple("AdjustAttribute")
-                .field(response)
-                .finish(),
-            ClientResponseRef::DeleteAttribute(response) => formatter
-                .debug_tuple("DeleteAttribute")
-                .field(response)
-                .finish(),
-            ClientResponseRef::ModifyAttribute(response) => formatter
-                .debug_tuple("ModifyAttribute")
-                .field(response)
-                .finish(),
-            ClientResponseRef::SetAttribute(response) => formatter
-                .debug_tuple("SetAttribute")
-                .field(response)
-                .finish(),
-            ClientResponseRef::GetAttributes(response) => formatter
-                .debug_tuple("GetAttributes")
-                .field(response)
-                .finish(),
-            ClientResponseRef::GetAttributeList(response) => formatter
-                .debug_tuple("GetAttributeList")
-                .field(response)
-                .finish(),
+            ClientResponseRef::CreateKeyPair(response) => {
+                debug_operation_response(formatter, "CreateKeyPair", response)
+            }
+            ClientResponseRef::CreateSplitKey(response) => {
+                debug_operation_response(formatter, "CreateSplitKey", response)
+            }
+            ClientResponseRef::AddAttribute(response) => {
+                debug_operation_response(formatter, "AddAttribute", response)
+            }
+            ClientResponseRef::AdjustAttribute(response) => {
+                debug_operation_response(formatter, "AdjustAttribute", response)
+            }
+            ClientResponseRef::DeleteAttribute(response) => {
+                debug_operation_response(formatter, "DeleteAttribute", response)
+            }
+            ClientResponseRef::ModifyAttribute(response) => {
+                debug_operation_response(formatter, "ModifyAttribute", response)
+            }
+            ClientResponseRef::SetAttribute(response) => {
+                debug_operation_response(formatter, "SetAttribute", response)
+            }
+            ClientResponseRef::GetAttributes(response) => {
+                debug_operation_response(formatter, "GetAttributes", response)
+            }
+            ClientResponseRef::GetAttributeList(response) => {
+                debug_operation_response(formatter, "GetAttributeList", response)
+            }
             ClientResponseRef::Ping(response) => {
-                formatter.debug_tuple("Ping").field(response).finish()
+                debug_operation_response(formatter, "Ping", response)
             }
             ClientResponseRef::Query(response) => {
-                formatter.debug_tuple("Query").field(response).finish()
+                debug_operation_response(formatter, "Query", response)
             }
         }
     }
@@ -1535,6 +1832,24 @@ impl fmt::Debug for ClientResponseView<'_> {
 pub enum ClientBatchOutcome {
     /// The server returned a non-Pending KMIP result.
     Completed(DiscoverVersionsResponse),
+    /// The server returned a Certify result.
+    Certify(CertifyResponse),
+    /// The server returned a Check result.
+    Check(CheckResponse),
+    /// The server returned an Obtain Lease result.
+    ObtainLease(ObtainLeaseResponse),
+    /// The server returned a Re-certify result.
+    Recertify(RecertifyResponse),
+    /// The server returned a Re-key result.
+    Rekey(RekeyResponse),
+    /// The server returned a Re-key Key Pair result.
+    RekeyKeyPair(RekeyKeyPairResponse),
+    /// The server returned a Re-Provision result.
+    ReProvision(ReProvisionResponse),
+    /// The server returned a Register result.
+    Register(RegisterResponse),
+    /// The server returned a Revoke result.
+    Revoke(RevokeResponse),
     /// The server returned an Encrypt result.
     Encrypt(EncryptResponse),
     /// The server returned a Decrypt result.
@@ -1595,6 +1910,15 @@ impl ClientBatchOutcome {
     pub fn asynchronous_correlation_value(&self) -> Option<&[u8]> {
         match self {
             Self::Completed(_)
+            | Self::Certify(_)
+            | Self::Check(_)
+            | Self::ObtainLease(_)
+            | Self::Recertify(_)
+            | Self::Rekey(_)
+            | Self::RekeyKeyPair(_)
+            | Self::ReProvision(_)
+            | Self::Register(_)
+            | Self::Revoke(_)
             | Self::Encrypt(_)
             | Self::Decrypt(_)
             | Self::Hash(_)
@@ -1629,6 +1953,15 @@ impl ClientBatchOutcome {
     pub const fn result(&self) -> &KmipOperationResult {
         match self {
             Self::Completed(response) => response.result(),
+            Self::Certify(response) => response.result(),
+            Self::Check(response) => response.result(),
+            Self::ObtainLease(response) => response.result(),
+            Self::Recertify(response) => response.result(),
+            Self::Rekey(response) => response.result(),
+            Self::RekeyKeyPair(response) => response.result(),
+            Self::ReProvision(response) => response.result(),
+            Self::Register(response) => response.result(),
+            Self::Revoke(response) => response.result(),
             Self::Encrypt(response) => response.result(),
             Self::Decrypt(response) => response.result(),
             Self::Hash(response) => response.result(),
@@ -1663,6 +1996,15 @@ impl ClientBatchOutcome {
     pub const fn operation(&self) -> ClientOperation {
         match self {
             Self::Completed(_) => ClientOperation::DiscoverVersions,
+            Self::Certify(_) => ClientOperation::Certify,
+            Self::Check(_) => ClientOperation::Check,
+            Self::ObtainLease(_) => ClientOperation::ObtainLease,
+            Self::Recertify(_) => ClientOperation::Recertify,
+            Self::Rekey(_) => ClientOperation::Rekey,
+            Self::RekeyKeyPair(_) => ClientOperation::RekeyKeyPair,
+            Self::ReProvision(_) => ClientOperation::ReProvision,
+            Self::Register(_) => ClientOperation::Register,
+            Self::Revoke(_) => ClientOperation::Revoke,
             Self::Encrypt(_) => ClientOperation::Encrypt,
             Self::Decrypt(_) => ClientOperation::Decrypt,
             Self::Hash(_) => ClientOperation::Hash,
@@ -1697,6 +2039,141 @@ impl ClientBatchOutcome {
     pub const fn discover_versions_response(&self) -> Option<&DiscoverVersionsResponse> {
         match self {
             Self::Completed(response) => Some(response),
+            _ => None,
+        }
+    }
+
+    /// Returns the typed Certify response, including when its result is Pending.
+    #[must_use]
+    pub const fn certify_response(&self) -> Option<&CertifyResponse> {
+        match self {
+            Self::Certify(response) => Some(response),
+            Self::Pending(pending) => match pending.response() {
+                ClientResponseView {
+                    response: ClientResponseRef::Certify(response),
+                } => Some(response),
+                _ => None,
+            },
+            _ => None,
+        }
+    }
+
+    /// Returns the typed Check response, including when its result is Pending.
+    #[must_use]
+    pub const fn check_response(&self) -> Option<&CheckResponse> {
+        match self {
+            Self::Check(response) => Some(response),
+            Self::Pending(pending) => match pending.response() {
+                ClientResponseView {
+                    response: ClientResponseRef::Check(response),
+                } => Some(response),
+                _ => None,
+            },
+            _ => None,
+        }
+    }
+
+    /// Returns the typed Obtain Lease response, including when its result is Pending.
+    #[must_use]
+    pub const fn obtain_lease_response(&self) -> Option<&ObtainLeaseResponse> {
+        match self {
+            Self::ObtainLease(response) => Some(response),
+            Self::Pending(pending) => match pending.response() {
+                ClientResponseView {
+                    response: ClientResponseRef::ObtainLease(response),
+                } => Some(response),
+                _ => None,
+            },
+            _ => None,
+        }
+    }
+
+    /// Returns the typed Re-certify response, including when its result is Pending.
+    #[must_use]
+    pub const fn recertify_response(&self) -> Option<&RecertifyResponse> {
+        match self {
+            Self::Recertify(response) => Some(response),
+            Self::Pending(pending) => match pending.response() {
+                ClientResponseView {
+                    response: ClientResponseRef::Recertify(response),
+                } => Some(response),
+                _ => None,
+            },
+            _ => None,
+        }
+    }
+
+    /// Returns the typed Re-key response, including when its result is Pending.
+    #[must_use]
+    pub const fn rekey_response(&self) -> Option<&RekeyResponse> {
+        match self {
+            Self::Rekey(response) => Some(response),
+            Self::Pending(pending) => match pending.response() {
+                ClientResponseView {
+                    response: ClientResponseRef::Rekey(response),
+                } => Some(response),
+                _ => None,
+            },
+            _ => None,
+        }
+    }
+
+    /// Returns the typed Re-key Key Pair response, including when its result is Pending.
+    #[must_use]
+    pub const fn rekey_key_pair_response(&self) -> Option<&RekeyKeyPairResponse> {
+        match self {
+            Self::RekeyKeyPair(response) => Some(response),
+            Self::Pending(pending) => match pending.response() {
+                ClientResponseView {
+                    response: ClientResponseRef::RekeyKeyPair(response),
+                } => Some(response),
+                _ => None,
+            },
+            _ => None,
+        }
+    }
+
+    /// Returns the typed Re-Provision response, including when its result is Pending.
+    #[must_use]
+    pub const fn reprovision_response(&self) -> Option<&ReProvisionResponse> {
+        match self {
+            Self::ReProvision(response) => Some(response),
+            Self::Pending(pending) => match pending.response() {
+                ClientResponseView {
+                    response: ClientResponseRef::ReProvision(response),
+                } => Some(response),
+                _ => None,
+            },
+            _ => None,
+        }
+    }
+
+    /// Returns the typed Register response, including when its result is Pending.
+    #[must_use]
+    pub const fn register_response(&self) -> Option<&RegisterResponse> {
+        match self {
+            Self::Register(response) => Some(response),
+            Self::Pending(pending) => match pending.response() {
+                ClientResponseView {
+                    response: ClientResponseRef::Register(response),
+                } => Some(response),
+                _ => None,
+            },
+            _ => None,
+        }
+    }
+
+    /// Returns the typed Revoke response, including when its result is Pending.
+    #[must_use]
+    pub const fn revoke_response(&self) -> Option<&RevokeResponse> {
+        match self {
+            Self::Revoke(response) => Some(response),
+            Self::Pending(pending) => match pending.response() {
+                ClientResponseView {
+                    response: ClientResponseRef::Revoke(response),
+                } => Some(response),
+                _ => None,
+            },
             _ => None,
         }
     }
@@ -1852,85 +2329,96 @@ impl ClientBatchOutcome {
     #[must_use]
     pub const fn response(&self) -> ClientResponseView<'_> {
         match self {
-            Self::Completed(response) => ClientResponseView {
-                response: ClientResponseRef::DiscoverVersions(response),
-            },
-            Self::Encrypt(response) => ClientResponseView {
-                response: ClientResponseRef::Encrypt(response),
-            },
-            Self::Decrypt(response) => ClientResponseView {
-                response: ClientResponseRef::Decrypt(response),
-            },
-            Self::Hash(response) => ClientResponseView {
-                response: ClientResponseRef::Hash(response),
-            },
-            Self::Mac(response) => ClientResponseView {
-                response: ClientResponseRef::Mac(response),
-            },
-            Self::MacVerify(response) => ClientResponseView {
-                response: ClientResponseRef::MacVerify(response),
-            },
-            Self::Sign(response) => ClientResponseView {
-                response: ClientResponseRef::Sign(response),
-            },
-            Self::SignatureVerify(response) => ClientResponseView {
-                response: ClientResponseRef::SignatureVerify(response),
-            },
-            Self::Activate(response) => ClientResponseView {
-                response: ClientResponseRef::Activate(response),
-            },
-            Self::Archive(response) => ClientResponseView {
-                response: ClientResponseRef::Archive(response),
-            },
-            Self::Destroy(response) => ClientResponseView {
-                response: ClientResponseRef::Destroy(response),
-            },
-            Self::Recover(response) => ClientResponseView {
-                response: ClientResponseRef::Recover(response),
-            },
-            Self::GetCompleted(response) => ClientResponseView {
-                response: ClientResponseRef::Get(response),
-            },
-            Self::LocateCompleted(response) => ClientResponseView {
-                response: ClientResponseRef::Locate(response),
-            },
-            Self::CreateCompleted(response) => ClientResponseView {
-                response: ClientResponseRef::Create(response),
-            },
-            Self::CreateKeyPairCompleted(response) => ClientResponseView {
-                response: ClientResponseRef::CreateKeyPair(response),
-            },
-            Self::CreateSplitKeyCompleted(response) => ClientResponseView {
-                response: ClientResponseRef::CreateSplitKey(response),
-            },
-            Self::AddAttribute(response) => ClientResponseView {
-                response: ClientResponseRef::AddAttribute(response),
-            },
-            Self::AdjustAttribute(response) => ClientResponseView {
-                response: ClientResponseRef::AdjustAttribute(response),
-            },
-            Self::DeleteAttribute(response) => ClientResponseView {
-                response: ClientResponseRef::DeleteAttribute(response),
-            },
-            Self::ModifyAttribute(response) => ClientResponseView {
-                response: ClientResponseRef::ModifyAttribute(response),
-            },
-            Self::SetAttribute(response) => ClientResponseView {
-                response: ClientResponseRef::SetAttribute(response),
-            },
+            Self::Completed(response) => {
+                ClientResponseView::new(ClientResponseRef::DiscoverVersions(response))
+            }
+            Self::Certify(response) => {
+                ClientResponseView::new(ClientResponseRef::Certify(response))
+            }
+            Self::Check(response) => ClientResponseView::new(ClientResponseRef::Check(response)),
+            Self::ObtainLease(response) => {
+                ClientResponseView::new(ClientResponseRef::ObtainLease(response))
+            }
+            Self::Recertify(response) => {
+                ClientResponseView::new(ClientResponseRef::Recertify(response))
+            }
+            Self::Rekey(response) => ClientResponseView::new(ClientResponseRef::Rekey(response)),
+            Self::RekeyKeyPair(response) => {
+                ClientResponseView::new(ClientResponseRef::RekeyKeyPair(response))
+            }
+            Self::ReProvision(response) => {
+                ClientResponseView::new(ClientResponseRef::ReProvision(response))
+            }
+            Self::Register(response) => {
+                ClientResponseView::new(ClientResponseRef::Register(response))
+            }
+            Self::Revoke(response) => ClientResponseView::new(ClientResponseRef::Revoke(response)),
+            Self::Encrypt(response) => {
+                ClientResponseView::new(ClientResponseRef::Encrypt(response))
+            }
+            Self::Decrypt(response) => {
+                ClientResponseView::new(ClientResponseRef::Decrypt(response))
+            }
+            Self::Hash(response) => ClientResponseView::new(ClientResponseRef::Hash(response)),
+            Self::Mac(response) => ClientResponseView::new(ClientResponseRef::Mac(response)),
+            Self::MacVerify(response) => {
+                ClientResponseView::new(ClientResponseRef::MacVerify(response))
+            }
+            Self::Sign(response) => ClientResponseView::new(ClientResponseRef::Sign(response)),
+            Self::SignatureVerify(response) => {
+                ClientResponseView::new(ClientResponseRef::SignatureVerify(response))
+            }
+            Self::Activate(response) => {
+                ClientResponseView::new(ClientResponseRef::Activate(response))
+            }
+            Self::Archive(response) => {
+                ClientResponseView::new(ClientResponseRef::Archive(response))
+            }
+            Self::Destroy(response) => {
+                ClientResponseView::new(ClientResponseRef::Destroy(response))
+            }
+            Self::Recover(response) => {
+                ClientResponseView::new(ClientResponseRef::Recover(response))
+            }
+            Self::GetCompleted(response) => {
+                ClientResponseView::new(ClientResponseRef::Get(response))
+            }
+            Self::LocateCompleted(response) => {
+                ClientResponseView::new(ClientResponseRef::Locate(response))
+            }
+            Self::CreateCompleted(response) => {
+                ClientResponseView::new(ClientResponseRef::Create(response))
+            }
+            Self::CreateKeyPairCompleted(response) => {
+                ClientResponseView::new(ClientResponseRef::CreateKeyPair(response))
+            }
+            Self::CreateSplitKeyCompleted(response) => {
+                ClientResponseView::new(ClientResponseRef::CreateSplitKey(response))
+            }
+            Self::AddAttribute(response) => {
+                ClientResponseView::new(ClientResponseRef::AddAttribute(response))
+            }
+            Self::AdjustAttribute(response) => {
+                ClientResponseView::new(ClientResponseRef::AdjustAttribute(response))
+            }
+            Self::DeleteAttribute(response) => {
+                ClientResponseView::new(ClientResponseRef::DeleteAttribute(response))
+            }
+            Self::ModifyAttribute(response) => {
+                ClientResponseView::new(ClientResponseRef::ModifyAttribute(response))
+            }
+            Self::SetAttribute(response) => {
+                ClientResponseView::new(ClientResponseRef::SetAttribute(response))
+            }
             Self::Pending(pending) => pending.response(),
-            Self::GetAttributes(response) => ClientResponseView {
-                response: ClientResponseRef::GetAttributes(response),
-            },
-            Self::GetAttributeList(response) => ClientResponseView {
-                response: ClientResponseRef::GetAttributeList(response),
-            },
-            Self::Ping(response) => ClientResponseView {
-                response: ClientResponseRef::Ping(response),
-            },
-            Self::Query(response) => ClientResponseView {
-                response: ClientResponseRef::Query(response),
-            },
+            Self::GetAttributes(response) => {
+                ClientResponseView::new(ClientResponseRef::GetAttributes(response))
+            }
+            Self::GetAttributeList(response) => {
+                ClientResponseView::new(ClientResponseRef::GetAttributeList(response))
+            }
+            Self::Ping(response) => ClientResponseView::new(ClientResponseRef::Ping(response)),
+            Self::Query(response) => ClientResponseView::new(ClientResponseRef::Query(response)),
         }
     }
 }
@@ -1941,6 +2429,26 @@ impl fmt::Debug for ClientBatchOutcome {
             Self::Completed(response) => {
                 formatter.debug_tuple("Completed").field(response).finish()
             }
+            Self::Certify(response) => formatter.debug_tuple("Certify").field(response).finish(),
+            Self::Check(response) => formatter.debug_tuple("Check").field(response).finish(),
+            Self::ObtainLease(response) => formatter
+                .debug_tuple("ObtainLease")
+                .field(response)
+                .finish(),
+            Self::Recertify(response) => {
+                formatter.debug_tuple("Recertify").field(response).finish()
+            }
+            Self::Rekey(response) => formatter.debug_tuple("Rekey").field(response).finish(),
+            Self::RekeyKeyPair(response) => formatter
+                .debug_tuple("RekeyKeyPair")
+                .field(response)
+                .finish(),
+            Self::ReProvision(response) => formatter
+                .debug_tuple("ReProvision")
+                .field(response)
+                .finish(),
+            Self::Register(response) => formatter.debug_tuple("Register").field(response).finish(),
+            Self::Revoke(response) => formatter.debug_tuple("Revoke").field(response).finish(),
             Self::GetCompleted(response) => formatter
                 .debug_tuple("GetCompleted")
                 .field(response)
@@ -2026,6 +2534,23 @@ impl fmt::Display for ClientBatchOutcome {
                 write!(formatter, "Signature Verify({})", response.result())
             }
             Self::Activate(response) => write!(formatter, "Activate({})", response.result()),
+            Self::Certify(response) => write!(formatter, "Certify({})", response.result()),
+            Self::Check(response) => write!(formatter, "Check({})", response.result()),
+            Self::ObtainLease(response) => {
+                write!(formatter, "ObtainLease({})", response.result())
+            }
+            Self::Recertify(response) => {
+                write!(formatter, "Re-certify({})", response.result())
+            }
+            Self::Rekey(response) => write!(formatter, "Re-key({})", response.result()),
+            Self::RekeyKeyPair(response) => {
+                write!(formatter, "Re-key Key Pair({})", response.result())
+            }
+            Self::ReProvision(response) => {
+                write!(formatter, "Re-Provision({})", response.result())
+            }
+            Self::Register(response) => write!(formatter, "Register({})", response.result()),
+            Self::Revoke(response) => write!(formatter, "Revoke({})", response.result()),
             Self::Archive(response) => write!(formatter, "Archive({})", response.result()),
             Self::Destroy(response) => write!(formatter, "Destroy({})", response.result()),
             Self::Recover(response) => write!(formatter, "Recover({})", response.result()),
@@ -2390,6 +2915,365 @@ impl Client {
                 failure.response_ttlv,
             )
         })
+    }
+
+    /// Executes one typed Certify request through the shared batch writer.
+    ///
+    /// Use the execute method with a one-item batch and an explicit
+    /// Asynchronous Indicator when the caller wants to accept Operation
+    /// Pending. This convenience method leaves batch options at their defaults
+    /// and never performs an implicit Poll or retry.
+    ///
+    /// # Errors
+    ///
+    /// Returns a sanitized validation, protocol, or transport error with the
+    /// strongest available request-delivery evidence.
+    pub fn certify(
+        &mut self,
+        request: CertifyRequest,
+        limits: &CodecLimits,
+    ) -> Result<ClientBatchItemResponse, ClientError> {
+        self.certify_with_options(request, limits, &RequestOptions::default())
+    }
+
+    /// Executes one typed Certify request with transport timeout overrides.
+    ///
+    /// The request uses the shared writer and one-exchange lifecycle.
+    ///
+    /// # Errors
+    ///
+    /// Returns a sanitized validation, protocol, or transport error with the
+    /// strongest available request-delivery evidence.
+    pub fn certify_with_options(
+        &mut self,
+        request: CertifyRequest,
+        limits: &CodecLimits,
+        request_options: &RequestOptions,
+    ) -> Result<ClientBatchItemResponse, ClientError> {
+        let response = self.execute_with_options(
+            ClientBatch::new(ClientBatchItem::new(ClientRequest::Certify(request))),
+            limits,
+            request_options,
+        )?;
+        take_single_item_response(response.items)
+    }
+
+    /// Executes one typed Check request through the shared batch writer.
+    ///
+    /// Use an explicitly ordered multi-item [`ClientBatch`] when Check should
+    /// consume a preceding ID Placeholder. The convenience method does not
+    /// select batch policy options, perform an implicit Poll, or retry.
+    ///
+    /// # Errors
+    ///
+    /// Returns a sanitized validation, protocol, or transport error with the
+    /// strongest available request-delivery evidence.
+    pub fn check(
+        &mut self,
+        request: CheckRequest,
+        limits: &CodecLimits,
+    ) -> Result<ClientBatchItemResponse, ClientError> {
+        self.check_with_options(request, limits, &RequestOptions::default())
+    }
+
+    /// Executes one typed Check request with transport timeout overrides.
+    ///
+    /// The request uses the shared writer, response bounds, and one-exchange
+    /// lifecycle. It does not evaluate server policy locally or alter the
+    /// caller's batch options.
+    ///
+    /// # Errors
+    ///
+    /// Returns a sanitized validation, protocol, or transport error with the
+    /// strongest available request-delivery evidence.
+    pub fn check_with_options(
+        &mut self,
+        request: CheckRequest,
+        limits: &CodecLimits,
+        request_options: &RequestOptions,
+    ) -> Result<ClientBatchItemResponse, ClientError> {
+        let response = self.execute_with_options(
+            ClientBatch::new(ClientBatchItem::new(ClientRequest::Check(request))),
+            limits,
+            request_options,
+        )?;
+        take_single_item_response(response.items)
+    }
+
+    /// Executes one typed Obtain Lease request through the shared batch writer.
+    ///
+    /// Use an explicitly ordered multi-item [`ClientBatch`] when the request
+    /// should consume a preceding ID Placeholder. This method does not track
+    /// lease expiry, perform an implicit Poll, or retry.
+    ///
+    /// # Errors
+    ///
+    /// Returns a sanitized validation, protocol, or transport error with the
+    /// strongest available request-delivery evidence.
+    pub fn obtain_lease(
+        &mut self,
+        request: ObtainLeaseRequest,
+        limits: &CodecLimits,
+    ) -> Result<ClientBatchItemResponse, ClientError> {
+        self.obtain_lease_with_options(request, limits, &RequestOptions::default())
+    }
+
+    /// Executes one typed Obtain Lease request with transport timeout overrides.
+    ///
+    /// The shared writer performs one exchange and preserves the server's
+    /// returned Lease Time and Last Change Date without creating local state.
+    ///
+    /// # Errors
+    ///
+    /// Returns a sanitized validation, protocol, or transport error with the
+    /// strongest available request-delivery evidence.
+    pub fn obtain_lease_with_options(
+        &mut self,
+        request: ObtainLeaseRequest,
+        limits: &CodecLimits,
+        request_options: &RequestOptions,
+    ) -> Result<ClientBatchItemResponse, ClientError> {
+        let response = self.execute_with_options(
+            ClientBatch::new(ClientBatchItem::new(ClientRequest::ObtainLease(request))),
+            limits,
+            request_options,
+        )?;
+        take_single_item_response(response.items)
+    }
+
+    /// Executes one typed Re-certify request through the shared batch writer.
+    ///
+    /// Use an explicitly ordered multi-item [`ClientBatch`] when the request
+    /// should consume a preceding ID Placeholder. This method performs one
+    /// exchange and never polls or retries implicitly.
+    ///
+    /// # Errors
+    ///
+    /// Returns a sanitized validation, protocol, or transport error with the
+    /// strongest available request-delivery evidence.
+    pub fn recertify(
+        &mut self,
+        request: RecertifyRequest,
+        limits: &CodecLimits,
+    ) -> Result<ClientBatchItemResponse, ClientError> {
+        self.recertify_with_options(request, limits, &RequestOptions::default())
+    }
+
+    /// Executes one typed Re-certify request with transport timeout overrides.
+    ///
+    /// The server owns certificate creation and Replacement/Replaced links;
+    /// this method performs one exchange and preserves the typed result.
+    ///
+    /// # Errors
+    ///
+    /// Returns a sanitized validation, protocol, or transport error with the
+    /// strongest available request-delivery evidence.
+    pub fn recertify_with_options(
+        &mut self,
+        request: RecertifyRequest,
+        limits: &CodecLimits,
+        request_options: &RequestOptions,
+    ) -> Result<ClientBatchItemResponse, ClientError> {
+        let response = self.execute_with_options(
+            ClientBatch::new(ClientBatchItem::new(ClientRequest::Recertify(request))),
+            limits,
+            request_options,
+        )?;
+        take_single_item_response(response.items)
+    }
+
+    /// Executes one typed Re-key request through the shared batch writer.
+    ///
+    /// Use an explicitly ordered multi-item [`ClientBatch`] when the request
+    /// should consume a preceding ID Placeholder. This method performs one
+    /// exchange and never polls or retries implicitly.
+    ///
+    /// # Errors
+    ///
+    /// Returns a sanitized validation, protocol, or transport error with the
+    /// strongest available request-delivery evidence.
+    pub fn rekey(
+        &mut self,
+        request: RekeyRequest,
+        limits: &CodecLimits,
+    ) -> Result<ClientBatchItemResponse, ClientError> {
+        self.rekey_with_options(request, limits, &RequestOptions::default())
+    }
+
+    /// Executes one typed Re-key request with transport timeout overrides.
+    ///
+    /// The server owns replacement key generation and Replacement/Replaced
+    /// links; this method performs one exchange and preserves the typed result.
+    ///
+    /// # Errors
+    ///
+    /// Returns a sanitized validation, protocol, or transport error with the
+    /// strongest available request-delivery evidence.
+    pub fn rekey_with_options(
+        &mut self,
+        request: RekeyRequest,
+        limits: &CodecLimits,
+        request_options: &RequestOptions,
+    ) -> Result<ClientBatchItemResponse, ClientError> {
+        let response = self.execute_with_options(
+            ClientBatch::new(ClientBatchItem::new(ClientRequest::Rekey(request))),
+            limits,
+            request_options,
+        )?;
+        take_single_item_response(response.items)
+    }
+
+    /// Executes one typed Re-key Key Pair request through the shared batch writer.
+    ///
+    /// Use an explicitly ordered multi-item [`ClientBatch`] when the request
+    /// should consume a preceding ID Placeholder. This method performs one
+    /// exchange and never polls or retries implicitly.
+    ///
+    /// # Errors
+    ///
+    /// Returns a sanitized validation, protocol, or transport error with the
+    /// strongest available request-delivery evidence.
+    pub fn rekey_key_pair(
+        &mut self,
+        request: RekeyKeyPairRequest,
+        limits: &CodecLimits,
+    ) -> Result<ClientBatchItemResponse, ClientError> {
+        self.rekey_key_pair_with_options(request, limits, &RequestOptions::default())
+    }
+
+    /// Executes one typed Re-key Key Pair request with timeout overrides.
+    ///
+    /// The server generates the replacement key pair and maintains its links;
+    /// `KMIPKit` performs one exchange and preserves both returned identifiers.
+    ///
+    /// # Errors
+    ///
+    /// Returns a sanitized validation, protocol, or transport error with the
+    /// strongest available request-delivery evidence.
+    pub fn rekey_key_pair_with_options(
+        &mut self,
+        request: RekeyKeyPairRequest,
+        limits: &CodecLimits,
+        request_options: &RequestOptions,
+    ) -> Result<ClientBatchItemResponse, ClientError> {
+        let response = self.execute_with_options(
+            ClientBatch::new(ClientBatchItem::new(ClientRequest::RekeyKeyPair(request))),
+            limits,
+            request_options,
+        )?;
+        take_single_item_response(response.items)
+    }
+
+    /// Executes one typed Re-Provision request through the shared batch writer.
+    ///
+    /// Re-Provision replaces the server-side client credential. The method
+    /// sends one exchange, preserves the returned result, and does not retain
+    /// or alter local credential state.
+    ///
+    /// # Errors
+    ///
+    /// Returns a sanitized validation, protocol, or transport error with the
+    /// strongest available request-delivery evidence.
+    pub fn reprovision(
+        &mut self,
+        request: ReProvisionRequest,
+        limits: &CodecLimits,
+    ) -> Result<ClientBatchItemResponse, ClientError> {
+        self.reprovision_with_options(request, limits, &RequestOptions::default())
+    }
+
+    /// Executes one typed Re-Provision request with transport timeout overrides.
+    ///
+    /// # Errors
+    ///
+    /// Returns a sanitized validation, protocol, or transport error with the
+    /// strongest available request-delivery evidence.
+    pub fn reprovision_with_options(
+        &mut self,
+        request: ReProvisionRequest,
+        limits: &CodecLimits,
+        request_options: &RequestOptions,
+    ) -> Result<ClientBatchItemResponse, ClientError> {
+        let response = self.execute_with_options(
+            ClientBatch::new(ClientBatchItem::new(ClientRequest::ReProvision(request))),
+            limits,
+            request_options,
+        )?;
+        take_single_item_response(response.items)
+    }
+
+    /// Executes one typed Register request through the shared batch writer.
+    ///
+    /// A successful response exposes the server-assigned Unique Identifier.
+    /// The operation performs one exchange and never retries automatically.
+    ///
+    /// # Errors
+    ///
+    /// Returns a sanitized validation, protocol, or transport error with the
+    /// strongest available request-delivery evidence.
+    pub fn register(
+        &mut self,
+        request: RegisterRequest,
+        limits: &CodecLimits,
+    ) -> Result<ClientBatchItemResponse, ClientError> {
+        self.register_with_options(request, limits, &RequestOptions::default())
+    }
+
+    /// Executes one typed Register request with transport timeout overrides.
+    ///
+    /// # Errors
+    ///
+    /// Returns a sanitized validation, protocol, or transport error with the
+    /// strongest available request-delivery evidence.
+    pub fn register_with_options(
+        &mut self,
+        request: RegisterRequest,
+        limits: &CodecLimits,
+        request_options: &RequestOptions,
+    ) -> Result<ClientBatchItemResponse, ClientError> {
+        let response = self.execute_with_options(
+            ClientBatch::new(ClientBatchItem::new(ClientRequest::Register(request))),
+            limits,
+            request_options,
+        )?;
+        take_single_item_response(response.items)
+    }
+
+    /// Executes one typed Revoke request through the shared batch writer.
+    ///
+    /// The method reports the server result and does not simulate or track the
+    /// server-side lifecycle transition. It sends one exchange and never retries.
+    ///
+    /// # Errors
+    ///
+    /// Returns a sanitized validation, protocol, or transport error with the
+    /// strongest available request-delivery evidence.
+    pub fn revoke(
+        &mut self,
+        request: RevokeRequest,
+        limits: &CodecLimits,
+    ) -> Result<ClientBatchItemResponse, ClientError> {
+        self.revoke_with_options(request, limits, &RequestOptions::default())
+    }
+
+    /// Executes one typed Revoke request with transport timeout overrides.
+    ///
+    /// # Errors
+    ///
+    /// Returns a sanitized validation, protocol, or transport error with the
+    /// strongest available request-delivery evidence.
+    pub fn revoke_with_options(
+        &mut self,
+        request: RevokeRequest,
+        limits: &CodecLimits,
+        request_options: &RequestOptions,
+    ) -> Result<ClientBatchItemResponse, ClientError> {
+        let response = self.execute_with_options(
+            ClientBatch::new(ClientBatchItem::new(ClientRequest::Revoke(request))),
+            limits,
+            request_options,
+        )?;
+        take_single_item_response(response.items)
     }
 
     /// Executes one typed Activate request through the shared batch writer.
@@ -3541,6 +4425,15 @@ fn request_mutation_is_prohibited(request: &ClientRequest) -> bool {
         ClientRequest::DiscoverVersions(_)
         | ClientRequest::Activate(_)
         | ClientRequest::Archive(_)
+        | ClientRequest::Certify(_)
+        | ClientRequest::Check(_)
+        | ClientRequest::ObtainLease(_)
+        | ClientRequest::Recertify(_)
+        | ClientRequest::Rekey(_)
+        | ClientRequest::RekeyKeyPair(_)
+        | ClientRequest::ReProvision(_)
+        | ClientRequest::Register(_)
+        | ClientRequest::Revoke(_)
         | ClientRequest::Destroy(_)
         | ClientRequest::Recover(_)
         | ClientRequest::Get(_)
@@ -4154,6 +5047,9 @@ fn response_outcome(
             PendingResponse::Activate,
             ClientBatchOutcome::Activate,
         ),
+        operation if is_lifecycle_operation(operation) => {
+            lifecycle_response_outcome(operation, item)
+        }
         ARCHIVE_OPERATION => read_operation_outcome(
             ClientOperation::Archive,
             item,
@@ -4236,6 +5132,39 @@ fn response_outcome(
     }
 }
 
+const fn is_lifecycle_operation(operation: u32) -> bool {
+    matches!(
+        operation,
+        CERTIFY_OPERATION
+            | CHECK_OPERATION
+            | OBTAIN_LEASE_OPERATION
+            | RECERTIFY_OPERATION
+            | REKEY_OPERATION
+            | REKEY_KEY_PAIR_OPERATION
+            | REPROVISION_OPERATION
+            | REGISTER_OPERATION
+            | REVOKE_OPERATION
+    )
+}
+
+fn lifecycle_response_outcome(
+    operation: u32,
+    item: ResponseBatchItemView<'_>,
+) -> Result<ClientBatchOutcome, ProtocolError> {
+    match operation {
+        CERTIFY_OPERATION => certify_response_outcome(item),
+        CHECK_OPERATION => check_response_outcome(item),
+        OBTAIN_LEASE_OPERATION => obtain_lease_response_outcome(item),
+        RECERTIFY_OPERATION => recertify_response_outcome(item),
+        REKEY_OPERATION => rekey_response_outcome(item),
+        REKEY_KEY_PAIR_OPERATION => rekey_key_pair_response_outcome(item),
+        REPROVISION_OPERATION => reprovision_response_outcome(item),
+        REGISTER_OPERATION => register_response_outcome(item),
+        REVOKE_OPERATION => revoke_response_outcome(item),
+        _ => Err(protocol_error(ProtocolErrorKind::UnsupportedValue)),
+    }
+}
+
 fn get_response_outcome(
     item: ResponseBatchItemView<'_>,
 ) -> Result<ClientBatchOutcome, ProtocolError> {
@@ -4246,6 +5175,130 @@ fn get_response_outcome(
         GetResponse::result,
         PendingResponse::Get,
         ClientBatchOutcome::GetCompleted,
+    )
+}
+
+fn certify_response_outcome(
+    item: ResponseBatchItemView<'_>,
+) -> Result<ClientBatchOutcome, ProtocolError> {
+    read_operation_outcome(
+        ClientOperation::Certify,
+        item,
+        CertifyResponse::try_from_response_item,
+        CertifyResponse::result,
+        PendingResponse::Certify,
+        ClientBatchOutcome::Certify,
+    )
+}
+
+fn check_response_outcome(
+    item: ResponseBatchItemView<'_>,
+) -> Result<ClientBatchOutcome, ProtocolError> {
+    // Route denial payloads through Check's typed parser while preserving the
+    // shared result and Pending mapping used by the other client operations.
+    read_operation_outcome(
+        ClientOperation::Check,
+        item,
+        CheckResponse::try_from_response_item,
+        CheckResponse::result,
+        PendingResponse::Check,
+        ClientBatchOutcome::Check,
+    )
+}
+
+fn obtain_lease_response_outcome(
+    item: ResponseBatchItemView<'_>,
+) -> Result<ClientBatchOutcome, ProtocolError> {
+    // Keep lease time and change date as server values; this path owns no clock
+    // or object-use state and shares normal Pending/result conversion.
+    read_operation_outcome(
+        ClientOperation::ObtainLease,
+        item,
+        ObtainLeaseResponse::try_from_response_item,
+        ObtainLeaseResponse::result,
+        PendingResponse::ObtainLease,
+        ClientBatchOutcome::ObtainLease,
+    )
+}
+
+fn recertify_response_outcome(
+    item: ResponseBatchItemView<'_>,
+) -> Result<ClientBatchOutcome, ProtocolError> {
+    // The response parser requires its identifier on success and leaves
+    // server-maintained replacement links untouched.
+    read_operation_outcome(
+        ClientOperation::Recertify,
+        item,
+        RecertifyResponse::try_from_response_item,
+        RecertifyResponse::result,
+        PendingResponse::Recertify,
+        ClientBatchOutcome::Recertify,
+    )
+}
+
+fn rekey_response_outcome(
+    item: ResponseBatchItemView<'_>,
+) -> Result<ClientBatchOutcome, ProtocolError> {
+    // The server generates the replacement key and maintains its links.
+    read_operation_outcome(
+        ClientOperation::Rekey,
+        item,
+        RekeyResponse::try_from_response_item,
+        RekeyResponse::result,
+        PendingResponse::Rekey,
+        ClientBatchOutcome::Rekey,
+    )
+}
+
+fn rekey_key_pair_response_outcome(
+    item: ResponseBatchItemView<'_>,
+) -> Result<ClientBatchOutcome, ProtocolError> {
+    read_operation_outcome(
+        ClientOperation::RekeyKeyPair,
+        item,
+        RekeyKeyPairResponse::try_from_response_item,
+        RekeyKeyPairResponse::result,
+        PendingResponse::RekeyKeyPair,
+        ClientBatchOutcome::RekeyKeyPair,
+    )
+}
+
+fn reprovision_response_outcome(
+    item: ResponseBatchItemView<'_>,
+) -> Result<ClientBatchOutcome, ProtocolError> {
+    read_operation_outcome(
+        ClientOperation::ReProvision,
+        item,
+        ReProvisionResponse::try_from_response_item,
+        ReProvisionResponse::result,
+        PendingResponse::ReProvision,
+        ClientBatchOutcome::ReProvision,
+    )
+}
+
+fn register_response_outcome(
+    item: ResponseBatchItemView<'_>,
+) -> Result<ClientBatchOutcome, ProtocolError> {
+    read_operation_outcome(
+        ClientOperation::Register,
+        item,
+        RegisterResponse::try_from_response_item,
+        RegisterResponse::result,
+        PendingResponse::Register,
+        ClientBatchOutcome::Register,
+    )
+}
+
+fn revoke_response_outcome(
+    item: ResponseBatchItemView<'_>,
+) -> Result<ClientBatchOutcome, ProtocolError> {
+    read_operation_outcome(
+        ClientOperation::Revoke,
+        item,
+        RevokeResponse::try_from_response_item,
+        RevokeResponse::result,
+        PendingResponse::Revoke,
+        ClientBatchOutcome::Revoke,
     )
 }
 

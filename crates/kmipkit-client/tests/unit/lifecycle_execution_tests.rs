@@ -75,7 +75,7 @@ fn lifecycle_results_preserve_unknown_status_reason_and_accepted_extension_value
             ClientRequest::Activate(ActivateRequest::new(None)),
         ),
         (
-            0x0000_0013,
+            0x0000_0015,
             ClientRequest::Archive(ArchiveRequest::new(None)),
         ),
         (
