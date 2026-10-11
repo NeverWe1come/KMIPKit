@@ -108045,6 +108045,32 @@
       "state": "resolved_by_approved_decision",
       "decision_id": "KMIPKIT-DEC-013",
       "erratum_source_refs": []
+    },
+    {
+      "discrepancy_id": "KMIPKIT-DISC-051",
+      "summary": "Re-Provision prose server obligation conflicts with optional Table 314 response identifier",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "6.1.48"
+        }
+      ],
+      "source_authority": "primary_normative",
+      "normative_status": "normative_conflict",
+      "alternatives": [
+        "Treat the §6.1.48 prose SHALL for CSR/certificate requests as a client parsing requirement and reject successful responses that omit Unique Identifier for those request forms.",
+        "Follow Table 314 for client parsing and permit the response Unique Identifier to be absent for all three request forms, while retaining the prose SHALL as a server-side obligation where it applies."
+      ],
+      "affected_requirement_ids": [],
+      "affected_element_ids": [
+        "KMIPKIT-ELEM-OP-C2S-RE-PROVISION"
+      ],
+      "affected_profile_ids": [],
+      "affected_policy_ids": [],
+      "downstream_impact": "Whether KMIPKit rejects a successful Re-Provision response without Unique Identifier; this does not change the server-side output obligation stated in the §6.1.48 prose.",
+      "state": "resolved_by_approved_decision",
+      "decision_id": "KMIPKIT-DEC-014",
+      "erratum_source_refs": []
     }
   ],
   "decisions": [
@@ -108388,6 +108414,26 @@
       "approval_evidence": "On 2026-10-11 the maintainer selected the §6.1.6 prose interpretation, requiring an explicit Unique Identifier when Certificate Request is omitted.",
       "approved_at": "2026-10-11",
       "consequence": "The client rejects Certify requests that omit both Certificate Request Value and Unique Identifier; it preserves omission of Unique Identifier when request material is present and retains the output ID Placeholder path for a following Get. Pinned OASIS source files remain unchanged.",
+      "status": "accepted"
+    },
+    {
+      "decision_id": "KMIPKIT-DEC-014",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "6.1.48"
+        }
+      ],
+      "requirement_ids": [],
+      "discrepancy_ids": [
+        "KMIPKIT-DISC-051"
+      ],
+      "policy_ids": [],
+      "interpretation": "Follow Table 314 for the KMIPKit client response parser: Unique Identifier remains optional and may be absent from a successful Re-Provision response for any of the three supported request forms. Preserve a returned identifier and do not synthesize one. The §6.1.48 prose SHALL to return an identifier for CSR and certificate forms remains a server-side obligation; the parameterless lowercase “shall” is not an uppercase normative keyword under §1.2.",
+      "approver": "KMIPKit maintainer, direct clarification in current task",
+      "approval_evidence": "On 2026-10-11 the maintainer selected the Table 314 interpretation, keeping Unique Identifier optional in parsed Re-Provision responses, including CSR and certificate forms.",
+      "approved_at": "2026-10-11",
+      "consequence": "The current Re-Provision parser contract and optional-identifier tests remain unchanged. The specification and catalog now record the prose/table discrepancy and distinguish client parsing from the server-side SHALL. Pinned OASIS source files remain unchanged.",
       "status": "accepted"
     }
   ]

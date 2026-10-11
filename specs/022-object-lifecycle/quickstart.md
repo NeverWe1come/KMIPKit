@@ -38,13 +38,18 @@ Record separate Red, Green, and Refactor commit IDs per operation in the draft P
 
 - The maintainer approved applying §6.1.7 to failed Check responses: preserve and type each returned `Usage Limits Count`, `Cryptographic Usage Mask`, and `Lease Time`; a failed response still does not require `Unique Identifier`.
 - Follow-up protocol and fake-client tests now exercise all three policy fields together on `Operation Failed`. `cargo test -p kmipkit-protocol policy_denial_response_returns_the_policy_value_without_a_success_identifier` and `cargo test -p kmipkit-client check_policy_denial_exposes_the_returned_mask_without_an_identifier` passed; focused Clippy, format, and diff checks passed.
+- A failed Check response never exposes a returned `Unique Identifier` from the typed accessor, even if a nonconforming server includes one; the generic response TTLV still retains that field. §6.1.7 and Table 184 support the server-side omission. The regression test was observed red, then green, and the parser refactor was verified with all nine Check protocol tests (`f35e112c`, `1dc3b71f`, `6fc28305`).
+
+### Re-Provision response interpretation (KMIPKIT-DISC-051)
+
+- The maintainer approved following Table 314: the client permits `Unique Identifier` to be absent for CSR, certificate, and parameterless Re-Provision responses. If present, the identifier is preserved and typed. The §6.1.48 prose `SHALL` remains a server-side obligation. The decision is recorded as KMIPKIT-DEC-014 in the specification and normative catalog; pinned OASIS source files remain unchanged.
 
 ### Catalog and traceability closure (T035–T036)
 
 - `specs/022-object-lifecycle/traceability.md` maps all 44 normative ledger IDs and each of the 53 Request/Response payload rows to canonical catalog elements, implementation paths, and exact executable Rust test symbols. It also maps the nine operation error tables to shared Result Status/Reason elements and tests.
 - `python -B -m unittest tools.normative_catalog.tests.test_object_lifecycle_traceability -v` passes (2 tests). The audit checks the 44 requirement assignments, nine operation elements, all 53 payload rows, catalog element IDs, and every referenced test function.
 - Full catalog suite: `python -B -m unittest discover -s tools/normative_catalog/tests -p 'test_*.py'` passes (209 tests, 7 platform skips).
-- `python tools/normative_catalog/validate.py` passes (4 sources, 1,411 clauses, 4,042 records).
+- `python -B tools/normative_catalog/validate.py` passes (4 sources, 1,411 clauses, 4,044 records).
 - Regenerated with `python tools/normative_catalog/report.py --repo-root . --write`; `python tools/normative_catalog/report.py --repo-root . --check` passes. Generated report changes are tool-produced.
 - Coverage labels distinguish `verified` client behavior from `scoped_verified` obligations that rely on caller sequencing, server policy/state, or material use outside this library. No OASIS profile or official Test Case conformance claim is made.
 
@@ -87,11 +92,11 @@ Record separate Red, Green, and Refactor commit IDs per operation in the draft P
 - `cargo clippy --workspace --all-targets --all-features -- -D warnings` passed.
 - `cargo test --workspace --all-features --quiet` passed on the installed stable toolchain, including workspace unit, integration, and UI suites.
 - `cargo +1.94 test --workspace --all-features --quiet` passed on this Windows host, including loopback transport tests.
-- `cargo llvm-cov --workspace --all-features --summary-only` passed its tests and reports 21,957/24,929 workspace lines covered (88.08%), below the repository's 90% workspace gate. The nine new protocol modules together report 1,413/1,455 lines (97.11%); each is at least 95%, with Re-certify lowest at 166/173 (95.95%). The checked-in C-consumer/platform aggregate is not present in this local report.
+- `cargo llvm-cov --workspace --all-features --summary-only` passed its tests and reports 21,955/24,927 workspace lines covered (88.08%), below the repository's 90% workspace gate. The nine new protocol modules together report 1,413/1,455 lines (97.11%); each is at least 95%, with Re-certify lowest at 166/173 (95.95%). The checked-in C-consumer/platform aggregate is not present in this local report.
 - `python scripts/coverage_gate.py preflight --workspace . --status-out target/022-coverage-status.json` passed its source inventory check (99 Rust source files; 155 eligible files).
 - `pwsh -File ./scripts/Test-DependencyPolicy.ps1` passed: the pinned cargo-deny policy, advisory database, exceptions, and lockfile hashes validate.
 - `python -B -m unittest discover -s tools/normative_catalog/tests -p 'test_*.py'` passed (209 tests, 7 platform skips); `python -B tools/normative_catalog/validate.py` and `python -B tools/normative_catalog/report.py --check` passed.
-- `python -B tools/api_manifest/generate.py --check` verified six generated files; `python -B tools/extension_fixtures/generate.py --check` passed. `tools/api_manifest/tests/test_extension_fixtures.py` passed 16 tests with 1 skip in the isolated Python 3.12.14 test environment.
+- `python -B tools/api_manifest/generate.py --check` verified six generated files; `python -B tools/extension_fixtures/generate.py --check` passed. `tools.api_manifest.tests.test_extension_fixtures` passed 16 tests with 1 platform skip on Python 3.13.14 using the pinned `tools/api_manifest/requirements-test.txt` dependency.
 - The English and Spanish lifecycle guide command compiled all 18 marked examples. Focused Check denial policy tests pass with the approved §6.1.7 behavior.
 - Requirement traceability tests passed (2 tests). Feature traceability passed 15 tests, with 1 skipped because Windows denied symlink creation (`WinError 1314`). The threat-model and public API documentation corrections list all nine Rust operations and explicitly defer C/Java/Python operation parity to KMIPKIT-0043.
 - `git diff --check` passed. The local host lacks CMake/CTest/Ninja and a native C compiler, so C-consumer, ASan, and libFuzzer checks require CI. Linux/macOS checks also require CI.
