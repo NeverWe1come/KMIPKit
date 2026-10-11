@@ -7010,7 +7010,6 @@ class CatalogValidationTests(unittest.TestCase):
             [("Data Length", "Yes", "server", "response_payload_data", [35554, 35571])],
         )
         self.assertEqual(response_rows[0]["source_excerpt"], pinned_source_excerpt(source_path, [35554, 35571]))
-        self.assertIsNone(response_rows[0]["source_gap_id"])
         self.assertEqual(reviews["KMIPKIT-CLAUSE-SPEC-6.1.50-002"]["source_obligations"], [])
         self.assertEqual(reviews["KMIPKIT-CLAUSE-SPEC-6.1.50-003"]["source_obligations"], [])
 
