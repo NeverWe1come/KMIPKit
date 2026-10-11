@@ -96,9 +96,10 @@ TDD, named-test, generated-report and diagnostic evidence is recorded in
   `a0846037eb9930b24d9b9e3d8c63b2e66b438d1a` does not contain the approved
   KMIPKIT-0043 capability mapping. No binding mapping was invented; existing
   API-manifest outputs remain checked and unchanged.
-- **T022 OPEN**: local full-test/coverage/security results are recorded in the
-  evidence file. Independent platform coverage and real exchanges against two
-  independent PKCS#11-capable KMIP 2.1 servers remain release gates. The
+- **T022 OPEN**: full local tests/coverage/security and actual CI platform/
+  adapter/C-consumer/aggregate gates passed; results are recorded in the evidence
+  file. Real exchanges against two independent PKCS#11-capable KMIP 2.1 servers
+  remain the outstanding release condition. The
   interoperability matrix retains Pending status. This specification is not
   complete and its PR must remain a draft while either task is open.
 

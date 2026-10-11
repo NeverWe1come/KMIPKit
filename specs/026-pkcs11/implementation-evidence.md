@@ -56,9 +56,10 @@ check uses Rust 1.94.0. Detailed uncommitted tool logs are under `target/`.
 | `python -m unittest discover -s tools/normative_catalog/tests -p 'test_feature_traceability.py' -v` | PASS after QA fix: 15 tests, 1 fixture skip |
 | `git diff --check` | PASS |
 | `python -m unittest discover -s tools/normative_catalog/tests -p 'test_*.py'` | PASS: 213 tests, 7 platform/fixture skips |
-| `cargo test --workspace --all-features` | Serial verification pending; first build stopped before tests to avoid concurrent localhost fixture interference |
-| `cargo llvm-cov --workspace --all-features --locked --json --output-path target/pkcs11-coverage-raw.json` | Serial verification pending; first build stopped before tests |
-| `pwsh -File scripts/Test-DependencyPolicy.ps1` | Serial verification pending |
+| `cargo test --workspace --all-features` | PASS after serial rerun: all tests and doctests passed; first concurrent build had been stopped before tests |
+| `cargo llvm-cov --workspace --all-features --locked --json --output-path target/pkcs11-coverage-raw.json` | PASS; full instrumented tests completed and JSON exported |
+| `python scripts/coverage_gate.py normalize --workspace . --input target/pkcs11-coverage-raw.json --output target/pkcs11-coverage.json` | PASS: LLVM schema 3.1.0 accepted |
+| `pwsh -File scripts/Test-DependencyPolicy.ps1` | PASS: exact cargo-deny 0.20.2; root/fuzz checks, fresh online advisory evidence, negative fixtures and unchanged lockfile hashes |
 
 Full Ubuntu/macOS/Windows plus required adapter coverage reports are needed for
 the repository aggregate coverage gate. A Windows-only report is local
@@ -111,3 +112,44 @@ linked to existing vendor Integer request/response tests. It uses the explicit
 Structure and standard Enumeration shape. The same-primary-document mismatch
 and observable alternatives remain documented; no official erratum, profile
 or complete conformance claim is made.
+
+
+## Final serial local and real CI coverage evidence
+
+The serial local test, coverage and dependency-policy commands all returned
+exit 0. Native `pkcs11.rs` line coverage was 218/226 (96.46%). Windows-only LLVM
+file-summary totals are not the project aggregate: native FFI was 22.73% and
+native overall totals were 89.70%, because the Linux C-consumer collector and
+other platform/adapter reports are not part of this local Rust-only run. No
+missing platform or C-consumer artifact is fabricated from that report.
+
+Actual CI run [38181159004](https://github.com/NeverWe1come/KMIPKit/actions/runs/38181159004)
+completed **SUCCESS** for implementation head
+`95644a0f1978259c9c30004c64eca8435e00d8d7`. All required core/MSRV, platform,
+C-consumer, Java/Python/JNI, sanitizer, generated-output, normative inventory,
+dependency-policy and final-summary jobs passed. The real selected-scope
+coverage gate consumed its required CI artifacts and reported:
+
+| Scope | Covered / measured lines | Coverage / gate |
+|---|---:|---|
+| Changed Rust | 244 / 252 | 96.83% / 95% |
+| TTLV | 735 / 741 | 99.19% / 95% |
+| Protocol | 11,997 / 12,377 | 96.93% / 95% |
+| Transport | 3,713 / 3,902 | 95.16% / 85% |
+| Rust FFI | 2,035 / 2,137 | 95.23% / 85% |
+| Java | 618 / 670 | 92.24% / 85% |
+| Python | 773 / 783 | 98.72% / 85% |
+| JNI | 1,193 / 1,312 | 90.93% / 85%; 21 summary-only uncovered lines included |
+| Workspace | 25,127 / 26,010 | 96.61% / 90% |
+
+Local dependency policy verified fresh online RustSec root and fuzz evidence
+at commit `7eebec69c352c7191b1f13eb95dd510eeca5d1de`, database commit timestamp
+`2026-10-09T10:12:02+02:00`; the refresh succeeded for both workspace scans.
+Existing exact exceptions were KMIPKIT-0011-EX-003 and KMIPKIT-0011-EX-004.
+Both Cargo.lock hashes and resolved-package invariance checks passed.
+
+Independent QA confirmed both review observations resolved after the nested
+member correction and source-context trace. T019 remains blocked by missing
+KMIPKIT-0043 on release; T022's remaining condition is real PKCS#11 execution
+against two independent supported KMIP 2.1 implementations. The PR remains a
+draft, and the whole specification is not declared complete.

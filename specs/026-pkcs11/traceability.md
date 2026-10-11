@@ -81,8 +81,8 @@ Function/Return Code requirements and optional rows are each represented above.
 T019 remains blocked: active release commit
 `a0846037eb9930b24d9b9e3d8c63b2e66b438d1a` has no integrated approved
 KMIPKIT-0043 capability mapping. Existing API-manifest outputs are checked
-without adding invented binding mappings. T022 remains open until its full
-coverage/platform/security and two-independent-server conditions are met.
+without adding invented binding mappings. T022's local and actual CI coverage/platform/security conditions passed;
+it remains open for the two-independent-server interoperability condition.
 No live PKCS#11 interoperability exchange was performed in this increment.
 
 
