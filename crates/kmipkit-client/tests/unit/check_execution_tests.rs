@@ -291,10 +291,11 @@ fn check_policy_denial_exposes_the_returned_mask_without_an_identifier() {
     let response = check_response_bytes(
         OPERATION_FAILED,
         Some(INCOMPATIBLE_CRYPTOGRAPHIC_USAGE_MASK),
-        Some(test_structure([test_item(
-            CRYPTOGRAPHIC_USAGE_MASK,
-            Value::integer(2),
-        )])),
+        Some(test_structure([
+            test_item(USAGE_LIMITS_COUNT, Value::long_integer(3)),
+            test_item(CRYPTOGRAPHIC_USAGE_MASK, Value::integer(2)),
+            test_item(LEASE_TIME, Value::interval(60)),
+        ])),
     );
     let (mut client, fake, _) = client_for(ExchangeScript::Success {
         response,
@@ -311,7 +312,9 @@ fn check_policy_denial_exposes_the_returned_mask_without_an_identifier() {
         .expect("the failed result retains its typed Check response");
 
     assert!(check.unique_identifier().is_none());
+    assert_eq!(check.usage_limits_count(), Some(3));
     assert_eq!(check.cryptographic_usage_mask(), Some(2));
+    assert_eq!(check.lease_time(), Some(60));
     assert_eq!(fake.borrow().exchange_count(), 1);
 }
 

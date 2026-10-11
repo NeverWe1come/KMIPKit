@@ -191,10 +191,11 @@ fn policy_denial_response_returns_the_policy_value_without_a_success_identifier(
     let response = check_response(
         OPERATION_FAILED,
         Some(INCOMPATIBLE_CRYPTOGRAPHIC_USAGE_MASK),
-        Some(structure([item(
-            CRYPTOGRAPHIC_USAGE_MASK,
-            Value::integer(2),
-        )])),
+        Some(structure([
+            item(USAGE_LIMITS_COUNT, Value::long_integer(3)),
+            item(CRYPTOGRAPHIC_USAGE_MASK, Value::integer(2)),
+            item(LEASE_TIME, Value::interval(60)),
+        ])),
     )
     .expect("§6.1.7 returns policy attributes when Check denies use");
 
@@ -204,7 +205,9 @@ fn policy_denial_response_returns_the_policy_value_without_a_success_identifier(
         Some(INCOMPATIBLE_CRYPTOGRAPHIC_USAGE_MASK)
     );
     assert!(response.unique_identifier().is_none());
+    assert_eq!(response.usage_limits_count(), Some(3));
     assert_eq!(response.cryptographic_usage_mask(), Some(2));
+    assert_eq!(response.lease_time(), Some(60));
 }
 
 #[test]
