@@ -304,6 +304,10 @@ mod create_split_key_tests;
 mod derive_key_operation_tests;
 
 #[cfg(test)]
+#[path = "../tests/unit/export_operation_tests.rs"]
+mod export_operation_tests;
+
+#[cfg(test)]
 #[path = "../tests/support/async_operation_fixtures.rs"]
 mod async_operation_fixtures;
 

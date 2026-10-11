@@ -66,6 +66,10 @@ mod hash_mac_signature_execution_tests;
 mod derive_key_execution_tests;
 
 #[cfg(test)]
+#[path = "../tests/unit/export_execution_tests.rs"]
+mod export_execution_tests;
+
+#[cfg(test)]
 #[path = "../tests/unit/hash_execution_tests.rs"]
 mod hash_execution_tests;
 

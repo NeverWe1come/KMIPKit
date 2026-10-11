@@ -47,7 +47,8 @@ Record separate Red, Green, and Refactor commit IDs per story. The implementatio
 ## Derive Key cycle evidence
 
 - Red commits: protocol `3ca0d0b2`; fake-client `6d583aa0`.
-- Green implementation: pending commit at this evidence update.
+- Green commits: protocol model `7616b79d`; client dispatch `bcb0ad9f`.
+- Refactor commit: `3ede3903`.
 - Passed `cargo test -p kmipkit-protocol --lib derive_key_operation_tests` (5 tests) and `cargo test -p kmipkit-client --lib derive_key_execution_tests` (1 test).
 - Passed `cargo fmt --all --check`, `cargo clippy -p kmipkit-protocol -p kmipkit-client --all-targets --all-features -- -D warnings`, and `git diff --check`.
 - Fixture vectors derive from KMIP 2.1 tables and do not establish official conformance or independent implementation interoperability.
