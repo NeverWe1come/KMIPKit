@@ -275,3 +275,7 @@ pub use kmipkit_transport::RequestOptions;
 #[cfg(test)]
 #[path = "../tests/unit/interop_execution_tests.rs"]
 mod interop_execution_tests;
+
+#[cfg(test)]
+#[path = "../tests/unit/log_execution_tests.rs"]
+mod log_execution_tests;
