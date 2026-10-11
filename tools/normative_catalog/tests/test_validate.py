@@ -7909,7 +7909,7 @@ class CatalogValidationTests(unittest.TestCase):
         self.assertEqual(validity_clause["scope_state"], "server_only")
         crypto_clause = clauses["KMIPKIT-CLAUSE-SPEC-6.1.56-007"]
         self.assertEqual(crypto_clause["direction"], "server_to_client")
-        self.assertIn("no Cryptographic Parameters", crypto_clause["condition"])
+        self.assertIn("no cryptographic parameters", crypto_clause["condition"].casefold())
         requirements = {row["requirement_id"]: row for row in catalog["requirements"]}
         self.assertEqual(requirements["KMIPKIT-REQ-SPEC-6.1.56-007-002"]["direction"], "server_to_client")
         self.assertEqual(requirements["KMIPKIT-REQ-SPEC-6.1.56-007-002"]["condition"], crypto_clause["condition"])
@@ -7976,7 +7976,7 @@ class CatalogValidationTests(unittest.TestCase):
         response_rows = {row["row_label"]: row for row in response_header["source_payload_rows"]}
         expected_response_rows = {
             "Unique Identifier": ("Yes", [36865, 36877], "KMIPKIT-ELEM-TAG-420094"),
-            "Validity Indicator": ("Yes for single-part. No for multi-part", [36883, 36895], "KMIPKIT-ELEM-TAG-42009B"),
+            "Validity Indicator": ("Yes for single-part. No for multi-part.", [36883, 36895], "KMIPKIT-ELEM-TAG-42009B"),
             "Data": ("No", [36898, 36912], "KMIPKIT-ELEM-TAG-4200C2"),
             "Correlation Value": ("No", [36918, 36930], "KMIPKIT-ELEM-TAG-4200D6"),
         }
@@ -13049,6 +13049,35 @@ class CatalogValidationTests(unittest.TestCase):
             sum(gap["proposed_requirement_id"] is not None for gap in gaps),
         )
 
+    def test_crosswalk_requirement_metadata_aggregates_split_source_atoms(self) -> None:
+        """Compound requirements retain each atom while catalog scope aggregates both actors."""
+        oracle = json.loads(
+            (ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json").read_text(encoding="utf-8")
+        )
+        catalog = json.loads(
+            (ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8")
+        )
+        requirements = {row["requirement_id"]: row for row in catalog["requirements"]}
+        mappings = {}
+        for row in oracle["requirement_crosswalk"]:
+            mappings.setdefault(row["requirement_id"], []).append(row)
+
+        for requirement_id in ("KMIPKIT-REQ-SPEC-6.1.5-001", "KMIPKIT-REQ-SPEC-6.1.7-005"):
+            source_rows = sorted(mappings[requirement_id], key=lambda row: row["source_obligation_order"])
+            self.assertEqual(
+                [row["scope_state"] for row in source_rows],
+                ["client_1_0", "server_only"],
+            )
+            self.assertEqual(
+                requirements[requirement_id]["scope_state"],
+                "client_1_0 + server_only (split/shared)",
+            )
+
+        verify_rows = mappings["KMIPKIT-REQ-SPEC-6.1.20-001-002"]
+        verify_keywords = {row["source_keyword"] for row in verify_rows}
+        self.assertEqual(verify_keywords, {"SHALL", "SHALL NOT"})
+        self.assertIn(requirements["KMIPKIT-REQ-SPEC-6.1.20-001-002"]["source_keyword"], verify_keywords)
+
     def test_requirement_crosswalk_rows_match_pinned_sources_and_catalog_labels(self) -> None:
         """Every accepted and rejected label is tied to its pinned source locator."""
         oracle = json.loads(
@@ -13315,6 +13344,7 @@ class CatalogValidationTests(unittest.TestCase):
             "KMIPKIT-REQ-SPEC-6.1.32-005",
             "KMIPKIT-REQ-SPEC-6.1.33-006",
             "KMIPKIT-REQ-SPEC-6.1.55-003",
+            "KMIPKIT-REQ-SPEC-6.1.56-010",
         }
         self.assertEqual(
             spec_proposals,
@@ -13396,6 +13426,12 @@ class CatalogValidationTests(unittest.TestCase):
             "KMIPKIT-REQ-SPEC-6.1.55-008",
             "KMIPKIT-REQ-SPEC-6.1.55-009",
             "KMIPKIT-REQ-SPEC-6.1.55-010",
+            "KMIPKIT-REQ-SPEC-6.1.56-008",
+            "KMIPKIT-REQ-SPEC-6.1.56-009",
+            "KMIPKIT-REQ-SPEC-6.1.56-010",
+            "KMIPKIT-REQ-SPEC-6.1.56-011",
+            "KMIPKIT-REQ-SPEC-6.1.56-012",
+            "KMIPKIT-REQ-SPEC-6.1.56-013",
             "KMIPKIT-REQ-SPEC-6.1.14-009",
             "KMIPKIT-REQ-SPEC-6.1.14-010",
             "KMIPKIT-REQ-SPEC-6.1.14-011",
@@ -13436,6 +13472,7 @@ class CatalogValidationTests(unittest.TestCase):
                 "Data",
                 "Yes for single-part, unless Digested Data is supplied.. No for multi-part.",
             ),
+            "6.1.56": ("Signature Data", "Yes for single-part. No for multi-part."),
         }
         for gap in conditional_body_gaps:
             section = gap["source_section"]
