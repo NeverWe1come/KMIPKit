@@ -115,15 +115,23 @@ class ProfileSectionsThreeAndFourCrosswalkTests(unittest.TestCase):
     def test_target_ids_have_audited_source_rows_and_only_client_mappings(self) -> None:
         self.assertEqual(len(ALL_TARGET_IDS), 22)
         self.assertTrue(ALL_TARGET_IDS.issubset(self.requirements))
-        self.assertTrue(ALL_TARGET_IDS.issubset(self.crosswalk.keys() | self.reviews.keys()))
+        target_clause_ids = {
+            self.requirements[requirement_id]["source_clause_ids"][0]
+            for requirement_id in ALL_TARGET_IDS
+        }
+        self.assertTrue(target_clause_ids.issubset(self.reviews))
         self.assertEqual(set(self.crosswalk), CLIENT_IDS)
-        self.assertEqual(set(self.reviews), ALL_TARGET_IDS)
+        self.assertEqual(set(self.reviews), target_clause_ids)
 
     def test_unresolved_and_test_only_rows_are_not_client_obligations(self) -> None:
         self.assertEqual(len(UNRESOLVED_IDS), 8)
         self.assertEqual(len(OUT_OF_SCOPE_IDS), 4)
         self.assertFalse((UNRESOLVED_IDS | OUT_OF_SCOPE_IDS) & self.crosswalk.keys())
-        self.assertTrue((UNRESOLVED_IDS | OUT_OF_SCOPE_IDS).issubset(self.reviews))
+        reviewed_clause_ids = {
+            self.requirements[requirement_id]["source_clause_ids"][0]
+            for requirement_id in UNRESOLVED_IDS | OUT_OF_SCOPE_IDS
+        }
+        self.assertTrue(reviewed_clause_ids.issubset(self.reviews))
         for requirement_id in UNRESOLVED_IDS:
             requirement = self.requirements[requirement_id]
             review = self.reviews[requirement["source_clause_ids"][0]]
@@ -170,6 +178,9 @@ class ProfileSectionsThreeAndFourCrosswalkTests(unittest.TestCase):
                 in {
                     "KMIPKIT-REQ-PROF-3.1.1-005",
                     "KMIPKIT-REQ-PROF-3.1.2-005",
+                    "KMIPKIT-REQ-PROF-3.2.1-001",
+                    "KMIPKIT-REQ-PROF-3.2.2-001",
+                    "KMIPKIT-REQ-PROF-3.2.3-001",
                 }
                 else "client"
             )
@@ -191,9 +202,9 @@ class ProfileSectionsThreeAndFourCrosswalkTests(unittest.TestCase):
 
     def test_all_target_review_locators_and_excerpts_match_pinned_html(self) -> None:
         expected_lines = {
-            "KMIPKIT-CLAUSE-PROF-3-002": [3972, 3975],
-            "KMIPKIT-CLAUSE-PROF-3-003": [3977, 3980],
-            "KMIPKIT-CLAUSE-PROF-3-004": [3982, 3985],
+            "KMIPKIT-CLAUSE-PROF-3-002": [3967, 3970],
+            "KMIPKIT-CLAUSE-PROF-3-003": [3972, 3975],
+            "KMIPKIT-CLAUSE-PROF-3-004": [3977, 3980],
             "KMIPKIT-CLAUSE-PROF-3-006": [3987, 3990],
             "KMIPKIT-CLAUSE-PROF-3.1-001": [3999, 4001],
             "KMIPKIT-CLAUSE-PROF-3.1.1-002": [4016, 4016],

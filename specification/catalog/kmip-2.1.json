@@ -1747,7 +1747,6 @@
         "block_kind": "list_item"
       },
       "source_keywords": [
-        "MUST",
         "MAY"
       ],
       "disposition": "profile_conditional",
