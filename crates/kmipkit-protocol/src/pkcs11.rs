@@ -147,17 +147,24 @@ impl Pkcs11Response {
         &self,
         callback: impl for<'a> FnOnce(StructureView<'a>) -> R,
     ) -> Option<R> {
-        self.with_ttlv_payload(|p| with_structure(p, INTERFACE, callback))
-            .flatten()
+        self.with_payload_structure(INTERFACE, callback)
     }
     /// Lends the Function Structure when supplied by the server.
     pub fn with_function<R>(
         &self,
         callback: impl for<'a> FnOnce(StructureView<'a>) -> R,
     ) -> Option<R> {
-        self.with_ttlv_payload(|p| with_structure(p, FUNCTION, callback))
+        self.with_payload_structure(FUNCTION, callback)
+    }
+    fn with_payload_structure<R>(
+        &self,
+        tag: u32,
+        callback: impl for<'a> FnOnce(StructureView<'a>) -> R,
+    ) -> Option<R> {
+        self.with_ttlv_payload(|payload| with_structure(payload, tag, callback))
             .flatten()
     }
+
     /// Lends exact sensitive correlation bytes without allocating an external copy.
     pub fn with_correlation_value<R>(
         &self,
@@ -179,16 +186,14 @@ impl Pkcs11Response {
         &self,
         callback: impl for<'a> FnOnce(StructureView<'a>) -> R,
     ) -> Option<R> {
-        self.with_ttlv_payload(|p| with_structure(p, OUTPUT, callback))
-            .flatten()
+        self.with_payload_structure(OUTPUT, callback)
     }
     /// Lends the complete Return Code Structure, preserving unknown members.
     pub fn with_return_code<R>(
         &self,
         callback: impl for<'a> FnOnce(StructureView<'a>) -> R,
     ) -> Option<R> {
-        self.with_ttlv_payload(|p| with_structure(p, RETURN, callback))
-            .flatten()
+        self.with_payload_structure(RETURN, callback)
     }
 }
 fn with_structure<R>(
