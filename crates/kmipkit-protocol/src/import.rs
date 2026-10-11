@@ -145,21 +145,36 @@ impl ImportRequest {
             OBJECT_TYPE,
             Value::enumeration(self.object_type.raw()),
         )?;
-        if let Some(value) = self.replace_existing {
-            push(&mut payload, REPLACE_EXISTING, Value::boolean(value))?;
-        }
-        if let Some(value) = self.key_wrap_type {
-            push(&mut payload, KEY_WRAP_TYPE, Value::enumeration(value.raw()))?;
-        }
-
-        let mut attributes = Structure::new();
-        for attribute in self.attributes.into_items() {
-            attributes.try_push(attribute).map_err(model_error)?;
-        }
-        push(&mut payload, ATTRIBUTES, Value::structure(attributes))?;
+        append_optional_fields(&mut payload, self.replace_existing, self.key_wrap_type)?;
+        append_attributes(&mut payload, self.attributes)?;
         payload.try_push(self.object).map_err(model_error)?;
         Ok(payload)
     }
+}
+
+fn append_optional_fields(
+    payload: &mut Structure,
+    replace_existing: Option<bool>,
+    key_wrap_type: Option<KeyWrapType>,
+) -> Result<(), ProtocolError> {
+    if let Some(value) = replace_existing {
+        push(payload, REPLACE_EXISTING, Value::boolean(value))?;
+    }
+    if let Some(value) = key_wrap_type {
+        push(payload, KEY_WRAP_TYPE, Value::enumeration(value.raw()))?;
+    }
+    Ok(())
+}
+
+fn append_attributes(
+    payload: &mut Structure,
+    attributes: AttributeSet,
+) -> Result<(), ProtocolError> {
+    let mut fields = Structure::new();
+    for attribute in attributes.into_items() {
+        fields.try_push(attribute).map_err(model_error)?;
+    }
+    push(payload, ATTRIBUTES, Value::structure(fields))
 }
 
 fn key_wrap_type_matches_object(
