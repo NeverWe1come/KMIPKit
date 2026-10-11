@@ -10909,6 +10909,8 @@ class CatalogValidationTests(unittest.TestCase):
                 "KMIPKIT-REQ-SPEC-6.1.33-008",
                 "KMIPKIT-REQ-SPEC-6.1.33-009",
                 "KMIPKIT-REQ-SPEC-6.1.40-017",
+            "KMIPKIT-REQ-SPEC-6.1.41-005",
+            "KMIPKIT-REQ-SPEC-6.1.41-006",
             "KMIPKIT-REQ-SPEC-6.1.14-009",
             "KMIPKIT-REQ-SPEC-6.1.14-010",
             "KMIPKIT-REQ-SPEC-6.1.14-011",
