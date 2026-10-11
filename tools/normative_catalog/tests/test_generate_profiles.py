@@ -173,6 +173,33 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
                     f"missing mixed-scope client requirement from closure: {requirement_id}",
                 )
 
+    def test_generated_client_requirement_metadata_covers_profile_closures(self) -> None:
+        catalog_path = ROOT / "specification" / "catalog" / "kmip-2.1.json"
+        catalog = load_validated_catalog(catalog_path.read_bytes(), ROOT, require_complete=True)
+        targets = ProfileTargets(
+            "1.0",
+            ("KMIPKIT-PROFILE-BASELINE-CLIENT",),
+            "KMIPKIT-0010/FR-003",
+        )
+
+        generated = render_profiles_source(catalog, targets)
+        requirement_block = generated.split("pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[", 1)[1]
+        requirement_block = requirement_block.split("\n];", 1)[0]
+        metadata_ids = set(re.findall(r'requirement_id: "([^"]+)"', requirement_block))
+        closed_requirement_ids = {
+            requirement_id
+            for profile in catalog["profiles"]
+            if profile["role"] in {"client", "both"}
+            for requirement_id in profile["requirement_ids"]
+        }
+
+        missing_metadata = sorted(closed_requirement_ids - metadata_ids)
+        self.assertEqual(
+            missing_metadata,
+            [],
+            "every requirement in a client profile closure needs generated runtime metadata",
+        )
+
     def test_profile_closure_generator_matches_the_pinned_source_oracle(self) -> None:
         """Compare closure expansion with static source-derived arrays for all 18 clients."""
         catalog_path = ROOT / "specification" / "catalog" / "kmip-2.1.json"
