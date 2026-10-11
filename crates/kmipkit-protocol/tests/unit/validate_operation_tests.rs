@@ -406,7 +406,7 @@ fn table_340_groups_certificates_before_identifiers_preserving_each_list_order()
                 panic!("Certificate Structure")
             };
             cert.children()[1].with_value(|v| {
-                assert!(matches!(v, ValueView::ByteString(bytes) if bytes == expected))
+                assert!(matches!(v, ValueView::ByteString(bytes) if bytes == expected));
             });
         });
     }
