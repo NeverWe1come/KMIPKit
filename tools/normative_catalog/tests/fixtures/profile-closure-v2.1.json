@@ -72,20 +72,10 @@
     ]
   },
   "counts": {
-    "profiles": 18,
-    "specification_clause_records": 877,
-    "profiles_clause_records": 534,
-    "requirement_crosswalk_records": 230,
-    "requirement_crosswalk_complete": false,
-    "common_baseline_official_cases": 16,
-    "common_baseline_unavailable_fixtures": 16,
-    "profile_test_associations": 365,
-    "distinct_profile_test_case_ids": 93,
-    "source_requirement_review_records": 621,
-    "direct_root_exclusion_records": 4,
-    "source_only_requirement_gaps": 160,
-    "source_only_requirement_gap_proposals": 130,
-    "profile_unlabeled_source_rows": 22
+    "requirement_crosswalk_records": 233,
+    "source_requirement_review_records": 629,
+    "source_only_requirement_gaps": 166,
+    "source_only_requirement_gap_proposals": 136
   },
   "source_clause_crosswalk": [
     {
@@ -21114,6 +21104,57 @@
       "review_note": "Specification v2.1 section 6.1.51; client read-only attribute prohibition mapped from the paragraph.",
       "source_obligation_order": 1,
       "source_actor": "client"
+    },
+    {
+      "requirement_id": "KMIPKIT-REQ-SPEC-6.1.55-001",
+      "source_clause_id": "KMIPKIT-CLAUSE-SPEC-6.1.55-001",
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_section": "6.1.55",
+      "source_locator": {
+        "ordinal": 1,
+        "block_kind": "paragraph"
+      },
+      "source_keyword": "MAY",
+      "role": "client",
+      "scope_state": "client_1_0",
+      "applies_to": "all_client_profiles",
+      "review_note": "Pinned KMIP Specification v2.1 §6.1.55; client may omit Cryptographic Parameters when managed-object attributes provide them.",
+      "source_obligation_order": 1,
+      "source_actor": "client"
+    },
+    {
+      "requirement_id": "KMIPKIT-REQ-SPEC-6.1.55-004",
+      "source_clause_id": "KMIPKIT-CLAUSE-SPEC-6.1.55-004",
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_section": "6.1.55",
+      "source_locator": {
+        "ordinal": 4,
+        "block_kind": "table_row"
+      },
+      "source_keyword": "SHALL",
+      "role": "server",
+      "scope_state": "server_only",
+      "applies_to": "all_client_profiles",
+      "review_note": "Pinned KMIP Specification v2.1 §6.1.55 Table 334; server uses the ID Placeholder when Unique Identifier is omitted. Placeholder availability and lifetime follow §6.1, KMIPKIT-CLAUSE-SPEC-6.1-002.",
+      "source_obligation_order": 1,
+      "source_actor": "server"
+    },
+    {
+      "requirement_id": "KMIPKIT-REQ-SPEC-6.1.55-005-002",
+      "source_clause_id": "KMIPKIT-CLAUSE-SPEC-6.1.55-005",
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_section": "6.1.55",
+      "source_locator": {
+        "ordinal": 5,
+        "block_kind": "table_row"
+      },
+      "source_keyword": "SHALL",
+      "role": "server",
+      "scope_state": "server_only",
+      "applies_to": "all_client_profiles",
+      "review_note": "Pinned KMIP Specification v2.1 §6.1.55 Table 334; server returns Operation Failed if the object has no associated Cryptographic Parameters and the selected algorithm requires parameters.",
+      "source_obligation_order": 1,
+      "source_actor": "server"
     }
   ],
   "profiles": [
@@ -65874,6 +65915,446 @@
         "REQUIRED"
       ],
       "source_context": "Table 333: Set Endpoint Role Errors"
+    },
+    {
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+      "source_section": "6.1.55",
+      "source_clause_id": "KMIPKIT-CLAUSE-SPEC-6.1.55-001",
+      "source_locator": {
+        "ordinal": 1,
+        "block_kind": "paragraph"
+      },
+      "html_line_range": [
+        36304,
+        36308
+      ],
+      "source_excerpt": "The request contains information about the cryptographic parameters (digital signature algorithm or cryptographic algorithm and hash algorithm) and the data to be signed. The cryptographic parameters MAY be omitted from the request as they can be specified as associated attributes of the Managed Cryptographic Object.",
+      "source_obligations": [
+        {
+          "source_keyword": "MAY",
+          "actor": "client",
+          "direction": "client_to_server",
+          "condition": "When the object's attributes provide the applicable parameters.",
+          "scope_disposition": "client_1_0",
+          "candidate_requirement_id": "KMIPKIT-REQ-SPEC-6.1.55-001",
+          "source_note": "The client may omit Cryptographic Parameters when associated object attributes provide them.",
+          "source_order": 1,
+          "source_text": "The request contains information about the cryptographic parameters (digital signature algorithm or cryptographic algorithm and hash algorithm) and the data to be signed. The cryptographic parameters MAY be omitted from the request as they can be specified as associated attributes of the Managed Cryptographic Object."
+        }
+      ],
+      "rejected_candidate_mappings": [],
+      "expected_client_requirement_ids": [
+        "KMIPKIT-REQ-SPEC-6.1.55-001"
+      ],
+      "applies_to": "all_client_profiles",
+      "review_note": "This is the client MAY for omitting Cryptographic Parameters when the managed object has associated parameter attributes.",
+      "source_keywords": [
+        "MAY"
+      ],
+      "source_context": "This operation requests the server to perform a signature operation on the provided data using a Managed Cryptographic Object as the key for the signature operation. The request contains information about the cryptographic parameters (digital signature algorithm or cryptographic algorithm and hash algorithm) and the data to be signed. The cryptographic parameters MAY be omitted from the request as they can be specified as associated attributes of the Managed Cryptographic Object."
+    },
+    {
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+      "source_section": "6.1.55",
+      "source_clause_id": "KMIPKIT-CLAUSE-SPEC-6.1.55-002",
+      "source_locator": {
+        "ordinal": 2,
+        "block_kind": "paragraph"
+      },
+      "html_line_range": [
+        36310,
+        36314
+      ],
+      "source_excerpt": "If the Managed Cryptographic Object referenced has a Usage Limits attribute then the server SHALL obtain an allocation from the current Usage Limits value prior to performing the signing operation. If the allocation is unable to be obtained the operation SHALL return with a result status of Operation Failed and result reason of Permission Denied.",
+      "source_obligations": [
+        {
+          "source_keyword": "SHALL",
+          "actor": "server",
+          "direction": "client_to_server",
+          "condition": "The Managed Cryptographic Object referenced has a Usage Limits attribute.",
+          "scope_disposition": "server_only",
+          "candidate_requirement_id": null,
+          "source_note": "This is server-side allocation behavior triggered by a client Sign request.",
+          "source_order": 1,
+          "source_text": "If the Managed Cryptographic Object referenced has a Usage Limits attribute then the server SHALL obtain an allocation from the current Usage Limits value prior to performing the signing operation."
+        },
+        {
+          "source_keyword": "SHALL",
+          "actor": "server",
+          "direction": "server_to_client",
+          "condition": "The Usage Limits allocation cannot be obtained.",
+          "scope_disposition": "server_only",
+          "candidate_requirement_id": null,
+          "source_note": "The required Operation Failed response is server behavior; it is not a client request obligation.",
+          "source_order": 2,
+          "source_text": "If the allocation is unable to be obtained the operation SHALL return with a result status of Operation Failed and result reason of Permission Denied."
+        }
+      ],
+      "rejected_candidate_mappings": [],
+      "expected_client_requirement_ids": [],
+      "applies_to": "all_client_profiles",
+      "review_note": "Both SHALL atoms govern server Usage Limits allocation and failure response; neither creates a client requirement.",
+      "source_keywords": [
+        "SHALL"
+      ],
+      "source_context": "If the Managed Cryptographic Object referenced has a Usage Limits attribute then the server SHALL obtain an allocation from the current Usage Limits value prior to performing the signing operation. If the allocation is unable to be obtained the operation SHALL return with a result status of Operation Failed and result reason of Permission Denied."
+    },
+    {
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+      "source_section": "6.1.55",
+      "source_clause_id": "KMIPKIT-CLAUSE-SPEC-6.1.55-003",
+      "source_locator": {
+        "ordinal": 3,
+        "block_kind": "table_row"
+      },
+      "html_line_range": [
+        36333,
+        36351
+      ],
+      "source_excerpt": "Item REQUIRED Description",
+      "source_obligations": [],
+      "rejected_candidate_mappings": [],
+      "expected_client_requirement_ids": [],
+      "applies_to": "all_client_profiles",
+      "review_note": "The extracted REQUIRED token is in Table 334's request header; the body rows below separately preserve the client's conditional Data and optional input capabilities.",
+      "source_keywords": [
+        "REQUIRED"
+      ],
+      "source_context": "name=\"_Toc32239128\">Table 334: Sign Request Payload",
+      "source_request_rows": [
+        {
+          "row_label": "Unique Identifier",
+          "required": "No",
+          "actor": "client",
+          "direction": "client_to_server",
+          "scope_disposition": "client_1_0",
+          "disposition": "optional_request_field_with_source_only_proposal",
+          "html_line_range": [
+            36352,
+            36369
+          ],
+          "source_excerpt": "Unique Identifier No The Unique Identifier of the Managed Cryptographic Object that is the key to use for the signature operation. If omitted, then the ID Placeholder value SHALL be used by the server as the Unique Identifier.",
+          "source_element_id": "KMIPKIT-ELEM-TAG-420094",
+          "source_requirement_ids": [],
+          "source_gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.55-UNIQUE-IDENTIFIER-OPTIONAL",
+          "source_note": "A Sign request may include or omit the key Unique Identifier. Omission uses the ID Placeholder only when one is valid."
+        },
+        {
+          "row_label": "Cryptographic Parameters",
+          "required": "No",
+          "actor": "client",
+          "direction": "client_to_server",
+          "scope_disposition": "client_1_0",
+          "disposition": "optional_request_field_covered_by_client_may",
+          "html_line_range": [
+            36370,
+            36390
+          ],
+          "source_excerpt": "Cryptographic Parameters No The Cryptographic Parameters (Digital Signature Algorithm or Cryptographic Algorithm and Hashing Algorithm) corresponding to the particular signature generation method requested. If there are no Cryptographic Parameters associated with the Managed Cryptographic Object and the algorithm requires parameters then the operation SHALL return with a Result Status of Operation Failed.",
+          "source_element_id": "KMIPKIT-ELEM-TAG-42002B",
+          "source_requirement_ids": [
+            "KMIPKIT-REQ-SPEC-6.1.55-001"
+          ],
+          "source_gap_id": null,
+          "source_note": "The client MAY omit these parameters when the Managed Cryptographic Object has associated attributes that provide them; this capability is already mapped to KMIPKIT-REQ-SPEC-6.1.55-001."
+        },
+        {
+          "row_label": "Data",
+          "required": "Yes for single-part, unless Digested Data is supplied.. No for multi-part.",
+          "actor": "client",
+          "direction": "client_to_server",
+          "scope_disposition": "client_1_0",
+          "disposition": "conditional_required_request_field_with_source_only_proposal",
+          "html_line_range": [
+            36391,
+            36406
+          ],
+          "source_excerpt": "Data Yes for single-part, unless Digested Data is supplied.. No for multi-part. The data to be.",
+          "source_element_id": "KMIPKIT-ELEM-TAG-4200C2",
+          "source_requirement_ids": [],
+          "source_gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.55-DATA-CONDITIONAL",
+          "source_note": "Single-part Sign requires Data unless Digested Data is supplied; multi-part Sign does not require the Data field."
+        },
+        {
+          "row_label": "Digested Data",
+          "required": "No",
+          "actor": "client",
+          "direction": "client_to_server",
+          "scope_disposition": "client_1_0",
+          "disposition": "optional_request_field_with_source_only_proposal",
+          "html_line_range": [
+            36407,
+            36422
+          ],
+          "source_excerpt": "Digested Data No The digested data to be signed (as a Byte String).",
+          "source_element_id": "KMIPKIT-ELEM-TAG-420107",
+          "source_requirement_ids": [],
+          "source_gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.55-DIGESTED-DATA-OPTIONAL",
+          "source_note": "The request may carry digested data for signing."
+        },
+        {
+          "row_label": "Correlation Value",
+          "required": "No",
+          "actor": "client",
+          "direction": "client_to_server",
+          "scope_disposition": "client_1_0",
+          "disposition": "optional_request_field_with_source_only_proposal",
+          "html_line_range": [
+            36423,
+            36439
+          ],
+          "source_excerpt": "Correlation Value No Specifies the existing stream or by-parts cryptographic operation (as returned from a previous call to this operation).",
+          "source_element_id": "KMIPKIT-ELEM-TAG-4200D6",
+          "source_requirement_ids": [],
+          "source_gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.55-CORRELATION-VALUE-OPTIONAL",
+          "source_note": "The request may carry the stream or by-parts value for a subsequent cryptographic operation call."
+        },
+        {
+          "row_label": "Init Indicator",
+          "required": "No",
+          "actor": "client",
+          "direction": "client_to_server",
+          "scope_disposition": "client_1_0",
+          "disposition": "optional_request_field_with_source_only_proposal",
+          "html_line_range": [
+            36440,
+            36455
+          ],
+          "source_excerpt": "Init Indicator No Initial operation as Boolean",
+          "source_element_id": "KMIPKIT-ELEM-TAG-4200D7",
+          "source_requirement_ids": [],
+          "source_gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.55-INIT-INDICATOR-OPTIONAL",
+          "source_note": "The request may carry the Boolean initial-operation indicator."
+        },
+        {
+          "row_label": "Final Indicator",
+          "required": "No",
+          "actor": "client",
+          "direction": "client_to_server",
+          "scope_disposition": "client_1_0",
+          "disposition": "optional_request_field_with_source_only_proposal",
+          "html_line_range": [
+            36456,
+            36471
+          ],
+          "source_excerpt": "Final Indicator No Final operation as Boolean",
+          "source_element_id": "KMIPKIT-ELEM-TAG-4200D8",
+          "source_requirement_ids": [],
+          "source_gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.55-FINAL-INDICATOR-OPTIONAL",
+          "source_note": "The request may carry the Boolean final-operation indicator."
+        }
+      ]
+    },
+    {
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+      "source_section": "6.1.55",
+      "source_clause_id": "KMIPKIT-CLAUSE-SPEC-6.1.55-004",
+      "source_locator": {
+        "ordinal": 4,
+        "block_kind": "table_row"
+      },
+      "html_line_range": [
+        36352,
+        36369
+      ],
+      "source_excerpt": "Unique Identifier No The Unique Identifier of the Managed Cryptographic Object that is the key to use for the signature operation. If omitted, then the ID Placeholder value SHALL be used by the server as the Unique Identifier.",
+      "source_obligations": [
+        {
+          "source_keyword": "SHALL",
+          "actor": "server",
+          "direction": "client_to_server",
+          "condition": "The request omits Unique Identifier and the ID Placeholder remains available under KMIPKIT-CLAUSE-SPEC-6.1-002.",
+          "scope_disposition": "server_only",
+          "candidate_requirement_id": "KMIPKIT-REQ-SPEC-6.1.55-004",
+          "source_note": "Table 334 states the omission fallback; ID Placeholder availability and lifetime follow the general rule in KMIPKIT-CLAUSE-SPEC-6.1-002.",
+          "source_order": 1,
+          "source_text": "If omitted, then the ID Placeholder value SHALL be used by the server as the Unique Identifier."
+        }
+      ],
+      "rejected_candidate_mappings": [],
+      "expected_client_requirement_ids": [],
+      "applies_to": "all_client_profiles",
+      "review_note": "The SHALL assigns placeholder substitution to the server; availability and lifetime follow the general ID Placeholder rule in KMIPKIT-CLAUSE-SPEC-6.1-002. It is not a client duty to omit Unique Identifier.",
+      "source_keywords": [
+        "SHALL"
+      ],
+      "source_context": "Unique Identifier No The Unique Identifier of the Managed Cryptographic Object that is the key to use for the signature operation. If omitted, then the ID Placeholder value SHALL be used by the server as the Unique Identifier."
+    },
+    {
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+      "source_section": "6.1.55",
+      "source_clause_id": "KMIPKIT-CLAUSE-SPEC-6.1.55-005",
+      "source_locator": {
+        "ordinal": 5,
+        "block_kind": "table_row"
+      },
+      "html_line_range": [
+        36370,
+        36390
+      ],
+      "source_excerpt": "Cryptographic Parameters No The Cryptographic Parameters (Digital Signature Algorithm or Cryptographic Algorithm and Hashing Algorithm) corresponding to the particular signature generation method requested. If there are no Cryptographic Parameters associated with the Managed Cryptographic Object and the algorithm requires parameters then the operation SHALL return with a Result Status of Operation Failed.",
+      "source_obligations": [
+        {
+          "source_keyword": "SHALL",
+          "actor": "server",
+          "direction": "server_to_client",
+          "condition": "No Cryptographic Parameters are associated with the Managed Cryptographic Object and the selected algorithm requires parameters.",
+          "scope_disposition": "server_only",
+          "candidate_requirement_id": "KMIPKIT-REQ-SPEC-6.1.55-005-002",
+          "source_note": "This conditional failure is server response behavior; Table 334 marks the request field optional.",
+          "source_order": 1,
+          "source_text": "If there are no Cryptographic Parameters associated with the Managed Cryptographic Object and the algorithm requires parameters then the operation SHALL return with a Result Status of Operation Failed."
+        }
+      ],
+      "rejected_candidate_mappings": [
+        {
+          "requirement_id": "KMIPKIT-REQ-SPEC-6.1.55-005-001",
+          "claimed_keyword": "SHALL",
+          "candidate_claim": "The client has a separate SHALL to include Cryptographic Parameters.",
+          "source_review": "The row marks Cryptographic Parameters optional; its SHALL requires a server failure only when the object has no associated parameters and the selected algorithm requires them.",
+          "expected_disposition": "not_a_normative_client_requirement"
+        }
+      ],
+      "expected_client_requirement_ids": [],
+      "applies_to": "all_client_profiles",
+      "review_note": "The only modal obligation in the row is a conditional server Operation Failed response. The previous client SHALL extraction is rejected.",
+      "source_keywords": [
+        "SHALL"
+      ],
+      "source_context": "Cryptographic Parameters No The Cryptographic Parameters (Digital Signature Algorithm or Cryptographic Algorithm and Hashing Algorithm) corresponding to the particular signature generation method requested. If there are no Cryptographic Parameters associated with the Managed Cryptographic Object and the algorithm requires parameters then the operation SHALL return with a Result Status of Operation Failed."
+    },
+    {
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+      "source_section": "6.1.55",
+      "source_clause_id": "KMIPKIT-CLAUSE-SPEC-6.1.55-006",
+      "source_locator": {
+        "ordinal": 6,
+        "block_kind": "table_row"
+      },
+      "html_line_range": [
+        36490,
+        36508
+      ],
+      "source_excerpt": "Item REQUIRED Description",
+      "source_obligations": [],
+      "rejected_candidate_mappings": [],
+      "expected_client_requirement_ids": [],
+      "applies_to": "all_client_profiles",
+      "review_note": "The extracted REQUIRED token is in Table 335's response header; response body fields are preserved as server output for client decoding.",
+      "source_keywords": [
+        "REQUIRED"
+      ],
+      "source_context": "name=\"_Toc32239129\">Table 335: Sign Response Payload",
+      "source_payload_rows": [
+        {
+          "row_label": "Unique Identifier",
+          "required": "Yes",
+          "actor": "server",
+          "direction": "server_to_client",
+          "scope_disposition": "client_1_0",
+          "html_line_range": [
+            36509,
+            36526
+          ],
+          "source_excerpt": "Unique Identifier Yes The Unique Identifier of the Managed Cryptographic Object that is the key used for the signature operation.",
+          "source_element_id": "KMIPKIT-ELEM-TAG-420094",
+          "source_requirement_ids": []
+        },
+        {
+          "row_label": "Signature Data",
+          "required": "Yes for single-part. No for multi-part.",
+          "actor": "server",
+          "direction": "server_to_client",
+          "scope_disposition": "client_1_0",
+          "html_line_range": [
+            36527,
+            36543
+          ],
+          "source_excerpt": "Signature Data Yes for single-part. No for multi-part. The signed data (as a Byte String).",
+          "source_element_id": "KMIPKIT-ELEM-TAG-4200C3",
+          "source_requirement_ids": []
+        },
+        {
+          "row_label": "Correlation Value",
+          "required": "No",
+          "actor": "server",
+          "direction": "server_to_client",
+          "scope_disposition": "client_1_0",
+          "html_line_range": [
+            36544,
+            36561
+          ],
+          "source_excerpt": "Correlation Value No Specifies the stream or by-parts value to be provided in subsequent calls to this operation for performing cryptographic operations.",
+          "source_element_id": "KMIPKIT-ELEM-TAG-4200D6",
+          "source_requirement_ids": []
+        }
+      ]
+    },
+    {
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+      "source_section": "6.1.55.1",
+      "source_clause_id": "KMIPKIT-CLAUSE-SPEC-6.1.55.1-001",
+      "source_locator": {
+        "ordinal": 1,
+        "block_kind": "paragraph"
+      },
+      "html_line_range": [
+        36573,
+        36574
+      ],
+      "source_excerpt": "This section details the specific Result Reasons that SHALL be returned for errors detected in a sign Operation.",
+      "source_obligations": [
+        {
+          "source_keyword": "SHALL",
+          "actor": "server",
+          "direction": "server_to_client",
+          "condition": "Errors are detected during Sign.",
+          "scope_disposition": "server_only",
+          "candidate_requirement_id": null,
+          "source_note": "The SHALL requires the server to return the specified Result Reasons for Sign errors.",
+          "source_order": 1,
+          "source_text": "This section details the specific Result Reasons that SHALL be returned for errors detected in a sign Operation."
+        }
+      ],
+      "rejected_candidate_mappings": [],
+      "expected_client_requirement_ids": [],
+      "applies_to": "all_client_profiles",
+      "review_note": "The Result Reasons SHALL is a server-to-client error-output obligation and is not a client request requirement.",
+      "source_keywords": [
+        "SHALL"
+      ],
+      "source_context": "This section details the specific Result Reasons that SHALL be returned for errors detected in a sign Operation."
+    },
+    {
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+      "source_section": "6.1.55.1",
+      "source_clause_id": "KMIPKIT-CLAUSE-SPEC-6.1.55.1-002",
+      "source_locator": {
+        "ordinal": 2,
+        "block_kind": "table_row"
+      },
+      "html_line_range": [
+        36594,
+        36611
+      ],
+      "source_excerpt": "Operation Failed Bad Cryptographic Parameters, Cryptographic Failure, Incompatible Cryptographic Usage Mask, Invalid Correlation Value, Invalid Object Type, Invalid Object Type, Key Value Not Present, Object Not Found, Unsupported Cryptographic Parameters, Usage Limit Exceeded, Wrong Key Lifecycle State, Attestation Failed, Attestation Required, Feature Not Supported, Invalid Field, Invalid Message, Operation Not Supported, Permission Denied, Response Too Large",
+      "source_obligations": [],
+      "rejected_candidate_mappings": [],
+      "expected_client_requirement_ids": [],
+      "applies_to": "all_client_profiles",
+      "review_note": "Table 336 contains two occurrences of Invalid Object Type; preserve both. Attestation Required is a Result Reason enum value, not a separate normative modal. The operation-level Test Cases references are not requirement-specific.",
+      "source_keywords": [
+        "REQUIRED"
+      ],
+      "source_context": "Table 336: Sign Errors"
     }
   ],
   "source_only_requirement_gaps": [
@@ -70826,6 +71307,210 @@
       "status": "stable_label_proposed_not_in_catalog",
       "review_note": "Table 331 marks the client request Endpoint Role field Required=Yes. KMIPKIT-ELEM-TAG-420151 identifies the wire field but not this operation-specific requiredness. This is an unassigned source-only proposal. No catalog ID is fabricated, and no requirement crosswalk is added.",
       "audited_statement": "Table 331 marks the client request Endpoint Role field Required=Yes."
+    },
+    {
+      "gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.55-UNIQUE-IDENTIFIER-OPTIONAL",
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+      "source_section": "6.1.55",
+      "source_clause_id": null,
+      "source_locator": {
+        "kind": "table_body_row",
+        "section": "6.1.55",
+        "row_label": "Unique Identifier",
+        "table": "request_payload",
+        "html_line_range": [
+          36352,
+          36369
+        ]
+      },
+      "source_locator_description": "Section 6.1.55 Table 334 Unique Identifier request body row (HTML lines 36352-36369).",
+      "html_line_range": [
+        36352,
+        36369
+      ],
+      "source_excerpt": "Unique Identifier No The Unique Identifier of the Managed Cryptographic Object that is the key to use for the signature operation. If omitted, then the ID Placeholder value SHALL be used by the server as the Unique Identifier.",
+      "source_keywords": [],
+      "source_force": "optional_table_body_value",
+      "audited_statement": "Sign requests may include or omit Unique Identifier. On omission, Table 334 directs the server to use the ID Placeholder; its availability and lifetime follow §6.1 (KMIPKIT-CLAUSE-SPEC-6.1-002).",
+      "actor": "client",
+      "direction": "Client-to-server Sign request field.",
+      "condition": "A Sign request is sent; ID Placeholder availability and lifetime follow §6.1 (KMIPKIT-CLAUSE-SPEC-6.1-002).",
+      "scope_disposition": "client_1_0",
+      "candidate_requirement_id": null,
+      "proposed_requirement_id": "KMIPKIT-REQ-SPEC-6.1.55-006",
+      "status": "stable_label_proposed_not_in_catalog",
+      "review_note": "This Table 334 body row records a client request capability, not a separate modal requirement. Placeholder availability and lifetime are governed by the general §6.1 rule, KMIPKIT-CLAUSE-SPEC-6.1-002. Keep its proposed label outside the catalog until source review assigns a stable requirement."
+    },
+    {
+      "gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.55-DATA-CONDITIONAL",
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+      "source_section": "6.1.55",
+      "source_clause_id": null,
+      "source_locator": {
+        "kind": "table_body_row",
+        "section": "6.1.55",
+        "row_label": "Data",
+        "table": "request_payload",
+        "html_line_range": [
+          36391,
+          36406
+        ]
+      },
+      "source_locator_description": "Section 6.1.55 Table 334 Data request body row (HTML lines 36391-36406).",
+      "html_line_range": [
+        36391,
+        36406
+      ],
+      "source_excerpt": "Data Yes for single-part, unless Digested Data is supplied.. No for multi-part. The data to be.",
+      "source_keywords": [],
+      "source_force": "conditional_required_table_body_value",
+      "audited_statement": "Single-part Sign requires Data unless Digested Data is supplied; multi-part Sign does not require the Data field.",
+      "actor": "client",
+      "direction": "Client-to-server Sign request field.",
+      "condition": "A single-part Sign request is sent without Digested Data; the field is not required for multi-part Sign.",
+      "scope_disposition": "client_1_0",
+      "candidate_requirement_id": null,
+      "proposed_requirement_id": "KMIPKIT-REQ-SPEC-6.1.55-003",
+      "status": "stable_label_proposed_not_in_catalog",
+      "review_note": "This Table 334 body row records a client request capability or conditional field rule, not a separate modal requirement. Keep its proposed label outside the catalog until source review assigns a stable requirement."
+    },
+    {
+      "gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.55-DIGESTED-DATA-OPTIONAL",
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+      "source_section": "6.1.55",
+      "source_clause_id": null,
+      "source_locator": {
+        "kind": "table_body_row",
+        "section": "6.1.55",
+        "row_label": "Digested Data",
+        "table": "request_payload",
+        "html_line_range": [
+          36407,
+          36422
+        ]
+      },
+      "source_locator_description": "Section 6.1.55 Table 334 Digested Data request body row (HTML lines 36407-36422).",
+      "html_line_range": [
+        36407,
+        36422
+      ],
+      "source_excerpt": "Digested Data No The digested data to be signed (as a Byte String).",
+      "source_keywords": [],
+      "source_force": "optional_table_body_value",
+      "audited_statement": "The request may carry digested data for signing.",
+      "actor": "client",
+      "direction": "Client-to-server Sign request field.",
+      "condition": "A Sign request is sent.",
+      "scope_disposition": "client_1_0",
+      "candidate_requirement_id": null,
+      "proposed_requirement_id": "KMIPKIT-REQ-SPEC-6.1.55-007",
+      "status": "stable_label_proposed_not_in_catalog",
+      "review_note": "This Table 334 body row records a client request capability or conditional field rule, not a separate modal requirement. Keep its proposed label outside the catalog until source review assigns a stable requirement."
+    },
+    {
+      "gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.55-CORRELATION-VALUE-OPTIONAL",
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+      "source_section": "6.1.55",
+      "source_clause_id": null,
+      "source_locator": {
+        "kind": "table_body_row",
+        "section": "6.1.55",
+        "row_label": "Correlation Value",
+        "table": "request_payload",
+        "html_line_range": [
+          36423,
+          36439
+        ]
+      },
+      "source_locator_description": "Section 6.1.55 Table 334 Correlation Value request body row (HTML lines 36423-36439).",
+      "html_line_range": [
+        36423,
+        36439
+      ],
+      "source_excerpt": "Correlation Value No Specifies the existing stream or by-parts cryptographic operation (as returned from a previous call to this operation).",
+      "source_keywords": [],
+      "source_force": "optional_table_body_value",
+      "audited_statement": "The request may carry the stream or by-parts value for a subsequent cryptographic operation call.",
+      "actor": "client",
+      "direction": "Client-to-server Sign request field.",
+      "condition": "A Sign request is sent.",
+      "scope_disposition": "client_1_0",
+      "candidate_requirement_id": null,
+      "proposed_requirement_id": "KMIPKIT-REQ-SPEC-6.1.55-008",
+      "status": "stable_label_proposed_not_in_catalog",
+      "review_note": "This Table 334 body row records a client request capability or conditional field rule, not a separate modal requirement. Keep its proposed label outside the catalog until source review assigns a stable requirement."
+    },
+    {
+      "gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.55-INIT-INDICATOR-OPTIONAL",
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+      "source_section": "6.1.55",
+      "source_clause_id": null,
+      "source_locator": {
+        "kind": "table_body_row",
+        "section": "6.1.55",
+        "row_label": "Init Indicator",
+        "table": "request_payload",
+        "html_line_range": [
+          36440,
+          36455
+        ]
+      },
+      "source_locator_description": "Section 6.1.55 Table 334 Init Indicator request body row (HTML lines 36440-36455).",
+      "html_line_range": [
+        36440,
+        36455
+      ],
+      "source_excerpt": "Init Indicator No Initial operation as Boolean",
+      "source_keywords": [],
+      "source_force": "optional_table_body_value",
+      "audited_statement": "The request may carry the Boolean initial-operation indicator.",
+      "actor": "client",
+      "direction": "Client-to-server Sign request field.",
+      "condition": "A Sign request is sent.",
+      "scope_disposition": "client_1_0",
+      "candidate_requirement_id": null,
+      "proposed_requirement_id": "KMIPKIT-REQ-SPEC-6.1.55-009",
+      "status": "stable_label_proposed_not_in_catalog",
+      "review_note": "This Table 334 body row records a client request capability or conditional field rule, not a separate modal requirement. Keep its proposed label outside the catalog until source review assigns a stable requirement."
+    },
+    {
+      "gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.55-FINAL-INDICATOR-OPTIONAL",
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+      "source_section": "6.1.55",
+      "source_clause_id": null,
+      "source_locator": {
+        "kind": "table_body_row",
+        "section": "6.1.55",
+        "row_label": "Final Indicator",
+        "table": "request_payload",
+        "html_line_range": [
+          36456,
+          36471
+        ]
+      },
+      "source_locator_description": "Section 6.1.55 Table 334 Final Indicator request body row (HTML lines 36456-36471).",
+      "html_line_range": [
+        36456,
+        36471
+      ],
+      "source_excerpt": "Final Indicator No Final operation as Boolean",
+      "source_keywords": [],
+      "source_force": "optional_table_body_value",
+      "audited_statement": "The request may carry the Boolean final-operation indicator.",
+      "actor": "client",
+      "direction": "Client-to-server Sign request field.",
+      "condition": "A Sign request is sent.",
+      "scope_disposition": "client_1_0",
+      "candidate_requirement_id": null,
+      "proposed_requirement_id": "KMIPKIT-REQ-SPEC-6.1.55-010",
+      "status": "stable_label_proposed_not_in_catalog",
+      "review_note": "This Table 334 body row records a client request capability or conditional field rule, not a separate modal requirement. Keep its proposed label outside the catalog until source review assigns a stable requirement."
     }
   ]
 }

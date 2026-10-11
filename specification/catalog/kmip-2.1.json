@@ -23443,9 +23443,9 @@
       ],
       "exclusion_rationale": null,
       "role": "server",
-      "direction": "client_to_server",
+      "direction": "server_to_client",
       "scope_state": "server_only",
-      "condition": null
+      "condition": "No Cryptographic Parameters are associated with the Managed Cryptographic Object and the selected algorithm requires parameters."
     },
     {
       "clause_id": "KMIPKIT-CLAUSE-SPEC-6.1.55-006",
@@ -23480,8 +23480,8 @@
       "disposition": "server_only",
       "requirement_ids": [],
       "exclusion_rationale": "Server behavior or output; no 1.0 client requirement.",
-      "role": "both",
-      "direction": "client_to_server",
+      "role": "server",
+      "direction": "server_to_client",
       "scope_state": "server_only",
       "condition": null
     },
@@ -94368,8 +94368,8 @@
       "subject": "Sign Cryptographic Parameters",
       "summary": "The server SHALL return Operation Failed when the signing key has no associated Cryptographic Parameters and the selected algorithm requires parameters.",
       "role": "server",
-      "direction": "client_to_server",
-      "condition": "When the selected algorithm requires parameters.",
+      "direction": "server_to_client",
+      "condition": "No Cryptographic Parameters are associated with the Managed Cryptographic Object and the selected algorithm requires parameters.",
       "scope_state": "server_only",
       "element_ids": [],
       "profile_ids": [],
