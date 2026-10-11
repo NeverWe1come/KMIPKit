@@ -1,5 +1,6 @@
 //! Check contracts derived from OASIS KMIP Specification v2.1 §6.1.7,
-//! Tables 183–185. Traceability: `KMIPKIT-REQ-SPEC-6.1.7-001`,
+//! Tables 183–185, and the value encodings in §§4.17, 4.30, and 4.59.
+//! Traceability: `KMIPKIT-REQ-SPEC-6.1.7-001`,
 //! `-002-001`, `-002-002`, `-003`, `-004-001`, `-004-002`, and `-005`.
 //! These are source-derived tests, not official OASIS Test Case executions.
 
@@ -63,9 +64,9 @@ fn success_payload() -> Structure {
             UNIQUE_IDENTIFIER,
             Value::text_string("checked-object".to_owned()),
         ),
-        item(USAGE_LIMITS_COUNT, Value::integer(3)),
+        item(USAGE_LIMITS_COUNT, Value::long_integer(3)),
         item(CRYPTOGRAPHIC_USAGE_MASK, Value::integer(2)),
-        item(LEASE_TIME, Value::integer(60)),
+        item(LEASE_TIME, Value::interval(60)),
         item(UNKNOWN_VENDOR_TAG, Value::integer(-7)),
     ])
 }
@@ -100,9 +101,9 @@ fn request_emits_table_183_fields_once_in_order_and_preserves_each_value() {
     );
     let fields = payload.view();
     for (tag, expected) in [
-        (USAGE_LIMITS_COUNT, 3),
-        (CRYPTOGRAPHIC_USAGE_MASK, 2),
-        (LEASE_TIME, 60),
+        (USAGE_LIMITS_COUNT, 3_i64),
+        (CRYPTOGRAPHIC_USAGE_MASK, 2_i64),
+        (LEASE_TIME, 60_i64),
     ] {
         let actual = fields
             .children()
@@ -110,7 +111,9 @@ fn request_emits_table_183_fields_once_in_order_and_preserves_each_value() {
             .find(|field| field.tag().raw() == tag)
             .and_then(|field| {
                 field.with_value(|value| match value {
-                    ValueView::Integer(value) => Some(*value),
+                    ValueView::LongInteger(value) => Some(*value),
+                    ValueView::Integer(value) => Some(i64::from(*value)),
+                    ValueView::Interval(value) => Some(i64::from(*value)),
                     _ => None,
                 })
             });

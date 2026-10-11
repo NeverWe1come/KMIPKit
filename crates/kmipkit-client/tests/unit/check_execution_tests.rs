@@ -1,12 +1,13 @@
 #![cfg(test)]
 
 //! Fake-transport Check contracts from OASIS KMIP v2.1 §6.1.7,
-//! Tables 183–185. Traceability: `KMIPKIT-REQ-SPEC-6.1.7-001`,
+//! Tables 183–185, and the value encodings in §§4.17, 4.30, and 4.59.
+//! Traceability: `KMIPKIT-REQ-SPEC-6.1.7-001`,
 //! `-002-001`, `-002-002`, `-003`, `-004-001`, `-004-002`, and `-005`.
 //! Shared Pending and delivery behavior follows KMIP v2.1 §§8.6, 9.1, and
 //! 9.2. These are derived tests, not official OASIS Test Case executions.
 
-use kmipkit_protocol::{CheckRequest, UniqueIdentifier};
+use kmipkit_protocol::{AttributeSet, CheckRequest, CreateRequest, ObjectType, UniqueIdentifier};
 use kmipkit_test_support::ExchangeScript;
 use kmipkit_transport::RequestDeliveryState;
 use kmipkit_ttlv::codec::{CodecLimits, decode};
@@ -22,6 +23,7 @@ use crate::{
 };
 
 const CHECK_OPERATION: u32 = 0x0000_0002;
+const CREATE_OPERATION: u32 = 0x0000_0001;
 const BATCH_ITEM: u32 = 0x0042_000F;
 const REQUEST_HEADER: u32 = 0x0042_0077;
 const PROTOCOL_VERSION: u32 = 0x0042_0069;
@@ -34,6 +36,7 @@ const OPERATION: u32 = 0x0042_005C;
 const UNIQUE_BATCH_ITEM_ID: u32 = 0x0042_0093;
 const REQUEST_PAYLOAD: u32 = 0x0042_0079;
 const UNIQUE_IDENTIFIER: u32 = 0x0042_0094;
+const OBJECT_TYPE: u32 = 0x0042_0057;
 const USAGE_LIMITS_COUNT: u32 = 0x0042_0096;
 const CRYPTOGRAPHIC_USAGE_MASK: u32 = 0x0042_002C;
 const LEASE_TIME: u32 = 0x0042_0049;
@@ -56,9 +59,9 @@ fn check_request(identifier: &str) -> CheckRequest {
 fn response_payload(identifier: &str) -> Structure {
     test_structure([
         test_item(UNIQUE_IDENTIFIER, Value::text_string(identifier.to_owned())),
-        test_item(USAGE_LIMITS_COUNT, Value::integer(3)),
+        test_item(USAGE_LIMITS_COUNT, Value::long_integer(3)),
         test_item(CRYPTOGRAPHIC_USAGE_MASK, Value::integer(2)),
-        test_item(LEASE_TIME, Value::integer(60)),
+        test_item(LEASE_TIME, Value::interval(60)),
         test_item(UNKNOWN_VENDOR_TAG, Value::integer(-7)),
     ])
 }
@@ -73,7 +76,7 @@ fn structure_contains_tag(view: &StructureView<'_>, raw_tag: u32) -> bool {
     })
 }
 
-fn request_fields(bytes: &[u8]) -> (Option<u32>, Vec<(u32, Option<i32>)>) {
+fn request_fields(bytes: &[u8]) -> (Option<u32>, Vec<(u32, Option<i64>)>) {
     let message = decode(bytes).expect("the captured request has valid TTLV framing");
     message.with_value(|value| {
         let ValueView::Structure(message) = value else {
@@ -112,7 +115,9 @@ fn request_fields(bytes: &[u8]) -> (Option<u32>, Vec<(u32, Option<i32>)>) {
                     .iter()
                     .map(|field| {
                         let integer = field.with_value(|value| match value {
-                            ValueView::Integer(value) => Some(*value),
+                            ValueView::LongInteger(value) => Some(*value),
+                            ValueView::Integer(value) => Some(i64::from(*value)),
+                            ValueView::Interval(value) => Some(i64::from(*value)),
                             _ => None,
                         });
                         (field.tag().raw(), integer)
@@ -120,6 +125,40 @@ fn request_fields(bytes: &[u8]) -> (Option<u32>, Vec<(u32, Option<i32>)>) {
                     .collect()
             });
             (operation, fields)
+        })
+    })
+}
+
+fn request_payload_tags(bytes: &[u8], batch_index: usize) -> Vec<u32> {
+    let message = decode(bytes).expect("the captured request has valid TTLV framing");
+    message.with_value(|value| {
+        let ValueView::Structure(message) = value else {
+            panic!("the KMIP request message is a Structure");
+        };
+        let batch_items = message
+            .children()
+            .iter()
+            .filter(|field| field.tag().raw() == BATCH_ITEM)
+            .collect::<Vec<_>>();
+        batch_items[batch_index].with_value(|value| {
+            let ValueView::Structure(batch) = value else {
+                panic!("the Batch Item is a Structure");
+            };
+            let payload = batch
+                .children()
+                .iter()
+                .find(|field| field.tag().raw() == REQUEST_PAYLOAD)
+                .expect("the Batch Item contains a Request Payload");
+            payload.with_value(|value| {
+                let ValueView::Structure(payload) = value else {
+                    panic!("the Request Payload is a Structure");
+                };
+                payload
+                    .children()
+                    .iter()
+                    .map(|field| field.tag().raw())
+                    .collect()
+            })
         })
     })
 }
@@ -246,7 +285,7 @@ fn check_failure_preserves_table_185_result_without_retry() {
     });
 
     let item = client
-        .check(CheckRequest::new(), &CodecLimits::defaults())
+        .check(check_request("missing-object"), &CodecLimits::defaults())
         .expect("a valid Table 185 Operation Failed response remains a KMIP result");
     assert_eq!(item.outcome().result().status().raw(), OPERATION_FAILED);
     assert_eq!(
@@ -272,9 +311,9 @@ fn check_pending_preserves_correlation_without_poll_or_retry() {
         response,
         request_write_chunks: Vec::new(),
     });
-    let batch = ClientBatch::new(ClientBatchItem::new(ClientRequest::Check(
-        CheckRequest::new(),
-    )))
+    let batch = ClientBatch::new(ClientBatchItem::new(ClientRequest::Check(check_request(
+        "checked-object",
+    ))))
     .with_asynchronous_indicator(1);
 
     let response = client
@@ -322,12 +361,60 @@ fn check_leaves_recommended_batch_options_explicitly_selected_by_the_caller() {
 }
 
 #[test]
+fn check_can_consume_a_preceding_successful_create_placeholder() {
+    let response = operation_batch_response_bytes([
+        (
+            CREATE_OPERATION,
+            b"create-item".to_vec(),
+            test_structure([
+                test_item(OBJECT_TYPE, Value::enumeration(7)),
+                test_item(
+                    UNIQUE_IDENTIFIER,
+                    Value::text_string("created-object".to_owned()),
+                ),
+            ]),
+        ),
+        (
+            CHECK_OPERATION,
+            b"check-item".to_vec(),
+            response_payload("created-object"),
+        ),
+    ]);
+    let (mut client, fake, captured) = client_for(ExchangeScript::Success {
+        response,
+        request_write_chunks: Vec::new(),
+    });
+    let batch = ClientBatch::from_items([
+        ClientBatchItem::new(ClientRequest::Create(CreateRequest::new(
+            ObjectType::from_raw(7),
+            AttributeSet::new(),
+        )))
+        .with_unique_batch_item_id(b"create-item".to_vec()),
+        ClientBatchItem::new(ClientRequest::Check(CheckRequest::new()))
+            .with_unique_batch_item_id(b"check-item".to_vec()),
+    ])
+    .with_batch_order_option(true)
+    .with_batch_error_continuation_option(1);
+
+    client
+        .execute(batch, &CodecLimits::defaults())
+        .expect("Check can use the preceding Create response ID Placeholder");
+
+    let request = captured
+        .borrow()
+        .as_deref()
+        .expect("the ordered Create and Check batch reaches the fake transport");
+    assert!(!request_payload_tags(request, 1).contains(&UNIQUE_IDENTIFIER));
+    assert_eq!(fake.borrow().exchange_count(), 1);
+}
+
+#[test]
 fn check_transport_error_preserves_delivery_state_after_one_exchange() {
     let (mut client, fake, _) =
         client_for(ExchangeScript::FailAfterPartialWrite { written_bytes: 3 });
 
     let error = client
-        .check(CheckRequest::new(), &CodecLimits::defaults())
+        .check(check_request("checked-object"), &CodecLimits::defaults())
         .expect_err("the fake transport deliberately fails after part of the request is written");
 
     assert_eq!(error.category(), ClientErrorCategory::Transport);
