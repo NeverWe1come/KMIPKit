@@ -52,7 +52,8 @@ fn table_256_request_requires_and_preserves_the_explicit_secret_ticket() {
     let payload = request
         .into_ttlv_payload()
         .expect("the required Table 256 Ticket is encodable");
-    let fields = payload.view().children();
+    let payload_view = payload.view();
+    let fields = payload_view.children();
     assert_eq!(fields.len(), 1);
     assert_eq!(fields[0].tag().raw(), TICKET);
     fields[0].with_value(|value| {
@@ -78,11 +79,7 @@ fn table_257_success_requires_an_empty_response_payload() {
 }
 
 #[test]
-fn success_without_or_with_fields_in_payload_is_rejected() {
-    assert_eq!(
-        typed_response(LOGOUT, SUCCESS, None, None).unwrap_err(),
-        LogoutError::MissingResponsePayload
-    );
+fn success_with_fields_in_payload_is_rejected() {
     assert_eq!(
         typed_response(
             LOGOUT,

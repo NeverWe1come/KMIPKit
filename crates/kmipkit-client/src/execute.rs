@@ -35,6 +35,7 @@ use kmipkit_protocol::{
     ResponseMessage, ResultStatus, RevokeRequest, RevokeResponse, SetAttributeRequest,
     SetAttributeResponse, SignRequest, SignResponse, SignatureVerifyRequest,
     SignatureVerifyResponse,
+    LogoutRequest, LogoutResponse,
 };
 
 #[cfg(test)]
@@ -164,6 +165,7 @@ const REGISTER_OPERATION: u32 = 0x0000_0003; // KMIP v2.1 §6.1.43, Table 291.
 const REVOKE_OPERATION: u32 = 0x0000_0013; // KMIP v2.1 §6.1.44, Table 295.
 const DELEGATED_LOGIN_OPERATION: u32 = 0x0000_002F; // KMIP v2.1 §6.1.12, Table 199.
 const LOGIN_OPERATION: u32 = 0x0000_002D; // KMIP v2.1 §6.1.30, Table 253.
+const LOGOUT_OPERATION: u32 = 0x0000_002E; // KMIP v2.1 §6.1.31, Table 256.
 const CREATE_KEY_PAIR_OPERATION: u32 = 0x0000_0002;
 const CREATE_SPLIT_KEY_OPERATION: u32 = 0x0000_0028; // KMIP v2.1 §11.36, Table 470.
 const ACTIVATE_OPERATION: u32 = 0x0000_0012; // KMIP v2.1 §6.1.1, Table 164.
@@ -209,6 +211,8 @@ pub enum ClientRequest {
     DelegatedLogin(DelegatedLoginRequest),
     /// An explicit client-to-server Login request.
     Login(LoginRequest),
+    /// An explicit client-to-server Logout request with a caller-supplied Ticket.
+    Logout(LogoutRequest),
     /// An explicit client-to-server Obtain Lease request.
     ObtainLease(ObtainLeaseRequest),
     /// An explicit client-to-server Re-certify request.
@@ -400,6 +404,12 @@ impl ClientRequest {
         Self::Login(request)
     }
 
+    /// Creates a typed client-to-server Logout request variant.
+    #[must_use]
+    pub fn logout(request: LogoutRequest) -> Self {
+        Self::Logout(request)
+    }
+
     /// Creates a typed client-to-server Obtain Lease request variant.
     #[must_use]
     pub fn obtain_lease(request: ObtainLeaseRequest) -> Self {
@@ -517,6 +527,7 @@ impl ClientRequest {
             Self::Check(_) => CHECK_OPERATION,
             Self::DelegatedLogin(_) => DELEGATED_LOGIN_OPERATION,
             Self::Login(_) => LOGIN_OPERATION,
+            Self::Logout(_) => LOGOUT_OPERATION,
             Self::ObtainLease(_) => OBTAIN_LEASE_OPERATION,
             Self::Recertify(_) => RECERTIFY_OPERATION,
             Self::Rekey(_) => REKEY_OPERATION,
@@ -617,6 +628,7 @@ impl ClientRequest {
             Self::Check(request) => request.into_ttlv_payload(),
             Self::DelegatedLogin(request) => request.into_ttlv_payload(),
             Self::Login(request) => request.into_ttlv_payload(),
+            Self::Logout(request) => request.into_ttlv_payload(),
             Self::ObtainLease(request) => request.into_ttlv_payload(),
             Self::Recertify(request) => request.into_ttlv_payload(),
             Self::Rekey(request) => request.into_ttlv_payload(),
@@ -668,6 +680,7 @@ impl fmt::Debug for ClientRequest {
                 .field(request)
                 .finish(),
             Self::Login(request) => formatter.debug_tuple("Login").field(request).finish(),
+            Self::Logout(request) => formatter.debug_tuple("Logout").field(request).finish(),
             Self::ObtainLease(request) => {
                 formatter.debug_tuple("ObtainLease").field(request).finish()
             }
@@ -976,6 +989,7 @@ enum PendingResponse {
     DiscoverVersions(DiscoverVersionsResponse),
     DelegatedLogin(DelegatedLoginResponse),
     Login(LoginResponse),
+    Logout(LogoutResponse),
     Certify(CertifyResponse),
     Check(CheckResponse),
     ObtainLease(ObtainLeaseResponse),
@@ -1022,6 +1036,7 @@ impl PendingResponse {
             Self::DiscoverVersions(response) => ClientResponseRef::DiscoverVersions(response),
             Self::DelegatedLogin(response) => ClientResponseRef::DelegatedLogin(response),
             Self::Login(response) => ClientResponseRef::Login(response),
+            Self::Logout(response) => ClientResponseRef::Logout(response),
             Self::Certify(response) => ClientResponseRef::Certify(response),
             Self::Check(response) => ClientResponseRef::Check(response),
             Self::ObtainLease(response) => ClientResponseRef::ObtainLease(response),
@@ -1226,6 +1241,8 @@ pub enum ClientOperation {
     DelegatedLogin,
     /// Login.
     Login,
+    /// Logout.
+    Logout,
     /// Activate.
     Activate,
     /// Certify.
@@ -1428,6 +1445,7 @@ enum ClientResponseRef<'a> {
     DiscoverVersions(&'a DiscoverVersionsResponse),
     DelegatedLogin(&'a DelegatedLoginResponse),
     Login(&'a LoginResponse),
+    Logout(&'a LogoutResponse),
     Certify(&'a CertifyResponse),
     Check(&'a CheckResponse),
     ObtainLease(&'a ObtainLeaseResponse),
@@ -1491,6 +1509,7 @@ impl<'a> ClientResponseView<'a> {
             ClientResponseRef::DiscoverVersions(response) => response.result(),
             ClientResponseRef::DelegatedLogin(response) => response.result(),
             ClientResponseRef::Login(response) => response.result(),
+            ClientResponseRef::Logout(response) => response.result(),
             ClientResponseRef::Certify(response) => response.result(),
             ClientResponseRef::Check(response) => response.result(),
             ClientResponseRef::ObtainLease(response) => response.result(),
@@ -1566,6 +1585,15 @@ impl<'a> ClientResponseView<'a> {
     pub const fn login(&self) -> Option<&'a LoginResponse> {
         match self.response {
             ClientResponseRef::Login(response) => Some(response),
+            _ => None,
+        }
+    }
+
+    /// Returns the Logout response when this view represents it.
+    #[must_use]
+    pub const fn logout(&self) -> Option<&'a LogoutResponse> {
+        match self.response {
+            ClientResponseRef::Logout(response) => Some(response),
             _ => None,
         }
     }
@@ -1950,6 +1978,7 @@ impl fmt::Debug for ClientResponseView<'_> {
                 debug_ticket_response(formatter, response)
             }
             ClientResponseRef::Login(response) => debug_login_response(formatter, response),
+            ClientResponseRef::Logout(response) => debug_response(formatter, "Logout", response),
             ClientResponseRef::Encrypt(response) => debug_response(formatter, "Encrypt", response),
             ClientResponseRef::Decrypt(response) => debug_response(formatter, "Decrypt", response),
             ClientResponseRef::Hash(response) => debug_response(formatter, "Hash", response),
@@ -2029,6 +2058,8 @@ pub enum ClientBatchOutcome {
     DelegatedLogin(DelegatedLoginResponse),
     /// The server returned a Login result.
     Login(LoginResponse),
+    /// The server returned a Logout result.
+    Logout(LogoutResponse),
     /// The server returned a Certify result.
     Certify(CertifyResponse),
     /// The server returned a Check result.
@@ -2117,6 +2148,7 @@ impl ClientBatchOutcome {
             Self::Completed(_)
             | Self::DelegatedLogin(_)
             | Self::Login(_)
+            | Self::Logout(_)
             | Self::Certify(_)
             | Self::Check(_)
             | Self::ObtainLease(_)
@@ -2166,6 +2198,7 @@ impl ClientBatchOutcome {
             Self::Completed(response) => response.result(),
             Self::DelegatedLogin(response) => response.result(),
             Self::Login(response) => response.result(),
+            Self::Logout(response) => response.result(),
             Self::Certify(response) => response.result(),
             Self::Check(response) => response.result(),
             Self::ObtainLease(response) => response.result(),
@@ -2215,6 +2248,7 @@ impl ClientBatchOutcome {
             Self::Completed(_) => ClientOperation::DiscoverVersions,
             Self::DelegatedLogin(_) => ClientOperation::DelegatedLogin,
             Self::Login(_) => ClientOperation::Login,
+            Self::Logout(_) => ClientOperation::Logout,
             Self::Certify(_) => ClientOperation::Certify,
             Self::Check(_) => ClientOperation::Check,
             Self::ObtainLease(_) => ClientOperation::ObtainLease,
@@ -2319,6 +2353,21 @@ impl ClientBatchOutcome {
             Self::Pending(pending) => match pending.response() {
                 ClientResponseView {
                     response: ClientResponseRef::Login(response),
+                } => Some(response),
+                _ => None,
+            },
+            _ => None,
+        }
+    }
+
+    /// Returns the typed Logout response, including when Pending.
+    #[must_use]
+    pub const fn logout_response(&self) -> Option<&LogoutResponse> {
+        match self {
+            Self::Logout(response) => Some(response),
+            Self::Pending(pending) => match pending.response() {
+                ClientResponseView {
+                    response: ClientResponseRef::Logout(response),
                 } => Some(response),
                 _ => None,
             },
@@ -2649,6 +2698,7 @@ impl ClientBatchOutcome {
                 ClientResponseView::new(ClientResponseRef::DelegatedLogin(response))
             }
             Self::Login(response) => ClientResponseView::new(ClientResponseRef::Login(response)),
+            Self::Logout(response) => ClientResponseView::new(ClientResponseRef::Logout(response)),
             Self::Certify(response) => {
                 ClientResponseView::new(ClientResponseRef::Certify(response))
             }
@@ -2762,6 +2812,7 @@ impl fmt::Debug for ClientBatchOutcome {
                 .field(response)
                 .finish(),
             Self::Login(response) => formatter.debug_tuple("Login").field(response).finish(),
+            Self::Logout(response) => formatter.debug_tuple("Logout").field(response).finish(),
             Self::Certify(response) => formatter.debug_tuple("Certify").field(response).finish(),
             Self::Check(response) => formatter.debug_tuple("Check").field(response).finish(),
             Self::ObtainLease(response) => formatter
@@ -2870,6 +2921,7 @@ impl fmt::Display for ClientBatchOutcome {
                 write!(formatter, "DelegatedLogin({})", response.result())
             }
             Self::Login(response) => write!(formatter, "Login({})", response.result()),
+            Self::Logout(response) => write!(formatter, "Logout({})", response.result()),
             Self::Encrypt(response) => write!(formatter, "Encrypt({})", response.result()),
             Self::Decrypt(response) => write!(formatter, "Decrypt({})", response.result()),
             Self::DeriveKey(response) => write!(formatter, "Derive Key({})", response.result()),
@@ -4907,6 +4959,7 @@ fn request_mutation_is_prohibited(request: &ClientRequest) -> bool {
         | ClientRequest::Check(_)
         | ClientRequest::DelegatedLogin(_)
         | ClientRequest::Login(_)
+        | ClientRequest::Logout(_)
         | ClientRequest::ObtainLease(_)
         | ClientRequest::Recertify(_)
         | ClientRequest::Rekey(_)
@@ -5527,7 +5580,7 @@ fn response_outcome(
             PendingResponse::Activate,
             ClientBatchOutcome::Activate,
         ),
-        DELEGATED_LOGIN_OPERATION | LOGIN_OPERATION => {
+        DELEGATED_LOGIN_OPERATION | LOGIN_OPERATION | LOGOUT_OPERATION => {
             credential_session_response_outcome(operation, item)
         }
         operation if is_lifecycle_operation(operation) => {
@@ -5632,11 +5685,18 @@ fn credential_session_response_outcome(
             PendingResponse::Login,
             ClientBatchOutcome::Login,
         ),
+        LOGOUT_OPERATION => read_operation_outcome(
+            ClientOperation::Logout,
+            item,
+            LogoutResponse::try_from_response_item,
+            LogoutResponse::result,
+            PendingResponse::Logout,
+            ClientBatchOutcome::Logout,
+        ),
         _ => Err(protocol_error(ProtocolErrorKind::UnsupportedValue)),
     }
 }
 
-<<<<<<< HEAD
 const fn is_crypto_operation(operation: u32) -> bool {
     matches!(
         operation,

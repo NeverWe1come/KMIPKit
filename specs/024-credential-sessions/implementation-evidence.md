@@ -25,6 +25,16 @@ The source-derived protocol tests cover OASIS KMIP Specification v2.1 §6.1.31 T
 | Red | This commit | `cargo test -p kmipkit-client --lib logout_execution_tests` | Expected compile failures: Logout request construction, operation classification, and typed response accessors do not exist. |
 | Red formatting | This commit | `cargo fmt --all --check`; `git diff --check` | PASS. |
 
+## T012 — Logout GREEN
+
+Logout requires a caller-supplied typed Ticket and encodes its original ordered TTLV without logging or changing ticket state. The typed response validates the empty success payload and retains shared Failure/Pending metadata. The fake transport confirms one exchange, delivery-state behavior, no retry, and no Ticket attached to the next independent request.
+
+| Phase | Commit | Command | Result |
+|---|---|---|---|
+| Focused Green | This commit | `cargo test -p kmipkit-protocol --lib logout_operation_tests`; `cargo test -p kmipkit-client --lib logout_execution_tests` | PASS: 5 protocol tests and 6 fake-transport tests for Tables 256–258, secret redaction, Pending, NotSent, and no hidden ticket reuse. |
+| Green package checks | This commit | `cargo test -p kmipkit-protocol --all-features`; `cargo test -p kmipkit-client --all-features`; `cargo test -p kmipkit --all-features` | PASS: protocol (565 unit tests), client (438 unit tests), integration/UI/doc tests, and facade API tests. |
+| Green quality gates | This commit | `cargo clippy -p kmipkit-protocol -p kmipkit-client -p kmipkit --all-targets --all-features -- -D warnings`; `cargo fmt --all --check`; `git diff --check` | PASS. |
+
 These results establish the Delegated Login model and typed client path against source-derived tests. They do not indicate official KMIP conformance, cross-language API parity, or completion of KMIPKIT-024.
 
 ## T008 — Login RED
