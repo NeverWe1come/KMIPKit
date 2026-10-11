@@ -147,6 +147,18 @@ fn malformed_success_ticket_is_rejected_without_echoing_ticket_bytes() {
 }
 
 #[test]
+fn successful_response_rejects_duplicate_ticket_fields() {
+    let payload = structure([
+        item(TICKET, Value::structure(valid_ticket())),
+        item(TICKET, Value::structure(valid_ticket())),
+    ]);
+    let error = delegated_login_response(SUCCESS, None, Some(payload))
+        .expect_err("Table 200 contains a single required Ticket field");
+
+    assert_eq!(error, DelegatedLoginError::MalformedSuccessPayload);
+}
+
+#[test]
 fn unknown_ticket_enumeration_values_are_not_rejected() {
     for raw_type in [0, 2, 0x7FFF_FFFF, 0x8000_0001, u32::MAX] {
         let ticket = structure([

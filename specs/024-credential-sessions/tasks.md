@@ -44,7 +44,7 @@ Every task uses the repository checklist form: checkbox, sequential task ID, opt
 
 ### Refactor commit
 
-- [ ] T007 Refactor Delegated Login payload handling and tests in crates/kmipkit-protocol/src/delegated_login.rs and crates/kmipkit-protocol/tests/unit/delegated_login_operation_tests.rs; preserve field order, unknown data, secret redaction, and behavior, rerun the focused tests, and commit separately as Refactor.
+- [x] T007 Refactor Delegated Login payload handling and tests in crates/kmipkit-protocol/src/delegated_login.rs and crates/kmipkit-protocol/tests/unit/delegated_login_operation_tests.rs; preserve field order, unknown data, secret redaction, and behavior, rerun the focused tests, and commit separately as Refactor.
 
 **Checkpoint**: Delegated Login can be constructed, executed once, and inspected without automatic session state.
 

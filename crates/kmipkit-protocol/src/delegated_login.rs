@@ -91,15 +91,19 @@ impl DelegatedLoginRequest {
                 LeaseTime::Interval(seconds) => Value::interval(seconds),
                 LeaseTime::DateTime(unix_seconds) => Value::date_time(unix_seconds),
             };
-            push(&mut payload, LEASE_TIME, value)?;
+            cryptographic_operation::push(&mut payload, LEASE_TIME, value)?;
         }
         if let Some(count) = self.request_count {
-            push(&mut payload, REQUEST_COUNT, Value::integer(count))?;
+            cryptographic_operation::push(&mut payload, REQUEST_COUNT, Value::integer(count))?;
         }
         if let Some(usage_limits) = self.usage_limits {
-            push(&mut payload, USAGE_LIMITS, Value::structure(usage_limits))?;
+            cryptographic_operation::push(
+                &mut payload,
+                USAGE_LIMITS,
+                Value::structure(usage_limits),
+            )?;
         }
-        push(&mut payload, RIGHTS, Value::structure(self.rights))?;
+        cryptographic_operation::push(&mut payload, RIGHTS, Value::structure(self.rights))?;
         Ok(payload)
     }
 }
@@ -114,10 +118,6 @@ impl fmt::Debug for DelegatedLoginRequest {
             .field("rights", &"[PRESERVED TTLV]")
             .finish()
     }
-}
-
-fn push(payload: &mut Structure, raw_tag: u32, value: Value) -> Result<(), ProtocolError> {
-    cryptographic_operation::push(payload, raw_tag, value)
 }
 
 /// A typed Delegated Login response from §6.1.12, Table 200, or a preserved
@@ -187,17 +187,19 @@ fn parse_ticket(payload: &kmipkit_ttlv::StructureView<'_>) -> Result<Ticket, Del
         if ticket.is_some() {
             return Err(DelegatedLoginError::MalformedSuccessPayload);
         }
-        let tree = field.with_value(|value| match value {
-            ValueView::Structure(structure) => structure.try_clone().ok(),
-            _ => None,
-        });
-        let tree = tree.ok_or(DelegatedLoginError::MalformedSuccessPayload)?;
-        ticket = Some(
-            Ticket::try_from_ttlv(tree)
-                .map_err(|_| DelegatedLoginError::MalformedSuccessPayload)?,
-        );
+        ticket = Some(field.with_value(parse_ticket_value)?);
     }
     ticket.ok_or(DelegatedLoginError::MalformedSuccessPayload)
+}
+
+fn parse_ticket_value(value: ValueView<'_>) -> Result<Ticket, DelegatedLoginError> {
+    let ValueView::Structure(structure) = value else {
+        return Err(DelegatedLoginError::MalformedSuccessPayload);
+    };
+    let tree = structure
+        .try_clone()
+        .map_err(|_| DelegatedLoginError::MalformedSuccessPayload)?;
+    Ticket::try_from_ttlv(tree).map_err(|_| DelegatedLoginError::MalformedSuccessPayload)
 }
 
 /// Payload-free error converting a Delegated Login response batch item.
