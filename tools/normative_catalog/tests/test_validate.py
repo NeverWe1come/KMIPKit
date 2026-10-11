@@ -6148,6 +6148,149 @@ class CatalogValidationTests(unittest.TestCase):
         )
         self.assertEqual(oracle["oracle_status"], "partial-source-reviewed; not complete T003 oracle")
 
+    def test_spec_6_1_42_recover_keeps_client_may_and_unresolved_authentication_should(self) -> None:
+        """Specification v2.1 §§6.1.42 and 6.1.42.1 preserve Recover actor and payload boundaries."""
+        fixture_path = ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json"
+        oracle = json.loads(fixture_path.read_text(encoding="utf-8"))
+        source_path = "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
+        pinned_locators = audit_document_with_text((ROOT / source_path).read_bytes(), "KMIPKIT-SRC-spec")
+        recover_locators = [row for row in pinned_locators if row["section"] in ("6.1.42", "6.1.42.1")]
+        expected_locators = {
+            "KMIPKIT-CLAUSE-SPEC-6.1.42-001": ("6.1.42", 1, "paragraph", ["MAY", "SHOULD"], [32613, 32618]),
+            "KMIPKIT-CLAUSE-SPEC-6.1.42-002": ("6.1.42", 2, "table_row", ["REQUIRED"], [32631, 32649]),
+            "KMIPKIT-CLAUSE-SPEC-6.1.42-003": ("6.1.42", 3, "table_row", ["REQUIRED"], [32687, 32705]),
+            "KMIPKIT-CLAUSE-SPEC-6.1.42.1-001": ("6.1.42.1", 1, "paragraph", ["SHALL"], [32735, 32736]),
+            "KMIPKIT-CLAUSE-SPEC-6.1.42.1-002": ("6.1.42.1", 2, "table_row", ["REQUIRED"], [32756, 32770]),
+        }
+        self.assertEqual({row["clause_id"] for row in recover_locators}, set(expected_locators))
+        reviews = {
+            row["source_clause_id"]: row
+            for row in oracle["source_requirement_reviews"]
+            if row["source_section"] in ("6.1.42", "6.1.42.1")
+        }
+        self.assertEqual(set(reviews), set(expected_locators))
+        for clause_id, (section, ordinal, block_kind, keywords, line_range) in expected_locators.items():
+            review = reviews[clause_id]
+            self.assertEqual(review["source_section"], section)
+            self.assertEqual(review["source_locator"], {"ordinal": ordinal, "block_kind": block_kind})
+            self.assertEqual(review["html_line_range"], line_range)
+            self.assertEqual(review["source_excerpt"], pinned_source_excerpt(source_path, line_range))
+            pinned = next(row for row in recover_locators if row["clause_id"] == clause_id)
+            self.assertEqual(review["source_excerpt"], pinned["source_text"])
+            self.assertEqual(pinned["source_keywords"], keywords)
+
+        recover_atoms = reviews["KMIPKIT-CLAUSE-SPEC-6.1.42-001"]["source_obligations"]
+        self.assertEqual(
+            [(atom["source_order"], atom["source_keyword"], atom["source_text"]) for atom in recover_atoms],
+            [
+                (1, "MAY", "This request MAY need asynchronous polling to obtain the response due to delays caused by retrieving the object from the archive."),
+                (2, "MAY", "Once the response is received, the object is now on-line, and MAY be obtained (e.g., via a Get operation)."),
+                (3, "SHOULD", "Special authentication and authorization SHOULD be enforced to perform this request (see [KMIP-UG])."),
+            ],
+        )
+        expected_atom_dispositions = [
+            ("client", "client→server Recover request", "client_1_0", "KMIPKIT-REQ-SPEC-6.1.42-001-001"),
+            ("client", "client→server Get request", "client_1_0", "KMIPKIT-REQ-SPEC-6.1.42-001-002"),
+            ("unresolved", "special authentication and authorization enforcement; actor unspecified", "unresolved", None),
+        ]
+        self.assertEqual(
+            [
+                (atom["actor"], atom["direction"], atom["scope_disposition"], atom["candidate_requirement_id"])
+                for atom in recover_atoms
+            ],
+            expected_atom_dispositions,
+        )
+        self.assertEqual(
+            reviews["KMIPKIT-CLAUSE-SPEC-6.1.42-001"]["expected_client_requirement_ids"],
+            ["KMIPKIT-REQ-SPEC-6.1.42-001-001", "KMIPKIT-REQ-SPEC-6.1.42-001-002"],
+        )
+        self.assertIn("informative", reviews["KMIPKIT-CLAUSE-SPEC-6.1.42-001"]["review_note"].lower())
+        self.assertIn("actor", reviews["KMIPKIT-CLAUSE-SPEC-6.1.42-001"]["review_note"].lower())
+
+        request_rows = reviews["KMIPKIT-CLAUSE-SPEC-6.1.42-002"]["source_request_rows"]
+        self.assertEqual(len(request_rows), 1)
+        request_row = request_rows[0]
+        self.assertEqual(request_row["row_label"], "Unique Identifier")
+        self.assertEqual(request_row["required"], "No")
+        self.assertEqual(request_row["actor"], "client")
+        self.assertEqual(request_row["disposition"], "optional_request_field_with_existing_conditional_capability")
+        self.assertEqual(request_row["html_line_range"], [32650, 32668])
+        self.assertEqual(request_row["source_excerpt"], pinned_source_excerpt(source_path, [32650, 32668]))
+        self.assertEqual(request_row["reused_requirement_id"], "KMIPKIT-REQ-SPEC-6.1-003-002")
+        self.assertEqual(request_row["source_requirement_ids"], ["KMIPKIT-REQ-SPEC-6.1-003-002"])
+        self.assertIn("subsequent", request_row["reuse_condition"])
+        self.assertIn("ID Placeholder", request_row["source_note"])
+        self.assertIsNone(request_row["source_gap_id"])
+
+        response_rows = reviews["KMIPKIT-CLAUSE-SPEC-6.1.42-003"]["source_payload_rows"]
+        self.assertEqual(
+            response_rows,
+            [{
+                "row_label": "Unique Identifier", "required": "Yes", "actor": "server",
+                "disposition": "response_payload_data", "html_line_range": [32706, 32723],
+                "source_excerpt": pinned_source_excerpt(source_path, [32706, 32723]),
+            }],
+        )
+
+        error_review = reviews["KMIPKIT-CLAUSE-SPEC-6.1.42.1-001"]
+        self.assertEqual(
+            [(atom["source_order"], atom["source_keyword"], atom["source_text"], atom["actor"], atom["direction"], atom["scope_disposition"], atom["candidate_requirement_id"])
+             for atom in error_review["source_obligations"]],
+            [(1, "SHALL", "This section details the specific Result Reasons that SHALL be returned for errors detected in a Recover Operation.",
+              "server", "server→client error response", "server_only", None)],
+        )
+        error_inventory = reviews["KMIPKIT-CLAUSE-SPEC-6.1.42.1-002"]
+        self.assertEqual(error_inventory["source_obligations"], [])
+        self.assertEqual(
+            error_inventory["source_excerpt"].split("Operation Failed ", 1)[1].split(", "),
+            ["Object Not Found", "Attestation Failed", "Attestation Required", "Feature Not Supported", "Invalid Field", "Invalid Message", "Operation Not Supported", "Permission Denied", "Response Too Large"],
+        )
+        self.assertIn("enum", error_inventory["review_note"].lower())
+
+        authentication_gap_id = "KMIPKIT-SOURCE-GAP-SPEC-6.1.42-RECOVER-AUTHENTICATION-SHOULD-ACTOR-UNRESOLVED"
+        recover_gaps = {
+            row["gap_id"]: row
+            for row in oracle["source_only_requirement_gaps"]
+            if row["source_section"] in ("6.1.42", "6.1.42.1")
+        }
+        self.assertEqual(set(recover_gaps), {authentication_gap_id})
+        auth_gap = recover_gaps[authentication_gap_id]
+        self.assertEqual(auth_gap["source_clause_id"], "KMIPKIT-CLAUSE-SPEC-6.1.42-001")
+        self.assertEqual(auth_gap["source_locator"], {"ordinal": 1, "block_kind": "paragraph"})
+        self.assertEqual(auth_gap["html_line_range"], [32613, 32618])
+        self.assertEqual(auth_gap["source_excerpt"], pinned_source_excerpt(source_path, [32613, 32618]))
+        self.assertEqual(auth_gap["source_keywords"], ["SHOULD"])
+        self.assertEqual(auth_gap["source_force"], "formal_SHOULD_with_actor_unresolved")
+        self.assertEqual(auth_gap["actor"], "unresolved")
+        self.assertEqual(auth_gap["scope_disposition"], "unresolved")
+        self.assertIsNone(auth_gap["candidate_requirement_id"])
+        self.assertIsNone(auth_gap["proposed_requirement_id"])
+        self.assertEqual(auth_gap["status"], "actor_and_scope_unresolved")
+        self.assertIn("informative", auth_gap["review_note"].lower())
+
+        captions = {
+            "request": ([32673, 32674], "Table 288: Recover Request Payload"),
+            "response": ([32728, 32729], "Table 289: Recover Response Payload"),
+            "errors": ([32775, 32775], "Table 290: Recover Errors"),
+        }
+        for payload, (line_range, caption) in captions.items():
+            with self.subTest(payload_caption=payload):
+                self.assertIn(caption, pinned_source_excerpt(source_path, line_range))
+
+        expected_crosswalks = {
+            ("KMIPKIT-REQ-SPEC-6.1.42-001-001", 1),
+            ("KMIPKIT-REQ-SPEC-6.1.42-001-002", 2),
+        }
+        self.assertEqual(
+            {
+                (row["requirement_id"], row["source_obligation_order"])
+                for row in oracle["requirement_crosswalk"]
+                if row["requirement_id"].startswith("KMIPKIT-REQ-SPEC-6.1.42-")
+            },
+            expected_crosswalks,
+        )
+        self.assertEqual(oracle["oracle_status"], "partial-source-reviewed; not complete T003 oracle")
+
     def test_spec_4_19_through_4_25_source_review_slice_preserves_actor_and_force(self) -> None:
         """The source audit separates server lifecycle rules and unresolved client wording."""
         oracle = json.loads(
