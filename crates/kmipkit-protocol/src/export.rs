@@ -269,45 +269,31 @@ fn parse_success_payload(
     for field in payload.children() {
         match field.tag().raw() {
             OBJECT_TYPE => {
-                if object_type.is_some() {
-                    return Err(ExportError::MalformedSuccessPayload);
-                }
-                object_type = field.with_value(|value| match value {
-                    ValueView::Enumeration(raw) => Some(ObjectType::from_raw(*raw)),
-                    _ => None,
-                });
-                if object_type.is_none() {
-                    return Err(ExportError::MalformedSuccessPayload);
-                }
+                let value = field
+                    .with_value(|value| match value {
+                        ValueView::Enumeration(raw) => Some(ObjectType::from_raw(*raw)),
+                        _ => None,
+                    })
+                    .ok_or(ExportError::MalformedSuccessPayload)?;
+                set_once(&mut object_type, value)?;
             }
             UNIQUE_IDENTIFIER => {
-                if unique_identifier.is_some() {
-                    return Err(ExportError::MalformedSuccessPayload);
-                }
-                unique_identifier = field.with_value(|value| parse_unique_identifier(&value));
-                if unique_identifier.is_none() {
-                    return Err(ExportError::MalformedSuccessPayload);
-                }
+                let value = field
+                    .with_value(|value| parse_unique_identifier(&value))
+                    .ok_or(ExportError::MalformedSuccessPayload)?;
+                set_once(&mut unique_identifier, value)?;
             }
             ATTRIBUTES => {
-                if attributes.is_some() || field.item_type() != ItemType::Structure {
+                if field.item_type() != ItemType::Structure {
                     return Err(ExportError::MalformedSuccessPayload);
                 }
-                attributes = Some(
-                    field
-                        .try_clone()
-                        .map_err(|_| ExportError::MalformedSuccessPayload)?,
-                );
+                set_once(&mut attributes, clone_field(field)?)?;
             }
             raw if is_object_tag(raw) => {
-                if object.is_some() || field.item_type() != ItemType::Structure {
+                if field.item_type() != ItemType::Structure {
                     return Err(ExportError::MalformedSuccessPayload);
                 }
-                object = Some(
-                    field
-                        .try_clone()
-                        .map_err(|_| ExportError::MalformedSuccessPayload)?,
-                );
+                set_once(&mut object, clone_field(field)?)?;
             }
             _ if field.item_type() == ItemType::Structure => unknown_structures.push(field),
             _ => {}
@@ -326,6 +312,20 @@ fn parse_success_payload(
         attributes.ok_or(ExportError::MalformedSuccessPayload)?,
         object.ok_or(ExportError::MalformedSuccessPayload)?,
     ))
+}
+
+fn set_once<T>(slot: &mut Option<T>, value: T) -> Result<(), ExportError> {
+    if slot.is_some() {
+        return Err(ExportError::MalformedSuccessPayload);
+    }
+    *slot = Some(value);
+    Ok(())
+}
+
+fn clone_field(field: &Item) -> Result<Item, ExportError> {
+    field
+        .try_clone()
+        .map_err(|_| ExportError::MalformedSuccessPayload)
 }
 
 fn is_object_tag(raw: u32) -> bool {

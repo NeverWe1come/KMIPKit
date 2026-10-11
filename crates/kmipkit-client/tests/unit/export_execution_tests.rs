@@ -7,7 +7,7 @@ use kmipkit_test_support::ExchangeScript;
 use kmipkit_ttlv::Value;
 use kmipkit_ttlv::codec::CodecLimits;
 
-use super::{ClientOperation, EXPORT_OPERATION, encode_message_for_test};
+use super::{ClientOperation, ClientRequest, EXPORT_OPERATION, encode_message_for_test};
 use crate::asynchronous_execution_test_support::{client_for, request_contains};
 use crate::execute_test_support::{test_item, test_structure};
 
@@ -64,6 +64,10 @@ fn server_error_response() -> Vec<u8> {
 #[test]
 fn explicit_export_options_reach_the_server_once_and_preserve_its_failure() {
     assert_eq!(EXPORT_OPERATION, 0x0000_002B);
+    assert_eq!(
+        format!("{:?}", ClientRequest::Export(request())),
+        "Export([REDACTED])"
+    );
     let (mut client, fake, request_bytes) = client_for(ExchangeScript::Success {
         response: server_error_response(),
         request_write_chunks: vec![4, 8, 3],

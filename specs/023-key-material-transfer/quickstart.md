@@ -52,3 +52,11 @@ Record separate Red, Green, and Refactor commit IDs per story. The implementatio
 - Passed `cargo test -p kmipkit-protocol --lib derive_key_operation_tests` (5 tests) and `cargo test -p kmipkit-client --lib derive_key_execution_tests` (1 test).
 - Passed `cargo fmt --all --check`, `cargo clippy -p kmipkit-protocol -p kmipkit-client --all-targets --all-features -- -D warnings`, and `git diff --check`.
 - Fixture vectors derive from KMIP 2.1 tables and do not establish official conformance or independent implementation interoperability.
+
+## Export cycle evidence
+
+- Red commit: `74c1ed86`.
+- Green commit: `84bdd676`.
+- Passed `cargo test -p kmipkit-protocol --lib export_operation_tests` (3 tests) and `cargo test -p kmipkit-client --lib export_execution_tests` (1 test).
+- Passed `cargo fmt --all --check`, `cargo clippy -p kmipkit-protocol -p kmipkit-client --all-targets --all-features -- -D warnings`, and `git diff --check`.
+- Table-derived vectors exercise caller-selected options, full successful response retention/redaction, unknown result values, single dispatch, and server-error passthrough; they do not establish official conformance or independent implementation interoperability.

@@ -111,6 +111,7 @@ fn request_preserves_all_explicit_optional_choices_and_omits_absent_fields() {
         .with_key_wrap_type(KeyWrapType::from_raw(0xF123_456A))
         .with_key_compression_type(KeyCompressionType::from_raw(0xF123_456B))
         .with_key_wrapping_specification(specification);
+    assert_eq!(format!("{request:?}"), "ExportRequest([REDACTED])");
     let payload = request
         .into_ttlv_payload()
         .expect("all caller-selected options are structurally valid");
