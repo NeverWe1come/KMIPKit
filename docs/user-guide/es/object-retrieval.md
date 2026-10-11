@@ -200,9 +200,9 @@ inspección a los metadatos permitidos, como `Object Type` y `Unique
 Identifier`, y al tag del elemento genérico `Any Object`. No inspecciones la
 estructura de `Any Object` ni sus descendientes, que pueden contener datos
 secretos. Trata el contenido como secreto: no formatees ni registres el
-objeto, material de claves, especificaciones de envoltura o cuerpos KMIP sin procesar. El almacenamiento TTLV
-propiedad de KMIPKit se pone a cero al descartarlo; las copias creadas por el
-llamador quedan fuera de esa garantía.
+objeto, material de claves, especificaciones de envoltura ni cuerpos KMIP sin
+procesar. El almacenamiento TTLV propiedad de KMIPKit se pone a cero al
+descartarlo; las copias creadas por el llamador quedan fuera de esa garantía.
 
 Un error del servidor es un resultado de operación tipado con `Result
 Status`, `Result Reason` y `Result Message` opcional; no es un `ClientError`
