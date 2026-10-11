@@ -211,6 +211,26 @@ fn policy_denial_response_returns_the_policy_value_without_a_success_identifier(
 }
 
 #[test]
+fn failed_response_does_not_expose_a_returned_identifier_as_authorization() {
+    let response = check_response(
+        OPERATION_FAILED,
+        Some(INCOMPATIBLE_CRYPTOGRAPHIC_USAGE_MASK),
+        Some(structure([
+            item(
+                UNIQUE_IDENTIFIER,
+                Value::text_string("denied-object".to_owned()),
+            ),
+            item(CRYPTOGRAPHIC_USAGE_MASK, Value::integer(2)),
+        ])),
+    )
+    .expect("the generic response remains inspectable despite the invalid identifier");
+
+    assert!(response.unique_identifier().is_none());
+    assert_eq!(response.cryptographic_usage_mask(), Some(2));
+    assert!(response.with_ttlv(|view| structure_contains_tag(&view, UNIQUE_IDENTIFIER)));
+}
+
+#[test]
 fn response_rejects_duplicate_and_mistyped_optional_policy_values() {
     let identifier = || item(UNIQUE_IDENTIFIER, Value::text_string("checked".to_owned()));
     let malformed_payloads = [
