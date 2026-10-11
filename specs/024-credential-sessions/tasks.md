@@ -56,7 +56,7 @@ Every task uses the repository checklist form: checkbox, sequential task ID, opt
 
 ### Red commit
 
-- [ ] T008 Add failing protocol and fake-transport tests in crates/kmipkit-protocol/tests/unit/login_operation_tests.rs and crates/kmipkit-client/tests/unit/login_execution_tests.rs; register them through crates/kmipkit-protocol/src/lib.rs and crates/kmipkit-client/src/execute.rs; cover empty/optional Table 253 requests, Table 254 Ticket parsing, Table 255 reasons, fixture case KMIPKIT-TEST-CN01-2-48, malformed/unknown data, Pending/correlation without Poll, no retry, and no hidden auth-state mutation; record the failing command/output in a separate Red commit.
+- [x] T008 Add failing protocol and fake-transport tests in crates/kmipkit-protocol/tests/unit/login_operation_tests.rs and crates/kmipkit-client/tests/unit/login_execution_tests.rs; register them through crates/kmipkit-protocol/src/lib.rs and crates/kmipkit-client/src/execute.rs; cover empty/optional Table 253 requests, Table 254 Ticket parsing, Table 255 reasons, fixture case KMIPKIT-TEST-CN01-2-48, malformed/unknown data, Pending/correlation without Poll, no retry, and no hidden auth-state mutation; record the failing command/output in a separate Red commit.
 
 ### Green commit
 

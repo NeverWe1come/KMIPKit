@@ -445,3 +445,7 @@ mod ticket_model_tests;
 #[cfg(test)]
 #[path = "../tests/unit/delegated_login_operation_tests.rs"]
 mod delegated_login_operation_tests;
+
+#[cfg(test)]
+#[path = "../tests/unit/login_operation_tests.rs"]
+mod login_operation_tests;

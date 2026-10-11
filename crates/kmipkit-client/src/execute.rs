@@ -83,6 +83,10 @@ mod key_transfer_operations_execution_tests;
 mod delegated_login_execution_tests;
 
 #[cfg(test)]
+#[path = "../tests/unit/login_execution_tests.rs"]
+mod login_execution_tests;
+
+#[cfg(test)]
 #[path = "../tests/unit/hash_execution_tests.rs"]
 mod hash_execution_tests;
 

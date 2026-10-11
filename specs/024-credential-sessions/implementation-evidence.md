@@ -16,3 +16,13 @@ The source-derived tests cover OASIS KMIP Specification v2.1 §6.1.12 Tables 199
 | Refactor quality gates | This commit | `cargo clippy -p kmipkit-protocol -p kmipkit-client -p kmipkit --all-targets --all-features -- -D warnings`; `cargo fmt --all --check`; `git diff --check` | PASS. |
 
 These results establish the Delegated Login model and typed client path against source-derived tests. They do not indicate official KMIP conformance, cross-language API parity, or completion of KMIPKIT-024.
+
+## T008 — Login RED
+
+The tests use OASIS KMIP Specification v2.1 §6.1.30, Tables 253–255; Ticket uses §7.39, Table 391 and §11.57, Table 488. The pinned Test Cases CN01 §2.48 fixture is parsed directly from `specification/oasis/kmip-2.1/fixtures/TC-LOGIN-1-21.xml`; the assertions distinguish fixture consistency from a server interoperability run.
+
+| Phase | Commit | Command | Result |
+|---|---|---|---|
+| Red | This commit | `cargo test -p kmipkit-protocol --lib login_operation_tests` | Expected compile failure: `LoginError`, `LoginRequest`, and `LoginResponse` are not implemented/exported. |
+| Red | This commit | `cargo test -p kmipkit-client --lib login_execution_tests` | Expected compile failures: Login request construction, operation classification, and typed response accessors do not exist. |
+| Red formatting | This commit | `cargo fmt --all --check`; `git diff --check` | PASS. |
