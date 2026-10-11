@@ -497,6 +497,19 @@ def _pull_request_rows(
     return rows, required_results, list(PR_REQUIRED_JOBS), selected_jobs, plan_error
 
 
+def _render_required_row(label: str, job_id: str, needs: Mapping[str, Any]) -> tuple[str, bool]:
+    result = _job_result(needs, job_id)
+    return f"| {_safe_text(label)} | {RESULT_LABELS[result]} |", result == "success"
+
+
+def _render_required_rows(
+    job_group: tuple[tuple[str, str], ...], needs: Mapping[str, Any]
+) -> tuple[list[str], list[bool]]:
+    """Render one required group and return its pass flags in display order."""
+    rendered = [_render_required_row(label, job_id, needs) for label, job_id in job_group]
+    return [row for row, _ in rendered], [passed for _, passed in rendered]
+
+
 def build_summary(
     *,
     event_name: str,
@@ -544,6 +557,8 @@ def build_summary(
         and context.get("ref_protected") is True
     ):
         rows, required_results = _render_required_rows(PR_REQUIRED_JOBS, needs)
+        job_group = PR_REQUIRED_JOBS
+        selected_jobs = {job_id for _, job_id in job_group}
         rows.extend(
             (
                 "| Scheduled dependency policy | ⚪ Not applicable — schedule-triggered checks |",
@@ -650,6 +665,7 @@ def main() -> int:
         return 2
 
     renderer_succeeded = True
+    manifest: dict[str, Any] | None = None
     try:
         needs = json.loads(os.environ.get("CI_NEEDS_JSON", "{}"), object_pairs_hook=_unique_json_object)
         if not isinstance(needs, dict):
@@ -675,21 +691,13 @@ def main() -> int:
                 needs=needs,
                 branch_protection=branch_protection,
             )
-            output_path = os.environ.get("GITHUB_OUTPUT")
-            if not output_path:
-                raise ValueError("manifest output is not configured")
-            with Path(output_path).open("a", encoding="utf-8", newline="\n") as output_file:
-                output_file.write(
-                    "profile_evidence_manifest="
-                    + json.dumps(manifest, separators=(",", ":"), sort_keys=True)
-                    + "\n"
-                )
         markdown, exit_code = build_summary(
             event_name=event_name,
             context=context,
             needs=needs,
         )
     except (json.JSONDecodeError, TypeError, ValueError):
+        manifest = None
         markdown = _failure_summary("Invalid workflow status input.")
         exit_code = 1
         renderer_succeeded = False
@@ -698,7 +706,14 @@ def main() -> int:
         Path(summary_path).write_text(markdown, encoding="utf-8", newline="\n")
         _write_console(markdown)
         with Path(output_path).open("a", encoding="utf-8", newline="\n") as output:
-            output.write(f"summary_written={'true' if renderer_succeeded else 'false'}\n")
+            output_lines = []
+            if manifest is not None and renderer_succeeded and exit_code == 0:
+                output_lines.append(
+                    "profile_evidence_manifest="
+                    + json.dumps(manifest, separators=(",", ":"), sort_keys=True)
+                )
+            output_lines.append(f"summary_written={'true' if renderer_succeeded else 'false'}")
+            output.write("\n".join(output_lines) + "\n")
     except OSError as error:
         print(f"CI run summary could not be written: {error}", file=sys.stderr)
         return 1
