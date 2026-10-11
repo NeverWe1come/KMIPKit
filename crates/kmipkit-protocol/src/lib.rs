@@ -14,6 +14,8 @@ pub mod attribute;
 mod attribute_reference;
 mod attribute_types_generated;
 mod cancel;
+mod certify;
+mod check;
 mod create;
 mod create_key_pair;
 mod create_split_key;
@@ -38,6 +40,7 @@ mod mac_verify;
 mod message;
 mod modify_attribute;
 mod multipart;
+mod obtain_lease;
 mod operation_data;
 mod ping;
 mod poll;
@@ -47,8 +50,14 @@ mod profile;
 pub mod profiles_generated;
 mod query;
 mod query_async_requests;
+mod recertify;
 mod recover;
+mod register;
+mod rekey;
+mod rekey_key_pair;
+mod reprovision;
 mod result;
+mod revoke;
 mod set_attribute;
 mod sign;
 mod signature_verify;
@@ -63,6 +72,8 @@ pub use asynchronous::AsynchronousOperationError;
 pub use attribute::{AttributeSet, AttributeSetError, CurrentAttribute, NewAttribute};
 pub use attribute_reference::AttributeReference;
 pub use cancel::{CancelRequest, CancelResponse, CancellationResult};
+pub use certify::{CertifyError, CertifyRequest, CertifyResponse};
+pub use check::{CheckError, CheckRequest, CheckResponse};
 pub use create::{CreateError, CreateRequest, CreateResponse, ObjectType, UniqueIdentifier};
 pub use create_key_pair::{CreateKeyPairError, CreateKeyPairRequest, CreateKeyPairResponse};
 pub use create_split_key::{
@@ -104,6 +115,7 @@ pub use message::{
     ResponseHeaderView, ResponseMessage,
 };
 pub use modify_attribute::{ModifyAttributeError, ModifyAttributeRequest, ModifyAttributeResponse};
+pub use obtain_lease::{ObtainLeaseError, ObtainLeaseRequest, ObtainLeaseResponse};
 pub use operation_data::OperationData;
 pub use ping::{PingError, PingRequest, PingResponse};
 pub use poll::{PollRequest, PollResponse};
@@ -115,10 +127,16 @@ pub use profile::{
 };
 pub use query::{QueryError, QueryFunction, QueryRequest, QueryResponse, QueryResponseField};
 pub use query_async_requests::{QueryAsyncRequestsRequest, QueryAsyncRequestsResponse};
+pub use recertify::{RecertifyError, RecertifyRequest, RecertifyResponse};
 pub use recover::{RecoverError, RecoverRequest, RecoverResponse};
+pub use register::{RegisterError, RegisterRequest, RegisterResponse};
+pub use rekey::{RekeyError, RekeyRequest, RekeyResponse};
+pub use rekey_key_pair::{RekeyKeyPairError, RekeyKeyPairRequest, RekeyKeyPairResponse};
+pub use reprovision::{ReProvisionError, ReProvisionRequest, ReProvisionResponse};
 pub use result::{
     KmipOperationResult, ResultMessage, ResultReason, ResultStatus, ResultValidationError,
 };
+pub use revoke::{RevocationReason, RevokeError, RevokeRequest, RevokeResponse};
 pub use set_attribute::{SetAttributeError, SetAttributeRequest, SetAttributeResponse};
 pub use sign::{SignError, SignRequest, SignResponse};
 pub use signature_verify::{SignatureVerifyError, SignatureVerifyRequest, SignatureVerifyResponse};
@@ -138,6 +156,46 @@ mod activate_operation_tests;
 #[cfg(test)]
 #[path = "../tests/unit/archive_operation_tests.rs"]
 mod archive_operation_tests;
+
+#[cfg(test)]
+#[path = "../tests/unit/certify_operation_tests.rs"]
+mod certify_operation_tests;
+
+#[cfg(test)]
+#[path = "../tests/unit/check_operation_tests.rs"]
+mod check_operation_tests;
+
+#[cfg(test)]
+#[path = "../tests/unit/obtain_lease_operation_tests.rs"]
+mod obtain_lease_operation_tests;
+
+#[cfg(test)]
+#[path = "../tests/unit/recertify_operation_tests.rs"]
+mod recertify_operation_tests;
+
+#[cfg(test)]
+#[path = "../tests/unit/rekey_operation_tests.rs"]
+mod rekey_operation_tests;
+
+#[cfg(test)]
+#[path = "../tests/unit/rekey_key_pair_operation_tests.rs"]
+mod rekey_key_pair_operation_tests;
+
+#[cfg(test)]
+#[path = "../tests/unit/reprovision_operation_tests.rs"]
+mod reprovision_operation_tests;
+
+#[cfg(test)]
+#[path = "../tests/unit/register_operation_tests.rs"]
+mod register_operation_tests;
+
+#[cfg(test)]
+#[path = "../tests/unit/revoke_operation_tests.rs"]
+mod revoke_operation_tests;
+
+#[cfg(test)]
+#[path = "../tests/unit/lifecycle_error_contract_tests.rs"]
+mod lifecycle_error_contract_tests;
 
 #[cfg(test)]
 #[path = "../tests/unit/destroy_operation_tests.rs"]

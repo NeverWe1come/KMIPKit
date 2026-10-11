@@ -1,7 +1,7 @@
 //! Synchronous typed KMIP client execution foundation for `KMIPKit`.
 //!
 //! The typed request enum supports explicit Discover Versions, Activate,
-//! Archive, Destroy, Recover, Create, Create Key Pair, Create Split Key, Add
+//! Archive, Certify, Destroy, Recover, Create, Create Key Pair, Create Split Key, Add
 //! Attribute, Adjust Attribute, Delete Attribute, Get Attributes, Get
 //! Attribute List, Modify Attribute, Set Attribute, Query, and Ping operations.
 //! Separate methods execute Poll, Cancel, Process, and Query Asynchronous
@@ -112,6 +112,18 @@ mod activate_execution_tests;
 mod archive_execution_tests;
 
 #[cfg(test)]
+#[path = "../tests/unit/certify_execution_tests.rs"]
+mod certify_execution_tests;
+
+#[cfg(test)]
+#[path = "../tests/unit/check_execution_tests.rs"]
+mod check_execution_tests;
+
+#[cfg(test)]
+#[path = "../tests/unit/obtain_lease_execution_tests.rs"]
+mod obtain_lease_execution_tests;
+
+#[cfg(test)]
 #[path = "../tests/unit/destroy_execution_tests.rs"]
 mod destroy_execution_tests;
 
@@ -190,6 +202,30 @@ mod attribute_mutation_execution_tests;
 #[cfg(test)]
 #[path = "../tests/unit/attribute_execution_contract_tests.rs"]
 mod attribute_execution_contract_tests;
+
+#[cfg(test)]
+#[path = "../tests/unit/recertify_execution_tests.rs"]
+mod recertify_execution_tests;
+
+#[cfg(test)]
+#[path = "../tests/unit/rekey_execution_tests.rs"]
+mod rekey_execution_tests;
+
+#[cfg(test)]
+#[path = "../tests/unit/rekey_key_pair_execution_tests.rs"]
+mod rekey_key_pair_execution_tests;
+
+#[cfg(test)]
+#[path = "../tests/unit/reprovision_execution_tests.rs"]
+mod reprovision_execution_tests;
+
+#[cfg(test)]
+#[path = "../tests/unit/register_execution_tests.rs"]
+mod register_execution_tests;
+
+#[cfg(test)]
+#[path = "../tests/unit/revoke_execution_tests.rs"]
+mod revoke_execution_tests;
 
 #[cfg(test)]
 #[path = "../tests/unit/object_read_execution_tests.rs"]
