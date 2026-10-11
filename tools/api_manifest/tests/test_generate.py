@@ -101,6 +101,23 @@ def _create_repo(parent: Path) -> Path:
     shutil.copy2(CATALOG, catalog_path)
 
     manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
+    dependency_matrix = ROOT / "specs" / "043-public-api-bindings" / "contracts" / "operation-dependencies.md"
+    dependency_destination = root / "specs" / "043-public-api-bindings" / "contracts" / dependency_matrix.name
+    dependency_destination.parent.mkdir(parents=True, exist_ok=True)
+    shutil.copy2(dependency_matrix, dependency_destination)
+    for operation in manifest.get("operations", []):
+        dependency = operation.get("ownerDependency", {})
+        owner_id = dependency.get("specId")
+        if not isinstance(owner_id, str):
+            continue
+        number = int(owner_id[-4:])
+        owner_matches = sorted((ROOT / "specs").glob(f"{number:03d}-*"))
+        if len(owner_matches) != 1:
+            raise AssertionError(f"expected one checked-in owner specification for {owner_id}")
+        source_path = owner_matches[0] / "spec.md"
+        destination = root / "specs" / owner_matches[0].name / "spec.md"
+        destination.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(source_path, destination)
     referenced_paths: set[str] = set()
     for collection_name in (
         "operations",

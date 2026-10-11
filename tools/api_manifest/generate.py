@@ -548,6 +548,13 @@ def _validate_operation_readiness(
         if state in {"declared", "verified"}:
             if operation.get("candidateSpecId") is not None:
                 raise ManifestError("ready operation still records a candidate owner")
+            dependency = operation.get("ownerDependency")
+            if (
+                not isinstance(dependency, dict)
+                or dependency.get("state") != "approved"
+                or dependency.get("specId") != operation.get("featureSpecId")
+            ):
+                raise ManifestError("ready operation does not match its approved dependency owner")
             _validate_approval_source(
                 operation.get("approvalEvidence"),
                 root,
@@ -565,6 +572,74 @@ def _validate_operation_readiness(
                         raise ManifestError("ready operation maps to a blocked public declaration")
         if state == "verified":
             _validate_parity_evidence(operation, root)
+
+
+def _validate_operation_dependencies(
+    operations: list[dict[str, Any]], root: Path
+) -> None:
+    """Require manifest owner links and states to match the reviewed dependency matrix."""
+    matrix_path = root / "specs" / "043-public-api-bindings" / "contracts" / "operation-dependencies.md"
+    try:
+        matrix_text = matrix_path.read_text(encoding="utf-8")
+    except (OSError, UnicodeDecodeError) as error:
+        raise ManifestError("operation dependency matrix is missing or unreadable") from error
+
+    matrix_owners: dict[tuple[str, str], str | None] = {}
+    for line in matrix_text.splitlines():
+        if not line.startswith("| §6.1."):
+            continue
+        columns = [column.strip() for column in line.strip().strip("|").split("|")]
+        if len(columns) != 4:
+            raise ManifestError("operation dependency matrix contains a malformed row")
+        section = columns[0].removeprefix("§")
+        name = columns[1]
+        owner = None if columns[2] == "—" else columns[2]
+        key = (section, name)
+        if key in matrix_owners:
+            raise ManifestError("operation dependency matrix contains a duplicate row")
+        if owner is not None and re.fullmatch(r"KMIPKIT-[0-9]{4}", owner) is None:
+            raise ManifestError("operation dependency matrix contains an invalid owner ID")
+        matrix_owners[key] = owner
+
+    if len(matrix_owners) != 57:
+        raise ManifestError("operation dependency matrix must contain exactly 57 rows")
+
+    manifest_keys: set[tuple[str, str]] = set()
+    for operation in operations:
+        key = (operation.get("section"), operation.get("name"))
+        if key not in matrix_owners:
+            raise ManifestError("operation dependency matrix does not cover a manifest operation")
+        manifest_keys.add(key)
+        expected_spec_id = matrix_owners[key]
+        dependency = operation.get("ownerDependency")
+        if not isinstance(dependency, dict):
+            raise ManifestError("manifest operation has no explicit owner dependency")
+        if dependency.get("specId") != expected_spec_id:
+            raise ManifestError("manifest operation owner differs from the dependency matrix")
+
+        if expected_spec_id is None:
+            expected_state = "unassigned"
+        else:
+            feature = _feature_directory(root, expected_spec_id)
+            spec_path = feature / "spec.md"
+            try:
+                spec_text = spec_path.read_text(encoding="utf-8")
+            except (OSError, UnicodeDecodeError) as error:
+                raise ManifestError("operation owner specification is missing or unreadable") from error
+            status_match = re.search(r"(?m)^\*\*Status\*\*:\s*([^\r\n]+)", spec_text)
+            if status_match is None:
+                raise ManifestError("operation owner specification has no recorded status")
+            expected_state = (
+                "approved"
+                if re.match(r"(?:Approved|Accepted)\b", status_match.group(1))
+                else "candidate"
+            )
+
+        if dependency.get("state") != expected_state:
+            raise ManifestError("manifest operation owner state differs from its specification")
+
+    if manifest_keys != set(matrix_owners):
+        raise ManifestError("operation dependency matrix and manifest inventories differ")
 
 
 def _validate_capability_readiness(
@@ -762,6 +837,7 @@ def _validate_v2_readiness(
 
     if require_complete:
         _require_complete_readiness(operations, capabilities, declarations)
+    _validate_operation_dependencies(operations, root)
     _validate_operation_readiness(operations, declaration_by_id, root)
     _validate_capability_readiness(capabilities, root)
     _validate_public_declarations(

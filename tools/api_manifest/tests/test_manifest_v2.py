@@ -128,6 +128,7 @@ def _valid_v2_manifest() -> dict[str, object]:
                     "name": item["name"],
                     "section": item["source_refs"][0]["section"],
                     "scope": "client_1_0",
+                    "ownerDependency": {"state": "unassigned", "specId": None},
                     "apiState": "blocked",
                     "blockedReason": "The owner specification or canonical Rust API is not ready.",
                 }

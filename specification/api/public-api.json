@@ -55329,7 +55329,11 @@
       "section": "6.1.1",
       "scope": "client_1_0",
       "apiState": "blocked",
-      "blockedReason": "The four-language API contract and parity evidence are not complete for this operation."
+      "blockedReason": "The linked owner specification is not formally approved; the operation remains blocked.",
+      "ownerDependency": {
+        "state": "candidate",
+        "specId": "KMIPKIT-0018"
+      }
     },
     {
       "operationId": "KMIPKIT-ELEM-OP-C2S-ADD-ATTRIBUTE",
@@ -55337,7 +55341,11 @@
       "section": "6.1.2",
       "scope": "client_1_0",
       "apiState": "blocked",
-      "blockedReason": "The four-language API contract and parity evidence are not complete for this operation."
+      "blockedReason": "The linked owner specification is not formally approved; the operation remains blocked.",
+      "ownerDependency": {
+        "state": "candidate",
+        "specId": "KMIPKIT-0016"
+      }
     },
     {
       "operationId": "KMIPKIT-ELEM-OP-C2S-ADJUST-ATTRIBUTE",
@@ -55345,7 +55353,11 @@
       "section": "6.1.3",
       "scope": "client_1_0",
       "apiState": "blocked",
-      "blockedReason": "The four-language API contract and parity evidence are not complete for this operation."
+      "blockedReason": "The linked owner specification is not formally approved; the operation remains blocked.",
+      "ownerDependency": {
+        "state": "candidate",
+        "specId": "KMIPKIT-0016"
+      }
     },
     {
       "operationId": "KMIPKIT-ELEM-OP-C2S-ARCHIVE",
@@ -55353,7 +55365,11 @@
       "section": "6.1.4",
       "scope": "client_1_0",
       "apiState": "blocked",
-      "blockedReason": "The four-language API contract and parity evidence are not complete for this operation."
+      "blockedReason": "The linked owner specification is not formally approved; the operation remains blocked.",
+      "ownerDependency": {
+        "state": "candidate",
+        "specId": "KMIPKIT-0018"
+      }
     },
     {
       "operationId": "KMIPKIT-ELEM-OP-C2S-CANCEL",
@@ -55361,7 +55377,11 @@
       "section": "6.1.5",
       "scope": "client_1_0",
       "apiState": "blocked",
-      "blockedReason": "The four-language API contract and parity evidence are not complete for this operation."
+      "blockedReason": "The linked owner specification is not formally approved; the operation remains blocked.",
+      "ownerDependency": {
+        "state": "candidate",
+        "specId": "KMIPKIT-0009"
+      }
     },
     {
       "operationId": "KMIPKIT-ELEM-OP-C2S-CERTIFY",
@@ -55369,7 +55389,11 @@
       "section": "6.1.6",
       "scope": "client_1_0",
       "apiState": "blocked",
-      "blockedReason": "The four-language API contract and parity evidence are not complete for this operation."
+      "blockedReason": "No owner specification is linked; the operation remains blocked until an owner is approved.",
+      "ownerDependency": {
+        "state": "unassigned",
+        "specId": null
+      }
     },
     {
       "operationId": "KMIPKIT-ELEM-OP-C2S-CHECK",
@@ -55377,7 +55401,11 @@
       "section": "6.1.7",
       "scope": "client_1_0",
       "apiState": "blocked",
-      "blockedReason": "The four-language API contract and parity evidence are not complete for this operation."
+      "blockedReason": "No owner specification is linked; the operation remains blocked until an owner is approved.",
+      "ownerDependency": {
+        "state": "unassigned",
+        "specId": null
+      }
     },
     {
       "operationId": "KMIPKIT-ELEM-OP-C2S-CREATE",
@@ -55385,7 +55413,11 @@
       "section": "6.1.8",
       "scope": "client_1_0",
       "apiState": "blocked",
-      "blockedReason": "The four-language API contract and parity evidence are not complete for this operation."
+      "blockedReason": "The owner is approved, but its canonical Rust API and complete four-language mapping are not yet verified.",
+      "ownerDependency": {
+        "state": "approved",
+        "specId": "KMIPKIT-0014"
+      }
     },
     {
       "operationId": "KMIPKIT-ELEM-OP-C2S-CREATE-KEY-PAIR",
@@ -55393,7 +55425,11 @@
       "section": "6.1.9",
       "scope": "client_1_0",
       "apiState": "blocked",
-      "blockedReason": "The four-language API contract and parity evidence are not complete for this operation."
+      "blockedReason": "The owner is approved, but its canonical Rust API and complete four-language mapping are not yet verified.",
+      "ownerDependency": {
+        "state": "approved",
+        "specId": "KMIPKIT-0014"
+      }
     },
     {
       "operationId": "KMIPKIT-ELEM-OP-C2S-CREATE-SPLIT-KEY",
@@ -55401,7 +55437,11 @@
       "section": "6.1.10",
       "scope": "client_1_0",
       "apiState": "blocked",
-      "blockedReason": "The four-language API contract and parity evidence are not complete for this operation."
+      "blockedReason": "The owner is approved, but its canonical Rust API and complete four-language mapping are not yet verified.",
+      "ownerDependency": {
+        "state": "approved",
+        "specId": "KMIPKIT-0014"
+      }
     },
     {
       "operationId": "KMIPKIT-ELEM-OP-C2S-DECRYPT",
@@ -55409,7 +55449,11 @@
       "section": "6.1.11",
       "scope": "client_1_0",
       "apiState": "blocked",
-      "blockedReason": "The four-language API contract and parity evidence are not complete for this operation."
+      "blockedReason": "The linked owner specification is not formally approved; the operation remains blocked.",
+      "ownerDependency": {
+        "state": "candidate",
+        "specId": "KMIPKIT-0019"
+      }
     },
     {
       "operationId": "KMIPKIT-ELEM-OP-C2S-DELEGATED-LOGIN",
@@ -55417,7 +55461,11 @@
       "section": "6.1.12",
       "scope": "client_1_0",
       "apiState": "blocked",
-      "blockedReason": "The four-language API contract and parity evidence are not complete for this operation."
+      "blockedReason": "No owner specification is linked; the operation remains blocked until an owner is approved.",
+      "ownerDependency": {
+        "state": "unassigned",
+        "specId": null
+      }
     },
     {
       "operationId": "KMIPKIT-ELEM-OP-C2S-DELETE-ATTRIBUTE",
@@ -55425,7 +55473,11 @@
       "section": "6.1.13",
       "scope": "client_1_0",
       "apiState": "blocked",
-      "blockedReason": "The four-language API contract and parity evidence are not complete for this operation."
+      "blockedReason": "The linked owner specification is not formally approved; the operation remains blocked.",
+      "ownerDependency": {
+        "state": "candidate",
+        "specId": "KMIPKIT-0016"
+      }
     },
     {
       "operationId": "KMIPKIT-ELEM-OP-C2S-DERIVE-KEY",
@@ -55433,7 +55485,11 @@
       "section": "6.1.14",
       "scope": "client_1_0",
       "apiState": "blocked",
-      "blockedReason": "The four-language API contract and parity evidence are not complete for this operation."
+      "blockedReason": "No owner specification is linked; the operation remains blocked until an owner is approved.",
+      "ownerDependency": {
+        "state": "unassigned",
+        "specId": null
+      }
     },
     {
       "operationId": "KMIPKIT-ELEM-OP-C2S-DESTROY",
@@ -55441,7 +55497,11 @@
       "section": "6.1.15",
       "scope": "client_1_0",
       "apiState": "blocked",
-      "blockedReason": "The four-language API contract and parity evidence are not complete for this operation."
+      "blockedReason": "The linked owner specification is not formally approved; the operation remains blocked.",
+      "ownerDependency": {
+        "state": "candidate",
+        "specId": "KMIPKIT-0018"
+      }
     },
     {
       "operationId": "KMIPKIT-ELEM-OP-C2S-DISCOVER-VERSIONS",
@@ -55449,7 +55509,11 @@
       "section": "6.1.16",
       "scope": "client_1_0",
       "apiState": "blocked",
-      "blockedReason": "The four-language API contract and parity evidence are not complete for this operation."
+      "blockedReason": "The owner is approved, but its canonical Rust API and complete four-language mapping are not yet verified.",
+      "ownerDependency": {
+        "state": "approved",
+        "specId": "KMIPKIT-0007"
+      }
     },
     {
       "operationId": "KMIPKIT-ELEM-OP-C2S-ENCRYPT",
@@ -55457,7 +55521,11 @@
       "section": "6.1.17",
       "scope": "client_1_0",
       "apiState": "blocked",
-      "blockedReason": "The four-language API contract and parity evidence are not complete for this operation."
+      "blockedReason": "The linked owner specification is not formally approved; the operation remains blocked.",
+      "ownerDependency": {
+        "state": "candidate",
+        "specId": "KMIPKIT-0019"
+      }
     },
     {
       "operationId": "KMIPKIT-ELEM-OP-C2S-EXPORT",
@@ -55465,7 +55533,11 @@
       "section": "6.1.18",
       "scope": "client_1_0",
       "apiState": "blocked",
-      "blockedReason": "The four-language API contract and parity evidence are not complete for this operation."
+      "blockedReason": "No owner specification is linked; the operation remains blocked until an owner is approved.",
+      "ownerDependency": {
+        "state": "unassigned",
+        "specId": null
+      }
     },
     {
       "operationId": "KMIPKIT-ELEM-OP-C2S-GET",
@@ -55473,7 +55545,11 @@
       "section": "6.1.19",
       "scope": "client_1_0",
       "apiState": "blocked",
-      "blockedReason": "The four-language API contract and parity evidence are not complete for this operation."
+      "blockedReason": "The owner is approved, but its canonical Rust API and complete four-language mapping are not yet verified.",
+      "ownerDependency": {
+        "state": "approved",
+        "specId": "KMIPKIT-0017"
+      }
     },
     {
       "operationId": "KMIPKIT-ELEM-OP-C2S-GET-ATTRIBUTES",
@@ -55481,7 +55557,11 @@
       "section": "6.1.20",
       "scope": "client_1_0",
       "apiState": "blocked",
-      "blockedReason": "The four-language API contract and parity evidence are not complete for this operation."
+      "blockedReason": "The linked owner specification is not formally approved; the operation remains blocked.",
+      "ownerDependency": {
+        "state": "candidate",
+        "specId": "KMIPKIT-0016"
+      }
     },
     {
       "operationId": "KMIPKIT-ELEM-OP-C2S-GET-ATTRIBUTE-LIST",
@@ -55489,7 +55569,11 @@
       "section": "6.1.21",
       "scope": "client_1_0",
       "apiState": "blocked",
-      "blockedReason": "The four-language API contract and parity evidence are not complete for this operation."
+      "blockedReason": "The linked owner specification is not formally approved; the operation remains blocked.",
+      "ownerDependency": {
+        "state": "candidate",
+        "specId": "KMIPKIT-0016"
+      }
     },
     {
       "operationId": "KMIPKIT-ELEM-OP-C2S-GET-CONSTRAINTS",
@@ -55497,7 +55581,11 @@
       "section": "6.1.22",
       "scope": "client_1_0",
       "apiState": "blocked",
-      "blockedReason": "The four-language API contract and parity evidence are not complete for this operation."
+      "blockedReason": "No owner specification is linked; the operation remains blocked until an owner is approved.",
+      "ownerDependency": {
+        "state": "unassigned",
+        "specId": null
+      }
     },
     {
       "operationId": "KMIPKIT-ELEM-OP-C2S-GET-USAGE-ALLOCATION",
@@ -55505,7 +55593,11 @@
       "section": "6.1.23",
       "scope": "client_1_0",
       "apiState": "blocked",
-      "blockedReason": "The four-language API contract and parity evidence are not complete for this operation."
+      "blockedReason": "No owner specification is linked; the operation remains blocked until an owner is approved.",
+      "ownerDependency": {
+        "state": "unassigned",
+        "specId": null
+      }
     },
     {
       "operationId": "KMIPKIT-ELEM-OP-C2S-HASH",
@@ -55513,7 +55605,11 @@
       "section": "6.1.24",
       "scope": "client_1_0",
       "apiState": "blocked",
-      "blockedReason": "The four-language API contract and parity evidence are not complete for this operation."
+      "blockedReason": "The owner is approved, but its canonical Rust API and complete four-language mapping are not yet verified.",
+      "ownerDependency": {
+        "state": "approved",
+        "specId": "KMIPKIT-0021"
+      }
     },
     {
       "operationId": "KMIPKIT-ELEM-OP-C2S-IMPORT",
@@ -55521,7 +55617,11 @@
       "section": "6.1.25",
       "scope": "client_1_0",
       "apiState": "blocked",
-      "blockedReason": "The four-language API contract and parity evidence are not complete for this operation."
+      "blockedReason": "No owner specification is linked; the operation remains blocked until an owner is approved.",
+      "ownerDependency": {
+        "state": "unassigned",
+        "specId": null
+      }
     },
     {
       "operationId": "KMIPKIT-ELEM-OP-C2S-INTEROP",
@@ -55529,7 +55629,11 @@
       "section": "6.1.26",
       "scope": "client_1_0",
       "apiState": "blocked",
-      "blockedReason": "The four-language API contract and parity evidence are not complete for this operation."
+      "blockedReason": "No owner specification is linked; the operation remains blocked until an owner is approved.",
+      "ownerDependency": {
+        "state": "unassigned",
+        "specId": null
+      }
     },
     {
       "operationId": "KMIPKIT-ELEM-OP-C2S-JOIN-SPLIT-KEY",
@@ -55537,7 +55641,11 @@
       "section": "6.1.27",
       "scope": "client_1_0",
       "apiState": "blocked",
-      "blockedReason": "The four-language API contract and parity evidence are not complete for this operation."
+      "blockedReason": "No owner specification is linked; the operation remains blocked until an owner is approved.",
+      "ownerDependency": {
+        "state": "unassigned",
+        "specId": null
+      }
     },
     {
       "operationId": "KMIPKIT-ELEM-OP-C2S-LOCATE",
@@ -55545,7 +55653,11 @@
       "section": "6.1.28",
       "scope": "client_1_0",
       "apiState": "blocked",
-      "blockedReason": "The four-language API contract and parity evidence are not complete for this operation."
+      "blockedReason": "The owner is approved, but its canonical Rust API and complete four-language mapping are not yet verified.",
+      "ownerDependency": {
+        "state": "approved",
+        "specId": "KMIPKIT-0017"
+      }
     },
     {
       "operationId": "KMIPKIT-ELEM-OP-C2S-LOG",
@@ -55553,7 +55665,11 @@
       "section": "6.1.29",
       "scope": "client_1_0",
       "apiState": "blocked",
-      "blockedReason": "The four-language API contract and parity evidence are not complete for this operation."
+      "blockedReason": "No owner specification is linked; the operation remains blocked until an owner is approved.",
+      "ownerDependency": {
+        "state": "unassigned",
+        "specId": null
+      }
     },
     {
       "operationId": "KMIPKIT-ELEM-OP-C2S-LOGIN",
@@ -55561,7 +55677,11 @@
       "section": "6.1.30",
       "scope": "client_1_0",
       "apiState": "blocked",
-      "blockedReason": "The four-language API contract and parity evidence are not complete for this operation."
+      "blockedReason": "No owner specification is linked; the operation remains blocked until an owner is approved.",
+      "ownerDependency": {
+        "state": "unassigned",
+        "specId": null
+      }
     },
     {
       "operationId": "KMIPKIT-ELEM-OP-C2S-LOGOUT",
@@ -55569,7 +55689,11 @@
       "section": "6.1.31",
       "scope": "client_1_0",
       "apiState": "blocked",
-      "blockedReason": "The four-language API contract and parity evidence are not complete for this operation."
+      "blockedReason": "No owner specification is linked; the operation remains blocked until an owner is approved.",
+      "ownerDependency": {
+        "state": "unassigned",
+        "specId": null
+      }
     },
     {
       "operationId": "KMIPKIT-ELEM-OP-C2S-MAC",
@@ -55577,7 +55701,11 @@
       "section": "6.1.32",
       "scope": "client_1_0",
       "apiState": "blocked",
-      "blockedReason": "The four-language API contract and parity evidence are not complete for this operation."
+      "blockedReason": "The owner is approved, but its canonical Rust API and complete four-language mapping are not yet verified.",
+      "ownerDependency": {
+        "state": "approved",
+        "specId": "KMIPKIT-0021"
+      }
     },
     {
       "operationId": "KMIPKIT-ELEM-OP-C2S-MAC-VERIFY",
@@ -55585,7 +55713,11 @@
       "section": "6.1.33",
       "scope": "client_1_0",
       "apiState": "blocked",
-      "blockedReason": "The four-language API contract and parity evidence are not complete for this operation."
+      "blockedReason": "The owner is approved, but its canonical Rust API and complete four-language mapping are not yet verified.",
+      "ownerDependency": {
+        "state": "approved",
+        "specId": "KMIPKIT-0021"
+      }
     },
     {
       "operationId": "KMIPKIT-ELEM-OP-C2S-MODIFY-ATTRIBUTE",
@@ -55593,7 +55725,11 @@
       "section": "6.1.34",
       "scope": "client_1_0",
       "apiState": "blocked",
-      "blockedReason": "The four-language API contract and parity evidence are not complete for this operation."
+      "blockedReason": "The linked owner specification is not formally approved; the operation remains blocked.",
+      "ownerDependency": {
+        "state": "candidate",
+        "specId": "KMIPKIT-0016"
+      }
     },
     {
       "operationId": "KMIPKIT-ELEM-OP-C2S-OBTAIN-LEASE",
@@ -55601,7 +55737,11 @@
       "section": "6.1.35",
       "scope": "client_1_0",
       "apiState": "blocked",
-      "blockedReason": "The four-language API contract and parity evidence are not complete for this operation."
+      "blockedReason": "No owner specification is linked; the operation remains blocked until an owner is approved.",
+      "ownerDependency": {
+        "state": "unassigned",
+        "specId": null
+      }
     },
     {
       "operationId": "KMIPKIT-ELEM-OP-C2S-PING",
@@ -55609,7 +55749,11 @@
       "section": "6.1.36",
       "scope": "client_1_0",
       "apiState": "blocked",
-      "blockedReason": "The four-language API contract and parity evidence are not complete for this operation."
+      "blockedReason": "The linked owner specification is not formally approved; the operation remains blocked.",
+      "ownerDependency": {
+        "state": "candidate",
+        "specId": "KMIPKIT-0020"
+      }
     },
     {
       "operationId": "KMIPKIT-ELEM-OP-C2S-PKCS-11",
@@ -55617,7 +55761,11 @@
       "section": "6.1.37",
       "scope": "client_1_0",
       "apiState": "blocked",
-      "blockedReason": "The four-language API contract and parity evidence are not complete for this operation."
+      "blockedReason": "No owner specification is linked; the operation remains blocked until an owner is approved.",
+      "ownerDependency": {
+        "state": "unassigned",
+        "specId": null
+      }
     },
     {
       "operationId": "KMIPKIT-ELEM-OP-C2S-POLL",
@@ -55625,7 +55773,11 @@
       "section": "6.1.38",
       "scope": "client_1_0",
       "apiState": "blocked",
-      "blockedReason": "The four-language API contract and parity evidence are not complete for this operation."
+      "blockedReason": "The linked owner specification is not formally approved; the operation remains blocked.",
+      "ownerDependency": {
+        "state": "candidate",
+        "specId": "KMIPKIT-0009"
+      }
     },
     {
       "operationId": "KMIPKIT-ELEM-OP-C2S-PROCESS",
@@ -55633,7 +55785,11 @@
       "section": "6.1.39",
       "scope": "client_1_0",
       "apiState": "blocked",
-      "blockedReason": "The four-language API contract and parity evidence are not complete for this operation."
+      "blockedReason": "The linked owner specification is not formally approved; the operation remains blocked.",
+      "ownerDependency": {
+        "state": "candidate",
+        "specId": "KMIPKIT-0009"
+      }
     },
     {
       "operationId": "KMIPKIT-ELEM-OP-C2S-QUERY",
@@ -55641,7 +55797,11 @@
       "section": "6.1.40",
       "scope": "client_1_0",
       "apiState": "blocked",
-      "blockedReason": "The four-language API contract and parity evidence are not complete for this operation."
+      "blockedReason": "The linked owner specification is not formally approved; the operation remains blocked.",
+      "ownerDependency": {
+        "state": "candidate",
+        "specId": "KMIPKIT-0020"
+      }
     },
     {
       "operationId": "KMIPKIT-ELEM-OP-C2S-QUERY-ASYNCHRONOUS-REQUESTS",
@@ -55649,7 +55809,11 @@
       "section": "6.1.41",
       "scope": "client_1_0",
       "apiState": "blocked",
-      "blockedReason": "The four-language API contract and parity evidence are not complete for this operation."
+      "blockedReason": "The linked owner specification is not formally approved; the operation remains blocked.",
+      "ownerDependency": {
+        "state": "candidate",
+        "specId": "KMIPKIT-0009"
+      }
     },
     {
       "operationId": "KMIPKIT-ELEM-OP-C2S-RECOVER",
@@ -55657,7 +55821,11 @@
       "section": "6.1.42",
       "scope": "client_1_0",
       "apiState": "blocked",
-      "blockedReason": "The four-language API contract and parity evidence are not complete for this operation."
+      "blockedReason": "The linked owner specification is not formally approved; the operation remains blocked.",
+      "ownerDependency": {
+        "state": "candidate",
+        "specId": "KMIPKIT-0018"
+      }
     },
     {
       "operationId": "KMIPKIT-ELEM-OP-C2S-REGISTER",
@@ -55665,7 +55833,11 @@
       "section": "6.1.43",
       "scope": "client_1_0",
       "apiState": "blocked",
-      "blockedReason": "The four-language API contract and parity evidence are not complete for this operation."
+      "blockedReason": "No owner specification is linked; the operation remains blocked until an owner is approved.",
+      "ownerDependency": {
+        "state": "unassigned",
+        "specId": null
+      }
     },
     {
       "operationId": "KMIPKIT-ELEM-OP-C2S-REVOKE",
@@ -55673,7 +55845,11 @@
       "section": "6.1.44",
       "scope": "client_1_0",
       "apiState": "blocked",
-      "blockedReason": "The four-language API contract and parity evidence are not complete for this operation."
+      "blockedReason": "No owner specification is linked; the operation remains blocked until an owner is approved.",
+      "ownerDependency": {
+        "state": "unassigned",
+        "specId": null
+      }
     },
     {
       "operationId": "KMIPKIT-ELEM-OP-C2S-RE-CERTIFY",
@@ -55681,7 +55857,11 @@
       "section": "6.1.45",
       "scope": "client_1_0",
       "apiState": "blocked",
-      "blockedReason": "The four-language API contract and parity evidence are not complete for this operation."
+      "blockedReason": "No owner specification is linked; the operation remains blocked until an owner is approved.",
+      "ownerDependency": {
+        "state": "unassigned",
+        "specId": null
+      }
     },
     {
       "operationId": "KMIPKIT-ELEM-OP-C2S-RE-KEY",
@@ -55689,7 +55869,11 @@
       "section": "6.1.46",
       "scope": "client_1_0",
       "apiState": "blocked",
-      "blockedReason": "The four-language API contract and parity evidence are not complete for this operation."
+      "blockedReason": "No owner specification is linked; the operation remains blocked until an owner is approved.",
+      "ownerDependency": {
+        "state": "unassigned",
+        "specId": null
+      }
     },
     {
       "operationId": "KMIPKIT-ELEM-OP-C2S-RE-KEY-KEY-PAIR",
@@ -55697,7 +55881,11 @@
       "section": "6.1.47",
       "scope": "client_1_0",
       "apiState": "blocked",
-      "blockedReason": "The four-language API contract and parity evidence are not complete for this operation."
+      "blockedReason": "No owner specification is linked; the operation remains blocked until an owner is approved.",
+      "ownerDependency": {
+        "state": "unassigned",
+        "specId": null
+      }
     },
     {
       "operationId": "KMIPKIT-ELEM-OP-C2S-RE-PROVISION",
@@ -55705,7 +55893,11 @@
       "section": "6.1.48",
       "scope": "client_1_0",
       "apiState": "blocked",
-      "blockedReason": "The four-language API contract and parity evidence are not complete for this operation."
+      "blockedReason": "No owner specification is linked; the operation remains blocked until an owner is approved.",
+      "ownerDependency": {
+        "state": "unassigned",
+        "specId": null
+      }
     },
     {
       "operationId": "KMIPKIT-ELEM-OP-C2S-RNG-RETRIEVE",
@@ -55713,7 +55905,11 @@
       "section": "6.1.49",
       "scope": "client_1_0",
       "apiState": "blocked",
-      "blockedReason": "The four-language API contract and parity evidence are not complete for this operation."
+      "blockedReason": "No owner specification is linked; the operation remains blocked until an owner is approved.",
+      "ownerDependency": {
+        "state": "unassigned",
+        "specId": null
+      }
     },
     {
       "operationId": "KMIPKIT-ELEM-OP-C2S-RNG-SEED",
@@ -55721,7 +55917,11 @@
       "section": "6.1.50",
       "scope": "client_1_0",
       "apiState": "blocked",
-      "blockedReason": "The four-language API contract and parity evidence are not complete for this operation."
+      "blockedReason": "No owner specification is linked; the operation remains blocked until an owner is approved.",
+      "ownerDependency": {
+        "state": "unassigned",
+        "specId": null
+      }
     },
     {
       "operationId": "KMIPKIT-ELEM-OP-C2S-SET-ATTRIBUTE",
@@ -55729,7 +55929,11 @@
       "section": "6.1.51",
       "scope": "client_1_0",
       "apiState": "blocked",
-      "blockedReason": "The four-language API contract and parity evidence are not complete for this operation."
+      "blockedReason": "The linked owner specification is not formally approved; the operation remains blocked.",
+      "ownerDependency": {
+        "state": "candidate",
+        "specId": "KMIPKIT-0016"
+      }
     },
     {
       "operationId": "KMIPKIT-ELEM-OP-C2S-SET-CONSTRAINTS",
@@ -55737,7 +55941,11 @@
       "section": "6.1.52",
       "scope": "client_1_0",
       "apiState": "blocked",
-      "blockedReason": "The four-language API contract and parity evidence are not complete for this operation."
+      "blockedReason": "No owner specification is linked; the operation remains blocked until an owner is approved.",
+      "ownerDependency": {
+        "state": "unassigned",
+        "specId": null
+      }
     },
     {
       "operationId": "KMIPKIT-ELEM-OP-C2S-SET-DEFAULTS",
@@ -55745,7 +55953,11 @@
       "section": "6.1.53",
       "scope": "client_1_0",
       "apiState": "blocked",
-      "blockedReason": "The four-language API contract and parity evidence are not complete for this operation."
+      "blockedReason": "No owner specification is linked; the operation remains blocked until an owner is approved.",
+      "ownerDependency": {
+        "state": "unassigned",
+        "specId": null
+      }
     },
     {
       "operationId": "KMIPKIT-ELEM-OP-C2S-SET-ENDPOINT-ROLE",
@@ -55753,7 +55965,11 @@
       "section": "6.1.54",
       "scope": "client_1_0",
       "apiState": "blocked",
-      "blockedReason": "The four-language API contract and parity evidence are not complete for this operation."
+      "blockedReason": "No owner specification is linked; the operation remains blocked until an owner is approved.",
+      "ownerDependency": {
+        "state": "unassigned",
+        "specId": null
+      }
     },
     {
       "operationId": "KMIPKIT-ELEM-OP-C2S-SIGN",
@@ -55761,7 +55977,11 @@
       "section": "6.1.55",
       "scope": "client_1_0",
       "apiState": "blocked",
-      "blockedReason": "The four-language API contract and parity evidence are not complete for this operation."
+      "blockedReason": "The owner is approved, but its canonical Rust API and complete four-language mapping are not yet verified.",
+      "ownerDependency": {
+        "state": "approved",
+        "specId": "KMIPKIT-0021"
+      }
     },
     {
       "operationId": "KMIPKIT-ELEM-OP-C2S-SIGNATURE-VERIFY",
@@ -55769,7 +55989,11 @@
       "section": "6.1.56",
       "scope": "client_1_0",
       "apiState": "blocked",
-      "blockedReason": "The four-language API contract and parity evidence are not complete for this operation."
+      "blockedReason": "The owner is approved, but its canonical Rust API and complete four-language mapping are not yet verified.",
+      "ownerDependency": {
+        "state": "approved",
+        "specId": "KMIPKIT-0021"
+      }
     },
     {
       "operationId": "KMIPKIT-ELEM-OP-C2S-VALIDATE",
@@ -55777,7 +56001,11 @@
       "section": "6.1.57",
       "scope": "client_1_0",
       "apiState": "blocked",
-      "blockedReason": "The four-language API contract and parity evidence are not complete for this operation."
+      "blockedReason": "No owner specification is linked; the operation remains blocked until an owner is approved.",
+      "ownerDependency": {
+        "state": "unassigned",
+        "specId": null
+      }
     }
   ],
   "capabilities": [

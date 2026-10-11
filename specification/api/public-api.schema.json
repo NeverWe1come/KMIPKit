@@ -1993,6 +1993,7 @@
         "name",
         "section",
         "scope",
+        "ownerDependency",
         "apiState"
       ],
       "properties": {
@@ -2010,6 +2011,9 @@
         },
         "scope": {
           "const": "client_1_0"
+        },
+        "ownerDependency": {
+          "$ref": "#/$defs/operationOwnerDependency"
         },
         "featureSpecId": {
           "type": "string",
@@ -2113,6 +2117,71 @@
           },
           "then": {
             "required": ["parityEvidenceIds"]
+          }
+        }
+      ]
+    },
+    "operationOwnerDependency": {
+      "type": "object",
+      "required": [
+        "state",
+        "specId"
+      ],
+      "properties": {
+        "state": {
+          "enum": [
+            "unassigned",
+            "candidate",
+            "approved"
+          ]
+        },
+        "specId": {
+          "oneOf": [
+            {
+              "type": "string",
+              "pattern": "^KMIPKIT-[0-9]{4}$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "state": {
+                "const": "unassigned"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "specId": {
+                "type": "null"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "state": {
+                "enum": [
+                  "candidate",
+                  "approved"
+                ]
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "specId": {
+                "type": "string"
+              }
+            }
           }
         }
       ]

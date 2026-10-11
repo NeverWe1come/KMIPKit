@@ -55,6 +55,7 @@ def _ready_operation(manifest: dict[str, object]) -> dict[str, object]:
     operation.update(
         {
             "apiState": "declared",
+            "ownerDependency": {"state": "approved", "specId": "KMIPKIT-0007"},
             "featureSpecId": "KMIPKIT-0007",
             "approvalEvidence": _approved_feature_source(),
             "declarations": {
@@ -136,6 +137,7 @@ def _complete_readiness_manifest(root: Path) -> dict[str, object]:
         operation.update(
             {
                 "apiState": "verified",
+                "ownerDependency": {"state": "approved", "specId": "KMIPKIT-0007"},
                 "featureSpecId": "KMIPKIT-0007",
                 "approvalEvidence": _approved_feature_source(),
                 "declarations": {
@@ -188,9 +190,47 @@ def _validate_v2_readiness(
     *,
     require_complete: bool = False,
 ) -> None:
+    _write_dependency_matrix_fixture_if_missing(manifest, root)
     validator = getattr(generate, "_validate_v2_readiness", None)
     test.assertTrue(callable(validator), "v2 readiness validation is not implemented")
     validator(manifest, root, require_complete=require_complete)
+
+
+def _write_dependency_matrix_fixture_if_missing(
+    manifest: dict[str, object], root: Path
+) -> None:
+    matrix = root / "specs" / "043-public-api-bindings" / "contracts" / "operation-dependencies.md"
+    if matrix.exists():
+        return
+    rows = [
+        "# Test operation dependencies",
+        "",
+        "| OASIS section | Operation | Linked owner specification | Current status / API gate |",
+        "|---|---|---|---|",
+    ]
+    for operation in manifest["operations"]:
+        dependency = operation.get(
+            "ownerDependency", {"state": "unassigned", "specId": None}
+        )
+        spec_id = dependency["specId"]
+        state = dependency["state"]
+        if spec_id is None:
+            owner = "—"
+        else:
+            owner = spec_id
+            number = int(spec_id[-4:])
+            existing = sorted((root / "specs").glob(f"{number:03d}-*"))
+            feature = existing[0] if existing else root / "specs" / f"{number:03d}-test-owner"
+            feature.mkdir(parents=True, exist_ok=True)
+            status = "Approved" if state == "approved" else "Draft"
+            (feature / "spec.md").write_text(
+                f"# Test owner\n\n**Status**: {status}.\n", encoding="utf-8"
+            )
+        rows.append(
+            f"| §{operation['section']} | {operation['name']} | {owner} | Test fixture. |"
+        )
+    matrix.parent.mkdir(parents=True, exist_ok=True)
+    matrix.write_text("\n".join(rows) + "\n", encoding="utf-8")
 
 
 class OperationReadinessSchemaTests(unittest.TestCase):
@@ -215,6 +255,9 @@ class OperationReadinessSchemaTests(unittest.TestCase):
 
     def test_checked_in_operation_dependencies_resolve_against_dependency_matrix(self) -> None:
         manifest = json.loads((ROOT / "specification" / "api" / "public-api.json").read_text(encoding="utf-8"))
+        _validate_v2_readiness(self, manifest, ROOT)
+        operation = manifest["operations"][0]
+        operation["ownerDependency"]["specId"] = "KMIPKIT-9999"
         with self.assertRaises(ManifestError):
             _validate_v2_readiness(self, manifest, ROOT)
 
