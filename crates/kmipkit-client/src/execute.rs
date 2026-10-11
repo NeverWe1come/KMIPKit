@@ -22,17 +22,17 @@ use kmipkit_protocol::{
     DiscoverVersionsResponse, EncryptRequest, EncryptResponse, ExportRequest, ExportResponse,
     GetAttributeListRequest, GetAttributeListResponse, GetAttributesRequest, GetAttributesResponse,
     GetRequest, GetResponse, HashRequest, HashResponse, ImportRequest, ImportResponse,
-    KmipOperationResult, LocateRequest, LocateResponse, MacRequest, MacResponse, MacVerifyRequest,
-    MacVerifyResponse, MessageExtensionView, ModifyAttributeRequest, ModifyAttributeResponse,
-    NewAttribute, ObtainLeaseRequest, ObtainLeaseResponse, PingRequest, PingResponse, PollRequest,
-    PollResponse, ProcessRequest, ProcessResponse, ProtocolCauseCategory, ProtocolError,
-    ProtocolErrorKind, ProtocolVersion, QueryAsyncRequestsRequest, QueryAsyncRequestsResponse,
-    QueryRequest, QueryResponse, ReProvisionRequest, ReProvisionResponse, RecertifyRequest,
-    RecertifyResponse, RecoverRequest, RecoverResponse, RegisterRequest, RegisterResponse,
-    RekeyKeyPairRequest, RekeyKeyPairResponse, RekeyRequest, RekeyResponse, RequestMessage,
-    ResponseBatchItemView, ResponseMessage, ResultStatus, RevokeRequest, RevokeResponse,
-    SetAttributeRequest, SetAttributeResponse, SignRequest, SignResponse, SignatureVerifyRequest,
-    SignatureVerifyResponse,
+    JoinSplitKeyRequest, JoinSplitKeyResponse, KmipOperationResult, LocateRequest, LocateResponse,
+    MacRequest, MacResponse, MacVerifyRequest, MacVerifyResponse, MessageExtensionView,
+    ModifyAttributeRequest, ModifyAttributeResponse, NewAttribute, ObtainLeaseRequest,
+    ObtainLeaseResponse, PingRequest, PingResponse, PollRequest, PollResponse, ProcessRequest,
+    ProcessResponse, ProtocolCauseCategory, ProtocolError, ProtocolErrorKind, ProtocolVersion,
+    QueryAsyncRequestsRequest, QueryAsyncRequestsResponse, QueryRequest, QueryResponse,
+    ReProvisionRequest, ReProvisionResponse, RecertifyRequest, RecertifyResponse, RecoverRequest,
+    RecoverResponse, RegisterRequest, RegisterResponse, RekeyKeyPairRequest, RekeyKeyPairResponse,
+    RekeyRequest, RekeyResponse, RequestMessage, ResponseBatchItemView, ResponseMessage,
+    ResultStatus, RevokeRequest, RevokeResponse, SetAttributeRequest, SetAttributeResponse,
+    SignRequest, SignResponse, SignatureVerifyRequest, SignatureVerifyResponse,
 };
 
 #[cfg(test)]
@@ -128,6 +128,7 @@ const DECRYPT_OPERATION: u32 = 0x0000_0020; // KMIP v2.1 §6.1.11, Table 196.
 const DERIVE_KEY_OPERATION: u32 = 0x0000_0005; // KMIP v2.1 §6.1.14, Table 205.
 const EXPORT_OPERATION: u32 = 0x0000_002B; // KMIP v2.1 §6.1.18, Table 217.
 const IMPORT_OPERATION: u32 = 0x0000_002A; // KMIP v2.1 §§6.1.25, 11.36, Tables 238, 470.
+pub(super) const JOIN_SPLIT_KEY_OPERATION: u32 = 0x0000_0029; // KMIP v2.1 §§6.1.27, 11.36, Tables 244, 470.
 const HASH_OPERATION: u32 = 0x0000_0027; // KMIP v2.1 §6.1.24, Table 235.
 const MAC_OPERATION: u32 = 0x0000_0023; // KMIP v2.1 §6.1.32, Table 259.
 const MAC_VERIFY_OPERATION: u32 = 0x0000_0024; // KMIP v2.1 §6.1.33, Table 262.
@@ -240,6 +241,8 @@ pub enum ClientRequest {
     Export(ExportRequest),
     /// An explicit client-to-server Import request.
     Import(ImportRequest),
+    /// An explicit client-to-server Join Split Key request.
+    JoinSplitKey(JoinSplitKeyRequest),
     /// An explicit client-to-server Hash request.
     Hash(HashRequest),
     /// An explicit client-to-server MAC request.
@@ -299,6 +302,12 @@ impl ClientRequest {
     #[must_use]
     pub fn import(request: ImportRequest) -> Self {
         Self::Import(request)
+    }
+
+    /// Creates a typed client-to-server Join Split Key request variant.
+    #[must_use]
+    pub fn join_split_key(request: JoinSplitKeyRequest) -> Self {
+        Self::JoinSplitKey(request)
     }
 
     /// Creates a typed client-to-server Hash request variant.
@@ -498,6 +507,7 @@ impl ClientRequest {
             Self::DeriveKey(_) => DERIVE_KEY_OPERATION,
             Self::Export(_) => EXPORT_OPERATION,
             Self::Import(_) => IMPORT_OPERATION,
+            Self::JoinSplitKey(_) => JOIN_SPLIT_KEY_OPERATION,
             Self::Hash(_) => HASH_OPERATION,
             Self::Mac(_) => MAC_OPERATION,
             Self::MacVerify(_) => MAC_VERIFY_OPERATION,
@@ -555,6 +565,7 @@ impl ClientRequest {
                 | Self::Rekey(_)
                 | Self::RekeyKeyPair(_)
                 | Self::Import(_)
+                | Self::JoinSplitKey(_)
                 | Self::Register(_)
         )
     }
@@ -594,6 +605,7 @@ impl ClientRequest {
             Self::DeriveKey(request) => request.into_ttlv_payload(),
             Self::Export(request) => request.into_ttlv_payload(),
             Self::Import(request) => request.into_ttlv_payload(),
+            Self::JoinSplitKey(request) => request.into_ttlv_payload(),
             Self::Hash(request) => request.to_ttlv_payload(),
             Self::Mac(request) => request.to_ttlv_payload(),
             Self::MacVerify(request) => request.to_ttlv_payload(),
@@ -652,6 +664,10 @@ impl fmt::Debug for ClientRequest {
             Self::DeriveKey(request) => formatter.debug_tuple("DeriveKey").field(request).finish(),
             Self::Export(_) => formatter.write_str("Export([REDACTED])"),
             Self::Import(request) => formatter.debug_tuple("Import").field(request).finish(),
+            Self::JoinSplitKey(request) => formatter
+                .debug_tuple("JoinSplitKey")
+                .field(request)
+                .finish(),
             Self::Hash(request) => formatter.debug_tuple("Hash").field(request).finish(),
             Self::Mac(request) => formatter.debug_tuple("MAC").field(request).finish(),
             Self::MacVerify(request) => formatter.debug_tuple("MAC Verify").field(request).finish(),
@@ -927,6 +943,7 @@ enum PendingResponse {
     DeriveKey(DeriveKeyResponse),
     Export(ExportResponse),
     Import(ImportResponse),
+    JoinSplitKey(JoinSplitKeyResponse),
     Hash(HashResponse),
     Mac(MacResponse),
     MacVerify(MacVerifyResponse),
@@ -970,6 +987,7 @@ impl PendingResponse {
             Self::DeriveKey(response) => ClientResponseRef::DeriveKey(response),
             Self::Export(response) => ClientResponseRef::Export(response),
             Self::Import(response) => ClientResponseRef::Import(response),
+            Self::JoinSplitKey(response) => ClientResponseRef::JoinSplitKey(response),
             Self::Hash(response) => ClientResponseRef::Hash(response),
             Self::Mac(response) => ClientResponseRef::Mac(response),
             Self::MacVerify(response) => ClientResponseRef::MacVerify(response),
@@ -1219,6 +1237,8 @@ pub enum ClientOperation {
     Export,
     /// Import caller-provided object material and attributes to the KMIP server.
     Import,
+    /// Combine caller-identified Split Keys on the KMIP server.
+    JoinSplitKey,
     /// Hash data through the selected server-side operation.
     Hash,
     /// Calculate a MAC through the selected server-side object.
@@ -1367,6 +1387,7 @@ enum ClientResponseRef<'a> {
     DeriveKey(&'a DeriveKeyResponse),
     Export(&'a ExportResponse),
     Import(&'a ImportResponse),
+    JoinSplitKey(&'a JoinSplitKeyResponse),
     Hash(&'a HashResponse),
     Mac(&'a MacResponse),
     MacVerify(&'a MacVerifyResponse),
@@ -1427,6 +1448,7 @@ impl<'a> ClientResponseView<'a> {
             ClientResponseRef::DeriveKey(response) => response.result(),
             ClientResponseRef::Export(response) => response.result(),
             ClientResponseRef::Import(response) => response.result(),
+            ClientResponseRef::JoinSplitKey(response) => response.result(),
             ClientResponseRef::Hash(response) => response.result(),
             ClientResponseRef::Mac(response) => response.result(),
             ClientResponseRef::MacVerify(response) => response.result(),
@@ -1523,6 +1545,15 @@ impl<'a> ClientResponseView<'a> {
     pub const fn import(&self) -> Option<&'a ImportResponse> {
         match self.response {
             ClientResponseRef::Import(response) => Some(response),
+            _ => None,
+        }
+    }
+
+    /// Returns the Join Split Key response when this view represents one.
+    #[must_use]
+    pub const fn join_split_key(&self) -> Option<&'a JoinSplitKeyResponse> {
+        match self.response {
+            ClientResponseRef::JoinSplitKey(response) => Some(response),
             _ => None,
         }
     }
@@ -1839,6 +1870,9 @@ impl fmt::Debug for ClientResponseView<'_> {
             ClientResponseRef::Import(response) => {
                 debug_operation_response(formatter, "Import", response)
             }
+            ClientResponseRef::JoinSplitKey(response) => {
+                debug_operation_response(formatter, "Join Split Key", response)
+            }
             ClientResponseRef::Hash(response) => {
                 debug_operation_response(formatter, "Hash", response)
             }
@@ -1964,6 +1998,8 @@ pub enum ClientBatchOutcome {
     Export(ExportResponse),
     /// The server returned an Import result.
     Import(ImportResponse),
+    /// The server returned a Join Split Key result.
+    JoinSplitKeyCompleted(JoinSplitKeyResponse),
     /// The server returned a Hash result.
     Hash(HashResponse),
     /// The server returned a MAC result.
@@ -2034,6 +2070,7 @@ impl ClientBatchOutcome {
             | Self::DeriveKey(_)
             | Self::Export(_)
             | Self::Import(_)
+            | Self::JoinSplitKeyCompleted(_)
             | Self::Hash(_)
             | Self::Mac(_)
             | Self::MacVerify(_)
@@ -2080,6 +2117,7 @@ impl ClientBatchOutcome {
             Self::DeriveKey(response) => response.result(),
             Self::Export(response) => response.result(),
             Self::Import(response) => response.result(),
+            Self::JoinSplitKeyCompleted(response) => response.result(),
             Self::Hash(response) => response.result(),
             Self::Mac(response) => response.result(),
             Self::MacVerify(response) => response.result(),
@@ -2126,6 +2164,7 @@ impl ClientBatchOutcome {
             Self::DeriveKey(_) => ClientOperation::DeriveKey,
             Self::Export(_) => ClientOperation::Export,
             Self::Import(_) => ClientOperation::Import,
+            Self::JoinSplitKeyCompleted(_) => ClientOperation::JoinSplitKey,
             Self::Hash(_) => ClientOperation::Hash,
             Self::Mac(_) => ClientOperation::Mac,
             Self::MacVerify(_) => ClientOperation::MacVerify,
@@ -2441,6 +2480,21 @@ impl ClientBatchOutcome {
         }
     }
 
+    /// Returns the typed Join Split Key response, including when its result is Pending.
+    #[must_use]
+    pub const fn join_split_key_response(&self) -> Option<&JoinSplitKeyResponse> {
+        match self {
+            Self::JoinSplitKeyCompleted(response) => Some(response),
+            Self::Pending(pending) => match pending.response() {
+                ClientResponseView {
+                    response: ClientResponseRef::JoinSplitKey(response),
+                } => Some(response),
+                _ => None,
+            },
+            _ => None,
+        }
+    }
+
     /// Returns the typed Hash response, when this is one.
     #[must_use]
     pub const fn hash_response(&self) -> Option<&HashResponse> {
@@ -2528,6 +2582,9 @@ impl ClientBatchOutcome {
             }
             Self::Export(response) => ClientResponseView::new(ClientResponseRef::Export(response)),
             Self::Import(response) => ClientResponseView::new(ClientResponseRef::Import(response)),
+            Self::JoinSplitKeyCompleted(response) => {
+                ClientResponseView::new(ClientResponseRef::JoinSplitKey(response))
+            }
             Self::Hash(response) => ClientResponseView::new(ClientResponseRef::Hash(response)),
             Self::Mac(response) => ClientResponseView::new(ClientResponseRef::Mac(response)),
             Self::MacVerify(response) => {
@@ -2593,6 +2650,9 @@ impl ClientBatchOutcome {
 }
 
 impl fmt::Debug for ClientBatchOutcome {
+    // Keep the exhaustive outcome labels together so each new typed response
+    // has an explicit, reviewable debug name.
+    #[allow(clippy::too_many_lines)]
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             Self::Completed(response) => {
@@ -2633,6 +2693,10 @@ impl fmt::Debug for ClientBatchOutcome {
             }
             Self::Export(response) => formatter.debug_tuple("Export").field(response).finish(),
             Self::Import(response) => formatter.debug_tuple("Import").field(response).finish(),
+            Self::JoinSplitKeyCompleted(response) => formatter
+                .debug_tuple("JoinSplitKeyCompleted")
+                .field(response)
+                .finish(),
             Self::Hash(response) => formatter.debug_tuple("Hash").field(response).finish(),
             Self::Mac(response) => formatter.debug_tuple("MAC").field(response).finish(),
             Self::MacVerify(response) => {
@@ -2703,6 +2767,9 @@ impl fmt::Display for ClientBatchOutcome {
             Self::DeriveKey(response) => write!(formatter, "Derive Key({})", response.result()),
             Self::Export(response) => write!(formatter, "Export({})", response.result()),
             Self::Import(response) => write!(formatter, "Import({})", response.result()),
+            Self::JoinSplitKeyCompleted(response) => {
+                write!(formatter, "Join Split Key({})", response.result())
+            }
             Self::Hash(response) => write!(formatter, "Hash({})", response.result()),
             Self::Mac(response) => write!(formatter, "MAC({})", response.result()),
             Self::MacVerify(response) => write!(formatter, "MAC Verify({})", response.result()),
@@ -3791,6 +3858,41 @@ impl Client {
         self.execute_one_typed_request(ClientRequest::Import(request), limits, options)
     }
 
+    /// Executes one typed Join Split Key request using caller-supplied threshold context.
+    ///
+    /// The client validates that every transmitted identifier has a known
+    /// threshold and that the identifier count meets the maximum threshold.
+    /// Thresholds remain local and are not encoded into the KMIP request. The
+    /// server performs the join; `KMIPKit` does not combine key material locally
+    /// and does not retry.
+    ///
+    /// # Errors
+    ///
+    /// Returns a sanitized validation, protocol, or transport error with the
+    /// strongest available request-delivery evidence.
+    pub fn join_split_key(
+        &mut self,
+        request: JoinSplitKeyRequest,
+        limits: &CodecLimits,
+    ) -> Result<ClientBatchItemResponse, ClientError> {
+        self.join_split_key_with_options(request, limits, &RequestOptions::default())
+    }
+
+    /// Executes one typed Join Split Key request with transport timeout overrides.
+    ///
+    /// # Errors
+    ///
+    /// Returns a sanitized validation, protocol, or transport error with the
+    /// strongest available request-delivery evidence.
+    pub fn join_split_key_with_options(
+        &mut self,
+        request: JoinSplitKeyRequest,
+        limits: &CodecLimits,
+        options: &RequestOptions,
+    ) -> Result<ClientBatchItemResponse, ClientError> {
+        self.execute_one_typed_request(ClientRequest::JoinSplitKey(request), limits, options)
+    }
+
     /// Executes one Hash request through the shared writer and performs one
     /// exchange without calculating a hash locally or retrying.
     ///
@@ -4718,6 +4820,7 @@ fn request_mutation_is_prohibited(request: &ClientRequest) -> bool {
         | ClientRequest::DeriveKey(_)
         | ClientRequest::Export(_)
         | ClientRequest::Import(_)
+        | ClientRequest::JoinSplitKey(_)
         | ClientRequest::Hash(_)
         | ClientRequest::Mac(_)
         | ClientRequest::MacVerify(_)
@@ -5319,6 +5422,7 @@ fn response_outcome(
         }
         DERIVE_KEY_OPERATION | EXPORT_OPERATION => key_material_response_outcome(operation, item),
         IMPORT_OPERATION => import_response_outcome(item),
+        JOIN_SPLIT_KEY_OPERATION => join_split_key_response_outcome(item),
         ARCHIVE_OPERATION => read_operation_outcome(
             ClientOperation::Archive,
             item,
@@ -5631,6 +5735,19 @@ fn import_response_outcome(
         ImportResponse::result,
         PendingResponse::Import,
         ClientBatchOutcome::Import,
+    )
+}
+
+fn join_split_key_response_outcome(
+    item: ResponseBatchItemView<'_>,
+) -> Result<ClientBatchOutcome, ProtocolError> {
+    read_operation_outcome(
+        ClientOperation::JoinSplitKey,
+        item,
+        JoinSplitKeyResponse::try_from_response_item,
+        JoinSplitKeyResponse::result,
+        PendingResponse::JoinSplitKey,
+        ClientBatchOutcome::JoinSplitKeyCompleted,
     )
 }
 

@@ -7,7 +7,7 @@ use kmipkit_transport::RequestDeliveryState;
 use kmipkit_ttlv::Value;
 use kmipkit_ttlv::codec::CodecLimits;
 
-use super::{ClientOperation, JOIN_SPLIT_KEY_OPERATION, encode_message_for_test};
+use super::execute::{ClientOperation, JOIN_SPLIT_KEY_OPERATION, encode_message_for_test};
 use crate::asynchronous_execution_test_support::{client_for, request_contains};
 use crate::execute_test_support::{test_item, test_structure};
 
