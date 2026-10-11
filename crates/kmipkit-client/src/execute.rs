@@ -28,10 +28,10 @@ use kmipkit_protocol::{
     ProtocolCauseCategory, ProtocolError, ProtocolErrorKind, ProtocolVersion,
     QueryAsyncRequestsRequest, QueryAsyncRequestsResponse, QueryRequest, QueryResponse,
     ReProvisionRequest, ReProvisionResponse, RecertifyRequest, RecertifyResponse, RecoverRequest,
-    RecoverResponse, RekeyKeyPairRequest, RekeyKeyPairResponse, RekeyRequest, RekeyResponse,
-    RequestMessage, ResponseBatchItemView, ResponseMessage, ResultStatus, SetAttributeRequest,
-    SetAttributeResponse, SignRequest, SignResponse, SignatureVerifyRequest,
-    SignatureVerifyResponse,
+    RecoverResponse, RegisterRequest, RegisterResponse, RekeyKeyPairRequest, RekeyKeyPairResponse,
+    RekeyRequest, RekeyResponse, RequestMessage, ResponseBatchItemView, ResponseMessage,
+    ResultStatus, SetAttributeRequest, SetAttributeResponse, SignRequest, SignResponse,
+    SignatureVerifyRequest, SignatureVerifyResponse,
 };
 
 #[cfg(test)]
@@ -126,6 +126,7 @@ const RECERTIFY_OPERATION: u32 = 0x0000_0007; // KMIP v2.1 §6.1.45, Table 300.
 const REKEY_OPERATION: u32 = 0x0000_0004; // KMIP v2.1 §6.1.46, Table 305.
 const REKEY_KEY_PAIR_OPERATION: u32 = 0x0000_001d; // KMIP v2.1 §6.1.47, Table 310.
 const REPROVISION_OPERATION: u32 = 0x0000_0035; // KMIP v2.1 §6.1.48, Table 313.
+const REGISTER_OPERATION: u32 = 0x0000_0003; // KMIP v2.1 §6.1.43, Table 291.
 const CREATE_KEY_PAIR_OPERATION: u32 = 0x0000_0002;
 const CREATE_SPLIT_KEY_OPERATION: u32 = 0x0000_0028; // KMIP v2.1 §11.36, Table 470.
 const ACTIVATE_OPERATION: u32 = 0x0000_0012; // KMIP v2.1 §6.1.1, Table 164.
@@ -177,6 +178,8 @@ pub enum ClientRequest {
     RekeyKeyPair(RekeyKeyPairRequest),
     /// An explicit client-to-server Re-Provision request.
     ReProvision(ReProvisionRequest),
+    /// An explicit client-to-server Register request.
+    Register(RegisterRequest),
     /// An explicit client-to-server Destroy request.
     Destroy(DestroyRequest),
     /// An explicit client-to-server Recover request.
@@ -340,6 +343,12 @@ impl ClientRequest {
         Self::ReProvision(request)
     }
 
+    /// Creates an explicit client-to-server Register request variant.
+    #[must_use]
+    pub const fn register(request: RegisterRequest) -> Self {
+        Self::Register(request)
+    }
+
     /// Creates a typed Destroy request variant.
     #[must_use]
     pub fn destroy(request: DestroyRequest) -> Self {
@@ -418,6 +427,7 @@ impl ClientRequest {
             Self::Rekey(_) => REKEY_OPERATION,
             Self::RekeyKeyPair(_) => REKEY_KEY_PAIR_OPERATION,
             Self::ReProvision(_) => REPROVISION_OPERATION,
+            Self::Register(_) => REGISTER_OPERATION,
             Self::Destroy(_) => DESTROY_OPERATION,
             Self::Recover(_) => RECOVER_OPERATION,
             Self::Get(_) => GET_OPERATION,
@@ -491,6 +501,7 @@ impl ClientRequest {
                 | Self::Recertify(_)
                 | Self::Rekey(_)
                 | Self::RekeyKeyPair(_)
+                | Self::Register(_)
         )
     }
 
@@ -506,6 +517,7 @@ impl ClientRequest {
             Self::Rekey(request) => request.into_ttlv_payload(),
             Self::RekeyKeyPair(request) => request.into_ttlv_payload(),
             Self::ReProvision(request) => request.into_ttlv_payload(),
+            Self::Register(request) => request.into_ttlv_payload(),
             Self::Destroy(request) => request.to_ttlv_payload(),
             Self::Recover(request) => request.to_ttlv_payload(),
             Self::Get(request) => request.to_ttlv_payload(),
@@ -553,6 +565,7 @@ impl fmt::Debug for ClientRequest {
             Self::ReProvision(request) => {
                 formatter.debug_tuple("ReProvision").field(request).finish()
             }
+            Self::Register(request) => formatter.debug_tuple("Register").field(request).finish(),
             Self::Destroy(_) => formatter.write_str("Destroy([REDACTED])"),
             Self::Recover(_) => formatter.write_str("Recover([REDACTED])"),
             Self::Get(_) => formatter.write_str("Get([REDACTED])"),
@@ -845,6 +858,7 @@ enum PendingResponse {
     Rekey(RekeyResponse),
     RekeyKeyPair(RekeyKeyPairResponse),
     ReProvision(ReProvisionResponse),
+    Register(RegisterResponse),
     Encrypt(EncryptResponse),
     Decrypt(DecryptResponse),
     Hash(HashResponse),
@@ -883,6 +897,7 @@ impl PendingResponse {
             Self::Rekey(response) => ClientResponseRef::Rekey(response),
             Self::RekeyKeyPair(response) => ClientResponseRef::RekeyKeyPair(response),
             Self::ReProvision(response) => ClientResponseRef::ReProvision(response),
+            Self::Register(response) => ClientResponseRef::Register(response),
             Self::Encrypt(response) => ClientResponseRef::Encrypt(response),
             Self::Decrypt(response) => ClientResponseRef::Decrypt(response),
             Self::Hash(response) => ClientResponseRef::Hash(response),
@@ -1086,6 +1101,8 @@ pub enum ClientOperation {
     RekeyKeyPair,
     /// Re-Provision.
     ReProvision,
+    /// Register.
+    Register,
     /// Archive.
     Archive,
     /// Destroy.
@@ -1265,6 +1282,7 @@ enum ClientResponseRef<'a> {
     Rekey(&'a RekeyResponse),
     RekeyKeyPair(&'a RekeyKeyPairResponse),
     ReProvision(&'a ReProvisionResponse),
+    Register(&'a RegisterResponse),
     Encrypt(&'a EncryptResponse),
     Decrypt(&'a DecryptResponse),
     Hash(&'a HashResponse),
@@ -1320,6 +1338,7 @@ impl<'a> ClientResponseView<'a> {
             ClientResponseRef::Rekey(response) => response.result(),
             ClientResponseRef::RekeyKeyPair(response) => response.result(),
             ClientResponseRef::ReProvision(response) => response.result(),
+            ClientResponseRef::Register(response) => response.result(),
             ClientResponseRef::Encrypt(response) => response.result(),
             ClientResponseRef::Decrypt(response) => response.result(),
             ClientResponseRef::Hash(response) => response.result(),
@@ -1508,6 +1527,15 @@ impl<'a> ClientResponseView<'a> {
     pub const fn reprovision(&self) -> Option<&'a ReProvisionResponse> {
         match self.response {
             ClientResponseRef::ReProvision(response) => Some(response),
+            _ => None,
+        }
+    }
+
+    /// Returns the Register response when this view represents it.
+    #[must_use]
+    pub const fn register(&self) -> Option<&'a RegisterResponse> {
+        match self.response {
+            ClientResponseRef::Register(response) => Some(response),
             _ => None,
         }
     }
@@ -1718,6 +1746,9 @@ impl fmt::Debug for ClientResponseView<'_> {
             ClientResponseRef::ReProvision(response) => {
                 debug_operation_response(formatter, "ReProvision", response)
             }
+            ClientResponseRef::Register(response) => {
+                debug_operation_response(formatter, "Register", response)
+            }
             ClientResponseRef::Activate(_) => formatter.write_str("Activate([REDACTED])"),
             ClientResponseRef::Archive(_) => formatter.write_str("Archive([REDACTED])"),
             ClientResponseRef::Destroy(_) => formatter.write_str("Destroy([REDACTED])"),
@@ -1784,6 +1815,8 @@ pub enum ClientBatchOutcome {
     RekeyKeyPair(RekeyKeyPairResponse),
     /// The server returned a Re-Provision result.
     ReProvision(ReProvisionResponse),
+    /// The server returned a Register result.
+    Register(RegisterResponse),
     /// The server returned an Encrypt result.
     Encrypt(EncryptResponse),
     /// The server returned a Decrypt result.
@@ -1851,6 +1884,7 @@ impl ClientBatchOutcome {
             | Self::Rekey(_)
             | Self::RekeyKeyPair(_)
             | Self::ReProvision(_)
+            | Self::Register(_)
             | Self::Encrypt(_)
             | Self::Decrypt(_)
             | Self::Hash(_)
@@ -1892,6 +1926,7 @@ impl ClientBatchOutcome {
             Self::Rekey(response) => response.result(),
             Self::RekeyKeyPair(response) => response.result(),
             Self::ReProvision(response) => response.result(),
+            Self::Register(response) => response.result(),
             Self::Encrypt(response) => response.result(),
             Self::Decrypt(response) => response.result(),
             Self::Hash(response) => response.result(),
@@ -1933,6 +1968,7 @@ impl ClientBatchOutcome {
             Self::Rekey(_) => ClientOperation::Rekey,
             Self::RekeyKeyPair(_) => ClientOperation::RekeyKeyPair,
             Self::ReProvision(_) => ClientOperation::ReProvision,
+            Self::Register(_) => ClientOperation::Register,
             Self::Encrypt(_) => ClientOperation::Encrypt,
             Self::Decrypt(_) => ClientOperation::Decrypt,
             Self::Hash(_) => ClientOperation::Hash,
@@ -2069,6 +2105,21 @@ impl ClientBatchOutcome {
             Self::Pending(pending) => match pending.response() {
                 ClientResponseView {
                     response: ClientResponseRef::ReProvision(response),
+                } => Some(response),
+                _ => None,
+            },
+            _ => None,
+        }
+    }
+
+    /// Returns the typed Register response, including when its result is Pending.
+    #[must_use]
+    pub const fn register_response(&self) -> Option<&RegisterResponse> {
+        match self {
+            Self::Register(response) => Some(response),
+            Self::Pending(pending) => match pending.response() {
+                ClientResponseView {
+                    response: ClientResponseRef::Register(response),
                 } => Some(response),
                 _ => None,
             },
@@ -2247,6 +2298,9 @@ impl ClientBatchOutcome {
             Self::ReProvision(response) => {
                 ClientResponseView::new(ClientResponseRef::ReProvision(response))
             }
+            Self::Register(response) => {
+                ClientResponseView::new(ClientResponseRef::Register(response))
+            }
             Self::Encrypt(response) => {
                 ClientResponseView::new(ClientResponseRef::Encrypt(response))
             }
@@ -2341,6 +2395,7 @@ impl fmt::Debug for ClientBatchOutcome {
                 .debug_tuple("ReProvision")
                 .field(response)
                 .finish(),
+            Self::Register(response) => formatter.debug_tuple("Register").field(response).finish(),
             Self::GetCompleted(response) => formatter
                 .debug_tuple("GetCompleted")
                 .field(response)
@@ -2441,6 +2496,7 @@ impl fmt::Display for ClientBatchOutcome {
             Self::ReProvision(response) => {
                 write!(formatter, "Re-Provision({})", response.result())
             }
+            Self::Register(response) => write!(formatter, "Register({})", response.result()),
             Self::Archive(response) => write!(formatter, "Archive({})", response.result()),
             Self::Destroy(response) => write!(formatter, "Destroy({})", response.result()),
             Self::Recover(response) => write!(formatter, "Recover({})", response.result()),
@@ -3086,6 +3142,43 @@ impl Client {
     ) -> Result<ClientBatchItemResponse, ClientError> {
         let response = self.execute_with_options(
             ClientBatch::new(ClientBatchItem::new(ClientRequest::ReProvision(request))),
+            limits,
+            request_options,
+        )?;
+        take_single_item_response(response.items)
+    }
+
+    /// Executes one typed Register request through the shared batch writer.
+    ///
+    /// A successful response exposes the server-assigned Unique Identifier.
+    /// The operation performs one exchange and never retries automatically.
+    ///
+    /// # Errors
+    ///
+    /// Returns a sanitized validation, protocol, or transport error with the
+    /// strongest available request-delivery evidence.
+    pub fn register(
+        &mut self,
+        request: RegisterRequest,
+        limits: &CodecLimits,
+    ) -> Result<ClientBatchItemResponse, ClientError> {
+        self.register_with_options(request, limits, &RequestOptions::default())
+    }
+
+    /// Executes one typed Register request with transport timeout overrides.
+    ///
+    /// # Errors
+    ///
+    /// Returns a sanitized validation, protocol, or transport error with the
+    /// strongest available request-delivery evidence.
+    pub fn register_with_options(
+        &mut self,
+        request: RegisterRequest,
+        limits: &CodecLimits,
+        request_options: &RequestOptions,
+    ) -> Result<ClientBatchItemResponse, ClientError> {
+        let response = self.execute_with_options(
+            ClientBatch::new(ClientBatchItem::new(ClientRequest::Register(request))),
             limits,
             request_options,
         )?;
@@ -4248,6 +4341,7 @@ fn request_mutation_is_prohibited(request: &ClientRequest) -> bool {
         | ClientRequest::Rekey(_)
         | ClientRequest::RekeyKeyPair(_)
         | ClientRequest::ReProvision(_)
+        | ClientRequest::Register(_)
         | ClientRequest::Destroy(_)
         | ClientRequest::Recover(_)
         | ClientRequest::Get(_)
@@ -4956,6 +5050,7 @@ const fn is_lifecycle_operation(operation: u32) -> bool {
             | REKEY_OPERATION
             | REKEY_KEY_PAIR_OPERATION
             | REPROVISION_OPERATION
+            | REGISTER_OPERATION
     )
 }
 
@@ -4971,6 +5066,7 @@ fn lifecycle_response_outcome(
         REKEY_OPERATION => rekey_response_outcome(item),
         REKEY_KEY_PAIR_OPERATION => rekey_key_pair_response_outcome(item),
         REPROVISION_OPERATION => reprovision_response_outcome(item),
+        REGISTER_OPERATION => register_response_outcome(item),
         _ => Err(protocol_error(ProtocolErrorKind::UnsupportedValue)),
     }
 }
@@ -5083,6 +5179,19 @@ fn reprovision_response_outcome(
         ReProvisionResponse::result,
         PendingResponse::ReProvision,
         ClientBatchOutcome::ReProvision,
+    )
+}
+
+fn register_response_outcome(
+    item: ResponseBatchItemView<'_>,
+) -> Result<ClientBatchOutcome, ProtocolError> {
+    read_operation_outcome(
+        ClientOperation::Register,
+        item,
+        RegisterResponse::try_from_response_item,
+        RegisterResponse::result,
+        PendingResponse::Register,
+        ClientBatchOutcome::Register,
     )
 }
 

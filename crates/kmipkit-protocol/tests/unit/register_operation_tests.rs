@@ -8,7 +8,7 @@ use crate::{
     AttributeSet, ObjectType, RegisterError, RegisterRequest, RegisterResponse,
     ResponseBatchItemView, ResponseMessage, ResultReason, UniqueIdentifier,
 };
-use kmipkit_ttlv::{Item, RawTag, Structure, Tag, Value};
+use kmipkit_ttlv::{Item, RawTag, Structure, Tag, Value, ValueView};
 
 const REGISTER_OPERATION: u32 = 0x0000_0003;
 const SUCCESS: u32 = 0;
@@ -28,6 +28,7 @@ const CERTIFICATE_LENGTH: u32 = 0x0042_00AD;
 const DIGITAL_SIGNATURE_ALGORITHM: u32 = 0x0042_00AE;
 const KEY_BLOCK: u32 = 0x0042_0040;
 const UNKNOWN_VENDOR_TAG: u32 = 0x0054_1234;
+const RESPONSE_PAYLOAD: u32 = 0x0042_007C;
 const SECRET_SENTINEL: &[u8] = b"REGISTER_SECRET_OBJECT_SENTINEL";
 
 fn tag(raw_tag: u32) -> Tag {
@@ -54,10 +55,7 @@ fn key_object(algorithm: bool, length: bool) -> Item {
         key_block.push(item(CRYPTOGRAPHIC_LENGTH, Value::integer(256)));
     }
     let key_block = item(KEY_BLOCK, Value::structure(structure(key_block)));
-    item(
-        SYMMETRIC_KEY,
-        Value::structure(structure([key_block])),
-    )
+    item(SYMMETRIC_KEY, Value::structure(structure([key_block])))
 }
 
 fn symmetric_attributes(extra: impl IntoIterator<Item = Item>) -> AttributeSet {
@@ -125,7 +123,12 @@ fn request_emits_table_291_fields_in_order_and_preserves_object_item() {
 
     assert_eq!(
         field_tags(&payload),
-        [OBJECT_TYPE, ATTRIBUTES, SYMMETRIC_KEY, PROTECTION_STORAGE_MASKS]
+        [
+            OBJECT_TYPE,
+            ATTRIBUTES,
+            SYMMETRIC_KEY,
+            PROTECTION_STORAGE_MASKS
+        ]
     );
 }
 
@@ -137,7 +140,10 @@ fn request_requires_key_algorithm_and_length_in_attributes_or_key_block() {
         key_object(false, false),
     )
     .into_ttlv_payload();
-    assert!(result.is_err(), "Table 293 requires key algorithm and length");
+    assert!(
+        result.is_err(),
+        "Table 293 requires key algorithm and length"
+    );
 
     let encoded_in_key_block = RegisterRequest::new(
         ObjectType::from_raw(2),
@@ -177,23 +183,23 @@ fn request_requires_usage_mask_for_managed_cryptographic_objects() {
         key_object(false, false),
     )
     .into_ttlv_payload();
-    assert!(result.is_err(), "Table 293 requires Cryptographic Usage Mask");
+    assert!(
+        result.is_err(),
+        "Table 293 requires Cryptographic Usage Mask"
+    );
 }
 
 #[test]
 fn request_requires_certificate_length_and_allows_embedded_signature_algorithm() {
     let certificate = item(CERTIFICATE, Value::structure(structure([])));
-    let missing_length = RegisterRequest::new(
-        ObjectType::from_raw(1),
-        attrs([]),
-        certificate,
-    )
-    .into_ttlv_payload();
+    let missing_length =
+        RegisterRequest::new(ObjectType::from_raw(1), attrs([]), certificate).into_ttlv_payload();
     assert!(missing_length.is_err());
 
     let request = RegisterRequest::new(
         ObjectType::from_raw(1),
         attrs([
+            item(CRYPTOGRAPHIC_USAGE_MASK, Value::integer(1)),
             item(CERTIFICATE_LENGTH, Value::integer(4096)),
             item(DIGITAL_SIGNATURE_ALGORITHM, Value::enumeration(1)),
         ]),
@@ -250,11 +256,24 @@ fn successful_response_requires_and_preserves_unique_identifier_and_extensions()
     assert_eq!(response.result().status().raw(), SUCCESS);
     assert_eq!(
         response.unique_identifier(),
-        Some(&UniqueIdentifier::TextString("registered-object".to_owned()))
+        Some(&UniqueIdentifier::TextString(
+            "registered-object".to_owned()
+        ))
     );
-    assert!(response.with_ttlv(|view| view.children().iter().any(|field| {
-        field.tag().raw() == UNKNOWN_VENDOR_TAG
-    })));
+    assert!(response.with_ttlv(|view| {
+        let payload = view
+            .children()
+            .iter()
+            .find(|field| field.tag().raw() == RESPONSE_PAYLOAD)
+            .expect("Register response includes a Response Payload");
+        payload.with_value(|value| match value {
+            ValueView::Structure(payload) => payload
+                .children()
+                .iter()
+                .any(|field| field.tag().raw() == UNKNOWN_VENDOR_TAG),
+            _ => false,
+        })
+    }));
 }
 
 #[test]
@@ -262,14 +281,8 @@ fn successful_response_rejects_missing_duplicate_or_mistyped_identifier() {
     let payloads = [
         structure([]),
         structure([
-            item(
-                UNIQUE_IDENTIFIER,
-                Value::text_string("first".to_owned()),
-            ),
-            item(
-                UNIQUE_IDENTIFIER,
-                Value::text_string("second".to_owned()),
-            ),
+            item(UNIQUE_IDENTIFIER, Value::text_string("first".to_owned())),
+            item(UNIQUE_IDENTIFIER, Value::text_string("second".to_owned())),
         ]),
         structure([item(
             UNIQUE_IDENTIFIER,

@@ -8,7 +8,7 @@ use kmipkit_protocol::{AttributeSet, ObjectType, RegisterRequest};
 use kmipkit_test_support::ExchangeScript;
 use kmipkit_transport::RequestDeliveryState;
 use kmipkit_ttlv::codec::{CodecLimits, decode};
-use kmipkit_ttlv::{Item, RawTag, Structure, Tag, Value, ValueView};
+use kmipkit_ttlv::{Value, ValueView};
 
 use crate::asynchronous_execution_test_support::client_for;
 use crate::execute_test_support::{asynchronous_response_bytes, test_item, test_structure};

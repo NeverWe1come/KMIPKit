@@ -49,10 +49,10 @@ mod query;
 mod query_async_requests;
 mod recertify;
 mod recover;
+mod register;
 mod rekey;
 mod rekey_key_pair;
 mod reprovision;
-mod register;
 mod result;
 mod set_attribute;
 mod sign;
@@ -120,10 +120,10 @@ pub use query::{QueryError, QueryFunction, QueryRequest, QueryResponse, QueryRes
 pub use query_async_requests::{QueryAsyncRequestsRequest, QueryAsyncRequestsResponse};
 pub use recertify::{RecertifyError, RecertifyRequest, RecertifyResponse};
 pub use recover::{RecoverError, RecoverRequest, RecoverResponse};
+pub use register::{RegisterError, RegisterRequest, RegisterResponse};
 pub use rekey::{RekeyError, RekeyRequest, RekeyResponse};
 pub use rekey_key_pair::{RekeyKeyPairError, RekeyKeyPairRequest, RekeyKeyPairResponse};
 pub use reprovision::{ReProvisionError, ReProvisionRequest, ReProvisionResponse};
-pub use register::{RegisterError, RegisterRequest, RegisterResponse};
 pub use result::{
     KmipOperationResult, ResultMessage, ResultReason, ResultStatus, ResultValidationError,
 };
