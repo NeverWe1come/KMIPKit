@@ -146,6 +146,24 @@ fn malformed_success_ticket_is_rejected_without_disclosing_secret_bytes() {
 }
 
 #[test]
+fn successful_login_rejects_duplicate_ticket_fields() {
+    let ticket = || {
+        item(
+            TICKET,
+            Value::structure(structure([
+                item(TICKET_TYPE, Value::enumeration(1)),
+                item(TICKET_VALUE, Value::byte_string(SECRET_SENTINEL.to_vec())),
+            ])),
+        )
+    };
+    let error = typed_response(SUCCESS, None, Some(structure([ticket(), ticket()])))
+        .expect_err("Table 254 has one Ticket result field");
+
+    assert_eq!(error, LoginError::MalformedSuccessPayload);
+    assert!(!error.to_string().contains("login-ticket-secret-sentinel"));
+}
+
+#[test]
 fn pinned_cn01_2_48_fixture_matches_the_typed_request_and_response_contract() {
     let document = roxmltree::Document::parse(LOGIN_FIXTURE)
         .expect("the checked-in OASIS Login fixture is valid XML");

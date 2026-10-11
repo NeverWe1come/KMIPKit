@@ -64,7 +64,7 @@ Every task uses the repository checklist form: checkbox, sequential task ID, opt
 
 ### Refactor commit
 
-- [ ] T010 Refactor Login request/response handling and tests in crates/kmipkit-protocol/src/login.rs and crates/kmipkit-protocol/tests/unit/login_operation_tests.rs without changing wire behavior; rerun fixture and focused tests, then commit separately as Refactor.
+- [x] T010 Refactor Login request/response handling and tests in crates/kmipkit-protocol/src/login.rs and crates/kmipkit-protocol/tests/unit/login_operation_tests.rs without changing wire behavior; rerun fixture and focused tests, then commit separately as Refactor.
 
 **Checkpoint**: Login returns a secret-safe Ticket without changing future client authentication state.
 

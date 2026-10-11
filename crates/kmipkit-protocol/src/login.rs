@@ -182,15 +182,19 @@ fn parse_ticket(payload: &kmipkit_ttlv::StructureView<'_>) -> Result<Ticket, Log
         if ticket.is_some() {
             return Err(LoginError::MalformedSuccessPayload);
         }
-        let tree = field.with_value(|value| match value {
-            ValueView::Structure(structure) => structure.try_clone().ok(),
-            _ => None,
-        });
-        let tree = tree.ok_or(LoginError::MalformedSuccessPayload)?;
-        ticket =
-            Some(Ticket::try_from_ttlv(tree).map_err(|_| LoginError::MalformedSuccessPayload)?);
+        ticket = Some(field.with_value(parse_ticket_value)?);
     }
     ticket.ok_or(LoginError::MalformedSuccessPayload)
+}
+
+fn parse_ticket_value(value: ValueView<'_>) -> Result<Ticket, LoginError> {
+    let ValueView::Structure(structure) = value else {
+        return Err(LoginError::MalformedSuccessPayload);
+    };
+    let tree = structure
+        .try_clone()
+        .map_err(|_| LoginError::MalformedSuccessPayload)?;
+    Ticket::try_from_ttlv(tree).map_err(|_| LoginError::MalformedSuccessPayload)
 }
 
 /// Payload-free error converting a Login response batch item.
