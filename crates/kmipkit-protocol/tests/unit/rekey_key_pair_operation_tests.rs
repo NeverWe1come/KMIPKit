@@ -165,6 +165,25 @@ fn successful_response_rejects_missing_or_duplicate_identifiers() {
 }
 
 #[test]
+fn successful_response_debug_redacts_both_identifiers_and_unknown_values() {
+    let payload = structure([
+        identifier_item(PRIVATE_KEY_UNIQUE_IDENTIFIER, "PRIVATE_ID_SENTINEL"),
+        identifier_item(PUBLIC_KEY_UNIQUE_IDENTIFIER, "PUBLIC_ID_SENTINEL"),
+        item(
+            UNKNOWN_VENDOR_TAG,
+            Value::text_string("UNKNOWN_RESPONSE_SENTINEL".to_owned()),
+        ),
+    ]);
+    let response = typed_response(SUCCESS, None, Some(payload))
+        .expect("the Table 311 identifiers have valid forms");
+    let debug = format!("{response:?}");
+
+    assert!(!debug.contains("PRIVATE_ID_SENTINEL"));
+    assert!(!debug.contains("PUBLIC_ID_SENTINEL"));
+    assert!(!debug.contains("UNKNOWN_RESPONSE_SENTINEL"));
+}
+
+#[test]
 fn failure_preserves_table_312_reason_without_success_identifiers() {
     let response = typed_response(OPERATION_FAILED, Some(KEY_VALUE_NOT_PRESENT), None)
         .expect("Table 312 Operation Failed remains a common KMIP result");

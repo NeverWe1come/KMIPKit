@@ -41,3 +41,4 @@ Record separate Red, Green, and Refactor commit IDs per operation in the draft P
 - GREEN focused: `cargo test -p kmipkit-protocol rekey_key_pair_operation_tests --no-fail-fast` and `cargo test -p kmipkit-client rekey_key_pair_execution_tests --no-fail-fast` both passed, six tests each.
 - GREEN package regression: `cargo test -p kmipkit-protocol -p kmipkit-client` passed.
 - Guide examples: `python scripts/test_user_guide_examples.py` compiled all 14 marked Rust examples.
+- REFACTOR verification: both focused operation tests passed (seven protocol tests and six client tests); `cargo test -p kmipkit-protocol -p kmipkit-client`, `cargo clippy -p kmipkit-protocol -p kmipkit-client --all-targets --all-features -- -D warnings`, `cargo fmt --all --check`, and `git diff --check` passed.

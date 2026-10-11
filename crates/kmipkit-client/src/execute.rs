@@ -1623,109 +1623,104 @@ impl<'a> ClientResponseView<'a> {
     }
 }
 
+fn debug_operation_response<T: fmt::Debug>(
+    formatter: &mut fmt::Formatter<'_>,
+    name: &str,
+    response: &T,
+) -> fmt::Result {
+    formatter.debug_tuple(name).field(response).finish()
+}
+
 impl fmt::Debug for ClientResponseView<'_> {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self.response {
-            ClientResponseRef::DiscoverVersions(response) => formatter
-                .debug_tuple("DiscoverVersions")
-                .field(response)
-                .finish(),
+            ClientResponseRef::DiscoverVersions(response) => {
+                debug_operation_response(formatter, "DiscoverVersions", response)
+            }
             ClientResponseRef::Encrypt(response) => {
-                formatter.debug_tuple("Encrypt").field(response).finish()
+                debug_operation_response(formatter, "Encrypt", response)
             }
             ClientResponseRef::Decrypt(response) => {
-                formatter.debug_tuple("Decrypt").field(response).finish()
+                debug_operation_response(formatter, "Decrypt", response)
             }
             ClientResponseRef::Hash(response) => {
-                formatter.debug_tuple("Hash").field(response).finish()
+                debug_operation_response(formatter, "Hash", response)
             }
             ClientResponseRef::Mac(response) => {
-                formatter.debug_tuple("MAC").field(response).finish()
+                debug_operation_response(formatter, "MAC", response)
             }
             ClientResponseRef::MacVerify(response) => {
-                formatter.debug_tuple("MAC Verify").field(response).finish()
+                debug_operation_response(formatter, "MAC Verify", response)
             }
             ClientResponseRef::Sign(response) => {
-                formatter.debug_tuple("Sign").field(response).finish()
+                debug_operation_response(formatter, "Sign", response)
             }
-            ClientResponseRef::SignatureVerify(response) => formatter
-                .debug_tuple("Signature Verify")
-                .field(response)
-                .finish(),
+            ClientResponseRef::SignatureVerify(response) => {
+                debug_operation_response(formatter, "Signature Verify", response)
+            }
             ClientResponseRef::Create(response) => {
-                formatter.debug_tuple("Create").field(response).finish()
+                debug_operation_response(formatter, "Create", response)
             }
             ClientResponseRef::Certify(response) => {
-                formatter.debug_tuple("Certify").field(response).finish()
+                debug_operation_response(formatter, "Certify", response)
             }
             ClientResponseRef::Check(response) => {
-                formatter.debug_tuple("Check").field(response).finish()
+                debug_operation_response(formatter, "Check", response)
             }
-            ClientResponseRef::ObtainLease(response) => formatter
-                .debug_tuple("ObtainLease")
-                .field(response)
-                .finish(),
+            ClientResponseRef::ObtainLease(response) => {
+                debug_operation_response(formatter, "ObtainLease", response)
+            }
             ClientResponseRef::Recertify(response) => {
-                formatter.debug_tuple("Recertify").field(response).finish()
+                debug_operation_response(formatter, "Recertify", response)
             }
             ClientResponseRef::Rekey(response) => {
-                formatter.debug_tuple("Rekey").field(response).finish()
+                debug_operation_response(formatter, "Rekey", response)
             }
-            ClientResponseRef::RekeyKeyPair(response) => formatter
-                .debug_tuple("RekeyKeyPair")
-                .field(response)
-                .finish(),
+            ClientResponseRef::RekeyKeyPair(response) => {
+                debug_operation_response(formatter, "RekeyKeyPair", response)
+            }
             ClientResponseRef::Activate(_) => formatter.write_str("Activate([REDACTED])"),
             ClientResponseRef::Archive(_) => formatter.write_str("Archive([REDACTED])"),
             ClientResponseRef::Destroy(_) => formatter.write_str("Destroy([REDACTED])"),
             ClientResponseRef::Recover(_) => formatter.write_str("Recover([REDACTED])"),
             ClientResponseRef::Get(response) => {
-                formatter.debug_tuple("Get").field(response).finish()
+                debug_operation_response(formatter, "Get", response)
             }
             ClientResponseRef::Locate(response) => {
-                formatter.debug_tuple("Locate").field(response).finish()
+                debug_operation_response(formatter, "Locate", response)
             }
-            ClientResponseRef::CreateKeyPair(response) => formatter
-                .debug_tuple("CreateKeyPair")
-                .field(response)
-                .finish(),
-            ClientResponseRef::CreateSplitKey(response) => formatter
-                .debug_tuple("CreateSplitKey")
-                .field(response)
-                .finish(),
-            ClientResponseRef::AddAttribute(response) => formatter
-                .debug_tuple("AddAttribute")
-                .field(response)
-                .finish(),
-            ClientResponseRef::AdjustAttribute(response) => formatter
-                .debug_tuple("AdjustAttribute")
-                .field(response)
-                .finish(),
-            ClientResponseRef::DeleteAttribute(response) => formatter
-                .debug_tuple("DeleteAttribute")
-                .field(response)
-                .finish(),
-            ClientResponseRef::ModifyAttribute(response) => formatter
-                .debug_tuple("ModifyAttribute")
-                .field(response)
-                .finish(),
-            ClientResponseRef::SetAttribute(response) => formatter
-                .debug_tuple("SetAttribute")
-                .field(response)
-                .finish(),
-            ClientResponseRef::GetAttributes(response) => formatter
-                .debug_tuple("GetAttributes")
-                .field(response)
-                .finish(),
-            ClientResponseRef::GetAttributeList(response) => formatter
-                .debug_tuple("GetAttributeList")
-                .field(response)
-                .finish(),
+            ClientResponseRef::CreateKeyPair(response) => {
+                debug_operation_response(formatter, "CreateKeyPair", response)
+            }
+            ClientResponseRef::CreateSplitKey(response) => {
+                debug_operation_response(formatter, "CreateSplitKey", response)
+            }
+            ClientResponseRef::AddAttribute(response) => {
+                debug_operation_response(formatter, "AddAttribute", response)
+            }
+            ClientResponseRef::AdjustAttribute(response) => {
+                debug_operation_response(formatter, "AdjustAttribute", response)
+            }
+            ClientResponseRef::DeleteAttribute(response) => {
+                debug_operation_response(formatter, "DeleteAttribute", response)
+            }
+            ClientResponseRef::ModifyAttribute(response) => {
+                debug_operation_response(formatter, "ModifyAttribute", response)
+            }
+            ClientResponseRef::SetAttribute(response) => {
+                debug_operation_response(formatter, "SetAttribute", response)
+            }
+            ClientResponseRef::GetAttributes(response) => {
+                debug_operation_response(formatter, "GetAttributes", response)
+            }
+            ClientResponseRef::GetAttributeList(response) => {
+                debug_operation_response(formatter, "GetAttributeList", response)
+            }
             ClientResponseRef::Ping(response) => {
-                formatter.debug_tuple("Ping").field(response).finish()
+                debug_operation_response(formatter, "Ping", response)
             }
             ClientResponseRef::Query(response) => {
-                formatter.debug_tuple("Query").field(response).finish()
+                debug_operation_response(formatter, "Query", response)
             }
         }
     }

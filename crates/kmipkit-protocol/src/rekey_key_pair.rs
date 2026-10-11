@@ -3,7 +3,7 @@
 use std::error::Error;
 use std::fmt;
 
-use kmipkit_ttlv::{Item, ModelError, RawTag, Structure, StructureView, Tag, Value, ValueView};
+use kmipkit_ttlv::{Item, ModelError, RawTag, Structure, StructureView, Tag, Value};
 
 use crate::cryptographic_operation::{self as common, OwnedResponseTtlv};
 use crate::{
@@ -344,7 +344,7 @@ fn parse_success_identifiers(
                 if private_identifier.is_some() {
                     return Err(RekeyKeyPairError::MalformedSuccessPayload);
                 }
-                private_identifier = parse_identifier(field);
+                private_identifier = crate::lifecycle::parse_unique_identifier(field);
                 if private_identifier.is_none() {
                     return Err(RekeyKeyPairError::MalformedSuccessPayload);
                 }
@@ -353,7 +353,7 @@ fn parse_success_identifiers(
                 if public_identifier.is_some() {
                     return Err(RekeyKeyPairError::MalformedSuccessPayload);
                 }
-                public_identifier = parse_identifier(field);
+                public_identifier = crate::lifecycle::parse_unique_identifier(field);
                 if public_identifier.is_none() {
                     return Err(RekeyKeyPairError::MalformedSuccessPayload);
                 }
@@ -365,15 +365,6 @@ fn parse_success_identifiers(
         (Some(private), Some(public)) => Ok((private, public)),
         _ => Err(RekeyKeyPairError::MalformedSuccessPayload),
     }
-}
-
-fn parse_identifier(field: &Item) -> Option<UniqueIdentifier> {
-    field.with_value(|value| match value {
-        ValueView::TextString(value) => Some(UniqueIdentifier::TextString(value.to_owned())),
-        ValueView::Enumeration(value) => Some(UniqueIdentifier::Enumeration(*value)),
-        ValueView::Integer(value) => Some(UniqueIdentifier::Integer(*value)),
-        _ => None,
-    })
 }
 
 fn push_attribute_group(

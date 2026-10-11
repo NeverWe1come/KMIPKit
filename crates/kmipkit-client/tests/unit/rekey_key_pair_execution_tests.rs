@@ -7,10 +7,12 @@
 use kmipkit_protocol::{
     AttributeSet, CheckRequest, CreateRequest, ObjectType, RekeyKeyPairRequest, UniqueIdentifier,
 };
-use kmipkit_test_support::ExchangeScript;
+use kmipkit_test_support::{ExchangeScript, ScriptedTransport};
 use kmipkit_transport::RequestDeliveryState;
 use kmipkit_ttlv::codec::{CodecLimits, decode};
 use kmipkit_ttlv::{Structure, StructureView, Value, ValueView};
+use std::cell::RefCell;
+use std::rc::Rc;
 
 use crate::asynchronous_execution_test_support::client_for;
 use crate::execute_test_support::{
@@ -66,6 +68,14 @@ fn rekey_key_pair_request() -> RekeyKeyPairRequest {
             0x0042_0160,
             Value::integer(3),
         )]))
+}
+
+fn assert_one_exchange(fake: &Rc<RefCell<ScriptedTransport>>) {
+    assert_eq!(
+        fake.borrow().exchange_count(),
+        1,
+        "KMIPKit performs no implicit retry for Re-key Key Pair"
+    );
 }
 
 fn response_payload() -> Structure {
@@ -175,6 +185,10 @@ fn rekey_key_pair_sends_table_310_and_returns_both_identifiers_once() {
         ))
     );
     assert!(typed.with_ttlv(|view| structure_contains_tag(&view, UNKNOWN_VENDOR_TAG)));
+    let debug = format!("{:?}", outcome.response());
+    assert!(debug.starts_with("RekeyKeyPair("));
+    assert!(!debug.contains("replacement-private-key"));
+    assert!(!debug.contains("replacement-public-key"));
     assert_eq!(
         request_fields(
             captured
@@ -197,7 +211,7 @@ fn rekey_key_pair_sends_table_310_and_returns_both_identifiers_once() {
             ]
         )
     );
-    assert_eq!(fake.borrow().exchange_count(), 1);
+    assert_one_exchange(&fake);
 }
 
 #[test]
@@ -225,7 +239,7 @@ fn rekey_key_pair_failure_preserves_table_312_result_without_retry() {
             .map(kmipkit_protocol::ResultReason::raw),
         Some(KEY_VALUE_NOT_PRESENT)
     );
-    assert_eq!(fake.borrow().exchange_count(), 1);
+    assert_one_exchange(&fake);
 }
 
 #[test]
@@ -263,7 +277,7 @@ fn rekey_key_pair_pending_preserves_correlation_without_implicit_poll() {
         pending.asynchronous_correlation_value(),
         PENDING_CORRELATION
     );
-    assert_eq!(fake.borrow().exchange_count(), 1);
+    assert_one_exchange(&fake);
 }
 
 #[test]
@@ -309,7 +323,7 @@ fn rekey_key_pair_can_consume_a_preceding_create_id_placeholder() {
         request_fields(captured.borrow().as_deref().expect("request captured"), 1),
         (Some(REKEY_KEY_PAIR_OPERATION), Vec::new())
     );
-    assert_eq!(fake.borrow().exchange_count(), 1);
+    assert_one_exchange(&fake);
 }
 
 #[test]
@@ -332,7 +346,7 @@ fn rekey_key_pair_response_produces_private_key_id_placeholder_for_check() {
         (Some(CHECK_OPERATION), Vec::new()),
         "§4.1.2 specifies Re-key Key Pair's private replacement UID as the ID Placeholder"
     );
-    assert_eq!(fake.borrow().exchange_count(), 1);
+    assert_one_exchange(&fake);
 }
 
 #[test]
@@ -348,5 +362,5 @@ fn rekey_key_pair_transport_error_preserves_partial_write_delivery_without_retry
         error.delivery_state(),
         Some(RequestDeliveryState::PossiblySent)
     );
-    assert_eq!(fake.borrow().exchange_count(), 1);
+    assert_one_exchange(&fake);
 }
