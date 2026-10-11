@@ -5385,6 +5385,138 @@ class CatalogValidationTests(unittest.TestCase):
         self.assertFalse(any(row["requirement_id"].startswith("KMIPKIT-REQ-SPEC-6.1.36-") for row in catalog["requirements"]))
         self.assertEqual(oracle["oracle_status"], "partial-source-reviewed; not complete T003 oracle")
 
+    def test_spec_6_1_37_pkcs11_operation_and_errors_preserve_source_force(self) -> None:
+        """Specification v2.1 §§6.1.37 and 6.1.37.1 retain payload force and lowercase wording."""
+        fixture_path = ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json"
+        oracle = json.loads(fixture_path.read_text(encoding="utf-8"))
+        source_path = "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
+        pinned_locators = audit_document_with_text((ROOT / source_path).read_bytes(), "KMIPKIT-SRC-spec")
+        operation_locators = [row for row in pinned_locators if row["section"] in ("6.1.37", "6.1.37.1")]
+        expected_locators = {
+            "KMIPKIT-CLAUSE-SPEC-6.1.37-001": ("6.1.37", 1, "table_row", ["REQUIRED"], [31165, 31183]),
+            "KMIPKIT-CLAUSE-SPEC-6.1.37-002": ("6.1.37", 2, "table_row", ["MUST"], [31222, 31240]),
+            "KMIPKIT-CLAUSE-SPEC-6.1.37-003": ("6.1.37", 3, "table_row", ["REQUIRED"], [31277, 31295]),
+            "KMIPKIT-CLAUSE-SPEC-6.1.37-004": ("6.1.37", 4, "table_row", ["MUST"], [31340, 31359]),
+            "KMIPKIT-CLAUSE-SPEC-6.1.37.1-001": ("6.1.37.1", 1, "paragraph", ["SHALL"], [31413, 31414]),
+            "KMIPKIT-CLAUSE-SPEC-6.1.37.1-002": ("6.1.37.1", 2, "table_row", ["REQUIRED"], [31434, 31449]),
+        }
+        self.assertEqual({row["clause_id"] for row in operation_locators}, set(expected_locators))
+        reviews = {
+            row["source_clause_id"]: row
+            for row in oracle["source_requirement_reviews"]
+            if row["source_section"] in ("6.1.37", "6.1.37.1")
+        }
+        self.assertEqual(set(reviews), set(expected_locators))
+        for clause_id, (section, ordinal, block_kind, keywords, line_range) in expected_locators.items():
+            review = reviews[clause_id]
+            self.assertEqual(review["source_section"], section)
+            self.assertEqual(review["source_locator"], {"ordinal": ordinal, "block_kind": block_kind})
+            self.assertEqual(review["html_line_range"], line_range)
+            self.assertEqual(review["source_excerpt"], pinned_source_excerpt(source_path, line_range))
+            pinned = next(row for row in operation_locators if row["clause_id"] == clause_id)
+            self.assertEqual(review["source_excerpt"], pinned["source_text"])
+            self.assertEqual(pinned["source_keywords"], keywords)
+
+        purpose = reviews["KMIPKIT-CLAUSE-SPEC-6.1.37-001"]
+        self.assertEqual(purpose["source_obligations"], [])
+        self.assertIn("This operation enables the server to perform a PKCS#11 operation.", purpose["review_note"])
+        request_rows = [row for review in reviews.values() for row in review["source_request_rows"]]
+        self.assertEqual(
+            [(row["row_label"], row["required"], row["actor"], row["html_line_range"]) for row in request_rows],
+            [
+                ("PKCS#11 Interface", "No", "client", [31184, 31202]),
+                ("PKCS#11 Function", "Yes", "client", [31203, 31221]),
+                ("Correlation Value", "No", "client", [31222, 31240]),
+                ("PKCS#11 Input Parameters", "No", "client", [31241, 31259]),
+            ],
+        )
+        for row in request_rows:
+            self.assertEqual(row["source_excerpt"], pinned_source_excerpt(source_path, row["html_line_range"]))
+        request_correlation = next(row for row in request_rows if row["row_label"] == "Correlation Value")
+        self.assertEqual(request_correlation["source_excerpt"], "Correlation Value No Must be returned to the server if provided in a previous response.")
+        self.assertIn("lowercase", request_correlation["source_note"].lower())
+        self.assertIn("not a normative keyword", request_correlation["source_note"].lower())
+        request_correlation_atom = reviews["KMIPKIT-CLAUSE-SPEC-6.1.37-002"]["source_obligations"][0]
+        self.assertEqual(
+            request_correlation_atom["source_keyword"],
+            "Must (not uppercase RFC 2119 keyword; force unresolved)",
+        )
+        self.assertIsNone(request_correlation_atom["candidate_requirement_id"])
+
+        response_rows = [row for review in reviews.values() for row in review["source_payload_rows"]]
+        self.assertEqual(
+            [(row["row_label"], row["required"], row["actor"], row["html_line_range"]) for row in response_rows],
+            [
+                ("PKCS#11 Interface", "No", "server", [31296, 31315]),
+                ("PKCS#11 Function", "Yes", "server", [31316, 31339]),
+                ("Correlation Value", "No", "server", [31340, 31359]),
+                ("PKCS#11 Output Parameters", "No", "server", [31360, 31383]),
+                ("PKCS#11 Return Code", "Yes", "server", [31384, 31403]),
+            ],
+        )
+        for row in response_rows:
+            self.assertEqual(row["source_excerpt"], pinned_source_excerpt(source_path, row["html_line_range"]))
+        response_correlation = next(row for row in response_rows if row["row_label"] == "Correlation Value")
+        self.assertIn("client must provide", response_correlation["source_excerpt"])
+        self.assertIn("lowercase", response_correlation["source_note"].lower())
+        self.assertIn("not a normative keyword", response_correlation["source_note"].lower())
+        response_correlation_atom = reviews["KMIPKIT-CLAUSE-SPEC-6.1.37-004"]["source_obligations"][0]
+        self.assertEqual(
+            response_correlation_atom["source_keyword"],
+            "must (lowercase; not a §1.2 formal keyword)",
+        )
+        self.assertIsNone(response_correlation_atom["candidate_requirement_id"])
+
+        function_gap_id = "KMIPKIT-SOURCE-GAP-SPEC-6.1.37-PKCS11-FUNCTION-REQUIRED"
+        gaps = {
+            row["gap_id"]: row
+            for row in oracle["source_only_requirement_gaps"]
+            if row["source_section"] == "6.1.37"
+        }
+        self.assertEqual(set(gaps), {function_gap_id})
+        function_gap = gaps[function_gap_id]
+        self.assertEqual(function_gap["html_line_range"], [31203, 31221])
+        self.assertEqual(function_gap["source_excerpt"], pinned_source_excerpt(source_path, [31203, 31221]))
+        self.assertEqual(function_gap["source_force"], "required_table_body_value")
+        self.assertEqual(function_gap["source_keywords"], [])
+        self.assertEqual(function_gap["actor"], "client")
+        self.assertEqual(function_gap["scope_disposition"], "client_1_0")
+        self.assertEqual(function_gap["proposed_requirement_id"], "KMIPKIT-REQ-SPEC-6.1.37-001")
+        self.assertNotIn("KMIPKIT-REQ-SPEC-6.1.37-001", {row["requirement_id"] for row in json.loads((ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8"))["requirements"]})
+
+        preamble = reviews["KMIPKIT-CLAUSE-SPEC-6.1.37.1-001"]
+        self.assertEqual(preamble["source_obligations"][0]["source_keyword"], "SHALL")
+        self.assertEqual(preamble["source_obligations"][0]["actor"], "server")
+        self.assertEqual(preamble["source_obligations"][0]["direction"], "server→client error response")
+        self.assertEqual(preamble["source_obligations"][0]["scope_disposition"], "server_only")
+        self.assertEqual(preamble["expected_client_requirement_ids"], [])
+        error_rows = reviews["KMIPKIT-CLAUSE-SPEC-6.1.37.1-002"]
+        self.assertEqual(error_rows["source_obligations"], [])
+        self.assertEqual(
+            error_rows["source_excerpt"].split("Operation Failed ", 1)[1].split(", "),
+            [
+                "Invalid Asynchronous Correlation Value",
+                "Attestation Failed",
+                "Attestation Required",
+                "Feature Not Supported",
+                "Invalid Field",
+                "Invalid Message",
+                "Operation Not Supported",
+                "Permission Denied",
+                "Response Too Large",
+                "PKCS#11 Codec Error",
+                "PKCS#11 Invalid Function",
+                "PKCS#11 Invalid Interface",
+            ],
+        )
+        self.assertIn("Attestation Required", error_rows["review_note"])
+        self.assertIn("non-exhaustive", error_rows["review_note"].lower())
+        self.assertEqual(
+            [row for row in oracle["requirement_crosswalk"] if row["requirement_id"].startswith("KMIPKIT-REQ-SPEC-6.1.37-")],
+            [],
+        )
+        self.assertEqual(oracle["oracle_status"], "partial-source-reviewed; not complete T003 oracle")
+
     def test_spec_4_19_through_4_25_source_review_slice_preserves_actor_and_force(self) -> None:
         """The source audit separates server lifecycle rules and unresolved client wording."""
         oracle = json.loads(
@@ -10045,6 +10177,7 @@ class CatalogValidationTests(unittest.TestCase):
         required_body_proposals = {
             "KMIPKIT-REQ-SPEC-6.1.12-003",
             "KMIPKIT-REQ-SPEC-6.1.34-005",
+            "KMIPKIT-REQ-SPEC-6.1.37-001",
             "KMIPKIT-REQ-SPEC-5.5-003",
             "KMIPKIT-REQ-SPEC-5.5-004",
             "KMIPKIT-REQ-SPEC-5.5-005",
@@ -10233,6 +10366,7 @@ class CatalogValidationTests(unittest.TestCase):
                 "KMIPKIT-REQ-SPEC-6.1.27-006",
                 "KMIPKIT-REQ-SPEC-6.1.31-001",
                 "KMIPKIT-REQ-SPEC-6.1.34-005",
+                "KMIPKIT-REQ-SPEC-6.1.37-001",
             }
             expected_scope = (
                 "client_1_0"
