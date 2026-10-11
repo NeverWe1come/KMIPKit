@@ -49,7 +49,7 @@ fn field_tags(payload: &Structure) -> Vec<u32> {
 }
 
 #[test]
-fn req_001_one_ordered_chain_rejects_nested_chain_representation() {
+fn req_001_models_one_collection_and_rejects_malformed_certificate_wrapper() {
     let request = ValidateRequest::new()
         .with_certificate(certificate(SENTINEL))
         .with_unique_identifier(UniqueIdentifier::Integer(7))
@@ -57,7 +57,7 @@ fn req_001_one_ordered_chain_rejects_nested_chain_representation() {
     assert_eq!(request.chain_len(), 3);
     assert_eq!(
         field_tags(&request.into_ttlv_payload().unwrap()),
-        [CERTIFICATE, IDENTIFIER, CERTIFICATE]
+        [CERTIFICATE, CERTIFICATE, IDENTIFIER]
     );
     let second_chain = structure([item(CERTIFICATE, Value::structure(certificate(SENTINEL)))]);
     assert!(
@@ -87,7 +87,7 @@ fn req_002_001_certificate_identifier_and_mixed_inputs_are_available() {
         .with_certificate(certificate(SENTINEL));
     assert_eq!(
         field_tags(&mixed.into_ttlv_payload().unwrap()),
-        [IDENTIFIER, CERTIFICATE]
+        [CERTIFICATE, IDENTIFIER]
     );
 }
 
@@ -380,4 +380,38 @@ fn request_extension_depth_limit_is_checked_before_encoding() {
         .into_ttlv_payload()
         .unwrap_err();
     assert_eq!(error.kind(), crate::ProtocolErrorKind::InvalidValue);
+}
+
+// KMIPKIT-REQ-SPEC-10.1.2-001: section 10.1.2, Table 405 requires description order.
+#[test]
+fn table_340_groups_certificates_before_identifiers_preserving_each_list_order() {
+    let request = ValidateRequest::new()
+        .with_unique_identifier(UniqueIdentifier::TextString("first-id".to_owned()))
+        .with_certificate(certificate(b"first-certificate"))
+        .with_unique_identifier(UniqueIdentifier::TextString("second-id".to_owned()))
+        .with_certificate(certificate(b"second-certificate"))
+        .with_validity_date(17);
+    let payload = request.into_ttlv_payload().unwrap();
+    assert_eq!(field_tags(&payload), [CERTIFICATE, CERTIFICATE, IDENTIFIER, IDENTIFIER, DATE]);
+    let view = payload.view();
+    for (field, expected) in view.children()[..2].iter().zip([b"first-certificate".as_slice(), b"second-certificate".as_slice()]) {
+        field.with_value(|v| {
+            let ValueView::Structure(cert) = v else { panic!("Certificate Structure") };
+            cert.children()[1].with_value(|v| assert!(matches!(v, ValueView::ByteString(bytes) if bytes == expected)));
+        });
+    }
+    view.children()[2].with_value(|v| assert!(matches!(v, ValueView::TextString("first-id"))));
+    view.children()[3].with_value(|v| assert!(matches!(v, ValueView::TextString("second-id"))));
+}
+
+// Table 2 field order follows the same section 10.1.2 Structure rule.
+#[test]
+fn table_2_certificate_value_before_type_is_rejected_structurally() {
+    let reversed = structure([
+        item(CERTIFICATE_VALUE, Value::byte_string(SENTINEL.to_vec())),
+        item(CERTIFICATE_TYPE, Value::enumeration(1)),
+    ]);
+    let error = ValidateRequest::new().with_certificate(reversed).into_ttlv_payload().unwrap_err();
+    assert_eq!(error.kind(), crate::ProtocolErrorKind::InvalidValue);
+    assert!(!format!("{error:?} {error}").contains("validate-certificate-private-sentinel"));
 }
