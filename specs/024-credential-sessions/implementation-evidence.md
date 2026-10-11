@@ -88,3 +88,16 @@ Added implementation and verification references for Delegated Login, Login, Log
 | `git diff --check` | PASS. |
 
 Four-language manifest mappings remain blocked on the canonical KMIPKIT-0043 operation mapping tasks; T014 does not claim binding parity.
+
+
+## T018 — Bilingual credential-session guide
+
+Added English and Spanish guidance for Login, Delegated Login, and Logout, including explicit Ticket ownership, a caller-controlled owned copy for Logout, redacted diagnostics, the synthetic-only status of the example Ticket, and the current parity/fixture limitations. Registered Rust example checks and added both guides to the default compiler script and documentation index.
+
+| Command | Result |
+|---|---|
+| `python scripts/test_user_guide_examples.py --guide docs/user-guide/en/credential-sessions.md --guide docs/user-guide/es/sesiones-credenciales.md` | PASS: 4 marked examples compiled. |
+| `cargo test -p kmipkit-protocol --test credential_sessions_guide_examples --all-features` | PASS: 2/2 tests. |
+| `python scripts/test_user_guide_examples.py` | PASS: all 18 marked user-guide examples compiled. |
+| `cargo fmt --all --check` | PASS. |
+| `git diff --check` | PASS. |
