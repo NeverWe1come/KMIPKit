@@ -15,6 +15,14 @@ POLICY_RUNNER = REPOSITORY_ROOT / "scripts" / "Test-DependencyPolicy.ps1"
 
 class WorkflowContractTests(unittest.TestCase):
     COVERAGE_COLLECTION_GUARD = "needs.impact-plan.outputs.coverage_scopes"
+    RELEASE_EVIDENCE_JOB_IDS = (
+        "core",
+        "script-contracts",
+        "normative-inventory",
+        "coverage",
+        "coverage-gate",
+        "dependency-policy",
+    )
     UV_PYTHON_SETUP = (
         "astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9 # astral-sh/setup-uv v9.0.0",
         "version: '0.12.23'",
@@ -124,14 +132,7 @@ class WorkflowContractTests(unittest.TestCase):
         self.assertIsNotNone(push, "The workflow must run on release pushes.")
         self.assertRegex(push.group(1), r"(?m)^\s+- release/1\.0\.0$")
 
-        for job_id in (
-            "core",
-            "script-contracts",
-            "normative-inventory",
-            "coverage",
-            "coverage-gate",
-            "dependency-policy",
-        ):
+        for job_id in self.RELEASE_EVIDENCE_JOB_IDS:
             job = self.require_job(contents, job_id)
             self.assertIn("github.event_name == 'push'", job, job_id)
             self.assertIn("github.ref == 'refs/heads/release/1.0.0'", job, job_id)
@@ -149,7 +150,7 @@ class WorkflowContractTests(unittest.TestCase):
         needs = re.search(r"(?ms)^    needs:\n((?:      - [a-z-]+\n)+)", release_job)
         self.assertIsNotNone(needs, "The protected aggregate must declare its required jobs.")
         self.assertEqual(
-            ["core", "script-contracts", "normative-inventory", "coverage", "coverage-gate", "dependency-policy"],
+            list(self.RELEASE_EVIDENCE_JOB_IDS),
             re.findall(r"(?m)^      - ([a-z-]+)$", needs.group(1)),
         )
         self.assertIn("environment: release-evidence", release_job)
