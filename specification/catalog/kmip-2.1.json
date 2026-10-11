@@ -90775,12 +90775,16 @@
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0017",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/get.rs::GetRequest::with_key_wrapping_specification"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/get_tests.rs::request_encodes_a_valid_wrapped_get_specification"
+      ],
       "negative_verification_required": false,
       "decision_id": null,
-      "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
+      "status": "verified",
+      "review_note": "The valid wrapped Get request test follows OASIS KMIP v2.1 §7.18/Table 370 with Wrapping Method Encrypt and Encryption Key Information containing the required Unique Identifier (Table 16; Encrypt value from Table 494). It verifies client request construction with TTLV default encoding; it does not perform cryptographic processing or establish server support. No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002; no official case-level pass is claimed."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.19-002",
@@ -90805,12 +90809,20 @@
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0017",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/get.rs::GetRequest::with_key_format_type",
+        "docs/user-guide/en/object-retrieval.md",
+        "docs/user-guide/es/object-retrieval.md"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/get_tests.rs::request_preserves_the_optional_key_format_type_enumeration",
+        "crates/kmipkit-test-support/tests/fixtures/oasis_get_fixture_tests.rs::pkcs12_case_1_preserves_get_item_at_correlation_step_8",
+        "crates/kmipkit-test-support/tests/fixtures/oasis_get_fixture_tests.rs::pkcs12_case_2_preserves_get_items_at_correlation_steps_5_7_and_9"
+      ],
       "negative_verification_required": false,
       "decision_id": null,
-      "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
+      "status": "verified",
+      "review_note": "OASIS KMIP v2.1 §6.1.19 requires the client to assume the server can return a registered key in that same format; the server MAY support other conversions. KMIPKit forwards the caller's Key Format Type and preserves opaque TTLV. Local checks verify requested-value preservation and selected pinned PKCS#12 fixture items only; they do not establish remote server capabilities, conversion behavior, or PKCS#12 container validity. KMIPKIT-DEC-003 treats the lowercase PKCS#12 paragraph as informative guidance. No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002; no official case-level pass is claimed."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.2-001-001",
@@ -91380,12 +91392,18 @@
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0017",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-client/src/execute.rs",
+        "crates/kmipkit-protocol/src/locate.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-client/tests/unit/object_read_execution_tests.rs::locate_batch_preserves_criteria_results_and_server_placeholder_boundary",
+        "crates/kmipkit-protocol/tests/unit/locate_tests.rs::request_emits_supplied_optional_fields_in_table_247_order"
+      ],
       "negative_verification_required": false,
       "decision_id": null,
       "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
+      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. Local protocol and fake-transport tests verify that a caller-supplied Maximum Items value is encoded and forwarded; they do not assert how many identifiers a server returns. No official case-level pass is claimed."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.28-002",
@@ -91410,12 +91428,19 @@
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0017",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-client/src/execute.rs",
+        "crates/kmipkit-protocol/src/locate.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-client/tests/operation_boundary.rs::rust_quickstart_get_and_locate_examples_execute_through_the_client",
+        "crates/kmipkit-client/tests/unit/object_read_execution_tests.rs::locate_batch_preserves_criteria_results_and_server_placeholder_boundary",
+        "crates/kmipkit-protocol/tests/unit/locate_tests.rs::request_emits_supplied_optional_fields_in_table_247_order"
+      ],
       "negative_verification_required": false,
       "decision_id": null,
       "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
+      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. Local protocol and client tests verify that caller-supplied Offset Items, including explicit zero, remains present in the request; they do not assert server-side zero-equivalence behavior. No official case-level pass is claimed."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.28-004-001",
@@ -91440,12 +91465,18 @@
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0017",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-client/src/execute.rs::Client::execute",
+        "docs/user-guide/en/object-retrieval.md",
+        "docs/user-guide/es/object-retrieval.md"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-client/tests/unit/object_read_execution_tests.rs::caller_directs_archived_locate_recover_then_get_as_three_exchanges"
+      ],
       "negative_verification_required": false,
       "decision_id": null,
-      "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
+      "status": "verified",
+      "review_note": "The fake-transport test verifies three separate caller-issued exchanges: archived Locate, Recover using the returned identifier, and Get after successful Recover. KMIPKit does not automatically orchestrate the follow-up, and the test does not establish server archive state or behavior. No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002; no official case-level pass is claimed."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.28-004-002",
@@ -91500,12 +91531,17 @@
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0017",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/attribute.rs",
+        "crates/kmipkit-protocol/src/locate.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/locate_tests.rs::request_preserves_structured_repeated_and_usage_criteria_for_server_matching"
+      ],
       "negative_verification_required": false,
       "decision_id": null,
       "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
+      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. The local Locate test verifies that a partial structured Link attribute is accepted and retained in the request criteria; it does not test server matching behavior. No official case-level pass is claimed."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.28-008-001",
@@ -91650,12 +91686,18 @@
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0017",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-client/src/execute.rs",
+        "crates/kmipkit-protocol/src/locate.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-client/tests/unit/object_read_execution_tests.rs::locate_batch_preserves_criteria_results_and_server_placeholder_boundary",
+        "crates/kmipkit-protocol/tests/unit/locate_tests.rs::request_emits_supplied_optional_fields_in_table_247_order"
+      ],
       "negative_verification_required": false,
       "decision_id": null,
       "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
+      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. Local protocol and fake-transport tests verify that a caller-supplied Maximum Items value is encoded and forwarded; they do not assert how many identifiers a server returns. No official case-level pass is claimed."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.28-012",
@@ -91710,12 +91752,19 @@
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0017",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-client/src/execute.rs",
+        "crates/kmipkit-protocol/src/attribute.rs",
+        "crates/kmipkit-protocol/src/locate.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-client/tests/unit/object_read_execution_tests.rs::locate_batch_preserves_criteria_results_and_server_placeholder_boundary",
+        "crates/kmipkit-protocol/tests/unit/locate_tests.rs::request_preserves_structured_repeated_and_usage_criteria_for_server_matching"
+      ],
       "negative_verification_required": false,
       "decision_id": null,
       "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
+      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. Local protocol and fake-transport tests preserve caller-supplied Locate criteria, including structured and repeated values, for server-side matching; they do not assert which objects the server matches or returns. No official case-level pass is claimed."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.28-013-002",
@@ -91740,12 +91789,19 @@
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0017",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-client/src/execute.rs",
+        "crates/kmipkit-protocol/src/attribute.rs",
+        "crates/kmipkit-protocol/src/locate.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-client/tests/operation_boundary.rs::rust_quickstart_get_and_locate_examples_execute_through_the_client",
+        "crates/kmipkit-protocol/tests/unit/locate_tests.rs::request_always_encodes_the_required_empty_attributes_structure"
+      ],
       "negative_verification_required": false,
       "decision_id": null,
       "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
+      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. Local protocol and client tests verify that the required empty Attributes Structure is encoded and sent; they do not assert the server returns every matching object. No official case-level pass is claimed."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.3-001",
