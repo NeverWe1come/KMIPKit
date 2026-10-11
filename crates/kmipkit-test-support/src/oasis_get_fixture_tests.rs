@@ -122,7 +122,10 @@ fn derived_metadata_only_case_vector_contains_a_locate_item_without_server_resul
     let payloads = decoded_payloads(&vector);
 
     assert_eq!(direct_tags(&payloads[0]), [ATTRIBUTES_TAG]);
-    assert!(direct_tags(&required_child(&payloads[0], ATTRIBUTES_TAG)).is_empty());
+    assert_eq!(
+        direct_tags(&required_child(&payloads[0], ATTRIBUTES_TAG)),
+        Vec::<u32>::new()
+    );
 }
 
 #[test]
@@ -323,17 +326,17 @@ fn same_item_tree(left: &Item, right: &Item) -> bool {
                         .all(|(left, right)| same_item_tree(left, right))
             }
             (ValueView::Integer(left), ValueView::Integer(right)) => left == right,
-            (ValueView::LongInteger(left), ValueView::LongInteger(right)) => left == right,
-            (ValueView::BigInteger(left), ValueView::BigInteger(right)) => left == right,
-            (ValueView::Enumeration(left), ValueView::Enumeration(right)) => left == right,
-            (ValueView::Boolean(left), ValueView::Boolean(right)) => left == right,
-            (ValueView::TextString(left), ValueView::TextString(right)) => left == right,
-            (ValueView::ByteString(left), ValueView::ByteString(right)) => left == right,
-            (ValueView::DateTime(left), ValueView::DateTime(right)) => left == right,
-            (ValueView::Interval(left), ValueView::Interval(right)) => left == right,
-            (ValueView::DateTimeExtended(left), ValueView::DateTimeExtended(right)) => {
+            (ValueView::LongInteger(left), ValueView::LongInteger(right))
+            | (ValueView::DateTime(left), ValueView::DateTime(right))
+            | (ValueView::DateTimeExtended(left), ValueView::DateTimeExtended(right)) => {
                 left == right
             }
+            (ValueView::BigInteger(left), ValueView::BigInteger(right))
+            | (ValueView::ByteString(left), ValueView::ByteString(right)) => left == right,
+            (ValueView::Enumeration(left), ValueView::Enumeration(right))
+            | (ValueView::Interval(left), ValueView::Interval(right)) => left == right,
+            (ValueView::Boolean(left), ValueView::Boolean(right)) => left == right,
+            (ValueView::TextString(left), ValueView::TextString(right)) => left == right,
             _ => false,
         })
     })
@@ -408,7 +411,9 @@ fn decode_hex(hex: &str) -> Vec<u8> {
         .collect();
     assert_eq!(digits.len() % 2, 0, "TTLV hexadecimal has an even length");
     digits
-        .chunks_exact(2)
+        .as_chunks::<2>()
+        .0
+        .iter()
         .map(|pair| {
             let text = std::str::from_utf8(pair).expect("hex digits are ASCII");
             u8::from_str_radix(text, 16).expect("TTLV payload has hexadecimal digits")
