@@ -7157,7 +7157,8 @@ class CatalogValidationTests(unittest.TestCase):
             [(row["source_keyword"], row["actor"], row["direction"], row["scope_disposition"],
               row["candidate_requirement_id"])
              for row in error_review["source_obligations"]],
-            [("SHALL", "server", "server_to_client", "server_only", None)],
+            [("SHALL", "server", "return the listed Result Reasons for Add Attribute errors to the client",
+              "server_only", None)],
         )
         self.assertEqual(error_review["expected_client_requirement_ids"], [])
         self.assertIn("Add Attribute", error_review["source_excerpt"])
@@ -12498,6 +12499,7 @@ class CatalogValidationTests(unittest.TestCase):
             "KMIPKIT-REQ-SPEC-6.1.44-004",
             "KMIPKIT-REQ-SPEC-6.1.49-001",
             "KMIPKIT-REQ-SPEC-6.1.50-004",
+            "KMIPKIT-REQ-SPEC-6.1.51-002",
         }
         conditional_body_proposals = {
             "KMIPKIT-REQ-SPEC-6.1.24-002",
@@ -12575,6 +12577,7 @@ class CatalogValidationTests(unittest.TestCase):
             "KMIPKIT-REQ-SPEC-6.1.47-012",
             "KMIPKIT-REQ-SPEC-6.1.47-013",
             "KMIPKIT-REQ-SPEC-6.1.49-001",
+                "KMIPKIT-REQ-SPEC-6.1.51-003",
             "KMIPKIT-REQ-SPEC-6.1.14-009",
             "KMIPKIT-REQ-SPEC-6.1.14-010",
             "KMIPKIT-REQ-SPEC-6.1.14-011",
@@ -12665,6 +12668,8 @@ class CatalogValidationTests(unittest.TestCase):
                 "KMIPKIT-REQ-SPEC-6.1.44-004",
                 "KMIPKIT-REQ-SPEC-6.1.49-001",
                 "KMIPKIT-REQ-SPEC-6.1.50-004",
+                "KMIPKIT-REQ-SPEC-6.1.51-002",
+                "KMIPKIT-REQ-SPEC-6.1.51-003",
             }
             expected_scope = (
                 "client_1_0"
