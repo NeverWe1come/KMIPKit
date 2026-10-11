@@ -37,6 +37,8 @@ tests, and the conformance matrix.
 - [Inspeccionar mensajes KMIP (Español)](user-guide/es/modelo-mensaje.md)
 - [Key derivation and transfer (English)](user-guide/en/key-derivation-and-transfer.md)
 - [Derivación y transferencia de claves (Español)](user-guide/es/derivacion-y-transferencia-de-claves.md)
+- [Policy and usage controls (English)](user-guide/en/policy-controls.md)
+- [Controles de política y uso (Español)](user-guide/es/controles-de-uso.md)
 
 ## Architecture
 
