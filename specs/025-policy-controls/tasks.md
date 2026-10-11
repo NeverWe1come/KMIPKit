@@ -50,7 +50,7 @@ Each task uses `[ ] T### [US#] action in exact/repository/path`. Every implement
 
 ### Allocation Red commit
 
-- [ ] T005 [US2] Add failing model/fake-client tests in `crates/kmipkit-protocol/tests/unit/get_usage_allocation_tests.rs` and `crates/kmipkit-client/tests/unit/get_usage_allocation_execution_tests.rs`; register modules in `crates/kmipkit-protocol/src/lib.rs` and `crates/kmipkit-client/src/lib.rs`; cite OASIS KMIP Specification v2.1 §6.1.23, Tables 232–234 and §4.59, Table 148 in test documentation; cover optional identifier, required Usage Limits Count Long Integer (`i64`), required response identifier, Table 234 failures, Pending, unknown result values, one exchange, and no retry; record failing output in a separate Red commit.
+- [x] T005 [US2] Add failing model/fake-client tests in `crates/kmipkit-protocol/tests/unit/get_usage_allocation_tests.rs` and `crates/kmipkit-client/tests/unit/get_usage_allocation_execution_tests.rs`; register modules in `crates/kmipkit-protocol/src/lib.rs` and `crates/kmipkit-client/src/lib.rs`; cite OASIS KMIP Specification v2.1 §6.1.23, Tables 232–234 and §4.59, Table 148; cover optional identifier, required Long Integer (`i64`) count, required response identifier, malformed responses, Table 234 failures, Pending, unknown reasons, one exchange, delivery, and no retry. Red evidence: `cargo test -p kmipkit-protocol -p kmipkit-client --lib get_usage_allocation` exits 1 only because the new request/response types and client operation API do not yet exist (E0432/E0599); formatting passes.
 
 ### Allocation Green commit
 

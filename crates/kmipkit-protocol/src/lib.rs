@@ -417,6 +417,10 @@ mod get_attribute_list_tests;
 mod get_constraints_tests;
 
 #[cfg(test)]
+#[path = "../tests/unit/get_usage_allocation_tests.rs"]
+mod get_usage_allocation_tests;
+
+#[cfg(test)]
 #[path = "../tests/unit/add_attribute_tests.rs"]
 mod add_attribute_tests;
 
