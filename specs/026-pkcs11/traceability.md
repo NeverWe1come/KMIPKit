@@ -15,3 +15,22 @@ Before review, link each table field and assigned catalog element to implementat
 | Table 275 result alternatives | §6.1.37 Table 275 | Server-reported Failure reasons | Shared KmipOperationResult preservation; never synthesize |
 
 The approved spec has no separate §6.1.37 client-clause ID and no direct catalog Test Case. FR-001–FR-008 and SC-001–SC-004 are covered by protocol, fake-transport, redaction, catalog, and final-gate tests. Do not claim Profile support, a fixture pass, certification, or interoperability.
+
+## Implementation targets confirmed before coding
+
+The protocol tests will be named `table_273_request_preserves_order_and_opaque_members`,
+`table_273_function_preserves_enumeration_or_integer`,
+`table_274_success_retains_required_optional_and_unknown_fields`,
+`table_274_rejects_missing_duplicate_wrong_type_and_out_of_order_fields`,
+`table_275_preserves_failure_reasons`, and `diagnostics_redact_all_pkcs11_sentinels`.
+They target `crates/kmipkit-protocol/src/pkcs11.rs` and source-derived fixtures
+only. Nested Function and Return Code are checked against §§7.26 and 7.30,
+Tables 378 and 382, with the approved Table 273/274 Integer alternative for
+vendor functions. Interface and parameters stay opaque generic Structures.
+Client tests target `execute.rs`, the `0x33` operation, one exchange,
+Pending/correlation, malformed response delivery, and no retry.
+
+The existing catalog contains all six operation-structure records, their tag
+records, and the operation/operation-enumeration records. No missing source
+record or generated runtime constant is needed. Baseline catalog validation
+and the feature branch/release merge are recorded in implementation evidence.
