@@ -83,15 +83,16 @@ Record separate Red, Green, and Refactor commit IDs per operation in the draft P
 
 ### Final local verification (2026-10-11)
 
-- cargo fmt --all --check passes.
-- cargo clippy --workspace --all-targets --all-features -- -D warnings passes.
-- cargo test --workspace --all-features --quiet passes on the installed stable toolchain, including the 540 protocol unit tests and workspace integration/UI suites.
-- cargo llvm-cov --workspace --all-features --quiet --json --output-path target/022-final-coverage.json passes its tests and reports 21,955/24,929 workspace lines covered (88.07%), below the repository's 90% workspace gate. The nine operation protocol modules individually range from 95.35% to 98.48%; the lowest is Obtain Lease at 123/129 lines.
-- cargo +1.94 test --workspace --all-features --quiet passes the 540 protocol tests, but three loopback socket tests in kmipkit-test-support/tests/transport_fixtures.rs fail on this Windows host with PermissionDenied (OS error 10013). Re-run on supported CI hosts.
-- python scripts/coverage_gate.py preflight --workspace . --status-out target/022-coverage-status.json passes its source inventory check (99 Rust source files; 155 eligible files).
-- pwsh -File ./scripts/Test-DependencyPolicy.ps1 passes: the pinned cargo-deny policy, advisory database, exceptions, and lockfile hashes validate.
-- python -B -m unittest discover -s tools/normative_catalog/tests -p 'test_*.py' passes (209 tests, 7 skips); python -B tools/normative_catalog/validate.py and python -B tools/normative_catalog/report.py --check pass.
-- python -B tools/api_manifest/generate.py --check verifies six generated files; python -B tools/extension_fixtures/generate.py --check passes. tools/api_manifest/tests/test_extension_fixtures.py passes 16 tests with 1 skip in the isolated Python 3.12.14 test environment.
-- The English and Spanish lifecycle guide command compiled all 18 marked examples. The focused Check denial policy tests pass with the approved §6.1.7 behavior.
-- git diff --check passes. The host lacks CMake/CTest/Ninja and a native C compiler, so the C consumer, ASan, and libFuzzer smoke checks were not run here. Linux/macOS gates also require CI.
-- Gate status: T037 remains open. The local workspace coverage gate is below 90%, and supported-platform/native C/fuzz checks remain outstanding. No profile conformance or certification claim is made.
+- `cargo fmt --all --check` passed.
+- `cargo clippy --workspace --all-targets --all-features -- -D warnings` passed.
+- `cargo test --workspace --all-features --quiet` passed on the installed stable toolchain, including workspace unit, integration, and UI suites.
+- `cargo +1.94 test --workspace --all-features --quiet` passed on this Windows host, including loopback transport tests.
+- `cargo llvm-cov --workspace --all-features --summary-only` passed its tests and reports 21,957/24,929 workspace lines covered (88.08%), below the repository's 90% workspace gate. The nine new protocol modules together report 1,413/1,455 lines (97.11%); each is at least 95%, with Re-certify lowest at 166/173 (95.95%). The checked-in C-consumer/platform aggregate is not present in this local report.
+- `python scripts/coverage_gate.py preflight --workspace . --status-out target/022-coverage-status.json` passed its source inventory check (99 Rust source files; 155 eligible files).
+- `pwsh -File ./scripts/Test-DependencyPolicy.ps1` passed: the pinned cargo-deny policy, advisory database, exceptions, and lockfile hashes validate.
+- `python -B -m unittest discover -s tools/normative_catalog/tests -p 'test_*.py'` passed (209 tests, 7 platform skips); `python -B tools/normative_catalog/validate.py` and `python -B tools/normative_catalog/report.py --check` passed.
+- `python -B tools/api_manifest/generate.py --check` verified six generated files; `python -B tools/extension_fixtures/generate.py --check` passed. `tools/api_manifest/tests/test_extension_fixtures.py` passed 16 tests with 1 skip in the isolated Python 3.12.14 test environment.
+- The English and Spanish lifecycle guide command compiled all 18 marked examples. Focused Check denial policy tests pass with the approved §6.1.7 behavior.
+- Requirement traceability tests passed (2 tests). Feature traceability passed 15 tests, with 1 skipped because Windows denied symlink creation (`WinError 1314`). The threat-model and public API documentation corrections list all nine Rust operations and explicitly defer C/Java/Python operation parity to KMIPKIT-0043.
+- `git diff --check` passed. The local host lacks CMake/CTest/Ninja and a native C compiler, so C-consumer, ASan, and libFuzzer checks require CI. Linux/macOS checks also require CI.
+- T033 remains blocked on the canonical manifest and operation mappings from KMIPKIT-0043. T037 remains open until the 90% aggregate coverage and supported-platform/native C/fuzz gates are evidenced by CI. T038 requires final independent QA and security reviews plus the draft PR. No profile conformance or certification claim is made.
