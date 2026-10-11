@@ -23,6 +23,7 @@ mod credential;
 mod cryptographic_operation;
 mod cryptographic_parameters;
 mod decrypt;
+mod delegated_login;
 mod delete_attribute;
 mod derive_key;
 mod destroy;
@@ -39,6 +40,8 @@ mod import;
 mod join_split_key;
 mod lifecycle;
 mod locate;
+mod login;
+mod logout;
 mod mac;
 mod mac_verify;
 mod message;
@@ -65,6 +68,7 @@ mod revoke;
 mod set_attribute;
 mod sign;
 mod signature_verify;
+mod ticket;
 
 pub use activate::{ActivateError, ActivateRequest, ActivateResponse};
 pub use add_attribute::{AddAttributeError, AddAttributeRequest, AddAttributeResponse};
@@ -95,6 +99,7 @@ pub use cryptographic_operation::{
     ValidityIndicator, VerificationResponseContext,
 };
 pub use decrypt::{DecryptError, DecryptRequest, DecryptResponse};
+pub use delegated_login::{DelegatedLoginError, DelegatedLoginRequest, DelegatedLoginResponse};
 pub use delete_attribute::{DeleteAttributeError, DeleteAttributeRequest, DeleteAttributeResponse};
 pub use derive_key::{
     DerivationMethod, DerivationParameters, DeriveKeyError, DeriveKeyRequest, DeriveKeyResponse,
@@ -119,6 +124,8 @@ pub use join_split_key::{
 pub use locate::{
     LocateError, LocateRequest, LocateResponse, ObjectGroupMember, StorageStatusMask,
 };
+pub use login::{LoginError, LoginRequest, LoginResponse};
+pub use logout::{LogoutError, LogoutRequest, LogoutResponse};
 pub use mac::{MacError, MacRequest, MacResponse};
 pub use mac_verify::{MacVerifyError, MacVerifyRequest, MacVerifyResponse};
 pub use message::{
@@ -152,6 +159,7 @@ pub use revoke::{RevocationReason, RevokeError, RevokeRequest, RevokeResponse};
 pub use set_attribute::{SetAttributeError, SetAttributeRequest, SetAttributeResponse};
 pub use sign::{SignError, SignRequest, SignResponse};
 pub use signature_verify::{SignatureVerifyError, SignatureVerifyRequest, SignatureVerifyResponse};
+pub use ticket::{Ticket, TicketType, TicketValidationError, TicketValidationErrorKind};
 
 #[cfg(test)]
 #[path = "../tests/unit/discover_versions_tests.rs"]
@@ -441,3 +449,19 @@ mod attribute_limits_tests;
 #[cfg(test)]
 #[path = "../tests/unit/attribute_coverage_contract_tests.rs"]
 mod attribute_coverage_contract_tests;
+
+#[cfg(test)]
+#[path = "../tests/unit/ticket_model_tests.rs"]
+mod ticket_model_tests;
+
+#[cfg(test)]
+#[path = "../tests/unit/delegated_login_operation_tests.rs"]
+mod delegated_login_operation_tests;
+
+#[cfg(test)]
+#[path = "../tests/unit/login_operation_tests.rs"]
+mod login_operation_tests;
+
+#[cfg(test)]
+#[path = "../tests/unit/logout_operation_tests.rs"]
+mod logout_operation_tests;

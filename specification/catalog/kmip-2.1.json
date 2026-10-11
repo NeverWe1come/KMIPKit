@@ -42211,9 +42211,14 @@
       "requirement_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0038",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/delegated_login.rs",
+        "crates/kmipkit-client/src/execute.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-client/tests/unit/delegated_login_execution_tests.rs::delegated_login_sends_one_typed_request_and_exposes_secret_safe_ticket"
+      ],
       "wire_value": "0000002F",
       "allocation": "assigned"
     },
@@ -42689,9 +42694,14 @@
       "requirement_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0038",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/login.rs",
+        "crates/kmipkit-client/src/execute.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-client/tests/unit/login_execution_tests.rs::login_matches_pinned_fixture_request_and_returns_one_secret_safe_ticket"
+      ],
       "wire_value": "0000002D",
       "allocation": "assigned"
     },
@@ -42713,9 +42723,14 @@
       "requirement_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0038",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/logout.rs",
+        "crates/kmipkit-client/src/execute.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-client/tests/unit/logout_execution_tests.rs::logout_sends_one_ticket_and_exposes_empty_success_without_leaking_it"
+      ],
       "wire_value": "0000002E",
       "allocation": "assigned"
     },
@@ -53108,9 +53123,13 @@
       "requirement_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": []
+      "feature_spec": "KMIPKIT-0038",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/ticket.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/ticket_model_tests.rs::ticket_type_preserves_unassigned_and_vendor_enumeration_values"
+      ]
     },
     {
       "element_id": "KMIPKIT-ELEM-ENUMERATION-UNIQUE-IDENTIFIER",
@@ -57138,9 +57157,20 @@
         "KMIPKIT-TEST-CN01-2-32",
         "KMIPKIT-TEST-CN01-2-33"
       ],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0038",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/delegated_login.rs",
+        "crates/kmipkit-protocol/src/ticket.rs",
+        "crates/kmipkit-client/src/execute.rs",
+        "crates/kmipkit-client/src/lib.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/delegated_login_operation_tests.rs::request_emits_table_199_fields_in_order_and_preserves_both_lease_time_forms",
+        "crates/kmipkit-protocol/tests/unit/delegated_login_operation_tests.rs::successful_response_requires_ticket_and_preserves_open_type_and_extensions",
+        "crates/kmipkit-protocol/tests/unit/delegated_login_operation_tests.rs::failure_preserves_each_distinct_table_201_reason_without_a_ticket",
+        "crates/kmipkit-client/tests/unit/delegated_login_execution_tests.rs::delegated_login_sends_one_typed_request_and_exposes_secret_safe_ticket",
+        "crates/kmipkit-client/tests/unit/delegated_login_execution_tests.rs::operation_failure_preserves_table_201_reason_and_does_not_retry"
+      ],
       "payload_tables": [
         {
           "role": "request",
@@ -58210,9 +58240,21 @@
         "KMIPKIT-TEST-CN01-2-49",
         "KMIPKIT-TEST-CN01-2-50"
       ],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0038",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/login.rs",
+        "crates/kmipkit-protocol/src/ticket.rs",
+        "crates/kmipkit-client/src/execute.rs",
+        "crates/kmipkit-client/src/lib.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/login_operation_tests.rs::empty_login_request_keeps_all_optional_table_253_fields_absent",
+        "crates/kmipkit-protocol/tests/unit/login_operation_tests.rs::table_254_success_requires_one_secret_safe_ticket_and_preserves_extensions",
+        "crates/kmipkit-protocol/tests/unit/login_operation_tests.rs::table_255_failure_reasons_are_preserved_without_a_ticket",
+        "crates/kmipkit-protocol/tests/unit/login_operation_tests.rs::pinned_cn01_2_48_fixture_matches_the_typed_request_and_response_contract",
+        "crates/kmipkit-client/tests/unit/login_execution_tests.rs::login_matches_pinned_fixture_request_and_returns_one_secret_safe_ticket",
+        "crates/kmipkit-client/tests/unit/login_execution_tests.rs::failure_preserves_table_255_reason_without_retry"
+      ],
       "payload_tables": [
         {
           "role": "request",
@@ -58243,9 +58285,20 @@
       "requirement_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0038",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/logout.rs",
+        "crates/kmipkit-protocol/src/ticket.rs",
+        "crates/kmipkit-client/src/execute.rs",
+        "crates/kmipkit-client/src/lib.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/logout_operation_tests.rs::table_256_request_requires_and_preserves_the_explicit_secret_ticket",
+        "crates/kmipkit-protocol/tests/unit/logout_operation_tests.rs::table_257_success_requires_an_empty_response_payload",
+        "crates/kmipkit-protocol/tests/unit/logout_operation_tests.rs::table_258_failure_reasons_are_preserved_without_a_success_payload",
+        "crates/kmipkit-client/tests/unit/logout_execution_tests.rs::logout_sends_one_ticket_and_exposes_empty_success_without_leaking_it",
+        "crates/kmipkit-client/tests/unit/logout_execution_tests.rs::table_258_failure_preserves_reason_without_retry"
+      ],
       "payload_tables": [
         {
           "role": "request",
@@ -60542,9 +60595,20 @@
       "requirement_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0038",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/ticket.rs",
+        "crates/kmipkit-protocol/src/delegated_login.rs",
+        "crates/kmipkit-protocol/src/login.rs",
+        "crates/kmipkit-protocol/src/logout.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/ticket_model_tests.rs::ttlv_parse_rejects_missing_duplicate_wrong_type_and_out_of_order_fields",
+        "crates/kmipkit-protocol/tests/unit/ticket_model_tests.rs::ticket_ttlv_round_trip_preserves_arbitrary_raw_type_and_secret_bytes",
+        "crates/kmipkit-protocol/tests/unit/delegated_login_operation_tests.rs::successful_response_requires_ticket_and_preserves_open_type_and_extensions",
+        "crates/kmipkit-protocol/tests/unit/login_operation_tests.rs::table_254_success_requires_one_secret_safe_ticket_and_preserves_extensions",
+        "crates/kmipkit-protocol/tests/unit/logout_operation_tests.rs::table_256_request_requires_and_preserves_the_explicit_secret_ticket"
+      ],
       "source_encoding": "Structure",
       "source_requiredness": ""
     },
@@ -65510,9 +65574,14 @@
       "requirement_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0038",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/ticket.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/ticket_model_tests.rs::ticket_type_preserves_unassigned_and_vendor_enumeration_values",
+        "crates/kmipkit-protocol/tests/unit/ticket_model_tests.rs::ttlv_parse_rejects_missing_duplicate_wrong_type_and_out_of_order_fields"
+      ],
       "source_encoding": "Enumeration",
       "source_requiredness": "Yes"
     },
@@ -65534,9 +65603,15 @@
       "requirement_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0038",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/ticket.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/ticket_model_tests.rs::ticket_constructor_owns_value_and_redacts_debug_and_display",
+        "crates/kmipkit-protocol/tests/unit/ticket_model_tests.rs::malformed_secret_value_error_never_formats_payload_bytes",
+        "crates/kmipkit-protocol/tests/unit/ticket_model_tests.rs::ticket_ttlv_round_trip_preserves_arbitrary_raw_type_and_secret_bytes"
+      ],
       "source_encoding": "Byte String",
       "source_requiredness": "Yes"
     },
@@ -69039,12 +69114,16 @@
       "feature_spec": "KMIPKIT-0004",
       "implementation_refs": [
         "crates/kmipkit-ttlv/src/tag.rs",
-        "crates/kmipkit-ttlv/src/generated/tag_allocations.rs"
+        "crates/kmipkit-ttlv/src/generated/tag_allocations.rs",
+        "crates/kmipkit-protocol/src/delegated_login.rs",
+        "crates/kmipkit-protocol/src/login.rs"
       ],
       "verification_refs": [
         "crates/kmipkit-ttlv/tests/tag_allocation.rs::every_exact_catalog_record_matches_public_allocation_check",
         "crates/kmipkit-ttlv/tests/tag_allocation.rs::every_allocation_range_boundary_and_adjacent_value_matches_catalog",
-        "crates/kmipkit-ttlv/tests/tag_allocation.rs::every_extension_range_tag_is_accepted"
+        "crates/kmipkit-ttlv/tests/tag_allocation.rs::every_extension_range_tag_is_accepted",
+        "crates/kmipkit-protocol/tests/unit/delegated_login_operation_tests.rs::request_emits_table_199_fields_in_order_and_preserves_both_lease_time_forms",
+        "crates/kmipkit-protocol/tests/unit/login_operation_tests.rs::optional_request_fields_keep_table_253_order_and_both_lease_forms"
       ]
     },
     {
@@ -70722,12 +70801,19 @@
       "feature_spec": "KMIPKIT-0004",
       "implementation_refs": [
         "crates/kmipkit-ttlv/src/tag.rs",
-        "crates/kmipkit-ttlv/src/generated/tag_allocations.rs"
+        "crates/kmipkit-ttlv/src/generated/tag_allocations.rs",
+        "crates/kmipkit-protocol/src/delegated_login.rs",
+        "crates/kmipkit-protocol/src/login.rs",
+        "crates/kmipkit-protocol/src/logout.rs",
+        "crates/kmipkit-client/src/execute.rs"
       ],
       "verification_refs": [
         "crates/kmipkit-ttlv/tests/tag_allocation.rs::every_exact_catalog_record_matches_public_allocation_check",
         "crates/kmipkit-ttlv/tests/tag_allocation.rs::every_allocation_range_boundary_and_adjacent_value_matches_catalog",
-        "crates/kmipkit-ttlv/tests/tag_allocation.rs::every_extension_range_tag_is_accepted"
+        "crates/kmipkit-ttlv/tests/tag_allocation.rs::every_extension_range_tag_is_accepted",
+        "crates/kmipkit-protocol/tests/unit/delegated_login_operation_tests.rs::failure_preserves_each_distinct_table_201_reason_without_a_ticket",
+        "crates/kmipkit-protocol/tests/unit/login_operation_tests.rs::table_255_failure_reasons_are_preserved_without_a_ticket",
+        "crates/kmipkit-protocol/tests/unit/logout_operation_tests.rs::table_258_failure_reasons_are_preserved_without_a_success_payload"
       ]
     },
     {
@@ -70755,12 +70841,19 @@
       "feature_spec": "KMIPKIT-0004",
       "implementation_refs": [
         "crates/kmipkit-ttlv/src/tag.rs",
-        "crates/kmipkit-ttlv/src/generated/tag_allocations.rs"
+        "crates/kmipkit-ttlv/src/generated/tag_allocations.rs",
+        "crates/kmipkit-protocol/src/delegated_login.rs",
+        "crates/kmipkit-protocol/src/login.rs",
+        "crates/kmipkit-protocol/src/logout.rs",
+        "crates/kmipkit-client/src/execute.rs"
       ],
       "verification_refs": [
         "crates/kmipkit-ttlv/tests/tag_allocation.rs::every_exact_catalog_record_matches_public_allocation_check",
         "crates/kmipkit-ttlv/tests/tag_allocation.rs::every_allocation_range_boundary_and_adjacent_value_matches_catalog",
-        "crates/kmipkit-ttlv/tests/tag_allocation.rs::every_extension_range_tag_is_accepted"
+        "crates/kmipkit-ttlv/tests/tag_allocation.rs::every_extension_range_tag_is_accepted",
+        "crates/kmipkit-protocol/tests/unit/delegated_login_operation_tests.rs::failure_preserves_each_distinct_table_201_reason_without_a_ticket",
+        "crates/kmipkit-protocol/tests/unit/login_operation_tests.rs::table_255_failure_reasons_are_preserved_without_a_ticket",
+        "crates/kmipkit-protocol/tests/unit/logout_operation_tests.rs::table_258_failure_reasons_are_preserved_without_a_success_payload"
       ]
     },
     {
@@ -70788,12 +70881,19 @@
       "feature_spec": "KMIPKIT-0004",
       "implementation_refs": [
         "crates/kmipkit-ttlv/src/tag.rs",
-        "crates/kmipkit-ttlv/src/generated/tag_allocations.rs"
+        "crates/kmipkit-ttlv/src/generated/tag_allocations.rs",
+        "crates/kmipkit-protocol/src/delegated_login.rs",
+        "crates/kmipkit-protocol/src/login.rs",
+        "crates/kmipkit-protocol/src/logout.rs",
+        "crates/kmipkit-client/src/execute.rs"
       ],
       "verification_refs": [
         "crates/kmipkit-ttlv/tests/tag_allocation.rs::every_exact_catalog_record_matches_public_allocation_check",
         "crates/kmipkit-ttlv/tests/tag_allocation.rs::every_allocation_range_boundary_and_adjacent_value_matches_catalog",
-        "crates/kmipkit-ttlv/tests/tag_allocation.rs::every_extension_range_tag_is_accepted"
+        "crates/kmipkit-ttlv/tests/tag_allocation.rs::every_extension_range_tag_is_accepted",
+        "crates/kmipkit-protocol/tests/unit/delegated_login_operation_tests.rs::failure_preserves_each_distinct_table_201_reason_without_a_ticket",
+        "crates/kmipkit-protocol/tests/unit/login_operation_tests.rs::table_255_failure_reasons_are_preserved_without_a_ticket",
+        "crates/kmipkit-protocol/tests/unit/logout_operation_tests.rs::table_258_failure_reasons_are_preserved_without_a_success_payload"
       ]
     },
     {
@@ -71485,12 +71585,16 @@
       "feature_spec": "KMIPKIT-0004",
       "implementation_refs": [
         "crates/kmipkit-ttlv/src/tag.rs",
-        "crates/kmipkit-ttlv/src/generated/tag_allocations.rs"
+        "crates/kmipkit-ttlv/src/generated/tag_allocations.rs",
+        "crates/kmipkit-protocol/src/delegated_login.rs",
+        "crates/kmipkit-protocol/src/login.rs"
       ],
       "verification_refs": [
         "crates/kmipkit-ttlv/tests/tag_allocation.rs::every_exact_catalog_record_matches_public_allocation_check",
         "crates/kmipkit-ttlv/tests/tag_allocation.rs::every_allocation_range_boundary_and_adjacent_value_matches_catalog",
-        "crates/kmipkit-ttlv/tests/tag_allocation.rs::every_extension_range_tag_is_accepted"
+        "crates/kmipkit-ttlv/tests/tag_allocation.rs::every_extension_range_tag_is_accepted",
+        "crates/kmipkit-protocol/tests/unit/delegated_login_operation_tests.rs::request_emits_table_199_fields_in_order_and_preserves_both_lease_time_forms",
+        "crates/kmipkit-protocol/tests/unit/login_operation_tests.rs::optional_request_fields_keep_table_253_order_and_both_lease_forms"
       ]
     },
     {
@@ -77154,12 +77258,20 @@
       "feature_spec": "KMIPKIT-0004",
       "implementation_refs": [
         "crates/kmipkit-ttlv/src/tag.rs",
-        "crates/kmipkit-ttlv/src/generated/tag_allocations.rs"
+        "crates/kmipkit-ttlv/src/generated/tag_allocations.rs",
+        "crates/kmipkit-protocol/src/ticket.rs",
+        "crates/kmipkit-protocol/src/delegated_login.rs",
+        "crates/kmipkit-protocol/src/login.rs",
+        "crates/kmipkit-protocol/src/logout.rs"
       ],
       "verification_refs": [
         "crates/kmipkit-ttlv/tests/tag_allocation.rs::every_exact_catalog_record_matches_public_allocation_check",
         "crates/kmipkit-ttlv/tests/tag_allocation.rs::every_allocation_range_boundary_and_adjacent_value_matches_catalog",
-        "crates/kmipkit-ttlv/tests/tag_allocation.rs::every_extension_range_tag_is_accepted"
+        "crates/kmipkit-ttlv/tests/tag_allocation.rs::every_extension_range_tag_is_accepted",
+        "crates/kmipkit-protocol/tests/unit/ticket_model_tests.rs::ttlv_parse_rejects_missing_duplicate_wrong_type_and_out_of_order_fields",
+        "crates/kmipkit-protocol/tests/unit/delegated_login_operation_tests.rs::successful_response_requires_ticket_and_preserves_open_type_and_extensions",
+        "crates/kmipkit-protocol/tests/unit/login_operation_tests.rs::table_254_success_requires_one_secret_safe_ticket_and_preserves_extensions",
+        "crates/kmipkit-protocol/tests/unit/logout_operation_tests.rs::table_256_request_requires_and_preserves_the_explicit_secret_ticket"
       ]
     },
     {
@@ -77247,12 +77359,16 @@
       "feature_spec": "KMIPKIT-0004",
       "implementation_refs": [
         "crates/kmipkit-ttlv/src/tag.rs",
-        "crates/kmipkit-ttlv/src/generated/tag_allocations.rs"
+        "crates/kmipkit-ttlv/src/generated/tag_allocations.rs",
+        "crates/kmipkit-protocol/src/delegated_login.rs",
+        "crates/kmipkit-protocol/src/login.rs"
       ],
       "verification_refs": [
         "crates/kmipkit-ttlv/tests/tag_allocation.rs::every_exact_catalog_record_matches_public_allocation_check",
         "crates/kmipkit-ttlv/tests/tag_allocation.rs::every_allocation_range_boundary_and_adjacent_value_matches_catalog",
-        "crates/kmipkit-ttlv/tests/tag_allocation.rs::every_extension_range_tag_is_accepted"
+        "crates/kmipkit-ttlv/tests/tag_allocation.rs::every_extension_range_tag_is_accepted",
+        "crates/kmipkit-protocol/tests/unit/delegated_login_operation_tests.rs::request_emits_table_199_fields_in_order_and_preserves_both_lease_time_forms",
+        "crates/kmipkit-protocol/tests/unit/login_operation_tests.rs::optional_request_fields_keep_table_253_order_and_both_lease_forms"
       ]
     },
     {
@@ -77278,12 +77394,14 @@
       "feature_spec": "KMIPKIT-0004",
       "implementation_refs": [
         "crates/kmipkit-ttlv/src/tag.rs",
-        "crates/kmipkit-ttlv/src/generated/tag_allocations.rs"
+        "crates/kmipkit-ttlv/src/generated/tag_allocations.rs",
+        "crates/kmipkit-protocol/src/delegated_login.rs"
       ],
       "verification_refs": [
         "crates/kmipkit-ttlv/tests/tag_allocation.rs::every_exact_catalog_record_matches_public_allocation_check",
         "crates/kmipkit-ttlv/tests/tag_allocation.rs::every_allocation_range_boundary_and_adjacent_value_matches_catalog",
-        "crates/kmipkit-ttlv/tests/tag_allocation.rs::every_extension_range_tag_is_accepted"
+        "crates/kmipkit-ttlv/tests/tag_allocation.rs::every_extension_range_tag_is_accepted",
+        "crates/kmipkit-protocol/tests/unit/delegated_login_operation_tests.rs::request_emits_table_199_fields_in_order_and_preserves_both_lease_time_forms"
       ]
     },
     {

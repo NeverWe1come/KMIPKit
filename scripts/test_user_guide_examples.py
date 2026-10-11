@@ -155,6 +155,8 @@ def main() -> int:
         root / "docs" / "user-guide" / "es" / "object-retrieval.md",
         root / "docs" / "user-guide" / "es" / "cifrado-descifrado.md",
         root / "docs" / "user-guide" / "es" / "derivacion-y-transferencia-de-claves.md",
+        root / "docs" / "user-guide" / "en" / "credential-sessions.md",
+        root / "docs" / "user-guide" / "es" / "sesiones-credenciales.md",
     ]
 
     try:

@@ -8,8 +8,10 @@ pub use kmipkit_client::{
     RequestOptions,
 };
 pub use kmipkit_protocol::{
-    CancelRequest, KmipOperationResult, PollRequest, ProcessRequest, ProtocolCauseCategory,
-    ProtocolError, ProtocolErrorKind, QueryAsyncRequestsRequest, ResultMessage, ResultReason,
-    ResultStatus, ResultValidationError,
+    CancelRequest, DelegatedLoginError, DelegatedLoginRequest, DelegatedLoginResponse,
+    KmipOperationResult, LoginError, LoginRequest, LoginResponse, LogoutError, LogoutRequest,
+    LogoutResponse, PollRequest, ProcessRequest, ProtocolCauseCategory, ProtocolError,
+    ProtocolErrorKind, QueryAsyncRequestsRequest, ResultMessage, ResultReason, ResultStatus,
+    ResultValidationError, Ticket, TicketType, TicketValidationError, TicketValidationErrorKind,
 };
 pub use kmipkit_transport::{RequestDeliveryState, TransportCauseCategory, TransportError};
