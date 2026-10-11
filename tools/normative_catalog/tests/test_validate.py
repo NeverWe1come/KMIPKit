@@ -7107,7 +7107,7 @@ class CatalogValidationTests(unittest.TestCase):
             "KMIPKIT-CLAUSE-SPEC-6.1.51-002": ("6.1.51", 2, "table_row", ["REQUIRED"], [35648, 35666]),
             "KMIPKIT-CLAUSE-SPEC-6.1.51-003": ("6.1.51", 3, "table_row", ["REQUIRED"], [35719, 35737]),
             "KMIPKIT-CLAUSE-SPEC-6.1.51.1-001": ("6.1.51.1", 1, "paragraph", ["SHALL"], [35766, 35767]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.51.1-002": ("6.1.51.1", 2, "table_row", ["REQUIRED"], [35773, 35808]),
+            "KMIPKIT-CLAUSE-SPEC-6.1.51.1-002": ("6.1.51.1", 2, "table_row", ["REQUIRED"], [35787, 35802]),
         }
         pinned_by_id = {row["clause_id"]: row for row in pinned
                         if row["section"] in ("6.1.51", "6.1.51.1")}
