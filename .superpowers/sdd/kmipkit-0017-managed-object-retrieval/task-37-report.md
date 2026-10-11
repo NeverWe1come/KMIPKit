@@ -73,3 +73,17 @@ Two final attempts to refresh full-workspace coverage exited 101 before producin
 ## Scope boundary
 
 The changes are confined to fixture JSON, the test-support parser/unit tests, task traceability, and this report. They add no production behavior/API, runtime dependency, catalog availability record, generated artifact, or modified OASIS source. No full OASIS case, Tape Library profile, live-server behavior, or KMIP profile support is claimed.
+
+## Fix round 1 — response pairing
+
+The review finding proposed pairing responses by `ClientCorrelationValue`. Inspection of both pinned XML sources found that each selected `ResponseHeader` omits both client and server correlation values; the source instead encodes each `RequestMessage` immediately followed by its `ResponseMessage`. The human ruling therefore requires adjacency-based association for these source pairs, with exact correlation equality enforced whenever a response correlation is present. Source fixtures remain byte-for-byte unchanged; no response metadata is synthesized.
+
+### Red evidence
+
+Added focused local XML regressions for swapped response correlations and non-adjacent request/response messages. Before changing the selector, the exact command was:
+
+```text
+cargo test -p kmipkit-test-support managed_object_fixture_tests -- --nocapture
+```
+
+It exited **1** (`test result: FAILED. 8 passed; 2 failed; 0 ignored; 0 measured; 19 filtered out`). The two new tests failed at their explicit outer assertions: `a reordered response correlation must not pair with the request by list order` and `request and response messages must remain adjacent in source order`. This demonstrates that the pre-fix selector accepted both mismatched correlation pairing and non-adjacent messages; the other eight selected fixture tests passed. Green verification and commit evidence will be appended after implementation.

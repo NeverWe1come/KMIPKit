@@ -13,6 +13,24 @@ const TC_PKCS12_1_21: &str =
 const TC_PKCS12_2_21: &str =
     include_str!("../../../specification/oasis/kmip-2.1/fixtures/TC-PKCS12-2-21.xml");
 
+const MISPAIRED_RESPONSE_CORRELATION_XML: &str = r#"
+<KMIP>
+  <RequestMessage><RequestHeader><ClientCorrelationValue type="TextString" value="T037-CORRELATION step=0"/></RequestHeader><BatchItem><Operation type="Enumeration" value="Get"/></BatchItem></RequestMessage>
+  <ResponseMessage><ResponseHeader><ClientCorrelationValue type="TextString" value="T037-CORRELATION step=1"/></ResponseHeader><BatchItem><Operation type="Enumeration" value="Get"/></BatchItem></ResponseMessage>
+  <RequestMessage><RequestHeader><ClientCorrelationValue type="TextString" value="T037-CORRELATION step=1"/></RequestHeader><BatchItem><Operation type="Enumeration" value="Get"/></BatchItem></RequestMessage>
+  <ResponseMessage><ResponseHeader><ClientCorrelationValue type="TextString" value="T037-CORRELATION step=0"/></ResponseHeader><BatchItem><Operation type="Enumeration" value="Get"/></BatchItem></ResponseMessage>
+</KMIP>
+"#;
+
+const NON_ADJACENT_REQUEST_RESPONSE_XML: &str = r#"
+<KMIP>
+  <RequestMessage><RequestHeader><ClientCorrelationValue type="TextString" value="T037-ADJACENCY step=0"/></RequestHeader><BatchItem><Operation type="Enumeration" value="Get"/></BatchItem></RequestMessage>
+  <RequestMessage><RequestHeader><ClientCorrelationValue type="TextString" value="T037-ADJACENCY step=1"/></RequestHeader><BatchItem><Operation type="Enumeration" value="Get"/></BatchItem></RequestMessage>
+  <ResponseMessage><ResponseHeader><ClientCorrelationValue type="TextString" value="T037-ADJACENCY step=0"/></ResponseHeader><BatchItem><Operation type="Enumeration" value="Get"/></BatchItem></ResponseMessage>
+  <ResponseMessage><ResponseHeader><ClientCorrelationValue type="TextString" value="T037-ADJACENCY step=1"/></ResponseHeader><BatchItem><Operation type="Enumeration" value="Get"/></BatchItem></ResponseMessage>
+</KMIP>
+"#;
+
 const REQUEST_PAYLOAD_TAG: u32 = 0x0042_0079;
 const RESPONSE_PAYLOAD_TAG: u32 = 0x0042_007C;
 const ATTRIBUTES_TAG: u32 = 0x0042_0125;
@@ -72,6 +90,38 @@ fn pkcs12_case_2_preserves_get_items_at_correlation_steps_5_7_and_9() {
         &[UNIQUE_IDENTIFIER_TAG, KEY_FORMAT_TYPE_TAG],
         PRIVATE_KEY_TAG,
         4,
+    );
+}
+
+#[test]
+fn selected_get_items_rejects_reordered_response_correlations() {
+    let result = std::panic::catch_unwind(|| {
+        selected_get_items(
+            MISPAIRED_RESPONSE_CORRELATION_XML,
+            "T037-CORRELATION",
+            &[0, 1],
+        )
+    });
+
+    assert!(
+        result.is_err(),
+        "a reordered response correlation must not pair with the request by list order"
+    );
+}
+
+#[test]
+fn selected_get_items_rejects_non_adjacent_request_response_messages() {
+    let result = std::panic::catch_unwind(|| {
+        selected_get_items(
+            NON_ADJACENT_REQUEST_RESPONSE_XML,
+            "T037-ADJACENCY",
+            &[0, 1],
+        )
+    });
+
+    assert!(
+        result.is_err(),
+        "request and response messages must remain adjacent in source order"
     );
 }
 
