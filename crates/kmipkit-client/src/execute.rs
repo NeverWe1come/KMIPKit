@@ -5,7 +5,6 @@ use std::error::Error;
 use std::fmt;
 
 use crate::ClientErrorResponseTtlv;
-use kmipkit_protocol::{ValidateRequest, ValidateResponse};
 use kmipkit_protocol::attribute::{
     ClientAttributeMutation, client_attribute_mutation_is_prohibited,
     client_vendor_attribute_mutation_is_prohibited,
@@ -40,6 +39,7 @@ use kmipkit_protocol::{
     SignRequest, SignResponse, SignatureVerifyRequest, SignatureVerifyResponse,
 };
 use kmipkit_protocol::{InteropRequest, InteropResponse, LogRequest, LogResponse};
+use kmipkit_protocol::{ValidateRequest, ValidateResponse};
 
 #[cfg(test)]
 use kmipkit_transport::Transport;
@@ -333,7 +333,9 @@ impl ClientRequest {
 
     /// Selects one explicit typed Validate request.
     #[must_use]
-    pub fn validate(request: ValidateRequest) -> Self { Self::Validate(request) }
+    pub fn validate(request: ValidateRequest) -> Self {
+        Self::Validate(request)
+    }
 
     /// Creates an empty client-to-server Get Constraints request.
     #[must_use]
@@ -2067,7 +2069,7 @@ impl<'a> ClientResponseView<'a> {
         }
     }
 
-    /// Returns an Log response, including a Pending result.
+    /// Returns a Log response, including a Pending result.
     #[must_use]
     pub const fn log(&self) -> Option<&LogResponse> {
         match self.response {
@@ -2076,7 +2078,7 @@ impl<'a> ClientResponseView<'a> {
         }
     }
 
-    /// Returns an Validate response, including a Pending result.
+    /// Returns a Validate response, including a Pending result.
     #[must_use]
     pub const fn validate(&self) -> Option<&ValidateResponse> {
         match self.response {
@@ -2251,7 +2253,9 @@ impl fmt::Debug for ClientResponseView<'_> {
             ClientResponseRef::Ping(response) => debug_response(formatter, "Ping", response),
             ClientResponseRef::Interop(response) => debug_response(formatter, "Interop", response),
             ClientResponseRef::Log(response) => debug_response(formatter, "Log", response),
-            ClientResponseRef::Validate(response) => debug_response(formatter, "Validate", response),
+            ClientResponseRef::Validate(response) => {
+                debug_response(formatter, "Validate", response)
+            }
             ClientResponseRef::GetConstraints(response) => {
                 debug_response(formatter, "GetConstraints", response)
             }
@@ -3051,7 +3055,9 @@ impl ClientBatchOutcome {
                 ClientResponseView::new(ClientResponseRef::Interop(response))
             }
             Self::Log(response) => ClientResponseView::new(ClientResponseRef::Log(response)),
-            Self::Validate(response) => ClientResponseView::new(ClientResponseRef::Validate(response)),
+            Self::Validate(response) => {
+                ClientResponseView::new(ClientResponseRef::Validate(response))
+            }
             Self::GetConstraints(response) => {
                 ClientResponseView::new(ClientResponseRef::GetConstraints(response))
             }
@@ -4345,9 +4351,16 @@ impl Client {
     /// # Errors
     ///
     /// Returns a sanitized error with request-delivery evidence.
-    pub fn validate(&mut self, request: ValidateRequest, limits: &CodecLimits) -> Result<ClientBatchItemResponse, ClientError> {
-        let response = self.execute(ClientBatch::new(ClientBatchItem::new(ClientRequest::Validate(request))), limits)?;
-        take_single_item_response(response.items)
+    pub fn validate(
+        &mut self,
+        request: ValidateRequest,
+        limits: &CodecLimits,
+    ) -> Result<ClientBatchItemResponse, ClientError> {
+        self.execute_one_typed_request(
+            ClientRequest::validate(request),
+            limits,
+            &RequestOptions::default(),
+        )
     }
 
     /// Executes one explicitly selected Log request with one exchange.

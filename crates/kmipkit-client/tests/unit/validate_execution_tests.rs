@@ -1,7 +1,7 @@
 //! Fake-transport Validate behavior derived from OASIS KMIP v2.1 §6.1.57,
 //! Tables 340–342. These tests are not official fixture passes.
 
-use kmipkit_protocol::{ValidateRequest, UniqueIdentifier};
+use kmipkit_protocol::{UniqueIdentifier, ValidateRequest};
 use kmipkit_test_support::ExchangeScript;
 use kmipkit_transport::RequestDeliveryState;
 use kmipkit_ttlv::ValueView;
@@ -19,14 +19,23 @@ const OPERATION: u32 = 0x0042_005c;
 const REQUEST_PAYLOAD: u32 = 0x0042_0079;
 
 fn request() -> ValidateRequest {
-    ValidateRequest::new().with_certificate(test_structure([
-        test_item(0x42001d, kmipkit_ttlv::Value::enumeration(1)),
-        test_item(0x42001e, kmipkit_ttlv::Value::byte_string(b"validate-private-sentinel".to_vec())),
-    ])).with_unique_identifier(UniqueIdentifier::Enumeration(0xf1234567)).with_validity_date(17)
+    ValidateRequest::new()
+        .with_certificate(test_structure([
+            test_item(0x42001d, kmipkit_ttlv::Value::enumeration(1)),
+            test_item(
+                0x42001e,
+                kmipkit_ttlv::Value::byte_string(b"validate-private-sentinel".to_vec()),
+            ),
+        ]))
+        .with_unique_identifier(UniqueIdentifier::Enumeration(0xf1234567))
+        .with_validity_date(17)
 }
 
 fn success_payload() -> kmipkit_ttlv::Structure {
-    test_structure([test_item(0x42009b, kmipkit_ttlv::Value::enumeration(0xf1234567))])
+    test_structure([test_item(
+        0x42009b,
+        kmipkit_ttlv::Value::enumeration(0xf1234567),
+    )])
 }
 
 fn request_shape(request: &[u8]) -> Option<(u32, usize)> {
@@ -65,7 +74,7 @@ fn request_shape(request: &[u8]) -> Option<(u32, usize)> {
 }
 
 #[test]
-fn validate_sends_required_fields_and_returns_empty_success() {
+fn validate_sends_chain_and_date_and_returns_open_indicator() {
     let response = asynchronous_response_bytes(VALIDATE, 0, None, None, Some(success_payload()));
     let (mut client, transport, captured) = client_for(ExchangeScript::Success {
         response,
@@ -183,7 +192,9 @@ fn failure_reason_message_and_diagnostics_are_lossless_and_redacted() {
         response,
         request_write_chunks: Vec::new(),
     });
-    let outcome = client.validate(request(), &CodecLimits::defaults()).unwrap();
+    let outcome = client
+        .validate(request(), &CodecLimits::defaults())
+        .unwrap();
     assert_eq!(
         outcome.outcome().result().reason().unwrap().raw(),
         0xf1234567
@@ -266,8 +277,14 @@ fn codec_failure_is_not_sent_and_operation_mismatch_is_response_started() {
 #[test]
 fn malformed_local_certificate_is_not_sent_and_redacted() {
     let response = asynchronous_response_bytes(VALIDATE, 0, None, None, Some(success_payload()));
-    let (mut client, transport, _) = client_for(ExchangeScript::Success { response, request_write_chunks: Vec::new() });
-    let bad = ValidateRequest::new().with_certificate(test_structure([test_item(0x42001d, kmipkit_ttlv::Value::text_string("validate-private-sentinel".to_owned()))]));
+    let (mut client, transport, _) = client_for(ExchangeScript::Success {
+        response,
+        request_write_chunks: Vec::new(),
+    });
+    let bad = ValidateRequest::new().with_certificate(test_structure([test_item(
+        0x42001d,
+        kmipkit_ttlv::Value::text_string("validate-private-sentinel".to_owned()),
+    )]));
     let error = client.validate(bad, &CodecLimits::defaults()).unwrap_err();
     assert_eq!(error.delivery_state(), Some(RequestDeliveryState::NotSent));
     assert!(!format!("{error:?} {error}").contains("validate-private-sentinel"));
@@ -277,9 +294,27 @@ fn malformed_local_certificate_is_not_sent_and_redacted() {
 #[test]
 fn omitted_chain_and_date_are_forwarded_without_local_policy() {
     let response = asynchronous_response_bytes(VALIDATE, 0, None, None, Some(success_payload()));
-    let (mut client, transport, captured) = client_for(ExchangeScript::Success { response, request_write_chunks: Vec::new() });
-    let result = client.validate(ValidateRequest::new(), &CodecLimits::defaults()).unwrap();
-    assert_eq!(result.outcome().response().validate().unwrap().validity_indicator().unwrap().raw(), 0xf1234567);
-    assert_eq!(request_shape(captured.borrow().as_deref().unwrap()), Some((VALIDATE, 0)));
+    let (mut client, transport, captured) = client_for(ExchangeScript::Success {
+        response,
+        request_write_chunks: Vec::new(),
+    });
+    let result = client
+        .validate(ValidateRequest::new(), &CodecLimits::defaults())
+        .unwrap();
+    assert_eq!(
+        result
+            .outcome()
+            .response()
+            .validate()
+            .unwrap()
+            .validity_indicator()
+            .unwrap()
+            .raw(),
+        0xf1234567
+    );
+    assert_eq!(
+        request_shape(captured.borrow().as_deref().unwrap()),
+        Some((VALIDATE, 0))
+    );
     assert_eq!(transport.borrow().exchange_count(), 1);
 }
