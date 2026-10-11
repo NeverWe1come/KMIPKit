@@ -74,6 +74,7 @@ impl fmt::Debug for LogRequest {
         formatter
             .debug_struct("LogRequest")
             .field("log_message", &self.log_message)
+            .field("extensions", &"[REDACTED]")
             .finish()
     }
 }

@@ -21,20 +21,20 @@ const REQUEST_PAYLOAD: u32 = 0x0042_0079;
 fn request() -> ValidateRequest {
     ValidateRequest::new()
         .with_certificate(test_structure([
-            test_item(0x42001d, kmipkit_ttlv::Value::enumeration(1)),
+            test_item(0x0042_001d, kmipkit_ttlv::Value::enumeration(1)),
             test_item(
-                0x42001e,
+                0x0042_001e,
                 kmipkit_ttlv::Value::byte_string(b"validate-private-sentinel".to_vec()),
             ),
         ]))
-        .with_unique_identifier(UniqueIdentifier::Enumeration(0xf1234567))
+        .with_unique_identifier(UniqueIdentifier::Enumeration(0xf123_4567))
         .with_validity_date(17)
 }
 
 fn success_payload() -> kmipkit_ttlv::Structure {
     test_structure([test_item(
-        0x42009b,
-        kmipkit_ttlv::Value::enumeration(0xf1234567),
+        0x0042_009b,
+        kmipkit_ttlv::Value::enumeration(0xf123_4567),
     )])
 }
 
@@ -89,7 +89,7 @@ fn validate_sends_chain_and_date_and_returns_open_indicator() {
     };
 
     assert_eq!(validate.result().status().raw(), 0);
-    assert_eq!(validate.validity_indicator().unwrap().raw(), 0xf1234567);
+    assert_eq!(validate.validity_indicator().unwrap().raw(), 0xf123_4567);
     assert_eq!(outcome.outcome().operation(), ClientOperation::Validate);
     assert_eq!(outcome.outcome().result().status().raw(), 0);
     let response = outcome.outcome().response();
@@ -182,7 +182,7 @@ fn failure_reason_message_and_diagnostics_are_lossless_and_redacted() {
     let response = crate::execute_test_support::one_item_response_bytes(
         VALIDATE,
         1,
-        Some(0xf1234567),
+        Some(0xf123_4567),
         Some("validate-private-sentinel"),
         None,
         None,
@@ -197,7 +197,7 @@ fn failure_reason_message_and_diagnostics_are_lossless_and_redacted() {
         .unwrap();
     assert_eq!(
         outcome.outcome().result().reason().unwrap().raw(),
-        0xf1234567
+        0xf123_4567
     );
     assert_eq!(
         outcome.outcome().result().message().unwrap().as_str(),
@@ -282,7 +282,7 @@ fn malformed_local_certificate_is_not_sent_and_redacted() {
         request_write_chunks: Vec::new(),
     });
     let bad = ValidateRequest::new().with_certificate(test_structure([test_item(
-        0x42001d,
+        0x0042_001d,
         kmipkit_ttlv::Value::text_string("validate-private-sentinel".to_owned()),
     )]));
     let error = client.validate(bad, &CodecLimits::defaults()).unwrap_err();
@@ -310,11 +310,75 @@ fn omitted_chain_and_date_are_forwarded_without_local_policy() {
             .validity_indicator()
             .unwrap()
             .raw(),
-        0xf1234567
+        0xf123_4567
     );
     assert_eq!(
         request_shape(captured.borrow().as_deref().unwrap()),
         Some((VALIDATE, 0))
     );
+    assert_eq!(transport.borrow().exchange_count(), 1);
+}
+
+#[test]
+fn unknown_request_extensions_are_sent_once_and_redacted() {
+    let response = asynchronous_response_bytes(VALIDATE, 0, None, None, Some(success_payload()));
+    let (mut client, transport, captured) = client_for(ExchangeScript::Success {
+        response,
+        request_write_chunks: Vec::new(),
+    });
+    let request = request().with_extension(test_item(
+        0x0054_1234,
+        kmipkit_ttlv::Value::byte_string(b"extension-private-sentinel".to_vec()),
+    ));
+    let outcome = client.validate(request, &CodecLimits::defaults()).unwrap();
+    assert!(
+        !format!("{:?} {}", outcome.outcome(), outcome.outcome())
+            .contains("extension-private-sentinel")
+    );
+    let guard = captured.borrow();
+    let tree = decode_with_limits(guard.as_deref().unwrap(), &CodecLimits::defaults()).unwrap();
+    tree.with_value(|value| {
+        let ValueView::Structure(root) = value else {
+            panic!("request root")
+        };
+        assert!(crate::execute_test_support::structure_contains_byte_string(
+            &root,
+            0x0054_1234,
+            b"extension-private-sentinel"
+        ));
+    });
+    assert_eq!(transport.borrow().exchange_count(), 1);
+}
+
+#[test]
+fn unknown_result_status_is_preserved_with_generic_payload() {
+    let response = asynchronous_response_bytes(
+        VALIDATE,
+        0xf123_4567,
+        Some(0xf765_4321),
+        None,
+        Some(test_structure([test_item(
+            0x0054_1234,
+            kmipkit_ttlv::Value::byte_string(b"generic-body-private-sentinel".to_vec()),
+        )])),
+    );
+    let (mut client, transport, _) = client_for(ExchangeScript::Success {
+        response,
+        request_write_chunks: Vec::new(),
+    });
+    let outcome = client
+        .validate(request(), &CodecLimits::defaults())
+        .unwrap();
+    let response = outcome.outcome().response();
+    assert_eq!(response.result().status().raw(), 0xf123_4567);
+    assert_eq!(response.result().reason().unwrap().raw(), 0xf765_4321);
+    response.validate().unwrap().with_ttlv(|tree| {
+        assert!(crate::execute_test_support::structure_contains_byte_string(
+            &tree,
+            0x0054_1234,
+            b"generic-body-private-sentinel"
+        ));
+    });
+    assert!(!format!("{response:?}").contains("generic-body-private-sentinel"));
     assert_eq!(transport.borrow().exchange_count(), 1);
 }

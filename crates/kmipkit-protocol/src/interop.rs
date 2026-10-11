@@ -93,6 +93,7 @@ impl fmt::Debug for InteropRequest {
             .debug_struct("InteropRequest")
             .field("interop_function", &self.interop_function)
             .field("interop_identifier", &self.interop_identifier)
+            .field("extensions", &"[REDACTED]")
             .finish()
     }
 }

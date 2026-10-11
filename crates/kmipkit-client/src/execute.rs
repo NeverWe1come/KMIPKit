@@ -6183,38 +6183,10 @@ fn response_outcome(
             PendingResponse::Query,
             ClientBatchOutcome::Query,
         ),
-        PING_OPERATION => read_operation_outcome(
-            ClientOperation::Ping,
-            item,
-            PingResponse::try_from_response_item,
-            PingResponse::result,
-            PendingResponse::Ping,
-            ClientBatchOutcome::Ping,
-        ),
-        INTEROP_OPERATION => read_operation_outcome(
-            ClientOperation::Interop,
-            item,
-            InteropResponse::try_from_response_item,
-            InteropResponse::result,
-            PendingResponse::Interop,
-            ClientBatchOutcome::Interop,
-        ),
-        LOG_OPERATION => read_operation_outcome(
-            ClientOperation::Log,
-            item,
-            LogResponse::try_from_response_item,
-            LogResponse::result,
-            PendingResponse::Log,
-            ClientBatchOutcome::Log,
-        ),
-        VALIDATE_OPERATION => read_operation_outcome(
-            ClientOperation::Validate,
-            item,
-            ValidateResponse::try_from_response_item,
-            ValidateResponse::result,
-            PendingResponse::Validate,
-            ClientBatchOutcome::Validate,
-        ),
+
+        PING_OPERATION | INTEROP_OPERATION | LOG_OPERATION | VALIDATE_OPERATION => {
+            diagnostics_response_outcome(operation, item)
+        }
         GET_CONSTRAINTS_OPERATION => get_constraints_response_outcome(item),
         SET_CONSTRAINTS_OPERATION => set_constraints_response_outcome(item),
         SET_DEFAULTS_OPERATION => set_defaults_response_outcome(item),
@@ -6359,6 +6331,47 @@ fn key_material_response_outcome(
     match operation {
         DERIVE_KEY_OPERATION => derive_key_response_outcome(item),
         EXPORT_OPERATION => export_response_outcome(item),
+        _ => Err(protocol_error(ProtocolErrorKind::UnsupportedValue)),
+    }
+}
+
+fn diagnostics_response_outcome(
+    operation: u32,
+    item: ResponseBatchItemView<'_>,
+) -> Result<ClientBatchOutcome, ProtocolError> {
+    match operation {
+        PING_OPERATION => read_operation_outcome(
+            ClientOperation::Ping,
+            item,
+            PingResponse::try_from_response_item,
+            PingResponse::result,
+            PendingResponse::Ping,
+            ClientBatchOutcome::Ping,
+        ),
+        INTEROP_OPERATION => read_operation_outcome(
+            ClientOperation::Interop,
+            item,
+            InteropResponse::try_from_response_item,
+            InteropResponse::result,
+            PendingResponse::Interop,
+            ClientBatchOutcome::Interop,
+        ),
+        LOG_OPERATION => read_operation_outcome(
+            ClientOperation::Log,
+            item,
+            LogResponse::try_from_response_item,
+            LogResponse::result,
+            PendingResponse::Log,
+            ClientBatchOutcome::Log,
+        ),
+        VALIDATE_OPERATION => read_operation_outcome(
+            ClientOperation::Validate,
+            item,
+            ValidateResponse::try_from_response_item,
+            ValidateResponse::result,
+            PendingResponse::Validate,
+            ClientBatchOutcome::Validate,
+        ),
         _ => Err(protocol_error(ProtocolErrorKind::UnsupportedValue)),
     }
 }

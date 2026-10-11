@@ -140,10 +140,10 @@ fn validate_certificate_shape(certificate: &Structure) -> Result<(), ProtocolErr
     for field in certificate.view().children() {
         match field.tag().raw() {
             CERTIFICATE_TYPE if !has_type && field.item_type() == ItemType::Enumeration => {
-                has_type = true
+                has_type = true;
             }
             CERTIFICATE_VALUE if !has_value && field.item_type() == ItemType::ByteString => {
-                has_value = true
+                has_value = true;
             }
             CERTIFICATE_TYPE | CERTIFICATE_VALUE => {
                 return Err(cryptographic_operation::request_error());
@@ -169,6 +169,7 @@ impl fmt::Debug for ValidateRequest {
             .debug_struct("ValidateRequest")
             .field("chain", &"[REDACTED]")
             .field("validity_date", &self.validity_date)
+            .field("extensions", &"[REDACTED]")
             .finish()
     }
 }
@@ -326,6 +327,7 @@ impl fmt::Debug for ValidateResponse {
         formatter
             .debug_struct("ValidateResponse")
             .field("result", &self.result)
+            .field("validity_indicator", &self.validity_indicator)
             .field("response_ttlv", &"[REDACTED]")
             .finish()
     }

@@ -105,13 +105,8 @@ fn log_failure_preserves_transport_delivery_and_does_not_retry() {
 #[test]
 fn log_pending_preserves_typed_response_and_correlation_without_follow_up() {
     const CORRELATION: &[u8] = b"log-pending-correlation";
-    let response = asynchronous_response_bytes(
-        LOG,
-        2,
-        None,
-        Some(CORRELATION),
-        Some(test_structure([])),
-    );
+    let response =
+        asynchronous_response_bytes(LOG, 2, None, Some(CORRELATION), Some(test_structure([])));
     let (mut client, transport, _) = client_for(ExchangeScript::Success {
         response,
         request_write_chunks: Vec::new(),
@@ -165,7 +160,7 @@ fn failure_reason_message_and_diagnostics_are_lossless_and_redacted() {
     let response = crate::execute_test_support::one_item_response_bytes(
         LOG,
         1,
-        Some(0xf1234567),
+        Some(0xf123_4567),
         Some("log-private-sentinel"),
         None,
         None,
@@ -178,7 +173,7 @@ fn failure_reason_message_and_diagnostics_are_lossless_and_redacted() {
     let outcome = client.log(request(), &CodecLimits::defaults()).unwrap();
     assert_eq!(
         outcome.outcome().result().reason().unwrap().raw(),
-        0xf1234567
+        0xf123_4567
     );
     assert_eq!(
         outcome.outcome().result().message().unwrap().as_str(),
@@ -193,9 +188,7 @@ fn failure_reason_message_and_diagnostics_are_lossless_and_redacted() {
         )
         .contains("log-private-sentinel")
     );
-    assert!(
-        !format!("{:?}", ClientRequest::log(request())).contains("log-private-sentinel")
-    );
+    assert!(!format!("{:?}", ClientRequest::log(request())).contains("log-private-sentinel"));
     assert_eq!(transport.borrow().exchange_count(), 1);
 }
 
@@ -219,9 +212,7 @@ fn every_transport_delivery_state_is_preserved_without_retry() {
         ),
     ] {
         let (mut client, transport, _) = client_for(script);
-        let error = client
-            .log(request(), &CodecLimits::defaults())
-            .unwrap_err();
+        let error = client.log(request(), &CodecLimits::defaults()).unwrap_err();
         assert_eq!(error.delivery_state(), Some(expected));
         assert!(!format!("{error:?} {error}").contains("log-private-sentinel"));
         assert_eq!(transport.borrow().exchange_count(), 1);
@@ -245,12 +236,72 @@ fn codec_failure_is_not_sent_and_operation_mismatch_is_response_started() {
         response,
         request_write_chunks: Vec::new(),
     });
-    let error = client
-        .log(request(), &CodecLimits::defaults())
-        .unwrap_err();
+    let error = client.log(request(), &CodecLimits::defaults()).unwrap_err();
     assert_eq!(
         error.delivery_state(),
         Some(RequestDeliveryState::ResponseStarted)
     );
+    assert_eq!(transport.borrow().exchange_count(), 1);
+}
+
+#[test]
+fn unknown_request_extensions_are_sent_once_and_redacted() {
+    let response = asynchronous_response_bytes(LOG, 0, None, None, Some(test_structure([])));
+    let (mut client, transport, captured) = client_for(ExchangeScript::Success {
+        response,
+        request_write_chunks: Vec::new(),
+    });
+    let request = request().with_extension(test_item(
+        0x0054_1234,
+        kmipkit_ttlv::Value::byte_string(b"extension-private-sentinel".to_vec()),
+    ));
+    let outcome = client.log(request, &CodecLimits::defaults()).unwrap();
+    assert!(
+        !format!("{:?} {}", outcome.outcome(), outcome.outcome())
+            .contains("extension-private-sentinel")
+    );
+    let guard = captured.borrow();
+    let tree = decode_with_limits(guard.as_deref().unwrap(), &CodecLimits::defaults()).unwrap();
+    tree.with_value(|value| {
+        let ValueView::Structure(root) = value else {
+            panic!("request root")
+        };
+        assert!(crate::execute_test_support::structure_contains_byte_string(
+            &root,
+            0x0054_1234,
+            b"extension-private-sentinel"
+        ));
+    });
+    assert_eq!(transport.borrow().exchange_count(), 1);
+}
+
+#[test]
+fn unknown_result_status_is_preserved_with_generic_payload() {
+    let response = asynchronous_response_bytes(
+        LOG,
+        0xf123_4567,
+        Some(0xf765_4321),
+        None,
+        Some(test_structure([test_item(
+            0x0054_1234,
+            kmipkit_ttlv::Value::byte_string(b"generic-body-private-sentinel".to_vec()),
+        )])),
+    );
+    let (mut client, transport, _) = client_for(ExchangeScript::Success {
+        response,
+        request_write_chunks: Vec::new(),
+    });
+    let outcome = client.log(request(), &CodecLimits::defaults()).unwrap();
+    let response = outcome.outcome().response();
+    assert_eq!(response.result().status().raw(), 0xf123_4567);
+    assert_eq!(response.result().reason().unwrap().raw(), 0xf765_4321);
+    response.log().unwrap().with_ttlv(|tree| {
+        assert!(crate::execute_test_support::structure_contains_byte_string(
+            &tree,
+            0x0054_1234,
+            b"generic-body-private-sentinel"
+        ));
+    });
+    assert!(!format!("{response:?}").contains("generic-body-private-sentinel"));
     assert_eq!(transport.borrow().exchange_count(), 1);
 }
