@@ -13,7 +13,9 @@ Expect table-derived field/type and round-trip tests, malformed request/response
 
 ## Recorded focused evidence
 
-On the implementation branch, `cargo test -p kmipkit-client --lib rng_ --no-fail-fast` passes all 8 RNG client fake-transport tests. `cargo test -p kmipkit-protocol --lib rng_ --no-fail-fast` passes all 15 RNG protocol tests. These tests are derived from the cited KMIP v2.1 tables; they are not official OASIS Test Case passes. The full workspace gates below and the two-server integration gate have not yet been recorded as passing.
+On the implementation branch, `cargo test -p kmipkit-client --lib rng_ --no-fail-fast` passes all 8 RNG client fake-transport tests. `cargo test -p kmipkit-protocol --lib rng_ --no-fail-fast` passes all 15 RNG protocol tests. The tests also exercise the typed response views, success/Pending accessors, debug redaction, and the `RngRetrieveRequest::data_length` getter. These tests are derived from the cited KMIP v2.1 tables; they are not official OASIS Test Case passes.
+
+After CI run 38181472593 reported 183/234 changed Rust lines covered, the added assertions were checked with `cargo llvm-cov --package kmipkit-client --package kmipkit-protocol --all-features --json`. The local Windows report covers 228/234 changed executable Rust lines (97.44%), above the 95% gate. The remaining lines are defensive paths for a successful message with no Response Payload (rejected by KMIP message validation before operation conversion) and an unknown RNG dispatcher value (not passed by the public dispatcher). The updated commit still requires the GitHub matrix and aggregate coverage gate to pass. The full workspace and two-server integration gates remain separate requirements.
 
 ## Review gates
 
