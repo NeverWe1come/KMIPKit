@@ -38,7 +38,8 @@ fn table_232_preserves_optional_identifier_and_required_long_integer_count() {
     let omitted = GetUsageAllocationRequest::new(0x0102_0304_0506_0708)
         .to_ttlv_payload()
         .expect("Table 232 request is representable");
-    let fields = omitted.view().children();
+    let omitted_view = omitted.view();
+    let fields = omitted_view.children();
     assert_eq!(fields.len(), 1, "omitted identifier remains absent");
     assert_eq!(fields[0].tag().raw(), USAGE_LIMITS_COUNT);
     assert_eq!(fields[0].item_type(), ItemType::LongInteger);
@@ -122,12 +123,37 @@ fn table_233_rejects_missing_duplicate_and_wrong_typed_identifier() {
                 Value::text_string("duplicate".to_owned()),
             ),
         ])),
-        Some(structure([item(UNIQUE_IDENTIFIER_TAG, Value::integer(23))])),
+        Some(structure([item(
+            UNIQUE_IDENTIFIER_TAG,
+            Value::boolean(true),
+        )])),
     ] {
         let message = response_message(GET_USAGE_ALLOCATION, 0, None, None, payload);
         assert!(
             GetUsageAllocationResponse::try_from_response_item(response_item(&message)).is_err()
         );
+    }
+}
+
+#[test]
+fn table_233_preserves_integer_and_open_enumeration_identifiers() {
+    for (wire_value, expected) in [
+        (Value::integer(23), UniqueIdentifier::Integer(23)),
+        (
+            Value::enumeration(0x54FF),
+            UniqueIdentifier::Enumeration(0x54FF),
+        ),
+    ] {
+        let message = response_message(
+            GET_USAGE_ALLOCATION,
+            0,
+            None,
+            None,
+            Some(structure([item(UNIQUE_IDENTIFIER_TAG, wire_value)])),
+        );
+        let actual = GetUsageAllocationResponse::try_from_response_item(response_item(&message))
+            .expect("Table 146 Unique Identifier representations remain open");
+        assert_eq!(actual.unique_identifier(), Some(&expected));
     }
 }
 
