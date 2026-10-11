@@ -143,13 +143,29 @@ class WorkflowContractTests(unittest.TestCase):
         self.assertIn("PROFILE_EVIDENCE_MANIFEST", release_job)
         self.assertIn("--readiness", release_job)
 
+    def test_release_summary_waits_for_exact_evidence_jobs(self) -> None:
+        contents = self.require_workflow()
+        release_job = self.require_job(contents, "release-summary")
+        needs = re.search(r"(?ms)^    needs:\n((?:      - [a-z-]+\n)+)", release_job)
+        self.assertIsNotNone(needs, "The protected aggregate must declare its required jobs.")
+        self.assertEqual(
+            ["core", "script-contracts", "normative-inventory", "coverage", "coverage-gate", "dependency-policy"],
+            re.findall(r"(?m)^      - ([a-z-]+)$", needs.group(1)),
+        )
+        self.assertIn("environment: release-evidence", release_job)
+        self.assertIn("permission-administration: read", release_job)
+        self.assertIn(
+            "actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # actions/create-github-app-token v3.2.0",
+            release_job,
+        )
+
     def test_push_coverage_uses_the_webhook_before_sha(self) -> None:
         contents = self.require_workflow()
-        self.assertIn("CI_PUSH_BEFORE_SHA: ${{ github.event.before }}", contents)
+        self.assertIn("github.event_name == 'push' && github.event.before", contents)
         inventory = self.require_job(contents, "normative-inventory")
-        self.assertIn("CI_PUSH_BEFORE_SHA", inventory)
+        self.assertIn("CI_EVENT_BASE_SHA", inventory)
         gate = self.require_job(contents, "coverage-gate")
-        self.assertIn("CI_PUSH_BEFORE_SHA", gate)
+        self.assertIn("CI_EVENT_BASE_SHA", gate)
 
     def test_required_platform_toolchain_and_informational_branch_matrices_exist(self) -> None:
         contents = self.require_workflow()
@@ -475,7 +491,9 @@ class WorkflowContractTests(unittest.TestCase):
         branch_coverage = self.require_job(contents, "branch-coverage")
         self.assertRegex(branch_coverage, r"(?m)^    if: github\.event_name == 'schedule'$")
         gate = self.require_job(contents, "coverage-gate")
-        self.assertIn("always() && github.event_name == 'pull_request'", gate)
+        self.assertIn("always()", gate)
+        self.assertIn("github.event_name == 'pull_request'", gate)
+        self.assertIn("github.event_name == 'push'", gate)
         self.assertIn(self.COVERAGE_COLLECTION_GUARD, gate)
 
     def test_branch_coverage_documentation_matches_schedule_only_workflow(self) -> None:
@@ -606,7 +624,7 @@ class WorkflowContractTests(unittest.TestCase):
     def test_run_summary_waits_for_all_jobs_and_runs_after_failures(self) -> None:
         contents = self.require_workflow()
         job = self.require_job(contents, "run-summary")
-        self.assertRegex(job, r"(?m)^    if: always\(\)$")
+        self.assertRegex(job, r"(?m)^    if: always\(\) && \(github\.event_name != 'push'")
         for dependency in (
             "impact-plan",
             "docs-contracts",
@@ -644,6 +662,10 @@ class WorkflowContractTests(unittest.TestCase):
 
         for job_id, body in jobs:
             with self.subTest(job=job_id):
+                if job_id == "release-summary":
+                    self.assertIn("current run cannot provide eligible verification evidence", body)
+                    self.assertNotIn("${{ toJSON(steps) }}", body)
+                    continue
                 diagnosis = re.search(
                     r"(?ms)^      - name: Diagnose job result\n(.*?)(?=^      - name: |\Z)", body
                 )
