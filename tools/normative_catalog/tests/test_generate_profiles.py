@@ -141,6 +141,38 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
 
         self.assertEqual(violations, [], "client profile closures differ from current catalog scope")
 
+    def test_client_profile_closure_keeps_client_obligations_with_mixed_scope(self) -> None:
+        catalog_path = ROOT / "specification" / "catalog" / "kmip-2.1.json"
+        catalog = json.loads(catalog_path.read_text(encoding="utf-8"))
+        baseline = next(
+            profile for profile in catalog["profiles"]
+            if profile["profile_id"] == "KMIPKIT-PROFILE-BASELINE-CLIENT"
+        )
+
+        closure = compute_profile_closure(
+            catalog,
+            baseline["direct_source_clause_ids"],
+            profile_id=baseline["profile_id"],
+        )
+
+        # Their reviewed source atoms separate a client obligation from a
+        # server obligation; the catalog aggregates those atoms as `mixed`.
+        for requirement_id in (
+            "KMIPKIT-REQ-SPEC-6.1.5-001",
+            "KMIPKIT-REQ-SPEC-6.1.7-005",
+        ):
+            with self.subTest(requirement_id=requirement_id):
+                requirement = next(
+                    row for row in catalog["requirements"]
+                    if row["requirement_id"] == requirement_id
+                )
+                self.assertEqual(requirement["role"], "client")
+                self.assertEqual(requirement["scope_state"], "mixed")
+                self.assertTrue(
+                    requirement_id in closure.requirement_ids,
+                    f"missing mixed-scope client requirement from closure: {requirement_id}",
+                )
+
     def test_profile_closure_generator_matches_the_pinned_source_oracle(self) -> None:
         """Compare closure expansion with static source-derived arrays for all 18 clients."""
         catalog_path = ROOT / "specification" / "catalog" / "kmip-2.1.json"

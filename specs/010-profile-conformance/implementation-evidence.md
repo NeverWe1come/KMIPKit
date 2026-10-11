@@ -527,3 +527,9 @@ Fixture totals after this slice are 230 requirement crosswalks, 621 source revie
 | Final Sign structural/source/generated checks | `python -B -m tools.normative_catalog.validate --repo-root . --structural-only`; `python -B tools/normative_catalog/report.py --check`; `python -B tools/normative_catalog/generate_profiles.py --check`; `python -B tools/normative_catalog/audit_sources.py --repo-root . --check --base-sha af172974cd5c6f56f7f938574e1546d4e295a9ef`; `python -B -m tools.normative_catalog.check_immutable_sources --base-sha af172974cd5c6f56f7f938574e1546d4e295a9ef`; `git diff --check` | PASS: catalog is valid (4 sources / 1,411 clauses / 4,049 records), report/profile output matches inputs, all 1,411 source candidates are audited, and the pinned OASIS source copies remain unchanged. |
 
 An independent source auditor verified Specification v2.1 SHA-256 `8bf9d914c097e98a6509aa1ffcbf03406f738066e940597aee93d0a5e07addcf` and confirmed the client MAY `.55-001`, two server Usage Limits SHALL atoms, the server placeholder/error behavior, optional and conditional Table 334 request rows, Table 335 response rows, and server-to-client error SHALL. Existing `.55-005-001` is a retired false client candidate; `.55-005-002` is the server failure requirement. No new catalog requirement ID or official test case is inferred by this Red test.
+
+### T003/T004 — mixed-scope client closure regression (2026-10-11)
+
+| Phase | Command | Result |
+|---|---|---|
+| Red — preserve split client duties in profile closure | `python -B -m unittest tools.normative_catalog.tests.test_generate_profiles.ProfileMetadataGeneratorTests.test_client_profile_closure_keeps_client_obligations_with_mixed_scope -v` | Expected Red: both reviewed client requirements `KMIPKIT-REQ-SPEC-6.1.5-001` and `KMIPKIT-REQ-SPEC-6.1.7-005` have catalog `scope_state: mixed` and `role: client`, but the computed Baseline Client closure omits them (`Ran 1 test`; `FAILED (failures=2)`). |
