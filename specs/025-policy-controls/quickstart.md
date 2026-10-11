@@ -44,7 +44,7 @@ cargo test --workspace --all-features
 cargo llvm-cov --workspace --all-features
 ```
 
-Run API-manifest unit tests and all binding-specific build/parity commands listed in `docs/development/api-manifest.md` after 0043 is available. The generated manifest check is not a substitute for testing handwritten adapters.
+Run the API-manifest unit tests and generated-manifest check now. Run the binding-specific build/parity commands listed in `docs/development/api-manifest.md` after 0043 is available; the generated manifest check is not a substitute for testing handwritten adapters.
 
 ## 1.0 scope disposition
 
