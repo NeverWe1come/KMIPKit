@@ -16,7 +16,7 @@ Every task uses the repository checklist form: checkbox, sequential task ID, opt
 
 **Purpose**: Confirm the pinned source and accepted release baseline; no project initialization or new dependency is required.
 
-- [ ] T001 Verify the OASIS source checksum and release-branch foundation references in specification/oasis/kmip-2.1/CHECKSUMS.sha256, specs/024-credential-sessions/spec.md, and specs/024-credential-sessions/plan.md; record any source change before coding.
+- [x] T001 Verify the OASIS source checksum and release-branch foundation references in specification/oasis/kmip-2.1/CHECKSUMS.sha256, specs/024-credential-sessions/spec.md, and specs/024-credential-sessions/plan.md; record any source change before coding.
 
 ## Phase 2: Foundational Ticket model
 
