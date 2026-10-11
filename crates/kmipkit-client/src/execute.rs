@@ -62,6 +62,10 @@ mod single_item_response_tests;
 mod hash_mac_signature_execution_tests;
 
 #[cfg(test)]
+#[path = "../tests/unit/key_transfer_operations_execution_tests.rs"]
+mod key_transfer_operations_execution_tests;
+
+#[cfg(test)]
 #[path = "../tests/unit/hash_execution_tests.rs"]
 mod hash_execution_tests;
 
