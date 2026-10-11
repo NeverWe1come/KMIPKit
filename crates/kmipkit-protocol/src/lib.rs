@@ -304,6 +304,10 @@ mod create_key_pair_tests;
 mod create_split_key_tests;
 
 #[cfg(test)]
+#[path = "../tests/unit/join_split_key_operation_tests.rs"]
+mod join_split_key_operation_tests;
+
+#[cfg(test)]
 #[path = "../tests/unit/derive_key_operation_tests.rs"]
 mod derive_key_operation_tests;
 

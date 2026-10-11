@@ -59,7 +59,7 @@
 
 **Independent Test**: Tables 244–246; one caller-known threshold per identifier occurrence; ID order/repetitions preserved; entry count >= maximum threshold before network transmission; no lookup; one exchange.
 
-- [ ] T015 [P] [US4] Add failing Join Split Key protocol and fake-client tests in `crates/kmipkit-protocol/tests/unit/join_split_key_operation_tests.rs` and `crates/kmipkit-client/tests/unit/join_split_key_execution_tests.rs` for missing/misaligned threshold context, count below/equal/above max, different thresholds, repeated field/value entries, exact wire ID order, and §6.1.27 Tables 244–246; commit Red.
+- [x] T015 [P] [US4] Add failing Join Split Key protocol and fake-client tests in `crates/kmipkit-protocol/tests/unit/join_split_key_operation_tests.rs` and `crates/kmipkit-client/tests/unit/join_split_key_execution_tests.rs` for missing/misaligned threshold context, count below/equal/above max, different thresholds, repeated field/value entries, exact wire ID order, and §6.1.27 Tables 244–246; commit Red.
 - [ ] T016 [US4] Implement `SplitKeyReference` and `JoinSplitKeyRequest/Response/Error` in `crates/kmipkit-protocol/src/join_split_key.rs`; require explicit non-wire per-entry threshold context, validate request entry count >= maximum threshold, preserve all ID occurrences, and integrate client dispatch in `crates/kmipkit-client/src/execute.rs` and `crates/kmipkit-client/src/lib.rs`; commit Green after T015 passes.
 - [ ] T017 [US4] Refactor Join Split Key model/validation/dispatch/tests in `crates/kmipkit-protocol/src/join_split_key.rs`, `crates/kmipkit-client/src/execute.rs`, and both test files; preserve the 2026-10-11 interpretation and commit Refactor separately.
 
