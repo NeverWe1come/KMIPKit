@@ -63,3 +63,13 @@ Post-update verification:
 - `cargo test -p kmipkit-client --test operation_boundary rust_quickstart_get_and_locate_examples_execute_through_the_client -- --exact` — passed, 1/1.
 - `cargo fmt --all --check` — passed.
 - `git diff --check` — passed.
+
+## Fix round 1 re-review — 2026-10-11
+
+**Finding: P2 — Refactor evidence is missing — ADDRESSED.** The fix records a distinct DCO-signed Refactor/no-change disposition in the report and T038 task evidence. It explains that extracting fixture-specific logic would obscure direct quickstart example coverage and that the existing test already reuses the TLS loopback helpers. This supplies the requested post-Green Refactor evidence without claiming a source refactor was needed.
+
+**New breakage: NONE FOUND.** The reviewed fix changes only the task report and the T038 evidence paragraph in `specs/017-managed-object-retrieval/tasks.md`; it adds no code or behavioral changes. Per review scope, no git commands or tests were run.
+
+**Out-of-scope observations:** None in the supplied fix package.
+
+**Round verdict: ACCEPT.** The finding is addressed and the documentation-only fix introduces no new breakage.
