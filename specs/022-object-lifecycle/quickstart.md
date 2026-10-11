@@ -57,3 +57,11 @@ Record separate Red, Green, and Refactor commit IDs per operation in the draft P
 - REFACTOR commit: `a6385456` (`refactor(022): finalize Register contract tests`). Added the ID Placeholder producer-to-Check batch case and verified a Certificate needs Certificate Length without a cryptographic Usage Mask.
 - Verification passed: `cargo test -p kmipkit-protocol -p kmipkit-client` (package regression suite), focused Register protocol/client tests (11 and 5 tests), `cargo fmt --all --check`, `cargo clippy -p kmipkit-protocol -p kmipkit-client --all-targets --all-features -- -D warnings`, and `git diff --check`.
 - No direct OASIS Test Case is listed for Register; tests are derived from §6.1.43 Tables 291–294. The Red/Green/Refactor commits use the maintainer-approved DCO sign-off; pinned upstream sources remain unchanged.
+
+### Revoke (US9)
+
+- RED commit: `997e030f` (`test(022): add Revoke RED coverage`) established the missing typed operation/client API failure. Follow-up RED correction `2d045c45` added assertions from §4.47/Table 123 after source review showed that `Revocation Reason` is a Structure, with required `Revocation Reason Code` and optional audit-only `Revocation Message`; the protocol and client suites failed against the incorrect direct-Enumeration encoding.
+- GREEN commit: `9884ded4` (`feat(022): implement Revoke operation`) adds the raw-preserving reason code, nested Table 123 request encoding, optional compromise date validation, typed success identifier, shared failure/Pending results, and the one-exchange client method. The request Debug output redacts the identifier and audit message.
+- REFACTOR commit: `f7831af5` (`refactor(022): reuse shared Revoke payload helpers`) removes duplicate TTLV-tag, item, error, and identifier helpers while preserving behavior.
+- Verification passed: focused Revoke protocol and client tests (10 and 6 tests), `cargo test -p kmipkit-protocol -p kmipkit-client`, `cargo clippy -p kmipkit-protocol -p kmipkit-client --all-targets --all-features -- -D warnings`, `cargo fmt --all --check`, and `git diff --check`.
+- No direct OASIS Test Case is listed for Revoke; these table-derived tests cover §6.1.44 Tables 295–297, §4.47/Table 123, and §11.48/Table 481. Pinned upstream sources remain unchanged.
