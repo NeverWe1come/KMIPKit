@@ -6231,6 +6231,19 @@ class CatalogValidationTests(unittest.TestCase):
             else:
                 self.assertTrue(all(atom["scope_disposition"] == "client_1_0" for atom in atoms))
 
+        expected_server_directions = {
+            "KMIPKIT-CLAUSE-SPEC-6.1.43-002": ["set Wrapping Key Link attribute on the registered object"],
+            "KMIPKIT-CLAUSE-SPEC-6.1.43-003": [
+                "copy Unique Identifier into the server ID Placeholder",
+                "set Initial Date attribute on the object",
+            ],
+        }
+        for clause_id, directions in expected_server_directions.items():
+            self.assertEqual(
+                [atom["direction"] for atom in reviews[clause_id]["source_obligations"]],
+                directions,
+            )
+
         for clause_id in (
             "KMIPKIT-CLAUSE-SPEC-6.1.43-004",
             "KMIPKIT-CLAUSE-SPEC-6.1.43-006",
