@@ -222,6 +222,10 @@ mod cryptographic_operation_contract_tests;
 mod hash_operation_tests;
 
 #[cfg(test)]
+#[path = "../tests/unit/rng_retrieve_operation_tests.rs"]
+mod rng_retrieve_operation_tests;
+
+#[cfg(test)]
 #[path = "../tests/unit/mac_operation_tests.rs"]
 mod mac_operation_tests;
 
