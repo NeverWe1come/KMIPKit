@@ -574,10 +574,8 @@ def _validate_operation_readiness(
             _validate_parity_evidence(operation, root)
 
 
-def _validate_operation_dependencies(
-    operations: list[dict[str, Any]], root: Path
-) -> None:
-    """Require manifest owner links and states to match the reviewed dependency matrix."""
+def _read_operation_dependency_matrix(root: Path) -> dict[tuple[str, str], str | None]:
+    """Read the exact section/name-to-owner mapping from the reviewed matrix."""
     matrix_path = root / "specs" / "043-public-api-bindings" / "contracts" / "operation-dependencies.md"
     try:
         matrix_text = matrix_path.read_text(encoding="utf-8")
@@ -603,6 +601,35 @@ def _validate_operation_dependencies(
 
     if len(matrix_owners) != 57:
         raise ManifestError("operation dependency matrix must contain exactly 57 rows")
+    return matrix_owners
+
+
+def _operation_owner_state(root: Path, owner_id: str | None) -> str:
+    """Resolve an owner as approved, a candidate, or unassigned from its release spec."""
+    if owner_id is None:
+        return "unassigned"
+
+    feature = _feature_directory(root, owner_id)
+    spec_path = feature / "spec.md"
+    try:
+        spec_text = spec_path.read_text(encoding="utf-8")
+    except (OSError, UnicodeDecodeError) as error:
+        raise ManifestError("operation owner specification is missing or unreadable") from error
+    status_match = re.search(r"(?m)^\*\*Status\*\*:\s*([^\r\n]+)", spec_text)
+    if status_match is None:
+        raise ManifestError("operation owner specification has no recorded status")
+    return (
+        "approved"
+        if re.match(r"(?:Approved|Accepted)\b", status_match.group(1))
+        else "candidate"
+    )
+
+
+def _validate_operation_dependencies(
+    operations: list[dict[str, Any]], root: Path
+) -> None:
+    """Require manifest owner links and states to match the reviewed dependency matrix."""
+    matrix_owners = _read_operation_dependency_matrix(root)
 
     manifest_keys: set[tuple[str, str]] = set()
     for operation in operations:
@@ -617,24 +644,7 @@ def _validate_operation_dependencies(
         if dependency.get("specId") != expected_spec_id:
             raise ManifestError("manifest operation owner differs from the dependency matrix")
 
-        if expected_spec_id is None:
-            expected_state = "unassigned"
-        else:
-            feature = _feature_directory(root, expected_spec_id)
-            spec_path = feature / "spec.md"
-            try:
-                spec_text = spec_path.read_text(encoding="utf-8")
-            except (OSError, UnicodeDecodeError) as error:
-                raise ManifestError("operation owner specification is missing or unreadable") from error
-            status_match = re.search(r"(?m)^\*\*Status\*\*:\s*([^\r\n]+)", spec_text)
-            if status_match is None:
-                raise ManifestError("operation owner specification has no recorded status")
-            expected_state = (
-                "approved"
-                if re.match(r"(?:Approved|Accepted)\b", status_match.group(1))
-                else "candidate"
-            )
-
+        expected_state = _operation_owner_state(root, expected_spec_id)
         if dependency.get("state") != expected_state:
             raise ManifestError("manifest operation owner state differs from its specification")
 
