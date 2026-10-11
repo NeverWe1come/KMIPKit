@@ -22,18 +22,13 @@ use crate::{
     ClientRequest,
 };
 
-const CHECK_OPERATION: u32 = 0x0000_0002;
+const CHECK_OPERATION: u32 = 0x0000_0009;
 const CREATE_OPERATION: u32 = 0x0000_0001;
 const BATCH_ITEM: u32 = 0x0042_000F;
 const REQUEST_HEADER: u32 = 0x0042_0077;
-const PROTOCOL_VERSION: u32 = 0x0042_0069;
-const PROTOCOL_VERSION_MAJOR: u32 = 0x0042_006A;
-const PROTOCOL_VERSION_MINOR: u32 = 0x0042_006B;
-const BATCH_ORDER_OPTION: u32 = 0x0042_000E;
-const BATCH_ERROR_CONTINUATION_OPTION: u32 = 0x0042_000C;
-const BATCH_COUNT: u32 = 0x0042_000D;
+const BATCH_ORDER_OPTION: u32 = 0x0042_0010;
+const BATCH_ERROR_CONTINUATION_OPTION: u32 = 0x0042_000E;
 const OPERATION: u32 = 0x0042_005C;
-const UNIQUE_BATCH_ITEM_ID: u32 = 0x0042_0093;
 const REQUEST_PAYLOAD: u32 = 0x0042_0079;
 const UNIQUE_IDENTIFIER: u32 = 0x0042_0094;
 const OBJECT_TYPE: u32 = 0x0042_0057;
@@ -46,6 +41,7 @@ const SUCCESS: u32 = 0;
 const OPERATION_FAILED: u32 = 1;
 const OPERATION_PENDING: u32 = 2;
 const OBJECT_NOT_FOUND: u32 = 0x0000_0037;
+const INCOMPATIBLE_CRYPTOGRAPHIC_USAGE_MASK: u32 = 0x0000_0029;
 const PENDING_CORRELATION: &[u8] = b"CHECK_PENDING\x00CORRELATION\xFF";
 
 fn check_request(identifier: &str) -> CheckRequest {
@@ -299,6 +295,37 @@ fn check_failure_preserves_table_185_result_without_retry() {
 }
 
 #[test]
+fn check_policy_denial_exposes_the_returned_mask_without_an_identifier() {
+    let response = asynchronous_response_bytes(
+        CHECK_OPERATION,
+        OPERATION_FAILED,
+        Some(INCOMPATIBLE_CRYPTOGRAPHIC_USAGE_MASK),
+        None,
+        Some(test_structure([test_item(
+            CRYPTOGRAPHIC_USAGE_MASK,
+            Value::integer(2),
+        )])),
+    );
+    let (mut client, fake, _) = client_for(ExchangeScript::Success {
+        response,
+        request_write_chunks: Vec::new(),
+    });
+
+    let item = client
+        .check(check_request("checked-object"), &CodecLimits::defaults())
+        .expect("Check preserves the §6.1.7 policy values in a denial response");
+    let check = item
+        .outcome()
+        .response()
+        .check()
+        .expect("the failed result retains its typed Check response");
+
+    assert!(check.unique_identifier().is_none());
+    assert_eq!(check.cryptographic_usage_mask(), Some(2));
+    assert_eq!(fake.borrow().exchange_count(), 1);
+}
+
+#[test]
 fn check_pending_preserves_correlation_without_poll_or_retry() {
     let response = asynchronous_response_bytes(
         CHECK_OPERATION,
@@ -352,8 +379,8 @@ fn check_leaves_recommended_batch_options_explicitly_selected_by_the_caller() {
         .expect("the caller's ordered Stop batch of Checks is valid");
     assert!(response.get(0).is_some());
     assert!(response.get(1).is_some());
-    let request = captured
-        .borrow()
+    let captured_request = captured.borrow();
+    let request = captured_request
         .as_deref()
         .expect("the caller's Check batch reaches the fake transport");
     assert_eq!(request_header_values(request), (Some(true), Some(1)));
@@ -400,8 +427,8 @@ fn check_can_consume_a_preceding_successful_create_placeholder() {
         .execute(batch, &CodecLimits::defaults())
         .expect("Check can use the preceding Create response ID Placeholder");
 
-    let request = captured
-        .borrow()
+    let captured_request = captured.borrow();
+    let request = captured_request
         .as_deref()
         .expect("the ordered Create and Check batch reaches the fake transport");
     assert!(!request_payload_tags(request, 1).contains(&UNIQUE_IDENTIFIER));
