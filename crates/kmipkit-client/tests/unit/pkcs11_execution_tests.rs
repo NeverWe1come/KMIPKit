@@ -252,3 +252,56 @@ fn pkcs11_options_method_and_request_enum_preserve_redaction() {
         .unwrap();
     assert_eq!(transport.borrow().exchange_count(), 1);
 }
+
+// Source: OASIS KMIP v2.1 Tables 273/274 and §§7.27–7.29 Tables 379–381.
+#[test]
+fn pkcs11_malformed_known_nested_request_members_are_not_sent() {
+    for tag in [0x0042_0159, 0x0042_015B] {
+        let (mut client, transport, _) =
+            client_for(ExchangeScript::FailAfterPartialWrite { written_bytes: 3 });
+        let nested = structure([item(tag, Value::integer(7))]);
+        let request = if tag == 0x0042_0159 {
+            request().with_interface(nested)
+        } else {
+            request().with_input_parameters(nested)
+        };
+        let error = client
+            .pkcs11(request, &CodecLimits::defaults())
+            .expect_err("invalid known nested scalar is local validation failure");
+        assert_eq!(error.delivery_state(), Some(RequestDeliveryState::NotSent));
+        assert_eq!(transport.borrow().exchange_count(), 0);
+    }
+}
+#[test]
+fn pkcs11_malformed_known_nested_response_member_is_response_started() {
+    let payload = structure([
+        item(
+            FUNCTION,
+            Value::structure(structure([item(FUNCTION, Value::enumeration(1))])),
+        ),
+        item(
+            0x0042_015C,
+            Value::structure(structure([item(
+                0x0042_015C,
+                Value::text_string("pkcs11-client-secret-sentinel".into()),
+            )])),
+        ),
+        item(
+            RETURN,
+            Value::structure(structure([item(RETURN, Value::enumeration(0))])),
+        ),
+    ]);
+    let (mut client, transport, _) = client_for(ExchangeScript::Success {
+        response: asynchronous_response_bytes(OP, 0, None, None, Some(payload)),
+        request_write_chunks: vec![],
+    });
+    let error = client
+        .pkcs11(request(), &CodecLimits::defaults())
+        .expect_err("Table 381 nested Output Parameters is ByteString");
+    assert_eq!(
+        error.delivery_state(),
+        Some(RequestDeliveryState::ResponseStarted)
+    );
+    assert_eq!(transport.borrow().exchange_count(), 1);
+    assert!(!format!("{error:?} {error}").contains("pkcs11-client-secret-sentinel"));
+}

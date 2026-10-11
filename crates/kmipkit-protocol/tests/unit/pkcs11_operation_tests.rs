@@ -331,3 +331,124 @@ fn public_conversion_errors_have_only_sanitized_categories_and_sources() {
         }
     }
 }
+
+// OASIS KMIP v2.1 §7.27 Table 379, §7.28 Table 380, §7.29 Table 381:
+// the known nested member is optional (0..1) and has its table-defined type.
+#[test]
+fn tables_379_380_request_rejects_wrong_or_duplicate_known_nested_values() {
+    for (tag, values) in [
+        (INTERFACE, vec![Value::byte_string(SENTINEL.to_vec())]),
+        (
+            INTERFACE,
+            vec![
+                Value::text_string("first".into()),
+                Value::text_string("second".into()),
+            ],
+        ),
+        (
+            INPUT,
+            vec![Value::text_string("pkcs11-secret-sentinel".into())],
+        ),
+        (
+            INPUT,
+            vec![
+                Value::byte_string(SENTINEL.to_vec()),
+                Value::byte_string(SENTINEL.to_vec()),
+            ],
+        ),
+    ] {
+        let nested = structure(values.into_iter().map(|v| item(tag, v)));
+        let request = Pkcs11Request::new(function(Value::enumeration(1)));
+        let request = if tag == INTERFACE {
+            request.with_interface(nested)
+        } else {
+            request.with_input_parameters(nested)
+        };
+        let error = request
+            .into_ttlv_payload()
+            .expect_err("known nested members use the table type/cardinality");
+        assert!(!format!("{error:?} {error}").contains("pkcs11-secret-sentinel"));
+    }
+}
+#[test]
+fn tables_380_381_response_rejects_wrong_or_duplicate_known_nested_values() {
+    for (tag, values) in [
+        (INTERFACE, vec![Value::byte_string(SENTINEL.to_vec())]),
+        (
+            INTERFACE,
+            vec![
+                Value::text_string("first".into()),
+                Value::text_string("second".into()),
+            ],
+        ),
+        (OUTPUT, vec![Value::integer(71)]),
+        (
+            OUTPUT,
+            vec![
+                Value::byte_string(SENTINEL.to_vec()),
+                Value::byte_string(SENTINEL.to_vec()),
+            ],
+        ),
+    ] {
+        let field = item(
+            tag,
+            Value::structure(structure(values.into_iter().map(|v| item(tag, v)))),
+        );
+        let mut fields = Vec::new();
+        if tag == INTERFACE {
+            fields.push(field);
+            fields.push(item(
+                FUNCTION,
+                Value::structure(function(Value::enumeration(1))),
+            ));
+        } else {
+            fields.push(item(
+                FUNCTION,
+                Value::structure(function(Value::enumeration(1))),
+            ));
+            fields.push(field);
+        }
+        fields.push(item(
+            RETURN,
+            Value::structure(structure([item(RETURN, Value::enumeration(0))])),
+        ));
+        assert_eq!(
+            response(0, None, Some(structure(fields))).unwrap_err(),
+            Pkcs11Error::MalformedPayload
+        );
+    }
+}
+#[test]
+fn tables_379_380_381_preserve_absent_known_member_and_repeated_unknown_members() {
+    let opaque = || {
+        structure([
+            item(UNKNOWN, Value::integer(7)),
+            item(UNKNOWN, Value::integer(8)),
+        ])
+    };
+    let payload = Pkcs11Request::new(function(Value::enumeration(1)))
+        .with_interface(opaque())
+        .with_input_parameters(opaque())
+        .into_ttlv_payload()
+        .unwrap();
+    assert_eq!(payload.view().children().len(), 3);
+    let result = response(
+        0,
+        None,
+        Some(structure([
+            item(INTERFACE, Value::structure(opaque())),
+            item(FUNCTION, Value::structure(function(Value::enumeration(1)))),
+            item(OUTPUT, Value::structure(opaque())),
+            item(
+                RETURN,
+                Value::structure(structure([item(RETURN, Value::enumeration(0))])),
+            ),
+        ])),
+    )
+    .unwrap();
+    assert_eq!(result.with_interface(|p| p.children().len()), Some(2));
+    assert_eq!(
+        result.with_output_parameters(|p| p.children().len()),
+        Some(2)
+    );
+}
