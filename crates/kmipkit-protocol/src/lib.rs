@@ -62,6 +62,7 @@ mod revoke;
 mod set_attribute;
 mod sign;
 mod signature_verify;
+mod ticket;
 
 pub use activate::{ActivateError, ActivateRequest, ActivateResponse};
 pub use add_attribute::{AddAttributeError, AddAttributeRequest, AddAttributeResponse};
@@ -144,6 +145,7 @@ pub use revoke::{RevocationReason, RevokeError, RevokeRequest, RevokeResponse};
 pub use set_attribute::{SetAttributeError, SetAttributeRequest, SetAttributeResponse};
 pub use sign::{SignError, SignRequest, SignResponse};
 pub use signature_verify::{SignatureVerifyError, SignatureVerifyRequest, SignatureVerifyResponse};
+pub use ticket::{Ticket, TicketType, TicketValidationError, TicketValidationErrorKind};
 
 #[cfg(test)]
 #[path = "../tests/unit/discover_versions_tests.rs"]

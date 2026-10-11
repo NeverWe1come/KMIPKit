@@ -3,7 +3,7 @@
 //! Ticket Type remains an open Enumeration, Ticket Value remains secret byte
 //! data, and structurally valid unknown children retain their exact order.
 
-use crate::{SecretBytes, Ticket, TicketType};
+use crate::{SecretBytes, Ticket, TicketType, TicketValidationErrorKind};
 use kmipkit_ttlv::{Item, RawTag, Structure, Tag, Value};
 use quickcheck::QuickCheck;
 
@@ -46,10 +46,18 @@ fn ticket_constructor_owns_value_and_redacts_debug_and_display() {
     let ticket = Ticket::new(
         TicketType::from_raw(1),
         SecretBytes::new(SECRET_SENTINEL.to_vec()),
-    );
+    )
+    .expect("Ticket fields use allocated, representable TTLV tags");
 
     assert_eq!(ticket.ticket_type().raw(), 1);
     ticket.with_ticket_value(|value| assert_eq!(value, SECRET_SENTINEL));
+    let original_tags = ticket.with_ttlv(|tree| {
+        tree.children()
+            .iter()
+            .map(|child| child.tag().raw())
+            .collect::<Vec<_>>()
+    });
+    assert_eq!(original_tags, [TICKET_TYPE, TICKET_VALUE]);
 
     let debug = format!("{ticket:?}");
     let display = ticket.to_string();
@@ -61,6 +69,14 @@ fn ticket_constructor_owns_value_and_redacts_debug_and_display() {
 
 #[test]
 fn ticket_type_preserves_unassigned_and_vendor_enumeration_values() {
+    assert_eq!(TicketType::LOGIN.raw(), 1);
+    assert_eq!(TicketType::LOGIN.known_name(), Some("Login"));
+    assert_eq!(
+        TicketType::from_raw(0x8000_0001).known_name(),
+        Some("Extensions")
+    );
+    assert_eq!(TicketType::from_raw(2).known_name(), None);
+
     for raw in [0, 2, 0x7FFF_FFFF, 0x8000_0001, u32::MAX] {
         assert_eq!(TicketType::from_raw(raw).raw(), raw);
     }
@@ -70,9 +86,9 @@ fn ticket_type_preserves_unassigned_and_vendor_enumeration_values() {
 fn ttlv_parse_preserves_unknown_children_and_original_order() {
     let parsed = Ticket::try_from_ttlv(structure([
         item(COMMENT, Value::text_string("opaque metadata".to_owned())),
-        item(TICKET_VALUE, Value::byte_string(SECRET_SENTINEL.to_vec())),
-        item(VENDOR_EXTENSION, Value::enumeration(0xF123_4567)),
         item(TICKET_TYPE, Value::enumeration(0x8000_0042)),
+        item(VENDOR_EXTENSION, Value::enumeration(0xF123_4567)),
+        item(TICKET_VALUE, Value::byte_string(SECRET_SENTINEL.to_vec())),
     ]))
     .expect("valid Ticket fields with unknown children are retained");
 
@@ -85,31 +101,55 @@ fn ttlv_parse_preserves_unknown_children_and_original_order() {
         .iter()
         .map(|child| child.tag().raw())
         .collect::<Vec<_>>();
-    assert_eq!(tags, [COMMENT, TICKET_VALUE, VENDOR_EXTENSION, TICKET_TYPE]);
+    assert_eq!(tags, [COMMENT, TICKET_TYPE, VENDOR_EXTENSION, TICKET_VALUE]);
 }
 
 #[test]
-fn ttlv_parse_rejects_missing_duplicate_and_wrong_type_required_fields() {
+fn ttlv_parse_rejects_missing_duplicate_wrong_type_and_out_of_order_fields() {
     let malformed = [
-        structure([item(TICKET_VALUE, Value::byte_string(vec![1]))]),
-        structure([item(TICKET_TYPE, Value::enumeration(1))]),
-        structure([
-            item(TICKET_TYPE, Value::enumeration(1)),
-            item(TICKET_TYPE, Value::enumeration(1)),
-            item(TICKET_VALUE, Value::byte_string(vec![1])),
-        ]),
-        structure([
-            item(TICKET_TYPE, Value::text_string("Login".to_owned())),
-            item(TICKET_VALUE, Value::byte_string(vec![1])),
-        ]),
-        structure([
-            item(TICKET_TYPE, Value::enumeration(1)),
-            item(TICKET_VALUE, Value::structure(Structure::new())),
-        ]),
+        (
+            structure([item(TICKET_VALUE, Value::byte_string(vec![1]))]),
+            TicketValidationErrorKind::MissingField,
+        ),
+        (
+            structure([item(TICKET_TYPE, Value::enumeration(1))]),
+            TicketValidationErrorKind::MissingField,
+        ),
+        (
+            structure([
+                item(TICKET_TYPE, Value::enumeration(1)),
+                item(TICKET_TYPE, Value::enumeration(1)),
+                item(TICKET_VALUE, Value::byte_string(vec![1])),
+            ]),
+            TicketValidationErrorKind::DuplicateField,
+        ),
+        (
+            structure([
+                item(TICKET_TYPE, Value::text_string("Login".to_owned())),
+                item(TICKET_VALUE, Value::byte_string(vec![1])),
+            ]),
+            TicketValidationErrorKind::WrongFieldType,
+        ),
+        (
+            structure([
+                item(TICKET_TYPE, Value::enumeration(1)),
+                item(TICKET_VALUE, Value::structure(Structure::new())),
+            ]),
+            TicketValidationErrorKind::WrongFieldType,
+        ),
+        (
+            structure([
+                item(TICKET_VALUE, Value::byte_string(vec![1])),
+                item(TICKET_TYPE, Value::enumeration(1)),
+            ]),
+            TicketValidationErrorKind::FieldOutOfOrder,
+        ),
     ];
 
-    for ticket in malformed {
-        assert!(Ticket::try_from_ttlv(ticket).is_err());
+    for (ticket, expected_kind) in malformed {
+        let error =
+            Ticket::try_from_ttlv(ticket).expect_err("malformed Ticket structure is rejected");
+        assert_eq!(error.kind(), expected_kind);
     }
 }
 
@@ -123,9 +163,8 @@ fn malformed_secret_value_error_never_formats_payload_bytes() {
         ),
     ]);
 
-    let error = Ticket::try_from_ttlv(ticket)
-        .err()
-        .expect("wrong Ticket Value item type is rejected");
+    let error =
+        Ticket::try_from_ttlv(ticket).expect_err("wrong Ticket Value item type is rejected");
     let formatted = format!("{error} {error:?}");
     assert!(!formatted.contains("ticket-value-secret-sentinel"));
 }
@@ -133,21 +172,21 @@ fn malformed_secret_value_error_never_formats_payload_bytes() {
 #[test]
 fn ticket_ttlv_round_trip_preserves_arbitrary_raw_type_and_secret_bytes() {
     fn round_trip(raw_type: u32, value: Vec<u8>) -> bool {
-        let parsed = match Ticket::try_from_ttlv(valid_ttlv(raw_type, value.clone())) {
-            Ok(ticket) => ticket,
-            Err(_) => return false,
+        let expected_value = value.clone();
+        let Ok(parsed) = Ticket::try_from_ttlv(valid_ttlv(raw_type, value)) else {
+            return false;
         };
         if parsed.ticket_type().raw() != raw_type {
             return false;
         }
-        let exact_value = parsed.with_ticket_value(|bytes| bytes == value);
+        let exact_value = parsed.with_ticket_value(|bytes| bytes == expected_value);
         if !exact_value {
             return false;
         }
         match Ticket::try_from_ttlv(parsed.into_ttlv()) {
             Ok(restored) => {
                 restored.ticket_type().raw() == raw_type
-                    && restored.with_ticket_value(|bytes| bytes == value)
+                    && restored.with_ticket_value(|bytes| bytes == expected_value)
             }
             Err(_) => false,
         }
