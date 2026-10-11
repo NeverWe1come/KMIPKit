@@ -104,6 +104,19 @@ fn rng_retrieve_sends_required_length_once_and_returns_redacted_secret_output() 
         .expect("the fake server returns a valid RNG Retrieve success response");
     assert_eq!(item.outcome().operation(), ClientOperation::RngRetrieve);
     assert_eq!(item.outcome().result().status().raw(), 0);
+    let response_view = item.outcome().response();
+    assert!(response_view.rng_retrieve().is_some());
+    assert!(response_view.rng_seed().is_none());
+    assert!(format!("{response_view:?}").contains("RngRetrieve"));
+    assert!(item.outcome().rng_retrieve_response().is_some());
+    assert!(item.outcome().rng_seed_response().is_none());
+    assert!(
+        format!(
+            "{:?}",
+            ClientRequest::rng_retrieve(RngRetrieveRequest::new(8))
+        )
+        .contains("RngRetrieve")
+    );
     let ClientBatchOutcome::RngRetrieve(response) = item.outcome() else {
         panic!("RNG Retrieve returns its typed outcome");
     };
@@ -148,6 +161,13 @@ fn rng_retrieve_pending_is_explicit_and_does_not_poll_or_retry() {
     let ClientBatchOutcome::Pending(pending) = outcome else {
         panic!("Pending remains explicit and resumable by the caller");
     };
+    assert!(outcome.rng_retrieve_response().is_some());
+    assert!(outcome.rng_seed_response().is_none());
+    let response_view = outcome.response();
+    assert!(response_view.rng_retrieve().is_some());
+    assert!(response_view.rng_seed().is_none());
+    assert_eq!(response_view.result().status().raw(), 2);
+    assert!(format!("{response_view:?}").contains("RngRetrieve"));
     assert_eq!(pending.operation(), ClientOperation::RngRetrieve);
     assert_eq!(pending.result().status().raw(), 2);
     assert_eq!(

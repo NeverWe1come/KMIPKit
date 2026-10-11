@@ -74,6 +74,7 @@ fn request_roundtrips_table_316_data_length(case: DataLengthCase) -> bool {
 #[test]
 fn request_encodes_required_table_316_data_length_as_integer() {
     let request = RngRetrieveRequest::new(48);
+    assert_eq!(request.data_length(), 48);
     let payload = request
         .to_ttlv_payload()
         .expect("Table 316 contains one required Data Length Integer");

@@ -100,6 +100,20 @@ fn rng_seed_sends_secret_once_and_accepts_zero_bytes_used() {
         .expect("the fake server returns success even though it used zero seed bytes");
     assert_eq!(item.outcome().operation(), ClientOperation::RngSeed);
     assert_eq!(item.outcome().result().status().raw(), 0);
+    let response_view = item.outcome().response();
+    assert!(response_view.rng_seed().is_some());
+    assert!(response_view.rng_retrieve().is_none());
+    assert!(format!("{response_view:?}").contains("RngSeed"));
+    assert!(item.outcome().rng_seed_response().is_some());
+    assert!(item.outcome().rng_retrieve_response().is_none());
+    let request_debug = format!(
+        "{:?}",
+        ClientRequest::rng_seed(RngSeedRequest::new(SecretBytes::new(
+            SEED_SENTINEL.to_vec()
+        ),))
+    );
+    assert!(request_debug.contains("RngSeed([REDACTED])"));
+    assert!(!request_debug.contains("KMIP_RNG_SEED_SECRET_SENTINEL"));
     let ClientBatchOutcome::RngSeed(response) = item.outcome() else {
         panic!("RNG Seed returns its typed outcome");
     };
@@ -144,6 +158,13 @@ fn rng_seed_pending_is_explicit_and_does_not_poll_or_retry() {
     let ClientBatchOutcome::Pending(pending) = outcome else {
         panic!("Pending remains explicit and resumable by the caller");
     };
+    assert!(outcome.rng_seed_response().is_some());
+    assert!(outcome.rng_retrieve_response().is_none());
+    let response_view = outcome.response();
+    assert!(response_view.rng_seed().is_some());
+    assert!(response_view.rng_retrieve().is_none());
+    assert_eq!(response_view.result().status().raw(), 2);
+    assert!(format!("{response_view:?}").contains("RngSeed"));
     assert_eq!(pending.operation(), ClientOperation::RngSeed);
     assert_eq!(pending.result().status().raw(), 2);
     assert_eq!(
