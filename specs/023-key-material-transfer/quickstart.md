@@ -61,3 +61,13 @@ Record separate Red, Green, and Refactor commit IDs per story. The implementatio
 - Passed `cargo test -p kmipkit-protocol --lib export_operation_tests` (3 tests) and `cargo test -p kmipkit-client --lib export_execution_tests` (1 test).
 - Passed `cargo fmt --all --check`, `cargo clippy -p kmipkit-protocol -p kmipkit-client --all-targets --all-features -- -D warnings`, and `git diff --check`.
 - Table-derived vectors exercise caller-selected options, full successful response retention/redaction, unknown result values, single dispatch, and server-error passthrough; they do not establish official conformance or independent implementation interoperability.
+
+## Import cycle evidence
+
+- Red commits: `3c001747` (Import request/response/client contracts), `64b5ec50` (Table 470 Import/Recover operation-code regression), and `337fb396` (Key Wrap Type conditionality regression).
+- Green commit: `c824bfb9`.
+- Refactor commit: `ab79ca50`.
+- Passed `cargo test -p kmipkit-protocol --lib import_operation_tests` (5 tests), `cargo test -p kmipkit-client --lib import_execution_tests` (1 test), the Recover wire-code test (1 test), and `cargo test -p kmipkit-client --lib recover_execution_tests` (9 tests).
+- Passed the complete protocol library suite (554 tests) and client library suite (424 tests), `cargo fmt --all --check`, `cargo clippy -p kmipkit-protocol -p kmipkit-client --all-targets --all-features -- -D warnings`, and `git diff --check`.
+- Corrected the pre-existing Recover operation code collision from `0x2A` to Table 470's `0x16`; Import uses `0x2A`. Updated existing Recover fixtures and traceability. Import enforces Table 238's Key Wrap Type iff condition against Key Wrapping Data in key objects without unwrapping or interpreting key material.
+- These local vectors do not establish official conformance or independent implementation interoperability.
