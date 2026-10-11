@@ -17,9 +17,10 @@ use std::time::{Duration, Instant};
 
 use kmipkit_client::extension_registry::{ClientConfiguration, client_extension_registry};
 use kmipkit_client::{
-    Client, ClientBatch, ClientBatchItem, ClientBatchOutcome, ClientOperation, ClientRequest,
+    Client, ClientBatch, ClientBatchItem, ClientBatchOutcome, ClientError, ClientOperation,
+    ClientRequest,
 };
-use kmipkit_protocol::{AttributeSet, GetRequest, LocateRequest, extension};
+use kmipkit_protocol::{AttributeSet, GetRequest, LocateRequest, UniqueIdentifier, extension};
 use kmipkit_test_support::{EphemeralPki, LoopbackTcpListener};
 use kmipkit_transport::{
     CertificateInput, ClientIdentity, Endpoint, PrivateKeyInput, TimeoutPolicy, TransportConfig,
@@ -156,20 +157,15 @@ fn get_and_locate_operations_keep_completed_and_pending_response_views() {
 
 #[test]
 fn rust_quickstart_get_and_locate_examples_execute_through_the_client() {
-    const SYMMETRIC_KEY_TAG: u32 = 0x0042_0091;
-
     let query = LocateRequest::new(AttributeSet::new()).with_offset_items(0);
     assert!(query.attributes().is_empty());
     assert_eq!(query.offset_items(), Some(0));
 
-    let get_request = GetRequest::new().with_unique_identifier(
-        kmipkit_protocol::UniqueIdentifier::TextString("object-123".to_owned()),
-    );
+    let get_request = GetRequest::new()
+        .with_unique_identifier(UniqueIdentifier::TextString("object-123".to_owned()));
     assert_eq!(
         get_request.unique_identifier(),
-        Some(&kmipkit_protocol::UniqueIdentifier::TextString(
-            "object-123".to_owned()
-        ))
+        Some(&UniqueIdentifier::TextString("object-123".to_owned()))
     );
 
     let limits = CodecLimits::defaults();
@@ -179,51 +175,18 @@ fn rust_quickstart_get_and_locate_examples_execute_through_the_client() {
     let get_peer = spawn_peer(
         get_listener.into_inner(),
         server_configuration(&get_pki),
-        response_bytes(),
+        quickstart_get_response_bytes(),
     );
     let mut get_client = Client::new(
         empty_client_configuration(),
         transport_configuration(&get_pki, get_port),
     )
     .expect("validated raw-TLS Get client construction succeeds");
-    let get_batch = ClientBatch::new(ClientBatchItem::new(ClientRequest::Get(get_request)));
-    let get_response = get_client
-        .execute(get_batch, &limits)
-        .expect("the Get quickstart batch executes successfully");
+    retrieve(&mut get_client, &limits).expect("the Get quickstart example executes");
     let get_wire_request = get_peer
         .join()
         .expect("the raw-TLS Get peer completes one exchange");
     assert_eq!(operation_count(&get_wire_request, GET_OPERATION), 1);
-
-    let mut inspected_object_tag = None;
-    if let Some(item) = get_response.get(0) {
-        if let Some(get) = item.outcome().get_response() {
-            assert_eq!(
-                get.unique_identifier(),
-                Some(&kmipkit_protocol::UniqueIdentifier::TextString(
-                    "object-123".to_owned()
-                ))
-            );
-            if let Some(object) = get.object() {
-                let object_tag = object.tag();
-                inspected_object_tag = Some(object_tag.raw());
-            }
-        }
-    }
-    assert_eq!(inspected_object_tag, Some(SYMMETRIC_KEY_TAG));
-    let uniform_get = get_response
-        .get(0)
-        .expect("the Get result remains in request order")
-        .outcome()
-        .response()
-        .get()
-        .expect("the uniform response path exposes the typed Get response");
-    assert_eq!(
-        uniform_get.unique_identifier(),
-        Some(&kmipkit_protocol::UniqueIdentifier::TextString(
-            "object-123".to_owned()
-        ))
-    );
 
     let locate_pki = EphemeralPki::generate().expect("ephemeral test PKI generation succeeds");
     let locate_listener = LoopbackTcpListener::bind().expect("Locate loopback listener binds");
@@ -231,7 +194,7 @@ fn rust_quickstart_get_and_locate_examples_execute_through_the_client() {
     let locate_peer = spawn_peer(
         locate_listener.into_inner(),
         server_configuration(&locate_pki),
-        response_bytes(),
+        quickstart_locate_response_bytes(),
     );
     let mut locate_client = Client::new(
         empty_client_configuration(),
@@ -246,6 +209,16 @@ fn rust_quickstart_get_and_locate_examples_execute_through_the_client() {
         .join()
         .expect("the raw-TLS Locate peer completes one exchange");
     assert_eq!(operation_count(&locate_wire_request, LOCATE_OPERATION), 1);
+    assert!(
+        locate_wire_request
+            .windows(ttlv_item(0x0042_0125, 0x01, &[]).len())
+            .any(|field| field == ttlv_item(0x0042_0125, 0x01, &[]))
+    );
+    assert!(
+        locate_wire_request
+            .windows(ttlv_item(0x0042_00D4, 0x02, &0_i32.to_be_bytes()).len())
+            .any(|field| field == ttlv_item(0x0042_00D4, 0x02, &0_i32.to_be_bytes()))
+    );
     assert_eq!(
         locate_response
             .get(0)
@@ -256,10 +229,48 @@ fn rust_quickstart_get_and_locate_examples_execute_through_the_client() {
             .expect("the uniform response path exposes the typed Locate response")
             .unique_identifiers(),
         [
-            kmipkit_protocol::UniqueIdentifier::TextString("located-b".to_owned()),
-            kmipkit_protocol::UniqueIdentifier::TextString("located-a".to_owned()),
+            UniqueIdentifier::TextString("located-b".to_owned()),
+            UniqueIdentifier::TextString("located-a".to_owned()),
         ]
     );
+}
+
+fn retrieve(client: &mut Client, limits: &CodecLimits) -> Result<(), ClientError> {
+    const SYMMETRIC_KEY_TAG: u32 = 0x0042_008F;
+
+    let request = GetRequest::new()
+        .with_unique_identifier(UniqueIdentifier::TextString("object-123".to_owned()));
+    let batch = ClientBatch::new(ClientBatchItem::new(ClientRequest::Get(request)));
+    let response = client.execute(batch, limits)?;
+
+    let mut inspected_object_tag = None;
+    if let Some(item) = response.get(0) {
+        if let Some(get) = item.outcome().get_response() {
+            assert_eq!(
+                get.unique_identifier(),
+                Some(&UniqueIdentifier::TextString("object-123".to_owned()))
+            );
+            if let Some(object) = get.object() {
+                // Inspect the object tag/shape without formatting its payload.
+                let object_tag = object.tag();
+                inspected_object_tag = Some(object_tag.raw());
+            }
+        }
+    }
+    assert_eq!(inspected_object_tag, Some(SYMMETRIC_KEY_TAG));
+
+    let uniform_get = response
+        .get(0)
+        .expect("the Get result remains in request order")
+        .outcome()
+        .response()
+        .get()
+        .expect("the uniform response path exposes the typed Get response");
+    assert_eq!(
+        uniform_get.unique_identifier(),
+        Some(&UniqueIdentifier::TextString("object-123".to_owned()))
+    );
+    Ok(())
 }
 
 fn empty_client_configuration() -> ClientConfiguration {
@@ -428,6 +439,62 @@ fn response_bytes() -> Vec<u8> {
     structure(
         0x0042_007B,
         [header, get_error, locate_completed, locate_pending],
+    )
+}
+
+fn quickstart_get_response_bytes() -> Vec<u8> {
+    let payload = structure(
+        RESPONSE_PAYLOAD,
+        [
+            enumeration(0x0042_0057, 2),
+            text_string(0x0042_0094, "object-123"),
+            structure(0x0042_008F, []),
+        ],
+    );
+    quickstart_response_bytes(GET_OPERATION, payload)
+}
+
+fn quickstart_locate_response_bytes() -> Vec<u8> {
+    let payload = structure(
+        RESPONSE_PAYLOAD,
+        [
+            integer(0x0042_00D5, 2),
+            text_string(0x0042_0094, "located-b"),
+            text_string(0x0042_0094, "located-a"),
+        ],
+    );
+    quickstart_response_bytes(LOCATE_OPERATION, payload)
+}
+
+fn quickstart_response_bytes(operation: u32, payload: Vec<u8>) -> Vec<u8> {
+    let protocol_version = structure(
+        PROTOCOL_VERSION,
+        [
+            integer(PROTOCOL_VERSION_MAJOR, 2),
+            integer(PROTOCOL_VERSION_MINOR, 1),
+        ],
+    );
+    let header = structure(
+        RESPONSE_HEADER,
+        [
+            protocol_version,
+            date_time(TIME_STAMP, 1),
+            integer(BATCH_COUNT, 1),
+        ],
+    );
+    structure(
+        0x0042_007B,
+        [
+            header,
+            structure(
+                BATCH_ITEM,
+                [
+                    enumeration(OPERATION, operation),
+                    enumeration(RESULT_STATUS, 0),
+                    payload,
+                ],
+            ),
+        ],
     )
 }
 
