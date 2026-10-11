@@ -5,13 +5,13 @@ use crate::async_operation_fixtures::{item, response_message, structure};
 use crate::{Pkcs11Error, Pkcs11Request, Pkcs11Response, ResultReason, SecretBytes};
 use kmipkit_ttlv::{Structure, Value, ValueView};
 const OP: u32 = 0x33;
-const INTERFACE: u32 = 0x420159;
-const FUNCTION: u32 = 0x42015a;
-const INPUT: u32 = 0x42015b;
-const OUTPUT: u32 = 0x42015c;
-const RETURN: u32 = 0x42015d;
-const CORRELATION: u32 = 0x4200d6;
-const UNKNOWN: u32 = 0x541234;
+const INTERFACE: u32 = 0x0042_0159;
+const FUNCTION: u32 = 0x0042_015A;
+const INPUT: u32 = 0x0042_015B;
+const OUTPUT: u32 = 0x0042_015C;
+const RETURN: u32 = 0x0042_015D;
+const CORRELATION: u32 = 0x0042_00D6;
+const UNKNOWN: u32 = 0x0054_1234;
 const SENTINEL: &[u8] = b"pkcs11-secret-sentinel";
 fn function(value: Value) -> Structure {
     structure([item(FUNCTION, value)])
@@ -20,11 +20,11 @@ fn success() -> Structure {
     structure([
         item(
             FUNCTION,
-            Value::structure(function(Value::enumeration(0xffff1234))),
+            Value::structure(function(Value::enumeration(0xFFFF_1234))),
         ),
         item(
             RETURN,
-            Value::structure(structure([item(RETURN, Value::enumeration(0x8fff1234))])),
+            Value::structure(structure([item(RETURN, Value::enumeration(0x8FFF_1234))])),
         ),
     ])
 }
@@ -79,7 +79,7 @@ fn table_273_request_preserves_order_and_opaque_members() {
 }
 #[test]
 fn table_273_function_preserves_enumeration_or_integer() {
-    for value in [Value::enumeration(0xffff1234), Value::integer(-123)] {
+    for value in [Value::enumeration(0xFFFF_1234), Value::integer(-123)] {
         let payload = Pkcs11Request::new(function(value))
             .into_ttlv_payload()
             .unwrap();
@@ -91,8 +91,8 @@ fn table_273_function_preserves_enumeration_or_integer() {
             s.children()[0].with_value(|v| {
                 assert!(matches!(
                     v,
-                    ValueView::Enumeration(0xffff1234) | ValueView::Integer(-123)
-                ))
+                    ValueView::Enumeration(0xFFFF_1234) | ValueView::Integer(-123)
+                ));
             });
         });
     }
@@ -127,7 +127,7 @@ fn table_274_success_retains_required_optional_and_unknown_fields() {
         item(
             RETURN,
             Value::structure(structure([
-                item(RETURN, Value::enumeration(0x8fff1234)),
+                item(RETURN, Value::enumeration(0x8FFF_1234)),
                 item(UNKNOWN, Value::integer(6)),
             ])),
         ),
@@ -218,13 +218,13 @@ fn table_275_preserves_failure_reasons() {
         assert_eq!(result.with_return_code(|_| ()), None);
     }
     assert_eq!(
-        response(1, Some(0xffff1234), None)
+        response(1, Some(0xFFFF_1234), None)
             .unwrap()
             .result()
             .reason()
             .unwrap()
             .raw(),
-        0xffff1234
+        0xFFFF_1234
     );
 }
 #[test]
@@ -244,4 +244,90 @@ fn diagnostics_redact_all_pkcs11_sentinels() {
         Pkcs11Response::try_from_response_item(message.batch_items().next().unwrap()).unwrap_err(),
         Pkcs11Error::UnexpectedOperation
     );
+}
+
+#[test]
+fn table_274_rejects_malformed_optional_fields_and_return_value() {
+    for (tag, value) in [
+        (
+            INTERFACE,
+            Value::text_string("pkcs11-secret-sentinel".into()),
+        ),
+        (CORRELATION, Value::integer(7)),
+        (OUTPUT, Value::byte_string(SENTINEL.to_vec())),
+        (
+            RETURN,
+            Value::structure(structure([item(RETURN, Value::integer(-1))])),
+        ),
+        (
+            RETURN,
+            Value::structure(structure([
+                item(RETURN, Value::enumeration(1)),
+                item(RETURN, Value::enumeration(2)),
+            ])),
+        ),
+    ] {
+        let mut fields = Vec::new();
+        if tag == INTERFACE {
+            fields.push(item(
+                tag,
+                Value::text_string("pkcs11-secret-sentinel".into()),
+            ));
+        }
+        fields.push(item(
+            FUNCTION,
+            Value::structure(function(Value::enumeration(1))),
+        ));
+        if tag == INTERFACE {
+            fields.push(item(
+                RETURN,
+                Value::structure(structure([item(RETURN, Value::enumeration(1))])),
+            ));
+        } else if tag == RETURN {
+            fields.push(item(tag, value));
+        } else {
+            fields.push(item(tag, value));
+            fields.push(item(
+                RETURN,
+                Value::structure(structure([item(RETURN, Value::enumeration(1))])),
+            ));
+        }
+        let error = response(0, None, Some(structure(fields))).unwrap_err();
+        assert!(!format!("{error:?} {error}").contains("pkcs11-secret-sentinel"));
+    }
+}
+#[test]
+fn request_preserves_empty_input_and_rejects_known_extension_duplicates_and_depth() {
+    let payload = Pkcs11Request::new(function(Value::enumeration(1)))
+        .with_input_parameters(Structure::new())
+        .into_ttlv_payload()
+        .unwrap();
+    assert_eq!(payload.view().children().len(), 2);
+    let duplicate = Pkcs11Request::new(function(Value::enumeration(1))).with_extension(item(
+        FUNCTION,
+        Value::structure(function(Value::enumeration(2))),
+    ));
+    assert!(duplicate.into_ttlv_payload().is_err());
+    let mut nested = Structure::new();
+    for _ in 1..64 {
+        nested = structure([item(UNKNOWN, Value::structure(nested))]);
+    }
+    let request = Pkcs11Request::new(function(Value::enumeration(1)))
+        .with_extension(item(UNKNOWN, Value::structure(nested)));
+    assert!(request.into_ttlv_payload().is_err());
+}
+#[test]
+fn public_conversion_errors_have_only_sanitized_categories_and_sources() {
+    for error in [
+        Pkcs11Error::UnexpectedOperation,
+        Pkcs11Error::MissingResultStatus,
+        Pkcs11Error::MissingResponsePayload,
+        Pkcs11Error::MalformedPayload,
+        Pkcs11Error::InvalidOperationResult(crate::ResultValidationError::SuccessForbidsReason),
+    ] {
+        assert!(!format!("{error:?} {error}").contains("pkcs11-secret-sentinel"));
+        if let Some(source) = std::error::Error::source(&error) {
+            assert!(!source.to_string().contains("pkcs11-secret-sentinel"));
+        }
+    }
 }

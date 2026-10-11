@@ -7,13 +7,13 @@ use crate::{
 use kmipkit_ttlv::{Item, Structure, StructureView, Value, ValueView};
 use std::{error::Error, fmt};
 const OPERATION: u32 = 0x33;
-const INTERFACE: u32 = 0x420159;
-const FUNCTION: u32 = 0x42015a;
-const INPUT: u32 = 0x42015b;
-const OUTPUT: u32 = 0x42015c;
-const RETURN: u32 = 0x42015d;
-const CORRELATION: u32 = 0x4200d6;
-const RESPONSE_PAYLOAD: u32 = 0x42007c;
+const INTERFACE: u32 = 0x0042_0159;
+const FUNCTION: u32 = 0x0042_015A;
+const INPUT: u32 = 0x0042_015B;
+const OUTPUT: u32 = 0x0042_015C;
+const RETURN: u32 = 0x0042_015D;
+const CORRELATION: u32 = 0x0042_00D6;
+const RESPONSE_PAYLOAD: u32 = 0x0042_007C;
 
 /// An explicit Table 273 request. Generic owned payloads zeroize on drop.
 /// The caller supplies the Function Structure, including its Enumeration or
@@ -81,7 +81,7 @@ impl Pkcs11Request {
         for extension in self.extensions {
             payload.try_push(extension).map_err(|_| invalid_request())?;
         }
-        validate_payload(payload.view(), false).map_err(|_| invalid_request())?;
+        validate_payload(&payload.view(), false).map_err(|_| invalid_request())?;
         Ok(payload)
     }
 }
@@ -118,7 +118,7 @@ impl Pkcs11Response {
             }
         })?;
         if result.status().raw() == 0 {
-            item.with_response_payload(|p| validate_payload(p, true))
+            item.with_response_payload(|p| validate_payload(&p, true))
                 .ok_or(Pkcs11Error::MissingResponsePayload)??;
         }
         let ttlv = common::clone_response_item(item, "PKCS#11")
@@ -140,7 +140,7 @@ impl Pkcs11Response {
         callback: impl for<'a> FnOnce(StructureView<'a>) -> R,
     ) -> Option<R> {
         self.ttlv
-            .with_ttlv(|tree| with_structure(tree, RESPONSE_PAYLOAD, callback))
+            .with_ttlv(|tree| with_structure(&tree, RESPONSE_PAYLOAD, callback))
     }
     /// Lends the optional opaque Interface Structure. Absence is never defaulted.
     pub fn with_interface<R>(
@@ -161,7 +161,7 @@ impl Pkcs11Response {
         tag: u32,
         callback: impl for<'a> FnOnce(StructureView<'a>) -> R,
     ) -> Option<R> {
-        self.with_ttlv_payload(|payload| with_structure(payload, tag, callback))
+        self.with_ttlv_payload(|payload| with_structure(&payload, tag, callback))
             .flatten()
     }
 
@@ -197,7 +197,7 @@ impl Pkcs11Response {
     }
 }
 fn with_structure<R>(
-    tree: StructureView<'_>,
+    tree: &StructureView<'_>,
     tag: u32,
     callback: impl for<'a> FnOnce(StructureView<'a>) -> R,
 ) -> Option<R> {
@@ -209,7 +209,7 @@ fn with_structure<R>(
             _ => None,
         })
 }
-fn validate_payload(payload: StructureView<'_>, response: bool) -> Result<(), Pkcs11Error> {
+fn validate_payload(payload: &StructureView<'_>, response: bool) -> Result<(), Pkcs11Error> {
     let mut seen = [false; 5];
     let mut last = 0;
     for field in payload.children() {
@@ -218,8 +218,7 @@ fn validate_payload(payload: StructureView<'_>, response: bool) -> Result<(), Pk
             INTERFACE => 0,
             FUNCTION => 1,
             CORRELATION => 2,
-            OUTPUT if response => 3,
-            INPUT if !response => 3,
+            INPUT | OUTPUT if (tag == OUTPUT) == response => 3,
             RETURN if response => 4,
             _ => continue,
         };
@@ -229,10 +228,10 @@ fn validate_payload(payload: StructureView<'_>, response: bool) -> Result<(), Pk
         seen[position] = true;
         last = position;
         let valid = field.with_value(|v| match (tag, v) {
-            (CORRELATION, ValueView::ByteString(_)) => true,
-            (FUNCTION, ValueView::Structure(s)) => valid_required_value(s, FUNCTION, true),
-            (RETURN, ValueView::Structure(s)) => valid_required_value(s, RETURN, false),
-            (INTERFACE | INPUT | OUTPUT, ValueView::Structure(_)) => true,
+            (FUNCTION, ValueView::Structure(s)) => valid_required_value(&s, FUNCTION, true),
+            (RETURN, ValueView::Structure(s)) => valid_required_value(&s, RETURN, false),
+            (CORRELATION, ValueView::ByteString(_))
+            | (INTERFACE | INPUT | OUTPUT, ValueView::Structure(_)) => true,
             _ => false,
         });
         if !valid {
@@ -244,7 +243,7 @@ fn validate_payload(payload: StructureView<'_>, response: bool) -> Result<(), Pk
     }
     Ok(())
 }
-fn valid_required_value(tree: StructureView<'_>, tag: u32, integer_allowed: bool) -> bool {
+fn valid_required_value(tree: &StructureView<'_>, tag: u32, integer_allowed: bool) -> bool {
     let mut values = tree.children().iter().filter(|f| f.tag().raw() == tag);
     let Some(value) = values.next() else {
         return false;
