@@ -19,15 +19,15 @@ use kmipkit_protocol::{
     DecryptRequest, DecryptResponse, DeleteAttributeRequest, DeleteAttributeResponse,
     DestroyRequest, DestroyResponse, DiscoverVersionsRequest, DiscoverVersionsResponse,
     EncryptRequest, EncryptResponse, GetAttributeListRequest, GetAttributeListResponse,
-    GetAttributesRequest, GetAttributesResponse, HashRequest, HashResponse, KmipOperationResult,
-    MacRequest, MacResponse, MacVerifyRequest, MacVerifyResponse, MessageExtensionView,
-    ModifyAttributeRequest, ModifyAttributeResponse, NewAttribute, PingRequest, PingResponse,
-    PollRequest, PollResponse, ProcessRequest, ProcessResponse, ProtocolCauseCategory,
-    ProtocolError, ProtocolErrorKind, ProtocolVersion, QueryAsyncRequestsRequest,
-    QueryAsyncRequestsResponse, QueryRequest, QueryResponse, RecoverRequest, RecoverResponse,
-    RequestMessage, ResponseBatchItemView, ResponseMessage, ResultStatus, SetAttributeRequest,
-    SetAttributeResponse, SignRequest, SignResponse, SignatureVerifyRequest,
-    SignatureVerifyResponse,
+    GetAttributesRequest, GetAttributesResponse, GetRequest, GetResponse, HashRequest,
+    HashResponse, KmipOperationResult, LocateRequest, LocateResponse, MacRequest, MacResponse,
+    MacVerifyRequest, MacVerifyResponse, MessageExtensionView, ModifyAttributeRequest,
+    ModifyAttributeResponse, NewAttribute, PingRequest, PingResponse, PollRequest, PollResponse,
+    ProcessRequest, ProcessResponse, ProtocolCauseCategory, ProtocolError, ProtocolErrorKind,
+    ProtocolVersion, QueryAsyncRequestsRequest, QueryAsyncRequestsResponse, QueryRequest,
+    QueryResponse, RecoverRequest, RecoverResponse, RequestMessage, ResponseBatchItemView,
+    ResponseMessage, ResultStatus, SetAttributeRequest, SetAttributeResponse, SignRequest,
+    SignResponse, SignatureVerifyRequest, SignatureVerifyResponse,
 };
 
 #[cfg(test)]
@@ -156,6 +156,10 @@ pub enum ClientRequest {
     Destroy(DestroyRequest),
     /// An explicit client-to-server Recover request.
     Recover(RecoverRequest),
+    /// An explicit client-to-server Get request.
+    Get(GetRequest),
+    /// An explicit client-to-server Locate request.
+    Locate(LocateRequest),
     /// An explicit client-to-server Create request.
     Create(CreateRequest),
     /// An explicit client-to-server Create Key Pair request.
@@ -280,6 +284,19 @@ impl ClientRequest {
     pub fn recover(request: RecoverRequest) -> Self {
         Self::Recover(request)
     }
+
+    /// Creates a typed client-to-server Get request variant.
+    #[must_use]
+    pub fn get(request: GetRequest) -> Self {
+        Self::Get(request)
+    }
+
+    /// Creates a typed client-to-server Locate request variant.
+    #[must_use]
+    pub fn locate(request: LocateRequest) -> Self {
+        Self::Locate(request)
+    }
+
     /// Creates a typed Get Attributes request variant.
     #[must_use]
     pub fn get_attributes(request: GetAttributesRequest) -> Self {
@@ -329,6 +346,8 @@ impl ClientRequest {
             Self::Archive(_) => ARCHIVE_OPERATION,
             Self::Destroy(_) => DESTROY_OPERATION,
             Self::Recover(_) => RECOVER_OPERATION,
+            Self::Get(_) => GET_OPERATION,
+            Self::Locate(_) => LOCATE_OPERATION,
             Self::Create(_) => CREATE_OPERATION,
             Self::CreateKeyPair(_) => CREATE_KEY_PAIR_OPERATION,
             Self::CreateSplitKey(_) => CREATE_SPLIT_KEY_OPERATION,
@@ -397,6 +416,8 @@ impl ClientRequest {
             Self::Archive(request) => request.to_ttlv_payload(),
             Self::Destroy(request) => request.to_ttlv_payload(),
             Self::Recover(request) => request.to_ttlv_payload(),
+            Self::Get(request) => request.to_ttlv_payload(),
+            Self::Locate(request) => request.to_ttlv_payload(),
             Self::Create(request) => request.into_ttlv_payload(),
             Self::CreateKeyPair(request) => request.into_ttlv_payload(),
             Self::CreateSplitKey(request) => request.into_ttlv_payload(),
@@ -428,6 +449,8 @@ impl fmt::Debug for ClientRequest {
             Self::Archive(_) => formatter.write_str("Archive([REDACTED])"),
             Self::Destroy(_) => formatter.write_str("Destroy([REDACTED])"),
             Self::Recover(_) => formatter.write_str("Recover([REDACTED])"),
+            Self::Get(_) => formatter.write_str("Get([REDACTED])"),
+            Self::Locate(_) => formatter.write_str("Locate([REDACTED])"),
             Self::Create(_) => formatter.write_str("Create([REDACTED])"),
             Self::CreateKeyPair(_) => formatter.write_str("CreateKeyPair([REDACTED])"),
             Self::CreateSplitKey(_) => formatter.write_str("CreateSplitKey([REDACTED])"),
@@ -462,6 +485,8 @@ impl fmt::Debug for ClientRequest {
 
 const GET_ATTRIBUTES_OPERATION: u32 = 0x0000_000B;
 const GET_ATTRIBUTE_LIST_OPERATION: u32 = 0x0000_000C;
+const GET_OPERATION: u32 = 0x0000_000A;
+const LOCATE_OPERATION: u32 = 0x0000_0008;
 
 /// One closed typed request and its optional Unique Batch Item ID.
 pub struct ClientBatchItem {
@@ -718,6 +743,8 @@ enum PendingResponse {
     Archive(ArchiveResponse),
     Destroy(DestroyResponse),
     Recover(RecoverResponse),
+    Get(GetResponse),
+    Locate(LocateResponse),
     Create(CreateResponse),
     CreateKeyPair(CreateKeyPairResponse),
     CreateSplitKey(CreateSplitKeyResponse),
@@ -747,6 +774,8 @@ impl PendingResponse {
             Self::Archive(response) => ClientResponseRef::Archive(response),
             Self::Destroy(response) => ClientResponseRef::Destroy(response),
             Self::Recover(response) => ClientResponseRef::Recover(response),
+            Self::Get(response) => ClientResponseRef::Get(response),
+            Self::Locate(response) => ClientResponseRef::Locate(response),
             Self::Create(response) => ClientResponseRef::Create(response),
             Self::CreateKeyPair(response) => ClientResponseRef::CreateKeyPair(response),
             Self::CreateSplitKey(response) => ClientResponseRef::CreateSplitKey(response),
@@ -929,6 +958,10 @@ pub enum ClientOperation {
     Destroy,
     /// Recover.
     Recover,
+    /// Get.
+    Get,
+    /// Locate.
+    Locate,
     /// Create.
     Create,
     /// Create Key Pair.
@@ -1102,6 +1135,8 @@ enum ClientResponseRef<'a> {
     Archive(&'a ArchiveResponse),
     Destroy(&'a DestroyResponse),
     Recover(&'a RecoverResponse),
+    Get(&'a GetResponse),
+    Locate(&'a LocateResponse),
     Create(&'a CreateResponse),
     CreateKeyPair(&'a CreateKeyPairResponse),
     CreateSplitKey(&'a CreateSplitKeyResponse),
@@ -1142,6 +1177,8 @@ impl<'a> ClientResponseView<'a> {
             ClientResponseRef::Archive(response) => response.result(),
             ClientResponseRef::Destroy(response) => response.result(),
             ClientResponseRef::Recover(response) => response.result(),
+            ClientResponseRef::Get(response) => response.result(),
+            ClientResponseRef::Locate(response) => response.result(),
             ClientResponseRef::Create(response) => response.result(),
             ClientResponseRef::CreateKeyPair(response) => response.result(),
             ClientResponseRef::CreateSplitKey(response) => response.result(),
@@ -1272,6 +1309,26 @@ impl<'a> ClientResponseView<'a> {
     pub const fn recover(&self) -> Option<&'a RecoverResponse> {
         match self.response {
             ClientResponseRef::Recover(response) => Some(response),
+            _ => None,
+        }
+    }
+
+    /// Returns the Get response when this view represents it, including a
+    /// Pending Get response.
+    #[must_use]
+    pub const fn get(&self) -> Option<&'a GetResponse> {
+        match self.response {
+            ClientResponseRef::Get(response) => Some(response),
+            _ => None,
+        }
+    }
+
+    /// Returns the Locate response when this view represents it, including a
+    /// Pending Locate response.
+    #[must_use]
+    pub const fn locate(&self) -> Option<&'a LocateResponse> {
+        match self.response {
+            ClientResponseRef::Locate(response) => Some(response),
             _ => None,
         }
     }
@@ -1421,6 +1478,12 @@ impl fmt::Debug for ClientResponseView<'_> {
             ClientResponseRef::Archive(_) => formatter.write_str("Archive([REDACTED])"),
             ClientResponseRef::Destroy(_) => formatter.write_str("Destroy([REDACTED])"),
             ClientResponseRef::Recover(_) => formatter.write_str("Recover([REDACTED])"),
+            ClientResponseRef::Get(response) => {
+                formatter.debug_tuple("Get").field(response).finish()
+            }
+            ClientResponseRef::Locate(response) => {
+                formatter.debug_tuple("Locate").field(response).finish()
+            }
             ClientResponseRef::CreateKeyPair(response) => formatter
                 .debug_tuple("CreateKeyPair")
                 .field(response)
@@ -1494,6 +1557,10 @@ pub enum ClientBatchOutcome {
     Destroy(DestroyResponse),
     /// The server returned a Recover result.
     Recover(RecoverResponse),
+    /// The server returned a non-Pending Get result.
+    GetCompleted(GetResponse),
+    /// The server returned a non-Pending Locate result.
+    LocateCompleted(LocateResponse),
     /// The server returned a non-Pending Create result.
     CreateCompleted(CreateResponse),
     /// The server returned a non-Pending Create Key Pair result.
@@ -1539,6 +1606,8 @@ impl ClientBatchOutcome {
             | Self::Archive(_)
             | Self::Destroy(_)
             | Self::Recover(_)
+            | Self::GetCompleted(_)
+            | Self::LocateCompleted(_)
             | Self::CreateCompleted(_)
             | Self::CreateKeyPairCompleted(_)
             | Self::CreateSplitKeyCompleted(_)
@@ -1571,6 +1640,8 @@ impl ClientBatchOutcome {
             Self::Archive(response) => response.result(),
             Self::Destroy(response) => response.result(),
             Self::Recover(response) => response.result(),
+            Self::GetCompleted(response) => response.result(),
+            Self::LocateCompleted(response) => response.result(),
             Self::CreateCompleted(response) => response.result(),
             Self::CreateKeyPairCompleted(response) => response.result(),
             Self::CreateSplitKeyCompleted(response) => response.result(),
@@ -1603,6 +1674,8 @@ impl ClientBatchOutcome {
             Self::Archive(_) => ClientOperation::Archive,
             Self::Destroy(_) => ClientOperation::Destroy,
             Self::Recover(_) => ClientOperation::Recover,
+            Self::GetCompleted(_) => ClientOperation::Get,
+            Self::LocateCompleted(_) => ClientOperation::Locate,
             Self::CreateCompleted(_) => ClientOperation::Create,
             Self::CreateKeyPairCompleted(_) => ClientOperation::CreateKeyPair,
             Self::CreateSplitKeyCompleted(_) => ClientOperation::CreateSplitKey,
@@ -1651,6 +1724,24 @@ impl ClientBatchOutcome {
     pub const fn recover_response(&self) -> Option<&RecoverResponse> {
         match self {
             Self::Recover(response) => Some(response),
+            _ => None,
+        }
+    }
+
+    /// Returns the typed completed Get response, when this is one.
+    #[must_use]
+    pub const fn get_response(&self) -> Option<&GetResponse> {
+        match self {
+            Self::GetCompleted(response) => Some(response),
+            _ => None,
+        }
+    }
+
+    /// Returns the typed completed Locate response, when this is one.
+    #[must_use]
+    pub const fn locate_response(&self) -> Option<&LocateResponse> {
+        match self {
+            Self::LocateCompleted(response) => Some(response),
             _ => None,
         }
     }
@@ -1797,6 +1888,12 @@ impl ClientBatchOutcome {
             Self::Recover(response) => ClientResponseView {
                 response: ClientResponseRef::Recover(response),
             },
+            Self::GetCompleted(response) => ClientResponseView {
+                response: ClientResponseRef::Get(response),
+            },
+            Self::LocateCompleted(response) => ClientResponseView {
+                response: ClientResponseRef::Locate(response),
+            },
             Self::CreateCompleted(response) => ClientResponseView {
                 response: ClientResponseRef::Create(response),
             },
@@ -1844,6 +1941,14 @@ impl fmt::Debug for ClientBatchOutcome {
             Self::Completed(response) => {
                 formatter.debug_tuple("Completed").field(response).finish()
             }
+            Self::GetCompleted(response) => formatter
+                .debug_tuple("GetCompleted")
+                .field(response)
+                .finish(),
+            Self::LocateCompleted(response) => formatter
+                .debug_tuple("LocateCompleted")
+                .field(response)
+                .finish(),
             Self::Encrypt(response) => formatter.debug_tuple("Encrypt").field(response).finish(),
             Self::Decrypt(response) => formatter.debug_tuple("Decrypt").field(response).finish(),
             Self::Hash(response) => formatter.debug_tuple("Hash").field(response).finish(),
@@ -1924,6 +2029,12 @@ impl fmt::Display for ClientBatchOutcome {
             Self::Archive(response) => write!(formatter, "Archive({})", response.result()),
             Self::Destroy(response) => write!(formatter, "Destroy({})", response.result()),
             Self::Recover(response) => write!(formatter, "Recover({})", response.result()),
+            Self::GetCompleted(response) => {
+                write!(formatter, "GetCompleted({})", response.result())
+            }
+            Self::LocateCompleted(response) => {
+                write!(formatter, "LocateCompleted({})", response.result())
+            }
             Self::CreateCompleted(response) => {
                 write!(formatter, "CreateCompleted({})", response.result())
             }
@@ -3432,6 +3543,8 @@ fn request_mutation_is_prohibited(request: &ClientRequest) -> bool {
         | ClientRequest::Archive(_)
         | ClientRequest::Destroy(_)
         | ClientRequest::Recover(_)
+        | ClientRequest::Get(_)
+        | ClientRequest::Locate(_)
         | ClientRequest::Create(_)
         | ClientRequest::CreateKeyPair(_)
         | ClientRequest::CreateSplitKey(_)
@@ -4109,6 +4222,8 @@ fn response_outcome(
             PendingResponse::GetAttributes,
             ClientBatchOutcome::GetAttributes,
         ),
+        GET_OPERATION => get_response_outcome(item),
+        LOCATE_OPERATION => locate_response_outcome(item),
         GET_ATTRIBUTE_LIST_OPERATION => read_operation_outcome(
             ClientOperation::GetAttributeList,
             item,
@@ -4119,6 +4234,32 @@ fn response_outcome(
         ),
         _ => Err(protocol_error(ProtocolErrorKind::UnsupportedValue)),
     }
+}
+
+fn get_response_outcome(
+    item: ResponseBatchItemView<'_>,
+) -> Result<ClientBatchOutcome, ProtocolError> {
+    read_operation_outcome(
+        ClientOperation::Get,
+        item,
+        GetResponse::try_from_response_item,
+        GetResponse::result,
+        PendingResponse::Get,
+        ClientBatchOutcome::GetCompleted,
+    )
+}
+
+fn locate_response_outcome(
+    item: ResponseBatchItemView<'_>,
+) -> Result<ClientBatchOutcome, ProtocolError> {
+    read_operation_outcome(
+        ClientOperation::Locate,
+        item,
+        LocateResponse::try_from_response_item,
+        LocateResponse::result,
+        PendingResponse::Locate,
+        ClientBatchOutcome::LocateCompleted,
+    )
 }
 
 fn crypto_response_outcome(
