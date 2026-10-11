@@ -112,13 +112,12 @@ impl GetUsageAllocationResponse {
         let response_ttlv = common::clone_response_item(item, "Get Usage Allocation")
             .map_err(|_| GetUsageAllocationError::MalformedResponseItem)?;
         let unique_identifier = if status.raw() == SUCCESS {
-            Some(
-                item.with_response_payload(|payload| {
+            let response_identifier = item
+                .with_response_payload(|payload| {
                     crate::lifecycle::successful_response_identifier(&payload)
-                        .ok_or(GetUsageAllocationError::MalformedSuccessPayload)
                 })
-                .ok_or(GetUsageAllocationError::MissingSuccessPayload)??,
-            )
+                .ok_or(GetUsageAllocationError::MissingSuccessPayload)?;
+            Some(response_identifier.ok_or(GetUsageAllocationError::MalformedSuccessPayload)?)
         } else {
             None
         };

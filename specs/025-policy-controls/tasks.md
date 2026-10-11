@@ -58,7 +58,7 @@ Each task uses `[ ] T### [US#] action in exact/repository/path`. Every implement
 
 ### Allocation Refactor commit
 
-- [ ] T007 [US2] Refactor allocation request/response field handling and tests in `crates/kmipkit-protocol/src/get_usage_allocation.rs`, `crates/kmipkit-protocol/tests/unit/get_usage_allocation_tests.rs`, and `crates/kmipkit-client/tests/unit/get_usage_allocation_execution_tests.rs`; preserve Long Integer wire type, optionality, and response ID; rerun focused tests and commit separately as Refactor.
+- [x] T007 [US2] Refactor allocation request/response field handling in `crates/kmipkit-protocol/src/get_usage_allocation.rs`; preserve Long Integer wire type, optionality, and response ID; rerun tests in `crates/kmipkit-protocol/tests/unit/get_usage_allocation_tests.rs` and `crates/kmipkit-client/tests/unit/get_usage_allocation_execution_tests.rs`, then commit separately as Refactor. Simplified required-response-identifier extraction while preserving distinct missing-payload and malformed-payload errors. Verified the 11 focused Get Usage Allocation tests, focused Clippy with `-D warnings`, formatting, and `git diff --check`; independent QA approved without behavior changes.
 
 ### Guard Red commit
 
