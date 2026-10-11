@@ -32,6 +32,7 @@ mod get_attribute_list;
 mod get_attributes;
 mod hash;
 mod lifecycle;
+mod locate;
 mod mac;
 mod mac_verify;
 mod message;
@@ -89,6 +90,9 @@ pub use get_attribute_list::{
 };
 pub use get_attributes::{GetAttributesError, GetAttributesRequest, GetAttributesResponse};
 pub use hash::{HashError, HashRequest, HashResponse};
+pub use locate::{
+    LocateError, LocateRequest, LocateResponse, ObjectGroupMember, StorageStatusMask,
+};
 pub use mac::{MacError, MacRequest, MacResponse};
 pub use mac_verify::{MacVerifyError, MacVerifyRequest, MacVerifyResponse};
 pub use message::{
@@ -298,6 +302,10 @@ mod get_attributes_tests;
 #[cfg(test)]
 #[path = "../tests/unit/get_tests.rs"]
 mod get_tests;
+
+#[cfg(test)]
+#[path = "../tests/unit/locate_tests.rs"]
+mod locate_tests;
 
 #[cfg(test)]
 #[path = "../tests/unit/get_attribute_list_tests.rs"]
