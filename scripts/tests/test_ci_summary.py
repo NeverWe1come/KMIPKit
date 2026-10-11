@@ -552,7 +552,18 @@ class CiSummaryTests(unittest.TestCase):
             branch_protection=self.branch_protection(),
         )
 
-        expected_job_ids = [job_id for _, job_id in summary_module.PR_REQUIRED_JOBS]
+        expected_job_ids = list(summary_module.EVIDENCE_REQUIRED_JOB_IDS)
+        self.assertEqual(
+            (
+                "core",
+                "script-contracts",
+                "normative-inventory",
+                "coverage",
+                "coverage-gate",
+                "dependency-policy",
+            ),
+            tuple(expected_job_ids),
+        )
         self.assertEqual(1, manifest["schema_version"])
         self.assertEqual("NeverWe1come/KMIPKit", manifest["repository"])
         self.assertEqual("push", manifest["event_name"])
@@ -609,7 +620,7 @@ class CiSummaryTests(unittest.TestCase):
 
     def test_release_evidence_manifest_requires_every_exact_job_to_succeed(self) -> None:
         summary_module = self.require_summary()
-        required_jobs = [job_id for _, job_id in summary_module.PR_REQUIRED_JOBS]
+        required_jobs = list(summary_module.EVIDENCE_REQUIRED_JOB_IDS)
         for job_id in required_jobs:
             for result in (None, "failure", "cancelled", "skipped", "unknown"):
                 needs = self.successful_release_needs()
@@ -712,6 +723,15 @@ class CiSummaryTests(unittest.TestCase):
                 ]
             }
         )
+        invalid_manifests.append(
+            manifest
+            | {
+                "checks": [
+                    manifest["checks"][0] | {"check_id": "unrelated-check"},
+                    *manifest["checks"][1:],
+                ]
+            }
+        )
         invalid_manifests.append(manifest | {"unknown": "field"})
 
         for invalid_manifest in invalid_manifests:
@@ -772,7 +792,7 @@ class CiSummaryTests(unittest.TestCase):
             self.assertEqual("profile_evidence_manifest", key)
             self.assertEqual("summary_written=true", lines[1])
             manifest = json.loads(encoded_manifest)
-            self.assertEqual(len(summary_module.PR_REQUIRED_JOBS), len(manifest["checks"]))
+            self.assertEqual(len(summary_module.EVIDENCE_REQUIRED_JOB_IDS), len(manifest["checks"]))
             self.assertNotIn("CI_BRANCH_PROTECTION_JSON", output)
             self.assertNotIn("private-key", output.lower())
 
