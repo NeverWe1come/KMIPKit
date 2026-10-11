@@ -64458,7 +64458,9 @@
         }
       ],
       "rejected_candidate_mappings": [],
-      "expected_client_requirement_ids": [],
+      "expected_client_requirement_ids": [
+        "KMIPKIT-REQ-SPEC-6.1.48-001"
+      ],
       "applies_to": "all_client_profiles",
       "review_note": "The client SHALL identifies the described Re-Provision input forms. The text does not expressly prohibit supplying both optional fields, so no mutual-exclusion rule is inferred."
     },
@@ -64520,7 +64522,7 @@
       "source_obligations": [
         {
           "source_order": 1,
-          "source_text": "The server SHALL associate the certificate with the client as the client�s link level credential.",
+          "source_text": "the server SHALL associate the certificate with the client as the client’s link level credential.",
           "source_keyword": "SHALL",
           "actor": "server",
           "direction": "associate the supplied certificate with the client as its link-level credential",
@@ -64641,7 +64643,9 @@
         }
       ],
       "rejected_candidate_mappings": [],
-      "expected_client_requirement_ids": [],
+      "expected_client_requirement_ids": [
+        "KMIPKIT-REQ-SPEC-6.1.48-006"
+      ],
       "applies_to": "all_client_profiles",
       "review_note": "The client SHALL to call Re-Provision when new credentials are required maps to the existing client requirement."
     },
@@ -64674,7 +64678,7 @@
       "rejected_candidate_mappings": [],
       "expected_client_requirement_ids": [],
       "applies_to": "all_client_profiles",
-      "review_note": "This SHOULD describes server failure behavior for an expired credential; it does not add a client request rule."
+      "review_note": "The sentence requires Re-Provision to fail for a expired credential but does not explicitly name the enforcing actor. The server-side failure actor is inferred from KMIP operation-result behavior and the catalog server-only classification; no client request crosswalk or local-validation requirement is added."
     },
     {
       "source_id": "KMIPKIT-SRC-spec",
@@ -64705,7 +64709,7 @@
       "rejected_candidate_mappings": [],
       "expected_client_requirement_ids": [],
       "applies_to": "all_client_profiles",
-      "review_note": "This SHALL describes server failure behavior for a revoked credential; it does not add a client request rule."
+      "review_note": "The sentence requires Re-Provision to fail for a revoked credential but does not explicitly name the enforcing actor. The server-side failure actor is inferred from KMIP operation-result behavior and the catalog server-only classification; no client request crosswalk or local-validation requirement is added."
     },
     {
       "source_id": "KMIPKIT-SRC-spec",
@@ -64736,7 +64740,7 @@
       "rejected_candidate_mappings": [],
       "expected_client_requirement_ids": [],
       "applies_to": "all_client_profiles",
-      "review_note": "This SHALL describes server failure behavior for a compromised credential; it does not add a client request rule."
+      "review_note": "The sentence requires Re-Provision to fail for a compromised credential but does not explicitly name the enforcing actor. The server-side failure actor is inferred from KMIP operation-result behavior and the catalog server-only classification; no client request crosswalk or local-validation requirement is added."
     },
     {
       "source_id": "KMIPKIT-SRC-spec",
