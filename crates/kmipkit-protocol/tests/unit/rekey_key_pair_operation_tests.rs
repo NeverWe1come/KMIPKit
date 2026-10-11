@@ -65,6 +65,18 @@ fn identifier_item(raw_tag: u32, value: &str) -> Item {
     item(raw_tag, Value::text_string(value.to_owned()))
 }
 
+fn deeply_nested_structure() -> Structure {
+    let mut nested = Structure::new();
+    for _ in 1..64 {
+        let mut parent = Structure::new();
+        parent
+            .try_push(item(UNKNOWN_VENDOR_TAG, Value::structure(nested)))
+            .expect("each level remains within the model depth bound");
+        nested = parent;
+    }
+    nested
+}
+
 fn typed_response(
     status: u32,
     reason: Option<u32>,
@@ -122,6 +134,15 @@ fn request_can_omit_private_identifier_for_the_batch_id_placeholder() {
 }
 
 #[test]
+fn request_rejects_protection_mask_groups_beyond_model_depth() {
+    let result = RekeyKeyPairRequest::new()
+        .with_common_protection_storage_masks(deeply_nested_structure())
+        .into_ttlv_payload();
+
+    assert!(result.is_err());
+}
+
+#[test]
 fn successful_response_returns_both_replacement_identifiers_and_unknown_fields() {
     let payload = structure([
         identifier_item(PRIVATE_KEY_UNIQUE_IDENTIFIER, "replacement-private"),
@@ -155,6 +176,19 @@ fn successful_response_rejects_missing_or_duplicate_identifiers() {
             identifier_item(PRIVATE_KEY_UNIQUE_IDENTIFIER, "private-1"),
             identifier_item(PRIVATE_KEY_UNIQUE_IDENTIFIER, "private-2"),
             identifier_item(PUBLIC_KEY_UNIQUE_IDENTIFIER, "public"),
+        ]),
+        structure([
+            identifier_item(PRIVATE_KEY_UNIQUE_IDENTIFIER, "private"),
+            identifier_item(PUBLIC_KEY_UNIQUE_IDENTIFIER, "public-1"),
+            identifier_item(PUBLIC_KEY_UNIQUE_IDENTIFIER, "public-2"),
+        ]),
+        structure([
+            item(PRIVATE_KEY_UNIQUE_IDENTIFIER, Value::boolean(true)),
+            identifier_item(PUBLIC_KEY_UNIQUE_IDENTIFIER, "public"),
+        ]),
+        structure([
+            identifier_item(PRIVATE_KEY_UNIQUE_IDENTIFIER, "private"),
+            item(PUBLIC_KEY_UNIQUE_IDENTIFIER, Value::boolean(true)),
         ]),
     ] {
         assert!(

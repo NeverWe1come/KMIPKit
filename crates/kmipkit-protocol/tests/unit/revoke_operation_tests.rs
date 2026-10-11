@@ -187,6 +187,33 @@ fn request_debug_does_not_expose_identifier_or_request_values() {
 }
 
 #[test]
+fn request_accessors_and_response_ttlv_view_preserve_caller_values() {
+    let request = RevokeRequest::new(RevocationReason::KEY_COMPROMISE)
+        .with_unique_identifier(UniqueIdentifier::TextString("object-id".to_owned()))
+        .with_revocation_message("audited reason".to_owned())
+        .with_compromise_occurrence_date(1_700_000_000);
+    assert_eq!(
+        request.unique_identifier(),
+        Some(&UniqueIdentifier::TextString("object-id".to_owned()))
+    );
+    assert_eq!(request.revocation_reason().raw(), KEY_COMPROMISE);
+    assert_eq!(request.revocation_message(), Some("audited reason"));
+    assert_eq!(request.compromise_occurrence_date(), Some(1_700_000_000));
+
+    let response = typed_response(
+        REVOKE_OPERATION,
+        SUCCESS,
+        None,
+        Some(structure([item(
+            UNIQUE_IDENTIFIER,
+            Value::text_string("revoked-object".to_owned()),
+        )])),
+    )
+    .expect("Table 296 success includes a Unique Identifier");
+    assert_eq!(response.with_ttlv(|view| view.children().len()), 3);
+}
+
+#[test]
 fn successful_response_requires_and_preserves_unique_identifier() {
     let response = typed_response(
         REVOKE_OPERATION,

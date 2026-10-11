@@ -186,6 +186,10 @@ mod register_operation_tests;
 mod revoke_operation_tests;
 
 #[cfg(test)]
+#[path = "../tests/unit/lifecycle_error_contract_tests.rs"]
+mod lifecycle_error_contract_tests;
+
+#[cfg(test)]
 #[path = "../tests/unit/destroy_operation_tests.rs"]
 mod destroy_operation_tests;
 

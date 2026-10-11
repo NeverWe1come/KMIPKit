@@ -54,6 +54,18 @@ fn certificate_material(sentinel: &str) -> Structure {
     )])
 }
 
+fn deeply_nested_structure() -> Structure {
+    let mut nested = Structure::new();
+    for _ in 1..64 {
+        let mut parent = Structure::new();
+        parent
+            .try_push(item(NESTED_VALUE, Value::structure(nested)))
+            .expect("each level remains within the model depth bound");
+        nested = parent;
+    }
+    nested
+}
+
 fn typed_response(
     status: u32,
     reason: Option<u32>,
@@ -96,6 +108,15 @@ fn request_rejects_mutually_supplied_certificate_request_and_certificate() {
 }
 
 #[test]
+fn request_rejects_certificate_material_beyond_model_depth() {
+    let result = ReProvisionRequest::new()
+        .with_certificate(deeply_nested_structure())
+        .into_ttlv_payload();
+
+    assert!(result.is_err());
+}
+
+#[test]
 fn successful_response_preserves_optional_identifier_and_absence() {
     let response = typed_response(
         SUCCESS,
@@ -113,10 +134,28 @@ fn successful_response_preserves_optional_identifier_and_absence() {
             "reprovisioned-credential".to_owned()
         ))
     );
+    assert!(response.with_ttlv(|view| !view.children().is_empty()));
 
     let absent = typed_response(SUCCESS, None, Some(structure([])))
         .expect("Table 314 marks Unique Identifier optional");
     assert_eq!(absent.unique_identifier(), None);
+}
+
+#[test]
+fn successful_response_rejects_a_duplicate_unique_identifier() {
+    let result = typed_response(
+        SUCCESS,
+        None,
+        Some(structure([
+            item(UNIQUE_IDENTIFIER, Value::text_string("first".to_owned())),
+            item(UNIQUE_IDENTIFIER, Value::text_string("second".to_owned())),
+        ])),
+    );
+
+    assert!(matches!(
+        result,
+        Err(ReProvisionError::MalformedSuccessPayload)
+    ));
 }
 
 #[test]

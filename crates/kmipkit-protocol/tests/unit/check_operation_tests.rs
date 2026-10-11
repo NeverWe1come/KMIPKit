@@ -211,6 +211,47 @@ fn policy_denial_response_returns_the_policy_value_without_a_success_identifier(
 }
 
 #[test]
+fn response_rejects_duplicate_and_mistyped_optional_policy_values() {
+    let identifier = || item(UNIQUE_IDENTIFIER, Value::text_string("checked".to_owned()));
+    let malformed_payloads = [
+        structure([
+            identifier(),
+            item(
+                USAGE_LIMITS_COUNT,
+                Value::text_string("wrong type".to_owned()),
+            ),
+        ]),
+        structure([
+            identifier(),
+            item(USAGE_LIMITS_COUNT, Value::long_integer(1)),
+            item(USAGE_LIMITS_COUNT, Value::long_integer(2)),
+        ]),
+        structure([
+            identifier(),
+            item(CRYPTOGRAPHIC_USAGE_MASK, Value::long_integer(1)),
+        ]),
+        structure([
+            identifier(),
+            item(CRYPTOGRAPHIC_USAGE_MASK, Value::integer(1)),
+            item(CRYPTOGRAPHIC_USAGE_MASK, Value::integer(2)),
+        ]),
+        structure([identifier(), item(LEASE_TIME, Value::long_integer(1))]),
+        structure([
+            identifier(),
+            item(LEASE_TIME, Value::interval(1)),
+            item(LEASE_TIME, Value::interval(2)),
+        ]),
+    ];
+
+    for payload in malformed_payloads {
+        assert!(
+            malformed_success(payload).is_err(),
+            "duplicate and mistyped Table 184 policy values are rejected"
+        );
+    }
+}
+
+#[test]
 fn request_debug_does_not_expose_identifier_value() {
     let sentinel = "check-request-debug-sentinel";
     let request = CheckRequest::new()

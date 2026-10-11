@@ -58,6 +58,18 @@ fn key_object(algorithm: bool, length: bool) -> Item {
     item(SYMMETRIC_KEY, Value::structure(structure([key_block])))
 }
 
+fn deeply_nested_structure() -> Structure {
+    let mut nested = Structure::new();
+    for _ in 1..64 {
+        let mut parent = Structure::new();
+        parent
+            .try_push(item(UNKNOWN_VENDOR_TAG, Value::structure(nested)))
+            .expect("each level remains within the model depth bound");
+        nested = parent;
+    }
+    nested
+}
+
 fn symmetric_attributes(extra: impl IntoIterator<Item = Item>) -> AttributeSet {
     attrs(
         [item(CRYPTOGRAPHIC_USAGE_MASK, Value::integer(3))]
@@ -215,6 +227,53 @@ fn secret_data_does_not_require_key_algorithm_or_length() {
         item(SECRET_DATA, Value::structure(structure([]))),
     );
     assert!(request.into_ttlv_payload().is_ok());
+}
+
+#[test]
+fn request_accessors_preserve_type_attributes_and_object_and_unknown_types_remain_forward_compatible()
+ {
+    let attributes = symmetric_attributes([
+        item(CRYPTOGRAPHIC_ALGORITHM, Value::enumeration(3)),
+        item(CRYPTOGRAPHIC_LENGTH, Value::integer(256)),
+    ]);
+    let object = key_object(false, false);
+    let request = RegisterRequest::new(ObjectType::from_raw(2), attributes, object);
+
+    assert_eq!(request.object_type().raw(), 2);
+    assert_eq!(request.attributes().as_items().len(), 3);
+    assert_eq!(request.object().tag().raw(), SYMMETRIC_KEY);
+
+    let future_object_type = RegisterRequest::new(
+        ObjectType::from_raw(0x8000_0001),
+        attrs([]),
+        item(UNKNOWN_VENDOR_TAG, Value::structure(structure([]))),
+    );
+    assert!(future_object_type.into_ttlv_payload().is_ok());
+}
+
+#[test]
+fn request_rejects_malformed_key_block_shape_and_objects_beyond_model_depth() {
+    let malformed_key_block = RegisterRequest::new(
+        ObjectType::from_raw(2),
+        symmetric_attributes([]),
+        item(
+            SYMMETRIC_KEY,
+            Value::structure(structure([item(KEY_BLOCK, Value::integer(1))])),
+        ),
+    )
+    .into_ttlv_payload();
+    assert!(malformed_key_block.is_err());
+
+    let excessive_depth = RegisterRequest::new(
+        ObjectType::from_raw(2),
+        symmetric_attributes([
+            item(CRYPTOGRAPHIC_ALGORITHM, Value::enumeration(3)),
+            item(CRYPTOGRAPHIC_LENGTH, Value::integer(256)),
+        ]),
+        item(SYMMETRIC_KEY, Value::structure(deeply_nested_structure())),
+    )
+    .into_ttlv_payload();
+    assert!(excessive_depth.is_err());
 }
 
 #[test]
