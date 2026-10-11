@@ -89,7 +89,7 @@ As a KMIPKit caller, I can send the §6.1.7 Check request and inspect the typed 
 3. Given a Table 185 failure, malformed payload, or transport error, when the call completes, then status/reason or error and delivery state remain available without retry.
 4. Given Pending in a caller-enabled typed batch, when the response arrives, then Pending and the exact correlation bytes remain available without an implicit Poll.
 
-**Specific rules**: Expose the recommended ordered batch with Batch Order Option true and Stop or Undo continuation; do not silently alter the caller batch.
+**Specific rules**: Expose the recommended ordered batch with Batch Order Option true and Stop or Undo continuation; do not silently alter the caller batch. Accept and type Usage Limits Count, Cryptographic Usage Mask, and Lease Time whenever the server returns them, including on a failed Check; a failed result does not require Unique Identifier.
 
 **Payload schema** (OASIS Specification v2.1 §6.1.7, Tables 183–184):
 

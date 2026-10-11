@@ -49,3 +49,11 @@ Record separate Red, Green, and Refactor commit IDs per operation in the draft P
 - GREEN commit: `cd6456a1` (`feat(022): implement Re-Provision operation`). Focused protocol tests passed (7 tests) and fake-transport client tests passed (6 tests), including all three request forms, mutually exclusive object forms, optional/malformed result identifier, server failure, Pending correlation preservation, partial-write delivery state, and no retry.
 - REFACTOR verifies the response-view projection through one constructor, retains the typed model and client dispatch, and updates the English lifecycle guide and public API architecture documentation.
 - No direct OASIS Test Case is listed for Re-Provision; tests are derived from §6.1.48 Tables 313–315. `KMIPKIT-DISC-040` is applied; upstream source files remain unchanged.
+
+### Register (US8)
+
+- RED commit: `ec1c31f1` (`test(022): add Register RED coverage`). The protocol and client Register test targets failed as expected before the model and client operation existed.
+- GREEN commit: `ff2f1581` (`feat(022): implement Register operation`). Added Table 291 ordered request encoding, Table 293 local required-attribute checks, typed Table 292 Unique Identifier response, failure/Pending passthrough, and one-exchange client methods.
+- REFACTOR commit: `a6385456` (`refactor(022): finalize Register contract tests`). Added the ID Placeholder producer-to-Check batch case and verified a Certificate needs Certificate Length without a cryptographic Usage Mask.
+- Verification passed: `cargo test -p kmipkit-protocol -p kmipkit-client` (package regression suite), focused Register protocol/client tests (11 and 5 tests), `cargo fmt --all --check`, `cargo clippy -p kmipkit-protocol -p kmipkit-client --all-targets --all-features -- -D warnings`, and `git diff --check`.
+- No direct OASIS Test Case is listed for Register; tests are derived from §6.1.43 Tables 291–294. The Red/Green/Refactor commits use the maintainer-approved DCO sign-off; pinned upstream sources remain unchanged.

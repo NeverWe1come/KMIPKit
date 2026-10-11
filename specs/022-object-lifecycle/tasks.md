@@ -99,9 +99,9 @@
 
 **Independent Test**: Tables 291–294; required Object Type/Attributes/Any Object; algorithm/length/signature rules; unknown values; sensitive-object handling.
 
-- [ ] T027 [P] [US8] Add failing Register tests in `crates/kmipkit-protocol/tests/unit/register_operation_tests.rs` and `crates/kmipkit-client/tests/unit/register_execution_tests.rs` for §6.1.43 and each of its traceability rows; commit Red.
-- [ ] T028 [US8] Implement `RegisterRequest/Response/Error` in `crates/kmipkit-protocol/src/register.rs`, export it, and integrate client dispatch/method in `crates/kmipkit-client/src/execute.rs` and `crates/kmipkit-client/src/lib.rs`; commit Green after T027 passes.
-- [ ] T029 [US8] Refactor Register model/dispatch/tests in `crates/kmipkit-protocol/src/register.rs`, `crates/kmipkit-client/src/execute.rs`, and both test files; commit Refactor separately.
+- [X] T027 [P] [US8] Add failing Register tests in `crates/kmipkit-protocol/tests/unit/register_operation_tests.rs` and `crates/kmipkit-client/tests/unit/register_execution_tests.rs` for §6.1.43 and each of its traceability rows; commit Red (`ec1c31f1`).
+- [X] T028 [US8] Implement `RegisterRequest/Response/Error` in `crates/kmipkit-protocol/src/register.rs`, export it, and integrate client dispatch/method in `crates/kmipkit-client/src/execute.rs` and `crates/kmipkit-client/src/lib.rs`; commit Green (`ff2f1581`).
+- [X] T029 [US8] Refactor Register model/dispatch/tests in `crates/kmipkit-protocol/src/register.rs`, `crates/kmipkit-client/src/execute.rs`, and both test files; commit Refactor separately (`a6385456`).
 
 ## Phase 11: User Story 9 — Revoke (Priority: P1)
 
