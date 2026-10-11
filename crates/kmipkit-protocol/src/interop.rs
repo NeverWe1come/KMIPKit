@@ -5,7 +5,7 @@
 
 use std::{error::Error, fmt};
 
-use kmipkit_ttlv::{Structure, StructureView, Value};
+use kmipkit_ttlv::{Item, Structure, StructureView, Value};
 
 use crate::cryptographic_operation;
 
@@ -26,6 +26,7 @@ const INTEROP_IDENTIFIER: u32 = 0x0042_0161;
 pub struct InteropRequest {
     interop_function: u32,
     interop_identifier: SecretText,
+    extensions: Vec<Item>,
 }
 
 impl InteropRequest {
@@ -35,6 +36,7 @@ impl InteropRequest {
         Self {
             interop_function,
             interop_identifier,
+            extensions: Vec::new(),
         }
     }
     /// Returns the exact caller-selected Interop Function Enumeration.
@@ -46,6 +48,15 @@ impl InteropRequest {
     pub fn with_interop_identifier<R>(&self, callback: impl for<'a> FnOnce(&'a str) -> R) -> R {
         self.interop_identifier.with_str(callback)
     }
+    /// Appends an unknown operation-payload extension in caller-selected order.
+    ///
+    /// Table-defined fields must use the typed builders; using an extension
+    /// to override them fails locally while all other checked tags remain open.
+    #[must_use]
+    pub fn with_extension(mut self, extension: Item) -> Self {
+        self.extensions.push(extension); self
+    }
+
     /// Moves the required Table 241 fields into their ordered payload.
     ///
     /// # Errors
@@ -66,6 +77,10 @@ impl InteropRequest {
             self.interop_identifier.into_ttlv_value(),
         )?;
 
+        for extension in self.extensions {
+            if [INTEROP_FUNCTION, INTEROP_IDENTIFIER].contains(&extension.tag().raw()) { return Err(cryptographic_operation::request_error()); }
+            payload.try_push(extension).map_err(|_| cryptographic_operation::request_error())?;
+        }
         Ok(payload)
     }
 }

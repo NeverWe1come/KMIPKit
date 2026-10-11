@@ -5,7 +5,7 @@
 
 use std::{error::Error, fmt};
 
-use kmipkit_ttlv::{Structure, StructureView};
+use kmipkit_ttlv::{Item, Structure, StructureView};
 
 use crate::cryptographic_operation;
 
@@ -24,18 +24,28 @@ const LOG_MESSAGE: u32 = 0x0042_0141;
 /// nevertheless redacted from every diagnostic and zeroized when dropped.
 pub struct LogRequest {
     log_message: SecretText,
+    extensions: Vec<Item>,
 }
 
 impl LogRequest {
     /// Creates a request with the caller-selected message.
     #[must_use]
     pub const fn new(log_message: SecretText) -> Self {
-        Self { log_message }
+        Self { log_message, extensions: Vec::new() }
     }
 
     /// Lends the exact message without cloning it.
     pub fn with_log_message<R>(&self, callback: impl for<'a> FnOnce(&'a str) -> R) -> R {
         self.log_message.with_str(callback)
+    }
+
+    /// Appends an unknown operation-payload extension in caller-selected order.
+    ///
+    /// Table-defined fields must use the typed builders; using an extension
+    /// to override them fails locally while all other checked tags remain open.
+    #[must_use]
+    pub fn with_extension(mut self, extension: Item) -> Self {
+        self.extensions.push(extension); self
     }
 
     /// Moves the required Table 250 Text String into its payload.
@@ -50,6 +60,10 @@ impl LogRequest {
             LOG_MESSAGE,
             self.log_message.into_ttlv_value(),
         )?;
+        for extension in self.extensions {
+            if [LOG_MESSAGE].contains(&extension.tag().raw()) { return Err(cryptographic_operation::request_error()); }
+            payload.try_push(extension).map_err(|_| cryptographic_operation::request_error())?;
+        }
         Ok(payload)
     }
 }

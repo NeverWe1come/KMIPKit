@@ -5,7 +5,7 @@
 
 use std::{error::Error, fmt};
 
-use kmipkit_ttlv::{ItemType, Structure, StructureView, Value, ValueView};
+use kmipkit_ttlv::{Item, ItemType, Structure, StructureView, Value, ValueView};
 
 use crate::cryptographic_operation;
 
@@ -31,6 +31,7 @@ const VALIDITY_INDICATOR: u32 = 0x0042_009b;
 /// and policy. Empty input is forwarded without imposing a local minimum.
 pub struct ValidateRequest {
     chain: Vec<ChainMember>,
+    extensions: Vec<Item>,
     validity_date: Option<i64>,
 }
 
@@ -45,6 +46,7 @@ impl ValidateRequest {
     pub const fn new() -> Self {
         Self {
             chain: Vec::new(),
+            extensions: Vec::new(),
             validity_date: None,
         }
     }
@@ -85,6 +87,15 @@ impl ValidateRequest {
         self.validity_date
     }
 
+    /// Appends an unknown operation-payload extension in caller-selected order.
+    ///
+    /// Table-defined fields must use the typed builders; using an extension
+    /// to override them fails locally while all other checked tags remain open.
+    #[must_use]
+    pub fn with_extension(mut self, extension: Item) -> Self {
+        self.extensions.push(extension); self
+    }
+
     /// Moves the chain and optional date into the ordered Table 340 payload.
     ///
     /// # Errors
@@ -112,6 +123,10 @@ impl ValidateRequest {
         }
         if let Some(date) = self.validity_date {
             cryptographic_operation::push(&mut payload, VALIDITY_DATE, Value::date_time(date))?;
+        }
+        for extension in self.extensions {
+            if [CERTIFICATE, UNIQUE_IDENTIFIER, VALIDITY_DATE].contains(&extension.tag().raw()) { return Err(cryptographic_operation::request_error()); }
+            payload.try_push(extension).map_err(|_| cryptographic_operation::request_error())?;
         }
         Ok(payload)
     }
