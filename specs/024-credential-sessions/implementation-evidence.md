@@ -35,6 +35,15 @@ Logout requires a caller-supplied typed Ticket and encodes its original ordered 
 | Green package checks | This commit | `cargo test -p kmipkit-protocol --all-features`; `cargo test -p kmipkit-client --all-features`; `cargo test -p kmipkit --all-features` | PASS: protocol (565 unit tests), client (438 unit tests), integration/UI/doc tests, and facade API tests. |
 | Green quality gates | This commit | `cargo clippy -p kmipkit-protocol -p kmipkit-client -p kmipkit --all-targets --all-features -- -D warnings`; `cargo fmt --all --check`; `git diff --check` | PASS. |
 
+## T013 — Logout REFACTOR
+
+Common result-header conversion is separated from Logout's operation-specific empty-payload check. Added a test for preserving an unknown Table 258 Result Reason; the request wire shape and response behavior are unchanged.
+
+| Phase | Commit | Command | Result |
+|---|---|---|---|
+| Refactor | This commit | `cargo test -p kmipkit-protocol --lib logout_operation_tests`; `cargo test -p kmipkit-client --lib logout_execution_tests` | PASS: 6 protocol tests and 6 fake-transport tests. |
+| Refactor quality gates | This commit | `cargo clippy -p kmipkit-protocol -p kmipkit-client -p kmipkit --all-targets --all-features -- -D warnings`; `cargo fmt --all --check`; `git diff --check` | PASS. |
+
 These results establish the Delegated Login model and typed client path against source-derived tests. They do not indicate official KMIP conformance, cross-language API parity, or completion of KMIPKIT-024.
 
 ## T008 — Login RED

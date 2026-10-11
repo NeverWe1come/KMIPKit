@@ -117,6 +117,18 @@ fn table_258_failure_reasons_are_preserved_without_a_success_payload() {
 }
 
 #[test]
+fn unknown_table_258_reason_remains_open_and_lossless() {
+    const UNKNOWN_REASON: u32 = 0xF123_4567;
+    let response = typed_response(LOGOUT, OPERATION_FAILED, Some(UNKNOWN_REASON), None)
+        .expect("an unknown Result Reason remains a valid open value");
+
+    assert_eq!(
+        response.result().reason(),
+        Some(ResultReason::from_raw(UNKNOWN_REASON))
+    );
+}
+
+#[test]
 fn wrong_operation_is_rejected_with_payload_free_error() {
     assert_eq!(
         typed_response(LOGOUT - 1, SUCCESS, None, Some(Structure::new())).unwrap_err(),

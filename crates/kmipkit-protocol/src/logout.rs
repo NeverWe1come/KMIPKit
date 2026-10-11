@@ -78,14 +78,8 @@ impl LogoutResponse {
         if item.operation() != Some(OPERATION) {
             return Err(LogoutError::UnexpectedOperation);
         }
-        let status = item
-            .result_status()
-            .ok_or(LogoutError::MissingResultStatus)?;
-        let result_message = item.with_result_message(|text| ResultMessage::new(text.to_owned()));
-        let result = KmipOperationResult::new(status, item.result_reason(), result_message)
-            .map_err(LogoutError::InvalidOperationResult)?;
-
-        if status.raw() == SUCCESS {
+        let result = logout_operation_result(item)?;
+        if result.status().raw() == SUCCESS {
             let member_count = item
                 .with_response_payload(|payload| payload.children().len())
                 .ok_or(LogoutError::MissingResponsePayload)?;
@@ -102,6 +96,17 @@ impl LogoutResponse {
     pub const fn result(&self) -> &KmipOperationResult {
         &self.result
     }
+}
+
+fn logout_operation_result(
+    item: ResponseBatchItemView<'_>,
+) -> Result<KmipOperationResult, LogoutError> {
+    let status = item
+        .result_status()
+        .ok_or(LogoutError::MissingResultStatus)?;
+    let result_message = item.with_result_message(|text| ResultMessage::new(text.to_owned()));
+    KmipOperationResult::new(status, item.result_reason(), result_message)
+        .map_err(LogoutError::InvalidOperationResult)
 }
 
 /// A payload-free error converting a Logout response batch item.

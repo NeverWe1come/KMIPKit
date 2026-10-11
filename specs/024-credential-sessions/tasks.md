@@ -84,7 +84,7 @@ Every task uses the repository checklist form: checkbox, sequential task ID, opt
 
 ### Refactor commit
 
-- [ ] T013 Refactor Logout encoding, response validation, and tests in crates/kmipkit-protocol/src/logout.rs and crates/kmipkit-protocol/tests/unit/logout_operation_tests.rs without changing wire behavior; rerun focused tests and commit separately as Refactor.
+- [x] T013 Refactor Logout encoding, response validation, and tests in crates/kmipkit-protocol/src/logout.rs and crates/kmipkit-protocol/tests/unit/logout_operation_tests.rs without changing wire behavior; rerun focused tests and commit separately as Refactor.
 
 **Checkpoint**: Logout can only use an explicit caller-provided Ticket and returns the common result without hidden session changes.
 
