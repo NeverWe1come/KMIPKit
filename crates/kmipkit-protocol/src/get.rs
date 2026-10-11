@@ -387,52 +387,30 @@ impl Error for GetError {
 fn parse_success_payload(
     payload: &StructureView<'_>,
 ) -> Result<(ObjectType, UniqueIdentifier, Item), GetError> {
-    let mut object_type = None;
-    let mut unique_identifier = None;
-    let mut object = None;
-
-    for field in payload.children() {
-        match field.tag().raw() {
-            OBJECT_TYPE => {
-                if object_type.is_some() {
-                    return Err(GetError::MalformedSuccessPayload);
-                }
-                object_type = field.with_value(|value| match value {
-                    ValueView::Enumeration(raw) => Some(ObjectType::from_raw(*raw)),
-                    _ => None,
-                });
-                if object_type.is_none() {
-                    return Err(GetError::MalformedSuccessPayload);
-                }
-            }
-            UNIQUE_IDENTIFIER => {
-                if unique_identifier.is_some() {
-                    return Err(GetError::MalformedSuccessPayload);
-                }
-                unique_identifier = field.with_value(|value| parse_unique_identifier(&value));
-                if unique_identifier.is_none() {
-                    return Err(GetError::MalformedSuccessPayload);
-                }
-            }
-            _ => {
-                if object.is_some() || field.item_type() != kmipkit_ttlv::ItemType::Structure {
-                    return Err(GetError::MalformedSuccessPayload);
-                }
-                object = Some(
-                    field
-                        .try_clone()
-                        .map_err(|_| GetError::MalformedSuccessPayload)?,
-                );
-            }
-        }
+    let [object_type_field, unique_identifier_field, object_field] = payload.children() else {
+        return Err(GetError::MalformedSuccessPayload);
+    };
+    if object_type_field.tag().raw() != OBJECT_TYPE
+        || unique_identifier_field.tag().raw() != UNIQUE_IDENTIFIER
+        || object_field.item_type() != kmipkit_ttlv::ItemType::Structure
+    {
+        return Err(GetError::MalformedSuccessPayload);
     }
 
-    match (object_type, unique_identifier, object) {
-        (Some(object_type), Some(unique_identifier), Some(object)) => {
-            Ok((object_type, unique_identifier, object))
-        }
-        _ => Err(GetError::MalformedSuccessPayload),
-    }
+    let object_type = object_type_field
+        .with_value(|value| match value {
+            ValueView::Enumeration(raw) => Some(ObjectType::from_raw(*raw)),
+            _ => None,
+        })
+        .ok_or(GetError::MalformedSuccessPayload)?;
+    let unique_identifier = unique_identifier_field
+        .with_value(|value| parse_unique_identifier(&value))
+        .ok_or(GetError::MalformedSuccessPayload)?;
+    let object = object_field
+        .try_clone()
+        .map_err(|_| GetError::MalformedSuccessPayload)?;
+
+    Ok((object_type, unique_identifier, object))
 }
 
 fn parse_unique_identifier(value: &ValueView<'_>) -> Option<UniqueIdentifier> {
