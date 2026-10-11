@@ -582,6 +582,10 @@ fn locate_batch_preserves_criteria_results_and_server_placeholder_boundary() {
     assert!(outcome_display.contains("status 0"));
     assert!(!response_debug.contains("server-id-z"));
     assert!(!response_debug.contains("server-id-a"));
+    assert!(!outcome_debug.contains("server-id-z"));
+    assert!(!outcome_debug.contains("server-id-a"));
+    assert!(!outcome_display.contains("server-id-z"));
+    assert!(!outcome_display.contains("server-id-a"));
     assert!(
         get_result.outcome().get_response().is_some(),
         "the subsequent Get response is exposed without a client-selected identifier"
