@@ -213,6 +213,11 @@ class OperationReadinessSchemaTests(unittest.TestCase):
         operation["declarations"] = _four_language_mappings()
         self.assertTrue(self.errors(manifest))
 
+    def test_checked_in_operation_dependencies_resolve_against_dependency_matrix(self) -> None:
+        manifest = json.loads((ROOT / "specification" / "api" / "public-api.json").read_text(encoding="utf-8"))
+        with self.assertRaises(ManifestError):
+            _validate_v2_readiness(self, manifest, ROOT)
+
     def test_declared_operation_requires_approved_owner_and_all_language_mappings(self) -> None:
         manifest = _contract_manifest()
         operation = _discover_versions_operation(manifest)
