@@ -75,16 +75,16 @@
     "profiles": 18,
     "specification_clause_records": 877,
     "profiles_clause_records": 534,
-    "requirement_crosswalk_records": 205,
+    "requirement_crosswalk_records": 213,
     "requirement_crosswalk_complete": false,
     "common_baseline_official_cases": 16,
     "common_baseline_unavailable_fixtures": 16,
     "profile_test_associations": 365,
     "distinct_profile_test_case_ids": 93,
-    "source_requirement_review_records": 536,
+    "source_requirement_review_records": 549,
     "direct_root_exclusion_records": 4,
-    "source_only_requirement_gaps": 138,
-    "source_only_requirement_gap_proposals": 108,
+    "source_only_requirement_gaps": 139,
+    "source_only_requirement_gap_proposals": 109,
     "profile_unlabeled_source_rows": 22
   },
   "source_clause_crosswalk": [
@@ -20689,8 +20689,143 @@
       "review_note": "Specification v2.1 §6.1.42; after Recover succeeds and the object is online, the client MAY obtain it with Get.",
       "source_obligation_order": 2,
       "source_actor": "client"
-    }
-  ],
+    },
+    {
+      "requirement_id": "KMIPKIT-REQ-SPEC-6.1.43-001",
+      "source_clause_id": "KMIPKIT-CLAUSE-SPEC-6.1.43-001",
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_section": "6.1.43",
+      "source_locator": {
+        "ordinal": 1,
+        "block_kind": "paragraph"
+      },
+      "source_keyword": "SHALL",
+      "role": "client",
+      "scope_state": "client_1_0",
+      "applies_to": "all_client_profiles",
+      "review_note": "Specification v2.1 §6.1.43; Register client capability mapped from source obligation 1.",
+      "source_obligation_order": 1,
+      "source_actor": "client"
+    },
+    {
+      "requirement_id": "KMIPKIT-REQ-SPEC-6.1.43-005",
+      "source_clause_id": "KMIPKIT-CLAUSE-SPEC-6.1.43-005",
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_section": "6.1.43",
+      "source_locator": {
+        "ordinal": 5,
+        "block_kind": "table_row"
+      },
+      "source_keyword": "MAY",
+      "role": "client",
+      "scope_state": "client_1_0",
+      "applies_to": "all_client_profiles",
+      "review_note": "Specification v2.1 §6.1.43; Register client capability mapped from source obligation 1.",
+      "source_obligation_order": 1,
+      "source_actor": "client"
+    },
+    {
+      "requirement_id": "KMIPKIT-REQ-SPEC-6.1.43-007",
+      "source_clause_id": "KMIPKIT-CLAUSE-SPEC-6.1.43-007",
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_section": "6.1.43",
+      "source_locator": {
+        "ordinal": 7,
+        "block_kind": "paragraph"
+      },
+      "source_keyword": "SHALL",
+      "role": "client",
+      "scope_state": "client_1_0",
+      "applies_to": "all_client_profiles",
+      "review_note": "Specification v2.1 §6.1.43; Register client capability mapped from source obligation 1.",
+      "source_obligation_order": 1,
+      "source_actor": "client"
+    },
+    {
+      "requirement_id": "KMIPKIT-REQ-SPEC-6.1.43-009-001",
+      "source_clause_id": "KMIPKIT-CLAUSE-SPEC-6.1.43-009",
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_section": "6.1.43",
+      "source_locator": {
+        "ordinal": 9,
+        "block_kind": "table_row"
+      },
+      "source_keyword": "MAY",
+      "role": "client",
+      "scope_state": "client_1_0",
+      "applies_to": "all_client_profiles",
+      "review_note": "Specification v2.1 §6.1.43; Register client capability mapped from source obligation 1.",
+      "source_obligation_order": 1,
+      "source_actor": "client"
+    },
+    {
+      "requirement_id": "KMIPKIT-REQ-SPEC-6.1.43-009-002",
+      "source_clause_id": "KMIPKIT-CLAUSE-SPEC-6.1.43-009",
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_section": "6.1.43",
+      "source_locator": {
+        "ordinal": 9,
+        "block_kind": "table_row"
+      },
+      "source_keyword": "SHALL",
+      "role": "client",
+      "scope_state": "client_1_0",
+      "applies_to": "all_client_profiles",
+      "review_note": "Specification v2.1 §6.1.43; Register client capability mapped from source obligation 2.",
+      "source_obligation_order": 2,
+      "source_actor": "client"
+    },
+    {
+      "requirement_id": "KMIPKIT-REQ-SPEC-6.1.43-010-001",
+      "source_clause_id": "KMIPKIT-CLAUSE-SPEC-6.1.43-010",
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_section": "6.1.43",
+      "source_locator": {
+        "ordinal": 10,
+        "block_kind": "table_row"
+      },
+      "source_keyword": "MAY",
+      "role": "client",
+      "scope_state": "client_1_0",
+      "applies_to": "all_client_profiles",
+      "review_note": "Specification v2.1 §6.1.43; Register client capability mapped from source obligation 1.",
+      "source_obligation_order": 1,
+      "source_actor": "client"
+    },
+    {
+      "requirement_id": "KMIPKIT-REQ-SPEC-6.1.43-010-002",
+      "source_clause_id": "KMIPKIT-CLAUSE-SPEC-6.1.43-010",
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_section": "6.1.43",
+      "source_locator": {
+        "ordinal": 10,
+        "block_kind": "table_row"
+      },
+      "source_keyword": "SHALL",
+      "role": "client",
+      "scope_state": "client_1_0",
+      "applies_to": "all_client_profiles",
+      "review_note": "Specification v2.1 §6.1.43; Register client capability mapped from source obligation 2.",
+      "source_obligation_order": 2,
+      "source_actor": "client"
+    },
+    {
+      "requirement_id": "KMIPKIT-REQ-SPEC-6.1.43-011",
+      "source_clause_id": "KMIPKIT-CLAUSE-SPEC-6.1.43-011",
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_section": "6.1.43",
+      "source_locator": {
+        "ordinal": 11,
+        "block_kind": "table_row"
+      },
+      "source_keyword": "MAY",
+      "role": "client",
+      "scope_state": "client_1_0",
+      "applies_to": "all_client_profiles",
+      "review_note": "Specification v2.1 §6.1.43; Register client capability mapped from source obligation 1.",
+      "source_obligation_order": 1,
+      "source_actor": "client"
+    }],
   "profiles": [
     {
       "profile_id": "KMIPKIT-PROFILE-AES-XTS-CLIENT",
@@ -62041,8 +62176,586 @@
       "review_note": "This error payload row lists Result Reason enum values. Attestation Required is an enum name and REQUIRED is not normative force in this row.",
       "source_request_rows": [],
       "source_payload_rows": []
-    }
-  ],
+    },
+    {
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+      "source_section": "6.1.43",
+      "source_clause_id": "KMIPKIT-CLAUSE-SPEC-6.1.43-001",
+      "source_locator": {
+        "ordinal": 1,
+        "block_kind": "paragraph"
+      },
+      "html_line_range": [
+        32788,
+        32791
+      ],
+      "source_excerpt": "The request contains information about the type of object being registered and attributes to be assigned to the object (e.g., Cryptographic Algorithm, Cryptographic Length, etc.). This information SHALL be specified by the use of a Attributes object.",
+      "source_obligations": [
+        {
+          "source_order": 1,
+          "source_text": "This information SHALL be specified by the use of a Attributes object.",
+          "source_keyword": "SHALL",
+          "actor": "client",
+          "direction": "client→server Register request",
+          "condition": "A Register request is sent.",
+          "scope_disposition": "client_1_0",
+          "candidate_requirement_id": "KMIPKIT-REQ-SPEC-6.1.43-001"
+        }
+      ],
+      "rejected_candidate_mappings": [],
+      "expected_client_requirement_ids": [
+        "KMIPKIT-REQ-SPEC-6.1.43-001"
+      ],
+      "applies_to": "all_client_profiles",
+      "review_note": "The client specifies the registered object information with an Attributes object.",
+      "source_request_rows": [],
+      "source_payload_rows": []
+    },
+    {
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+      "source_section": "6.1.43",
+      "source_clause_id": "KMIPKIT-CLAUSE-SPEC-6.1.43-002",
+      "source_locator": {
+        "ordinal": 2,
+        "block_kind": "paragraph"
+      },
+      "html_line_range": [
+        32793,
+        32795
+      ],
+      "source_excerpt": "If the Managed Object being registered is wrapped, the server SHALL create a Link attribute of Link Type Wrapping Key Link pointing to the Managed Object with which the Managed Object being registered is wrapped.",
+      "source_obligations": [
+        {
+          "source_order": 1,
+          "source_text": "the server SHALL create a Link attribute of Link Type Wrapping Key Link pointing to the Managed Object with which the Managed Object being registered is wrapped.",
+          "source_keyword": "SHALL",
+          "actor": "server",
+          "direction": "set Wrapping Key Link attribute on the registered object",
+          "condition": "The Managed Object being registered is wrapped.",
+          "scope_disposition": "server_only",
+          "candidate_requirement_id": null
+        }
+      ],
+      "rejected_candidate_mappings": [],
+      "expected_client_requirement_ids": [],
+      "applies_to": "all_client_profiles",
+      "review_note": "This paragraph specifies the server's internal registered-object Link attribute update when the Managed Object being registered is wrapped.",
+      "source_request_rows": [],
+      "source_payload_rows": []
+    },
+    {
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+      "source_section": "6.1.43",
+      "source_clause_id": "KMIPKIT-CLAUSE-SPEC-6.1.43-003",
+      "source_locator": {
+        "ordinal": 3,
+        "block_kind": "paragraph"
+      },
+      "html_line_range": [
+        32797,
+        32800
+      ],
+      "source_excerpt": "The response contains the Unique Identifier assigned by the server to the registered object. The server SHALL copy the Unique Identifier returned by this operation into the ID Placeholder variable. The Initial Date attribute of the object SHALL be set to the current time.",
+      "source_obligations": [
+        {
+          "source_order": 1,
+          "source_text": "The server SHALL copy the Unique Identifier returned by this operation into the ID Placeholder variable.",
+          "source_keyword": "SHALL",
+          "actor": "server",
+          "direction": "copy Unique Identifier into the server ID Placeholder",
+          "condition": "A Register operation returns a Unique Identifier.",
+          "scope_disposition": "server_only",
+          "candidate_requirement_id": null
+        },
+        {
+          "source_order": 2,
+          "source_text": "The Initial Date attribute of the object SHALL be set to the current time.",
+          "source_keyword": "SHALL",
+          "actor": "server",
+          "direction": "set Initial Date attribute on the object",
+          "condition": "The object is registered.",
+          "scope_disposition": "server_only",
+          "candidate_requirement_id": null
+        }
+      ],
+      "rejected_candidate_mappings": [],
+      "expected_client_requirement_ids": [],
+      "applies_to": "all_client_profiles",
+      "review_note": "The SHALL atoms update server-side ID Placeholder and object state; they do not describe response payload fields. The preceding response Unique Identifier sentence is informative context.",
+      "source_request_rows": [],
+      "source_payload_rows": []
+    },
+    {
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+      "source_section": "6.1.43",
+      "source_clause_id": "KMIPKIT-CLAUSE-SPEC-6.1.43-004",
+      "source_locator": {
+        "ordinal": 4,
+        "block_kind": "table_row"
+      },
+      "html_line_range": [
+        32813,
+        32831
+      ],
+      "source_excerpt": "Item REQUIRED Description",
+      "source_obligations": [],
+      "rejected_candidate_mappings": [],
+      "expected_client_requirement_ids": [],
+      "applies_to": "all_client_profiles",
+      "review_note": "This locator is the Register request payload table header. REQUIRED is only a column heading; the request rows describe the fields.",
+      "source_request_rows": [
+        {
+          "row_label": "Object Type",
+          "required": "Yes",
+          "actor": "client",
+          "disposition": "required_request_field_mapped_to_client_requirement",
+          "html_line_range": [
+            32832,
+            32849
+          ],
+          "source_excerpt": "Object Type Yes Determines the type of object being registered.",
+          "source_gap_id": null,
+          "source_requirement_ids": [
+            "KMIPKIT-REQ-SPEC-6.1.43-001"
+          ]
+        },
+        {
+          "row_label": "Attributes",
+          "required": "Yes",
+          "actor": "client",
+          "disposition": "required_request_field_mapped_to_client_requirement",
+          "html_line_range": [
+            32850,
+            32870
+          ],
+          "source_excerpt": "Attributes Yes Specifies desired object attributes to be associated with the new object.",
+          "source_gap_id": null,
+          "source_requirement_ids": [
+            "KMIPKIT-REQ-SPEC-6.1.43-001"
+          ]
+        },
+        {
+          "row_label": "Any Object (Section 2)",
+          "required": "Yes",
+          "actor": "client",
+          "disposition": "required_request_field_mapped_to_client_requirement",
+          "html_line_range": [
+            32871,
+            32889
+          ],
+          "source_excerpt": "Any Object (Section 2) Yes The object being registered. The object and attributes MAY be wrapped.",
+          "source_gap_id": null,
+          "source_requirement_ids": [
+            "KMIPKIT-REQ-SPEC-6.1.43-005"
+          ],
+          "source_note": "The object and attributes may be sent using KMIP wrapping."
+        },
+        {
+          "row_label": "Protection Storage Masks",
+          "required": "No",
+          "actor": "client",
+          "disposition": "optional_request_field_with_source_only_proposal",
+          "html_line_range": [
+            32890,
+            32908
+          ],
+          "source_excerpt": "Protection Storage Masks No Specifies all permissible Protection Storage Mask selections for the new object",
+          "source_gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.43-PROTECTION-STORAGE-MASKS-OPTIONAL",
+          "source_requirement_ids": []
+        }
+      ],
+      "source_payload_rows": []
+    },
+    {
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+      "source_section": "6.1.43",
+      "source_clause_id": "KMIPKIT-CLAUSE-SPEC-6.1.43-005",
+      "source_locator": {
+        "ordinal": 5,
+        "block_kind": "table_row"
+      },
+      "html_line_range": [
+        32871,
+        32889
+      ],
+      "source_excerpt": "Any Object (Section 2) Yes The object being registered. The object and attributes MAY be wrapped.",
+      "source_obligations": [
+        {
+          "source_order": 1,
+          "source_text": "The object and attributes MAY be wrapped.",
+          "source_keyword": "MAY",
+          "actor": "client",
+          "direction": "client→server Register request",
+          "condition": "The client elects to wrap the object and attributes.",
+          "scope_disposition": "client_1_0",
+          "candidate_requirement_id": "KMIPKIT-REQ-SPEC-6.1.43-005"
+        }
+      ],
+      "rejected_candidate_mappings": [],
+      "expected_client_requirement_ids": [
+        "KMIPKIT-REQ-SPEC-6.1.43-005"
+      ],
+      "applies_to": "all_client_profiles",
+      "review_note": "The Any Object request row permits the client to wrap the object and attributes.",
+      "source_request_rows": [],
+      "source_payload_rows": []
+    },
+    {
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+      "source_section": "6.1.43",
+      "source_clause_id": "KMIPKIT-CLAUSE-SPEC-6.1.43-006",
+      "source_locator": {
+        "ordinal": 6,
+        "block_kind": "table_row"
+      },
+      "html_line_range": [
+        32928,
+        32946
+      ],
+      "source_excerpt": "Item REQUIRED Description",
+      "source_obligations": [],
+      "rejected_candidate_mappings": [],
+      "expected_client_requirement_ids": [],
+      "applies_to": "all_client_profiles",
+      "review_note": "This locator is the Register response payload table header. REQUIRED is only a column heading; Unique Identifier is response payload data.",
+      "source_request_rows": [],
+      "source_payload_rows": [
+        {
+          "row_label": "Unique Identifier",
+          "required": "Yes",
+          "actor": "server",
+          "disposition": "response_payload_data",
+          "html_line_range": [
+            32947,
+            32965
+          ],
+          "source_excerpt": "Unique Identifier Yes The Unique Identifier of the newly registered object."
+        }
+      ]
+    },
+    {
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+      "source_section": "6.1.43",
+      "source_clause_id": "KMIPKIT-CLAUSE-SPEC-6.1.43-007",
+      "source_locator": {
+        "ordinal": 7,
+        "block_kind": "paragraph"
+      },
+      "html_line_range": [
+        32974,
+        32976
+      ],
+      "source_excerpt": "If a Managed Cryptographic Object is registered, then the following attributes SHALL be included in the Register request.",
+      "source_obligations": [
+        {
+          "source_order": 1,
+          "source_text": "If a Managed Cryptographic Object is registered, then the following attributes SHALL be included in the Register request.",
+          "source_keyword": "SHALL",
+          "actor": "client",
+          "direction": "client→server Register request",
+          "condition": "A Managed Cryptographic Object is registered.",
+          "scope_disposition": "client_1_0",
+          "candidate_requirement_id": "KMIPKIT-REQ-SPEC-6.1.43-007"
+        }
+      ],
+      "rejected_candidate_mappings": [],
+      "expected_client_requirement_ids": [
+        "KMIPKIT-REQ-SPEC-6.1.43-007"
+      ],
+      "applies_to": "all_client_profiles",
+      "review_note": "When a Managed Cryptographic Object is registered, the client includes the listed attributes.",
+      "source_request_rows": [],
+      "source_payload_rows": []
+    },
+    {
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+      "source_section": "6.1.43",
+      "source_clause_id": "KMIPKIT-CLAUSE-SPEC-6.1.43-008",
+      "source_locator": {
+        "ordinal": 8,
+        "block_kind": "table_row"
+      },
+      "html_line_range": [
+        32982,
+        32993
+      ],
+      "source_excerpt": "Attribute REQUIRED",
+      "source_obligations": [],
+      "rejected_candidate_mappings": [],
+      "expected_client_requirement_ids": [],
+      "applies_to": "all_client_profiles",
+      "review_note": "This locator is the Register Attribute Requirements table header. REQUIRED is only a column heading; the rows apply when a Managed Cryptographic Object is registered.",
+      "source_request_rows": [
+        {
+          "row_label": "Cryptographic Algorithm",
+          "required": "Yes",
+          "actor": "client",
+          "disposition": "required_request_field_mapped_to_client_requirement",
+          "html_line_range": [
+            32994,
+            33009
+          ],
+          "source_excerpt": "Cryptographic Algorithm Yes, MAY be omitted only if this information is encapsulated in the Key Block. Does not apply to Secret Data. If present, then Cryptographic Length below SHALL also be present.",
+          "source_gap_id": null,
+          "source_requirement_ids": [
+            "KMIPKIT-REQ-SPEC-6.1.43-009-001",
+            "KMIPKIT-REQ-SPEC-6.1.43-009-002"
+          ]
+        },
+        {
+          "row_label": "Cryptographic Length",
+          "required": "Yes",
+          "actor": "client",
+          "disposition": "required_request_field_mapped_to_client_requirement",
+          "html_line_range": [
+            33010,
+            33026
+          ],
+          "source_excerpt": "Cryptographic Length Yes, MAY be omitted only if this information is encapsulated in the Key Block. Does not apply to Secret Data. If present, then Cryptographic Algorithm above SHALL also be present.",
+          "source_gap_id": null,
+          "source_requirement_ids": [
+            "KMIPKIT-REQ-SPEC-6.1.43-010-001",
+            "KMIPKIT-REQ-SPEC-6.1.43-010-002"
+          ]
+        },
+        {
+          "row_label": "Certificate Length",
+          "required": "Yes",
+          "actor": "client",
+          "disposition": "required_request_field_mapped_to_client_requirement",
+          "html_line_range": [
+            33027,
+            33039
+          ],
+          "source_excerpt": "Certificate Length Yes. Only applies to Certificates.",
+          "source_gap_id": null,
+          "source_requirement_ids": [
+            "KMIPKIT-REQ-SPEC-6.1.43-007"
+          ]
+        },
+        {
+          "row_label": "Cryptographic Usage Mask",
+          "required": "Yes",
+          "actor": "client",
+          "disposition": "required_request_field_mapped_to_client_requirement",
+          "html_line_range": [
+            33040,
+            33052
+          ],
+          "source_excerpt": "Cryptographic Usage Mask Yes.",
+          "source_gap_id": null,
+          "source_requirement_ids": [
+            "KMIPKIT-REQ-SPEC-6.1.43-007"
+          ]
+        },
+        {
+          "row_label": "Digital Signature Algorithm",
+          "required": "Yes",
+          "actor": "client",
+          "disposition": "required_request_field_mapped_to_client_requirement",
+          "html_line_range": [
+            33053,
+            33067
+          ],
+          "source_excerpt": "Digital Signature Algorithm Yes, MAY be omitted only if this information is encapsulated in the Certificate object. Only applies to Certificates.",
+          "source_gap_id": null,
+          "source_requirement_ids": [
+            "KMIPKIT-REQ-SPEC-6.1.43-011"
+          ]
+        }
+      ],
+      "source_payload_rows": []
+    },
+    {
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+      "source_section": "6.1.43",
+      "source_clause_id": "KMIPKIT-CLAUSE-SPEC-6.1.43-009",
+      "source_locator": {
+        "ordinal": 9,
+        "block_kind": "table_row"
+      },
+      "html_line_range": [
+        32994,
+        33009
+      ],
+      "source_excerpt": "Cryptographic Algorithm Yes, MAY be omitted only if this information is encapsulated in the Key Block. Does not apply to Secret Data. If present, then Cryptographic Length below SHALL also be present.",
+      "source_obligations": [
+        {
+          "source_order": 1,
+          "source_text": "MAY be omitted only if this information is encapsulated in the Key Block.",
+          "source_keyword": "MAY",
+          "actor": "client",
+          "direction": "client→server Register request",
+          "condition": "Cryptographic Algorithm information is encapsulated in the Key Block.",
+          "scope_disposition": "client_1_0",
+          "candidate_requirement_id": "KMIPKIT-REQ-SPEC-6.1.43-009-001"
+        },
+        {
+          "source_order": 2,
+          "source_text": "If present, then Cryptographic Length below SHALL also be present.",
+          "source_keyword": "SHALL",
+          "actor": "client",
+          "direction": "client→server Register request",
+          "condition": "Cryptographic Algorithm is present.",
+          "scope_disposition": "client_1_0",
+          "candidate_requirement_id": "KMIPKIT-REQ-SPEC-6.1.43-009-002"
+        }
+      ],
+      "rejected_candidate_mappings": [],
+      "expected_client_requirement_ids": [
+        "KMIPKIT-REQ-SPEC-6.1.43-009-001",
+        "KMIPKIT-REQ-SPEC-6.1.43-009-002"
+      ],
+      "applies_to": "all_client_profiles",
+      "review_note": "The row applies to Managed Cryptographic Objects except Secret Data; its Key Block and paired Length conditions remain explicit.",
+      "source_request_rows": [],
+      "source_payload_rows": []
+    },
+    {
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+      "source_section": "6.1.43",
+      "source_clause_id": "KMIPKIT-CLAUSE-SPEC-6.1.43-010",
+      "source_locator": {
+        "ordinal": 10,
+        "block_kind": "table_row"
+      },
+      "html_line_range": [
+        33010,
+        33026
+      ],
+      "source_excerpt": "Cryptographic Length Yes, MAY be omitted only if this information is encapsulated in the Key Block. Does not apply to Secret Data. If present, then Cryptographic Algorithm above SHALL also be present.",
+      "source_obligations": [
+        {
+          "source_order": 1,
+          "source_text": "MAY be omitted only if this information is encapsulated in the Key Block.",
+          "source_keyword": "MAY",
+          "actor": "client",
+          "direction": "client→server Register request",
+          "condition": "Cryptographic Length information is encapsulated in the Key Block.",
+          "scope_disposition": "client_1_0",
+          "candidate_requirement_id": "KMIPKIT-REQ-SPEC-6.1.43-010-001"
+        },
+        {
+          "source_order": 2,
+          "source_text": "If present, then Cryptographic Algorithm above SHALL also be present.",
+          "source_keyword": "SHALL",
+          "actor": "client",
+          "direction": "client→server Register request",
+          "condition": "Cryptographic Length is present.",
+          "scope_disposition": "client_1_0",
+          "candidate_requirement_id": "KMIPKIT-REQ-SPEC-6.1.43-010-002"
+        }
+      ],
+      "rejected_candidate_mappings": [],
+      "expected_client_requirement_ids": [
+        "KMIPKIT-REQ-SPEC-6.1.43-010-001",
+        "KMIPKIT-REQ-SPEC-6.1.43-010-002"
+      ],
+      "applies_to": "all_client_profiles",
+      "review_note": "The row applies to Managed Cryptographic Objects except Secret Data; its Key Block and paired Algorithm conditions remain explicit.",
+      "source_request_rows": [],
+      "source_payload_rows": []
+    },
+    {
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+      "source_section": "6.1.43",
+      "source_clause_id": "KMIPKIT-CLAUSE-SPEC-6.1.43-011",
+      "source_locator": {
+        "ordinal": 11,
+        "block_kind": "table_row"
+      },
+      "html_line_range": [
+        33053,
+        33067
+      ],
+      "source_excerpt": "Digital Signature Algorithm Yes, MAY be omitted only if this information is encapsulated in the Certificate object. Only applies to Certificates.",
+      "source_obligations": [
+        {
+          "source_order": 1,
+          "source_text": "MAY be omitted only if this information is encapsulated in the Certificate object.",
+          "source_keyword": "MAY",
+          "actor": "client",
+          "direction": "client→server Register request",
+          "condition": "Digital Signature Algorithm information is encapsulated in the Certificate object.",
+          "scope_disposition": "client_1_0",
+          "candidate_requirement_id": "KMIPKIT-REQ-SPEC-6.1.43-011"
+        }
+      ],
+      "rejected_candidate_mappings": [],
+      "expected_client_requirement_ids": [
+        "KMIPKIT-REQ-SPEC-6.1.43-011"
+      ],
+      "applies_to": "all_client_profiles",
+      "review_note": "The Digital Signature Algorithm row applies only to Certificates and preserves its Certificate object condition.",
+      "source_request_rows": [],
+      "source_payload_rows": []
+    },
+    {
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+      "source_section": "6.1.43.1",
+      "source_clause_id": "KMIPKIT-CLAUSE-SPEC-6.1.43.1-001",
+      "source_locator": {
+        "ordinal": 1,
+        "block_kind": "paragraph"
+      },
+      "html_line_range": [
+        33080,
+        33081
+      ],
+      "source_excerpt": "This section details the specific Result Reasons that SHALL be returned for errors detected in a Register Operation.",
+      "source_obligations": [
+        {
+          "source_order": 1,
+          "source_text": "This section details the specific Result Reasons that SHALL be returned for errors detected in a Register Operation.",
+          "source_keyword": "SHALL",
+          "actor": "server",
+          "direction": "server→client error response",
+          "condition": "Errors are detected in a Register operation.",
+          "scope_disposition": "server_only",
+          "candidate_requirement_id": null
+        }
+      ],
+      "rejected_candidate_mappings": [],
+      "expected_client_requirement_ids": [],
+      "applies_to": "all_client_profiles",
+      "review_note": "The error-handling preamble assigns the listed Result Reasons to the server for errors detected in a Register operation.",
+      "source_request_rows": [],
+      "source_payload_rows": []
+    },
+    {
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+      "source_section": "6.1.43.1",
+      "source_clause_id": "KMIPKIT-CLAUSE-SPEC-6.1.43.1-002",
+      "source_locator": {
+        "ordinal": 2,
+        "block_kind": "table_row"
+      },
+      "html_line_range": [
+        33101,
+        33118
+      ],
+      "source_excerpt": "Operation Failed Attribute Read Only, Attribute Single Valued, Bad Password, Encoding Option Error, Invalid Attribute, Invalid Attribute Value, Invalid Object Type, Non Unique Name Attribute, Server Limit Exceeded, Attestation Failed, Attestation Required, Feature Not Supported, Invalid Field, Invalid Message, Operation Not Supported, Permission Denied, Protection Storage Unavailable, Response Too Large",
+      "source_obligations": [],
+      "rejected_candidate_mappings": [],
+      "expected_client_requirement_ids": [],
+      "applies_to": "all_client_profiles",
+      "review_note": "This error payload row lists Result Reason enum values. Attestation Required is an enum name and REQUIRED is not normative force in this row.",
+      "source_request_rows": [],
+      "source_payload_rows": []
+    }],
   "source_only_requirement_gaps": [
     {
       "gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1-PROCEDURE-011",
@@ -66251,6 +66964,39 @@
       "proposed_requirement_id": null,
       "status": "actor_and_scope_unresolved",
       "review_note": "The KMIP Usage Guide citation is informative and does not resolve the actor or scope for this formal SHOULD; preserve both as unresolved."
-    }
-  ]
+    },
+    {
+      "gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.43-PROTECTION-STORAGE-MASKS-OPTIONAL",
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+      "source_section": "6.1.43",
+      "source_clause_id": null,
+      "source_locator": {
+        "kind": "table_body_row",
+        "section": "6.1.43",
+        "row_label": "Protection Storage Masks",
+        "table": "request_payload",
+        "html_line_range": [
+          32890,
+          32908
+        ]
+      },
+      "source_locator_description": "§6.1.43 Register request payload body row for Protection Storage Masks (HTML lines 32890-32908)",
+      "html_line_range": [
+        32890,
+        32908
+      ],
+      "source_excerpt": "Protection Storage Masks No Specifies all permissible Protection Storage Mask selections for the new object",
+      "source_keywords": [],
+      "source_force": "optional_table_body_value",
+      "audited_statement": "The Register request payload marks Protection Storage Masks Required=No and describes all permissible Protection Storage Mask selections for the new object.",
+      "actor": "client",
+      "direction": "optional Protection Storage Masks request payload value",
+      "condition": "A client elects to specify permissible Protection Storage Mask selections for the new object.",
+      "scope_disposition": "client_1_0",
+      "candidate_requirement_id": null,
+      "proposed_requirement_id": "KMIPKIT-REQ-SPEC-6.1.43-012",
+      "status": "stable_label_proposed_not_in_catalog",
+      "review_note": "Source-only proposal for the Optional Protection Storage Masks request row. The row has Required=No and no formal keyword or active catalog requirement; do not create a requirement crosswalk."
+    }]
 }
