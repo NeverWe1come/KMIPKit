@@ -42464,9 +42464,15 @@
       "requirement_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0039",
+      "implementation_refs": [
+        "crates/kmipkit-client/src/execute.rs",
+        "crates/kmipkit-protocol/src/get_constraints.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/get_constraints_tests.rs",
+        "crates/kmipkit-client/tests/unit/get_constraints_execution_tests.rs"
+      ],
       "wire_value": "00000038",
       "allocation": "assigned"
     },
@@ -42488,9 +42494,15 @@
       "requirement_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0039",
+      "implementation_refs": [
+        "crates/kmipkit-client/src/execute.rs",
+        "crates/kmipkit-protocol/src/get_usage_allocation.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/get_usage_allocation_tests.rs",
+        "crates/kmipkit-client/tests/unit/get_usage_allocation_execution_tests.rs"
+      ],
       "wire_value": "00000011",
       "allocation": "assigned"
     },
@@ -43327,9 +43339,15 @@
       "requirement_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0039",
+      "implementation_refs": [
+        "crates/kmipkit-client/src/execute.rs",
+        "crates/kmipkit-protocol/src/set_constraints.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/set_constraints_tests.rs",
+        "crates/kmipkit-client/tests/unit/set_constraints_execution_tests.rs"
+      ],
       "wire_value": "00000037",
       "allocation": "assigned"
     },
@@ -43351,9 +43369,15 @@
       "requirement_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0039",
+      "implementation_refs": [
+        "crates/kmipkit-client/src/execute.rs",
+        "crates/kmipkit-protocol/src/set_defaults.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/set_defaults_tests.rs",
+        "crates/kmipkit-client/tests/unit/set_defaults_execution_tests.rs"
+      ],
       "wire_value": "00000036",
       "allocation": "assigned"
     },
@@ -43368,7 +43392,7 @@
         }
       ],
       "direction": "both",
-      "scope_state": "client_1_0",
+      "scope_state": "client_1_1",
       "parent_element_ids": [
         "KMIPKIT-ELEM-ENUMERATION-OPERATION"
       ],
@@ -43379,7 +43403,8 @@
       "implementation_refs": [],
       "verification_refs": [],
       "wire_value": "00000032",
-      "allocation": "assigned"
+      "allocation": "assigned",
+      "scope_reason": "Deferred with §6.1.54 Set Endpoint Role because the successful role transition requires bidirectional channel behavior outside KMIPKit 1.0. Generic TTLV continues preserving open Operation enumeration values."
     },
     {
       "element_id": "KMIPKIT-ELEM-ENUM-VALUE-OPERATION-SIGN-00000021",
@@ -57789,9 +57814,16 @@
       "requirement_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0039",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/get_constraints.rs",
+        "crates/kmipkit-client/src/execute.rs",
+        "crates/kmipkit-client/src/lib.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/get_constraints_tests.rs",
+        "crates/kmipkit-client/tests/unit/get_constraints_execution_tests.rs"
+      ],
       "payload_tables": [
         {
           "role": "request",
@@ -57819,12 +57851,24 @@
       "direction": "client_to_server",
       "scope_state": "client_1_0",
       "parent_element_ids": [],
-      "requirement_ids": [],
+      "requirement_ids": [
+        "KMIPKIT-REQ-SPEC-6.1.23-001-001",
+        "KMIPKIT-REQ-SPEC-6.1.23-001-002",
+        "KMIPKIT-REQ-SPEC-6.1.23-002-001",
+        "KMIPKIT-REQ-SPEC-6.1.23-002-002"
+      ],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0039",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/get_usage_allocation.rs",
+        "crates/kmipkit-client/src/execute.rs",
+        "crates/kmipkit-client/src/lib.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/get_usage_allocation_tests.rs",
+        "crates/kmipkit-client/tests/unit/get_usage_allocation_execution_tests.rs"
+      ],
       "payload_tables": [
         {
           "role": "request",
@@ -59334,9 +59378,16 @@
       "requirement_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0039",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/set_constraints.rs",
+        "crates/kmipkit-client/src/execute.rs",
+        "crates/kmipkit-client/src/lib.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/set_constraints_tests.rs",
+        "crates/kmipkit-client/tests/unit/set_constraints_execution_tests.rs"
+      ],
       "payload_tables": [
         {
           "role": "request",
@@ -59367,9 +59418,16 @@
       "requirement_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0039",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/set_defaults.rs",
+        "crates/kmipkit-client/src/execute.rs",
+        "crates/kmipkit-client/src/lib.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/set_defaults_tests.rs",
+        "crates/kmipkit-client/tests/unit/set_defaults_execution_tests.rs"
+      ],
       "payload_tables": [
         {
           "role": "request",
@@ -59395,7 +59453,7 @@
         }
       ],
       "direction": "client_to_server",
-      "scope_state": "client_1_0",
+      "scope_state": "client_1_1",
       "parent_element_ids": [],
       "requirement_ids": [],
       "profile_ids": [
@@ -59433,7 +59491,8 @@
           "caption": "Set Endpoint Role Response Payload"
         }
       ],
-      "asynchronous_response": null
+      "asynchronous_response": null,
+      "scope_reason": "OASIS KMIP 2.1 §6.1.54 requires that, after success, the server assumes Client role and the client assumes Server role on the existing channel; §11.19, Tables 451–452 defines the role values. This bidirectional behavior is outside KMIPKit 1.0's client-only scope and is deferred to 1.1 under an approved specification. The generic TTLV layer still preserves Operation value 0x00000032."
     },
     {
       "element_id": "KMIPKIT-ELEM-OP-C2S-SIGN",
@@ -59880,9 +59939,13 @@
       "requirement_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0039",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/set_defaults.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/set_defaults_tests.rs"
+      ],
       "source_encoding": "Structure",
       "source_requiredness": ""
     },
@@ -60724,9 +60787,15 @@
       "requirement_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0039",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/get_constraints.rs",
+        "crates/kmipkit-protocol/src/set_constraints.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/get_constraints_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/set_constraints_tests.rs"
+      ],
       "source_encoding": "Structure",
       "source_requiredness": "YES"
     },
@@ -71538,12 +71607,15 @@
       "feature_spec": "KMIPKIT-0004",
       "implementation_refs": [
         "crates/kmipkit-ttlv/src/tag.rs",
-        "crates/kmipkit-ttlv/src/generated/tag_allocations.rs"
+        "crates/kmipkit-ttlv/src/generated/tag_allocations.rs",
+        "crates/kmipkit-protocol/src/get_usage_allocation.rs"
       ],
       "verification_refs": [
         "crates/kmipkit-ttlv/tests/tag_allocation.rs::every_exact_catalog_record_matches_public_allocation_check",
         "crates/kmipkit-ttlv/tests/tag_allocation.rs::every_allocation_range_boundary_and_adjacent_value_matches_catalog",
-        "crates/kmipkit-ttlv/tests/tag_allocation.rs::every_extension_range_tag_is_accepted"
+        "crates/kmipkit-ttlv/tests/tag_allocation.rs::every_extension_range_tag_is_accepted",
+        "crates/kmipkit-protocol/tests/unit/get_usage_allocation_tests.rs",
+        "crates/kmipkit-client/tests/unit/usage_allocation_guard_tests.rs"
       ]
     },
     {
@@ -71604,12 +71676,15 @@
       "feature_spec": "KMIPKIT-0004",
       "implementation_refs": [
         "crates/kmipkit-ttlv/src/tag.rs",
-        "crates/kmipkit-ttlv/src/generated/tag_allocations.rs"
+        "crates/kmipkit-ttlv/src/generated/tag_allocations.rs",
+        "crates/kmipkit-protocol/src/get_usage_allocation.rs"
       ],
       "verification_refs": [
         "crates/kmipkit-ttlv/tests/tag_allocation.rs::every_exact_catalog_record_matches_public_allocation_check",
         "crates/kmipkit-ttlv/tests/tag_allocation.rs::every_allocation_range_boundary_and_adjacent_value_matches_catalog",
-        "crates/kmipkit-ttlv/tests/tag_allocation.rs::every_extension_range_tag_is_accepted"
+        "crates/kmipkit-ttlv/tests/tag_allocation.rs::every_extension_range_tag_is_accepted",
+        "crates/kmipkit-protocol/tests/unit/get_usage_allocation_tests.rs",
+        "crates/kmipkit-client/tests/unit/usage_allocation_guard_tests.rs"
       ]
     },
     {
@@ -77536,7 +77611,8 @@
       "implementation_refs": [
         "crates/kmipkit-ttlv/src/tag.rs",
         "crates/kmipkit-ttlv/src/generated/tag_allocations.rs",
-        "crates/kmipkit-protocol/src/query.rs"
+        "crates/kmipkit-protocol/src/query.rs",
+        "crates/kmipkit-protocol/src/set_defaults.rs"
       ],
       "verification_refs": [
         "crates/kmipkit-ttlv/tests/tag_allocation.rs::every_exact_catalog_record_matches_public_allocation_check",
@@ -77550,7 +77626,8 @@
         "crates/kmipkit-client/tests/unit/query_execution_tests.rs::query_sends_one_request_with_repeated_functions_and_ordered_object_groups",
         "crates/kmipkit-client/tests/unit/query_execution_tests.rs::empty_query_is_not_sent",
         "crates/kmipkit-client/tests/unit/query_execution_tests.rs::query_failure_preserves_kmip_result_and_transport_delivery_without_retry",
-        "crates/kmipkit-client/tests/unit/query_execution_tests.rs::query_rejects_malformed_response_after_one_exchange"
+        "crates/kmipkit-client/tests/unit/query_execution_tests.rs::query_rejects_malformed_response_after_one_exchange",
+        "crates/kmipkit-protocol/tests/unit/set_defaults_tests.rs"
       ]
     },
     {
@@ -78247,12 +78324,16 @@
       "feature_spec": "KMIPKIT-0004",
       "implementation_refs": [
         "crates/kmipkit-ttlv/src/tag.rs",
-        "crates/kmipkit-ttlv/src/generated/tag_allocations.rs"
+        "crates/kmipkit-ttlv/src/generated/tag_allocations.rs",
+        "crates/kmipkit-protocol/src/get_constraints.rs",
+        "crates/kmipkit-protocol/src/set_constraints.rs"
       ],
       "verification_refs": [
         "crates/kmipkit-ttlv/tests/tag_allocation.rs::every_exact_catalog_record_matches_public_allocation_check",
         "crates/kmipkit-ttlv/tests/tag_allocation.rs::every_allocation_range_boundary_and_adjacent_value_matches_catalog",
-        "crates/kmipkit-ttlv/tests/tag_allocation.rs::every_extension_range_tag_is_accepted"
+        "crates/kmipkit-ttlv/tests/tag_allocation.rs::every_extension_range_tag_is_accepted",
+        "crates/kmipkit-protocol/tests/unit/get_constraints_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/set_constraints_tests.rs"
       ]
     },
     {
@@ -91437,16 +91518,26 @@
       "direction": "client_to_server",
       "condition": "When applying protection to an object with Usage Limits.",
       "scope_state": "client_1_0",
-      "element_ids": [],
+      "element_ids": [
+        "KMIPKIT-ELEM-OP-C2S-GET-USAGE-ALLOCATION",
+        "KMIPKIT-ELEM-TAG-420094",
+        "KMIPKIT-ELEM-TAG-420096"
+      ],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0039",
+      "implementation_refs": [
+        "crates/kmipkit-client/src/usage_allocation.rs",
+        "specs/025-policy-controls/contracts/usage-allocation-guard.md"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-client/tests/usage_allocation_guard_boundary.rs",
+        "crates/kmipkit-client/tests/unit/usage_allocation_guard_tests.rs::successful_allocation_binds_returned_identifier_and_open_caller_unit"
+      ],
       "negative_verification_required": true,
       "decision_id": null,
-      "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
+      "status": "scoped_verified",
+      "review_note": "The explicit guard enforces allocation context only for typed Encrypt, MAC, and Sign calls routed through it. Ordinary typed calls, raw requests, other clients, and server-side use bypass this caller-owned local guard. Caller responsibility and this limitation are defined in the approved guard contract and feature traceability; this is scoped verification, not a claim of global or server-side enforcement. No requirement-specific official Test Cases are linked to this clause in the pinned OASIS test inventory."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.23-001-002",
@@ -91467,16 +91558,25 @@
       "direction": "client_to_server",
       "condition": "After Activation Date and before Protect Stop Date.",
       "scope_state": "client_1_0",
-      "element_ids": [],
+      "element_ids": [
+        "KMIPKIT-ELEM-OP-C2S-GET-USAGE-ALLOCATION",
+        "KMIPKIT-ELEM-TAG-420094",
+        "KMIPKIT-ELEM-TAG-420096"
+      ],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0039",
+      "implementation_refs": [
+        "specs/025-policy-controls/contracts/usage-allocation-guard.md",
+        "specs/025-policy-controls/traceability.md"
+      ],
+      "verification_refs": [
+        "specs/025-policy-controls/traceability.md"
+      ],
       "negative_verification_required": false,
       "decision_id": null,
-      "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
+      "status": "scoped_verified",
+      "review_note": "The caller must ensure allocation is requested within the object's Activation Date and Protect Stop Date window. KMIPKit has no local server-object metadata with which to enforce this timing condition; the approved contract assigns the check to the caller and explicitly says ordinary typed calls bypass the guard. No runtime date enforcement is claimed. No requirement-specific official Test Cases are linked to this clause in the pinned OASIS inventory."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.23-002-001",
@@ -91497,16 +91597,26 @@
       "direction": "client_to_server",
       "condition": null,
       "scope_state": "client_1_0",
-      "element_ids": [],
+      "element_ids": [
+        "KMIPKIT-ELEM-OP-C2S-GET-USAGE-ALLOCATION",
+        "KMIPKIT-ELEM-TAG-420094",
+        "KMIPKIT-ELEM-TAG-420096"
+      ],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0039",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/get_usage_allocation.rs",
+        "crates/kmipkit-client/src/usage_allocation.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/get_usage_allocation_tests.rs",
+        "crates/kmipkit-client/tests/unit/usage_allocation_guard_tests.rs::successful_allocation_binds_returned_identifier_and_open_caller_unit"
+      ],
       "negative_verification_required": false,
       "decision_id": null,
-      "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
+      "status": "scoped_verified",
+      "review_note": "The typed request carries the required exact Long Integer count, and the guard binds the caller-supplied exact positive count and open unit to the successful response's resolved identifier. The caller still supplies object metadata; this scoped verification is not a full profile conformance claim. No requirement-specific official Test Cases are linked to this clause in the pinned OASIS test inventory."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.23-002-002",
@@ -91527,16 +91637,26 @@
       "direction": "client_to_server",
       "condition": "After the entire allocation is consumed.",
       "scope_state": "client_1_0",
-      "element_ids": [],
+      "element_ids": [
+        "KMIPKIT-ELEM-OP-C2S-GET-USAGE-ALLOCATION",
+        "KMIPKIT-ELEM-TAG-420094",
+        "KMIPKIT-ELEM-TAG-420096"
+      ],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0039",
+      "implementation_refs": [
+        "crates/kmipkit-client/src/usage_allocation.rs",
+        "crates/kmipkit-client/src/execute.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-client/tests/unit/usage_allocation_guard_tests.rs::over_budget_is_not_sent_and_not_sent_failure_releases_a_valid_reservation",
+        "crates/kmipkit-client/tests/unit/usage_allocation_guard_tests.rs::possibly_sent_and_response_started_errors_keep_reservations"
+      ],
       "negative_verification_required": true,
       "decision_id": null,
-      "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
+      "status": "scoped_verified",
+      "review_note": "The local guard prevents over-budget use only for explicitly routed typed Encrypt, MAC, and Sign calls. Other operations and callers bypass this context, and local reservations are not evidence of remote consumption. This is verified at the documented caller boundary, not a full profile conformance claim. No requirement-specific official Test Cases are linked to this clause in the pinned OASIS test inventory."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.25-001",

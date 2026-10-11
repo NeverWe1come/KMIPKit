@@ -1614,7 +1614,11 @@ class CatalogValidationTests(unittest.TestCase):
         ]
         _check_operation_inventory(elements)
 
-        missing_operation = elements[:-1]
+        missing_operation = [
+            row
+            for row in elements
+            if not (row.get("kind") == "operation" and row.get("name") == "Discover Versions")
+        ]
         with self.assertRaisesRegex(CatalogValidationError, "operation"):
             _check_operation_inventory(missing_operation)
 
