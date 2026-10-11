@@ -6702,6 +6702,177 @@ class CatalogValidationTests(unittest.TestCase):
             self.assertIn(caption, pinned_source_excerpt(source_path, line_range))
         self.assertEqual(oracle["oracle_status"], "partial-source-reviewed; not complete T003 oracle")
 
+    def test_spec_6_1_48_reprovision_reviews_client_inputs_and_server_effects(self) -> None:
+        """Specification v2.1 §§6.1.48 and 6.1.48.1 preserve Re-Provision source roles."""
+        fixture_path = ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json"
+        oracle = json.loads(fixture_path.read_text(encoding="utf-8"))
+        source_path = "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
+        pinned_locators = audit_document_with_text((ROOT / source_path).read_bytes(), "KMIPKIT-SRC-spec")
+        reprovision_locators = [row for row in pinned_locators if row["section"] in ("6.1.48", "6.1.48.1")]
+        expected_locators = {
+            "KMIPKIT-CLAUSE-SPEC-6.1.48-001": ("6.1.48", 1, "paragraph", ["SHALL"], [35070, 35073]),
+            "KMIPKIT-CLAUSE-SPEC-6.1.48-002": ("6.1.48", 2, "paragraph", ["SHALL"], [35075, 35078]),
+            "KMIPKIT-CLAUSE-SPEC-6.1.48-003": ("6.1.48", 3, "paragraph", ["SHALL"], [35080, 35083]),
+            "KMIPKIT-CLAUSE-SPEC-6.1.48-004": ("6.1.48", 4, "paragraph", ["SHALL", "MAY"], [35085, 35088]),
+            "KMIPKIT-CLAUSE-SPEC-6.1.48-005": ("6.1.48", 5, "paragraph", ["SHALL"], [35090, 35091]),
+            "KMIPKIT-CLAUSE-SPEC-6.1.48-006": ("6.1.48", 6, "paragraph", ["SHALL"], [35093, 35094]),
+            "KMIPKIT-CLAUSE-SPEC-6.1.48-007": ("6.1.48", 7, "paragraph", ["SHOULD"], [35096, 35097]),
+            "KMIPKIT-CLAUSE-SPEC-6.1.48-008": ("6.1.48", 8, "paragraph", ["SHALL"], [35099, 35100]),
+            "KMIPKIT-CLAUSE-SPEC-6.1.48-009": ("6.1.48", 9, "paragraph", ["SHALL"], [35102, 35103]),
+            "KMIPKIT-CLAUSE-SPEC-6.1.48-010": ("6.1.48", 10, "table_row", ["REQUIRED"], [35119, 35132]),
+            "KMIPKIT-CLAUSE-SPEC-6.1.48-011": ("6.1.48", 11, "table_row", ["REQUIRED"], [35191, 35204]),
+            "KMIPKIT-CLAUSE-SPEC-6.1.48.1-001": ("6.1.48.1", 1, "paragraph", ["SHALL"], [35235, 35236]),
+            "KMIPKIT-CLAUSE-SPEC-6.1.48.1-002": ("6.1.48.1", 2, "table_row", ["REQUIRED"], [35259, 35268]),
+        }
+        self.assertEqual({row["clause_id"] for row in reprovision_locators}, set(expected_locators))
+        reviews = {
+            row["source_clause_id"]: row
+            for row in oracle["source_requirement_reviews"]
+            if row["source_section"] in ("6.1.48", "6.1.48.1")
+        }
+        self.assertEqual(set(reviews), set(expected_locators))
+        for clause_id, (section, ordinal, block_kind, keywords, line_range) in expected_locators.items():
+            review = reviews[clause_id]
+            self.assertEqual(review["source_section"], section)
+            self.assertEqual(review["source_locator"], {"ordinal": ordinal, "block_kind": block_kind})
+            self.assertEqual(review["html_line_range"], line_range)
+            self.assertEqual(review["source_excerpt"], pinned_source_excerpt(source_path, line_range))
+            pinned = next(row for row in reprovision_locators if row["clause_id"] == clause_id)
+            self.assertEqual(review["source_excerpt"], pinned["source_text"])
+            self.assertEqual(pinned["source_keywords"], keywords)
+
+        expected_atoms = {
+            "KMIPKIT-CLAUSE-SPEC-6.1.48-001": [
+                ("SHALL", "The client requesting re-provisioning SHALL provide a certificate signing request, or a certificate, or no parameters if the server will create the client credential .",
+                 "client", "KMIPKIT-REQ-SPEC-6.1.48-001", "client_1_0"),
+            ],
+            "KMIPKIT-CLAUSE-SPEC-6.1.48-002": [
+                ("SHALL", "the server SHALL process the certificate signing request and assign the new certificate to the be the client link level credential.",
+                 "server", None, "server_only"),
+                ("SHALL", "The server SHALL return the unique identifier for the signed certificate stored on the server.",
+                 "server", None, "server_only"),
+            ],
+            "KMIPKIT-CLAUSE-SPEC-6.1.48-003": [
+                ("SHALL", "The server SHALL associate the certificate with the client as the client\ufffds link level credential.",
+                 "server", None, "server_only"),
+                ("SHALL", "The server SHALL return the unique identifier for the certificate stored on the server.",
+                 "server", None, "server_only"),
+            ],
+            "KMIPKIT-CLAUSE-SPEC-6.1.48-004": [
+                ("SHALL", "The server SHALL return the unique identifier for the private key.",
+                 "server", None, "server_only"),
+            ],
+            "KMIPKIT-CLAUSE-SPEC-6.1.48-005": [
+                ("SHALL", "The current client credential SHALL be made invalid and cannot be used in future KMIP requests.",
+                 "unspecified", None, "server_only"),
+            ],
+            "KMIPKIT-CLAUSE-SPEC-6.1.48-006": [
+                ("SHALL", "Re-Provision SHALL be called by the client that requires new credentials",
+                 "client", "KMIPKIT-REQ-SPEC-6.1.48-006", "client_1_0"),
+            ],
+            "KMIPKIT-CLAUSE-SPEC-6.1.48-007": [
+                ("SHOULD", "Re-Provision SHOULD fail if the certificate that represents the client credential has expired.",
+                 "server", None, "server_only"),
+            ],
+            "KMIPKIT-CLAUSE-SPEC-6.1.48-008": [
+                ("SHALL", "Re-Provision SHALL fail if the certificate that represents the client credential has been Revoked.",
+                 "server", None, "server_only"),
+            ],
+            "KMIPKIT-CLAUSE-SPEC-6.1.48-009": [
+                ("SHALL", "Re-Provision SHALL fail if the certificate that represents the client credential has been compromised.",
+                 "server", None, "server_only"),
+            ],
+            "KMIPKIT-CLAUSE-SPEC-6.1.48.1-001": [
+                ("SHALL", "This section details the specific Result Reasons that SHALL be returned for errors detected in a Re-Provision Operation.",
+                 "server", None, "server_only"),
+            ],
+        }
+        for clause_id, expected in expected_atoms.items():
+            atoms = reviews[clause_id]["source_obligations"]
+            self.assertEqual(
+                [(atom["source_keyword"], atom["source_text"], atom["actor"],
+                  atom["candidate_requirement_id"], atom["scope_disposition"])
+                 for atom in atoms],
+                expected,
+            )
+
+        no_parameter_review = reviews["KMIPKIT-CLAUSE-SPEC-6.1.48-004"]
+        self.assertIn("client may then subsequently retrieve", no_parameter_review["source_excerpt"])
+        self.assertEqual(
+            [row["requirement_id"] for row in no_parameter_review["rejected_candidate_mappings"]],
+            ["KMIPKIT-REQ-SPEC-6.1.48-004"],
+        )
+        self.assertEqual(no_parameter_review["rejected_candidate_mappings"][0]["claimed_keyword"], "MAY")
+        self.assertIn("lowercase", no_parameter_review["rejected_candidate_mappings"][0]["source_review"].lower())
+        self.assertIn("KMIPKIT-DEC-014", no_parameter_review["review_note"])
+        self.assertIn("actor", no_parameter_review["review_note"].lower())
+        self.assertEqual(
+            no_parameter_review["expected_client_requirement_ids"],
+            [],
+        )
+        self.assertIn("actor", reviews["KMIPKIT-CLAUSE-SPEC-6.1.48-005"]["review_note"].lower())
+        self.assertIn("unspecified", reviews["KMIPKIT-CLAUSE-SPEC-6.1.48-005"]["review_note"].lower())
+
+        for clause_id in (
+            "KMIPKIT-CLAUSE-SPEC-6.1.48-010",
+            "KMIPKIT-CLAUSE-SPEC-6.1.48-011",
+            "KMIPKIT-CLAUSE-SPEC-6.1.48.1-002",
+        ):
+            self.assertEqual(reviews[clause_id]["source_obligations"], [])
+        request_rows = reviews["KMIPKIT-CLAUSE-SPEC-6.1.48-010"]["source_request_rows"]
+        self.assertEqual(
+            [(row["row_label"], row["required"], row["html_line_range"], row["source_requirement_ids"], row["source_gap_id"])
+             for row in request_rows],
+            [
+                ("Certificate Request", "No", [35138, 35150], ["KMIPKIT-REQ-SPEC-6.1.48-001"], None),
+                ("Certificate", "No", [35156, 35168], ["KMIPKIT-REQ-SPEC-6.1.48-001"], None),
+            ],
+        )
+        for row in request_rows:
+            self.assertEqual(row["actor"], "client")
+            self.assertEqual(row["source_excerpt"], pinned_source_excerpt(source_path, row["html_line_range"]))
+        response_rows = reviews["KMIPKIT-CLAUSE-SPEC-6.1.48-011"]["source_payload_rows"]
+        self.assertEqual(
+            [(row["row_label"], row["required"], row["actor"], row["disposition"], row["html_line_range"])
+             for row in response_rows],
+            [("Unique Identifier", "No", "server", "response_payload_data", [35210, 35222])],
+        )
+        self.assertEqual(response_rows[0]["source_excerpt"], pinned_source_excerpt(source_path, [35210, 35222]))
+        self.assertIn("KMIPKIT-DEC-014", reviews["KMIPKIT-CLAUSE-SPEC-6.1.48-011"]["review_note"])
+        self.assertIn("SHALL", reviews["KMIPKIT-CLAUSE-SPEC-6.1.48-011"]["review_note"])
+        result_reasons = reviews["KMIPKIT-CLAUSE-SPEC-6.1.48.1-002"]["source_excerpt"].split("Operation Failed ", 1)[1].split(", ")
+        self.assertEqual(
+            result_reasons,
+            ["Cryptographic Failure", "Attestation Failed", "Attestation Required", "Feature Not Supported",
+             "Invalid Field", "Invalid Message", "Operation Not Supported", "Permission Denied", "Response Too Large"],
+        )
+        self.assertIn("caption", reviews["KMIPKIT-CLAUSE-SPEC-6.1.48.1-002"]["review_note"].lower())
+        self.assertIn("RNG Retrieve Errors", reviews["KMIPKIT-CLAUSE-SPEC-6.1.48.1-002"]["review_note"])
+
+        self.assertEqual(
+            {
+                (row["requirement_id"], row["source_obligation_order"])
+                for row in oracle["requirement_crosswalk"]
+                if row["requirement_id"].startswith("KMIPKIT-REQ-SPEC-6.1.48-")
+            },
+            {
+                ("KMIPKIT-REQ-SPEC-6.1.48-001", 1),
+                ("KMIPKIT-REQ-SPEC-6.1.48-006", 1),
+            },
+        )
+        reprovision_gaps = [
+            row for row in oracle["source_only_requirement_gaps"]
+            if row["source_section"] in ("6.1.48", "6.1.48.1")
+        ]
+        self.assertEqual(reprovision_gaps, [])
+        for line_range, caption in [
+            ([35175, 35175], "Table 313: Re-Provision Request Payload"),
+            ([35229, 35229], "Table 314: Re-Provision Response Payload"),
+            ([35275, 35275], "Table 315: RNG Retrieve Errors"),
+        ]:
+            self.assertIn(caption, pinned_source_excerpt(source_path, line_range))
+        self.assertEqual(oracle["oracle_status"], "partial-source-reviewed; not complete T003 oracle")
+
     def test_spec_6_1_45_recertify_reviews_client_inputs_and_server_effects(self) -> None:
         """Specification v2.1 §§6.1.45 and 6.1.45.1 preserve Re-certify source roles."""
         fixture_path = ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json"
