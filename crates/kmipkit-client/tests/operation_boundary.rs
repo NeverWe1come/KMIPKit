@@ -154,6 +154,114 @@ fn get_and_locate_operations_keep_completed_and_pending_response_views() {
     );
 }
 
+#[test]
+fn rust_quickstart_get_and_locate_examples_execute_through_the_client() {
+    const SYMMETRIC_KEY_TAG: u32 = 0x0042_0091;
+
+    let query = LocateRequest::new(AttributeSet::new()).with_offset_items(0);
+    assert!(query.attributes().is_empty());
+    assert_eq!(query.offset_items(), Some(0));
+
+    let get_request = GetRequest::new().with_unique_identifier(
+        kmipkit_protocol::UniqueIdentifier::TextString("object-123".to_owned()),
+    );
+    assert_eq!(
+        get_request.unique_identifier(),
+        Some(&kmipkit_protocol::UniqueIdentifier::TextString(
+            "object-123".to_owned()
+        ))
+    );
+
+    let limits = CodecLimits::defaults();
+    let get_pki = EphemeralPki::generate().expect("ephemeral test PKI generation succeeds");
+    let get_listener = LoopbackTcpListener::bind().expect("Get loopback listener binds");
+    let get_port = get_listener.local_addr().port();
+    let get_peer = spawn_peer(
+        get_listener.into_inner(),
+        server_configuration(&get_pki),
+        response_bytes(),
+    );
+    let mut get_client = Client::new(
+        empty_client_configuration(),
+        transport_configuration(&get_pki, get_port),
+    )
+    .expect("validated raw-TLS Get client construction succeeds");
+    let get_batch = ClientBatch::new(ClientBatchItem::new(ClientRequest::Get(get_request)));
+    let get_response = get_client
+        .execute(get_batch, &limits)
+        .expect("the Get quickstart batch executes successfully");
+    let get_wire_request = get_peer
+        .join()
+        .expect("the raw-TLS Get peer completes one exchange");
+    assert_eq!(operation_count(&get_wire_request, GET_OPERATION), 1);
+
+    let mut inspected_object_tag = None;
+    if let Some(item) = get_response.get(0) {
+        if let Some(get) = item.outcome().get_response() {
+            assert_eq!(
+                get.unique_identifier(),
+                Some(&kmipkit_protocol::UniqueIdentifier::TextString(
+                    "object-123".to_owned()
+                ))
+            );
+            if let Some(object) = get.object() {
+                let object_tag = object.tag();
+                inspected_object_tag = Some(object_tag.raw());
+            }
+        }
+    }
+    assert_eq!(inspected_object_tag, Some(SYMMETRIC_KEY_TAG));
+    let uniform_get = get_response
+        .get(0)
+        .expect("the Get result remains in request order")
+        .outcome()
+        .response()
+        .get()
+        .expect("the uniform response path exposes the typed Get response");
+    assert_eq!(
+        uniform_get.unique_identifier(),
+        Some(&kmipkit_protocol::UniqueIdentifier::TextString(
+            "object-123".to_owned()
+        ))
+    );
+
+    let locate_pki = EphemeralPki::generate().expect("ephemeral test PKI generation succeeds");
+    let locate_listener = LoopbackTcpListener::bind().expect("Locate loopback listener binds");
+    let locate_port = locate_listener.local_addr().port();
+    let locate_peer = spawn_peer(
+        locate_listener.into_inner(),
+        server_configuration(&locate_pki),
+        response_bytes(),
+    );
+    let mut locate_client = Client::new(
+        empty_client_configuration(),
+        transport_configuration(&locate_pki, locate_port),
+    )
+    .expect("validated raw-TLS Locate client construction succeeds");
+    let locate_batch = ClientBatch::new(ClientBatchItem::new(ClientRequest::Locate(query)));
+    let locate_response = locate_client
+        .execute(locate_batch, &limits)
+        .expect("the Locate quickstart batch executes successfully");
+    let locate_wire_request = locate_peer
+        .join()
+        .expect("the raw-TLS Locate peer completes one exchange");
+    assert_eq!(operation_count(&locate_wire_request, LOCATE_OPERATION), 1);
+    assert_eq!(
+        locate_response
+            .get(0)
+            .expect("the Locate result remains in request order")
+            .outcome()
+            .response()
+            .locate()
+            .expect("the uniform response path exposes the typed Locate response")
+            .unique_identifiers(),
+        [
+            kmipkit_protocol::UniqueIdentifier::TextString("located-b".to_owned()),
+            kmipkit_protocol::UniqueIdentifier::TextString("located-a".to_owned()),
+        ]
+    );
+}
+
 fn empty_client_configuration() -> ClientConfiguration {
     let registry = client_extension_registry(Vec::new(), extension::defaults())
         .expect("an empty extension registry is valid");
