@@ -44,6 +44,22 @@ class WorkflowContractTests(unittest.TestCase):
         self.assertIsNotNone(match, f"The {job} job must exist.")
         return match.group(1)
 
+    def assert_generator_check_step(
+        self,
+        job: str,
+        *,
+        name: str,
+        step_id: str,
+        command: str,
+    ) -> None:
+        step = re.search(
+            rf"(?ms)^      - name: {re.escape(name)}\n(.*?)(?=^      - name: |\Z)",
+            job,
+        )
+        self.assertIsNotNone(step, f"The normative inventory job must check {name.lower()}.")
+        self.assertRegex(step.group(1), rf"(?m)^        id: {re.escape(step_id)}$")
+        self.assertRegex(step.group(1), rf"(?m)^        run: {re.escape(command)}$")
+
     def assert_github_hosted_runner(self, body: str, runner: str = "ubuntu-latest") -> None:
         self.assertRegex(body, rf"(?m)^    runs-on: {re.escape(runner)}$")
 
@@ -96,29 +112,21 @@ class WorkflowContractTests(unittest.TestCase):
     def test_normative_inventory_checks_generated_attribute_policy(self) -> None:
         contents = self.require_workflow()
         job = self.require_job(contents, "normative-inventory")
-        step = re.search(
-            r"(?ms)^      - name: Verify generated attribute policy lookup\n(.*?)(?=^      - name: |\Z)",
+        self.assert_generator_check_step(
             job,
-        )
-        self.assertIsNotNone(step, "The pull-request normative inventory job must check generated attribute policy.")
-        self.assertRegex(step.group(1), r"(?m)^        id: verify-generated-attribute-policy-lookup$")
-        self.assertRegex(
-            step.group(1),
-            r"(?m)^        run: python3 -B tools/normative_catalog/generate_attribute_policy\.py --repo-root \. --check$",
+            name="Verify generated attribute policy lookup",
+            step_id="verify-generated-attribute-policy-lookup",
+            command="python3 -B tools/normative_catalog/generate_attribute_policy.py --repo-root . --check",
         )
 
     def test_normative_inventory_checks_generated_client_profiles(self) -> None:
         contents = self.require_workflow()
         job = self.require_job(contents, "normative-inventory")
-        step = re.search(
-            r"(?ms)^      - name: Verify generated client profiles\n(.*?)(?=^      - name: |\Z)",
+        self.assert_generator_check_step(
             job,
-        )
-        self.assertIsNotNone(step, "The normative inventory job must reject stale generated client profiles.")
-        self.assertRegex(step.group(1), r"(?m)^        id: verify-generated-client-profiles$")
-        self.assertRegex(
-            step.group(1),
-            r"(?m)^        run: python3 -B tools/normative_catalog/generate_profiles\.py --repo-root \. --check$",
+            name="Verify generated client profiles",
+            step_id="verify-generated-client-profiles",
+            command="python3 -B tools/normative_catalog/generate_profiles.py --repo-root . --check",
         )
 
     def test_external_actions_use_full_commit_sha_and_release_comment(self) -> None:
