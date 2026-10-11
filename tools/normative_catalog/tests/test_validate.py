@@ -13661,6 +13661,53 @@ class CatalogValidationTests(unittest.TestCase):
         self.assertEqual(unresolved_preface["scope_disposition"], "unresolved")
         self.assertEqual(unresolved_preface["proposed_requirement_id"], None)
 
+    def test_non_normative_table_header_candidates_are_out_of_scope(self) -> None:
+        """A table header's REQUIRED label is not a client obligation."""
+        oracle = json.loads(
+            (ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json").read_text(encoding="utf-8")
+        )
+        catalog = json.loads(
+            (ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8")
+        )
+        requirements = {row["requirement_id"]: row for row in catalog["requirements"]}
+        clauses = {row["clause_id"]: row for row in catalog["source_clauses"]}
+        profiles = [row for row in catalog["profiles"] if row["role"] == "client"]
+        header_dispositions = {
+            "reject_candidate_non_normative_table_header",
+            "table_header_only",
+            "header_only_metadata",
+            "header_only_keyword_label_not_normative_requirement",
+        }
+        header_ids = {
+            candidate["requirement_id"]
+            for review in oracle["source_requirement_reviews"]
+            for candidate in review["rejected_candidate_mappings"]
+            if candidate["expected_disposition"] in header_dispositions
+        }
+
+        self.assertEqual(len(header_ids), 34)
+        active_header_ids = sorted(
+            requirement_id
+            for requirement_id in header_ids
+            if requirements[requirement_id]["scope_state"] != "out_of_scope"
+        )
+        self.assertEqual(
+            active_header_ids,
+            [],
+            "non-normative table header candidates must not remain in client scope",
+        )
+        for requirement_id in sorted(header_ids):
+            requirement = requirements[requirement_id]
+            self.assertEqual(requirement["role"], "not_applicable", requirement_id)
+            self.assertEqual(requirement["direction"], "not_applicable", requirement_id)
+            for clause_id in requirement["source_clause_ids"]:
+                clause = clauses[clause_id]
+                self.assertEqual(clause["role"], "not_applicable", clause_id)
+                self.assertEqual(clause["direction"], "not_applicable", clause_id)
+                self.assertEqual(clause["scope_state"], "out_of_scope", clause_id)
+            for profile in profiles:
+                self.assertNotIn(requirement_id, profile["requirement_ids"], profile["profile_id"])
+
     def test_server_only_source_obligations_use_server_catalog_role(self) -> None:
         """Source-reviewed server-only obligations retain a server catalog role."""
         oracle = json.loads(

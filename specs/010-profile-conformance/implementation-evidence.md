@@ -571,6 +571,12 @@ An independent source auditor verified Specification v2.1 SHA-256 `8bf9d914c097e
 
 This correction closes only the two specific evidence-note failures. The full T003 oracle, global crosswalk, source mapping, and client MAY/OPTIONAL evidence gates remain incomplete; this PR remains draft and is not ready to merge.
 
+### T003 — reject non-normative table-header candidates (2026-10-11)
+
+| Phase | Command | Result |
+|---|---|---|
+| Red — exclude `REQUIRED` table headers from client scope | `python -B -m unittest tools.normative_catalog.tests.test_validate.CatalogValidationTests.test_non_normative_table_header_candidates_are_out_of_scope -v` | Expected Red: 34 source-reviewed rejected candidate IDs still have client scope; `KMIPKIT-REQ-SPEC-3.1-003` is the first header-only example (`REQUIRED` appears in the table heading, while its body requiredness row is separate). |
+
 ### T003/T004 — align catalog roles for reviewed server-only duties (2026-10-11)
 
 | Phase | Command or evidence | Result |
