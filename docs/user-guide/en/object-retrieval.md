@@ -29,7 +29,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     )?])?;
     let query = LocateRequest::new(attributes)
         .with_maximum_items(25)
-        .with_offset_item(0);
+        .with_offset_items(0);
 
     assert_eq!(query.attributes().len(), 1);
     assert_eq!(query.maximum_items(), Some(25));
@@ -71,7 +71,9 @@ fn build_get(
         .with_key_wrapping_specification(wrapping_specification)
 }
 
-fn main() {}
+fn main() {
+    let _ = build_get;
+}
 ```
 
 The raw enumeration values and wrapping structure above are inputs supplied
@@ -166,7 +168,9 @@ fn execute_reads(client: &mut Client, limits: &CodecLimits) -> Result<(), Client
     Ok(())
 }
 
-fn main() {}
+fn main() {
+    let _ = execute_reads;
+}
 ```
 
 `get_response()` and `locate_response()` return a typed response only for a

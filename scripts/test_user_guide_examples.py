@@ -1,4 +1,4 @@
-"""Compile explicitly marked Rust examples from the bilingual client guides."""
+"""Compile explicitly marked Rust examples from the configured user guides."""
 
 from __future__ import annotations
 
