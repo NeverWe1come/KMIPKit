@@ -23321,11 +23321,11 @@
       ],
       "disposition": "server_only",
       "requirement_ids": [],
-      "exclusion_rationale": "Server behavior or output; no 1.0 client requirement.",
-      "role": "both",
-      "direction": "client_to_server",
+      "exclusion_rationale": "The complete sentence requires the server to return Result Reasons for errors detected during Set Endpoint Role; it does not impose a client request obligation.",
+      "role": "server",
+      "direction": "server_to_client",
       "scope_state": "server_only",
-      "condition": null
+      "condition": "Errors are detected during Set Endpoint Role."
     },
     {
       "clause_id": "KMIPKIT-CLAUSE-SPEC-6.1.54.1-002",
@@ -23340,7 +23340,7 @@
       ],
       "disposition": "non_applicable",
       "requirement_ids": [],
-      "exclusion_rationale": "Heading, enum/table value, or field-name extractor hit rather than independent obligation.",
+      "exclusion_rationale": "The extracted REQUIRED token occurs inside the Result Reason value Attestation Required in Table 333, not as a normative modal.",
       "role": "not_applicable",
       "direction": "not_applicable",
       "scope_state": "out_of_scope",
@@ -131219,6 +131219,38 @@
       "downstream_impact": "Whether KMIPKit rejects a successful Re-Provision response without Unique Identifier; this does not change the server-side output obligation stated in the §6.1.48 prose.",
       "state": "resolved_by_approved_decision",
       "decision_id": "KMIPKIT-DEC-014",
+      "erratum_source_refs": []
+    },
+    {
+      "discrepancy_id": "KMIPKIT-DISC-052",
+      "summary": "Set Endpoint Role's successful role switch is unresolved against the client-only 1.0 boundary",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "6.1.54"
+        },
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "6.2.5"
+        }
+      ],
+      "source_authority": "primary_normative",
+      "normative_status": "evidence_gap",
+      "alternatives": [
+        "Treat the §6.1.54 role-switch prose as requiring a 1.0 client to act as the server for later messages on the established channel, extending beyond the approved client-initiated-only boundary.",
+        "Limit 1.0 support to the client-initiated Set Endpoint Role exchange and defer behavior after the role switch until a scope decision is approved.",
+        "Defer the §6.1.54 operation from 1.0 until the effect of its successful role switch is resolved."
+      ],
+      "affected_requirement_ids": [],
+      "affected_element_ids": [
+        "KMIPKIT-ELEM-OP-C2S-SET-ENDPOINT-ROLE",
+        "KMIPKIT-ELEM-OP-S2C-SET-ENDPOINT-ROLE"
+      ],
+      "affected_profile_ids": [],
+      "affected_policy_ids": [],
+      "downstream_impact": "The resolution determines whether a KMIPKit client may communicate after the endpoint roles switch and whether Set Endpoint Role can be claimed in a 1.0 client profile.",
+      "state": "open",
+      "decision_id": null,
       "erratum_source_refs": []
     }
   ],

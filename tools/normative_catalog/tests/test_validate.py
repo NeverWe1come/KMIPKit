@@ -68,7 +68,10 @@ def pinned_source_excerpt(relative_path: str, line_range: list[int]) -> str:
     parser = _PlainTextParser()
     parser.feed("\n".join(lines[line_range[0] - 1 : line_range[1]]))
     parser.close()
-    return parser.normalized_text()
+    text = parser.normalized_text()
+    # Table-row spans can begin in the middle of an HTML attribute when the
+    # source wraps a cell across physical lines. Drop that orphaned markup.
+    return re.sub(r"^(?:style|class)\s*=\s*(['\"]).*?\1>", "", text, flags=re.IGNORECASE).strip()
 
 
 OFFICIAL_NON_OPERATION_TEST_ELEMENTS = {
@@ -7562,11 +7565,11 @@ class CatalogValidationTests(unittest.TestCase):
             self.assertEqual(review["source_path"], source_path)
             self.assertEqual(review["source_locator"], {"ordinal": ordinal, "block_kind": kind})
             self.assertEqual(review["html_line_range"], line_range)
-            self.assertEqual(review["source_excerpt"], pinned_source_excerpt(source_path, line_range))
             if clause_id == "KMIPKIT-CLAUSE-SPEC-6.1.54.1-001":
-                self.assertEqual(pinned_by_id[clause_id]["source_text"],
-                                 pinned_source_excerpt(source_path, [36254, 36255]))
+                self.assertEqual(review["source_excerpt"], pinned_by_id[clause_id]["source_text"])
+                self.assertEqual(review["source_excerpt"], pinned_source_excerpt(source_path, [36254, 36255]))
             else:
+                self.assertEqual(review["source_excerpt"], pinned_source_excerpt(source_path, line_range))
                 self.assertEqual(review["source_excerpt"], pinned_by_id[clause_id]["source_text"])
             self.assertEqual(pinned_by_id[clause_id]["source_keywords"], keywords)
 
@@ -12907,6 +12910,7 @@ class CatalogValidationTests(unittest.TestCase):
             "KMIPKIT-REQ-SPEC-6.1.50-004",
             "KMIPKIT-REQ-SPEC-6.1.51-002",
             "KMIPKIT-REQ-SPEC-6.1.52-001",
+            "KMIPKIT-REQ-SPEC-6.1.54-001",
         }
         conditional_body_proposals = {
             "KMIPKIT-REQ-SPEC-6.1.24-002",
@@ -13080,6 +13084,7 @@ class CatalogValidationTests(unittest.TestCase):
                 "KMIPKIT-REQ-SPEC-6.1.51-002",
                 "KMIPKIT-REQ-SPEC-6.1.51-003",
                 "KMIPKIT-REQ-SPEC-6.1.52-001",
+                "KMIPKIT-REQ-SPEC-6.1.54-001",
             }
             expected_scope = (
                 "client_1_0"
