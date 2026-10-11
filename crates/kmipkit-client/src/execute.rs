@@ -3616,8 +3616,8 @@ impl Client {
         if let Some(indicator) = asynchronous_indicator {
             batch = batch.with_asynchronous_indicator(indicator);
         }
-        match self.execute_with_options(batch, limits, &RequestOptions::default()) {
-            Ok(response) => Ok(take_single_response(response)?),
+        match self.execute_one_typed_batch(batch, limits, &RequestOptions::default()) {
+            Ok(response) => Ok(response),
             Err(error) => {
                 context.settle_after_error(cost, error.delivery_state());
                 Err(error)
@@ -4577,11 +4577,20 @@ impl Client {
         limits: &CodecLimits,
         options: &RequestOptions,
     ) -> Result<ClientBatchItemResponse, ClientError> {
-        let response = self.execute_with_options(
+        self.execute_one_typed_batch(
             ClientBatch::new(ClientBatchItem::new(request)),
             limits,
             options,
-        )?;
+        )
+    }
+
+    fn execute_one_typed_batch(
+        &mut self,
+        batch: ClientBatch,
+        limits: &CodecLimits,
+        options: &RequestOptions,
+    ) -> Result<ClientBatchItemResponse, ClientError> {
+        let response = self.execute_with_options(batch, limits, options)?;
         take_single_item_response(response.items)
     }
 
