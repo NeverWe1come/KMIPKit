@@ -40,6 +40,9 @@ mod operation_data;
 mod ping;
 mod poll;
 mod process;
+mod profile;
+/// Generated source and evidence metadata for catalogued client profiles.
+pub mod profiles_generated;
 mod query;
 mod query_async_requests;
 mod recover;
@@ -99,6 +102,11 @@ pub use operation_data::OperationData;
 pub use ping::{PingError, PingRequest, PingResponse};
 pub use poll::{PollRequest, PollResponse};
 pub use process::{ProcessRequest, ProcessResponse};
+pub use profile::{
+    ProfileEvidenceReadiness, ProfileEvidenceRecord, ProfileReadiness, ProfileReadinessBlocker,
+    ProfileValidationError, ProfileValidationErrorCode, ProfileValidationResult,
+    ProfileValidationSelection,
+};
 pub use query::{QueryError, QueryFunction, QueryRequest, QueryResponse, QueryResponseField};
 pub use query_async_requests::{QueryAsyncRequestsRequest, QueryAsyncRequestsResponse};
 pub use recover::{RecoverError, RecoverRequest, RecoverResponse};

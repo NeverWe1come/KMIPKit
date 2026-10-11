@@ -1,0 +1,663 @@
+use std::fmt;
+use std::fmt::Write as _;
+
+use super::{
+    ProfileEvidenceRecord, ProfileReadiness, ProfileReadinessBlocker, ProfileValidationError,
+    ProfileValidationErrorCode, ProfileValidationSelection, RuleConstraint, RuleTestEvidence,
+    RuleTestKind, TypedRuleMapping, reconcile_effective_state, validate_mapping,
+    validate_selection_with_registry,
+};
+use crate::profiles_generated::{
+    GeneratedClientProfile, GeneratedClientRequirement, GeneratedVerificationCategory,
+};
+
+struct RejectingWriter;
+
+impl fmt::Write for RejectingWriter {
+    fn write_str(&mut self, _value: &str) -> fmt::Result {
+        Err(fmt::Error)
+    }
+}
+
+static CONSTRAINTS_HTTPS: [RuleConstraint; 1] = [RuleConstraint {
+    key: "transport",
+    value: "https",
+}];
+static CONSTRAINTS_RAW_TLS: [RuleConstraint; 1] = [RuleConstraint {
+    key: "transport",
+    value: "raw_tls",
+}];
+static POSITIVE_TEST: [RuleTestEvidence; 1] = [RuleTestEvidence {
+    test_id: "profile-rule-positive-test",
+    kind: RuleTestKind::PositiveBehavior,
+}];
+static NEGATIVE_TEST: [RuleTestEvidence; 1] = [RuleTestEvidence {
+    test_id: "profile-rule-negative-test",
+    kind: RuleTestKind::NegativeBehavior,
+}];
+static RECOMMENDED_TEST: [RuleTestEvidence; 1] = [RuleTestEvidence {
+    test_id: "profile-rule-recommended-test",
+    kind: RuleTestKind::RecommendedBehavior,
+}];
+static DISCOURAGED_ABSENCE_TEST: [RuleTestEvidence; 1] = [RuleTestEvidence {
+    test_id: "profile-rule-discouraged-absence-test",
+    kind: RuleTestKind::DiscouragedBehaviorAbsent,
+}];
+static OPTIONAL_CAPABILITY_TEST: [RuleTestEvidence; 1] = [RuleTestEvidence {
+    test_id: "profile-rule-optional-capability-test",
+    kind: RuleTestKind::OptionalCapabilityUsable,
+}];
+
+fn passing_rule(
+    _request: Option<&crate::RequestMessage>,
+    _response: Option<(&crate::RequestMessage, &crate::ResponseMessage)>,
+) -> bool {
+    true
+}
+
+fn profile(
+    profile_id: &'static str,
+    requirement_ids: &'static [&'static str],
+    dependency_profile_ids: &'static [&'static str],
+) -> GeneratedClientProfile {
+    GeneratedClientProfile {
+        profile_id,
+        name: "synthetic test profile",
+        applicability: "client_1_0",
+        claim_state: "not_claimed",
+        selected_target: false,
+        direct_source_clause_ids: &["TEST-CLAUSE"],
+        source_clause_ids: &["TEST-CLAUSE"],
+        requirement_ids,
+        dependency_profile_ids,
+        transport_requirements: &[],
+        encoding_requirements: &[],
+        test_cases: &[],
+    }
+}
+
+fn requirement(
+    requirement_id: &'static str,
+    category: GeneratedVerificationCategory,
+    has_accepted_deviation: bool,
+) -> GeneratedClientRequirement {
+    GeneratedClientRequirement {
+        requirement_id,
+        source_keyword: "SHALL",
+        verification_category: category,
+        scope_state: "client_1_0",
+        source_clause_ids: &["TEST-CLAUSE"],
+        profile_ids: &[],
+        official_test_case_ids: &[],
+        has_accepted_deviation,
+    }
+}
+
+fn mapping(
+    requirement_id: &'static str,
+    category: GeneratedVerificationCategory,
+    test_kind: RuleTestKind,
+    constraints: &'static [RuleConstraint],
+) -> TypedRuleMapping {
+    let test_evidence = match test_kind {
+        RuleTestKind::PositiveBehavior => &POSITIVE_TEST,
+        RuleTestKind::NegativeBehavior => &NEGATIVE_TEST,
+        RuleTestKind::RecommendedBehavior => &RECOMMENDED_TEST,
+        RuleTestKind::DiscouragedBehaviorAbsent => &DISCOURAGED_ABSENCE_TEST,
+        RuleTestKind::OptionalCapabilityUsable => &OPTIONAL_CAPABILITY_TEST,
+    };
+    TypedRuleMapping {
+        requirement_id,
+        source_clause_id: "TEST-CLAUSE",
+        verification_category: category,
+        evaluator: Some(passing_rule),
+        test_evidence,
+        constraints,
+    }
+}
+
+#[test]
+fn each_keyword_category_requires_the_matching_test_form() {
+    let cases = [
+        (
+            GeneratedVerificationCategory::RequiredBehavior,
+            RuleTestKind::PositiveBehavior,
+        ),
+        (
+            GeneratedVerificationCategory::ProhibitedBehavior,
+            RuleTestKind::NegativeBehavior,
+        ),
+        (
+            GeneratedVerificationCategory::RecommendedBehaviorOrDeviation,
+            RuleTestKind::RecommendedBehavior,
+        ),
+        (
+            GeneratedVerificationCategory::DiscouragedAbsenceOrDeviation,
+            RuleTestKind::DiscouragedBehaviorAbsent,
+        ),
+        (
+            GeneratedVerificationCategory::OptionalCapability,
+            RuleTestKind::OptionalCapabilityUsable,
+        ),
+    ];
+
+    for (category, test_kind) in cases {
+        let requirement = requirement("TEST-REQ", category, false);
+        let good_mapping = mapping("TEST-REQ", category, test_kind, &[]);
+        assert!(validate_mapping("TEST-PROFILE", &requirement, &good_mapping).is_ok());
+
+        let wrong_test_kind = match test_kind {
+            RuleTestKind::PositiveBehavior => RuleTestKind::NegativeBehavior,
+            _ => RuleTestKind::PositiveBehavior,
+        };
+        let mapping = mapping("TEST-REQ", category, wrong_test_kind, &[]);
+        let error = validate_mapping("TEST-PROFILE", &requirement, &mapping)
+            .expect_err("a different test category cannot cover the rule");
+        assert_eq!(
+            error.code(),
+            ProfileValidationErrorCode::MissingCategoryTest
+        );
+    }
+}
+
+#[test]
+fn accepted_deviations_cover_only_recommended_and_discouraged_categories() {
+    for category in [
+        GeneratedVerificationCategory::RecommendedBehaviorOrDeviation,
+        GeneratedVerificationCategory::DiscouragedAbsenceOrDeviation,
+    ] {
+        let requirement = requirement("TEST-REQ", category, true);
+        let mapping = TypedRuleMapping {
+            test_evidence: &[],
+            ..mapping("TEST-REQ", category, RuleTestKind::PositiveBehavior, &[])
+        };
+        assert!(validate_mapping("TEST-PROFILE", &requirement, &mapping).is_ok());
+    }
+
+    let requirement = requirement(
+        "TEST-REQ",
+        GeneratedVerificationCategory::RequiredBehavior,
+        true,
+    );
+    let mapping = TypedRuleMapping {
+        test_evidence: &[],
+        ..mapping(
+            "TEST-REQ",
+            GeneratedVerificationCategory::RequiredBehavior,
+            RuleTestKind::PositiveBehavior,
+            &[],
+        )
+    };
+    let error = validate_mapping("TEST-PROFILE", &requirement, &mapping)
+        .expect_err("a deviation cannot replace required behavior verification");
+    assert_eq!(
+        error.code(),
+        ProfileValidationErrorCode::MissingCategoryTest
+    );
+}
+
+#[test]
+fn a_complete_synthetic_mapping_allows_selection_without_target_membership() {
+    let profiles = [profile("TEST-PROFILE", &["TEST-REQ"], &[])];
+    let requirements = [requirement(
+        "TEST-REQ",
+        GeneratedVerificationCategory::RequiredBehavior,
+        false,
+    )];
+    let mappings = [mapping(
+        "TEST-REQ",
+        GeneratedVerificationCategory::RequiredBehavior,
+        RuleTestKind::PositiveBehavior,
+        &CONSTRAINTS_HTTPS,
+    )];
+    let selection = ProfileValidationSelection::new(["TEST-PROFILE"]);
+    assert_eq!(&["TEST-PROFILE".to_owned()], selection.profile_ids());
+
+    let result = validate_selection_with_registry(&selection, &profiles, &requirements, &mappings)
+        .expect("complete synthetic code and verification evidence is selectable");
+
+    assert_eq!(result.profile_ids(), &["TEST-PROFILE"]);
+    assert_eq!(result.requirement_ids(), &["TEST-REQ"]);
+}
+
+#[test]
+fn dependency_cycles_and_constraint_conflicts_fail_deterministically() {
+    let cyclic_profiles = [
+        profile("TEST-A", &[], &["TEST-B"]),
+        profile("TEST-B", &[], &["TEST-A"]),
+    ];
+    let cycle_error = validate_selection_with_registry(
+        &ProfileValidationSelection::new(["TEST-A"]),
+        &cyclic_profiles,
+        &[],
+        &[],
+    )
+    .expect_err("cyclic dependencies are rejected");
+    assert_eq!(
+        cycle_error.code(),
+        ProfileValidationErrorCode::DependencyCycle
+    );
+
+    let profiles = [
+        profile("TEST-A", &["TEST-REQ-A"], &[]),
+        profile("TEST-B", &["TEST-REQ-B"], &[]),
+    ];
+    let requirements = [
+        requirement(
+            "TEST-REQ-A",
+            GeneratedVerificationCategory::RequiredBehavior,
+            false,
+        ),
+        requirement(
+            "TEST-REQ-B",
+            GeneratedVerificationCategory::RequiredBehavior,
+            false,
+        ),
+    ];
+    let mappings = [
+        mapping(
+            "TEST-REQ-A",
+            GeneratedVerificationCategory::RequiredBehavior,
+            RuleTestKind::PositiveBehavior,
+            &CONSTRAINTS_HTTPS,
+        ),
+        mapping(
+            "TEST-REQ-B",
+            GeneratedVerificationCategory::RequiredBehavior,
+            RuleTestKind::PositiveBehavior,
+            &CONSTRAINTS_RAW_TLS,
+        ),
+    ];
+    let error = validate_selection_with_registry(
+        &ProfileValidationSelection::new(["TEST-B", "TEST-A"]),
+        &profiles,
+        &requirements,
+        &mappings,
+    )
+    .expect_err("conflicting selected constraints have no order-based resolution");
+    assert_eq!(
+        error.code(),
+        ProfileValidationErrorCode::ConflictingConstraints
+    );
+}
+
+#[test]
+fn missing_evaluator_and_wrong_source_link_fail_closed() {
+    let requirement = requirement(
+        "TEST-REQ",
+        GeneratedVerificationCategory::RequiredBehavior,
+        false,
+    );
+    let missing_evaluator = TypedRuleMapping {
+        evaluator: None,
+        ..mapping(
+            "TEST-REQ",
+            GeneratedVerificationCategory::RequiredBehavior,
+            RuleTestKind::PositiveBehavior,
+            &[],
+        )
+    };
+    let error = validate_mapping("TEST-PROFILE", &requirement, &missing_evaluator)
+        .expect_err("rule metadata without executable code is incomplete");
+    assert_eq!(
+        error.code(),
+        ProfileValidationErrorCode::IncompleteRuleMapping
+    );
+
+    let wrong_clause = TypedRuleMapping {
+        source_clause_id: "OTHER-CLAUSE",
+        ..mapping(
+            "TEST-REQ",
+            GeneratedVerificationCategory::RequiredBehavior,
+            RuleTestKind::PositiveBehavior,
+            &[],
+        )
+    };
+    let error = validate_mapping("TEST-PROFILE", &requirement, &wrong_clause)
+        .expect_err("rule source links must match the catalog");
+    assert_eq!(
+        error.code(),
+        ProfileValidationErrorCode::RuleMappingMismatch
+    );
+}
+
+#[test]
+fn validation_error_codes_and_readiness_blockers_have_stable_text() {
+    let validation_codes = [
+        (
+            ProfileValidationErrorCode::EmptySelection,
+            "empty_selection",
+        ),
+        (
+            ProfileValidationErrorCode::DuplicateProfile,
+            "duplicate_profile",
+        ),
+        (
+            ProfileValidationErrorCode::UnknownProfile,
+            "unknown_profile",
+        ),
+        (
+            ProfileValidationErrorCode::ProfileUnavailable,
+            "profile_unavailable",
+        ),
+        (
+            ProfileValidationErrorCode::ConditionalProfileUnsatisfied,
+            "conditional_profile_unsatisfied",
+        ),
+        (
+            ProfileValidationErrorCode::DependencyCycle,
+            "dependency_cycle",
+        ),
+        (
+            ProfileValidationErrorCode::MissingRequirementMetadata,
+            "missing_requirement_metadata",
+        ),
+        (
+            ProfileValidationErrorCode::MissingRuleMapping,
+            "missing_rule_mapping",
+        ),
+        (
+            ProfileValidationErrorCode::IncompleteRuleMapping,
+            "incomplete_rule_mapping",
+        ),
+        (
+            ProfileValidationErrorCode::RuleMappingMismatch,
+            "rule_mapping_mismatch",
+        ),
+        (
+            ProfileValidationErrorCode::MissingCategoryTest,
+            "missing_category_test",
+        ),
+        (
+            ProfileValidationErrorCode::ConflictingConstraints,
+            "conflicting_constraints",
+        ),
+    ];
+    for (code, expected) in validation_codes {
+        assert_eq!(expected, code.as_str());
+    }
+}
+
+#[test]
+fn readiness_blockers_have_stable_text_and_requirement_ids() {
+    let blockers = [
+        (
+            ProfileReadinessBlocker::MissingRequirementRecord {
+                requirement_id: "REQ-MISSING",
+            },
+            "required requirement evidence is missing",
+            Some("REQ-MISSING"),
+        ),
+        (
+            ProfileReadinessBlocker::FailedRequirementRecord {
+                requirement_id: "REQ-FAILED",
+            },
+            "required requirement evidence failed",
+            Some("REQ-FAILED"),
+        ),
+        (
+            ProfileReadinessBlocker::DuplicateRequirementRecord {
+                requirement_id: "REQ-DUPLICATE",
+            },
+            "requirement evidence record is duplicated",
+            Some("REQ-DUPLICATE"),
+        ),
+        (
+            ProfileReadinessBlocker::UnknownRequirementRecord,
+            "requirement evidence record is unknown",
+            None,
+        ),
+        (
+            ProfileReadinessBlocker::RuntimeValidationUnavailable,
+            "runtime profile validation is unavailable",
+            None,
+        ),
+        (
+            ProfileReadinessBlocker::MandatoryFixtureUnavailable {
+                test_id: "FIXTURE-1",
+            },
+            "mandatory profile fixture is unavailable",
+            None,
+        ),
+        (
+            ProfileReadinessBlocker::ConditionalProfileUnsatisfied,
+            "conditional profile is unsatisfied",
+            None,
+        ),
+        (
+            ProfileReadinessBlocker::DependencyEvidenceIncomplete {
+                profile_id: "PROFILE-DEPENDENCY",
+            },
+            "dependency profile evidence is incomplete",
+            None,
+        ),
+        (
+            ProfileReadinessBlocker::VerificationManifestUnavailable,
+            "current verification manifest is unavailable",
+            None,
+        ),
+        (
+            ProfileReadinessBlocker::StaleCatalogEvidenceState,
+            "catalog evidence-complete state is stale",
+            None,
+        ),
+        (
+            ProfileReadinessBlocker::CatalogEvidenceReviewRequired,
+            "catalog evidence state requires human review",
+            None,
+        ),
+        (
+            ProfileReadinessBlocker::ProfileUnavailable,
+            "profile is outside the KMIPKit 1.0 client scope",
+            None,
+        ),
+    ];
+    for (blocker, expected, requirement_id) in blockers {
+        assert_eq!(expected, blocker.as_str());
+        assert_eq!(requirement_id, blocker.requirement_id());
+    }
+}
+
+#[test]
+fn validation_error_display_contains_only_stable_identifiers() {
+    let code_only = ProfileValidationError::new(ProfileValidationErrorCode::EmptySelection);
+    assert_eq!(
+        "profile validation failed: empty_selection",
+        code_only.to_string()
+    );
+    assert_eq!(None, code_only.profile_id());
+    assert_eq!(None, code_only.requirement_id());
+    assert_eq!(None, code_only.source_clause_id());
+
+    let profile = ProfileValidationError::for_profile(
+        ProfileValidationErrorCode::UnknownProfile,
+        "TEST-PROFILE",
+    );
+    assert_eq!(Some("TEST-PROFILE"), profile.profile_id());
+    assert_eq!(
+        "profile validation failed: unknown_profile; profile TEST-PROFILE",
+        profile.to_string()
+    );
+
+    let requirement = ProfileValidationError::for_requirement(
+        ProfileValidationErrorCode::MissingRuleMapping,
+        "TEST-PROFILE",
+        "TEST-REQ",
+        Some("TEST-CLAUSE"),
+    );
+    assert_eq!(Some("TEST-REQ"), requirement.requirement_id());
+    assert_eq!(Some("TEST-CLAUSE"), requirement.source_clause_id());
+    assert_eq!(
+        "profile validation failed: missing_rule_mapping; profile TEST-PROFILE; requirement TEST-REQ; source clause TEST-CLAUSE",
+        requirement.to_string()
+    );
+
+    assert!(write!(&mut RejectingWriter, "{code_only}").is_err());
+}
+
+#[test]
+fn readiness_records_classify_duplicates_and_unknown_ids() {
+    let baseline = super::CLIENT_PROFILES
+        .iter()
+        .find(|profile| profile.profile_id == "KMIPKIT-PROFILE-BASELINE-CLIENT")
+        .expect("generated catalog contains Baseline Client");
+    let first = baseline.requirement_ids[0];
+    let records: Vec<_> = baseline
+        .requirement_ids
+        .iter()
+        .map(|requirement_id| ProfileEvidenceRecord::passed(*requirement_id))
+        .chain([ProfileEvidenceRecord::passed(first)])
+        .chain([ProfileEvidenceRecord::passed("UNKNOWN-REQ")])
+        .collect();
+
+    let readiness = ProfileReadiness::evaluate(baseline.profile_id, &records)
+        .expect("generated Baseline Client resolves");
+
+    assert!(!readiness.requirement_records_complete());
+    assert!(
+        readiness
+            .blockers()
+            .contains(&ProfileReadinessBlocker::DuplicateRequirementRecord {
+                requirement_id: first
+            })
+    );
+    assert!(
+        readiness
+            .blockers()
+            .contains(&ProfileReadinessBlocker::UnknownRequirementRecord)
+    );
+    assert!(readiness.target_selected());
+    assert!(!readiness.runtime_validation_available());
+    assert_eq!(baseline.profile_id, readiness.profile_id());
+    assert_eq!("evidence_incomplete", readiness.effective_state());
+    assert!(!readiness.published_claim());
+    assert!(ProfileReadiness::evaluate("UNKNOWN-PROFILE", &[]).is_none());
+}
+
+#[test]
+fn readiness_blocks_conditional_out_of_scope_and_dependent_profiles() {
+    let conditional = ProfileReadiness::evaluate("KMIPKIT-PROFILE-HTTPS-CLIENT", &[])
+        .expect("generated HTTPS Client resolves");
+    assert!(
+        conditional
+            .blockers()
+            .contains(&ProfileReadinessBlocker::ConditionalProfileUnsatisfied)
+    );
+
+    let unavailable = ProfileReadiness::evaluate("KMIPKIT-PROFILE-JSON-CLIENT", &[])
+        .expect("generated JSON Client resolves");
+    assert!(
+        unavailable
+            .blockers()
+            .contains(&ProfileReadinessBlocker::ProfileUnavailable)
+    );
+
+    let dependent = ProfileReadiness::evaluate("KMIPKIT-PROFILE-AES-XTS-CLIENT", &[])
+        .expect("generated AES-XTS Client resolves");
+    assert!(dependent.blockers().contains(
+        &ProfileReadinessBlocker::DependencyEvidenceIncomplete {
+            profile_id: "KMIPKIT-PROFILE-BASELINE-CLIENT"
+        }
+    ));
+}
+
+#[test]
+fn readiness_reconciles_catalog_states_with_blockers() {
+    let mut stale = vec![ProfileReadinessBlocker::RuntimeValidationUnavailable];
+    assert_eq!(
+        "evidence_incomplete",
+        reconcile_effective_state("evidence_complete", &mut stale)
+    );
+    assert!(stale.contains(&ProfileReadinessBlocker::StaleCatalogEvidenceState));
+
+    let mut review_required = Vec::new();
+    assert_eq!(
+        "not_claimed",
+        reconcile_effective_state("not_claimed", &mut review_required)
+    );
+    assert_eq!(
+        vec![ProfileReadinessBlocker::CatalogEvidenceReviewRequired],
+        review_required
+    );
+
+    let repeated = ProfileReadinessBlocker::VerificationManifestUnavailable;
+    let mut unchanged_with_duplicates = vec![repeated, repeated];
+    assert_eq!(
+        "evidence_incomplete",
+        reconcile_effective_state("evidence_incomplete", &mut unchanged_with_duplicates)
+    );
+    assert_eq!(vec![repeated], unchanged_with_duplicates);
+}
+
+#[test]
+fn selection_rejects_missing_catalog_metadata_and_skips_resolved_dependencies() {
+    let unknown_duplicate = validate_selection_with_registry(
+        &ProfileValidationSelection::new(["UNKNOWN", "UNKNOWN"]),
+        &[],
+        &[],
+        &[],
+    )
+    .expect_err("duplicate unknown identifiers are still duplicates");
+    assert_eq!(
+        ProfileValidationErrorCode::DuplicateProfile,
+        unknown_duplicate.code()
+    );
+    assert_eq!(None, unknown_duplicate.profile_id());
+
+    let unknown = validate_selection_with_registry(
+        &ProfileValidationSelection::new(["UNKNOWN"]),
+        &[],
+        &[],
+        &[],
+    )
+    .expect_err("unknown profiles do not resolve");
+    assert_eq!(ProfileValidationErrorCode::UnknownProfile, unknown.code());
+
+    let empty_requirements = [profile("EMPTY", &[], &[])];
+    let missing_list = validate_selection_with_registry(
+        &ProfileValidationSelection::new(["EMPTY"]),
+        &empty_requirements,
+        &[],
+        &[],
+    )
+    .expect_err("a selected profile must list applicable requirements");
+    assert_eq!(
+        ProfileValidationErrorCode::MissingRequirementMetadata,
+        missing_list.code()
+    );
+
+    let missing_record_profiles = [profile("MISSING-RECORD", &["TEST-REQ"], &[])];
+    let missing_record = validate_selection_with_registry(
+        &ProfileValidationSelection::new(["MISSING-RECORD"]),
+        &missing_record_profiles,
+        &[],
+        &[],
+    )
+    .expect_err("every profile requirement must resolve to metadata");
+    assert_eq!(
+        ProfileValidationErrorCode::MissingRequirementMetadata,
+        missing_record.code()
+    );
+
+    let shared_dependency_profiles = [
+        profile("SHARED", &[], &[]),
+        profile("ROOT-A", &[], &["SHARED"]),
+        profile("ROOT-B", &[], &["SHARED"]),
+    ];
+    let dependency_error = validate_selection_with_registry(
+        &ProfileValidationSelection::new(["ROOT-A", "ROOT-B"]),
+        &shared_dependency_profiles,
+        &[],
+        &[],
+    )
+    .expect_err("empty requirement metadata remains fail-closed after closure resolution");
+    assert_eq!(
+        ProfileValidationErrorCode::MissingRequirementMetadata,
+        dependency_error.code()
+    );
+}
+
+#[test]
+fn passing_evaluator_is_safe_for_absent_and_present_exchange_contexts() {
+    assert!(passing_rule(None, None));
+}

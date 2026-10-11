@@ -27,6 +27,20 @@ fixture links separately from normalized display fields. An unavailable
 fixture is evidence of a missing local artifact, not a failed conformance
 result.
 
+Profile records keep `direct_source_clause_ids` as reviewed closure roots and
+store `source_clause_ids` and `requirement_ids` as their deterministic computed
+closure. `normative_inclusions` records source-backed incorporation edges;
+`included_section: null` means the entire pinned source document, while a
+section value includes that section and its dot-delimited subclauses. The
+validator rejects unresolved or duplicate edges, cycles, and stored profile
+closures that differ from their roots and inclusions. Informative references
+are not represented as normative inclusion edges. Baseline Client §6.1 item 1
+includes the whole KMIP Specification v2.1 source, and item 2 includes Profiles
+§3.1. \`profile-targets.json\` selects the product target independently; the
+generated report shows this beside \`claim_state\`. Those catalog links and
+target membership do not imply that the profile is runtime-eligible or that
+conformance has been established.
+
 `coverage-report.md` is generated from the reviewed catalog by
 `tools/normative_catalog/report.py`. Do not edit the report manually. Empty
 coverage assignments remain visible as unassigned. Prohibited requirements
@@ -35,8 +49,39 @@ their downstream gate and affected record counts; implementation specifications
 must resolve a discrepancy before changing affected behavior. The report
 includes pinned source checksums and count reconciliation, plus requirement-
 level gaps where no official Test Cases ID is explicitly source-linked.
-Inventory presence does not imply implementation, profile support,
-certification, or conformance; all current profile claims remain `not_claimed`.
+
+## Profile readiness and claim lifecycle
+
+The catalog `claim_state` records evidence lifecycle; it is not a public
+conformance claim. `profile-targets.json` records the selected project target,
+while runtime validation availability is determined separately by complete
+typed rules and category-appropriate executable tests. The generated report
+shows these states and the mandatory fixture gaps independently. This feature
+never publishes a profile claim.
+
+Baseline Client is the selected initial 1.0 target and currently has
+`claim_state: evidence_incomplete`. Its 16 mandatory official fixture records
+are unavailable in the pinned tree, remain visible as blockers, and are not
+counted as passed. The production typed-rule registry is also empty, so no
+profile can currently be selected for runtime validation.
+
+Readiness may accept test results only from a strict, ephemeral manifest made
+by the final aggregate job during a push to protected `release/1.0.0`. The
+manifest must bind the current repository, commit, workflow, run and attempt,
+all required successful job IDs, and a freshly verified branch policy with
+required review, no bypass actors, admin enforcement, and force-push and
+deletion disabled. Pull-request, scheduled, and local runs cannot certify
+their own evidence. Missing or unverifiable branch-policy or app-token
+evidence keeps readiness blocked. A passing evaluator never advances catalog
+state automatically; evidence-complete updates require human review, and
+public publication remains a separate release decision. The
+[conformance strategy](../../docs/compliance/conformance.md) records the exact
+workflow trigger, required job IDs, and branch-policy predicate.
+
+See the [profile conformance guidance](../../docs/user-guide/en/profile-conformance.md)
+and [KMIPKIT-0010 specification](../../specs/010-profile-conformance/spec.md)
+for the evidence workflow. Inventory presence does not imply implementation,
+profile support, certification, or conformance.
 
 Tag reporting lists all five source-ordered ranges and named-tag counts by
 OASIS allocation. Unassigned protocol elements expose their names, wire values,

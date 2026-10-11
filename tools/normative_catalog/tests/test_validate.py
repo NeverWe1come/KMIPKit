@@ -22,6 +22,7 @@ from tools.normative_catalog.validate import (
     _check_tag_registry,
     validate_catalog,
 )
+from tools.normative_catalog.audit_sources import audit_document
 import tools.normative_catalog.validate as catalog_validate
 
 
@@ -1059,6 +1060,7 @@ def minimal_catalog() -> dict[str, object]:
         "schema_version": 1,
         "sources": sources,
         "source_clauses": [],
+        "normative_inclusions": [],
         "elements": [],
         "tag_ranges": [],
         "requirements": [],
@@ -1098,6 +1100,7 @@ def profile_record(**overrides: object) -> dict[str, object]:
         "name": "Baseline profile",
         "role": "client",
         "source_refs": [{"source_id": "KMIPKIT-SRC-profiles", "section": "5.1"}],
+        "direct_source_clause_ids": [],
         "source_clause_ids": [],
         "dependency_profile_ids": [],
         "transport_requirements": ["ttlv_tls"],
@@ -3034,7 +3037,17 @@ class CatalogValidationTests(unittest.TestCase):
         profiles = document["profiles"]
         self.assertEqual(len(profiles), 35)
         self.assertTrue({"client", "server"}.issubset({profile["role"] for profile in profiles}))
-        self.assertTrue(all(profile["claim_state"] == "not_claimed" for profile in profiles))
+        baseline_state = next(
+            profile["claim_state"]
+            for profile in profiles
+            if profile["profile_id"] == "KMIPKIT-PROFILE-BASELINE-CLIENT"
+        )
+        self.assertEqual("evidence_incomplete", baseline_state)
+        self.assertTrue(all(
+            profile["claim_state"] == "not_claimed"
+            for profile in profiles
+            if profile["profile_id"] != "KMIPKIT-PROFILE-BASELINE-CLIENT"
+        ))
         self.assertTrue(all(profile["source_refs"] for profile in profiles))
         self.assertTrue(all(profile["source_clause_ids"] for profile in profiles))
         self.assertTrue(all(profile["requirement_ids"] for profile in profiles))
@@ -3052,6 +3065,28 @@ class CatalogValidationTests(unittest.TestCase):
             and reference["section"].startswith("6.")
         }
         self.assertEqual(conformance_sections, {f"6.{section}" for section in range(1, 36)})
+
+    def test_baseline_catalog_state_is_incomplete_while_required_fixtures_are_unavailable(self) -> None:
+        catalog = json.loads((ROOT / "specification/catalog/kmip-2.1.json").read_text(encoding="utf-8"))
+        target_manifest = json.loads(
+            (ROOT / "specification/catalog/profile-targets.json").read_text(encoding="utf-8")
+        )
+        baseline = next(
+            profile
+            for profile in catalog["profiles"]
+            if profile["profile_id"] == "KMIPKIT-PROFILE-BASELINE-CLIENT"
+        )
+        required_tests = [
+            test_case
+            for test_case in catalog["test_cases"]
+            if test_case["test_id"] in baseline["test_case_ids"]
+            and test_case["mandatory_status"] == "mandatory"
+        ]
+
+        self.assertIn(baseline["profile_id"], target_manifest["profile_ids"])
+        self.assertEqual(16, len(required_tests))
+        self.assertTrue(all(test["fixture_availability"] == "unavailable" for test in required_tests))
+        self.assertEqual("evidence_incomplete", baseline["claim_state"])
 
     def test_checked_in_catalog_preserves_pinned_source_discrepancies(self) -> None:
         catalog_path = ROOT / "specification" / "catalog" / "kmip-2.1.json"
@@ -3705,6 +3740,159 @@ class CatalogValidationTests(unittest.TestCase):
         document["profiles"] = [profile_record(claim_state="evidence_complete")]
         with self.assertRaisesRegex(CatalogValidationError, "profile.*evidence"):
             validate(document)
+
+    def test_profile_cannot_claim_complete_evidence_with_unavailable_mandatory_fixtures(self) -> None:
+        catalog = json.loads(
+            (ROOT / "specification/catalog/kmip-2.1.json").read_text(encoding="utf-8")
+        )
+        baseline = next(
+            profile
+            for profile in catalog["profiles"]
+            if profile["profile_id"] == "KMIPKIT-PROFILE-BASELINE-CLIENT"
+        )
+        baseline["claim_state"] = "evidence_complete"
+        official_test = next(
+            test_case
+            for test_case in catalog["test_cases"]
+            if test_case["source_id"] == "KMIPKIT-SRC-testcases"
+        )
+        baseline["test_case_ids"] = sorted({
+            *baseline["test_case_ids"],
+            official_test["test_id"],
+        })
+
+        self.assertTrue(any(
+            test_case["test_id"] in baseline["test_case_ids"]
+            and test_case["mandatory_status"] == "mandatory"
+            and test_case["fixture_availability"] == "unavailable"
+            for test_case in catalog["test_cases"]
+        ))
+        with self.assertRaisesRegex(CatalogValidationError, "(?i)(mandatory.{0,40}fixture|fixture.{0,40}mandatory)"):
+            validate(catalog)
+
+    def test_profile_cannot_claim_complete_evidence_without_requirement_assignments(self) -> None:
+        catalog = json.loads(
+            (ROOT / "specification/catalog/kmip-2.1.json").read_text(encoding="utf-8")
+        )
+        baseline = next(
+            profile
+            for profile in catalog["profiles"]
+            if profile["profile_id"] == "KMIPKIT-PROFILE-BASELINE-CLIENT"
+        )
+        baseline["claim_state"] = "evidence_complete"
+        official_test = next(
+            test_case
+            for test_case in catalog["test_cases"]
+            if test_case["source_id"] == "KMIPKIT-SRC-testcases"
+        )
+        baseline["test_case_ids"] = sorted({
+            *baseline["test_case_ids"],
+            official_test["test_id"],
+        })
+        for test_case in catalog["test_cases"]:
+            if test_case["test_id"] in baseline["test_case_ids"]:
+                test_case["mandatory_status"] = "optional"
+
+        with self.assertRaisesRegex(
+            CatalogValidationError,
+            "requirement implementation and verification assignments",
+        ):
+            validate(catalog)
+
+    def test_baseline_profile_links_normative_basic_auth_subclauses(self) -> None:
+        """Profiles v2.1 §6.1 item 2 incorporates §§3.1.1 and 3.1.2."""
+        catalog = json.loads(
+            (ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8")
+        )
+        baseline = next(
+            profile
+            for profile in catalog["profiles"]
+            if profile["profile_id"] == "KMIPKIT-PROFILE-BASELINE-CLIENT"
+        )
+        inherited_requirement_ids = {
+            "KMIPKIT-REQ-PROF-3.1.1-002",
+            "KMIPKIT-REQ-PROF-3.1.1-004",
+            "KMIPKIT-REQ-PROF-3.1.1-005",
+            "KMIPKIT-REQ-PROF-3.1.2-002",
+            "KMIPKIT-REQ-PROF-3.1.2-005",
+        }
+
+        missing = sorted(inherited_requirement_ids - set(baseline["requirement_ids"]))
+
+        self.assertFalse(missing, f"Baseline closure omits incorporated requirements: {missing}")
+
+    def test_baseline_profile_closes_over_all_normative_specification_candidates(self) -> None:
+        """Profiles v2.1 §6.1 item 1 incorporates the entire KMIP Specification v2.1."""
+        catalog = json.loads(
+            (ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8")
+        )
+        baseline = next(
+            profile
+            for profile in catalog["profiles"]
+            if profile["profile_id"] == "KMIPKIT-PROFILE-BASELINE-CLIENT"
+        )
+        spec_path = ROOT / "specification" / "oasis" / "kmip-2.1" / "upstream" / "kmip-spec-v2.1-os.html"
+        specification_candidates = audit_document(spec_path.read_bytes(), "KMIPKIT-SRC-spec")
+        expected_clause_ids = {candidate["clause_id"] for candidate in specification_candidates}
+
+        missing = sorted(expected_clause_ids - set(baseline["source_clause_ids"]))
+
+        self.assertEqual(
+            len(missing),
+            0,
+            f"Baseline closure omits {len(missing)} pinned Specification clauses, including {missing[:5]}",
+        )
+
+    def test_baseline_profile_records_whole_source_and_basic_auth_inclusions(self) -> None:
+        catalog = json.loads(
+            (ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8")
+        )
+        baseline = next(
+            profile
+            for profile in catalog["profiles"]
+            if profile["profile_id"] == "KMIPKIT-PROFILE-BASELINE-CLIENT"
+        )
+        expected_direct = {
+            "KMIPKIT-CLAUSE-PROF-3.1-001",
+            "KMIPKIT-CLAUSE-PROF-5.1.1-001",
+            "KMIPKIT-CLAUSE-PROF-6.1-001",
+            "KMIPKIT-CLAUSE-PROF-6.1-002",
+            "KMIPKIT-CLAUSE-PROF-6.1-003",
+            "KMIPKIT-CLAUSE-PROF-6.1-004",
+        }
+        self.assertEqual(set(baseline["direct_source_clause_ids"]), expected_direct)
+        actual_inclusions = {
+            (item["source_clause_id"], item["included_source_id"], item["included_section"])
+            for item in catalog["normative_inclusions"]
+        }
+        self.assertTrue(
+            {
+                ("KMIPKIT-CLAUSE-PROF-6.1-001", "KMIPKIT-SRC-spec", None),
+                ("KMIPKIT-CLAUSE-PROF-6.1-002", "KMIPKIT-SRC-profiles", "3.1"),
+            }.issubset(actual_inclusions)
+        )
+        self.assertTrue(
+            {
+                "KMIPKIT-REQ-PROF-3.1.1-002",
+                "KMIPKIT-REQ-PROF-3.1.1-004",
+                "KMIPKIT-REQ-PROF-3.1.1-005",
+                "KMIPKIT-REQ-PROF-3.1.2-002",
+                "KMIPKIT-REQ-PROF-3.1.2-005",
+            }.issubset(set(baseline["requirement_ids"]))
+        )
+
+    def test_catalog_validation_rejects_an_omitted_profile_closure_clause(self) -> None:
+        catalog_path = ROOT / "specification" / "catalog" / "kmip-2.1.json"
+        document = json.loads(catalog_path.read_text(encoding="utf-8"))
+        baseline = next(
+            profile
+            for profile in document["profiles"]
+            if profile["profile_id"] == "KMIPKIT-PROFILE-BASELINE-CLIENT"
+        )
+        baseline["source_clause_ids"].remove(baseline["source_clause_ids"][0])
+
+        with self.assertRaisesRegex(CatalogValidationError, "profile clause closure"):
+            validate_catalog(json.dumps(document).encode("utf-8"), ROOT, require_complete=True)
 
     def test_discrepancy_authority_must_derive_from_cited_source(self) -> None:
         document = minimal_catalog()
