@@ -204,8 +204,9 @@ class ProfileSectionFiveCrosswalkTests(unittest.TestCase):
         candidates = {
             candidate["clause_id"]: candidate
             for candidate in audit_document_with_text((ROOT / SOURCE_PATH).read_bytes(), SOURCE_ID)
+            if candidate["clause_id"] in clauses
         }
-        self.assertEqual(len(candidates), 534)
+        self.assertEqual(set(candidates), set(clauses))
 
         requirements_by_clause: dict[str, list[dict[str, object]]] = {}
         for requirement in requirements.values():
@@ -240,9 +241,10 @@ class ProfileSectionFiveCrosswalkTests(unittest.TestCase):
                     for atom in review["source_obligations"]
                     if atom.get("candidate_requirement_id")
                 }
-                self.assertTrue(
-                    requirement_ids <= reviewed_ids,
-                    f"source review omits catalogued IDs: {sorted(requirement_ids - reviewed_ids)}",
+                self.assertEqual(
+                    reviewed_ids,
+                    requirement_ids,
+                    "source review must identify every and only catalogued atom for this clause",
                 )
 
                 for requirement in clause_requirements:
