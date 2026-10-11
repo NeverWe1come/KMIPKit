@@ -1262,6 +1262,8 @@ def operation_element(name: str, section: str, direction: str) -> dict[str, obje
     slug = re.sub(r"[^A-Z0-9]+", "-", name.upper()).strip("-")
     direction_code = "C2S" if direction == "client_to_server" else "S2C"
     scope = "client_1_0" if direction == "client_to_server" else "client_1_1"
+    if direction == "client_to_server" and name == "Set Endpoint Role":
+        scope = "client_1_1"
     if direction == "client_to_server":
         operation_names = list(CLIENT_OPERATIONS)
         request_table, response_table = CLIENT_OPERATION_PAYLOAD_TABLES[operation_names.index(name)]
@@ -1296,7 +1298,23 @@ def operation_element(name: str, section: str, direction: str) -> dict[str, obje
     }
     if direction == "server_to_client":
         record["scope_reason"] = "Server-initiated operation support is scheduled for KMIPKit 1.1."
+    elif name == "Set Endpoint Role":
+        record["scope_reason"] = (
+            "OASIS §6.1.54 changes endpoint roles after success; the operation is deferred from the client-only 1.0 scope."
+        )
     return record
+
+
+def endpoint_role_operation_enum_element() -> dict[str, object]:
+    return {
+        "element_id": "KMIPKIT-ELEM-ENUM-VALUE-OPERATION-SET-ENDPOINT-ROLE-00000032",
+        "kind": "enumeration_value",
+        "name": "Set Endpoint Role",
+        "scope_state": "client_1_1",
+        "scope_reason": (
+            "The named operation value is deferred with §6.1.54; generic TTLV still preserves raw enumeration values."
+        ),
+    }
 
 
 class CatalogValidationTests(unittest.TestCase):
@@ -1592,6 +1610,7 @@ class CatalogValidationTests(unittest.TestCase):
         elements = [
             *(operation_element(name, section, "client_to_server") for name, section in CLIENT_OPERATIONS.items()),
             *(operation_element(name, section, "server_to_client") for name, section in SERVER_OPERATIONS.items()),
+            endpoint_role_operation_enum_element(),
         ]
         _check_operation_inventory(elements)
 
@@ -1603,6 +1622,7 @@ class CatalogValidationTests(unittest.TestCase):
         elements = [
             *(operation_element(name, section, "client_to_server") for name, section in CLIENT_OPERATIONS.items()),
             *(operation_element(name, section, "server_to_client") for name, section in SERVER_OPERATIONS.items()),
+            endpoint_role_operation_enum_element(),
         ]
         elements[0]["source_refs"] = [{"source_id": "KMIPKIT-SRC-spec", "section": "6.1.2"}]
         with self.assertRaisesRegex(CatalogValidationError, "operation"):
@@ -1612,6 +1632,7 @@ class CatalogValidationTests(unittest.TestCase):
         elements = [
             *(operation_element(name, section, "client_to_server") for name, section in CLIENT_OPERATIONS.items()),
             *(operation_element(name, section, "server_to_client") for name, section in SERVER_OPERATIONS.items()),
+            endpoint_role_operation_enum_element(),
         ]
         _check_operation_inventory(elements)
 
@@ -1623,6 +1644,33 @@ class CatalogValidationTests(unittest.TestCase):
         poll = next(row for row in elements if row["name"] == "Poll")
         poll["payload_tables"].append({"role": "response", "table_number": 277, "caption": "Poll Response Payload"})
         with self.assertRaisesRegex(CatalogValidationError, "operation"):
+            _check_operation_inventory(elements)
+
+    def test_set_endpoint_role_client_operation_and_enum_are_deferred_to_1_1(self) -> None:
+        elements = [
+            *(operation_element(name, section, "client_to_server") for name, section in CLIENT_OPERATIONS.items()),
+            *(operation_element(name, section, "server_to_client") for name, section in SERVER_OPERATIONS.items()),
+            endpoint_role_operation_enum_element(),
+        ]
+        _check_operation_inventory(elements)
+
+        operation = next(
+            row for row in elements
+            if row.get("kind") == "operation"
+            and row.get("direction") == "client_to_server"
+            and row.get("name") == "Set Endpoint Role"
+        )
+        operation["scope_state"] = "client_1_0"
+        operation.pop("scope_reason", None)
+        with self.assertRaisesRegex(CatalogValidationError, "scope disposition"):
+            _check_operation_inventory(elements)
+
+        operation["scope_state"] = "client_1_1"
+        operation["scope_reason"] = "OASIS role transition defers the operation from client-only 1.0."
+        enum_value = next(row for row in elements if row.get("element_id", "").endswith("SET-ENDPOINT-ROLE-00000032"))
+        enum_value["scope_state"] = "client_1_0"
+        enum_value.pop("scope_reason", None)
+        with self.assertRaisesRegex(CatalogValidationError, "enumeration.*scope"):
             _check_operation_inventory(elements)
 
     def test_item_types_managed_object_types_and_object_structures_reconcile(self) -> None:
