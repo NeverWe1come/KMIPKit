@@ -76,6 +76,29 @@ fn pkcs12_case_2_preserves_get_items_at_correlation_steps_5_7_and_9() {
 }
 
 #[test]
+fn synthetic_big_integer_fixture_item_is_parsed_without_exposing_its_bytes() {
+    let document = Document::parse(r#"<Modulus type="BigInteger" value="01020304"/>"#)
+        .expect("synthetic BigInteger XML parses");
+    let catalog = CatalogMaps::load().expect("pinned catalog resolves Modulus");
+    let mut item_count = 0;
+    let item = parse_item_with_get_test_symbols(
+        document.root_element(),
+        &catalog,
+        1,
+        &mut item_count,
+        true,
+    )
+    .expect("synthetic BigInteger fixture item parses");
+
+    assert_eq!(item.item_type(), ItemType::BigInteger);
+    let byte_count = item.with_value(|value| match value {
+        ValueView::BigInteger(bytes) => bytes.len(),
+        _ => 0,
+    });
+    assert_eq!(byte_count, 4, "synthetic BigInteger has four opaque bytes");
+}
+
+#[test]
 fn derived_profile_tape_library_vector_covers_only_locate_and_get_payloads() {
     // OASIS KMIP Profiles v2.1 §§5.12.2 and 5.12.6.3; KMIP Specification
     // v2.1 §§6.1.19 and 6.1.28. The sample does not claim profile support.

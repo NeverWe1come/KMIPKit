@@ -421,11 +421,8 @@ fn parse_item_with_get_test_symbols(
         }
         "Integer" => Value::integer(parse_scalar(node)?),
         "LongInteger" => Value::long_integer(parse_scalar(node)?),
-        "BigInteger" => Value::big_integer(parse_byte_string(
-            node,
-            "BigInteger",
-            allow_get_test_symbols,
-        )?),
+        // Test-only symbolic substitutions apply only to ByteString leaves.
+        "BigInteger" => Value::big_integer(parse_byte_string(node, "BigInteger", false)?),
         "Enumeration" => Value::enumeration(catalog.enumeration_value(node)?),
         "Boolean" => Value::boolean(parse_boolean(node)?),
         "TextString" => Value::text_string(parse_text_string(node, allow_get_test_symbols)?),
