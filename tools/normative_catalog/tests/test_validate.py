@@ -6148,6 +6148,192 @@ class CatalogValidationTests(unittest.TestCase):
         )
         self.assertEqual(oracle["oracle_status"], "partial-source-reviewed; not complete T003 oracle")
 
+    def test_spec_6_1_43_register_reviews_client_fields_and_server_results(self) -> None:
+        """Specification v2.1 §§6.1.43 and 6.1.43.1 preserve Register source boundaries."""
+        fixture_path = ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json"
+        oracle = json.loads(fixture_path.read_text(encoding="utf-8"))
+        source_path = "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
+        pinned_locators = audit_document_with_text((ROOT / source_path).read_bytes(), "KMIPKIT-SRC-spec")
+        register_locators = [row for row in pinned_locators if row["section"] in ("6.1.43", "6.1.43.1")]
+        expected_locators = {
+            "KMIPKIT-CLAUSE-SPEC-6.1.43-001": ("6.1.43", 1, "paragraph", ["SHALL"], [32788, 32791]),
+            "KMIPKIT-CLAUSE-SPEC-6.1.43-002": ("6.1.43", 2, "paragraph", ["SHALL"], [32793, 32795]),
+            "KMIPKIT-CLAUSE-SPEC-6.1.43-003": ("6.1.43", 3, "paragraph", ["SHALL"], [32797, 32800]),
+            "KMIPKIT-CLAUSE-SPEC-6.1.43-004": ("6.1.43", 4, "table_row", ["REQUIRED"], [32813, 32831]),
+            "KMIPKIT-CLAUSE-SPEC-6.1.43-005": ("6.1.43", 5, "table_row", ["MAY"], [32871, 32889]),
+            "KMIPKIT-CLAUSE-SPEC-6.1.43-006": ("6.1.43", 6, "table_row", ["REQUIRED"], [32928, 32946]),
+            "KMIPKIT-CLAUSE-SPEC-6.1.43-007": ("6.1.43", 7, "paragraph", ["SHALL"], [32974, 32976]),
+            "KMIPKIT-CLAUSE-SPEC-6.1.43-008": ("6.1.43", 8, "table_row", ["REQUIRED"], [32982, 32993]),
+            "KMIPKIT-CLAUSE-SPEC-6.1.43-009": ("6.1.43", 9, "table_row", ["MAY", "SHALL"], [32994, 33009]),
+            "KMIPKIT-CLAUSE-SPEC-6.1.43-010": ("6.1.43", 10, "table_row", ["MAY", "SHALL"], [33010, 33026]),
+            "KMIPKIT-CLAUSE-SPEC-6.1.43-011": ("6.1.43", 11, "table_row", ["MAY"], [33053, 33067]),
+            "KMIPKIT-CLAUSE-SPEC-6.1.43.1-001": ("6.1.43.1", 1, "paragraph", ["SHALL"], [33080, 33081]),
+            "KMIPKIT-CLAUSE-SPEC-6.1.43.1-002": ("6.1.43.1", 2, "table_row", ["REQUIRED"], [33101, 33118]),
+        }
+        self.assertEqual({row["clause_id"] for row in register_locators}, set(expected_locators))
+        reviews = {
+            row["source_clause_id"]: row
+            for row in oracle["source_requirement_reviews"]
+            if row["source_section"] in ("6.1.43", "6.1.43.1")
+        }
+        self.assertEqual(set(reviews), set(expected_locators))
+        for clause_id, (section, ordinal, block_kind, keywords, line_range) in expected_locators.items():
+            review = reviews[clause_id]
+            self.assertEqual(review["source_section"], section)
+            self.assertEqual(review["source_locator"], {"ordinal": ordinal, "block_kind": block_kind})
+            self.assertEqual(review["html_line_range"], line_range)
+            self.assertEqual(review["source_excerpt"], pinned_source_excerpt(source_path, line_range))
+            pinned = next(row for row in register_locators if row["clause_id"] == clause_id)
+            self.assertEqual(review["source_excerpt"], pinned["source_text"])
+            self.assertEqual(pinned["source_keywords"], keywords)
+
+        expected_atoms = {
+            "KMIPKIT-CLAUSE-SPEC-6.1.43-001": [
+                ("SHALL", "This information SHALL be specified by the use of a Attributes object.", "client", "KMIPKIT-REQ-SPEC-6.1.43-001"),
+            ],
+            "KMIPKIT-CLAUSE-SPEC-6.1.43-002": [
+                ("SHALL", "the server SHALL create a Link attribute of Link Type Wrapping Key Link pointing to the Managed Object with which the Managed Object being registered is wrapped.", "server", None),
+            ],
+            "KMIPKIT-CLAUSE-SPEC-6.1.43-003": [
+                ("SHALL", "The server SHALL copy the Unique Identifier returned by this operation into the ID Placeholder variable.", "server", None),
+                ("SHALL", "The Initial Date attribute of the object SHALL be set to the current time.", "server", None),
+            ],
+            "KMIPKIT-CLAUSE-SPEC-6.1.43-005": [
+                ("MAY", "The object and attributes MAY be wrapped.", "client", "KMIPKIT-REQ-SPEC-6.1.43-005"),
+            ],
+            "KMIPKIT-CLAUSE-SPEC-6.1.43-007": [
+                ("SHALL", "If a Managed Cryptographic Object is registered, then the following attributes SHALL be included in the Register request.", "client", "KMIPKIT-REQ-SPEC-6.1.43-007"),
+            ],
+            "KMIPKIT-CLAUSE-SPEC-6.1.43-009": [
+                ("MAY", "MAY be omitted only if this information is encapsulated in the Key Block.", "client", "KMIPKIT-REQ-SPEC-6.1.43-009-001"),
+                ("SHALL", "If present, then Cryptographic Length below SHALL also be present.", "client", "KMIPKIT-REQ-SPEC-6.1.43-009-002"),
+            ],
+            "KMIPKIT-CLAUSE-SPEC-6.1.43-010": [
+                ("MAY", "MAY be omitted only if this information is encapsulated in the Key Block.", "client", "KMIPKIT-REQ-SPEC-6.1.43-010-001"),
+                ("SHALL", "If present, then Cryptographic Algorithm above SHALL also be present.", "client", "KMIPKIT-REQ-SPEC-6.1.43-010-002"),
+            ],
+            "KMIPKIT-CLAUSE-SPEC-6.1.43-011": [
+                ("MAY", "MAY be omitted only if this information is encapsulated in the Certificate object.", "client", "KMIPKIT-REQ-SPEC-6.1.43-011"),
+            ],
+            "KMIPKIT-CLAUSE-SPEC-6.1.43.1-001": [
+                ("SHALL", "This section details the specific Result Reasons that SHALL be returned for errors detected in a Register Operation.", "server", None),
+            ],
+        }
+        for clause_id, expected in expected_atoms.items():
+            atoms = reviews[clause_id]["source_obligations"]
+            self.assertEqual(
+                [(atom["source_keyword"], atom["source_text"], atom["actor"], atom["candidate_requirement_id"]) for atom in atoms],
+                expected,
+            )
+            if all(actor == "server" for _, _, actor, _ in expected):
+                self.assertTrue(all(atom["scope_disposition"] == "server_only" for atom in atoms))
+                self.assertEqual(reviews[clause_id]["expected_client_requirement_ids"], [])
+            else:
+                self.assertTrue(all(atom["scope_disposition"] == "client_1_0" for atom in atoms))
+
+        for clause_id in (
+            "KMIPKIT-CLAUSE-SPEC-6.1.43-004",
+            "KMIPKIT-CLAUSE-SPEC-6.1.43-006",
+            "KMIPKIT-CLAUSE-SPEC-6.1.43-008",
+            "KMIPKIT-CLAUSE-SPEC-6.1.43.1-002",
+        ):
+            self.assertEqual(reviews[clause_id]["source_obligations"], [])
+        self.assertIn("header", reviews["KMIPKIT-CLAUSE-SPEC-6.1.43-004"]["review_note"].lower())
+        self.assertIn("header", reviews["KMIPKIT-CLAUSE-SPEC-6.1.43-006"]["review_note"].lower())
+        self.assertIn("header", reviews["KMIPKIT-CLAUSE-SPEC-6.1.43-008"]["review_note"].lower())
+        self.assertIn("enum", reviews["KMIPKIT-CLAUSE-SPEC-6.1.43.1-002"]["review_note"].lower())
+
+        request_header = reviews["KMIPKIT-CLAUSE-SPEC-6.1.43-004"]
+        expected_request_rows = [
+            ("Object Type", "Yes", [32832, 32849], ["KMIPKIT-REQ-SPEC-6.1.43-001"], None),
+            ("Attributes", "Yes", [32850, 32870], ["KMIPKIT-REQ-SPEC-6.1.43-001"], None),
+            ("Any Object (Section 2)", "Yes", [32871, 32889], ["KMIPKIT-REQ-SPEC-6.1.43-005"], None),
+            ("Protection Storage Masks", "No", [32890, 32908], [], "KMIPKIT-SOURCE-GAP-SPEC-6.1.43-PROTECTION-STORAGE-MASKS-OPTIONAL"),
+        ]
+        self.assertEqual(
+            [(row["row_label"], row["required"], row["html_line_range"], row["source_requirement_ids"], row["source_gap_id"])
+             for row in request_header["source_request_rows"]],
+            expected_request_rows,
+        )
+        for row in request_header["source_request_rows"]:
+            self.assertEqual(row["actor"], "client")
+            self.assertEqual(row["source_excerpt"], pinned_source_excerpt(source_path, row["html_line_range"]))
+        self.assertIn("wrapping", request_header["source_request_rows"][2]["source_note"].lower())
+
+        attribute_header = reviews["KMIPKIT-CLAUSE-SPEC-6.1.43-008"]
+        expected_attribute_rows = [
+            ("Cryptographic Algorithm", "Yes", [32994, 33009], ["KMIPKIT-REQ-SPEC-6.1.43-009-001", "KMIPKIT-REQ-SPEC-6.1.43-009-002"]),
+            ("Cryptographic Length", "Yes", [33010, 33026], ["KMIPKIT-REQ-SPEC-6.1.43-010-001", "KMIPKIT-REQ-SPEC-6.1.43-010-002"]),
+            ("Certificate Length", "Yes", [33027, 33039], ["KMIPKIT-REQ-SPEC-6.1.43-007"]),
+            ("Cryptographic Usage Mask", "Yes", [33040, 33052], ["KMIPKIT-REQ-SPEC-6.1.43-007"]),
+            ("Digital Signature Algorithm", "Yes", [33053, 33067], ["KMIPKIT-REQ-SPEC-6.1.43-011"]),
+        ]
+        self.assertEqual(
+            [(row["row_label"], row["required"], row["html_line_range"], row["source_requirement_ids"])
+             for row in attribute_header["source_request_rows"]],
+            expected_attribute_rows,
+        )
+        for row in attribute_header["source_request_rows"]:
+            self.assertEqual(row["actor"], "client")
+            self.assertEqual(row["source_excerpt"], pinned_source_excerpt(source_path, row["html_line_range"]))
+        self.assertIn("managed cryptographic object", attribute_header["review_note"].lower())
+
+        self.assertEqual(
+            reviews["KMIPKIT-CLAUSE-SPEC-6.1.43-006"]["source_payload_rows"],
+            [{
+                "row_label": "Unique Identifier", "required": "Yes", "actor": "server",
+                "disposition": "response_payload_data", "html_line_range": [32947, 32965],
+                "source_excerpt": pinned_source_excerpt(source_path, [32947, 32965]),
+            }],
+        )
+        enum_review = reviews["KMIPKIT-CLAUSE-SPEC-6.1.43.1-002"]
+        self.assertEqual(
+            enum_review["source_excerpt"].split("Operation Failed ", 1)[1].split(", "),
+            ["Attribute Read Only", "Attribute Single Valued", "Bad Password", "Encoding Option Error", "Invalid Attribute", "Invalid Attribute Value", "Invalid Object Type", "Non Unique Name Attribute", "Server Limit Exceeded", "Attestation Failed", "Attestation Required", "Feature Not Supported", "Invalid Field", "Invalid Message", "Operation Not Supported", "Permission Denied", "Protection Storage Unavailable", "Response Too Large"],
+        )
+
+        optional_mask_gap = next(
+            row for row in oracle["source_only_requirement_gaps"]
+            if row["gap_id"] == "KMIPKIT-SOURCE-GAP-SPEC-6.1.43-PROTECTION-STORAGE-MASKS-OPTIONAL"
+        )
+        self.assertEqual(optional_mask_gap["html_line_range"], [32890, 32908])
+        self.assertEqual(optional_mask_gap["source_excerpt"], pinned_source_excerpt(source_path, [32890, 32908]))
+        self.assertEqual(optional_mask_gap["source_force"], "optional_table_body_value")
+        self.assertEqual(optional_mask_gap["actor"], "client")
+        self.assertEqual(optional_mask_gap["scope_disposition"], "client_1_0")
+        self.assertEqual(optional_mask_gap["candidate_requirement_id"], None)
+        self.assertEqual(optional_mask_gap["proposed_requirement_id"], "KMIPKIT-REQ-SPEC-6.1.43-012")
+        self.assertEqual(optional_mask_gap["status"], "stable_label_proposed_not_in_catalog")
+
+        captions = [
+            ([32913, 32915], "Table 291: Register Request Payload"),
+            ([32970, 32972], "Table 292: Register Response Payload"),
+            ([33072, 33074], "Table 293: Register Attribute Requirements"),
+            ([33123, 33123], "Table 294: Register Errors"),
+        ]
+        for line_range, caption in captions:
+            self.assertIn(caption, pinned_source_excerpt(source_path, line_range))
+
+        expected_crosswalks = {
+            ("KMIPKIT-REQ-SPEC-6.1.43-001", 1),
+            ("KMIPKIT-REQ-SPEC-6.1.43-005", 1),
+            ("KMIPKIT-REQ-SPEC-6.1.43-007", 1),
+            ("KMIPKIT-REQ-SPEC-6.1.43-009-001", 1),
+            ("KMIPKIT-REQ-SPEC-6.1.43-009-002", 2),
+            ("KMIPKIT-REQ-SPEC-6.1.43-010-001", 1),
+            ("KMIPKIT-REQ-SPEC-6.1.43-010-002", 2),
+            ("KMIPKIT-REQ-SPEC-6.1.43-011", 1),
+        }
+        self.assertEqual(
+            {
+                (row["requirement_id"], row["source_obligation_order"])
+                for row in oracle["requirement_crosswalk"]
+                if row["requirement_id"].startswith("KMIPKIT-REQ-SPEC-6.1.43-")
+            },
+            expected_crosswalks,
+        )
+        self.assertEqual(oracle["oracle_status"], "partial-source-reviewed; not complete T003 oracle")
+
     def test_spec_6_1_42_recover_keeps_client_may_and_unresolved_authentication_should(self) -> None:
         """Specification v2.1 §§6.1.42 and 6.1.42.1 preserve Recover actor and payload boundaries."""
         fixture_path = ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json"
@@ -11059,6 +11245,7 @@ class CatalogValidationTests(unittest.TestCase):
                 "KMIPKIT-REQ-SPEC-6.1.40-017",
             "KMIPKIT-REQ-SPEC-6.1.41-005",
             "KMIPKIT-REQ-SPEC-6.1.41-006",
+            "KMIPKIT-REQ-SPEC-6.1.43-012",
             "KMIPKIT-REQ-SPEC-6.1.14-009",
             "KMIPKIT-REQ-SPEC-6.1.14-010",
             "KMIPKIT-REQ-SPEC-6.1.14-011",
