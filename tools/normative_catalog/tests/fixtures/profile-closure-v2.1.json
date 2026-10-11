@@ -42,7 +42,7 @@
       "All exact upstream XML href targets are unavailable in this worktree; hrefs and labels are retained as published.",
       "Requirement crosswalk, complete test-link provenance, keyword-category, target-manifest, adversarial parser, and generated-source compilation cases remain incomplete.",
       "Direct roots are source-reviewed client-facing profile obligations; candidate keyword blocks that are inherited, server-only, descriptive, or explicitly informative remain in the clause closure but are not direct client roots. HTTPS §3.1 is inherited from Baseline; Tape Library exclusions are individually locator- and span-documented.",
-      "Source-only gaps include ten §6.1 imperative procedure ID proposals, an unresolved lowercase multipart-option preface, and every unlabeled formal/source-only Profile row from the independent client-roots audit; proposals are not catalog IDs and do not silently enter closure sets. The 26 Specification §§3.1-3.12 Required=Yes table-body rows are separate source-only proposed obligations; they do not reuse the rejected heading labels and are not formal uppercase RFC 2119 REQUIRED tokens."
+      "Source-only gaps include ten §6.1 imperative procedure ID proposals, six optional §6.1.47 Request Payload row proposals, an unresolved lowercase multipart-option preface, and every unlabeled formal/source-only Profile row from the independent client-roots audit; proposals are not catalog IDs and do not silently enter closure sets. The 26 Specification §§3.1-3.12 Required=Yes table-body rows are separate source-only proposed obligations; they do not reuse the rejected heading labels and are not formal uppercase RFC 2119 REQUIRED tokens."
     ],
     "case_label_href_mismatches": [
       {
@@ -75,16 +75,16 @@
     "profiles": 18,
     "specification_clause_records": 877,
     "profiles_clause_records": 534,
-    "requirement_crosswalk_records": 222,
+    "requirement_crosswalk_records": 224,
     "requirement_crosswalk_complete": false,
     "common_baseline_official_cases": 16,
     "common_baseline_unavailable_fixtures": 16,
     "profile_test_associations": 365,
     "distinct_profile_test_case_ids": 93,
-    "source_requirement_review_records": 574,
+    "source_requirement_review_records": 582,
     "direct_root_exclusion_records": 4,
-    "source_only_requirement_gaps": 147,
-    "source_only_requirement_gap_proposals": 117,
+    "source_only_requirement_gaps": 153,
+    "source_only_requirement_gap_proposals": 123,
     "profile_unlabeled_source_rows": 22
   },
   "source_clause_crosswalk": [
@@ -20976,6 +20976,40 @@
       "scope_state": "client_1_0",
       "applies_to": "all_client_profiles",
       "review_note": "Specification v2.1 section 6.1.46; client obligation mapped from source obligation 1.",
+      "source_obligation_order": 1,
+      "source_actor": "client"
+    },
+    {
+      "requirement_id": "KMIPKIT-REQ-SPEC-6.1.47-001",
+      "source_clause_id": "KMIPKIT-CLAUSE-SPEC-6.1.47-001",
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_section": "6.1.47",
+      "source_locator": {
+        "ordinal": 1,
+        "block_kind": "paragraph"
+      },
+      "source_keyword": "SHOULD",
+      "role": "client",
+      "scope_state": "client_1_0",
+      "applies_to": "all_client_profiles",
+      "review_note": "Specification v2.1 section 6.1.47; client obligation mapped from source obligation 1.",
+      "source_obligation_order": 1,
+      "source_actor": "client"
+    },
+    {
+      "requirement_id": "KMIPKIT-REQ-SPEC-6.1.47-004-001",
+      "source_clause_id": "KMIPKIT-CLAUSE-SPEC-6.1.47-004",
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_section": "6.1.47",
+      "source_locator": {
+        "ordinal": 4,
+        "block_kind": "paragraph"
+      },
+      "source_keyword": "MAY",
+      "role": "client",
+      "scope_state": "client_1_0",
+      "applies_to": "all_client_profiles",
+      "review_note": "Specification v2.1 section 6.1.47; client obligation mapped from source obligation 1.",
       "source_obligation_order": 1,
       "source_actor": "client"
     }
@@ -63958,6 +63992,401 @@
       "source_keywords": [
         "REQUIRED"
       ]
+    },
+    {
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+      "source_section": "6.1.47",
+      "source_clause_id": "KMIPKIT-CLAUSE-SPEC-6.1.47-001",
+      "source_locator": {
+        "ordinal": 1,
+        "block_kind": "paragraph"
+      },
+      "html_line_range": [
+        34425,
+        34427
+      ],
+      "source_excerpt": "As the replacement of the key pair takes over the name attribute for the existing public/private key pair, Re-key Key Pair SHOULD only be performed once on a given key pair.",
+      "source_obligations": [
+        {
+          "source_order": 1,
+          "source_text": "Re-key Key Pair SHOULD only be performed once on a given key pair.",
+          "source_keyword": "SHOULD",
+          "actor": "client",
+          "direction": "perform Re-key Key Pair no more than once on a given key pair",
+          "condition": "A given public/private key pair is being re-keyed.",
+          "scope_disposition": "client_1_0",
+          "candidate_requirement_id": "KMIPKIT-REQ-SPEC-6.1.47-001"
+        }
+      ],
+      "rejected_candidate_mappings": [],
+      "expected_client_requirement_ids": [
+        "KMIPKIT-REQ-SPEC-6.1.47-001"
+      ],
+      "applies_to": "all_client_profiles",
+      "review_note": "The client SHOULD is mapped to the stable Re-key Key Pair requirement."
+    },
+    {
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+      "source_section": "6.1.47",
+      "source_clause_id": "KMIPKIT-CLAUSE-SPEC-6.1.47-002",
+      "source_locator": {
+        "ordinal": 2,
+        "block_kind": "paragraph"
+      },
+      "html_line_range": [
+        34429,
+        34433
+      ],
+      "source_excerpt": "For both the existing public key and private key, the server SHALL create a Link attribute of Link Type Replacement Key pointing to the replacement public and private key, respectively. For both the replacement public and private key, the server SHALL create a Link attribute of Link Type Replaced Key pointing to the existing public and private key, respectively.",
+      "source_obligations": [
+        {
+          "source_order": 1,
+          "source_text": "For both the existing public key and private key, the server SHALL create a Link attribute of Link Type Replacement Key pointing to the replacement public and private key, respectively.",
+          "source_keyword": "SHALL",
+          "actor": "server",
+          "direction": "create Replacement Key links from the existing public and private keys to their corresponding replacement keys",
+          "condition": "A Re-key Key Pair operation creates replacement keys.",
+          "scope_disposition": "server_only",
+          "candidate_requirement_id": null
+        },
+        {
+          "source_order": 2,
+          "source_text": "For both the replacement public and private key, the server SHALL create a Link attribute of Link Type Replaced Key pointing to the existing public and private key, respectively.",
+          "source_keyword": "SHALL",
+          "actor": "server",
+          "direction": "create Replaced Key links from the replacement public and private keys to their corresponding existing keys",
+          "condition": "A Re-key Key Pair operation creates replacement keys.",
+          "scope_disposition": "server_only",
+          "candidate_requirement_id": null
+        }
+      ],
+      "rejected_candidate_mappings": [],
+      "expected_client_requirement_ids": [],
+      "applies_to": "all_client_profiles",
+      "review_note": "Both link updates are server-side effects of creating the replacement key pair."
+    },
+    {
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+      "source_section": "6.1.47",
+      "source_clause_id": "KMIPKIT-CLAUSE-SPEC-6.1.47-003",
+      "source_locator": {
+        "ordinal": 3,
+        "block_kind": "paragraph"
+      },
+      "html_line_range": [
+        34435,
+        34437
+      ],
+      "source_excerpt": "The server SHALL copy the Private Key Unique Identifier of the replacement private key returned by this operation into the ID Placeholder variable.",
+      "source_obligations": [
+        {
+          "source_order": 1,
+          "source_text": "The server SHALL copy the Private Key Unique Identifier of the replacement private key returned by this operation into the ID Placeholder variable.",
+          "source_keyword": "SHALL",
+          "actor": "server",
+          "direction": "copy the returned replacement private-key Unique Identifier into the server ID Placeholder",
+          "condition": "A Re-key Key Pair operation returns a replacement private-key Unique Identifier.",
+          "scope_disposition": "server_only",
+          "candidate_requirement_id": null
+        }
+      ],
+      "rejected_candidate_mappings": [],
+      "expected_client_requirement_ids": [],
+      "applies_to": "all_client_profiles",
+      "review_note": "ID Placeholder assignment is server behavior and is retained without claiming a client requirement."
+    },
+    {
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+      "source_section": "6.1.47",
+      "source_clause_id": "KMIPKIT-CLAUSE-SPEC-6.1.47-004",
+      "source_locator": {
+        "ordinal": 4,
+        "block_kind": "paragraph"
+      },
+      "html_line_range": [
+        34439,
+        34444
+      ],
+      "source_excerpt": "An Offset MAY be used to indicate the difference between the Initial Date and the Activation Date of the replacement key pair. If no Offset is specified, the Activation Date and Deactivation Date values are copied from the existing key pair. If Offset is set and dates exist for the existing key pair, then the dates of the replacement key pair SHALL be set based on the dates of the existing key pair as follows",
+      "source_obligations": [
+        {
+          "source_order": 1,
+          "source_text": "An Offset MAY be used to indicate the difference between the Initial Date and the Activation Date of the replacement key pair.",
+          "source_keyword": "MAY",
+          "actor": "client",
+          "direction": "include Offset in the Re-key Key Pair request to indicate the Initial Date and Activation Date difference",
+          "condition": "A client elects to specify Offset.",
+          "scope_disposition": "client_1_0",
+          "candidate_requirement_id": "KMIPKIT-REQ-SPEC-6.1.47-004-001"
+        },
+        {
+          "source_order": 2,
+          "source_text": "then the dates of the replacement key pair SHALL be set based on the dates of the existing key pair as follows",
+          "source_keyword": "SHALL",
+          "actor": "server",
+          "direction": "set replacement key-pair dates from the existing key pair according to Table 308",
+          "condition": "Offset is specified and dates exist for the existing key pair.",
+          "scope_disposition": "server_only",
+          "candidate_requirement_id": null
+        }
+      ],
+      "rejected_candidate_mappings": [
+        {
+          "requirement_id": "KMIPKIT-REQ-SPEC-6.1.47-004-002",
+          "claimed_keyword": "SHALL",
+          "source_review": "The candidate assigns a client SHALL when Offset is omitted, but the source Offset-omitted date-copy sentence contains no formal keyword. The formal SHALL applies when Offset is set and existing dates are present; it governs a server date transformation. The candidate therefore mismatches the source keyword, actor, and condition.",
+          "expected_disposition": "reject_candidate_actor_mismatch"
+        }
+      ],
+      "expected_client_requirement_ids": [
+        "KMIPKIT-REQ-SPEC-6.1.47-004-001"
+      ],
+      "applies_to": "all_client_profiles",
+      "review_note": "Offset is a client MAY; the date transformation is server-side and conditional on Offset and existing dates. The candidate .47-004-002 incorrectly turns the descriptive Offset-omitted date-copy sentence into a client SHALL; the source gives that sentence no formal keyword. Its client actor and Offset-omitted condition mismatch the actual formal SHALL, which applies only when Offset is set and existing dates are present and governs the server. Table 308 gives Initial Date (IT2) > IT1 while Table 309 says Initial Date is set to the current time; this source discrepancy remains unresolved and creates no client date-setting obligation. The pinned source formula contains byte 0xA0 before IT2 + Offset at HTML line 34486; decoded as Windows-1252, this is U+00A0 (a non-breaking space), preserved in source_context.",
+      "source_context": "An Offset MAY be used to indicate the difference between the Initial Date and the Activation Date of the replacement key pair. If no Offset is specified, the Activation Date and Deactivation Date values are copied from the existing key pair. If Offset is set and dates exist for the existing key pair, then the dates of the replacement key pair SHALL be set based on the dates of the existing key pair as follows Attribute in Existing Key Pair Attribute in Replacement Key Pair Initial Date (IT1) Initial Date (IT2) > IT1 Activation Date (AT1) Activation Date (AT2) = IT2+ Offset Deactivation Date (DT1) Deactivation Date = DT1+(AT2- AT1) Table 308: Computing New Dates from Offset during Re-key Key Pair Initial Date Set to the current time Pinned HTML lines 34486-34487: Activation Date (AT2) = \u00A0IT2+ Offset"
+    },
+    {
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+      "source_section": "6.1.47",
+      "source_clause_id": "KMIPKIT-CLAUSE-SPEC-6.1.47-005",
+      "source_locator": {
+        "ordinal": 5,
+        "block_kind": "table_row"
+      },
+      "html_line_range": [
+        34738,
+        34756
+      ],
+      "source_excerpt": "Item REQUIRED Description",
+      "source_obligations": [],
+      "rejected_candidate_mappings": [],
+      "expected_client_requirement_ids": [],
+      "applies_to": "all_client_profiles",
+      "review_note": "The request payload header introduces Table 310; individual body fields are recorded as source_request_rows. Table 309 server-side attribute effects are retained as context.",
+      "source_context": "Initial Date Set to the current time Destroy Date Not set Compromise Occurrence Date Not set Compromise Date Not set Revocation Reason Not set Link Set to point to the existing public/private keys as the replaced public/private keys Last Change Date Set to current time Random Number Generator Set to the random number generator used for creating the new managed object. Not copied from the original object. Table 309: Re-key Key Pair Attribute Requirements",
+      "source_request_rows": [
+        {
+          "row_label": "Private Key Unique Identifier",
+          "required": "No",
+          "actor": "client",
+          "disposition": "optional_request_field_with_existing_conditional_capability",
+          "html_line_range": [
+            34757,
+            34775
+          ],
+          "source_excerpt": "Private Key Unique Identifier No Determines the existing Asymmetric key pair to be re-keyed. If omitted, then the ID Placeholder is substituted by the server.",
+          "source_gap_id": null,
+          "source_requirement_ids": [
+            "KMIPKIT-REQ-SPEC-6.1-003-002"
+          ],
+          "reused_requirement_id": "KMIPKIT-REQ-SPEC-6.1-003-002",
+          "reuse_condition": "The Batch Order Option is true or unspecified and the request is a subsequent operation in the batched request; the ID Placeholder must be available for the specified fallback.",
+          "source_note": "The row describes server fallback to ID Placeholder. The generic client capability is reused only when its batch and placeholder preconditions apply; this operation section does not add a separate batch condition."
+        },
+        {
+          "row_label": "Offset",
+          "required": "No",
+          "actor": "client",
+          "disposition": "optional_request_field_covered_by_client_may",
+          "html_line_range": [
+            34776,
+            34795
+          ],
+          "source_excerpt": "Offset No An Interval object indicating the difference between the Initial Date and the Activation Date of the replacement key pair to be created.",
+          "source_gap_id": null,
+          "source_requirement_ids": [
+            "KMIPKIT-REQ-SPEC-6.1.47-004-001"
+          ]
+        },
+        {
+          "row_label": "Common Attributes",
+          "required": "No",
+          "actor": "client",
+          "disposition": "optional_request_field_with_source_only_proposal",
+          "html_line_range": [
+            34796,
+            34816
+          ],
+          "source_excerpt": "Common Attributes No Specifies desired attributes that apply to both the Private and Public Key Objects.",
+          "source_gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.47-COMMON-ATTRIBUTES-OPTIONAL",
+          "source_requirement_ids": [],
+          "source_note": "The request table marks this field optional but no stable client requirement ID currently represents its exposure."
+        },
+        {
+          "row_label": "Private Key Attributes",
+          "required": "No",
+          "actor": "client",
+          "disposition": "optional_request_field_with_source_only_proposal",
+          "html_line_range": [
+            34817,
+            34835
+          ],
+          "source_excerpt": "Private Key Attributes No Specifies attributes that apply to the Private Key Object.",
+          "source_gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.47-PRIVATE-KEY-ATTRIBUTES-OPTIONAL",
+          "source_requirement_ids": [],
+          "source_note": "The request table marks this field optional but no stable client requirement ID currently represents its exposure."
+        },
+        {
+          "row_label": "Public Key Attributes",
+          "required": "No",
+          "actor": "client",
+          "disposition": "optional_request_field_with_source_only_proposal",
+          "html_line_range": [
+            34836,
+            34854
+          ],
+          "source_excerpt": "Public Key Attributes No Specifies attributes that apply to the Public Key Object.",
+          "source_gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.47-PUBLIC-KEY-ATTRIBUTES-OPTIONAL",
+          "source_requirement_ids": [],
+          "source_note": "The request table marks this field optional but no stable client requirement ID currently represents its exposure."
+        },
+        {
+          "row_label": "Common Protection Storage Masks",
+          "required": "No",
+          "actor": "client",
+          "disposition": "optional_request_field_with_source_only_proposal",
+          "html_line_range": [
+            34855,
+            34873
+          ],
+          "source_excerpt": "Common Protection Storage Masks No Specifies all Protection Storage Mask selections that are permissible for the new Private Key and new Public Key objects",
+          "source_gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.47-COMMON-PROTECTION-STORAGE-MASKS-OPTIONAL",
+          "source_requirement_ids": [],
+          "source_note": "The request table marks this field optional but no stable client requirement ID currently represents its exposure."
+        },
+        {
+          "row_label": "Private Protection Storage Masks",
+          "required": "No",
+          "actor": "client",
+          "disposition": "optional_request_field_with_source_only_proposal",
+          "html_line_range": [
+            34874,
+            34897
+          ],
+          "source_excerpt": "Private Protection Storage Masks No Specifies all Protection Storage Mask selections that are permissible for the new Private Key object.",
+          "source_gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.47-PRIVATE-PROTECTION-STORAGE-MASKS-OPTIONAL",
+          "source_requirement_ids": [],
+          "source_note": "The request table marks this field optional but no stable client requirement ID currently represents its exposure."
+        },
+        {
+          "row_label": "Public Protection Storage Masks",
+          "required": "No",
+          "actor": "client",
+          "disposition": "optional_request_field_with_source_only_proposal",
+          "html_line_range": [
+            34898,
+            34921
+          ],
+          "source_excerpt": "Public Protection Storage Masks No Specifies all Protection Storage Mask selections that are permissible for the new Public Key object.",
+          "source_gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.47-PUBLIC-PROTECTION-STORAGE-MASKS-OPTIONAL",
+          "source_requirement_ids": [],
+          "source_note": "The request table marks this field optional but no stable client requirement ID currently represents its exposure."
+        }
+      ]
+    },
+    {
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+      "source_section": "6.1.47",
+      "source_clause_id": "KMIPKIT-CLAUSE-SPEC-6.1.47-006",
+      "source_locator": {
+        "ordinal": 6,
+        "block_kind": "table_row"
+      },
+      "html_line_range": [
+        34943,
+        34961
+      ],
+      "source_excerpt": "Item REQUIRED Description",
+      "source_obligations": [],
+      "rejected_candidate_mappings": [],
+      "expected_client_requirement_ids": [],
+      "applies_to": "all_client_profiles",
+      "review_note": "The response payload header introduces Table 311; both Unique Identifier rows are required server response data, not client request obligations.",
+      "source_context": "Item REQUIRED Description Private Key Unique Identifier Yes The Unique Identifier of the newly created replacement Private Key object. Public Key Unique Identifier Yes The Unique Identifier of the newly created replacement Public Key object. Table 311: Re-key Key Pair Response Payload",
+      "source_payload_rows": [
+        {
+          "row_label": "Private Key Unique Identifier",
+          "required": "Yes",
+          "actor": "server",
+          "disposition": "response_payload_data",
+          "html_line_range": [
+            34962,
+            34980
+          ],
+          "source_excerpt": "Private Key Unique Identifier Yes The Unique Identifier of the newly created replacement Private Key object."
+        },
+        {
+          "row_label": "Public Key Unique Identifier",
+          "required": "Yes",
+          "actor": "server",
+          "disposition": "response_payload_data",
+          "html_line_range": [
+            34981,
+            35000
+          ],
+          "source_excerpt": "Public Key Unique Identifier Yes The Unique Identifier of the newly created replacement Public Key object."
+        }
+      ]
+    },
+    {
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+      "source_section": "6.1.47.1",
+      "source_clause_id": "KMIPKIT-CLAUSE-SPEC-6.1.47.1-001",
+      "source_locator": {
+        "ordinal": 1,
+        "block_kind": "paragraph"
+      },
+      "html_line_range": [
+        35015,
+        35016
+      ],
+      "source_excerpt": "This section details the specific Result Reasons that SHALL be returned for errors detected in a Re-key Key Pair Operation.",
+      "source_obligations": [
+        {
+          "source_order": 1,
+          "source_text": "This section details the specific Result Reasons that SHALL be returned for errors detected in a Re-key Key Pair Operation.",
+          "source_keyword": "SHALL",
+          "actor": "server",
+          "direction": "return the specified Re-key Key Pair Result Reasons in error responses",
+          "condition": "An error is detected in a Re-key Key Pair operation.",
+          "scope_disposition": "server_only",
+          "candidate_requirement_id": null
+        }
+      ],
+      "rejected_candidate_mappings": [],
+      "expected_client_requirement_ids": [],
+      "applies_to": "all_client_profiles",
+      "review_note": "Result Reason selection describes server error responses."
+    },
+    {
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+      "source_section": "6.1.47.1",
+      "source_clause_id": "KMIPKIT-CLAUSE-SPEC-6.1.47.1-002",
+      "source_locator": {
+        "ordinal": 2,
+        "block_kind": "table_row"
+      },
+      "html_line_range": [
+        35036,
+        35052
+      ],
+      "source_excerpt": "Operation Failed Cryptographic Failure, Invalid Field, Invalid Message, Invalid Object Type, Key Value Not Present, Object Not Found, Attestation Failed, Attestation Required, Feature Not Supported, Invalid Field, Invalid Message, Operation Not Supported, Permission Denied, Private Protection Storage Unavailable, Public Protection Storage Unavailable, Response Too Large",
+      "source_obligations": [],
+      "rejected_candidate_mappings": [],
+      "expected_client_requirement_ids": [],
+      "applies_to": "all_client_profiles",
+      "review_note": "The row lists 16 Result Reason occurrences, including duplicate Invalid Field and Invalid Message values. It states no formal REQUIRED source obligation; the REQUIRED token is a table-column heading and Attestation Required is a reason name.",
+      "source_keywords": [
+        "REQUIRED"
+      ]
     }
   ],
   "source_only_requirement_gaps": [
@@ -68468,6 +68897,210 @@
       "scope_disposition": "client_1_0",
       "candidate_requirement_id": null,
       "proposed_requirement_id": "KMIPKIT-REQ-SPEC-6.1.46-009",
+      "status": "stable_label_proposed_not_in_catalog",
+      "review_note": "A source-only stable-label proposal remains outside the catalog until a separately approved normative catalog change assigns it."
+    },
+    {
+      "gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.47-COMMON-ATTRIBUTES-OPTIONAL",
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+      "source_section": "6.1.47",
+      "source_clause_id": null,
+      "source_locator": {
+        "kind": "table_body_row",
+        "section": "6.1.47",
+        "row_label": "Common Attributes",
+        "table": "request_payload",
+        "html_line_range": [
+          34796,
+          34816
+        ]
+      },
+      "source_locator_description": "Specification v2.1 section 6.1.47 Re-key Key Pair request payload body row for Common Attributes (HTML lines 34796-34816)",
+      "html_line_range": [
+        34796,
+        34816
+      ],
+      "source_excerpt": "Common Attributes No Specifies desired attributes that apply to both the Private and Public Key Objects.",
+      "source_keywords": [],
+      "source_force": "optional_table_body_value",
+      "audited_statement": "The request table exposes optional Common Attributes.",
+      "actor": "client",
+      "direction": "expose Common Attributes as an optional client request field",
+      "condition": "A client elects to specify the optional field.",
+      "scope_disposition": "client_1_0",
+      "candidate_requirement_id": null,
+      "proposed_requirement_id": "KMIPKIT-REQ-SPEC-6.1.47-008",
+      "status": "stable_label_proposed_not_in_catalog",
+      "review_note": "A source-only stable-label proposal remains outside the catalog until a separately approved normative catalog change assigns it."
+    },
+    {
+      "gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.47-PRIVATE-KEY-ATTRIBUTES-OPTIONAL",
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+      "source_section": "6.1.47",
+      "source_clause_id": null,
+      "source_locator": {
+        "kind": "table_body_row",
+        "section": "6.1.47",
+        "row_label": "Private Key Attributes",
+        "table": "request_payload",
+        "html_line_range": [
+          34817,
+          34835
+        ]
+      },
+      "source_locator_description": "Specification v2.1 section 6.1.47 Re-key Key Pair request payload body row for Private Key Attributes (HTML lines 34817-34835)",
+      "html_line_range": [
+        34817,
+        34835
+      ],
+      "source_excerpt": "Private Key Attributes No Specifies attributes that apply to the Private Key Object.",
+      "source_keywords": [],
+      "source_force": "optional_table_body_value",
+      "audited_statement": "The request table exposes optional Private Key Attributes.",
+      "actor": "client",
+      "direction": "expose Private Key Attributes as an optional client request field",
+      "condition": "A client elects to specify the optional field.",
+      "scope_disposition": "client_1_0",
+      "candidate_requirement_id": null,
+      "proposed_requirement_id": "KMIPKIT-REQ-SPEC-6.1.47-009",
+      "status": "stable_label_proposed_not_in_catalog",
+      "review_note": "A source-only stable-label proposal remains outside the catalog until a separately approved normative catalog change assigns it."
+    },
+    {
+      "gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.47-PUBLIC-KEY-ATTRIBUTES-OPTIONAL",
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+      "source_section": "6.1.47",
+      "source_clause_id": null,
+      "source_locator": {
+        "kind": "table_body_row",
+        "section": "6.1.47",
+        "row_label": "Public Key Attributes",
+        "table": "request_payload",
+        "html_line_range": [
+          34836,
+          34854
+        ]
+      },
+      "source_locator_description": "Specification v2.1 section 6.1.47 Re-key Key Pair request payload body row for Public Key Attributes (HTML lines 34836-34854)",
+      "html_line_range": [
+        34836,
+        34854
+      ],
+      "source_excerpt": "Public Key Attributes No Specifies attributes that apply to the Public Key Object.",
+      "source_keywords": [],
+      "source_force": "optional_table_body_value",
+      "audited_statement": "The request table exposes optional Public Key Attributes.",
+      "actor": "client",
+      "direction": "expose Public Key Attributes as an optional client request field",
+      "condition": "A client elects to specify the optional field.",
+      "scope_disposition": "client_1_0",
+      "candidate_requirement_id": null,
+      "proposed_requirement_id": "KMIPKIT-REQ-SPEC-6.1.47-010",
+      "status": "stable_label_proposed_not_in_catalog",
+      "review_note": "A source-only stable-label proposal remains outside the catalog until a separately approved normative catalog change assigns it."
+    },
+    {
+      "gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.47-COMMON-PROTECTION-STORAGE-MASKS-OPTIONAL",
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+      "source_section": "6.1.47",
+      "source_clause_id": null,
+      "source_locator": {
+        "kind": "table_body_row",
+        "section": "6.1.47",
+        "row_label": "Common Protection Storage Masks",
+        "table": "request_payload",
+        "html_line_range": [
+          34855,
+          34873
+        ]
+      },
+      "source_locator_description": "Specification v2.1 section 6.1.47 Re-key Key Pair request payload body row for Common Protection Storage Masks (HTML lines 34855-34873)",
+      "html_line_range": [
+        34855,
+        34873
+      ],
+      "source_excerpt": "Common Protection Storage Masks No Specifies all Protection Storage Mask selections that are permissible for the new Private Key and new Public Key objects",
+      "source_keywords": [],
+      "source_force": "optional_table_body_value",
+      "audited_statement": "The request table exposes optional Common Protection Storage Masks.",
+      "actor": "client",
+      "direction": "expose Common Protection Storage Masks as an optional client request field",
+      "condition": "A client elects to specify the optional field.",
+      "scope_disposition": "client_1_0",
+      "candidate_requirement_id": null,
+      "proposed_requirement_id": "KMIPKIT-REQ-SPEC-6.1.47-011",
+      "status": "stable_label_proposed_not_in_catalog",
+      "review_note": "A source-only stable-label proposal remains outside the catalog until a separately approved normative catalog change assigns it."
+    },
+    {
+      "gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.47-PRIVATE-PROTECTION-STORAGE-MASKS-OPTIONAL",
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+      "source_section": "6.1.47",
+      "source_clause_id": null,
+      "source_locator": {
+        "kind": "table_body_row",
+        "section": "6.1.47",
+        "row_label": "Private Protection Storage Masks",
+        "table": "request_payload",
+        "html_line_range": [
+          34874,
+          34897
+        ]
+      },
+      "source_locator_description": "Specification v2.1 section 6.1.47 Re-key Key Pair request payload body row for Private Protection Storage Masks (HTML lines 34874-34897)",
+      "html_line_range": [
+        34874,
+        34897
+      ],
+      "source_excerpt": "Private Protection Storage Masks No Specifies all Protection Storage Mask selections that are permissible for the new Private Key object.",
+      "source_keywords": [],
+      "source_force": "optional_table_body_value",
+      "audited_statement": "The request table exposes optional Private Protection Storage Masks.",
+      "actor": "client",
+      "direction": "expose Private Protection Storage Masks as an optional client request field",
+      "condition": "A client elects to specify the optional field.",
+      "scope_disposition": "client_1_0",
+      "candidate_requirement_id": null,
+      "proposed_requirement_id": "KMIPKIT-REQ-SPEC-6.1.47-012",
+      "status": "stable_label_proposed_not_in_catalog",
+      "review_note": "A source-only stable-label proposal remains outside the catalog until a separately approved normative catalog change assigns it."
+    },
+    {
+      "gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.47-PUBLIC-PROTECTION-STORAGE-MASKS-OPTIONAL",
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+      "source_section": "6.1.47",
+      "source_clause_id": null,
+      "source_locator": {
+        "kind": "table_body_row",
+        "section": "6.1.47",
+        "row_label": "Public Protection Storage Masks",
+        "table": "request_payload",
+        "html_line_range": [
+          34898,
+          34921
+        ]
+      },
+      "source_locator_description": "Specification v2.1 section 6.1.47 Re-key Key Pair request payload body row for Public Protection Storage Masks (HTML lines 34898-34921)",
+      "html_line_range": [
+        34898,
+        34921
+      ],
+      "source_excerpt": "Public Protection Storage Masks No Specifies all Protection Storage Mask selections that are permissible for the new Public Key object.",
+      "source_keywords": [],
+      "source_force": "optional_table_body_value",
+      "audited_statement": "The request table exposes optional Public Protection Storage Masks.",
+      "actor": "client",
+      "direction": "expose Public Protection Storage Masks as an optional client request field",
+      "condition": "A client elects to specify the optional field.",
+      "scope_disposition": "client_1_0",
+      "candidate_requirement_id": null,
+      "proposed_requirement_id": "KMIPKIT-REQ-SPEC-6.1.47-013",
       "status": "stable_label_proposed_not_in_catalog",
       "review_note": "A source-only stable-label proposal remains outside the catalog until a separately approved normative catalog change assigns it."
     }
