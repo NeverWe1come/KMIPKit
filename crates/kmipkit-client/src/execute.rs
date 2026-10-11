@@ -324,7 +324,9 @@ impl ClientRequest {
 
     /// Selects one explicit typed Log request.
     #[must_use]
-    pub fn log(request: LogRequest) -> Self { Self::Log(request) }
+    pub fn log(request: LogRequest) -> Self {
+        Self::Log(request)
+    }
 
     /// Creates an empty client-to-server Get Constraints request.
     #[must_use]
@@ -3018,9 +3020,7 @@ impl ClientBatchOutcome {
             Self::Interop(response) => {
                 ClientResponseView::new(ClientResponseRef::Interop(response))
             }
-            Self::Log(response) => {
-                ClientResponseView::new(ClientResponseRef::Log(response))
-            }
+            Self::Log(response) => ClientResponseView::new(ClientResponseRef::Log(response)),
             Self::GetConstraints(response) => {
                 ClientResponseView::new(ClientResponseRef::GetConstraints(response))
             }
@@ -4312,9 +4312,16 @@ impl Client {
     /// # Errors
     ///
     /// Returns a sanitized error with request-delivery evidence.
-    pub fn log(&mut self, request: LogRequest, limits: &CodecLimits) -> Result<ClientBatchItemResponse, ClientError> {
-        let response = self.execute(ClientBatch::new(ClientBatchItem::new(ClientRequest::Log(request))), limits)?;
-        take_single_item_response(response.items)
+    pub fn log(
+        &mut self,
+        request: LogRequest,
+        limits: &CodecLimits,
+    ) -> Result<ClientBatchItemResponse, ClientError> {
+        self.execute_one_typed_request(
+            ClientRequest::log(request),
+            limits,
+            &RequestOptions::default(),
+        )
     }
 
     /// Executes one explicitly selected Interop request with one exchange.
