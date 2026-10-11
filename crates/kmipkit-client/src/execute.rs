@@ -5,6 +5,7 @@ use std::error::Error;
 use std::fmt;
 
 use crate::ClientErrorResponseTtlv;
+use kmipkit_protocol::{InteropRequest, InteropResponse};
 use kmipkit_protocol::attribute::{
     ClientAttributeMutation, client_attribute_mutation_is_prohibited,
     client_vendor_attribute_mutation_is_prohibited,
@@ -185,6 +186,7 @@ const POLL_OPERATION: u32 = 0x0000_001A;
 const QUERY_ASYNCHRONOUS_REQUESTS_OPERATION: u32 = 0x0000_0039;
 const PROCESS_OPERATION: u32 = 0x0000_003A;
 const PING_OPERATION: u32 = 0x0000_003B;
+const INTEROP_OPERATION: u32 = 0x0000_0034; // KMIP v2.1 section 6.1.26.
 const GET_CONSTRAINTS_OPERATION: u32 = 0x0000_0038; // KMIP v2.1 §6.1.22, Table 229.
 const SET_CONSTRAINTS_OPERATION: u32 = 0x0000_0037; // KMIP v2.1 §6.1.52, Table 325.
 const SET_DEFAULTS_OPERATION: u32 = 0x0000_0036; // KMIP v2.1 §6.1.53, Table 328.
@@ -264,6 +266,7 @@ pub enum ClientRequest {
     GetAttributeList(GetAttributeListRequest),
     /// An explicit client-to-server Ping request.
     Ping(PingRequest),
+    Interop(InteropRequest),
     /// An explicit client-to-server Get Constraints request.
     GetConstraints(GetConstraintsRequest),
     /// An explicit client-to-server Set Constraints request.
@@ -310,6 +313,10 @@ impl ClientRequest {
     pub const fn ping() -> Self {
         Self::Ping(PingRequest::new())
     }
+
+    /// Selects one explicit typed Interop request.
+    #[must_use]
+    pub fn interop(request: InteropRequest) -> Self { Self::Interop(request) }
 
     /// Creates an empty client-to-server Get Constraints request.
     #[must_use]
@@ -589,6 +596,7 @@ impl ClientRequest {
             Self::GetAttributes(_) => GET_ATTRIBUTES_OPERATION,
             Self::GetAttributeList(_) => GET_ATTRIBUTE_LIST_OPERATION,
             Self::Ping(_) => PING_OPERATION,
+            Self::Interop(_) => INTEROP_OPERATION,
             Self::GetConstraints(_) => GET_CONSTRAINTS_OPERATION,
             Self::SetConstraints(_) => SET_CONSTRAINTS_OPERATION,
             Self::SetDefaults(_) => SET_DEFAULTS_OPERATION,
@@ -694,6 +702,7 @@ impl ClientRequest {
             Self::GetAttributes(request) => request.to_ttlv_payload(),
             Self::GetAttributeList(request) => request.to_ttlv_payload(),
             Self::Ping(request) => request.to_ttlv_payload(),
+            Self::Interop(request) => request.into_ttlv_payload(),
             Self::GetConstraints(request) => request.to_ttlv_payload(),
             Self::SetConstraints(request) => request.to_ttlv_payload(),
             Self::SetDefaults(request) => request.to_ttlv_payload(),
@@ -763,6 +772,7 @@ impl fmt::Debug for ClientRequest {
                 .field(request)
                 .finish(),
             Self::Ping(_) => formatter.write_str("Ping"),
+            Self::Interop(request) => formatter.debug_tuple("Interop").field(request).finish(),
             Self::GetConstraints(_) => formatter.write_str("GetConstraints"),
             Self::SetConstraints(request) => formatter
                 .debug_tuple("SetConstraints")
@@ -1086,6 +1096,7 @@ enum PendingResponse {
     GetAttributes(GetAttributesResponse),
     GetAttributeList(GetAttributeListResponse),
     Ping(PingResponse),
+    Interop(InteropResponse),
     GetConstraints(GetConstraintsResponse),
     SetConstraints(SetConstraintsResponse),
     SetDefaults(SetDefaultsResponse),
@@ -1137,6 +1148,7 @@ impl PendingResponse {
             Self::GetAttributes(response) => ClientResponseRef::GetAttributes(response),
             Self::GetAttributeList(response) => ClientResponseRef::GetAttributeList(response),
             Self::Ping(response) => ClientResponseRef::Ping(response),
+            Self::Interop(response) => ClientResponseRef::Interop(response),
             Self::GetConstraints(response) => ClientResponseRef::GetConstraints(response),
             Self::SetConstraints(response) => ClientResponseRef::SetConstraints(response),
             Self::SetDefaults(response) => ClientResponseRef::SetDefaults(response),
@@ -1362,6 +1374,8 @@ pub enum ClientOperation {
     GetAttributeList,
     /// Ping one server connection and observe its KMIP response.
     Ping,
+    /// Interop diagnostic operation.
+    Interop,
     /// Read the server's Constraints Structure.
     GetConstraints,
     /// Configure the server's Constraints Structure.
@@ -1558,6 +1572,7 @@ enum ClientResponseRef<'a> {
     GetAttributes(&'a GetAttributesResponse),
     GetAttributeList(&'a GetAttributeListResponse),
     Ping(&'a PingResponse),
+    Interop(&'a InteropResponse),
     GetConstraints(&'a GetConstraintsResponse),
     SetConstraints(&'a SetConstraintsResponse),
     SetDefaults(&'a SetDefaultsResponse),
@@ -1626,6 +1641,7 @@ impl<'a> ClientResponseView<'a> {
             ClientResponseRef::GetAttributes(response) => response.result(),
             ClientResponseRef::GetAttributeList(response) => response.result(),
             ClientResponseRef::Ping(response) => response.result(),
+            ClientResponseRef::Interop(response) => response.result(),
             ClientResponseRef::GetConstraints(response) => response.result(),
             ClientResponseRef::SetConstraints(response) => response.result(),
             ClientResponseRef::SetDefaults(response) => response.result(),
@@ -2007,6 +2023,12 @@ impl<'a> ClientResponseView<'a> {
         }
     }
 
+    /// Returns an Interop response, including a Pending result.
+    #[must_use]
+    pub const fn interop(&self) -> Option<&InteropResponse> {
+        match self.response { ClientResponseRef::Interop(response) => Some(response), _ => None }
+    }
+
     /// Returns the Ping response when this view represents it.
     #[must_use]
     pub const fn ping(&self) -> Option<&PingResponse> {
@@ -2171,6 +2193,7 @@ impl fmt::Debug for ClientResponseView<'_> {
                 debug_response(formatter, "GetAttributeList", response)
             }
             ClientResponseRef::Ping(response) => debug_response(formatter, "Ping", response),
+            ClientResponseRef::Interop(response) => debug_response(formatter, "Interop", response),
             ClientResponseRef::GetConstraints(response) => {
                 debug_response(formatter, "GetConstraints", response)
             }
@@ -2275,6 +2298,7 @@ pub enum ClientBatchOutcome {
     GetAttributeList(GetAttributeListResponse),
     /// The server returned a Ping result.
     Ping(PingResponse),
+    Interop(InteropResponse),
     /// The server returned a Get Constraints result.
     GetConstraints(GetConstraintsResponse),
     /// The server returned a Set Constraints result.
@@ -2333,6 +2357,7 @@ impl ClientBatchOutcome {
             | Self::GetAttributes(_)
             | Self::GetAttributeList(_)
             | Self::Ping(_)
+            | Self::Interop(_)
             | Self::GetConstraints(_)
             | Self::SetConstraints(_)
             | Self::SetDefaults(_)
@@ -2387,6 +2412,7 @@ impl ClientBatchOutcome {
             Self::GetAttributes(response) => response.result(),
             Self::GetAttributeList(response) => response.result(),
             Self::Ping(response) => response.result(),
+            Self::Interop(response) => response.result(),
             Self::GetConstraints(response) => response.result(),
             Self::SetConstraints(response) => response.result(),
             Self::SetDefaults(response) => response.result(),
@@ -2441,6 +2467,7 @@ impl ClientBatchOutcome {
             Self::GetAttributes(_) => ClientOperation::GetAttributes,
             Self::GetAttributeList(_) => ClientOperation::GetAttributeList,
             Self::Ping(_) => ClientOperation::Ping,
+            Self::Interop(_) => ClientOperation::Interop,
             Self::GetConstraints(_) => ClientOperation::GetConstraints,
             Self::SetConstraints(_) => ClientOperation::SetConstraints,
             Self::SetDefaults(_) => ClientOperation::SetDefaults,
@@ -2954,6 +2981,7 @@ impl ClientBatchOutcome {
                 ClientResponseView::new(ClientResponseRef::GetAttributeList(response))
             }
             Self::Ping(response) => ClientResponseView::new(ClientResponseRef::Ping(response)),
+            Self::Interop(response) => ClientResponseView::new(ClientResponseRef::Interop(response)),
             Self::GetConstraints(response) => {
                 ClientResponseView::new(ClientResponseRef::GetConstraints(response))
             }
@@ -3081,6 +3109,7 @@ impl fmt::Debug for ClientBatchOutcome {
                 .field(response)
                 .finish(),
             Self::Ping(response) => formatter.debug_tuple("Ping").field(response).finish(),
+            Self::Interop(response) => formatter.debug_tuple("Interop").field(response).finish(),
             Self::GetConstraints(response) => formatter
                 .debug_tuple("GetConstraints")
                 .field(response)
@@ -3185,6 +3214,7 @@ impl fmt::Display for ClientBatchOutcome {
                 write!(formatter, "GetAttributeList({})", response.result())
             }
             Self::Ping(response) => write!(formatter, "Ping({})", response.result()),
+            Self::Interop(response) => write!(formatter, "Interop({})", response.result()),
             Self::GetConstraints(response) => {
                 write!(formatter, "GetConstraints({})", response.result())
             }
@@ -4231,6 +4261,17 @@ impl Client {
             limits,
             &RequestOptions::default(),
         )
+    }
+
+    /// Executes one explicitly selected Interop request with one exchange.
+    ///
+    /// # Errors
+    ///
+    /// Returns a sanitized error with request-delivery evidence. The caller
+    /// can use an asynchronous batch to accept Pending without an implicit Poll.
+    pub fn interop(&mut self, request: InteropRequest, limits: &CodecLimits) -> Result<ClientBatchItemResponse, ClientError> {
+        let response = self.execute(ClientBatch::new(ClientBatchItem::new(ClientRequest::Interop(request))), limits)?;
+        take_single_item_response(response.items)
     }
 
     /// Executes one client-to-server Ping request.
@@ -5364,6 +5405,7 @@ fn request_mutation_is_prohibited(request: &ClientRequest) -> bool {
         | ClientRequest::GetAttributes(_)
         | ClientRequest::GetAttributeList(_)
         | ClientRequest::Ping(_)
+        | ClientRequest::Interop(_)
         | ClientRequest::GetConstraints(_)
         | ClientRequest::SetConstraints(_)
         | ClientRequest::SetDefaults(_)
@@ -6019,6 +6061,14 @@ fn response_outcome(
             PingResponse::result,
             PendingResponse::Ping,
             ClientBatchOutcome::Ping,
+        ),
+        INTEROP_OPERATION => read_operation_outcome(
+            ClientOperation::Interop,
+            item,
+            InteropResponse::try_from_response_item,
+            InteropResponse::result,
+            PendingResponse::Interop,
+            ClientBatchOutcome::Interop,
         ),
         GET_CONSTRAINTS_OPERATION => get_constraints_response_outcome(item),
         SET_CONSTRAINTS_OPERATION => set_constraints_response_outcome(item),

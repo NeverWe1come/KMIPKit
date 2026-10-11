@@ -81,7 +81,7 @@ fn interop_sends_required_fields_and_returns_empty_success() {
     assert_eq!(response.result().status().raw(), 0);
     assert_eq!(
         request_shape(captured.borrow().as_deref().expect("request was captured")),
-        Some((INTEROP, 0))
+        Some((INTEROP, 2))
     );
     assert_eq!(transport.borrow().exchange_count(), 1);
 }
