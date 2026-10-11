@@ -232,21 +232,13 @@ struct ParsedSuccessPayload {
 fn parse_success_payload(
     payload: &StructureView<'_>,
 ) -> Result<ParsedSuccessPayload, ObtainLeaseError> {
-    let mut unique_identifier = None;
+    let unique_identifier = super::lifecycle::successful_response_identifier(payload)
+        .ok_or(ObtainLeaseError::MalformedSuccessPayload)?;
     let mut lease_time = None;
     let mut last_change_date = None;
 
     for field in payload.children() {
         match field.tag().raw() {
-            UNIQUE_IDENTIFIER => {
-                if unique_identifier.is_some() {
-                    return Err(ObtainLeaseError::MalformedSuccessPayload);
-                }
-                unique_identifier = Some(
-                    super::lifecycle::parse_unique_identifier(field)
-                        .ok_or(ObtainLeaseError::MalformedSuccessPayload)?,
-                );
-            }
             LEASE_TIME => {
                 if lease_time.is_some() {
                     return Err(ObtainLeaseError::MalformedSuccessPayload);
@@ -278,7 +270,7 @@ fn parse_success_payload(
     }
 
     Ok(ParsedSuccessPayload {
-        unique_identifier: unique_identifier.ok_or(ObtainLeaseError::MalformedSuccessPayload)?,
+        unique_identifier,
         lease_time: lease_time.ok_or(ObtainLeaseError::MalformedSuccessPayload)?,
         last_change_date: last_change_date.ok_or(ObtainLeaseError::MalformedSuccessPayload)?,
     })

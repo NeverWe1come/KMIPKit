@@ -54,6 +54,15 @@ fn response_payload(identifier: &str, lease_time: u32) -> Structure {
     ])
 }
 
+fn obtain_lease_response_bytes(
+    status: u32,
+    reason: Option<u32>,
+    correlation: Option<&[u8]>,
+    payload: Option<Structure>,
+) -> Vec<u8> {
+    asynchronous_response_bytes(OBTAIN_LEASE_OPERATION, status, reason, correlation, payload)
+}
+
 fn request_fields(bytes: &[u8], batch_index: usize) -> (Option<u32>, Vec<u32>) {
     let message = decode(bytes).expect("the captured request has valid TTLV framing");
     message.with_value(|value| {
@@ -111,8 +120,7 @@ fn structure_contains_tag(view: &StructureView<'_>, raw_tag: u32) -> bool {
 
 #[test]
 fn obtain_lease_sends_table_268_and_exposes_required_table_269_values_once() {
-    let response = asynchronous_response_bytes(
-        OBTAIN_LEASE_OPERATION,
+    let response = obtain_lease_response_bytes(
         SUCCESS,
         None,
         None,
@@ -163,13 +171,8 @@ fn obtain_lease_sends_table_268_and_exposes_required_table_269_values_once() {
 
 #[test]
 fn obtain_lease_failure_preserves_table_270_reason_without_retry() {
-    let response = asynchronous_response_bytes(
-        OBTAIN_LEASE_OPERATION,
-        OPERATION_FAILED,
-        Some(OBJECT_NOT_FOUND),
-        None,
-        None,
-    );
+    let response =
+        obtain_lease_response_bytes(OPERATION_FAILED, Some(OBJECT_NOT_FOUND), None, None);
     let (mut client, fake, _) = client_for(ExchangeScript::Success {
         response,
         request_write_chunks: Vec::new(),
@@ -194,8 +197,7 @@ fn obtain_lease_failure_preserves_table_270_reason_without_retry() {
 
 #[test]
 fn obtain_lease_pending_preserves_correlation_without_implicit_poll() {
-    let response = asynchronous_response_bytes(
-        OBTAIN_LEASE_OPERATION,
+    let response = obtain_lease_response_bytes(
         OPERATION_PENDING,
         None,
         Some(PENDING_CORRELATION),

@@ -4587,6 +4587,8 @@ fn check_response_outcome(
 fn obtain_lease_response_outcome(
     item: ResponseBatchItemView<'_>,
 ) -> Result<ClientBatchOutcome, ProtocolError> {
+    // Keep lease time and change date as server values; this path owns no clock
+    // or object-use state and shares normal Pending/result conversion.
     read_operation_outcome(
         ClientOperation::ObtainLease,
         item,
