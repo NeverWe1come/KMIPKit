@@ -47,6 +47,7 @@ mod poll;
 mod process;
 mod query;
 mod query_async_requests;
+mod recertify;
 mod recover;
 mod result;
 mod set_attribute;
@@ -113,6 +114,7 @@ pub use poll::{PollRequest, PollResponse};
 pub use process::{ProcessRequest, ProcessResponse};
 pub use query::{QueryError, QueryFunction, QueryRequest, QueryResponse, QueryResponseField};
 pub use query_async_requests::{QueryAsyncRequestsRequest, QueryAsyncRequestsResponse};
+pub use recertify::{RecertifyError, RecertifyRequest, RecertifyResponse};
 pub use recover::{RecoverError, RecoverRequest, RecoverResponse};
 pub use result::{
     KmipOperationResult, ResultMessage, ResultReason, ResultStatus, ResultValidationError,

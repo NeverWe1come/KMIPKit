@@ -8,9 +8,10 @@ The 1.0 target includes idiomatic operation builders, but KMIPKIT-0007 does
 not implement the general builder surface. The current typed client exposes
 Discover Versions, Create, Create Key Pair, Create Split Key, Add Attribute,
 Adjust Attribute, Delete Attribute, Get Attributes, Get Attribute List, Modify
-Attribute, Set Attribute, Activate, Archive, Destroy, and Recover for batch
-execution, with single-operation convenience methods for lifecycle calls and
-separate Poll, Cancel, Process, and Query Asynchronous Requests methods.
+Attribute, Set Attribute, Activate, Archive, Destroy, Recover, Certify, Check,
+Obtain Lease, and Re-certify for batch execution, with single-operation
+convenience methods for lifecycle calls and separate Poll, Cancel, Process,
+and Query Asynchronous Requests methods.
 KMIPKIT-0013 adds synchronous production construction from a separate
 immutable client extension configuration and validated transport
 configuration. The typed client accepts neither raw request bytes nor an
@@ -39,8 +40,9 @@ KMIPKIT-0007 provides synchronous `Client::execute` over an ordered `ClientBatch
 with a closed typed request set. The currently implemented operation variants
 are Discover Versions, Create, Create Key Pair, Create Split Key, Add Attribute,
 Adjust Attribute, Delete Attribute, Get Attributes, Get Attribute List, Modify
-Attribute, Set Attribute, Activate, Archive, Destroy, and Recover. The API does
-not accept generic Item values, raw message bytes, or caller-implemented
+Attribute, Set Attribute, Activate, Archive, Destroy, Recover, Certify, Check,
+Obtain Lease, and Re-certify. The API does not accept generic Item values, raw
+message bytes, or caller-implemented
 conversions. Discover Versions is explicit and is never a hidden preflight.
 Per-call `CodecLimits` bound request encoding and response decoding and supply
 the transport response-byte cap.
@@ -54,11 +56,13 @@ API under ADR-0014. A typed result does not expose raw response bytes. See the
 
 ### Managed-object lifecycle
 
-KMIPKIT-0018 adds typed `Client::activate`, `Client::archive`,
-`Client::destroy`, and `Client::recover` methods and matching request and
-response models. Each convenience call performs one exchange and returns the
-server result. It does not simulate server object state, retry, or claim that
-Archive completed. The convenience methods use default batch options; callers
+KMIPKIT-0018 adds typed Activate, Archive, Destroy, and Recover operations.
+KMIPKIT-0022 adds Certify, Check, Obtain Lease, and Re-certify. Each
+single-operation convenience call performs one exchange and returns the
+server result. The client does not simulate server object state, retry, or
+claim that Archive completed. Re-certify callers should submit it no more than
+once per existing certificate; KMIPKit does not retain a local certificate
+lifecycle ledger. The convenience methods use default batch options; callers
 that want to accept `Operation Pending` use `Client::execute` with an explicit
 Asynchronous Indicator and choose any later Poll/Get action themselves.
 Unknown result values and accepted non-critical Message Extensions remain

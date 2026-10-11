@@ -1,9 +1,9 @@
 # Managed-object lifecycle operations
 
-KMIPKit exposes explicit client calls for Activate, Archive, Destroy, and
-Recover. Each call sends one typed request, performs one exchange, and returns
-the server's operation result. The client does not simulate remote object
-state, retry requests, or issue Poll/Get follow-ups automatically. For
+KMIPKit exposes explicit client calls for Activate, Archive, Destroy, Recover,
+and Re-certify. Each call sends one typed request, performs one exchange, and
+returns the server's operation result. The client does not simulate remote
+object state, retry requests, or issue Poll/Get follow-ups automatically. For
 connection setup and TLS policy, see the [production transport guide](production-transports.md).
 
 The operation payloads follow OASIS KMIP Specification v2.1 §6.1.1 Tables
@@ -153,6 +153,47 @@ fn recover(
 
 fn main() {
     let _example = recover;
+}
+```
+
+## Re-certify
+
+Re-certify asks the server to renew one certificate. The caller may identify
+the existing certificate explicitly or omit its Unique Identifier to use the
+batch ID Placeholder. The caller supplies any Certificate Request, request
+type, Offset, attributes, and protection masks; a Certificate Request Value
+requires its type. If request data and Certificate Type are omitted, the
+server uses the existing certificate type. The server creates and maintains
+the replacement links. KMIPKit does not create certificates or track which
+certificates have already been renewed, so callers should issue Re-certify no
+more than once for a given existing certificate.
+
+```rust,kmipkit-test
+use kmipkit_client::{Client, ClientOperation};
+use kmipkit_protocol::{RecertifyRequest, UniqueIdentifier};
+use kmipkit_ttlv::codec::CodecLimits;
+
+fn recertify(
+    client: &mut Client,
+    limits: &CodecLimits,
+) -> Result<(), kmipkit_client::ClientError> {
+    let request = RecertifyRequest::new().with_unique_identifier(
+        UniqueIdentifier::TextString("certificate-42".to_owned()),
+    );
+    let item = client.recertify(request, limits)?;
+    let outcome = item.outcome();
+    assert_eq!(outcome.operation(), ClientOperation::Recertify);
+    let response = outcome
+        .response()
+        .recertify()
+        .expect("Re-certify returns its typed response");
+    let _server_status = response.result().status().raw();
+    let _replacement_identifier = response.unique_identifier();
+    Ok(())
+}
+
+fn main() {
+    let _example = recertify;
 }
 ```
 

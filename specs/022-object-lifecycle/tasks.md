@@ -59,8 +59,8 @@
 
 **Independent Test**: Tables 298–302; conditional request form, Offset/date behavior, response shape, and server-owned replacement links.
 
-- [ ] T015 [P] [US4] Add failing Re-certify tests in `crates/kmipkit-protocol/tests/unit/recertify_operation_tests.rs` and `crates/kmipkit-client/tests/unit/recertify_execution_tests.rs` for §6.1.45 and its traceability rows; commit Red.
-- [ ] T016 [US4] Implement `RecertifyRequest/Response/Error` in `crates/kmipkit-protocol/src/recertify.rs`, export it, and integrate the client dispatcher/method in `crates/kmipkit-client/src/execute.rs` and `crates/kmipkit-client/src/lib.rs`; keep link behavior server-side; commit Green after T015 passes.
+- [X] T015 [P] [US4] Add failing Re-certify tests in `crates/kmipkit-protocol/tests/unit/recertify_operation_tests.rs` and `crates/kmipkit-client/tests/unit/recertify_execution_tests.rs` for §6.1.45 and its traceability rows; commit Red.
+- [X] T016 [US4] Implement `RecertifyRequest/Response/Error` in `crates/kmipkit-protocol/src/recertify.rs`, export it, and integrate the client dispatcher/method in `crates/kmipkit-client/src/execute.rs` and `crates/kmipkit-client/src/lib.rs`; keep link behavior server-side; commit Green after T015 passes.
 - [ ] T017 [US4] Refactor Re-certify model/dispatch/tests in `crates/kmipkit-protocol/src/recertify.rs`, `crates/kmipkit-client/src/execute.rs`, and both test files; commit Refactor separately.
 
 ## Phase 7: User Story 5 — Re-key (Priority: P1)

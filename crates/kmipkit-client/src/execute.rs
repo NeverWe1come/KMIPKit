@@ -27,9 +27,10 @@ use kmipkit_protocol::{
     PingResponse, PollRequest, PollResponse, ProcessRequest, ProcessResponse,
     ProtocolCauseCategory, ProtocolError, ProtocolErrorKind, ProtocolVersion,
     QueryAsyncRequestsRequest, QueryAsyncRequestsResponse, QueryRequest, QueryResponse,
-    RecoverRequest, RecoverResponse, RequestMessage, ResponseBatchItemView, ResponseMessage,
-    ResultStatus, SetAttributeRequest, SetAttributeResponse, SignRequest, SignResponse,
-    SignatureVerifyRequest, SignatureVerifyResponse,
+    RecertifyRequest, RecertifyResponse, RecoverRequest, RecoverResponse, RequestMessage,
+    ResponseBatchItemView, ResponseMessage, ResultStatus, SetAttributeRequest,
+    SetAttributeResponse, SignRequest, SignResponse, SignatureVerifyRequest,
+    SignatureVerifyResponse,
 };
 
 #[cfg(test)]
@@ -120,6 +121,7 @@ const CREATE_OPERATION: u32 = 0x0000_0001;
 const CHECK_OPERATION: u32 = 0x0000_0009; // KMIP v2.1 §§6.1.7, 11.36.
 const OBTAIN_LEASE_OPERATION: u32 = 0x0000_0010; // KMIP v2.1 §§6.1.35, 11.36.
 const CERTIFY_OPERATION: u32 = 0x0000_0006; // KMIP v2.1 §6.1.6, Table 179.
+const RECERTIFY_OPERATION: u32 = 0x0000_0007; // KMIP v2.1 §6.1.45, Table 300.
 const CREATE_KEY_PAIR_OPERATION: u32 = 0x0000_0002;
 const CREATE_SPLIT_KEY_OPERATION: u32 = 0x0000_0028; // KMIP v2.1 §11.36, Table 470.
 const ACTIVATE_OPERATION: u32 = 0x0000_0012; // KMIP v2.1 §6.1.1, Table 164.
@@ -163,6 +165,8 @@ pub enum ClientRequest {
     Check(CheckRequest),
     /// An explicit client-to-server Obtain Lease request.
     ObtainLease(ObtainLeaseRequest),
+    /// An explicit client-to-server Re-certify request.
+    Recertify(RecertifyRequest),
     /// An explicit client-to-server Destroy request.
     Destroy(DestroyRequest),
     /// An explicit client-to-server Recover request.
@@ -302,6 +306,12 @@ impl ClientRequest {
         Self::ObtainLease(request)
     }
 
+    /// Creates a typed client-to-server Re-certify request variant.
+    #[must_use]
+    pub fn recertify(request: RecertifyRequest) -> Self {
+        Self::Recertify(request)
+    }
+
     /// Creates a typed Destroy request variant.
     #[must_use]
     pub fn destroy(request: DestroyRequest) -> Self {
@@ -376,6 +386,7 @@ impl ClientRequest {
             Self::Certify(_) => CERTIFY_OPERATION,
             Self::Check(_) => CHECK_OPERATION,
             Self::ObtainLease(_) => OBTAIN_LEASE_OPERATION,
+            Self::Recertify(_) => RECERTIFY_OPERATION,
             Self::Destroy(_) => DESTROY_OPERATION,
             Self::Recover(_) => RECOVER_OPERATION,
             Self::Get(_) => GET_OPERATION,
@@ -430,6 +441,7 @@ impl ClientRequest {
         match self {
             Self::Check(request) => request.unique_identifier().is_none(),
             Self::ObtainLease(request) => request.unique_identifier().is_none(),
+            Self::Recertify(request) => request.unique_identifier().is_none(),
             Self::Encrypt(request) => request.unique_identifier().is_none(),
             Self::Decrypt(request) => request.unique_identifier().is_none(),
             _ => false,
@@ -439,7 +451,11 @@ impl ClientRequest {
     const fn is_id_placeholder_producer(&self) -> bool {
         matches!(
             self,
-            Self::Create(_) | Self::CreateKeyPair(_) | Self::Recover(_) | Self::Certify(_)
+            Self::Create(_)
+                | Self::CreateKeyPair(_)
+                | Self::Recover(_)
+                | Self::Certify(_)
+                | Self::Recertify(_)
         )
     }
 
@@ -451,6 +467,7 @@ impl ClientRequest {
             Self::Certify(request) => request.into_ttlv_payload(),
             Self::Check(request) => request.into_ttlv_payload(),
             Self::ObtainLease(request) => request.into_ttlv_payload(),
+            Self::Recertify(request) => request.into_ttlv_payload(),
             Self::Destroy(request) => request.to_ttlv_payload(),
             Self::Recover(request) => request.to_ttlv_payload(),
             Self::Get(request) => request.to_ttlv_payload(),
@@ -489,6 +506,7 @@ impl fmt::Debug for ClientRequest {
             Self::ObtainLease(request) => {
                 formatter.debug_tuple("ObtainLease").field(request).finish()
             }
+            Self::Recertify(request) => formatter.debug_tuple("Recertify").field(request).finish(),
             Self::Destroy(_) => formatter.write_str("Destroy([REDACTED])"),
             Self::Recover(_) => formatter.write_str("Recover([REDACTED])"),
             Self::Get(_) => formatter.write_str("Get([REDACTED])"),
@@ -777,6 +795,7 @@ enum PendingResponse {
     Certify(CertifyResponse),
     Check(CheckResponse),
     ObtainLease(ObtainLeaseResponse),
+    Recertify(RecertifyResponse),
     Encrypt(EncryptResponse),
     Decrypt(DecryptResponse),
     Hash(HashResponse),
@@ -811,6 +830,7 @@ impl PendingResponse {
             Self::Certify(response) => ClientResponseRef::Certify(response),
             Self::Check(response) => ClientResponseRef::Check(response),
             Self::ObtainLease(response) => ClientResponseRef::ObtainLease(response),
+            Self::Recertify(response) => ClientResponseRef::Recertify(response),
             Self::Encrypt(response) => ClientResponseRef::Encrypt(response),
             Self::Decrypt(response) => ClientResponseRef::Decrypt(response),
             Self::Hash(response) => ClientResponseRef::Hash(response),
@@ -1006,6 +1026,8 @@ pub enum ClientOperation {
     Check,
     /// Obtain Lease.
     ObtainLease,
+    /// Re-certify.
+    Recertify,
     /// Archive.
     Archive,
     /// Destroy.
@@ -1181,6 +1203,7 @@ enum ClientResponseRef<'a> {
     Certify(&'a CertifyResponse),
     Check(&'a CheckResponse),
     ObtainLease(&'a ObtainLeaseResponse),
+    Recertify(&'a RecertifyResponse),
     Encrypt(&'a EncryptResponse),
     Decrypt(&'a DecryptResponse),
     Hash(&'a HashResponse),
@@ -1226,6 +1249,7 @@ impl<'a> ClientResponseView<'a> {
             ClientResponseRef::Certify(response) => response.result(),
             ClientResponseRef::Check(response) => response.result(),
             ClientResponseRef::ObtainLease(response) => response.result(),
+            ClientResponseRef::Recertify(response) => response.result(),
             ClientResponseRef::Encrypt(response) => response.result(),
             ClientResponseRef::Decrypt(response) => response.result(),
             ClientResponseRef::Hash(response) => response.result(),
@@ -1378,6 +1402,15 @@ impl<'a> ClientResponseView<'a> {
     pub const fn obtain_lease(&self) -> Option<&'a ObtainLeaseResponse> {
         match self.response {
             ClientResponseRef::ObtainLease(response) => Some(response),
+            _ => None,
+        }
+    }
+
+    /// Returns the Re-certify response when this view represents it.
+    #[must_use]
+    pub const fn recertify(&self) -> Option<&'a RecertifyResponse> {
+        match self.response {
+            ClientResponseRef::Recertify(response) => Some(response),
             _ => None,
         }
     }
@@ -1571,6 +1604,9 @@ impl fmt::Debug for ClientResponseView<'_> {
                 .debug_tuple("ObtainLease")
                 .field(response)
                 .finish(),
+            ClientResponseRef::Recertify(response) => {
+                formatter.debug_tuple("Recertify").field(response).finish()
+            }
             ClientResponseRef::Activate(_) => formatter.write_str("Activate([REDACTED])"),
             ClientResponseRef::Archive(_) => formatter.write_str("Archive([REDACTED])"),
             ClientResponseRef::Destroy(_) => formatter.write_str("Destroy([REDACTED])"),
@@ -1638,6 +1674,8 @@ pub enum ClientBatchOutcome {
     Check(CheckResponse),
     /// The server returned an Obtain Lease result.
     ObtainLease(ObtainLeaseResponse),
+    /// The server returned a Re-certify result.
+    Recertify(RecertifyResponse),
     /// The server returned an Encrypt result.
     Encrypt(EncryptResponse),
     /// The server returned a Decrypt result.
@@ -1701,6 +1739,7 @@ impl ClientBatchOutcome {
             | Self::Certify(_)
             | Self::Check(_)
             | Self::ObtainLease(_)
+            | Self::Recertify(_)
             | Self::Encrypt(_)
             | Self::Decrypt(_)
             | Self::Hash(_)
@@ -1738,6 +1777,7 @@ impl ClientBatchOutcome {
             Self::Certify(response) => response.result(),
             Self::Check(response) => response.result(),
             Self::ObtainLease(response) => response.result(),
+            Self::Recertify(response) => response.result(),
             Self::Encrypt(response) => response.result(),
             Self::Decrypt(response) => response.result(),
             Self::Hash(response) => response.result(),
@@ -1775,6 +1815,7 @@ impl ClientBatchOutcome {
             Self::Certify(_) => ClientOperation::Certify,
             Self::Check(_) => ClientOperation::Check,
             Self::ObtainLease(_) => ClientOperation::ObtainLease,
+            Self::Recertify(_) => ClientOperation::Recertify,
             Self::Encrypt(_) => ClientOperation::Encrypt,
             Self::Decrypt(_) => ClientOperation::Decrypt,
             Self::Hash(_) => ClientOperation::Hash,
@@ -1851,6 +1892,21 @@ impl ClientBatchOutcome {
             Self::Pending(pending) => match pending.response() {
                 ClientResponseView {
                     response: ClientResponseRef::ObtainLease(response),
+                } => Some(response),
+                _ => None,
+            },
+            _ => None,
+        }
+    }
+
+    /// Returns the typed Re-certify response, including when its result is Pending.
+    #[must_use]
+    pub const fn recertify_response(&self) -> Option<&RecertifyResponse> {
+        match self {
+            Self::Recertify(response) => Some(response),
+            Self::Pending(pending) => match pending.response() {
+                ClientResponseView {
+                    response: ClientResponseRef::Recertify(response),
                 } => Some(response),
                 _ => None,
             },
@@ -2021,6 +2077,9 @@ impl ClientBatchOutcome {
             Self::ObtainLease(response) => ClientResponseView {
                 response: ClientResponseRef::ObtainLease(response),
             },
+            Self::Recertify(response) => ClientResponseView {
+                response: ClientResponseRef::Recertify(response),
+            },
             Self::Encrypt(response) => ClientResponseView {
                 response: ClientResponseRef::Encrypt(response),
             },
@@ -2113,6 +2172,9 @@ impl fmt::Debug for ClientBatchOutcome {
                 .debug_tuple("ObtainLease")
                 .field(response)
                 .finish(),
+            Self::Recertify(response) => {
+                formatter.debug_tuple("Recertify").field(response).finish()
+            }
             Self::GetCompleted(response) => formatter
                 .debug_tuple("GetCompleted")
                 .field(response)
@@ -2202,6 +2264,9 @@ impl fmt::Display for ClientBatchOutcome {
             Self::Check(response) => write!(formatter, "Check({})", response.result()),
             Self::ObtainLease(response) => {
                 write!(formatter, "ObtainLease({})", response.result())
+            }
+            Self::Recertify(response) => {
+                write!(formatter, "Re-certify({})", response.result())
             }
             Self::Archive(response) => write!(formatter, "Archive({})", response.result()),
             Self::Destroy(response) => write!(formatter, "Destroy({})", response.result()),
@@ -2687,6 +2752,47 @@ impl Client {
     ) -> Result<ClientBatchItemResponse, ClientError> {
         let response = self.execute_with_options(
             ClientBatch::new(ClientBatchItem::new(ClientRequest::ObtainLease(request))),
+            limits,
+            request_options,
+        )?;
+        take_single_item_response(response.items)
+    }
+
+    /// Executes one typed Re-certify request through the shared batch writer.
+    ///
+    /// Use an explicitly ordered multi-item [`ClientBatch`] when the request
+    /// should consume a preceding ID Placeholder. This method performs one
+    /// exchange and never polls or retries implicitly.
+    ///
+    /// # Errors
+    ///
+    /// Returns a sanitized validation, protocol, or transport error with the
+    /// strongest available request-delivery evidence.
+    pub fn recertify(
+        &mut self,
+        request: RecertifyRequest,
+        limits: &CodecLimits,
+    ) -> Result<ClientBatchItemResponse, ClientError> {
+        self.recertify_with_options(request, limits, &RequestOptions::default())
+    }
+
+    /// Executes one typed Re-certify request with transport timeout overrides.
+    ///
+    /// The server owns certificate creation and Replacement/Replaced links;
+    /// this method performs one exchange and preserves the typed result.
+    ///
+    /// # Errors
+    ///
+    /// Returns a sanitized validation, protocol, or transport error with the
+    /// strongest available request-delivery evidence.
+    pub fn recertify_with_options(
+        &mut self,
+        request: RecertifyRequest,
+        limits: &CodecLimits,
+        request_options: &RequestOptions,
+    ) -> Result<ClientBatchItemResponse, ClientError> {
+        let response = self.execute_with_options(
+            ClientBatch::new(ClientBatchItem::new(ClientRequest::Recertify(request))),
             limits,
             request_options,
         )?;
@@ -3845,6 +3951,7 @@ fn request_mutation_is_prohibited(request: &ClientRequest) -> bool {
         | ClientRequest::Certify(_)
         | ClientRequest::Check(_)
         | ClientRequest::ObtainLease(_)
+        | ClientRequest::Recertify(_)
         | ClientRequest::Destroy(_)
         | ClientRequest::Recover(_)
         | ClientRequest::Get(_)
@@ -4461,6 +4568,7 @@ fn response_outcome(
         CERTIFY_OPERATION => certify_response_outcome(item),
         CHECK_OPERATION => check_response_outcome(item),
         OBTAIN_LEASE_OPERATION => obtain_lease_response_outcome(item),
+        RECERTIFY_OPERATION => recertify_response_outcome(item),
         ARCHIVE_OPERATION => read_operation_outcome(
             ClientOperation::Archive,
             item,
@@ -4596,6 +4704,21 @@ fn obtain_lease_response_outcome(
         ObtainLeaseResponse::result,
         PendingResponse::ObtainLease,
         ClientBatchOutcome::ObtainLease,
+    )
+}
+
+fn recertify_response_outcome(
+    item: ResponseBatchItemView<'_>,
+) -> Result<ClientBatchOutcome, ProtocolError> {
+    // The response parser requires its identifier on success and leaves
+    // server-maintained replacement links untouched.
+    read_operation_outcome(
+        ClientOperation::Recertify,
+        item,
+        RecertifyResponse::try_from_response_item,
+        RecertifyResponse::result,
+        PendingResponse::Recertify,
+        ClientBatchOutcome::Recertify,
     )
 }
 
