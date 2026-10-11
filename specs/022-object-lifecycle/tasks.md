@@ -4,7 +4,7 @@
 
 **Prerequisites**: Approved [spec.md](spec.md), [plan.md](plan.md), [research.md](research.md), [data-model.md](data-model.md), [contracts/public-rust.md](contracts/public-rust.md), and [traceability.md](traceability.md).
 
-**TDD and commit evidence**: Every operation story requires distinct Red test, Green implementation, and Refactor commits. Do not combine these phases. PR evidence follows [quickstart.md](quickstart.md).
+**TDD and commit evidence**: Every operation story requires distinct Red test, Green implementation, and Refactor commits. Do not combine these phases. A Rust compile-time Red is acceptable only when the diagnostic is directly caused by the operation API that the paired Green task introduces; test syntax/type errors are not valid Red evidence. Record the exact focused command and expected diagnostic. PR evidence follows [quickstart.md](quickstart.md).
 
 **Organization**: Tasks are grouped by the nine P1 operation stories. Operation model/test files are isolated; edits to `execute.rs`, public module exports, catalog, and generated report are serialized.
 
@@ -16,12 +16,12 @@
 - [ ] T002 Verify pinned source checksums in `specification/oasis/kmip-2.1/CHECKSUMS.sha256` and confirm no change under `specification/oasis/kmip-2.1/upstream/`.
 - [ ] T003 Confirm reusable TTLV/object/attribute/credential/result/batch/client/transport contracts in `crates/kmipkit-protocol/src/` and `crates/kmipkit-client/src/execute.rs`; keep language mapping under KMIPKIT-0043.
 
-## Phase 2: Shared request/response execution tests
+## Phase 2: Shared behavior baseline
 
-**Purpose**: Establish failing shared client evidence before implementing operation dispatch.
+**Purpose**: Confirm reusable common behavior and avoid duplicating tests for APIs that do not exist yet. Each operation story owns its feature-specific Red tests.
 
-- [ ] T004 [P] Add failing fake-transport tests in `crates/kmipkit-client/tests/unit/lifecycle_operations_execution_tests.rs` for all nine operation codes, one exchange, ordered batch association, common Success/Failure/Pending results, delivery-state failures, and no retries; commit shared Red evidence.
-- [ ] T005 [P] Add failing common-result and unknown-field tests in `crates/kmipkit-protocol/tests/unit/lifecycle_operation_contract_tests.rs` proving open result reasons, unknown response child retention, and sanitized malformed-success errors; commit with T004 before production edits.
+- [X] T004 Audit existing fake-transport coverage for common result delivery, Pending/correlation, batch association, one-exchange behavior, delivery-state failures, and no retries. Reuse examples in `crates/kmipkit-client/tests/unit/activate_execution_tests.rs`, `archive_execution_tests.rs`, and `create_execution_tests.rs`; add the nine operation-code assertions within each operation's Red task after its expected API is specified.
+- [X] T005 Audit existing protocol coverage for unknown result reasons, unknown generic response children, and redacted malformed-success errors. Existing cases are `common_operation_result_tests::shared_helper_and_encrypt_decrypt_preserve_unknown_reason_and_result_message`, `create_tests::typed_response_conversion_leaves_unknown_generic_payload_fields_available`, and `destroy_operation_tests::malformed_success_errors_do_not_expose_payload_values`; do not add duplicate tests before operation response types exist.
 
 ## Phase 3: User Story 1 — Certify (Priority: P1)
 
@@ -126,7 +126,7 @@
 
 ## Dependencies & Execution Order
 
-- T001–T003 precede implementation. Shared Red tests T004–T005 precede Green operation work.
+- T001–T003 precede implementation. T004–T005 confirm the shared foundation; every operation's own Red task precedes its paired Green task.
 - In every operation story, Red precedes Green and Refactor follows Green as a separate commit.
 - Operation-specific models and test files are independent. Client dispatcher, public exports, catalog, and generated-report integration are serialized.
 - Rust protocol/client stories may proceed before KMIPKIT-0043 is complete. T033 waits for its canonical manifest and operation mapping tasks; that dependency applies to four-language parity only.
