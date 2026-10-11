@@ -538,6 +538,13 @@ An independent source auditor verified Specification v2.1 SHA-256 `8bf9d914c097e
 | Refactor — use one catalog scope predicate for generation and reporting | `python -B -m unittest tools.normative_catalog.tests.test_report -v`; three focused generator tests; `cargo test -p kmipkit-protocol`; structural validation, generator/report `--check`, `cargo fmt --all --check`, `git diff --check` | PASS: extracted the client unresolved-scope predicate and reused it in closure generation and Python readiness/reporting. The generated output is unchanged; all 33 report tests (one platform skip), three focused generator tests, and protocol tests pass. |
 | Existing suite limitations observed during this slice | `python -B -m unittest tools.normative_catalog.tests.test_generate_profiles tools.normative_catalog.tests.test_report -v` | 58 tests: one existing closure-oracle failure (`oracle_status` is still `partial-source-reviewed; not complete T003 oracle`), one existing fixture error (`counts.profiles` absent), and two platform-dependent skips. The report test file passed; these oracle gaps remain PR blockers. |
 
+### T003/T004 — QA regression coverage follow-up (2026-10-11)
+
+| Review note | Test change | Verification |
+|---|---|---|
+| Server-only exclusions lacked a direct negative closure assertion. | Added a focused case proving both server-role duties and server-only duties remain outside client requirements and do not become unresolved client blockers. | `python -B -m unittest tools.normative_catalog.tests.test_generate_profiles.ProfileMetadataGeneratorTests.test_closure_excludes_server_only_obligations -v` — PASS. |
+| The report runtime-block assertion also used an empty rule registry. | The unresolved-scope report test now supplies a valid typed rule mapping and first asserts that the otherwise identical resolved profile is runtime-available; then the linked unresolved duties make runtime availability false. | `python -B -m unittest tools.normative_catalog.tests.test_report.CoverageReportTests.test_profile_readiness_blocks_unresolved_scope_in_its_clause_closure -v` — PASS. |
+
 ### T003/T004 — mixed-scope client closure regression (2026-10-11)
 
 | Phase | Command | Result |

@@ -372,6 +372,35 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
             ],
         )
 
+    def test_closure_excludes_server_only_obligations_from_client_scope(self) -> None:
+        catalog = closure_catalog()
+        catalog["requirements"].extend(
+            [
+                {
+                    "requirement_id": "KMIPKIT-REQ-SPEC-1-SERVER-ROLE",
+                    "source_clause_ids": ["KMIPKIT-CLAUSE-SPEC-1-001"],
+                    "role": "server",
+                    "scope_state": "server_only",
+                },
+                {
+                    "requirement_id": "KMIPKIT-REQ-SPEC-1-SERVER-SCOPE",
+                    "source_clause_ids": ["KMIPKIT-CLAUSE-SPEC-1-001"],
+                    "role": "client",
+                    "scope_state": "server_only",
+                },
+            ]
+        )
+
+        closure = compute_profile_closure(
+            catalog,
+            ["KMIPKIT-CLAUSE-PROF-6.1-001"],
+            profile_id="KMIPKIT-PROFILE-BASELINE-CLIENT",
+        )
+
+        self.assertNotIn("KMIPKIT-REQ-SPEC-1-SERVER-ROLE", closure.requirement_ids)
+        self.assertNotIn("KMIPKIT-REQ-SPEC-1-SERVER-SCOPE", closure.requirement_ids)
+        self.assertEqual(closure.unresolved_scope_obligations, ())
+
     def test_closure_rejects_recursive_normative_inclusion_cycles(self) -> None:
         catalog = closure_catalog()
         inclusions = catalog["normative_inclusions"]

@@ -81,6 +81,23 @@ class CoverageReportTests(unittest.TestCase):
                 "test_case_ids": ["KMIPKIT-TEST-PROFILE-BASELINE"],
             }
         ]
+        typed_rule_mapping = {
+            "requirement_id": "KMIPKIT-REQ-SPEC-8.1-001",
+            "source_clause_id": "KMIPKIT-CLAUSE-SPEC-8.1-001",
+            "verification_category": "RequiredBehavior",
+            "evaluator_present": True,
+            "test_kind": "PositiveBehavior",
+            "test_id": "profile_validation::required_rule_enforces_clause",
+        }
+        resolved_readiness = evaluate_profile_readiness(
+            catalog,
+            "KMIPKIT-PROFILE-BASELINE",
+            selected_profile_ids={"KMIPKIT-PROFILE-BASELINE"},
+            typed_rule_mappings=[typed_rule_mapping],
+            verification_manifest=None,
+            current_context=None,
+        )
+        self.assertTrue(resolved_readiness["runtime_validation_available"])
         catalog["requirements"].extend(
             [
                 {
@@ -107,12 +124,12 @@ class CoverageReportTests(unittest.TestCase):
             catalog,
             "KMIPKIT-PROFILE-BASELINE",
             selected_profile_ids={"KMIPKIT-PROFILE-BASELINE"},
-            typed_rule_mappings=[],
+            typed_rule_mappings=[typed_rule_mapping],
             verification_manifest=None,
             current_context=None,
         )
 
-        report = render_report(catalog, typed_rule_mappings=[])
+        report = render_report(catalog, typed_rule_mappings=[typed_rule_mapping])
         self.assertIn(
             "unresolved applicability scope: KMIPKIT-REQ-SPEC-8.1-UNCLEAR",
             report,
