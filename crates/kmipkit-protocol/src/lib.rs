@@ -228,6 +228,10 @@ mod hash_operation_tests;
 mod rng_retrieve_operation_tests;
 
 #[cfg(test)]
+#[path = "../tests/unit/rng_seed_operation_tests.rs"]
+mod rng_seed_operation_tests;
+
+#[cfg(test)]
 #[path = "../tests/unit/mac_operation_tests.rs"]
 mod mac_operation_tests;
 
