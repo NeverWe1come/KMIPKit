@@ -487,3 +487,7 @@ mod login_operation_tests;
 #[cfg(test)]
 #[path = "../tests/unit/logout_operation_tests.rs"]
 mod logout_operation_tests;
+
+#[cfg(test)]
+#[path = "../tests/unit/log_operation_tests.rs"]
+mod log_operation_tests;
