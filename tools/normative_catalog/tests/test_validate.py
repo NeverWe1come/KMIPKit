@@ -13204,27 +13204,28 @@ class CatalogValidationTests(unittest.TestCase):
         self.assertEqual(
             {gap["proposed_requirement_id"] for gap in conditional_body_gaps},
             conditional_body_proposals,
-            "data required only for single-part Hash, MAC, or MAC Verify is tracked separately from unconditional Required=Yes rows",
+            "conditionally required cryptographic request data stays separate from unconditional Required=Yes rows",
         )
         self.assertFalse(
             conditional_body_proposals & {gap["proposed_requirement_id"] for gap in required_body_gaps},
             "a conditionally required field is not counted as an unconditional required body row",
         )
+        expected_conditional_rows = {
+            "6.1.24": ("Data", "Yes for single-part. No for multi-part."),
+            "6.1.32": ("Data", "Yes for single-part. No for multi-part."),
+            "6.1.33": ("MAC Data", "Yes for single-part. No for multi-part."),
+            "6.1.55": (
+                "Data",
+                "Yes for single-part, unless Digested Data is supplied.. No for multi-part.",
+            ),
+        }
         for gap in conditional_body_gaps:
-            self.assertIn(gap["source_section"], {"6.1.24", "6.1.32", "6.1.33", "6.1.55"})
-            expected_label = "MAC Data" if gap["source_section"] == "6.1.33" else "Data"
+            section = gap["source_section"]
+            self.assertIn(section, expected_conditional_rows)
+            expected_label, expected_condition = expected_conditional_rows[section]
             self.assertEqual(gap["source_locator"]["row_label"], expected_label)
             self.assertEqual(gap["source_excerpt"], pinned_source_excerpt(gap["source_path"], gap["html_line_range"]))
-            if gap["source_section"] == "6.1.55":
-                self.assertEqual(
-                    gap["source_locator"]["row_label"], "Data"
-                )
-                self.assertIn(
-                    "Yes for single-part, unless Digested Data is supplied.. No for multi-part.",
-                    gap["source_excerpt"],
-                )
-            else:
-                self.assertIn("Yes for single-part. No for multi-part.", gap["source_excerpt"])
+            self.assertIn(expected_condition, gap["source_excerpt"])
             self.assertEqual(gap["source_keywords"], [])
             self.assertEqual(gap["actor"], "client")
             self.assertEqual(gap["scope_disposition"], "client_1_0")
