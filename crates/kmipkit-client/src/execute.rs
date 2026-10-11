@@ -21,20 +21,22 @@ use kmipkit_protocol::{
     DeleteAttributeRequest, DeleteAttributeResponse, DeriveKeyRequest, DeriveKeyResponse,
     DestroyRequest, DestroyResponse, DiscoverVersionsRequest, DiscoverVersionsResponse,
     EncryptRequest, EncryptResponse, ExportRequest, ExportResponse, GetAttributeListRequest,
-    GetAttributeListResponse, GetAttributesRequest, GetAttributesResponse, GetRequest, GetResponse,
-    HashRequest, HashResponse, ImportRequest, ImportResponse, JoinSplitKeyRequest,
-    JoinSplitKeyResponse, KmipOperationResult, LocateRequest, LocateResponse, LoginRequest,
-    LoginResponse, LogoutRequest, LogoutResponse, MacRequest, MacResponse, MacVerifyRequest,
-    MacVerifyResponse, MessageExtensionView, ModifyAttributeRequest, ModifyAttributeResponse,
-    NewAttribute, ObtainLeaseRequest, ObtainLeaseResponse, PingRequest, PingResponse, PollRequest,
-    PollResponse, ProcessRequest, ProcessResponse, ProtocolCauseCategory, ProtocolError,
-    ProtocolErrorKind, ProtocolVersion, QueryAsyncRequestsRequest, QueryAsyncRequestsResponse,
-    QueryRequest, QueryResponse, ReProvisionRequest, ReProvisionResponse, RecertifyRequest,
-    RecertifyResponse, RecoverRequest, RecoverResponse, RegisterRequest, RegisterResponse,
-    RekeyKeyPairRequest, RekeyKeyPairResponse, RekeyRequest, RekeyResponse, RequestMessage,
-    ResponseBatchItemView, ResponseMessage, ResultStatus, RevokeRequest, RevokeResponse,
-    SetAttributeRequest, SetAttributeResponse, SignRequest, SignResponse, SignatureVerifyRequest,
-    SignatureVerifyResponse,
+    GetAttributeListResponse, GetAttributesRequest, GetAttributesResponse, GetConstraintsRequest,
+    GetConstraintsResponse, GetRequest, GetResponse, GetUsageAllocationRequest,
+    GetUsageAllocationResponse, HashRequest, HashResponse, ImportRequest, ImportResponse,
+    JoinSplitKeyRequest, JoinSplitKeyResponse, KmipOperationResult, LocateRequest, LocateResponse,
+    LoginRequest, LoginResponse, LogoutRequest, LogoutResponse, MacRequest, MacResponse,
+    MacVerifyRequest, MacVerifyResponse, MessageExtensionView, ModifyAttributeRequest,
+    ModifyAttributeResponse, NewAttribute, ObtainLeaseRequest, ObtainLeaseResponse, PingRequest,
+    PingResponse, PollRequest, PollResponse, ProcessRequest, ProcessResponse,
+    ProtocolCauseCategory, ProtocolError, ProtocolErrorKind, ProtocolVersion,
+    QueryAsyncRequestsRequest, QueryAsyncRequestsResponse, QueryRequest, QueryResponse,
+    ReProvisionRequest, ReProvisionResponse, RecertifyRequest, RecertifyResponse, RecoverRequest,
+    RecoverResponse, RegisterRequest, RegisterResponse, RekeyKeyPairRequest, RekeyKeyPairResponse,
+    RekeyRequest, RekeyResponse, RequestMessage, ResponseBatchItemView, ResponseMessage,
+    ResultStatus, RevokeRequest, RevokeResponse, SetAttributeRequest, SetAttributeResponse,
+    SetConstraintsRequest, SetConstraintsResponse, SetDefaultsRequest, SetDefaultsResponse,
+    SignRequest, SignResponse, SignatureVerifyRequest, SignatureVerifyResponse,
 };
 
 #[cfg(test)]
@@ -54,7 +56,9 @@ use crate::execute_test_support::TestTransport;
 use crate::extension_registry::{
     self, ClientConfiguration, ClientExtensionRegistry, ClientRequestMessageExtension,
 };
-use crate::{ClientCauseCategory, ClientError};
+use crate::{
+    ClientCauseCategory, ClientError, UsageAllocationContext, UsageAllocationContextError,
+};
 
 #[cfg(test)]
 #[path = "../tests/unit/single_item_response_tests.rs"]
@@ -181,6 +185,10 @@ const POLL_OPERATION: u32 = 0x0000_001A;
 const QUERY_ASYNCHRONOUS_REQUESTS_OPERATION: u32 = 0x0000_0039;
 const PROCESS_OPERATION: u32 = 0x0000_003A;
 const PING_OPERATION: u32 = 0x0000_003B;
+const GET_CONSTRAINTS_OPERATION: u32 = 0x0000_0038; // KMIP v2.1 §6.1.22, Table 229.
+const SET_CONSTRAINTS_OPERATION: u32 = 0x0000_0037; // KMIP v2.1 §6.1.52, Table 325.
+const SET_DEFAULTS_OPERATION: u32 = 0x0000_0036; // KMIP v2.1 §6.1.53, Table 328.
+const GET_USAGE_ALLOCATION_OPERATION: u32 = 0x0000_0011; // §6.1.23, Table 232.
 const QUERY_OPERATION: u32 = 0x0000_0018;
 const ASYNCHRONOUS_MANDATORY: u32 = 1;
 const ASYNCHRONOUS_OPTIONAL: u32 = 2;
@@ -256,6 +264,14 @@ pub enum ClientRequest {
     GetAttributeList(GetAttributeListRequest),
     /// An explicit client-to-server Ping request.
     Ping(PingRequest),
+    /// An explicit client-to-server Get Constraints request.
+    GetConstraints(GetConstraintsRequest),
+    /// An explicit client-to-server Set Constraints request.
+    SetConstraints(SetConstraintsRequest),
+    /// An explicit client-to-server Set Defaults request.
+    SetDefaults(SetDefaultsRequest),
+    /// An explicit client-to-server Get Usage Allocation request.
+    GetUsageAllocation(GetUsageAllocationRequest),
     /// An explicit client-to-server Query request.
     Query(QueryRequest),
     /// An explicit client-to-server Encrypt request.
@@ -293,6 +309,30 @@ impl ClientRequest {
     #[must_use]
     pub const fn ping() -> Self {
         Self::Ping(PingRequest::new())
+    }
+
+    /// Creates an empty client-to-server Get Constraints request.
+    #[must_use]
+    pub const fn get_constraints() -> Self {
+        Self::GetConstraints(GetConstraintsRequest::new())
+    }
+
+    /// Creates a typed client-to-server Set Constraints request.
+    #[must_use]
+    pub fn set_constraints(request: SetConstraintsRequest) -> Self {
+        Self::SetConstraints(request)
+    }
+
+    /// Creates a typed client-to-server Set Defaults request.
+    #[must_use]
+    pub fn set_defaults(request: SetDefaultsRequest) -> Self {
+        Self::SetDefaults(request)
+    }
+
+    /// Creates a typed client-to-server Get Usage Allocation request.
+    #[must_use]
+    pub fn get_usage_allocation(request: GetUsageAllocationRequest) -> Self {
+        Self::GetUsageAllocation(request)
     }
 
     /// Creates a typed client-to-server Query request variant.
@@ -549,6 +589,10 @@ impl ClientRequest {
             Self::GetAttributes(_) => GET_ATTRIBUTES_OPERATION,
             Self::GetAttributeList(_) => GET_ATTRIBUTE_LIST_OPERATION,
             Self::Ping(_) => PING_OPERATION,
+            Self::GetConstraints(_) => GET_CONSTRAINTS_OPERATION,
+            Self::SetConstraints(_) => SET_CONSTRAINTS_OPERATION,
+            Self::SetDefaults(_) => SET_DEFAULTS_OPERATION,
+            Self::GetUsageAllocation(_) => GET_USAGE_ALLOCATION_OPERATION,
             Self::Query(_) => QUERY_OPERATION,
             Self::Encrypt(_) => ENCRYPT_OPERATION,
             Self::Decrypt(_) => DECRYPT_OPERATION,
@@ -650,6 +694,10 @@ impl ClientRequest {
             Self::GetAttributes(request) => request.to_ttlv_payload(),
             Self::GetAttributeList(request) => request.to_ttlv_payload(),
             Self::Ping(request) => request.to_ttlv_payload(),
+            Self::GetConstraints(request) => request.to_ttlv_payload(),
+            Self::SetConstraints(request) => request.to_ttlv_payload(),
+            Self::SetDefaults(request) => request.to_ttlv_payload(),
+            Self::GetUsageAllocation(request) => request.to_ttlv_payload(),
             Self::Query(request) => request.to_ttlv_payload(),
             Self::Encrypt(request) => request.to_ttlv_payload(),
             Self::Decrypt(request) => request.to_ttlv_payload(),
@@ -715,6 +763,18 @@ impl fmt::Debug for ClientRequest {
                 .field(request)
                 .finish(),
             Self::Ping(_) => formatter.write_str("Ping"),
+            Self::GetConstraints(_) => formatter.write_str("GetConstraints"),
+            Self::SetConstraints(request) => formatter
+                .debug_tuple("SetConstraints")
+                .field(request)
+                .finish(),
+            Self::SetDefaults(request) => {
+                formatter.debug_tuple("SetDefaults").field(request).finish()
+            }
+            Self::GetUsageAllocation(request) => formatter
+                .debug_tuple("GetUsageAllocation")
+                .field(request)
+                .finish(),
             Self::Query(_) => formatter.write_str("Query([REDACTED])"),
             Self::Encrypt(_) => formatter.write_str("Encrypt([REDACTED])"),
             Self::Decrypt(_) => formatter.write_str("Decrypt([REDACTED])"),
@@ -1026,6 +1086,10 @@ enum PendingResponse {
     GetAttributes(GetAttributesResponse),
     GetAttributeList(GetAttributeListResponse),
     Ping(PingResponse),
+    GetConstraints(GetConstraintsResponse),
+    SetConstraints(SetConstraintsResponse),
+    SetDefaults(SetDefaultsResponse),
+    GetUsageAllocation(GetUsageAllocationResponse),
     Query(QueryResponse),
 }
 
@@ -1073,6 +1137,10 @@ impl PendingResponse {
             Self::GetAttributes(response) => ClientResponseRef::GetAttributes(response),
             Self::GetAttributeList(response) => ClientResponseRef::GetAttributeList(response),
             Self::Ping(response) => ClientResponseRef::Ping(response),
+            Self::GetConstraints(response) => ClientResponseRef::GetConstraints(response),
+            Self::SetConstraints(response) => ClientResponseRef::SetConstraints(response),
+            Self::SetDefaults(response) => ClientResponseRef::SetDefaults(response),
+            Self::GetUsageAllocation(response) => ClientResponseRef::GetUsageAllocation(response),
             Self::Query(response) => ClientResponseRef::Query(response),
         };
         ClientResponseView { response }
@@ -1294,6 +1362,14 @@ pub enum ClientOperation {
     GetAttributeList,
     /// Ping one server connection and observe its KMIP response.
     Ping,
+    /// Read the server's Constraints Structure.
+    GetConstraints,
+    /// Configure the server's Constraints Structure.
+    SetConstraints,
+    /// Configure the server's Object Defaults.
+    SetDefaults,
+    /// Allocate Usage Limits Units for a managed object.
+    GetUsageAllocation,
     /// Query one server for explicitly requested protocol information.
     Query,
     /// Encrypt data with the explicitly selected server-side object.
@@ -1482,6 +1558,10 @@ enum ClientResponseRef<'a> {
     GetAttributes(&'a GetAttributesResponse),
     GetAttributeList(&'a GetAttributeListResponse),
     Ping(&'a PingResponse),
+    GetConstraints(&'a GetConstraintsResponse),
+    SetConstraints(&'a SetConstraintsResponse),
+    SetDefaults(&'a SetDefaultsResponse),
+    GetUsageAllocation(&'a GetUsageAllocationResponse),
     Query(&'a QueryResponse),
 }
 
@@ -1546,6 +1626,10 @@ impl<'a> ClientResponseView<'a> {
             ClientResponseRef::GetAttributes(response) => response.result(),
             ClientResponseRef::GetAttributeList(response) => response.result(),
             ClientResponseRef::Ping(response) => response.result(),
+            ClientResponseRef::GetConstraints(response) => response.result(),
+            ClientResponseRef::SetConstraints(response) => response.result(),
+            ClientResponseRef::SetDefaults(response) => response.result(),
+            ClientResponseRef::GetUsageAllocation(response) => response.result(),
             ClientResponseRef::Query(response) => response.result(),
         }
     }
@@ -1932,6 +2016,42 @@ impl<'a> ClientResponseView<'a> {
         }
     }
 
+    /// Returns a Get Constraints response, including a Pending result.
+    #[must_use]
+    pub const fn get_constraints(&self) -> Option<&GetConstraintsResponse> {
+        match self.response {
+            ClientResponseRef::GetConstraints(response) => Some(response),
+            _ => None,
+        }
+    }
+
+    /// Returns a Set Constraints response, including a Pending result.
+    #[must_use]
+    pub const fn set_constraints(&self) -> Option<&SetConstraintsResponse> {
+        match self.response {
+            ClientResponseRef::SetConstraints(response) => Some(response),
+            _ => None,
+        }
+    }
+
+    /// Returns a Set Defaults response, including a Pending result.
+    #[must_use]
+    pub const fn set_defaults(&self) -> Option<&SetDefaultsResponse> {
+        match self.response {
+            ClientResponseRef::SetDefaults(response) => Some(response),
+            _ => None,
+        }
+    }
+
+    /// Returns a Get Usage Allocation response, including a Pending result.
+    #[must_use]
+    pub const fn get_usage_allocation(&self) -> Option<&GetUsageAllocationResponse> {
+        match self.response {
+            ClientResponseRef::GetUsageAllocation(response) => Some(response),
+            _ => None,
+        }
+    }
+
     /// Returns the Query response when this view represents it.
     #[must_use]
     pub const fn query(&self) -> Option<&QueryResponse> {
@@ -2051,6 +2171,18 @@ impl fmt::Debug for ClientResponseView<'_> {
                 debug_response(formatter, "GetAttributeList", response)
             }
             ClientResponseRef::Ping(response) => debug_response(formatter, "Ping", response),
+            ClientResponseRef::GetConstraints(response) => {
+                debug_response(formatter, "GetConstraints", response)
+            }
+            ClientResponseRef::SetConstraints(response) => {
+                debug_response(formatter, "SetConstraints", response)
+            }
+            ClientResponseRef::SetDefaults(response) => {
+                debug_response(formatter, "SetDefaults", response)
+            }
+            ClientResponseRef::GetUsageAllocation(response) => {
+                debug_response(formatter, "GetUsageAllocation", response)
+            }
             ClientResponseRef::Query(response) => debug_response(formatter, "Query", response),
         }
     }
@@ -2143,6 +2275,14 @@ pub enum ClientBatchOutcome {
     GetAttributeList(GetAttributeListResponse),
     /// The server returned a Ping result.
     Ping(PingResponse),
+    /// The server returned a Get Constraints result.
+    GetConstraints(GetConstraintsResponse),
+    /// The server returned a Set Constraints result.
+    SetConstraints(SetConstraintsResponse),
+    /// The server returned a Set Defaults result.
+    SetDefaults(SetDefaultsResponse),
+    /// The server returned a Get Usage Allocation result.
+    GetUsageAllocation(GetUsageAllocationResponse),
     /// The server returned a Query result.
     Query(QueryResponse),
 }
@@ -2193,6 +2333,10 @@ impl ClientBatchOutcome {
             | Self::GetAttributes(_)
             | Self::GetAttributeList(_)
             | Self::Ping(_)
+            | Self::GetConstraints(_)
+            | Self::SetConstraints(_)
+            | Self::SetDefaults(_)
+            | Self::GetUsageAllocation(_)
             | Self::Query(_) => None,
             Self::Pending(pending) => Some(pending.asynchronous_correlation_value()),
         }
@@ -2243,6 +2387,10 @@ impl ClientBatchOutcome {
             Self::GetAttributes(response) => response.result(),
             Self::GetAttributeList(response) => response.result(),
             Self::Ping(response) => response.result(),
+            Self::GetConstraints(response) => response.result(),
+            Self::SetConstraints(response) => response.result(),
+            Self::SetDefaults(response) => response.result(),
+            Self::GetUsageAllocation(response) => response.result(),
             Self::Query(response) => response.result(),
             Self::Pending(pending) => pending.result(),
         }
@@ -2293,6 +2441,10 @@ impl ClientBatchOutcome {
             Self::GetAttributes(_) => ClientOperation::GetAttributes,
             Self::GetAttributeList(_) => ClientOperation::GetAttributeList,
             Self::Ping(_) => ClientOperation::Ping,
+            Self::GetConstraints(_) => ClientOperation::GetConstraints,
+            Self::SetConstraints(_) => ClientOperation::SetConstraints,
+            Self::SetDefaults(_) => ClientOperation::SetDefaults,
+            Self::GetUsageAllocation(_) => ClientOperation::GetUsageAllocation,
             Self::Query(_) => ClientOperation::Query,
             Self::Pending(pending) => pending.operation(),
         }
@@ -2802,6 +2954,18 @@ impl ClientBatchOutcome {
                 ClientResponseView::new(ClientResponseRef::GetAttributeList(response))
             }
             Self::Ping(response) => ClientResponseView::new(ClientResponseRef::Ping(response)),
+            Self::GetConstraints(response) => {
+                ClientResponseView::new(ClientResponseRef::GetConstraints(response))
+            }
+            Self::SetConstraints(response) => {
+                ClientResponseView::new(ClientResponseRef::SetConstraints(response))
+            }
+            Self::SetDefaults(response) => {
+                ClientResponseView::new(ClientResponseRef::SetDefaults(response))
+            }
+            Self::GetUsageAllocation(response) => {
+                ClientResponseView::new(ClientResponseRef::GetUsageAllocation(response))
+            }
             Self::Query(response) => ClientResponseView::new(ClientResponseRef::Query(response)),
         }
     }
@@ -2917,6 +3081,22 @@ impl fmt::Debug for ClientBatchOutcome {
                 .field(response)
                 .finish(),
             Self::Ping(response) => formatter.debug_tuple("Ping").field(response).finish(),
+            Self::GetConstraints(response) => formatter
+                .debug_tuple("GetConstraints")
+                .field(response)
+                .finish(),
+            Self::SetConstraints(response) => formatter
+                .debug_tuple("SetConstraints")
+                .field(response)
+                .finish(),
+            Self::SetDefaults(response) => formatter
+                .debug_tuple("SetDefaults")
+                .field(response)
+                .finish(),
+            Self::GetUsageAllocation(response) => formatter
+                .debug_tuple("GetUsageAllocation")
+                .field(response)
+                .finish(),
             Self::Query(response) => formatter.debug_tuple("Query").field(response).finish(),
         }
     }
@@ -3005,6 +3185,18 @@ impl fmt::Display for ClientBatchOutcome {
                 write!(formatter, "GetAttributeList({})", response.result())
             }
             Self::Ping(response) => write!(formatter, "Ping({})", response.result()),
+            Self::GetConstraints(response) => {
+                write!(formatter, "GetConstraints({})", response.result())
+            }
+            Self::SetConstraints(response) => {
+                write!(formatter, "SetConstraints({})", response.result())
+            }
+            Self::SetDefaults(response) => {
+                write!(formatter, "SetDefaults({})", response.result())
+            }
+            Self::GetUsageAllocation(response) => {
+                write!(formatter, "GetUsageAllocation({})", response.result())
+            }
             Self::Query(response) => write!(formatter, "Query({})", response.result()),
         }
     }
@@ -3328,6 +3520,109 @@ impl Client {
                 failure.response_ttlv,
             )
         })
+    }
+
+    /// Executes one Encrypt, MAC, or Sign request through an explicit local
+    /// Usage Allocation guard.
+    ///
+    /// The request must name the exact object identifier returned by the
+    /// successful allocation. The caller supplies a positive cost in the
+    /// context's caller-known Usage Limits Unit. Cost is not inferred from
+    /// operation type or input length. This context accounts only for calls
+    /// routed through this method; reservations do not prove server use.
+    ///
+    /// A complete Success or Failure response keeps the reservation. Only
+    /// `NotSent` delivery evidence releases it. No retry or Poll is performed.
+    /// Use [`Self::execute_guarded_protection_with_asynchronous_indicator`]
+    /// when the caller explicitly permits a Pending response.
+    ///
+    /// # Errors
+    ///
+    /// Returns a sanitized `NotSent` validation error for an unsupported
+    /// operation, missing or mismatched identifier, invalid cost, or cost
+    /// above the locally available allocation. Otherwise returns the standard
+    /// execution error with the strongest available delivery evidence.
+    #[allow(clippy::needless_pass_by_value)]
+    pub fn execute_guarded_protection(
+        &mut self,
+        context: &mut UsageAllocationContext,
+        request: ClientRequest,
+        cost: i64,
+        limits: &CodecLimits,
+    ) -> Result<ClientBatchItemResponse, ClientError> {
+        self.execute_guarded_protection_inner(context, request, cost, None, limits)
+    }
+
+    /// Executes one guarded Encrypt, MAC, or Sign request with an explicit
+    /// KMIP Asynchronous Indicator.
+    ///
+    /// This method is the only guarded convenience path that accepts Pending.
+    /// Pending retains the local reservation, preserves its correlation value,
+    /// and never triggers Poll automatically.
+    ///
+    /// # Errors
+    ///
+    /// Returns a sanitized `NotSent` validation error for an unsupported
+    /// operation, missing or mismatched identifier, invalid cost, or cost
+    /// above the locally available allocation. Otherwise returns the standard
+    /// execution error with the strongest available delivery evidence.
+    #[allow(clippy::needless_pass_by_value)]
+    pub fn execute_guarded_protection_with_asynchronous_indicator(
+        &mut self,
+        context: &mut UsageAllocationContext,
+        request: ClientRequest,
+        cost: i64,
+        asynchronous_indicator: u32,
+        limits: &CodecLimits,
+    ) -> Result<ClientBatchItemResponse, ClientError> {
+        self.execute_guarded_protection_inner(
+            context,
+            request,
+            cost,
+            Some(asynchronous_indicator),
+            limits,
+        )
+    }
+
+    fn execute_guarded_protection_inner(
+        &mut self,
+        context: &mut UsageAllocationContext,
+        request: ClientRequest,
+        cost: i64,
+        asynchronous_indicator: Option<u32>,
+        limits: &CodecLimits,
+    ) -> Result<ClientBatchItemResponse, ClientError> {
+        let identifier = match &request {
+            ClientRequest::Encrypt(request) => request.unique_identifier(),
+            ClientRequest::Mac(request) => request.unique_identifier(),
+            ClientRequest::Sign(request) => request.unique_identifier(),
+            _ => {
+                return Err(guard_validation_error(
+                    UsageAllocationContextError::UnsupportedOperation,
+                ));
+            }
+        }
+        .ok_or_else(|| {
+            guard_validation_error(UsageAllocationContextError::MissingUniqueIdentifier)
+        })?;
+        if identifier != context.unique_identifier() {
+            return Err(guard_validation_error(
+                UsageAllocationContextError::MismatchedUniqueIdentifier,
+            ));
+        }
+        context.reserve(cost).map_err(guard_validation_error)?;
+
+        let mut batch = ClientBatch::new(ClientBatchItem::new(request));
+        if let Some(indicator) = asynchronous_indicator {
+            batch = batch.with_asynchronous_indicator(indicator);
+        }
+        match self.execute_one_typed_batch(batch, limits, &RequestOptions::default()) {
+            Ok(response) => Ok(response),
+            Err(error) => {
+                context.settle_after_error(cost, error.delivery_state());
+                Err(error)
+            }
+        }
     }
 
     /// Executes one typed Certify request through the shared batch writer.
@@ -3864,6 +4159,80 @@ impl Client {
         take_single_item_response(response.items)
     }
 
+    /// Executes one Get Constraints request through one transport exchange.
+    ///
+    /// # Errors
+    ///
+    /// Returns a sanitized validation, protocol, or transport error with the
+    /// strongest available request-delivery evidence.
+    pub fn get_constraints(
+        &mut self,
+        limits: &CodecLimits,
+    ) -> Result<ClientBatchItemResponse, ClientError> {
+        self.execute_one_typed_request(
+            ClientRequest::get_constraints(),
+            limits,
+            &RequestOptions::default(),
+        )
+    }
+
+    /// Executes one Set Constraints request through one transport exchange.
+    ///
+    /// # Errors
+    ///
+    /// Returns a sanitized validation, protocol, or transport error with the
+    /// strongest available request-delivery evidence.
+    pub fn set_constraints(
+        &mut self,
+        request: SetConstraintsRequest,
+        limits: &CodecLimits,
+    ) -> Result<ClientBatchItemResponse, ClientError> {
+        self.execute_one_typed_request(
+            ClientRequest::set_constraints(request),
+            limits,
+            &RequestOptions::default(),
+        )
+    }
+
+    /// Executes one Set Defaults request through one transport exchange.
+    ///
+    /// # Errors
+    ///
+    /// Returns a sanitized validation, protocol, or transport error with the
+    /// strongest available request-delivery evidence.
+    pub fn set_defaults(
+        &mut self,
+        request: SetDefaultsRequest,
+        limits: &CodecLimits,
+    ) -> Result<ClientBatchItemResponse, ClientError> {
+        self.execute_one_typed_request(
+            ClientRequest::set_defaults(request),
+            limits,
+            &RequestOptions::default(),
+        )
+    }
+
+    /// Executes one Get Usage Allocation request through one transport exchange.
+    ///
+    /// Use `execute` with an explicit asynchronous indicator when the caller
+    /// wants to accept Operation Pending. This method does not poll or retry.
+    ///
+    /// # Errors
+    ///
+    /// Returns a sanitized validation, protocol, or transport error with the
+    /// strongest available request-delivery evidence.
+    pub fn get_usage_allocation(
+        &mut self,
+        request: GetUsageAllocationRequest,
+        limits: &CodecLimits,
+    ) -> Result<ClientBatchItemResponse, ClientError> {
+        self.execute_one_typed_request(
+            ClientRequest::get_usage_allocation(request),
+            limits,
+            &RequestOptions::default(),
+        )
+    }
+
     /// Executes one client-to-server Ping request.
     ///
     /// A successful result confirms that the server returned a successful KMIP
@@ -4208,11 +4577,20 @@ impl Client {
         limits: &CodecLimits,
         options: &RequestOptions,
     ) -> Result<ClientBatchItemResponse, ClientError> {
-        let response = self.execute_with_options(
+        self.execute_one_typed_batch(
             ClientBatch::new(ClientBatchItem::new(request)),
             limits,
             options,
-        )?;
+        )
+    }
+
+    fn execute_one_typed_batch(
+        &mut self,
+        batch: ClientBatch,
+        limits: &CodecLimits,
+        options: &RequestOptions,
+    ) -> Result<ClientBatchItemResponse, ClientError> {
+        let response = self.execute_with_options(batch, limits, options)?;
         take_single_item_response(response.items)
     }
 
@@ -4986,6 +5364,10 @@ fn request_mutation_is_prohibited(request: &ClientRequest) -> bool {
         | ClientRequest::GetAttributes(_)
         | ClientRequest::GetAttributeList(_)
         | ClientRequest::Ping(_)
+        | ClientRequest::GetConstraints(_)
+        | ClientRequest::SetConstraints(_)
+        | ClientRequest::SetDefaults(_)
+        | ClientRequest::GetUsageAllocation(_)
         | ClientRequest::Query(_)
         | ClientRequest::Encrypt(_)
         | ClientRequest::Decrypt(_)
@@ -5638,6 +6020,10 @@ fn response_outcome(
             PendingResponse::Ping,
             ClientBatchOutcome::Ping,
         ),
+        GET_CONSTRAINTS_OPERATION => get_constraints_response_outcome(item),
+        SET_CONSTRAINTS_OPERATION => set_constraints_response_outcome(item),
+        SET_DEFAULTS_OPERATION => set_defaults_response_outcome(item),
+        GET_USAGE_ALLOCATION_OPERATION => get_usage_allocation_response_outcome(item),
         DISCOVER_VERSIONS_OPERATION => {
             let response = DiscoverVersionsResponse::try_from_response_item(item)
                 .map_err(invalid_typed_response)?;
@@ -5671,6 +6057,58 @@ fn response_outcome(
         GET_ATTRIBUTE_LIST_OPERATION => get_attribute_list_response_outcome(item),
         _ => Err(protocol_error(ProtocolErrorKind::UnsupportedValue)),
     }
+}
+
+fn get_constraints_response_outcome(
+    item: ResponseBatchItemView<'_>,
+) -> Result<ClientBatchOutcome, ProtocolError> {
+    read_operation_outcome(
+        ClientOperation::GetConstraints,
+        item,
+        GetConstraintsResponse::try_from_response_item,
+        GetConstraintsResponse::result,
+        PendingResponse::GetConstraints,
+        ClientBatchOutcome::GetConstraints,
+    )
+}
+
+fn set_constraints_response_outcome(
+    item: ResponseBatchItemView<'_>,
+) -> Result<ClientBatchOutcome, ProtocolError> {
+    read_operation_outcome(
+        ClientOperation::SetConstraints,
+        item,
+        SetConstraintsResponse::try_from_response_item,
+        SetConstraintsResponse::result,
+        PendingResponse::SetConstraints,
+        ClientBatchOutcome::SetConstraints,
+    )
+}
+
+fn set_defaults_response_outcome(
+    item: ResponseBatchItemView<'_>,
+) -> Result<ClientBatchOutcome, ProtocolError> {
+    read_operation_outcome(
+        ClientOperation::SetDefaults,
+        item,
+        SetDefaultsResponse::try_from_response_item,
+        SetDefaultsResponse::result,
+        PendingResponse::SetDefaults,
+        ClientBatchOutcome::SetDefaults,
+    )
+}
+
+fn get_usage_allocation_response_outcome(
+    item: ResponseBatchItemView<'_>,
+) -> Result<ClientBatchOutcome, ProtocolError> {
+    read_operation_outcome(
+        ClientOperation::GetUsageAllocation,
+        item,
+        GetUsageAllocationResponse::try_from_response_item,
+        GetUsageAllocationResponse::result,
+        PendingResponse::GetUsageAllocation,
+        ClientBatchOutcome::GetUsageAllocation,
+    )
 }
 
 fn credential_session_response_outcome(
@@ -6484,6 +6922,14 @@ fn decode_transport_response(
 
 fn protocol_failure_at(error: ProtocolError, delivery_state: RequestDeliveryState) -> ClientError {
     ClientError::protocol(error, delivery_state)
+}
+
+fn guard_validation_error(error: UsageAllocationContextError) -> ClientError {
+    ClientError::validation(
+        ClientCauseCategory::InvalidInput,
+        RequestDeliveryState::NotSent,
+        error,
+    )
 }
 
 fn decode_response_message(

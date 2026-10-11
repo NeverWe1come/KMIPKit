@@ -35,6 +35,8 @@ pub mod extension;
 mod get;
 mod get_attribute_list;
 mod get_attributes;
+mod get_constraints;
+mod get_usage_allocation;
 mod hash;
 mod import;
 mod join_split_key;
@@ -63,6 +65,14 @@ mod reprovision;
 mod result;
 mod revoke;
 mod set_attribute;
+mod set_constraints;
+#[cfg(test)]
+#[path = "../tests/unit/set_constraints_tests.rs"]
+mod set_constraints_tests;
+mod set_defaults;
+#[cfg(test)]
+#[path = "../tests/unit/set_defaults_tests.rs"]
+mod set_defaults_tests;
 mod sign;
 mod signature_verify;
 mod ticket;
@@ -113,6 +123,10 @@ pub use get_attribute_list::{
     GetAttributeListError, GetAttributeListRequest, GetAttributeListResponse,
 };
 pub use get_attributes::{GetAttributesError, GetAttributesRequest, GetAttributesResponse};
+pub use get_constraints::{GetConstraintsError, GetConstraintsRequest, GetConstraintsResponse};
+pub use get_usage_allocation::{
+    GetUsageAllocationError, GetUsageAllocationRequest, GetUsageAllocationResponse,
+};
 pub use hash::{HashError, HashRequest, HashResponse};
 pub use import::{ImportError, ImportRequest, ImportResponse};
 pub use join_split_key::{
@@ -149,6 +163,8 @@ pub use result::{
 };
 pub use revoke::{RevocationReason, RevokeError, RevokeRequest, RevokeResponse};
 pub use set_attribute::{SetAttributeError, SetAttributeRequest, SetAttributeResponse};
+pub use set_constraints::{SetConstraintsError, SetConstraintsRequest, SetConstraintsResponse};
+pub use set_defaults::{SetDefaultsError, SetDefaultsRequest, SetDefaultsResponse};
 pub use sign::{SignError, SignRequest, SignResponse};
 pub use signature_verify::{SignatureVerifyError, SignatureVerifyRequest, SignatureVerifyResponse};
 pub use ticket::{Ticket, TicketType, TicketValidationError, TicketValidationErrorKind};
@@ -409,6 +425,14 @@ mod locate_tests;
 #[cfg(test)]
 #[path = "../tests/unit/get_attribute_list_tests.rs"]
 mod get_attribute_list_tests;
+
+#[cfg(test)]
+#[path = "../tests/unit/get_constraints_tests.rs"]
+mod get_constraints_tests;
+
+#[cfg(test)]
+#[path = "../tests/unit/get_usage_allocation_tests.rs"]
+mod get_usage_allocation_tests;
 
 #[cfg(test)]
 #[path = "../tests/unit/add_attribute_tests.rs"]

@@ -50,6 +50,9 @@ mod extension_registry_test_support;
 mod extension_execution_tests;
 
 mod execute;
+mod usage_allocation;
+
+pub use usage_allocation::{UsageAllocationContext, UsageAllocationContextError};
 
 #[cfg(test)]
 #[path = "../tests/unit/execution_tests.rs"]
@@ -198,6 +201,28 @@ mod attestation_indicator_tests;
 #[cfg(test)]
 #[path = "../tests/unit/attribute_read_execution_tests.rs"]
 mod attribute_read_execution_tests;
+
+#[cfg(test)]
+#[path = "../tests/unit/get_constraints_execution_tests.rs"]
+mod get_constraints_execution_tests;
+
+#[cfg(test)]
+#[path = "../tests/unit/get_usage_allocation_execution_tests.rs"]
+mod get_usage_allocation_execution_tests;
+
+#[cfg(test)]
+#[path = "../tests/unit/set_constraints_execution_tests.rs"]
+mod set_constraints_execution_tests;
+#[cfg(test)]
+#[path = "../tests/unit/set_defaults_execution_tests.rs"]
+mod set_defaults_execution_tests;
+#[cfg(test)]
+#[path = "../tests/unit/usage_allocation_guard_tests.rs"]
+mod usage_allocation_guard_tests;
+
+#[cfg(test)]
+#[path = "../tests/unit/policy_controls_guide_examples.rs"]
+mod policy_controls_guide_examples;
 
 #[cfg(test)]
 #[path = "../tests/unit/attribute_mutation_execution_tests.rs"]
