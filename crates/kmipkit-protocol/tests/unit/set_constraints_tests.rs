@@ -85,8 +85,26 @@ fn table_326_success_has_empty_operation_payload_and_retains_complete_response()
 
 #[test]
 fn table_326_rejects_success_without_response_payload() {
-    let message = response_message(SET_CONSTRAINTS, 0, None, None, None);
-    assert!(SetConstraintsResponse::try_from_response_item(response_item(&message)).is_err());
+    // The common ResponseMessage validator rejects a successful response
+    // without Response Payload before a typed batch-item view can be created.
+    let version = structure([
+        item(0x0042_006A, Value::integer(2)),
+        item(0x0042_006B, Value::integer(1)),
+    ]);
+    let header = structure([
+        item(0x0042_0069, Value::structure(version)),
+        item(0x0042_0092, Value::date_time(1)),
+        item(0x0042_000D, Value::integer(1)),
+    ]);
+    let batch = structure([
+        item(0x0042_005C, Value::enumeration(SET_CONSTRAINTS)),
+        item(0x0042_007F, Value::enumeration(0)),
+    ]);
+    let message = structure([
+        item(0x0042_007A, Value::structure(header)),
+        item(0x0042_000F, Value::structure(batch)),
+    ]);
+    assert!(ResponseMessage::try_from_ttlv(message).is_err());
 }
 
 #[test]
