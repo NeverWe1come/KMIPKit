@@ -5,6 +5,7 @@ use std::error::Error;
 use std::fmt;
 
 use crate::ClientErrorResponseTtlv;
+use kmipkit_protocol::{ValidateRequest, ValidateResponse};
 use kmipkit_protocol::attribute::{
     ClientAttributeMutation, client_attribute_mutation_is_prohibited,
     client_vendor_attribute_mutation_is_prohibited,
@@ -186,6 +187,7 @@ const POLL_OPERATION: u32 = 0x0000_001A;
 const QUERY_ASYNCHRONOUS_REQUESTS_OPERATION: u32 = 0x0000_0039;
 const PROCESS_OPERATION: u32 = 0x0000_003A;
 const PING_OPERATION: u32 = 0x0000_003B;
+const VALIDATE_OPERATION: u32 = 0x0000_0017; // KMIP v2.1 section 6.1.57.
 const LOG_OPERATION: u32 = 0x0000_002c; // KMIP v2.1 section 6.1.29.
 const INTEROP_OPERATION: u32 = 0x0000_0034; // KMIP v2.1 section 6.1.26.
 const GET_CONSTRAINTS_OPERATION: u32 = 0x0000_0038; // KMIP v2.1 §6.1.22, Table 229.
@@ -269,6 +271,7 @@ pub enum ClientRequest {
     Ping(PingRequest),
     Interop(InteropRequest),
     Log(LogRequest),
+    Validate(ValidateRequest),
     /// An explicit client-to-server Get Constraints request.
     GetConstraints(GetConstraintsRequest),
     /// An explicit client-to-server Set Constraints request.
@@ -327,6 +330,10 @@ impl ClientRequest {
     pub fn log(request: LogRequest) -> Self {
         Self::Log(request)
     }
+
+    /// Selects one explicit typed Validate request.
+    #[must_use]
+    pub fn validate(request: ValidateRequest) -> Self { Self::Validate(request) }
 
     /// Creates an empty client-to-server Get Constraints request.
     #[must_use]
@@ -608,6 +615,7 @@ impl ClientRequest {
             Self::Ping(_) => PING_OPERATION,
             Self::Interop(_) => INTEROP_OPERATION,
             Self::Log(_) => LOG_OPERATION,
+            Self::Validate(_) => VALIDATE_OPERATION,
             Self::GetConstraints(_) => GET_CONSTRAINTS_OPERATION,
             Self::SetConstraints(_) => SET_CONSTRAINTS_OPERATION,
             Self::SetDefaults(_) => SET_DEFAULTS_OPERATION,
@@ -715,6 +723,7 @@ impl ClientRequest {
             Self::Ping(request) => request.to_ttlv_payload(),
             Self::Interop(request) => request.into_ttlv_payload(),
             Self::Log(request) => request.into_ttlv_payload(),
+            Self::Validate(request) => request.into_ttlv_payload(),
             Self::GetConstraints(request) => request.to_ttlv_payload(),
             Self::SetConstraints(request) => request.to_ttlv_payload(),
             Self::SetDefaults(request) => request.to_ttlv_payload(),
@@ -786,6 +795,7 @@ impl fmt::Debug for ClientRequest {
             Self::Ping(_) => formatter.write_str("Ping"),
             Self::Interop(request) => formatter.debug_tuple("Interop").field(request).finish(),
             Self::Log(request) => formatter.debug_tuple("Log").field(request).finish(),
+            Self::Validate(request) => formatter.debug_tuple("Validate").field(request).finish(),
             Self::GetConstraints(_) => formatter.write_str("GetConstraints"),
             Self::SetConstraints(request) => formatter
                 .debug_tuple("SetConstraints")
@@ -1111,6 +1121,7 @@ enum PendingResponse {
     Ping(PingResponse),
     Interop(InteropResponse),
     Log(LogResponse),
+    Validate(ValidateResponse),
     GetConstraints(GetConstraintsResponse),
     SetConstraints(SetConstraintsResponse),
     SetDefaults(SetDefaultsResponse),
@@ -1164,6 +1175,7 @@ impl PendingResponse {
             Self::Ping(response) => ClientResponseRef::Ping(response),
             Self::Interop(response) => ClientResponseRef::Interop(response),
             Self::Log(response) => ClientResponseRef::Log(response),
+            Self::Validate(response) => ClientResponseRef::Validate(response),
             Self::GetConstraints(response) => ClientResponseRef::GetConstraints(response),
             Self::SetConstraints(response) => ClientResponseRef::SetConstraints(response),
             Self::SetDefaults(response) => ClientResponseRef::SetDefaults(response),
@@ -1393,6 +1405,8 @@ pub enum ClientOperation {
     Interop,
     /// Log a caller-selected message on the server.
     Log,
+    /// Validate one supplied certificate chain on the server.
+    Validate,
     /// Read the server's Constraints Structure.
     GetConstraints,
     /// Configure the server's Constraints Structure.
@@ -1591,6 +1605,7 @@ enum ClientResponseRef<'a> {
     Ping(&'a PingResponse),
     Interop(&'a InteropResponse),
     Log(&'a LogResponse),
+    Validate(&'a ValidateResponse),
     GetConstraints(&'a GetConstraintsResponse),
     SetConstraints(&'a SetConstraintsResponse),
     SetDefaults(&'a SetDefaultsResponse),
@@ -1661,6 +1676,7 @@ impl<'a> ClientResponseView<'a> {
             ClientResponseRef::Ping(response) => response.result(),
             ClientResponseRef::Interop(response) => response.result(),
             ClientResponseRef::Log(response) => response.result(),
+            ClientResponseRef::Validate(response) => response.result(),
             ClientResponseRef::GetConstraints(response) => response.result(),
             ClientResponseRef::SetConstraints(response) => response.result(),
             ClientResponseRef::SetDefaults(response) => response.result(),
@@ -2060,6 +2076,15 @@ impl<'a> ClientResponseView<'a> {
         }
     }
 
+    /// Returns an Validate response, including a Pending result.
+    #[must_use]
+    pub const fn validate(&self) -> Option<&ValidateResponse> {
+        match self.response {
+            ClientResponseRef::Validate(response) => Some(response),
+            _ => None,
+        }
+    }
+
     /// Returns the Ping response when this view represents it.
     #[must_use]
     pub const fn ping(&self) -> Option<&PingResponse> {
@@ -2226,6 +2251,7 @@ impl fmt::Debug for ClientResponseView<'_> {
             ClientResponseRef::Ping(response) => debug_response(formatter, "Ping", response),
             ClientResponseRef::Interop(response) => debug_response(formatter, "Interop", response),
             ClientResponseRef::Log(response) => debug_response(formatter, "Log", response),
+            ClientResponseRef::Validate(response) => debug_response(formatter, "Validate", response),
             ClientResponseRef::GetConstraints(response) => {
                 debug_response(formatter, "GetConstraints", response)
             }
@@ -2332,6 +2358,7 @@ pub enum ClientBatchOutcome {
     Ping(PingResponse),
     Interop(InteropResponse),
     Log(LogResponse),
+    Validate(ValidateResponse),
     /// The server returned a Get Constraints result.
     GetConstraints(GetConstraintsResponse),
     /// The server returned a Set Constraints result.
@@ -2392,6 +2419,7 @@ impl ClientBatchOutcome {
             | Self::Ping(_)
             | Self::Interop(_)
             | Self::Log(_)
+            | Self::Validate(_)
             | Self::GetConstraints(_)
             | Self::SetConstraints(_)
             | Self::SetDefaults(_)
@@ -2448,6 +2476,7 @@ impl ClientBatchOutcome {
             Self::Ping(response) => response.result(),
             Self::Interop(response) => response.result(),
             Self::Log(response) => response.result(),
+            Self::Validate(response) => response.result(),
             Self::GetConstraints(response) => response.result(),
             Self::SetConstraints(response) => response.result(),
             Self::SetDefaults(response) => response.result(),
@@ -2504,6 +2533,7 @@ impl ClientBatchOutcome {
             Self::Ping(_) => ClientOperation::Ping,
             Self::Interop(_) => ClientOperation::Interop,
             Self::Log(_) => ClientOperation::Log,
+            Self::Validate(_) => ClientOperation::Validate,
             Self::GetConstraints(_) => ClientOperation::GetConstraints,
             Self::SetConstraints(_) => ClientOperation::SetConstraints,
             Self::SetDefaults(_) => ClientOperation::SetDefaults,
@@ -3021,6 +3051,7 @@ impl ClientBatchOutcome {
                 ClientResponseView::new(ClientResponseRef::Interop(response))
             }
             Self::Log(response) => ClientResponseView::new(ClientResponseRef::Log(response)),
+            Self::Validate(response) => ClientResponseView::new(ClientResponseRef::Validate(response)),
             Self::GetConstraints(response) => {
                 ClientResponseView::new(ClientResponseRef::GetConstraints(response))
             }
@@ -3150,6 +3181,7 @@ impl fmt::Debug for ClientBatchOutcome {
             Self::Ping(response) => formatter.debug_tuple("Ping").field(response).finish(),
             Self::Interop(response) => formatter.debug_tuple("Interop").field(response).finish(),
             Self::Log(response) => formatter.debug_tuple("Log").field(response).finish(),
+            Self::Validate(response) => formatter.debug_tuple("Validate").field(response).finish(),
             Self::GetConstraints(response) => formatter
                 .debug_tuple("GetConstraints")
                 .field(response)
@@ -3256,6 +3288,7 @@ impl fmt::Display for ClientBatchOutcome {
             Self::Ping(response) => write!(formatter, "Ping({})", response.result()),
             Self::Interop(response) => write!(formatter, "Interop({})", response.result()),
             Self::Log(response) => write!(formatter, "Log({})", response.result()),
+            Self::Validate(response) => write!(formatter, "Validate({})", response.result()),
             Self::GetConstraints(response) => {
                 write!(formatter, "GetConstraints({})", response.result())
             }
@@ -4302,6 +4335,19 @@ impl Client {
             limits,
             &RequestOptions::default(),
         )
+    }
+
+    /// Executes one certificate-chain Validate request with one exchange.
+    ///
+    /// The server selects trust and validation policy. Use an explicit
+    /// asynchronous batch to accept Pending; this call does not poll or retry.
+    ///
+    /// # Errors
+    ///
+    /// Returns a sanitized error with request-delivery evidence.
+    pub fn validate(&mut self, request: ValidateRequest, limits: &CodecLimits) -> Result<ClientBatchItemResponse, ClientError> {
+        let response = self.execute(ClientBatch::new(ClientBatchItem::new(ClientRequest::Validate(request))), limits)?;
+        take_single_item_response(response.items)
     }
 
     /// Executes one explicitly selected Log request with one exchange.
@@ -5475,6 +5521,7 @@ fn request_mutation_is_prohibited(request: &ClientRequest) -> bool {
         | ClientRequest::Ping(_)
         | ClientRequest::Interop(_)
         | ClientRequest::Log(_)
+        | ClientRequest::Validate(_)
         | ClientRequest::GetConstraints(_)
         | ClientRequest::SetConstraints(_)
         | ClientRequest::SetDefaults(_)
@@ -6146,6 +6193,14 @@ fn response_outcome(
             LogResponse::result,
             PendingResponse::Log,
             ClientBatchOutcome::Log,
+        ),
+        VALIDATE_OPERATION => read_operation_outcome(
+            ClientOperation::Validate,
+            item,
+            ValidateResponse::try_from_response_item,
+            ValidateResponse::result,
+            PendingResponse::Validate,
+            ClientBatchOutcome::Validate,
         ),
         GET_CONSTRAINTS_OPERATION => get_constraints_response_outcome(item),
         SET_CONSTRAINTS_OPERATION => set_constraints_response_outcome(item),
