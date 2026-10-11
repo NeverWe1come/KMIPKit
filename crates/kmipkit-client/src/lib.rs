@@ -271,3 +271,7 @@ pub use execute::{
     ClientRequest, ClientResponseView, PendingOutcome,
 };
 pub use kmipkit_transport::RequestOptions;
+
+#[cfg(test)]
+#[path = "../tests/unit/pkcs11_execution_tests.rs"]
+mod pkcs11_execution_tests;
