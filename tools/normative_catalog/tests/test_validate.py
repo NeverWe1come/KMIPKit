@@ -7280,8 +7280,12 @@ class CatalogValidationTests(unittest.TestCase):
         catalog = json.loads((ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8"))
         discrepancy = next(row for row in catalog["discrepancies"] if row["discrepancy_id"] == "KMIPKIT-DISC-020")
         decision = next(row for row in catalog["decisions"] if row["decision_id"] == "KMIPKIT-DEC-006")
+        constraints_element = next(row for row in catalog["elements"]
+                                  if row["element_id"] == "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-7-CONSTRAINTS")
         error_clause = next(row for row in catalog["source_clauses"]
                             if row["clause_id"] == "KMIPKIT-CLAUSE-SPEC-6.1.52.1-001")
+        self.assertEqual(constraints_element["kind"], "operation_structure")
+        self.assertEqual(constraints_element["source_requiredness"], "YES")
         self.assertEqual(discrepancy["state"], "resolved_by_approved_decision")
         self.assertEqual(discrepancy["decision_id"], "KMIPKIT-DEC-006")
         self.assertEqual(decision["status"], "accepted")
@@ -7305,7 +7309,7 @@ class CatalogValidationTests(unittest.TestCase):
 
         for caption, line_range in (("Table 325: Set Constraints Request Payload", [35870, 35871]),
                                     ("Table 326: Set Constraints Response Payload", [35922, 35923]),
-                                    ("Table 327", [35968, 35968])):
+                                    ("Table 327", [35973, 35974])):
             self.assertIn(caption, pinned_source_excerpt(source_path, line_range))
 
     def test_spec_6_1_45_recertify_reviews_client_inputs_and_server_effects(self) -> None:
@@ -12769,6 +12773,7 @@ class CatalogValidationTests(unittest.TestCase):
                 "KMIPKIT-REQ-SPEC-6.1.50-004",
                 "KMIPKIT-REQ-SPEC-6.1.51-002",
                 "KMIPKIT-REQ-SPEC-6.1.51-003",
+                "KMIPKIT-REQ-SPEC-6.1.52-001",
             }
             expected_scope = (
                 "client_1_0"

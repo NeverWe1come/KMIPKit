@@ -81,10 +81,10 @@
     "common_baseline_unavailable_fixtures": 16,
     "profile_test_associations": 365,
     "distinct_profile_test_case_ids": 93,
-    "source_requirement_review_records": 609,
+    "source_requirement_review_records": 613,
     "direct_root_exclusion_records": 4,
-    "source_only_requirement_gaps": 157,
-    "source_only_requirement_gap_proposals": 127,
+    "source_only_requirement_gaps": 158,
+    "source_only_requirement_gap_proposals": 128,
     "profile_unlabeled_source_rows": 22
   },
   "source_clause_crosswalk": [
@@ -65475,6 +65475,132 @@
       "source_keywords": [
         "REQUIRED"
       ]
+    },
+    {
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+      "source_section": "6.1.52",
+      "source_clause_id": "KMIPKIT-CLAUSE-SPEC-6.1.52-001",
+      "source_locator": {
+        "ordinal": 1,
+        "block_kind": "table_row"
+      },
+      "html_line_range": [
+        35830,
+        35848
+      ],
+      "source_excerpt": "Item REQUIRED Description",
+      "source_obligations": [],
+      "rejected_candidate_mappings": [],
+      "expected_client_requirement_ids": [],
+      "applies_to": "all_client_profiles",
+      "review_note": "The extracted source candidate is the Table 325 Request Payload header, not a standalone obligation. The body row requires the client to send the Constraints structure; it is recorded as a source-only gap because §7.7 provides no operation-specific stable label.",
+      "source_keywords": [
+        "REQUIRED"
+      ],
+      "source_context": "Constraints Yes The set of Constraints to apply during operations. Table 325: Set Constraints Request Payload",
+      "source_request_rows": [
+        {
+          "row_label": "Constraints",
+          "required": "Yes",
+          "actor": "client",
+          "disposition": "required_request_field_with_source_only_proposal",
+          "html_line_range": [
+            35849,
+            35864
+          ],
+          "source_excerpt": "Constraints Yes The set of Constraints to apply during operations.",
+          "source_gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.52-CONSTRAINTS-REQUIRED",
+          "source_requirement_ids": [],
+          "source_element_id": "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-7-CONSTRAINTS",
+          "source_note": "Table 325 requires the client request to contain the Constraints structure. The generic §7.7 structure is identified, but this operation-specific Required=Yes row has no stable requirement label."
+        }
+      ]
+    },
+    {
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+      "source_section": "6.1.52",
+      "source_clause_id": "KMIPKIT-CLAUSE-SPEC-6.1.52-002",
+      "source_locator": {
+        "ordinal": 2,
+        "block_kind": "table_row"
+      },
+      "html_line_range": [
+        35884,
+        35902
+      ],
+      "source_excerpt": "Item REQUIRED Description",
+      "source_obligations": [],
+      "rejected_candidate_mappings": [],
+      "expected_client_requirement_ids": [],
+      "applies_to": "all_client_profiles",
+      "review_note": "The extracted source candidate is the Table 326 Response Payload header. The table has no operation-specific response fields; this does not remove the common KMIP Response Message structure.",
+      "source_keywords": [
+        "REQUIRED"
+      ],
+      "source_context": "Table 326: Set Constraints Response Payload",
+      "source_payload_rows": []
+    },
+    {
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+      "source_section": "6.1.52.1",
+      "source_clause_id": "KMIPKIT-CLAUSE-SPEC-6.1.52.1-001",
+      "source_locator": {
+        "ordinal": 1,
+        "block_kind": "paragraph"
+      },
+      "html_line_range": [
+        35927,
+        35928
+      ],
+      "source_excerpt": "This section details the specific Result Reasons that SHALL be returned for errors detected in a Set",
+      "source_obligations": [
+        {
+          "source_order": 1,
+          "source_text": "This section details the specific Result Reasons that SHALL be returned for errors detected in a Set",
+          "source_keyword": "SHALL",
+          "actor": "server",
+          "direction": "server_to_client",
+          "condition": "Errors are detected during Set Constraints.",
+          "scope_disposition": "server_only",
+          "candidate_requirement_id": null
+        }
+      ],
+      "rejected_candidate_mappings": [],
+      "expected_client_requirement_ids": [],
+      "applies_to": "all_client_profiles",
+      "review_note": "The following paragraph at lines 35929–35930 continues the printed sentence as “Constraints Operation.” Accepted KMIPKIT-DEC-006 associates the error introduction with Set Constraints. The SHALL is a server response obligation; it does not create a client requirement ID.",
+      "source_keywords": [
+        "SHALL"
+      ],
+      "source_context": "This section details the specific Result Reasons that SHALL be returned for errors detected in a Set Constraints Operation.",
+      "review_decision_id": "KMIPKIT-DEC-006"
+    },
+    {
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+      "source_section": "6.1.52.1",
+      "source_clause_id": "KMIPKIT-CLAUSE-SPEC-6.1.52.1-002",
+      "source_locator": {
+        "ordinal": 2,
+        "block_kind": "table_row"
+      },
+      "html_line_range": [
+        35950,
+        35966
+      ],
+      "source_excerpt": "Operation Failed Invalid Field, Invalid Object Type, Attestation Failed, Attestation Required, Feature Not Supported, Invalid Field, Invalid Message, Operation Not Supported, Permission Denied, Response Too Large",
+      "source_obligations": [],
+      "rejected_candidate_mappings": [],
+      "expected_client_requirement_ids": [],
+      "applies_to": "all_client_profiles",
+      "review_note": "Table 327 is the Set Constraints error list under accepted KMIPKIT-DEC-006. Preserve both occurrences of Invalid Field in the source evidence. “Attestation Required” is an enum value and the extracted case-insensitive REQUIRED token is not a separate normative obligation.",
+      "source_keywords": [
+        "REQUIRED"
+      ],
+      "source_context": "Table 327: Set Constraints Errors"
     }
   ],
   "source_only_requirement_gaps": [
@@ -70327,6 +70453,39 @@
       "proposed_requirement_id": "KMIPKIT-REQ-SPEC-6.1.51-002",
       "status": "stable_label_proposed_not_in_catalog",
       "review_note": "Table 322 Required=Yes is a client request body-row obligation without an operation-specific catalog label; preserve as a source-only proposal."
+    },
+    {
+      "gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.52-CONSTRAINTS-REQUIRED",
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+      "source_section": "6.1.52",
+      "source_clause_id": null,
+      "source_locator": {
+        "kind": "table_body_row",
+        "section": "6.1.52",
+        "row_label": "Constraints",
+        "html_line_range": [
+          35849,
+          35864
+        ]
+      },
+      "source_locator_description": "Section 6.1.52 Table 325 Required-column body row for Constraints (HTML lines 35849-35864)",
+      "html_line_range": [
+        35849,
+        35864
+      ],
+      "source_excerpt": "Constraints Yes The set of Constraints to apply during operations.",
+      "source_keywords": [],
+      "source_force": "required_table_body_value",
+      "actor": "client",
+      "direction": "client_to_server",
+      "condition": "Sending a Set Constraints request.",
+      "scope_disposition": "client_1_0",
+      "candidate_requirement_id": null,
+      "proposed_requirement_id": "KMIPKIT-REQ-SPEC-6.1.52-001",
+      "status": "stable_label_proposed_not_in_catalog",
+      "review_note": "Table 325 marks the Constraints request field Required=Yes and describes its operation payload. The generic §7.7 Constraints structure exists, but its MAY requirement for repeated Constraint structures does not cover the operation-specific required field. No catalog ID is fabricated.",
+      "audited_statement": "Table 325 marks the client request Constraints field Required=Yes."
     }
   ]
 }

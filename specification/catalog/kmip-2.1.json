@@ -23167,13 +23167,13 @@
       "source_keywords": [
         "SHALL"
       ],
-      "disposition": "source_discrepancy",
+      "disposition": "server_only",
       "requirement_ids": [],
-      "exclusion_rationale": "Error introduction ends after Set; exact operation is unresolved.",
-      "role": "unclear",
-      "direction": "unclear",
-      "scope_state": "unclear",
-      "condition": null
+      "exclusion_rationale": "Accepted KMIPKIT-DEC-006 applies the immediately following continuation paragraph and associates these error reasons with Set Constraints.",
+      "role": "server",
+      "direction": "server_to_client",
+      "scope_state": "server_only",
+      "condition": "Errors are detected during Set Constraints."
     },
     {
       "clause_id": "KMIPKIT-CLAUSE-SPEC-6.1.52.1-002",
