@@ -1,6 +1,10 @@
 //! KMIP 2.1 protocol models and validation for `KMIPKit`.
 #![forbid(unsafe_code)]
 
+#[cfg(test)]
+#[path = "../tests/unit/interop_operation_tests.rs"]
+mod interop_operation_tests;
+
 mod attribute_policy {
     include!("generated/attribute_policy.rs");
 }
