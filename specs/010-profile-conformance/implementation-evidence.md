@@ -345,3 +345,14 @@ Independent pinned-source audit verified all 13 locator spans and normative atom
 The existing requirement summary for `KMIPKIT-REQ-SPEC-6.1.43-001` mentions an Attributes object, while Table 291 lists Object Type and Attributes as separate required rows. This tranche preserves those separate source rows and does not invent a catalog change to resolve the summary wording. The server-only Register Result Reasons and internal state updates create no client crosswalks.
 
 CI run 38151028376 at the preceding head failed the known global Script contracts closure checks (317 unmapped requirement IDs, 64 source/catalog provenance mismatches, and 964 profile/source mapping violations). Its Windows stable workspace test also hit a platform-sensitive DNS fixture concurrency assertion in untouched test-support code; that test passed in the previous run. The global closure remains a merge blocker. No pinned upstream source changed.
+
+### T003/T004 — §6.1.44 Revoke source review (2026-10-11, in progress)
+
+| Phase | Command | Result |
+|---|---|---|
+| Red — Revoke locator, actor, field, and Result Reason evidence | `python -B -m unittest tools.normative_catalog.tests.test_validate.CatalogValidationTests.test_spec_6_1_44_revoke_reviews_client_input_and_server_effects -v` | Expected Red in the test-first commit: all six pinned locators in §§6.1.44/.1 lack source-review rows. |
+| Red — required-row proposal inventory | `python -B -m unittest tools.normative_catalog.tests.test_validate.CatalogValidationTests.test_source_only_gap_proposals_are_auditable_and_do_not_collide_with_catalog_ids -v` | Expected Red with the pre-Green fixture: the newly asserted Required=Yes Revocation Reason proposal `KMIPKIT-REQ-SPEC-6.1.44-004` was absent from the source-only proposal inventory. |
+
+Independent pinned-source review confirms Specification v2.1 HTML SHA-256 `8bf9d914c097e98a6509aa1ffcbf03406f738066e940597aee93d0a5e07addcf`, request Table 295, response Table 296, and errors Table 297. The request requires Revocation Reason; Unique Identifier is optional and may reuse the generic ID Placeholder rule only for eligible subsequent batch requests. The client SHOULD supply Compromise Occurrence Date for key or CA compromise and SHALL NOT supply it for other reasons. The prose SHOULD to default a missing Compromise Occurrence Date to Initial Date is server-side. The Result Reason list contains `Invalid Field` twice; no individual error-to-reason mapping is inferred.
+
+The active catalog maps `KMIPKIT-REQ-SPEC-6.1.44-001` as a client SHOULD, but the cited prose atom describes server-side date defaulting; the separate client table obligations are already represented by `...-003-001` and `...-003-002`. This review preserves the source actor, records the discrepancy without changing catalog data, and proposes a source-only traceability label for the Required=Yes Revocation Reason request row. No pinned upstream file changed.

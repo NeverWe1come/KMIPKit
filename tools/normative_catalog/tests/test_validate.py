@@ -6148,6 +6148,157 @@ class CatalogValidationTests(unittest.TestCase):
         )
         self.assertEqual(oracle["oracle_status"], "partial-source-reviewed; not complete T003 oracle")
 
+    def test_spec_6_1_44_revoke_reviews_client_input_and_server_effects(self) -> None:
+        """Specification v2.1 §§6.1.44 and 6.1.44.1 preserve Revoke source roles."""
+        fixture_path = ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json"
+        oracle = json.loads(fixture_path.read_text(encoding="utf-8"))
+        source_path = "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
+        source_bytes = (ROOT / source_path).read_bytes()
+        self.assertEqual(
+            hashlib.sha256(source_bytes).hexdigest(),
+            "8bf9d914c097e98a6509aa1ffcbf03406f738066e940597aee93d0a5e07addcf",
+        )
+        pinned_locators = audit_document_with_text(source_bytes, "KMIPKIT-SRC-spec")
+        revoke_locators = [row for row in pinned_locators if row["section"] in ("6.1.44", "6.1.44.1")]
+        expected_locators = {
+            "KMIPKIT-CLAUSE-SPEC-6.1.44-001": ("6.1.44", 1, "paragraph", ["SHOULD"], [33132, 33144]),
+            "KMIPKIT-CLAUSE-SPEC-6.1.44-002": ("6.1.44", 2, "table_row", ["REQUIRED"], [33158, 33175]),
+            "KMIPKIT-CLAUSE-SPEC-6.1.44-003": ("6.1.44", 3, "table_row", ["SHOULD", "SHALL NOT"], [33216, 33231]),
+            "KMIPKIT-CLAUSE-SPEC-6.1.44-004": ("6.1.44", 4, "table_row", ["REQUIRED"], [33253, 33270]),
+            "KMIPKIT-CLAUSE-SPEC-6.1.44.1-001": ("6.1.44.1", 1, "paragraph", ["SHALL"], [33300, 33301]),
+            "KMIPKIT-CLAUSE-SPEC-6.1.44.1-002": ("6.1.44.1", 2, "table_row", ["REQUIRED"], [33324, 33335]),
+        }
+        self.assertEqual({row["clause_id"] for row in revoke_locators}, set(expected_locators))
+        reviews = {
+            row["source_clause_id"]: row
+            for row in oracle["source_requirement_reviews"]
+            if row["source_section"] in ("6.1.44", "6.1.44.1")
+        }
+        self.assertEqual(set(reviews), set(expected_locators))
+        for clause_id, (section, ordinal, block_kind, keywords, line_range) in expected_locators.items():
+            review = reviews[clause_id]
+            self.assertEqual(review["source_section"], section)
+            self.assertEqual(review["source_locator"], {"ordinal": ordinal, "block_kind": block_kind})
+            self.assertEqual(review["html_line_range"], line_range)
+            self.assertEqual(review["source_excerpt"], pinned_source_excerpt(source_path, line_range))
+            pinned = next(row for row in revoke_locators if row["clause_id"] == clause_id)
+            self.assertEqual(review["source_excerpt"], pinned["source_text"])
+            self.assertEqual(pinned["source_keywords"], keywords)
+
+        paragraph = reviews["KMIPKIT-CLAUSE-SPEC-6.1.44-001"]
+        paragraph_atoms = paragraph["source_obligations"]
+        self.assertEqual(
+            [(atom["source_order"], atom["source_keyword"], atom["source_text"], atom["actor"], atom["direction"], atom["scope_disposition"], atom["candidate_requirement_id"])
+             for atom in paragraph_atoms],
+            [(1, "SHOULD", "if a value is not provided in the Revoke request then Compromise Occurrence Date SHOULD be set to the Initial Date for the object.",
+              "server", "set Compromise Occurrence Date to Initial Date on the object when the request omits it", "server_only", None)],
+        )
+        self.assertEqual(paragraph["expected_client_requirement_ids"], [])
+        self.assertIn("catalog", paragraph["review_note"].lower())
+
+        date_row = reviews["KMIPKIT-CLAUSE-SPEC-6.1.44-003"]
+        self.assertEqual(
+            [(atom["source_order"], atom["source_keyword"], atom["source_text"], atom["actor"], atom["direction"], atom["scope_disposition"], atom["candidate_requirement_id"])
+             for atom in date_row["source_obligations"]],
+            [
+                (1, "SHOULD", "SHOULD be specified if the Revocation Reason is 'key compromise' or ‘CA compromise’",
+                 "client", "include Compromise Occurrence Date in Revoke request", "client_1_0", "KMIPKIT-REQ-SPEC-6.1.44-003-001"),
+                (2, "SHALL NOT", "SHALL NOT be specified for other Revocation Reason enumerations",
+                 "client", "omit Compromise Occurrence Date from Revoke request for other reasons", "client_1_0", "KMIPKIT-REQ-SPEC-6.1.44-003-002"),
+            ],
+        )
+        self.assertEqual(
+            date_row["expected_client_requirement_ids"],
+            ["KMIPKIT-REQ-SPEC-6.1.44-003-001", "KMIPKIT-REQ-SPEC-6.1.44-003-002"],
+        )
+
+        for clause_id in (
+            "KMIPKIT-CLAUSE-SPEC-6.1.44-002",
+            "KMIPKIT-CLAUSE-SPEC-6.1.44-004",
+        ):
+            self.assertEqual(reviews[clause_id]["source_obligations"], [])
+            self.assertIn("column heading", reviews[clause_id]["review_note"].lower())
+        self.assertEqual(reviews["KMIPKIT-CLAUSE-SPEC-6.1.44.1-002"]["source_obligations"], [])
+        self.assertIn("enum", reviews["KMIPKIT-CLAUSE-SPEC-6.1.44.1-002"]["review_note"].lower())
+        error_review = reviews["KMIPKIT-CLAUSE-SPEC-6.1.44.1-001"]
+        self.assertEqual(
+            [(atom["source_order"], atom["source_keyword"], atom["source_text"], atom["actor"], atom["direction"], atom["scope_disposition"], atom["candidate_requirement_id"])
+             for atom in error_review["source_obligations"]],
+            [(1, "SHALL", "This section details the specific Result Reasons that SHALL be returned for errors detected in a Revoke Operation.",
+              "server", "server→client error response", "server_only", None)],
+        )
+        self.assertEqual(error_review["expected_client_requirement_ids"], [])
+
+        request_rows = reviews["KMIPKIT-CLAUSE-SPEC-6.1.44-002"]["source_request_rows"]
+        self.assertEqual(
+            [(row["row_label"], row["required"], row["html_line_range"], row["source_requirement_ids"], row["source_gap_id"])
+             for row in request_rows],
+            [
+                ("Unique Identifier", "No", [33179, 33192], ["KMIPKIT-REQ-SPEC-6.1-003-002"], None),
+                ("Revocation Reason", "Yes", [33198, 33210], [], "KMIPKIT-SOURCE-GAP-SPEC-6.1.44-REVOCATION-REASON-REQUIRED"),
+                ("Compromise Occurrence Date", "No", [33216, 33231],
+                 ["KMIPKIT-REQ-SPEC-6.1.44-003-001", "KMIPKIT-REQ-SPEC-6.1.44-003-002"], None),
+            ],
+        )
+        for row in request_rows:
+            self.assertEqual(row["actor"], "client")
+            self.assertEqual(row["source_excerpt"], pinned_source_excerpt(source_path, row["html_line_range"]))
+        identifier_row = request_rows[0]
+        self.assertEqual(identifier_row["disposition"], "optional_request_field_with_existing_conditional_capability")
+        self.assertEqual(identifier_row["reused_requirement_id"], "KMIPKIT-REQ-SPEC-6.1-003-002")
+        self.assertIn("subsequent", identifier_row["reuse_condition"])
+        self.assertIn("ID Placeholder", identifier_row["source_note"])
+        reason_row = request_rows[1]
+        self.assertEqual(reason_row["disposition"], "required_request_field_with_source_only_proposal")
+        self.assertEqual(reason_row["source_gap_id"], "KMIPKIT-SOURCE-GAP-SPEC-6.1.44-REVOCATION-REASON-REQUIRED")
+
+        self.assertEqual(
+            reviews["KMIPKIT-CLAUSE-SPEC-6.1.44-004"]["source_payload_rows"],
+            [{
+                "row_label": "Unique Identifier", "required": "Yes", "actor": "server",
+                "disposition": "response_payload_data", "html_line_range": [33273, 33289],
+                "source_excerpt": pinned_source_excerpt(source_path, [33273, 33289]),
+            }],
+        )
+        error_text = reviews["KMIPKIT-CLAUSE-SPEC-6.1.44.1-002"]["source_excerpt"]
+        self.assertEqual(
+            error_text.split("Operation Failed ", 1)[1].split(", "),
+            ["Invalid Field", "Invalid Object Type", "Object Not Found", "Wrong Key Lifecycle State", "Attestation Failed", "Attestation Required", "Feature Not Supported", "Invalid Field", "Invalid Message", "Operation Not Supported", "Permission Denied", "Response Too Large"],
+        )
+
+        revocation_reason_gap = next(
+            row for row in oracle["source_only_requirement_gaps"]
+            if row["gap_id"] == "KMIPKIT-SOURCE-GAP-SPEC-6.1.44-REVOCATION-REASON-REQUIRED"
+        )
+        self.assertEqual(revocation_reason_gap["html_line_range"], [33198, 33210])
+        self.assertEqual(revocation_reason_gap["source_excerpt"], pinned_source_excerpt(source_path, [33198, 33210]))
+        self.assertEqual(revocation_reason_gap["source_force"], "required_table_body_value")
+        self.assertEqual(revocation_reason_gap["actor"], "client")
+        self.assertEqual(revocation_reason_gap["candidate_requirement_id"], None)
+        self.assertEqual(revocation_reason_gap["proposed_requirement_id"], "KMIPKIT-REQ-SPEC-6.1.44-004")
+        self.assertEqual(revocation_reason_gap["status"], "stable_label_proposed_not_in_catalog")
+
+        captions = [
+            ([33238, 33239], "Table 295: Revoke Request Payload"),
+            ([33293, 33294], "Table 296: Revoke Response Payload"),
+            ([33340, 33340], "Table 297: Revoke Errors"),
+        ]
+        for line_range, caption in captions:
+            self.assertIn(caption, pinned_source_excerpt(source_path, line_range))
+
+        self.assertEqual(
+            {
+                (row["requirement_id"], row["source_obligation_order"])
+                for row in oracle["requirement_crosswalk"]
+                if row["requirement_id"].startswith("KMIPKIT-REQ-SPEC-6.1.44-")
+            },
+            {
+                ("KMIPKIT-REQ-SPEC-6.1.44-003-001", 1),
+                ("KMIPKIT-REQ-SPEC-6.1.44-003-002", 2),
+            },
+        )
+        self.assertEqual(oracle["oracle_status"], "partial-source-reviewed; not complete T003 oracle")
+
     def test_spec_6_1_43_register_reviews_client_fields_and_server_results(self) -> None:
         """Specification v2.1 §§6.1.43 and 6.1.43.1 preserve Register source boundaries."""
         fixture_path = ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json"
@@ -11197,6 +11348,7 @@ class CatalogValidationTests(unittest.TestCase):
             "KMIPKIT-REQ-SPEC-6.1.27-006",
             "KMIPKIT-REQ-SPEC-6.1.31-001",
             "KMIPKIT-REQ-SPEC-6.1.29-003",
+            "KMIPKIT-REQ-SPEC-6.1.44-004",
         }
         conditional_body_proposals = {
             "KMIPKIT-REQ-SPEC-6.1.24-002",
@@ -11259,6 +11411,7 @@ class CatalogValidationTests(unittest.TestCase):
             "KMIPKIT-REQ-SPEC-6.1.41-005",
             "KMIPKIT-REQ-SPEC-6.1.41-006",
             "KMIPKIT-REQ-SPEC-6.1.43-012",
+            "KMIPKIT-REQ-SPEC-6.1.44-004",
             "KMIPKIT-REQ-SPEC-6.1.14-009",
             "KMIPKIT-REQ-SPEC-6.1.14-010",
             "KMIPKIT-REQ-SPEC-6.1.14-011",
@@ -11346,6 +11499,7 @@ class CatalogValidationTests(unittest.TestCase):
                 "KMIPKIT-REQ-SPEC-6.1.34-005",
                 "KMIPKIT-REQ-SPEC-6.1.37-001",
                 "KMIPKIT-REQ-SPEC-6.1.39-001",
+                "KMIPKIT-REQ-SPEC-6.1.44-004",
             }
             expected_scope = (
                 "client_1_0"
