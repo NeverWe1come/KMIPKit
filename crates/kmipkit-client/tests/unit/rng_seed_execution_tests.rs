@@ -2,7 +2,9 @@
 //! §6.1.50, Tables 319–321. These tests are source-derived, not official
 //! Test Case passes.
 //!
-//! Traceability: KMIPKIT-0041 FR-001–FR-008, SC-002–SC-004;
+//! Traceability: KMIPKIT-0041 FR-001–FR-008, SC-002–SC-003. This is Rust-only
+//! fake-transport evidence; it does not establish cross-language parity or
+//! two-server interoperability.
 //! `KMIPKIT-ELEM-OP-C2S-RNG-SEED`,
 //! `KMIPKIT-ELEM-ENUM-VALUE-OPERATION-RNG-SEED-00000026`,
 //! `KMIPKIT-ELEM-OPERATION-STRUCTURE-7-9-DATA`,
