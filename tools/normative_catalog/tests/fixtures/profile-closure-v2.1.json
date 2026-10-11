@@ -75,7 +75,7 @@
     "profiles": 18,
     "specification_clause_records": 877,
     "profiles_clause_records": 534,
-    "requirement_crosswalk_records": 227,
+    "requirement_crosswalk_records": 229,
     "requirement_crosswalk_complete": false,
     "common_baseline_official_cases": 16,
     "common_baseline_unavailable_fixtures": 16,
@@ -21046,6 +21046,40 @@
       "review_note": "Specification v2.1 section 6.1.48; client obligation mapped from source obligation 1.",
       "source_obligation_order": 1,
       "source_actor": "client"
+    },
+    {
+      "requirement_id": "KMIPKIT-REQ-SPEC-6.1.50-002",
+      "source_clause_id": "KMIPKIT-CLAUSE-SPEC-6.1.50-001",
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_section": "6.1.50",
+      "source_locator": {
+        "ordinal": 1,
+        "block_kind": "paragraph"
+      },
+      "source_keyword": "MAY",
+      "role": "server",
+      "scope_state": "server_only",
+      "applies_to": "all_client_profiles",
+      "review_note": "Specification v2.1 section 6.1.50; server-only capability mapped from source obligation 1: Server may ignore supplied seed material.",
+      "source_obligation_order": 1,
+      "source_actor": "server"
+    },
+    {
+      "requirement_id": "KMIPKIT-REQ-SPEC-6.1.50-003",
+      "source_clause_id": "KMIPKIT-CLAUSE-SPEC-6.1.50-001",
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_section": "6.1.50",
+      "source_locator": {
+        "ordinal": 1,
+        "block_kind": "paragraph"
+      },
+      "source_keyword": "MAY",
+      "role": "server",
+      "scope_state": "server_only",
+      "applies_to": "all_client_profiles",
+      "review_note": "Specification v2.1 section 6.1.50; server-only capability mapped from source obligation 2: Server may indicate ignored seed material with zero Data Length.",
+      "source_obligation_order": 2,
+      "source_actor": "server"
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.50-001",
@@ -65067,7 +65101,7 @@
           "direction": "ignore supplied seed material",
           "condition": "A client provides RNG Seed material.",
           "scope_disposition": "server_only",
-          "candidate_requirement_id": null
+          "candidate_requirement_id": "KMIPKIT-REQ-SPEC-6.1.50-002"
         },
         {
           "source_order": 2,
@@ -65077,7 +65111,7 @@
           "direction": "return Data Length equal to zero",
           "condition": "The server elects to ignore the supplied seeding material.",
           "scope_disposition": "server_only",
-          "candidate_requirement_id": null
+          "candidate_requirement_id": "KMIPKIT-REQ-SPEC-6.1.50-003"
         },
         {
           "source_order": 3,
@@ -65095,7 +65129,7 @@
         "KMIPKIT-REQ-SPEC-6.1.50-001"
       ],
       "applies_to": "all_client_profiles",
-      "review_note": "The paragraph contains two server MAY capabilities and a client SHALL NOT. The client prohibition is the only linked client requirement; zero Data Length is server output and is not independently required when the server ignores the seed.",
+      "review_note": "The paragraph contains two server MAY capabilities and a client SHALL NOT. The server capabilities are classified as server-only and excluded from client closure; the client prohibition is the only client requirement. Zero Data Length is not required when the server ignores the seed.",
       "source_keywords": [
         "MAY",
         "SHALL NOT"
@@ -70019,7 +70053,7 @@
       "condition": "A RNG Seed request is sent.",
       "scope_disposition": "client_1_0",
       "candidate_requirement_id": null,
-      "proposed_requirement_id": "KMIPKIT-REQ-SPEC-6.1.50-002",
+      "proposed_requirement_id": "KMIPKIT-REQ-SPEC-6.1.50-004",
       "status": "stable_label_proposed_not_in_catalog",
       "review_note": "Table 319 is a REQUIRED=Yes client request body row. The existing clause candidates are table headers and no stable requirement ID is linked to this field, so preserve it as a source-only gap without adding a speculative crosswalk."
     }

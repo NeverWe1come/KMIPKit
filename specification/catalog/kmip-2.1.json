@@ -22935,12 +22935,14 @@
       ],
       "disposition": "requirement",
       "requirement_ids": [
+        "KMIPKIT-REQ-SPEC-6.1.50-002",
+        "KMIPKIT-REQ-SPEC-6.1.50-003",
         "KMIPKIT-REQ-SPEC-6.1.50-001"
       ],
       "exclusion_rationale": null,
-      "role": "client",
-      "direction": "server_to_client",
-      "scope_state": "client_1_0",
+      "role": "both",
+      "direction": "both",
+      "scope_state": "mixed",
       "condition": "When the server ignores supplied seeding material."
     },
     {
@@ -94148,6 +94150,66 @@
       "decision_id": null,
       "status": "unassigned",
       "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
+    },
+    {
+      "source_clause_ids": [
+        "KMIPKIT-CLAUSE-SPEC-6.1.50-001"
+      ],
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "6.1.50"
+        }
+      ],
+      "source_keyword": "MAY",
+      "normative_strength": "permission_or_optional",
+      "role": "server",
+      "scope_state": "server_only",
+      "element_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "negative_verification_required": false,
+      "decision_id": null,
+      "status": "unassigned",
+      "requirement_id": "KMIPKIT-REQ-SPEC-6.1.50-002",
+      "subject": "RNG Seed request handling",
+      "summary": "The server MAY elect not to accept seeding material supplied by the client.",
+      "direction": "client_to_server",
+      "condition": "The client provides RNG Seed material.",
+      "review_note": "This server capability is one of two MAY statements in the pinned §6.1.50 paragraph. It is outside client_1_0 implementation scope and must not be treated as a client obligation."
+    },
+    {
+      "source_clause_ids": [
+        "KMIPKIT-CLAUSE-SPEC-6.1.50-001"
+      ],
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "6.1.50"
+        }
+      ],
+      "source_keyword": "MAY",
+      "normative_strength": "permission_or_optional",
+      "role": "server",
+      "scope_state": "server_only",
+      "element_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "negative_verification_required": false,
+      "decision_id": null,
+      "status": "unassigned",
+      "requirement_id": "KMIPKIT-REQ-SPEC-6.1.50-003",
+      "subject": "RNG Seed response handling",
+      "summary": "The server MAY indicate that it ignored seeding material by returning zero as the Data Length response value.",
+      "direction": "server_to_client",
+      "condition": "The server elects not to accept the supplied seeding material.",
+      "review_note": "This server capability is one of two MAY statements in the pinned §6.1.50 paragraph. It is outside client_1_0 implementation scope and is not a required response whenever the server ignores supplied seed data."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.51-001",
