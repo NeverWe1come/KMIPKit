@@ -43267,9 +43267,13 @@
       "requirement_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0041",
+      "implementation_refs": [
+        "crates/kmipkit-client/src/execute.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-client/tests/unit/rng_retrieve_execution_tests.rs::rng_retrieve_sends_required_length_once_and_returns_redacted_secret_output"
+      ],
       "wire_value": "00000025",
       "allocation": "assigned"
     },
@@ -43291,9 +43295,13 @@
       "requirement_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0041",
+      "implementation_refs": [
+        "crates/kmipkit-client/src/execute.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-client/tests/unit/rng_seed_execution_tests.rs::rng_seed_sends_secret_once_and_accepts_zero_bytes_used"
+      ],
       "wire_value": "00000026",
       "allocation": "assigned"
     },
@@ -59230,9 +59238,15 @@
         "KMIPKIT-PROFILE-CRYPTOGRAPHIC-RNG-SERVER"
       ],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0041",
+      "implementation_refs": [
+        "crates/kmipkit-client/src/execute.rs",
+        "crates/kmipkit-protocol/src/rng_retrieve.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-client/tests/unit/rng_retrieve_execution_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/rng_retrieve_operation_tests.rs"
+      ],
       "payload_tables": [
         {
           "role": "request",
@@ -59267,9 +59281,15 @@
         "KMIPKIT-PROFILE-CRYPTOGRAPHIC-RNG-SERVER"
       ],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0041",
+      "implementation_refs": [
+        "crates/kmipkit-client/src/execute.rs",
+        "crates/kmipkit-protocol/src/rng_seed.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-client/tests/unit/rng_seed_execution_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/rng_seed_operation_tests.rs"
+      ],
       "payload_tables": [
         {
           "role": "request",
@@ -94333,15 +94353,23 @@
       "direction": "server_to_client",
       "condition": "When the server ignores supplied seeding material.",
       "scope_state": "client_1_0",
-      "element_ids": [],
+      "element_ids": [
+        "KMIPKIT-ELEM-OP-C2S-RNG-SEED"
+      ],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0041",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/rng_seed.rs",
+        "crates/kmipkit-client/src/execute.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/rng_seed_operation_tests.rs::successful_response_preserves_zero_data_length_and_unknown_fields",
+        "crates/kmipkit-client/tests/unit/rng_seed_execution_tests.rs::rng_seed_sends_secret_once_and_accepts_zero_bytes_used"
+      ],
       "negative_verification_required": true,
       "decision_id": null,
-      "status": "unassigned",
+      "status": "verified",
       "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
     },
     {

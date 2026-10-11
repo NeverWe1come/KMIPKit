@@ -11,6 +11,10 @@ Run from repository root using Rust 1.94. These checks do not claim official vec
 
 Expect table-derived field/type and round-trip tests, malformed request/response negatives, opaque-byte redaction, exactly one fake-transport exchange, Pending/result/delivery preservation, and no retry. A zero Data Length response for RNG Seed must remain successful.
 
+## Recorded focused evidence
+
+On the implementation branch, `cargo test -p kmipkit-client --lib rng_ --no-fail-fast` passes all 8 RNG client fake-transport tests. `cargo test -p kmipkit-protocol --lib rng_ --no-fail-fast` passes all 15 RNG protocol tests. These tests are derived from the cited KMIP v2.1 tables; they are not official OASIS Test Case passes. The full workspace gates below and the two-server integration gate have not yet been recorded as passing.
+
 ## Review gates
 
     cargo fmt --all --check

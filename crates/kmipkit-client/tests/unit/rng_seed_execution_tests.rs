@@ -103,6 +103,12 @@ fn rng_seed_sends_secret_once_and_accepts_zero_bytes_used() {
     };
     assert_eq!(response.data_length(), Some(0));
     assert!(!format!("{:?}", item.outcome()).contains("KMIP_RNG_SEED_SECRET_SENTINEL"));
+    assert!(
+        !item
+            .outcome()
+            .to_string()
+            .contains("KMIP_RNG_SEED_SECRET_SENTINEL")
+    );
     assert_eq!(
         request_operation_and_data(captured.borrow().as_deref().expect("request was captured")),
         Some((RNG_SEED, SEED_SENTINEL.to_vec()))
@@ -146,6 +152,26 @@ fn rng_seed_pending_is_explicit_and_does_not_poll_or_retry() {
 }
 
 #[test]
+fn rng_seed_malformed_response_error_does_not_expose_seed_bytes() {
+    let response = asynchronous_response_bytes(RNG_SEED, 0, None, None, Some(test_structure([])));
+    let (mut client, transport, _) = client_for(ExchangeScript::Success {
+        response,
+        request_write_chunks: Vec::new(),
+    });
+
+    let error = client
+        .rng_seed(
+            RngSeedRequest::new(SecretBytes::new(SEED_SENTINEL.to_vec())),
+            &CodecLimits::defaults(),
+        )
+        .expect_err("a successful Table 320 response requires Data Length");
+
+    assert!(!error.to_string().contains("KMIP_RNG_SEED_SECRET_SENTINEL"));
+    assert!(!format!("{error:?}").contains("KMIP_RNG_SEED_SECRET_SENTINEL"));
+    assert_eq!(transport.borrow().exchange_count(), 1);
+}
+
+#[test]
 fn rng_seed_transport_failure_preserves_delivery_and_is_not_retried() {
     let (mut client, transport, _) =
         client_for(ExchangeScript::FailAfterPartialWrite { written_bytes: 3 });
@@ -161,5 +187,7 @@ fn rng_seed_transport_failure_preserves_delivery_and_is_not_retried() {
         error.delivery_state(),
         Some(RequestDeliveryState::PossiblySent)
     );
+    assert!(!error.to_string().contains("KMIP_RNG_SEED_SECRET_SENTINEL"));
+    assert!(!format!("{error:?}").contains("KMIP_RNG_SEED_SECRET_SENTINEL"));
     assert_eq!(transport.borrow().exchange_count(), 1);
 }

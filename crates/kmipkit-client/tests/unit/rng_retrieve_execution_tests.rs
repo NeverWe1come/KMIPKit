@@ -104,6 +104,12 @@ fn rng_retrieve_sends_required_length_once_and_returns_redacted_secret_output() 
     let output = response.data().expect("Table 317 returns required Data");
     assert!(output.with_bytes(|bytes| bytes == OUTPUT_SENTINEL));
     assert!(!format!("{:?}", item.outcome()).contains("KMIP_RNG_RETRIEVE_SECRET_SENTINEL"));
+    assert!(
+        !item
+            .outcome()
+            .to_string()
+            .contains("KMIP_RNG_RETRIEVE_SECRET_SENTINEL")
+    );
     assert_eq!(
         request_operation_and_length(captured.borrow().as_deref().expect("request was captured")),
         Some((RNG_RETRIEVE, OUTPUT_SENTINEL.len() as i32))
@@ -146,6 +152,39 @@ fn rng_retrieve_pending_is_explicit_and_does_not_poll_or_retry() {
 }
 
 #[test]
+fn rng_retrieve_malformed_secret_response_is_not_exposed_in_errors() {
+    let response = asynchronous_response_bytes(
+        RNG_RETRIEVE,
+        0,
+        None,
+        None,
+        Some(test_structure([
+            test_item(
+                DATA,
+                kmipkit_ttlv::Value::byte_string(OUTPUT_SENTINEL.to_vec()),
+            ),
+            test_item(DATA, kmipkit_ttlv::Value::byte_string(vec![1, 2, 3])),
+        ])),
+    );
+    let (mut client, transport, _) = client_for(ExchangeScript::Success {
+        response,
+        request_write_chunks: Vec::new(),
+    });
+
+    let error = client
+        .rng_retrieve(RngRetrieveRequest::new(16), &CodecLimits::defaults())
+        .expect_err("duplicate Table 317 Data is rejected");
+
+    assert!(
+        !error
+            .to_string()
+            .contains("KMIP_RNG_RETRIEVE_SECRET_SENTINEL")
+    );
+    assert!(!format!("{error:?}").contains("KMIP_RNG_RETRIEVE_SECRET_SENTINEL"));
+    assert_eq!(transport.borrow().exchange_count(), 1);
+}
+
+#[test]
 fn rng_retrieve_transport_failure_preserves_delivery_and_is_not_retried() {
     let (mut client, transport, _) =
         client_for(ExchangeScript::FailAfterPartialWrite { written_bytes: 3 });
@@ -158,5 +197,11 @@ fn rng_retrieve_transport_failure_preserves_delivery_and_is_not_retried() {
         error.delivery_state(),
         Some(RequestDeliveryState::PossiblySent)
     );
+    assert!(
+        !error
+            .to_string()
+            .contains("KMIP_RNG_RETRIEVE_SECRET_SENTINEL")
+    );
+    assert!(!format!("{error:?}").contains("KMIP_RNG_RETRIEVE_SECRET_SENTINEL"));
     assert_eq!(transport.borrow().exchange_count(), 1);
 }

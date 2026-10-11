@@ -79,10 +79,10 @@ description: "Implementation task list for KMIP 2.1 remote RNG operations"
 
 **Purpose**: Close catalog traceability, security, parity, documentation, and quality gates.
 
-- [ ] T030 Update the implementation/verification references for both operations and KMIPKIT-REQ-SPEC-6.1.50-001 in specification/catalog/kmip-2.1.json; regenerate specification/catalog/coverage-report.md with python tools/normative_catalog/report.py --write and validate/check it.
+- [x] T030 Update the implementation/verification references for both operations and KMIPKIT-REQ-SPEC-6.1.50-001 in specification/catalog/kmip-2.1.json; regenerate specification/catalog/coverage-report.md with python tools/normative_catalog/report.py --write and validate/check it.
 - [ ] T031 After approved KMIPKIT-0043 mapping is integrated, add both operations to specification/api/public-api.json, implement mapped C/Java/Python adapters/parity tests, regenerate with python tools/api_manifest/generate.py --write, and verify --check; keep this task gated until 0043 is available.
-- [ ] T032 Update specs/027-rng-operations/traceability.md and specs/027-rng-operations/quickstart.md with actual test names/results, all normative links, and source-derived fixture status.
-- [ ] T033 Verify RNG Seed and RNG Retrieve byte sentinels never appear in Debug, Display, errors, or logs in crates/kmipkit-protocol/tests/unit/rng_seed_operation_tests.rs, crates/kmipkit-protocol/tests/unit/rng_retrieve_operation_tests.rs, and the client test suites.
+- [x] T032 Update specs/027-rng-operations/traceability.md and specs/027-rng-operations/quickstart.md with actual test names/results, all normative links, and source-derived fixture status.
+- [x] T033 Verify RNG Seed and RNG Retrieve byte sentinels never appear in Debug, Display, errors, or logs in crates/kmipkit-protocol/tests/unit/rng_seed_operation_tests.rs, crates/kmipkit-protocol/tests/unit/rng_retrieve_operation_tests.rs, and the client test suites.
 - [ ] T034 Run required checks from specs/027-rng-operations/quickstart.md; record command/results and enforce the documented coverage and 100% traceability gates. Before 1.0, exercise RNG Retrieve and RNG Seed against at least two independent KMIP server implementations and record evidence in docs/development/kmip-interoperability.md; unsupported cases remain SKIP/N/A, not passing evidence.
 
 ## Dependencies and Execution Order
