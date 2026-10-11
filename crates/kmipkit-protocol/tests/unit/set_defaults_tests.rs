@@ -160,6 +160,7 @@ fn table_329_success_without_response_payload_is_rejected_by_common_validator() 
 
 #[test]
 fn table_330_preserves_all_distinct_reasons_and_open_unknown_reason() {
+    // Table 330 repeats Invalid Field; exercise each distinct value once.
     for reason in TABLE_330_DISTINCT_REASONS.into_iter().chain([0x8000_0054]) {
         let message = response_message(SET_DEFAULTS, 1, Some(reason), None, None);
         let response = SetDefaultsResponse::try_from_response_item(response_item(&message))
@@ -170,6 +171,59 @@ fn table_330_preserves_all_distinct_reasons_and_open_unknown_reason() {
             Some(ResultReason::from_raw(reason))
         );
     }
+}
+
+#[test]
+fn response_retains_unknown_payload_after_source_message_is_dropped() {
+    const OPAQUE_VALUE: &str = "opaque defaults response survives source drop";
+    let response = {
+        let payload = structure([item(
+            VENDOR_MEMBER,
+            Value::text_string(OPAQUE_VALUE.to_owned()),
+        )]);
+        let message = response_message(SET_DEFAULTS, 0, None, None, Some(payload));
+        SetDefaultsResponse::try_from_response_item(response_item(&message))
+            .expect("unknown Table 329 extension remains representable")
+    };
+
+    response.with_ttlv(|item| {
+        let payload = item
+            .children()
+            .iter()
+            .find(|field| field.tag().raw() == 0x0042_007C)
+            .expect("owned response retains its payload");
+        payload.with_value(|value| {
+            let ValueView::Structure(payload) = value else {
+                panic!("Response Payload is a Structure");
+            };
+            assert_eq!(payload.children().len(), 1);
+            assert!(
+                payload.children()[0]
+                    .with_value(|value| matches!(value, ValueView::TextString(OPAQUE_VALUE)))
+            );
+        });
+    });
+}
+
+#[test]
+fn request_and_response_debug_redact_defaults_values() {
+    const SENSITIVE_VALUE: &str = "sensitive-default-value";
+    let request = SetDefaultsRequest::new().with_defaults_information(structure([item(
+        VENDOR_MEMBER,
+        Value::text_string(SENSITIVE_VALUE.to_owned()),
+    )]));
+    assert!(!format!("{request:?}").contains(SENSITIVE_VALUE));
+
+    let response = {
+        let payload = structure([item(
+            VENDOR_MEMBER,
+            Value::text_string(SENSITIVE_VALUE.to_owned()),
+        )]);
+        let message = response_message(SET_DEFAULTS, 0, None, None, Some(payload));
+        SetDefaultsResponse::try_from_response_item(response_item(&message))
+            .expect("unknown response payload remains retained")
+    };
+    assert!(!format!("{response:?}").contains(SENSITIVE_VALUE));
 }
 
 #[test]

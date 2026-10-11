@@ -108,7 +108,7 @@ Each task uses `[ ] T### [US#] action in exact/repository/path`. Every implement
 
 ### Refactor commit
 
-- [ ] T016 [US4] Refactor Set Defaults request/result handling in `crates/kmipkit-protocol/src/set_defaults.rs`, `crates/kmipkit-protocol/tests/unit/set_defaults_tests.rs`, and `crates/kmipkit-client/tests/unit/set_defaults_execution_tests.rs` while preserving absent-vs-empty behavior; rerun focused tests and commit separately as Refactor.
+- [x] T016 [US4] Refactor Set Defaults request/result handling in `crates/kmipkit-protocol/src/set_defaults.rs`, `crates/kmipkit-protocol/tests/unit/set_defaults_tests.rs`, and `crates/kmipkit-client/tests/unit/set_defaults_execution_tests.rs` while preserving absent-vs-empty behavior; rerun focused tests and commit separately as Refactor. Kept production encoding unchanged after review found no beneficial wire-code cleanup; deduplicated Table 330's reason inventory and added tests for response ownership after source drop and Debug redaction. Verified 9 protocol and 7 client focused tests, focused Clippy (`-D warnings`), formatting, and `git diff --check`. Independent QA approved without behavior changes.
 
 ## Phase 6: User Story 5 — Set Endpoint Role (Priority: P1)
 
