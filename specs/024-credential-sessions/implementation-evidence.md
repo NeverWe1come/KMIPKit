@@ -6,9 +6,11 @@ The source-derived tests cover OASIS KMIP Specification v2.1 §6.1.12 Tables 199
 
 | Phase | Commit | Command | Result |
 |---|---|---|---|
-| Baseline | Existing worktree HEAD `25a8770c` | `cargo test -p kmipkit-protocol --all-features`; `cargo test -p kmipkit-client --all-features` | PASS: protocol 547 unit tests plus integration/doc tests; client 420 unit tests plus UI, integration, and doc tests. |
-| Red | Pending commit | `cargo test -p kmipkit-protocol --lib delegated_login_operation_tests` | Expected compile failure: `DelegatedLoginError`, `DelegatedLoginRequest`, and `DelegatedLoginResponse` are not yet exported. |
-| Red | Pending commit | `cargo test -p kmipkit-client --lib delegated_login_execution_tests` | Expected compile failures: `DelegatedLoginRequest`, `ClientRequest::delegated_login`, typed outcome access, and `ClientOperation::DelegatedLogin` do not yet exist. |
-| Red formatting | Pending commit | `cargo fmt --all --check`; `git diff --check` | PASS. |
+| Baseline | `25a8770c` | `cargo test -p kmipkit-protocol --all-features`; `cargo test -p kmipkit-client --all-features` | PASS: protocol 547 unit tests plus integration/doc tests; client 420 unit tests plus UI, integration, and doc tests. |
+| Red | `b67a7804` | `cargo test -p kmipkit-protocol --lib delegated_login_operation_tests`; `cargo test -p kmipkit-client --lib delegated_login_execution_tests` | Expected compile failures confirmed before implementation: Delegated Login protocol models and the typed request/outcome/client operation API were absent. The separate Red commit records these results. |
+| Red formatting | `b67a7804` | `cargo fmt --all --check`; `git diff --check` | PASS. |
+| Green | This commit | `cargo test -p kmipkit-protocol --lib delegated_login_operation_tests`; `cargo test -p kmipkit-client --lib delegated_login_execution_tests` | PASS: protocol 5/5 and client 6/6 Delegated Login tests. |
+| Green | This commit | `cargo test -p kmipkit-protocol --all-features`; `cargo test -p kmipkit-client --all-features` | PASS: protocol 552 unit tests plus integration/doc tests; client 426 unit tests plus UI, integration, and doc tests. |
+| Green quality gates | This commit | `cargo clippy -p kmipkit-protocol -p kmipkit-client -p kmipkit --all-targets --all-features -- -D warnings`; `cargo fmt --all --check`; `git diff --check` | PASS. |
 
-These are RED-stage results only; they do not indicate implementation completion or protocol conformance.
+These results establish the Delegated Login model and typed client path against source-derived tests. They do not indicate official KMIP conformance, cross-language API parity, or completion of KMIPKIT-024.

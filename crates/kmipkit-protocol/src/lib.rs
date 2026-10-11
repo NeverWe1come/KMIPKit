@@ -23,6 +23,7 @@ mod credential;
 mod cryptographic_operation;
 mod cryptographic_parameters;
 mod decrypt;
+mod delegated_login;
 mod delete_attribute;
 mod derive_key;
 mod destroy;
@@ -93,6 +94,7 @@ pub use cryptographic_operation::{
     ValidityIndicator, VerificationResponseContext,
 };
 pub use decrypt::{DecryptError, DecryptRequest, DecryptResponse};
+pub use delegated_login::{DelegatedLoginError, DelegatedLoginRequest, DelegatedLoginResponse};
 pub use delete_attribute::{DeleteAttributeError, DeleteAttributeRequest, DeleteAttributeResponse};
 pub use derive_key::{
     DerivationMethod, DerivationParameters, DeriveKeyError, DeriveKeyRequest, DeriveKeyResponse,

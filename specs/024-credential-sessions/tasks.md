@@ -40,7 +40,7 @@ Every task uses the repository checklist form: checkbox, sequential task ID, opt
 
 ### Green commit
 
-- [ ] T006 Implement DelegatedLoginRequest, DelegatedLoginResponse, and sanitized errors in crates/kmipkit-protocol/src/delegated_login.rs; export the models from crates/kmipkit-protocol/src/lib.rs and integrate the explicit request/response in crates/kmipkit-client/src/execute.rs, crates/kmipkit-client/src/lib.rs, and crates/kmipkit/src/lib.rs; make T005 pass and commit separately as Green.
+- [x] T006 Implement DelegatedLoginRequest, DelegatedLoginResponse, and sanitized errors in crates/kmipkit-protocol/src/delegated_login.rs; export the models from crates/kmipkit-protocol/src/lib.rs and integrate the explicit request/response in crates/kmipkit-client/src/execute.rs, crates/kmipkit-client/src/lib.rs, and crates/kmipkit/src/lib.rs; make T005 pass and commit separately as Green.
 
 ### Refactor commit
 

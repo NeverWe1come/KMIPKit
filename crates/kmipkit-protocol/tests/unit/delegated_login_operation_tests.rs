@@ -110,7 +110,12 @@ fn successful_response_requires_ticket_and_preserves_open_type_and_extensions() 
 
     assert_eq!(ticket.ticket_type().raw(), 0x8000_0042);
     ticket.with_ticket_value(|actual| assert_eq!(actual, SECRET_SENTINEL));
-    let retained_tags = ticket.with_ttlv(|tree| item_tags(tree));
+    let retained_tags = ticket.with_ttlv(|tree| {
+        tree.children()
+            .iter()
+            .map(|field| field.tag().raw())
+            .collect::<Vec<_>>()
+    });
     assert_eq!(retained_tags, [TICKET_TYPE, TICKET_VALUE, VENDOR_EXTENSION]);
     let debug = format!("{response:?}");
     assert!(!debug.contains("delegated-login-ticket-secret"));
@@ -146,7 +151,7 @@ fn unknown_ticket_enumeration_values_are_not_rejected() {
     for raw_type in [0, 2, 0x7FFF_FFFF, 0x8000_0001, u32::MAX] {
         let ticket = structure([
             item(TICKET_TYPE, Value::enumeration(raw_type)),
-            item(TICKET_VALUE, Value::byte_string(vec![raw_type as u8])),
+            item(TICKET_VALUE, Value::byte_string(vec![0x5A])),
         ]);
         let payload = structure([item(TICKET, Value::structure(ticket))]);
         let response = delegated_login_response(SUCCESS, None, Some(payload))

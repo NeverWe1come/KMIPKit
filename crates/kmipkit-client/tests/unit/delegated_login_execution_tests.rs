@@ -104,20 +104,21 @@ fn ticket_payload() -> Structure {
     )])
 }
 
+fn structure_contains_tag(tree: &kmipkit_ttlv::StructureView<'_>, raw_tag: u32) -> bool {
+    tree.children().iter().any(|item| {
+        item.tag().raw() == raw_tag
+            || item.with_value(|value| match value {
+                ValueView::Structure(nested) => structure_contains_tag(&nested, raw_tag),
+                _ => false,
+            })
+    })
+}
+
 fn request_contains_tag(request: &[u8], raw_tag: u32) -> bool {
     let decoded = decode_with_limits(request, &CodecLimits::defaults())
         .expect("captured request is valid TTLV");
-    fn contains(tree: &kmipkit_ttlv::StructureView<'_>, raw_tag: u32) -> bool {
-        tree.children().iter().any(|item| {
-            item.tag().raw() == raw_tag
-                || item.with_value(|value| match value {
-                    ValueView::Structure(nested) => contains(&nested, raw_tag),
-                    _ => false,
-                })
-        })
-    }
     decoded.with_value(|value| match value {
-        ValueView::Structure(root) => contains(&root, raw_tag),
+        ValueView::Structure(root) => structure_contains_tag(&root, raw_tag),
         _ => false,
     })
 }
@@ -197,7 +198,10 @@ fn operation_failure_preserves_table_201_reason_and_does_not_retry() {
 
     assert_eq!(outcome.result().status().raw(), OPERATION_FAILED);
     assert_eq!(
-        outcome.result().reason().map(|reason| reason.raw()),
+        outcome
+            .result()
+            .reason()
+            .map(kmipkit_protocol::ResultReason::raw),
         Some(PERMISSION_DENIED)
     );
     assert_eq!(state.borrow().calls, 1);
@@ -232,7 +236,7 @@ fn malformed_ticket_response_is_sanitized_after_one_exchange() {
 fn returned_ticket_does_not_mutate_the_next_request_authentication_state() {
     let (mut client, state) = client(vec![
         response(SUCCESS, None, None, Some(ticket_payload())),
-        asynchronous_response_bytes(0x0000_003B, SUCCESS, None, None, None),
+        asynchronous_response_bytes(0x0000_003B, SUCCESS, None, None, Some(test_structure([]))),
     ]);
     client
         .execute(
