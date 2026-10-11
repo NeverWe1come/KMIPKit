@@ -433,3 +433,7 @@ mod attribute_limits_tests;
 #[cfg(test)]
 #[path = "../tests/unit/attribute_coverage_contract_tests.rs"]
 mod attribute_coverage_contract_tests;
+
+#[cfg(test)]
+#[path = "../tests/unit/ticket_model_tests.rs"]
+mod ticket_model_tests;
