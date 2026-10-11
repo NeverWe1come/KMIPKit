@@ -7,6 +7,8 @@ import unittest
 from pathlib import Path
 from typing import Any
 
+from tools.api_manifest import generate
+
 
 ROOT = Path(__file__).resolve().parents[3]
 MANIFEST = ROOT / "specification" / "api" / "public-api.json"
@@ -68,6 +70,56 @@ class PublicApiParityTests(unittest.TestCase):
 
         for item in [*self.manifest["types"], *self.manifest["functions"]]:
             self.assertTrue(set(item["requirementIds"]).issubset(REQUIREMENT_IDS), item["id"])
+
+    def test_generated_rust_api_uses_rust_mapping_and_excludes_blocked_records(self) -> None:
+        manifest = {
+            "formatVersion": 2,
+            "releaseLine": "1.0.0",
+            "languages": ["Rust", "C", "Java", "Python"],
+            "publicPackages": [
+                {"id": "rust-kmipkit-client", "language": "rust"},
+                {"id": "c-kmipkit", "language": "c"},
+            ],
+            "apiLevels": [],
+            "capabilities": [],
+            "operations": [
+                {"operationId": "blocked", "apiState": "blocked"},
+                {"operationId": "ready", "apiState": "declared"},
+            ],
+            "publicDeclarations": [
+                {
+                    "declarationId": "blocked_declaration",
+                    "packageId": "rust-kmipkit-client",
+                    "kind": "function",
+                    "declarationState": "blocked",
+                    "languageMappings": {},
+                },
+                {
+                    "declarationId": "ready_declaration",
+                    "packageId": "rust-kmipkit-client",
+                    "kind": "function",
+                    "declarationState": "declared",
+                    "languageMappings": {
+                        "rust": {"name": "kmipkit_client::Client::execute"},
+                        "c": {"name": "kmipkit_client_execute"},
+                    },
+                },
+            ],
+            "approvedExclusions": [],
+            "types": [],
+            "functions": [],
+            "errorCategories": [],
+            "limits": [],
+            "security": {},
+        }
+
+        projection = generate._ready_api_projection(manifest)
+        output = generate.render_public_rust_api(projection)
+
+        self.assertEqual([item["operationId"] for item in projection["operations"]], ["ready"])
+        self.assertIn("kmipkit_client::Client::execute", output)
+        self.assertNotIn("kmipkit_client_execute", output)
+        self.assertNotIn("blocked_declaration", output)
 
     def test_manifest_exposes_identity_fields_and_ordered_batch_extension_views(self) -> None:
         function_ids = {function["id"] for function in self.manifest["functions"]}
