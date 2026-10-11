@@ -7704,6 +7704,7 @@ class CatalogValidationTests(unittest.TestCase):
             self.assertEqual(row["source_gap_id"], gap_id)
         self.assertEqual(request_rows["Cryptographic Parameters"]["source_requirement_ids"],
                          ["KMIPKIT-REQ-SPEC-6.1.55-001"])
+        self.assertIn("KMIPKIT-CLAUSE-SPEC-6.1-002", request_rows["Unique Identifier"]["source_note"])
 
         identifier_review = reviews["KMIPKIT-CLAUSE-SPEC-6.1.55-004"]
         self.assertEqual(identifier_review["source_obligations"][0]["candidate_requirement_id"],
@@ -7772,6 +7773,10 @@ class CatalogValidationTests(unittest.TestCase):
             crypto_clause["condition"],
             "No Cryptographic Parameters are associated with the Managed Cryptographic Object and the selected algorithm requires parameters.",
         )
+        requirements = {row["requirement_id"]: row for row in catalog["requirements"]}
+        crypto_requirement = requirements["KMIPKIT-REQ-SPEC-6.1.55-005-002"]
+        self.assertEqual(crypto_requirement["direction"], "server_to_client")
+        self.assertEqual(crypto_requirement["condition"], crypto_clause["condition"])
         self.assertEqual((clauses["KMIPKIT-CLAUSE-SPEC-6.1.55.1-001"]["role"],
                           clauses["KMIPKIT-CLAUSE-SPEC-6.1.55.1-001"]["direction"]),
                          ("server", "server_to_client"))
