@@ -109,8 +109,8 @@
 
 **Independent Test**: Tables 295–297; open reason preservation, SHOULD recommendation, SHALL NOT date prohibition for other reasons, result passthrough.
 
-- [X] T030 [P] [US9] Add failing Revoke tests in `crates/kmipkit-protocol/tests/unit/revoke_operation_tests.rs` and `crates/kmipkit-client/tests/unit/revoke_execution_tests.rs` for §6.1.44, §4.47/Table 123, §11.48/Table 481, and their traceability rows; commit Red (`997e030f`, with the nested-Structure correction in `2d045c45`).
-- [X] T031 [US9] Implement `RevokeRequest/Response/Error` in `crates/kmipkit-protocol/src/revoke.rs`, export it, and integrate dispatcher/client methods in `crates/kmipkit-client/src/execute.rs` and `crates/kmipkit-client/src/lib.rs`; commit Green (`9884ded4`).
+- [X] T030 [P] [US9] Add failing Revoke tests in `crates/kmipkit-protocol/tests/unit/revoke_operation_tests.rs` and `crates/kmipkit-client/tests/unit/revoke_execution_tests.rs` for §6.1.44, §4.47/Table 123, §11.48/Table 481, and their traceability rows; commit Red (`997e030f`, with nested-Structure and operation-code corrections in `2d045c45` and `b0323416`).
+- [X] T031 [US9] Implement `RevokeRequest/Response/Error` in `crates/kmipkit-protocol/src/revoke.rs`, export it, and integrate dispatcher/client methods in `crates/kmipkit-client/src/execute.rs` and `crates/kmipkit-client/src/lib.rs`; initial Green (`9884ded4`), with the KMIP 2.1 operation-code correction in `bb4f5387`.
 - [X] T032 [US9] Refactor Revoke model/dispatch/tests in `crates/kmipkit-protocol/src/revoke.rs`, `crates/kmipkit-client/src/execute.rs`, and both test files; commit Refactor separately (`f7831af5`).
 
 ## Phase 12: Cross-language parity, documentation, and release evidence
