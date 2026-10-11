@@ -9,7 +9,7 @@ use crate::{
 };
 use kmipkit_ttlv::{Item, RawTag, Structure, Tag, Value, ValueView};
 
-const REVOKE_OPERATION: u32 = 0x0000_0011;
+const REVOKE_OPERATION: u32 = 0x0000_0013;
 const SUCCESS: u32 = 0;
 const OPERATION_FAILED: u32 = 1;
 const OBJECT_NOT_FOUND: u32 = 0x0000_0037;
