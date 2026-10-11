@@ -36,7 +36,7 @@ Every task uses the repository checklist form: checkbox, sequential task ID, opt
 
 ### Red commit
 
-- [ ] T005 Add failing protocol and fake-transport tests in crates/kmipkit-protocol/tests/unit/delegated_login_operation_tests.rs and crates/kmipkit-client/tests/unit/delegated_login_execution_tests.rs; register them through crates/kmipkit-protocol/src/lib.rs and crates/kmipkit-client/src/execute.rs; cover required Rights, optional fields and both Lease Time forms, Ticket response, Table 201 reasons, malformed payload, unknown tags/values, Pending/correlation without Poll, one exchange, no retry, and no hidden auth-state mutation; record the failing command/output in a separate Red commit.
+- [x] T005 Add failing protocol and fake-transport tests in crates/kmipkit-protocol/tests/unit/delegated_login_operation_tests.rs and crates/kmipkit-client/tests/unit/delegated_login_execution_tests.rs; register them through crates/kmipkit-protocol/src/lib.rs and crates/kmipkit-client/src/execute.rs; cover required Rights, optional fields and both Lease Time forms, Ticket response, Table 201 reasons, malformed payload, unknown tags/values, Pending/correlation without Poll, one exchange, no retry, and no hidden auth-state mutation; record the failing command/output in a separate Red commit.
 
 ### Green commit
 

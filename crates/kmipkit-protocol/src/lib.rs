@@ -439,3 +439,7 @@ mod attribute_coverage_contract_tests;
 #[cfg(test)]
 #[path = "../tests/unit/ticket_model_tests.rs"]
 mod ticket_model_tests;
+
+#[cfg(test)]
+#[path = "../tests/unit/delegated_login_operation_tests.rs"]
+mod delegated_login_operation_tests;
