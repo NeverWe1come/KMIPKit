@@ -81,10 +81,10 @@
     "common_baseline_unavailable_fixtures": 16,
     "profile_test_associations": 365,
     "distinct_profile_test_case_ids": 93,
-    "source_requirement_review_records": 613,
+    "source_requirement_review_records": 617,
     "direct_root_exclusion_records": 4,
-    "source_only_requirement_gaps": 158,
-    "source_only_requirement_gap_proposals": 128,
+    "source_only_requirement_gaps": 159,
+    "source_only_requirement_gap_proposals": 129,
     "profile_unlabeled_source_rows": 22
   },
   "source_clause_crosswalk": [
@@ -65601,6 +65601,130 @@
         "REQUIRED"
       ],
       "source_context": "Table 327: Set Constraints Errors"
+    },
+    {
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+      "source_section": "6.1.53",
+      "source_clause_id": "KMIPKIT-CLAUSE-SPEC-6.1.53-001",
+      "source_locator": {
+        "ordinal": 1,
+        "block_kind": "table_row"
+      },
+      "html_line_range": [
+        35994,
+        36012
+      ],
+      "source_excerpt": "Item REQUIRED Description",
+      "source_obligations": [],
+      "rejected_candidate_mappings": [],
+      "expected_client_requirement_ids": [],
+      "applies_to": "all_client_profiles",
+      "review_note": "The extracted REQUIRED token is in the Table 328 request header. Its body row marks Defaults Information optional; preserve the client capability and its explicit omission semantics as a source-only proposal.",
+      "source_keywords": [
+        "REQUIRED"
+      ],
+      "source_context": "Defaults Information No The set of Object Defaults to begin using. If no Defaults Information is supplied, the semantic is to remove all Object Defaults from the server. Table 328: Set Defaults Request Payload",
+      "source_request_rows": [
+        {
+          "row_label": "Defaults Information",
+          "required": "No",
+          "actor": "client",
+          "disposition": "optional_request_field_with_source_only_proposal",
+          "html_line_range": [
+            36013,
+            36030
+          ],
+          "source_excerpt": "Defaults Information No The set of Object Defaults to begin using. If no Defaults Information is supplied, the semantic is to remove all Object Defaults from the server.",
+          "source_gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.53-DEFAULTS-INFORMATION-OPTIONAL",
+          "source_requirement_ids": [],
+          "source_element_id": "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-11-DEFAULTS-INFORMATION",
+          "source_note": "Table 328 marks Defaults Information optional. The client capability includes both supplying defaults and intentionally omitting the field, which removes all Object Defaults from the server; no no-op behavior is inferred."
+        }
+      ]
+    },
+    {
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+      "source_section": "6.1.53",
+      "source_clause_id": "KMIPKIT-CLAUSE-SPEC-6.1.53-002",
+      "source_locator": {
+        "ordinal": 2,
+        "block_kind": "table_row"
+      },
+      "html_line_range": [
+        36050,
+        36068
+      ],
+      "source_excerpt": "Item REQUIRED Description",
+      "source_obligations": [],
+      "rejected_candidate_mappings": [],
+      "expected_client_requirement_ids": [],
+      "applies_to": "all_client_profiles",
+      "review_note": "The extracted REQUIRED token is in the Table 329 response header. The table has no operation-specific response fields; this does not remove the common KMIP Response Message structure.",
+      "source_keywords": [
+        "REQUIRED"
+      ],
+      "source_context": "Table 329: Set Defaults Response Payload",
+      "source_payload_rows": []
+    },
+    {
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+      "source_section": "6.1.53.1",
+      "source_clause_id": "KMIPKIT-CLAUSE-SPEC-6.1.53.1-001",
+      "source_locator": {
+        "ordinal": 1,
+        "block_kind": "paragraph"
+      },
+      "html_line_range": [
+        36093,
+        36094
+      ],
+      "source_excerpt": "This section details the specific Result Reasons that SHALL be returned for errors detected in a Set",
+      "source_obligations": [
+        {
+          "source_keyword": "SHALL",
+          "actor": "server",
+          "direction": "server_to_client",
+          "condition": "Errors are detected during Set Defaults.",
+          "scope_disposition": "server_only",
+          "candidate_requirement_id": null,
+          "source_note": "The sentence continues in the adjacent paragraph as “Defaults Operation.” The actor and response direction follow from the Result Reasons returned for errors; accepted KMIPKIT-DEC-006 associates this table with Set Defaults."
+        }
+      ],
+      "rejected_candidate_mappings": [],
+      "expected_client_requirement_ids": [],
+      "applies_to": "all_client_profiles",
+      "review_note": "The source sentence spans adjacent paragraphs and reads “errors detected in a Set Defaults Operation.” The server-only response obligation is not a 1.0 client requirement. Accepted KMIPKIT-DEC-006 also resolves KMIPKIT-DISC-020 for Set Defaults.",
+      "source_keywords": [
+        "SHALL"
+      ],
+      "source_context": "This section details the specific Result Reasons that SHALL be returned for errors detected in a Set Defaults Operation."
+    },
+    {
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+      "source_section": "6.1.53.1",
+      "source_clause_id": "KMIPKIT-CLAUSE-SPEC-6.1.53.1-002",
+      "source_locator": {
+        "ordinal": 2,
+        "block_kind": "table_row"
+      },
+      "html_line_range": [
+        36114,
+        36126
+      ],
+      "source_excerpt": "Operation Failed Invalid Field, Invalid Object Type, Attestation Failed, Attestation Required, Feature Not Supported, Invalid Field, Invalid Message, Operation Not Supported, Permission Denied, Response Too Large",
+      "source_obligations": [],
+      "rejected_candidate_mappings": [],
+      "expected_client_requirement_ids": [],
+      "applies_to": "all_client_profiles",
+      "review_note": "Table 330 contains ten source occurrences and nine distinct Result Reasons; retain the repeated Invalid Field occurrence. Attestation Required is a Result Reason value, not a standalone normative requirement. No official Set Defaults case or fixture is associated in the checked-in catalog.",
+      "source_keywords": [
+        "REQUIRED"
+      ],
+      "source_context": "Table 330: Set Defaults Errors"
     }
   ],
   "source_only_requirement_gaps": [
@@ -70486,6 +70610,40 @@
       "status": "stable_label_proposed_not_in_catalog",
       "review_note": "Table 325 marks the Constraints request field Required=Yes and describes its operation payload. The generic §7.7 Constraints structure exists, but its MAY requirement for repeated Constraint structures does not cover the operation-specific required field. No catalog ID is fabricated.",
       "audited_statement": "Table 325 marks the client request Constraints field Required=Yes."
+    },
+    {
+      "gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.53-DEFAULTS-INFORMATION-OPTIONAL",
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+      "source_section": "6.1.53",
+      "source_clause_id": null,
+      "source_locator": {
+        "kind": "table_body_row",
+        "section": "6.1.53",
+        "row_label": "Defaults Information",
+        "table": "request_payload",
+        "html_line_range": [
+          36013,
+          36030
+        ]
+      },
+      "source_locator_description": "Section 6.1.53 Table 328 Defaults Information optional request body row (HTML lines 36013-36030).",
+      "html_line_range": [
+        36013,
+        36030
+      ],
+      "source_excerpt": "Defaults Information No The set of Object Defaults to begin using. If no Defaults Information is supplied, the semantic is to remove all Object Defaults from the server.",
+      "source_keywords": [],
+      "source_force": "optional_table_body_value",
+      "audited_statement": "Table 328 marks Defaults Information optional and specifies that omission removes all Object Defaults from the server.",
+      "actor": "client",
+      "direction": "A client may send Defaults Information; omitting it removes all Object Defaults.",
+      "condition": "A Set Defaults request is sent.",
+      "scope_disposition": "client_1_0",
+      "candidate_requirement_id": null,
+      "proposed_requirement_id": "KMIPKIT-REQ-SPEC-6.1.53-001",
+      "status": "stable_label_proposed_not_in_catalog",
+      "review_note": "Table 328 Required=No preserves a client capability without creating a server requirement. The absent-field semantic is removal of all Object Defaults, not a no-op. No operation-specific stable catalog label exists, so keep this as a source-only proposal."
     }
   ]
 }
