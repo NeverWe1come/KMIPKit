@@ -83,7 +83,7 @@ fn validate_sends_chain_and_date_and_returns_open_indicator() {
 
     let outcome = client
         .validate(request(), &CodecLimits::defaults())
-        .expect("the fake server returns a successful empty Validate response");
+        .expect("the fake server returns a Table 341 Validity Indicator");
     let ClientBatchOutcome::Validate(validate) = outcome.outcome() else {
         panic!("the typed outcome is Validate");
     };
@@ -171,7 +171,7 @@ fn malformed_validate_response_is_rejected_after_one_exchange() {
 
     let error = client
         .validate(request(), &CodecLimits::defaults())
-        .expect_err("Validate success has an empty response payload");
+        .expect_err("Validate success requires one Validity Indicator");
 
     assert!(error.delivery_state().is_some());
     assert_eq!(transport.borrow().exchange_count(), 1);
