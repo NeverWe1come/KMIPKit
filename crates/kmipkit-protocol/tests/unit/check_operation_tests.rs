@@ -73,7 +73,15 @@ fn success_payload() -> Structure {
 }
 
 fn malformed_success(payload: Structure) -> Result<CheckResponse, CheckError> {
-    let message = response_message(CHECK_OPERATION, SUCCESS, None, None, Some(payload));
+    check_response(SUCCESS, None, Some(payload))
+}
+
+fn check_response(
+    status: u32,
+    reason: Option<u32>,
+    payload: Option<Structure>,
+) -> Result<CheckResponse, CheckError> {
+    let message = response_message(CHECK_OPERATION, status, reason, None, payload);
     CheckResponse::try_from_response_item(response_item(&message))
 }
 
@@ -135,14 +143,7 @@ fn request_can_omit_identifier_and_all_optional_policy_values() {
 #[test]
 fn successful_response_returns_identifier_and_present_policy_values_and_keeps_extensions() {
     let identifier = UniqueIdentifier::TextString("checked-object".to_owned());
-    let message = response_message(
-        CHECK_OPERATION,
-        SUCCESS,
-        None,
-        None,
-        Some(success_payload()),
-    );
-    let response = CheckResponse::try_from_response_item(response_item(&message))
+    let response = check_response(SUCCESS, None, Some(success_payload()))
         .expect("Table 184 success contains its required Unique Identifier");
 
     assert_eq!(response.result().status().raw(), SUCCESS);
@@ -150,7 +151,6 @@ fn successful_response_returns_identifier_and_present_policy_values_and_keeps_ex
     assert_eq!(response.usage_limits_count(), Some(3));
     assert_eq!(response.cryptographic_usage_mask(), Some(2));
     assert_eq!(response.lease_time(), Some(60));
-    drop(message);
     assert!(response.with_ttlv(|view| structure_contains_tag(&view, UNKNOWN_VENDOR_TAG)));
 }
 
@@ -172,14 +172,7 @@ fn successful_response_rejects_missing_or_duplicate_unique_identifier() {
 
 #[test]
 fn failure_response_preserves_table_185_reason_without_success_identifier() {
-    let message = response_message(
-        CHECK_OPERATION,
-        OPERATION_FAILED,
-        Some(OBJECT_NOT_FOUND),
-        None,
-        None,
-    );
-    let response = CheckResponse::try_from_response_item(response_item(&message))
+    let response = check_response(OPERATION_FAILED, Some(OBJECT_NOT_FOUND), None)
         .expect("Table 185 Operation Failed remains a common KMIP result");
 
     assert_eq!(response.result().status().raw(), OPERATION_FAILED);
@@ -195,18 +188,15 @@ fn failure_response_preserves_table_185_reason_without_success_identifier() {
 
 #[test]
 fn policy_denial_response_returns_the_policy_value_without_a_success_identifier() {
-    let message = response_message(
-        CHECK_OPERATION,
+    let response = check_response(
         OPERATION_FAILED,
         Some(INCOMPATIBLE_CRYPTOGRAPHIC_USAGE_MASK),
-        None,
         Some(structure([item(
             CRYPTOGRAPHIC_USAGE_MASK,
             Value::integer(2),
         )])),
-    );
-    let response = CheckResponse::try_from_response_item(response_item(&message))
-        .expect("§6.1.7 returns policy attributes when Check denies use");
+    )
+    .expect("§6.1.7 returns policy attributes when Check denies use");
 
     assert_eq!(response.result().status().raw(), OPERATION_FAILED);
     assert_eq!(

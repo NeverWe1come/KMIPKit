@@ -4464,6 +4464,8 @@ fn certify_response_outcome(
 fn check_response_outcome(
     item: ResponseBatchItemView<'_>,
 ) -> Result<ClientBatchOutcome, ProtocolError> {
+    // Route denial payloads through Check's typed parser while preserving the
+    // shared result and Pending mapping used by the other client operations.
     read_operation_outcome(
         ClientOperation::Check,
         item,

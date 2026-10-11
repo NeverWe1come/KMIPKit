@@ -41,7 +41,7 @@
 
 - [X] T009 [P] [US2] Add failing Check protocol/fake-client tests in `crates/kmipkit-protocol/tests/unit/check_operation_tests.rs` and `crates/kmipkit-client/tests/unit/check_execution_tests.rs`; cite §6.1.7 Tables 183–185 and its traceability rows; commit Red.
 - [X] T010 [US2] Implement `CheckRequest/Response/Error` in `crates/kmipkit-protocol/src/check.rs`, export it, and serialize shared dispatcher/client additions in `crates/kmipkit-client/src/execute.rs` and `crates/kmipkit-client/src/lib.rs`; keep batch choices explicit; commit Green after T009 passes.
-- [ ] T011 [US2] Refactor Check model, dispatch, and tests in `crates/kmipkit-protocol/src/check.rs`, `crates/kmipkit-client/src/execute.rs`, and both Check test files; commit Refactor separately.
+- [X] T011 [US2] Refactor Check model, dispatch, and tests in `crates/kmipkit-protocol/src/check.rs`, `crates/kmipkit-client/src/execute.rs`, and both Check test files; commit Refactor separately.
 
 ## Phase 5: User Story 3 — Obtain Lease (Priority: P1)
 

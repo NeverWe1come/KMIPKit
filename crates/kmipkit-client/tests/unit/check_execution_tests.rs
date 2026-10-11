@@ -62,6 +62,10 @@ fn response_payload(identifier: &str) -> Structure {
     ])
 }
 
+fn check_response_bytes(status: u32, reason: Option<u32>, payload: Option<Structure>) -> Vec<u8> {
+    asynchronous_response_bytes(CHECK_OPERATION, status, reason, None, payload)
+}
+
 fn structure_contains_tag(view: &StructureView<'_>, raw_tag: u32) -> bool {
     view.children().iter().any(|field| {
         field.tag().raw() == raw_tag
@@ -216,13 +220,7 @@ fn two_check_response_bytes() -> Vec<u8> {
 
 #[test]
 fn check_sends_table_183_fields_and_exposes_table_184_response_once() {
-    let response = asynchronous_response_bytes(
-        CHECK_OPERATION,
-        SUCCESS,
-        None,
-        None,
-        Some(response_payload("checked-object")),
-    );
+    let response = check_response_bytes(SUCCESS, None, Some(response_payload("checked-object")));
     let (mut client, fake, captured) = client_for(ExchangeScript::Success {
         response,
         request_write_chunks: vec![4, 7],
@@ -268,13 +266,7 @@ fn check_sends_table_183_fields_and_exposes_table_184_response_once() {
 
 #[test]
 fn check_failure_preserves_table_185_result_without_retry() {
-    let response = asynchronous_response_bytes(
-        CHECK_OPERATION,
-        OPERATION_FAILED,
-        Some(OBJECT_NOT_FOUND),
-        None,
-        None,
-    );
+    let response = check_response_bytes(OPERATION_FAILED, Some(OBJECT_NOT_FOUND), None);
     let (mut client, fake, _) = client_for(ExchangeScript::Success {
         response,
         request_write_chunks: Vec::new(),
@@ -296,11 +288,9 @@ fn check_failure_preserves_table_185_result_without_retry() {
 
 #[test]
 fn check_policy_denial_exposes_the_returned_mask_without_an_identifier() {
-    let response = asynchronous_response_bytes(
-        CHECK_OPERATION,
+    let response = check_response_bytes(
         OPERATION_FAILED,
         Some(INCOMPATIBLE_CRYPTOGRAPHIC_USAGE_MASK),
-        None,
         Some(test_structure([test_item(
             CRYPTOGRAPHIC_USAGE_MASK,
             Value::integer(2),

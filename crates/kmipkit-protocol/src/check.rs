@@ -142,15 +142,14 @@ pub struct CheckResponse {
 impl CheckResponse {
     /// Converts one already validated Check response batch item.
     ///
-    /// Success payload fields are typed and malformed or duplicate known
-    /// fields are rejected without including server values in the error.
-    /// Non-success results retain their common operation result; their payload
-    /// remains available in the generic response item.
+    /// Known success and policy-denial payload fields are typed, while unknown
+    /// fields remain available through the generic response item. Malformed or
+    /// duplicate known fields are rejected without including server values.
     ///
     /// # Errors
     ///
     /// Returns [`CheckError`] for another operation, malformed result
-    /// metadata, or malformed successful payload.
+    /// metadata or payload, or a successful response without its identifier.
     pub fn try_from_response_item(item: ResponseBatchItemView<'_>) -> Result<Self, CheckError> {
         if item.operation() != Some(OPERATION) {
             return Err(CheckError::UnexpectedOperation);
@@ -172,18 +171,16 @@ impl CheckResponse {
             None if is_success => return Err(CheckError::MalformedResponsePayload),
             None => None,
         };
-        let unique_identifier = parsed_payload
-            .as_ref()
-            .and_then(|payload| payload.unique_identifier.clone());
-        let usage_limits_count = parsed_payload
-            .as_ref()
-            .and_then(|payload| payload.usage_limits_count);
-        let cryptographic_usage_mask = parsed_payload
-            .as_ref()
-            .and_then(|payload| payload.cryptographic_usage_mask);
-        let lease_time = parsed_payload
-            .as_ref()
-            .and_then(|payload| payload.lease_time);
+        let (unique_identifier, usage_limits_count, cryptographic_usage_mask, lease_time) =
+            match parsed_payload {
+                Some(payload) => (
+                    payload.unique_identifier,
+                    payload.usage_limits_count,
+                    payload.cryptographic_usage_mask,
+                    payload.lease_time,
+                ),
+                None => (None, None, None, None),
+            };
 
         Ok(Self {
             result,
@@ -284,7 +281,6 @@ fn parse_response_payload(
     require_identifier: bool,
 ) -> Result<ParsedCheckResponsePayload, CheckError> {
     let mut unique_identifier = None;
-    let mut identifier_seen = false;
     let mut usage_limits_count = None;
     let mut cryptographic_usage_mask = None;
     let mut lease_time = None;
@@ -292,24 +288,12 @@ fn parse_response_payload(
     for field in payload.children() {
         match field.tag().raw() {
             UNIQUE_IDENTIFIER => {
-                if identifier_seen {
+                if unique_identifier.is_some() {
                     return Err(CheckError::MalformedResponsePayload);
                 }
-                identifier_seen = true;
-                unique_identifier = Some(
-                    field
-                        .with_value(|value| match value {
-                            ValueView::TextString(value) => {
-                                Some(UniqueIdentifier::TextString(value.to_owned()))
-                            }
-                            ValueView::Enumeration(value) => {
-                                Some(UniqueIdentifier::Enumeration(*value))
-                            }
-                            ValueView::Integer(value) => Some(UniqueIdentifier::Integer(*value)),
-                            _ => None,
-                        })
-                        .ok_or(CheckError::MalformedResponsePayload)?,
-                );
+                let identifier = super::lifecycle::parse_unique_identifier(field)
+                    .ok_or(CheckError::MalformedResponsePayload)?;
+                unique_identifier = Some(identifier);
             }
             USAGE_LIMITS_COUNT => {
                 if usage_limits_count.is_some() {
