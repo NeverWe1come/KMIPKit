@@ -49,8 +49,8 @@
 
 **Independent Test**: Tables 268–270; identifier, Lease Time, Last Change Date, zero-time value, common errors, no timer/cache.
 
-- [ ] T012 [P] [US3] Add failing Obtain Lease tests in `crates/kmipkit-protocol/tests/unit/obtain_lease_operation_tests.rs` and `crates/kmipkit-client/tests/unit/obtain_lease_execution_tests.rs` for §6.1.35 tables and all its traceability rows; commit Red.
-- [ ] T013 [US3] Implement `ObtainLeaseRequest/Response/Error` in `crates/kmipkit-protocol/src/obtain_lease.rs`, export it, and integrate dispatch/client methods in `crates/kmipkit-client/src/execute.rs` and `crates/kmipkit-client/src/lib.rs`; commit Green after T012 passes.
+- [X] T012 [P] [US3] Add failing Obtain Lease tests in `crates/kmipkit-protocol/tests/unit/obtain_lease_operation_tests.rs` and `crates/kmipkit-client/tests/unit/obtain_lease_execution_tests.rs` for §6.1.35 tables and all its traceability rows; commit Red.
+- [X] T013 [US3] Implement `ObtainLeaseRequest/Response/Error` in `crates/kmipkit-protocol/src/obtain_lease.rs`, export it, and integrate dispatch/client methods in `crates/kmipkit-client/src/execute.rs` and `crates/kmipkit-client/src/lib.rs`; commit Green after T012 passes.
 - [ ] T014 [US3] Refactor Obtain Lease model/dispatch/tests in `crates/kmipkit-protocol/src/obtain_lease.rs`, `crates/kmipkit-client/src/execute.rs`, and its protocol/client test files; commit Refactor separately.
 
 ## Phase 6: User Story 4 — Re-certify (Priority: P1)

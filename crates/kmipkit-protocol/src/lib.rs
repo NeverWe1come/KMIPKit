@@ -40,6 +40,7 @@ mod mac_verify;
 mod message;
 mod modify_attribute;
 mod multipart;
+mod obtain_lease;
 mod operation_data;
 mod ping;
 mod poll;
@@ -105,6 +106,7 @@ pub use message::{
     ResponseHeaderView, ResponseMessage,
 };
 pub use modify_attribute::{ModifyAttributeError, ModifyAttributeRequest, ModifyAttributeResponse};
+pub use obtain_lease::{ObtainLeaseError, ObtainLeaseRequest, ObtainLeaseResponse};
 pub use operation_data::OperationData;
 pub use ping::{PingError, PingRequest, PingResponse};
 pub use poll::{PollRequest, PollResponse};

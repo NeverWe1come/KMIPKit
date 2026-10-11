@@ -23,12 +23,13 @@ use kmipkit_protocol::{
     GetAttributesRequest, GetAttributesResponse, GetRequest, GetResponse, HashRequest,
     HashResponse, KmipOperationResult, LocateRequest, LocateResponse, MacRequest, MacResponse,
     MacVerifyRequest, MacVerifyResponse, MessageExtensionView, ModifyAttributeRequest,
-    ModifyAttributeResponse, NewAttribute, PingRequest, PingResponse, PollRequest, PollResponse,
-    ProcessRequest, ProcessResponse, ProtocolCauseCategory, ProtocolError, ProtocolErrorKind,
-    ProtocolVersion, QueryAsyncRequestsRequest, QueryAsyncRequestsResponse, QueryRequest,
-    QueryResponse, RecoverRequest, RecoverResponse, RequestMessage, ResponseBatchItemView,
-    ResponseMessage, ResultStatus, SetAttributeRequest, SetAttributeResponse, SignRequest,
-    SignResponse, SignatureVerifyRequest, SignatureVerifyResponse,
+    ModifyAttributeResponse, NewAttribute, ObtainLeaseRequest, ObtainLeaseResponse, PingRequest,
+    PingResponse, PollRequest, PollResponse, ProcessRequest, ProcessResponse,
+    ProtocolCauseCategory, ProtocolError, ProtocolErrorKind, ProtocolVersion,
+    QueryAsyncRequestsRequest, QueryAsyncRequestsResponse, QueryRequest, QueryResponse,
+    RecoverRequest, RecoverResponse, RequestMessage, ResponseBatchItemView, ResponseMessage,
+    ResultStatus, SetAttributeRequest, SetAttributeResponse, SignRequest, SignResponse,
+    SignatureVerifyRequest, SignatureVerifyResponse,
 };
 
 #[cfg(test)]
@@ -117,6 +118,7 @@ const SIGN_OPERATION: u32 = 0x0000_0021; // KMIP v2.1 §6.1.55, Table 334.
 const SIGNATURE_VERIFY_OPERATION: u32 = 0x0000_0022; // KMIP v2.1 §6.1.56, Table 337.
 const CREATE_OPERATION: u32 = 0x0000_0001;
 const CHECK_OPERATION: u32 = 0x0000_0009; // KMIP v2.1 §§6.1.7, 11.36.
+const OBTAIN_LEASE_OPERATION: u32 = 0x0000_0010; // KMIP v2.1 §§6.1.35, 11.36.
 const CERTIFY_OPERATION: u32 = 0x0000_0006; // KMIP v2.1 §6.1.6, Table 179.
 const CREATE_KEY_PAIR_OPERATION: u32 = 0x0000_0002;
 const CREATE_SPLIT_KEY_OPERATION: u32 = 0x0000_0028; // KMIP v2.1 §11.36, Table 470.
@@ -159,6 +161,8 @@ pub enum ClientRequest {
     Certify(CertifyRequest),
     /// An explicit client-to-server Check request.
     Check(CheckRequest),
+    /// An explicit client-to-server Obtain Lease request.
+    ObtainLease(ObtainLeaseRequest),
     /// An explicit client-to-server Destroy request.
     Destroy(DestroyRequest),
     /// An explicit client-to-server Recover request.
@@ -292,6 +296,12 @@ impl ClientRequest {
         Self::Check(request)
     }
 
+    /// Creates a typed client-to-server Obtain Lease request variant.
+    #[must_use]
+    pub fn obtain_lease(request: ObtainLeaseRequest) -> Self {
+        Self::ObtainLease(request)
+    }
+
     /// Creates a typed Destroy request variant.
     #[must_use]
     pub fn destroy(request: DestroyRequest) -> Self {
@@ -365,6 +375,7 @@ impl ClientRequest {
             Self::Archive(_) => ARCHIVE_OPERATION,
             Self::Certify(_) => CERTIFY_OPERATION,
             Self::Check(_) => CHECK_OPERATION,
+            Self::ObtainLease(_) => OBTAIN_LEASE_OPERATION,
             Self::Destroy(_) => DESTROY_OPERATION,
             Self::Recover(_) => RECOVER_OPERATION,
             Self::Get(_) => GET_OPERATION,
@@ -418,6 +429,7 @@ impl ClientRequest {
     fn omits_identifier_for_id_placeholder(&self) -> bool {
         match self {
             Self::Check(request) => request.unique_identifier().is_none(),
+            Self::ObtainLease(request) => request.unique_identifier().is_none(),
             Self::Encrypt(request) => request.unique_identifier().is_none(),
             Self::Decrypt(request) => request.unique_identifier().is_none(),
             _ => false,
@@ -438,6 +450,7 @@ impl ClientRequest {
             Self::Archive(request) => request.to_ttlv_payload(),
             Self::Certify(request) => request.into_ttlv_payload(),
             Self::Check(request) => request.into_ttlv_payload(),
+            Self::ObtainLease(request) => request.into_ttlv_payload(),
             Self::Destroy(request) => request.to_ttlv_payload(),
             Self::Recover(request) => request.to_ttlv_payload(),
             Self::Get(request) => request.to_ttlv_payload(),
@@ -473,6 +486,9 @@ impl fmt::Debug for ClientRequest {
             Self::Archive(_) => formatter.write_str("Archive([REDACTED])"),
             Self::Certify(request) => formatter.debug_tuple("Certify").field(request).finish(),
             Self::Check(request) => formatter.debug_tuple("Check").field(request).finish(),
+            Self::ObtainLease(request) => {
+                formatter.debug_tuple("ObtainLease").field(request).finish()
+            }
             Self::Destroy(_) => formatter.write_str("Destroy([REDACTED])"),
             Self::Recover(_) => formatter.write_str("Recover([REDACTED])"),
             Self::Get(_) => formatter.write_str("Get([REDACTED])"),
@@ -760,6 +776,7 @@ enum PendingResponse {
     DiscoverVersions(DiscoverVersionsResponse),
     Certify(CertifyResponse),
     Check(CheckResponse),
+    ObtainLease(ObtainLeaseResponse),
     Encrypt(EncryptResponse),
     Decrypt(DecryptResponse),
     Hash(HashResponse),
@@ -793,6 +810,7 @@ impl PendingResponse {
             Self::DiscoverVersions(response) => ClientResponseRef::DiscoverVersions(response),
             Self::Certify(response) => ClientResponseRef::Certify(response),
             Self::Check(response) => ClientResponseRef::Check(response),
+            Self::ObtainLease(response) => ClientResponseRef::ObtainLease(response),
             Self::Encrypt(response) => ClientResponseRef::Encrypt(response),
             Self::Decrypt(response) => ClientResponseRef::Decrypt(response),
             Self::Hash(response) => ClientResponseRef::Hash(response),
@@ -986,6 +1004,8 @@ pub enum ClientOperation {
     Certify,
     /// Check.
     Check,
+    /// Obtain Lease.
+    ObtainLease,
     /// Archive.
     Archive,
     /// Destroy.
@@ -1160,6 +1180,7 @@ enum ClientResponseRef<'a> {
     DiscoverVersions(&'a DiscoverVersionsResponse),
     Certify(&'a CertifyResponse),
     Check(&'a CheckResponse),
+    ObtainLease(&'a ObtainLeaseResponse),
     Encrypt(&'a EncryptResponse),
     Decrypt(&'a DecryptResponse),
     Hash(&'a HashResponse),
@@ -1204,6 +1225,7 @@ impl<'a> ClientResponseView<'a> {
             ClientResponseRef::DiscoverVersions(response) => response.result(),
             ClientResponseRef::Certify(response) => response.result(),
             ClientResponseRef::Check(response) => response.result(),
+            ClientResponseRef::ObtainLease(response) => response.result(),
             ClientResponseRef::Encrypt(response) => response.result(),
             ClientResponseRef::Decrypt(response) => response.result(),
             ClientResponseRef::Hash(response) => response.result(),
@@ -1347,6 +1369,15 @@ impl<'a> ClientResponseView<'a> {
     pub const fn check(&self) -> Option<&'a CheckResponse> {
         match self.response {
             ClientResponseRef::Check(response) => Some(response),
+            _ => None,
+        }
+    }
+
+    /// Returns the Obtain Lease response when this view represents it.
+    #[must_use]
+    pub const fn obtain_lease(&self) -> Option<&'a ObtainLeaseResponse> {
+        match self.response {
+            ClientResponseRef::ObtainLease(response) => Some(response),
             _ => None,
         }
     }
@@ -1536,6 +1567,10 @@ impl fmt::Debug for ClientResponseView<'_> {
             ClientResponseRef::Check(response) => {
                 formatter.debug_tuple("Check").field(response).finish()
             }
+            ClientResponseRef::ObtainLease(response) => formatter
+                .debug_tuple("ObtainLease")
+                .field(response)
+                .finish(),
             ClientResponseRef::Activate(_) => formatter.write_str("Activate([REDACTED])"),
             ClientResponseRef::Archive(_) => formatter.write_str("Archive([REDACTED])"),
             ClientResponseRef::Destroy(_) => formatter.write_str("Destroy([REDACTED])"),
@@ -1601,6 +1636,8 @@ pub enum ClientBatchOutcome {
     Certify(CertifyResponse),
     /// The server returned a Check result.
     Check(CheckResponse),
+    /// The server returned an Obtain Lease result.
+    ObtainLease(ObtainLeaseResponse),
     /// The server returned an Encrypt result.
     Encrypt(EncryptResponse),
     /// The server returned a Decrypt result.
@@ -1663,6 +1700,7 @@ impl ClientBatchOutcome {
             Self::Completed(_)
             | Self::Certify(_)
             | Self::Check(_)
+            | Self::ObtainLease(_)
             | Self::Encrypt(_)
             | Self::Decrypt(_)
             | Self::Hash(_)
@@ -1699,6 +1737,7 @@ impl ClientBatchOutcome {
             Self::Completed(response) => response.result(),
             Self::Certify(response) => response.result(),
             Self::Check(response) => response.result(),
+            Self::ObtainLease(response) => response.result(),
             Self::Encrypt(response) => response.result(),
             Self::Decrypt(response) => response.result(),
             Self::Hash(response) => response.result(),
@@ -1735,6 +1774,7 @@ impl ClientBatchOutcome {
             Self::Completed(_) => ClientOperation::DiscoverVersions,
             Self::Certify(_) => ClientOperation::Certify,
             Self::Check(_) => ClientOperation::Check,
+            Self::ObtainLease(_) => ClientOperation::ObtainLease,
             Self::Encrypt(_) => ClientOperation::Encrypt,
             Self::Decrypt(_) => ClientOperation::Decrypt,
             Self::Hash(_) => ClientOperation::Hash,
@@ -1796,6 +1836,21 @@ impl ClientBatchOutcome {
             Self::Pending(pending) => match pending.response() {
                 ClientResponseView {
                     response: ClientResponseRef::Check(response),
+                } => Some(response),
+                _ => None,
+            },
+            _ => None,
+        }
+    }
+
+    /// Returns the typed Obtain Lease response, including when its result is Pending.
+    #[must_use]
+    pub const fn obtain_lease_response(&self) -> Option<&ObtainLeaseResponse> {
+        match self {
+            Self::ObtainLease(response) => Some(response),
+            Self::Pending(pending) => match pending.response() {
+                ClientResponseView {
+                    response: ClientResponseRef::ObtainLease(response),
                 } => Some(response),
                 _ => None,
             },
@@ -1963,6 +2018,9 @@ impl ClientBatchOutcome {
             Self::Check(response) => ClientResponseView {
                 response: ClientResponseRef::Check(response),
             },
+            Self::ObtainLease(response) => ClientResponseView {
+                response: ClientResponseRef::ObtainLease(response),
+            },
             Self::Encrypt(response) => ClientResponseView {
                 response: ClientResponseRef::Encrypt(response),
             },
@@ -2051,6 +2109,10 @@ impl fmt::Debug for ClientBatchOutcome {
             }
             Self::Certify(response) => formatter.debug_tuple("Certify").field(response).finish(),
             Self::Check(response) => formatter.debug_tuple("Check").field(response).finish(),
+            Self::ObtainLease(response) => formatter
+                .debug_tuple("ObtainLease")
+                .field(response)
+                .finish(),
             Self::GetCompleted(response) => formatter
                 .debug_tuple("GetCompleted")
                 .field(response)
@@ -2138,6 +2200,9 @@ impl fmt::Display for ClientBatchOutcome {
             Self::Activate(response) => write!(formatter, "Activate({})", response.result()),
             Self::Certify(response) => write!(formatter, "Certify({})", response.result()),
             Self::Check(response) => write!(formatter, "Check({})", response.result()),
+            Self::ObtainLease(response) => {
+                write!(formatter, "ObtainLease({})", response.result())
+            }
             Self::Archive(response) => write!(formatter, "Archive({})", response.result()),
             Self::Destroy(response) => write!(formatter, "Destroy({})", response.result()),
             Self::Recover(response) => write!(formatter, "Recover({})", response.result()),
@@ -2581,6 +2646,47 @@ impl Client {
     ) -> Result<ClientBatchItemResponse, ClientError> {
         let response = self.execute_with_options(
             ClientBatch::new(ClientBatchItem::new(ClientRequest::Check(request))),
+            limits,
+            request_options,
+        )?;
+        take_single_item_response(response.items)
+    }
+
+    /// Executes one typed Obtain Lease request through the shared batch writer.
+    ///
+    /// Use an explicitly ordered multi-item [`ClientBatch`] when the request
+    /// should consume a preceding ID Placeholder. This method does not track
+    /// lease expiry, perform an implicit Poll, or retry.
+    ///
+    /// # Errors
+    ///
+    /// Returns a sanitized validation, protocol, or transport error with the
+    /// strongest available request-delivery evidence.
+    pub fn obtain_lease(
+        &mut self,
+        request: ObtainLeaseRequest,
+        limits: &CodecLimits,
+    ) -> Result<ClientBatchItemResponse, ClientError> {
+        self.obtain_lease_with_options(request, limits, &RequestOptions::default())
+    }
+
+    /// Executes one typed Obtain Lease request with transport timeout overrides.
+    ///
+    /// The shared writer performs one exchange and preserves the server's
+    /// returned Lease Time and Last Change Date without creating local state.
+    ///
+    /// # Errors
+    ///
+    /// Returns a sanitized validation, protocol, or transport error with the
+    /// strongest available request-delivery evidence.
+    pub fn obtain_lease_with_options(
+        &mut self,
+        request: ObtainLeaseRequest,
+        limits: &CodecLimits,
+        request_options: &RequestOptions,
+    ) -> Result<ClientBatchItemResponse, ClientError> {
+        let response = self.execute_with_options(
+            ClientBatch::new(ClientBatchItem::new(ClientRequest::ObtainLease(request))),
             limits,
             request_options,
         )?;
@@ -3738,6 +3844,7 @@ fn request_mutation_is_prohibited(request: &ClientRequest) -> bool {
         | ClientRequest::Archive(_)
         | ClientRequest::Certify(_)
         | ClientRequest::Check(_)
+        | ClientRequest::ObtainLease(_)
         | ClientRequest::Destroy(_)
         | ClientRequest::Recover(_)
         | ClientRequest::Get(_)
@@ -4353,6 +4460,7 @@ fn response_outcome(
         ),
         CERTIFY_OPERATION => certify_response_outcome(item),
         CHECK_OPERATION => check_response_outcome(item),
+        OBTAIN_LEASE_OPERATION => obtain_lease_response_outcome(item),
         ARCHIVE_OPERATION => read_operation_outcome(
             ClientOperation::Archive,
             item,
@@ -4473,6 +4581,19 @@ fn check_response_outcome(
         CheckResponse::result,
         PendingResponse::Check,
         ClientBatchOutcome::Check,
+    )
+}
+
+fn obtain_lease_response_outcome(
+    item: ResponseBatchItemView<'_>,
+) -> Result<ClientBatchOutcome, ProtocolError> {
+    read_operation_outcome(
+        ClientOperation::ObtainLease,
+        item,
+        ObtainLeaseResponse::try_from_response_item,
+        ObtainLeaseResponse::result,
+        PendingResponse::ObtainLease,
+        ClientBatchOutcome::ObtainLease,
     )
 }
 

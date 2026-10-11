@@ -154,7 +154,11 @@ fn obtain_lease_sends_table_268_and_exposes_required_table_269_values_once() {
         ),
         (Some(OBTAIN_LEASE_OPERATION), vec![UNIQUE_IDENTIFIER])
     );
-    assert_eq!(fake.borrow().exchange_count(), 1, "Obtain Lease is never retried");
+    assert_eq!(
+        fake.borrow().exchange_count(),
+        1,
+        "Obtain Lease is never retried"
+    );
 }
 
 #[test]
@@ -209,7 +213,9 @@ fn obtain_lease_pending_preserves_correlation_without_implicit_poll() {
     let response = client
         .execute(batch, &CodecLimits::defaults())
         .expect("caller-enabled typed batch preserves Obtain Lease Pending");
-    let item = response.get(0).expect("one Obtain Lease result is associated");
+    let item = response
+        .get(0)
+        .expect("one Obtain Lease result is associated");
     let ClientBatchOutcome::Pending(pending) = item.outcome() else {
         panic!("the server's Operation Pending result remains Pending");
     };
@@ -266,7 +272,10 @@ fn obtain_lease_can_use_a_preceding_successful_create_placeholder() {
     let request = request
         .as_deref()
         .expect("the ordered Create and Obtain Lease batch reaches the fake transport");
-    assert_eq!(request_fields(request, 1), (Some(OBTAIN_LEASE_OPERATION), vec![]));
+    assert_eq!(
+        request_fields(request, 1),
+        (Some(OBTAIN_LEASE_OPERATION), vec![])
+    );
     assert_eq!(fake.borrow().exchange_count(), 1);
 }
 

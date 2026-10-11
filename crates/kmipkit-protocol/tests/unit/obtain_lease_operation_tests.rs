@@ -114,11 +114,25 @@ fn successful_response_preserves_identifier_zero_lease_time_date_and_extensions(
 
 #[test]
 fn successful_response_rejects_missing_duplicate_or_mistyped_required_fields() {
-    let valid = success_payload();
     let payloads = [
+        structure([
+            item(LEASE_TIME, Value::interval(1)),
+            item(LAST_CHANGE_DATE, Value::date_time(2)),
+        ]),
+        structure([
+            item(UNIQUE_IDENTIFIER, Value::text_string("id".to_owned())),
+            item(LAST_CHANGE_DATE, Value::date_time(2)),
+        ]),
         structure([
             item(UNIQUE_IDENTIFIER, Value::text_string("id".to_owned())),
             item(LEASE_TIME, Value::interval(1)),
+            item(LAST_CHANGE_DATE, Value::integer(2)),
+        ]),
+        structure([
+            item(UNIQUE_IDENTIFIER, Value::text_string("first".to_owned())),
+            item(UNIQUE_IDENTIFIER, Value::text_string("second".to_owned())),
+            item(LEASE_TIME, Value::interval(1)),
+            item(LAST_CHANGE_DATE, Value::date_time(2)),
         ]),
         structure([
             item(UNIQUE_IDENTIFIER, Value::text_string("id".to_owned())),
@@ -128,11 +142,24 @@ fn successful_response_rejects_missing_duplicate_or_mistyped_required_fields() {
         ]),
         structure([
             item(UNIQUE_IDENTIFIER, Value::text_string("id".to_owned())),
+            item(LEASE_TIME, Value::interval(1)),
+            item(LEASE_TIME, Value::interval(2)),
+            item(LAST_CHANGE_DATE, Value::date_time(3)),
+        ]),
+        structure([
+            item(
+                UNIQUE_IDENTIFIER,
+                Value::byte_string(b"not-an-identifier".to_vec()),
+            ),
+            item(LEASE_TIME, Value::interval(1)),
+            item(LAST_CHANGE_DATE, Value::date_time(2)),
+        ]),
+        structure([
+            item(UNIQUE_IDENTIFIER, Value::text_string("id".to_owned())),
             item(LEASE_TIME, Value::integer(1)),
             item(LAST_CHANGE_DATE, Value::date_time(2)),
         ]),
     ];
-    assert!(!valid.view().children().is_empty());
     for payload in payloads {
         assert!(
             typed_response(SUCCESS, None, Some(payload)).is_err(),
