@@ -1,7 +1,7 @@
 # Public Rust Contract: Get and Locate
 
 **Feature**: KMIPKIT-0017<br>
-**Status**: Proposed; release-contract refresh pending review before implementation.<br>
+**Status**: Approved for implementation; release-contract refresh merged in PR #81 at `fd6b7782`.<br>
 **Compatibility**: Additive APIs in kmipkit-protocol and kmipkit-client. No new dependency or unsafe code.
 
 ## Request models
