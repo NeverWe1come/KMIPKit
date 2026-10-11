@@ -150,9 +150,11 @@ def main() -> int:
         root / "docs" / "user-guide" / "en" / "client-execution.md",
         root / "docs" / "user-guide" / "en" / "object-retrieval.md",
         root / "docs" / "user-guide" / "en" / "encrypt-decrypt.md",
+        root / "docs" / "user-guide" / "en" / "key-derivation-and-transfer.md",
         root / "docs" / "user-guide" / "es" / "ejecucion-cliente.md",
         root / "docs" / "user-guide" / "es" / "object-retrieval.md",
         root / "docs" / "user-guide" / "es" / "cifrado-descifrado.md",
+        root / "docs" / "user-guide" / "es" / "derivacion-y-transferencia-de-claves.md",
     ]
 
     try:

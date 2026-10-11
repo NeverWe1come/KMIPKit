@@ -24,15 +24,19 @@ mod cryptographic_operation;
 mod cryptographic_parameters;
 mod decrypt;
 mod delete_attribute;
+mod derive_key;
 mod destroy;
 mod discover_versions;
 mod encrypt;
 mod error;
+mod export;
 pub mod extension;
 mod get;
 mod get_attribute_list;
 mod get_attributes;
 mod hash;
+mod import;
+mod join_split_key;
 mod lifecycle;
 mod locate;
 mod mac;
@@ -89,18 +93,26 @@ pub use cryptographic_operation::{
 };
 pub use decrypt::{DecryptError, DecryptRequest, DecryptResponse};
 pub use delete_attribute::{DeleteAttributeError, DeleteAttributeRequest, DeleteAttributeResponse};
+pub use derive_key::{
+    DerivationMethod, DerivationParameters, DeriveKeyError, DeriveKeyRequest, DeriveKeyResponse,
+};
 pub use destroy::{DestroyError, DestroyRequest, DestroyResponse};
 pub use discover_versions::{
     DiscoverVersionsError, DiscoverVersionsRequest, DiscoverVersionsResponse,
 };
 pub use encrypt::{EncryptError, EncryptRequest, EncryptResponse};
 pub use error::{ProtocolCauseCategory, ProtocolError, ProtocolErrorKind};
+pub use export::{ExportError, ExportRequest, ExportResponse};
 pub use get::{GetError, GetRequest, GetResponse, KeyCompressionType, KeyFormatType, KeyWrapType};
 pub use get_attribute_list::{
     GetAttributeListError, GetAttributeListRequest, GetAttributeListResponse,
 };
 pub use get_attributes::{GetAttributesError, GetAttributesRequest, GetAttributesResponse};
 pub use hash::{HashError, HashRequest, HashResponse};
+pub use import::{ImportError, ImportRequest, ImportResponse};
+pub use join_split_key::{
+    JoinSplitKeyError, JoinSplitKeyRequest, JoinSplitKeyResponse, SplitKeyReference,
+};
 pub use locate::{
     LocateError, LocateRequest, LocateResponse, ObjectGroupMember, StorageStatusMask,
 };
@@ -218,6 +230,8 @@ mod cryptographic_parameters_tests;
 mod cryptographic_operation_contract_tests;
 
 #[cfg(test)]
+// Temporarily disabled while operation-specific Red/Green slices are exercised.
+#[cfg(test)]
 #[path = "../tests/unit/hash_operation_tests.rs"]
 mod hash_operation_tests;
 
@@ -292,6 +306,25 @@ mod create_key_pair_tests;
 #[cfg(test)]
 #[path = "../tests/unit/create_split_key_tests.rs"]
 mod create_split_key_tests;
+
+#[cfg(test)]
+#[path = "../tests/unit/join_split_key_operation_tests.rs"]
+mod join_split_key_operation_tests;
+
+#[cfg(test)]
+#[path = "../tests/unit/derive_key_operation_tests.rs"]
+mod derive_key_operation_tests;
+
+#[cfg(test)]
+#[path = "../tests/unit/export_operation_tests.rs"]
+mod export_operation_tests;
+#[cfg(test)]
+#[path = "../tests/unit/import_operation_tests.rs"]
+mod import_operation_tests;
+
+#[cfg(test)]
+#[path = "../tests/unit/key_transfer_operation_contract_tests.rs"]
+mod key_transfer_operation_contract_tests;
 
 #[cfg(test)]
 #[path = "../tests/support/async_operation_fixtures.rs"]

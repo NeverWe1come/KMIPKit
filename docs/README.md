@@ -33,6 +33,8 @@ tests, and the conformance matrix.
 - [Operaciones de ciclo de vida y certificados (Español)](user-guide/es/operaciones-ciclo-vida-y-certificados.md)
 - [Inspecting KMIP messages (English)](user-guide/en/message-model.md)
 - [Inspeccionar mensajes KMIP (Español)](user-guide/es/modelo-mensaje.md)
+- [Key derivation and transfer (English)](user-guide/en/key-derivation-and-transfer.md)
+- [Derivación y transferencia de claves (Español)](user-guide/es/derivacion-y-transferencia-de-claves.md)
 
 ## Architecture
 
