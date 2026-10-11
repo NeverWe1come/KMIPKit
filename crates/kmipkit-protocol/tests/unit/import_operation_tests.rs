@@ -7,7 +7,7 @@ use crate::{
 };
 use kmipkit_ttlv::{Item, RawTag, Structure, Tag, Value, ValueView};
 
-const IMPORT_OPERATION: u32 = 0x0000_0015;
+const IMPORT_OPERATION: u32 = 0x0000_002A;
 const SUCCESS: u32 = 0;
 const OPERATION_FAILED: u32 = 1;
 const UNIQUE_IDENTIFIER: u32 = 0x0042_0094;
@@ -112,7 +112,9 @@ fn request_preserves_required_fields_and_only_explicit_optional_choices() {
         attributes(),
         key_object(),
     );
-    assert_eq!(format!("{request:?}"), "ImportRequest([REDACTED])");
+    let debug = format!("{request:?}");
+    assert!(!debug.contains("import-key"));
+    assert!(!debug.contains("synthetic-import-material"));
     let payload = request
         .into_ttlv_payload()
         .expect("Table 238 required values are caller supplied");

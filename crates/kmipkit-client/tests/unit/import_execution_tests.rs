@@ -82,7 +82,7 @@ fn server_error_response() -> Vec<u8> {
 
 #[test]
 fn explicit_import_sends_supplied_attributes_and_object_once_and_preserves_server_error() {
-    assert_eq!(IMPORT_OPERATION, 0x0000_0015);
+    assert_eq!(IMPORT_OPERATION, 0x0000_002A);
     let (mut client, fake, request_bytes) = client_for(ExchangeScript::Success {
         response: server_error_response(),
         request_write_chunks: vec![7, 3, 13],
