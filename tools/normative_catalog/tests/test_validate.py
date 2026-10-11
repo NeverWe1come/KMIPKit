@@ -6988,8 +6988,8 @@ class CatalogValidationTests(unittest.TestCase):
         self.assertEqual(
             [(row["source_keyword"], row["actor"], row["scope_disposition"], row["candidate_requirement_id"])
              for row in seed_behavior["source_obligations"]],
-            [("MAY", "server", "server_only", None),
-             ("MAY", "server", "server_only", None),
+            [("MAY", "server", "server_only", "KMIPKIT-REQ-SPEC-6.1.50-002"),
+             ("MAY", "server", "server_only", "KMIPKIT-REQ-SPEC-6.1.50-003"),
              ("SHALL NOT", "client", "client_1_0", "KMIPKIT-REQ-SPEC-6.1.50-001")],
         )
         self.assertEqual(seed_behavior["expected_client_requirement_ids"], ["KMIPKIT-REQ-SPEC-6.1.50-001"])
@@ -7001,7 +7001,28 @@ class CatalogValidationTests(unittest.TestCase):
         self.assertEqual(mixed_clause["direction"], "both")
         self.assertEqual(mixed_clause["scope_state"], "mixed")
         self.assertEqual(mixed_clause["disposition"], "requirement")
-        self.assertEqual(mixed_clause["requirement_ids"], ["KMIPKIT-REQ-SPEC-6.1.50-001"])
+        self.assertEqual(mixed_clause["requirement_ids"], [
+            "KMIPKIT-REQ-SPEC-6.1.50-002",
+            "KMIPKIT-REQ-SPEC-6.1.50-003",
+            "KMIPKIT-REQ-SPEC-6.1.50-001",
+        ])
+        server_requirements = {
+            row["requirement_id"]: row for row in catalog["requirements"]
+            if row["requirement_id"] in {
+                "KMIPKIT-REQ-SPEC-6.1.50-002",
+                "KMIPKIT-REQ-SPEC-6.1.50-003",
+            }
+        }
+        self.assertEqual(set(server_requirements), {
+            "KMIPKIT-REQ-SPEC-6.1.50-002",
+            "KMIPKIT-REQ-SPEC-6.1.50-003",
+        })
+        self.assertEqual(
+            [(row["source_keyword"], row["role"], row["direction"], row["scope_state"])
+             for row in server_requirements.values()],
+            [("MAY", "server", "client_to_server", "server_only"),
+             ("MAY", "server", "server_to_client", "server_only")],
+        )
 
         request_review = reviews["KMIPKIT-CLAUSE-SPEC-6.1.50-002"]
         request_rows = request_review["source_request_rows"]
@@ -7045,14 +7066,18 @@ class CatalogValidationTests(unittest.TestCase):
         self.assertEqual(gap["source_excerpt"], pinned_source_excerpt(source_path, [35498, 35516]))
         self.assertEqual(
             (gap["source_force"], gap["actor"], gap["scope_disposition"], gap["candidate_requirement_id"], gap["proposed_requirement_id"]),
-            ("required_table_body_value", "client", "client_1_0", None, "KMIPKIT-REQ-SPEC-6.1.50-002"),
+            ("required_table_body_value", "client", "client_1_0", None, "KMIPKIT-REQ-SPEC-6.1.50-004"),
         )
         self.assertEqual(gap["source_clause_id"], None)
         self.assertIn("Data", gap["direction"])
         self.assertEqual(
             [(row["requirement_id"], row["source_clause_id"], row["source_obligation_order"], row["source_keyword"], row["source_actor"])
              for row in oracle["requirement_crosswalk"] if row["source_section"] == "6.1.50"],
-            [("KMIPKIT-REQ-SPEC-6.1.50-001", "KMIPKIT-CLAUSE-SPEC-6.1.50-001", 3, "SHALL NOT", "client")],
+            [
+                ("KMIPKIT-REQ-SPEC-6.1.50-002", "KMIPKIT-CLAUSE-SPEC-6.1.50-001", 1, "MAY", "server"),
+                ("KMIPKIT-REQ-SPEC-6.1.50-003", "KMIPKIT-CLAUSE-SPEC-6.1.50-001", 2, "MAY", "server"),
+                ("KMIPKIT-REQ-SPEC-6.1.50-001", "KMIPKIT-CLAUSE-SPEC-6.1.50-001", 3, "SHALL NOT", "client"),
+            ],
         )
         for caption, line_range in (("Table 319: RNG Seed Request Payload", [35522, 35522]),
                                     ("Table 320: RNG Seed Response Payload", [35577, 35577]),
@@ -12525,7 +12550,7 @@ class CatalogValidationTests(unittest.TestCase):
                 "KMIPKIT-REQ-SPEC-6.1.39-001",
                 "KMIPKIT-REQ-SPEC-6.1.44-004",
                 "KMIPKIT-REQ-SPEC-6.1.49-001",
-                "KMIPKIT-REQ-SPEC-6.1.50-002",
+                "KMIPKIT-REQ-SPEC-6.1.50-004",
             }
             expected_scope = (
                 "client_1_0"
