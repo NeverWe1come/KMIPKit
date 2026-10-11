@@ -68,7 +68,7 @@
 - [ ] T041 Run independent specification QA against `spec.md`, `plan.md`, `tasks.md`, the pinned-source closure oracle, catalog assignments, tests, and generated reports; resolve findings before review.
 - [x] T042 Run independent security review of catalog safe-loading, bounded target-manifest parsing and target/runtime separation, Rust literal escaping, generated metadata, profile selection, error redaction, request preflight, CI evidence producer trust, and readiness-state reconciliation; resolve findings before review.
 - [ ] T043 Verify live repository protection for `release/1.0.0` through the same read-only API contract used by readiness; record the currently observed policy state, and keep readiness blocked if administrator-owned controls or the protected Actions app secret are absent. Update the feature branch from the current `release/1.0.0`, resolve conflicts, rerun all required checks, and verify the branch is clean.
-- [ ] T044 Open a draft PR to `release/1.0.0` describing changes, Red/Green/Refactor commits, verification evidence, risks, and the 16 missing mandatory fixture blockers; do not make a public conformance claim.
+- [x] T044 Open a draft PR to `release/1.0.0` describing changes, Red/Green/Refactor commits, verification evidence, risks, and the 16 missing mandatory fixture blockers; do not make a public conformance claim.
 
 ## Dependencies and gates
 
