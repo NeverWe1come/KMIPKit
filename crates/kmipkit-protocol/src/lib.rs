@@ -82,6 +82,7 @@ mod set_defaults_tests;
 mod sign;
 mod signature_verify;
 mod ticket;
+mod validate;
 
 pub use activate::{ActivateError, ActivateRequest, ActivateResponse};
 pub use add_attribute::{AddAttributeError, AddAttributeRequest, AddAttributeResponse};
@@ -176,6 +177,7 @@ pub use set_defaults::{SetDefaultsError, SetDefaultsRequest, SetDefaultsResponse
 pub use sign::{SignError, SignRequest, SignResponse};
 pub use signature_verify::{SignatureVerifyError, SignatureVerifyRequest, SignatureVerifyResponse};
 pub use ticket::{Ticket, TicketType, TicketValidationError, TicketValidationErrorKind};
+pub use validate::{ValidateError, ValidateRequest, ValidateResponse};
 
 #[cfg(test)]
 #[path = "../tests/unit/discover_versions_tests.rs"]
