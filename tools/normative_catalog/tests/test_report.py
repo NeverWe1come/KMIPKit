@@ -65,6 +65,63 @@ def report_catalog() -> dict[str, object]:
 
 
 class CoverageReportTests(unittest.TestCase):
+    def test_profile_readiness_blocks_unresolved_scope_in_its_clause_closure(self) -> None:
+        from tools.normative_catalog.report import evaluate_profile_readiness
+
+        catalog = report_catalog()
+        catalog["profiles"] = [
+            {
+                "profile_id": "KMIPKIT-PROFILE-BASELINE",
+                "role": "client",
+                "applicability": "client_1_0",
+                "claim_state": "not_claimed",
+                "source_clause_ids": ["KMIPKIT-CLAUSE-SPEC-8.1-001"],
+                "requirement_ids": ["KMIPKIT-REQ-SPEC-8.1-001"],
+                "dependency_profile_ids": [],
+                "test_case_ids": ["KMIPKIT-TEST-PROFILE-BASELINE"],
+            }
+        ]
+        catalog["requirements"].extend(
+            [
+                {
+                    "requirement_id": "KMIPKIT-REQ-SPEC-8.1-UNCLEAR",
+                    "source_clause_ids": ["KMIPKIT-CLAUSE-SPEC-8.1-001"],
+                    "role": "client",
+                    "scope_state": "unclear",
+                    "implementation_refs": [],
+                    "verification_refs": [],
+                },
+                {
+                    "requirement_id": "KMIPKIT-REQ-SPEC-8.1-CONDITIONAL",
+                    "source_clause_ids": ["KMIPKIT-CLAUSE-SPEC-8.1-001"],
+                    "role": "both",
+                    "scope_state": "profile_conditional",
+                    "profile_ids": [],
+                    "implementation_refs": [],
+                    "verification_refs": [],
+                },
+            ]
+        )
+
+        readiness = evaluate_profile_readiness(
+            catalog,
+            "KMIPKIT-PROFILE-BASELINE",
+            selected_profile_ids={"KMIPKIT-PROFILE-BASELINE"},
+            typed_rule_mappings=[],
+            verification_manifest=None,
+            current_context=None,
+        )
+
+        self.assertIn(
+            "unresolved applicability scope: KMIPKIT-REQ-SPEC-8.1-UNCLEAR",
+            readiness["blockers"],
+        )
+        self.assertIn(
+            "unresolved applicability scope: KMIPKIT-REQ-SPEC-8.1-CONDITIONAL",
+            readiness["blockers"],
+        )
+        self.assertFalse(readiness["runtime_validation_available"])
+
     def test_readiness_cli_reports_missing_current_run_manifest_without_publishing(self) -> None:
         from tools.normative_catalog import report as report_module
 

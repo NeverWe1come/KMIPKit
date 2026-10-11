@@ -44,6 +44,29 @@ fn baseline_target_membership_does_not_make_runtime_selection_available() {
 }
 
 #[test]
+fn baseline_selection_reports_unresolved_applicability_before_rule_mapping() {
+    let error = ProfileValidationSelection::new([BASELINE])
+        .validate()
+        .expect_err("unresolved applicability in the source closure must fail closed");
+
+    assert_eq!(error.code().as_str(), "unresolved_requirement_scope");
+    assert!(error.requirement_id().is_some());
+    assert!(error.source_clause_id().is_some());
+}
+
+#[test]
+fn profile_readiness_exposes_unresolved_applicability_blockers() {
+    let readiness = kmipkit_protocol::ProfileReadiness::evaluate(BASELINE, &[])
+        .expect("Baseline Client is present in generated profile metadata");
+
+    assert!(readiness
+        .blockers()
+        .iter()
+        .any(|blocker| blocker.as_str() == "profile requirement applicability is unresolved"));
+    assert!(!readiness.runtime_validation_available());
+}
+
+#[test]
 fn in_scope_non_target_profile_uses_dependency_closure_without_target_gating() {
     let target = CLIENT_PROFILES
         .iter()

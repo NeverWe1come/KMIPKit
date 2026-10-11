@@ -328,6 +328,50 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
         self.assertIn("KMIPKIT-REQ-PROF-3.1.1-001", baseline.requirement_ids)
         self.assertNotIn("KMIPKIT-REQ-PROF-3.1.1-001", unrelated.requirement_ids)
 
+    def test_closure_reports_unresolved_client_scope_without_applying_it(self) -> None:
+        catalog = closure_catalog()
+        catalog["requirements"].extend(
+            [
+                {
+                    "requirement_id": "KMIPKIT-REQ-SPEC-1.1-UNCLEAR",
+                    "source_clause_ids": ["KMIPKIT-CLAUSE-SPEC-1.1-001"],
+                    "role": "client",
+                    "scope_state": "unclear",
+                },
+                {
+                    "requirement_id": "KMIPKIT-REQ-SPEC-2-CONDITIONAL",
+                    "source_clause_ids": ["KMIPKIT-CLAUSE-SPEC-2-001"],
+                    "role": "both",
+                    "scope_state": "profile_conditional",
+                    "profile_ids": [],
+                },
+            ]
+        )
+
+        closure = compute_profile_closure(
+            catalog,
+            ["KMIPKIT-CLAUSE-PROF-6.1-001"],
+            profile_id="KMIPKIT-PROFILE-BASELINE-CLIENT",
+        )
+
+        self.assertNotIn("KMIPKIT-REQ-SPEC-1.1-UNCLEAR", closure.requirement_ids)
+        self.assertNotIn("KMIPKIT-REQ-SPEC-2-CONDITIONAL", closure.requirement_ids)
+        blockers = getattr(closure, "unresolved_scope_obligations", ())
+        self.assertEqual(
+            [
+                (item.requirement_id, item.source_clause_id, item.scope_state)
+                for item in blockers
+            ],
+            [
+                ("KMIPKIT-REQ-SPEC-1.1-UNCLEAR", "KMIPKIT-CLAUSE-SPEC-1.1-001", "unclear"),
+                (
+                    "KMIPKIT-REQ-SPEC-2-CONDITIONAL",
+                    "KMIPKIT-CLAUSE-SPEC-2-001",
+                    "profile_conditional",
+                ),
+            ],
+        )
+
     def test_closure_rejects_recursive_normative_inclusion_cycles(self) -> None:
         catalog = closure_catalog()
         inclusions = catalog["normative_inclusions"]
