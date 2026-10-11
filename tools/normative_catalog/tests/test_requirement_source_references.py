@@ -77,6 +77,22 @@ class RequirementSourceReferenceTests(unittest.TestCase):
         self.assertEqual(catalog_clause["source_keywords"], audited_clause["source_keywords"])
         self.assertEqual(requirement["source_keyword"], "MAY")
 
+    def test_out_of_scope_profile_clause_keyword_inventory_matches_pinned_source(self) -> None:
+        catalog = json.loads(
+            (ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8")
+        )
+        source_id = "KMIPKIT-SRC-profiles"
+        clause_id = "KMIPKIT-CLAUSE-PROF-4.1.2-008"
+        source_path = ROOT / "specification" / "oasis" / "kmip-2.1" / "upstream" / "kmip-profiles-v2.1-os.html"
+        audited_clause = next(
+            item for item in audit_document(source_path.read_bytes(), source_id) if item["clause_id"] == clause_id
+        )
+        catalog_clause = next(
+            item for item in catalog["source_clauses"] if item["clause_id"] == clause_id
+        )
+
+        self.assertEqual(catalog_clause["source_keywords"], audited_clause["source_keywords"])
+
 
 if __name__ == "__main__":
     unittest.main()
