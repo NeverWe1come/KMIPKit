@@ -34,6 +34,11 @@ Run pinned generation-drift, security/dependency, and supported-platform CI chec
 
 Record separate Red, Green, and Refactor commit IDs per operation in the draft PR. Include focused/full-suite commands, coverage and traceability results, generator status, binding parity state, unavailable fixture notes, risks, and actual test outputs. Update this guide with results only during implementation.
 
+### Check (US2) maintainer clarification
+
+- The maintainer approved applying §6.1.7 to failed Check responses: preserve and type each returned `Usage Limits Count`, `Cryptographic Usage Mask`, and `Lease Time`; a failed response still does not require `Unique Identifier`.
+- Follow-up protocol and fake-client tests now exercise all three policy fields together on `Operation Failed`. `cargo test -p kmipkit-protocol policy_denial_response_returns_the_policy_value_without_a_success_identifier` and `cargo test -p kmipkit-client check_policy_denial_exposes_the_returned_mask_without_an_identifier` passed; focused Clippy, format, and diff checks passed.
+
 ### Re-key Key Pair (US6)
 
 - RED protocol: `cargo test -p kmipkit-protocol rekey_key_pair_operation_tests --no-fail-fast` failed as expected because `RekeyKeyPairRequest`, `RekeyKeyPairResponse`, and `RekeyKeyPairError` were not yet exported.
