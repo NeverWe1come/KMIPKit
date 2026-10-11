@@ -32,7 +32,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     )?])?;
     let query = LocateRequest::new(attributes)
         .with_maximum_items(25)
-        .with_offset_item(0);
+        .with_offset_items(0);
 
     assert_eq!(query.attributes().len(), 1);
     assert_eq!(query.maximum_items(), Some(25));
@@ -200,7 +200,7 @@ inspección a los metadatos permitidos, como `Object Type` y `Unique
 Identifier`, y al tag del elemento genérico `Any Object`. No inspecciones la
 estructura de `Any Object` ni sus descendientes, que pueden contener datos
 secretos. Trata el contenido como secreto: no formatees ni registres el
-objeto, material de claves o cuerpos KMIP sin procesar. El almacenamiento TTLV
+objeto, material de claves, especificaciones de envoltura o cuerpos KMIP sin procesar. El almacenamiento TTLV
 propiedad de KMIPKit se pone a cero al descartarlo; las copias creadas por el
 llamador quedan fuera de esa garantía.
 
