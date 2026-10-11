@@ -4293,12 +4293,7 @@ impl Client {
         limits: &CodecLimits,
         options: &RequestOptions,
     ) -> Result<ClientBatchItemResponse, ClientError> {
-        let response = self.execute_with_options(
-            ClientBatch::new(ClientBatchItem::new(ClientRequest::Pkcs11(request))),
-            limits,
-            options,
-        )?;
-        take_single_response(response)
+        self.execute_one_typed_request(ClientRequest::pkcs11(request), limits, options)
     }
 
     /// Executes one client-to-server Ping request.
@@ -6081,14 +6076,7 @@ fn response_outcome(
             PendingResponse::Query,
             ClientBatchOutcome::Query,
         ),
-        PKCS11_OPERATION => read_operation_outcome(
-            ClientOperation::Pkcs11,
-            item,
-            Pkcs11Response::try_from_response_item,
-            Pkcs11Response::result,
-            PendingResponse::Pkcs11,
-            ClientBatchOutcome::Pkcs11,
-        ),
+        PKCS11_OPERATION => pkcs11_response_outcome(item),
         PING_OPERATION => read_operation_outcome(
             ClientOperation::Ping,
             item,
@@ -6134,6 +6122,19 @@ fn response_outcome(
         GET_ATTRIBUTE_LIST_OPERATION => get_attribute_list_response_outcome(item),
         _ => Err(protocol_error(ProtocolErrorKind::UnsupportedValue)),
     }
+}
+
+fn pkcs11_response_outcome(
+    item: ResponseBatchItemView<'_>,
+) -> Result<ClientBatchOutcome, ProtocolError> {
+    read_operation_outcome(
+        ClientOperation::Pkcs11,
+        item,
+        Pkcs11Response::try_from_response_item,
+        Pkcs11Response::result,
+        PendingResponse::Pkcs11,
+        ClientBatchOutcome::Pkcs11,
+    )
 }
 
 fn get_constraints_response_outcome(
