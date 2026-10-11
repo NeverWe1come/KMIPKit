@@ -180,6 +180,10 @@ mod reprovision_operation_tests;
 mod register_operation_tests;
 
 #[cfg(test)]
+#[path = "../tests/unit/revoke_operation_tests.rs"]
+mod revoke_operation_tests;
+
+#[cfg(test)]
 #[path = "../tests/unit/destroy_operation_tests.rs"]
 mod destroy_operation_tests;
 

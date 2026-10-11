@@ -224,6 +224,10 @@ mod reprovision_execution_tests;
 mod register_execution_tests;
 
 #[cfg(test)]
+#[path = "../tests/unit/revoke_execution_tests.rs"]
+mod revoke_execution_tests;
+
+#[cfg(test)]
 #[path = "../tests/unit/object_read_execution_tests.rs"]
 mod object_read_execution_tests;
 
