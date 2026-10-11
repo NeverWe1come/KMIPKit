@@ -37,7 +37,8 @@ fn table_325_requires_and_preserves_the_ordered_constraints_structure() {
     let payload = SetConstraintsRequest::new(requested)
         .to_ttlv_payload()
         .expect("Table 325 Constraints Structure is representable");
-    let fields = payload.view().children();
+    let payload_view = payload.view();
+    let fields = payload_view.children();
     assert_eq!(fields.len(), 1);
     assert_eq!(fields[0].tag().raw(), CONSTRAINTS);
     assert_eq!(fields[0].item_type(), ItemType::Structure);

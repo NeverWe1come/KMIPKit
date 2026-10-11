@@ -86,7 +86,7 @@ Each task uses `[ ] T### [US#] action in exact/repository/path`. Every implement
 
 ### Green commit
 
-- [ ] T012 [US3] Implement `SetConstraintsRequest`/`SetConstraintsResponse` in `crates/kmipkit-protocol/src/set_constraints.rs`, export via protocol/facade `lib.rs`, and add typed execution in `crates/kmipkit-client/src/execute.rs` and `crates/kmipkit-client/src/lib.rs`; pass T011 and commit separately as Green.
+- [x] T012 [US3] Implement `SetConstraintsRequest`/`SetConstraintsResponse` in `crates/kmipkit-protocol/src/set_constraints.rs`, export via protocol/facade `lib.rs`, and add typed execution in `crates/kmipkit-client/src/execute.rs` and `crates/kmipkit-client/src/lib.rs`; pass T011 and commit separately as Green. Success requires the common Response Payload Structure and preserves its full TTLV, including unknown vendor fields, while applying Table 326's empty known payload. The client exposes both `ClientRequest::set_constraints` and `Client::set_constraints`; Pending remains explicit with no polling/retry. Verified 6 protocol and 5 client focused tests, focused Clippy (`-D warnings`), formatting, and `git diff --check`. Independent QA approved the implementation and API wiring.
 
 ### Refactor commit
 

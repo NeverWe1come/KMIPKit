@@ -65,6 +65,7 @@ mod reprovision;
 mod result;
 mod revoke;
 mod set_attribute;
+mod set_constraints;
 #[cfg(test)]
 #[path = "../tests/unit/set_constraints_tests.rs"]
 mod set_constraints_tests;
@@ -158,6 +159,7 @@ pub use result::{
 };
 pub use revoke::{RevocationReason, RevokeError, RevokeRequest, RevokeResponse};
 pub use set_attribute::{SetAttributeError, SetAttributeRequest, SetAttributeResponse};
+pub use set_constraints::{SetConstraintsError, SetConstraintsRequest, SetConstraintsResponse};
 pub use sign::{SignError, SignRequest, SignResponse};
 pub use signature_verify::{SignatureVerifyError, SignatureVerifyRequest, SignatureVerifyResponse};
 pub use ticket::{Ticket, TicketType, TicketValidationError, TicketValidationErrorKind};

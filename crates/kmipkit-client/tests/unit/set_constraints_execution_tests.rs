@@ -118,6 +118,31 @@ fn table_325_request_is_required_ordered_and_sent_once() {
 }
 
 #[test]
+fn typed_set_constraints_convenience_call_returns_the_operation_result() {
+    let (mut client, fake, _) = client_for(ExchangeScript::Success {
+        response: asynchronous_response_bytes(
+            SET_CONSTRAINTS,
+            0,
+            None,
+            None,
+            Some(test_structure([])),
+        ),
+        request_write_chunks: Vec::new(),
+    });
+    let response = client
+        .set_constraints(
+            SetConstraintsRequest::new(constraints()),
+            &CodecLimits::defaults(),
+        )
+        .expect("the typed convenience method executes one request");
+    assert_eq!(fake.borrow().exchange_count(), 1);
+    let outcome = response.outcome();
+    let response_view = outcome.response();
+    let typed = response_view.set_constraints().expect("typed result");
+    assert_eq!(typed.result().status().raw(), 0);
+}
+
+#[test]
 fn table_327_failure_alternatives_are_preserved_without_retry() {
     // Table 327 repeats Invalid Field. KMIPKIT-DISC-020 associates this error
     // introduction with Set Constraints; the table's reasons remain binding.
@@ -142,7 +167,8 @@ fn table_327_failure_alternatives_are_preserved_without_retry() {
             .expect("Operation Failed remains a typed KMIP result");
         let outcome = result.get(0).expect("one result").outcome();
         assert_eq!(fake.borrow().exchange_count(), 1);
-        let response = outcome.response().set_constraints().expect("typed result");
+        let response_view = outcome.response();
+        let response = response_view.set_constraints().expect("typed result");
         assert_eq!(response.result().status().raw(), 1);
         assert_eq!(
             response.result().reason(),

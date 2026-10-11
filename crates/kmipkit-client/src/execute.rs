@@ -35,7 +35,8 @@ use kmipkit_protocol::{
     RecoverResponse, RegisterRequest, RegisterResponse, RekeyKeyPairRequest, RekeyKeyPairResponse,
     RekeyRequest, RekeyResponse, RequestMessage, ResponseBatchItemView, ResponseMessage,
     ResultStatus, RevokeRequest, RevokeResponse, SetAttributeRequest, SetAttributeResponse,
-    SignRequest, SignResponse, SignatureVerifyRequest, SignatureVerifyResponse,
+    SetConstraintsRequest, SetConstraintsResponse, SignRequest, SignResponse,
+    SignatureVerifyRequest, SignatureVerifyResponse,
 };
 
 #[cfg(test)]
@@ -185,6 +186,7 @@ const QUERY_ASYNCHRONOUS_REQUESTS_OPERATION: u32 = 0x0000_0039;
 const PROCESS_OPERATION: u32 = 0x0000_003A;
 const PING_OPERATION: u32 = 0x0000_003B;
 const GET_CONSTRAINTS_OPERATION: u32 = 0x0000_0038; // KMIP v2.1 §6.1.22, Table 229.
+const SET_CONSTRAINTS_OPERATION: u32 = 0x0000_0037; // KMIP v2.1 §6.1.52, Table 325.
 const GET_USAGE_ALLOCATION_OPERATION: u32 = 0x0000_0011; // §6.1.23, Table 232.
 const QUERY_OPERATION: u32 = 0x0000_0018;
 const ASYNCHRONOUS_MANDATORY: u32 = 1;
@@ -263,6 +265,8 @@ pub enum ClientRequest {
     Ping(PingRequest),
     /// An explicit client-to-server Get Constraints request.
     GetConstraints(GetConstraintsRequest),
+    /// An explicit client-to-server Set Constraints request.
+    SetConstraints(SetConstraintsRequest),
     /// An explicit client-to-server Get Usage Allocation request.
     GetUsageAllocation(GetUsageAllocationRequest),
     /// An explicit client-to-server Query request.
@@ -308,6 +312,12 @@ impl ClientRequest {
     #[must_use]
     pub const fn get_constraints() -> Self {
         Self::GetConstraints(GetConstraintsRequest::new())
+    }
+
+    /// Creates a typed client-to-server Set Constraints request.
+    #[must_use]
+    pub fn set_constraints(request: SetConstraintsRequest) -> Self {
+        Self::SetConstraints(request)
     }
 
     /// Creates a typed client-to-server Get Usage Allocation request.
@@ -571,6 +581,7 @@ impl ClientRequest {
             Self::GetAttributeList(_) => GET_ATTRIBUTE_LIST_OPERATION,
             Self::Ping(_) => PING_OPERATION,
             Self::GetConstraints(_) => GET_CONSTRAINTS_OPERATION,
+            Self::SetConstraints(_) => SET_CONSTRAINTS_OPERATION,
             Self::GetUsageAllocation(_) => GET_USAGE_ALLOCATION_OPERATION,
             Self::Query(_) => QUERY_OPERATION,
             Self::Encrypt(_) => ENCRYPT_OPERATION,
@@ -674,6 +685,7 @@ impl ClientRequest {
             Self::GetAttributeList(request) => request.to_ttlv_payload(),
             Self::Ping(request) => request.to_ttlv_payload(),
             Self::GetConstraints(request) => request.to_ttlv_payload(),
+            Self::SetConstraints(request) => request.to_ttlv_payload(),
             Self::GetUsageAllocation(request) => request.to_ttlv_payload(),
             Self::Query(request) => request.to_ttlv_payload(),
             Self::Encrypt(request) => request.to_ttlv_payload(),
@@ -741,6 +753,10 @@ impl fmt::Debug for ClientRequest {
                 .finish(),
             Self::Ping(_) => formatter.write_str("Ping"),
             Self::GetConstraints(_) => formatter.write_str("GetConstraints"),
+            Self::SetConstraints(request) => formatter
+                .debug_tuple("SetConstraints")
+                .field(request)
+                .finish(),
             Self::GetUsageAllocation(request) => formatter
                 .debug_tuple("GetUsageAllocation")
                 .field(request)
@@ -1057,6 +1073,7 @@ enum PendingResponse {
     GetAttributeList(GetAttributeListResponse),
     Ping(PingResponse),
     GetConstraints(GetConstraintsResponse),
+    SetConstraints(SetConstraintsResponse),
     GetUsageAllocation(GetUsageAllocationResponse),
     Query(QueryResponse),
 }
@@ -1106,6 +1123,7 @@ impl PendingResponse {
             Self::GetAttributeList(response) => ClientResponseRef::GetAttributeList(response),
             Self::Ping(response) => ClientResponseRef::Ping(response),
             Self::GetConstraints(response) => ClientResponseRef::GetConstraints(response),
+            Self::SetConstraints(response) => ClientResponseRef::SetConstraints(response),
             Self::GetUsageAllocation(response) => ClientResponseRef::GetUsageAllocation(response),
             Self::Query(response) => ClientResponseRef::Query(response),
         };
@@ -1330,6 +1348,8 @@ pub enum ClientOperation {
     Ping,
     /// Read the server's Constraints Structure.
     GetConstraints,
+    /// Configure the server's Constraints Structure.
+    SetConstraints,
     /// Allocate Usage Limits Units for a managed object.
     GetUsageAllocation,
     /// Query one server for explicitly requested protocol information.
@@ -1521,6 +1541,7 @@ enum ClientResponseRef<'a> {
     GetAttributeList(&'a GetAttributeListResponse),
     Ping(&'a PingResponse),
     GetConstraints(&'a GetConstraintsResponse),
+    SetConstraints(&'a SetConstraintsResponse),
     GetUsageAllocation(&'a GetUsageAllocationResponse),
     Query(&'a QueryResponse),
 }
@@ -1587,6 +1608,7 @@ impl<'a> ClientResponseView<'a> {
             ClientResponseRef::GetAttributeList(response) => response.result(),
             ClientResponseRef::Ping(response) => response.result(),
             ClientResponseRef::GetConstraints(response) => response.result(),
+            ClientResponseRef::SetConstraints(response) => response.result(),
             ClientResponseRef::GetUsageAllocation(response) => response.result(),
             ClientResponseRef::Query(response) => response.result(),
         }
@@ -1983,6 +2005,15 @@ impl<'a> ClientResponseView<'a> {
         }
     }
 
+    /// Returns a Set Constraints response, including a Pending result.
+    #[must_use]
+    pub const fn set_constraints(&self) -> Option<&SetConstraintsResponse> {
+        match self.response {
+            ClientResponseRef::SetConstraints(response) => Some(response),
+            _ => None,
+        }
+    }
+
     /// Returns a Get Usage Allocation response, including a Pending result.
     #[must_use]
     pub const fn get_usage_allocation(&self) -> Option<&GetUsageAllocationResponse> {
@@ -2114,6 +2145,9 @@ impl fmt::Debug for ClientResponseView<'_> {
             ClientResponseRef::GetConstraints(response) => {
                 debug_response(formatter, "GetConstraints", response)
             }
+            ClientResponseRef::SetConstraints(response) => {
+                debug_response(formatter, "SetConstraints", response)
+            }
             ClientResponseRef::GetUsageAllocation(response) => {
                 debug_response(formatter, "GetUsageAllocation", response)
             }
@@ -2211,6 +2245,8 @@ pub enum ClientBatchOutcome {
     Ping(PingResponse),
     /// The server returned a Get Constraints result.
     GetConstraints(GetConstraintsResponse),
+    /// The server returned a Set Constraints result.
+    SetConstraints(SetConstraintsResponse),
     /// The server returned a Get Usage Allocation result.
     GetUsageAllocation(GetUsageAllocationResponse),
     /// The server returned a Query result.
@@ -2264,6 +2300,7 @@ impl ClientBatchOutcome {
             | Self::GetAttributeList(_)
             | Self::Ping(_)
             | Self::GetConstraints(_)
+            | Self::SetConstraints(_)
             | Self::GetUsageAllocation(_)
             | Self::Query(_) => None,
             Self::Pending(pending) => Some(pending.asynchronous_correlation_value()),
@@ -2316,6 +2353,7 @@ impl ClientBatchOutcome {
             Self::GetAttributeList(response) => response.result(),
             Self::Ping(response) => response.result(),
             Self::GetConstraints(response) => response.result(),
+            Self::SetConstraints(response) => response.result(),
             Self::GetUsageAllocation(response) => response.result(),
             Self::Query(response) => response.result(),
             Self::Pending(pending) => pending.result(),
@@ -2368,6 +2406,7 @@ impl ClientBatchOutcome {
             Self::GetAttributeList(_) => ClientOperation::GetAttributeList,
             Self::Ping(_) => ClientOperation::Ping,
             Self::GetConstraints(_) => ClientOperation::GetConstraints,
+            Self::SetConstraints(_) => ClientOperation::SetConstraints,
             Self::GetUsageAllocation(_) => ClientOperation::GetUsageAllocation,
             Self::Query(_) => ClientOperation::Query,
             Self::Pending(pending) => pending.operation(),
@@ -2881,6 +2920,9 @@ impl ClientBatchOutcome {
             Self::GetConstraints(response) => {
                 ClientResponseView::new(ClientResponseRef::GetConstraints(response))
             }
+            Self::SetConstraints(response) => {
+                ClientResponseView::new(ClientResponseRef::SetConstraints(response))
+            }
             Self::GetUsageAllocation(response) => {
                 ClientResponseView::new(ClientResponseRef::GetUsageAllocation(response))
             }
@@ -3003,6 +3045,10 @@ impl fmt::Debug for ClientBatchOutcome {
                 .debug_tuple("GetConstraints")
                 .field(response)
                 .finish(),
+            Self::SetConstraints(response) => formatter
+                .debug_tuple("SetConstraints")
+                .field(response)
+                .finish(),
             Self::GetUsageAllocation(response) => formatter
                 .debug_tuple("GetUsageAllocation")
                 .field(response)
@@ -3097,6 +3143,9 @@ impl fmt::Display for ClientBatchOutcome {
             Self::Ping(response) => write!(formatter, "Ping({})", response.result()),
             Self::GetConstraints(response) => {
                 write!(formatter, "GetConstraints({})", response.result())
+            }
+            Self::SetConstraints(response) => {
+                write!(formatter, "SetConstraints({})", response.result())
             }
             Self::GetUsageAllocation(response) => {
                 write!(formatter, "GetUsageAllocation({})", response.result())
@@ -4075,6 +4124,26 @@ impl Client {
     ) -> Result<ClientBatchItemResponse, ClientError> {
         let response = self.execute(
             ClientBatch::new(ClientBatchItem::new(ClientRequest::get_constraints())),
+            limits,
+        )?;
+        take_single_item_response(response.items)
+    }
+
+    /// Executes one Set Constraints request through one transport exchange.
+    ///
+    /// # Errors
+    ///
+    /// Returns a sanitized validation, protocol, or transport error with the
+    /// strongest available request-delivery evidence.
+    pub fn set_constraints(
+        &mut self,
+        request: SetConstraintsRequest,
+        limits: &CodecLimits,
+    ) -> Result<ClientBatchItemResponse, ClientError> {
+        let response = self.execute(
+            ClientBatch::new(ClientBatchItem::new(ClientRequest::set_constraints(
+                request,
+            ))),
             limits,
         )?;
         take_single_item_response(response.items)
@@ -5226,6 +5295,7 @@ fn request_mutation_is_prohibited(request: &ClientRequest) -> bool {
         | ClientRequest::GetAttributeList(_)
         | ClientRequest::Ping(_)
         | ClientRequest::GetConstraints(_)
+        | ClientRequest::SetConstraints(_)
         | ClientRequest::GetUsageAllocation(_)
         | ClientRequest::Query(_)
         | ClientRequest::Encrypt(_)
@@ -5880,6 +5950,7 @@ fn response_outcome(
             ClientBatchOutcome::Ping,
         ),
         GET_CONSTRAINTS_OPERATION => get_constraints_response_outcome(item),
+        SET_CONSTRAINTS_OPERATION => set_constraints_response_outcome(item),
         GET_USAGE_ALLOCATION_OPERATION => get_usage_allocation_response_outcome(item),
         DISCOVER_VERSIONS_OPERATION => {
             let response = DiscoverVersionsResponse::try_from_response_item(item)
@@ -5926,6 +5997,19 @@ fn get_constraints_response_outcome(
         GetConstraintsResponse::result,
         PendingResponse::GetConstraints,
         ClientBatchOutcome::GetConstraints,
+    )
+}
+
+fn set_constraints_response_outcome(
+    item: ResponseBatchItemView<'_>,
+) -> Result<ClientBatchOutcome, ProtocolError> {
+    read_operation_outcome(
+        ClientOperation::SetConstraints,
+        item,
+        SetConstraintsResponse::try_from_response_item,
+        SetConstraintsResponse::result,
+        PendingResponse::SetConstraints,
+        ClientBatchOutcome::SetConstraints,
     )
 }
 
