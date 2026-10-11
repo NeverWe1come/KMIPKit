@@ -44,10 +44,11 @@ fn certify_request() -> CertifyRequest {
         .with_unique_identifier(UniqueIdentifier::TextString("public-key".to_owned()))
         .with_certificate_request_type(1)
         .with_certificate_request_value(SecretBytes::new(b"single-certificate-request".to_vec()))
-        .with_attributes(test_structure([test_item(
-            CERTIFICATE_TYPE,
-            Value::enumeration(1),
-        )]))
+        .with_attributes(certificate_type_attributes())
+}
+
+fn certificate_type_attributes() -> Structure {
+    test_structure([test_item(CERTIFICATE_TYPE, Value::enumeration(1))])
 }
 
 fn response_payload(identifier: &str) -> Structure {

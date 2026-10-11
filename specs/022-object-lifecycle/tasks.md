@@ -31,7 +31,7 @@
 
 - [X] T006 [P] [US1] Add failing protocol and fake-client tests in `crates/kmipkit-protocol/tests/unit/certify_operation_tests.rs` and `crates/kmipkit-client/tests/unit/certify_execution_tests.rs` for §6.1.6 Tables 179–181 and all §6.1.6 entries in `specs/022-object-lifecycle/traceability.md`, including the approved KMIPKIT-DISC-050 / KMIPKIT-DEC-013 interpretation; commit Red.
 - [X] T007 [US1] Implement Certify models in `crates/kmipkit-protocol/src/certify.rs`, export in `crates/kmipkit-protocol/src/lib.rs`, and serialize its `ClientRequest`/operation-code/response/convenience integration in `crates/kmipkit-client/src/execute.rs` and `crates/kmipkit-client/src/lib.rs`; commit Green after T006 passes.
-- [ ] T008 [US1] Refactor Certify model/dispatch/test helpers in `crates/kmipkit-protocol/src/certify.rs`, `crates/kmipkit-client/src/execute.rs`, and both Certify test files without changing wire behavior; commit Refactor separately.
+- [X] T008 [US1] Refactor Certify model/dispatch/test helpers in `crates/kmipkit-protocol/src/certify.rs`, `crates/kmipkit-client/src/execute.rs`, and both Certify test files without changing wire behavior; commit Refactor separately.
 
 ## Phase 4: User Story 2 — Check (Priority: P1)
 

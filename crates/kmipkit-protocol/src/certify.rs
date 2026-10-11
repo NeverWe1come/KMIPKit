@@ -285,28 +285,8 @@ fn contains_certificate_type(attributes: &Structure) -> bool {
 }
 
 fn successful_identifier(payload: &StructureView<'_>) -> Result<UniqueIdentifier, CertifyError> {
-    let mut identifier = None;
-    for field in payload.children() {
-        if field.tag().raw() == UNIQUE_IDENTIFIER {
-            if identifier.is_some() {
-                return Err(CertifyError::MalformedSuccessPayload);
-            }
-            identifier = field.with_value(|value| match value {
-                kmipkit_ttlv::ValueView::TextString(value) => {
-                    Some(UniqueIdentifier::TextString(value.to_owned()))
-                }
-                kmipkit_ttlv::ValueView::Enumeration(value) => {
-                    Some(UniqueIdentifier::Enumeration(*value))
-                }
-                kmipkit_ttlv::ValueView::Integer(value) => Some(UniqueIdentifier::Integer(*value)),
-                _ => None,
-            });
-            if identifier.is_none() {
-                return Err(CertifyError::MalformedSuccessPayload);
-            }
-        }
-    }
-    identifier.ok_or(CertifyError::MalformedSuccessPayload)
+    super::lifecycle::successful_response_identifier(payload)
+        .ok_or(CertifyError::MalformedSuccessPayload)
 }
 
 fn invalid_request() -> ProtocolError {
