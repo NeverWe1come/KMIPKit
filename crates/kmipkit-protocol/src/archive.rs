@@ -65,7 +65,7 @@ pub struct ArchiveResponse {
 impl ArchiveResponse {
     /// Converts one already validated KMIP response batch item.
     ///
-    /// The item must identify the client-to-server Archive operation (`0x13`).
+    /// The item must identify the client-to-server Archive operation (`0x15`).
     /// Successful payload parsing requires exactly one Unique Identifier in a
     /// form permitted by §4.58 Tables 145–146. Unknown fields remain available
     /// from the original response message.
