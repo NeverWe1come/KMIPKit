@@ -17,6 +17,8 @@ use crate::{
 const OPERATION: u32 = 0x0000_0034;
 
 const SUCCESS: u32 = 0;
+const INTEROP_FUNCTION: u32 = 0x0042_0160;
+const INTEROP_IDENTIFIER: u32 = 0x0042_0161;
 /// Required Interop fields from §6.1.26, Table 241.
 ///
 /// The production-server restriction applies to servers. This client does
@@ -62,13 +64,13 @@ impl InteropRequest {
 
         cryptographic_operation::push(
             &mut payload,
-            0x0042_0160,
+            INTEROP_FUNCTION,
             Value::enumeration(self.interop_function),
         )?;
 
         cryptographic_operation::push(
             &mut payload,
-            0x0042_0161,
+            INTEROP_IDENTIFIER,
             self.interop_identifier.into_ttlv_value(),
         )?;
 
