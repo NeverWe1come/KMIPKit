@@ -1,0 +1,7 @@
+error[E0432]: unresolved import `kmipkit_client::UsageAllocationContext`
+ --> tests/ui/usage_allocation_guard_not_clone.rs:1:5
+  |
+1 | use kmipkit_client::UsageAllocationContext;
+  |     ^^^^^^^^^^^^^^^^----------------------
+  |                     |
+  |                     no `UsageAllocationContext` in the root

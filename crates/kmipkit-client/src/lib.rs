@@ -208,6 +208,10 @@ mod get_constraints_execution_tests;
 mod get_usage_allocation_execution_tests;
 
 #[cfg(test)]
+#[path = "../tests/unit/usage_allocation_guard_tests.rs"]
+mod usage_allocation_guard_tests;
+
+#[cfg(test)]
 #[path = "../tests/unit/attribute_mutation_execution_tests.rs"]
 mod attribute_mutation_execution_tests;
 
