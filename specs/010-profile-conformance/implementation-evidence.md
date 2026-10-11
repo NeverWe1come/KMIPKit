@@ -578,6 +578,12 @@ This correction closes only the two specific evidence-note failures. The full T0
 | Red — exclude `REQUIRED` table headers from client scope | `python -B -m unittest tools.normative_catalog.tests.test_validate.CatalogValidationTests.test_non_normative_table_header_candidates_are_out_of_scope -v` | Expected Red: 34 source-reviewed rejected candidate IDs still have client scope; `KMIPKIT-REQ-SPEC-3.1-003` is the first header-only example (`REQUIRED` appears in the table heading, while its body requiredness row is separate). |
 | Green — exclude header-only candidates and regenerate closures | `python -B -m unittest tools.normative_catalog.tests.test_validate.CatalogValidationTests.test_non_normative_table_header_candidates_are_out_of_scope -v`; `python -B -m tools.normative_catalog.validate --repo-root . --structural-only`; `python -B tools/normative_catalog/generate_profiles.py --write` then `--check`; `python -B tools/normative_catalog/report.py --write` then `--check`; `git diff --check` | PASS: the 34 rejected header-only candidates and their source clauses are now `not_applicable`/`out_of_scope`, and all 18 client profile closures are recomputed from the catalog; generated Rust metadata and report are current. The pinned-source mapping contract improved from 1,257 to 645 aggregated violations; remaining oracle, rejected-atom, and in-scope-gap coverage is still incomplete. The 59-test generator/report suite had 1 failure and 1 error because the oracle remains partial and omits its expected profile count; 2 platform-dependent cases were skipped. |
 
+### T003 — retire eight source-rejected client candidates (2026-10-11)
+
+| Phase | Command | Result |
+|---|---|---|
+| Red — keep rejected source mappings outside client profile closures | `python -B -m unittest tools.normative_catalog.tests.test_validate.CatalogValidationTests.test_source_rejected_client_candidates_are_out_of_scope -v` | Expected Red: all eight pinned-source-rejected candidates still have catalog `role: client`; the first failing subtest is `KMIPKIT-REQ-SPEC-6.1.11-004-001` (`Ran 1 test`; `FAILED (failures=8)`). The test checks role, direction, scope, client-profile inclusion, and source-crosswalk exclusion for each stable ID. |
+
 ### T003/T004 — align catalog roles for reviewed server-only duties (2026-10-11)
 
 | Phase | Command or evidence | Result |

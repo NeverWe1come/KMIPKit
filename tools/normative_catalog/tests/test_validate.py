@@ -13661,6 +13661,58 @@ class CatalogValidationTests(unittest.TestCase):
         self.assertEqual(unresolved_preface["scope_disposition"], "unresolved")
         self.assertEqual(unresolved_preface["proposed_requirement_id"], None)
 
+    def test_source_rejected_client_candidates_are_out_of_scope(self) -> None:
+        """Rejected source atoms cannot remain in any computed client closure."""
+        rejected_client_candidates = {
+            "KMIPKIT-REQ-SPEC-9.8-001-001",
+            "KMIPKIT-REQ-SPEC-6.1.11-004-001",
+            "KMIPKIT-REQ-SPEC-6.1.17-005-001",
+            "KMIPKIT-REQ-SPEC-6.1.25-004",
+            "KMIPKIT-REQ-SPEC-6.1.27-002-001",
+            "KMIPKIT-REQ-SPEC-6.1.28-011",
+            "KMIPKIT-REQ-SPEC-6.1.46-004-002",
+            "KMIPKIT-REQ-SPEC-6.1.47-004-002",
+        }
+        catalog = json.loads(
+            (ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8")
+        )
+        requirements = {record["requirement_id"]: record for record in catalog["requirements"]}
+        actual_client_scope = {
+            record["requirement_id"]
+            for record in catalog["requirements"]
+            if record["role"] in {"client", "both"}
+            and record["scope_state"] in {"client_1_0", "client_1_1", "profile_conditional", "mixed"}
+        }
+        linked_client_profiles = {
+            requirement_id
+            for profile in catalog["profiles"]
+            if profile["role"] in {"client", "both"}
+            for requirement_id in profile["requirement_ids"]
+        }
+        actual_crosswalk_ids = {
+            row["requirement_id"]
+            for row in json.loads(
+                (
+                    ROOT
+                    / "tools"
+                    / "normative_catalog"
+                    / "tests"
+                    / "fixtures"
+                    / "profile-closure-v2.1.json"
+                ).read_text(encoding="utf-8")
+            )["requirement_crosswalk"]
+        }
+
+        for requirement_id in sorted(rejected_client_candidates):
+            with self.subTest(requirement_id=requirement_id):
+                requirement = requirements[requirement_id]
+                self.assertEqual(requirement["role"], "not_applicable")
+                self.assertEqual(requirement["direction"], "not_applicable")
+                self.assertEqual(requirement["scope_state"], "out_of_scope")
+                self.assertNotIn(requirement_id, actual_client_scope)
+                self.assertNotIn(requirement_id, linked_client_profiles)
+                self.assertNotIn(requirement_id, actual_crosswalk_ids)
+
     def test_non_normative_table_header_candidates_are_out_of_scope(self) -> None:
         """A table header's REQUIRED label is not a client obligation."""
         oracle = json.loads(
