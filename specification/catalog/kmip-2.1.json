@@ -15188,7 +15188,8 @@
       "requirement_ids": [
         "KMIPKIT-REQ-SPEC-4.57-003-001",
         "KMIPKIT-REQ-SPEC-4.57-003-002",
-        "KMIPKIT-REQ-SPEC-4.57-003-003"
+        "KMIPKIT-REQ-SPEC-4.57-003-003",
+        "KMIPKIT-REQ-SPEC-4.57-003-004"
       ],
       "exclusion_rationale": null,
       "role": "client",
