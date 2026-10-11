@@ -200,6 +200,10 @@ mod attestation_indicator_tests;
 mod attribute_read_execution_tests;
 
 #[cfg(test)]
+#[path = "../tests/unit/get_constraints_execution_tests.rs"]
+mod get_constraints_execution_tests;
+
+#[cfg(test)]
 #[path = "../tests/unit/attribute_mutation_execution_tests.rs"]
 mod attribute_mutation_execution_tests;
 
