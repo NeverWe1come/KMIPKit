@@ -89,7 +89,7 @@ As a KMIPKit caller, I can send the §6.1.7 Check request and inspect the typed 
 3. Given a Table 185 failure, malformed payload, or transport error, when the call completes, then status/reason or error and delivery state remain available without retry.
 4. Given Pending in a caller-enabled typed batch, when the response arrives, then Pending and the exact correlation bytes remain available without an implicit Poll.
 
-**Specific rules**: Expose the recommended ordered batch with Batch Order Option true and Stop or Undo continuation; do not silently alter the caller batch. Accept and type Usage Limits Count, Cryptographic Usage Mask, and Lease Time whenever the server returns them, including on a failed Check; a failed result does not require Unique Identifier.
+**Specific rules**: Expose the recommended ordered batch with Batch Order Option true and Stop or Undo continuation; do not silently alter the caller batch. Accept and type Usage Limits Count, Cryptographic Usage Mask, and Lease Time whenever the server returns them, including on a failed Check; a failed result does not require Unique Identifier. Per §6.1.7, do not expose a Unique Identifier through the typed accessor for a failed result, even if a nonconforming server includes one; preserve the complete response in generic TTLV for inspection.
 
 **Payload schema** (OASIS Specification v2.1 §6.1.7, Tables 183–184):
 
@@ -432,4 +432,5 @@ These are accepted KMIPKit interpretations, not official OASIS errata. Their dec
 | --- | --- | --- |
 | Certify | KMIPKIT-DISC-050 | The §6.1.6 prose requires the public key's Unique Identifier when Certificate Request is omitted; this governs over the conflicting Table 179 ID Placeholder sentence. Decision: KMIPKIT-DEC-013. |
 | Re-Provision | KMIPKIT-DISC-040 | Support certificate-request, certificate, and parameterless server-credential paths. Table 315 has an errant RNG Retrieve caption in the Re-Provision error section. |
+| Re-Provision response | KMIPKIT-DISC-051 | §6.1.48 prose says the server SHALL return Unique Identifier for CSR/certificate forms, while Table 314 says the field is not required. Follow Table 314 for client parsing: allow absence for all three forms and preserve a present identifier. The prose SHALL remains a server-side obligation. Decision: KMIPKIT-DEC-014. |
 | Unique Identifier | KMIPKIT-DISC-025 | The lowercase “may” in §11.58 is descriptive text, not a new normative client keyword. Explicit operation-specific identifier and batch rules remain in force. Decision: KMIPKIT-DEC-009. |

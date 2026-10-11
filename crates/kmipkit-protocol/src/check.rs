@@ -128,7 +128,8 @@ impl fmt::Debug for CheckRequest {
 ///
 /// The complete generic response item is retained for callback-scoped
 /// inspection, including unknown or future fields. A successful result
-/// requires one Unique Identifier; policy values are optional.
+/// requires one Unique Identifier; policy values are optional. A Unique
+/// Identifier in a failed result is not exposed by the typed accessor.
 #[derive(Debug)]
 pub struct CheckResponse {
     result: KmipOperationResult,
@@ -142,9 +143,10 @@ pub struct CheckResponse {
 impl CheckResponse {
     /// Converts one already validated Check response batch item.
     ///
-    /// Known success and policy-denial payload fields are typed, while unknown
-    /// fields remain available through the generic response item. Malformed or
-    /// duplicate known fields are rejected without including server values.
+/// Known success and policy-denial payload fields are typed, while unknown
+/// fields remain available through the generic response item. A Unique
+/// Identifier is exposed only on success, as required by §6.1.7. Malformed or
+/// duplicate known fields are rejected without including server values.
     ///
     /// # Errors
     ///
@@ -171,7 +173,7 @@ impl CheckResponse {
             None if is_success => return Err(CheckError::MalformedResponsePayload),
             None => None,
         };
-        let (unique_identifier, usage_limits_count, cryptographic_usage_mask, lease_time) =
+        let (returned_identifier, usage_limits_count, cryptographic_usage_mask, lease_time) =
             match parsed_payload {
                 Some(payload) => (
                     payload.unique_identifier,
@@ -181,6 +183,11 @@ impl CheckResponse {
                 ),
                 None => (None, None, None, None),
             };
+        let unique_identifier = if is_success {
+            returned_identifier
+        } else {
+            None
+        };
 
         Ok(Self {
             result,
