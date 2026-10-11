@@ -197,4 +197,5 @@ guide. The changes remain documentation-only: the response example already
 restricts access to the object tag, and the additional prose states the
 normative server requirement without changing API examples or runner behavior.
 No source refactor was justified; this disposition is recorded in the separate
-DCO-signed Refactor evidence commit.
+DCO-signed Refactor evidence commit
+`da97d5d2196fc15ef212436d5403d121faa68a37`.
