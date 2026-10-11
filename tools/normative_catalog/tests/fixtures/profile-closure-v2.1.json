@@ -75,13 +75,13 @@
     "profiles": 18,
     "specification_clause_records": 877,
     "profiles_clause_records": 534,
-    "requirement_crosswalk_records": 199,
+    "requirement_crosswalk_records": 201,
     "requirement_crosswalk_complete": false,
     "common_baseline_official_cases": 16,
     "common_baseline_unavailable_fixtures": 16,
     "profile_test_associations": 365,
     "distinct_profile_test_case_ids": 93,
-    "source_requirement_review_records": 482,
+    "source_requirement_review_records": 489,
     "direct_root_exclusion_records": 4,
     "source_only_requirement_gaps": 133,
     "source_only_requirement_gap_proposals": 104,
@@ -20587,6 +20587,40 @@
       "review_note": "Specification v2.1 §6.1.35; exact client atom and order are retained from the pinned source.",
       "source_obligation_order": 1,
       "source_actor": "client"
+    },
+    {
+      "requirement_id": "KMIPKIT-REQ-SPEC-6.1.38-001-001",
+      "source_clause_id": "KMIPKIT-CLAUSE-SPEC-6.1.38-001",
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_section": "6.1.38",
+      "source_locator": {
+        "ordinal": 1,
+        "block_kind": "paragraph"
+      },
+      "source_keyword": "SHALL",
+      "role": "client",
+      "scope_state": "client_1_0",
+      "applies_to": "all_client_profiles",
+      "review_note": "Specification v2.1 §6.1.38; the client SHALL specify the correlation value of the original operation in the Poll request.",
+      "source_obligation_order": 1,
+      "source_actor": "client"
+    },
+    {
+      "requirement_id": "KMIPKIT-REQ-SPEC-6.1.38-001-002",
+      "source_clause_id": "KMIPKIT-CLAUSE-SPEC-6.1.38-001",
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_section": "6.1.38",
+      "source_locator": {
+        "ordinal": 1,
+        "block_kind": "paragraph"
+      },
+      "source_keyword": "SHALL NOT",
+      "role": "server",
+      "scope_state": "server_only",
+      "applies_to": "all_client_profiles",
+      "review_note": "Specification v2.1 §6.1.38; this SHALL NOT prohibits an asynchronous server response to Poll and is server_only. The catalog assignment to a client role is rejected.",
+      "source_obligation_order": 2,
+      "source_actor": "server"
     }
   ],
   "profiles": [
@@ -59883,6 +59917,262 @@
       "expected_client_requirement_ids": [],
       "applies_to": "all_client_profiles",
       "review_note": "The twelve listed Result Reasons are server response values. Attestation Required is a Result Reason enum value, and this operation-specific list is non-exhaustive under the general Result Reason rules.",
+      "source_request_rows": [],
+      "source_payload_rows": []
+    },
+    {
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+      "source_section": "6.1.38",
+      "source_clause_id": "KMIPKIT-CLAUSE-SPEC-6.1.38-001",
+      "source_locator": {
+        "ordinal": 1,
+        "block_kind": "paragraph"
+      },
+      "html_line_range": [
+        31460,
+        31463
+      ],
+      "source_excerpt": "This operation is used to poll the server in order to obtain the status of an outstanding asynchronous operation. The correlation value of the original operation SHALL be specified in the request. The response to this operation SHALL NOT be asynchronous.",
+      "source_obligations": [
+        {
+          "source_order": 1,
+          "source_text": "The correlation value of the original operation SHALL be specified in the request.",
+          "source_keyword": "SHALL",
+          "actor": "client",
+          "direction": "client→server request payload",
+          "condition": "For a Poll request, identify the original asynchronous operation.",
+          "scope_disposition": "client_1_0",
+          "candidate_requirement_id": "KMIPKIT-REQ-SPEC-6.1.38-001-001"
+        },
+        {
+          "source_order": 2,
+          "source_text": "The response to this operation SHALL NOT be asynchronous.",
+          "source_keyword": "SHALL NOT",
+          "actor": "server",
+          "direction": "server→client response",
+          "condition": "The server response to Poll is not itself asynchronous.",
+          "scope_disposition": "server_only",
+          "candidate_requirement_id": "KMIPKIT-REQ-SPEC-6.1.38-001-002"
+        }
+      ],
+      "rejected_candidate_mappings": [
+        {
+          "requirement_id": "KMIPKIT-REQ-SPEC-6.1.38-001-002",
+          "claimed_keyword": "SHALL NOT",
+          "source_review": "The clause prohibits asynchronous Poll responses; it does not prohibit the client from treating the Poll request as asynchronous.",
+          "expected_disposition": "reject_catalog_client_actor_server_obligation"
+        }
+      ],
+      "expected_client_requirement_ids": [
+        "KMIPKIT-REQ-SPEC-6.1.38-001-001"
+      ],
+      "applies_to": "all_client_profiles",
+      "review_note": "The first SHALL is a client request obligation and maps to the client candidate. The SHALL NOT constrains server Poll responses; it does not prohibit treating the Poll request as asynchronous. The catalog client assignment for the second atom is explicitly rejected.",
+      "source_request_rows": [],
+      "source_payload_rows": []
+    },
+    {
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+      "source_section": "6.1.38",
+      "source_clause_id": "KMIPKIT-CLAUSE-SPEC-6.1.38-002",
+      "source_locator": {
+        "ordinal": 2,
+        "block_kind": "table_row"
+      },
+      "html_line_range": [
+        31476,
+        31494
+      ],
+      "source_excerpt": "Item REQUIRED Description",
+      "source_obligations": [],
+      "rejected_candidate_mappings": [],
+      "expected_client_requirement_ids": [
+        "KMIPKIT-REQ-SPEC-6.1.38-001-001"
+      ],
+      "applies_to": "all_client_profiles",
+      "review_note": "The locator is the Poll request payload table header. Its REQUIRED text is a column heading, not an independent obligation; the Asynchronous Correlation Value body row is recorded as client request data.",
+      "source_request_rows": [
+        {
+          "row_label": "Asynchronous Correlation Value",
+          "required": "Yes",
+          "actor": "client",
+          "disposition": "required_request_field_mapped_to_client_requirement",
+          "html_line_range": [
+            31495,
+            31512
+          ],
+          "source_excerpt": "Asynchronous Correlation Value Yes Specifies the request being polled.",
+          "source_gap_id": null,
+          "source_requirement_ids": [
+            "KMIPKIT-REQ-SPEC-6.1.38-001-001"
+          ]
+        }
+      ],
+      "source_payload_rows": []
+    },
+    {
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+      "source_section": "6.1.38",
+      "source_clause_id": "KMIPKIT-CLAUSE-SPEC-6.1.38-003",
+      "source_locator": {
+        "ordinal": 3,
+        "block_kind": "paragraph"
+      },
+      "html_line_range": [
+        31520,
+        31520
+      ],
+      "source_excerpt": "The server SHALL reply with one of two responses:",
+      "source_obligations": [
+        {
+          "source_order": 1,
+          "source_text": "The server SHALL reply with one of two responses:",
+          "source_keyword": "SHALL",
+          "actor": "server",
+          "direction": "server→client response",
+          "condition": "For a Poll operation.",
+          "scope_disposition": "server_only",
+          "candidate_requirement_id": null
+        }
+      ],
+      "rejected_candidate_mappings": [],
+      "expected_client_requirement_ids": [],
+      "applies_to": "all_client_profiles",
+      "review_note": "This SHALL describes the server response alternatives. It does not create a client requirement or a response payload table row.",
+      "source_request_rows": [],
+      "source_payload_rows": []
+    },
+    {
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+      "source_section": "6.1.38",
+      "source_clause_id": "KMIPKIT-CLAUSE-SPEC-6.1.38-004",
+      "source_locator": {
+        "ordinal": 4,
+        "block_kind": "paragraph"
+      },
+      "html_line_range": [
+        31522,
+        31523
+      ],
+      "source_excerpt": "If the operation has not completed, the response SHALL contain no payload and a Result Status of Pending.",
+      "source_obligations": [
+        {
+          "source_order": 1,
+          "source_text": "If the operation has not completed, the response SHALL contain no payload and a Result Status of Pending.",
+          "source_keyword": "SHALL",
+          "actor": "server",
+          "direction": "server→client pending response",
+          "condition": "The original asynchronous operation has not completed.",
+          "scope_disposition": "server_only",
+          "candidate_requirement_id": null
+        }
+      ],
+      "rejected_candidate_mappings": [],
+      "expected_client_requirement_ids": [],
+      "applies_to": "all_client_profiles",
+      "review_note": "This conditional SHALL specifies the server response when the polled operation remains pending; it is not a client payload requirement.",
+      "source_request_rows": [],
+      "source_payload_rows": []
+    },
+    {
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+      "source_section": "6.1.38",
+      "source_clause_id": "KMIPKIT-CLAUSE-SPEC-6.1.38-005",
+      "source_locator": {
+        "ordinal": 5,
+        "block_kind": "paragraph"
+      },
+      "html_line_range": [
+        31525,
+        31528
+      ],
+      "source_excerpt": "If the operation has completed, the response SHALL contain the appropriate payload for the operation. This response SHALL be identical to the response that would have been sent if the operation had completed synchronously.",
+      "source_obligations": [
+        {
+          "source_order": 1,
+          "source_text": "If the operation has completed, the response SHALL contain the appropriate payload for the operation.",
+          "source_keyword": "SHALL",
+          "actor": "server",
+          "direction": "server→client completed response payload",
+          "condition": "The original asynchronous operation has completed.",
+          "scope_disposition": "server_only",
+          "candidate_requirement_id": null
+        },
+        {
+          "source_order": 2,
+          "source_text": "This response SHALL be identical to the response that would have been sent if the operation had completed synchronously.",
+          "source_keyword": "SHALL",
+          "actor": "server",
+          "direction": "server→client completed response",
+          "condition": "The original asynchronous operation has completed.",
+          "scope_disposition": "server_only",
+          "candidate_requirement_id": null
+        }
+      ],
+      "rejected_candidate_mappings": [],
+      "expected_client_requirement_ids": [],
+      "applies_to": "all_client_profiles",
+      "review_note": "Both SHALL atoms specify server behavior for a completed operation. Their payload and status semantics are represented as response outcomes, not client requirements or table payload rows.",
+      "source_request_rows": [],
+      "source_payload_rows": []
+    },
+    {
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+      "source_section": "6.1.38.1",
+      "source_clause_id": "KMIPKIT-CLAUSE-SPEC-6.1.38.1-001",
+      "source_locator": {
+        "ordinal": 1,
+        "block_kind": "paragraph"
+      },
+      "html_line_range": [
+        31534,
+        31535
+      ],
+      "source_excerpt": "This section details the specific Result Reasons that SHALL be returned for errors detected in a Poll Operation.",
+      "source_obligations": [
+        {
+          "source_order": 1,
+          "source_text": "This section details the specific Result Reasons that SHALL be returned for errors detected in a Poll Operation.",
+          "source_keyword": "SHALL",
+          "actor": "server",
+          "direction": "server→client error response",
+          "condition": "Errors detected in a Poll operation.",
+          "scope_disposition": "server_only",
+          "candidate_requirement_id": null
+        }
+      ],
+      "rejected_candidate_mappings": [],
+      "expected_client_requirement_ids": [],
+      "applies_to": "all_client_profiles",
+      "review_note": "The error-handling preamble assigns the return of the specified Result Reasons to the server; it is outside the client requirement set.",
+      "source_request_rows": [],
+      "source_payload_rows": []
+    },
+    {
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+      "source_section": "6.1.38.1",
+      "source_clause_id": "KMIPKIT-CLAUSE-SPEC-6.1.38.1-002",
+      "source_locator": {
+        "ordinal": 2,
+        "block_kind": "table_row"
+      },
+      "html_line_range": [
+        31555,
+        31568
+      ],
+      "source_excerpt": "Operation Failed Invalid Asynchronous Correlation Value, Attestation Failed, Attestation Required, Feature Not Supported, Invalid Field, Invalid Message, Operation Not Supported, Permission Denied, Response Too Large",
+      "source_obligations": [],
+      "rejected_candidate_mappings": [],
+      "expected_client_requirement_ids": [],
+      "applies_to": "all_client_profiles",
+      "review_note": "The Poll error table lists nine Result Reasons for Operation Failed. The list is non-exhaustive under the general Result Reason rules. Attestation Required is present as an enum value; its extracted keyword hit is a false positive, not a formal clause obligation.",
       "source_request_rows": [],
       "source_payload_rows": []
     }
