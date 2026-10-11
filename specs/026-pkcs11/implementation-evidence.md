@@ -41,7 +41,7 @@ check uses Rust 1.94.0. Detailed uncommitted tool logs are under `target/`.
 
 | Command | Result |
 |---|---|
-| `cargo test -p kmipkit-protocol -p kmipkit-client pkcs11` | PASS: protocol 12; client 7; no failures |
+| `cargo test -p kmipkit-protocol -p kmipkit-client pkcs11` | PASS: protocol 15; client 9; no failures |
 | `cargo fmt --all --check` | PASS |
 | `cargo clippy --workspace --all-targets --all-features -- -D warnings` | PASS |
 | `cargo +1.94.0 check --workspace --all-targets --all-features --locked` | PASS |
@@ -53,6 +53,7 @@ check uses Rust 1.94.0. Detailed uncommitted tool logs are under `target/`.
 | `python tools/normative_catalog/check_immutable_sources.py --base-sha a0846037eb9930b24d9b9e3d8c63b2e66b438d1a` | PASS |
 | `python -m unittest discover -s scripts/tests -p 'test_requirement_traceability.py' -v` | PASS: 2 tests |
 | `python -m unittest discover -s scripts/tests -p 'test_diagnostic_redaction.py' -v` | PASS: 1 test |
+| `python -m unittest discover -s tools/normative_catalog/tests -p 'test_feature_traceability.py' -v` | PASS after QA fix: 15 tests, 1 fixture skip |
 | `git diff --check` | PASS |
 | `python -m unittest discover -s tools/normative_catalog/tests -p 'test_*.py'` | PASS: 213 tests, 7 platform/fixture skips |
 | `cargo test --workspace --all-features` | Serial verification pending; first build stopped before tests to avoid concurrent localhost fixture interference |
@@ -90,3 +91,23 @@ No official PKCS#11 fixture is linked in the pinned catalog. No official
 vector pass, profile support, certification, FIPS status or interoperability
 claim is made. No live PKCS#11 server exchange was executed. The two-independent
 server gate in T022 remains open and the existing matrix stays Pending.
+
+
+## Independent QA correction evidence
+
+- Red `d2f3362d`: two protocol cases failed because wrong/duplicate known
+  nested Interface/Input/Output scalars were accepted; two client cases failed
+  because an invalid request reached the transport (PossiblySent) and malformed
+  nested Output Parameters were accepted as Success.
+- Green `daf0ad6b`: known nested 0..1 Interface TextString and Input/Output
+  ByteString members are validated. Protocol 15 and client 9 tests passed.
+- Refactor `8549fcc7`: one shared required/optional cardinality validator;
+  protocol 15 and client 9 remain passing. Workspace Clippy and explicit MSRV
+  1.94.0 all-target/all-feature checks were rerun successfully after the fix.
+
+Source interpretation `KMIPKIT-026-SOURCE-001` is recorded in `research.md` and
+linked to existing vendor Integer request/response tests. It uses the explicit
+§6.1.37 Tables 273/274 vendor context and preserves §7.26 Table 378's outer
+Structure and standard Enumeration shape. The same-primary-document mismatch
+and observable alternatives remain documented; no official erratum, profile
+or complete conformance claim is made.

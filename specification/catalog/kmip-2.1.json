@@ -58674,7 +58674,9 @@
         "crates/kmipkit-protocol/tests/unit/pkcs11_operation_tests.rs::table_274_success_retains_required_optional_and_unknown_fields",
         "crates/kmipkit-protocol/tests/unit/pkcs11_operation_tests.rs::table_275_preserves_failure_reasons",
         "crates/kmipkit-client/tests/unit/pkcs11_execution_tests.rs::pkcs11_sends_table_273_once_and_exposes_table_274_losslessly",
-        "crates/kmipkit-client/tests/unit/pkcs11_execution_tests.rs::pkcs11_pending_preserves_exact_batch_correlation_without_poll"
+        "crates/kmipkit-client/tests/unit/pkcs11_execution_tests.rs::pkcs11_pending_preserves_exact_batch_correlation_without_poll",
+        "crates/kmipkit-client/tests/unit/pkcs11_execution_tests.rs::pkcs11_malformed_known_nested_request_members_are_not_sent",
+        "crates/kmipkit-client/tests/unit/pkcs11_execution_tests.rs::pkcs11_malformed_known_nested_response_member_is_response_started"
       ],
       "payload_tables": [
         {
@@ -60381,7 +60383,10 @@
         "crates/kmipkit-client/src/execute.rs"
       ],
       "verification_refs": [
-        "crates/kmipkit-protocol/tests/unit/pkcs11_operation_tests.rs::table_273_request_preserves_order_and_opaque_members"
+        "crates/kmipkit-protocol/tests/unit/pkcs11_operation_tests.rs::table_273_request_preserves_order_and_opaque_members",
+        "crates/kmipkit-protocol/tests/unit/pkcs11_operation_tests.rs::tables_379_380_request_rejects_wrong_or_duplicate_known_nested_values",
+        "crates/kmipkit-protocol/tests/unit/pkcs11_operation_tests.rs::tables_379_380_381_preserve_absent_known_member_and_repeated_unknown_members",
+        "crates/kmipkit-client/tests/unit/pkcs11_execution_tests.rs::pkcs11_malformed_known_nested_request_members_are_not_sent"
       ],
       "source_encoding": "Structure",
       "source_requiredness": ""
@@ -60409,7 +60414,10 @@
       ],
       "verification_refs": [
         "crates/kmipkit-protocol/tests/unit/pkcs11_operation_tests.rs::table_274_absence_remains_absent",
-        "crates/kmipkit-protocol/tests/unit/pkcs11_operation_tests.rs::table_274_success_retains_required_optional_and_unknown_fields"
+        "crates/kmipkit-protocol/tests/unit/pkcs11_operation_tests.rs::table_274_success_retains_required_optional_and_unknown_fields",
+        "crates/kmipkit-protocol/tests/unit/pkcs11_operation_tests.rs::tables_379_380_request_rejects_wrong_or_duplicate_known_nested_values",
+        "crates/kmipkit-protocol/tests/unit/pkcs11_operation_tests.rs::tables_380_381_response_rejects_wrong_or_duplicate_known_nested_values",
+        "crates/kmipkit-protocol/tests/unit/pkcs11_operation_tests.rs::tables_379_380_381_preserve_absent_known_member_and_repeated_unknown_members"
       ],
       "source_encoding": "Structure",
       "source_requiredness": ""
@@ -60437,7 +60445,10 @@
       ],
       "verification_refs": [
         "crates/kmipkit-protocol/tests/unit/pkcs11_operation_tests.rs::table_274_absence_remains_absent",
-        "crates/kmipkit-protocol/tests/unit/pkcs11_operation_tests.rs::table_274_success_retains_required_optional_and_unknown_fields"
+        "crates/kmipkit-protocol/tests/unit/pkcs11_operation_tests.rs::table_274_success_retains_required_optional_and_unknown_fields",
+        "crates/kmipkit-protocol/tests/unit/pkcs11_operation_tests.rs::tables_380_381_response_rejects_wrong_or_duplicate_known_nested_values",
+        "crates/kmipkit-protocol/tests/unit/pkcs11_operation_tests.rs::tables_379_380_381_preserve_absent_known_member_and_repeated_unknown_members",
+        "crates/kmipkit-client/tests/unit/pkcs11_execution_tests.rs::pkcs11_malformed_known_nested_response_member_is_response_started"
       ],
       "source_encoding": "Structure",
       "source_requiredness": ""
@@ -64910,7 +64921,10 @@
         "crates/kmipkit-client/src/execute.rs"
       ],
       "verification_refs": [
-        "crates/kmipkit-protocol/tests/unit/pkcs11_operation_tests.rs::table_273_request_preserves_order_and_opaque_members"
+        "crates/kmipkit-protocol/tests/unit/pkcs11_operation_tests.rs::table_273_request_preserves_order_and_opaque_members",
+        "crates/kmipkit-protocol/tests/unit/pkcs11_operation_tests.rs::tables_379_380_request_rejects_wrong_or_duplicate_known_nested_values",
+        "crates/kmipkit-protocol/tests/unit/pkcs11_operation_tests.rs::tables_379_380_381_preserve_absent_known_member_and_repeated_unknown_members",
+        "crates/kmipkit-client/tests/unit/pkcs11_execution_tests.rs::pkcs11_malformed_known_nested_request_members_are_not_sent"
       ],
       "source_encoding": "ByteString",
       "source_requiredness": "No"
@@ -64940,7 +64954,10 @@
       ],
       "verification_refs": [
         "crates/kmipkit-protocol/tests/unit/pkcs11_operation_tests.rs::table_274_absence_remains_absent",
-        "crates/kmipkit-protocol/tests/unit/pkcs11_operation_tests.rs::table_274_success_retains_required_optional_and_unknown_fields"
+        "crates/kmipkit-protocol/tests/unit/pkcs11_operation_tests.rs::table_274_success_retains_required_optional_and_unknown_fields",
+        "crates/kmipkit-protocol/tests/unit/pkcs11_operation_tests.rs::tables_379_380_request_rejects_wrong_or_duplicate_known_nested_values",
+        "crates/kmipkit-protocol/tests/unit/pkcs11_operation_tests.rs::tables_380_381_response_rejects_wrong_or_duplicate_known_nested_values",
+        "crates/kmipkit-protocol/tests/unit/pkcs11_operation_tests.rs::tables_379_380_381_preserve_absent_known_member_and_repeated_unknown_members"
       ],
       "source_encoding": "TextString",
       "source_requiredness": "No"
@@ -64970,7 +64987,10 @@
       ],
       "verification_refs": [
         "crates/kmipkit-protocol/tests/unit/pkcs11_operation_tests.rs::table_274_absence_remains_absent",
-        "crates/kmipkit-protocol/tests/unit/pkcs11_operation_tests.rs::table_274_success_retains_required_optional_and_unknown_fields"
+        "crates/kmipkit-protocol/tests/unit/pkcs11_operation_tests.rs::table_274_success_retains_required_optional_and_unknown_fields",
+        "crates/kmipkit-protocol/tests/unit/pkcs11_operation_tests.rs::tables_380_381_response_rejects_wrong_or_duplicate_known_nested_values",
+        "crates/kmipkit-protocol/tests/unit/pkcs11_operation_tests.rs::tables_379_380_381_preserve_absent_known_member_and_repeated_unknown_members",
+        "crates/kmipkit-client/tests/unit/pkcs11_execution_tests.rs::pkcs11_malformed_known_nested_response_member_is_response_started"
       ],
       "source_encoding": "ByteString",
       "source_requiredness": "No"
@@ -77944,7 +77964,10 @@
         "crates/kmipkit-ttlv/tests/tag_allocation.rs::every_allocation_range_boundary_and_adjacent_value_matches_catalog",
         "crates/kmipkit-ttlv/tests/tag_allocation.rs::every_extension_range_tag_is_accepted",
         "crates/kmipkit-protocol/tests/unit/pkcs11_operation_tests.rs::table_274_absence_remains_absent",
-        "crates/kmipkit-protocol/tests/unit/pkcs11_operation_tests.rs::table_274_success_retains_required_optional_and_unknown_fields"
+        "crates/kmipkit-protocol/tests/unit/pkcs11_operation_tests.rs::table_274_success_retains_required_optional_and_unknown_fields",
+        "crates/kmipkit-protocol/tests/unit/pkcs11_operation_tests.rs::tables_379_380_request_rejects_wrong_or_duplicate_known_nested_values",
+        "crates/kmipkit-protocol/tests/unit/pkcs11_operation_tests.rs::tables_380_381_response_rejects_wrong_or_duplicate_known_nested_values",
+        "crates/kmipkit-protocol/tests/unit/pkcs11_operation_tests.rs::tables_379_380_381_preserve_absent_known_member_and_repeated_unknown_members"
       ]
     },
     {
@@ -78014,7 +78037,10 @@
         "crates/kmipkit-ttlv/tests/tag_allocation.rs::every_exact_catalog_record_matches_public_allocation_check",
         "crates/kmipkit-ttlv/tests/tag_allocation.rs::every_allocation_range_boundary_and_adjacent_value_matches_catalog",
         "crates/kmipkit-ttlv/tests/tag_allocation.rs::every_extension_range_tag_is_accepted",
-        "crates/kmipkit-protocol/tests/unit/pkcs11_operation_tests.rs::table_273_request_preserves_order_and_opaque_members"
+        "crates/kmipkit-protocol/tests/unit/pkcs11_operation_tests.rs::table_273_request_preserves_order_and_opaque_members",
+        "crates/kmipkit-protocol/tests/unit/pkcs11_operation_tests.rs::tables_379_380_request_rejects_wrong_or_duplicate_known_nested_values",
+        "crates/kmipkit-protocol/tests/unit/pkcs11_operation_tests.rs::tables_379_380_381_preserve_absent_known_member_and_repeated_unknown_members",
+        "crates/kmipkit-client/tests/unit/pkcs11_execution_tests.rs::pkcs11_malformed_known_nested_request_members_are_not_sent"
       ]
     },
     {
@@ -78049,7 +78075,10 @@
         "crates/kmipkit-ttlv/tests/tag_allocation.rs::every_allocation_range_boundary_and_adjacent_value_matches_catalog",
         "crates/kmipkit-ttlv/tests/tag_allocation.rs::every_extension_range_tag_is_accepted",
         "crates/kmipkit-protocol/tests/unit/pkcs11_operation_tests.rs::table_274_absence_remains_absent",
-        "crates/kmipkit-protocol/tests/unit/pkcs11_operation_tests.rs::table_274_success_retains_required_optional_and_unknown_fields"
+        "crates/kmipkit-protocol/tests/unit/pkcs11_operation_tests.rs::table_274_success_retains_required_optional_and_unknown_fields",
+        "crates/kmipkit-protocol/tests/unit/pkcs11_operation_tests.rs::tables_380_381_response_rejects_wrong_or_duplicate_known_nested_values",
+        "crates/kmipkit-protocol/tests/unit/pkcs11_operation_tests.rs::tables_379_380_381_preserve_absent_known_member_and_repeated_unknown_members",
+        "crates/kmipkit-client/tests/unit/pkcs11_execution_tests.rs::pkcs11_malformed_known_nested_response_member_is_response_started"
       ]
     },
     {

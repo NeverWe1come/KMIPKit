@@ -46,8 +46,14 @@ Owned opaque TTLV storage and `SecretBytes` use the existing recursive
 zeroization contract. Callbacks permit deliberate caller-owned copies, whose
 lifetime is controlled by the caller. No PKCS#11 profile codec is added.
 
-The source-derived protocol suite contains 12 tests and the fake-client suite
-contains 7 tests. Exact names, sources and remaining four-language/release
+The source-derived protocol suite contains 15 tests and the fake-client suite
+contains 9 tests. Exact names, sources and remaining four-language/release
 gates are in `traceability.md`; command results and TDD commits are in
 `implementation-evidence.md`. C/Java/Python mapping remains T019, gated by
 KMIPKIT-0043. No official PKCS#11 fixture or real two-server pass is claimed.
+
+
+The focused suites also exercise §§7.27–7.29 known nested types/cardinality,
+local NotSent rejection and received malformed nested Output Parameters.
+Function's operation-specific Enumeration/vendor Integer context is explicitly
+traced in `research.md` as `KMIPKIT-026-SOURCE-001`.

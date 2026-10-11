@@ -13,3 +13,11 @@ Additive contract following existing request/response and explicit-client patter
 - Keep generic response TTLV accessible. Redact parameter/correlation contents in Debug, Display, and errors.
 
 Use these Rust names as API-manifest inputs only after the approved 0043 mapping is integrated. Never hand-edit generated bindings.
+
+
+Known nested members are checked before transmission and in Success responses:
+Interface is 0..1 TextString (Table 380); Input/Output Parameters are 0..1
+ByteString (Tables 379/381). Unknown nested children remain preserved. Invalid
+requests retain NotSent and malformed received nested values retain
+ResponseStarted. Vendor Function Integer follows the operation-context
+interpretation `KMIPKIT-026-SOURCE-001` in `../research.md`.

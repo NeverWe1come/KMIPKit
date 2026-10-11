@@ -38,7 +38,7 @@ and the feature branch/release merge are recorded in implementation evidence.
 ## Executed Rust verification
 
 All fixtures below are source-derived, not official OASIS test vectors.
-The protocol suite has 12 tests and the client suite has 7 tests.
+The protocol suite has 15 tests and the client suite has 9 tests.
 
 | Contract / catalog element | Implementation | Executable tests |
 |---|---|---|
@@ -84,3 +84,25 @@ KMIPKIT-0043 capability mapping. Existing API-manifest outputs are checked
 without adding invented binding mappings. T022 remains open until its full
 coverage/platform/security and two-independent-server conditions are met.
 No live PKCS#11 interoperability exchange was performed in this increment.
+
+
+## Independent review corrections — 2026-10-12
+
+Root cause: the first Rust increment validated only the outer optional
+Structures, permitting wrong known nested scalar types/cardinality.
+`valid_single_member` now checks the known member while retaining unknown
+children. The extra Red/Green/Refactor cycle is recorded in the evidence file.
+
+| Source / trace context | Contract | Named executable evidence |
+|---|---|---|
+| §7.27 Table 379 Input Parameters; `KMIPKIT-ELEM-STRUCTURE-MEMBER-7-27-PKCS-11-INPUT-PARAMETERS` | 0..1 known ByteString member | `tables_379_380_request_rejects_wrong_or_duplicate_known_nested_values`; `pkcs11_malformed_known_nested_request_members_are_not_sent` |
+| §7.28 Table 380 Interface; `KMIPKIT-ELEM-STRUCTURE-MEMBER-7-28-PKCS-11-INTERFACE` | 0..1 known TextString member | `tables_379_380_request_rejects_wrong_or_duplicate_known_nested_values`; `tables_380_381_response_rejects_wrong_or_duplicate_known_nested_values` |
+| §7.29 Table 381 Output Parameters; `KMIPKIT-ELEM-STRUCTURE-MEMBER-7-29-PKCS-11-OUTPUT-PARAMETERS` | 0..1 known ByteString member | `tables_380_381_response_rejects_wrong_or_duplicate_known_nested_values`; `pkcs11_malformed_known_nested_response_member_is_response_started` |
+| Tables 379–381 optional member absence / unknown children | Empty and unknown-only Structures remain valid; repeated unknown tags preserved | `tables_379_380_381_preserve_absent_known_member_and_repeated_unknown_members` |
+| `KMIPKIT-026-SOURCE-001` (§6.1.37 Tables 273/274 versus §7.26 Table 378) | Vendor Function Integer retained only in this operation's explicit context; no generic relaxation of Enumeration fields | `table_273_function_preserves_enumeration_or_integer`; `table_274_success_retains_required_optional_and_unknown_fields`; `pkcs11_sends_table_273_once_and_exposes_table_274_losslessly` |
+
+`KMIPKIT-026-SOURCE-001` is a source interpretation record, not a synthetic
+client MUST/SHALL clause. `research.md` records same-document normative status,
+alternatives, maintainer authorization, actual applicability, compatibility
+and security effects. No approved OASIS erratum or profile conformance is
+claimed. Table-defined requirements remain linked to stable existing elements.

@@ -101,3 +101,10 @@ TDD, named-test, generated-report and diagnostic evidence is recorded in
   independent PKCS#11-capable KMIP 2.1 servers remain release gates. The
   interoperability matrix retains Pending status. This specification is not
   complete and its PR must remain a draft while either task is open.
+
+
+Independent QA corrections were completed with a further Red/Green/Refactor
+cycle: Tables 379–381 known nested scalar/cardinality validation, local NotSent
+and received ResponseStarted tests, preserved unknown children, and explicit
+Function vendor Integer source-context trace `KMIPKIT-026-SOURCE-001`.
+The focused suite now has 15 protocol and 9 client tests; T019/T022 remain open.
