@@ -87,6 +87,29 @@ Added implementation and verification references for Delegated Login, Login, Log
 | `python tools/normative_catalog/report.py --check` | PASS: generated report is current and deterministic. |
 | `git diff --check` | PASS. |
 
+
+## T019 — Current verification and remaining release gates (2026-10-11)
+
+The post-rebase Rust implementation was rechecked after adding defensive parser, error-formatting, Ticket redaction, request-default, and typed response-view coverage. The focused protocol/client commands from `quickstart.md` pass. The full workspace unit, fixture, fake-transport, UI/trybuild, integration, and doctest suites pass on this host; the separate Linux C consumer run exercises the exported ABI. This is source-derived behavioral evidence, not a KMIP server interoperability result.
+
+| Command | Result |
+|---|---|
+| `cargo fmt --all --check` | PASS. |
+| `cargo clippy --workspace --all-targets --all-features -- -D warnings` | PASS. |
+| `cargo test --workspace --all-features` | PASS: all workspace unit, integration, UI/trybuild, fixture, guide-example, and doc tests completed with exit code 0. |
+| `python scripts/test_user_guide_examples.py` | PASS: 20 marked Rust guide examples compiled. |
+| `python -B tools/api_manifest/generate.py --check` | PASS: six registry-manifest outputs are current. Credential-session operation mappings are not present in the release manifest. |
+| `python -B tools/normative_catalog/check_immutable_sources.py --repo-root . --base-sha 25f99278fe3fbc90da5569283107e19bb0fa012c` | PASS: pinned OASIS copies match the release base. |
+| `python -B tools/normative_catalog/audit_sources.py --repo-root . --base-sha 25f99278fe3fbc90da5569283107e19bb0fa012c --check` | PASS: 1,411 normative source candidates audited. |
+| Normative catalog validate/report check and generated TTLV tags, result values, attribute types, and attribute policy checks | PASS: 4,044 catalog records valid; all generated outputs current. |
+| `pwsh -File .\scripts\Test-DependencyPolicy.ps1` | PASS: pinned cargo-deny 0.20.2 checked the root and fuzz workspaces, refreshed/verified the RustSec advisory database, and confirmed both lockfile hashes unchanged. |
+| `python scripts/coverage_gate.py preflight --workspace .` | PASS: source scan found 107 executable or ambiguous function bodies across 163 production files. |
+| `cargo llvm-cov --workspace --all-features` | Tests and report generation PASS; this Windows-only workspace report measured 89.24% lines, below the 90% aggregate workspace threshold. It is not a three-platform CI aggregate. |
+| `bash scripts/collect_ffi_coverage.sh coverage-ffi` with a fresh isolated Linux `CARGO_TARGET_DIR` | PASS: C consumer test passed; `crates/kmipkit-ffi/src/extension_registry.rs` measured 93.59% lines. Do not combine this Linux profile with Windows raw profiles; their LLVM profile formats differ. |
+| `git diff --check` | PASS. |
+
+The global coverage gate still needs its CI aggregate across the three Rust platforms plus the C consumer report. T015–T017 remain blocked until the approved KMIPKIT-0043 public API contract is merged; the current release manifest has no credential-session operation mappings and no KMIPKIT-0043 PR is open. T020 remains open: ports 5696 and 5697 have no local listeners, and no two-server interoperability result is available. These checks do not establish 1.0.0 readiness, certification, or server interoperability.
+
 Four-language manifest mappings remain blocked on the canonical KMIPKIT-0043 operation mapping tasks; T014 does not claim binding parity.
 
 
