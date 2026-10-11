@@ -5535,8 +5535,9 @@ fn request_mutation_is_prohibited(request: &ClientRequest) -> bool {
         | ClientRequest::Mac(_)
         | ClientRequest::MacVerify(_)
         | ClientRequest::Sign(_)
-        | ClientRequest::SignatureVerify(_) => false,
-        ClientRequest::RngRetrieve(_) | ClientRequest::RngSeed(_) => false,
+        | ClientRequest::SignatureVerify(_)
+        | ClientRequest::RngRetrieve(_)
+        | ClientRequest::RngSeed(_) => false,
     }
 }
 

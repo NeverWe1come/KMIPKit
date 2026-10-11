@@ -29,6 +29,10 @@ const REQUEST_PAYLOAD: u32 = 0x0042_0079;
 const PENDING_CORRELATION: &[u8] = b"RNG_RETRIEVE_PENDING\x00\xff";
 const OUTPUT_SENTINEL: &[u8] = b"KMIP_RNG_RETRIEVE_SECRET_SENTINEL";
 
+fn output_length() -> i32 {
+    i32::try_from(OUTPUT_SENTINEL.len()).expect("test output length fits i32")
+}
+
 fn request_operation_and_length(request: &[u8]) -> Option<(u32, i32)> {
     let decoded = decode_with_limits(request, &CodecLimits::defaults()).ok()?;
     decoded.with_value(|value| {
@@ -92,7 +96,7 @@ fn rng_retrieve_sends_required_length_once_and_returns_redacted_secret_output() 
 
     let item = client
         .rng_retrieve(
-            RngRetrieveRequest::new(OUTPUT_SENTINEL.len() as i32),
+            RngRetrieveRequest::new(output_length()),
             &CodecLimits::defaults(),
         )
         .expect("the fake server returns a valid RNG Retrieve success response");
@@ -112,7 +116,7 @@ fn rng_retrieve_sends_required_length_once_and_returns_redacted_secret_output() 
     );
     assert_eq!(
         request_operation_and_length(captured.borrow().as_deref().expect("request was captured")),
-        Some((RNG_RETRIEVE, OUTPUT_SENTINEL.len() as i32))
+        Some((RNG_RETRIEVE, output_length()))
     );
     assert_eq!(transport.borrow().exchange_count(), 1);
 }
