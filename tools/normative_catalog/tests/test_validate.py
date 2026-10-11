@@ -13097,6 +13097,13 @@ class CatalogValidationTests(unittest.TestCase):
             )
             self.assertEqual(requirements[requirement_id]["scope_state"], "mixed")
 
+        unresolved_requirement_id = "KMIPKIT-REQ-SPEC-4.1-001-001"
+        self.assertEqual(
+            [row["scope_state"] for row in mappings[unresolved_requirement_id]],
+            ["unresolved"],
+        )
+        self.assertEqual(requirements[unresolved_requirement_id]["scope_state"], "unclear")
+
         verify_rows = mappings["KMIPKIT-REQ-SPEC-6.1.20-001-002"]
         verify_keywords = {row["source_keyword"] for row in verify_rows}
         self.assertEqual(verify_keywords, {"SHALL", "SHALL NOT"})
