@@ -75,13 +75,13 @@
     "profiles": 18,
     "specification_clause_records": 877,
     "profiles_clause_records": 534,
-    "requirement_crosswalk_records": 224,
+    "requirement_crosswalk_records": 226,
     "requirement_crosswalk_complete": false,
     "common_baseline_official_cases": 16,
     "common_baseline_unavailable_fixtures": 16,
     "profile_test_associations": 365,
     "distinct_profile_test_case_ids": 93,
-    "source_requirement_review_records": 582,
+    "source_requirement_review_records": 595,
     "direct_root_exclusion_records": 4,
     "source_only_requirement_gaps": 153,
     "source_only_requirement_gap_proposals": 123,
@@ -21010,6 +21010,40 @@
       "scope_state": "client_1_0",
       "applies_to": "all_client_profiles",
       "review_note": "Specification v2.1 section 6.1.47; client obligation mapped from source obligation 1.",
+      "source_obligation_order": 1,
+      "source_actor": "client"
+    },
+    {
+      "requirement_id": "KMIPKIT-REQ-SPEC-6.1.48-001",
+      "source_clause_id": "KMIPKIT-CLAUSE-SPEC-6.1.48-001",
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_section": "6.1.48",
+      "source_locator": {
+        "ordinal": 1,
+        "block_kind": "paragraph"
+      },
+      "source_keyword": "SHALL",
+      "role": "client",
+      "scope_state": "client_1_0",
+      "applies_to": "all_client_profiles",
+      "review_note": "Specification v2.1 section 6.1.48; client obligation mapped from source obligation 1.",
+      "source_obligation_order": 1,
+      "source_actor": "client"
+    },
+    {
+      "requirement_id": "KMIPKIT-REQ-SPEC-6.1.48-006",
+      "source_clause_id": "KMIPKIT-CLAUSE-SPEC-6.1.48-006",
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_section": "6.1.48",
+      "source_locator": {
+        "ordinal": 6,
+        "block_kind": "paragraph"
+      },
+      "source_keyword": "SHALL",
+      "role": "client",
+      "scope_state": "client_1_0",
+      "applies_to": "all_client_profiles",
+      "review_note": "Specification v2.1 section 6.1.48; client obligation mapped from source obligation 1.",
       "source_obligation_order": 1,
       "source_actor": "client"
     }
@@ -61305,7 +61339,7 @@
       ],
       "source_payload_rows": []
     },
-        {
+    {
       "source_id": "KMIPKIT-SRC-spec",
       "source_path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
       "source_section": "6.1.40",
@@ -61483,7 +61517,7 @@
         }
       ]
     },
-        {
+    {
       "source_id": "KMIPKIT-SRC-spec",
       "source_path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
       "source_section": "6.1.40",
@@ -61516,7 +61550,7 @@
       "source_request_rows": [],
       "source_payload_rows": []
     },
-        {
+    {
       "source_id": "KMIPKIT-SRC-spec",
       "source_path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
       "source_section": "6.1.40",
@@ -61549,7 +61583,7 @@
       "source_request_rows": [],
       "source_payload_rows": []
     },
-        {
+    {
       "source_id": "KMIPKIT-SRC-spec",
       "source_path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
       "source_section": "6.1.40",
@@ -61592,7 +61626,7 @@
       "source_request_rows": [],
       "source_payload_rows": []
     },
-        {
+    {
       "source_id": "KMIPKIT-SRC-spec",
       "source_path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
       "source_section": "6.1.40",
@@ -61625,7 +61659,7 @@
       "source_request_rows": [],
       "source_payload_rows": []
     },
-        {
+    {
       "source_id": "KMIPKIT-SRC-spec",
       "source_path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
       "source_section": "6.1.40",
@@ -61668,7 +61702,7 @@
       "source_request_rows": [],
       "source_payload_rows": []
     },
-        {
+    {
       "source_id": "KMIPKIT-SRC-spec",
       "source_path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
       "source_section": "6.1.40",
@@ -61701,7 +61735,7 @@
       "source_request_rows": [],
       "source_payload_rows": []
     },
-        {
+    {
       "source_id": "KMIPKIT-SRC-spec",
       "source_path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
       "source_section": "6.1.40",
@@ -61734,7 +61768,7 @@
       "source_request_rows": [],
       "source_payload_rows": []
     },
-        {
+    {
       "source_id": "KMIPKIT-SRC-spec",
       "source_path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
       "source_section": "6.1.40",
@@ -61767,7 +61801,7 @@
       "source_request_rows": [],
       "source_payload_rows": []
     },
-        {
+    {
       "source_id": "KMIPKIT-SRC-spec",
       "source_path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
       "source_section": "6.1.40",
@@ -61800,7 +61834,7 @@
       "source_request_rows": [],
       "source_payload_rows": []
     },
-        {
+    {
       "source_id": "KMIPKIT-SRC-spec",
       "source_path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
       "source_section": "6.1.40",
@@ -61833,7 +61867,7 @@
       "source_request_rows": [],
       "source_payload_rows": []
     },
-        {
+    {
       "source_id": "KMIPKIT-SRC-spec",
       "source_path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
       "source_section": "6.1.40",
@@ -61866,7 +61900,7 @@
       "source_request_rows": [],
       "source_payload_rows": []
     },
-        {
+    {
       "source_id": "KMIPKIT-SRC-spec",
       "source_path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
       "source_section": "6.1.40",
@@ -63438,7 +63472,10 @@
         "ordinal": 7,
         "block_kind": "table_row"
       },
-      "html_line_range": [33606, 33624],
+      "html_line_range": [
+        33606,
+        33624
+      ],
       "source_excerpt": "Item REQUIRED Description",
       "source_obligations": [],
       "rejected_candidate_mappings": [],
@@ -63596,7 +63633,10 @@
         "ordinal": 9,
         "block_kind": "table_row"
       },
-      "html_line_range": [33777, 33795],
+      "html_line_range": [
+        33777,
+        33795
+      ],
       "source_excerpt": "Item REQUIRED Description",
       "source_obligations": [],
       "rejected_candidate_mappings": [],
@@ -63657,7 +63697,10 @@
         "ordinal": 2,
         "block_kind": "table_row"
       },
-      "html_line_range": [33846, 33861],
+      "html_line_range": [
+        33846,
+        33861
+      ],
       "source_excerpt": "Operation Failed Invalid CSR, Invalid Message, Invalid Object Type, Object Not Found, Attestation Failed, Attestation Required, Feature Not Supported, Invalid Field, Invalid Message, Operation Not Supported, Permission Denied, Protection Storage Unavailable, Response Too Large",
       "source_obligations": [],
       "rejected_candidate_mappings": [],
@@ -64147,7 +64190,7 @@
       ],
       "applies_to": "all_client_profiles",
       "review_note": "Offset is a client MAY; the date transformation is server-side and conditional on Offset and existing dates. The candidate .47-004-002 incorrectly turns the descriptive Offset-omitted date-copy sentence into a client SHALL; the source gives that sentence no formal keyword. Its client actor and Offset-omitted condition mismatch the actual formal SHALL, which applies only when Offset is set and existing dates are present and governs the server. Table 308 gives Initial Date (IT2) > IT1 while Table 309 says Initial Date is set to the current time; this source discrepancy remains unresolved and creates no client date-setting obligation. The pinned source formula contains byte 0xA0 before IT2 + Offset at HTML line 34486; decoded as Windows-1252, this is U+00A0 (a non-breaking space), preserved in source_context.",
-      "source_context": "An Offset MAY be used to indicate the difference between the Initial Date and the Activation Date of the replacement key pair. If no Offset is specified, the Activation Date and Deactivation Date values are copied from the existing key pair. If Offset is set and dates exist for the existing key pair, then the dates of the replacement key pair SHALL be set based on the dates of the existing key pair as follows Attribute in Existing Key Pair Attribute in Replacement Key Pair Initial Date (IT1) Initial Date (IT2) > IT1 Activation Date (AT1) Activation Date (AT2) = IT2+ Offset Deactivation Date (DT1) Deactivation Date = DT1+(AT2- AT1) Table 308: Computing New Dates from Offset during Re-key Key Pair Initial Date Set to the current time Pinned HTML lines 34486-34487: Activation Date (AT2) = \u00A0IT2+ Offset"
+      "source_context": "An Offset MAY be used to indicate the difference between the Initial Date and the Activation Date of the replacement key pair. If no Offset is specified, the Activation Date and Deactivation Date values are copied from the existing key pair. If Offset is set and dates exist for the existing key pair, then the dates of the replacement key pair SHALL be set based on the dates of the existing key pair as follows Attribute in Existing Key Pair Attribute in Replacement Key Pair Initial Date (IT1) Initial Date (IT2) > IT1 Activation Date (AT1) Activation Date (AT2) = IT2+ Offset Deactivation Date (DT1) Deactivation Date = DT1+(AT2- AT1) Table 308: Computing New Dates from Offset during Re-key Key Pair Initial Date Set to the current time Pinned HTML lines 34486-34487: Activation Date (AT2) =  IT2+ Offset"
     },
     {
       "source_id": "KMIPKIT-SRC-spec",
@@ -64387,6 +64430,465 @@
       "source_keywords": [
         "REQUIRED"
       ]
+    },
+    {
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+      "source_section": "6.1.48",
+      "source_clause_id": "KMIPKIT-CLAUSE-SPEC-6.1.48-001",
+      "source_locator": {
+        "ordinal": 1,
+        "block_kind": "paragraph"
+      },
+      "html_line_range": [
+        35070,
+        35073
+      ],
+      "source_excerpt": "This request is used to generate a replacement client link level credential from an existing client link level credential. The client requesting re-provisioning SHALL provide a certificate signing request, or a certificate, or no parameters if the server will create the client credential .",
+      "source_obligations": [
+        {
+          "source_order": 1,
+          "source_text": "The client requesting re-provisioning SHALL provide a certificate signing request, or a certificate, or no parameters if the server will create the client credential .",
+          "source_keyword": "SHALL",
+          "actor": "client",
+          "direction": "provide a certificate signing request, a certificate, or no parameters if the server will create the client credential",
+          "condition": "When requesting a replacement client link-level credential.",
+          "scope_disposition": "client_1_0",
+          "candidate_requirement_id": "KMIPKIT-REQ-SPEC-6.1.48-001"
+        }
+      ],
+      "rejected_candidate_mappings": [],
+      "expected_client_requirement_ids": [],
+      "applies_to": "all_client_profiles",
+      "review_note": "The client SHALL identifies the described Re-Provision input forms. The text does not expressly prohibit supplying both optional fields, so no mutual-exclusion rule is inferred."
+    },
+    {
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+      "source_section": "6.1.48",
+      "source_clause_id": "KMIPKIT-CLAUSE-SPEC-6.1.48-002",
+      "source_locator": {
+        "ordinal": 2,
+        "block_kind": "paragraph"
+      },
+      "html_line_range": [
+        35075,
+        35078
+      ],
+      "source_excerpt": "If the client provides a certificate signing request, the server SHALL process the certificate signing request and assign the new certificate to the be the client link level credential. The server SHALL return the unique identifier for the signed certificate stored on the server.",
+      "source_obligations": [
+        {
+          "source_order": 1,
+          "source_text": "the server SHALL process the certificate signing request and assign the new certificate to the be the client link level credential.",
+          "source_keyword": "SHALL",
+          "actor": "server",
+          "direction": "process the supplied certificate signing request and assign the new certificate as the client link-level credential",
+          "condition": "When a certificate signing request is provided.",
+          "scope_disposition": "server_only",
+          "candidate_requirement_id": null
+        },
+        {
+          "source_order": 2,
+          "source_text": "The server SHALL return the unique identifier for the signed certificate stored on the server.",
+          "source_keyword": "SHALL",
+          "actor": "server",
+          "direction": "return the unique identifier of the stored signed certificate",
+          "condition": "When a certificate signing request is provided.",
+          "scope_disposition": "server_only",
+          "candidate_requirement_id": null
+        }
+      ],
+      "rejected_candidate_mappings": [],
+      "expected_client_requirement_ids": [],
+      "applies_to": "all_client_profiles",
+      "review_note": "Both formal SHALL atoms assign server processing and output behavior. The client condition is not an additional client requirement. The catalog records role=both because the paragraph mentions the client condition, but both normative SHALL actors are the server."
+    },
+    {
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+      "source_section": "6.1.48",
+      "source_clause_id": "KMIPKIT-CLAUSE-SPEC-6.1.48-003",
+      "source_locator": {
+        "ordinal": 3,
+        "block_kind": "paragraph"
+      },
+      "html_line_range": [
+        35080,
+        35083
+      ],
+      "source_excerpt": "If the client provides a certificate, the server SHALL associate the certificate with the client as the client’s link level credential. The server SHALL return the unique identifier for the certificate stored on the server.",
+      "source_obligations": [
+        {
+          "source_order": 1,
+          "source_text": "The server SHALL associate the certificate with the client as the client�s link level credential.",
+          "source_keyword": "SHALL",
+          "actor": "server",
+          "direction": "associate the supplied certificate with the client as its link-level credential",
+          "condition": "When a certificate is provided.",
+          "scope_disposition": "server_only",
+          "candidate_requirement_id": null
+        },
+        {
+          "source_order": 2,
+          "source_text": "The server SHALL return the unique identifier for the certificate stored on the server.",
+          "source_keyword": "SHALL",
+          "actor": "server",
+          "direction": "return the unique identifier of the stored certificate",
+          "condition": "When a certificate is provided.",
+          "scope_disposition": "server_only",
+          "candidate_requirement_id": null
+        }
+      ],
+      "rejected_candidate_mappings": [],
+      "expected_client_requirement_ids": [],
+      "applies_to": "all_client_profiles",
+      "review_note": "Both formal SHALL atoms assign server association and output behavior. The client condition is not an additional client requirement. The catalog role=both includes the client condition; the normative actor is server for both SHALL atoms."
+    },
+    {
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+      "source_section": "6.1.48",
+      "source_clause_id": "KMIPKIT-CLAUSE-SPEC-6.1.48-004",
+      "source_locator": {
+        "ordinal": 4,
+        "block_kind": "paragraph"
+      },
+      "html_line_range": [
+        35085,
+        35088
+      ],
+      "source_excerpt": "Where no parameters are provided, the server shall generate a key pair and certificate associated with the client. The server SHALL return the unique identifier for the private key. The client may then subsequently retrieve the private key via a Get operation.",
+      "source_obligations": [
+        {
+          "source_order": 1,
+          "source_text": "The server SHALL return the unique identifier for the private key.",
+          "source_keyword": "SHALL",
+          "actor": "server",
+          "direction": "return the unique identifier for the generated private key",
+          "condition": "When no request parameters are provided.",
+          "scope_disposition": "server_only",
+          "candidate_requirement_id": null
+        }
+      ],
+      "rejected_candidate_mappings": [
+        {
+          "requirement_id": "KMIPKIT-REQ-SPEC-6.1.48-004",
+          "claimed_keyword": "MAY",
+          "source_review": "The client sentence says lowercase `may`, while the candidate classifies it as uppercase MAY. The inventory locator normalizes keyword matching without preserving case; accepted KMIPKIT-DEC-014 addresses lowercase `shall` but does not state whether lowercase `may` is normative. Do not use this occurrence as uppercase normative proof or add a client crosswalk until the keyword policy is explicit.",
+          "expected_disposition": "reject_candidate_keyword_case_mismatch"
+        }
+      ],
+      "expected_client_requirement_ids": [],
+      "applies_to": "all_client_profiles",
+      "review_note": "The uppercase SHALL is a server output obligation, while the client retrieval sentence uses lowercase `may`; the case-insensitive locator keyword list does not preserve that distinction. KMIPKIT-DEC-014 addresses lowercase `shall` but does not settle a general policy for lowercase `may`, so the existing client MAY candidate is flagged for its actor and keyword mismatch and omitted from this crosswalk.",
+      "source_context": "Where no parameters are provided, the server shall generate a key pair and certificate associated with the client. The server SHALL return the unique identifier for the private key. The client may then subsequently retrieve the private key via a Get operation."
+    },
+    {
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+      "source_section": "6.1.48",
+      "source_clause_id": "KMIPKIT-CLAUSE-SPEC-6.1.48-005",
+      "source_locator": {
+        "ordinal": 5,
+        "block_kind": "paragraph"
+      },
+      "html_line_range": [
+        35090,
+        35091
+      ],
+      "source_excerpt": "The current client credential SHALL be made invalid and cannot be used in future KMIP requests.",
+      "source_obligations": [
+        {
+          "source_order": 1,
+          "source_text": "The current client credential SHALL be made invalid and cannot be used in future KMIP requests.",
+          "source_keyword": "SHALL",
+          "actor": "unspecified",
+          "direction": "make the current client credential invalid for future KMIP requests",
+          "condition": "After re-provisioning.",
+          "scope_disposition": "server_only",
+          "candidate_requirement_id": null
+        }
+      ],
+      "rejected_candidate_mappings": [],
+      "expected_client_requirement_ids": [],
+      "applies_to": "all_client_profiles",
+      "review_note": "The passive sentence does not name the actor. Its effect is credential invalidation, not a separate client request obligation; preserve the actor as unspecified rather than assigning one from context."
+    },
+    {
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+      "source_section": "6.1.48",
+      "source_clause_id": "KMIPKIT-CLAUSE-SPEC-6.1.48-006",
+      "source_locator": {
+        "ordinal": 6,
+        "block_kind": "paragraph"
+      },
+      "html_line_range": [
+        35093,
+        35094
+      ],
+      "source_excerpt": "Re-Provision SHALL be called by the client that requires new credentials",
+      "source_obligations": [
+        {
+          "source_order": 1,
+          "source_text": "Re-Provision SHALL be called by the client that requires new credentials",
+          "source_keyword": "SHALL",
+          "actor": "client",
+          "direction": "call Re-Provision when new client credentials are required",
+          "condition": "When the client requires new credentials.",
+          "scope_disposition": "client_1_0",
+          "candidate_requirement_id": "KMIPKIT-REQ-SPEC-6.1.48-006"
+        }
+      ],
+      "rejected_candidate_mappings": [],
+      "expected_client_requirement_ids": [],
+      "applies_to": "all_client_profiles",
+      "review_note": "The client SHALL to call Re-Provision when new credentials are required maps to the existing client requirement."
+    },
+    {
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+      "source_section": "6.1.48",
+      "source_clause_id": "KMIPKIT-CLAUSE-SPEC-6.1.48-007",
+      "source_locator": {
+        "ordinal": 7,
+        "block_kind": "paragraph"
+      },
+      "html_line_range": [
+        35096,
+        35097
+      ],
+      "source_excerpt": "Re-Provision SHOULD fail if the certificate that represents the client credential has expired.",
+      "source_obligations": [
+        {
+          "source_order": 1,
+          "source_text": "Re-Provision SHOULD fail if the certificate that represents the client credential has expired.",
+          "source_keyword": "SHOULD",
+          "actor": "server",
+          "direction": "fail Re-Provision when the client credential certificate has expired",
+          "condition": "The certificate representing the client credential is expired.",
+          "scope_disposition": "server_only",
+          "candidate_requirement_id": null
+        }
+      ],
+      "rejected_candidate_mappings": [],
+      "expected_client_requirement_ids": [],
+      "applies_to": "all_client_profiles",
+      "review_note": "This SHOULD describes server failure behavior for an expired credential; it does not add a client request rule."
+    },
+    {
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+      "source_section": "6.1.48",
+      "source_clause_id": "KMIPKIT-CLAUSE-SPEC-6.1.48-008",
+      "source_locator": {
+        "ordinal": 8,
+        "block_kind": "paragraph"
+      },
+      "html_line_range": [
+        35099,
+        35100
+      ],
+      "source_excerpt": "Re-Provision SHALL fail if the certificate that represents the client credential has been Revoked.",
+      "source_obligations": [
+        {
+          "source_order": 1,
+          "source_text": "Re-Provision SHALL fail if the certificate that represents the client credential has been Revoked.",
+          "source_keyword": "SHALL",
+          "actor": "server",
+          "direction": "fail Re-Provision when the client credential certificate has been revoked",
+          "condition": "The certificate representing the client credential has been revoked.",
+          "scope_disposition": "server_only",
+          "candidate_requirement_id": null
+        }
+      ],
+      "rejected_candidate_mappings": [],
+      "expected_client_requirement_ids": [],
+      "applies_to": "all_client_profiles",
+      "review_note": "This SHALL describes server failure behavior for a revoked credential; it does not add a client request rule."
+    },
+    {
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+      "source_section": "6.1.48",
+      "source_clause_id": "KMIPKIT-CLAUSE-SPEC-6.1.48-009",
+      "source_locator": {
+        "ordinal": 9,
+        "block_kind": "paragraph"
+      },
+      "html_line_range": [
+        35102,
+        35103
+      ],
+      "source_excerpt": "Re-Provision SHALL fail if the certificate that represents the client credential has been compromised.",
+      "source_obligations": [
+        {
+          "source_order": 1,
+          "source_text": "Re-Provision SHALL fail if the certificate that represents the client credential has been compromised.",
+          "source_keyword": "SHALL",
+          "actor": "server",
+          "direction": "fail Re-Provision when the client credential certificate has been compromised",
+          "condition": "The certificate representing the client credential is compromised.",
+          "scope_disposition": "server_only",
+          "candidate_requirement_id": null
+        }
+      ],
+      "rejected_candidate_mappings": [],
+      "expected_client_requirement_ids": [],
+      "applies_to": "all_client_profiles",
+      "review_note": "This SHALL describes server failure behavior for a compromised credential; it does not add a client request rule."
+    },
+    {
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+      "source_section": "6.1.48",
+      "source_clause_id": "KMIPKIT-CLAUSE-SPEC-6.1.48-010",
+      "source_locator": {
+        "ordinal": 10,
+        "block_kind": "table_row"
+      },
+      "html_line_range": [
+        35119,
+        35132
+      ],
+      "source_excerpt": "Item REQUIRED Description",
+      "source_obligations": [],
+      "rejected_candidate_mappings": [],
+      "expected_client_requirement_ids": [],
+      "applies_to": "all_client_profiles",
+      "review_note": "The request payload header introduces Table 313; the optional body rows are retained below and linked to the existing client request-form SHALL. Neither the prose nor table expressly forbids both fields from appearing together.",
+      "source_keywords": [
+        "REQUIRED"
+      ],
+      "source_context": "Certificate Request No The certificate request to be signed Certificate No The certificate to replace the existing certificate Table 313: Re-Provision Request Payload",
+      "source_request_rows": [
+        {
+          "row_label": "Certificate Request",
+          "required": "No",
+          "actor": "client",
+          "disposition": "optional_request_field_covered_by_client_request_forms",
+          "html_line_range": [
+            35138,
+            35150
+          ],
+          "source_excerpt": "Certificate Request No The certificate request to be signed",
+          "source_gap_id": null,
+          "source_requirement_ids": [
+            "KMIPKIT-REQ-SPEC-6.1.48-001"
+          ],
+          "source_note": "This optional field is one of the input forms named by the client SHALL; the source does not expressly say it must exclude Certificate."
+        },
+        {
+          "row_label": "Certificate",
+          "required": "No",
+          "actor": "client",
+          "disposition": "optional_request_field_covered_by_client_request_forms",
+          "html_line_range": [
+            35156,
+            35168
+          ],
+          "source_excerpt": "Certificate No The certificate to replace the existing certificate",
+          "source_gap_id": null,
+          "source_requirement_ids": [
+            "KMIPKIT-REQ-SPEC-6.1.48-001"
+          ],
+          "source_note": "This optional field is one of the input forms named by the client SHALL; the source does not expressly say it must exclude Certificate Request."
+        }
+      ]
+    },
+    {
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+      "source_section": "6.1.48",
+      "source_clause_id": "KMIPKIT-CLAUSE-SPEC-6.1.48-011",
+      "source_locator": {
+        "ordinal": 11,
+        "block_kind": "table_row"
+      },
+      "html_line_range": [
+        35191,
+        35204
+      ],
+      "source_excerpt": "Item REQUIRED Description",
+      "source_obligations": [],
+      "rejected_candidate_mappings": [],
+      "expected_client_requirement_ids": [],
+      "applies_to": "all_client_profiles",
+      "review_note": "The response payload header introduces Table 314. Its Unique Identifier row is REQUIRED=No. Accepted KMIPKIT-DEC-014 follows Table 314 for the client parser while retaining the prose identifier-return SHALL as server behavior for CSR and certificate forms; preserve both sources without converting the server duty into a client parser requirement.",
+      "source_keywords": [
+        "REQUIRED"
+      ],
+      "source_context": "Unique Identifier No The Certificate or Private Key unique identifier. Table 314: Re-Provision Response Payload",
+      "source_payload_rows": [
+        {
+          "row_label": "Unique Identifier",
+          "required": "No",
+          "actor": "server",
+          "disposition": "response_payload_data",
+          "html_line_range": [
+            35210,
+            35222
+          ],
+          "source_excerpt": "Unique Identifier No The Certificate or Private Key unique identifier",
+          "source_requirement_ids": [],
+          "source_note": "Table 314 marks this response item optional. KMIPKIT-DEC-014 makes absence acceptable to the client parser; paragraphs 2–4 separately retain uppercase server SHALLs to return identifiers when CSR, certificate, or no parameters are used."
+        }
+      ]
+    },
+    {
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+      "source_section": "6.1.48.1",
+      "source_clause_id": "KMIPKIT-CLAUSE-SPEC-6.1.48.1-001",
+      "source_locator": {
+        "ordinal": 1,
+        "block_kind": "paragraph"
+      },
+      "html_line_range": [
+        35235,
+        35236
+      ],
+      "source_excerpt": "This section details the specific Result Reasons that SHALL be returned for errors detected in a Re-Provision Operation.",
+      "source_obligations": [
+        {
+          "source_order": 1,
+          "source_text": "This section details the specific Result Reasons that SHALL be returned for errors detected in a Re-Provision Operation.",
+          "source_keyword": "SHALL",
+          "actor": "server",
+          "direction": "return the listed Result Reasons for Re-Provision errors",
+          "condition": "An error is detected in a Re-Provision operation.",
+          "scope_disposition": "server_only",
+          "candidate_requirement_id": null
+        }
+      ],
+      "rejected_candidate_mappings": [],
+      "expected_client_requirement_ids": [],
+      "applies_to": "all_client_profiles",
+      "review_note": "The error-handling preamble governs server Result Reason output for this operation."
+    },
+    {
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+      "source_section": "6.1.48.1",
+      "source_clause_id": "KMIPKIT-CLAUSE-SPEC-6.1.48.1-002",
+      "source_locator": {
+        "ordinal": 2,
+        "block_kind": "table_row"
+      },
+      "html_line_range": [
+        35259,
+        35268
+      ],
+      "source_excerpt": "Operation Failed Cryptographic Failure, Attestation Failed, Attestation Required, Feature Not Supported, Invalid Field, Invalid Message, Operation Not Supported, Permission Denied, Response Too Large",
+      "source_obligations": [],
+      "rejected_candidate_mappings": [],
+      "expected_client_requirement_ids": [],
+      "applies_to": "all_client_profiles",
+      "review_note": "The row lists nine Result Reasons under Operation Failed. The REQUIRED token in the locator is a column heading, not an independent obligation. The caption at line 35275 says `RNG Retrieve Errors` although the table is under Re-Provision error handling; preserve and flag this source caption discrepancy without correcting the pinned HTML.",
+      "source_keywords": [
+        "REQUIRED"
+      ],
+      "source_context": "Table 315: RNG Retrieve Errors"
     }
   ],
   "source_only_requirement_gaps": [

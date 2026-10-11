@@ -6806,6 +6806,8 @@ class CatalogValidationTests(unittest.TestCase):
         self.assertIn("lowercase", no_parameter_review["rejected_candidate_mappings"][0]["source_review"].lower())
         self.assertIn("KMIPKIT-DEC-014", no_parameter_review["review_note"])
         self.assertIn("actor", no_parameter_review["review_note"].lower())
+        self.assertIn("role=both", reviews["KMIPKIT-CLAUSE-SPEC-6.1.48-002"]["review_note"])
+        self.assertIn("normative actor is server", reviews["KMIPKIT-CLAUSE-SPEC-6.1.48-003"]["review_note"])
         self.assertEqual(
             no_parameter_review["expected_client_requirement_ids"],
             [],
