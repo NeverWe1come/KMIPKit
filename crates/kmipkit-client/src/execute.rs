@@ -69,6 +69,9 @@ mod derive_key_execution_tests;
 #[cfg(test)]
 #[path = "../tests/unit/export_execution_tests.rs"]
 mod export_execution_tests;
+#[cfg(test)]
+#[path = "../tests/unit/import_execution_tests.rs"]
+mod import_execution_tests;
 
 #[cfg(test)]
 #[path = "../tests/unit/hash_execution_tests.rs"]

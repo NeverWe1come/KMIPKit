@@ -49,7 +49,7 @@
 
 **Independent Test**: Tables 238–240; required identifier/type/attributes/object; conditional wrapping; explicit Replace Existing; one exchange; no local unwrap/import.
 
-- [ ] T012 [P] [US3] Add failing Import request, response/error, and fake-client tests in `crates/kmipkit-protocol/tests/unit/import_operation_tests.rs` and `crates/kmipkit-client/tests/unit/import_execution_tests.rs` for §6.1.25 Tables 238–240 and its traceability rows; commit Red.
+- [x] T012 [P] [US3] Add failing Import request, response/error, and fake-client tests in `crates/kmipkit-protocol/tests/unit/import_operation_tests.rs` and `crates/kmipkit-client/tests/unit/import_execution_tests.rs` for §6.1.25 Tables 238–240 and its traceability rows; commit Red.
 - [ ] T013 [US3] Implement `ImportRequest/Response/Error` in `crates/kmipkit-protocol/src/import.rs`, export it, and integrate dispatch/client methods in `crates/kmipkit-client/src/execute.rs` and `crates/kmipkit-client/src/lib.rs`; commit Green after T012 passes.
 - [ ] T014 [US3] Refactor Import payload/dispatch/tests in `crates/kmipkit-protocol/src/import.rs`, `crates/kmipkit-client/src/execute.rs`, and both test files without local unwrapping; commit Refactor separately.
 

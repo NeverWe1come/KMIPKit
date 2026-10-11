@@ -308,6 +308,9 @@ mod derive_key_operation_tests;
 #[cfg(test)]
 #[path = "../tests/unit/export_operation_tests.rs"]
 mod export_operation_tests;
+#[cfg(test)]
+#[path = "../tests/unit/import_operation_tests.rs"]
+mod import_operation_tests;
 
 #[cfg(test)]
 #[path = "../tests/support/async_operation_fixtures.rs"]

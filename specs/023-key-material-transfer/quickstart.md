@@ -57,6 +57,7 @@ Record separate Red, Green, and Refactor commit IDs per story. The implementatio
 
 - Red commit: `74c1ed86`.
 - Green commit: `84bdd676`.
+- Refactor commit: `3c0c5c07`.
 - Passed `cargo test -p kmipkit-protocol --lib export_operation_tests` (3 tests) and `cargo test -p kmipkit-client --lib export_execution_tests` (1 test).
 - Passed `cargo fmt --all --check`, `cargo clippy -p kmipkit-protocol -p kmipkit-client --all-targets --all-features -- -D warnings`, and `git diff --check`.
 - Table-derived vectors exercise caller-selected options, full successful response retention/redaction, unknown result values, single dispatch, and server-error passthrough; they do not establish official conformance or independent implementation interoperability.
