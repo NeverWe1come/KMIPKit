@@ -6318,6 +6318,242 @@ class CatalogValidationTests(unittest.TestCase):
         )
         self.assertEqual(oracle["oracle_status"], "partial-source-reviewed; not complete T003 oracle")
 
+    def test_spec_6_1_45_recertify_reviews_client_inputs_and_server_effects(self) -> None:
+        """Specification v2.1 §§6.1.45 and 6.1.45.1 preserve Re-certify source roles."""
+        fixture_path = ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json"
+        oracle = json.loads(fixture_path.read_text(encoding="utf-8"))
+        source_path = "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
+        pinned_locators = audit_document_with_text((ROOT / source_path).read_bytes(), "KMIPKIT-SRC-spec")
+        recertify_locators = [row for row in pinned_locators if row["section"] in ("6.1.45", "6.1.45.1")]
+        expected_locators = {
+            "KMIPKIT-CLAUSE-SPEC-6.1.45-001": ("6.1.45", 1, "paragraph", ["SHALL"], [33345, 33346]),
+            "KMIPKIT-CLAUSE-SPEC-6.1.45-002": ("6.1.45", 2, "paragraph", ["MAY", "SHALL"], [33348, 33353]),
+            "KMIPKIT-CLAUSE-SPEC-6.1.45-003": ("6.1.45", 3, "paragraph", ["SHALL"], [33359, 33360]),
+            "KMIPKIT-CLAUSE-SPEC-6.1.45-004": ("6.1.45", 4, "paragraph", ["SHOULD"], [33366, 33368]),
+            "KMIPKIT-CLAUSE-SPEC-6.1.45-005": ("6.1.45", 5, "paragraph", ["SHALL"], [33370, 33375]),
+            "KMIPKIT-CLAUSE-SPEC-6.1.45-006": ("6.1.45", 6, "paragraph", ["MAY", "SHALL"], [33377, 33382]),
+            "KMIPKIT-CLAUSE-SPEC-6.1.45-007": ("6.1.45", 7, "table_row", ["REQUIRED"], [33606, 33624]),
+            "KMIPKIT-CLAUSE-SPEC-6.1.45-008": ("6.1.45", 8, "table_row", ["REQUIRED"], [33663, 33681]),
+            "KMIPKIT-CLAUSE-SPEC-6.1.45-009": ("6.1.45", 9, "table_row", ["REQUIRED"], [33777, 33795]),
+            "KMIPKIT-CLAUSE-SPEC-6.1.45.1-001": ("6.1.45.1", 1, "paragraph", ["SHALL"], [33825, 33826]),
+            "KMIPKIT-CLAUSE-SPEC-6.1.45.1-002": ("6.1.45.1", 2, "table_row", ["REQUIRED"], [33846, 33861]),
+        }
+        self.assertEqual({row["clause_id"] for row in recertify_locators}, set(expected_locators))
+        reviews = {
+            row["source_clause_id"]: row
+            for row in oracle["source_requirement_reviews"]
+            if row["source_section"] in ("6.1.45", "6.1.45.1")
+        }
+        self.assertEqual(set(reviews), set(expected_locators))
+        for clause_id, (section, ordinal, block_kind, keywords, line_range) in expected_locators.items():
+            review = reviews[clause_id]
+            self.assertEqual(review["source_section"], section)
+            self.assertEqual(review["source_locator"], {"ordinal": ordinal, "block_kind": block_kind})
+            self.assertEqual(review["html_line_range"], line_range)
+            self.assertEqual(review["source_excerpt"], pinned_source_excerpt(source_path, line_range))
+            pinned = next(row for row in recertify_locators if row["clause_id"] == clause_id)
+            self.assertEqual(review["source_excerpt"], pinned["source_text"])
+            self.assertEqual(pinned["source_keywords"], keywords)
+
+        expected_atoms = {
+            "KMIPKIT-CLAUSE-SPEC-6.1.45-001": [
+                ("SHALL", "Only a single certificate SHALL be renewed at a time.", "client",
+                 "limit one certificate per Re-certify request", "Every Re-certify request.",
+                 "KMIPKIT-REQ-SPEC-6.1.45-001", None),
+            ],
+            "KMIPKIT-CLAUSE-SPEC-6.1.45-002": [
+                ("MAY", "The Certificate Request object MAY be omitted", "client",
+                 "omit Certificate Request and identify the public key by Unique Identifier",
+                 "When Certificate Request is omitted.", "KMIPKIT-REQ-SPEC-6.1.45-002-001", None),
+                ("SHALL", "the public key for which a Certificate object is generated SHALL be specified by its Unique Identifier only",
+                 "client", "identify the public key only by Unique Identifier when Certificate Request is omitted",
+                 "When Certificate Request is omitted.", None,
+                 "KMIPKIT-SOURCE-GAP-SPEC-6.1.45-CERTIFICATE-REQUEST-UID-ONLY"),
+                ("SHALL", "the Certificate Type of the new certificate SHALL be the same as that of the existing certificate",
+                 "server", "use the existing certificate type for the new certificate when request type and Attributes omit it",
+                 "Certificate Request Type and Certificate Request are omitted and Certificate Type is absent from Attributes.",
+                 None, None),
+            ],
+            "KMIPKIT-CLAUSE-SPEC-6.1.45-003": [
+                ("SHALL", "The server SHALL copy the Unique Identifier of the new certificate returned by this operation into the ID Placeholder variable.",
+                 "server", "copy the new certificate Unique Identifier into the server ID Placeholder",
+                 "A Re-certify operation returns a new certificate Unique Identifier.", None, None),
+            ],
+            "KMIPKIT-CLAUSE-SPEC-6.1.45-004": [
+                ("SHOULD", "Re-certify SHOULD only be performed once on a given (existing) certificate",
+                 "client", "perform Re-certify no more than once for a given existing certificate",
+                 "A given existing certificate is being re-certified.", "KMIPKIT-REQ-SPEC-6.1.45-004", None),
+            ],
+            "KMIPKIT-CLAUSE-SPEC-6.1.45-005": [
+                ("SHALL", "For the existing certificate, the server SHALL create a Link attribute of Link Type Replacement pointing to the new certificate.",
+                 "server", "set Replacement link from the existing certificate to the new certificate",
+                 "A Re-certify operation creates a new certificate.", None, None),
+                ("SHALL", "For the new certificate, the server SHALL create a Link attribute of Link Type Replaced pointing to the existing certificate.",
+                 "server", "set Replaced link from the new certificate to the existing certificate",
+                 "A Re-certify operation creates a new certificate.", None, None),
+                ("SHALL", "For the public key, the server SHALL change the Link attribute of Link Type Certificate to point to the new certificate.",
+                 "server", "change the public key Certificate link to the new certificate",
+                 "A Re-certify operation creates a new certificate.", None, None),
+            ],
+            "KMIPKIT-CLAUSE-SPEC-6.1.45-006": [
+                ("MAY", "An Offset MAY be used to indicate the difference between the Initial Date and the Activation Date of the new certificate.",
+                 "client", "include Offset in the Re-certify request to indicate the Initial Date and Activation Date difference",
+                 "A client elects to specify Offset.", "KMIPKIT-REQ-SPEC-6.1.45-006-001", None),
+                ("SHALL", "then the dates of the new certificate SHALL be set based on the dates of the existing certificate as follows:",
+                 "server", "set new certificate dates from the existing certificate using Table 298",
+                 "Offset is set and dates exist for the existing certificate.", None, None),
+            ],
+            "KMIPKIT-CLAUSE-SPEC-6.1.45-008": [
+                ("REQUIRED", "It is REQUIRED if the Certificate Request is present.", "client",
+                 "include Certificate Request Type when Certificate Request is present",
+                 "Certificate Request is present.", "KMIPKIT-REQ-SPEC-6.1.45-008", None),
+            ],
+            "KMIPKIT-CLAUSE-SPEC-6.1.45.1-001": [
+                ("SHALL", "This section details the specific Result Reasons that SHALL be returned for errors detected in a Re-certify Operation.",
+                 "server", "return the specified Re-certify Result Reasons in error responses",
+                 "An error is detected in a Re-certify operation.", None, None),
+            ],
+        }
+        for clause_id, expected in expected_atoms.items():
+            atoms = reviews[clause_id]["source_obligations"]
+            self.assertEqual(
+                [(atom["source_keyword"], atom["source_text"], atom["actor"], atom["direction"],
+                  atom["condition"], atom["candidate_requirement_id"], atom.get("source_gap_id"))
+                 for atom in atoms],
+                expected,
+            )
+            actors = {atom["actor"] for atom in atoms}
+            if actors == {"server"}:
+                self.assertTrue(all(atom["scope_disposition"] == "server_only" for atom in atoms))
+                self.assertEqual(reviews[clause_id]["expected_client_requirement_ids"], [])
+            else:
+                self.assertEqual(
+                    [atom["scope_disposition"] for atom in atoms],
+                    ["client_1_0" if atom["actor"] == "client" else "server_only" for atom in atoms],
+                )
+
+        self.assertEqual(
+            reviews["KMIPKIT-CLAUSE-SPEC-6.1.45-002"]["expected_client_requirement_ids"],
+            ["KMIPKIT-REQ-SPEC-6.1.45-002-001"],
+        )
+        self.assertIn("server", reviews["KMIPKIT-CLAUSE-SPEC-6.1.45-002"]["review_note"].lower())
+        self.assertIn("mismatch", reviews["KMIPKIT-CLAUSE-SPEC-6.1.45-002"]["review_note"].lower())
+        self.assertEqual(
+            reviews["KMIPKIT-CLAUSE-SPEC-6.1.45-006"]["expected_client_requirement_ids"],
+            ["KMIPKIT-REQ-SPEC-6.1.45-006-001"],
+        )
+        self.assertIn("mismatch", reviews["KMIPKIT-CLAUSE-SPEC-6.1.45-006"]["review_note"].lower())
+        self.assertEqual(
+            reviews["KMIPKIT-CLAUSE-SPEC-6.1.45-006"]["source_context"],
+            pinned_source_excerpt(source_path, [33377, 33448]),
+        )
+
+        request_header = reviews["KMIPKIT-CLAUSE-SPEC-6.1.45-007"]
+        self.assertEqual(request_header["source_obligations"], [])
+        self.assertIn("header", request_header["review_note"].lower())
+        self.assertEqual(request_header["source_context"], pinned_source_excerpt(source_path, [33450, 33593]))
+        request_rows = request_header["source_request_rows"]
+        self.assertEqual(
+            [(row["row_label"], row["required"], row["html_line_range"], row["source_requirement_ids"], row["source_gap_id"])
+             for row in request_rows],
+            [
+                ("Unique Identifier", "No", [33625, 33644], ["KMIPKIT-REQ-SPEC-6.1-003-002"], None),
+                ("Certificate Request Unique Identifier", "No", [33645, 33662], [],
+                 "KMIPKIT-SOURCE-GAP-SPEC-6.1.45-CERTIFICATE-REQUEST-UNIQUE-IDENTIFIER-OPTIONAL"),
+                ("Certificate Request Type", "No", [33663, 33681], ["KMIPKIT-REQ-SPEC-6.1.45-008"], None),
+                ("Certificate Request Value", "No", [33682, 33699], [],
+                 "KMIPKIT-SOURCE-GAP-SPEC-6.1.45-CERTIFICATE-REQUEST-VALUE-OPTIONAL"),
+                ("Offset", "No", [33700, 33719], ["KMIPKIT-REQ-SPEC-6.1.45-006-001"], None),
+                ("Attributes", "No", [33720, 33739], [],
+                 "KMIPKIT-SOURCE-GAP-SPEC-6.1.45-ATTRIBUTES-OPTIONAL"),
+                ("Protection Storage Masks", "No", [33740, 33758], [],
+                 "KMIPKIT-SOURCE-GAP-SPEC-6.1.45-PROTECTION-STORAGE-MASKS-OPTIONAL"),
+            ],
+        )
+        for row in request_rows:
+            self.assertEqual(row["actor"], "client")
+            self.assertEqual(row["source_excerpt"], pinned_source_excerpt(source_path, row["html_line_range"]))
+        self.assertEqual(request_rows[0]["disposition"], "optional_request_field_with_existing_conditional_capability")
+        self.assertEqual(request_rows[0]["reused_requirement_id"], "KMIPKIT-REQ-SPEC-6.1-003-002")
+        self.assertEqual(
+            request_rows[0]["reuse_condition"],
+            "The Batch Order Option is true or unspecified and the request is a subsequent operation in the batched request; the ID Placeholder must be available for the specified fallback.",
+        )
+        self.assertEqual(request_rows[2]["disposition"], "conditionally_required_request_field_with_existing_stable_requirement")
+        self.assertEqual(request_rows[2]["condition"], "Certificate Request is present.")
+        self.assertEqual(request_rows[4]["disposition"], "optional_request_field_covered_by_client_may")
+
+        self.assertEqual(
+            reviews["KMIPKIT-CLAUSE-SPEC-6.1.45-009"]["source_payload_rows"],
+            [{
+                "row_label": "Unique Identifier", "required": "Yes", "actor": "server",
+                "disposition": "response_payload_data", "html_line_range": [33796, 33813],
+                "source_excerpt": pinned_source_excerpt(source_path, [33796, 33813]),
+            }],
+        )
+        self.assertEqual(reviews["KMIPKIT-CLAUSE-SPEC-6.1.45.1-002"]["source_obligations"], [])
+        self.assertIn("enum", reviews["KMIPKIT-CLAUSE-SPEC-6.1.45.1-002"]["review_note"].lower())
+        self.assertEqual(
+            reviews["KMIPKIT-CLAUSE-SPEC-6.1.45.1-002"]["source_excerpt"].split("Operation Failed ", 1)[1].split(", "),
+            ["Invalid CSR", "Invalid Message", "Invalid Object Type", "Object Not Found", "Attestation Failed",
+             "Attestation Required", "Feature Not Supported", "Invalid Field", "Invalid Message",
+             "Operation Not Supported", "Permission Denied", "Protection Storage Unavailable", "Response Too Large"],
+        )
+
+        expected_gaps = {
+            "KMIPKIT-SOURCE-GAP-SPEC-6.1.45-CERTIFICATE-REQUEST-UID-ONLY": ("KMIPKIT-REQ-SPEC-6.1.45-002-003", "normative_SHALL"),
+            "KMIPKIT-SOURCE-GAP-SPEC-6.1.45-CERTIFICATE-REQUEST-UNIQUE-IDENTIFIER-OPTIONAL": ("KMIPKIT-REQ-SPEC-6.1.45-009", "optional_table_body_value"),
+            "KMIPKIT-SOURCE-GAP-SPEC-6.1.45-CERTIFICATE-REQUEST-VALUE-OPTIONAL": ("KMIPKIT-REQ-SPEC-6.1.45-010", "optional_table_body_value"),
+            "KMIPKIT-SOURCE-GAP-SPEC-6.1.45-ATTRIBUTES-OPTIONAL": ("KMIPKIT-REQ-SPEC-6.1.45-011", "optional_table_body_value"),
+            "KMIPKIT-SOURCE-GAP-SPEC-6.1.45-PROTECTION-STORAGE-MASKS-OPTIONAL": ("KMIPKIT-REQ-SPEC-6.1.45-012", "optional_table_body_value"),
+        }
+        recertify_gaps = {
+            row["gap_id"]: row
+            for row in oracle["source_only_requirement_gaps"]
+            if row["source_section"] == "6.1.45"
+        }
+        self.assertEqual(set(recertify_gaps), set(expected_gaps))
+        for gap_id, (proposed_id, source_force) in expected_gaps.items():
+            gap = recertify_gaps[gap_id]
+            self.assertEqual(gap["proposed_requirement_id"], proposed_id)
+            self.assertEqual(gap["source_force"], source_force)
+            self.assertEqual(gap["actor"], "client")
+            self.assertEqual(gap["scope_disposition"], "client_1_0")
+            self.assertIsNone(gap["candidate_requirement_id"])
+            self.assertEqual(gap["status"], "stable_label_proposed_not_in_catalog")
+            if gap["source_clause_id"] is None:
+                self.assertEqual(gap["source_locator"]["kind"], "table_body_row")
+                self.assertEqual(gap["source_locator"]["html_line_range"], gap["html_line_range"])
+                self.assertEqual(gap["source_excerpt"], pinned_source_excerpt(source_path, gap["html_line_range"]))
+            else:
+                self.assertEqual(gap["source_clause_id"], "KMIPKIT-CLAUSE-SPEC-6.1.45-002")
+                self.assertEqual(gap["source_locator"], {"ordinal": 2, "block_kind": "paragraph"})
+                self.assertEqual(gap["html_line_range"], [33348, 33353])
+
+        self.assertEqual(
+            {
+                (row["requirement_id"], row["source_obligation_order"])
+                for row in oracle["requirement_crosswalk"]
+                if row["requirement_id"].startswith("KMIPKIT-REQ-SPEC-6.1.45-")
+            },
+            {
+                ("KMIPKIT-REQ-SPEC-6.1.45-001", 1),
+                ("KMIPKIT-REQ-SPEC-6.1.45-002-001", 1),
+                ("KMIPKIT-REQ-SPEC-6.1.45-004", 1),
+                ("KMIPKIT-REQ-SPEC-6.1.45-006-001", 1),
+                ("KMIPKIT-REQ-SPEC-6.1.45-008", 1),
+            },
+        )
+        for line_range, caption in [
+            ([33446, 33448], "Table 298: Computing New Dates from Offset during Re-certify"),
+            ([33592, 33593], "Table 299: Re-certify Attribute Requirements"),
+            ([33763, 33764], "Table 300: Re-certify Request Payload"),
+            ([33818, 33819], "Table 301: Re-certify Response Payload"),
+            ([33866, 33866], "Table 302: Re-certify Errors"),
+        ]:
+            self.assertIn(caption, pinned_source_excerpt(source_path, line_range))
+        self.assertEqual(oracle["oracle_status"], "partial-source-reviewed; not complete T003 oracle")
+
     def test_spec_6_1_43_register_reviews_client_fields_and_server_results(self) -> None:
         """Specification v2.1 §§6.1.43 and 6.1.43.1 preserve Register source boundaries."""
         fixture_path = ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json"
@@ -11431,6 +11667,11 @@ class CatalogValidationTests(unittest.TestCase):
             "KMIPKIT-REQ-SPEC-6.1.41-006",
             "KMIPKIT-REQ-SPEC-6.1.43-012",
             "KMIPKIT-REQ-SPEC-6.1.44-004",
+            "KMIPKIT-REQ-SPEC-6.1.45-002-003",
+            "KMIPKIT-REQ-SPEC-6.1.45-009",
+            "KMIPKIT-REQ-SPEC-6.1.45-010",
+            "KMIPKIT-REQ-SPEC-6.1.45-011",
+            "KMIPKIT-REQ-SPEC-6.1.45-012",
             "KMIPKIT-REQ-SPEC-6.1.14-009",
             "KMIPKIT-REQ-SPEC-6.1.14-010",
             "KMIPKIT-REQ-SPEC-6.1.14-011",
