@@ -35,7 +35,8 @@ fn table_250_required_message_is_preserved_and_redacted() {
     let view = payload.view();
     assert_eq!(view.children().len(), 1);
     assert_eq!(view.children()[0].tag().raw(), MESSAGE);
-    view.children()[0].with_value(|value| assert!(matches!(value, ValueView::TextString(v) if v == SENTINEL)));
+    view.children()[0]
+        .with_value(|value| assert!(matches!(value, ValueView::TextString(v) if v == SENTINEL)));
 }
 
 #[test]

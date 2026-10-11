@@ -17,16 +17,21 @@ use crate::{
 const OPERATION: u32 = 0x0000_002c;
 
 const SUCCESS: u32 = 0;
+const LOG_MESSAGE: u32 = 0x0042_0141;
 /// Required Log Message from section 6.1.29, Table 250.
 ///
 /// The caller must not submit secrets to a server log. The complete text is
 /// nevertheless redacted from every diagnostic and zeroized when dropped.
-pub struct LogRequest { log_message: SecretText }
+pub struct LogRequest {
+    log_message: SecretText,
+}
 
 impl LogRequest {
     /// Creates a request with the caller-selected message.
     #[must_use]
-    pub const fn new(log_message: SecretText) -> Self { Self { log_message } }
+    pub const fn new(log_message: SecretText) -> Self {
+        Self { log_message }
+    }
 
     /// Lends the exact message without cloning it.
     pub fn with_log_message<R>(&self, callback: impl for<'a> FnOnce(&'a str) -> R) -> R {
@@ -40,14 +45,21 @@ impl LogRequest {
     /// Returns a sanitized error if the TTLV model cannot represent the field.
     pub fn into_ttlv_payload(self) -> Result<Structure, ProtocolError> {
         let mut payload = Structure::new();
-        cryptographic_operation::push(&mut payload, 0x0042_0141, self.log_message.into_ttlv_value())?;
+        cryptographic_operation::push(
+            &mut payload,
+            LOG_MESSAGE,
+            self.log_message.into_ttlv_value(),
+        )?;
         Ok(payload)
     }
 }
 
 impl fmt::Debug for LogRequest {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
-        formatter.debug_struct("LogRequest").field("log_message", &self.log_message).finish()
+        formatter
+            .debug_struct("LogRequest")
+            .field("log_message", &self.log_message)
+            .finish()
     }
 }
 
@@ -103,12 +115,8 @@ impl LogResponse {
     }
 }
 
-fn log_operation_result(
-    item: ResponseBatchItemView<'_>,
-) -> Result<KmipOperationResult, LogError> {
-    let status = item
-        .result_status()
-        .ok_or(LogError::MissingResultStatus)?;
+fn log_operation_result(item: ResponseBatchItemView<'_>) -> Result<KmipOperationResult, LogError> {
+    let status = item.result_status().ok_or(LogError::MissingResultStatus)?;
 
     let result_message = item.with_result_message(|text| ResultMessage::new(text.to_owned()));
 
@@ -148,9 +156,7 @@ impl fmt::Display for LogError {
                 formatter.write_str("successful Log response payload is missing")
             }
 
-            Self::MalformedResponseItem => {
-                formatter.write_str("Log response item is malformed")
-            }
+            Self::MalformedResponseItem => formatter.write_str("Log response item is malformed"),
 
             Self::MalformedResponsePayload => {
                 formatter.write_str("successful Log response payload is not empty")
