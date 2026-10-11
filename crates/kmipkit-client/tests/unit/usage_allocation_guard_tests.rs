@@ -209,9 +209,10 @@ fn successful_allocation_binds_returned_identifier_and_open_caller_unit() {
 #[test]
 fn usage_context_debug_redacts_the_object_identifier() {
     let context = allocate_context();
+    let debug = format!("{context:?}");
 
-    assert!(!format!("{context:?}").contains(OBJECT_ID));
-    assert!(format!("{context:?}").contains("has_unique_identifier: true"));
+    assert!(!debug.contains(OBJECT_ID));
+    assert!(debug.contains("has_unique_identifier: true"));
 }
 
 #[test]
@@ -535,7 +536,10 @@ fn explicitly_asynchronous_guarded_protection_retains_pending_reservation() {
         )
         .expect("caller explicitly permits asynchronous completion");
 
-    assert!(matches!(outcome.outcome(), ClientBatchOutcome::Pending(_)));
+    let ClientBatchOutcome::Pending(pending) = outcome.outcome() else {
+        panic!("the explicitly permitted Pending result is retained");
+    };
+    assert_eq!(pending.asynchronous_correlation_value(), &[0xA5, 0x5A]);
     assert_eq!(fake.borrow().exchange_count(), 1);
     assert_eq!(context.reserved_units(), 3);
     assert_eq!(context.available_units(), ALLOCATION - 3);

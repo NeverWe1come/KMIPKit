@@ -70,7 +70,7 @@ Each task uses `[ ] T### [US#] action in exact/repository/path`. Every implement
 
 ### Guard Refactor commit
 
-- [ ] T010 [US2] Refactor checked local reservation accounting and delivery-state transitions in `crates/kmipkit-client/src/usage_allocation.rs`, `crates/kmipkit-client/src/execute.rs`, and `crates/kmipkit-client/tests/unit/usage_allocation_guard_tests.rs`; prove `NotSent` releases while `PossiblySent`, `ResponseStarted`, complete Success/Failure, and Pending retain locally, rerun focused tests, and commit separately as Refactor.
+- [x] T010 [US2] Refactor checked local reservation accounting and delivery-state transitions in `crates/kmipkit-client/src/usage_allocation.rs`, `crates/kmipkit-client/src/execute.rs`, and `crates/kmipkit-client/tests/unit/usage_allocation_guard_tests.rs`; prove `NotSent` releases while `PossiblySent`, `ResponseStarted`, complete Success/Failure, and Pending retain locally, rerun focused tests, and commit separately as Refactor. Centralized the error-settlement transition in `UsageAllocationContext::settle_after_error`; only exact `Some(NotSent)` releases, and all other delivery evidence retains. Verified 12 focused tests (including exact Pending correlation bytes), trybuild non-Clone boundary, focused Clippy `-D warnings`, formatting, and `git diff --check`. Independent QA approved the behavior-preserving refactor.
 
 **Checkpoint**: A successful allocation may seed one explicit local context; guarded requests cannot exceed its caller-known local allowance. No remote usage is inferred.
 

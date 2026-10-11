@@ -3523,9 +3523,7 @@ impl Client {
         match self.execute(batch, limits) {
             Ok(response) => Ok(take_single_response(response)?),
             Err(error) => {
-                if error.delivery_state() == Some(RequestDeliveryState::NotSent) {
-                    context.release_not_sent(cost);
-                }
+                context.settle_after_error(cost, error.delivery_state());
                 Err(error)
             }
         }

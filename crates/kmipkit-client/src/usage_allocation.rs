@@ -8,6 +8,7 @@ use std::error::Error;
 use std::fmt;
 
 use kmipkit_protocol::{GetUsageAllocationResponse, UniqueIdentifier};
+use kmipkit_transport::RequestDeliveryState;
 
 const SUCCESS: u32 = 0;
 
@@ -112,7 +113,18 @@ impl UsageAllocationContext {
         Ok(())
     }
 
-    pub(crate) fn release_not_sent(&mut self, cost: i64) {
+    /// Releases only when the client has positive evidence that no request was sent.
+    pub(crate) fn settle_after_error(
+        &mut self,
+        cost: i64,
+        delivery_state: Option<RequestDeliveryState>,
+    ) {
+        if delivery_state == Some(RequestDeliveryState::NotSent) {
+            self.release_not_sent(cost);
+        }
+    }
+
+    fn release_not_sent(&mut self, cost: i64) {
         if let Some(remaining) = self.reserved_units.checked_sub(cost) {
             self.reserved_units = remaining;
         }
