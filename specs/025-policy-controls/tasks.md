@@ -20,7 +20,7 @@ Each task uses `[ ] T### [US#] action in exact/repository/path`. Every implement
 
 **Purpose**: Confirm the approved source and release baseline. No project initialization or new runtime dependency is needed.
 
-- [x] T001 Verify source checksums in `specification/oasis/kmip-2.1/CHECKSUMS.sha256`; compare the pinned §6.1.22, §6.1.23, §6.1.52, §6.1.53, §6.1.54, §4.59, §7.7, §7.11, §11.19, and §11.60 source passages with `specs/025-policy-controls/spec.md` and `traceability.md`; confirm the approved release baseline and record exact commands before coding. Evidence: verified all four entries in CHECKSUMS.sha256 (all OK); python tools/normative_catalog/validate.py returned Catalog valid: sources=4 clauses=1411 records=4044; git merge-base HEAD origin/release/1.0.0 returned af172974cd5c6f56f7f938574e1546d4e295a9ef, matching git show origin/release/1.0.0. Pinned table/section review matched the payload contracts and guard; corrected Endpoint Role Enumeration to §11.19, Table 452.
+- [x] T001 Verify source checksums in `specification/oasis/kmip-2.1/CHECKSUMS.sha256`; compare the pinned §6.1.22, §6.1.23, §6.1.52, §6.1.53, §6.1.54, §4.59, §7.7, §7.11, §11.19, and §11.60 source passages with `specs/025-policy-controls/spec.md` and `traceability.md`; confirm the approved release baseline and record exact commands before coding. Evidence refreshed after rebasing: all four checksum entries returned OK; `python tools/normative_catalog/validate.py` returned `Catalog valid: sources=4 clauses=1411 records=4044`; `git merge-base HEAD origin/release/1.0.0` and `git rev-parse origin/release/1.0.0` both returned `4fba50ecbff0a6d2ab662bab4ba69031b80ba3c6`. OASIS §4.59 Table 148 specifies Usage Limits Count as Long Integer, so corrected the feature contracts and tasks to use `i64`/TTLV Long Integer; §11.19 Table 452 is the Endpoint Role Enumeration source.
 
 ## Phase 2: User Story 1 — Get Constraints (Priority: P1)
 
@@ -50,7 +50,7 @@ Each task uses `[ ] T### [US#] action in exact/repository/path`. Every implement
 
 ### Allocation Red commit
 
-- [ ] T005 [US2] Add failing model/fake-client tests in `crates/kmipkit-protocol/tests/unit/get_usage_allocation_tests.rs` and `crates/kmipkit-client/tests/unit/get_usage_allocation_execution_tests.rs`; register modules in `crates/kmipkit-protocol/src/lib.rs` and `crates/kmipkit-client/src/lib.rs`; cite OASIS KMIP Specification v2.1 §6.1.23, Tables 232–234 in test documentation; cover optional identifier, required Usage Limits Count Integer, required response identifier, Table 234 failures, Pending, unknown result values, one exchange, and no retry; record failing output in a separate Red commit.
+- [ ] T005 [US2] Add failing model/fake-client tests in `crates/kmipkit-protocol/tests/unit/get_usage_allocation_tests.rs` and `crates/kmipkit-client/tests/unit/get_usage_allocation_execution_tests.rs`; register modules in `crates/kmipkit-protocol/src/lib.rs` and `crates/kmipkit-client/src/lib.rs`; cite OASIS KMIP Specification v2.1 §6.1.23, Tables 232–234 and §4.59, Table 148 in test documentation; cover optional identifier, required Usage Limits Count Long Integer (`i64`), required response identifier, Table 234 failures, Pending, unknown result values, one exchange, and no retry; record failing output in a separate Red commit.
 
 ### Allocation Green commit
 
@@ -58,7 +58,7 @@ Each task uses `[ ] T### [US#] action in exact/repository/path`. Every implement
 
 ### Allocation Refactor commit
 
-- [ ] T007 [US2] Refactor allocation request/response field handling and tests in `crates/kmipkit-protocol/src/get_usage_allocation.rs`, `crates/kmipkit-protocol/tests/unit/get_usage_allocation_tests.rs`, and `crates/kmipkit-client/tests/unit/get_usage_allocation_execution_tests.rs`; preserve Integer wire type, optionality, and response ID; rerun focused tests and commit separately as Refactor.
+- [ ] T007 [US2] Refactor allocation request/response field handling and tests in `crates/kmipkit-protocol/src/get_usage_allocation.rs`, `crates/kmipkit-protocol/tests/unit/get_usage_allocation_tests.rs`, and `crates/kmipkit-client/tests/unit/get_usage_allocation_execution_tests.rs`; preserve Long Integer wire type, optionality, and response ID; rerun focused tests and commit separately as Refactor.
 
 ### Guard Red commit
 

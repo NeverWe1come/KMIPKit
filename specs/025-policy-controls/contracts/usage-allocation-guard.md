@@ -8,7 +8,7 @@ This explicit caller-supplied local guard exposes the client obligations recorde
 
 A context can be created only from one complete successful Get Usage Allocation exchange and these caller-known inputs:
 
-1. The exact positive Usage Limits Count Integer sent in that request.
+1. The exact positive Usage Limits Count Long Integer (`i64`) sent in that request.
 2. The open Usage Limits Unit Enumeration known from the target object's Usage Limits attribute (§4.59/Table 148 and §11.60/Table 491).
 3. The required Unique Identifier returned by the server (Table 233).
 

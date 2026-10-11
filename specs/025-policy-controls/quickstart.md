@@ -51,6 +51,7 @@ Run API-manifest unit tests and all binding-specific build/parity commands liste
 ## §6.1.23 focused acceptance checklist
 
 - The request encodes optional Unique Identifier and required Usage Limits Count in Table 232 order and type.
+- Usage Limits Count is encoded as TTLV Long Integer (`i64`) per §4.59, Table 148.
 - The response requires and returns the concrete Unique Identifier in Table 233.
 - A context requires a complete successful allocation plus the exact request count and caller-known unit.
 - Guarded Encrypt/MAC/Sign requires a matching concrete object identifier and positive caller-supplied cost.

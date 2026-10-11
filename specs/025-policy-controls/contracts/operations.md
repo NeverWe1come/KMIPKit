@@ -7,7 +7,7 @@ This contract defines the typed client surface for the five operations in `spec.
 | Rust-level model/call | Request TTLV contract | Success response TTLV contract | Normative source |
 | --- | --- | --- | --- |
 | `GetConstraintsRequest` / `Client::get_constraints` | Empty operation payload | Required Constraints Structure | Specification §6.1.22, Tables 229–231; §7.7 |
-| `GetUsageAllocationRequest` / `Client::get_usage_allocation` | Optional Unique Identifier; required Usage Limits Count Integer | Required Unique Identifier | Specification §6.1.23, Tables 232–234 |
+| `GetUsageAllocationRequest` / `Client::get_usage_allocation` | Optional Unique Identifier; required Usage Limits Count as TTLV Long Integer (`i64`) | Required Unique Identifier | Specification §6.1.23, Tables 232–234; §4.59, Table 148 |
 | `SetConstraintsRequest` / `Client::set_constraints` | Required Constraints Structure | Empty operation payload | Specification §6.1.52, Tables 325–327; §7.7 |
 | `SetDefaultsRequest` / `Client::set_defaults` | Optional Defaults Information Structure | Empty operation payload | Specification §6.1.53, Tables 328–330; §7.11 |
 | `SetEndpointRoleRequest` / `Client::set_endpoint_role` | Required Endpoint Role Enumeration | Required Endpoint Role Enumeration | Specification §6.1.54, Tables 331–333; §11.19 |
