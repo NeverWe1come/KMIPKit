@@ -122,6 +122,12 @@ class CoverageReportTests(unittest.TestCase):
         )
         self.assertFalse(readiness["runtime_validation_available"])
 
+        report = render_report(catalog, typed_rule_mappings=[])
+        self.assertIn(
+            "unresolved applicability scope: KMIPKIT-REQ-SPEC-8.1-UNCLEAR",
+            report,
+        )
+
     def test_readiness_cli_reports_missing_current_run_manifest_without_publishing(self) -> None:
         from tools.normative_catalog import report as report_module
 
