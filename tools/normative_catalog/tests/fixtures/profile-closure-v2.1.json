@@ -57957,7 +57957,7 @@
       ],
       "expected_client_requirement_ids": [],
       "applies_to": "all_client_profiles",
-      "review_note": "The first Cryptographic Parameters description is descriptive, with no client SHALL; candidate KMIPKIT-REQ-SPEC-6.1.17-005-001 is rejected. The only formal SHALL assigns Operation Failed to the server and maps to ...-005-002; catalog role/scope currently says client and is a Green correction."
+      "review_note": "The catalog candidate KMIPKIT-REQ-SPEC-6.1.17-005-001 is retired and out of client scope: the first Cryptographic Parameters row is descriptive and has no client SHALL. The only formal SHALL assigns Operation Failed to the server and maps to ...-005-002."
     },
     {
       "source_id": "KMIPKIT-SRC-spec",
