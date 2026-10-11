@@ -1,6 +1,6 @@
 # T039 implementer report — English Get and Locate guide
 
-Date: 2026-10-11  
+Date: 2026-10-11<br>
 Base: `96151d41e008b76a3797b4adbafbe57c688b942f`
 
 ## Result
@@ -71,7 +71,8 @@ explicit source list is the established integration point. Extracting helpers
 or adding more runner machinery would make the user-facing examples less direct
 without adding coverage. No production source or runtime behavior was changed.
 This report and the T039 checklist evidence record the no-source-change
-disposition in the separate Refactor commit.
+disposition in DCO-signed commit
+`4555c584c9dd7d0faa5d60d48893cf9d86f182f1`.
 
 ## Changed files
 
