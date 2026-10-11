@@ -244,17 +244,17 @@ fn retrieve(client: &mut Client, limits: &CodecLimits) -> Result<(), ClientError
     let response = client.execute(batch, limits)?;
 
     let mut inspected_object_tag = None;
-    if let Some(item) = response.get(0) {
-        if let Some(get) = item.outcome().get_response() {
-            assert_eq!(
-                get.unique_identifier(),
-                Some(&UniqueIdentifier::TextString("object-123".to_owned()))
-            );
-            if let Some(object) = get.object() {
-                // Inspect the object tag/shape without formatting its payload.
-                let object_tag = object.tag();
-                inspected_object_tag = Some(object_tag.raw());
-            }
+    if let Some(item) = response.get(0)
+        && let Some(get) = item.outcome().get_response()
+    {
+        assert_eq!(
+            get.unique_identifier(),
+            Some(&UniqueIdentifier::TextString("object-123".to_owned()))
+        );
+        if let Some(object) = get.object() {
+            // Inspect the object tag/shape without formatting its payload.
+            let object_tag = object.tag();
+            inspected_object_tag = Some(object_tag.raw());
         }
     }
     assert_eq!(inspected_object_tag, Some(SYMMETRIC_KEY_TAG));

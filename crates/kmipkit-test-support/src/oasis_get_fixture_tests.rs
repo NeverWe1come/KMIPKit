@@ -288,7 +288,7 @@ fn selected_get_items(xml: &str, case_id: &str, steps: &[usize]) -> Vec<Selected
 
     let catalog = CatalogMaps::load().expect("pinned catalog resolves source tags");
     let mut selected = Vec::new();
-    for pair in messages.chunks_exact(2) {
+    for pair in messages.as_chunks::<2>().0 {
         let request_node = pair[0];
         let response_node = pair[1];
         assert!(
