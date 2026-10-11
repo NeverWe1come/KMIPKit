@@ -451,3 +451,7 @@ mod delegated_login_operation_tests;
 #[cfg(test)]
 #[path = "../tests/unit/login_operation_tests.rs"]
 mod login_operation_tests;
+
+#[cfg(test)]
+#[path = "../tests/unit/logout_operation_tests.rs"]
+mod logout_operation_tests;

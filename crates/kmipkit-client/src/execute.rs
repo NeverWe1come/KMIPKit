@@ -88,6 +88,10 @@ mod delegated_login_execution_tests;
 mod login_execution_tests;
 
 #[cfg(test)]
+#[path = "../tests/unit/logout_execution_tests.rs"]
+mod logout_execution_tests;
+
+#[cfg(test)]
 #[path = "../tests/unit/hash_execution_tests.rs"]
 mod hash_execution_tests;
 

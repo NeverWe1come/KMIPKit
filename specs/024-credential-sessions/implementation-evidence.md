@@ -15,6 +15,16 @@ The source-derived tests cover OASIS KMIP Specification v2.1 §6.1.12 Tables 199
 | Refactor | This commit | `cargo test -p kmipkit-protocol --lib delegated_login_operation_tests` | PASS: 6/6 focused tests, including duplicate Ticket rejection and unknown extension preservation. The parser now separates TTLV value conversion from response field selection; request encoding calls the shared payload helper directly. |
 | Refactor quality gates | This commit | `cargo clippy -p kmipkit-protocol -p kmipkit-client -p kmipkit --all-targets --all-features -- -D warnings`; `cargo fmt --all --check`; `git diff --check` | PASS. |
 
+## T011 — Logout RED
+
+The source-derived protocol tests cover OASIS KMIP Specification v2.1 §6.1.31 Tables 256–258 and the required Ticket from §7.39 Table 391. The client tests cover one explicit Ticket-bearing exchange, empty success payload, Table 258 failure, Pending correlation, malformed responses, local NotSent validation, and no retry. There is no direct official Logout fixture, and none is claimed.
+
+| Phase | Commit | Command | Result |
+|---|---|---|---|
+| Red | This commit | `cargo test -p kmipkit-protocol --lib logout_operation_tests` | Expected compile failure: `LogoutError`, `LogoutRequest`, and `LogoutResponse` are not implemented/exported. |
+| Red | This commit | `cargo test -p kmipkit-client --lib logout_execution_tests` | Expected compile failures: Logout request construction, operation classification, and typed response accessors do not exist. |
+| Red formatting | This commit | `cargo fmt --all --check`; `git diff --check` | PASS. |
+
 These results establish the Delegated Login model and typed client path against source-derived tests. They do not indicate official KMIP conformance, cross-language API parity, or completion of KMIPKIT-024.
 
 ## T008 — Login RED
