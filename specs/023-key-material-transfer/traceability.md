@@ -1,95 +1,100 @@
 # Traceability: KMIP 2.1 Key Derivation and Transfer
 
-This design-time map links all 18 stable client requirement IDs and each request, response, and conditional Derivation Parameters row to implementation tasks and verification. Exact source sections and table numbers are in [spec.md](spec.md). Implementation must replace task links with code/test references and regenerate the normative catalog with the pinned tool. A task mapping is not evidence that implementation or conformance tests have passed.
+This implementation trace maps all 18 stable client requirement IDs and each
+mandatory or conditional request/response payload row to catalog elements,
+Rust code, and executable tests. Exact OASIS source sections and table numbers
+are named in each row. Catalog statuses distinguish scoped caller/server
+responsibilities from locally verified request behavior. Local table-derived
+tests do not constitute official fixture, profile, certification, or
+interoperability results.
 
 ## Stable normative requirement IDs
 
-| Requirement ID | Source and obligation/capability | Implementation and verification |
+| Requirement ID | OASIS obligation/capability | Catalog elements | Implementation | Executable verification and disposition |
+|---|---|---|---|---|
+| KMIPKIT-REQ-SPEC-6.1.14-001-001 | §6.1.14: select source objects whose Cryptographic Usage Mask includes Derive Key. | `KMIPKIT-ELEM-OP-C2S-DERIVE-KEY`; `KMIPKIT-ELEM-TAG-420094`; `KMIPKIT-ELEM-ATTRIBUTE-CRYPTOGRAPHIC-USAGE-MASK`; `KMIPKIT-ELEM-BITMASK-CRYPTOGRAPHIC-USAGE-MASK` | `crates/kmipkit-protocol/src/derive_key.rs`; `crates/kmipkit-client/src/execute.rs` | `crates/kmipkit-protocol/tests/unit/derive_key_operation_tests.rs::request_encodes_required_table_205_fields_in_order_and_repeats_identifiers`. **Scoped verification:** KMIPKit sends caller-selected source IDs but does not fetch the server-held object or its mask; selecting an eligible source remains the caller's responsibility. |
+| KMIPKIT-REQ-SPEC-6.1.14-001-002 | §6.1.14: specify Cryptographic Length for a derived key or Secret Data result. | `KMIPKIT-ELEM-OP-C2S-DERIVE-KEY`; tags `42002A` and `420125` | `crates/kmipkit-protocol/src/derive_key.rs` | `...derive_key_operation_tests.rs::request_encodes_required_table_205_fields_in_order_and_repeats_identifiers`; `...::secret_data_output_accepts_a_total_cryptographic_length_without_key_algorithm` |
+| KMIPKIT-REQ-SPEC-6.1.14-001-003 | §6.1.14: when deriving a key, specify Cryptographic Length and Cryptographic Algorithm. | `KMIPKIT-ELEM-OP-C2S-DERIVE-KEY`; tags `420028`, `42002A`, `420125` | `crates/kmipkit-protocol/src/derive_key.rs` | `crates/kmipkit-protocol/tests/unit/derive_key_operation_tests.rs::request_rejects_id_placeholder_and_missing_symmetric_key_attributes` |
+| KMIPKIT-REQ-SPEC-6.1.14-001-004 | §6.1.14: MAY derive multiple keys or IVs in Secret Data by specifying total length. | `KMIPKIT-ELEM-OP-C2S-DERIVE-KEY`; tags `420057`, `42002A` | `crates/kmipkit-protocol/src/derive_key.rs` | `crates/kmipkit-protocol/tests/unit/derive_key_operation_tests.rs::secret_data_output_accepts_a_total_cryptographic_length_without_key_algorithm` |
+| KMIPKIT-REQ-SPEC-6.1.14-002 | §6.1.14: MAY identify inputs, select a derivation method, and provide parameters. | `KMIPKIT-ELEM-OP-C2S-DERIVE-KEY`; tags `420031`, `420032`, `420030`, `420084`, `42003C` | `crates/kmipkit-protocol/src/derive_key.rs` | `crates/kmipkit-protocol/tests/unit/derive_key_operation_tests.rs::request_encodes_required_table_205_fields_in_order_and_repeats_identifiers`; `...::method_conditional_fields_are_checked_without_selecting_defaults` |
+| KMIPKIT-REQ-SPEC-6.1.14-006-001 | §6.1.14: MAY repeat source Unique Identifier. | `KMIPKIT-ELEM-OP-C2S-DERIVE-KEY`; tag `420094` | `crates/kmipkit-protocol/src/derive_key.rs` | `crates/kmipkit-protocol/tests/unit/derive_key_operation_tests.rs::request_encodes_required_table_205_fields_in_order_and_repeats_identifiers` |
+| KMIPKIT-REQ-SPEC-6.1.14-006-002 | §6.1.14: SHALL NOT substitute ID Placeholder for Derive Key Unique Identifier. | `KMIPKIT-ELEM-OP-C2S-DERIVE-KEY`; tag `420094` | `crates/kmipkit-protocol/src/derive_key.rs` | `crates/kmipkit-protocol/tests/unit/derive_key_operation_tests.rs::request_rejects_id_placeholder_and_missing_symmetric_key_attributes` |
+| KMIPKIT-REQ-SPEC-6.1.14-007-001 | §6.1.14: specify desired Attributes for the new object. | `KMIPKIT-ELEM-OP-C2S-DERIVE-KEY`; tag `420125` | `crates/kmipkit-protocol/src/derive_key.rs` | `crates/kmipkit-protocol/tests/unit/derive_key_operation_tests.rs::request_encodes_required_table_205_fields_in_order_and_repeats_identifiers` |
+| KMIPKIT-REQ-SPEC-6.1.14-007-002 | §6.1.14: symmetric-key Attributes include Cryptographic Length and Algorithm. | `KMIPKIT-ELEM-OP-C2S-DERIVE-KEY`; tags `420028`, `42002A`, `420125` | `crates/kmipkit-protocol/src/derive_key.rs` | `crates/kmipkit-protocol/tests/unit/derive_key_operation_tests.rs::request_rejects_id_placeholder_and_missing_symmetric_key_attributes` |
+| KMIPKIT-REQ-SPEC-7.12-003 | §7.12/Table 364: provide PRF/mode Cryptographic Parameters as applicable. | `KMIPKIT-ELEM-OP-C2S-DERIVE-KEY`; tags `42002B`, `420011`, `420038`; members `KMIPKIT-ELEM-STRUCTURE-MEMBER-4-16-BLOCK-CIPHER-MODE`, `KMIPKIT-ELEM-STRUCTURE-MEMBER-7-36-HASHING-ALGORITHM` | `crates/kmipkit-protocol/src/derive_key.rs`; `crates/kmipkit-protocol/src/cryptographic_parameters.rs` | `crates/kmipkit-protocol/tests/unit/derive_key_operation_tests.rs::method_conditional_fields_are_checked_without_selecting_defaults`. **Scoped verification:** the test checks required HASH parameters and preservation of caller-supplied AES-CBC Block Cipher Mode; the client does not infer remote key properties, and the server evaluates context-dependent conditions. |
+| KMIPKIT-REQ-SPEC-7.12-005-001 | §7.12/Table 364: MAY provide input as Derivation Data or identify Secret Data by Unique Identifier. | `KMIPKIT-ELEM-OP-C2S-DERIVE-KEY`; tags `420030`, `420094` | `crates/kmipkit-protocol/src/derive_key.rs`; `crates/kmipkit-client/src/execute.rs` | `crates/kmipkit-protocol/tests/unit/derive_key_operation_tests.rs::both_derivation_input_forms_are_sent_and_server_error_is_not_rejected_locally`; `crates/kmipkit-client/tests/unit/derive_key_execution_tests.rs::both_derivation_inputs_reach_the_server_and_its_error_is_returned_once` |
+| KMIPKIT-REQ-SPEC-6.1.25-001 | §6.1.25: supply Import Attributes rather than rely on server-generated values. | `KMIPKIT-ELEM-OP-C2S-IMPORT`; tag `420125` | `crates/kmipkit-protocol/src/import.rs`; `crates/kmipkit-client/src/execute.rs` | `crates/kmipkit-protocol/tests/unit/import_operation_tests.rs::request_preserves_required_fields_and_only_explicit_optional_choices` |
+| KMIPKIT-REQ-SPEC-6.1.25-004 | §6.1.25: set Replace Existing true when replacement of the same ID is intended. | `KMIPKIT-ELEM-OP-C2S-IMPORT`; tags `420094`, `420124` | `crates/kmipkit-protocol/src/import.rs`; `crates/kmipkit-client/src/execute.rs` | `crates/kmipkit-protocol/tests/unit/import_operation_tests.rs::replacement_and_conditional_wrap_type_are_preserved_without_unwrapping` |
+| KMIPKIT-REQ-SPEC-6.1.25-006 | §6.1.25: MAY send imported object and Attributes wrapped. | `KMIPKIT-ELEM-OP-C2S-IMPORT`; tags `420046`, `4200F8`, `420125` | `crates/kmipkit-protocol/src/import.rs` | `crates/kmipkit-protocol/tests/unit/import_operation_tests.rs::key_wrap_type_is_present_if_and_only_if_key_block_has_wrapping_data` |
+| KMIPKIT-REQ-SPEC-6.1.27-001 | §6.1.27: include at least the supplied Split Key Threshold number of Unique Identifier entries. | `KMIPKIT-ELEM-OP-C2S-JOIN-SPLIT-KEY`; tags `420094`, `42008C` | `crates/kmipkit-protocol/src/join_split_key.rs`; `crates/kmipkit-client/src/execute.rs` | `crates/kmipkit-protocol/tests/unit/join_split_key_operation_tests.rs::entry_count_must_meet_the_maximum_threshold_and_thresholds_may_differ`; `crates/kmipkit-client/tests/unit/join_split_key_execution_tests.rs::absent_or_insufficient_threshold_context_fails_before_transport` |
+| KMIPKIT-REQ-SPEC-6.1.27-002-001 | §6.1.27: MAY specify resulting Object Type. | `KMIPKIT-ELEM-OP-C2S-JOIN-SPLIT-KEY`; tag `420057` | `crates/kmipkit-protocol/src/join_split_key.rs` | `crates/kmipkit-protocol/tests/unit/join_split_key_operation_tests.rs::request_preserves_repeated_identifiers_in_order_and_keeps_thresholds_off_wire` |
+| KMIPKIT-REQ-SPEC-6.1.27-002-002 | §6.1.27: MAY specify Secret Data Type for a Secret Data result. | `KMIPKIT-ELEM-OP-C2S-JOIN-SPLIT-KEY`; tag `420086` | `crates/kmipkit-protocol/src/join_split_key.rs` | `crates/kmipkit-protocol/tests/unit/join_split_key_operation_tests.rs::request_preserves_repeated_identifiers_in_order_and_keeps_thresholds_off_wire` |
+| KMIPKIT-REQ-SPEC-6.1.27-005 | §6.1.27: MAY repeat Unique Identifiers for split keys. | `KMIPKIT-ELEM-OP-C2S-JOIN-SPLIT-KEY`; tag `420094` | `crates/kmipkit-protocol/src/join_split_key.rs` | `crates/kmipkit-protocol/tests/unit/join_split_key_operation_tests.rs::request_preserves_repeated_identifiers_in_order_and_keeps_thresholds_off_wire` |
+
+## Source clauses outside the 18-ID client ledger
+
+| Requirement ID | Source and disposition | Implementation and executable verification |
 |---|---|---|
-| KMIPKIT-REQ-SPEC-6.1.14-001-001 | OASIS KMIP 2.1 §6.1.14: source object Cryptographic Usage Mask includes Derive Key. | T006–T008: source-use validation and negative cases from caller-known request data; no remote lookup. |
-| KMIPKIT-REQ-SPEC-6.1.14-001-002 | §6.1.14: specify Cryptographic Length for each derived key or Secret Data object. | T006–T008: required output length cases. |
-| KMIPKIT-REQ-SPEC-6.1.14-001-003 | §6.1.14: when deriving a key, specify Cryptographic Length and Cryptographic Algorithm. | T006–T008: symmetric-key missing-length/algorithm cases. |
-| KMIPKIT-REQ-SPEC-6.1.14-001-004 | §6.1.14: MAY derive multiple keys or IVs in Secret Data by specifying total length. | T006–T008: typed capability and round-trip/encoding case. |
-| KMIPKIT-REQ-SPEC-6.1.14-002 | §6.1.14: MAY identify derivation inputs, method, and parameters. | T006–T008: typed capability and Table 205 encoding case. |
-| KMIPKIT-REQ-SPEC-6.1.14-006-001 | §6.1.14: MAY repeat source Unique Identifier. | T006–T008: ordered repeated-field encoding/round-trip case. |
-| KMIPKIT-REQ-SPEC-6.1.14-006-002 | §6.1.14: SHALL NOT substitute ID Placeholder for Derive Key Unique Identifier. | T006–T008: negative preflight/encoding case; verify no placeholder substitution. |
-| KMIPKIT-REQ-SPEC-6.1.14-007-001 | §6.1.14: SHALL specify desired new-object Attributes. | T006–T008: required Attributes case. |
-| KMIPKIT-REQ-SPEC-6.1.14-007-002 | §6.1.14: symmetric-key Attributes SHALL include Cryptographic Length and Algorithm. | T006–T008: missing-member negative cases. |
-| KMIPKIT-REQ-SPEC-7.12-003 | §7.12: REQUIRED PRF/mode parameters, including HASH algorithm and AES-CBC block mode. | T006–T008: method-dependent Cryptographic Parameters validation and cases. |
-| KMIPKIT-REQ-SPEC-7.12-005-001 | §7.12: MAY provide derivation input as Derivation Data or by Secret Data Unique Identifier. | T006–T008: both input forms remain expressible and are transmitted as supplied. |
-| KMIPKIT-REQ-SPEC-6.1.25-001 | §6.1.25: MUST supply Import Attribute values rather than rely on server-generated values. | T012–T014: required caller-supplied Attributes cases. |
-| KMIPKIT-REQ-SPEC-6.1.25-004 | §6.1.25: SHALL set Replace Existing true when intending replacement for the same Unique Identifier. | T012–T014: explicit replacement true/false/absent cases. |
-| KMIPKIT-REQ-SPEC-6.1.25-006 | §6.1.25: MAY send imported object and Attributes wrapped. | T012–T014: wrapped request capability and conditional Key Wrap Type cases. |
-| KMIPKIT-REQ-SPEC-6.1.27-001 | §6.1.27: SHALL include at least the referenced Split Key Threshold number of Unique Identifier entries. | T015–T017: caller-known per-occurrence context; count below/equal/above maximum; NotSent on failure. |
-| KMIPKIT-REQ-SPEC-6.1.27-002-001 | §6.1.27: MAY specify resulting Object Type. | T015–T017: typed optional field encoding/round-trip. |
-| KMIPKIT-REQ-SPEC-6.1.27-002-002 | §6.1.27: MAY specify Secret Data Type for Secret Data result. | T015–T017: typed optional field encoding/round-trip. |
-| KMIPKIT-REQ-SPEC-6.1.27-005 | §6.1.27: MAY provide repeated Unique Identifiers for split keys. | T015–T017: duplicate values and repeated occurrences retained in order and counted as transmitted. |
+| KMIPKIT-REQ-SPEC-7.12-002 | §7.12 Table 364 says Derivation Data “May be repeated” in sentence case. Under §1.2/RFC 8174 this is not a separate uppercase normative obligation; repeated structure values remain preserved. | `crates/kmipkit-protocol/src/derive_key.rs`; `crates/kmipkit-protocol/tests/unit/derive_key_operation_tests.rs::request_encodes_required_table_205_fields_in_order_and_repeats_identifiers` |
+| KMIPKIT-REQ-SPEC-7.12-005-002 | §7.12 assigns the error when both input forms are supplied to the server. KMIPKit does not pre-reject and returns the server result. | `crates/kmipkit-protocol/src/derive_key.rs`; `crates/kmipkit-protocol/tests/unit/derive_key_operation_tests.rs::both_derivation_input_forms_are_sent_and_server_error_is_not_rejected_locally`; `crates/kmipkit-client/tests/unit/derive_key_execution_tests.rs::both_derivation_inputs_reach_the_server_and_its_error_is_returned_once` |
 
-## Source clauses outside the client requirement ledger
+## Operation payload rows
 
-These catalog entries appear in the specification but are not additional active client requirement IDs:
+Each row maps the OASIS table member or condition to its catalog element(s), source module, and executable source-derived vector. For polymorphic Any Object values, the generic TTLV item is preserved through the operation model; Any Object is not a standalone tag.
 
-| Requirement ID | Source role and disposition | Implementation and verification |
-|---|---|---|
-| KMIPKIT-REQ-SPEC-7.12-002 | §7.12 sentence-case “May be repeated” extraction, retired under KMIPKIT-DEC-011; repetition remains represented in the Table 364 schema without a separate normative client obligation. | T006–T008 preserve and round-trip repeated Derivation Data occurrences. |
-| KMIPKIT-REQ-SPEC-7.12-005-002 | §7.12 server-only SHALL: the server returns an error if both Derivation Data and a Secret Data object Unique Identifier are supplied. KMIPKit sends both caller-provided fields and surfaces the server result; it does not pre-reject locally. | T006–T008 include the both-inputs server-error result case from spec.md acceptance scenario 5. |
-
-These entries do not change the count of 18 stable client requirement IDs.
-
-## Operation payload table rows
-
-Tasks below include Red tests against exact table shape, Green model/dispatch, and a separate Refactor commit. “Success/error” includes success payload decoding and the operation error result table while preserving common open result values and delivery evidence.
-
-| OASIS source row | Row requirement/condition | Implementation and verification |
-|---|---|---|
-| §6.1.14 Table 205 — Object Type | Required. | T006–T008 |
-| §6.1.14 Table 205 — Unique Identifier | Required; may repeat; ID Placeholder must not be substituted. | T006–T008; stable IDs 6.1.14-006-001/-002 |
-| §6.1.14 Table 205 — Derivation Method | Required. | T006–T008 |
-| §6.1.14 Table 205 — Derivation Parameters | Required structure. | T006–T008; §7.12 Table 364 rows below |
-| §6.1.14 Table 205 — Attributes | Required; key length and algorithm conditions apply. | T006–T008; stable IDs 6.1.14-007-001/-002 |
-| §6.1.14 Table 206 — Unique Identifier | Required on success. | T006–T008 |
-| §6.1.14 Table 207 — operation errors | Preserve server Operation Failed result reasons, including unknown/future values via common result path. | T006–T008 |
-| §7.12 Table 364 — Derivation Parameters | Required structure containing derivation-method parameters. | T006–T008 |
-| §7.12 Table 364 — Cryptographic Parameters | Conditional on PRF/mode; HASH and AES-CBC specifics per §7.12. | T006–T008; stable ID KMIPKIT-REQ-SPEC-7.12-003 |
-| §7.12 Table 364 — Initialization Vector | Conditional on PRF/mode; preserve absence/value. | T006–T008 |
-| §7.12 Table 364 — Derivation Data | Required unless Secret Data Unique Identifier supplies input; repeated representation is preserved. | T006–T008; stable ID KMIPKIT-REQ-SPEC-7.12-005-001 |
-| §7.12 Table 364 — Salt | Required for PBKDF2. | T006–T008 |
-| §7.12 Table 364 — Iteration Count | Required for PBKDF2. | T006–T008 |
-| §6.1.18 Table 217 — Unique Identifier | Optional; absence preserves server-side ID Placeholder behavior. | T009–T011 |
-| §6.1.18 Table 217 — Key Format Type | Optional explicit caller choice. | T009–T011 |
-| §6.1.18 Table 217 — Key Wrap Type | Optional explicit caller choice. | T009–T011 |
-| §6.1.18 Table 217 — Key Compression Type | Optional explicit caller choice. | T009–T011 |
-| §6.1.18 Table 217 — Key Wrapping Specification | Optional explicit caller choice. | T009–T011 |
-| §6.1.18 Table 218 — Object Type | Required on success. | T009–T011 |
-| §6.1.18 Table 218 — Unique Identifier | Required on success. | T009–T011 |
-| §6.1.18 Table 218 — Attributes | Required on success; sensitive values remain redacted. | T009–T011 |
-| §6.1.18 Table 218 — Any Object | Required on success; opaque/sensitive object representation preserved. | T009–T011 |
-| §6.1.18 Table 219 — operation errors | Preserve server Operation Failed result reasons via common result path. | T009–T011 |
-| §6.1.25 Table 238 — Unique Identifier | Required. | T012–T014 |
-| §6.1.25 Table 238 — Object Type | Required. | T012–T014 |
-| §6.1.25 Table 238 — Replace Existing | Optional; true requests replacement; absent/false leaves duplicate handling to server. | T012–T014; stable ID KMIPKIT-REQ-SPEC-6.1.25-004 |
-| §6.1.25 Table 238 — Key Wrap Type | Conditional if and only if the key object is wrapped; preserve wrapped form. | T012–T014 |
-| §6.1.25 Table 238 — Attributes | Required caller-supplied values. | T012–T014; stable ID KMIPKIT-REQ-SPEC-6.1.25-001 |
-| §6.1.25 Table 238 — Any Object | Required; wrapped object/Attributes remain as supplied. | T012–T014; stable ID KMIPKIT-REQ-SPEC-6.1.25-006 |
-| §6.1.25 Table 239 — Unique Identifier | Required on success. | T012–T014 |
-| §6.1.25 Table 240 — operation errors | Preserve server Operation Failed result reasons via common result path. | T012–T014 |
-| §11.36 Table 470 — Import / Recover operation values | Import is `0x2A` (`KMIPKIT-ELEM-ENUM-VALUE-OPERATION-IMPORT-0000002A`); Recover is `0x16` (`KMIPKIT-ELEM-ENUM-VALUE-OPERATION-RECOVER-00000016`). | T012–T014 Import model/fake transport; `crates/kmipkit-protocol/src/recover.rs`, `recover_operation_tests`, and `recover_execution_tests::recover_wire_code_matches_kmip_table_470`; prevents code collision. |
-| §6.1.27 Table 244 — Object Type | Required. | T015–T017 |
-| §6.1.27 Table 244 — Unique Identifier | Required; may repeat; entry count and exact order/repetition are preserved. | T015–T017; stable IDs KMIPKIT-REQ-SPEC-6.1.27-001/-005 |
-| §6.1.27 Table 244 — Secret Data Type | Optional. | T015–T017; stable ID KMIPKIT-REQ-SPEC-6.1.27-002-002 |
-| §6.1.27 Table 244 — Attributes | Optional. | T015–T017 |
-| §6.1.27 Table 244 — Protection Storage Masks | Optional; preserve all caller-selected permissible masks. | T015–T017 |
-| §6.1.27 Table 245 — Unique Identifier | Required on success. | T015–T017 |
-| §6.1.27 Table 246 — operation errors | Preserve server Operation Failed result reasons via common result path. | T015–T017 |
+| OASIS row | Required, optional, or conditional behavior | Catalog element(s) | Implementation and test reference |
+|---|---|---|---|
+| §6.1.14 Table 205 — Object Type | Required | `KMIPKIT-ELEM-OP-C2S-DERIVE-KEY`; tag `420057` | `crates/kmipkit-protocol/src/derive_key.rs`; `crates/kmipkit-protocol/tests/unit/derive_key_operation_tests.rs::request_encodes_required_table_205_fields_in_order_and_repeats_identifiers` |
+| §6.1.14 Table 205 — Unique Identifier | Required; MAY repeat; ID Placeholder prohibited | `KMIPKIT-ELEM-OP-C2S-DERIVE-KEY`; tag `420094` | `...derive_key.rs`; `...derive_key_operation_tests.rs::request_encodes_required_table_205_fields_in_order_and_repeats_identifiers`; `...::request_rejects_id_placeholder_and_missing_symmetric_key_attributes` |
+| §6.1.14 Table 205 — Derivation Method | Required | `KMIPKIT-ELEM-OP-C2S-DERIVE-KEY`; tag `420031` | `...derive_key.rs`; `...derive_key_operation_tests.rs::request_encodes_required_table_205_fields_in_order_and_repeats_identifiers` |
+| §6.1.14 Table 205 — Derivation Parameters | Required structure | `KMIPKIT-ELEM-OP-C2S-DERIVE-KEY`; tag `420032` | `...derive_key.rs`; `...derive_key_operation_tests.rs::request_encodes_required_table_205_fields_in_order_and_repeats_identifiers` |
+| §6.1.14 Table 205 — Attributes | Required; key length and algorithm conditions apply | `KMIPKIT-ELEM-OP-C2S-DERIVE-KEY`; tag `420125` | `...derive_key.rs`; `...derive_key_operation_tests.rs::request_rejects_id_placeholder_and_missing_symmetric_key_attributes` |
+| §6.1.14 Table 206 — Unique Identifier | Required success result | `KMIPKIT-ELEM-OP-C2S-DERIVE-KEY`; tag `420094` | `...derive_key.rs`; `...derive_key_operation_tests.rs::response_preserves_success_identifier_and_server_error_reason` |
+| §6.1.14 Table 207 — operation errors | Preserve server status/reason, including unknown future values | Result tags `42007F`, `42007E`; operation element | `...derive_key.rs`; `...derive_key_operation_tests.rs::response_preserves_success_identifier_and_server_error_reason`; `...key_transfer_operation_contract_tests.rs::unknown_result_values_and_untrusted_messages_remain_inspectable` |
+| §7.12 Table 364 — Derivation Parameters | Required structure | tag `420032` | `crates/kmipkit-protocol/src/derive_key.rs`; `...derive_key_operation_tests.rs::request_encodes_required_table_205_fields_in_order_and_repeats_identifiers` |
+| §7.12 Table 364 — Cryptographic Parameters | Conditional on selected PRF/mode; retain explicit parameters | tags `42002B`, `420011`, `420038` | `crates/kmipkit-protocol/src/derive_key.rs`; `...derive_key_operation_tests.rs::method_conditional_fields_are_checked_without_selecting_defaults` |
+| §7.12 Table 364 — Initialization Vector | Conditional on PRF/mode; retain presence/value | tag `42003A` | `crates/kmipkit-protocol/src/derive_key.rs`; `...derive_key_operation_tests.rs::request_encodes_required_table_205_fields_in_order_and_repeats_identifiers` |
+| §7.12 Table 364 — Derivation Data | Required unless Secret Data Unique Identifier provides input; repeated values retained | tag `420030` | `crates/kmipkit-protocol/src/derive_key.rs`; `...derive_key_operation_tests.rs::request_encodes_required_table_205_fields_in_order_and_repeats_identifiers`; `...::both_derivation_input_forms_are_sent_and_server_error_is_not_rejected_locally` |
+| §7.12 Table 364 — Salt | Required for PBKDF2 | tag `420084` | `crates/kmipkit-protocol/src/derive_key.rs`; `...derive_key_operation_tests.rs::request_encodes_required_table_205_fields_in_order_and_repeats_identifiers` |
+| §7.12 Table 364 — Iteration Count | Required for PBKDF2 | tag `42003C` | `crates/kmipkit-protocol/src/derive_key.rs`; `...derive_key_operation_tests.rs::request_encodes_required_table_205_fields_in_order_and_repeats_identifiers` |
+| §6.1.18 Table 217 — Unique Identifier | Optional; absence retained | `KMIPKIT-ELEM-OP-C2S-EXPORT`; tag `420094` | `crates/kmipkit-protocol/src/export.rs`; `crates/kmipkit-protocol/tests/unit/export_operation_tests.rs::request_preserves_all_explicit_optional_choices_and_omits_absent_fields` |
+| §6.1.18 Table 217 — Key Format Type | Optional explicit selector | `KMIPKIT-ELEM-OP-C2S-EXPORT`; tag `420042` | `...export.rs`; `...export_operation_tests.rs::request_preserves_all_explicit_optional_choices_and_omits_absent_fields` |
+| §6.1.18 Table 217 — Key Wrap Type | Optional explicit selector | `KMIPKIT-ELEM-OP-C2S-EXPORT`; tag `4200F8` | `...export.rs`; `...export_operation_tests.rs::request_preserves_all_explicit_optional_choices_and_omits_absent_fields` |
+| §6.1.18 Table 217 — Key Compression Type | Optional explicit selector | `KMIPKIT-ELEM-OP-C2S-EXPORT`; tag `420041` | `...export.rs`; `...export_operation_tests.rs::request_preserves_all_explicit_optional_choices_and_omits_absent_fields` |
+| §6.1.18 Table 217 — Key Wrapping Specification | Optional explicit structure | `KMIPKIT-ELEM-OP-C2S-EXPORT`; tag `420047` | `...export.rs`; `...export_operation_tests.rs::request_preserves_all_explicit_optional_choices_and_omits_absent_fields` |
+| §6.1.18 Table 218 — Object Type | Required success result | `KMIPKIT-ELEM-OP-C2S-EXPORT`; tag `420057` | `...export.rs`; `...export_operation_tests.rs::success_preserves_all_response_fields_unknown_children_and_redacts_object_material` |
+| §6.1.18 Table 218 — Unique Identifier | Required success result | `KMIPKIT-ELEM-OP-C2S-EXPORT`; tag `420094` | `...export.rs`; `...export_operation_tests.rs::success_preserves_all_response_fields_unknown_children_and_redacts_object_material` |
+| §6.1.18 Table 218 — Attributes | Required success result | `KMIPKIT-ELEM-OP-C2S-EXPORT`; tag `420125` | `...export.rs`; `...export_operation_tests.rs::success_preserves_all_response_fields_unknown_children_and_redacts_object_material` |
+| §6.1.18 Table 218 — Any Object | Required polymorphic object; opaque values preserved/redacted | `KMIPKIT-ELEM-OP-C2S-EXPORT` | `...export.rs`; `...export_operation_tests.rs::success_preserves_all_response_fields_unknown_children_and_redacts_object_material` |
+| §6.1.18 Table 219 — operation errors | Preserve status/reason and reject malformed success payloads | Result tags `42007F`, `42007E`; operation element | `...export.rs`; `...export_operation_tests.rs::failure_keeps_unknown_result_reason_and_malformed_success_is_rejected` |
+| §6.1.25 Table 238 — Unique Identifier | Required | `KMIPKIT-ELEM-OP-C2S-IMPORT`; tag `420094` | `crates/kmipkit-protocol/src/import.rs`; `crates/kmipkit-protocol/tests/unit/import_operation_tests.rs::request_preserves_required_fields_and_only_explicit_optional_choices` |
+| §6.1.25 Table 238 — Object Type | Required | `KMIPKIT-ELEM-OP-C2S-IMPORT`; tag `420057` | `...import.rs`; `...import_operation_tests.rs::request_preserves_required_fields_and_only_explicit_optional_choices` |
+| §6.1.25 Table 238 — Replace Existing | Optional; true expresses caller replacement intent | `KMIPKIT-ELEM-OP-C2S-IMPORT`; tag `420124` | `...import.rs`; `...import_operation_tests.rs::replacement_and_conditional_wrap_type_are_preserved_without_unwrapping` |
+| §6.1.25 Table 238 — Key Wrap Type | Present iff the supplied key object contains Key Wrapping Data | `KMIPKIT-ELEM-OP-C2S-IMPORT`; tags `4200F8`, `420046` | `...import.rs`; `...import_operation_tests.rs::key_wrap_type_is_present_if_and_only_if_key_block_has_wrapping_data` |
+| §6.1.25 Table 238 — Attributes | Required caller-supplied values | `KMIPKIT-ELEM-OP-C2S-IMPORT`; tag `420125` | `...import.rs`; `...import_operation_tests.rs::request_preserves_required_fields_and_only_explicit_optional_choices` |
+| §6.1.25 Table 238 — Any Object | Required polymorphic object; wrapped form preserved, not unwrapped locally | `KMIPKIT-ELEM-OP-C2S-IMPORT` | `...import.rs`; `...import_operation_tests.rs::replacement_and_conditional_wrap_type_are_preserved_without_unwrapping` |
+| §6.1.25 Table 239 — Unique Identifier | Required success result | `KMIPKIT-ELEM-OP-C2S-IMPORT`; tag `420094` | `...import.rs`; `...import_operation_tests.rs::success_returns_identifier_and_failure_preserves_unknown_reason` |
+| §6.1.25 Table 240 — operation errors | Preserve server result and unknown reason values | Result tags `42007F`, `42007E`; operation element | `...import.rs`; `...import_operation_tests.rs::success_returns_identifier_and_failure_preserves_unknown_reason` |
+| §11.36 Table 470 — Import and Recover values | Import is `0x2A`; Recover is `0x16`, eliminating the previous collision | `KMIPKIT-ELEM-ENUM-VALUE-OPERATION-IMPORT-0000002A`; `KMIPKIT-ELEM-ENUM-VALUE-OPERATION-RECOVER-00000016` | `crates/kmipkit-protocol/src/import.rs`; `crates/kmipkit-protocol/src/recover.rs`; `crates/kmipkit-client/tests/unit/recover_execution_tests.rs::recover_wire_code_matches_kmip_table_470`; `crates/kmipkit-client/tests/unit/key_transfer_operations_execution_tests.rs::four_operations_preserve_codes_batch_order_pending_and_one_exchange` |
+| §6.1.27 Table 244 — Object Type | Required | `KMIPKIT-ELEM-OP-C2S-JOIN-SPLIT-KEY`; tag `420057` | `crates/kmipkit-protocol/src/join_split_key.rs`; `crates/kmipkit-protocol/tests/unit/join_split_key_operation_tests.rs::request_preserves_repeated_identifiers_in_order_and_keeps_thresholds_off_wire` |
+| §6.1.27 Table 244 — Unique Identifier | Required; MAY repeat; count against maximum explicit threshold | `KMIPKIT-ELEM-OP-C2S-JOIN-SPLIT-KEY`; tags `420094`, `42008C` | `...join_split_key.rs`; `...join_split_key_operation_tests.rs::entry_count_must_meet_the_maximum_threshold_and_thresholds_may_differ`; `...::request_preserves_repeated_identifiers_in_order_and_keeps_thresholds_off_wire` |
+| §6.1.27 Table 244 — Secret Data Type | Optional | `KMIPKIT-ELEM-OP-C2S-JOIN-SPLIT-KEY`; tag `420086` | `...join_split_key.rs`; `...join_split_key_operation_tests.rs::request_preserves_repeated_identifiers_in_order_and_keeps_thresholds_off_wire` |
+| §6.1.27 Table 244 — Attributes | Optional | `KMIPKIT-ELEM-OP-C2S-JOIN-SPLIT-KEY`; tag `420125` | `...join_split_key.rs`; `...join_split_key_operation_tests.rs::request_preserves_repeated_identifiers_in_order_and_keeps_thresholds_off_wire` |
+| §6.1.27 Table 244 — Protection Storage Masks | Optional; preserve caller-selected bitmask structure | `KMIPKIT-ELEM-OP-C2S-JOIN-SPLIT-KEY`; tag `42015F` | `...join_split_key.rs`; `...join_split_key_operation_tests.rs::request_preserves_repeated_identifiers_in_order_and_keeps_thresholds_off_wire` |
+| §6.1.27 Table 245 — Unique Identifier | Required success result | `KMIPKIT-ELEM-OP-C2S-JOIN-SPLIT-KEY`; tag `420094` | `...join_split_key.rs`; `...join_split_key_operation_tests.rs::success_returns_identifier_and_failure_preserves_unknown_reason` |
+| §6.1.27 Table 246 — operation errors | Preserve result reason, including unknown values | Result tags `42007F`, `42007E`; operation element | `...join_split_key.rs`; `...join_split_key_operation_tests.rs::success_returns_identifier_and_failure_preserves_unknown_reason` |
 
 ## Shared behavior and evidence
 
-| Contract | Source | Tasks |
-|---|---|---|
-| One explicit exchange, no retry, Pending/correlation and per-item delivery state | Approved common batch/client/result contract; operation acceptance scenarios in spec.md | T004–T005, T006–T017 |
-| Unknown tags/enums/bitmasks/extensions and ordered repeated fields remain lossless | Constitution; OASIS tables cited above | T004–T017 |
-| Sensitive values and raw bodies are redacted; KMIPKit-owned secrets are zeroized | Constitution security invariants | T004–T005, T006–T017 |
-| Rust/C/Java/Python public capability uses canonical manifest; no handwritten generated declarations | KMIPKIT-0043 tasks T046, T047, T050, T052 | T018 |
-| Catalog and generated coverage report updated by pinned generators | Constitution generated-artifact rules | T020–T021 |
+| Contract | Implementation and executable verification |
+|---|---|
+| Four operation codes, ordered batch association, Pending/correlation, one exchange, delivery state, and no retry | `crates/kmipkit-client/src/execute.rs`; `crates/kmipkit-client/tests/unit/key_transfer_operations_execution_tests.rs::four_operations_preserve_codes_batch_order_pending_and_one_exchange`; `...::each_operation_reports_failure_delivery_state_without_retry` |
+| Unknown tags/enums, extensions, and repeated generic TTLV children remain lossless | `crates/kmipkit-protocol/src/operation_data.rs`; `crates/kmipkit-protocol/tests/unit/key_transfer_operation_contract_tests.rs::generic_ttlv_retains_repeated_unknown_children_in_order`; `...::unknown_result_values_and_untrusted_messages_remain_inspectable` |
+| Secret bytes redact formatting and errors; KMIPKit-owned bytes are zeroized | `crates/kmipkit-protocol/src/operation_data.rs`; `crates/kmipkit-protocol/tests/unit/key_transfer_operation_contract_tests.rs::secret_operation_data_redacts_its_owned_bytes`; operation-specific Export/Import/Join response redaction tests |
+| Four-language binding parity follows the canonical KMIPKIT-0043 manifest/mappings | Gate tracked in `specs/023-key-material-transfer/tasks.md::T018`; no operation mapping in the separate 0043 task is edited by this feature. |
+| Normative catalog report is generated from catalog inputs | `tools/normative_catalog/report.py`; `specification/catalog/coverage-report.md` is generated and checked by the pinned report command. |
 
-No official fixture pass, profile support, interoperability result, certification, or implementation completion is claimed by this design-time mapping.
+The official case IDs listed in `spec.md` remain inventory references; this PR
+has not run or claimed those official fixtures. Join Split Key has no direct
+catalog case ID. Source-derived vectors verify the tables locally and do not
+establish formal conformance or profile support.

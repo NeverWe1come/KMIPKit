@@ -42548,9 +42548,14 @@
       "requirement_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0037",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/import.rs",
+        "crates/kmipkit-client/src/execute.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-client/tests/unit/key_transfer_operations_execution_tests.rs::four_operations_preserve_codes_batch_order_pending_and_one_exchange"
+      ],
       "wire_value": "0000002A",
       "allocation": "assigned"
     },
@@ -43158,9 +43163,14 @@
       "requirement_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0037",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/recover.rs",
+        "crates/kmipkit-client/src/execute.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-client/tests/unit/recover_execution_tests.rs::recover_wire_code_matches_kmip_table_470"
+      ],
       "wire_value": "00000016",
       "allocation": "assigned"
     },
@@ -57220,7 +57230,19 @@
       "direction": "client_to_server",
       "scope_state": "client_1_0",
       "parent_element_ids": [],
-      "requirement_ids": [],
+      "requirement_ids": [
+        "KMIPKIT-REQ-SPEC-6.1.14-001-001",
+        "KMIPKIT-REQ-SPEC-6.1.14-001-002",
+        "KMIPKIT-REQ-SPEC-6.1.14-001-003",
+        "KMIPKIT-REQ-SPEC-6.1.14-001-004",
+        "KMIPKIT-REQ-SPEC-6.1.14-002",
+        "KMIPKIT-REQ-SPEC-6.1.14-006-001",
+        "KMIPKIT-REQ-SPEC-6.1.14-006-002",
+        "KMIPKIT-REQ-SPEC-6.1.14-007-001",
+        "KMIPKIT-REQ-SPEC-6.1.14-007-002",
+        "KMIPKIT-REQ-SPEC-7.12-003",
+        "KMIPKIT-REQ-SPEC-7.12-005-001"
+      ],
       "profile_ids": [],
       "test_case_ids": [
         "KMIPKIT-TEST-CN01-2-14",
@@ -57230,9 +57252,18 @@
         "KMIPKIT-TEST-CN01-2-18",
         "KMIPKIT-TEST-CN01-2-19"
       ],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0037",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/derive_key.rs",
+        "crates/kmipkit-client/src/execute.rs",
+        "crates/kmipkit-client/src/lib.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/derive_key_operation_tests.rs::request_encodes_required_table_205_fields_in_order_and_repeats_identifiers",
+        "crates/kmipkit-protocol/tests/unit/derive_key_operation_tests.rs::response_preserves_success_identifier_and_server_error_reason",
+        "crates/kmipkit-protocol/tests/unit/derive_key_operation_tests.rs::method_conditional_fields_are_checked_without_selecting_defaults",
+        "crates/kmipkit-client/tests/unit/derive_key_execution_tests.rs::both_derivation_inputs_reach_the_server_and_its_error_is_returned_once"
+      ],
       "payload_tables": [
         {
           "role": "request",
@@ -57449,9 +57480,18 @@
         "KMIPKIT-TEST-CN01-2-46",
         "KMIPKIT-TEST-CN01-2-47"
       ],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0037",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/export.rs",
+        "crates/kmipkit-client/src/execute.rs",
+        "crates/kmipkit-client/src/lib.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/export_operation_tests.rs::request_preserves_all_explicit_optional_choices_and_omits_absent_fields",
+        "crates/kmipkit-protocol/tests/unit/export_operation_tests.rs::success_preserves_all_response_fields_unknown_children_and_redacts_object_material",
+        "crates/kmipkit-protocol/tests/unit/export_operation_tests.rs::failure_keeps_unknown_result_reason_and_malformed_success_is_rejected",
+        "crates/kmipkit-client/tests/unit/export_execution_tests.rs::explicit_export_options_reach_the_server_once_and_preserve_its_failure"
+      ],
       "payload_tables": [
         {
           "role": "request",
@@ -57839,7 +57879,11 @@
       "direction": "client_to_server",
       "scope_state": "client_1_0",
       "parent_element_ids": [],
-      "requirement_ids": [],
+      "requirement_ids": [
+        "KMIPKIT-REQ-SPEC-6.1.25-001",
+        "KMIPKIT-REQ-SPEC-6.1.25-004",
+        "KMIPKIT-REQ-SPEC-6.1.25-006"
+      ],
       "profile_ids": [
         "KMIPKIT-PROFILE-AES-XTS-SERVER",
         "KMIPKIT-PROFILE-ASYMMETRIC-KEY-LIFECYCLE-SERVER",
@@ -57866,9 +57910,18 @@
         "KMIPKIT-TEST-CN01-2-46",
         "KMIPKIT-TEST-CN01-2-47"
       ],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0037",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/import.rs",
+        "crates/kmipkit-client/src/execute.rs",
+        "crates/kmipkit-client/src/lib.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/import_operation_tests.rs::request_preserves_required_fields_and_only_explicit_optional_choices",
+        "crates/kmipkit-protocol/tests/unit/import_operation_tests.rs::replacement_and_conditional_wrap_type_are_preserved_without_unwrapping",
+        "crates/kmipkit-protocol/tests/unit/import_operation_tests.rs::key_wrap_type_is_present_if_and_only_if_key_block_has_wrapping_data",
+        "crates/kmipkit-client/tests/unit/import_execution_tests.rs::explicit_import_sends_supplied_attributes_and_object_once_and_preserves_server_error"
+      ],
       "payload_tables": [
         {
           "role": "request",
@@ -57947,12 +58000,27 @@
       "direction": "client_to_server",
       "scope_state": "client_1_0",
       "parent_element_ids": [],
-      "requirement_ids": [],
+      "requirement_ids": [
+        "KMIPKIT-REQ-SPEC-6.1.27-001",
+        "KMIPKIT-REQ-SPEC-6.1.27-002-001",
+        "KMIPKIT-REQ-SPEC-6.1.27-002-002",
+        "KMIPKIT-REQ-SPEC-6.1.27-005"
+      ],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0037",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/join_split_key.rs",
+        "crates/kmipkit-client/src/execute.rs",
+        "crates/kmipkit-client/src/lib.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/join_split_key_operation_tests.rs::entry_count_must_meet_the_maximum_threshold_and_thresholds_may_differ",
+        "crates/kmipkit-protocol/tests/unit/join_split_key_operation_tests.rs::request_preserves_repeated_identifiers_in_order_and_keeps_thresholds_off_wire",
+        "crates/kmipkit-protocol/tests/unit/join_split_key_operation_tests.rs::success_returns_identifier_and_failure_preserves_unknown_reason",
+        "crates/kmipkit-client/tests/unit/join_split_key_execution_tests.rs::explicit_join_split_key_dispatches_once_and_returns_typed_success",
+        "crates/kmipkit-client/tests/unit/join_split_key_execution_tests.rs::absent_or_insufficient_threshold_context_fails_before_transport"
+      ],
       "payload_tables": [
         {
           "role": "request",
@@ -90338,16 +90406,26 @@
       "direction": "client_to_server",
       "condition": null,
       "scope_state": "client_1_0",
-      "element_ids": [],
+      "element_ids": [
+        "KMIPKIT-ELEM-ATTRIBUTE-CRYPTOGRAPHIC-USAGE-MASK",
+        "KMIPKIT-ELEM-BITMASK-CRYPTOGRAPHIC-USAGE-MASK",
+        "KMIPKIT-ELEM-OP-C2S-DERIVE-KEY",
+        "KMIPKIT-ELEM-TAG-420094"
+      ],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0037",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/derive_key.rs",
+        "crates/kmipkit-client/src/execute.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/derive_key_operation_tests.rs::request_encodes_required_table_205_fields_in_order_and_repeats_identifiers"
+      ],
       "negative_verification_required": false,
       "decision_id": null,
-      "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
+      "status": "scoped_verified",
+      "review_note": "The API carries caller-selected source identifiers but cannot inspect the Cryptographic Usage Mask of server-held source objects without a remote lookup; selecting an eligible object remains a caller responsibility. No requirement-specific official Test Cases ID is asserted as executed; local tests use source-derived table vectors."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.14-001-002",
@@ -90368,16 +90446,26 @@
       "direction": "client_to_server",
       "condition": null,
       "scope_state": "client_1_0",
-      "element_ids": [],
+      "element_ids": [
+        "KMIPKIT-ELEM-OP-C2S-DERIVE-KEY",
+        "KMIPKIT-ELEM-TAG-42002A",
+        "KMIPKIT-ELEM-TAG-420125"
+      ],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0037",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/derive_key.rs",
+        "crates/kmipkit-client/src/execute.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/derive_key_operation_tests.rs::request_encodes_required_table_205_fields_in_order_and_repeats_identifiers",
+        "crates/kmipkit-protocol/tests/unit/derive_key_operation_tests.rs::secret_data_output_accepts_a_total_cryptographic_length_without_key_algorithm"
+      ],
       "negative_verification_required": false,
       "decision_id": null,
-      "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
+      "status": "verified",
+      "review_note": "No requirement-specific official Test Cases ID is asserted as executed; local tests use source-derived table vectors."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.14-001-003",
@@ -90398,16 +90486,26 @@
       "direction": "client_to_server",
       "condition": "When the result is a key.",
       "scope_state": "client_1_0",
-      "element_ids": [],
+      "element_ids": [
+        "KMIPKIT-ELEM-OP-C2S-DERIVE-KEY",
+        "KMIPKIT-ELEM-TAG-420028",
+        "KMIPKIT-ELEM-TAG-42002A",
+        "KMIPKIT-ELEM-TAG-420125"
+      ],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0037",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/derive_key.rs",
+        "crates/kmipkit-client/src/execute.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/derive_key_operation_tests.rs::request_rejects_id_placeholder_and_missing_symmetric_key_attributes"
+      ],
       "negative_verification_required": false,
       "decision_id": null,
-      "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
+      "status": "verified",
+      "review_note": "No requirement-specific official Test Cases ID is asserted as executed; local tests use source-derived table vectors."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.14-001-004",
@@ -90428,16 +90526,25 @@
       "direction": "client_to_server",
       "condition": "When the derivation method supports the output.",
       "scope_state": "client_1_0",
-      "element_ids": [],
+      "element_ids": [
+        "KMIPKIT-ELEM-OP-C2S-DERIVE-KEY",
+        "KMIPKIT-ELEM-TAG-42002A",
+        "KMIPKIT-ELEM-TAG-420057"
+      ],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0037",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/derive_key.rs",
+        "crates/kmipkit-client/src/execute.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/derive_key_operation_tests.rs::secret_data_output_accepts_a_total_cryptographic_length_without_key_algorithm"
+      ],
       "negative_verification_required": false,
       "decision_id": null,
-      "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
+      "status": "verified",
+      "review_note": "No requirement-specific official Test Cases ID is asserted as executed; local tests use source-derived table vectors."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.14-002",
@@ -90458,16 +90565,29 @@
       "direction": "client_to_server",
       "condition": null,
       "scope_state": "client_1_0",
-      "element_ids": [],
+      "element_ids": [
+        "KMIPKIT-ELEM-OP-C2S-DERIVE-KEY",
+        "KMIPKIT-ELEM-TAG-420030",
+        "KMIPKIT-ELEM-TAG-420031",
+        "KMIPKIT-ELEM-TAG-420032",
+        "KMIPKIT-ELEM-TAG-42003C",
+        "KMIPKIT-ELEM-TAG-420084"
+      ],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0037",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/derive_key.rs",
+        "crates/kmipkit-client/src/execute.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/derive_key_operation_tests.rs::request_encodes_required_table_205_fields_in_order_and_repeats_identifiers",
+        "crates/kmipkit-protocol/tests/unit/derive_key_operation_tests.rs::method_conditional_fields_are_checked_without_selecting_defaults"
+      ],
       "negative_verification_required": false,
       "decision_id": null,
-      "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
+      "status": "verified",
+      "review_note": "No requirement-specific official Test Cases ID is asserted as executed; local tests use source-derived table vectors."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.14-006-001",
@@ -90488,16 +90608,24 @@
       "direction": "client_to_server",
       "condition": null,
       "scope_state": "client_1_0",
-      "element_ids": [],
+      "element_ids": [
+        "KMIPKIT-ELEM-OP-C2S-DERIVE-KEY",
+        "KMIPKIT-ELEM-TAG-420094"
+      ],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0037",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/derive_key.rs",
+        "crates/kmipkit-client/src/execute.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/derive_key_operation_tests.rs::request_encodes_required_table_205_fields_in_order_and_repeats_identifiers"
+      ],
       "negative_verification_required": false,
       "decision_id": null,
-      "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
+      "status": "verified",
+      "review_note": "No requirement-specific official Test Cases ID is asserted as executed; local tests use source-derived table vectors."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.14-006-002",
@@ -90518,16 +90646,24 @@
       "direction": "client_to_server",
       "condition": null,
       "scope_state": "client_1_0",
-      "element_ids": [],
+      "element_ids": [
+        "KMIPKIT-ELEM-OP-C2S-DERIVE-KEY",
+        "KMIPKIT-ELEM-TAG-420094"
+      ],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0037",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/derive_key.rs",
+        "crates/kmipkit-client/src/execute.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/derive_key_operation_tests.rs::request_rejects_id_placeholder_and_missing_symmetric_key_attributes"
+      ],
       "negative_verification_required": true,
       "decision_id": null,
-      "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
+      "status": "verified",
+      "review_note": "No requirement-specific official Test Cases ID is asserted as executed; local tests use source-derived table vectors."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.14-007-001",
@@ -90548,16 +90684,24 @@
       "direction": "client_to_server",
       "condition": null,
       "scope_state": "client_1_0",
-      "element_ids": [],
+      "element_ids": [
+        "KMIPKIT-ELEM-OP-C2S-DERIVE-KEY",
+        "KMIPKIT-ELEM-TAG-420125"
+      ],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0037",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/derive_key.rs",
+        "crates/kmipkit-client/src/execute.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/derive_key_operation_tests.rs::request_encodes_required_table_205_fields_in_order_and_repeats_identifiers"
+      ],
       "negative_verification_required": false,
       "decision_id": null,
-      "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
+      "status": "verified",
+      "review_note": "No requirement-specific official Test Cases ID is asserted as executed; local tests use source-derived table vectors."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.14-007-002",
@@ -90578,16 +90722,26 @@
       "direction": "client_to_server",
       "condition": "When deriving a symmetric key.",
       "scope_state": "client_1_0",
-      "element_ids": [],
+      "element_ids": [
+        "KMIPKIT-ELEM-OP-C2S-DERIVE-KEY",
+        "KMIPKIT-ELEM-TAG-420028",
+        "KMIPKIT-ELEM-TAG-42002A",
+        "KMIPKIT-ELEM-TAG-420125"
+      ],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0037",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/derive_key.rs",
+        "crates/kmipkit-client/src/execute.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/derive_key_operation_tests.rs::request_rejects_id_placeholder_and_missing_symmetric_key_attributes"
+      ],
       "negative_verification_required": false,
       "decision_id": null,
-      "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
+      "status": "verified",
+      "review_note": "No requirement-specific official Test Cases ID is asserted as executed; local tests use source-derived table vectors."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.16-001-001",
@@ -91285,16 +91439,24 @@
       "direction": "client_to_server",
       "condition": null,
       "scope_state": "client_1_0",
-      "element_ids": [],
+      "element_ids": [
+        "KMIPKIT-ELEM-OP-C2S-IMPORT",
+        "KMIPKIT-ELEM-TAG-420125"
+      ],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0037",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/import.rs",
+        "crates/kmipkit-client/src/execute.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/import_operation_tests.rs::request_preserves_required_fields_and_only_explicit_optional_choices"
+      ],
       "negative_verification_required": false,
       "decision_id": null,
-      "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
+      "status": "verified",
+      "review_note": "No requirement-specific official Test Cases ID is asserted as executed; local tests use source-derived table vectors."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.25-004",
@@ -91315,16 +91477,25 @@
       "direction": "client_to_server",
       "condition": "When replacement is intended.",
       "scope_state": "client_1_0",
-      "element_ids": [],
+      "element_ids": [
+        "KMIPKIT-ELEM-OP-C2S-IMPORT",
+        "KMIPKIT-ELEM-TAG-420094",
+        "KMIPKIT-ELEM-TAG-420124"
+      ],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0037",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/import.rs",
+        "crates/kmipkit-client/src/execute.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/import_operation_tests.rs::replacement_and_conditional_wrap_type_are_preserved_without_unwrapping"
+      ],
       "negative_verification_required": false,
       "decision_id": null,
-      "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
+      "status": "verified",
+      "review_note": "No requirement-specific official Test Cases ID is asserted as executed; local tests use source-derived table vectors."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.25-006",
@@ -91345,16 +91516,26 @@
       "direction": "client_to_server",
       "condition": null,
       "scope_state": "client_1_0",
-      "element_ids": [],
+      "element_ids": [
+        "KMIPKIT-ELEM-OP-C2S-IMPORT",
+        "KMIPKIT-ELEM-TAG-420046",
+        "KMIPKIT-ELEM-TAG-4200F8",
+        "KMIPKIT-ELEM-TAG-420125"
+      ],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0037",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/import.rs",
+        "crates/kmipkit-client/src/execute.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/import_operation_tests.rs::key_wrap_type_is_present_if_and_only_if_key_block_has_wrapping_data"
+      ],
       "negative_verification_required": false,
       "decision_id": null,
-      "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
+      "status": "verified",
+      "review_note": "No requirement-specific official Test Cases ID is asserted as executed; local tests use source-derived table vectors."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.27-001",
@@ -91375,16 +91556,26 @@
       "direction": "client_to_server",
       "condition": null,
       "scope_state": "client_1_0",
-      "element_ids": [],
+      "element_ids": [
+        "KMIPKIT-ELEM-OP-C2S-JOIN-SPLIT-KEY",
+        "KMIPKIT-ELEM-TAG-42008C",
+        "KMIPKIT-ELEM-TAG-420094"
+      ],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0037",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/join_split_key.rs",
+        "crates/kmipkit-client/src/execute.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/join_split_key_operation_tests.rs::entry_count_must_meet_the_maximum_threshold_and_thresholds_may_differ",
+        "crates/kmipkit-client/tests/unit/join_split_key_execution_tests.rs::absent_or_insufficient_threshold_context_fails_before_transport"
+      ],
       "negative_verification_required": false,
       "decision_id": null,
-      "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
+      "status": "verified",
+      "review_note": "No requirement-specific official Test Cases ID is asserted as executed; local tests use source-derived table vectors."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.27-002-001",
@@ -91405,16 +91596,24 @@
       "direction": "client_to_server",
       "condition": null,
       "scope_state": "client_1_0",
-      "element_ids": [],
+      "element_ids": [
+        "KMIPKIT-ELEM-OP-C2S-JOIN-SPLIT-KEY",
+        "KMIPKIT-ELEM-TAG-420057"
+      ],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0037",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/join_split_key.rs",
+        "crates/kmipkit-client/src/execute.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/join_split_key_operation_tests.rs::request_preserves_repeated_identifiers_in_order_and_keeps_thresholds_off_wire"
+      ],
       "negative_verification_required": false,
       "decision_id": null,
-      "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
+      "status": "verified",
+      "review_note": "No requirement-specific official Test Cases ID is asserted as executed; local tests use source-derived table vectors."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.27-002-002",
@@ -91435,16 +91634,24 @@
       "direction": "client_to_server",
       "condition": "When the resulting object is Secret Data.",
       "scope_state": "client_1_0",
-      "element_ids": [],
+      "element_ids": [
+        "KMIPKIT-ELEM-OP-C2S-JOIN-SPLIT-KEY",
+        "KMIPKIT-ELEM-TAG-420086"
+      ],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0037",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/join_split_key.rs",
+        "crates/kmipkit-client/src/execute.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/join_split_key_operation_tests.rs::request_preserves_repeated_identifiers_in_order_and_keeps_thresholds_off_wire"
+      ],
       "negative_verification_required": false,
       "decision_id": null,
-      "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
+      "status": "verified",
+      "review_note": "No requirement-specific official Test Cases ID is asserted as executed; local tests use source-derived table vectors."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.27-005",
@@ -91465,16 +91672,24 @@
       "direction": "client_to_server",
       "condition": null,
       "scope_state": "client_1_0",
-      "element_ids": [],
+      "element_ids": [
+        "KMIPKIT-ELEM-OP-C2S-JOIN-SPLIT-KEY",
+        "KMIPKIT-ELEM-TAG-420094"
+      ],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0037",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/join_split_key.rs",
+        "crates/kmipkit-client/src/execute.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/join_split_key_operation_tests.rs::request_preserves_repeated_identifiers_in_order_and_keeps_thresholds_off_wire"
+      ],
       "negative_verification_required": false,
       "decision_id": null,
-      "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
+      "status": "verified",
+      "review_note": "No requirement-specific official Test Cases ID is asserted as executed; local tests use source-derived table vectors."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.28-001",
@@ -95108,16 +95323,28 @@
       "direction": "client_to_server",
       "condition": "For derivation methods using a PRF.",
       "scope_state": "client_1_0",
-      "element_ids": [],
+      "element_ids": [
+        "KMIPKIT-ELEM-OP-C2S-DERIVE-KEY",
+        "KMIPKIT-ELEM-STRUCTURE-MEMBER-4-16-BLOCK-CIPHER-MODE",
+        "KMIPKIT-ELEM-STRUCTURE-MEMBER-7-36-HASHING-ALGORITHM",
+        "KMIPKIT-ELEM-TAG-420011",
+        "KMIPKIT-ELEM-TAG-42002B",
+        "KMIPKIT-ELEM-TAG-420038"
+      ],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0037",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/derive_key.rs",
+        "crates/kmipkit-client/src/execute.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/derive_key_operation_tests.rs::method_conditional_fields_are_checked_without_selecting_defaults"
+      ],
       "negative_verification_required": false,
       "decision_id": null,
-      "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
+      "status": "scoped_verified",
+      "review_note": "KMIPKit preserves caller-selected Cryptographic Parameters, including AES-CBC Block Cipher Mode, without inferring server-held derivation-key properties; the KMIP server evaluates context-dependent conditions. No requirement-specific official Test Cases ID is asserted as executed; local tests use source-derived table vectors."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-7.12-005-001",
@@ -95138,16 +95365,26 @@
       "direction": "client_to_server",
       "condition": null,
       "scope_state": "client_1_0",
-      "element_ids": [],
+      "element_ids": [
+        "KMIPKIT-ELEM-OP-C2S-DERIVE-KEY",
+        "KMIPKIT-ELEM-TAG-420030",
+        "KMIPKIT-ELEM-TAG-420094"
+      ],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0037",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/derive_key.rs",
+        "crates/kmipkit-client/src/execute.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/derive_key_operation_tests.rs::both_derivation_input_forms_are_sent_and_server_error_is_not_rejected_locally",
+        "crates/kmipkit-client/tests/unit/derive_key_execution_tests.rs::both_derivation_inputs_reach_the_server_and_its_error_is_returned_once"
+      ],
       "negative_verification_required": false,
       "decision_id": null,
-      "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
+      "status": "verified",
+      "review_note": "No requirement-specific official Test Cases ID is asserted as executed; local tests use source-derived table vectors."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-7.12-005-002",

@@ -49,7 +49,7 @@ Record separate Red, Green, and Refactor commit IDs per story. The implementatio
 - Red commits: protocol `3ca0d0b2`; fake-client `6d583aa0`.
 - Green commits: protocol model `7616b79d`; client dispatch `bcb0ad9f`.
 - Refactor commit: `3ede3903`.
-- Passed `cargo test -p kmipkit-protocol --lib derive_key_operation_tests` (5 tests) and `cargo test -p kmipkit-client --lib derive_key_execution_tests` (1 test).
+- Passed `cargo test -p kmipkit-protocol --lib derive_key_operation_tests` (6 tests, including the Secret Data total-length and AES-CBC parameter-preservation assertions) and `cargo test -p kmipkit-client --lib derive_key_execution_tests` (1 test).
 - Passed `cargo fmt --all --check`, `cargo clippy -p kmipkit-protocol -p kmipkit-client --all-targets --all-features -- -D warnings`, and `git diff --check`.
 - Fixture vectors derive from KMIP 2.1 tables and do not establish official conformance or independent implementation interoperability.
 
@@ -71,3 +71,32 @@ Record separate Red, Green, and Refactor commit IDs per story. The implementatio
 - Passed the complete protocol library suite (554 tests) and client library suite (424 tests), `cargo fmt --all --check`, `cargo clippy -p kmipkit-protocol -p kmipkit-client --all-targets --all-features -- -D warnings`, and `git diff --check`.
 - Corrected the pre-existing Recover operation code collision from `0x2A` to Table 470's `0x16`; Import uses `0x2A`. Updated existing Recover fixtures and traceability. Import enforces Table 238's Key Wrap Type iff condition against Key Wrapping Data in key objects without unwrapping or interpreting key material.
 - These local vectors do not establish official conformance or independent implementation interoperability.
+
+
+## Join Split Key cycle evidence
+
+- Red commit: `9148bbd7`.
+- Green commit: `2ff342bb`.
+- Refactor commit: `6b0ad9a3`.
+- Passed `cargo test -p kmipkit-protocol --lib join_split_key_operation_tests` (6 tests) and `cargo test -p kmipkit-client --lib join_split_key_execution_tests` (3 tests). The protocol suite asserts caller threshold context, maximum threshold, repeated ID ordering, no wire threshold, error passthrough, and redaction; the client suite asserts one dispatch and NotSent on missing/insufficient context.
+- Package-level Clippy and `cargo fmt --all --check` passed after the operation refactor.
+
+## Documentation, traceability, and catalog evidence
+
+- T019: `python scripts/test_user_guide_examples.py --guide docs/user-guide/en/key-derivation-and-transfer.md --guide docs/user-guide/es/derivacion-y-transferencia-de-claves.md` compiled 2 examples; default `python scripts/test_user_guide_examples.py` compiled all 16 marked examples. Both exited 0 on 2026-10-11.
+- T020: DCO Red commit `1ec2ec63` added the catalog/traceability regression test; it failed on the missing feature mapping as intended. The catalog and traceability Green edits now pass `python -m unittest tools.normative_catalog.tests.test_key_derivation_transfer_traceability` (3 tests) and `python tools/normative_catalog/validate.py` (`sources=4 clauses=1411 records=4044`). Every stable ledger ID now includes exact implementation and executable test references; mandatory and conditional payload rows link to code, test, and catalog element where one exists.
+- T021: `python tools/normative_catalog/report.py --write` regenerated `specification/catalog/coverage-report.md`; the subsequent `--check` passed. API binding artifacts remain gated by T018; no generated binding output was edited by hand.
+- T004/T005 final harness evidence: the shared protocol and fake-transport test modules are now registered from their crate test harnesses. `cargo test -p kmipkit-protocol --lib key_transfer_operation_contract_tests` passed 4 tests; `cargo test -p kmipkit-client --lib key_transfer_operations_execution_tests` passed 4 tests. Registration exposed stale synthetic fixture construction (reserved extension tags, old request builders, incomplete PBKDF2 inputs, and a Pending response without its required Response Payload); fixtures were corrected without production behavior changes. Added successful typed response and accessor assertions exercise both completed and Pending outcomes. The separate operation-specific Red commits remain the Red evidence for their respective implementations.
+- Updated focused protocol suites on 2026-10-11 passed: Derive Key 9, Export 6, Import 9, and Join Split Key 9. `cargo fmt --all --check` passed.
+- Clean workspace coverage retry: `cargo llvm-cov clean --workspace` followed by `cargo llvm-cov --workspace --all-features` exited 0 on 2026-10-11. Coverage is 23,284/26,101 lines = 89.21%, below the 90% repository gate. Feature modules are Derive Key 95.24%, Export 96.76%, Import 95.26%, and Join Split Key 95.26%. In `crates/kmipkit-client/src/execute.rs`, 182 of 183 executable lines added by this branch are covered (99.45%); the single uncovered defensive `UnsupportedValue` fallback cannot be reached through its closed Derive Key/Export dispatcher. The full file is 96.69%. The largest workspace gap is the unchanged C FFI extension registry at 22.7%; `c_api_coverage` ran 0 tests with `cfg(coverage)`. The workspace gate remains open pending an in-scope path to cover the C interface.
+- Workspace quality checks: `cargo fmt --all --check` and `cargo clippy --workspace --all-targets --all-features -- -D warnings` pass. `cargo test --workspace --all-features` exited 1 because three `kmipkit-test-support` loopback fixtures received WinSock 10013 (`PermissionDenied`); the client suite (431 tests) and protocol suite (579 tests) passed before that failure. The bounded retry `cargo test -p kmipkit-test-support --test transport_fixtures` passed all 7 tests. The remaining workspace suites passed in `cargo test --workspace --all-features --exclude kmipkit-test-support` (exit 0). These results isolate the observed failure to the loopback fixture's local socket bind restriction; full supported-platform CI remains necessary.
+- Normative checks on 2026-10-11: `python tools/normative_catalog/validate.py` passed (`sources=4 clauses=1411 records=4044`); `python tools/normative_catalog/report.py --check` passed; and `python -m unittest tools.normative_catalog.tests.test_key_derivation_transfer_traceability` passed 3 tests. The default `python scripts/test_user_guide_examples.py` compiled all 16 marked Rust examples.
+- Pinned generated-output checks on 2026-10-11 passed: `python tools/normative_catalog/generate_ttlv_tags.py --repo-root . --check`, `generate_result_values.py --repo-root . --check`, `generate_attribute_types.py --repo-root . --check`, and `generate_attribute_policy.py --repo-root . --check`. Each generator verified its existing committed output; no generated file was edited by hand.
+- Dependency/security/parser/FFI checks and supported-platform CI remain pending. The sequential diff security review and independent QA review are also pending; do not report T022/T023 complete until their outcomes and remote checks are recorded.
+- The new Derive Key positive test confirms caller-supplied AES-CBC Block Cipher Mode is preserved. KMIPKit does not infer remote source-key properties. The catalog and guides record this scope and caller responsibility for a source object's Derive Key usage bit.
+- Import uses operation value `0x2A` and Recover uses `0x16` per pinned OASIS §11.36/Table 470. The Import/Recover wire-code regression is linked in the catalog and the Recover client test.
+
+## Cross-language dependency gate
+
+- A read-only check of the KMIPKIT-0043 worktree on 2026-10-11 found the v2 manifest includes all four operation IDs. Its `tasks.md` operation mapping tasks T046, T047, T050, and T052 remain unchecked, and the operation-dependencies contract still gates binding declarations on canonical Rust mappings and four-language parity evidence. No files on that task's branch were modified. T018 remains open until those owner mappings are available and can be reconciled through the approved generator.
+- Official case IDs in the normative inventory have not been executed by this feature; source-derived tests do not claim official fixture, profile, certification, or interoperability passes.
