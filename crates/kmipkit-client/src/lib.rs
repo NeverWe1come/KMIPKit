@@ -204,6 +204,10 @@ mod attribute_mutation_execution_tests;
 mod attribute_execution_contract_tests;
 
 #[cfg(test)]
+#[path = "../tests/unit/recertify_execution_tests.rs"]
+mod recertify_execution_tests;
+
+#[cfg(test)]
 #[path = "../tests/unit/object_read_execution_tests.rs"]
 mod object_read_execution_tests;
 

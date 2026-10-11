@@ -150,6 +150,10 @@ mod check_operation_tests;
 mod obtain_lease_operation_tests;
 
 #[cfg(test)]
+#[path = "../tests/unit/recertify_operation_tests.rs"]
+mod recertify_operation_tests;
+
+#[cfg(test)]
 #[path = "../tests/unit/destroy_operation_tests.rs"]
 mod destroy_operation_tests;
 
