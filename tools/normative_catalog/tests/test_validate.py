@@ -6883,6 +6883,63 @@ class CatalogValidationTests(unittest.TestCase):
             self.assertIn(caption, pinned_source_excerpt(source_path, line_range))
         self.assertEqual(oracle["oracle_status"], "partial-source-reviewed; not complete T003 oracle")
 
+    def test_spec_6_1_49_rng_retrieve_reviews_payload_and_error_evidence(self) -> None:
+        """Specification v2.1 §6.1.49 preserves RNG Retrieve payload and error evidence."""
+        fixture_path = ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json"
+        oracle = json.loads(fixture_path.read_text(encoding="utf-8"))
+        source_path = "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
+        locators = audit_document_with_text((ROOT / source_path).read_bytes(), "KMIPKIT-SRC-spec")
+        expected = {
+            "KMIPKIT-CLAUSE-SPEC-6.1.49-001": ("6.1.49", 1, "table_row", ["REQUIRED"], [35302, 35320]),
+            "KMIPKIT-CLAUSE-SPEC-6.1.49-002": ("6.1.49", 2, "table_row", ["REQUIRED"], [35358, 35376]),
+            "KMIPKIT-CLAUSE-SPEC-6.1.49.1-001": ("6.1.49.1", 1, "paragraph", ["SHALL"], [35406, 35407]),
+            "KMIPKIT-CLAUSE-SPEC-6.1.49.1-002": ("6.1.49.1", 2, "table_row", ["REQUIRED"], [35427, 35440]),
+        }
+        selected = [row for row in locators if row["section"] in ("6.1.49", "6.1.49.1")]
+        self.assertEqual({row["clause_id"] for row in selected}, set(expected))
+        reviews = {row["source_clause_id"]: row for row in oracle["source_requirement_reviews"]
+                   if row["source_section"] in ("6.1.49", "6.1.49.1")}
+        self.assertEqual(set(reviews), set(expected))
+        for clause_id, (section, ordinal, kind, keywords, line_range) in expected.items():
+            review = reviews[clause_id]
+            self.assertEqual(review["source_locator"], {"ordinal": ordinal, "block_kind": kind})
+            self.assertEqual(review["html_line_range"], line_range)
+            self.assertEqual(review["source_excerpt"], pinned_source_excerpt(source_path, line_range))
+            pinned = next(row for row in selected if row["clause_id"] == clause_id)
+            self.assertEqual(review["source_excerpt"], pinned["source_text"])
+            self.assertEqual(pinned["source_keywords"], keywords)
+
+        request_rows = reviews["KMIPKIT-CLAUSE-SPEC-6.1.49-001"]["source_request_rows"]
+        self.assertEqual([(row["row_label"], row["required"], row["actor"], row["html_line_range"])
+                          for row in request_rows], [("Data Length", "Yes", "client", [35321, 35339])])
+        response_rows = reviews["KMIPKIT-CLAUSE-SPEC-6.1.49-002"]["source_payload_rows"]
+        self.assertEqual([(row["row_label"], row["required"], row["actor"], row["html_line_range"])
+                          for row in response_rows], [("Data", "Yes", "server", [35377, 35394])])
+        reason_text = reviews["KMIPKIT-CLAUSE-SPEC-6.1.49.1-002"]["source_excerpt"]
+        self.assertEqual(reason_text.split("Operation Failed ", 1)[1].split(", "),
+                         ["Cryptographic Failure", "Attestation Failed", "Attestation Required",
+                          "Feature Not Supported", "Invalid Field", "Invalid Message",
+                          "Operation Not Supported", "Permission Denied", "Response Too Large"])
+        atoms = reviews["KMIPKIT-CLAUSE-SPEC-6.1.49.1-001"]["source_obligations"]
+        self.assertEqual([(atom["source_keyword"], atom["actor"], atom["scope_disposition"])
+                          for atom in atoms], [("SHALL", "server", "server_only")])
+
+        gaps = [gap for gap in oracle["source_only_requirement_gaps"] if gap["source_section"] == "6.1.49"]
+        self.assertEqual(len(gaps), 1)
+        gap = gaps[0]
+        self.assertEqual(gap["gap_id"], "KMIPKIT-SOURCE-GAP-SPEC-6.1.49-DATA-LENGTH-REQUIRED")
+        self.assertEqual(gap["source_locator"], {"kind": "table_body_row", "section": "6.1.49",
+                         "row_label": "Data Length", "table": "request_payload", "html_line_range": [35321, 35339]})
+        self.assertEqual(gap["source_excerpt"], pinned_source_excerpt(source_path, [35321, 35339]))
+        self.assertEqual((gap["source_force"], gap["actor"], gap["scope_disposition"], gap["proposed_requirement_id"]),
+                         ("required_table_body_value", "client", "client_1_0", "KMIPKIT-REQ-SPEC-6.1.49-001"))
+        self.assertEqual([row for row in oracle["requirement_crosswalk"] if row["source_section"] == "6.1.49"], [])
+        for line_range, caption in (([35345, 35345], "Table 316: RNG Retrieve Request Payload"),
+                                    ([35400, 35400], "Table 317: RNG Retrieve Response Payload"),
+                                    ([35446, 35446], "Table 318: RNG Retrieve Errors")):
+            self.assertIn(caption, pinned_source_excerpt(source_path, line_range))
+        self.assertEqual(oracle["oracle_status"], "partial-source-reviewed; not complete T003 oracle")
+
     def test_spec_6_1_45_recertify_reviews_client_inputs_and_server_effects(self) -> None:
         """Specification v2.1 §§6.1.45 and 6.1.45.1 preserve Re-certify source roles."""
         fixture_path = ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json"
@@ -12245,6 +12302,7 @@ class CatalogValidationTests(unittest.TestCase):
             "KMIPKIT-REQ-SPEC-6.1.47-011",
             "KMIPKIT-REQ-SPEC-6.1.47-012",
             "KMIPKIT-REQ-SPEC-6.1.47-013",
+            "KMIPKIT-REQ-SPEC-6.1.49-001",
             "KMIPKIT-REQ-SPEC-6.1.14-009",
             "KMIPKIT-REQ-SPEC-6.1.14-010",
             "KMIPKIT-REQ-SPEC-6.1.14-011",
