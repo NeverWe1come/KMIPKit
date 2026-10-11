@@ -24,3 +24,30 @@ Apply the exact gates in docs/development/testing.md: 95% line coverage for the 
 ## 1.0 interoperability release gate
 
 Before 1.0, exercise this operation against at least two independent KMIP server implementations and record product/version, transport, profile, operation, result, and workaround in docs/development/kmip-interoperability.md and the test report, following docs/development/testing.md. A server that does not support the operation is recorded as SKIP/N/A with its reason; that result is not a passing interoperability test and leaves the release gate open.
+
+
+## Implemented Rust surface
+
+`Pkcs11Request::new(function_structure)` requires an explicit Function
+Structure. `with_interface`, `with_correlation_value`, and
+`with_input_parameters` preserve optional presence; `with_extension` preserves
+generic unknown fields. `into_ttlv_payload` validates and consumes the request.
+The client offers `ClientRequest::pkcs11`, `Client::pkcs11`, and
+`Client::pkcs11_with_options` through the shared one-exchange path.
+
+`Pkcs11Response::result` exposes common status/reason/message metadata.
+Callback accessors expose the optional Interface, Function, Correlation Value,
+Output Parameters and Return Code without formatting their contents.
+`with_ttlv` retains the entire generic response batch item and
+`with_ttlv_payload` retains the original payload, including unknown fields.
+Failure/Pending results do not fabricate required Success fields.
+
+Owned opaque TTLV storage and `SecretBytes` use the existing recursive
+zeroization contract. Callbacks permit deliberate caller-owned copies, whose
+lifetime is controlled by the caller. No PKCS#11 profile codec is added.
+
+The source-derived protocol suite contains 12 tests and the fake-client suite
+contains 7 tests. Exact names, sources and remaining four-language/release
+gates are in `traceability.md`; command results and TDD commits are in
+`implementation-evidence.md`. C/Java/Python mapping remains T019, gated by
+KMIPKIT-0043. No official PKCS#11 fixture or real two-server pass is claimed.

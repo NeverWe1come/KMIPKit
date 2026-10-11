@@ -16,16 +16,16 @@ description: "Implementation task list for KMIP 2.1 PKCS#11 forwarding"
 
 **Purpose**: Confirm source, branch, and existing integration conventions.
 
-- [ ] T001 [P] Verify the approved KMIPKIT-0040 feature branch, pinned OASIS source, and baseline catalog using specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html and python tools/normative_catalog/validate.py.
-- [ ] T002 [P] Review existing one-operation protocol and fake-client patterns in crates/kmipkit-protocol/src/ping.rs, crates/kmipkit-client/src/execute.rs, and crates/kmipkit-client/tests/unit/ping_execution_tests.rs.
+- [x] T001 [P] Verify the approved KMIPKIT-0040 feature branch, pinned OASIS source, and baseline catalog using specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html and python tools/normative_catalog/validate.py.
+- [x] T002 [P] Review existing one-operation protocol and fake-client patterns in crates/kmipkit-protocol/src/ping.rs, crates/kmipkit-client/src/execute.rs, and crates/kmipkit-client/tests/unit/ping_execution_tests.rs.
 
 ## Phase 2: Foundational
 
 **Purpose**: Establish operation-specific traceability and verify inputs before behavior changes.
 
-- [ ] T003 Map every §6.1.37 Table 273/274 row, Table 275 result, and KMIPKIT-ELEM identifier to a verification target in specs/026-pkcs11/traceability.md; do not create a synthetic normative client clause.
-- [ ] T004 Confirm required operation and tag records in specification/catalog/kmip-2.1.json; if a required record is absent, add source-backed catalog input and run its pinned generator rather than editing generated files.
-- [ ] T005 Record the operation implementation references and planned named tests in specs/026-pkcs11/traceability.md before coding.
+- [x] T003 Map every §6.1.37 Table 273/274 row, Table 275 result, and KMIPKIT-ELEM identifier to a verification target in specs/026-pkcs11/traceability.md; do not create a synthetic normative client clause.
+- [x] T004 Confirm required operation and tag records in specification/catalog/kmip-2.1.json; if a required record is absent, add source-backed catalog input and run its pinned generator rather than editing generated files.
+- [x] T005 Record the operation implementation references and planned named tests in specs/026-pkcs11/traceability.md before coding.
 
 ## Phase 3: User Story 1 — PKCS#11 (Priority: P1)
 
@@ -35,27 +35,27 @@ description: "Implementation task list for KMIP 2.1 PKCS#11 forwarding"
 
 ### Protocol TDD
 
-- [ ] T006 [P] [US1] Add failing source-derived Table 273/274 tests in crates/kmipkit-protocol/tests/unit/pkcs11_operation_tests.rs for required Function/Return Code, optional absence, Enum-versus-Integer Function, malformed types, unknown nested members, and redacted sentinel data; run cargo test -p kmipkit-protocol pkcs11_operation_tests and retain the expected failure as Red evidence.
-- [ ] T007 [US1] Commit only the failing protocol tests in crates/kmipkit-protocol/tests/unit/pkcs11_operation_tests.rs as the distinct Red evidence commit.
-- [ ] T008 [US1] Implement Pkcs11Request/Pkcs11Response/Pkcs11Error and Table 273/274 conversion in crates/kmipkit-protocol/src/pkcs11.rs; export them from crates/kmipkit-protocol/src/lib.rs; pass the focused protocol tests.
-- [ ] T009 [US1] Commit the minimal passing protocol implementation in crates/kmipkit-protocol/src/pkcs11.rs and crates/kmipkit-protocol/src/lib.rs as the distinct Green evidence commit.
-- [ ] T010 [US1] Refactor protocol conversion without changing wire behavior in crates/kmipkit-protocol/src/pkcs11.rs; rerun cargo test -p kmipkit-protocol pkcs11_operation_tests and formatting.
-- [ ] T011 [US1] Commit protocol-only refactoring in crates/kmipkit-protocol/src/pkcs11.rs as the distinct Refactor evidence commit.
-- [ ] T012 [P] [US1] Add failing fake-transport tests in crates/kmipkit-client/tests/unit/pkcs11_execution_tests.rs for operation selection, exact one exchange, result/Pending/correlation/delivery preservation, no retry, and request redaction; retain expected failures as Red evidence.
-- [ ] T013 [US1] Commit only the failing client tests in crates/kmipkit-client/tests/unit/pkcs11_execution_tests.rs as the distinct Red evidence commit.
-- [ ] T014 [US1] Add PKCS#11 request/response association, operation code, and explicit one-exchange client method to crates/kmipkit-client/src/execute.rs and exports to crates/kmipkit-client/src/lib.rs; pass the focused client suite.
-- [ ] T015 [US1] Commit the minimal passing client integration in crates/kmipkit-client/src/execute.rs and crates/kmipkit-client/src/lib.rs as the distinct Green evidence commit; coordinate this shared dispatcher edit with the feature integrator.
-- [ ] T016 [US1] Refactor PKCS#11 client dispatch and tests in crates/kmipkit-client/src/execute.rs and crates/kmipkit-client/tests/unit/pkcs11_execution_tests.rs; rerun focused protocol/client suites, formatting, and Clippy.
-- [ ] T017 [US1] Commit client-only refactoring in crates/kmipkit-client/src/execute.rs and crates/kmipkit-client/tests/unit/pkcs11_execution_tests.rs as the distinct Refactor evidence commit.
+- [x] T006 [P] [US1] Add failing source-derived Table 273/274 tests in crates/kmipkit-protocol/tests/unit/pkcs11_operation_tests.rs for required Function/Return Code, optional absence, Enum-versus-Integer Function, malformed types, unknown nested members, and redacted sentinel data; run cargo test -p kmipkit-protocol pkcs11_operation_tests and retain the expected failure as Red evidence.
+- [x] T007 [US1] Commit only the failing protocol tests in crates/kmipkit-protocol/tests/unit/pkcs11_operation_tests.rs as the distinct Red evidence commit.
+- [x] T008 [US1] Implement Pkcs11Request/Pkcs11Response/Pkcs11Error and Table 273/274 conversion in crates/kmipkit-protocol/src/pkcs11.rs; export them from crates/kmipkit-protocol/src/lib.rs; pass the focused protocol tests.
+- [x] T009 [US1] Commit the minimal passing protocol implementation in crates/kmipkit-protocol/src/pkcs11.rs and crates/kmipkit-protocol/src/lib.rs as the distinct Green evidence commit.
+- [x] T010 [US1] Refactor protocol conversion without changing wire behavior in crates/kmipkit-protocol/src/pkcs11.rs; rerun cargo test -p kmipkit-protocol pkcs11_operation_tests and formatting.
+- [x] T011 [US1] Commit protocol-only refactoring in crates/kmipkit-protocol/src/pkcs11.rs as the distinct Refactor evidence commit.
+- [x] T012 [P] [US1] Add failing fake-transport tests in crates/kmipkit-client/tests/unit/pkcs11_execution_tests.rs for operation selection, exact one exchange, result/Pending/correlation/delivery preservation, no retry, and request redaction; retain expected failures as Red evidence.
+- [x] T013 [US1] Commit only the failing client tests in crates/kmipkit-client/tests/unit/pkcs11_execution_tests.rs as the distinct Red evidence commit.
+- [x] T014 [US1] Add PKCS#11 request/response association, operation code, and explicit one-exchange client method to crates/kmipkit-client/src/execute.rs and exports to crates/kmipkit-client/src/lib.rs; pass the focused client suite.
+- [x] T015 [US1] Commit the minimal passing client integration in crates/kmipkit-client/src/execute.rs and crates/kmipkit-client/src/lib.rs as the distinct Green evidence commit; coordinate this shared dispatcher edit with the feature integrator.
+- [x] T016 [US1] Refactor PKCS#11 client dispatch and tests in crates/kmipkit-client/src/execute.rs and crates/kmipkit-client/tests/unit/pkcs11_execution_tests.rs; rerun focused protocol/client suites, formatting, and Clippy.
+- [x] T017 [US1] Commit client-only refactoring in crates/kmipkit-client/src/execute.rs and crates/kmipkit-client/tests/unit/pkcs11_execution_tests.rs as the distinct Refactor evidence commit.
 
 ## Phase 4: Polish and Cross-Cutting Concerns
 
 **Purpose**: Close traceability, security, parity, documentation, and quality gates.
 
-- [ ] T018 Update implementation and verification references for the PKCS#11 operation and fields in specification/catalog/kmip-2.1.json; regenerate specification/catalog/coverage-report.md with python tools/normative_catalog/report.py --write, then validate the catalog and report.
+- [x] T018 Update implementation and verification references for the PKCS#11 operation and fields in specification/catalog/kmip-2.1.json; regenerate specification/catalog/coverage-report.md with python tools/normative_catalog/report.py --write, then validate the catalog and report.
 - [ ] T019 After KMIPKIT-0043's approved capability mapping is present on the active release branch, add the Rust operation to specification/api/public-api.json, implement mapped C/Java/Python adapters and parity tests, regenerate only with python tools/api_manifest/generate.py --write, and verify with --check; leave this task gated while 0043 is unavailable.
-- [ ] T020 Update specs/026-pkcs11/traceability.md and specs/026-pkcs11/quickstart.md with actual test names/results, catalog IDs, redaction evidence, and unavailable official fixture status; do not claim profile support or interoperability.
-- [ ] T021 Verify sentinel Function/Correlation/Input/Output values are absent from Debug, Display, and sanitized errors in crates/kmipkit-protocol/tests/unit/pkcs11_operation_tests.rs and crates/kmipkit-client/tests/unit/pkcs11_execution_tests.rs.
+- [x] T020 Update specs/026-pkcs11/traceability.md and specs/026-pkcs11/quickstart.md with actual test names/results, catalog IDs, redaction evidence, and unavailable official fixture status; do not claim profile support or interoperability.
+- [x] T021 Verify sentinel Function/Correlation/Input/Output values are absent from Debug, Display, and sanitized errors in crates/kmipkit-protocol/tests/unit/pkcs11_operation_tests.rs and crates/kmipkit-client/tests/unit/pkcs11_execution_tests.rs.
 - [ ] T022 Run required checks from specs/026-pkcs11/quickstart.md; record command/results and enforce the documented coverage and 100% traceability gates. Before 1.0, exercise PKCS#11 against at least two independent KMIP server implementations and record evidence in docs/development/kmip-interoperability.md; unsupported cases remain SKIP/N/A, not passing evidence.
 
 ## Dependencies and Execution Order
@@ -84,3 +84,20 @@ Complete the protocol Red/Green/Refactor cycle, then the client Red/Green/Refact
 - Every implementation phase uses three distinct DCO-signed evidence commits: failing tests (Red), minimal implementation (Green), and behavior-preserving cleanup (Refactor).
 - Never edit generated output or pinned upstream OASIS files by hand.
 - PKCS#11 structures stay opaque; no profile codec, local cryptographic algorithm, retry, Poll, or server behavior is added.
+
+
+## Execution status — 2026-10-12
+
+T001–T018 and T020–T021 are complete for the Rust increment. Their source,
+TDD, named-test, generated-report and diagnostic evidence is recorded in
+`traceability.md` and `implementation-evidence.md`.
+
+- **T019 BLOCKED**: origin/release/1.0.0 at
+  `a0846037eb9930b24d9b9e3d8c63b2e66b438d1a` does not contain the approved
+  KMIPKIT-0043 capability mapping. No binding mapping was invented; existing
+  API-manifest outputs remain checked and unchanged.
+- **T022 OPEN**: local full-test/coverage/security results are recorded in the
+  evidence file. Independent platform coverage and real exchanges against two
+  independent PKCS#11-capable KMIP 2.1 servers remain release gates. The
+  interoperability matrix retains Pending status. This specification is not
+  complete and its PR must remain a draft while either task is open.
