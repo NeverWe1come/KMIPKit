@@ -245,39 +245,41 @@ fn validate_payload(payload: &StructureView<'_>, response: bool) -> Result<(), P
     Ok(())
 }
 fn valid_required_value(tree: &StructureView<'_>, tag: u32, integer_allowed: bool) -> bool {
-    let mut values = tree.children().iter().filter(|f| f.tag().raw() == tag);
-    let Some(value) = values.next() else {
-        return false;
-    };
-    values.next().is_none()
-        && value.with_value(|v| {
-            matches!(v, ValueView::Enumeration(_))
-                || (integer_allowed && matches!(v, ValueView::Integer(_)))
-        })
+    // Tables 273/274 explicitly allow vendor Integer functions in this operation.
+    // Table 378 supplies the outer Structure/standard Enumeration shape; the
+    // context interpretation is traced as KMIPKIT-026-SOURCE-001 in research.md.
+    valid_single_member(tree, tag, true, |value| {
+        matches!(value, ValueView::Enumeration(_))
+            || (integer_allowed && matches!(value, ValueView::Integer(_)))
+    })
 }
+
 // §§7.27–7.29 Tables 379–381 give the known member 0..1 cardinality.
 // Unknown/profile members retain their generic representation and source order.
-fn valid_optional_value(tree: &StructureView<'_>, tag: u32, text: bool) -> bool {
-    let mut seen = false;
-    for child in tree
+fn valid_optional_value(tree: &StructureView<'_>, tag: u32, text_expected: bool) -> bool {
+    valid_single_member(tree, tag, false, |value| {
+        if text_expected {
+            matches!(value, ValueView::TextString(_))
+        } else {
+            matches!(value, ValueView::ByteString(_))
+        }
+    })
+}
+
+fn valid_single_member(
+    tree: &StructureView<'_>,
+    tag: u32,
+    required: bool,
+    is_valid: impl for<'a> FnOnce(ValueView<'a>) -> bool,
+) -> bool {
+    let mut members = tree
         .children()
         .iter()
-        .filter(|field| field.tag().raw() == tag)
-    {
-        if seen
-            || !child.with_value(|value| {
-                if text {
-                    matches!(value, ValueView::TextString(_))
-                } else {
-                    matches!(value, ValueView::ByteString(_))
-                }
-            })
-        {
-            return false;
-        }
-        seen = true;
-    }
-    true
+        .filter(|field| field.tag().raw() == tag);
+    let Some(member) = members.next() else {
+        return !required;
+    };
+    members.next().is_none() && member.with_value(is_valid)
 }
 
 /// A sanitized PKCS#11 conversion error that never retains payload values.
