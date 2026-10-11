@@ -19041,7 +19041,7 @@
         "block_kind": "paragraph"
       },
       "source_keyword": "SHALL NOT",
-      "role": "client",
+      "role": "server",
       "scope_state": "server_only",
       "applies_to": "all_client_profiles",
       "review_note": "Specification v2.1 §6.1.2 paragraph source atom 1; actor/scope reviewed against pinned source text.",
@@ -19058,7 +19058,7 @@
         "block_kind": "paragraph"
       },
       "source_keyword": "SHALL NOT",
-      "role": "client",
+      "role": "server",
       "scope_state": "server_only",
       "applies_to": "all_client_profiles",
       "review_note": "Specification v2.1 §6.1.2 paragraph source atom 2; actor/scope reviewed against pinned source text.",
@@ -19075,7 +19075,7 @@
         "block_kind": "paragraph"
       },
       "source_keyword": "SHALL NOT",
-      "role": "client",
+      "role": "server",
       "scope_state": "server_only",
       "applies_to": "all_client_profiles",
       "review_note": "Specification v2.1 §6.1.3 paragraph source atom 1; actor/scope reviewed against pinned source text.",
@@ -19585,7 +19585,7 @@
         "block_kind": "paragraph"
       },
       "source_keyword": "SHALL",
-      "role": "client",
+      "role": "server",
       "scope_state": "server_only",
       "applies_to": "all_client_profiles",
       "review_note": "Specification v2.1 §6.1.13 source atom 1 assigns the operation effect to the server; the catalog's client role/scope metadata needs correction in Green.",
@@ -19602,7 +19602,7 @@
         "block_kind": "paragraph"
       },
       "source_keyword": "SHALL",
-      "role": "client",
+      "role": "server",
       "scope_state": "server_only",
       "applies_to": "all_client_profiles",
       "review_note": "Specification v2.1 §6.1.13 source atom 3 specifies the deletion result of server processing; the catalog's client role/scope metadata needs correction in Green.",
@@ -19857,7 +19857,7 @@
         "block_kind": "table_row"
       },
       "source_keyword": "SHALL",
-      "role": "client",
+      "role": "server",
       "scope_state": "server_only",
       "applies_to": "all_client_profiles",
       "review_note": "Specification v2.1 §6.1.17 source atom 1; source assigns the error response to the server. Current catalog role/scope metadata is inconsistent and remains for Green.",
@@ -19891,7 +19891,7 @@
         "block_kind": "paragraph"
       },
       "source_keyword": "MAY",
-      "role": "client",
+      "role": "server",
       "scope_state": "server_only",
       "applies_to": "all_client_profiles",
       "review_note": "Pinned OASIS KMIP Specification v2.1 §6.1.19; source atom 1 is the server response-wrap MAY. The catalog role/scope metadata is source-discrepant and remains for Green correction.",
@@ -19942,7 +19942,7 @@
         "block_kind": "paragraph"
       },
       "source_keyword": "SHALL NOT",
-      "role": "client",
+      "role": "server",
       "scope_state": "server_only",
       "applies_to": "all_client_profiles",
       "review_note": "Pinned OASIS KMIP Specification v2.1 §6.1.20 paragraph 1, source atom 1 is server response omission behavior. The candidate summary also covers source atom 2; catalog role/scope metadata is source-discrepant and remains for Green correction.",
@@ -19959,7 +19959,7 @@
         "block_kind": "paragraph"
       },
       "source_keyword": "SHALL",
-      "role": "client",
+      "role": "server",
       "scope_state": "server_only",
       "applies_to": "all_client_profiles",
       "review_note": "Pinned OASIS KMIP Specification v2.1 §6.1.20 paragraph 1, source atom 2 is server response content when no requested attributes exist. Keep the compound candidate label linked to both server atoms; catalog role/scope metadata is source-discrepant and remains for Green correction.",
