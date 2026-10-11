@@ -223,7 +223,7 @@ fn unknown_certificate_fields_are_retained_without_local_certificate_policy() {
 
 #[test]
 fn table_341_requires_one_open_indicator_and_retains_unknown_fields() {
-    for indicator in [0, 1, 2, 0xf1234567] {
+    for indicator in [1, 2, 3, 0x80000001, 0xf1234567] {
         let payload = structure([
             item(INDICATOR, Value::enumeration(indicator)),
             item(VENDOR, Value::byte_string(SENTINEL.to_vec())),
@@ -297,4 +297,62 @@ fn response_errors_are_payload_free_and_preserve_sources() {
         ValidateError::InvalidOperationResult(crate::ResultValidationError::SuccessForbidsReason);
     assert!(std::error::Error::source(&error).is_some());
     assert!(error.to_string().contains("Validate"));
+}
+
+#[test]
+fn generic_unknown_response_data_remains_exact_and_redacted() {
+    let payload = structure([item(
+        0x541234,
+        Value::byte_string(b"generic-body-private-sentinel".to_vec()),
+    )]);
+    let message = response_message(OPERATION, 0xf1234567, Some(0xf7654321), None, Some(payload));
+    let batch = message.batch_items().next().unwrap();
+    let expected = batch
+        .with_ttlv(|tree| {
+            tree.children()
+                .iter()
+                .map(|field| field.tag().raw())
+                .collect::<Vec<_>>()
+        })
+        .unwrap();
+    let typed = ValidateResponse::try_from_response_item(batch).unwrap();
+    typed.with_ttlv(|tree| {
+        assert_eq!(tree.children().iter().map(|field| field.tag().raw()).collect::<Vec<_>>(), expected);
+        let payload = tree.children().iter().find(|field| field.tag().raw() == 0x42007c).unwrap();
+        payload.with_value(|v| {
+            let ValueView::Structure(payload) = v else { panic!("Response Payload Structure") };
+            assert_eq!(payload.children()[0].tag().raw(), 0x541234);
+            payload.children()[0].with_value(|v| assert!(matches!(v, ValueView::ByteString(bytes) if bytes == b"generic-body-private-sentinel")));
+        });
+    });
+    assert_eq!(typed.result().reason().unwrap().raw(), 0xf7654321);
+    assert!(!format!("{typed:?}").contains("generic-body-private-sentinel"));
+}
+
+#[test]
+fn unknown_request_extensions_preserve_order_without_overriding_table_fields() {
+    let request = ValidateRequest::new()
+        .with_extension(item(0x541234, Value::byte_string(b"extension-private-sentinel".to_vec())))
+        .with_extension(item(0x541235, Value::enumeration(0xf1234567)));
+    assert!(!format!("{request:?}").contains("extension-private-sentinel"));
+    let payload = request.into_ttlv_payload().unwrap();
+    let view = payload.view();
+    let fields = view.children();
+    assert_eq!(fields[fields.len()-2].tag().raw(), 0x541234);
+    assert_eq!(fields[fields.len()-1].tag().raw(), 0x541235);
+    fields[fields.len()-2].with_value(|v| assert!(matches!(v, ValueView::ByteString(bytes) if bytes == b"extension-private-sentinel")));
+    fields[fields.len()-1].with_value(|v| assert!(matches!(v, ValueView::Enumeration(0xf1234567))));
+    for known in [4325395, 4325524, 4325530] {
+        let error = ValidateRequest::new().with_extension(item(known, Value::text_string("extension-private-sentinel".to_owned()))).into_ttlv_payload().unwrap_err();
+        assert_eq!(error.kind(), crate::ProtocolErrorKind::InvalidValue);
+        assert!(!format!("{error:?} {error}").contains("extension-private-sentinel"));
+    }
+}
+
+#[test]
+fn request_extension_depth_limit_is_checked_before_encoding() {
+    let mut nested = Structure::new();
+    for _ in 0..63 { nested = structure([item(0x541234, Value::structure(nested))]); }
+    let error = ValidateRequest::new().with_extension(item(0x541234, Value::structure(nested))).into_ttlv_payload().unwrap_err();
+    assert_eq!(error.kind(), crate::ProtocolErrorKind::InvalidValue);
 }
