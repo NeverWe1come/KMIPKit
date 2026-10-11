@@ -1,6 +1,6 @@
 # KMIPKIT-0017 Requirement Traceability
 
-**Status**: Planned source/spec/code/test mapping. Code and executable verification references remain pending implementation.<br>
+**Status**: Incremental traceability. The T037 source-item and derived-vector rows below have executable evidence; other entries retain their task-specific status.<br>
 **Normative source**: Pinned OASIS KMIP Specification v2.1.<br>
 **Scope count**: 15 direct catalog inventory links: 2 Get and 13 Locate. KMIPKIT-DEC-005 classifies 5 Locate rows as server-only and retires 1 false extraction; the 7 remaining Locate rows are client-applicable.
 
@@ -41,13 +41,13 @@ Catalog IDs and official case labels are separate fields. The two Get PKCS#12 fi
 
 | Catalog test ID | Official case label in catalog | Operation / evidence class | Fixture and claim |
 | --- | --- | --- | --- |
-| KMIPKIT-TEST-CN01-2-68 | TC-PKCS12-1-21 | Get / official conformance | Available pinned XML; full case not yet executed, no official pass |
-| KMIPKIT-TEST-CN01-2-69 | TC-PKCS12-2-21 | Get / official conformance | Available pinned XML; full case not yet executed, no official pass |
-| KMIPKIT-TEST-PROF-5-12-6-3 | TL-M-3-21 | Get among profile operations | Unavailable; mapping only, no profile-support claim |
-| KMIPKIT-TEST-CN01-2-62 | TC-MDO-2-21 | Locate / official conformance | Unavailable; derived criteria vector only |
-| KMIPKIT-TEST-CN01-2-63 | TC-MDO-3-21 | Locate / official conformance | Unavailable; derived attribute vector only |
-| KMIPKIT-TEST-CN01-2-64 | TC-OFFSET-1-21 | Locate / official conformance | Unavailable; derived offset vector only |
-| KMIPKIT-TEST-CN01-2-65 | TC-OFFSET-2-21 | Locate / official conformance | Unavailable; derived offset boundary vector only |
+| KMIPKIT-TEST-CN01-2-68 | TC-PKCS12-1-21 | Get / selected source item | Pinned XML request/response at correlation step 8; `pkcs12_case_1_preserves_get_item_at_correlation_step_8` checks 1 selected pair and opaque Any Object; full case not executed, no official pass |
+| KMIPKIT-TEST-CN01-2-69 | TC-PKCS12-2-21 | Get / selected source items | Pinned XML request/response pairs at correlation steps 5, 7, and 9; `pkcs12_case_2_preserves_get_items_at_correlation_steps_5_7_and_9` checks 3 selected pairs and opaque Any Objects; full case not executed, no official pass |
+| KMIPKIT-TEST-PROF-5-12-6-3 | TL-M-3-21 | Get/Locate / derived local vector | `crates/kmipkit-protocol/tests/fixtures/KMIPKIT-TEST-PROF-5-12-6-3-TL-M-3-21-derived.json`; `derived_profile_tape_library_vector_covers_only_locate_and_get_payloads`; synthetic payload evidence only, no profile-support claim |
+| KMIPKIT-TEST-CN01-2-62 | TC-MDO-2-21 | Locate / derived local vector | `crates/kmipkit-protocol/tests/fixtures/KMIPKIT-TEST-CN01-2-62-TC-MDO-2-21-derived.json`; `derived_metadata_only_case_vector_contains_a_locate_item_without_server_results`; criteria envelope only, no matching or server-return claim |
+| KMIPKIT-TEST-CN01-2-63 | TC-MDO-3-21 | Locate / derived local vector | `crates/kmipkit-protocol/tests/fixtures/KMIPKIT-TEST-CN01-2-63-TC-MDO-3-21-derived.json`; `derived_key_value_location_case_vector_contains_url_locate_criteria`; synthetic URL criterion only |
+| KMIPKIT-TEST-CN01-2-64 | TC-OFFSET-1-21 | Locate / derived local vector | `crates/kmipkit-protocol/tests/fixtures/KMIPKIT-TEST-CN01-2-64-TC-OFFSET-1-21-derived.json`; `derived_offset_case_vector_contains_locate_offset_input`; synthetic offset input only |
+| KMIPKIT-TEST-CN01-2-65 | TC-OFFSET-2-21 | Locate / derived local vector | `crates/kmipkit-protocol/tests/fixtures/KMIPKIT-TEST-CN01-2-65-TC-OFFSET-2-21-derived.json`; `derived_symmetric_key_offset_case_vector_contains_locate_offset_input`; synthetic offset input and catalog Symmetric Key context only |
 
 The implementation PR replaces planned file paths with verified symbols and tests, adds catalog implementation_refs and verification_refs only for demonstrated client obligations, regenerates coverage-report.md from the pinned repository tool, and records server-only obligations separately. Do not convert fixture availability or server behavior into a client conformance claim.
 
@@ -55,3 +55,9 @@ The implementation PR replaces planned file paths with verified symbols and test
 
 - **T030 — Get secret redaction and owned-payload zeroization:** No additional production change was required. `crates/kmipkit-protocol/tests/get_secret_handling.rs` passed 4/4, covering wrapping-field redaction, sanitized wrapping errors, owned nested Any Object data after the callback source is dropped, and redacted malformed-object errors. `crates/kmipkit-ttlv/tests/value_zeroization.rs` passed 2/2, directly verifying that TTLV payload variants and nested structures are cleared on zeroization/drop. The protocol ownership test establishes the Get copy and drop contract; the TTLV owner tests establish clearing. These local tests do not establish an official OASIS case or live-server behavior.
 - **T032 — Locate omission, unknown mask bits, and no client filtering:** No additional production change was required. `crates/kmipkit-client/tests/unit/object_read_execution_tests.rs` passed 8/8, including captured-request evidence that an omitted Storage Status Mask stays omitted, assigned and unknown mask bits reach the wire unchanged, and all server-returned identifiers remain exposed in order. This verifies client preservation only; it does not claim the server follows its own online/archived/destroyed response obligations or establish live-server behavior.
+
+## T037 fixture evidence
+
+- The pinned `TC-PKCS12-1-21.xml` request/response pair at correlation step 8 and the three `TC-PKCS12-2-21.xml` pairs at steps 5, 7, and 9 are checked by test-support unit tests. These are four selected Get item pairs total, not complete OASIS case runs. The request's explicit PKCS#12 Key Format Type is checked where present; response Any Object items are structurally/value-compared with a zeroizing clone, with constant non-payload diagnostics.
+- Five unavailable catalog mappings have one clearly labeled synthetic local TTLV vector and one executable check each, as linked in the table. Their tests validate request evidence only; they do not invent Locate matches, returned object IDs, official XML bytes, or profile behavior.
+- For source parsing only under unit-test configuration, unresolved Unique Identifier symbols are mapped to stable local text aliases. The unresolved private-key `KeyMaterial` symbol in the pinned Get response is represented as an opaque one-byte test sentinel so generic TTLV shape and clone preservation can be checked without outputting key material. The sentinel is not claimed to equal official key bytes, and no key payload is logged or interpolated into assertions.
