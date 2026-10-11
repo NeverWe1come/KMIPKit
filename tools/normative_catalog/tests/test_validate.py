@@ -7709,9 +7709,20 @@ class CatalogValidationTests(unittest.TestCase):
         self.assertEqual(identifier_review["source_obligations"][0]["candidate_requirement_id"],
                          "KMIPKIT-REQ-SPEC-6.1.55-004")
         self.assertEqual(identifier_review["source_obligations"][0]["scope_disposition"], "server_only")
+        self.assertEqual(
+            identifier_review["source_obligations"][0]["condition"],
+            "The request omits Unique Identifier and the ID Placeholder is available under KMIPKIT-CLAUSE-SPEC-6.1-002.",
+        )
+        self.assertIn("KMIPKIT-CLAUSE-SPEC-6.1-002", identifier_review["source_obligations"][0]["source_note"])
+        self.assertIn("KMIPKIT-CLAUSE-SPEC-6.1-002", identifier_review["review_note"])
         crypto_review = reviews["KMIPKIT-CLAUSE-SPEC-6.1.55-005"]
         self.assertEqual(crypto_review["source_obligations"][0]["candidate_requirement_id"],
                          "KMIPKIT-REQ-SPEC-6.1.55-005-002")
+        self.assertEqual(crypto_review["source_obligations"][0]["direction"], "server_to_client")
+        self.assertEqual(
+            crypto_review["source_obligations"][0]["condition"],
+            "No Cryptographic Parameters are associated with the Managed Cryptographic Object and the selected algorithm requires parameters.",
+        )
         self.assertEqual(crypto_review["rejected_candidate_mappings"], [{
             "requirement_id": "KMIPKIT-REQ-SPEC-6.1.55-005-001",
             "claimed_keyword": "SHALL",
@@ -7751,13 +7762,24 @@ class CatalogValidationTests(unittest.TestCase):
         clauses = {row["clause_id"]: row for row in catalog["source_clauses"] if row["clause_id"] in expected}
         self.assertEqual(clauses["KMIPKIT-CLAUSE-SPEC-6.1.55-001"]["scope_state"], "client_1_0")
         self.assertEqual(clauses["KMIPKIT-CLAUSE-SPEC-6.1.55-002"]["disposition"], "server_only")
-        self.assertEqual(clauses["KMIPKIT-CLAUSE-SPEC-6.1.55-004"]["disposition"], "server_only")
-        self.assertEqual(clauses["KMIPKIT-CLAUSE-SPEC-6.1.55-005"]["disposition"], "server_only")
-        self.assertEqual(clauses["KMIPKIT-CLAUSE-SPEC-6.1.55.1-001"]["direction"], "server_to_client")
+        for clause_id in ("KMIPKIT-CLAUSE-SPEC-6.1.55-004", "KMIPKIT-CLAUSE-SPEC-6.1.55-005"):
+            self.assertEqual(clauses[clause_id]["disposition"], "requirement")
+            self.assertEqual(clauses[clause_id]["role"], "server")
+            self.assertEqual(clauses[clause_id]["scope_state"], "server_only")
+        crypto_clause = clauses["KMIPKIT-CLAUSE-SPEC-6.1.55-005"]
+        self.assertEqual(crypto_clause["direction"], "server_to_client")
+        self.assertEqual(
+            crypto_clause["condition"],
+            "No Cryptographic Parameters are associated with the Managed Cryptographic Object and the selected algorithm requires parameters.",
+        )
+        self.assertEqual((clauses["KMIPKIT-CLAUSE-SPEC-6.1.55.1-001"]["role"],
+                          clauses["KMIPKIT-CLAUSE-SPEC-6.1.55.1-001"]["direction"]),
+                         ("server", "server_to_client"))
         crosswalk = {row["requirement_id"]: row for row in oracle["requirement_crosswalk"]}
         self.assertEqual(crosswalk["KMIPKIT-REQ-SPEC-6.1.55-001"]["source_actor"], "client")
         self.assertEqual(crosswalk["KMIPKIT-REQ-SPEC-6.1.55-004"]["source_actor"], "server")
         self.assertEqual(crosswalk["KMIPKIT-REQ-SPEC-6.1.55-005-002"]["source_actor"], "server")
+        self.assertIn("KMIPKIT-CLAUSE-SPEC-6.1-002", crosswalk["KMIPKIT-REQ-SPEC-6.1.55-004"]["review_note"])
         self.assertNotIn("KMIPKIT-REQ-SPEC-6.1.55-005-001", crosswalk)
 
         gaps = {row["gap_id"]: row for row in oracle["source_only_requirement_gaps"]
@@ -7768,6 +7790,10 @@ class CatalogValidationTests(unittest.TestCase):
             self.assertEqual(gap["actor"], "client")
             self.assertEqual(gap["scope_disposition"], "client_1_0")
             self.assertEqual(gap["status"], "stable_label_proposed_not_in_catalog")
+        identifier_gap = gaps["KMIPKIT-SOURCE-GAP-SPEC-6.1.55-UNIQUE-IDENTIFIER-OPTIONAL"]
+        self.assertIn("KMIPKIT-CLAUSE-SPEC-6.1-002", identifier_gap["condition"])
+        self.assertIn("KMIPKIT-CLAUSE-SPEC-6.1-002", identifier_gap["review_note"])
+        self.assertNotIn("only when one is valid", identifier_gap["audited_statement"])
 
         self.assertEqual([row for row in oracle["requirement_crosswalk"] if row["source_section"].startswith("6.1.55.1")], [])
         self.assertIn("Table 334: Sign Request Payload", pinned_source_excerpt(source_path, [36477, 36478]))
@@ -13070,6 +13096,7 @@ class CatalogValidationTests(unittest.TestCase):
             "KMIPKIT-REQ-SPEC-6.1.24-002",
             "KMIPKIT-REQ-SPEC-6.1.32-005",
             "KMIPKIT-REQ-SPEC-6.1.33-006",
+            "KMIPKIT-REQ-SPEC-6.1.55-003",
         }
         self.assertEqual(
             spec_proposals,
@@ -13145,6 +13172,12 @@ class CatalogValidationTests(unittest.TestCase):
                 "KMIPKIT-REQ-SPEC-6.1.51-003",
                 "KMIPKIT-REQ-SPEC-6.1.52-001",
                 "KMIPKIT-REQ-SPEC-6.1.53-001",
+            "KMIPKIT-REQ-SPEC-6.1.55-003",
+            "KMIPKIT-REQ-SPEC-6.1.55-006",
+            "KMIPKIT-REQ-SPEC-6.1.55-007",
+            "KMIPKIT-REQ-SPEC-6.1.55-008",
+            "KMIPKIT-REQ-SPEC-6.1.55-009",
+            "KMIPKIT-REQ-SPEC-6.1.55-010",
             "KMIPKIT-REQ-SPEC-6.1.14-009",
             "KMIPKIT-REQ-SPEC-6.1.14-010",
             "KMIPKIT-REQ-SPEC-6.1.14-011",
@@ -13178,11 +13211,20 @@ class CatalogValidationTests(unittest.TestCase):
             "a conditionally required field is not counted as an unconditional required body row",
         )
         for gap in conditional_body_gaps:
-            self.assertIn(gap["source_section"], {"6.1.24", "6.1.32", "6.1.33"})
+            self.assertIn(gap["source_section"], {"6.1.24", "6.1.32", "6.1.33", "6.1.55"})
             expected_label = "MAC Data" if gap["source_section"] == "6.1.33" else "Data"
             self.assertEqual(gap["source_locator"]["row_label"], expected_label)
             self.assertEqual(gap["source_excerpt"], pinned_source_excerpt(gap["source_path"], gap["html_line_range"]))
-            self.assertIn("Yes for single-part. No for multi-part.", gap["source_excerpt"])
+            if gap["source_section"] == "6.1.55":
+                self.assertEqual(
+                    gap["source_locator"]["row_label"], "Data"
+                )
+                self.assertIn(
+                    "Yes for single-part, unless Digested Data is supplied.. No for multi-part.",
+                    gap["source_excerpt"],
+                )
+            else:
+                self.assertIn("Yes for single-part. No for multi-part.", gap["source_excerpt"])
             self.assertEqual(gap["source_keywords"], [])
             self.assertEqual(gap["actor"], "client")
             self.assertEqual(gap["scope_disposition"], "client_1_0")
