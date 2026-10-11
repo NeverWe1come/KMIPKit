@@ -5,6 +5,7 @@ from __future__ import annotations
 import json
 import unittest
 
+from tools.normative_catalog.audit_sources import audit_document
 from tools.normative_catalog.tests.test_validate import ROOT
 
 
@@ -53,6 +54,28 @@ class RequirementSourceReferenceTests(unittest.TestCase):
         self.assertEqual(requirement["scope_state"], "out_of_scope")
         self.assertNotIn("currently says client", source_review["review_note"])
         self.assertIn("retired", source_review["review_note"])
+
+    def test_profile_clause_keyword_inventory_matches_pinned_source_without_changing_requirement(self) -> None:
+        catalog = json.loads(
+            (ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8")
+        )
+        source_id = "KMIPKIT-SRC-profiles"
+        clause_id = "KMIPKIT-CLAUSE-PROF-4.1.2-007"
+        source_path = ROOT / "specification" / "oasis" / "kmip-2.1" / "upstream" / "kmip-profiles-v2.1-os.html"
+        audited_clause = next(
+            item for item in audit_document(source_path.read_bytes(), source_id) if item["clause_id"] == clause_id
+        )
+        catalog_clause = next(
+            item for item in catalog["source_clauses"] if item["clause_id"] == clause_id
+        )
+        requirement = next(
+            item
+            for item in catalog["requirements"]
+            if item["requirement_id"] == "KMIPKIT-REQ-PROF-4.1.2-007"
+        )
+
+        self.assertEqual(catalog_clause["source_keywords"], audited_clause["source_keywords"])
+        self.assertEqual(requirement["source_keyword"], "MAY")
 
 
 if __name__ == "__main__":
