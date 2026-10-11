@@ -5,7 +5,9 @@
 //! pinned fixtures, so these are source-derived tests, not official fixture
 //! executions. Shared Pending and delivery behavior follows §§8.6, 9.1, 9.2.
 
-use kmipkit_protocol::{AttributeSet, CreateRequest, ObjectType, RekeyRequest, UniqueIdentifier};
+use kmipkit_protocol::{
+    AttributeSet, CheckRequest, CreateRequest, ObjectType, RekeyRequest, UniqueIdentifier,
+};
 use kmipkit_test_support::ExchangeScript;
 use kmipkit_transport::RequestDeliveryState;
 use kmipkit_ttlv::codec::{CodecLimits, decode};
@@ -22,6 +24,7 @@ use crate::{
 
 const REKEY_OPERATION: u32 = 0x0000_0004;
 const CREATE_OPERATION: u32 = 0x0000_0001;
+const CHECK_OPERATION: u32 = 0x0000_0009;
 const BATCH_ITEM: u32 = 0x0042_000F;
 const OPERATION: u32 = 0x0042_005C;
 const REQUEST_PAYLOAD: u32 = 0x0042_0079;
@@ -204,7 +207,8 @@ fn rekey_pending_preserves_correlation_without_implicit_poll() {
         request_write_chunks: Vec::new(),
     });
     let batch = ClientBatch::new(ClientBatchItem::new(ClientRequest::Rekey(
-        RekeyRequest::new(),
+        RekeyRequest::new()
+            .with_unique_identifier(UniqueIdentifier::TextString("existing-key".to_owned())),
     )))
     .with_asynchronous_indicator(1);
 
@@ -271,6 +275,34 @@ fn rekey_can_consume_a_preceding_successful_create_placeholder() {
     assert_eq!(
         request_fields(request, 1),
         (Some(REKEY_OPERATION), Vec::new())
+    );
+    assert_eq!(fake.borrow().exchange_count(), 1);
+}
+
+#[test]
+fn rekey_can_produce_the_placeholder_for_a_later_check() {
+    let (mut client, fake, captured) = client_for(ExchangeScript::FailBeforeWrite);
+    let batch = ClientBatch::from_items([
+        ClientBatchItem::new(ClientRequest::Rekey(rekey_request()))
+            .with_unique_batch_item_id(b"rekey-item".to_vec()),
+        ClientBatchItem::new(ClientRequest::Check(CheckRequest::new()))
+            .with_unique_batch_item_id(b"check-item".to_vec()),
+    ]);
+
+    let error = client
+        .execute(batch, &CodecLimits::defaults())
+        .expect_err("the fake transport stops the exchange before any bytes are sent");
+
+    assert_eq!(error.category(), ClientErrorCategory::Transport);
+    assert_eq!(error.delivery_state(), Some(RequestDeliveryState::NotSent));
+    let captured_request = captured.borrow();
+    let request = captured_request
+        .as_deref()
+        .expect("the Re-key and Check batch reaches the fake transport");
+    assert_eq!(
+        request_fields(request, 1),
+        (Some(CHECK_OPERATION), Vec::new()),
+        "§4.1.2 allows the next operation to use Re-key's returned ID Placeholder"
     );
     assert_eq!(fake.borrow().exchange_count(), 1);
 }
