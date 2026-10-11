@@ -65690,7 +65690,9 @@
           "condition": "Errors are detected during Set Defaults.",
           "scope_disposition": "server_only",
           "candidate_requirement_id": null,
-          "source_note": "The sentence continues in the adjacent paragraph as “Defaults Operation.” The actor and response direction follow from the Result Reasons returned for errors; accepted KMIPKIT-DEC-006 associates this table with Set Defaults."
+          "source_note": "The sentence continues in the adjacent paragraph as “Defaults Operation.” The actor and response direction follow from the Result Reasons returned for errors; accepted KMIPKIT-DEC-006 associates this table with Set Defaults.",
+          "source_order": 1,
+          "source_text": "This section details the specific Result Reasons that SHALL be returned for errors detected in a Set Defaults Operation."
         }
       ],
       "rejected_candidate_mappings": [],
