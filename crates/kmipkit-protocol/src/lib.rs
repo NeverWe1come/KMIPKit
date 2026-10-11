@@ -73,6 +73,9 @@ mod set_defaults;
 #[cfg(test)]
 #[path = "../tests/unit/set_defaults_tests.rs"]
 mod set_defaults_tests;
+#[cfg(test)]
+#[path = "../tests/unit/set_endpoint_role_tests.rs"]
+mod set_endpoint_role_tests;
 mod sign;
 mod signature_verify;
 mod ticket;

@@ -216,6 +216,9 @@ mod set_constraints_execution_tests;
 #[cfg(test)]
 #[path = "../tests/unit/set_defaults_execution_tests.rs"]
 mod set_defaults_execution_tests;
+#[cfg(test)]
+#[path = "../tests/unit/set_endpoint_role_execution_tests.rs"]
+mod set_endpoint_role_execution_tests;
 
 #[cfg(test)]
 #[path = "../tests/unit/usage_allocation_guard_tests.rs"]
