@@ -120,6 +120,10 @@ mod certify_execution_tests;
 mod check_execution_tests;
 
 #[cfg(test)]
+#[path = "../tests/unit/obtain_lease_execution_tests.rs"]
+mod obtain_lease_execution_tests;
+
+#[cfg(test)]
 #[path = "../tests/unit/destroy_execution_tests.rs"]
 mod destroy_execution_tests;
 
