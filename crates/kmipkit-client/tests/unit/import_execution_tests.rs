@@ -30,11 +30,24 @@ fn attributes() -> AttributeSet {
 }
 
 fn object() -> Item {
+    let wrapping_data = test_structure([
+        test_item(0x0042_009E, Value::enumeration(1)),
+        test_item(
+            0x0042_0036,
+            Value::structure(test_structure([test_item(
+                0x0042_0094,
+                Value::text_string("wrapping-key".to_owned()),
+            )])),
+        ),
+    ]);
     let key_value = test_structure([test_item(
         0x0042_0043,
         Value::byte_string(b"synthetic-import-object".to_vec()),
     )]);
-    let key_block = test_structure([test_item(0x0042_0045, Value::structure(key_value))]);
+    let key_block = test_structure([
+        test_item(0x0042_0045, Value::structure(key_value)),
+        test_item(0x0042_0046, Value::structure(wrapping_data)),
+    ]);
     test_item(
         0x0042_008F,
         Value::structure(test_structure([test_item(

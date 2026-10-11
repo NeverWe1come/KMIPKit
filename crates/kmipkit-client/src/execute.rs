@@ -21,17 +21,17 @@ use kmipkit_protocol::{
     DeriveKeyRequest, DeriveKeyResponse, DestroyRequest, DestroyResponse, DiscoverVersionsRequest,
     DiscoverVersionsResponse, EncryptRequest, EncryptResponse, ExportRequest, ExportResponse,
     GetAttributeListRequest, GetAttributeListResponse, GetAttributesRequest, GetAttributesResponse,
-    GetRequest, GetResponse, HashRequest, HashResponse, KmipOperationResult, LocateRequest,
-    LocateResponse, MacRequest, MacResponse, MacVerifyRequest, MacVerifyResponse,
-    MessageExtensionView, ModifyAttributeRequest, ModifyAttributeResponse, NewAttribute,
-    ObtainLeaseRequest, ObtainLeaseResponse, PingRequest, PingResponse, PollRequest, PollResponse,
-    ProcessRequest, ProcessResponse, ProtocolCauseCategory, ProtocolError, ProtocolErrorKind,
-    ProtocolVersion, QueryAsyncRequestsRequest, QueryAsyncRequestsResponse, QueryRequest,
-    QueryResponse, ReProvisionRequest, ReProvisionResponse, RecertifyRequest, RecertifyResponse,
-    RecoverRequest, RecoverResponse, RegisterRequest, RegisterResponse, RekeyKeyPairRequest,
-    RekeyKeyPairResponse, RekeyRequest, RekeyResponse, RequestMessage, ResponseBatchItemView,
-    ResponseMessage, ResultStatus, RevokeRequest, RevokeResponse, SetAttributeRequest,
-    SetAttributeResponse, SignRequest, SignResponse, SignatureVerifyRequest,
+    GetRequest, GetResponse, HashRequest, HashResponse, ImportRequest, ImportResponse,
+    KmipOperationResult, LocateRequest, LocateResponse, MacRequest, MacResponse, MacVerifyRequest,
+    MacVerifyResponse, MessageExtensionView, ModifyAttributeRequest, ModifyAttributeResponse,
+    NewAttribute, ObtainLeaseRequest, ObtainLeaseResponse, PingRequest, PingResponse, PollRequest,
+    PollResponse, ProcessRequest, ProcessResponse, ProtocolCauseCategory, ProtocolError,
+    ProtocolErrorKind, ProtocolVersion, QueryAsyncRequestsRequest, QueryAsyncRequestsResponse,
+    QueryRequest, QueryResponse, ReProvisionRequest, ReProvisionResponse, RecertifyRequest,
+    RecertifyResponse, RecoverRequest, RecoverResponse, RegisterRequest, RegisterResponse,
+    RekeyKeyPairRequest, RekeyKeyPairResponse, RekeyRequest, RekeyResponse, RequestMessage,
+    ResponseBatchItemView, ResponseMessage, ResultStatus, RevokeRequest, RevokeResponse,
+    SetAttributeRequest, SetAttributeResponse, SignRequest, SignResponse, SignatureVerifyRequest,
     SignatureVerifyResponse,
 };
 
@@ -127,6 +127,7 @@ const ENCRYPT_OPERATION: u32 = 0x0000_001F; // KMIP v2.1 §6.1.17, Table 214.
 const DECRYPT_OPERATION: u32 = 0x0000_0020; // KMIP v2.1 §6.1.11, Table 196.
 const DERIVE_KEY_OPERATION: u32 = 0x0000_0005; // KMIP v2.1 §6.1.14, Table 205.
 const EXPORT_OPERATION: u32 = 0x0000_002B; // KMIP v2.1 §6.1.18, Table 217.
+const IMPORT_OPERATION: u32 = 0x0000_002A; // KMIP v2.1 §§6.1.25, 11.36, Tables 238, 470.
 const HASH_OPERATION: u32 = 0x0000_0027; // KMIP v2.1 §6.1.24, Table 235.
 const MAC_OPERATION: u32 = 0x0000_0023; // KMIP v2.1 §6.1.32, Table 259.
 const MAC_VERIFY_OPERATION: u32 = 0x0000_0024; // KMIP v2.1 §6.1.33, Table 262.
@@ -147,7 +148,7 @@ const CREATE_SPLIT_KEY_OPERATION: u32 = 0x0000_0028; // KMIP v2.1 §11.36, Table
 const ACTIVATE_OPERATION: u32 = 0x0000_0012; // KMIP v2.1 §6.1.1, Table 164.
 const ARCHIVE_OPERATION: u32 = 0x0000_0015; // KMIP v2.1 §6.1.4, Table 173.
 const DESTROY_OPERATION: u32 = 0x0000_0014; // KMIP v2.1 §6.1.15, Table 208.
-const RECOVER_OPERATION: u32 = 0x0000_002A; // KMIP v2.1 §6.1.42, Table 288.
+const RECOVER_OPERATION: u32 = 0x0000_0016; // KMIP v2.1 §§6.1.42, 11.36, Tables 288, 470.
 const ADD_ATTRIBUTE_OPERATION: u32 = 0x0000_000D;
 const MODIFY_ATTRIBUTE_OPERATION: u32 = 0x0000_000E;
 const DELETE_ATTRIBUTE_OPERATION: u32 = 0x0000_000F;
@@ -237,6 +238,8 @@ pub enum ClientRequest {
     DeriveKey(DeriveKeyRequest),
     /// An explicit client-to-server Export request.
     Export(ExportRequest),
+    /// An explicit client-to-server Import request.
+    Import(ImportRequest),
     /// An explicit client-to-server Hash request.
     Hash(HashRequest),
     /// An explicit client-to-server MAC request.
@@ -290,6 +293,12 @@ impl ClientRequest {
     #[must_use]
     pub fn export(request: ExportRequest) -> Self {
         Self::Export(request)
+    }
+
+    /// Creates a typed client-to-server Import request variant.
+    #[must_use]
+    pub fn import(request: ImportRequest) -> Self {
+        Self::Import(request)
     }
 
     /// Creates a typed client-to-server Hash request variant.
@@ -488,6 +497,7 @@ impl ClientRequest {
             Self::Decrypt(_) => DECRYPT_OPERATION,
             Self::DeriveKey(_) => DERIVE_KEY_OPERATION,
             Self::Export(_) => EXPORT_OPERATION,
+            Self::Import(_) => IMPORT_OPERATION,
             Self::Hash(_) => HASH_OPERATION,
             Self::Mac(_) => MAC_OPERATION,
             Self::MacVerify(_) => MAC_VERIFY_OPERATION,
@@ -544,6 +554,7 @@ impl ClientRequest {
                 | Self::Recertify(_)
                 | Self::Rekey(_)
                 | Self::RekeyKeyPair(_)
+                | Self::Import(_)
                 | Self::Register(_)
         )
     }
@@ -582,6 +593,7 @@ impl ClientRequest {
             Self::Decrypt(request) => request.to_ttlv_payload(),
             Self::DeriveKey(request) => request.into_ttlv_payload(),
             Self::Export(request) => request.into_ttlv_payload(),
+            Self::Import(request) => request.into_ttlv_payload(),
             Self::Hash(request) => request.to_ttlv_payload(),
             Self::Mac(request) => request.to_ttlv_payload(),
             Self::MacVerify(request) => request.to_ttlv_payload(),
@@ -639,6 +651,7 @@ impl fmt::Debug for ClientRequest {
             Self::Decrypt(_) => formatter.write_str("Decrypt([REDACTED])"),
             Self::DeriveKey(request) => formatter.debug_tuple("DeriveKey").field(request).finish(),
             Self::Export(_) => formatter.write_str("Export([REDACTED])"),
+            Self::Import(request) => formatter.debug_tuple("Import").field(request).finish(),
             Self::Hash(request) => formatter.debug_tuple("Hash").field(request).finish(),
             Self::Mac(request) => formatter.debug_tuple("MAC").field(request).finish(),
             Self::MacVerify(request) => formatter.debug_tuple("MAC Verify").field(request).finish(),
@@ -913,6 +926,7 @@ enum PendingResponse {
     Decrypt(DecryptResponse),
     DeriveKey(DeriveKeyResponse),
     Export(ExportResponse),
+    Import(ImportResponse),
     Hash(HashResponse),
     Mac(MacResponse),
     MacVerify(MacVerifyResponse),
@@ -955,6 +969,7 @@ impl PendingResponse {
             Self::Decrypt(response) => ClientResponseRef::Decrypt(response),
             Self::DeriveKey(response) => ClientResponseRef::DeriveKey(response),
             Self::Export(response) => ClientResponseRef::Export(response),
+            Self::Import(response) => ClientResponseRef::Import(response),
             Self::Hash(response) => ClientResponseRef::Hash(response),
             Self::Mac(response) => ClientResponseRef::Mac(response),
             Self::MacVerify(response) => ClientResponseRef::MacVerify(response),
@@ -1202,6 +1217,8 @@ pub enum ClientOperation {
     DeriveKey,
     /// Export an object using caller-selected format and wrapping options.
     Export,
+    /// Import caller-provided object material and attributes to the KMIP server.
+    Import,
     /// Hash data through the selected server-side operation.
     Hash,
     /// Calculate a MAC through the selected server-side object.
@@ -1349,6 +1366,7 @@ enum ClientResponseRef<'a> {
     Decrypt(&'a DecryptResponse),
     DeriveKey(&'a DeriveKeyResponse),
     Export(&'a ExportResponse),
+    Import(&'a ImportResponse),
     Hash(&'a HashResponse),
     Mac(&'a MacResponse),
     MacVerify(&'a MacVerifyResponse),
@@ -1408,6 +1426,7 @@ impl<'a> ClientResponseView<'a> {
             ClientResponseRef::Decrypt(response) => response.result(),
             ClientResponseRef::DeriveKey(response) => response.result(),
             ClientResponseRef::Export(response) => response.result(),
+            ClientResponseRef::Import(response) => response.result(),
             ClientResponseRef::Hash(response) => response.result(),
             ClientResponseRef::Mac(response) => response.result(),
             ClientResponseRef::MacVerify(response) => response.result(),
@@ -1495,6 +1514,15 @@ impl<'a> ClientResponseView<'a> {
     pub const fn export(&self) -> Option<&'a ExportResponse> {
         match self.response {
             ClientResponseRef::Export(response) => Some(response),
+            _ => None,
+        }
+    }
+
+    /// Returns the Import response when this view represents one.
+    #[must_use]
+    pub const fn import(&self) -> Option<&'a ImportResponse> {
+        match self.response {
+            ClientResponseRef::Import(response) => Some(response),
             _ => None,
         }
     }
@@ -1808,6 +1836,9 @@ impl fmt::Debug for ClientResponseView<'_> {
             ClientResponseRef::Export(response) => {
                 debug_operation_response(formatter, "Export", response)
             }
+            ClientResponseRef::Import(response) => {
+                debug_operation_response(formatter, "Import", response)
+            }
             ClientResponseRef::Hash(response) => {
                 debug_operation_response(formatter, "Hash", response)
             }
@@ -1931,6 +1962,8 @@ pub enum ClientBatchOutcome {
     DeriveKey(DeriveKeyResponse),
     /// The server returned an Export result.
     Export(ExportResponse),
+    /// The server returned an Import result.
+    Import(ImportResponse),
     /// The server returned a Hash result.
     Hash(HashResponse),
     /// The server returned a MAC result.
@@ -2000,6 +2033,7 @@ impl ClientBatchOutcome {
             | Self::Decrypt(_)
             | Self::DeriveKey(_)
             | Self::Export(_)
+            | Self::Import(_)
             | Self::Hash(_)
             | Self::Mac(_)
             | Self::MacVerify(_)
@@ -2045,6 +2079,7 @@ impl ClientBatchOutcome {
             Self::Decrypt(response) => response.result(),
             Self::DeriveKey(response) => response.result(),
             Self::Export(response) => response.result(),
+            Self::Import(response) => response.result(),
             Self::Hash(response) => response.result(),
             Self::Mac(response) => response.result(),
             Self::MacVerify(response) => response.result(),
@@ -2090,6 +2125,7 @@ impl ClientBatchOutcome {
             Self::Decrypt(_) => ClientOperation::Decrypt,
             Self::DeriveKey(_) => ClientOperation::DeriveKey,
             Self::Export(_) => ClientOperation::Export,
+            Self::Import(_) => ClientOperation::Import,
             Self::Hash(_) => ClientOperation::Hash,
             Self::Mac(_) => ClientOperation::Mac,
             Self::MacVerify(_) => ClientOperation::MacVerify,
@@ -2390,6 +2426,21 @@ impl ClientBatchOutcome {
         }
     }
 
+    /// Returns the typed Import response, including when its result is Pending.
+    #[must_use]
+    pub const fn import_response(&self) -> Option<&ImportResponse> {
+        match self {
+            Self::Import(response) => Some(response),
+            Self::Pending(pending) => match pending.response() {
+                ClientResponseView {
+                    response: ClientResponseRef::Import(response),
+                } => Some(response),
+                _ => None,
+            },
+            _ => None,
+        }
+    }
+
     /// Returns the typed Hash response, when this is one.
     #[must_use]
     pub const fn hash_response(&self) -> Option<&HashResponse> {
@@ -2476,6 +2527,7 @@ impl ClientBatchOutcome {
                 ClientResponseView::new(ClientResponseRef::DeriveKey(response))
             }
             Self::Export(response) => ClientResponseView::new(ClientResponseRef::Export(response)),
+            Self::Import(response) => ClientResponseView::new(ClientResponseRef::Import(response)),
             Self::Hash(response) => ClientResponseView::new(ClientResponseRef::Hash(response)),
             Self::Mac(response) => ClientResponseView::new(ClientResponseRef::Mac(response)),
             Self::MacVerify(response) => {
@@ -2580,6 +2632,7 @@ impl fmt::Debug for ClientBatchOutcome {
                 formatter.debug_tuple("DeriveKey").field(response).finish()
             }
             Self::Export(response) => formatter.debug_tuple("Export").field(response).finish(),
+            Self::Import(response) => formatter.debug_tuple("Import").field(response).finish(),
             Self::Hash(response) => formatter.debug_tuple("Hash").field(response).finish(),
             Self::Mac(response) => formatter.debug_tuple("MAC").field(response).finish(),
             Self::MacVerify(response) => {
@@ -2649,6 +2702,7 @@ impl fmt::Display for ClientBatchOutcome {
             Self::Decrypt(response) => write!(formatter, "Decrypt({})", response.result()),
             Self::DeriveKey(response) => write!(formatter, "Derive Key({})", response.result()),
             Self::Export(response) => write!(formatter, "Export({})", response.result()),
+            Self::Import(response) => write!(formatter, "Import({})", response.result()),
             Self::Hash(response) => write!(formatter, "Hash({})", response.result()),
             Self::Mac(response) => write!(formatter, "MAC({})", response.result()),
             Self::MacVerify(response) => write!(formatter, "MAC Verify({})", response.result()),
@@ -3708,6 +3762,35 @@ impl Client {
         self.execute_one_typed_request(ClientRequest::Export(request), limits, options)
     }
 
+    /// Executes one typed Import request without locally importing or unwrapping the object.
+    ///
+    /// This method makes one server exchange and never retries.
+    ///
+    /// # Errors
+    /// Returns a sanitized validation, protocol, or transport error with the
+    /// strongest available request-delivery evidence.
+    pub fn import(
+        &mut self,
+        request: ImportRequest,
+        limits: &CodecLimits,
+    ) -> Result<ClientBatchItemResponse, ClientError> {
+        self.import_with_options(request, limits, &RequestOptions::default())
+    }
+
+    /// Executes one typed Import request with transport timeout overrides.
+    ///
+    /// # Errors
+    /// Returns a sanitized validation, protocol, or transport error with the
+    /// strongest available request-delivery evidence.
+    pub fn import_with_options(
+        &mut self,
+        request: ImportRequest,
+        limits: &CodecLimits,
+        options: &RequestOptions,
+    ) -> Result<ClientBatchItemResponse, ClientError> {
+        self.execute_one_typed_request(ClientRequest::Import(request), limits, options)
+    }
+
     /// Executes one Hash request through the shared writer and performs one
     /// exchange without calculating a hash locally or retrying.
     ///
@@ -4634,6 +4717,7 @@ fn request_mutation_is_prohibited(request: &ClientRequest) -> bool {
         | ClientRequest::Decrypt(_)
         | ClientRequest::DeriveKey(_)
         | ClientRequest::Export(_)
+        | ClientRequest::Import(_)
         | ClientRequest::Hash(_)
         | ClientRequest::Mac(_)
         | ClientRequest::MacVerify(_)
@@ -5234,6 +5318,7 @@ fn response_outcome(
             lifecycle_response_outcome(operation, item)
         }
         DERIVE_KEY_OPERATION | EXPORT_OPERATION => key_material_response_outcome(operation, item),
+        IMPORT_OPERATION => import_response_outcome(item),
         ARCHIVE_OPERATION => read_operation_outcome(
             ClientOperation::Archive,
             item,
@@ -5533,6 +5618,19 @@ fn export_response_outcome(
         ExportResponse::result,
         PendingResponse::Export,
         ClientBatchOutcome::Export,
+    )
+}
+
+fn import_response_outcome(
+    item: ResponseBatchItemView<'_>,
+) -> Result<ClientBatchOutcome, ProtocolError> {
+    read_operation_outcome(
+        ClientOperation::Import,
+        item,
+        ImportResponse::try_from_response_item,
+        ImportResponse::result,
+        PendingResponse::Import,
+        ClientBatchOutcome::Import,
     )
 }
 

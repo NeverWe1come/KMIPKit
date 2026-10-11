@@ -73,7 +73,7 @@ Tasks below include Red tests against exact table shape, Green model/dispatch, a
 | §6.1.25 Table 238 — Any Object | Required; wrapped object/Attributes remain as supplied. | T012–T014; stable ID KMIPKIT-REQ-SPEC-6.1.25-006 |
 | §6.1.25 Table 239 — Unique Identifier | Required on success. | T012–T014 |
 | §6.1.25 Table 240 — operation errors | Preserve server Operation Failed result reasons via common result path. | T012–T014 |
-| §11.36 Table 470 — Import / Recover operation values | Import is `0x2A` (`KMIPKIT-ELEM-ENUM-VALUE-OPERATION-IMPORT-0000002A`); Recover is `0x16` (`KMIPKIT-ELEM-ENUM-VALUE-OPERATION-RECOVER-00000016`). | T012–T014 Import fake transport and `recover_execution_tests::recover_operation_code_matches_kmip_table_470`; prevents code collision. |
+| §11.36 Table 470 — Import / Recover operation values | Import is `0x2A` (`KMIPKIT-ELEM-ENUM-VALUE-OPERATION-IMPORT-0000002A`); Recover is `0x16` (`KMIPKIT-ELEM-ENUM-VALUE-OPERATION-RECOVER-00000016`). | T012–T014 Import model/fake transport; `crates/kmipkit-protocol/src/recover.rs`, `recover_operation_tests`, and `recover_execution_tests::recover_wire_code_matches_kmip_table_470`; prevents code collision. |
 | §6.1.27 Table 244 — Object Type | Required. | T015–T017 |
 | §6.1.27 Table 244 — Unique Identifier | Required; may repeat; entry count and exact order/repetition are preserved. | T015–T017; stable IDs KMIPKIT-REQ-SPEC-6.1.27-001/-005 |
 | §6.1.27 Table 244 — Secret Data Type | Optional. | T015–T017; stable ID KMIPKIT-REQ-SPEC-6.1.27-002-002 |

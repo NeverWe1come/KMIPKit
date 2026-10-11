@@ -10,7 +10,7 @@ use crate::{
     ResultValidationError, UniqueIdentifier,
 };
 
-const RECOVER_OPERATION: u32 = 0x0000_002A;
+const RECOVER_OPERATION: u32 = 0x0000_0016; // KMIP v2.1 §11.36, Table 470.
 const SUCCESS: u32 = 0;
 
 /// A typed KMIP 2.1 Recover request payload from §6.1.42, Table 288.
@@ -65,7 +65,7 @@ pub struct RecoverResponse {
 impl RecoverResponse {
     /// Converts one already validated KMIP response batch item.
     ///
-    /// The item must identify the client-to-server Recover operation (`0x2A`).
+    /// The item must identify the client-to-server Recover operation (`0x16`).
     /// Successful payload parsing requires exactly one Unique Identifier in a
     /// form permitted by §4.58 Tables 145–146. Unknown fields remain available
     /// from the original response message.

@@ -83,7 +83,7 @@ fn lifecycle_results_preserve_unknown_status_reason_and_accepted_extension_value
             ClientRequest::Destroy(DestroyRequest::new(None)),
         ),
         (
-            0x0000_002A,
+            0x0000_0016,
             ClientRequest::Recover(RecoverRequest::new(None)),
         ),
     ];

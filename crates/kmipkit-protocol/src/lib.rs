@@ -35,6 +35,7 @@ mod get;
 mod get_attribute_list;
 mod get_attributes;
 mod hash;
+mod import;
 mod lifecycle;
 mod locate;
 mod mac;
@@ -107,6 +108,7 @@ pub use get_attribute_list::{
 };
 pub use get_attributes::{GetAttributesError, GetAttributesRequest, GetAttributesResponse};
 pub use hash::{HashError, HashRequest, HashResponse};
+pub use import::{ImportError, ImportRequest, ImportResponse};
 pub use locate::{
     LocateError, LocateRequest, LocateResponse, ObjectGroupMember, StorageStatusMask,
 };
