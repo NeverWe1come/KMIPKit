@@ -65,6 +65,10 @@ mod hash_mac_signature_execution_tests;
 // Temporarily disabled while operation-specific Red/Green slices are exercised.
 
 #[cfg(test)]
+#[path = "../tests/unit/derive_key_execution_tests.rs"]
+mod derive_key_execution_tests;
+
+#[cfg(test)]
 #[path = "../tests/unit/hash_execution_tests.rs"]
 mod hash_execution_tests;
 
