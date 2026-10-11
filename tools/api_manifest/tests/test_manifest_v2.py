@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import re
 import unittest
 from pathlib import Path
 
@@ -334,6 +335,63 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
         self.assertEqual(batch_extension["declarationState"], "declared")
         native_handle = by_name["org.kmipkit.internal.NativeHandle"]
         self.assertEqual(native_handle["declarationState"], "blocked")
+
+    def test_checked_in_manifest_accounts_for_every_c_header_declaration(self) -> None:
+        header = (ROOT / "bindings" / "c" / "include" / "kmipkit.h").read_text(
+            encoding="utf-8"
+        )
+        declarations = self.declarations_for_package("c-kmipkit")
+        by_kind = {
+            kind: {item["exportName"] for item in declarations if item["kind"] == kind}
+            for kind in {item["kind"] for item in declarations}
+        }
+
+        header_functions = set(
+            re.findall(
+                r"^(?:void|int32_t)\s+(kmipkit_[A-Za-z0-9_]+)\s*\(",
+                header,
+                re.MULTILINE,
+            )
+        )
+        self.assertEqual(header_functions, by_kind["c-symbol"])
+
+        header_types = set(
+            re.findall(r"^typedef struct \w+\s+(kmipkit_\w+);$", header, re.MULTILINE)
+        )
+        header_types.update(
+            re.findall(r"^typedef uint8_t (kmipkit_\w+);$", header, re.MULTILINE)
+        )
+        header_types.update(
+            re.findall(r"^} (kmipkit_\w+);$", header, re.MULTILINE)
+        )
+        self.assertEqual(header_types, by_kind["type"])
+
+        limits_match = re.search(
+            r"typedef struct \{(?P<body>.*?)\} kmipkit_extension_registry_limits_t;",
+            header,
+            re.DOTALL,
+        )
+        self.assertIsNotNone(limits_match)
+        assert limits_match is not None
+        header_fields = {
+            f"kmipkit_extension_registry_limits_t.{name}"
+            for name in re.findall(
+                r"^\s*uint64_t (\w+);$", limits_match["body"], re.MULTILINE
+            )
+        }
+        self.assertEqual(header_fields, by_kind["field"])
+
+        header_ttlv_macros = set(
+            re.findall(r"^#define (KMIPKIT_TTLV_ITEM_TYPE_\w+)", header, re.MULTILINE)
+        )
+        self.assertEqual(header_ttlv_macros, by_kind["macro"])
+        header_error_macros = set(
+            re.findall(r"^#define (KMIPKIT_ERROR_\w+)", header, re.MULTILINE)
+        )
+        manifest_error_macros = {
+            item["cCode"] for item in self.checked_in_manifest["errorCategories"]
+        }
+        self.assertEqual(header_error_macros, manifest_error_macros)
 
     def test_checked_in_manifest_inventories_python_exports_and_lifecycle(self) -> None:
         declarations = self.declarations_for_package("python-kmipkit")
