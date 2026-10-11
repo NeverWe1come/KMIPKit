@@ -14,20 +14,21 @@ use kmipkit_protocol::{
     ActivateRequest, ActivateResponse, AddAttributeRequest, AddAttributeResponse,
     AdjustAttributeRequest, AdjustAttributeResponse, ArchiveRequest, ArchiveResponse,
     AsynchronousOperationError, AttributeReference, CancelRequest, CancelResponse,
-    CancellationResult, CreateKeyPairRequest, CreateKeyPairResponse, CreateRequest, CreateResponse,
-    CreateSplitKeyRequest, CreateSplitKeyResponse, CryptographicOperationResponseContext,
-    DecryptRequest, DecryptResponse, DeleteAttributeRequest, DeleteAttributeResponse,
-    DestroyRequest, DestroyResponse, DiscoverVersionsRequest, DiscoverVersionsResponse,
-    EncryptRequest, EncryptResponse, GetAttributeListRequest, GetAttributeListResponse,
-    GetAttributesRequest, GetAttributesResponse, GetRequest, GetResponse, HashRequest,
-    HashResponse, KmipOperationResult, LocateRequest, LocateResponse, MacRequest, MacResponse,
-    MacVerifyRequest, MacVerifyResponse, MessageExtensionView, ModifyAttributeRequest,
-    ModifyAttributeResponse, NewAttribute, PingRequest, PingResponse, PollRequest, PollResponse,
-    ProcessRequest, ProcessResponse, ProtocolCauseCategory, ProtocolError, ProtocolErrorKind,
-    ProtocolVersion, QueryAsyncRequestsRequest, QueryAsyncRequestsResponse, QueryRequest,
-    QueryResponse, RecoverRequest, RecoverResponse, RequestMessage, ResponseBatchItemView,
-    ResponseMessage, ResultStatus, SetAttributeRequest, SetAttributeResponse, SignRequest,
-    SignResponse, SignatureVerifyRequest, SignatureVerifyResponse,
+    CancellationResult, CertifyRequest, CertifyResponse, CreateKeyPairRequest,
+    CreateKeyPairResponse, CreateRequest, CreateResponse, CreateSplitKeyRequest,
+    CreateSplitKeyResponse, CryptographicOperationResponseContext, DecryptRequest, DecryptResponse,
+    DeleteAttributeRequest, DeleteAttributeResponse, DestroyRequest, DestroyResponse,
+    DiscoverVersionsRequest, DiscoverVersionsResponse, EncryptRequest, EncryptResponse,
+    GetAttributeListRequest, GetAttributeListResponse, GetAttributesRequest, GetAttributesResponse,
+    GetRequest, GetResponse, HashRequest, HashResponse, KmipOperationResult, LocateRequest,
+    LocateResponse, MacRequest, MacResponse, MacVerifyRequest, MacVerifyResponse,
+    MessageExtensionView, ModifyAttributeRequest, ModifyAttributeResponse, NewAttribute,
+    PingRequest, PingResponse, PollRequest, PollResponse, ProcessRequest, ProcessResponse,
+    ProtocolCauseCategory, ProtocolError, ProtocolErrorKind, ProtocolVersion,
+    QueryAsyncRequestsRequest, QueryAsyncRequestsResponse, QueryRequest, QueryResponse,
+    RecoverRequest, RecoverResponse, RequestMessage, ResponseBatchItemView, ResponseMessage,
+    ResultStatus, SetAttributeRequest, SetAttributeResponse, SignRequest, SignResponse,
+    SignatureVerifyRequest, SignatureVerifyResponse,
 };
 
 #[cfg(test)]
@@ -115,6 +116,7 @@ const MAC_VERIFY_OPERATION: u32 = 0x0000_0024; // KMIP v2.1 §6.1.33, Table 262.
 const SIGN_OPERATION: u32 = 0x0000_0021; // KMIP v2.1 §6.1.55, Table 334.
 const SIGNATURE_VERIFY_OPERATION: u32 = 0x0000_0022; // KMIP v2.1 §6.1.56, Table 337.
 const CREATE_OPERATION: u32 = 0x0000_0001;
+const CERTIFY_OPERATION: u32 = 0x0000_0006; // KMIP v2.1 §6.1.6, Table 179.
 const CREATE_KEY_PAIR_OPERATION: u32 = 0x0000_0002;
 const CREATE_SPLIT_KEY_OPERATION: u32 = 0x0000_0028; // KMIP v2.1 §11.36, Table 470.
 const ACTIVATE_OPERATION: u32 = 0x0000_0012; // KMIP v2.1 §6.1.1, Table 164.
@@ -152,6 +154,8 @@ pub enum ClientRequest {
     Activate(ActivateRequest),
     /// An explicit client-to-server Archive request.
     Archive(ArchiveRequest),
+    /// An explicit client-to-server Certify request.
+    Certify(CertifyRequest),
     /// An explicit client-to-server Destroy request.
     Destroy(DestroyRequest),
     /// An explicit client-to-server Recover request.
@@ -273,6 +277,12 @@ impl ClientRequest {
         Self::Archive(request)
     }
 
+    /// Creates a typed client-to-server Certify request variant.
+    #[must_use]
+    pub fn certify(request: CertifyRequest) -> Self {
+        Self::Certify(request)
+    }
+
     /// Creates a typed Destroy request variant.
     #[must_use]
     pub fn destroy(request: DestroyRequest) -> Self {
@@ -344,6 +354,7 @@ impl ClientRequest {
             Self::DiscoverVersions(_) => DISCOVER_VERSIONS_OPERATION,
             Self::Activate(_) => ACTIVATE_OPERATION,
             Self::Archive(_) => ARCHIVE_OPERATION,
+            Self::Certify(_) => CERTIFY_OPERATION,
             Self::Destroy(_) => DESTROY_OPERATION,
             Self::Recover(_) => RECOVER_OPERATION,
             Self::Get(_) => GET_OPERATION,
@@ -405,7 +416,7 @@ impl ClientRequest {
     const fn is_id_placeholder_producer(&self) -> bool {
         matches!(
             self,
-            Self::Create(_) | Self::CreateKeyPair(_) | Self::Recover(_)
+            Self::Create(_) | Self::CreateKeyPair(_) | Self::Recover(_) | Self::Certify(_)
         )
     }
 
@@ -414,6 +425,7 @@ impl ClientRequest {
             Self::DiscoverVersions(request) => request.to_ttlv_payload(),
             Self::Activate(request) => request.to_ttlv_payload(),
             Self::Archive(request) => request.to_ttlv_payload(),
+            Self::Certify(request) => request.into_ttlv_payload(),
             Self::Destroy(request) => request.to_ttlv_payload(),
             Self::Recover(request) => request.to_ttlv_payload(),
             Self::Get(request) => request.to_ttlv_payload(),
@@ -447,6 +459,7 @@ impl fmt::Debug for ClientRequest {
             Self::DiscoverVersions(_) => formatter.write_str("DiscoverVersions"),
             Self::Activate(_) => formatter.write_str("Activate([REDACTED])"),
             Self::Archive(_) => formatter.write_str("Archive([REDACTED])"),
+            Self::Certify(request) => formatter.debug_tuple("Certify").field(request).finish(),
             Self::Destroy(_) => formatter.write_str("Destroy([REDACTED])"),
             Self::Recover(_) => formatter.write_str("Recover([REDACTED])"),
             Self::Get(_) => formatter.write_str("Get([REDACTED])"),
@@ -732,6 +745,7 @@ impl fmt::Debug for ClientMessageExtension {
 
 enum PendingResponse {
     DiscoverVersions(DiscoverVersionsResponse),
+    Certify(CertifyResponse),
     Encrypt(EncryptResponse),
     Decrypt(DecryptResponse),
     Hash(HashResponse),
@@ -763,6 +777,7 @@ impl PendingResponse {
     const fn view(&self) -> ClientResponseView<'_> {
         let response = match self {
             Self::DiscoverVersions(response) => ClientResponseRef::DiscoverVersions(response),
+            Self::Certify(response) => ClientResponseRef::Certify(response),
             Self::Encrypt(response) => ClientResponseRef::Encrypt(response),
             Self::Decrypt(response) => ClientResponseRef::Decrypt(response),
             Self::Hash(response) => ClientResponseRef::Hash(response),
@@ -952,6 +967,8 @@ pub enum ClientOperation {
     DiscoverVersions,
     /// Activate.
     Activate,
+    /// Certify.
+    Certify,
     /// Archive.
     Archive,
     /// Destroy.
@@ -1124,6 +1141,7 @@ impl fmt::Debug for ClientOperationOutcome {
 #[derive(Clone, Copy)]
 enum ClientResponseRef<'a> {
     DiscoverVersions(&'a DiscoverVersionsResponse),
+    Certify(&'a CertifyResponse),
     Encrypt(&'a EncryptResponse),
     Decrypt(&'a DecryptResponse),
     Hash(&'a HashResponse),
@@ -1166,6 +1184,7 @@ impl<'a> ClientResponseView<'a> {
     pub const fn result(&self) -> &KmipOperationResult {
         match self.response {
             ClientResponseRef::DiscoverVersions(response) => response.result(),
+            ClientResponseRef::Certify(response) => response.result(),
             ClientResponseRef::Encrypt(response) => response.result(),
             ClientResponseRef::Decrypt(response) => response.result(),
             ClientResponseRef::Hash(response) => response.result(),
@@ -1291,6 +1310,15 @@ impl<'a> ClientResponseView<'a> {
     pub const fn activate(&self) -> Option<&'a ActivateResponse> {
         match self.response {
             ClientResponseRef::Activate(response) => Some(response),
+            _ => None,
+        }
+    }
+
+    /// Returns the Certify response when this view represents it.
+    #[must_use]
+    pub const fn certify(&self) -> Option<&'a CertifyResponse> {
+        match self.response {
+            ClientResponseRef::Certify(response) => Some(response),
             _ => None,
         }
     }
@@ -1474,6 +1502,9 @@ impl fmt::Debug for ClientResponseView<'_> {
             ClientResponseRef::Create(response) => {
                 formatter.debug_tuple("Create").field(response).finish()
             }
+            ClientResponseRef::Certify(response) => {
+                formatter.debug_tuple("Certify").field(response).finish()
+            }
             ClientResponseRef::Activate(_) => formatter.write_str("Activate([REDACTED])"),
             ClientResponseRef::Archive(_) => formatter.write_str("Archive([REDACTED])"),
             ClientResponseRef::Destroy(_) => formatter.write_str("Destroy([REDACTED])"),
@@ -1535,6 +1566,8 @@ impl fmt::Debug for ClientResponseView<'_> {
 pub enum ClientBatchOutcome {
     /// The server returned a non-Pending KMIP result.
     Completed(DiscoverVersionsResponse),
+    /// The server returned a Certify result.
+    Certify(CertifyResponse),
     /// The server returned an Encrypt result.
     Encrypt(EncryptResponse),
     /// The server returned a Decrypt result.
@@ -1595,6 +1628,7 @@ impl ClientBatchOutcome {
     pub fn asynchronous_correlation_value(&self) -> Option<&[u8]> {
         match self {
             Self::Completed(_)
+            | Self::Certify(_)
             | Self::Encrypt(_)
             | Self::Decrypt(_)
             | Self::Hash(_)
@@ -1629,6 +1663,7 @@ impl ClientBatchOutcome {
     pub const fn result(&self) -> &KmipOperationResult {
         match self {
             Self::Completed(response) => response.result(),
+            Self::Certify(response) => response.result(),
             Self::Encrypt(response) => response.result(),
             Self::Decrypt(response) => response.result(),
             Self::Hash(response) => response.result(),
@@ -1663,6 +1698,7 @@ impl ClientBatchOutcome {
     pub const fn operation(&self) -> ClientOperation {
         match self {
             Self::Completed(_) => ClientOperation::DiscoverVersions,
+            Self::Certify(_) => ClientOperation::Certify,
             Self::Encrypt(_) => ClientOperation::Encrypt,
             Self::Decrypt(_) => ClientOperation::Decrypt,
             Self::Hash(_) => ClientOperation::Hash,
@@ -1697,6 +1733,21 @@ impl ClientBatchOutcome {
     pub const fn discover_versions_response(&self) -> Option<&DiscoverVersionsResponse> {
         match self {
             Self::Completed(response) => Some(response),
+            _ => None,
+        }
+    }
+
+    /// Returns the typed Certify response, including when its result is Pending.
+    #[must_use]
+    pub const fn certify_response(&self) -> Option<&CertifyResponse> {
+        match self {
+            Self::Certify(response) => Some(response),
+            Self::Pending(pending) => match pending.response() {
+                ClientResponseView {
+                    response: ClientResponseRef::Certify(response),
+                } => Some(response),
+                _ => None,
+            },
             _ => None,
         }
     }
@@ -1855,6 +1906,9 @@ impl ClientBatchOutcome {
             Self::Completed(response) => ClientResponseView {
                 response: ClientResponseRef::DiscoverVersions(response),
             },
+            Self::Certify(response) => ClientResponseView {
+                response: ClientResponseRef::Certify(response),
+            },
             Self::Encrypt(response) => ClientResponseView {
                 response: ClientResponseRef::Encrypt(response),
             },
@@ -1941,6 +1995,7 @@ impl fmt::Debug for ClientBatchOutcome {
             Self::Completed(response) => {
                 formatter.debug_tuple("Completed").field(response).finish()
             }
+            Self::Certify(response) => formatter.debug_tuple("Certify").field(response).finish(),
             Self::GetCompleted(response) => formatter
                 .debug_tuple("GetCompleted")
                 .field(response)
@@ -2026,6 +2081,7 @@ impl fmt::Display for ClientBatchOutcome {
                 write!(formatter, "Signature Verify({})", response.result())
             }
             Self::Activate(response) => write!(formatter, "Activate({})", response.result()),
+            Self::Certify(response) => write!(formatter, "Certify({})", response.result()),
             Self::Archive(response) => write!(formatter, "Archive({})", response.result()),
             Self::Destroy(response) => write!(formatter, "Destroy({})", response.result()),
             Self::Recover(response) => write!(formatter, "Recover({})", response.result()),
@@ -2390,6 +2446,47 @@ impl Client {
                 failure.response_ttlv,
             )
         })
+    }
+
+    /// Executes one typed Certify request through the shared batch writer.
+    ///
+    /// Use the execute method with a one-item batch and an explicit
+    /// Asynchronous Indicator when the caller wants to accept Operation
+    /// Pending. This convenience method leaves batch options at their defaults
+    /// and never performs an implicit Poll or retry.
+    ///
+    /// # Errors
+    ///
+    /// Returns a sanitized validation, protocol, or transport error with the
+    /// strongest available request-delivery evidence.
+    pub fn certify(
+        &mut self,
+        request: CertifyRequest,
+        limits: &CodecLimits,
+    ) -> Result<ClientBatchItemResponse, ClientError> {
+        self.certify_with_options(request, limits, &RequestOptions::default())
+    }
+
+    /// Executes one typed Certify request with transport timeout overrides.
+    ///
+    /// The request uses the shared writer and one-exchange lifecycle.
+    ///
+    /// # Errors
+    ///
+    /// Returns a sanitized validation, protocol, or transport error with the
+    /// strongest available request-delivery evidence.
+    pub fn certify_with_options(
+        &mut self,
+        request: CertifyRequest,
+        limits: &CodecLimits,
+        request_options: &RequestOptions,
+    ) -> Result<ClientBatchItemResponse, ClientError> {
+        let response = self.execute_with_options(
+            ClientBatch::new(ClientBatchItem::new(ClientRequest::Certify(request))),
+            limits,
+            request_options,
+        )?;
+        take_single_item_response(response.items)
     }
 
     /// Executes one typed Activate request through the shared batch writer.
@@ -3541,6 +3638,7 @@ fn request_mutation_is_prohibited(request: &ClientRequest) -> bool {
         ClientRequest::DiscoverVersions(_)
         | ClientRequest::Activate(_)
         | ClientRequest::Archive(_)
+        | ClientRequest::Certify(_)
         | ClientRequest::Destroy(_)
         | ClientRequest::Recover(_)
         | ClientRequest::Get(_)
@@ -4154,6 +4252,7 @@ fn response_outcome(
             PendingResponse::Activate,
             ClientBatchOutcome::Activate,
         ),
+        CERTIFY_OPERATION => certify_response_outcome(item),
         ARCHIVE_OPERATION => read_operation_outcome(
             ClientOperation::Archive,
             item,
@@ -4246,6 +4345,19 @@ fn get_response_outcome(
         GetResponse::result,
         PendingResponse::Get,
         ClientBatchOutcome::GetCompleted,
+    )
+}
+
+fn certify_response_outcome(
+    item: ResponseBatchItemView<'_>,
+) -> Result<ClientBatchOutcome, ProtocolError> {
+    read_operation_outcome(
+        ClientOperation::Certify,
+        item,
+        CertifyResponse::try_from_response_item,
+        CertifyResponse::result,
+        PendingResponse::Certify,
+        ClientBatchOutcome::Certify,
     )
 }
 

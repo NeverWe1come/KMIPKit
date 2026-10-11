@@ -1,7 +1,7 @@
 //! Synchronous typed KMIP client execution foundation for `KMIPKit`.
 //!
 //! The typed request enum supports explicit Discover Versions, Activate,
-//! Archive, Destroy, Recover, Create, Create Key Pair, Create Split Key, Add
+//! Archive, Certify, Destroy, Recover, Create, Create Key Pair, Create Split Key, Add
 //! Attribute, Adjust Attribute, Delete Attribute, Get Attributes, Get
 //! Attribute List, Modify Attribute, Set Attribute, Query, and Ping operations.
 //! Separate methods execute Poll, Cancel, Process, and Query Asynchronous

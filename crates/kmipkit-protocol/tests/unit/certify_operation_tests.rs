@@ -88,7 +88,8 @@ fn request_emits_table_179_fields_once_and_in_order() {
         ],
         "Table 179 has one Certificate Request Value field, so a request cannot fan out into multiple certificates"
     );
-    let fields = payload.view().children();
+    let payload_view = payload.view();
+    let fields = payload_view.children();
     assert!(fields[2].with_value(|value| {
         matches!(value, ValueView::ByteString(bytes) if bytes == request_value.as_slice())
     }));
@@ -203,7 +204,7 @@ fn failure_response_preserves_the_table_181_reason_without_success_payload() {
 
     assert_eq!(response.result().status().raw(), OPERATION_FAILED);
     assert_eq!(
-        response.result().reason().map(|reason| reason.raw()),
+        response.result().reason().map(crate::ResultReason::raw),
         Some(INVALID_CSR)
     );
     assert!(response.unique_identifier().is_none());

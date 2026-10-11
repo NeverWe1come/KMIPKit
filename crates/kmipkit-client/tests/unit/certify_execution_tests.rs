@@ -326,8 +326,10 @@ fn certify_can_produce_the_placeholder_for_a_get_in_the_same_batch() {
             CertifyRequest::new()
                 .with_certificate_request_type(1)
                 .with_certificate_request_value(SecretBytes::new(b"request".to_vec())),
-        )),
-        ClientBatchItem::new(ClientRequest::Get(GetRequest::new())),
+        ))
+        .with_unique_batch_item_id(b"certify".to_vec()),
+        ClientBatchItem::new(ClientRequest::Get(GetRequest::new()))
+            .with_unique_batch_item_id(b"get".to_vec()),
     ]);
 
     let error = client
@@ -335,8 +337,8 @@ fn certify_can_produce_the_placeholder_for_a_get_in_the_same_batch() {
         .expect_err("the fake transport stops the exchange before any bytes are sent");
 
     assert_eq!(error.delivery_state(), Some(RequestDeliveryState::NotSent));
-    let request = captured
-        .borrow()
+    let captured_request = captured.borrow();
+    let request = captured_request
         .as_deref()
         .expect("the caller's two-operation batch reaches the fake transport");
     assert_eq!(
