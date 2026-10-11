@@ -7,7 +7,7 @@ use crate::{
     ResponseBatchItemView, ResponseMessage, ResultReason, RevocationReason, RevokeError,
     RevokeRequest, RevokeResponse, UniqueIdentifier,
 };
-use kmipkit_ttlv::{Item, RawTag, Structure, Tag, Value};
+use kmipkit_ttlv::{Item, RawTag, Structure, Tag, Value, ValueView};
 
 const REVOKE_OPERATION: u32 = 0x0000_0011;
 const SUCCESS: u32 = 0;
@@ -15,6 +15,8 @@ const OPERATION_FAILED: u32 = 1;
 const OBJECT_NOT_FOUND: u32 = 0x0000_0037;
 const UNIQUE_IDENTIFIER: u32 = 0x0042_0094;
 const REVOCATION_REASON: u32 = 0x0042_0081;
+const REVOCATION_MESSAGE: u32 = 0x0042_0080;
+const REVOCATION_REASON_CODE: u32 = 0x0042_0082;
 const COMPROMISE_OCCURRENCE_DATE: u32 = 0x0042_0021;
 const KEY_COMPROMISE: u32 = 2;
 const CA_COMPROMISE: u32 = 3;
@@ -66,12 +68,72 @@ fn field_tags(payload: &Structure) -> Vec<u32> {
         .collect()
 }
 
+fn reason_fields(payload: &Structure) -> (Vec<u32>, Option<u32>, Option<String>) {
+    let view = payload.view();
+    let reason = view
+        .children()
+        .iter()
+        .find(|field| field.tag().raw() == REVOCATION_REASON)
+        .expect("Table 295 contains the required Revocation Reason");
+    reason.with_value(|value| {
+        let ValueView::Structure(reason) = value else {
+            panic!("§4.47 Revocation Reason is a Structure");
+        };
+        let tags = reason
+            .children()
+            .iter()
+            .map(|field| field.tag().raw())
+            .collect();
+        let code = reason
+            .children()
+            .iter()
+            .find(|field| field.tag().raw() == REVOCATION_REASON_CODE)
+            .and_then(|field| {
+                field.with_value(|value| match value {
+                    ValueView::Enumeration(value) => Some(*value),
+                    _ => None,
+                })
+            });
+        let message = reason
+            .children()
+            .iter()
+            .find(|field| field.tag().raw() == REVOCATION_MESSAGE)
+            .and_then(|field| {
+                field.with_value(|value| match value {
+                    ValueView::TextString(value) => Some(value.to_owned()),
+                    _ => None,
+                })
+            });
+        (tags, code, message)
+    })
+}
+
 #[test]
 fn request_emits_table_295_fields_in_order_and_preserves_open_reason() {
     let payload = request(UNKNOWN_REASON, None)
         .into_ttlv_payload()
         .expect("unknown open reason remains valid when no compromise date is supplied");
     assert_eq!(field_tags(&payload), [UNIQUE_IDENTIFIER, REVOCATION_REASON]);
+    assert_eq!(
+        reason_fields(&payload),
+        (vec![REVOCATION_REASON_CODE], Some(UNKNOWN_REASON), None)
+    );
+}
+
+#[test]
+fn request_encodes_optional_audit_message_inside_revocation_reason_structure() {
+    let payload = RevokeRequest::new(RevocationReason::KEY_COMPROMISE)
+        .with_revocation_message("audit explanation".to_owned())
+        .into_ttlv_payload()
+        .expect("§4.47 Table 123 permits Revocation Message");
+    assert_eq!(
+        reason_fields(&payload),
+        (
+            vec![REVOCATION_REASON_CODE, REVOCATION_MESSAGE],
+            Some(KEY_COMPROMISE),
+            Some("audit explanation".to_owned())
+        )
+    );
 }
 
 #[test]
@@ -117,8 +179,11 @@ fn request_debug_does_not_expose_identifier_or_request_values() {
         .with_unique_identifier(UniqueIdentifier::TextString(
             "revoke-secret-sentinel".to_owned(),
         ))
+        .with_revocation_message("revoke-message-sentinel".to_owned())
         .with_compromise_occurrence_date(1_700_000_000);
-    assert!(!format!("{request:?}").contains("revoke-secret-sentinel"));
+    let debug = format!("{request:?}");
+    assert!(!debug.contains("revoke-secret-sentinel"));
+    assert!(!debug.contains("revoke-message-sentinel"));
 }
 
 #[test]

@@ -20,9 +20,10 @@ use crate::{
 };
 
 const REVOKE_OPERATION: u32 = 0x0000_0011;
-const REGISTER_OPERATION: u32 = 0x0000_0003;
 const UNIQUE_IDENTIFIER: u32 = 0x0042_0094;
 const REVOCATION_REASON: u32 = 0x0042_0081;
+const REVOCATION_MESSAGE: u32 = 0x0042_0080;
+const REVOCATION_REASON_CODE: u32 = 0x0042_0082;
 const COMPROMISE_OCCURRENCE_DATE: u32 = 0x0042_0021;
 const CERTIFICATE: u32 = 0x0042_0013;
 const CERTIFICATE_LENGTH: u32 = 0x0042_00AD;
@@ -100,6 +101,72 @@ fn request_fields(bytes: &[u8], batch_index: usize) -> (Option<u32>, Vec<(u32, O
     })
 }
 
+fn reason_fields(bytes: &[u8], batch_index: usize) -> (Vec<u32>, Option<u32>, Option<String>) {
+    let message = decode(bytes).expect("captured request has valid TTLV framing");
+    message.with_value(|value| {
+        let ValueView::Structure(message) = value else {
+            panic!("KMIP request message is a Structure");
+        };
+        let batch = message
+            .children()
+            .iter()
+            .filter(|field| field.tag().raw() == BATCH_ITEM)
+            .nth(batch_index)
+            .expect("request contains the selected Batch Item");
+        batch.with_value(|value| {
+            let ValueView::Structure(batch) = value else {
+                panic!("Batch Item is a Structure");
+            };
+            let payload = batch
+                .children()
+                .iter()
+                .find(|field| field.tag().raw() == REQUEST_PAYLOAD)
+                .expect("Batch Item contains Request Payload");
+            payload.with_value(|value| {
+                let ValueView::Structure(payload) = value else {
+                    panic!("Request Payload is a Structure");
+                };
+                let reason = payload
+                    .children()
+                    .iter()
+                    .find(|field| field.tag().raw() == REVOCATION_REASON)
+                    .expect("Table 295 contains Revocation Reason");
+                reason.with_value(|value| {
+                    let ValueView::Structure(reason) = value else {
+                        panic!("§4.47 Revocation Reason is a Structure");
+                    };
+                    let tags = reason
+                        .children()
+                        .iter()
+                        .map(|field| field.tag().raw())
+                        .collect();
+                    let code = reason
+                        .children()
+                        .iter()
+                        .find(|field| field.tag().raw() == REVOCATION_REASON_CODE)
+                        .and_then(|field| {
+                            field.with_value(|value| match value {
+                                ValueView::Enumeration(value) => Some(*value),
+                                _ => None,
+                            })
+                        });
+                    let message = reason
+                        .children()
+                        .iter()
+                        .find(|field| field.tag().raw() == REVOCATION_MESSAGE)
+                        .and_then(|field| {
+                            field.with_value(|value| match value {
+                                ValueView::TextString(value) => Some(value.to_owned()),
+                                _ => None,
+                            })
+                        });
+                    (tags, code, message)
+                })
+            })
+        })
+    })
+}
+
 #[test]
 fn revoke_sends_table_295_and_exposes_table_296_identifier_once() {
     let response = asynchronous_response_bytes(
@@ -119,7 +186,8 @@ fn revoke_sends_table_295_and_exposes_table_296_identifier_once() {
 
     let item = client
         .revoke(
-            revoke_request(KEY_COMPROMISE, Some(1_700_000_000)),
+            revoke_request(KEY_COMPROMISE, Some(1_700_000_000))
+                .with_revocation_message("audit explanation".to_owned()),
             &CodecLimits::defaults(),
         )
         .expect("valid Revoke request receives typed Table 296 success");
@@ -144,9 +212,17 @@ fn revoke_sends_table_295_and_exposes_table_296_identifier_once() {
             Some(REVOKE_OPERATION),
             vec![
                 (UNIQUE_IDENTIFIER, None),
-                (REVOCATION_REASON, Some(i64::from(KEY_COMPROMISE))),
+                (REVOCATION_REASON, None),
                 (COMPROMISE_OCCURRENCE_DATE, Some(1_700_000_000)),
             ],
+        )
+    );
+    assert_eq!(
+        reason_fields(request, 0),
+        (
+            vec![REVOCATION_REASON_CODE, REVOCATION_MESSAGE],
+            Some(KEY_COMPROMISE),
+            Some("audit explanation".to_owned())
         )
     );
     assert_eq!(fake.borrow().exchange_count(), 1);
@@ -186,7 +262,7 @@ fn revoke_pending_preserves_correlation_without_implicit_poll() {
         OPERATION_PENDING,
         None,
         Some(PENDING_CORRELATION),
-        None,
+        Some(test_structure([])),
     );
     let (mut client, fake, _) = client_for(ExchangeScript::Success {
         response,
@@ -254,7 +330,7 @@ fn revoke_can_consume_a_preceding_register_id_placeholder() {
         request_fields(request, 1),
         (
             Some(REVOKE_OPERATION),
-            vec![(REVOCATION_REASON, Some(i64::from(KEY_COMPROMISE)))],
+            vec![(REVOCATION_REASON, None)],
         ),
         "§4.1.2 and §6.1.44 allow Revoke to consume Register's ID Placeholder"
     );
