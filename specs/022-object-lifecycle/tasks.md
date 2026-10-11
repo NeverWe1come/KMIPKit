@@ -89,9 +89,9 @@
 
 **Independent Test**: Tables 313–315; CSR, certificate, or parameterless form; approved caption discrepancy; sensitive redaction; no follow-up Get.
 
-- [ ] T024 [P] [US7] Add failing Re-Provision form/payload/result and fake-client tests in `crates/kmipkit-protocol/tests/unit/reprovision_operation_tests.rs` and `crates/kmipkit-client/tests/unit/reprovision_execution_tests.rs`; cite §6.1.48, KMIPKIT-DISC-040, and its traceability rows; commit Red.
-- [ ] T025 [US7] Implement `ReProvisionRequest/Response/Error` in `crates/kmipkit-protocol/src/reprovision.rs`, export it, and integrate client dispatch/method in `crates/kmipkit-client/src/execute.rs` and `crates/kmipkit-client/src/lib.rs`; commit Green after T024 passes.
-- [ ] T026 [US7] Refactor Re-Provision model/dispatch/tests in `crates/kmipkit-protocol/src/reprovision.rs`, `crates/kmipkit-client/src/execute.rs`, and both test files; commit Refactor separately.
+- [X] T024 [P] [US7] Add failing Re-Provision form/payload/result and fake-client tests in `crates/kmipkit-protocol/tests/unit/reprovision_operation_tests.rs` and `crates/kmipkit-client/tests/unit/reprovision_execution_tests.rs`; cite §6.1.48, KMIPKIT-DISC-040, and its traceability rows; commit Red.
+- [X] T025 [US7] Implement `ReProvisionRequest/Response/Error` in `crates/kmipkit-protocol/src/reprovision.rs`, export it, and integrate client dispatch/method in `crates/kmipkit-client/src/execute.rs` and `crates/kmipkit-client/src/lib.rs`; commit Green after T024 passes.
+- [X] T026 [US7] Refactor Re-Provision model/dispatch/tests in `crates/kmipkit-protocol/src/reprovision.rs`, `crates/kmipkit-client/src/execute.rs`, and both test files; commit Refactor separately.
 
 ## Phase 10: User Story 8 — Register (Priority: P1)
 

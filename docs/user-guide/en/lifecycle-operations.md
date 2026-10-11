@@ -1,7 +1,7 @@
 # Managed-object lifecycle operations
 
 KMIPKit exposes explicit client calls for Activate, Archive, Destroy, Recover,
-Re-certify, Re-key, and Re-key Key Pair. Each call sends one typed request,
+Re-certify, Re-key, Re-key Key Pair, and Re-Provision. Each call sends one typed request,
 performs one exchange, and returns the server's operation result. The client
 does not simulate remote object state, retry requests, or issue Poll/Get follow-ups
 automatically. For connection setup and TLS policy, see the
@@ -10,7 +10,8 @@ automatically. For connection setup and TLS policy, see the
 The operation payloads follow OASIS KMIP Specification v2.1 §6.1.1 Tables
 164–166 (Activate), §6.1.4 Tables 173–175 (Archive), §6.1.15 Tables 208–210
 (Destroy), §6.1.42 Tables 288–290 (Recover), §6.1.46 Tables 303–307
-(Re-key), and §6.1.47 Tables 308–312 (Re-key Key Pair). Unique Identifier
+(Re-key), §6.1.47 Tables 308–312 (Re-key Key Pair), and §6.1.48 Tables
+313–315 (Re-Provision). Unique Identifier
 forms and the assigned tag are defined by §4.58 Tables 145–146 and §11.56
 Table 487.
 
@@ -282,6 +283,57 @@ fn rekey_key_pair(
 
 fn main() {
     let _example = rekey_key_pair;
+}
+```
+
+## Re-Provision
+
+Re-Provision requests a replacement client credential. Supply either a
+Certificate Request object for the server to sign, a Certificate object for
+the server to associate, or neither to ask the server to create credentials.
+The two object forms are mutually exclusive. KMIPKit forwards the supplied
+structures and does not parse them, retain local credentials, or perform a
+follow-up Get. Inspect the optional Unique Identifier returned by the server.
+The pinned OASIS source labels Table 315 “RNG Retrieve Errors”; the approved
+KMIPKit interpretation applies its listed failure reasons to Re-Provision
+without modifying the pinned source.
+
+```rust,kmipkit-test
+use kmipkit_client::{Client, ClientOperation};
+use kmipkit_protocol::{ReProvisionRequest, UniqueIdentifier};
+use kmipkit_ttlv::codec::CodecLimits;
+use kmipkit_ttlv::Structure;
+
+fn reprovision_with_certificate_request(
+    client: &mut Client,
+    limits: &CodecLimits,
+    certificate_request: Structure,
+) -> Result<(), kmipkit_client::ClientError> {
+    let request = ReProvisionRequest::new().with_certificate_request(certificate_request);
+    let item = client.reprovision(request, limits)?;
+    let outcome = item.outcome();
+    assert_eq!(outcome.operation(), ClientOperation::ReProvision);
+    let response = outcome
+        .response()
+        .reprovision()
+        .expect("Re-Provision returns its typed response");
+    let _server_status = response.result().status().raw();
+    let _credential_identifier: Option<&UniqueIdentifier> = response.unique_identifier();
+    Ok(())
+}
+
+fn reprovision_with_server_generated_credentials(
+    client: &mut Client,
+    limits: &CodecLimits,
+) -> Result<(), kmipkit_client::ClientError> {
+    let item = client.reprovision(ReProvisionRequest::new(), limits)?;
+    let _server_status = item.outcome().result().status().raw();
+    Ok(())
+}
+
+fn main() {
+    let _request_example = reprovision_with_certificate_request;
+    let _server_generated_example = reprovision_with_server_generated_credentials;
 }
 ```
 

@@ -2225,8 +2225,6 @@ impl ClientBatchOutcome {
     /// Existing Discover Versions result access remains available through
     /// [`ClientResponseView::result`] and [`ClientResponseView::supported_versions`].
     #[must_use]
-    // Each typed result variant must map directly to exactly one borrowed view.
-    #[allow(clippy::too_many_lines)]
     pub const fn response(&self) -> ClientResponseView<'_> {
         match self {
             Self::Completed(response) => {
@@ -2235,100 +2233,86 @@ impl ClientBatchOutcome {
             Self::Certify(response) => {
                 ClientResponseView::new(ClientResponseRef::Certify(response))
             }
-            Self::Check(response) => ClientResponseView {
-                response: ClientResponseRef::Check(response),
-            },
-            Self::ObtainLease(response) => ClientResponseView {
-                response: ClientResponseRef::ObtainLease(response),
-            },
-            Self::Recertify(response) => ClientResponseView {
-                response: ClientResponseRef::Recertify(response),
-            },
-            Self::Rekey(response) => ClientResponseView {
-                response: ClientResponseRef::Rekey(response),
-            },
-            Self::RekeyKeyPair(response) => ClientResponseView {
-                response: ClientResponseRef::RekeyKeyPair(response),
-            },
+            Self::Check(response) => ClientResponseView::new(ClientResponseRef::Check(response)),
+            Self::ObtainLease(response) => {
+                ClientResponseView::new(ClientResponseRef::ObtainLease(response))
+            }
+            Self::Recertify(response) => {
+                ClientResponseView::new(ClientResponseRef::Recertify(response))
+            }
+            Self::Rekey(response) => ClientResponseView::new(ClientResponseRef::Rekey(response)),
+            Self::RekeyKeyPair(response) => {
+                ClientResponseView::new(ClientResponseRef::RekeyKeyPair(response))
+            }
             Self::ReProvision(response) => {
                 ClientResponseView::new(ClientResponseRef::ReProvision(response))
             }
-            Self::Encrypt(response) => ClientResponseView {
-                response: ClientResponseRef::Encrypt(response),
-            },
-            Self::Decrypt(response) => ClientResponseView {
-                response: ClientResponseRef::Decrypt(response),
-            },
-            Self::Hash(response) => ClientResponseView {
-                response: ClientResponseRef::Hash(response),
-            },
-            Self::Mac(response) => ClientResponseView {
-                response: ClientResponseRef::Mac(response),
-            },
-            Self::MacVerify(response) => ClientResponseView {
-                response: ClientResponseRef::MacVerify(response),
-            },
-            Self::Sign(response) => ClientResponseView {
-                response: ClientResponseRef::Sign(response),
-            },
-            Self::SignatureVerify(response) => ClientResponseView {
-                response: ClientResponseRef::SignatureVerify(response),
-            },
-            Self::Activate(response) => ClientResponseView {
-                response: ClientResponseRef::Activate(response),
-            },
-            Self::Archive(response) => ClientResponseView {
-                response: ClientResponseRef::Archive(response),
-            },
-            Self::Destroy(response) => ClientResponseView {
-                response: ClientResponseRef::Destroy(response),
-            },
-            Self::Recover(response) => ClientResponseView {
-                response: ClientResponseRef::Recover(response),
-            },
-            Self::GetCompleted(response) => ClientResponseView {
-                response: ClientResponseRef::Get(response),
-            },
-            Self::LocateCompleted(response) => ClientResponseView {
-                response: ClientResponseRef::Locate(response),
-            },
-            Self::CreateCompleted(response) => ClientResponseView {
-                response: ClientResponseRef::Create(response),
-            },
-            Self::CreateKeyPairCompleted(response) => ClientResponseView {
-                response: ClientResponseRef::CreateKeyPair(response),
-            },
-            Self::CreateSplitKeyCompleted(response) => ClientResponseView {
-                response: ClientResponseRef::CreateSplitKey(response),
-            },
-            Self::AddAttribute(response) => ClientResponseView {
-                response: ClientResponseRef::AddAttribute(response),
-            },
-            Self::AdjustAttribute(response) => ClientResponseView {
-                response: ClientResponseRef::AdjustAttribute(response),
-            },
-            Self::DeleteAttribute(response) => ClientResponseView {
-                response: ClientResponseRef::DeleteAttribute(response),
-            },
-            Self::ModifyAttribute(response) => ClientResponseView {
-                response: ClientResponseRef::ModifyAttribute(response),
-            },
-            Self::SetAttribute(response) => ClientResponseView {
-                response: ClientResponseRef::SetAttribute(response),
-            },
+            Self::Encrypt(response) => {
+                ClientResponseView::new(ClientResponseRef::Encrypt(response))
+            }
+            Self::Decrypt(response) => {
+                ClientResponseView::new(ClientResponseRef::Decrypt(response))
+            }
+            Self::Hash(response) => ClientResponseView::new(ClientResponseRef::Hash(response)),
+            Self::Mac(response) => ClientResponseView::new(ClientResponseRef::Mac(response)),
+            Self::MacVerify(response) => {
+                ClientResponseView::new(ClientResponseRef::MacVerify(response))
+            }
+            Self::Sign(response) => ClientResponseView::new(ClientResponseRef::Sign(response)),
+            Self::SignatureVerify(response) => {
+                ClientResponseView::new(ClientResponseRef::SignatureVerify(response))
+            }
+            Self::Activate(response) => {
+                ClientResponseView::new(ClientResponseRef::Activate(response))
+            }
+            Self::Archive(response) => {
+                ClientResponseView::new(ClientResponseRef::Archive(response))
+            }
+            Self::Destroy(response) => {
+                ClientResponseView::new(ClientResponseRef::Destroy(response))
+            }
+            Self::Recover(response) => {
+                ClientResponseView::new(ClientResponseRef::Recover(response))
+            }
+            Self::GetCompleted(response) => {
+                ClientResponseView::new(ClientResponseRef::Get(response))
+            }
+            Self::LocateCompleted(response) => {
+                ClientResponseView::new(ClientResponseRef::Locate(response))
+            }
+            Self::CreateCompleted(response) => {
+                ClientResponseView::new(ClientResponseRef::Create(response))
+            }
+            Self::CreateKeyPairCompleted(response) => {
+                ClientResponseView::new(ClientResponseRef::CreateKeyPair(response))
+            }
+            Self::CreateSplitKeyCompleted(response) => {
+                ClientResponseView::new(ClientResponseRef::CreateSplitKey(response))
+            }
+            Self::AddAttribute(response) => {
+                ClientResponseView::new(ClientResponseRef::AddAttribute(response))
+            }
+            Self::AdjustAttribute(response) => {
+                ClientResponseView::new(ClientResponseRef::AdjustAttribute(response))
+            }
+            Self::DeleteAttribute(response) => {
+                ClientResponseView::new(ClientResponseRef::DeleteAttribute(response))
+            }
+            Self::ModifyAttribute(response) => {
+                ClientResponseView::new(ClientResponseRef::ModifyAttribute(response))
+            }
+            Self::SetAttribute(response) => {
+                ClientResponseView::new(ClientResponseRef::SetAttribute(response))
+            }
             Self::Pending(pending) => pending.response(),
-            Self::GetAttributes(response) => ClientResponseView {
-                response: ClientResponseRef::GetAttributes(response),
-            },
-            Self::GetAttributeList(response) => ClientResponseView {
-                response: ClientResponseRef::GetAttributeList(response),
-            },
-            Self::Ping(response) => ClientResponseView {
-                response: ClientResponseRef::Ping(response),
-            },
-            Self::Query(response) => ClientResponseView {
-                response: ClientResponseRef::Query(response),
-            },
+            Self::GetAttributes(response) => {
+                ClientResponseView::new(ClientResponseRef::GetAttributes(response))
+            }
+            Self::GetAttributeList(response) => {
+                ClientResponseView::new(ClientResponseRef::GetAttributeList(response))
+            }
+            Self::Ping(response) => ClientResponseView::new(ClientResponseRef::Ping(response)),
+            Self::Query(response) => ClientResponseView::new(ClientResponseRef::Query(response)),
         }
     }
 }

@@ -2,7 +2,9 @@
 
 //! Fake-transport Re-Provision contracts from OASIS KMIP v2.1 §6.1.48,
 //! Tables 313–315. Stable requirements: `KMIPKIT-REQ-SPEC-6.1.48-001`, `-004`,
-//! and `-006`. These are table-derived tests, not official OASIS fixture runs.
+//! and `-006`. `KMIPKIT-DISC-040` approves the three credential forms and the
+//! Table 315 caption interpretation. These are table-derived tests, not
+//! official OASIS fixture runs.
 
 use kmipkit_protocol::{ReProvisionRequest, UniqueIdentifier};
 use kmipkit_test_support::ExchangeScript;
