@@ -82,11 +82,13 @@ Typed identifier assertion correction: commit `f392a60e` updates the two client 
 
 ### Implementation for User Story 2
 
-- [ ] T024 [US2] Implement Locate selectors, required Attributes Structure, builder/accessors, and ordered Table 247 payload conversion in crates/kmipkit-protocol/src/locate.rs
-- [ ] T025 [US2] Implement Table 248 conversion for optional Integer and zero-or-more ordered Unique Identifiers in crates/kmipkit-protocol/src/locate.rs
-- [ ] T026 [US2] Export Locate request/response/error types and public rustdoc from crates/kmipkit-protocol/src/lib.rs
-- [ ] T027 [US2] Add Locate request serialization, completed and Pending response decoding, typed outcome storage, direct completed accessor, and unified response-view mapping in crates/kmipkit-client/src/execute.rs
-- [ ] T028 Run focused Locate protocol/client tests and the combined `operation_boundary` integration contract after both Get and Locate client mappings exist; record Green evidence and commit the Locate/client Green implementation separately in the KMIPKIT-0017 implementation branch
+- [x] T024 [US2] Implement Locate selectors, required Attributes Structure, builder/accessors, and ordered Table 247 payload conversion in crates/kmipkit-protocol/src/locate.rs
+- [x] T025 [US2] Implement Table 248 conversion for optional Integer and zero-or-more ordered Unique Identifiers in crates/kmipkit-protocol/src/locate.rs
+- [x] T026 [US2] Export Locate request/response/error types and public rustdoc from crates/kmipkit-protocol/src/lib.rs
+- [x] T027 [US2] Add Locate request serialization, completed and Pending response decoding, typed outcome storage, direct completed accessor, and unified response-view mapping in crates/kmipkit-client/src/execute.rs
+- [x] T028 Run focused Locate protocol/client tests and the combined `operation_boundary` integration contract after both Get and Locate client mappings exist; record Green evidence and commit the Locate/client Green implementation separately in the KMIPKIT-0017 implementation branch
+
+**Locate Green evidence (2026-10-11):** DCO Green implementation commit `c367b974`; separate DCO test-only commits `d9f4a32c` (operation-boundary harness/fixture), `43ead050` (public contract view lifetimes), and `5f82a94d` (Clippy-only equivalent assertion/API-check cleanup). `cargo fmt --all --check` and `git diff --check` exited 0. `cargo test -p kmipkit-protocol --lib locate_tests` passed 12/12; `cargo test -p kmipkit-protocol --test public_operation_contract` passed 4/4; `cargo test -p kmipkit-client --lib object_read_execution_tests` passed 6/6; `cargo test -p kmipkit-client --test operation_boundary` passed 1/1. `cargo clippy -p kmipkit-protocol --all-targets --all-features -- -D warnings` and the matching `kmipkit-client` command exited 0. The exact operation-boundary contract also passed after fixing the accepted loopback stream's nonblocking mode and adding the non-failure Response Payload required by KMIP v2.1 §8.6 Table 399 to its Pending fixture; assertions were retained. Detailed diagnostics, causes, and exact results are recorded in `C:\Users\ramp1953\.codex\state\kmipkit-sdd\KMIPKIT-0017\T024-T028-implementer-report.md`.
 - [ ] T029 Perform a behavior-preserving Locate Refactor only where test evidence justifies it; run tests and commit any change separately in crates/kmipkit-protocol/src/locate.rs and crates/kmipkit-client/src/execute.rs
 
 ## Phase 5: User Story 3 — Preserve results and protect object contents (Priority: P1)
