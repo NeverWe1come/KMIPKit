@@ -162,6 +162,30 @@ def _fail(message: str) -> None:
     raise CatalogValidationError(message)
 
 
+def _fail_profile_closure_mismatch(
+    label: str,
+    actual_ids: list[str],
+    expected_ids: list[str],
+) -> None:
+    """Report stable IDs missing from or unexpected in a computed profile closure."""
+    actual = set(actual_ids)
+    expected = set(expected_ids)
+    missing = [identifier for identifier in expected_ids if identifier not in actual]
+    unexpected = [identifier for identifier in actual_ids if identifier not in expected]
+    if missing or unexpected:
+        details = []
+        if missing:
+            details.append(f"missing IDs {missing[:10]}")
+        if unexpected:
+            details.append(f"unexpected IDs {unexpected[:10]}")
+        _fail(f"{label} closure mismatch: " + "; ".join(details))
+
+    _fail(
+        f"{label} closure order mismatch: "
+        f"expected IDs beginning {expected_ids[:10]}; found IDs beginning {actual_ids[:10]}"
+    )
+
+
 def _enum(value: Any, choices: set[str], field: str) -> None:
     if not isinstance(value, str) or value not in choices:
         _fail(f"{field} has an invalid value")
@@ -1170,9 +1194,17 @@ def _check_semantics(
             except ProfileGenerationError as error:
                 raise CatalogValidationError("profile normative closure is invalid") from error
             if profile["source_clause_ids"] != list(closure.source_clause_ids):
-                _fail("profile clause closure does not match its direct roots and normative inclusions")
+                _fail_profile_closure_mismatch(
+                    "profile clause",
+                    profile["source_clause_ids"],
+                    list(closure.source_clause_ids),
+                )
             if profile["requirement_ids"] != list(closure.requirement_ids):
-                _fail("profile requirement closure does not match its clauses and product scope")
+                _fail_profile_closure_mismatch(
+                    "profile requirement",
+                    profile["requirement_ids"],
+                    list(closure.requirement_ids),
+                )
 
     for test_case in catalog["test_cases"]:
         if not isinstance(test_case, dict) or set(test_case) != TEST_CASE_FIELDS:
