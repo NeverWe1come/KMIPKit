@@ -48,6 +48,7 @@ mod join_split_key;
 mod lifecycle;
 mod locate;
 mod login;
+mod log;
 mod logout;
 mod mac;
 mod mac_verify;
@@ -142,6 +143,7 @@ pub use locate::{
     LocateError, LocateRequest, LocateResponse, ObjectGroupMember, StorageStatusMask,
 };
 pub use login::{LoginError, LoginRequest, LoginResponse};
+pub use log::{LogError, LogRequest, LogResponse};
 pub use logout::{LogoutError, LogoutRequest, LogoutResponse};
 pub use mac::{MacError, MacRequest, MacResponse};
 pub use mac_verify::{MacVerifyError, MacVerifyRequest, MacVerifyResponse};
