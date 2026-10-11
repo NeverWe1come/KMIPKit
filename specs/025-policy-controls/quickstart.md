@@ -1,22 +1,21 @@
 # Quickstart: KMIP 2.1 Policy and Usage Controls
 
-This checklist is for the future implementation PR. It makes no claim that the feature is implemented or that any command has passed.
+This is the implementation and verification checklist for KMIPKIT-0039. Record command outcomes from the current revision; a passing local suite does not claim formal KMIP profile conformance.
 
-## Before implementation
+## Baseline and dependency status
 
-1. Confirm the active branch is `feature/KMIPKIT-0039-policy-controls` based on the approved release branch.
+1. The implementation branch is `feature/KMIPKIT-0039-policy-controls-implementation`, based on the approved `release/1.0.0` branch.
 2. Verify pinned source checksums in `specification/oasis/kmip-2.1/CHECKSUMS.sha256` and review `spec.md`, `plan.md`, `traceability.md`, and the two API contracts.
-3. Check whether the canonical public API feature KMIPKIT-0043 has merged. Rust protocol/client work may proceed without it; C, Java, Python, manifest, and generated parity tasks must wait for its approved contract.
-4. Confirm typed Encrypt, MAC, and Sign request variants exist on the active release baseline before implementing guard execution. Reuse them; do not reproduce their wire models.
+3. KMIPKIT-0043's approved public API manifest contract has not merged into `release/1.0.0`. Rust protocol/client work and documentation are complete; C, Java, Python, manifest, and generated parity tasks remain blocked until that contract is approved and merged.
+4. Typed Encrypt, MAC, and Sign request variants were present on the release baseline and are reused by the guard; no duplicate wire models were introduced.
 
-## Required implementation order
+## Implementation order and current disposition
 
-1. Implement Get Constraints and its focused model/client tests.
-2. Implement Get Usage Allocation and its tests; then add the local caller guard and its delivery-state tests.
-3. Implement Set Constraints and Set Defaults in separate Red/Green/Refactor sequences. Set Endpoint Role (§6.1.54) and server-to-client §6.2.5 are deferred from 1.0 because successful completion changes endpoint roles; do not expose a partial client-only API.
-4. Update requirement traceability and normative catalog implementation/verification references. Run the pinned catalog validator/report generator; never edit generated reports by hand.
-5. After 0043 merges, add public manifest entries, adapters, generated outputs, and C/Java/Python parity tests in a coordinated slice.
-6. Add English/Spanish examples and update the interop matrix. Record real server/version evidence only after the tests actually run.
+1. Get Constraints and Get Usage Allocation, their client paths, and the local caller guard are implemented with focused model/client tests.
+2. Set Constraints and Set Defaults are implemented in separate Red/Green/Refactor sequences. Set Endpoint Role (§6.1.54) and server-to-client §6.2.5 are deferred from 1.0 because successful completion changes endpoint roles; no partial client-only API is exposed.
+3. Requirement traceability and normative catalog implementation/verification references are updated. Generate catalog reports and code with the pinned generators; never edit generated reports by hand.
+4. After 0043 merges, add public manifest entries, adapters, generated outputs, and C/Java/Python parity tests in a coordinated slice.
+5. English/Spanish examples and the interop matrix are updated. Record real server/version evidence only after tests actually run.
 
 ## Focused checks
 
