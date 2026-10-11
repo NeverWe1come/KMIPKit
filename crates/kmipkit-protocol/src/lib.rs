@@ -43,6 +43,7 @@ mod get_constraints;
 mod get_usage_allocation;
 mod hash;
 mod import;
+mod interop;
 mod join_split_key;
 mod lifecycle;
 mod locate;
@@ -133,6 +134,7 @@ pub use get_usage_allocation::{
 };
 pub use hash::{HashError, HashRequest, HashResponse};
 pub use import::{ImportError, ImportRequest, ImportResponse};
+pub use interop::{InteropError, InteropRequest, InteropResponse};
 pub use join_split_key::{
     JoinSplitKeyError, JoinSplitKeyRequest, JoinSplitKeyResponse, SplitKeyReference,
 };

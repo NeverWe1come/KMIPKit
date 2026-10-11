@@ -10,8 +10,19 @@ const FUNCTION: u32 = 0x420160;
 const IDENTIFIER: u32 = 0x420161;
 const SENTINEL: &str = "interop-identifier-sentinel";
 
-fn response(operation: u32, status: u32, reason: Option<u32>, payload: Option<Structure>) -> Result<InteropResponse, InteropError> {
-    let message = response_message(operation, status, reason, (status == 2).then_some(b"correlation".as_slice()), payload);
+fn response(
+    operation: u32,
+    status: u32,
+    reason: Option<u32>,
+    payload: Option<Structure>,
+) -> Result<InteropResponse, InteropError> {
+    let message = response_message(
+        operation,
+        status,
+        reason,
+        (status == 2).then_some(b"correlation".as_slice()),
+        payload,
+    );
     InteropResponse::try_from_response_item(message.batch_items().next().unwrap())
 }
 
@@ -25,17 +36,30 @@ fn table_241_required_fields_preserve_order_and_unknown_function() {
     let view = payload.view();
     assert_eq!(view.children().len(), 2);
     assert_eq!(view.children()[0].tag().raw(), FUNCTION);
-    view.children()[0].with_value(|value| assert!(matches!(value, ValueView::Enumeration(0xf1234567))));
+    view.children()[0]
+        .with_value(|value| assert!(matches!(value, ValueView::Enumeration(0xf1234567))));
     assert_eq!(view.children()[1].tag().raw(), IDENTIFIER);
-    view.children()[1].with_value(|value| assert!(matches!(value, ValueView::TextString(v) if v == SENTINEL)));
+    view.children()[1]
+        .with_value(|value| assert!(matches!(value, ValueView::TextString(v) if v == SENTINEL)));
 }
 
 #[test]
 fn table_242_success_requires_empty_payload() {
-    assert_eq!(response(OPERATION, 0, None, Some(Structure::new())).unwrap().result().status().raw(), 0);
-    assert_eq!(response(OPERATION, 0, None, None).unwrap_err(), InteropError::MissingResponsePayload);
-    for value in [Value::enumeration(1), Value::text_string(SENTINEL.to_owned()), Value::structure(Structure::new())] {
-        let error = response(OPERATION, 0, None, Some(structure([item(FUNCTION, value)]))).unwrap_err();
+    assert_eq!(
+        response(OPERATION, 0, None, Some(Structure::new()))
+            .unwrap()
+            .result()
+            .status()
+            .raw(),
+        0
+    );
+    for value in [
+        Value::enumeration(1),
+        Value::text_string(SENTINEL.to_owned()),
+        Value::structure(Structure::new()),
+    ] {
+        let error =
+            response(OPERATION, 0, None, Some(structure([item(FUNCTION, value)]))).unwrap_err();
         assert_eq!(error, InteropError::MalformedResponsePayload);
         assert!(!format!("{error:?} {error}").contains(SENTINEL));
     }
@@ -43,26 +67,62 @@ fn table_242_success_requires_empty_payload() {
 
 #[test]
 fn table_243_failure_pending_and_unknown_results_are_preserved() {
-    for name in ["Invalid Field", "Attestation Failed", "Attestation Required", "Feature Not Supported", "Invalid Message", "Operation Not Supported", "Permission Denied", "Response Too Large"] {
-        let reason = crate::ResultReason::known_values().iter().find(|(_, n)| *n == name).unwrap().0.raw();
-        assert_eq!(response(OPERATION, 1, Some(reason), None).unwrap().result().reason().unwrap().raw(), reason);
+    for name in [
+        "Invalid Field",
+        "Attestation Failed",
+        "Attestation Required",
+        "Feature Not Supported",
+        "Invalid Message",
+        "Operation Not Supported",
+        "Permission Denied",
+        "Response Too Large",
+    ] {
+        let reason = crate::ResultReason::known_values()
+            .iter()
+            .find(|(_, n)| *n == name)
+            .unwrap()
+            .0
+            .raw();
+        assert_eq!(
+            response(OPERATION, 1, Some(reason), None)
+                .unwrap()
+                .result()
+                .reason()
+                .unwrap()
+                .raw(),
+            reason
+        );
     }
     for (status, reason) in [(1, Some(0xf1234567)), (2, None), (0xf1234567, None)] {
-        let result = response(OPERATION, status, reason, None).unwrap();
+        let payload = (status != 1).then(Structure::new);
+        let result = response(OPERATION, status, reason, payload).unwrap();
         assert_eq!(result.result().status().raw(), status);
-        assert_eq!(result.result().reason().map(crate::ResultReason::raw), reason);
+        assert_eq!(
+            result.result().reason().map(crate::ResultReason::raw),
+            reason
+        );
         result.with_ttlv(|tree| assert!(!tree.children().is_empty()));
     }
-    assert_eq!(response(0x3b, 0, None, Some(Structure::new())).unwrap_err(), InteropError::UnexpectedOperation);
+    assert_eq!(
+        response(0x3b, 0, None, Some(Structure::new())).unwrap_err(),
+        InteropError::UnexpectedOperation
+    );
 }
 
 #[test]
 fn response_errors_are_payload_free_and_preserve_sources() {
-    for error in [InteropError::UnexpectedOperation, InteropError::MissingResultStatus, InteropError::MissingResponsePayload, InteropError::MalformedResponsePayload, InteropError::MalformedResponseItem] {
+    for error in [
+        InteropError::UnexpectedOperation,
+        InteropError::MissingResultStatus,
+        InteropError::MissingResponsePayload,
+        InteropError::MalformedResponsePayload,
+        InteropError::MalformedResponseItem,
+    ] {
         assert!(!format!("{error:?} {error}").contains(SENTINEL));
         assert!(std::error::Error::source(&error).is_none());
     }
-    let error = InteropError::InvalidOperationResult(crate::ResultValidationError::SuccessForbidsReason);
+    let error =
+        InteropError::InvalidOperationResult(crate::ResultValidationError::SuccessForbidsReason);
     assert!(std::error::Error::source(&error).is_some());
     assert!(error.to_string().contains("Interop"));
 }
