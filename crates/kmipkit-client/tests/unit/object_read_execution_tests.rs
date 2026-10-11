@@ -2,8 +2,8 @@
 //! v2.1 §§6.1.19 and 6.1.28, Tables 220–222 and 247–249; §§8.6 and 9.1,
 //! Tables 399–400; §§9.2 and 11.3, Tables 431–432; §§11.46–11.47,
 //! Tables 479–480; and ID Placeholder behavior in §§6.1, 6.1.8/Table 187,
-//! and 9.8. Traceability: KMIPKIT-0017-FR-001, FR-003, FR-006–FR-010,
-//! FR-011, and SC-002. FR-009 is verified here by preserving the Locate
+//! and 9.8; §12.3, Table 498. Traceability: KMIPKIT-0017-FR-001, FR-003,
+//! FR-006–FR-011, and SC-002. FR-009 is verified here by preserving the Locate
 //! identifiers returned by the server without client-side filtering. These
 //! are client execution contracts, not claims of official OASIS case passes.
 
@@ -552,6 +552,103 @@ fn locate_batch_preserves_criteria_results_and_server_placeholder_boundary() {
     assert!(
         get_result.outcome().get_response().is_some(),
         "the subsequent Get response is exposed without a client-selected identifier"
+    );
+}
+
+#[test]
+fn locate_without_storage_status_mask_preserves_all_server_returned_identifiers() {
+    let returned_identifiers = [
+        "server-returned-fixture-alpha",
+        "server-returned-archived-labeled-fixture-id",
+        "server-returned-destroyed-labeled-fixture-id",
+    ];
+    let response = operation_batch_response_bytes([(
+        LOCATE_OPERATION,
+        LOCATE_BATCH_ID.to_vec(),
+        successful_locate_payload(&returned_identifiers),
+    )]);
+    let (mut client, _, captured_request) = client_for(ExchangeScript::Success {
+        response,
+        request_write_chunks: Vec::new(),
+    });
+    let batch = ClientBatch::new(
+        ClientBatchItem::new(ClientRequest::Locate(LocateRequest::new(
+            AttributeSet::new(),
+        )))
+        .with_unique_batch_item_id(LOCATE_BATCH_ID.to_vec()),
+    );
+
+    let response = client
+        .execute(batch, &CodecLimits::defaults())
+        .expect("the server returns a typed Locate response");
+
+    let request = captured_request.borrow();
+    let locate_request = request_item_snapshot(
+        request
+            .as_deref()
+            .expect("the Locate request reaches the fake transport"),
+        0,
+    )
+    .expect("the submitted Locate request is captured");
+    assert_eq!(
+        wire_field(&locate_request.payload, STORAGE_STATUS_MASK),
+        None,
+        "an omitted Storage Status Mask stays absent on the wire"
+    );
+
+    let locate_response = response
+        .get(0)
+        .expect("one Locate result is returned")
+        .outcome()
+        .locate_response()
+        .expect("the Locate result remains typed");
+    assert_eq!(
+        locate_response.unique_identifiers(),
+        &returned_identifiers.map(|identifier| UniqueIdentifier::TextString(identifier.to_owned())),
+        "the client exposes every returned identifier in server order; fixture labels do not assert object status"
+    );
+}
+
+#[test]
+fn locate_forwards_assigned_and_unknown_storage_status_bits_unchanged() {
+    let raw_mask = 0x8000_0007;
+    let response = operation_batch_response_bytes([(
+        LOCATE_OPERATION,
+        LOCATE_BATCH_ID.to_vec(),
+        successful_locate_payload(&[]),
+    )]);
+    let (mut client, _, captured_request) = client_for(ExchangeScript::Success {
+        response,
+        request_write_chunks: Vec::new(),
+    });
+    let locate = LocateRequest::new(AttributeSet::new())
+        .with_storage_status_mask(StorageStatusMask::from_raw(raw_mask));
+    let batch = ClientBatch::new(
+        ClientBatchItem::new(ClientRequest::Locate(locate))
+            .with_unique_batch_item_id(LOCATE_BATCH_ID.to_vec()),
+    );
+
+    client
+        .execute(batch, &CodecLimits::defaults())
+        .expect("the server returns a typed Locate response");
+
+    let request = captured_request.borrow();
+    let locate_request = request_item_snapshot(
+        request
+            .as_deref()
+            .expect("the Locate request reaches the fake transport"),
+        0,
+    )
+    .expect("the submitted Locate request is captured");
+    let Some(WireValue::Integer(encoded_mask)) =
+        wire_field(&locate_request.payload, STORAGE_STATUS_MASK)
+    else {
+        panic!("the explicit Storage Status Mask is encoded as an Integer");
+    };
+    assert_eq!(
+        encoded_mask.to_be_bytes(),
+        raw_mask.to_be_bytes(),
+        "the assigned Online, Archived, and Destroyed bits plus the unknown bit reach the wire unchanged"
     );
 }
 
