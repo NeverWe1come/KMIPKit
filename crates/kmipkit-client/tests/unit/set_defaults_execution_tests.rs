@@ -212,6 +212,35 @@ fn table_329_success_returns_typed_result_with_empty_payload() {
 }
 
 #[test]
+fn typed_set_defaults_convenience_call_returns_operation_result() {
+    let (mut client, fake, _) = client_for(ExchangeScript::Success {
+        response: asynchronous_response_bytes(
+            SET_DEFAULTS,
+            0,
+            None,
+            None,
+            Some(test_structure([])),
+        ),
+        request_write_chunks: Vec::new(),
+    });
+    let response = client
+        .set_defaults(SetDefaultsRequest::new(), &CodecLimits::defaults())
+        .expect("typed convenience method executes one request");
+    assert_eq!(fake.borrow().exchange_count(), 1);
+    let outcome = response.outcome();
+    let response_view = outcome.response();
+    assert_eq!(
+        response_view
+            .set_defaults()
+            .expect("typed Set Defaults response")
+            .result()
+            .status()
+            .raw(),
+        0
+    );
+}
+
+#[test]
 fn table_330_failure_reason_message_and_unknown_reason_are_preserved_without_retry() {
     for reason in [
         0x07,

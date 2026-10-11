@@ -69,6 +69,7 @@ mod set_constraints;
 #[cfg(test)]
 #[path = "../tests/unit/set_constraints_tests.rs"]
 mod set_constraints_tests;
+mod set_defaults;
 #[cfg(test)]
 #[path = "../tests/unit/set_defaults_tests.rs"]
 mod set_defaults_tests;
@@ -163,6 +164,7 @@ pub use result::{
 pub use revoke::{RevocationReason, RevokeError, RevokeRequest, RevokeResponse};
 pub use set_attribute::{SetAttributeError, SetAttributeRequest, SetAttributeResponse};
 pub use set_constraints::{SetConstraintsError, SetConstraintsRequest, SetConstraintsResponse};
+pub use set_defaults::{SetDefaultsError, SetDefaultsRequest, SetDefaultsResponse};
 pub use sign::{SignError, SignRequest, SignResponse};
 pub use signature_verify::{SignatureVerifyError, SignatureVerifyRequest, SignatureVerifyResponse};
 pub use ticket::{Ticket, TicketType, TicketValidationError, TicketValidationErrorKind};

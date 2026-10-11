@@ -35,8 +35,8 @@ use kmipkit_protocol::{
     RecoverResponse, RegisterRequest, RegisterResponse, RekeyKeyPairRequest, RekeyKeyPairResponse,
     RekeyRequest, RekeyResponse, RequestMessage, ResponseBatchItemView, ResponseMessage,
     ResultStatus, RevokeRequest, RevokeResponse, SetAttributeRequest, SetAttributeResponse,
-    SetConstraintsRequest, SetConstraintsResponse, SignRequest, SignResponse,
-    SignatureVerifyRequest, SignatureVerifyResponse,
+    SetConstraintsRequest, SetConstraintsResponse, SetDefaultsRequest, SetDefaultsResponse,
+    SignRequest, SignResponse, SignatureVerifyRequest, SignatureVerifyResponse,
 };
 
 #[cfg(test)]
@@ -187,6 +187,7 @@ const PROCESS_OPERATION: u32 = 0x0000_003A;
 const PING_OPERATION: u32 = 0x0000_003B;
 const GET_CONSTRAINTS_OPERATION: u32 = 0x0000_0038; // KMIP v2.1 §6.1.22, Table 229.
 const SET_CONSTRAINTS_OPERATION: u32 = 0x0000_0037; // KMIP v2.1 §6.1.52, Table 325.
+const SET_DEFAULTS_OPERATION: u32 = 0x0000_0036; // KMIP v2.1 §6.1.53, Table 328.
 const GET_USAGE_ALLOCATION_OPERATION: u32 = 0x0000_0011; // §6.1.23, Table 232.
 const QUERY_OPERATION: u32 = 0x0000_0018;
 const ASYNCHRONOUS_MANDATORY: u32 = 1;
@@ -267,6 +268,8 @@ pub enum ClientRequest {
     GetConstraints(GetConstraintsRequest),
     /// An explicit client-to-server Set Constraints request.
     SetConstraints(SetConstraintsRequest),
+    /// An explicit client-to-server Set Defaults request.
+    SetDefaults(SetDefaultsRequest),
     /// An explicit client-to-server Get Usage Allocation request.
     GetUsageAllocation(GetUsageAllocationRequest),
     /// An explicit client-to-server Query request.
@@ -318,6 +321,12 @@ impl ClientRequest {
     #[must_use]
     pub fn set_constraints(request: SetConstraintsRequest) -> Self {
         Self::SetConstraints(request)
+    }
+
+    /// Creates a typed client-to-server Set Defaults request.
+    #[must_use]
+    pub fn set_defaults(request: SetDefaultsRequest) -> Self {
+        Self::SetDefaults(request)
     }
 
     /// Creates a typed client-to-server Get Usage Allocation request.
@@ -582,6 +591,7 @@ impl ClientRequest {
             Self::Ping(_) => PING_OPERATION,
             Self::GetConstraints(_) => GET_CONSTRAINTS_OPERATION,
             Self::SetConstraints(_) => SET_CONSTRAINTS_OPERATION,
+            Self::SetDefaults(_) => SET_DEFAULTS_OPERATION,
             Self::GetUsageAllocation(_) => GET_USAGE_ALLOCATION_OPERATION,
             Self::Query(_) => QUERY_OPERATION,
             Self::Encrypt(_) => ENCRYPT_OPERATION,
@@ -686,6 +696,7 @@ impl ClientRequest {
             Self::Ping(request) => request.to_ttlv_payload(),
             Self::GetConstraints(request) => request.to_ttlv_payload(),
             Self::SetConstraints(request) => request.to_ttlv_payload(),
+            Self::SetDefaults(request) => request.to_ttlv_payload(),
             Self::GetUsageAllocation(request) => request.to_ttlv_payload(),
             Self::Query(request) => request.to_ttlv_payload(),
             Self::Encrypt(request) => request.to_ttlv_payload(),
@@ -757,6 +768,9 @@ impl fmt::Debug for ClientRequest {
                 .debug_tuple("SetConstraints")
                 .field(request)
                 .finish(),
+            Self::SetDefaults(request) => {
+                formatter.debug_tuple("SetDefaults").field(request).finish()
+            }
             Self::GetUsageAllocation(request) => formatter
                 .debug_tuple("GetUsageAllocation")
                 .field(request)
@@ -1074,6 +1088,7 @@ enum PendingResponse {
     Ping(PingResponse),
     GetConstraints(GetConstraintsResponse),
     SetConstraints(SetConstraintsResponse),
+    SetDefaults(SetDefaultsResponse),
     GetUsageAllocation(GetUsageAllocationResponse),
     Query(QueryResponse),
 }
@@ -1124,6 +1139,7 @@ impl PendingResponse {
             Self::Ping(response) => ClientResponseRef::Ping(response),
             Self::GetConstraints(response) => ClientResponseRef::GetConstraints(response),
             Self::SetConstraints(response) => ClientResponseRef::SetConstraints(response),
+            Self::SetDefaults(response) => ClientResponseRef::SetDefaults(response),
             Self::GetUsageAllocation(response) => ClientResponseRef::GetUsageAllocation(response),
             Self::Query(response) => ClientResponseRef::Query(response),
         };
@@ -1350,6 +1366,8 @@ pub enum ClientOperation {
     GetConstraints,
     /// Configure the server's Constraints Structure.
     SetConstraints,
+    /// Configure the server's Object Defaults.
+    SetDefaults,
     /// Allocate Usage Limits Units for a managed object.
     GetUsageAllocation,
     /// Query one server for explicitly requested protocol information.
@@ -1542,6 +1560,7 @@ enum ClientResponseRef<'a> {
     Ping(&'a PingResponse),
     GetConstraints(&'a GetConstraintsResponse),
     SetConstraints(&'a SetConstraintsResponse),
+    SetDefaults(&'a SetDefaultsResponse),
     GetUsageAllocation(&'a GetUsageAllocationResponse),
     Query(&'a QueryResponse),
 }
@@ -1609,6 +1628,7 @@ impl<'a> ClientResponseView<'a> {
             ClientResponseRef::Ping(response) => response.result(),
             ClientResponseRef::GetConstraints(response) => response.result(),
             ClientResponseRef::SetConstraints(response) => response.result(),
+            ClientResponseRef::SetDefaults(response) => response.result(),
             ClientResponseRef::GetUsageAllocation(response) => response.result(),
             ClientResponseRef::Query(response) => response.result(),
         }
@@ -2014,6 +2034,15 @@ impl<'a> ClientResponseView<'a> {
         }
     }
 
+    /// Returns a Set Defaults response, including a Pending result.
+    #[must_use]
+    pub const fn set_defaults(&self) -> Option<&SetDefaultsResponse> {
+        match self.response {
+            ClientResponseRef::SetDefaults(response) => Some(response),
+            _ => None,
+        }
+    }
+
     /// Returns a Get Usage Allocation response, including a Pending result.
     #[must_use]
     pub const fn get_usage_allocation(&self) -> Option<&GetUsageAllocationResponse> {
@@ -2148,6 +2177,9 @@ impl fmt::Debug for ClientResponseView<'_> {
             ClientResponseRef::SetConstraints(response) => {
                 debug_response(formatter, "SetConstraints", response)
             }
+            ClientResponseRef::SetDefaults(response) => {
+                debug_response(formatter, "SetDefaults", response)
+            }
             ClientResponseRef::GetUsageAllocation(response) => {
                 debug_response(formatter, "GetUsageAllocation", response)
             }
@@ -2247,6 +2279,8 @@ pub enum ClientBatchOutcome {
     GetConstraints(GetConstraintsResponse),
     /// The server returned a Set Constraints result.
     SetConstraints(SetConstraintsResponse),
+    /// The server returned a Set Defaults result.
+    SetDefaults(SetDefaultsResponse),
     /// The server returned a Get Usage Allocation result.
     GetUsageAllocation(GetUsageAllocationResponse),
     /// The server returned a Query result.
@@ -2301,6 +2335,7 @@ impl ClientBatchOutcome {
             | Self::Ping(_)
             | Self::GetConstraints(_)
             | Self::SetConstraints(_)
+            | Self::SetDefaults(_)
             | Self::GetUsageAllocation(_)
             | Self::Query(_) => None,
             Self::Pending(pending) => Some(pending.asynchronous_correlation_value()),
@@ -2354,6 +2389,7 @@ impl ClientBatchOutcome {
             Self::Ping(response) => response.result(),
             Self::GetConstraints(response) => response.result(),
             Self::SetConstraints(response) => response.result(),
+            Self::SetDefaults(response) => response.result(),
             Self::GetUsageAllocation(response) => response.result(),
             Self::Query(response) => response.result(),
             Self::Pending(pending) => pending.result(),
@@ -2407,6 +2443,7 @@ impl ClientBatchOutcome {
             Self::Ping(_) => ClientOperation::Ping,
             Self::GetConstraints(_) => ClientOperation::GetConstraints,
             Self::SetConstraints(_) => ClientOperation::SetConstraints,
+            Self::SetDefaults(_) => ClientOperation::SetDefaults,
             Self::GetUsageAllocation(_) => ClientOperation::GetUsageAllocation,
             Self::Query(_) => ClientOperation::Query,
             Self::Pending(pending) => pending.operation(),
@@ -2923,6 +2960,9 @@ impl ClientBatchOutcome {
             Self::SetConstraints(response) => {
                 ClientResponseView::new(ClientResponseRef::SetConstraints(response))
             }
+            Self::SetDefaults(response) => {
+                ClientResponseView::new(ClientResponseRef::SetDefaults(response))
+            }
             Self::GetUsageAllocation(response) => {
                 ClientResponseView::new(ClientResponseRef::GetUsageAllocation(response))
             }
@@ -3049,6 +3089,10 @@ impl fmt::Debug for ClientBatchOutcome {
                 .debug_tuple("SetConstraints")
                 .field(response)
                 .finish(),
+            Self::SetDefaults(response) => formatter
+                .debug_tuple("SetDefaults")
+                .field(response)
+                .finish(),
             Self::GetUsageAllocation(response) => formatter
                 .debug_tuple("GetUsageAllocation")
                 .field(response)
@@ -3146,6 +3190,9 @@ impl fmt::Display for ClientBatchOutcome {
             }
             Self::SetConstraints(response) => {
                 write!(formatter, "SetConstraints({})", response.result())
+            }
+            Self::SetDefaults(response) => {
+                write!(formatter, "SetDefaults({})", response.result())
             }
             Self::GetUsageAllocation(response) => {
                 write!(formatter, "GetUsageAllocation({})", response.result())
@@ -4144,6 +4191,24 @@ impl Client {
             ClientBatch::new(ClientBatchItem::new(ClientRequest::set_constraints(
                 request,
             ))),
+            limits,
+        )?;
+        take_single_item_response(response.items)
+    }
+
+    /// Executes one Set Defaults request through one transport exchange.
+    ///
+    /// # Errors
+    ///
+    /// Returns a sanitized validation, protocol, or transport error with the
+    /// strongest available request-delivery evidence.
+    pub fn set_defaults(
+        &mut self,
+        request: SetDefaultsRequest,
+        limits: &CodecLimits,
+    ) -> Result<ClientBatchItemResponse, ClientError> {
+        let response = self.execute(
+            ClientBatch::new(ClientBatchItem::new(ClientRequest::set_defaults(request))),
             limits,
         )?;
         take_single_item_response(response.items)
@@ -5296,6 +5361,7 @@ fn request_mutation_is_prohibited(request: &ClientRequest) -> bool {
         | ClientRequest::Ping(_)
         | ClientRequest::GetConstraints(_)
         | ClientRequest::SetConstraints(_)
+        | ClientRequest::SetDefaults(_)
         | ClientRequest::GetUsageAllocation(_)
         | ClientRequest::Query(_)
         | ClientRequest::Encrypt(_)
@@ -5951,6 +6017,7 @@ fn response_outcome(
         ),
         GET_CONSTRAINTS_OPERATION => get_constraints_response_outcome(item),
         SET_CONSTRAINTS_OPERATION => set_constraints_response_outcome(item),
+        SET_DEFAULTS_OPERATION => set_defaults_response_outcome(item),
         GET_USAGE_ALLOCATION_OPERATION => get_usage_allocation_response_outcome(item),
         DISCOVER_VERSIONS_OPERATION => {
             let response = DiscoverVersionsResponse::try_from_response_item(item)
@@ -6010,6 +6077,19 @@ fn set_constraints_response_outcome(
         SetConstraintsResponse::result,
         PendingResponse::SetConstraints,
         ClientBatchOutcome::SetConstraints,
+    )
+}
+
+fn set_defaults_response_outcome(
+    item: ResponseBatchItemView<'_>,
+) -> Result<ClientBatchOutcome, ProtocolError> {
+    read_operation_outcome(
+        ClientOperation::SetDefaults,
+        item,
+        SetDefaultsResponse::try_from_response_item,
+        SetDefaultsResponse::result,
+        PendingResponse::SetDefaults,
+        ClientBatchOutcome::SetDefaults,
     )
 }
 

@@ -104,7 +104,7 @@ Each task uses `[ ] T### [US#] action in exact/repository/path`. Every implement
 
 ### Green commit
 
-- [ ] T015 [US4] Implement `SetDefaultsRequest`/`SetDefaultsResponse` in `crates/kmipkit-protocol/src/set_defaults.rs`, export via protocol/facade `lib.rs`, and add explicit execution in `crates/kmipkit-client/src/execute.rs` and `crates/kmipkit-client/src/lib.rs`; preserve omission as omission, pass T014, and commit separately as Green.
+- [x] T015 [US4] Implement `SetDefaultsRequest`/`SetDefaultsResponse` in `crates/kmipkit-protocol/src/set_defaults.rs`, export via protocol/facade `lib.rs`, and add explicit execution in `crates/kmipkit-client/src/execute.rs` and `crates/kmipkit-client/src/lib.rs`; preserve omission as omission, pass T014, and commit separately as Green. Table 328 omission is encoded as no field; `Some(Structure::new())` remains one empty Defaults Information Structure. Typed success retains the full response payload and unknown fields. Client exposes batch and direct convenience APIs; Pending uses one exchange with exact correlation and no implicit Poll/retry. Verified 7 protocol and 7 client focused tests, focused Clippy (`-D warnings`), formatting, and `git diff --check`. Independent QA approved; source attribution follows Table 328 for omission and DISC-020 for Table 330's truncated error introduction.
 
 ### Refactor commit
 
