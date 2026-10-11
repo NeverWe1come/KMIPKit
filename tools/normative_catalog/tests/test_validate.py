@@ -7373,6 +7373,11 @@ class CatalogValidationTests(unittest.TestCase):
             [("SHALL", "server", "server_to_client", "Errors are detected during Set Defaults.",
               "server_only", None)],
         )
+        self.assertEqual(error_review["source_obligations"][0]["source_order"], 1)
+        self.assertEqual(
+            error_review["source_obligations"][0]["source_text"],
+            pinned_source_excerpt(source_path, [36093, 36096]),
+        )
         self.assertEqual(error_review["expected_client_requirement_ids"], [])
         self.assertEqual(error_review["source_context"], pinned_source_excerpt(source_path, [36093, 36096]))
         self.assertIn("Set Defaults Operation", error_review["source_context"])
