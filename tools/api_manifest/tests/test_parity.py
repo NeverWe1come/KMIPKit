@@ -74,6 +74,10 @@ class PublicApiParityTests(unittest.TestCase):
     def setUpClass(cls) -> None:
         cls.manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
 
+    @staticmethod
+    def _shared_parity_case(cases: list[dict[str, Any]], capability: str) -> dict[str, Any]:
+        return next(case for case in cases if case["capability"] == capability)
+
     def test_manifest_covers_every_registry_requirement(self) -> None:
         self.assertTrue(set(REQUIREMENT_IDS).issubset(self.manifest["requirementIds"]))
 
@@ -129,33 +133,21 @@ class PublicApiParityTests(unittest.TestCase):
                 self.assertIn("::", case["consumerTests"]["rust"])
                 self.assertIn("::", case["consumerTests"]["c"])
 
-        redaction = next(
-            case for case in cases
-            if case["capability"] == "error_category_and_redaction"
-        )
+        redaction = self._shared_parity_case(cases, "error_category_and_redaction")
         self.assertEqual(redaction["errorCategory"], "resource_limit")
         self.assertTrue(redaction["expectedOutput"]["diagnosticOmitsInputMarker"])
 
-        batch = next(
-            case for case in cases
-            if case["capability"] == "ordered_batch_outcomes"
-        )
+        batch = self._shared_parity_case(cases, "ordered_batch_outcomes")
         self.assertEqual(batch["expectedOutput"]["itemIndexes"], [0, 1, 2])
         self.assertEqual(batch["expectedOutput"]["pendingCount"], 1)
         self.assertFalse(batch["expectedOutput"]["automaticFollowUp"])
 
-        ttlv = next(
-            case for case in cases
-            if case["capability"] == "generic_ttlv_losslessness"
-        )
+        ttlv = self._shared_parity_case(cases, "generic_ttlv_losslessness")
         self.assertEqual(ttlv["expectedOutput"]["childTagsInOrder"], ["0x540001", "0x540002"])
         self.assertEqual(ttlv["expectedOutput"]["enumerationValue"], 0xE1020304)
         self.assertTrue(ttlv["expectedOutput"]["unknownValuesPreserved"])
 
-        extension = next(
-            case for case in cases
-            if case["capability"] == "extension_registry_recognition"
-        )
+        extension = self._shared_parity_case(cases, "extension_registry_recognition")
         extension_fixtures = json.loads(
             (ROOT / extension["input"]["sourceFixture"]).read_text(encoding="utf-8")
         )
