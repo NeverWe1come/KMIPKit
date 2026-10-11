@@ -52,6 +52,7 @@ mod recover;
 mod rekey;
 mod rekey_key_pair;
 mod reprovision;
+mod register;
 mod result;
 mod set_attribute;
 mod sign;
@@ -122,6 +123,7 @@ pub use recover::{RecoverError, RecoverRequest, RecoverResponse};
 pub use rekey::{RekeyError, RekeyRequest, RekeyResponse};
 pub use rekey_key_pair::{RekeyKeyPairError, RekeyKeyPairRequest, RekeyKeyPairResponse};
 pub use reprovision::{ReProvisionError, ReProvisionRequest, ReProvisionResponse};
+pub use register::{RegisterError, RegisterRequest, RegisterResponse};
 pub use result::{
     KmipOperationResult, ResultMessage, ResultReason, ResultStatus, ResultValidationError,
 };
@@ -172,6 +174,10 @@ mod rekey_key_pair_operation_tests;
 #[cfg(test)]
 #[path = "../tests/unit/reprovision_operation_tests.rs"]
 mod reprovision_operation_tests;
+
+#[cfg(test)]
+#[path = "../tests/unit/register_operation_tests.rs"]
+mod register_operation_tests;
 
 #[cfg(test)]
 #[path = "../tests/unit/destroy_operation_tests.rs"]
