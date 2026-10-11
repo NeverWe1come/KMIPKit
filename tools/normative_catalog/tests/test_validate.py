@@ -12383,7 +12383,7 @@ class CatalogValidationTests(unittest.TestCase):
             "KMIPKIT-REQ-SPEC-6.1.29-003",
             "KMIPKIT-REQ-SPEC-6.1.44-004",
             "KMIPKIT-REQ-SPEC-6.1.49-001",
-            "KMIPKIT-REQ-SPEC-6.1.50-002",
+            "KMIPKIT-REQ-SPEC-6.1.50-004",
         }
         conditional_body_proposals = {
             "KMIPKIT-REQ-SPEC-6.1.24-002",
