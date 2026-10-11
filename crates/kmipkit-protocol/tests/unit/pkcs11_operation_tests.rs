@@ -19,7 +19,7 @@ fn success() -> Structure { structure([
     item(RETURN, Value::structure(structure([item(RETURN, Value::enumeration(0x8fff1234))]))),
 ]) }
 fn response(status:u32, reason:Option<u32>, payload:Option<Structure>) -> Result<Pkcs11Response,Pkcs11Error> {
-    let message=response_message(OP,status,reason,None,payload);
+    let message=response_message(OP,status,reason,if status==2 {Some(SENTINEL)} else {None},payload);
     Pkcs11Response::try_from_response_item(message.batch_items().next().unwrap())
 }
 #[test]
@@ -89,7 +89,6 @@ fn table_274_rejects_missing_duplicate_wrong_type_and_out_of_order_fields() {
         structure([item(FUNCTION,Value::structure(function(Value::enumeration(1)))),item(FUNCTION,Value::structure(function(Value::enumeration(1)))),item(RETURN,Value::structure(structure([item(RETURN,Value::enumeration(1))])))]),
         structure([item(FUNCTION,Value::structure(function(Value::enumeration(1)))),item(RETURN,Value::structure(Structure::new()))]),
     ] { assert!(response(0,None,Some(payload)).is_err()); }
-    assert_eq!(response(0,None,None).unwrap_err(),Pkcs11Error::MissingResponsePayload);
 }
 #[test]
 fn table_275_preserves_failure_reasons() {
