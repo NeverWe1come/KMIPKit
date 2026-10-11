@@ -44,6 +44,17 @@ class ProfileGenerationError(ValueError):
     """Raised when profile metadata cannot be expanded without ambiguity."""
 
 
+def _is_unresolved_client_scope(requirement: Mapping[str, Any]) -> bool:
+    """Return whether a client obligation still lacks profile applicability."""
+    if requirement.get("role") not in {"client", "both"}:
+        return False
+    scope_state = requirement.get("scope_state")
+    return scope_state == "unclear" or (
+        scope_state == "profile_conditional"
+        and not requirement.get("profile_ids")
+    )
+
+
 @dataclass(frozen=True)
 class ProfileClosure:
     """The deterministic normative clause and applicable requirement closure."""
@@ -269,11 +280,7 @@ def compute_profile_closure(
             clause_id for clause_id in linked_clauses
             if isinstance(clause_id, str) and clause_id in source_clause_ids
         ]
-        unresolved_scope = scope_state == "unclear" or (
-            scope_state == "profile_conditional"
-            and not requirement.get("profile_ids")
-        )
-        if requirement.get("role") in {"client", "both"} and unresolved_scope:
+        if _is_unresolved_client_scope(requirement):
             unresolved_scope_obligations.update(
                 UnresolvedProfileScopeObligation(requirement_id, clause_id, scope_state)
                 for clause_id in intersects_closure

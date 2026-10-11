@@ -15,8 +15,10 @@ from pathlib import Path
 from typing import Any
 
 if __package__:
+    from .generate_profiles import _is_unresolved_client_scope
     from .safe_io import PathSecurityError, atomic_write_bytes, confined_path, safe_read_bytes
 else:
+    from generate_profiles import _is_unresolved_client_scope
     from safe_io import PathSecurityError, atomic_write_bytes, confined_path, safe_read_bytes
 
 
@@ -435,15 +437,9 @@ def _unresolved_profile_scope_blockers(
     }
     blockers: list[str] = []
     for requirement in catalog.get("requirements", []):
-        if not isinstance(requirement, dict) or requirement.get("role") not in {"client", "both"}:
+        if not isinstance(requirement, dict) or not _is_unresolved_client_scope(requirement):
             continue
         scope_state = requirement.get("scope_state")
-        unresolved = scope_state == "unclear" or (
-            scope_state == "profile_conditional"
-            and not requirement.get("profile_ids")
-        )
-        if not unresolved:
-            continue
         requirement_id = requirement.get("requirement_id")
         if not isinstance(requirement_id, str):
             continue
