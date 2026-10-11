@@ -137,19 +137,22 @@ pub type RngSeedError = CryptographicOperationError;
 
 fn parse_success_payload(payload: &StructureView<'_>) -> Result<i32, RngSeedError> {
     let mut data_length = None;
-    for field in payload.children() {
-        if field.tag().raw() == DATA_LENGTH {
-            if data_length.is_some() {
-                return Err(malformed_response());
-            }
-            data_length = field.with_value(|value| match value {
-                ValueView::Integer(value) => Some(*value),
-                _ => None,
-            });
-            if data_length.is_none() {
-                return Err(malformed_response());
-            }
+    for field in payload
+        .children()
+        .iter()
+        .filter(|field| field.tag().raw() == DATA_LENGTH)
+    {
+        if data_length.is_some() {
+            return Err(malformed_response());
         }
+        data_length = Some(
+            field
+                .with_value(|value| match value {
+                    ValueView::Integer(value) => Some(*value),
+                    _ => None,
+                })
+                .ok_or_else(malformed_response)?,
+        );
     }
     data_length.ok_or_else(malformed_response)
 }
