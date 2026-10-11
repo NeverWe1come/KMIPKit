@@ -4,8 +4,12 @@
 //! KMIPKIT-025-COMMON-RESULT.
 
 use crate::async_operation_fixtures::{item, response_message, structure};
-use crate::{ResponseMessage, ResultReason, SetConstraintsRequest, SetConstraintsResponse};
+use crate::{
+    ResponseMessage, ResultReason, ResultValidationError, SetConstraintsError,
+    SetConstraintsRequest, SetConstraintsResponse,
+};
 use kmipkit_ttlv::{ItemType, Structure, Value, ValueView};
+use std::error::Error as _;
 
 const SET_CONSTRAINTS: u32 = 0x0000_0037;
 const CONSTRAINTS: u32 = 0x0042_0168;
@@ -34,8 +38,11 @@ fn constraints() -> Structure {
 
 #[test]
 fn table_325_requires_and_preserves_the_ordered_constraints_structure() {
-    let requested = constraints();
-    let payload = SetConstraintsRequest::new(requested)
+    let requested = SetConstraintsRequest::new(constraints());
+    let constraint_view = requested.constraints();
+    assert_eq!(constraint_view.children().len(), 2);
+    assert_eq!(constraint_view.children()[0].tag().raw(), VENDOR_MEMBER);
+    let payload = requested
         .to_ttlv_payload()
         .expect("Table 325 Constraints Structure is representable");
     let payload_view = payload.view();
@@ -62,6 +69,53 @@ fn table_325_requires_and_preserves_the_ordered_constraints_structure() {
             )));
         });
     });
+}
+
+#[test]
+fn set_constraints_errors_format_messages_and_expose_only_wrapped_sources() {
+    let result_error = ResultValidationError::FailureRequiresReason;
+    let cases = [
+        (
+            SetConstraintsError::UnexpectedOperation,
+            "response item is not Set Constraints",
+        ),
+        (
+            SetConstraintsError::MissingResultStatus,
+            "Set Constraints result status is missing",
+        ),
+        (
+            SetConstraintsError::InvalidOperationResult(result_error),
+            "invalid Set Constraints result: Failure requires a Result Reason",
+        ),
+        (
+            SetConstraintsError::MissingSuccessPayload,
+            "successful Set Constraints payload is missing",
+        ),
+        (
+            SetConstraintsError::MalformedResponseItem,
+            "Set Constraints response item is malformed",
+        ),
+    ];
+
+    for (error, expected_message) in cases {
+        assert_eq!(error.to_string(), expected_message);
+    }
+
+    let invalid_result = SetConstraintsError::InvalidOperationResult(result_error);
+    assert_eq!(
+        invalid_result
+            .source()
+            .and_then(|source| source.downcast_ref::<ResultValidationError>()),
+        Some(&result_error)
+    );
+    for error in [
+        SetConstraintsError::UnexpectedOperation,
+        SetConstraintsError::MissingResultStatus,
+        SetConstraintsError::MissingSuccessPayload,
+        SetConstraintsError::MalformedResponseItem,
+    ] {
+        assert!(error.source().is_none());
+    }
 }
 
 #[test]
@@ -214,4 +268,12 @@ fn pending_is_preserved_without_fabricating_success_fields() {
     let response = SetConstraintsResponse::try_from_response_item(response_item(&message))
         .expect("Pending uses the common result contract");
     assert_eq!(response.result().status().raw(), 2);
+}
+
+#[test]
+fn set_constraints_rejects_another_operation() {
+    let message = response_message(0x0000_0001, 1, Some(0x07), None, None);
+    let error = SetConstraintsResponse::try_from_response_item(response_item(&message))
+        .expect_err("a different operation cannot be converted as Set Constraints");
+    assert_eq!(error, SetConstraintsError::UnexpectedOperation);
 }

@@ -5,8 +5,12 @@
 //! KMIPKIT-025-COMMON-RESULT.
 
 use crate::async_operation_fixtures::{item, response_message, structure};
-use crate::{ResponseMessage, ResultReason, SetDefaultsRequest, SetDefaultsResponse};
+use crate::{
+    ProtocolErrorKind, ResponseMessage, ResultReason, ResultValidationError, SetDefaultsError,
+    SetDefaultsRequest, SetDefaultsResponse,
+};
 use kmipkit_ttlv::{ItemType, Structure, Value, ValueView};
+use std::error::Error as _;
 
 const SET_DEFAULTS: u32 = 0x0000_0036;
 const DEFAULTS_INFORMATION: u32 = 0x0042_0152;
@@ -22,12 +26,23 @@ fn response_item(message: &ResponseMessage) -> crate::ResponseBatchItemView<'_> 
 
 #[test]
 fn table_328_preserves_omitted_empty_and_populated_defaults_information() {
-    let omitted = SetDefaultsRequest::new()
+    let omitted_request = SetDefaultsRequest::default();
+    assert!(omitted_request.defaults_information().is_none());
+    assert_eq!(
+        format!("{omitted_request:?}"),
+        "SetDefaultsRequest { has_defaults_information: false, defaults_information: \"[REDACTED]\" }"
+    );
+    let omitted = omitted_request
         .to_ttlv_payload()
         .expect("omitting Defaults Information is a valid request");
     assert!(omitted.view().children().is_empty());
 
     let supplied_empty = SetDefaultsRequest::new().with_defaults_information(Structure::new());
+    assert!(
+        supplied_empty
+            .defaults_information()
+            .is_some_and(|information| information.children().is_empty())
+    );
     let empty_payload = supplied_empty
         .to_ttlv_payload()
         .expect("an explicitly supplied empty structure remains present");
@@ -80,6 +95,71 @@ fn table_328_preserves_omitted_empty_and_populated_defaults_information() {
             )));
         });
     });
+}
+
+#[test]
+fn table_328_rejects_defaults_information_that_exceeds_the_local_nesting_limit() {
+    let mut information = Structure::new();
+    for _ in 0..63 {
+        let mut parent = Structure::new();
+        parent
+            .try_push(item(VENDOR_MEMBER, Value::structure(information)))
+            .expect("Defaults Information can be represented at depth 64");
+        information = parent;
+    }
+
+    let error = SetDefaultsRequest::new()
+        .with_defaults_information(information)
+        .to_ttlv_payload()
+        .expect_err("adding the Request Payload wrapper would exceed the local depth limit");
+    assert_eq!(error.kind(), ProtocolErrorKind::InvalidValue);
+}
+
+#[test]
+fn set_defaults_errors_format_messages_and_expose_only_wrapped_sources() {
+    let result_error = ResultValidationError::FailureRequiresReason;
+    let cases = [
+        (
+            SetDefaultsError::UnexpectedOperation,
+            "response item is not Set Defaults",
+        ),
+        (
+            SetDefaultsError::MissingResultStatus,
+            "Set Defaults result status is missing",
+        ),
+        (
+            SetDefaultsError::InvalidOperationResult(result_error),
+            "invalid Set Defaults result: Failure requires a Result Reason",
+        ),
+        (
+            SetDefaultsError::MissingSuccessPayload,
+            "successful Set Defaults payload is missing",
+        ),
+        (
+            SetDefaultsError::MalformedResponseItem,
+            "Set Defaults response item is malformed",
+        ),
+    ];
+
+    for (error, expected_message) in cases {
+        assert_eq!(error.to_string(), expected_message);
+    }
+
+    let invalid_result = SetDefaultsError::InvalidOperationResult(result_error);
+    assert_eq!(
+        invalid_result
+            .source()
+            .and_then(|source| source.downcast_ref::<ResultValidationError>()),
+        Some(&result_error)
+    );
+    for error in [
+        SetDefaultsError::UnexpectedOperation,
+        SetDefaultsError::MissingResultStatus,
+        SetDefaultsError::MissingSuccessPayload,
+        SetDefaultsError::MalformedResponseItem,
+    ] {
+        assert!(error.source().is_none());
+    }
 }
 
 #[test]

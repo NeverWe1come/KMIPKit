@@ -16,7 +16,7 @@ use crate::execute::encode_message_for_test;
 use crate::execute_test_support::{asynchronous_response_bytes, test_item, test_structure};
 use crate::{
     ClientBatch, ClientBatchItem, ClientBatchOutcome, ClientBatchResponse, ClientErrorCategory,
-    ClientRequest, UsageAllocationContext,
+    ClientRequest, UsageAllocationContext, UsageAllocationContextError,
 };
 
 const GET_USAGE_ALLOCATION: u32 = 0x0000_0011;
@@ -274,6 +274,53 @@ fn unsuccessful_pending_malformed_and_nonpositive_allocations_cannot_create_cont
             )
             .is_err()
         );
+    }
+}
+
+#[test]
+fn usage_allocation_context_errors_have_payload_free_display_messages() {
+    let cases = [
+        (
+            UsageAllocationContextError::AllocationNotSuccessful,
+            "usage allocation response is not successful",
+        ),
+        (
+            UsageAllocationContextError::InvalidAllocationCount,
+            "usage allocation count must be positive",
+        ),
+        (
+            UsageAllocationContextError::MissingResolvedIdentifier,
+            "usage allocation response has no resolved identifier",
+        ),
+        (
+            UsageAllocationContextError::InvalidUsageCost,
+            "usage cost must be positive",
+        ),
+        (
+            UsageAllocationContextError::CostExceedsAvailable,
+            "usage cost exceeds locally available allocation",
+        ),
+        (
+            UsageAllocationContextError::ReservationOverflow,
+            "usage reservation exceeds local integer bounds",
+        ),
+        (
+            UsageAllocationContextError::UnsupportedOperation,
+            "operation is outside the guarded protection scope",
+        ),
+        (
+            UsageAllocationContextError::MissingUniqueIdentifier,
+            "guarded protection requires an explicit object identifier",
+        ),
+        (
+            UsageAllocationContextError::MismatchedUniqueIdentifier,
+            "guarded protection object does not match the allocation",
+        ),
+    ];
+
+    for (error, expected) in cases {
+        assert_eq!(error.to_string(), expected);
+        assert!(!error.to_string().contains(OBJECT_ID));
     }
 }
 

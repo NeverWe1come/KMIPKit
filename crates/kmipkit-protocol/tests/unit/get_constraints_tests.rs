@@ -4,8 +4,12 @@
 //! These are not official OASIS Test Cases.
 
 use crate::async_operation_fixtures::{item, response_message, structure};
-use crate::{GetConstraintsRequest, GetConstraintsResponse, ResponseMessage, ResultReason};
-use kmipkit_ttlv::{Item, ItemType, Structure, Value};
+use crate::{
+    GetConstraintsError, GetConstraintsRequest, GetConstraintsResponse, ResponseMessage,
+    ResultReason, ResultValidationError,
+};
+use kmipkit_ttlv::{Item, ItemType, ModelError, Structure, Value};
+use std::error::Error as _;
 
 const GET_CONSTRAINTS: u32 = 0x0000_0038;
 const CONSTRAINTS: u32 = 0x0042_0168;
@@ -64,6 +68,10 @@ fn table_230_returns_required_constraints_without_reordering_unknown_nested_memb
         .expect("a Table 230 success is typed");
 
     assert_eq!(actual.result().status().raw(), 0);
+    assert_eq!(
+        format!("{actual:?}"),
+        "GetConstraintsResponse { result: KmipOperationResult { status: ResultStatus(0), reason: None, message: None }, has_constraints: true, response_ttlv: \"[REDACTED]\" }"
+    );
     let returned = actual.constraints().expect("success requires Constraints");
     let view = returned.view();
     let fields = view.children();
@@ -96,6 +104,70 @@ fn table_230_returns_required_constraints_without_reordering_unknown_nested_memb
             (VENDOR_MEMBER, ItemType::Integer),
         ]
     );
+}
+
+#[test]
+fn get_constraints_errors_format_messages_and_expose_only_wrapped_sources() {
+    let result_error = ResultValidationError::FailureRequiresReason;
+    let model_error = ModelError::TagNotAllocated;
+    let cases = [
+        (
+            GetConstraintsError::UnexpectedOperation,
+            "response item is not Get Constraints",
+        ),
+        (
+            GetConstraintsError::MissingResultStatus,
+            "Get Constraints result status is missing",
+        ),
+        (
+            GetConstraintsError::InvalidOperationResult(result_error),
+            "invalid Get Constraints result: Failure requires a Result Reason",
+        ),
+        (
+            GetConstraintsError::MissingSuccessPayload,
+            "successful Get Constraints payload is missing",
+        ),
+        (
+            GetConstraintsError::MalformedResponseItem,
+            "Get Constraints response item is malformed",
+        ),
+        (
+            GetConstraintsError::MalformedSuccessPayload,
+            "successful Get Constraints payload is malformed",
+        ),
+        (
+            GetConstraintsError::TtlvModel(model_error),
+            "invalid Get Constraints TTLV model: tag is reserved or unallocated",
+        ),
+    ];
+
+    for (error, expected_message) in cases {
+        assert_eq!(error.to_string(), expected_message);
+    }
+
+    let invalid_result = GetConstraintsError::InvalidOperationResult(result_error);
+    assert_eq!(
+        invalid_result
+            .source()
+            .and_then(|source| source.downcast_ref::<ResultValidationError>()),
+        Some(&result_error)
+    );
+    let invalid_ttlv = GetConstraintsError::TtlvModel(model_error);
+    assert_eq!(
+        invalid_ttlv
+            .source()
+            .and_then(|source| source.downcast_ref::<ModelError>()),
+        Some(&model_error)
+    );
+    for error in [
+        GetConstraintsError::UnexpectedOperation,
+        GetConstraintsError::MissingResultStatus,
+        GetConstraintsError::MissingSuccessPayload,
+        GetConstraintsError::MalformedResponseItem,
+        GetConstraintsError::MalformedSuccessPayload,
+    ] {
+        assert!(error.source().is_none());
+    }
 }
 
 #[test]

@@ -25,6 +25,7 @@ const RESPONSE_PAYLOAD: u32 = 0x0042_007C;
 const REQUEST_PAYLOAD: u32 = 0x0042_0079;
 const BATCH_ITEM: u32 = 0x0042_000F;
 const SERVER_MESSAGE: &str = "opaque-set-defaults-error";
+const DEBUG_SENTINEL: &str = "P025-DEBUG-SECRET-SENTINEL";
 
 fn request(defaults_information: Option<Structure>) -> ClientBatch {
     let mut request = SetDefaultsRequest::new();
@@ -183,6 +184,51 @@ fn table_328_populated_defaults_information_keeps_order_and_nested_values() {
 }
 
 #[test]
+fn set_defaults_outcome_exposes_typed_views_and_safe_diagnostics() {
+    // Table 329 defines an empty Success payload. This extra unknown child is
+    // intentionally a robustness-only, non-conformant fixture that checks the
+    // typed Debug wrappers redact retained raw response TTLV.
+    let (mut client, _, _) = client_for(ExchangeScript::Success {
+        response: asynchronous_response_bytes(
+            SET_DEFAULTS,
+            0,
+            None,
+            None,
+            Some(test_structure([test_item(
+                VENDOR_MEMBER,
+                Value::text_string(DEBUG_SENTINEL.to_owned()),
+            )])),
+        ),
+        request_write_chunks: Vec::new(),
+    });
+    let response = client
+        .execute(request(None), &CodecLimits::defaults())
+        .expect("Set Defaults succeeds");
+    let outcome = response.get(0).expect("one response").outcome();
+    let view = outcome.response();
+
+    assert_eq!(outcome.operation(), crate::ClientOperation::SetDefaults);
+    assert_eq!(outcome.result().status().raw(), 0);
+    assert_eq!(view.result().status().raw(), 0);
+    assert!(view.get_constraints().is_none());
+    assert!(view.set_constraints().is_none());
+    assert!(view.set_defaults().is_some());
+    assert!(view.get_usage_allocation().is_none());
+    let outcome_debug = format!("{outcome:?}");
+    let view_debug = format!("{view:?}");
+    assert!(outcome_debug.starts_with("SetDefaults("));
+    assert!(view_debug.starts_with("SetDefaults("));
+    for formatted in [&outcome_debug, &view_debug] {
+        assert!(formatted.contains("[REDACTED]"), "{formatted}");
+        assert!(!formatted.contains(DEBUG_SENTINEL), "{formatted}");
+    }
+    assert_eq!(
+        outcome.to_string(),
+        format!("SetDefaults({})", outcome.result())
+    );
+}
+
+#[test]
 fn table_329_success_returns_typed_result_with_empty_payload() {
     let (mut client, fake, _) = client_for(ExchangeScript::Success {
         response: asynchronous_response_bytes(
@@ -317,6 +363,9 @@ fn caller_enabled_pending_preserves_correlation_without_polling() {
         outcome.asynchronous_correlation_value(),
         Some(&correlation[..])
     );
+    let view = outcome.response();
+    assert!(view.set_defaults().is_some());
+    assert_eq!(view.result().status().raw(), 2);
 }
 
 #[test]

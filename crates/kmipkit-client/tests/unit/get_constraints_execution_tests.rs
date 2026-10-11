@@ -39,6 +39,13 @@ const ASYNCHRONOUS_CORRELATION_VALUE: u32 = 0x0042_0006;
 const BATCH_ID: &[u8] = b"get-constraints-batch";
 const CORRELATION: &[u8] = &[0xA5, 0x00, 0x5A, 0xFF];
 const SERVER_MESSAGE: &str = "opaque-server-message-get-constraints";
+const DEBUG_SENTINEL: &str = "P025-DEBUG-SECRET-SENTINEL";
+const CONSTRAINT_TAG: u32 = 0x0042_0169;
+const ATTRIBUTES_TAG: u32 = 0x0042_0025;
+const ATTRIBUTE_TAG: u32 = 0x0042_0008;
+const VENDOR_IDENTIFICATION_TAG: u32 = 0x0042_009D;
+const ATTRIBUTE_NAME_TAG: u32 = 0x0042_000A;
+const ATTRIBUTE_VALUE_TAG: u32 = 0x0042_000B;
 
 fn response_bytes(
     status: u32,
@@ -101,6 +108,27 @@ fn success_payload() -> Structure {
             test_item(VENDOR_MEMBER, Value::integer(2)),
         ])),
     )])
+}
+
+fn debug_sensitive_payload() -> Structure {
+    let attribute_value = test_structure([
+        test_item(
+            VENDOR_IDENTIFICATION_TAG,
+            Value::text_string("KMIPKit test vendor".to_owned()),
+        ),
+        test_item(
+            ATTRIBUTE_NAME_TAG,
+            Value::text_string("Debug Redaction Sentinel".to_owned()),
+        ),
+        test_item(
+            ATTRIBUTE_VALUE_TAG,
+            Value::byte_string(DEBUG_SENTINEL.as_bytes().to_vec()),
+        ),
+    ]);
+    let attributes = test_structure([test_item(ATTRIBUTE_TAG, Value::structure(attribute_value))]);
+    let constraint = test_structure([test_item(ATTRIBUTES_TAG, Value::structure(attributes))]);
+    let constraints = test_structure([test_item(CONSTRAINT_TAG, Value::structure(constraint))]);
+    test_structure([test_item(CONSTRAINTS, Value::structure(constraints))])
 }
 
 fn request_batch() -> ClientBatch {
@@ -170,6 +198,39 @@ fn table_229_empty_request_and_table_230_constraints_use_one_exchange() {
     assert_eq!(members[1].tag().raw(), VENDOR_MEMBER);
     assert!(members[0].with_value(|value| matches!(value, ValueView::Integer(1))));
     assert!(members[1].with_value(|value| matches!(value, ValueView::Integer(2))));
+}
+
+#[test]
+fn get_constraints_outcome_exposes_typed_views_and_safe_diagnostics() {
+    let (mut client, _, _) = client_for(ExchangeScript::Success {
+        response: response_bytes(0, None, None, None, None, Some(debug_sensitive_payload())),
+        request_write_chunks: Vec::new(),
+    });
+    let response = client
+        .execute(request_batch(), &CodecLimits::defaults())
+        .expect("Get Constraints succeeds");
+    let outcome = response.get(0).expect("one response").outcome();
+    let view = outcome.response();
+
+    assert_eq!(outcome.operation(), ClientOperation::GetConstraints);
+    assert_eq!(outcome.result().status().raw(), 0);
+    assert_eq!(view.result().status().raw(), 0);
+    assert!(view.get_constraints().is_some());
+    assert!(view.set_constraints().is_none());
+    assert!(view.set_defaults().is_none());
+    assert!(view.get_usage_allocation().is_none());
+    let outcome_debug = format!("{outcome:?}");
+    let view_debug = format!("{view:?}");
+    assert!(outcome_debug.starts_with("GetConstraints("));
+    assert!(view_debug.starts_with("GetConstraints("));
+    for formatted in [&outcome_debug, &view_debug] {
+        assert!(formatted.contains("[REDACTED]"), "{formatted}");
+        assert!(!formatted.contains(DEBUG_SENTINEL), "{formatted}");
+    }
+    assert_eq!(
+        outcome.to_string(),
+        format!("GetConstraints({})", outcome.result())
+    );
 }
 
 #[test]
@@ -256,7 +317,10 @@ fn pending_keeps_exact_correlation_and_does_not_poll() {
     };
     assert_eq!(pending.operation(), ClientOperation::GetConstraints);
     assert_eq!(pending.result().status().raw(), 2);
-    assert!(response.outcome().response().get_constraints().is_some());
+    let view = response.outcome().response();
+    assert!(view.get_constraints().is_some());
+    assert_eq!(view.result().status().raw(), 2);
+    assert!(format!("{view:?}").starts_with("GetConstraints("));
     assert!(!format!("{:?}", response.outcome()).contains("A5005AFF"));
 }
 

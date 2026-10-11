@@ -40,6 +40,7 @@ const ASYNCHRONOUS_CORRELATION_VALUE: u32 = 0x0042_0006;
 const BATCH_ID: &[u8] = b"get-usage-allocation-batch";
 const CORRELATION: &[u8] = &[0xA5, 0x00, 0x5A, 0xFF];
 const OBJECT_ID: &str = "usage-object-23";
+const DEBUG_SENTINEL: &str = "P025-DEBUG-SECRET-SENTINEL";
 
 fn response_bytes(
     status: u32,
@@ -285,6 +286,55 @@ fn pending_keeps_exact_correlation_and_does_not_poll() {
     assert_eq!(outcome.asynchronous_correlation_value(), Some(CORRELATION));
     assert!(matches!(outcome, ClientBatchOutcome::Pending(_)));
     assert!(!format!("{outcome:?}").contains("A5005AFF"));
+    let view = outcome.response();
+    assert!(view.get_usage_allocation().is_some());
+    assert_eq!(view.result().status().raw(), 2);
+    assert!(format!("{view:?}").starts_with("GetUsageAllocation("));
+}
+
+#[test]
+fn get_usage_allocation_outcome_exposes_typed_views_and_safe_diagnostics() {
+    let (mut client, _, _) = client_for(ExchangeScript::Success {
+        response: response_bytes(
+            0,
+            None,
+            None,
+            None,
+            Some(test_structure([test_item(
+                UNIQUE_IDENTIFIER_TAG,
+                Value::text_string(DEBUG_SENTINEL.to_owned()),
+            )])),
+        ),
+        request_write_chunks: Vec::new(),
+    });
+    let response = client
+        .execute(
+            request_batch(GetUsageAllocationRequest::new(1)),
+            &CodecLimits::defaults(),
+        )
+        .expect("Get Usage Allocation succeeds");
+    let outcome = response.get(0).expect("one response").outcome();
+    let view = outcome.response();
+
+    assert_eq!(outcome.operation(), ClientOperation::GetUsageAllocation);
+    assert_eq!(outcome.result().status().raw(), 0);
+    assert_eq!(view.result().status().raw(), 0);
+    assert!(view.get_constraints().is_none());
+    assert!(view.set_constraints().is_none());
+    assert!(view.set_defaults().is_none());
+    assert!(view.get_usage_allocation().is_some());
+    let outcome_debug = format!("{outcome:?}");
+    let view_debug = format!("{view:?}");
+    assert!(outcome_debug.starts_with("GetUsageAllocation("));
+    assert!(view_debug.starts_with("GetUsageAllocation("));
+    for formatted in [&outcome_debug, &view_debug] {
+        assert!(formatted.contains("[REDACTED]"), "{formatted}");
+        assert!(!formatted.contains(DEBUG_SENTINEL), "{formatted}");
+    }
+    assert_eq!(
+        outcome.to_string(),
+        format!("GetUsageAllocation({})", outcome.result())
+    );
 }
 
 #[test]

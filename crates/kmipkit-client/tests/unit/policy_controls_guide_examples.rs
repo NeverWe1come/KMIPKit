@@ -9,12 +9,22 @@ use kmipkit_protocol::{
     GetConstraintsRequest, GetUsageAllocationRequest, SetConstraintsRequest, SetDefaultsRequest,
     UniqueIdentifier,
 };
-use kmipkit_ttlv::{Structure, codec::CodecLimits};
+use kmipkit_ttlv::{Structure, Value, codec::CodecLimits};
 
+use crate::execute_test_support::{test_item, test_structure};
 use crate::{Client, ClientBatchItemResponse, ClientError, ClientRequest, UsageAllocationContext};
 
 const ENGLISH_GUIDE: &str = include_str!("../../../../docs/user-guide/en/policy-controls.md");
 const SPANISH_GUIDE: &str = include_str!("../../../../docs/user-guide/es/controles-de-uso.md");
+const DEBUG_SENTINEL: &str = "P025-DEBUG-SECRET-SENTINEL";
+const CONSTRAINT_TAG: u32 = 0x0042_0169;
+const ATTRIBUTES_TAG: u32 = 0x0042_0025;
+const ATTRIBUTE_TAG: u32 = 0x0042_0008;
+const VENDOR_IDENTIFICATION_TAG: u32 = 0x0042_009D;
+const ATTRIBUTE_NAME_TAG: u32 = 0x0042_000A;
+const ATTRIBUTE_VALUE_TAG: u32 = 0x0042_000B;
+const OBJECT_DEFAULTS_TAG: u32 = 0x0042_0153;
+const OBJECT_TYPE_TAG: u32 = 0x0042_0057;
 
 type AllocationExample = fn(
     &mut Client,
@@ -85,6 +95,49 @@ fn encrypt_with_allocation(
     )
 }
 
+fn vendor_attribute_with_debug_sentinel() -> Structure {
+    test_structure([test_item(
+        ATTRIBUTE_TAG,
+        Value::structure(test_structure([
+            test_item(
+                VENDOR_IDENTIFICATION_TAG,
+                Value::text_string("KMIPKit test vendor".to_owned()),
+            ),
+            test_item(
+                ATTRIBUTE_NAME_TAG,
+                Value::text_string("Debug Redaction Sentinel".to_owned()),
+            ),
+            test_item(
+                ATTRIBUTE_VALUE_TAG,
+                Value::byte_string(DEBUG_SENTINEL.as_bytes().to_vec()),
+            ),
+        ])),
+    )])
+}
+
+fn constraints_with_debug_sentinel() -> Structure {
+    test_structure([test_item(
+        CONSTRAINT_TAG,
+        Value::structure(test_structure([test_item(
+            ATTRIBUTES_TAG,
+            Value::structure(vendor_attribute_with_debug_sentinel()),
+        )])),
+    )])
+}
+
+fn defaults_with_debug_sentinel() -> Structure {
+    test_structure([test_item(
+        OBJECT_DEFAULTS_TAG,
+        Value::structure(test_structure([
+            test_item(OBJECT_TYPE_TAG, Value::enumeration(2)),
+            test_item(
+                ATTRIBUTES_TAG,
+                Value::structure(vendor_attribute_with_debug_sentinel()),
+            ),
+        ])),
+    )])
+}
+
 #[test]
 fn documented_policy_payloads_preserve_defaults_omission_semantics() {
     for guide in [ENGLISH_GUIDE, SPANISH_GUIDE] {
@@ -111,6 +164,50 @@ fn documented_policy_payloads_preserve_defaults_omission_semantics() {
 
     assert!(omitted.view().children().is_empty());
     assert_eq!(explicit_empty.view().children().len(), 1);
+}
+
+#[test]
+fn policy_request_debug_uses_operation_names_without_request_payloads() {
+    let constraints = constraints_with_debug_sentinel();
+    let defaults = defaults_with_debug_sentinel();
+    let requests = [
+        (ClientRequest::get_constraints(), "GetConstraints", false),
+        (
+            ClientRequest::set_constraints(SetConstraintsRequest::new(constraints)),
+            "SetConstraints(",
+            true,
+        ),
+        (
+            ClientRequest::set_defaults(
+                SetDefaultsRequest::new().with_defaults_information(defaults),
+            ),
+            "SetDefaults(",
+            true,
+        ),
+        (
+            ClientRequest::get_usage_allocation(GetUsageAllocationRequest::new(1)),
+            "GetUsageAllocation(",
+            false,
+        ),
+    ];
+
+    for (request, expected_prefix, has_sensitive_payload) in requests {
+        let formatted = format!("{request:?}");
+        assert!(
+            formatted.starts_with(expected_prefix),
+            "{formatted:?} starts with {expected_prefix:?}"
+        );
+        assert!(
+            !formatted.contains(DEBUG_SENTINEL),
+            "request Debug exposed a supplied payload: {formatted}"
+        );
+        if has_sensitive_payload {
+            assert!(
+                formatted.contains("[REDACTED]"),
+                "request Debug must mark payload redaction: {formatted}"
+            );
+        }
+    }
 }
 
 #[test]
