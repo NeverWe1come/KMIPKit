@@ -389,6 +389,52 @@ class CiSummaryTests(unittest.TestCase):
         self.assertIn("Unavailable — informational", markdown)
         self.assertNotIn("Attempt completed", markdown)
 
+    def test_protected_release_push_summary_renders_required_jobs(self) -> None:
+        summary_module = self.require_summary()
+
+        markdown, exit_code = summary_module.build_summary(
+            event_name="push",
+            context=self.release_context(),
+            needs=self.successful_release_needs(),
+        )
+
+        self.assertEqual(0, exit_code)
+        self.assertIn("CI result: PASS", markdown)
+        self.assertIn("Core matrix (3 OS × Rust 1.94 and stable)", markdown)
+        self.assertIn("Dependency policy", markdown)
+
+    def test_release_manifest_is_not_written_before_summary_rendering_succeeds(self) -> None:
+        summary_module = self.require_summary()
+        context = self.release_context()
+        with tempfile.TemporaryDirectory() as directory:
+            summary_path = Path(directory) / "step-summary.md"
+            output_path = Path(directory) / "step-output.txt"
+            environment = {
+                "GITHUB_STEP_SUMMARY": str(summary_path),
+                "GITHUB_OUTPUT": str(output_path),
+                "CI_NEEDS_JSON": json.dumps(self.successful_release_needs()),
+                "CI_BRANCH_PROTECTION_JSON": json.dumps(self.branch_protection()),
+                "GITHUB_EVENT_NAME": "push",
+                "GITHUB_REPOSITORY": context["repository"],
+                "GITHUB_REF": context["ref"],
+                "GITHUB_REF_PROTECTED": "true",
+                "GITHUB_WORKFLOW_REF": context["workflow_ref"],
+                "GITHUB_SHA": context["sha"],
+                "GITHUB_RUN_ID": context["run_id"],
+                "GITHUB_RUN_ATTEMPT": context["run_attempt"],
+                "GITHUB_SERVER_URL": "https://github.com",
+            }
+            with mock.patch.dict(os.environ, environment, clear=False):
+                with mock.patch.object(
+                    summary_module,
+                    "build_summary",
+                    side_effect=RuntimeError("summary rendering failed"),
+                ):
+                    with self.assertRaisesRegex(RuntimeError, "summary rendering failed"):
+                        summary_module.main()
+
+            self.assertFalse(output_path.exists())
+
     def test_untrusted_ref_is_escaped_before_markdown_rendering(self) -> None:
         summary_module = self.require_summary()
         context = self.context() | {"ref": "refs/pull/42/merge|oops\nInjected heading"}
