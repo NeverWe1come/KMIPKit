@@ -89,8 +89,12 @@ for constructing a client with verified TLS 1.3 mutual authentication.
 assumes `client` was constructed as shown in the
 [production transport guide](production-transports.md). It submits explicit
 Get and Locate requests and reads their responses in request order. An
-Asynchronous Indicator of `1` allows a valid Pending result as described in
-OASIS KMIP v2.1 §9.2, Table 401.
+Asynchronous Indicator of `1` is `Mandatory` (OASIS KMIP v2.1 §9.2,
+Table 401; §11.3, Tables 431–432). The server SHALL process every batch item
+asynchronously and return an Asynchronous Correlation Value for each item. This
+is a server requirement, not merely permission to return a Pending result.
+Pending and correlation semantics are described in §§9.1–9.2 and §8.6,
+Table 399.
 
 ```rust,kmipkit-test
 use kmipkit_client::{
@@ -184,10 +188,11 @@ workflow.
 The Get response carries the complete Any Object as an opaque generic TTLV
 item. KMIPKit preserves its structure and values; it does not decode key
 material or perform cryptographic operations. Inspect only permitted metadata
-such as Object Type, Unique Identifier, and the generic Any Object's tag or
-structure. Treat object contents as secret: do not format or log the object,
-key material, or raw KMIP bodies. KMIPKit-owned TTLV storage is zeroized when
-dropped; caller-created copies are outside that guarantee.
+such as Object Type and Unique Identifier, and the generic Any Object's tag.
+Do not inspect the Any Object structure or its descendants because they may
+contain secret-bearing data. Treat object contents as secret: do not format or
+log the object, key material, or raw KMIP bodies. KMIPKit-owned TTLV storage
+is zeroized when dropped; caller-created copies are outside that guarantee.
 
 Server Failure is a typed operation result with Result Status, Result Reason,
 and optional Result Message, not a local `ClientError`. Inspect an untrusted
