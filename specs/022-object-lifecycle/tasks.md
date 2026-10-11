@@ -12,9 +12,9 @@
 
 **Purpose**: Confirm branch, immutable sources, shared foundation, and binding dependency boundary.
 
-- [ ] T001 Confirm worktree is on `feature/KMIPKIT-0036-object-lifecycle`, based on active `release/1.0.0`, and record release base SHA and clean-worktree result in the implementation PR.
-- [ ] T002 Verify pinned source checksums in `specification/oasis/kmip-2.1/CHECKSUMS.sha256` and confirm no change under `specification/oasis/kmip-2.1/upstream/`.
-- [ ] T003 Confirm reusable TTLV/object/attribute/credential/result/batch/client/transport contracts in `crates/kmipkit-protocol/src/` and `crates/kmipkit-client/src/execute.rs`; keep language mapping under KMIPKIT-0043.
+- [X] T001 Confirm worktree is on `feature/KMIPKIT-0036-object-lifecycle`, based on active `release/1.0.0`, and record release base SHA and clean-worktree result in the implementation PR.
+- [X] T002 Verify pinned source checksums in `specification/oasis/kmip-2.1/CHECKSUMS.sha256` and confirm no change under `specification/oasis/kmip-2.1/upstream/`.
+- [X] T003 Confirm reusable TTLV/object/attribute/credential/result/batch/client/transport contracts in `crates/kmipkit-protocol/src/` and `crates/kmipkit-client/src/execute.rs`; keep language mapping under KMIPKIT-0043.
 
 ## Phase 2: Shared behavior baseline
 
