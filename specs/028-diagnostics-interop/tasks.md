@@ -142,8 +142,9 @@ Implement the Interop protocol/client vertical slice first, then Log with redact
 T001–T043, T045 and T046 are complete for the Rust scope, with distinct
 Red/Green/Refactor commits for each operation and layer. T044 remains gated
 until the approved KMIPKIT-0043 mapping is integrated into `release/1.0.0`.
-T047 remains open until required local gates and the independent two-server
-1.0 release evidence are complete. A published support statement or fake
+T047 remains open: final local workspace/lint/dependency checks passed; the
+coverage aggregate and independent two-server 1.0 release evidence remain
+pending. A published support statement or fake
 transport result is not a substitute for that evidence. See
 `implementation-evidence.md` for actual commands, results and remaining gates.
 

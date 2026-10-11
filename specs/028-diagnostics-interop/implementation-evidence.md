@@ -66,11 +66,11 @@ into release/1.0.0. No API manifest, generated binding signature, mapped adapter
 or parity test was changed. Rust models/calls are implemented; four-language
 parity is not claimed.
 
-T047 remains open. Full workspace test/coverage/security verification is
-coordinated serially with the other worktrees to avoid shared localhost/DNS
-fixture interference. Fresh final commands and actual outcomes will be
-recorded here. No threshold is lowered or bypassed. Local results do not
-replace supported-platform CI or the separate two-independent-server gate.
+T047 remains open. The final local workspace, lint, instrumented suite and
+dependency policy runs passed in the serial verification window. Coverage
+collection is recorded below; the official supported-platform and adapter
+aggregation remains a CI gate. No threshold is lowered or bypassed. Local
+results do not replace CI or the separate two-independent-server gate.
 
 No direct official OASIS Test Case is linked to these operations in the
 pinned catalog. No new two-server run occurred. The server matrix stays pending
@@ -103,6 +103,47 @@ were corrected as well.
 The first full Python catalog run had six gap-note wording failures and one
 safe-directory-lock failure observed during concurrent read/generation checks.
 The six notes now use the established pinned official-Test-Cases gap wording;
-the focused gap contract passes and an isolated rerun of all 13 source-audit
-tests passes. A stable final catalog-suite rerun is required before final local
-verification is claimed. No safe-I/O or requirement gate was relaxed.
+the focused gap contract and an isolated rerun of all 13 source-audit tests
+passed. The stable final catalog-suite rerun passed all 216 tests (7 existing
+skips) in 196.316 seconds. No safe-I/O or requirement gate was relaxed.
+
+## Final local checks and independent QA
+
+Verified snapshot: f89d7e5349132ed384154e7f797f83d4e4dfa799.
+A fresh fetch still resolves release/1.0.0 to a0846037eb9930b24d9b9e3d8c63b2e66b438d1a.
+Independent QA of 19e800fd reported no blocking findings. Its P3 request to
+correct two Validate success assertion messages was committed with DCO in
+2bdaaf4c0d81cf934680320477100fed8e43ee42; the 11-test client suite passed.
+The final workspace assertion-terminator lint fix is DCO commit f89d7e53.
+
+| Final command | Actual result |
+|---|---|
+| cargo fmt --all --check | Passed |
+| cargo clippy --workspace --all-targets --all-features -- -D warnings | Passed |
+| cargo test --workspace --all-features | Passed; 3 existing Cosmian tests remain ignored for their documented environment requirement |
+| cargo llvm-cov --workspace --all-features --json --output-path target/028-coverage.json | Instrumented tests passed and LLVM JSON produced on Windows; this command does not enforce the aggregate threshold |
+| python -m unittest discover -s tools/normative_catalog/tests | 216 tests passed, 7 existing skips |
+| python tools/api_manifest/generate.py --check | Passed, 6 outputs unchanged |
+| generate_result_values.py / generate_attribute_types.py / generate_ttlv_tags.py / generate_attribute_policy.py --check | Passed |
+| python scripts/coverage_gate.py preflight --workspace . | Passed; 172 files scanned, 116 executable/ambiguous production Rust files |
+| python scripts/coverage_gate.py normalize --workspace . --input target/028-coverage.json --output target/028-coverage-normalized.json | Passed; repository parser accepts the normalized report |
+| python tools/normative_catalog/check_immutable_sources.py --base-sha a0846037eb9930b24d9b9e3d8c63b2e66b438d1a | Passed; pinned sources unchanged |
+| pwsh -File scripts/Test-DependencyPolicy.ps1 | Passed with pinned cargo-deny 0.20.2, RustSec 7eebec69c352c7191b1f13eb95dd510eeca5d1de; existing EX-003/EX-004 only; both lockfile SHA256 hashes unchanged |
+| git diff --check | Passed |
+
+Windows LLVM summaries alone have FFI 22.73% and production Rust 89.33%.
+These are incomplete local collection figures: the existing instrumented C
+consumer is Linux-only. They are not the repository aggregate gate result.
+The official C collector ran through WSL Ubuntu-26.04 with Rust 1.94.0 and an
+isolated target under this worktree. Its actual C consumer test passed and
+its LLVM summary reports FFI 2073/2215 (93.59%); normalized export/combination
+is still being finalized at draft creation. No report from another tree or
+CI platform is substituted. The repository parser's physical-line accounting
+will determine final local numbers; CI must enforce the complete supported
+platform and adapter aggregate. Independent QA additionally measured changed
+Rust executable lines at 461/470 (98.085%). New module LLVM summary coverage:
+diagnostics 100%, Interop 98.04%, Log 98.82%, Validate 98.81%.
+
+CI is pending at draft creation. The draft cannot become ready until T044,
+T047 and required CI are satisfied. No four-language parity, official Test
+Case pass, two-server interoperability or certification is claimed.
