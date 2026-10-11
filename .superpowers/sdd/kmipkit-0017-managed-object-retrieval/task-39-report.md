@@ -111,3 +111,35 @@ production/API code, or dependency was changed.
   Markdown renderer or Markdown linter was run; fence structure was covered by
   the guide-example extractor and claims/links were reviewed in the Markdown
   source.
+
+## Independent-review follow-up
+
+### Red evidence
+
+The independent review identified two documentation defects: the guide
+understated Asynchronous Indicator value 1, and its Get security note permitted
+inspection of the Any Object structure. Before editing the guide, this
+acceptance audit was run:
+
+```powershell
+@'
+from pathlib import Path
+text = Path('docs/user-guide/en/object-retrieval.md').read_text(encoding='utf-8')
+issues = []
+if 'Asynchronous Indicator of `1` is Mandatory' not in text:
+    issues.append('missing Mandatory semantics for Asynchronous Indicator 1')
+if '§11.3 Tables 431–432' not in text:
+    issues.append('missing §11.3 Tables 431–432 citation')
+if "generic Any Object's tag; do not inspect its structure" not in text:
+    issues.append('missing tag-only opaque-object inspection guidance')
+if 'generic Any Object\'s tag or\nstructure' in text:
+    issues.append('permits inspection of secret-bearing object structure')
+print('\n'.join(issues) if issues else 'all guide contract checks passed')
+raise SystemExit(bool(issues))
+'@ | python -B -
+```
+
+Result: exit 1 with four expected findings: missing Mandatory semantics,
+missing §11.3 Tables 431–432 citation, missing tag-only inspection wording,
+and the current text explicitly permitting structure inspection. No guide
+change was present when this Red check ran.
