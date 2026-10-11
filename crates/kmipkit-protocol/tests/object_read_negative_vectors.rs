@@ -7,7 +7,7 @@
 //! apply FR-012 and the shared KMIPKIT-0005-FR-006–FR-009 decoder contract.
 //! These are project-derived negative vectors, not official OASIS test cases.
 
-use std::error::Error;
+use std::{error::Error, fmt::Write as _};
 
 use kmipkit_protocol::{
     GetError, GetResponse, LocateError, LocateResponse, ResponseBatchItemView, ResponseMessage,
@@ -136,7 +136,7 @@ fn diagnostics(error: &dyn Error) -> String {
     let mut output = String::new();
     let mut cause = Some(error);
     while let Some(current) = cause {
-        output.push_str(&format!("debug={current:?}; display={current}; "));
+        let _ = write!(output, "debug={current:?}; display={current}; ");
         cause = current.source();
     }
     output
@@ -145,10 +145,10 @@ fn diagnostics(error: &dyn Error) -> String {
 fn assert_sanitized(error: &dyn Error) {
     let diagnostic = diagnostics(error);
     let byte_text = String::from_utf8_lossy(SECRET_BYTES_SENTINEL);
-    let byte_hex = SECRET_BYTES_SENTINEL
-        .iter()
-        .map(|byte| format!("{byte:02x}"))
-        .collect::<String>();
+    let mut byte_hex = String::with_capacity(SECRET_BYTES_SENTINEL.len() * 2);
+    for byte in SECRET_BYTES_SENTINEL {
+        let _ = write!(byte_hex, "{byte:02x}");
+    }
     let byte_decimals = SECRET_BYTES_SENTINEL
         .iter()
         .map(u8::to_string)

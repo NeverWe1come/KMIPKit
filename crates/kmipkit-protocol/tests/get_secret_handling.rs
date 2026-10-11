@@ -2,9 +2,9 @@
 //!
 //! Get field shapes follow OASIS KMIP v2.1 §6.1.19, Tables 220–221; the Any
 //! Object remains opaque as described in §2. Payload redaction and zeroization
-//! are KMIPKit ownership requirements, not OASIS conformance claims.
+//! are `KMIPKit` ownership requirements, not OASIS conformance claims.
 
-use std::error::Error;
+use std::{error::Error, fmt::Write as _};
 
 use kmipkit_protocol::{GetRequest, GetResponse, ResponseBatchItemView, ResponseMessage};
 use kmipkit_ttlv::{Item, RawTag, Structure, Tag, Value, ValueView};
@@ -147,7 +147,7 @@ fn diagnostics(error: &dyn Error) -> String {
     let mut output = format!("debug={error:?}; display={error}");
     let mut source = error.source();
     while let Some(cause) = source {
-        output.push_str(&format!("; source-debug={cause:?}; source-display={cause}"));
+        let _ = write!(output, "; source-debug={cause:?}; source-display={cause}");
         source = cause.source();
     }
     output
