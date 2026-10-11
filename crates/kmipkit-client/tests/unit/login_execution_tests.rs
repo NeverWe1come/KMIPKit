@@ -182,6 +182,14 @@ fn login_matches_pinned_fixture_request_and_returns_one_secret_safe_ticket() {
         .expect("the server returns the Login fixture success shape");
     let item = outcome.get(0).expect("one Login result exists");
     assert_eq!(item.outcome().operation(), ClientOperation::Login);
+    let view = item.outcome().response();
+    assert_eq!(view.result().status().raw(), SUCCESS);
+    assert!(view.login().is_some());
+    assert!(view.delegated_login().is_none());
+    assert!(view.logout().is_none());
+    assert!(item.outcome().delegated_login_response().is_none());
+    assert!(item.outcome().logout_response().is_none());
+    assert!(format!("{:?}", fixture_request()).contains("Login"));
     assert!(format!("{:?}", item.outcome()).contains("Login"));
     assert!(format!("{:?}", item.outcome().response()).contains("Login"));
     assert!(format!("{}", item.outcome()).contains("Login("));
@@ -238,11 +246,15 @@ fn pending_preserves_exact_correlation_without_implicit_poll() {
     let outcome = client
         .execute(batch, &CodecLimits::defaults())
         .expect("the caller opted into asynchronous results");
-    let ClientBatchOutcome::Pending(pending) = outcome.get(0).expect("one result exists").outcome()
-    else {
+    let item = outcome.get(0).expect("one result exists");
+    let ClientBatchOutcome::Pending(pending) = item.outcome() else {
         panic!("Login Pending remains explicitly resumable");
     };
     assert_eq!(pending.operation(), ClientOperation::Login);
+    assert_eq!(pending.response().result().status().raw(), PENDING);
+    assert!(pending.response().login().is_some());
+    assert!(item.outcome().login_response().is_some());
+    assert!(item.outcome().response().login().is_some());
     assert_eq!(pending.asynchronous_correlation_value(), CORRELATION);
     assert_eq!(transport.borrow().exchange_count(), 1);
 }
@@ -266,13 +278,7 @@ fn partial_write_failure_preserves_possibly_sent_delivery_without_retry() {
 
 #[test]
 fn malformed_success_ticket_is_sanitized_after_one_exchange() {
-    let malformed = test_structure([test_item(
-        TICKET,
-        kmipkit_ttlv::Value::structure(test_structure([test_item(
-            TICKET_TYPE,
-            kmipkit_ttlv::Value::enumeration(1),
-        )])),
-    )]);
+    let malformed = test_structure([test_item(TICKET, kmipkit_ttlv::Value::enumeration(1))]);
     let (mut client, transport, _) = client_for(ExchangeScript::Success {
         response: response(SUCCESS, None, None, Some(malformed)),
         request_write_chunks: Vec::new(),

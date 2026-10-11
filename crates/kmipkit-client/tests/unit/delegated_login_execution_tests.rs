@@ -137,10 +137,18 @@ fn delegated_login_sends_one_typed_request_and_exposes_secret_safe_ticket() {
         .outcome()
         .delegated_login_response()
         .expect("the explicit request returns a typed Delegated Login result");
+    let view = item.outcome().response();
+    assert_eq!(view.result().status().raw(), SUCCESS);
+    assert!(view.delegated_login().is_some());
+    assert!(view.login().is_none());
+    assert!(view.logout().is_none());
+    assert!(item.outcome().login_response().is_none());
+    assert!(item.outcome().logout_response().is_none());
     let ticket = typed.ticket().expect("success exposes its Ticket");
     ticket.with_ticket_value(|actual| assert_eq!(actual, SECRET_SENTINEL));
 
     assert_eq!(item.outcome().operation(), ClientOperation::DelegatedLogin);
+    assert!(format!("{:?}", request()).contains("DelegatedLogin"));
     assert!(format!("{:?}", item.outcome()).contains("DelegatedLogin"));
     assert!(format!("{:?}", item.outcome().response()).contains("DelegatedLogin"));
     assert!(format!("{}", item.outcome()).contains("DelegatedLogin("));
@@ -175,6 +183,10 @@ fn pending_result_keeps_exact_correlation_without_implicit_poll() {
     };
 
     assert_eq!(pending.operation(), ClientOperation::DelegatedLogin);
+    assert_eq!(pending.response().result().status().raw(), PENDING);
+    assert!(pending.response().delegated_login().is_some());
+    assert!(item.outcome().delegated_login_response().is_some());
+    assert!(item.outcome().response().delegated_login().is_some());
     assert_eq!(pending.asynchronous_correlation_value(), correlation);
     assert_eq!(
         state.borrow().calls,
@@ -212,13 +224,7 @@ fn operation_failure_preserves_table_201_reason_and_does_not_retry() {
 
 #[test]
 fn malformed_ticket_response_is_sanitized_after_one_exchange() {
-    let malformed = test_structure([test_item(
-        TICKET,
-        Value::structure(test_structure([test_item(
-            TICKET_TYPE,
-            Value::enumeration(1),
-        )])),
-    )]);
+    let malformed = test_structure([test_item(TICKET, Value::enumeration(1))]);
     let (mut client, state) = client(vec![response(SUCCESS, None, None, Some(malformed))]);
     let error = client
         .execute(

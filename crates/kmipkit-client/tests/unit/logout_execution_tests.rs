@@ -99,6 +99,14 @@ fn logout_sends_one_ticket_and_exposes_empty_success_without_leaking_it() {
         .expect("the server returns empty Table 257 success");
     let item = outcome.get(0).expect("one Logout result exists");
     assert_eq!(item.outcome().operation(), ClientOperation::Logout);
+    let view = item.outcome().response();
+    assert_eq!(view.result().status().raw(), SUCCESS);
+    assert!(view.logout().is_some());
+    assert!(view.delegated_login().is_none());
+    assert!(view.login().is_none());
+    assert!(item.outcome().delegated_login_response().is_none());
+    assert!(item.outcome().login_response().is_none());
+    assert!(format!("{:?}", request()).contains("Logout"));
     assert!(format!("{:?}", item.outcome()).contains("Logout"));
     assert!(format!("{:?}", item.outcome().response()).contains("Logout"));
     assert!(format!("{}", item.outcome()).contains("Logout("));
@@ -154,10 +162,15 @@ fn pending_preserves_correlation_without_implicit_poll() {
     let outcome = client
         .execute(batch, &CodecLimits::defaults())
         .expect("caller explicitly opted into asynchronous responses");
-    let ClientBatchOutcome::Pending(pending) = outcome.get(0).expect("one result").outcome() else {
+    let item = outcome.get(0).expect("one result");
+    let ClientBatchOutcome::Pending(pending) = item.outcome() else {
         panic!("Logout Pending remains explicit and resumable");
     };
     assert_eq!(pending.operation(), ClientOperation::Logout);
+    assert_eq!(pending.response().result().status().raw(), PENDING);
+    assert!(pending.response().logout().is_some());
+    assert!(item.outcome().logout_response().is_some());
+    assert!(item.outcome().response().logout().is_some());
     assert_eq!(pending.asynchronous_correlation_value(), CORRELATION);
     assert_eq!(transport.borrow().exchange_count(), 1);
 }
