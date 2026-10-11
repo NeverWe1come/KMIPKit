@@ -29,8 +29,8 @@
 
 **Independent Test**: Tables 205–207 and §7.12/Table 364; ID Placeholder prohibition; explicit source IDs and algorithm details; one exchange and no local derivation.
 
-- [ ] T006 [P] [US1] Add failing Derive Key payload and fake-client tests in `crates/kmipkit-protocol/tests/unit/derive_key_operation_tests.rs` and `crates/kmipkit-client/tests/unit/derive_key_execution_tests.rs` for §6.1.14 Tables 205–207, §7.12 Table 364 and traceability rows, plus the both-inputs server-error passthrough without local pre-rejection; commit Red.
-- [ ] T007 [US1] Implement `DeriveKeyRequest/Response/Error` in `crates/kmipkit-protocol/src/derive_key.rs`, export it, and integrate `ClientRequest`/operation code/response/convenience dispatch in `crates/kmipkit-client/src/execute.rs` and `crates/kmipkit-client/src/lib.rs`; commit Green after T006 passes.
+- [x] T006 [P] [US1] Add failing Derive Key payload and fake-client tests in `crates/kmipkit-protocol/tests/unit/derive_key_operation_tests.rs` and `crates/kmipkit-client/tests/unit/derive_key_execution_tests.rs` for §6.1.14 Tables 205–207, §7.12 Table 364 and traceability rows, plus the both-inputs server-error passthrough without local pre-rejection; commit Red.
+- [x] T007 [US1] Implement `DeriveKeyRequest/Response/Error` in `crates/kmipkit-protocol/src/derive_key.rs`, export it, and integrate `ClientRequest`/operation code/response/convenience dispatch in `crates/kmipkit-client/src/execute.rs` and `crates/kmipkit-client/src/lib.rs`; commit Green after T006 passes.
 - [ ] T008 [US1] Refactor Derive Key payload/dispatch/tests in `crates/kmipkit-protocol/src/derive_key.rs`, `crates/kmipkit-client/src/execute.rs`, and both test files without changing caller-controlled semantics; commit Refactor separately.
 
 ## Phase 4: User Story 2 — Export (Priority: P1)
