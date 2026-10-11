@@ -7431,6 +7431,192 @@ class CatalogValidationTests(unittest.TestCase):
                                     ("Table 330: Set Defaults Errors", [36133, 36134])):
             self.assertIn(caption, pinned_source_excerpt(source_path, line_range))
 
+    def test_spec_6_1_54_set_endpoint_role_reviews_payload_actor_direction_and_scope(self) -> None:
+        """Set Endpoint Role preserves required payload actors and its open role-switch scope tension."""
+        fixture_path = ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json"
+        oracle = json.loads(fixture_path.read_text(encoding="utf-8"))
+        source_path = "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
+        pinned = audit_document_with_text((ROOT / source_path).read_bytes(), "KMIPKIT-SRC-spec")
+        expected = {
+            "KMIPKIT-CLAUSE-SPEC-6.1.54-001": ("6.1.54", 1, "table_row", ["REQUIRED"], [36155, 36173]),
+            "KMIPKIT-CLAUSE-SPEC-6.1.54-002": ("6.1.54", 2, "table_row", ["REQUIRED"], [36208, 36226]),
+        }
+        pinned_by_id = {row["clause_id"]: row for row in pinned if row["section"] == "6.1.54"}
+        self.assertEqual(set(pinned_by_id), set(expected))
+        reviews = {row["source_clause_id"]: row for row in oracle["source_requirement_reviews"]
+                   if row["source_section"] == "6.1.54"}
+        self.assertEqual(set(reviews), set(expected))
+        for clause_id, (section, ordinal, kind, keywords, line_range) in expected.items():
+            review = reviews[clause_id]
+            self.assertEqual(review["source_section"], section)
+            self.assertEqual(review["source_id"], "KMIPKIT-SRC-spec")
+            self.assertEqual(review["source_path"], source_path)
+            self.assertEqual(review["source_locator"], {"ordinal": ordinal, "block_kind": kind})
+            self.assertEqual(review["html_line_range"], line_range)
+            self.assertEqual(review["source_excerpt"], pinned_source_excerpt(source_path, line_range))
+            self.assertEqual(review["source_excerpt"], pinned_by_id[clause_id]["source_text"])
+            self.assertEqual(pinned_by_id[clause_id]["source_keywords"], keywords)
+            self.assertEqual(review["source_obligations"], [])
+
+        request_review = reviews["KMIPKIT-CLAUSE-SPEC-6.1.54-001"]
+        self.assertIn("header", request_review["review_note"])
+        self.assertIn("Table 331", request_review["review_note"])
+        self.assertEqual(len(request_review["source_request_rows"]), 1)
+        request_row = request_review["source_request_rows"][0]
+        self.assertEqual(
+            (request_row["row_label"], request_row["required"], request_row["actor"],
+             request_row["direction"], request_row["scope_disposition"]),
+            ("Endpoint Role", "Yes", "client", "client_to_server", "client_1_0"),
+        )
+        self.assertEqual(request_row["disposition"], "required_request_field_with_source_only_proposal")
+        self.assertEqual(request_row["html_line_range"], [36165, 36187])
+        self.assertEqual(request_row["source_excerpt"], pinned_source_excerpt(source_path, [36165, 36187]))
+        self.assertEqual(request_row["source_element_id"], "KMIPKIT-ELEM-TAG-420151")
+        self.assertEqual(request_row["source_requirement_ids"], [])
+        self.assertEqual(request_row["source_gap_id"], "KMIPKIT-SOURCE-GAP-SPEC-6.1.54-ENDPOINT-ROLE-REQUIRED")
+
+        gaps = [row for row in oracle["source_only_requirement_gaps"] if row["source_section"] == "6.1.54"]
+        self.assertEqual(len(gaps), 1)
+        gap = gaps[0]
+        self.assertEqual(gap["gap_id"], "KMIPKIT-SOURCE-GAP-SPEC-6.1.54-ENDPOINT-ROLE-REQUIRED")
+        self.assertEqual(gap["source_clause_id"], None)
+        self.assertEqual(gap["source_locator"]["kind"], "table_body_row")
+        self.assertEqual(gap["source_locator"]["row_label"], "Endpoint Role")
+        self.assertEqual(gap["html_line_range"], [36165, 36187])
+        self.assertEqual(gap["source_excerpt"], pinned_source_excerpt(source_path, [36165, 36187]))
+        self.assertEqual(gap["source_force"], "required_table_body_value")
+        self.assertEqual((gap["actor"], gap["direction"], gap["scope_disposition"]),
+                         ("client", "client_to_server", "client_1_0"))
+        self.assertIsNone(gap["candidate_requirement_id"])
+        self.assertEqual(gap["proposed_requirement_id"], "KMIPKIT-REQ-SPEC-6.1.54-001")
+        self.assertEqual(gap["status"], "stable_label_proposed_not_in_catalog")
+        self.assertIn("No catalog ID is fabricated", gap["review_note"])
+
+        response_review = reviews["KMIPKIT-CLAUSE-SPEC-6.1.54-002"]
+        self.assertEqual(response_review["source_request_rows"], [])
+        self.assertEqual(len(response_review["source_payload_rows"]), 1)
+        response_row = response_review["source_payload_rows"][0]
+        self.assertEqual(
+            (response_row["row_label"], response_row["required"], response_row["actor"],
+             response_row["direction"], response_row["scope_disposition"]),
+            ("Endpoint Role", "Yes", "server", "server_to_client", "client_1_0"),
+        )
+        self.assertEqual(response_row["html_line_range"], [36218, 36240])
+        self.assertEqual(response_row["source_excerpt"], pinned_source_excerpt(source_path, [36218, 36240]))
+        self.assertEqual(response_row["source_element_id"], "KMIPKIT-ELEM-TAG-420151")
+        self.assertEqual(response_row["source_requirement_ids"], [])
+        self.assertIn("accepted endpoint role", response_review["source_context"])
+        self.assertIn("KMIPKIT-DISC-052", response_review["review_note"])
+
+        catalog = json.loads((ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8"))
+        clauses = {row["clause_id"]: row for row in catalog["source_clauses"]
+                   if row["clause_id"].startswith("KMIPKIT-CLAUSE-SPEC-6.1.54-")}
+        self.assertEqual(clauses["KMIPKIT-CLAUSE-SPEC-6.1.54-001"]["disposition"], "non_applicable")
+        self.assertEqual(clauses["KMIPKIT-CLAUSE-SPEC-6.1.54-002"]["disposition"], "non_applicable")
+        client_operation = next(row for row in catalog["elements"]
+                                if row["element_id"] == "KMIPKIT-ELEM-OP-C2S-SET-ENDPOINT-ROLE")
+        server_operation = next(row for row in catalog["elements"]
+                                if row["element_id"] == "KMIPKIT-ELEM-OP-S2C-SET-ENDPOINT-ROLE")
+        self.assertEqual((client_operation["direction"], client_operation["scope_state"]),
+                         ("client_to_server", "client_1_0"))
+        self.assertEqual(client_operation["test_case_ids"], [])
+        self.assertEqual((server_operation["direction"], server_operation["scope_state"]),
+                         ("server_to_client", "client_1_1"))
+        self.assertEqual([row["table_number"] for row in server_operation["payload_tables"]], [349, 350])
+
+        discrepancy = next(row for row in catalog["discrepancies"]
+                           if row["discrepancy_id"] == "KMIPKIT-DISC-052")
+        self.assertEqual(discrepancy["state"], "open")
+        self.assertIsNone(discrepancy["decision_id"])
+        self.assertEqual(discrepancy["affected_requirement_ids"], [])
+        self.assertEqual(set(discrepancy["affected_element_ids"]),
+                         {client_operation["element_id"], server_operation["element_id"]})
+        self.assertEqual({row["section"] for row in discrepancy["source_refs"]}, {"6.1.54", "6.2.5"})
+        self.assertEqual([row for row in oracle["requirement_crosswalk"]
+                          if row["source_section"] == "6.1.54"], [])
+
+        for caption, line_range in (("Table 331: Set Endpoint Role Request Payload", [36194, 36195]),
+                                    ("Table 332: Set Endpoint Role Response Payload", [36247, 36248])):
+            self.assertIn(caption, pinned_source_excerpt(source_path, line_range))
+        self.assertIn("client assumes the server role", pinned_source_excerpt(source_path, [36138, 36142]))
+
+    def test_spec_6_1_54_set_endpoint_role_reviews_server_only_errors_and_duplicate_reasons(self) -> None:
+        """Set Endpoint Role error SHALL is server-only and Table 333 retains duplicate enum values."""
+        fixture_path = ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json"
+        oracle = json.loads(fixture_path.read_text(encoding="utf-8"))
+        source_path = "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
+        pinned = audit_document_with_text((ROOT / source_path).read_bytes(), "KMIPKIT-SRC-spec")
+        expected = {
+            "KMIPKIT-CLAUSE-SPEC-6.1.54.1-001": ("6.1.54.1", 1, "paragraph", ["SHALL"], [36251, 36255]),
+            "KMIPKIT-CLAUSE-SPEC-6.1.54.1-002": ("6.1.54.1", 2, "table_row", ["REQUIRED"], [36278, 36287]),
+        }
+        pinned_by_id = {row["clause_id"]: row for row in pinned if row["section"] == "6.1.54.1"}
+        self.assertEqual(set(pinned_by_id), set(expected))
+        reviews = {row["source_clause_id"]: row for row in oracle["source_requirement_reviews"]
+                   if row["source_section"] == "6.1.54.1"}
+        self.assertEqual(set(reviews), set(expected))
+        for clause_id, (section, ordinal, kind, keywords, line_range) in expected.items():
+            review = reviews[clause_id]
+            self.assertEqual(review["source_section"], section)
+            self.assertEqual(review["source_id"], "KMIPKIT-SRC-spec")
+            self.assertEqual(review["source_path"], source_path)
+            self.assertEqual(review["source_locator"], {"ordinal": ordinal, "block_kind": kind})
+            self.assertEqual(review["html_line_range"], line_range)
+            self.assertEqual(review["source_excerpt"], pinned_source_excerpt(source_path, line_range))
+            if clause_id == "KMIPKIT-CLAUSE-SPEC-6.1.54.1-001":
+                self.assertEqual(pinned_by_id[clause_id]["source_text"],
+                                 pinned_source_excerpt(source_path, [36254, 36255]))
+            else:
+                self.assertEqual(review["source_excerpt"], pinned_by_id[clause_id]["source_text"])
+            self.assertEqual(pinned_by_id[clause_id]["source_keywords"], keywords)
+
+        error_review = reviews["KMIPKIT-CLAUSE-SPEC-6.1.54.1-001"]
+        self.assertEqual(
+            [(row["source_keyword"], row["actor"], row["direction"], row["condition"],
+              row["scope_disposition"], row["candidate_requirement_id"], row["source_order"])
+             for row in error_review["source_obligations"]],
+            [("SHALL", "server", "server_to_client", "Errors are detected during Set Endpoint Role.",
+              "server_only", None, 1)],
+        )
+        self.assertEqual(error_review["source_obligations"][0]["source_text"],
+                         pinned_source_excerpt(source_path, [36254, 36255]))
+        self.assertEqual(error_review["expected_client_requirement_ids"], [])
+        self.assertEqual(error_review["source_context"], pinned_source_excerpt(source_path, [36251, 36255]))
+        self.assertEqual(error_review["source_obligations"][0]["source_note"],
+                         "The SHALL specifies Result Reasons returned by the server for an operation error; it creates no client request requirement.")
+
+        reason_review = reviews["KMIPKIT-CLAUSE-SPEC-6.1.54.1-002"]
+        reasons = reason_review["source_excerpt"].split("Operation Failed ", 1)[1].split(", ")
+        self.assertEqual(
+            reasons,
+            ["Permission Denied", "Attestation Failed", "Attestation Required", "Feature Not Supported",
+             "Invalid Field", "Invalid Message", "Operation Not Supported", "Permission Denied", "Response Too Large"],
+        )
+        self.assertEqual(reason_review["source_obligations"], [])
+        self.assertEqual(reason_review["source_keywords"], ["REQUIRED"])
+        self.assertIn("Attestation Required is a Result Reason value", reason_review["review_note"])
+        self.assertIn("false positive", reason_review["review_note"])
+        self.assertIn("Table 333: Set Endpoint Role Errors", reason_review["source_context"])
+        self.assertIn("Permission Denied appears twice", reason_review["review_note"])
+
+        catalog = json.loads((ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8"))
+        clauses = {row["clause_id"]: row for row in catalog["source_clauses"]
+                   if row["clause_id"] in expected}
+        error_clause = clauses["KMIPKIT-CLAUSE-SPEC-6.1.54.1-001"]
+        self.assertEqual(error_clause["disposition"], "server_only")
+        self.assertEqual(error_clause["role"], "server")
+        self.assertEqual(error_clause["direction"], "server_to_client")
+        self.assertEqual(error_clause["scope_state"], "server_only")
+        self.assertEqual(error_clause["condition"], "Errors are detected during Set Endpoint Role.")
+        self.assertEqual(error_clause["requirement_ids"], [])
+        false_positive_clause = clauses["KMIPKIT-CLAUSE-SPEC-6.1.54.1-002"]
+        self.assertEqual(false_positive_clause["disposition"], "non_applicable")
+        self.assertEqual(false_positive_clause["role"], "not_applicable")
+        self.assertIn("Attestation Required", false_positive_clause["exclusion_rationale"])
+        self.assertEqual([row for row in oracle["requirement_crosswalk"]
+                          if row["source_section"] == "6.1.54.1"], [])
+        self.assertIn("Table 333: Set Endpoint Role Errors", pinned_source_excerpt(source_path, [36294, 36295]))
+
     def test_spec_6_1_45_recertify_reviews_client_inputs_and_server_effects(self) -> None:
         """Specification v2.1 §§6.1.45 and 6.1.45.1 preserve Re-certify source roles."""
         fixture_path = ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json"
