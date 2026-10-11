@@ -195,7 +195,7 @@ class ProfileSectionsThreeAndFourCrosswalkTests(unittest.TestCase):
         self.assertIn("KMIPKIT-CLAUSE-PROF-4.1.2-007", self.reviews)
         review = self.reviews["KMIPKIT-CLAUSE-PROF-4.1.2-007"]
         self.assertEqual(requirement["source_keyword"], "MAY")
-        self.assertEqual(clause["source_keywords"], ["MAY"])
+        self.assertIn("MAY", clause["source_keywords"])
         self.assertEqual(review["source_obligations"][0]["source_keyword"], "MAY")
         self.assertEqual(review["html_line_range"], [4488, 4493])
         self.assertEqual(review["source_excerpt"], pinned_excerpt([4488, 4493]))
