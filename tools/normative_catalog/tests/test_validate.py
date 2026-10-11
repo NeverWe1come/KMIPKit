@@ -7711,7 +7711,7 @@ class CatalogValidationTests(unittest.TestCase):
         self.assertEqual(identifier_review["source_obligations"][0]["scope_disposition"], "server_only")
         self.assertEqual(
             identifier_review["source_obligations"][0]["condition"],
-            "The request omits Unique Identifier and the ID Placeholder is available under KMIPKIT-CLAUSE-SPEC-6.1-002.",
+            "The request omits Unique Identifier and the ID Placeholder remains available under KMIPKIT-CLAUSE-SPEC-6.1-002.",
         )
         self.assertIn("KMIPKIT-CLAUSE-SPEC-6.1-002", identifier_review["source_obligations"][0]["source_note"])
         self.assertIn("KMIPKIT-CLAUSE-SPEC-6.1-002", identifier_review["review_note"])
