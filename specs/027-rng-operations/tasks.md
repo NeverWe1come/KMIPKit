@@ -16,8 +16,8 @@ description: "Implementation task list for KMIP 2.1 remote RNG operations"
 
 **Purpose**: Confirm sources and existing operation conventions.
 
-- [ ] T001 [P] Verify the assigned feature branch and pinned OASIS §§6.1.49–6.1.50 Tables 316–321 in specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html; run python tools/normative_catalog/validate.py.
-- [ ] T002 [P] Review shared Data, Data Length, asynchronous result, secret ownership, and client test patterns in crates/kmipkit-protocol/src/operation_data.rs, crates/kmipkit-protocol/src/poll.rs, crates/kmipkit-client/src/execute.rs, and crates/kmipkit-client/tests/unit/ping_execution_tests.rs.
+- [x] T001 [P] Verify the assigned feature branch and pinned OASIS §§6.1.49–6.1.50 Tables 316–321 in specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html; run python tools/normative_catalog/validate.py.
+- [x] T002 [P] Review shared Data, Data Length, asynchronous result, secret ownership, and client test patterns in crates/kmipkit-protocol/src/operation_data.rs, crates/kmipkit-protocol/src/poll.rs, crates/kmipkit-client/src/execute.rs, and crates/kmipkit-client/tests/unit/ping_execution_tests.rs.
 
 ## Phase 2: Foundational
 
@@ -35,17 +35,17 @@ description: "Implementation task list for KMIP 2.1 remote RNG operations"
 
 ### Protocol Red/Green/Refactor
 
-- [ ] T006 [P] [US1] Add failing Table 316/317 tests in crates/kmipkit-protocol/tests/unit/rng_retrieve_operation_tests.rs for required Integer Data Length, required opaque Data, unknown-field round trip, malformed types, and secret redaction; run cargo test -p kmipkit-protocol rng_retrieve_operation_tests and capture expected Red failure.
-- [ ] T007 [US1] Commit only the failing protocol tests in crates/kmipkit-protocol/tests/unit/rng_retrieve_operation_tests.rs as the distinct Red evidence commit.
-- [ ] T008 [US1] Implement RngRetrieveRequest/Response/Error and table conversion in crates/kmipkit-protocol/src/rng_retrieve.rs; export from crates/kmipkit-protocol/src/lib.rs; pass the focused tests without imposing an unstated response-length rule.
-- [ ] T009 [US1] Commit the minimal passing protocol implementation in crates/kmipkit-protocol/src/rng_retrieve.rs and crates/kmipkit-protocol/src/lib.rs as the distinct Green evidence commit.
-- [ ] T010 [US1] Refactor RNG Retrieve conversion without changing behavior in crates/kmipkit-protocol/src/rng_retrieve.rs; rerun its tests and formatting.
-- [ ] T011 [US1] Commit protocol refactoring in crates/kmipkit-protocol/src/rng_retrieve.rs as the distinct Refactor evidence commit.
+- [x] T006 [P] [US1] Add failing Table 316/317 tests in crates/kmipkit-protocol/tests/unit/rng_retrieve_operation_tests.rs for required Integer Data Length, required opaque Data, unknown-field round trip, malformed types, and secret redaction; run cargo test -p kmipkit-protocol rng_retrieve_operation_tests and capture expected Red failure.
+- [x] T007 [US1] Commit only the failing protocol tests in crates/kmipkit-protocol/tests/unit/rng_retrieve_operation_tests.rs as the distinct Red evidence commit.
+- [x] T008 [US1] Implement RngRetrieveRequest/Response/Error and table conversion in crates/kmipkit-protocol/src/rng_retrieve.rs; export from crates/kmipkit-protocol/src/lib.rs; pass the focused tests without imposing an unstated response-length rule.
+- [x] T009 [US1] Commit the minimal passing protocol implementation in crates/kmipkit-protocol/src/rng_retrieve.rs and crates/kmipkit-protocol/src/lib.rs as the distinct Green evidence commit.
+- [x] T010 [US1] Refactor RNG Retrieve conversion without changing behavior in crates/kmipkit-protocol/src/rng_retrieve.rs; rerun its tests and formatting.
+- [x] T011 [US1] Commit protocol refactoring in crates/kmipkit-protocol/src/rng_retrieve.rs as the distinct Refactor evidence commit.
 
 ### Client Red/Green/Refactor
 
-- [ ] T012 [P] [US1] Add failing fake-transport tests in crates/kmipkit-client/tests/unit/rng_retrieve_execution_tests.rs for operation code, exactly one exchange, result/Pending/delivery, output redaction, and no retry; capture expected Red failures.
-- [ ] T013 [US1] Commit only the failing client tests in crates/kmipkit-client/tests/unit/rng_retrieve_execution_tests.rs as the distinct Red evidence commit.
+- [x] T012 [P] [US1] Add failing fake-transport tests in crates/kmipkit-client/tests/unit/rng_retrieve_execution_tests.rs for operation code, exactly one exchange, result/Pending/delivery, output redaction, and no retry; capture expected Red failures.
+- [x] T013 [US1] Commit only the failing client tests in crates/kmipkit-client/tests/unit/rng_retrieve_execution_tests.rs as the distinct Red evidence commit.
 - [ ] T014 [US1] Add RNG Retrieve request selection, response association, explicit client method, and redacted request handling in crates/kmipkit-client/src/execute.rs and crates/kmipkit-client/src/lib.rs; pass the focused suite.
 - [ ] T015 [US1] Commit the minimal passing RNG Retrieve client integration in crates/kmipkit-client/src/execute.rs and crates/kmipkit-client/src/lib.rs as the distinct Green evidence commit; coordinate the shared dispatcher.
 - [ ] T016 [US1] Refactor RNG Retrieve client handling without changing behavior in crates/kmipkit-client/src/execute.rs and crates/kmipkit-client/tests/unit/rng_retrieve_execution_tests.rs; rerun protocol/client tests.
@@ -59,12 +59,12 @@ description: "Implementation task list for KMIP 2.1 remote RNG operations"
 
 ### Protocol Red/Green/Refactor
 
-- [ ] T018 [P] [US2] Add failing Table 319/320 tests in crates/kmipkit-protocol/tests/unit/rng_seed_operation_tests.rs for required secret Data, required Integer Data Length, zero response length, unknown values, malformed types, and redaction; run cargo test -p kmipkit-protocol rng_seed_operation_tests and capture expected Red failure.
-- [ ] T019 [US2] Commit only the failing protocol tests in crates/kmipkit-protocol/tests/unit/rng_seed_operation_tests.rs as the distinct Red evidence commit.
-- [ ] T020 [US2] Implement RngSeedRequest/Response/Error and table conversion in crates/kmipkit-protocol/src/rng_seed.rs; export from crates/kmipkit-protocol/src/lib.rs; preserve zero Data Length as success per KMIPKIT-REQ-SPEC-6.1.50-001.
-- [ ] T021 [US2] Commit the minimal passing protocol implementation in crates/kmipkit-protocol/src/rng_seed.rs and crates/kmipkit-protocol/src/lib.rs as the distinct Green evidence commit.
-- [ ] T022 [US2] Refactor RNG Seed conversion without behavior changes in crates/kmipkit-protocol/src/rng_seed.rs; rerun focused tests and formatting.
-- [ ] T023 [US2] Commit protocol refactoring in crates/kmipkit-protocol/src/rng_seed.rs as the distinct Refactor evidence commit.
+- [x] T018 [P] [US2] Add failing Table 319/320 tests in crates/kmipkit-protocol/tests/unit/rng_seed_operation_tests.rs for required secret Data, required Integer Data Length, zero response length, unknown values, malformed types, and redaction; run cargo test -p kmipkit-protocol rng_seed_operation_tests and capture expected Red failure.
+- [x] T019 [US2] Commit only the failing protocol tests in crates/kmipkit-protocol/tests/unit/rng_seed_operation_tests.rs as the distinct Red evidence commit.
+- [x] T020 [US2] Implement RngSeedRequest/Response/Error and table conversion in crates/kmipkit-protocol/src/rng_seed.rs; export from crates/kmipkit-protocol/src/lib.rs; preserve zero Data Length as success per KMIPKIT-REQ-SPEC-6.1.50-001.
+- [x] T021 [US2] Commit the minimal passing protocol implementation in crates/kmipkit-protocol/src/rng_seed.rs and crates/kmipkit-protocol/src/lib.rs as the distinct Green evidence commit.
+- [x] T022 [US2] Refactor RNG Seed conversion without behavior changes in crates/kmipkit-protocol/src/rng_seed.rs; rerun focused tests and formatting.
+- [x] T023 [US2] Commit protocol refactoring in crates/kmipkit-protocol/src/rng_seed.rs as the distinct Refactor evidence commit.
 
 ### Client Red/Green/Refactor
 
