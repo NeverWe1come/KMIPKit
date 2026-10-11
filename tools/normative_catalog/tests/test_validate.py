@@ -6039,6 +6039,11 @@ class CatalogValidationTests(unittest.TestCase):
                 ("SHALL", "This section details the specific Result Reasons that SHALL be returned for errors detected in a Query Asynchronous Requests Operation.")
             ],
         }
+        expected_directions = {
+            "KMIPKIT-CLAUSE-SPEC-6.1.41-002": "server→client response",
+            "KMIPKIT-CLAUSE-SPEC-6.1.41-004": "server→client response payload",
+            "KMIPKIT-CLAUSE-SPEC-6.1.41.1-001": "server→client error response",
+        }
         for clause_id, expected_atoms in expected_source_atoms.items():
             with self.subTest(source_clause_id=clause_id, assertion="complete normative atom inventory"):
                 atoms = reviews[clause_id]["source_obligations"]
@@ -6049,7 +6054,7 @@ class CatalogValidationTests(unittest.TestCase):
                 self.assertTrue(
                     all(
                         atom["actor"] == "server"
-                        and atom["direction"].startswith("server→client")
+                        and atom["direction"] == expected_directions[clause_id]
                         and atom["scope_disposition"] == "server_only"
                         and atom["candidate_requirement_id"] is None
                         for atom in atoms
