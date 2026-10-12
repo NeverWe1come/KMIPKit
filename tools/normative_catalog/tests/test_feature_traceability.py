@@ -334,9 +334,9 @@ def _rust_cfg_condition_is_enabled(expression: str) -> bool | None:
 
 def _rust_source_has_only_unconditionally_enabled_cfg(source: str) -> bool:
     """Fail closed on cfg conditions this local test-ref gate cannot resolve."""
-    if re.search(r"#\s*\[\s*cfg_attr\s*\(", source):
+    if re.search(r"#\s*!?\s*\[\s*cfg_attr\s*\(", source):
         return False
-    marker = re.compile(r"#\s*\[\s*cfg\s*\(")
+    marker = re.compile(r"#\s*!?\s*\[\s*cfg\s*\(")
     cursor = 0
     while match := marker.search(source, cursor):
         depth = 1
