@@ -41,10 +41,15 @@ final class NativeLibraryLoaderTest {
         assertEquals("linux-glibc-aarch64", NativeLibraryLoader.targetIdFor("Linux", "aarch64"));
         assertEquals("macos-x86_64", NativeLibraryLoader.targetIdFor("Mac OS X", "x86_64"));
         assertEquals("macos-aarch64", NativeLibraryLoader.targetIdFor("Darwin", "arm64"));
-        assertThrows(UnsatisfiedLinkError.class,
+        UnsatisfiedLinkError unsupportedArchitecture = assertThrows(UnsatisfiedLinkError.class,
                 () -> NativeLibraryLoader.targetIdFor("Linux", "riscv64"));
-        assertThrows(UnsatisfiedLinkError.class,
+        assertEquals(NativeLibraryLoader.LOAD_FAILURE_MESSAGE, unsupportedArchitecture.getMessage());
+        assertNull(unsupportedArchitecture.getCause());
+
+        UnsatisfiedLinkError unsupportedOperatingSystem = assertThrows(UnsatisfiedLinkError.class,
                 () -> NativeLibraryLoader.targetIdFor("FreeBSD", "x86_64"));
+        assertEquals(NativeLibraryLoader.LOAD_FAILURE_MESSAGE, unsupportedOperatingSystem.getMessage());
+        assertNull(unsupportedOperatingSystem.getCause());
     }
 
     @Test

@@ -148,6 +148,31 @@ def test_loader_failure_is_redacted(tmp_path: Path) -> None:
     assert error.value.__suppress_context__
 
 
+def test_wrong_architecture_binary_failure_is_redacted(tmp_path: Path) -> None:
+    package_library = tmp_path / "kmipkit" / "_native_ffi" / "_native_ffi.so"
+    package_library.parent.mkdir(parents=True)
+    package_library.touch()
+    loaded: list[str] = []
+
+    def reject_wrong_architecture(path: str) -> object:
+        loaded.append(path)
+        raise OSError(f"invalid ELF class for native library at {path}")
+
+    with pytest.raises(NativeLibraryLoadError) as error:
+        load_native_library(
+            bundled_path=package_library,
+            expected_abi_version=1,
+            backend=reject_wrong_architecture,
+            abi_version=lambda _: 1,
+            environ={},
+        )
+
+    assert loaded == [str(package_library)]
+    assert "invalid ELF class" not in str(error.value)
+    assert str(package_library) not in str(error.value)
+    assert error.value.__suppress_context__
+
+
 def test_abi_inspection_failure_is_redacted(
     tmp_path: Path,
 ) -> None:
@@ -208,10 +233,12 @@ def test_bundled_native_library_rejects_missing_or_ambiguous_artifacts(
     package_directory = tmp_path / "kmipkit" / "_native_ffi"
     package_directory.mkdir(parents=True)
 
-    with pytest.raises(NativeLibraryLoadError):
+    with pytest.raises(NativeLibraryLoadError) as missing_error:
         find_bundled_native_library(package_directory)
+    assert str(package_directory) not in str(missing_error.value)
 
     (package_directory / "_native_ffi.dll").touch()
     (package_directory / "_native_ffi.so").touch()
-    with pytest.raises(NativeLibraryLoadError):
+    with pytest.raises(NativeLibraryLoadError) as ambiguous_error:
         find_bundled_native_library(package_directory)
+    assert str(package_directory) not in str(ambiguous_error.value)
