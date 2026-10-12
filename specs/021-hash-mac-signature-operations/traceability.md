@@ -42,7 +42,9 @@ The following stable records are retained as server-only duties and are not assi
 
 Stable records `...32-004-001`, `...33-005-001`, `...55-005-001`, `...56-007-001`, and `...56-001-002` are retained with status `retired`: the earlier inventory treated descriptive table/paragraph wording as separate client normative statements. The corresponding source-backed table behavior remains covered by operation-field FRs; the actual server failure duty remains in each `...-002` record, and the actual client original-data MAY remains `...56-001-001`. IDs are not recycled.
 
-## Open source conflict
+## Open source conflicts
+
+`KMIPKIT-SOURCE-GAP-SPEC-6.1-PARAGRAPH-009` records a conflict between the general §6.1 statement that Data is always required except when Init Indicator or Final Indicator is true and the Data request rows in Tables 235, 259, and 334, which mark Data absent for multi-part operations. The source gap remains unresolved; the table-derived request field shape is represented for Hash, MAC, and Sign, but no conformance claim is made for Data omission when both indicators are false. The Sign table's single-part Digested Data condition remains as printed. These table contracts do not create standalone REQ records.
 
 `KMIPKIT-DISC-048` records a conflict between the Validity Indicator rows in Tables 263 and 338, which say “Yes for single-part. No for multi-part,” and the prose in §§6.1.33 and 6.1.56, which requires the indicator for the final multipart response and forbids it on non-final responses. The sources agree that a non-final response omits the indicator but conflict for the final response. The typed client accepts either final-part form without making a conformance claim. The conflict remains open until a pinned OASIS erratum or approved project decision resolves it.
 
