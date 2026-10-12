@@ -12,8 +12,13 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.attribute.AclEntryPermission;
+import java.nio.file.attribute.AclEntryType;
+import java.nio.file.attribute.AclFileAttributeView;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.nio.file.attribute.PosixFilePermission;
 import java.security.MessageDigest;
+import java.util.EnumSet;
 import java.util.HexFormat;
 import java.util.Map;
 import java.util.Set;
@@ -56,7 +61,8 @@ final class NativeLibraryLoaderTest {
         assertArrayEquals(libraryBytes, Files.readAllBytes(loadedPath));
         assertEquals(temporaryDirectory.toAbsolutePath().normalize(),
                 loadedPath.getParent().getParent().toAbsolutePath().normalize());
-        assertNotNull(Files.readAttributes(loadedPath, java.nio.file.attribute.BasicFileAttributes.class).fileKey());
+        BasicFileAttributes attributes = Files.readAttributes(loadedPath, BasicFileAttributes.class);
+        assertTrue(attributes.isRegularFile());
     }
 
     @Test
@@ -94,13 +100,14 @@ final class NativeLibraryLoaderTest {
     void existingDestinationIsNeverReplaced() throws Exception {
         byte[] expectedContent = {10, 11};
         byte[] libraryBytes = {20, 21, 22};
-        Path destination = temporaryDirectory.resolve(WINDOWS_LIBRARY);
+        Path privateDirectory = NativeLibraryLoader.createPrivateDirectory(temporaryDirectory);
+        Path destination = privateDirectory.resolve(WINDOWS_LIBRARY);
         Files.write(destination, expectedContent);
 
         assertThrows(UnsatisfiedLinkError.class,
                 () -> NativeLibraryLoader.extractVerified(
                         new ByteArrayInputStream(libraryBytes), sha256(libraryBytes),
-                        temporaryDirectory, WINDOWS_LIBRARY));
+                        privateDirectory, WINDOWS_LIBRARY));
 
         assertArrayEquals(expectedContent, Files.readAllBytes(destination));
     }
@@ -124,6 +131,9 @@ final class NativeLibraryLoaderTest {
                     PosixFilePermission.OWNER_EXECUTE), directoryPermissions);
             assertEquals(Set.of(PosixFilePermission.OWNER_READ, PosixFilePermission.OWNER_WRITE),
                     filePermissions);
+        } else if (Files.getFileStore(first).supportsFileAttributeView("acl")) {
+            assertPrivateAcl(first.getParent());
+            assertPrivateAcl(first);
         }
     }
 
@@ -160,5 +170,17 @@ final class NativeLibraryLoaderTest {
 
     private static String sha256(byte[] bytes) throws Exception {
         return HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256").digest(bytes));
+    }
+
+    private static void assertPrivateAcl(Path path) throws IOException {
+        AclFileAttributeView view = Files.getFileAttributeView(path, AclFileAttributeView.class);
+        assertNotNull(view);
+        var owner = Files.getOwner(path);
+        var entries = view.getAcl();
+        assertEquals(1, entries.size());
+        assertEquals(AclEntryType.ALLOW, entries.get(0).type());
+        assertEquals(owner, entries.get(0).principal());
+        assertEquals(EnumSet.allOf(AclEntryPermission.class), entries.get(0).permissions());
+        assertTrue(entries.get(0).flags().isEmpty());
     }
 }

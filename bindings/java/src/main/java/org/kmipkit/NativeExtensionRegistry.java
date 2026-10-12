@@ -7,8 +7,9 @@ import org.kmipkit.ttlv.CodecLimits;
  *
  * <p>Applications should use the typed classes in {@code org.kmipkit.extensions}
  * and {@code org.kmipkit.ttlv}. The native library is loaded lazily on the first
- * bridge call. Set {@code -Dkmipkit.nativeLibrary=/absolute/path/to/library}
- * to load a specific JNI library; otherwise {@code kmipkit_jni} is used.</p>
+ * bridge call. The packaged native library is selected and verified from the
+ * current platform resources. Set {@code -Dkmipkit.nativeLibrary=/absolute/path/to/library}
+ * to load an administrator-provided library instead.</p>
  */
 public final class NativeExtensionRegistry {
     public static final int IDENTITY = 1;
@@ -51,12 +52,7 @@ public final class NativeExtensionRegistry {
         }
         synchronized (NativeExtensionRegistry.class) {
             if (!loaded) {
-                String explicitLibrary = System.getProperty("kmipkit.nativeLibrary");
-                if (explicitLibrary == null || explicitLibrary.isBlank()) {
-                    System.loadLibrary("kmipkit_jni");
-                } else {
-                    System.load(explicitLibrary);
-                }
+                NativeLibraryLoader.load();
                 loaded = true;
             }
         }
