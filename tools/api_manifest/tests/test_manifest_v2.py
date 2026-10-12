@@ -321,6 +321,51 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
         self.assertEqual(transport_exchange["declarationState"], "declared")
         self.assertEqual(transport_exchange["parityScope"], "rust-only-adr")
 
+    def test_ffi_runtime_metadata_is_owned_and_mapped_in_all_languages(self) -> None:
+        capability = next(
+            (
+                record
+                for record in self.checked_in_manifest["capabilities"]
+                if record["capabilityId"] == "ffi_runtime_metadata"
+            ),
+            None,
+        )
+        self.assertIsNotNone(capability)
+        self.assertEqual(capability["capabilityState"], "declared")
+        self.assertEqual(capability["ownerSpecId"], "KMIPKIT-0043")
+        self.assertEqual(
+            set(capability["mappings"]),
+            {"rust", "c", "java", "python"},
+        )
+
+        expected_symbols = {
+            "kmipkit_version_get",
+            "kmipkit_capability_is_available",
+            "kmipkit_last_error_get",
+            "kmipkit_last_error_clear",
+        }
+        functions = {
+            function["c"]["symbol"]: function
+            for function in self.checked_in_manifest["functions"]
+        }
+        self.assertTrue(expected_symbols <= set(functions))
+        for symbol in expected_symbols:
+            with self.subTest(symbol=symbol):
+                function = functions[symbol]
+                self.assertIn("KMIPKIT-0043-FR-007", function["requirementIds"])
+                if symbol.startswith("kmipkit_last_error"):
+                    self.assertIn("KMIPKIT-0043-FR-013", function["requirementIds"])
+
+        declarations = {
+            declaration.get("languageMappings", {}).get("c", {}).get("name"):
+            declaration
+            for declaration in self.checked_in_manifest["publicDeclarations"]
+        }
+        self.assertTrue(expected_symbols <= set(declarations))
+        for symbol in expected_symbols:
+            self.assertEqual(declarations[symbol]["capabilityId"], "ffi_runtime_metadata")
+            self.assertEqual(declarations[symbol]["declarationState"], "declared")
+
     def test_ttlv_declarations_use_their_approved_shared_spec_owners(self) -> None:
         capabilities = {
             record["capabilityId"]: record
