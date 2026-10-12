@@ -1465,17 +1465,33 @@ def _check_operation_inventory(elements: list[dict[str, Any]]) -> None:
         operation = observed[key]
         if operation.get("source_refs") != [{"source_id": "KMIPKIT-SRC-spec", "section": section}]:
             _fail(f"operation {operation.get('name')} has an incorrect source section")
-        required_scope = "client_1_0" if key[0] == "client_to_server" else "client_1_1"
+        deferred_client_operations = {("client_to_server", "Set Endpoint Role")}
+        if key in deferred_client_operations:
+            required_scope = "client_1_1"
+        else:
+            required_scope = "client_1_0" if key[0] == "client_to_server" else "client_1_1"
         if operation.get("scope_state") != required_scope:
             _fail(f"operation {operation.get('name')} has an incorrect scope disposition")
-        if key[0] == "server_to_client" and not operation.get("scope_reason"):
-            _fail(f"operation {operation.get('name')} requires a 1.1 scope rationale")
+        if required_scope != "client_1_0" and not (
+            isinstance(operation.get("scope_reason"), str) and operation["scope_reason"].strip()
+        ):
+            _fail(f"operation {operation.get('name')} requires a non-empty 1.1 scope rationale")
         name = key[1]
         expected_tables = _expected_operation_payload_tables(name, key[0])
         if operation.get("payload_tables") != expected_tables:
             _fail(f"operation {name} has incorrect payload table references")
         if operation.get("asynchronous_response") != ASYNC_RESPONSE_BEHAVIORS.get(name):
             _fail(f"operation {name} has incorrect asynchronous response classification")
+    endpoint_role_enum_id = "KMIPKIT-ELEM-ENUM-VALUE-OPERATION-SET-ENDPOINT-ROLE-00000032"
+    endpoint_role_enum = next((row for row in elements if row.get("element_id") == endpoint_role_enum_id), None)
+    if endpoint_role_enum is None:
+        _fail("operation inventory is missing the Set Endpoint Role enumeration value")
+    if (
+        endpoint_role_enum.get("scope_state") != "client_1_1"
+        or not isinstance(endpoint_role_enum.get("scope_reason"), str)
+        or not endpoint_role_enum["scope_reason"].strip()
+    ):
+        _fail("Set Endpoint Role operation enumeration value has incorrect scope or lacks a 1.1 rationale")
 
 
 COMPLETE_ELEMENT_COUNTS = {
