@@ -30,6 +30,15 @@ import tools.normative_catalog.validate as catalog_validate
 
 ROOT = Path(__file__).resolve().parents[3]
 OPTIONAL_CAPABILITY_TEST_REQUIREMENTS = {
+    "crates/kmipkit-protocol/tests/unit/attribute_tests.rs::property_roundtrips_ordered_repeated_direct_attribute_items": (
+        "KMIPKIT-REQ-SPEC-5.1-002",
+    ),
+    "crates/kmipkit-protocol/tests/unit/get_attributes_tests.rs::request_follows_table_223_order_and_allows_repeated_reference_fields": (
+        "KMIPKIT-REQ-SPEC-6.1.20-004",
+    ),
+    "crates/kmipkit-protocol/tests/unit/modify_attribute_tests.rs::request_omits_current_attribute_without_selecting_an_instance_locally": (
+        "KMIPKIT-REQ-SPEC-6.1.34-001-001",
+    ),
     "crates/kmipkit-client/tests/unit/execute_lifecycle_tests.rs::single_item_request_may_include_or_omit_unique_batch_item_id": (
         "KMIPKIT-REQ-PROF-4.1.2-007",
     ),
