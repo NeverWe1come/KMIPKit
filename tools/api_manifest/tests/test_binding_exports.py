@@ -70,6 +70,10 @@ class BindingExportAuditTests(unittest.TestCase):
         struct.pack_into("<H", image, 0x248, 0)
         image[0x250:0x266] = b"kmipkit_client_create\0"
         self.assertEqual(AUDIT.read_pe_exports(bytes(image)), ["kmipkit_client_create"])
+        ordinal_only = bytearray(image)
+        struct.pack_into("<I", ordinal_only, export + 20, 2)
+        with self.assertRaisesRegex(ValueError, "ordinal-only"):
+            AUDIT.read_pe_exports(bytes(ordinal_only))
 
     def test_javap_inventory_includes_public_types_constructors_fields_and_methods(self):
         outputs = {
