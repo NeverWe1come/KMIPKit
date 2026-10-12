@@ -27,8 +27,26 @@ class RustExportGreenGapTests(unittest.TestCase):
             raise AssertionError("fixture must retain authentic rustdoc JSON format 57")
         return {"rustdoc_v57_fixture": document}
 
+    def fixture_without_static_contract(self):
+        documents = self.fixture()
+        document = documents["rustdoc_v57_fixture"]
+        index = document["index"]
+        generic = next(item for item in index.values() if item.get("name") == "Generic")
+        retained_impls = []
+        for implementation_id in generic["inner"]["struct"]["impls"]:
+            implementation = index[str(implementation_id)]["inner"]["impl"]
+            if (implementation.get("trait") or {}).get("path") == "StaticContract":
+                continue
+            retained_impls.append(implementation_id)
+        generic["inner"]["struct"]["impls"] = retained_impls
+        for identifier, item in list(index.items()):
+            if "impl" in item.get("inner", {}) \
+                    and (item["inner"]["impl"].get("trait") or {}).get("path") == "StaticContract":
+                del index[identifier]
+        return documents
+
     def test_empty_trait_impl_includes_default_associated_constant_and_type(self):
-        report = self.audit.inventory(self.fixture())
+        report = self.audit.inventory(self.fixture_without_static_contract())
         names = {declaration["exportName"] for declaration in report["declarations"]}
 
         self.assertIn(
@@ -41,7 +59,7 @@ class RustExportGreenGapTests(unittest.TestCase):
         )
 
     def test_trait_identity_resolves_rustdoc_ids_to_canonical_paths(self):
-        original = self.fixture()
+        original = self.fixture_without_static_contract()
         changed_id = copy.deepcopy(original)
         document = changed_id["rustdoc_v57_fixture"]
         generic = next(item for item in document["index"].values() if item.get("name") == "Generic")
@@ -69,7 +87,7 @@ class RustExportGreenGapTests(unittest.TestCase):
         self.assertEqual(generic_identity(original), generic_identity(changed_id))
 
     def test_non_applicable_generic_alias_does_not_receive_copy_bounded_impl(self):
-        report = self.audit.inventory(self.fixture())
+        report = self.audit.inventory(self.fixture_without_static_contract())
         export_name = (
             "<rustdoc_v57_fixture::GenericDerivedAlias as "
             "rustdoc_v57_fixture::Contract<rustdoc_v57_fixture::Derived>>::required"
@@ -77,14 +95,14 @@ class RustExportGreenGapTests(unittest.TestCase):
         self.assertNotIn(export_name, {entry["exportName"] for entry in report["declarations"]})
 
     def test_composite_generic_arguments_are_compared_recursively(self):
-        report = self.audit.inventory(self.fixture())
+        report = self.audit.inventory(self.fixture_without_static_contract())
         names = {declaration["exportName"] for declaration in report["declarations"]}
 
         self.assertIn("rustdoc_v57_fixture::GenericU8TupleAlias::only_tuple_u8", names)
         self.assertNotIn("rustdoc_v57_fixture::GenericU16TupleAlias::only_tuple_u8", names)
 
     def test_public_trait_inside_private_module_is_not_reported_as_exported(self):
-        report = self.audit.inventory(self.fixture())
+        report = self.audit.inventory(self.fixture_without_static_contract())
         names = {declaration["exportName"] for declaration in report["declarations"]}
 
         self.assertNotIn(
@@ -93,8 +111,30 @@ class RustExportGreenGapTests(unittest.TestCase):
             names,
         )
 
+    def test_elided_lifetime_impl_is_exported_only_through_public_reexport(self):
+        documents = self.fixture_without_static_contract()
+        document = documents["rustdoc_v57_fixture"]
+        index = document["index"]
+        view = next(item for item in index.values() if item.get("name") == "View")
+        implementation = index[str(view["inner"]["struct"]["impls"][0])]["inner"]["impl"]
+        self.assertIsNone(implementation["trait"])
+        self.assertEqual(implementation["generics"]["params"], [])
+        self.assertEqual(
+            implementation["for"]["resolved_path"]["args"]["angle_bracketed"]["args"],
+            [{"lifetime": "'_"}],
+        )
+
+        report = self.audit.inventory(documents)
+        names = {declaration["exportName"] for declaration in report["declarations"]}
+        view_methods = {
+            name for name in names
+            if name.endswith("::get") and ("Alias" in name or "View" in name)
+        }
+
+        self.assertEqual(view_methods, {"rustdoc_v57_fixture::Alias::get"})
+
     def test_inventory_is_invariant_to_root_item_order(self):
-        original = self.fixture()
+        original = self.fixture_without_static_contract()
         reversed_items = copy.deepcopy(original)
         document = reversed_items["rustdoc_v57_fixture"]
         document["index"][str(document["root"])]["inner"]["module"]["items"].reverse()
@@ -112,51 +152,7 @@ class RustExportGreenGapTests(unittest.TestCase):
         self.assertEqual(original_report["issues"], reversed_report["issues"])
 
     def test_any_blanket_is_projected_for_concrete_alias(self):
-        documents = self.fixture()
-        document = documents["rustdoc_v57_fixture"]
-        generic = next(item for item in document["index"].values() if item.get("name") == "Generic")
-        any_trait_id = 999_991
-        any_impl_id = 999_992
-        type_id_method_id = 999_993
-        document["paths"][str(any_trait_id)] = {
-            "crate_id": 2, "kind": "trait", "path": ["core", "any", "Any"],
-        }
-        document["index"][str(type_id_method_id)] = {
-            "id": type_id_method_id, "crate_id": 0, "name": "type_id", "span": None,
-            "visibility": "default", "docs": None, "links": {}, "attrs": [],
-            "deprecation": None, "inner": {"function": {}},
-        }
-        document["index"][str(any_impl_id)] = {
-            "id": any_impl_id, "crate_id": 0, "name": None, "span": None,
-            "visibility": "default", "docs": None, "links": {}, "attrs": [],
-            "deprecation": None,
-            "inner": {"impl": {
-                "is_unsafe": False,
-                "generics": {
-                    "params": [{
-                        "name": "T",
-                        "kind": {"type": {"bounds": [], "default": None, "is_synthetic": False}},
-                    }],
-                    "where_predicates": [{"bound_predicate": {
-                        "type": {"generic": "T"}, "generic_params": [],
-                        "bounds": [{"outlives": "'static"}],
-                    }}],
-                },
-                "provided_trait_methods": [],
-                "trait": {"path": "Any", "id": any_trait_id, "args": None},
-                "for": {"resolved_path": {
-                    "path": "Generic", "id": generic["id"],
-                    "args": {"angle_bracketed": {
-                        "args": [{"type": {"generic": "T"}}], "constraints": [],
-                    }},
-                }},
-                "items": [type_id_method_id], "is_negative": False, "is_synthetic": False,
-                "blanket_impl": {"generic": "T"},
-            }},
-        }
-        generic["inner"]["struct"]["impls"].append(any_impl_id)
-
-        report = self.audit.inventory(documents)
+        report = self.audit.inventory(self.fixture_without_static_contract())
         names = {declaration["exportName"] for declaration in report["declarations"]}
         concrete_alias_member = (
             "<rustdoc_v57_fixture::GenericDerivedAlias as core::any::Any>::type_id"
@@ -165,51 +161,7 @@ class RustExportGreenGapTests(unittest.TestCase):
         self.assertIn(concrete_alias_member, names)
 
     def test_any_blanket_stays_unresolved_for_open_generic_alias(self):
-        documents = self.fixture()
-        document = documents["rustdoc_v57_fixture"]
-        generic = next(item for item in document["index"].values() if item.get("name") == "Generic")
-        any_trait_id = 999_991
-        any_impl_id = 999_992
-        type_id_method_id = 999_993
-        document["paths"][str(any_trait_id)] = {
-            "crate_id": 2, "kind": "trait", "path": ["core", "any", "Any"],
-        }
-        document["index"][str(type_id_method_id)] = {
-            "id": type_id_method_id, "crate_id": 0, "name": "type_id", "span": None,
-            "visibility": "default", "docs": None, "links": {}, "attrs": [],
-            "deprecation": None, "inner": {"function": {}},
-        }
-        document["index"][str(any_impl_id)] = {
-            "id": any_impl_id, "crate_id": 0, "name": None, "span": None,
-            "visibility": "default", "docs": None, "links": {}, "attrs": [],
-            "deprecation": None,
-            "inner": {"impl": {
-                "is_unsafe": False,
-                "generics": {
-                    "params": [{
-                        "name": "T",
-                        "kind": {"type": {"bounds": [], "default": None, "is_synthetic": False}},
-                    }],
-                    "where_predicates": [{"bound_predicate": {
-                        "type": {"generic": "T"}, "generic_params": [],
-                        "bounds": [{"outlives": "'static"}],
-                    }}],
-                },
-                "provided_trait_methods": [],
-                "trait": {"path": "Any", "id": any_trait_id, "args": None},
-                "for": {"resolved_path": {
-                    "path": "Generic", "id": generic["id"],
-                    "args": {"angle_bracketed": {
-                        "args": [{"type": {"generic": "T"}}], "constraints": [],
-                    }},
-                }},
-                "items": [type_id_method_id], "is_negative": False, "is_synthetic": False,
-                "blanket_impl": {"generic": "T"},
-            }},
-        }
-        generic["inner"]["struct"]["impls"].append(any_impl_id)
-
-        report = self.audit.inventory(documents)
+        report = self.audit.inventory(self.fixture_without_static_contract())
         names = {declaration["exportName"] for declaration in report["declarations"]}
         open_alias_member = "<rustdoc_v57_fixture::GenericAlias<T> as core::any::Any>::type_id"
 
@@ -217,6 +169,46 @@ class RustExportGreenGapTests(unittest.TestCase):
         self.assertTrue(any(
             issue["reason"] == "unresolved-rustdoc-implementation-predicate"
             and issue.get("exportName") == "rustdoc_v57_fixture::GenericAlias"
+            for issue in report["issues"]
+        ))
+
+    def test_inline_static_bound_is_evaluated_or_reported_without_traceback(self):
+        documents = self.fixture()
+        document = documents["rustdoc_v57_fixture"]
+        generic = next(item for item in document["index"].values() if item.get("name") == "Generic")
+        static_impl = next(
+            (str(impl_id), document["index"][str(impl_id)]["inner"]["impl"])
+            for impl_id in generic["inner"]["struct"]["impls"]
+            if (document["index"][str(impl_id)]["inner"]["impl"].get("trait") or {}).get("path")
+            == "StaticContract"
+        )
+        static_impl_id, static_impl = static_impl
+        self.assertIn(
+            {"outlives": "'static"},
+            static_impl["generics"]["params"][0]["kind"]["type"]["bounds"],
+        )
+
+        try:
+            report = self.audit.inventory(documents)
+        except AttributeError as error:
+            self.fail(f"inline outlives bound caused an auditor traceback: {error}")
+
+        self.assertFalse(report["complete"])
+        names = {declaration["exportName"] for declaration in report["declarations"]}
+        self.assertIn(
+            "<rustdoc_v57_fixture::GenericDerivedAlias as "
+            "rustdoc_v57_fixture::StaticContract>::static_bound",
+            names,
+        )
+        self.assertNotIn(
+            "<rustdoc_v57_fixture::GenericAlias<T> as "
+            "rustdoc_v57_fixture::StaticContract>::static_bound",
+            names,
+        )
+        self.assertTrue(any(
+            issue["reason"] == "unresolved-rustdoc-implementation-predicate"
+            and issue.get("exportName") == "rustdoc_v57_fixture::GenericAlias"
+            and issue.get("implementationId") == static_impl_id
             for issue in report["issues"]
         ))
 

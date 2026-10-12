@@ -23,8 +23,26 @@ mod private_module {
     }
 }
 
+mod hidden_view {
+    pub struct View<'a> {
+        value: &'a u8,
+    }
+
+    impl View<'_> {
+        pub fn get(&self) -> &u8 {
+            self.value
+        }
+    }
+}
+
+pub use hidden_view::View as Alias;
+
 pub trait Audit {
     fn required(&self) -> u8;
+}
+
+pub trait StaticContract {
+    fn static_bound(&self);
 }
 
 trait PrivateContract {
@@ -78,6 +96,10 @@ where
     fn required(&self) -> T {
         self.value
     }
+}
+
+impl<T: 'static> StaticContract for Generic<T> {
+    fn static_bound(&self) {}
 }
 
 impl Generic<(u8,)> {

@@ -14,6 +14,28 @@ def project(raw_path: Path, output_path: Path) -> None:
     root_id = str(raw["root"])
     root = raw_index[root_id]
     root_items = root["inner"]["module"]["items"]
+
+    def source_items(item_ids: list[Any]) -> list[Any]:
+        selected_ids: list[Any] = []
+        seen: set[str] = set()
+
+        def visit(ids: list[Any]) -> None:
+            for item_id in ids:
+                key = str(item_id)
+                if key in seen:
+                    continue
+                seen.add(key)
+                selected_ids.append(item_id)
+                item = raw_index[key]
+                module = item["inner"].get("module")
+                if module is not None:
+                    visit(module["items"])
+
+        visit(item_ids)
+        return selected_ids
+
+    source_item_ids = source_items(root_items)
+
     def source_traits(item_ids: list[Any]) -> set[str]:
         names: set[str] = set()
         for item_id in item_ids:
@@ -27,7 +49,7 @@ def project(raw_path: Path, output_path: Path) -> None:
 
     source_trait_names = source_traits(root_items)
     selected_impls: dict[str, list[Any]] = {}
-    for item_id in root_items:
+    for item_id in source_item_ids:
         item = raw_index[str(item_id)]
         item_kind = next(iter(item["inner"]))
         if item_kind not in {"struct", "union"}:
@@ -42,8 +64,10 @@ def project(raw_path: Path, output_path: Path) -> None:
                 and trait.get("path") == "Send" and impl.get("is_synthetic") is True
             representative_blanket = item.get("name") == "Fixed" and trait is not None \
                 and trait.get("path") == "Borrow" and impl.get("blanket_impl") is not None
+            representative_any = item.get("name") == "Generic" and trait is not None \
+                and trait.get("path") == "Any" and impl.get("blanket_impl") is not None
             if trait is None or trait.get("path") in source_trait_names or derived \
-                    or representative_synthetic or representative_blanket:
+                    or representative_synthetic or representative_blanket or representative_any:
                 impl_ids.append(impl_id)
         selected_impls[str(item_id)] = impl_ids
 
@@ -57,17 +81,11 @@ def project(raw_path: Path, output_path: Path) -> None:
 
     projected_root = include(root_id)
     projected_root["inner"]["module"]["items"] = root_items
-    for item_id in root_items:
+    for item_id in source_item_ids:
         item = include(item_id)
         kind = next(iter(item["inner"]))
         inner = item["inner"][kind]
-        if kind == "module":
-            for nested_id in inner["items"]:
-                nested = include(nested_id)
-                if "trait" in nested["inner"]:
-                    for member_id in nested["inner"]["trait"]["items"]:
-                        include(member_id)
-        elif kind == "trait":
+        if kind == "trait":
             for member_id in inner["items"]:
                 include(member_id)
         elif kind in {"struct", "union"}:
