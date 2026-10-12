@@ -214,6 +214,18 @@ class ManifestGeneratorCliTests(unittest.TestCase):
         self.assertIn("kmipkit_version_get", c_header)
         self.assertNotIn("version_get", registry_python)
 
+    def test_generated_rust_metadata_lists_only_unblocked_c_mapped_capabilities(self) -> None:
+        manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
+        generated = generate.render_public_rust_api(
+            generate._ready_api_projection(manifest)
+        )
+
+        self.assertIn('"generic_ttlv_model"', generated)
+        self.assertIn('"ttlv_wire_codec"', generated)
+        self.assertNotIn('"public_binding_surface"', generated)
+        self.assertNotIn('"vendor_extension_registry"', generated)
+        self.assertNotIn('"rust_transport_exchange"', generated)
+
     def _run_generator(self, root: Path, *arguments: str) -> subprocess.CompletedProcess[str]:
         self.assertTrue(
             GENERATOR.is_file(),
