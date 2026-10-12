@@ -15900,7 +15900,7 @@ class CatalogValidationTests(unittest.TestCase):
     def test_optional_evidence_gate_accepts_only_scoped_client_request_evidence(self) -> None:
         """Scoped evidence counts only for representable in-scope client requests."""
         requirement_id = "KMIPKIT-REQ-SPEC-TEST-CLIENT-MAY"
-        test_reference = "tests/positive_capability.py::request_capability_is_available"
+        test_reference = "tests/positive_capability.rs::request_capability_is_available"
 
         def requirement(**overrides: Any) -> dict[str, Any]:
             row: dict[str, Any] = {
@@ -15920,13 +15920,15 @@ class CatalogValidationTests(unittest.TestCase):
             *,
             create_test: bool = True,
             external_implementation_reference: str | None = None,
+            external_verification_reference: str | None = None,
+            test_source: str | None = None,
         ) -> None:
             with tempfile.TemporaryDirectory() as temporary_directory:
                 root = Path(temporary_directory)
                 catalog_path = root / "specification" / "catalog" / "kmip-2.1.json"
                 targets_path = root / "specification" / "catalog" / "profile-targets.json"
                 oracle_path = root / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json"
-                test_path = root / "tests" / "positive_capability.py"
+                test_path = root / "tests" / "positive_capability.rs"
                 for path, value in (
                     (catalog_path, {"requirements": [row]}),
                     (targets_path, {}),
@@ -15937,7 +15939,8 @@ class CatalogValidationTests(unittest.TestCase):
                 if create_test:
                     test_path.parent.mkdir(parents=True, exist_ok=True)
                     test_path.write_text(
-                        "def request_capability_is_available():\n    pass\n",
+                        test_source
+                        or "#[test]\nfn request_capability_is_available() {\n    assert!(true);\n}\n",
                         encoding="utf-8",
                     )
                 implementation_path = root / "src" / "request.rs"
@@ -15956,6 +15959,49 @@ class CatalogValidationTests(unittest.TestCase):
                     catalog_path.write_text(
                         json.dumps({"requirements": [row]}), encoding="utf-8"
                     )
+                external_test_directory = root.parent / f"{root.name}-outside-tests"
+                external_test_path = external_test_directory / "positive_capability.rs"
+                linked_test_directory = root / "tests" / "linked_tests"
+                if external_verification_reference is not None:
+                    external_test_directory.mkdir()
+                    external_test_path.write_text(
+                        "#[test]\nfn request_capability_is_available() {\n    assert!(true);\n}\n",
+                        encoding="utf-8",
+                    )
+                    if external_verification_reference == "absolute":
+                        row["verification_refs"] = [
+                            f"{external_test_path}::request_capability_is_available"
+                        ]
+                    elif external_verification_reference == "traversal":
+                        row["verification_refs"] = [
+                            f"../{external_test_directory.name}/positive_capability.rs::request_capability_is_available"
+                        ]
+                    else:
+                        linked_test_directory.parent.mkdir(parents=True, exist_ok=True)
+                        if os.name == "nt":
+                            subprocess.run(
+                                [
+                                    "cmd.exe",
+                                    "/c",
+                                    "mklink",
+                                    "/J",
+                                    str(linked_test_directory),
+                                    str(external_test_directory),
+                                ],
+                                check=True,
+                                capture_output=True,
+                                text=True,
+                            )
+                        else:
+                            linked_test_directory.symlink_to(
+                                external_test_directory, target_is_directory=True
+                            )
+                        row["verification_refs"] = [
+                            "tests/linked_tests/positive_capability.rs::request_capability_is_available"
+                        ]
+                    catalog_path.write_text(
+                        json.dumps({"requirements": [row]}), encoding="utf-8"
+                    )
                 with (
                     patch(__name__ + ".ROOT", root),
                     patch(__name__ + "._selected_profile_source_scope", return_value=(set(), set())),
@@ -15964,6 +16010,12 @@ class CatalogValidationTests(unittest.TestCase):
                     try:
                         CatalogValidationTests().test_every_reviewed_client_may_or_optional_has_usable_positive_evidence()
                     finally:
+                        if linked_test_directory.exists():
+                            linked_test_directory.rmdir()
+                        if external_test_path.exists():
+                            external_test_path.unlink()
+                        if external_test_directory.exists():
+                            external_test_directory.rmdir()
                         if external_implementation_path.exists():
                             external_implementation_path.unlink()
 
@@ -15977,8 +16029,10 @@ class CatalogValidationTests(unittest.TestCase):
             ("missing implementation reference", requirement(implementation_refs=[]), True),
             ("missing implementation file", requirement(implementation_refs=["src/missing.rs"]), True),
             ("missing positive-test reference", requirement(verification_refs=[]), True),
+            ("positive-test reference without separator", requirement(verification_refs=["tests/positive_capability.rs"]), True),
+            ("positive-test reference without test name", requirement(verification_refs=["tests/positive_capability.rs::"]), True),
             ("unresolvable positive-test name", requirement(verification_refs=["tests/positive_capability.py::missing_test"]), True),
-            ("missing positive-test file", requirement(verification_refs=["tests/missing.py::request_capability_is_available"]), False),
+            ("missing positive-test file", requirement(verification_refs=["tests/missing.rs::request_capability_is_available"]), False),
         )
         for label, row, create_test in rejected_rows:
             with self.subTest(label):
@@ -15992,6 +16046,22 @@ class CatalogValidationTests(unittest.TestCase):
             with self.subTest(label):
                 with self.assertRaises(AssertionError):
                     run_gate(requirement(), external_implementation_reference=reference_style)
+
+        for label, reference_style in (
+            ("absolute positive-test path outside repository", "absolute"),
+            ("traversal positive-test path outside repository", "traversal"),
+            ("positive-test path through an external directory symlink", "symlink"),
+        ):
+            with self.subTest(label):
+                with self.assertRaises(AssertionError):
+                    run_gate(requirement(), external_verification_reference=reference_style)
+
+        with self.subTest("ordinary function is not a discoverable positive test"):
+            with self.assertRaises(AssertionError):
+                run_gate(
+                    requirement(),
+                    test_source="fn request_capability_is_available() { assert!(true); }\n",
+                )
 
     def test_every_reviewed_client_may_or_optional_has_usable_positive_evidence(self) -> None:
         """Selected Baseline MAY/OPTIONAL capabilities require implementation and positive test evidence."""
