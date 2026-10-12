@@ -256,6 +256,7 @@ PR run `38299757432` also found that `_generated/public_api.py` was selected as 
 |---|---|---|---|
 | Red | `f7c787c0` | `python -B -m unittest test_multilanguage_coverage.MultiLanguageCoverageTests.test_python_coverage_tests_execute_the_generated_public_api_manifest -v` from `scripts/tests` | Expected failure: the Python manifest suite did not import `public_api`. |
 | Green | `6677ea95` | Focused Python manifest tests with pinned coverage requirements; full Python coverage suite; `python -m unittest test_multilanguage_coverage -v` | PASS: 2 focused tests; full Python suite 48/48 and 97.22% coverage; the XML contains `bindings/python/src/kmipkit/_generated/public_api.py`; all 17 multi-language coverage contract tests pass. |
+| Read-only QA | `001d3dc3` | Review of the Red/Green change, coverage contract, guide, and evidence | PASS: no findings. The QA reviewer noted the source-text import guard is intentionally narrow; the aggregate coverage gate remains the final check that the module is actually measured. |
 
 The testing guide now documents that only the two generated `_native_ffi` wrappers are excluded and that the checked-in public API manifest stays inside the 85% coverage gate. The full suite produced local Windows evidence; the Linux CI run on the pushed head remains authoritative. T011 remains open pending final CI and read-only QA.
 
