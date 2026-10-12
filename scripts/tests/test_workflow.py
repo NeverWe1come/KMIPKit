@@ -266,6 +266,20 @@ class WorkflowContractTests(unittest.TestCase):
         self.assertIn("uv pip install --requirement bindings/python/requirements-coverage.txt", python_job)
         self.assert_uv_managed_python_312(python_job)
 
+    def test_c_abi_inventory_does_not_cache_unused_uv_dependencies(self) -> None:
+        contents = self.require_workflow()
+        job = self.require_job(contents, "language-c")
+        step = re.search(
+            r"(?ms)^      - name: Set up Python 3\.12 for the ABI inventory\n(.*?)(?=^      - name: |\Z)",
+            job,
+        )
+        self.assertIsNotNone(step, "The C ABI inventory job must set up its pinned Python runtime.")
+        self.assertRegex(
+            step.group(1),
+            r"(?m)^          enable-cache: false$",
+            "The C ABI inventory installs no uv dependencies, so setup-uv caching must be disabled.",
+        )
+
     def test_rust_built_adapter_jobs_install_the_pinned_rust_toolchain(self) -> None:
         contents = self.require_workflow()
         for job_id in ("language-python", "coverage-java", "coverage-python", "coverage-jni"):
