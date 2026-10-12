@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -167,6 +168,11 @@ final class NativeLibraryLoaderTest {
                 () -> NativeLibraryLoader.resolveExplicitLibrary("  "));
         assertEquals(NativeLibraryLoader.LOAD_FAILURE_MESSAGE, failure.getMessage());
         assertEquals(null, failure.getCause());
+    }
+
+    @Test
+    void allowsBundledSelectionOnlyWhenNativeLibraryOverrideIsAbsent() {
+        assertNull(NativeLibraryLoader.resolveExplicitLibrary(null));
     }
 
     private static ClassLoader classLoader(Map<String, byte[]> resources) {
