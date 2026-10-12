@@ -81,7 +81,15 @@ class PublicApiParityTests(unittest.TestCase):
     def test_manifest_covers_every_registry_requirement(self) -> None:
         self.assertTrue(set(REQUIREMENT_IDS).issubset(self.manifest["requirementIds"]))
 
-        for item in [*self.manifest["types"], *self.manifest["functions"]]:
+        registry_records = [
+            item
+            for item in [*self.manifest["types"], *self.manifest["functions"]]
+            if any(
+                requirement.startswith("KMIPKIT-0012-")
+                for requirement in item["requirementIds"]
+            )
+        ]
+        for item in registry_records:
             self.assertTrue(set(item["requirementIds"]).issubset(REQUIREMENT_IDS), item["id"])
 
     def test_shared_capability_parity_fixtures_cover_rust_and_c_contracts(self) -> None:

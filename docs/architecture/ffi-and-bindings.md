@@ -14,6 +14,24 @@ The C ABI is the shared boundary for C, Java, Python, and later adapters.
 - Catch every Rust panic at each exported function.
 - Keep 1.x ABI additions backward compatible.
 
+### Runtime metadata and error snapshots
+
+`kmipkit_version_get` returns the synchronized package version as three
+`uint32_t` components and the stable C ABI revision (`1` for the initial 1.x
+ABI). `kmipkit_capability_is_available` accepts a UTF-8 capability ID and
+returns `1` only when the generated manifest declares a non-blocked C mapping;
+this does not imply that a remote KMIP server supports the capability.
+
+`kmipkit_last_error_get` copies the calling thread's most recent nonzero C
+status and safe metadata without clearing it. `kmipkit_last_error_clear` resets
+that snapshot. The category values are `0` none, `1` validation, `2` protocol,
+`3` transport, `4` server result, and `5` other. Cause values currently
+exposed by the C surface are `0` none, `1` invalid input, and `10` other. The
+delivery value `0` means no KMIP request delivery information is attached;
+the current C surface does not execute client requests. Status values remain
+the existing `KMIPKIT_ERROR_*` codes and are independent from category/cause
+values. Snapshots contain no source strings or request payloads.
+
 ## Memory ownership
 
 - Input memory is borrowed only for the duration of the call.

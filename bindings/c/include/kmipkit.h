@@ -316,6 +316,14 @@ int32_t kmipkit_ttlv_value_view_date_time_extended(kmipkit_ttlv_value_view_t * v
 int32_t kmipkit_ttlv_value_view_byte_length(kmipkit_ttlv_value_view_t * view, uint64_t * out_length);
 /* KMIPKIT-0012-FR-005, KMIPKIT-0012-FR-007, KMIPKIT-0012-FR-010 */
 int32_t kmipkit_ttlv_value_view_byte_at(kmipkit_ttlv_value_view_t * view, uint64_t index, uint8_t * out_byte);
+/* KMIPKIT-0043-FR-007 */
+int32_t kmipkit_version_get(uint32_t * out_major, uint32_t * out_minor, uint32_t * out_patch, uint32_t * out_abi_version);
+/* KMIPKIT-0043-FR-007 */
+int32_t kmipkit_capability_is_available(const uint8_t * capability_id_data, uint64_t capability_id_length, uint8_t * out_available);
+/* KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-013 */
+int32_t kmipkit_last_error_get(int32_t * out_status, uint32_t * out_category, uint32_t * out_cause, uint32_t * out_delivery);
+/* KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-013 */
+int32_t kmipkit_last_error_clear(void);
 
 #ifdef __cplusplus
 }

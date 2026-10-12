@@ -961,7 +961,7 @@ pub extern "C" fn kmipkit_version_get(
         || out_patch.is_null()
         || out_abi_version.is_null()
     {
-        return ERROR_INVALID_INPUT;
+        return record_ffi_error(ERROR_INVALID_INPUT);
     }
     let Some([major, minor, patch]) = package_version_components() else {
         return record_ffi_error(ERROR_INVALID_SCHEMA);

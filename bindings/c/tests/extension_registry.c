@@ -213,9 +213,9 @@ static bool test_runtime_metadata_and_error_snapshot(void)
     REQUIRE_STATUS(kmipkit_last_error_get(&status, &category, &cause, &delivery),
         KMIPKIT_SUCCESS);
     REQUIRE(status == KMIPKIT_ERROR_INVALID_INPUT);
-    REQUIRE(category == KMIPKIT_CLIENT_ERROR_CATEGORY_VALIDATION);
-    REQUIRE(cause == KMIPKIT_CLIENT_ERROR_CAUSE_INVALID_INPUT);
-    REQUIRE(delivery == KMIPKIT_REQUEST_DELIVERY_STATE_NONE);
+    REQUIRE(category == UINT32_C(1)); /* Validation */
+    REQUIRE(cause == UINT32_C(1)); /* InvalidInput */
+    REQUIRE(delivery == UINT32_C(0)); /* No request delivery */
     REQUIRE_STATUS(kmipkit_last_error_clear(), KMIPKIT_SUCCESS);
 
     REQUIRE_STATUS(kmipkit_version_get(&major, &minor, &patch, &abi), KMIPKIT_SUCCESS);
@@ -236,9 +236,9 @@ static bool test_runtime_metadata_and_error_snapshot(void)
     REQUIRE_STATUS(kmipkit_last_error_get(&status, &category, &cause, &delivery),
         KMIPKIT_SUCCESS);
     REQUIRE(status == KMIPKIT_ERROR_INVALID_INPUT);
-    REQUIRE(category == KMIPKIT_CLIENT_ERROR_CATEGORY_VALIDATION);
-    REQUIRE(cause == KMIPKIT_CLIENT_ERROR_CAUSE_INVALID_INPUT);
-    REQUIRE(delivery == KMIPKIT_REQUEST_DELIVERY_STATE_NONE);
+    REQUIRE(category == UINT32_C(1));
+    REQUIRE(cause == UINT32_C(1));
+    REQUIRE(delivery == UINT32_C(0));
 
     REQUIRE_STATUS(kmipkit_last_error_get(NULL, &category, &cause, &delivery),
         KMIPKIT_ERROR_INVALID_INPUT);
@@ -253,9 +253,9 @@ static bool test_runtime_metadata_and_error_snapshot(void)
     REQUIRE_STATUS(kmipkit_last_error_get(&status, &category, &cause, &delivery),
         KMIPKIT_SUCCESS);
     REQUIRE(status == KMIPKIT_SUCCESS);
-    REQUIRE(category == KMIPKIT_CLIENT_ERROR_CATEGORY_NONE);
-    REQUIRE(cause == KMIPKIT_CLIENT_ERROR_CAUSE_NONE);
-    REQUIRE(delivery == KMIPKIT_REQUEST_DELIVERY_STATE_NONE);
+    REQUIRE(category == UINT32_C(0));
+    REQUIRE(cause == UINT32_C(0));
+    REQUIRE(delivery == UINT32_C(0));
     return true;
 }
 

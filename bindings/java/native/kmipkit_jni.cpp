@@ -11,12 +11,6 @@
 #include <utility>
 #include <vector>
 
-extern "C" int32_t kmipkit_version_get(
-        uint32_t* out_major,
-        uint32_t* out_minor,
-        uint32_t* out_patch,
-        uint32_t* out_abi_version);
-
 namespace {
 
 constexpr uint64_t kMaximumTextBytes = 4096;

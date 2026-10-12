@@ -185,9 +185,13 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
     def test_checked_in_manifest_retains_every_registry_slice_record(self) -> None:
         manifest = self.checked_in_manifest
         registry = json.loads(REGISTRY_FIXTURE_PATH.read_text(encoding="utf-8"))
-        for field in ("types", "functions", "errorCategories", "limits", "security"):
+        for field in ("types", "errorCategories", "limits", "security"):
             with self.subTest(field=field):
                 self.assertEqual(manifest[field], registry[field])
+        manifest_functions = {item["id"]: item for item in manifest["functions"]}
+        for function in registry["functions"]:
+            with self.subTest(function=function["id"]):
+                self.assertEqual(manifest_functions[function["id"]], function)
         self.assertTrue(set(registry["requirementIds"]) <= set(manifest["requirementIds"]))
         outputs = manifest["generatedOutputs"]
         if isinstance(outputs, list):
