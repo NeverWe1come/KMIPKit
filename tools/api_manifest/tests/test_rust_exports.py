@@ -24,7 +24,7 @@ def document(name, items, root_items, paths=None):
     root = item(0, name, {"module": {"is_crate": True, "items": root_items}})
     return {
         "root": 0, "index": {str(i["id"]): i for i in [root, *items]},
-        "paths": paths or {}, "format_version": 61, "includes_private": True,
+        "paths": paths or {}, "format_version": 57, "includes_private": True,
         "target": {"triple": "x86_64-pc-windows-msvc"},
     }
 
@@ -183,7 +183,7 @@ class RustExportAuditTests(unittest.TestCase):
         self.assertEqual(report["issues"][0]["reason"], "unresolved-reexport")
 
     def test_format_and_private_documentation_must_match_the_pinned_contract(self):
-        for key, value in [("format_version", 62), ("includes_private", False)]:
+        for key, value in [("format_version", 58), ("includes_private", False)]:
             doc = document("sample", [], [])
             doc[key] = value
             with self.subTest(key=key), self.assertRaises(ValueError):
