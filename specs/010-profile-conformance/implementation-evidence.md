@@ -1686,3 +1686,62 @@ Source basis: KMIP Specification v2.1 §14.1 and KMIP Profiles v2.1 §6.1; appro
 | Green - expose profile result and document raw-body omission | Red commit `0652580f`; `cargo test -p kmipkit --test error_api facade_exports_profile_validation_result_and_omits_raw_body_for_profile_errors`<br>`cargo test -p kmipkit-client --lib response_profile_rejection_after_exchange_preserves_response_started_delivery`<br>`cargo fmt --all --check`<br>`cargo clippy -p kmipkit-client -p kmipkit-protocol -p kmipkit --all-targets --all-features -- -D warnings -A clippy::redundant_closure_for_method_calls`<br>`git diff --check` | PASS: callers can name the public `ProfileValidationResult` through the facade; profile errors retain delivery evidence but do not expose a raw response body. The rustdoc now states this behavior explicitly. DCO Green commit: this commit. |
 | Refactor - normalize the public API contract test | `cargo fmt --all --check`<br>`cargo test -p kmipkit --test error_api facade_exports_profile_validation_result_and_omits_raw_body_for_profile_errors` | PASS: formatting-only cleanup; the facade type and response-body assertions remain unchanged. DCO Refactor commit: this commit. |
 | Refactor - make the bilingual profile example compile | `cargo test -p kmipkit --doc`<br>`cargo fmt --all --check`<br>`git diff --check` | PASS: the English and Spanish guides now show the same complete helper function with imports and explicit parameters; the matching crate-level doctest compiles. The example returns the API result without claiming a successful production profile is available. DCO Refactor commit: this commit. |
+
+
+### KMIPKIT-0010 - Baseline optional-capability evidence batch 02
+
+Scope: add exact positive evidence and source-specific limits for the nine selected Baseline MAY/OPTIONAL records: KMIP Specification v2.1 §§3.3, 4.16, 4.47, 5.2, and 6.1. The requirement records retain status verified and empty official Test Cases ID lists. Local tests are not official OASIS evidence or formal profile conformance. No OASIS source, production behavior, typed profile rule, or official-test claim changed.
+
+| Stage | Commit | Exact commands | Exact result |
+|---|---|---|---|
+| Red - require the selected exact positive test references | 9b4d7203aae40c6a0aa27a8e5b7af7c34f2fbca8 | python -B -m unittest tools.normative_catalog.tests.test_validate.CatalogValidationTests.test_optional_capability_evidence_links_name_positive_tests -v | Expected Red: one test ran and failed in two subtests. KMIPKIT-REQ-SPEC-3.3-001-001 lacked wrapped_pgp_key_accepts_key_wrap_type, and KMIPKIT-REQ-SPEC-6.1-004 lacked request_emits_table_291_fields_in_order_and_preserves_object_item. DCO Red commit signed by NeverWe1come <vgarciaaguilar97@gmail.com>. |
+| Green - add scoped catalog links and regenerate the report | 66380e41036ba9cd57d84333d6482831e387d6f1 | python -B -m unittest tools.normative_catalog.tests.test_validate.CatalogValidationTests.test_optional_capability_evidence_links_name_positive_tests -v<br>cargo test -p kmipkit-protocol wrapped_pgp_key_accepts_key_wrap_type<br>cargo test -p kmipkit-protocol request_emits_table_291_fields_in_order_and_preserves_object_item<br>python -B tools/normative_catalog/validate.py --repo-root . --structural-only<br>python -B tools/normative_catalog/validate.py --repo-root .<br>python -B tools/normative_catalog/generate_profiles.py --repo-root . --check<br>python -B tools/normative_catalog/report.py --repo-root . --write<br>python -B tools/normative_catalog/report.py --repo-root . --check | Named-evidence test passed; both Rust tests passed 1/1; structural and full catalog validation reported Catalog valid: sources=4 clauses=1411 records=4111; profile metadata and generated report checks passed. The report was written by report.py. One parallel generator-check invocation initially reported that the pinned OASIS source manifest was unavailable; the exact check passed on the serial rerun and again in Refactor. DCO Green commit signed by NeverWe1come <vgarciaaguilar97@gmail.com>. |
+| Refactor - repeat focused verification, audit scope, and record evidence | this commit | python -B -m unittest tools.normative_catalog.tests.test_validate.CatalogValidationTests.test_optional_capability_evidence_links_name_positive_tests -v<br>python -B -m unittest tools.normative_catalog.tests.test_feature_traceability -v<br>cargo test -p kmipkit-protocol wrapped_pgp_key_accepts_key_wrap_type<br>cargo test -p kmipkit-protocol request_emits_table_291_fields_in_order_and_preserves_object_item<br>python -B tools/normative_catalog/validate.py --repo-root . --structural-only<br>python -B tools/normative_catalog/validate.py --repo-root .<br>python -B tools/normative_catalog/generate_profiles.py --repo-root . --check<br>python -B tools/normative_catalog/report.py --repo-root . --check<br>cargo fmt --all --check<br>git diff --check<br>git diff --name-only f942ebed..HEAD<br>git diff --quiet f942ebed..HEAD -- specification/oasis/kmip-2.1/upstream/ | Named-evidence test passed; traceability suite ran 17 tests with one Windows symlink-creation skip; each Rust test passed 1/1; structural/full catalog validation, profile generation check, report check, formatting, whitespace, and pinned-source immutability checks passed. Catalog comparison against the Red commit confirmed exactly the nine scoped requirement IDs changed. The non-evidence diff from f942ebed contains only test_validate.py, kmip-2.1.json, and coverage-report.md; this Refactor commit adds implementation-evidence.md. No production source or Rust test body changed. DCO Refactor commit signed by NeverWe1come <vgarciaaguilar97@gmail.com>. |
+
+The selected Baseline MAY/OPTIONAL gate remains expected to fail and is recorded separately from the passing scoped named-evidence regression:
+
+| Gate command | Result |
+|---|---|
+| python -B -m unittest tools.normative_catalog.tests.test_validate.CatalogValidationTests.test_every_reviewed_client_may_or_optional_has_usable_positive_evidence -v | Expected remaining blockers: the selected closure contains 107 reviewed positive capabilities and reports 73 diagnostic entries across the 37 requirement IDs below. This batch does not satisfy runtime rule mappings, full profile readiness, or official OASIS Test Cases. |
+
+| Requirement ID | Remaining diagnostics |
+|---|---|
+| KMIPKIT-REQ-SPEC-2.3-001 | no usable implementation mapping; no eligible implementation and positive-test evidence |
+| KMIPKIT-REQ-SPEC-2.3-002 | no usable implementation mapping; no eligible implementation and positive-test evidence |
+| KMIPKIT-REQ-SPEC-2.4-001-001 | no usable implementation mapping; no eligible implementation and positive-test evidence |
+| KMIPKIT-REQ-SPEC-2.4-001-002 | no usable implementation mapping; no eligible implementation and positive-test evidence |
+| KMIPKIT-REQ-SPEC-2.7-001 | no usable implementation mapping; no eligible implementation and positive-test evidence |
+| KMIPKIT-REQ-SPEC-3.1-001 | no usable implementation mapping; no eligible implementation and positive-test evidence |
+| KMIPKIT-REQ-SPEC-3.1-004-001 | no usable implementation mapping; no eligible implementation and positive-test evidence |
+| KMIPKIT-REQ-SPEC-3.1-005-001 | no usable implementation mapping; no eligible implementation and positive-test evidence |
+| KMIPKIT-REQ-SPEC-3.2-001 | no usable implementation mapping; no eligible implementation and positive-test evidence |
+| KMIPKIT-REQ-SPEC-4.14-001-001 | no usable implementation mapping; no eligible implementation and positive-test evidence |
+| KMIPKIT-REQ-SPEC-4.14-001-002 | no usable implementation mapping; no eligible implementation and positive-test evidence |
+| KMIPKIT-REQ-SPEC-4.16-001-002 | no usable implementation mapping; no eligible implementation and positive-test evidence |
+| KMIPKIT-REQ-SPEC-4.17-001-001 | no usable implementation mapping; no eligible implementation and positive-test evidence |
+| KMIPKIT-REQ-SPEC-4.26-001 | no usable implementation mapping; no eligible implementation and positive-test evidence |
+| KMIPKIT-REQ-SPEC-4.27-001 | no usable implementation mapping; no eligible implementation and positive-test evidence |
+| KMIPKIT-REQ-SPEC-4.34-001-001 | no usable implementation mapping; no eligible implementation and positive-test evidence |
+| KMIPKIT-REQ-SPEC-4.38-001-001 | no usable implementation mapping; no eligible implementation and positive-test evidence |
+| KMIPKIT-REQ-SPEC-4.38-001-002 | no usable implementation mapping; no eligible implementation and positive-test evidence |
+| KMIPKIT-REQ-SPEC-4.38-001-003 | no usable implementation mapping; no eligible implementation and positive-test evidence |
+| KMIPKIT-REQ-SPEC-4.4-001 | no usable implementation mapping; no eligible implementation and positive-test evidence |
+| KMIPKIT-REQ-SPEC-4.46-001-001 | no usable implementation mapping; no eligible implementation and positive-test evidence |
+| KMIPKIT-REQ-SPEC-4.46-001-002 | no usable implementation mapping; no eligible implementation and positive-test evidence |
+| KMIPKIT-REQ-SPEC-4.62-003 | no usable implementation mapping; no eligible implementation and positive-test evidence |
+| KMIPKIT-REQ-SPEC-4.63-004 | no usable implementation mapping; no eligible implementation and positive-test evidence |
+| KMIPKIT-REQ-SPEC-4.63-005 | no usable implementation mapping; no eligible implementation and positive-test evidence |
+| KMIPKIT-REQ-SPEC-5.3-002 | no usable implementation mapping; no eligible implementation and positive-test evidence |
+| KMIPKIT-REQ-SPEC-5.4-002 | no usable implementation mapping; no eligible implementation and positive-test evidence |
+| KMIPKIT-REQ-SPEC-6.1-003-002 | no usable implementation mapping; no eligible implementation and positive-test evidence |
+| KMIPKIT-REQ-SPEC-6.1.4-001 | no usable implementation mapping; no eligible implementation and positive-test evidence |
+| KMIPKIT-REQ-SPEC-6.1.42-001-001 | no usable implementation mapping; no eligible implementation and positive-test evidence |
+| KMIPKIT-REQ-SPEC-6.1.42-001-002 | no usable implementation mapping; no eligible implementation and positive-test evidence |
+| KMIPKIT-REQ-SPEC-6.1.43-005 | no eligible implementation and positive-test evidence |
+| KMIPKIT-REQ-SPEC-9.11-001 | no usable implementation mapping; no eligible implementation and positive-test evidence |
+| KMIPKIT-REQ-SPEC-9.11-004-003 | no usable implementation mapping; no eligible implementation and positive-test evidence |
+| KMIPKIT-REQ-SPEC-9.20-001-002 | no usable implementation mapping; no eligible implementation and positive-test evidence |
+| KMIPKIT-REQ-SPEC-9.4-001-001 | no usable implementation mapping; no eligible implementation and positive-test evidence |
+| KMIPKIT-REQ-SPEC-9.4-002 | no usable implementation mapping; no eligible implementation and positive-test evidence |
+
+The existing blockers for requirements excluded by batch 02 remain unchanged and are left for their separately reviewed follow-up scopes.
