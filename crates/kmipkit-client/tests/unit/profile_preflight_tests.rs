@@ -121,20 +121,33 @@ impl ProfileExchangeValidator for ResponseRejectingProfile {
 
     fn validate_response(
         &self,
-        _request: &RequestMessage,
-        _response: &ResponseMessage,
+        request: &RequestMessage,
+        response: &ResponseMessage,
     ) -> Result<(), ProfileValidationError> {
-        Err(self.error.clone())
+        let request_operation = request.batch_items().next().and_then(|item| item.operation());
+        let response_operation = response.batch_items().next().and_then(|item| item.operation());
+        let has_matching_single_item = request.batch_items().len() == 1
+            && response.batch_items().len() == 1
+            && request_operation.is_some()
+            && request_operation == response_operation;
+
+        if has_matching_single_item {
+            Err(self.error.clone())
+        } else {
+            Ok(())
+        }
     }
 }
 
 #[test]
 fn response_profile_rejection_after_exchange_preserves_response_started_delivery() {
-    let source_error = ProfileValidationSelection::new([BASELINE])
-        .validate()
-        .expect_err("the current Baseline mapping is incomplete");
     let validator = ResponseRejectingProfile {
-        error: source_error,
+        error: ProfileValidationError::for_test(
+            ProfileValidationErrorCode::ResponseRuleRejected,
+            "KMIPKIT-TEST-PROFILE",
+            "KMIPKIT-TEST-REQUIREMENT",
+            "KMIPKIT-TEST-CLAUSE",
+        ),
     };
     let exchanges = Rc::new(Cell::new(0));
     let mut client = Client::for_test(CountingTransport::new(Rc::clone(&exchanges)));
@@ -158,7 +171,15 @@ fn response_profile_rejection_after_exchange_preserves_response_started_delivery
         .expect("response rejection remains a structured profile error");
     assert_eq!(
         profile_error.code(),
-        ProfileValidationErrorCode::UnresolvedRequirementScope
+        ProfileValidationErrorCode::ResponseRuleRejected
     );
-    assert_eq!(profile_error.profile_id(), Some(BASELINE));
+    assert_eq!(profile_error.profile_id(), Some("KMIPKIT-TEST-PROFILE"));
+    assert_eq!(
+        profile_error.requirement_id(),
+        Some("KMIPKIT-TEST-REQUIREMENT")
+    );
+    assert_eq!(
+        profile_error.source_clause_id(),
+        Some("KMIPKIT-TEST-CLAUSE")
+    );
 }
