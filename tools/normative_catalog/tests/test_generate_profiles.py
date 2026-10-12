@@ -325,6 +325,90 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
                     f"missing inherited requirement {requirement_id}",
                 )
 
+    def test_oracle_audits_the_required_derive_key_table_body_row(self) -> None:
+        """Specification v2.1 Table 205's required Attributes row is in every client closure."""
+        catalog_path = ROOT / "specification" / "catalog" / "kmip-2.1.json"
+        catalog = json.loads(catalog_path.read_text(encoding="utf-8"))
+        oracle_path = ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json"
+        oracle = json.loads(oracle_path.read_text(encoding="utf-8"))
+        requirement_id = "KMIPKIT-REQ-SPEC-6.1.14-007-001"
+        gap_id = "KMIPKIT-SOURCE-GAP-SPEC-6.1.14-ATTRIBUTES-REQUIRED"
+        mapping = next(item for item in oracle["requirement_crosswalk"] if item["requirement_id"] == requirement_id)
+        clauses = {item["clause_id"]: item for item in oracle["source_clause_crosswalk"]}
+        catalog_profiles = {item["profile_id"]: item for item in catalog["profiles"]}
+
+        self.assertEqual(mapping["source_gap_id"], gap_id)
+        self.assertEqual(mapping["source_section"], "6.1.14")
+        self.assertEqual(mapping["applies_to"], "all_client_profiles")
+        self.assertEqual(mapping["scope_state"], "client_1_0")
+        self.assertIsNone(mapping.get("source_clause_id"))
+        for profile in oracle["profiles"]:
+            profile_id = profile["profile_id"]
+            included_spec_sections = {
+                clauses[clause_id]["section"]
+                for clause_id in profile["source_clause_ids"]
+                if clauses[clause_id]["source_id"] == "KMIPKIT-SRC-spec"
+            }
+            with self.subTest(profile_id=profile_id):
+                self.assertIn("6.1.14", included_spec_sections)
+                self.assertTrue(
+                    requirement_id in profile["requirement_ids_audited_subset"],
+                    f"missing source-reviewed table row {requirement_id}",
+                )
+                self.assertTrue(
+                    requirement_id in catalog_profiles[profile_id]["requirement_ids"],
+                    f"catalog omits source-reviewed table row {requirement_id}",
+                )
+
+    def test_oracle_crosswalks_the_attestation_indicator_client_requirement(self) -> None:
+        """Specification v2.1 §9.3's client SHALL has one exact source mapping."""
+        catalog_path = ROOT / "specification" / "catalog" / "kmip-2.1.json"
+        catalog = json.loads(catalog_path.read_text(encoding="utf-8"))
+        oracle_path = ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json"
+        oracle = json.loads(oracle_path.read_text(encoding="utf-8"))
+        requirement_id = "KMIPKIT-REQ-SPEC-9.3-001-001"
+        clause_id = "KMIPKIT-CLAUSE-SPEC-9.3-001"
+        mapping = next(
+            (item for item in oracle["requirement_crosswalk"] if item["requirement_id"] == requirement_id),
+            None,
+        )
+        review = next(item for item in oracle["source_requirement_reviews"] if item["source_clause_id"] == clause_id)
+        obligation = next(item for item in review["source_obligations"] if item["candidate_requirement_id"] == requirement_id)
+        catalog_profiles = {item["profile_id"]: item for item in catalog["profiles"]}
+
+        self.assertEqual(review["expected_client_requirement_ids"], [requirement_id])
+        self.assertEqual(obligation["actor"], "client")
+        self.assertEqual(obligation["scope_disposition"], "client_1_0")
+        self.assertEqual(
+            mapping,
+            {
+                "requirement_id": requirement_id,
+                "source_clause_id": clause_id,
+                "source_id": "KMIPKIT-SRC-spec",
+                "source_section": "9.3",
+                "source_locator": {"ordinal": 1, "block_kind": "paragraph"},
+                "source_keyword": "SHALL",
+                "role": "client",
+                "scope_state": "client_1_0",
+                "applies_to": "all_client_profiles",
+                "review_note": "Specification v2.1 §9.3 lines 43612–43619; this crosswalk row covers the client's Attestation Capable Indicator obligation only. The separate server response obligation remains server-only.",
+                "source_obligation_order": 1,
+                "source_actor": "client",
+            },
+        )
+        for profile in oracle["profiles"]:
+            profile_id = profile["profile_id"]
+            with self.subTest(profile_id=profile_id):
+                self.assertIn(clause_id, profile["source_clause_ids"])
+                self.assertTrue(
+                    requirement_id in profile["requirement_ids_audited_subset"],
+                    f"missing reviewed client requirement {requirement_id}",
+                )
+                self.assertTrue(
+                    requirement_id in catalog_profiles[profile_id]["requirement_ids"],
+                    f"catalog omits reviewed client requirement {requirement_id}",
+                )
+
     def test_source_oracle_covers_all_profiles_and_expected_scope_counts(self) -> None:
         oracle_path = ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json"
         oracle = json.loads(oracle_path.read_text(encoding="utf-8"))
