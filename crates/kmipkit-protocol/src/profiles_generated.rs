@@ -16123,7 +16123,6 @@ pub const CLIENT_PROFILES: &[GeneratedClientProfile] = &[
         claim_state: "not_claimed",
         selected_target: false,
         direct_source_clause_ids: &[
-            "KMIPKIT-CLAUSE-PROF-3.1-001",
             "KMIPKIT-CLAUSE-PROF-3.2-001",
             "KMIPKIT-CLAUSE-PROF-5.3.1-001",
             "KMIPKIT-CLAUSE-PROF-5.3.1-002",
