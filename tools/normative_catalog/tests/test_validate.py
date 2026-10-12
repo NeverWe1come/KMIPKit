@@ -13166,8 +13166,8 @@ class CatalogValidationTests(unittest.TestCase):
             sum(gap["proposed_requirement_id"] is not None for gap in gaps),
         )
 
-    def test_crosswalk_requirement_metadata_aggregates_split_source_atoms(self) -> None:
-        """Compound requirements retain each atom while catalog scope aggregates both actors."""
+    def test_crosswalk_requirement_metadata_keeps_split_actors_on_distinct_ids(self) -> None:
+        """Client and server atoms use distinct requirement IDs and scopes."""
         oracle = json.loads(
             (ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json").read_text(encoding="utf-8")
         )
@@ -13179,16 +13179,28 @@ class CatalogValidationTests(unittest.TestCase):
         for row in oracle["requirement_crosswalk"]:
             mappings.setdefault(row["requirement_id"], []).append(row)
 
-        for requirement_id in ("KMIPKIT-REQ-SPEC-6.1.5-001", "KMIPKIT-REQ-SPEC-6.1.7-005"):
-            source_rows = sorted(mappings[requirement_id], key=lambda row: row["source_obligation_order"])
-            self.assertEqual(
-                [row["scope_state"] for row in source_rows],
-                ["client_1_0", "server_only"],
+        split_actor_mappings = {
+            "KMIPKIT-CLAUSE-SPEC-6.1.5-001": (
+                "KMIPKIT-REQ-SPEC-6.1.5-001",
+                "KMIPKIT-REQ-SPEC-6.1.5-002",
+            ),
+            "KMIPKIT-CLAUSE-SPEC-6.1.7-005": (
+                "KMIPKIT-REQ-SPEC-6.1.7-005",
+                "KMIPKIT-REQ-SPEC-6.1.7-006",
+            ),
+        }
+        for clause_id, (client_id, server_id) in split_actor_mappings.items():
+            source_rows = sorted(
+                (row for row in oracle["requirement_crosswalk"] if row["source_clause_id"] == clause_id),
+                key=lambda row: row["source_obligation_order"],
             )
-            self.assertEqual(
-                requirements[requirement_id]["scope_state"],
-                "mixed",
-            )
+            self.assertEqual([row["requirement_id"] for row in source_rows], [client_id, server_id])
+            self.assertEqual([row["source_actor"] for row in source_rows], ["client", "server"])
+            self.assertEqual([row["scope_state"] for row in source_rows], ["client_1_0", "server_only"])
+            self.assertEqual(requirements[client_id]["role"], "client")
+            self.assertEqual(requirements[client_id]["scope_state"], "client_1_0")
+            self.assertEqual(requirements[server_id]["role"], "server")
+            self.assertEqual(requirements[server_id]["scope_state"], "server_only")
 
         for requirement_id in ("KMIPKIT-REQ-SPEC-6.1.9-006", "KMIPKIT-REQ-SPEC-6.1.9-007"):
             self.assertTrue(
