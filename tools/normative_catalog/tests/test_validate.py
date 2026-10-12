@@ -6114,6 +6114,62 @@ class CatalogValidationTests(unittest.TestCase):
         )
         self.assertEqual(oracle["oracle_status"], "partial-source-reviewed; not complete T003 oracle")
 
+    def test_spec_6_1_40_object_groups_optional_row_links_approved_feature_and_direct_tests(self) -> None:
+        """Table 282 optional Object Groups is tied to approved feature and executable evidence."""
+        oracle = json.loads(
+            (ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json").read_text(encoding="utf-8")
+        )
+        gap_id = "KMIPKIT-SOURCE-GAP-SPEC-6.1.40-OBJECT-GROUPS-OPTIONAL"
+        source_path = "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
+        protocol_tests = [
+            "crates/kmipkit-protocol/tests/unit/query_operation_tests.rs::query_request_preserves_required_repeated_functions_and_object_group_order",
+            "crates/kmipkit-protocol/tests/unit/query_operation_tests.rs::query_request_distinguishes_absent_and_present_empty_object_groups",
+        ]
+        client_test = "crates/kmipkit-client/tests/unit/query_execution_tests.rs::query_sends_one_request_with_repeated_functions_and_ordered_object_groups"
+        contracts = {
+            row["gap_id"]: row
+            for row in oracle["source_table_contracts"]
+            if row["source_section"] == "6.1.40" and row["table_number"] == 282
+        }
+
+        self.assertEqual(set(contracts), {gap_id})
+        contract = contracts[gap_id]
+        self.assertEqual(contract["source_id"], "KMIPKIT-SRC-spec")
+        self.assertEqual(contract["source_path"], source_path)
+        self.assertEqual(contract["source_locator"], {
+            "kind": "table_body_row",
+            "section": "6.1.40",
+            "row_label": "Object Groups",
+            "table": "request_payload",
+            "html_line_range": [32043, 32062],
+        })
+        self.assertEqual(contract["source_excerpt"], pinned_source_excerpt(source_path, [32043, 32062]))
+        self.assertEqual(contract["requiredness"], "No")
+        self.assertEqual(contract["source_force"], "optional_table_body_value")
+        self.assertEqual(contract["operation_element_id"], "KMIPKIT-ELEM-OP-C2S-QUERY")
+        self.assertEqual(contract["functional_requirement_ids"], ["FR-001", "FR-004"])
+        self.assertEqual(contract["verification_refs"], [*protocol_tests, client_test])
+        self.assertTrue({
+            "KMIPKIT-REQ-SPEC-6.1.40-017",
+            gap_id,
+        }.isdisjoint({
+            value
+            for gap in oracle["source_only_requirement_gaps"]
+            for value in (gap["gap_id"], gap["proposed_requirement_id"])
+            if value is not None
+        }))
+        request_review = next(
+            row for row in oracle["source_requirement_reviews"]
+            if row["source_clause_id"] == "KMIPKIT-CLAUSE-SPEC-6.1.40-015"
+        )
+        self.assertEqual(request_review["source_obligations"], [])
+        self.assertEqual(request_review["expected_client_requirement_ids"], [])
+        object_groups_row = next(row for row in request_review["source_request_rows"] if row["row_label"] == "Object Groups")
+        self.assertEqual(object_groups_row["source_gap_id"], gap_id)
+        self.assertEqual(object_groups_row["source_requirement_ids"], [])
+        self.assertEqual(object_groups_row["disposition"], "optional_request_table_contract")
+        self.assertEqual(validate_source_table_contracts(oracle, ROOT), [])
+
     def test_spec_6_1_41_query_async_requests_keeps_server_results_and_optional_client_inputs(self) -> None:
         """Specification v2.1 §§6.1.41 and 6.1.41.1 separate client filters from server results."""
         fixture_path = ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json"
