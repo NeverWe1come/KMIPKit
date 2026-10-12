@@ -5,6 +5,9 @@ import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.nio.charset.StandardCharsets;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 import org.junit.jupiter.api.Test;
 import org.kmipkit.extensions.DuplicateExtensionKeyException;
@@ -69,6 +72,35 @@ final class NativeBridgeCoverageTest {
                 () -> NativeExtensionRegistry.clientBatchItemExtensionIdentityAt(0, 0));
         assertThrows(InvalidInputException.class,
                 () -> NativeExtensionRegistry.clientBatchItemExtensionCriticalityIndicatorAt(0, 0));
+    }
+
+    @Test
+    void nativeErrorClearResetsOnlyCallingThreadSnapshot() throws Exception {
+        RuntimeMetadata.clearLastError();
+        ExecutorService worker = Executors.newSingleThreadExecutor();
+        try {
+            assertThrows(ResourceLimitException.class,
+                    () -> RuntimeMetadata.capabilityIsAvailable("x".repeat(129)));
+            RuntimeMetadata.ErrorSnapshot callerError = new RuntimeMetadata.ErrorSnapshot(6, 1, 10, 0);
+            assertEquals(callerError, RuntimeMetadata.lastErrorSnapshot());
+
+            worker.submit(() -> {
+                assertEquals(new RuntimeMetadata.ErrorSnapshot(0, 0, 0, 0), RuntimeMetadata.lastErrorSnapshot());
+                assertThrows(InvalidInputException.class,
+                        () -> NativeExtensionRegistry.clientBatchItemExtensionCount(0));
+                assertEquals(new RuntimeMetadata.ErrorSnapshot(4, 1, 1, 0), RuntimeMetadata.lastErrorSnapshot());
+
+                RuntimeMetadata.clearLastError();
+                assertEquals(new RuntimeMetadata.ErrorSnapshot(0, 0, 0, 0), RuntimeMetadata.lastErrorSnapshot());
+            }).get(10, TimeUnit.SECONDS);
+
+            assertEquals(callerError, RuntimeMetadata.lastErrorSnapshot());
+            RuntimeMetadata.clearLastError();
+            assertEquals(new RuntimeMetadata.ErrorSnapshot(0, 0, 0, 0), RuntimeMetadata.lastErrorSnapshot());
+        } finally {
+            worker.shutdownNow();
+            RuntimeMetadata.clearLastError();
+        }
     }
 
     @Test

@@ -12,6 +12,9 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URI;
+import java.nio.file.FileSystem;
+import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.attribute.AclEntry;
@@ -23,9 +26,11 @@ import java.nio.file.attribute.PosixFilePermission;
 import java.security.MessageDigest;
 import java.util.EnumSet;
 import java.util.HexFormat;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
@@ -393,6 +398,286 @@ final class NativeLibraryLoaderTest {
     @Test
     void allowsBundledSelectionOnlyWhenNativeLibraryOverrideIsAbsent() {
         assertNull(NativeLibraryLoader.resolveExplicitLibrary(null));
+    }
+
+    @Test
+    void acceptsDigestResourcesWithoutNewlineOrWithCrLf() throws Exception {
+        byte[] library = {5, 8, 13};
+        String resource = "META-INF/native/" + WINDOWS_TARGET + "/" + WINDOWS_LIBRARY;
+        for (String suffix : List.of("", "\r\n")) {
+            Path extracted = NativeLibraryLoader.extractBundled(classLoader(Map.of(
+                    resource, library,
+                    resource + ".sha256", (sha256(library) + suffix)
+                            .getBytes(java.nio.charset.StandardCharsets.US_ASCII))),
+                    "Windows", "amd64", temporaryDirectory, NativeLibraryLoader::createPrivateDirectory);
+            assertArrayEquals(library, Files.readAllBytes(extracted));
+        }
+    }
+
+    @Test
+    void rejectsMalformedCrLfDigestAndInvalidOverridePath() throws Exception {
+        byte[] library = {4, 2};
+        String resource = "META-INF/native/" + WINDOWS_TARGET + "/" + WINDOWS_LIBRARY;
+        for (String suffix : List.of("\nx", "\rx")) {
+            assertRedacted(assertThrows(UnsatisfiedLinkError.class,
+                    () -> NativeLibraryLoader.extractBundled(classLoader(Map.of(
+                            resource, library,
+                            resource + ".sha256", (sha256(library) + suffix)
+                                    .getBytes(java.nio.charset.StandardCharsets.US_ASCII))),
+                            "Windows", "amd64", temporaryDirectory,
+                            NativeLibraryLoader::createPrivateDirectory)));
+        }
+        assertRedacted(assertThrows(UnsatisfiedLinkError.class,
+                () -> NativeLibraryLoader.resolveExplicitLibrary("invalid\u0000library")));
+        assertDirectoryEmpty(temporaryDirectory);
+    }
+
+    @Test
+    void directoryFactoryRuntimeFailureAndFailedCleanupRemainRedacted() throws Exception {
+        byte[] library = {1, 2};
+        assertRedacted(assertThrows(UnsatisfiedLinkError.class,
+                () -> NativeLibraryLoader.extractBundled(classLoader(resources(library, sha256(library))),
+                        "Windows", "amd64", temporaryDirectory,
+                        ignored -> { throw new IllegalStateException("private filesystem details"); })));
+        Path directory = NativeLibraryLoader.createPrivateDirectory(temporaryDirectory);
+        Path retained = Files.write(directory.resolve("unrelated-file"), new byte[] {7});
+        assertRedacted(assertThrows(UnsatisfiedLinkError.class,
+                () -> NativeLibraryLoader.extractBundled(classLoader(resources(library, "0".repeat(64))),
+                        "Windows", "amd64", temporaryDirectory, ignored -> directory)));
+        assertArrayEquals(new byte[] {7}, Files.readAllBytes(retained));
+        try (var files = Files.list(directory)) {
+            assertEquals(List.of(retained), files.toList());
+        }
+    }
+
+    @Test
+    void destinationCreatedWhileReadingIsNeverReplaced() throws Exception {
+        byte[] library = {2, 4, 6};
+        Path directory = NativeLibraryLoader.createPrivateDirectory(temporaryDirectory);
+        Path destination = directory.resolve(WINDOWS_LIBRARY);
+        InputStream source = sourceWithCloseAction(library,
+                () -> Files.write(destination, new byte[] {99}));
+
+        assertRedacted(assertThrows(UnsatisfiedLinkError.class,
+                () -> NativeLibraryLoader.extractVerified(source, sha256(library), directory, WINDOWS_LIBRARY)));
+
+        assertArrayEquals(new byte[] {99}, Files.readAllBytes(destination));
+        assertDirectoryEmptyExcept(directory, WINDOWS_LIBRARY);
+    }
+
+    @Test
+    void stagedFilePermissionChangeFailsBeforePublication() throws Exception {
+        byte[] library = {3, 5, 8};
+        Path directory = NativeLibraryLoader.createPrivateDirectory(temporaryDirectory);
+        InputStream source = sourceWithCloseAction(library, () -> {
+            Path staging = stagingFile(directory);
+            if (Files.getFileStore(staging).supportsFileAttributeView("posix")) {
+                Files.setPosixFilePermissions(staging, Set.of(PosixFilePermission.OWNER_READ,
+                        PosixFilePermission.OWNER_WRITE, PosixFilePermission.OTHERS_READ));
+            } else {
+                AclFileAttributeView view = Files.getFileAttributeView(staging, AclFileAttributeView.class);
+                assertNotNull(view);
+                var permissions = EnumSet.allOf(AclEntryPermission.class);
+                permissions.remove(AclEntryPermission.EXECUTE);
+                view.setAcl(List.of(AclEntry.newBuilder().setType(AclEntryType.ALLOW)
+                        .setPrincipal(Files.getOwner(staging)).setPermissions(permissions).build()));
+            }
+        });
+
+        assertRedacted(assertThrows(UnsatisfiedLinkError.class,
+                () -> NativeLibraryLoader.extractVerified(source, sha256(library), directory, WINDOWS_LIBRARY)));
+
+        assertDirectoryEmpty(directory);
+    }
+
+    @Test
+    void stagedFileReplacedByDirectoryIsRejectedAndRemoved() throws Exception {
+        byte[] library = {5, 8};
+        Path directory = NativeLibraryLoader.createPrivateDirectory(temporaryDirectory);
+        InputStream source = sourceWithCloseAction(library, () -> {
+            Path staging = stagingFile(directory);
+            Files.delete(staging);
+            Files.createDirectory(staging);
+        });
+
+        assertRedacted(assertThrows(UnsatisfiedLinkError.class,
+                () -> NativeLibraryLoader.extractVerified(source, sha256(library), directory, WINDOWS_LIBRARY)));
+
+        assertDirectoryEmpty(directory);
+    }
+
+    @Test
+    void stagingCleanupFailureRemainsRedactedAndDoesNotPublishLibrary() throws Exception {
+        byte[] library = {8, 13};
+        Path directory = NativeLibraryLoader.createPrivateDirectory(temporaryDirectory);
+        InputStream source = sourceWithCloseAction(library, () -> {
+            Path staging = stagingFile(directory);
+            Files.delete(staging);
+            Files.createDirectory(staging);
+            Files.write(staging.resolve("retained"), new byte[] {42});
+        });
+
+        assertRedacted(assertThrows(UnsatisfiedLinkError.class,
+                () -> NativeLibraryLoader.extractVerified(source, sha256(library), directory, WINDOWS_LIBRARY)));
+
+        assertFalse(Files.exists(directory.resolve(WINDOWS_LIBRARY)));
+        Path retainedStaging = stagingFile(directory);
+        assertTrue(Files.isDirectory(retainedStaging));
+        assertArrayEquals(new byte[] {42}, Files.readAllBytes(retainedStaging.resolve("retained")));
+        try (var entries = Files.list(directory)) {
+            assertEquals(1, entries.count());
+        }
+    }
+
+    @Test
+    void sourceCloseFailureRemovesStagingAndRedactsCause() throws Exception {
+        byte[] library = {13, 21};
+        Path directory = NativeLibraryLoader.createPrivateDirectory(temporaryDirectory);
+        InputStream source = sourceWithCloseAction(library,
+                () -> { throw new IOException("secret resource close details"); });
+
+        assertRedacted(assertThrows(UnsatisfiedLinkError.class,
+                () -> NativeLibraryLoader.extractVerified(source, sha256(library), directory, WINDOWS_LIBRARY)));
+
+        assertDirectoryEmpty(directory);
+    }
+
+    @Test
+    void rejectsMissingOrNonDirectoryExtractionRoots() throws Exception {
+        byte[] library = {1, 3};
+        Path file = Files.write(temporaryDirectory.resolve("regular-file"), new byte[] {7});
+        for (Path invalidRoot : List.of(file, temporaryDirectory.resolve("missing-directory"))) {
+            assertRedacted(assertThrows(UnsatisfiedLinkError.class,
+                    () -> NativeLibraryLoader.extractVerified(new ByteArrayInputStream(library),
+                            sha256(library), invalidRoot, WINDOWS_LIBRARY)));
+        }
+        assertArrayEquals(new byte[] {7}, Files.readAllBytes(file));
+    }
+
+    @Test
+    void rejectsSymbolicLinkDirectoryAndTemporaryRoot() throws Exception {
+        byte[] library = {2, 5};
+        Path directory = NativeLibraryLoader.createPrivateDirectory(temporaryDirectory);
+        Path linkedDirectory = temporaryDirectory.resolve("linked-directory");
+        createSymbolicLinkOrSkip(linkedDirectory, directory);
+
+        assertThrows(IOException.class, () -> NativeLibraryLoader.createPrivateDirectory(linkedDirectory));
+        assertRedacted(assertThrows(UnsatisfiedLinkError.class,
+                () -> NativeLibraryLoader.extractVerified(new ByteArrayInputStream(library),
+                        sha256(library), linkedDirectory, WINDOWS_LIBRARY)));
+
+        assertTrue(Files.isSymbolicLink(linkedDirectory));
+        assertDirectoryEmpty(directory);
+    }
+
+    @Test
+    void stagedFileReplacedBySymbolicLinkIsRejectedWithoutTouchingTarget() throws Exception {
+        byte[] library = {3, 7};
+        Path directory = NativeLibraryLoader.createPrivateDirectory(temporaryDirectory);
+        Path target = Files.write(temporaryDirectory.resolve("link-target"), new byte[] {99});
+        Path probe = temporaryDirectory.resolve("link-capability-probe");
+        createSymbolicLinkOrSkip(probe, target);
+        Files.delete(probe);
+        InputStream source = sourceWithCloseAction(library, () -> {
+            Path staging = stagingFile(directory);
+            Files.delete(staging);
+            Files.createSymbolicLink(staging, target);
+        });
+
+        assertRedacted(assertThrows(UnsatisfiedLinkError.class,
+                () -> NativeLibraryLoader.extractVerified(source, sha256(library), directory, WINDOWS_LIBRARY)));
+
+        assertArrayEquals(new byte[] {99}, Files.readAllBytes(target));
+        assertDirectoryEmpty(directory);
+    }
+
+    @Test
+    void filesystemWithoutPrivatePermissionSupportFailsClosed() throws Exception {
+        Path archive = temporaryDirectory.resolve("no-private-permissions.zip");
+        try (FileSystem filesystem = FileSystems.newFileSystem(URI.create("jar:" + archive.toUri()),
+                Map.of("create", "true"))) {
+            IOException failure = assertThrows(IOException.class,
+                    () -> NativeLibraryLoader.createPrivateDirectory(filesystem.getPath("/")));
+            assertEquals("Private permissions are unavailable", failure.getMessage());
+            assertDirectoryEmpty(filesystem.getPath("/"));
+
+            byte[] library = {1, 2};
+            assertRedacted(assertThrows(UnsatisfiedLinkError.class,
+                    () -> NativeLibraryLoader.extractVerified(new ByteArrayInputStream(library),
+                            sha256(library), filesystem.getPath("/"), WINDOWS_LIBRARY)));
+            assertDirectoryEmpty(filesystem.getPath("/"));
+        }
+    }
+
+    @Test
+    void missingHashAndLibraryNameFailBeforeReadingNativeBytes() throws Exception {
+        Path directory = NativeLibraryLoader.createPrivateDirectory(temporaryDirectory);
+        byte[] library = {1, 2};
+        InputStream unreadableSource = new InputStream() {
+            @Override
+            public int read() {
+                throw new AssertionError("Invalid metadata must be rejected before reading native bytes");
+            }
+        };
+        for (String hash : new String[] {null, "", "f".repeat(63), "0".repeat(63) + "g"}) {
+            assertRedacted(assertThrows(UnsatisfiedLinkError.class,
+                    () -> NativeLibraryLoader.extractVerified(unreadableSource,
+                            hash, directory, WINDOWS_LIBRARY)));
+        }
+        assertRedacted(assertThrows(UnsatisfiedLinkError.class,
+                () -> NativeLibraryLoader.extractVerified(unreadableSource,
+                        sha256(library), directory, null)));
+        assertDirectoryEmpty(directory);
+    }
+
+    @FunctionalInterface
+    private interface CloseAction {
+        void run() throws IOException;
+    }
+
+    private static InputStream sourceWithCloseAction(byte[] bytes, CloseAction action) {
+        return new ByteArrayInputStream(bytes) {
+            @Override
+            public void close() throws IOException {
+                super.close();
+                action.run();
+            }
+        };
+    }
+
+    private static Path stagingFile(Path directory) throws IOException {
+        try (var entries = Files.list(directory)) {
+            List<Path> staging = entries.filter(path -> path.getFileName().toString().endsWith(".part"))
+                    .toList();
+            assertEquals(1, staging.size());
+            return staging.get(0);
+        }
+    }
+
+    private static void createSymbolicLinkOrSkip(Path link, Path target) throws IOException {
+        try {
+            Files.createSymbolicLink(link, target);
+        } catch (IOException | UnsupportedOperationException unavailable) {
+            Assumptions.assumeTrue(false, "Symbolic links are unavailable: " + unavailable.getClass().getName());
+        }
+    }
+
+    private static void assertRedacted(UnsatisfiedLinkError failure) {
+        assertEquals(NativeLibraryLoader.LOAD_FAILURE_MESSAGE, failure.getMessage());
+        assertNull(failure.getCause());
+        assertEquals(0, failure.getSuppressed().length);
+    }
+
+    private static void assertDirectoryEmpty(Path directory) throws IOException {
+        try (var files = Files.list(directory)) {
+            assertEquals(0, files.count());
+        }
+    }
+
+    private static void assertDirectoryEmptyExcept(Path directory, String name) throws IOException {
+        try (var files = Files.list(directory)) {
+            assertEquals(List.of(name), files.map(path -> path.getFileName().toString()).toList());
+        }
     }
 
     private static ClassLoader classLoader(Map<String, byte[]> resources) {
