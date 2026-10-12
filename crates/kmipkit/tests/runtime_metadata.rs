@@ -45,6 +45,10 @@ fn capability_query_rejects_ids_over_128_utf8_bytes_as_a_resource_limit() {
     let error = kmipkit::capability_is_available(&"x".repeat(129))
         .expect_err("an overlong capability identifier is a resource-limit error");
     assert_eq!(error, kmipkit::RuntimeMetadataError::ResourceLimit);
+    assert_eq!(
+        error.to_string(),
+        "capability identifier exceeds the 128-byte limit"
+    );
 
     let multibyte = "🔐".repeat(33);
     assert_eq!(multibyte.chars().count(), 33);
