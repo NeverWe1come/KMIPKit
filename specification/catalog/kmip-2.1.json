@@ -58710,8 +58710,8 @@
         "crates/kmipkit-client/src/execute.rs"
       ],
       "verification_refs": [
-        "crates/kmipkit-protocol/tests/unit/obtain_lease_operation_tests.rs",
-        "crates/kmipkit-client/tests/unit/obtain_lease_execution_tests.rs"
+        "crates/kmipkit-protocol/tests/unit/obtain_lease_operation_tests.rs::successful_response_preserves_identifier_zero_lease_time_date_and_extensions",
+        "crates/kmipkit-client/tests/unit/obtain_lease_execution_tests.rs::obtain_lease_sends_table_268_and_exposes_required_table_269_values_once"
       ],
       "payload_tables": [
         {
@@ -94964,13 +94964,13 @@
         "crates/kmipkit-client/src/execute.rs"
       ],
       "verification_refs": [
-        "crates/kmipkit-protocol/tests/unit/obtain_lease_operation_tests.rs",
-        "crates/kmipkit-client/tests/unit/obtain_lease_execution_tests.rs"
+        "crates/kmipkit-protocol/tests/unit/obtain_lease_operation_tests.rs::successful_response_preserves_identifier_zero_lease_time_date_and_extensions",
+        "crates/kmipkit-client/tests/unit/obtain_lease_execution_tests.rs::obtain_lease_sends_table_268_and_exposes_required_table_269_values_once"
       ],
       "negative_verification_required": false,
       "decision_id": null,
       "status": "verified",
-      "review_note": "Caller-facing behavior links to table-derived protocol and fake-transport tests in specs/022-object-lifecycle/traceability.md. No official Test Cases are linked to this requirement in the pinned OASIS source; no formal conformance is claimed."
+      "review_note": "The client preserves and exposes a zero Lease Time to its caller; evidence does not assert server lease decisions or client timekeeping. No official Test Cases are linked to this requirement in the pinned OASIS source; no formal conformance is claimed."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.35-001-002",
@@ -95040,13 +95040,13 @@
         "crates/kmipkit-client/src/execute.rs"
       ],
       "verification_refs": [
-        "crates/kmipkit-protocol/tests/unit/obtain_lease_operation_tests.rs",
-        "crates/kmipkit-client/tests/unit/obtain_lease_execution_tests.rs"
+        "crates/kmipkit-protocol/tests/unit/obtain_lease_operation_tests.rs::successful_response_preserves_identifier_zero_lease_time_date_and_extensions",
+        "crates/kmipkit-client/tests/unit/obtain_lease_execution_tests.rs::obtain_lease_sends_table_268_and_exposes_required_table_269_values_once"
       ],
       "negative_verification_required": false,
       "decision_id": null,
       "status": "verified",
-      "review_note": "Caller-facing behavior links to table-derived protocol and fake-transport tests in specs/022-object-lifecycle/traceability.md. No official Test Cases are linked to this requirement in the pinned OASIS source; no formal conformance is claimed."
+      "review_note": "The client preserves and exposes Last Change Date for caller comparison; evidence does not assert automatic cache refresh. No official Test Cases are linked to this requirement in the pinned OASIS source; no formal conformance is claimed."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.35-005",
@@ -95078,13 +95078,12 @@
         "crates/kmipkit-client/src/execute.rs"
       ],
       "verification_refs": [
-        "crates/kmipkit-protocol/tests/unit/obtain_lease_operation_tests.rs",
-        "crates/kmipkit-client/tests/unit/obtain_lease_execution_tests.rs"
+        "crates/kmipkit-protocol/tests/unit/obtain_lease_operation_tests.rs::successful_response_exposes_positive_lease_interval"
       ],
       "negative_verification_required": false,
       "decision_id": null,
       "status": "verified",
-      "review_note": "Caller-facing behavior links to table-derived protocol and fake-transport tests in specs/022-object-lifecycle/traceability.md. No official Test Cases are linked to this requirement in the pinned OASIS source; no formal conformance is claimed."
+      "review_note": "The client exposes a positive Lease Time interval through the response getter; evidence does not assert timers, automatic renewal, or server behavior. No official Test Cases are linked to this requirement in the pinned OASIS source; no formal conformance is claimed."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.38-001-001",

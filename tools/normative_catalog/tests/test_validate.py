@@ -117,6 +117,17 @@ OPTIONAL_CAPABILITY_TEST_REQUIREMENTS = {
     "crates/kmipkit-protocol/tests/unit/get_tests.rs::get_preserves_repeated_attribute_names_in_valid_wrapping_specification": (
         "KMIPKIT-REQ-SPEC-7.18-006",
     ),
+    "crates/kmipkit-protocol/tests/unit/obtain_lease_operation_tests.rs::successful_response_preserves_identifier_zero_lease_time_date_and_extensions": (
+        "KMIPKIT-REQ-SPEC-6.1.35-001-001",
+        "KMIPKIT-REQ-SPEC-6.1.35-002",
+    ),
+    "crates/kmipkit-client/tests/unit/obtain_lease_execution_tests.rs::obtain_lease_sends_table_268_and_exposes_required_table_269_values_once": (
+        "KMIPKIT-REQ-SPEC-6.1.35-001-001",
+        "KMIPKIT-REQ-SPEC-6.1.35-002",
+    ),
+    "crates/kmipkit-protocol/tests/unit/obtain_lease_operation_tests.rs::successful_response_exposes_positive_lease_interval": (
+        "KMIPKIT-REQ-SPEC-6.1.35-005",
+    ),
 }
 
 
@@ -15951,6 +15962,7 @@ class CatalogValidationTests(unittest.TestCase):
                 self.assertEqual(requirement["feature_spec"], "KMIPKIT-0036")
                 self.assertEqual(requirement["scope_state"], "client_1_0")
                 self.assertEqual(requirement["status"], "verified")
+                self.assertEqual(requirement["test_case_ids"], [])
                 self.assertTrue(
                     all("::" in reference and reference.partition("::")[2] for reference in requirement["verification_refs"]),
                     "verification references must include a named test, not only a file path",
