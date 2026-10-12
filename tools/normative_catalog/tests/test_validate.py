@@ -13203,6 +13203,41 @@ class CatalogValidationTests(unittest.TestCase):
                 self.assertEqual(requirements[server_id]["role"], "server")
                 self.assertEqual(requirements[server_id]["scope_state"], "server_only")
 
+    def test_check_limited_additional_attributes_have_verified_client_evidence(self) -> None:
+        """The client Check attribute limit has a stable ID and executable evidence."""
+        oracle = json.loads(
+            (ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json").read_text(encoding="utf-8")
+        )
+        catalog = json.loads(
+            (ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8")
+        )
+        requirement_id = "KMIPKIT-REQ-SPEC-6.1.7-002-003"
+        requirement = next(
+            (row for row in catalog["requirements"] if row["requirement_id"] == requirement_id),
+            None,
+        )
+        self.assertIsNotNone(requirement, "the proposed client MAY must be promoted to a stable requirement")
+        assert requirement is not None
+        self.assertEqual(requirement["source_clause_ids"], ["KMIPKIT-CLAUSE-SPEC-6.1.7-002"])
+        self.assertEqual(requirement["source_keyword"], "MAY")
+        self.assertEqual(requirement["role"], "client")
+        self.assertEqual(requirement["direction"], "client_to_server")
+        self.assertEqual(requirement["scope_state"], "client_1_0")
+        self.assertEqual(requirement["status"], "verified")
+        self.assertIn("crates/kmipkit-protocol/src/check.rs", requirement["implementation_refs"])
+        self.assertIn("crates/kmipkit-protocol/tests/unit/check_operation_tests.rs", requirement["verification_refs"])
+        matching_rows = [
+            row
+            for row in oracle["requirement_crosswalk"]
+            if row["source_clause_id"] == "KMIPKIT-CLAUSE-SPEC-6.1.7-002"
+            and row["source_obligation_order"] == 3
+        ]
+        self.assertEqual(len(matching_rows), 1)
+        self.assertEqual(matching_rows[0]["requirement_id"], requirement_id)
+        self.assertFalse(
+            any(gap["gap_id"] == "KMIPKIT-SOURCE-GAP-SPEC-6.1.7-002-MAY-LIMITED-ATTRIBUTES" for gap in oracle["source_only_requirement_gaps"])
+        )
+
         for requirement_id in ("KMIPKIT-REQ-SPEC-6.1.9-006", "KMIPKIT-REQ-SPEC-6.1.9-007"):
             self.assertTrue(
                 all("(split/shared)" in row["scope_state"] for row in mappings[requirement_id])
