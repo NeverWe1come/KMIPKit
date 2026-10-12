@@ -76,9 +76,9 @@
     "requirement_crosswalk_records": 466,
     "requirement_crosswalk_complete": false,
     "source_requirement_review_records": 889,
-    "source_only_requirement_gaps": 110,
-    "source_only_requirement_gap_proposals": 57,
-    "source_table_contracts": 60
+    "source_only_requirement_gaps": 109,
+    "source_only_requirement_gap_proposals": 56,
+    "source_table_contracts": 61
   },
   "source_clause_crosswalk": [
     {
@@ -65818,7 +65818,7 @@
           "row_label": "Interop Identifier",
           "required": "Yes",
           "actor": "client",
-          "disposition": "required_request_field_with_source_only_proposal",
+          "disposition": "required_request_table_contract",
           "html_line_range": [
             28779,
             28794
@@ -83731,40 +83731,6 @@
       "review_note": "This Required=Yes table-body row reuses the existing stable label for specifying the number of protection units. Catalog source_keyword=SHALL points to a descriptive paragraph rather than this Required=Yes row; Green must correct the locator/keyword metadata while preserving the client requirement."
     },
     {
-      "gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.26-INTEROP-IDENTIFIER-REQUIRED",
-      "source_id": "KMIPKIT-SRC-spec",
-      "source_path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
-      "source_section": "6.1.26",
-      "source_clause_id": null,
-      "source_locator": {
-        "kind": "table_body_row",
-        "section": "6.1.26",
-        "row_label": "Interop Identifier",
-        "table": "request_payload",
-        "html_line_range": [
-          28779,
-          28794
-        ]
-      },
-      "source_locator_description": "§6.1.26 Interop request payload body row for Interop Identifier (HTML lines 28779–28794)",
-      "html_line_range": [
-        28779,
-        28794
-      ],
-      "source_excerpt": "Interop Identifier Yes The identifier if the test case to be submitted.",
-      "source_keywords": [],
-      "source_force": "required_table_body_value",
-      "audited_statement": "Interop Identifier is Required=Yes in the client request table; the source description identifies it as the test case identifier being submitted.",
-      "actor": "client",
-      "direction": "client→server Interop request field",
-      "condition": "Required in each Interop request; source description says it identifies the test case to be submitted.",
-      "scope_disposition": "client_1_0",
-      "candidate_requirement_id": null,
-      "proposed_requirement_id": "KMIPKIT-REQ-SPEC-6.1.26-002",
-      "status": "stable_label_proposed_not_in_catalog",
-      "review_note": "The source wording uses “if the test case” and is preserved verbatim. This source-only proposal is not added to the catalog or profile closure arrays in Red."
-    },
-    {
       "gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.29-LOG-MESSAGE-REQUIRED",
       "source_id": "KMIPKIT-SRC-spec",
       "source_path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
@@ -87168,6 +87134,57 @@
       "evidence_disposition": {
         "status": "mapped_to_feature_contract",
         "statement": "The linked tests verify the caller-supplied required Function structure is encoded and forwarded opaquely, with the Enumeration or vendor Integer form preserved. They make no claim about local PKCS#11 execution, server-side function effects, certification, or profile conformance."
+      }
+    },
+    {
+      "gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.26-INTEROP-IDENTIFIER-REQUIRED",
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+      "source_section": "6.1.26",
+      "source_clause_id": null,
+      "source_locator": {
+        "kind": "table_body_row",
+        "section": "6.1.26",
+        "row_label": "Interop Identifier",
+        "table": "request_payload",
+        "html_line_range": [
+          28779,
+          28794
+        ]
+      },
+      "source_locator_description": "Specification v2.1 §6.1.26 Table 241 required Interop Identifier request row (HTML lines 28779–28794).",
+      "html_line_range": [
+        28779,
+        28794
+      ],
+      "source_excerpt": "Interop Identifier Yes The identifier if the test case to be submitted.",
+      "source_keywords": [],
+      "source_force": "required_table_body_value",
+      "audited_statement": "Table 241 requires an Interop Identifier field in the client request; the source description is preserved without inferring test-case selection semantics.",
+      "actor": "client",
+      "direction": "client→server Interop request field",
+      "condition": "Required in each Interop request; source description says it identifies the test case to be submitted.",
+      "scope_disposition": "client_1_0",
+      "status": "mapped_to_approved_feature_contract",
+      "review_note": "Required Table 241 request field mapped through KMIPKIT-ELEM-OP-C2S-INTEROP and KMIPKIT-0028 FR-001/FR-008. Evidence covers caller-supplied Text String serialization and forwarding only. Preserve the source wording “The identifier if the test case to be submitted”; do not infer selection or execution semantics.",
+      "contract_kind": "operation_request_table_field",
+      "table_number": 241,
+      "requiredness": "Yes",
+      "operation_element_id": "KMIPKIT-ELEM-OP-C2S-INTEROP",
+      "functional_requirement_ids": [
+        "FR-001",
+        "FR-008"
+      ],
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/interop.rs::InteropRequest::into_ttlv_payload"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/interop_operation_tests.rs::table_241_required_fields_preserve_order_and_unknown_function",
+        "crates/kmipkit-client/tests/unit/interop_execution_tests.rs::interop_sends_required_fields_and_returns_empty_success"
+      ],
+      "evidence_disposition": {
+        "status": "mapped_to_feature_contract",
+        "statement": "The linked tests verify the caller-provided Interop Identifier is represented as a Text String and forwarded in the client request. They do not infer test-case selection or execution semantics, server availability, official test-case completion, or profile conformance."
       }
     }
   ]
