@@ -7915,6 +7915,188 @@ class CatalogValidationTests(unittest.TestCase):
         self.assertIn("Table 335: Sign Response Payload", pinned_source_excerpt(source_path, [36567, 36568]))
         self.assertIn("Table 336: Sign Errors", pinned_source_excerpt(source_path, [36616, 36616]))
 
+    def test_signature_verify_table_337_request_rows_are_contracts_with_direct_field_evidence(self) -> None:
+        """Table 337 client request rows map to feature evidence without per-cell REQ IDs."""
+        fixture_path = ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json"
+        oracle = json.loads(fixture_path.read_text(encoding="utf-8"))
+        source_path = "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
+        protocol_path = "crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs"
+        client_path = "crates/kmipkit-client/tests/unit/signature_verify_execution_tests.rs"
+        emit_fields = f"{protocol_path}::request_emits_optional_key_parameters_data_digest_signature_and_framing_in_order"
+        multipart_fields = f"{protocol_path}::request_requires_signature_data_for_single_part_and_omits_it_for_multipart"
+        single_part_client = f"{client_path}::request_table_337_single_part_fields_reach_the_fake_transport_unchanged"
+        multipart_client = f"{client_path}::request_table_337_multipart_fields_reach_the_fake_transport_unchanged"
+        expected = {
+            "KMIPKIT-SOURCE-GAP-SPEC-6.1.56-UNIQUE-IDENTIFIER-OPTIONAL": {
+                "row_label": "Unique Identifier",
+                "requiredness": "No",
+                "source_force": "optional_table_body_value",
+                "html_line_range": [36687, 36700],
+                "element_id": "KMIPKIT-ELEM-TAG-420094",
+                "functional_requirement_ids": ["FR-005"],
+                "verification_refs": [emit_fields, single_part_client],
+                "asserted_field": "UNIQUE_IDENTIFIER",
+            },
+            "KMIPKIT-SOURCE-GAP-SPEC-6.1.56-DIGESTED-DATA-OPTIONAL": {
+                "row_label": "Digested Data",
+                "requiredness": "No",
+                "source_force": "optional_table_body_value",
+                "html_line_range": [36745, 36755],
+                "element_id": "KMIPKIT-ELEM-TAG-420107",
+                "functional_requirement_ids": ["FR-007"],
+                "verification_refs": [emit_fields, single_part_client],
+                "asserted_field": "DIGESTED_DATA",
+            },
+            "KMIPKIT-SOURCE-GAP-SPEC-6.1.56-SIGNATURE-DATA-CONDITIONAL": {
+                "row_label": "Signature Data",
+                "requiredness": "Yes for single-part. No for multi-part.",
+                "source_force": "conditional_required_table_body_value",
+                "html_line_range": [36761, 36772],
+                "element_id": "KMIPKIT-ELEM-TAG-4200C3",
+                "functional_requirement_ids": ["FR-007"],
+                "verification_refs": [emit_fields, multipart_fields, single_part_client],
+                "asserted_field": "SIGNATURE_DATA",
+            },
+            "KMIPKIT-SOURCE-GAP-SPEC-6.1.56-CORRELATION-VALUE-OPTIONAL": {
+                "row_label": "Correlation Value",
+                "requiredness": "No",
+                "source_force": "optional_table_body_value",
+                "html_line_range": [36778, 36790],
+                "element_id": "KMIPKIT-ELEM-TAG-4200D6",
+                "functional_requirement_ids": ["FR-007"],
+                "verification_refs": [multipart_fields, multipart_client],
+                "asserted_field": "CORRELATION_VALUE",
+            },
+            "KMIPKIT-SOURCE-GAP-SPEC-6.1.56-INIT-INDICATOR-OPTIONAL": {
+                "row_label": "Init Indicator",
+                "requiredness": "No",
+                "source_force": "optional_table_body_value",
+                "html_line_range": [36796, 36806],
+                "element_id": "KMIPKIT-ELEM-TAG-4200D7",
+                "functional_requirement_ids": ["FR-007"],
+                "verification_refs": [emit_fields, multipart_fields, multipart_client],
+                "asserted_field": "INIT_INDICATOR",
+            },
+            "KMIPKIT-SOURCE-GAP-SPEC-6.1.56-FINAL-INDICATOR-OPTIONAL": {
+                "row_label": "Final Indicator",
+                "requiredness": "No",
+                "source_force": "optional_table_body_value",
+                "html_line_range": [36812, 36822],
+                "element_id": "KMIPKIT-ELEM-TAG-4200D8",
+                "functional_requirement_ids": ["FR-007"],
+                "verification_refs": [emit_fields, multipart_fields, multipart_client],
+                "asserted_field": "FINAL_INDICATOR",
+            },
+        }
+        contracts = {
+            row.get("gap_id"): row
+            for row in oracle.get("source_table_contracts", [])
+            if row.get("source_section") == "6.1.56" and row.get("table_number") == 337
+        }
+
+        self.assertEqual(
+            set(contracts),
+            set(expected),
+            "all six audited Table 337 request rows are source-table contracts",
+        )
+        self.assertEqual(len(oracle["source_table_contracts"]), 34)
+        self.assertEqual(oracle["counts"]["source_table_contracts"], 34)
+        self.assertEqual(oracle["counts"]["source_only_requirement_gaps"], 136)
+        self.assertEqual(oracle["counts"]["source_only_requirement_gap_proposals"], 83)
+
+        request_header = next(
+            row for row in oracle["source_requirement_reviews"]
+            if row.get("source_clause_id") == "KMIPKIT-CLAUSE-SPEC-6.1.56-005"
+        )
+        reviewed_rows = {row["row_label"]: row for row in request_header["source_request_rows"]}
+        source_gap_ids = {gap["gap_id"] for gap in oracle["source_only_requirement_gaps"]}
+        proposed_ids = {
+            gap["proposed_requirement_id"]
+            for gap in oracle["source_only_requirement_gaps"]
+            if gap["proposed_requirement_id"] is not None
+        }
+        protocol_source = (ROOT / protocol_path).read_text(encoding="utf-8")
+        client_source = (ROOT / client_path).read_text(encoding="utf-8")
+
+        for gap_id, values in expected.items():
+            contract = contracts[gap_id]
+            label = values["row_label"]
+            with self.subTest(source_table_contract=gap_id):
+                self.assertNotIn(gap_id, source_gap_ids)
+                self.assertEqual(contract["source_id"], "KMIPKIT-SRC-spec")
+                self.assertEqual(contract["source_path"], source_path)
+                self.assertEqual(contract["source_section"], "6.1.56")
+                self.assertIsNone(contract["source_clause_id"])
+                self.assertEqual(contract["source_locator"], {
+                    "kind": "table_body_row",
+                    "section": "6.1.56",
+                    "row_label": label,
+                    "table": "request_payload",
+                    "html_line_range": values["html_line_range"],
+                })
+                self.assertEqual(contract["html_line_range"], values["html_line_range"])
+                self.assertEqual(
+                    contract["source_excerpt"],
+                    pinned_source_excerpt(source_path, values["html_line_range"]),
+                )
+                self.assertEqual(contract["requiredness"], values["requiredness"])
+                self.assertEqual(contract["source_force"], values["source_force"])
+                self.assertEqual(contract["contract_kind"], "operation_request_table_field")
+                self.assertEqual(contract["actor"], "client")
+                self.assertEqual(contract["direction"], "client→server Signature Verify request")
+                self.assertEqual(contract["scope_disposition"], "client_1_0")
+                self.assertEqual(contract["table_number"], 337)
+                self.assertEqual(contract["operation_element_id"], "KMIPKIT-ELEM-OP-C2S-SIGNATURE-VERIFY")
+                self.assertEqual(contract["functional_requirement_ids"], values["functional_requirement_ids"])
+                self.assertEqual(contract["implementation_refs"], [
+                    "crates/kmipkit-protocol/src/signature_verify.rs::SignatureVerifyRequest::to_ttlv_payload"
+                ])
+                self.assertEqual(contract["verification_refs"], values["verification_refs"])
+                self.assertEqual(contract["status"], "mapped_to_approved_feature_contract")
+                self.assertEqual(contract["evidence_disposition"]["status"], "mapped_to_feature_contract")
+                self.assertIn("does not create a standalone REQ record", contract["evidence_disposition"]["statement"])
+                self.assertNotIn("candidate_requirement_id", contract)
+                self.assertNotIn("proposed_requirement_id", contract)
+                self.assertNotIn("requirement_id", contract)
+
+                reviewed = reviewed_rows[label]
+                self.assertEqual((reviewed["actor"], reviewed["direction"], reviewed["scope_disposition"]),
+                                 ("client", "client_to_server", "client_1_0"))
+                self.assertEqual(reviewed["html_line_range"], values["html_line_range"])
+                self.assertEqual(reviewed["source_element_id"], values["element_id"])
+                self.assertEqual(reviewed["source_gap_id"], gap_id)
+                self.assertEqual(reviewed["source_requirement_ids"], [])
+                self.assertEqual(
+                    reviewed["disposition"],
+                    "conditional_required_request_table_contract"
+                    if label == "Signature Data"
+                    else "optional_request_table_contract",
+                )
+
+                for reference in values["verification_refs"]:
+                    path, symbol = reference.split("::", maxsplit=1)
+                    source = protocol_source if path == protocol_path else client_source
+                    start = source.index(f"fn {symbol}(")
+                    end = source.find("\\n#[test]", start)
+                    body = source[start:end] if end != -1 else source[start:]
+                    field_token = values["asserted_field"]
+                    if label == "Digested Data" and path == protocol_path:
+                        field_token = "0x0042_0107"
+                    self.assertIn("assert_eq!", body)
+                    self.assertIn(field_token, body)
+
+        self.assertTrue(
+            {
+                "KMIPKIT-REQ-SPEC-6.1.56-008",
+                "KMIPKIT-REQ-SPEC-6.1.56-009",
+                "KMIPKIT-REQ-SPEC-6.1.56-010",
+                "KMIPKIT-REQ-SPEC-6.1.56-011",
+                "KMIPKIT-REQ-SPEC-6.1.56-012",
+                "KMIPKIT-REQ-SPEC-6.1.56-013",
+            }.isdisjoint(proposed_ids)
+        )
+        self.assertEqual(validate_source_table_contracts(oracle, ROOT), [])
+
     def test_sign_table_334_request_rows_are_contracts_with_preserved_data_conflict(self) -> None:
         """Sign Table 334 client rows resolve to approved evidence without per-cell REQ IDs."""
         oracle = json.loads(
