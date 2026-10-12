@@ -395,8 +395,6 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
         expected_symbols = {
             "kmipkit_version_get",
             "kmipkit_capability_is_available",
-            "kmipkit_last_error_get",
-            "kmipkit_last_error_clear",
         }
         functions = {
             function["c"]["symbol"]: function
@@ -407,8 +405,6 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
             with self.subTest(symbol=symbol):
                 function = functions[symbol]
                 self.assertIn("KMIPKIT-0043-FR-007", function["requirementIds"])
-                if symbol.startswith("kmipkit_last_error"):
-                    self.assertIn("KMIPKIT-0043-FR-013", function["requirementIds"])
 
         declarations = {
             declaration.get("languageMappings", {}).get("c", {}).get("name"):
@@ -419,6 +415,37 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
         for symbol in expected_symbols:
             self.assertEqual(declarations[symbol]["capabilityId"], "ffi_runtime_metadata")
             self.assertEqual(declarations[symbol]["declarationState"], "declared")
+
+        rust_lookup = next(
+            item for item in self.checked_in_manifest["publicDeclarations"]
+            if item["exportName"] == "kmipkit::capability_is_available"
+        )
+        self.assertEqual(rust_lookup["packageId"], "rust-kmipkit")
+        self.assertEqual(
+            rust_lookup["languageMappings"]["rust"]["name"],
+            "kmipkit::capability_is_available",
+        )
+
+        exclusions = {
+            item["exportName"]: item
+            for item in self.checked_in_manifest["approvedExclusions"]
+        }
+        self.assertEqual(
+            set(exclusions),
+            {"kmipkit_last_error_get", "kmipkit_last_error_clear"},
+        )
+        for symbol in exclusions:
+            self.assertEqual(exclusions[symbol]["packageId"], "c-kmipkit")
+            self.assertTrue(exclusions[symbol]["reason"])
+            self.assertTrue(exclusions[symbol]["evidence"])
+            self.assertNotIn(symbol, declarations)
+
+        capability_mappings = capability["mappings"]
+        for language in ("rust", "c", "java", "python"):
+            self.assertFalse(
+                any("last_error" in name or "lastError" in name
+                    for name in capability_mappings[language])
+            )
 
     def test_ttlv_declarations_use_their_approved_shared_spec_owners(self) -> None:
         capabilities = {
