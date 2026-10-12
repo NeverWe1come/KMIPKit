@@ -93,6 +93,133 @@ class RustExportGreenGapTests(unittest.TestCase):
             names,
         )
 
+    def test_inventory_is_invariant_to_root_item_order(self):
+        original = self.fixture()
+        reversed_items = copy.deepcopy(original)
+        document = reversed_items["rustdoc_v57_fixture"]
+        document["index"][str(document["root"])]["inner"]["module"]["items"].reverse()
+
+        original_report = self.audit.inventory(original)
+        reversed_report = self.audit.inventory(reversed_items)
+
+        def declaration_snapshot(report):
+            return [
+                (row["packageId"], row["exportName"], row["kind"], row["identity"], row["aliases"])
+                for row in report["declarations"]
+            ]
+
+        self.assertEqual(declaration_snapshot(original_report), declaration_snapshot(reversed_report))
+        self.assertEqual(original_report["issues"], reversed_report["issues"])
+
+    def test_any_blanket_is_projected_for_concrete_alias(self):
+        documents = self.fixture()
+        document = documents["rustdoc_v57_fixture"]
+        generic = next(item for item in document["index"].values() if item.get("name") == "Generic")
+        any_trait_id = 999_991
+        any_impl_id = 999_992
+        type_id_method_id = 999_993
+        document["paths"][str(any_trait_id)] = {
+            "crate_id": 2, "kind": "trait", "path": ["core", "any", "Any"],
+        }
+        document["index"][str(type_id_method_id)] = {
+            "id": type_id_method_id, "crate_id": 0, "name": "type_id", "span": None,
+            "visibility": "default", "docs": None, "links": {}, "attrs": [],
+            "deprecation": None, "inner": {"function": {}},
+        }
+        document["index"][str(any_impl_id)] = {
+            "id": any_impl_id, "crate_id": 0, "name": None, "span": None,
+            "visibility": "default", "docs": None, "links": {}, "attrs": [],
+            "deprecation": None,
+            "inner": {"impl": {
+                "is_unsafe": False,
+                "generics": {
+                    "params": [{
+                        "name": "T",
+                        "kind": {"type": {"bounds": [], "default": None, "is_synthetic": False}},
+                    }],
+                    "where_predicates": [{"bound_predicate": {
+                        "type": {"generic": "T"}, "generic_params": [],
+                        "bounds": [{"outlives": "'static"}],
+                    }}],
+                },
+                "provided_trait_methods": [],
+                "trait": {"path": "Any", "id": any_trait_id, "args": None},
+                "for": {"resolved_path": {
+                    "path": "Generic", "id": generic["id"],
+                    "args": {"angle_bracketed": {
+                        "args": [{"type": {"generic": "T"}}], "constraints": [],
+                    }},
+                }},
+                "items": [type_id_method_id], "is_negative": False, "is_synthetic": False,
+                "blanket_impl": {"generic": "T"},
+            }},
+        }
+        generic["inner"]["struct"]["impls"].append(any_impl_id)
+
+        report = self.audit.inventory(documents)
+        names = {declaration["exportName"] for declaration in report["declarations"]}
+        concrete_alias_member = (
+            "<rustdoc_v57_fixture::GenericDerivedAlias as core::any::Any>::type_id"
+        )
+
+        self.assertIn(concrete_alias_member, names)
+
+    def test_any_blanket_stays_unresolved_for_open_generic_alias(self):
+        documents = self.fixture()
+        document = documents["rustdoc_v57_fixture"]
+        generic = next(item for item in document["index"].values() if item.get("name") == "Generic")
+        any_trait_id = 999_991
+        any_impl_id = 999_992
+        type_id_method_id = 999_993
+        document["paths"][str(any_trait_id)] = {
+            "crate_id": 2, "kind": "trait", "path": ["core", "any", "Any"],
+        }
+        document["index"][str(type_id_method_id)] = {
+            "id": type_id_method_id, "crate_id": 0, "name": "type_id", "span": None,
+            "visibility": "default", "docs": None, "links": {}, "attrs": [],
+            "deprecation": None, "inner": {"function": {}},
+        }
+        document["index"][str(any_impl_id)] = {
+            "id": any_impl_id, "crate_id": 0, "name": None, "span": None,
+            "visibility": "default", "docs": None, "links": {}, "attrs": [],
+            "deprecation": None,
+            "inner": {"impl": {
+                "is_unsafe": False,
+                "generics": {
+                    "params": [{
+                        "name": "T",
+                        "kind": {"type": {"bounds": [], "default": None, "is_synthetic": False}},
+                    }],
+                    "where_predicates": [{"bound_predicate": {
+                        "type": {"generic": "T"}, "generic_params": [],
+                        "bounds": [{"outlives": "'static"}],
+                    }}],
+                },
+                "provided_trait_methods": [],
+                "trait": {"path": "Any", "id": any_trait_id, "args": None},
+                "for": {"resolved_path": {
+                    "path": "Generic", "id": generic["id"],
+                    "args": {"angle_bracketed": {
+                        "args": [{"type": {"generic": "T"}}], "constraints": [],
+                    }},
+                }},
+                "items": [type_id_method_id], "is_negative": False, "is_synthetic": False,
+                "blanket_impl": {"generic": "T"},
+            }},
+        }
+        generic["inner"]["struct"]["impls"].append(any_impl_id)
+
+        report = self.audit.inventory(documents)
+        names = {declaration["exportName"] for declaration in report["declarations"]}
+        open_alias_member = "<rustdoc_v57_fixture::GenericAlias<T> as core::any::Any>::type_id"
+
+        self.assertNotIn(open_alias_member, names)
+        self.assertTrue(any(
+            issue["reason"] == "unresolved-rustdoc-implementation-predicate"
+            and issue.get("exportName") == "rustdoc_v57_fixture::GenericAlias"
+            for issue in report["issues"]
+        ))
+
     def test_comparison_normalizes_lifetime_arguments_and_field_separators(self):
         observed = {
             "crates": ["demo"],
