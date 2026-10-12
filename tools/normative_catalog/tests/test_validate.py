@@ -16132,8 +16132,10 @@ class CatalogValidationTests(unittest.TestCase):
                     requirement = requirements[requirement_id]
                     self.assertIn(expected_test, requirement["verification_refs"])
 
-    def test_get_key_compression_request_has_scoped_implementation_and_positive_test_evidence(self) -> None:
-        """Get request selector evidence is linked narrowly and passes the optional-evidence gate."""
+    def test_get_key_compression_request_has_scoped_implementation_and_positive_test_evidence(
+        self,
+    ) -> None:
+        """Get request selector evidence is scoped; profile-wide readiness is validated separately."""
         requirement_id = "KMIPKIT-REQ-SPEC-3.1-001"
         expected_implementation_refs = {
             "crates/kmipkit-protocol/src/get.rs::GetRequest::with_key_compression_type",
@@ -16178,7 +16180,7 @@ class CatalogValidationTests(unittest.TestCase):
             if _is_discoverable_positive_test(test_path, test_name, test_source):
                 usable_positive_tests.add(reference)
 
-        scoped_client_request_evidence = (
+        scoped_get_request_evidence = (
             requirement["status"] == "scoped_verified"
             and requirement["role"] == "client"
             and requirement["direction"] == "client_to_server"
@@ -16189,7 +16191,7 @@ class CatalogValidationTests(unittest.TestCase):
         gaps = []
         if not expected_implementation_refs.issubset(resolvable_implementation_refs):
             gaps.append("no usable implementation mapping")
-        if not scoped_client_request_evidence:
+        if not scoped_get_request_evidence:
             gaps.append("no eligible implementation and positive-test evidence")
 
         self.assertEqual(gaps, [], f"{requirement_id}: {'; '.join(gaps)}")
