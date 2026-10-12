@@ -29,4 +29,3 @@ class SignatureTypeReadinessTests(unittest.TestCase):
 
         with self.assertRaisesRegex(generate.ManifestError, "signature.*type.*TtlvItemView"):
             generate._validate_v2_readiness(manifest, ROOT)
-
