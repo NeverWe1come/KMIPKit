@@ -115,11 +115,13 @@ class _Inventory:
     def __init__(self, documents: dict[str, dict[str, Any]]) -> None:
         self.documents = documents
         self.records: dict[tuple[str, str], dict[str, Any]] = {}
+        self.conditional_records: dict[tuple[str, str], dict[str, Any]] = {}
         self.issues: list[dict[str, Any]] = []
         self.definitions: dict[tuple[str, ...], tuple[str, str]] = {}
         self.member_origins: dict[tuple[str, str], tuple[str, ...]] = {}
         self.reachable_items: set[tuple[str, str]] = set()
         self.reachability_prepass = False
+        self._trait_proof_stack: set[tuple[tuple[str, ...], str]] = set()
         for crate, doc in sorted(documents.items()):
             if doc.get("format_version") != FORMAT_VERSION or doc.get("includes_private") is not True:
                 raise ValueError(f"{crate}: expected rustdoc format {FORMAT_VERSION} with private items")
@@ -601,6 +603,78 @@ class _Inventory:
     def check_implementation_predicates(self, crate: str, impl: dict[str, Any],
                                         bindings: dict[str, Any]) -> bool | None:
         """Check concrete predicates needed to project an impl through an alias."""
+        proof_key = self.implementation_proof_key(crate, impl, bindings)
+        added_proof_key = proof_key is not None and proof_key not in self._trait_proof_stack
+        if added_proof_key:
+            self._trait_proof_stack.add(proof_key)
+        try:
+            return self.check_implementation_predicates_inner(crate, impl, bindings)
+        finally:
+            if added_proof_key:
+                self._trait_proof_stack.remove(proof_key)
+
+    def implementation_proof_key(self, crate: str, impl: dict[str, Any],
+                                 bindings: dict[str, Any]) -> tuple[tuple[str, ...], str] | None:
+        """Identify the concrete trait obligation represented by this impl."""
+        trait = impl.get("trait")
+        trait_id = trait.get("id") if isinstance(trait, dict) else None
+        trait_path = self.reference_path(crate, trait_id) if trait_id is not None else None
+        subject = self.substitute_type(impl.get("for"), bindings)
+        if trait_path is None or self.contains_open_type_parameter(subject):
+            return None
+        formatted_subject = self.format_type(crate, subject)
+        if formatted_subject is None:
+            return None
+        return trait_path, formatted_subject
+
+    def has_only_symbolic_trait_predicates(self, crate: str, impl: dict[str, Any],
+                                           bindings: dict[str, Any]) -> bool:
+        """Recognize compiler-declared generic trait conditions, excluding lifetimes."""
+        generics = impl.get("generics", {})
+        saw_predicate = False
+
+        def is_symbolic_trait_bound(subject: Any, bound: dict[str, Any]) -> bool:
+            nonlocal saw_predicate
+            trait_bound = bound.get("trait_bound")
+            if trait_bound is None:
+                return False
+            trait = trait_bound.get("trait", {})
+            trait_id = trait.get("id") if isinstance(trait, dict) else None
+            if trait_id is None or self.reference_path(crate, trait_id) is None:
+                return False
+            concrete_subject = self.substitute_type(subject, bindings)
+            if not self.contains_open_type_parameter(concrete_subject):
+                return False
+            saw_predicate = True
+            return True
+
+        for parameter in generics.get("params", []):
+            kind = parameter.get("kind", {})
+            if "lifetime" in kind:
+                return False
+            type_kind = kind.get("type", {})
+            name = parameter.get("name")
+            if type_kind.get("bounds") and not name:
+                return False
+            subject = {"generic": name} if name else None
+            for bound in type_kind.get("bounds", []):
+                if not is_symbolic_trait_bound(subject, bound):
+                    return False
+        for predicate in generics.get("where_predicates", []):
+            bound_predicate = predicate.get("bound_predicate")
+            if bound_predicate is None:
+                return False
+            subject = bound_predicate.get("type")
+            bounds = bound_predicate.get("bounds", [])
+            if not bounds:
+                return False
+            for bound in bounds:
+                if not is_symbolic_trait_bound(subject, bound):
+                    return False
+        return saw_predicate
+
+    def check_implementation_predicates_inner(self, crate: str, impl: dict[str, Any],
+                                              bindings: dict[str, Any]) -> bool | None:
         generics = impl.get("generics", {})
         for parameter in generics.get("params", []):
             name = parameter.get("name")
@@ -649,6 +723,104 @@ class _Inventory:
                 if result is not True:
                     return result
         return True
+
+    def conditional_trait_predicates(self, crate: str, impl: dict[str, Any],
+                                    bindings: dict[str, Any]) -> list[dict[str, Any]] | None:
+        """Serialize fully identified trait bounds that remain conditional on open type vars."""
+        generics = impl.get("generics")
+        if not isinstance(generics, dict):
+            return None
+        parameters = generics.get("params", [])
+        if not isinstance(parameters, list) or any(
+            not isinstance(parameter.get("kind"), dict)
+            or "type" not in parameter["kind"]
+            for parameter in parameters
+        ):
+            return None
+        declared_names = self.generic_parameter_names(generics)
+        if not declared_names:
+            return None
+
+        conditions: list[dict[str, Any]] = []
+        saw_open_subject = False
+
+        def add_trait_bound(subject: Any, bound: Any) -> bool:
+            nonlocal saw_open_subject
+            if not isinstance(bound, dict) or set(bound) != {"trait_bound"}:
+                return False
+            trait_bound = bound["trait_bound"]
+            if not isinstance(trait_bound, dict) \
+                    or trait_bound.get("modifier") not in {None, "none"} \
+                    or trait_bound.get("generic_params", []):
+                return False
+            trait = trait_bound.get("trait")
+            if not isinstance(trait, dict) or trait.get("id") is None:
+                return False
+            trait_path = self.reference_path(crate, trait["id"])
+            if not trait_path:
+                return False
+
+            concrete_subject = self.substitute_type(subject, bindings)
+            if not self.contains_open_type_parameter(concrete_subject):
+                return False
+            open_names = self.generic_type_names(concrete_subject)
+            if not open_names or not open_names <= declared_names:
+                return False
+            formatted_subject = self.format_type(crate, concrete_subject)
+            arguments = self.format_type_arguments(crate, trait.get("args"), bindings)
+            if formatted_subject is None or arguments is None:
+                return False
+            conditions.append({
+                "subject": formatted_subject,
+                "traitPath": list(trait_path),
+                "arguments": arguments,
+            })
+            saw_open_subject = True
+            return True
+
+        for parameter in parameters:
+            name = parameter.get("name")
+            type_kind = parameter.get("kind", {}).get("type", {})
+            if not isinstance(type_kind, dict):
+                return None
+            for bound in type_kind.get("bounds", []):
+                if not add_trait_bound({"generic": name}, bound):
+                    return None
+
+        predicates = generics.get("where_predicates", [])
+        if not isinstance(predicates, list):
+            return None
+        for predicate in predicates:
+            if not isinstance(predicate, dict):
+                return None
+            bound_predicate = predicate.get("bound_predicate")
+            if not isinstance(bound_predicate, dict) \
+                    or bound_predicate.get("generic_params") \
+                    or not isinstance(bound_predicate.get("bounds"), list) \
+                    or not bound_predicate["bounds"]:
+                return None
+            for bound in bound_predicate["bounds"]:
+                if not add_trait_bound(bound_predicate.get("type"), bound):
+                    return None
+
+        if not conditions or not saw_open_subject:
+            return None
+        unique = {
+            json.dumps(condition, sort_keys=True, separators=(",", ":")): condition
+            for condition in conditions
+        }
+        return [unique[key] for key in sorted(unique)]
+
+    @staticmethod
+    def generic_type_names(expression: Any) -> set[str]:
+        """Collect rustdoc generic type variables from a type expression."""
+        if isinstance(expression, list):
+            return set().union(*(_Inventory.generic_type_names(value) for value in expression))
+        if not isinstance(expression, dict):
+            return set()
+        if set(expression) == {"generic"} and isinstance(expression["generic"], str):
+            return {expression["generic"]}
+        return set().union(*(_Inventory.generic_type_names(value) for value in expression.values()))
 
     def check_lifetime_relation(self, longer: str, shorter: str,
                                 bindings: dict[str, Any]) -> bool | None:
@@ -726,17 +898,100 @@ class _Inventory:
         if trait_bound.get("modifier") == "maybe":
             return True
         trait = trait_bound.get("trait", {})
-        trait_path = self.reference_path(crate, trait.get("id")) if trait.get("id") is not None else None
-        if trait_path is None:
-            raw_path = trait.get("path")
-            trait_path = tuple(str(raw_path).split("::")) if raw_path else None
-        if trait_path is None:
+        trait_id = trait.get("id")
+        trait_path = self.reference_path(crate, trait_id) if trait_id is not None else None
+        if trait_path is None or not trait_path:
             return None
-        if isinstance(subject, dict) and set(subject) == {"generic"}:
+
+        concrete_subject = self.substitute_type(subject, bindings)
+        if self.contains_open_type_parameter(concrete_subject):
+            return None
+        formatted_subject = self.format_type(crate, concrete_subject)
+        if formatted_subject is None:
+            return None
+        key = trait_path, formatted_subject
+        if key in self._trait_proof_stack:
+            return None
+
+        self._trait_proof_stack.add(key)
+        try:
+            return self.find_trait_implementation(crate, trait_path, concrete_subject)
+        finally:
+            self._trait_proof_stack.remove(key)
+
+    @staticmethod
+    def contains_open_type_parameter(expression: Any) -> bool:
+        """Reject proofs whose subject still contains an unbound type variable."""
+        if isinstance(expression, list):
+            return any(_Inventory.contains_open_type_parameter(entry) for entry in expression)
+        if not isinstance(expression, dict):
+            return False
+        if "generic" in expression or "infer" in expression or "impl_trait" in expression:
             return True
-        if trait_path in {("core", "marker", "Copy"), ("std", "marker", "Copy"), ("Copy",)}:
-            return self.is_copy_type(crate, subject, bindings, set())
-        return None
+        return any(_Inventory.contains_open_type_parameter(entry) for entry in expression.values())
+
+    def find_trait_implementation(self, crate: str, trait_path: tuple[str, ...],
+                                  subject: Any) -> bool | None:
+        """Prove a trait bound only from a matching rustdoc implementation."""
+        uncertain = False
+        document = self.documents[crate]
+        owner_kinds = {"struct", "enum", "union"}
+        for owner in document["index"].values():
+            owner_kind = _kind(owner)
+            if owner.get("crate_id") != 0 or owner_kind not in owner_kinds:
+                continue
+            for implementation_id in owner["inner"][owner_kind].get("impls", []):
+                implementation_item = document["index"].get(str(implementation_id))
+                if implementation_item is None:
+                    uncertain = True
+                    continue
+                implementation = implementation_item.get("inner", {}).get("impl")
+                if implementation is None:
+                    uncertain = True
+                    continue
+                trait = implementation.get("trait")
+                if trait is None:
+                    continue
+                implementation_trait_id = trait.get("id")
+                implementation_trait_path = (
+                    self.reference_path(crate, implementation_trait_id)
+                    if implementation_trait_id is not None else None
+                )
+                if implementation_trait_path is None:
+                    uncertain = True
+                    continue
+                if implementation_trait_path != trait_path:
+                    continue
+
+                generic_names = self.generic_parameter_names(implementation.get("generics", {}))
+                implementation_bindings: dict[str, Any] = {}
+                blanket_impl = implementation.get("blanket_impl")
+                blanket_name = blanket_impl.get("generic") if isinstance(blanket_impl, dict) else None
+                if blanket_name is not None:
+                    if blanket_name not in generic_names:
+                        uncertain = True
+                        continue
+                    implementation_bindings[blanket_name] = subject
+                    matches = True
+                else:
+                    matches = self.unify_type(
+                        crate, implementation.get("for"), subject,
+                        generic_names, implementation_bindings,
+                    )
+                if matches is None:
+                    uncertain = True
+                    continue
+                if not matches:
+                    continue
+
+                predicates = self.check_implementation_predicates(
+                    crate, implementation, implementation_bindings,
+                )
+                if predicates is True:
+                    return True
+                if predicates is None:
+                    uncertain = True
+        return None if uncertain else False
 
     def is_copy_type(self, crate: str, expression: Any, bindings: dict[str, Any],
                      visiting: set[tuple[str, str]]) -> bool | None:
@@ -869,15 +1124,33 @@ class _Inventory:
                 continue
             if filter_to_owner and not matches_owner:
                 continue
-            if filter_to_owner:
+            blanket = impl.get("blanket_impl")
+            conditional_condition = None
+            if filter_to_owner or isinstance(blanket, dict):
                 predicate_bindings = dict(bindings)
-                blanket = impl.get("blanket_impl")
                 if isinstance(blanket, dict) and isinstance(blanket.get("generic"), str):
                     predicate_bindings[blanket["generic"]] = owner_type
                 applies = self.check_implementation_predicates(crate, impl, predicate_bindings)
                 if applies is False:
                     continue
-                if applies is None:
+                if applies is None and isinstance(blanket, dict):
+                    conditional_condition = self.conditional_trait_predicates(
+                        crate, impl, predicate_bindings,
+                    )
+                # A compiler-reported non-blanket impl remains a valid conditional API
+                # when a generic alias preserves its exact owner type and parameters.
+                # This carries the impl shape through the alias; it does not prove the
+                # predicate for arbitrary substitutions (which remains unresolved).
+                symbolic_owner_impl = (
+                    filter_to_owner
+                    and applies is None
+                    and not isinstance(blanket, dict)
+                    and self.contains_open_type_parameter(owner_type)
+                    and self.format_type(crate, implementation_type)
+                    == self.format_type(crate, owner_type)
+                    and self.has_only_symbolic_trait_predicates(crate, impl, predicate_bindings)
+                )
+                if applies is None and conditional_condition is None and not symbolic_owner_impl:
                     self.issue(package, "::".join(path), "unresolved-rustdoc-implementation-predicate", impl_item,
                                implementationId=str(impl_id), ownerPath=list(self.definition_path(crate, str(owner["id"]))))
                     continue
@@ -974,8 +1247,14 @@ class _Inventory:
                                ownerPath=list(self.definition_path(crate, str(owner["id"]))),
                                traitPath=list(trait_path))
                     continue
-                self.add_trait_impl_member(crate, member, package, qualified_impl,
-                                           member_name, exports, owner, identity_components)
+                if conditional_condition is None:
+                    self.add_trait_impl_member(crate, member, package, qualified_impl,
+                                               member_name, exports, owner, identity_components)
+                else:
+                    self.add_conditional_trait_impl_member(
+                        crate, package, qualified_impl, member, member_name, impl_id, owner,
+                        conditional_condition,
+                    )
                 seen_members.add((member_name, member_kind))
 
             for member_name in impl.get("provided_trait_methods", []):
@@ -987,8 +1266,14 @@ class _Inventory:
                               "inner": {"function": {}}}
                 member_kind = _kind(member)
                 if (member_name, member_kind) not in seen_members:
-                    self.add_trait_impl_member(crate, member, package, qualified_impl,
-                                               member_name, exports, owner, identity_components)
+                    if conditional_condition is None:
+                        self.add_trait_impl_member(crate, member, package, qualified_impl,
+                                                   member_name, exports, owner, identity_components)
+                    else:
+                        self.add_conditional_trait_impl_member(
+                            crate, package, qualified_impl, member, member_name, impl_id, owner,
+                            conditional_condition,
+                        )
                     seen_members.add((member_name, member_kind))
 
             implemented_names = {
@@ -1003,8 +1288,14 @@ class _Inventory:
                 has_default = (member_kind == "assoc_type" and member_inner.get("type") is not None) \
                     or (member_kind == "assoc_const" and member_inner.get("value") is not None)
                 if has_default and (member_name, member_kind) not in implemented_names:
-                    self.add_trait_impl_member(crate, member, package, qualified_impl,
-                                               member_name, exports, owner, identity_components)
+                    if conditional_condition is None:
+                        self.add_trait_impl_member(crate, member, package, qualified_impl,
+                                                   member_name, exports, owner, identity_components)
+                    else:
+                        self.add_conditional_trait_impl_member(
+                            crate, package, qualified_impl, member, member_name, impl_id, owner,
+                            conditional_condition,
+                        )
 
     def format_type_arguments(self, crate: str, arguments: Any,
                               bindings: dict[str, Any]) -> list[str] | None:
@@ -1060,6 +1351,28 @@ class _Inventory:
         self.add(crate, member, package, (export_name,), exports, associated=True,
                  identity_components=identity_components)
 
+    def add_conditional_trait_impl_member(self, crate: str, package: str, qualified_impl: str,
+                                          member: dict[str, Any], member_name: str,
+                                          implementation_id: Any, owner: dict[str, Any],
+                                          condition: list[dict[str, Any]]) -> None:
+        """Record a known conditional trait member without advertising an API signature."""
+        export_name = f"{qualified_impl}::{member_name}"
+        record = {
+            "packageId": package,
+            "exportName": export_name,
+            "kind": "associated-item",
+            "implementationId": str(implementation_id),
+            "ownerPath": list(self.definition_path(crate, str(owner["id"]))),
+            "condition": condition,
+        }
+        key = package, export_name
+        previous = self.conditional_records.get(key)
+        if previous is not None and previous != record:
+            self.issue(package, export_name, "conflicting-conditional-rustdoc-declaration", member,
+                       implementationId=str(implementation_id))
+            return
+        self.conditional_records[key] = record
+
     @staticmethod
     def fields(kind: Any) -> list[Any]:
         if isinstance(kind, str):
@@ -1080,6 +1393,7 @@ class _Inventory:
         visit_roots()
         self.reachability_prepass = False
         self.records.clear()
+        self.conditional_records.clear()
         self.issues.clear()
         visit_roots()
         aliases: dict[str, list[str]] = {}
@@ -1091,10 +1405,15 @@ class _Inventory:
             sites = {json.dumps(site, sort_keys=True): site for site in record["exportLocations"]}
             record["exportLocations"] = [sites[key] for key in sorted(sites)]
         issues = {json.dumps(issue, sort_keys=True): issue for issue in self.issues}
+        conditional_records = sorted(
+            self.conditional_records.values(),
+            key=lambda record: (record["packageId"], record["exportName"], record["kind"]),
+        )
         return {
             "formatVersion": 1, "toolchain": TOOLCHAIN, "rustdocFormat": FORMAT_VERSION,
             "crates": sorted(self.documents), "complete": not issues,
             "declarations": records,
+            "conditionalDeclarations": conditional_records,
             "issues": sorted(issues.values(), key=lambda i: (*_key(i), i["reason"], json.dumps(i, sort_keys=True))),
         }
 
@@ -1116,7 +1435,10 @@ def compare(observed: dict[str, Any], manifest: dict[str, Any]) -> dict[str, Any
             expected[key] = row
     exclusions = {_comparison_key(row) for row in manifest.get("approvedExclusions", [])}
     actual: dict[tuple[str, str], dict[str, Any]] = {}
-    for row in observed["declarations"]:
+    conditional_keys: set[tuple[str, str]] = set()
+    conditional_rows = observed.get("conditionalDeclarations", [])
+    conditional_keys = {_comparison_key(row) for row in conditional_rows}
+    for row in [*observed["declarations"], *conditional_rows]:
         key = _comparison_key(row)
         previous = actual.get(key)
         if previous is not None:
@@ -1128,10 +1450,25 @@ def compare(observed: dict[str, Any], manifest: dict[str, Any]) -> dict[str, Any
             raise ValueError(f"duplicate observed declaration after path normalization: {row['exportName']}")
         actual[key] = row
     matched, missing, excluded, wrong_kind = [], [], [], []
+    conditional_state_mismatches, conditional_condition_mismatches = [], []
     for key, row in sorted(actual.items()):
         if key in expected:
             if row["kind"] == expected[key]["kind"]:
-                matched.append({**row, "declarationState": expected[key]["declarationState"]})
+                expected_row = expected[key]
+                if key in conditional_keys:
+                    if expected_row.get("declarationState") != "blocked":
+                        conditional_state_mismatches.append({
+                            **row, "manifestState": expected_row.get("declarationState"),
+                        })
+                    if expected_row.get("condition") != row.get("condition"):
+                        conditional_condition_mismatches.append({
+                            **row, "manifestCondition": expected_row.get("condition"),
+                        })
+                elif "condition" in expected_row:
+                    conditional_condition_mismatches.append({
+                        **row, "manifestCondition": expected_row.get("condition"),
+                    })
+                matched.append({**row, "declarationState": expected_row["declarationState"]})
             else:
                 wrong_kind.append({**row, "manifestKind": expected[key]["kind"]})
         elif key in exclusions:
@@ -1140,12 +1477,21 @@ def compare(observed: dict[str, Any], manifest: dict[str, Any]) -> dict[str, Any
             missing.append(row)
     not_observed = [expected[key] for key in sorted(expected.keys() - actual.keys())]
     return {
-        **observed, "matchesManifest": not (missing or not_observed or wrong_kind),
+        **observed,
+        "matchesManifest": not (
+            missing or not_observed or wrong_kind
+            or conditional_state_mismatches or conditional_condition_mismatches
+        ),
         "matched": matched, "missingFromManifest": missing, "notObserved": not_observed,
         "kindMismatches": wrong_kind, "excluded": excluded,
+        "conditionalStateMismatches": conditional_state_mismatches,
+        "conditionalConditionMismatches": conditional_condition_mismatches,
         "counts": {"observed": len(actual), "manifest": len(expected), "matched": len(matched),
                    "missingFromManifest": len(missing), "notObserved": len(not_observed),
-                   "kindMismatches": len(wrong_kind), "excluded": len(excluded), "issues": len(observed["issues"])},
+                   "kindMismatches": len(wrong_kind), "excluded": len(excluded),
+                   "conditionalStateMismatches": len(conditional_state_mismatches),
+                   "conditionalConditionMismatches": len(conditional_condition_mismatches),
+                   "issues": len(observed["issues"])},
     }
 
 

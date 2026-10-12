@@ -525,24 +525,48 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
             for declaration in self.checked_in_manifest["publicDeclarations"]
             if declaration["packageId"] in rust_packages
         ]
-        self.assertEqual(len(declarations), 9448)
+        self.assertEqual(len(declarations), 9497)
         report = json.loads(RUST_EXPORT_REPORT_PATH.read_text(encoding="utf-8"))
         observed_keys = {
             (row["packageId"], _canonical_export_name(row["exportName"]), row["kind"])
             for row in report["declarations"]
         }
+        conditional_keys = {
+            (row["packageId"], _canonical_export_name(row["exportName"]), row["kind"])
+            for row in report["conditionalDeclarations"]
+        }
         manifest_keys = {
             (row["packageId"], _canonical_export_name(row["exportName"]), row["kind"])
             for row in declarations
         }
+        not_observed_keys = {
+            (row["packageId"], _canonical_export_name(row["exportName"]), row["kind"])
+            for row in report["notObserved"]
+        }
         self.assertEqual(len(observed_keys), len(report["declarations"]))
-        self.assertEqual(manifest_keys, observed_keys)
+        self.assertEqual(len(conditional_keys), len(report["conditionalDeclarations"]))
+        self.assertEqual(len(not_observed_keys), len(report["notObserved"]))
+        self.assertEqual(manifest_keys - not_observed_keys, observed_keys | conditional_keys)
         self.assertEqual(report["counts"]["missingFromManifest"], 0)
-        self.assertEqual(report["counts"]["notObserved"], 0)
+        self.assertEqual(report["counts"]["notObserved"], 13)
         self.assertEqual(report["counts"]["kindMismatches"], 0)
-        self.assertEqual(report["counts"]["issues"], 39)
+        self.assertEqual(report["counts"]["issues"], 13)
         self.assertFalse(report["complete"])
-        self.assertTrue(report["matchesManifest"])
+        self.assertFalse(report["matchesManifest"])
+        for row in report["notObserved"]:
+            with self.subTest(not_observed=row["exportName"]):
+                self.assertEqual(row["declarationState"], "blocked")
+                self.assertNotIn("languageMappings", row)
+        by_package_and_export = {
+            (declaration["packageId"], declaration["exportName"]): declaration
+            for declaration in declarations
+        }
+        for row in report["conditionalDeclarations"]:
+            with self.subTest(conditional=row["exportName"]):
+                manifest_row = by_package_and_export[(row["packageId"], row["exportName"])]
+                self.assertEqual(manifest_row["declarationState"], "blocked")
+                self.assertEqual(manifest_row["condition"], row["condition"])
+                self.assertNotIn("languageMappings", manifest_row)
         self.assertEqual(
             {issue["reason"] for issue in report["issues"]},
             {"unresolved-rustdoc-implementation-predicate"},

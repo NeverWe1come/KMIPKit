@@ -33,6 +33,27 @@ UNRESOLVED_OWNER_REASON = (
     "dependency inventory; assign an owner before advertising it."
 )
 
+
+def _validate_condition(condition: Any) -> list[dict[str, Any]]:
+    """Validate the canonical, signature-free representation of trait bounds."""
+    if not isinstance(condition, list) or not condition:
+        raise ValueError("conditional Rust declarations require a nonempty exact condition")
+    for predicate in condition:
+        if not isinstance(predicate, dict) or set(predicate) != {
+            "subject", "traitPath", "arguments",
+        }:
+            raise ValueError("conditional Rust declaration has an invalid predicate")
+        if not isinstance(predicate["subject"], str) or not predicate["subject"]:
+            raise ValueError("conditional Rust predicate subject must be a nonempty type")
+        if not isinstance(predicate["traitPath"], list) or not predicate["traitPath"] \
+                or any(not isinstance(part, str) or not part for part in predicate["traitPath"]):
+            raise ValueError("conditional Rust predicate requires a canonical trait path")
+        if not isinstance(predicate["arguments"], list) \
+                or any(not isinstance(argument, str) or not argument
+                       for argument in predicate["arguments"]):
+            raise ValueError("conditional Rust predicate arguments must be canonical type names")
+    return condition
+
 def blocked_record(observed: dict[str, Any], manifest: dict[str, Any]) -> dict[str, Any]:
     """Build a blocked record for an observed Rust path without inventing mappings."""
     package_id = observed.get("packageId")
@@ -50,7 +71,7 @@ def blocked_record(observed: dict[str, Any], manifest: dict[str, Any]) -> dict[s
     declaration_hash = hashlib.sha256(
         f"{package_id}\0{export_name}".encode("utf-8")
     ).hexdigest()[:20]
-    return {
+    record = {
         "declarationId": f"rust-observed-{declaration_hash}",
         "packageId": package_id,
         "kind": kind,
@@ -62,6 +83,9 @@ def blocked_record(observed: dict[str, Any], manifest: dict[str, Any]) -> dict[s
         "candidateSpecId": candidate_spec_id,
         "blockedReason": reason,
     }
+    if "condition" in observed:
+        record["condition"] = _validate_condition(observed["condition"])
+    return record
 
 
 def _owner_path(export_name: str) -> str | None:
@@ -129,8 +153,9 @@ def reconcile(manifest: dict[str, Any], report: dict[str, Any]) -> list[dict[str
     declarations = manifest.get("publicDeclarations")
     exclusions = manifest.get("approvedExclusions")
     missing = report.get("missingFromManifest")
+    conditional = report.get("conditionalDeclarations", [])
     if not isinstance(declarations, list) or not isinstance(exclusions, list) \
-            or not isinstance(missing, list):
+            or not isinstance(missing, list) or not isinstance(conditional, list):
         raise ValueError("manifest or Rust report has an invalid declaration inventory")
 
     existing_keys: set[tuple[str, str]] = set()
@@ -141,6 +166,26 @@ def reconcile(manifest: dict[str, Any], report: dict[str, Any]) -> list[dict[str
             raise ValueError(f"duplicate manifest declaration: {key[0]}:{key[1]}")
         existing_keys.add(key)
         existing_ids.add(row.get("declarationId"))
+    declarations_by_key = {_export_key(row): row for row in declarations}
+    observed_conditional_keys: set[tuple[Any, Any]] = set()
+    for item in conditional:
+        if not isinstance(item, dict):
+            raise ValueError("Rust report conditional entries must be objects")
+        key = _export_key(item)
+        if key in observed_conditional_keys:
+            raise ValueError(f"duplicate conditional Rust path: {key[0]}:{key[1]}")
+        observed_conditional_keys.add(key)
+        condition = _validate_condition(item.get("condition"))
+        current = declarations_by_key.get(key)
+        if current is None:
+            continue
+        if current.get("kind") != item.get("kind"):
+            raise ValueError(f"conditional Rust declaration kind mismatch: {key[0]}:{key[1]}")
+        if current.get("declarationState") != "blocked":
+            raise ValueError(f"conditional Rust declaration must remain blocked: {key[0]}:{key[1]}")
+        if "languageMappings" in current or "approvalSource" in current:
+            raise ValueError(f"blocked conditional declaration contains API approval data: {key[0]}:{key[1]}")
+        current["condition"] = condition
     exclusion_keys = {_export_key(row) for row in exclusions}
 
     observed_keys: set[tuple[str, str]] = set()
@@ -185,11 +230,25 @@ def main(argv: list[str] | None = None) -> int:
     try:
         manifest = json.loads(arguments.manifest.read_text(encoding="utf-8"))
         report = json.loads(arguments.report.read_text(encoding="utf-8"))
+        prior_declarations = {
+            _export_key(row): row for row in manifest.get("publicDeclarations", [])
+        }
+        conditional_updates = sum(
+            1 for item in report.get("conditionalDeclarations", [])
+            if _export_key(item) in prior_declarations
+            and prior_declarations[_export_key(item)].get("condition") != item.get("condition")
+        )
+        original = json.dumps(manifest, sort_keys=True)
         additions = reconcile(manifest, report)
-        if arguments.write and additions:
+        changed = json.dumps(manifest, sort_keys=True) != original
+        if arguments.write and changed:
             _write_manifest(arguments.manifest, manifest)
-        print(json.dumps({"blockedRecordsAdded": len(additions), "write": arguments.write}))
-        return 0 if arguments.write or not additions else 1
+        print(json.dumps({
+            "blockedRecordsAdded": len(additions),
+            "conditionalRecordsUpdated": conditional_updates,
+            "write": arguments.write,
+        }))
+        return 0 if arguments.write or not changed else 1
     except (OSError, json.JSONDecodeError, ValueError) as error:
         print(f"Rust export reconciliation failed: {error}", file=sys.stderr)
         return 2

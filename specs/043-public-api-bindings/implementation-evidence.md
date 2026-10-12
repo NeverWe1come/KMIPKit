@@ -86,26 +86,26 @@ The canonical cross-language declaration slice whose Rust mapping paths begin wi
 
 ### T011/T013 — Reproducible Rust public-export audit (current partial snapshot)
 
-The pinned Rust 1.94.0 / rustdoc JSON 57 audit report at [rust-export-report-2026-10-12.json](reports/rust-export-report-2026-10-12.json) was regenerated from the current continuation branch on Windows x64 with all Cargo features. The deterministic traversal now expands reachable trait-implementation members and transparent type-alias projections when identity, reachability, generic arguments, and predicates can be established. It emits exact issues instead of claiming completion when an implementation predicate remains unresolved. The command returned **1 as expected** because the manifest and issue gates remain open.
+The pinned Rust 1.94.0 / rustdoc JSON 57 audit report at [rust-export-report-2026-10-12.json](reports/rust-export-report-2026-10-12.json) was regenerated from the current continuation branch on Windows x64 with all Cargo features. The inventory keeps verified declarations separate from conditional blanket-impl declarations. Conditional records preserve their exact compiler predicates and remain blocked without signatures or language mappings. The audit exits **1 as expected** while 13 `Any` implementation predicates remain unresolved.
 
-| Published package | Observed paths | Manifest rows | Exact matches | Missing from manifest | Not observed | Issues |
+| Published package | Verified | Conditional | Observed total | Manifest rows | Not observed | Issues |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: |
-| `kmipkit-ttlv` | 331 | 331 | 331 | 0 | 0 | 0 |
-| `kmipkit-protocol` | 5,806 | 5,806 | 5,806 | 0 | 0 | 31 |
-| `kmipkit-transport` | 365 | 365 | 365 | 0 | 0 | 0 |
-| `kmipkit-client` | 1,031 | 1,031 | 1,031 | 0 | 0 | 0 |
-| `kmipkit` | 1,915 | 1,915 | 1,915 | 0 | 0 | 8 |
-| **Total** | **9,448** | **9,448** | **9,448** | **0** | **0** | **39** |
+| `kmipkit-ttlv` | 264 | 65 | 329 | 331 | 2 | 2 |
+| `kmipkit-protocol` | 4,585 | 1,250 | 5,835 | 5,845 | 10 | 10 |
+| `kmipkit-transport` | 275 | 90 | 365 | 365 | 0 | 0 |
+| `kmipkit-client` | 895 | 135 | 1,030 | 1,031 | 1 | 1 |
+| `kmipkit` | 1,595 | 330 | 1,925 | 1,925 | 0 | 0 |
+| **Total** | **7,614** | **1,870** | **9,484** | **9,497** | **13** | **13** |
 
-There were no kind mismatches or approved Rust exclusions. All 39 issues are `unresolved-rustdoc-implementation-predicate`; the report records the exact implementation ID and reachable owner for each. The 7,681 previously missing rows now match exact blocked records with no signatures or language mappings. Their candidate owner is inherited only from an exact manifest owner; unresolved owners remain under the existing blocked `public_binding_surface` candidate. `matchesManifest` is true, but `complete` remains false until all 39 predicates are resolved. T011 remains unchecked.
+There are no kind mismatches or approved Rust exclusions. Reconciliation added 49 exact blocked rows and recorded the exact conditions on 1,870 existing blocked rows; all conditional rows have no signatures or language mappings. The remaining 13 issues are the blanket `core::any::Any` implementation, whose rustdoc predicate is `T: 'static + ?Sized`. Since the current report and manifest condition shape represents trait bounds only, these lifetime predicates remain explicit issues and their 13 existing rows remain blocked and unobserved. `missingFromManifest` and conditional state/condition mismatches are zero, but `matchesManifest` and `complete` remain false. T011 remains unchecked.
 
 | Verification | Command | Result |
 |---|---|---|
-| Focused auditor tests | `python -B -m unittest tools.api_manifest.tests.test_rust_exports -v` | PASS: 18 tests. |
-| Full API-manifest tests | `.venv/Scripts/python.exe -B -m unittest discover -s tools/api_manifest/tests -v` | PASS: 194 tests; 3 Windows symlink tests skipped because symlink creation was denied (WinError 1314). |
-| Rust export inventory | `.venv/Scripts/python.exe -B tools/api_manifest/audit_rust_exports.py --repo-root . --report specs/043-public-api-bindings/reports/rust-export-report-2026-10-12.json --check` | Report written; exit 1 with 9,448 observed, 9,448 matched, 0 missing, 0 not observed, 0 kind mismatches, and 39 unresolved predicate issues. Exit 1 is the expected open gate. |
-| Blocked Rust reconciliation | `.venv/Scripts/python.exe -B tools/api_manifest/reconcile_rust_exports.py --report specs/043-public-api-bindings/reports/rust-export-report-2026-10-12.json --write` | Added 7,681 exact `blocked` records without signatures, language mappings, or exclusions; owner candidates came only from exact manifest owners or the existing blocked `public_binding_surface` capability. |
-| Reconciled export inventory | `.venv/Scripts/python.exe -B tools/api_manifest/audit_rust_exports.py --repo-root . --report specs/043-public-api-bindings/reports/rust-export-report-2026-10-12.json --check` | Report written; exit 1 with 9,448 observed, 9,448 matched, 0 missing, 0 not observed, 0 kind mismatches, and 39 unresolved predicate issues. |
+| Focused auditor tests | `.venv/Scripts/python.exe -B -m unittest tools.api_manifest.tests.test_rust_export_trait_predicates -v` | PASS: 16 conversion, cycle, and conditional reconciliation tests. |
+| Full API-manifest tests | `.venv/Scripts/python.exe -B -m unittest discover -s tools/api_manifest/tests -p 'test_*.py' -v` | PASS: 211 tests; 3 Windows symlink tests skipped because symlink creation was denied (WinError 1314). |
+| Rust export inventory | `.venv/Scripts/python.exe -B tools/api_manifest/audit_rust_exports.py --repo-root . --report specs/043-public-api-bindings/reports/rust-export-report-2026-10-12.json --check` | Report written; exit 1 with 9,484 observed paths (7,614 verified and 1,870 conditional), 9,484 matched, 0 missing, 13 not observed, 0 kind mismatches, and 13 unresolved `Any` lifetime-predicate issues. Exit 1 is the expected open gate. |
+| Blocked Rust reconciliation | `.venv/Scripts/python.exe -B tools/api_manifest/reconcile_rust_exports.py --report specs/043-public-api-bindings/reports/rust-export-report-2026-10-12.json --write` | Added 49 exact `blocked` records and recorded exact predicates for 1,870 existing blocked conditional rows; no signatures or language mappings were added. |
+| Reconciled export inventory | `.venv/Scripts/python.exe -B tools/api_manifest/audit_rust_exports.py --repo-root . --report specs/043-public-api-bindings/reports/rust-export-report-2026-10-12.json --check` | Report written; exit 1 with 0 missing, 0 conditional state/condition mismatches, 0 kind mismatches, and 13 `Any` lifetime-predicate issues that remain explicit. |
 | KMIPKit FFI MSRV build | `cargo +1.94.0 build --locked -p kmipkit-ffi` | PASS on Windows x86-64; built `target/debug/kmipkit_ffi.dll` with the vendored `aws-lc-sys@0.45.0`. Optional NASM/stdalign probes emitted warnings; the build completed successfully. |
 | MSRV C ABI allowlist | `.venv/Scripts/python.exe -B tools/api_manifest/audit_binding_exports.py --repo-root . --c-only --c-binary target/debug/kmipkit_ffi.dll --check` | PASS: complete C audit, 180 exact manifest rows, 2 approved C-only exclusions, no missing/stale/kind/issues. |
 | C consumer locally | `cmake -G "Visual Studio 17 2022" -A x64 -S bindings/c -B build/c-consumer` | Not run: CMake is not installed on this host. The GitHub C matrix remains the C-consumer verification path. |

@@ -111,37 +111,44 @@ remaining blocked for readiness and parity.
 On **2026-10-12**, with the current continuation branch Rust sources, Windows
 x64, Rust 1.94.0 and all features, the report found:
 
-| Published package | Observed paths | Manifest rows | Exact matches | Missing from manifest | Not observed | Issues |
+| Published package | Verified | Conditional | Observed paths | Manifest rows | Not observed | Issues |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: |
-| `kmipkit-ttlv` | 331 | 331 | 331 | 0 | 0 | 0 |
-| `kmipkit-protocol` | 5,806 | 5,806 | 5,806 | 0 | 0 | 31 |
-| `kmipkit-transport` | 365 | 365 | 365 | 0 | 0 | 0 |
-| `kmipkit-client` | 1,031 | 1,031 | 1,031 | 0 | 0 | 0 |
-| `kmipkit` | 1,915 | 1,915 | 1,915 | 0 | 0 | 8 |
-| **Total** | **9,448** | **9,448** | **9,448** | **0** | **0** | **39** |
+| `kmipkit-ttlv` | 264 | 65 | 329 | 331 | 2 | 2 |
+| `kmipkit-protocol` | 4,585 | 1,250 | 5,835 | 5,845 | 10 | 10 |
+| `kmipkit-transport` | 275 | 90 | 365 | 365 | 0 | 0 |
+| `kmipkit-client` | 895 | 135 | 1,030 | 1,031 | 1 | 1 |
+| `kmipkit` | 1,595 | 330 | 1,925 | 1,925 | 0 | 0 |
+| **Total** | **7,614** | **1,870** | **9,484** | **9,497** | **13** | **13** |
 
-There were no kind mismatches or approved Rust exclusions. All 39 issues are
-`unresolved-rustdoc-implementation-predicate` (31 in `rust-kmipkit-protocol`
-and 8 in `rust-kmipkit`); each identifies the implementation and reachable
-owner whose applicability could not be proved. The crawler emits exact trait
-implementation and alias paths for cases it can resolve. The 7,681 previously
-missing declarations now have exact blocked manifest rows without language
-mappings or API signatures. `matchesManifest` is true, but `complete` is false
-and `--check` exits 1 because the 39 predicate issues remain. Counts are a
-dated source snapshot, not a coverage percentage or permanent expected test
-result; rerun after Rust or manifest changes.
+There are no kind mismatches or approved Rust exclusions. The 1,870
+`conditionalDeclarations` are exact blanket-implementation members with open
+trait bounds. Each has an exact blocked manifest row carrying the compiler
+condition, with no signature or language mapping. Reconciliation also added
+49 blocked rows for newly observed declarations. The remaining 13 issues are
+the `core::any::Any` blanket impl (`T: 'static + ?Sized`) projected onto types
+with a generic lifetime; the current condition shape cannot represent that
+lifetime predicate. Those 13 existing manifest paths remain blocked and are
+reported as `notObserved`. `missingFromManifest` and conditional state/condition
+mismatches are zero, but `matchesManifest` and `complete` are false, and
+`--check` exits 1. Counts are a dated source snapshot, not a coverage
+percentage or permanent expected test result; rerun after Rust or manifest
+changes.
 
 The full deterministic JSON from this snapshot is checked in at
 `specs/043-public-api-bindings/reports/rust-export-report-2026-10-12.json`.
 Regenerate the report after any Rust export or manifest change; the timestamped
 path identifies the source snapshot and is not a generated manifest output.
 
-The JSON report lists each issue requiring predicate review. Its declarations
-match all 9,448 Rust manifest paths by canonical package, path, and kind. The
-reconciliation tool adds blocked rows only for exact paths in
-`missingFromManifest`; it inherits a candidate owner only from an exact
-manifest owner path, otherwise uses the already blocked `public_binding_surface`
-candidate. It does not add signatures, mappings, or approved exclusions.
+The JSON report lists each issue requiring predicate review and separates
+verified `declarations` from conditional ones. Their union matches 9,484
+observed Rust paths by canonical package, path, and kind. Thirteen additional
+manifest rows remain blocked because their `Any` implementation predicates
+cannot yet be serialized. The reconciliation tool adds blocked rows only for
+exact paths in `missingFromManifest` and updates conditions only on exact
+blocked conditional rows. It inherits a candidate owner only from an exact
+manifest owner path, otherwise uses the already blocked
+`public_binding_surface` candidate. It does not add signatures, mappings, or
+approved exclusions.
 
 ## Development verification
 
