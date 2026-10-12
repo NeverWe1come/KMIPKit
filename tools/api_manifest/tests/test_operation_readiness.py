@@ -242,6 +242,10 @@ class OperationReadinessSchemaTests(unittest.TestCase):
     def errors(self, manifest: dict[str, object]) -> list[object]:
         return list(self.validator.iter_errors(manifest))
 
+    def test_feature_owner_id_resolves_through_spec_feature_branch(self) -> None:
+        feature = generate._feature_directory(ROOT, "KMIPKIT-0036")
+        self.assertEqual(feature.name, "022-object-lifecycle")
+
     def test_blocked_operation_records_only_candidate_and_reason(self) -> None:
         manifest = _contract_manifest()
         operation = manifest["operations"][0]
