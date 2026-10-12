@@ -16534,5 +16534,64 @@ class CatalogValidationTests(unittest.TestCase):
                 self.assertIn("no", review_note.lower())
 
 
+    def test_locate_client_may_capabilities_keep_exact_local_evidence_and_official_case_gap(self) -> None:
+        """Locate client MAY capabilities link only their local request evidence."""
+        catalog = json.loads(
+            (ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8")
+        )
+        requirements = {row["requirement_id"]: row for row in catalog["requirements"]}
+        expected_evidence = {
+            "KMIPKIT-REQ-SPEC-6.1.28-001": (
+                ["crates/kmipkit-client/src/execute.rs", "crates/kmipkit-protocol/src/locate.rs"],
+                [
+                    "crates/kmipkit-client/tests/unit/object_read_execution_tests.rs::locate_batch_preserves_criteria_results_and_server_placeholder_boundary",
+                    "crates/kmipkit-protocol/tests/unit/locate_tests.rs::request_emits_supplied_optional_fields_in_table_247_order",
+                ],
+                "do not assert how many identifiers a server returns",
+            ),
+            "KMIPKIT-REQ-SPEC-6.1.28-002": (
+                ["crates/kmipkit-client/src/execute.rs", "crates/kmipkit-protocol/src/locate.rs"],
+                [
+                    "crates/kmipkit-client/tests/operation_boundary.rs::rust_quickstart_get_and_locate_examples_execute_through_the_client",
+                    "crates/kmipkit-client/tests/unit/object_read_execution_tests.rs::locate_batch_preserves_criteria_results_and_server_placeholder_boundary",
+                    "crates/kmipkit-protocol/tests/unit/locate_tests.rs::request_emits_supplied_optional_fields_in_table_247_order",
+                ],
+                "do not assert server-side zero-equivalence behavior",
+            ),
+            "KMIPKIT-REQ-SPEC-6.1.28-013-002": (
+                [
+                    "crates/kmipkit-client/src/execute.rs",
+                    "crates/kmipkit-protocol/src/attribute.rs",
+                    "crates/kmipkit-protocol/src/locate.rs",
+                ],
+                [
+                    "crates/kmipkit-client/tests/operation_boundary.rs::rust_quickstart_get_and_locate_examples_execute_through_the_client",
+                    "crates/kmipkit-protocol/tests/unit/locate_tests.rs::request_always_encodes_the_required_empty_attributes_structure",
+                ],
+                "do not assert the server returns every matching object",
+            ),
+        }
+
+        self.assertEqual(set(requirements) & set(expected_evidence), set(expected_evidence))
+        for requirement_id, (implementation_refs, verification_refs, behavior_limit) in expected_evidence.items():
+            with self.subTest(requirement_id=requirement_id):
+                requirement = requirements[requirement_id]
+                self.assertEqual(requirement["role"], "client")
+                self.assertEqual(requirement["direction"], "client_to_server")
+                self.assertEqual(requirement["scope_state"], "client_1_0")
+                self.assertEqual(requirement["feature_spec"], "KMIPKIT-0017")
+                self.assertEqual(requirement["implementation_refs"], implementation_refs)
+                self.assertEqual(requirement["verification_refs"], verification_refs)
+                self.assertEqual(requirement["test_case_ids"], [])
+                review_note = requirement["review_note"]
+                self.assertIn(
+                    "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources",
+                    review_note,
+                )
+                self.assertIn(behavior_limit, review_note)
+                self.assertIn("No official case-level pass is claimed.", review_note)
+                self.assertEqual(requirement["status"], "verified")
+
+
 if __name__ == "__main__":
     unittest.main()
