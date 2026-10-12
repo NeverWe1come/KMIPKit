@@ -991,9 +991,8 @@ pub extern "C" fn kmipkit_capability_is_available(
         capability_id_length,
         MAX_CAPABILITY_ID_BYTES,
     ));
-    let capability_id = match std::str::from_utf8(bytes) {
-        Ok(value) => value,
-        Err(_) => return record_ffi_error(ERROR_INVALID_INPUT),
+    let Ok(capability_id) = std::str::from_utf8(bytes) else {
+        return record_ffi_error(ERROR_INVALID_INPUT);
     };
     let available = crate::public_api_generated::C_AVAILABLE_CAPABILITIES.contains(&capability_id);
     // SAFETY: the output pointer was checked non-null and is writable for this call.
