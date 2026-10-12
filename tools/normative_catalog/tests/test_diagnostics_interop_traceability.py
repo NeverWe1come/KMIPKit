@@ -18,6 +18,8 @@ EXPECTED = {
     "KMIPKIT-REQ-SPEC-6.1.57-005": "req_005_repeated_identifiers_preserve_order_and_open_values",
     "KMIPKIT-REQ-SPEC-6.1.57-006": "req_006_omitted_date_remains_absent_for_server_default",
 }
+UNSPECIFIED_ROLE_REQUIREMENTS = {"KMIPKIT-REQ-SPEC-6.1.57-006"}
+PROFILELESS_FEATURE_REQUIREMENTS = {"KMIPKIT-REQ-SPEC-6.1.57-006"}
 
 
 class DiagnosticsInteropTraceabilityTests(unittest.TestCase):
@@ -25,7 +27,7 @@ class DiagnosticsInteropTraceabilityTests(unittest.TestCase):
         self.catalog = json.loads(CATALOG.read_text(encoding="utf-8"))
         self.trace = TRACE.read_text(encoding="utf-8")
 
-    def test_exactly_six_validate_feature_requirements_have_test_symbols(self) -> None:
+    def test_validate_feature_requirement_roles_scope_and_traceability(self) -> None:
         records = {
             r["requirement_id"]: r
             for r in self.catalog["requirements"]
@@ -34,12 +36,12 @@ class DiagnosticsInteropTraceabilityTests(unittest.TestCase):
         self.assertEqual(set(records), set(EXPECTED))
         for identifier, test in EXPECTED.items():
             record = records[identifier]
-            expected_role = "unspecified" if identifier.endswith("6.1.57-006") else "client"
+            expected_role = "unspecified" if identifier in UNSPECIFIED_ROLE_REQUIREMENTS else "client"
             self.assertEqual(record["role"], expected_role)
             self.assertEqual(record["status"], "scoped_verified")
             self.assertEqual(record["scope_state"], "client_1_0")
             self.assertIn("KMIPKIT-ELEM-OP-C2S-VALIDATE", record["element_ids"])
-            if identifier.endswith("6.1.57-006"):
+            if identifier in PROFILELESS_FEATURE_REQUIREMENTS:
                 self.assertEqual(record["profile_ids"], [])
             self.assertEqual(record["test_case_ids"], [])
             self.assertIn({"source_id": "KMIPKIT-SRC-spec", "section": "6.1.57"}, record["source_refs"])
