@@ -354,6 +354,56 @@ class BindingExportAuditTests(unittest.TestCase):
         self.assertFalse(result["matchesManifest"])
         self.assertEqual(result["issues"][0]["reason"], "duplicate-manifest-export-name")
 
+    def test_comparison_rejects_duplicate_approved_exclusion_paths(self):
+        exclusion = {"packageId": "java-kmipkit", "exportName": "org.example.Internal"}
+        manifest = {
+            "publicDeclarations": [],
+            "approvedExclusions": [exclusion, dict(exclusion, reason="duplicate")],
+        }
+        report = {
+            "complete": True,
+            "declarations": [],
+            "issues": [],
+        }
+
+        result = AUDIT.compare(report, manifest, "java-kmipkit")
+
+        self.assertFalse(result["matchesManifest"])
+        self.assertIn(
+            "duplicate-manifest-approved-exclusion",
+            {issue["reason"] for issue in result["issues"]},
+        )
+
+    def test_comparison_rejects_declaration_exclusion_overlap(self):
+        manifest = {
+            "publicDeclarations": [{
+                "packageId": "java-kmipkit",
+                "exportName": "org.example.Internal",
+                "kind": "type",
+            }],
+            "approvedExclusions": [{
+                "packageId": "java-kmipkit",
+                "exportName": "org.example.Internal",
+            }],
+        }
+        report = {
+            "complete": True,
+            "declarations": [{
+                "packageId": "java-kmipkit",
+                "exportName": "org.example.Internal",
+                "kind": "type",
+            }],
+            "issues": [],
+        }
+
+        result = AUDIT.compare(report, manifest, "java-kmipkit")
+
+        self.assertFalse(result["matchesManifest"])
+        self.assertIn(
+            "manifest-export-also-excluded",
+            {issue["reason"] for issue in result["issues"]},
+        )
+
     def test_comparison_counts_exact_matches_separately_from_path_matches(self):
         manifest = {"publicDeclarations": [{
             "packageId": "java-kmipkit",

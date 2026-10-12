@@ -11,6 +11,7 @@ from pathlib import Path
 from jsonschema import Draft202012Validator
 
 from tools.api_manifest.generate import (
+    ManifestError,
     _validate_operation_inventory,
     _validate_v2_readiness,
 )
@@ -260,6 +261,44 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
 
     def test_checked_in_manifest_resolves_all_public_declaration_mappings(self) -> None:
         _validate_v2_readiness(self.checked_in_manifest, ROOT)
+
+    def test_readiness_rejects_duplicate_package_export_declarations(self) -> None:
+        manifest = json.loads(json.dumps(self.checked_in_manifest))
+        declaration = next(
+            item for item in manifest["publicDeclarations"]
+            if item["declarationState"] == "blocked"
+        )
+        duplicate = json.loads(json.dumps(declaration))
+        duplicate["declarationId"] += ":duplicate"
+        manifest["publicDeclarations"].append(duplicate)
+
+        with self.assertRaisesRegex(ManifestError, "duplicate public export path"):
+            _validate_v2_readiness(manifest, ROOT)
+
+    def test_readiness_rejects_duplicate_approved_exclusion_paths(self) -> None:
+        manifest = json.loads(json.dumps(self.checked_in_manifest))
+        exclusion = json.loads(json.dumps(manifest["approvedExclusions"][0]))
+        exclusion["reason"] += " Duplicate record with a different reason."
+        manifest["approvedExclusions"].append(exclusion)
+
+        with self.assertRaisesRegex(ManifestError, "duplicate approved exclusion path"):
+            _validate_v2_readiness(manifest, ROOT)
+
+    def test_readiness_rejects_declaration_and_exclusion_overlap(self) -> None:
+        manifest = json.loads(json.dumps(self.checked_in_manifest))
+        exclusion = manifest["approvedExclusions"][0]
+        declaration = next(
+            item for item in manifest["publicDeclarations"]
+            if item["packageId"] == exclusion["packageId"]
+            and item["declarationState"] == "blocked"
+        )
+        overlapping = json.loads(json.dumps(declaration))
+        overlapping["declarationId"] += ":overlap"
+        overlapping["exportName"] = exclusion["exportName"]
+        manifest["publicDeclarations"].append(overlapping)
+
+        with self.assertRaisesRegex(ManifestError, "overlaps an approved exclusion"):
+            _validate_v2_readiness(manifest, ROOT)
 
     def test_checked_in_manifest_records_unmapped_binding_exports_as_blocked(self) -> None:
         declarations = {
@@ -697,7 +736,7 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
 
     def test_checked_in_manifest_inventories_all_java_public_access_paths(self) -> None:
         declarations = self.declarations_for_package("java-kmipkit")
-        self.assertEqual(len(declarations), 319)
+        self.assertEqual(len(declarations), 329)
         by_name = {declaration["exportName"]: declaration for declaration in declarations}
         batch_item = by_name["org.kmipkit.extensions.ClientBatchItem"]
         self.assertEqual(batch_item["kind"], "type")
