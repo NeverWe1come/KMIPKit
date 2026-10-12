@@ -16,7 +16,15 @@ final class RuntimeMetadataTest {
     void reportsOnlyCapabilitiesWithReadyNativeMappings() {
         assertTrue(RuntimeMetadata.capabilityIsAvailable("generic_ttlv_model"));
         assertFalse(RuntimeMetadata.capabilityIsAvailable("unknown_capability"));
+    }
+
+    @Test
+    void treatsUnknownCapabilityContainingNulAsUnavailable() {
         assertFalse(RuntimeMetadata.capabilityIsAvailable("unknown\u0000capability"));
+    }
+
+    @Test
+    void treatsUnknownCapabilityContainingSupplementaryCodePointAsUnavailable() {
         assertFalse(RuntimeMetadata.capabilityIsAvailable("unknown-\uD83D\uDD10-capability"));
     }
 
