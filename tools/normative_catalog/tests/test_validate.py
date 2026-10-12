@@ -75,6 +75,9 @@ OPTIONAL_CAPABILITY_TEST_REQUIREMENTS = {
     "crates/kmipkit-protocol/tests/unit/import_operation_tests.rs::wrapped_pgp_key_accepts_key_wrap_type": (
         "KMIPKIT-REQ-SPEC-3.3-001-001",
     ),
+    "crates/kmipkit-protocol/tests/unit/import_operation_tests.rs::replacement_and_conditional_wrap_type_are_preserved_without_unwrapping": (
+        "KMIPKIT-REQ-SPEC-3.3-001-001",
+    ),
     "crates/kmipkit-protocol/tests/unit/import_operation_tests.rs::request_preserves_required_fields_and_only_explicit_optional_choices": (
         "KMIPKIT-REQ-SPEC-3.3-001-002",
     ),
@@ -108,7 +111,7 @@ OPTIONAL_CAPABILITY_TEST_REQUIREMENTS = {
     "crates/kmipkit-protocol/tests/unit/create_tests.rs::request_keeps_the_required_empty_attributes_structure_without_synthesizing_fields": (
         "KMIPKIT-REQ-SPEC-6.1-004",
     ),
-    "crates/kmipkit-protocol/tests/unit/register_operation_tests.rs::request_emits_table_291_fields_in_order_and_preserves_object_item": (
+    "crates/kmipkit-protocol/tests/unit/create_tests.rs::create_only_oasis_fixtures_decode_with_the_expected_fields": (
         "KMIPKIT-REQ-SPEC-6.1-004",
     ),
     "crates/kmipkit-protocol/tests/unit/create_tests.rs::create_preserves_two_repeated_object_group_text_values_in_order": (
@@ -133,6 +136,61 @@ OPTIONAL_CAPABILITY_TEST_REQUIREMENTS = {
         "KMIPKIT-REQ-SPEC-6.1.35-005",
     ),
 }
+
+
+OPTIONAL_CAPABILITY_TEST_CONTENT_REQUIREMENTS = {
+    "crates/kmipkit-protocol/tests/unit/import_operation_tests.rs::wrapped_pgp_key_accepts_key_wrap_type": (
+        "ObjectType::from_raw(9)",
+        "with_key_wrap_type(KeyWrapType::from_raw(1))",
+        "field.tag().raw() == KEY_WRAP_TYPE",
+        "ValueView::Enumeration(raw) if *raw == 1",
+    ),
+    "crates/kmipkit-protocol/tests/unit/import_operation_tests.rs::replacement_and_conditional_wrap_type_are_preserved_without_unwrapping": (
+        "with_replace_existing(true)",
+        "with_key_wrap_type(KeyWrapType::from_raw(0xF123_4568))",
+        "wrapped_object_has_encryption_key_information(&fields[5])",
+        "wrapped_object_has_byte_string_key_value(&fields[5])",
+    ),
+    "crates/kmipkit-protocol/tests/unit/create_tests.rs::request_keeps_the_required_empty_attributes_structure_without_synthesizing_fields": (
+        "AttributeSet::new()",
+        "request.attributes().as_items().is_empty()",
+        "attributes.children().is_empty()",
+    ),
+    "crates/kmipkit-protocol/tests/unit/create_tests.rs::create_only_oasis_fixtures_decode_with_the_expected_fields": (
+        "items[0].tag().raw(), CRYPTOGRAPHIC_LENGTH",
+        "ValueView::Integer(value) if *value == 80",
+    ),
+}
+
+
+def _rust_test_body(test_reference: str) -> str | None:
+    """Return one confined Rust test body for exact content-evidence checks."""
+    test_path, separator, test_name = test_reference.partition("::")
+    if not separator or not test_name:
+        return None
+    confined_source = test_feature_traceability._read_confined_test_source(test_path)
+    if confined_source is None or confined_source[0].suffix != ".rs":
+        return None
+    _, source = confined_source
+    source_without_comments_or_literals = test_feature_traceability._strip_rust_comments_and_literals(source)
+    if source_without_comments_or_literals is None:
+        return None
+    declaration = re.compile(
+        rf"\bfn\s+{re.escape(test_name)}\s*\([^)]*\)\s*\{{"
+    )
+    match = declaration.search(source_without_comments_or_literals)
+    if match is None:
+        return None
+    opening_brace = match.end() - 1
+    depth = 0
+    for index in range(opening_brace, len(source_without_comments_or_literals)):
+        if source_without_comments_or_literals[index] == "{":
+            depth += 1
+        elif source_without_comments_or_literals[index] == "}":
+            depth -= 1
+            if depth == 0:
+                return source[opening_brace + 1:index]
+    return None
 
 
 def _selected_profile_source_scope(
@@ -15875,6 +15933,16 @@ class CatalogValidationTests(unittest.TestCase):
         for expected_test, requirement_ids in OPTIONAL_CAPABILITY_TEST_REQUIREMENTS.items():
             for requirement_id in requirement_ids:
                 with self.subTest(requirement_id=requirement_id):
+                    expected_content = OPTIONAL_CAPABILITY_TEST_CONTENT_REQUIREMENTS.get(expected_test)
+                    if expected_content is not None:
+                        test_body = _rust_test_body(expected_test)
+                        self.assertIsNotNone(test_body, expected_test)
+                        if test_body is not None:
+                            source_without_comments_or_literals = test_feature_traceability._strip_rust_comments_and_literals(test_body)
+                            self.assertIsNotNone(source_without_comments_or_literals, expected_test)
+                            if source_without_comments_or_literals is not None:
+                                for fragment in expected_content:
+                                    self.assertIn(fragment, source_without_comments_or_literals, expected_test)
                     requirement = requirements[requirement_id]
                     self.assertIn(expected_test, requirement["verification_refs"])
 
