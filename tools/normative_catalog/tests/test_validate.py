@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import ast
 import hashlib
 import os
 import re
@@ -25,6 +26,7 @@ from tools.normative_catalog.validate import (
     validate_source_table_contracts,
 )
 from tools.normative_catalog.audit_sources import _CandidateParser, _decode_document, audit_document
+from tools.normative_catalog.tests import test_feature_traceability
 import tools.normative_catalog.validate as catalog_validate
 
 
@@ -116,6 +118,68 @@ OPTIONAL_CAPABILITY_TEST_REQUIREMENTS = {
         "KMIPKIT-REQ-SPEC-7.18-006",
     ),
 }
+
+
+def _is_discoverable_positive_test(path: Path, test_name: str, source: str) -> bool:
+    """Recognize the Rust and Python test declarations used by catalog evidence."""
+    if path.suffix == ".rs":
+        if not re.fullmatch(r"[A-Za-z_][A-Za-z0-9_]*", test_name):
+            return False
+        declaration = re.compile(
+            rf"^\s*(?:async\s+)?fn\s+{re.escape(test_name)}\s*\(", re.MULTILINE
+        )
+        test_attribute = re.compile(
+            r"^\s*#\[(?:test|tokio::test)(?:\s*\([^]]*\))?\]\s*$"
+        )
+        lines = source.splitlines()
+        for index, line in enumerate(lines):
+            if not declaration.match(line):
+                continue
+            cursor = index - 1
+            while cursor >= 0:
+                preceding_line = lines[cursor].strip()
+                if not preceding_line or preceding_line.startswith("//"):
+                    cursor -= 1
+                    continue
+                if preceding_line.startswith("#["):
+                    if test_attribute.fullmatch(preceding_line):
+                        return True
+                    cursor -= 1
+                    continue
+                break
+        return False
+
+    if path.suffix == ".py":
+        try:
+            module = ast.parse(source)
+        except SyntaxError:
+            return False
+        class_name, separator, function_name = test_name.rpartition(".")
+        if separator:
+            if not function_name.startswith("test_"):
+                return False
+            for node in module.body:
+                if not isinstance(node, ast.ClassDef) or node.name != class_name:
+                    continue
+                is_pytest_class = class_name.startswith("Test")
+                is_unittest_class = any(
+                    isinstance(base, ast.Name) and base.id == "TestCase"
+                    or isinstance(base, ast.Attribute) and base.attr == "TestCase"
+                    for base in node.bases
+                )
+                return (is_pytest_class or is_unittest_class) and any(
+                    isinstance(method, (ast.FunctionDef, ast.AsyncFunctionDef))
+                    and method.name == function_name
+                    for method in node.body
+                )
+            return False
+        return test_name.startswith("test_") and any(
+            isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef))
+            and node.name == test_name
+            for node in module.body
+        )
+
+    return False
 
 
 def _selected_profile_source_scope(
@@ -15928,7 +15992,9 @@ class CatalogValidationTests(unittest.TestCase):
                 catalog_path = root / "specification" / "catalog" / "kmip-2.1.json"
                 targets_path = root / "specification" / "catalog" / "profile-targets.json"
                 oracle_path = root / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json"
-                test_path = root / "tests" / "positive_capability.rs"
+                first_test_reference = row["verification_refs"][0] if row["verification_refs"] else "tests/positive_capability.rs"
+                test_path_reference = first_test_reference.partition("::")[0]
+                test_path = root / test_path_reference
                 for path, value in (
                     (catalog_path, {"requirements": [row]}),
                     (targets_path, {}),
@@ -16004,6 +16070,7 @@ class CatalogValidationTests(unittest.TestCase):
                     )
                 with (
                     patch(__name__ + ".ROOT", root),
+                    patch.object(test_feature_traceability, "ROOT", root),
                     patch(__name__ + "._selected_profile_source_scope", return_value=(set(), set())),
                     patch(__name__ + "._reviewed_profile_optional_capabilities", return_value=({requirement_id}, [])),
                 ):
@@ -16031,7 +16098,7 @@ class CatalogValidationTests(unittest.TestCase):
             ("missing positive-test reference", requirement(verification_refs=[]), True),
             ("positive-test reference without separator", requirement(verification_refs=["tests/positive_capability.rs"]), True),
             ("positive-test reference without test name", requirement(verification_refs=["tests/positive_capability.rs::"]), True),
-            ("unresolvable positive-test name", requirement(verification_refs=["tests/positive_capability.py::missing_test"]), True),
+            ("unresolvable positive-test name", requirement(verification_refs=["tests/positive_capability.rs::missing_test"]), True),
             ("missing positive-test file", requirement(verification_refs=["tests/missing.rs::request_capability_is_available"]), False),
         )
         for label, row, create_test in rejected_rows:
@@ -16061,6 +16128,40 @@ class CatalogValidationTests(unittest.TestCase):
                 run_gate(
                     requirement(),
                     test_source="fn request_capability_is_available() { assert!(true); }\n",
+                )
+
+        for label, reference, source in (
+            (
+                "tokio async Rust test discovery",
+                test_reference,
+                "#[tokio::test]\nasync fn request_capability_is_available() {\n    assert!(true);\n}\n",
+            ),
+            (
+                "pytest function discovery",
+                "tests/test_positive_capability.py::test_request_capability_is_available",
+                "def test_request_capability_is_available():\n    assert True\n",
+            ),
+            (
+                "unittest method discovery",
+                "tests/test_positive_capability.py::CapabilityTests.test_request_capability_is_available",
+                "import unittest\n\nclass CapabilityTests(unittest.TestCase):\n    def test_request_capability_is_available(self):\n        self.assertTrue(True)\n",
+            ),
+        ):
+            with self.subTest(label):
+                run_gate(
+                    requirement(verification_refs=[reference]),
+                    test_source=source,
+                )
+
+        with self.subTest("ordinary Python function is not a discoverable positive test"):
+            with self.assertRaises(AssertionError):
+                run_gate(
+                    requirement(
+                        verification_refs=[
+                            "tests/test_positive_capability.py::request_capability_is_available"
+                        ]
+                    ),
+                    test_source="def request_capability_is_available():\n    assert True\n",
                 )
 
     def test_every_reviewed_client_may_or_optional_has_usable_positive_evidence(self) -> None:
@@ -16110,11 +16211,11 @@ class CatalogValidationTests(unittest.TestCase):
                 path, separator, test_name = reference.partition("::")
                 if not separator or not test_name:
                     continue
-                test_path = ROOT / path
-                if not test_path.is_file():
+                confined_test_source = test_feature_traceability._read_confined_test_source(path)
+                if confined_test_source is None:
                     continue
-                test_source = test_path.read_text(encoding="utf-8")
-                if re.search(rf"\b(?:fn|def)\s+{re.escape(test_name)}\s*\(", test_source):
+                test_path, test_source = confined_test_source
+                if _is_discoverable_positive_test(test_path, test_name, test_source):
                     usable_positive_tests.append(reference)
             scoped_client_request_evidence = (
                 requirement["status"] == "scoped_verified"
