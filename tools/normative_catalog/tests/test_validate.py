@@ -7546,10 +7546,14 @@ class CatalogValidationTests(unittest.TestCase):
             "crates/kmipkit-protocol/tests/unit/rng_seed_operation_tests.rs::request_encodes_required_table_319_data_and_redacts_secret_bytes",
             "crates/kmipkit-protocol/tests/unit/rng_seed_operation_tests.rs::request_preserves_arbitrary_seed_bytes_including_empty_and_non_utf8",
             "crates/kmipkit-client/tests/unit/rng_seed_execution_tests.rs::rng_seed_sends_secret_once_and_accepts_zero_bytes_used",
+            "crates/kmipkit-protocol/tests/unit/credential_secret_tests.rs::owned_secret_storage_calls_zeroize_before_drop",
+            "crates/kmipkit-protocol/tests/unit/operation_data_tests.rs::byte_string_data_uses_secret_bytes_and_zeroizing_ttlv_ownership",
+            "crates/kmipkit-ttlv/tests/value_zeroization.rs::value::tests::live_zeroize_clears_each_payload_variant_and_nested_structure",
         ])
         self.assertEqual(contract["status"], "mapped_to_approved_feature_contract")
         self.assertEqual(contract["evidence_disposition"]["status"], "mapped_to_feature_contract")
         self.assertIn("redact", contract["evidence_disposition"]["statement"].lower())
+        self.assertIn("zeroiz", contract["evidence_disposition"]["statement"].lower())
         self.assertFalse(
             {"candidate_requirement_id", "proposed_requirement_id", "requirement_id"}.intersection(contract),
         )
