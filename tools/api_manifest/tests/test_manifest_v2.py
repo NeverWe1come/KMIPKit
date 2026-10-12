@@ -568,6 +568,10 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
             declaration["exportName"]: declaration
             for declaration in self.checked_in_manifest["publicDeclarations"]
         }
+        declarations_by_package_and_name = {
+            (declaration["packageId"], declaration["exportName"]): declaration
+            for declaration in self.checked_in_manifest["publicDeclarations"]
+        }
         macro_exports = [
             *(f"KMIPKIT_TTLV_ITEM_TYPE_{name}" for name in (
                 "STRUCTURE",
@@ -659,6 +663,17 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
                     declaration["languageMappings"]["python"]["name"],
                     f"kmipkit.ttlv.ItemType.{variant}",
                 )
+                for mapping in declaration["languageMappings"].values():
+                    target = declarations_by_package_and_name[
+                        (mapping["packageId"], mapping["name"])
+                    ]
+                    with self.subTest(target=target["declarationId"]):
+                        self.assertEqual(target["declarationState"], "declared")
+                        self.assertEqual(target["capabilityId"], "generic_ttlv_model")
+                        self.assertEqual(
+                            target["approvalSource"]["path"],
+                            "specs/004-generic-ttlv-model/spec.md",
+                        )
         for export_name in field_exports:
             with self.subTest(export_name=export_name):
                 declaration = declarations[export_name]
