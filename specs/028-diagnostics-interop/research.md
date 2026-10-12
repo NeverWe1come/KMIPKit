@@ -14,7 +14,7 @@ The §6.1.29 error prose mistakenly says Query Operation. Accepted KMIPKIT-DEC-0
 
 ## Decision 4: Validate forwards one chain without local certificate policy
 
-Model repeated Certificate and Unique Identifier inputs, including mixed use, as the supplied chain material. Preserve repeated-field order. Support optional Validity Date and leave it absent when omitted; server behavior assumes current date/time. Expose the server Validity Indicator as an open value. Do not validate the chain, choose trust anchors, or predict server policy.
+Model repeated Certificate and Unique Identifier inputs, including mixed use, as the supplied chain material. Preserve repeated-field order. Support optional Validity Date and preserve its absence when omitted. Section 6.1.57 states passively that the current date and time SHALL be assumed if the date is omitted, but it does not identify an actor; the source actor remains unspecified. The `client_1_0` scope denotes KMIPKit feature/API serialization applicability only. Client verification covers preserving the omission in request serialization only; date evaluation is unverified. Expose the server Validity Indicator as an open value. Do not validate the chain, choose trust anchors, or predict server policy.
 
 ## Decision 5: Gate only cross-language binding work on KMIPKIT-0043
 

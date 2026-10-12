@@ -144,7 +144,7 @@ fn req_005_repeated_identifiers_preserve_order_and_open_values() {
 }
 
 #[test]
-fn req_006_omitted_date_remains_absent_for_server_default() {
+fn req_006_omitted_date_remains_absent_in_request_serialization() {
     let request = ValidateRequest::new();
     assert_eq!(request.validity_date(), None);
     assert_eq!(request.chain_len(), 0);

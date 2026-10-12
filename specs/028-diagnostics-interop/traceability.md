@@ -62,7 +62,7 @@ operations in the catalog.
 | KMIPKIT-028-T252-ERROR | Table 252 per approved DISC-017; KMIPKIT-ELEM-OP-C2S-LOG | log_operation_tests::table_252_failure_pending_and_unknown_results_are_preserved; log_execution_tests::failure_reason_message_and_diagnostics_are_lossless_and_redacted |
 | KMIPKIT-028-T340-CERTIFICATE | Table 340 Certificate; KMIPKIT-ELEM-TAG-420013 | validate_operation_tests::req_004_repeated_certificate_values_preserve_order; validate_operation_tests::table_2_certificate_structure_rejects_missing_wrong_and_duplicate_fields |
 | KMIPKIT-028-T340-IDENTIFIER | Table 340 Unique Identifier; KMIPKIT-ELEM-TAG-420094 | validate_operation_tests::req_005_repeated_identifiers_preserve_order_and_open_values |
-| KMIPKIT-028-T340-DATE | Table 340 Validity Date; KMIPKIT-ELEM-TAG-42009A | validate_operation_tests::req_002_002_optional_validity_date_preserves_exact_value; validate_operation_tests::req_006_omitted_date_remains_absent_for_server_default |
+| KMIPKIT-028-T340-DATE | Table 340 Validity Date; KMIPKIT-ELEM-TAG-42009A | validate_operation_tests::req_002_002_optional_validity_date_preserves_exact_value; validate_operation_tests::req_006_omitted_date_remains_absent_in_request_serialization |
 | KMIPKIT-028-T341-INDICATOR | Table 341 Validity Indicator; KMIPKIT-ELEM-TAG-42009B | validate_operation_tests::table_341_requires_one_open_indicator_and_retains_unknown_fields; validate_execution_tests::validate_sends_chain_and_date_and_returns_open_indicator |
 | KMIPKIT-028-T342-ERROR | Table 342 common result; KMIPKIT-ELEM-OP-C2S-VALIDATE | validate_operation_tests::table_342_failure_and_pending_preserve_results_without_indicator; validate_execution_tests::failure_reason_message_and_diagnostics_are_lossless_and_redacted |
 
@@ -83,14 +83,15 @@ Raw message parsing and resource limits remain the common message/TTLV contract.
 | KMIPKIT-REQ-SPEC-6.1.57-002-002 | ValidateRequest::with_validity_date | validate_operation_tests::req_002_002_optional_validity_date_preserves_exact_value |
 | KMIPKIT-REQ-SPEC-6.1.57-004 | Ordered Certificate entries in one chain | validate_operation_tests::req_004_repeated_certificate_values_preserve_order |
 | KMIPKIT-REQ-SPEC-6.1.57-005 | Ordered typed identifier entries in one chain | validate_operation_tests::req_005_repeated_identifiers_preserve_order_and_open_values |
-| KMIPKIT-REQ-SPEC-6.1.57-006 | Source actor unspecified; client serialization preserves absence only | validate_operation_tests::req_006_omitted_date_remains_absent_for_server_default |
+| KMIPKIT-REQ-SPEC-6.1.57-006 | Source actor unspecified; client serialization preserves absence only | validate_operation_tests::req_006_omitted_date_remains_absent_in_request_serialization |
 
 The catalog records all six IDs as `scoped_verified` for feature traceability:
 five have `role=client` and track client obligations or capabilities; 006 has
 `role=unspecified` and tracks request-serialization evidence only. Its
 `client_1_0` scope denotes feature/API serialization applicability, not source
-actor attribution. The passive SHALL's actor and date evaluation remain
-unverified. No test claims server conformance or current-date evaluation.
+actor attribution. The passive SHALL's actor is unspecified, and date
+evaluation is unverified. No test claims server conformance or current-date
+evaluation.
 
 ## Common results, security and remaining gates
 

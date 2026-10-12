@@ -16,7 +16,7 @@ EXPECTED = {
     "KMIPKIT-REQ-SPEC-6.1.57-002-002": "req_002_002_optional_validity_date_preserves_exact_value",
     "KMIPKIT-REQ-SPEC-6.1.57-004": "req_004_repeated_certificate_values_preserve_order",
     "KMIPKIT-REQ-SPEC-6.1.57-005": "req_005_repeated_identifiers_preserve_order_and_open_values",
-    "KMIPKIT-REQ-SPEC-6.1.57-006": "req_006_omitted_date_remains_absent_for_server_default",
+    "KMIPKIT-REQ-SPEC-6.1.57-006": "req_006_omitted_date_remains_absent_in_request_serialization",
 }
 UNSPECIFIED_ROLE_REQUIREMENTS = {"KMIPKIT-REQ-SPEC-6.1.57-006"}
 PROFILELESS_FEATURE_REQUIREMENTS = {"KMIPKIT-REQ-SPEC-6.1.57-006"}
@@ -75,10 +75,10 @@ class DiagnosticsInteropTraceabilityTests(unittest.TestCase):
     def test_omitted_validity_date_evidence_stays_actor_neutral(self) -> None:
         research = (ROOT / "specs/028-diagnostics-interop/research.md").read_text(encoding="utf-8")
         self.assertIn("source actor remains unspecified", research)
-        self.assertIn("client verification covers preserving the omission in request serialization only", research)
+        self.assertIn("Client verification covers preserving the omission in request serialization only", research)
         self.assertIn("date evaluation is unverified", research)
-        self.assertIn("serialization applicability only", self.trace)
-        self.assertIn("date evaluation is unverified", self.trace)
+        self.assertIn("denotes feature/API serialization applicability", self.trace)
+        self.assertIn("evaluation is unverified", self.trace)
         self.assertIn("req_006_omitted_date_remains_absent_in_request_serialization", self.trace)
         self.assertNotIn("for_server_default", self.trace)
 
