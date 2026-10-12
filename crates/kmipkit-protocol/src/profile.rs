@@ -681,6 +681,19 @@ impl ProfileValidationError {
         }
     }
 
+    /// Constructs a stable validation error for cross-crate client tests.
+    #[cfg(feature = "test-support")]
+    #[doc(hidden)]
+    #[must_use]
+    pub fn for_test(
+        code: ProfileValidationErrorCode,
+        profile_id: &'static str,
+        requirement_id: &'static str,
+        source_clause_id: &'static str,
+    ) -> Self {
+        Self::for_requirement(code, profile_id, requirement_id, Some(source_clause_id))
+    }
+
     fn for_profile(code: ProfileValidationErrorCode, profile_id: &str) -> Self {
         Self {
             code,
