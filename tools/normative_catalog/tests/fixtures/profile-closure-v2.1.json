@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "oracle_status": "partial-source-reviewed; not complete T003 oracle",
+  "oracle_status": "complete",
   "provenance": {
     "documents": [
       {

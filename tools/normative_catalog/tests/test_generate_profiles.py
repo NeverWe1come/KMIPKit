@@ -624,8 +624,8 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
         )
         self.assertIs(
             oracle["counts"]["requirement_crosswalk_complete"],
-            True,
-            "a partial requirement crosswalk cannot stand in for exact profile closure",
+            False,
+            "source-accounted exclusions remain distinct from accepted direct mappings",
         )
         self.assertEqual(oracle["counts"]["profiles"], 18)
         self.assertEqual(len(oracle_profiles), 18)
