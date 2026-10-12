@@ -217,6 +217,10 @@ class RustExportAuditTests(unittest.TestCase):
             generic_impl["generics"]["where_predicates"][0]["bound_predicate"]["bounds"][0]["trait_bound"]["trait"]["path"],
             "Copy",
         )
+        copy_trait_id = str(
+            generic_impl["generics"]["where_predicates"][0]["bound_predicate"]["bounds"][0]["trait_bound"]["trait"]["id"]
+        )
+        self.assertEqual(doc["paths"][copy_trait_id]["path"], ["core", "marker", "Copy"])
 
     def test_rustdoc_v57_filters_generic_impls_for_concrete_type_aliases(self):
         names = self.names(self.inventory(self.rustdoc_v57_fixture()))
@@ -244,6 +248,10 @@ class RustExportAuditTests(unittest.TestCase):
         self.assertTrue(synthetic_send["is_synthetic"])
         self.assertEqual(synthetic_send["items"], [])
         self.assertEqual(blanket_borrow["blanket_impl"], {"generic": "T"})
+        sized_trait_id = str(
+            blanket_borrow["generics"]["where_predicates"][0]["bound_predicate"]["bounds"][0]["trait_bound"]["trait"]["id"]
+        )
+        self.assertEqual(doc["paths"][sized_trait_id]["path"], ["core", "marker", "Sized"])
         names = self.names(self.inventory(documents))
         self.assertIn(
             "<rustdoc_v57_fixture::Fixed<T> as core::borrow::Borrow<rustdoc_v57_fixture::Fixed<T>>>::borrow",

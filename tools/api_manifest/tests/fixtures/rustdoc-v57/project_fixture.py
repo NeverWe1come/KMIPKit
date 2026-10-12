@@ -88,15 +88,26 @@ def project(raw_path: Path, output_path: Path) -> None:
                     if field_id is not None:
                         include(field_id)
 
-    external_paths = {}
+    referenced_ids: set[str] = set()
+
+    def collect_references(value: Any) -> None:
+        if isinstance(value, dict):
+            for key, child in value.items():
+                if key == "id" and isinstance(child, (int, str)):
+                    referenced_ids.add(str(child))
+                else:
+                    collect_references(child)
+        elif isinstance(value, list):
+            for child in value:
+                collect_references(child)
+
     for item in selected.values():
-        if "impl" not in item.get("inner", {}):
-            continue
-        trait = item["inner"]["impl"].get("trait")
-        if trait is not None:
-            trait_id = str(trait.get("id", ""))
-            if trait_id not in selected and trait_id in raw.get("paths", {}):
-                external_paths[trait_id] = raw["paths"][trait_id]
+        collect_references(item)
+    external_paths = {
+        identifier: raw["paths"][identifier]
+        for identifier in sorted(referenced_ids)
+        if identifier not in selected and identifier in raw.get("paths", {})
+    }
 
     projected = {
         "root": raw["root"],

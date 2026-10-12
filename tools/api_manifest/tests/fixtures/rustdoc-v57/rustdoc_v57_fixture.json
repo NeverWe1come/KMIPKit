@@ -2695,6 +2695,33 @@
     }
   },
   "paths": {
+    "12": {
+      "crate_id": 2,
+      "kind": "trait",
+      "path": [
+        "core",
+        "marker",
+        "Copy"
+      ]
+    },
+    "120": {
+      "crate_id": 2,
+      "kind": "struct",
+      "path": [
+        "core",
+        "fmt",
+        "Formatter"
+      ]
+    },
+    "121": {
+      "crate_id": 2,
+      "kind": "type_alias",
+      "path": [
+        "core",
+        "fmt",
+        "Result"
+      ]
+    },
     "123": {
       "crate_id": 2,
       "kind": "trait",
@@ -2711,6 +2738,15 @@
         "core",
         "marker",
         "Send"
+      ]
+    },
+    "47": {
+      "crate_id": 2,
+      "kind": "trait",
+      "path": [
+        "core",
+        "marker",
+        "Sized"
       ]
     },
     "48": {
