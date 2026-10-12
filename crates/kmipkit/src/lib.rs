@@ -65,7 +65,10 @@ pub fn capability_is_available(capability_id: &str) -> Result<bool, RuntimeMetad
 
     Ok(matches!(
         capability_id,
-        "ffi_runtime_metadata" | "generic_ttlv_model" | "ttlv_wire_codec"
+        "ffi_runtime_metadata"
+            | "generic_ttlv_model"
+            | "ttlv_wire_codec"
+            | "vendor_extension_registry"
     ))
 }
 

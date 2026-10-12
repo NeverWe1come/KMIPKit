@@ -47,10 +47,7 @@ fn capability_query_only_reports_c_mapped_nonblocked_capabilities() {
             "Rust facade omitted ready manifest capability {capability}"
         );
     }
-    for unavailable in [
-        "public_binding_surface",
-        "rust_transport_exchange",
-    ] {
+    for unavailable in ["public_binding_surface", "rust_transport_exchange"] {
         assert!(
             matches!(kmipkit::capability_is_available(unavailable), Ok(false)),
             "Rust facade advertised a capability outside its mapped surface: {unavailable}"
