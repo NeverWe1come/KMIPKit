@@ -125,6 +125,33 @@ class SharedRustInventoryTests(unittest.TestCase):
             self.assertNotIn("languageMappings", source)
             self.assertNotIn("approvalSource", source)
 
+    def test_runtime_metadata_namespaces_keep_their_candidate_in_blocked_report(self) -> None:
+        inventory = AUDIT.build_inventory(self.manifest, self.rust_report, REPO_ROOT)
+        blocked = {
+            row["declarationId"]: row
+            for row in inventory["blockedUnreconciledDeclarations"]
+        }
+        expected = {
+            "org.kmipkit.RuntimeMetadata:java": "org.kmipkit.RuntimeMetadata",
+            "kmipkit.metadata:python": "kmipkit.metadata",
+        }
+
+        for declaration_id, export_name in expected.items():
+            with self.subTest(declaration=declaration_id):
+                row = blocked[declaration_id]
+                self.assertEqual(row["exportName"], export_name)
+                self.assertEqual(row["candidateSpecId"], "KMIPKIT-0043")
+                self.assertIn("crate root is not an exported declaration", row["blockedReason"])
+
+                source = next(
+                    declaration
+                    for declaration in self.manifest["publicDeclarations"]
+                    if declaration["declarationId"] == declaration_id
+                )
+                self.assertEqual(source["declarationState"], "blocked")
+                self.assertNotIn("languageMappings", source)
+                self.assertNotIn("approvalSource", source)
+
     def test_ready_declaration_with_an_unobserved_rust_mapping_is_rejected(self) -> None:
         altered = json.loads(json.dumps(self.manifest))
         declaration = next(
