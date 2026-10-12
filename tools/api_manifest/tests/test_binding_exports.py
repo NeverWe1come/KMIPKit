@@ -20,6 +20,32 @@ SPEC.loader.exec_module(AUDIT)
 
 
 class BindingExportAuditTests(unittest.TestCase):
+    def test_c_only_audit_reuses_the_existing_library_and_skips_other_bindings(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            manifest_path = root / "specification" / "api" / "public-api.json"
+            manifest_path.parent.mkdir(parents=True)
+            manifest_path.write_text(
+                '{"publicDeclarations":[{"packageId":"c-kmipkit",'
+                '"kind":"c-symbol","exportName":"kmipkit_probe"}],'
+                '"approvedExclusions":[]}',
+                encoding="utf-8",
+            )
+            header_path = root / "bindings" / "c" / "include" / "kmipkit.h"
+            header_path.parent.mkdir(parents=True)
+            header_path.write_text("int32_t kmipkit_probe(void);\n", encoding="utf-8")
+            binary = root / "kmipkit_ffi.dll"
+            binary.write_bytes(b"synthetic native library")
+
+            with patch.object(AUDIT, "read_native_exports", return_value=["kmipkit_probe"]) as read_exports, patch.object(
+                AUDIT, "build_c_binary_exports", side_effect=AssertionError("must reuse the existing binary")
+            ):
+                result = AUDIT.run(root, c_only=True, c_binary=binary)
+
+        read_exports.assert_called_once_with(binary)
+        self.assertEqual(["c-kmipkit"], [item["packageId"] for item in result["packages"]])
+        self.assertTrue(result["packages"][0]["matchesManifest"])
+
     def test_published_c_abi_exports_only_kmipkit_symbols(self):
         exports = AUDIT.build_c_binary_exports(Path(__file__).resolve().parents[3])
         non_kmipkit_exports = [name for name in exports if not name.startswith("kmipkit_")]
