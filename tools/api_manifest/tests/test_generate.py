@@ -219,6 +219,15 @@ class ManifestGeneratorCliTests(unittest.TestCase):
         self.assertIn("kmipkit_version_get", c_header)
         self.assertNotIn("version_get", registry_python)
 
+    def test_c_header_renders_manifest_documentation_for_error_snapshot_outputs(self) -> None:
+        manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
+        outputs = generate.render_outputs(manifest)
+        c_header = outputs["bindings/c/include/kmipkit.h"].decode("utf-8")
+
+        self.assertIn("out_category receives 0 none, 1 validation, 2 protocol", c_header)
+        self.assertIn("out_cause receives 0 none, 1 invalid input, or 10 other", c_header)
+        self.assertIn("out_delivery is 0 when no KMIP request delivery information", c_header)
+
     def test_generated_rust_metadata_lists_only_unblocked_c_mapped_capabilities(self) -> None:
         manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
         outputs = generate.render_outputs(manifest)
