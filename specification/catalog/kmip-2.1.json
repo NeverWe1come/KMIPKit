@@ -92440,8 +92440,8 @@
       ],
       "negative_verification_required": false,
       "decision_id": null,
-      "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. Local protocol and fake-transport tests verify that a caller-supplied Maximum Items value is encoded and forwarded; they do not assert how many identifiers a server returns. No official case-level pass is claimed."
+      "status": "verified",
+      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. The referenced local protocol and fake-transport tests verify that a caller-supplied Maximum Items value is encoded and forwarded; they do not assert how many identifiers a server returns. No official case-level pass is claimed."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.28-002",
@@ -92477,8 +92477,8 @@
       ],
       "negative_verification_required": false,
       "decision_id": null,
-      "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. Local protocol and client tests verify that caller-supplied Offset Items, including explicit zero, remains present in the request; they do not assert server-side zero-equivalence behavior. No official case-level pass is claimed."
+      "status": "verified",
+      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. The referenced local protocol and client tests verify that caller-supplied Offset Items, including explicit zero, remains present in the request; they do not assert server-side zero-equivalence behavior. No official case-level pass is claimed."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.28-004-001",
@@ -92832,8 +92832,8 @@
       ],
       "negative_verification_required": false,
       "decision_id": null,
-      "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. Local protocol and client tests verify that the required empty Attributes Structure is encoded and sent; they do not assert the server returns every matching object. No official case-level pass is claimed."
+      "status": "verified",
+      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. The referenced local protocol and client tests verify that the required empty Attributes Structure is encoded and sent; they do not assert the server returns every matching object. No official case-level pass is claimed."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.3-001",
