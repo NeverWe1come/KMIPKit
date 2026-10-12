@@ -9,6 +9,11 @@ implementation (rustdoc marks it `automatically_derived` and
 explicit `where T: Copy` predicate, concrete generic aliases, a private trait
 on a public type, and enum payloads. `Fixed<u16>` also has an inherent method
 used to verify that aliases filter implementations by concrete type argument.
+An empty implementation of `DefaultMembers` verifies that default associated
+constants and types remain visible. `GenericDerivedAlias` checks that a concrete
+alias does not inherit an implementation whose `Copy` predicate it cannot meet.
+Tuple-specialized inherent implementations test recursive generic argument
+matching, and a public trait nested in a private module tests export reachability.
 The projection retains one real synthetic `Send` implementation and one
 applicable blanket `Borrow<T>` implementation. The associated type default uses Rust's
 `associated_type_defaults` feature only in this test fixture.

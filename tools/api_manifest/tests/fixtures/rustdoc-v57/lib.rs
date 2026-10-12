@@ -12,6 +12,17 @@ pub trait Contract<T> {
     }
 }
 
+pub trait DefaultMembers {
+    type Output = u8;
+    const LIMIT: usize = 13;
+}
+
+mod private_module {
+    pub trait HiddenContract {
+        fn hidden_method(&self) {}
+    }
+}
+
 pub trait Audit {
     fn required(&self) -> u8;
 }
@@ -25,6 +36,10 @@ trait PrivateContract {
 }
 
 pub struct Service;
+
+impl DefaultMembers for Service {}
+
+impl private_module::HiddenContract for Service {}
 
 pub struct Generic<T> {
     pub value: T,
@@ -65,6 +80,18 @@ where
     }
 }
 
+impl Generic<(u8,)> {
+    pub fn only_tuple_u8(&self) -> u8 {
+        self.value.0
+    }
+}
+
+impl Generic<(u16,)> {
+    pub fn only_tuple_u16(&self) -> u16 {
+        self.value.0
+    }
+}
+
 impl Contract<u8> for Fixed<u8> {
     fn required(&self) -> u8 {
         self.value
@@ -102,6 +129,9 @@ pub type ServiceAlias = Service;
 pub type ServiceAliasChain = ServiceAlias;
 pub type StateAlias = State;
 pub type GenericAlias<T> = Generic<T>;
+pub type GenericDerivedAlias = Generic<Derived>;
+pub type GenericU8TupleAlias = Generic<(u8,)>;
+pub type GenericU16TupleAlias = Generic<(u16,)>;
 pub type FixedU8Alias = Fixed<u8>;
 pub type FixedU16Alias = Fixed<u16>;
 

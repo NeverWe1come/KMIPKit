@@ -14,11 +14,18 @@ def project(raw_path: Path, output_path: Path) -> None:
     root_id = str(raw["root"])
     root = raw_index[root_id]
     root_items = root["inner"]["module"]["items"]
-    source_trait_names = {
-        raw_index[str(item_id)]["name"]
-        for item_id in root_items
-        if "trait" in raw_index[str(item_id)]["inner"]
-    }
+    def source_traits(item_ids: list[Any]) -> set[str]:
+        names: set[str] = set()
+        for item_id in item_ids:
+            item = raw_index[str(item_id)]
+            inner = item["inner"]
+            if "trait" in inner:
+                names.add(item["name"])
+            elif "module" in inner:
+                names.update(source_traits(inner["module"]["items"]))
+        return names
+
+    source_trait_names = source_traits(root_items)
     selected_impls: dict[str, list[Any]] = {}
     for item_id in root_items:
         item = raw_index[str(item_id)]
@@ -54,7 +61,13 @@ def project(raw_path: Path, output_path: Path) -> None:
         item = include(item_id)
         kind = next(iter(item["inner"]))
         inner = item["inner"][kind]
-        if kind == "trait":
+        if kind == "module":
+            for nested_id in inner["items"]:
+                nested = include(nested_id)
+                if "trait" in nested["inner"]:
+                    for member_id in nested["inner"]["trait"]["items"]:
+                        include(member_id)
+        elif kind == "trait":
             for member_id in inner["items"]:
                 include(member_id)
         elif kind in {"struct", "union"}:
