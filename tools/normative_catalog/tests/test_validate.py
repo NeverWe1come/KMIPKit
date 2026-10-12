@@ -8565,6 +8565,7 @@ class CatalogValidationTests(unittest.TestCase):
 
         operation_id = "KMIPKIT-ELEM-OP-C2S-RE-CERTIFY"
         implementation_ref = "crates/kmipkit-protocol/src/recertify.rs::RecertifyRequest::into_ttlv_payload"
+        verification_refs = [protocol_test_ref, client_test_ref]
         for gap_id, (row_label, line_range) in expected.items():
             contract = contracts[gap_id]
             with self.subTest(source_table_contract=gap_id):
@@ -8589,7 +8590,7 @@ class CatalogValidationTests(unittest.TestCase):
                 self.assertEqual(contract["operation_element_id"], operation_id)
                 self.assertEqual(contract["functional_requirement_ids"], ["FR-001"])
                 self.assertEqual(contract["implementation_refs"], [implementation_ref])
-                self.assertEqual(contract["verification_refs"], [protocol_test_ref, client_test_ref])
+                self.assertEqual(contract["verification_refs"], verification_refs)
                 self.assertTrue(contract["condition"])
                 self.assertEqual(contract["status"], "mapped_to_approved_feature_contract")
                 self.assertEqual(contract["evidence_disposition"]["status"], "mapped_to_feature_contract")
