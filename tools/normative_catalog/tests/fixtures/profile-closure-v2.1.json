@@ -76,9 +76,9 @@
     "requirement_crosswalk_records": 466,
     "requirement_crosswalk_complete": false,
     "source_requirement_review_records": 889,
-    "source_only_requirement_gaps": 116,
-    "source_only_requirement_gap_proposals": 63,
-    "source_table_contracts": 54
+    "source_only_requirement_gaps": 115,
+    "source_only_requirement_gap_proposals": 62,
+    "source_table_contracts": 55
   },
   "source_clause_crosswalk": [
     {
@@ -73914,7 +73914,7 @@
           "row_label": "Data Length",
           "required": "Yes",
           "actor": "client",
-          "disposition": "required_request_field",
+          "disposition": "required_request_table_contract",
           "html_line_range": [
             35321,
             35339
@@ -73922,7 +73922,7 @@
           "source_excerpt": "Data Length Yes The amount of random number generator output to be returned (in bytes).",
           "source_gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.49-DATA-LENGTH-REQUIRED",
           "source_requirement_ids": [],
-          "source_note": "The only Table 316 body field is required. No existing operation-specific stable client requirement ID is linked to this source row."
+          "source_note": "Required Table 316 client request field mapped to the approved RNG Retrieve feature contract; the contract links existing integer-encoding and fake-transport evidence."
         }
       ]
     },
@@ -84165,40 +84165,6 @@
       "review_note": "A source-only stable-label proposal remains outside the catalog until a separately approved normative catalog change assigns it."
     },
     {
-      "gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.49-DATA-LENGTH-REQUIRED",
-      "source_id": "KMIPKIT-SRC-spec",
-      "source_path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
-      "source_section": "6.1.49",
-      "source_clause_id": null,
-      "source_locator": {
-        "kind": "table_body_row",
-        "section": "6.1.49",
-        "row_label": "Data Length",
-        "table": "request_payload",
-        "html_line_range": [
-          35321,
-          35339
-        ]
-      },
-      "source_locator_description": "§6.1.49 Table 316 Required=Yes body row for Data Length (HTML lines 35321-35339)",
-      "html_line_range": [
-        35321,
-        35339
-      ],
-      "source_excerpt": "Data Length Yes The amount of random number generator output to be returned (in bytes).",
-      "source_keywords": [],
-      "source_force": "required_table_body_value",
-      "audited_statement": "Table 316 requires the client request to include Data Length, the requested quantity of RNG output in bytes.",
-      "actor": "client",
-      "direction": "include the requested RNG output quantity in the Data Length request field",
-      "condition": "A RNG Retrieve request is sent.",
-      "scope_disposition": "client_1_0",
-      "candidate_requirement_id": null,
-      "proposed_requirement_id": "KMIPKIT-REQ-SPEC-6.1.49-001",
-      "status": "stable_label_proposed_not_in_catalog",
-      "review_note": "The catalog source-clause candidates for §6.1.49 are table-header hits and have no stable requirement label for the Data Length body row. Preserve this required client field as a source-only gap; do not reuse a header candidate or invent an existing crosswalk."
-    },
-    {
       "gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.50-DATA-REQUIRED",
       "source_id": "KMIPKIT-SRC-spec",
       "source_path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
@@ -87051,6 +87017,58 @@
       "evidence_disposition": {
         "status": "mapped_to_feature_contract",
         "statement": "OASIS Table 328 defines omission as a request to remove all Object Defaults. The linked project tests verify the wire distinction between an omitted Defaults Information field and an explicitly empty Structure; they do not exercise server-side removal."
+      }
+    },
+    {
+      "gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.49-DATA-LENGTH-REQUIRED",
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+      "source_section": "6.1.49",
+      "source_clause_id": null,
+      "source_locator": {
+        "kind": "table_body_row",
+        "section": "6.1.49",
+        "row_label": "Data Length",
+        "table": "request_payload",
+        "html_line_range": [
+          35321,
+          35339
+        ]
+      },
+      "source_locator_description": "Specification v2.1 §6.1.49 Table 316 required Data Length request row (HTML lines 35321–35339).",
+      "html_line_range": [
+        35321,
+        35339
+      ],
+      "source_excerpt": "Data Length Yes The amount of random number generator output to be returned (in bytes).",
+      "source_keywords": [],
+      "source_force": "required_table_body_value",
+      "audited_statement": "Table 316 requires the client RNG Retrieve request to include Data Length, the requested output quantity in bytes.",
+      "actor": "client",
+      "direction": "include the requested RNG output quantity in the Data Length request field",
+      "condition": "A RNG Retrieve request is sent.",
+      "scope_disposition": "client_1_0",
+      "status": "mapped_to_approved_feature_contract",
+      "review_note": "The approved client feature sends the caller-selected Integer once. The evidence does not infer an additional numeric range or claim the server returns that quantity.",
+      "contract_kind": "operation_request_table_field",
+      "table_number": 316,
+      "requiredness": "Yes",
+      "operation_element_id": "KMIPKIT-ELEM-OP-C2S-RNG-RETRIEVE",
+      "functional_requirement_ids": [
+        "FR-001",
+        "FR-008"
+      ],
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/rng_retrieve.rs::RngRetrieveRequest::to_ttlv_payload"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/rng_retrieve_operation_tests.rs::request_encodes_required_table_316_data_length_as_integer",
+        "crates/kmipkit-protocol/tests/unit/rng_retrieve_operation_tests.rs::request_preserves_all_caller_supplied_integer_values",
+        "crates/kmipkit-client/tests/unit/rng_retrieve_execution_tests.rs::rng_retrieve_sends_required_length_once_and_returns_redacted_secret_output"
+      ],
+      "evidence_disposition": {
+        "status": "mapped_to_feature_contract",
+        "statement": "The linked client evidence proves that caller-supplied Data Length is encoded as an Integer and sent once; it makes no claim about server result quantity or RNG behavior."
       }
     }
   ]
