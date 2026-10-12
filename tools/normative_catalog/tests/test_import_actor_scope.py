@@ -48,7 +48,7 @@ class ImportActorScopeTests(unittest.TestCase):
         self.assertIsNone(requirement["feature_spec"])
         self.assertEqual(requirement["implementation_refs"], [])
         self.assertEqual(requirement["verification_refs"], [])
-        self.assertEqual(clause["role"], "unspecified")
+        self.assertEqual(clause["role"], "unclear")
         self.assertEqual(clause["direction"], "unclear")
         self.assertEqual(clause["scope_state"], "unclear")
 

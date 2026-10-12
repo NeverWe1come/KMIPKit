@@ -351,24 +351,18 @@ Stable IDs and summaries below come from the checked-in normative catalog. The i
 | KMIPKIT-REQ-SPEC-6.1.43-010-001 | §6.1.43 | MAY | Cryptographic Length may be omitted only when encoded in Key Block; it does not apply to Secret Data. |
 | KMIPKIT-REQ-SPEC-6.1.43-010-002 | §6.1.43 | SHALL | If Cryptographic Length is present, also include Cryptographic Algorithm. |
 | KMIPKIT-REQ-SPEC-6.1.43-011 | §6.1.43 | MAY | Digital Signature Algorithm may be omitted only when encoded in the Certificate object. |
-| KMIPKIT-REQ-SPEC-6.1.44-001 | §6.1.44 | SHOULD | For key-compromise or CA-compromise revocation, the client should supply Compromise Occurrence Date. |
 | KMIPKIT-REQ-SPEC-6.1.44-003-001 | §6.1.44 | SHOULD | Specify Compromise Occurrence Date for key-compromise or CA-compromise reasons. |
 | KMIPKIT-REQ-SPEC-6.1.44-003-002 | §6.1.44 | SHALL NOT | Do not specify Compromise Occurrence Date for other revocation reasons. |
 | KMIPKIT-REQ-SPEC-6.1.45-001 | §6.1.45 | SHALL | A Re-certify request must renew only one certificate. |
 | KMIPKIT-REQ-SPEC-6.1.45-002-001 | §6.1.45 | MAY | A client may omit Certificate Request and identify the public key by Unique Identifier. |
-| KMIPKIT-REQ-SPEC-6.1.45-002-002 | §6.1.45 | SHALL | If request fields and Certificate Type in Attributes are omitted, use the existing certificate's type. |
 | KMIPKIT-REQ-SPEC-6.1.45-004 | §6.1.45 | SHOULD | A client should perform Re-certify no more than once on a given existing certificate. |
 | KMIPKIT-REQ-SPEC-6.1.45-006-001 | §6.1.45 | MAY | A client may set Offset to determine the date difference for the new certificate. |
-| KMIPKIT-REQ-SPEC-6.1.45-006-002 | §6.1.45 | SHALL | If Offset is omitted, retain the existing certificate's Activation Date and Deactivation Date. |
 | KMIPKIT-REQ-SPEC-6.1.45-008 | §6.1.45 | REQUIRED | Certificate Request Type is required when Certificate Request is present. |
 | KMIPKIT-REQ-SPEC-6.1.46-001 | §6.1.46 | SHOULD | A client should perform Re-key no more than once on a given key. |
 | KMIPKIT-REQ-SPEC-6.1.46-004-001 | §6.1.46 | MAY | A client may set Offset to determine the date difference for the replacement key. |
-| KMIPKIT-REQ-SPEC-6.1.46-004-002 | §6.1.46 | SHALL | If Offset is omitted, lifecycle dates are copied from the existing key. |
 | KMIPKIT-REQ-SPEC-6.1.47-001 | §6.1.47 | SHOULD | A client should perform Re-key Key Pair no more than once on a given key pair. |
 | KMIPKIT-REQ-SPEC-6.1.47-004-001 | §6.1.47 | MAY | A client may set Offset to determine the date difference for the replacement key pair. |
-| KMIPKIT-REQ-SPEC-6.1.47-004-002 | §6.1.47 | SHALL | If Offset is omitted, lifecycle dates are copied from the existing key pair. |
 | KMIPKIT-REQ-SPEC-6.1.48-001 | §6.1.48 | SHALL | A client requesting Re-Provision must provide a certificate signing request, a certificate, or no parameters for server-created credentials. |
-| KMIPKIT-REQ-SPEC-6.1.48-004 | §6.1.48 | MAY | A client may omit all parameters for server-created credentials, then retrieve the private key with Get. |
 | KMIPKIT-REQ-SPEC-6.1.48-006 | §6.1.48 | SHALL | A client that needs new credentials must call Re-Provision. |
 | KMIPKIT-REQ-SPEC-6.1.6-001 | §6.1.6 | SHALL | A Certify request must request no more than one certificate. |
 | KMIPKIT-REQ-SPEC-6.1.6-002-001 | §6.1.6 | MAY | A client may omit the Certificate Request object. |

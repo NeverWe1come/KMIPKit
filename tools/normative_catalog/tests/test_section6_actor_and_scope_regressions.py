@@ -85,6 +85,12 @@ class SectionSixActorAndScopeRegressionTests(unittest.TestCase):
             for row in self.fixture["requirement_crosswalk"]
             if row["source_id"] == "KMIPKIT-SRC-spec"
         }
+        self.client_profile_ids = {
+            requirement_id
+            for profile in self.catalog["profiles"]
+            if profile["role"] == "client"
+            for requirement_id in profile["requirement_ids"]
+        }
 
     def test_server_side_candidates_are_reviewed_but_never_client_mapped(self) -> None:
         for requirement_id, clause_id in FALSE_CLIENT_CANDIDATES.items():
@@ -97,6 +103,7 @@ class SectionSixActorAndScopeRegressionTests(unittest.TestCase):
                 }
 
                 self.assertNotIn(requirement_id, self.crosswalk_ids)
+                self.assertNotIn(requirement_id, self.client_profile_ids)
                 self.assertNotIn(requirement_id, review["expected_client_requirement_ids"])
                 self.assertNotEqual(requirement["role"], "client")
                 self.assertNotEqual(requirement["scope_state"], "client_1_0")
@@ -112,6 +119,7 @@ class SectionSixActorAndScopeRegressionTests(unittest.TestCase):
             for atom in import_review["source_obligations"]
         }
         self.assertNotIn(import_id, self.crosswalk_ids)
+        self.assertNotIn(import_id, self.client_profile_ids)
         self.assertEqual(import_requirement["role"], "unspecified")
         self.assertEqual(import_requirement["direction"], "unclear")
         self.assertEqual(import_requirement["scope_state"], "unclear")
@@ -132,6 +140,7 @@ class SectionSixActorAndScopeRegressionTests(unittest.TestCase):
         encrypt_requirement = self.requirements[encrypt_id]
         encrypt_review = self.reviews["KMIPKIT-CLAUSE-SPEC-6.1.17-005"]
         self.assertNotIn(encrypt_id, self.crosswalk_ids)
+        self.assertNotIn(encrypt_id, self.client_profile_ids)
         self.assertEqual(encrypt_requirement["role"], "not_applicable")
         self.assertEqual(encrypt_requirement["scope_state"], "out_of_scope")
         self.assertEqual(encrypt_requirement["status"], "retired")
@@ -170,6 +179,7 @@ class SectionSixActorAndScopeRegressionTests(unittest.TestCase):
 
                 if requirement_id.endswith("6.1.57-006"):
                     self.assertNotIn(requirement_id, self.crosswalk_ids)
+                    self.assertNotIn(requirement_id, self.client_profile_ids)
                     requirement = self.requirements[requirement_id]
                     self.assertEqual(requirement["role"], "unspecified")
                     self.assertEqual(requirement["direction"], "client_to_server")
@@ -200,7 +210,7 @@ class SectionSixActorAndScopeRegressionTests(unittest.TestCase):
         self.assertIn("No, MAY be repeated", self.reviews["KMIPKIT-CLAUSE-SPEC-6.1.57-005"]["source_excerpt"])
         self.assertIn("If omitted, the current date and time SHALL be assumed", self.reviews["KMIPKIT-CLAUSE-SPEC-6.1.57-006"]["source_excerpt"])
 
-    def test_required_yes_payload_rows_do_not_claim_a_shall(self) -> None:
+    def test_required_yes_payload_gaps_preserve_client_direction_and_scope(self) -> None:
         expected = {
             "KMIPKIT-REQ-SPEC-6.1.14-007-001": (
                 "KMIPKIT-SOURCE-GAP-SPEC-6.1.14-ATTRIBUTES-REQUIRED",

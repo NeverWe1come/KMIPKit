@@ -45,10 +45,12 @@ class ProfileGenerationError(ValueError):
 
 
 def _is_unresolved_client_scope(requirement: Mapping[str, Any]) -> bool:
-    """Return whether a client obligation still lacks profile applicability."""
+    """Return whether a source obligation may apply to clients but is unresolved."""
+    scope_state = requirement.get("scope_state")
+    if requirement.get("role") == "unspecified":
+        return scope_state == "unclear"
     if requirement.get("role") not in {"client", "both"}:
         return False
-    scope_state = requirement.get("scope_state")
     return scope_state == "unclear" or (
         scope_state == "profile_conditional"
         and not requirement.get("profile_ids")

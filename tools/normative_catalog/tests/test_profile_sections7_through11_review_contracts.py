@@ -91,23 +91,58 @@ class ProfileSectionsSevenThroughElevenReviewContractTests(unittest.TestCase):
         for gap in (response_gap, error_gap):
             with self.subTest(gap_id=gap["gap_id"]):
                 self.assertEqual(gap["actor"], "unspecified")
-                self.assertEqual(gap["scope_disposition"], "unresolved")
+                self.assertEqual(gap["direction"], "server_to_client")
                 self.assertIsNone(gap["candidate_requirement_id"])
                 self.assertIsNone(gap["proposed_requirement_id"])
+
+        self.assertEqual(response_gap["scope_disposition"], "server_only")
+        self.assertEqual(error_gap["scope_disposition"], "unresolved")
+        clauses = {row["clause_id"]: row for row in self.catalog["source_clauses"]}
+        for clause_id in ("KMIPKIT-CLAUSE-SPEC-8.4-002", "KMIPKIT-CLAUSE-SPEC-9.17-001"):
+            with self.subTest(clause_id=clause_id):
+                self.assertEqual(clauses[clause_id]["role"], "unclear")
+                self.assertEqual(clauses[clause_id]["direction"], "server_to_client")
 
         response_review = self.reviews["KMIPKIT-CLAUSE-SPEC-8.4-002"]
         self.assertEqual(len(response_review["source_obligations"]), 1)
         self.assertEqual(response_review["source_obligations"][0]["source_keyword"], "MAY")
         self.assertEqual(response_review["source_obligations"][0]["actor"], "unspecified")
-        self.assertEqual(response_review["source_obligations"][0]["scope_disposition"], "unresolved")
+        self.assertEqual(response_review["source_obligations"][0]["direction"], "server_to_client")
+        self.assertEqual(response_review["source_obligations"][0]["scope_disposition"], "server_only")
         self.assertIsNone(response_review["source_obligations"][0]["candidate_requirement_id"])
 
         error_review = self.reviews["KMIPKIT-CLAUSE-SPEC-9.17-001"]
         error_atoms = error_review["source_obligations"]
         self.assertEqual([atom["source_keyword"] for atom in error_atoms], ["MAY", "MAY"])
         self.assertTrue(all(atom["actor"] == "unspecified" for atom in error_atoms))
-        self.assertTrue(all(atom["scope_disposition"] == "unresolved" for atom in error_atoms))
+        self.assertEqual([atom["direction"] for atom in error_atoms], ["server_to_client", "unspecified"])
+        self.assertEqual([atom["scope_disposition"] for atom in error_atoms], ["server_only", "unresolved"])
         self.assertTrue(all(atom["candidate_requirement_id"] is None for atom in error_atoms))
+
+    def test_time_stamp_may_atoms_keep_only_explicit_client_actor_mapped(self) -> None:
+        review = self.reviews["KMIPKIT-CLAUSE-SPEC-9.20-001"]
+        atoms = {atom["source_order"]: atom for atom in review["source_obligations"]}
+        ambiguous = atoms[3]
+        self.assertEqual(ambiguous["source_keyword"], "MAY")
+        self.assertEqual(ambiguous["actor"], "unspecified")
+        self.assertEqual(ambiguous["direction"], "unspecified")
+        self.assertEqual(ambiguous["scope_disposition"], "unresolved")
+        self.assertIsNone(ambiguous["candidate_requirement_id"])
+
+        explicit_client = atoms[5]
+        self.assertEqual(explicit_client["actor"], "client")
+        self.assertEqual(explicit_client["direction"], "client_to_server")
+        self.assertEqual(explicit_client["scope_disposition"], "client_1_0")
+        self.assertEqual(explicit_client["candidate_requirement_id"], "KMIPKIT-REQ-SPEC-9.20-001-002")
+
+        crosswalk_orders = [
+            row["source_obligation_order"]
+            for row in self.oracle["requirement_crosswalk"]
+            if row["requirement_id"] == "KMIPKIT-REQ-SPEC-9.20-001-002"
+        ]
+        self.assertEqual(crosswalk_orders, [5])
+        requirement = self.requirements["KMIPKIT-REQ-SPEC-9.20-001-002"]
+        self.assertNotIn("enforce reasonable time usage", requirement["summary"])
 
 
 if __name__ == "__main__":
