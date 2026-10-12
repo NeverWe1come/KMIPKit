@@ -30,6 +30,9 @@ import tools.normative_catalog.validate as catalog_validate
 
 ROOT = Path(__file__).resolve().parents[3]
 OPTIONAL_CAPABILITY_TEST_REQUIREMENTS = {
+    "crates/kmipkit-client/tests/unit/execute_lifecycle_tests.rs::single_item_request_may_include_or_omit_unique_batch_item_id": (
+        "KMIPKIT-REQ-PROF-4.1.2-007",
+    ),
     "crates/kmipkit-protocol/tests/unit/register_operation_tests.rs::request_requires_key_algorithm_and_length_in_attributes_or_key_block": (
         "KMIPKIT-REQ-SPEC-6.1.43-009-001",
         "KMIPKIT-REQ-SPEC-6.1.43-010-001",
