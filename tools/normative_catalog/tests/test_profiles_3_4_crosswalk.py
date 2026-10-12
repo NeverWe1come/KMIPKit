@@ -51,6 +51,7 @@ CLIENT_IDS = {
     "KMIPKIT-REQ-PROF-3.2.2-001",
     "KMIPKIT-REQ-PROF-3.2.3-001",
     "KMIPKIT-REQ-PROF-3.2.4-002",
+    "KMIPKIT-REQ-PROF-3.2-001",
     "KMIPKIT-REQ-PROF-4.1.2-007",
 }
 UNRESOLVED_IDS = {
@@ -58,7 +59,6 @@ UNRESOLVED_IDS = {
     "KMIPKIT-REQ-PROF-3-003",
     "KMIPKIT-REQ-PROF-3-004",
     "KMIPKIT-REQ-PROF-3-006",
-    "KMIPKIT-REQ-PROF-3.2-001",
     "KMIPKIT-REQ-PROF-4.1.2-001",
     "KMIPKIT-REQ-PROF-4.1.2-005",
 }
@@ -124,7 +124,7 @@ class ProfileSectionsThreeAndFourCrosswalkTests(unittest.TestCase):
         self.assertEqual(set(self.reviews), target_clause_ids)
 
     def test_unresolved_and_test_only_rows_are_not_client_obligations(self) -> None:
-        self.assertEqual(len(UNRESOLVED_IDS), 7)
+        self.assertEqual(len(UNRESOLVED_IDS), 6)
         self.assertEqual(len(OUT_OF_SCOPE_IDS), 4)
         self.assertFalse((UNRESOLVED_IDS | OUT_OF_SCOPE_IDS) & self.crosswalk.keys())
         reviewed_clause_ids = {
@@ -146,6 +146,7 @@ class ProfileSectionsThreeAndFourCrosswalkTests(unittest.TestCase):
 
     def test_client_crosswalk_rows_preserve_profile_membership_and_source_actors(self) -> None:
         https_ids = {
+            "KMIPKIT-REQ-PROF-3.2-001",
             "KMIPKIT-REQ-PROF-3.2.1-001",
             "KMIPKIT-REQ-PROF-3.2.2-001",
             "KMIPKIT-REQ-PROF-3.2.3-001",
@@ -190,12 +191,13 @@ class ProfileSectionsThreeAndFourCrosswalkTests(unittest.TestCase):
             self.assertEqual(row["applies_to"], expected_applies_to)
 
     def test_https_profile_closure_includes_all_explicit_client_requirements(self) -> None:
-        """Sections 3.2.1–3.2.4 assign four client duties to the HTTPS profile."""
+        """Sections 3.2 and 3.2.1–3.2.4 assign conditions to the HTTPS profile."""
         https_profile_id = "KMIPKIT-PROFILE-HTTPS-CLIENT"
         https_profile = next(
             row for row in self.catalog["profiles"] if row["profile_id"] == https_profile_id
         )
         expected_ids = {
+            "KMIPKIT-REQ-PROF-3.2-001",
             "KMIPKIT-REQ-PROF-3.2.1-001",
             "KMIPKIT-REQ-PROF-3.2.2-001",
             "KMIPKIT-REQ-PROF-3.2.3-001",
@@ -204,8 +206,27 @@ class ProfileSectionsThreeAndFourCrosswalkTests(unittest.TestCase):
 
         for requirement_id in expected_ids:
             requirement = self.requirements[requirement_id]
-            self.assertEqual(requirement["profile_ids"], [https_profile_id])
+            self.assertIn(https_profile_id, requirement["profile_ids"])
+            if requirement_id == "KMIPKIT-REQ-PROF-3.2-001":
+                self.assertNotIn(
+                    "KMIPKIT-PROFILE-BASELINE-CLIENT", requirement["profile_ids"]
+                )
+            else:
+                self.assertEqual(requirement["profile_ids"], [https_profile_id])
             self.assertIn(requirement_id, https_profile["requirement_ids"])
+
+    def test_https_authentication_suite_clause_is_client_applicable_without_direction(self) -> None:
+        """Sections 3.2 and 6.4 establish client scope, while §3.2 leaves direction unstated."""
+        requirement_id = "KMIPKIT-REQ-PROF-3.2-001"
+        clause_id = "KMIPKIT-CLAUSE-PROF-3.2-001"
+        requirement = self.requirements[requirement_id]
+        review = self.reviews[clause_id]
+
+        self.assertEqual(requirement["direction"], "unclear")
+        self.assertEqual(review["expected_client_requirement_ids"], [requirement_id])
+        self.assertEqual(review["source_obligations"][0]["actor"], "client")
+        self.assertEqual(review["source_obligations"][0]["direction"], "unresolved")
+        self.assertEqual(review["html_line_range"], [4227, 4229])
 
     def test_basic_authentication_suite_requirement_is_in_baseline_client_closure(self) -> None:
         """Sections 3.1 and 6.1 make the conditional TLS requirement part of Baseline Client."""
