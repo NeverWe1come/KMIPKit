@@ -76,6 +76,26 @@ class SharedRustInventoryTests(unittest.TestCase):
         self.assertEqual({row["packageId"] for row in rows}, {"rust-kmipkit-transport"})
         self.assertEqual(len(inventory["rustOnlyDeclarations"]), 5)
 
+    def test_approved_registry_capability_matches_its_existing_four_language_declarations(self) -> None:
+        capability = next(
+            row for row in self.manifest["capabilities"] if row["capabilityId"] == "vendor_extension_registry"
+        )
+        declarations = [
+            row
+            for row in self.manifest["publicDeclarations"]
+            if row["capabilityId"] == "vendor_extension_registry"
+            and row["declarationState"] in {"declared", "verified"}
+        ]
+
+        self.assertEqual(capability["capabilityState"], "declared")
+        self.assertEqual(capability["ownerSpecId"], "KMIPKIT-0012")
+        self.assertEqual(capability["approvalEvidence"]["status"], "Approved")
+        for language in ("rust", "c", "java", "python"):
+            expected = sorted(
+                {row["languageMappings"][language]["name"] for row in declarations}
+            )
+            self.assertEqual(capability["mappings"][language], expected)
+
     def test_unapproved_rust_only_owner_is_rejected(self) -> None:
         altered = json.loads(json.dumps(self.manifest))
         declaration = next(row for row in altered["publicDeclarations"] if row["parityScope"] == "rust-only-adr")
