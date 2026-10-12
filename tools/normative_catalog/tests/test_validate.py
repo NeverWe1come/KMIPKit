@@ -15068,6 +15068,28 @@ class CatalogValidationTests(unittest.TestCase):
         self.assertIn("both Init Indicator and Final Indicator are false", data_contract["evidence_disposition"]["claim"])
         self.assertEqual(validate_source_table_contracts(oracle, ROOT), [])
 
+    def test_mac_data_contract_validator_rejects_a_silenced_shared_source_conflict(self) -> None:
+        """The MAC Data table cell cannot claim away the unresolved general §6.1 rule."""
+        oracle = json.loads(
+            (ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json").read_text(encoding="utf-8")
+        )
+        broken = json.loads(json.dumps(oracle))
+        data_contract = next(
+            row for row in broken["source_table_contracts"]
+            if row["gap_id"] == "KMIPKIT-SOURCE-GAP-SPEC-6.1.32-DATA-REQUIRED"
+        )
+        data_contract["evidence_disposition"] = {
+            "status": "mapped_to_feature_contract",
+            "statement": "The row is covered by the MAC request model.",
+        }
+
+        diagnostics = validate_source_table_contracts(broken, ROOT)
+
+        self.assertTrue(
+            any("must preserve the unresolved Data conflict without an omission claim" in issue for issue in diagnostics),
+            diagnostics,
+        )
+
     def test_hash_data_row_keeps_its_conditional_source_force_and_disposition(self) -> None:
         """The Hash Table 235 Data row remains a conditional source table contract."""
         oracle = json.loads(
