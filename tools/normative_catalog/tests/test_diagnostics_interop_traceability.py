@@ -72,6 +72,16 @@ class DiagnosticsInteropTraceabilityTests(unittest.TestCase):
         rows = re.findall(r"^\| KMIPKIT-028-T\d+-\w+", self.trace, re.MULTILINE)
         self.assertEqual(len(rows), 12)
 
+    def test_omitted_validity_date_evidence_stays_actor_neutral(self) -> None:
+        research = (ROOT / "specs/028-diagnostics-interop/research.md").read_text(encoding="utf-8")
+        self.assertIn("source actor remains unspecified", research)
+        self.assertIn("client verification covers preserving the omission in request serialization only", research)
+        self.assertIn("date evaluation is unverified", research)
+        self.assertIn("serialization applicability only", self.trace)
+        self.assertIn("date evaluation is unverified", self.trace)
+        self.assertIn("req_006_omitted_date_remains_absent_in_request_serialization", self.trace)
+        self.assertNotIn("for_server_default", self.trace)
+
     def test_extension_and_unavailable_evidence_are_explicit(self) -> None:
         for operation in ["interop", "log", "validate"]:
             source = (ROOT / f"crates/kmipkit-protocol/src/{operation}.rs").read_text(encoding="utf-8")
