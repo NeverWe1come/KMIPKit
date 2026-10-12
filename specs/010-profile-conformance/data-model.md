@@ -92,6 +92,8 @@ A `ProfileEvidence` record links one obligation to its implementation and verifi
 
 Every applicable MUST/SHALL is release-blocking. MUST NOT/SHALL NOT require negative tests. In-scope MAY/OPTIONAL capabilities remain representable and usable. The `verified` status is a current-run readiness result only; catalog assignments retain stable test/check identifiers and are never rewritten by CI run results.
 
+The normative catalog's `requirements[].status` (for example, `scoped_verified`) is a separate, feature-scoped traceability disposition. It is not a `ProfileEvidence.status`, does not establish profile readiness, and does not replace current-run CI verification.
+
 ## ProfileValidationError
 
 A profile validation error contains a stable error code, profile ID, requirement ID, exact source clause ID, and request delivery state. It contains no free-form source error, arbitrary diagnostic text, secret data, credentials, or raw KMIP body. Implementation references are repository-relative paths validated beneath the canonical checkout root; verification references are stable IDs, not caller-provided paths.
