@@ -15915,7 +15915,12 @@ class CatalogValidationTests(unittest.TestCase):
             row.update(overrides)
             return row
 
-        def run_gate(row: dict[str, Any], *, create_test: bool = True) -> None:
+        def run_gate(
+            row: dict[str, Any],
+            *,
+            create_test: bool = True,
+            external_implementation_reference: str | None = None,
+        ) -> None:
             with tempfile.TemporaryDirectory() as temporary_directory:
                 root = Path(temporary_directory)
                 catalog_path = root / "specification" / "catalog" / "kmip-2.1.json"
@@ -15935,12 +15940,32 @@ class CatalogValidationTests(unittest.TestCase):
                         "def request_capability_is_available():\n    pass\n",
                         encoding="utf-8",
                     )
+                implementation_path = root / "src" / "request.rs"
+                implementation_path.parent.mkdir(parents=True, exist_ok=True)
+                implementation_path.write_text("pub fn request_capability() {}\n", encoding="utf-8")
+                external_implementation_path = root.parent / f"{root.name}-outside-implementation.rs"
+                if external_implementation_reference is not None:
+                    external_implementation_path.write_text(
+                        "pub fn request_capability() {}\n", encoding="utf-8"
+                    )
+                    row["implementation_refs"] = [
+                        str(external_implementation_path)
+                        if external_implementation_reference == "absolute"
+                        else f"../{external_implementation_path.name}"
+                    ]
+                    catalog_path.write_text(
+                        json.dumps({"requirements": [row]}), encoding="utf-8"
+                    )
                 with (
                     patch(__name__ + ".ROOT", root),
                     patch(__name__ + "._selected_profile_source_scope", return_value=(set(), set())),
                     patch(__name__ + "._reviewed_profile_optional_capabilities", return_value=({requirement_id}, [])),
                 ):
-                    CatalogValidationTests().test_every_reviewed_client_may_or_optional_has_usable_positive_evidence()
+                    try:
+                        CatalogValidationTests().test_every_reviewed_client_may_or_optional_has_usable_positive_evidence()
+                    finally:
+                        if external_implementation_path.exists():
+                            external_implementation_path.unlink()
 
         with self.subTest("bounded client request evidence is accepted"):
             run_gate(requirement())
@@ -15950,6 +15975,7 @@ class CatalogValidationTests(unittest.TestCase):
             ("response direction", requirement(direction="server_to_client"), True),
             ("conditional scope", requirement(scope_state="profile_conditional"), True),
             ("missing implementation reference", requirement(implementation_refs=[]), True),
+            ("missing implementation file", requirement(implementation_refs=["src/missing.rs"]), True),
             ("missing positive-test reference", requirement(verification_refs=[]), True),
             ("unresolvable positive-test name", requirement(verification_refs=["tests/positive_capability.py::missing_test"]), True),
             ("missing positive-test file", requirement(verification_refs=["tests/missing.py::request_capability_is_available"]), False),
@@ -15958,6 +15984,14 @@ class CatalogValidationTests(unittest.TestCase):
             with self.subTest(label):
                 with self.assertRaises(AssertionError):
                     run_gate(row, create_test=create_test)
+
+        for label, reference_style in (
+            ("absolute implementation path outside repository", "absolute"),
+            ("traversal implementation path outside repository", "traversal"),
+        ):
+            with self.subTest(label):
+                with self.assertRaises(AssertionError):
+                    run_gate(requirement(), external_implementation_reference=reference_style)
 
     def test_every_reviewed_client_may_or_optional_has_usable_positive_evidence(self) -> None:
         """Selected Baseline MAY/OPTIONAL capabilities require implementation and positive test evidence."""
