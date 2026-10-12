@@ -156,6 +156,19 @@ class BindingExportAuditTests(unittest.TestCase):
         }.issubset(names))
         self.assertTrue(result["complete"])
 
+    def test_python_inventory_resolves_private_module_values_and_property_exports(self):
+        sources = {
+            "kmipkit/_ffi/__init__.py": "ffi = object()\nlib = object()\n",
+            "kmipkit/api.py": "from ._ffi import lib\n__all__ = []\n",
+            "kmipkit/_handles.py": "class Base:\n    @property\n    def closed(self) -> bool: ...\n",
+            "kmipkit/handles.py": "from ._handles import Base\nclass Handle(Base):\n    pass\n",
+        }
+        result = AUDIT.inventory_python_sources(sources)
+        observed = {row["exportName"]: row["kind"] for row in result["declarations"]}
+        self.assertEqual(observed["kmipkit.handles.Handle.closed"], "python-export")
+        self.assertFalse(any(issue["reason"] == "unresolved-import-target" for issue in result["issues"]))
+        self.assertTrue(result["complete"])
+
     def test_java_overloads_that_share_a_manifest_path_remain_incomplete(self):
         output = """
             public class org.example.Client {
