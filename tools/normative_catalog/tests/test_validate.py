@@ -4959,7 +4959,12 @@ class CatalogValidationTests(unittest.TestCase):
         data_row = next(row for row in request_rows if row["row_label"] == "Data")
         self.assertIn("KMIPKIT-REQ-SPEC-6.1.33-001-001", data_row.get("source_note", ""))
         self.assertIn("KMIPKIT-SOURCE-GAP-SPEC-6.1-PARAGRAPH-009", data_row.get("source_note", ""))
-        self.assertIn("KMIPKIT-REQ-SPEC-6.1-009-001", data_row.get("source_note", ""))
+        catalog = json.loads((ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8"))
+        self.assertNotIn(
+            "KMIPKIT-REQ-SPEC-6.1-009-001",
+            {requirement["requirement_id"] for requirement in catalog["requirements"]},
+            "the unresolved paragraph-009 proposal must not become an accepted catalog requirement",
+        )
         self.assertIn("Data is always required in cryptographic operations except when either Init Indicator or Final Indicator is true.", data_row.get("source_note", ""))
         self.assertIn("tension", data_row.get("source_note", "").lower())
         self.assertIn("separate MAC Data field", data_row.get("source_note", ""))
