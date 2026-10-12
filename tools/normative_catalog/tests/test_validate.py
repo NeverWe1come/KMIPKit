@@ -16486,6 +16486,45 @@ class CatalogValidationTests(unittest.TestCase):
             "KMIPKit 1.0 advertises only its fixed KMIP 2.1 protocol version",
         )
 
+    def test_operation_request_evidence_records_the_official_test_case_gap(self) -> None:
+        catalog = json.loads((ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8"))
+        requirement_ids = {
+            "KMIPKIT-REQ-SPEC-6.1.9-001-001",
+            "KMIPKIT-REQ-SPEC-6.1.9-001-002",
+            "KMIPKIT-REQ-SPEC-6.1.10-001",
+            "KMIPKIT-REQ-SPEC-6.1.11-001-001",
+            "KMIPKIT-REQ-SPEC-6.1.11-001-002",
+            "KMIPKIT-REQ-SPEC-6.1.12-003",
+            "KMIPKIT-REQ-SPEC-6.1.12-005",
+            "KMIPKIT-REQ-SPEC-6.1.12-006",
+            "KMIPKIT-REQ-SPEC-6.1.12-007",
+            "KMIPKIT-REQ-SPEC-6.1.13-005",
+            "KMIPKIT-REQ-SPEC-6.1.13-006",
+            "KMIPKIT-REQ-SPEC-6.1.14-009",
+            "KMIPKIT-REQ-SPEC-6.1.14-010",
+            "KMIPKIT-REQ-SPEC-6.1.14-011",
+            "KMIPKIT-REQ-SPEC-6.1.14-012",
+            "KMIPKIT-REQ-SPEC-6.1.16-001-001",
+            "KMIPKIT-REQ-SPEC-6.1.17-001-001",
+            "KMIPKIT-REQ-SPEC-6.1.17-001-002",
+        }
+        requirements = {
+            row["requirement_id"]: row
+            for row in catalog["requirements"]
+            if row["requirement_id"] in requirement_ids
+        }
+
+        self.assertEqual(set(requirements), requirement_ids)
+        for requirement_id in sorted(requirement_ids):
+            with self.subTest(requirement_id=requirement_id):
+                requirement = requirements[requirement_id]
+                self.assertTrue(requirement["verification_refs"])
+                self.assertEqual(requirement["test_case_ids"], [])
+                review_note = requirement["review_note"]
+                self.assertIn("official Test Cases", review_note)
+                self.assertIn("pinned", review_note.lower())
+                self.assertIn("no", review_note.lower())
+
 
 if __name__ == "__main__":
     unittest.main()
