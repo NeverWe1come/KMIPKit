@@ -16984,6 +16984,8 @@ class CatalogValidationTests(unittest.TestCase):
         self.assertEqual(contract["scope_disposition"], "client_1_0")
         self.assertEqual(contract["operation_element_id"], "KMIPKIT-ELEM-OP-C2S-INTEROP")
         self.assertEqual(contract["functional_requirement_ids"], ["FR-001", "FR-008"])
+        self.assertIn("KMIPKIT-0042 FR-001/FR-008", contract["review_note"])
+        self.assertNotIn("KMIPKIT-0028", contract["review_note"])
         self.assertEqual(contract["implementation_refs"], [
             "crates/kmipkit-protocol/src/interop.rs::InteropRequest::into_ttlv_payload",
         ])
@@ -17052,6 +17054,8 @@ class CatalogValidationTests(unittest.TestCase):
         self.assertEqual(contract["scope_disposition"], "client_1_0")
         self.assertEqual(contract["operation_element_id"], "KMIPKIT-ELEM-OP-C2S-INTEROP")
         self.assertEqual(contract["functional_requirement_ids"], ["FR-001", "FR-008"])
+        self.assertIn("KMIPKIT-0042 FR-001/FR-008", contract["review_note"])
+        self.assertNotIn("KMIPKIT-0028", contract["review_note"])
         self.assertEqual(contract["implementation_refs"], [
             "crates/kmipkit-protocol/src/interop.rs::InteropRequest::into_ttlv_payload",
         ])
