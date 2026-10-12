@@ -76,7 +76,7 @@ Final verification on Windows x86-64: `bindings/python/.venv/Scripts/python.exe 
 
 ## T013 — Approved generic TTLV declaration ownership (partial)
 
-The canonical declaration slice whose Rust paths begin with `kmipkit_ttlv::` contains exactly 101 declarations: 76 generic-model declarations owned by KMIPKIT-0004 and 25 `CodecLimits` declarations owned by KMIPKIT-0005. The manifest maps these to the two approved shared capabilities with their owner requirements and evidence. This closes only this audited slice; T013 remains open until the remaining published Rust crate declarations are audited and mapped or explicitly excluded under an accepted authority.
+The canonical cross-language declaration slice whose Rust mapping paths begin with `kmipkit_ttlv::` contains 101 rows: 76 generic-model rows owned by KMIPKIT-0004 and 25 `CodecLimits` rows owned by KMIPKIT-0005, distributed across the four language package families. This is distinct from the 95 rows in the `rust-kmipkit-ttlv` package itself (24 `declared`, 71 `blocked`). The manifest maps the cross-language slice to the two approved shared capabilities with their owner requirements and evidence. This closes only this audited slice; T013 remains open until the remaining published Rust crate declarations are audited and mapped or explicitly excluded under an accepted authority.
 
 | Phase | Commit | Command | Result |
 |---|---|---|---|
