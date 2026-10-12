@@ -22,7 +22,7 @@ The strict v2 schema requires these records and rejects undeclared fields. Stabl
 | `publicDeclarations` | Complete inventory of publicly reachable declarations for those packages. Every declaration has a stable ID, package ID, export kind/name, logical capability ID, requirement references, readiness state, and parity scope. Approved source is required for ready declarations; a blocked observed export may record a candidate owner and reason without a signature or mappings. |
 | `approvedExclusions` | Array of explicit exclusions from the public declaration inventory; may be empty. Each exclusion identifies the exact symbol/package, reason, approving feature or ADR, and review evidence. No wildcard or package-wide exclusion is allowed. |
 | `apiLevels` | Exactly high-level, typed-protocol, and generic-TTLV levels, with canonical IDs and requirement references. |
-| `operations` | Exactly 57 unique `client_1_0` entries, ordered by OASIS §6.1 section number. Each identifies the exact source reference, catalog element ID, scope, owning approved feature (when available), API readiness, and declarations by language when ready. |
+| `operations` | Exactly 56 unique `client_1_0` entries, ordered by OASIS §6.1 section number. KMIP 2.1 defines 57 client-initiated operation types overall; Set Endpoint Role (§6.1.54) remains `client_1_1` and is excluded from the 1.0 API. Each included entry identifies the exact source reference, catalog element ID, scope, owning approved feature (when available), API readiness, and declarations by language when ready. |
 | `capabilities` | Shared client, batch, asynchronous, TTLV, credential, extension, error, lifecycle, and diagnostic capabilities with requirement IDs and four-language mappings. |
 | `types` | Existing v1 type declarations plus all additional released API types, preserving complete Rust/C/Java/Python names, kind, ownership, and requirement references. |
 | `functions` | Existing v1 function declarations plus all additional released functions, with ordered parameters, complete result type, error mappings, ownership, ordering, and all four language mappings. |
@@ -57,7 +57,7 @@ Every inventory row includes:
 
 - `operationId`: the catalog operation element ID.
 - `name` and `section`: the exact catalog name and OASIS Specification v2.1 §6.1.x section.
-- `scope`: `client_1_0` for these 57 entries.
+- `scope`: `client_1_0` for these 56 entries.
 - `ownerDependency`: the exact linked owner from `contracts/operation-dependencies.md`, represented as `approved`, `candidate`, or `unassigned`. This is dependency metadata only; it does not declare the operation API available.
 - `featureSpecId`: an approved feature ID, or absent when none is approved.
 - `candidateSpecId`: optional linked draft/implementation-authorized feature ID, permitted only while blocked; it records a possible owner but conveys no approval.
@@ -67,7 +67,7 @@ Every inventory row includes:
 - `declarations`: stable declaration IDs grouped by Rust, C, Java, and Python. This list is empty only while blocked.
 - `parityEvidenceIds`: stable fixture/test references; required when `apiState` is `verified` and each reference must resolve to checked-in evidence.
 
-`blocked` means the operation is in the 1.0 product target but its binding API cannot be declared or implemented under 0043 yet. `ownerDependency` records the dependency matrix's linked owner and whether its checked-in release-line status is approved, a candidate, or unassigned; it MUST NOT be treated as API readiness. A blocked row may have a `candidateSpecId` if a draft exists, but MUST NOT set `featureSpecId` or be presented as supported capability. For this contract, an owner is approved only when its checked-in status explicitly says Approved or Accepted for implementation and records human acceptance on the active release line. A status that only grants autonomous implementation does not qualify. `declared` means an approved operation specification and canonical Rust surface exist and all four mappings are defined but parity verification is incomplete. `verified` means all four mappings and required tests pass. A 1.0 release manifest MUST have all 57 rows `verified` and zero blocked rows.
+`blocked` means the operation is in the 1.0 product target but its binding API cannot be declared or implemented under 0043 yet. `ownerDependency` records the dependency matrix's linked owner and whether its checked-in release-line status is approved, a candidate, or unassigned; it MUST NOT be treated as API readiness. A blocked row may have a `candidateSpecId` if a draft exists, but MUST NOT set `featureSpecId` or be presented as supported capability. For this contract, an owner is approved only when its checked-in status explicitly says Approved or Accepted for implementation and records human acceptance on the active release line. A status that only grants autonomous implementation does not qualify. `declared` means an approved operation specification and canonical Rust surface exist and all four mappings are defined but parity verification is incomplete. `verified` means all four mappings and required tests pass. A 1.0 release manifest MUST have all 56 in-scope rows `verified` and zero blocked rows. Set Endpoint Role remains a normative 1.1 record and does not become a blocked 1.0 API row.
 
 The generator MUST reject a transition to `declared` unless the `featureSpecId` resolves to an approved/accepted feature, its approval evidence is recorded, and all referenced Rust declarations and requirement IDs exist. It MUST reject a transition to `verified` unless each language has a mapping and the parity evidence references resolve. During phased implementation, blocked inventory rows are permitted in the review manifest; `--check --require-complete` MUST reject any manifest that is not fully verified.
 
@@ -104,7 +104,7 @@ The existing v1 `types`, `functions`, `errorCategories`, `limits`, `security`, a
 - JSON object key order has no semantic effect. Array order is significant and schema-defined for languages, API levels, operations, types, functions, parameters, errors, limits, and generated destinations.
 - Operations are sorted by numeric OASIS section. Requirement ID arrays and reference arrays that are declared unordered are unique and sorted.
 - The schema validates shapes; the generator additionally validates cross-record references, exact catalog coverage, ready-state requirements, symbol uniqueness, fixed-width value ranges, and permitted output destinations.
-- Catalog comparison MUST fail on a missing, duplicate, renamed, out-of-scope, or extra operation. A catalog change that changes the set of 57 requires an approved product-scope/specification change before the public manifest changes.
+- Catalog comparison MUST fail on a missing, duplicate, renamed, out-of-scope, or extra operation. A catalog change that changes the set of 56 `client_1_0` operations requires an approved product-scope/specification change before the public manifest changes.
 - Generator behavior is offline, deterministic, and independent of filesystem traversal order, timestamps, locale, environment-specific paths, or network access.
 - Check mode compares bytes and never repairs or rewrites outputs. Write mode atomically writes only the eleven fixed outputs listed above.
 - Generated source and test files are never edited by hand. Handwritten Java/Python facades, lifecycle handling, validation, and package loaders remain reviewed source and are covered by parity tests.
@@ -113,9 +113,9 @@ The existing v1 `types`, `functions`, `errorCategories`, `limits`, `security`, a
 
 The feature and release gate require all of the following:
 
-1. The operation dependency matrix contains 57/57 exact entries.
+1. The operation dependency matrix contains 56/56 exact `client_1_0` entries; the catalog's §6.1.54 Set Endpoint Role row is explicitly deferred to `client_1_1`.
 2. Every operation dependency has an approved, in-scope feature specification.
-3. All 57 operation APIs are verified across Rust, C, Java, and Python; their owner specifications are approved/accepted.
+3. All 56 in-scope operation APIs are verified across Rust, C, Java, and Python; their owner specifications are approved/accepted.
 4. All API levels and shared capabilities have four-language mappings, except only the ADR-defined Rust transport capability.
 5. All eight logical package families are inventoried and version-synchronized; public symbol audits have no untracked export and no unapproved exclusion.
 6. Manifest schema validation, catalog cross-check, generator tests, generated-file check, consumer tests, compatibility checks, and 100% traceability pass.

@@ -15,7 +15,7 @@
 
 - [x] Requirements are testable and use stable identifiers.
 - [x] Success criteria are measurable and tied to the complete 1.0 target.
-- [x] All 57 client-initiated operations and exact OASIS sections are inventoried.
+- [x] All 56 `client_1_0` operations and exact OASIS sections are inventoried; Set Endpoint Role (§6.1.54) is explicitly deferred to 1.1 per the catalog and approved 025 scope disposition.
 - [x] The five published Rust crates and C/Java/Python distribution families are enumerated with stable package IDs.
 - [x] Complete public declaration auditing, exact exclusions, and the sole ADR-backed Rust-only transport exception are specified.
 - [x] Existing approved owner specifications and missing dependencies are distinguished.

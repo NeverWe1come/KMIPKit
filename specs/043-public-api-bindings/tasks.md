@@ -13,16 +13,16 @@
 **Purpose**: Establish a complete, strict, reviewable 1.0 API contract without duplicating protocol semantics.
 
 - [X] T001 [US1] Write failing v2 schema tests for required top-level fields, format version, scope, the exact eight public package IDs, declaration/exclusion records, language/API-level sets, and strict unknown-field rejection in `tools/api_manifest/tests/test_manifest_v2.py`.
-- [X] T002 [US1] Write failing operation-inventory tests for exact 57-row catalog equality, numeric section ordering, duplicate/missing/extra operations, and rejection of out-of-scope operations in `tools/api_manifest/tests/test_catalog_parity.py`.
+- [X] T002 [US1] Write failing operation-inventory tests for exact 56-row `client_1_0` catalog equality, numeric section ordering, duplicate/missing/extra operations, and explicit rejection of the `client_1_1` Set Endpoint Role operation in `tools/api_manifest/tests/test_catalog_parity.py`.
 - [X] T003 [US1] Write failing readiness tests for blocked/declared/verified transitions, approved owner-spec/ADR resolution, exact candidate/reason fields for blocked observed exports, complete package declaration mapping, required parity scope, and release rejection when any operation/capability/declaration remains blocked in `tools/api_manifest/tests/test_operation_readiness.py`.
 - [X] T004 [US1] Implement the v2 JSON Schema in `specification/api/public-api.schema.json`, preserving registry-slice declarations and adding full-1.0 package and public declaration inventories, exact exclusion records, requirement-ID patterns, capability/type/function mappings, and operation readiness constraints.
 - [X] T005 [US1] Migrate `specification/api/public-api.json` to v2 with exactly the five published Rust crate IDs plus C, Java, and Python distribution-family IDs; seed the full currently public declaration inventory, mark observed exports with unapproved owners as blocked candidates without signatures/mappings, and preserve all existing registry declarations, requirement references, error categories, limits, security notes, and outputs.
-- [X] T006 [US1] Implement catalog and cross-record validation in `tools/api_manifest/generate.py`; compare all 57 operation IDs/names/sections/scope values, enforce exact public-package coverage, verify declaration-to-capability and approval-source references, and reject undeclared exports or unapproved parity exceptions without network access.
+- [X] T006 [US1] Implement catalog and cross-record validation in `tools/api_manifest/generate.py`; compare all 56 in-scope operation IDs/names/sections/scope values, enforce exact public-package coverage, verify declaration-to-capability and approval-source references, and reject undeclared exports or unapproved parity exceptions without network access.
 - [X] T007 [US1] Add the explicit blocked/approved-owner mapping represented by `contracts/operation-dependencies.md` to the manifest and validator; do not infer feature IDs from draft worktrees.
 - [X] T008 [US1] Refactor the v2 validator and renderer so JSON ordering, filesystem enumeration, locale, timestamps, and environment paths cannot affect output; keep destinations fixed in generator code/schema.
 - [X] T009 [US1] Generate the existing registry outputs unchanged in behavior and add the v2 public API Rust, C, Java, Python, and parity outputs at the fixed destinations in `contracts/manifest-v2.md`; ensure they derive only from declared/verified entries and never generate API signatures from blocked declaration records.
 - [X] T010 [US1] Update `docs/development/api-manifest.md` and `specs/012-vendor-extension-registry/contracts/public-api-manifest.md` to explain the registry slice's preservation inside manifest v2 and the new full-1.0 contract owner.
-- [X] T011 [US1] Verify deterministic `--write` and `--check`, missing/stale output detection, path traversal/symlink rejection, exact catalog equality, exact package inventory, and export-surface audits for Rust, C, Java, and Python; require every public declaration to resolve to a manifest record (including an explicit blocked record where appropriate) or exact approved exclusion.
+- [ ] T011 [US1] Verify deterministic `--write` and `--check`, missing/stale output detection, path traversal/symlink rejection, exact catalog equality, exact package inventory, and export-surface audits for Rust, C, Java, and Python; require every public declaration to resolve to a manifest record (including an explicit blocked record where appropriate) or exact approved exclusion. Rust, Java, and Python audit findings still need reconciliation against the manifest before this task can close.
 
 **Checkpoint**: One manifest represents the full 1.0 inventory; no blocked operation is advertised as an available capability.
 
@@ -68,11 +68,11 @@
 - [ ] T033 [US2] Add mappings and parity fixtures for Hash, MAC, MAC Verify, Sign, and Signature Verify from approved `specs/021-hash-mac-signature-operations/spec.md`; cite §§6.1.24, 6.1.32–6.1.33, and 6.1.55–6.1.56.
 - [ ] T034 [US2] For T031–T033, use strict Red/Green/Refactor TDD with separate development commits for each phase; update manifest declarations and stable traceability, and preserve ABI compatibility and each owner specification's semantics.
 
-**Checkpoint**: Only the nine operations with formally Approved/Accepted owner specifications may become declared or verified; all other operation rows remain blocked.
+**Checkpoint**: Only operations with formally Approved/Accepted owner specifications may become declared or verified; the current release inventory has 37 approved owners and 19 candidate owners, which remain blocked.
 
 ## Phase 5: Linked but Unapproved API Dependencies (US1, US2)
 
-**Purpose**: Make the 21 mapped-but-unapproved operation dependencies and the two shared feature gates visible without treating implementation authorization as spec approval.
+**Purpose**: Keep the 19 mapped-but-unapproved operation dependencies and the shared feature gates visible without treating implementation authorization as spec approval.
 
 > **Hard prerequisite for each task below**: the linked specification is formally marked Approved/Accepted in the active release line, its scope is confirmed for 1.0, and its canonical Rust contract and implementation are available. A status that only authorizes autonomous implementation does not satisfy this gate.
 
@@ -85,13 +85,13 @@
 - [ ] T041 [US2] After formal approval of `specs/020-query-ping/spec.md`, add mappings and parity fixtures for Ping and Query; cite §§6.1.36 and 6.1.40.
 - [ ] T042 [US2] For each task T035–T041, perform Red/Green/Refactor commits; update the operation's candidate owner to approved owner only after formal acceptance; keep the row blocked until all language tests and traceability pass.
 
-**Checkpoint**: The 21 candidate-linked operation rows and the 0009/0010 shared capabilities advance only when their own specs are approved and implemented; unresolved source or scope issues remain visible blockers.
+**Checkpoint**: The 19 candidate-linked operation rows and the 0009/0010 shared capabilities advance only when their own specs are approved and implemented; unresolved source or scope issues remain visible blockers.
 
-## Phase 6: Operations without an Approved Owner Specification (US1, US2)
+## Phase 6: Newly Approved Operation Owners (US1, US2)
 
-**Purpose**: Reserve exact operation-level gates for the remaining 27 operations without assigning feature numbers or duplicating their protocol contracts.
+**Purpose**: Add four-language API mappings for operations whose owner specifications were approved after the initial inventory; do not duplicate their protocol contracts.
 
-> **Hard prerequisite for each task below**: a separate operation specification is created, assigned by the maintainer, formally approved/accepted, and explicitly includes the operation in the 1.0 scope; its canonical Rust contract and implementation exist. Until then, the inventory row remains blocked and no API signature is added.
+> **Hard prerequisite for each task below**: its linked owner specification is formally approved/accepted in the active release line, includes the operation in the 1.0 scope, and its canonical Rust contract and implementation are available. Until the four-language mapping is verified, the manifest operation row remains blocked.
 >
 > **TDD requirement**: Every implementation task in this phase uses strict Red/Green/Refactor TDD and keeps the failing test, passing implementation, and refactor in distinct development commits.
 
@@ -120,18 +120,18 @@
 - [ ] T065 [US2] Add four-language API mapping and parity evidence for RNG Seed after its approved contract exists; cite §6.1.50.
 - [ ] T066 [US2] Add four-language API mapping and parity evidence for Set Constraints after its approved contract exists; cite §6.1.52.
 - [ ] T067 [US2] Add four-language API mapping and parity evidence for Set Defaults after its approved contract exists; cite §6.1.53.
-- [ ] T068 [US2] Add four-language API mapping and parity evidence for Set Endpoint Role after its approved contract exists; cite §6.1.54.
+- [X] T068 [US2] Resolve Set Endpoint Role (§6.1.54) as explicitly deferred to 1.1 by the normative catalog and approved specification 025; keep it out of the 1.0 API while generic TTLV preserves its open Operation enumeration value.
 - [ ] T069 [US2] Add four-language API mapping and parity evidence for Validate after its approved contract exists; cite §6.1.57.
 
-**Checkpoint**: All 57 operations have approved owners and all four mappings; no blocked row remains.
+**Checkpoint**: All 56 `client_1_0` operations have approved owners and all four mappings; no blocked row remains. Set Endpoint Role remains a cataloged `client_1_1` operation and is excluded from this release gate.
 
 ## Phase 7: Release Parity Gate (US1, US2, US3)
 
 **Purpose**: Verify the complete API contract and prepare it for human release review.
 
-- [ ] T070 [US1] Add `--check --require-complete` release validation that fails unless all 57 operations and all shared capabilities are verified, all eight package families are version-synchronized, every exported declaration is inventoried or explicitly excluded, and every requirement/type/function/error/output reference resolves.
+- [ ] T070 [US1] Add `--check --require-complete` release validation that fails unless all 56 in-scope operations and all shared capabilities are verified, all eight package families are version-synchronized, every exported declaration is inventoried or explicitly excluded, and every requirement/type/function/error/output reference resolves.
 - [ ] T071 [US2] Run the shared parity corpus through Rust, compiled C, Java 17, and Python 3.12 on the complete API surface, including negative inputs, unknown values, asynchronous outcomes, ownership, and redaction.
 - [ ] T072 [US3] Run offline native package load/install tests across the existing platform matrix and verify no executable runtime download path.
 - [ ] T073 [US1] Reconcile the public manifest, eight package identities/versions, exported-symbol inventory, fixed generated outputs, operation dependency matrix, compliance traceability, API reference, and English/Spanish user documentation.
 - [ ] T074 [US1] Run the repository-required formatting, lint, workspace, coverage, security, compatibility, and generated-file checks at the applicable AGENTS.md thresholds; verify separate ordered Red/Green/Refactor development commits and DCO sign-off, and record commands/results plus approved exclusions in the draft PR.
-- [ ] T075 [US1] Confirm zero blocked manifest operations/capabilities, 57/57 inventory coverage, complete package export accounting, 100% requirement traceability, synchronized package versions, no unauthorized Rust-only surface, and no profile/certification claim without evidence before requesting human review.
+- [ ] T075 [US1] Confirm zero blocked manifest operations/capabilities, 56/56 `client_1_0` inventory coverage, complete package export accounting, 100% requirement traceability, synchronized package versions, no unauthorized Rust-only surface, and no profile/certification claim without evidence before requesting human review.

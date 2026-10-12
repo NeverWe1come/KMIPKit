@@ -31,7 +31,7 @@ Every publicly reachable symbol is represented by one declaration or one exact, 
 | `operationId` | Stable operation element ID from the reviewed normative catalog. | Unique; must resolve to one catalog operation. |
 | `name` | OASIS operation name. | Exact catalog spelling. |
 | `section` | OASIS KMIP 2.1 source section. | Exact §6.1.x; sorted numerically. |
-| `scope` | Product scope classification. | `client_1_0` for the 57 entries. |
+| `scope` | Product scope classification. | `client_1_0` for the 56 in-scope entries; §6.1.54 Set Endpoint Role remains `client_1_1` and is excluded from the 1.0 manifest. |
 | `featureSpecId` | Formally approved operation owner. | Required for declared/verified; absent while blocked. |
 | `candidateSpecId` | Linked draft or implementation-authorized candidate owner. | Optional while blocked only; never conveys approval. |
 | `approvalEvidence` | Repository-local evidence for the approved owner's active-release acceptance. | Required whenever `featureSpecId` is set. |

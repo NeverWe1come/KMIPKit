@@ -37,8 +37,9 @@ git diff --check
 ```
 
 The `--write` command validates the manifest and schema before atomically
-writing the eleven fixed destinations. Version 2 also checks the 57-operation
-inventory against the checked-in normative catalog and resolves all approval,
+writing the eleven fixed destinations. Version 2 also checks the 56-operation
+`client_1_0` inventory against the checked-in normative catalog, leaving Set
+Endpoint Role (§6.1.54) deferred to 1.1, and resolves all approval,
 declaration, and parity references offline. Review the source manifest change
 and all generated diffs together in the same PR. Update the handwritten
 adapters and their tests to match the manifest; generated signatures do not

@@ -6,7 +6,7 @@
 
 ## Summary
 
-Expand the unreleased registry-only API manifest to strict v2 for the complete 1.0 public contract, inventory all five published Rust crates and the C/Java/Python distribution families, account for every public declaration, and build a catalog-checked inventory of all 57 client-initiated KMIP 2.1 operations. Define/test equivalent Rust, C, Java 17, and Python 3.12 product capabilities at the three approved API levels. The manifest owns mappings and generation metadata; each operation's approved feature specification remains the source of its Rust operation contract and semantics. Common manifest, shared API, and adapter work proceeds in phases; an operation's language surface is gated on its owner specification and canonical Rust implementation. ADR-0003/ADR-0014's low-level transport contract is explicitly inventoried as the only Rust-only capability.
+Expand the unreleased registry-only API manifest to strict v2 for the complete 1.0 public contract, inventory all five published Rust crates and the C/Java/Python distribution families, account for every public declaration, and build a catalog-checked inventory of all 56 `client_1_0` operations. KMIP 2.1 defines 57 client-initiated operation types overall; Set Endpoint Role (§6.1.54) remains `client_1_1` because its role transition requires bidirectional channel behavior outside the 1.0 boundary. Define/test equivalent Rust, C, Java 17, and Python 3.12 product capabilities at the three approved API levels. The manifest owns mappings and generation metadata; each operation's approved feature specification remains the source of its Rust operation contract and semantics. Common manifest, shared API, and adapter work proceeds in phases; an operation's language surface is gated on its owner specification and canonical Rust implementation. ADR-0003/ADR-0014's low-level transport contract is explicitly inventoried as the only Rust-only capability.
 
 ## Technical Context
 
@@ -24,15 +24,15 @@ Expand the unreleased registry-only API manifest to strict v2 for the complete 1
 
 **Performance Goals**: No new KMIP runtime path or protocol computation. Adapter overhead and native loading must not introduce unbounded copies or unbounded handle retention; existing operation/transport budgets remain owned by their feature specifications.
 
-**Constraints**: One canonical Rust protocol model; no operation-semantic duplication; stable 1.x C ABI; four-language semantic parity; no runtime network downloads; fixed generator destinations; secret redaction and explicit ownership; all 57 operations required at 1.0 release completion.
+**Constraints**: One canonical Rust protocol model; no operation-semantic duplication; stable 1.x C ABI; four-language semantic parity; no runtime network downloads; fixed generator destinations; secret redaction and explicit ownership; all 56 in-scope operations required at 1.0 release completion; Set Endpoint Role remains deferred to 1.1.
 
-**Scale/Scope**: Eight logical published package families, every publicly reachable declaration, three API levels, four languages, 57 operations, current shared facilities and existing registry manifest declarations.
+**Scale/Scope**: Eight logical published package families, every publicly reachable declaration, three API levels, four languages, 56 in-scope operations, current shared facilities and existing registry manifest declarations.
 
 ## Constitution Check
 
 - Approved Spec Kit specification required: satisfied; human approval is recorded in `approval-record.md`.
 - Worktree and branch from active `release/1.0.0`: satisfied; current branch is `feature/KMIPKIT-0043-public-api` created at the active release head.
-- OASIS authority and exact references: operation inventory cites KMIP Specification v2.1 §§6.1.1–6.1.57; each operation contract remains in its owning specification.
+- OASIS authority and exact references: operation inventory cites applicable KMIP Specification v2.1 §§6.1.1–6.1.57; §6.1.54 Set Endpoint Role is explicitly deferred by the catalog to 1.1.
 - Rust core and four-language parity: preserved; C stays the foreign-language ABI boundary, Java and Python remain thin adapters.
 - Security, ownership, no-retry, and generated-file constraints: preserved and included in acceptance.
 - No constitution or accepted ADR boundary change: none.
@@ -41,7 +41,7 @@ Expand the unreleased registry-only API manifest to strict v2 for the complete 1
 
 ### Phase A - Manifest v2 and complete inventory
 
-Add a strict v2 schema and expand the existing generator. Preserve v1 registry declarations and fixed outputs. Inventory the eight logical public package families and every exported declaration; cross-check exactly 57 catalog client_1_0 operation entries, exact §6.1 references, stable requirement IDs, blocked/declared/verified operation status, accepted parity scope, and fixed generated destinations. Common contract/generator work does not wait for per-operation specifications.
+Add a strict v2 schema and expand the existing generator. Preserve v1 registry declarations and fixed outputs. Inventory the eight logical public package families and every exported declaration; cross-check exactly 56 catalog client_1_0 operation entries, exact §6.1 references, stable requirement IDs, blocked/declared/verified operation status, accepted parity scope, and fixed generated destinations. Keep the catalog's 1.1 Set Endpoint Role record out of the 1.0 manifest. Common contract/generator work does not wait for per-operation specifications.
 
 ### Phase B - Canonical Rust API and stable C ABI mapping
 
@@ -53,7 +53,7 @@ Implement idiomatic Java 17/JNI and Python 3.12/CFFI facades over the stable C A
 
 ### Phase D - Operation-specific binding slices
 
-For every operation in the dependency matrix, use its formally approved feature specification and canonical Rust implementation as a prerequisite. Add the manifest mapping and C/Java/Python accessors, operation tests, documentation, and traceability. The 48 operations without an approved owner contract remain blocked (21 have candidate draft owners; 27 do not); no signature or future specification ID is inferred. The final release gate requires zero blocked rows.
+For every operation in the dependency matrix, use its formally approved feature specification and canonical Rust implementation as a prerequisite. Add the manifest mapping and C/Java/Python accessors, operation tests, documentation, and traceability. The 19 operations whose linked owners remain unapproved stay blocked; all 56 operation rows now have an explicit owner link. Set Endpoint Role remains outside the 1.0 API per the accepted 025 scope disposition. The final release gate requires zero blocked rows.
 
 ### Phase E - Complete parity and packaging gate
 
@@ -103,10 +103,10 @@ specification/compliance/          # requirement traceability evidence
 - The public-package inventory is fixed to five Rust crates and the C, Java, and Python distribution families; actual publication coordinates are read from package metadata rather than invented here. Every export must map to an approved capability or an exact reviewed exclusion.
 - `kmipkit-transport::Transport::exchange` is the sole Rust-only API exception under accepted ADR-0003/ADR-0014; no raw request or arbitrary-transport injection is added to the typed facade.
 - Operation APIs depend on the owning approved operation specification plus its canonical Rust request/response/client contract.
-- The 48 operations without a formally approved owner contract are explicit release blockers: 21 have a linked draft/implementation-authorized-but-unapproved spec and 27 have no owner spec. They are not silently deferred out of 1.0.
-- A feature-specific operation API can be merged only with the corresponding approved contract and tests. KMIPKIT-0043's complete 1.0 gate remains red until all 57 operations and all shared APIs are verified across four languages.
+- The 19 operations without a formally approved owner contract are explicit release blockers; their candidate specifications are linked in the dependency matrix. They are not silently deferred out of 1.0.
+- A feature-specific operation API can be merged only with the corresponding approved contract and tests. KMIPKIT-0043's complete 1.0 gate remains red until all 56 in-scope operations and all shared APIs are verified across four languages.
 - Follow the repository's required Red, Green, Refactor commit evidence and draft-PR workflow during implementation; this documentation-preparation task does not modify production code.
 
 ## Complexity Tracking
 
-No constitution or accepted architecture exception is required. The 57-operation matrix is a release dependency register, not a second owner of KMIP semantics.
+No constitution or accepted architecture exception is required. The 56-operation `client_1_0` matrix is a release dependency register, not a second owner of KMIP semantics; it records the 57th KMIP operation, Set Endpoint Role, as deferred to 1.1 by the normative catalog.
