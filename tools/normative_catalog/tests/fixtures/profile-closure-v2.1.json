@@ -48366,17 +48366,19 @@
           "source_order": 1,
           "source_text": "This authentication suite stipulates that a profile conforming to the Basic Authentication Suite SHALL use TLS to negotiate a secure channel.",
           "source_keyword": "SHALL",
-          "actor": "unresolved",
+          "actor": "client",
           "direction": "unresolved",
           "condition": "For a profile conforming to the Basic Authentication Suite.",
-          "scope_disposition": "unresolved",
+          "scope_disposition": "profile_conditional",
           "candidate_requirement_id": "KMIPKIT-REQ-PROF-3.1-001"
         }
       ],
       "rejected_candidate_mappings": [],
-      "expected_client_requirement_ids": [],
+      "expected_client_requirement_ids": [
+        "KMIPKIT-REQ-PROF-3.1-001"
+      ],
       "applies_to": "all_client_profiles",
-      "review_note": "Profiles v2.1 section 3.1, locator 1; The source assigns the duty to a conforming Profile, not an identified client or server endpoint; actor remains unresolved."
+      "review_note": "Profiles v2.1 section 3.1, locator 1; Profiles §6.1 item 2 explicitly requires client implementations conformant to the profile to support the Basic Authentication Suite conditions, so this conditional TLS requirement is included in client profile closure. Profiles §6.2 item 2 separately establishes server-profile applicability; message direction remains unresolved."
     },
     {
       "source_id": "KMIPKIT-SRC-profiles",
