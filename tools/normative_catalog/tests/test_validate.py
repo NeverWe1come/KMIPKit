@@ -105,6 +105,16 @@ OPTIONAL_CAPABILITY_TEST_REQUIREMENTS = {
     "crates/kmipkit-protocol/tests/unit/register_operation_tests.rs::request_emits_table_291_fields_in_order_and_preserves_object_item": (
         "KMIPKIT-REQ-SPEC-6.1-004",
     ),
+    "crates/kmipkit-protocol/tests/unit/create_tests.rs::create_preserves_two_repeated_object_group_text_values_in_order": (
+        "KMIPKIT-REQ-SPEC-4.35-001-001",
+        "KMIPKIT-REQ-SPEC-4.35-001-002",
+    ),
+    "crates/kmipkit-protocol/tests/unit/locate_tests.rs::locate_encodes_key_value_present_boolean_as_a_search_criterion": (
+        "KMIPKIT-REQ-SPEC-4.28-001-003",
+    ),
+    "crates/kmipkit-protocol/tests/unit/get_tests.rs::get_preserves_repeated_attribute_names_in_valid_wrapping_specification": (
+        "KMIPKIT-REQ-SPEC-7.18-006",
+    ),
 }
 
 

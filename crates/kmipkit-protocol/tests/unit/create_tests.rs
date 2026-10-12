@@ -15,6 +15,7 @@ const REQUEST_PAYLOAD: u32 = 0x0042_0079;
 const RESPONSE_PAYLOAD: u32 = 0x0042_007c;
 const OBJECT_TYPE: u32 = 0x0042_0057;
 const ATTRIBUTES: u32 = 0x0042_0125; // KMIP v2.1 §11.56 tag assignment for §5.1.
+const OBJECT_GROUP: u32 = 0x0042_0056;
 const CRYPTOGRAPHIC_LENGTH: u32 = 0x0042_002a;
 const PROTECTION_STORAGE_MASKS: u32 = 0x0042_015f;
 const UNIQUE_IDENTIFIER: u32 = 0x0042_0094;
@@ -258,6 +259,43 @@ fn request_keeps_the_required_empty_attributes_structure_without_synthesizing_fi
     fields[1].with_value(|value| match value {
         ValueView::Structure(attributes) => assert!(attributes.children().is_empty()),
         _ => panic!("Attributes must remain a Structure"),
+    });
+}
+
+#[test]
+fn create_preserves_two_repeated_object_group_text_values_in_order() {
+    // OASIS KMIP v2.1 §4.35, Table 99, defines Object Group as Text String;
+    // §6.1.8, Table 186, carries the attributes in a Create request.
+    let attributes = AttributeSet::try_new([
+        item(OBJECT_GROUP, Value::text_string("group-primary".to_owned())),
+        item(OBJECT_GROUP, Value::text_string("group-secondary".to_owned())),
+    ])
+    .expect("Object Group accepts repeated Text String attribute values");
+    let payload = CreateRequest::new(ObjectType::from_raw(2), attributes)
+        .into_ttlv_payload()
+        .expect("the Create request can carry both Object Group values");
+    let view = payload.view();
+    let fields = view.children();
+
+    assert_eq!(fields.len(), 2);
+    assert_eq!(fields[0].tag().raw(), OBJECT_TYPE);
+    assert_eq!(fields[0].item_type(), ItemType::Enumeration);
+    assert_eq!(fields[1].tag().raw(), ATTRIBUTES);
+    assert_eq!(fields[1].item_type(), ItemType::Structure);
+    fields[1].with_value(|value| match value {
+        ValueView::Structure(attributes) => {
+            let items = attributes.children();
+            assert_eq!(items.len(), 2);
+            for (item, expected) in items.iter().zip(["group-primary", "group-secondary"]) {
+                assert_eq!(item.tag().raw(), OBJECT_GROUP);
+                assert_eq!(item.item_type(), ItemType::TextString);
+                assert!(item.with_value(|value| matches!(
+                    value,
+                    ValueView::TextString(actual) if actual == expected
+                )));
+            }
+        }
+        _ => panic!("Create Attributes remains a Structure"),
     });
 }
 
