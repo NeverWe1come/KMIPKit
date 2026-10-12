@@ -15065,7 +15065,7 @@ class CatalogValidationTests(unittest.TestCase):
             ),
             "KMIPKIT-SOURCE-GAP-SPEC-6.1.33-CORRELATION-VALUE-OPTIONAL": (
                 "Correlation Value", [30404, 30421], "No", "optional_table_body_value",
-                "crates/kmipkit-protocol/tests/unit/mac_verify_operation_tests.rs::request_emits_optional_identifier_parameters_original_data_mac_and_framing_in_order",
+                "crates/kmipkit-protocol/tests/unit/mac_verify_operation_tests.rs::request_requires_mac_data_for_single_part_and_omits_it_for_multipart",
                 "crates/kmipkit-client/tests/unit/mac_verify_execution_tests.rs::reordered_batch_responses_keep_each_requests_multipart_indicator_context",
             ),
             "KMIPKIT-SOURCE-GAP-SPEC-6.1.33-INIT-INDICATOR-OPTIONAL": (
