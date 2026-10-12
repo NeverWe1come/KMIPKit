@@ -9,11 +9,13 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[3]
 ORACLE_PATH = ROOT / "tools/normative_catalog/tests/fixtures/profile-closure-v2.1.json"
+CATALOG_PATH = ROOT / "specification/catalog/kmip-2.1.json"
 
 
 class AsyncTableContractTests(unittest.TestCase):
     def test_process_and_query_async_request_rows_are_feature_contracts(self) -> None:
         oracle = json.loads(ORACLE_PATH.read_text(encoding="utf-8"))
+        catalog = json.loads(CATALOG_PATH.read_text(encoding="utf-8"))
         expected = {
             "KMIPKIT-SOURCE-GAP-SPEC-6.1.39-ASYNC-CORRELATION-VALUE-REQUIRED": (
                 "6.1.39", "Asynchronous Correlation Value", [31618, 31636], 278,
@@ -41,6 +43,13 @@ class AsyncTableContractTests(unittest.TestCase):
 
         self.assertEqual(set(contracts), set(expected))
         self.assertEqual(gaps, {})
+        operations = {row["element_id"]: row for row in catalog["elements"] if row.get("kind") == "operation"}
+        for operation_id in {
+            "KMIPKIT-ELEM-OP-C2S-PROCESS",
+            "KMIPKIT-ELEM-OP-C2S-QUERY-ASYNCHRONOUS-REQUESTS",
+        }:
+            with self.subTest(operation_id=operation_id):
+                self.assertEqual(operations[operation_id]["feature_spec"], "KMIPKIT-0009")
         for gap_id, (section, label, line_range, table_number, operation_id, fr_ids) in expected.items():
             row = contracts[gap_id]
             with self.subTest(gap_id=gap_id):
