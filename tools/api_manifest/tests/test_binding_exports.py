@@ -213,6 +213,14 @@ class BindingExportAuditTests(unittest.TestCase):
         self.assertFalse(result["complete"])
         self.assertIn("unresolved-import-target", {issue["reason"] for issue in result["issues"]})
 
+    def test_python_inventory_fails_closed_for_augmented_all_exports(self):
+        source = "from datetime import datetime\n__all__ = []\n__all__ += ['datetime']\n"
+        result = AUDIT.inventory_python_sources({"kmipkit/api.py": source})
+        names = {row["exportName"] for row in result["declarations"]}
+        self.assertIn("kmipkit.api.datetime", names)
+        self.assertFalse(result["complete"])
+        self.assertIn("unresolved-import-target", {issue["reason"] for issue in result["issues"]})
+
     def test_python_inventory_resolves_reexports_through_multiple_modules(self):
         sources = {
             "kmipkit/core.py": "class Client:\n    pass\n",
