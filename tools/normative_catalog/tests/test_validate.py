@@ -13262,6 +13262,9 @@ class CatalogValidationTests(unittest.TestCase):
         requirements = {row["requirement_id"]: row for row in catalog["requirements"]}
         profile = next(row for row in catalog["profiles"] if row["profile_id"] == profile_id)
         reviews = {row["source_clause_id"]: row for row in oracle["source_requirement_reviews"]}
+        crosswalk_by_requirement: dict[str, list[dict[str, object]]] = {}
+        for mapping in oracle["requirement_crosswalk"]:
+            crosswalk_by_requirement.setdefault(mapping["requirement_id"], []).append(mapping)
         for requirement_id, source_clause_id in requirement_clauses.items():
             with self.subTest(requirement_id=requirement_id):
                 requirement = requirements[requirement_id]
@@ -13271,7 +13274,7 @@ class CatalogValidationTests(unittest.TestCase):
                 self.assertIn(requirement_id, profile["requirement_ids"])
                 self.assertIn(source_clause_id, profile["direct_source_clause_ids"])
                 self.assertIn(source_clause_id, profile["source_clause_ids"])
-                mappings = [row for row in oracle["requirement_crosswalk"] if row["requirement_id"] == requirement_id]
+                mappings = crosswalk_by_requirement.get(requirement_id, [])
                 self.assertEqual(len(mappings), 1)
                 self.assertEqual(mappings[0]["source_clause_id"], source_clause_id)
                 self.assertEqual(mappings[0]["source_actor"], "client")
