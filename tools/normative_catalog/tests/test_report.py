@@ -107,6 +107,31 @@ class CoverageReportTests(unittest.TestCase):
                 load_typed_rule_mappings(repository),
             )
 
+    def test_typed_rule_registry_reader_rejects_executable_field_expressions(self) -> None:
+        from tools.normative_catalog.report import load_typed_rule_mappings
+
+        with tempfile.TemporaryDirectory() as directory:
+            repository = Path(directory)
+            source_path = repository / "crates/kmipkit-protocol/src/profile.rs"
+            source_path.parent.mkdir(parents=True)
+            source_path.write_text(
+                """const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
+    TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-6.1.16-001-001",
+        source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.16-001",
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
+        evaluator: Some(run_unreviewed_macro!()),
+        test_evidence: &[],
+        constraints: &[],
+    },
+];
+""",
+                encoding="utf-8",
+            )
+
+            with self.assertRaisesRegex(ValueError, "unsupported typed profile rule mapping"):
+                load_typed_rule_mappings(repository)
+
     def test_profile_readiness_blocks_unresolved_scope_in_its_clause_closure(self) -> None:
         from tools.normative_catalog.report import evaluate_profile_readiness
 
