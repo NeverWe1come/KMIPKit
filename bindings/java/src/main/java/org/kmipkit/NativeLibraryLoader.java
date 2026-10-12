@@ -49,6 +49,16 @@ final class NativeLibraryLoader {
         Path create(Path temporaryRoot) throws IOException;
     }
 
+    @FunctionalInterface
+    interface AclDirectoryVerifier {
+        void verify(Path directory) throws IOException;
+    }
+
+    @FunctionalInterface
+    interface AtomicPublisher {
+        void publish(Path staging, Path destination) throws IOException;
+    }
+
     private NativeLibraryLoader() {}
 
     static void load() {
@@ -158,6 +168,11 @@ final class NativeLibraryLoader {
     }
 
     static Path createPrivateDirectory(Path temporaryRoot) throws IOException {
+        return createPrivateDirectory(temporaryRoot, NativeLibraryLoader::verifyPrivateDirectory);
+    }
+
+    static Path createPrivateDirectory(Path temporaryRoot, AclDirectoryVerifier aclDirectoryVerifier)
+            throws IOException {
         Path root = temporaryRoot.toAbsolutePath().normalize();
         if (Files.isSymbolicLink(root) || !Files.isDirectory(root, LinkOption.NOFOLLOW_LINKS)) {
             throw new IOException("Temporary directory is unavailable");
@@ -176,7 +191,7 @@ final class NativeLibraryLoader {
             FileAttribute<List<AclEntry>> acl = privateAcl(owner);
             Path directory = Files.createTempDirectory(root, "kmipkit-native-", acl);
             try {
-                verifyPrivateDirectory(directory);
+                aclDirectoryVerifier.verify(directory);
                 return directory;
             } catch (IOException failure) {
                 Files.deleteIfExists(directory);
@@ -187,6 +202,16 @@ final class NativeLibraryLoader {
     }
 
     static Path extractVerified(InputStream library, String expectedHash, Path privateDirectory, String libraryName) {
+        return extractVerified(library, expectedHash, privateDirectory, libraryName,
+                (staging, destination) -> Files.move(staging, destination, StandardCopyOption.ATOMIC_MOVE));
+    }
+
+    static Path extractVerified(
+            InputStream library,
+            String expectedHash,
+            Path privateDirectory,
+            String libraryName,
+            AtomicPublisher atomicPublisher) {
         Path staging = null;
         Path identityLink = null;
         try {
@@ -238,7 +263,7 @@ final class NativeLibraryLoader {
                 throw new IOException("Native library destination already exists");
             }
             try {
-                Files.move(staging, destination, StandardCopyOption.ATOMIC_MOVE);
+                atomicPublisher.publish(staging, destination);
             } catch (AtomicMoveNotSupportedException unsupported) {
                 throw new IOException("Atomic native library publication is unavailable");
             }
@@ -294,7 +319,7 @@ final class NativeLibraryLoader {
         }
     }
 
-    private static FileAttribute<?> privateFileAttribute(Path privateDirectory) throws IOException {
+    static FileAttribute<?> privateFileAttribute(Path privateDirectory) throws IOException {
         if (Files.getFileStore(privateDirectory).supportsFileAttributeView("posix")) {
             return PosixFilePermissions.asFileAttribute(PRIVATE_FILE_PERMISSIONS);
         }
