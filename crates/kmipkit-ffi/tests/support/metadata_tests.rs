@@ -13,12 +13,7 @@ fn version_query_matches_the_package_version_and_stable_abi() {
     let mut abi = u32::MAX;
 
     assert_eq!(
-        kmipkit_version_get(
-            &raw mut major,
-            &raw mut minor,
-            &raw mut patch,
-            &raw mut abi,
-        ),
+        kmipkit_version_get(&raw mut major, &raw mut minor, &raw mut patch, &raw mut abi,),
         SUCCESS
     );
     let package_version = env!("CARGO_PKG_VERSION");
@@ -27,7 +22,10 @@ fn version_query_matches_the_package_version_and_stable_abi() {
         .split('.')
         .map(|component| component.parse().expect("Cargo package version is numeric"))
         .collect();
-    assert_eq!([major, minor, patch], [components[0], components[1], components[2]]);
+    assert_eq!(
+        [major, minor, patch],
+        [components[0], components[1], components[2]]
+    );
     assert_eq!(abi, KMIPKIT_ABI_VERSION);
     assert_eq!(abi, 1);
 }
@@ -48,22 +46,14 @@ fn capability_query_only_reports_c_mapped_nonblocked_capabilities() {
 
     let blocked = b"public_binding_surface";
     assert_eq!(
-        kmipkit_capability_is_available(
-            blocked.as_ptr(),
-            blocked.len() as u64,
-            &raw mut available,
-        ),
+        kmipkit_capability_is_available(blocked.as_ptr(), blocked.len() as u64, &raw mut available,),
         SUCCESS
     );
     assert_eq!(available, 0);
 
     let unknown = b"not-a-manifest-capability";
     assert_eq!(
-        kmipkit_capability_is_available(
-            unknown.as_ptr(),
-            unknown.len() as u64,
-            &raw mut available,
-        ),
+        kmipkit_capability_is_available(unknown.as_ptr(), unknown.len() as u64, &raw mut available,),
         SUCCESS
     );
     assert_eq!(available, 0);
@@ -85,9 +75,15 @@ fn last_error_is_redacted_thread_local_and_persists_until_explicitly_cleared() {
         ),
         SUCCESS
     );
-    assert_eq!((status, category, cause, delivery), (SUCCESS, ERROR_NONE, ERROR_NONE, DELIVERY_NONE));
+    assert_eq!(
+        (status, category, cause, delivery),
+        (SUCCESS, ERROR_NONE, ERROR_NONE, DELIVERY_NONE)
+    );
 
-    assert_eq!(kmipkit_ttlv_structure_create(std::ptr::null_mut()), ERROR_INVALID_INPUT);
+    assert_eq!(
+        kmipkit_ttlv_structure_create(std::ptr::null_mut()),
+        ERROR_INVALID_INPUT
+    );
     status = i32::MAX;
     category = u32::MAX;
     cause = u32::MAX;
@@ -103,7 +99,12 @@ fn last_error_is_redacted_thread_local_and_persists_until_explicitly_cleared() {
     );
     assert_eq!(
         (status, category, cause, delivery),
-        (ERROR_INVALID_INPUT, ERROR_CATEGORY_VALIDATION, ERROR_CAUSE_INVALID_INPUT, DELIVERY_NONE)
+        (
+            ERROR_INVALID_INPUT,
+            ERROR_CATEGORY_VALIDATION,
+            ERROR_CAUSE_INVALID_INPUT,
+            DELIVERY_NONE
+        )
     );
 
     let child = std::thread::spawn(|| {
@@ -145,7 +146,12 @@ fn last_error_is_redacted_thread_local_and_persists_until_explicitly_cleared() {
     );
     assert_eq!(
         (status, category, cause, delivery),
-        (ERROR_INVALID_INPUT, ERROR_CATEGORY_VALIDATION, ERROR_CAUSE_INVALID_INPUT, DELIVERY_NONE)
+        (
+            ERROR_INVALID_INPUT,
+            ERROR_CATEGORY_VALIDATION,
+            ERROR_CAUSE_INVALID_INPUT,
+            DELIVERY_NONE
+        )
     );
 
     kmipkit_last_error_clear();
@@ -162,13 +168,24 @@ fn last_error_is_redacted_thread_local_and_persists_until_explicitly_cleared() {
         ),
         SUCCESS
     );
-    assert_eq!((status, category, cause, delivery), (SUCCESS, ERROR_NONE, ERROR_NONE, DELIVERY_NONE));
+    assert_eq!(
+        (status, category, cause, delivery),
+        (SUCCESS, ERROR_NONE, ERROR_NONE, DELIVERY_NONE)
+    );
 }
 
 #[test]
 fn last_error_get_rejects_null_outputs_without_overwriting_the_snapshot() {
     kmipkit_last_error_clear();
-    assert_eq!(kmipkit_ttlv_structure_create(std::ptr::null_mut()), ERROR_INVALID_INPUT);
+    let mut available = 0;
+    assert_eq!(
+        kmipkit_capability_is_available(
+            std::ptr::null(),
+            MAX_CAPABILITY_ID_BYTES + 1,
+            &raw mut available,
+        ),
+        ERROR_RESOURCE_LIMIT
+    );
     assert_eq!(
         kmipkit_last_error_get(
             std::ptr::null_mut(),
@@ -193,6 +210,11 @@ fn last_error_get_rejects_null_outputs_without_overwriting_the_snapshot() {
     );
     assert_eq!(
         (status, category, cause, delivery),
-        (ERROR_INVALID_INPUT, ERROR_CATEGORY_VALIDATION, ERROR_CAUSE_INVALID_INPUT, DELIVERY_NONE)
+        (
+            ERROR_RESOURCE_LIMIT,
+            ERROR_CATEGORY_VALIDATION,
+            ERROR_CAUSE_OTHER,
+            DELIVERY_NONE
+        )
     );
 }

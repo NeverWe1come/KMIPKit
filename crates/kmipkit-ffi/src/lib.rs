@@ -2,6 +2,8 @@
 #![deny(unsafe_code)]
 #[allow(unsafe_code)]
 mod extension_registry;
+#[allow(dead_code)]
+mod public_api_generated;
 
 #[repr(C)]
 pub struct kmipkit_extension_identity_t {
