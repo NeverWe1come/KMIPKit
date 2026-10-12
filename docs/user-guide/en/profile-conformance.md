@@ -7,14 +7,25 @@ successful exchange.
 
 ## Explicit per-exchange selection
 
-Applications can pass a selection to `Client::execute_with_profiles` for one
-request batch:
+Pass a configured client, a typed request batch, and codec limits to a helper
+that selects a profile for one exchange. This complete Rust function compiles
+as a rustdoc example; its body returns the structured success or failure to
+the caller:
 
-```rust
-let selection = ProfileValidationSelection::new([
-    "KMIPKIT-PROFILE-BASELINE-CLIENT",
-]);
-let result = client.execute_with_profiles(batch, &selection, &limits);
+```rust,no_run
+use kmipkit::{
+    Client, ClientBatch, ClientBatchResponse, ClientError, ProfileValidationSelection,
+};
+use kmipkit_ttlv::codec::CodecLimits;
+
+fn execute_for_profile(
+    client: &mut Client,
+    batch: ClientBatch,
+    limits: &CodecLimits,
+) -> Result<ClientBatchResponse, ClientError> {
+    let selection = ProfileValidationSelection::new(["KMIPKIT-PROFILE-BASELINE-CLIENT"]);
+    client.execute_with_profiles(batch, &selection, limits)
+}
 ```
 
 The method validates applicability, dependencies, and complete typed rule

@@ -7,14 +7,25 @@ vacío, así que ningún perfil puede completar todavía un intercambio validado
 
 ## Selección explícita por intercambio
 
-La aplicación puede pasar una selección a `Client::execute_with_profiles`
-para un lote de solicitudes:
+Pasa un cliente configurado, un lote tipado y los límites del códec a una
+función que selecciona un perfil para un intercambio. Esta función Rust
+completa compila como ejemplo de rustdoc y devuelve al llamador el resultado o
+el error estructurado:
 
-```rust
-let selection = ProfileValidationSelection::new([
-    "KMIPKIT-PROFILE-BASELINE-CLIENT",
-]);
-let result = client.execute_with_profiles(batch, &selection, &limits);
+```rust,no_run
+use kmipkit::{
+    Client, ClientBatch, ClientBatchResponse, ClientError, ProfileValidationSelection,
+};
+use kmipkit_ttlv::codec::CodecLimits;
+
+fn execute_for_profile(
+    client: &mut Client,
+    batch: ClientBatch,
+    limits: &CodecLimits,
+) -> Result<ClientBatchResponse, ClientError> {
+    let selection = ProfileValidationSelection::new(["KMIPKIT-PROFILE-BASELINE-CLIENT"]);
+    client.execute_with_profiles(batch, &selection, limits)
+}
 ```
 
 El método valida aplicabilidad, dependencias y cobertura tipada completa antes
