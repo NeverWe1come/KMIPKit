@@ -36,6 +36,10 @@ def _cells(line: str) -> list[str]:
     return [cell.strip() for cell in line.strip().strip("|").split("|")]
 
 
+def _reference_file(reference: str) -> Path:
+    return ROOT / reference.partition("::")[0]
+
+
 class ObjectLifecycleTraceabilityTests(unittest.TestCase):
     def test_all_39_requirements_link_to_their_operation_and_sources(self) -> None:
         trace = TRACEABILITY_PATH.read_text(encoding="utf-8")
@@ -95,14 +99,15 @@ class ObjectLifecycleTraceabilityTests(unittest.TestCase):
                     row[0],
                 )
             for path in (*requirement["implementation_refs"], *requirement["verification_refs"]):
-                reference_path = path.partition("::")[0]
-                self.assertTrue((ROOT / reference_path).is_file(), f"{row[0]}: {path}")
+                self.assertTrue(_reference_file(path).is_file(), f"{row[0]}: {path}")
 
         for element in operation_elements:
             self.assertTrue(element["requirement_ids"])
             for path in (*element["implementation_refs"], *element["verification_refs"]):
-                reference_path = path.partition("::")[0]
-                self.assertTrue((ROOT / reference_path).is_file(), f"{element['element_id']}: {path}")
+                self.assertTrue(
+                    _reference_file(path).is_file(),
+                    f"{element['element_id']}: {path}",
+                )
 
     def test_source_rejected_candidates_are_not_assigned_to_client_operations(self) -> None:
         catalog = json.loads(CATALOG_PATH.read_text(encoding="utf-8"))
