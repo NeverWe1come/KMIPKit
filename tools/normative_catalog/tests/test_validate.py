@@ -9663,7 +9663,7 @@ class CatalogValidationTests(unittest.TestCase):
             ],
             "KMIPKIT-CLAUSE-SPEC-6.1.5-001": [
                 (1, "The correlation value of the original operation SHALL be specified in the request.", "SHALL", "client", "client_to_server operation request", None, "client_1_0", "KMIPKIT-REQ-SPEC-6.1.5-001"),
-                (2, "The server SHALL respond with a Cancellation Result.", "SHALL", "server", "server_to_client response", None, "server_only", "KMIPKIT-REQ-SPEC-6.1.5-001"),
+                (2, "The server SHALL respond with a Cancellation Result.", "SHALL", "server", "server_to_client response", None, "server_only", "KMIPKIT-REQ-SPEC-6.1.5-002"),
             ],
             "KMIPKIT-CLAUSE-SPEC-6.1.5-004": [
                 (1, "This section details the specific Result Reasons that SHALL be returned for errors detected in a Cancel Operation.", "SHALL", "server", "server_to_client response", "An error is detected in a Cancel Operation.", "server_only", None),
@@ -9882,7 +9882,7 @@ class CatalogValidationTests(unittest.TestCase):
             ],
             "KMIPKIT-CLAUSE-SPEC-6.1.7-005": [
                 (1, "The client MAY use this to determine if the server allows the client to use the object with the specified lease or longer.", "MAY", "client", "client-side lease capability decision", "if the server allows the client to use the object with the specified lease or longer", "client_1_0", "KMIPKIT-REQ-SPEC-6.1.7-005"),
-                (2, "Including this attribute in the Check operation does not actually cause the server to grant a lease, but only indicates that the requested lease time value MAY be granted if requested by a subsequent, batched Obtain Lease operation.", "MAY", "server", "server processing of client request", "if requested by a subsequent, batched Obtain Lease operation", "server_only", "KMIPKIT-REQ-SPEC-6.1.7-005"),
+                (2, "Including this attribute in the Check operation does not actually cause the server to grant a lease, but only indicates that the requested lease time value MAY be granted if requested by a subsequent, batched Obtain Lease operation.", "MAY", "server", "server processing of client request", "if requested by a subsequent, batched Obtain Lease operation", "server_only", "KMIPKIT-REQ-SPEC-6.1.7-006"),
             ],
             "KMIPKIT-CLAUSE-SPEC-6.1.7-006": [],
             "KMIPKIT-CLAUSE-SPEC-6.1.7-007": [],
@@ -13703,12 +13703,16 @@ class CatalogValidationTests(unittest.TestCase):
                 "KMIPKIT-REQ-SPEC-6.1.51-002",
                 "KMIPKIT-REQ-SPEC-6.1.51-003",
                 "KMIPKIT-REQ-SPEC-6.1.52-001",
-                "KMIPKIT-REQ-SPEC-6.1.54-001",
             }
+            client_1_1_body_proposals = {"KMIPKIT-REQ-SPEC-6.1.54-001"}
             expected_scope = (
                 "client_1_0"
                 if gap["proposed_requirement_id"] in client_body_proposals
-                else "profile_conditional"
+                else (
+                    "client_1_1"
+                    if gap["proposed_requirement_id"] in client_1_1_body_proposals
+                    else "profile_conditional"
+                )
             )
             self.assertEqual(gap["scope_disposition"], expected_scope)
             self.assertIsNone(gap["candidate_requirement_id"])

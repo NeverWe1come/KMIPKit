@@ -22747,11 +22747,12 @@
       ],
       "disposition": "requirement",
       "requirement_ids": [
-        "KMIPKIT-REQ-SPEC-6.1.5-001"
+        "KMIPKIT-REQ-SPEC-6.1.5-001",
+        "KMIPKIT-REQ-SPEC-6.1.5-002"
       ],
       "exclusion_rationale": null,
-      "role": "client",
-      "direction": "client_to_server",
+      "role": "both",
+      "direction": "both",
       "scope_state": "mixed",
       "condition": null
     },
@@ -24116,11 +24117,12 @@
       ],
       "disposition": "requirement",
       "requirement_ids": [
-        "KMIPKIT-REQ-SPEC-6.1.7-005"
+        "KMIPKIT-REQ-SPEC-6.1.7-005",
+        "KMIPKIT-REQ-SPEC-6.1.7-006"
       ],
       "exclusion_rationale": null,
-      "role": "client",
-      "direction": "client_to_server",
+      "role": "both",
+      "direction": "both",
       "scope_state": "mixed",
       "condition": "To evaluate a later Obtain Lease request."
     },
@@ -94222,7 +94224,7 @@
       "role": "client",
       "direction": "client_to_server",
       "condition": null,
-      "scope_state": "mixed",
+      "scope_state": "client_1_0",
       "element_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
@@ -94233,6 +94235,36 @@
       "decision_id": null,
       "status": "unassigned",
       "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
+    },
+    {
+      "requirement_id": "KMIPKIT-REQ-SPEC-6.1.5-002",
+      "source_clause_ids": [
+        "KMIPKIT-CLAUSE-SPEC-6.1.5-001"
+      ],
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "6.1.5"
+        }
+      ],
+      "source_keyword": "SHALL",
+      "normative_strength": "mandatory",
+      "subject": "Cancellation Result response",
+      "summary": "A server must respond to a Cancel operation with a Cancellation Result.",
+      "role": "server",
+      "direction": "server_to_client",
+      "condition": null,
+      "scope_state": "server_only",
+      "element_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "negative_verification_required": false,
+      "decision_id": null,
+      "status": "unassigned",
+      "review_note": "Pinned KMIP Specification v2.1 §6.1.5 assigns this response obligation to the server. It is separate from the client Cancel request obligation and has no client profile membership."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.50-001",
@@ -95344,7 +95376,7 @@
       "role": "client",
       "direction": "client_to_server",
       "condition": "To evaluate a later Obtain Lease request.",
-      "scope_state": "mixed",
+      "scope_state": "client_1_0",
       "element_ids": [
         "KMIPKIT-ELEM-OP-C2S-CHECK"
       ],
@@ -95363,6 +95395,36 @@
       "decision_id": null,
       "status": "verified",
       "review_note": "Caller-facing behavior links to table-derived protocol and fake-transport tests in specs/022-object-lifecycle/traceability.md. No official Test Cases are linked to this requirement in the pinned OASIS source; no formal conformance is claimed."
+    },
+    {
+      "requirement_id": "KMIPKIT-REQ-SPEC-6.1.7-006",
+      "source_clause_ids": [
+        "KMIPKIT-CLAUSE-SPEC-6.1.7-005"
+      ],
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "6.1.7"
+        }
+      ],
+      "source_keyword": "MAY",
+      "normative_strength": "permission_or_optional",
+      "subject": "Lease Time grant policy",
+      "summary": "A server may grant the requested lease time only when it is requested by a subsequent batched Obtain Lease operation.",
+      "role": "server",
+      "direction": "server_to_client",
+      "condition": "If requested by a subsequent, batched Obtain Lease operation.",
+      "scope_state": "server_only",
+      "element_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "negative_verification_required": false,
+      "decision_id": null,
+      "status": "unassigned",
+      "review_note": "Pinned KMIP Specification v2.1 §6.1.7 states a server-side MAY for a later batched Obtain Lease operation. Check does not itself grant a lease; this server permission is separate from the client Lease Time capability and has no client profile membership."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.9-001-001",

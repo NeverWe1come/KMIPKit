@@ -23497,7 +23497,7 @@
       "source_actor": "client"
     },
     {
-      "requirement_id": "KMIPKIT-REQ-SPEC-6.1.5-001",
+      "requirement_id": "KMIPKIT-REQ-SPEC-6.1.5-002",
       "source_clause_id": "KMIPKIT-CLAUSE-SPEC-6.1.5-001",
       "source_id": "KMIPKIT-SRC-spec",
       "source_section": "6.1.5",
@@ -23506,10 +23506,10 @@
         "block_kind": "paragraph"
       },
       "source_keyword": "SHALL",
-      "role": "client",
+      "role": "server",
       "scope_state": "server_only",
-      "applies_to": "all_client_profiles",
-      "review_note": "Specification v2.1 §6.1.5 paragraph source atom 2; actor/scope reviewed against pinned source text.",
+      "applies_to": "none_1_0",
+      "review_note": "Pinned Specification v2.1 source atom is server-only; the separate client atom has its own stable requirement ID.",
       "source_obligation_order": 2,
       "source_actor": "server"
     },
@@ -24007,7 +24007,7 @@
       "source_actor": "client"
     },
     {
-      "requirement_id": "KMIPKIT-REQ-SPEC-6.1.7-005",
+      "requirement_id": "KMIPKIT-REQ-SPEC-6.1.7-006",
       "source_clause_id": "KMIPKIT-CLAUSE-SPEC-6.1.7-005",
       "source_id": "KMIPKIT-SRC-spec",
       "source_section": "6.1.7",
@@ -24016,10 +24016,10 @@
         "block_kind": "table_row"
       },
       "source_keyword": "MAY",
-      "role": "client",
+      "role": "server",
       "scope_state": "server_only",
-      "applies_to": "all_client_profiles",
-      "review_note": "Specification v2.1 §6.1.7 source atom 2; actor/scope reviewed against pinned source text.",
+      "applies_to": "none_1_0",
+      "review_note": "Pinned Specification v2.1 source atom is server-only; the separate client atom has its own stable requirement ID.",
       "source_obligation_order": 2,
       "source_actor": "server"
     },
@@ -73045,7 +73045,7 @@
           "direction": "server_to_client response",
           "condition": null,
           "scope_disposition": "server_only",
-          "candidate_requirement_id": "KMIPKIT-REQ-SPEC-6.1.5-001"
+          "candidate_requirement_id": "KMIPKIT-REQ-SPEC-6.1.5-002"
         }
       ],
       "rejected_candidate_mappings": [],
@@ -73053,7 +73053,7 @@
         "KMIPKIT-REQ-SPEC-6.1.5-001"
       ],
       "applies_to": "all_client_profiles",
-      "review_note": "The client request correlation predicate and the server Cancellation Result predicate are separate source atoms. The catalog label is client-scoped and describes only the request atom; the non-modal asynchronous-response sentence is retained as context, not a third keyword atom."
+      "review_note": "The client request correlation predicate and server Cancellation Result response predicate are separate source atoms with distinct stable requirement IDs; only the client ID is in client profile closure."
     },
     {
       "source_id": "KMIPKIT-SRC-spec",
@@ -75531,7 +75531,8 @@
           "direction": "client→server request payload",
           "condition": null,
           "scope_disposition": "client_1_0",
-          "candidate_requirement_id": null
+          "candidate_requirement_id": null,
+          "source_gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.7-002-MAY-LIMITED-ATTRIBUTES"
         }
       ],
       "rejected_candidate_mappings": [],
@@ -75652,7 +75653,7 @@
           "direction": "server processing of client request",
           "condition": "if requested by a subsequent, batched Obtain Lease operation",
           "scope_disposition": "server_only",
-          "candidate_requirement_id": "KMIPKIT-REQ-SPEC-6.1.7-005"
+          "candidate_requirement_id": "KMIPKIT-REQ-SPEC-6.1.7-006"
         }
       ],
       "rejected_candidate_mappings": [],
@@ -75660,7 +75661,7 @@
         "KMIPKIT-REQ-SPEC-6.1.7-005"
       ],
       "applies_to": "all_client_profiles",
-      "review_note": "The client lease-time capability and server grant permission are distinct atoms. The stable label describes the client capability; the server atom exposes a source/catalog scope mismatch."
+      "review_note": "The client Lease Time capability and the server permission for a later batched Obtain Lease are separate source atoms with distinct stable requirement IDs; Check does not itself grant a lease."
     },
     {
       "source_id": "KMIPKIT-SRC-spec",

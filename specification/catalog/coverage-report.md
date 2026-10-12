@@ -21,7 +21,7 @@ This report records inventory coverage and evidence state. It does not claim pro
 | Client-to-server operations | 57 |
 | Server-to-client operations | 5 |
 | Tag ranges | 5 |
-| Normative requirements | 570 |
+| Normative requirements | 572 |
 | Profiles | 35 |
 | Test cases | 203 |
 | Open discrepancies | 36 |
@@ -54,20 +54,20 @@ This report records inventory coverage and evidence state. It does not claim pro
 | Dimension | Value | Count |
 | --- | --- | --- |
 | Strength | discouraged | 2 |
-| Strength | mandatory | 317 |
-| Strength | permission\_or\_optional | 182 |
+| Strength | mandatory | 318 |
+| Strength | permission\_or\_optional | 183 |
 | Strength | prohibited | 48 |
 | Strength | recommended | 21 |
-| Scope | client\_1\_0 | 190 |
-| Scope | mixed | 4 |
+| Scope | client\_1\_0 | 192 |
+| Scope | mixed | 2 |
 | Scope | out\_of\_scope | 65 |
 | Scope | profile\_conditional | 205 |
-| Scope | server\_only | 40 |
+| Scope | server\_only | 42 |
 | Scope | unclear | 66 |
 | Direction | both | 10 |
 | Direction | client\_to\_server | 342 |
 | Direction | not\_applicable | 62 |
-| Direction | server\_to\_client | 17 |
+| Direction | server\_to\_client | 19 |
 | Direction | unclear | 139 |
 
 ## Tag allocation and ranges
@@ -924,7 +924,8 @@ Every row summarizes audited candidate locators by their pinned source section. 
 | KMIPKIT-REQ-SPEC-6.1.46-004-002 | mandatory | out\_of\_scope | KMIPKIT-SRC-spec §6.1.46 |
 | KMIPKIT-REQ-SPEC-6.1.47-004-002 | mandatory | out\_of\_scope | KMIPKIT-SRC-spec §6.1.47 |
 | KMIPKIT-REQ-SPEC-6.1.48-004 | permission\_or\_optional | out\_of\_scope | KMIPKIT-SRC-spec §6.1.48 |
-| KMIPKIT-REQ-SPEC-6.1.5-001 | mandatory | mixed | KMIPKIT-SRC-spec §6.1.5 |
+| KMIPKIT-REQ-SPEC-6.1.5-001 | mandatory | client\_1\_0 | KMIPKIT-SRC-spec §6.1.5 |
+| KMIPKIT-REQ-SPEC-6.1.5-002 | mandatory | server\_only | KMIPKIT-SRC-spec §6.1.5 |
 | KMIPKIT-REQ-SPEC-6.1.50-001 | prohibited | client\_1\_0 | KMIPKIT-SRC-spec §6.1.50 |
 | KMIPKIT-REQ-SPEC-6.1.50-002 | permission\_or\_optional | server\_only | KMIPKIT-SRC-spec §6.1.50 |
 | KMIPKIT-REQ-SPEC-6.1.50-003 | permission\_or\_optional | server\_only | KMIPKIT-SRC-spec §6.1.50 |
@@ -941,6 +942,7 @@ Every row summarizes audited candidate locators by their pinned source section. 
 | KMIPKIT-REQ-SPEC-6.1.57-004 | permission\_or\_optional | client\_1\_0 | KMIPKIT-SRC-spec §6.1.57 |
 | KMIPKIT-REQ-SPEC-6.1.57-005 | permission\_or\_optional | client\_1\_0 | KMIPKIT-SRC-spec §6.1.57 |
 | KMIPKIT-REQ-SPEC-6.1.57-006 | mandatory | unclear | KMIPKIT-SRC-spec §6.1.57 |
+| KMIPKIT-REQ-SPEC-6.1.7-006 | permission\_or\_optional | server\_only | KMIPKIT-SRC-spec §6.1.7 |
 | KMIPKIT-REQ-SPEC-6.1.9-001-001 | permission\_or\_optional | client\_1\_0 | KMIPKIT-SRC-spec §6.1.9 |
 | KMIPKIT-REQ-SPEC-6.1.9-001-002 | permission\_or\_optional | client\_1\_0 | KMIPKIT-SRC-spec §6.1.9 |
 | KMIPKIT-REQ-SPEC-6.1.9-006 | mandatory | mixed | KMIPKIT-SRC-spec §6.1.9 |
@@ -1437,6 +1439,7 @@ Every row summarizes audited candidate locators by their pinned source section. 
 | KMIPKIT-REQ-SPEC-6.1.48-004 | Source review rejects this client candidate because the source uses lowercase may, not formal uppercase MAY. The explicit server SHALL remains a server-only obligation. KMIPKIT-DEC-014 does not establish policy for lowercase may. | KMIPKIT-SRC-spec §6.1.48 |
 | KMIPKIT-REQ-SPEC-6.1.48-006 | Caller-facing behavior is verified within KMIPKit scope; see specs/022-object-lifecycle/traceability.md for the server/application boundary. No official Test Cases are linked to this requirement in the pinned OASIS source; this is not a full profile conformance claim. | KMIPKIT-SRC-spec §6.1.48 |
 | KMIPKIT-REQ-SPEC-6.1.5-001 | No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing. | KMIPKIT-SRC-spec §6.1.5 |
+| KMIPKIT-REQ-SPEC-6.1.5-002 | Pinned KMIP Specification v2.1 §6.1.5 assigns this response obligation to the server. It is separate from the client Cancel request obligation and has no client profile membership. | KMIPKIT-SRC-spec §6.1.5 |
 | KMIPKIT-REQ-SPEC-6.1.50-001 | No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing. | KMIPKIT-SRC-spec §6.1.50 |
 | KMIPKIT-REQ-SPEC-6.1.50-002 | No entry in the pinned official Test Cases v2.1 Committee Note 01 inventory covers this server-side MAY in OASIS KMIP Specification v2.1 Section 6.1.50. It is outside client\_1\_0 implementation scope and must not be treated as a client obligation. | KMIPKIT-SRC-spec §6.1.50 |
 | KMIPKIT-REQ-SPEC-6.1.50-003 | No entry in the pinned official Test Cases v2.1 Committee Note 01 inventory covers the server's optional zero Data Length response under OASIS KMIP Specification v2.1 Section 6.1.50. It is outside client\_1\_0 implementation scope and does not impose a client response obligation. | KMIPKIT-SRC-spec §6.1.50 |
@@ -1470,6 +1473,7 @@ Every row summarizes audited candidate locators by their pinned source section. 
 | KMIPKIT-REQ-SPEC-6.1.7-004-001 | Caller-facing behavior links to table-derived protocol and fake-transport tests in specs/022-object-lifecycle/traceability.md. No official Test Cases are linked to this requirement in the pinned OASIS source; no formal conformance is claimed. | KMIPKIT-SRC-spec §6.1.7 |
 | KMIPKIT-REQ-SPEC-6.1.7-004-002 | Caller-facing behavior is verified within KMIPKit scope; see specs/022-object-lifecycle/traceability.md for the server/application boundary. No official Test Cases are linked to this requirement in the pinned OASIS source; this is not a full profile conformance claim. | KMIPKIT-SRC-spec §6.1.7 |
 | KMIPKIT-REQ-SPEC-6.1.7-005 | Caller-facing behavior links to table-derived protocol and fake-transport tests in specs/022-object-lifecycle/traceability.md. No official Test Cases are linked to this requirement in the pinned OASIS source; no formal conformance is claimed. | KMIPKIT-SRC-spec §6.1.7 |
+| KMIPKIT-REQ-SPEC-6.1.7-006 | Pinned KMIP Specification v2.1 §6.1.7 states a server-side MAY for a later batched Obtain Lease operation. Check does not itself grant a lease; this server permission is separate from the client Lease Time capability and has no client profile membership. | KMIPKIT-SRC-spec §6.1.7 |
 | KMIPKIT-REQ-SPEC-6.1.9-001-001 | No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing. | KMIPKIT-SRC-spec §6.1.9 |
 | KMIPKIT-REQ-SPEC-6.1.9-001-002 | No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing. | KMIPKIT-SRC-spec §6.1.9 |
 | KMIPKIT-REQ-SPEC-6.1.9-006 | No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing. | KMIPKIT-SRC-spec §6.1.9 |
