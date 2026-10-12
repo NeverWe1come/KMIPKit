@@ -1372,6 +1372,13 @@ def endpoint_role_operation_enum_element() -> dict[str, object]:
 
 
 class CatalogValidationTests(unittest.TestCase):
+    def _requirement_record_from_catalog(self, requirement_id: str) -> dict[str, object]:
+        catalog = json.loads((ROOT / "specification/catalog/kmip-2.1.json").read_text(encoding="utf-8"))
+        return next(
+            row for row in catalog["requirements"]
+            if row["requirement_id"] == requirement_id
+        )
+
     def test_checked_in_clause_ledger_covers_all_keyword_strength_mappings(self) -> None:
         catalog = json.loads((ROOT / "specification/catalog/kmip-2.1.json").read_text(encoding="utf-8"))
         expected_keywords = set(catalog_validate.KEYWORD_STRENGTH)
@@ -1652,8 +1659,9 @@ class CatalogValidationTests(unittest.TestCase):
                             r"(?i)(source|pinned|OASIS|retired|normative|candidate|extract|cited|server|ambiguous|unresolved)",
                         )
                     else:
-                        self.assertIn("official Test Cases", review_note)
-                        self.assertIn("pinned", review_note)
+                        normalized_review_note = review_note.casefold()
+                        self.assertIn("official test cases", normalized_review_note)
+                        self.assertIn("pinned", normalized_review_note)
 
     def test_json_preflight_enforces_depth_record_token_and_global_member_limits(self) -> None:
         cases = (
@@ -13270,13 +13278,7 @@ class CatalogValidationTests(unittest.TestCase):
 
     def test_check_additional_attributes_separates_local_evidence_from_official_case_gap(self) -> None:
         """The pinned Test Cases source does not justify an official case link for §6.1.7."""
-        catalog = json.loads(
-            (ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8")
-        )
-        requirement = next(
-            row for row in catalog["requirements"]
-            if row["requirement_id"] == "KMIPKIT-REQ-SPEC-6.1.7-002-003"
-        )
+        requirement = self._requirement_record_from_catalog("KMIPKIT-REQ-SPEC-6.1.7-002-003")
 
         self.assertEqual(requirement["test_case_ids"], [])
         with self.subTest(evidence="qualified local verification"):
@@ -14094,13 +14096,7 @@ class CatalogValidationTests(unittest.TestCase):
 
     def test_attestation_indicator_separates_local_evidence_from_official_case_gap(self) -> None:
         """Pinned sources leave §9.3 without an official test-case link."""
-        catalog = json.loads(
-            (ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8")
-        )
-        requirement = next(
-            row for row in catalog["requirements"]
-            if row["requirement_id"] == "KMIPKIT-REQ-SPEC-9.3-001-001"
-        )
+        requirement = self._requirement_record_from_catalog("KMIPKIT-REQ-SPEC-9.3-001-001")
 
         self.assertEqual(requirement["test_case_ids"], [])
         with self.subTest(evidence="existing local verification"):
