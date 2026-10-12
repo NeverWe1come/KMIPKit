@@ -1381,6 +1381,14 @@ class CatalogValidationTests(unittest.TestCase):
 
         self.assertEqual(observed_keywords, expected_keywords)
         for requirement in catalog["requirements"]:
+            source_force = requirement.get("source_force")
+            if source_force is not None:
+                self.assertIsNone(requirement["source_keyword"])
+                self.assertEqual(
+                    requirement["normative_strength"],
+                    catalog_validate.TABLE_BODY_STRENGTH[source_force],
+                )
+                continue
             self.assertEqual(
                 requirement["normative_strength"],
                 catalog_validate.KEYWORD_STRENGTH[requirement["source_keyword"]],
@@ -4379,7 +4387,7 @@ class CatalogValidationTests(unittest.TestCase):
         self.assertEqual(set(reviews), expected_clauses)
 
         crosswalk = [
-            row for row in oracle["requirement_crosswalk"] if row["source_clause_id"] in expected_clauses
+            row for row in oracle["requirement_crosswalk"] if row.get("source_clause_id") in expected_clauses
         ]
         self.assertEqual({row["requirement_id"] for row in crosswalk}, expected_candidates)
         reviewed_candidates = {
@@ -8747,7 +8755,7 @@ class CatalogValidationTests(unittest.TestCase):
         }
         self.assertEqual(set(reviews), expected_clause_ids)
         self.assertFalse(
-            [row for row in oracle["requirement_crosswalk"] if row["source_clause_id"] in expected_clause_ids],
+            [row for row in oracle["requirement_crosswalk"] if row.get("source_clause_id") in expected_clause_ids],
             "the only catalog candidate in this slice is a rejected REQUIRED table heading",
         )
         self.assertEqual(
@@ -8868,7 +8876,7 @@ class CatalogValidationTests(unittest.TestCase):
             "KMIPKIT-REQ-SPEC-4.32-002",
         }
         crosswalk = [
-            row for row in oracle["requirement_crosswalk"] if row["source_clause_id"] in expected_clause_ids
+            row for row in oracle["requirement_crosswalk"] if row.get("source_clause_id") in expected_clause_ids
         ]
         self.assertEqual({row["requirement_id"] for row in crosswalk}, expected_client_labels)
         reviewed_labels = {
@@ -9017,7 +9025,7 @@ class CatalogValidationTests(unittest.TestCase):
         crosswalk_ids = {
             row["requirement_id"]
             for row in oracle["requirement_crosswalk"]
-            if row["source_clause_id"] in expected_clause_ids
+            if row.get("source_clause_id") in expected_clause_ids
         }
         self.assertEqual(crosswalk_ids, expected_candidate_ids)
 
@@ -9106,7 +9114,7 @@ class CatalogValidationTests(unittest.TestCase):
         crosswalk_labels = {
             row["requirement_id"]
             for row in oracle["requirement_crosswalk"]
-            if row["source_clause_id"] in expected_clause_ids
+            if row.get("source_clause_id") in expected_clause_ids
         }
         self.assertEqual(crosswalk_labels, expected_client_labels)
         rejected_labels = {
@@ -9225,7 +9233,7 @@ class CatalogValidationTests(unittest.TestCase):
                     self.assertGreaterEqual(atom_offset, 0, f"source atom {atom['source_order']} must be a source-ordered excerpt")
                     prior_offset = atom_offset
         self.assertFalse(
-            [row for row in oracle["requirement_crosswalk"] if row["source_clause_id"] in expected_clause_ids],
+            [row for row in oracle["requirement_crosswalk"] if row.get("source_clause_id") in expected_clause_ids],
             "these clauses have no existing catalog requirement labels; source duties stay in the review inventory",
         )
         self.assertEqual(
@@ -9534,7 +9542,7 @@ class CatalogValidationTests(unittest.TestCase):
                         mapping
                         for mapping in crosswalk
                         if mapping["requirement_id"] == requirement_id
-                        and mapping["source_clause_id"] == clause_id
+                        and mapping.get("source_clause_id") == clause_id
                         and mapping["source_obligation_order"] == order
                     ]
                     self.assertEqual(len(matching_mappings), 1)
@@ -9750,7 +9758,7 @@ class CatalogValidationTests(unittest.TestCase):
                         mapping
                         for mapping in crosswalk
                         if mapping["requirement_id"] == requirement_id
-                        and mapping["source_clause_id"] == clause_id
+                        and mapping.get("source_clause_id") == clause_id
                         and mapping["source_obligation_order"] == order
                     ]
                     self.assertEqual(len(mappings), 1)
@@ -9953,7 +9961,7 @@ class CatalogValidationTests(unittest.TestCase):
                     matching_mappings = [
                         mapping
                         for mapping in crosswalk
-                        if mapping["source_clause_id"] == clause_id
+                        if mapping.get("source_clause_id") == clause_id
                         and mapping.get("source_obligation_order") == order
                     ]
                     self.assertEqual(len(matching_mappings), 1)
@@ -9978,7 +9986,7 @@ class CatalogValidationTests(unittest.TestCase):
             for atom in all_atoms
         )
         self.assertEqual(expected_mapping_count, 15)
-        slice_mappings = [mapping for mapping in crosswalk if mapping["source_clause_id"] in clause_ids]
+        slice_mappings = [mapping for mapping in crosswalk if mapping.get("source_clause_id") in clause_ids]
         self.assertEqual(len(slice_mappings), expected_mapping_count)
         client_profiles = [profile for profile in catalog["profiles"] if profile["role"] == "client"]
         self.assertEqual(len(client_profiles), 18)
@@ -10168,7 +10176,7 @@ class CatalogValidationTests(unittest.TestCase):
                         continue
                     matching = [
                         row for row in crosswalk
-                        if row["source_clause_id"] == clause_id and row.get("source_obligation_order") == order
+                        if row.get("source_clause_id") == clause_id and row.get("source_obligation_order") == order
                     ]
                     self.assertEqual(len(matching), 1)
                     mapping = matching[0]
@@ -10190,7 +10198,7 @@ class CatalogValidationTests(unittest.TestCase):
         self.assertEqual(sum(atom[6] == "client_1_0 + server_only (split/shared)" for atom in all_atoms), 2)
         self.assertEqual(sum(atom[6] == "server_only" for atom in all_atoms), 13)
         self.assertEqual({clause_id for clause_id, atoms in expected_atoms.items() if not atoms}, expected_empty_atoms)
-        slice_crosswalk = [row for row in crosswalk if row["source_clause_id"] in clause_ids]
+        slice_crosswalk = [row for row in crosswalk if row.get("source_clause_id") in clause_ids]
         self.assertEqual(len(slice_crosswalk), 5)
         self.assertEqual(
             {row["requirement_id"] for row in slice_crosswalk},
@@ -10340,7 +10348,7 @@ class CatalogValidationTests(unittest.TestCase):
             {
                 row["requirement_id"]
                 for row in oracle["requirement_crosswalk"]
-                if row["source_clause_id"] in expected_clause_ids
+                if row.get("source_clause_id") in expected_clause_ids
             },
             expected_client_ids | {
                 "KMIPKIT-REQ-SPEC-6.1.11-003",
@@ -11408,7 +11416,7 @@ class CatalogValidationTests(unittest.TestCase):
             },
             "all current stable labels in the audited source locators are accounted for",
         )
-        crosswalk = [row for row in oracle["requirement_crosswalk"] if row["source_clause_id"] in expected_sources]
+        crosswalk = [row for row in oracle["requirement_crosswalk"] if row.get("source_clause_id") in expected_sources]
         self.assertEqual(
             {
                 row["requirement_id"]: (
@@ -12649,7 +12657,7 @@ class CatalogValidationTests(unittest.TestCase):
 
         slice_clause_ids = set(expected_sources)
         self.assertEqual(
-            [row for row in oracle["requirement_crosswalk"] if row["source_clause_id"] in slice_clause_ids],
+            [row for row in oracle["requirement_crosswalk"] if row.get("source_clause_id") in slice_clause_ids],
             [],
             "the pinned Export locators have no assigned requirement labels yet",
         )
@@ -13020,7 +13028,7 @@ class CatalogValidationTests(unittest.TestCase):
             all(atom["actor"] == "client" and atom["scope_disposition"] == "out_of_scope" for atom in client_may_atoms)
         )
         self.assertFalse(
-            any(mapping["source_clause_id"] in expected_clause_ids for mapping in oracle["requirement_crosswalk"]),
+            any(mapping.get("source_clause_id") in expected_clause_ids for mapping in oracle["requirement_crosswalk"]),
             "§6.2 source duties remain outside the client-initiated 1.0 requirement closure",
         )
 
@@ -13190,7 +13198,7 @@ class CatalogValidationTests(unittest.TestCase):
         for clause_id, (client_id, server_id) in split_actor_mappings.items():
             with self.subTest(source_clause_id=clause_id):
                 source_rows = sorted(
-                    (row for row in oracle["requirement_crosswalk"] if row["source_clause_id"] == clause_id),
+                    (row for row in oracle["requirement_crosswalk"] if row.get("source_clause_id") == clause_id),
                     key=lambda row: row["source_obligation_order"],
                 )
                 self.assertEqual([row["requirement_id"] for row in source_rows], [client_id, server_id])
@@ -13242,7 +13250,7 @@ class CatalogValidationTests(unittest.TestCase):
         matching_rows = [
             row
             for row in oracle["requirement_crosswalk"]
-            if row["source_clause_id"] == "KMIPKIT-CLAUSE-SPEC-6.1.7-002"
+            if row.get("source_clause_id") == "KMIPKIT-CLAUSE-SPEC-6.1.7-002"
             and row["source_obligation_order"] == 3
         ]
         self.assertEqual(len(matching_rows), 1)

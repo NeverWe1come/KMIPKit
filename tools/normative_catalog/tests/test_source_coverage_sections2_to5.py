@@ -241,7 +241,7 @@ class SourceCoverageSectionsTwoThroughFiveTests(unittest.TestCase):
             row["requirement_id"]: row
             for row in fixture["requirement_crosswalk"]
             if row["source_id"] == "KMIPKIT-SRC-spec"
-            and row["source_clause_id"] == "KMIPKIT-CLAUSE-SPEC-4-001"
+            and row.get("source_clause_id") == "KMIPKIT-CLAUSE-SPEC-4-001"
         }
         self.assertTrue("KMIPKIT-CLAUSE-SPEC-4-001" in reviews)
         review = reviews["KMIPKIT-CLAUSE-SPEC-4-001"]
