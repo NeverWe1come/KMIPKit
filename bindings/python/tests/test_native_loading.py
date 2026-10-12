@@ -98,7 +98,7 @@ def test_loader_failure_is_redacted(tmp_path: Path) -> None:
     assert error.value.__suppress_context__
 
 
-def test_abi_mismatch_fails_without_exposing_version_details(
+def test_abi_inspection_failure_is_redacted(
     tmp_path: Path,
 ) -> None:
     package_library = tmp_path / "kmipkit" / "_ffi" / "_ffi.dll"
@@ -127,7 +127,7 @@ def test_reported_abi_mismatch_has_a_distinct_error(tmp_path: Path) -> None:
     package_library.parent.mkdir(parents=True)
     package_library.touch()
 
-    with pytest.raises(NativeAbiMismatchError):
+    with pytest.raises(NativeAbiMismatchError) as error:
         load_native_library(
             bundled_path=package_library,
             expected_abi_version=4,
@@ -135,3 +135,6 @@ def test_reported_abi_mismatch_has_a_distinct_error(tmp_path: Path) -> None:
             abi_version=lambda _: 3,
             environ={},
         )
+
+    assert "3" not in str(error.value)
+    assert "4" not in str(error.value)

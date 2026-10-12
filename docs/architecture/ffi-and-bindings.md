@@ -77,8 +77,12 @@ download executable code at runtime.
 
 Java selects the OS and architecture, verifies the bundled SHA-256, extracts
 atomically to a private location, and loads with `System.load`. Python loads
-the library adjacent to the installed wheel. Both may accept an explicit
-administrator-provided native path and fail fast on ABI mismatch.
+the package-local native library. Python accepts only the explicit
+`KMIPKIT_NATIVE_LIBRARY` environment variable as an administrator path
+override. When set, that path replaces the bundled selection; a missing or
+incompatible override fails without falling back to the bundled library.
+Java also accepts an explicit administrator-provided native path. Both fail
+fast on ABI mismatch.
 
 ## Parity gate
 
