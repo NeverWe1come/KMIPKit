@@ -166,8 +166,15 @@ class _Inventory:
             self.children(crate, inner["items"], package, path, ancestors, exports, default_public=True, associated=True)
         elif kind == "type_alias":
             self.issue(package, "::".join(path), "type-alias-members-not-audited", item)
+        if isinstance(inner, dict):
+            self.implementation_members(crate, inner.get("impls", []), package, path, ancestors, exports, item)
+
+    def implementation_members(self, crate: str, impl_ids: list[Any], package: str, path: tuple[str, ...],
+                               ancestors: frozenset[tuple[str, str]], exports: tuple[dict[str, Any] | None, ...],
+                               owner: dict[str, Any]) -> None:
+        """Visit inherent members and retain an honest boundary around trait behavior."""
         trait_members: set[str] = set()
-        for impl_id in inner.get("impls", []) if isinstance(inner, dict) else []:
+        for impl_id in impl_ids:
             impl_item = self.documents[crate]["index"][str(impl_id)]
             impl = impl_item["inner"]["impl"]
             if impl.get("trait") is None:
@@ -175,7 +182,7 @@ class _Inventory:
             elif impl["items"] or impl.get("provided_trait_methods"):
                 trait_members.add(impl["trait"]["path"])
         if trait_members:
-            self.issue(package, "::".join(path), "trait-implementation-members-not-audited", item,
+            self.issue(package, "::".join(path), "trait-implementation-members-not-audited", owner,
                        traits=sorted(trait_members))
 
     @staticmethod
