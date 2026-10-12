@@ -140,10 +140,23 @@ class MultiLanguageCoverageTests(unittest.TestCase):
             source_relative = "bindings/java/src/main/java/org/kmipkit/NativeLibraryLoader.java"
             source = root / source_relative
             source.parent.mkdir(parents=True)
-            source.write_text("line one\nline two\nline three\n", encoding="utf-8")
+            source.write_text("".join(f"line {line}\n" for line in range(1, 21)), encoding="utf-8")
+
+            def jacoco_report(name: str, covered_lines: set[int]) -> str:
+                report = ET.Element("report", {"name": name})
+                package = ET.SubElement(report, "package", {"name": "org/kmipkit"})
+                source_file = ET.SubElement(package, "sourcefile", {"name": "NativeLibraryLoader.java"})
+                for line in range(1, 21):
+                    covered = line in covered_lines
+                    ET.SubElement(source_file, "line", {
+                        "nr": str(line), "mi": str(int(not covered)), "ci": str(int(covered)),
+                        "mb": "0", "cb": "0",
+                    })
+                return ET.tostring(report, encoding="unicode")
+
             reports = {
-                "coverage-java-linux": '<report name="Linux"><package name="org/kmipkit"><sourcefile name="NativeLibraryLoader.java"><line nr="1" mi="0" ci="1" mb="0" cb="0"/><line nr="2" mi="1" ci="0" mb="0" cb="0"/></sourcefile></package></report>',
-                "coverage-java-windows": '<report name="Windows"><package name="org/kmipkit"><sourcefile name="NativeLibraryLoader.java"><line nr="1" mi="0" ci="1" mb="0" cb="0"/><line nr="2" mi="0" ci="1" mb="0" cb="0"/><line nr="3" mi="1" ci="0" mb="0" cb="0"/></sourcefile></package></report>',
+                "coverage-java-linux": jacoco_report("Linux", set(range(1, 20)) - {2}),
+                "coverage-java-windows": jacoco_report("Windows", {2}),
             }
             for artifact, document in reports.items():
                 report_path = root / artifact / "jacoco.xml"
@@ -151,14 +164,44 @@ class MultiLanguageCoverageTests(unittest.TestCase):
                 report_path.write_text(document, encoding="utf-8")
 
             parsed = GATE._load_adapter_reports(root, root, {"java"})
+            diff = (
+                f"diff --git a/{source_relative} b/{source_relative}\n"
+                f"--- a/{source_relative}\n+++ b/{source_relative}\n@@ -0,0 +1,20 @@\n"
+                + "".join(f"+line {line}\n" for line in range(1, 21))
+            )
+            results = GATE._evaluate_coverage(root, {}, diff, parsed, required_scopes={"java"})
 
         self.assertIsNotNone(parsed)
         assert parsed is not None
         self.assertEqual(
-            {source_relative: {1: 1, 2: 1, 3: 0}},
+            {source_relative: {**{line: 1 for line in range(1, 20)}, 20: 0}},
             parsed["Java adapters"],
             "Java coverage should union independently covered Linux and Windows lines",
         )
+        self.assertTrue(any(result.startswith("Changed production coverage: 19/20 (95.00%)") for result in results))
+
+    def test_adapter_loader_requires_both_platform_jacoco_reports(self) -> None:
+        self.require_gate()
+        source_relative = "bindings/java/src/main/java/org/kmipkit/NativeLibraryLoader.java"
+        for missing_platform in ("linux", "windows"):
+            with self.subTest(missing_platform=missing_platform), tempfile.TemporaryDirectory() as directory:
+                root = Path(directory)
+                source = root / source_relative
+                source.parent.mkdir(parents=True)
+                source.write_text("line one\n", encoding="utf-8")
+                available_platform = "windows" if missing_platform == "linux" else "linux"
+                artifact = root / f"coverage-java-{available_platform}" / "jacoco.xml"
+                artifact.parent.mkdir(parents=True)
+                artifact.write_text(
+                    '<report name="available"><package name="org/kmipkit">'
+                    '<sourcefile name="NativeLibraryLoader.java">'
+                    '<line nr="1" mi="0" ci="1" mb="0" cb="0"/>'
+                    '</sourcefile></package></report>',
+                    encoding="utf-8",
+                )
+
+                with self.assertRaisesRegex(GATE.CoverageDataError, "Required Java adapters coverage artifact is missing"):
+                    GATE._load_adapter_reports(root, root, {"java"})
 
     def test_cobertura_parser_maps_python_sources_and_rejects_outside_sources(self) -> None:
         self.require_gate()

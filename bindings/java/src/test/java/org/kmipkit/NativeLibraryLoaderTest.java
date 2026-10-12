@@ -10,9 +10,11 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.ByteArrayInputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.FileSystem;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
@@ -334,6 +336,46 @@ final class NativeLibraryLoaderTest {
         } finally {
             restoreProperty("kmipkit.nativeLibrary", previousLibrary);
             restoreProperty("java.io.tmpdir", previousTemporaryDirectory);
+        }
+    }
+
+    @Test
+    void loadsVerifiedBundledLibraryInAnIsolatedJvmWithoutAnExplicitOverride() throws Exception {
+        Path nativeLibrary = Path.of(System.getProperty("kmipkit.nativeLibrary", ""));
+        assertTrue(Files.isRegularFile(nativeLibrary), "Maven must build the JNI library before this test");
+        byte[] nativeBytes = Files.readAllBytes(nativeLibrary);
+        String targetId = NativeLibraryLoader.targetIdFor(
+                System.getProperty("os.name", ""), System.getProperty("os.arch", ""));
+        Path resourceRoot = Files.createDirectory(temporaryDirectory.resolve("bundled-classpath"));
+        Path resourceLibrary = resourceRoot.resolve("META-INF/native")
+                .resolve(targetId).resolve(nativeLibrary.getFileName());
+        Files.createDirectories(resourceLibrary.getParent());
+        Files.write(resourceLibrary, nativeBytes);
+        Files.writeString(resourceLibrary.resolveSibling(resourceLibrary.getFileName() + ".sha256"),
+                sha256(nativeBytes) + "\n", StandardCharsets.US_ASCII);
+
+        Path childTemporaryRoot = Files.createDirectory(temporaryDirectory.resolve("child-tmp"));
+        Path testClasses = classLocation(NativeLibraryLoadProbe.class);
+        Path mainClasses = classLocation(NativeExtensionRegistry.class);
+        Path java = Path.of(System.getProperty("java.home"), "bin",
+                System.getProperty("os.name", "").startsWith("Windows") ? "java.exe" : "java");
+        String classPath = String.join(File.pathSeparator,
+                resourceRoot.toString(), testClasses.toString(), mainClasses.toString());
+        Process process = new ProcessBuilder(
+                java.toString(), "-Djava.io.tmpdir=" + childTemporaryRoot,
+                "--class-path", classPath, NativeLibraryLoadProbe.class.getName())
+                .redirectErrorStream(true)
+                .start();
+        String output = new String(process.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
+        int exitCode = process.waitFor();
+
+        assertEquals(0, exitCode, output);
+        assertTrue(output.contains("ABI=1"), output);
+        try (var extractedDirectories = Files.list(childTemporaryRoot)) {
+            List<Path> directories = extractedDirectories.toList();
+            assertEquals(1, directories.size());
+            assertTrue(directories.get(0).getFileName().toString().startsWith("kmipkit-native-"));
+            assertTrue(Files.isRegularFile(directories.get(0).resolve(nativeLibrary.getFileName())));
         }
     }
 
@@ -699,6 +741,10 @@ final class NativeLibraryLoaderTest {
 
     private static String sha256(byte[] bytes) throws Exception {
         return HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256").digest(bytes));
+    }
+
+    private static Path classLocation(Class<?> type) throws Exception {
+        return Path.of(type.getProtectionDomain().getCodeSource().getLocation().toURI());
     }
 
     private static void restoreProperty(String name, String value) {
