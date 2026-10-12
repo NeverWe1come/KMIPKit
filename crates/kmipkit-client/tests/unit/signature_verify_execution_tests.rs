@@ -14,8 +14,8 @@ use kmipkit_protocol::{SecretBytes, SignatureVerifyRequest, UniqueIdentifier};
 use kmipkit_transport::{
     RequestDeliveryState, Transport, TransportCauseCategory, TransportError, TransportResponse,
 };
-use kmipkit_ttlv::{Value, ValueView};
 use kmipkit_ttlv::codec::{CodecLimits, decode};
+use kmipkit_ttlv::{Value, ValueView};
 use zeroize::Zeroizing;
 
 use crate::execute_test_support::{
@@ -155,9 +155,7 @@ enum CapturedSignatureVerifyField {
     Other,
 }
 
-fn request_payload_fields(
-    bytes: &[u8],
-) -> (Option<u32>, Vec<(u32, CapturedSignatureVerifyField)>) {
+fn request_payload_fields(bytes: &[u8]) -> (Option<u32>, Vec<(u32, CapturedSignatureVerifyField)>) {
     let message = decode(bytes).expect("the captured Signature Verify request is valid TTLV");
     message.with_value(|value| {
         let ValueView::Structure(message) = value else {
@@ -269,14 +267,8 @@ fn request_table_337_single_part_fields_reach_the_fake_transport_unchanged() {
                 SIGNATURE_DATA,
                 CapturedSignatureVerifyField::Bytes(signature.to_vec()),
             ),
-            (
-                INIT_INDICATOR,
-                CapturedSignatureVerifyField::Boolean(true),
-            ),
-            (
-                FINAL_INDICATOR,
-                CapturedSignatureVerifyField::Boolean(true),
-            ),
+            (INIT_INDICATOR, CapturedSignatureVerifyField::Boolean(true),),
+            (FINAL_INDICATOR, CapturedSignatureVerifyField::Boolean(true),),
         ]
     );
 }
@@ -309,10 +301,7 @@ fn request_table_337_multipart_fields_reach_the_fake_transport_unchanged() {
                 CORRELATION_VALUE,
                 CapturedSignatureVerifyField::Bytes(correlation.to_vec()),
             ),
-            (
-                INIT_INDICATOR,
-                CapturedSignatureVerifyField::Boolean(true),
-            ),
+            (INIT_INDICATOR, CapturedSignatureVerifyField::Boolean(true),),
             (
                 FINAL_INDICATOR,
                 CapturedSignatureVerifyField::Boolean(false),
