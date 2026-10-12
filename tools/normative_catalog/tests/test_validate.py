@@ -15925,6 +15925,48 @@ class CatalogValidationTests(unittest.TestCase):
                     requirement = requirements[requirement_id]
                     self.assertIn(expected_test, requirement["verification_refs"])
 
+    def test_obtain_lease_evidence_uses_named_tests_without_reassigning_requirement_owner(self) -> None:
+        """Obtain Lease evidence names positive client-visible tests under its existing owner."""
+        catalog = json.loads(
+            (ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8")
+        )
+        requirements = {row["requirement_id"]: row for row in catalog["requirements"]}
+        expected_refs = {
+            "KMIPKIT-REQ-SPEC-6.1.35-001-001": {
+                "crates/kmipkit-protocol/tests/unit/obtain_lease_operation_tests.rs::successful_response_preserves_identifier_zero_lease_time_date_and_extensions",
+                "crates/kmipkit-client/tests/unit/obtain_lease_execution_tests.rs::obtain_lease_sends_table_268_and_exposes_required_table_269_values_once",
+            },
+            "KMIPKIT-REQ-SPEC-6.1.35-002": {
+                "crates/kmipkit-protocol/tests/unit/obtain_lease_operation_tests.rs::successful_response_preserves_identifier_zero_lease_time_date_and_extensions",
+                "crates/kmipkit-client/tests/unit/obtain_lease_execution_tests.rs::obtain_lease_sends_table_268_and_exposes_required_table_269_values_once",
+            },
+            "KMIPKIT-REQ-SPEC-6.1.35-005": {
+                "crates/kmipkit-protocol/tests/unit/obtain_lease_operation_tests.rs::successful_response_exposes_positive_lease_interval",
+            },
+        }
+
+        for requirement_id, named_refs in expected_refs.items():
+            with self.subTest(requirement_id=requirement_id):
+                requirement = requirements[requirement_id]
+                self.assertEqual(requirement["feature_spec"], "KMIPKIT-0036")
+                self.assertEqual(requirement["scope_state"], "client_1_0")
+                self.assertEqual(requirement["status"], "verified")
+                self.assertTrue(
+                    all("::" in reference and reference.partition("::")[2] for reference in requirement["verification_refs"]),
+                    "verification references must include a named test, not only a file path",
+                )
+                self.assertTrue(named_refs.issubset(set(requirement["verification_refs"])))
+                for reference in named_refs:
+                    test_path, _, test_name = reference.partition("::")
+                    confined_source = test_feature_traceability._read_confined_test_source(test_path)
+                    self.assertIsNotNone(confined_source, reference)
+                    if confined_source is not None:
+                        path, source = confined_source
+                        self.assertTrue(
+                            _is_discoverable_positive_test(path, test_name, source),
+                            reference,
+                        )
+
     def test_unselected_profile_may_remains_catalogued_without_blocking_baseline_scope(self) -> None:
         """Only selected-profile closure requirements gate Baseline optional evidence."""
         oracle = json.loads(

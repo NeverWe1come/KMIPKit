@@ -113,6 +113,22 @@ fn successful_response_preserves_identifier_zero_lease_time_date_and_extensions(
 }
 
 #[test]
+fn successful_response_exposes_positive_lease_interval() {
+    let payload = structure([
+        item(
+            UNIQUE_IDENTIFIER,
+            Value::text_string("leased-object".to_owned()),
+        ),
+        item(LEASE_TIME, Value::interval(30)),
+        item(LAST_CHANGE_DATE, Value::date_time(1_700_000_000)),
+    ]);
+    let response = typed_response(SUCCESS, None, Some(payload))
+        .expect("Table 269 success exposes the required positive Lease Time");
+
+    assert_eq!(response.lease_time(), Some(30));
+}
+
+#[test]
 fn successful_response_rejects_missing_duplicate_or_mistyped_required_fields() {
     let payloads = [
         structure([
