@@ -14753,7 +14753,13 @@ class CatalogValidationTests(unittest.TestCase):
                             )
                     continue
                 reviewed_scope = obligation["scope_disposition"]
-                if reviewed_scope in {"client_1_0", "profile_conditional"} or reviewed_scope == "client_1_0 + server_only (split/shared)":
+                if (
+                    obligation["actor"] != "unresolved"
+                    and (
+                        reviewed_scope in {"client_1_0", "profile_conditional"}
+                        or reviewed_scope == "client_1_0 + server_only (split/shared)"
+                    )
+                ):
                     reviewed_client_ids.add(candidate_id)
                 candidate = candidate_requirements.get(candidate_id)
                 if candidate is None:

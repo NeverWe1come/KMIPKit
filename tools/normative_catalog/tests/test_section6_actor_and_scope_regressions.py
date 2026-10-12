@@ -199,6 +199,7 @@ class SectionSixActorAndScopeRegressionTests(unittest.TestCase):
         self.assertEqual(review["expected_client_requirement_ids"], [])
         self.assertNotIn(requirement_id, self.crosswalk_ids)
         self.assertNotIn(requirement_id, self.client_profile_ids)
+        self.assertEqual(requirement["profile_ids"], [])
         self.assertIn("feature/API serialization scope", review["review_note"])
         self.assertIn("does not establish server-side evaluation", review["review_note"])
 

@@ -76134,14 +76134,14 @@
           "actor": "unresolved",
           "direction": "client→server Request Payload field context; the passive SHALL does not name an actor",
           "condition": "If Validity Date is omitted.",
-          "scope_disposition": "unresolved",
+          "scope_disposition": "client_1_0",
           "candidate_requirement_id": "KMIPKIT-REQ-SPEC-6.1.57-006"
         }
       ],
       "rejected_candidate_mappings": [],
       "expected_client_requirement_ids": [],
       "applies_to": "all_client_profiles",
-        "review_note": "This is the Validity Date Request Payload row. Required=No describes field requiredness; the separate passive SHALL says that if omitted, the current date and time is assumed. The surrounding text says the server validates the chain, but the passive SHALL does not name the actor, so actor and source scope remain unresolved and no client crosswalk is assigned. The separate catalog scope_state=client_1_0 records that approved KMIPKIT-0042 includes this request/API serialization rule; it is feature/API serialization scope only, does not assign a source actor, and does not establish server-side evaluation of the assumed current date and time."
+      "review_note": "This is the Validity Date Request Payload row. Required=No describes field requiredness; the passive SHALL says omitted Validity Date uses the current date and time. The source actor remains unresolved because the text names no endpoint. scope_disposition=client_1_0 records only applicability to KMIPKit's approved KMIPKIT-0042 Validate request/API serialization feature; this feature/API serialization scope does not assign a source actor, add a client crosswalk or profile ID, and does not establish server-side evaluation of the assumed current date and time."
     },
     {
       "source_id": "KMIPKIT-SRC-spec",
