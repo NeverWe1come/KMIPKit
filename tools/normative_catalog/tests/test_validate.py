@@ -17325,7 +17325,7 @@ class CatalogValidationTests(unittest.TestCase):
         self.assertEqual(oracle["counts"]["source_table_contracts"], 62)
         self.assertEqual(oracle["counts"]["source_only_requirement_gaps"], 108)
         self.assertEqual(oracle["counts"]["source_only_requirement_gap_proposals"], 55)
-        self.assertEqual(oracle["counts"]["requirement_crosswalk_records"], 466)
+        self.assertEqual(oracle["counts"]["requirement_crosswalk_records"], 468)
         contract = contracts[0]
         source_path = "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
         line_range = [29529, 29544]
