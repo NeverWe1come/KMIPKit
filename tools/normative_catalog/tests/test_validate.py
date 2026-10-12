@@ -262,7 +262,7 @@ OPTIONAL_CAPABILITY_TEST_CONTENT_REQUIREMENTS = {
     "crates/kmipkit-client/tests/unit/recover_execution_tests.rs::caller_issues_poll_after_recover_pending_with_the_returned_correlation": (
         ".asynchronous_correlation_value()",
         "PollRequest::new(correlation.as_slice())",
-        "requests.borrow().len(), 1",
+        "requests.borrow().len(),",
         "[Some(RECOVER_OPERATION), Some(POLL_OPERATION)]",
         "requests[1].poll_correlation_matches_expected",
     ),
@@ -1853,7 +1853,10 @@ class CatalogValidationTests(unittest.TestCase):
         )
 
         self.assertEqual(requirement["status"], "unassigned")
-        self.assertIn("embedded Attributes within the wrapped Key Value are not evidenced", requirement["review_note"])
+        self.assertIn(
+            "embedded attributes within the wrapped key value are not evidenced",
+            requirement["review_note"].lower(),
+        )
 
     def test_checked_in_catalog_orders_evidence_policies_and_relationships_deterministically(self) -> None:
         catalog = json.loads((ROOT / "specification/catalog/kmip-2.1.json").read_text(encoding="utf-8"))

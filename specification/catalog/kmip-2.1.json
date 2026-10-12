@@ -91253,16 +91253,26 @@
       "direction": "client_to_server",
       "condition": "When the preceding operation and Batch Order Option permit it.",
       "scope_state": "client_1_0",
-      "element_ids": [],
+      "element_ids": [
+        "KMIPKIT-ELEM-ENUM-VALUE-UNIQUE-IDENTIFIER-ID-PLACEHOLDER-00000001",
+        "KMIPKIT-ELEM-OP-C2S-CHECK",
+        "KMIPKIT-ELEM-OP-C2S-REGISTER",
+        "KMIPKIT-ELEM-TAG-420094"
+      ],
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0019",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-client/src/execute.rs",
+        "crates/kmipkit-protocol/src/check.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-client/tests/unit/register_execution_tests.rs::register_produces_id_placeholder_for_a_later_identifier_omitting_operation"
+      ],
       "negative_verification_required": false,
       "decision_id": null,
-      "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
+      "status": "scoped_verified",
+      "review_note": "The named fake-transport test checks a Register followed by a Check request with Unique Identifier omitted and Batch Order Option unspecified, which section 6.1 permits. The transport fails before write, so this proves request construction only; it does not claim successful Register, server ID Placeholder assignment, or server consumption. No official Test Case is linked."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1-004",
@@ -95236,17 +95246,23 @@
       "condition": null,
       "scope_state": "client_1_0",
       "element_ids": [
-        "KMIPKIT-ELEM-OP-C2S-ARCHIVE"
+        "KMIPKIT-ELEM-OP-C2S-ARCHIVE",
+        "KMIPKIT-ELEM-TAG-420094"
       ],
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0018",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-client/src/execute.rs",
+        "crates/kmipkit-protocol/src/archive.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-client/tests/unit/archive_execution_tests.rs::archive_success_returns_server_result_without_claiming_archival_completion"
+      ],
       "negative_verification_required": false,
       "decision_id": null,
-      "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
+      "status": "scoped_verified",
+      "review_note": "The named client test verifies an Archive request and returns the scripted server result. Section 6.1.4 makes archival timing, location, and hierarchy a key-management-system policy matter; the evidence makes no archival-completion claim. No official Test Case is linked."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.40-014",
@@ -95347,17 +95363,25 @@
       "condition": "When retrieving an archived object takes time.",
       "scope_state": "client_1_0",
       "element_ids": [
-        "KMIPKIT-ELEM-OP-C2S-RECOVER"
+        "KMIPKIT-ELEM-OP-C2S-POLL",
+        "KMIPKIT-ELEM-OP-C2S-RECOVER",
+        "KMIPKIT-ELEM-TAG-420006"
       ],
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0018",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-client/src/execute.rs",
+        "crates/kmipkit-protocol/src/poll.rs",
+        "crates/kmipkit-protocol/src/recover.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-client/tests/unit/recover_execution_tests.rs::caller_issues_poll_after_recover_pending_with_the_returned_correlation"
+      ],
       "negative_verification_required": false,
       "decision_id": null,
-      "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
+      "status": "scoped_verified",
+      "review_note": "The named fake-transport test extracts the correlation from a scripted Recover Pending response and the caller explicitly invokes Poll with it, consistent with sections 6.1.42 and 6.1.38. No implicit polling is claimed; the scripted exchange does not establish server-side Recover completion. No official Test Case is linked."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.42-001-002",
@@ -95379,17 +95403,25 @@
       "condition": "After the Recover response.",
       "scope_state": "client_1_0",
       "element_ids": [
-        "KMIPKIT-ELEM-OP-C2S-RECOVER"
+        "KMIPKIT-ELEM-OP-C2S-GET",
+        "KMIPKIT-ELEM-OP-C2S-RECOVER",
+        "KMIPKIT-ELEM-TAG-420094"
       ],
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0018",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-client/src/execute.rs",
+        "crates/kmipkit-protocol/src/get.rs",
+        "crates/kmipkit-protocol/src/recover.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-client/tests/unit/object_read_execution_tests.rs::caller_directs_archived_locate_recover_then_get_as_three_exchanges"
+      ],
       "negative_verification_required": false,
       "decision_id": null,
-      "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
+      "status": "scoped_verified",
+      "review_note": "The named fake-transport test verifies the caller directs Locate, Recover, then Get as three exchanges, consistent with sections 6.1.42 and 6.1.19. The test makes no claim about archive state beyond its scripted responses. No official Test Case is linked."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.43-001",
@@ -95449,23 +95481,24 @@
       "condition": null,
       "scope_state": "client_1_0",
       "element_ids": [
-        "KMIPKIT-ELEM-OP-C2S-REGISTER"
+        "KMIPKIT-ELEM-OBJECT-STRUCTURE-KEY-WRAPPING-DATA",
+        "KMIPKIT-ELEM-OP-C2S-REGISTER",
+        "KMIPKIT-ELEM-STRUCTURE-MEMBER-3-1-KEY-BLOCK-KEY-WRAPPING-DATA"
       ],
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0036",
       "implementation_refs": [
-        "crates/kmipkit-protocol/src/register.rs",
-        "crates/kmipkit-client/src/execute.rs"
+        "crates/kmipkit-client/src/execute.rs",
+        "crates/kmipkit-protocol/src/register.rs"
       ],
       "verification_refs": [
-        "crates/kmipkit-protocol/tests/unit/register_operation_tests.rs",
-        "crates/kmipkit-client/tests/unit/register_execution_tests.rs"
+        "crates/kmipkit-client/tests/unit/register_execution_tests.rs::register_sends_a_wrapped_object_from_table_291"
       ],
       "negative_verification_required": false,
       "decision_id": null,
-      "status": "verified",
-      "review_note": "Caller-facing behavior links to table-derived protocol and fake-transport tests in specs/022-object-lifecycle/traceability.md. No official Test Cases are linked to this requirement in the pinned OASIS source; no formal conformance is claimed."
+      "status": "unassigned",
+      "review_note": "KMIP Specification 2.1 section 6.1.43 Table 291 says the registered object and attributes MAY be wrapped. The named test covers a Register request with wrapped Key Value bytes and a separate direct Attributes structure. Embedded Attributes within the wrapped Key Value are not evidenced. Keep this optional client capability unassigned until positive wrapped-Attributes request evidence is added. Synthetic bytes assert request shape only, not cryptographic wrapping, server acceptance, or unwrapping. No official Test Case is linked."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.43-007",
