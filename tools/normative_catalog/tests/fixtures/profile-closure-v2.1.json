@@ -93932,7 +93932,7 @@
       "reused_requirement_id": "KMIPKIT-REQ-SPEC-6.1.23-002-001",
       "proposed_requirement_id": null,
       "status": "source_obligation_covered_by_existing_stable_label",
-      "review_note": "This Required=Yes table-body row reuses the existing stable label for specifying the number of protection units. Catalog source_keyword=SHALL points to a descriptive paragraph rather than this Required=Yes row; Green must correct the locator/keyword metadata while preserving the client requirement."
+      "review_note": "This Required=Yes table-body row reuses the existing stable label for specifying the number of protection units. The catalog record links this exact table row using source_gap_id, source_locator, and source_force; source_keyword is absent because Required=Yes is table-field semantics, not an RFC keyword. The requirement remains conditioned on sending Get Usage Allocation."
     },
     {
       "gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.30-LEASE-TIME-OPTIONAL",

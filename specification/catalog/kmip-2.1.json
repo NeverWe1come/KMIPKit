@@ -93454,22 +93454,32 @@
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.23-002-001",
-      "source_clause_ids": [
-        "KMIPKIT-CLAUSE-SPEC-6.1.23-002"
-      ],
+      "source_clause_ids": [],
       "source_refs": [
         {
           "source_id": "KMIPKIT-SRC-spec",
           "section": "6.1.23"
         }
       ],
-      "source_keyword": "SHALL",
+      "source_keyword": null,
       "normative_strength": "mandatory",
-      "subject": "allocation amount",
-      "summary": "Specify the number of protection units needed.",
+      "source_force": "required_table_body_value",
+      "source_gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.23-USAGE-LIMITS-COUNT-REQUIRED",
+      "source_locator": {
+        "kind": "table_body_row",
+        "section": "6.1.23",
+        "row_label": "Usage Limits Count",
+        "table": "request_payload",
+        "html_line_range": [
+          28080,
+          28097
+        ]
+      },
+      "subject": "Usage Limits Count",
+      "summary": "Include the required number of Usage Limits Units to protect.",
       "role": "client",
       "direction": "client_to_server",
-      "condition": null,
+      "condition": "A Get Usage Allocation request is sent.",
       "scope_state": "client_1_0",
       "element_ids": [
         "KMIPKIT-ELEM-OP-C2S-GET-USAGE-ALLOCATION",
@@ -93490,7 +93500,7 @@
       "negative_verification_required": false,
       "decision_id": null,
       "status": "scoped_verified",
-      "review_note": "The typed request carries the required exact Long Integer count, and the guard binds the caller-supplied exact positive count and open unit to the successful response's resolved identifier. The caller still supplies object metadata; this scoped verification is not a full profile conformance claim. No requirement-specific official Test Cases are linked to this clause in the pinned OASIS test inventory."
+      "review_note": "Pinned KMIP Specification v2.1 \u00a76.1.23, request payload row Usage Limits Count (HTML lines 28080-28097), records required_table_body_value. This source force is table-field semantics, not an RFC keyword. The typed request carries the exact Long Integer count, and the guard binds the caller-supplied exact positive count and open unit to the successful response's resolved identifier. This scoped verification is not a full profile conformance claim. No requirement-specific official Test Cases are linked to this source row in the pinned OASIS test inventory."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.23-002-002",

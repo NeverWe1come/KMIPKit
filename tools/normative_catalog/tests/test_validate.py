@@ -13112,7 +13112,7 @@ class CatalogValidationTests(unittest.TestCase):
         self.assertEqual(usage_count_gap["candidate_requirement_id"], "KMIPKIT-REQ-SPEC-6.1.23-002-001")
         self.assertEqual(usage_count_gap["reused_requirement_id"], "KMIPKIT-REQ-SPEC-6.1.23-002-001")
         self.assertIsNone(usage_count_gap["proposed_requirement_id"])
-        self.assertIn("source_keyword=SHALL", usage_count_gap["review_note"])
+        self.assertIn("source_keyword is absent", usage_count_gap["review_note"])
 
         catalog = json.loads((ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8"))
         usage_count_requirement = next(
