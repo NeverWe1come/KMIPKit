@@ -76,9 +76,9 @@
     "requirement_crosswalk_records": 466,
     "requirement_crosswalk_complete": false,
     "source_requirement_review_records": 889,
-    "source_only_requirement_gaps": 119,
-    "source_only_requirement_gap_proposals": 66,
-    "source_table_contracts": 51
+    "source_only_requirement_gaps": 118,
+    "source_only_requirement_gap_proposals": 65,
+    "source_table_contracts": 52
   },
   "source_clause_crosswalk": [
     {
@@ -72029,14 +72029,15 @@
           "row_label": "Revocation Reason",
           "required": "Yes",
           "actor": "client",
-          "disposition": "required_request_field_with_source_only_proposal",
+          "disposition": "required_request_table_contract",
           "html_line_range": [
             33198,
             33210
           ],
           "source_excerpt": "Revocation Reason Yes Specifies the reason for revocation.",
           "source_gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.44-REVOCATION-REASON-REQUIRED",
-          "source_requirement_ids": []
+          "source_requirement_ids": [],
+          "source_note": "Required Table 295 field mapped through KMIPKIT-ELEM-OP-C2S-REVOKE and KMIPKIT-0036 FR-001/FR-008; this row does not create a standalone REQ record."
         },
         {
           "row_label": "Compromise Occurrence Date",
@@ -84201,40 +84202,6 @@
       "review_note": "The KMIP Usage Guide citation is informative and does not resolve the actor or scope for this formal SHOULD; preserve both as unresolved."
     },
     {
-      "gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.44-REVOCATION-REASON-REQUIRED",
-      "source_id": "KMIPKIT-SRC-spec",
-      "source_path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
-      "source_section": "6.1.44",
-      "source_clause_id": null,
-      "source_locator": {
-        "kind": "table_body_row",
-        "section": "6.1.44",
-        "row_label": "Revocation Reason",
-        "table": "request_payload",
-        "html_line_range": [
-          33198,
-          33210
-        ]
-      },
-      "source_locator_description": "§6.1.44 Revoke request payload body row for Revocation Reason (HTML lines 33198-33210)",
-      "html_line_range": [
-        33198,
-        33210
-      ],
-      "source_excerpt": "Revocation Reason Yes Specifies the reason for revocation.",
-      "source_keywords": [],
-      "source_force": "required_table_body_value",
-      "audited_statement": "Table 295 marks Revocation Reason Required=Yes and says it specifies the reason for revocation.",
-      "actor": "client",
-      "direction": "include Revocation Reason in client Revoke request payload",
-      "condition": "Every Revoke request.",
-      "scope_disposition": "client_1_0",
-      "candidate_requirement_id": null,
-      "proposed_requirement_id": "KMIPKIT-REQ-SPEC-6.1.44-004",
-      "status": "stable_label_proposed_not_in_catalog",
-      "review_note": "This source-only proposal maps the Required=Yes Table 295 body value. The catalog's REQUIRED extractor hit for the request column heading is non-applicable; no client requirement ID currently represents this required field."
-    },
-    {
       "gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.45-CERTIFICATE-REQUEST-UID-ONLY",
       "source_id": "KMIPKIT-SRC-spec",
       "source_path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
@@ -86897,6 +86864,57 @@
       "evidence_disposition": {
         "status": "mapped_to_feature_contract",
         "statement": "Implementation and executable tests are linked through KMIPKIT-ELEM-OP-C2S-QUERY and KMIPKIT-0020 FR-001/FR-004; this optional table cell does not create a standalone normative requirement ID."
+      }
+    },
+    {
+      "gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.44-REVOCATION-REASON-REQUIRED",
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+      "source_section": "6.1.44",
+      "source_clause_id": null,
+      "source_locator": {
+        "kind": "table_body_row",
+        "section": "6.1.44",
+        "row_label": "Revocation Reason",
+        "table": "request_payload",
+        "html_line_range": [
+          33198,
+          33210
+        ]
+      },
+      "source_locator_description": "§6.1.44 Table 295 Required-column body row for Revocation Reason (HTML lines 33198–33210)",
+      "html_line_range": [
+        33198,
+        33210
+      ],
+      "source_excerpt": "Revocation Reason Yes Specifies the reason for revocation.",
+      "source_keywords": [],
+      "source_force": "required_table_body_value",
+      "audited_statement": "Table 295 marks Revocation Reason Required=Yes and specifies the reason for revocation.",
+      "actor": "client",
+      "direction": "include Revocation Reason in client Revoke request payload",
+      "condition": "Every Revoke request.",
+      "scope_disposition": "client_1_0",
+      "status": "mapped_to_approved_feature_contract",
+      "review_note": "Required Table 295 field mapped through KMIPKIT-ELEM-OP-C2S-REVOKE and KMIPKIT-0036 FR-001/FR-008; this row does not create a standalone REQ record. Linked tests verify serialization and one client exchange only.",
+      "contract_kind": "operation_request_table_field",
+      "table_number": 295,
+      "requiredness": "Yes",
+      "operation_element_id": "KMIPKIT-ELEM-OP-C2S-REVOKE",
+      "functional_requirement_ids": [
+        "FR-001",
+        "FR-008"
+      ],
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/revoke.rs::RevokeRequest::into_ttlv_payload"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/revoke_operation_tests.rs::request_emits_table_295_fields_in_order_and_preserves_open_reason",
+        "crates/kmipkit-client/tests/unit/revoke_execution_tests.rs::revoke_sends_table_295_and_exposes_table_296_identifier_once"
+      ],
+      "evidence_disposition": {
+        "status": "mapped_to_feature_contract",
+        "statement": "The Table 295 Required=Yes Revocation Reason row maps to the approved Revoke FR-001/FR-008 feature contract. Linked protocol and fake-transport tests verify request serialization and one exchange; no remote revocation effect is claimed."
       }
     },
     {
