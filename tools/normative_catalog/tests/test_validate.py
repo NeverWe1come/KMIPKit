@@ -1746,6 +1746,15 @@ class CatalogValidationTests(unittest.TestCase):
                 catalog_validate.KEYWORD_STRENGTH[requirement["source_keyword"]],
             )
 
+    def test_application_specific_information_element_ids_are_sorted(self) -> None:
+        """The corrected 4.4 client request row keeps relationship IDs deterministic."""
+        catalog = json.loads((ROOT / "specification/catalog/kmip-2.1.json").read_text(encoding="utf-8"))
+        requirement = next(
+            row for row in catalog["requirements"] if row["requirement_id"] == "KMIPKIT-REQ-SPEC-4.4-001"
+        )
+
+        self.assertEqual(requirement["element_ids"], sorted(requirement["element_ids"]))
+
     def test_checked_in_catalog_orders_evidence_policies_and_relationships_deterministically(self) -> None:
         catalog = json.loads((ROOT / "specification/catalog/kmip-2.1.json").read_text(encoding="utf-8"))
 
