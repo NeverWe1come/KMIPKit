@@ -50,19 +50,26 @@ def inventory_c_header(source: str, package: str = "c-kmipkit") -> dict[str, Any
         if macro:
             name = macro.group(1)
             records.append(_record(package, name, "constant" if name.startswith("KMIPKIT_ERROR_") else "macro", str(line_number)))
-    for match in re.finditer(r"\btypedef\s+struct\s*\{(.*?)\}\s*([A-Za-z_]\w*)\s*;", cleaned, re.S):
-        name, body = match.group(2), match.group(1)
+    parsed_aggregate_spans: set[tuple[int, int]] = set()
+    aggregate_pattern = re.compile(r"\btypedef\s+(struct|union)(?:\s+[A-Za-z_]\w*)?\s*\{([^{}]*)\}\s*([A-Za-z_]\w*)\s*;", re.S)
+    for match in aggregate_pattern.finditer(cleaned):
+        parsed_aggregate_spans.add((match.start(), match.end()))
+        body, name = match.group(2), match.group(3)
         line_number = cleaned.count("\n", 0, match.start()) + 1
         records.append(_record(package, name, "type", str(line_number)))
         for field in body.split(";"):
             field = field.strip()
             if not field:
                 continue
-            field_name = re.search(r"([A-Za-z_]\w*)\s*(?:\[[^]]*\])?\s*$", field)
+            field_name = re.search(r"([A-Za-z_]\w*)\s*(?::\s*\d+)?\s*(?:\[[^]]*\])?\s*$", field)
             if field_name and "(" not in field:
                 records.append(_record(package, f"{name}.{field_name.group(1)}", "field", str(line_number)))
             else:
                 issues.append({"packageId": package, "exportName": name, "reason": "unsupported-c-field"})
+    for match in re.finditer(r"\btypedef\s+(?:struct|union)\b[^;]*\{", cleaned, re.S):
+        if not any(start <= match.start() < end for start, end in parsed_aggregate_spans):
+            issues.append({"packageId": package, "exportName": str(cleaned.count("\n", 0, match.start()) + 1),
+                           "reason": "unsupported-c-type"})
     parsed_enum_spans: set[tuple[int, int]] = set()
     enum_pattern = re.compile(r"\btypedef\s+enum(?:\s+[A-Za-z_]\w*)?\s*\{([^{}]*)\}\s*([A-Za-z_]\w*)\s*;", re.S)
     for match in enum_pattern.finditer(cleaned):
@@ -76,10 +83,11 @@ def inventory_c_header(source: str, package: str = "c-kmipkit") -> dict[str, Any
                 records.append(_record(package, enumerator_name, "constant", str(line_number)))
             elif enumerator_name:
                 issues.append({"packageId": package, "exportName": name, "reason": "unsupported-c-enumerator"})
-    for match in re.finditer(r"\btypedef\s+enum\b", cleaned):
-        if not any(start <= match.start() < end for start, end in parsed_enum_spans):
+    parsed_type_spans = parsed_aggregate_spans | parsed_enum_spans
+    for match in re.finditer(r"\b(?:struct|union|enum)\b[^;{]*\{", cleaned, re.S):
+        if not any(start <= match.start() < end for start, end in parsed_type_spans):
             issues.append({"packageId": package, "exportName": str(cleaned.count("\n", 0, match.start()) + 1),
-                           "reason": "unsupported-c-enum"})
+                           "reason": "unsupported-c-type"})
     for match in re.finditer(r"\btypedef\s+(?:struct\s+[A-Za-z_]\w*|[^;{}]+?)\s+([A-Za-z_]\w*)\s*;", cleaned, re.S):
         name = match.group(1)
         line_number = cleaned.count("\n", 0, match.start()) + 1
