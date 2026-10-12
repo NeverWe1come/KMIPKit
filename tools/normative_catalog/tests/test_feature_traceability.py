@@ -787,6 +787,21 @@ class FeatureTraceabilityTests(unittest.TestCase):
                 "fn request_capability_is_available() { assert!(true); }\n",
                 False,
             ),
+            "disabled crate cfg": (
+                "#![cfg(any())]\n#[test]\n"
+                "fn request_capability_is_available() { assert!(true); }\n",
+                False,
+            ),
+            "unknown crate cfg is not accepted as active": (
+                "#![cfg(feature = \"optional-tests\")]\n#[test]\n"
+                "fn request_capability_is_available() { assert!(true); }\n",
+                False,
+            ),
+            "unknown crate cfg_attr is not accepted as active": (
+                "#![cfg_attr(feature = \"optional-tests\", cfg(any()))]\n#[test]\n"
+                "fn request_capability_is_available() { assert!(true); }\n",
+                False,
+            ),
             "disabled cfg on parent module": (
                 "#[cfg(any())]\nmod inactive {\n#[test]\n"
                 "fn request_capability_is_available() { assert!(true); }\n}\n",
@@ -807,6 +822,11 @@ class FeatureTraceabilityTests(unittest.TestCase):
             ),
             "test cfg is enabled in a test build": (
                 "#[cfg(test)]\n#[test]\n"
+                "fn request_capability_is_available() { assert!(true); }\n",
+                True,
+            ),
+            "crate test cfg is enabled in a test build": (
+                "#![cfg(test)]\n#[test]\n"
                 "fn request_capability_is_available() { assert!(true); }\n",
                 True,
             ),

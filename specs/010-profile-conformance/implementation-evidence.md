@@ -1614,3 +1614,9 @@ Pinned source review: `specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.h
 | Selected Baseline MAY/OPTIONAL evidence gate | `python -B -m unittest tools.normative_catalog.tests.test_validate.CatalogValidationTests.test_every_reviewed_client_may_or_optional_has_usable_positive_evidence -v` | Expected remaining blocker: the global gate still fails with 75 evidence gaps; first gap is `KMIPKIT-REQ-SPEC-2.3-001: no usable implementation mapping`. The Check evidence hole is closed; this batch does not assert runtime rule mapping, full profile readiness, or official OASIS Test Case execution. |
 
 The requirement remains owned by `KMIPKIT-0036` and `specs/022-object-lifecycle/traceability.md`; this batch adds request-capability evidence only and changes no production code or protocol behavior.
+
+### KMIPKIT-0010 - Crate-level Rust cfg in positive test-reference discovery
+
+| Stage | Exact command | Exact result |
+|---|---|---|
+| Red - reject crate-disabled and unresolved crate `cfg`/`cfg_attr` in positive refs while preserving crate `cfg(test)` | `python -B -m unittest tools.normative_catalog.tests.test_feature_traceability.FeatureTraceabilityTests.test_rust_executable_test_refs_require_an_active_test_declaration tools.normative_catalog.tests.test_validate.CatalogValidationTests.test_optional_evidence_gate_accepts_only_scoped_client_request_evidence -v` | Expected Red: exit 1; 2 tests ran and failed with 6 failures. The shared traceability recognizer accepted `#![cfg(any())]`, an unknown crate-level `feature` predicate, and an unknown crate-level `cfg_attr` predicate (3 failed subtests); the optional-evidence gate likewise failed to reject all three references (3 failed subtests). The active crate-level `#![cfg(test)]` positive cases remained accepted. DCO Red commit: this evidence commit. |

@@ -16157,6 +16157,45 @@ class CatalogValidationTests(unittest.TestCase):
                     ),
                 )
 
+        with self.subTest("test disabled by crate cfg(any()) is not discoverable"):
+            with self.assertRaises(AssertionError):
+                run_gate(
+                    requirement(),
+                    test_source=(
+                        "#![cfg(any())]\n#[test]\n"
+                        "fn request_capability_is_available() { assert!(true); }\n"
+                    ),
+                )
+
+        with self.subTest("unknown crate cfg is not accepted as positive evidence"):
+            with self.assertRaises(AssertionError):
+                run_gate(
+                    requirement(),
+                    test_source=(
+                        "#![cfg(feature = \"optional-tests\")]\n#[test]\n"
+                        "fn request_capability_is_available() { assert!(true); }\n"
+                    ),
+                )
+
+        with self.subTest("unknown crate cfg_attr is not accepted as positive evidence"):
+            with self.assertRaises(AssertionError):
+                run_gate(
+                    requirement(),
+                    test_source=(
+                        "#![cfg_attr(feature = \"optional-tests\", cfg(any()))]\n#[test]\n"
+                        "fn request_capability_is_available() { assert!(true); }\n"
+                    ),
+                )
+
+        with self.subTest("test enabled by crate cfg(test) remains discoverable"):
+            run_gate(
+                requirement(),
+                test_source=(
+                    "#![cfg(test)]\n#[test]\n"
+                    "fn request_capability_is_available() { assert!(true); }\n"
+                ),
+            )
+
         with self.subTest("real test remains discoverable after nested comments and raw strings"):
             run_gate(
                 requirement(),
