@@ -27,7 +27,12 @@ class BindingExportAuditTests(unittest.TestCase):
             manifest_path.parent.mkdir(parents=True)
             manifest_path.write_text(
                 '{"publicDeclarations":[{"packageId":"c-kmipkit",'
-                '"kind":"c-symbol","exportName":"kmipkit_probe"}],'
+                '"kind":"c-symbol","exportName":"kmipkit_probe",'
+                '"declarationState":"declared"},{"packageId":"c-kmipkit",'
+                '"kind":"c-symbol","exportName":"kmipkit_blocked_probe",'
+                '"declarationState":"blocked"},{"packageId":"c-kmipkit",'
+                '"kind":"field","exportName":"kmipkit_options_t.secret",'
+                '"declarationState":"blocked"}],'
                 '"approvedExclusions":[]}',
                 encoding="utf-8",
             )
@@ -37,7 +42,11 @@ class BindingExportAuditTests(unittest.TestCase):
             binary = root / "kmipkit_ffi.dll"
             binary.write_bytes(b"synthetic native library")
 
-            with patch.object(AUDIT, "read_native_exports", return_value=["kmipkit_probe"]) as read_exports, patch.object(
+            with patch.object(
+                AUDIT,
+                "read_native_exports",
+                return_value=["kmipkit_probe", "kmipkit_blocked_probe"],
+            ) as read_exports, patch.object(
                 AUDIT, "build_c_binary_exports", side_effect=AssertionError("must reuse the existing binary")
             ):
                 result = AUDIT.run(root, c_only=True, c_binary=binary)
