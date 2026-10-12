@@ -109,6 +109,33 @@ There are no kind mismatches or approved Rust exclusions. The audit reports 375 
 
 T011 remains open until C, Java, and Python export audits are complete and all declarations reconcile to manifest rows or accepted exclusions; the Rust traversal gaps and all listed mismatches must also be resolved. T013 remains open because only the approved TTLV owner slice has been mapped; the remaining Rust package declarations are not yet reconciled.
 
+### C/Java/Python public-export audit (incomplete)
+
+The deterministic non-Rust audit is checked in at [binding-export-report-2026-10-12.json](reports/binding-export-report-2026-10-12.json). On Windows x86-64, `python -B tools/api_manifest/audit_binding_exports.py --repo-root . --report specs/043-public-api-bindings/reports/binding-export-report-2026-10-12.json --check` completed with exit code 1, as required while exact reconciliation is incomplete. `matchesManifest` is false for all three packages. These observations are not approved exclusions or authorization to invent declaration owners.
+
+| Package | Scanner complete | Observed | Manifest | Exact matches | Missing | Stale | Kind mismatches | Issues |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|
+| C | no | 192 | 175 | 175 | 15 | 0 | 0 | 18 |
+| Java | yes | 329 | 319 | 318 | 11 | 1 | 0 | 0 |
+| Python | no | 274 | 262 | 262 | 12 | 0 | 2 | 2 |
+
+C's 15 absent manifest paths are five `KMIPKIT_ERROR_*` constants (`COMPATIBILITY_MISMATCH`, `DUPLICATE_KEY`, `INVALID_IDENTITY`, `INVALID_INPUT`, and `INVALID_SCHEMA`), the `KMIPKIT_H` header guard, and nine exported `aws_lc_0_45_0_jent_*` binary symbols: `entropy_collector_alloc`, `entropy_collector_free`, `entropy_init`, `entropy_init_ex`, `entropy_switch_notime_impl`, `read_entropy`, `read_entropy_safe`, `set_fips_failure_callback`, and `version`. Each dependency symbol is both absent from the header and outside the required `kmipkit_` prefix, producing 18 issues. Java is missing `RuntimeMetadata.Version`'s constructor and seven public members (`abiVersion`, `equals`, `hashCode`, `major`, `minor`, `patch`, `toString`), plus generated `PublicApi` and its `DECLARATIONS_JSON` and `FORMAT_VERSION` members; the manifest's `org.kmipkit.internal.NativeHandle.run` is stale. Python is missing the root `kmipkit` module, seven error `category` attributes, and four `Version` fields (`abi_version`, `major`, `minor`, `patch`). Its two runtime-metadata functions are recorded as `function` but observed as `python-export`; `validate_extension_value` has a duplicate manifest path and multiple declarations sharing one export path. The JSON report preserves the full exact paths, kinds, locations, and issue records.
+
+The audit changes followed separate failing-test and implementation commits for each newly found behavior. The final Refactor is a distinct commit after the latest Green commit.
+
+| Phase | Commit(s) | Evidence |
+|---|---|---|
+| Red | `c4658505`, `ea830f13`, `e30697c9` | Added failing cases for binary C ABI exports, protected Java declarations, Python export resolution, and ordinal-only PE exports. |
+| Green | `22550fc2` | Implemented C header/binary reconciliation, Java `javap -protected` inventory, and Python source export inventory. |
+| Red → Green | `b092775c` → `e62a88fe` | C enum and Python public alias traversal tests, then inventory support. |
+| Red → Green | `b117cda0` → `56b1641f` | Python same-path module alias test, then duplicate-path suppression. |
+| Red → Green | `8fc86d3b` → `f92a13d7` | C tagged struct/union declaration tests, then aggregate inventory and fail-closed parsing. |
+| Red → Green | `f53fdb96` → `0be674d1` | C multi-field declaration test for `int left, right;`, then inventory of both fields. |
+| Red → Green | `53f34dc5` → `cf816836` | Python augmented `__all__` test, then literal `+=` export resolution and unresolved-import reporting. |
+| Refactor | `9d0c18ef` | Extracted Python class-member inventory without changing behavior. `python -B -m unittest tools.api_manifest.tests.test_binding_exports -v` passed all 19 tests; `python -B tools/api_manifest/generate.py --check` verified all 11 generated outputs; `git diff --check` passed. The full export audit still exits 1 because the inventory discrepancies above remain. |
+
+T011 remains unchecked: an observed blocked declaration can count as an exact inventory match, but it cannot account for missing or stale paths, a kind mismatch, duplicate declarations, unsupported ABI exports, or incomplete traversal. No manifest data was fabricated to suppress these findings.
+
 ## T030 — Java/Python package metadata and user scope documentation
 
 Java Gradle/Maven metadata and Python project metadata use the manifest's synchronized `releaseLine` value (`1.0.0`). The Java target is Java 17; Python package metadata and the 1.0 documentation target CPython 3.12 only. Bilingual package guides record the five Java/Python OS/architecture targets from the manifest, explain Java and Python native loading, explicit overrides, ABI 1 checks, redacted failures, and the absence of runtime executable-code downloads. They mark all six current manifest capability states and all 56 `client_1_0` operations (`blocked`) without claiming full operation parity or a published package release. Existing English and Spanish vendor-extension guides now distinguish implementation examples from the still-blocked release-parity status.
