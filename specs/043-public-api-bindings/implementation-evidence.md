@@ -74,17 +74,44 @@ The Python package loads exactly one regular shared library adjacent to its gene
 
 Final verification on Windows x86-64: `bindings/python/.venv/Scripts/python.exe -m pytest bindings/python/tests -q` passed 46 tests. `maturin build` produced `kmipkit-1.0.0-py3-none-win_amd64.whl`; installing it into an isolated target directory with `uv pip install --target ... --no-deps` and importing from that installed tree returned product version 1.0.0, ABI 1, and `generic_ttlv_model` available. QA independently reviewed the loader and wheel smoke, confirmed the no-fallback/redaction behavior, and approved closing T027. This does not close T028's Java/Python cross-platform CI matrix.
 
-## T013 — Approved generic TTLV declaration ownership (partial)
+## T013 — Approved shared Rust declaration inventory (complete)
 
-The canonical cross-language declaration slice whose Rust mapping paths begin with `kmipkit_ttlv::` contains 101 rows: 76 generic-model rows owned by KMIPKIT-0004 and 25 `CodecLimits` rows owned by KMIPKIT-0005, distributed across the four language package families. This is distinct from the 95 rows in the `rust-kmipkit-ttlv` package itself (24 `declared`, 71 `blocked`). The manifest maps the cross-language slice to the two approved shared capabilities with their owner requirements and evidence. This closes only this audited slice; T013 remains open until the remaining published Rust crate declarations are audited and mapped or explicitly excluded under an accepted authority.
+T013 reconciles the canonical public declarations observed across all five published Rust crates with exact manifest paths. It maps 109 declarations whose shared capabilities have Approved/Accepted owners, existing implementations, and linked owner requirements; only the five bounded transport declarations use the accepted ADR-0014 Rust-only exception. The remaining 9,388 observed Rust declarations stay explicitly blocked pending an approved owner or exact parity evidence. This inventory completion does not promote blocked APIs or claim release readiness.
 
-| Phase | Commit | Command | Result |
+| Published Rust crate | Observed | Mapped | Blocked |
+|---|---:|---:|---:|
+| `kmipkit-ttlv` | 331 | 24 | 307 |
+| `kmipkit-protocol` | 5,845 | 49 | 5,796 |
+| `kmipkit-transport` | 365 | 5 | 360 |
+| `kmipkit-client` | 1,031 | 22 | 1,009 |
+| `kmipkit` | 1,925 | 9 | 1,916 |
+| **Total** | **9,497** | **109** | **9,388** |
+
+The 109 mapped declarations comprise 18 generic TTLV model, 6 TTLV codec, 71 vendor-extension registry, 9 FFI runtime-metadata, and 5 Rust-only transport declarations. The 36 observed foreign-language declarations without exact callable Rust equivalents remain blocked without signatures or mappings: 22 C release/`Drop` rows, 12 TTLV helper rows, and the Java `RuntimeMetadata` and Python `metadata` namespace rows. Those two metadata namespaces now identify KMIPKIT-0043 as their candidate owner; they remain blocked because the Rust crate root is not an exported declaration matching either namespace. Candidate drafts 0009/0010 remain blocked. The generated T013 audit report preserves all 36 blocked cross-language rows and their exact reasons.
+
+The initial approved TTLV ownership slice remains historical evidence within this task. It covers the four-language declaration rows mapped to `kmipkit_ttlv::` (76 generic-model rows owned by KMIPKIT-0004 and 25 `CodecLimits` rows owned by KMIPKIT-0005); it is a subset of the completed five-crate inventory above.
+
+| Initial slice phase | Commit | Command | Result |
 |---|---|---|---|
 | Red | `0344edaf` | `python -B -m unittest tools.api_manifest.tests.test_manifest_v2.PublicApiManifestV2SchemaTests.test_ttlv_declarations_use_their_approved_shared_spec_owners -v` | Expected failure before owner reconciliation: the manifest had no `generic_ttlv_model` capability record, so the test failed with `KeyError`. |
 | Green | `c0cc2a31` | `python -B -m unittest discover -s tools/api_manifest/tests -v`; `python tools/api_manifest/generate.py --check`; `git diff --check` | PASS: 94 tests passed, 3 symlink tests skipped because Windows denied symlink creation (WinError 1314); all 11 generated outputs current; no whitespace errors. |
-| Refactor | `5d36f87c` | `uv run --with jsonschema -- python -B -m unittest discover -s tools/api_manifest/tests -v`; `python tools/api_manifest/generate.py --check`; `git diff --check` | PASS: 94 tests passed, 3 symlink tests skipped because Windows denied symlink creation (WinError 1314); all 11 generated outputs current; no whitespace errors. Strengthened the inventory assertion to require exactly 101 declarations split 76/25; no API behavior or manifest data changed. |
+| Refactor | `5d36f87c` | `uv run --with jsonschema -- python -B -m unittest discover -s tools/api_manifest/tests -v`; `python tools/api_manifest/generate.py --check`; `git diff --check` | PASS: 94 tests passed, 3 symlink tests skipped because Windows denied symlink creation (WinError 1314); all 11 generated outputs current; no whitespace errors. Strengthened the inventory assertion to require exactly 101 declarations split 76/25. |
 
-### T011/T013 — Reproducible Rust public-export audit (current partial snapshot)
+| Full inventory phase | Commit | Verification | Result |
+|---|---|---|---|
+| Red | `2e3ade0e`, `0bf96eff` | Failing tests for complete shared Rust inventory gates and exact approved vendor-registry mappings | Expected failures before auditor and manifest reconciliation. |
+| Green | `f823ccb8` | `.venv/Scripts/python.exe -B -m unittest discover -s tools/api_manifest/tests -p "test_*.py" -v` | PASS: 224 tests; 3 Windows symlink tests skipped (WinError 1314). Reconciled 9,497 exports and generated the shared Rust inventory. |
+| Refactor | `c957b94a` | `.venv/Scripts/python.exe -B -m unittest tools.api_manifest.tests.test_shared_rust_inventory -v`; `.venv/Scripts/python.exe tools/api_manifest/generate.py --check`; `.venv/Scripts/python.exe tools/api_manifest/audit_shared_rust_inventory.py --check`; `git diff --check` | PASS: initial T013 inventory and documentation checks; all 11 generated outputs and the report were current. |
+| Red | `6aaa1d49` | `.venv/Scripts/python.exe -B -m unittest tools.api_manifest.tests.test_manifest_v2.PublicApiManifestV2SchemaTests.test_runtime_metadata_exports_are_inventoried_in_every_language -v` | Expected failure: the blocked Java/Python namespace rows named KMIPKIT-0012 instead of their KMIPKIT-0043 candidate owner. |
+| Green | `2f6a0e13` | Same focused test; `.venv/Scripts/python.exe tools/api_manifest/generate.py --check` | PASS: namespace candidate ownership corrected without changing blocked state or adding mappings; 11 generated outputs remained current. |
+| Refactor | `3b68ed94` | `.venv/Scripts/python.exe -B -m unittest tools.api_manifest.tests.test_manifest_v2.PublicApiManifestV2SchemaTests.test_runtime_metadata_namespace_exports_remain_blocked_under_0043 -v`; `git diff --check` | PASS: isolated the namespace ownership regression and confirmed both records remain blocked and mapping-free. |
+| Red | `18715166` | `.venv/Scripts/python.exe -B -m unittest tools.api_manifest.tests.test_shared_rust_inventory.SharedRustInventoryTests.test_runtime_metadata_namespaces_keep_their_candidate_in_blocked_report -v` | Expected failure: the auditor's registry-only candidate filter omitted both namespaces from the blocked inventory report. |
+| Green | `d98fa57a` | `.venv/Scripts/python.exe -B -m unittest tools.api_manifest.tests.test_shared_rust_inventory -v`; `.venv/Scripts/python.exe tools/api_manifest/audit_shared_rust_inventory.py` | PASS: all 8 inventory tests; regenerated report retains exactly 36 blocked rows, including the two namespaces under KMIPKIT-0043. |
+| Refactor | `49450cc4` | `.venv/Scripts/python.exe -B -m unittest tools.api_manifest.tests.test_shared_rust_inventory -v`; `.venv/Scripts/python.exe tools/api_manifest/generate.py --check`; `.venv/Scripts/python.exe tools/api_manifest/audit_shared_rust_inventory.py --check`; `git diff --check` | PASS: 8 inventory tests; 11 generated outputs and inventory report current; no whitespace errors. QA passed at this commit. |
+
+The original full API-manifest suite passed 224 tests with 3 Windows symlink-permission skips; the namespace follow-up passed all 33 `test_manifest_v2` tests and all 8 shared-inventory tests. The generator, shared-inventory auditor, and diff checks pass at QA-approved HEAD `49450cc4`. The Rust export audit still has a separate T011 limitation: 1,883 conditional declarations remain blocked, including 13 unresolved `core::any::Any` lifetime predicates. T011 remains unchecked pending its read-only QA and remote CI; it does not leave T013's approved shared-inventory work incomplete.
+
+### T011 — Reproducible Rust public-export audit limitations (current snapshot)
 
 The pinned Rust 1.94.0 / rustdoc JSON 57 audit report at [rust-export-report-2026-10-12.json](reports/rust-export-report-2026-10-12.json) was regenerated from the current continuation branch on Windows x64 with all Cargo features. The inventory keeps verified declarations separate from conditional blanket-impl declarations. Conditional records preserve their exact compiler predicates and remain blocked without signatures or language mappings. The audit exits **1 as expected** while 13 `Any` implementation predicates remain unresolved.
 
@@ -120,7 +147,7 @@ There are no kind mismatches or approved Rust exclusions. Reconciliation added 4
 | Green | `6c19b62a` | Added 7,681 exact blocked rows; the audit matched all 9,448 observed paths and preserved all 39 unresolved-predicate issues. |
 | Refactor | `d792bc81` | `.venv/Scripts/python.exe -B -m unittest tools.api_manifest.tests.test_rust_export_reconciliation -v`; `.venv/Scripts/python.exe -B tools/api_manifest/generate.py --check`; `git diff --check` — PASS: 7 reconciliation tests passed, all 11 generated outputs were current, and the shared key extraction preserved the exact package/path pair. |
 
-T011 remains open because 39 Rust implementation predicates remain unresolved and the remote Linux/macOS ABI checks have not yet been evidenced. All 9,448 Rust paths in this snapshot now have exact manifest rows; the 7,681 added rows remain blocked and therefore do not declare API capability or parity. The C, Java, and Python binding audit completes with exact manifest reconciliation on this Windows x86-64 host. T013 remains open because only the approved TTLV owner slice has been mapped; the remaining Rust package declarations are not yet reconciled.
+Historical snapshot note: at that earlier point T013 covered only the approved TTLV owner slice. The current five-crate T013 reconciliation and remaining T011 limitations are recorded above; the historical counts in this subsection do not supersede the current T013 report.
 
 ### C/Java/Python public-export audit (local snapshot passes)
 
