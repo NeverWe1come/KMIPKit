@@ -18,6 +18,17 @@ class MultiLanguageCoverageTests(unittest.TestCase):
     def require_gate(self) -> None:
         self.assertIsNotNone(GATE, "coverage_gate.py must provide the multi-language coverage contract")
 
+    def test_python_coverage_tests_execute_the_generated_public_api_manifest(self) -> None:
+        test_source = (
+            REPOSITORY_ROOT / "bindings/python/tests/test_generated_api_manifest.py"
+        ).read_text(encoding="utf-8")
+
+        self.assertIn(
+            "from kmipkit._generated import public_api",
+            test_source,
+            "checked-in generated Python API metadata must be exercised and included in coverage",
+        )
+
     def test_jni_collector_ignores_hosted_toolcache_jdk_header(self) -> None:
         self.require_gate()
         script = (REPOSITORY_ROOT / "scripts/collect_jni_coverage.sh").read_text(encoding="utf-8")
