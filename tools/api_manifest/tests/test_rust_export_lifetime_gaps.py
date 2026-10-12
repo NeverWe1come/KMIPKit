@@ -19,6 +19,11 @@ class RustExportLifetimeGapTests(unittest.TestCase):
         self.audit = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(self.audit)
 
+    def test_lifetime_resolution_refactor_preserves_shape_only_comparison(self):
+        inventory = self.audit._Inventory({})
+
+        self.assertTrue(inventory.check_lifetime_relation(None, None, {}))
+
     @staticmethod
     def fixture_without_static_contract():
         document = json.loads(FIXTURE.read_text(encoding="utf-8"))

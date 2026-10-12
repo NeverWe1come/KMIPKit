@@ -23,6 +23,7 @@ from typing import Any
 TOOLCHAIN = "1.94.0"
 FORMAT_VERSION = 57
 _UNRESOLVED_IDENTITY = object()
+_UNRESOLVED_LIFETIME = object()
 PACKAGES = (
     "kmipkit-ttlv", "kmipkit-protocol", "kmipkit-transport", "kmipkit-client", "kmipkit",
 )
@@ -510,13 +511,12 @@ class _Inventory:
         return {key: cls.substitute_type(value, bindings) for key, value in expression.items()}
 
     @classmethod
-    def substitute_lifetime(cls, lifetime: str, bindings: dict[str, Any]) -> str | None:
+    def substitute_lifetime(cls, lifetime: str, bindings: dict[str, Any]) -> Any:
         """Resolve a lifetime through generic bindings when rustdoc provides one."""
         resolved = cls.substitute_type({"lifetime": lifetime}, bindings)
-        if isinstance(resolved, dict) and set(resolved) == {"lifetime"} \
-                and isinstance(resolved["lifetime"], str):
+        if isinstance(resolved, dict) and set(resolved) == {"lifetime"}:
             return resolved["lifetime"]
-        return None
+        return _UNRESOLVED_LIFETIME
 
     @staticmethod
     def generic_parameter_names(generics: dict[str, Any]) -> set[str]:
@@ -655,7 +655,7 @@ class _Inventory:
         """Prove a lifetime outlives relation only from identity or `'static`."""
         longer_name = self.substitute_lifetime(longer, bindings)
         shorter_name = self.substitute_lifetime(shorter, bindings)
-        if longer_name is None or shorter_name is None:
+        if longer_name is _UNRESOLVED_LIFETIME or shorter_name is _UNRESOLVED_LIFETIME:
             return None
         if longer_name == shorter_name or longer_name == "'static":
             return True
