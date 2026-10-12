@@ -310,6 +310,18 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
                 self.assertEqual(declaration["candidateSpecId"], candidate_spec_id)
                 self.assertNotIn("languageMappings", declaration)
 
+    def test_c_documentation_rejects_comment_and_line_splice_injection(self) -> None:
+        unsafe_documentation = "*\\\r/#define KMIPKIT_INJECTED 1/*"
+        manifest = json.loads(json.dumps(self.checked_in_manifest))
+        function = next(
+            record for record in manifest["functions"]
+            if record["id"] == "ffi_last_error_get"
+        )
+        function["c"]["documentation"] = [unsafe_documentation]
+
+        with self.assertRaises(ManifestError):
+            _validate_schema(manifest, self.schema)
+
     def test_checked_in_manifest_retains_every_registry_slice_record(self) -> None:
         manifest = self.checked_in_manifest
         registry = json.loads(REGISTRY_FIXTURE_PATH.read_text(encoding="utf-8"))
