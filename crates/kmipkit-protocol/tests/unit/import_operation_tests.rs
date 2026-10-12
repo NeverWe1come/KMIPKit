@@ -95,28 +95,19 @@ fn wrapped_key_object() -> Item {
     )
 }
 
-fn wrapped_object_has_encryption_key_information(object: &Item) -> bool {
+fn key_block_field_matches(
+    object: &Item,
+    field_tag: u32,
+    matches_field: impl Fn(&Item) -> bool,
+) -> bool {
     object.with_value(|object_value| match object_value {
         ValueView::Structure(object_fields) => object_fields.children().iter().any(|key_block| {
             key_block.tag().raw() == KEY_BLOCK
                 && key_block.with_value(|key_block_value| match key_block_value {
-                    ValueView::Structure(key_block_fields) => {
-                        key_block_fields.children().iter().any(|field| {
-                            field.tag().raw() == KEY_WRAPPING_DATA
-                                && field.with_value(|wrapping_value| match wrapping_value {
-                                    ValueView::Structure(wrapping_fields) => {
-                                        wrapping_fields.children().iter().any(|information| {
-                                            // OASIS KMIP 2.1 §3.3/Table 15 and §11.56/Table 487.
-                                            information.tag().raw() == 0x0042_0036
-                                                && information.with_value(|value| {
-                                                    matches!(value, ValueView::Structure(_))
-                                                })
-                                        })
-                                    }
-                                    _ => false,
-                                })
-                        })
-                    }
+                    ValueView::Structure(key_block_fields) => key_block_fields
+                        .children()
+                        .iter()
+                        .any(|field| field.tag().raw() == field_tag && matches_field(field)),
                     _ => false,
                 })
         }),
@@ -124,22 +115,24 @@ fn wrapped_object_has_encryption_key_information(object: &Item) -> bool {
     })
 }
 
-fn wrapped_object_has_byte_string_key_value(object: &Item) -> bool {
-    object.with_value(|object_value| match object_value {
-        ValueView::Structure(object_fields) => object_fields.children().iter().any(|key_block| {
-            key_block.tag().raw() == KEY_BLOCK
-                && key_block.with_value(|key_block_value| match key_block_value {
-                    ValueView::Structure(key_block_fields) => {
-                        key_block_fields.children().iter().any(|field| {
-                            field.tag().raw() == KEY_VALUE
-                                && field
-                                    .with_value(|value| matches!(value, ValueView::ByteString(_)))
-                        })
-                    }
-                    _ => false,
+fn wrapped_object_has_encryption_key_information(object: &Item) -> bool {
+    key_block_field_matches(object, KEY_WRAPPING_DATA, |field| {
+        field.with_value(|wrapping_value| match wrapping_value {
+            ValueView::Structure(wrapping_fields) => {
+                wrapping_fields.children().iter().any(|information| {
+                    // OASIS KMIP 2.1 §3.3/Table 15 and §11.56/Table 487.
+                    information.tag().raw() == 0x0042_0036
+                        && information.with_value(|value| matches!(value, ValueView::Structure(_)))
                 })
-        }),
-        _ => false,
+            }
+            _ => false,
+        })
+    })
+}
+
+fn wrapped_object_has_byte_string_key_value(object: &Item) -> bool {
+    key_block_field_matches(object, KEY_VALUE, |field| {
+        field.with_value(|value| matches!(value, ValueView::ByteString(_)))
     })
 }
 
