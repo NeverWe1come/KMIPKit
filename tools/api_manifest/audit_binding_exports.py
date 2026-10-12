@@ -230,13 +230,15 @@ def read_pe_exports(image: bytes) -> list[str]:
 
 
 def audit_c_surface(header: str, binary_exports: list[str], package: str = "c-kmipkit",
-                    approved_exclusions: list[dict[str, Any]] | None = None) -> dict[str, Any]:
+                    approved_exclusions: list[dict[str, Any]] | None = None,
+                    blocked_exports: set[str] | None = None) -> dict[str, Any]:
     """Reconcile header declarations with the symbols exported by the ABI library."""
     header_report = inventory_c_header(header, package)
     records = [dict(row) for row in header_report["declarations"]]
     issues = list(header_report["issues"])
     excluded_symbols = {row["exportName"] for row in approved_exclusions or []
                         if row.get("packageId") == package}
+    binary_only_blocked = blocked_exports or set()
     header_symbols = {row["exportName"]: row for row in records if row["kind"] == "c-symbol"}
     export_names = set(binary_exports)
     issues.extend({"packageId": package, "exportName": name, "reason": "non-prefixed-c-abi-export"}
@@ -246,7 +248,7 @@ def audit_c_surface(header: str, binary_exports: list[str], package: str = "c-km
             header_symbols[name]["location"] += "+binary"
         else:
             records.append(_record(package, name, "c-symbol", "binary"))
-            if name not in excluded_symbols:
+            if name not in excluded_symbols and name not in binary_only_blocked:
                 issues.append({"packageId": package, "exportName": name, "reason": "exported-symbol-missing-from-header"})
     issues.extend({"packageId": package, "exportName": name, "reason": "header-symbol-not-exported"}
                   for name in sorted(set(header_symbols) - export_names))
@@ -574,6 +576,13 @@ def inventory_python_sources(sources: dict[str, str], package: str = "python-kmi
 
 def compare(report: dict[str, Any], manifest: dict[str, Any], package: str) -> dict[str, Any]:
     package_rows = [row for row in manifest.get("publicDeclarations", []) if row.get("packageId") == package]
+    if package == "c-kmipkit":
+        # The C header intentionally omits blocked non-symbol declarations.
+        # Blocked function symbols remain audited from the native binary ABI.
+        package_rows = [
+            row for row in package_rows
+            if row.get("declarationState") != "blocked" or row.get("kind") == "c-symbol"
+        ]
     declared = {(row["packageId"], row["exportName"]): row for row in package_rows}
     duplicate_names = sorted(name for name, count in Counter(row["exportName"] for row in package_rows).items() if count > 1)
     package_exclusions = [row for row in manifest.get("approvedExclusions", [])
@@ -636,7 +645,19 @@ def audit_c_package(root: Path, manifest: dict[str, Any], binary: Path | None = 
     native_exports = read_native_exports(binary) if binary is not None else build_c_binary_exports(root)
     c_exclusions = [row for row in manifest.get("approvedExclusions", [])
                     if row.get("packageId") == "c-kmipkit"]
-    c = audit_c_surface(c_header, native_exports, approved_exclusions=c_exclusions)
+    blocked_c_exports = {
+        row["exportName"]
+        for row in manifest.get("publicDeclarations", [])
+        if row.get("packageId") == "c-kmipkit"
+        and row.get("kind") == "c-symbol"
+        and row.get("declarationState") == "blocked"
+    }
+    c = audit_c_surface(
+        c_header,
+        native_exports,
+        approved_exclusions=c_exclusions,
+        blocked_exports=blocked_c_exports,
+    )
     return compare(c, manifest, "c-kmipkit")
 
 

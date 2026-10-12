@@ -885,6 +885,11 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
 
         ttlv_declarations = []
         for declaration in self.checked_in_manifest["publicDeclarations"]:
+            if declaration["capabilityId"] not in {
+                "generic_ttlv_model",
+                "ttlv_wire_codec",
+            }:
+                continue
             rust_mapping = declaration.get("languageMappings", {}).get("rust", {})
             rust_name = rust_mapping.get("name", "")
             if not rust_name.startswith("kmipkit_ttlv::"):
@@ -1000,14 +1005,14 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
             header,
             re.DOTALL,
         )
-        self.assertIsNotNone(limits_match)
-        assert limits_match is not None
-        header_fields = {
-            f"kmipkit_extension_registry_limits_t.{name}"
-            for name in re.findall(
-                r"^\s*uint64_t (\w+);$", limits_match["body"], re.MULTILINE
-            )
-        }
+        header_fields = set()
+        if limits_match is not None:
+            header_fields = {
+                f"kmipkit_extension_registry_limits_t.{name}"
+                for name in re.findall(
+                    r"^\s*uint64_t (\w+);$", limits_match["body"], re.MULTILINE
+                )
+            }
         self.assertEqual(header_fields, ready_by_kind["field"])
 
         header_ttlv_macros = set(

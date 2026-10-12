@@ -13944,12 +13944,36 @@
       "requirementIds": [
         "KMIPKIT-0012-FR-005",
         "KMIPKIT-0012-FR-007",
-        "KMIPKIT-0012-FR-010"
+        "KMIPKIT-0012-FR-010",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-021"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0012",
-      "blockedReason": "The existing v1 mapping points to the unpublished FFI bridge; its published Rust crate mapping still needs review in the full API inventory."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/012-vendor-extension-registry/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation under the maintainer's standing direct authorization to execute the complete KMIPKit plan without further approval requests."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-ttlv",
+          "name": "kmipkit_ttlv::StructureView<'a>"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_ttlv_structure_view_t"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.ttlv.TtlvStructureView"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.ttlv.TtlvStructureView"
+        }
+      }
     },
     {
       "declarationId": "TtlvStructureView:c-release",
@@ -13960,12 +13984,36 @@
       "requirementIds": [
         "KMIPKIT-0012-FR-005",
         "KMIPKIT-0012-FR-007",
-        "KMIPKIT-0012-FR-010"
+        "KMIPKIT-0012-FR-010",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-021"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0012",
-      "blockedReason": "The existing v1 mapping points to the unpublished FFI bridge; its published Rust crate mapping still needs review in the full API inventory."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/012-vendor-extension-registry/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation under the maintainer's standing direct authorization to execute the complete KMIPKit plan without further approval requests."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-ttlv",
+          "name": "kmipkit_ttlv::StructureView<'a>"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_ttlv_structure_view_release"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.ttlv.TtlvStructureView"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.ttlv.TtlvStructureView.close"
+        }
+      }
     },
     {
       "declarationId": "TtlvStructureView:java",
@@ -13976,12 +14024,36 @@
       "requirementIds": [
         "KMIPKIT-0012-FR-005",
         "KMIPKIT-0012-FR-007",
-        "KMIPKIT-0012-FR-010"
+        "KMIPKIT-0012-FR-010",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-021"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0012",
-      "blockedReason": "The existing v1 mapping points to the unpublished FFI bridge; its published Rust crate mapping still needs review in the full API inventory."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/012-vendor-extension-registry/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation under the maintainer's standing direct authorization to execute the complete KMIPKit plan without further approval requests."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-ttlv",
+          "name": "kmipkit_ttlv::StructureView<'a>"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_ttlv_structure_view_t"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.ttlv.TtlvStructureView"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.ttlv.TtlvStructureView"
+        }
+      }
     },
     {
       "declarationId": "TtlvStructureView:python",
@@ -13992,12 +14064,36 @@
       "requirementIds": [
         "KMIPKIT-0012-FR-005",
         "KMIPKIT-0012-FR-007",
-        "KMIPKIT-0012-FR-010"
+        "KMIPKIT-0012-FR-010",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-021"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0012",
-      "blockedReason": "The existing v1 mapping points to the unpublished FFI bridge; its published Rust crate mapping still needs review in the full API inventory."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/012-vendor-extension-registry/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation under the maintainer's standing direct authorization to execute the complete KMIPKit plan without further approval requests."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-ttlv",
+          "name": "kmipkit_ttlv::StructureView<'a>"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_ttlv_structure_view_t"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.ttlv.TtlvStructureView"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.ttlv.TtlvStructureView"
+        }
+      }
     },
     {
       "declarationId": "TtlvValue:c",
@@ -32285,14 +32381,40 @@
       "packageId": "rust-kmipkit-ttlv",
       "kind": "type",
       "exportName": "kmipkit_ttlv::StructureView",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "vendor_extension_registry",
       "requirementIds": [
+        "KMIPKIT-0012-FR-005",
+        "KMIPKIT-0012-FR-007",
+        "KMIPKIT-0012-FR-010",
+        "KMIPKIT-0043-FR-004",
         "KMIPKIT-0043-FR-021"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0004",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/012-vendor-extension-registry/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation under the maintainer's standing direct authorization to execute the complete KMIPKit plan without further approval requests."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-ttlv",
+          "name": "kmipkit_ttlv::StructureView<'a>"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_ttlv_structure_view_t"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.ttlv.TtlvStructureView"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.ttlv.TtlvStructureView"
+        }
+      }
     },
     {
       "declarationId": "rust-observed-b6b35e2154581b76341d",

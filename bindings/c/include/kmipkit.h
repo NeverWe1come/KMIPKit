@@ -18,20 +18,7 @@ typedef struct kmipkit_extension_schema_t kmipkit_extension_schema_t;
 
 typedef struct kmipkit_extension_information_t kmipkit_extension_information_t;
 
-typedef struct {
-    uint64_t max_definitions;
-    uint64_t max_schema_nodes;
-    uint64_t max_child_rules_per_structure;
-    uint64_t max_text_bytes_per_field;
-    uint64_t max_registry_text_bytes;
-    uint64_t max_discriminator_scalar_bytes;
-    uint64_t max_total_discriminator_scalar_bytes;
-    uint64_t max_constraint_members_per_rule;
-    uint64_t max_total_constraint_members;
-    uint64_t max_payload_index_records;
-    uint64_t max_lookup_comparisons;
-    uint64_t max_depth;
-} kmipkit_extension_registry_limits_t;
+typedef struct kmipkit_extension_registry_limits_t kmipkit_extension_registry_limits_t;
 
 typedef struct kmipkit_extension_definition_t kmipkit_extension_definition_t;
 
@@ -54,17 +41,6 @@ typedef struct kmipkit_extension_child_rule_t kmipkit_extension_child_rule_t;
 typedef struct kmipkit_extension_order_constraint_t kmipkit_extension_order_constraint_t;
 
 typedef uint8_t kmipkit_ttlv_item_type_t;
-#define KMIPKIT_TTLV_ITEM_TYPE_STRUCTURE ((kmipkit_ttlv_item_type_t)1)
-#define KMIPKIT_TTLV_ITEM_TYPE_INTEGER ((kmipkit_ttlv_item_type_t)2)
-#define KMIPKIT_TTLV_ITEM_TYPE_LONG_INTEGER ((kmipkit_ttlv_item_type_t)3)
-#define KMIPKIT_TTLV_ITEM_TYPE_BIG_INTEGER ((kmipkit_ttlv_item_type_t)4)
-#define KMIPKIT_TTLV_ITEM_TYPE_ENUMERATION ((kmipkit_ttlv_item_type_t)5)
-#define KMIPKIT_TTLV_ITEM_TYPE_BOOLEAN ((kmipkit_ttlv_item_type_t)6)
-#define KMIPKIT_TTLV_ITEM_TYPE_TEXT_STRING ((kmipkit_ttlv_item_type_t)7)
-#define KMIPKIT_TTLV_ITEM_TYPE_BYTE_STRING ((kmipkit_ttlv_item_type_t)8)
-#define KMIPKIT_TTLV_ITEM_TYPE_DATE_TIME ((kmipkit_ttlv_item_type_t)9)
-#define KMIPKIT_TTLV_ITEM_TYPE_INTERVAL ((kmipkit_ttlv_item_type_t)10)
-#define KMIPKIT_TTLV_ITEM_TYPE_DATE_TIME_EXTENDED ((kmipkit_ttlv_item_type_t)11)
 
 typedef struct kmipkit_ttlv_value_t kmipkit_ttlv_value_t;
 
@@ -80,40 +56,7 @@ typedef struct kmipkit_codec_limits_t kmipkit_codec_limits_t;
 
 typedef struct kmipkit_ttlv_structure_view_t kmipkit_ttlv_structure_view_t;
 
-typedef struct kmipkit_ttlv_item_view_t kmipkit_ttlv_item_view_t;
-
-typedef struct kmipkit_ttlv_value_view_t kmipkit_ttlv_value_view_t;
-
-void kmipkit_extension_identity_release(kmipkit_extension_identity_t *handle);
-void kmipkit_extension_compatibility_release(kmipkit_extension_compatibility_t *handle);
-void kmipkit_ttlv_path_release(kmipkit_ttlv_path_t *handle);
-void kmipkit_extension_discriminator_release(kmipkit_extension_discriminator_t *handle);
-void kmipkit_extension_schema_release(kmipkit_extension_schema_t *handle);
-void kmipkit_extension_information_release(kmipkit_extension_information_t *handle);
-void kmipkit_extension_definition_release(kmipkit_extension_definition_t *handle);
-void kmipkit_client_extension_registry_release(kmipkit_client_extension_registry_t *handle);
-void kmipkit_client_configuration_release(kmipkit_client_configuration_t *handle);
-void kmipkit_validated_extension_value_release(kmipkit_validated_extension_value_t *handle);
-void kmipkit_registered_extension_value_release(kmipkit_registered_extension_value_t *handle);
-void kmipkit_client_request_message_extension_release(kmipkit_client_request_message_extension_t *handle);
-void kmipkit_ttlv_structure_release(kmipkit_ttlv_structure_t *handle);
-void kmipkit_client_batch_item_release(kmipkit_client_batch_item_t *handle);
-void kmipkit_extension_child_rule_release(kmipkit_extension_child_rule_t *handle);
-void kmipkit_extension_order_constraint_release(kmipkit_extension_order_constraint_t *handle);
-void kmipkit_ttlv_value_release(kmipkit_ttlv_value_t *handle);
-void kmipkit_extension_recognition_release(kmipkit_extension_recognition_t *handle);
-void kmipkit_raw_tag_release(kmipkit_raw_tag_t *handle);
-void kmipkit_tag_release(kmipkit_tag_t *handle);
-void kmipkit_ttlv_item_release(kmipkit_ttlv_item_t *handle);
-void kmipkit_codec_limits_release(kmipkit_codec_limits_t *handle);
 void kmipkit_ttlv_structure_view_release(kmipkit_ttlv_structure_view_t *handle);
-void kmipkit_ttlv_item_view_release(kmipkit_ttlv_item_view_t *handle);
-void kmipkit_ttlv_value_view_release(kmipkit_ttlv_value_view_t *handle);
-#define KMIPKIT_ERROR_COMPATIBILITY_MISMATCH ((int32_t)1)
-#define KMIPKIT_ERROR_DUPLICATE_KEY ((int32_t)2)
-#define KMIPKIT_ERROR_INVALID_IDENTITY ((int32_t)3)
-#define KMIPKIT_ERROR_INVALID_INPUT ((int32_t)4)
-#define KMIPKIT_ERROR_INVALID_SCHEMA ((int32_t)5)
 #define KMIPKIT_ERROR_RESOURCE_LIMIT ((int32_t)6)
 
 /* KMIPKIT-0012-FR-002, KMIPKIT-0012-FR-010, KMIPKIT-0012-FR-012 */
@@ -233,8 +176,6 @@ int32_t kmipkit_validated_extension_value_identity(kmipkit_validated_extension_v
 /* KMIPKIT-0012-FR-005, KMIPKIT-0012-FR-007, KMIPKIT-0012-FR-010, KMIPKIT-0012-FR-011 */
 int32_t kmipkit_validated_extension_value_generic_value(kmipkit_validated_extension_value_t * value, kmipkit_ttlv_structure_view_t ** out_structure);
 /* KMIPKIT-0012-FR-005, KMIPKIT-0012-FR-007, KMIPKIT-0012-FR-010 */
-int32_t kmipkit_validated_extension_value_value_at(kmipkit_validated_extension_value_t * value, kmipkit_ttlv_path_t * path, kmipkit_ttlv_value_view_t ** out_value);
-/* KMIPKIT-0012-FR-005, KMIPKIT-0012-FR-007, KMIPKIT-0012-FR-010 */
 int32_t kmipkit_ttlv_raw_tag_create(uint32_t raw, kmipkit_raw_tag_t ** out_raw_tag);
 /* KMIPKIT-0012-FR-005, KMIPKIT-0012-FR-007, KMIPKIT-0012-FR-010 */
 int32_t kmipkit_ttlv_raw_tag_value(kmipkit_raw_tag_t * raw_tag, uint32_t * out_raw);
@@ -266,56 +207,8 @@ int32_t kmipkit_ttlv_value_date_time(int64_t value, kmipkit_ttlv_value_t ** out_
 int32_t kmipkit_ttlv_value_interval(uint32_t value, kmipkit_ttlv_value_t ** out_value);
 /* KMIPKIT-0012-FR-005, KMIPKIT-0012-FR-007, KMIPKIT-0012-FR-010 */
 int32_t kmipkit_ttlv_value_date_time_extended(int64_t value, kmipkit_ttlv_value_t ** out_value);
-/* KMIPKIT-0012-FR-005, KMIPKIT-0012-FR-007, KMIPKIT-0012-FR-010, KMIPKIT-0012-FR-012 */
-int32_t kmipkit_ttlv_value_big_integer(kmipkit_codec_limits_t * limits, const uint8_t * value, uint64_t value_length, kmipkit_ttlv_value_t ** out_value);
-/* KMIPKIT-0012-FR-005, KMIPKIT-0012-FR-007, KMIPKIT-0012-FR-010, KMIPKIT-0012-FR-012 */
-int32_t kmipkit_ttlv_value_text_string(kmipkit_codec_limits_t * limits, const uint8_t * value, uint64_t value_length, kmipkit_ttlv_value_t ** out_value);
-/* KMIPKIT-0012-FR-005, KMIPKIT-0012-FR-007, KMIPKIT-0012-FR-010, KMIPKIT-0012-FR-012 */
-int32_t kmipkit_ttlv_value_byte_string(kmipkit_codec_limits_t * limits, const uint8_t * value, uint64_t value_length, kmipkit_ttlv_value_t ** out_value);
-/* KMIPKIT-0012-FR-005, KMIPKIT-0012-FR-007, KMIPKIT-0012-FR-010, KMIPKIT-0012-FR-012 */
-int32_t kmipkit_ttlv_value_structure(kmipkit_ttlv_structure_t * structure, kmipkit_codec_limits_t * limits, kmipkit_ttlv_value_t ** out_value);
 /* KMIPKIT-0012-FR-005, KMIPKIT-0012-FR-007, KMIPKIT-0012-FR-010 */
 int32_t kmipkit_ttlv_structure_create(kmipkit_ttlv_structure_t ** out_structure);
-/* KMIPKIT-0012-FR-005, KMIPKIT-0012-FR-007, KMIPKIT-0012-FR-010, KMIPKIT-0012-FR-012 */
-int32_t kmipkit_ttlv_item_create(kmipkit_tag_t * tag, kmipkit_ttlv_value_t * value, kmipkit_codec_limits_t * limits, kmipkit_ttlv_item_t ** out_item);
-/* KMIPKIT-0012-FR-005, KMIPKIT-0012-FR-007, KMIPKIT-0012-FR-010, KMIPKIT-0012-FR-012 */
-int32_t kmipkit_ttlv_structure_with_item(kmipkit_ttlv_structure_t * structure, kmipkit_ttlv_item_t * item, kmipkit_codec_limits_t * limits, kmipkit_ttlv_structure_t ** out_structure);
-/* KMIPKIT-0012-FR-005, KMIPKIT-0012-FR-007, KMIPKIT-0012-FR-010 */
-int32_t kmipkit_ttlv_structure_view(kmipkit_ttlv_structure_t * structure, kmipkit_ttlv_structure_view_t ** out_view);
-/* KMIPKIT-0012-FR-005, KMIPKIT-0012-FR-007, KMIPKIT-0012-FR-010 */
-int32_t kmipkit_ttlv_structure_view_item_count(kmipkit_ttlv_structure_view_t * view, uint64_t * out_count);
-/* KMIPKIT-0012-FR-005, KMIPKIT-0012-FR-007, KMIPKIT-0012-FR-010 */
-int32_t kmipkit_ttlv_structure_view_item_at(kmipkit_ttlv_structure_view_t * view, uint64_t index, kmipkit_ttlv_item_view_t ** out_item);
-/* KMIPKIT-0012-FR-005, KMIPKIT-0012-FR-007, KMIPKIT-0012-FR-010 */
-int32_t kmipkit_ttlv_item_view_tag(kmipkit_ttlv_item_view_t * view, kmipkit_tag_t ** out_tag);
-/* KMIPKIT-0012-FR-005, KMIPKIT-0012-FR-007, KMIPKIT-0012-FR-010 */
-int32_t kmipkit_ttlv_item_view_type(kmipkit_ttlv_item_view_t * view, uint8_t * out_item_type);
-/* KMIPKIT-0012-FR-005, KMIPKIT-0012-FR-007, KMIPKIT-0012-FR-010 */
-int32_t kmipkit_ttlv_item_view_value(kmipkit_ttlv_item_view_t * view, kmipkit_ttlv_value_view_t ** out_value);
-/* KMIPKIT-0012-FR-005, KMIPKIT-0012-FR-007, KMIPKIT-0012-FR-010 */
-int32_t kmipkit_ttlv_value_view(kmipkit_ttlv_value_t * value, kmipkit_ttlv_value_view_t ** out_view);
-/* KMIPKIT-0012-FR-005, KMIPKIT-0012-FR-007, KMIPKIT-0012-FR-010 */
-int32_t kmipkit_ttlv_value_view_type(kmipkit_ttlv_value_view_t * view, uint8_t * out_item_type);
-/* KMIPKIT-0012-FR-005, KMIPKIT-0012-FR-007, KMIPKIT-0012-FR-010 */
-int32_t kmipkit_ttlv_value_view_structure(kmipkit_ttlv_value_view_t * view, kmipkit_ttlv_structure_view_t ** out_structure);
-/* KMIPKIT-0012-FR-005, KMIPKIT-0012-FR-007, KMIPKIT-0012-FR-010 */
-int32_t kmipkit_ttlv_value_view_integer(kmipkit_ttlv_value_view_t * view, int32_t * out_value);
-/* KMIPKIT-0012-FR-005, KMIPKIT-0012-FR-007, KMIPKIT-0012-FR-010 */
-int32_t kmipkit_ttlv_value_view_long_integer(kmipkit_ttlv_value_view_t * view, int64_t * out_value);
-/* KMIPKIT-0012-FR-005, KMIPKIT-0012-FR-007, KMIPKIT-0012-FR-010 */
-int32_t kmipkit_ttlv_value_view_enumeration(kmipkit_ttlv_value_view_t * view, uint32_t * out_value);
-/* KMIPKIT-0012-FR-005, KMIPKIT-0012-FR-007, KMIPKIT-0012-FR-010 */
-int32_t kmipkit_ttlv_value_view_boolean(kmipkit_ttlv_value_view_t * view, uint8_t * out_value);
-/* KMIPKIT-0012-FR-005, KMIPKIT-0012-FR-007, KMIPKIT-0012-FR-010 */
-int32_t kmipkit_ttlv_value_view_date_time(kmipkit_ttlv_value_view_t * view, int64_t * out_value);
-/* KMIPKIT-0012-FR-005, KMIPKIT-0012-FR-007, KMIPKIT-0012-FR-010 */
-int32_t kmipkit_ttlv_value_view_interval(kmipkit_ttlv_value_view_t * view, uint32_t * out_value);
-/* KMIPKIT-0012-FR-005, KMIPKIT-0012-FR-007, KMIPKIT-0012-FR-010 */
-int32_t kmipkit_ttlv_value_view_date_time_extended(kmipkit_ttlv_value_view_t * view, int64_t * out_value);
-/* KMIPKIT-0012-FR-005, KMIPKIT-0012-FR-007, KMIPKIT-0012-FR-010 */
-int32_t kmipkit_ttlv_value_view_byte_length(kmipkit_ttlv_value_view_t * view, uint64_t * out_length);
-/* KMIPKIT-0012-FR-005, KMIPKIT-0012-FR-007, KMIPKIT-0012-FR-010 */
-int32_t kmipkit_ttlv_value_view_byte_at(kmipkit_ttlv_value_view_t * view, uint64_t index, uint8_t * out_byte);
 /* KMIPKIT-0043-FR-007 */
 int32_t kmipkit_version_get(uint32_t * out_major, uint32_t * out_minor, uint32_t * out_patch, uint32_t * out_abi_version);
 /* KMIPKIT-0043-FR-007 */

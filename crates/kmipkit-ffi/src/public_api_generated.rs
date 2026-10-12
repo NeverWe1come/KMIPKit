@@ -483,6 +483,11 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "kmipkit_protocol::extension::validated_extension_value_identity",
     ),
     (
+        "rust-observed-bfc563ca8dd828273ab6",
+        "rust-kmipkit-ttlv",
+        "kmipkit_ttlv::StructureView<'a>",
+    ),
+    (
         "rust-adr0014-91e7a41f5f7a2bcb",
         "rust-kmipkit-transport",
         "kmipkit_transport::TransportResponse::new",
