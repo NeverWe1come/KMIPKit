@@ -2,7 +2,7 @@
 //! Cryptographic Algorithm and Digital Signature Algorithm values follow
 //! §§11.12/11.16, Tables 443/447. These tests do not claim an official pass.
 //!
-//! Traceability: FR-003, FR-004, FR-009–FR-015; `KMIPKIT-ELEM-OP-C2S-SIGN`,
+//! Traceability: FR-003–FR-005, FR-009–FR-015; `KMIPKIT-ELEM-OP-C2S-SIGN`,
 //! `KMIPKIT-ELEM-ENUMERATION-CRYPTOGRAPHIC-ALGORITHM`,
 //! `KMIPKIT-ELEM-ENUMERATION-DIGITAL-SIGNATURE-ALGORITHM`, and the shared Data,
 //! Digested Data, Correlation Value, Init Indicator, and Final Indicator.

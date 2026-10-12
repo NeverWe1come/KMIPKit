@@ -7812,9 +7812,18 @@ class CatalogValidationTests(unittest.TestCase):
             self.assertEqual(row["source_excerpt"], pinned_source_excerpt(source_path, line_range))
             self.assertEqual(row["source_element_id"], element_id)
             self.assertEqual(row["source_gap_id"], gap_id)
+            if gap_id is not None:
+                self.assertEqual(
+                    row["disposition"],
+                    "conditionally_required_request_table_contract" if label == "Data" else "optional_request_table_contract",
+                )
+                self.assertEqual(row["source_requirement_ids"], [])
         self.assertEqual(request_rows["Cryptographic Parameters"]["source_requirement_ids"],
                          ["KMIPKIT-REQ-SPEC-6.1.55-001"])
         self.assertIn("KMIPKIT-CLAUSE-SPEC-6.1-002", request_rows["Unique Identifier"]["source_note"])
+        self.assertIn("no conformance claim", request_rows["Data"]["source_note"].lower())
+        self.assertIn("both Init Indicator and Final Indicator are false", request_rows["Data"]["source_note"])
+        self.assertIn("single-part", request_rows["Digested Data"]["source_note"])
 
         identifier_review = reviews["KMIPKIT-CLAUSE-SPEC-6.1.55-004"]
         self.assertEqual(identifier_review["source_obligations"][0]["candidate_requirement_id"],
@@ -7899,16 +7908,7 @@ class CatalogValidationTests(unittest.TestCase):
 
         gaps = {row["gap_id"]: row for row in oracle["source_only_requirement_gaps"]
                 if row["source_section"] == "6.1.55"}
-        self.assertEqual(set(gaps), {row[3] for row in expected_request_rows.values() if row[3] is not None})
-        for gap_id, gap in gaps.items():
-            self.assertEqual(gap["source_excerpt"], pinned_source_excerpt(source_path, gap["html_line_range"]))
-            self.assertEqual(gap["actor"], "client")
-            self.assertEqual(gap["scope_disposition"], "client_1_0")
-            self.assertEqual(gap["status"], "stable_label_proposed_not_in_catalog")
-        identifier_gap = gaps["KMIPKIT-SOURCE-GAP-SPEC-6.1.55-UNIQUE-IDENTIFIER-OPTIONAL"]
-        self.assertIn("KMIPKIT-CLAUSE-SPEC-6.1-002", identifier_gap["condition"])
-        self.assertIn("KMIPKIT-CLAUSE-SPEC-6.1-002", identifier_gap["review_note"])
-        self.assertNotIn("only when one is valid", identifier_gap["audited_statement"])
+        self.assertEqual(gaps, {}, "Table 334 row contracts must leave the source-gap proposal ledger")
 
         self.assertEqual([row for row in oracle["requirement_crosswalk"] if row["source_section"].startswith("6.1.55.1")], [])
         self.assertIn("Table 334: Sign Request Payload", pinned_source_excerpt(source_path, [36477, 36478]))
@@ -7924,7 +7924,10 @@ class CatalogValidationTests(unittest.TestCase):
             "KMIPKIT-SOURCE-GAP-SPEC-6.1.55-UNIQUE-IDENTIFIER-OPTIONAL": (
                 "Unique Identifier", [36352, 36369], "No", "optional_table_body_value",
                 ["FR-004", "FR-005"],
-                ["request_emits_optional_identifier_parameters_inputs_and_framing_in_order"],
+                [
+                    "request_emits_optional_identifier_parameters_inputs_and_framing_in_order",
+                    "request_allows_optional_identifier_and_parameters_to_be_omitted",
+                ],
             ),
             "KMIPKIT-SOURCE-GAP-SPEC-6.1.55-DATA-CONDITIONAL": (
                 "Data", [36391, 36406],
@@ -7939,11 +7942,18 @@ class CatalogValidationTests(unittest.TestCase):
             "KMIPKIT-SOURCE-GAP-SPEC-6.1.55-DIGESTED-DATA-OPTIONAL": (
                 "Digested Data", [36407, 36422], "No", "optional_table_body_value",
                 ["FR-004"],
-                ["request_requires_data_or_digested_data_for_single_part_and_accepts_digest_only"],
+                [
+                    "request_requires_data_or_digested_data_for_single_part_and_accepts_digest_only",
+                    "request_allows_optional_identifier_and_parameters_to_be_omitted",
+                ],
             ),
             "KMIPKIT-SOURCE-GAP-SPEC-6.1.55-CORRELATION-VALUE-OPTIONAL": (
                 "Correlation Value", [36423, 36439], "No", "optional_table_body_value",
-                ["FR-004"], ["request_omits_data_for_explicit_multipart_calls"],
+                ["FR-004"],
+                [
+                    "request_omits_data_for_explicit_multipart_calls",
+                    "request_allows_optional_identifier_and_parameters_to_be_omitted",
+                ],
             ),
             "KMIPKIT-SOURCE-GAP-SPEC-6.1.55-INIT-INDICATOR-OPTIONAL": (
                 "Init Indicator", [36440, 36455], "No", "optional_table_body_value",
@@ -7951,6 +7961,7 @@ class CatalogValidationTests(unittest.TestCase):
                 [
                     "request_emits_optional_identifier_parameters_inputs_and_framing_in_order",
                     "request_omits_data_for_explicit_multipart_calls",
+                    "request_allows_optional_identifier_and_parameters_to_be_omitted",
                 ],
             ),
             "KMIPKIT-SOURCE-GAP-SPEC-6.1.55-FINAL-INDICATOR-OPTIONAL": (
@@ -7959,6 +7970,7 @@ class CatalogValidationTests(unittest.TestCase):
                 [
                     "request_emits_optional_identifier_parameters_inputs_and_framing_in_order",
                     "request_omits_data_for_explicit_multipart_calls",
+                    "request_allows_optional_identifier_and_parameters_to_be_omitted",
                 ],
             ),
         }
@@ -8010,8 +8022,11 @@ class CatalogValidationTests(unittest.TestCase):
                 self.assertEqual(contract["verification_refs"], verification_refs)
                 self.assertTrue(contract["condition"])
                 self.assertEqual(contract["status"], "mapped_to_approved_feature_contract")
-                self.assertEqual(contract["evidence_disposition"]["status"], "mapped_to_feature_contract")
-                self.assertIn("does not create a standalone REQ record", contract["evidence_disposition"]["statement"])
+                if label == "Data":
+                    self.assertEqual(contract["evidence_disposition"]["status"], "unresolved_source_conflict")
+                else:
+                    self.assertEqual(contract["evidence_disposition"]["status"], "mapped_to_feature_contract")
+                    self.assertIn("does not create a standalone REQ record", contract["evidence_disposition"]["statement"])
                 self.assertFalse(
                     {"candidate_requirement_id", "proposed_requirement_id", "requirement_id"}.intersection(contract),
                     "Table 334 rows must not create per-cell normative requirement IDs",
@@ -8025,7 +8040,30 @@ class CatalogValidationTests(unittest.TestCase):
         )
         self.assertIn("no conformance claim", data_contract["evidence_disposition"]["claim"].lower())
         self.assertIn("both Init Indicator and Final Indicator are false", data_contract["evidence_disposition"]["claim"])
+        self.assertIn("single-part", contracts["KMIPKIT-SOURCE-GAP-SPEC-6.1.55-DIGESTED-DATA-OPTIONAL"]["condition"])
         self.assertEqual(validate_source_table_contracts(oracle, ROOT), [])
+
+    def test_sign_data_contract_validator_rejects_a_silenced_shared_source_conflict(self) -> None:
+        """The Sign Data table row cannot discard the unresolved general §6.1 rule."""
+        oracle = json.loads(
+            (ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json").read_text(encoding="utf-8")
+        )
+        broken = json.loads(json.dumps(oracle))
+        data_contract = next(
+            row for row in broken["source_table_contracts"]
+            if row["gap_id"] == "KMIPKIT-SOURCE-GAP-SPEC-6.1.55-DATA-CONDITIONAL"
+        )
+        data_contract["evidence_disposition"] = {
+            "status": "mapped_to_feature_contract",
+            "statement": "The row is covered by the Sign request model.",
+        }
+
+        diagnostics = validate_source_table_contracts(broken, ROOT)
+
+        self.assertTrue(
+            any("must preserve the unresolved Data conflict without an omission claim" in issue for issue in diagnostics),
+            diagnostics,
+        )
 
     def test_spec_6_1_56_signature_verify_reviews_source_atoms_and_server_directions(self) -> None:
         """Signature Verify source clauses keep client requests and server responses distinct."""
@@ -13763,10 +13801,7 @@ class CatalogValidationTests(unittest.TestCase):
             "KMIPKIT-REQ-SPEC-6.1.52-001",
             "KMIPKIT-REQ-SPEC-6.1.54-001",
         }
-        conditional_body_proposals = {
-            "KMIPKIT-REQ-SPEC-6.1.55-003",
-            "KMIPKIT-REQ-SPEC-6.1.56-010",
-        }
+        conditional_body_proposals = {"KMIPKIT-REQ-SPEC-6.1.56-010"}
         self.assertEqual(
             spec_proposals,
             {
@@ -13801,12 +13836,6 @@ class CatalogValidationTests(unittest.TestCase):
                 "KMIPKIT-REQ-SPEC-6.1.51-003",
                 "KMIPKIT-REQ-SPEC-6.1.52-001",
                 "KMIPKIT-REQ-SPEC-6.1.53-001",
-            "KMIPKIT-REQ-SPEC-6.1.55-003",
-            "KMIPKIT-REQ-SPEC-6.1.55-006",
-            "KMIPKIT-REQ-SPEC-6.1.55-007",
-            "KMIPKIT-REQ-SPEC-6.1.55-008",
-            "KMIPKIT-REQ-SPEC-6.1.55-009",
-            "KMIPKIT-REQ-SPEC-6.1.55-010",
             "KMIPKIT-REQ-SPEC-6.1.56-008",
             "KMIPKIT-REQ-SPEC-6.1.56-009",
             "KMIPKIT-REQ-SPEC-6.1.56-010",
@@ -13843,10 +13872,6 @@ class CatalogValidationTests(unittest.TestCase):
         )
         expected_conditional_rows = {
             "6.1.32": ("Data", "Yes for single-part. No for multi-part."),
-            "6.1.55": (
-                "Data",
-                "Yes for single-part, unless Digested Data is supplied.. No for multi-part.",
-            ),
             "6.1.56": ("Signature Data", "Yes for single-part. No for multi-part."),
         }
         for gap in conditional_body_gaps:
@@ -15002,7 +15027,7 @@ class CatalogValidationTests(unittest.TestCase):
             if contract.get("source_section") in ("6.1.25", "6.1.27")
         }
         self.assertEqual(set(contracts), set(expected))
-        self.assertEqual(len(oracle["source_table_contracts"]), 22)
+        self.assertEqual(len(oracle["source_table_contracts"]), 28)
         self.assertEqual(oracle["oracle_status"], "partial-source-reviewed; not complete T003 oracle")
 
         catalog = json.loads((ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8"))
@@ -15070,10 +15095,10 @@ class CatalogValidationTests(unittest.TestCase):
         }
 
         self.assertEqual(set(contracts), set(expected))
-        self.assertEqual(len(oracle["source_table_contracts"]), 22)
-        self.assertEqual(oracle["counts"]["source_table_contracts"], 22)
-        self.assertEqual(oracle["counts"]["source_only_requirement_gaps"], 148)
-        self.assertEqual(oracle["counts"]["source_only_requirement_gap_proposals"], 95)
+        self.assertEqual(len(oracle["source_table_contracts"]), 28)
+        self.assertEqual(oracle["counts"]["source_table_contracts"], 28)
+        self.assertEqual(oracle["counts"]["source_only_requirement_gaps"], 142)
+        self.assertEqual(oracle["counts"]["source_only_requirement_gap_proposals"], 89)
         gap_ids = {row["gap_id"] for row in oracle["source_only_requirement_gaps"]}
         self.assertTrue(set(expected).isdisjoint(gap_ids))
         self.assertTrue(
@@ -15198,10 +15223,10 @@ class CatalogValidationTests(unittest.TestCase):
         }
 
         self.assertEqual(set(contracts), set(expected))
-        self.assertEqual(len(oracle["source_table_contracts"]), 22)
-        self.assertEqual(oracle["counts"]["source_table_contracts"], 22)
-        self.assertEqual(oracle["counts"]["source_only_requirement_gaps"], 148)
-        self.assertEqual(oracle["counts"]["source_only_requirement_gap_proposals"], 95)
+        self.assertEqual(len(oracle["source_table_contracts"]), 28)
+        self.assertEqual(oracle["counts"]["source_table_contracts"], 28)
+        self.assertEqual(oracle["counts"]["source_only_requirement_gaps"], 142)
+        self.assertEqual(oracle["counts"]["source_only_requirement_gap_proposals"], 89)
         source_gap_ids = {gap["gap_id"] for gap in oracle["source_only_requirement_gaps"]}
         self.assertTrue(set(expected).isdisjoint(source_gap_ids))
         self.assertTrue(
