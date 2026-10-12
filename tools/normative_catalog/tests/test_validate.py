@@ -5518,6 +5518,55 @@ class CatalogValidationTests(unittest.TestCase):
         self.assertFalse(any(row["requirement_id"].startswith("KMIPKIT-REQ-SPEC-6.1.36-") for row in catalog["requirements"]))
         self.assertEqual(oracle["oracle_status"], "partial-source-reviewed; not complete T003 oracle")
 
+    def test_pkcs11_table_273_required_function_is_a_client_source_contract(self) -> None:
+        """The required PKCS#11 Function field is traced to the approved opaque-forwarding client."""
+        fixture_path = ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json"
+        oracle = json.loads(fixture_path.read_text(encoding="utf-8"))
+        gap_id = "KMIPKIT-SOURCE-GAP-SPEC-6.1.37-PKCS11-FUNCTION-REQUIRED"
+        contracts = source_table_contracts_for_gap(oracle["source_table_contracts"], gap_id)
+
+        self.assertEqual(len(contracts), 1)
+        contract = contracts[0]
+        source_path = "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
+        line_range = [31203, 31221]
+        protocol_test_ref = "crates/kmipkit-protocol/tests/unit/pkcs11_operation_tests.rs::table_273_function_preserves_enumeration_or_integer"
+        client_test_ref = "crates/kmipkit-client/tests/unit/pkcs11_execution_tests.rs::pkcs11_sends_table_273_once_and_exposes_table_274_losslessly"
+        self.assertEqual(contract["source_id"], "KMIPKIT-SRC-spec")
+        self.assertEqual(contract["source_path"], source_path)
+        self.assertEqual(contract["source_section"], "6.1.37")
+        self.assertEqual(contract["source_locator"], {
+            "kind": "table_body_row",
+            "section": "6.1.37",
+            "row_label": "PKCS#11 Function",
+            "table": "request_payload",
+            "html_line_range": line_range,
+        })
+        self.assertEqual(contract["html_line_range"], line_range)
+        self.assertEqual(contract["source_excerpt"], pinned_source_excerpt(source_path, line_range))
+        self.assertEqual(contract["table_number"], 273)
+        self.assertEqual(contract["requiredness"], "Yes")
+        self.assertEqual(contract["source_force"], "required_table_body_value")
+        self.assertEqual(contract["actor"], "client")
+        self.assertEqual(contract["direction"], "client→server PKCS#11 request")
+        self.assertEqual(contract["scope_disposition"], "client_1_0")
+        self.assertEqual(contract["operation_element_id"], "KMIPKIT-ELEM-OP-C2S-PKCS-11")
+        self.assertEqual(contract["functional_requirement_ids"], ["FR-001", "FR-002", "FR-008"])
+        self.assertEqual(contract["implementation_refs"], [
+            "crates/kmipkit-protocol/src/pkcs11.rs::Pkcs11Request::into_ttlv_payload",
+        ])
+        self.assertEqual(contract["verification_refs"], [protocol_test_ref, client_test_ref])
+        self.assertEqual(contract["status"], "mapped_to_approved_feature_contract")
+        self.assertEqual(contract["evidence_disposition"]["status"], "mapped_to_feature_contract")
+        self.assertIn("opaque", contract["evidence_disposition"]["statement"].lower())
+        self.assertNotIn("KMIPKIT-REQ-SPEC-6.1.37-001", {
+            row["requirement_id"]
+            for row in json.loads((ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8"))["requirements"]
+        })
+        self.assertNotIn("KMIPKIT-REQ-SPEC-6.1.37-001", {
+            row["requirement_id"] for row in oracle["requirement_crosswalk"]
+        })
+        self.assertEqual(validate_source_table_contracts(oracle, ROOT), [])
+
     def test_spec_6_1_37_pkcs11_operation_and_errors_preserve_source_force(self) -> None:
         """Specification v2.1 §§6.1.37 and 6.1.37.1 retain payload force and lowercase wording."""
         fixture_path = ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json"
