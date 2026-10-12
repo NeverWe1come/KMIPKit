@@ -17003,17 +17003,13 @@ class CatalogValidationTests(unittest.TestCase):
             (ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json").read_text(encoding="utf-8")
         )
         gap_id = "KMIPKIT-SOURCE-GAP-SPEC-6.1.28-OBJECT-GROUP-MEMBER-OPTIONAL"
-        contracts = {
-            row["gap_id"]: row
-            for row in oracle.get("source_table_contracts", [])
-            if row.get("gap_id") == gap_id
-        }
+        contracts = source_table_contracts_for_gap(oracle["source_table_contracts"], gap_id)
 
-        self.assertEqual(set(contracts), {gap_id})
+        self.assertEqual(len(contracts), 1)
         self.assertEqual(oracle["counts"]["source_table_contracts"], 53)
         self.assertEqual(oracle["counts"]["source_only_requirement_gaps"], 117)
         self.assertEqual(oracle["counts"]["source_only_requirement_gap_proposals"], 64)
-        contract = contracts[gap_id]
+        contract = contracts[0]
         line_range = [29318, 29336]
         source_path = "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
         self.assertEqual(contract["source_id"], "KMIPKIT-SRC-spec")
