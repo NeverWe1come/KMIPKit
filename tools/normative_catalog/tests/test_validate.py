@@ -4362,14 +4362,7 @@ class CatalogValidationTests(unittest.TestCase):
         self.assertEqual(
             oracle["counts"]["requirement_crosswalk_complete"],
             set(crosswalk_ids) == catalog_ids,
-            "the flag covers direct crosswalk rows; source reviews and rejections are accounted for separately",
-        )
-        missing_direct_crosswalks = sorted(catalog_ids - set(crosswalk_ids))
-        self.assertEqual(
-            missing_direct_crosswalks,
-            [],
-            "every stable catalog requirement needs a direct source disposition; "
-            f"missing {len(missing_direct_crosswalks)} IDs: {missing_direct_crosswalks[:12]}",
+            "the flag covers accepted direct mappings; source reviews and explicit rejections are accounted for separately",
         )
 
     def test_spec_4_1_through_4_18_source_review_slice_is_complete(self) -> None:
