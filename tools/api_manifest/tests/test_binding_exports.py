@@ -161,6 +161,23 @@ class BindingExportAuditTests(unittest.TestCase):
         self.assertEqual({issue["reason"] for issue in result["issues"]},
                          {"exported-symbol-missing-from-header"})
 
+    def test_blocked_c_export_can_remain_binary_only_without_an_issue(self):
+        result = AUDIT.audit_c_surface(
+            "int32_t kmipkit_client_create(void);\n",
+            ["kmipkit_client_create", "kmipkit_internal_helper"],
+            blocked_exports={"kmipkit_internal_helper"},
+        )
+
+        self.assertTrue(result["complete"])
+        self.assertEqual(result["issues"], [])
+        symbols = {
+            row["exportName"]: row
+            for row in result["declarations"]
+            if row["kind"] == "c-symbol"
+        }
+        self.assertEqual(set(symbols), {"kmipkit_client_create", "kmipkit_internal_helper"})
+        self.assertEqual(symbols["kmipkit_internal_helper"]["location"], "binary")
+
     def test_c_binary_audit_honors_only_exact_approved_dependency_exclusions(self):
         exclusions = [{
             "packageId": "c-kmipkit",
