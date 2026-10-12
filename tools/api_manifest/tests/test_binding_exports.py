@@ -86,6 +86,13 @@ class BindingExportAuditTests(unittest.TestCase):
         self.assertIn("KMIPKIT_ERROR_INVALID_INPUT", names)
         self.assertTrue(result["complete"])
 
+    def test_c_header_inventory_keeps_a_conditional_public_version_macro(self):
+        result = AUDIT.inventory_c_header(
+            "#ifndef KMIPKIT_ABI_VERSION\n#define KMIPKIT_ABI_VERSION 1\n#endif\n"
+        )
+        names = {row["exportName"] for row in result["declarations"]}
+        self.assertIn("KMIPKIT_ABI_VERSION", names)
+
     def test_c_header_inventory_accounts_for_enum_types_and_values(self):
         result = AUDIT.inventory_c_header("typedef enum { KMIPKIT_A = 0, KMIPKIT_B = 1 } kmipkit_mode_t;\n")
         actual = {(row["kind"], row["exportName"]) for row in result["declarations"]}
