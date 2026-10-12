@@ -2,7 +2,9 @@
 fn public_version_matches_the_synchronized_package_version() {
     assert_eq!(kmipkit::VERSION, env!("CARGO_PKG_VERSION"));
     assert_eq!(kmipkit::VERSION, "1.0.0");
-    assert_eq!(kmipkit::ABI_VERSION, 1);
+    let runtime_version = kmipkit::runtime_version();
+    assert_eq!(runtime_version.product_version, kmipkit::VERSION);
+    assert_eq!(runtime_version.abi_version, 1);
 }
 
 #[test]
