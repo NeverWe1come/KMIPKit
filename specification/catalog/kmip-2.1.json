@@ -92050,7 +92050,7 @@
       "negative_verification_required": false,
       "decision_id": null,
       "status": "scoped_verified",
-      "review_note": "KMIPKIT-0037 verifies caller-supplied Derive Key method inputs and request encoding only. The pinned source review leaves the optional multiple-input methods' actor and client-profile scope unresolved; this scoped evidence does not create a client profile requirement or support claim."
+      "review_note": "KMIPKIT-0037 verifies caller-supplied Derive Key method inputs and request encoding only. No requirement-specific official test case ID is linked for this source atom. The pinned source review leaves the optional multiple-input methods' actor and client-profile scope unresolved; this scoped evidence does not create a client profile requirement or support claim."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.14-006-001",
