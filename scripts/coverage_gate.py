@@ -1168,7 +1168,7 @@ def _load_adapter_reports(
         expected_sources = sources[scope]
         if not expected_sources:
             continue
-        merged_report: dict[str, dict[int, int]] = {}
+        platform_reports: dict[str, Mapping[str, Mapping[int, int]]] = {}
         for report_path, parser in inputs[scope]:
             if not report_path.is_file():
                 raise CoverageDataError(f"Required {scope} coverage artifact is missing: {report_path}.")
@@ -1187,11 +1187,8 @@ def _load_adapter_reports(
                 raise CoverageDataError(
                     f"{scope} coverage report contains a source outside its package: {', '.join(sorted(unexpected_sources))}"
                 )
-            for source, lines in adapter_report.items():
-                merged_lines = merged_report.setdefault(source, {})
-                for line, hits in lines.items():
-                    merged_lines[line] = max(merged_lines.get(line, 0), hits)
-        parsed[scope] = merged_report
+            platform_reports[report_path.parent.name] = adapter_report
+        parsed[scope] = merge_coverage_reports(platform_reports)
     return parsed
 
 

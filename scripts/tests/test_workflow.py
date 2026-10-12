@@ -228,7 +228,6 @@ class WorkflowContractTests(unittest.TestCase):
             "fuzz-smoke",
             "normative-inventory",
             "coverage-gate",
-            "coverage-java",
             "coverage-python",
             "coverage-jni",
             "dependency-policy",
@@ -238,6 +237,11 @@ class WorkflowContractTests(unittest.TestCase):
             with self.subTest(job=job):
                 body = self.require_job(contents, job)
                 self.assert_github_hosted_runner(body)
+
+        java_coverage = self.require_job(contents, "coverage-java")
+        self.assertIn("runs-on: ${{ matrix.os }}", java_coverage)
+        self.assertIn("os: ubuntu-latest", java_coverage)
+        self.assertIn("os: windows-latest", java_coverage)
 
         branch_coverage = self.require_job(contents, "branch-coverage")
         self.assert_github_hosted_runner(branch_coverage, "ubuntu-24.04-arm")
