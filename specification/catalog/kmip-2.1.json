@@ -91706,6 +91706,190 @@
       "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
     },
     {
+      "requirement_id": "KMIPKIT-REQ-SPEC-6.1.18-005",
+      "source_clause_ids": [],
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "6.1.18"
+        }
+      ],
+      "source_keyword": null,
+      "normative_strength": "permission_or_optional",
+      "source_force": "optional_table_body_value",
+      "source_gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.18-KEY-FORMAT-TYPE-OPTIONAL",
+      "source_locator": {
+        "kind": "table_body_row",
+        "section": "6.1.18",
+        "row_label": "Key Format Type",
+        "table": "request_payload",
+        "html_line_range": [
+          26902,
+          26917
+        ]
+      },
+      "subject": "Key Format Type",
+      "summary": "The client can select the format of the key value returned by Export.",
+      "role": "client",
+      "direction": "client_to_server",
+      "condition": null,
+      "scope_state": "client_1_0",
+      "element_ids": [
+        "KMIPKIT-ELEM-OP-C2S-EXPORT"
+      ],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": "KMIPKIT-0037",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/export.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/export_operation_tests.rs::request_preserves_all_explicit_optional_choices_and_omits_absent_fields"
+      ],
+      "negative_verification_required": false,
+      "decision_id": null,
+      "status": "verified",
+      "review_note": "Pinned KMIP Specification v2.1 §6.1.18 request payload row Key Format Type (HTML lines 26902-26917) records optional_table_body_value. This table-field classification is distinct from RFC keywords. The linked local Rust request test verifies positive encoding of the caller-selected Key Format Type selector; the local request tests do not assert server-side behavior. No requirement-specific official Test Cases ID is explicitly linked by pinned OASIS sources in KMIPKIT-0002. No official case-level pass is claimed. The combined test's incidental empty-request Unique Identifier assertion creates no Unique Identifier omission requirement here; this label covers only this selector."
+    },
+    {
+      "requirement_id": "KMIPKIT-REQ-SPEC-6.1.18-006",
+      "source_clause_ids": [],
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "6.1.18"
+        }
+      ],
+      "source_keyword": null,
+      "normative_strength": "permission_or_optional",
+      "source_force": "optional_table_body_value",
+      "source_gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.18-KEY-WRAP-TYPE-OPTIONAL",
+      "source_locator": {
+        "kind": "table_body_row",
+        "section": "6.1.18",
+        "row_label": "Key Wrap Type",
+        "table": "request_payload",
+        "html_line_range": [
+          26918,
+          26933
+        ]
+      },
+      "subject": "Key Wrap Type",
+      "summary": "The client can select the wrap type of the key value returned by Export.",
+      "role": "client",
+      "direction": "client_to_server",
+      "condition": null,
+      "scope_state": "client_1_0",
+      "element_ids": [
+        "KMIPKIT-ELEM-OP-C2S-EXPORT"
+      ],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": "KMIPKIT-0037",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/export.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/export_operation_tests.rs::request_preserves_all_explicit_optional_choices_and_omits_absent_fields"
+      ],
+      "negative_verification_required": false,
+      "decision_id": null,
+      "status": "verified",
+      "review_note": "Pinned KMIP Specification v2.1 §6.1.18 request payload row Key Wrap Type (HTML lines 26918-26933) records optional_table_body_value. This table-field classification is distinct from RFC keywords. The linked local Rust request test verifies positive encoding of the caller-selected Key Wrap Type selector; the local request tests do not assert server-side behavior. No requirement-specific official Test Cases ID is explicitly linked by pinned OASIS sources in KMIPKIT-0002. No official case-level pass is claimed. The combined test's incidental empty-request Unique Identifier assertion creates no Unique Identifier omission requirement here; this label covers only this selector."
+    },
+    {
+      "requirement_id": "KMIPKIT-REQ-SPEC-6.1.18-007",
+      "source_clause_ids": [],
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "6.1.18"
+        }
+      ],
+      "source_keyword": null,
+      "normative_strength": "permission_or_optional",
+      "source_force": "optional_table_body_value",
+      "source_gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.18-KEY-COMPRESSION-TYPE-OPTIONAL",
+      "source_locator": {
+        "kind": "table_body_row",
+        "section": "6.1.18",
+        "row_label": "Key Compression Type",
+        "table": "request_payload",
+        "html_line_range": [
+          26934,
+          26950
+        ]
+      },
+      "subject": "Key Compression Type",
+      "summary": "The client can select the compression method for elliptic-curve public keys returned by Export.",
+      "role": "client",
+      "direction": "client_to_server",
+      "condition": null,
+      "scope_state": "client_1_0",
+      "element_ids": [
+        "KMIPKIT-ELEM-OP-C2S-EXPORT"
+      ],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": "KMIPKIT-0037",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/export.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/export_operation_tests.rs::request_preserves_all_explicit_optional_choices_and_omits_absent_fields"
+      ],
+      "negative_verification_required": false,
+      "decision_id": null,
+      "status": "verified",
+      "review_note": "Pinned KMIP Specification v2.1 §6.1.18 request payload row Key Compression Type (HTML lines 26934-26950) records optional_table_body_value. This table-field classification is distinct from RFC keywords. The linked local Rust request test verifies positive encoding of the caller-selected Key Compression Type selector; the local request tests do not assert server-side behavior. No requirement-specific official Test Cases ID is explicitly linked by pinned OASIS sources in KMIPKIT-0002. No official case-level pass is claimed. The combined test's incidental empty-request Unique Identifier assertion creates no Unique Identifier omission requirement here; this label covers only this selector."
+    },
+    {
+      "requirement_id": "KMIPKIT-REQ-SPEC-6.1.18-008",
+      "source_clause_ids": [],
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "6.1.18"
+        }
+      ],
+      "source_keyword": null,
+      "normative_strength": "permission_or_optional",
+      "source_force": "optional_table_body_value",
+      "source_gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.18-KEY-WRAPPING-SPECIFICATION-OPTIONAL",
+      "source_locator": {
+        "kind": "table_body_row",
+        "section": "6.1.18",
+        "row_label": "Key Wrapping Specification",
+        "table": "request_payload",
+        "html_line_range": [
+          26951,
+          26966
+        ]
+      },
+      "subject": "Key Wrapping Specification",
+      "summary": "The client can supply wrapping keys and other information for the object returned by Export.",
+      "role": "client",
+      "direction": "client_to_server",
+      "condition": null,
+      "scope_state": "client_1_0",
+      "element_ids": [
+        "KMIPKIT-ELEM-OP-C2S-EXPORT"
+      ],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": "KMIPKIT-0037",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/export.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/export_operation_tests.rs::request_preserves_all_explicit_optional_choices_and_omits_absent_fields"
+      ],
+      "negative_verification_required": false,
+      "decision_id": null,
+      "status": "verified",
+      "review_note": "Pinned KMIP Specification v2.1 §6.1.18 request payload row Key Wrapping Specification (HTML lines 26951-26966) records optional_table_body_value. This table-field classification is distinct from RFC keywords. The linked local Rust request test verifies positive encoding of the caller-selected Key Wrapping Specification selector; the local request tests do not assert server-side behavior. No requirement-specific official Test Cases ID is explicitly linked by pinned OASIS sources in KMIPKIT-0002. No official case-level pass is claimed. The combined test's incidental empty-request Unique Identifier assertion creates no Unique Identifier omission requirement here; this label covers only this selector."
+    },
+    {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.19-001",
       "source_clause_ids": [
         "KMIPKIT-CLAUSE-SPEC-6.1.19-001"
@@ -91776,6 +91960,194 @@
       "decision_id": null,
       "status": "verified",
       "review_note": "OASIS KMIP v2.1 §6.1.19 requires the client to assume the server can return a registered key in that same format; the server MAY support other conversions. KMIPKit forwards the caller's Key Format Type and preserves opaque TTLV. Local checks verify requested-value preservation and selected pinned PKCS#12 fixture items only; they do not establish remote server capabilities, conversion behavior, or PKCS#12 container validity. KMIPKIT-DEC-003 treats the lowercase PKCS#12 paragraph as informative guidance. No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002; no official case-level pass is claimed."
+    },
+    {
+      "requirement_id": "KMIPKIT-REQ-SPEC-6.1.19-003",
+      "source_clause_ids": [],
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "6.1.19"
+        }
+      ],
+      "source_keyword": null,
+      "normative_strength": "permission_or_optional",
+      "source_force": "optional_table_body_value",
+      "source_gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.19-KEY-FORMAT-TYPE-OPTIONAL",
+      "source_locator": {
+        "kind": "table_body_row",
+        "section": "6.1.19",
+        "row_label": "Key Format Type",
+        "table": "request_payload",
+        "html_line_range": [
+          27211,
+          27228
+        ]
+      },
+      "subject": "Key Format Type",
+      "summary": "The client can select the format of the key value returned by Get.",
+      "role": "client",
+      "direction": "client_to_server",
+      "condition": null,
+      "scope_state": "client_1_0",
+      "element_ids": [
+        "KMIPKIT-ELEM-OP-C2S-GET"
+      ],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": "KMIPKIT-0017",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/get.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/get_tests.rs::request_omits_every_optional_table_220_field_when_unspecified",
+        "crates/kmipkit-protocol/tests/unit/get_tests.rs::request_serializes_present_table_220_fields_in_source_order"
+      ],
+      "negative_verification_required": false,
+      "decision_id": null,
+      "status": "verified",
+      "review_note": "Pinned KMIP Specification v2.1 §6.1.19 request payload row Key Format Type (HTML lines 27211-27228) records optional_table_body_value. This table-field classification is distinct from RFC keywords. The linked local Rust request tests verify presence and omission of caller-selected Key Format Type selectors; the local request tests do not assert server-side behavior. No requirement-specific official Test Cases ID is explicitly linked by pinned OASIS sources in KMIPKIT-0002. No official case-level pass is claimed."
+    },
+    {
+      "requirement_id": "KMIPKIT-REQ-SPEC-6.1.19-004",
+      "source_clause_ids": [],
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "6.1.19"
+        }
+      ],
+      "source_keyword": null,
+      "normative_strength": "permission_or_optional",
+      "source_force": "optional_table_body_value",
+      "source_gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.19-KEY-WRAP-TYPE-OPTIONAL",
+      "source_locator": {
+        "kind": "table_body_row",
+        "section": "6.1.19",
+        "row_label": "Key Wrap Type",
+        "table": "request_payload",
+        "html_line_range": [
+          27229,
+          27247
+        ]
+      },
+      "subject": "Key Wrap Type",
+      "summary": "The client can select the wrap type of the key value returned by Get.",
+      "role": "client",
+      "direction": "client_to_server",
+      "condition": null,
+      "scope_state": "client_1_0",
+      "element_ids": [
+        "KMIPKIT-ELEM-OP-C2S-GET"
+      ],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": "KMIPKIT-0017",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/get.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/get_tests.rs::request_omits_every_optional_table_220_field_when_unspecified",
+        "crates/kmipkit-protocol/tests/unit/get_tests.rs::request_serializes_present_table_220_fields_in_source_order"
+      ],
+      "negative_verification_required": false,
+      "decision_id": null,
+      "status": "verified",
+      "review_note": "Pinned KMIP Specification v2.1 §6.1.19 request payload row Key Wrap Type (HTML lines 27229-27247) records optional_table_body_value. This table-field classification is distinct from RFC keywords. The linked local Rust request tests verify presence and omission of caller-selected Key Wrap Type selectors; the local request tests do not assert server-side behavior. No requirement-specific official Test Cases ID is explicitly linked by pinned OASIS sources in KMIPKIT-0002. No official case-level pass is claimed."
+    },
+    {
+      "requirement_id": "KMIPKIT-REQ-SPEC-6.1.19-005",
+      "source_clause_ids": [],
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "6.1.19"
+        }
+      ],
+      "source_keyword": null,
+      "normative_strength": "permission_or_optional",
+      "source_force": "optional_table_body_value",
+      "source_gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.19-KEY-COMPRESSION-TYPE-OPTIONAL",
+      "source_locator": {
+        "kind": "table_body_row",
+        "section": "6.1.19",
+        "row_label": "Key Compression Type",
+        "table": "request_payload",
+        "html_line_range": [
+          27248,
+          27266
+        ]
+      },
+      "subject": "Key Compression Type",
+      "summary": "The client can select the compression method for elliptic-curve public keys returned by Get.",
+      "role": "client",
+      "direction": "client_to_server",
+      "condition": null,
+      "scope_state": "client_1_0",
+      "element_ids": [
+        "KMIPKIT-ELEM-OP-C2S-GET"
+      ],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": "KMIPKIT-0017",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/get.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/get_tests.rs::request_omits_every_optional_table_220_field_when_unspecified",
+        "crates/kmipkit-protocol/tests/unit/get_tests.rs::request_serializes_present_table_220_fields_in_source_order"
+      ],
+      "negative_verification_required": false,
+      "decision_id": null,
+      "status": "verified",
+      "review_note": "Pinned KMIP Specification v2.1 §6.1.19 request payload row Key Compression Type (HTML lines 27248-27266) records optional_table_body_value. This table-field classification is distinct from RFC keywords. The linked local Rust request tests verify presence and omission of caller-selected Key Compression Type selectors; the local request tests do not assert server-side behavior. No requirement-specific official Test Cases ID is explicitly linked by pinned OASIS sources in KMIPKIT-0002. No official case-level pass is claimed."
+    },
+    {
+      "requirement_id": "KMIPKIT-REQ-SPEC-6.1.19-006",
+      "source_clause_ids": [],
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "6.1.19"
+        }
+      ],
+      "source_keyword": null,
+      "normative_strength": "permission_or_optional",
+      "source_force": "optional_table_body_value",
+      "source_gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.19-KEY-WRAPPING-SPECIFICATION-OPTIONAL",
+      "source_locator": {
+        "kind": "table_body_row",
+        "section": "6.1.19",
+        "row_label": "Key Wrapping Specification",
+        "table": "request_payload",
+        "html_line_range": [
+          27267,
+          27285
+        ]
+      },
+      "subject": "Key Wrapping Specification",
+      "summary": "The client can supply wrapping keys and other information for the object returned by Get.",
+      "role": "client",
+      "direction": "client_to_server",
+      "condition": null,
+      "scope_state": "client_1_0",
+      "element_ids": [
+        "KMIPKIT-ELEM-OP-C2S-GET"
+      ],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": "KMIPKIT-0017",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/get.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/get_tests.rs::request_omits_every_optional_table_220_field_when_unspecified",
+        "crates/kmipkit-protocol/tests/unit/get_tests.rs::request_serializes_present_table_220_fields_in_source_order"
+      ],
+      "negative_verification_required": false,
+      "decision_id": null,
+      "status": "verified",
+      "review_note": "Pinned KMIP Specification v2.1 §6.1.19 request payload row Key Wrapping Specification (HTML lines 27267-27285) records optional_table_body_value. This table-field classification is distinct from RFC keywords. The linked local Rust request tests verify presence and omission of caller-selected Key Wrapping Specification selectors; the local request tests do not assert server-side behavior. No requirement-specific official Test Cases ID is explicitly linked by pinned OASIS sources in KMIPKIT-0002. No official case-level pass is claimed."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.2-001-001",
@@ -99697,7 +100069,15 @@
         "KMIPKIT-REQ-SPEC-6.1.17-001-001",
         "KMIPKIT-REQ-SPEC-6.1.17-001-002",
         "KMIPKIT-REQ-SPEC-6.1.17-006",
+        "KMIPKIT-REQ-SPEC-6.1.18-005",
+        "KMIPKIT-REQ-SPEC-6.1.18-006",
+        "KMIPKIT-REQ-SPEC-6.1.18-007",
+        "KMIPKIT-REQ-SPEC-6.1.18-008",
         "KMIPKIT-REQ-SPEC-6.1.19-002",
+        "KMIPKIT-REQ-SPEC-6.1.19-003",
+        "KMIPKIT-REQ-SPEC-6.1.19-004",
+        "KMIPKIT-REQ-SPEC-6.1.19-005",
+        "KMIPKIT-REQ-SPEC-6.1.19-006",
         "KMIPKIT-REQ-SPEC-6.1.20-001-001",
         "KMIPKIT-REQ-SPEC-6.1.20-004",
         "KMIPKIT-REQ-SPEC-6.1.23-001-001",
@@ -101040,7 +101420,15 @@
         "KMIPKIT-REQ-SPEC-6.1.17-001-001",
         "KMIPKIT-REQ-SPEC-6.1.17-001-002",
         "KMIPKIT-REQ-SPEC-6.1.17-006",
+        "KMIPKIT-REQ-SPEC-6.1.18-005",
+        "KMIPKIT-REQ-SPEC-6.1.18-006",
+        "KMIPKIT-REQ-SPEC-6.1.18-007",
+        "KMIPKIT-REQ-SPEC-6.1.18-008",
         "KMIPKIT-REQ-SPEC-6.1.19-002",
+        "KMIPKIT-REQ-SPEC-6.1.19-003",
+        "KMIPKIT-REQ-SPEC-6.1.19-004",
+        "KMIPKIT-REQ-SPEC-6.1.19-005",
+        "KMIPKIT-REQ-SPEC-6.1.19-006",
         "KMIPKIT-REQ-SPEC-6.1.20-001-001",
         "KMIPKIT-REQ-SPEC-6.1.20-004",
         "KMIPKIT-REQ-SPEC-6.1.23-001-001",
@@ -102368,7 +102756,15 @@
         "KMIPKIT-REQ-SPEC-6.1.17-001-001",
         "KMIPKIT-REQ-SPEC-6.1.17-001-002",
         "KMIPKIT-REQ-SPEC-6.1.17-006",
+        "KMIPKIT-REQ-SPEC-6.1.18-005",
+        "KMIPKIT-REQ-SPEC-6.1.18-006",
+        "KMIPKIT-REQ-SPEC-6.1.18-007",
+        "KMIPKIT-REQ-SPEC-6.1.18-008",
         "KMIPKIT-REQ-SPEC-6.1.19-002",
+        "KMIPKIT-REQ-SPEC-6.1.19-003",
+        "KMIPKIT-REQ-SPEC-6.1.19-004",
+        "KMIPKIT-REQ-SPEC-6.1.19-005",
+        "KMIPKIT-REQ-SPEC-6.1.19-006",
         "KMIPKIT-REQ-SPEC-6.1.20-001-001",
         "KMIPKIT-REQ-SPEC-6.1.20-004",
         "KMIPKIT-REQ-SPEC-6.1.23-001-001",
@@ -104024,7 +104420,15 @@
         "KMIPKIT-REQ-SPEC-6.1.17-001-001",
         "KMIPKIT-REQ-SPEC-6.1.17-001-002",
         "KMIPKIT-REQ-SPEC-6.1.17-006",
+        "KMIPKIT-REQ-SPEC-6.1.18-005",
+        "KMIPKIT-REQ-SPEC-6.1.18-006",
+        "KMIPKIT-REQ-SPEC-6.1.18-007",
+        "KMIPKIT-REQ-SPEC-6.1.18-008",
         "KMIPKIT-REQ-SPEC-6.1.19-002",
+        "KMIPKIT-REQ-SPEC-6.1.19-003",
+        "KMIPKIT-REQ-SPEC-6.1.19-004",
+        "KMIPKIT-REQ-SPEC-6.1.19-005",
+        "KMIPKIT-REQ-SPEC-6.1.19-006",
         "KMIPKIT-REQ-SPEC-6.1.20-001-001",
         "KMIPKIT-REQ-SPEC-6.1.20-004",
         "KMIPKIT-REQ-SPEC-6.1.23-001-001",
@@ -105400,7 +105804,15 @@
         "KMIPKIT-REQ-SPEC-6.1.17-001-001",
         "KMIPKIT-REQ-SPEC-6.1.17-001-002",
         "KMIPKIT-REQ-SPEC-6.1.17-006",
+        "KMIPKIT-REQ-SPEC-6.1.18-005",
+        "KMIPKIT-REQ-SPEC-6.1.18-006",
+        "KMIPKIT-REQ-SPEC-6.1.18-007",
+        "KMIPKIT-REQ-SPEC-6.1.18-008",
         "KMIPKIT-REQ-SPEC-6.1.19-002",
+        "KMIPKIT-REQ-SPEC-6.1.19-003",
+        "KMIPKIT-REQ-SPEC-6.1.19-004",
+        "KMIPKIT-REQ-SPEC-6.1.19-005",
+        "KMIPKIT-REQ-SPEC-6.1.19-006",
         "KMIPKIT-REQ-SPEC-6.1.20-001-001",
         "KMIPKIT-REQ-SPEC-6.1.20-004",
         "KMIPKIT-REQ-SPEC-6.1.23-001-001",
@@ -106779,7 +107191,15 @@
         "KMIPKIT-REQ-SPEC-6.1.17-001-001",
         "KMIPKIT-REQ-SPEC-6.1.17-001-002",
         "KMIPKIT-REQ-SPEC-6.1.17-006",
+        "KMIPKIT-REQ-SPEC-6.1.18-005",
+        "KMIPKIT-REQ-SPEC-6.1.18-006",
+        "KMIPKIT-REQ-SPEC-6.1.18-007",
+        "KMIPKIT-REQ-SPEC-6.1.18-008",
         "KMIPKIT-REQ-SPEC-6.1.19-002",
+        "KMIPKIT-REQ-SPEC-6.1.19-003",
+        "KMIPKIT-REQ-SPEC-6.1.19-004",
+        "KMIPKIT-REQ-SPEC-6.1.19-005",
+        "KMIPKIT-REQ-SPEC-6.1.19-006",
         "KMIPKIT-REQ-SPEC-6.1.20-001-001",
         "KMIPKIT-REQ-SPEC-6.1.20-004",
         "KMIPKIT-REQ-SPEC-6.1.23-001-001",
@@ -108156,7 +108576,15 @@
         "KMIPKIT-REQ-SPEC-6.1.17-001-001",
         "KMIPKIT-REQ-SPEC-6.1.17-001-002",
         "KMIPKIT-REQ-SPEC-6.1.17-006",
+        "KMIPKIT-REQ-SPEC-6.1.18-005",
+        "KMIPKIT-REQ-SPEC-6.1.18-006",
+        "KMIPKIT-REQ-SPEC-6.1.18-007",
+        "KMIPKIT-REQ-SPEC-6.1.18-008",
         "KMIPKIT-REQ-SPEC-6.1.19-002",
+        "KMIPKIT-REQ-SPEC-6.1.19-003",
+        "KMIPKIT-REQ-SPEC-6.1.19-004",
+        "KMIPKIT-REQ-SPEC-6.1.19-005",
+        "KMIPKIT-REQ-SPEC-6.1.19-006",
         "KMIPKIT-REQ-SPEC-6.1.20-001-001",
         "KMIPKIT-REQ-SPEC-6.1.20-004",
         "KMIPKIT-REQ-SPEC-6.1.23-001-001",
@@ -109518,7 +109946,15 @@
         "KMIPKIT-REQ-SPEC-6.1.17-001-001",
         "KMIPKIT-REQ-SPEC-6.1.17-001-002",
         "KMIPKIT-REQ-SPEC-6.1.17-006",
+        "KMIPKIT-REQ-SPEC-6.1.18-005",
+        "KMIPKIT-REQ-SPEC-6.1.18-006",
+        "KMIPKIT-REQ-SPEC-6.1.18-007",
+        "KMIPKIT-REQ-SPEC-6.1.18-008",
         "KMIPKIT-REQ-SPEC-6.1.19-002",
+        "KMIPKIT-REQ-SPEC-6.1.19-003",
+        "KMIPKIT-REQ-SPEC-6.1.19-004",
+        "KMIPKIT-REQ-SPEC-6.1.19-005",
+        "KMIPKIT-REQ-SPEC-6.1.19-006",
         "KMIPKIT-REQ-SPEC-6.1.20-001-001",
         "KMIPKIT-REQ-SPEC-6.1.20-004",
         "KMIPKIT-REQ-SPEC-6.1.23-001-001",
@@ -110857,7 +111293,15 @@
         "KMIPKIT-REQ-SPEC-6.1.17-001-001",
         "KMIPKIT-REQ-SPEC-6.1.17-001-002",
         "KMIPKIT-REQ-SPEC-6.1.17-006",
+        "KMIPKIT-REQ-SPEC-6.1.18-005",
+        "KMIPKIT-REQ-SPEC-6.1.18-006",
+        "KMIPKIT-REQ-SPEC-6.1.18-007",
+        "KMIPKIT-REQ-SPEC-6.1.18-008",
         "KMIPKIT-REQ-SPEC-6.1.19-002",
+        "KMIPKIT-REQ-SPEC-6.1.19-003",
+        "KMIPKIT-REQ-SPEC-6.1.19-004",
+        "KMIPKIT-REQ-SPEC-6.1.19-005",
+        "KMIPKIT-REQ-SPEC-6.1.19-006",
         "KMIPKIT-REQ-SPEC-6.1.20-001-001",
         "KMIPKIT-REQ-SPEC-6.1.20-004",
         "KMIPKIT-REQ-SPEC-6.1.23-001-001",
@@ -112204,7 +112648,15 @@
         "KMIPKIT-REQ-SPEC-6.1.17-001-001",
         "KMIPKIT-REQ-SPEC-6.1.17-001-002",
         "KMIPKIT-REQ-SPEC-6.1.17-006",
+        "KMIPKIT-REQ-SPEC-6.1.18-005",
+        "KMIPKIT-REQ-SPEC-6.1.18-006",
+        "KMIPKIT-REQ-SPEC-6.1.18-007",
+        "KMIPKIT-REQ-SPEC-6.1.18-008",
         "KMIPKIT-REQ-SPEC-6.1.19-002",
+        "KMIPKIT-REQ-SPEC-6.1.19-003",
+        "KMIPKIT-REQ-SPEC-6.1.19-004",
+        "KMIPKIT-REQ-SPEC-6.1.19-005",
+        "KMIPKIT-REQ-SPEC-6.1.19-006",
         "KMIPKIT-REQ-SPEC-6.1.20-001-001",
         "KMIPKIT-REQ-SPEC-6.1.20-004",
         "KMIPKIT-REQ-SPEC-6.1.23-001-001",
@@ -113560,7 +114012,15 @@
         "KMIPKIT-REQ-SPEC-6.1.17-001-001",
         "KMIPKIT-REQ-SPEC-6.1.17-001-002",
         "KMIPKIT-REQ-SPEC-6.1.17-006",
+        "KMIPKIT-REQ-SPEC-6.1.18-005",
+        "KMIPKIT-REQ-SPEC-6.1.18-006",
+        "KMIPKIT-REQ-SPEC-6.1.18-007",
+        "KMIPKIT-REQ-SPEC-6.1.18-008",
         "KMIPKIT-REQ-SPEC-6.1.19-002",
+        "KMIPKIT-REQ-SPEC-6.1.19-003",
+        "KMIPKIT-REQ-SPEC-6.1.19-004",
+        "KMIPKIT-REQ-SPEC-6.1.19-005",
+        "KMIPKIT-REQ-SPEC-6.1.19-006",
         "KMIPKIT-REQ-SPEC-6.1.20-001-001",
         "KMIPKIT-REQ-SPEC-6.1.20-004",
         "KMIPKIT-REQ-SPEC-6.1.23-001-001",
@@ -114924,7 +115384,15 @@
         "KMIPKIT-REQ-SPEC-6.1.17-001-001",
         "KMIPKIT-REQ-SPEC-6.1.17-001-002",
         "KMIPKIT-REQ-SPEC-6.1.17-006",
+        "KMIPKIT-REQ-SPEC-6.1.18-005",
+        "KMIPKIT-REQ-SPEC-6.1.18-006",
+        "KMIPKIT-REQ-SPEC-6.1.18-007",
+        "KMIPKIT-REQ-SPEC-6.1.18-008",
         "KMIPKIT-REQ-SPEC-6.1.19-002",
+        "KMIPKIT-REQ-SPEC-6.1.19-003",
+        "KMIPKIT-REQ-SPEC-6.1.19-004",
+        "KMIPKIT-REQ-SPEC-6.1.19-005",
+        "KMIPKIT-REQ-SPEC-6.1.19-006",
         "KMIPKIT-REQ-SPEC-6.1.20-001-001",
         "KMIPKIT-REQ-SPEC-6.1.20-004",
         "KMIPKIT-REQ-SPEC-6.1.23-001-001",
@@ -116272,7 +116740,15 @@
         "KMIPKIT-REQ-SPEC-6.1.17-001-001",
         "KMIPKIT-REQ-SPEC-6.1.17-001-002",
         "KMIPKIT-REQ-SPEC-6.1.17-006",
+        "KMIPKIT-REQ-SPEC-6.1.18-005",
+        "KMIPKIT-REQ-SPEC-6.1.18-006",
+        "KMIPKIT-REQ-SPEC-6.1.18-007",
+        "KMIPKIT-REQ-SPEC-6.1.18-008",
         "KMIPKIT-REQ-SPEC-6.1.19-002",
+        "KMIPKIT-REQ-SPEC-6.1.19-003",
+        "KMIPKIT-REQ-SPEC-6.1.19-004",
+        "KMIPKIT-REQ-SPEC-6.1.19-005",
+        "KMIPKIT-REQ-SPEC-6.1.19-006",
         "KMIPKIT-REQ-SPEC-6.1.20-001-001",
         "KMIPKIT-REQ-SPEC-6.1.20-004",
         "KMIPKIT-REQ-SPEC-6.1.23-001-001",
@@ -117479,7 +117955,15 @@
         "KMIPKIT-REQ-SPEC-6.1.17-001-001",
         "KMIPKIT-REQ-SPEC-6.1.17-001-002",
         "KMIPKIT-REQ-SPEC-6.1.17-006",
+        "KMIPKIT-REQ-SPEC-6.1.18-005",
+        "KMIPKIT-REQ-SPEC-6.1.18-006",
+        "KMIPKIT-REQ-SPEC-6.1.18-007",
+        "KMIPKIT-REQ-SPEC-6.1.18-008",
         "KMIPKIT-REQ-SPEC-6.1.19-002",
+        "KMIPKIT-REQ-SPEC-6.1.19-003",
+        "KMIPKIT-REQ-SPEC-6.1.19-004",
+        "KMIPKIT-REQ-SPEC-6.1.19-005",
+        "KMIPKIT-REQ-SPEC-6.1.19-006",
         "KMIPKIT-REQ-SPEC-6.1.20-001-001",
         "KMIPKIT-REQ-SPEC-6.1.20-004",
         "KMIPKIT-REQ-SPEC-6.1.23-001-001",
@@ -118685,7 +119169,15 @@
         "KMIPKIT-REQ-SPEC-6.1.17-001-001",
         "KMIPKIT-REQ-SPEC-6.1.17-001-002",
         "KMIPKIT-REQ-SPEC-6.1.17-006",
+        "KMIPKIT-REQ-SPEC-6.1.18-005",
+        "KMIPKIT-REQ-SPEC-6.1.18-006",
+        "KMIPKIT-REQ-SPEC-6.1.18-007",
+        "KMIPKIT-REQ-SPEC-6.1.18-008",
         "KMIPKIT-REQ-SPEC-6.1.19-002",
+        "KMIPKIT-REQ-SPEC-6.1.19-003",
+        "KMIPKIT-REQ-SPEC-6.1.19-004",
+        "KMIPKIT-REQ-SPEC-6.1.19-005",
+        "KMIPKIT-REQ-SPEC-6.1.19-006",
         "KMIPKIT-REQ-SPEC-6.1.20-001-001",
         "KMIPKIT-REQ-SPEC-6.1.20-004",
         "KMIPKIT-REQ-SPEC-6.1.23-001-001",
@@ -120052,7 +120544,15 @@
         "KMIPKIT-REQ-SPEC-6.1.17-001-001",
         "KMIPKIT-REQ-SPEC-6.1.17-001-002",
         "KMIPKIT-REQ-SPEC-6.1.17-006",
+        "KMIPKIT-REQ-SPEC-6.1.18-005",
+        "KMIPKIT-REQ-SPEC-6.1.18-006",
+        "KMIPKIT-REQ-SPEC-6.1.18-007",
+        "KMIPKIT-REQ-SPEC-6.1.18-008",
         "KMIPKIT-REQ-SPEC-6.1.19-002",
+        "KMIPKIT-REQ-SPEC-6.1.19-003",
+        "KMIPKIT-REQ-SPEC-6.1.19-004",
+        "KMIPKIT-REQ-SPEC-6.1.19-005",
+        "KMIPKIT-REQ-SPEC-6.1.19-006",
         "KMIPKIT-REQ-SPEC-6.1.20-001-001",
         "KMIPKIT-REQ-SPEC-6.1.20-004",
         "KMIPKIT-REQ-SPEC-6.1.23-001-001",
@@ -121450,7 +121950,15 @@
         "KMIPKIT-REQ-SPEC-6.1.17-001-001",
         "KMIPKIT-REQ-SPEC-6.1.17-001-002",
         "KMIPKIT-REQ-SPEC-6.1.17-006",
+        "KMIPKIT-REQ-SPEC-6.1.18-005",
+        "KMIPKIT-REQ-SPEC-6.1.18-006",
+        "KMIPKIT-REQ-SPEC-6.1.18-007",
+        "KMIPKIT-REQ-SPEC-6.1.18-008",
         "KMIPKIT-REQ-SPEC-6.1.19-002",
+        "KMIPKIT-REQ-SPEC-6.1.19-003",
+        "KMIPKIT-REQ-SPEC-6.1.19-004",
+        "KMIPKIT-REQ-SPEC-6.1.19-005",
+        "KMIPKIT-REQ-SPEC-6.1.19-006",
         "KMIPKIT-REQ-SPEC-6.1.20-001-001",
         "KMIPKIT-REQ-SPEC-6.1.20-004",
         "KMIPKIT-REQ-SPEC-6.1.23-001-001",
@@ -122821,7 +123329,15 @@
         "KMIPKIT-REQ-SPEC-6.1.17-001-001",
         "KMIPKIT-REQ-SPEC-6.1.17-001-002",
         "KMIPKIT-REQ-SPEC-6.1.17-006",
+        "KMIPKIT-REQ-SPEC-6.1.18-005",
+        "KMIPKIT-REQ-SPEC-6.1.18-006",
+        "KMIPKIT-REQ-SPEC-6.1.18-007",
+        "KMIPKIT-REQ-SPEC-6.1.18-008",
         "KMIPKIT-REQ-SPEC-6.1.19-002",
+        "KMIPKIT-REQ-SPEC-6.1.19-003",
+        "KMIPKIT-REQ-SPEC-6.1.19-004",
+        "KMIPKIT-REQ-SPEC-6.1.19-005",
+        "KMIPKIT-REQ-SPEC-6.1.19-006",
         "KMIPKIT-REQ-SPEC-6.1.20-001-001",
         "KMIPKIT-REQ-SPEC-6.1.20-004",
         "KMIPKIT-REQ-SPEC-6.1.23-001-001",

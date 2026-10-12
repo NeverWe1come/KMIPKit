@@ -73,11 +73,11 @@
   },
   "counts": {
     "profiles": 18,
-    "requirement_crosswalk_records": 454,
+    "requirement_crosswalk_records": 462,
     "requirement_crosswalk_complete": false,
     "source_requirement_review_records": 889,
     "source_only_requirement_gaps": 170,
-    "source_only_requirement_gap_proposals": 129
+    "source_only_requirement_gap_proposals": 121
   },
   "source_clause_crosswalk": [
     {
@@ -25129,6 +25129,174 @@
       "scope_state": "client_1_0",
       "applies_to": "all_client_profiles",
       "review_note": "Exact Derivation Parameters request body row; table-field force is not a formal RFC keyword."
+    },
+    {
+      "requirement_id": "KMIPKIT-REQ-SPEC-6.1.18-005",
+      "source_gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.18-KEY-FORMAT-TYPE-OPTIONAL",
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_section": "6.1.18",
+      "source_locator": {
+        "kind": "table_body_row",
+        "section": "6.1.18",
+        "row_label": "Key Format Type",
+        "table": "request_payload",
+        "html_line_range": [
+          26902,
+          26917
+        ]
+      },
+      "source_force": "optional_table_body_value",
+      "role": "client",
+      "scope_state": "client_1_0",
+      "applies_to": "all_client_profiles",
+      "review_note": "Exact Key Format Type 6.1.18 request body row; table-field force is not a formal RFC keyword."
+    },
+    {
+      "requirement_id": "KMIPKIT-REQ-SPEC-6.1.18-006",
+      "source_gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.18-KEY-WRAP-TYPE-OPTIONAL",
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_section": "6.1.18",
+      "source_locator": {
+        "kind": "table_body_row",
+        "section": "6.1.18",
+        "row_label": "Key Wrap Type",
+        "table": "request_payload",
+        "html_line_range": [
+          26918,
+          26933
+        ]
+      },
+      "source_force": "optional_table_body_value",
+      "role": "client",
+      "scope_state": "client_1_0",
+      "applies_to": "all_client_profiles",
+      "review_note": "Exact Key Wrap Type 6.1.18 request body row; table-field force is not a formal RFC keyword."
+    },
+    {
+      "requirement_id": "KMIPKIT-REQ-SPEC-6.1.18-007",
+      "source_gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.18-KEY-COMPRESSION-TYPE-OPTIONAL",
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_section": "6.1.18",
+      "source_locator": {
+        "kind": "table_body_row",
+        "section": "6.1.18",
+        "row_label": "Key Compression Type",
+        "table": "request_payload",
+        "html_line_range": [
+          26934,
+          26950
+        ]
+      },
+      "source_force": "optional_table_body_value",
+      "role": "client",
+      "scope_state": "client_1_0",
+      "applies_to": "all_client_profiles",
+      "review_note": "Exact Key Compression Type 6.1.18 request body row; table-field force is not a formal RFC keyword."
+    },
+    {
+      "requirement_id": "KMIPKIT-REQ-SPEC-6.1.18-008",
+      "source_gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.18-KEY-WRAPPING-SPECIFICATION-OPTIONAL",
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_section": "6.1.18",
+      "source_locator": {
+        "kind": "table_body_row",
+        "section": "6.1.18",
+        "row_label": "Key Wrapping Specification",
+        "table": "request_payload",
+        "html_line_range": [
+          26951,
+          26966
+        ]
+      },
+      "source_force": "optional_table_body_value",
+      "role": "client",
+      "scope_state": "client_1_0",
+      "applies_to": "all_client_profiles",
+      "review_note": "Exact Key Wrapping Specification 6.1.18 request body row; table-field force is not a formal RFC keyword."
+    },
+    {
+      "requirement_id": "KMIPKIT-REQ-SPEC-6.1.19-003",
+      "source_gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.19-KEY-FORMAT-TYPE-OPTIONAL",
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_section": "6.1.19",
+      "source_locator": {
+        "kind": "table_body_row",
+        "section": "6.1.19",
+        "row_label": "Key Format Type",
+        "table": "request_payload",
+        "html_line_range": [
+          27211,
+          27228
+        ]
+      },
+      "source_force": "optional_table_body_value",
+      "role": "client",
+      "scope_state": "client_1_0",
+      "applies_to": "all_client_profiles",
+      "review_note": "Exact Key Format Type 6.1.19 request body row; table-field force is not a formal RFC keyword."
+    },
+    {
+      "requirement_id": "KMIPKIT-REQ-SPEC-6.1.19-004",
+      "source_gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.19-KEY-WRAP-TYPE-OPTIONAL",
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_section": "6.1.19",
+      "source_locator": {
+        "kind": "table_body_row",
+        "section": "6.1.19",
+        "row_label": "Key Wrap Type",
+        "table": "request_payload",
+        "html_line_range": [
+          27229,
+          27247
+        ]
+      },
+      "source_force": "optional_table_body_value",
+      "role": "client",
+      "scope_state": "client_1_0",
+      "applies_to": "all_client_profiles",
+      "review_note": "Exact Key Wrap Type 6.1.19 request body row; table-field force is not a formal RFC keyword."
+    },
+    {
+      "requirement_id": "KMIPKIT-REQ-SPEC-6.1.19-005",
+      "source_gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.19-KEY-COMPRESSION-TYPE-OPTIONAL",
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_section": "6.1.19",
+      "source_locator": {
+        "kind": "table_body_row",
+        "section": "6.1.19",
+        "row_label": "Key Compression Type",
+        "table": "request_payload",
+        "html_line_range": [
+          27248,
+          27266
+        ]
+      },
+      "source_force": "optional_table_body_value",
+      "role": "client",
+      "scope_state": "client_1_0",
+      "applies_to": "all_client_profiles",
+      "review_note": "Exact Key Compression Type 6.1.19 request body row; table-field force is not a formal RFC keyword."
+    },
+    {
+      "requirement_id": "KMIPKIT-REQ-SPEC-6.1.19-006",
+      "source_gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.19-KEY-WRAPPING-SPECIFICATION-OPTIONAL",
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_section": "6.1.19",
+      "source_locator": {
+        "kind": "table_body_row",
+        "section": "6.1.19",
+        "row_label": "Key Wrapping Specification",
+        "table": "request_payload",
+        "html_line_range": [
+          27267,
+          27285
+        ]
+      },
+      "source_force": "optional_table_body_value",
+      "role": "client",
+      "scope_state": "client_1_0",
+      "applies_to": "all_client_profiles",
+      "review_note": "Exact Key Wrapping Specification 6.1.19 request body row; table-field force is not a formal RFC keyword."
     }
   ],
   "profiles": [
@@ -26083,7 +26251,15 @@
         "KMIPKIT-REQ-SPEC-6.1.14-010",
         "KMIPKIT-REQ-SPEC-6.1.14-011",
         "KMIPKIT-REQ-SPEC-6.1.14-012",
+        "KMIPKIT-REQ-SPEC-6.1.18-005",
+        "KMIPKIT-REQ-SPEC-6.1.18-006",
+        "KMIPKIT-REQ-SPEC-6.1.18-007",
+        "KMIPKIT-REQ-SPEC-6.1.18-008",
         "KMIPKIT-REQ-SPEC-6.1.19-002",
+        "KMIPKIT-REQ-SPEC-6.1.19-003",
+        "KMIPKIT-REQ-SPEC-6.1.19-004",
+        "KMIPKIT-REQ-SPEC-6.1.19-005",
+        "KMIPKIT-REQ-SPEC-6.1.19-006",
         "KMIPKIT-REQ-SPEC-6.1.20-001-001",
         "KMIPKIT-REQ-SPEC-6.1.20-004",
         "KMIPKIT-REQ-SPEC-6.1.23-001-001",
@@ -27303,7 +27479,15 @@
         "KMIPKIT-REQ-SPEC-6.1.14-010",
         "KMIPKIT-REQ-SPEC-6.1.14-011",
         "KMIPKIT-REQ-SPEC-6.1.14-012",
+        "KMIPKIT-REQ-SPEC-6.1.18-005",
+        "KMIPKIT-REQ-SPEC-6.1.18-006",
+        "KMIPKIT-REQ-SPEC-6.1.18-007",
+        "KMIPKIT-REQ-SPEC-6.1.18-008",
         "KMIPKIT-REQ-SPEC-6.1.19-002",
+        "KMIPKIT-REQ-SPEC-6.1.19-003",
+        "KMIPKIT-REQ-SPEC-6.1.19-004",
+        "KMIPKIT-REQ-SPEC-6.1.19-005",
+        "KMIPKIT-REQ-SPEC-6.1.19-006",
         "KMIPKIT-REQ-SPEC-6.1.20-001-001",
         "KMIPKIT-REQ-SPEC-6.1.20-004",
         "KMIPKIT-REQ-SPEC-6.1.23-001-001",
@@ -28539,7 +28723,15 @@
         "KMIPKIT-REQ-SPEC-6.1.14-010",
         "KMIPKIT-REQ-SPEC-6.1.14-011",
         "KMIPKIT-REQ-SPEC-6.1.14-012",
+        "KMIPKIT-REQ-SPEC-6.1.18-005",
+        "KMIPKIT-REQ-SPEC-6.1.18-006",
+        "KMIPKIT-REQ-SPEC-6.1.18-007",
+        "KMIPKIT-REQ-SPEC-6.1.18-008",
         "KMIPKIT-REQ-SPEC-6.1.19-002",
+        "KMIPKIT-REQ-SPEC-6.1.19-003",
+        "KMIPKIT-REQ-SPEC-6.1.19-004",
+        "KMIPKIT-REQ-SPEC-6.1.19-005",
+        "KMIPKIT-REQ-SPEC-6.1.19-006",
         "KMIPKIT-REQ-SPEC-6.1.20-001-001",
         "KMIPKIT-REQ-SPEC-6.1.20-004",
         "KMIPKIT-REQ-SPEC-6.1.23-001-001",
@@ -29733,7 +29925,15 @@
         "KMIPKIT-REQ-SPEC-6.1.14-010",
         "KMIPKIT-REQ-SPEC-6.1.14-011",
         "KMIPKIT-REQ-SPEC-6.1.14-012",
+        "KMIPKIT-REQ-SPEC-6.1.18-005",
+        "KMIPKIT-REQ-SPEC-6.1.18-006",
+        "KMIPKIT-REQ-SPEC-6.1.18-007",
+        "KMIPKIT-REQ-SPEC-6.1.18-008",
         "KMIPKIT-REQ-SPEC-6.1.19-002",
+        "KMIPKIT-REQ-SPEC-6.1.19-003",
+        "KMIPKIT-REQ-SPEC-6.1.19-004",
+        "KMIPKIT-REQ-SPEC-6.1.19-005",
+        "KMIPKIT-REQ-SPEC-6.1.19-006",
         "KMIPKIT-REQ-SPEC-6.1.20-001-001",
         "KMIPKIT-REQ-SPEC-6.1.20-004",
         "KMIPKIT-REQ-SPEC-6.1.23-001-001",
@@ -31163,7 +31363,15 @@
         "KMIPKIT-REQ-SPEC-6.1.14-010",
         "KMIPKIT-REQ-SPEC-6.1.14-011",
         "KMIPKIT-REQ-SPEC-6.1.14-012",
+        "KMIPKIT-REQ-SPEC-6.1.18-005",
+        "KMIPKIT-REQ-SPEC-6.1.18-006",
+        "KMIPKIT-REQ-SPEC-6.1.18-007",
+        "KMIPKIT-REQ-SPEC-6.1.18-008",
         "KMIPKIT-REQ-SPEC-6.1.19-002",
+        "KMIPKIT-REQ-SPEC-6.1.19-003",
+        "KMIPKIT-REQ-SPEC-6.1.19-004",
+        "KMIPKIT-REQ-SPEC-6.1.19-005",
+        "KMIPKIT-REQ-SPEC-6.1.19-006",
         "KMIPKIT-REQ-SPEC-6.1.20-001-001",
         "KMIPKIT-REQ-SPEC-6.1.20-004",
         "KMIPKIT-REQ-SPEC-6.1.23-001-001",
@@ -32632,7 +32840,15 @@
         "KMIPKIT-REQ-SPEC-6.1.14-010",
         "KMIPKIT-REQ-SPEC-6.1.14-011",
         "KMIPKIT-REQ-SPEC-6.1.14-012",
+        "KMIPKIT-REQ-SPEC-6.1.18-005",
+        "KMIPKIT-REQ-SPEC-6.1.18-006",
+        "KMIPKIT-REQ-SPEC-6.1.18-007",
+        "KMIPKIT-REQ-SPEC-6.1.18-008",
         "KMIPKIT-REQ-SPEC-6.1.19-002",
+        "KMIPKIT-REQ-SPEC-6.1.19-003",
+        "KMIPKIT-REQ-SPEC-6.1.19-004",
+        "KMIPKIT-REQ-SPEC-6.1.19-005",
+        "KMIPKIT-REQ-SPEC-6.1.19-006",
         "KMIPKIT-REQ-SPEC-6.1.20-001-001",
         "KMIPKIT-REQ-SPEC-6.1.20-004",
         "KMIPKIT-REQ-SPEC-6.1.23-001-001",
@@ -33913,7 +34129,15 @@
         "KMIPKIT-REQ-SPEC-6.1.14-010",
         "KMIPKIT-REQ-SPEC-6.1.14-011",
         "KMIPKIT-REQ-SPEC-6.1.14-012",
+        "KMIPKIT-REQ-SPEC-6.1.18-005",
+        "KMIPKIT-REQ-SPEC-6.1.18-006",
+        "KMIPKIT-REQ-SPEC-6.1.18-007",
+        "KMIPKIT-REQ-SPEC-6.1.18-008",
         "KMIPKIT-REQ-SPEC-6.1.19-002",
+        "KMIPKIT-REQ-SPEC-6.1.19-003",
+        "KMIPKIT-REQ-SPEC-6.1.19-004",
+        "KMIPKIT-REQ-SPEC-6.1.19-005",
+        "KMIPKIT-REQ-SPEC-6.1.19-006",
         "KMIPKIT-REQ-SPEC-6.1.20-001-001",
         "KMIPKIT-REQ-SPEC-6.1.20-004",
         "KMIPKIT-REQ-SPEC-6.1.23-001-001",
@@ -35133,7 +35357,15 @@
         "KMIPKIT-REQ-SPEC-6.1.14-010",
         "KMIPKIT-REQ-SPEC-6.1.14-011",
         "KMIPKIT-REQ-SPEC-6.1.14-012",
+        "KMIPKIT-REQ-SPEC-6.1.18-005",
+        "KMIPKIT-REQ-SPEC-6.1.18-006",
+        "KMIPKIT-REQ-SPEC-6.1.18-007",
+        "KMIPKIT-REQ-SPEC-6.1.18-008",
         "KMIPKIT-REQ-SPEC-6.1.19-002",
+        "KMIPKIT-REQ-SPEC-6.1.19-003",
+        "KMIPKIT-REQ-SPEC-6.1.19-004",
+        "KMIPKIT-REQ-SPEC-6.1.19-005",
+        "KMIPKIT-REQ-SPEC-6.1.19-006",
         "KMIPKIT-REQ-SPEC-6.1.20-001-001",
         "KMIPKIT-REQ-SPEC-6.1.20-004",
         "KMIPKIT-REQ-SPEC-6.1.23-001-001",
@@ -36340,7 +36572,15 @@
         "KMIPKIT-REQ-SPEC-6.1.14-010",
         "KMIPKIT-REQ-SPEC-6.1.14-011",
         "KMIPKIT-REQ-SPEC-6.1.14-012",
+        "KMIPKIT-REQ-SPEC-6.1.18-005",
+        "KMIPKIT-REQ-SPEC-6.1.18-006",
+        "KMIPKIT-REQ-SPEC-6.1.18-007",
+        "KMIPKIT-REQ-SPEC-6.1.18-008",
         "KMIPKIT-REQ-SPEC-6.1.19-002",
+        "KMIPKIT-REQ-SPEC-6.1.19-003",
+        "KMIPKIT-REQ-SPEC-6.1.19-004",
+        "KMIPKIT-REQ-SPEC-6.1.19-005",
+        "KMIPKIT-REQ-SPEC-6.1.19-006",
         "KMIPKIT-REQ-SPEC-6.1.20-001-001",
         "KMIPKIT-REQ-SPEC-6.1.20-004",
         "KMIPKIT-REQ-SPEC-6.1.23-001-001",
@@ -37564,7 +37804,15 @@
         "KMIPKIT-REQ-SPEC-6.1.14-010",
         "KMIPKIT-REQ-SPEC-6.1.14-011",
         "KMIPKIT-REQ-SPEC-6.1.14-012",
+        "KMIPKIT-REQ-SPEC-6.1.18-005",
+        "KMIPKIT-REQ-SPEC-6.1.18-006",
+        "KMIPKIT-REQ-SPEC-6.1.18-007",
+        "KMIPKIT-REQ-SPEC-6.1.18-008",
         "KMIPKIT-REQ-SPEC-6.1.19-002",
+        "KMIPKIT-REQ-SPEC-6.1.19-003",
+        "KMIPKIT-REQ-SPEC-6.1.19-004",
+        "KMIPKIT-REQ-SPEC-6.1.19-005",
+        "KMIPKIT-REQ-SPEC-6.1.19-006",
         "KMIPKIT-REQ-SPEC-6.1.20-001-001",
         "KMIPKIT-REQ-SPEC-6.1.20-004",
         "KMIPKIT-REQ-SPEC-6.1.23-001-001",
@@ -38780,7 +39028,15 @@
         "KMIPKIT-REQ-SPEC-6.1.14-010",
         "KMIPKIT-REQ-SPEC-6.1.14-011",
         "KMIPKIT-REQ-SPEC-6.1.14-012",
+        "KMIPKIT-REQ-SPEC-6.1.18-005",
+        "KMIPKIT-REQ-SPEC-6.1.18-006",
+        "KMIPKIT-REQ-SPEC-6.1.18-007",
+        "KMIPKIT-REQ-SPEC-6.1.18-008",
         "KMIPKIT-REQ-SPEC-6.1.19-002",
+        "KMIPKIT-REQ-SPEC-6.1.19-003",
+        "KMIPKIT-REQ-SPEC-6.1.19-004",
+        "KMIPKIT-REQ-SPEC-6.1.19-005",
+        "KMIPKIT-REQ-SPEC-6.1.19-006",
         "KMIPKIT-REQ-SPEC-6.1.20-001-001",
         "KMIPKIT-REQ-SPEC-6.1.20-004",
         "KMIPKIT-REQ-SPEC-6.1.23-001-001",
@@ -40002,7 +40258,15 @@
         "KMIPKIT-REQ-SPEC-6.1.14-010",
         "KMIPKIT-REQ-SPEC-6.1.14-011",
         "KMIPKIT-REQ-SPEC-6.1.14-012",
+        "KMIPKIT-REQ-SPEC-6.1.18-005",
+        "KMIPKIT-REQ-SPEC-6.1.18-006",
+        "KMIPKIT-REQ-SPEC-6.1.18-007",
+        "KMIPKIT-REQ-SPEC-6.1.18-008",
         "KMIPKIT-REQ-SPEC-6.1.19-002",
+        "KMIPKIT-REQ-SPEC-6.1.19-003",
+        "KMIPKIT-REQ-SPEC-6.1.19-004",
+        "KMIPKIT-REQ-SPEC-6.1.19-005",
+        "KMIPKIT-REQ-SPEC-6.1.19-006",
         "KMIPKIT-REQ-SPEC-6.1.20-001-001",
         "KMIPKIT-REQ-SPEC-6.1.20-004",
         "KMIPKIT-REQ-SPEC-6.1.23-001-001",
@@ -41235,7 +41499,15 @@
         "KMIPKIT-REQ-SPEC-6.1.14-010",
         "KMIPKIT-REQ-SPEC-6.1.14-011",
         "KMIPKIT-REQ-SPEC-6.1.14-012",
+        "KMIPKIT-REQ-SPEC-6.1.18-005",
+        "KMIPKIT-REQ-SPEC-6.1.18-006",
+        "KMIPKIT-REQ-SPEC-6.1.18-007",
+        "KMIPKIT-REQ-SPEC-6.1.18-008",
         "KMIPKIT-REQ-SPEC-6.1.19-002",
+        "KMIPKIT-REQ-SPEC-6.1.19-003",
+        "KMIPKIT-REQ-SPEC-6.1.19-004",
+        "KMIPKIT-REQ-SPEC-6.1.19-005",
+        "KMIPKIT-REQ-SPEC-6.1.19-006",
         "KMIPKIT-REQ-SPEC-6.1.20-001-001",
         "KMIPKIT-REQ-SPEC-6.1.20-004",
         "KMIPKIT-REQ-SPEC-6.1.23-001-001",
@@ -42481,7 +42753,15 @@
         "KMIPKIT-REQ-SPEC-6.1.14-010",
         "KMIPKIT-REQ-SPEC-6.1.14-011",
         "KMIPKIT-REQ-SPEC-6.1.14-012",
+        "KMIPKIT-REQ-SPEC-6.1.18-005",
+        "KMIPKIT-REQ-SPEC-6.1.18-006",
+        "KMIPKIT-REQ-SPEC-6.1.18-007",
+        "KMIPKIT-REQ-SPEC-6.1.18-008",
         "KMIPKIT-REQ-SPEC-6.1.19-002",
+        "KMIPKIT-REQ-SPEC-6.1.19-003",
+        "KMIPKIT-REQ-SPEC-6.1.19-004",
+        "KMIPKIT-REQ-SPEC-6.1.19-005",
+        "KMIPKIT-REQ-SPEC-6.1.19-006",
         "KMIPKIT-REQ-SPEC-6.1.20-001-001",
         "KMIPKIT-REQ-SPEC-6.1.20-004",
         "KMIPKIT-REQ-SPEC-6.1.23-001-001",
@@ -43727,7 +44007,15 @@
         "KMIPKIT-REQ-SPEC-6.1.14-010",
         "KMIPKIT-REQ-SPEC-6.1.14-011",
         "KMIPKIT-REQ-SPEC-6.1.14-012",
+        "KMIPKIT-REQ-SPEC-6.1.18-005",
+        "KMIPKIT-REQ-SPEC-6.1.18-006",
+        "KMIPKIT-REQ-SPEC-6.1.18-007",
+        "KMIPKIT-REQ-SPEC-6.1.18-008",
         "KMIPKIT-REQ-SPEC-6.1.19-002",
+        "KMIPKIT-REQ-SPEC-6.1.19-003",
+        "KMIPKIT-REQ-SPEC-6.1.19-004",
+        "KMIPKIT-REQ-SPEC-6.1.19-005",
+        "KMIPKIT-REQ-SPEC-6.1.19-006",
         "KMIPKIT-REQ-SPEC-6.1.20-001-001",
         "KMIPKIT-REQ-SPEC-6.1.20-004",
         "KMIPKIT-REQ-SPEC-6.1.23-001-001",
@@ -44973,7 +45261,15 @@
         "KMIPKIT-REQ-SPEC-6.1.14-010",
         "KMIPKIT-REQ-SPEC-6.1.14-011",
         "KMIPKIT-REQ-SPEC-6.1.14-012",
+        "KMIPKIT-REQ-SPEC-6.1.18-005",
+        "KMIPKIT-REQ-SPEC-6.1.18-006",
+        "KMIPKIT-REQ-SPEC-6.1.18-007",
+        "KMIPKIT-REQ-SPEC-6.1.18-008",
         "KMIPKIT-REQ-SPEC-6.1.19-002",
+        "KMIPKIT-REQ-SPEC-6.1.19-003",
+        "KMIPKIT-REQ-SPEC-6.1.19-004",
+        "KMIPKIT-REQ-SPEC-6.1.19-005",
+        "KMIPKIT-REQ-SPEC-6.1.19-006",
         "KMIPKIT-REQ-SPEC-6.1.20-001-001",
         "KMIPKIT-REQ-SPEC-6.1.20-004",
         "KMIPKIT-REQ-SPEC-6.1.23-001-001",
@@ -46215,7 +46511,15 @@
         "KMIPKIT-REQ-SPEC-6.1.14-010",
         "KMIPKIT-REQ-SPEC-6.1.14-011",
         "KMIPKIT-REQ-SPEC-6.1.14-012",
+        "KMIPKIT-REQ-SPEC-6.1.18-005",
+        "KMIPKIT-REQ-SPEC-6.1.18-006",
+        "KMIPKIT-REQ-SPEC-6.1.18-007",
+        "KMIPKIT-REQ-SPEC-6.1.18-008",
         "KMIPKIT-REQ-SPEC-6.1.19-002",
+        "KMIPKIT-REQ-SPEC-6.1.19-003",
+        "KMIPKIT-REQ-SPEC-6.1.19-004",
+        "KMIPKIT-REQ-SPEC-6.1.19-005",
+        "KMIPKIT-REQ-SPEC-6.1.19-006",
         "KMIPKIT-REQ-SPEC-6.1.20-001-001",
         "KMIPKIT-REQ-SPEC-6.1.20-004",
         "KMIPKIT-REQ-SPEC-6.1.23-001-001",
@@ -47496,7 +47800,15 @@
         "KMIPKIT-REQ-SPEC-6.1.14-010",
         "KMIPKIT-REQ-SPEC-6.1.14-011",
         "KMIPKIT-REQ-SPEC-6.1.14-012",
+        "KMIPKIT-REQ-SPEC-6.1.18-005",
+        "KMIPKIT-REQ-SPEC-6.1.18-006",
+        "KMIPKIT-REQ-SPEC-6.1.18-007",
+        "KMIPKIT-REQ-SPEC-6.1.18-008",
         "KMIPKIT-REQ-SPEC-6.1.19-002",
+        "KMIPKIT-REQ-SPEC-6.1.19-003",
+        "KMIPKIT-REQ-SPEC-6.1.19-004",
+        "KMIPKIT-REQ-SPEC-6.1.19-005",
+        "KMIPKIT-REQ-SPEC-6.1.19-006",
         "KMIPKIT-REQ-SPEC-6.1.20-001-001",
         "KMIPKIT-REQ-SPEC-6.1.20-004",
         "KMIPKIT-REQ-SPEC-6.1.23-001-001",
@@ -63593,49 +63905,61 @@
           "row_label": "Key Format Type",
           "required": "No",
           "actor": "client",
-          "disposition": "optional_request_field_with_source_only_proposal",
+          "disposition": "optional_request_field",
           "html_line_range": [
             27211,
             27228
           ],
           "source_excerpt": "Key Format Type No Determines the key format type to be returned.",
-          "source_gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.19-KEY-FORMAT-TYPE-OPTIONAL"
+          "source_gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.19-KEY-FORMAT-TYPE-OPTIONAL",
+          "source_requirement_ids": [
+            "KMIPKIT-REQ-SPEC-6.1.19-003"
+          ]
         },
         {
           "row_label": "Key Wrap Type",
           "required": "No",
           "actor": "client",
-          "disposition": "optional_request_field_with_source_only_proposal",
+          "disposition": "optional_request_field",
           "html_line_range": [
             27229,
             27247
           ],
           "source_excerpt": "Key Wrap Type No Determines the Key Wrap Type of the returned key value.",
-          "source_gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.19-KEY-WRAP-TYPE-OPTIONAL"
+          "source_gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.19-KEY-WRAP-TYPE-OPTIONAL",
+          "source_requirement_ids": [
+            "KMIPKIT-REQ-SPEC-6.1.19-004"
+          ]
         },
         {
           "row_label": "Key Compression Type",
           "required": "No",
           "actor": "client",
-          "disposition": "optional_request_field_with_source_only_proposal",
+          "disposition": "optional_request_field",
           "html_line_range": [
             27248,
             27266
           ],
           "source_excerpt": "Key Compression Type No Determines the compression method for elliptic curve public keys.",
-          "source_gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.19-KEY-COMPRESSION-TYPE-OPTIONAL"
+          "source_gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.19-KEY-COMPRESSION-TYPE-OPTIONAL",
+          "source_requirement_ids": [
+            "KMIPKIT-REQ-SPEC-6.1.19-005"
+          ]
         },
         {
           "row_label": "Key Wrapping Specification",
           "required": "No",
           "actor": "client",
-          "disposition": "optional_request_field_with_source_only_proposal",
+          "disposition": "optional_request_field",
           "html_line_range": [
             27267,
             27285
           ],
           "source_excerpt": "Key Wrapping Specification No Specifies keys and other information for wrapping the returned object.",
-          "source_gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.19-KEY-WRAPPING-SPECIFICATION-OPTIONAL"
+          "source_gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.19-KEY-WRAPPING-SPECIFICATION-OPTIONAL",
+          "source_requirement_ids": [
+            "KMIPKIT-REQ-SPEC-6.1.19-006"
+          ]
         }
       ]
     },
@@ -82942,10 +83266,10 @@
       "direction": "client→server Export request parameter",
       "condition": null,
       "scope_disposition": "client_1_0",
-      "candidate_requirement_id": null,
-      "proposed_requirement_id": "KMIPKIT-REQ-SPEC-6.1.18-005",
-      "status": "stable_label_proposed_not_in_catalog",
-      "review_note": "Required=No marks this request field optional. Its exact semantic relationship to Get is separately stated in §6.1.18 paragraph 1."
+      "candidate_requirement_id": "KMIPKIT-REQ-SPEC-6.1.18-005",
+      "proposed_requirement_id": null,
+      "status": "source_obligation_covered_by_existing_stable_label",
+      "review_note": "The exact 6.1.18 request body row Key Format Type is represented by KMIPKIT-REQ-SPEC-6.1.18-005; its optional_table_body_value force stays distinct from RFC keyword requirements. Linked local Rust request evidence verifies caller-selected request encoding only; no server behavior or official OASIS Test Cases pass is claimed."
     },
     {
       "gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.18-KEY-WRAP-TYPE-OPTIONAL",
@@ -82976,10 +83300,10 @@
       "direction": "client→server Export request parameter",
       "condition": null,
       "scope_disposition": "client_1_0",
-      "candidate_requirement_id": null,
-      "proposed_requirement_id": "KMIPKIT-REQ-SPEC-6.1.18-006",
-      "status": "stable_label_proposed_not_in_catalog",
-      "review_note": "Required=No marks this request field optional. Its exact semantic relationship to Get is separately stated in §6.1.18 paragraph 1."
+      "candidate_requirement_id": "KMIPKIT-REQ-SPEC-6.1.18-006",
+      "proposed_requirement_id": null,
+      "status": "source_obligation_covered_by_existing_stable_label",
+      "review_note": "The exact 6.1.18 request body row Key Wrap Type is represented by KMIPKIT-REQ-SPEC-6.1.18-006; its optional_table_body_value force stays distinct from RFC keyword requirements. Linked local Rust request evidence verifies caller-selected request encoding only; no server behavior or official OASIS Test Cases pass is claimed."
     },
     {
       "gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.18-KEY-COMPRESSION-TYPE-OPTIONAL",
@@ -83010,10 +83334,10 @@
       "direction": "client→server Export request parameter",
       "condition": null,
       "scope_disposition": "client_1_0",
-      "candidate_requirement_id": null,
-      "proposed_requirement_id": "KMIPKIT-REQ-SPEC-6.1.18-007",
-      "status": "stable_label_proposed_not_in_catalog",
-      "review_note": "Required=No marks this request field optional. The table limits its stated effect to elliptic-curve public keys."
+      "candidate_requirement_id": "KMIPKIT-REQ-SPEC-6.1.18-007",
+      "proposed_requirement_id": null,
+      "status": "source_obligation_covered_by_existing_stable_label",
+      "review_note": "The exact 6.1.18 request body row Key Compression Type is represented by KMIPKIT-REQ-SPEC-6.1.18-007; its optional_table_body_value force stays distinct from RFC keyword requirements. Linked local Rust request evidence verifies caller-selected request encoding only; no server behavior or official OASIS Test Cases pass is claimed."
     },
     {
       "gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.18-KEY-WRAPPING-SPECIFICATION-OPTIONAL",
@@ -83044,10 +83368,10 @@
       "direction": "client→server Export request parameter",
       "condition": null,
       "scope_disposition": "client_1_0",
-      "candidate_requirement_id": null,
-      "proposed_requirement_id": "KMIPKIT-REQ-SPEC-6.1.18-008",
-      "status": "stable_label_proposed_not_in_catalog",
-      "review_note": "Required=No marks this request field optional. The table gives its field purpose without further conditions."
+      "candidate_requirement_id": "KMIPKIT-REQ-SPEC-6.1.18-008",
+      "proposed_requirement_id": null,
+      "status": "source_obligation_covered_by_existing_stable_label",
+      "review_note": "The exact 6.1.18 request body row Key Wrapping Specification is represented by KMIPKIT-REQ-SPEC-6.1.18-008; its optional_table_body_value force stays distinct from RFC keyword requirements. Linked local Rust request evidence verifies caller-selected request encoding only; no server behavior or official OASIS Test Cases pass is claimed."
     },
     {
       "gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.19-KEY-FORMAT-TYPE-OPTIONAL",
@@ -83078,10 +83402,10 @@
       "direction": "client→server Get request parameter",
       "condition": null,
       "scope_disposition": "client_1_0",
-      "candidate_requirement_id": null,
-      "proposed_requirement_id": "KMIPKIT-REQ-SPEC-6.1.19-003",
-      "status": "stable_label_proposed_not_in_catalog",
-      "review_note": "Required=No marks this request control optional. Paragraph 2 requires the client to assume the server can return a registered format and applies restrictions if a format is requested; it does not require the client to expose this optional request control. The control remains a separate source-only capability proposal."
+      "candidate_requirement_id": "KMIPKIT-REQ-SPEC-6.1.19-003",
+      "proposed_requirement_id": null,
+      "status": "source_obligation_covered_by_existing_stable_label",
+      "review_note": "The exact 6.1.19 request body row Key Format Type is represented by KMIPKIT-REQ-SPEC-6.1.19-003; its optional_table_body_value force stays distinct from RFC keyword requirements. Linked local Rust request evidence verifies caller-selected request encoding only; no server behavior or official OASIS Test Cases pass is claimed."
     },
     {
       "source_id": "KMIPKIT-SRC-spec",
@@ -83093,8 +83417,8 @@
       "actor": "client",
       "condition": null,
       "scope_disposition": "client_1_0",
-      "candidate_requirement_id": null,
-      "status": "stable_label_proposed_not_in_catalog",
+      "candidate_requirement_id": "KMIPKIT-REQ-SPEC-6.1.19-004",
+      "status": "source_obligation_covered_by_existing_stable_label",
       "gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.19-KEY-WRAP-TYPE-OPTIONAL",
       "source_locator": {
         "kind": "table_body_row",
@@ -83114,8 +83438,8 @@
       "source_excerpt": "Key Wrap Type No Determines the Key Wrap Type of the returned key value.",
       "audited_statement": "Key Wrap Type is an optional client request control for the wrap type of the returned key value.",
       "direction": "client→server Get request parameter",
-      "proposed_requirement_id": "KMIPKIT-REQ-SPEC-6.1.19-004",
-      "review_note": "Required=No marks this request control optional. Its source mapping is recorded as a client capability proposal until Green assigns a stable catalog requirement label."
+      "proposed_requirement_id": null,
+      "review_note": "The exact 6.1.19 request body row Key Wrap Type is represented by KMIPKIT-REQ-SPEC-6.1.19-004; its optional_table_body_value force stays distinct from RFC keyword requirements. Linked local Rust request evidence verifies caller-selected request encoding only; no server behavior or official OASIS Test Cases pass is claimed."
     },
     {
       "source_id": "KMIPKIT-SRC-spec",
@@ -83127,8 +83451,8 @@
       "actor": "client",
       "condition": null,
       "scope_disposition": "client_1_0",
-      "candidate_requirement_id": null,
-      "status": "stable_label_proposed_not_in_catalog",
+      "candidate_requirement_id": "KMIPKIT-REQ-SPEC-6.1.19-005",
+      "status": "source_obligation_covered_by_existing_stable_label",
       "gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.19-KEY-COMPRESSION-TYPE-OPTIONAL",
       "source_locator": {
         "kind": "table_body_row",
@@ -83148,8 +83472,8 @@
       "source_excerpt": "Key Compression Type No Determines the compression method for elliptic curve public keys.",
       "audited_statement": "Key Compression Type is an optional client request control for compression of elliptic curve public keys.",
       "direction": "client→server Get request parameter",
-      "proposed_requirement_id": "KMIPKIT-REQ-SPEC-6.1.19-005",
-      "review_note": "Required=No marks this request control optional. Its source mapping is recorded as a client capability proposal until Green assigns a stable catalog requirement label."
+      "proposed_requirement_id": null,
+      "review_note": "The exact 6.1.19 request body row Key Compression Type is represented by KMIPKIT-REQ-SPEC-6.1.19-005; its optional_table_body_value force stays distinct from RFC keyword requirements. Linked local Rust request evidence verifies caller-selected request encoding only; no server behavior or official OASIS Test Cases pass is claimed."
     },
     {
       "source_id": "KMIPKIT-SRC-spec",
@@ -83161,8 +83485,8 @@
       "actor": "client",
       "condition": null,
       "scope_disposition": "client_1_0",
-      "candidate_requirement_id": null,
-      "status": "stable_label_proposed_not_in_catalog",
+      "candidate_requirement_id": "KMIPKIT-REQ-SPEC-6.1.19-006",
+      "status": "source_obligation_covered_by_existing_stable_label",
       "gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.19-KEY-WRAPPING-SPECIFICATION-OPTIONAL",
       "source_locator": {
         "kind": "table_body_row",
@@ -83182,8 +83506,8 @@
       "source_excerpt": "Key Wrapping Specification No Specifies keys and other information for wrapping the returned object.",
       "audited_statement": "Key Wrapping Specification is an optional client request control that supplies keys and other information for wrapping the returned object.",
       "direction": "client→server Get request parameter",
-      "proposed_requirement_id": "KMIPKIT-REQ-SPEC-6.1.19-006",
-      "review_note": "Required=No marks this request control optional. Its source mapping is recorded as a client capability proposal until Green assigns a stable catalog requirement label."
+      "proposed_requirement_id": null,
+      "review_note": "The exact 6.1.19 request body row Key Wrapping Specification is represented by KMIPKIT-REQ-SPEC-6.1.19-006; its optional_table_body_value force stays distinct from RFC keyword requirements. Linked local Rust request evidence verifies caller-selected request encoding only; no server behavior or official OASIS Test Cases pass is claimed."
     },
     {
       "gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.23-USAGE-LIMITS-COUNT-REQUIRED",

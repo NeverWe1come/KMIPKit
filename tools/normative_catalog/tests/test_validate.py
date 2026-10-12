@@ -11611,10 +11611,10 @@ class CatalogValidationTests(unittest.TestCase):
                 self.assertEqual(gap["source_keywords"], [])
                 self.assertEqual(gap["actor"], "client")
                 self.assertEqual(gap["scope_disposition"], "client_1_0")
-                self.assertIsNone(gap["candidate_requirement_id"])
-                self.assertEqual(gap["proposed_requirement_id"], proposed_id)
-                self.assertEqual(gap["status"], "stable_label_proposed_not_in_catalog")
-                self.assertNotIn(proposed_id, catalog_ids)
+                self.assertEqual(gap["candidate_requirement_id"], proposed_id)
+                self.assertIsNone(gap["proposed_requirement_id"])
+                self.assertEqual(gap["status"], "source_obligation_covered_by_existing_stable_label")
+                self.assertIn(proposed_id, catalog_ids)
                 self.assertIn(" No ", f" {excerpt} ")
 
         request_header = reviews["KMIPKIT-CLAUSE-SPEC-6.1.19-006"]
@@ -11638,12 +11638,13 @@ class CatalogValidationTests(unittest.TestCase):
                         "row_label": label,
                         "required": "No",
                         "actor": "client",
-                        "disposition": "optional_request_field_with_source_only_proposal",
+                        "disposition": "optional_request_field",
                         "html_line_range": line_range,
                         "source_excerpt": pinned_source_excerpt(source_path, line_range),
                         "source_gap_id": gap_id,
+                        "source_requirement_ids": [requirement_id],
                     }
-                    for label, (line_range, gap_id, _) in request_rows.items()
+                    for label, (line_range, gap_id, requirement_id) in request_rows.items()
                 ],
             ],
         )
@@ -11693,7 +11694,7 @@ class CatalogValidationTests(unittest.TestCase):
             profile["profile_id"]: set(profile["requirement_ids_audited_subset"])
             for profile in oracle["profiles"]
         }
-        optional_request_proposals = {proposed_id for _, _, proposed_id in request_rows.values()}
+        optional_request_requirement_ids = {requirement_id for _, _, requirement_id in request_rows.values()}
         self.assertEqual(set(expected_profile_ids), {profile["profile_id"] for profile in client_profiles})
         for profile in client_profiles:
             ids = set(profile["requirement_ids"])
@@ -11701,10 +11702,11 @@ class CatalogValidationTests(unittest.TestCase):
                 self.assertIn("KMIPKIT-REQ-SPEC-6.1.19-002", expected_profile_ids[profile["profile_id"]])
                 self.assertTrue("KMIPKIT-REQ-SPEC-6.1.19-001" not in expected_profile_ids[profile["profile_id"]])
                 self.assertTrue(
-                    optional_request_proposals.isdisjoint(expected_profile_ids[profile["profile_id"]]),
-                    "Required=No Get request controls remain source-only proposals, not closure labels",
+                    optional_request_requirement_ids.issubset(expected_profile_ids[profile["profile_id"]]),
+                    "each client profile closure includes all four reviewed optional Get request selectors",
                 )
                 self.assertIn("KMIPKIT-REQ-SPEC-6.1.19-002", ids)
+                self.assertTrue(optional_request_requirement_ids.issubset(ids))
                 self.assertTrue(
                     "KMIPKIT-REQ-SPEC-6.1.19-001" not in ids,
                     f"{profile['profile_id']} still includes the server-only Get response-wrap MAY",
@@ -12560,10 +12562,10 @@ class CatalogValidationTests(unittest.TestCase):
                 self.assertEqual(gap["source_keywords"], [])
                 self.assertEqual(gap["actor"], "client")
                 self.assertEqual(gap["scope_disposition"], "client_1_0")
-                self.assertIsNone(gap["candidate_requirement_id"])
-                self.assertEqual(gap["proposed_requirement_id"], proposed_id)
-                self.assertEqual(gap["status"], "stable_label_proposed_not_in_catalog")
-                self.assertNotIn(proposed_id, catalog_ids)
+                self.assertEqual(gap["candidate_requirement_id"], proposed_id)
+                self.assertIsNone(gap["proposed_requirement_id"])
+                self.assertEqual(gap["status"], "source_obligation_covered_by_existing_stable_label")
+                self.assertIn(proposed_id, catalog_ids)
                 self.assertIn(" No ", f" {excerpt} ")
 
         uid_request_row = reviews["KMIPKIT-CLAUSE-SPEC-6.1.18-003"]["source_request_rows"]
@@ -12659,16 +12661,16 @@ class CatalogValidationTests(unittest.TestCase):
         self.assertEqual(
             [row for row in oracle["requirement_crosswalk"] if row.get("source_clause_id") in slice_clause_ids],
             [],
-            "the pinned Export locators have no assigned requirement labels yet",
+            "the Export table-row capabilities are gap-linked rather than formal clause-atom mappings",
         )
         client_profiles = [profile for profile in catalog["profiles"] if profile["role"] == "client"]
         self.assertEqual(len(client_profiles), 18)
-        proposal_ids = {
-            gap["proposed_requirement_id"]
-            for gap in [semantics_gap, *(gaps[gap_id] for _, gap_id, _ in request_rows.values())]
-        }
+        proposal_ids = {semantics_gap["proposed_requirement_id"]}
+        export_requirement_ids = {requirement_id for _, _, requirement_id in request_rows.values()}
         for profile in client_profiles:
-            self.assertFalse(proposal_ids & set(profile["requirement_ids"]))
+            requirement_ids = set(profile["requirement_ids"])
+            self.assertFalse(proposal_ids & requirement_ids)
+            self.assertTrue(export_requirement_ids.issubset(requirement_ids), profile["profile_id"])
         self.assertEqual(oracle["oracle_status"], "partial-source-reviewed; not complete T003 oracle")
 
     def test_spec_6_1_15_destroy_and_error_handling_have_source_review_rows(self) -> None:
@@ -13531,6 +13533,10 @@ class CatalogValidationTests(unittest.TestCase):
         gaps = oracle["source_only_requirement_gaps"]
         gap_ids = [gap["gap_id"] for gap in gaps]
         self.assertEqual(len(gap_ids), len(set(gap_ids)), "source-only obligations need unique gap references")
+        direct_export_get_row_ids = {
+            *(f"KMIPKIT-REQ-SPEC-6.1.18-{ordinal:03d}" for ordinal in range(5, 9)),
+            *(f"KMIPKIT-REQ-SPEC-6.1.19-{ordinal:03d}" for ordinal in range(3, 7)),
+        }
 
         for gap in gaps:
             with self.subTest(gap_id=gap["gap_id"]):
@@ -13564,12 +13570,16 @@ class CatalogValidationTests(unittest.TestCase):
                         self.assertEqual(reused_requirement.get("source_gap_id"), gap["gap_id"])
                         self.assertEqual(reused_requirement.get("source_locator"), gap["source_locator"])
                         self.assertEqual(reused_requirement.get("source_clause_ids"), [])
+                        if reused_id in direct_export_get_row_ids:
+                            self.assertNotIn("reused_requirement_id", gap)
+                        else:
+                            self.assertEqual(gap["reused_requirement_id"], reused_id)
                     else:
                         self.assertTrue(
                             reused_requirement["source_clause_ids"],
                             "a reused label must retain its original source mapping",
                         )
-                    self.assertEqual(gap["reused_requirement_id"], reused_id)
+                        self.assertEqual(gap["reused_requirement_id"], reused_id)
                     self.assertEqual(
                         gap["status"],
                         "source_obligation_covered_by_existing_stable_label",
@@ -13652,14 +13662,6 @@ class CatalogValidationTests(unittest.TestCase):
                 "KMIPKIT-REQ-SPEC-4.30-001-002",
                 "KMIPKIT-REQ-SPEC-4.39-002-001",
                 "KMIPKIT-REQ-SPEC-6.1.18-001-001",
-                "KMIPKIT-REQ-SPEC-6.1.18-005",
-                "KMIPKIT-REQ-SPEC-6.1.18-006",
-                "KMIPKIT-REQ-SPEC-6.1.18-007",
-                "KMIPKIT-REQ-SPEC-6.1.18-008",
-                "KMIPKIT-REQ-SPEC-6.1.19-003",
-                "KMIPKIT-REQ-SPEC-6.1.19-004",
-                "KMIPKIT-REQ-SPEC-6.1.19-005",
-                "KMIPKIT-REQ-SPEC-6.1.19-006",
                 "KMIPKIT-REQ-SPEC-6.1.24-001",
                 "KMIPKIT-REQ-SPEC-6.1.24-002",
                 "KMIPKIT-REQ-SPEC-6.1.24-003",
@@ -16750,6 +16752,8 @@ class CatalogValidationTests(unittest.TestCase):
                 self.assertEqual(gap["candidate_requirement_id"], requirement_id)
                 self.assertIsNone(gap["proposed_requirement_id"])
                 self.assertEqual(gap["status"], "source_obligation_covered_by_existing_stable_label")
+                self.assertEqual(requirement["source_gap_id"], gap_id)
+                self.assertNotIn("reused_requirement_id", gap)
                 crosswalk = crosswalk_by_gap[gap_id]
                 self.assertEqual(crosswalk["requirement_id"], requirement_id)
                 self.assertEqual(crosswalk["source_force"], "optional_table_body_value")
