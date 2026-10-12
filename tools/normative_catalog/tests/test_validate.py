@@ -13114,6 +13114,26 @@ class CatalogValidationTests(unittest.TestCase):
         self.assertIsNone(usage_count_gap["proposed_requirement_id"])
         self.assertIn("source_keyword=SHALL", usage_count_gap["review_note"])
 
+        catalog = json.loads((ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8"))
+        usage_count_requirement = next(
+            requirement
+            for requirement in catalog["requirements"]
+            if requirement["requirement_id"] == "KMIPKIT-REQ-SPEC-6.1.23-002-001"
+        )
+        self.assertEqual(usage_count_requirement["source_clause_ids"], [])
+        self.assertEqual(
+            usage_count_requirement["source_refs"],
+            [{"source_id": "KMIPKIT-SRC-spec", "section": "6.1.23"}],
+        )
+        self.assertIsNone(usage_count_requirement["source_keyword"])
+        self.assertEqual(usage_count_requirement["source_force"], "required_table_body_value")
+        self.assertEqual(
+            usage_count_requirement["source_gap_id"],
+            "KMIPKIT-SOURCE-GAP-SPEC-6.1.23-USAGE-LIMITS-COUNT-REQUIRED",
+        )
+        self.assertEqual(usage_count_requirement["source_locator"], usage_count_gap["source_locator"])
+        self.assertEqual(usage_count_requirement["condition"], "A Get Usage Allocation request is sent.")
+
         response_header = reviews["KMIPKIT-CLAUSE-SPEC-6.1.23-004"]
         self.assertEqual(response_header["source_obligations"], [])
         self.assertEqual(
@@ -13137,7 +13157,6 @@ class CatalogValidationTests(unittest.TestCase):
         self.assertEqual(reason_values.count("Invalid Message"), 2)
         self.assertEqual(reviews["KMIPKIT-CLAUSE-SPEC-6.1.23.1-002"]["source_obligations"], [])
 
-        catalog = json.loads((ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8"))
         client_profiles = [profile for profile in catalog["profiles"] if profile["role"] == "client"]
         self.assertEqual(len(client_profiles), 18)
         expected_profile_ids = {

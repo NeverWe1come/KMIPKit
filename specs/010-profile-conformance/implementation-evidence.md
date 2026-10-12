@@ -1407,3 +1407,9 @@ Crosswalk audit note: 133 catalog IDs lack rows in the accepted `requirement_cro
 | Validation correction | Evidence | Result |
 |---|---|---|
 | Replace the blanket direct-row assertion with source-accounted label coverage | The initial `621fc338` regression failed with 133 missing accepted crosswalk rows; source review of all 133, plus pinned-source crosswalk and §4.57 actorless-label tests. Corrected focused command: `py -3 -B -m unittest tools.normative_catalog.tests.test_validate.CatalogValidationTests.test_requirement_crosswalk_accounts_for_every_catalog_requirement_id tools.normative_catalog.tests.test_validate.CatalogValidationTests.test_requirement_crosswalk_rows_match_pinned_sources_and_catalog_labels tools.normative_catalog.tests.test_validate.CatalogValidationTests.test_active_state_source_predicates_have_four_distinct_requirement_labels -q` | PASS: 3 tests. The union of accepted mappings, source-obligation candidate IDs, explicit rejections, and source-gap IDs accounts for every catalog ID without inventing accepted mappings. `requirement_crosswalk_complete` intentionally remains false while the accepted row set is partial; the overall oracle status remains partial. |
+
+### T003 — Usage Limits Count table-row source mapping
+
+| Stage | Evidence | Result |
+|---|---|---|
+| Red — bind the existing Usage Limits Count requirement to its exact Required=Yes source-gap row | `py -3 -B -m unittest tools.normative_catalog.tests.test_validate.CatalogValidationTests.test_spec_6_1_23_get_usage_allocation_and_errors_have_source_review_rows -q` | Expected Red: the stable ID still points at `KMIPKIT-CLAUSE-SPEC-6.1.23-002` and carries `source_keyword=SHALL`, while the reviewed source-gap row is a §6.1.23 Required=Yes request-table body row. The test requires typed source-gap metadata and the existing stable ID; it does not create a new requirement. |
