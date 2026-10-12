@@ -80,6 +80,12 @@ class PackageDocumentationContractTests(unittest.TestCase):
         for guide in (self.english, self.spanish):
             self.assertIn("Java 17", guide)
             self.assertIn("Python 3.12", guide)
+        for relative_path in (
+            "docs/design/project-definition.md",
+            "docs/development/coding-standards.md",
+        ):
+            source = (ROOT / relative_path).read_text(encoding="utf-8")
+            self.assertIn("Python 3.12 only for the 1.0 package", source)
 
     def test_bilingual_guides_match_native_loading_and_platform_contract(self) -> None:
         packages = {
@@ -127,6 +133,20 @@ class PackageDocumentationContractTests(unittest.TestCase):
             self.assertIn(f"{blocked_operations} / {len(operations)}", guide)
             normalized_guide = re.sub(r"\s+", " ", guide.lower())
             self.assertIn(operation_phrase, normalized_guide)
+
+    def test_vendor_extension_examples_disclose_blocked_release_parity(self) -> None:
+        english = (ROOT / "docs/user-guide/en/vendor-extensions.md").read_text(
+            encoding="utf-8"
+        )
+        spanish = (ROOT / "docs/user-guide/es/extensiones-de-fabricante.md").read_text(
+            encoding="utf-8"
+        )
+        self.assertIn("vendor_extension_registry", english)
+        self.assertIn("blocked", english)
+        self.assertIn("verified, supported four-language 1.0 capability", english)
+        self.assertIn("vendor_extension_registry", spanish)
+        self.assertIn("blocked", spanish)
+        self.assertIn("capacidad 1.0 verificada", spanish)
 
 
 if __name__ == "__main__":

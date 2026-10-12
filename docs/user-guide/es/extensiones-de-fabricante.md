@@ -11,6 +11,14 @@ asociación a peticiones, la inspección de respuestas y la conservación de TTL
 genérico. Los ejemplos construyen un elemento de batch tipado Discover Versions
 y no abren una conexión de red.
 
+Los ejemplos siguientes documentan el comportamiento implementado y los
+consumidores locales disponibles. El manifiesto de API pública actual todavía
+marca `vendor_extension_registry` como `blocked` mientras se reconcilia el
+inventario completo de la versión. Por tanto, esta guía no afirma que el
+registro sea una capacidad 1.0 verificada y compatible en los cuatro
+lenguajes. Consulta el [alcance de los paquetes Java y
+Python](paquetes-de-idiomas.md) para ver el estado actual del manifiesto.
+
 ## Definir una extensión
 
 Cada definición incluye un Vendor Identification no vacío formado por letras

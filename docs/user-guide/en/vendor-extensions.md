@@ -10,6 +10,13 @@ attachment, response inspection, and generic TTLV preservation. The examples
 build a typed Discover Versions batch item and do not open a network
 connection.
 
+The examples below document implementation behavior and available local
+consumers. The current public API manifest still marks
+`vendor_extension_registry` as `blocked` while its complete release inventory
+is reconciled. Therefore this guide does not claim that the registry is a
+verified, supported four-language 1.0 capability. See [Java and Python package
+scope](language-packages.md) for the current manifest status.
+
 ## Define an extension
 
 Each definition includes a non-empty Vendor Identification using ASCII
