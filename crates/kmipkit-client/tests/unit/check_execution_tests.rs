@@ -80,6 +80,22 @@ fn structure_contains_tag(view: &StructureView<'_>, raw_tag: u32) -> bool {
     })
 }
 
+fn integer_field(view: &StructureView<'_>, raw_tag: u32) -> Option<i32> {
+    view.children().iter().find_map(|field| {
+        if field.tag().raw() == raw_tag {
+            field.with_value(|value| match value {
+                ValueView::Integer(value) => Some(*value),
+                _ => None,
+            })
+        } else {
+            field.with_value(|value| match value {
+                ValueView::Structure(nested) => integer_field(&nested, raw_tag),
+                _ => None,
+            })
+        }
+    })
+}
+
 fn request_fields(bytes: &[u8]) -> (Option<u32>, Vec<(u32, Option<i64>)>) {
     let message = decode(bytes).expect("the captured request has valid TTLV framing");
     message.with_value(|value| {
@@ -198,11 +214,11 @@ fn request_usage_mask(bytes: &[u8], batch_index: usize) -> (Option<u32>, Option<
                 .iter()
                 .find(|field| field.tag().raw() == REQUEST_PAYLOAD)
                 .expect("the Batch Item contains a Request Payload");
-            let mask = if operation == Some(LOCATE_OPERATION) {
-                payload.with_value(|value| {
-                    let ValueView::Structure(payload) = value else {
-                        panic!("the Request Payload is a Structure");
-                    };
+            let mask = payload.with_value(|value| {
+                let ValueView::Structure(payload) = value else {
+                    panic!("the Request Payload is a Structure");
+                };
+                if operation == Some(LOCATE_OPERATION) {
                     let attributes = payload
                         .children()
                         .iter()
@@ -212,35 +228,12 @@ fn request_usage_mask(bytes: &[u8], batch_index: usize) -> (Option<u32>, Option<
                         let ValueView::Structure(attributes) = value else {
                             panic!("Locate Attributes is a Structure");
                         };
-                        attributes
-                            .children()
-                            .iter()
-                            .find(|field| field.tag().raw() == CRYPTOGRAPHIC_USAGE_MASK)
-                            .and_then(|field| {
-                                field.with_value(|value| match value {
-                                    ValueView::Integer(value) => Some(*value),
-                                    _ => None,
-                                })
-                            })
+                        integer_field(&attributes, CRYPTOGRAPHIC_USAGE_MASK)
                     })
-                })
-            } else {
-                payload.with_value(|value| {
-                    let ValueView::Structure(payload) = value else {
-                        panic!("the Request Payload is a Structure");
-                    };
-                    payload
-                        .children()
-                        .iter()
-                        .find(|field| field.tag().raw() == CRYPTOGRAPHIC_USAGE_MASK)
-                        .and_then(|field| {
-                            field.with_value(|value| match value {
-                                ValueView::Integer(value) => Some(*value),
-                                _ => None,
-                            })
-                        })
-                })
-            };
+                } else {
+                    integer_field(&payload, CRYPTOGRAPHIC_USAGE_MASK)
+                }
+            });
             (operation, mask)
         })
     })
@@ -361,13 +354,11 @@ fn check_sends_table_183_fields_and_exposes_table_184_response_once() {
 fn locate_and_check_requests_preserve_distinct_cryptographic_usage_masks() {
     // OASIS KMIP v2.1 §6.1.7/Table 182 permits Check's mask to narrow a preceding
     // Locate mask. §12.1/Table 495 defines Encrypt as 0x04 and Decrypt as 0x08.
-    // This asserts only
-    // the two client request payloads; the fake response makes no server claim.
-    let locate_attributes = AttributeSet::try_new([test_item(
-        CRYPTOGRAPHIC_USAGE_MASK,
-        Value::integer(0x0C),
-    )])
-    .expect("the Locate mask is a valid direct Integer criterion");
+    // It asserts only the two client request payloads; the fake response makes
+    // no server claim.
+    let locate_attributes =
+        AttributeSet::try_new([test_item(CRYPTOGRAPHIC_USAGE_MASK, Value::integer(0x0C))])
+            .expect("the Locate mask is a valid direct Integer criterion");
     let response = operation_batch_response_bytes([
         (
             LOCATE_OPERATION,
@@ -404,8 +395,14 @@ fn locate_and_check_requests_preserve_distinct_cryptographic_usage_masks() {
     let request = captured
         .as_deref()
         .expect("the fake transport captured the submitted batch");
-    assert_eq!(request_usage_mask(request, 0), (Some(LOCATE_OPERATION), Some(0x0C)));
-    assert_eq!(request_usage_mask(request, 1), (Some(CHECK_OPERATION), Some(0x04)));
+    assert_eq!(
+        request_usage_mask(request, 0),
+        (Some(LOCATE_OPERATION), Some(0x0C))
+    );
+    assert_eq!(
+        request_usage_mask(request, 1),
+        (Some(CHECK_OPERATION), Some(0x04))
+    );
     assert_eq!(fake.borrow().exchange_count(), 1);
 }
 
