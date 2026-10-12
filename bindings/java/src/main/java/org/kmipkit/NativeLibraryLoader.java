@@ -440,13 +440,12 @@ final class NativeLibraryLoader {
     }
 
     private static String libraryFileName(String targetId) {
-        String extension = switch (targetId) {
-            case "windows-x86_64-msvc" -> ".dll";
-            case "linux-glibc-x86_64", "linux-glibc-aarch64" -> ".so";
-            case "macos-x86_64", "macos-aarch64" -> ".dylib";
+        return switch (targetId) {
+            case "windows-x86_64-msvc" -> LIBRARY_BASE_NAME + ".dll";
+            case "linux-glibc-x86_64", "linux-glibc-aarch64" -> "lib" + LIBRARY_BASE_NAME + ".so";
+            case "macos-x86_64", "macos-aarch64" -> "lib" + LIBRARY_BASE_NAME + ".dylib";
             default -> throw loadFailure();
         };
-        return LIBRARY_BASE_NAME + extension;
     }
 
     private static boolean isLeafName(String name) {
