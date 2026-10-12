@@ -38,6 +38,7 @@ fn capability_query_only_reports_c_mapped_nonblocked_capabilities() {
             "ffi_runtime_metadata",
             "generic_ttlv_model",
             "ttlv_wire_codec",
+            "vendor_extension_registry",
         ]
     );
     for capability in crate::public_api_generated::C_AVAILABLE_CAPABILITIES {
@@ -49,7 +50,6 @@ fn capability_query_only_reports_c_mapped_nonblocked_capabilities() {
     for unavailable in [
         "public_binding_surface",
         "rust_transport_exchange",
-        "vendor_extension_registry",
     ] {
         assert!(
             matches!(kmipkit::capability_is_available(unavailable), Ok(false)),
