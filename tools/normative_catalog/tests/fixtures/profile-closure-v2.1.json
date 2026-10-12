@@ -48350,7 +48350,9 @@
         }
       ],
       "rejected_candidate_mappings": [],
-      "expected_client_requirement_ids": [],
+      "expected_client_requirement_ids": [
+        "KMIPKIT-REQ-PROF-5.12.2-002"
+      ],
       "applies_to": "KMIPKIT-PROFILE-TAPE-LIBRARY-CLIENT",
       "review_note": "Profiles v2.1 §5.12.2 lines 8541–46 frames Application Specific Information as client use; the Tape Library client may place application-specific data in the request object.",
       "source_keywords": [
@@ -48385,7 +48387,9 @@
         }
       ],
       "rejected_candidate_mappings": [],
-      "expected_client_requirement_ids": [],
+      "expected_client_requirement_ids": [
+        "KMIPKIT-REQ-PROF-5.12.2-003"
+      ],
       "applies_to": "KMIPKIT-PROFILE-TAPE-LIBRARY-CLIENT",
       "review_note": "Profiles v2.1 §5.12.2 lines 8541–55 frames Application Specific Information and its namespace as client request data; the recommendation applies only to the Tape Library Client profile.",
       "source_keywords": [
@@ -48994,7 +48998,9 @@
         }
       ],
       "rejected_candidate_mappings": [],
-      "expected_client_requirement_ids": [],
+      "expected_client_requirement_ids": [
+        "KMIPKIT-REQ-PROF-5.12.6.2-002"
+      ],
       "applies_to": "KMIPKIT-PROFILE-TAPE-LIBRARY-CLIENT",
       "review_note": "Profiles v2.1 §5.12.6.2 lines 8916–36 describes the Tape Library client creating a key and placing custom attributes in that request; this is profile-conditional client behavior.",
       "source_keywords": [
@@ -49029,7 +49035,9 @@
         }
       ],
       "rejected_candidate_mappings": [],
-      "expected_client_requirement_ids": [],
+      "expected_client_requirement_ids": [
+        "KMIPKIT-REQ-PROF-5.12.6.2-003"
+      ],
       "applies_to": "KMIPKIT-PROFILE-TAPE-LIBRARY-CLIENT",
       "review_note": "Profiles v2.1 §5.12.6.2 lines 8916–36 identifies the Tape Library client as the Create requester; the MAY permits omitting optional custom request attributes.",
       "source_keywords": [
@@ -49112,7 +49120,9 @@
         }
       ],
       "rejected_candidate_mappings": [],
-      "expected_client_requirement_ids": [],
+      "expected_client_requirement_ids": [
+        "KMIPKIT-REQ-PROF-5.12.6.3-001"
+      ],
       "applies_to": "KMIPKIT-PROFILE-TAPE-LIBRARY-CLIENT",
       "review_note": "Profiles v2.1 §5.12.6.3 lines 8945–60 identifies the Tape Library as constructing the identifier and requesting Locate/Get; the MAY update is a client request capability.",
       "source_keywords": [
