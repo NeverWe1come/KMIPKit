@@ -15413,6 +15413,54 @@ class CatalogValidationTests(unittest.TestCase):
         self.assertEqual(requirement["scope_state"], "unclear")
         self.assertEqual(requirement["profile_ids"], [])
 
+    def test_profile_section_three_client_authenticity_clause_preserves_unresolved_scope(self) -> None:
+        """Profiles §3 item 3 does not assign client authenticity to a KMIP endpoint."""
+        catalog = json.loads(
+            (ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8")
+        )
+        clause = next(
+            row
+            for row in catalog["source_clauses"]
+            if row["clause_id"] == "KMIPKIT-CLAUSE-PROF-3-004"
+        )
+
+        self.assertEqual(clause["role"], "unclear")
+        self.assertEqual(clause["direction"], "unclear")
+        self.assertEqual(clause["scope_state"], "unclear")
+        self.assertEqual(clause["disposition"], "profile_conditional")
+        self.assertTrue(clause["condition"])
+
+    def test_profile_section_three_client_authenticity_requirement_keeps_source_scope(self) -> None:
+        """Profiles §3 item 3 keeps its endpoint and client applicability unresolved."""
+        oracle = json.loads(
+            (ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json").read_text(encoding="utf-8")
+        )
+        catalog = json.loads(
+            (ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8")
+        )
+        review = next(
+            row
+            for row in oracle["source_requirement_reviews"]
+            if row["source_clause_id"] == "KMIPKIT-CLAUSE-PROF-3-004"
+        )
+        obligation = review["source_obligations"][0]
+        requirement = next(
+            row
+            for row in catalog["requirements"]
+            if row["requirement_id"] == "KMIPKIT-REQ-PROF-3-004"
+        )
+
+        source_path = ROOT / "specification" / "oasis" / "kmip-2.1" / "upstream" / "kmip-profiles-v2.1-os.html"
+        self.assertEqual(review["source_excerpt"], pinned_source_excerpt(source_path, [3977, 3980]))
+        self.assertEqual(obligation["actor"], "unresolved")
+        self.assertEqual(obligation["direction"], "unresolved")
+        self.assertEqual(obligation["scope_disposition"], "unresolved")
+        self.assertEqual(review["expected_client_requirement_ids"], [])
+        self.assertEqual(requirement["role"], "unclear")
+        self.assertEqual(requirement["direction"], "unclear")
+        self.assertEqual(requirement["scope_state"], "unclear")
+        self.assertEqual(requirement["profile_ids"], [])
+
     def test_every_reviewed_client_may_or_optional_has_usable_positive_evidence(self) -> None:
         """A selected profile or summary cannot replace an implementation and positive test."""
         oracle = json.loads(
