@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import re
+import tomllib
 import unittest
 from pathlib import Path
 
@@ -181,6 +182,22 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
         self.assertTrue(manifest["capabilities"])
         self.assertIn("approvedExclusions", manifest)
         self.assertEqual(list(self.validator.iter_errors(manifest)), [])
+
+    def test_official_package_versions_match_the_manifest_release_line(self) -> None:
+        expected = self.checked_in_manifest["releaseLine"]
+        workspace = tomllib.loads((ROOT / "Cargo.toml").read_text(encoding="utf-8"))
+        python = tomllib.loads(
+            (ROOT / "bindings" / "python" / "pyproject.toml").read_text(encoding="utf-8")
+        )
+        java_gradle = (ROOT / "bindings" / "java" / "build.gradle.kts").read_text(
+            encoding="utf-8"
+        )
+        java_pom = (ROOT / "bindings" / "java" / "pom.xml").read_text(encoding="utf-8")
+
+        self.assertEqual(workspace["workspace"]["package"]["version"], expected)
+        self.assertEqual(python["project"]["version"], expected)
+        self.assertRegex(java_gradle, rf'(?m)^version = "{re.escape(expected)}"$')
+        self.assertRegex(java_pom, rf"(?m)^\s*<version>{re.escape(expected)}</version>$")
 
     def test_checked_in_manifest_retains_every_registry_slice_record(self) -> None:
         manifest = self.checked_in_manifest
