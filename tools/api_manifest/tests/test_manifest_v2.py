@@ -206,6 +206,10 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
         }
         expected = {
             ("rust-kmipkit", "kmipkit::VERSION"),
+            ("rust-kmipkit", "kmipkit::RuntimeVersion"),
+            ("rust-kmipkit", "kmipkit::RuntimeVersion::product_version"),
+            ("rust-kmipkit", "kmipkit::RuntimeVersion::abi_version"),
+            ("rust-kmipkit", "kmipkit::runtime_version"),
             ("rust-kmipkit", "kmipkit::capability_is_available"),
             ("java-kmipkit", "org.kmipkit.RuntimeMetadata"),
             ("java-kmipkit", "org.kmipkit.RuntimeMetadata.Version"),
@@ -435,6 +439,15 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
             runtime_version["languageMappings"]["python"]["name"],
             "kmipkit.metadata.Version",
         )
+        runtime_version_function = next(
+            item for item in self.checked_in_manifest["publicDeclarations"]
+            if item["exportName"] == "kmipkit::runtime_version"
+        )
+        self.assertEqual(runtime_version_function["kind"], "function")
+        self.assertEqual(
+            runtime_version_function["languageMappings"]["c"]["name"],
+            "kmipkit_version_get",
+        )
 
         exclusions = {
             item["exportName"]: item
@@ -449,6 +462,33 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
             self.assertTrue(exclusions[symbol]["reason"])
             self.assertTrue(exclusions[symbol]["evidence"])
             self.assertNotIn(symbol, declarations)
+
+        public_exports = {
+            item["exportName"]
+            for item in self.checked_in_manifest["publicDeclarations"]
+            if item["packageId"] == "python-kmipkit"
+        }
+        self.assertFalse(
+            {
+                "kmipkit.metadata.last_error_snapshot",
+                "kmipkit.metadata.clear_last_error",
+                "kmipkit.metadata.FfiErrorSnapshot",
+                "kmipkit.metadata.ClientCauseCategory",
+                "kmipkit.metadata.RequestDeliveryState",
+            }
+            & public_exports
+        )
+        functions_by_id = {
+            item["id"]: item for item in self.checked_in_manifest["functions"]
+        }
+        self.assertEqual(
+            functions_by_id["ffi_last_error_get"]["python"]["function"],
+            "_last_error_snapshot",
+        )
+        self.assertEqual(
+            functions_by_id["ffi_last_error_clear"]["python"]["function"],
+            "_clear_last_error",
+        )
 
         capability_mappings = capability["mappings"]
         for language in ("rust", "c", "java", "python"):
