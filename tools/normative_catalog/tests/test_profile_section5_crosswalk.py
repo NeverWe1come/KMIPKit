@@ -274,6 +274,64 @@ class ProfileSectionFiveCrosswalkTests(unittest.TestCase):
                         self.assertEqual(source_atom["actor"], UNRESOLVED_SOURCE_ACTOR[requirement_id])
                         self.assertNotIn(requirement_id, row_by_id)
 
+    def test_unresolved_profile_test_atoms_do_not_become_client_requirements(self) -> None:
+        """Profiles test clauses without an endpoint stay outside the client requirement closure."""
+        catalog = _load_json("specification/catalog/kmip-2.1.json")
+        fixture = _load_json("tools/normative_catalog/tests/fixtures/profile-closure-v2.1.json")
+        requirement_rows = {
+            row["requirement_id"]: row for row in catalog["requirements"]
+        }
+        clause_rows = {
+            row["clause_id"]: row for row in catalog["source_clauses"]
+        }
+        reviews = {
+            row["source_clause_id"]: row for row in fixture["source_requirement_reviews"]
+        }
+        crosswalk_ids = {row["requirement_id"] for row in fixture["requirement_crosswalk"]}
+        profile_requirement_ids = {
+            requirement_id
+            for profile in fixture["profiles"]
+            for requirement_id in profile["requirement_ids_audited_subset"]
+        }
+        expected = {
+            "KMIPKIT-REQ-PROF-5.12.6.3-004": ("KMIPKIT-CLAUSE-PROF-5.12.6.3-004", [8967, 8969]),
+            "KMIPKIT-REQ-PROF-5.17.1-001": ("KMIPKIT-CLAUSE-PROF-5.17.1-001", [9391, 9392]),
+            "KMIPKIT-REQ-PROF-5.17.1-002": ("KMIPKIT-CLAUSE-PROF-5.17.1-002", [9394, 9395]),
+            "KMIPKIT-REQ-PROF-5.17.2-002": ("KMIPKIT-CLAUSE-PROF-5.17.2-002", [9413, 9414]),
+        }
+
+        source_path = ROOT / SOURCE_PATH
+        for requirement_id, (clause_id, line_range) in expected.items():
+            with self.subTest(requirement_id=requirement_id):
+                clause = clause_rows[clause_id]
+                requirement = requirement_rows[requirement_id]
+                review = reviews[clause_id]
+                obligation = next(
+                    atom
+                    for atom in review["source_obligations"]
+                    if atom["candidate_requirement_id"] == requirement_id
+                )
+
+                self.assertEqual(clause["disposition"], "profile_conditional")
+                self.assertEqual(clause["role"], "unclear")
+                self.assertEqual(clause["direction"], "unclear")
+                self.assertEqual(clause["scope_state"], "unclear")
+                self.assertEqual(clause["requirement_ids"], [requirement_id])
+                self.assertEqual(requirement["role"], "unclear")
+                self.assertEqual(requirement["direction"], "unclear")
+                self.assertEqual(requirement["scope_state"], "unclear")
+                self.assertEqual(requirement["profile_ids"], [])
+                self.assertEqual(review["expected_client_requirement_ids"], [])
+                self.assertEqual(
+                    review["source_excerpt"],
+                    pinned_source_excerpt(source_path, line_range),
+                )
+                self.assertEqual(obligation["scope_disposition"], "unresolved")
+                self.assertEqual(obligation["direction"], "unspecified")
+                self.assertEqual(obligation["actor"], UNRESOLVED_SOURCE_ACTOR[requirement_id])
+                self.assertNotIn(requirement_id, crosswalk_ids)
+                self.assertNotIn(requirement_id, profile_requirement_ids)
+
     def test_ttlv_http_atoms_and_literal_internal_reference_defects_remain_linked(self) -> None:
         fixture = _load_json("tools/normative_catalog/tests/fixtures/profile-closure-v2.1.json")
         rows = {
