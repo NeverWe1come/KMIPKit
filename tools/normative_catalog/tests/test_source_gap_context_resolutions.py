@@ -149,16 +149,6 @@ def pinned_source_excerpt(source_path: str, html_line_range: list[int]) -> str:
     return parser.normalized_text()
 
 
-def _collect_strings(value: object) -> set[str]:
-    if isinstance(value, str):
-        return {value}
-    if isinstance(value, list):
-        return set().union(*(_collect_strings(item) for item in value)) if value else set()
-    if isinstance(value, dict):
-        return set().union(*(_collect_strings(item) for item in value.values())) if value else set()
-    return set()
-
-
 def _requiredness_matches(contract: dict[str, object], expected: str) -> bool:
     """Match the reviewed table requiredness category for a procedure mode."""
     requiredness = contract.get("requiredness")
@@ -227,10 +217,21 @@ class SourceGapContextResolutionTests(unittest.TestCase):
                 requirement["implementation_refs"] and requirement["verification_refs"]
                 for requirement in linked_requirements
             )
-            linked_contract_ids = _collect_strings(resolution) & contracts.keys()
-            contract_evidence = bool(linked_contract_ids) and all(
+            raw_contract_ids = resolution.get("related_source_table_contract_ids", [])
+            with self.subTest(gap_id=gap_id, link_field="related_source_table_contract_ids"):
+                self.assertIsInstance(raw_contract_ids, list)
+            if not isinstance(raw_contract_ids, list):
+                raw_contract_ids = []
+            self.assertTrue(all(isinstance(identifier, str) for identifier in raw_contract_ids))
+            linked_contract_ids = {
+                identifier for identifier in raw_contract_ids if isinstance(identifier, str)
+            }
+            known_linked_contract_ids = linked_contract_ids & contracts.keys()
+            self.assertEqual(known_linked_contract_ids, linked_contract_ids)
+            self.assertEqual(len(known_linked_contract_ids), len(raw_contract_ids))
+            contract_evidence = bool(known_linked_contract_ids) and all(
                 contracts[identifier]["implementation_refs"] and contracts[identifier]["verification_refs"]
-                for identifier in linked_contract_ids
+                for identifier in known_linked_contract_ids
             )
             explicit_blocker = gap["scope_disposition"] == "unresolved"
 
@@ -338,15 +339,25 @@ class SourceGapContextResolutionTests(unittest.TestCase):
         for gap_id, operation_contracts in EXPECTED_GENERIC_CONTEXT_OPERATIONS.items():
             gap = gaps[gap_id]
             resolution = gap["source_resolution"]
-            linked_contract_ids = _collect_strings(resolution) & contracts.keys()
+            raw_contract_ids = resolution.get("related_source_table_contract_ids")
+            with self.subTest(gap_id=gap_id, link_field="related_source_table_contract_ids"):
+                self.assertIsInstance(
+                    raw_contract_ids,
+                    list,
+                    f"{gap_id} must use the structured contract-ID field, not review_note prose",
+                )
+            if not isinstance(raw_contract_ids, list):
+                raw_contract_ids = []
+            self.assertTrue(all(isinstance(identifier, str) for identifier in raw_contract_ids))
+            linked_contract_ids = {
+                identifier for identifier in raw_contract_ids if isinstance(identifier, str)
+            }
+            known_linked_contract_ids = linked_contract_ids & contracts.keys()
+            self.assertEqual(known_linked_contract_ids, linked_contract_ids)
             expected_contract_ids = set().union(
                 *(contract_ids for contract_ids in operation_contracts.values() if contract_ids is not None)
             )
-            referenced_contract_ids = {
-                value
-                for value in _collect_strings(resolution)
-                if value.startswith("KMIPKIT-SOURCE-GAP-SPEC-")
-            }
+            self.assertEqual(len(linked_contract_ids), len(raw_contract_ids))
             self.assertEqual(set(operation_contracts), expected_operation_ids)
             for operation_id, expected_ids in operation_contracts.items():
                 with self.subTest(gap_id=gap_id, operation_id=operation_id):
@@ -394,7 +405,7 @@ class SourceGapContextResolutionTests(unittest.TestCase):
                         continue
                     actual_operation_ids = {
                         contract_id
-                        for contract_id in linked_contract_ids
+                        for contract_id in known_linked_contract_ids
                         if contracts[contract_id]["operation_element_id"] == operation_id
                     }
                     self.assertEqual(
@@ -408,7 +419,6 @@ class SourceGapContextResolutionTests(unittest.TestCase):
                     expected_contract_ids,
                     f"{gap_id} must link the complete reviewed request contract set for each operation",
                 )
-                self.assertEqual(referenced_contract_ids, expected_contract_ids)
 
     def test_generic_parameter_spans_retain_the_complete_pinned_instruction(self) -> None:
         """KMIP Specification v2.1 §6.1 paragraph spans must preserve exact source text."""
