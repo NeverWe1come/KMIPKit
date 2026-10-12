@@ -16000,8 +16000,19 @@ class CatalogValidationTests(unittest.TestCase):
                 test_source = test_path.read_text(encoding="utf-8")
                 if re.search(rf"\b(?:fn|def)\s+{re.escape(test_name)}\s*\(", test_source):
                     usable_positive_tests.append(reference)
-            if requirement["status"] != "verified" or not usable_positive_tests:
-                gaps.append(f"{requirement_id}: no verified, resolvable positive capability test")
+            scoped_client_request_evidence = (
+                requirement["status"] == "scoped_verified"
+                and requirement["role"] == "client"
+                and requirement["direction"] == "client_to_server"
+                and requirement["scope_state"] == "client_1_0"
+                and bool(requirement["implementation_refs"])
+                and bool(usable_positive_tests)
+            )
+            if (
+                requirement["status"] != "verified"
+                and not scoped_client_request_evidence
+            ) or not usable_positive_tests:
+                gaps.append(f"{requirement_id}: no eligible, resolvable positive capability test")
 
         self.assertEqual(
             gaps,
