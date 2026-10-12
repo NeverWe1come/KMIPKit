@@ -29,9 +29,22 @@ class OperationCatalogParityTests(unittest.TestCase):
 
         operations = self.manifest["operations"]
         sections = [tuple(int(part) for part in row["section"].split(".")) for row in operations]
-        self.assertEqual(len(operations), 57)
+        self.assertEqual(len(operations), 56)
         self.assertEqual(sections, sorted(sections))
         self.assertEqual({row["scope"] for row in operations}, {"client_1_0"})
+
+    def test_client_1_1_operations_are_not_in_the_1_0_api_inventory(self) -> None:
+        endpoint_role = next(
+            item
+            for item in self.catalog["elements"]
+            if item.get("kind") == "operation" and item.get("name") == "Set Endpoint Role"
+        )
+
+        self.assertEqual(endpoint_role["scope_state"], "client_1_1")
+        self.assertNotIn(
+            endpoint_role["element_id"],
+            {row["operationId"] for row in self.manifest["operations"]},
+        )
 
     def test_duplicate_missing_extra_and_out_of_scope_rows_are_rejected(self) -> None:
         cases = {}
