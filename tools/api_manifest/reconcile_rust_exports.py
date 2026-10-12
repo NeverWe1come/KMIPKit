@@ -75,6 +75,11 @@ def _owner_path(export_name: str) -> str | None:
     return owner_path or None
 
 
+def _export_key(row: dict[str, Any]) -> tuple[Any, Any]:
+    """Return the package/path pair used to reconcile one declaration."""
+    return row.get("packageId"), row.get("exportName")
+
+
 def _find_owner(manifest: dict[str, Any], package_id: str, owner_path: str | None,
                 export_name: str) -> dict[str, Any] | None:
     if owner_path:
@@ -131,12 +136,12 @@ def reconcile(manifest: dict[str, Any], report: dict[str, Any]) -> list[dict[str
     existing_keys: set[tuple[str, str]] = set()
     existing_ids: set[str] = set()
     for row in declarations:
-        key = (row.get("packageId"), row.get("exportName"))
+        key = _export_key(row)
         if key in existing_keys:
             raise ValueError(f"duplicate manifest declaration: {key[0]}:{key[1]}")
         existing_keys.add(key)
         existing_ids.add(row.get("declarationId"))
-    exclusion_keys = {(row.get("packageId"), row.get("exportName")) for row in exclusions}
+    exclusion_keys = {_export_key(row) for row in exclusions}
 
     observed_keys: set[tuple[str, str]] = set()
     rows: list[dict[str, Any]] = []
@@ -144,7 +149,7 @@ def reconcile(manifest: dict[str, Any], report: dict[str, Any]) -> list[dict[str
     for item in missing:
         if not isinstance(item, dict):
             raise ValueError("Rust report missing entries must be objects")
-        key = (item.get("packageId"), item.get("exportName"))
+        key = _export_key(item)
         if key in observed_keys:
             raise ValueError(f"duplicate observed Rust path: {key[0]}:{key[1]}")
         observed_keys.add(key)

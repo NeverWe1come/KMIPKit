@@ -34,6 +34,14 @@ def observed(package_id: str, export_name: str, kind: str = "associated-item") -
 
 
 class RustExportReconciliationTests(unittest.TestCase):
+    def test_export_key_is_the_package_and_export_path_pair(self):
+        row = observed("rust-kmipkit-protocol", "kmipkit_protocol::Owner::method")
+
+        self.assertEqual(
+            RECONCILER._export_key(row),
+            (row.get("packageId"), row.get("exportName")),
+        )
+
     def test_trait_member_inherits_only_the_exact_manifest_owner_candidate(self):
         manifest = {
             "capabilities": [],

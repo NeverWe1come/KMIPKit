@@ -112,6 +112,12 @@ There were no kind mismatches or approved Rust exclusions. All 39 issues are `un
 | Generated manifest outputs | `python -B tools/api_manifest/generate.py --check` | PASS: all 11 generated outputs current. |
 | Whitespace validation | `git diff --check` | PASS. |
 
+| Phase | Commit | Evidence |
+|---|---|---|
+| Red | `910f799c`, `ef257e79` | Reconciliation tests failed on missing exact blocked rows and absent nearest-owner inheritance, with assertion failures and no harness errors. |
+| Green | `6c19b62a` | Added 7,681 exact blocked rows; the audit matched all 9,448 observed paths and preserved all 39 unresolved-predicate issues. |
+| Refactor | `b5267278` | `.venv/Scripts/python.exe -B -m unittest tools.api_manifest.tests.test_rust_export_reconciliation -v`; `.venv/Scripts/python.exe -B tools/api_manifest/generate.py --check`; `git diff --check` | PASS: 7 reconciliation tests passed, all 11 generated outputs were current, and the shared key extraction preserved the exact package/path pair. |
+
 T011 remains open because 39 Rust implementation predicates remain unresolved and the remote Linux/macOS ABI checks have not yet been evidenced. All 9,448 Rust paths in this snapshot now have exact manifest rows; the 7,681 added rows remain blocked and therefore do not declare API capability or parity. The C, Java, and Python binding audit completes with exact manifest reconciliation on this Windows x86-64 host. T013 remains open because only the approved TTLV owner slice has been mapped; the remaining Rust package declarations are not yet reconciled.
 
 ### C/Java/Python public-export audit (local snapshot passes)
