@@ -61,9 +61,37 @@ def inventory_c_header(source: str, package: str = "c-kmipkit") -> dict[str, Any
             field = field.strip()
             if not field:
                 continue
-            field_name = re.search(r"([A-Za-z_]\w*)\s*(?::\s*\d+)?\s*(?:\[[^]]*\])?\s*$", field)
-            if field_name and "(" not in field:
-                records.append(_record(package, f"{name}.{field_name.group(1)}", "field", str(line_number)))
+            declarators: list[str] = []
+            start = 0
+            nesting = {"(": 0, "[": 0, "{": 0}
+            closing = {")": "(", "]": "[", "}": "{"}
+            balanced = True
+            for index, character in enumerate(field):
+                if character in nesting:
+                    nesting[character] += 1
+                elif character in closing:
+                    opener = closing[character]
+                    if nesting[opener] == 0:
+                        balanced = False
+                        break
+                    nesting[opener] -= 1
+                elif character == "," and not any(nesting.values()):
+                    declarators.append(field[start:index].strip())
+                    start = index + 1
+            if any(nesting.values()):
+                balanced = False
+            declarators.append(field[start:].strip())
+            field_names = []
+            if balanced:
+                for declarator in declarators:
+                    field_name = re.search(r"([A-Za-z_]\w*)\s*(?::\s*\d+)?\s*(?:\[[^]]*\])?\s*$", declarator)
+                    if not field_name or "(" in declarator:
+                        field_names = []
+                        break
+                    field_names.append(field_name.group(1))
+            if field_names:
+                records.extend(_record(package, f"{name}.{field_name}", "field", str(line_number))
+                               for field_name in field_names)
             else:
                 issues.append({"packageId": package, "exportName": name, "reason": "unsupported-c-field"})
     for match in re.finditer(r"\btypedef\s+(?:struct|union)\b[^;]*\{", cleaned, re.S):
