@@ -102,26 +102,29 @@ There are no kind mismatches or approved Rust exclusions. The audit reports 375 
 | Verification | Command | Result |
 |---|---|---|
 | Focused auditor tests | `python -B -m unittest tools.api_manifest.tests.test_rust_exports -v` | PASS: 18 tests. |
-| Full API-manifest tests | `uv run --with jsonschema -- python -B -m unittest discover -s tools/api_manifest/tests -v` | PASS: 122 tests; 3 Windows symlink tests skipped because symlink creation was denied (WinError 1314). |
+| Full API-manifest tests | `.venv/Scripts/python.exe -B -m unittest discover -s tools/api_manifest/tests -v` | PASS: 162 tests; 3 Windows symlink tests skipped because symlink creation was denied (WinError 1314). |
 | Rust export inventory | `python -B tools/api_manifest/audit_rust_exports.py --repo-root . --report specs/043-public-api-bindings/reports/rust-export-report-2026-10-12.json --check` | Report written; exit 1 with 3,272 observed, 1,761 matched, 1,511 missing, 6 not observed, and 375 incomplete-scope records. |
+| KMIPKit FFI MSRV build | `cargo +1.94.0 build --locked -p kmipkit-ffi` | PASS on Windows x86-64; built `target/debug/kmipkit_ffi.dll` with the vendored `aws-lc-sys@0.45.0`. Optional NASM/stdalign probes emitted warnings; the build completed successfully. |
+| MSRV C ABI allowlist | `.venv/Scripts/python.exe -B tools/api_manifest/audit_binding_exports.py --repo-root . --c-only --c-binary target/debug/kmipkit_ffi.dll --check` | PASS: complete C audit, 180 exact manifest rows, 2 approved C-only exclusions, no missing/stale/kind/issues. |
+| C consumer locally | `cmake -G "Visual Studio 17 2022" -A x64 -S bindings/c -B build/c-consumer` | Not run: CMake is not installed on this host. The GitHub C matrix remains the C-consumer verification path. |
 | Generated manifest outputs | `python -B tools/api_manifest/generate.py --check` | PASS: all 11 generated outputs current. |
 | Whitespace validation | `git diff --check` | PASS. |
 
-T011 remains open until C, Java, and Python export audits are complete and all declarations reconcile to manifest rows or accepted exclusions; the Rust traversal gaps and all listed mismatches must also be resolved. T013 remains open because only the approved TTLV owner slice has been mapped; the remaining Rust package declarations are not yet reconciled.
+T011 remains open because the Rust traversal does not yet inventory trait-implementation members and type-alias inherited members exhaustively. The C, Java, and Python binding audit now completes with exact manifest reconciliation on the current Windows x86-64 host; its Linux and macOS ABI matrix still requires remote CI evidence. T013 remains open because only the approved TTLV owner slice has been mapped; the remaining Rust package declarations are not yet reconciled.
 
-### C/Java/Python public-export audit (incomplete)
+### C/Java/Python public-export audit (local snapshot passes)
 
-The deterministic non-Rust audit is checked in at [binding-export-report-2026-10-12.json](reports/binding-export-report-2026-10-12.json). On Windows x86-64, `python -B tools/api_manifest/audit_binding_exports.py --repo-root . --report specs/043-public-api-bindings/reports/binding-export-report-2026-10-12.json --check` completed with exit code 1, as required while exact reconciliation is incomplete. `matchesManifest` is false for all three packages. These observations are not approved exclusions or authorization to invent declaration owners.
+The deterministic non-Rust audit is checked in at [binding-export-report-2026-10-12.json](reports/binding-export-report-2026-10-12.json). On Windows x86-64, `.venv/Scripts/python.exe -B tools/api_manifest/audit_binding_exports.py --repo-root . --report specs/043-public-api-bindings/reports/binding-export-report-2026-10-12.json --check` completed with exit code 0. All three scanners are complete; every observed declaration reconciles to its manifest row or exact approved exclusion, with no missing, stale, kind-mismatch, or issue records. The native ABI regression test detected nine unprefixed jitterentropy exports before the vendor patch and passed after it. CI now runs the C header/binary/manifest allowlist audit on Windows, Linux, and macOS against the C job's already-built library; cross-platform results remain pending remote CI.
 
 | Package | Scanner complete | Observed | Manifest | Exact matches | Missing | Stale | Kind mismatches | Issues |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|
-| C | no | 192 | 175 | 175 | 15 | 0 | 0 | 18 |
-| Java | yes | 329 | 319 | 318 | 11 | 1 | 0 | 0 |
-| Python | no | 274 | 262 | 262 | 12 | 0 | 2 | 2 |
+| C | yes | 182 | 180 | 180 | 0 | 0 | 0 | 0 |
+| Java | yes | 329 | 329 | 329 | 0 | 0 | 0 | 0 |
+| Python | yes | 274 | 274 | 274 | 0 | 0 | 0 | 0 |
 
-C's 15 absent manifest paths are five `KMIPKIT_ERROR_*` constants (`COMPATIBILITY_MISMATCH`, `DUPLICATE_KEY`, `INVALID_IDENTITY`, `INVALID_INPUT`, and `INVALID_SCHEMA`), the `KMIPKIT_H` header guard, and nine exported `aws_lc_0_45_0_jent_*` binary symbols: `entropy_collector_alloc`, `entropy_collector_free`, `entropy_init`, `entropy_init_ex`, `entropy_switch_notime_impl`, `read_entropy`, `read_entropy_safe`, `set_fips_failure_callback`, and `version`. Each dependency symbol is both absent from the header and outside the required `kmipkit_` prefix, producing 18 issues. Java is missing `RuntimeMetadata.Version`'s constructor and seven public members (`abiVersion`, `equals`, `hashCode`, `major`, `minor`, `patch`, `toString`), plus generated `PublicApi` and its `DECLARATIONS_JSON` and `FORMAT_VERSION` members; the manifest's `org.kmipkit.internal.NativeHandle.run` is stale. Python is missing the root `kmipkit` module, seven error `category` attributes, and four `Version` fields (`abi_version`, `major`, `minor`, `patch`). Its two runtime-metadata functions are recorded as `function` but observed as `python-export`; `validate_extension_value` has a duplicate manifest path and multiple declarations sharing one export path. The JSON report preserves the full exact paths, kinds, locations, and issue records.
+C's observed count includes `kmipkit_last_error_clear` and `kmipkit_last_error_get`, represented by exact approved exclusions because they are C-specific diagnostics rather than shared four-language capabilities. The C ABI patch removes the nine transitive `aws_lc_0_45_0_jent_*` symbols from the published dynamic library while retaining jitterentropy. Java and Python now reconcile their compiled/source public export surfaces exactly with manifest v2. The checked-in report preserves exact paths, kinds, locations, and counts for all three languages.
 
-The audit changes followed separate failing-test and implementation commits for each newly found behavior. The final Refactor is a distinct commit after the latest Green commit.
+The binding-auditor changes have distinct failing-test and implementation commits, including the false-include-guard parser case and the real shared-library export leak. The vendored ABI Green is commit `a7ecd323`; a separate behavior-preserving Refactor commit for that vendor change is still pending, so no T011 completion claim is made.
 
 | Phase | Commit(s) | Evidence |
 |---|---|---|
@@ -132,7 +135,10 @@ The audit changes followed separate failing-test and implementation commits for 
 | Red → Green | `8fc86d3b` → `f92a13d7` | C tagged struct/union declaration tests, then aggregate inventory and fail-closed parsing. |
 | Red → Green | `f53fdb96` → `0be674d1` | C multi-field declaration test for `int left, right;`, then inventory of both fields. |
 | Red → Green | `53f34dc5` → `cf816836` | Python augmented `__all__` test, then literal `+=` export resolution and unresolved-import reporting. |
-| Refactor | `9d0c18ef` | Extracted Python class-member inventory without changing behavior. `python -B -m unittest tools.api_manifest.tests.test_binding_exports -v` passed all 19 tests; `python -B tools/api_manifest/generate.py --check` verified all 11 generated outputs; `git diff --check` passed. The full export audit still exits 1 because the inventory discrepancies above remain. |
+| Refactor | `9d0c18ef` | Extracted Python class-member inventory without changing behavior. At that earlier checkpoint the full export audit still exited 1; later Green commits resolved the binding discrepancies. |
+| Red | `1395106`, `2ae084ce`, `ba3cafbe` | Added failing ABI leak, incomplete C include-guard, and C-only existing-binary audit cases. The ABI regression enumerated the nine AWS-LC jitterentropy exports before patching. |
+| Green | `22b13a7a`, `a7ecd323` | Made include-guard recognition fail closed; vendored and patched `aws-lc-sys@0.45.0`, constrained the dependency-policy exception, removed leaked symbols from the published ABI, added the cross-platform C audit step, and reconciled C/Java/Python manifests. `python -B -m unittest discover -s tools/api_manifest/tests -v` passed 162 tests (3 skipped); the full binding audit `--check` exited 0; generator check verified 11 outputs. |
+| Refactor | Pending | A behavior-preserving cleanup commit is still required for the vendor ABI change. |
 
 T011 remains unchecked: an observed blocked declaration can count as an exact inventory match, but it cannot account for missing or stale paths, a kind mismatch, duplicate declarations, unsupported ABI exports, or incomplete traversal. No manifest data was fabricated to suppress these findings.
 
