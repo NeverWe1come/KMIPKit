@@ -29,6 +29,32 @@ import tools.normative_catalog.validate as catalog_validate
 
 
 ROOT = Path(__file__).resolve().parents[3]
+OPTIONAL_CAPABILITY_TEST_REQUIREMENTS = {
+    "crates/kmipkit-protocol/tests/unit/register_operation_tests.rs::request_requires_key_algorithm_and_length_in_attributes_or_key_block": (
+        "KMIPKIT-REQ-SPEC-6.1.43-009-001",
+        "KMIPKIT-REQ-SPEC-6.1.43-010-001",
+    ),
+    "crates/kmipkit-protocol/tests/unit/certify_operation_tests.rs::request_without_request_value_requires_public_key_identifier_and_certificate_type_attribute": (
+        "KMIPKIT-REQ-SPEC-6.1.6-002-001",
+    ),
+    "crates/kmipkit-client/tests/unit/certify_execution_tests.rs::certify_can_produce_the_placeholder_for_a_get_in_the_same_batch": (
+        "KMIPKIT-REQ-SPEC-6.1.6-003",
+    ),
+    "crates/kmipkit-client/tests/unit/check_execution_tests.rs::check_sends_table_183_fields_and_exposes_table_184_response_once": (
+        "KMIPKIT-REQ-SPEC-6.1.7-003",
+        "KMIPKIT-REQ-SPEC-6.1.7-004-001",
+        "KMIPKIT-REQ-SPEC-6.1.7-005",
+    ),
+    "crates/kmipkit-protocol/tests/unit/recertify_operation_tests.rs::request_emits_table_300_fields_once_in_order_and_preserves_values": (
+        "KMIPKIT-REQ-SPEC-6.1.45-006-001",
+    ),
+    "crates/kmipkit-protocol/tests/unit/rekey_operation_tests.rs::request_emits_table_305_fields_once_in_order_and_preserves_values": (
+        "KMIPKIT-REQ-SPEC-6.1.46-004-001",
+    ),
+    "crates/kmipkit-protocol/tests/unit/rekey_key_pair_operation_tests.rs::request_emits_table_310_fields_once_in_order_and_preserves_groups": (
+        "KMIPKIT-REQ-SPEC-6.1.47-004-001",
+    ),
+}
 
 
 def source_table_contracts_for_gap(
@@ -15680,23 +15706,11 @@ class CatalogValidationTests(unittest.TestCase):
             (ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8")
         )
         requirements = {row["requirement_id"]: row for row in catalog["requirements"]}
-        expected_tests = {
-            "KMIPKIT-REQ-SPEC-6.1.43-009-001": "crates/kmipkit-protocol/tests/unit/register_operation_tests.rs::request_requires_key_algorithm_and_length_in_attributes_or_key_block",
-            "KMIPKIT-REQ-SPEC-6.1.43-010-001": "crates/kmipkit-protocol/tests/unit/register_operation_tests.rs::request_requires_key_algorithm_and_length_in_attributes_or_key_block",
-            "KMIPKIT-REQ-SPEC-6.1.6-002-001": "crates/kmipkit-protocol/tests/unit/certify_operation_tests.rs::request_without_request_value_requires_public_key_identifier_and_certificate_type_attribute",
-            "KMIPKIT-REQ-SPEC-6.1.6-003": "crates/kmipkit-client/tests/unit/certify_execution_tests.rs::certify_can_produce_the_placeholder_for_a_get_in_the_same_batch",
-            "KMIPKIT-REQ-SPEC-6.1.7-003": "crates/kmipkit-client/tests/unit/check_execution_tests.rs::check_sends_table_183_fields_and_exposes_table_184_response_once",
-            "KMIPKIT-REQ-SPEC-6.1.7-004-001": "crates/kmipkit-client/tests/unit/check_execution_tests.rs::check_sends_table_183_fields_and_exposes_table_184_response_once",
-            "KMIPKIT-REQ-SPEC-6.1.7-005": "crates/kmipkit-client/tests/unit/check_execution_tests.rs::check_sends_table_183_fields_and_exposes_table_184_response_once",
-            "KMIPKIT-REQ-SPEC-6.1.45-006-001": "crates/kmipkit-protocol/tests/unit/recertify_operation_tests.rs::request_emits_table_300_fields_once_in_order_and_preserves_values",
-            "KMIPKIT-REQ-SPEC-6.1.46-004-001": "crates/kmipkit-protocol/tests/unit/rekey_operation_tests.rs::request_emits_table_305_fields_once_in_order_and_preserves_values",
-            "KMIPKIT-REQ-SPEC-6.1.47-004-001": "crates/kmipkit-protocol/tests/unit/rekey_key_pair_operation_tests.rs::request_emits_table_310_fields_once_in_order_and_preserves_groups",
-        }
-
-        for requirement_id, expected_test in expected_tests.items():
-            with self.subTest(requirement_id=requirement_id):
-                requirement = requirements[requirement_id]
-                self.assertIn(expected_test, requirement["verification_refs"])
+        for expected_test, requirement_ids in OPTIONAL_CAPABILITY_TEST_REQUIREMENTS.items():
+            for requirement_id in requirement_ids:
+                with self.subTest(requirement_id=requirement_id):
+                    requirement = requirements[requirement_id]
+                    self.assertIn(expected_test, requirement["verification_refs"])
 
     def test_every_reviewed_client_may_or_optional_has_usable_positive_evidence(self) -> None:
         """A selected profile or summary cannot replace an implementation and positive test."""
