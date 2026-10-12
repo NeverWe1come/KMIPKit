@@ -60,6 +60,25 @@ OPTIONAL_CAPABILITY_TEST_REQUIREMENTS = {
 }
 
 
+def _selected_profile_source_scope(
+    catalog: dict[str, Any], target_manifest: dict[str, Any]
+) -> tuple[set[str], set[tuple[str, str]]]:
+    """Resolve the selected profile clause IDs and their pinned source sections."""
+    profiles = {profile["profile_id"]: profile for profile in catalog["profiles"]}
+    selected_profiles = [profiles[profile_id] for profile_id in target_manifest["profile_ids"]]
+    selected_clause_ids = {
+        clause_id
+        for profile in selected_profiles
+        for clause_id in profile["source_clause_ids"]
+    }
+    clauses_by_id = {clause["clause_id"]: clause for clause in catalog["source_clauses"]}
+    selected_source_sections = {
+        (clauses_by_id[clause_id]["source_id"], clauses_by_id[clause_id]["section"])
+        for clause_id in selected_clause_ids
+    }
+    return selected_clause_ids, selected_source_sections
+
+
 def _reviewed_profile_optional_capabilities(
     oracle: dict[str, Any],
     selected_clause_ids: set[str],
@@ -15795,18 +15814,9 @@ class CatalogValidationTests(unittest.TestCase):
         targets = json.loads(
             (ROOT / "specification" / "catalog" / "profile-targets.json").read_text(encoding="utf-8")
         )
-        profiles = {profile["profile_id"]: profile for profile in catalog["profiles"]}
-        selected_profiles = [profiles[profile_id] for profile_id in targets["profile_ids"]]
-        selected_clause_ids = {
-            clause_id
-            for profile in selected_profiles
-            for clause_id in profile["source_clause_ids"]
-        }
-        clauses_by_id = {clause["clause_id"]: clause for clause in catalog["source_clauses"]}
-        selected_source_sections = {
-            (clauses_by_id[clause_id]["source_id"], clauses_by_id[clause_id]["section"])
-            for clause_id in selected_clause_ids
-        }
+        selected_clause_ids, selected_source_sections = _selected_profile_source_scope(
+            catalog, targets
+        )
         optional_capabilities, _ = _reviewed_profile_optional_capabilities(
             oracle,
             selected_clause_ids,
@@ -15840,18 +15850,9 @@ class CatalogValidationTests(unittest.TestCase):
         targets = json.loads(
             (ROOT / "specification" / "catalog" / "profile-targets.json").read_text(encoding="utf-8")
         )
-        profiles = {profile["profile_id"]: profile for profile in catalog["profiles"]}
-        selected_profiles = [profiles[profile_id] for profile_id in targets["profile_ids"]]
-        selected_clause_ids = {
-            clause_id
-            for profile in selected_profiles
-            for clause_id in profile["source_clause_ids"]
-        }
-        clauses_by_id = {clause["clause_id"]: clause for clause in catalog["source_clauses"]}
-        selected_source_sections = {
-            (clauses_by_id[clause_id]["source_id"], clauses_by_id[clause_id]["section"])
-            for clause_id in selected_clause_ids
-        }
+        selected_clause_ids, selected_source_sections = _selected_profile_source_scope(
+            catalog, targets
+        )
         requirements = {row["requirement_id"]: row for row in catalog["requirements"]}
         positive_capabilities, gaps = _reviewed_profile_optional_capabilities(
             oracle,
