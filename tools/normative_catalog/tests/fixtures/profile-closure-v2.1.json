@@ -76,9 +76,9 @@
     "requirement_crosswalk_records": 466,
     "requirement_crosswalk_complete": false,
     "source_requirement_review_records": 889,
-    "source_only_requirement_gaps": 156,
-    "source_only_requirement_gap_proposals": 103,
-    "source_table_contracts": 14
+    "source_only_requirement_gaps": 152,
+    "source_only_requirement_gap_proposals": 99,
+    "source_table_contracts": 18
   },
   "source_clause_crosswalk": [
     {
@@ -67650,7 +67650,7 @@
           "row_label": "Data",
           "required": "Yes for single-part. No for multi-part.",
           "actor": "client",
-          "disposition": "conditionally_required_request_field_with_source_only_proposal",
+          "disposition": "conditionally_required_request_table_contract",
           "html_line_range": [
             30060,
             30076
@@ -67663,7 +67663,7 @@
           "row_label": "Correlation Value",
           "required": "No",
           "actor": "client",
-          "disposition": "optional_request_field_with_source_only_proposal",
+          "disposition": "optional_request_table_contract",
           "html_line_range": [
             30077,
             30094
@@ -67676,7 +67676,7 @@
           "row_label": "Init Indicator",
           "required": "No",
           "actor": "client",
-          "disposition": "optional_request_field_with_source_only_proposal",
+          "disposition": "optional_request_table_contract",
           "html_line_range": [
             30095,
             30110
@@ -67689,7 +67689,7 @@
           "row_label": "Final Indicator",
           "required": "No",
           "actor": "client",
-          "disposition": "optional_request_field_with_source_only_proposal",
+          "disposition": "optional_request_table_contract",
           "html_line_range": [
             30111,
             30127
@@ -84030,123 +84030,6 @@
       "reused_requirement_id": "KMIPKIT-REQ-SPEC-6.1.31-001"
     },
     {
-      "gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.32-DATA-REQUIRED",
-      "source_id": "KMIPKIT-SRC-spec",
-      "source_path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
-      "source_section": "6.1.32",
-      "source_locator": {
-        "kind": "table_body_row",
-        "section": "6.1.32",
-        "row_label": "Data",
-        "table": "request_payload",
-        "html_line_range": [
-          30060,
-          30076
-        ]
-      },
-      "html_line_range": [
-        30060,
-        30076
-      ],
-      "source_excerpt": "Data Yes for single-part. No for multi-part. The data to be MACed .",
-      "source_force": "conditional_required_table_body_value",
-      "source_keywords": [],
-      "actor": "client",
-      "scope_disposition": "client_1_0",
-      "candidate_requirement_id": null,
-      "proposed_requirement_id": "KMIPKIT-REQ-SPEC-6.1.32-005",
-      "status": "stable_label_proposed_not_in_catalog",
-      "source_clause_id": null,
-      "review_note": "The Required value is preserved literally as 'Yes for single-part. No for multi-part.' This MAC table row links to the general §6.1 evidence KMIPKIT-SOURCE-GAP-SPEC-6.1-PARAGRAPH-009 and proposal KMIPKIT-REQ-SPEC-6.1-009-001. Specification v2.1 §6.1 HTML lines 22498–22499 states: Data is always required in cryptographic operations except when either Init Indicator or Final Indicator is true. This creates a source tension that is not resolved here. The row does not make all multipart Data optional, and no additional multipart Data obligation is inferred."
-    },
-    {
-      "gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.32-CORRELATION-VALUE-OPTIONAL",
-      "source_id": "KMIPKIT-SRC-spec",
-      "source_path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
-      "source_section": "6.1.32",
-      "source_locator": {
-        "kind": "table_body_row",
-        "section": "6.1.32",
-        "row_label": "Correlation Value",
-        "table": "request_payload",
-        "html_line_range": [
-          30077,
-          30094
-        ]
-      },
-      "html_line_range": [
-        30077,
-        30094
-      ],
-      "source_excerpt": "Correlation Value No Specifies the existing stream or by-parts cryptographic operation (as returned from a previous call to this operation).",
-      "source_force": "optional_table_body_value",
-      "source_keywords": [],
-      "actor": "client",
-      "scope_disposition": "client_1_0",
-      "candidate_requirement_id": null,
-      "proposed_requirement_id": "KMIPKIT-REQ-SPEC-6.1.32-006",
-      "status": "stable_label_proposed_not_in_catalog",
-      "source_clause_id": null
-    },
-    {
-      "gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.32-INIT-INDICATOR-OPTIONAL",
-      "source_id": "KMIPKIT-SRC-spec",
-      "source_path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
-      "source_section": "6.1.32",
-      "source_locator": {
-        "kind": "table_body_row",
-        "section": "6.1.32",
-        "row_label": "Init Indicator",
-        "table": "request_payload",
-        "html_line_range": [
-          30095,
-          30110
-        ]
-      },
-      "html_line_range": [
-        30095,
-        30110
-      ],
-      "source_excerpt": "Init Indicator No Initial operation as Boolean",
-      "source_force": "optional_table_body_value",
-      "source_keywords": [],
-      "actor": "client",
-      "scope_disposition": "client_1_0",
-      "candidate_requirement_id": null,
-      "proposed_requirement_id": "KMIPKIT-REQ-SPEC-6.1.32-007",
-      "status": "stable_label_proposed_not_in_catalog",
-      "source_clause_id": null
-    },
-    {
-      "gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.32-FINAL-INDICATOR-OPTIONAL",
-      "source_id": "KMIPKIT-SRC-spec",
-      "source_path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
-      "source_section": "6.1.32",
-      "source_locator": {
-        "kind": "table_body_row",
-        "section": "6.1.32",
-        "row_label": "Final Indicator",
-        "table": "request_payload",
-        "html_line_range": [
-          30111,
-          30127
-        ]
-      },
-      "html_line_range": [
-        30111,
-        30127
-      ],
-      "source_excerpt": "Final Indicator No Final operation as Boolean",
-      "source_force": "optional_table_body_value",
-      "source_keywords": [],
-      "actor": "client",
-      "scope_disposition": "client_1_0",
-      "candidate_requirement_id": null,
-      "proposed_requirement_id": "KMIPKIT-REQ-SPEC-6.1.32-008",
-      "status": "stable_label_proposed_not_in_catalog",
-      "source_clause_id": null
-    },
-    {
       "gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.33-MAC-DATA-REQUIRED",
       "source_id": "KMIPKIT-SRC-spec",
       "source_path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
@@ -86351,6 +86234,204 @@
       "evidence_disposition": {
         "status": "mapped_to_feature_contract",
         "statement": "Implementation and executable verification are linked through KMIPKIT-ELEM-OP-C2S-JOIN-SPLIT-KEY and feature requirements FR-001; this table row does not create a standalone REQ record."
+      }
+    },
+    {
+      "gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.32-DATA-REQUIRED",
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+      "source_section": "6.1.32",
+      "source_clause_id": null,
+      "source_locator": {
+        "kind": "table_body_row",
+        "section": "6.1.32",
+        "row_label": "Data",
+        "table": "request_payload",
+        "html_line_range": [
+          30060,
+          30076
+        ]
+      },
+      "source_locator_description": "§6.1.32 MAC request payload body row for Data (HTML lines 30060–30076)",
+      "html_line_range": [
+        30060,
+        30076
+      ],
+      "source_excerpt": "Data Yes for single-part. No for multi-part. The data to be MACed .",
+      "source_keywords": [],
+      "source_force": "conditional_required_table_body_value",
+      "audited_statement": "Table 259 marks Data required for single-part MAC and not required for multi-part MAC; the general §6.1 Data rule remains an unresolved source conflict.",
+      "actor": "client",
+      "direction": "client→server MAC request",
+      "condition": "Table 259 distinguishes single-part and multi-part MAC. The general §6.1 Data rule conflicts for multipart calls when both Init Indicator and Final Indicator are false.",
+      "scope_disposition": "client_1_0",
+      "status": "mapped_to_approved_feature_contract",
+      "review_note": "Source table field contract mapped through KMIPKIT-ELEM-OP-C2S-MAC and KMIPKIT-0021 FR-004; this row does not create a standalone REQ record.",
+      "contract_kind": "operation_request_table_field",
+      "table_number": 259,
+      "requiredness": "Yes for single-part. No for multi-part.",
+      "operation_element_id": "KMIPKIT-ELEM-OP-C2S-MAC",
+      "functional_requirement_ids": [
+        "FR-004"
+      ],
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/mac.rs::MacRequest::to_ttlv_payload"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/mac_operation_tests.rs::request_requires_single_part_data_and_omits_data_for_multipart"
+      ],
+      "evidence_disposition": {
+        "status": "unresolved_source_conflict",
+        "conflict_source_gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1-PARAGRAPH-009",
+        "conflicting_source": "KMIP Specification v2.1 §6.1 Table 259 marks Data Yes for single-part and No for multi-part; §6.1 lines 22498–22499 say Data is always required except when Init Indicator or Final Indicator is true.",
+        "claim": "No conformance claim is made for Data omission when both Init Indicator and Final Indicator are false."
+      }
+    },
+    {
+      "gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.32-CORRELATION-VALUE-OPTIONAL",
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+      "source_section": "6.1.32",
+      "source_clause_id": null,
+      "source_locator": {
+        "kind": "table_body_row",
+        "section": "6.1.32",
+        "row_label": "Correlation Value",
+        "table": "request_payload",
+        "html_line_range": [
+          30077,
+          30094
+        ]
+      },
+      "source_locator_description": "§6.1.32 MAC request payload body row for Correlation Value (HTML lines 30077–30094)",
+      "html_line_range": [
+        30077,
+        30094
+      ],
+      "source_excerpt": "Correlation Value No Specifies the existing stream or by-parts cryptographic operation (as returned from a previous call to this operation).",
+      "source_keywords": [],
+      "source_force": "optional_table_body_value",
+      "audited_statement": "Table 259 marks Correlation Value optional and describes it as the value returned by a previous call for an existing stream or by-parts operation.",
+      "actor": "client",
+      "direction": "client→server MAC request",
+      "condition": "The client may supply the value returned by an earlier call to continue an existing stream or by-parts MAC operation.",
+      "scope_disposition": "client_1_0",
+      "status": "mapped_to_approved_feature_contract",
+      "review_note": "Source table field contract mapped through KMIPKIT-ELEM-OP-C2S-MAC and KMIPKIT-0021 FR-004; this row does not create a standalone REQ record.",
+      "contract_kind": "operation_request_table_field",
+      "table_number": 259,
+      "requiredness": "No",
+      "operation_element_id": "KMIPKIT-ELEM-OP-C2S-MAC",
+      "functional_requirement_ids": [
+        "FR-004"
+      ],
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/mac.rs::MacRequest::to_ttlv_payload"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/mac_operation_tests.rs::request_emits_optional_identifier_and_parameters_before_input_and_framing"
+      ],
+      "evidence_disposition": {
+        "status": "mapped_to_feature_contract",
+        "statement": "Implementation and executable tests are linked through KMIPKIT-ELEM-OP-C2S-MAC and KMIPKIT-0021 FR-004; this table cell does not create a standalone REQ record."
+      }
+    },
+    {
+      "gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.32-INIT-INDICATOR-OPTIONAL",
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+      "source_section": "6.1.32",
+      "source_clause_id": null,
+      "source_locator": {
+        "kind": "table_body_row",
+        "section": "6.1.32",
+        "row_label": "Init Indicator",
+        "table": "request_payload",
+        "html_line_range": [
+          30095,
+          30110
+        ]
+      },
+      "source_locator_description": "§6.1.32 MAC request payload body row for Init Indicator (HTML lines 30095–30110)",
+      "html_line_range": [
+        30095,
+        30110
+      ],
+      "source_excerpt": "Init Indicator No Initial operation as Boolean",
+      "source_keywords": [],
+      "source_force": "optional_table_body_value",
+      "audited_statement": "Table 259 marks Init Indicator optional and describes it as a Boolean identifying an initial operation.",
+      "actor": "client",
+      "direction": "client→server MAC request",
+      "condition": "The client may supply a Boolean identifying an initial MAC operation.",
+      "scope_disposition": "client_1_0",
+      "status": "mapped_to_approved_feature_contract",
+      "review_note": "Source table field contract mapped through KMIPKIT-ELEM-OP-C2S-MAC and KMIPKIT-0021 FR-004; this row does not create a standalone REQ record.",
+      "contract_kind": "operation_request_table_field",
+      "table_number": 259,
+      "requiredness": "No",
+      "operation_element_id": "KMIPKIT-ELEM-OP-C2S-MAC",
+      "functional_requirement_ids": [
+        "FR-004"
+      ],
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/mac.rs::MacRequest::to_ttlv_payload"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/mac_operation_tests.rs::request_emits_optional_identifier_and_parameters_before_input_and_framing"
+      ],
+      "evidence_disposition": {
+        "status": "mapped_to_feature_contract",
+        "statement": "Implementation and executable tests are linked through KMIPKIT-ELEM-OP-C2S-MAC and KMIPKIT-0021 FR-004; this table cell does not create a standalone REQ record."
+      }
+    },
+    {
+      "gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.32-FINAL-INDICATOR-OPTIONAL",
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+      "source_section": "6.1.32",
+      "source_clause_id": null,
+      "source_locator": {
+        "kind": "table_body_row",
+        "section": "6.1.32",
+        "row_label": "Final Indicator",
+        "table": "request_payload",
+        "html_line_range": [
+          30111,
+          30127
+        ]
+      },
+      "source_locator_description": "§6.1.32 MAC request payload body row for Final Indicator (HTML lines 30111–30127)",
+      "html_line_range": [
+        30111,
+        30127
+      ],
+      "source_excerpt": "Final Indicator No Final operation as Boolean",
+      "source_keywords": [],
+      "source_force": "optional_table_body_value",
+      "audited_statement": "Table 259 marks Final Indicator optional and describes it as a Boolean identifying a final operation.",
+      "actor": "client",
+      "direction": "client→server MAC request",
+      "condition": "The client may supply a Boolean identifying a final MAC operation.",
+      "scope_disposition": "client_1_0",
+      "status": "mapped_to_approved_feature_contract",
+      "review_note": "Source table field contract mapped through KMIPKIT-ELEM-OP-C2S-MAC and KMIPKIT-0021 FR-004; this row does not create a standalone REQ record.",
+      "contract_kind": "operation_request_table_field",
+      "table_number": 259,
+      "requiredness": "No",
+      "operation_element_id": "KMIPKIT-ELEM-OP-C2S-MAC",
+      "functional_requirement_ids": [
+        "FR-004"
+      ],
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/mac.rs::MacRequest::to_ttlv_payload"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/mac_operation_tests.rs::request_emits_optional_identifier_and_parameters_before_input_and_framing"
+      ],
+      "evidence_disposition": {
+        "status": "mapped_to_feature_contract",
+        "statement": "Implementation and executable tests are linked through KMIPKIT-ELEM-OP-C2S-MAC and KMIPKIT-0021 FR-004; this table cell does not create a standalone REQ record."
       }
     }
   ]

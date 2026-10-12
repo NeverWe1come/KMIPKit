@@ -1901,7 +1901,7 @@ def validate_source_table_contracts(oracle: object, repo_root: Path) -> list[str
         disposition = contract.get("evidence_disposition")
         if not isinstance(disposition, dict) or not isinstance(disposition.get("status"), str):
             diagnostics.append(f"{label}.evidence_disposition must record an explicit status")
-        elif locator and locator.get("row_label") == "Data" and table_number == 235:
+        elif locator and locator.get("row_label") == "Data" and table_number in {235, 259, 334}:
             claim = disposition.get("claim")
             if (
                 disposition.get("status") != "unresolved_source_conflict"
