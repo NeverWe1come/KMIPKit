@@ -108,9 +108,9 @@ Record separate Red, Green, and Refactor commit IDs per story. The implementatio
 
 ## Final PR #99 verification (2026-10-12)
 
-- PR: [#99](https://github.com/NeverWe1come/KMIPKit/pull/99), branch `feature/KMIPKIT-0037-ci-evidence`, final verified head `33bbaad78f623d11f46240460eaf148529ba819c`; base `release/1.0.0` at `7a430d5f382c2726e2167bc9d703f8957a8b7acc`.
-- GitHub Actions run [38245298488](https://github.com/NeverWe1come/KMIPKit/actions/runs/38245298488): `gh pr checks 99 --json name,state` reported **33 SUCCESS, 2 SKIPPED, 0 failed, 0 pending**. The skipped jobs were scheduled release dependency policy and informational nightly coverage.
+- PR: [#99](https://github.com/NeverWe1come/KMIPKit/pull/99), branch `feature/KMIPKIT-0037-ci-evidence`, final verified head `4f7c13ae4061cde96078d916d5830bad9fc990f3`; base `release/1.0.0` at `7a430d5f382c2726e2167bc9d703f8957a8b7acc`.
+- GitHub Actions run [38247165872](https://github.com/NeverWe1come/KMIPKit/actions/runs/38247165872): `gh pr checks 99 --json name,state` reported **33 SUCCESS, 2 SKIPPED, 0 failed, 0 pending**. The skipped jobs were scheduled release dependency policy and informational nightly coverage.
 - Core checks passed on Linux, macOS, and Windows for Rust 1.94/stable; C consumers passed on Linux/macOS/Windows; Java/JNI integration passed on Linux/macOS/Windows; Python bindings passed on Linux/macOS/Windows; C/JNI sanitizers, dependency policy, documentation/traceability, normative inventory, fuzz smoke, and script contracts passed. Coverage passed on Linux/macOS/Windows and the selected-scope aggregate gate passed.
-- Independent QA reviewed the final PR diff at `33bbaad7` and found no blocker. Focused rechecks passed: Import protocol 10/10, Derive Key protocol 10/10, Import client 1/1, `cargo fmt --all --check`, and `git diff --check`.
+- Independent QA reviewed the implementation diff at `33bbaad7`, then reviewed the current-head verification update at `4f7c13ae`; no blocker remained. Focused rechecks passed: Import protocol 10/10, Derive Key protocol 10/10, Import client 1/1, `cargo fmt --all --check`, and `git diff --check`.
 - The exact-range Codex Security review of the implementation diff completed with zero reportable candidates (`6bc360b3-9696-4f16-990d-95a6a1d19aa3`). The later changes on this branch are documentation-only.
 - These checks close T022 and T023. T018's four-language API mappings and the generated API artifacts in T021 remain gated on the approved KMIPKIT-0043 mapping; this PR does not claim those API tasks complete.
