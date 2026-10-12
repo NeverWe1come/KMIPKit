@@ -304,6 +304,27 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
                     self.assertIn(profile_id, requirement["profile_ids"])
                     self.assertIn(requirement_id, actual_profile["requirement_ids"])
 
+    def test_client_profiles_audit_the_inherited_baseline_authentication_requirement(self) -> None:
+        """Client profile dependencies inherit Baseline Client's §3.1 requirement mapping."""
+        oracle_path = ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json"
+        oracle = json.loads(oracle_path.read_text(encoding="utf-8"))
+        clause_id = "KMIPKIT-CLAUSE-PROF-3.1-001"
+        requirement_id = "KMIPKIT-REQ-PROF-3.1-001"
+        basic_auth_inclusion = "KMIPKIT-INCLUSION-PROF-BASELINE-BASIC-AUTH"
+        baseline_profile = "KMIPKIT-PROFILE-BASELINE-CLIENT"
+
+        for profile in oracle["profiles"]:
+            profile_id = profile["profile_id"]
+            with self.subTest(profile_id=profile_id):
+                self.assertIn(clause_id, profile["source_clause_ids"])
+                self.assertIn(basic_auth_inclusion, profile["normative_inclusion_ids"])
+                if profile_id != baseline_profile:
+                    self.assertIn(baseline_profile, profile["dependency_profile_ids"])
+                self.assertTrue(
+                    requirement_id in profile["requirement_ids_audited_subset"],
+                    f"missing inherited requirement {requirement_id}",
+                )
+
     def test_source_oracle_covers_all_profiles_and_expected_scope_counts(self) -> None:
         oracle_path = ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json"
         oracle = json.loads(oracle_path.read_text(encoding="utf-8"))
