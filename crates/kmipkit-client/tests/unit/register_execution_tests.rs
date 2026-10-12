@@ -8,7 +8,7 @@ use kmipkit_protocol::{AttributeSet, CheckRequest, ObjectType, RegisterRequest};
 use kmipkit_test_support::ExchangeScript;
 use kmipkit_transport::RequestDeliveryState;
 use kmipkit_ttlv::codec::{CodecLimits, decode};
-use kmipkit_ttlv::{Value, ValueView};
+use kmipkit_ttlv::{Item, StructureView, Value, ValueView};
 
 use crate::asynchronous_execution_test_support::client_for;
 use crate::execute_test_support::{asynchronous_response_bytes, test_item, test_structure};
@@ -130,101 +130,131 @@ fn request_fields(bytes: &[u8], item_index: usize) -> (Option<u32>, Vec<u32>, Ve
     })
 }
 
-fn register_certificate_fields(bytes: &[u8]) -> (u32, Vec<u32>, i32, u32, Vec<u8>) {
+struct RegisterCertificateFields {
+    object_type: u32,
+    attribute_tags: Vec<u32>,
+    attribute_certificate_type: u32,
+    certificate_length: i32,
+    certificate_type: u32,
+    certificate_der: Vec<u8>,
+}
+
+fn structure_value<R>(
+    value: ValueView<'_>,
+    description: &str,
+    inspect: impl FnOnce(&StructureView<'_>) -> R,
+) -> R {
+    let ValueView::Structure(structure) = value else {
+        panic!("{description} is a Structure");
+    };
+    inspect(&structure)
+}
+
+fn with_structure<R>(
+    item: &Item,
+    description: &str,
+    inspect: impl FnOnce(&StructureView<'_>) -> R,
+) -> R {
+    item.with_value(|value| structure_value(value, description, inspect))
+}
+
+fn required_field<'a>(structure: &'a StructureView<'_>, tag: u32, description: &str) -> &'a Item {
+    structure
+        .children()
+        .iter()
+        .find(|field| field.tag().raw() == tag)
+        .unwrap_or_else(|| panic!("{description} is present"))
+}
+
+fn enumeration_field(structure: &StructureView<'_>, tag: u32, description: &str) -> u32 {
+    required_field(structure, tag, description).with_value(|value| match value {
+        ValueView::Enumeration(raw) => *raw,
+        _ => panic!("{description} is an Enumeration"),
+    })
+}
+
+fn integer_field(structure: &StructureView<'_>, tag: u32, description: &str) -> i32 {
+    required_field(structure, tag, description).with_value(|value| match value {
+        ValueView::Integer(integer) => *integer,
+        _ => panic!("{description} is an Integer"),
+    })
+}
+
+fn byte_string_field(structure: &StructureView<'_>, tag: u32, description: &str) -> Vec<u8> {
+    required_field(structure, tag, description).with_value(|value| match value {
+        ValueView::ByteString(bytes) => bytes.to_vec(),
+        _ => panic!("{description} is a Byte String"),
+    })
+}
+
+fn register_certificate_attribute_fields(attributes: &StructureView<'_>) -> (Vec<u32>, u32, i32) {
+    let tags = attributes
+        .children()
+        .iter()
+        .map(|field| field.tag().raw())
+        .collect();
+    let certificate_type =
+        enumeration_field(attributes, CERTIFICATE_TYPE, "Attributes Certificate Type");
+    let certificate_length = integer_field(
+        attributes,
+        CERTIFICATE_LENGTH,
+        "Attributes Certificate Length",
+    );
+    (tags, certificate_type, certificate_length)
+}
+
+fn register_certificate_object_fields(certificate: &StructureView<'_>) -> (u32, Vec<u8>) {
+    (
+        enumeration_field(
+            certificate,
+            CERTIFICATE_TYPE,
+            "Certificate object Certificate Type",
+        ),
+        byte_string_field(
+            certificate,
+            CERTIFICATE_VALUE,
+            "Certificate object Certificate Value",
+        ),
+    )
+}
+
+fn register_certificate_payload_fields(payload: &StructureView<'_>) -> RegisterCertificateFields {
+    let object_type = enumeration_field(payload, OBJECT_TYPE, "Register Object Type");
+    let (attribute_tags, attribute_certificate_type, certificate_length) = with_structure(
+        required_field(payload, ATTRIBUTES, "Register Attributes"),
+        "Attributes",
+        register_certificate_attribute_fields,
+    );
+    let (certificate_type, certificate_der) = with_structure(
+        required_field(payload, CERTIFICATE, "Register Certificate object"),
+        "Certificate object",
+        register_certificate_object_fields,
+    );
+    RegisterCertificateFields {
+        object_type,
+        attribute_tags,
+        attribute_certificate_type,
+        certificate_length,
+        certificate_type,
+        certificate_der,
+    }
+}
+
+fn register_certificate_fields(bytes: &[u8]) -> RegisterCertificateFields {
     let message = decode(bytes).expect("captured request has valid TTLV framing");
     message.with_value(|value| {
-        let ValueView::Structure(message) = value else {
-            panic!("KMIP request message is a Structure");
-        };
-        let batch = message
-            .children()
-            .iter()
-            .find(|field| field.tag().raw() == BATCH_ITEM)
-            .expect("Register request contains a Batch Item");
-        batch.with_value(|value| {
-            let ValueView::Structure(batch) = value else {
-                panic!("Batch Item is a Structure");
-            };
-            let payload = batch
-                .children()
-                .iter()
-                .find(|field| field.tag().raw() == REQUEST_PAYLOAD)
-                .expect("Register request contains a Request Payload");
-            payload.with_value(|value| {
-                let ValueView::Structure(payload) = value else {
-                    panic!("Request Payload is a Structure");
-                };
-                let object_type = payload
-                    .children()
-                    .iter()
-                    .find(|field| field.tag().raw() == OBJECT_TYPE)
-                    .expect("Register request contains Object Type")
-                    .with_value(|value| match value {
-                        ValueView::Enumeration(raw) => *raw,
-                        _ => panic!("Object Type is an Enumeration"),
-                    });
-                let attributes = payload
-                    .children()
-                    .iter()
-                    .find(|field| field.tag().raw() == ATTRIBUTES)
-                    .expect("Register request contains Attributes");
-                let (attribute_tags, certificate_length) = attributes.with_value(|value| {
-                    let ValueView::Structure(attributes) = value else {
-                        panic!("Attributes is a Structure");
-                    };
-                    let tags = attributes
-                        .children()
-                        .iter()
-                        .map(|field| field.tag().raw())
-                        .collect();
-                    let length = attributes
-                        .children()
-                        .iter()
-                        .find(|field| field.tag().raw() == CERTIFICATE_LENGTH)
-                        .expect("Attributes contains Certificate Length")
-                        .with_value(|value| match value {
-                            ValueView::Integer(length) => *length,
-                            _ => panic!("Certificate Length is an Integer"),
-                        });
-                    (tags, length)
-                });
-                let certificate = payload
-                    .children()
-                    .iter()
-                    .find(|field| field.tag().raw() == CERTIFICATE)
-                    .expect("Register request contains the Certificate object");
-                let (certificate_type, certificate_der) = certificate.with_value(|value| {
-                    let ValueView::Structure(certificate) = value else {
-                        panic!("Certificate object is a Structure");
-                    };
-                    let certificate_type = certificate
-                        .children()
-                        .iter()
-                        .find(|field| field.tag().raw() == CERTIFICATE_TYPE)
-                        .expect("Certificate object contains Certificate Type")
-                        .with_value(|value| match value {
-                            ValueView::Enumeration(raw) => *raw,
-                            _ => panic!("Certificate Type is an Enumeration"),
-                        });
-                    let certificate_der = certificate
-                        .children()
-                        .iter()
-                        .find(|field| field.tag().raw() == CERTIFICATE_VALUE)
-                        .expect("Certificate object contains Certificate Value")
-                        .with_value(|value| match value {
-                            ValueView::ByteString(bytes) => bytes.to_vec(),
-                            _ => panic!("Certificate Value is a Byte String"),
-                        });
-                    (certificate_type, certificate_der)
-                });
-                (
-                    object_type,
-                    attribute_tags,
-                    certificate_length,
-                    certificate_type,
-                    certificate_der,
-                )
-            })
+        structure_value(value, "KMIP request message", |message| {
+            with_structure(
+                required_field(message, BATCH_ITEM, "Register Batch Item"),
+                "Batch Item",
+                |batch| {
+                    with_structure(
+                        required_field(batch, REQUEST_PAYLOAD, "Register Request Payload"),
+                        "Request Payload",
+                        register_certificate_payload_fields,
+                    )
+                },
+            )
         })
     })
 }
@@ -414,26 +444,36 @@ fn register_client_omits_signature_algorithm_when_x509_certificate_encodes_it() 
 
     let request = captured.borrow();
     let request = request.as_deref().expect("fake transport captured request");
-    let (object_type, attribute_tags, certificate_length, certificate_type, certificate_der) =
-        register_certificate_fields(request);
-    assert_eq!(object_type, 1, "Object Type is Certificate");
-    assert_eq!(certificate_type, 1, "Certificate Type is X.509");
+    let fields = register_certificate_fields(request);
+    assert_eq!(fields.object_type, 1, "Object Type is Certificate");
     assert_eq!(
-        certificate_length,
+        fields.attribute_certificate_type, 1,
+        "Certificate Type attribute is X.509"
+    );
+    assert_eq!(
+        fields.certificate_type, 1,
+        "Certificate object type is X.509"
+    );
+    assert_eq!(
+        fields.certificate_length,
         i32::try_from(OASIS_PKCS12_STEP_2_CERTIFICATE_DER.len())
             .expect("OASIS fixture length fits KMIP Integer")
     );
     assert!(
-        attribute_tags.contains(&CERTIFICATE_LENGTH),
+        fields.attribute_tags.contains(&CERTIFICATE_TYPE),
+        "Table 293 Certificate Type is serialized"
+    );
+    assert!(
+        fields.attribute_tags.contains(&CERTIFICATE_LENGTH),
         "Table 293 Certificate Length is serialized"
     );
     assert!(
-        !attribute_tags.contains(&DIGITAL_SIGNATURE_ALGORITHM),
+        !fields.attribute_tags.contains(&DIGITAL_SIGNATURE_ALGORITHM),
         "Digital Signature Algorithm is omitted from Attributes"
     );
-    assert_eq!(certificate_der, OASIS_PKCS12_STEP_2_CERTIFICATE_DER);
+    assert_eq!(fields.certificate_der, OASIS_PKCS12_STEP_2_CERTIFICATE_DER);
     assert_eq!(
-        certificate_signature_algorithm_oid(&certificate_der),
+        certificate_signature_algorithm_oid(&fields.certificate_der),
         [0x2a, 0x86, 0x48, 0x86, 0xf7, 0x0d, 0x01, 0x01, 0x0b],
         "X.509 signatureAlgorithm contains SHA256withRSA OID 1.2.840.113549.1.1.11"
     );
