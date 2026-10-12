@@ -55389,10 +55389,10 @@
       "section": "6.1.6",
       "scope": "client_1_0",
       "apiState": "blocked",
-      "blockedReason": "No owner specification is linked; the operation remains blocked until an owner is approved.",
+      "blockedReason": "The owner specification is approved, but the canonical Rust API and four-language parity evidence are not complete.",
       "ownerDependency": {
-        "state": "unassigned",
-        "specId": null
+        "state": "approved",
+        "specId": "KMIPKIT-0036"
       }
     },
     {
@@ -55401,10 +55401,10 @@
       "section": "6.1.7",
       "scope": "client_1_0",
       "apiState": "blocked",
-      "blockedReason": "No owner specification is linked; the operation remains blocked until an owner is approved.",
+      "blockedReason": "The owner specification is approved, but the canonical Rust API and four-language parity evidence are not complete.",
       "ownerDependency": {
-        "state": "unassigned",
-        "specId": null
+        "state": "approved",
+        "specId": "KMIPKIT-0036"
       }
     },
     {
@@ -55461,10 +55461,10 @@
       "section": "6.1.12",
       "scope": "client_1_0",
       "apiState": "blocked",
-      "blockedReason": "No owner specification is linked; the operation remains blocked until an owner is approved.",
+      "blockedReason": "The owner specification is approved, but the canonical Rust API and four-language parity evidence are not complete.",
       "ownerDependency": {
-        "state": "unassigned",
-        "specId": null
+        "state": "approved",
+        "specId": "KMIPKIT-0038"
       }
     },
     {
@@ -55485,10 +55485,10 @@
       "section": "6.1.14",
       "scope": "client_1_0",
       "apiState": "blocked",
-      "blockedReason": "No owner specification is linked; the operation remains blocked until an owner is approved.",
+      "blockedReason": "The owner specification is approved, but the canonical Rust API and four-language parity evidence are not complete.",
       "ownerDependency": {
-        "state": "unassigned",
-        "specId": null
+        "state": "approved",
+        "specId": "KMIPKIT-0037"
       }
     },
     {
@@ -55533,10 +55533,10 @@
       "section": "6.1.18",
       "scope": "client_1_0",
       "apiState": "blocked",
-      "blockedReason": "No owner specification is linked; the operation remains blocked until an owner is approved.",
+      "blockedReason": "The owner specification is approved, but the canonical Rust API and four-language parity evidence are not complete.",
       "ownerDependency": {
-        "state": "unassigned",
-        "specId": null
+        "state": "approved",
+        "specId": "KMIPKIT-0037"
       }
     },
     {
@@ -55581,10 +55581,10 @@
       "section": "6.1.22",
       "scope": "client_1_0",
       "apiState": "blocked",
-      "blockedReason": "No owner specification is linked; the operation remains blocked until an owner is approved.",
+      "blockedReason": "The owner specification is approved, but the canonical Rust API and four-language parity evidence are not complete.",
       "ownerDependency": {
-        "state": "unassigned",
-        "specId": null
+        "state": "approved",
+        "specId": "KMIPKIT-0039"
       }
     },
     {
@@ -55593,10 +55593,10 @@
       "section": "6.1.23",
       "scope": "client_1_0",
       "apiState": "blocked",
-      "blockedReason": "No owner specification is linked; the operation remains blocked until an owner is approved.",
+      "blockedReason": "The owner specification is approved, but the canonical Rust API and four-language parity evidence are not complete.",
       "ownerDependency": {
-        "state": "unassigned",
-        "specId": null
+        "state": "approved",
+        "specId": "KMIPKIT-0039"
       }
     },
     {
@@ -55617,10 +55617,10 @@
       "section": "6.1.25",
       "scope": "client_1_0",
       "apiState": "blocked",
-      "blockedReason": "No owner specification is linked; the operation remains blocked until an owner is approved.",
+      "blockedReason": "The owner specification is approved, but the canonical Rust API and four-language parity evidence are not complete.",
       "ownerDependency": {
-        "state": "unassigned",
-        "specId": null
+        "state": "approved",
+        "specId": "KMIPKIT-0037"
       }
     },
     {
@@ -55629,10 +55629,10 @@
       "section": "6.1.26",
       "scope": "client_1_0",
       "apiState": "blocked",
-      "blockedReason": "No owner specification is linked; the operation remains blocked until an owner is approved.",
+      "blockedReason": "The owner specification is approved, but the canonical Rust API and four-language parity evidence are not complete.",
       "ownerDependency": {
-        "state": "unassigned",
-        "specId": null
+        "state": "approved",
+        "specId": "KMIPKIT-0042"
       }
     },
     {
@@ -55641,10 +55641,10 @@
       "section": "6.1.27",
       "scope": "client_1_0",
       "apiState": "blocked",
-      "blockedReason": "No owner specification is linked; the operation remains blocked until an owner is approved.",
+      "blockedReason": "The owner specification is approved, but the canonical Rust API and four-language parity evidence are not complete.",
       "ownerDependency": {
-        "state": "unassigned",
-        "specId": null
+        "state": "approved",
+        "specId": "KMIPKIT-0037"
       }
     },
     {
@@ -55665,10 +55665,10 @@
       "section": "6.1.29",
       "scope": "client_1_0",
       "apiState": "blocked",
-      "blockedReason": "No owner specification is linked; the operation remains blocked until an owner is approved.",
+      "blockedReason": "The owner specification is approved, but the canonical Rust API and four-language parity evidence are not complete.",
       "ownerDependency": {
-        "state": "unassigned",
-        "specId": null
+        "state": "approved",
+        "specId": "KMIPKIT-0042"
       }
     },
     {
@@ -55677,10 +55677,10 @@
       "section": "6.1.30",
       "scope": "client_1_0",
       "apiState": "blocked",
-      "blockedReason": "No owner specification is linked; the operation remains blocked until an owner is approved.",
+      "blockedReason": "The owner specification is approved, but the canonical Rust API and four-language parity evidence are not complete.",
       "ownerDependency": {
-        "state": "unassigned",
-        "specId": null
+        "state": "approved",
+        "specId": "KMIPKIT-0038"
       }
     },
     {
@@ -55689,10 +55689,10 @@
       "section": "6.1.31",
       "scope": "client_1_0",
       "apiState": "blocked",
-      "blockedReason": "No owner specification is linked; the operation remains blocked until an owner is approved.",
+      "blockedReason": "The owner specification is approved, but the canonical Rust API and four-language parity evidence are not complete.",
       "ownerDependency": {
-        "state": "unassigned",
-        "specId": null
+        "state": "approved",
+        "specId": "KMIPKIT-0038"
       }
     },
     {
@@ -55737,10 +55737,10 @@
       "section": "6.1.35",
       "scope": "client_1_0",
       "apiState": "blocked",
-      "blockedReason": "No owner specification is linked; the operation remains blocked until an owner is approved.",
+      "blockedReason": "The owner specification is approved, but the canonical Rust API and four-language parity evidence are not complete.",
       "ownerDependency": {
-        "state": "unassigned",
-        "specId": null
+        "state": "approved",
+        "specId": "KMIPKIT-0036"
       }
     },
     {
@@ -55761,10 +55761,10 @@
       "section": "6.1.37",
       "scope": "client_1_0",
       "apiState": "blocked",
-      "blockedReason": "No owner specification is linked; the operation remains blocked until an owner is approved.",
+      "blockedReason": "The owner specification is approved, but the canonical Rust API and four-language parity evidence are not complete.",
       "ownerDependency": {
-        "state": "unassigned",
-        "specId": null
+        "state": "approved",
+        "specId": "KMIPKIT-0040"
       }
     },
     {
@@ -55833,10 +55833,10 @@
       "section": "6.1.43",
       "scope": "client_1_0",
       "apiState": "blocked",
-      "blockedReason": "No owner specification is linked; the operation remains blocked until an owner is approved.",
+      "blockedReason": "The owner specification is approved, but the canonical Rust API and four-language parity evidence are not complete.",
       "ownerDependency": {
-        "state": "unassigned",
-        "specId": null
+        "state": "approved",
+        "specId": "KMIPKIT-0036"
       }
     },
     {
@@ -55845,10 +55845,10 @@
       "section": "6.1.44",
       "scope": "client_1_0",
       "apiState": "blocked",
-      "blockedReason": "No owner specification is linked; the operation remains blocked until an owner is approved.",
+      "blockedReason": "The owner specification is approved, but the canonical Rust API and four-language parity evidence are not complete.",
       "ownerDependency": {
-        "state": "unassigned",
-        "specId": null
+        "state": "approved",
+        "specId": "KMIPKIT-0036"
       }
     },
     {
@@ -55857,10 +55857,10 @@
       "section": "6.1.45",
       "scope": "client_1_0",
       "apiState": "blocked",
-      "blockedReason": "No owner specification is linked; the operation remains blocked until an owner is approved.",
+      "blockedReason": "The owner specification is approved, but the canonical Rust API and four-language parity evidence are not complete.",
       "ownerDependency": {
-        "state": "unassigned",
-        "specId": null
+        "state": "approved",
+        "specId": "KMIPKIT-0036"
       }
     },
     {
@@ -55869,10 +55869,10 @@
       "section": "6.1.46",
       "scope": "client_1_0",
       "apiState": "blocked",
-      "blockedReason": "No owner specification is linked; the operation remains blocked until an owner is approved.",
+      "blockedReason": "The owner specification is approved, but the canonical Rust API and four-language parity evidence are not complete.",
       "ownerDependency": {
-        "state": "unassigned",
-        "specId": null
+        "state": "approved",
+        "specId": "KMIPKIT-0036"
       }
     },
     {
@@ -55881,10 +55881,10 @@
       "section": "6.1.47",
       "scope": "client_1_0",
       "apiState": "blocked",
-      "blockedReason": "No owner specification is linked; the operation remains blocked until an owner is approved.",
+      "blockedReason": "The owner specification is approved, but the canonical Rust API and four-language parity evidence are not complete.",
       "ownerDependency": {
-        "state": "unassigned",
-        "specId": null
+        "state": "approved",
+        "specId": "KMIPKIT-0036"
       }
     },
     {
@@ -55893,10 +55893,10 @@
       "section": "6.1.48",
       "scope": "client_1_0",
       "apiState": "blocked",
-      "blockedReason": "No owner specification is linked; the operation remains blocked until an owner is approved.",
+      "blockedReason": "The owner specification is approved, but the canonical Rust API and four-language parity evidence are not complete.",
       "ownerDependency": {
-        "state": "unassigned",
-        "specId": null
+        "state": "approved",
+        "specId": "KMIPKIT-0036"
       }
     },
     {
@@ -55905,10 +55905,10 @@
       "section": "6.1.49",
       "scope": "client_1_0",
       "apiState": "blocked",
-      "blockedReason": "No owner specification is linked; the operation remains blocked until an owner is approved.",
+      "blockedReason": "The owner specification is approved, but the canonical Rust API and four-language parity evidence are not complete.",
       "ownerDependency": {
-        "state": "unassigned",
-        "specId": null
+        "state": "approved",
+        "specId": "KMIPKIT-0041"
       }
     },
     {
@@ -55917,10 +55917,10 @@
       "section": "6.1.50",
       "scope": "client_1_0",
       "apiState": "blocked",
-      "blockedReason": "No owner specification is linked; the operation remains blocked until an owner is approved.",
+      "blockedReason": "The owner specification is approved, but the canonical Rust API and four-language parity evidence are not complete.",
       "ownerDependency": {
-        "state": "unassigned",
-        "specId": null
+        "state": "approved",
+        "specId": "KMIPKIT-0041"
       }
     },
     {
@@ -55941,10 +55941,10 @@
       "section": "6.1.52",
       "scope": "client_1_0",
       "apiState": "blocked",
-      "blockedReason": "No owner specification is linked; the operation remains blocked until an owner is approved.",
+      "blockedReason": "The owner specification is approved, but the canonical Rust API and four-language parity evidence are not complete.",
       "ownerDependency": {
-        "state": "unassigned",
-        "specId": null
+        "state": "approved",
+        "specId": "KMIPKIT-0039"
       }
     },
     {
@@ -55953,10 +55953,10 @@
       "section": "6.1.53",
       "scope": "client_1_0",
       "apiState": "blocked",
-      "blockedReason": "No owner specification is linked; the operation remains blocked until an owner is approved.",
+      "blockedReason": "The owner specification is approved, but the canonical Rust API and four-language parity evidence are not complete.",
       "ownerDependency": {
-        "state": "unassigned",
-        "specId": null
+        "state": "approved",
+        "specId": "KMIPKIT-0039"
       }
     },
     {
@@ -55989,10 +55989,10 @@
       "section": "6.1.57",
       "scope": "client_1_0",
       "apiState": "blocked",
-      "blockedReason": "No owner specification is linked; the operation remains blocked until an owner is approved.",
+      "blockedReason": "The owner specification is approved, but the canonical Rust API and four-language parity evidence are not complete.",
       "ownerDependency": {
-        "state": "unassigned",
-        "specId": null
+        "state": "approved",
+        "specId": "KMIPKIT-0042"
       }
     }
   ],

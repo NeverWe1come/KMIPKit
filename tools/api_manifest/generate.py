@@ -461,6 +461,24 @@ def _manifest_file(root: Path, relative_path: Any) -> tuple[Path, str]:
 def _feature_directory(root: Path, feature_id: Any) -> Path:
     if not isinstance(feature_id, str) or re.fullmatch(r"KMIPKIT-[0-9]{4}", feature_id) is None:
         raise ManifestError("manifest feature owner ID is invalid")
+
+    branch_pattern = re.compile(
+        rf"(?m)^\*\*Feature Branch\*\*:\s*`?feature/{re.escape(feature_id)}(?:[-`\s]|$)"
+    )
+    branch_matches: list[Path] = []
+    for spec_path in (root / "specs").glob("*/spec.md"):
+        try:
+            spec_text = spec_path.read_text(encoding="utf-8")
+        except (OSError, UnicodeDecodeError) as error:
+            raise ManifestError("feature specification is missing or unreadable") from error
+        if branch_pattern.search(spec_text):
+            branch_matches.append(spec_path.parent)
+
+    if len(branch_matches) == 1:
+        return branch_matches[0]
+    if len(branch_matches) > 1:
+        raise ManifestError("manifest feature owner resolves to multiple specifications")
+
     number = int(feature_id[-4:])
     prefix = f"{number:03d}-"
     matches = sorted((root / "specs").glob(f"{prefix}*"))
