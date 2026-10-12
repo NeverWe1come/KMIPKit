@@ -13275,6 +13275,7 @@ class CatalogValidationTests(unittest.TestCase):
                 self.assertEqual(mappings[0]["scope_state"], "profile_conditional")
                 self.assertEqual(mappings[0]["applies_to"], profile_id)
                 review = next(row for row in oracle["source_requirement_reviews"] if row["source_clause_id"] == requirement["source_clause_ids"][0])
+                self.assertEqual(review["expected_client_requirement_ids"], [requirement_id])
                 atom = next(row for row in review["source_obligations"] if row["candidate_requirement_id"] == requirement_id)
                 self.assertEqual(atom["actor"], "client")
                 self.assertEqual(atom["scope_disposition"], "profile_conditional")
