@@ -13,6 +13,7 @@ from jsonschema import Draft202012Validator
 from tools.api_manifest.generate import (
     ManifestError,
     _validate_operation_inventory,
+    _validate_references,
     _validate_v2_readiness,
 )
 
@@ -261,6 +262,34 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
 
     def test_checked_in_manifest_resolves_all_public_declaration_mappings(self) -> None:
         _validate_v2_readiness(self.checked_in_manifest, ROOT)
+
+    def test_error_categories_resolve_to_canonical_language_exports(self) -> None:
+        manifest = json.loads(json.dumps(self.checked_in_manifest))
+        manifest["errorCategories"][0]["pythonException"] = "kmipkit.errors.MissingError"
+
+        with self.assertRaisesRegex(ManifestError, "error category references an undeclared language export"):
+            _validate_references(manifest)
+
+    def test_checked_in_error_categories_keep_real_python_names_and_status_values(self) -> None:
+        categories = {
+            item["id"]: item for item in self.checked_in_manifest["errorCategories"]
+        }
+        self.assertEqual(
+            [categories[name]["pythonException"] for name in (
+                "compatibility_mismatch", "duplicate_key", "invalid_identity"
+            )],
+            [
+                "kmipkit.errors.CompatibilityMismatchError",
+                "kmipkit.errors.DuplicateKeyError",
+                "kmipkit.errors.InvalidIdentityError",
+            ],
+        )
+        self.assertEqual(
+            [categories[name]["cValue"] for name in (
+                "compatibility_mismatch", "duplicate_key", "invalid_identity"
+            )],
+            [1, 2, 3],
+        )
 
     def test_readiness_rejects_duplicate_package_export_declarations(self) -> None:
         manifest = json.loads(json.dumps(self.checked_in_manifest))
@@ -771,7 +800,13 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
             for exclusion in self.checked_in_manifest["approvedExclusions"]
             if exclusion["packageId"] == "c-kmipkit"
         }
-        self.assertEqual(header_functions, by_kind["c-symbol"] | excluded_c_functions)
+        published_header_symbols = {
+            name for name in by_kind["c-symbol"] if name.startswith("kmipkit_")
+        }
+        self.assertEqual(
+            header_functions,
+            published_header_symbols | excluded_c_functions,
+        )
 
         header_types = set(
             re.findall(r"^typedef struct \w+\s+(kmipkit_\w+);$", header, re.MULTILINE)
