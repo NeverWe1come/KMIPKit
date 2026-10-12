@@ -49,7 +49,7 @@ class ProfileGenerationError(ValueError):
 def _is_unresolved_client_scope(requirement: Mapping[str, Any]) -> bool:
     """Return whether a source obligation may apply to clients but is unresolved."""
     scope_state = requirement.get("scope_state")
-    if requirement.get("role") == "unspecified":
+    if requirement.get("role") in {"unclear", "unspecified"}:
         return scope_state == "unclear"
     if requirement.get("role") not in {"client", "both"}:
         return False

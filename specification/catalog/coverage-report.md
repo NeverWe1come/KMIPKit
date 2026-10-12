@@ -60,15 +60,15 @@ This report records inventory coverage and evidence state. It does not claim pro
 | Strength | recommended | 21 |
 | Scope | client\_1\_0 | 215 |
 | Scope | mixed | 2 |
-| Scope | out\_of\_scope | 66 |
-| Scope | profile\_conditional | 201 |
+| Scope | out\_of\_scope | 70 |
+| Scope | profile\_conditional | 195 |
 | Scope | server\_only | 42 |
-| Scope | unclear | 69 |
+| Scope | unclear | 71 |
 | Direction | both | 10 |
-| Direction | client\_to\_server | 363 |
-| Direction | not\_applicable | 62 |
+| Direction | client\_to\_server | 360 |
+| Direction | not\_applicable | 64 |
 | Direction | server\_to\_client | 19 |
-| Direction | unclear | 141 |
+| Direction | unclear | 142 |
 
 ## Tag allocation and ranges
 
@@ -568,13 +568,13 @@ Every row summarizes audited candidate locators by their pinned source section. 
 | KMIPKIT-REQ-PROF-3.2.2-001 | mandatory | profile\_conditional | KMIPKIT-SRC-profiles §3.2.2 |
 | KMIPKIT-REQ-PROF-3.2.3-001 | mandatory | profile\_conditional | KMIPKIT-SRC-profiles §3.2.3 |
 | KMIPKIT-REQ-PROF-3.2.4-002 | mandatory | profile\_conditional | KMIPKIT-SRC-profiles §3.2.4 |
-| KMIPKIT-REQ-PROF-4.1-001 | permission\_or\_optional | profile\_conditional | KMIPKIT-SRC-profiles §4.1 |
-| KMIPKIT-REQ-PROF-4.1-003 | mandatory | profile\_conditional | KMIPKIT-SRC-profiles §4.1 |
-| KMIPKIT-REQ-PROF-4.1.2-001 | mandatory | profile\_conditional | KMIPKIT-SRC-profiles §4.1.2 |
-| KMIPKIT-REQ-PROF-4.1.2-005 | permission\_or\_optional | profile\_conditional | KMIPKIT-SRC-profiles §4.1.2 |
+| KMIPKIT-REQ-PROF-4.1-001 | permission\_or\_optional | out\_of\_scope | KMIPKIT-SRC-profiles §4.1 |
+| KMIPKIT-REQ-PROF-4.1-003 | mandatory | out\_of\_scope | KMIPKIT-SRC-profiles §4.1 |
+| KMIPKIT-REQ-PROF-4.1.2-001 | mandatory | unclear | KMIPKIT-SRC-profiles §4.1.2 |
+| KMIPKIT-REQ-PROF-4.1.2-005 | permission\_or\_optional | unclear | KMIPKIT-SRC-profiles §4.1.2 |
 | KMIPKIT-REQ-PROF-4.1.2-007 | permission\_or\_optional | profile\_conditional | KMIPKIT-SRC-profiles §4.1.2 |
-| KMIPKIT-REQ-PROF-4.1.2-008 | permission\_or\_optional | profile\_conditional | KMIPKIT-SRC-profiles §4.1.2 |
-| KMIPKIT-REQ-PROF-4.1.2-009 | permission\_or\_optional | profile\_conditional | KMIPKIT-SRC-profiles §4.1.2 |
+| KMIPKIT-REQ-PROF-4.1.2-008 | permission\_or\_optional | out\_of\_scope | KMIPKIT-SRC-profiles §4.1.2 |
+| KMIPKIT-REQ-PROF-4.1.2-009 | permission\_or\_optional | out\_of\_scope | KMIPKIT-SRC-profiles §4.1.2 |
 | KMIPKIT-REQ-PROF-5.10.1-001 | mandatory | profile\_conditional | KMIPKIT-SRC-profiles §5.10.1 |
 | KMIPKIT-REQ-PROF-5.10.1-002 | permission\_or\_optional | profile\_conditional | KMIPKIT-SRC-profiles §5.10.1 |
 | KMIPKIT-REQ-PROF-5.10.1-003 | permission\_or\_optional | profile\_conditional | KMIPKIT-SRC-profiles §5.10.1 |
