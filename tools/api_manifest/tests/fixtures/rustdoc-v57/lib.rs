@@ -37,6 +37,35 @@ mod hidden_view {
 
 pub use hidden_view::View as Alias;
 
+mod alpha_view {
+    pub struct AlphaView<'a> {
+        value: &'a u8,
+    }
+
+    impl<'b> AlphaView<'b> {
+        pub fn get(&self) -> &u8 {
+            self.value
+        }
+    }
+}
+
+pub use alpha_view::AlphaView as AlphaAlias;
+
+pub struct LifetimeBound<T> {
+    value: T,
+}
+
+pub type LifetimeBoundAlias<'a> = LifetimeBound<&'a u8>;
+
+impl<'a> LifetimeBound<&'a u8>
+where
+    'a: 'static,
+{
+    pub fn only_when_static(&self) -> &u8 {
+        self.value
+    }
+}
+
 pub trait Audit {
     fn required(&self) -> u8;
 }

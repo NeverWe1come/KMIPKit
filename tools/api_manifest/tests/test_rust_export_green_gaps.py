@@ -115,7 +115,11 @@ class RustExportGreenGapTests(unittest.TestCase):
         documents = self.fixture_without_static_contract()
         document = documents["rustdoc_v57_fixture"]
         index = document["index"]
-        view = next(item for item in index.values() if item.get("name") == "View")
+        use_item = next(
+            item for item in index.values()
+            if item.get("inner", {}).get("use", {}).get("name") == "Alias"
+        )
+        view = index[str(use_item["inner"]["use"]["id"])]
         implementation = index[str(view["inner"]["struct"]["impls"][0])]["inner"]["impl"]
         self.assertIsNone(implementation["trait"])
         self.assertEqual(implementation["generics"]["params"], [])
@@ -128,10 +132,14 @@ class RustExportGreenGapTests(unittest.TestCase):
         names = {declaration["exportName"] for declaration in report["declarations"]}
         view_methods = {
             name for name in names
-            if name.endswith("::get") and ("Alias" in name or "View" in name)
+            if name.endswith("::get")
+            and name.rsplit("::", 2)[-2].split("<", 1)[0] in {"Alias", "View"}
         }
 
-        self.assertEqual(view_methods, {"rustdoc_v57_fixture::Alias::get"})
+        normalized_view_methods = {
+            self.audit._canonical_export_name(name) for name in view_methods
+        }
+        self.assertEqual(normalized_view_methods, {"rustdoc_v57_fixture::Alias::get"})
 
     def test_inventory_is_invariant_to_root_item_order(self):
         original = self.fixture_without_static_contract()
