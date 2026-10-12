@@ -189,7 +189,7 @@ fn single_item_request_may_include_or_omit_unique_batch_item_id() {
         assert_eq!(
             encoded_ids,
             expected_id
-                .map(|id| id.to_vec())
+                .map(<[u8]>::to_vec)
                 .into_iter()
                 .collect::<Vec<_>>()
         );

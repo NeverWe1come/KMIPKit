@@ -131,11 +131,11 @@ impl ProfileExchangeValidator for ResponseRejectingProfile {
         let request_operation = request
             .batch_items()
             .next()
-            .and_then(|item| item.operation());
+            .and_then(kmipkit_protocol::RequestBatchItemView::operation);
         let response_operation = response
             .batch_items()
             .next()
-            .and_then(|item| item.operation());
+            .and_then(kmipkit_protocol::ResponseBatchItemView::operation);
         let has_matching_single_item = request.batch_items().len() == 1
             && response.batch_items().len() == 1
             && request_operation.is_some()

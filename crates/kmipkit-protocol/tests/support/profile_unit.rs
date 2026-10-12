@@ -407,7 +407,7 @@ fn minimum_capability_rules_do_not_reject_an_extra_base_protocol_operation() {
         request
             .batch_items()
             .next()
-            .and_then(|item| item.operation()),
+            .and_then(crate::RequestBatchItemView::operation),
         Some(0x1E),
         "the synthetic extra operation is Discover Versions"
     );
