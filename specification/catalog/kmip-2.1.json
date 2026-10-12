@@ -90605,7 +90605,7 @@
         "crates/kmipkit-client/tests/unit/attribute_read_execution_tests.rs",
         "crates/kmipkit-protocol/tests/unit/add_attribute_tests.rs",
         "crates/kmipkit-protocol/tests/unit/attribute_roundtrip_tests.rs",
-        "crates/kmipkit-protocol/tests/unit/attribute_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/attribute_tests.rs::property_roundtrips_ordered_repeated_direct_attribute_items",
         "crates/kmipkit-protocol/tests/unit/delete_attribute_tests.rs",
         "crates/kmipkit-protocol/tests/unit/get_attributes_tests.rs",
         "crates/kmipkit-protocol/tests/unit/modify_attribute_tests.rs",
@@ -90613,8 +90613,8 @@
       ],
       "negative_verification_required": false,
       "decision_id": null,
-      "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
+      "status": "verified",
+      "review_note": "KMIP Specification v2.1 §5.1 permits repeated §4 Object Attributes in the general Attributes structure. The local positive property test verifies ordered repeated direct attribute items survive TTLV round trips. No requirement-specific official Test Cases ID is linked by the pinned OASIS sources; local evidence does not claim formal conformance."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-5.2-001",
@@ -93370,12 +93370,12 @@
         "crates/kmipkit-client/tests/unit/attribute_read_execution_tests.rs",
         "crates/kmipkit-protocol/tests/unit/attribute_roundtrip_tests.rs",
         "crates/kmipkit-protocol/tests/unit/attribute_tests.rs",
-        "crates/kmipkit-protocol/tests/unit/get_attributes_tests.rs"
+        "crates/kmipkit-protocol/tests/unit/get_attributes_tests.rs::request_follows_table_223_order_and_allows_repeated_reference_fields"
       ],
       "negative_verification_required": false,
       "decision_id": null,
-      "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
+      "status": "verified",
+      "review_note": "KMIP Specification v2.1 §6.1.20 permits a client to request and repeat Attribute Reference fields, subject to the separate prohibition on repeating the same reference. The local positive request test verifies ordered, distinct repeated references. No requirement-specific official Test Cases ID is linked by the pinned OASIS sources; local evidence does not claim formal conformance."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.23-001-001",
@@ -94786,12 +94786,12 @@
         "crates/kmipkit-client/tests/unit/attribute_mutation_execution_tests.rs",
         "crates/kmipkit-protocol/tests/unit/attribute_roundtrip_tests.rs",
         "crates/kmipkit-protocol/tests/unit/attribute_tests.rs",
-        "crates/kmipkit-protocol/tests/unit/modify_attribute_tests.rs"
+        "crates/kmipkit-protocol/tests/unit/modify_attribute_tests.rs::request_omits_current_attribute_without_selecting_an_instance_locally"
       ],
       "negative_verification_required": false,
       "decision_id": null,
-      "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
+      "status": "verified",
+      "review_note": "KMIP Specification v2.1 §6.1.34 makes Current Attribute optional for Modify Attribute when the object has one instance; selecting an instance is a server responsibility. The local positive request test verifies that the client can omit Current Attribute without selecting an instance locally. No requirement-specific official Test Cases ID is linked by the pinned OASIS sources; local evidence does not claim formal conformance."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.34-001-002",
