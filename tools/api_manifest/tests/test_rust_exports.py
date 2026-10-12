@@ -226,6 +226,15 @@ class RustExportAuditTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "duplicate"):
             self.audit.compare(self.inventory({"sample": document("sample", [], [])}), {"publicDeclarations": [row, dict(row)]})
 
+    def test_missing_exact_toolchain_is_rejected_before_rustup_can_download_it(self):
+        require_toolchain = getattr(self.audit, "require_installed_toolchain", None)
+        self.assertIsNotNone(require_toolchain, "the runner needs an offline installed-toolchain guard")
+        for installed in ["", "1.94-x86_64-pc-windows-msvc\n", "stable-x86_64-unknown-linux-gnu (default)\n"]:
+            with self.subTest(installed=installed), self.assertRaisesRegex(ValueError, "already installed"):
+                require_toolchain(installed)
+        require_toolchain("1.94.0-x86_64-pc-windows-msvc\n")
+        require_toolchain("stable-x86_64-unknown-linux-gnu (default)\n1.94.0-x86_64-unknown-linux-gnu\n")
+
 
 if __name__ == "__main__":
     unittest.main()
