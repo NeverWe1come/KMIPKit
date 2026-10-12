@@ -313,15 +313,23 @@ def _literal_all(tree: ast.Module, visible_names: set[str]) -> tuple[list[str] |
             return sorted(name for name in visible_names if any(name.startswith(prefix) for prefix in prefixes))
         return None
 
+    current: list[str] | None = None
     for statement in tree.body:
         if isinstance(statement, (ast.Assign, ast.AnnAssign)):
             targets = statement.targets if isinstance(statement, ast.Assign) else [statement.target]
             if any(isinstance(target, ast.Name) and target.id == "__all__" for target in targets):
                 values = evaluate(statement.value)
-                if values is not None:
-                    return values, None
+                if values is None:
+                    return None, "dynamic-all"
+                current = values
+        elif isinstance(statement, ast.AugAssign) and isinstance(statement.target, ast.Name) and statement.target.id == "__all__":
+            if not isinstance(statement.op, ast.Add) or current is None:
                 return None, "dynamic-all"
-    return None, None
+            values = evaluate(statement.value)
+            if values is None:
+                return None, "dynamic-all"
+            current.extend(values)
+    return current, None
 
 
 def inventory_python_sources(sources: dict[str, str], package: str = "python-kmipkit") -> dict[str, Any]:
