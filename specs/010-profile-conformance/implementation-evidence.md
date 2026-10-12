@@ -1278,3 +1278,13 @@ Profiles v2.1 §5.13.1 item 2 (pinned HTML lines 8990–8991) grants the AES XTS
 | Refactor — retain an exact, auditable source disposition | Documentation-only evidence update | The catalog and oracle preserve the exact 5.10.1 text, open discrepancy ID, unassigned implementation/verification, and deterministic generated closure/report. No runtime behavior changed. |
 | Independent QA | Read-only review of the Green diff from `38d39584` | No findings. The oracle has 469 crosswalk rows, 890 source reviews, 108 source gaps, 54 unresolved proposals, and 62 table contracts; the AES XTS closure is 904 clauses / 230 requirements. The source discrepancy remains open and no support is claimed. |
 | Global acceptance status | `py -3 -B -m unittest tools.normative_catalog.tests.test_validate.CatalogValidationTests.test_reviewed_source_requirement_mappings_match_pinned_locators_and_scope -v` | Still fails on 59 other source-mapping gaps; the new Profiles item-2 mismatch is absent. This narrow mapping correction does not complete KMIPKIT-0010 or establish profile conformance. |
+
+### KMIPKIT-0010 — Refresh the profile ownership crosswalk count (2026-10-12)
+
+Adding `KMIPKIT-REQ-PROF-5.13.1-002` increased the in-scope profile requirement count from 158 to 159. The feature traceability contract correctly caught its now-stale expected count; the ownership assertion itself remains unchanged and the new requirement is owned by KMIPKIT-0010.
+
+| Phase | Commit and command | Result |
+|---|---|---|
+| Failing contract observed | Before `8d43e4f2`; `py -3 -B -m unittest discover -s tools/normative_catalog/tests -p test_feature_traceability.py -v` | Expected failure: `test_profile_requirements_are_owned_by_profile_conformance` reported expected 158, actual 159. |
+| Green — update the explicit catalog crosswalk count | `8d43e4f2`; same unittest discovery command; `git diff --check` | PASS: all 16 traceability tests pass; one Windows symlink-permission case is skipped. No generated files or runtime code changed. |
+| Refactor — document the CI-discovered contract correction | Documentation-only evidence update | The count change and exact verification are recorded here. |
