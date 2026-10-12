@@ -253,6 +253,57 @@ class OperationReadinessSchemaTests(unittest.TestCase):
         operation["declarations"] = _four_language_mappings()
         self.assertTrue(self.errors(manifest))
 
+    def test_approved_release_operations_resolve_to_their_current_owner_specs(self) -> None:
+        manifest = json.loads((ROOT / "specification" / "api" / "public-api.json").read_text(encoding="utf-8"))
+        expected_owner_by_section = {
+            "6.1.6": "KMIPKIT-0036",
+            "6.1.7": "KMIPKIT-0036",
+            "6.1.8": "KMIPKIT-0014",
+            "6.1.9": "KMIPKIT-0014",
+            "6.1.10": "KMIPKIT-0014",
+            "6.1.12": "KMIPKIT-0038",
+            "6.1.14": "KMIPKIT-0037",
+            "6.1.16": "KMIPKIT-0007",
+            "6.1.18": "KMIPKIT-0037",
+            "6.1.19": "KMIPKIT-0017",
+            "6.1.22": "KMIPKIT-0039",
+            "6.1.23": "KMIPKIT-0039",
+            "6.1.24": "KMIPKIT-0021",
+            "6.1.25": "KMIPKIT-0037",
+            "6.1.26": "KMIPKIT-0042",
+            "6.1.27": "KMIPKIT-0037",
+            "6.1.28": "KMIPKIT-0017",
+            "6.1.29": "KMIPKIT-0042",
+            "6.1.30": "KMIPKIT-0038",
+            "6.1.31": "KMIPKIT-0038",
+            "6.1.32": "KMIPKIT-0021",
+            "6.1.33": "KMIPKIT-0021",
+            "6.1.35": "KMIPKIT-0036",
+            "6.1.37": "KMIPKIT-0040",
+            "6.1.43": "KMIPKIT-0036",
+            "6.1.44": "KMIPKIT-0036",
+            "6.1.45": "KMIPKIT-0036",
+            "6.1.46": "KMIPKIT-0036",
+            "6.1.47": "KMIPKIT-0036",
+            "6.1.48": "KMIPKIT-0036",
+            "6.1.49": "KMIPKIT-0041",
+            "6.1.50": "KMIPKIT-0041",
+            "6.1.52": "KMIPKIT-0039",
+            "6.1.53": "KMIPKIT-0039",
+            "6.1.55": "KMIPKIT-0021",
+            "6.1.56": "KMIPKIT-0021",
+            "6.1.57": "KMIPKIT-0042",
+        }
+
+        operation_by_section = {
+            operation["section"]: operation for operation in manifest["operations"]
+        }
+        self.assertEqual(len(expected_owner_by_section), 37)
+        for section, spec_id in expected_owner_by_section.items():
+            with self.subTest(section=section):
+                dependency = operation_by_section[section]["ownerDependency"]
+                self.assertEqual(dependency, {"state": "approved", "specId": spec_id})
+
     def test_checked_in_operation_dependencies_resolve_against_dependency_matrix(self) -> None:
         manifest = json.loads((ROOT / "specification" / "api" / "public-api.json").read_text(encoding="utf-8"))
         _validate_v2_readiness(self, manifest, ROOT)
