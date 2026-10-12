@@ -13,8 +13,6 @@ const SUCCESS: u32 = 0;
 const OPERATION_FAILED: u32 = 1;
 const UNIQUE_IDENTIFIER: u32 = 0x0042_0094;
 const OBJECT_TYPE: u32 = 0x0042_0057;
-// OASIS KMIP 2.1 §11.56 assigns Replace Existing tag 0x420124.
-const REPLACE_EXISTING: u32 = 0x0042_0124;
 const KEY_WRAP_TYPE: u32 = 0x0042_00F8;
 const ATTRIBUTES: u32 = 0x0042_0125;
 const SYMMETRIC_KEY: u32 = 0x0042_008F;
@@ -203,7 +201,8 @@ fn replacement_and_conditional_wrap_type_are_preserved_without_unwrapping() {
         vec![
             UNIQUE_IDENTIFIER,
             OBJECT_TYPE,
-            REPLACE_EXISTING,
+            // OASIS KMIP 2.1 §11.56 assigns Replace Existing tag 0x420124.
+            0x0042_0124,
             KEY_WRAP_TYPE,
             ATTRIBUTES,
             SYMMETRIC_KEY,
