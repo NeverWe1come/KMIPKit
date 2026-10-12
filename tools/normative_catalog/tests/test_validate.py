@@ -15316,6 +15316,23 @@ class CatalogValidationTests(unittest.TestCase):
 
         self.assertEqual(violations, [], "pinned-source requirement review mismatches: " + "; ".join(violations))
 
+    def test_profile_section_three_channel_clause_preserves_unresolved_scope(self) -> None:
+        """Profiles §3 clause 2 leaves endpoint role and direction unspecified."""
+        catalog = json.loads(
+            (ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8")
+        )
+        clause = next(
+            row
+            for row in catalog["source_clauses"]
+            if row["clause_id"] == "KMIPKIT-CLAUSE-PROF-3-002"
+        )
+
+        self.assertEqual(clause["role"], "unclear")
+        self.assertEqual(clause["direction"], "unclear")
+        self.assertEqual(clause["scope_state"], "unclear")
+        self.assertEqual(clause["disposition"], "profile_conditional")
+        self.assertTrue(clause["condition"])
+
     def test_profile_section_three_channel_security_does_not_invent_client_actor(self) -> None:
         """Profiles §3 clause 2 names channel properties, not a client endpoint."""
         oracle = json.loads(
