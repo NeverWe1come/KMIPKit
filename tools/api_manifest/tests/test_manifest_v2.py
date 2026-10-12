@@ -293,6 +293,12 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
                 self.assertEqual(declaration["capabilityId"], "ffi_runtime_metadata")
                 self.assertEqual(declaration["declarationState"], "declared")
 
+
+    def test_runtime_metadata_namespace_exports_remain_blocked_under_0043(self) -> None:
+        declarations = {
+            (entry["packageId"], entry["exportName"]): entry
+            for entry in self.checked_in_manifest["publicDeclarations"]
+        }
         blocked_namespace_candidates = {
             ("java-kmipkit", "org.kmipkit.RuntimeMetadata"): "KMIPKIT-0043",
             ("python-kmipkit", "kmipkit.metadata"): "KMIPKIT-0043",
