@@ -562,26 +562,12 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
         self.assertEqual(transport["capabilityState"], "declared")
         self.assertEqual(transport["ownerAdrId"], "ADR-0014")
 
-    def test_checked_in_manifest_accounts_for_c_struct_fields_and_ttlv_macros(self) -> None:
+    def test_checked_in_manifest_maps_ttlv_item_type_macros_and_blocks_unversioned_fields(self) -> None:
         declarations = {
             declaration["exportName"]: declaration
             for declaration in self.checked_in_manifest["publicDeclarations"]
         }
-        exports = [
-            *(f"kmipkit_extension_registry_limits_t.{name}" for name in (
-                "max_definitions",
-                "max_schema_nodes",
-                "max_child_rules_per_structure",
-                "max_text_bytes_per_field",
-                "max_registry_text_bytes",
-                "max_discriminator_scalar_bytes",
-                "max_total_discriminator_scalar_bytes",
-                "max_constraint_members_per_rule",
-                "max_total_constraint_members",
-                "max_payload_index_records",
-                "max_lookup_comparisons",
-                "max_depth",
-            )),
+        macro_exports = [
             *(f"KMIPKIT_TTLV_ITEM_TYPE_{name}" for name in (
                 "STRUCTURE",
                 "INTEGER",
@@ -596,8 +582,37 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
                 "DATE_TIME_EXTENDED",
             )),
         ]
-        self.assertEqual(len(exports), len(set(exports)))
-        for export_name in exports:
+        field_exports = [
+            f"kmipkit_extension_registry_limits_t.{name}"
+            for name in (
+                "max_definitions",
+                "max_schema_nodes",
+                "max_child_rules_per_structure",
+                "max_text_bytes_per_field",
+                "max_registry_text_bytes",
+                "max_discriminator_scalar_bytes",
+                "max_total_discriminator_scalar_bytes",
+                "max_constraint_members_per_rule",
+                "max_total_constraint_members",
+                "max_payload_index_records",
+                "max_lookup_comparisons",
+                "max_depth",
+            )
+        ]
+        self.assertEqual(len(macro_exports), len(set(macro_exports)))
+        self.assertEqual(len(field_exports), len(set(field_exports)))
+        item_type = next(
+            item_type
+            for item_type in self.checked_in_manifest["types"]
+            if item_type["id"] == "TtlvItemType"
+        )
+        item_type_codes = {
+            f"KMIPKIT_TTLV_ITEM_TYPE_{re.sub(r'(?<!^)(?=[A-Z])', '_', value['name']).upper()}": value[
+                "value"
+            ]
+            for value in item_type["enumRepresentation"]["values"]
+        }
+        for export_name in macro_exports:
             with self.subTest(export_name=export_name):
                 declaration = declarations[export_name]
                 self.assertEqual(declaration["declarationState"], "declared")
@@ -606,9 +621,7 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
                 self.assertIn("approvalSource", declaration)
                 self.assertEqual(
                     declaration["capabilityId"],
-                    "vendor_extension_registry"
-                    if export_name.startswith("kmipkit_extension_registry_limits_t.")
-                    else "generic_ttlv_model",
+                    "generic_ttlv_model",
                 )
                 self.assertEqual(
                     set(declaration["languageMappings"]),
@@ -619,10 +632,40 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
                 )
                 self.assertEqual(
                     declaration["approvalSource"]["path"],
-                    "specs/012-vendor-extension-registry/spec.md"
-                    if export_name.startswith("kmipkit_extension_registry_limits_t.")
-                    else "specs/004-generic-ttlv-model/spec.md",
+                    "specs/004-generic-ttlv-model/spec.md",
                 )
+                self.assertEqual(
+                    set(declaration["requirementIds"]),
+                    {
+                        "KMIPKIT-0004-FR-001",
+                        "KMIPKIT-0043-FR-004",
+                        "KMIPKIT-0043-FR-010",
+                        "KMIPKIT-0043-FR-021",
+                    },
+                )
+                suffix = export_name.removeprefix("KMIPKIT_TTLV_ITEM_TYPE_")
+                variant = "".join(part.title() for part in suffix.split("_"))
+                self.assertEqual(item_type_codes[export_name], macro_exports.index(export_name) + 1)
+                self.assertEqual(
+                    declaration["languageMappings"]["rust"]["name"],
+                    f"kmipkit_ttlv::ItemType::{variant}",
+                )
+                self.assertEqual(
+                    declaration["languageMappings"]["java"]["name"],
+                    f"org.kmipkit.ttlv.TtlvItemType.{variant}",
+                )
+                self.assertEqual(
+                    declaration["languageMappings"]["python"]["name"],
+                    f"kmipkit.ttlv.ItemType.{variant}",
+                )
+        for export_name in field_exports:
+            with self.subTest(export_name=export_name):
+                declaration = declarations[export_name]
+                self.assertEqual(declaration["declarationState"], "blocked")
+                self.assertEqual(declaration["candidateSpecId"], "KMIPKIT-0012")
+                self.assertIn("versioned", declaration["blockedReason"])
+                self.assertNotIn("approvalSource", declaration)
+                self.assertNotIn("languageMappings", declaration)
 
     def test_checked_in_manifest_inventories_all_rust_public_access_paths(self) -> None:
         rust_packages = EXPECTED_PACKAGES - {"c-kmipkit", "java-kmipkit", "python-kmipkit"}

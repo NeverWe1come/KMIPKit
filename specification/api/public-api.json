@@ -31534,7 +31534,7 @@
       "declarationState": "blocked",
       "parityScope": "four-language",
       "candidateSpecId": "KMIPKIT-0012",
-      "blockedReason": "This public C structure field is present in the header but has no reviewed declaration mapping in the v2 manifest."
+      "blockedReason": "These fields expose an unversioned C/Rust layout. The approved ABI requires versioned public structures; current C limits APIs use scalar arguments and do not require this layout."
     },
     {
       "declarationId": "c-field-extension-registry-limits-max_schema_nodes",
@@ -31548,7 +31548,7 @@
       "declarationState": "blocked",
       "parityScope": "four-language",
       "candidateSpecId": "KMIPKIT-0012",
-      "blockedReason": "This public C structure field is present in the header but has no reviewed declaration mapping in the v2 manifest."
+      "blockedReason": "These fields expose an unversioned C/Rust layout. The approved ABI requires versioned public structures; current C limits APIs use scalar arguments and do not require this layout."
     },
     {
       "declarationId": "c-field-extension-registry-limits-max_child_rules_per_structure",
@@ -31562,7 +31562,7 @@
       "declarationState": "blocked",
       "parityScope": "four-language",
       "candidateSpecId": "KMIPKIT-0012",
-      "blockedReason": "This public C structure field is present in the header but has no reviewed declaration mapping in the v2 manifest."
+      "blockedReason": "These fields expose an unversioned C/Rust layout. The approved ABI requires versioned public structures; current C limits APIs use scalar arguments and do not require this layout."
     },
     {
       "declarationId": "c-field-extension-registry-limits-max_text_bytes_per_field",
@@ -31576,7 +31576,7 @@
       "declarationState": "blocked",
       "parityScope": "four-language",
       "candidateSpecId": "KMIPKIT-0012",
-      "blockedReason": "This public C structure field is present in the header but has no reviewed declaration mapping in the v2 manifest."
+      "blockedReason": "These fields expose an unversioned C/Rust layout. The approved ABI requires versioned public structures; current C limits APIs use scalar arguments and do not require this layout."
     },
     {
       "declarationId": "c-field-extension-registry-limits-max_registry_text_bytes",
@@ -31590,7 +31590,7 @@
       "declarationState": "blocked",
       "parityScope": "four-language",
       "candidateSpecId": "KMIPKIT-0012",
-      "blockedReason": "This public C structure field is present in the header but has no reviewed declaration mapping in the v2 manifest."
+      "blockedReason": "These fields expose an unversioned C/Rust layout. The approved ABI requires versioned public structures; current C limits APIs use scalar arguments and do not require this layout."
     },
     {
       "declarationId": "c-field-extension-registry-limits-max_discriminator_scalar_bytes",
@@ -31604,7 +31604,7 @@
       "declarationState": "blocked",
       "parityScope": "four-language",
       "candidateSpecId": "KMIPKIT-0012",
-      "blockedReason": "This public C structure field is present in the header but has no reviewed declaration mapping in the v2 manifest."
+      "blockedReason": "These fields expose an unversioned C/Rust layout. The approved ABI requires versioned public structures; current C limits APIs use scalar arguments and do not require this layout."
     },
     {
       "declarationId": "c-field-extension-registry-limits-max_total_discriminator_scalar_bytes",
@@ -31618,7 +31618,7 @@
       "declarationState": "blocked",
       "parityScope": "four-language",
       "candidateSpecId": "KMIPKIT-0012",
-      "blockedReason": "This public C structure field is present in the header but has no reviewed declaration mapping in the v2 manifest."
+      "blockedReason": "These fields expose an unversioned C/Rust layout. The approved ABI requires versioned public structures; current C limits APIs use scalar arguments and do not require this layout."
     },
     {
       "declarationId": "c-field-extension-registry-limits-max_constraint_members_per_rule",
@@ -31632,7 +31632,7 @@
       "declarationState": "blocked",
       "parityScope": "four-language",
       "candidateSpecId": "KMIPKIT-0012",
-      "blockedReason": "This public C structure field is present in the header but has no reviewed declaration mapping in the v2 manifest."
+      "blockedReason": "These fields expose an unversioned C/Rust layout. The approved ABI requires versioned public structures; current C limits APIs use scalar arguments and do not require this layout."
     },
     {
       "declarationId": "c-field-extension-registry-limits-max_total_constraint_members",
@@ -31646,7 +31646,7 @@
       "declarationState": "blocked",
       "parityScope": "four-language",
       "candidateSpecId": "KMIPKIT-0012",
-      "blockedReason": "This public C structure field is present in the header but has no reviewed declaration mapping in the v2 manifest."
+      "blockedReason": "These fields expose an unversioned C/Rust layout. The approved ABI requires versioned public structures; current C limits APIs use scalar arguments and do not require this layout."
     },
     {
       "declarationId": "c-field-extension-registry-limits-max_payload_index_records",
@@ -31660,7 +31660,7 @@
       "declarationState": "blocked",
       "parityScope": "four-language",
       "candidateSpecId": "KMIPKIT-0012",
-      "blockedReason": "This public C structure field is present in the header but has no reviewed declaration mapping in the v2 manifest."
+      "blockedReason": "These fields expose an unversioned C/Rust layout. The approved ABI requires versioned public structures; current C limits APIs use scalar arguments and do not require this layout."
     },
     {
       "declarationId": "c-field-extension-registry-limits-max_lookup_comparisons",
@@ -31674,7 +31674,7 @@
       "declarationState": "blocked",
       "parityScope": "four-language",
       "candidateSpecId": "KMIPKIT-0012",
-      "blockedReason": "This public C structure field is present in the header but has no reviewed declaration mapping in the v2 manifest."
+      "blockedReason": "These fields expose an unversioned C/Rust layout. The approved ABI requires versioned public structures; current C limits APIs use scalar arguments and do not require this layout."
     },
     {
       "declarationId": "c-field-extension-registry-limits-max_depth",
@@ -31688,161 +31688,436 @@
       "declarationState": "blocked",
       "parityScope": "four-language",
       "candidateSpecId": "KMIPKIT-0012",
-      "blockedReason": "This public C structure field is present in the header but has no reviewed declaration mapping in the v2 manifest."
+      "blockedReason": "These fields expose an unversioned C/Rust layout. The approved ABI requires versioned public structures; current C limits APIs use scalar arguments and do not require this layout."
     },
     {
       "declarationId": "c-macro-ttlv-item-type-structure",
       "packageId": "c-kmipkit",
       "kind": "macro",
       "exportName": "KMIPKIT_TTLV_ITEM_TYPE_STRUCTURE",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "generic_ttlv_model",
       "requirementIds": [
+        "KMIPKIT-0004-FR-001",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-010",
         "KMIPKIT-0043-FR-021"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0004",
-      "blockedReason": "This public C TTLV item-type macro is present in the header but has no reviewed four-language declaration mapping in the v2 manifest."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/004-generic-ttlv-model/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-ttlv",
+          "name": "kmipkit_ttlv::ItemType::Structure"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "KMIPKIT_TTLV_ITEM_TYPE_STRUCTURE"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.ttlv.TtlvItemType.Structure"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.ttlv.ItemType.Structure"
+        }
+      }
     },
     {
       "declarationId": "c-macro-ttlv-item-type-integer",
       "packageId": "c-kmipkit",
       "kind": "macro",
       "exportName": "KMIPKIT_TTLV_ITEM_TYPE_INTEGER",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "generic_ttlv_model",
       "requirementIds": [
+        "KMIPKIT-0004-FR-001",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-010",
         "KMIPKIT-0043-FR-021"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0004",
-      "blockedReason": "This public C TTLV item-type macro is present in the header but has no reviewed four-language declaration mapping in the v2 manifest."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/004-generic-ttlv-model/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-ttlv",
+          "name": "kmipkit_ttlv::ItemType::Integer"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "KMIPKIT_TTLV_ITEM_TYPE_INTEGER"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.ttlv.TtlvItemType.Integer"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.ttlv.ItemType.Integer"
+        }
+      }
     },
     {
       "declarationId": "c-macro-ttlv-item-type-long-integer",
       "packageId": "c-kmipkit",
       "kind": "macro",
       "exportName": "KMIPKIT_TTLV_ITEM_TYPE_LONG_INTEGER",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "generic_ttlv_model",
       "requirementIds": [
+        "KMIPKIT-0004-FR-001",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-010",
         "KMIPKIT-0043-FR-021"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0004",
-      "blockedReason": "This public C TTLV item-type macro is present in the header but has no reviewed four-language declaration mapping in the v2 manifest."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/004-generic-ttlv-model/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-ttlv",
+          "name": "kmipkit_ttlv::ItemType::LongInteger"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "KMIPKIT_TTLV_ITEM_TYPE_LONG_INTEGER"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.ttlv.TtlvItemType.LongInteger"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.ttlv.ItemType.LongInteger"
+        }
+      }
     },
     {
       "declarationId": "c-macro-ttlv-item-type-big-integer",
       "packageId": "c-kmipkit",
       "kind": "macro",
       "exportName": "KMIPKIT_TTLV_ITEM_TYPE_BIG_INTEGER",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "generic_ttlv_model",
       "requirementIds": [
+        "KMIPKIT-0004-FR-001",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-010",
         "KMIPKIT-0043-FR-021"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0004",
-      "blockedReason": "This public C TTLV item-type macro is present in the header but has no reviewed four-language declaration mapping in the v2 manifest."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/004-generic-ttlv-model/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-ttlv",
+          "name": "kmipkit_ttlv::ItemType::BigInteger"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "KMIPKIT_TTLV_ITEM_TYPE_BIG_INTEGER"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.ttlv.TtlvItemType.BigInteger"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.ttlv.ItemType.BigInteger"
+        }
+      }
     },
     {
       "declarationId": "c-macro-ttlv-item-type-enumeration",
       "packageId": "c-kmipkit",
       "kind": "macro",
       "exportName": "KMIPKIT_TTLV_ITEM_TYPE_ENUMERATION",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "generic_ttlv_model",
       "requirementIds": [
+        "KMIPKIT-0004-FR-001",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-010",
         "KMIPKIT-0043-FR-021"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0004",
-      "blockedReason": "This public C TTLV item-type macro is present in the header but has no reviewed four-language declaration mapping in the v2 manifest."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/004-generic-ttlv-model/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-ttlv",
+          "name": "kmipkit_ttlv::ItemType::Enumeration"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "KMIPKIT_TTLV_ITEM_TYPE_ENUMERATION"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.ttlv.TtlvItemType.Enumeration"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.ttlv.ItemType.Enumeration"
+        }
+      }
     },
     {
       "declarationId": "c-macro-ttlv-item-type-boolean",
       "packageId": "c-kmipkit",
       "kind": "macro",
       "exportName": "KMIPKIT_TTLV_ITEM_TYPE_BOOLEAN",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "generic_ttlv_model",
       "requirementIds": [
+        "KMIPKIT-0004-FR-001",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-010",
         "KMIPKIT-0043-FR-021"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0004",
-      "blockedReason": "This public C TTLV item-type macro is present in the header but has no reviewed four-language declaration mapping in the v2 manifest."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/004-generic-ttlv-model/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-ttlv",
+          "name": "kmipkit_ttlv::ItemType::Boolean"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "KMIPKIT_TTLV_ITEM_TYPE_BOOLEAN"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.ttlv.TtlvItemType.Boolean"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.ttlv.ItemType.Boolean"
+        }
+      }
     },
     {
       "declarationId": "c-macro-ttlv-item-type-text-string",
       "packageId": "c-kmipkit",
       "kind": "macro",
       "exportName": "KMIPKIT_TTLV_ITEM_TYPE_TEXT_STRING",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "generic_ttlv_model",
       "requirementIds": [
+        "KMIPKIT-0004-FR-001",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-010",
         "KMIPKIT-0043-FR-021"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0004",
-      "blockedReason": "This public C TTLV item-type macro is present in the header but has no reviewed four-language declaration mapping in the v2 manifest."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/004-generic-ttlv-model/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-ttlv",
+          "name": "kmipkit_ttlv::ItemType::TextString"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "KMIPKIT_TTLV_ITEM_TYPE_TEXT_STRING"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.ttlv.TtlvItemType.TextString"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.ttlv.ItemType.TextString"
+        }
+      }
     },
     {
       "declarationId": "c-macro-ttlv-item-type-byte-string",
       "packageId": "c-kmipkit",
       "kind": "macro",
       "exportName": "KMIPKIT_TTLV_ITEM_TYPE_BYTE_STRING",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "generic_ttlv_model",
       "requirementIds": [
+        "KMIPKIT-0004-FR-001",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-010",
         "KMIPKIT-0043-FR-021"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0004",
-      "blockedReason": "This public C TTLV item-type macro is present in the header but has no reviewed four-language declaration mapping in the v2 manifest."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/004-generic-ttlv-model/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-ttlv",
+          "name": "kmipkit_ttlv::ItemType::ByteString"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "KMIPKIT_TTLV_ITEM_TYPE_BYTE_STRING"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.ttlv.TtlvItemType.ByteString"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.ttlv.ItemType.ByteString"
+        }
+      }
     },
     {
       "declarationId": "c-macro-ttlv-item-type-date-time",
       "packageId": "c-kmipkit",
       "kind": "macro",
       "exportName": "KMIPKIT_TTLV_ITEM_TYPE_DATE_TIME",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "generic_ttlv_model",
       "requirementIds": [
+        "KMIPKIT-0004-FR-001",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-010",
         "KMIPKIT-0043-FR-021"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0004",
-      "blockedReason": "This public C TTLV item-type macro is present in the header but has no reviewed four-language declaration mapping in the v2 manifest."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/004-generic-ttlv-model/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-ttlv",
+          "name": "kmipkit_ttlv::ItemType::DateTime"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "KMIPKIT_TTLV_ITEM_TYPE_DATE_TIME"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.ttlv.TtlvItemType.DateTime"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.ttlv.ItemType.DateTime"
+        }
+      }
     },
     {
       "declarationId": "c-macro-ttlv-item-type-interval",
       "packageId": "c-kmipkit",
       "kind": "macro",
       "exportName": "KMIPKIT_TTLV_ITEM_TYPE_INTERVAL",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "generic_ttlv_model",
       "requirementIds": [
+        "KMIPKIT-0004-FR-001",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-010",
         "KMIPKIT-0043-FR-021"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0004",
-      "blockedReason": "This public C TTLV item-type macro is present in the header but has no reviewed four-language declaration mapping in the v2 manifest."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/004-generic-ttlv-model/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-ttlv",
+          "name": "kmipkit_ttlv::ItemType::Interval"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "KMIPKIT_TTLV_ITEM_TYPE_INTERVAL"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.ttlv.TtlvItemType.Interval"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.ttlv.ItemType.Interval"
+        }
+      }
     },
     {
       "declarationId": "c-macro-ttlv-item-type-date-time-extended",
       "packageId": "c-kmipkit",
       "kind": "macro",
       "exportName": "KMIPKIT_TTLV_ITEM_TYPE_DATE_TIME_EXTENDED",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "generic_ttlv_model",
       "requirementIds": [
+        "KMIPKIT-0004-FR-001",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-010",
         "KMIPKIT-0043-FR-021"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0004",
-      "blockedReason": "This public C TTLV item-type macro is present in the header but has no reviewed four-language declaration mapping in the v2 manifest."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/004-generic-ttlv-model/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-ttlv",
+          "name": "kmipkit_ttlv::ItemType::DateTimeExtended"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "KMIPKIT_TTLV_ITEM_TYPE_DATE_TIME_EXTENDED"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.ttlv.TtlvItemType.DateTimeExtended"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.ttlv.ItemType.DateTimeExtended"
+        }
+      }
     },
     {
       "declarationId": "rust-observed-20adf6e437bc59d7ac3d",

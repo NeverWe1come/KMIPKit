@@ -24877,6 +24877,435 @@
     },
     {
       "approvalSource": {
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`.",
+        "kind": "feature-specification",
+        "path": "specs/004-generic-ttlv-model/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "generic_ttlv_model",
+      "declarationId": "c-macro-ttlv-item-type-structure",
+      "declarationState": "declared",
+      "exportName": "KMIPKIT_TTLV_ITEM_TYPE_STRUCTURE",
+      "kind": "macro",
+      "languageMappings": {
+        "c": {
+          "name": "KMIPKIT_TTLV_ITEM_TYPE_STRUCTURE",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.ttlv.TtlvItemType.Structure",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.ttlv.ItemType.Structure",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_ttlv::ItemType::Structure",
+          "packageId": "rust-kmipkit-ttlv"
+        }
+      },
+      "packageId": "c-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0004-FR-001",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-021"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`.",
+        "kind": "feature-specification",
+        "path": "specs/004-generic-ttlv-model/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "generic_ttlv_model",
+      "declarationId": "c-macro-ttlv-item-type-integer",
+      "declarationState": "declared",
+      "exportName": "KMIPKIT_TTLV_ITEM_TYPE_INTEGER",
+      "kind": "macro",
+      "languageMappings": {
+        "c": {
+          "name": "KMIPKIT_TTLV_ITEM_TYPE_INTEGER",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.ttlv.TtlvItemType.Integer",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.ttlv.ItemType.Integer",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_ttlv::ItemType::Integer",
+          "packageId": "rust-kmipkit-ttlv"
+        }
+      },
+      "packageId": "c-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0004-FR-001",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-021"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`.",
+        "kind": "feature-specification",
+        "path": "specs/004-generic-ttlv-model/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "generic_ttlv_model",
+      "declarationId": "c-macro-ttlv-item-type-long-integer",
+      "declarationState": "declared",
+      "exportName": "KMIPKIT_TTLV_ITEM_TYPE_LONG_INTEGER",
+      "kind": "macro",
+      "languageMappings": {
+        "c": {
+          "name": "KMIPKIT_TTLV_ITEM_TYPE_LONG_INTEGER",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.ttlv.TtlvItemType.LongInteger",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.ttlv.ItemType.LongInteger",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_ttlv::ItemType::LongInteger",
+          "packageId": "rust-kmipkit-ttlv"
+        }
+      },
+      "packageId": "c-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0004-FR-001",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-021"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`.",
+        "kind": "feature-specification",
+        "path": "specs/004-generic-ttlv-model/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "generic_ttlv_model",
+      "declarationId": "c-macro-ttlv-item-type-big-integer",
+      "declarationState": "declared",
+      "exportName": "KMIPKIT_TTLV_ITEM_TYPE_BIG_INTEGER",
+      "kind": "macro",
+      "languageMappings": {
+        "c": {
+          "name": "KMIPKIT_TTLV_ITEM_TYPE_BIG_INTEGER",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.ttlv.TtlvItemType.BigInteger",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.ttlv.ItemType.BigInteger",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_ttlv::ItemType::BigInteger",
+          "packageId": "rust-kmipkit-ttlv"
+        }
+      },
+      "packageId": "c-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0004-FR-001",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-021"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`.",
+        "kind": "feature-specification",
+        "path": "specs/004-generic-ttlv-model/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "generic_ttlv_model",
+      "declarationId": "c-macro-ttlv-item-type-enumeration",
+      "declarationState": "declared",
+      "exportName": "KMIPKIT_TTLV_ITEM_TYPE_ENUMERATION",
+      "kind": "macro",
+      "languageMappings": {
+        "c": {
+          "name": "KMIPKIT_TTLV_ITEM_TYPE_ENUMERATION",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.ttlv.TtlvItemType.Enumeration",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.ttlv.ItemType.Enumeration",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_ttlv::ItemType::Enumeration",
+          "packageId": "rust-kmipkit-ttlv"
+        }
+      },
+      "packageId": "c-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0004-FR-001",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-021"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`.",
+        "kind": "feature-specification",
+        "path": "specs/004-generic-ttlv-model/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "generic_ttlv_model",
+      "declarationId": "c-macro-ttlv-item-type-boolean",
+      "declarationState": "declared",
+      "exportName": "KMIPKIT_TTLV_ITEM_TYPE_BOOLEAN",
+      "kind": "macro",
+      "languageMappings": {
+        "c": {
+          "name": "KMIPKIT_TTLV_ITEM_TYPE_BOOLEAN",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.ttlv.TtlvItemType.Boolean",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.ttlv.ItemType.Boolean",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_ttlv::ItemType::Boolean",
+          "packageId": "rust-kmipkit-ttlv"
+        }
+      },
+      "packageId": "c-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0004-FR-001",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-021"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`.",
+        "kind": "feature-specification",
+        "path": "specs/004-generic-ttlv-model/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "generic_ttlv_model",
+      "declarationId": "c-macro-ttlv-item-type-text-string",
+      "declarationState": "declared",
+      "exportName": "KMIPKIT_TTLV_ITEM_TYPE_TEXT_STRING",
+      "kind": "macro",
+      "languageMappings": {
+        "c": {
+          "name": "KMIPKIT_TTLV_ITEM_TYPE_TEXT_STRING",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.ttlv.TtlvItemType.TextString",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.ttlv.ItemType.TextString",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_ttlv::ItemType::TextString",
+          "packageId": "rust-kmipkit-ttlv"
+        }
+      },
+      "packageId": "c-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0004-FR-001",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-021"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`.",
+        "kind": "feature-specification",
+        "path": "specs/004-generic-ttlv-model/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "generic_ttlv_model",
+      "declarationId": "c-macro-ttlv-item-type-byte-string",
+      "declarationState": "declared",
+      "exportName": "KMIPKIT_TTLV_ITEM_TYPE_BYTE_STRING",
+      "kind": "macro",
+      "languageMappings": {
+        "c": {
+          "name": "KMIPKIT_TTLV_ITEM_TYPE_BYTE_STRING",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.ttlv.TtlvItemType.ByteString",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.ttlv.ItemType.ByteString",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_ttlv::ItemType::ByteString",
+          "packageId": "rust-kmipkit-ttlv"
+        }
+      },
+      "packageId": "c-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0004-FR-001",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-021"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`.",
+        "kind": "feature-specification",
+        "path": "specs/004-generic-ttlv-model/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "generic_ttlv_model",
+      "declarationId": "c-macro-ttlv-item-type-date-time",
+      "declarationState": "declared",
+      "exportName": "KMIPKIT_TTLV_ITEM_TYPE_DATE_TIME",
+      "kind": "macro",
+      "languageMappings": {
+        "c": {
+          "name": "KMIPKIT_TTLV_ITEM_TYPE_DATE_TIME",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.ttlv.TtlvItemType.DateTime",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.ttlv.ItemType.DateTime",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_ttlv::ItemType::DateTime",
+          "packageId": "rust-kmipkit-ttlv"
+        }
+      },
+      "packageId": "c-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0004-FR-001",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-021"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`.",
+        "kind": "feature-specification",
+        "path": "specs/004-generic-ttlv-model/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "generic_ttlv_model",
+      "declarationId": "c-macro-ttlv-item-type-interval",
+      "declarationState": "declared",
+      "exportName": "KMIPKIT_TTLV_ITEM_TYPE_INTERVAL",
+      "kind": "macro",
+      "languageMappings": {
+        "c": {
+          "name": "KMIPKIT_TTLV_ITEM_TYPE_INTERVAL",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.ttlv.TtlvItemType.Interval",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.ttlv.ItemType.Interval",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_ttlv::ItemType::Interval",
+          "packageId": "rust-kmipkit-ttlv"
+        }
+      },
+      "packageId": "c-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0004-FR-001",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-021"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`.",
+        "kind": "feature-specification",
+        "path": "specs/004-generic-ttlv-model/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "generic_ttlv_model",
+      "declarationId": "c-macro-ttlv-item-type-date-time-extended",
+      "declarationState": "declared",
+      "exportName": "KMIPKIT_TTLV_ITEM_TYPE_DATE_TIME_EXTENDED",
+      "kind": "macro",
+      "languageMappings": {
+        "c": {
+          "name": "KMIPKIT_TTLV_ITEM_TYPE_DATE_TIME_EXTENDED",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.ttlv.TtlvItemType.DateTimeExtended",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.ttlv.ItemType.DateTimeExtended",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_ttlv::ItemType::DateTimeExtended",
+          "packageId": "rust-kmipkit-ttlv"
+        }
+      },
+      "packageId": "c-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0004-FR-001",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-021"
+      ]
+    },
+    {
+      "approvalSource": {
         "evidence": "**Status**: Approved for implementation under the maintainer's standing direct authorization to execute the complete KMIPKit plan without further approval requests.",
         "kind": "feature-specification",
         "path": "specs/012-vendor-extension-registry/spec.md",

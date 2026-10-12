@@ -41,6 +41,17 @@ typedef struct kmipkit_extension_child_rule_t kmipkit_extension_child_rule_t;
 typedef struct kmipkit_extension_order_constraint_t kmipkit_extension_order_constraint_t;
 
 typedef uint8_t kmipkit_ttlv_item_type_t;
+#define KMIPKIT_TTLV_ITEM_TYPE_STRUCTURE ((kmipkit_ttlv_item_type_t)1)
+#define KMIPKIT_TTLV_ITEM_TYPE_INTEGER ((kmipkit_ttlv_item_type_t)2)
+#define KMIPKIT_TTLV_ITEM_TYPE_LONG_INTEGER ((kmipkit_ttlv_item_type_t)3)
+#define KMIPKIT_TTLV_ITEM_TYPE_BIG_INTEGER ((kmipkit_ttlv_item_type_t)4)
+#define KMIPKIT_TTLV_ITEM_TYPE_ENUMERATION ((kmipkit_ttlv_item_type_t)5)
+#define KMIPKIT_TTLV_ITEM_TYPE_BOOLEAN ((kmipkit_ttlv_item_type_t)6)
+#define KMIPKIT_TTLV_ITEM_TYPE_TEXT_STRING ((kmipkit_ttlv_item_type_t)7)
+#define KMIPKIT_TTLV_ITEM_TYPE_BYTE_STRING ((kmipkit_ttlv_item_type_t)8)
+#define KMIPKIT_TTLV_ITEM_TYPE_DATE_TIME ((kmipkit_ttlv_item_type_t)9)
+#define KMIPKIT_TTLV_ITEM_TYPE_INTERVAL ((kmipkit_ttlv_item_type_t)10)
+#define KMIPKIT_TTLV_ITEM_TYPE_DATE_TIME_EXTENDED ((kmipkit_ttlv_item_type_t)11)
 
 typedef struct kmipkit_ttlv_value_t kmipkit_ttlv_value_t;
 
