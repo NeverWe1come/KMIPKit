@@ -15,6 +15,12 @@ AUDITOR = TEST_ROOT.parent / "audit_rust_exports.py"
 SPEC = importlib.util.spec_from_file_location("rust_exports", AUDITOR)
 AUDIT = importlib.util.module_from_spec(SPEC)
 SPEC.loader.exec_module(AUDIT)
+RECONCILER_PATH = TEST_ROOT.parent / "reconcile_rust_exports.py"
+RECONCILER_SPEC = importlib.util.spec_from_file_location(
+    "rust_export_reconciliation", RECONCILER_PATH
+)
+RECONCILER = importlib.util.module_from_spec(RECONCILER_SPEC)
+RECONCILER_SPEC.loader.exec_module(RECONCILER)
 CRATE = "rustdoc_v57_fixture"
 
 
@@ -278,20 +284,57 @@ class RustExportTraitPredicateTests(unittest.TestCase):
         report = AUDIT.inventory(self.fixture())
         declarations = {entry["exportName"] for entry in report["declarations"]}
         conditional = report.get("conditionalDeclarations", [])
-        conditional_names = {entry["exportName"] for entry in conditional}
         verified_paths = {
             name for name in declarations
             if " as core::convert::Into<U>>::" in name
             and ("CloneDebug" in name or "CloneDebugAlias" in name)
         }
         self.assertFalse(verified_paths, "a free target type parameter must not be advertised as verified")
-        matching = [name for name in conditional_names if " as core::convert::Into<U>>::" in name]
+        matching = [
+            entry for entry in conditional
+            if " as core::convert::Into<U>>::" in entry["exportName"]
+            and "CloneDebug" in entry["exportName"]
+        ]
         self.assertTrue(matching, "rustdoc's exact Into<U> predicate should be recorded as conditional")
+        self.assertTrue(all(entry["kind"] == "associated-item" for entry in matching))
+        self.assertTrue(all(entry["implementationId"] for entry in matching))
+        expected_condition = [{
+            "subject": "U",
+            "traitPath": ["core", "convert", "From"],
+            "arguments": ["rustdoc_v57_fixture::CloneDebug"],
+        }]
+        self.assertTrue(
+            all(entry["condition"] == expected_condition for entry in matching),
+            "conditional rows must preserve the canonical bound U: From<CloneDebug>",
+        )
         self.assertTrue(any(
             issue.get("reason") == "unresolved-rustdoc-implementation-predicate"
             and issue.get("implementationId")
             for issue in report["issues"]
         ), "unrelated predicates without proof must remain unresolved")
+
+    def test_conditional_blanket_reconciliation_preserves_bound_without_api_mapping(self):
+        condition = [{
+            "subject": "U",
+            "traitPath": ["core", "convert", "From"],
+            "arguments": ["rustdoc_v57_fixture::CloneDebug"],
+        }]
+        manifest = {"capabilities": [], "approvedExclusions": [], "publicDeclarations": []}
+        observed = {
+            "packageId": "rust-kmipkit-protocol",
+            "exportName": "<rustdoc_v57_fixture::CloneDebug as core::convert::Into<U>>::into",
+            "kind": "associated-item",
+            "implementationId": "198",
+            "condition": condition,
+        }
+
+        record = RECONCILER.blocked_record(observed, manifest)
+
+        self.assertEqual(record["declarationState"], "blocked")
+        self.assertEqual(record.get("condition"), condition)
+        self.assertNotIn("languageMappings", record)
+        self.assertNotIn("signature", record)
+        self.assertNotIn("rustSignature", record)
 
     def test_recursive_trait_proof_fails_closed_with_exact_impl_issue(self):
         documents = self.fixture()
