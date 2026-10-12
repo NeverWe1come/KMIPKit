@@ -293,13 +293,15 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
                 self.assertEqual(declaration["capabilityId"], "ffi_runtime_metadata")
                 self.assertEqual(declaration["declarationState"], "declared")
 
-        for key in (
-            ("java-kmipkit", "org.kmipkit.RuntimeMetadata"),
-            ("python-kmipkit", "kmipkit.metadata"),
-        ):
+        blocked_namespace_candidates = {
+            ("java-kmipkit", "org.kmipkit.RuntimeMetadata"): "KMIPKIT-0043",
+            ("python-kmipkit", "kmipkit.metadata"): "KMIPKIT-0043",
+        }
+        for key, candidate_spec_id in blocked_namespace_candidates.items():
             with self.subTest(declaration=key):
                 declaration = declarations[key]
                 self.assertEqual(declaration["declarationState"], "blocked")
+                self.assertEqual(declaration["candidateSpecId"], candidate_spec_id)
                 self.assertNotIn("languageMappings", declaration)
 
     def test_checked_in_manifest_retains_every_registry_slice_record(self) -> None:
