@@ -20,6 +20,7 @@ const SYMMETRIC_KEY: u32 = 2;
 const PUBLIC_KEY: u32 = 3;
 const PRIVATE_KEY: u32 = 4;
 const SPLIT_KEY: u32 = 5;
+const PGP_KEY: u32 = 9;
 const UNIQUE_IDENTIFIER: u32 = 0x0042_0094;
 const OBJECT_TYPE: u32 = 0x0042_0057;
 const KEY_BLOCK: u32 = 0x0042_0040;
@@ -184,7 +185,7 @@ fn key_wrap_type_matches_object(
 ) -> bool {
     let is_key_object = matches!(
         object_type.raw(),
-        SYMMETRIC_KEY | PUBLIC_KEY | PRIVATE_KEY | SPLIT_KEY
+        SYMMETRIC_KEY | PUBLIC_KEY | PRIVATE_KEY | SPLIT_KEY | PGP_KEY
     );
     if !is_key_object {
         return !key_wrap_type_is_present;
