@@ -14490,6 +14490,92 @@
       },
       "visibility": "public"
     },
+    "54": {
+      "attrs": [],
+      "crate_id": 0,
+      "deprecation": null,
+      "docs": null,
+      "id": 54,
+      "inner": {
+        "impl": {
+          "blanket_impl": {
+            "generic": "T"
+          },
+          "for": {
+            "resolved_path": {
+              "args": {
+                "angle_bracketed": {
+                  "args": [
+                    {
+                      "lifetime": "'a"
+                    }
+                  ],
+                  "constraints": []
+                }
+              },
+              "id": 7,
+              "path": "View"
+            }
+          },
+          "generics": {
+            "params": [
+              {
+                "kind": {
+                  "type": {
+                    "bounds": [],
+                    "default": null,
+                    "is_synthetic": false
+                  }
+                },
+                "name": "T"
+              }
+            ],
+            "where_predicates": [
+              {
+                "bound_predicate": {
+                  "bounds": [
+                    {
+                      "outlives": "'static"
+                    },
+                    {
+                      "trait_bound": {
+                        "generic_params": [],
+                        "modifier": "maybe",
+                        "trait": {
+                          "args": null,
+                          "id": 31,
+                          "path": "Sized"
+                        }
+                      }
+                    }
+                  ],
+                  "generic_params": [],
+                  "type": {
+                    "generic": "T"
+                  }
+                }
+              }
+            ]
+          },
+          "is_negative": false,
+          "is_synthetic": false,
+          "is_unsafe": false,
+          "items": [
+            52
+          ],
+          "provided_trait_methods": [],
+          "trait": {
+            "args": null,
+            "id": 55,
+            "path": "Any"
+          }
+        }
+      },
+      "links": {},
+      "name": null,
+      "span": null,
+      "visibility": "default"
+    },
     "542": {
       "attrs": [],
       "crate_id": 0,
@@ -14904,6 +14990,51 @@
       "visibility": "public"
     },
     "551": {
+      "attrs": [],
+      "crate_id": 0,
+      "deprecation": null,
+      "docs": null,
+      "id": 551,
+      "inner": {
+        "type_alias": {
+          "generics": {
+            "params": [],
+            "where_predicates": []
+          },
+          "type": {
+            "resolved_path": {
+              "args": {
+                "angle_bracketed": {
+                  "args": [
+                    {
+                      "lifetime": "'static"
+                    }
+                  ],
+                  "constraints": []
+                }
+              },
+              "id": 7,
+              "path": "Alias"
+            }
+          }
+        }
+      },
+      "links": {},
+      "name": "StaticAlias",
+      "span": {
+        "begin": [
+          335,
+          1
+        ],
+        "end": [
+          335,
+          39
+        ],
+        "filename": "tools/api_manifest/tests/fixtures/rustdoc-v57/lib.rs"
+      },
+      "visibility": "public"
+    },
+    "552": {
       "attrs": [
         {
           "other": "#[allow(dead_code)]"
@@ -14915,7 +15046,7 @@
       "crate_id": 0,
       "deprecation": null,
       "docs": null,
-      "id": 551,
+      "id": 552,
       "inner": {
         "module": {
           "is_crate": true,
@@ -14978,7 +15109,8 @@
             547,
             548,
             549,
-            550
+            550,
+            551
           ]
         }
       },
@@ -14990,8 +15122,8 @@
           1
         ],
         "end": [
-          333,
-          2
+          335,
+          39
         ],
         "filename": "tools/api_manifest/tests/fixtures/rustdoc-v57/lib.rs"
       },
@@ -15290,7 +15422,8 @@
             "where_predicates": []
           },
           "impls": [
-            9
+            9,
+            54
           ],
           "kind": {
             "plain": {
@@ -16867,7 +17000,7 @@
       ]
     }
   },
-  "root": 551,
+  "root": 552,
   "target": {
     "triple": "x86_64-pc-windows-msvc"
   }

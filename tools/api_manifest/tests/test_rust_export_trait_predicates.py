@@ -25,32 +25,60 @@ CRATE = "rustdoc_v57_fixture"
 CONDITIONAL_CONVERSIONS = (
     {
         "trait": "Into<U>",
-        "condition": [{
-            "subject": "U",
-            "traitPath": ["core", "convert", "From"],
-            "arguments": ["rustdoc_v57_fixture::CloneDebug"],
-        }],
+        "condition": {
+            "subjectBindings": {},
+            "predicates": [{
+                "kind": "traitBound",
+                "subject": "U",
+                "traitPath": ["core", "convert", "From"],
+                "arguments": ["rustdoc_v57_fixture::CloneDebug"],
+                "modifier": "none",
+            }],
+        },
         "members": ("into",),
     },
     {
         "trait": "TryInto<U>",
-        "condition": [{
-            "subject": "U",
-            "traitPath": ["core", "convert", "TryFrom"],
-            "arguments": ["rustdoc_v57_fixture::CloneDebug"],
-        }],
+        "condition": {
+            "subjectBindings": {},
+            "predicates": [{
+                "kind": "traitBound",
+                "subject": "U",
+                "traitPath": ["core", "convert", "TryFrom"],
+                "arguments": ["rustdoc_v57_fixture::CloneDebug"],
+                "modifier": "none",
+            }],
+        },
         "members": ("Error", "try_into"),
     },
     {
         "trait": "TryFrom<U>",
-        "condition": [{
-            "subject": "U",
-            "traitPath": ["core", "convert", "Into"],
-            "arguments": ["rustdoc_v57_fixture::CloneDebug"],
-        }],
+        "condition": {
+            "subjectBindings": {},
+            "predicates": [{
+                "kind": "traitBound",
+                "subject": "U",
+                "traitPath": ["core", "convert", "Into"],
+                "arguments": ["rustdoc_v57_fixture::CloneDebug"],
+                "modifier": "none",
+            }],
+        },
         "members": ("Error", "try_from"),
     },
 )
+ANY_LIFETIME_CONDITION = {
+    "subjectBindings": {"T": "rustdoc_v57_fixture::Alias<'a>"},
+    "predicates": [
+        {"kind": "outlives", "subject": "T", "lifetime": "'static"},
+        {
+            "kind": "traitBound",
+            "subject": "T",
+            "traitPath": ["core", "marker", "Sized"],
+            "arguments": [],
+            "modifier": "maybe",
+        },
+    ],
+}
 
 
 class RustExportTraitPredicateTests(unittest.TestCase):
@@ -364,7 +392,10 @@ class RustExportTraitPredicateTests(unittest.TestCase):
             "missingFromManifest": observed,
             "issues": [],
         }
-        additions = RECONCILER.reconcile(manifest, report)
+        try:
+            additions = RECONCILER.reconcile(manifest, report)
+        except ValueError as error:
+            self.fail(f"valid conversion conditions were rejected during reconciliation: {error}")
         reconciled = {record["exportName"]: record for record in additions}
 
         self.assertEqual(set(reconciled), set(expected_conditions))
@@ -375,6 +406,117 @@ class RustExportTraitPredicateTests(unittest.TestCase):
             self.assertNotIn("languageMappings", record, export_name)
             self.assertNotIn("signature", record, export_name)
             self.assertNotIn("rustSignature", record, export_name)
+
+    def test_any_for_open_lifetime_alias_is_conditional_and_exact(self):
+        report = AUDIT.inventory(self.fixture())
+        export_name = "<rustdoc_v57_fixture::Alias<'a> as core::any::Any>::type_id"
+        declarations = {entry["exportName"] for entry in report["declarations"]}
+        conditional = {
+            entry["exportName"]: entry
+            for entry in report.get("conditionalDeclarations", [])
+        }
+
+        self.assertTrue(
+            export_name not in declarations,
+            f"open lifetime was promoted: {export_name}",
+        )
+        self.assertTrue(
+            export_name in conditional,
+            f"missing conditional API: {export_name}",
+        )
+        self.assertEqual(
+            conditional.get(export_name, {}).get("condition"),
+            ANY_LIFETIME_CONDITION,
+        )
+
+    def test_any_for_static_lifetime_alias_is_a_satisfied_concrete_declaration(self):
+        report = AUDIT.inventory(self.fixture())
+        export_name = "<rustdoc_v57_fixture::StaticAlias as core::any::Any>::type_id"
+        declarations = {entry["exportName"] for entry in report["declarations"]}
+        conditional = {
+            entry["exportName"] for entry in report.get("conditionalDeclarations", [])
+        }
+
+        self.assertTrue(export_name in declarations, f"missing verified API: {export_name}")
+        self.assertNotIn(export_name, conditional)
+
+    def test_any_without_static_bound_fails_closed_for_open_lifetime_alias(self):
+        document = self.fixture()[CRATE]
+        _, implementation = self.implementation(document, "View", "Any")
+        bounds = implementation["generics"]["where_predicates"][0]["bound_predicate"]["bounds"]
+        implementation["generics"]["where_predicates"][0]["bound_predicate"]["bounds"] = [
+            bound for bound in bounds if "outlives" not in bound
+        ]
+
+        report = AUDIT.inventory({CRATE: document})
+        export_name = "<rustdoc_v57_fixture::Alias<'a> as core::any::Any>::type_id"
+        declarations = {entry["exportName"] for entry in report["declarations"]}
+        conditional = {
+            entry["exportName"] for entry in report.get("conditionalDeclarations", [])
+        }
+
+        self.assertTrue(
+            export_name not in declarations,
+            f"Any without its exact outlives predicate was promoted: {export_name}",
+        )
+        self.assertTrue(
+            export_name not in conditional,
+            f"Any without a complete condition was advertised as conditional: {export_name}",
+        )
+        self.assertTrue(any(
+            issue.get("reason") == "unresolved-rustdoc-implementation-predicate"
+            and issue.get("ownerPath") == [CRATE, "View"]
+            for issue in report["issues"]
+        ))
+
+    def test_any_maybe_sized_modifier_is_preserved_exactly(self):
+        document = self.fixture()[CRATE]
+        _, implementation = self.implementation(document, "View", "Any")
+        bounds = implementation["generics"]["where_predicates"][0]["bound_predicate"]["bounds"]
+        sized = next(bound["trait_bound"] for bound in bounds if "trait_bound" in bound)
+        sized["modifier"] = "none"
+
+        report = AUDIT.inventory({CRATE: document})
+        export_name = "<rustdoc_v57_fixture::Alias<'a> as core::any::Any>::type_id"
+        conditional = {
+            entry["exportName"]: entry
+            for entry in report.get("conditionalDeclarations", [])
+        }
+        mutated_condition = json.loads(json.dumps(ANY_LIFETIME_CONDITION))
+        mutated_condition["predicates"][1]["modifier"] = "none"
+
+        self.assertTrue(export_name in conditional, f"missing conditional API: {export_name}")
+        self.assertEqual(conditional[export_name]["condition"], mutated_condition)
+
+    def test_any_lifetime_condition_reconciles_as_blocked_without_api_approval(self):
+        export_name = "<rustdoc_v57_fixture::Alias<'a> as core::any::Any>::type_id"
+        report = {
+            "formatVersion": 1,
+            "rustdocFormat": 57,
+            "crates": [CRATE],
+            "missingFromManifest": [],
+            "conditionalDeclarations": [{
+                "packageId": "rust-rustdoc-v57-fixture",
+                "exportName": export_name,
+                "kind": "associated-item",
+                "condition": ANY_LIFETIME_CONDITION,
+            }],
+            "issues": [],
+        }
+        manifest = {"capabilities": [], "approvedExclusions": [], "publicDeclarations": []}
+
+        try:
+            RECONCILER.reconcile(manifest, report)
+        except ValueError as error:
+            self.fail(f"valid lifetime condition was rejected during reconciliation: {error}")
+
+        record = manifest["publicDeclarations"][0]
+        self.assertEqual(record["exportName"], export_name)
+        self.assertEqual(record["declarationState"], "blocked")
+        self.assertEqual(record["condition"], ANY_LIFETIME_CONDITION)
+        self.assertNotIn("languageMappings", record)
+        self.assertNotIn("signature", record)
+        self.assertNotIn("rustSignature", record)
 
     def test_concrete_unconditional_trait_route_remains_verified(self):
         report = AUDIT.inventory(self.fixture())

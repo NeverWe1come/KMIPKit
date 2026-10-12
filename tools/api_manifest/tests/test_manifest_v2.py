@@ -190,6 +190,58 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
         self.assertIn("approvedExclusions", manifest)
         self.assertEqual(list(self.validator.iter_errors(manifest)), [])
 
+    def test_blocked_condition_schema_round_trips_lifetime_and_trait_bounds(self) -> None:
+        manifest = _valid_v2_manifest()
+        condition = {
+            "subjectBindings": {"T": "kmipkit_protocol::View<'a>"},
+            "predicates": [
+                {"kind": "outlives", "subject": "T", "lifetime": "'static"},
+                {
+                    "kind": "traitBound",
+                    "subject": "T",
+                    "traitPath": ["core", "marker", "Sized"],
+                    "arguments": [],
+                    "modifier": "maybe",
+                },
+            ],
+        }
+        declaration = {
+            "declarationId": "rust-observed-test-lifetime-bound",
+            "packageId": "rust-kmipkit-protocol",
+            "kind": "associated-item",
+            "exportName": "<kmipkit_protocol::View<'a> as core::any::Any>::type_id",
+            "capabilityId": "public_binding_surface",
+            "requirementIds": ["KMIPKIT-0043-FR-021"],
+            "declarationState": "blocked",
+            "parityScope": "four-language",
+            "candidateSpecId": "KMIPKIT-0043",
+            "blockedReason": "The generic lifetime condition is not a reviewed API mapping.",
+            "condition": condition,
+        }
+        manifest["publicDeclarations"].append(declaration)
+
+        encoded = json.dumps(manifest, sort_keys=True)
+        round_tripped = json.loads(encoded)
+        self.assertEqual(round_tripped["publicDeclarations"][-1]["condition"], condition)
+        errors = list(self.validator.iter_errors(round_tripped))
+        self.assertTrue(
+            len(errors) == 0,
+            "schema rejected exact blocked condition at "
+            f"{list(errors[0].absolute_path) if errors else []}",
+        )
+
+        malformed = json.loads(json.dumps(manifest))
+        malformed["publicDeclarations"][-1]["condition"]["predicates"][0].pop("lifetime")
+        self.assertTrue(list(self.validator.iter_errors(malformed)))
+
+        malformed = json.loads(json.dumps(manifest))
+        malformed["publicDeclarations"][-1]["condition"]["unexpected"] = True
+        self.assertTrue(list(self.validator.iter_errors(malformed)))
+
+        malformed = json.loads(json.dumps(manifest))
+        malformed["publicDeclarations"][-1]["condition"]["predicates"][1]["modifier"] = "maybe-ish"
+        self.assertTrue(list(self.validator.iter_errors(malformed)))
+
     def test_official_package_versions_match_the_manifest_release_line(self) -> None:
         expected = self.checked_in_manifest["releaseLine"]
         workspace = tomllib.loads((ROOT / "Cargo.toml").read_text(encoding="utf-8"))

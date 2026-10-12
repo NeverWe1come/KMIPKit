@@ -331,3 +331,5 @@ impl Fixed<u16> {
         self.value
     }
 }
+
+pub type StaticAlias = Alias<'static>;

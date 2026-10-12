@@ -75,8 +75,12 @@ def project(raw_path: Path, output_path: Path) -> None:
                 and trait.get("path") == "Send" and impl.get("is_synthetic") is True
             representative_blanket = item.get("name") == "Fixed" and trait is not None \
                 and trait.get("path") == "Borrow" and impl.get("blanket_impl") is not None
-            representative_any = item.get("name") == "Generic" and trait is not None \
-                and trait.get("path") == "Any" and impl.get("blanket_impl") is not None
+            representative_any = (
+                item.get("name") in {"Generic", "View"}
+                and trait is not None
+                and trait.get("path") == "Any"
+                and impl.get("blanket_impl") is not None
+            )
             trait_path = None if trait is None else trait.get("path")
             predicate_impl = trait_path in predicate_traits and item.get("name") in predicate_targets
             ordinary_local_trait_impl = trait_path in source_trait_names \
