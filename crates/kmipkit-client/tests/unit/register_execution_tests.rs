@@ -25,6 +25,16 @@ const REQUEST_PAYLOAD: u32 = 0x0042_0079;
 const OBJECT_TYPE: u32 = 0x0042_0057;
 const ATTRIBUTES: u32 = 0x0042_0125;
 const CERTIFICATE: u32 = 0x0042_0013;
+const SYMMETRIC_KEY: u32 = 0x0042_008F;
+const KEY_BLOCK: u32 = 0x0042_0040;
+const KEY_FORMAT_TYPE: u32 = 0x0042_0042;
+const KEY_VALUE: u32 = 0x0042_0045;
+const KEY_WRAPPING_DATA: u32 = 0x0042_0046;
+const ENCRYPTION_KEY_INFORMATION: u32 = 0x0042_0036;
+const WRAPPING_METHOD: u32 = 0x0042_009E;
+const CRYPTOGRAPHIC_ALGORITHM: u32 = 0x0042_0028;
+const CRYPTOGRAPHIC_LENGTH: u32 = 0x0042_002A;
+const CRYPTOGRAPHIC_USAGE_MASK: u32 = 0x0042_002C;
 const CERTIFICATE_TYPE: u32 = 0x0042_001D;
 const CERTIFICATE_VALUE: u32 = 0x0042_001E;
 const PROTECTION_STORAGE_MASKS: u32 = 0x0042_015F;
@@ -38,6 +48,7 @@ const OPERATION_FAILED: u32 = 1;
 const OPERATION_PENDING: u32 = 2;
 const INVALID_OBJECT_TYPE: u32 = 0x0000_0038;
 const PENDING_CORRELATION: &[u8] = b"REGISTER_PENDING_CORRELATION\xFF";
+const SYNTHETIC_WRAPPED_KEY_VALUE: &[u8] = b"fixture-wrapped-key-bytes";
 
 // Byte-for-byte extraction from the pinned OASIS KMIP 2.1 fixture
 // TC-PKCS12-1-21.xml, RequestMessage step 2. This local input does not execute
@@ -126,6 +137,112 @@ fn request_fields(bytes: &[u8], item_index: usize) -> (Option<u32>, Vec<u32>, Ve
                 (tags, nested)
             });
             (operation, tags, nested)
+        })
+    })
+}
+
+struct RegisterWrappingEvidence {
+    direct_attribute_fields: Vec<u32>,
+    direct_algorithm: u32,
+    direct_length: i32,
+    key_block_fields: Vec<u32>,
+    key_value_bytes: Vec<u8>,
+    wrapping_method: u32,
+    encryption_key_identifier: String,
+}
+
+fn register_wrapping_evidence(bytes: &[u8]) -> RegisterWrappingEvidence {
+    let message = decode(bytes).expect("captured Register request has valid TTLV framing");
+    message.with_value(|value| {
+        let ValueView::Structure(message) = value else {
+            panic!("request message is a Structure");
+        };
+        let batch_item = message
+            .children()
+            .iter()
+            .find(|field| field.tag().raw() == BATCH_ITEM)
+            .expect("Register request has a Batch Item");
+        with_structure(batch_item, "Register Batch Item", |batch_item| {
+            let payload = required_field(batch_item, REQUEST_PAYLOAD, "Register Request Payload");
+            with_structure(payload, "Register Request Payload", |payload| {
+                let (direct_attribute_fields, direct_algorithm, direct_length) = with_structure(
+                    required_field(payload, ATTRIBUTES, "Register Attributes"),
+                    "Register Attributes",
+                    |attributes| {
+                        let fields = attributes
+                            .children()
+                            .iter()
+                            .map(|field| field.tag().raw())
+                            .collect();
+                        let algorithm = enumeration_field(
+                            attributes,
+                            CRYPTOGRAPHIC_ALGORITHM,
+                            "Register Attributes Cryptographic Algorithm",
+                        );
+                        let length = integer_field(
+                            attributes,
+                            CRYPTOGRAPHIC_LENGTH,
+                            "Register Attributes Cryptographic Length",
+                        );
+                        (fields, algorithm, length)
+                    },
+                );
+                let object = required_field(payload, SYMMETRIC_KEY, "Register Symmetric Key");
+                with_structure(object, "Register Symmetric Key", |object| {
+                    let key_block = required_field(object, KEY_BLOCK, "Register Key Block");
+                    with_structure(key_block, "Register Key Block", |key_block| {
+                        let key_block_fields = key_block
+                            .children()
+                            .iter()
+                            .map(|field| field.tag().raw())
+                            .collect();
+                        let key_value_bytes =
+                            byte_string_field(key_block, KEY_VALUE, "wrapped Register Key Value");
+                        let wrapping = required_field(
+                            key_block,
+                            KEY_WRAPPING_DATA,
+                            "Register Key Wrapping Data",
+                        );
+                        with_structure(wrapping, "Key Wrapping Data", |wrapping| {
+                            let wrapping_method = enumeration_field(
+                                wrapping,
+                                WRAPPING_METHOD,
+                                "Key Wrapping Data Wrapping Method",
+                            );
+                            let key_information = required_field(
+                                wrapping,
+                                ENCRYPTION_KEY_INFORMATION,
+                                "Key Wrapping Data Encryption Key Information",
+                            );
+                            with_structure(
+                                key_information,
+                                "Encryption Key Information",
+                                |key_information| {
+                                    let identifier = required_field(
+                                        key_information,
+                                        UNIQUE_IDENTIFIER,
+                                        "Encryption Key Information Unique Identifier",
+                                    );
+                                    let encryption_key_identifier =
+                                        identifier.with_value(|value| match value {
+                                            ValueView::TextString(value) => value.to_owned(),
+                                            _ => panic!("wrapping key identifier is a Text String"),
+                                        });
+                                    RegisterWrappingEvidence {
+                                        direct_attribute_fields,
+                                        direct_algorithm,
+                                        direct_length,
+                                        key_block_fields,
+                                        key_value_bytes,
+                                        wrapping_method,
+                                        encryption_key_identifier,
+                                    }
+                                },
+                            )
+                        })
+                    })
+                })
+            })
         })
     })
 }
@@ -401,6 +518,98 @@ fn register_sends_table_291_and_exposes_table_292_identifier_once() {
             vec![PROTECTION_STORAGE_MASK],
         ]
     );
+    assert_eq!(fake.borrow().exchange_count(), 1);
+}
+
+#[test]
+fn register_sends_a_wrapped_object_from_table_291() {
+    // OASIS KMIP v2.1 §3.1 Tables 11–12, §3.3 Tables 14–15, and §6.1.43 Tables 291 and 293.
+    // Synthetic wrapped-value bytes exercise request shape, not cryptographic wrapping or server acceptance.
+    let request = RegisterRequest::new(
+        ObjectType::from_raw(2),
+        AttributeSet::try_new([
+            test_item(CRYPTOGRAPHIC_ALGORITHM, Value::enumeration(3)),
+            test_item(CRYPTOGRAPHIC_LENGTH, Value::integer(256)),
+            test_item(CRYPTOGRAPHIC_USAGE_MASK, Value::integer(3)),
+        ])
+        .expect("symmetric key Attributes are well formed"),
+        test_item(
+            SYMMETRIC_KEY,
+            Value::structure(test_structure([test_item(
+                KEY_BLOCK,
+                Value::structure(test_structure([
+                    test_item(KEY_FORMAT_TYPE, Value::enumeration(1)),
+                    test_item(
+                        KEY_VALUE,
+                        Value::byte_string(SYNTHETIC_WRAPPED_KEY_VALUE.to_vec()),
+                    ),
+                    test_item(CRYPTOGRAPHIC_ALGORITHM, Value::enumeration(3)),
+                    test_item(CRYPTOGRAPHIC_LENGTH, Value::integer(256)),
+                    test_item(
+                        KEY_WRAPPING_DATA,
+                        Value::structure(test_structure([
+                            test_item(WRAPPING_METHOD, Value::enumeration(1)),
+                            test_item(
+                                ENCRYPTION_KEY_INFORMATION,
+                                Value::structure(test_structure([test_item(
+                                    UNIQUE_IDENTIFIER,
+                                    Value::text_string("wrapping-key".to_owned()),
+                                )])),
+                            ),
+                        ])),
+                    ),
+                ])),
+            )])),
+        ),
+    );
+    // This synthetic failure only completes the local fake exchange. It does not assert server acceptance or unwrapping.
+    let response = asynchronous_response_bytes(
+        REGISTER_OPERATION,
+        OPERATION_FAILED,
+        Some(INVALID_OBJECT_TYPE),
+        None,
+        None,
+    );
+    let (mut client, fake, captured) = client_for(ExchangeScript::Success {
+        response,
+        request_write_chunks: Vec::new(),
+    });
+    let outcome = client
+        .register(request, &CodecLimits::defaults())
+        .expect("the fake OperationFailed response completes one encoded Register exchange");
+    assert_eq!(outcome.outcome().result().status().raw(), OPERATION_FAILED);
+
+    let request = captured.borrow();
+    let request = request
+        .as_deref()
+        .expect("fake transport captured Register request");
+    let (operation, fields, _) = request_fields(request, 0);
+    assert_eq!(operation, Some(REGISTER_OPERATION));
+    assert_eq!(fields, [OBJECT_TYPE, ATTRIBUTES, SYMMETRIC_KEY]);
+    let wrapped = register_wrapping_evidence(request);
+    assert_eq!(
+        wrapped.direct_attribute_fields,
+        [
+            CRYPTOGRAPHIC_ALGORITHM,
+            CRYPTOGRAPHIC_LENGTH,
+            CRYPTOGRAPHIC_USAGE_MASK
+        ]
+    );
+    assert_eq!(wrapped.direct_algorithm, 3);
+    assert_eq!(wrapped.direct_length, 256);
+    assert_eq!(
+        wrapped.key_block_fields,
+        [
+            KEY_FORMAT_TYPE,
+            KEY_VALUE,
+            CRYPTOGRAPHIC_ALGORITHM,
+            CRYPTOGRAPHIC_LENGTH,
+            KEY_WRAPPING_DATA,
+        ]
+    );
+    assert_eq!(wrapped.key_value_bytes, SYNTHETIC_WRAPPED_KEY_VALUE);
+    assert_eq!(wrapped.wrapping_method, 1);
+    assert_eq!(wrapped.encryption_key_identifier, "wrapping-key");
     assert_eq!(fake.borrow().exchange_count(), 1);
 }
 

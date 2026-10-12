@@ -159,6 +159,21 @@ OPTIONAL_CAPABILITY_TEST_REQUIREMENTS = {
     "crates/kmipkit-protocol/tests/unit/obtain_lease_operation_tests.rs::successful_response_exposes_positive_lease_interval": (
         "KMIPKIT-REQ-SPEC-6.1.35-005",
     ),
+    "crates/kmipkit-client/tests/unit/register_execution_tests.rs::register_produces_id_placeholder_for_a_later_identifier_omitting_operation": (
+        "KMIPKIT-REQ-SPEC-6.1-003-002",
+    ),
+    "crates/kmipkit-client/tests/unit/archive_execution_tests.rs::archive_success_returns_server_result_without_claiming_archival_completion": (
+        "KMIPKIT-REQ-SPEC-6.1.4-001",
+    ),
+    "crates/kmipkit-client/tests/unit/recover_execution_tests.rs::caller_issues_poll_after_recover_pending_with_the_returned_correlation": (
+        "KMIPKIT-REQ-SPEC-6.1.42-001-001",
+    ),
+    "crates/kmipkit-client/tests/unit/object_read_execution_tests.rs::caller_directs_archived_locate_recover_then_get_as_three_exchanges": (
+        "KMIPKIT-REQ-SPEC-6.1.42-001-002",
+    ),
+    "crates/kmipkit-client/tests/unit/register_execution_tests.rs::register_sends_a_wrapped_object_from_table_291": (
+        "KMIPKIT-REQ-SPEC-6.1.43-005",
+    ),
 }
 
 
@@ -233,6 +248,40 @@ OPTIONAL_CAPABILITY_TEST_CONTENT_REQUIREMENTS = {
     "crates/kmipkit-protocol/tests/unit/create_tests.rs::create_only_oasis_fixtures_decode_with_the_expected_fields": (
         "items[0].tag().raw(), CRYPTOGRAPHIC_LENGTH",
         "ValueView::Integer(value) if *value == 80",
+    ),
+    "crates/kmipkit-client/tests/unit/register_execution_tests.rs::register_produces_id_placeholder_for_a_later_identifier_omitting_operation": (
+        "request_fields(request, 1)",
+        "Some(CHECK_OPERATION)",
+        "Vec::new()",
+    ),
+    "crates/kmipkit-client/tests/unit/archive_execution_tests.rs::archive_success_returns_server_result_without_claiming_archival_completion": (
+        ".archive(typed_request",
+        "outcome.result().status().raw()",
+        "assert_archive_request(",
+    ),
+    "crates/kmipkit-client/tests/unit/recover_execution_tests.rs::caller_issues_poll_after_recover_pending_with_the_returned_correlation": (
+        ".asynchronous_correlation_value()",
+        "PollRequest::new(correlation.as_slice())",
+        "requests.borrow().len(), 1",
+        "[Some(RECOVER_OPERATION), Some(POLL_OPERATION)]",
+        "requests[1].poll_correlation_matches_expected",
+    ),
+    "crates/kmipkit-client/tests/unit/object_read_execution_tests.rs::caller_directs_archived_locate_recover_then_get_as_three_exchanges": (
+        "[LOCATE_OPERATION, RECOVER_OPERATION, GET_OPERATION]",
+        "Some(&WireValue::Integer(0x2))",
+        "Some(&WireValue::TextString(archived_identifier.to_owned()))",
+    ),
+    "crates/kmipkit-client/tests/unit/register_execution_tests.rs::register_sends_a_wrapped_object_from_table_291": (
+        "Value::byte_string(SYNTHETIC_WRAPPED_KEY_VALUE.to_vec())",
+        "wrapped.direct_attribute_fields",
+        "wrapped.key_value_bytes",
+        "KEY_FORMAT_TYPE,",
+        "KEY_VALUE,",
+        "CRYPTOGRAPHIC_ALGORITHM,",
+        "CRYPTOGRAPHIC_LENGTH,",
+        "KEY_WRAPPING_DATA,",
+        "wrapped.wrapping_method",
+        "wrapped.encryption_key_identifier",
     ),
 }
 
@@ -1747,7 +1796,7 @@ class CatalogValidationTests(unittest.TestCase):
             )
 
     def test_optional_request_evidence_element_ids_are_sorted(self) -> None:
-        """The eight reviewed optional request rows keep relationship IDs deterministic."""
+        """Reviewed optional request rows keep relationship IDs deterministic."""
         catalog = json.loads((ROOT / "specification/catalog/kmip-2.1.json").read_text(encoding="utf-8"))
         requirement_ids = (
             "KMIPKIT-REQ-SPEC-4.26-001",
@@ -1758,6 +1807,11 @@ class CatalogValidationTests(unittest.TestCase):
             "KMIPKIT-REQ-SPEC-4.4-001",
             "KMIPKIT-REQ-SPEC-4.46-001-001",
             "KMIPKIT-REQ-SPEC-4.46-001-002",
+            "KMIPKIT-REQ-SPEC-6.1-003-002",
+            "KMIPKIT-REQ-SPEC-6.1.4-001",
+            "KMIPKIT-REQ-SPEC-6.1.42-001-001",
+            "KMIPKIT-REQ-SPEC-6.1.42-001-002",
+            "KMIPKIT-REQ-SPEC-6.1.43-005",
         )
         requirements = {row["requirement_id"]: row for row in catalog["requirements"]}
 
@@ -1765,6 +1819,27 @@ class CatalogValidationTests(unittest.TestCase):
             with self.subTest(requirement_id=requirement_id):
                 element_ids = requirements[requirement_id]["element_ids"]
                 self.assertEqual(element_ids, sorted(element_ids))
+
+    def test_optional_lifecycle_evidence_rows_are_client_to_server_requests(self) -> None:
+        """Lifecycle MAY evidence remains client-originated and has no official test claim."""
+        catalog = json.loads(
+            (ROOT / "specification/catalog/kmip-2.1.json").read_text(encoding="utf-8")
+        )
+        requirements = {row["requirement_id"]: row for row in catalog["requirements"]}
+        requirement_ids = (
+            "KMIPKIT-REQ-SPEC-6.1-003-002",
+            "KMIPKIT-REQ-SPEC-6.1.4-001",
+            "KMIPKIT-REQ-SPEC-6.1.42-001-001",
+            "KMIPKIT-REQ-SPEC-6.1.42-001-002",
+            "KMIPKIT-REQ-SPEC-6.1.43-005",
+        )
+
+        for requirement_id in requirement_ids:
+            with self.subTest(requirement_id=requirement_id):
+                requirement = requirements[requirement_id]
+                self.assertEqual(requirement["role"], "client")
+                self.assertEqual(requirement["direction"], "client_to_server")
+                self.assertEqual(requirement["test_case_ids"], [])
 
     def test_checked_in_catalog_orders_evidence_policies_and_relationships_deterministically(self) -> None:
         catalog = json.loads((ROOT / "specification/catalog/kmip-2.1.json").read_text(encoding="utf-8"))
