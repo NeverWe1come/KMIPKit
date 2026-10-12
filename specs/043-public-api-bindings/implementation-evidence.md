@@ -84,6 +84,31 @@ The canonical declaration slice whose Rust paths begin with `kmipkit_ttlv::` con
 | Green | `c0cc2a31` | `python -B -m unittest discover -s tools/api_manifest/tests -v`; `python tools/api_manifest/generate.py --check`; `git diff --check` | PASS: 94 tests passed, 3 symlink tests skipped because Windows denied symlink creation (WinError 1314); all 11 generated outputs current; no whitespace errors. |
 | Refactor | `5d36f87c` | `uv run --with jsonschema -- python -B -m unittest discover -s tools/api_manifest/tests -v`; `python tools/api_manifest/generate.py --check`; `git diff --check` | PASS: 94 tests passed, 3 symlink tests skipped because Windows denied symlink creation (WinError 1314); all 11 generated outputs current; no whitespace errors. Strengthened the inventory assertion to require exactly 101 declarations split 76/25; no API behavior or manifest data changed. |
 
+### T011/T013 — Reproducible Rust public-export audit (partial)
+
+The pinned Rust 1.94.0 / rustdoc JSON 57 audit now has a checked-in, reproducible report at [rust-export-report-2026-10-12.json](reports/rust-export-report-2026-10-12.json). It audits all five published Rust crates on Windows x86-64 with all Cargo features. The command below wrote the report and returned **1 as expected** because the export inventory is not reconciled and the supported traversal subset is incomplete; this is a failing release gate, not a pass.
+
+| Published package | Observed paths | Manifest rows | Exact matches | Missing from manifest | Not observed |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| `kmipkit-ttlv` | 107 | 95 | 95 | 12 | 0 |
+| `kmipkit-protocol` | 1,631 | 964 | 958 | 673 | 6 |
+| `kmipkit-transport` | 98 | 96 | 96 | 2 | 0 |
+| `kmipkit-client` | 651 | 291 | 291 | 360 | 0 |
+| `kmipkit` | 785 | 321 | 321 | 464 | 0 |
+| **Total** | **3,272** | **1,767** | **1,761** | **1,511** | **6** |
+
+There are no kind mismatches or approved Rust exclusions. The audit reports 375 paths whose full scope is not yet covered: 365 owners with trait-implementation members and 10 transparent type aliases. The 12 missing TTLV package paths are `kmipkit_ttlv::Item::try_clone` and the 11 public `ValueView` tuple payload fields. Six protocol manifest names use a different spelling for `ExtensionDefinitionAccounting` fields. The JSON report records every path, package, source location, and issue for reconciliation.
+
+| Verification | Command | Result |
+|---|---|---|
+| Focused auditor tests | `python -B -m unittest tools.api_manifest.tests.test_rust_exports -v` | PASS: 18 tests. |
+| Full API-manifest tests | `uv run --with jsonschema -- python -B -m unittest discover -s tools/api_manifest/tests -v` | PASS: 122 tests; 3 Windows symlink tests skipped because symlink creation was denied (WinError 1314). |
+| Rust export inventory | `python -B tools/api_manifest/audit_rust_exports.py --repo-root . --report specs/043-public-api-bindings/reports/rust-export-report-2026-10-12.json --check` | Report written; exit 1 with 3,272 observed, 1,761 matched, 1,511 missing, 6 not observed, and 375 incomplete-scope records. |
+| Generated manifest outputs | `python -B tools/api_manifest/generate.py --check` | PASS: all 11 generated outputs current. |
+| Whitespace validation | `git diff --check` | PASS. |
+
+T011 remains open until C, Java, and Python export audits are complete and all declarations reconcile to manifest rows or accepted exclusions; the Rust traversal gaps and all listed mismatches must also be resolved. T013 remains open because only the approved TTLV owner slice has been mapped; the remaining Rust package declarations are not yet reconciled.
+
 ## T030 — Java/Python package metadata and user scope documentation
 
 Java Gradle/Maven metadata and Python project metadata use the manifest's synchronized `releaseLine` value (`1.0.0`). The Java target is Java 17; Python package metadata and the 1.0 documentation target CPython 3.12 only. Bilingual package guides record the five Java/Python OS/architecture targets from the manifest, explain Java and Python native loading, explicit overrides, ABI 1 checks, redacted failures, and the absence of runtime executable-code downloads. They mark all six current manifest capability states and all 56 `client_1_0` operations (`blocked`) without claiming full operation parity or a published package release. Existing English and Spanish vendor-extension guides now distinguish implementation examples from the still-blocked release-parity status.
