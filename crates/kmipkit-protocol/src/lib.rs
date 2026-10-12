@@ -1,6 +1,10 @@
 //! KMIP 2.1 protocol models and validation for `KMIPKit`.
 #![forbid(unsafe_code)]
 
+#[cfg(test)]
+#[path = "../tests/unit/interop_operation_tests.rs"]
+mod interop_operation_tests;
+
 mod attribute_policy {
     include!("generated/attribute_policy.rs");
 }
@@ -27,6 +31,7 @@ mod delegated_login;
 mod delete_attribute;
 mod derive_key;
 mod destroy;
+mod diagnostics;
 mod discover_versions;
 mod encrypt;
 mod error;
@@ -39,9 +44,11 @@ mod get_constraints;
 mod get_usage_allocation;
 mod hash;
 mod import;
+mod interop;
 mod join_split_key;
 mod lifecycle;
 mod locate;
+mod log;
 mod login;
 mod logout;
 mod mac;
@@ -82,6 +89,7 @@ mod set_defaults_tests;
 mod sign;
 mod signature_verify;
 mod ticket;
+mod validate;
 
 pub use activate::{ActivateError, ActivateRequest, ActivateResponse};
 pub use add_attribute::{AddAttributeError, AddAttributeRequest, AddAttributeResponse};
@@ -135,12 +143,14 @@ pub use get_usage_allocation::{
 };
 pub use hash::{HashError, HashRequest, HashResponse};
 pub use import::{ImportError, ImportRequest, ImportResponse};
+pub use interop::{InteropError, InteropRequest, InteropResponse};
 pub use join_split_key::{
     JoinSplitKeyError, JoinSplitKeyRequest, JoinSplitKeyResponse, SplitKeyReference,
 };
 pub use locate::{
     LocateError, LocateRequest, LocateResponse, ObjectGroupMember, StorageStatusMask,
 };
+pub use log::{LogError, LogRequest, LogResponse};
 pub use login::{LoginError, LoginRequest, LoginResponse};
 pub use logout::{LogoutError, LogoutRequest, LogoutResponse};
 pub use mac::{MacError, MacRequest, MacResponse};
@@ -182,6 +192,7 @@ pub use set_defaults::{SetDefaultsError, SetDefaultsRequest, SetDefaultsResponse
 pub use sign::{SignError, SignRequest, SignResponse};
 pub use signature_verify::{SignatureVerifyError, SignatureVerifyRequest, SignatureVerifyResponse};
 pub use ticket::{Ticket, TicketType, TicketValidationError, TicketValidationErrorKind};
+pub use validate::{ValidateError, ValidateRequest, ValidateResponse};
 
 #[cfg(test)]
 #[path = "../tests/unit/discover_versions_tests.rs"]
@@ -503,6 +514,14 @@ mod login_operation_tests;
 #[cfg(test)]
 #[path = "../tests/unit/logout_operation_tests.rs"]
 mod logout_operation_tests;
+
+#[cfg(test)]
+#[path = "../tests/unit/log_operation_tests.rs"]
+mod log_operation_tests;
+
+#[cfg(test)]
+#[path = "../tests/unit/validate_operation_tests.rs"]
+mod validate_operation_tests;
 
 #[cfg(test)]
 #[path = "../tests/unit/pkcs11_operation_tests.rs"]
