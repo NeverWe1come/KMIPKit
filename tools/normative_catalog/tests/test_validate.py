@@ -13240,6 +13240,42 @@ class CatalogValidationTests(unittest.TestCase):
             any(gap["gap_id"] == "KMIPKIT-SOURCE-GAP-SPEC-6.1.7-002-MAY-LIMITED-ATTRIBUTES" for gap in oracle["source_only_requirement_gaps"])
         )
 
+    def test_tape_library_client_requirements_use_explicit_profile_closure(self) -> None:
+        """Tape Library client duties map only to that profile with source-backed actors."""
+        oracle = json.loads(
+            (ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json").read_text(encoding="utf-8")
+        )
+        catalog = json.loads(
+            (ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8")
+        )
+        profile_id = "KMIPKIT-PROFILE-TAPE-LIBRARY-CLIENT"
+        requirement_ids = {
+            "KMIPKIT-REQ-PROF-5.12.2-002",
+            "KMIPKIT-REQ-PROF-5.12.2-003",
+            "KMIPKIT-REQ-PROF-5.12.6.2-002",
+            "KMIPKIT-REQ-PROF-5.12.6.2-003",
+            "KMIPKIT-REQ-PROF-5.12.6.3-001",
+        }
+        requirements = {row["requirement_id"]: row for row in catalog["requirements"]}
+        profile = next(row for row in catalog["profiles"] if row["profile_id"] == profile_id)
+        for requirement_id in requirement_ids:
+            with self.subTest(requirement_id=requirement_id):
+                requirement = requirements[requirement_id]
+                self.assertEqual(requirement["role"], "client")
+                self.assertEqual(requirement["scope_state"], "profile_conditional")
+                self.assertEqual(requirement["profile_ids"], [profile_id])
+                self.assertIn(requirement_id, profile["requirement_ids"])
+                mappings = [row for row in oracle["requirement_crosswalk"] if row["requirement_id"] == requirement_id]
+                self.assertEqual(len(mappings), 1)
+                self.assertEqual(mappings[0]["source_actor"], "client")
+                self.assertEqual(mappings[0]["role"], "client")
+                self.assertEqual(mappings[0]["scope_state"], "profile_conditional")
+                self.assertEqual(mappings[0]["applies_to"], profile_id)
+                review = next(row for row in oracle["source_requirement_reviews"] if row["source_clause_id"] == requirement["source_clause_ids"][0])
+                atom = next(row for row in review["source_obligations"] if row["candidate_requirement_id"] == requirement_id)
+                self.assertEqual(atom["actor"], "client")
+                self.assertEqual(atom["scope_disposition"], "profile_conditional")
+
     def test_requirement_crosswalk_rows_match_pinned_sources_and_catalog_labels(self) -> None:
         """Every accepted and rejected label is tied to its pinned source locator."""
         oracle = json.loads(
