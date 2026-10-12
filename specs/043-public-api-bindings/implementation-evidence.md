@@ -222,3 +222,29 @@ The initial PR run `38288466279` on `2e3157fe` failed 11 root jobs and two deriv
 Remote CI has not yet rerun on these commits. T011 remains open until the complete PR matrix and a fresh read-only QA review pass.
 
 The Windows C consumer check used the installed Visual Studio 2022 x64 developer environment to compile `bindings/c/tests/extension_registry.c` against `bindings/c/include` and `target/debug/kmipkit_ffi.dll.lib`, then executed `target/debug/extension_registry_consumer.exe`. CMake is unavailable on this host, so the CI-configured CMake matrix remains the cross-platform build authority.
+
+## T011 — CI follow-up for capability, generated C docs, and schema payload safety
+
+The subsequent PR run `38295045556` exposed three independent regressions. First, the manifest correctly declared the C-mapped `vendor_extension_registry` capability while the runtime query and FFI inventory test omitted it. Second, the checked-in generated C header had last-error documentation that was not represented in the manifest or generator. Third, QA demonstrated that a C documentation string containing a backslash-newline splice could escape the generated comment even though `*/` was rejected. Each behavior has a separate Red and Green commit; T011 stays open until remote CI on the new head passes.
+
+| Phase | Commit | Verification | Result |
+|---|---|---|---|
+| Red | `19b5eb54` | Runtime metadata and FFI capability inventory tests | Expected failure: the nonblocked C-mapped `vendor_extension_registry` capability was missing from runtime availability. |
+| Green | `04ab5dfe` | Same focused tests | PASS: capability discovery and the FFI inventory now agree with the manifest; QA review found no issue. |
+| Red | `a0f81de9` | Generated C-header documentation contract test | Expected failure: generation did not preserve the existing last-error snapshot documentation. |
+| Green | `3bbdcb19` | Focused generator test and `python -B tools/api_manifest/generate.py --write` | PASS: manifest-backed C documentation regenerates the header; 11 generated outputs are current. |
+| Red | `1d1c6c42` | C-comment splice payload regression test | Expected failure: schema validation accepted `*\\\r/#define KMIPKIT_INJECTED 1/*`. |
+| Green | `4ddeb0f3` | Focused rendering/security tests and Draft 2020-12 schema validation | PASS: C documentation rejects comment terminators, CR/LF, and backslashes; QA re-review confirmed the custom validator and JSON Schema both reject the payload and found no remaining early-comment-close path. |
+
+Fresh local verification on this head:
+
+| Check | Command | Result |
+|---|---|---|
+| Formatting | `cargo fmt --all --check` | PASS. |
+| Rust lint | `cargo clippy --locked --workspace --all-targets --all-features -- -D warnings` | PASS. |
+| Rust workspace tests | `cargo test --locked --workspace --all-features` | PASS, exit 0; all executed tests and doctests passed. Three Cosmian KMS integration tests were ignored because the local KMS is not installed. |
+| API-manifest tests | `.venv/Scripts/python.exe -B -m unittest discover -s tools/api_manifest/tests -p 'test_*.py'` | PASS: 228 tests, 3 skipped because Windows denied symlink creation. |
+| Generated outputs | `python -B tools/api_manifest/generate.py --check` | PASS: all 11 outputs current. |
+| Coverage-gate preflight | `scripts/coverage_gate.py preflight --workspace .` | PASS: exit 0, eligible; source scan found 120 executable or ambiguous function bodies across 186 files. The PR's remote coverage jobs remain authoritative. |
+| Read-only QA | Review of the capability, generated-documentation, and C-comment payload fixes | PASS; no remaining injection path or contract inconsistency identified. |
+| Remote PR matrix | GitHub Actions after pushing this head | Pending; required before closing T011. |
