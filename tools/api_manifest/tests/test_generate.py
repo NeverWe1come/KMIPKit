@@ -228,6 +228,18 @@ class ManifestGeneratorCliTests(unittest.TestCase):
         self.assertIn("out_cause receives 0 none, 1 invalid input, or 10 other", c_header)
         self.assertIn("out_delivery is 0 when no KMIP request delivery information", c_header)
 
+    def test_private_c_header_keeps_blocked_ffi_declarations_out_of_public_header(self) -> None:
+        manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
+        outputs = generate.render_outputs(manifest)
+        private_header = outputs[
+            "tests/fixtures/api/generated/kmipkit_internal.h"
+        ].decode("utf-8")
+        public_header = outputs["bindings/c/include/kmipkit.h"].decode("utf-8")
+
+        self.assertIn("KMIPKIT_INTERNAL_H", private_header)
+        self.assertIn("kmipkit_ttlv_item_create", private_header)
+        self.assertNotIn("kmipkit_ttlv_item_create", public_header)
+
     def test_generated_rust_metadata_lists_only_unblocked_c_mapped_capabilities(self) -> None:
         manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
         outputs = generate.render_outputs(manifest)
