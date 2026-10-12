@@ -7,7 +7,9 @@
 //! Shared Pending and delivery behavior follows KMIP v2.1 §§8.6, 9.1, and
 //! 9.2. These are derived tests, not official OASIS Test Case executions.
 
-use kmipkit_protocol::{AttributeSet, CheckRequest, CreateRequest, ObjectType, UniqueIdentifier};
+use kmipkit_protocol::{
+    AttributeSet, CheckRequest, CreateRequest, LocateRequest, ObjectType, UniqueIdentifier,
+};
 use kmipkit_test_support::ExchangeScript;
 use kmipkit_transport::RequestDeliveryState;
 use kmipkit_ttlv::codec::{CodecLimits, decode};
@@ -23,6 +25,7 @@ use crate::{
 };
 
 const CHECK_OPERATION: u32 = 0x0000_0009;
+const LOCATE_OPERATION: u32 = 0x0000_0008;
 const CREATE_OPERATION: u32 = 0x0000_0001;
 const BATCH_ITEM: u32 = 0x0042_000F;
 const REQUEST_HEADER: u32 = 0x0042_0077;
@@ -35,6 +38,7 @@ const OBJECT_TYPE: u32 = 0x0042_0057;
 const USAGE_LIMITS_COUNT: u32 = 0x0042_0096;
 const CRYPTOGRAPHIC_USAGE_MASK: u32 = 0x0042_002C;
 const LEASE_TIME: u32 = 0x0042_0049;
+const ATTRIBUTES: u32 = 0x0042_0125;
 const UNKNOWN_VENDOR_TAG: u32 = 0x0054_1234;
 
 const SUCCESS: u32 = 0;
@@ -163,6 +167,85 @@ fn request_payload_tags(bytes: &[u8], batch_index: usize) -> Vec<u32> {
     })
 }
 
+fn request_usage_mask(bytes: &[u8], batch_index: usize) -> (Option<u32>, Option<i32>) {
+    let message = decode(bytes).expect("the captured request has valid TTLV framing");
+    message.with_value(|value| {
+        let ValueView::Structure(message) = value else {
+            panic!("the KMIP request message is a Structure");
+        };
+        let batch_item = message
+            .children()
+            .iter()
+            .filter(|field| field.tag().raw() == BATCH_ITEM)
+            .nth(batch_index)
+            .expect("the captured request contains the indexed Batch Item");
+        batch_item.with_value(|value| {
+            let ValueView::Structure(batch) = value else {
+                panic!("the Batch Item is a Structure");
+            };
+            let operation = batch
+                .children()
+                .iter()
+                .find(|field| field.tag().raw() == OPERATION)
+                .and_then(|field| {
+                    field.with_value(|value| match value {
+                        ValueView::Enumeration(value) => Some(*value),
+                        _ => None,
+                    })
+                });
+            let payload = batch
+                .children()
+                .iter()
+                .find(|field| field.tag().raw() == REQUEST_PAYLOAD)
+                .expect("the Batch Item contains a Request Payload");
+            let mask = if operation == Some(LOCATE_OPERATION) {
+                payload.with_value(|value| {
+                    let ValueView::Structure(payload) = value else {
+                        panic!("the Request Payload is a Structure");
+                    };
+                    let attributes = payload
+                        .children()
+                        .iter()
+                        .find(|field| field.tag().raw() == ATTRIBUTES)
+                        .expect("the Locate payload contains Attributes");
+                    attributes.with_value(|value| {
+                        let ValueView::Structure(attributes) = value else {
+                            panic!("Locate Attributes is a Structure");
+                        };
+                        attributes
+                            .children()
+                            .iter()
+                            .find(|field| field.tag().raw() == CRYPTOGRAPHIC_USAGE_MASK)
+                            .and_then(|field| {
+                                field.with_value(|value| match value {
+                                    ValueView::Integer(value) => Some(*value),
+                                    _ => None,
+                                })
+                            })
+                    })
+                })
+            } else {
+                payload.with_value(|value| {
+                    let ValueView::Structure(payload) = value else {
+                        panic!("the Request Payload is a Structure");
+                    };
+                    payload
+                        .children()
+                        .iter()
+                        .find(|field| field.tag().raw() == CRYPTOGRAPHIC_USAGE_MASK)
+                        .and_then(|field| {
+                            field.with_value(|value| match value {
+                                ValueView::Integer(value) => Some(*value),
+                                _ => None,
+                            })
+                        })
+                })
+            };
+            (operation, mask)
+        })
+    })
+}
+
 fn request_header_values(bytes: &[u8]) -> (Option<bool>, Option<u32>) {
     let message = decode(bytes).expect("the captured request has valid TTLV framing");
     message.with_value(|value| {
@@ -272,6 +355,57 @@ fn check_sends_table_183_fields_and_exposes_table_184_response_once() {
         ]
     );
     assert_eq!(fake.borrow().exchange_count(), 1, "Check is never retried");
+}
+
+#[test]
+fn locate_and_check_requests_preserve_distinct_cryptographic_usage_masks() {
+    // §6.1.7/Table 182 permits Check's mask to narrow a preceding Locate mask.
+    // Table 495 defines Encrypt as 0x04 and Decrypt as 0x08. This asserts only
+    // the two client request payloads; the fake response makes no server claim.
+    let locate_attributes = AttributeSet::try_new([test_item(
+        CRYPTOGRAPHIC_USAGE_MASK,
+        Value::integer(0x0C),
+    )])
+    .expect("the Locate mask is a valid direct Integer criterion");
+    let response = operation_batch_response_bytes([
+        (
+            LOCATE_OPERATION,
+            b"locate-usage-mask".to_vec(),
+            test_structure([test_item(
+                UNIQUE_IDENTIFIER,
+                Value::text_string("located-object".to_owned()),
+            )]),
+        ),
+        (
+            CHECK_OPERATION,
+            b"check-usage-mask".to_vec(),
+            response_payload("checked-object"),
+        ),
+    ]);
+    let (mut client, fake, captured) = client_for(ExchangeScript::Success {
+        response,
+        request_write_chunks: Vec::new(),
+    });
+    let batch = ClientBatch::from_items([
+        ClientBatchItem::new(ClientRequest::Locate(LocateRequest::new(locate_attributes)))
+            .with_unique_batch_item_id(b"locate-usage-mask".to_vec()),
+        ClientBatchItem::new(ClientRequest::Check(
+            check_request("checked-object").with_cryptographic_usage_mask(0x04),
+        ))
+        .with_unique_batch_item_id(b"check-usage-mask".to_vec()),
+    ]);
+
+    client
+        .execute(batch, &CodecLimits::defaults())
+        .expect("the typed Locate/Check request batch is serializable");
+
+    let captured = captured.borrow();
+    let request = captured
+        .as_deref()
+        .expect("the fake transport captured the submitted batch");
+    assert_eq!(request_usage_mask(request, 0), (Some(LOCATE_OPERATION), Some(0x0C)));
+    assert_eq!(request_usage_mask(request, 1), (Some(CHECK_OPERATION), Some(0x04)));
+    assert_eq!(fake.borrow().exchange_count(), 1);
 }
 
 #[test]

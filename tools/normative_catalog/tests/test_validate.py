@@ -60,6 +60,9 @@ OPTIONAL_CAPABILITY_TEST_REQUIREMENTS = {
         "KMIPKIT-REQ-SPEC-6.1.7-004-001",
         "KMIPKIT-REQ-SPEC-6.1.7-005",
     ),
+    "crates/kmipkit-client/tests/unit/check_execution_tests.rs::locate_and_check_requests_preserve_distinct_cryptographic_usage_masks": (
+        "KMIPKIT-REQ-SPEC-6.1.7-004-002",
+    ),
     "crates/kmipkit-protocol/tests/unit/recertify_operation_tests.rs::request_emits_table_300_fields_once_in_order_and_preserves_values": (
         "KMIPKIT-REQ-SPEC-6.1.45-006-001",
     ),
