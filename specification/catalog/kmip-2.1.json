@@ -784,9 +784,9 @@
         "KMIPKIT-REQ-PROF-3-006"
       ],
       "exclusion_rationale": null,
-      "role": "both",
+      "role": "unclear",
       "direction": "unclear",
-      "scope_state": "profile_conditional",
+      "scope_state": "unclear",
       "condition": "Optional only for automated client provisioning under a selected Profile; not a general channel exception."
     },
     {
@@ -79349,10 +79349,10 @@
       "normative_strength": "permission_or_optional",
       "subject": "Authentication assurance provisioning",
       "summary": "For automated client provisioning, server/client authenticity assurance may be provided by means outside the security-channel protocol.",
-      "role": "both",
+      "role": "unclear",
       "direction": "unclear",
       "condition": "Optional only for automated client provisioning under a selected Profile; not a general channel exception.",
-      "scope_state": "profile_conditional",
+      "scope_state": "unclear",
       "element_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
