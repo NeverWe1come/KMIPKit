@@ -14685,7 +14685,6 @@ class CatalogValidationTests(unittest.TestCase):
         }
         self.assertNotIn("KMIPKIT-REQ-SPEC-6.1.40-017", spec_proposals)
         required_body_proposals = {
-            "KMIPKIT-REQ-SPEC-6.1.37-001",
             "KMIPKIT-REQ-SPEC-6.1.39-001",
             "KMIPKIT-REQ-SPEC-5.5-003",
             "KMIPKIT-REQ-SPEC-5.5-004",
@@ -14806,7 +14805,6 @@ class CatalogValidationTests(unittest.TestCase):
             client_body_proposals = {
                 "KMIPKIT-REQ-SPEC-6.1.26-002",
                 "KMIPKIT-REQ-SPEC-6.1.31-001",
-                "KMIPKIT-REQ-SPEC-6.1.37-001",
                 "KMIPKIT-REQ-SPEC-6.1.39-001",
             }
             client_1_1_body_proposals = {"KMIPKIT-REQ-SPEC-6.1.54-001"}
