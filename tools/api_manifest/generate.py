@@ -75,6 +75,7 @@ _C_INTEGER_TYPES = {
     "uint64_t": ("u64", 64, False),
 }
 _REQUIREMENT_PATTERN = re.compile(r"KMIPKIT-0012-FR-[0-9]{3}\Z")
+_EXPECTED_CLIENT_1_0_OPERATION_COUNT = 56
 _RUST_2024_KEYWORDS = {
     "as", "async", "await", "break", "const", "continue", "crate", "dyn", "else", "enum",
     "extern", "false", "fn", "for", "if", "impl", "in", "let", "loop", "match", "mod",
@@ -413,13 +414,13 @@ def _validate_operation_inventory(manifest: dict[str, Any], catalog: dict[str, A
             )
         )
 
-    if len(expected) != 57:
-        raise ManifestError("normative catalog must contain exactly 57 client 1.0 operations")
+    if len(expected) != _EXPECTED_CLIENT_1_0_OPERATION_COUNT:
+        raise ManifestError("normative catalog must contain exactly 56 client 1.0 operations")
     expected.sort(key=lambda item: item[0])
 
     rows = manifest.get("operations")
     if not isinstance(rows, list) or len(rows) != len(expected):
-        raise ManifestError("manifest operation inventory must contain exactly 57 rows")
+        raise ManifestError("manifest operation inventory must contain exactly 56 rows")
     operation_ids = [row.get("operationId") for row in rows if isinstance(row, dict)]
     if len(operation_ids) != len(rows) or len(set(operation_ids)) != len(rows):
         raise ManifestError("manifest operation inventory contains malformed or duplicate IDs")
@@ -599,8 +600,8 @@ def _read_operation_dependency_matrix(root: Path) -> dict[tuple[str, str], str |
             raise ManifestError("operation dependency matrix contains an invalid owner ID")
         matrix_owners[key] = owner
 
-    if len(matrix_owners) != 57:
-        raise ManifestError("operation dependency matrix must contain exactly 57 rows")
+    if len(matrix_owners) != _EXPECTED_CLIENT_1_0_OPERATION_COUNT:
+        raise ManifestError("operation dependency matrix must contain exactly 56 rows")
     return matrix_owners
 
 
@@ -799,7 +800,7 @@ def _require_complete_readiness(
     capabilities: list[dict[str, Any]],
     declarations: list[dict[str, Any]],
 ) -> None:
-    if len(operations) != 57 or any(
+    if len(operations) != _EXPECTED_CLIENT_1_0_OPERATION_COUNT or any(
         record.get("apiState") != "verified" for record in operations
     ):
         raise ManifestError("release manifest contains an incomplete operation API")

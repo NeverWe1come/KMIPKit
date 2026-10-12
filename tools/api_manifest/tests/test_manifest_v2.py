@@ -176,7 +176,7 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
             {package["id"] for package in manifest["publicPackages"]},
             EXPECTED_PACKAGES,
         )
-        self.assertEqual(len(manifest["operations"]), 57)
+        self.assertEqual(len(manifest["operations"]), 56)
         self.assertTrue(manifest["publicDeclarations"])
         self.assertTrue(manifest["capabilities"])
         self.assertIn("approvedExclusions", manifest)

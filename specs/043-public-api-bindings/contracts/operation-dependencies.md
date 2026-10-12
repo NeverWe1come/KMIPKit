@@ -59,7 +59,6 @@ The owner states below were revalidated from the active `release/1.0.0` base `af
 | §6.1.51 | Set Attribute | KMIPKIT-0016 | Candidate owner (draft, not formally approved); blocked until approval and four-language parity evidence |
 | §6.1.52 | Set Constraints | — | Unassigned; blocked until a separate owner specification is approved |
 | §6.1.53 | Set Defaults | — | Unassigned; blocked until a separate owner specification is approved |
-| §6.1.54 | Set Endpoint Role | — | Unassigned; blocked until a separate owner specification is approved |
 | §6.1.55 | Sign | KMIPKIT-0021 | Approved/accepted owner; binding remains blocked until Rust and four-language parity evidence exist |
 | §6.1.56 | Signature Verify | KMIPKIT-0021 | Approved/accepted owner; binding remains blocked until Rust and four-language parity evidence exist |
 | §6.1.57 | Validate | — | Unassigned; blocked until a separate owner specification is approved |

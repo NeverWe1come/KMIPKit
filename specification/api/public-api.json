@@ -55960,18 +55960,6 @@
       }
     },
     {
-      "operationId": "KMIPKIT-ELEM-OP-C2S-SET-ENDPOINT-ROLE",
-      "name": "Set Endpoint Role",
-      "section": "6.1.54",
-      "scope": "client_1_0",
-      "apiState": "blocked",
-      "blockedReason": "No owner specification is linked; the operation remains blocked until an owner is approved.",
-      "ownerDependency": {
-        "state": "unassigned",
-        "specId": null
-      }
-    },
-    {
       "operationId": "KMIPKIT-ELEM-OP-C2S-SIGN",
       "name": "Sign",
       "section": "6.1.55",
