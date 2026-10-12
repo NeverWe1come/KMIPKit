@@ -76,9 +76,9 @@
     "requirement_crosswalk_records": 466,
     "requirement_crosswalk_complete": false,
     "source_requirement_review_records": 889,
-    "source_only_requirement_gaps": 113,
-    "source_only_requirement_gap_proposals": 60,
-    "source_table_contracts": 57
+    "source_only_requirement_gaps": 112,
+    "source_only_requirement_gap_proposals": 59,
+    "source_table_contracts": 58
   },
   "source_clause_crosswalk": [
     {
@@ -74420,13 +74420,14 @@
           "source_excerpt": "Unique Identifier No The Unique Identifier of the object. If omitted, then the ID Placeholder value is used by the server as the Unique Identifier.",
           "source_gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.51-UNIQUE-IDENTIFIER-OPTIONAL",
           "source_requirement_ids": [],
-          "source_note": "Table 322 marks Unique Identifier optional. The client contract covers omission only; server placeholder selection and availability are outside the client evidence."
+          "source_note": "Table 322 marks Unique Identifier optional. The client contract covers omission only; server placeholder selection and availability are outside the client evidence.",
+          "source_element_id": "KMIPKIT-ELEM-TAG-420094"
         },
         {
           "row_label": "New Attribute",
           "required": "Yes",
           "actor": "client",
-          "disposition": "required_request_field_with_source_only_proposal",
+          "disposition": "required_request_table_contract",
           "html_line_range": [
             35685,
             35699
@@ -74434,7 +74435,8 @@
           "source_excerpt": "New Attribute Yes Specifies the new value for the attribute associated with the object.",
           "source_gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.51-NEW-ATTRIBUTE-REQUIRED",
           "source_requirement_ids": [],
-          "source_note": "Table 322 requires the client request to include New Attribute with the value to set. No operation-specific stable requirement ID is linked to this body row."
+          "source_note": "Table 322 requires New Attribute. The client contract verifies the caller value is sent unchanged; it does not claim the server applied the mutation.",
+          "source_element_id": "KMIPKIT-ELEM-TAG-42013D"
         }
       ]
     },
@@ -84165,40 +84167,6 @@
       "review_note": "A source-only stable-label proposal remains outside the catalog until a separately approved normative catalog change assigns it."
     },
     {
-      "gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.51-NEW-ATTRIBUTE-REQUIRED",
-      "source_id": "KMIPKIT-SRC-spec",
-      "source_path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
-      "source_section": "6.1.51",
-      "source_clause_id": null,
-      "source_locator": {
-        "kind": "table_body_row",
-        "section": "6.1.51",
-        "row_label": "New Attribute",
-        "table": "request_payload",
-        "html_line_range": [
-          35685,
-          35699
-        ]
-      },
-      "source_locator_description": "Section 6.1.51 Table 322 New Attribute body row.",
-      "html_line_range": [
-        35685,
-        35699
-      ],
-      "source_excerpt": "New Attribute Yes Specifies the new value for the attribute associated with the object.",
-      "source_keywords": [],
-      "source_force": "required_table_body_value",
-      "audited_statement": "Table 322 requires New Attribute with the new value for the object attribute.",
-      "actor": "client",
-      "direction": "include the required New Attribute value in the request",
-      "condition": "A Set Attribute request is sent.",
-      "scope_disposition": "client_1_0",
-      "candidate_requirement_id": null,
-      "proposed_requirement_id": "KMIPKIT-REQ-SPEC-6.1.51-002",
-      "status": "stable_label_proposed_not_in_catalog",
-      "review_note": "Table 322 Required=Yes is a client request body-row obligation without an operation-specific catalog label; preserve as a source-only proposal."
-    },
-    {
       "gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.54-ENDPOINT-ROLE-REQUIRED",
       "source_id": "KMIPKIT-SRC-spec",
       "source_path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
@@ -87110,6 +87078,58 @@
       "evidence_disposition": {
         "status": "mapped_to_feature_contract",
         "statement": "The client evidence verifies that omitting Unique Identifier leaves the optional request field absent, preserves the required New Attribute, and sends Set Attribute once through fake transport. It makes no claim about server object selection, identifier assignment, or mutation results."
+      }
+    },
+    {
+      "gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.51-NEW-ATTRIBUTE-REQUIRED",
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+      "source_section": "6.1.51",
+      "source_clause_id": null,
+      "source_locator": {
+        "kind": "table_body_row",
+        "section": "6.1.51",
+        "row_label": "New Attribute",
+        "table": "request_payload",
+        "html_line_range": [
+          35685,
+          35699
+        ]
+      },
+      "source_locator_description": "Specification v2.1 §6.1.51 Table 322 required New Attribute request row (HTML lines 35685–35699).",
+      "html_line_range": [
+        35685,
+        35699
+      ],
+      "source_excerpt": "New Attribute Yes Specifies the new value for the attribute associated with the object.",
+      "source_keywords": [],
+      "source_force": "required_table_body_value",
+      "audited_statement": "Table 322 requires the Set Attribute client request to include New Attribute with the value to set.",
+      "actor": "client",
+      "direction": "include the caller-supplied New Attribute value in the request",
+      "condition": "A Set Attribute request is sent.",
+      "scope_disposition": "client_1_0",
+      "status": "mapped_to_approved_feature_contract",
+      "review_note": "The client emits required New Attribute as one direct Item without changing the caller value. Server application, instance selection, and mutation results are not claimed by this evidence.",
+      "contract_kind": "operation_request_table_field",
+      "table_number": 322,
+      "requiredness": "Yes",
+      "operation_element_id": "KMIPKIT-ELEM-OP-C2S-SET-ATTRIBUTE",
+      "functional_requirement_ids": [
+        "FR-001",
+        "FR-002",
+        "FR-009"
+      ],
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/set_attribute.rs::SetAttributeRequest::to_ttlv_payload"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/set_attribute_tests.rs::request_preserves_the_required_new_attribute_direct_item_and_table_322_order",
+        "crates/kmipkit-client/tests/unit/attribute_mutation_execution_tests.rs::add_and_set_send_the_new_attribute_as_one_unchanged_direct_item"
+      ],
+      "evidence_disposition": {
+        "status": "mapped_to_feature_contract",
+        "statement": "The client tests verify that the caller-supplied New Attribute is emitted unchanged and Set Attribute is sent once through fake transport. They do not claim server-side mutation or object-instance selection."
       }
     }
   ]
