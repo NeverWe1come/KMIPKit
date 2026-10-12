@@ -16603,5 +16603,159 @@ class CatalogValidationTests(unittest.TestCase):
                 self.assertEqual(requirement["status"], "verified")
 
 
+    def test_export_and_get_optional_request_rows_have_verified_catalog_evidence(self) -> None:
+        """Export and Get request table rows map to separate typed capabilities."""
+        catalog = json.loads(
+            (ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8")
+        )
+        requirements = {row["requirement_id"]: row for row in catalog["requirements"]}
+        oracle = json.loads(
+            (ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json").read_text(encoding="utf-8")
+        )
+        expected_rows = {
+            "KMIPKIT-REQ-SPEC-6.1.18-005": (
+                "KMIPKIT-SOURCE-GAP-SPEC-6.1.18-KEY-FORMAT-TYPE-OPTIONAL",
+                "6.1.18",
+                "Key Format Type",
+                [26902, 26917],
+                "KMIPKIT-0037",
+                ["crates/kmipkit-protocol/src/export.rs"],
+                [
+                    "crates/kmipkit-protocol/tests/unit/export_operation_tests.rs::request_preserves_all_explicit_optional_choices_and_omits_absent_fields"
+                ],
+            ),
+            "KMIPKIT-REQ-SPEC-6.1.18-006": (
+                "KMIPKIT-SOURCE-GAP-SPEC-6.1.18-KEY-WRAP-TYPE-OPTIONAL",
+                "6.1.18",
+                "Key Wrap Type",
+                [26918, 26933],
+                "KMIPKIT-0037",
+                ["crates/kmipkit-protocol/src/export.rs"],
+                [
+                    "crates/kmipkit-protocol/tests/unit/export_operation_tests.rs::request_preserves_all_explicit_optional_choices_and_omits_absent_fields"
+                ],
+            ),
+            "KMIPKIT-REQ-SPEC-6.1.18-007": (
+                "KMIPKIT-SOURCE-GAP-SPEC-6.1.18-KEY-COMPRESSION-TYPE-OPTIONAL",
+                "6.1.18",
+                "Key Compression Type",
+                [26934, 26950],
+                "KMIPKIT-0037",
+                ["crates/kmipkit-protocol/src/export.rs"],
+                [
+                    "crates/kmipkit-protocol/tests/unit/export_operation_tests.rs::request_preserves_all_explicit_optional_choices_and_omits_absent_fields"
+                ],
+            ),
+            "KMIPKIT-REQ-SPEC-6.1.18-008": (
+                "KMIPKIT-SOURCE-GAP-SPEC-6.1.18-KEY-WRAPPING-SPECIFICATION-OPTIONAL",
+                "6.1.18",
+                "Key Wrapping Specification",
+                [26951, 26966],
+                "KMIPKIT-0037",
+                ["crates/kmipkit-protocol/src/export.rs"],
+                [
+                    "crates/kmipkit-protocol/tests/unit/export_operation_tests.rs::request_preserves_all_explicit_optional_choices_and_omits_absent_fields"
+                ],
+            ),
+            "KMIPKIT-REQ-SPEC-6.1.19-003": (
+                "KMIPKIT-SOURCE-GAP-SPEC-6.1.19-KEY-FORMAT-TYPE-OPTIONAL",
+                "6.1.19",
+                "Key Format Type",
+                [27211, 27228],
+                "KMIPKIT-0017",
+                ["crates/kmipkit-protocol/src/get.rs"],
+                [
+                    "crates/kmipkit-protocol/tests/unit/get_tests.rs::request_omits_every_optional_table_220_field_when_unspecified",
+                    "crates/kmipkit-protocol/tests/unit/get_tests.rs::request_serializes_present_table_220_fields_in_source_order",
+                ],
+            ),
+            "KMIPKIT-REQ-SPEC-6.1.19-004": (
+                "KMIPKIT-SOURCE-GAP-SPEC-6.1.19-KEY-WRAP-TYPE-OPTIONAL",
+                "6.1.19",
+                "Key Wrap Type",
+                [27229, 27247],
+                "KMIPKIT-0017",
+                ["crates/kmipkit-protocol/src/get.rs"],
+                [
+                    "crates/kmipkit-protocol/tests/unit/get_tests.rs::request_omits_every_optional_table_220_field_when_unspecified",
+                    "crates/kmipkit-protocol/tests/unit/get_tests.rs::request_serializes_present_table_220_fields_in_source_order",
+                ],
+            ),
+            "KMIPKIT-REQ-SPEC-6.1.19-005": (
+                "KMIPKIT-SOURCE-GAP-SPEC-6.1.19-KEY-COMPRESSION-TYPE-OPTIONAL",
+                "6.1.19",
+                "Key Compression Type",
+                [27248, 27266],
+                "KMIPKIT-0017",
+                ["crates/kmipkit-protocol/src/get.rs"],
+                [
+                    "crates/kmipkit-protocol/tests/unit/get_tests.rs::request_omits_every_optional_table_220_field_when_unspecified",
+                    "crates/kmipkit-protocol/tests/unit/get_tests.rs::request_serializes_present_table_220_fields_in_source_order",
+                ],
+            ),
+            "KMIPKIT-REQ-SPEC-6.1.19-006": (
+                "KMIPKIT-SOURCE-GAP-SPEC-6.1.19-KEY-WRAPPING-SPECIFICATION-OPTIONAL",
+                "6.1.19",
+                "Key Wrapping Specification",
+                [27267, 27285],
+                "KMIPKIT-0017",
+                ["crates/kmipkit-protocol/src/get.rs"],
+                [
+                    "crates/kmipkit-protocol/tests/unit/get_tests.rs::request_omits_every_optional_table_220_field_when_unspecified",
+                    "crates/kmipkit-protocol/tests/unit/get_tests.rs::request_serializes_present_table_220_fields_in_source_order",
+                ],
+            ),
+        }
+        gaps = {row["gap_id"]: row for row in oracle["source_only_requirement_gaps"]}
+        crosswalk_by_gap = {
+            row["source_gap_id"]: row
+            for row in oracle["requirement_crosswalk"]
+            if row.get("source_gap_id") is not None
+        }
+
+        for requirement_id, (gap_id, section, row_label, line_range, feature_spec, implementation_refs, verification_refs) in expected_rows.items():
+            with self.subTest(requirement_id=requirement_id):
+                gap = gaps[gap_id]
+                self.assertEqual(gap["source_locator"]["kind"], "table_body_row")
+                self.assertEqual(gap["source_locator"]["section"], section)
+                self.assertEqual(gap["source_locator"]["row_label"], row_label)
+                self.assertEqual(gap["source_locator"]["table"], "request_payload")
+                self.assertEqual(gap["source_locator"]["html_line_range"], line_range)
+                self.assertEqual(gap["html_line_range"], line_range)
+                self.assertEqual(gap["source_force"], "optional_table_body_value")
+                self.assertEqual(gap["source_keywords"], [])
+                self.assertEqual(gap["actor"], "client")
+                self.assertEqual(gap["scope_disposition"], "client_1_0")
+                self.assertIsNotNone(requirements.get(requirement_id), f"{requirement_id} is missing from the catalog")
+
+                requirement = requirements[requirement_id]
+                self.assertEqual(requirement["source_gap_id"], gap_id)
+                self.assertEqual(requirement["source_clause_ids"], [])
+                self.assertIsNone(requirement["source_keyword"])
+                self.assertEqual(requirement["source_force"], "optional_table_body_value")
+                self.assertEqual(requirement["normative_strength"], "permission_or_optional")
+                self.assertEqual(requirement["source_locator"], gap["source_locator"])
+                self.assertEqual(requirement["role"], "client")
+                self.assertEqual(requirement["direction"], "client_to_server")
+                self.assertEqual(requirement["scope_state"], "client_1_0")
+                self.assertEqual(requirement["feature_spec"], feature_spec)
+                self.assertEqual(requirement["status"], "verified")
+                self.assertEqual(requirement["implementation_refs"], implementation_refs)
+                self.assertEqual(requirement["verification_refs"], verification_refs)
+                self.assertEqual(requirement["test_case_ids"], [])
+                review_note = requirement["review_note"]
+                self.assertIn("No requirement-specific official Test Cases ID is explicitly linked", review_note)
+                self.assertIn("No official case-level pass is claimed.", review_note)
+                self.assertIn("do not assert server-side behavior", review_note)
+                self.assertEqual(gap["candidate_requirement_id"], requirement_id)
+                self.assertIsNone(gap["proposed_requirement_id"])
+                self.assertEqual(gap["status"], "source_obligation_covered_by_existing_stable_label")
+                crosswalk = crosswalk_by_gap[gap_id]
+                self.assertEqual(crosswalk["requirement_id"], requirement_id)
+                self.assertEqual(crosswalk["source_force"], "optional_table_body_value")
+                self.assertNotIn("source_clause_id", crosswalk)
+                self.assertNotIn("source_keyword", crosswalk)
+
+
 if __name__ == "__main__":
     unittest.main()
