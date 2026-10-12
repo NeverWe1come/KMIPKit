@@ -15897,6 +15897,68 @@ class CatalogValidationTests(unittest.TestCase):
         )
         self.assertIn("KMIPKIT-REQ-SPEC-6.1.43-009-001", optional_capabilities)
 
+    def test_optional_evidence_gate_accepts_only_scoped_client_request_evidence(self) -> None:
+        """Scoped evidence counts only for representable in-scope client requests."""
+        requirement_id = "KMIPKIT-REQ-SPEC-TEST-CLIENT-MAY"
+        test_reference = "tests/positive_capability.py::request_capability_is_available"
+
+        def requirement(**overrides: Any) -> dict[str, Any]:
+            row: dict[str, Any] = {
+                "requirement_id": requirement_id,
+                "scope_state": "client_1_0",
+                "implementation_refs": ["src/request.rs"],
+                "verification_refs": [test_reference],
+                "status": "scoped_verified",
+                "role": "client",
+                "direction": "client_to_server",
+            }
+            row.update(overrides)
+            return row
+
+        def run_gate(row: dict[str, Any], *, create_test: bool = True) -> None:
+            with tempfile.TemporaryDirectory() as temporary_directory:
+                root = Path(temporary_directory)
+                catalog_path = root / "specification" / "catalog" / "kmip-2.1.json"
+                targets_path = root / "specification" / "catalog" / "profile-targets.json"
+                oracle_path = root / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json"
+                test_path = root / "tests" / "positive_capability.py"
+                for path, value in (
+                    (catalog_path, {"requirements": [row]}),
+                    (targets_path, {}),
+                    (oracle_path, {}),
+                ):
+                    path.parent.mkdir(parents=True, exist_ok=True)
+                    path.write_text(json.dumps(value), encoding="utf-8")
+                if create_test:
+                    test_path.parent.mkdir(parents=True, exist_ok=True)
+                    test_path.write_text(
+                        "def request_capability_is_available():\n    pass\n",
+                        encoding="utf-8",
+                    )
+                with (
+                    patch(__name__ + ".ROOT", root),
+                    patch(__name__ + "._selected_profile_source_scope", return_value=(set(), set())),
+                    patch(__name__ + "._reviewed_profile_optional_capabilities", return_value=({requirement_id}, [])),
+                ):
+                    CatalogValidationTests().test_every_reviewed_client_may_or_optional_has_usable_positive_evidence()
+
+        with self.subTest("bounded client request evidence is accepted"):
+            run_gate(requirement())
+
+        rejected_rows = (
+            ("server role", requirement(role="server"), True),
+            ("response direction", requirement(direction="server_to_client"), True),
+            ("conditional scope", requirement(scope_state="profile_conditional"), True),
+            ("missing implementation reference", requirement(implementation_refs=[]), True),
+            ("missing positive-test reference", requirement(verification_refs=[]), True),
+            ("unresolvable positive-test name", requirement(verification_refs=["tests/positive_capability.py::missing_test"]), True),
+            ("missing positive-test file", requirement(verification_refs=["tests/missing.py::request_capability_is_available"]), False),
+        )
+        for label, row, create_test in rejected_rows:
+            with self.subTest(label):
+                with self.assertRaises(AssertionError):
+                    run_gate(row, create_test=create_test)
+
     def test_every_reviewed_client_may_or_optional_has_usable_positive_evidence(self) -> None:
         """Selected Baseline MAY/OPTIONAL capabilities require implementation and positive test evidence."""
         oracle = json.loads(
