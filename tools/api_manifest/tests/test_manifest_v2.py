@@ -330,7 +330,7 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
             for declaration in self.checked_in_manifest["publicDeclarations"]
             if declaration["packageId"] in rust_packages
         ]
-        self.assertEqual(len(declarations), 1759)
+        self.assertEqual(len(declarations), 1760)
         by_package_and_name = {
             (declaration["packageId"], declaration["exportName"]): declaration
             for declaration in declarations
@@ -509,7 +509,7 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
 
     def test_checked_in_manifest_inventories_all_java_public_access_paths(self) -> None:
         declarations = self.declarations_for_package("java-kmipkit")
-        self.assertEqual(len(declarations), 315)
+        self.assertEqual(len(declarations), 319)
         by_name = {declaration["exportName"]: declaration for declaration in declarations}
         batch_item = by_name["org.kmipkit.extensions.ClientBatchItem"]
         self.assertEqual(batch_item["kind"], "type")
@@ -539,7 +539,12 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
                 re.MULTILINE,
             )
         )
-        self.assertEqual(header_functions, by_kind["c-symbol"])
+        excluded_c_functions = {
+            exclusion["exportName"]
+            for exclusion in self.checked_in_manifest["approvedExclusions"]
+            if exclusion["packageId"] == "c-kmipkit"
+        }
+        self.assertEqual(header_functions, by_kind["c-symbol"] | excluded_c_functions)
 
         header_types = set(
             re.findall(r"^typedef struct \w+\s+(kmipkit_\w+);$", header, re.MULTILINE)
@@ -581,7 +586,7 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
 
     def test_checked_in_manifest_inventories_python_exports_and_lifecycle(self) -> None:
         declarations = self.declarations_for_package("python-kmipkit")
-        self.assertEqual(len(declarations), 259)
+        self.assertEqual(len(declarations), 263)
         by_name = {declaration["exportName"]: declaration for declaration in declarations}
         close_method = by_name["kmipkit.extensions.ClientBatchItem.close"]
         self.assertEqual(close_method["kind"], "python-export")
