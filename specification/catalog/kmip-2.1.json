@@ -95615,7 +95615,8 @@
       ],
       "verification_refs": [
         "crates/kmipkit-protocol/tests/unit/register_operation_tests.rs",
-        "crates/kmipkit-client/tests/unit/register_execution_tests.rs"
+        "crates/kmipkit-client/tests/unit/register_execution_tests.rs",
+        "crates/kmipkit-client/tests/unit/register_execution_tests.rs::register_client_omits_signature_algorithm_when_x509_certificate_encodes_it"
       ],
       "negative_verification_required": false,
       "decision_id": null,
