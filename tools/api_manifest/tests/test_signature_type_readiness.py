@@ -20,15 +20,13 @@ class SignatureTypeReadinessTests(unittest.TestCase):
 
     def test_ready_signatures_reject_blocked_result_types(self) -> None:
         manifest = copy.deepcopy(self.manifest)
-        rust_type = next(
-            declaration
-            for declaration in manifest["publicDeclarations"]
-            if declaration["declarationId"] == "ExtensionRegistryLimits:rust"
+        defaults = next(
+            function
+            for function in manifest["functions"]
+            if function["id"] == "extension_registry_limits_defaults"
         )
-        rust_type["declarationState"] = "blocked"
-        rust_type.pop("approvalSource", None)
-        rust_type.pop("languageMappings", None)
+        defaults["java"]["returnType"] = "TtlvItemView"
 
-        with self.assertRaisesRegex(generate.ManifestError, "signature.*type|blocked.*type"):
+        with self.assertRaisesRegex(generate.ManifestError, "signature.*type.*TtlvItemView"):
             generate._validate_v2_readiness(manifest, ROOT)
 
