@@ -359,8 +359,9 @@ fn check_sends_table_183_fields_and_exposes_table_184_response_once() {
 
 #[test]
 fn locate_and_check_requests_preserve_distinct_cryptographic_usage_masks() {
-    // §6.1.7/Table 182 permits Check's mask to narrow a preceding Locate mask.
-    // Table 495 defines Encrypt as 0x04 and Decrypt as 0x08. This asserts only
+    // OASIS KMIP v2.1 §6.1.7/Table 182 permits Check's mask to narrow a preceding
+    // Locate mask. §12.1/Table 495 defines Encrypt as 0x04 and Decrypt as 0x08.
+    // This asserts only
     // the two client request payloads; the fake response makes no server claim.
     let locate_attributes = AttributeSet::try_new([test_item(
         CRYPTOGRAPHIC_USAGE_MASK,

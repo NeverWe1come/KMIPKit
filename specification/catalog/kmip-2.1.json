@@ -97561,12 +97561,12 @@
       ],
       "verification_refs": [
         "crates/kmipkit-protocol/tests/unit/check_operation_tests.rs",
-        "crates/kmipkit-client/tests/unit/check_execution_tests.rs"
+        "crates/kmipkit-client/tests/unit/check_execution_tests.rs::locate_and_check_requests_preserve_distinct_cryptographic_usage_masks"
       ],
       "negative_verification_required": false,
       "decision_id": null,
       "status": "scoped_verified",
-      "review_note": "Caller-facing behavior is verified within KMIPKit scope; see specs/022-object-lifecycle/traceability.md for the server/application boundary. No official Test Cases are linked to this requirement in the pinned OASIS source; this is not a full profile conformance claim."
+      "review_note": "The fake-transport test verifies the client can serialize a Locate Cryptographic Usage Mask of Encrypt plus Decrypt (0x0C) and a distinct Check mask of Encrypt (0x04) in the same caller-submitted batch. It makes no server matching or authorization claim. See specs/022-object-lifecycle/traceability.md for the boundary. No official Test Cases are linked to this requirement in the pinned OASIS source; this is not a full profile conformance claim."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.7-005",
