@@ -131,10 +131,183 @@ OPTIONAL_CAPABILITY_TEST_REQUIREMENTS = {
 }
 
 
+def _blank_rust_source_region(source: str, start: int, end: int) -> str:
+    """Blank a Rust comment or literal while retaining its original line layout."""
+    return "".join("\n" if char == "\n" else "\r" if char == "\r" else " " for char in source[start:end])
+
+
+def _rust_raw_string_start(source: str, index: int) -> tuple[int, int] | None:
+    """Return the quote index and hash count for a raw string starting here."""
+    raw_prefix = index
+    if source.startswith(("br", "cr"), index):
+        raw_prefix += 1
+    elif index >= len(source) or source[index] != "r":
+        return None
+
+    if raw_prefix >= len(source) or source[raw_prefix] != "r":
+        return None
+    quote_index = raw_prefix + 1
+    while quote_index < len(source) and source[quote_index] == "#":
+        quote_index += 1
+    if quote_index < len(source) and source[quote_index] == '"':
+        return quote_index, quote_index - raw_prefix - 1
+    return None
+
+
+def _strip_rust_comments_and_literals(source: str) -> str | None:
+    """Remove Rust comments/literals lexically so their text cannot mimic test items."""
+    characters = list(source)
+    index = 0
+    while index < len(source):
+        if source.startswith("//", index):
+            end = source.find("\n", index)
+            if end < 0:
+                end = len(source)
+            characters[index:end] = _blank_rust_source_region(source, index, end)
+            index = end
+            continue
+
+        if source.startswith("/*", index):
+            depth = 1
+            end = index + 2
+            while end < len(source) and depth:
+                if source.startswith("/*", end):
+                    depth += 1
+                    end += 2
+                elif source.startswith("*/", end):
+                    depth -= 1
+                    end += 2
+                else:
+                    end += 1
+            if depth:
+                return None
+            characters[index:end] = _blank_rust_source_region(source, index, end)
+            index = end
+            continue
+
+        raw_start = _rust_raw_string_start(source, index)
+        if raw_start is not None:
+            quote_index, hash_count = raw_start
+            terminator = '"' + ("#" * hash_count)
+            end_quote = source.find(terminator, quote_index + 1)
+            if end_quote < 0:
+                return None
+            end = end_quote + len(terminator)
+            characters[index:end] = _blank_rust_source_region(source, index, end)
+            index = end
+            continue
+
+        quote_index = index
+        if source.startswith(("b\"", "c\""), index):
+            quote_index += 1
+        if quote_index < len(source) and source[quote_index] == '"':
+            end = quote_index + 1
+            while end < len(source):
+                if source[end] == "\\":
+                    end += 2
+                elif source[end] == '"':
+                    end += 1
+                    break
+                else:
+                    end += 1
+            else:
+                return None
+            characters[index:end] = _blank_rust_source_region(source, index, end)
+            index = end
+            continue
+
+        index += 1
+    return "".join(characters)
+
+
+def _rust_cfg_condition_is_enabled(expression: str) -> bool | None:
+    """Evaluate cfg logic known in a Rust test build; None means unknown."""
+    tokens = re.findall(r'"(?:\\.|[^"\\])*"|[A-Za-z_][A-Za-z0-9_]*|[(),=]|\S', expression)
+    cursor = 0
+
+    def parse_predicate() -> bool | None:
+        nonlocal cursor
+        if cursor >= len(tokens) or not re.fullmatch(r"[A-Za-z_][A-Za-z0-9_]*", tokens[cursor]):
+            return None
+        name = tokens[cursor]
+        cursor += 1
+        if name not in {"any", "all", "not"}:
+            if cursor < len(tokens) and tokens[cursor] == "=":
+                cursor += 1
+                if cursor < len(tokens) and tokens[cursor] not in {",", ")"}:
+                    cursor += 1
+                return None
+            return True if name == "test" else None
+        if cursor >= len(tokens) or tokens[cursor] != "(":
+            return None
+        cursor += 1
+        values: list[bool | None] = []
+        if cursor < len(tokens) and tokens[cursor] != ")":
+            while True:
+                values.append(parse_predicate())
+                if cursor >= len(tokens):
+                    return None
+                if tokens[cursor] == ")":
+                    break
+                if tokens[cursor] != ",":
+                    return None
+                cursor += 1
+                if cursor < len(tokens) and tokens[cursor] == ")":
+                    break
+        if cursor >= len(tokens) or tokens[cursor] != ")":
+            return None
+        cursor += 1
+        if name == "not":
+            if len(values) != 1 or values[0] is None:
+                return None
+            return not values[0]
+        if name == "all":
+            if any(value is False for value in values):
+                return False
+            if all(value is True for value in values):
+                return True
+            return None
+        if any(value is True for value in values):
+            return True
+        if all(value is False for value in values):
+            return False
+        return None
+
+    result = parse_predicate()
+    return result if cursor == len(tokens) else None
+
+
+def _rust_source_has_only_unconditionally_enabled_cfg(source: str) -> bool:
+    """Fail closed on cfg conditions this local test-ref gate cannot resolve."""
+    if re.search(r"#\s*\[\s*cfg_attr\s*\(", source):
+        return False
+    marker = re.compile(r"#\s*\[\s*cfg\s*\(")
+    cursor = 0
+    while match := marker.search(source, cursor):
+        depth = 1
+        end = match.end()
+        while end < len(source) and depth:
+            if source[end] == "(":
+                depth += 1
+            elif source[end] == ")":
+                depth -= 1
+            end += 1
+        if depth:
+            return False
+        expression = source[match.end():end - 1]
+        if _rust_cfg_condition_is_enabled(expression) is not True:
+            return False
+        cursor = end
+    return True
+
+
 def _is_discoverable_positive_test(path: Path, test_name: str, source: str) -> bool:
-    """Recognize the Rust and Python test declarations used by catalog evidence."""
+    """Recognize runner-shaped Rust/Python tests, not their assertion semantics."""
     if path.suffix == ".rs":
         if not re.fullmatch(r"[A-Za-z_][A-Za-z0-9_]*", test_name):
+            return False
+        source = _strip_rust_comments_and_literals(source)
+        if source is None or not _rust_source_has_only_unconditionally_enabled_cfg(source):
             return False
         declaration = re.compile(
             rf"^\s*(?:async\s+)?fn\s+{re.escape(test_name)}\s*\(", re.MULTILINE
