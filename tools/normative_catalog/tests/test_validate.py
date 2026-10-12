@@ -16931,6 +16931,73 @@ class CatalogValidationTests(unittest.TestCase):
             )
         self.assertEqual(oracle["oracle_status"], "partial-source-reviewed; not complete T003 oracle")
 
+    def test_locate_table_247_storage_status_mask_is_a_client_source_contract(self) -> None:
+        """The optional Storage Status Mask maps to request-only client evidence."""
+        oracle = json.loads(
+            (ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json").read_text(encoding="utf-8")
+        )
+        gap_id = "KMIPKIT-SOURCE-GAP-SPEC-6.1.28-STORAGE-STATUS-MASK-OPTIONAL"
+        proposed_id = "KMIPKIT-REQ-SPEC-6.1.28-014"
+        contracts = source_table_contracts_for_gap(oracle["source_table_contracts"], gap_id)
+
+        self.assertEqual(len(contracts), 1)
+        contract = contracts[0]
+        line_range = [29297, 29316]
+        source_path = "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
+        self.assertEqual(contract["source_id"], "KMIPKIT-SRC-spec")
+        self.assertEqual(contract["source_path"], source_path)
+        self.assertEqual(contract["source_section"], "6.1.28")
+        self.assertEqual(contract["source_locator"], {
+            "kind": "table_body_row",
+            "section": "6.1.28",
+            "row_label": "Storage Status Mask",
+            "table": "request_payload",
+            "html_line_range": line_range,
+        })
+        self.assertEqual(contract["source_excerpt"], pinned_source_excerpt(source_path, line_range))
+        self.assertEqual(contract["table_number"], 247)
+        self.assertEqual(contract["requiredness"], "No")
+        self.assertEqual(contract["source_force"], "optional_table_body_value")
+        self.assertEqual(contract["actor"], "client")
+        self.assertEqual(contract["scope_disposition"], "client_1_0")
+        self.assertEqual(contract["operation_element_id"], "KMIPKIT-ELEM-OP-C2S-LOCATE")
+        self.assertEqual(contract["functional_requirement_ids"], ["FR-006", "FR-009"])
+        self.assertEqual(contract["implementation_refs"], [
+            "crates/kmipkit-protocol/src/locate.rs::LocateRequest::to_ttlv_payload",
+        ])
+        self.assertEqual(contract["verification_refs"], [
+            "crates/kmipkit-protocol/tests/unit/locate_tests.rs::request_emits_supplied_optional_fields_in_table_247_order",
+            "crates/kmipkit-protocol/tests/unit/locate_tests.rs::storage_status_mask_preserves_assigned_and_unknown_bits",
+            "crates/kmipkit-client/tests/unit/object_read_execution_tests.rs::locate_forwards_assigned_and_unknown_storage_status_bits_unchanged",
+            "crates/kmipkit-client/tests/unit/object_read_execution_tests.rs::locate_without_storage_status_mask_preserves_all_server_returned_identifiers",
+        ])
+        self.assertEqual(contract["status"], "mapped_to_approved_feature_contract")
+        self.assertEqual(contract["evidence_disposition"]["status"], "mapped_to_feature_contract")
+        self.assertFalse(
+            {"candidate_requirement_id", "proposed_requirement_id", "requirement_id"}.intersection(contract),
+        )
+
+        self.assertFalse(any(row["gap_id"] == gap_id for row in oracle["source_only_requirement_gaps"]))
+        self.assertFalse(any(row["requirement_id"] == proposed_id for row in oracle["requirement_crosswalk"]))
+        catalog = json.loads((ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8"))
+        self.assertNotIn(proposed_id, {row["requirement_id"] for row in catalog["requirements"]})
+
+        request_review = next(
+            review for review in oracle["source_requirement_reviews"]
+            if review.get("source_clause_id") == "KMIPKIT-CLAUSE-SPEC-6.1.28-010"
+        )
+        row = next(
+            row for row in request_review["source_request_rows"]
+            if row["row_label"] == "Storage Status Mask"
+        )
+        self.assertEqual(row["source_gap_id"], gap_id)
+        self.assertEqual(row["disposition"], "optional_request_table_contract")
+
+        self.assertEqual(oracle["counts"]["source_table_contracts"], 53)
+        self.assertEqual(oracle["counts"]["source_only_requirement_gaps"], 117)
+        self.assertEqual(oracle["counts"]["source_only_requirement_gap_proposals"], 64)
+        self.assertEqual(validate_source_table_contracts(oracle, ROOT), [])
+
     def test_locate_table_247_object_group_member_is_a_client_source_contract(self) -> None:
         """Locate Table 247's optional Object Group Member maps to client evidence."""
         oracle = json.loads(
