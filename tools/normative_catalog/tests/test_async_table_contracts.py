@@ -55,6 +55,15 @@ def validate_with_catalog_fixture(oracle: object, catalog: dict[str, object]) ->
             return validate_source_table_contracts(oracle, ROOT)
 
 
+def source_request_rows_for_gap(oracle: dict[str, object], gap_id: str) -> list[dict[str, object]]:
+    return [
+        row
+        for review in oracle["source_requirement_reviews"]
+        for row in review.get("source_request_rows", [])
+        if row.get("source_gap_id") == gap_id
+    ]
+
+
 class AsyncTableContractTests(unittest.TestCase):
     def test_process_and_query_async_request_rows_are_feature_contracts(self) -> None:
         oracle = json.loads(ORACLE_PATH.read_text(encoding="utf-8"))
@@ -106,6 +115,14 @@ class AsyncTableContractTests(unittest.TestCase):
                     {field: row[field] for field in REVIEWED_ASYNC_CONTRACT_SEMANTICS[gap_id]},
                     REVIEWED_ASYNC_CONTRACT_SEMANTICS[gap_id],
                 )
+                source_rows = source_request_rows_for_gap(oracle, gap_id)
+                self.assertEqual(len(source_rows), 1)
+                self.assertEqual(row["requiredness"], source_rows[0]["required"])
+                self.assertEqual(row["actor"], source_rows[0]["actor"])
+                self.assertEqual(
+                    row["scope_disposition"],
+                    operations[operation_id]["scope_state"],
+                )
                 self.assertEqual(row["status"], "mapped_to_approved_feature_contract")
                 self.assertNotIn("candidate_requirement_id", row)
                 self.assertNotIn("proposed_requirement_id", row)
@@ -114,28 +131,50 @@ class AsyncTableContractTests(unittest.TestCase):
     def test_source_table_validator_rejects_wrong_async_contract_semantics(self) -> None:
         oracle = json.loads(ORACLE_PATH.read_text(encoding="utf-8"))
         self.assertEqual(validate_source_table_contracts(oracle, ROOT), [])
+        catalog = json.loads(CATALOG_PATH.read_text(encoding="utf-8"))
 
-        for gap_id, semantics in REVIEWED_ASYNC_CONTRACT_SEMANTICS.items():
-            for field, wrong_value in (
-                ("requiredness", "No" if semantics["requiredness"] == "Yes" else "Yes"),
-                ("actor", "server"),
-                ("scope_disposition", "client_1_1"),
-            ):
+        for index, contract in enumerate(oracle["source_table_contracts"]):
+            gap_id = contract.get("gap_id")
+            if gap_id not in REVIEWED_ASYNC_CONTRACT_SEMANTICS:
+                continue
+            source_rows = source_request_rows_for_gap(oracle, gap_id)
+            self.assertEqual(len(source_rows), 1)
+            source_row = source_rows[0]
+            operation = next(
+                row for row in catalog["elements"]
+                if row.get("element_id") == contract["operation_element_id"]
+            )
+            wrong_values = (
+                (
+                    "requiredness",
+                    "No" if source_row["required"] == "Yes" else "Yes",
+                ),
+                ("actor", "server" if source_row["actor"] == "client" else "client"),
+                (
+                    "scope_disposition",
+                    "client_1_1" if operation["scope_state"] == "client_1_0" else "client_1_0",
+                ),
+            )
+            for field, wrong_value in wrong_values:
                 with self.subTest(gap_id=gap_id, field=field):
                     mutated_oracle = copy.deepcopy(oracle)
-                    contract = next(
+                    mutated_contract = next(
                         row for row in mutated_oracle["source_table_contracts"]
                         if row.get("gap_id") == gap_id
                     )
-                    contract[field] = wrong_value
+                    mutated_contract[field] = wrong_value
 
                     diagnostics = validate_source_table_contracts(mutated_oracle, ROOT)
+                    contract_label = f"source_table_contracts[{index}]"
                     self.assertTrue(
-                        any(f".{field}" in diagnostic for diagnostic in diagnostics),
+                        any(
+                            contract_label in diagnostic and f".{field}" in diagnostic
+                            for diagnostic in diagnostics
+                        ),
                         f"validator accepted wrong {field} for {gap_id}: {diagnostics!r}",
                     )
 
-    def test_source_table_validator_checks_linked_operation_direction_and_request_table(self) -> None:
+    def test_source_table_validator_checks_linked_operation_and_scope_metadata(self) -> None:
         oracle = json.loads(ORACLE_PATH.read_text(encoding="utf-8"))
         catalog = json.loads(CATALOG_PATH.read_text(encoding="utf-8"))
         operation_ids = (
@@ -144,7 +183,13 @@ class AsyncTableContractTests(unittest.TestCase):
         )
 
         for operation_id in operation_ids:
-            for mutation in ("direction", "request_table_role"):
+            affected_contracts = [
+                (index, contract)
+                for index, contract in enumerate(oracle["source_table_contracts"])
+                if contract.get("operation_element_id") == operation_id
+            ]
+            self.assertTrue(affected_contracts)
+            for mutation in ("direction", "request_table_role", "scope_state"):
                 with self.subTest(operation_id=operation_id, mutation=mutation):
                     mutated_catalog = copy.deepcopy(catalog)
                     operation = next(
@@ -153,21 +198,35 @@ class AsyncTableContractTests(unittest.TestCase):
                     )
                     if mutation == "direction":
                         operation["direction"] = "server_to_client"
-                    else:
+                    elif mutation == "request_table_role":
                         request_table = next(
                             table for table in operation["payload_tables"]
                             if table.get("role") == "request"
                         )
                         request_table["role"] = "response"
+                    else:
+                        operation["scope_state"] = (
+                            "client_1_1"
+                            if operation["scope_state"] == "client_1_0"
+                            else "client_1_0"
+                        )
 
                     diagnostics = validate_with_catalog_fixture(oracle, mutated_catalog)
-                    self.assertTrue(
-                        any(
-                            "operation_element_id must reference a client-to-server operation with the request table" in diagnostic
-                            for diagnostic in diagnostics
-                        ),
-                        f"validator accepted wrong linked operation {mutation} for {operation_id}: {diagnostics!r}",
-                    )
+                    for contract_index, contract in affected_contracts:
+                        contract_label = f"source_table_contracts[{contract_index}]"
+                        diagnostic_fragment = (
+                            "scope_disposition"
+                            if mutation == "scope_state"
+                            else "operation_element_id must reference a client-to-server operation with the request table"
+                        )
+                        with self.subTest(contract_gap_id=contract["gap_id"]):
+                            self.assertTrue(
+                                any(
+                                    contract_label in diagnostic and diagnostic_fragment in diagnostic
+                                    for diagnostic in diagnostics
+                                ),
+                                f"validator accepted linked operation {mutation} for {contract['gap_id']}: {diagnostics!r}",
+                            )
 
 
 if __name__ == "__main__":

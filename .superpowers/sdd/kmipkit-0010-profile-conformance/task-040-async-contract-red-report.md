@@ -14,7 +14,7 @@ The pinned source rows are KMIP Specification v2.1 §6.1.39, Table 278, lines 31
 
 The tests do not map Process's asynchronous correlation field to `KMIPKIT-REQ-SPEC-7.8-001`.
 
-The contract `direction` values are prose, not normalized data. The mutation matrix therefore does not substitute arbitrary text for that field. A separate crosslink test changes each linked catalog operation's direction and request-table role in a temporary catalog copy; the existing operation/table validator rejects those mutations. The remaining semantic mutation matrix expects `requiredness` and `actor` to match the independent source-review row and `scope_disposition` to match the linked operation's `scope_state`.
+The contract `direction` values are prose, not normalized data. The mutation matrix therefore does not substitute arbitrary text for that field. Catalog-copy cases change each linked operation's structured direction, request-table role, and scope state. The operation-direction and request-table mutations are rejected with diagnostics for every affected source-table row, including each Query Asynchronous Requests contract independently. The semantic mutations expect `requiredness` and `actor` to match the independent source-review row selected by `source_gap_id`, and `scope_disposition` to match the linked operation's `scope_state`.
 
 ## Red run
 
@@ -24,8 +24,8 @@ Command:
 python -m unittest tools.normative_catalog.tests.test_async_table_contracts
 ```
 
-Result: expected failure, exit code 1. Two test methods passed: exact reviewed-value assertions, and the existing catalog operation-direction/request-table crosslink check for Process and Query Asynchronous Requests. The semantic mutation matrix produced 9 failed subtests (three contracts × `requiredness`, `actor`, and `scope_disposition`): each changed value was accepted and returned `[]` diagnostics. The failures were rejection assertions, not import, fixture, or setup errors.
+Result: expected failure, exit code 1. Exact reviewed-value assertions and the catalog operation-direction/request-table cases passed. Twelve row-specific rejection assertions failed: nine oracle mutations (three contracts × `requiredness`, `actor`, and `scope_disposition`) and three linked catalog `scope_state` mutations (Process and both Query Asynchronous Requests rows). Each failed mutation was accepted with no diagnostic for its specific `source_table_contracts[index]` row. The failures were rejection assertions, not import, fixture, or setup errors.
 
-Mutation values used: toggle `Yes`/`No`, set `actor` to `server`, and set `scope_disposition` to `client_1_1`. Each mutation was applied to a fresh `copy.deepcopy` of the oracle object. The crosslink test mutates `direction` to `server_to_client` or changes the linked request table role to `response` in a temporary catalog fixture.
+Mutation values used: toggle requiredness relative to the review row's `required` value, set actor to the opposite of the review row's actor, and change `scope_disposition` relative to the linked operation's `scope_state`. Each contract mutation uses a fresh `copy.deepcopy` of the oracle object. Catalog-copy cases set operation direction to `server_to_client`, change the linked request table role to `response`, or set `scope_state` to `client_1_1`.
 
 `git diff --check` passed. This is Red evidence only; no validator fix was included.
