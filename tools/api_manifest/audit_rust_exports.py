@@ -509,6 +509,15 @@ class _Inventory:
             return bindings[expression["lifetime"]]
         return {key: cls.substitute_type(value, bindings) for key, value in expression.items()}
 
+    @classmethod
+    def substitute_lifetime(cls, lifetime: str, bindings: dict[str, Any]) -> str | None:
+        """Resolve a lifetime through generic bindings when rustdoc provides one."""
+        resolved = cls.substitute_type({"lifetime": lifetime}, bindings)
+        if isinstance(resolved, dict) and set(resolved) == {"lifetime"} \
+                and isinstance(resolved["lifetime"], str):
+            return resolved["lifetime"]
+        return None
+
     @staticmethod
     def generic_parameter_names(generics: dict[str, Any]) -> set[str]:
         return {parameter["name"] for parameter in generics.get("params", []) if parameter.get("name")}
@@ -644,13 +653,10 @@ class _Inventory:
     def check_lifetime_relation(self, longer: str, shorter: str,
                                 bindings: dict[str, Any]) -> bool | None:
         """Prove a lifetime outlives relation only from identity or `'static`."""
-        longer_value = self.substitute_type({"lifetime": longer}, bindings)
-        shorter_value = self.substitute_type({"lifetime": shorter}, bindings)
-        if not isinstance(longer_value, dict) or set(longer_value) != {"lifetime"} \
-                or not isinstance(shorter_value, dict) or set(shorter_value) != {"lifetime"}:
+        longer_name = self.substitute_lifetime(longer, bindings)
+        shorter_name = self.substitute_lifetime(shorter, bindings)
+        if longer_name is None or shorter_name is None:
             return None
-        longer_name = longer_value["lifetime"]
-        shorter_name = shorter_value["lifetime"]
         if longer_name == shorter_name or longer_name == "'static":
             return True
         return None
