@@ -195,6 +195,11 @@ def _apply_handle_array_contract(manifest: dict[str, object]) -> None:
 
 
 class ManifestGeneratorCliTests(unittest.TestCase):
+    def test_v1_reference_validation_does_not_require_v2_declarations(self) -> None:
+        manifest = json.loads(PUBLIC_API_V1_FIXTURE.read_text(encoding="utf-8"))
+
+        generate._validate_references(manifest)
+
     def test_v2_full_api_header_shares_new_symbols_without_polluting_registry_slice(self) -> None:
         manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
         version_query = copy.deepcopy(manifest["functions"][0])
