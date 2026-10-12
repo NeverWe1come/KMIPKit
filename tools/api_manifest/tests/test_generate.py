@@ -14,6 +14,8 @@ from pathlib import Path
 
 from jsonschema import Draft202012Validator
 
+from tools.api_manifest import generate
+
 
 ROOT = Path(__file__).resolve().parents[3]
 GENERATOR = ROOT / "tools" / "api_manifest" / "generate.py"
@@ -110,12 +112,9 @@ def _create_repo(parent: Path) -> Path:
         owner_id = dependency.get("specId")
         if not isinstance(owner_id, str):
             continue
-        number = int(owner_id[-4:])
-        owner_matches = sorted((ROOT / "specs").glob(f"{number:03d}-*"))
-        if len(owner_matches) != 1:
-            raise AssertionError(f"expected one checked-in owner specification for {owner_id}")
-        source_path = owner_matches[0] / "spec.md"
-        destination = root / "specs" / owner_matches[0].name / "spec.md"
+        owner_directory = generate._feature_directory(ROOT, owner_id)
+        source_path = owner_directory / "spec.md"
+        destination = root / "specs" / owner_directory.name / "spec.md"
         destination.parent.mkdir(parents=True, exist_ok=True)
         shutil.copy2(source_path, destination)
     referenced_paths: set[str] = set()

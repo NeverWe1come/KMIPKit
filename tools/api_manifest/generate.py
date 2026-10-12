@@ -18,6 +18,7 @@ import stat
 import sys
 import tempfile
 from decimal import Decimal
+from functools import lru_cache
 from pathlib import Path, PurePosixPath
 from typing import Any
 
@@ -458,21 +459,25 @@ def _manifest_file(root: Path, relative_path: Any) -> tuple[Path, str]:
     return resolved, content
 
 
-def _feature_directory(root: Path, feature_id: Any) -> Path:
-    if not isinstance(feature_id, str) or re.fullmatch(r"KMIPKIT-[0-9]{4}", feature_id) is None:
-        raise ManifestError("manifest feature owner ID is invalid")
-
+def _feature_branch_directories(root: Path, feature_id: str) -> list[Path]:
     branch_pattern = re.compile(
-        rf"(?m)^\*\*Feature Branch\*\*:\s*`?feature/{re.escape(feature_id)}(?:[-`\s]|$)"
+        rf"^\*\*Feature Branch\*\*:\s*`?feature/{re.escape(feature_id)}(?:[-`\s]|$)"
     )
     branch_matches: list[Path] = []
     for spec_path in (root / "specs").glob("*/spec.md"):
         try:
-            spec_text = spec_path.read_text(encoding="utf-8")
+            with spec_path.open(encoding="utf-8") as spec_file:
+                header = "".join(next(spec_file, "") for _ in range(8))
         except (OSError, UnicodeDecodeError) as error:
             raise ManifestError("feature specification is missing or unreadable") from error
-        if branch_pattern.search(spec_text):
+        if any(branch_pattern.search(line.rstrip("\r\n")) for line in header.splitlines()):
             branch_matches.append(spec_path.parent)
+    return branch_matches
+
+
+@lru_cache(maxsize=128)
+def _resolve_feature_directory(root: Path, feature_id: str) -> Path:
+    branch_matches = _feature_branch_directories(root, feature_id)
 
     if len(branch_matches) == 1:
         return branch_matches[0]
@@ -485,6 +490,16 @@ def _feature_directory(root: Path, feature_id: Any) -> Path:
     if len(matches) != 1 or not matches[0].is_dir():
         raise ManifestError("manifest feature owner does not resolve to one specification")
     return matches[0]
+
+
+def _feature_directory(root: Path, feature_id: Any) -> Path:
+    if not isinstance(feature_id, str) or re.fullmatch(r"KMIPKIT-[0-9]{4}", feature_id) is None:
+        raise ManifestError("manifest feature owner ID is invalid")
+    try:
+        checkout = root.resolve(strict=True)
+    except OSError as error:
+        raise ManifestError("feature specification root is missing or unreadable") from error
+    return _resolve_feature_directory(checkout, feature_id)
 
 
 def _status_from_document(content: str) -> str:
