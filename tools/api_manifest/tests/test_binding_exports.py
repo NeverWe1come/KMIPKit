@@ -20,6 +20,12 @@ SPEC.loader.exec_module(AUDIT)
 
 
 class BindingExportAuditTests(unittest.TestCase):
+    def test_published_c_abi_exports_only_kmipkit_symbols(self):
+        exports = AUDIT.build_c_binary_exports(Path(__file__).resolve().parents[3])
+        non_kmipkit_exports = [name for name in exports if not name.startswith("kmipkit_")]
+        self.assertEqual(non_kmipkit_exports, [])
+        self.assertTrue(any(name.startswith("kmipkit_") for name in exports))
+
     def test_c_build_export_reader_reads_library_before_temporary_cleanup(self):
         build_exports = getattr(AUDIT, "build_c_binary_exports", None)
         self.assertIsNotNone(build_exports)
