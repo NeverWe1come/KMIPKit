@@ -66,7 +66,7 @@ OPTIONAL_CAPABILITY_TEST_REQUIREMENTS = {
     "crates/kmipkit-protocol/tests/unit/rekey_key_pair_operation_tests.rs::request_emits_table_310_fields_once_in_order_and_preserves_groups": (
         "KMIPKIT-REQ-SPEC-6.1.47-004-001",
     ),
-    "crates/kmipkit-protocol/tests/unit/import_operation_tests.rs::wrapped_pgp_key_accepts_key_wrap_type": (
+    "crates/kmipkit-protocol/tests/unit/import_operation_tests.rs::replacement_and_conditional_wrap_type_are_preserved_without_unwrapping": (
         "KMIPKIT-REQ-SPEC-3.3-001-001",
     ),
     "crates/kmipkit-protocol/tests/unit/import_operation_tests.rs::request_preserves_required_fields_and_only_explicit_optional_choices": (
@@ -102,7 +102,7 @@ OPTIONAL_CAPABILITY_TEST_REQUIREMENTS = {
     "crates/kmipkit-protocol/tests/unit/create_tests.rs::request_keeps_the_required_empty_attributes_structure_without_synthesizing_fields": (
         "KMIPKIT-REQ-SPEC-6.1-004",
     ),
-    "crates/kmipkit-protocol/tests/unit/register_operation_tests.rs::request_emits_table_291_fields_in_order_and_preserves_object_item": (
+    "crates/kmipkit-protocol/tests/unit/create_tests.rs::create_only_oasis_fixtures_decode_with_the_expected_fields": (
         "KMIPKIT-REQ-SPEC-6.1-004",
     ),
     "crates/kmipkit-protocol/tests/unit/create_tests.rs::create_preserves_two_repeated_object_group_text_values_in_order": (
