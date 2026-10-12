@@ -685,7 +685,8 @@ class ProfileTargetManifestTests(unittest.TestCase):
         self.assertIn('claim_state: "not_claimed"', generated)
         self.assertIn("selected_target: true", generated)
         self.assertIn('fixture_availability: "unavailable"', generated)
-        self.assertIn('"KMIPKIT-REQ-SPEC-2.1-001"', generated)
+        self.assertNotIn('"KMIPKIT-REQ-SPEC-2.1-001"', generated)
+        self.assertIn('"KMIPKIT-REQ-PROF-3.1.1-004"', generated)
         self.assertNotIn("ProfileRuleMapping", generated)
 
     def test_target_and_profile_prose_do_not_change_requirement_evidence_metadata(self) -> None:
