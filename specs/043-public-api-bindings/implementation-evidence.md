@@ -208,3 +208,17 @@ The current snapshot has 7,614 verified declarations and 1,883 conditional decla
 | Generated outputs | `python -B tools/api_manifest/generate.py --check` | PASS: all 11 generated outputs current. |
 | Full API-manifest suite | `uv run --no-project --with-requirements tools/api_manifest/requirements-test.txt python -B -m unittest discover -s tools/api_manifest/tests -v` | PASS: 217 tests; 3 Windows symlink tests skipped because creation was denied (WinError 1314). |
 | Whitespace validation | `git diff --check` | PASS at the latest local check; rerun before commit. |
+
+## T011 — Initial CI regression repair (remote verification pending)
+
+The initial PR run `38288466279` on `2e3157fe` failed 11 root jobs and two derivative gates. The root failures reduced to two defects: `extension_registry.c` referenced two category/cause identifiers that are not declared by the public C ABI, and the temporary offline guide-example project did not carry the workspace's local `aws-lc-sys` patch. The coverage gate and run-summary failures were downstream of the failed root jobs.
+
+| Phase | Commit | Verification | Result |
+|---|---|---|---|
+| Red | `aa990084` | `.venv/Scripts/python.exe -B -m unittest discover -s scripts/tests -p test_user_guide_examples.py -v` | Expected failure: 5 existing tests passed and the new patch-inheritance regression failed because the temporary manifest omitted `[patch.crates-io] aws-lc-sys`. The initial CI run also showed the C consumer compile failure at the undefined identifiers. |
+| Green | `971988eb` | Same script unit suite; `.venv/Scripts/python.exe -B scripts/test_user_guide_examples.py`; `cargo build --locked -p kmipkit-ffi`; MSVC C consumer compile and execution | PASS: 6 script tests; all 20 marked guide examples compiled with Cargo offline; the C consumer compiled against the public header and FFI library and all 14 consumer cases passed. The test now checks the documented numeric category/cause values. |
+| Refactor | `62c05a1a` | Script unit suite; offline guide-example compilation; `git diff --check` | PASS: 6 script tests and 20 offline examples; the regression parses TOML semantically rather than depending on formatting. No runtime behavior changed in this phase. |
+
+Remote CI has not yet rerun on these commits. T011 remains open until the complete PR matrix and a fresh read-only QA review pass.
+
+The Windows C consumer check used the installed Visual Studio 2022 x64 developer environment to compile `bindings/c/tests/extension_registry.c` against `bindings/c/include` and `target/debug/kmipkit_ffi.dll.lib`, then executed `target/debug/extension_registry_consumer.exe`. CMake is unavailable on this host, so the CI-configured CMake matrix remains the cross-platform build authority.
