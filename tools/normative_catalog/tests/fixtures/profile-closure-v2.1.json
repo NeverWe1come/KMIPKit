@@ -73,11 +73,11 @@
   },
   "counts": {
     "profiles": 18,
-    "requirement_crosswalk_records": 462,
+    "requirement_crosswalk_records": 466,
     "requirement_crosswalk_complete": false,
     "source_requirement_review_records": 889,
     "source_only_requirement_gaps": 170,
-    "source_only_requirement_gap_proposals": 121
+    "source_only_requirement_gap_proposals": 117
   },
   "source_clause_crosswalk": [
     {
@@ -22817,6 +22817,90 @@
       "source_actor": "server"
     },
     {
+      "requirement_id": "KMIPKIT-REQ-SPEC-6.1.30-001",
+      "source_gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.30-LEASE-TIME-OPTIONAL",
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_section": "6.1.30",
+      "source_locator": {
+        "kind": "table_body_row",
+        "section": "6.1.30",
+        "row_label": "Lease Time",
+        "table": "request_payload",
+        "html_line_range": [
+          29673,
+          29688
+        ]
+      },
+      "source_force": "optional_table_body_value",
+      "role": "client",
+      "scope_state": "client_1_0",
+      "applies_to": "all_client_profiles",
+      "review_note": "Exact Lease Time request body row mapped to KMIPKIT-REQ-SPEC-6.1.30-001; table-field force is not a formal RFC keyword."
+    },
+    {
+      "requirement_id": "KMIPKIT-REQ-SPEC-6.1.30-002",
+      "source_gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.30-REQUEST-COUNT-OPTIONAL",
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_section": "6.1.30",
+      "source_locator": {
+        "kind": "table_body_row",
+        "section": "6.1.30",
+        "row_label": "Request Count",
+        "table": "request_payload",
+        "html_line_range": [
+          29689,
+          29704
+        ]
+      },
+      "source_force": "optional_table_body_value",
+      "role": "client",
+      "scope_state": "client_1_0",
+      "applies_to": "all_client_profiles",
+      "review_note": "Exact Request Count request body row mapped to KMIPKIT-REQ-SPEC-6.1.30-002; table-field force is not a formal RFC keyword."
+    },
+    {
+      "requirement_id": "KMIPKIT-REQ-SPEC-6.1.30-003",
+      "source_gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.30-USAGE-LIMITS-OPTIONAL",
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_section": "6.1.30",
+      "source_locator": {
+        "kind": "table_body_row",
+        "section": "6.1.30",
+        "row_label": "Usage Limits",
+        "table": "request_payload",
+        "html_line_range": [
+          29705,
+          29720
+        ]
+      },
+      "source_force": "optional_table_body_value",
+      "role": "client",
+      "scope_state": "client_1_0",
+      "applies_to": "all_client_profiles",
+      "review_note": "Exact Usage Limits request body row mapped to KMIPKIT-REQ-SPEC-6.1.30-003; table-field force is not a formal RFC keyword."
+    },
+    {
+      "requirement_id": "KMIPKIT-REQ-SPEC-6.1.31-001",
+      "source_gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.31-TICKET-REQUIRED",
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_section": "6.1.31",
+      "source_locator": {
+        "kind": "table_body_row",
+        "section": "6.1.31",
+        "row_label": "Ticket",
+        "table": "request_payload",
+        "html_line_range": [
+          29866,
+          29881
+        ]
+      },
+      "source_force": "required_table_body_value",
+      "role": "client",
+      "scope_state": "client_1_0",
+      "applies_to": "all_client_profiles",
+      "review_note": "Exact Ticket request body row mapped to KMIPKIT-REQ-SPEC-6.1.31-001; table-field force is not a formal RFC keyword."
+    },
+    {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.32-001",
       "source_clause_id": "KMIPKIT-CLAUSE-SPEC-6.1.32-001",
       "source_id": "KMIPKIT-SRC-spec",
@@ -26276,6 +26360,10 @@
         "KMIPKIT-REQ-SPEC-6.1.28-007",
         "KMIPKIT-REQ-SPEC-6.1.28-013-001",
         "KMIPKIT-REQ-SPEC-6.1.28-013-002",
+        "KMIPKIT-REQ-SPEC-6.1.30-001",
+        "KMIPKIT-REQ-SPEC-6.1.30-002",
+        "KMIPKIT-REQ-SPEC-6.1.30-003",
+        "KMIPKIT-REQ-SPEC-6.1.31-001",
         "KMIPKIT-REQ-SPEC-9.11-001",
         "KMIPKIT-REQ-SPEC-9.11-004-001",
         "KMIPKIT-REQ-SPEC-9.11-004-002",
@@ -27504,6 +27592,10 @@
         "KMIPKIT-REQ-SPEC-6.1.28-007",
         "KMIPKIT-REQ-SPEC-6.1.28-013-001",
         "KMIPKIT-REQ-SPEC-6.1.28-013-002",
+        "KMIPKIT-REQ-SPEC-6.1.30-001",
+        "KMIPKIT-REQ-SPEC-6.1.30-002",
+        "KMIPKIT-REQ-SPEC-6.1.30-003",
+        "KMIPKIT-REQ-SPEC-6.1.31-001",
         "KMIPKIT-REQ-SPEC-9.11-001",
         "KMIPKIT-REQ-SPEC-9.11-004-001",
         "KMIPKIT-REQ-SPEC-9.11-004-002",
@@ -28748,6 +28840,10 @@
         "KMIPKIT-REQ-SPEC-6.1.28-007",
         "KMIPKIT-REQ-SPEC-6.1.28-013-001",
         "KMIPKIT-REQ-SPEC-6.1.28-013-002",
+        "KMIPKIT-REQ-SPEC-6.1.30-001",
+        "KMIPKIT-REQ-SPEC-6.1.30-002",
+        "KMIPKIT-REQ-SPEC-6.1.30-003",
+        "KMIPKIT-REQ-SPEC-6.1.31-001",
         "KMIPKIT-REQ-SPEC-9.11-001",
         "KMIPKIT-REQ-SPEC-9.11-004-001",
         "KMIPKIT-REQ-SPEC-9.11-004-002",
@@ -29950,6 +30046,10 @@
         "KMIPKIT-REQ-SPEC-6.1.28-007",
         "KMIPKIT-REQ-SPEC-6.1.28-013-001",
         "KMIPKIT-REQ-SPEC-6.1.28-013-002",
+        "KMIPKIT-REQ-SPEC-6.1.30-001",
+        "KMIPKIT-REQ-SPEC-6.1.30-002",
+        "KMIPKIT-REQ-SPEC-6.1.30-003",
+        "KMIPKIT-REQ-SPEC-6.1.31-001",
         "KMIPKIT-REQ-SPEC-9.11-001",
         "KMIPKIT-REQ-SPEC-9.11-004-001",
         "KMIPKIT-REQ-SPEC-9.11-004-002",
@@ -31388,6 +31488,10 @@
         "KMIPKIT-REQ-SPEC-6.1.28-007",
         "KMIPKIT-REQ-SPEC-6.1.28-013-001",
         "KMIPKIT-REQ-SPEC-6.1.28-013-002",
+        "KMIPKIT-REQ-SPEC-6.1.30-001",
+        "KMIPKIT-REQ-SPEC-6.1.30-002",
+        "KMIPKIT-REQ-SPEC-6.1.30-003",
+        "KMIPKIT-REQ-SPEC-6.1.31-001",
         "KMIPKIT-REQ-SPEC-9.11-001",
         "KMIPKIT-REQ-SPEC-9.11-004-001",
         "KMIPKIT-REQ-SPEC-9.11-004-002",
@@ -32865,6 +32969,10 @@
         "KMIPKIT-REQ-SPEC-6.1.28-007",
         "KMIPKIT-REQ-SPEC-6.1.28-013-001",
         "KMIPKIT-REQ-SPEC-6.1.28-013-002",
+        "KMIPKIT-REQ-SPEC-6.1.30-001",
+        "KMIPKIT-REQ-SPEC-6.1.30-002",
+        "KMIPKIT-REQ-SPEC-6.1.30-003",
+        "KMIPKIT-REQ-SPEC-6.1.31-001",
         "KMIPKIT-REQ-SPEC-9.11-001",
         "KMIPKIT-REQ-SPEC-9.11-004-001",
         "KMIPKIT-REQ-SPEC-9.11-004-002",
@@ -34154,6 +34262,10 @@
         "KMIPKIT-REQ-SPEC-6.1.28-007",
         "KMIPKIT-REQ-SPEC-6.1.28-013-001",
         "KMIPKIT-REQ-SPEC-6.1.28-013-002",
+        "KMIPKIT-REQ-SPEC-6.1.30-001",
+        "KMIPKIT-REQ-SPEC-6.1.30-002",
+        "KMIPKIT-REQ-SPEC-6.1.30-003",
+        "KMIPKIT-REQ-SPEC-6.1.31-001",
         "KMIPKIT-REQ-SPEC-9.11-001",
         "KMIPKIT-REQ-SPEC-9.11-004-001",
         "KMIPKIT-REQ-SPEC-9.11-004-002",
@@ -35382,6 +35494,10 @@
         "KMIPKIT-REQ-SPEC-6.1.28-007",
         "KMIPKIT-REQ-SPEC-6.1.28-013-001",
         "KMIPKIT-REQ-SPEC-6.1.28-013-002",
+        "KMIPKIT-REQ-SPEC-6.1.30-001",
+        "KMIPKIT-REQ-SPEC-6.1.30-002",
+        "KMIPKIT-REQ-SPEC-6.1.30-003",
+        "KMIPKIT-REQ-SPEC-6.1.31-001",
         "KMIPKIT-REQ-SPEC-9.11-001",
         "KMIPKIT-REQ-SPEC-9.11-004-001",
         "KMIPKIT-REQ-SPEC-9.11-004-002",
@@ -36597,6 +36713,10 @@
         "KMIPKIT-REQ-SPEC-6.1.28-007",
         "KMIPKIT-REQ-SPEC-6.1.28-013-001",
         "KMIPKIT-REQ-SPEC-6.1.28-013-002",
+        "KMIPKIT-REQ-SPEC-6.1.30-001",
+        "KMIPKIT-REQ-SPEC-6.1.30-002",
+        "KMIPKIT-REQ-SPEC-6.1.30-003",
+        "KMIPKIT-REQ-SPEC-6.1.31-001",
         "KMIPKIT-REQ-SPEC-9.11-001",
         "KMIPKIT-REQ-SPEC-9.11-004-001",
         "KMIPKIT-REQ-SPEC-9.11-004-002",
@@ -37829,6 +37949,10 @@
         "KMIPKIT-REQ-SPEC-6.1.28-007",
         "KMIPKIT-REQ-SPEC-6.1.28-013-001",
         "KMIPKIT-REQ-SPEC-6.1.28-013-002",
+        "KMIPKIT-REQ-SPEC-6.1.30-001",
+        "KMIPKIT-REQ-SPEC-6.1.30-002",
+        "KMIPKIT-REQ-SPEC-6.1.30-003",
+        "KMIPKIT-REQ-SPEC-6.1.31-001",
         "KMIPKIT-REQ-SPEC-9.11-001",
         "KMIPKIT-REQ-SPEC-9.11-004-001",
         "KMIPKIT-REQ-SPEC-9.11-004-002",
@@ -39053,6 +39177,10 @@
         "KMIPKIT-REQ-SPEC-6.1.28-007",
         "KMIPKIT-REQ-SPEC-6.1.28-013-001",
         "KMIPKIT-REQ-SPEC-6.1.28-013-002",
+        "KMIPKIT-REQ-SPEC-6.1.30-001",
+        "KMIPKIT-REQ-SPEC-6.1.30-002",
+        "KMIPKIT-REQ-SPEC-6.1.30-003",
+        "KMIPKIT-REQ-SPEC-6.1.31-001",
         "KMIPKIT-REQ-SPEC-9.11-001",
         "KMIPKIT-REQ-SPEC-9.11-004-001",
         "KMIPKIT-REQ-SPEC-9.11-004-002",
@@ -40283,6 +40411,10 @@
         "KMIPKIT-REQ-SPEC-6.1.28-007",
         "KMIPKIT-REQ-SPEC-6.1.28-013-001",
         "KMIPKIT-REQ-SPEC-6.1.28-013-002",
+        "KMIPKIT-REQ-SPEC-6.1.30-001",
+        "KMIPKIT-REQ-SPEC-6.1.30-002",
+        "KMIPKIT-REQ-SPEC-6.1.30-003",
+        "KMIPKIT-REQ-SPEC-6.1.31-001",
         "KMIPKIT-REQ-SPEC-9.11-001",
         "KMIPKIT-REQ-SPEC-9.11-004-001",
         "KMIPKIT-REQ-SPEC-9.11-004-002",
@@ -41524,6 +41656,10 @@
         "KMIPKIT-REQ-SPEC-6.1.28-007",
         "KMIPKIT-REQ-SPEC-6.1.28-013-001",
         "KMIPKIT-REQ-SPEC-6.1.28-013-002",
+        "KMIPKIT-REQ-SPEC-6.1.30-001",
+        "KMIPKIT-REQ-SPEC-6.1.30-002",
+        "KMIPKIT-REQ-SPEC-6.1.30-003",
+        "KMIPKIT-REQ-SPEC-6.1.31-001",
         "KMIPKIT-REQ-SPEC-9.11-001",
         "KMIPKIT-REQ-SPEC-9.11-004-001",
         "KMIPKIT-REQ-SPEC-9.11-004-002",
@@ -42778,6 +42914,10 @@
         "KMIPKIT-REQ-SPEC-6.1.28-007",
         "KMIPKIT-REQ-SPEC-6.1.28-013-001",
         "KMIPKIT-REQ-SPEC-6.1.28-013-002",
+        "KMIPKIT-REQ-SPEC-6.1.30-001",
+        "KMIPKIT-REQ-SPEC-6.1.30-002",
+        "KMIPKIT-REQ-SPEC-6.1.30-003",
+        "KMIPKIT-REQ-SPEC-6.1.31-001",
         "KMIPKIT-REQ-SPEC-9.11-001",
         "KMIPKIT-REQ-SPEC-9.11-004-001",
         "KMIPKIT-REQ-SPEC-9.11-004-002",
@@ -44032,6 +44172,10 @@
         "KMIPKIT-REQ-SPEC-6.1.28-007",
         "KMIPKIT-REQ-SPEC-6.1.28-013-001",
         "KMIPKIT-REQ-SPEC-6.1.28-013-002",
+        "KMIPKIT-REQ-SPEC-6.1.30-001",
+        "KMIPKIT-REQ-SPEC-6.1.30-002",
+        "KMIPKIT-REQ-SPEC-6.1.30-003",
+        "KMIPKIT-REQ-SPEC-6.1.31-001",
         "KMIPKIT-REQ-SPEC-9.11-001",
         "KMIPKIT-REQ-SPEC-9.11-004-001",
         "KMIPKIT-REQ-SPEC-9.11-004-002",
@@ -45286,6 +45430,10 @@
         "KMIPKIT-REQ-SPEC-6.1.28-007",
         "KMIPKIT-REQ-SPEC-6.1.28-013-001",
         "KMIPKIT-REQ-SPEC-6.1.28-013-002",
+        "KMIPKIT-REQ-SPEC-6.1.30-001",
+        "KMIPKIT-REQ-SPEC-6.1.30-002",
+        "KMIPKIT-REQ-SPEC-6.1.30-003",
+        "KMIPKIT-REQ-SPEC-6.1.31-001",
         "KMIPKIT-REQ-SPEC-9.11-001",
         "KMIPKIT-REQ-SPEC-9.11-004-001",
         "KMIPKIT-REQ-SPEC-9.11-004-002",
@@ -46536,6 +46684,10 @@
         "KMIPKIT-REQ-SPEC-6.1.28-007",
         "KMIPKIT-REQ-SPEC-6.1.28-013-001",
         "KMIPKIT-REQ-SPEC-6.1.28-013-002",
+        "KMIPKIT-REQ-SPEC-6.1.30-001",
+        "KMIPKIT-REQ-SPEC-6.1.30-002",
+        "KMIPKIT-REQ-SPEC-6.1.30-003",
+        "KMIPKIT-REQ-SPEC-6.1.31-001",
         "KMIPKIT-REQ-SPEC-9.11-001",
         "KMIPKIT-REQ-SPEC-9.11-004-001",
         "KMIPKIT-REQ-SPEC-9.11-004-002",
@@ -47825,6 +47977,10 @@
         "KMIPKIT-REQ-SPEC-6.1.28-007",
         "KMIPKIT-REQ-SPEC-6.1.28-013-001",
         "KMIPKIT-REQ-SPEC-6.1.28-013-002",
+        "KMIPKIT-REQ-SPEC-6.1.30-001",
+        "KMIPKIT-REQ-SPEC-6.1.30-002",
+        "KMIPKIT-REQ-SPEC-6.1.30-003",
+        "KMIPKIT-REQ-SPEC-6.1.31-001",
         "KMIPKIT-REQ-SPEC-9.11-001",
         "KMIPKIT-REQ-SPEC-9.11-004-001",
         "KMIPKIT-REQ-SPEC-9.11-004-002",
@@ -67142,45 +67298,58 @@
       "source_excerpt": "Item REQUIRED Description",
       "source_obligations": [],
       "rejected_candidate_mappings": [],
-      "expected_client_requirement_ids": [],
+      "expected_client_requirement_ids": [
+        "KMIPKIT-REQ-SPEC-6.1.30-001",
+        "KMIPKIT-REQ-SPEC-6.1.30-002",
+        "KMIPKIT-REQ-SPEC-6.1.30-003"
+      ],
       "applies_to": "all_client_profiles",
-      "review_note": "Item / REQUIRED / Description is only the Request Payload table header. The three Required=No request body rows are distinct optional client capabilities and are recorded as source-only gaps.",
+      "review_note": "Request header row is provenance only. Each Required=No request body row maps to its stable optional client requirement; response Ticket remains server payload data.",
       "source_request_rows": [
         {
           "row_label": "Lease Time",
           "required": "No",
           "actor": "client",
-          "disposition": "optional_request_field_with_source_only_proposal",
+          "disposition": "optional_request_field",
           "html_line_range": [
             29673,
             29688
           ],
           "source_excerpt": "Lease Time No The lease time Interval or Date Time for the ticket",
-          "source_gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.30-LEASE-TIME-OPTIONAL"
+          "source_gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.30-LEASE-TIME-OPTIONAL",
+          "source_requirement_ids": [
+            "KMIPKIT-REQ-SPEC-6.1.30-001"
+          ]
         },
         {
           "row_label": "Request Count",
           "required": "No",
           "actor": "client",
-          "disposition": "optional_request_field_with_source_only_proposal",
+          "disposition": "optional_request_field",
           "html_line_range": [
             29689,
             29704
           ],
           "source_excerpt": "Request Count No The integer count of the number of requests that can be made with the ticket",
-          "source_gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.30-REQUEST-COUNT-OPTIONAL"
+          "source_gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.30-REQUEST-COUNT-OPTIONAL",
+          "source_requirement_ids": [
+            "KMIPKIT-REQ-SPEC-6.1.30-002"
+          ]
         },
         {
           "row_label": "Usage Limits",
           "required": "No",
           "actor": "client",
-          "disposition": "optional_request_field_with_source_only_proposal",
+          "disposition": "optional_request_field",
           "html_line_range": [
             29705,
             29720
           ],
           "source_excerpt": "Usage Limits No The usage limits for the operations performed",
-          "source_gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.30-USAGE-LIMITS-OPTIONAL"
+          "source_gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.30-USAGE-LIMITS-OPTIONAL",
+          "source_requirement_ids": [
+            "KMIPKIT-REQ-SPEC-6.1.30-003"
+          ]
         }
       ],
       "source_payload_rows": []
@@ -67290,21 +67459,26 @@
       "source_excerpt": "Item REQUIRED Description",
       "source_obligations": [],
       "rejected_candidate_mappings": [],
-      "expected_client_requirement_ids": [],
+      "expected_client_requirement_ids": [
+        "KMIPKIT-REQ-SPEC-6.1.31-001"
+      ],
       "applies_to": "all_client_profiles",
-      "review_note": "Item / REQUIRED / Description is only the Request Payload table header. Ticket Required=Yes is a required client request field and is recorded as a source-only gap; there are no optional request rows.",
+      "review_note": "Request header row is provenance only. The Required=Yes Ticket request body row maps to its stable required client requirement; the response table is empty.",
       "source_request_rows": [
         {
           "row_label": "Ticket",
           "required": "Yes",
           "actor": "client",
-          "disposition": "required_request_field_with_source_only_proposal",
+          "disposition": "required_request_field",
           "html_line_range": [
             29866,
             29881
           ],
           "source_excerpt": "Ticket Yes The ticket to be invalidated",
-          "source_gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.31-TICKET-REQUIRED"
+          "source_gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.31-TICKET-REQUIRED",
+          "source_requirement_ids": [
+            "KMIPKIT-REQ-SPEC-6.1.31-001"
+          ]
         }
       ],
       "source_payload_rows": []
@@ -84219,10 +84393,11 @@
       "direction": "client→server Login request field",
       "condition": "When the client chooses to set a lease interval or date-time for the Login ticket.",
       "scope_disposition": "client_1_0",
-      "candidate_requirement_id": null,
-      "proposed_requirement_id": "KMIPKIT-REQ-SPEC-6.1.30-001",
-      "status": "stable_label_proposed_not_in_catalog",
-      "review_note": "Required=No is recorded as a distinct optional client capability, not a formal MAY atom. The source-only proposal remains outside the catalog/profile closure arrays in Red."
+      "candidate_requirement_id": "KMIPKIT-REQ-SPEC-6.1.30-001",
+      "proposed_requirement_id": null,
+      "status": "source_obligation_covered_by_existing_stable_label",
+      "review_note": "The exact request body row is represented by KMIPKIT-REQ-SPEC-6.1.30-001; its optional_table_body_value force is table-field semantics, not a formal RFC keyword. Linked local Rust request encoding/requiredness evidence makes no official case-level pass claim.",
+      "reused_requirement_id": "KMIPKIT-REQ-SPEC-6.1.30-001"
     },
     {
       "gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.30-REQUEST-COUNT-OPTIONAL",
@@ -84253,10 +84428,11 @@
       "direction": "client→server Login request field",
       "condition": "When the client chooses to limit the number of requests that can use the Login ticket.",
       "scope_disposition": "client_1_0",
-      "candidate_requirement_id": null,
-      "proposed_requirement_id": "KMIPKIT-REQ-SPEC-6.1.30-002",
-      "status": "stable_label_proposed_not_in_catalog",
-      "review_note": "Required=No is recorded as a distinct optional client capability, not a formal MAY atom. The source-only proposal remains outside the catalog/profile closure arrays in Red."
+      "candidate_requirement_id": "KMIPKIT-REQ-SPEC-6.1.30-002",
+      "proposed_requirement_id": null,
+      "status": "source_obligation_covered_by_existing_stable_label",
+      "review_note": "The exact request body row is represented by KMIPKIT-REQ-SPEC-6.1.30-002; its optional_table_body_value force is table-field semantics, not a formal RFC keyword. Linked local Rust request encoding/requiredness evidence makes no official case-level pass claim.",
+      "reused_requirement_id": "KMIPKIT-REQ-SPEC-6.1.30-002"
     },
     {
       "gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.30-USAGE-LIMITS-OPTIONAL",
@@ -84287,10 +84463,11 @@
       "direction": "client→server Login request field",
       "condition": "When the client chooses to set usage limits for operations performed with the Login ticket.",
       "scope_disposition": "client_1_0",
-      "candidate_requirement_id": null,
-      "proposed_requirement_id": "KMIPKIT-REQ-SPEC-6.1.30-003",
-      "status": "stable_label_proposed_not_in_catalog",
-      "review_note": "Required=No is recorded as a distinct optional client capability, not a formal MAY atom. The source-only proposal remains outside the catalog/profile closure arrays in Red."
+      "candidate_requirement_id": "KMIPKIT-REQ-SPEC-6.1.30-003",
+      "proposed_requirement_id": null,
+      "status": "source_obligation_covered_by_existing_stable_label",
+      "review_note": "The exact request body row is represented by KMIPKIT-REQ-SPEC-6.1.30-003; its optional_table_body_value force is table-field semantics, not a formal RFC keyword. Linked local Rust request encoding/requiredness evidence makes no official case-level pass claim.",
+      "reused_requirement_id": "KMIPKIT-REQ-SPEC-6.1.30-003"
     },
     {
       "gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.31-TICKET-REQUIRED",
@@ -84321,10 +84498,11 @@
       "direction": "client→server Logout request",
       "condition": "A Logout request is sent to invalidate the specified ticket.",
       "scope_disposition": "client_1_0",
-      "candidate_requirement_id": null,
-      "proposed_requirement_id": "KMIPKIT-REQ-SPEC-6.1.31-001",
-      "status": "stable_label_proposed_not_in_catalog",
-      "review_note": "The stable label is a source-only proposal because the catalog has no requirement mapping for the required Logout Ticket field. It remains outside catalog and profile closure arrays in Red."
+      "candidate_requirement_id": "KMIPKIT-REQ-SPEC-6.1.31-001",
+      "proposed_requirement_id": null,
+      "status": "source_obligation_covered_by_existing_stable_label",
+      "review_note": "The exact request body row is represented by KMIPKIT-REQ-SPEC-6.1.31-001; its required_table_body_value force is table-field semantics, not a formal RFC keyword. Linked local Rust request encoding/requiredness evidence makes no official case-level pass claim.",
+      "reused_requirement_id": "KMIPKIT-REQ-SPEC-6.1.31-001"
     },
     {
       "gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.32-DATA-REQUIRED",
