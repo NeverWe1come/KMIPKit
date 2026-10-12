@@ -568,11 +568,11 @@ class FeatureTraceabilityTests(unittest.TestCase):
             row["requirement_id"]: row
             for row in catalog["requirements"]
         }
-        profile_requirement_ids = sorted(
+        profile_requirement_ids = {
             requirement_id
             for requirement_id in in_scope_requirement_ids
             if requirement_id.startswith("KMIPKIT-REQ-PROF-")
-        )
+        }
 
         self.assertEqual(155, len(profile_requirement_ids))
         incorrectly_owned_profile_requirements = [
