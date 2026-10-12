@@ -917,7 +917,6 @@ Every row summarizes audited candidate locators by their pinned source section. 
 | KMIPKIT-REQ-SPEC-6.1.11-004-002 | mandatory | server\_only | KMIPKIT-SRC-spec §6.1.11 |
 | KMIPKIT-REQ-SPEC-6.1.11-005 | mandatory | client\_1\_0 | KMIPKIT-SRC-spec §6.1.11 |
 | KMIPKIT-REQ-SPEC-6.1.11-006 | mandatory | client\_1\_0 | KMIPKIT-SRC-spec §6.1.11 |
-| KMIPKIT-REQ-SPEC-6.1.14-002 | permission\_or\_optional | unclear | KMIPKIT-SRC-spec §6.1.14 |
 | KMIPKIT-REQ-SPEC-6.1.16-001-001 | permission\_or\_optional | client\_1\_0 | KMIPKIT-SRC-spec §6.1.16 |
 | KMIPKIT-REQ-SPEC-6.1.16-001-002 | mandatory | client\_1\_0 | KMIPKIT-SRC-spec §6.1.16 |
 | KMIPKIT-REQ-SPEC-6.1.16-004 | permission\_or\_optional | out\_of\_scope | KMIPKIT-SRC-spec §6.1.16 |
@@ -1400,7 +1399,7 @@ Every row summarizes audited candidate locators by their pinned source section. 
 | KMIPKIT-REQ-SPEC-6.1.14-001-002 | No requirement-specific official Test Cases ID is asserted as executed against the pinned OASIS Test Cases source; local tests use source-derived table vectors. | KMIPKIT-SRC-spec §6.1.14 |
 | KMIPKIT-REQ-SPEC-6.1.14-001-003 | No requirement-specific official Test Cases ID is asserted as executed against the pinned OASIS Test Cases source; local tests use source-derived table vectors. | KMIPKIT-SRC-spec §6.1.14 |
 | KMIPKIT-REQ-SPEC-6.1.14-001-004 | No requirement-specific official Test Cases ID is asserted as executed against the pinned OASIS Test Cases source; local tests use source-derived table vectors. | KMIPKIT-SRC-spec §6.1.14 |
-| KMIPKIT-REQ-SPEC-6.1.14-002 | Pinned Specification v2.1 §6.1.14 says some derivation methods MAY use multiple keys or Secret Data objects. The normative subject is the method; client actor and client-profile applicability are unresolved, so no client conformance claim or executable mapping is assigned. No requirement-specific official test case is assigned for a client capability. | KMIPKIT-SRC-spec §6.1.14 |
+| KMIPKIT-REQ-SPEC-6.1.14-002 | KMIPKIT-0037 verifies caller-supplied Derive Key method inputs and request encoding only. The pinned source review leaves the optional multiple-input methods' actor and client-profile scope unresolved; this scoped evidence does not create a client profile requirement or support claim. | KMIPKIT-SRC-spec §6.1.14 |
 | KMIPKIT-REQ-SPEC-6.1.14-006-001 | No requirement-specific official Test Cases ID is asserted as executed against the pinned OASIS Test Cases source; local tests use source-derived table vectors. | KMIPKIT-SRC-spec §6.1.14 |
 | KMIPKIT-REQ-SPEC-6.1.14-006-002 | No requirement-specific official Test Cases ID is asserted as executed against the pinned OASIS Test Cases source; local tests use source-derived table vectors. | KMIPKIT-SRC-spec §6.1.14 |
 | KMIPKIT-REQ-SPEC-6.1.14-007-001 | Pinned Specification v2.1 Table 205 marks the Attributes request member Required=Yes. This is table-field requiredness, not a formal SHALL; the local request-construction test verifies encoding. No requirement-specific official test case execution is claimed. | KMIPKIT-SRC-spec §6.1.14 |

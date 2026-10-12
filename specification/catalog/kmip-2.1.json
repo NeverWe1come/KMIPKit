@@ -92039,13 +92039,18 @@
       ],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0037",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/derive_key.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/derive_key_operation_tests.rs::request_encodes_required_table_205_fields_in_order_and_repeats_identifiers",
+        "crates/kmipkit-protocol/tests/unit/derive_key_operation_tests.rs::method_conditional_fields_are_checked_without_selecting_defaults"
+      ],
       "negative_verification_required": false,
       "decision_id": null,
-      "status": "unassigned",
-      "review_note": "Pinned Specification v2.1 §6.1.14 says some derivation methods MAY use multiple keys or Secret Data objects. The normative subject is the method; client actor and client-profile applicability are unresolved, so no client conformance claim or executable mapping is assigned. No requirement-specific official test case is assigned for a client capability."
+      "status": "scoped_verified",
+      "review_note": "KMIPKIT-0037 verifies caller-supplied Derive Key method inputs and request encoding only. The pinned source review leaves the optional multiple-input methods' actor and client-profile scope unresolved; this scoped evidence does not create a client profile requirement or support claim."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.14-006-001",
