@@ -15316,6 +15316,38 @@ class CatalogValidationTests(unittest.TestCase):
 
         self.assertEqual(violations, [], "pinned-source requirement review mismatches: " + "; ".join(violations))
 
+    def test_profile_section_three_channel_security_does_not_invent_client_actor(self) -> None:
+        """Profiles §3 clause 2 names channel properties, not a client endpoint."""
+        oracle = json.loads(
+            (ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json").read_text(encoding="utf-8")
+        )
+        catalog = json.loads(
+            (ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8")
+        )
+        requirement_id = "KMIPKIT-REQ-PROF-3-002"
+        review = next(
+            review
+            for review in oracle["source_requirement_reviews"]
+            if review["source_clause_id"] == "KMIPKIT-CLAUSE-PROF-3-002"
+        )
+        obligation = review["source_obligations"][0]
+        requirement = next(
+            row for row in catalog["requirements"] if row["requirement_id"] == requirement_id
+        )
+
+        self.assertEqual(review["source_excerpt"], pinned_source_excerpt(
+            ROOT / "specification" / "oasis" / "kmip-2.1" / "upstream" / "kmip-profiles-v2.1-os.html",
+            [3967, 3970],
+        ))
+        self.assertEqual(obligation["actor"], "unresolved")
+        self.assertEqual(obligation["direction"], "unresolved")
+        self.assertEqual(obligation["scope_disposition"], "unresolved")
+        self.assertEqual(requirement["role"], "unclear")
+        self.assertEqual(requirement["direction"], "unclear")
+        self.assertEqual(requirement["scope_state"], "unclear")
+        self.assertTrue(requirement["condition"])
+        self.assertEqual(requirement["profile_ids"], [])
+
     def test_every_reviewed_client_may_or_optional_has_usable_positive_evidence(self) -> None:
         """A selected profile or summary cannot replace an implementation and positive test."""
         oracle = json.loads(
