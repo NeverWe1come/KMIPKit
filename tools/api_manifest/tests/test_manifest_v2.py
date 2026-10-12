@@ -600,9 +600,29 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
         for export_name in exports:
             with self.subTest(export_name=export_name):
                 declaration = declarations[export_name]
-                self.assertEqual(declaration["declarationState"], "blocked")
-                self.assertIn("candidateSpecId", declaration)
-                self.assertNotIn("languageMappings", declaration)
+                self.assertEqual(declaration["declarationState"], "declared")
+                self.assertNotIn("candidateSpecId", declaration)
+                self.assertNotIn("blockedReason", declaration)
+                self.assertIn("approvalSource", declaration)
+                self.assertEqual(
+                    declaration["capabilityId"],
+                    "vendor_extension_registry"
+                    if export_name.startswith("kmipkit_extension_registry_limits_t.")
+                    else "generic_ttlv_model",
+                )
+                self.assertEqual(
+                    set(declaration["languageMappings"]),
+                    {"rust", "c", "java", "python"},
+                )
+                self.assertEqual(
+                    declaration["languageMappings"]["c"]["name"], export_name
+                )
+                self.assertEqual(
+                    declaration["approvalSource"]["path"],
+                    "specs/012-vendor-extension-registry/spec.md"
+                    if export_name.startswith("kmipkit_extension_registry_limits_t.")
+                    else "specs/004-generic-ttlv-model/spec.md",
+                )
 
     def test_checked_in_manifest_inventories_all_rust_public_access_paths(self) -> None:
         rust_packages = EXPECTED_PACKAGES - {"c-kmipkit", "java-kmipkit", "python-kmipkit"}
