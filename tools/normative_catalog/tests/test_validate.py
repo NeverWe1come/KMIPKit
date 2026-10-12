@@ -14738,6 +14738,121 @@ class CatalogValidationTests(unittest.TestCase):
             validate(document)
 
 
+    def test_hash_table_235_request_rows_are_contracts_not_requirement_gaps(self) -> None:
+        """Hash request table cells map through operation metadata, not per-cell REQ IDs."""
+        oracle = json.loads(
+            (ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json").read_text(encoding="utf-8")
+        )
+        expected_gap_ids = {
+            "KMIPKIT-SOURCE-GAP-SPEC-6.1.24-CRYPTOGRAPHIC-PARAMETERS-REQUIRED",
+            "KMIPKIT-SOURCE-GAP-SPEC-6.1.24-DATA-REQUIRED",
+            "KMIPKIT-SOURCE-GAP-SPEC-6.1.24-CORRELATION-VALUE-OPTIONAL",
+            "KMIPKIT-SOURCE-GAP-SPEC-6.1.24-INIT-INDICATOR-OPTIONAL",
+            "KMIPKIT-SOURCE-GAP-SPEC-6.1.24-FINAL-INDICATOR-OPTIONAL",
+        }
+        contracts = [
+            row for row in oracle.get("source_table_contracts", [])
+            if row.get("source_section") == "6.1.24" and row.get("table_number") == 235
+        ]
+
+        self.assertEqual({row.get("gap_id") for row in contracts}, expected_gap_ids)
+        source_gap_ids = {row["gap_id"] for row in oracle["source_only_requirement_gaps"]}
+        self.assertTrue(expected_gap_ids.isdisjoint(source_gap_ids))
+        self.assertFalse(
+            any(
+                row["source_section"] == "6.1.24"
+                for row in oracle["requirement_crosswalk"]
+            ),
+            "Table 235 body rows are not independent normative REQ records",
+        )
+        self.assertTrue(
+            all(
+                "proposed_requirement_id" not in row and "candidate_requirement_id" not in row
+                for row in contracts
+            ),
+            "table contracts must not mint per-cell requirement identifiers",
+        )
+
+        legacy_proposals = {
+            f"KMIPKIT-REQ-SPEC-6.1.24-{ordinal:03d}"
+            for ordinal in range(1, 6)
+        }
+        catalog = json.loads((ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8"))
+        catalog_requirement_ids = {row["requirement_id"] for row in catalog["requirements"]}
+        self.assertTrue(legacy_proposals.isdisjoint(catalog_requirement_ids))
+        for profile in oracle["profiles"]:
+            self.assertTrue(legacy_proposals.isdisjoint(profile["requirement_ids_audited_subset"]))
+
+    def test_hash_table_235_contracts_retain_source_operation_and_executable_evidence(self) -> None:
+        """Every Hash table contract resolves pinned source, FR, implementation, and test evidence."""
+        oracle = json.loads(
+            (ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json").read_text(encoding="utf-8")
+        )
+        source_path = "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
+        expected = {
+            "KMIPKIT-SOURCE-GAP-SPEC-6.1.24-CRYPTOGRAPHIC-PARAMETERS-REQUIRED": (
+                "Cryptographic Parameters", "Yes", "required_table_body_value", [28255, 28267],
+            ),
+            "KMIPKIT-SOURCE-GAP-SPEC-6.1.24-DATA-REQUIRED": (
+                "Data", "Yes for single-part. No for multi-part.", "conditional_required_table_body_value", [28273, 28284],
+            ),
+            "KMIPKIT-SOURCE-GAP-SPEC-6.1.24-CORRELATION-VALUE-OPTIONAL": (
+                "Correlation Value", "No", "optional_table_body_value", [28290, 28302],
+            ),
+            "KMIPKIT-SOURCE-GAP-SPEC-6.1.24-INIT-INDICATOR-OPTIONAL": (
+                "Init Indicator", "No", "optional_table_body_value", [28308, 28319],
+            ),
+            "KMIPKIT-SOURCE-GAP-SPEC-6.1.24-FINAL-INDICATOR-OPTIONAL": (
+                "Final Indicator", "No", "optional_table_body_value", [28324, 28334],
+            ),
+        }
+        contracts = {
+            row.get("gap_id"): row
+            for row in oracle.get("source_table_contracts", [])
+            if row.get("source_section") == "6.1.24" and row.get("table_number") == 235
+        }
+        self.assertEqual(set(contracts), set(expected))
+
+        for gap_id, (row_label, requiredness, source_force, line_range) in expected.items():
+            contract = contracts[gap_id]
+            with self.subTest(source_table_contract=gap_id):
+                self.assertEqual(contract["source_id"], "KMIPKIT-SRC-spec")
+                self.assertEqual(contract["source_path"], source_path)
+                self.assertEqual(contract["source_locator"], {
+                    "kind": "table_body_row",
+                    "section": "6.1.24",
+                    "row_label": row_label,
+                    "table": "request_payload",
+                    "html_line_range": line_range,
+                })
+                self.assertEqual(contract["html_line_range"], line_range)
+                self.assertEqual(contract["source_excerpt"], pinned_source_excerpt(source_path, line_range))
+                self.assertEqual(contract["table_number"], 235)
+                self.assertEqual(contract["requiredness"], requiredness)
+                self.assertEqual(contract["source_force"], source_force)
+                self.assertEqual(contract["actor"], "client")
+                self.assertEqual(contract["direction"], "client→server Hash request")
+                self.assertTrue(contract["condition"])
+                self.assertEqual(contract["scope_disposition"], "client_1_0")
+                self.assertEqual(contract["operation_element_id"], "KMIPKIT-ELEM-OP-C2S-HASH")
+                self.assertIn("FR-002", contract["functional_requirement_ids"])
+                self.assertTrue(contract["implementation_refs"])
+                self.assertTrue(contract["verification_refs"])
+                self.assertTrue(contract["evidence_disposition"])
+
+        data_contract = contracts["KMIPKIT-SOURCE-GAP-SPEC-6.1.24-DATA-REQUIRED"]
+        disposition = data_contract["evidence_disposition"]
+        self.assertEqual(disposition["status"], "unresolved_source_conflict")
+        self.assertEqual(
+            disposition["conflict_source_gap_id"],
+            "KMIPKIT-SOURCE-GAP-SPEC-6.1-PARAGRAPH-009",
+        )
+        self.assertIn(
+            "no conformance claim",
+            disposition["claim"].lower(),
+        )
+        self.assertIn("both Init Indicator and Final Indicator are false", disposition["claim"])
+
     def test_hash_data_row_keeps_its_conditional_source_force_and_disposition(self) -> None:
         """The Hash table's single-part condition stays conditional in the source audit."""
         oracle = json.loads(
