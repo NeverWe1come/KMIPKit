@@ -81,6 +81,22 @@ class RustExportReconciliationTests(unittest.TestCase):
 
         self.assertEqual(record.get("candidateSpecId"), "KMIPKIT-0042")
 
+    def test_inherent_member_uses_the_nearest_exact_manifest_owner(self):
+        manifest = {
+            "capabilities": [],
+            "approvedExclusions": [],
+            "publicDeclarations": [
+                blocked_owner("kmipkit_protocol::Owner", "KMIPKIT-0017"),
+            ],
+        }
+
+        record = RECONCILER.blocked_record(
+            observed("rust-kmipkit-protocol", "kmipkit_protocol::Owner::method"),
+            manifest,
+        )
+
+        self.assertEqual(record.get("candidateSpecId"), "KMIPKIT-0017")
+
     def test_unknown_owner_uses_the_existing_public_surface_candidate_without_mappings(self):
         manifest = {"capabilities": [], "approvedExclusions": [], "publicDeclarations": []}
 
