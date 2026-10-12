@@ -67,6 +67,23 @@ typedef struct kmipkit_codec_limits_t kmipkit_codec_limits_t;
 
 typedef struct kmipkit_ttlv_structure_view_t kmipkit_ttlv_structure_view_t;
 
+typedef struct {
+    uint32_t struct_size;
+    uint32_t abi_version;
+    uint64_t max_definitions;
+    uint64_t max_schema_nodes;
+    uint64_t max_child_rules_per_structure;
+    uint64_t max_text_bytes_per_field;
+    uint64_t max_registry_text_bytes;
+    uint64_t max_discriminator_scalar_bytes;
+    uint64_t max_total_discriminator_scalar_bytes;
+    uint64_t max_constraint_members_per_rule;
+    uint64_t max_total_constraint_members;
+    uint64_t max_payload_index_records;
+    uint64_t max_lookup_comparisons;
+    uint64_t max_depth;
+} kmipkit_extension_registry_limits_v1_t;
+
 void kmipkit_ttlv_structure_view_release(kmipkit_ttlv_structure_view_t *handle);
 #define KMIPKIT_ERROR_RESOURCE_LIMIT ((int32_t)6)
 
@@ -235,6 +252,15 @@ int32_t kmipkit_capability_is_available(const uint8_t * capability_id_data, uint
 int32_t kmipkit_last_error_get(int32_t * out_status, uint32_t * out_category, uint32_t * out_cause, uint32_t * out_delivery);
 /* KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-013 */
 int32_t kmipkit_last_error_clear(void);
+/* For nullable handle arrays, NULL is valid only when the linked count is zero.
+ * Implementations must check the count before reading elements and return
+ * invalid_input when a NULL array has a nonzero count. */
+/* KMIPKIT-0043-FR-007 */
+int32_t kmipkit_client_extension_registry_create_v1(kmipkit_extension_definition_t ** definitions, uint64_t definition_count, const kmipkit_extension_registry_limits_v1_t * limits, kmipkit_client_extension_registry_t ** out_registry);
+/* KMIPKIT-0043-FR-007 */
+int32_t kmipkit_extension_registry_limits_v1_default_values(kmipkit_extension_registry_limits_v1_t * out_limits);
+/* KMIPKIT-0043-FR-007 */
+int32_t kmipkit_extension_registry_limits_v1_validate(const kmipkit_extension_registry_limits_v1_t * limits);
 
 #ifdef __cplusplus
 }

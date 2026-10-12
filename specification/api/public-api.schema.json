@@ -345,6 +345,18 @@
             "opaque-handle"
           ]
         },
+        "visibility": {
+          "type": "string",
+          "enum": [
+            "public",
+            "internal-only"
+          ],
+          "description": "Whether this C representation is part of the supported public ABI or retained only for private in-repository FFI calls."
+        },
+        "versioned": {
+          "type": "boolean",
+          "description": "Whether the public fixed-width structure begins with uint32_t struct_size and uint32_t abi_version fields."
+        },
         "handleKind": {
           "type": "string",
           "pattern": "^[a-z][a-z0-9_]*$"
@@ -532,6 +544,44 @@
                 "uint32_t",
                 "int64_t",
                 "uint64_t"
+              ]
+            }
+          },
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "required": [
+            "name",
+            "kind",
+            "type",
+            "direction",
+            "ownership"
+          ],
+          "properties": {
+            "name": {
+              "$ref": "#/$defs/identifier"
+            },
+            "kind": {
+              "const": "versioned-value-pointer"
+            },
+            "type": {
+              "type": "string",
+              "pattern": "^(const )?kmipkit_[a-z0-9_]+_v[1-9][0-9]*_t \\*$",
+              "description": "Pointer to a generated fixed-width versioned public value structure."
+            },
+            "direction": {
+              "type": "string",
+              "enum": [
+                "input",
+                "output"
+              ]
+            },
+            "ownership": {
+              "type": "string",
+              "enum": [
+                "borrowed",
+                "none"
               ]
             }
           },
@@ -2462,8 +2512,8 @@
     },
     "v2GeneratedOutputs": {
       "type": "array",
-      "minItems": 11,
-      "maxItems": 11,
+      "minItems": 12,
+      "maxItems": 12,
       "prefixItems": [
         {
           "type": "object",
@@ -2637,6 +2687,22 @@
             },
             "path": {
               "const": "tests/fixtures/api/generated/public_api_parity.json"
+            }
+          },
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "required": [
+            "name",
+            "path"
+          ],
+          "properties": {
+            "name": {
+              "const": "internalCHeader"
+            },
+            "path": {
+              "const": "tests/fixtures/api/generated/kmipkit_internal.h"
             }
           },
           "additionalProperties": false

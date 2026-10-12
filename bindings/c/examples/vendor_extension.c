@@ -12,9 +12,13 @@
  * Payload field Tags follow the shared extension fixture's known.alpha
  * allocation. It demonstrates typed construction only; the current C surface
  * does not expose a client send or message-encoding operation.
+ *
+ * This repository example uses the private FFI header because these binding
+ * declarations remain blocked in the public API manifest until four-language
+ * parity is verified. It is not a supported public C facade example.
  */
 
-#include "kmipkit.h"
+#include "kmipkit_internal.h"
 
 #include <inttypes.h>
 #include <stdbool.h>
@@ -369,7 +373,7 @@ int main(void)
     kmipkit_client_request_message_extension_t *extension = NULL;
     kmipkit_client_batch_item_t *batch_item = NULL;
     kmipkit_client_batch_item_t *updated_batch_item = NULL;
-    kmipkit_extension_registry_limits_t limits;
+    kmipkit_extension_registry_limits_v1_t limits = {0};
     kmipkit_extension_identity_t *attached_identity = NULL;
     uint64_t extension_count = 0U;
     uint8_t criticality = UINT8_C(0xFF);
@@ -377,14 +381,9 @@ int main(void)
     int exit_code = 1;
 
     CHECK(kmipkit_codec_limits_defaults(&codec_limits));
-    CHECK(kmipkit_extension_registry_limits_default_values(
-        &limits.max_definitions, &limits.max_schema_nodes,
-        &limits.max_child_rules_per_structure, &limits.max_text_bytes_per_field,
-        &limits.max_registry_text_bytes, &limits.max_discriminator_scalar_bytes,
-        &limits.max_total_discriminator_scalar_bytes,
-        &limits.max_constraint_members_per_rule, &limits.max_total_constraint_members,
-        &limits.max_payload_index_records, &limits.max_lookup_comparisons,
-        &limits.max_depth));
+    limits.struct_size = (uint32_t)sizeof(limits);
+    limits.abi_version = UINT32_C(1);
+    CHECK(kmipkit_extension_registry_limits_v1_default_values(&limits));
     CHECK(make_definition(codec_limits, first_name, sizeof(first_name) - 1U,
         first_discriminator, sizeof(first_discriminator) - 1U,
         &first_identity, &first_definition));
@@ -394,14 +393,8 @@ int main(void)
 
     definitions[0] = first_definition;
     definitions[1] = second_definition;
-    CHECK(kmipkit_client_extension_registry_create(definitions, 2U,
-        limits.max_definitions, limits.max_schema_nodes,
-        limits.max_child_rules_per_structure, limits.max_text_bytes_per_field,
-        limits.max_registry_text_bytes, limits.max_discriminator_scalar_bytes,
-        limits.max_total_discriminator_scalar_bytes,
-        limits.max_constraint_members_per_rule, limits.max_total_constraint_members,
-        limits.max_payload_index_records, limits.max_lookup_comparisons,
-        limits.max_depth, &registry));
+    CHECK(kmipkit_client_extension_registry_create_v1(definitions, 2U,
+        &limits, &registry));
     CHECK(kmipkit_client_configuration_create(registry, &configuration));
     registry = NULL; /* The configuration takes ownership of the registry. */
     CHECK(kmipkit_client_configuration_extension_registry(configuration,

@@ -1,5 +1,5 @@
 #include <jni.h>
-#include "kmipkit.h"
+#include "kmipkit_internal.h"
 #include "secure_bytes.hpp"
 
 #include <algorithm>
@@ -874,11 +874,24 @@ JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_clientExtension
         std::array<uint64_t, 12> limits{};
         if (!read_handle_array(env, raw_definitions, definitions)
                 || !registry_limit_values(env, raw_limits, &limits)) return static_cast<jlong>(0);
+        kmipkit_extension_registry_limits_v1_t versioned_limits{};
+        versioned_limits.struct_size = static_cast<uint32_t>(sizeof(versioned_limits));
+        versioned_limits.abi_version = UINT32_C(1);
+        versioned_limits.max_definitions = limits[0];
+        versioned_limits.max_schema_nodes = limits[1];
+        versioned_limits.max_child_rules_per_structure = limits[2];
+        versioned_limits.max_text_bytes_per_field = limits[3];
+        versioned_limits.max_registry_text_bytes = limits[4];
+        versioned_limits.max_discriminator_scalar_bytes = limits[5];
+        versioned_limits.max_total_discriminator_scalar_bytes = limits[6];
+        versioned_limits.max_constraint_members_per_rule = limits[7];
+        versioned_limits.max_total_constraint_members = limits[8];
+        versioned_limits.max_payload_index_records = limits[9];
+        versioned_limits.max_lookup_comparisons = limits[10];
+        versioned_limits.max_depth = limits[11];
         return return_handle<kmipkit_client_extension_registry_t>(env, [&](auto output) {
-            return kmipkit_client_extension_registry_create(
-                    definitions.data(), definitions.size(),
-                    limits[0], limits[1], limits[2], limits[3], limits[4], limits[5],
-                    limits[6], limits[7], limits[8], limits[9], limits[10], limits[11], output);
+            return kmipkit_client_extension_registry_create_v1(
+                    definitions.data(), definitions.size(), &versioned_limits, output);
         });
     });
 }

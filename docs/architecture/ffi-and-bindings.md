@@ -7,12 +7,22 @@ The C ABI is the shared boundary for C, Java, Python, and later adapters.
 - Prefix every exported symbol with `kmipkit_`.
 - Use fixed width integers and explicit pointer lengths.
 - Expose opaque handles, never Rust layouts.
-- Version public structures with `struct_size` and `abi_version`.
+- Version public structures with `struct_size` and `abi_version`. Callers set
+  `struct_size` to the byte size of the concrete versioned structure and
+  `abi_version` to its declared ABI revision; these fields are C ABI metadata,
+  not KMIPKit facade values.
 - Provide version and capability query functions.
 - Return a stable status code and use output parameters.
 - Provide detailed last-error access per thread.
 - Catch every Rust panic at each exported function.
 - Keep 1.x ABI additions backward compatible.
+
+The extension-registry limits v1 value is passed to the C defaults, validation,
+and registry-creation entry points. Callers initialize `struct_size` to exactly
+`sizeof(kmipkit_extension_registry_limits_v1_t)` and `abi_version` to `1`.
+These entry points reject a null pointer, a different size, or an unsupported
+ABI version before reading or writing the limit fields. The defaults function
+preserves the initialized metadata fields while filling the twelve values.
 
 ### Runtime metadata and error snapshots
 

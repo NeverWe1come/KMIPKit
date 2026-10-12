@@ -30,20 +30,6 @@ class ItemType(IntEnum):
     Interval = 10
     DateTimeExtended = 11
 
-    @classmethod
-    def _missing_(cls, value: object) -> ItemType | None:
-        if (
-            not isinstance(value, int)
-            or isinstance(value, bool)
-            or not 0 <= value <= 0xFF
-        ):
-            return None
-        member = int.__new__(cls, value)
-        member._name_ = f"Unknown_0x{value:02X}"
-        member._value_ = value
-        cls._value2member_map_[value] = member
-        return member
-
 
 class RawTag(NativeHandle):
     _release_name = "kmipkit_raw_tag_release"

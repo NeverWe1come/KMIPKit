@@ -11,10 +11,11 @@ use crate::{
     kmipkit_extension_definition_t, kmipkit_extension_discriminator_t,
     kmipkit_extension_identity_t, kmipkit_extension_information_t,
     kmipkit_extension_order_constraint_t, kmipkit_extension_recognition_t,
-    kmipkit_extension_schema_t, kmipkit_raw_tag_t, kmipkit_registered_extension_value_t,
-    kmipkit_tag_t, kmipkit_ttlv_item_t, kmipkit_ttlv_item_view_t, kmipkit_ttlv_path_t,
-    kmipkit_ttlv_structure_t, kmipkit_ttlv_structure_view_t, kmipkit_ttlv_value_t,
-    kmipkit_ttlv_value_view_t, kmipkit_validated_extension_value_t,
+    kmipkit_extension_registry_limits_v1_t, kmipkit_extension_schema_t, kmipkit_raw_tag_t,
+    kmipkit_registered_extension_value_t, kmipkit_tag_t, kmipkit_ttlv_item_t,
+    kmipkit_ttlv_item_view_t, kmipkit_ttlv_path_t, kmipkit_ttlv_structure_t,
+    kmipkit_ttlv_structure_view_t, kmipkit_ttlv_value_t, kmipkit_ttlv_value_view_t,
+    kmipkit_validated_extension_value_t,
 };
 use kmipkit_client::ClientBatchItem;
 use kmipkit_client::extension_registry as client_extension;
@@ -727,6 +728,47 @@ fn limits_from_fields(fields: [u64; 12]) -> FfiResult<extension::ExtensionRegist
         fields[8], fields[9], fields[10], fields[11],
     )
     .map_err(|error| protocol_status(&error))
+}
+
+fn validate_versioned_limits_header(
+    limits: *const kmipkit_extension_registry_limits_v1_t,
+) -> FfiResult<()> {
+    if limits.is_null() {
+        return Err(ERROR_INVALID_INPUT);
+    }
+    // SAFETY: a non-null pointer to a readable v1 limits structure is a caller precondition.
+    let header = unsafe { &*limits };
+    let Ok(minimum_size) =
+        u32::try_from(std::mem::size_of::<kmipkit_extension_registry_limits_v1_t>())
+    else {
+        return Err(ERROR_INVALID_INPUT);
+    };
+    if header.struct_size != minimum_size || header.abi_version != 1 {
+        return Err(ERROR_INVALID_INPUT);
+    }
+    Ok(())
+}
+
+fn limits_from_versioned(
+    limits: *const kmipkit_extension_registry_limits_v1_t,
+) -> FfiResult<extension::ExtensionRegistryLimits> {
+    validate_versioned_limits_header(limits)?;
+    // SAFETY: the header validator established a non-null pointer to the complete v1 prefix.
+    let limits = unsafe { &*limits };
+    limits_from_fields([
+        limits.max_definitions,
+        limits.max_schema_nodes,
+        limits.max_child_rules_per_structure,
+        limits.max_text_bytes_per_field,
+        limits.max_registry_text_bytes,
+        limits.max_discriminator_scalar_bytes,
+        limits.max_total_discriminator_scalar_bytes,
+        limits.max_constraint_members_per_rule,
+        limits.max_total_constraint_members,
+        limits.max_payload_index_records,
+        limits.max_lookup_comparisons,
+        limits.max_depth,
+    ])
 }
 
 fn registry_from_handle(
@@ -1492,6 +1534,70 @@ pub extern "C" fn kmipkit_extension_definition_create(
 }
 
 #[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_extension_registry_limits_v1_default_values(
+    out_limits: *mut kmipkit_extension_registry_limits_v1_t,
+) -> i32 {
+    if let Err(status) = validate_versioned_limits_header(out_limits) {
+        return record_ffi_error(status);
+    }
+    let limits = extension::defaults();
+    // SAFETY: validation established that the caller supplied a writable v1-sized output.
+    unsafe {
+        (*out_limits).max_definitions = limits.max_definitions();
+        (*out_limits).max_schema_nodes = limits.max_schema_nodes();
+        (*out_limits).max_child_rules_per_structure = limits.max_child_rules_per_structure();
+        (*out_limits).max_text_bytes_per_field = limits.max_text_bytes_per_field();
+        (*out_limits).max_registry_text_bytes = limits.max_registry_text_bytes();
+        (*out_limits).max_discriminator_scalar_bytes = limits.max_discriminator_scalar_bytes();
+        (*out_limits).max_total_discriminator_scalar_bytes =
+            limits.max_total_discriminator_scalar_bytes();
+        (*out_limits).max_constraint_members_per_rule = limits.max_constraint_members_per_rule();
+        (*out_limits).max_total_constraint_members = limits.max_total_constraint_members();
+        (*out_limits).max_payload_index_records = limits.max_payload_index_records();
+        (*out_limits).max_lookup_comparisons = limits.max_lookup_comparisons();
+        (*out_limits).max_depth = limits.max_depth();
+    }
+    SUCCESS
+}
+
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_extension_registry_limits_v1_validate(
+    limits: *const kmipkit_extension_registry_limits_v1_t,
+) -> i32 {
+    match limits_from_versioned(limits) {
+        Ok(_) => SUCCESS,
+        Err(status) => status,
+    }
+}
+
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_client_extension_registry_create_v1(
+    definitions: *mut *mut kmipkit_extension_definition_t,
+    definition_count: u64,
+    limits: *const kmipkit_extension_registry_limits_v1_t,
+    out_registry: *mut *mut kmipkit_client_extension_registry_t,
+) -> i32 {
+    let out = out_slot!(out_registry);
+    let limits = try_ffi!(limits_from_versioned(limits));
+    let pointers = try_ffi!(input_handle_pointers(
+        definitions,
+        definition_count,
+        limits.max_definitions(),
+    ));
+    let copied = try_ffi!(copy_registry_definitions(pointers, limits, |definition| {
+        #[cfg(test)]
+        REGISTRY_DEFINITION_CLONE_COUNT.with(|count| count.set(count.get() + 1));
+        extension::clone_extension_definition(definition).map_err(|error| protocol_status(&error))
+    },));
+    let registry = try_ffi!(
+        client_extension::client_extension_registry(copied, limits)
+            .map_err(|error| client_status(&error))
+    );
+    *out = make_handle(Kind::Registry, HandleValue::Registry(Arc::new(registry)));
+    SUCCESS
+}
+
+#[unsafe(no_mangle)]
 pub extern "C" fn kmipkit_extension_registry_limits_default_values(
     out_max_definitions: *mut u64,
     out_max_schema_nodes: *mut u64,
@@ -1540,9 +1646,7 @@ pub extern "C" fn kmipkit_extension_registry_limits_default_values(
     ];
     for (output, value) in outputs.into_iter().zip(values) {
         // SAFETY: all output pointers were checked non-null and are writable C output slots.
-        unsafe {
-            *output = value;
-        }
+        unsafe { *output = value };
     }
     SUCCESS
 }
@@ -1582,6 +1686,7 @@ pub extern "C" fn kmipkit_extension_registry_limits_validate(
 }
 
 #[unsafe(no_mangle)]
+#[allow(clippy::too_many_arguments)]
 pub extern "C" fn kmipkit_client_extension_registry_create(
     definitions: *mut *mut kmipkit_extension_definition_t,
     definition_count: u64,

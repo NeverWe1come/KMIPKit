@@ -40,6 +40,7 @@ case "$(uname -s)" in
         "${CXX:-c++}" "$@" \
             -I"$java_home/include" -I"$java_home/include/linux" \
             -I"$repository_root/bindings/c/include" \
+            -I"$repository_root/tests/fixtures/api/generated" \
             "$script_dir/kmipkit_jni.cpp" "$rust_library" \
             -ldl -lpthread -lm -o "$native_output/libkmipkit_jni.so"
         ;;
@@ -48,6 +49,7 @@ case "$(uname -s)" in
         "${CXX:-c++}" -std=c++17 -dynamiclib \
             -I"$java_home/include" -I"$java_home/include/darwin" \
             -I"$repository_root/bindings/c/include" \
+            -I"$repository_root/tests/fixtures/api/generated" \
             "$script_dir/kmipkit_jni.cpp" "$rust_library" \
             -framework Security -framework CoreFoundation -framework SystemConfiguration \
             -o "$native_output/libkmipkit_jni.dylib"

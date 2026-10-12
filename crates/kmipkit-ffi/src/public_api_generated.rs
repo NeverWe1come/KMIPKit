@@ -485,7 +485,122 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
     (
         "rust-observed-bfc563ca8dd828273ab6",
         "rust-kmipkit-ttlv",
-        "kmipkit_ttlv::StructureView<'a>",
+        "kmipkit_ttlv::StructureView",
+    ),
+    (
+        "rust-observed-4cb48e2a2221594a3e1c",
+        "rust-kmipkit-ttlv",
+        "kmipkit_ttlv::ItemType::Structure",
+    ),
+    (
+        "rust-observed-e4de02f8fde8c69a9671",
+        "rust-kmipkit-ttlv",
+        "kmipkit_ttlv::ItemType::Integer",
+    ),
+    (
+        "rust-observed-314c205b3ce0e61a623d",
+        "rust-kmipkit-ttlv",
+        "kmipkit_ttlv::ItemType::LongInteger",
+    ),
+    (
+        "rust-observed-959f5f2d550790a18818",
+        "rust-kmipkit-ttlv",
+        "kmipkit_ttlv::ItemType::BigInteger",
+    ),
+    (
+        "rust-observed-5352991d5eb987551c8b",
+        "rust-kmipkit-ttlv",
+        "kmipkit_ttlv::ItemType::Enumeration",
+    ),
+    (
+        "rust-observed-c64e49beb11bcaaa8ef7",
+        "rust-kmipkit-ttlv",
+        "kmipkit_ttlv::ItemType::Boolean",
+    ),
+    (
+        "rust-observed-4f9c974ddfc87ead8714",
+        "rust-kmipkit-ttlv",
+        "kmipkit_ttlv::ItemType::TextString",
+    ),
+    (
+        "rust-observed-3ed086484551a0b02b0a",
+        "rust-kmipkit-ttlv",
+        "kmipkit_ttlv::ItemType::ByteString",
+    ),
+    (
+        "rust-observed-d682769c14b73754236d",
+        "rust-kmipkit-ttlv",
+        "kmipkit_ttlv::ItemType::DateTime",
+    ),
+    (
+        "rust-observed-8dafa75d670033a70b46",
+        "rust-kmipkit-ttlv",
+        "kmipkit_ttlv::ItemType::Interval",
+    ),
+    (
+        "rust-observed-e378ca6338585213f88c",
+        "rust-kmipkit-ttlv",
+        "kmipkit_ttlv::ItemType::DateTimeExtended",
+    ),
+    (
+        "rust-observed-72971c3fc3e87711e331",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::extension::ExtensionRegistryLimits::max_definitions",
+    ),
+    (
+        "rust-observed-aca009288b8b17a07d63",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::extension::ExtensionRegistryLimits::max_schema_nodes",
+    ),
+    (
+        "rust-observed-4b28b70d1cd367ff6570",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::extension::ExtensionRegistryLimits::max_child_rules_per_structure",
+    ),
+    (
+        "rust-observed-c8e5300713af995c80ab",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::extension::ExtensionRegistryLimits::max_text_bytes_per_field",
+    ),
+    (
+        "rust-observed-db834d895f1c340a30e1",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::extension::ExtensionRegistryLimits::max_registry_text_bytes",
+    ),
+    (
+        "rust-observed-1170b7447404a2063d7c",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::extension::ExtensionRegistryLimits::max_discriminator_scalar_bytes",
+    ),
+    (
+        "rust-observed-c3b42d518b1dbcd7c036",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::extension::ExtensionRegistryLimits::max_total_discriminator_scalar_bytes",
+    ),
+    (
+        "rust-observed-ae1bf19347f125c5aee5",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::extension::ExtensionRegistryLimits::max_constraint_members_per_rule",
+    ),
+    (
+        "rust-observed-4a751307f675146474f9",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::extension::ExtensionRegistryLimits::max_total_constraint_members",
+    ),
+    (
+        "rust-observed-d77da82b54c11b7e5dc7",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::extension::ExtensionRegistryLimits::max_payload_index_records",
+    ),
+    (
+        "rust-observed-14b16dd83ca7f6ccae28",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::extension::ExtensionRegistryLimits::max_lookup_comparisons",
+    ),
+    (
+        "rust-observed-0ef8b62644188f211729",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::extension::ExtensionRegistryLimits::max_depth",
     ),
     (
         "rust-adr0014-91e7a41f5f7a2bcb",
@@ -496,6 +611,11 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "rust-adr0014-ae2cbe64b1134333",
         "rust-kmipkit-transport",
         "kmipkit_transport::TransportResponse::as_bytes",
+    ),
+    (
+        "rust-observed-f6620e59c28f505087bc",
+        "rust-kmipkit-client",
+        "kmipkit_client::ClientBatchItem",
     ),
     ("kmipkit.VERSION:rust", "rust-kmipkit", "kmipkit::VERSION"),
     (

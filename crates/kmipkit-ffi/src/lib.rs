@@ -107,9 +107,26 @@ pub struct kmipkit_ttlv_value_view_t {
 }
 
 #[repr(C)]
-#[doc(hidden)]
-#[allow(dead_code, clippy::struct_field_names)]
 pub struct kmipkit_extension_registry_limits_t {
+    pub max_definitions: u64,
+    pub max_schema_nodes: u64,
+    pub max_child_rules_per_structure: u64,
+    pub max_text_bytes_per_field: u64,
+    pub max_registry_text_bytes: u64,
+    pub max_discriminator_scalar_bytes: u64,
+    pub max_total_discriminator_scalar_bytes: u64,
+    pub max_constraint_members_per_rule: u64,
+    pub max_total_constraint_members: u64,
+    pub max_payload_index_records: u64,
+    pub max_lookup_comparisons: u64,
+    pub max_depth: u64,
+}
+
+#[repr(C)]
+#[allow(clippy::struct_field_names)]
+pub struct kmipkit_extension_registry_limits_v1_t {
+    pub struct_size: u32,
+    pub abi_version: u32,
     pub max_definitions: u64,
     pub max_schema_nodes: u64,
     pub max_child_rules_per_structure: u64,

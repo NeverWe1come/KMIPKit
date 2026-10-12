@@ -10,6 +10,7 @@ Runtime code uses only the Python standard library.
 from __future__ import annotations
 
 import argparse
+from copy import deepcopy
 import json
 import math
 import os
@@ -49,6 +50,7 @@ V2_OUTPUTS = (
     ("javaParityTests", "bindings/java/src/test/java/org/kmipkit/generated/PublicApiParityFixtures.java"),
     ("pythonApi", "bindings/python/src/kmipkit/_generated/public_api.py"),
     ("parityFixtures", "tests/fixtures/api/generated/public_api_parity.json"),
+    ("internalCHeader", "tests/fixtures/api/generated/kmipkit_internal.h"),
 )
 V2_OUTPUT_PATHS = dict(V2_OUTPUTS)
 _FIXED_LIMIT_IDS = (
@@ -914,9 +916,167 @@ def _validate_v2_readiness(
         requirements,
         root,
     )
+    _validate_ready_mapping_targets(declarations, package_languages)
+    _validate_capability_mapping_inventories(
+        capabilities, declarations, package_languages
+    )
+    _validate_internal_c_type_visibility(manifest)
+    _validate_signature_type_readiness(manifest, declarations)
     _validate_approved_exclusions(exclusions, package_languages, root)
     if require_complete and not package_languages:
         raise ManifestError("release manifest contains no public packages")
+
+
+def _validate_ready_mapping_targets(
+    declarations: list[dict[str, Any]], package_languages: dict[Any, Any]
+) -> None:
+    """Require every ready cross-language mapping to resolve to a ready export."""
+    declarations_by_path = {
+        (row["packageId"], row["exportName"]): row for row in declarations
+    }
+    for declaration in declarations:
+        if declaration.get("declarationState") not in {"declared", "verified"}:
+            continue
+        mappings = declaration.get("languageMappings", {})
+        required_languages = (
+            ("rust",)
+            if declaration.get("parityScope") == "rust-only-adr"
+            else ("rust", "c", "java", "python")
+        )
+        for language in required_languages:
+            mapping = mappings.get(language, {})
+            target = declarations_by_path.get(
+                (mapping.get("packageId"), mapping.get("name"))
+            )
+            if target is None:
+                raise ManifestError("ready public declaration mapping target is not an exact listed export")
+            if package_languages.get(target.get("packageId")) != language:
+                raise ManifestError("ready public declaration mapping target has the wrong language")
+            if target.get("declarationState") not in {"declared", "verified"}:
+                raise ManifestError("ready public declaration mapping target is blocked")
+
+
+def _validate_capability_mapping_inventories(
+    capabilities: list[dict[str, Any]],
+    declarations: list[dict[str, Any]],
+    package_languages: dict[Any, Any],
+) -> None:
+    """Keep capability mappings equal to exact declared exports in each language."""
+    for capability in capabilities:
+        if not isinstance(capability, dict):
+            raise ManifestError("manifest capability mapping record is malformed")
+        if capability.get("capabilityState") == "blocked":
+            continue
+        language_scope = (
+            ("rust",)
+            if capability.get("parityScope") == "rust-only-adr"
+            else ("rust", "c", "java", "python")
+        )
+        mappings = capability.get("mappings", {})
+        for language in language_scope:
+            expected = sorted(
+                {
+                    row["exportName"]
+                    for row in declarations
+                    if row.get("capabilityId") == capability.get("capabilityId")
+                    and row.get("declarationState") in {"declared", "verified"}
+                    and package_languages.get(row.get("packageId")) == language
+                }
+            )
+            if mappings.get(language) != expected:
+                raise ManifestError(
+                    "capability mapping must equal the exact ready exports in each language"
+                )
+
+
+def _validate_internal_c_type_visibility(manifest: dict[str, Any]) -> None:
+    """Prevent private C value layouts from being mapped into the public surface."""
+    declarations = manifest.get("publicDeclarations", [])
+    for type_record in manifest.get("types", []):
+        c_type = type_record.get("c", {})
+        if c_type.get("visibility") != "internal-only":
+            continue
+        c_name = c_type.get("name")
+        if not isinstance(c_name, str):
+            raise ManifestError("internal C type has no declared private name")
+        for declaration in declarations:
+            if declaration.get("declarationState") not in {"declared", "verified"}:
+                continue
+            if declaration.get("packageId") == "c-kmipkit" and declaration.get("exportName") == c_name:
+                raise ManifestError("internal-only C type is declared as a public export")
+            c_mapping = declaration.get("languageMappings", {}).get("c", {})
+            if c_mapping.get("packageId") == "c-kmipkit" and c_mapping.get("name") == c_name:
+                raise ManifestError("ready declaration maps to an internal-only C type")
+
+
+def _validate_signature_type_readiness(
+    manifest: dict[str, Any], declarations: list[dict[str, Any]]
+) -> None:
+    """Reject function signatures that expose a type blocked in that language."""
+    rust_packages = {
+        "kmipkit": "rust-kmipkit",
+        "kmipkit_ttlv": "rust-kmipkit-ttlv",
+        "kmipkit_protocol": "rust-kmipkit-protocol",
+        "kmipkit_transport": "rust-kmipkit-transport",
+        "kmipkit_client": "rust-kmipkit-client",
+    }
+    type_names: dict[str, dict[str, tuple[str, str]]] = {
+        language: {}
+        for language in ("rust", "c", "java", "python")
+    }
+    for type_record in manifest.get("types", []):
+        rust_type = type_record.get("rust", {})
+        rust_module = rust_type.get("module")
+        rust_name = rust_type.get("name")
+        rust_package = rust_packages.get(rust_module.split("::", 1)[0]) if isinstance(rust_module, str) else None
+        if isinstance(rust_name, str) and isinstance(rust_module, str) and rust_package:
+            type_names["rust"][rust_name] = (rust_package, f"{rust_module}::{rust_name}")
+        c_type = type_record.get("c", {})
+        if isinstance(c_type.get("name"), str):
+            type_names["c"][c_type["name"]] = ("c-kmipkit", c_type["name"])
+        for language in ("java", "python"):
+            language_type = type_record.get(language, {})
+            module = language_type.get("package" if language == "java" else "module")
+            name = language_type.get("name")
+            package_id = "java-kmipkit" if language == "java" else "python-kmipkit"
+            if isinstance(module, str) and isinstance(name, str):
+                type_names[language][name] = (package_id, f"{module}.{name}")
+
+    declaration_states = {
+        (row.get("packageId"), row.get("exportName")): row.get("declarationState")
+        for row in declarations
+    }
+    ready_declaration_ids = {
+        row.get("declarationId")
+        for row in declarations
+        if row.get("declarationState") in {"declared", "verified"}
+    }
+    for function in manifest.get("functions", []):
+        for language in type_names:
+            if f"{function.get('id')}:{language}" not in ready_declaration_ids:
+                continue
+            if language == "rust" and function.get("rust", {}).get("owner") == "ffi":
+                continue
+            signature = function.get(language, {})
+            signature_types: list[str] = []
+            result = signature.get("returnType")
+            if isinstance(result, str):
+                signature_types.append(result)
+            for parameter in signature.get("parameters", []):
+                if isinstance(parameter, dict) and isinstance(parameter.get("type"), str):
+                    signature_types.append(parameter["type"])
+            for signature_type in signature_types:
+                for type_name, target in type_names[language].items():
+                    if re.search(
+                        rf"(?<![A-Za-z0-9_]){re.escape(type_name)}(?![A-Za-z0-9_])",
+                        signature_type,
+                    ) and declaration_states.get(target) not in {
+                        "declared",
+                        "verified",
+                    }:
+                        raise ManifestError(
+                            f"ready {language} function signature references blocked type {type_name}"
+                        )
 
 
 def _validate_v2_manifest(
@@ -1128,6 +1288,8 @@ def render_rust_ffi(manifest: dict[str, Any]) -> str:
                 lines.append(f"pub const {const_name}: {name} = {value['value']};")
         elif c_type["kind"] == "fixed-width-value":
             lines.extend(["#[repr(C)]", f"pub struct {name} {{"])
+            if c_type.get("versioned"):
+                lines.extend(["    pub struct_size: u32,", "    pub abi_version: u32,"])
             for limit in manifest["limits"]:
                 lines.append(f"    pub {limit['cField']}: u64,")
             lines.append("}")
@@ -1167,18 +1329,26 @@ def _ready_c_export_names(manifest: dict[str, Any]) -> set[str] | None:
     return names
 
 
-def render_c_header(manifest: dict[str, Any]) -> str:
-    ready_c_exports = _ready_c_export_names(manifest)
+def render_c_header(
+    manifest: dict[str, Any], *, include_blocked: bool = False, header_guard: str = "KMIPKIT_H"
+) -> str:
+    ready_c_exports = None if include_blocked else _ready_c_export_names(manifest)
     lines = [
         "/* @generated by tools/api_manifest/generate.py; do not edit. */",
-        "#ifndef KMIPKIT_H",
-        "#define KMIPKIT_H",
+        f"#ifndef {header_guard}",
+        f"#define {header_guard}",
         "#include <stdint.h>",
         "#ifdef __cplusplus",
         'extern "C" {',
         "#endif",
         "",
     ]
+    declared_c_fields = {
+        declaration["exportName"]
+        for declaration in manifest.get("publicDeclarations", [])
+        if declaration.get("packageId") == "c-kmipkit"
+        and declaration.get("kind") == "field"
+    }
     emitted: set[str] = set()
     for declaration in manifest["types"]:
         c_type = declaration["c"]
@@ -1202,14 +1372,19 @@ def render_c_header(manifest: dict[str, Any]) -> str:
             ready_fields = [
                 limit["cField"]
                 for limit in manifest["limits"]
-                if ready_c_exports is None
-                or f"{name}.{limit['cField']}" in ready_c_exports
+                if f"{name}.{limit['cField']}" in declared_c_fields
+                and (
+                    ready_c_exports is None
+                    or f"{name}.{limit['cField']}" in ready_c_exports
+                )
             ]
             if not ready_fields:
                 lines.append(f"typedef struct {name} {name};")
                 lines.append("")
                 continue
             lines.append("typedef struct {")
+            if c_type.get("versioned"):
+                lines.extend(["    uint32_t struct_size;", "    uint32_t abi_version;"])
             for field in ready_fields:
                 lines.append(f"    uint64_t {field};")
             lines.append(f"}} {name};")
@@ -1255,8 +1430,17 @@ def render_c_header(manifest: dict[str, Any]) -> str:
             ])
         lines.append(f"/* {requirement_comment} */")
         lines.append(_c_declaration(function))
-    lines.extend(["", "#ifdef __cplusplus", "}", "#endif", "#endif /* KMIPKIT_H */", ""])
+    lines.extend(["", "#ifdef __cplusplus", "}", "#endif", f"#endif /* {header_guard} */", ""])
     return "\n".join(lines)
+
+
+def render_internal_c_header(manifest: dict[str, Any]) -> str:
+    """Render private ABI declarations for in-repository native adapters/tests."""
+    return render_c_header(
+        manifest,
+        include_blocked=True,
+        header_guard="KMIPKIT_INTERNAL_H",
+    )
 
 
 def _json_literal(value: Any) -> str:
@@ -1271,9 +1455,16 @@ def _encode_generated_text(value: str) -> bytes:
 def _registry_manifest_v2(manifest: dict[str, Any]) -> dict[str, Any]:
     """Project the preserved KMIPKIT-0012 registry slice into its v1 renderer shape."""
     registry_types = [
-        record for record in manifest["types"]
+        deepcopy(record) for record in manifest["types"]
         if any(requirement.startswith("KMIPKIT-0012-") for requirement in record["requirementIds"])
     ]
+    # The v1 registry metadata used the original top-level Java/Python names.
+    # Keep that generated compatibility slice stable while the complete v2 API
+    # records the implemented extension-package names.
+    for record in registry_types:
+        if record.get("id") == "ClientBatchItem":
+            record["java"] = {**record["java"], "package": "org.kmipkit"}
+            record["python"] = {**record["python"], "module": "kmipkit"}
     registry_functions = [
         record for record in manifest["functions"]
         if any(requirement.startswith("KMIPKIT-0012-") for requirement in record["requirementIds"])
@@ -1582,6 +1773,7 @@ def render_outputs(manifest: dict[str, Any]) -> dict[str, bytes]:
     projection = _ready_api_projection(manifest)
     full_rendered = {
         "cHeader": render_c_header(manifest),
+        "internalCHeader": render_internal_c_header(manifest),
         "rustFfi": render_public_rust_api(projection),
         "javaApi": render_public_java_api(projection),
         "javaParityTests": render_public_java_parity(projection),

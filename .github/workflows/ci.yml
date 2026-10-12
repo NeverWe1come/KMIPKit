@@ -600,7 +600,7 @@ jobs:
         id: run-the-c-consumer-against-the-instrumented-rust-ffi
         run: |
           mkdir -p target/sanitizers
-          cc -std=c11 -Wall -Wextra -Werror -fsanitize=address -fno-omit-frame-pointer -Ibindings/c/include bindings/c/tests/extension_registry.c -Ltarget/debug -Wl,-rpath,"$GITHUB_WORKSPACE/target/debug" -lkmipkit_ffi -o target/sanitizers/extension_registry_consumer
+          cc -std=c11 -Wall -Wextra -Werror -fsanitize=address -fno-omit-frame-pointer -Ibindings/c/include -Itests/fixtures/api/generated bindings/c/tests/extension_registry.c -Ltarget/debug -Wl,-rpath,"$GITHUB_WORKSPACE/target/debug" -lkmipkit_ffi -o target/sanitizers/extension_registry_consumer
           target/sanitizers/extension_registry_consumer
 
       - name: Diagnose job result

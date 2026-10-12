@@ -24,16 +24,16 @@ The strict v2 schema requires these records and rejects undeclared fields. Stabl
 | `apiLevels` | Exactly high-level, typed-protocol, and generic-TTLV levels, with canonical IDs and requirement references. |
 | `operations` | Exactly 56 unique `client_1_0` entries, ordered by OASIS §6.1 section number. KMIP 2.1 defines 57 client-initiated operation types overall; Set Endpoint Role (§6.1.54) remains `client_1_1` and is excluded from the 1.0 API. Each included entry identifies the exact source reference, catalog element ID, scope, owning approved feature (when available), API readiness, and declarations by language when ready. |
 | `capabilities` | Shared client, batch, asynchronous, TTLV, credential, extension, error, lifecycle, and diagnostic capabilities with requirement IDs and four-language mappings. |
-| `types` | Existing v1 type declarations plus all additional released API types, preserving complete Rust/C/Java/Python names, kind, ownership, and requirement references. |
+| `types` | Existing v1 type declarations plus all additional released API types, preserving complete Rust/C/Java/Python names, kind, ownership, and requirement references. A C representation may set `visibility: internal-only` only when retained for private in-repository ABI use and excluded from public declarations and mappings. |
 | `functions` | Existing v1 function declarations plus all additional released functions, with ordered parameters, complete result type, error mappings, ownership, ordering, and all four language mappings. |
 | `errorCategories` | Stable unique cross-language error/status/exception records; every function error reference resolves. |
 | `limits` | All shared limit values with units, defaults, maxima, and one equivalent mapping in each language. |
 | `security` | Redaction, zeroization, external-runtime-copy, and native-loading boundaries by language. Notes MUST describe guarantees and limits without secret examples. |
-| `generatedOutputs` | Exactly the eleven schema-controlled output names and paths below; manifest text cannot add, remove, or redirect paths. |
+| `generatedOutputs` | Exactly the twelve schema-controlled output names and paths below; manifest text cannot add, remove, or redirect paths. |
 
 ## Fixed generated outputs
 
-The v2 generator writes exactly these destinations. The six registry destinations preserve the current registry slice; the five full-API destinations cover all public declarations and parity fixtures. The generated C umbrella header is shared and contains both slices.
+The v2 generator writes exactly these destinations. The six registry destinations preserve the current registry slice; the five full-API destinations cover public declarations and parity fixtures. `internalCHeader` is a private in-repository build/test fixture: it declares existing binary exports needed by JNI and the internal FFI harness, is not installed or packaged, and does not count as a public declaration or parity mapping. The generated C umbrella header remains restricted to declared/verified public declarations.
 
 | Output name | Fixed destination | Content |
 |---|---|---|
@@ -48,8 +48,9 @@ The v2 generator writes exactly these destinations. The six registry destination
 | `javaParityTests` | `bindings/java/src/test/java/org/kmipkit/generated/PublicApiParityFixtures.java` | Generated Java fixtures for the shared full-API parity corpus. |
 | `pythonApi` | `bindings/python/src/kmipkit/_generated/public_api.py` | Generated full public API Python declarations/metadata. |
 | `parityFixtures` | `tests/fixtures/api/generated/public_api_parity.json` | Language-neutral shared fixtures for complete API parity. |
+| `internalCHeader` | `tests/fixtures/api/generated/kmipkit_internal.h` | Private C ABI declarations for in-repository native builds and the internal FFI harness; never installed or packaged. |
 
-Output names and paths are constants in the generator and exact values in the schema; the JSON manifest repeats those values for review. The generator MUST reject any mismatch, duplicate destination, traversal, or symlink escape. The two Rust output files remain separate so existing registry generation and its reviewed behavior remain intact.
+Output names and paths are constants in the generator and exact values in the schema; the JSON manifest repeats those values for review. The generator MUST reject any mismatch, duplicate destination, traversal, or symlink escape. The two Rust output files remain separate so existing registry generation and its reviewed behavior remain intact. The private header may include blocked declarations only for existing internal ABI exports; it MUST NOT be copied into a public distribution or used as public parity evidence.
 
 ## Operation readiness
 
@@ -95,6 +96,14 @@ The package inventory is a set of logical distribution families, not a list of i
 
 Names may differ by language. The listed observable behavior may not. A language-specific convenience wrapper may compose canonical calls but MUST NOT add protocol behavior, implicit cryptographic choices, retries, waits, or capability assumptions.
 
+Every ready language mapping MUST resolve to an exact `publicDeclarations` export in the stated language whose state is `declared` or `verified`. Each non-blocked capability's per-language mapping inventory MUST equal the sorted set of its exact ready declaration exports. The only exception is the Rust-only ADR capability, which has only its Rust inventory. The generator enforces both rules.
+
+A C type whose `visibility` is `internal-only` is a private representation used only by in-repository native adapters or tests. The generator MUST reject it as a ready C declaration or as the C target of any ready cross-language mapping. It may appear in the generated private `internalCHeader`; it MUST NOT appear in the installed `kmipkit.h`, public capability mappings, package documentation, or public parity evidence. Every ready function signature MUST also reference only types whose declaration is ready in that language; a blocked function declaration is exempt while it remains excluded from the public surface.
+
+`ExtensionRegistryLimits` is a four-language value type owned by KMIPKIT-0012-FR-010/012. For source and ABI compatibility, C retains the historical tagged name `kmipkit_extension_registry_limits_t` as an opaque typedef; it does not expose the old layout. The usable C value representation is the additional `ExtensionRegistryLimitsV1` type, named `kmipkit_extension_registry_limits_v1_t`: `struct_size` and `abi_version` are C ABI compatibility metadata, followed by the twelve fixed-width limit values. The metadata fields are exact C-only ABI exclusions from facade capability parity; the twelve value fields map to the canonical Rust accessors and equivalent Java/Python fields. This versioned representation satisfies KMIPKIT-0043-FR-007 while preserving the historical C name without publishing its layout.
+
+The additive C `_v1` defaults, validation, and client-registry creation functions consume or fill this versioned value directly; the historical C functions retain their original scalar signatures. The `_v1` functions require a non-null pointer, `struct_size == sizeof(kmipkit_extension_registry_limits_v1_t)`, and `abi_version == 1`; defaults preserves those initialized metadata values while writing the twelve limit fields. The Java JNI and Python CFFI adapters construct the same v1 representation at the ABI boundary.
+
 Shared capability records for asynchronous follow-up (0009) and profile validation (0010) remain blocked while their current owner specs are drafts. A capability's presence in an accepted project target or API-level taxonomy does not mark it available. At 1.0 release completion, every in-scope four-language capability must be `verified` with a formally approved/accepted owner and resolvable evidence in all four languages; the only Rust-only capability is verified against the accepted ADR scope.
 
 The existing v1 `types`, `functions`, `errorCategories`, `limits`, `security`, and `generatedOutputs` declarations remain represented. Existing registry API behavior, including request ordering, criticality, generic TTLV limits, and extension value preservation, MUST NOT regress during migration.
@@ -106,7 +115,7 @@ The existing v1 `types`, `functions`, `errorCategories`, `limits`, `security`, a
 - The schema validates shapes; the generator additionally validates cross-record references, exact catalog coverage, ready-state requirements, symbol uniqueness, fixed-width value ranges, and permitted output destinations.
 - Catalog comparison MUST fail on a missing, duplicate, renamed, out-of-scope, or extra operation. A catalog change that changes the set of 56 `client_1_0` operations requires an approved product-scope/specification change before the public manifest changes.
 - Generator behavior is offline, deterministic, and independent of filesystem traversal order, timestamps, locale, environment-specific paths, or network access.
-- Check mode compares bytes and never repairs or rewrites outputs. Write mode atomically writes only the eleven fixed outputs listed above.
+- Check mode compares bytes and never repairs or rewrites outputs. Write mode atomically writes only the twelve fixed outputs listed above.
 - Generated source and test files are never edited by hand. Handwritten Java/Python facades, lifecycle handling, validation, and package loaders remain reviewed source and are covered by parity tests.
 
 ## Completion gates
