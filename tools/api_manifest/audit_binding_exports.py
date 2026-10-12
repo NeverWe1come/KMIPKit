@@ -364,6 +364,8 @@ def inventory_python_sources(sources: dict[str, str], package: str = "python-kmi
                         records.append(_record(package, f"{module}.{target.id}", "python-export",
                                                f"{module}:{node.lineno}"))
             elif isinstance(node, (ast.ImportFrom, ast.Import)):
+                if isinstance(node, ast.ImportFrom) and node.module == "__future__":
+                    continue
                 for alias in node.names:
                     visible = alias.asname or alias.name
                     if not visible.startswith("_"):
@@ -458,6 +460,9 @@ def inventory_python_sources(sources: dict[str, str], package: str = "python-kmi
         if target_kind is None:
             records.append(_record(package, export_name, "python-export", module))
             issues.append({"packageId": package, "exportName": export_name, "reason": "unresolved-import-target"})
+            continue
+        source_module, source_name = imported[(module, name)]
+        if target_kind == "module" and not source_name and export_name == source_module:
             continue
         records.append(_record(package, export_name, target_kind, module))
     return _report(records, issues)
