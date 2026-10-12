@@ -49,11 +49,6 @@ OUT_OF_SCOPE_IDS = {
     "KMIPKIT-REQ-PROF-5.18.3-005",
 }
 UNRESOLVED_ACTOR_IDS = {
-    "KMIPKIT-REQ-PROF-5.12.2-002",
-    "KMIPKIT-REQ-PROF-5.12.2-003",
-    "KMIPKIT-REQ-PROF-5.12.6.2-002",
-    "KMIPKIT-REQ-PROF-5.12.6.2-003",
-    "KMIPKIT-REQ-PROF-5.12.6.3-001",
     "KMIPKIT-REQ-PROF-5.12.6.3-004",
     "KMIPKIT-REQ-PROF-5.17.1-001",
     "KMIPKIT-REQ-PROF-5.17.1-002",
@@ -64,11 +59,6 @@ SHARED_ACTOR = {
     "KMIPKIT-REQ-PROF-5.17-001": "a client or server conformant to this profile",
 }
 UNRESOLVED_SOURCE_ACTOR = {
-    "KMIPKIT-REQ-PROF-5.12.2-002": "source does not assign a client or server actor",
-    "KMIPKIT-REQ-PROF-5.12.2-003": "source does not assign a client or server actor",
-    "KMIPKIT-REQ-PROF-5.12.6.2-002": "actor not explicit in this test-case statement",
-    "KMIPKIT-REQ-PROF-5.12.6.2-003": "implementation actor not identified by this statement",
-    "KMIPKIT-REQ-PROF-5.12.6.3-001": "source says Tape Library; client/server endpoint is not specified",
     "KMIPKIT-REQ-PROF-5.12.6.3-004": "Tape Library implementation; client/server endpoint is not specified",
     "KMIPKIT-REQ-PROF-5.17.1-001": "test-case endpoint is not specified by this clause",
     "KMIPKIT-REQ-PROF-5.17.1-002": "test-case endpoint is not specified by this clause",
@@ -181,7 +171,7 @@ class ProfileSectionFiveCrosswalkTests(unittest.TestCase):
         self.assertEqual(len(requirements), 84)
 
         expected_mappable_ids = set(requirements) - OUT_OF_SCOPE_IDS - UNRESOLVED_ACTOR_IDS
-        self.assertEqual(len(expected_mappable_ids), 69)
+        self.assertEqual(len(expected_mappable_ids), 74)
         crosswalk_rows = [
             row
             for row in fixture["requirement_crosswalk"]
@@ -192,7 +182,7 @@ class ProfileSectionFiveCrosswalkTests(unittest.TestCase):
         self.assertEqual(
             set(row_by_id),
             expected_mappable_ids,
-            "only the 69 reviewed client/shared §5 atoms belong in the crosswalk",
+            "only the 74 reviewed client/shared §5 atoms belong in the crosswalk",
         )
 
         reviews = {

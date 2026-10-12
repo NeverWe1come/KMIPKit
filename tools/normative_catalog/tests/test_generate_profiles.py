@@ -141,9 +141,11 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
 
         self.assertEqual(violations, [], "client profile closures differ from current catalog scope")
 
-    def test_client_profile_closure_keeps_client_obligations_with_mixed_scope(self) -> None:
+    def test_client_profile_closure_keeps_split_client_obligations_without_server_obligations(self) -> None:
         catalog_path = ROOT / "specification" / "catalog" / "kmip-2.1.json"
         catalog = json.loads(catalog_path.read_text(encoding="utf-8"))
+        oracle_path = ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json"
+        oracle = json.loads(oracle_path.read_text(encoding="utf-8"))
         baseline = next(
             profile for profile in catalog["profiles"]
             if profile["profile_id"] == "KMIPKIT-PROFILE-BASELINE-CLIENT"
@@ -155,23 +157,48 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
             profile_id=baseline["profile_id"],
         )
 
-        # Their reviewed source atoms separate a client obligation from a
-        # server obligation; the catalog aggregates those atoms as `mixed`.
-        for requirement_id in (
-            "KMIPKIT-REQ-SPEC-6.1.5-001",
-            "KMIPKIT-REQ-SPEC-6.1.7-005",
+        requirements = {
+            row["requirement_id"]: row for row in catalog["requirements"]
+        }
+        source_reviews = {
+            row["source_clause_id"]: row for row in oracle["source_requirement_reviews"]
+        }
+        # The pinned source review assigns client requests and server responses
+        # separate requirement IDs, even when they share a source clause.
+        for clause_id, client_id, server_id in (
+            (
+                "KMIPKIT-CLAUSE-SPEC-6.1.5-001",
+                "KMIPKIT-REQ-SPEC-6.1.5-001",
+                "KMIPKIT-REQ-SPEC-6.1.5-002",
+            ),
+            (
+                "KMIPKIT-CLAUSE-SPEC-6.1.7-005",
+                "KMIPKIT-REQ-SPEC-6.1.7-005",
+                "KMIPKIT-REQ-SPEC-6.1.7-006",
+            ),
         ):
-            with self.subTest(requirement_id=requirement_id):
-                requirement = next(
-                    row for row in catalog["requirements"]
-                    if row["requirement_id"] == requirement_id
-                )
-                self.assertEqual(requirement["role"], "client")
-                self.assertEqual(requirement["scope_state"], "mixed")
-                self.assertTrue(
-                    requirement_id in closure.requirement_ids,
-                    f"missing mixed-scope client requirement from closure: {requirement_id}",
-                )
+            with self.subTest(requirement_id=client_id):
+                source_review = source_reviews[clause_id]
+                client_requirement = requirements[client_id]
+                server_requirement = requirements[server_id]
+                source_atoms = {
+                    atom.get("candidate_requirement_id"): atom
+                    for atom in source_review["source_obligations"]
+                }
+
+                self.assertEqual(client_requirement["role"], "client")
+                self.assertEqual(client_requirement["scope_state"], "client_1_0")
+                self.assertIn(client_id, source_review["expected_client_requirement_ids"])
+                self.assertIn(client_id, closure.requirement_ids)
+                self.assertEqual(source_atoms[client_id]["actor"], "client")
+                self.assertEqual(source_atoms[client_id]["scope_disposition"], "client_1_0")
+
+                self.assertEqual(server_requirement["role"], "server")
+                self.assertEqual(server_requirement["scope_state"], "server_only")
+                self.assertNotIn(server_id, source_review["expected_client_requirement_ids"])
+                self.assertNotIn(server_id, closure.requirement_ids)
+                self.assertEqual(source_atoms[server_id]["actor"], "server")
+                self.assertEqual(source_atoms[server_id]["scope_disposition"], "server_only")
 
     def test_generated_client_requirement_metadata_covers_profile_closures(self) -> None:
         catalog_path = ROOT / "specification" / "catalog" / "kmip-2.1.json"

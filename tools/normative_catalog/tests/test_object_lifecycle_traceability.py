@@ -24,6 +24,12 @@ OPERATIONS = {
     "Register",
     "Revoke",
 }
+CHECK_ATTRIBUTE_REQUIREMENT_ID = "KMIPKIT-REQ-SPEC-6.1.7-002-003"
+CHECK_ATTRIBUTE_ELEMENT_IDS = [
+    "KMIPKIT-ELEM-TAG-42002C",
+    "KMIPKIT-ELEM-TAG-420049",
+    "KMIPKIT-ELEM-TAG-420096",
+]
 
 
 def _cells(line: str) -> list[str]:
@@ -31,8 +37,9 @@ def _cells(line: str) -> list[str]:
 
 
 class ObjectLifecycleTraceabilityTests(unittest.TestCase):
-    def test_all_38_requirements_link_to_their_operation_and_sources(self) -> None:
+    def test_all_39_requirements_link_to_their_operation_and_sources(self) -> None:
         trace = TRACEABILITY_PATH.read_text(encoding="utf-8")
+        spec = SPEC_PATH.read_text(encoding="utf-8")
         catalog = json.loads(CATALOG_PATH.read_text(encoding="utf-8"))
         requirements = {
             record["requirement_id"]: record for record in catalog["requirements"]
@@ -44,9 +51,22 @@ class ObjectLifecycleTraceabilityTests(unittest.TestCase):
             if line.startswith("| KMIPKIT-REQ-SPEC-")
         ]
 
-        self.assertEqual(len(rows), 38)
-        self.assertEqual(len({row[0] for row in rows}), 38)
-        self.assertEqual(sum(record.get("feature_spec") == FEATURE_SPEC for record in requirements.values()), 38)
+        spec_requirement_ids = {
+            _cells(line)[0]
+            for line in spec.splitlines()
+            if line.startswith("| KMIPKIT-REQ-SPEC-")
+        }
+        trace_requirement_ids = {row[0] for row in rows}
+        catalog_requirement_ids = {
+            requirement_id
+            for requirement_id, record in requirements.items()
+            if record.get("feature_spec") == FEATURE_SPEC
+        }
+
+        self.assertEqual(len(spec_requirement_ids), 39)
+        self.assertEqual(len(rows), len(trace_requirement_ids))
+        self.assertEqual(trace_requirement_ids, spec_requirement_ids)
+        self.assertEqual(catalog_requirement_ids, spec_requirement_ids)
 
         operation_elements = [
             element
@@ -54,13 +74,26 @@ class ObjectLifecycleTraceabilityTests(unittest.TestCase):
             if element.get("feature_spec") == FEATURE_SPEC
             and element.get("kind") == "operation"
         ]
+        operation_element_ids = {element["element_id"] for element in operation_elements}
         self.assertEqual({element["name"] for element in operation_elements}, OPERATIONS)
         for row in rows:
             requirement = requirements[row[0]]
             self.assertEqual(requirement["feature_spec"], FEATURE_SPEC, row[0])
             self.assertIn(requirement["status"], {"verified", "scoped_verified"}, row[0])
-            self.assertEqual(len(requirement["element_ids"]), 1, row[0])
-            self.assertEqual(requirement["element_ids"][0], f"KMIPKIT-ELEM-OP-C2S-{row[3].split('(')[0].strip().upper().replace(' ', '-')}", row[0])
+            expected_operation_element_id = (
+                f"KMIPKIT-ELEM-OP-C2S-{row[3].split('(')[0].strip().upper().replace(' ', '-')}"
+            )
+            self.assertIn(expected_operation_element_id, operation_element_ids, row[0])
+            if row[0] == CHECK_ATTRIBUTE_REQUIREMENT_ID:
+                self.assertEqual(row[3].split("(")[0].strip(), "Check", row[0])
+                self.assertEqual(requirement["element_ids"], CHECK_ATTRIBUTE_ELEMENT_IDS, row[0])
+            else:
+                self.assertEqual(len(requirement["element_ids"]), 1, row[0])
+                self.assertEqual(
+                    requirement["element_ids"][0],
+                    expected_operation_element_id,
+                    row[0],
+                )
             for path in (*requirement["implementation_refs"], *requirement["verification_refs"]):
                 self.assertTrue((ROOT / path).is_file(), f"{row[0]}: {path}")
 
