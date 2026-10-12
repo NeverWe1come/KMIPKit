@@ -79159,7 +79159,7 @@
         "KMIPKIT-PROFILE-HTTPS-CLIENT"
       ],
       "test_case_ids": [],
-      "feature_spec": null,
+      "feature_spec": "KMIPKIT-0010",
       "implementation_refs": [],
       "verification_refs": [],
       "negative_verification_required": false,
@@ -79191,7 +79191,7 @@
         "KMIPKIT-PROFILE-HTTPS-CLIENT"
       ],
       "test_case_ids": [],
-      "feature_spec": null,
+      "feature_spec": "KMIPKIT-0010",
       "implementation_refs": [],
       "verification_refs": [],
       "negative_verification_required": false,
@@ -79223,7 +79223,7 @@
         "KMIPKIT-PROFILE-HTTPS-CLIENT"
       ],
       "test_case_ids": [],
-      "feature_spec": null,
+      "feature_spec": "KMIPKIT-0010",
       "implementation_refs": [],
       "verification_refs": [],
       "negative_verification_required": false,
@@ -79255,7 +79255,7 @@
         "KMIPKIT-PROFILE-HTTPS-CLIENT"
       ],
       "test_case_ids": [],
-      "feature_spec": null,
+      "feature_spec": "KMIPKIT-0010",
       "implementation_refs": [],
       "verification_refs": [],
       "negative_verification_required": false,
@@ -80327,7 +80327,7 @@
         "KMIPKIT-PROFILE-TAPE-LIBRARY-CLIENT"
       ],
       "test_case_ids": [],
-      "feature_spec": null,
+      "feature_spec": "KMIPKIT-0010",
       "implementation_refs": [],
       "verification_refs": [],
       "negative_verification_required": false,
@@ -80359,7 +80359,7 @@
         "KMIPKIT-PROFILE-TAPE-LIBRARY-CLIENT"
       ],
       "test_case_ids": [],
-      "feature_spec": null,
+      "feature_spec": "KMIPKIT-0010",
       "implementation_refs": [],
       "verification_refs": [],
       "negative_verification_required": false,
@@ -80421,7 +80421,7 @@
         "KMIPKIT-PROFILE-TAPE-LIBRARY-CLIENT"
       ],
       "test_case_ids": [],
-      "feature_spec": null,
+      "feature_spec": "KMIPKIT-0010",
       "implementation_refs": [],
       "verification_refs": [],
       "negative_verification_required": false,
