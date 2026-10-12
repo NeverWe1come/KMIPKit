@@ -160,6 +160,15 @@ final class NativeLibraryLoaderTest {
         assertEquals(null, failure.getCause());
     }
 
+    @Test
+    void rejectsPresentButBlankNativeLibraryOverrideInsteadOfFallingBack() {
+        UnsatisfiedLinkError failure = assertThrows(
+                UnsatisfiedLinkError.class,
+                () -> NativeLibraryLoader.resolveExplicitLibrary("  "));
+        assertEquals(NativeLibraryLoader.LOAD_FAILURE_MESSAGE, failure.getMessage());
+        assertEquals(null, failure.getCause());
+    }
+
     private static ClassLoader classLoader(Map<String, byte[]> resources) {
         return new ClassLoader(null) {
             @Override
