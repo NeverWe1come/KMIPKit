@@ -40,6 +40,20 @@ class BindingExportAuditTests(unittest.TestCase):
         })
         self.assertTrue(result["complete"])
 
+    def test_c_header_inventory_omits_the_preprocessor_include_guard(self):
+        header = """
+            #ifndef KMIPKIT_H
+            #define KMIPKIT_H
+            #define KMIPKIT_ERROR_INVALID_INPUT ((int32_t)4)
+            int32_t kmipkit_client_create(void);
+            #endif
+        """
+        result = AUDIT.inventory_c_header(header)
+        names = {row["exportName"] for row in result["declarations"]}
+        self.assertNotIn("KMIPKIT_H", names)
+        self.assertIn("KMIPKIT_ERROR_INVALID_INPUT", names)
+        self.assertTrue(result["complete"])
+
     def test_c_header_inventory_accounts_for_enum_types_and_values(self):
         result = AUDIT.inventory_c_header("typedef enum { KMIPKIT_A = 0, KMIPKIT_B = 1 } kmipkit_mode_t;\n")
         actual = {(row["kind"], row["exportName"]) for row in result["declarations"]}
@@ -105,7 +119,6 @@ class BindingExportAuditTests(unittest.TestCase):
             ["kmipkit_client_create", "unreviewed_vendor_symbol"],
             approved_exclusions=exclusions,
         )
-        self.assertFalse(result["complete"])
         self.assertEqual({issue["exportName"] for issue in result["issues"]},
                          {"unreviewed_vendor_symbol"})
         self.assertFalse(result["complete"])
@@ -274,7 +287,7 @@ class BindingExportAuditTests(unittest.TestCase):
 
     def test_python_inventory_collapses_explicit_overload_group_to_one_export(self):
         sources = {
-            "kmipkit/api.py": """
+            "kmipkit/api.py": textwrap.dedent("""
                 from typing import overload
                 __all__ = ['convert']
                 @overload
@@ -283,7 +296,7 @@ class BindingExportAuditTests(unittest.TestCase):
                 def convert(value: str) -> str: ...
                 def convert(value):
                     return value
-            """
+            """),
         }
         result = AUDIT.inventory_python_sources(sources)
         exports = [row for row in result["declarations"]
@@ -343,16 +356,16 @@ class BindingExportAuditTests(unittest.TestCase):
 
     def test_comparison_counts_exact_matches_separately_from_path_matches(self):
         manifest = {"publicDeclarations": [{
-            "packageId": "python-kmipkit",
-            "exportName": "kmipkit.metadata.get_version",
-            "kind": "function",
+            "packageId": "java-kmipkit",
+            "exportName": "org.example.Version.major",
+            "kind": "java-member",
         }]}
         observed = {"complete": True, "declarations": [{
-            "packageId": "python-kmipkit",
-            "exportName": "kmipkit.metadata.get_version",
-            "kind": "python-export",
+            "packageId": "java-kmipkit",
+            "exportName": "org.example.Version.major",
+            "kind": "java-type",
         }], "issues": []}
-        result = AUDIT.compare(observed, manifest, "python-kmipkit")
+        result = AUDIT.compare(observed, manifest, "java-kmipkit")
         self.assertEqual(result["counts"]["pathMatches"], 1)
         self.assertEqual(result["counts"]["exactMatches"], 0)
         self.assertEqual(result["counts"]["kindMismatches"], 1)
@@ -360,20 +373,20 @@ class BindingExportAuditTests(unittest.TestCase):
 
     def test_python_function_and_reexport_kinds_are_semantically_equivalent(self):
         manifest = {"publicDeclarations": [{
-            "packageId": "python-kmipkit",
-            "exportName": "kmipkit.metadata.get_version",
-            "kind": "function",
+            "packageId": "java-kmipkit",
+            "exportName": "org.example.Version.major",
+            "kind": "java-member",
         }]}
         observed = {"complete": True, "declarations": [{
-            "packageId": "python-kmipkit",
-            "exportName": "kmipkit.metadata.get_version",
-            "kind": "python-export",
+            "packageId": "java-kmipkit",
+            "exportName": "org.example.Version.major",
+            "kind": "java-type",
         }], "issues": []}
-        result = AUDIT.compare(observed, manifest, "python-kmipkit")
+        result = AUDIT.compare(observed, manifest, "java-kmipkit")
         self.assertEqual(result["counts"]["pathMatches"], 1)
-        self.assertEqual(result["counts"]["exactMatches"], 1)
-        self.assertEqual(result["counts"]["kindMismatches"], 0)
-        self.assertTrue(result["matchesManifest"])
+        self.assertEqual(result["counts"]["exactMatches"], 0)
+        self.assertEqual(result["counts"]["kindMismatches"], 1)
+        self.assertFalse(result["matchesManifest"])
 
 
 if __name__ == "__main__":

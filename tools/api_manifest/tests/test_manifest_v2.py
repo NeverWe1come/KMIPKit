@@ -300,6 +300,20 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
             )
         }
         blocked_exports.update({
+            ("c-kmipkit", f"aws_lc_0_45_0_jent_{name}")
+            for name in (
+                "entropy_collector_alloc",
+                "entropy_collector_free",
+                "entropy_init",
+                "entropy_init_ex",
+                "entropy_switch_notime_impl",
+                "read_entropy",
+                "read_entropy_safe",
+                "set_fips_failure_callback",
+                "version",
+            )
+        })
+        blocked_exports.update({
             ("java-kmipkit", "org.kmipkit.RuntimeMetadata.Version.<init>"),
             ("java-kmipkit", "org.kmipkit.RuntimeMetadata.Version.abiVersion"),
             ("java-kmipkit", "org.kmipkit.RuntimeMetadata.Version.equals"),
@@ -338,24 +352,14 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
             (item["packageId"], item["exportName"])
             for item in self.checked_in_manifest["approvedExclusions"]
         }
-        expected_exclusions = {
-            ("c-kmipkit", "KMIPKIT_H"),
-            *(
-                ("c-kmipkit", f"aws_lc_0_45_0_jent_{name}")
-                for name in (
-                    "entropy_collector_alloc",
-                    "entropy_collector_free",
-                    "entropy_init",
-                    "entropy_init_ex",
-                    "entropy_switch_notime_impl",
-                    "read_entropy",
-                    "read_entropy_safe",
-                    "set_fips_failure_callback",
-                    "version",
-                )
-            ),
-        }
-        self.assertTrue(expected_exclusions <= exclusions)
+        self.assertFalse(
+            {
+                ("c-kmipkit", "KMIPKIT_H"),
+                *(key for key in blocked_exports if key[0] == "c-kmipkit" and key[1].startswith("aws_lc_")),
+            }
+            & exclusions
+        )
+        self.assertNotIn(("c-kmipkit", "KMIPKIT_H"), declarations)
         self.assertNotIn(
             ("java-kmipkit", "org.kmipkit.internal.NativeHandle.run"),
             declarations,
