@@ -95797,7 +95797,8 @@
       ],
       "verification_refs": [
         "crates/kmipkit-protocol/tests/unit/recertify_operation_tests.rs",
-        "crates/kmipkit-client/tests/unit/recertify_execution_tests.rs"
+        "crates/kmipkit-client/tests/unit/recertify_execution_tests.rs",
+        "crates/kmipkit-client/tests/unit/recertify_execution_tests.rs::recertify_sends_explicit_unique_identifier_without_certificate_request_fields"
       ],
       "negative_verification_required": false,
       "decision_id": null,
