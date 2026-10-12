@@ -96,6 +96,7 @@ class RustExportGreenGapTests(unittest.TestCase):
     def test_comparison_normalizes_lifetime_arguments_and_field_separators(self):
         observed = {
             "crates": ["demo"],
+            "complete": True,
             "declarations": [
                 {"packageId": "rust-demo", "exportName": "demo::View<'a>::result", "kind": "associated-item"},
                 {"packageId": "rust-demo", "exportName": "demo::Alias<'a>::result", "kind": "associated-item"},
@@ -105,9 +106,9 @@ class RustExportGreenGapTests(unittest.TestCase):
         }
         manifest = {
             "publicDeclarations": [
-                {"packageId": "rust-demo", "exportName": "demo::View::result", "kind": "associated-item"},
-                {"packageId": "rust-demo", "exportName": "demo::Alias<'_>::result", "kind": "associated-item"},
-                {"packageId": "rust-demo", "exportName": "demo::Record.field", "kind": "field"},
+                {"packageId": "rust-demo", "exportName": "demo::View::result", "kind": "associated-item", "declarationState": "blocked"},
+                {"packageId": "rust-demo", "exportName": "demo::Alias<'_>::result", "kind": "associated-item", "declarationState": "blocked"},
+                {"packageId": "rust-demo", "exportName": "demo::Record.field", "kind": "field", "declarationState": "blocked"},
             ],
             "approvedExclusions": [],
         }
@@ -117,6 +118,14 @@ class RustExportGreenGapTests(unittest.TestCase):
         self.assertTrue(report["matchesManifest"])
         self.assertEqual(report["counts"]["matched"], 3)
         self.assertEqual(report["notObserved"], [])
+
+    def test_path_normalization_keeps_type_const_and_static_lifetime_arguments(self):
+        normalize = getattr(self.audit, "_canonical_export_name", lambda value: value)
+
+        self.assertEqual(normalize("demo::Borrowed<'a>::get"), normalize("demo::Borrowed<'_>::get"))
+        self.assertNotEqual(normalize("demo::Value<u8>::new"), normalize("demo::Value<u16>::new"))
+        self.assertNotEqual(normalize("demo::Array<3>::new"), normalize("demo::Array<4>::new"))
+        self.assertNotEqual(normalize("demo::Borrowed<'static>::get"), normalize("demo::Borrowed<'a>::get"))
 
 
 if __name__ == "__main__":
