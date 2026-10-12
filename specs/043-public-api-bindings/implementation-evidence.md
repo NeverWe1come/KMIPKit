@@ -223,6 +223,19 @@ Remote CI has not yet rerun on these commits. T011 remains open until the comple
 
 The Windows C consumer check used the installed Visual Studio 2022 x64 developer environment to compile `bindings/c/tests/extension_registry.c` against `bindings/c/include` and `target/debug/kmipkit_ffi.dll.lib`, then executed `target/debug/extension_registry_consumer.exe`. CMake is unavailable on this host, so the CI-configured CMake matrix remains the cross-platform build authority.
 
+## T011/T028 — Coverage gate and offline native-loader CI follow-up
+
+The PR run `38298147704` on `e3462e91` passed its core, language, sanitizer, dependency-policy, normative-inventory, documentation, and most coverage jobs. The selected-scope coverage gate failed because Cobertura included generated Python CFFI wrappers under `kmipkit/_native_ffi/`, while `bindings/python/pyproject.toml` mistakenly excluded the handwritten `kmipkit/_ffi/` adapter instead. The coverage gate correctly rejected the generated source path; its validation was not weakened. The corrected configuration excludes only `_native_ffi/__init__.py` and `_native_ffi/ffi.py`, leaving handwritten `_ffi` code in measured coverage.
+
+| Phase | Commit | Verification | Result |
+|---|---|---|---|
+| Red | `20c94285` | `scripts/tests/test_multilanguage_coverage.py` | Expected failure: the regression test found that configured omissions did not match the generated `_native_ffi` source paths in Cobertura. |
+| Green | `167c774e` | `scripts/tests/test_multilanguage_coverage.py`; full `scripts/tests` suite | PASS: 16 focused tests; 258 script tests passed and 26 were skipped. The configured omissions now target only generated wrappers. |
+| T028 test coverage | `9fbfaddc` | `mvn --batch-mode --file bindings/java/pom.xml -Dtest=NativeLibraryLoaderTest test`; Python `test_native_loading.py` via `uv run` | PASS: 10 Java tests and 12 Python tests. Added assertions for redacted unsupported-target errors, missing/ambiguous artifact paths, and simulated wrong-architecture load errors with no fallback. |
+| Read-only QA | `9fbfaddc` | Static re-review of the Java/Python loader failure tests | PASS: all three previously identified test gaps are addressed. QA did not execute tests or modify files. |
+
+The three commits above have not yet been verified by remote CI at this evidence checkpoint. T028 remains unchecked until its Java and Python platform matrices pass on Ubuntu, Windows, and macOS. T011 also remains unchecked until the regenerated export audits, full coverage gate, and final PR CI pass on the pushed head and read-only QA signs off. The prior run is failure evidence only; a fresh successful run is required.
+
 ## T011 — CI follow-up for capability, generated C docs, and schema payload safety
 
 The subsequent PR run `38295045556` exposed three independent regressions. First, the manifest correctly declared the C-mapped `vendor_extension_registry` capability while the runtime query and FFI inventory test omitted it. Second, the checked-in generated C header had last-error documentation that was not represented in the manifest or generator. Third, QA demonstrated that a C documentation string containing a backslash-newline splice could escape the generated comment even though `*/` was rejected. Each behavior has a separate Red and Green commit; T011 stays open until remote CI on the new head passes.
