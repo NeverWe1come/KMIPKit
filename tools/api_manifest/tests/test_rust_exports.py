@@ -60,7 +60,7 @@ class RustExportAuditTests(unittest.TestCase):
             structure(2, "Visible", impls=[6]), structure(3, "Unreachable"),
             item(4, None, {"use": {"id": 2, "name": "Alias", "is_glob": False}}),
             item(5, "new", {"function": {}}),
-            item(6, None, {"impl": {"trait": None, "items": [5]}}),
+            item(6, None, {"impl": {"trait": None, "for": {"resolved_path": {"id": 2, "path": "Visible", "args": None}}, "items": [5]}}),
         ], [1, 4])
         report = self.inventory({"sample": doc})
         self.assertEqual(self.names(report), {"sample::Alias", "sample::Alias::new"})
@@ -121,7 +121,7 @@ class RustExportAuditTests(unittest.TestCase):
             item(3, "Result", {"assoc_type": {}}, "default"),
             item(4, "LIMIT", {"assoc_const": {}}, "default"),
             structure(5, "Value", impls=[6]),
-            item(6, None, {"impl": {"trait": None, "items": [7, 8, 9]}}),
+            item(6, None, {"impl": {"trait": None, "for": {"resolved_path": {"id": 5, "path": "Value", "args": None}}, "items": [7, 8, 9]}}),
             item(7, "create", {"function": {}}),
             item(8, "secret", {"function": {}}, "default"),
             item(9, "MAX", {"assoc_const": {}}),
@@ -136,7 +136,7 @@ class RustExportAuditTests(unittest.TestCase):
     def test_trait_implementation_with_unknown_external_path_fails_closed(self):
         doc = document("sample", [
             structure(1, "Value", impls=[2]),
-            item(2, None, {"impl": {"trait": {"path": "Debug", "id": 10}, "items": [3]}}),
+            item(2, None, {"impl": {"trait": {"path": "Debug", "id": 10}, "for": {"resolved_path": {"id": 1, "path": "Value", "args": None}}, "items": [3]}}),
             item(3, "fmt", {"function": {}}, "default"),
         ], [1])
         report = self.inventory({"sample": doc})
@@ -331,7 +331,7 @@ class RustExportAuditTests(unittest.TestCase):
         origin = document("origin", [
             item(1, "hidden", {"module": {"items": [2]}}, "default"),
             structure(2, "Value", impls=[3]),
-            item(3, None, {"impl": {"trait": None, "items": [4]}}),
+            item(3, None, {"impl": {"trait": None, "for": {"resolved_path": {"id": 2, "path": "Value", "args": None}}, "items": [4]}}),
             item(4, "new", {"function": {}}),
             item(5, None, {"use": {"id": 2, "name": "Value", "is_glob": False}}),
         ], [1, 5], {"2": {"path": ["origin", "hidden", "Value"], "kind": "struct"}})
@@ -422,9 +422,9 @@ class RustExportAuditTests(unittest.TestCase):
         second["span"] = copy.deepcopy(first["span"])
         doc = document("sample", [
             structure(1, "First", impls=[2]),
-            item(2, None, {"impl": {"trait": None, "items": [3]}}), first,
+            item(2, None, {"impl": {"trait": None, "for": {"resolved_path": {"id": 1, "path": "First", "args": None}}, "items": [3]}}), first,
             structure(4, "Second", impls=[5]),
-            item(5, None, {"impl": {"trait": None, "items": [6]}}), second,
+            item(5, None, {"impl": {"trait": None, "for": {"resolved_path": {"id": 4, "path": "Second", "args": None}}, "items": [6]}}), second,
         ], [1, 4])
         members = [r for r in self.inventory({"sample": doc})["declarations"] if r["kind"] == "associated-item"]
         self.assertNotEqual(members[0]["identity"], members[1]["identity"])

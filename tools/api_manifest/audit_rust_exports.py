@@ -1,9 +1,10 @@
 """Audit public Rust declaration paths against manifest v2, without changing it.
 
 The runner uses the existing Rust 1.94.0 toolchain, locked offline dependencies,
-and rustdoc JSON format 57. Trait implementation behavior is explicitly outside
-this first audit's accurate subset: it is reported as an incomplete audit,
-never silently treated as complete. See ``rust-export-audit.md``.
+and rustdoc JSON format 57. Trait implementations and type aliases are expanded
+only when rustdoc supplies exact owner, trait, and target identities. Unknown
+targets stay as explicit issues, never as a complete inventory. See
+``rust-export-audit.md``.
 """
 
 from __future__ import annotations
@@ -11,6 +12,7 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import re
 import subprocess
 import sys
 import tempfile
@@ -20,6 +22,7 @@ from typing import Any
 
 TOOLCHAIN = "1.94.0"
 FORMAT_VERSION = 57
+_UNRESOLVED_IDENTITY = object()
 PACKAGES = (
     "kmipkit-ttlv", "kmipkit-protocol", "kmipkit-transport", "kmipkit-client", "kmipkit",
 )
@@ -50,6 +53,63 @@ def _key(record: dict[str, Any]) -> tuple[str, str]:
     return record["packageId"], record["exportName"]
 
 
+def _canonical_export_name(name: str) -> str:
+    """Normalize lifetime elision and field separators in a Rust declaration path."""
+    def split_arguments(value: str) -> list[str]:
+        arguments: list[str] = []
+        depth = 0
+        start = 0
+        for index, character in enumerate(value):
+            if character == "<":
+                depth += 1
+            elif character == ">":
+                depth -= 1
+            elif character == "," and depth == 0:
+                arguments.append(value[start:index].strip())
+                start = index + 1
+        arguments.append(value[start:].strip())
+        return arguments
+
+    def normalize(value: str) -> str:
+        output: list[str] = []
+        index = 0
+        while index < len(value):
+            if value[index] != "<":
+                output.append(value[index])
+                index += 1
+                continue
+            depth = 1
+            end = index + 1
+            while end < len(value) and depth:
+                if value[end] == "<":
+                    depth += 1
+                elif value[end] == ">":
+                    depth -= 1
+                end += 1
+            if depth:
+                output.append(value[index:])
+                break
+            arguments = []
+            for argument in split_arguments(value[index + 1:end - 1]):
+                if re.fullmatch(r"'[A-Za-z_][A-Za-z0-9_]*", argument) and argument != "'static":
+                    continue
+                normalized = normalize(argument)
+                normalized = re.sub(r"(?<![A-Za-z0-9_])'([A-Za-z_][A-Za-z0-9_]*)",
+                                    lambda match: match.group(0) if match.group(1) == "static" else "'_",
+                                    normalized)
+                arguments.append(normalized)
+            if arguments:
+                output.append("<" + ", ".join(arguments) + ">")
+            index = end
+        return "".join(output).replace(".", "::")
+
+    return normalize(name)
+
+
+def _comparison_key(record: dict[str, Any]) -> tuple[str, str]:
+    return record["packageId"], _canonical_export_name(record["exportName"])
+
+
 class _Inventory:
     def __init__(self, documents: dict[str, dict[str, Any]]) -> None:
         self.documents = documents
@@ -57,6 +117,8 @@ class _Inventory:
         self.issues: list[dict[str, Any]] = []
         self.definitions: dict[tuple[str, ...], tuple[str, str]] = {}
         self.member_origins: dict[tuple[str, str], tuple[str, ...]] = {}
+        self.reachable_items: set[tuple[str, str]] = set()
+        self.reachability_prepass = False
         for crate, doc in sorted(documents.items()):
             if doc.get("format_version") != FORMAT_VERSION or doc.get("includes_private") is not True:
                 raise ValueError(f"{crate}: expected rustdoc format {FORMAT_VERSION} with private items")
@@ -87,7 +149,9 @@ class _Inventory:
         elif kind == "trait":
             children = list(inner["items"])
         for impl_id in inner.get("impls", []):
-            children.extend(self.documents[crate]["index"][str(impl_id)]["inner"]["impl"]["items"])
+            impl_item = self.documents[crate]["index"].get(str(impl_id))
+            if impl_item is not None:
+                children.extend(impl_item.get("inner", {}).get("impl", {}).get("items", []))
         for identifier in children:
             if identifier is None:
                 continue
@@ -115,13 +179,17 @@ class _Inventory:
         return None if path is None else self.definitions.get(tuple(path["path"]))
 
     def add(self, crate: str, item: dict[str, Any], package: str, path: tuple[str, ...],
-            exports: tuple[dict[str, Any] | None, ...], associated: bool = False) -> None:
+            exports: tuple[dict[str, Any] | None, ...], associated: bool = False,
+            identity_components: list[Any] | None = None) -> None:
         kind = _kind(item)
         location = _location(item)
         origin_path = self.member_origins.get((crate, str(item["id"])))
         if origin_path is None:
             origin_path = self.documents[crate]["paths"].get(str(item["id"]), {}).get("path", [crate, item["name"]])
-        identity = json.dumps([crate, location, kind, origin_path], sort_keys=True, separators=(",", ":"))
+        identity = json.dumps(
+            identity_components if identity_components is not None else [crate, location, kind, origin_path],
+            sort_keys=True, separators=(",", ":"),
+        )
         name = "::".join(path)
         record = {
             "packageId": package, "exportName": name,
@@ -183,7 +251,9 @@ class _Inventory:
         if kind not in KINDS:
             self.issue(package, "::".join(path), "unsupported-item-kind", item, itemKind=kind)
             return
-        self.add(crate, item, package, path, exports, associated)
+        self.reachable_items.add((crate, identifier))
+        if not self.reachability_prepass:
+            self.add(crate, item, package, path, exports, associated)
         if (crate, identifier) in ancestors:
             return
         ancestors = ancestors | {(crate, identifier)}
@@ -199,25 +269,790 @@ class _Inventory:
         elif kind == "trait":
             self.children(crate, inner["items"], package, path, ancestors, exports, default_public=True, associated=True)
         elif kind == "type_alias":
-            self.issue(package, "::".join(path), "type-alias-members-not-audited", item)
-        if isinstance(inner, dict):
-            self.implementation_members(crate, inner.get("impls", []), package, path, ancestors, exports, item)
+            if not self.reachability_prepass:
+                self.expand_type_alias(crate, item, package, path, ancestors, exports)
+        if isinstance(inner, dict) and not self.reachability_prepass:
+            owner_type = self.type_expression(crate, item) if kind in {"struct", "union", "enum"} else None
+            owner_display = "::".join(path)
+            if owner_type is not None:
+                parameters = self.generic_parameters(inner.get("generics", {}))
+                parameter_names = [parameter.get("name") for parameter in parameters if parameter.get("name")]
+                if parameter_names:
+                    owner_display += f"<{', '.join(parameter_names)}>"
+            self.implementation_members(crate, inner.get("impls", []), package, path, ancestors, exports, item,
+                                        owner_type=owner_type, owner_display=owner_display)
+
+    def expand_type_alias(self, crate: str, alias: dict[str, Any], package: str,
+                          path: tuple[str, ...], ancestors: frozenset[tuple[str, str]],
+                          exports: tuple[dict[str, Any] | None, ...]) -> None:
+        """Expose members reachable through an exact, locally documented alias target."""
+        alias_chain: list[tuple[str, str]] = [(crate, str(alias["id"]))]
+        target_crate = crate
+        target_id: str | None = None
+        alias_parameters = self.generic_parameters(alias["inner"]["type_alias"].get("generics", {}))
+        alias_arguments = self.parameter_arguments(alias_parameters)
+        alias_bindings = {
+            parameter["name"]: argument["type"] if "type" in argument else argument
+            for parameter, argument in zip(alias_parameters, alias_arguments, strict=True)
+            if parameter.get("name")
+        }
+        alias_display = "::".join(path)
+        if alias_arguments:
+            formatted_alias_arguments = [
+                self.format_type(crate, argument["type"]) if "type" in argument else
+                str(argument.get("lifetime", argument.get("const", {}).get("value", "")))
+                for argument in alias_arguments
+            ]
+            if any(argument is None for argument in formatted_alias_arguments):
+                self.issue(package, alias_display, "unsupported-type-alias-parameters", alias,
+                           aliasParameters=[parameter.get("name") for parameter in alias_parameters])
+                return
+            alias_display += f"<{', '.join(formatted_alias_arguments)}>"
+
+        target_inner = alias["inner"]["type_alias"]["type"]
+        target_path: list[str] | None = None
+        final_expression: Any = None
+        while isinstance(target_inner, dict) and "resolved_path" in target_inner:
+            current_expression = self.substitute_type(target_inner, alias_bindings)
+            resolved = current_expression["resolved_path"]
+            target_path = resolved.get("path", "").split("::") if resolved.get("path") else None
+            target = self.resolve(target_crate, resolved.get("id"))
+            if target is None:
+                self.issue(package, "::".join(path), "unresolved-type-alias-target", alias,
+                           targetId=str(resolved.get("id")), targetPath=target_path,
+                           aliasChain=[list(self.definition_path(c, i)) for c, i in alias_chain])
+                return
+            target_crate, target_id = target
+            target_key = (target_crate, target_id)
+            if target_key in alias_chain:
+                self.issue(package, "::".join(path), "cyclic-type-alias", alias,
+                           targetPath=target_path,
+                           aliasChain=[list(self.definition_path(c, i)) for c, i in alias_chain])
+                return
+            target_item = self.documents[target_crate]["index"][target_id]
+            if _kind(target_item) != "type_alias":
+                final_expression = current_expression
+                break
+            alias_chain.append(target_key)
+            next_parameters = self.generic_parameters(target_item["inner"]["type_alias"].get("generics", {}))
+            next_arguments = self.parameter_arguments(next_parameters)
+            supplied_arguments = resolved.get("args")
+            actual_arguments = supplied_arguments.get("angle_bracketed", {}).get("args", []) \
+                if supplied_arguments is not None else []
+            if len(actual_arguments) != len(next_parameters):
+                self.issue(package, "::".join(path), "unresolved-type-alias-arguments", alias,
+                           targetId=target_id, targetPath=target_path,
+                           expectedArgumentCount=len(next_parameters), actualArgumentCount=len(actual_arguments),
+                           aliasChain=[list(self.definition_path(c, i)) for c, i in alias_chain])
+                return
+            alias_bindings = {
+                parameter["name"]: self.substitute_type(argument.get("type", argument), alias_bindings)
+                for parameter, argument in zip(next_parameters, actual_arguments, strict=True)
+                if parameter.get("name")
+            }
+            target_inner = target_item["inner"]["type_alias"]["type"]
+        else:
+            self.issue(package, "::".join(path), "unsupported-type-alias-target", alias,
+                       targetPath=target_path,
+                       aliasChain=[list(self.definition_path(c, i)) for c, i in alias_chain])
+            return
+
+        if target_id is None:
+            self.issue(package, "::".join(path), "unresolved-type-alias-target", alias,
+                       targetPath=target_path,
+                       aliasChain=[list(self.definition_path(c, i)) for c, i in alias_chain])
+            return
+        concrete = self.documents[target_crate]["index"][target_id]
+        concrete_kind = _kind(concrete)
+        concrete_inner = concrete["inner"][concrete_kind]
+        alias_ancestors = ancestors | set(alias_chain) | {(target_crate, target_id)}
+        if concrete_kind in {"struct", "union"}:
+            fields = concrete_inner["fields"] if concrete_kind == "union" else self.fields(concrete_inner["kind"])
+            self.children(target_crate, fields, package, path, frozenset(alias_ancestors), exports)
+        elif concrete_kind == "enum":
+            self.children(target_crate, concrete_inner["variants"], package, path,
+                          frozenset(alias_ancestors), exports, default_public=True)
+        elif concrete_kind not in {"struct", "union", "enum"}:
+            self.issue(package, "::".join(path), "unsupported-type-alias-target-kind", alias,
+                       targetKind=concrete_kind, targetPath=list(self.definition_path(target_crate, target_id)),
+                       aliasChain=[list(self.definition_path(c, i)) for c, i in alias_chain])
+            return
+        self.implementation_members(target_crate, concrete_inner.get("impls", []), package, path,
+                                    frozenset(alias_ancestors), exports, concrete,
+                                    owner_type=final_expression, owner_display=alias_display,
+                                    filter_to_owner=True)
+
+    def definition_path(self, crate: str, identifier: str) -> tuple[str, ...]:
+        """Return rustdoc's canonical path for an item, including external items."""
+        doc = self.documents[crate]
+        path = doc["paths"].get(str(identifier))
+        if path is not None:
+            return tuple(path["path"])
+        item = doc["index"].get(str(identifier))
+        if item is not None and item.get("name") is not None:
+            return crate, item["name"]
+        return crate, f"<unknown:{identifier}>"
+
+    @staticmethod
+    def generic_parameters(generics: dict[str, Any]) -> list[dict[str, Any]]:
+        return list(generics.get("params", []))
+
+    @staticmethod
+    def parameter_arguments(parameters: list[dict[str, Any]]) -> list[dict[str, Any]]:
+        arguments = []
+        for parameter in parameters:
+            kind = parameter.get("kind", {})
+            name = parameter.get("name")
+            if not name:
+                continue
+            if "type" in kind:
+                arguments.append({"type": {"generic": name}})
+            elif "lifetime" in kind:
+                arguments.append({"lifetime": name})
+            elif "const" in kind:
+                arguments.append({"const": {"value": name}})
+        return arguments
+
+    def type_expression(self, crate: str, item: dict[str, Any]) -> dict[str, Any]:
+        kind = _kind(item)
+        generics = item["inner"][kind].get("generics", {})
+        arguments = self.parameter_arguments(self.generic_parameters(generics))
+        resolved = {"id": item["id"], "path": "::".join(self.definition_path(crate, str(item["id"]))) }
+        if arguments:
+            resolved["args"] = {"angle_bracketed": {"args": arguments, "constraints": []}}
+        else:
+            resolved["args"] = None
+        return {"resolved_path": resolved}
+
+    def format_type(self, crate: str, expression: Any) -> str | None:
+        """Render the rustdoc type forms used in public owner and trait identities."""
+        if not isinstance(expression, dict):
+            return None
+        if "primitive" in expression:
+            return str(expression["primitive"])
+        if "generic" in expression:
+            return str(expression["generic"])
+        if "resolved_path" in expression:
+            value = expression["resolved_path"]
+            target = self.resolve(crate, value.get("id")) if value.get("id") is not None else None
+            if target is not None:
+                base = "::".join(self.definition_path(*target))
+            else:
+                base = str(value.get("path", ""))
+            if not base:
+                return None
+            raw_args = value.get("args")
+            if raw_args is None:
+                return base
+            angle = raw_args.get("angle_bracketed")
+            if angle is None:
+                return None
+            rendered = []
+            for argument in angle.get("args", []):
+                if "type" in argument:
+                    value_text = self.format_type(crate, argument["type"])
+                elif "lifetime" in argument:
+                    value_text = str(argument["lifetime"])
+                elif "const" in argument:
+                    const_value = argument["const"].get("value")
+                    value_text = None if const_value is None else str(const_value)
+                else:
+                    value_text = None
+                if value_text is None:
+                    return None
+                rendered.append(value_text)
+            if not rendered:
+                return base
+            return f"{base}<{', '.join(rendered)}>"
+        if "tuple" in expression:
+            values = [self.format_type(crate, element) for element in expression["tuple"]]
+            if any(value is None for value in values):
+                return None
+            if len(values) == 1:
+                return f"({values[0]},)"
+            return f"({', '.join(values)})"
+        if "slice" in expression:
+            inner = self.format_type(crate, expression["slice"])
+            return None if inner is None else f"[{inner}]"
+        if "borrowed_ref" in expression:
+            value = expression["borrowed_ref"]
+            inner = self.format_type(crate, value.get("type"))
+            if inner is None:
+                return None
+            lifetime = value.get("lifetime")
+            mutable = "mut " if value.get("is_mutable") else ""
+            lifetime_prefix = f"{lifetime} " if lifetime else ""
+            return f"&{lifetime_prefix}{mutable}{inner}"
+        if "raw_pointer" in expression:
+            value = expression["raw_pointer"]
+            inner = self.format_type(crate, value.get("type"))
+            if inner is None:
+                return None
+            pointer = "mut" if value.get("is_mutable") else "const"
+            return f"*{pointer} {inner}"
+        return None
+
+    @classmethod
+    def substitute_type(cls, expression: Any, bindings: dict[str, Any]) -> Any:
+        if isinstance(expression, list):
+            return [cls.substitute_type(value, bindings) for value in expression]
+        if isinstance(expression, str) and expression.startswith("'") and expression in bindings:
+            bound_lifetime = bindings[expression]
+            if isinstance(bound_lifetime, dict) and set(bound_lifetime) == {"lifetime"}:
+                return bound_lifetime["lifetime"]
+        if not isinstance(expression, dict):
+            return expression
+        if set(expression) == {"generic"} and expression["generic"] in bindings:
+            return bindings[expression["generic"]]
+        if set(expression) == {"lifetime"} and isinstance(expression["lifetime"], str) \
+                and expression["lifetime"] in bindings:
+            return bindings[expression["lifetime"]]
+        return {key: cls.substitute_type(value, bindings) for key, value in expression.items()}
+
+    @staticmethod
+    def generic_parameter_names(generics: dict[str, Any]) -> set[str]:
+        return {parameter["name"] for parameter in generics.get("params", []) if parameter.get("name")}
+
+    def unify_type(self, crate: str, pattern: Any, actual: Any, variables: set[str],
+                   bindings: dict[str, Any]) -> bool | None:
+        if isinstance(pattern, str) and pattern.startswith("'"):
+            if pattern == "'_":
+                return isinstance(actual, str) and actual.startswith("'")
+            if pattern in variables:
+                if not isinstance(actual, str) or not actual.startswith("'"):
+                    return False
+                previous = bindings.get(pattern)
+                if previous is None:
+                    bindings[pattern] = {"lifetime": actual}
+                    return True
+                return isinstance(previous, dict) and previous.get("lifetime") == actual
+        if isinstance(pattern, dict) and pattern == {"lifetime": "'_"}:
+            # rustdoc encodes an elided lifetime in an impl target as an inferred
+            # binder that can match the owner's named lifetime parameter.
+            return isinstance(actual, dict) and set(actual) == {"lifetime"}
+        if isinstance(pattern, dict) and set(pattern) == {"lifetime"} \
+                and isinstance(pattern["lifetime"], str) and pattern["lifetime"] in variables:
+            name = pattern["lifetime"]
+            previous = bindings.get(name)
+            if previous is None:
+                if not isinstance(actual, dict) or set(actual) != {"lifetime"}:
+                    return False
+                bindings[name] = actual
+                return True
+            return self.unify_type(crate, previous, actual, set(), {})
+        if isinstance(pattern, dict) and set(pattern) == {"generic"} and pattern["generic"] in variables:
+            name = pattern["generic"]
+            previous = bindings.get(name)
+            if previous is None:
+                bindings[name] = actual
+                return True
+            return self.unify_type(crate, previous, actual, set(), {})
+        if isinstance(pattern, list) or isinstance(actual, list):
+            if not isinstance(pattern, list) or not isinstance(actual, list):
+                return False
+            if len(pattern) != len(actual):
+                return False
+            results = [self.unify_type(crate, left, right, variables, bindings)
+                       for left, right in zip(pattern, actual, strict=True)]
+            return None if None in results else all(results)
+        if isinstance(pattern, dict) or isinstance(actual, dict):
+            if not isinstance(pattern, dict) or not isinstance(actual, dict) or set(pattern) != set(actual):
+                return False
+            if set(pattern) == {"resolved_path"}:
+                return self.unify_resolved_path(crate, pattern["resolved_path"], actual["resolved_path"],
+                                                variables, bindings)
+            type_forms = {
+                "primitive", "generic", "tuple", "slice", "borrowed_ref", "raw_pointer",
+                "qualified_path", "function_pointer", "dyn_trait", "impl_trait", "infer", "never",
+                "type", "lifetime", "const", "angle_bracketed",
+            }
+            if len(pattern) == 1 and next(iter(pattern)) not in type_forms:
+                return None
+            results = [self.unify_type(crate, pattern[key], actual[key], variables, bindings)
+                       for key in pattern]
+            return None if None in results else all(results)
+        return pattern == actual
+
+    def unify_resolved_path(self, crate: str, first: dict[str, Any], second: dict[str, Any],
+                            variables: set[str], bindings: dict[str, Any]) -> bool | None:
+        first_target = self.resolve(crate, first.get("id")) if first.get("id") is not None else None
+        second_target = self.resolve(crate, second.get("id")) if second.get("id") is not None else None
+        first_path = self.definition_path(*first_target) if first_target is not None else tuple(
+            str(first.get("path", "")).split("::"))
+        second_path = self.definition_path(*second_target) if second_target is not None else tuple(
+            str(second.get("path", "")).split("::"))
+        if not first_path or not second_path:
+            return None
+        if first_path != second_path:
+            return False
+        first_args = first.get("args")
+        second_args = second.get("args")
+        return self.unify_type(crate, first_args, second_args, variables, bindings)
+
+    def check_implementation_predicates(self, crate: str, impl: dict[str, Any],
+                                        bindings: dict[str, Any]) -> bool | None:
+        """Check concrete predicates needed to project an impl through an alias."""
+        generics = impl.get("generics", {})
+        for parameter in generics.get("params", []):
+            name = parameter.get("name")
+            parameter_kind = parameter.get("kind", {})
+            lifetime_kind = parameter_kind.get("lifetime")
+            if name and lifetime_kind is not None:
+                for outlives in lifetime_kind.get("outlives", []):
+                    result = self.check_lifetime_relation(name, outlives, bindings)
+                    if result is not True:
+                        return result
+            type_kind = parameter_kind.get("type", {})
+            if not name or not type_kind.get("bounds"):
+                continue
+            subject = self.substitute_type({"generic": name}, bindings)
+            for bound in type_kind["bounds"]:
+                trait_bound = bound.get("trait_bound")
+                if trait_bound is not None:
+                    result = self.check_trait_bound(crate, subject, trait_bound, bindings)
+                elif "outlives" in bound:
+                    result = self.prove_static_type(crate, subject) if bound["outlives"] == "'static" else None
+                else:
+                    result = None
+                if result is not True:
+                    return result
+        for predicate in generics.get("where_predicates", []):
+            bound_predicate = predicate.get("bound_predicate")
+            if bound_predicate is None:
+                lifetime_predicate = predicate.get("lifetime_predicate")
+                if lifetime_predicate is not None:
+                    lifetime = lifetime_predicate.get("lifetime")
+                    for outlives in lifetime_predicate.get("outlives", []):
+                        result = self.check_lifetime_relation(lifetime, outlives, bindings)
+                        if result is not True:
+                            return result
+                    continue
+                return None
+            subject = self.substitute_type(bound_predicate.get("type"), bindings)
+            for bound in bound_predicate.get("bounds", []):
+                trait_bound = bound.get("trait_bound")
+                if trait_bound is not None:
+                    result = self.check_trait_bound(crate, subject, trait_bound, bindings)
+                elif "outlives" in bound:
+                    result = self.prove_static_type(crate, subject) if bound["outlives"] == "'static" else None
+                else:
+                    return None
+                if result is not True:
+                    return result
+        return True
+
+    def check_lifetime_relation(self, longer: str, shorter: str,
+                                bindings: dict[str, Any]) -> bool | None:
+        """Prove a lifetime outlives relation only from identity or `'static`."""
+        longer_value = self.substitute_type({"lifetime": longer}, bindings)
+        shorter_value = self.substitute_type({"lifetime": shorter}, bindings)
+        if not isinstance(longer_value, dict) or set(longer_value) != {"lifetime"} \
+                or not isinstance(shorter_value, dict) or set(shorter_value) != {"lifetime"}:
+            return None
+        longer_name = longer_value["lifetime"]
+        shorter_name = shorter_value["lifetime"]
+        if longer_name == shorter_name or longer_name == "'static":
+            return True
+        return None
+
+    def prove_static_type(self, crate: str, expression: Any) -> bool | None:
+        """Prove a closed rustdoc type has no non-static lifetime parameters."""
+        if not isinstance(expression, dict) or len(expression) != 1:
+            return None
+        kind, value = next(iter(expression.items()))
+        if kind == "primitive":
+            return True
+        if kind == "generic":
+            return None
+        if kind == "tuple":
+            results = [self.prove_static_type(crate, element) for element in value]
+            if False in results:
+                return False
+            return None if None in results else True
+        if kind == "slice":
+            return self.prove_static_type(crate, value)
+        if kind in {"borrowed_ref", "raw_pointer"}:
+            lifetime = value.get("lifetime") if kind == "borrowed_ref" else None
+            if lifetime not in {None, "'static"}:
+                return None
+            if kind == "borrowed_ref" and lifetime is None:
+                return None
+            return self.prove_static_type(crate, value.get("type"))
+        if kind != "resolved_path":
+            return None
+        target = self.resolve(crate, value.get("id")) if value.get("id") is not None else None
+        if target is None:
+            return None
+        target_crate, target_id = target
+        item = self.documents[target_crate]["index"].get(target_id)
+        if item is None:
+            return None
+        item_kind = _kind(item)
+        if item_kind not in {"struct", "enum", "union", "type_alias"}:
+            return None
+        inner = item["inner"][item_kind]
+        parameters = self.generic_parameters(inner.get("generics", {}))
+        arguments = value.get("args")
+        if arguments is None:
+            return True if not parameters else None
+        angle = arguments.get("angle_bracketed") if isinstance(arguments, dict) else None
+        if angle is None or angle.get("constraints"):
+            return None
+        supplied = angle.get("args", [])
+        if len(supplied) != len(parameters):
+            return None
+        for parameter, argument in zip(parameters, supplied, strict=True):
+            parameter_kind = parameter.get("kind", {})
+            if "lifetime" in parameter_kind:
+                lifetime = argument.get("lifetime")
+                if lifetime != "'static":
+                    return None
+            elif "type" in parameter_kind:
+                type_argument = argument.get("type")
+                if type_argument is None or self.prove_static_type(crate, type_argument) is not True:
+                    return None
+            elif "const" not in parameter_kind:
+                return None
+        return True
+
+    def check_trait_bound(self, crate: str, subject: Any, trait_bound: dict[str, Any],
+                          bindings: dict[str, Any]) -> bool | None:
+        if trait_bound.get("modifier") == "maybe":
+            return True
+        trait = trait_bound.get("trait", {})
+        trait_path = self.reference_path(crate, trait.get("id")) if trait.get("id") is not None else None
+        if trait_path is None:
+            raw_path = trait.get("path")
+            trait_path = tuple(str(raw_path).split("::")) if raw_path else None
+        if trait_path is None:
+            return None
+        if isinstance(subject, dict) and set(subject) == {"generic"}:
+            return True
+        if trait_path in {("core", "marker", "Copy"), ("std", "marker", "Copy"), ("Copy",)}:
+            return self.is_copy_type(crate, subject, bindings, set())
+        return None
+
+    def is_copy_type(self, crate: str, expression: Any, bindings: dict[str, Any],
+                     visiting: set[tuple[str, str]]) -> bool | None:
+        expression = self.substitute_type(expression, bindings)
+        if not isinstance(expression, dict) or len(expression) != 1:
+            return None
+        kind, value = next(iter(expression.items()))
+        if kind == "generic":
+            return True
+        if kind == "primitive":
+            return value in {
+                "bool", "char", "f32", "f64", "i8", "i16", "i32", "i64", "i128", "isize",
+                "u8", "u16", "u32", "u64", "u128", "usize",
+            }
+        if kind == "tuple":
+            results = [self.is_copy_type(crate, child, bindings, visiting) for child in value]
+            if False in results:
+                return False
+            return None if None in results else True
+        if kind == "borrowed_ref":
+            return not value.get("is_mutable", False)
+        if kind == "raw_pointer":
+            return True
+        if kind != "resolved_path":
+            return None
+        target = self.resolve(crate, value.get("id")) if value.get("id") is not None else None
+        if target is None:
+            return None
+        target_crate, target_id = target
+        if target in visiting:
+            return None
+        item = self.documents[target_crate]["index"].get(target_id)
+        if item is None or _kind(item) not in {"struct", "enum", "union"}:
+            return None
+        item_kind = _kind(item)
+        impl_ids = item["inner"][item_kind].get("impls", [])
+        actual_type = expression
+        saw_uncertain_copy_impl = False
+        for impl_id in impl_ids:
+            impl_item = self.documents[target_crate]["index"].get(str(impl_id))
+            if impl_item is None:
+                saw_uncertain_copy_impl = True
+                continue
+            impl = impl_item.get("inner", {}).get("impl", {})
+            trait = impl.get("trait") or {}
+            impl_trait_path = self.reference_path(target_crate, trait.get("id")) if trait.get("id") is not None else None
+            if impl_trait_path not in {("core", "marker", "Copy"), ("std", "marker", "Copy"), ("Copy",)}:
+                continue
+            parameters = self.generic_parameter_names(impl.get("generics", {}))
+            impl_bindings: dict[str, Any] = {}
+            matches = self.unify_type(target_crate, impl.get("for"), actual_type, parameters, impl_bindings)
+            if matches is None:
+                saw_uncertain_copy_impl = True
+                continue
+            if not matches:
+                continue
+            predicates = self.check_implementation_predicates(target_crate, impl, impl_bindings)
+            if predicates is True:
+                return True
+            if predicates is None:
+                saw_uncertain_copy_impl = True
+        if saw_uncertain_copy_impl:
+            return None
+        return False
+
+    def reference_path(self, crate: str, identifier: Any) -> tuple[str, ...] | None:
+        if identifier is None:
+            return None
+        resolved = self.resolve(crate, identifier)
+        if resolved is not None:
+            return self.definition_path(*resolved)
+        path = self.documents[crate].get("paths", {}).get(str(identifier))
+        return None if path is None else tuple(path["path"])
+
+    def canonicalize_identity_value(self, crate: str, value: Any) -> Any | None:
+        """Replace rustdoc-local IDs with stable definition paths recursively."""
+        if isinstance(value, list):
+            items = [self.canonicalize_identity_value(crate, entry) for entry in value]
+            return _UNRESOLVED_IDENTITY if any(entry is _UNRESOLVED_IDENTITY for entry in items) else items
+        if not isinstance(value, dict):
+            return value
+        output: dict[str, Any] = {}
+        canonical_path = None
+        if "id" in value:
+            canonical_path = self.reference_path(crate, value["id"])
+            if canonical_path is None:
+                return _UNRESOLVED_IDENTITY
+        for key, entry in value.items():
+            if key == "id":
+                continue
+            if key == "path" and canonical_path is not None:
+                output[key] = list(canonical_path)
+                continue
+            canonical = self.canonicalize_identity_value(crate, entry)
+            if canonical is _UNRESOLVED_IDENTITY:
+                return _UNRESOLVED_IDENTITY
+            output[key] = canonical
+        if canonical_path is not None and "path" not in output:
+            output["definitionPath"] = list(canonical_path)
+        return output
 
     def implementation_members(self, crate: str, impl_ids: list[Any], package: str, path: tuple[str, ...],
                                ancestors: frozenset[tuple[str, str]], exports: tuple[dict[str, Any] | None, ...],
-                               owner: dict[str, Any]) -> None:
-        """Visit inherent members and retain an honest boundary around trait behavior."""
-        trait_members: set[str] = set()
+                               owner: dict[str, Any], owner_type: dict[str, Any] | None = None,
+                               owner_display: str | None = None, filter_to_owner: bool = False) -> None:
+        """Inventory inherent members and exact trait-implementation members."""
+        if owner_type is None:
+            owner_type = self.type_expression(crate, owner)
+        if owner_display is None:
+            owner_display = self.format_type(crate, owner_type)
         for impl_id in impl_ids:
-            impl_item = self.documents[crate]["index"][str(impl_id)]
+            impl_item = self.documents[crate]["index"].get(str(impl_id))
+            if impl_item is None:
+                self.issue(package, "::".join(path), "missing-rustdoc-implementation", owner,
+                           implementationId=str(impl_id))
+                continue
             impl = impl_item["inner"]["impl"]
+            implementation_type = impl.get("for")
+            if implementation_type is None:
+                self.issue(package, "::".join(path), "missing-rustdoc-implementation-target", impl_item,
+                           implementationId=str(impl_id))
+                continue
+            implementation_parameters = self.generic_parameter_names(impl.get("generics", {}))
+            bindings: dict[str, Any] = {}
+            matches_owner = self.unify_type(crate, implementation_type, owner_type,
+                                            implementation_parameters, bindings)
+            if matches_owner is None:
+                self.issue(package, "::".join(path), "unsupported-rustdoc-type-comparison", impl_item,
+                           implementationId=str(impl_id), ownerPath=list(self.definition_path(crate, str(owner["id"]))))
+                continue
+            if filter_to_owner and not matches_owner:
+                continue
+            if filter_to_owner:
+                predicate_bindings = dict(bindings)
+                blanket = impl.get("blanket_impl")
+                if isinstance(blanket, dict) and isinstance(blanket.get("generic"), str):
+                    predicate_bindings[blanket["generic"]] = owner_type
+                applies = self.check_implementation_predicates(crate, impl, predicate_bindings)
+                if applies is False:
+                    continue
+                if applies is None:
+                    self.issue(package, "::".join(path), "unresolved-rustdoc-implementation-predicate", impl_item,
+                               implementationId=str(impl_id), ownerPath=list(self.definition_path(crate, str(owner["id"]))))
+                    continue
+            effective_owner_type = owner_type if filter_to_owner else self.substitute_type(implementation_type, bindings)
+            formatted_implementation_owner = self.format_type(crate, effective_owner_type)
+            if formatted_implementation_owner is None:
+                self.issue(package, "::".join(path), "unsupported-rustdoc-implementation-target", impl_item,
+                           implementationId=str(impl_id), ownerPath=list(self.definition_path(crate, str(owner["id"]))))
+                continue
+            qualified_owner = owner_display if filter_to_owner or matches_owner else formatted_implementation_owner
+            if qualified_owner is None:
+                self.issue(package, "::".join(path), "unsupported-rustdoc-owner-path", owner,
+                           implementationId=str(impl_id))
+                continue
             if impl.get("trait") is None:
-                self.children(crate, impl["items"], package, path, ancestors, exports, associated=True)
-            elif impl["items"] or impl.get("provided_trait_methods"):
-                trait_members.add(impl["trait"]["path"])
-        if trait_members:
-            self.issue(package, "::".join(path), "trait-implementation-members-not-audited", owner,
-                       traits=sorted(trait_members))
+                self.children(crate, impl.get("items", []), package, tuple(qualified_owner.split("::")),
+                              ancestors, exports, associated=True)
+                continue
+            trait = impl["trait"]
+            trait_id = str(trait.get("id", ""))
+            trait_definition = self.resolve(crate, trait_id) if trait_id else None
+            trait_path: tuple[str, ...] | None = None
+            trait_item: dict[str, Any] | None = None
+            if trait_definition is not None:
+                trait_crate, resolved_trait_id = trait_definition
+                trait_item = self.documents[trait_crate]["index"][resolved_trait_id]
+                if _kind(trait_item) == "trait":
+                    if trait_item.get("visibility") != "public":
+                        continue
+                    if trait_crate == crate and (trait_crate, resolved_trait_id) not in self.reachable_items:
+                        continue
+                    trait_path = self.definition_path(trait_crate, resolved_trait_id)
+            if trait_path is None:
+                raw_path = self.documents[crate]["paths"].get(trait_id)
+                if raw_path is not None and raw_path.get("kind") == "trait":
+                    trait_path = tuple(raw_path["path"])
+            if trait_path is None:
+                self.issue(package, f"<{'::'.join(path)} as {trait.get('path', '<unknown>')}>",
+                           "unresolved-trait-implementation-path", impl_item,
+                           ownerPath=list(self.definition_path(crate, str(owner["id"]))),
+                           traitId=trait_id, traitPath=trait.get("path"))
+                continue
+
+            trait_bindings = dict(bindings)
+            blanket = impl.get("blanket_impl")
+            if isinstance(blanket, dict) and isinstance(blanket.get("generic"), str):
+                trait_bindings[blanket["generic"]] = effective_owner_type
+            trait_arguments = self.format_type_arguments(crate, trait.get("args"), trait_bindings)
+            if trait_arguments is None:
+                self.issue(package, f"<{qualified_owner} as {'::'.join(trait_path)}>",
+                           "unsupported-rustdoc-trait-arguments", impl_item,
+                           ownerPath=list(self.definition_path(crate, str(owner["id"]))),
+                           traitPath=list(trait_path), traitId=trait_id)
+                continue
+            qualified_trait = "::".join(trait_path)
+            if trait_arguments:
+                qualified_trait += f"<{', '.join(trait_arguments)}>"
+            qualified_impl = f"<{qualified_owner} as {qualified_trait}>"
+            identity_components = self.trait_member_identity(crate, package, owner, trait_path,
+                                                              effective_owner_type, qualified_trait, impl,
+                                                              trait_bindings)
+            if identity_components is None:
+                continue
+            impl_member_ids = list(impl.get("items", []))
+            trait_member_by_name: dict[str, dict[str, Any]] = {}
+            if trait_item is not None and trait_definition is not None:
+                trait_crate, resolved_trait_id = trait_definition
+                for member_id in trait_item["inner"]["trait"].get("items", []):
+                    member = self.documents[trait_crate]["index"].get(str(member_id))
+                    if member is not None and member.get("name") is not None:
+                        trait_member_by_name[member["name"]] = member
+
+            seen_members: set[tuple[str, str]] = set()
+            for member_id in impl_member_ids:
+                member = self.documents[crate]["index"].get(str(member_id))
+                if member is None:
+                    self.issue(package, f"{qualified_impl}>::<unknown:{member_id}>",
+                               "missing-trait-implementation-item", impl_item,
+                               implementationId=str(impl_id), itemId=str(member_id),
+                               ownerPath=list(self.definition_path(crate, str(owner["id"]))),
+                               traitPath=list(trait_path))
+                    continue
+                member_kind = _kind(member)
+                if member_kind not in KINDS:
+                    self.issue(package, f"{qualified_impl}>::{member.get('name', '<unknown>')}",
+                               "unsupported-trait-implementation-item", member,
+                               itemKind=member_kind, ownerPath=list(self.definition_path(crate, str(owner["id"]))),
+                               traitPath=list(trait_path))
+                    continue
+                member_name = member.get("name")
+                if member_name is None:
+                    self.issue(package, f"{qualified_impl}>::<unnamed>",
+                               "unnamed-trait-implementation-item", member,
+                               ownerPath=list(self.definition_path(crate, str(owner["id"]))),
+                               traitPath=list(trait_path))
+                    continue
+                self.add_trait_impl_member(crate, member, package, qualified_impl,
+                                           member_name, exports, owner, identity_components)
+                seen_members.add((member_name, member_kind))
+
+            for member_name in impl.get("provided_trait_methods", []):
+                member = trait_member_by_name.get(member_name)
+                if member is None:
+                    # rustdoc explicitly lists this name as a provided trait method.
+                    # Preserve that exact declaration without fabricating a signature.
+                    member = {**impl_item, "id": f"{impl_id}:provided:{member_name}", "name": member_name,
+                              "inner": {"function": {}}}
+                member_kind = _kind(member)
+                if (member_name, member_kind) not in seen_members:
+                    self.add_trait_impl_member(crate, member, package, qualified_impl,
+                                               member_name, exports, owner, identity_components)
+                    seen_members.add((member_name, member_kind))
+
+            implemented_names = {
+                (member["name"], _kind(member))
+                for member_id in impl_member_ids
+                if (member := self.documents[crate]["index"].get(str(member_id))) is not None
+                and member.get("name") is not None
+            }
+            for member_name, member in trait_member_by_name.items():
+                member_kind = _kind(member)
+                member_inner = member["inner"][member_kind]
+                has_default = (member_kind == "assoc_type" and member_inner.get("type") is not None) \
+                    or (member_kind == "assoc_const" and member_inner.get("value") is not None)
+                if has_default and (member_name, member_kind) not in implemented_names:
+                    self.add_trait_impl_member(crate, member, package, qualified_impl,
+                                               member_name, exports, owner, identity_components)
+
+    def format_type_arguments(self, crate: str, arguments: Any,
+                              bindings: dict[str, Any]) -> list[str] | None:
+        if arguments is None:
+            return []
+        if not isinstance(arguments, dict) or "angle_bracketed" not in arguments:
+            return None
+        angle = arguments["angle_bracketed"]
+        if angle.get("constraints"):
+            return None
+        output = []
+        for argument in angle.get("args", []):
+            if "type" in argument:
+                value = self.format_type(crate, self.substitute_type(argument["type"], bindings))
+            elif "lifetime" in argument:
+                value = str(argument["lifetime"])
+            elif "const" in argument:
+                value = argument["const"].get("value")
+                value = None if value is None else str(value)
+            else:
+                value = None
+            if value is None:
+                return None
+            output.append(value)
+        return output
+
+    def trait_member_identity(self, crate: str, package: str, owner: dict[str, Any],
+                              trait_path: tuple[str, ...], owner_type: Any,
+                              qualified_trait: str, impl: dict[str, Any],
+                              bindings: dict[str, Any]) -> list[Any] | None:
+        generics = self.substitute_type(impl.get("generics", {}), bindings)
+        canonical_generics = self.canonicalize_identity_value(crate, generics)
+        if canonical_generics is _UNRESOLVED_IDENTITY:
+            self.issue(package, f"<{self.format_type(crate, owner_type)} as {qualified_trait}>",
+                       "unresolved-rustdoc-predicate-identity", owner,
+                       ownerPath=list(self.definition_path(crate, str(owner["id"]))),
+                       traitPath=list(trait_path))
+            return None
+        return [
+            "rust-trait-implementation", package,
+            list(self.definition_path(crate, str(owner["id"]))), list(trait_path),
+            self.format_type(crate, owner_type), qualified_trait,
+            canonical_generics,
+        ]
+
+    def add_trait_impl_member(self, crate: str, member: dict[str, Any], package: str,
+                              qualified_impl: str, member_name: str,
+                              exports: tuple[dict[str, Any] | None, ...], owner: dict[str, Any],
+                              identity_components: list[Any]) -> None:
+        item_kind = _kind(member)
+        export_name = f"{qualified_impl}::{member_name}"
+        identity_components = [*identity_components, member_name, item_kind]
+        self.add(crate, member, package, (export_name,), exports, associated=True,
+                 identity_components=identity_components)
 
     @staticmethod
     def fields(kind: Any) -> list[Any]:
@@ -228,11 +1063,19 @@ class _Inventory:
         return kind.get("plain", kind.get("struct", {})).get("fields", [])
 
     def run(self) -> dict[str, Any]:
-        for crate, doc in sorted(self.documents.items()):
-            root_id = str(doc["root"])
-            root = doc["index"][root_id]
-            self.children(crate, root["inner"]["module"]["items"], "rust-" + crate.replace("_", "-"),
-                          (crate,), frozenset({(crate, root_id)}), ())
+        def visit_roots() -> None:
+            for crate, doc in sorted(self.documents.items()):
+                root_id = str(doc["root"])
+                root = doc["index"][root_id]
+                self.children(crate, root["inner"]["module"]["items"], "rust-" + crate.replace("_", "-"),
+                              (crate,), frozenset({(crate, root_id)}), ())
+
+        self.reachability_prepass = True
+        visit_roots()
+        self.reachability_prepass = False
+        self.records.clear()
+        self.issues.clear()
+        visit_roots()
         aliases: dict[str, list[str]] = {}
         for record in self.records.values():
             aliases.setdefault(record["identity"], []).append(record["exportName"])
@@ -256,16 +1099,28 @@ def inventory(documents: dict[str, dict[str, Any]]) -> dict[str, Any]:
 
 
 def compare(observed: dict[str, Any], manifest: dict[str, Any]) -> dict[str, Any]:
-    """Compare exact package/name/kind records; blocked entries still count as inventory."""
+    """Compare canonical package/name/kind records; blocked entries still count as inventory."""
     package_ids = {"rust-" + name.replace("_", "-") for name in observed["crates"]}
     expected: dict[tuple[str, str], dict[str, Any]] = {}
     for row in manifest["publicDeclarations"]:
         if row["packageId"] in package_ids:
-            if _key(row) in expected:
+            key = _comparison_key(row)
+            if key in expected:
                 raise ValueError(f"duplicate manifest declaration: {row['exportName']}")
-            expected[_key(row)] = row
-    exclusions = {_key(row) for row in manifest.get("approvedExclusions", [])}
-    actual = {_key(row): row for row in observed["declarations"]}
+            expected[key] = row
+    exclusions = {_comparison_key(row) for row in manifest.get("approvedExclusions", [])}
+    actual: dict[tuple[str, str], dict[str, Any]] = {}
+    for row in observed["declarations"]:
+        key = _comparison_key(row)
+        previous = actual.get(key)
+        if previous is not None:
+            if previous.get("identity") != row.get("identity"):
+                raise ValueError(
+                    f"distinct Rust declarations collide after path normalization: "
+                    f"{previous['exportName']} and {row['exportName']}"
+                )
+            raise ValueError(f"duplicate observed declaration after path normalization: {row['exportName']}")
+        actual[key] = row
     matched, missing, excluded, wrong_kind = [], [], [], []
     for key, row in sorted(actual.items()):
         if key in expected:
