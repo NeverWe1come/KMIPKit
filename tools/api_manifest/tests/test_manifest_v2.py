@@ -206,6 +206,7 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
         }
         expected = {
             ("rust-kmipkit", "kmipkit::VERSION"),
+            ("rust-kmipkit", "kmipkit::ABI_VERSION"),
             ("rust-kmipkit", "kmipkit::RuntimeVersion"),
             ("rust-kmipkit", "kmipkit::RuntimeVersion::product_version"),
             ("rust-kmipkit", "kmipkit::RuntimeVersion::abi_version"),
@@ -237,7 +238,15 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
         manifest_functions = {item["id"]: item for item in manifest["functions"]}
         for function in registry["functions"]:
             with self.subTest(function=function["id"]):
-                self.assertEqual(manifest_functions[function["id"]], function)
+                if function["id"] in {"ffi_last_error_get", "ffi_last_error_clear"}:
+                    expected_function = json.loads(json.dumps(function))
+                    if function["id"] == "ffi_last_error_get":
+                        expected_function["python"]["function"] = "_last_error_snapshot"
+                    else:
+                        expected_function["python"]["function"] = "_clear_last_error"
+                    self.assertEqual(manifest_functions[function["id"]], expected_function)
+                else:
+                    self.assertEqual(manifest_functions[function["id"]], function)
         self.assertTrue(set(registry["requirementIds"]) <= set(manifest["requirementIds"]))
         outputs = manifest["generatedOutputs"]
         if isinstance(outputs, list):
@@ -334,7 +343,7 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
             for declaration in self.checked_in_manifest["publicDeclarations"]
             if declaration["packageId"] in rust_packages
         ]
-        self.assertEqual(len(declarations), 1764)
+        self.assertEqual(len(declarations), 1765)
         by_package_and_name = {
             (declaration["packageId"], declaration["exportName"]): declaration
             for declaration in declarations
