@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import errno
+import copy
 import json
 import os
 import shutil
@@ -194,6 +195,25 @@ def _apply_handle_array_contract(manifest: dict[str, object]) -> None:
 
 
 class ManifestGeneratorCliTests(unittest.TestCase):
+    def test_v2_full_api_header_shares_new_symbols_without_polluting_registry_slice(self) -> None:
+        manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
+        version_query = copy.deepcopy(manifest["functions"][0])
+        version_query["id"] = "version_query_fixture"
+        version_query["requirementIds"] = ["KMIPKIT-0043-FR-007"]
+        version_query["c"]["symbol"] = "kmipkit_version_get"
+        version_query["java"]["method"] = "versionGet"
+        version_query["python"]["function"] = "version_get"
+        manifest["functions"].append(version_query)
+
+        outputs = generate.render_outputs(manifest)
+        c_header = outputs["bindings/c/include/kmipkit.h"].decode("utf-8")
+        registry_python = outputs[
+            "bindings/python/src/kmipkit/_generated/extension_registry.py"
+        ].decode("utf-8")
+
+        self.assertIn("kmipkit_version_get", c_header)
+        self.assertNotIn("version_get", registry_python)
+
     def _run_generator(self, root: Path, *arguments: str) -> subprocess.CompletedProcess[str]:
         self.assertTrue(
             GENERATOR.is_file(),
