@@ -91278,7 +91278,7 @@
       "negative_verification_required": false,
       "decision_id": null,
       "status": "scoped_verified",
-      "review_note": "The named fake-transport test checks a Register followed by a Check request with Unique Identifier omitted and Batch Order Option unspecified, which section 6.1 permits. The transport fails before write, so this proves request construction only; it does not claim successful Register, server ID Placeholder assignment, or server consumption. No official Test Case is linked."
+      "review_note": "The named fake-transport test checks a Register followed by a Check request with Unique Identifier omitted and Batch Order Option unspecified, which section 6.1 permits. The transport fails before write, so this proves request construction only; it does not claim successful Register, server ID Placeholder assignment, or server consumption. No requirement-specific official Test Case is linked in the pinned OASIS Test Cases source."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1-004",
@@ -95268,7 +95268,7 @@
       "negative_verification_required": false,
       "decision_id": null,
       "status": "scoped_verified",
-      "review_note": "The named client test verifies an Archive request and returns the scripted server result. Section 6.1.4 makes archival timing, location, and hierarchy a key-management-system policy matter; the evidence makes no archival-completion claim. No official Test Case is linked."
+      "review_note": "The named client test verifies an Archive request and returns the scripted server result. Section 6.1.4 makes archival timing, location, and hierarchy a key-management-system policy matter; the evidence makes no archival-completion claim. No requirement-specific official Test Case is linked in the pinned OASIS Test Cases source."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.40-014",
@@ -95387,7 +95387,7 @@
       "negative_verification_required": false,
       "decision_id": null,
       "status": "scoped_verified",
-      "review_note": "The named fake-transport test extracts the correlation from a scripted Recover Pending response and the caller explicitly invokes Poll with it, consistent with sections 6.1.42 and 6.1.38. No implicit polling is claimed; the scripted exchange does not establish server-side Recover completion. No official Test Case is linked."
+      "review_note": "The named fake-transport test extracts the correlation from a scripted Recover Pending response and the caller explicitly invokes Poll with it, consistent with sections 6.1.42 and 6.1.38. No implicit polling is claimed; the scripted exchange does not establish server-side Recover completion. No requirement-specific official Test Case is linked in the pinned OASIS Test Cases source."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.42-001-002",
@@ -95427,7 +95427,7 @@
       "negative_verification_required": false,
       "decision_id": null,
       "status": "scoped_verified",
-      "review_note": "The named fake-transport test verifies the caller directs Locate, Recover, then Get as three exchanges, consistent with sections 6.1.42 and 6.1.19. The test makes no claim about archive state beyond its scripted responses. No official Test Case is linked."
+      "review_note": "The named fake-transport test verifies the caller directs Locate, Recover, then Get as three exchanges, consistent with sections 6.1.42 and 6.1.19. The test makes no claim about archive state beyond its scripted responses. No requirement-specific official Test Case is linked in the pinned OASIS Test Cases source."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.43-001",
@@ -95504,7 +95504,7 @@
       "negative_verification_required": false,
       "decision_id": null,
       "status": "unassigned",
-      "review_note": "KMIP Specification 2.1 section 6.1.43 Table 291 says the registered object and attributes MAY be wrapped. The named test covers a Register request with wrapped Key Value bytes and a separate direct Attributes structure. Embedded Attributes within the wrapped Key Value are not evidenced. Keep this optional client capability unassigned until positive wrapped-Attributes request evidence is added. Synthetic bytes assert request shape only, not cryptographic wrapping, server acceptance, or unwrapping. No official Test Case is linked."
+      "review_note": "KMIP Specification 2.1 section 6.1.43 Table 291 says the registered object and attributes MAY be wrapped. The named test covers a Register request with wrapped Key Value bytes and a separate direct Attributes structure. Embedded Attributes within the wrapped Key Value are not evidenced. Keep this optional client capability unassigned until positive wrapped-Attributes request evidence is added. Synthetic bytes assert request shape only, not cryptographic wrapping, server acceptance, or unwrapping. No requirement-specific official Test Case is linked in the pinned OASIS Test Cases source."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.43-007",

@@ -16442,7 +16442,11 @@ class CatalogValidationTests(unittest.TestCase):
                     try:
                         CatalogValidationTests().test_every_reviewed_client_may_or_optional_has_usable_positive_evidence()
                     finally:
-                        if linked_test_directory.exists():
+                        if os.name == "nt" and linked_test_directory.exists():
+                            linked_test_directory.rmdir()
+                        elif linked_test_directory.is_symlink():
+                            linked_test_directory.unlink()
+                        elif linked_test_directory.exists():
                             linked_test_directory.rmdir()
                         if external_test_path.exists():
                             external_test_path.unlink()
