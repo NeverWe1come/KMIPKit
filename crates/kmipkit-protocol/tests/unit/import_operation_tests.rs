@@ -309,6 +309,7 @@ fn key_wrap_type_is_present_if_and_only_if_key_block_has_wrapping_data() {
 #[test]
 fn wrapped_pgp_key_accepts_key_wrap_type() {
     let pgp_key = wrapped_pgp_key_object();
+    // OASIS KMIP 2.1 §3.1/Table 12 requires Key Format Type in every Key Block.
     assert!(
         key_block_field_matches(&pgp_key, KEY_FORMAT_TYPE, |field| {
             field.with_value(|value| matches!(value, ValueView::Enumeration(_)))
