@@ -908,7 +908,7 @@
             "where_predicates": []
           },
           "impls": [
-            "76"
+            76
           ],
           "kind": "unit"
         }
@@ -1410,9 +1410,9 @@
             "where_predicates": []
           },
           "impls": [
-            "16",
-            "8",
-            "13"
+            16,
+            8,
+            13
           ],
           "kind": "unit"
         }

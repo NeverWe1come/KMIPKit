@@ -133,7 +133,7 @@ class RustExportAuditTests(unittest.TestCase):
             "sample::Value::create", "sample::Value::MAX",
         })
 
-    def test_trait_implementation_members_are_explicitly_reported_as_unaudited(self):
+    def test_trait_implementation_with_unknown_external_path_fails_closed(self):
         doc = document("sample", [
             structure(1, "Value", impls=[2]),
             item(2, None, {"impl": {"trait": {"path": "Debug", "id": 10}, "items": [3]}}),
@@ -142,7 +142,10 @@ class RustExportAuditTests(unittest.TestCase):
         report = self.inventory({"sample": doc})
         self.assertEqual(self.names(report), {"sample::Value"})
         self.assertFalse(report["complete"])
-        self.assertEqual(report["issues"][0]["reason"], "trait-implementation-members-not-audited")
+        issue = report["issues"][0]
+        self.assertEqual(issue["reason"], "unresolved-trait-implementation-path")
+        self.assertEqual(issue["traitId"], "10")
+        self.assertEqual(issue["exportName"], "<sample::Value as Debug>")
 
     def test_rustdoc_v57_inventories_qualified_required_and_default_trait_members(self):
         report = self.inventory(self.rustdoc_v57_fixture())
@@ -155,9 +158,17 @@ class RustExportAuditTests(unittest.TestCase):
             "<rustdoc_v57_fixture::Service as rustdoc_v57_fixture::Audit>::required",
         }
         self.assertTrue(expected <= self.names(report), sorted(expected - self.names(report)))
+        inherent = next(r for r in report["declarations"] if r["exportName"] == "rustdoc_v57_fixture::Service::required")
+        contract = next(r for r in report["declarations"] if r["exportName"].endswith("Contract>::required"))
+        audit = next(r for r in report["declarations"] if r["exportName"].endswith("Audit>::required"))
+        self.assertEqual(len({inherent["identity"], contract["identity"], audit["identity"]}), 3)
 
-    def test_rustdoc_v57_inventories_synthetic_derived_trait_members(self):
-        report = self.inventory(self.rustdoc_v57_fixture())
+    def test_rustdoc_v57_inventories_automatically_derived_trait_members(self):
+        documents = self.rustdoc_v57_fixture()
+        report = self.inventory(documents)
+        derived_impl = documents["rustdoc_v57_fixture"]["index"]["76"]
+        self.assertIn("automatically_derived", derived_impl["attrs"])
+        self.assertFalse(derived_impl["inner"]["impl"]["is_synthetic"])
         self.assertIn(
             "<rustdoc_v57_fixture::Derived as core::fmt::Debug>::fmt",
             self.names(report),
@@ -177,6 +188,30 @@ class RustExportAuditTests(unittest.TestCase):
             "rustdoc_v57_fixture::StateAlias::Named::value",
         }
         self.assertTrue(expected <= self.names(report), sorted(expected - self.names(report)))
+        base = next(r for r in report["declarations"] if r["exportName"] == "rustdoc_v57_fixture::Service::inherent")
+        alias = next(r for r in report["declarations"] if r["exportName"] == "rustdoc_v57_fixture::ServiceAlias::inherent")
+        chained_alias = next(r for r in report["declarations"] if r["exportName"] == "rustdoc_v57_fixture::ServiceAliasChain::inherent")
+        self.assertEqual(base["identity"], alias["identity"])
+        self.assertEqual(alias["identity"], chained_alias["identity"])
+        self.assertEqual(base["aliases"], sorted({
+            "rustdoc_v57_fixture::Service::inherent",
+            "rustdoc_v57_fixture::ServiceAlias::inherent",
+            "rustdoc_v57_fixture::ServiceAliasChain::inherent",
+        }))
+
+    def test_unknown_type_alias_target_is_an_exact_incomplete_scope_issue(self):
+        documents = self.rustdoc_v57_fixture()
+        doc = documents["rustdoc_v57_fixture"]
+        alias = next(item for item in doc["index"].values() if item.get("name") == "ServiceAlias")
+        alias["inner"]["type_alias"]["type"]["resolved_path"] = {"id": 999, "path": "external::Hidden"}
+        report = self.inventory(documents)
+        matching_issues = [issue for issue in report["issues"] if issue["reason"] == "unresolved-type-alias-target"]
+        self.assertFalse(report["complete"])
+        self.assertTrue(matching_issues, report["issues"])
+        issue = matching_issues[0]
+        self.assertEqual(issue["exportName"], "rustdoc_v57_fixture::ServiceAlias")
+        self.assertEqual(issue["targetId"], "999")
+        self.assertEqual(issue["targetPath"], ["external", "Hidden"])
 
     def test_exported_macros_and_hidden_public_items_are_kept(self):
         hidden = structure(2, "HiddenDocumentation")

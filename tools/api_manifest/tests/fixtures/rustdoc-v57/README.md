@@ -3,8 +3,9 @@
 `rustdoc_v57_fixture.json` is a minimal projection of real output from Rust
 1.94.0 rustdoc. The source is `lib.rs`; it exercises inherent/trait member
 name collisions, required and provided trait members, a derived external-trait
-implementation, type aliases and alias chains, generic fields, and enum
-payloads.
+implementation (rustdoc marks it `automatically_derived` and
+`is_synthetic: false`), type aliases and alias chains, generic fields, and
+enum payloads.
 
 The source was captured with:
 
