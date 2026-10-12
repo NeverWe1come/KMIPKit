@@ -74,19 +74,26 @@ final class NativeLibraryLoaderTest {
     @Test
     void resolvesUnixLibraryNameFromBundledResources() throws Exception {
         byte[] libraryBytes = {0x4b, 0x4d, 0x49, 0x50};
-        String target = "linux-glibc-x86_64";
-        String libraryName = "libkmipkit_jni.so";
-        Map<String, byte[]> resources = Map.of(
-                "META-INF/native/" + target + "/" + libraryName, libraryBytes,
-                "META-INF/native/" + target + "/" + libraryName + ".sha256",
-                (sha256(libraryBytes) + "\n").getBytes(java.nio.charset.StandardCharsets.US_ASCII));
+        String[][] targets = {
+            {"Linux", "amd64", "linux-glibc-x86_64", "libkmipkit_jni.so"},
+            {"Linux", "aarch64", "linux-glibc-aarch64", "libkmipkit_jni.so"},
+            {"Mac OS X", "x86_64", "macos-x86_64", "libkmipkit_jni.dylib"},
+            {"Darwin", "arm64", "macos-aarch64", "libkmipkit_jni.dylib"},
+        };
 
-        Path loadedPath = NativeLibraryLoader.extractBundled(
-                classLoader(resources), "Linux", "amd64", temporaryDirectory,
-                NativeLibraryLoader::createPrivateDirectory);
+        for (String[] target : targets) {
+            String resource = "META-INF/native/" + target[2] + "/" + target[3];
+            Map<String, byte[]> resources = Map.of(
+                    resource, libraryBytes,
+                    resource + ".sha256",
+                    (sha256(libraryBytes) + "\n").getBytes(java.nio.charset.StandardCharsets.US_ASCII));
+            Path loadedPath = NativeLibraryLoader.extractBundled(
+                    classLoader(resources), target[0], target[1], temporaryDirectory,
+                    NativeLibraryLoader::createPrivateDirectory);
 
-        assertEquals(libraryName, loadedPath.getFileName().toString());
-        assertArrayEquals(libraryBytes, Files.readAllBytes(loadedPath));
+            assertEquals(target[3], loadedPath.getFileName().toString());
+            assertArrayEquals(libraryBytes, Files.readAllBytes(loadedPath));
+        }
     }
 
     @Test
