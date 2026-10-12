@@ -4377,6 +4377,11 @@ class CatalogValidationTests(unittest.TestCase):
             set(crosswalk_ids) == catalog_ids,
             "the flag covers accepted direct mappings; source reviews and explicit rejections are accounted for separately",
         )
+        self.assertEqual(
+            oracle["oracle_status"],
+            "complete",
+            "complete source disposition coverage and profile arrays define oracle completion, not accepted-row equality",
+        )
 
     def test_spec_4_1_through_4_18_source_review_slice_is_complete(self) -> None:
         """The first reviewed §4 slice retains every candidate and actor split."""
