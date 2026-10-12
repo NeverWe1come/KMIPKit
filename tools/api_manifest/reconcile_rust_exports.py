@@ -34,24 +34,50 @@ UNRESOLVED_OWNER_REASON = (
 )
 
 
-def _validate_condition(condition: Any) -> list[dict[str, Any]]:
-    """Validate the canonical, signature-free representation of trait bounds."""
-    if not isinstance(condition, list) or not condition:
+def _validate_condition(condition: Any) -> dict[str, Any]:
+    """Validate canonical, signature-free generic and lifetime predicates."""
+    if not isinstance(condition, dict) or set(condition) != {"subjectBindings", "predicates"}:
         raise ValueError("conditional Rust declarations require a nonempty exact condition")
-    for predicate in condition:
-        if not isinstance(predicate, dict) or set(predicate) != {
-            "subject", "traitPath", "arguments",
-        }:
+    bindings = condition["subjectBindings"]
+    if not isinstance(bindings, dict) or any(
+        not isinstance(name, str)
+        or re.fullmatch(r"(?:[A-Za-z_][A-Za-z0-9_]*|'[A-Za-z_][A-Za-z0-9_]*)", name) is None
+        or not isinstance(value, str) or not value
+        for name, value in bindings.items()
+    ):
+        raise ValueError("conditional Rust subject bindings must be canonical generic names and types")
+    predicates = condition["predicates"]
+    if not isinstance(predicates, list) or not predicates:
+        raise ValueError("conditional Rust declarations require at least one predicate")
+    for predicate in predicates:
+        if not isinstance(predicate, dict):
             raise ValueError("conditional Rust declaration has an invalid predicate")
+        kind = predicate.get("kind")
+        if kind == "outlives":
+            if set(predicate) != {"kind", "subject", "lifetime"}:
+                raise ValueError("conditional Rust outlives predicate has invalid fields")
+            if not isinstance(predicate["lifetime"], str) or re.fullmatch(
+                r"'(?:static|[A-Za-z_][A-Za-z0-9_]*)", predicate["lifetime"],
+            ) is None:
+                raise ValueError("conditional Rust outlives predicate requires a canonical lifetime")
+        elif kind == "traitBound":
+            if set(predicate) != {
+                "kind", "subject", "traitPath", "arguments", "modifier",
+            }:
+                raise ValueError("conditional Rust trait predicate has invalid fields")
+            if predicate["modifier"] not in {"none", "maybe"}:
+                raise ValueError("conditional Rust trait predicate has an invalid modifier")
+            if not isinstance(predicate["traitPath"], list) or not predicate["traitPath"] \
+                    or any(not isinstance(part, str) or not part for part in predicate["traitPath"]):
+                raise ValueError("conditional Rust predicate requires a canonical trait path")
+            if not isinstance(predicate["arguments"], list) \
+                    or any(not isinstance(argument, str) or not argument
+                           for argument in predicate["arguments"]):
+                raise ValueError("conditional Rust predicate arguments must be canonical type names")
+        else:
+            raise ValueError("conditional Rust predicate kind must be outlives or traitBound")
         if not isinstance(predicate["subject"], str) or not predicate["subject"]:
             raise ValueError("conditional Rust predicate subject must be a nonempty type")
-        if not isinstance(predicate["traitPath"], list) or not predicate["traitPath"] \
-                or any(not isinstance(part, str) or not part for part in predicate["traitPath"]):
-            raise ValueError("conditional Rust predicate requires a canonical trait path")
-        if not isinstance(predicate["arguments"], list) \
-                or any(not isinstance(argument, str) or not argument
-                       for argument in predicate["arguments"]):
-            raise ValueError("conditional Rust predicate arguments must be canonical type names")
     return condition
 
 def blocked_record(observed: dict[str, Any], manifest: dict[str, Any]) -> dict[str, Any]:

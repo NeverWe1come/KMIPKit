@@ -15,6 +15,7 @@ from tools.api_manifest.generate import (
     _validate_operation_inventory,
     _validate_references,
     _validate_v2_readiness,
+    _validate_schema,
 )
 from tools.api_manifest.audit_rust_exports import _canonical_export_name
 
@@ -223,6 +224,10 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
         encoded = json.dumps(manifest, sort_keys=True)
         round_tripped = json.loads(encoded)
         self.assertEqual(round_tripped["publicDeclarations"][-1]["condition"], condition)
+        try:
+            _validate_schema(round_tripped, self.schema)
+        except ManifestError as error:
+            self.fail(f"generator rejected a valid blocked condition: {error}")
         errors = list(self.validator.iter_errors(round_tripped))
         self.assertTrue(
             len(errors) == 0,
@@ -241,6 +246,8 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
         malformed = json.loads(json.dumps(manifest))
         malformed["publicDeclarations"][-1]["condition"]["predicates"][1]["modifier"] = "maybe-ish"
         self.assertTrue(list(self.validator.iter_errors(malformed)))
+        with self.assertRaises(ManifestError):
+            _validate_schema(malformed, self.schema)
 
     def test_official_package_versions_match_the_manifest_release_line(self) -> None:
         expected = self.checked_in_manifest["releaseLine"]
@@ -600,11 +607,11 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
         self.assertEqual(len(not_observed_keys), len(report["notObserved"]))
         self.assertEqual(manifest_keys - not_observed_keys, observed_keys | conditional_keys)
         self.assertEqual(report["counts"]["missingFromManifest"], 0)
-        self.assertEqual(report["counts"]["notObserved"], 13)
+        self.assertEqual(report["counts"]["notObserved"], 0)
         self.assertEqual(report["counts"]["kindMismatches"], 0)
-        self.assertEqual(report["counts"]["issues"], 13)
-        self.assertFalse(report["complete"])
-        self.assertFalse(report["matchesManifest"])
+        self.assertEqual(report["counts"]["issues"], 0)
+        self.assertTrue(report["complete"])
+        self.assertTrue(report["matchesManifest"])
         for row in report["notObserved"]:
             with self.subTest(not_observed=row["exportName"]):
                 self.assertEqual(row["declarationState"], "blocked")
@@ -619,10 +626,28 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
                 self.assertEqual(manifest_row["declarationState"], "blocked")
                 self.assertEqual(manifest_row["condition"], row["condition"])
                 self.assertNotIn("languageMappings", manifest_row)
-        self.assertEqual(
-            {issue["reason"] for issue in report["issues"]},
-            {"unresolved-rustdoc-implementation-predicate"},
-        )
+        self.assertEqual(report["issues"], [])
+        any_lifetime_rows = [
+            row for row in report["conditionalDeclarations"]
+            if "core::any::Any" in row["exportName"]
+            and "<'" in row["exportName"]
+        ]
+        self.assertEqual(len(any_lifetime_rows), 13)
+        for row in any_lifetime_rows:
+            with self.subTest(any_lifetime=row["exportName"]):
+                declaration = by_package_and_export[(row["packageId"], row["exportName"])]
+                predicates = row["condition"]["predicates"]
+                self.assertEqual(predicates[0], {
+                    "kind": "outlives", "subject": "T", "lifetime": "'static",
+                })
+                self.assertEqual(predicates[1], {
+                    "kind": "traitBound", "subject": "T",
+                    "traitPath": ["core", "marker", "Sized"], "arguments": [],
+                    "modifier": "maybe",
+                })
+                self.assertEqual(declaration["declarationState"], "blocked")
+                self.assertNotIn("languageMappings", declaration)
+                self.assertNotIn("approvalSource", declaration)
         by_package_and_name = {
             (declaration["packageId"], declaration["exportName"]): declaration
             for declaration in declarations

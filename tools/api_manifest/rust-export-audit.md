@@ -113,37 +113,34 @@ x64, Rust 1.94.0 and all features, the report found:
 
 | Published package | Verified | Conditional | Observed paths | Manifest rows | Not observed | Issues |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: |
-| `kmipkit-ttlv` | 264 | 65 | 329 | 331 | 2 | 2 |
-| `kmipkit-protocol` | 4,585 | 1,250 | 5,835 | 5,845 | 10 | 10 |
+| `kmipkit-ttlv` | 264 | 67 | 331 | 331 | 0 | 0 |
+| `kmipkit-protocol` | 4,585 | 1,260 | 5,845 | 5,845 | 0 | 0 |
 | `kmipkit-transport` | 275 | 90 | 365 | 365 | 0 | 0 |
-| `kmipkit-client` | 895 | 135 | 1,030 | 1,031 | 1 | 1 |
+| `kmipkit-client` | 895 | 136 | 1,031 | 1,031 | 0 | 0 |
 | `kmipkit` | 1,595 | 330 | 1,925 | 1,925 | 0 | 0 |
-| **Total** | **7,614** | **1,870** | **9,484** | **9,497** | **13** | **13** |
+| **Total** | **7,614** | **1,883** | **9,497** | **9,497** | **0** | **0** |
 
-There are no kind mismatches or approved Rust exclusions. The 1,870
-`conditionalDeclarations` are exact blanket-implementation members with open
-trait bounds. Each has an exact blocked manifest row carrying the compiler
-condition, with no signature or language mapping. Reconciliation also added
-49 blocked rows for newly observed declarations. The remaining 13 issues are
-the `core::any::Any` blanket impl (`T: 'static + ?Sized`) projected onto types
-with a generic lifetime; the current condition shape cannot represent that
-lifetime predicate. Those 13 existing manifest paths remain blocked and are
-reported as `notObserved`. `missingFromManifest` and conditional state/condition
-mismatches are zero, but `matchesManifest` and `complete` are false, and
-`--check` exits 1. Counts are a dated source snapshot, not a coverage
-percentage or permanent expected test result; rerun after Rust or manifest
-changes.
+There are no kind mismatches or approved Rust exclusions. Each of the 1,883
+`conditionalDeclarations` is an exact compiler-observed trait implementation
+member recorded as `blocked`, with no signature or language mapping. Its
+closed `condition` object retains exact generic subject bindings and ordered
+`traitBound` or `outlives` predicates, including `modifier: "maybe"` for
+`?Sized`. The 13 `core::any::Any` lifetime surfaces now preserve `T: 'static`
+and `T: ?Sized` while binding `T` to the actual owner type; they remain blocked
+until a reviewed API mapping exists. The generated report and manifest match
+all 9,497 observed paths, with zero missing, unobserved, issue, kind, or
+conditional state/condition mismatch entries. `--check` exits 0. Counts are a
+dated source snapshot, not a coverage percentage or permanent expected test
+result; rerun after Rust or manifest changes.
 
 The full deterministic JSON from this snapshot is checked in at
 `specs/043-public-api-bindings/reports/rust-export-report-2026-10-12.json`.
 Regenerate the report after any Rust export or manifest change; the timestamped
 path identifies the source snapshot and is not a generated manifest output.
 
-The JSON report lists each issue requiring predicate review and separates
-verified `declarations` from conditional ones. Their union matches 9,484
-observed Rust paths by canonical package, path, and kind. Thirteen additional
-manifest rows remain blocked because their `Any` implementation predicates
-cannot yet be serialized. The reconciliation tool adds blocked rows only for
+The JSON report keeps verified `declarations` separate from
+`conditionalDeclarations`; their union matches every observed Rust path by
+canonical package, path, and kind. The reconciler creates blocked rows only for
 exact paths in `missingFromManifest` and updates conditions only on exact
 blocked conditional rows. It inherits a candidate owner only from an exact
 manifest owner path, otherwise uses the already blocked

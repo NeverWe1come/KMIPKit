@@ -332,4 +332,4 @@ impl Fixed<u16> {
     }
 }
 
-pub type StaticAlias = Alias<'static>;
+pub type StaticAlias = hidden_view::View<'static>;

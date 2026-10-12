@@ -692,7 +692,8 @@ class _Inventory:
             for bound in type_kind["bounds"]:
                 trait_bound = bound.get("trait_bound")
                 if trait_bound is not None:
-                    result = self.check_trait_bound(crate, subject, trait_bound, bindings)
+                    result = True if trait_bound.get("modifier") == "maybe" else \
+                        self.check_trait_bound(crate, subject, trait_bound, bindings)
                 elif "outlives" in bound:
                     result = self.prove_static_type(crate, subject) if bound["outlives"] == "'static" else None
                 else:
@@ -715,7 +716,8 @@ class _Inventory:
             for bound in bound_predicate.get("bounds", []):
                 trait_bound = bound.get("trait_bound")
                 if trait_bound is not None:
-                    result = self.check_trait_bound(crate, subject, trait_bound, bindings)
+                    result = True if trait_bound.get("modifier") == "maybe" else \
+                        self.check_trait_bound(crate, subject, trait_bound, bindings)
                 elif "outlives" in bound:
                     result = self.prove_static_type(crate, subject) if bound["outlives"] == "'static" else None
                 else:
@@ -725,15 +727,17 @@ class _Inventory:
         return True
 
     def conditional_trait_predicates(self, crate: str, impl: dict[str, Any],
-                                    bindings: dict[str, Any]) -> list[dict[str, Any]] | None:
-        """Serialize fully identified trait bounds that remain conditional on open type vars."""
+                                    bindings: dict[str, Any],
+                                    subject_binding_overrides: dict[str, str] | None = None
+                                    ) -> dict[str, Any] | None:
+        """Serialize exact trait and outlives predicates for a blocked implementation."""
         generics = impl.get("generics")
         if not isinstance(generics, dict):
             return None
         parameters = generics.get("params", [])
         if not isinstance(parameters, list) or any(
             not isinstance(parameter.get("kind"), dict)
-            or "type" not in parameter["kind"]
+            or not ("type" in parameter["kind"] or "lifetime" in parameter["kind"])
             for parameter in parameters
         ):
             return None
@@ -742,15 +746,51 @@ class _Inventory:
             return None
 
         conditions: list[dict[str, Any]] = []
+        subject_bindings: dict[str, str] = {}
         saw_open_subject = False
 
-        def add_trait_bound(subject: Any, bound: Any) -> bool:
+        def canonical_subject(subject: Any) -> tuple[str, set[str], set[str]] | None:
             nonlocal saw_open_subject
+            concrete_subject = self.substitute_type(subject, bindings)
+            if isinstance(subject, dict) and set(subject) == {"generic"}:
+                subject_name = subject["generic"]
+            elif isinstance(subject, dict) and set(subject) == {"lifetime"}:
+                subject_name = subject["lifetime"]
+            else:
+                subject_name = self.format_type(crate, concrete_subject)
+            if not isinstance(subject_name, str) or not subject_name:
+                return None
+
+            open_types = self.generic_type_names(concrete_subject)
+            open_lifetimes = self.generic_lifetime_names(concrete_subject)
+            direct_generic = subject.get("generic") if isinstance(subject, dict) else None
+            if isinstance(direct_generic, str) and direct_generic not in bindings:
+                open_types.add(direct_generic)
+            if open_types and not open_types <= declared_names \
+                    and not (isinstance(direct_generic, str) and direct_generic in bindings):
+                return None
+            if open_types or open_lifetimes:
+                saw_open_subject = True
+
+            if isinstance(direct_generic, str) and direct_generic in bindings \
+                    and (open_types or open_lifetimes):
+                display = (subject_binding_overrides or {}).get(direct_generic)
+                if display is None:
+                    display = self.format_type(crate, bindings[direct_generic])
+                if not display:
+                    return None
+                previous = subject_bindings.get(direct_generic)
+                if previous is not None and previous != display:
+                    return None
+                subject_bindings[direct_generic] = display
+            return subject_name, open_types, open_lifetimes
+
+        def add_trait_bound(subject: Any, bound: Any) -> bool:
             if not isinstance(bound, dict) or set(bound) != {"trait_bound"}:
                 return False
             trait_bound = bound["trait_bound"]
             if not isinstance(trait_bound, dict) \
-                    or trait_bound.get("modifier") not in {None, "none"} \
+                    or trait_bound.get("modifier") not in {None, "none", "maybe"} \
                     or trait_bound.get("generic_params", []):
                 return False
             trait = trait_bound.get("trait")
@@ -759,33 +799,54 @@ class _Inventory:
             trait_path = self.reference_path(crate, trait["id"])
             if not trait_path:
                 return False
-
-            concrete_subject = self.substitute_type(subject, bindings)
-            if not self.contains_open_type_parameter(concrete_subject):
-                return False
-            open_names = self.generic_type_names(concrete_subject)
-            if not open_names or not open_names <= declared_names:
-                return False
-            formatted_subject = self.format_type(crate, concrete_subject)
+            formatted = canonical_subject(subject)
             arguments = self.format_type_arguments(crate, trait.get("args"), bindings)
-            if formatted_subject is None or arguments is None:
+            if formatted is None or arguments is None:
                 return False
             conditions.append({
-                "subject": formatted_subject,
+                "kind": "traitBound",
+                "subject": formatted[0],
                 "traitPath": list(trait_path),
                 "arguments": arguments,
+                "modifier": "maybe" if trait_bound.get("modifier") == "maybe" else "none",
             })
-            saw_open_subject = True
             return True
+
+        def add_outlives(subject: Any, lifetime: Any) -> bool:
+            if not isinstance(lifetime, str) or not lifetime.startswith("'") or len(lifetime) < 2:
+                return False
+            formatted = canonical_subject(subject)
+            if formatted is None or not (formatted[1] or formatted[2]):
+                return False
+            conditions.append({
+                "kind": "outlives",
+                "subject": formatted[0],
+                "lifetime": lifetime,
+            })
+            return True
+
+        def add_bound(subject: Any, bound: Any) -> bool:
+            if isinstance(bound, dict) and set(bound) == {"outlives"}:
+                return add_outlives(subject, bound["outlives"])
+            return add_trait_bound(subject, bound)
 
         for parameter in parameters:
             name = parameter.get("name")
-            type_kind = parameter.get("kind", {}).get("type", {})
-            if not isinstance(type_kind, dict):
-                return None
-            for bound in type_kind.get("bounds", []):
-                if not add_trait_bound({"generic": name}, bound):
+            parameter_kind = parameter.get("kind", {})
+            if "type" in parameter_kind:
+                type_kind = parameter_kind["type"]
+                if not isinstance(type_kind, dict):
                     return None
+                for bound in type_kind.get("bounds", []):
+                    if not add_bound({"generic": name}, bound):
+                        return None
+            else:
+                lifetime_kind = parameter_kind["lifetime"]
+                if not isinstance(lifetime_kind, dict):
+                    return None
+                for outlives in lifetime_kind.get("outlives", []):
+                    if not add_outlives({"lifetime": name}, outlives):
+                        return None
 
         predicates = generics.get("where_predicates", [])
         if not isinstance(predicates, list):
@@ -794,22 +855,33 @@ class _Inventory:
             if not isinstance(predicate, dict):
                 return None
             bound_predicate = predicate.get("bound_predicate")
-            if not isinstance(bound_predicate, dict) \
-                    or bound_predicate.get("generic_params") \
-                    or not isinstance(bound_predicate.get("bounds"), list) \
-                    or not bound_predicate["bounds"]:
+            if isinstance(bound_predicate, dict):
+                if bound_predicate.get("generic_params") \
+                        or not isinstance(bound_predicate.get("bounds"), list) \
+                        or not bound_predicate["bounds"]:
+                    return None
+                for bound in bound_predicate["bounds"]:
+                    if not add_bound(bound_predicate.get("type"), bound):
+                        return None
+                continue
+            lifetime_predicate = predicate.get("lifetime_predicate")
+            if not isinstance(lifetime_predicate, dict) or lifetime_predicate.get("generic_params"):
                 return None
-            for bound in bound_predicate["bounds"]:
-                if not add_trait_bound(bound_predicate.get("type"), bound):
+            lifetime = lifetime_predicate.get("lifetime")
+            for outlives in lifetime_predicate.get("outlives", []):
+                if not add_outlives({"lifetime": lifetime}, outlives):
                     return None
 
         if not conditions or not saw_open_subject:
             return None
-        unique = {
-            json.dumps(condition, sort_keys=True, separators=(",", ":")): condition
-            for condition in conditions
-        }
-        return [unique[key] for key in sorted(unique)]
+        predicates = []
+        seen_conditions: set[str] = set()
+        for condition in conditions:
+            key = json.dumps(condition, sort_keys=True, separators=(",", ":"))
+            if key not in seen_conditions:
+                predicates.append(condition)
+                seen_conditions.add(key)
+        return {"subjectBindings": subject_bindings, "predicates": predicates}
 
     @staticmethod
     def generic_type_names(expression: Any) -> set[str]:
@@ -821,6 +893,37 @@ class _Inventory:
         if set(expression) == {"generic"} and isinstance(expression["generic"], str):
             return {expression["generic"]}
         return set().union(*(_Inventory.generic_type_names(value) for value in expression.values()))
+
+    @staticmethod
+    def generic_lifetime_names(expression: Any) -> set[str]:
+        """Collect non-static rustdoc lifetimes so open owners stay conditional."""
+        if isinstance(expression, list):
+            return set().union(*(_Inventory.generic_lifetime_names(value) for value in expression))
+        if isinstance(expression, str):
+            return {expression} if expression.startswith("'") and expression != "'static" else set()
+        if not isinstance(expression, dict):
+            return set()
+        if set(expression) == {"lifetime"}:
+            lifetime = expression["lifetime"]
+            return {lifetime} if isinstance(lifetime, str) and lifetime != "'static" else set()
+        return set().union(*(_Inventory.generic_lifetime_names(value) for value in expression.values()))
+
+    @staticmethod
+    def has_exact_static_outlives_predicate(impl: dict[str, Any], subject: str) -> bool:
+        """Require rustdoc to preserve the exact `subject: 'static` predicate."""
+        generics = impl.get("generics", {})
+        for parameter in generics.get("params", []):
+            if parameter.get("name") == subject:
+                bounds = parameter.get("kind", {}).get("type", {}).get("bounds", [])
+                if {"outlives": "'static"} in bounds:
+                    return True
+        for predicate in generics.get("where_predicates", []):
+            bound = predicate.get("bound_predicate")
+            if not isinstance(bound, dict) or bound.get("type") != {"generic": subject}:
+                continue
+            if {"outlives": "'static"} in bound.get("bounds", []):
+                return True
+        return False
 
     def check_lifetime_relation(self, longer: str, shorter: str,
                                 bindings: dict[str, Any]) -> bool | None:
@@ -1115,6 +1218,10 @@ class _Inventory:
                            implementationId=str(impl_id))
                 continue
             implementation_parameters = self.generic_parameter_names(impl.get("generics", {}))
+            implementation_parameters.update(
+                lifetime for lifetime in self.generic_lifetime_names(implementation_type)
+                if lifetime not in {"'_", "'static"}
+            )
             bindings: dict[str, Any] = {}
             matches_owner = self.unify_type(crate, implementation_type, owner_type,
                                             implementation_parameters, bindings)
@@ -1125,6 +1232,18 @@ class _Inventory:
             if filter_to_owner and not matches_owner:
                 continue
             blanket = impl.get("blanket_impl")
+            trait = impl.get("trait")
+            trait_id = trait.get("id") if isinstance(trait, dict) else None
+            trait_path = self.reference_path(crate, trait_id) if trait_id is not None else None
+            if trait_path == ("core", "any", "Any") and isinstance(blanket, dict):
+                blanket_name = blanket.get("generic")
+                if not isinstance(blanket_name, str) or not self.has_exact_static_outlives_predicate(
+                    impl, blanket_name,
+                ):
+                    self.issue(package, "::".join(path), "unresolved-rustdoc-implementation-predicate",
+                               impl_item, implementationId=str(impl_id),
+                               ownerPath=list(self.definition_path(crate, str(owner["id"]))))
+                    continue
             conditional_condition = None
             if filter_to_owner or isinstance(blanket, dict):
                 predicate_bindings = dict(bindings)
@@ -1134,8 +1253,13 @@ class _Inventory:
                 if applies is False:
                     continue
                 if applies is None and isinstance(blanket, dict):
+                    blanket_name = blanket.get("generic")
+                    binding_overrides = (
+                        {blanket_name: owner_display}
+                        if isinstance(blanket_name, str) and owner_display is not None else None
+                    )
                     conditional_condition = self.conditional_trait_predicates(
-                        crate, impl, predicate_bindings,
+                        crate, impl, predicate_bindings, binding_overrides,
                     )
                 # A compiler-reported non-blanket impl remains a valid conditional API
                 # when a generic alias preserves its exact owner type and parameters.
@@ -1354,7 +1478,7 @@ class _Inventory:
     def add_conditional_trait_impl_member(self, crate: str, package: str, qualified_impl: str,
                                           member: dict[str, Any], member_name: str,
                                           implementation_id: Any, owner: dict[str, Any],
-                                          condition: list[dict[str, Any]]) -> None:
+                                          condition: dict[str, Any]) -> None:
         """Record a known conditional trait member without advertising an API signature."""
         export_name = f"{qualified_impl}::{member_name}"
         record = {

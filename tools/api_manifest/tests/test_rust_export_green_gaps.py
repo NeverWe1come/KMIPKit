@@ -172,13 +172,28 @@ class RustExportGreenGapTests(unittest.TestCase):
         report = self.audit.inventory(self.fixture_without_static_contract())
         names = {declaration["exportName"] for declaration in report["declarations"]}
         open_alias_member = "<rustdoc_v57_fixture::GenericAlias<T> as core::any::Any>::type_id"
+        conditional = {
+            declaration["exportName"]: declaration
+            for declaration in report["conditionalDeclarations"]
+        }
 
         self.assertNotIn(open_alias_member, names)
-        self.assertTrue(any(
-            issue["reason"] == "unresolved-rustdoc-implementation-predicate"
-            and issue.get("exportName") == "rustdoc_v57_fixture::GenericAlias"
-            for issue in report["issues"]
-        ))
+        self.assertIn(open_alias_member, conditional)
+        self.assertEqual(
+            conditional[open_alias_member]["condition"]["subjectBindings"],
+            {"T": "rustdoc_v57_fixture::GenericAlias<T>"},
+        )
+        self.assertEqual(
+            conditional[open_alias_member]["condition"]["predicates"],
+            [
+                {"kind": "outlives", "subject": "T", "lifetime": "'static"},
+                {
+                    "kind": "traitBound", "subject": "T",
+                    "traitPath": ["core", "marker", "Sized"],
+                    "arguments": [], "modifier": "maybe",
+                },
+            ],
+        )
 
     def test_inline_static_bound_is_evaluated_or_reported_without_traceback(self):
         documents = self.fixture()

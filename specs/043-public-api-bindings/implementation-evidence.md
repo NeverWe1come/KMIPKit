@@ -88,6 +88,8 @@ The canonical cross-language declaration slice whose Rust mapping paths begin wi
 
 The pinned Rust 1.94.0 / rustdoc JSON 57 audit report at [rust-export-report-2026-10-12.json](reports/rust-export-report-2026-10-12.json) was regenerated from the current continuation branch on Windows x64 with all Cargo features. The inventory keeps verified declarations separate from conditional blanket-impl declarations. Conditional records preserve their exact compiler predicates and remain blocked without signatures or language mappings. The audit exits **1 as expected** while 13 `Any` implementation predicates remain unresolved.
 
+> Historical pre-Green baseline. The following counts describe the audit before the lifetime-condition model was added and are superseded by the Green evidence later in this file.
+
 | Published package | Verified | Conditional | Observed total | Manifest rows | Not observed | Issues |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: |
 | `kmipkit-ttlv` | 264 | 65 | 329 | 331 | 2 | 2 |
@@ -148,7 +150,7 @@ The binding-auditor changes have distinct failing-test and implementation commit
 | Green | `22b13a7a`, `a7ecd323` | Made include-guard recognition fail closed; vendored and patched `aws-lc-sys@0.45.0`, constrained the dependency-policy exception, removed leaked symbols from the published ABI, added the cross-platform C audit step, and reconciled C/Java/Python manifests. `python -B -m unittest discover -s tools/api_manifest/tests -v` passed 162 tests (3 skipped); the full binding audit `--check` exited 0; generator check verified 11 outputs. |
 | Refactor | Pending | A behavior-preserving cleanup commit is still required for the vendor ABI change. |
 
-T011 remains unchecked: an observed blocked declaration can count as an exact inventory match, but it cannot account for missing or stale paths, a kind mismatch, duplicate declarations, unsupported ABI exports, or incomplete traversal. No manifest data was fabricated to suppress these findings.
+T011 remains unchecked pending read-only QA and remote CI. The latest Rust snapshot records every compiler-observed public path exactly; conditional rows remain explicitly blocked, and no missing or stale path, kind mismatch, duplicate declaration, unsupported ABI export, or incomplete traversal is suppressed.
 
 ## T030 — Java/Python package metadata and user scope documentation
 
@@ -161,3 +163,19 @@ Java Gradle/Maven metadata and Python project metadata use the manifest's synchr
 | Refactor | `aba0b9d6` | `python -B -m unittest tools.api_manifest.tests.test_t030_package_docs -v`; `python -B tools/api_manifest/generate.py --check`; `mvn -o -f bindings/java/pom.xml validate -q`; `git diff --check` | PASS: 5 focused contract tests; all 11 generated outputs current; Maven metadata validation and whitespace check pass. Clarified that Python 3.12 is the only 1.0 package minor line and that vendor-extension examples do not establish verified release parity. |
 
 The platform-matrix CI and offline load/install verification remain T028/T072 work; T030 documents the currently declared target matrix without claiming that every target has completed those checks.
+
+## T011 Green — Rust conditional lifetime predicates
+
+The pre-Green Rust counts above are historical. The condition schema now uses a strict object with `subjectBindings` and ordered `predicates`; predicates preserve exact `outlives` bounds and trait bounds, including the `maybe` modifier used by `?Sized`. The reconciler accepts only this closed shape and keeps conditional declarations blocked without signatures, language mappings, or approval data. The fixture is regenerated from authentic Rust 1.94.0 rustdoc JSON and proves both the open `View<'a>` condition and the satisfied `View<'static>` control. The auditor fails closed if rustdoc omits the exact `T: 'static` bound for the canonical `core::any::Any` implementation.
+
+The current snapshot has 7,614 verified declarations and 1,883 conditional declarations (including all 13 Any lifetime surfaces). All 9,497 compiler-observed paths match the manifest; missing, not-observed, kind mismatch, issue, and conditional state/condition mismatch counts are zero. All 1,883 conditional rows remain blocked without signatures or mappings. T011 is not complete until read-only QA and remote CI finish.
+
+| Verification | Command | Result |
+|---|---|---|
+| Red+Green focal tests | `uv run --no-project --with-requirements tools/api_manifest/requirements-test.txt python -B -m unittest tools.api_manifest.tests.test_rust_export_trait_predicates tools.api_manifest.tests.test_manifest_v2.PublicApiManifestV2SchemaTests.test_blocked_condition_schema_round_trips_lifetime_and_trait_bounds -v` | PASS: 22 tests, including exact predicates, open/static lifetime controls, fail-closed mutation, strict schema round-trip, and blocked reconciliation. |
+| Rust export inventory | `uv run --no-project --with-requirements tools/api_manifest/requirements-test.txt python -B tools/api_manifest/audit_rust_exports.py --repo-root . --report specs/043-public-api-bindings/reports/rust-export-report-2026-10-12.json --check` | PASS: 9,497 observed and matched, including 7,614 verified and 1,883 conditional; all missing/not-observed/mismatch/issue counts are zero. |
+| Conditional reconciliation | `uv run --no-project --with-requirements tools/api_manifest/requirements-test.txt python -B tools/api_manifest/reconcile_rust_exports.py --report specs/043-public-api-bindings/reports/rust-export-report-2026-10-12.json --write` | PASS: updated 1,883 existing condition records; added 0 records; no signatures or mappings were added. |
+| Determinism | Reproject Rust 1.94.0/rustdoc JSON 57 fixture; rerun the Rust inventory to a temporary report and compare SHA-256 | PASS: fixture projection `58CAE1A346AADE81AC13BBBCB9DC02090A98BD12187D9C80EBD391045014DCC2`; checked-in and regenerated report both `A4D34F6244C3C690182C38CB42D5DBBE8E92E99D6A3223E971845A0978C1B854`. |
+| Generated outputs | `python -B tools/api_manifest/generate.py --check` | PASS: all 11 generated outputs current. |
+| Full API-manifest suite | `uv run --no-project --with-requirements tools/api_manifest/requirements-test.txt python -B -m unittest discover -s tools/api_manifest/tests -v` | PASS: 217 tests; 3 Windows symlink tests skipped because creation was denied (WinError 1314). |
+| Whitespace validation | `git diff --check` | PASS at the latest local check; rerun before commit. |

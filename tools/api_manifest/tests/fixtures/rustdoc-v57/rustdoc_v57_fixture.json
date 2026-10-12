@@ -15014,7 +15014,7 @@
                 }
               },
               "id": 7,
-              "path": "Alias"
+              "path": "hidden_view::View"
             }
           }
         }
@@ -15028,7 +15028,7 @@
         ],
         "end": [
           335,
-          39
+          51
         ],
         "filename": "tools/api_manifest/tests/fixtures/rustdoc-v57/lib.rs"
       },
@@ -15123,7 +15123,7 @@
         ],
         "end": [
           335,
-          39
+          51
         ],
         "filename": "tools/api_manifest/tests/fixtures/rustdoc-v57/lib.rs"
       },

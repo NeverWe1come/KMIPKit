@@ -494,9 +494,14 @@ class RustExportTraitPredicateTests(unittest.TestCase):
             "formatVersion": 1,
             "rustdocFormat": 57,
             "crates": [CRATE],
-            "missingFromManifest": [],
+            "missingFromManifest": [{
+                "packageId": "rust-kmipkit-protocol",
+                "exportName": export_name,
+                "kind": "associated-item",
+                "condition": ANY_LIFETIME_CONDITION,
+            }],
             "conditionalDeclarations": [{
-                "packageId": "rust-rustdoc-v57-fixture",
+                "packageId": "rust-kmipkit-protocol",
                 "exportName": export_name,
                 "kind": "associated-item",
                 "condition": ANY_LIFETIME_CONDITION,

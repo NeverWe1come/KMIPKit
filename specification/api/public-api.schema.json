@@ -1783,34 +1783,61 @@
           "minLength": 1
         },
         "condition": {
-          "type": "array",
-          "minItems": 1,
-          "items": {
-            "type": "object",
-            "required": ["subject", "traitPath", "arguments"],
-            "properties": {
-              "subject": {
+          "type": "object",
+          "required": ["subjectBindings", "predicates"],
+          "properties": {
+            "subjectBindings": {
+              "type": "object",
+              "propertyNames": {
+                "pattern": "^(?:[A-Za-z_][A-Za-z0-9_]*|'[A-Za-z_][A-Za-z0-9_]*)$"
+              },
+              "additionalProperties": {
                 "type": "string",
                 "minLength": 1
-              },
-              "traitPath": {
-                "type": "array",
-                "minItems": 1,
-                "items": {
-                  "type": "string",
-                  "minLength": 1
-                }
-              },
-              "arguments": {
-                "type": "array",
-                "items": {
-                  "type": "string",
-                  "minLength": 1
-                }
               }
             },
-            "additionalProperties": false
-          }
+            "predicates": {
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "oneOf": [
+                  {
+                    "type": "object",
+                    "required": ["kind", "subject", "lifetime"],
+                    "properties": {
+                      "kind": {"const": "outlives"},
+                      "subject": {"type": "string", "minLength": 1},
+                      "lifetime": {
+                        "type": "string",
+                        "pattern": "^'(?:static|[A-Za-z_][A-Za-z0-9_]*)$"
+                      }
+                    },
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "required": ["kind", "subject", "traitPath", "arguments", "modifier"],
+                    "properties": {
+                      "kind": {"const": "traitBound"},
+                      "subject": {"type": "string", "minLength": 1},
+                      "traitPath": {
+                        "type": "array",
+                        "minItems": 1,
+                        "items": {"type": "string", "minLength": 1}
+                      },
+                      "arguments": {
+                        "type": "array",
+                        "items": {"type": "string", "minLength": 1}
+                      },
+                      "modifier": {"enum": ["none", "maybe"]}
+                    },
+                    "additionalProperties": false
+                  }
+                ]
+              }
+            }
+          },
+          "additionalProperties": false
         },
         "approvalSource": {
           "$ref": "#/$defs/approvalSource"
