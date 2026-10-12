@@ -13190,17 +13190,18 @@ class CatalogValidationTests(unittest.TestCase):
             ),
         }
         for clause_id, (client_id, server_id) in split_actor_mappings.items():
-            source_rows = sorted(
-                (row for row in oracle["requirement_crosswalk"] if row["source_clause_id"] == clause_id),
-                key=lambda row: row["source_obligation_order"],
-            )
-            self.assertEqual([row["requirement_id"] for row in source_rows], [client_id, server_id])
-            self.assertEqual([row["source_actor"] for row in source_rows], ["client", "server"])
-            self.assertEqual([row["scope_state"] for row in source_rows], ["client_1_0", "server_only"])
-            self.assertEqual(requirements[client_id]["role"], "client")
-            self.assertEqual(requirements[client_id]["scope_state"], "client_1_0")
-            self.assertEqual(requirements[server_id]["role"], "server")
-            self.assertEqual(requirements[server_id]["scope_state"], "server_only")
+            with self.subTest(source_clause_id=clause_id):
+                source_rows = sorted(
+                    (row for row in oracle["requirement_crosswalk"] if row["source_clause_id"] == clause_id),
+                    key=lambda row: row["source_obligation_order"],
+                )
+                self.assertEqual([row["requirement_id"] for row in source_rows], [client_id, server_id])
+                self.assertEqual([row["source_actor"] for row in source_rows], ["client", "server"])
+                self.assertEqual([row["scope_state"] for row in source_rows], ["client_1_0", "server_only"])
+                self.assertEqual(requirements[client_id]["role"], "client")
+                self.assertEqual(requirements[client_id]["scope_state"], "client_1_0")
+                self.assertEqual(requirements[server_id]["role"], "server")
+                self.assertEqual(requirements[server_id]["scope_state"], "server_only")
 
         for requirement_id in ("KMIPKIT-REQ-SPEC-6.1.9-006", "KMIPKIT-REQ-SPEC-6.1.9-007"):
             self.assertTrue(
