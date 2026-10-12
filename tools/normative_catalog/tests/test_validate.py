@@ -12,6 +12,7 @@ import tempfile
 import unittest
 from html.parser import HTMLParser
 from pathlib import Path
+from typing import Any
 from unittest.mock import patch
 
 from tools.normative_catalog.validate import (
@@ -28,6 +29,13 @@ import tools.normative_catalog.validate as catalog_validate
 
 
 ROOT = Path(__file__).resolve().parents[3]
+
+
+def source_table_contracts_for_gap(
+    contracts: list[dict[str, Any]], gap_id: str
+) -> list[dict[str, Any]]:
+    """Return every contract for a source gap so callers can assert cardinality."""
+    return [contract for contract in contracts if contract.get("gap_id") == gap_id]
 
 
 class _CandidateTextParser(_CandidateParser):
@@ -6497,7 +6505,7 @@ class CatalogValidationTests(unittest.TestCase):
         gap_id = "KMIPKIT-SOURCE-GAP-SPEC-6.1.44-REVOCATION-REASON-REQUIRED"
         proposed_id = "KMIPKIT-REQ-SPEC-6.1.44-004"
         line_range = [33198, 33210]
-        contracts = [row for row in oracle["source_table_contracts"] if row["gap_id"] == gap_id]
+        contracts = source_table_contracts_for_gap(oracle["source_table_contracts"], gap_id)
 
         self.assertEqual(len(contracts), 1)
         contract = contracts[0]
@@ -7667,11 +7675,7 @@ class CatalogValidationTests(unittest.TestCase):
         gap_id = "KMIPKIT-SOURCE-GAP-SPEC-6.1.52-CONSTRAINTS-REQUIRED"
         proposed_id = "KMIPKIT-REQ-SPEC-6.1.52-001"
         line_range = [35849, 35864]
-        contracts = [
-            row
-            for row in oracle["source_table_contracts"]
-            if row["gap_id"] == gap_id
-        ]
+        contracts = source_table_contracts_for_gap(oracle["source_table_contracts"], gap_id)
 
         self.assertEqual(len(contracts), 1)
         contract = contracts[0]
