@@ -1590,21 +1590,13 @@ JNIEXPORT jobject JNICALL Java_org_kmipkit_RuntimeMetadata_version(JNIEnv* env, 
 JNIEXPORT jboolean JNICALL Java_org_kmipkit_RuntimeMetadata_capabilityIsAvailable(
         JNIEnv* env, jclass, jstring capability_id) {
     return guarded<jboolean>(env, JNI_FALSE, [&] {
-        if (capability_id == nullptr) {
-            throw_invalid_input(env);
-            return JNI_FALSE;
-        }
-        const char* data = env->GetStringUTFChars(capability_id, nullptr);
-        if (data == nullptr) {
-            return JNI_FALSE;
-        }
-        const jsize length = env->GetStringUTFLength(capability_id);
+        std::vector<uint8_t> capability_id_bytes;
+        if (!java_string_to_utf8(env, capability_id, capability_id_bytes)) return JNI_FALSE;
         uint8_t available = 0;
         const int32_t status = kmipkit_capability_is_available(
-                reinterpret_cast<const uint8_t*>(data),
-                static_cast<uint64_t>(length),
+                capability_id_bytes.empty() ? nullptr : capability_id_bytes.data(),
+                static_cast<uint64_t>(capability_id_bytes.size()),
                 &available);
-        env->ReleaseStringUTFChars(capability_id, data);
         if (status != 0) {
             throw_status(env, status);
             return JNI_FALSE;
