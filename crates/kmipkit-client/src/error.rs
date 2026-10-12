@@ -210,7 +210,8 @@ impl ClientError {
     ///
     /// This is `None` for failures that occur before a complete response is
     /// decoded and for validation or transport failures unrelated to response
-    /// processing. The retained response is not included in diagnostics.
+    /// processing. Profile validation failures intentionally do not retain the
+    /// raw response body. Any retained response is not included in diagnostics.
     #[must_use]
     pub const fn response_ttlv(&self) -> Option<&ClientErrorResponseTtlv> {
         match self {
