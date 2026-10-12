@@ -10,6 +10,7 @@ from pathlib import Path
 
 from jsonschema import Draft202012Validator
 
+from tools.api_manifest import generate
 from tools.api_manifest.generate import (
     ManifestError,
     _validate_operation_inventory,
@@ -666,6 +667,11 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
                 self.assertIn("versioned", declaration["blockedReason"])
                 self.assertNotIn("approvalSource", declaration)
                 self.assertNotIn("languageMappings", declaration)
+
+    def test_public_header_does_not_advertise_unused_extension_limits_abi_type(self) -> None:
+        public_header = generate.render_c_header(self.checked_in_manifest)
+
+        self.assertNotIn("kmipkit_extension_registry_limits_t", public_header)
 
     def test_checked_in_manifest_inventories_all_rust_public_access_paths(self) -> None:
         rust_packages = EXPECTED_PACKAGES - {"c-kmipkit", "java-kmipkit", "python-kmipkit"}
