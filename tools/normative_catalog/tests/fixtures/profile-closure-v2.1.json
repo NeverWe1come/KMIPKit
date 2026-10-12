@@ -39,6 +39,13 @@
         "included_source_id": "KMIPKIT-SRC-profiles",
         "included_section": "5.18.1",
         "source_locator": "Profiles v2.1 section 5.18.3 item 2"
+      },
+      {
+        "inclusion_id": "KMIPKIT-INCLUSION-PROF-TAPE-LIBRARY-TEST-CASES",
+        "source_clause_id": "KMIPKIT-CLAUSE-PROF-6.28-007",
+        "included_source_id": "KMIPKIT-SRC-profiles",
+        "included_section": "5.12.6",
+        "source_locator": "Profiles v2.1 §6.28 item 7"
       }
     ],
     "normative_boundaries": [
@@ -46939,6 +46946,7 @@
         "5.12.2",
         "5.12.3",
         "5.12.4",
+        "5.12.6",
         "6.1",
         "6.28"
       ],
@@ -46973,8 +46981,9 @@
         "KMIPKIT-CLAUSE-PROF-6.28-007"
       ],
       "normative_inclusion_ids": [
+        "KMIPKIT-INCLUSION-PROF-BASELINE-BASIC-AUTH",
         "KMIPKIT-INCLUSION-PROF-BASELINE-SPEC",
-        "KMIPKIT-INCLUSION-PROF-BASELINE-BASIC-AUTH"
+        "KMIPKIT-INCLUSION-PROF-TAPE-LIBRARY-TEST-CASES"
       ],
       "source_clause_ids": [
         "KMIPKIT-CLAUSE-PROF-3.1-001",
@@ -47011,6 +47020,15 @@
         "KMIPKIT-CLAUSE-PROF-5.12.4-007",
         "KMIPKIT-CLAUSE-PROF-5.12.4-008",
         "KMIPKIT-CLAUSE-PROF-5.12.4-009",
+        "KMIPKIT-CLAUSE-PROF-5.12.6.1-001",
+        "KMIPKIT-CLAUSE-PROF-5.12.6.2-001",
+        "KMIPKIT-CLAUSE-PROF-5.12.6.2-002",
+        "KMIPKIT-CLAUSE-PROF-5.12.6.2-003",
+        "KMIPKIT-CLAUSE-PROF-5.12.6.2-004",
+        "KMIPKIT-CLAUSE-PROF-5.12.6.3-001",
+        "KMIPKIT-CLAUSE-PROF-5.12.6.3-002",
+        "KMIPKIT-CLAUSE-PROF-5.12.6.3-003",
+        "KMIPKIT-CLAUSE-PROF-5.12.6.3-004",
         "KMIPKIT-CLAUSE-PROF-6.1-001",
         "KMIPKIT-CLAUSE-PROF-6.1-002",
         "KMIPKIT-CLAUSE-PROF-6.1-003",
@@ -47901,6 +47919,13 @@
         "KMIPKIT-CLAUSE-SPEC-9.9-002"
       ],
       "requirement_ids_audited_subset": [
+        "KMIPKIT-REQ-PROF-5.12.6.1-001",
+        "KMIPKIT-REQ-PROF-5.12.6.2-002",
+        "KMIPKIT-REQ-PROF-5.12.6.2-003",
+        "KMIPKIT-REQ-PROF-5.12.6.2-004",
+        "KMIPKIT-REQ-PROF-5.12.6.3-001",
+        "KMIPKIT-REQ-PROF-5.12.6.3-002",
+        "KMIPKIT-REQ-PROF-5.12.6.3-003",
         "KMIPKIT-REQ-SPEC-12-001-001",
         "KMIPKIT-REQ-SPEC-14.1-001",
         "KMIPKIT-REQ-SPEC-14.1-002",
@@ -48285,6 +48310,96 @@
           "source_excerpt": "The identifier in Alternative Name SHALL be used by the server administrator for finding keys associated with specific tape media.",
           "expected_disposition": "server_only_not_client_root",
           "reason": "This `SHALL` assigns use to the server administrator; the lowercase `may` example is informative."
+        },
+        {
+          "source_clause_id": "KMIPKIT-CLAUSE-PROF-5.12.6.1-001",
+          "source_section": "5.12.6.1",
+          "source_locator": {
+            "ordinal": 1,
+            "block_kind": "paragraph"
+          },
+          "expected_disposition": "included_not_direct",
+          "reason": "Profiles v2.1 §6.28 item 7 normatively incorporates §5.12.6; this source clause enters the Tape Library profile closure through that section inclusion, not as a direct profile root."
+        },
+        {
+          "source_clause_id": "KMIPKIT-CLAUSE-PROF-5.12.6.2-001",
+          "source_section": "5.12.6.2",
+          "source_locator": {
+            "ordinal": 1,
+            "block_kind": "paragraph"
+          },
+          "expected_disposition": "included_not_direct",
+          "reason": "Profiles v2.1 §6.28 item 7 normatively incorporates §5.12.6; this source clause enters the Tape Library profile closure through that section inclusion, not as a direct profile root."
+        },
+        {
+          "source_clause_id": "KMIPKIT-CLAUSE-PROF-5.12.6.2-002",
+          "source_section": "5.12.6.2",
+          "source_locator": {
+            "ordinal": 2,
+            "block_kind": "paragraph"
+          },
+          "expected_disposition": "included_not_direct",
+          "reason": "Profiles v2.1 §6.28 item 7 normatively incorporates §5.12.6; this source clause enters the Tape Library profile closure through that section inclusion, not as a direct profile root."
+        },
+        {
+          "source_clause_id": "KMIPKIT-CLAUSE-PROF-5.12.6.2-003",
+          "source_section": "5.12.6.2",
+          "source_locator": {
+            "ordinal": 3,
+            "block_kind": "paragraph"
+          },
+          "expected_disposition": "included_not_direct",
+          "reason": "Profiles v2.1 §6.28 item 7 normatively incorporates §5.12.6; this source clause enters the Tape Library profile closure through that section inclusion, not as a direct profile root."
+        },
+        {
+          "source_clause_id": "KMIPKIT-CLAUSE-PROF-5.12.6.2-004",
+          "source_section": "5.12.6.2",
+          "source_locator": {
+            "ordinal": 4,
+            "block_kind": "paragraph"
+          },
+          "expected_disposition": "included_not_direct",
+          "reason": "Profiles v2.1 §6.28 item 7 normatively incorporates §5.12.6; this source clause enters the Tape Library profile closure through that section inclusion, not as a direct profile root."
+        },
+        {
+          "source_clause_id": "KMIPKIT-CLAUSE-PROF-5.12.6.3-001",
+          "source_section": "5.12.6.3",
+          "source_locator": {
+            "ordinal": 1,
+            "block_kind": "paragraph"
+          },
+          "expected_disposition": "included_not_direct",
+          "reason": "Profiles v2.1 §6.28 item 7 normatively incorporates §5.12.6; this source clause enters the Tape Library profile closure through that section inclusion, not as a direct profile root."
+        },
+        {
+          "source_clause_id": "KMIPKIT-CLAUSE-PROF-5.12.6.3-002",
+          "source_section": "5.12.6.3",
+          "source_locator": {
+            "ordinal": 2,
+            "block_kind": "paragraph"
+          },
+          "expected_disposition": "included_not_direct",
+          "reason": "Profiles v2.1 §6.28 item 7 normatively incorporates §5.12.6; this source clause enters the Tape Library profile closure through that section inclusion, not as a direct profile root."
+        },
+        {
+          "source_clause_id": "KMIPKIT-CLAUSE-PROF-5.12.6.3-003",
+          "source_section": "5.12.6.3",
+          "source_locator": {
+            "ordinal": 3,
+            "block_kind": "paragraph"
+          },
+          "expected_disposition": "included_not_direct",
+          "reason": "Profiles v2.1 §6.28 item 7 normatively incorporates §5.12.6; this source clause enters the Tape Library profile closure through that section inclusion, not as a direct profile root."
+        },
+        {
+          "source_clause_id": "KMIPKIT-CLAUSE-PROF-5.12.6.3-004",
+          "source_section": "5.12.6.3",
+          "source_locator": {
+            "ordinal": 4,
+            "block_kind": "paragraph"
+          },
+          "expected_disposition": "included_not_direct",
+          "reason": "Profiles v2.1 §6.28 item 7 normatively incorporates §5.12.6; this source clause enters the Tape Library profile closure through that section inclusion, not as a direct profile root."
         }
       ]
     },

@@ -27984,6 +27984,12 @@
       "source_clause_id": "KMIPKIT-CLAUSE-PROF-5.18.3-002",
       "included_source_id": "KMIPKIT-SRC-profiles",
       "included_section": "5.18.1"
+    },
+    {
+      "inclusion_id": "KMIPKIT-INCLUSION-PROF-TAPE-LIBRARY-TEST-CASES",
+      "source_clause_id": "KMIPKIT-CLAUSE-PROF-6.28-007",
+      "included_source_id": "KMIPKIT-SRC-profiles",
+      "included_section": "5.12.6"
     }
   ],
   "elements": [
@@ -80854,7 +80860,9 @@
       "condition": "Only for section 5.12.6.1 test exchange; preserve actor/direction ambiguity.",
       "scope_state": "profile_conditional",
       "element_ids": [],
-      "profile_ids": [],
+      "profile_ids": [
+        "KMIPKIT-PROFILE-TAPE-LIBRARY-CLIENT"
+      ],
       "test_case_ids": [],
       "feature_spec": null,
       "implementation_refs": [],
@@ -123652,6 +123660,7 @@
         "KMIPKIT-CLAUSE-PROF-5.12.4-007",
         "KMIPKIT-CLAUSE-PROF-5.12.4-008",
         "KMIPKIT-CLAUSE-PROF-5.12.4-009",
+        "KMIPKIT-CLAUSE-PROF-5.12.6.1-001",
         "KMIPKIT-CLAUSE-PROF-5.12.6.2-001",
         "KMIPKIT-CLAUSE-PROF-5.12.6.2-002",
         "KMIPKIT-CLAUSE-PROF-5.12.6.2-003",
@@ -124576,6 +124585,7 @@
         "KMIPKIT-REQ-PROF-5.12.4-007",
         "KMIPKIT-REQ-PROF-5.12.4-008",
         "KMIPKIT-REQ-PROF-5.12.4-009",
+        "KMIPKIT-REQ-PROF-5.12.6.1-001",
         "KMIPKIT-REQ-PROF-5.12.6.2-002",
         "KMIPKIT-REQ-PROF-5.12.6.2-003",
         "KMIPKIT-REQ-PROF-5.12.6.2-004",
@@ -124888,12 +124898,6 @@
         "KMIPKIT-CLAUSE-PROF-5.12.4-007",
         "KMIPKIT-CLAUSE-PROF-5.12.4-008",
         "KMIPKIT-CLAUSE-PROF-5.12.4-009",
-        "KMIPKIT-CLAUSE-PROF-5.12.6.2-002",
-        "KMIPKIT-CLAUSE-PROF-5.12.6.2-003",
-        "KMIPKIT-CLAUSE-PROF-5.12.6.2-004",
-        "KMIPKIT-CLAUSE-PROF-5.12.6.3-001",
-        "KMIPKIT-CLAUSE-PROF-5.12.6.3-002",
-        "KMIPKIT-CLAUSE-PROF-5.12.6.3-003",
         "KMIPKIT-CLAUSE-PROF-6.1-001",
         "KMIPKIT-CLAUSE-PROF-6.1-002",
         "KMIPKIT-CLAUSE-PROF-6.1-003",

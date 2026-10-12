@@ -14378,6 +14378,14 @@ class CatalogValidationTests(unittest.TestCase):
             (ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8")
         )
         profile_id = "KMIPKIT-PROFILE-TAPE-LIBRARY-CLIENT"
+        test_case_clause_ids = {
+            "KMIPKIT-CLAUSE-PROF-5.12.6.2-002",
+            "KMIPKIT-CLAUSE-PROF-5.12.6.2-003",
+            "KMIPKIT-CLAUSE-PROF-5.12.6.2-004",
+            "KMIPKIT-CLAUSE-PROF-5.12.6.3-001",
+            "KMIPKIT-CLAUSE-PROF-5.12.6.3-002",
+            "KMIPKIT-CLAUSE-PROF-5.12.6.3-003",
+        }
         requirement_clauses = {
             "KMIPKIT-REQ-PROF-5.12.2-002": "KMIPKIT-CLAUSE-PROF-5.12.2-002",
             "KMIPKIT-REQ-PROF-5.12.2-003": "KMIPKIT-CLAUSE-PROF-5.12.2-003",
@@ -14401,7 +14409,11 @@ class CatalogValidationTests(unittest.TestCase):
                 self.assertEqual(requirement["scope_state"], "profile_conditional")
                 self.assertEqual(requirement["profile_ids"], [profile_id])
                 self.assertIn(requirement_id, profile["requirement_ids"])
-                self.assertIn(source_clause_id, profile["direct_source_clause_ids"])
+                if source_clause_id in test_case_clause_ids:
+                    # §6.28 item 7 incorporates these through §5.12.6.
+                    self.assertNotIn(source_clause_id, profile["direct_source_clause_ids"])
+                else:
+                    self.assertIn(source_clause_id, profile["direct_source_clause_ids"])
                 self.assertIn(source_clause_id, profile["source_clause_ids"])
                 mappings = crosswalk_by_requirement.get(requirement_id, [])
                 self.assertEqual(len(mappings), 1)
