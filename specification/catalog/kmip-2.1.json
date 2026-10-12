@@ -88668,12 +88668,16 @@
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/locate.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/locate_tests.rs::locate_encodes_key_value_present_boolean_as_a_search_criterion"
+      ],
       "negative_verification_required": false,
       "decision_id": null,
-      "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
+      "status": "verified",
+      "review_note": "Spec v2.1 §4.28 permits Key Value Present as a Locate criterion. The linked test asserts the Boolean attribute is encoded as a direct Locate criterion; it makes no Register or matching-result claim. No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-4.28-002",
@@ -88938,12 +88942,16 @@
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/create.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/create_tests.rs::create_preserves_two_repeated_object_group_text_values_in_order"
+      ],
       "negative_verification_required": false,
       "decision_id": null,
-      "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
+      "status": "verified",
+      "review_note": "Spec v2.1 §4.35 and Table 99 define Object Group as Text String and permit a Managed Object to belong to a group. The linked Create test asserts the direct Object Group tag, Text String type, value, and count in the request payload; it makes no server-persistence claim. No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-4.35-001-002",
@@ -88968,12 +88976,16 @@
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/create.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/create_tests.rs::create_preserves_two_repeated_object_group_text_values_in_order"
+      ],
       "negative_verification_required": false,
       "decision_id": null,
-      "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
+      "status": "verified",
+      "review_note": "Spec v2.1 §4.35 permits an object to belong to more than one group. The linked Create test asserts two direct Object Group Text String values, their count, and their order in the request payload; it makes no server-persistence claim. No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-4.35-001-003",
@@ -98075,12 +98087,16 @@
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/get.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/get_tests.rs::get_preserves_repeated_attribute_names_in_valid_wrapping_specification"
+      ],
       "negative_verification_required": false,
       "decision_id": null,
-      "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
+      "status": "verified",
+      "review_note": "Spec v2.1 §7.18 Table 370 permits repeated Attribute Name Text Strings in a Key Wrapping Specification. The linked Get test asserts two direct Attribute Name values in order inside a structurally valid specification; it makes no server-wrapping or returned-value claim. No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-7.26-001",
