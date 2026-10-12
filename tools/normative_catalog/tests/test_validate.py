@@ -16023,6 +16023,18 @@ class CatalogValidationTests(unittest.TestCase):
                 gaps.append(f"{requirement_id}: catalog scope does not retain reviewed client capability")
             if not requirement["implementation_refs"]:
                 gaps.append(f"{requirement_id}: no usable implementation mapping")
+            resolvable_implementation_refs = []
+            if requirement["status"] == "scoped_verified":
+                repository_root = ROOT.resolve()
+                for reference in requirement["implementation_refs"]:
+                    implementation_path = ROOT / reference.partition("::")[0]
+                    try:
+                        resolved_implementation_path = implementation_path.resolve(strict=True)
+                        resolved_implementation_path.relative_to(repository_root)
+                    except (OSError, ValueError):
+                        continue
+                    if resolved_implementation_path.is_file():
+                        resolvable_implementation_refs.append(reference)
             usable_positive_tests = []
             for reference in requirement["verification_refs"]:
                 path, separator, test_name = reference.partition("::")
@@ -16039,14 +16051,14 @@ class CatalogValidationTests(unittest.TestCase):
                 and requirement["role"] == "client"
                 and requirement["direction"] == "client_to_server"
                 and requirement["scope_state"] == "client_1_0"
-                and bool(requirement["implementation_refs"])
+                and bool(resolvable_implementation_refs)
                 and bool(usable_positive_tests)
             )
             if (
                 requirement["status"] != "verified"
                 and not scoped_client_request_evidence
             ) or not usable_positive_tests:
-                gaps.append(f"{requirement_id}: no eligible, resolvable positive capability test")
+                gaps.append(f"{requirement_id}: no eligible implementation and positive-test evidence")
 
         self.assertEqual(
             gaps,
