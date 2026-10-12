@@ -411,6 +411,14 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
                 function = functions[symbol]
                 self.assertIn("KMIPKIT-0043-FR-007", function["requirementIds"])
 
+        capability_function = functions["kmipkit_capability_is_available"]
+        capability_span = next(
+            parameter
+            for parameter in capability_function["c"]["parameters"]
+            if parameter["name"] == "capability_id_data"
+        )
+        self.assertEqual(capability_span["maxBytes"], 128)
+
         declarations = {
             declaration.get("languageMappings", {}).get("c", {}).get("name"):
             declaration
@@ -429,6 +437,15 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
         self.assertEqual(
             rust_lookup["languageMappings"]["rust"]["name"],
             "kmipkit::capability_is_available",
+        )
+        rust_limit_error = next(
+            item for item in self.checked_in_manifest["publicDeclarations"]
+            if item["exportName"] == "kmipkit::RuntimeMetadataError::ResourceLimit"
+        )
+        self.assertEqual(rust_limit_error["declarationState"], "declared")
+        self.assertEqual(
+            rust_limit_error["languageMappings"]["rust"]["name"],
+            "kmipkit::RuntimeMetadataError::ResourceLimit",
         )
 
         runtime_version = next(
