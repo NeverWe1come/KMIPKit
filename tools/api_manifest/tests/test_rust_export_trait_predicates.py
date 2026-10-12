@@ -274,6 +274,25 @@ class RustExportTraitPredicateTests(unittest.TestCase):
             None,
         )
 
+    def test_blanket_into_with_free_target_is_conditional_not_verified(self):
+        report = AUDIT.inventory(self.fixture())
+        declarations = {entry["exportName"] for entry in report["declarations"]}
+        conditional = report.get("conditionalDeclarations", [])
+        conditional_names = {entry["exportName"] for entry in conditional}
+        verified_paths = {
+            name for name in declarations
+            if " as core::convert::Into<U>>::" in name
+            and ("CloneDebug" in name or "CloneDebugAlias" in name)
+        }
+        self.assertFalse(verified_paths, "a free target type parameter must not be advertised as verified")
+        matching = [name for name in conditional_names if " as core::convert::Into<U>>::" in name]
+        self.assertTrue(matching, "rustdoc's exact Into<U> predicate should be recorded as conditional")
+        self.assertTrue(any(
+            issue.get("reason") == "unresolved-rustdoc-implementation-predicate"
+            and issue.get("implementationId")
+            for issue in report["issues"]
+        ), "unrelated predicates without proof must remain unresolved")
+
     def test_recursive_trait_proof_fails_closed_with_exact_impl_issue(self):
         documents = self.fixture()
         document = documents[CRATE]

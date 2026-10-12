@@ -48,7 +48,10 @@ def project(raw_path: Path, output_path: Path) -> None:
         return names
 
     source_trait_names = source_traits(root_items)
-    external_traits = {"Clone", "Copy", "Debug", "Display", "CloneToUninit", "ToOwned", "ToString"}
+    external_traits = {
+        "Clone", "Copy", "Debug", "Display", "CloneToUninit", "ToOwned", "ToString",
+        "Into", "TryInto", "TryFrom",
+    }
     predicate_traits = {
         "RequiresClone", "RequiresDebug", "RequiresDisplay", "Printable", "RecursiveBound"
     }
