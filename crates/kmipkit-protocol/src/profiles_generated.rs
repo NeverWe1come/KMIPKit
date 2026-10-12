@@ -99,18 +99,6 @@ pub struct GeneratedClientProfile {
 /// Client requirements in the approved product scope, sorted by stable identifier.
 pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
-        requirement_id: "KMIPKIT-REQ-PROF-3-004",
-        source_keyword: Some("SHALL"),
-        source_force: None,
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::RequiredBehavior,
-        scope_state: "profile_conditional",
-        source_clause_ids: &["KMIPKIT-CLAUSE-PROF-3-004"],
-        profile_ids: &[],
-        official_test_case_ids: &[],
-        has_accepted_deviation: false,
-    },
-    GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-PROF-3-006",
         source_keyword: Some("MAY"),
         source_force: None,
