@@ -76,9 +76,9 @@
     "requirement_crosswalk_records": 466,
     "requirement_crosswalk_complete": false,
     "source_requirement_review_records": 889,
-    "source_only_requirement_gaps": 123,
-    "source_only_requirement_gap_proposals": 70,
-    "source_table_contracts": 47
+    "source_only_requirement_gaps": 122,
+    "source_only_requirement_gap_proposals": 69,
+    "source_table_contracts": 48
   },
   "source_clause_crosswalk": [
     {
@@ -70237,13 +70237,13 @@
       "rejected_candidate_mappings": [],
       "expected_client_requirement_ids": [],
       "applies_to": "all_client_profiles",
-      "review_note": "This locator is the Query request payload table header. REQUIRED is only a column heading. The Object Groups body row is recorded as optional client input with a source-only proposal.",
+      "review_note": "This locator is the Query request payload table header. REQUIRED is only a column heading. The Object Groups body row is recorded as an optional feature contract through KMIPKIT-0020; it creates no per-cell standalone requirement.",
       "source_request_rows": [
         {
           "row_label": "Object Groups",
           "required": "No",
           "actor": "client",
-          "disposition": "optional_request_field_with_source_only_proposal",
+          "disposition": "optional_request_table_contract",
           "html_line_range": [
             32043,
             32062
@@ -84137,40 +84137,6 @@
       "review_note": "Source-only proposal for the Required=Yes Asynchronous Correlation Value Process request row. The stable ID is not present in the catalog and must not be added as a requirement crosswalk until catalog review."
     },
     {
-      "gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.40-OBJECT-GROUPS-OPTIONAL",
-      "source_id": "KMIPKIT-SRC-spec",
-      "source_path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
-      "source_section": "6.1.40",
-      "source_clause_id": null,
-      "source_locator": {
-        "kind": "table_body_row",
-        "section": "6.1.40",
-        "row_label": "Object Groups",
-        "table": "request_payload",
-        "html_line_range": [
-          32043,
-          32062
-        ]
-      },
-      "source_locator_description": "§6.1.40 Query request payload body row for Object Groups (HTML lines 32043-32062)",
-      "html_line_range": [
-        32043,
-        32062
-      ],
-      "source_excerpt": "Object Groups No Specified the list of Object Group(s) for which the Query is being performed",
-      "source_keywords": [],
-      "source_force": "optional_table_body_value",
-      "audited_statement": "The Query request payload marks Object Groups Required=No and describes the object groups for which the Query is performed.",
-      "actor": "client",
-      "direction": "optional Object Groups request payload value",
-      "condition": "A client elects to restrict the Query to specified Object Group values.",
-      "scope_disposition": "client_1_0",
-      "candidate_requirement_id": null,
-      "proposed_requirement_id": "KMIPKIT-REQ-SPEC-6.1.40-017",
-      "status": "stable_label_proposed_not_in_catalog",
-      "review_note": "Source-only proposal for the Optional Object Groups request row. The row has no formal keyword and no active catalog requirement or source clause; do not create a requirement crosswalk."
-    },
-    {
       "gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.41-ASYNC-CORRELATION-VALUES-OPTIONAL",
       "source_id": "KMIPKIT-SRC-spec",
       "source_path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
@@ -86929,6 +86895,58 @@
       "evidence_disposition": {
         "status": "mapped_to_feature_contract",
         "statement": "The optional Register field is emitted by the typed request and verified through KMIPKIT-ELEM-OP-C2S-REGISTER and KMIPKIT-0036 FR-001; Required=No does not create a standalone REQ identifier or normative MUST/SHALL requirement."
+      }
+    },
+    {
+      "gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.40-OBJECT-GROUPS-OPTIONAL",
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+      "source_section": "6.1.40",
+      "source_clause_id": null,
+      "source_locator": {
+        "kind": "table_body_row",
+        "section": "6.1.40",
+        "row_label": "Object Groups",
+        "table": "request_payload",
+        "html_line_range": [
+          32043,
+          32062
+        ]
+      },
+      "source_locator_description": "§6.1.40 Query request payload body row for Object Groups (HTML lines 32043-32062)",
+      "html_line_range": [
+        32043,
+        32062
+      ],
+      "source_excerpt": "Object Groups No Specified the list of Object Group(s) for which the Query is being performed",
+      "source_keywords": [],
+      "source_force": "optional_table_body_value",
+      "audited_statement": "The Query request payload marks Object Groups Required=No and describes the object groups for which the Query is performed.",
+      "actor": "client",
+      "direction": "optional Object Groups request payload value",
+      "condition": "A client elects to restrict the Query to specified Object Group values.",
+      "scope_disposition": "client_1_0",
+      "status": "mapped_to_approved_feature_contract",
+      "review_note": "Optional Table 282 field mapped through KMIPKIT-ELEM-OP-C2S-QUERY and KMIPKIT-0020 FR-001/FR-004; this row does not create a standalone REQ record.",
+      "contract_kind": "operation_request_table_field",
+      "table_number": 282,
+      "requiredness": "No",
+      "operation_element_id": "KMIPKIT-ELEM-OP-C2S-QUERY",
+      "functional_requirement_ids": [
+        "FR-001",
+        "FR-004"
+      ],
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/query.rs::QueryRequest::to_ttlv_payload"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/query_operation_tests.rs::query_request_preserves_required_repeated_functions_and_object_group_order",
+        "crates/kmipkit-protocol/tests/unit/query_operation_tests.rs::query_request_distinguishes_absent_and_present_empty_object_groups",
+        "crates/kmipkit-client/tests/unit/query_execution_tests.rs::query_sends_one_request_with_repeated_functions_and_ordered_object_groups"
+      ],
+      "evidence_disposition": {
+        "status": "mapped_to_feature_contract",
+        "statement": "Implementation and executable tests are linked through KMIPKIT-ELEM-OP-C2S-QUERY and KMIPKIT-0020 FR-001/FR-004; this optional table cell does not create a standalone normative requirement ID."
       }
     }
   ]
