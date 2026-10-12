@@ -8505,6 +8505,87 @@ class CatalogValidationTests(unittest.TestCase):
                          if row["element_id"] == "KMIPKIT-ELEM-OP-C2S-SIGNATURE-VERIFY")
         self.assertEqual(set(operation["test_case_ids"]), {"KMIPKIT-TEST-CN01-2-37", "KMIPKIT-TEST-CN01-2-107"})
 
+    def test_recertify_table_300_optional_rows_have_typed_contracts(self) -> None:
+        """Table 300 optional request fields map to the approved typed operation without REQ IDs."""
+        oracle = json.loads(
+            (ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json").read_text(encoding="utf-8")
+        )
+        protocol_test_ref = "crates/kmipkit-protocol/tests/unit/recertify_operation_tests.rs::request_emits_table_300_fields_once_in_order_and_preserves_values"
+        client_test_ref = "crates/kmipkit-client/tests/unit/recertify_execution_tests.rs::recertify_sends_one_table_300_request_and_exposes_table_301_identifier"
+        expected = {
+            "KMIPKIT-SOURCE-GAP-SPEC-6.1.45-CERTIFICATE-REQUEST-UNIQUE-IDENTIFIER-OPTIONAL": (
+                "Certificate Request Unique Identifier", [33645, 33662],
+            ),
+            "KMIPKIT-SOURCE-GAP-SPEC-6.1.45-CERTIFICATE-REQUEST-VALUE-OPTIONAL": (
+                "Certificate Request Value", [33682, 33699],
+            ),
+            "KMIPKIT-SOURCE-GAP-SPEC-6.1.45-ATTRIBUTES-OPTIONAL": (
+                "Attributes", [33720, 33739],
+            ),
+            "KMIPKIT-SOURCE-GAP-SPEC-6.1.45-PROTECTION-STORAGE-MASKS-OPTIONAL": (
+                "Protection Storage Masks", [33740, 33758],
+            ),
+        }
+        contracts = {
+            contract.get("gap_id"): contract
+            for contract in oracle.get("source_table_contracts", [])
+            if contract.get("source_section") == "6.1.45" and contract.get("table_number") == 300
+        }
+
+        self.assertEqual(set(contracts), set(expected))
+        self.assertEqual(len(oracle["source_table_contracts"]), 44)
+        self.assertEqual(oracle["counts"]["source_table_contracts"], 44)
+        self.assertEqual(oracle["counts"]["source_only_requirement_gaps"], 126)
+        self.assertEqual(oracle["counts"]["source_only_requirement_gap_proposals"], 73)
+        source_gap_ids = {gap["gap_id"] for gap in oracle["source_only_requirement_gaps"]}
+        self.assertTrue(set(expected).isdisjoint(source_gap_ids))
+        self.assertIn(
+            "KMIPKIT-SOURCE-GAP-SPEC-6.1.45-CERTIFICATE-REQUEST-UID-ONLY",
+            source_gap_ids,
+            "the separate normative Unique Identifier-only clause remains a source gap",
+        )
+        self.assertTrue(
+            all(
+                not {"candidate_requirement_id", "proposed_requirement_id", "requirement_id"}.intersection(contract)
+                for contract in contracts.values()
+            ),
+            "optional table cells must not become per-cell normative requirement identifiers",
+        )
+
+        operation_id = "KMIPKIT-ELEM-OP-C2S-RE-CERTIFY"
+        implementation_ref = "crates/kmipkit-protocol/src/recertify.rs::RecertifyRequest::into_ttlv_payload"
+        for gap_id, (row_label, line_range) in expected.items():
+            contract = contracts[gap_id]
+            with self.subTest(source_table_contract=gap_id):
+                self.assertEqual(contract["source_id"], "KMIPKIT-SRC-spec")
+                self.assertEqual(contract["source_path"], "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html")
+                self.assertEqual(contract["source_locator"], {
+                    "kind": "table_body_row",
+                    "section": "6.1.45",
+                    "row_label": row_label,
+                    "table": "request_payload",
+                    "html_line_range": line_range,
+                })
+                self.assertEqual(contract["html_line_range"], line_range)
+                self.assertEqual(contract["source_excerpt"], pinned_source_excerpt(contract["source_path"], line_range))
+                self.assertEqual(contract["table_number"], 300)
+                self.assertEqual(contract["requiredness"], "No")
+                self.assertEqual(contract["source_force"], "optional_table_body_value")
+                self.assertEqual(contract["contract_kind"], "operation_request_table_field")
+                self.assertEqual(contract["actor"], "client")
+                self.assertEqual(contract["direction"], "client→server Re-certify request")
+                self.assertEqual(contract["scope_disposition"], "client_1_0")
+                self.assertEqual(contract["operation_element_id"], operation_id)
+                self.assertEqual(contract["functional_requirement_ids"], ["FR-001"])
+                self.assertEqual(contract["implementation_refs"], [implementation_ref])
+                self.assertEqual(contract["verification_refs"], [protocol_test_ref, client_test_ref])
+                self.assertTrue(contract["condition"])
+                self.assertEqual(contract["status"], "mapped_to_approved_feature_contract")
+                self.assertEqual(contract["evidence_disposition"]["status"], "mapped_to_feature_contract")
+                self.assertIn("does not create a standalone REQ record", contract["evidence_disposition"]["statement"])
+
+        self.assertEqual(validate_source_table_contracts(oracle, ROOT), [])
+
     def test_spec_6_1_45_recertify_reviews_client_inputs_and_server_effects(self) -> None:
         """Specification v2.1 §§6.1.45 and 6.1.45.1 preserve Re-certify source roles."""
         fixture_path = ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json"
