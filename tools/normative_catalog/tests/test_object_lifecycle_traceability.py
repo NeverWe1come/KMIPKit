@@ -95,12 +95,14 @@ class ObjectLifecycleTraceabilityTests(unittest.TestCase):
                     row[0],
                 )
             for path in (*requirement["implementation_refs"], *requirement["verification_refs"]):
-                self.assertTrue((ROOT / path).is_file(), f"{row[0]}: {path}")
+                reference_path = path.partition("::")[0]
+                self.assertTrue((ROOT / reference_path).is_file(), f"{row[0]}: {path}")
 
         for element in operation_elements:
             self.assertTrue(element["requirement_ids"])
             for path in (*element["implementation_refs"], *element["verification_refs"]):
-                self.assertTrue((ROOT / path).is_file(), f"{element['element_id']}: {path}")
+                reference_path = path.partition("::")[0]
+                self.assertTrue((ROOT / reference_path).is_file(), f"{element['element_id']}: {path}")
 
     def test_source_rejected_candidates_are_not_assigned_to_client_operations(self) -> None:
         catalog = json.loads(CATALOG_PATH.read_text(encoding="utf-8"))

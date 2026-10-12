@@ -14256,11 +14256,22 @@ class CatalogValidationTests(unittest.TestCase):
 
             for gap in oracle.get("source_only_requirement_gaps", []):
                 reused_id = gap.get("reused_requirement_id")
+                review_locator = review.get("source_locator") or {}
+                gap_locator = gap.get("source_locator") or {}
+                reviewed_login_logout_request_row = (
+                    source_id == "KMIPKIT-SRC-spec"
+                    and review["source_section"] in {"6.1.30", "6.1.31"}
+                    and review_locator.get("ordinal") == 1
+                    and gap_locator.get("table") == "request_payload"
+                )
                 if (
                     reused_id is None
                     or gap["source_id"] != source_id
                     or gap["source_section"] != review["source_section"]
-                    or gap["html_line_range"] != review["html_line_range"]
+                    or (
+                        gap["html_line_range"] != review["html_line_range"]
+                        and not reviewed_login_logout_request_row
+                    )
                 ):
                     continue
                 candidate = candidate_requirements.get(reused_id)
@@ -14281,6 +14292,11 @@ class CatalogValidationTests(unittest.TestCase):
                         violations.append(f"{gap['gap_id']} reuses a label outside client scope")
                     if " ".join(gap["source_excerpt"].split()) != " ".join(pinned_source_excerpt(gap["source_path"], gap["html_line_range"]).split()):
                         violations.append(f"{gap['gap_id']} does not identify the exact pinned table row")
+                    if reused_id not in review["expected_client_requirement_ids"]:
+                        violations.append(
+                            f"{gap['gap_id']} reuse {reused_id} is absent from reviewed expected client membership"
+                        )
+                    reviewed_client_ids.add(reused_id)
                     continue
                 if review["source_clause_id"] not in candidate["source_clause_ids"]:
                     violations.append(
