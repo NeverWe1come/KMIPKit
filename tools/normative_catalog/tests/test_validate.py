@@ -13258,6 +13258,7 @@ class CatalogValidationTests(unittest.TestCase):
         }
         requirements = {row["requirement_id"]: row for row in catalog["requirements"]}
         profile = next(row for row in catalog["profiles"] if row["profile_id"] == profile_id)
+        reviews = {row["source_clause_id"]: row for row in oracle["source_requirement_reviews"]}
         for requirement_id, source_clause_id in requirement_clauses.items():
             with self.subTest(requirement_id=requirement_id):
                 requirement = requirements[requirement_id]
@@ -13274,7 +13275,7 @@ class CatalogValidationTests(unittest.TestCase):
                 self.assertEqual(mappings[0]["role"], "client")
                 self.assertEqual(mappings[0]["scope_state"], "profile_conditional")
                 self.assertEqual(mappings[0]["applies_to"], profile_id)
-                review = next(row for row in oracle["source_requirement_reviews"] if row["source_clause_id"] == requirement["source_clause_ids"][0])
+                review = reviews[requirement["source_clause_ids"][0]]
                 self.assertEqual(review["expected_client_requirement_ids"], [requirement_id])
                 atom = next(row for row in review["source_obligations"] if row["candidate_requirement_id"] == requirement_id)
                 self.assertEqual(atom["actor"], "client")
