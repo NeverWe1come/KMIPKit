@@ -16184,6 +16184,48 @@ class CatalogValidationTests(unittest.TestCase):
                     test_source="fn request_capability_is_available() { assert!(true); }\n",
                 )
 
+        with self.subTest("test-shaped declaration inside a block comment is not discoverable"):
+            with self.assertRaises(AssertionError):
+                run_gate(
+                    requirement(),
+                    test_source=(
+                        "/*\n#[test]\nfn request_capability_is_available() {\n"
+                        "    assert!(true);\n}\n*/\n"
+                    ),
+                )
+
+        with self.subTest("test-shaped declaration inside a raw string is not discoverable"):
+            with self.assertRaises(AssertionError):
+                run_gate(
+                    requirement(),
+                    test_source=(
+                        'const DECOY: &str = r###"\n#[test]\n'
+                        "fn request_capability_is_available() { assert!(true); }\n"
+                        '"###;\n'
+                    ),
+                )
+
+        with self.subTest("test disabled by cfg(any()) is not discoverable"):
+            with self.assertRaises(AssertionError):
+                run_gate(
+                    requirement(),
+                    test_source=(
+                        "#[cfg(any())]\n#[test]\n"
+                        "fn request_capability_is_available() { assert!(true); }\n"
+                    ),
+                )
+
+        with self.subTest("real test remains discoverable after nested comments and raw strings"):
+            run_gate(
+                requirement(),
+                test_source=(
+                    'const DECOY: &str = r###"\n#[test]\n'
+                    "fn not_a_test() { assert!(true); }\n"
+                    '"###;\n/* outer /* nested */ comment */\n'
+                    "#[test]\nfn request_capability_is_available() { assert!(true); }\n"
+                ),
+            )
+
         for label, reference, source in (
             (
                 "tokio async Rust test discovery",
