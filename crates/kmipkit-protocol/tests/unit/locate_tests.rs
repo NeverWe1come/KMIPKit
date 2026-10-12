@@ -309,11 +309,8 @@ fn request_emits_supplied_optional_fields_in_table_247_order() {
 fn locate_encodes_key_value_present_boolean_as_a_search_criterion() {
     // OASIS KMIP v2.1 §4.28 permits Key Value Present in Locate; §6.1.28,
     // Table 247, carries the criterion inside the request Attributes Structure.
-    let criteria = AttributeSet::try_new([item(
-        KEY_VALUE_PRESENT_TAG,
-        Value::boolean(true),
-    )])
-    .expect("Key Value Present is a Boolean Locate criterion");
+    let criteria = AttributeSet::try_new([item(KEY_VALUE_PRESENT_TAG, Value::boolean(true))])
+        .expect("Key Value Present is a Boolean Locate criterion");
     let payload = payload(LocateRequest::new(criteria));
     let view = payload.view();
     let fields = view.children();

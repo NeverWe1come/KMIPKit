@@ -268,7 +268,10 @@ fn create_preserves_two_repeated_object_group_text_values_in_order() {
     // §6.1.8, Table 186, carries the attributes in a Create request.
     let attributes = AttributeSet::try_new([
         item(OBJECT_GROUP, Value::text_string("group-primary".to_owned())),
-        item(OBJECT_GROUP, Value::text_string("group-secondary".to_owned())),
+        item(
+            OBJECT_GROUP,
+            Value::text_string("group-secondary".to_owned()),
+        ),
     ])
     .expect("Object Group accepts repeated Text String attribute values");
     let payload = CreateRequest::new(ObjectType::from_raw(2), attributes)

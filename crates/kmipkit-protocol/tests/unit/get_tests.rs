@@ -534,16 +534,16 @@ fn get_preserves_repeated_attribute_names_in_valid_wrapping_specification() {
             (KEY_WRAPPING_SPECIFICATION_TAG, ItemType::Structure),
         ]
     );
-    assert!(fields[0].with_value(|value| matches!(
-        value,
-        ValueView::TextString("object-123")
-    )));
+    assert!(fields[0].with_value(|value| matches!(value, ValueView::TextString("object-123"))));
     fields[1].with_value(|value| match value {
         ValueView::Structure(specification) => {
             let items = specification.children();
             assert_eq!(items.len(), 4);
             assert_eq!(
-                items.iter().map(|item| item.tag().raw()).collect::<Vec<_>>(),
+                items
+                    .iter()
+                    .map(|item| item.tag().raw())
+                    .collect::<Vec<_>>(),
                 [
                     WRAPPING_METHOD_TAG,
                     ENCRYPTION_KEY_INFORMATION_TAG,
@@ -552,10 +552,7 @@ fn get_preserves_repeated_attribute_names_in_valid_wrapping_specification() {
                 ]
             );
             assert_eq!(items[0].item_type(), ItemType::Enumeration);
-            assert!(items[0].with_value(|value| matches!(
-                value,
-                ValueView::Enumeration(1)
-            )));
+            assert!(items[0].with_value(|value| matches!(value, ValueView::Enumeration(1))));
             assert_eq!(items[1].item_type(), ItemType::Structure);
             items[1].with_value(|value| match value {
                 ValueView::Structure(key_information) => {
