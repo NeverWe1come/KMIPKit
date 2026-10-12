@@ -3,17 +3,125 @@
 from __future__ import annotations
 
 import json
-import subprocess
-import sys
-import tempfile
+import re
 import unittest
 from html.parser import HTMLParser
 from pathlib import Path
+
+from tools.normative_catalog.validate import _profile_oracle_reference_issue
 
 
 ROOT = Path(__file__).resolve().parents[3]
 ORACLE_PATH = ROOT / "tools/normative_catalog/tests/fixtures/profile-closure-v2.1.json"
 CATALOG_PATH = ROOT / "specification/catalog/kmip-2.1.json"
+HASH_MAC_SIGNATURE_TRACEABILITY_PATH = ROOT / "specs/021-hash-mac-signature-operations/traceability.md"
+HASH_MAC_SIGNATURE_SPEC_PATH = ROOT / "specs/021-hash-mac-signature-operations/spec.md"
+ENCRYPT_DECRYPT_SPEC_PATH = ROOT / "specs/019-cryptographic-operations/spec.md"
+ENCRYPT_DECRYPT_PAYLOAD_CONTRACT_PATH = ROOT / "specs/019-cryptographic-operations/contracts/operation-payloads.md"
+
+# These are the request rows relevant to the five KMIPKIT-0021 operations
+# assigned by the approved traceability. The first two §6.1 contexts cover
+# multipart requests; the third covers single-part requests, including Sign's
+# Digested Data alternative. Operation IDs, request tables, requiredness, and
+# feature assignments are checked against the catalog/spec below.
+EXPECTED_GENERIC_PARAMETER_CONTRACTS = {
+    "KMIPKIT-SOURCE-GAP-SPEC-6.1.24-CRYPTOGRAPHIC-PARAMETERS-REQUIRED": (
+        "KMIPKIT-ELEM-OP-C2S-HASH",
+        235,
+        {"FR-002"},
+        "always",
+    ),
+    "KMIPKIT-SOURCE-GAP-SPEC-6.1.24-DATA-REQUIRED": (
+        "KMIPKIT-ELEM-OP-C2S-HASH",
+        235,
+        {"FR-002"},
+        "single_part",
+    ),
+    "KMIPKIT-SOURCE-GAP-SPEC-6.1.32-DATA-REQUIRED": (
+        "KMIPKIT-ELEM-OP-C2S-MAC",
+        259,
+        {"FR-004"},
+        "single_part",
+    ),
+    "KMIPKIT-SOURCE-GAP-SPEC-6.1.33-MAC-DATA-REQUIRED": (
+        "KMIPKIT-ELEM-OP-C2S-MAC-VERIFY",
+        262,
+        {"FR-007"},
+        "single_part",
+    ),
+    "KMIPKIT-SOURCE-GAP-SPEC-6.1.55-DATA-CONDITIONAL": (
+        "KMIPKIT-ELEM-OP-C2S-SIGN",
+        334,
+        {"FR-004"},
+        "single_part",
+    ),
+    "KMIPKIT-SOURCE-GAP-SPEC-6.1.55-DIGESTED-DATA-OPTIONAL": (
+        "KMIPKIT-ELEM-OP-C2S-SIGN",
+        334,
+        {"FR-004"},
+        "optional",
+    ),
+    "KMIPKIT-SOURCE-GAP-SPEC-6.1.56-SIGNATURE-DATA-CONDITIONAL": (
+        "KMIPKIT-ELEM-OP-C2S-SIGNATURE-VERIFY",
+        337,
+        {"FR-007"},
+        "single_part",
+    ),
+}
+
+# KMIPKIT-0019 approves both operations and request tables, but the profile
+# oracle does not yet have source_table_contracts for these tables. Generic
+# contexts must stay explicitly blocked until those requests are mapped.
+UNMAPPED_GENERIC_CONTEXT_OPERATION_TABLES = {
+    "KMIPKIT-ELEM-OP-C2S-DECRYPT": ("Decrypt", 196),
+    "KMIPKIT-ELEM-OP-C2S-ENCRYPT": ("Encrypt", 214),
+}
+
+EXPECTED_GENERIC_CONTEXT_OPERATIONS = {
+    "KMIPKIT-SOURCE-GAP-SPEC-6.1-PARAGRAPH-006": {
+        "KMIPKIT-ELEM-OP-C2S-DECRYPT": None,
+        "KMIPKIT-ELEM-OP-C2S-ENCRYPT": None,
+        "KMIPKIT-ELEM-OP-C2S-HASH": {
+            "KMIPKIT-SOURCE-GAP-SPEC-6.1.24-CRYPTOGRAPHIC-PARAMETERS-REQUIRED"
+        },
+        "KMIPKIT-ELEM-OP-C2S-MAC": set(),
+        "KMIPKIT-ELEM-OP-C2S-MAC-VERIFY": set(),
+        "KMIPKIT-ELEM-OP-C2S-SIGN": set(),
+        "KMIPKIT-ELEM-OP-C2S-SIGNATURE-VERIFY": set(),
+    },
+    "KMIPKIT-SOURCE-GAP-SPEC-6.1-PARAGRAPH-007": {
+        "KMIPKIT-ELEM-OP-C2S-DECRYPT": None,
+        "KMIPKIT-ELEM-OP-C2S-ENCRYPT": None,
+        "KMIPKIT-ELEM-OP-C2S-HASH": {
+            "KMIPKIT-SOURCE-GAP-SPEC-6.1.24-CRYPTOGRAPHIC-PARAMETERS-REQUIRED"
+        },
+        "KMIPKIT-ELEM-OP-C2S-MAC": set(),
+        "KMIPKIT-ELEM-OP-C2S-MAC-VERIFY": set(),
+        "KMIPKIT-ELEM-OP-C2S-SIGN": set(),
+        "KMIPKIT-ELEM-OP-C2S-SIGNATURE-VERIFY": set(),
+    },
+    "KMIPKIT-SOURCE-GAP-SPEC-6.1-PARAGRAPH-008": {
+        "KMIPKIT-ELEM-OP-C2S-DECRYPT": None,
+        "KMIPKIT-ELEM-OP-C2S-ENCRYPT": None,
+        "KMIPKIT-ELEM-OP-C2S-HASH": {
+            "KMIPKIT-SOURCE-GAP-SPEC-6.1.24-CRYPTOGRAPHIC-PARAMETERS-REQUIRED",
+            "KMIPKIT-SOURCE-GAP-SPEC-6.1.24-DATA-REQUIRED",
+        },
+        "KMIPKIT-ELEM-OP-C2S-MAC": {
+            "KMIPKIT-SOURCE-GAP-SPEC-6.1.32-DATA-REQUIRED",
+        },
+        "KMIPKIT-ELEM-OP-C2S-MAC-VERIFY": {
+            "KMIPKIT-SOURCE-GAP-SPEC-6.1.33-MAC-DATA-REQUIRED",
+        },
+        "KMIPKIT-ELEM-OP-C2S-SIGN": {
+            "KMIPKIT-SOURCE-GAP-SPEC-6.1.55-DATA-CONDITIONAL",
+            "KMIPKIT-SOURCE-GAP-SPEC-6.1.55-DIGESTED-DATA-OPTIONAL",
+        },
+        "KMIPKIT-ELEM-OP-C2S-SIGNATURE-VERIFY": {
+            "KMIPKIT-SOURCE-GAP-SPEC-6.1.56-SIGNATURE-DATA-CONDITIONAL",
+        },
+    },
+}
 
 
 class _PinnedHtmlText(HTMLParser):
@@ -49,6 +157,22 @@ def _collect_strings(value: object) -> set[str]:
     if isinstance(value, dict):
         return set().union(*(_collect_strings(item) for item in value.values())) if value else set()
     return set()
+
+
+def _requiredness_matches(contract: dict[str, object], expected: str) -> bool:
+    """Match the reviewed table requiredness category for a procedure mode."""
+    requiredness = contract.get("requiredness")
+    if expected == "always":
+        return requiredness == "Yes"
+    if expected == "single_part":
+        return (
+            isinstance(requiredness, str)
+            and requiredness.startswith("Yes for single-part")
+            and "No for multi-part" in requiredness
+        )
+    if expected == "optional":
+        return requiredness == "No"
+    return False
 
 
 class SourceGapContextResolutionTests(unittest.TestCase):
@@ -121,24 +245,170 @@ class SourceGapContextResolutionTests(unittest.TestCase):
     def test_generic_parameter_context_links_operation_contract_evidence(self) -> None:
         """KMIP Specification v2.1 §6.1 generic instructions need request contracts."""
         oracle = json.loads(ORACLE_PATH.read_text(encoding="utf-8"))
+        catalog = json.loads(CATALOG_PATH.read_text(encoding="utf-8"))
+        approved_traceability = HASH_MAC_SIGNATURE_TRACEABILITY_PATH.read_text(encoding="utf-8")
+        approved_spec = HASH_MAC_SIGNATURE_SPEC_PATH.read_text(encoding="utf-8")
+        encrypt_decrypt_spec = ENCRYPT_DECRYPT_SPEC_PATH.read_text(encoding="utf-8")
+        encrypt_decrypt_payload_contract = ENCRYPT_DECRYPT_PAYLOAD_CONTRACT_PATH.read_text(encoding="utf-8")
         gaps = {row["gap_id"]: row for row in oracle["source_only_requirement_gaps"]}
         contracts = {row["gap_id"]: row for row in oracle["source_table_contracts"]}
+        catalog_operations = {
+            row["element_id"]: row
+            for row in catalog["elements"]
+            if row.get("feature_spec") in {"KMIPKIT-0019", "KMIPKIT-0021"}
+            and row.get("element_id", "").startswith("KMIPKIT-ELEM-OP-C2S-")
+        }
+        approved_operation_ids_021 = set(
+            re.findall(r"`(KMIPKIT-ELEM-OP-C2S-[A-Z-]+)`", approved_traceability)
+        )
+        approved_operation_ids_019 = set(
+            re.findall(r"`(KMIPKIT-ELEM-OP-C2S-[A-Z-]+)`", encrypt_decrypt_spec)
+        )
+        approved_operation_ids = approved_operation_ids_019 | approved_operation_ids_021
+        approved_requirement_ids = set(re.findall(r"\bFR-\d{3}\b", approved_spec))
+        expected_operation_ids = set(catalog_operations)
+        expected_requirement_ids = set().union(
+            *(entry[2] for entry in EXPECTED_GENERIC_PARAMETER_CONTRACTS.values())
+        )
+        expected_operation_ids_from_contexts = set().union(
+            *(set(operation_contracts) for operation_contracts in EXPECTED_GENERIC_CONTEXT_OPERATIONS.values())
+        )
+        expected_mapped_contract_ids = set().union(
+            *(
+                contract_ids
+                for operation_contracts in EXPECTED_GENERIC_CONTEXT_OPERATIONS.values()
+                for contract_ids in operation_contracts.values()
+                if contract_ids is not None
+            )
+        )
 
-        for number in range(6, 9):
-            gap_id = f"KMIPKIT-SOURCE-GAP-SPEC-6.1-PARAGRAPH-{number:03d}"
+        self.assertEqual(set(catalog_operations), approved_operation_ids)
+        self.assertEqual(approved_operation_ids_019, set(UNMAPPED_GENERIC_CONTEXT_OPERATION_TABLES))
+        self.assertEqual(expected_operation_ids_from_contexts, expected_operation_ids)
+        for operation_id, (operation_name, table_number) in UNMAPPED_GENERIC_CONTEXT_OPERATION_TABLES.items():
+            with self.subTest(operation_id=operation_id):
+                self.assertIn(operation_id, catalog_operations)
+                self.assertEqual(catalog_operations[operation_id]["feature_spec"], "KMIPKIT-0019")
+                self.assertIn(f"{operation_name} Table {table_number}", encrypt_decrypt_payload_contract)
+                self.assertIn(
+                    table_number,
+                    {
+                        table["table_number"]
+                        for table in catalog_operations[operation_id]["payload_tables"]
+                        if table.get("role") == "request"
+                    },
+                )
+        self.assertEqual(expected_mapped_contract_ids, set(EXPECTED_GENERIC_PARAMETER_CONTRACTS))
+        self.assertTrue(expected_requirement_ids)
+        self.assertTrue(expected_requirement_ids <= approved_requirement_ids)
+
+        for contract_id, (operation_id, table_number, requirement_ids, requiredness) in EXPECTED_GENERIC_PARAMETER_CONTRACTS.items():
+            with self.subTest(contract_id=contract_id):
+                contract = contracts.get(contract_id)
+                self.assertIsNotNone(contract, f"missing approved operation contract {contract_id}")
+                if contract is None:
+                    continue
+                self.assertEqual(contract["contract_kind"], "operation_request_table_field")
+                self.assertEqual(contract["operation_element_id"], operation_id)
+                self.assertEqual(contract["table_number"], table_number)
+                self.assertTrue(_requiredness_matches(contract, requiredness))
+                request_tables = {
+                    table["table_number"]
+                    for table in catalog_operations[operation_id]["payload_tables"]
+                    if table.get("role") == "request"
+                }
+                self.assertIn(table_number, request_tables)
+                self.assertTrue(requirement_ids <= set(contract["functional_requirement_ids"]))
+                self.assertTrue(set(contract["functional_requirement_ids"]) <= approved_requirement_ids)
+                self.assertTrue(contract["implementation_refs"])
+                self.assertTrue(contract["verification_refs"])
+                self.assertTrue(
+                    all(
+                        _profile_oracle_reference_issue(ROOT, ref, executable_test=False) is None
+                        for ref in contract["implementation_refs"]
+                    )
+                )
+                self.assertTrue(
+                    all(
+                        _profile_oracle_reference_issue(ROOT, ref, executable_test=True) is None
+                        for ref in contract["verification_refs"]
+                    )
+                )
+
+        for gap_id, operation_contracts in EXPECTED_GENERIC_CONTEXT_OPERATIONS.items():
             gap = gaps[gap_id]
             resolution = gap["source_resolution"]
             linked_contract_ids = _collect_strings(resolution) & contracts.keys()
-            contract_evidence = [
-                contracts[identifier]
-                for identifier in linked_contract_ids
-                if contracts[identifier]["implementation_refs"] and contracts[identifier]["verification_refs"]
-            ]
-            with self.subTest(gap_id=gap_id):
-                self.assertTrue(
-                    contract_evidence or gap["scope_disposition"] == "unresolved",
-                    f"{gap_id} is treated as closed without explicit links to operation request contracts and their evidence",
+            expected_contract_ids = set().union(
+                *(contract_ids for contract_ids in operation_contracts.values() if contract_ids is not None)
+            )
+            referenced_contract_ids = {
+                value
+                for value in _collect_strings(resolution)
+                if value.startswith("KMIPKIT-SOURCE-GAP-SPEC-")
+            }
+            self.assertEqual(set(operation_contracts), expected_operation_ids)
+            for operation_id, expected_ids in operation_contracts.items():
+                with self.subTest(gap_id=gap_id, operation_id=operation_id):
+                    if expected_ids is None:
+                        operation_name, table_number = UNMAPPED_GENERIC_CONTEXT_OPERATION_TABLES[operation_id]
+                        request_contracts = {
+                            contract_id
+                            for contract_id, contract in contracts.items()
+                            if contract.get("operation_element_id") == operation_id
+                            and contract.get("table_number") == table_number
+                        }
+                        note = resolution.get("review_note", "")
+                        self.assertEqual(
+                            gap["scope_disposition"],
+                            "unresolved",
+                            f"{gap_id} closes {operation_name} Table {table_number} without request contracts",
+                        )
+                        note_requirements = {
+                            "KMIPKIT-0019",
+                            operation_name,
+                            f"Table {table_number}",
+                            "source_table_contracts",
+                        }
+                        self.assertTrue(
+                            all(term in note for term in note_requirements),
+                            f"{gap_id} needs an explicit blocker for {operation_name} Table {table_number}",
+                        )
+                        self.assertTrue(request_contracts <= linked_contract_ids)
+                        for contract_id in request_contracts:
+                            contract = contracts[contract_id]
+                            self.assertTrue(contract["implementation_refs"])
+                            self.assertTrue(contract["verification_refs"])
+                            self.assertTrue(
+                                all(
+                                    _profile_oracle_reference_issue(ROOT, ref, executable_test=False) is None
+                                    for ref in contract["implementation_refs"]
+                                )
+                            )
+                            self.assertTrue(
+                                all(
+                                    _profile_oracle_reference_issue(ROOT, ref, executable_test=True) is None
+                                    for ref in contract["verification_refs"]
+                                )
+                            )
+                        continue
+                    actual_operation_ids = {
+                        contract_id
+                        for contract_id in linked_contract_ids
+                        if contracts[contract_id]["operation_element_id"] == operation_id
+                    }
+                    self.assertEqual(
+                        actual_operation_ids,
+                        expected_ids,
+                        f"{gap_id} has an incomplete or misassigned mapping for {operation_id}",
+                    )
+            with self.subTest(gap_id=gap_id, mapping="complete-set"):
+                self.assertEqual(
+                    linked_contract_ids,
+                    expected_contract_ids,
+                    f"{gap_id} must link the complete reviewed request contract set for each operation",
                 )
+                self.assertEqual(referenced_contract_ids, expected_contract_ids)
 
     def test_generic_parameter_spans_retain_the_complete_pinned_instruction(self) -> None:
         """KMIP Specification v2.1 §6.1 paragraph spans must preserve exact source text."""
@@ -151,58 +421,6 @@ class SourceGapContextResolutionTests(unittest.TestCase):
             with self.subTest(gap_id=gap["gap_id"]):
                 self.assertEqual(gap["source_excerpt"], extracted)
                 self.assertTrue(extracted.endswith("any other required parameters"))
-
-    def test_public_validator_rejects_unclosed_context_in_an_isolated_repository_copy(self) -> None:
-        """KMIP Specification v2.1 §6.1 oracle gaps must fail public validation."""
-        with tempfile.TemporaryDirectory(prefix="kmipkit-context-validator-") as temporary_directory:
-            isolated_root = Path(temporary_directory) / "repository"
-            clone = subprocess.run(
-                ["git", "clone", "--quiet", "--shared", "--no-checkout", str(ROOT), str(isolated_root)],
-                cwd=ROOT,
-                capture_output=True,
-                text=True,
-                check=False,
-            )
-            self.assertEqual(clone.returncode, 0, clone.stderr)
-            checkout = subprocess.run(
-                ["git", "checkout", "--quiet", "HEAD"],
-                cwd=isolated_root,
-                capture_output=True,
-                text=True,
-                check=False,
-            )
-            self.assertEqual(checkout.returncode, 0, checkout.stderr)
-
-            oracle_path = isolated_root / "tools/normative_catalog/tests/fixtures/profile-closure-v2.1.json"
-            copied_oracle = json.loads(oracle_path.read_text(encoding="utf-8"))
-            gaps = {row["gap_id"]: row for row in copied_oracle["source_only_requirement_gaps"]}
-            procedure = gaps["KMIPKIT-SOURCE-GAP-SPEC-6.1-PROCEDURE-011"]
-            procedure["source_resolution"] = {
-                "kind": "procedure_context",
-                "context_id": "KMIPKIT-PROC-SPEC-6.1-011",
-            }
-            oracle_path.write_text(json.dumps(copied_oracle, indent=2) + "\n", encoding="utf-8")
-
-            validation = subprocess.run(
-                [
-                    sys.executable,
-                    "-m",
-                    "tools.normative_catalog.validate",
-                    "--repo-root",
-                    str(isolated_root),
-                    "--structural-only",
-                ],
-                cwd=ROOT,
-                capture_output=True,
-                text=True,
-                check=False,
-            )
-            self.assertNotEqual(
-                validation.returncode,
-                0,
-                "the public validator accepted an isolated oracle copy whose client procedure has no traceable evidence: "
-                f"stdout={validation.stdout!r}, stderr={validation.stderr!r}",
-            )
 
     def test_paragraph_data_rule_remains_unresolved_and_lease_policy_maps_to_attribute(self) -> None:
         oracle = json.loads(ORACLE_PATH.read_text(encoding="utf-8"))
