@@ -1,0 +1,2223 @@
+{
+  "crate_version": null,
+  "external_crates": {
+    "1": {
+      "html_root_url": "https://doc.rust-lang.org/1.94.0/",
+      "name": "std",
+      "path": "C:\\Users\\ramp1953\\.rustup\\toolchains\\1.94.0-x86_64-pc-windows-msvc\\lib\\rustlib\\x86_64-pc-windows-msvc\\lib\\libstd-2137bdd3874dafb5.rmeta"
+    },
+    "10": {
+      "html_root_url": "https://doc.rust-lang.org/1.94.0/",
+      "name": "rustc_demangle",
+      "path": "C:\\Users\\ramp1953\\.rustup\\toolchains\\1.94.0-x86_64-pc-windows-msvc\\lib\\rustlib\\x86_64-pc-windows-msvc\\lib\\librustc_demangle-105b70207c8cdabe.rmeta"
+    },
+    "11": {
+      "html_root_url": "https://doc.rust-lang.org/1.94.0/",
+      "name": "windows_targets",
+      "path": "C:\\Users\\ramp1953\\.rustup\\toolchains\\1.94.0-x86_64-pc-windows-msvc\\lib\\rustlib\\x86_64-pc-windows-msvc\\lib\\libwindows_targets-1d988f59e953aa41.rmeta"
+    },
+    "12": {
+      "html_root_url": "https://doc.rust-lang.org/1.94.0/",
+      "name": "cfg_if",
+      "path": "C:\\Users\\ramp1953\\.rustup\\toolchains\\1.94.0-x86_64-pc-windows-msvc\\lib\\rustlib\\x86_64-pc-windows-msvc\\lib\\libcfg_if-2115bb4cb4db19cf.rmeta"
+    },
+    "13": {
+      "html_root_url": "https://doc.rust-lang.org/1.94.0/",
+      "name": "panic_unwind",
+      "path": "C:\\Users\\ramp1953\\.rustup\\toolchains\\1.94.0-x86_64-pc-windows-msvc\\lib\\rustlib\\x86_64-pc-windows-msvc\\lib\\libpanic_unwind-44c2097187f5e9f3.rmeta"
+    },
+    "2": {
+      "html_root_url": "https://doc.rust-lang.org/1.94.0/",
+      "name": "core",
+      "path": "C:\\Users\\ramp1953\\.rustup\\toolchains\\1.94.0-x86_64-pc-windows-msvc\\lib\\rustlib\\x86_64-pc-windows-msvc\\lib\\libcore-2dc1efaf7a721ce5.rmeta"
+    },
+    "3": {
+      "html_root_url": "https://doc.rust-lang.org/1.94.0/",
+      "name": "alloc",
+      "path": "C:\\Users\\ramp1953\\.rustup\\toolchains\\1.94.0-x86_64-pc-windows-msvc\\lib\\rustlib\\x86_64-pc-windows-msvc\\lib\\liballoc-9df789857261090a.rmeta"
+    },
+    "4": {
+      "html_root_url": "https://doc.rust-lang.org/1.94.0/",
+      "name": "compiler_builtins",
+      "path": "C:\\Users\\ramp1953\\.rustup\\toolchains\\1.94.0-x86_64-pc-windows-msvc\\lib\\rustlib\\x86_64-pc-windows-msvc\\lib\\libcompiler_builtins-7d3a0c55eac2cc40.rmeta"
+    },
+    "5": {
+      "html_root_url": "https://doc.rust-lang.org/1.94.0/",
+      "name": "unwind",
+      "path": "C:\\Users\\ramp1953\\.rustup\\toolchains\\1.94.0-x86_64-pc-windows-msvc\\lib\\rustlib\\x86_64-pc-windows-msvc\\lib\\libunwind-057148f5ceadfdcd.rmeta"
+    },
+    "6": {
+      "html_root_url": "https://doc.rust-lang.org/1.94.0/",
+      "name": "rustc_std_workspace_core",
+      "path": "C:\\Users\\ramp1953\\.rustup\\toolchains\\1.94.0-x86_64-pc-windows-msvc\\lib\\rustlib\\x86_64-pc-windows-msvc\\lib\\librustc_std_workspace_core-5c1f1a13cd5c811f.rmeta"
+    },
+    "7": {
+      "html_root_url": "https://doc.rust-lang.org/1.94.0/",
+      "name": "hashbrown",
+      "path": "C:\\Users\\ramp1953\\.rustup\\toolchains\\1.94.0-x86_64-pc-windows-msvc\\lib\\rustlib\\x86_64-pc-windows-msvc\\lib\\libhashbrown-95979db93eb3aaa1.rmeta"
+    },
+    "8": {
+      "html_root_url": "https://doc.rust-lang.org/1.94.0/",
+      "name": "rustc_std_workspace_alloc",
+      "path": "C:\\Users\\ramp1953\\.rustup\\toolchains\\1.94.0-x86_64-pc-windows-msvc\\lib\\rustlib\\x86_64-pc-windows-msvc\\lib\\librustc_std_workspace_alloc-bbb94ea5f6120a07.rmeta"
+    },
+    "9": {
+      "html_root_url": "https://doc.rust-lang.org/1.94.0/",
+      "name": "std_detect",
+      "path": "C:\\Users\\ramp1953\\.rustup\\toolchains\\1.94.0-x86_64-pc-windows-msvc\\lib\\rustlib\\x86_64-pc-windows-msvc\\lib\\libstd_detect-c018179ad7ae8382.rmeta"
+    }
+  },
+  "format_version": 57,
+  "includes_private": true,
+  "index": {
+    "0": {
+      "attrs": [],
+      "crate_id": 0,
+      "deprecation": null,
+      "docs": null,
+      "id": 0,
+      "inner": {
+        "assoc_type": {
+          "bounds": [],
+          "generics": {
+            "params": [],
+            "where_predicates": []
+          },
+          "type": null
+        }
+      },
+      "links": {},
+      "name": "Output",
+      "span": {
+        "begin": [
+          4,
+          5
+        ],
+        "end": [
+          4,
+          17
+        ],
+        "filename": "tools/api_manifest/tests/fixtures/rustdoc-v57/lib.rs"
+      },
+      "visibility": "default"
+    },
+    "1": {
+      "attrs": [],
+      "crate_id": 0,
+      "deprecation": null,
+      "docs": null,
+      "id": 1,
+      "inner": {
+        "assoc_const": {
+          "type": {
+            "primitive": "usize"
+          },
+          "value": null
+        }
+      },
+      "links": {},
+      "name": "LIMIT",
+      "span": {
+        "begin": [
+          5,
+          5
+        ],
+        "end": [
+          5,
+          24
+        ],
+        "filename": "tools/api_manifest/tests/fixtures/rustdoc-v57/lib.rs"
+      },
+      "visibility": "default"
+    },
+    "10": {
+      "attrs": [],
+      "crate_id": 0,
+      "deprecation": null,
+      "docs": null,
+      "id": 10,
+      "inner": {
+        "function": {
+          "generics": {
+            "params": [],
+            "where_predicates": []
+          },
+          "has_body": false,
+          "header": {
+            "abi": "Rust",
+            "is_async": false,
+            "is_const": false,
+            "is_unsafe": false
+          },
+          "sig": {
+            "inputs": [
+              [
+                "self",
+                {
+                  "borrowed_ref": {
+                    "is_mutable": false,
+                    "lifetime": null,
+                    "type": {
+                      "generic": "Self"
+                    }
+                  }
+                }
+              ]
+            ],
+            "is_c_variadic": false,
+            "output": {
+              "primitive": "u8"
+            }
+          }
+        }
+      },
+      "links": {},
+      "name": "required",
+      "span": {
+        "begin": [
+          15,
+          5
+        ],
+        "end": [
+          15,
+          30
+        ],
+        "filename": "tools/api_manifest/tests/fixtures/rustdoc-v57/lib.rs"
+      },
+      "visibility": "default"
+    },
+    "11": {
+      "attrs": [],
+      "crate_id": 0,
+      "deprecation": null,
+      "docs": null,
+      "id": 11,
+      "inner": {
+        "trait": {
+          "bounds": [],
+          "generics": {
+            "params": [],
+            "where_predicates": []
+          },
+          "implementations": [
+            13
+          ],
+          "is_auto": false,
+          "is_dyn_compatible": true,
+          "is_unsafe": false,
+          "items": [
+            10
+          ]
+        }
+      },
+      "links": {},
+      "name": "Audit",
+      "span": {
+        "begin": [
+          14,
+          1
+        ],
+        "end": [
+          16,
+          2
+        ],
+        "filename": "tools/api_manifest/tests/fixtures/rustdoc-v57/lib.rs"
+      },
+      "visibility": "public"
+    },
+    "114": {
+      "attrs": [],
+      "crate_id": 0,
+      "deprecation": null,
+      "docs": null,
+      "id": 114,
+      "inner": {
+        "type_alias": {
+          "generics": {
+            "params": [],
+            "where_predicates": []
+          },
+          "type": {
+            "resolved_path": {
+              "args": null,
+              "id": 9,
+              "path": "Service"
+            }
+          }
+        }
+      },
+      "links": {},
+      "name": "ServiceAlias",
+      "span": {
+        "begin": [
+          58,
+          1
+        ],
+        "end": [
+          58,
+          33
+        ],
+        "filename": "tools/api_manifest/tests/fixtures/rustdoc-v57/lib.rs"
+      },
+      "visibility": "public"
+    },
+    "115": {
+      "attrs": [],
+      "crate_id": 0,
+      "deprecation": null,
+      "docs": null,
+      "id": 115,
+      "inner": {
+        "type_alias": {
+          "generics": {
+            "params": [],
+            "where_predicates": []
+          },
+          "type": {
+            "resolved_path": {
+              "args": null,
+              "id": 114,
+              "path": "ServiceAlias"
+            }
+          }
+        }
+      },
+      "links": {},
+      "name": "ServiceAliasChain",
+      "span": {
+        "begin": [
+          59,
+          1
+        ],
+        "end": [
+          59,
+          43
+        ],
+        "filename": "tools/api_manifest/tests/fixtures/rustdoc-v57/lib.rs"
+      },
+      "visibility": "public"
+    },
+    "116": {
+      "attrs": [],
+      "crate_id": 0,
+      "deprecation": null,
+      "docs": null,
+      "id": 116,
+      "inner": {
+        "type_alias": {
+          "generics": {
+            "params": [],
+            "where_predicates": []
+          },
+          "type": {
+            "resolved_path": {
+              "args": null,
+              "id": 83,
+              "path": "State"
+            }
+          }
+        }
+      },
+      "links": {},
+      "name": "StateAlias",
+      "span": {
+        "begin": [
+          60,
+          1
+        ],
+        "end": [
+          60,
+          29
+        ],
+        "filename": "tools/api_manifest/tests/fixtures/rustdoc-v57/lib.rs"
+      },
+      "visibility": "public"
+    },
+    "117": {
+      "attrs": [],
+      "crate_id": 0,
+      "deprecation": null,
+      "docs": null,
+      "id": 117,
+      "inner": {
+        "type_alias": {
+          "generics": {
+            "params": [
+              {
+                "kind": {
+                  "type": {
+                    "bounds": [],
+                    "default": null,
+                    "is_synthetic": false
+                  }
+                },
+                "name": "T"
+              }
+            ],
+            "where_predicates": []
+          },
+          "type": {
+            "resolved_path": {
+              "args": {
+                "angle_bracketed": {
+                  "args": [
+                    {
+                      "type": {
+                        "generic": "T"
+                      }
+                    }
+                  ],
+                  "constraints": []
+                }
+              },
+              "id": 99,
+              "path": "Generic"
+            }
+          }
+        }
+      },
+      "links": {},
+      "name": "GenericAlias",
+      "span": {
+        "begin": [
+          61,
+          1
+        ],
+        "end": [
+          61,
+          39
+        ],
+        "filename": "tools/api_manifest/tests/fixtures/rustdoc-v57/lib.rs"
+      },
+      "visibility": "public"
+    },
+    "118": {
+      "attrs": [
+        {
+          "other": "#[allow(dead_code)]"
+        }
+      ],
+      "crate_id": 0,
+      "deprecation": null,
+      "docs": null,
+      "id": 118,
+      "inner": {
+        "module": {
+          "is_crate": true,
+          "is_stripped": false,
+          "items": [
+            3,
+            11,
+            9,
+            58,
+            83,
+            99,
+            114,
+            115,
+            116,
+            117
+          ]
+        }
+      },
+      "links": {},
+      "name": "rustdoc_v57_fixture",
+      "span": {
+        "begin": [
+          1,
+          1
+        ],
+        "end": [
+          61,
+          39
+        ],
+        "filename": "tools/api_manifest/tests/fixtures/rustdoc-v57/lib.rs"
+      },
+      "visibility": "public"
+    },
+    "12": {
+      "attrs": [],
+      "crate_id": 0,
+      "deprecation": null,
+      "docs": null,
+      "id": 12,
+      "inner": {
+        "function": {
+          "generics": {
+            "params": [],
+            "where_predicates": []
+          },
+          "has_body": true,
+          "header": {
+            "abi": "Rust",
+            "is_async": false,
+            "is_const": false,
+            "is_unsafe": false
+          },
+          "sig": {
+            "inputs": [
+              [
+                "self",
+                {
+                  "borrowed_ref": {
+                    "is_mutable": false,
+                    "lifetime": null,
+                    "type": {
+                      "generic": "Self"
+                    }
+                  }
+                }
+              ]
+            ],
+            "is_c_variadic": false,
+            "output": {
+              "primitive": "u8"
+            }
+          }
+        }
+      },
+      "links": {},
+      "name": "required",
+      "span": {
+        "begin": [
+          40,
+          5
+        ],
+        "end": [
+          42,
+          6
+        ],
+        "filename": "tools/api_manifest/tests/fixtures/rustdoc-v57/lib.rs"
+      },
+      "visibility": "default"
+    },
+    "13": {
+      "attrs": [],
+      "crate_id": 0,
+      "deprecation": null,
+      "docs": null,
+      "id": 13,
+      "inner": {
+        "impl": {
+          "blanket_impl": null,
+          "for": {
+            "resolved_path": {
+              "args": null,
+              "id": 9,
+              "path": "Service"
+            }
+          },
+          "generics": {
+            "params": [],
+            "where_predicates": []
+          },
+          "is_negative": false,
+          "is_synthetic": false,
+          "is_unsafe": false,
+          "items": [
+            12
+          ],
+          "provided_trait_methods": [],
+          "trait": {
+            "args": null,
+            "id": 11,
+            "path": "Audit"
+          }
+        }
+      },
+      "links": {},
+      "name": null,
+      "span": {
+        "begin": [
+          39,
+          1
+        ],
+        "end": [
+          43,
+          2
+        ],
+        "filename": "tools/api_manifest/tests/fixtures/rustdoc-v57/lib.rs"
+      },
+      "visibility": "default"
+    },
+    "14": {
+      "attrs": [],
+      "crate_id": 0,
+      "deprecation": null,
+      "docs": null,
+      "id": 14,
+      "inner": {
+        "function": {
+          "generics": {
+            "params": [],
+            "where_predicates": []
+          },
+          "has_body": true,
+          "header": {
+            "abi": "Rust",
+            "is_async": false,
+            "is_const": false,
+            "is_unsafe": false
+          },
+          "sig": {
+            "inputs": [
+              [
+                "self",
+                {
+                  "borrowed_ref": {
+                    "is_mutable": false,
+                    "lifetime": null,
+                    "type": {
+                      "generic": "Self"
+                    }
+                  }
+                }
+              ]
+            ],
+            "is_c_variadic": false,
+            "output": {
+              "primitive": "u8"
+            }
+          }
+        }
+      },
+      "links": {},
+      "name": "required",
+      "span": {
+        "begin": [
+          21,
+          5
+        ],
+        "end": [
+          23,
+          6
+        ],
+        "filename": "tools/api_manifest/tests/fixtures/rustdoc-v57/lib.rs"
+      },
+      "visibility": "public"
+    },
+    "15": {
+      "attrs": [],
+      "crate_id": 0,
+      "deprecation": null,
+      "docs": null,
+      "id": 15,
+      "inner": {
+        "function": {
+          "generics": {
+            "params": [],
+            "where_predicates": []
+          },
+          "has_body": true,
+          "header": {
+            "abi": "Rust",
+            "is_async": false,
+            "is_const": false,
+            "is_unsafe": false
+          },
+          "sig": {
+            "inputs": [
+              [
+                "self",
+                {
+                  "borrowed_ref": {
+                    "is_mutable": false,
+                    "lifetime": null,
+                    "type": {
+                      "generic": "Self"
+                    }
+                  }
+                }
+              ]
+            ],
+            "is_c_variadic": false,
+            "output": {
+              "primitive": "usize"
+            }
+          }
+        }
+      },
+      "links": {},
+      "name": "inherent",
+      "span": {
+        "begin": [
+          25,
+          5
+        ],
+        "end": [
+          27,
+          6
+        ],
+        "filename": "tools/api_manifest/tests/fixtures/rustdoc-v57/lib.rs"
+      },
+      "visibility": "public"
+    },
+    "16": {
+      "attrs": [],
+      "crate_id": 0,
+      "deprecation": null,
+      "docs": null,
+      "id": 16,
+      "inner": {
+        "impl": {
+          "blanket_impl": null,
+          "for": {
+            "resolved_path": {
+              "args": null,
+              "id": 9,
+              "path": "Service"
+            }
+          },
+          "generics": {
+            "params": [],
+            "where_predicates": []
+          },
+          "is_negative": false,
+          "is_synthetic": false,
+          "is_unsafe": false,
+          "items": [
+            14,
+            15
+          ],
+          "provided_trait_methods": [],
+          "trait": null
+        }
+      },
+      "links": {},
+      "name": null,
+      "span": {
+        "begin": [
+          20,
+          1
+        ],
+        "end": [
+          28,
+          2
+        ],
+        "filename": "tools/api_manifest/tests/fixtures/rustdoc-v57/lib.rs"
+      },
+      "visibility": "default"
+    },
+    "2": {
+      "attrs": [],
+      "crate_id": 0,
+      "deprecation": null,
+      "docs": null,
+      "id": 2,
+      "inner": {
+        "function": {
+          "generics": {
+            "params": [],
+            "where_predicates": []
+          },
+          "has_body": false,
+          "header": {
+            "abi": "Rust",
+            "is_async": false,
+            "is_const": false,
+            "is_unsafe": false
+          },
+          "sig": {
+            "inputs": [
+              [
+                "self",
+                {
+                  "borrowed_ref": {
+                    "is_mutable": false,
+                    "lifetime": null,
+                    "type": {
+                      "generic": "Self"
+                    }
+                  }
+                }
+              ]
+            ],
+            "is_c_variadic": false,
+            "output": {
+              "qualified_path": {
+                "args": null,
+                "name": "Output",
+                "self_type": {
+                  "generic": "Self"
+                },
+                "trait": {
+                  "args": null,
+                  "id": 3,
+                  "path": ""
+                }
+              }
+            }
+          }
+        }
+      },
+      "links": {},
+      "name": "required",
+      "span": {
+        "begin": [
+          7,
+          5
+        ],
+        "end": [
+          7,
+          40
+        ],
+        "filename": "tools/api_manifest/tests/fixtures/rustdoc-v57/lib.rs"
+      },
+      "visibility": "default"
+    },
+    "3": {
+      "attrs": [],
+      "crate_id": 0,
+      "deprecation": null,
+      "docs": null,
+      "id": 3,
+      "inner": {
+        "trait": {
+          "bounds": [],
+          "generics": {
+            "params": [],
+            "where_predicates": []
+          },
+          "implementations": [
+            8
+          ],
+          "is_auto": false,
+          "is_dyn_compatible": false,
+          "is_unsafe": false,
+          "items": [
+            0,
+            1,
+            2,
+            4
+          ]
+        }
+      },
+      "links": {},
+      "name": "Contract",
+      "span": {
+        "begin": [
+          3,
+          1
+        ],
+        "end": [
+          12,
+          2
+        ],
+        "filename": "tools/api_manifest/tests/fixtures/rustdoc-v57/lib.rs"
+      },
+      "visibility": "public"
+    },
+    "4": {
+      "attrs": [],
+      "crate_id": 0,
+      "deprecation": null,
+      "docs": null,
+      "id": 4,
+      "inner": {
+        "function": {
+          "generics": {
+            "params": [],
+            "where_predicates": []
+          },
+          "has_body": true,
+          "header": {
+            "abi": "Rust",
+            "is_async": false,
+            "is_const": false,
+            "is_unsafe": false
+          },
+          "sig": {
+            "inputs": [
+              [
+                "self",
+                {
+                  "borrowed_ref": {
+                    "is_mutable": false,
+                    "lifetime": null,
+                    "type": {
+                      "generic": "Self"
+                    }
+                  }
+                }
+              ]
+            ],
+            "is_c_variadic": false,
+            "output": {
+              "primitive": "usize"
+            }
+          }
+        }
+      },
+      "links": {},
+      "name": "provided",
+      "span": {
+        "begin": [
+          9,
+          5
+        ],
+        "end": [
+          11,
+          6
+        ],
+        "filename": "tools/api_manifest/tests/fixtures/rustdoc-v57/lib.rs"
+      },
+      "visibility": "default"
+    },
+    "5": {
+      "attrs": [],
+      "crate_id": 0,
+      "deprecation": null,
+      "docs": null,
+      "id": 5,
+      "inner": {
+        "assoc_type": {
+          "bounds": [],
+          "generics": {
+            "params": [],
+            "where_predicates": []
+          },
+          "type": {
+            "primitive": "u8"
+          }
+        }
+      },
+      "links": {},
+      "name": "Output",
+      "span": {
+        "begin": [
+          31,
+          5
+        ],
+        "end": [
+          31,
+          22
+        ],
+        "filename": "tools/api_manifest/tests/fixtures/rustdoc-v57/lib.rs"
+      },
+      "visibility": "default"
+    },
+    "58": {
+      "attrs": [],
+      "crate_id": 0,
+      "deprecation": null,
+      "docs": null,
+      "id": 58,
+      "inner": {
+        "struct": {
+          "generics": {
+            "params": [],
+            "where_predicates": []
+          },
+          "impls": [
+            "76"
+          ],
+          "kind": "unit"
+        }
+      },
+      "links": {},
+      "name": "Derived",
+      "span": {
+        "begin": [
+          46,
+          1
+        ],
+        "end": [
+          46,
+          20
+        ],
+        "filename": "tools/api_manifest/tests/fixtures/rustdoc-v57/lib.rs"
+      },
+      "visibility": "public"
+    },
+    "6": {
+      "attrs": [],
+      "crate_id": 0,
+      "deprecation": null,
+      "docs": null,
+      "id": 6,
+      "inner": {
+        "assoc_const": {
+          "type": {
+            "primitive": "usize"
+          },
+          "value": "11"
+        }
+      },
+      "links": {},
+      "name": "LIMIT",
+      "span": {
+        "begin": [
+          32,
+          5
+        ],
+        "end": [
+          32,
+          29
+        ],
+        "filename": "tools/api_manifest/tests/fixtures/rustdoc-v57/lib.rs"
+      },
+      "visibility": "default"
+    },
+    "7": {
+      "attrs": [],
+      "crate_id": 0,
+      "deprecation": null,
+      "docs": null,
+      "id": 7,
+      "inner": {
+        "function": {
+          "generics": {
+            "params": [],
+            "where_predicates": []
+          },
+          "has_body": true,
+          "header": {
+            "abi": "Rust",
+            "is_async": false,
+            "is_const": false,
+            "is_unsafe": false
+          },
+          "sig": {
+            "inputs": [
+              [
+                "self",
+                {
+                  "borrowed_ref": {
+                    "is_mutable": false,
+                    "lifetime": null,
+                    "type": {
+                      "generic": "Self"
+                    }
+                  }
+                }
+              ]
+            ],
+            "is_c_variadic": false,
+            "output": {
+              "qualified_path": {
+                "args": null,
+                "name": "Output",
+                "self_type": {
+                  "generic": "Self"
+                },
+                "trait": {
+                  "args": null,
+                  "id": 3,
+                  "path": ""
+                }
+              }
+            }
+          }
+        }
+      },
+      "links": {},
+      "name": "required",
+      "span": {
+        "begin": [
+          34,
+          5
+        ],
+        "end": [
+          36,
+          6
+        ],
+        "filename": "tools/api_manifest/tests/fixtures/rustdoc-v57/lib.rs"
+      },
+      "visibility": "default"
+    },
+    "73": {
+      "attrs": [
+        {
+          "other": "#[attr = Inline(Hint)]"
+        }
+      ],
+      "crate_id": 0,
+      "deprecation": null,
+      "docs": null,
+      "id": 73,
+      "inner": {
+        "function": {
+          "generics": {
+            "params": [],
+            "where_predicates": []
+          },
+          "has_body": true,
+          "header": {
+            "abi": "Rust",
+            "is_async": false,
+            "is_const": false,
+            "is_unsafe": false
+          },
+          "sig": {
+            "inputs": [
+              [
+                "self",
+                {
+                  "borrowed_ref": {
+                    "is_mutable": false,
+                    "lifetime": null,
+                    "type": {
+                      "generic": "Self"
+                    }
+                  }
+                }
+              ],
+              [
+                "f",
+                {
+                  "borrowed_ref": {
+                    "is_mutable": true,
+                    "lifetime": null,
+                    "type": {
+                      "resolved_path": {
+                        "args": {
+                          "angle_bracketed": {
+                            "args": [
+                              {
+                                "lifetime": "'_"
+                              }
+                            ],
+                            "constraints": []
+                          }
+                        },
+                        "id": 74,
+                        "path": "$crate::fmt::Formatter"
+                      }
+                    }
+                  }
+                }
+              ]
+            ],
+            "is_c_variadic": false,
+            "output": {
+              "resolved_path": {
+                "args": null,
+                "id": 75,
+                "path": "$crate::fmt::Result"
+              }
+            }
+          }
+        }
+      },
+      "links": {},
+      "name": "fmt",
+      "span": {
+        "begin": [
+          45,
+          10
+        ],
+        "end": [
+          45,
+          15
+        ],
+        "filename": "tools/api_manifest/tests/fixtures/rustdoc-v57/lib.rs"
+      },
+      "visibility": "default"
+    },
+    "76": {
+      "attrs": [
+        "automatically_derived"
+      ],
+      "crate_id": 0,
+      "deprecation": null,
+      "docs": null,
+      "id": 76,
+      "inner": {
+        "impl": {
+          "blanket_impl": null,
+          "for": {
+            "resolved_path": {
+              "args": null,
+              "id": 58,
+              "path": "Derived"
+            }
+          },
+          "generics": {
+            "params": [],
+            "where_predicates": []
+          },
+          "is_negative": false,
+          "is_synthetic": false,
+          "is_unsafe": false,
+          "items": [
+            73
+          ],
+          "provided_trait_methods": [],
+          "trait": {
+            "args": null,
+            "id": 77,
+            "path": "Debug"
+          }
+        }
+      },
+      "links": {},
+      "name": null,
+      "span": {
+        "begin": [
+          45,
+          10
+        ],
+        "end": [
+          45,
+          15
+        ],
+        "filename": "tools/api_manifest/tests/fixtures/rustdoc-v57/lib.rs"
+      },
+      "visibility": "default"
+    },
+    "78": {
+      "attrs": [],
+      "crate_id": 0,
+      "deprecation": null,
+      "docs": null,
+      "id": 78,
+      "inner": {
+        "variant": {
+          "discriminant": null,
+          "kind": "plain"
+        }
+      },
+      "links": {},
+      "name": "Unit",
+      "span": {
+        "begin": [
+          49,
+          5
+        ],
+        "end": [
+          49,
+          9
+        ],
+        "filename": "tools/api_manifest/tests/fixtures/rustdoc-v57/lib.rs"
+      },
+      "visibility": "default"
+    },
+    "79": {
+      "attrs": [],
+      "crate_id": 0,
+      "deprecation": null,
+      "docs": null,
+      "id": 79,
+      "inner": {
+        "struct_field": {
+          "primitive": "u8"
+        }
+      },
+      "links": {},
+      "name": "0",
+      "span": {
+        "begin": [
+          50,
+          11
+        ],
+        "end": [
+          50,
+          13
+        ],
+        "filename": "tools/api_manifest/tests/fixtures/rustdoc-v57/lib.rs"
+      },
+      "visibility": "default"
+    },
+    "8": {
+      "attrs": [],
+      "crate_id": 0,
+      "deprecation": null,
+      "docs": null,
+      "id": 8,
+      "inner": {
+        "impl": {
+          "blanket_impl": null,
+          "for": {
+            "resolved_path": {
+              "args": null,
+              "id": 9,
+              "path": "Service"
+            }
+          },
+          "generics": {
+            "params": [],
+            "where_predicates": []
+          },
+          "is_negative": false,
+          "is_synthetic": false,
+          "is_unsafe": false,
+          "items": [
+            5,
+            6,
+            7
+          ],
+          "provided_trait_methods": [
+            "provided"
+          ],
+          "trait": {
+            "args": null,
+            "id": 3,
+            "path": "Contract"
+          }
+        }
+      },
+      "links": {},
+      "name": null,
+      "span": {
+        "begin": [
+          30,
+          1
+        ],
+        "end": [
+          37,
+          2
+        ],
+        "filename": "tools/api_manifest/tests/fixtures/rustdoc-v57/lib.rs"
+      },
+      "visibility": "default"
+    },
+    "80": {
+      "attrs": [],
+      "crate_id": 0,
+      "deprecation": null,
+      "docs": null,
+      "id": 80,
+      "inner": {
+        "variant": {
+          "discriminant": null,
+          "kind": {
+            "tuple": [
+              79
+            ]
+          }
+        }
+      },
+      "links": {},
+      "name": "Tuple",
+      "span": {
+        "begin": [
+          50,
+          5
+        ],
+        "end": [
+          50,
+          14
+        ],
+        "filename": "tools/api_manifest/tests/fixtures/rustdoc-v57/lib.rs"
+      },
+      "visibility": "default"
+    },
+    "81": {
+      "attrs": [],
+      "crate_id": 0,
+      "deprecation": null,
+      "docs": null,
+      "id": 81,
+      "inner": {
+        "struct_field": {
+          "primitive": "u8"
+        }
+      },
+      "links": {},
+      "name": "value",
+      "span": {
+        "begin": [
+          51,
+          13
+        ],
+        "end": [
+          51,
+          22
+        ],
+        "filename": "tools/api_manifest/tests/fixtures/rustdoc-v57/lib.rs"
+      },
+      "visibility": "default"
+    },
+    "82": {
+      "attrs": [],
+      "crate_id": 0,
+      "deprecation": null,
+      "docs": null,
+      "id": 82,
+      "inner": {
+        "variant": {
+          "discriminant": null,
+          "kind": {
+            "struct": {
+              "fields": [
+                81
+              ],
+              "has_stripped_fields": false
+            }
+          }
+        }
+      },
+      "links": {},
+      "name": "Named",
+      "span": {
+        "begin": [
+          51,
+          5
+        ],
+        "end": [
+          51,
+          24
+        ],
+        "filename": "tools/api_manifest/tests/fixtures/rustdoc-v57/lib.rs"
+      },
+      "visibility": "default"
+    },
+    "83": {
+      "attrs": [],
+      "crate_id": 0,
+      "deprecation": null,
+      "docs": null,
+      "id": 83,
+      "inner": {
+        "enum": {
+          "generics": {
+            "params": [],
+            "where_predicates": []
+          },
+          "has_stripped_variants": false,
+          "impls": [],
+          "variants": [
+            78,
+            80,
+            82
+          ]
+        }
+      },
+      "links": {},
+      "name": "State",
+      "span": {
+        "begin": [
+          48,
+          1
+        ],
+        "end": [
+          52,
+          2
+        ],
+        "filename": "tools/api_manifest/tests/fixtures/rustdoc-v57/lib.rs"
+      },
+      "visibility": "public"
+    },
+    "9": {
+      "attrs": [],
+      "crate_id": 0,
+      "deprecation": null,
+      "docs": null,
+      "id": 9,
+      "inner": {
+        "struct": {
+          "generics": {
+            "params": [],
+            "where_predicates": []
+          },
+          "impls": [
+            "16",
+            "8",
+            "13"
+          ],
+          "kind": "unit"
+        }
+      },
+      "links": {},
+      "name": "Service",
+      "span": {
+        "begin": [
+          18,
+          1
+        ],
+        "end": [
+          18,
+          20
+        ],
+        "filename": "tools/api_manifest/tests/fixtures/rustdoc-v57/lib.rs"
+      },
+      "visibility": "public"
+    },
+    "98": {
+      "attrs": [],
+      "crate_id": 0,
+      "deprecation": null,
+      "docs": null,
+      "id": 98,
+      "inner": {
+        "struct_field": {
+          "generic": "T"
+        }
+      },
+      "links": {},
+      "name": "value",
+      "span": {
+        "begin": [
+          55,
+          5
+        ],
+        "end": [
+          55,
+          17
+        ],
+        "filename": "tools/api_manifest/tests/fixtures/rustdoc-v57/lib.rs"
+      },
+      "visibility": "public"
+    },
+    "99": {
+      "attrs": [],
+      "crate_id": 0,
+      "deprecation": null,
+      "docs": null,
+      "id": 99,
+      "inner": {
+        "struct": {
+          "generics": {
+            "params": [
+              {
+                "kind": {
+                  "type": {
+                    "bounds": [],
+                    "default": null,
+                    "is_synthetic": false
+                  }
+                },
+                "name": "T"
+              }
+            ],
+            "where_predicates": []
+          },
+          "impls": [],
+          "kind": {
+            "plain": {
+              "fields": [
+                98
+              ],
+              "has_stripped_fields": false
+            }
+          }
+        }
+      },
+      "links": {},
+      "name": "Generic",
+      "span": {
+        "begin": [
+          54,
+          1
+        ],
+        "end": [
+          56,
+          2
+        ],
+        "filename": "tools/api_manifest/tests/fixtures/rustdoc-v57/lib.rs"
+      },
+      "visibility": "public"
+    }
+  },
+  "paths": {
+    "11": {
+      "crate_id": 0,
+      "kind": "trait",
+      "path": [
+        "rustdoc_v57_fixture",
+        "Audit"
+      ]
+    },
+    "114": {
+      "crate_id": 0,
+      "kind": "type_alias",
+      "path": [
+        "rustdoc_v57_fixture",
+        "ServiceAlias"
+      ]
+    },
+    "115": {
+      "crate_id": 0,
+      "kind": "type_alias",
+      "path": [
+        "rustdoc_v57_fixture",
+        "ServiceAliasChain"
+      ]
+    },
+    "116": {
+      "crate_id": 0,
+      "kind": "type_alias",
+      "path": [
+        "rustdoc_v57_fixture",
+        "StateAlias"
+      ]
+    },
+    "117": {
+      "crate_id": 0,
+      "kind": "type_alias",
+      "path": [
+        "rustdoc_v57_fixture",
+        "GenericAlias"
+      ]
+    },
+    "118": {
+      "crate_id": 0,
+      "kind": "module",
+      "path": [
+        "rustdoc_v57_fixture"
+      ]
+    },
+    "3": {
+      "crate_id": 0,
+      "kind": "trait",
+      "path": [
+        "rustdoc_v57_fixture",
+        "Contract"
+      ]
+    },
+    "58": {
+      "crate_id": 0,
+      "kind": "struct",
+      "path": [
+        "rustdoc_v57_fixture",
+        "Derived"
+      ]
+    },
+    "77": {
+      "crate_id": 2,
+      "kind": "trait",
+      "path": [
+        "core",
+        "fmt",
+        "Debug"
+      ]
+    },
+    "78": {
+      "crate_id": 0,
+      "kind": "variant",
+      "path": [
+        "rustdoc_v57_fixture",
+        "State",
+        "Unit"
+      ]
+    },
+    "80": {
+      "crate_id": 0,
+      "kind": "variant",
+      "path": [
+        "rustdoc_v57_fixture",
+        "State",
+        "Tuple"
+      ]
+    },
+    "82": {
+      "crate_id": 0,
+      "kind": "variant",
+      "path": [
+        "rustdoc_v57_fixture",
+        "State",
+        "Named"
+      ]
+    },
+    "83": {
+      "crate_id": 0,
+      "kind": "enum",
+      "path": [
+        "rustdoc_v57_fixture",
+        "State"
+      ]
+    },
+    "9": {
+      "crate_id": 0,
+      "kind": "struct",
+      "path": [
+        "rustdoc_v57_fixture",
+        "Service"
+      ]
+    },
+    "99": {
+      "crate_id": 0,
+      "kind": "struct",
+      "path": [
+        "rustdoc_v57_fixture",
+        "Generic"
+      ]
+    }
+  },
+  "root": 118,
+  "target": {
+    "target_features": [
+      {
+        "globally_enabled": false,
+        "implies_features": [],
+        "name": "adx",
+        "unstable_feature_gate": null
+      },
+      {
+        "globally_enabled": false,
+        "implies_features": [
+          "sse2"
+        ],
+        "name": "aes",
+        "unstable_feature_gate": null
+      },
+      {
+        "globally_enabled": false,
+        "implies_features": [
+          "amx-tile"
+        ],
+        "name": "amx-avx512",
+        "unstable_feature_gate": "x86_amx_intrinsics"
+      },
+      {
+        "globally_enabled": false,
+        "implies_features": [
+          "amx-tile"
+        ],
+        "name": "amx-bf16",
+        "unstable_feature_gate": "x86_amx_intrinsics"
+      },
+      {
+        "globally_enabled": false,
+        "implies_features": [
+          "amx-tile"
+        ],
+        "name": "amx-complex",
+        "unstable_feature_gate": "x86_amx_intrinsics"
+      },
+      {
+        "globally_enabled": false,
+        "implies_features": [
+          "amx-tile"
+        ],
+        "name": "amx-fp8",
+        "unstable_feature_gate": "x86_amx_intrinsics"
+      },
+      {
+        "globally_enabled": false,
+        "implies_features": [
+          "amx-tile"
+        ],
+        "name": "amx-fp16",
+        "unstable_feature_gate": "x86_amx_intrinsics"
+      },
+      {
+        "globally_enabled": false,
+        "implies_features": [
+          "amx-tile"
+        ],
+        "name": "amx-int8",
+        "unstable_feature_gate": "x86_amx_intrinsics"
+      },
+      {
+        "globally_enabled": false,
+        "implies_features": [
+          "amx-tile"
+        ],
+        "name": "amx-movrs",
+        "unstable_feature_gate": "x86_amx_intrinsics"
+      },
+      {
+        "globally_enabled": false,
+        "implies_features": [
+          "amx-tile"
+        ],
+        "name": "amx-tf32",
+        "unstable_feature_gate": "x86_amx_intrinsics"
+      },
+      {
+        "globally_enabled": false,
+        "implies_features": [],
+        "name": "amx-tile",
+        "unstable_feature_gate": "x86_amx_intrinsics"
+      },
+      {
+        "globally_enabled": false,
+        "implies_features": [],
+        "name": "apxf",
+        "unstable_feature_gate": "apx_target_feature"
+      },
+      {
+        "globally_enabled": false,
+        "implies_features": [
+          "sse4.2"
+        ],
+        "name": "avx",
+        "unstable_feature_gate": null
+      },
+      {
+        "globally_enabled": false,
+        "implies_features": [
+          "avx"
+        ],
+        "name": "avx2",
+        "unstable_feature_gate": null
+      },
+      {
+        "globally_enabled": false,
+        "implies_features": [
+          "avx512bf16",
+          "avx512bitalg",
+          "avx512bw",
+          "avx512cd",
+          "avx512dq",
+          "avx512f",
+          "avx512fp16",
+          "avx512ifma",
+          "avx512vbmi",
+          "avx512vbmi2",
+          "avx512vl",
+          "avx512vnni",
+          "avx512vpopcntdq"
+        ],
+        "name": "avx10.1",
+        "unstable_feature_gate": "avx10_target_feature"
+      },
+      {
+        "globally_enabled": false,
+        "implies_features": [
+          "avx10.1"
+        ],
+        "name": "avx10.2",
+        "unstable_feature_gate": "avx10_target_feature"
+      },
+      {
+        "globally_enabled": false,
+        "implies_features": [
+          "avx512bw"
+        ],
+        "name": "avx512bf16",
+        "unstable_feature_gate": null
+      },
+      {
+        "globally_enabled": false,
+        "implies_features": [
+          "avx512bw"
+        ],
+        "name": "avx512bitalg",
+        "unstable_feature_gate": null
+      },
+      {
+        "globally_enabled": false,
+        "implies_features": [
+          "avx512f"
+        ],
+        "name": "avx512bw",
+        "unstable_feature_gate": null
+      },
+      {
+        "globally_enabled": false,
+        "implies_features": [
+          "avx512f"
+        ],
+        "name": "avx512cd",
+        "unstable_feature_gate": null
+      },
+      {
+        "globally_enabled": false,
+        "implies_features": [
+          "avx512f"
+        ],
+        "name": "avx512dq",
+        "unstable_feature_gate": null
+      },
+      {
+        "globally_enabled": false,
+        "implies_features": [
+          "avx2",
+          "fma",
+          "f16c"
+        ],
+        "name": "avx512f",
+        "unstable_feature_gate": null
+      },
+      {
+        "globally_enabled": false,
+        "implies_features": [
+          "avx512bw"
+        ],
+        "name": "avx512fp16",
+        "unstable_feature_gate": null
+      },
+      {
+        "globally_enabled": false,
+        "implies_features": [
+          "avx512f"
+        ],
+        "name": "avx512ifma",
+        "unstable_feature_gate": null
+      },
+      {
+        "globally_enabled": false,
+        "implies_features": [
+          "avx512bw"
+        ],
+        "name": "avx512vbmi",
+        "unstable_feature_gate": null
+      },
+      {
+        "globally_enabled": false,
+        "implies_features": [
+          "avx512bw"
+        ],
+        "name": "avx512vbmi2",
+        "unstable_feature_gate": null
+      },
+      {
+        "globally_enabled": false,
+        "implies_features": [
+          "avx512f"
+        ],
+        "name": "avx512vl",
+        "unstable_feature_gate": null
+      },
+      {
+        "globally_enabled": false,
+        "implies_features": [
+          "avx512f"
+        ],
+        "name": "avx512vnni",
+        "unstable_feature_gate": null
+      },
+      {
+        "globally_enabled": false,
+        "implies_features": [
+          "avx512f"
+        ],
+        "name": "avx512vp2intersect",
+        "unstable_feature_gate": null
+      },
+      {
+        "globally_enabled": false,
+        "implies_features": [
+          "avx512f"
+        ],
+        "name": "avx512vpopcntdq",
+        "unstable_feature_gate": null
+      },
+      {
+        "globally_enabled": false,
+        "implies_features": [
+          "avx2"
+        ],
+        "name": "avxifma",
+        "unstable_feature_gate": null
+      },
+      {
+        "globally_enabled": false,
+        "implies_features": [
+          "avx2"
+        ],
+        "name": "avxneconvert",
+        "unstable_feature_gate": null
+      },
+      {
+        "globally_enabled": false,
+        "implies_features": [
+          "avx2"
+        ],
+        "name": "avxvnni",
+        "unstable_feature_gate": null
+      },
+      {
+        "globally_enabled": false,
+        "implies_features": [
+          "avx2"
+        ],
+        "name": "avxvnniint8",
+        "unstable_feature_gate": null
+      },
+      {
+        "globally_enabled": false,
+        "implies_features": [
+          "avx2"
+        ],
+        "name": "avxvnniint16",
+        "unstable_feature_gate": null
+      },
+      {
+        "globally_enabled": false,
+        "implies_features": [],
+        "name": "bmi1",
+        "unstable_feature_gate": null
+      },
+      {
+        "globally_enabled": false,
+        "implies_features": [],
+        "name": "bmi2",
+        "unstable_feature_gate": null
+      },
+      {
+        "globally_enabled": true,
+        "implies_features": [],
+        "name": "cmpxchg16b",
+        "unstable_feature_gate": null
+      },
+      {
+        "globally_enabled": false,
+        "implies_features": [],
+        "name": "ermsb",
+        "unstable_feature_gate": "ermsb_target_feature"
+      },
+      {
+        "globally_enabled": false,
+        "implies_features": [
+          "avx"
+        ],
+        "name": "f16c",
+        "unstable_feature_gate": null
+      },
+      {
+        "globally_enabled": false,
+        "implies_features": [
+          "avx"
+        ],
+        "name": "fma",
+        "unstable_feature_gate": null
+      },
+      {
+        "globally_enabled": true,
+        "implies_features": [],
+        "name": "fxsr",
+        "unstable_feature_gate": null
+      },
+      {
+        "globally_enabled": false,
+        "implies_features": [
+          "sse2"
+        ],
+        "name": "gfni",
+        "unstable_feature_gate": null
+      },
+      {
+        "globally_enabled": false,
+        "implies_features": [
+          "sse2"
+        ],
+        "name": "kl",
+        "unstable_feature_gate": null
+      },
+      {
+        "globally_enabled": true,
+        "implies_features": [],
+        "name": "lahfsahf",
+        "unstable_feature_gate": "lahfsahf_target_feature"
+      },
+      {
+        "globally_enabled": false,
+        "implies_features": [],
+        "name": "lzcnt",
+        "unstable_feature_gate": null
+      },
+      {
+        "globally_enabled": false,
+        "implies_features": [],
+        "name": "movbe",
+        "unstable_feature_gate": null
+      },
+      {
+        "globally_enabled": false,
+        "implies_features": [],
+        "name": "movrs",
+        "unstable_feature_gate": "movrs_target_feature"
+      },
+      {
+        "globally_enabled": false,
+        "implies_features": [
+          "sse2"
+        ],
+        "name": "pclmulqdq",
+        "unstable_feature_gate": null
+      },
+      {
+        "globally_enabled": false,
+        "implies_features": [],
+        "name": "popcnt",
+        "unstable_feature_gate": null
+      },
+      {
+        "globally_enabled": false,
+        "implies_features": [],
+        "name": "prfchw",
+        "unstable_feature_gate": "prfchw_target_feature"
+      },
+      {
+        "globally_enabled": false,
+        "implies_features": [],
+        "name": "rdrand",
+        "unstable_feature_gate": null
+      },
+      {
+        "globally_enabled": false,
+        "implies_features": [],
+        "name": "rdseed",
+        "unstable_feature_gate": null
+      },
+      {
+        "globally_enabled": false,
+        "implies_features": [],
+        "name": "rtm",
+        "unstable_feature_gate": "rtm_target_feature"
+      },
+      {
+        "globally_enabled": false,
+        "implies_features": [
+          "sse2"
+        ],
+        "name": "sha",
+        "unstable_feature_gate": null
+      },
+      {
+        "globally_enabled": false,
+        "implies_features": [
+          "avx2"
+        ],
+        "name": "sha512",
+        "unstable_feature_gate": null
+      },
+      {
+        "globally_enabled": false,
+        "implies_features": [
+          "avx"
+        ],
+        "name": "sm3",
+        "unstable_feature_gate": null
+      },
+      {
+        "globally_enabled": false,
+        "implies_features": [
+          "avx2"
+        ],
+        "name": "sm4",
+        "unstable_feature_gate": null
+      },
+      {
+        "globally_enabled": false,
+        "implies_features": [],
+        "name": "soft-float",
+        "unstable_feature_gate": "x87_target_feature"
+      },
+      {
+        "globally_enabled": true,
+        "implies_features": [],
+        "name": "sse",
+        "unstable_feature_gate": null
+      },
+      {
+        "globally_enabled": true,
+        "implies_features": [
+          "sse"
+        ],
+        "name": "sse2",
+        "unstable_feature_gate": null
+      },
+      {
+        "globally_enabled": true,
+        "implies_features": [
+          "sse2"
+        ],
+        "name": "sse3",
+        "unstable_feature_gate": null
+      },
+      {
+        "globally_enabled": false,
+        "implies_features": [
+          "ssse3"
+        ],
+        "name": "sse4.1",
+        "unstable_feature_gate": null
+      },
+      {
+        "globally_enabled": false,
+        "implies_features": [
+          "sse4.1"
+        ],
+        "name": "sse4.2",
+        "unstable_feature_gate": null
+      },
+      {
+        "globally_enabled": false,
+        "implies_features": [
+          "sse3"
+        ],
+        "name": "sse4a",
+        "unstable_feature_gate": null
+      },
+      {
+        "globally_enabled": false,
+        "implies_features": [
+          "sse3"
+        ],
+        "name": "ssse3",
+        "unstable_feature_gate": null
+      },
+      {
+        "globally_enabled": false,
+        "implies_features": [],
+        "name": "tbm",
+        "unstable_feature_gate": null
+      },
+      {
+        "globally_enabled": false,
+        "implies_features": [
+          "avx2",
+          "aes"
+        ],
+        "name": "vaes",
+        "unstable_feature_gate": null
+      },
+      {
+        "globally_enabled": false,
+        "implies_features": [
+          "avx",
+          "pclmulqdq"
+        ],
+        "name": "vpclmulqdq",
+        "unstable_feature_gate": null
+      },
+      {
+        "globally_enabled": false,
+        "implies_features": [
+          "kl"
+        ],
+        "name": "widekl",
+        "unstable_feature_gate": null
+      },
+      {
+        "globally_enabled": true,
+        "implies_features": [],
+        "name": "x87",
+        "unstable_feature_gate": "x87_target_feature"
+      },
+      {
+        "globally_enabled": false,
+        "implies_features": [
+          "avx",
+          "sse4a"
+        ],
+        "name": "xop",
+        "unstable_feature_gate": "xop_target_feature"
+      },
+      {
+        "globally_enabled": false,
+        "implies_features": [],
+        "name": "xsave",
+        "unstable_feature_gate": null
+      },
+      {
+        "globally_enabled": false,
+        "implies_features": [
+          "xsave"
+        ],
+        "name": "xsavec",
+        "unstable_feature_gate": null
+      },
+      {
+        "globally_enabled": false,
+        "implies_features": [
+          "xsave"
+        ],
+        "name": "xsaveopt",
+        "unstable_feature_gate": null
+      },
+      {
+        "globally_enabled": false,
+        "implies_features": [
+          "xsave"
+        ],
+        "name": "xsaves",
+        "unstable_feature_gate": null
+      }
+    ],
+    "triple": "x86_64-pc-windows-msvc"
+  }
+}

@@ -10,6 +10,7 @@ from pathlib import Path
 
 
 MODULE_PATH = Path(__file__).resolve().parents[1] / "audit_rust_exports.py"
+RUSTDOC_V57_FIXTURE = Path(__file__).with_name("fixtures") / "rustdoc-v57" / "rustdoc_v57_fixture.json"
 
 
 def item(identifier, name, inner, visibility="public", file="crates/sample/src/lib.rs"):
@@ -47,6 +48,11 @@ class RustExportAuditTests(unittest.TestCase):
 
     def names(self, report):
         return {record["exportName"] for record in report["declarations"]}
+
+    def rustdoc_v57_fixture(self):
+        document = json.loads(RUSTDOC_V57_FIXTURE.read_text(encoding="utf-8"))
+        self.assertEqual(document["format_version"], 57)
+        return {"rustdoc_v57_fixture": document}
 
     def test_private_module_items_are_visible_only_through_public_reexports(self):
         doc = document("sample", [
@@ -137,6 +143,40 @@ class RustExportAuditTests(unittest.TestCase):
         self.assertEqual(self.names(report), {"sample::Value"})
         self.assertFalse(report["complete"])
         self.assertEqual(report["issues"][0]["reason"], "trait-implementation-members-not-audited")
+
+    def test_rustdoc_v57_inventories_qualified_required_and_default_trait_members(self):
+        report = self.inventory(self.rustdoc_v57_fixture())
+        expected = {
+            "rustdoc_v57_fixture::Service::required",
+            "<rustdoc_v57_fixture::Service as rustdoc_v57_fixture::Contract>::required",
+            "<rustdoc_v57_fixture::Service as rustdoc_v57_fixture::Contract>::provided",
+            "<rustdoc_v57_fixture::Service as rustdoc_v57_fixture::Contract>::Output",
+            "<rustdoc_v57_fixture::Service as rustdoc_v57_fixture::Contract>::LIMIT",
+            "<rustdoc_v57_fixture::Service as rustdoc_v57_fixture::Audit>::required",
+        }
+        self.assertTrue(expected <= self.names(report), sorted(expected - self.names(report)))
+
+    def test_rustdoc_v57_inventories_synthetic_derived_trait_members(self):
+        report = self.inventory(self.rustdoc_v57_fixture())
+        self.assertIn(
+            "<rustdoc_v57_fixture::Derived as core::fmt::Debug>::fmt",
+            self.names(report),
+        )
+
+    def test_rustdoc_v57_expands_alias_chains_struct_fields_enum_variants_and_payloads(self):
+        report = self.inventory(self.rustdoc_v57_fixture())
+        expected = {
+            "rustdoc_v57_fixture::ServiceAlias::inherent",
+            "<rustdoc_v57_fixture::ServiceAlias as rustdoc_v57_fixture::Contract>::required",
+            "rustdoc_v57_fixture::ServiceAliasChain::inherent",
+            "<rustdoc_v57_fixture::ServiceAliasChain as rustdoc_v57_fixture::Contract>::required",
+            "rustdoc_v57_fixture::GenericAlias::value",
+            "rustdoc_v57_fixture::StateAlias::Tuple",
+            "rustdoc_v57_fixture::StateAlias::Tuple::0",
+            "rustdoc_v57_fixture::StateAlias::Named",
+            "rustdoc_v57_fixture::StateAlias::Named::value",
+        }
+        self.assertTrue(expected <= self.names(report), sorted(expected - self.names(report)))
 
     def test_exported_macros_and_hidden_public_items_are_kept(self):
         hidden = structure(2, "HiddenDocumentation")
