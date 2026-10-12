@@ -1689,6 +1689,24 @@ def load_validated_catalog(raw: bytes, repo_root: Path, *, require_complete: boo
     return catalog
 
 
+def _profile_oracle_feature_spec_requirement_ids(root: Path, feature_spec_id: str) -> set[str] | None:
+    """Return declared FR IDs for the feature spec linked by an operation."""
+    specification_dir = root / "specs"
+    for specification_path in specification_dir.glob("*/spec.md"):
+        try:
+            specification = specification_path.read_text(encoding="utf-8")
+        except (OSError, UnicodeError):
+            continue
+        branch = re.search(
+            r"(?m)^\*\*Feature Branch\*\*:\s*`?feature/([^`\s]+)",
+            specification,
+        )
+        if branch is None or not branch.group(1).startswith(f"{feature_spec_id}-"):
+            continue
+        return set(re.findall(r"(?m)^\s*-\s+\*\*(FR-\d{3})\*\*:", specification))
+    return None
+
+
 def _profile_oracle_reference_issue(
     root: Path,
     reference: object,
@@ -1765,27 +1783,6 @@ def validate_source_table_contracts(oracle: object, repo_root: Path) -> list[str
         if isinstance(element, dict) and isinstance(element.get("element_id"), str)
     }
     feature_requirement_cache: dict[str, set[str] | None] = {}
-
-    def feature_requirements(feature_spec_id: str) -> set[str] | None:
-        if feature_spec_id in feature_requirement_cache:
-            return feature_requirement_cache[feature_spec_id]
-        specification_dir = root / "specs"
-        for specification_path in specification_dir.glob("*/spec.md"):
-            try:
-                specification = specification_path.read_text(encoding="utf-8")
-            except (OSError, UnicodeError):
-                continue
-            branch = re.search(
-                r"(?m)^\*\*Feature Branch\*\*:\s*`?feature/([^`\s]+)",
-                specification,
-            )
-            if branch is None or not branch.group(1).startswith(f"{feature_spec_id}-"):
-                continue
-            identifiers = set(re.findall(r"(?m)^\s*-\s+\*\*(FR-\d{3})\*\*:", specification))
-            feature_requirement_cache[feature_spec_id] = identifiers
-            return identifiers
-        feature_requirement_cache[feature_spec_id] = None
-        return None
 
     for index, contract in enumerate(contracts):
         label = f"source_table_contracts[{index}]"
@@ -1876,7 +1873,12 @@ def validate_source_table_contracts(oracle: object, repo_root: Path) -> list[str
             if not isinstance(feature_spec_id, str) or not feature_spec_id.strip():
                 diagnostics.append(f"{label}.functional_requirement_ids cannot resolve the operation feature spec")
             else:
-                approved_requirements = feature_requirements(feature_spec_id)
+                if feature_spec_id not in feature_requirement_cache:
+                    feature_requirement_cache[feature_spec_id] = _profile_oracle_feature_spec_requirement_ids(
+                        root,
+                        feature_spec_id,
+                    )
+                approved_requirements = feature_requirement_cache[feature_spec_id]
                 if approved_requirements is None:
                     diagnostics.append(f"{label}.functional_requirement_ids cannot resolve the approved feature spec")
                 elif not set(functional_requirements).issubset(approved_requirements):
