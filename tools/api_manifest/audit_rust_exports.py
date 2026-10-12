@@ -56,6 +56,7 @@ class _Inventory:
         self.records: dict[tuple[str, str], dict[str, Any]] = {}
         self.issues: list[dict[str, Any]] = []
         self.definitions: dict[tuple[str, ...], tuple[str, str]] = {}
+        self.member_origins: dict[tuple[str, str], tuple[str, ...]] = {}
         for crate, doc in sorted(documents.items()):
             if doc.get("format_version") != FORMAT_VERSION or doc.get("includes_private") is not True:
                 raise ValueError(f"{crate}: expected rustdoc format {FORMAT_VERSION} with private items")
@@ -66,6 +67,37 @@ class _Inventory:
             for identifier, path in doc["paths"].items():
                 if identifier in doc["index"] and doc["index"][identifier].get("crate_id") == 0:
                     self.definitions[tuple(path["path"])] = crate, identifier
+            for identifier, owner in doc["index"].items():
+                if owner.get("crate_id") != 0 or _kind(owner) not in {"struct", "union", "enum", "trait"}:
+                    continue
+                canonical = tuple(doc["paths"].get(identifier, {}).get("path", [crate, owner["name"]]))
+                self.index_member_origins(crate, owner, canonical)
+
+    def index_member_origins(self, crate: str, owner: dict[str, Any], canonical: tuple[str, ...]) -> None:
+        """Keep macro-expanded members distinct even when their source spans coincide."""
+        kind = _kind(owner)
+        inner = owner["inner"][kind]
+        children = []
+        if kind in {"struct", "variant"}:
+            children = self.fields(inner["kind"])
+        elif kind == "union":
+            children = inner["fields"]
+        elif kind == "enum":
+            children = inner["variants"]
+        elif kind == "trait":
+            children = inner["items"]
+        for impl_id in inner.get("impls", []):
+            children = [*children, *self.documents[crate]["index"][str(impl_id)]["inner"]["impl"]["items"]]
+        for identifier in children:
+            if identifier is None:
+                continue
+            member = self.documents[crate]["index"].get(str(identifier))
+            if member is None:
+                continue
+            origin = (*canonical, member["name"])
+            self.member_origins[(crate, str(identifier))] = origin
+            if _kind(member) == "variant":
+                self.index_member_origins(crate, member, origin)
 
     def issue(self, package: str, name: str, reason: str, item: dict[str, Any], **details: Any) -> None:
         self.issues.append({
@@ -86,7 +118,9 @@ class _Inventory:
             exports: tuple[dict[str, Any] | None, ...], associated: bool = False) -> None:
         kind = _kind(item)
         location = _location(item)
-        origin_path = self.documents[crate]["paths"].get(str(item["id"]), {}).get("path", [crate, item["name"]])
+        origin_path = self.member_origins.get((crate, str(item["id"])))
+        if origin_path is None:
+            origin_path = self.documents[crate]["paths"].get(str(item["id"]), {}).get("path", [crate, item["name"]])
         identity = json.dumps([crate, location, kind, origin_path], sort_keys=True, separators=(",", ":"))
         name = "::".join(path)
         record = {
