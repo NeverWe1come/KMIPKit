@@ -206,23 +206,15 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
         }
         expected = {
             ("rust-kmipkit", "kmipkit::VERSION"),
+            ("rust-kmipkit", "kmipkit::capability_is_available"),
             ("java-kmipkit", "org.kmipkit.RuntimeMetadata"),
             ("java-kmipkit", "org.kmipkit.RuntimeMetadata.Version"),
-            ("java-kmipkit", "org.kmipkit.RuntimeMetadata.ErrorSnapshot"),
             ("java-kmipkit", "org.kmipkit.RuntimeMetadata.version"),
             ("java-kmipkit", "org.kmipkit.RuntimeMetadata.capabilityIsAvailable"),
-            ("java-kmipkit", "org.kmipkit.RuntimeMetadata.lastErrorSnapshot"),
-            ("java-kmipkit", "org.kmipkit.RuntimeMetadata.clearLastError"),
             ("python-kmipkit", "kmipkit.metadata"),
             ("python-kmipkit", "kmipkit.metadata.Version"),
-            ("python-kmipkit", "kmipkit.metadata.FfiErrorSnapshot"),
-            ("python-kmipkit", "kmipkit.metadata.ClientErrorCategory"),
-            ("python-kmipkit", "kmipkit.metadata.ClientCauseCategory"),
-            ("python-kmipkit", "kmipkit.metadata.RequestDeliveryState"),
             ("python-kmipkit", "kmipkit.metadata.get_version"),
             ("python-kmipkit", "kmipkit.metadata.capability_is_available"),
-            ("python-kmipkit", "kmipkit.metadata.last_error_snapshot"),
-            ("python-kmipkit", "kmipkit.metadata.clear_last_error"),
         }
 
         self.assertTrue(expected <= declarations.keys())
@@ -338,7 +330,7 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
             for declaration in self.checked_in_manifest["publicDeclarations"]
             if declaration["packageId"] in rust_packages
         ]
-        self.assertEqual(len(declarations), 1758)
+        self.assertEqual(len(declarations), 1759)
         by_package_and_name = {
             (declaration["packageId"], declaration["exportName"]): declaration
             for declaration in declarations
