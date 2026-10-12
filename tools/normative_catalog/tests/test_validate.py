@@ -13217,12 +13217,9 @@ class CatalogValidationTests(unittest.TestCase):
             (ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8")
         )
         requirement_id = "KMIPKIT-REQ-SPEC-6.1.7-002-003"
-        requirement = next(
-            (row for row in catalog["requirements"] if row["requirement_id"] == requirement_id),
-            None,
-        )
-        self.assertIsNotNone(requirement, "the proposed client MAY must be promoted to a stable requirement")
-        assert requirement is not None
+        requirements = {row["requirement_id"]: row for row in catalog["requirements"]}
+        self.assertIn(requirement_id, requirements, "the proposed client MAY must be promoted to a stable requirement")
+        requirement = requirements[requirement_id]
         self.assertEqual(requirement["source_clause_ids"], ["KMIPKIT-CLAUSE-SPEC-6.1.7-002"])
         self.assertEqual(requirement["source_keyword"], "MAY")
         self.assertEqual(requirement["role"], "client")
