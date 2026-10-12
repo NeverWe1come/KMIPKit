@@ -89,9 +89,11 @@ class BindingExportAuditTests(unittest.TestCase):
     def test_c_header_inventory_keeps_a_conditional_public_version_macro(self):
         result = AUDIT.inventory_c_header(
             "#ifndef KMIPKIT_ABI_VERSION\n#define KMIPKIT_ABI_VERSION 1\n#endif\n"
+            "#define KMIPKIT_FEATURE_LEVEL 1\n"
         )
         names = {row["exportName"] for row in result["declarations"]}
         self.assertIn("KMIPKIT_ABI_VERSION", names)
+        self.assertIn("KMIPKIT_FEATURE_LEVEL", names)
 
     def test_c_header_inventory_accounts_for_enum_types_and_values(self):
         result = AUDIT.inventory_c_header("typedef enum { KMIPKIT_A = 0, KMIPKIT_B = 1 } kmipkit_mode_t;\n")
