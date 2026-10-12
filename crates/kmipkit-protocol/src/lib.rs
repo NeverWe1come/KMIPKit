@@ -59,6 +59,7 @@ mod multipart;
 mod obtain_lease;
 mod operation_data;
 mod ping;
+mod pkcs11;
 mod poll;
 mod process;
 mod query;
@@ -158,6 +159,7 @@ pub use modify_attribute::{ModifyAttributeError, ModifyAttributeRequest, ModifyA
 pub use obtain_lease::{ObtainLeaseError, ObtainLeaseRequest, ObtainLeaseResponse};
 pub use operation_data::OperationData;
 pub use ping::{PingError, PingRequest, PingResponse};
+pub use pkcs11::{Pkcs11Error, Pkcs11Request, Pkcs11Response};
 pub use poll::{PollRequest, PollResponse};
 pub use process::{ProcessRequest, ProcessResponse};
 pub use query::{QueryError, QueryFunction, QueryRequest, QueryResponse, QueryResponseField};
@@ -500,3 +502,7 @@ mod log_operation_tests;
 #[cfg(test)]
 #[path = "../tests/unit/validate_operation_tests.rs"]
 mod validate_operation_tests;
+
+#[cfg(test)]
+#[path = "../tests/unit/pkcs11_operation_tests.rs"]
+mod pkcs11_operation_tests;

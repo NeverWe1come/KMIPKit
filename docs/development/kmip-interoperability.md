@@ -181,6 +181,16 @@ For KMIPKIT-0039, the Get Constraints (§6.1.22), Get Usage Allocation (§6.1.23
 
 On 2026-10-11, the pinned Cosmian KMS 5.28.0 image was started with the local mTLS test certificates. Separate credential-session probes for Delegated Login (§6.1.12), Login (§6.1.30), and Logout (§6.1.31) sent binary TTLV/TLS requests. Each received Failure/Invalid Message without the Operation field, which OASIS KMIP 2.1 §8.6, Table 399 requires when the request batch item includes Operation. KMIPKit rejected each response after response delivery began and retained its generic TTLV for inspection. These are `FAIL` interoperability results for credential-session operations; they are unrelated to KMIPKIT-0039 and do not change its four still-pending result rows above. PyKMIP's current version enum lists KMIP 2.0 as its latest version and does not list 2.1, so it is not a strict KMIP 2.1 integration target. The two-independent-implementation release gate remains open. The focused live probes are in `crates/kmipkit-client/tests/credential_sessions_cosmian.rs` and remain ignored in ordinary test runs.
 
+For KMIPKIT-0040, the PKCS#11 (§6.1.37, Tables 273–275) row remains
+`Pending` for every KMIP 2.1 server. The Rust protocol and fake-transport tests
+are source-derived local evidence only; no live PKCS#11 exchange was executed
+for this increment. No configured pair of independent KMIP 2.1 implementations
+with PKCS#11 forwarding support was available for this work. This leaves the
+T022 two-server release gate open. When access is available, record the exact
+client/server builds, TLS transport, caller-selected interface/function and
+parameter profile, result/delivery state, UTC date and workaround, without
+recording secret parameters, correlation values or raw KMIP bodies.
+
 ## Sources
 
 - [OASIS KMIP Specification 2.1, §§6.1–6.2](https://docs.oasis-open.org/kmip/kmip-spec/v2.1/os/kmip-spec-v2.1-os.html); the repository’s pinned copy and source status are indexed in [the KMIP 2.1 source inventory](../../specification/oasis/kmip-2.1/README.md).
