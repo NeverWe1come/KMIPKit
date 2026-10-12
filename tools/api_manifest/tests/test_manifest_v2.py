@@ -16,6 +16,7 @@ from tools.api_manifest.generate import (
     _validate_references,
     _validate_v2_readiness,
 )
+from tools.api_manifest.audit_rust_exports import _canonical_export_name
 
 
 ROOT = Path(__file__).resolve().parents[3]
@@ -23,6 +24,10 @@ SCHEMA_PATH = ROOT / "specification" / "api" / "public-api.schema.json"
 CHECKED_IN_MANIFEST_PATH = ROOT / "specification" / "api" / "public-api.json"
 REGISTRY_FIXTURE_PATH = ROOT / "tools" / "api_manifest" / "tests" / "fixtures" / "public-api-v1.json"
 CATALOG_PATH = ROOT / "specification" / "catalog" / "kmip-2.1.json"
+RUST_EXPORT_REPORT_PATH = (
+    ROOT / "specs" / "043-public-api-bindings" / "reports"
+    / "rust-export-report-2026-10-12.json"
+)
 
 EXPECTED_PACKAGES = {
     "rust-kmipkit-ttlv",
@@ -520,7 +525,28 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
             for declaration in self.checked_in_manifest["publicDeclarations"]
             if declaration["packageId"] in rust_packages
         ]
-        self.assertEqual(len(declarations), 1767)
+        self.assertEqual(len(declarations), 9448)
+        report = json.loads(RUST_EXPORT_REPORT_PATH.read_text(encoding="utf-8"))
+        observed_keys = {
+            (row["packageId"], _canonical_export_name(row["exportName"]), row["kind"])
+            for row in report["declarations"]
+        }
+        manifest_keys = {
+            (row["packageId"], _canonical_export_name(row["exportName"]), row["kind"])
+            for row in declarations
+        }
+        self.assertEqual(len(observed_keys), len(report["declarations"]))
+        self.assertEqual(manifest_keys, observed_keys)
+        self.assertEqual(report["counts"]["missingFromManifest"], 0)
+        self.assertEqual(report["counts"]["notObserved"], 0)
+        self.assertEqual(report["counts"]["kindMismatches"], 0)
+        self.assertEqual(report["counts"]["issues"], 39)
+        self.assertFalse(report["complete"])
+        self.assertTrue(report["matchesManifest"])
+        self.assertEqual(
+            {issue["reason"] for issue in report["issues"]},
+            {"unresolved-rustdoc-implementation-predicate"},
+        )
         by_package_and_name = {
             (declaration["packageId"], declaration["exportName"]): declaration
             for declaration in declarations

@@ -84,33 +84,35 @@ The canonical cross-language declaration slice whose Rust mapping paths begin wi
 | Green | `c0cc2a31` | `python -B -m unittest discover -s tools/api_manifest/tests -v`; `python tools/api_manifest/generate.py --check`; `git diff --check` | PASS: 94 tests passed, 3 symlink tests skipped because Windows denied symlink creation (WinError 1314); all 11 generated outputs current; no whitespace errors. |
 | Refactor | `5d36f87c` | `uv run --with jsonschema -- python -B -m unittest discover -s tools/api_manifest/tests -v`; `python tools/api_manifest/generate.py --check`; `git diff --check` | PASS: 94 tests passed, 3 symlink tests skipped because Windows denied symlink creation (WinError 1314); all 11 generated outputs current; no whitespace errors. Strengthened the inventory assertion to require exactly 101 declarations split 76/25; no API behavior or manifest data changed. |
 
-### T011/T013 — Reproducible Rust public-export audit (partial)
+### T011/T013 — Reproducible Rust public-export audit (current partial snapshot)
 
-The pinned Rust 1.94.0 / rustdoc JSON 57 audit now has a checked-in, reproducible report at [rust-export-report-2026-10-12.json](reports/rust-export-report-2026-10-12.json). It audits all five published Rust crates on Windows x86-64 with all Cargo features. The command below wrote the report and returned **1 as expected** because the export inventory is not reconciled and the supported traversal subset is incomplete; this is a failing release gate, not a pass.
+The pinned Rust 1.94.0 / rustdoc JSON 57 audit report at [rust-export-report-2026-10-12.json](reports/rust-export-report-2026-10-12.json) was regenerated from the current continuation branch on Windows x64 with all Cargo features. The deterministic traversal now expands reachable trait-implementation members and transparent type-alias projections when identity, reachability, generic arguments, and predicates can be established. It emits exact issues instead of claiming completion when an implementation predicate remains unresolved. The command returned **1 as expected** because the manifest and issue gates remain open.
 
-| Published package | Observed paths | Manifest rows | Exact matches | Missing from manifest | Not observed |
-| --- | ---: | ---: | ---: | ---: | ---: |
-| `kmipkit-ttlv` | 107 | 95 | 95 | 12 | 0 |
-| `kmipkit-protocol` | 1,631 | 964 | 958 | 673 | 6 |
-| `kmipkit-transport` | 98 | 96 | 96 | 2 | 0 |
-| `kmipkit-client` | 651 | 291 | 291 | 360 | 0 |
-| `kmipkit` | 785 | 321 | 321 | 464 | 0 |
-| **Total** | **3,272** | **1,767** | **1,761** | **1,511** | **6** |
+| Published package | Observed paths | Manifest rows | Exact matches | Missing from manifest | Not observed | Issues |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| `kmipkit-ttlv` | 331 | 331 | 331 | 0 | 0 | 0 |
+| `kmipkit-protocol` | 5,806 | 5,806 | 5,806 | 0 | 0 | 31 |
+| `kmipkit-transport` | 365 | 365 | 365 | 0 | 0 | 0 |
+| `kmipkit-client` | 1,031 | 1,031 | 1,031 | 0 | 0 | 0 |
+| `kmipkit` | 1,915 | 1,915 | 1,915 | 0 | 0 | 8 |
+| **Total** | **9,448** | **9,448** | **9,448** | **0** | **0** | **39** |
 
-There are no kind mismatches or approved Rust exclusions. The audit reports 375 paths whose full scope is not yet covered: 365 owners with trait-implementation members and 10 transparent type aliases. The 12 missing TTLV package paths are `kmipkit_ttlv::Item::try_clone` and the 11 public `ValueView` tuple payload fields. Six protocol manifest names use a different spelling for `ExtensionDefinitionAccounting` fields. The JSON report records every path, package, source location, and issue for reconciliation.
+There were no kind mismatches or approved Rust exclusions. All 39 issues are `unresolved-rustdoc-implementation-predicate`; the report records the exact implementation ID and reachable owner for each. The 7,681 previously missing rows now match exact blocked records with no signatures or language mappings. Their candidate owner is inherited only from an exact manifest owner; unresolved owners remain under the existing blocked `public_binding_surface` candidate. `matchesManifest` is true, but `complete` remains false until all 39 predicates are resolved. T011 remains unchecked.
 
 | Verification | Command | Result |
 |---|---|---|
 | Focused auditor tests | `python -B -m unittest tools.api_manifest.tests.test_rust_exports -v` | PASS: 18 tests. |
-| Full API-manifest tests | `.venv/Scripts/python.exe -B -m unittest discover -s tools/api_manifest/tests -v` | PASS: 162 tests; 3 Windows symlink tests skipped because symlink creation was denied (WinError 1314). |
-| Rust export inventory | `python -B tools/api_manifest/audit_rust_exports.py --repo-root . --report specs/043-public-api-bindings/reports/rust-export-report-2026-10-12.json --check` | Report written; exit 1 with 3,272 observed, 1,761 matched, 1,511 missing, 6 not observed, and 375 incomplete-scope records. |
+| Full API-manifest tests | `.venv/Scripts/python.exe -B -m unittest discover -s tools/api_manifest/tests -v` | PASS: 194 tests; 3 Windows symlink tests skipped because symlink creation was denied (WinError 1314). |
+| Rust export inventory | `.venv/Scripts/python.exe -B tools/api_manifest/audit_rust_exports.py --repo-root . --report specs/043-public-api-bindings/reports/rust-export-report-2026-10-12.json --check` | Report written; exit 1 with 9,448 observed, 9,448 matched, 0 missing, 0 not observed, 0 kind mismatches, and 39 unresolved predicate issues. Exit 1 is the expected open gate. |
+| Blocked Rust reconciliation | `.venv/Scripts/python.exe -B tools/api_manifest/reconcile_rust_exports.py --report specs/043-public-api-bindings/reports/rust-export-report-2026-10-12.json --write` | Added 7,681 exact `blocked` records without signatures, language mappings, or exclusions; owner candidates came only from exact manifest owners or the existing blocked `public_binding_surface` capability. |
+| Reconciled export inventory | `.venv/Scripts/python.exe -B tools/api_manifest/audit_rust_exports.py --repo-root . --report specs/043-public-api-bindings/reports/rust-export-report-2026-10-12.json --check` | Report written; exit 1 with 9,448 observed, 9,448 matched, 0 missing, 0 not observed, 0 kind mismatches, and 39 unresolved predicate issues. |
 | KMIPKit FFI MSRV build | `cargo +1.94.0 build --locked -p kmipkit-ffi` | PASS on Windows x86-64; built `target/debug/kmipkit_ffi.dll` with the vendored `aws-lc-sys@0.45.0`. Optional NASM/stdalign probes emitted warnings; the build completed successfully. |
 | MSRV C ABI allowlist | `.venv/Scripts/python.exe -B tools/api_manifest/audit_binding_exports.py --repo-root . --c-only --c-binary target/debug/kmipkit_ffi.dll --check` | PASS: complete C audit, 180 exact manifest rows, 2 approved C-only exclusions, no missing/stale/kind/issues. |
 | C consumer locally | `cmake -G "Visual Studio 17 2022" -A x64 -S bindings/c -B build/c-consumer` | Not run: CMake is not installed on this host. The GitHub C matrix remains the C-consumer verification path. |
 | Generated manifest outputs | `python -B tools/api_manifest/generate.py --check` | PASS: all 11 generated outputs current. |
 | Whitespace validation | `git diff --check` | PASS. |
 
-T011 remains open because the Rust traversal does not yet inventory trait-implementation members and type-alias inherited members exhaustively. The C, Java, and Python binding audit now completes with exact manifest reconciliation on the current Windows x86-64 host; its Linux and macOS ABI matrix still requires remote CI evidence. T013 remains open because only the approved TTLV owner slice has been mapped; the remaining Rust package declarations are not yet reconciled.
+T011 remains open because 39 Rust implementation predicates remain unresolved and the remote Linux/macOS ABI checks have not yet been evidenced. All 9,448 Rust paths in this snapshot now have exact manifest rows; the 7,681 added rows remain blocked and therefore do not declare API capability or parity. The C, Java, and Python binding audit completes with exact manifest reconciliation on this Windows x86-64 host. T013 remains open because only the approved TTLV owner slice has been mapped; the remaining Rust package declarations are not yet reconciled.
 
 ### C/Java/Python public-export audit (local snapshot passes)
 
@@ -124,7 +126,7 @@ The deterministic non-Rust audit is checked in at [binding-export-report-2026-10
 
 C's observed count includes `kmipkit_last_error_clear` and `kmipkit_last_error_get`, represented by exact approved exclusions because they are C-specific diagnostics rather than shared four-language capabilities. The C ABI patch removes the nine transitive `aws_lc_0_45_0_jent_*` symbols from the published dynamic library while retaining jitterentropy. Java and Python now reconcile their compiled/source public export surfaces exactly with manifest v2. The checked-in report preserves exact paths, kinds, locations, and counts for all three languages.
 
-The binding-auditor changes have distinct failing-test and implementation commits, including the false-include-guard parser case and the real shared-library export leak. The vendored ABI Green is commit `a7ecd323`; a separate behavior-preserving Refactor commit for that vendor change is still pending, so no T011 completion claim is made.
+The binding-auditor changes have distinct failing-test and implementation commits, including the false-include-guard parser case and the real shared-library export leak. At the checkpoint represented by the original ABI Green commit `a7ecd323`, the separate behavior-preserving vendor Refactor had not yet been recorded; that statement is historical and does not close T011.
 
 | Phase | Commit(s) | Evidence |
 |---|---|---|

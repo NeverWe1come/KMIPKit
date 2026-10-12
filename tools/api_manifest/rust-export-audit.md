@@ -17,6 +17,17 @@ python -B -m unittest tools.api_manifest.tests.test_rust_exports -v
 python -B tools/api_manifest/audit_rust_exports.py --repo-root . --report rust-export-report.json --check
 ```
 
+For a failed report with exact `missingFromManifest` paths, the separately
+reviewable reconciliation utility can add blocked rows to the canonical
+manifest input. It never generates signatures, mappings, or exclusions:
+
+```text
+python -B tools/api_manifest/reconcile_rust_exports.py --report rust-export-report.json --write
+```
+
+Regenerate the report and run `generate.py --check` afterward. The Rust audit
+remains a failing gate while it reports unresolved issues.
+
 The runner checks `rustup toolchain list` before invoking any toolchain proxy,
 rejects a missing exact compiler, and never installs one. For each of the five
 published Rust crates it runs:
@@ -68,32 +79,29 @@ IDs, which can vary between builds. Member identity also includes the original
 owning type or trait, keeping macro-expanded methods with equal source spans
 distinct from one another.
 
-The following surfaces **remain explicitly unaudited**:
+Trait implementation members and members projected through transparent type
+aliases are inventoried when rustdoc provides enough identity and generic
+information to establish reachability and applicability. Their paths include
+the qualified owner and trait/member identity; alias projections use the
+reachable public alias path. This includes derived, external-trait, blanket,
+provided, and default associated members when the crawler can prove the exact
+applicable implementation. Unknown targets or predicates that cannot be
+proven produce an issue tied to the exact implementation and reachable owner;
+they are never silently treated as complete. Unresolved external re-exports
+and unsupported reachable kinds likewise produce issue records with the exact
+available paths and source locations.
 
-- Trait implementation behavior, including derived implementations, external
-  trait members, blanket implementations, and provided trait methods. These
-  need a reviewed representation of qualified trait/member paths and
-  overlapping or generic implementations. The tool records every observed
-  owner with such members as `trait-implementation-members-not-audited`.
-- Members inherited through transparent type aliases. The alias itself is
-  observed; inherited methods/variants are recorded as
-  `type-alias-members-not-audited` until their resolution is implemented.
-- Unresolved external re-exports or unsupported reachable item kinds. They
-  produce issue records with exact paths and available source locations;
-  the tool never invents their declarations.
-
-Any such issue makes `complete` false and makes `--check` fail, even when every
-observed path matches the manifest. This tested subset alone cannot close
-the full export audit required by FR-021. C, Java, and Python are outside
-this runner's scope.
+Any unresolved issue makes `complete` false and makes `--check` fail, even when
+all observed paths match the manifest. The current crawler still reports
+unresolved implementation predicates, so T011 remains open. C, Java, and
+Python are outside this runner's scope.
 
 ## Exact comparison
 
 `matched` lists paths whose package, name, and kind match a manifest record.
 `missingFromManifest` lists compiler-observed paths absent from both manifest
 declarations and exact approved exclusions. `notObserved` lists manifest
-records absent from this supported observed subset; this does not establish
-their absence from unaudited trait or alias surfaces. `kindMismatches` lists
+records absent from the observed inventory. `kindMismatches` lists
 exact name matches with inconsistent kinds. Duplicate manifest names are
 rejected. A `blocked` manifest record counts as an inventory match while
 remaining blocked for readiness and parity.
@@ -103,34 +111,37 @@ remaining blocked for readiness and parity.
 On **2026-10-12**, with the current continuation branch Rust sources, Windows
 x64, Rust 1.94.0 and all features, the report found:
 
-| Published package | Observed paths | Manifest rows | Exact matches | Missing from manifest | Not observed |
-| --- | ---: | ---: | ---: | ---: | ---: |
-| `kmipkit-ttlv` | 107 | 95 | 95 | 12 | 0 |
-| `kmipkit-protocol` | 1,631 | 964 | 958 | 673 | 6 |
-| `kmipkit-transport` | 98 | 96 | 96 | 2 | 0 |
-| `kmipkit-client` | 651 | 291 | 291 | 360 | 0 |
-| `kmipkit` | 785 | 321 | 321 | 464 | 0 |
-| **Total** | **3,272** | **1,767** | **1,761** | **1,511** | **6** |
+| Published package | Observed paths | Manifest rows | Exact matches | Missing from manifest | Not observed | Issues |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| `kmipkit-ttlv` | 331 | 331 | 331 | 0 | 0 | 0 |
+| `kmipkit-protocol` | 5,806 | 5,806 | 5,806 | 0 | 0 | 31 |
+| `kmipkit-transport` | 365 | 365 | 365 | 0 | 0 | 0 |
+| `kmipkit-client` | 1,031 | 1,031 | 1,031 | 0 | 0 | 0 |
+| `kmipkit` | 1,915 | 1,915 | 1,915 | 0 | 0 | 8 |
+| **Total** | **9,448** | **9,448** | **9,448** | **0** | **0** | **39** |
 
-There were no kind mismatches or Rust exclusions. The report also contained
-**375 incomplete-scope records**: 365 owners with trait implementation members
-and 10 transparent type aliases. Counts are a dated source snapshot, not a
-coverage percentage or permanent expected test result; rerun after Rust or
-manifest changes.
+There were no kind mismatches or approved Rust exclusions. All 39 issues are
+`unresolved-rustdoc-implementation-predicate` (31 in `rust-kmipkit-protocol`
+and 8 in `rust-kmipkit`); each identifies the implementation and reachable
+owner whose applicability could not be proved. The crawler emits exact trait
+implementation and alias paths for cases it can resolve. The 7,681 previously
+missing declarations now have exact blocked manifest rows without language
+mappings or API signatures. `matchesManifest` is true, but `complete` is false
+and `--check` exits 1 because the 39 predicate issues remain. Counts are a
+dated source snapshot, not a coverage percentage or permanent expected test
+result; rerun after Rust or manifest changes.
 
 The full deterministic JSON from this snapshot is checked in at
 `specs/043-public-api-bindings/reports/rust-export-report-2026-10-12.json`.
 Regenerate the report after any Rust export or manifest change; the timestamped
 path identifies the source snapshot and is not a generated manifest output.
 
-The 12 missing TTLV paths are `kmipkit_ttlv::Item::try_clone` and the 11 public
-`ValueView` tuple payload fields. The six protocol records not observed use
-dot notation for `ExtensionDefinitionAccounting` fields; their source fields
-exist but the manifest spelling differs from the consistent `Owner::field`
-notation emitted by this auditor. These are exact-name discrepancies to
-review, not proof that the fields were removed. Newly integrated operation
-types and methods account for many other missing paths; the JSON report lists
-every exact path and source location for reconciliation.
+The JSON report lists each issue requiring predicate review. Its declarations
+match all 9,448 Rust manifest paths by canonical package, path, and kind. The
+reconciliation tool adds blocked rows only for exact paths in
+`missingFromManifest`; it inherits a candidate owner only from an exact
+manifest owner path, otherwise uses the already blocked `public_binding_surface`
+candidate. It does not add signatures, mappings, or approved exclusions.
 
 ## Development verification
 
