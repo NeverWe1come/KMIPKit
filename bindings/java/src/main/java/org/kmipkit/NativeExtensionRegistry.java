@@ -64,6 +64,8 @@ public final class NativeExtensionRegistry {
         };
     }
 
+    static native int nativeAbiVersion();
+
     public static native void release(int handleKind, long handle);
 
     public static native long extensionIdentityCreate(String vendorIdentifier, String name, String version);

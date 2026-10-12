@@ -60,6 +60,7 @@ final class NativeLibraryLoader {
                     throw loadFailure();
                 }
                 System.load(explicitLibrary.normalize().toString());
+                verifyNativeAbiVersion();
                 return;
             }
 
@@ -70,11 +71,22 @@ final class NativeLibraryLoader {
                     Path.of(System.getProperty("java.io.tmpdir", "")),
                     NativeLibraryLoader::createPrivateDirectory);
             System.load(library.toAbsolutePath().normalize().toString());
+            verifyNativeAbiVersion();
         } catch (UnsatisfiedLinkError failure) {
             throw loadFailure();
         } catch (RuntimeException failure) {
             throw loadFailure();
         }
+    }
+
+    static void validateNativeAbiVersion(int abiVersion) {
+        if (abiVersion != 1) {
+            throw loadFailure();
+        }
+    }
+
+    private static void verifyNativeAbiVersion() {
+        validateNativeAbiVersion(NativeExtensionRegistry.nativeAbiVersion());
     }
 
     static String targetIdFor(String osName, String osArch) {

@@ -11,6 +11,12 @@
 #include <utility>
 #include <vector>
 
+extern "C" int32_t kmipkit_version_get(
+        uint32_t* out_major,
+        uint32_t* out_minor,
+        uint32_t* out_patch,
+        uint32_t* out_abi_version);
+
 namespace {
 
 constexpr uint64_t kMaximumTextBytes = 4096;
@@ -1542,6 +1548,16 @@ JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_codecLimitsCrea
                     static_cast<uint64_t>(elements), output);
         });
     });
+}
+
+JNIEXPORT jint JNICALL Java_org_kmipkit_NativeExtensionRegistry_nativeAbiVersion(
+        JNIEnv*, jclass) {
+    uint32_t major = 0;
+    uint32_t minor = 0;
+    uint32_t patch = 0;
+    uint32_t abi_version = 0;
+    const int32_t status = kmipkit_version_get(&major, &minor, &patch, &abi_version);
+    return status == 0 ? static_cast<jint>(abi_version) : static_cast<jint>(-1);
 }
 
 } // extern "C"
