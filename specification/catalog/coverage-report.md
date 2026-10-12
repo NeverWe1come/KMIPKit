@@ -1987,7 +1987,6 @@ Every row summarizes audited candidate locators by their pinned source section. 
 | KMIPKIT-ELEM-ENUM-VALUE-OPERATION-MODIFY-ATTRIBUTE-0000000E | Modify Attribute | enumeration\_value | both | client\_1\_0 | 0000000E | assigned | KMIPKIT-SRC-spec §11.36 |
 | KMIPKIT-ELEM-ENUM-VALUE-OPERATION-NOTIFY-0000001B | Notify | enumeration\_value | both | client\_1\_0 | 0000001B | assigned | KMIPKIT-SRC-spec §11.36 |
 | KMIPKIT-ELEM-ENUM-VALUE-OPERATION-OBTAIN-LEASE-00000010 | Obtain Lease | enumeration\_value | both | client\_1\_0 | 00000010 | assigned | KMIPKIT-SRC-spec §11.36 |
-| KMIPKIT-ELEM-ENUM-VALUE-OPERATION-PKCS-11-00000033 | PKCS#11 | enumeration\_value | both | client\_1\_0 | 00000033 | assigned | KMIPKIT-SRC-spec §11.36 |
 | KMIPKIT-ELEM-ENUM-VALUE-OPERATION-POLL-0000001A | Poll | enumeration\_value | both | client\_1\_0 | 0000001A | assigned | KMIPKIT-SRC-spec §11.36 |
 | KMIPKIT-ELEM-ENUM-VALUE-OPERATION-PROCESS-0000003A | Process | enumeration\_value | both | client\_1\_0 | 0000003A | assigned | KMIPKIT-SRC-spec §11.36 |
 | KMIPKIT-ELEM-ENUM-VALUE-OPERATION-PUT-0000001C | Put | enumeration\_value | both | client\_1\_0 | 0000001C | assigned | KMIPKIT-SRC-spec §11.36 |
@@ -2329,7 +2328,6 @@ Every row summarizes audited candidate locators by their pinned source section. 
 | KMIPKIT-ELEM-OP-C2S-INTEROP | Interop | operation | client\_to\_server | client\_1\_0 |  |  | KMIPKIT-SRC-spec §6.1.26 |
 | KMIPKIT-ELEM-OP-C2S-LOCATE | Locate | operation | client\_to\_server | client\_1\_0 |  |  | KMIPKIT-SRC-spec §6.1.28 |
 | KMIPKIT-ELEM-OP-C2S-LOG | Log | operation | client\_to\_server | client\_1\_0 |  |  | KMIPKIT-SRC-spec §6.1.29 |
-| KMIPKIT-ELEM-OP-C2S-PKCS-11 | PKCS#11 | operation | client\_to\_server | client\_1\_0 |  |  | KMIPKIT-SRC-spec §6.1.37 |
 | KMIPKIT-ELEM-OP-C2S-POLL | Poll | operation | client\_to\_server | client\_1\_0 |  |  | KMIPKIT-SRC-spec §6.1.38 |
 | KMIPKIT-ELEM-OP-C2S-PROCESS | Process | operation | client\_to\_server | client\_1\_0 |  |  | KMIPKIT-SRC-spec §6.1.39 |
 | KMIPKIT-ELEM-OP-C2S-QUERY-ASYNCHRONOUS-REQUESTS | Query Asynchronous Requests | operation | client\_to\_server | client\_1\_0 |  |  | KMIPKIT-SRC-spec §6.1.41 |
@@ -2356,12 +2354,7 @@ Every row summarizes audited candidate locators by their pinned source section. 
 | KMIPKIT-ELEM-OPERATION-STRUCTURE-7-22-OBJECT-DEFAULTS | Object Defaults | operation\_structure | both | client\_1\_0 |  |  | KMIPKIT-SRC-spec §7.22 |
 | KMIPKIT-ELEM-OPERATION-STRUCTURE-7-24-OBJECT-TYPES | Object Types | operation\_structure | both | client\_1\_0 |  |  | KMIPKIT-SRC-spec §7.24 |
 | KMIPKIT-ELEM-OPERATION-STRUCTURE-7-25-OPERATIONS | Operations | operation\_structure | both | client\_1\_0 |  |  | KMIPKIT-SRC-spec §7.25 |
-| KMIPKIT-ELEM-OPERATION-STRUCTURE-7-26-PKCS-11-FUNCTION | PKCS#11 Function | operation\_structure | both | client\_1\_0 |  |  | KMIPKIT-SRC-spec §7.26 |
-| KMIPKIT-ELEM-OPERATION-STRUCTURE-7-27-PKCS-11-INPUT-PARAMETERS | PKCS#11 Input Parameters | operation\_structure | both | client\_1\_0 |  |  | KMIPKIT-SRC-spec §7.27 |
-| KMIPKIT-ELEM-OPERATION-STRUCTURE-7-28-PKCS-11-INTERFACE | PKCS#11 Interface | operation\_structure | both | client\_1\_0 |  |  | KMIPKIT-SRC-spec §7.28 |
-| KMIPKIT-ELEM-OPERATION-STRUCTURE-7-29-PKCS-11-OUTPUT-PARAMETERS | PKCS#11 Output Parameters | operation\_structure | both | client\_1\_0 |  |  | KMIPKIT-SRC-spec §7.29 |
 | KMIPKIT-ELEM-OPERATION-STRUCTURE-7-3-AUTHENTICATED-ENCRYPTION-ADDITIONAL-DATA | Authenticated Encryption Additional Data | operation\_structure | both | client\_1\_0 |  |  | KMIPKIT-SRC-spec §7.3 |
-| KMIPKIT-ELEM-OPERATION-STRUCTURE-7-30-PKCS-11-RETURN-CODE | PKCS#11 Return Code | operation\_structure | both | client\_1\_0 |  |  | KMIPKIT-SRC-spec §7.30 |
 | KMIPKIT-ELEM-OPERATION-STRUCTURE-7-31-PROFILE-INFORMATION | Profile Information | operation\_structure | both | client\_1\_0 |  |  | KMIPKIT-SRC-spec §7.31 |
 | KMIPKIT-ELEM-OPERATION-STRUCTURE-7-32-PROFILE-VERSION | Profile Version | operation\_structure | both | client\_1\_0 |  |  | KMIPKIT-SRC-spec §7.32 |
 | KMIPKIT-ELEM-OPERATION-STRUCTURE-7-33-PROTECTION-STORAGE-MASKS | Protection Storage Masks | operation\_structure | both | client\_1\_0 |  |  | KMIPKIT-SRC-spec §7.33 |
@@ -2374,7 +2367,6 @@ Every row summarizes audited candidate locators by their pinned source section. 
 | KMIPKIT-ELEM-OPERATION-STRUCTURE-7-41-VALIDATION-INFORMATION | Validation Information | operation\_structure | both | client\_1\_0 |  |  | KMIPKIT-SRC-spec §7.41 |
 | KMIPKIT-ELEM-OPERATION-STRUCTURE-7-5-CAPABILITY-INFORMATION | Capability Information | operation\_structure | both | client\_1\_0 |  |  | KMIPKIT-SRC-spec §7.5 |
 | KMIPKIT-ELEM-OPERATION-STRUCTURE-7-6-CONSTRAINT | Constraint | operation\_structure | both | client\_1\_0 |  |  | KMIPKIT-SRC-spec §7.6 |
-| KMIPKIT-ELEM-OPERATION-STRUCTURE-7-8-CORRELATION-VALUE | Correlation Value | operation\_structure | both | client\_1\_0 |  |  | KMIPKIT-SRC-spec §7.8 |
 | KMIPKIT-ELEM-OPERATION-STRUCTURE-7-9-DATA | Data | operation\_structure | both | client\_1\_0 |  |  | KMIPKIT-SRC-spec §7.9 |
 | KMIPKIT-ELEM-OPTION-ASYNCHRONOUS-INDICATOR | Asynchronous Indicator | option | both | client\_1\_0 |  |  | KMIPKIT-SRC-spec §9.2, KMIPKIT-SRC-spec §11.3 |
 | KMIPKIT-ELEM-OPTION-BATCH-ERROR-CONTINUATION-OPTION | Batch Error Continuation Option | option | both | client\_1\_0 |  |  | KMIPKIT-SRC-spec §9.6, KMIPKIT-SRC-spec §11.5 |
@@ -2531,11 +2523,6 @@ Every row summarizes audited candidate locators by their pinned source section. 
 | KMIPKIT-ELEM-STRUCTURE-MEMBER-7-22-OBJECT-TYPE-OBJECTTYPES | Object Type \| ObjectTypes | structure\_member | both | client\_1\_0 |  |  | KMIPKIT-SRC-spec §7.22 |
 | KMIPKIT-ELEM-STRUCTURE-MEMBER-7-24-OBJECT-TYPE | Object Type | structure\_member | both | client\_1\_0 |  |  | KMIPKIT-SRC-spec §7.24 |
 | KMIPKIT-ELEM-STRUCTURE-MEMBER-7-25-OPERATION | Operation | structure\_member | both | client\_1\_0 |  |  | KMIPKIT-SRC-spec §7.25 |
-| KMIPKIT-ELEM-STRUCTURE-MEMBER-7-26-PKCS-11-FUNCTION | PKCS#11 Function | structure\_member | both | client\_1\_0 |  |  | KMIPKIT-SRC-spec §7.26 |
-| KMIPKIT-ELEM-STRUCTURE-MEMBER-7-27-PKCS-11-INPUT-PARAMETERS | PKCS#11 Input Parameters | structure\_member | both | client\_1\_0 |  |  | KMIPKIT-SRC-spec §7.27 |
-| KMIPKIT-ELEM-STRUCTURE-MEMBER-7-28-PKCS-11-INTERFACE | PKCS#11 Interface | structure\_member | both | client\_1\_0 |  |  | KMIPKIT-SRC-spec §7.28 |
-| KMIPKIT-ELEM-STRUCTURE-MEMBER-7-29-PKCS-11-OUTPUT-PARAMETERS | PKCS#11 Output Parameters | structure\_member | both | client\_1\_0 |  |  | KMIPKIT-SRC-spec §7.29 |
-| KMIPKIT-ELEM-STRUCTURE-MEMBER-7-30-PKCS-11-RETURN-CODE | PKCS#11 Return Code | structure\_member | both | client\_1\_0 |  |  | KMIPKIT-SRC-spec §7.30 |
 | KMIPKIT-ELEM-STRUCTURE-MEMBER-7-31-PROFILE-NAME | Profile Name | structure\_member | both | client\_1\_0 |  |  | KMIPKIT-SRC-spec §7.31 |
 | KMIPKIT-ELEM-STRUCTURE-MEMBER-7-31-PROFILE-VERSION | Profile Version | structure\_member | both | client\_1\_0 |  |  | KMIPKIT-SRC-spec §7.31 |
 | KMIPKIT-ELEM-STRUCTURE-MEMBER-7-31-SERVER-PORT | Server Port | structure\_member | both | client\_1\_0 |  |  | KMIPKIT-SRC-spec §7.31 |

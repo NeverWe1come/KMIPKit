@@ -50,6 +50,9 @@ mod extension_registry_test_support;
 mod extension_execution_tests;
 
 mod execute;
+
+/// Typed opaque PKCS#11 forwarding models.
+pub use kmipkit_protocol::{Pkcs11Error, Pkcs11Request, Pkcs11Response};
 mod usage_allocation;
 
 pub use usage_allocation::{UsageAllocationContext, UsageAllocationContextError};
@@ -279,3 +282,7 @@ pub use execute::{
     ClientRequest, ClientResponseView, PendingOutcome,
 };
 pub use kmipkit_transport::RequestOptions;
+
+#[cfg(test)]
+#[path = "../tests/unit/pkcs11_execution_tests.rs"]
+mod pkcs11_execution_tests;
