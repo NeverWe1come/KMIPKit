@@ -4057,7 +4057,7 @@ class CatalogValidationTests(unittest.TestCase):
             (ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8")
         )
         self.assertEqual(
-            oracle["oracle_status"],
+            oracle["source_closure_status"],
             "complete",
             "profile closure comparison requires the completed pinned-source oracle",
         )
@@ -4378,7 +4378,7 @@ class CatalogValidationTests(unittest.TestCase):
             "the flag covers accepted direct mappings; source reviews and explicit rejections are accounted for separately",
         )
         self.assertEqual(
-            oracle["oracle_status"],
+            oracle["source_closure_status"],
             "complete",
             "complete source disposition coverage and profile arrays define oracle completion, not accepted-row equality",
         )
@@ -4488,7 +4488,7 @@ class CatalogValidationTests(unittest.TestCase):
             ["client", "client"],
         )
         self.assertFalse(oracle["counts"]["requirement_crosswalk_complete"])
-        self.assertEqual(oracle["oracle_status"], "complete")
+        self.assertEqual(oracle["source_closure_status"], "complete")
 
     def test_spec_6_1_32_mac_and_errors_have_source_review_rows(self) -> None:
         """Specification v2.1 §§6.1.32 and 6.1.32.1 require a reviewed MAC source slice."""
@@ -4783,7 +4783,7 @@ class CatalogValidationTests(unittest.TestCase):
             "KMIPKIT-SOURCE-GAP-SPEC-6.1-PARAGRAPH-009",
         )
         self.assertIn("no conformance claim", data_contract["evidence_disposition"]["claim"].lower())
-        self.assertEqual(oracle["oracle_status"], "complete")
+        self.assertEqual(oracle["source_closure_status"], "complete")
 
     def test_spec_6_1_33_mac_verify_and_errors_have_source_review_rows(self) -> None:
         """Specification v2.1 §§6.1.33 and 6.1.33.1 preserve MAC Verify source atoms and rows."""
@@ -5133,7 +5133,7 @@ class CatalogValidationTests(unittest.TestCase):
             general_data_gap["source_excerpt"],
             pinned_source_excerpt(source_path, [22498, 22499]),
         )
-        self.assertEqual(oracle["oracle_status"], "complete")
+        self.assertEqual(oracle["source_closure_status"], "complete")
 
     def test_spec_6_1_34_modify_attribute_and_errors_have_source_review_rows(self) -> None:
         """Specification v2.1 §§6.1.34 and 6.1.34.1 preserve Modify Attribute atoms and rows."""
@@ -5310,7 +5310,7 @@ class CatalogValidationTests(unittest.TestCase):
             row["requirement_id"]
             for row in json.loads((ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8"))["requirements"]
         })
-        self.assertEqual(oracle["oracle_status"], "complete")
+        self.assertEqual(oracle["source_closure_status"], "complete")
 
     def test_spec_6_1_35_obtain_lease_and_errors_have_source_review_rows(self) -> None:
         """Specification v2.1 §§6.1.35 and 6.1.35.1 preserve lease atoms and payload rows."""
@@ -5475,7 +5475,7 @@ class CatalogValidationTests(unittest.TestCase):
             [gap for gap in oracle["source_only_requirement_gaps"] if gap["source_section"] in ("6.1.35", "6.1.35.1")],
             [],
         )
-        self.assertEqual(oracle["oracle_status"], "complete")
+        self.assertEqual(oracle["source_closure_status"], "complete")
 
     def test_spec_6_1_36_ping_keeps_server_may_and_empty_payload_tables(self) -> None:
         """Specification v2.1 §6.1.36 has no Ping client payload requirement or specific error table."""
@@ -5539,7 +5539,7 @@ class CatalogValidationTests(unittest.TestCase):
         self.assertFalse(any(row["source_section"] == "6.1.36.1" for row in oracle["source_requirement_reviews"]))
         catalog = json.loads((ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8"))
         self.assertFalse(any(row["requirement_id"].startswith("KMIPKIT-REQ-SPEC-6.1.36-") for row in catalog["requirements"]))
-        self.assertEqual(oracle["oracle_status"], "complete")
+        self.assertEqual(oracle["source_closure_status"], "complete")
 
     def test_pkcs11_table_273_required_function_is_a_client_source_contract(self) -> None:
         """The required PKCS#11 Function field is traced to the approved opaque-forwarding client."""
@@ -5722,7 +5722,7 @@ class CatalogValidationTests(unittest.TestCase):
             [row for row in oracle["requirement_crosswalk"] if row["requirement_id"].startswith("KMIPKIT-REQ-SPEC-6.1.37-")],
             [],
         )
-        self.assertEqual(oracle["oracle_status"], "complete")
+        self.assertEqual(oracle["source_closure_status"], "complete")
 
     def test_spec_6_1_38_poll_tracks_async_request_and_server_responses(self) -> None:
         """Specification v2.1 §§6.1.38 and 6.1.38.1 separate client Poll input from server outcomes."""
@@ -5852,7 +5852,7 @@ class CatalogValidationTests(unittest.TestCase):
             [row for row in oracle["source_only_requirement_gaps"] if row["source_section"] in ("6.1.38", "6.1.38.1")],
             [],
         )
-        self.assertEqual(oracle["oracle_status"], "complete")
+        self.assertEqual(oracle["source_closure_status"], "complete")
 
     def test_spec_6_1_39_process_records_server_rule_and_required_correlation(self) -> None:
         """Specification v2.1 §§6.1.39 and 6.1.39.1 separate server behavior from required client input."""
@@ -5952,7 +5952,7 @@ class CatalogValidationTests(unittest.TestCase):
             [row for row in oracle["requirement_crosswalk"] if row["requirement_id"].startswith("KMIPKIT-REQ-SPEC-6.1.39-")],
             [],
         )
-        self.assertEqual(oracle["oracle_status"], "complete")
+        self.assertEqual(oracle["source_closure_status"], "complete")
 
     def test_spec_6_1_40_query_reviews_client_inputs_and_server_capabilities(self) -> None:
         """Specification v2.1 §§6.1.40 and 6.1.40.1 distinguish Query inputs from server results."""
@@ -6184,7 +6184,7 @@ class CatalogValidationTests(unittest.TestCase):
             [row for row in oracle["requirement_crosswalk"] if row["requirement_id"].startswith("KMIPKIT-REQ-SPEC-6.1.40-")],
             list(crosswalks.values()),
         )
-        self.assertEqual(oracle["oracle_status"], "complete")
+        self.assertEqual(oracle["source_closure_status"], "complete")
 
     def test_spec_6_1_40_object_groups_optional_row_links_approved_feature_and_direct_tests(self) -> None:
         """Table 282 optional Object Groups is tied to approved feature and executable evidence."""
@@ -6410,7 +6410,7 @@ class CatalogValidationTests(unittest.TestCase):
             [],
             "server SHOULD/MAY/SHALL atoms and header keywords do not create client requirement mappings",
         )
-        self.assertEqual(oracle["oracle_status"], "complete")
+        self.assertEqual(oracle["source_closure_status"], "complete")
 
     def test_spec_6_1_44_revoke_reviews_client_input_and_server_effects(self) -> None:
         """Specification v2.1 §§6.1.44 and 6.1.44.1 preserve Revoke source roles."""
@@ -6563,7 +6563,7 @@ class CatalogValidationTests(unittest.TestCase):
                 ("KMIPKIT-REQ-SPEC-6.1.44-003-002", 2),
             },
         )
-        self.assertEqual(oracle["oracle_status"], "complete")
+        self.assertEqual(oracle["source_closure_status"], "complete")
 
     def test_spec_6_1_44_table_295_required_revocation_reason_row_is_contract(self) -> None:
         """The required Table 295 reason maps to Revoke evidence without inventing a REQ ID."""
@@ -6787,7 +6787,7 @@ class CatalogValidationTests(unittest.TestCase):
             ([34409, 34410], "Table 307: Re-key Errors"),
         ]:
             self.assertIn(caption, pinned_source_excerpt(source_path, line_range))
-        self.assertEqual(oracle["oracle_status"], "complete")
+        self.assertEqual(oracle["source_closure_status"], "complete")
 
     def test_rekey_table_305_optional_rows_have_typed_contracts(self) -> None:
         """Table 305 optional request fields map to the approved typed operation without REQ IDs."""
@@ -7130,7 +7130,7 @@ class CatalogValidationTests(unittest.TestCase):
             ([35057, 35058], "Table 312: Re-key Key Pair Errors"),
         ]:
             self.assertIn(caption, pinned_source_excerpt(source_path, line_range))
-        self.assertEqual(oracle["oracle_status"], "complete")
+        self.assertEqual(oracle["source_closure_status"], "complete")
 
     def test_spec_6_1_48_reprovision_reviews_client_inputs_and_server_effects(self) -> None:
         """Specification v2.1 §§6.1.48 and 6.1.48.1 preserve Re-Provision source roles."""
@@ -7311,7 +7311,7 @@ class CatalogValidationTests(unittest.TestCase):
             ([35275, 35275], "Table 315: RNG Retrieve Errors"),
         ]:
             self.assertIn(caption, pinned_source_excerpt(source_path, line_range))
-        self.assertEqual(oracle["oracle_status"], "complete")
+        self.assertEqual(oracle["source_closure_status"], "complete")
 
     def test_spec_6_1_49_rng_retrieve_reviews_payload_and_error_evidence(self) -> None:
         """Specification v2.1 §6.1.49 preserves RNG Retrieve payload and error evidence."""
@@ -7368,7 +7368,7 @@ class CatalogValidationTests(unittest.TestCase):
                                     ([35400, 35400], "Table 317: RNG Retrieve Response Payload"),
                                     ([35446, 35446], "Table 318: RNG Retrieve Errors")):
             self.assertIn(caption, pinned_source_excerpt(source_path, line_range))
-        self.assertEqual(oracle["oracle_status"], "complete")
+        self.assertEqual(oracle["source_closure_status"], "complete")
 
     def test_rng_retrieve_table_316_data_length_is_a_required_client_source_contract(self) -> None:
         """The required RNG Retrieve Data Length row maps to approved client evidence."""
@@ -7575,7 +7575,7 @@ class CatalogValidationTests(unittest.TestCase):
                                     ("Table 320: RNG Seed Response Payload", [35577, 35577]),
                                     ("Table 321: RNG Seed Errors", [35623, 35623])):
             self.assertIn(caption, pinned_source_excerpt(source_path, line_range))
-        self.assertEqual(oracle["oracle_status"], "complete")
+        self.assertEqual(oracle["source_closure_status"], "complete")
 
     def test_rng_seed_table_319_data_is_a_required_client_source_contract(self) -> None:
         """The required RNG Seed Data row maps to approved client and secret-handling evidence."""
@@ -9473,7 +9473,7 @@ class CatalogValidationTests(unittest.TestCase):
             ([33866, 33866], "Table 302: Re-certify Errors"),
         ]:
             self.assertIn(caption, pinned_source_excerpt(source_path, line_range))
-        self.assertEqual(oracle["oracle_status"], "complete")
+        self.assertEqual(oracle["source_closure_status"], "complete")
 
     def test_spec_6_1_43_register_reviews_client_fields_and_server_results(self) -> None:
         """Specification v2.1 §§6.1.43 and 6.1.43.1 preserve Register source boundaries."""
@@ -9659,7 +9659,7 @@ class CatalogValidationTests(unittest.TestCase):
             },
             expected_crosswalks,
         )
-        self.assertEqual(oracle["oracle_status"], "complete")
+        self.assertEqual(oracle["source_closure_status"], "complete")
 
     def test_spec_6_1_42_recover_keeps_client_may_and_unresolved_authentication_should(self) -> None:
         """Specification v2.1 §§6.1.42 and 6.1.42.1 preserve Recover actor and payload boundaries."""
@@ -9802,7 +9802,7 @@ class CatalogValidationTests(unittest.TestCase):
             },
             expected_crosswalks,
         )
-        self.assertEqual(oracle["oracle_status"], "complete")
+        self.assertEqual(oracle["source_closure_status"], "complete")
 
     def test_spec_4_19_through_4_25_source_review_slice_preserves_actor_and_force(self) -> None:
         """The source audit separates server lifecycle rules and unresolved client wording."""
@@ -9913,7 +9913,7 @@ class CatalogValidationTests(unittest.TestCase):
         )
         self.assertIsNone(gaps["KMIPKIT-SOURCE-GAP-SPEC-4.21-CLIENT-LOWERCASE-MAY"]["proposed_requirement_id"])
         self.assertIsNone(gaps["KMIPKIT-SOURCE-GAP-SPEC-4.24-CLIENT-FRESH-INPUT-EXCEPTION"]["proposed_requirement_id"])
-        self.assertEqual(oracle["oracle_status"], "complete")
+        self.assertEqual(oracle["source_closure_status"], "complete")
 
     def test_spec_4_26_through_4_33_source_review_slice_preserves_mixed_actors(self) -> None:
         """The source review separates client labels, server duties, and table metadata."""
@@ -10059,7 +10059,7 @@ class CatalogValidationTests(unittest.TestCase):
             gaps["KMIPKIT-SOURCE-GAP-SPEC-4.28-001-SERVER-NONMUTATION"]["scope_disposition"],
             "server_only",
         )
-        self.assertEqual(oracle["oracle_status"], "complete")
+        self.assertEqual(oracle["source_closure_status"], "complete")
 
     def test_spec_4_34_through_4_42_source_review_slice_preserves_scope_and_candidate_atoms(self) -> None:
         """The source audit keeps attribute duties, ambiguous actors, and client options distinct."""
@@ -10159,7 +10159,7 @@ class CatalogValidationTests(unittest.TestCase):
         self.assertEqual(lowercase_capability["scope_disposition"], "client_1_0")
         self.assertEqual(lowercase_capability["candidate_requirement_id"], "KMIPKIT-REQ-SPEC-4.39-002-001")
         self.assertIsNone(lowercase_capability["proposed_requirement_id"])
-        self.assertEqual(oracle["oracle_status"], "complete")
+        self.assertEqual(oracle["source_closure_status"], "complete")
 
     def test_spec_4_43_through_4_50_source_review_separates_client_and_server_scope(self) -> None:
         """Protection-period scope, RNG lifecycle, and Revocation Message labels follow source text."""
@@ -10264,7 +10264,7 @@ class CatalogValidationTests(unittest.TestCase):
             with self.subTest(clause_id=clause_id):
                 self.assertEqual(reviews[clause_id]["source_obligations"], [])
                 self.assertIn("value No", reviews[clause_id]["source_excerpt"])
-        self.assertEqual(oracle["oracle_status"], "complete")
+        self.assertEqual(oracle["source_closure_status"], "complete")
 
     def test_spec_4_51_through_4_56_source_review_keeps_server_lifecycle_out_of_client_closure(self) -> None:
         """Rotate metadata, Sensitive, and Short Unique Identifier duties retain their source actors."""
@@ -10374,7 +10374,7 @@ class CatalogValidationTests(unittest.TestCase):
             with self.subTest(clause_id=clause_id):
                 self.assertEqual(reviews[clause_id]["source_obligations"][0]["source_keyword"], "table property")
                 self.assertEqual(reviews[clause_id]["source_obligations"][0]["scope_disposition"], "server_only")
-        self.assertEqual(oracle["oracle_status"], "complete")
+        self.assertEqual(oracle["source_closure_status"], "complete")
 
     def test_spec_4_57_through_4_63_source_review_preserves_active_atoms_and_certificate_scope(self) -> None:
         """Specification v2.1 §§4.57–4.63 preserve source order, actors, and header exclusions."""
@@ -10510,7 +10510,7 @@ class CatalogValidationTests(unittest.TestCase):
             [atom["scope_disposition"] for atom in reviews["KMIPKIT-CLAUSE-SPEC-4.63-005"]["source_obligations"]],
             ["profile_conditional"],
         )
-        self.assertEqual(oracle["oracle_status"], "complete")
+        self.assertEqual(oracle["source_closure_status"], "complete")
         self.assertEqual(
             len(included_headers),
             0,
@@ -10651,7 +10651,7 @@ class CatalogValidationTests(unittest.TestCase):
             "one compound stable ID must preserve both distinct source predicates in source order",
         )
         self.assertIn("catalog condition metadata", reviews["KMIPKIT-CLAUSE-SPEC-6.1-002"]["review_note"])
-        self.assertEqual(oracle["oracle_status"], "complete")
+        self.assertEqual(oracle["source_closure_status"], "complete")
 
         client_profiles = [profile for profile in catalog["profiles"] if profile["role"] == "client"]
         expected_client_ids = {
@@ -11093,7 +11093,7 @@ class CatalogValidationTests(unittest.TestCase):
 
         slice_gaps = [gap for gap in oracle["source_only_requirement_gaps"] if gap["gap_id"] == expected_gap_id]
         self.assertEqual(slice_gaps, [], "the Check attribute limit has a stable requirement crosswalk")
-        self.assertEqual(oracle["oracle_status"], "complete")
+        self.assertEqual(oracle["source_closure_status"], "complete")
 
     def test_spec_6_1_8_through_6_1_10_complete_operations_have_source_review_rows(self) -> None:
         """Specification v2.1 §§6.1.8–6.1.10 and immediate subclauses are reviewed completely."""
@@ -11305,7 +11305,7 @@ class CatalogValidationTests(unittest.TestCase):
             [gap for gap in oracle["source_only_requirement_gaps"] if gap["source_clause_id"] in clause_ids],
             "this slice has no source-only client requirement gaps: every client MAY/SHALL label exists and is mapped",
         )
-        self.assertEqual(oracle["oracle_status"], "complete")
+        self.assertEqual(oracle["source_closure_status"], "complete")
 
     def test_spec_6_1_11_decrypt_and_error_handling_have_source_review_rows(self) -> None:
         """Specification v2.1 §6.1.11 and its immediate error-handling subsection are reviewed."""
@@ -11442,7 +11442,7 @@ class CatalogValidationTests(unittest.TestCase):
                 "KMIPKIT-REQ-SPEC-6.1.11-004-002",
             },
         )
-        self.assertEqual(oracle["oracle_status"], "complete")
+        self.assertEqual(oracle["source_closure_status"], "complete")
 
     def test_spec_6_1_12_delegated_login_and_error_handling_have_source_review_rows(self) -> None:
         """Specification v2.1 §6.1.12 and its immediate error-handling subsection are reviewed."""
@@ -11641,7 +11641,7 @@ class CatalogValidationTests(unittest.TestCase):
             rights_gaps["KMIPKIT-SOURCE-GAP-SPEC-6.1.12-RIGHTS-REQUIRED"]["reused_requirement_id"],
             "KMIPKIT-REQ-SPEC-6.1.12-003",
         )
-        self.assertEqual(oracle["oracle_status"], "complete")
+        self.assertEqual(oracle["source_closure_status"], "complete")
 
     def test_uid_optional_rows_reuse_general_batch_placeholder_capability(self) -> None:
         """Operation-specific UID omission rows reuse the conditional §6.1 MAY once."""
@@ -11921,7 +11921,7 @@ class CatalogValidationTests(unittest.TestCase):
         self.assertEqual(reviews["KMIPKIT-CLAUSE-SPEC-6.1.13.1-002"]["source_obligations"], [])
         self.assertEqual(reviews["KMIPKIT-CLAUSE-SPEC-6.1.13-002"]["source_obligations"], [])
         self.assertEqual(reviews["KMIPKIT-CLAUSE-SPEC-6.1.13-003"]["source_obligations"], [])
-        self.assertEqual(oracle["oracle_status"], "complete")
+        self.assertEqual(oracle["source_closure_status"], "complete")
 
         catalog = json.loads((ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8"))
         catalog_requirements = {
@@ -12228,7 +12228,7 @@ class CatalogValidationTests(unittest.TestCase):
         self.assertEqual(len(set(reason_items)), 18)
         self.assertEqual(reason_items.count("Invalid Field"), 2)
         self.assertEqual(reason_items.count("Invalid Message"), 2)
-        self.assertEqual(oracle["oracle_status"], "complete")
+        self.assertEqual(oracle["source_closure_status"], "complete")
 
     def test_spec_6_1_16_discover_versions_and_error_handling_have_source_review_rows(self) -> None:
         """Specification v2.1 §6.1.16 separates client version-list input from server response rules."""
@@ -12399,7 +12399,7 @@ class CatalogValidationTests(unittest.TestCase):
         for profile in client_profiles:
             with self.subTest(profile_id=profile["profile_id"]):
                 self.assertEqual(set(catalog_profiles[profile["profile_id"]]["requirement_ids"]) & catalog_ids_for_slice, expected_client_ids)
-        self.assertEqual(oracle["oracle_status"], "complete")
+        self.assertEqual(oracle["source_closure_status"], "complete")
 
     def test_spec_6_1_17_encrypt_and_error_handling_have_source_review_rows(self) -> None:
         """Specification v2.1 §6.1.17 separates client request capabilities from server Encrypt rules."""
@@ -12584,7 +12584,7 @@ class CatalogValidationTests(unittest.TestCase):
                     set(catalog_profiles[profile["profile_id"]]["requirement_ids"]) & catalog_ids_for_slice,
                     expected_client_ids,
                 )
-        self.assertEqual(oracle["oracle_status"], "complete")
+        self.assertEqual(oracle["source_closure_status"], "complete")
 
     def _assert_optional_request_row_gaps(
         self,
@@ -12819,7 +12819,7 @@ class CatalogValidationTests(unittest.TestCase):
                     "KMIPKIT-REQ-SPEC-6.1.19-001" not in ids,
                     f"{profile['profile_id']} still includes the server-only Get response-wrap MAY",
                 )
-        self.assertEqual(oracle["oracle_status"], "complete")
+        self.assertEqual(oracle["source_closure_status"], "complete")
 
     def test_spec_6_1_22_get_constraints_and_errors_have_source_review_rows(self) -> None:
         """Specification v2.1 §§6.1.22 and 6.1.22.1 preserve empty request and server response semantics."""
@@ -12959,7 +12959,7 @@ class CatalogValidationTests(unittest.TestCase):
         self.assertEqual(reason_values.count("Invalid Field"), 2)
         self.assertIn("Get Constrains Operation", reviews["KMIPKIT-CLAUSE-SPEC-6.1.22.1-001"]["source_excerpt"])
         self.assertTrue(all(review["expected_client_requirement_ids"] == [] for review in reviews.values()))
-        self.assertEqual(oracle["oracle_status"], "complete")
+        self.assertEqual(oracle["source_closure_status"], "complete")
 
     def test_spec_6_1_23_get_usage_allocation_and_errors_have_source_review_rows(self) -> None:
         """Specification v2.1 §§6.1.23 and 6.1.23.1 need source-reviewed allocation semantics."""
@@ -13194,7 +13194,7 @@ class CatalogValidationTests(unittest.TestCase):
         self.assertEqual(oracle["counts"]["source_requirement_review_records"], len(oracle["source_requirement_reviews"]))
         self.assertEqual(oracle["counts"]["requirement_crosswalk_records"], len(oracle["requirement_crosswalk"]))
         self.assertEqual(oracle["counts"]["source_only_requirement_gaps"], len(oracle["source_only_requirement_gaps"]))
-        self.assertEqual(oracle["oracle_status"], "complete")
+        self.assertEqual(oracle["source_closure_status"], "complete")
 
     def test_spec_6_1_21_get_attribute_list_and_errors_have_source_review_rows(self) -> None:
         """Specification v2.1 §§6.1.21 and 6.1.21.1 distinguish request data from server output."""
@@ -13381,7 +13381,7 @@ class CatalogValidationTests(unittest.TestCase):
             ],
         )
         self.assertEqual(reviews["KMIPKIT-CLAUSE-SPEC-6.1.21.1-002"]["source_obligations"], [])
-        self.assertEqual(oracle["oracle_status"], "complete")
+        self.assertEqual(oracle["source_closure_status"], "complete")
 
     def test_spec_6_1_20_get_attributes_and_errors_have_source_review_rows(self) -> None:
         """Specification v2.1 §§6.1.20 and 6.1.20.1 distinguish client requests from server results."""
@@ -13582,7 +13582,7 @@ class CatalogValidationTests(unittest.TestCase):
                     "the response-production SHALLs are server-only, despite the current catalog role label",
                 )
                 self.assertIn("KMIPKIT-REQ-SPEC-6.1-005", actual, "archived objects require generic Recover before use")
-        self.assertEqual(oracle["oracle_status"], "complete")
+        self.assertEqual(oracle["source_closure_status"], "complete")
 
     def test_spec_6_1_18_export_and_error_handling_have_source_review_rows(self) -> None:
         """Specification v2.1 §6.1.18 separates Export request rules from server response behavior."""
@@ -13793,7 +13793,7 @@ class CatalogValidationTests(unittest.TestCase):
             requirement_ids = set(profile["requirement_ids"])
             self.assertFalse(proposal_ids & requirement_ids)
             self.assertTrue(export_requirement_ids.issubset(requirement_ids), profile["profile_id"])
-        self.assertEqual(oracle["oracle_status"], "complete")
+        self.assertEqual(oracle["source_closure_status"], "complete")
 
     def test_spec_6_1_15_destroy_and_error_handling_have_source_review_rows(self) -> None:
         """Specification v2.1 §6.1.15 keeps Destroy effects server-side and records optional UID omission."""
@@ -13891,7 +13891,7 @@ class CatalogValidationTests(unittest.TestCase):
         client_profiles = [profile for profile in catalog["profiles"] if profile["role"] == "client"]
         self.assertEqual(len(client_profiles), 18)
         self.assertTrue(all("KMIPKIT-REQ-SPEC-6.1-003-002" in profile["requirement_ids"] for profile in client_profiles))
-        self.assertEqual(oracle["oracle_status"], "complete")
+        self.assertEqual(oracle["source_closure_status"], "complete")
 
     def test_spec_6_2_complete_section_has_source_review_rows(self) -> None:
         """Specification v2.1 §6.2 and its subclauses stay explicitly outside client-initiated 1.0 scope."""
@@ -14279,7 +14279,7 @@ class CatalogValidationTests(unittest.TestCase):
             0,
             f"{len(included_headers)} client profiles include the four header-only REQUIRED labels",
         )
-        self.assertEqual(oracle["oracle_status"], "complete")
+        self.assertEqual(oracle["source_closure_status"], "complete")
 
     def test_profile_closure_fixture_counts_match_source_review_arrays(self) -> None:
         """Fixture counters track the arrays as source-audit rows are added."""
@@ -16270,7 +16270,7 @@ class CatalogValidationTests(unittest.TestCase):
         }
         self.assertEqual(set(contracts), set(expected))
         self.assertEqual(len(oracle["source_table_contracts"]), 65)
-        self.assertEqual(oracle["oracle_status"], "complete")
+        self.assertEqual(oracle["source_closure_status"], "complete")
 
         catalog = json.loads((ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8"))
         catalog_elements = {element["element_id"]: element for element in catalog["elements"]}
@@ -16833,7 +16833,7 @@ class CatalogValidationTests(unittest.TestCase):
         self.assertEqual(oracle["counts"]["source_requirement_review_records"], len(oracle["source_requirement_reviews"]))
         self.assertEqual(oracle["counts"]["requirement_crosswalk_records"], len(oracle["requirement_crosswalk"]))
         self.assertEqual(oracle["counts"]["source_only_requirement_gaps"], len(oracle["source_only_requirement_gaps"]))
-        self.assertEqual(oracle["oracle_status"], "complete")
+        self.assertEqual(oracle["source_closure_status"], "complete")
 
     def test_spec_6_1_25_import_and_errors_have_source_review_rows(self) -> None:
         """Specification v2.1 §§6.1.25 and 6.1.25.1 require a reviewed Import source slice."""
@@ -17114,7 +17114,7 @@ class CatalogValidationTests(unittest.TestCase):
                 set(),
                 f"{profile['profile_id']} still includes source-rejected client labels",
             )
-        self.assertEqual(oracle["oracle_status"], "complete")
+        self.assertEqual(oracle["source_closure_status"], "complete")
 
 
     def test_spec_6_1_26_interop_and_errors_have_source_review_rows(self) -> None:
@@ -17308,7 +17308,7 @@ class CatalogValidationTests(unittest.TestCase):
         for profile in client_profiles:
             self.assertFalse(proposed_ids & set(profile["requirement_ids"]))
             self.assertFalse(proposed_ids & oracle_profiles[profile["profile_id"]])
-        self.assertEqual(oracle["oracle_status"], "complete")
+        self.assertEqual(oracle["source_closure_status"], "complete")
 
     def test_interop_table_241_function_is_a_required_client_source_contract(self) -> None:
         """The required Table 241 function maps to approved client Interop evidence."""
@@ -17834,7 +17834,7 @@ class CatalogValidationTests(unittest.TestCase):
                 actual_ids,
                 f"{profile['profile_id']} still includes a source-rejected Object Type MAY label",
             )
-        self.assertEqual(oracle["oracle_status"], "complete")
+        self.assertEqual(oracle["source_closure_status"], "complete")
 
     def test_locate_table_247_storage_status_mask_is_a_client_source_contract(self) -> None:
         """The optional Storage Status Mask maps to request-only client evidence."""
@@ -18227,7 +18227,7 @@ class CatalogValidationTests(unittest.TestCase):
         ])
         self.assertEqual(len(set(reasons)), 9)
         self.assertIn("non-exhaustive", reviews["KMIPKIT-CLAUSE-SPEC-6.1.28.1-002"]["review_note"])
-        self.assertEqual(oracle["oracle_status"], "complete")
+        self.assertEqual(oracle["source_closure_status"], "complete")
 
     def test_spec_6_1_29_log_and_errors_have_source_review_rows(self) -> None:
         """Specification v2.1 §§6.1.29 and 6.1.29.1 require a reviewed Log source slice."""
@@ -18342,7 +18342,7 @@ class CatalogValidationTests(unittest.TestCase):
         self.assertIn("KMIPKIT-DEC-006", result_inventory["review_note"])
         self.assertIn("non-exhaustive", result_inventory["review_note"])
 
-        self.assertEqual(oracle["oracle_status"], "complete")
+        self.assertEqual(oracle["source_closure_status"], "complete")
 
     def test_spec_6_1_30_login_and_errors_have_source_review_rows(self) -> None:
         """Specification v2.1 §§6.1.30 and 6.1.30.1 require a reviewed Login source slice."""
@@ -18498,7 +18498,7 @@ class CatalogValidationTests(unittest.TestCase):
             self.assertIsNone(gap["proposed_requirement_id"])
             self.assertEqual(gap["reused_requirement_id"], requirement_id)
             self.assertEqual(gap["status"], "source_obligation_covered_by_existing_stable_label")
-        self.assertEqual(oracle["oracle_status"], "complete")
+        self.assertEqual(oracle["source_closure_status"], "complete")
 
     def test_spec_6_1_31_logout_and_errors_have_source_review_rows(self) -> None:
         """Specification v2.1 §§6.1.31 and 6.1.31.1 require a reviewed Logout source slice."""
@@ -18633,7 +18633,7 @@ class CatalogValidationTests(unittest.TestCase):
         self.assertIsNone(ticket_gap["proposed_requirement_id"])
         self.assertEqual(ticket_gap["reused_requirement_id"], "KMIPKIT-REQ-SPEC-6.1.31-001")
         self.assertEqual(ticket_gap["status"], "source_obligation_covered_by_existing_stable_label")
-        self.assertEqual(oracle["oracle_status"], "complete")
+        self.assertEqual(oracle["source_closure_status"], "complete")
 
     def test_login_logout_request_rows_have_catalog_mapping_and_evidence(self) -> None:
         """Reviewed Login and Logout request rows map to independently evidenced requirements."""

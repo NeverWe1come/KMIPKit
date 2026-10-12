@@ -176,7 +176,7 @@ class ProfileScopeBoundaryTests(unittest.TestCase):
         )
 
         self.assertEqual(profile["applicability"], "out_of_scope")
-        self.assertEqual(oracle["oracle_status"], "complete")
+        self.assertEqual(oracle["source_closure_status"], "complete")
 
         for requirement_id in PKCS11_REQUIREMENT_IDS:
             requirement = requirements[requirement_id]

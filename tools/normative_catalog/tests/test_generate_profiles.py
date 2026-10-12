@@ -618,7 +618,7 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
         }
 
         self.assertEqual(
-            oracle["oracle_status"],
+            oracle["source_closure_status"],
             "complete",
             "profile closure comparison requires the completed pinned-source oracle",
         )

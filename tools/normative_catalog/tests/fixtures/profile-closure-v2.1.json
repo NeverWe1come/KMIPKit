@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "oracle_status": "complete",
+  "source_closure_status": "complete",
   "provenance": {
     "documents": [
       {
@@ -16,7 +16,7 @@
         "audited_source_clause_count": 534
       }
     ],
-    "derivation": "Clause locators and keywords are cross-checked against only the exact pinned normative HTML files. The catalog is permitted as a candidate registry for project-assigned requirement labels at a locator, but no profile roots, profile IDs, requirement closure arrays, or target arrays are used as expected data. For every reviewed source locator, expected membership follows the manually audited source obligation, keyword, actor/direction, condition, and client-scope disposition; candidate labels that do not match a source obligation are recorded as rejected, and missing source obligations receive explicit labels only under the documented project-ID convention. The current fixture remains partial and includes a detailed source review of Specification §9.8 paragraph 1 as a concrete false-client-requirement regression. Official test IDs and hrefs come from pinned Profiles headings and links. The visible heading is canonical; XML href and anchor display are separate provenance fields.",
+    "derivation": "Clause locators and keywords are cross-checked against only the exact pinned normative HTML files. The catalog is permitted as a candidate registry for project-assigned requirement labels at a locator, but no profile roots, profile IDs, requirement closure arrays, or target arrays are used as expected data. For every reviewed source locator, expected membership follows the manually audited source obligation, keyword, actor/direction, condition, and client-scope disposition; candidate labels that do not match a source obligation are recorded as rejected, and missing source obligations receive explicit labels only under the documented project-ID convention. All source dispositions and profile requirement closures are complete; the accepted direct requirement crosswalk remains partial. The fixture includes a detailed source review of Specification §9.8 paragraph 1 as a concrete false-client-requirement regression. Official test IDs and hrefs come from pinned Profiles headings and links. The visible heading is canonical; XML href and anchor display are separate provenance fields.",
     "direct_section_mapping": "Profiles v2.1 §§5.x and 6.1-6.35. HTTPS direct sections are §§3.2, 5.3.1, 6.1, and 6.4. It inherits §3.1 through its Baseline dependency and Profiles §6.1 item 2.",
     "inclusion_edges": [
       {
@@ -50,7 +50,7 @@
     ],
     "normative_boundaries": [
       "Usage Guide v2.1 and Test Cases v2.1 add no normative closure clauses.",
-      "The full Specification clause closure preserves server-only and out-of-scope dispositions; this partial requirement crosswalk is not the full client-applicable 1.0 map.",
+      "The full Specification clause closure preserves server-only and out-of-scope dispositions. The accepted direct requirement crosswalk is a separate partial mapping view; complete source dispositions and profile closures do not imply implementation readiness or conformance.",
       "The §14.1-002 claim gate appears for all 18 client profile expected subsets per the approved 2026-10-11 research ruling.",
       "JSON, PKCS#11, and XML remain out_of_scope; conditional HTTPS remains distinct from client_1_0.",
       "All exact upstream XML href targets are unavailable in this worktree; hrefs and labels are retained as published.",
