@@ -258,6 +258,47 @@ class ProfileSectionsThreeAndFourCrosswalkTests(unittest.TestCase):
         self.assertEqual(self.crosswalk[requirement_id]["applies_to"], baseline_profile_id)
         self.assertNotIn(requirement_id, UNRESOLVED_IDS)
 
+    def test_profile_test_variations_do_not_create_client_runtime_scope(self) -> None:
+        """§§4.1 and 4.1.2 separate conformance-test variation from client obligations."""
+        expected_scope = {
+            "KMIPKIT-REQ-PROF-4.1-001": ("unclear", "unclear", "out_of_scope"),
+            "KMIPKIT-REQ-PROF-4.1-003": ("unclear", "unclear", "out_of_scope"),
+            "KMIPKIT-REQ-PROF-4.1.2-001": ("unclear", "unclear", "unclear"),
+            "KMIPKIT-REQ-PROF-4.1.2-005": ("unclear", "unclear", "unclear"),
+            "KMIPKIT-REQ-PROF-4.1.2-008": (
+                "not_applicable",
+                "not_applicable",
+                "out_of_scope",
+            ),
+            "KMIPKIT-REQ-PROF-4.1.2-009": (
+                "not_applicable",
+                "not_applicable",
+                "out_of_scope",
+            ),
+        }
+        baseline_id = "KMIPKIT-PROFILE-BASELINE-CLIENT"
+        baseline = next(
+            profile for profile in self.catalog["profiles"] if profile["profile_id"] == baseline_id
+        )
+
+        for requirement_id, (role, direction, scope) in expected_scope.items():
+            requirement = self.requirements[requirement_id]
+            clause_id = requirement["source_clause_ids"][0]
+            clause = self.clauses[clause_id]
+            review = self.reviews[clause_id]
+
+            self.assertEqual((requirement["role"], requirement["direction"], requirement["scope_state"]), (role, direction, scope))
+            self.assertEqual((clause["role"], clause["direction"], clause["scope_state"]), (role, direction, scope))
+            self.assertEqual(review["expected_client_requirement_ids"], [])
+            self.assertNotIn(requirement_id, self.crosswalk)
+            self.assertNotIn(requirement_id, baseline["requirement_ids"])
+            self.assertNotIn(clause_id, baseline["source_clause_ids"])
+
+        auth_requirement = self.requirements["KMIPKIT-REQ-PROF-4.1.2-005"]
+        self.assertNotIn("client request", auth_requirement["summary"].lower())
+        interop_text = pinned_excerpt([4494, 4502]).lower()
+        self.assertIn("not expected that production kmip clients will support the interop operation", interop_text)
+
     def test_profile_4_1_2_007_is_may_without_a_false_must_keyword(self) -> None:
         requirement_id = "KMIPKIT-REQ-PROF-4.1.2-007"
         requirement = self.requirements[requirement_id]
