@@ -9,9 +9,34 @@ fn public_version_matches_the_synchronized_package_version() {
 
 #[test]
 fn capability_query_matches_manifest_ready_capabilities() {
-    assert!(kmipkit::capability_is_available("ffi_runtime_metadata"));
-    assert!(kmipkit::capability_is_available("generic_ttlv_model"));
-    assert!(kmipkit::capability_is_available("ttlv_wire_codec"));
-    assert!(!kmipkit::capability_is_available("public_binding_surface"));
-    assert!(!kmipkit::capability_is_available("unknown_capability"));
+    assert_eq!(kmipkit::capability_is_available("ffi_runtime_metadata"), Ok(true));
+    assert_eq!(kmipkit::capability_is_available("generic_ttlv_model"), Ok(true));
+    assert_eq!(kmipkit::capability_is_available("ttlv_wire_codec"), Ok(true));
+    assert_eq!(kmipkit::capability_is_available("public_binding_surface"), Ok(false));
+    assert_eq!(kmipkit::capability_is_available("unknown_capability"), Ok(false));
+}
+
+#[test]
+fn capability_query_rejects_ids_over_128_utf8_bytes_as_a_resource_limit() {
+    assert_eq!(
+        kmipkit::capability_is_available(&"x".repeat(128)),
+        Ok(false)
+    );
+
+    let error = kmipkit::capability_is_available(&"x".repeat(129))
+        .expect_err("an overlong capability identifier is a resource-limit error");
+    assert_eq!(error.category(), kmipkit::ClientErrorCategory::Validation);
+    assert_eq!(
+        error.cause_category(),
+        Some(kmipkit::ClientCauseCategory::Other)
+    );
+    assert_eq!(
+        error.delivery_state(),
+        Some(kmipkit::RequestDeliveryState::NotSent)
+    );
+
+    let multibyte = "🔐".repeat(33);
+    assert_eq!(multibyte.chars().count(), 33);
+    assert!(multibyte.len() > 128);
+    assert!(kmipkit::capability_is_available(&multibyte).is_err());
 }
