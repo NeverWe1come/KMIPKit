@@ -170,6 +170,28 @@ impl<T: Clone> core::fmt::Debug for CoreTraitCycle<T> {
     }
 }
 
+pub struct A<T>(pub core::marker::PhantomData<T>);
+
+pub struct B<T>(pub core::marker::PhantomData<T>);
+
+impl<T> Clone for A<T>
+where
+    B<T>: core::fmt::Debug,
+{
+    fn clone(&self) -> Self {
+        Self(self.0)
+    }
+}
+
+impl<T> core::fmt::Debug for B<T>
+where
+    A<T>: Clone,
+{
+    fn fmt(&self, formatter: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        formatter.write_str("B")
+    }
+}
+
 pub struct Recursive<T>(pub core::marker::PhantomData<T>);
 
 pub trait RecursiveBound {
@@ -199,6 +221,8 @@ pub type PrintableValueAlias = PrintableValue;
 pub type CopyOnlyAlias = CopyOnly;
 pub type DebugOnlyAlias = DebugOnly;
 pub type CloneOnlyAlias = CloneOnly;
+pub type AliasA = A<u8>;
+pub type AliasB = B<u8>;
 
 impl DefaultMembers for Service {}
 

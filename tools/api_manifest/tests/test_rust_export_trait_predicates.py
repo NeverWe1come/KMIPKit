@@ -166,6 +166,52 @@ class RustExportTraitPredicateTests(unittest.TestCase):
             False,
         )
 
+    def test_core_trait_impl_cycle_is_traced_and_fails_closed_for_alias_a(self):
+        documents = self.fixture()
+        document = documents[CRATE]
+        inventory = AUDIT._Inventory(documents)
+        clone_impl_id, clone_impl = self.implementation(document, "A", "Clone")
+        alias_a = self.alias_target(document, "AliasA")
+        alias_b = self.alias_target(document, "AliasB")
+        alias_a_name = inventory.format_type(CRATE, alias_a)
+        alias_b_name = inventory.format_type(CRATE, alias_b)
+        trace = [("Clone", alias_a_name)]
+        original_check_trait_bound = inventory.check_trait_bound
+
+        def trace_trait_bound(crate, subject, trait_bound, bindings):
+            trait_name = trait_bound["trait"]["path"].split("::")[-1]
+            trace.append((trait_name, inventory.format_type(crate, subject)))
+            return original_check_trait_bound(crate, subject, trait_bound, bindings)
+
+        inventory.check_trait_bound = trace_trait_bound
+        alias_a_argument = self.type_argument(alias_a)
+        self.assertIs(
+            inventory.check_implementation_predicates(
+                CRATE, clone_impl, {"T": alias_a_argument}
+            ),
+            None,
+        )
+        report = AUDIT.inventory(documents)
+        alias_name = "rustdoc_v57_fixture::AliasA"
+        self.assertFalse(any(
+            entry["exportName"] == f"<{alias_name} as core::clone::Clone>::clone"
+            for entry in report["declarations"]
+        ))
+        self.assertTrue(any(
+            issue.get("reason") == "unresolved-rustdoc-implementation-predicate"
+            and issue.get("implementationId") == clone_impl_id
+            for issue in report["issues"]
+            if issue.get("exportName") == alias_name
+        ))
+        self.assertEqual(
+            trace,
+            [
+                ("Clone", alias_a_name),
+                ("Debug", alias_b_name),
+                ("Clone", alias_a_name),
+            ],
+        )
+
     def test_clone_debug_and_display_proofs_project_exact_alias_paths(self):
         report = AUDIT.inventory(self.fixture())
         names = {entry["exportName"] for entry in report["declarations"]}

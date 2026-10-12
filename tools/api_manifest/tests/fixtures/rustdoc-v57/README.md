@@ -26,10 +26,12 @@ and `ToString` implementations. `Printable` requires both `Copy` and `Debug`,
 with positive, Copy-only, and Debug-only concrete types. `CoreTraitCycle<T>`
 has authentic `Clone` and `Debug` impl predicates that depend on the opposite
 core trait for `T`, exercising a cycle in the supported trait-predicate graph
-with concrete positive and negative arguments. A literal owner-level cycle
-(`Clone for X where X: Debug` and `Debug for X where X: Clone`) is rejected by
-rustc 1.94 with E0275 before rustdoc can emit JSON, so it is intentionally not
-represented as fabricated fixture data.
+with concrete positive and negative arguments. `A<T>: Clone where B<T>:
+Debug` and `B<T>: Debug where A<T>: Clone` form a real core-trait proof cycle;
+`AliasA = A<u8>` exercises cycle detection and exact unresolved-implementation
+reporting. A literal same-owner cycle (`Clone for X where X: Debug` and `Debug
+for X where X: Clone`) is rejected by rustc 1.94 with E0275 before rustdoc can
+emit JSON, so it is intentionally not represented as fabricated fixture data.
 Static aliases and open lifetime-generic aliases test proven vs. unresolved
 outlives predicates without fabricated rustdoc item records. The associated
 type default uses Rust's `associated_type_defaults` feature only in this test

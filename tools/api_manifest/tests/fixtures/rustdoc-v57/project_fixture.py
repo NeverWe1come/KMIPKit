@@ -54,7 +54,7 @@ def project(raw_path: Path, output_path: Path) -> None:
     }
     predicate_targets = {
         "CloneDebug", "NoTraits", "Conditional", "Recursive", "PrintableValue", "CopyOnly",
-        "DebugOnly", "CoreTraitCycle"
+        "DebugOnly", "CoreTraitCycle", "A", "B"
     }
     selected_impls: dict[str, list[Any]] = {}
     for item_id in source_item_ids:
