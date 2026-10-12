@@ -16540,34 +16540,44 @@ class CatalogValidationTests(unittest.TestCase):
             (ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8")
         )
         requirements = {row["requirement_id"]: row for row in catalog["requirements"]}
+        locate_implementation_refs = [
+            "crates/kmipkit-client/src/execute.rs",
+            "crates/kmipkit-protocol/src/locate.rs",
+        ]
+        locate_batch_test = (
+            "crates/kmipkit-client/tests/unit/object_read_execution_tests.rs::"
+            "locate_batch_preserves_criteria_results_and_server_placeholder_boundary"
+        )
+        locate_wire_test = (
+            "crates/kmipkit-protocol/tests/unit/locate_tests.rs::"
+            "request_emits_supplied_optional_fields_in_table_247_order"
+        )
+        locate_quickstart_test = (
+            "crates/kmipkit-client/tests/operation_boundary.rs::"
+            "rust_quickstart_get_and_locate_examples_execute_through_the_client"
+        )
+        empty_attributes_test = (
+            "crates/kmipkit-protocol/tests/unit/locate_tests.rs::"
+            "request_always_encodes_the_required_empty_attributes_structure"
+        )
         expected_evidence = {
             "KMIPKIT-REQ-SPEC-6.1.28-001": (
-                ["crates/kmipkit-client/src/execute.rs", "crates/kmipkit-protocol/src/locate.rs"],
-                [
-                    "crates/kmipkit-client/tests/unit/object_read_execution_tests.rs::locate_batch_preserves_criteria_results_and_server_placeholder_boundary",
-                    "crates/kmipkit-protocol/tests/unit/locate_tests.rs::request_emits_supplied_optional_fields_in_table_247_order",
-                ],
+                locate_implementation_refs,
+                [locate_batch_test, locate_wire_test],
                 "do not assert how many identifiers a server returns",
             ),
             "KMIPKIT-REQ-SPEC-6.1.28-002": (
-                ["crates/kmipkit-client/src/execute.rs", "crates/kmipkit-protocol/src/locate.rs"],
-                [
-                    "crates/kmipkit-client/tests/operation_boundary.rs::rust_quickstart_get_and_locate_examples_execute_through_the_client",
-                    "crates/kmipkit-client/tests/unit/object_read_execution_tests.rs::locate_batch_preserves_criteria_results_and_server_placeholder_boundary",
-                    "crates/kmipkit-protocol/tests/unit/locate_tests.rs::request_emits_supplied_optional_fields_in_table_247_order",
-                ],
+                locate_implementation_refs,
+                [locate_quickstart_test, locate_batch_test, locate_wire_test],
                 "do not assert server-side zero-equivalence behavior",
             ),
             "KMIPKIT-REQ-SPEC-6.1.28-013-002": (
                 [
-                    "crates/kmipkit-client/src/execute.rs",
+                    locate_implementation_refs[0],
                     "crates/kmipkit-protocol/src/attribute.rs",
-                    "crates/kmipkit-protocol/src/locate.rs",
+                    locate_implementation_refs[1],
                 ],
-                [
-                    "crates/kmipkit-client/tests/operation_boundary.rs::rust_quickstart_get_and_locate_examples_execute_through_the_client",
-                    "crates/kmipkit-protocol/tests/unit/locate_tests.rs::request_always_encodes_the_required_empty_attributes_structure",
-                ],
+                [locate_quickstart_test, empty_attributes_test],
                 "do not assert the server returns every matching object",
             ),
         }
