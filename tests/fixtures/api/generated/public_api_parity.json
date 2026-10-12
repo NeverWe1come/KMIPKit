@@ -300,7 +300,7 @@
       "cValue": 1,
       "id": "compatibility_mismatch",
       "javaException": "org.kmipkit.extensions.ExtensionCompatibilityException",
-      "pythonException": "kmipkit.errors.ExtensionCompatibilityError",
+      "pythonException": "kmipkit.errors.CompatibilityMismatchError",
       "rustVariant": "CompatibilityMismatch"
     },
     {
@@ -308,7 +308,7 @@
       "cValue": 2,
       "id": "duplicate_key",
       "javaException": "org.kmipkit.extensions.DuplicateExtensionKeyException",
-      "pythonException": "kmipkit.errors.DuplicateExtensionKeyError",
+      "pythonException": "kmipkit.errors.DuplicateKeyError",
       "rustVariant": "DuplicateKey"
     },
     {
@@ -316,7 +316,7 @@
       "cValue": 3,
       "id": "invalid_identity",
       "javaException": "org.kmipkit.extensions.InvalidExtensionIdentityException",
-      "pythonException": "kmipkit.errors.InvalidExtensionIdentityError",
+      "pythonException": "kmipkit.errors.InvalidIdentityError",
       "rustVariant": "InvalidIdentity"
     },
     {
@@ -15898,46 +15898,6 @@
         "status": "Approved"
       },
       "capabilityId": "vendor_extension_registry",
-      "declarationId": "client_extension_registry_validate:python",
-      "declarationState": "declared",
-      "exportName": "kmipkit.extensions.validate_extension_value",
-      "kind": "python-export",
-      "languageMappings": {
-        "c": {
-          "name": "kmipkit_client_extension_registry_validate",
-          "packageId": "c-kmipkit"
-        },
-        "java": {
-          "name": "org.kmipkit.extensions.ClientExtensionRegistry.validateExtensionValue",
-          "packageId": "java-kmipkit"
-        },
-        "python": {
-          "name": "kmipkit.extensions.validate_extension_value",
-          "packageId": "python-kmipkit"
-        },
-        "rust": {
-          "name": "kmipkit_client::extension_registry::validate_extension_value",
-          "packageId": "rust-kmipkit-client"
-        }
-      },
-      "packageId": "python-kmipkit",
-      "parityScope": "four-language",
-      "requirementIds": [
-        "KMIPKIT-0012-FR-002",
-        "KMIPKIT-0012-FR-005",
-        "KMIPKIT-0012-FR-010",
-        "KMIPKIT-0012-FR-011",
-        "KMIPKIT-0012-FR-012"
-      ]
-    },
-    {
-      "approvalSource": {
-        "evidence": "**Status**: Approved for implementation under the maintainer's standing direct authorization to execute the complete KMIPKit plan without further approval requests.",
-        "kind": "feature-specification",
-        "path": "specs/012-vendor-extension-registry/spec.md",
-        "status": "Approved"
-      },
-      "capabilityId": "vendor_extension_registry",
       "declarationId": "client_extension_registry_validate:rust",
       "declarationState": "declared",
       "exportName": "kmipkit_client::extension_registry::validate_extension_value",
@@ -18021,46 +17981,6 @@
         }
       },
       "packageId": "java-kmipkit",
-      "parityScope": "four-language",
-      "requirementIds": [
-        "KMIPKIT-0012-FR-005",
-        "KMIPKIT-0012-FR-007",
-        "KMIPKIT-0012-FR-010",
-        "KMIPKIT-0012-FR-011",
-        "KMIPKIT-0012-FR-012"
-      ]
-    },
-    {
-      "approvalSource": {
-        "evidence": "**Status**: Approved for implementation under the maintainer's standing direct authorization to execute the complete KMIPKit plan without further approval requests.",
-        "kind": "feature-specification",
-        "path": "specs/012-vendor-extension-registry/spec.md",
-        "status": "Approved"
-      },
-      "capabilityId": "vendor_extension_registry",
-      "declarationId": "extension_definition_validate:python",
-      "declarationState": "declared",
-      "exportName": "kmipkit.extensions.validate_extension_value",
-      "kind": "python-export",
-      "languageMappings": {
-        "c": {
-          "name": "kmipkit_extension_definition_validate",
-          "packageId": "c-kmipkit"
-        },
-        "java": {
-          "name": "org.kmipkit.extensions.ExtensionDefinition.validate",
-          "packageId": "java-kmipkit"
-        },
-        "python": {
-          "name": "kmipkit.extensions.validate_extension_value",
-          "packageId": "python-kmipkit"
-        },
-        "rust": {
-          "name": "kmipkit_protocol::extension::validate",
-          "packageId": "rust-kmipkit-protocol"
-        }
-      },
-      "packageId": "python-kmipkit",
       "parityScope": "four-language",
       "requirementIds": [
         "KMIPKIT-0012-FR-005",
@@ -26051,11 +25971,11 @@
           "packageId": "c-kmipkit"
         },
         "java": {
-          "name": "org.kmipkit.RuntimeMetadata.version",
+          "name": "org.kmipkit.RuntimeMetadata.Version",
           "packageId": "java-kmipkit"
         },
         "python": {
-          "name": "kmipkit.metadata.get_version",
+          "name": "kmipkit.metadata.Version",
           "packageId": "python-kmipkit"
         },
         "rust": {
@@ -26195,11 +26115,11 @@
           "packageId": "c-kmipkit"
         },
         "java": {
-          "name": "org.kmipkit.RuntimeMetadata.version",
+          "name": "org.kmipkit.RuntimeMetadata.Version",
           "packageId": "java-kmipkit"
         },
         "python": {
-          "name": "kmipkit.metadata.get_version",
+          "name": "kmipkit.metadata.Version",
           "packageId": "python-kmipkit"
         },
         "rust": {

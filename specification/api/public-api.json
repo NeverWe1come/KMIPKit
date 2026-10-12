@@ -9874,7 +9874,7 @@
       "cCode": "KMIPKIT_ERROR_COMPATIBILITY_MISMATCH",
       "cValue": 1,
       "javaException": "org.kmipkit.extensions.ExtensionCompatibilityException",
-      "pythonException": "kmipkit.errors.ExtensionCompatibilityError"
+      "pythonException": "kmipkit.errors.CompatibilityMismatchError"
     },
     {
       "id": "duplicate_key",
@@ -9882,7 +9882,7 @@
       "cCode": "KMIPKIT_ERROR_DUPLICATE_KEY",
       "cValue": 2,
       "javaException": "org.kmipkit.extensions.DuplicateExtensionKeyException",
-      "pythonException": "kmipkit.errors.DuplicateExtensionKeyError"
+      "pythonException": "kmipkit.errors.DuplicateKeyError"
     },
     {
       "id": "invalid_identity",
@@ -9890,7 +9890,7 @@
       "cCode": "KMIPKIT_ERROR_INVALID_IDENTITY",
       "cValue": 3,
       "javaException": "org.kmipkit.extensions.InvalidExtensionIdentityException",
-      "pythonException": "kmipkit.errors.InvalidExtensionIdentityError"
+      "pythonException": "kmipkit.errors.InvalidIdentityError"
     },
     {
       "id": "invalid_input",
@@ -16895,46 +16895,6 @@
       }
     },
     {
-      "declarationId": "client_extension_registry_validate:python",
-      "packageId": "python-kmipkit",
-      "kind": "python-export",
-      "exportName": "kmipkit.extensions.validate_extension_value",
-      "capabilityId": "vendor_extension_registry",
-      "requirementIds": [
-        "KMIPKIT-0012-FR-002",
-        "KMIPKIT-0012-FR-005",
-        "KMIPKIT-0012-FR-010",
-        "KMIPKIT-0012-FR-011",
-        "KMIPKIT-0012-FR-012"
-      ],
-      "declarationState": "declared",
-      "parityScope": "four-language",
-      "approvalSource": {
-        "kind": "feature-specification",
-        "path": "specs/012-vendor-extension-registry/spec.md",
-        "status": "Approved",
-        "evidence": "**Status**: Approved for implementation under the maintainer's standing direct authorization to execute the complete KMIPKit plan without further approval requests."
-      },
-      "languageMappings": {
-        "rust": {
-          "packageId": "rust-kmipkit-client",
-          "name": "kmipkit_client::extension_registry::validate_extension_value"
-        },
-        "c": {
-          "packageId": "c-kmipkit",
-          "name": "kmipkit_client_extension_registry_validate"
-        },
-        "java": {
-          "packageId": "java-kmipkit",
-          "name": "org.kmipkit.extensions.ClientExtensionRegistry.validateExtensionValue"
-        },
-        "python": {
-          "packageId": "python-kmipkit",
-          "name": "kmipkit.extensions.validate_extension_value"
-        }
-      }
-    },
-    {
       "declarationId": "client_extension_registry_validate:rust",
       "packageId": "rust-kmipkit-client",
       "kind": "function",
@@ -18999,46 +18959,6 @@
       "packageId": "java-kmipkit",
       "kind": "java-member",
       "exportName": "org.kmipkit.extensions.ExtensionDefinition.validate",
-      "capabilityId": "vendor_extension_registry",
-      "requirementIds": [
-        "KMIPKIT-0012-FR-005",
-        "KMIPKIT-0012-FR-007",
-        "KMIPKIT-0012-FR-010",
-        "KMIPKIT-0012-FR-011",
-        "KMIPKIT-0012-FR-012"
-      ],
-      "declarationState": "declared",
-      "parityScope": "four-language",
-      "approvalSource": {
-        "kind": "feature-specification",
-        "path": "specs/012-vendor-extension-registry/spec.md",
-        "status": "Approved",
-        "evidence": "**Status**: Approved for implementation under the maintainer's standing direct authorization to execute the complete KMIPKit plan without further approval requests."
-      },
-      "languageMappings": {
-        "rust": {
-          "packageId": "rust-kmipkit-protocol",
-          "name": "kmipkit_protocol::extension::validate"
-        },
-        "c": {
-          "packageId": "c-kmipkit",
-          "name": "kmipkit_extension_definition_validate"
-        },
-        "java": {
-          "packageId": "java-kmipkit",
-          "name": "org.kmipkit.extensions.ExtensionDefinition.validate"
-        },
-        "python": {
-          "packageId": "python-kmipkit",
-          "name": "kmipkit.extensions.validate_extension_value"
-        }
-      }
-    },
-    {
-      "declarationId": "extension_definition_validate:python",
-      "packageId": "python-kmipkit",
-      "kind": "python-export",
-      "exportName": "kmipkit.extensions.validate_extension_value",
       "capabilityId": "vendor_extension_registry",
       "requirementIds": [
         "KMIPKIT-0012-FR-005",
@@ -29542,10 +29462,22 @@
         "evidence": "**Status**: Approved for implementation"
       },
       "languageMappings": {
-        "rust": { "packageId": "rust-kmipkit", "name": "kmipkit::RuntimeMetadataError::ResourceLimit" },
-        "c": { "packageId": "c-kmipkit", "name": "KMIPKIT_ERROR_RESOURCE_LIMIT" },
-        "java": { "packageId": "java-kmipkit", "name": "org.kmipkit.ResourceLimitException" },
-        "python": { "packageId": "python-kmipkit", "name": "kmipkit.errors.ResourceLimitError" }
+        "rust": {
+          "packageId": "rust-kmipkit",
+          "name": "kmipkit::RuntimeMetadataError::ResourceLimit"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "KMIPKIT_ERROR_RESOURCE_LIMIT"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.ResourceLimitException"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.errors.ResourceLimitError"
+        }
       }
     },
     {
@@ -30057,20 +29989,6 @@
       "packageId": "java-kmipkit",
       "kind": "java-member",
       "exportName": "org.kmipkit.internal.NativeHandle.owned",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
-    },
-    {
-      "declarationId": "java-observed-80e4b358a41da3230d8a",
-      "packageId": "java-kmipkit",
-      "kind": "java-member",
-      "exportName": "org.kmipkit.internal.NativeHandle.run",
       "capabilityId": "public_binding_surface",
       "requirementIds": [
         "KMIPKIT-0043-FR-021"
@@ -30619,10 +30537,22 @@
         "evidence": "**Status**: Approved for implementation"
       },
       "languageMappings": {
-        "rust": { "packageId": "rust-kmipkit", "name": "kmipkit::RuntimeMetadataError::ResourceLimit" },
-        "c": { "packageId": "c-kmipkit", "name": "KMIPKIT_ERROR_RESOURCE_LIMIT" },
-        "java": { "packageId": "java-kmipkit", "name": "org.kmipkit.ResourceLimitException" },
-        "python": { "packageId": "python-kmipkit", "name": "kmipkit.errors.ResourceLimitError" }
+        "rust": {
+          "packageId": "rust-kmipkit",
+          "name": "kmipkit::RuntimeMetadataError::ResourceLimit"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "KMIPKIT_ERROR_RESOURCE_LIMIT"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.ResourceLimitException"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.errors.ResourceLimitError"
+        }
       }
     },
     {
@@ -56125,11 +56055,11 @@
         },
         "java": {
           "packageId": "java-kmipkit",
-          "name": "org.kmipkit.RuntimeMetadata.version"
+          "name": "org.kmipkit.RuntimeMetadata.Version"
         },
         "python": {
           "packageId": "python-kmipkit",
-          "name": "kmipkit.metadata.get_version"
+          "name": "kmipkit.metadata.Version"
         }
       }
     },
@@ -56269,11 +56199,11 @@
         },
         "java": {
           "packageId": "java-kmipkit",
-          "name": "org.kmipkit.RuntimeMetadata.version"
+          "name": "org.kmipkit.RuntimeMetadata.Version"
         },
         "python": {
           "packageId": "python-kmipkit",
-          "name": "kmipkit.metadata.get_version"
+          "name": "kmipkit.metadata.Version"
         }
       }
     },
@@ -56548,10 +56478,22 @@
         "evidence": "**Status**: Approved for implementation"
       },
       "languageMappings": {
-        "rust": { "packageId": "rust-kmipkit", "name": "kmipkit::RuntimeMetadataError" },
-        "c": { "packageId": "c-kmipkit", "name": "KMIPKIT_ERROR_RESOURCE_LIMIT" },
-        "java": { "packageId": "java-kmipkit", "name": "org.kmipkit.ResourceLimitException" },
-        "python": { "packageId": "python-kmipkit", "name": "kmipkit.errors.ResourceLimitError" }
+        "rust": {
+          "packageId": "rust-kmipkit",
+          "name": "kmipkit::RuntimeMetadataError"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "KMIPKIT_ERROR_RESOURCE_LIMIT"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.ResourceLimitException"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.errors.ResourceLimitError"
+        }
       }
     },
     {
@@ -56573,10 +56515,22 @@
         "evidence": "**Status**: Approved for implementation"
       },
       "languageMappings": {
-        "rust": { "packageId": "rust-kmipkit", "name": "kmipkit::RuntimeMetadataError::ResourceLimit" },
-        "c": { "packageId": "c-kmipkit", "name": "KMIPKIT_ERROR_RESOURCE_LIMIT" },
-        "java": { "packageId": "java-kmipkit", "name": "org.kmipkit.ResourceLimitException" },
-        "python": { "packageId": "python-kmipkit", "name": "kmipkit.errors.ResourceLimitError" }
+        "rust": {
+          "packageId": "rust-kmipkit",
+          "name": "kmipkit::RuntimeMetadataError::ResourceLimit"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "KMIPKIT_ERROR_RESOURCE_LIMIT"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.ResourceLimitException"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.errors.ResourceLimitError"
+        }
       }
     },
     {
@@ -56598,11 +56552,555 @@
         "evidence": "**Status**: Approved for implementation"
       },
       "languageMappings": {
-        "rust": { "packageId": "rust-kmipkit", "name": "kmipkit::RuntimeMetadataError::ResourceLimit" },
-        "c": { "packageId": "c-kmipkit", "name": "KMIPKIT_ERROR_RESOURCE_LIMIT" },
-        "java": { "packageId": "java-kmipkit", "name": "org.kmipkit.ResourceLimitException" },
-        "python": { "packageId": "python-kmipkit", "name": "kmipkit.errors.ResourceLimitError" }
+        "rust": {
+          "packageId": "rust-kmipkit",
+          "name": "kmipkit::RuntimeMetadataError::ResourceLimit"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "KMIPKIT_ERROR_RESOURCE_LIMIT"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.ResourceLimitException"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.errors.ResourceLimitError"
+        }
       }
+    },
+    {
+      "declarationId": "t011-observed-c-compatibility_mismatch",
+      "packageId": "c-kmipkit",
+      "kind": "constant",
+      "exportName": "KMIPKIT_ERROR_COMPATIBILITY_MISMATCH",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0043",
+      "blockedReason": "This error constant is explicitly exported by the C header, but its owning logical capability and equivalent cross-language declaration mapping have not been reviewed."
+    },
+    {
+      "declarationId": "t011-observed-c-duplicate_key",
+      "packageId": "c-kmipkit",
+      "kind": "constant",
+      "exportName": "KMIPKIT_ERROR_DUPLICATE_KEY",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0043",
+      "blockedReason": "This error constant is explicitly exported by the C header, but its owning logical capability and equivalent cross-language declaration mapping have not been reviewed."
+    },
+    {
+      "declarationId": "t011-observed-c-invalid_identity",
+      "packageId": "c-kmipkit",
+      "kind": "constant",
+      "exportName": "KMIPKIT_ERROR_INVALID_IDENTITY",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0043",
+      "blockedReason": "This error constant is explicitly exported by the C header, but its owning logical capability and equivalent cross-language declaration mapping have not been reviewed."
+    },
+    {
+      "declarationId": "t011-observed-c-invalid_input",
+      "packageId": "c-kmipkit",
+      "kind": "constant",
+      "exportName": "KMIPKIT_ERROR_INVALID_INPUT",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0043",
+      "blockedReason": "This error constant is explicitly exported by the C header, but its owning logical capability and equivalent cross-language declaration mapping have not been reviewed."
+    },
+    {
+      "declarationId": "t011-observed-c-invalid_schema",
+      "packageId": "c-kmipkit",
+      "kind": "constant",
+      "exportName": "KMIPKIT_ERROR_INVALID_SCHEMA",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0043",
+      "blockedReason": "This error constant is explicitly exported by the C header, but its owning logical capability and equivalent cross-language declaration mapping have not been reviewed."
+    },
+    {
+      "declarationId": "t011-observed-c-aws-entropy_collector_alloc",
+      "packageId": "c-kmipkit",
+      "kind": "c-symbol",
+      "exportName": "aws_lc_0_45_0_jent_entropy_collector_alloc",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0043",
+      "blockedReason": "The built C ABI currently exposes this unprefixed transitive aws-lc jitterentropy symbol. It is recorded as an observed export, but it has no KMIPKit API owner and remains a visibility violation under KMIPKIT-0043-FR-007."
+    },
+    {
+      "declarationId": "t011-observed-c-aws-entropy_collector_free",
+      "packageId": "c-kmipkit",
+      "kind": "c-symbol",
+      "exportName": "aws_lc_0_45_0_jent_entropy_collector_free",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0043",
+      "blockedReason": "The built C ABI currently exposes this unprefixed transitive aws-lc jitterentropy symbol. It is recorded as an observed export, but it has no KMIPKit API owner and remains a visibility violation under KMIPKIT-0043-FR-007."
+    },
+    {
+      "declarationId": "t011-observed-c-aws-entropy_init",
+      "packageId": "c-kmipkit",
+      "kind": "c-symbol",
+      "exportName": "aws_lc_0_45_0_jent_entropy_init",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0043",
+      "blockedReason": "The built C ABI currently exposes this unprefixed transitive aws-lc jitterentropy symbol. It is recorded as an observed export, but it has no KMIPKit API owner and remains a visibility violation under KMIPKIT-0043-FR-007."
+    },
+    {
+      "declarationId": "t011-observed-c-aws-entropy_init_ex",
+      "packageId": "c-kmipkit",
+      "kind": "c-symbol",
+      "exportName": "aws_lc_0_45_0_jent_entropy_init_ex",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0043",
+      "blockedReason": "The built C ABI currently exposes this unprefixed transitive aws-lc jitterentropy symbol. It is recorded as an observed export, but it has no KMIPKit API owner and remains a visibility violation under KMIPKIT-0043-FR-007."
+    },
+    {
+      "declarationId": "t011-observed-c-aws-entropy_switch_notime_impl",
+      "packageId": "c-kmipkit",
+      "kind": "c-symbol",
+      "exportName": "aws_lc_0_45_0_jent_entropy_switch_notime_impl",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0043",
+      "blockedReason": "The built C ABI currently exposes this unprefixed transitive aws-lc jitterentropy symbol. It is recorded as an observed export, but it has no KMIPKit API owner and remains a visibility violation under KMIPKIT-0043-FR-007."
+    },
+    {
+      "declarationId": "t011-observed-c-aws-read_entropy",
+      "packageId": "c-kmipkit",
+      "kind": "c-symbol",
+      "exportName": "aws_lc_0_45_0_jent_read_entropy",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0043",
+      "blockedReason": "The built C ABI currently exposes this unprefixed transitive aws-lc jitterentropy symbol. It is recorded as an observed export, but it has no KMIPKit API owner and remains a visibility violation under KMIPKIT-0043-FR-007."
+    },
+    {
+      "declarationId": "t011-observed-c-aws-read_entropy_safe",
+      "packageId": "c-kmipkit",
+      "kind": "c-symbol",
+      "exportName": "aws_lc_0_45_0_jent_read_entropy_safe",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0043",
+      "blockedReason": "The built C ABI currently exposes this unprefixed transitive aws-lc jitterentropy symbol. It is recorded as an observed export, but it has no KMIPKit API owner and remains a visibility violation under KMIPKIT-0043-FR-007."
+    },
+    {
+      "declarationId": "t011-observed-c-aws-set_fips_failure_callback",
+      "packageId": "c-kmipkit",
+      "kind": "c-symbol",
+      "exportName": "aws_lc_0_45_0_jent_set_fips_failure_callback",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0043",
+      "blockedReason": "The built C ABI currently exposes this unprefixed transitive aws-lc jitterentropy symbol. It is recorded as an observed export, but it has no KMIPKit API owner and remains a visibility violation under KMIPKIT-0043-FR-007."
+    },
+    {
+      "declarationId": "t011-observed-c-aws-version",
+      "packageId": "c-kmipkit",
+      "kind": "c-symbol",
+      "exportName": "aws_lc_0_45_0_jent_version",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0043",
+      "blockedReason": "The built C ABI currently exposes this unprefixed transitive aws-lc jitterentropy symbol. It is recorded as an observed export, but it has no KMIPKit API owner and remains a visibility violation under KMIPKIT-0043-FR-007."
+    },
+    {
+      "declarationId": "t011-observed-java-init",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.RuntimeMetadata.Version.<init>",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0043",
+      "blockedReason": "This public or protected record member is compiler-generated or declared on RuntimeMetadata.Version, but it has no reviewed cross-language declaration mapping in the current inventory."
+    },
+    {
+      "declarationId": "t011-observed-java-abiVersion",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.RuntimeMetadata.Version.abiVersion",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0043",
+      "blockedReason": "This public or protected record member is compiler-generated or declared on RuntimeMetadata.Version, but it has no reviewed cross-language declaration mapping in the current inventory."
+    },
+    {
+      "declarationId": "t011-observed-java-equals",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.RuntimeMetadata.Version.equals",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0043",
+      "blockedReason": "This public or protected record member is compiler-generated or declared on RuntimeMetadata.Version, but it has no reviewed cross-language declaration mapping in the current inventory."
+    },
+    {
+      "declarationId": "t011-observed-java-hashCode",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.RuntimeMetadata.Version.hashCode",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0043",
+      "blockedReason": "This public or protected record member is compiler-generated or declared on RuntimeMetadata.Version, but it has no reviewed cross-language declaration mapping in the current inventory."
+    },
+    {
+      "declarationId": "t011-observed-java-major",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.RuntimeMetadata.Version.major",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0043",
+      "blockedReason": "This public or protected record member is compiler-generated or declared on RuntimeMetadata.Version, but it has no reviewed cross-language declaration mapping in the current inventory."
+    },
+    {
+      "declarationId": "t011-observed-java-minor",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.RuntimeMetadata.Version.minor",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0043",
+      "blockedReason": "This public or protected record member is compiler-generated or declared on RuntimeMetadata.Version, but it has no reviewed cross-language declaration mapping in the current inventory."
+    },
+    {
+      "declarationId": "t011-observed-java-patch",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.RuntimeMetadata.Version.patch",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0043",
+      "blockedReason": "This public or protected record member is compiler-generated or declared on RuntimeMetadata.Version, but it has no reviewed cross-language declaration mapping in the current inventory."
+    },
+    {
+      "declarationId": "t011-observed-java-toString",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.RuntimeMetadata.Version.toString",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0043",
+      "blockedReason": "This public or protected record member is compiler-generated or declared on RuntimeMetadata.Version, but it has no reviewed cross-language declaration mapping in the current inventory."
+    },
+    {
+      "declarationId": "t011-observed-java-public-api",
+      "packageId": "java-kmipkit",
+      "kind": "type",
+      "exportName": "org.kmipkit.generated.PublicApi",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0043",
+      "blockedReason": "This public generated metadata declaration is observable in the Java distribution, but it does not yet have a reviewed logical capability or cross-language API mapping."
+    },
+    {
+      "declarationId": "t011-observed-java-public-api-declarations",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.generated.PublicApi.DECLARATIONS_JSON",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0043",
+      "blockedReason": "This public generated metadata declaration is observable in the Java distribution, but it does not yet have a reviewed logical capability or cross-language API mapping."
+    },
+    {
+      "declarationId": "t011-observed-java-public-api-format",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.generated.PublicApi.FORMAT_VERSION",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0043",
+      "blockedReason": "This public generated metadata declaration is observable in the Java distribution, but it does not yet have a reviewed logical capability or cross-language API mapping."
+    },
+    {
+      "declarationId": "t011-observed-python-root",
+      "packageId": "python-kmipkit",
+      "kind": "module",
+      "exportName": "kmipkit",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0043",
+      "blockedReason": "This public Python package export is observable, but it has no reviewed logical capability or cross-language declaration mapping in the current inventory."
+    },
+    {
+      "declarationId": "t011-observed-python-compatibilitymismatcherror-category",
+      "packageId": "python-kmipkit",
+      "kind": "python-export",
+      "exportName": "kmipkit.errors.CompatibilityMismatchError.category",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0043",
+      "blockedReason": "This public Python package export is observable, but it has no reviewed logical capability or cross-language declaration mapping in the current inventory."
+    },
+    {
+      "declarationId": "t011-observed-python-duplicatekeyerror-category",
+      "packageId": "python-kmipkit",
+      "kind": "python-export",
+      "exportName": "kmipkit.errors.DuplicateKeyError.category",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0043",
+      "blockedReason": "This public Python package export is observable, but it has no reviewed logical capability or cross-language declaration mapping in the current inventory."
+    },
+    {
+      "declarationId": "t011-observed-python-invalidextensionschemaerror-category",
+      "packageId": "python-kmipkit",
+      "kind": "python-export",
+      "exportName": "kmipkit.errors.InvalidExtensionSchemaError.category",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0043",
+      "blockedReason": "This public Python package export is observable, but it has no reviewed logical capability or cross-language declaration mapping in the current inventory."
+    },
+    {
+      "declarationId": "t011-observed-python-invalididentityerror-category",
+      "packageId": "python-kmipkit",
+      "kind": "python-export",
+      "exportName": "kmipkit.errors.InvalidIdentityError.category",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0043",
+      "blockedReason": "This public Python package export is observable, but it has no reviewed logical capability or cross-language declaration mapping in the current inventory."
+    },
+    {
+      "declarationId": "t011-observed-python-invalidinputerror-category",
+      "packageId": "python-kmipkit",
+      "kind": "python-export",
+      "exportName": "kmipkit.errors.InvalidInputError.category",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0043",
+      "blockedReason": "This public Python package export is observable, but it has no reviewed logical capability or cross-language declaration mapping in the current inventory."
+    },
+    {
+      "declarationId": "t011-observed-python-kmipkiterror-category",
+      "packageId": "python-kmipkit",
+      "kind": "python-export",
+      "exportName": "kmipkit.errors.KmipKitError.category",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0043",
+      "blockedReason": "This public Python package export is observable, but it has no reviewed logical capability or cross-language declaration mapping in the current inventory."
+    },
+    {
+      "declarationId": "t011-observed-python-resourcelimiterror-category",
+      "packageId": "python-kmipkit",
+      "kind": "python-export",
+      "exportName": "kmipkit.errors.ResourceLimitError.category",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0043",
+      "blockedReason": "This public Python package export is observable, but it has no reviewed logical capability or cross-language declaration mapping in the current inventory."
+    },
+    {
+      "declarationId": "t011-observed-python-version-abi_version",
+      "packageId": "python-kmipkit",
+      "kind": "field",
+      "exportName": "kmipkit.metadata.Version.abi_version",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0043",
+      "blockedReason": "This public Python package export is observable, but it has no reviewed logical capability or cross-language declaration mapping in the current inventory."
+    },
+    {
+      "declarationId": "t011-observed-python-version-major",
+      "packageId": "python-kmipkit",
+      "kind": "field",
+      "exportName": "kmipkit.metadata.Version.major",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0043",
+      "blockedReason": "This public Python package export is observable, but it has no reviewed logical capability or cross-language declaration mapping in the current inventory."
+    },
+    {
+      "declarationId": "t011-observed-python-version-minor",
+      "packageId": "python-kmipkit",
+      "kind": "field",
+      "exportName": "kmipkit.metadata.Version.minor",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0043",
+      "blockedReason": "This public Python package export is observable, but it has no reviewed logical capability or cross-language declaration mapping in the current inventory."
+    },
+    {
+      "declarationId": "t011-observed-python-version-patch",
+      "packageId": "python-kmipkit",
+      "kind": "field",
+      "exportName": "kmipkit.metadata.Version.patch",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0043",
+      "blockedReason": "This public Python package export is observable, but it has no reviewed logical capability or cross-language declaration mapping in the current inventory."
+    },
+    {
+      "declarationId": "t011-observed-python-validate-extension-value",
+      "packageId": "python-kmipkit",
+      "kind": "python-export",
+      "exportName": "kmipkit.extensions.validate_extension_value",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0043",
+      "blockedReason": "The single Python overload group implements two differently named cross-language operations; the current manifest cannot represent that many-to-one mapping without an approved declaration contract."
     }
   ],
   "approvedExclusions": [

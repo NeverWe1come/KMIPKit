@@ -45,10 +45,20 @@ def inventory_c_header(source: str, package: str = "c-kmipkit") -> dict[str, Any
     records: list[dict[str, str]] = []
     issues: list[dict[str, str]] = []
     cleaned = re.sub(r"/\*.*?\*/|//[^\n]*", " ", source, flags=re.S)
-    for line_number, line in enumerate(cleaned.splitlines(), 1):
+    lines = cleaned.splitlines()
+    directives = [(index, line.strip()) for index, line in enumerate(lines) if line.strip()]
+    include_guard: str | None = None
+    if len(directives) >= 2:
+        opening = re.fullmatch(r"#\s*ifndef\s+([A-Za-z_]\w*)", directives[0][1])
+        closing = re.fullmatch(r"#\s*define\s+([A-Za-z_]\w*)\b(?:\s+.*)?", directives[1][1])
+        if opening is not None and closing is not None and opening.group(1) == closing.group(1):
+            include_guard = opening.group(1)
+    for line_number, line in enumerate(lines, 1):
         macro = re.match(r"\s*#\s*define\s+([A-Za-z_]\w*)\b", line)
         if macro:
             name = macro.group(1)
+            if name == include_guard:
+                continue
             records.append(_record(package, name, "constant" if name.startswith("KMIPKIT_ERROR_") else "macro", str(line_number)))
     parsed_aggregate_spans: set[tuple[int, int]] = set()
     aggregate_pattern = re.compile(r"\btypedef\s+(struct|union)(?:\s+[A-Za-z_]\w*)?\s*\{([^{}]*)\}\s*([A-Za-z_]\w*)\s*;", re.S)
@@ -199,21 +209,25 @@ def read_pe_exports(image: bytes) -> list[str]:
     return sorted(set(names))
 
 
-def audit_c_surface(header: str, binary_exports: list[str], package: str = "c-kmipkit") -> dict[str, Any]:
+def audit_c_surface(header: str, binary_exports: list[str], package: str = "c-kmipkit",
+                    approved_exclusions: list[dict[str, Any]] | None = None) -> dict[str, Any]:
     """Reconcile header declarations with the symbols exported by the ABI library."""
     header_report = inventory_c_header(header, package)
     records = [dict(row) for row in header_report["declarations"]]
     issues = list(header_report["issues"])
+    excluded_symbols = {row["exportName"] for row in approved_exclusions or []
+                        if row.get("packageId") == package}
     header_symbols = {row["exportName"]: row for row in records if row["kind"] == "c-symbol"}
     export_names = set(binary_exports)
     issues.extend({"packageId": package, "exportName": name, "reason": "non-prefixed-c-abi-export"}
-                  for name in sorted(export_names) if not name.startswith("kmipkit_"))
+                  for name in sorted(export_names) if not name.startswith("kmipkit_") and name not in excluded_symbols)
     for name in sorted(export_names):
         if name in header_symbols:
             header_symbols[name]["location"] += "+binary"
         else:
             records.append(_record(package, name, "c-symbol", "binary"))
-            issues.append({"packageId": package, "exportName": name, "reason": "exported-symbol-missing-from-header"})
+            if name not in excluded_symbols:
+                issues.append({"packageId": package, "exportName": name, "reason": "exported-symbol-missing-from-header"})
     issues.extend({"packageId": package, "exportName": name, "reason": "header-symbol-not-exported"}
                   for name in sorted(set(header_symbols) - export_names))
     return _report(records, issues)
@@ -380,6 +394,23 @@ def inventory_python_sources(sources: dict[str, str], package: str = "python-kmi
     imported: dict[tuple[str, str], tuple[str, str]] = {}
     explicit_exports: dict[str, list[str] | None] = {}
     classes: dict[str, tuple[str, str, list[ast.expr], list[tuple[str, str, int]]]] = {}
+    function_groups: dict[tuple[str, str], list[ast.FunctionDef | ast.AsyncFunctionDef]] = {}
+    for module, tree in sorted(parsed.items()):
+        for node in tree.body:
+            if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
+                function_groups.setdefault((module, node.name), []).append(node)
+
+    def is_overload(node: ast.FunctionDef | ast.AsyncFunctionDef) -> bool:
+        return any((decorator.id if isinstance(decorator, ast.Name)
+                    else decorator.attr if isinstance(decorator, ast.Attribute) else None) == "overload"
+                   for decorator in node.decorator_list)
+
+    overload_groups: set[tuple[str, str]] = set()
+    for key, group in function_groups.items():
+        overload_flags = [is_overload(node) for node in group]
+        if len(group) > 1 and any(overload_flags) and all(overload_flags[:-1]) and not overload_flags[-1]:
+            overload_groups.add(key)
+    recorded_overloads: set[tuple[str, str]] = set()
     for module, tree in sorted(parsed.items()):
         visible_names = {node.name for node in tree.body if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef))}
         visible_names.update(alias.asname or alias.name for node in tree.body if isinstance(node, (ast.Import, ast.ImportFrom)) for alias in node.names)
@@ -402,8 +433,11 @@ def inventory_python_sources(sources: dict[str, str], package: str = "python-kmi
             elif isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)) and not node.name.startswith("_"):
                 kind = "python-export" if exports is not None else "function"
                 definitions[(module, node.name)] = kind
-                if module in public_modules:
+                key = (module, node.name)
+                if module in public_modules and (key not in overload_groups or key not in recorded_overloads):
                     records.append(_record(package, f"{module}.{node.name}", kind, f"{module}:{node.lineno}"))
+                    if key in overload_groups:
+                        recorded_overloads.add(key)
             elif isinstance(node, (ast.Assign, ast.AnnAssign)):
                 targets = node.targets if isinstance(node, ast.Assign) else [node.target]
                 for target in targets:
@@ -522,21 +556,37 @@ def compare(report: dict[str, Any], manifest: dict[str, Any], package: str) -> d
     package_rows = [row for row in manifest.get("publicDeclarations", []) if row.get("packageId") == package]
     declared = {(row["packageId"], row["exportName"]): row for row in package_rows}
     duplicate_names = sorted(name for name, count in Counter(row["exportName"] for row in package_rows).items() if count > 1)
-    exclusions = {(row["packageId"], row["exportName"]): row for row in manifest.get("approvedExclusions", [])
-                  if row.get("packageId") == package}
+    package_exclusions = [row for row in manifest.get("approvedExclusions", [])
+                          if row.get("packageId") == package]
+    exclusion_counts = Counter((row["packageId"], row["exportName"]) for row in package_exclusions)
+    duplicate_exclusions = sorted(key for key, count in exclusion_counts.items() if count > 1)
+    exclusions = {(row["packageId"], row["exportName"]): row for row in package_exclusions}
+    declaration_exclusion_overlaps = sorted(set(declared) & set(exclusions))
     observed = {(row["packageId"], row["exportName"]): row for row in report["declarations"]}
     missing = sorted(set(observed) - set(declared) - set(exclusions))
     stale = sorted(set(declared) - set(observed))
+    def canonical_kind(kind: str) -> str:
+        if package == "python-kmipkit" and kind in {"function", "python-export"}:
+            return "python-callable"
+        return kind
+
     mismatches = sorted(key for key in set(observed) & set(declared)
-                        if observed[key]["kind"] != declared[key]["kind"])
+                        if canonical_kind(observed[key]["kind"]) != canonical_kind(declared[key]["kind"]))
     path_matches = set(observed) & set(declared)
     exact_matches = len(path_matches) - len(mismatches)
     issues = list(report["issues"])
     issues.extend({"packageId": package, "exportName": name, "reason": "duplicate-manifest-export-name"}
                   for name in duplicate_names)
-    return {"packageId": package, "complete": report["complete"] and not duplicate_names,
-            "matchesManifest": not missing and not stale and not mismatches and not duplicate_names and report["complete"],
-            "counts": {"observed": len(observed), "manifest": len(declared), "matched": exact_matches,
+    issues.extend({"packageId": key[0], "exportName": key[1],
+                   "reason": "duplicate-manifest-approved-exclusion"}
+                  for key in duplicate_exclusions)
+    issues.extend({"packageId": key[0], "exportName": key[1],
+                   "reason": "manifest-export-also-excluded"}
+                  for key in declaration_exclusion_overlaps)
+    invalid_identities = bool(duplicate_names or duplicate_exclusions or declaration_exclusion_overlaps)
+    return {"packageId": package, "complete": report["complete"] and not invalid_identities,
+            "matchesManifest": not missing and not stale and not mismatches and not invalid_identities and report["complete"],
+            "counts": {"observed": len(observed), "manifest": len(package_rows), "matched": exact_matches,
                        "pathMatches": len(path_matches), "exactMatches": exact_matches,
                        "missingFromManifest": len(missing), "notObserved": len(stale), "kindMismatches": len(mismatches)},
             "missingFromManifest": [observed[k] for k in missing],
@@ -545,13 +595,12 @@ def compare(report: dict[str, Any], manifest: dict[str, Any], package: str) -> d
             "issues": sorted(issues, key=lambda row: (row["packageId"], row["exportName"], row["reason"]))}
 
 
-def run(root: Path) -> dict[str, Any]:
-    manifest = json.loads((root / "specification/api/public-api.json").read_text(encoding="utf-8"))
-    c_header = (root / "bindings/c/include/kmipkit.h").read_text(encoding="utf-8")
+def build_c_binary_exports(root: Path) -> list[str]:
+    """Build the C cdylib and read its exports before the temporary directory is removed."""
     with tempfile.TemporaryDirectory(prefix="kmipkit-api-cargo-") as temp_output:
         target_root = Path(temp_output) / "target"
         build_result = subprocess.run(["cargo", "build", "--locked", "--offline", "--package", "kmipkit-ffi",
-                                       "--lib", "--target-dir", str(target_root)],
+                                       "--lib", "--target-dir", str(target_root)], cwd=root,
                                       check=False, capture_output=True, text=True, encoding="utf-8")
         if build_result.returncode != 0:
             raise ValueError(f"cargo build for C ABI audit failed: {build_result.stderr.strip()}")
@@ -559,7 +608,16 @@ def run(root: Path) -> dict[str, Any]:
         binaries = sorted(path for path in (target_root / "debug").glob(f"*kmipkit_ffi{suffix}") if path.is_file())
         if not binaries:
             raise ValueError("cargo build completed without producing the kmipkit_ffi shared library")
-        c = audit_c_surface(c_header, read_native_exports(binaries[0]))
+        return read_native_exports(binaries[0])
+
+
+def run(root: Path) -> dict[str, Any]:
+    manifest = json.loads((root / "specification/api/public-api.json").read_text(encoding="utf-8"))
+    c_header = (root / "bindings/c/include/kmipkit.h").read_text(encoding="utf-8")
+    native_exports = build_c_binary_exports(root)
+    c_exclusions = [row for row in manifest.get("approvedExclusions", [])
+                    if row.get("packageId") == "c-kmipkit"]
+    c = audit_c_surface(c_header, native_exports, approved_exclusions=c_exclusions)
     java_root = root / "bindings/java/src/main/java"
     java_sources = sorted(java_root.rglob("*.java"))
     if not java_sources:

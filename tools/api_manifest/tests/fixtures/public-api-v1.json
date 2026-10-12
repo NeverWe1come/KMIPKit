@@ -9534,7 +9534,7 @@
       "cCode": "KMIPKIT_ERROR_COMPATIBILITY_MISMATCH",
       "cValue": 1,
       "javaException": "org.kmipkit.extensions.ExtensionCompatibilityException",
-      "pythonException": "kmipkit.errors.ExtensionCompatibilityError"
+      "pythonException": "kmipkit.errors.CompatibilityMismatchError"
     },
     {
       "id": "duplicate_key",
@@ -9542,7 +9542,7 @@
       "cCode": "KMIPKIT_ERROR_DUPLICATE_KEY",
       "cValue": 2,
       "javaException": "org.kmipkit.extensions.DuplicateExtensionKeyException",
-      "pythonException": "kmipkit.errors.DuplicateExtensionKeyError"
+      "pythonException": "kmipkit.errors.DuplicateKeyError"
     },
     {
       "id": "invalid_identity",
@@ -9550,7 +9550,7 @@
       "cCode": "KMIPKIT_ERROR_INVALID_IDENTITY",
       "cValue": 3,
       "javaException": "org.kmipkit.extensions.InvalidExtensionIdentityException",
-      "pythonException": "kmipkit.errors.InvalidExtensionIdentityError"
+      "pythonException": "kmipkit.errors.InvalidIdentityError"
     },
     {
       "id": "invalid_input",

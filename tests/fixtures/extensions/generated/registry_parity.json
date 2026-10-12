@@ -5,7 +5,7 @@
       "cValue": 1,
       "id": "compatibility_mismatch",
       "javaException": "org.kmipkit.extensions.ExtensionCompatibilityException",
-      "pythonException": "kmipkit.errors.ExtensionCompatibilityError",
+      "pythonException": "kmipkit.errors.CompatibilityMismatchError",
       "rustVariant": "CompatibilityMismatch"
     },
     {
@@ -13,7 +13,7 @@
       "cValue": 2,
       "id": "duplicate_key",
       "javaException": "org.kmipkit.extensions.DuplicateExtensionKeyException",
-      "pythonException": "kmipkit.errors.DuplicateExtensionKeyError",
+      "pythonException": "kmipkit.errors.DuplicateKeyError",
       "rustVariant": "DuplicateKey"
     },
     {
@@ -21,7 +21,7 @@
       "cValue": 3,
       "id": "invalid_identity",
       "javaException": "org.kmipkit.extensions.InvalidExtensionIdentityException",
-      "pythonException": "kmipkit.errors.InvalidExtensionIdentityError",
+      "pythonException": "kmipkit.errors.InvalidIdentityError",
       "rustVariant": "InvalidIdentity"
     },
     {

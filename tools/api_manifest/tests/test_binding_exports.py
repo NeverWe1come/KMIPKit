@@ -26,7 +26,8 @@ class BindingExportAuditTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as directory:
             def fake_run(arguments, **_kwargs):
                 target_root = Path(arguments[arguments.index("--target-dir") + 1])
-                binary = target_root / "debug" / "kmipkit_ffi.dll"
+                suffix = ".dll" if AUDIT.os.name == "nt" else ".dylib" if AUDIT.sys.platform == "darwin" else ".so"
+                binary = target_root / "debug" / f"kmipkit_ffi{suffix}"
                 binary.parent.mkdir(parents=True)
                 binary.write_bytes(b"synthetic PE library")
                 return subprocess.CompletedProcess(arguments, 0, "", "")

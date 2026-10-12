@@ -828,6 +828,27 @@ def _validate_approved_exclusions(
         _validate_approval_source(exclusion.get("approvalSource"), root)
 
 
+def _validate_unique_public_export_identities(
+    declarations: list[dict[str, Any]], exclusions: list[dict[str, Any]]
+) -> None:
+    declaration_paths = [
+        (record.get("packageId"), record.get("exportName"))
+        for record in declarations
+        if isinstance(record, dict)
+    ]
+    exclusion_paths = [
+        (record.get("packageId"), record.get("exportName"))
+        for record in exclusions
+        if isinstance(record, dict)
+    ]
+    if len(declaration_paths) != len(set(declaration_paths)):
+        raise ManifestError("manifest contains a duplicate public export path")
+    if len(exclusion_paths) != len(set(exclusion_paths)):
+        raise ManifestError("manifest contains a duplicate approved exclusion path")
+    if set(declaration_paths) & set(exclusion_paths):
+        raise ManifestError("a public declaration overlaps an approved exclusion")
+
+
 def _require_complete_readiness(
     operations: list[dict[str, Any]],
     capabilities: list[dict[str, Any]],
@@ -878,6 +899,7 @@ def _validate_v2_readiness(
     }
     if len(declaration_by_id) != len(declarations):
         raise ManifestError("manifest public declaration IDs are malformed or duplicated")
+    _validate_unique_public_export_identities(declarations, exclusions)
 
     if require_complete:
         _require_complete_readiness(operations, capabilities, declarations)
@@ -926,6 +948,29 @@ def _validate_references(manifest: dict[str, Any]) -> None:
     _require_unique(manifest["functions"], "id", "function IDs")
     _require_unique(manifest["errorCategories"], "cValue", "C error values")
     _require_unique(manifest["errorCategories"], "cCode", "C error codes")
+    if "publicDeclarations" in manifest:
+        declarations_by_path = {
+            (record["packageId"], record["exportName"]): record
+            for record in manifest["publicDeclarations"]
+        }
+        for error in manifest["errorCategories"]:
+            for package, field, kind, language in (
+                ("c-kmipkit", "cCode", "constant", "c"),
+                ("java-kmipkit", "javaException", "type", "java"),
+                ("python-kmipkit", "pythonException", "type", "python"),
+            ):
+                export_name = error[field]
+                declaration = declarations_by_path.get((package, export_name))
+                if declaration is None or declaration["kind"] != kind:
+                    raise ManifestError(
+                        "error category references an undeclared language export"
+                    )
+                if declaration["declarationState"] in {"declared", "verified"}:
+                    mapping = declaration["languageMappings"].get(language)
+                    if mapping != {"packageId": package, "name": export_name}:
+                        raise ManifestError(
+                            "error category does not resolve to its canonical language export"
+                        )
     c_symbols = [function["c"]["symbol"] for function in manifest["functions"]]
     release_symbols = [
         record["c"]["releaseFunction"]

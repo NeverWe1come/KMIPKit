@@ -2620,12 +2620,14 @@
         },
         "publicDeclarations": {
           "type": "array",
+          "uniqueItems": true,
           "items": {
             "$ref": "#/$defs/publicDeclaration"
           }
         },
         "approvedExclusions": {
           "type": "array",
+          "uniqueItems": true,
           "items": {
             "$ref": "#/$defs/approvedExclusion"
           }
