@@ -16986,6 +16986,13 @@ class CatalogValidationTests(unittest.TestCase):
         self.assertEqual(contract["functional_requirement_ids"], ["FR-001", "FR-008"])
         self.assertIn("KMIPKIT-0042 FR-001/FR-008", contract["review_note"])
         self.assertNotIn("KMIPKIT-0028", contract["review_note"])
+        traceability = (ROOT / "specs" / "028-diagnostics-interop" / "traceability.md").read_text(encoding="utf-8")
+        function_trace = next(
+            line for line in traceability.splitlines()
+            if line.startswith("| KMIPKIT-ELEM-OPERATION-STRUCTURE-7-15-INTEROP-FUNCTION |")
+        )
+        self.assertIn("KMIPKIT-0042 FR-001/FR-008", function_trace)
+        self.assertNotIn("KMIPKIT-0028", function_trace)
         self.assertEqual(contract["implementation_refs"], [
             "crates/kmipkit-protocol/src/interop.rs::InteropRequest::into_ttlv_payload",
         ])
