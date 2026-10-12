@@ -13254,7 +13254,10 @@ class CatalogValidationTests(unittest.TestCase):
             "KMIPKIT-REQ-PROF-5.12.2-003": "KMIPKIT-CLAUSE-PROF-5.12.2-003",
             "KMIPKIT-REQ-PROF-5.12.6.2-002": "KMIPKIT-CLAUSE-PROF-5.12.6.2-002",
             "KMIPKIT-REQ-PROF-5.12.6.2-003": "KMIPKIT-CLAUSE-PROF-5.12.6.2-003",
+            "KMIPKIT-REQ-PROF-5.12.6.2-004": "KMIPKIT-CLAUSE-PROF-5.12.6.2-004",
             "KMIPKIT-REQ-PROF-5.12.6.3-001": "KMIPKIT-CLAUSE-PROF-5.12.6.3-001",
+            "KMIPKIT-REQ-PROF-5.12.6.3-002": "KMIPKIT-CLAUSE-PROF-5.12.6.3-002",
+            "KMIPKIT-REQ-PROF-5.12.6.3-003": "KMIPKIT-CLAUSE-PROF-5.12.6.3-003",
         }
         requirements = {row["requirement_id"]: row for row in catalog["requirements"]}
         profile = next(row for row in catalog["profiles"] if row["profile_id"] == profile_id)
