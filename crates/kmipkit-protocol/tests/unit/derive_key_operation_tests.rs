@@ -178,7 +178,7 @@ fn secret_data_output_accepts_a_total_cryptographic_length_without_key_algorithm
     let attributes = AttributeSet::try_new([item(CRYPTOGRAPHIC_LENGTH, Value::integer(512))])
         .expect("Secret Data length is a valid typed attribute");
     let request = DeriveKeyRequest::new(
-        ObjectType::from_raw(8),
+        ObjectType::from_raw(7),
         vec![UniqueIdentifier::TextString("source".to_owned())],
         DerivationMethod::from_raw(1),
         DerivationParameters::new()
@@ -191,6 +191,11 @@ fn secret_data_output_accepts_a_total_cryptographic_length_without_key_algorithm
         .into_ttlv_payload()
         .expect("Secret Data uses the requested total Cryptographic Length");
     assert_eq!(payload.view().children()[0].tag().raw(), OBJECT_TYPE);
+    // OASIS KMIP 2.1 §11.34/Table 468 assigns Secret Data Object Type value 7.
+    assert!(
+        payload.view().children()[0]
+            .with_value(|value| matches!(value, ValueView::Enumeration(raw) if *raw == 7))
+    );
 }
 
 #[test]

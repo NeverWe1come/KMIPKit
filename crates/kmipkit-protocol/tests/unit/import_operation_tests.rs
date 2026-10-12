@@ -13,17 +13,18 @@ const SUCCESS: u32 = 0;
 const OPERATION_FAILED: u32 = 1;
 const UNIQUE_IDENTIFIER: u32 = 0x0042_0094;
 const OBJECT_TYPE: u32 = 0x0042_0057;
-const REPLACE_EXISTING: u32 = 0x0042_0072;
 const KEY_WRAP_TYPE: u32 = 0x0042_00F8;
 const ATTRIBUTES: u32 = 0x0042_0125;
 const SYMMETRIC_KEY: u32 = 0x0042_008F;
+const PGP_KEY: u32 = 0x0042_00BD;
+const PGP_KEY_VERSION: u32 = 0x0042_00BE;
 const KEY_BLOCK: u32 = 0x0042_0040;
 const KEY_WRAPPING_DATA: u32 = 0x0042_0046;
 const KEY_FORMAT_TYPE: u32 = 0x0042_0042;
 const KEY_VALUE: u32 = 0x0042_0045;
 const KEY_MATERIAL: u32 = 0x0042_0043;
 const WRAPPING_METHOD: u32 = 0x0042_009E;
-const ENCRYPTION_KEY_INFORMATION: u32 = 0x0042_003D;
+const ENCRYPTION_KEY_INFORMATION: u32 = 0x0042_0036;
 const CRYPTOGRAPHIC_ALGORITHM: u32 = 0x0042_0028;
 const CRYPTOGRAPHIC_LENGTH: u32 = 0x0042_002A;
 const FUTURE_RESULT_REASON: u32 = 0xF123_4567;
@@ -71,29 +72,95 @@ fn key_object() -> Item {
 }
 
 fn wrapped_key_object() -> Item {
-    let key_wrapping_data = structure([
-        item(WRAPPING_METHOD, Value::enumeration(1)),
-        item(
-            ENCRYPTION_KEY_INFORMATION,
-            Value::structure(structure([item(
-                UNIQUE_IDENTIFIER,
-                Value::text_string("wrapping-key".to_owned()),
-            )])),
-        ),
-    ]);
-    let value = structure([item(
-        KEY_MATERIAL,
-        Value::byte_string(b"synthetic-import-material".to_vec()),
-    )]);
     let key_block = structure([
         item(KEY_FORMAT_TYPE, Value::enumeration(1)),
-        item(KEY_VALUE, Value::structure(value)),
-        item(KEY_WRAPPING_DATA, Value::structure(key_wrapping_data)),
+        synthetic_wrapped_key_value(),
+        encryption_key_wrapping_data(),
     ]);
     item(
         SYMMETRIC_KEY,
         Value::structure(structure([item(KEY_BLOCK, Value::structure(key_block))])),
     )
+}
+
+fn wrapped_pgp_key_object() -> Item {
+    let key_block = structure([
+        item(KEY_FORMAT_TYPE, Value::enumeration(1)),
+        synthetic_wrapped_key_value(),
+        encryption_key_wrapping_data(),
+    ]);
+    item(
+        PGP_KEY,
+        Value::structure(structure([
+            item(PGP_KEY_VERSION, Value::integer(4)),
+            item(KEY_BLOCK, Value::structure(key_block)),
+        ])),
+    )
+}
+
+fn synthetic_wrapped_key_value() -> Item {
+    // Synthetic ciphertext; KMIPKit transports these bytes and does not unwrap them.
+    item(
+        KEY_VALUE,
+        Value::byte_string(b"synthetic-wrapped-key-value".to_vec()),
+    )
+}
+
+fn encryption_key_wrapping_data() -> Item {
+    item(
+        KEY_WRAPPING_DATA,
+        Value::structure(structure([
+            item(WRAPPING_METHOD, Value::enumeration(1)),
+            item(
+                ENCRYPTION_KEY_INFORMATION,
+                Value::structure(structure([item(
+                    UNIQUE_IDENTIFIER,
+                    Value::text_string("wrapping-key".to_owned()),
+                )])),
+            ),
+        ])),
+    )
+}
+
+fn key_block_field_matches(
+    object: &Item,
+    field_tag: u32,
+    matches_field: impl Fn(&Item) -> bool,
+) -> bool {
+    object.with_value(|object_value| match object_value {
+        ValueView::Structure(object_fields) => object_fields.children().iter().any(|key_block| {
+            key_block.tag().raw() == KEY_BLOCK
+                && key_block.with_value(|key_block_value| match key_block_value {
+                    ValueView::Structure(key_block_fields) => key_block_fields
+                        .children()
+                        .iter()
+                        .any(|field| field.tag().raw() == field_tag && matches_field(field)),
+                    _ => false,
+                })
+        }),
+        _ => false,
+    })
+}
+
+fn wrapped_object_has_encryption_key_information(object: &Item) -> bool {
+    key_block_field_matches(object, KEY_WRAPPING_DATA, |field| {
+        field.with_value(|wrapping_value| match wrapping_value {
+            ValueView::Structure(wrapping_fields) => {
+                wrapping_fields.children().iter().any(|information| {
+                    // OASIS KMIP 2.1 §3.3/Table 15 and §11.56/Table 487.
+                    information.tag().raw() == 0x0042_0036
+                        && information.with_value(|value| matches!(value, ValueView::Structure(_)))
+                })
+            }
+            _ => false,
+        })
+    })
+}
+
+fn wrapped_object_has_byte_string_key_value(object: &Item) -> bool {
+    key_block_field_matches(object, KEY_VALUE, |field| {
+        field.with_value(|value| matches!(value, ValueView::ByteString(_)))
+    })
 }
 
 fn response_message(
@@ -202,13 +269,16 @@ fn replacement_and_conditional_wrap_type_are_preserved_without_unwrapping() {
         vec![
             UNIQUE_IDENTIFIER,
             OBJECT_TYPE,
-            REPLACE_EXISTING,
+            // OASIS KMIP 2.1 §11.56 assigns Replace Existing tag 0x420124.
+            0x0042_0124,
             KEY_WRAP_TYPE,
             ATTRIBUTES,
             SYMMETRIC_KEY,
         ]
     );
     assert!(fields[2].with_value(|value| matches!(value, ValueView::Boolean(true))));
+    assert!(wrapped_object_has_encryption_key_information(&fields[5]));
+    assert!(wrapped_object_has_byte_string_key_value(&fields[5]));
     assert!(
         fields[3].with_value(
             |value| matches!(value, ValueView::Enumeration(raw) if *raw == 0xF123_4568)
@@ -234,6 +304,36 @@ fn key_wrap_type_is_present_if_and_only_if_key_block_has_wrapping_data() {
     )
     .with_key_wrap_type(KeyWrapType::from_raw(1));
     assert!(unwrapped_with_type.into_ttlv_payload().is_err());
+}
+
+#[test]
+fn wrapped_pgp_key_accepts_key_wrap_type() {
+    let pgp_key = wrapped_pgp_key_object();
+    // OASIS KMIP 2.1 §3.1/Table 12 requires Key Format Type in every Key Block.
+    assert!(
+        key_block_field_matches(&pgp_key, KEY_FORMAT_TYPE, |field| {
+            field.with_value(|value| matches!(value, ValueView::Enumeration(_)))
+        }),
+        "Key Block includes the required Key Format Type Enumeration"
+    );
+
+    let request = ImportRequest::new(
+        UniqueIdentifier::TextString("wrapped-pgp-key".to_owned()),
+        ObjectType::from_raw(9),
+        attributes(),
+        pgp_key,
+    )
+    .with_key_wrap_type(KeyWrapType::from_raw(1));
+
+    // OASIS KMIP 2.1 §2.4/Table 5 defines PGP Key as a key object with Key Block;
+    // §6.1.25/Table 238 requires Key Wrap Type iff the key object is wrapped.
+    let payload = request
+        .into_ttlv_payload()
+        .expect("wrapped PGP Key can carry its explicit Key Wrap Type");
+    assert!(payload.view().children().iter().any(|field| {
+        field.tag().raw() == KEY_WRAP_TYPE
+            && field.with_value(|value| matches!(value, ValueView::Enumeration(raw) if *raw == 1))
+    }));
 }
 
 #[test]
