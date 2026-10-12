@@ -65,6 +65,48 @@ def report_catalog() -> dict[str, object]:
 
 
 class CoverageReportTests(unittest.TestCase):
+    def test_typed_rule_registry_reader_parses_a_complete_static_mapping(self) -> None:
+        from tools.normative_catalog.report import load_typed_rule_mappings
+
+        with tempfile.TemporaryDirectory() as directory:
+            repository = Path(directory)
+            source_path = repository / "crates/kmipkit-protocol/src/profile.rs"
+            source_path.parent.mkdir(parents=True)
+            source_path.write_text(
+                """const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
+    TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-6.1.16-001-001",
+        source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.16-001",
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
+        evaluator: Some(validate_discover_versions_rule),
+        test_evidence: &[RuleTestEvidence {
+            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::production_discover_versions_rule_accepts_only_kmip_21_offers",
+            kind: RuleTestKind::OptionalCapabilityUsable,
+        }],
+        constraints: &[],
+    },
+];
+""",
+                encoding="utf-8",
+            )
+
+            self.assertEqual(
+                [
+                    {
+                        "requirement_id": "KMIPKIT-REQ-SPEC-6.1.16-001-001",
+                        "source_clause_id": "KMIPKIT-CLAUSE-SPEC-6.1.16-001",
+                        "verification_category": "OptionalCapability",
+                        "evaluator_present": True,
+                        "test_kind": "OptionalCapabilityUsable",
+                        "test_id": (
+                            "crates/kmipkit-protocol/tests/support/profile_unit.rs::"
+                            "production_discover_versions_rule_accepts_only_kmip_21_offers"
+                        ),
+                    }
+                ],
+                load_typed_rule_mappings(repository),
+            )
+
     def test_profile_readiness_blocks_unresolved_scope_in_its_clause_closure(self) -> None:
         from tools.normative_catalog.report import evaluate_profile_readiness
 
@@ -650,7 +692,10 @@ class CoverageReportTests(unittest.TestCase):
             typed_rule_mappings=typed_rule_mappings,
         )
 
-        self.assertEqual(typed_rule_mappings, [])
+        self.assertEqual(
+            ["KMIPKIT-REQ-SPEC-6.1.16-001-001"],
+            [mapping["requirement_id"] for mapping in typed_rule_mappings],
+        )
         profile_state_section = report.split("## Profile states\n", 1)[1]
         baseline_row = next(
             line for line in profile_state_section.splitlines()

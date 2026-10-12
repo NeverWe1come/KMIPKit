@@ -2,10 +2,12 @@ use std::fmt;
 use std::fmt::Write as _;
 
 use super::{
+    CLIENT_REQUIREMENTS,
     ProfileEvidenceRecord, ProfileReadiness, ProfileReadinessBlocker, ProfileTransport,
     ProfileValidationError, ProfileValidationErrorCode, ProfileValidationResult,
     ProfileValidationSelection, RuleConstraint, RuleTestEvidence, RuleTestKind, TypedRuleMapping,
-    reconcile_effective_state, validate_mapping, validate_selection_with_registry,
+    TYPED_RULE_MAPPINGS, reconcile_effective_state, validate_mapping,
+    validate_selection_with_registry,
 };
 use crate::profiles_generated::{
     GeneratedClientProfile, GeneratedClientRequirement, GeneratedVerificationCategory,
@@ -133,6 +135,45 @@ fn request_message() -> crate::RequestMessage {
         ),
     ]))
     .expect("test Request Message is valid")
+}
+
+fn request_message_with_operation_payload(
+    operation: u32,
+    payload: Structure,
+) -> crate::RequestMessage {
+    crate::RequestMessage::try_from_ttlv(structure([
+        tagged(
+            REQUEST_HEADER_TAG,
+            Value::structure(structure([
+                test_protocol_version(),
+                tagged(BATCH_COUNT_TAG, Value::integer(1)),
+            ])),
+        ),
+        tagged(
+            BATCH_ITEM_TAG,
+            Value::structure(structure([
+                tagged(OPERATION_TAG, Value::enumeration(operation)),
+                tagged(REQUEST_PAYLOAD_TAG, Value::structure(payload)),
+            ])),
+        ),
+    ]))
+    .expect("test Request Message with operation payload is valid")
+}
+
+fn discover_versions_payload(versions: &[(i32, i32)]) -> Structure {
+    let mut payload = Structure::new();
+    for &(major, minor) in versions {
+        payload
+            .try_push(tagged(
+                PROTOCOL_VERSION_TAG,
+                Value::structure(structure([
+                    tagged(PROTOCOL_VERSION_MAJOR_TAG, Value::integer(major)),
+                    tagged(PROTOCOL_VERSION_MINOR_TAG, Value::integer(minor)),
+                ])),
+            ))
+            .expect("test Discover Versions payload remains valid");
+    }
+    payload
 }
 
 fn response_message() -> crate::ResponseMessage {
@@ -263,6 +304,55 @@ fn each_keyword_category_requires_the_matching_test_form() {
             ProfileValidationErrorCode::MissingCategoryTest
         );
     }
+}
+
+#[test]
+fn production_discover_versions_rule_accepts_only_kmip_21_offers() {
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.16-001-001";
+    const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
+
+    let mapping = TYPED_RULE_MAPPINGS
+        .iter()
+        .find(|mapping| mapping.requirement_id == REQUIREMENT_ID)
+        .expect("Discover Versions capability has a production typed rule mapping");
+    let requirement = CLIENT_REQUIREMENTS
+        .iter()
+        .find(|requirement| requirement.requirement_id == REQUIREMENT_ID)
+        .expect("Discover Versions capability resolves to generated normative metadata");
+    validate_mapping(BASELINE_PROFILE_ID, requirement, mapping)
+        .expect("the production rule matches its generated clause and optional-test category");
+
+    let result = ProfileValidationResult {
+        profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
+        requirement_ids: vec![REQUIREMENT_ID.to_owned()],
+    };
+    let supported_request = request_message_with_operation_payload(
+        0x0000_001E,
+        crate::DiscoverVersionsRequest::new()
+            .to_ttlv_payload()
+            .expect("the typed request advertises KMIP 2.1"),
+    );
+    assert!(result.validate_request(&supported_request).is_ok());
+
+    let omitted_optional_list =
+        request_message_with_operation_payload(0x0000_001E, Structure::new());
+    assert!(result.validate_request(&omitted_optional_list).is_ok());
+
+    let other_operation = request_message_with_operation_payload(0x0000_0001, Structure::new());
+    assert!(result.validate_request(&other_operation).is_ok());
+
+    let unsupported_request =
+        request_message_with_operation_payload(0x0000_001E, discover_versions_payload(&[(3, 0)]));
+    let error = result
+        .validate_request(&unsupported_request)
+        .expect_err("a 1.0 client must not advertise a protocol version it does not support");
+    assert_eq!(error.code(), ProfileValidationErrorCode::RequestRuleRejected);
+    assert_eq!(error.profile_id(), Some(BASELINE_PROFILE_ID));
+    assert_eq!(error.requirement_id(), Some(REQUIREMENT_ID));
+    assert_eq!(
+        error.source_clause_id(),
+        Some("KMIPKIT-CLAUSE-SPEC-6.1.16-001")
+    );
 }
 
 #[test]
