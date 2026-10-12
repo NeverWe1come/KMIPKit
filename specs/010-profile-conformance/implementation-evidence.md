@@ -1288,3 +1288,14 @@ Adding `KMIPKIT-REQ-PROF-5.13.1-002` increased the in-scope profile requirement 
 | Failing contract observed | Before `8d43e4f2`; `py -3 -B -m unittest discover -s tools/normative_catalog/tests -p test_feature_traceability.py -v` | Expected failure: `test_profile_requirements_are_owned_by_profile_conformance` reported expected 158, actual 159. |
 | Green — update the explicit catalog crosswalk count | `8d43e4f2`; same unittest discovery command; `git diff --check` | PASS: all 16 traceability tests pass; one Windows symlink-permission case is skipped. No generated files or runtime code changed. |
 | Refactor — document the CI-discovered contract correction | Documentation-only evidence update | The count change and exact verification are recorded here. |
+
+### KMIPKIT-0010 — Align source-oracle assertions with the assigned AES XTS label (2026-10-12)
+
+The Green mapping converted the AES XTS source gap from an unresolved proposal into a direct source-clause requirement. The independent fixture now has 54 proposed labels and 469 crosswalk rows. Test contracts were updated to assert those counts, remove the resolved proposal from the profile proposal set, and distinguish a direct clause mapping from a reused pre-existing requirement ID.
+
+| Phase | Commit and command | Result |
+|---|---|---|
+| Failing contracts observed | Before `fafc53ec`; `py -3 -B -m unittest tools.normative_catalog.tests.test_validate -q` | The full validator exposed stale expected proposal/crosswalk counts and direct-mapping assumptions after the Green catalog change. The completed run had 244 tests, 26 failures, 1 error, and 1 skip; it also confirmed genuine global blockers remained. |
+| Green — update exact oracle-count and direct-mapping assertions | `fafc53ec`; 23 focused source-gap/table-contract tests covering the affected counts and crosswalk, plus `test_source_only_gap_proposals_are_auditable_and_do_not_collide_with_catalog_ids` | PASS: all 23 tests pass. The direct AES XTS mapping no longer requires a misleading `reused_requirement_id`. |
+| Remaining acceptance gates | `py -3 -B -m unittest tools.normative_catalog.tests.test_validate.CatalogValidationTests.test_every_reviewed_client_may_or_optional_has_usable_positive_evidence -q` | FAIL as intended for incomplete implementation work: 196 client MAY/OPTIONAL records lack usable implementation and positive-test evidence. The complete pinned-source closure oracle and 59 unrelated source mappings also remain incomplete. |
+| Refactor — record corrected contracts and remaining blockers | Documentation-only evidence update | The audit count changes are recorded without weakening the fail-closed acceptance assertions. |
