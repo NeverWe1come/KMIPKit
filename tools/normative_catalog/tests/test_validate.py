@@ -15366,7 +15366,7 @@ class CatalogValidationTests(unittest.TestCase):
         self.assertEqual(requirement["profile_ids"], [])
 
     def test_profile_section_three_server_authenticity_clause_preserves_unresolved_scope(self) -> None:
-        """Profiles §3 clause 3 does not assign server-authenticity checks to a client."""
+        """Profiles §3 item 2 does not assign server-authenticity checks to a client."""
         catalog = json.loads(
             (ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8")
         )
@@ -15383,7 +15383,7 @@ class CatalogValidationTests(unittest.TestCase):
         self.assertTrue(clause["condition"])
 
     def test_profile_section_three_server_authenticity_requirement_keeps_source_scope(self) -> None:
-        """Profiles §3 clause 3 keeps its endpoint and client applicability unresolved."""
+        """Profiles §3 item 2 keeps its endpoint and client applicability unresolved."""
         oracle = json.loads(
             (ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json").read_text(encoding="utf-8")
         )
