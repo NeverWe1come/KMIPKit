@@ -320,7 +320,16 @@ int32_t kmipkit_ttlv_value_view_byte_at(kmipkit_ttlv_value_view_t * view, uint64
 int32_t kmipkit_version_get(uint32_t * out_major, uint32_t * out_minor, uint32_t * out_patch, uint32_t * out_abi_version);
 /* KMIPKIT-0043-FR-007 */
 int32_t kmipkit_capability_is_available(const uint8_t * capability_id_data, uint64_t capability_id_length, uint8_t * out_available);
-/* KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-013 */
+/* KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-013
+ * Copies the calling thread's most recent C error status and safe metadata
+ * without clearing the snapshot. `out_status` receives an existing
+ * KMIPKIT_ERROR_* code, or KMIPKIT_SUCCESS when the snapshot is empty.
+ * `out_category` is 0 none, 1 validation, 2 protocol, 3 transport,
+ * 4 server result, or 5 other. `out_cause` is 0 none, 1 invalid input,
+ * or 10 other. `out_delivery` is 0 when no KMIP request delivery information
+ * is attached; the current C surface does not execute client requests.
+ * Status codes are independent of category and cause values. The snapshot
+ * contains no source strings or request payloads. */
 int32_t kmipkit_last_error_get(int32_t * out_status, uint32_t * out_category, uint32_t * out_cause, uint32_t * out_delivery);
 /* KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-013 */
 int32_t kmipkit_last_error_clear(void);
