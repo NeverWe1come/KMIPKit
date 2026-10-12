@@ -7820,6 +7820,70 @@ class CatalogValidationTests(unittest.TestCase):
         self.assertEqual(new_attribute["disposition"], "required_request_table_contract")
         self.assertEqual(validate_source_table_contracts(oracle, ROOT), [])
 
+    def test_modify_attribute_table_265_required_new_attribute_is_a_client_source_contract(self) -> None:
+        """The required Modify Attribute New Attribute row maps without inventing a normative REQ."""
+        fixture_path = ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json"
+        oracle = json.loads(fixture_path.read_text(encoding="utf-8"))
+        gap_id = "KMIPKIT-SOURCE-GAP-SPEC-6.1.34-NEW-ATTRIBUTE-REQUIRED"
+        proposed_id = "KMIPKIT-REQ-SPEC-6.1.34-005"
+        source_path = "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
+        line_range = [30687, 30705]
+        contracts = source_table_contracts_for_gap(oracle["source_table_contracts"], gap_id)
+
+        self.assertEqual(len(contracts), 1)
+        contract = contracts[0]
+        self.assertEqual(contract["source_id"], "KMIPKIT-SRC-spec")
+        self.assertEqual(contract["source_path"], source_path)
+        self.assertEqual(contract["source_section"], "6.1.34")
+        self.assertEqual(contract["source_locator"], {
+            "kind": "table_body_row",
+            "section": "6.1.34",
+            "row_label": "New Attribute",
+            "table": "request_payload",
+            "html_line_range": line_range,
+        })
+        self.assertEqual(contract["source_excerpt"], pinned_source_excerpt(source_path, line_range))
+        self.assertEqual(contract["table_number"], 265)
+        self.assertEqual(contract["requiredness"], "Yes")
+        self.assertEqual(contract["source_force"], "required_table_body_value")
+        self.assertEqual(contract["actor"], "client")
+        self.assertEqual(contract["scope_disposition"], "client_1_0")
+        self.assertEqual(contract["operation_element_id"], "KMIPKIT-ELEM-OP-C2S-MODIFY-ATTRIBUTE")
+        self.assertEqual(contract["functional_requirement_ids"], ["FR-001", "FR-002", "FR-008"])
+        self.assertEqual(contract["implementation_refs"], [
+            "crates/kmipkit-protocol/src/modify_attribute.rs::ModifyAttributeRequest::to_ttlv_payload",
+        ])
+        self.assertEqual(contract["verification_refs"], [
+            "crates/kmipkit-protocol/tests/unit/modify_attribute_tests.rs::request_omits_current_attribute_without_selecting_an_instance_locally",
+            "crates/kmipkit-client/tests/unit/attribute_mutation_execution_tests.rs::modify_sends_both_current_and_new_values_as_distinct_direct_items",
+        ])
+        self.assertEqual(contract["status"], "mapped_to_approved_feature_contract")
+        self.assertEqual(contract["evidence_disposition"]["status"], "mapped_to_feature_contract")
+        self.assertIn("caller", contract["evidence_disposition"]["statement"].lower())
+        self.assertIn("remote", contract["evidence_disposition"]["statement"].lower())
+        for field in ("candidate_requirement_id", "proposed_requirement_id", "requirement_id"):
+            self.assertNotIn(field, contract)
+
+        self.assertFalse(any(row["gap_id"] == gap_id for row in oracle["source_only_requirement_gaps"]))
+        self.assertFalse(any(row["requirement_id"] == proposed_id for row in oracle["requirement_crosswalk"]))
+        self.assertFalse(any(row.get("proposed_requirement_id") == proposed_id
+                             for row in oracle["source_only_requirement_gaps"]))
+        catalog = json.loads((ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8"))
+        self.assertNotIn(proposed_id, {row["requirement_id"] for row in catalog["requirements"]})
+        self.assertEqual(oracle["counts"]["source_table_contracts"], 59)
+        self.assertEqual(oracle["counts"]["source_only_requirement_gaps"], 111)
+        self.assertEqual(oracle["counts"]["source_only_requirement_gap_proposals"], 58)
+
+        review = next(row for row in oracle["source_requirement_reviews"]
+                      if row["source_clause_id"] == "KMIPKIT-CLAUSE-SPEC-6.1.34-001")
+        new_attribute = next(row for row in review["source_request_rows"]
+                             if row["row_label"] == "New Attribute")
+        self.assertEqual(new_attribute["source_gap_id"], gap_id)
+        self.assertEqual(new_attribute["source_element_id"], "KMIPKIT-ELEM-TAG-42013D")
+        self.assertEqual(new_attribute["source_requirement_ids"], [])
+        self.assertEqual(new_attribute["disposition"], "required_request_table_contract")
+        self.assertEqual(validate_source_table_contracts(oracle, ROOT), [])
+
     def test_spec_6_1_52_set_constraints_reviews_payload_and_approved_error_decision(self) -> None:
         """Set Constraints links its required payload and error table to the accepted reading of DISC-020."""
         fixture_path = ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json"
