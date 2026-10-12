@@ -95,6 +95,35 @@ fn wrapped_key_object() -> Item {
     )
 }
 
+fn wrapped_object_has_encryption_key_information(object: &Item) -> bool {
+    object.with_value(|object_value| match object_value {
+        ValueView::Structure(object_fields) => object_fields.children().iter().any(|key_block| {
+            key_block.tag().raw() == KEY_BLOCK
+                && key_block.with_value(|key_block_value| match key_block_value {
+                    ValueView::Structure(key_block_fields) => {
+                        key_block_fields.children().iter().any(|field| {
+                            field.tag().raw() == KEY_WRAPPING_DATA
+                                && field.with_value(|wrapping_value| match wrapping_value {
+                                    ValueView::Structure(wrapping_fields) => {
+                                        wrapping_fields.children().iter().any(|information| {
+                                            // OASIS KMIP 2.1 §3.3/Table 15 and §11.56/Table 487.
+                                            information.tag().raw() == 0x0042_0036
+                                                && information.with_value(|value| {
+                                                    matches!(value, ValueView::Structure(_))
+                                                })
+                                        })
+                                    }
+                                    _ => false,
+                                })
+                        })
+                    }
+                    _ => false,
+                })
+        }),
+        _ => false,
+    })
+}
+
 fn response_message(
     status: u32,
     reason: Option<u32>,
@@ -209,6 +238,7 @@ fn replacement_and_conditional_wrap_type_are_preserved_without_unwrapping() {
         ]
     );
     assert!(fields[2].with_value(|value| matches!(value, ValueView::Boolean(true))));
+    assert!(wrapped_object_has_encryption_key_information(&fields[5]));
     assert!(
         fields[3].with_value(
             |value| matches!(value, ValueView::Enumeration(raw) if *raw == 0xF123_4568)
