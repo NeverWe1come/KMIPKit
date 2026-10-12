@@ -235,6 +235,21 @@ class RustExportAuditTests(unittest.TestCase):
         require_toolchain("1.94.0-x86_64-pc-windows-msvc\n")
         require_toolchain("stable-x86_64-unknown-linux-gnu (default)\n1.94.0-x86_64-unknown-linux-gnu\n")
 
+    def test_macro_generated_members_with_equal_source_spans_have_distinct_owner_identities(self):
+        first = item(3, "from_raw", {"function": {}})
+        second = item(6, "from_raw", {"function": {}})
+        second["span"] = copy.deepcopy(first["span"])
+        doc = document("sample", [
+            structure(1, "First", impls=[2]),
+            item(2, None, {"impl": {"trait": None, "items": [3]}}), first,
+            structure(4, "Second", impls=[5]),
+            item(5, None, {"impl": {"trait": None, "items": [6]}}), second,
+        ], [1, 4])
+        members = [r for r in self.inventory({"sample": doc})["declarations"] if r["kind"] == "associated-item"]
+        self.assertNotEqual(members[0]["identity"], members[1]["identity"])
+        self.assertEqual(members[0]["aliases"], ["sample::First::from_raw"])
+        self.assertEqual(members[1]["aliases"], ["sample::Second::from_raw"])
+
 
 if __name__ == "__main__":
     unittest.main()
