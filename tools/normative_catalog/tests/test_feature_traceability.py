@@ -519,6 +519,43 @@ class FeatureTraceabilityTests(unittest.TestCase):
             with self.subTest(reference=reference):
                 self.assertFalse(self._is_executable_test_ref(reference))
 
+    def test_rust_executable_test_refs_require_an_active_test_declaration(self) -> None:
+        test_name = "request_capability_is_available"
+        source_by_case = {
+            "block comment": (
+                "/*\n#[test]\nfn request_capability_is_available() { assert!(true); }\n*/\n",
+                False,
+            ),
+            "raw string": (
+                'const DECOY: &str = r###"\n#[test]\n'
+                "fn request_capability_is_available() { assert!(true); }\n"
+                '"###;\n',
+                False,
+            ),
+            "disabled cfg": (
+                "#[cfg(any())]\n#[test]\n"
+                "fn request_capability_is_available() { assert!(true); }\n",
+                False,
+            ),
+            "missing test attribute": (
+                "fn request_capability_is_available() { assert!(true); }\n",
+                False,
+            ),
+            "active test": (
+                "#[test]\nfn request_capability_is_available() { assert!(true); }\n",
+                True,
+            ),
+        }
+
+        with tempfile.TemporaryDirectory(dir=ROOT) as repo_temporary:
+            test_file = Path(repo_temporary) / "evidence_fixture.rs"
+            reference_path = test_file.relative_to(ROOT).as_posix()
+            for label, (source, expected) in source_by_case.items():
+                with self.subTest(label):
+                    test_file.write_text(source, encoding="utf-8")
+                    reference = f"{reference_path}::{test_name}"
+                    self.assertEqual(expected, self._is_executable_test_ref(reference))
+
     def test_executable_test_refs_reject_symlinks_outside_repository(self) -> None:
         test_name = "Outside.test_referenced_test"
         with tempfile.TemporaryDirectory(dir=ROOT) as repo_temporary:
