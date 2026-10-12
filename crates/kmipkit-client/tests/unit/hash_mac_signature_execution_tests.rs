@@ -42,7 +42,7 @@ const UNIQUE_IDENTIFIER: u32 = 0x0042_0094;
 const HASHING_ALGORITHM: u32 = 0x0042_0038;
 const HASH_DATA: u32 = 0x0042_00C2;
 const MAC_DATA: u32 = 0x0042_00C4;
-const SIGNATURE_DATA: u32 = 0x0042_00C7;
+const SIGNATURE_DATA: u32 = 0x0042_00C3;
 
 #[derive(Clone, Copy)]
 struct OperationFixture {
