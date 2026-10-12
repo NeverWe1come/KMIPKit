@@ -60,6 +60,55 @@ OPTIONAL_CAPABILITY_TEST_REQUIREMENTS = {
 }
 
 
+def _reviewed_profile_optional_capabilities(
+    oracle: dict[str, Any],
+    selected_clause_ids: set[str],
+    selected_source_sections: set[tuple[str, str]],
+) -> tuple[set[str], list[str]]:
+    """Collect source-reviewed client MAY/OPTIONAL candidate IDs."""
+    del selected_clause_ids, selected_source_sections
+    capabilities: set[str] = set()
+    gaps: list[str] = []
+    explicit_source_gaps = {
+        gap["gap_id"]: gap for gap in oracle.get("source_only_requirement_gaps", [])
+    }
+    for review in oracle["source_requirement_reviews"]:
+        for obligation in review["source_obligations"]:
+            if (
+                obligation["source_keyword"] not in {"MAY", "OPTIONAL"}
+                or obligation["scope_disposition"] not in {"client_1_0", "profile_conditional"}
+            ):
+                continue
+            candidate_id = obligation["candidate_requirement_id"]
+            if candidate_id is None:
+                gap_ref = obligation.get("source_gap_id")
+                if gap_ref not in explicit_source_gaps:
+                    gaps.append(
+                        f"{review['source_clause_id']} source capability has no stable candidate ID or explicit gap record"
+                    )
+                else:
+                    gaps.append(
+                        f"{gap_ref}: in-scope {obligation['source_keyword']} capability has no stable candidate ID"
+                    )
+                continue
+            capabilities.add(candidate_id)
+
+    for gap in oracle.get("source_only_requirement_gaps", []):
+        if (
+            set(gap["source_keywords"]) & {"MAY", "OPTIONAL"}
+            and gap["scope_disposition"] in {"client_1_0", "profile_conditional"}
+        ):
+            candidate_id = gap["candidate_requirement_id"]
+            if candidate_id is None:
+                gaps.append(
+                    f"{gap['gap_id']}: in-scope optional capability has no stable candidate ID "
+                    f"(proposed {gap['proposed_requirement_id']})"
+                )
+                continue
+            capabilities.add(candidate_id)
+    return capabilities, gaps
+
+
 def source_table_contracts_for_gap(
     contracts: list[dict[str, Any]], gap_id: str
 ) -> list[dict[str, Any]]:
@@ -15713,6 +15762,51 @@ class CatalogValidationTests(unittest.TestCase):
                 with self.subTest(requirement_id=requirement_id):
                     requirement = requirements[requirement_id]
                     self.assertIn(expected_test, requirement["verification_refs"])
+
+    def test_unselected_profile_may_remains_catalogued_without_blocking_baseline_scope(self) -> None:
+        """Only selected-profile closure requirements gate Baseline optional evidence."""
+        oracle = json.loads(
+            (ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json").read_text(encoding="utf-8")
+        )
+        catalog = json.loads(
+            (ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8")
+        )
+        targets = json.loads(
+            (ROOT / "specification" / "catalog" / "profile-targets.json").read_text(encoding="utf-8")
+        )
+        profiles = {profile["profile_id"]: profile for profile in catalog["profiles"]}
+        selected_profiles = [profiles[profile_id] for profile_id in targets["profile_ids"]]
+        selected_clause_ids = {
+            clause_id
+            for profile in selected_profiles
+            for clause_id in profile["source_clause_ids"]
+        }
+        clauses_by_id = {clause["clause_id"]: clause for clause in catalog["source_clauses"]}
+        selected_source_sections = {
+            (clauses_by_id[clause_id]["source_id"], clauses_by_id[clause_id]["section"])
+            for clause_id in selected_clause_ids
+        }
+        optional_capabilities, _ = _reviewed_profile_optional_capabilities(
+            oracle,
+            selected_clause_ids,
+            selected_source_sections,
+        )
+        unselected_capability = "KMIPKIT-REQ-PROF-5.12.6.1-001"
+
+        self.assertIn(unselected_capability, {row["requirement_id"] for row in catalog["requirements"]})
+        self.assertTrue(
+            any(
+                obligation["candidate_requirement_id"] == unselected_capability
+                for review in oracle["source_requirement_reviews"]
+                for obligation in review["source_obligations"]
+            ),
+            "the unselected profile's source obligation remains auditable",
+        )
+        self.assertFalse(
+            unselected_capability in optional_capabilities,
+            f"{unselected_capability} is catalogued for another profile, not the selected Baseline closure",
+        )
+        self.assertIn("KMIPKIT-REQ-SPEC-6.1.43-009-001", optional_capabilities)
 
     def test_every_reviewed_client_may_or_optional_has_usable_positive_evidence(self) -> None:
         """A selected profile or summary cannot replace an implementation and positive test."""
