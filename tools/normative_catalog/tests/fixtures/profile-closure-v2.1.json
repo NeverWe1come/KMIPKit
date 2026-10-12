@@ -73,7 +73,7 @@
   },
   "counts": {
     "profiles": 18,
-    "requirement_crosswalk_records": 439,
+    "requirement_crosswalk_records": 444,
     "requirement_crosswalk_complete": false,
     "source_requirement_review_records": 889,
     "source_only_requirement_gaps": 170,
@@ -17281,6 +17281,91 @@
       "review_note": "Profiles v2.1 §3.1.2 paragraph 5; Baseline Basic Authentication Suite.",
       "source_obligation_order": 1,
       "source_actor": "client and server"
+    },
+    {
+      "requirement_id": "KMIPKIT-REQ-PROF-5.12.2-002",
+      "source_clause_id": "KMIPKIT-CLAUSE-PROF-5.12.2-002",
+      "source_id": "KMIPKIT-SRC-profiles",
+      "source_section": "5.12.2",
+      "source_locator": {
+        "ordinal": 2,
+        "block_kind": "paragraph"
+      },
+      "source_keyword": "MAY",
+      "role": "client",
+      "scope_state": "profile_conditional",
+      "applies_to": "KMIPKIT-PROFILE-TAPE-LIBRARY-CLIENT",
+      "review_note": "Profiles v2.1 §5.12.2 lines 8541–46 frames Application Specific Information as client use; the Tape Library client may place application-specific data in the request object.",
+      "source_obligation_order": 1,
+      "source_actor": "client"
+    },
+    {
+      "requirement_id": "KMIPKIT-REQ-PROF-5.12.2-003",
+      "source_clause_id": "KMIPKIT-CLAUSE-PROF-5.12.2-003",
+      "source_id": "KMIPKIT-SRC-profiles",
+      "source_section": "5.12.2",
+      "source_locator": {
+        "ordinal": 3,
+        "block_kind": "paragraph"
+      },
+      "source_keyword": "SHOULD",
+      "role": "client",
+      "scope_state": "profile_conditional",
+      "applies_to": "KMIPKIT-PROFILE-TAPE-LIBRARY-CLIENT",
+      "review_note": "Profiles v2.1 §5.12.2 lines 8541–55 frames Application Specific Information and its namespace as client request data; the recommendation applies only to the Tape Library Client profile.",
+      "source_obligation_order": 1,
+      "source_actor": "client"
+    },
+    {
+      "requirement_id": "KMIPKIT-REQ-PROF-5.12.6.2-002",
+      "source_clause_id": "KMIPKIT-CLAUSE-PROF-5.12.6.2-002",
+      "source_id": "KMIPKIT-SRC-profiles",
+      "source_section": "5.12.6.2",
+      "source_locator": {
+        "ordinal": 2,
+        "block_kind": "paragraph"
+      },
+      "source_keyword": "MAY",
+      "role": "client",
+      "scope_state": "profile_conditional",
+      "applies_to": "KMIPKIT-PROFILE-TAPE-LIBRARY-CLIENT",
+      "review_note": "Profiles v2.1 §5.12.6.2 lines 8916–36 describes the Tape Library client creating a key and placing custom attributes in that request; this is profile-conditional client behavior.",
+      "source_obligation_order": 1,
+      "source_actor": "client"
+    },
+    {
+      "requirement_id": "KMIPKIT-REQ-PROF-5.12.6.2-003",
+      "source_clause_id": "KMIPKIT-CLAUSE-PROF-5.12.6.2-003",
+      "source_id": "KMIPKIT-SRC-profiles",
+      "source_section": "5.12.6.2",
+      "source_locator": {
+        "ordinal": 3,
+        "block_kind": "paragraph"
+      },
+      "source_keyword": "MAY",
+      "role": "client",
+      "scope_state": "profile_conditional",
+      "applies_to": "KMIPKIT-PROFILE-TAPE-LIBRARY-CLIENT",
+      "review_note": "Profiles v2.1 §5.12.6.2 lines 8916–36 identifies the Tape Library client as the Create requester; the MAY permits omitting optional custom request attributes.",
+      "source_obligation_order": 1,
+      "source_actor": "client"
+    },
+    {
+      "requirement_id": "KMIPKIT-REQ-PROF-5.12.6.3-001",
+      "source_clause_id": "KMIPKIT-CLAUSE-PROF-5.12.6.3-001",
+      "source_id": "KMIPKIT-SRC-profiles",
+      "source_section": "5.12.6.3",
+      "source_locator": {
+        "ordinal": 1,
+        "block_kind": "paragraph"
+      },
+      "source_keyword": "MAY",
+      "role": "client",
+      "scope_state": "profile_conditional",
+      "applies_to": "KMIPKIT-PROFILE-TAPE-LIBRARY-CLIENT",
+      "review_note": "Profiles v2.1 §5.12.6.3 lines 8945–60 identifies the Tape Library as constructing the identifier and requesting Locate/Get; the MAY update is a client request capability.",
+      "source_obligation_order": 1,
+      "source_actor": "client"
     },
     {
       "requirement_id": "KMIPKIT-REQ-PROF-6-001",
@@ -48256,17 +48341,18 @@
           "source_order": 1,
           "source_text": "The Application Specific Information [KMIP-SPEC] MAY be used to store data that is specific to the application (Tape Library) using the object.",
           "source_keyword": "MAY",
-          "actor": "source does not assign a client or server actor",
-          "direction": "unspecified",
+          "actor": "client",
+          "direction": "client_to_server request",
           "condition": "Optional Tape Library profile behavior when the client elects to use Application Specific Information.",
-          "scope_disposition": "unresolved",
-          "candidate_requirement_id": "KMIPKIT-REQ-PROF-5.12.2-002"
+          "scope_disposition": "profile_conditional",
+          "candidate_requirement_id": "KMIPKIT-REQ-PROF-5.12.2-002",
+          "review_note": "Profiles v2.1 §5.12.2 lines 8541–46 frames Application Specific Information as client use; the Tape Library client may place application-specific data in the request object."
         }
       ],
       "rejected_candidate_mappings": [],
       "expected_client_requirement_ids": [],
       "applies_to": "KMIPKIT-PROFILE-TAPE-LIBRARY-CLIENT",
-      "review_note": "Profiles v2.1 §5.12.2; the pinned statement does not identify the enforcing client/server actor or direction. Keep the stable ID visible in source review without assigning a client crosswalk row.",
+      "review_note": "Profiles v2.1 §5.12.2 lines 8541–46 frames Application Specific Information as client use; the Tape Library client may place application-specific data in the request object.",
       "source_keywords": [
         "MAY"
       ]
@@ -48290,17 +48376,18 @@
           "source_order": 1,
           "source_text": "The following Application Namespaces SHOULD be used in the Application Namespace field of the Application Specific Information [KMIP-SPEC]:",
           "source_keyword": "SHOULD",
-          "actor": "source does not assign a client or server actor",
-          "direction": "unspecified",
+          "actor": "client",
+          "direction": "client_to_server request",
           "condition": "Recommendation applies when using Application Specific Information; source lists LIBRARY-LTO and LIBRARY-LTO4 through LIBRARY-LTO7.",
-          "scope_disposition": "unresolved",
-          "candidate_requirement_id": "KMIPKIT-REQ-PROF-5.12.2-003"
+          "scope_disposition": "profile_conditional",
+          "candidate_requirement_id": "KMIPKIT-REQ-PROF-5.12.2-003",
+          "review_note": "Profiles v2.1 §5.12.2 lines 8541–55 frames Application Specific Information and its namespace as client request data; the recommendation applies only to the Tape Library Client profile."
         }
       ],
       "rejected_candidate_mappings": [],
       "expected_client_requirement_ids": [],
       "applies_to": "KMIPKIT-PROFILE-TAPE-LIBRARY-CLIENT",
-      "review_note": "Profiles v2.1 §5.12.2; the pinned statement does not identify the enforcing client/server actor or direction. Keep the stable ID visible in source review without assigning a client crosswalk row.",
+      "review_note": "Profiles v2.1 §5.12.2 lines 8541–55 frames Application Specific Information and its namespace as client request data; the recommendation applies only to the Tape Library Client profile.",
       "source_keywords": [
         "SHOULD"
       ]
@@ -48898,17 +48985,18 @@
           "source_order": 1,
           "source_text": "Additional custom attributes MAY be specified in order to:",
           "source_keyword": "MAY",
-          "actor": "actor not explicit in this test-case statement",
-          "direction": "unspecified",
+          "actor": "client",
+          "direction": "client_to_server request",
           "condition": "Optional test-case capability; not a general mandatory feature.",
-          "scope_disposition": "unresolved",
-          "candidate_requirement_id": "KMIPKIT-REQ-PROF-5.12.6.2-002"
+          "scope_disposition": "profile_conditional",
+          "candidate_requirement_id": "KMIPKIT-REQ-PROF-5.12.6.2-002",
+          "review_note": "Profiles v2.1 §5.12.6.2 lines 8916–36 describes the Tape Library client creating a key and placing custom attributes in that request; this is profile-conditional client behavior."
         }
       ],
       "rejected_candidate_mappings": [],
       "expected_client_requirement_ids": [],
       "applies_to": "KMIPKIT-PROFILE-TAPE-LIBRARY-CLIENT",
-      "review_note": "Profiles v2.1 §5.12.6.2; the pinned statement does not identify the enforcing client/server actor or direction. Keep the stable ID visible in source review without assigning a client crosswalk row.",
+      "review_note": "Profiles v2.1 §5.12.6.2 lines 8916–36 describes the Tape Library client creating a key and placing custom attributes in that request; this is profile-conditional client behavior.",
       "source_keywords": [
         "MAY"
       ]
@@ -48932,17 +49020,18 @@
           "source_order": 1,
           "source_text": "Tape Library implementations are not required to use custom attributes and custom attributes within the create request MAY be omitted.",
           "source_keyword": "MAY",
-          "actor": "implementation actor not identified by this statement",
-          "direction": "unspecified",
+          "actor": "client",
+          "direction": "client_to_server request",
           "condition": "Optional test/profile behavior; custom attributes are not mandatory.",
-          "scope_disposition": "unresolved",
-          "candidate_requirement_id": "KMIPKIT-REQ-PROF-5.12.6.2-003"
+          "scope_disposition": "profile_conditional",
+          "candidate_requirement_id": "KMIPKIT-REQ-PROF-5.12.6.2-003",
+          "review_note": "Profiles v2.1 §5.12.6.2 lines 8916–36 identifies the Tape Library client as the Create requester; the MAY permits omitting optional custom request attributes."
         }
       ],
       "rejected_candidate_mappings": [],
       "expected_client_requirement_ids": [],
       "applies_to": "KMIPKIT-PROFILE-TAPE-LIBRARY-CLIENT",
-      "review_note": "Profiles v2.1 §5.12.6.2; the pinned statement does not identify the enforcing client/server actor or direction. Keep the stable ID visible in source review without assigning a client crosswalk row.",
+      "review_note": "Profiles v2.1 §5.12.6.2 lines 8916–36 identifies the Tape Library client as the Create requester; the MAY permits omitting optional custom request attributes.",
       "source_keywords": [
         "REQUIRED",
         "MAY"
@@ -49014,17 +49103,18 @@
           "source_order": 1,
           "source_text": "The Tape Library constructs an identifier string based on the method in Tape Library Application Specific Information (5.12.2), and requests the server to locate the matching managed object for that Application Specific Information value. A Get is then requested based on the key's unique identifier. The Tape Library MAY update attributes associated with the Symmetric Key Managed Object. The following test case shows extensive use of custom attributes. Custom attributes are not required if the Application Name is unique within the Application Namespace. An implementation may also use custom attributes for vendor-unique purposes, or to improve usability.",
           "source_keyword": "MAY",
-          "actor": "source says Tape Library; client/server endpoint is not specified",
-          "direction": "unspecified",
+          "actor": "client",
+          "direction": "client_to_server request",
           "condition": "Optional behavior in the Tape Library test workflow; custom attributes can be unnecessary when the name is unique.",
-          "scope_disposition": "unresolved",
-          "candidate_requirement_id": "KMIPKIT-REQ-PROF-5.12.6.3-001"
+          "scope_disposition": "profile_conditional",
+          "candidate_requirement_id": "KMIPKIT-REQ-PROF-5.12.6.3-001",
+          "review_note": "Profiles v2.1 §5.12.6.3 lines 8945–60 identifies the Tape Library as constructing the identifier and requesting Locate/Get; the MAY update is a client request capability."
         }
       ],
       "rejected_candidate_mappings": [],
       "expected_client_requirement_ids": [],
       "applies_to": "KMIPKIT-PROFILE-TAPE-LIBRARY-CLIENT",
-      "review_note": "Profiles v2.1 §5.12.6.3; the pinned statement does not identify the enforcing client/server actor or direction. Keep the stable ID visible in source review without assigning a client crosswalk row.",
+      "review_note": "Profiles v2.1 §5.12.6.3 lines 8945–60 identifies the Tape Library as constructing the identifier and requesting Locate/Get; the MAY update is a client request capability.",
       "source_keywords": [
         "MAY",
         "REQUIRED"
