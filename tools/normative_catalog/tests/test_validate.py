@@ -15090,6 +15090,102 @@ class CatalogValidationTests(unittest.TestCase):
             diagnostics,
         )
 
+    def test_mac_verify_table_262_request_rows_are_client_contracts_without_requirement_ids(self) -> None:
+        """MAC Verify Table 262 body rows retain source provenance and client direction."""
+        oracle = json.loads(
+            (ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json").read_text(encoding="utf-8")
+        )
+        expected = {
+            "KMIPKIT-SOURCE-GAP-SPEC-6.1.33-MAC-DATA-REQUIRED": (
+                "MAC Data", [30387, 30403], "Yes for single-part. No for multi-part.",
+                "conditional_required_table_body_value",
+                "crates/kmipkit-protocol/tests/unit/mac_verify_operation_tests.rs::request_requires_mac_data_for_single_part_and_omits_it_for_multipart",
+                "crates/kmipkit-client/tests/unit/mac_verify_execution_tests.rs::invalid_and_unknown_indicators_remain_operation_results_with_one_exchange",
+            ),
+            "KMIPKIT-SOURCE-GAP-SPEC-6.1.33-CORRELATION-VALUE-OPTIONAL": (
+                "Correlation Value", [30404, 30421], "No", "optional_table_body_value",
+                "crates/kmipkit-protocol/tests/unit/mac_verify_operation_tests.rs::request_emits_optional_identifier_parameters_original_data_mac_and_framing_in_order",
+                "crates/kmipkit-client/tests/unit/mac_verify_execution_tests.rs::reordered_batch_responses_keep_each_requests_multipart_indicator_context",
+            ),
+            "KMIPKIT-SOURCE-GAP-SPEC-6.1.33-INIT-INDICATOR-OPTIONAL": (
+                "Init Indicator", [30422, 30437], "No", "optional_table_body_value",
+                "crates/kmipkit-protocol/tests/unit/mac_verify_operation_tests.rs::request_emits_optional_identifier_parameters_original_data_mac_and_framing_in_order",
+                "crates/kmipkit-client/tests/unit/mac_verify_execution_tests.rs::reordered_batch_responses_keep_each_requests_multipart_indicator_context",
+            ),
+            "KMIPKIT-SOURCE-GAP-SPEC-6.1.33-FINAL-INDICATOR-OPTIONAL": (
+                "Final Indicator", [30438, 30453], "No", "optional_table_body_value",
+                "crates/kmipkit-protocol/tests/unit/mac_verify_operation_tests.rs::request_emits_optional_identifier_parameters_original_data_mac_and_framing_in_order",
+                "crates/kmipkit-client/tests/unit/mac_verify_execution_tests.rs::reordered_batch_responses_keep_each_requests_multipart_indicator_context",
+            ),
+        }
+        contracts = {
+            contract.get("gap_id"): contract
+            for contract in oracle.get("source_table_contracts", [])
+            if contract.get("source_section") == "6.1.33" and contract.get("table_number") == 262
+        }
+
+        self.assertEqual(set(contracts), set(expected))
+        self.assertEqual(len(oracle["source_table_contracts"]), 22)
+        self.assertEqual(oracle["counts"]["source_table_contracts"], 22)
+        self.assertEqual(oracle["counts"]["source_only_requirement_gaps"], 148)
+        self.assertEqual(oracle["counts"]["source_only_requirement_gap_proposals"], 95)
+        source_gap_ids = {gap["gap_id"] for gap in oracle["source_only_requirement_gaps"]}
+        self.assertTrue(set(expected).isdisjoint(source_gap_ids))
+        self.assertTrue(
+            all(
+                not {"candidate_requirement_id", "proposed_requirement_id", "requirement_id"}.intersection(contract)
+                for contract in contracts.values()
+            ),
+            "table cells must not become per-cell normative requirement identifiers",
+        )
+
+        operation_id = "KMIPKIT-ELEM-OP-C2S-MAC-VERIFY"
+        implementation_ref = "crates/kmipkit-protocol/src/mac_verify.rs::MacVerifyRequest::to_ttlv_payload"
+        for gap_id, (row_label, line_range, requiredness, source_force, operation_test_ref, execution_test_ref) in expected.items():
+            contract = contracts[gap_id]
+            with self.subTest(source_table_contract=gap_id):
+                self.assertEqual(contract["source_id"], "KMIPKIT-SRC-spec")
+                self.assertEqual(contract["source_path"], "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html")
+                self.assertEqual(contract["source_locator"], {
+                    "kind": "table_body_row",
+                    "section": "6.1.33",
+                    "row_label": row_label,
+                    "table": "request_payload",
+                    "html_line_range": line_range,
+                })
+                self.assertEqual(contract["html_line_range"], line_range)
+                self.assertEqual(contract["source_excerpt"], pinned_source_excerpt(contract["source_path"], line_range))
+                self.assertEqual(contract["table_number"], 262)
+                self.assertEqual(contract["requiredness"], requiredness)
+                self.assertEqual(contract["source_force"], source_force)
+                self.assertEqual(contract["contract_kind"], "operation_request_table_field")
+                self.assertEqual(contract["actor"], "client")
+                self.assertEqual(contract["direction"], "client→server MAC Verify request")
+                self.assertEqual(contract["scope_disposition"], "client_1_0")
+                self.assertEqual(contract["operation_element_id"], operation_id)
+                self.assertEqual(contract["functional_requirement_ids"], ["FR-007"])
+                self.assertEqual(contract["implementation_refs"], [implementation_ref])
+                self.assertEqual(contract["verification_refs"], [operation_test_ref, execution_test_ref])
+                self.assertTrue(contract["condition"])
+                self.assertIn(contract["evidence_disposition"]["status"], {"mapped_to_feature_contract", "source_contract_recorded"})
+
+        request_header = next(
+            review for review in oracle["source_requirement_reviews"]
+            if review.get("source_clause_id") == "KMIPKIT-CLAUSE-SPEC-6.1.33-003"
+        )
+        reviewed_rows = {row["row_label"]: row for row in request_header["source_request_rows"]}
+        for gap_id, (row_label, *_rest) in expected.items():
+            reviewed_row = reviewed_rows[row_label]
+            with self.subTest(reviewed_request_row=row_label):
+                self.assertEqual(reviewed_row["source_gap_id"], gap_id)
+                self.assertEqual(
+                    reviewed_row["disposition"],
+                    "conditionally_required_request_table_contract" if row_label == "MAC Data" else "optional_request_table_contract",
+                )
+                self.assertEqual(reviewed_row.get("source_requirement_ids", []), [])
+
+        self.assertEqual(validate_source_table_contracts(oracle, ROOT), [])
+
     def test_hash_data_row_keeps_its_conditional_source_force_and_disposition(self) -> None:
         """The Hash Table 235 Data row remains a conditional source table contract."""
         oracle = json.loads(
