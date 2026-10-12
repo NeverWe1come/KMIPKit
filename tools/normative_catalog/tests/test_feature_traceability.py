@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import ast
 import csv
 import json
 import re
@@ -178,6 +179,246 @@ def _read_confined_test_source(test_path: str) -> tuple[Path, str] | None:
     except (OSError, RuntimeError, ValueError, UnicodeDecodeError):
         return None
     return path, source
+
+
+def _blank_rust_source_region(source: str, start: int, end: int) -> str:
+    """Blank a Rust comment or literal while retaining its original line layout."""
+    return "".join(
+        "\n" if char == "\n" else "\r" if char == "\r" else " "
+        for char in source[start:end]
+    )
+
+
+def _rust_raw_string_start(source: str, index: int) -> tuple[int, int] | None:
+    """Return the quote index and hash count for a raw string starting here."""
+    raw_prefix = index
+    if source.startswith(("br", "cr"), index):
+        raw_prefix += 1
+    elif index >= len(source) or source[index] != "r":
+        return None
+
+    if raw_prefix >= len(source) or source[raw_prefix] != "r":
+        return None
+    quote_index = raw_prefix + 1
+    while quote_index < len(source) and source[quote_index] == "#":
+        quote_index += 1
+    if quote_index < len(source) and source[quote_index] == '"':
+        return quote_index, quote_index - raw_prefix - 1
+    return None
+
+
+def _strip_rust_comments_and_literals(source: str) -> str | None:
+    """Remove Rust comments/literals lexically so their text cannot mimic test items."""
+    characters = list(source)
+    index = 0
+    while index < len(source):
+        if source.startswith("//", index):
+            end = source.find("\n", index)
+            if end < 0:
+                end = len(source)
+            characters[index:end] = _blank_rust_source_region(source, index, end)
+            index = end
+            continue
+
+        if source.startswith("/*", index):
+            depth = 1
+            end = index + 2
+            while end < len(source) and depth:
+                if source.startswith("/*", end):
+                    depth += 1
+                    end += 2
+                elif source.startswith("*/", end):
+                    depth -= 1
+                    end += 2
+                else:
+                    end += 1
+            if depth:
+                return None
+            characters[index:end] = _blank_rust_source_region(source, index, end)
+            index = end
+            continue
+
+        raw_start = _rust_raw_string_start(source, index)
+        if raw_start is not None:
+            quote_index, hash_count = raw_start
+            terminator = '"' + ("#" * hash_count)
+            end_quote = source.find(terminator, quote_index + 1)
+            if end_quote < 0:
+                return None
+            end = end_quote + len(terminator)
+            characters[index:end] = _blank_rust_source_region(source, index, end)
+            index = end
+            continue
+
+        quote_index = index
+        if source.startswith(("b\"", "c\""), index):
+            quote_index += 1
+        if quote_index < len(source) and source[quote_index] == '"':
+            end = quote_index + 1
+            while end < len(source):
+                if source[end] == "\\":
+                    end += 2
+                elif source[end] == '"':
+                    end += 1
+                    break
+                else:
+                    end += 1
+            else:
+                return None
+            characters[index:end] = _blank_rust_source_region(source, index, end)
+            index = end
+            continue
+
+        index += 1
+    return "".join(characters)
+
+
+def _rust_cfg_condition_is_enabled(expression: str) -> bool | None:
+    """Evaluate cfg logic known in a Rust test build; None means unknown."""
+    tokens = re.findall(
+        r'"(?:\\.|[^"\\])*"|[A-Za-z_][A-Za-z0-9_]*|[(),=]|\S', expression
+    )
+    cursor = 0
+
+    def parse_predicate() -> bool | None:
+        nonlocal cursor
+        if cursor >= len(tokens) or not re.fullmatch(r"[A-Za-z_][A-Za-z0-9_]*", tokens[cursor]):
+            return None
+        name = tokens[cursor]
+        cursor += 1
+        if name not in {"any", "all", "not"}:
+            if cursor < len(tokens) and tokens[cursor] == "=":
+                cursor += 1
+                if cursor < len(tokens) and tokens[cursor] not in {",", ")"}:
+                    cursor += 1
+                return None
+            return True if name == "test" else None
+        if cursor >= len(tokens) or tokens[cursor] != "(":
+            return None
+        cursor += 1
+        values: list[bool | None] = []
+        if cursor < len(tokens) and tokens[cursor] != ")":
+            while True:
+                values.append(parse_predicate())
+                if cursor >= len(tokens):
+                    return None
+                if tokens[cursor] == ")":
+                    break
+                if tokens[cursor] != ",":
+                    return None
+                cursor += 1
+                if cursor < len(tokens) and tokens[cursor] == ")":
+                    break
+        if cursor >= len(tokens) or tokens[cursor] != ")":
+            return None
+        cursor += 1
+        if name == "not":
+            if len(values) != 1 or values[0] is None:
+                return None
+            return not values[0]
+        if name == "all":
+            if any(value is False for value in values):
+                return False
+            if all(value is True for value in values):
+                return True
+            return None
+        if any(value is True for value in values):
+            return True
+        if all(value is False for value in values):
+            return False
+        return None
+
+    result = parse_predicate()
+    return result if cursor == len(tokens) else None
+
+
+def _rust_source_has_only_unconditionally_enabled_cfg(source: str) -> bool:
+    """Fail closed on cfg conditions this local test-ref gate cannot resolve."""
+    if re.search(r"#\s*\[\s*cfg_attr\s*\(", source):
+        return False
+    marker = re.compile(r"#\s*\[\s*cfg\s*\(")
+    cursor = 0
+    while match := marker.search(source, cursor):
+        depth = 1
+        end = match.end()
+        while end < len(source) and depth:
+            if source[end] == "(":
+                depth += 1
+            elif source[end] == ")":
+                depth -= 1
+            end += 1
+        if depth:
+            return False
+        expression = source[match.end():end - 1]
+        if _rust_cfg_condition_is_enabled(expression) is not True:
+            return False
+        cursor = end
+    return True
+
+
+def _is_discoverable_positive_test(path: Path, test_name: str, source: str) -> bool:
+    """Recognize runner-shaped Rust/Python tests, not their assertion semantics."""
+    if path.suffix == ".rs":
+        if not re.fullmatch(r"[A-Za-z_][A-Za-z0-9_]*", test_name):
+            return False
+        source = _strip_rust_comments_and_literals(source)
+        if source is None or not _rust_source_has_only_unconditionally_enabled_cfg(source):
+            return False
+        declaration = re.compile(
+            rf"^\s*(?:async\s+)?fn\s+{re.escape(test_name)}\s*\(", re.MULTILINE
+        )
+        test_attribute = re.compile(
+            r"^\s*#\[(?:test|tokio::test)(?:\s*\([^]]*\))?\]\s*$"
+        )
+        lines = source.splitlines()
+        for index, line in enumerate(lines):
+            if not declaration.match(line):
+                continue
+            cursor = index - 1
+            while cursor >= 0:
+                preceding_line = lines[cursor].strip()
+                if not preceding_line or preceding_line.startswith("//"):
+                    cursor -= 1
+                    continue
+                if preceding_line.startswith("#["):
+                    if test_attribute.fullmatch(preceding_line):
+                        return True
+                    cursor -= 1
+                    continue
+                break
+        return False
+
+    if path.suffix == ".py":
+        try:
+            module = ast.parse(source)
+        except SyntaxError:
+            return False
+        class_name, separator, function_name = test_name.rpartition(".")
+        if separator:
+            if not function_name.startswith("test_"):
+                return False
+            for node in module.body:
+                if not isinstance(node, ast.ClassDef) or node.name != class_name:
+                    continue
+                is_pytest_class = class_name.startswith("Test")
+                is_unittest_class = any(
+                    isinstance(base, ast.Name) and base.id == "TestCase"
+                    or isinstance(base, ast.Attribute) and base.attr == "TestCase"
+                    for base in node.bases
+                )
+                return (is_pytest_class or is_unittest_class) and any(
+                    isinstance(method, (ast.FunctionDef, ast.AsyncFunctionDef))
+                    and method.name == function_name
+                    for method in node.body
+                )
+            return False
+        return test_name.startswith("test_") and any(
+            isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef))
+            and node.name == test_name
+            for node in module.body
+        )
+
+    return False
 
 
 def _markdown_table_rows(document: str) -> list[list[str]]:
@@ -526,6 +767,15 @@ class FeatureTraceabilityTests(unittest.TestCase):
                 "/*\n#[test]\nfn request_capability_is_available() { assert!(true); }\n*/\n",
                 False,
             ),
+            "nested block comment": (
+                "/* outer /* nested */\n#[test]\n"
+                "fn request_capability_is_available() { assert!(true); }\n*/\n",
+                False,
+            ),
+            "line comments": (
+                "// #[test]\n// fn request_capability_is_available() { assert!(true); }\n",
+                False,
+            ),
             "raw string": (
                 'const DECOY: &str = r###"\n#[test]\n'
                 "fn request_capability_is_available() { assert!(true); }\n"
@@ -537,12 +787,27 @@ class FeatureTraceabilityTests(unittest.TestCase):
                 "fn request_capability_is_available() { assert!(true); }\n",
                 False,
             ),
+            "disabled cfg on parent module": (
+                "#[cfg(any())]\nmod inactive {\n#[test]\n"
+                "fn request_capability_is_available() { assert!(true); }\n}\n",
+                False,
+            ),
+            "unknown cfg is not accepted as active": (
+                "#[cfg(feature = \"optional-tests\")]\n#[test]\n"
+                "fn request_capability_is_available() { assert!(true); }\n",
+                False,
+            ),
             "missing test attribute": (
                 "fn request_capability_is_available() { assert!(true); }\n",
                 False,
             ),
             "active test": (
                 "#[test]\nfn request_capability_is_available() { assert!(true); }\n",
+                True,
+            ),
+            "test cfg is enabled in a test build": (
+                "#[cfg(test)]\n#[test]\n"
+                "fn request_capability_is_available() { assert!(true); }\n",
                 True,
             ),
         }
@@ -638,15 +903,7 @@ class FeatureTraceabilityTests(unittest.TestCase):
             return False
         path, source = source_file
 
-        if path.suffix == ".rs":
-            return f"fn {test_name}(" in source
-        if path.suffix == ".py":
-            class_name, separator, function_name = test_name.rpartition(".")
-            if not separator:
-                return False
-            class_exists = re.search(rf"^class {re.escape(class_name)}(?:\(|:)", source, re.MULTILINE)
-            return class_exists is not None and f"def {function_name}(" in source
-        return False
+        return _is_discoverable_positive_test(path, test_name, source)
 
 
 class MessageModelTraceabilityTests(unittest.TestCase):
