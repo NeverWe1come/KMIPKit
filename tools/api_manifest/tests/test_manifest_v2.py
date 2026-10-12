@@ -270,6 +270,22 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
         with self.assertRaisesRegex(ManifestError, "error category references an undeclared language export"):
             _validate_references(manifest)
 
+    def test_error_category_rejects_a_stale_ready_declaration_mapping(self) -> None:
+        manifest = json.loads(json.dumps(self.checked_in_manifest))
+        error = next(
+            item for item in manifest["errorCategories"]
+            if item["id"] == "resource_limit"
+        )
+        declaration = next(
+            item for item in manifest["publicDeclarations"]
+            if item["packageId"] == "python-kmipkit"
+            and item["exportName"] == error["pythonException"]
+        )
+        declaration["languageMappings"]["python"]["name"] = "kmipkit.errors.StaleError"
+
+        with self.assertRaisesRegex(ManifestError, "canonical language export"):
+            _validate_references(manifest)
+
     def test_checked_in_error_categories_keep_real_python_names_and_status_values(self) -> None:
         categories = {
             item["id"]: item for item in self.checked_in_manifest["errorCategories"]
