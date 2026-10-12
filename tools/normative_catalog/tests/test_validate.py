@@ -7680,6 +7680,11 @@ class CatalogValidationTests(unittest.TestCase):
             "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-11-DEFAULTS-INFORMATION",
         )
         self.assertEqual(
+            defaults_row["source_gap_id"],
+            "KMIPKIT-SOURCE-GAP-SPEC-6.1.53-DEFAULTS-INFORMATION-OPTIONAL",
+        )
+        self.assertEqual(defaults_row["disposition"], "optional_request_table_contract")
+        self.assertEqual(
             defaults_row["source_excerpt"],
             pinned_source_excerpt(source_path, [36013, 36030]),
         )
@@ -7750,6 +7755,44 @@ class CatalogValidationTests(unittest.TestCase):
         self.assertEqual(gap["direction"], "A client may send Defaults Information; omitting it removes all Object Defaults.")
         self.assertEqual(gap["scope_disposition"], "client_1_0")
         self.assertEqual([row for row in oracle["requirement_crosswalk"] if row["source_section"] == "6.1.53"], [])
+
+        contracts = {
+            row["gap_id"]: row
+            for row in oracle["source_table_contracts"]
+            if row["source_section"] == "6.1.53" and row["table_number"] == 328
+        }
+        self.assertEqual(set(contracts), {gap["gap_id"]})
+        contract = contracts[gap["gap_id"]]
+        self.assertEqual(contract["source_id"], "KMIPKIT-SRC-spec")
+        self.assertEqual(contract["source_path"], source_path)
+        self.assertEqual(contract["source_locator"], {
+            "kind": "table_body_row",
+            "section": "6.1.53",
+            "row_label": "Defaults Information",
+            "table": "request_payload",
+            "html_line_range": [36013, 36030],
+        })
+        self.assertEqual(contract["source_excerpt"], pinned_source_excerpt(source_path, [36013, 36030]))
+        self.assertEqual(contract["requiredness"], "No")
+        self.assertEqual(contract["source_force"], "optional_table_body_value")
+        self.assertEqual(contract["contract_kind"], "operation_request_table_field")
+        self.assertEqual(contract["status"], "mapped_to_approved_feature_contract")
+        self.assertEqual(contract["operation_element_id"], "KMIPKIT-ELEM-OP-C2S-SET-DEFAULTS")
+        self.assertEqual(contract["functional_requirement_ids"], ["FR-001"])
+        self.assertEqual(contract["implementation_refs"], [
+            "crates/kmipkit-protocol/src/set_defaults.rs::SetDefaultsRequest::to_ttlv_payload",
+        ])
+        self.assertEqual(contract["verification_refs"], [
+            "crates/kmipkit-protocol/tests/unit/set_defaults_tests.rs::table_328_preserves_omitted_empty_and_populated_defaults_information",
+            "crates/kmipkit-client/tests/unit/set_defaults_execution_tests.rs::table_328_omission_and_explicit_empty_structure_are_distinct_on_the_wire",
+        ])
+        self.assertEqual(contract["evidence_disposition"]["status"], "mapped_to_feature_contract")
+        self.assertNotIn("KMIPKIT-REQ-SPEC-6.1.53-001", {
+            row["requirement_id"]
+            for row in catalog["requirements"]
+        })
+        self.assertEqual(validate_source_table_contracts(oracle, ROOT), [])
+        self.assertEqual(oracle["counts"]["source_table_contracts"], 49)
 
         for caption, line_range in (("Table 328: Set Defaults Request Payload", [36036, 36037]),
                                     ("Table 329: Set Defaults Response Payload", [36088, 36089]),
