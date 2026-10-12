@@ -85,6 +85,7 @@ fn wrapped_key_object() -> Item {
 
 fn wrapped_pgp_key_object() -> Item {
     let key_block = structure([
+        item(KEY_FORMAT_TYPE, Value::enumeration(1)),
         synthetic_wrapped_key_value(),
         encryption_key_wrapping_data(),
     ]);
