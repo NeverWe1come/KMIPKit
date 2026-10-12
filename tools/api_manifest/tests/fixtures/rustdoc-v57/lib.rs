@@ -1,8 +1,9 @@
 #![allow(dead_code)]
+#![feature(associated_type_defaults)]
 
-pub trait Contract {
-    type Output;
-    const LIMIT: usize;
+pub trait Contract<T> {
+    type Output = T;
+    const LIMIT: usize = 11;
 
     fn required(&self) -> Self::Output;
 
@@ -15,7 +16,23 @@ pub trait Audit {
     fn required(&self) -> u8;
 }
 
+trait PrivateContract {
+    const PRIVATE_LIMIT: usize = 5;
+
+    fn hidden(&self) -> usize {
+        Self::PRIVATE_LIMIT
+    }
+}
+
 pub struct Service;
+
+pub struct Generic<T> {
+    pub value: T,
+}
+
+pub struct Fixed<T> {
+    pub value: T,
+}
 
 impl Service {
     pub fn required(&self) -> u8 {
@@ -27,17 +44,44 @@ impl Service {
     }
 }
 
-impl Contract for Service {
-    type Output = u8;
-    const LIMIT: usize = 11;
-
-    fn required(&self) -> Self::Output {
+impl Contract<u8> for Service {
+    fn required(&self) -> u8 {
         3
+    }
+}
+
+impl Contract<u16> for Service {
+    fn required(&self) -> u16 {
+        3
+    }
+}
+
+impl<T: Copy> Contract<T> for Generic<T> {
+    fn required(&self) -> T {
+        self.value
+    }
+}
+
+impl Contract<u8> for Fixed<u8> {
+    fn required(&self) -> u8 {
+        self.value
+    }
+}
+
+impl Contract<u16> for Fixed<u16> {
+    fn required(&self) -> u16 {
+        self.value
     }
 }
 
 impl Audit for Service {
     fn required(&self) -> u8 {
+        5
+    }
+}
+
+impl PrivateContract for Service {
+    fn hidden(&self) -> usize {
         5
     }
 }
@@ -51,11 +95,9 @@ pub enum State {
     Named { value: u8 },
 }
 
-pub struct Generic<T> {
-    pub value: T,
-}
-
 pub type ServiceAlias = Service;
 pub type ServiceAliasChain = ServiceAlias;
 pub type StateAlias = State;
 pub type GenericAlias<T> = Generic<T>;
+pub type FixedU8Alias = Fixed<u8>;
+pub type FixedU16Alias = Fixed<u16>;

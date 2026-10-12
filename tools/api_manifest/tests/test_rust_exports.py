@@ -147,26 +147,84 @@ class RustExportAuditTests(unittest.TestCase):
         self.assertEqual(issue["traitId"], "10")
         self.assertEqual(issue["exportName"], "<sample::Value as Debug>")
 
+    def test_public_type_does_not_export_members_of_an_unreachable_private_trait(self):
+        report = self.inventory(self.rustdoc_v57_fixture())
+        self.assertNotIn(
+            "<rustdoc_v57_fixture::Service as rustdoc_v57_fixture::PrivateContract>::hidden",
+            self.names(report),
+        )
+
+    def test_missing_impl_index_record_is_an_issue_instead_of_a_key_error(self):
+        doc = document("sample", [structure(1, "Value", impls=[999])], [1])
+        report = self.inventory({"sample": doc})
+        self.assertFalse(report["complete"])
+        self.assertEqual(report["issues"][0]["reason"], "missing-rustdoc-implementation")
+        self.assertEqual(report["issues"][0]["implementationId"], "999")
+
     def test_rustdoc_v57_inventories_qualified_required_and_default_trait_members(self):
         report = self.inventory(self.rustdoc_v57_fixture())
         expected = {
             "rustdoc_v57_fixture::Service::required",
-            "<rustdoc_v57_fixture::Service as rustdoc_v57_fixture::Contract>::required",
-            "<rustdoc_v57_fixture::Service as rustdoc_v57_fixture::Contract>::provided",
-            "<rustdoc_v57_fixture::Service as rustdoc_v57_fixture::Contract>::Output",
-            "<rustdoc_v57_fixture::Service as rustdoc_v57_fixture::Contract>::LIMIT",
+            "<rustdoc_v57_fixture::Service as rustdoc_v57_fixture::Contract<u8>>::required",
+            "<rustdoc_v57_fixture::Service as rustdoc_v57_fixture::Contract<u8>>::provided",
+            "<rustdoc_v57_fixture::Service as rustdoc_v57_fixture::Contract<u8>>::Output",
+            "<rustdoc_v57_fixture::Service as rustdoc_v57_fixture::Contract<u8>>::LIMIT",
+            "<rustdoc_v57_fixture::Service as rustdoc_v57_fixture::Contract<u16>>::required",
+            "<rustdoc_v57_fixture::Service as rustdoc_v57_fixture::Contract<u16>>::provided",
+            "<rustdoc_v57_fixture::Service as rustdoc_v57_fixture::Contract<u16>>::Output",
+            "<rustdoc_v57_fixture::Service as rustdoc_v57_fixture::Contract<u16>>::LIMIT",
             "<rustdoc_v57_fixture::Service as rustdoc_v57_fixture::Audit>::required",
         }
         self.assertTrue(expected <= self.names(report), sorted(expected - self.names(report)))
         inherent = next(r for r in report["declarations"] if r["exportName"] == "rustdoc_v57_fixture::Service::required")
-        contract = next(r for r in report["declarations"] if r["exportName"].endswith("Contract>::required"))
+        contract_u8 = next(r for r in report["declarations"] if r["exportName"] ==
+                           "<rustdoc_v57_fixture::Service as rustdoc_v57_fixture::Contract<u8>>::required")
+        contract_u16 = next(r for r in report["declarations"] if r["exportName"] ==
+                            "<rustdoc_v57_fixture::Service as rustdoc_v57_fixture::Contract<u16>>::required")
         audit = next(r for r in report["declarations"] if r["exportName"].endswith("Audit>::required"))
-        self.assertEqual(len({inherent["identity"], contract["identity"], audit["identity"]}), 3)
+        self.assertEqual(len({inherent["identity"], contract_u8["identity"], contract_u16["identity"], audit["identity"]}), 4)
+        documents = self.rustdoc_v57_fixture()
+        doc = documents["rustdoc_v57_fixture"]
+        service = next(item for item in doc["index"].values() if item.get("name") == "Service")
+        contract_impls = []
+        for impl_id in service["inner"]["struct"]["impls"]:
+            impl = doc["index"][str(impl_id)]["inner"]["impl"]
+            if impl.get("trait", {}).get("path") == "Contract":
+                contract_impls.append(impl)
+        self.assertEqual(len(contract_impls), 2)
+        for impl in contract_impls:
+            self.assertEqual([doc["index"][str(i)]["name"] for i in impl["items"]], ["required"])
+            self.assertEqual(impl["provided_trait_methods"], ["provided"])
+
+    def test_rustdoc_v57_keeps_generic_owner_trait_arguments_and_predicates(self):
+        report = self.inventory(self.rustdoc_v57_fixture())
+        generic = "<rustdoc_v57_fixture::Generic<T> as rustdoc_v57_fixture::Contract<T>>::required"
+        generic_alias = "<rustdoc_v57_fixture::GenericAlias<T> as rustdoc_v57_fixture::Contract<T>>::required"
+        self.assertIn(generic, self.names(report))
+        self.assertIn(generic_alias, self.names(report))
+        direct = next(r for r in report["declarations"] if r["exportName"] == generic)
+        alias = next(r for r in report["declarations"] if r["exportName"] == generic_alias)
+        self.assertEqual(direct["identity"], alias["identity"])
+        self.assertIn('"Copy"', direct["identity"])
+
+    def test_rustdoc_v57_filters_generic_impls_for_concrete_type_aliases(self):
+        names = self.names(self.inventory(self.rustdoc_v57_fixture()))
+        self.assertIn(
+            "<rustdoc_v57_fixture::FixedU8Alias as rustdoc_v57_fixture::Contract<u8>>::required",
+            names,
+        )
+        self.assertNotIn(
+            "<rustdoc_v57_fixture::FixedU8Alias as rustdoc_v57_fixture::Contract<u16>>::required",
+            names,
+        )
 
     def test_rustdoc_v57_inventories_automatically_derived_trait_members(self):
         documents = self.rustdoc_v57_fixture()
         report = self.inventory(documents)
-        derived_impl = documents["rustdoc_v57_fixture"]["index"]["76"]
+        doc = documents["rustdoc_v57_fixture"]
+        derived = next(item for item in doc["index"].values() if item.get("name") == "Derived")
+        derived_impl = next(doc["index"][str(i)] for i in derived["inner"]["struct"]["impls"]
+                            if doc["index"][str(i)]["inner"]["impl"].get("trait", {}).get("path") == "Debug")
         self.assertIn("automatically_derived", derived_impl["attrs"])
         self.assertFalse(derived_impl["inner"]["impl"]["is_synthetic"])
         self.assertIn(
@@ -178,9 +236,9 @@ class RustExportAuditTests(unittest.TestCase):
         report = self.inventory(self.rustdoc_v57_fixture())
         expected = {
             "rustdoc_v57_fixture::ServiceAlias::inherent",
-            "<rustdoc_v57_fixture::ServiceAlias as rustdoc_v57_fixture::Contract>::required",
+            "<rustdoc_v57_fixture::ServiceAlias as rustdoc_v57_fixture::Contract<u8>>::required",
             "rustdoc_v57_fixture::ServiceAliasChain::inherent",
-            "<rustdoc_v57_fixture::ServiceAliasChain as rustdoc_v57_fixture::Contract>::required",
+            "<rustdoc_v57_fixture::ServiceAliasChain as rustdoc_v57_fixture::Contract<u8>>::required",
             "rustdoc_v57_fixture::GenericAlias::value",
             "rustdoc_v57_fixture::StateAlias::Tuple",
             "rustdoc_v57_fixture::StateAlias::Tuple::0",
