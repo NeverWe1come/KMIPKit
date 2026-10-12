@@ -93,6 +93,31 @@ class RustExportGreenGapTests(unittest.TestCase):
             names,
         )
 
+    def test_comparison_normalizes_lifetime_arguments_and_field_separators(self):
+        observed = {
+            "crates": ["demo"],
+            "declarations": [
+                {"packageId": "rust-demo", "exportName": "demo::View<'a>::result", "kind": "associated-item"},
+                {"packageId": "rust-demo", "exportName": "demo::Alias<'a>::result", "kind": "associated-item"},
+                {"packageId": "rust-demo", "exportName": "demo::Record::field", "kind": "field"},
+            ],
+            "issues": [],
+        }
+        manifest = {
+            "publicDeclarations": [
+                {"packageId": "rust-demo", "exportName": "demo::View::result", "kind": "associated-item"},
+                {"packageId": "rust-demo", "exportName": "demo::Alias<'_>::result", "kind": "associated-item"},
+                {"packageId": "rust-demo", "exportName": "demo::Record.field", "kind": "field"},
+            ],
+            "approvedExclusions": [],
+        }
+
+        report = self.audit.compare(observed, manifest)
+
+        self.assertTrue(report["matchesManifest"])
+        self.assertEqual(report["counts"]["matched"], 3)
+        self.assertEqual(report["notObserved"], [])
+
 
 if __name__ == "__main__":
     unittest.main()
