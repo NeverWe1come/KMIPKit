@@ -183,7 +183,7 @@ class SectionSixActorAndScopeRegressionTests(unittest.TestCase):
                     requirement = self.requirements[requirement_id]
                     self.assertEqual(requirement["role"], "unspecified")
                     self.assertEqual(requirement["direction"], "client_to_server")
-                    self.assertEqual(requirement["scope_state"], "unclear")
+                    self.assertEqual(requirement["scope_state"], "client_1_0")
                     self.assertEqual(atom["actor"], "unresolved")
                     self.assertEqual(atom["scope_disposition"], "unresolved")
                 else:
@@ -193,6 +193,24 @@ class SectionSixActorAndScopeRegressionTests(unittest.TestCase):
                     self.assertEqual(requirement["role"], "client")
                     self.assertEqual(requirement["direction"], "client_to_server")
                     self.assertEqual(requirement["scope_state"], "client_1_0")
+
+    def test_validate_feature_scope_does_not_attribute_passive_shall(self) -> None:
+        requirement_id = "KMIPKIT-REQ-SPEC-6.1.57-006"
+        requirement = self.requirements[requirement_id]
+        review = self.reviews["KMIPKIT-CLAUSE-SPEC-6.1.57-006"]
+        atom = review["source_obligations"][0]
+
+        self.assertEqual(requirement["feature_spec"], "KMIPKIT-0042")
+        self.assertEqual(requirement["role"], "unspecified")
+        self.assertEqual(requirement["direction"], "client_to_server")
+        self.assertEqual(requirement["scope_state"], "client_1_0")
+        self.assertEqual(atom["actor"], "unresolved")
+        self.assertEqual(atom["scope_disposition"], "unresolved")
+        self.assertEqual(review["expected_client_requirement_ids"], [])
+        self.assertNotIn(requirement_id, self.crosswalk_ids)
+        self.assertNotIn(requirement_id, self.client_profile_ids)
+        self.assertIn("feature/API serialization scope", review["review_note"])
+        self.assertIn("does not establish server-side evaluation", review["review_note"])
 
     def test_validate_review_locators_match_the_pinned_html(self) -> None:
         clauses = {

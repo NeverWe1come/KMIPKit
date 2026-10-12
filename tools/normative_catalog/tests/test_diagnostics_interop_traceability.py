@@ -25,7 +25,7 @@ class DiagnosticsInteropTraceabilityTests(unittest.TestCase):
         self.catalog = json.loads(CATALOG.read_text(encoding="utf-8"))
         self.trace = TRACE.read_text(encoding="utf-8")
 
-    def test_exactly_six_client_requirements_have_resolving_test_symbols(self) -> None:
+    def test_exactly_six_validate_feature_requirements_have_test_symbols(self) -> None:
         records = {
             r["requirement_id"]: r
             for r in self.catalog["requirements"]
@@ -34,9 +34,13 @@ class DiagnosticsInteropTraceabilityTests(unittest.TestCase):
         self.assertEqual(set(records), set(EXPECTED))
         for identifier, test in EXPECTED.items():
             record = records[identifier]
-            self.assertEqual(record["role"], "client")
+            expected_role = "unspecified" if identifier.endswith("6.1.57-006") else "client"
+            self.assertEqual(record["role"], expected_role)
             self.assertEqual(record["status"], "scoped_verified")
+            self.assertEqual(record["scope_state"], "client_1_0")
             self.assertIn("KMIPKIT-ELEM-OP-C2S-VALIDATE", record["element_ids"])
+            if identifier.endswith("6.1.57-006"):
+                self.assertEqual(record["profile_ids"], [])
             self.assertEqual(record["test_case_ids"], [])
             self.assertIn({"source_id": "KMIPKIT-SRC-spec", "section": "6.1.57"}, record["source_refs"])
             expected = f"crates/kmipkit-protocol/tests/unit/validate_operation_tests.rs::{test}"
