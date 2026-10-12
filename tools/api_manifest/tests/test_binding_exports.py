@@ -3,10 +3,13 @@
 from __future__ import annotations
 
 import importlib.util
+import subprocess
 import struct
+import tempfile
 import textwrap
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 
 
 MODULE_PATH = Path(__file__).resolve().parents[1] / "audit_binding_exports.py"
@@ -17,6 +20,28 @@ SPEC.loader.exec_module(AUDIT)
 
 
 class BindingExportAuditTests(unittest.TestCase):
+    def test_c_build_export_reader_reads_library_before_temporary_cleanup(self):
+        build_exports = getattr(AUDIT, "build_c_binary_exports", None)
+        self.assertIsNotNone(build_exports)
+        with tempfile.TemporaryDirectory() as directory:
+            def fake_run(arguments, **_kwargs):
+                target_root = Path(arguments[arguments.index("--target-dir") + 1])
+                binary = target_root / "debug" / "kmipkit_ffi.dll"
+                binary.parent.mkdir(parents=True)
+                binary.write_bytes(b"synthetic PE library")
+                return subprocess.CompletedProcess(arguments, 0, "", "")
+
+            def read_existing_binary(binary):
+                self.assertTrue(binary.is_file())
+                return ["kmipkit_probe"]
+
+            with patch.object(AUDIT.subprocess, "run", side_effect=fake_run), patch.object(
+                AUDIT, "read_native_exports", side_effect=read_existing_binary
+            ):
+                exports = build_exports(Path(directory))
+
+        self.assertEqual(exports, ["kmipkit_probe"])
+
     def test_c_header_inventory_includes_aliases_functions_macros_and_fields(self):
         header = """
             #define KMIPKIT_MODE_DEFAULT ((uint8_t)0)
