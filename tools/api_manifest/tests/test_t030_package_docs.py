@@ -142,10 +142,12 @@ class PackageDocumentationContractTests(unittest.TestCase):
             encoding="utf-8"
         )
         self.assertIn("vendor_extension_registry", english)
+        self.assertIn("declared", english)
         self.assertIn("blocked", english)
-        self.assertIn("verified, supported four-language 1.0 capability", english)
+        self.assertIn("verified four-language 1.0 capability", english)
         self.assertIn("vendor_extension_registry", spanish)
-        self.assertIn("blocked", spanish)
+        self.assertIn("declared", spanish)
+        self.assertIn("bloqueados", spanish)
         self.assertIn("capacidad 1.0 verificada", spanish)
 
 

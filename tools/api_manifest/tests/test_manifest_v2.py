@@ -278,11 +278,9 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
             ("rust-kmipkit", "kmipkit::RuntimeVersion::abi_version"),
             ("rust-kmipkit", "kmipkit::runtime_version"),
             ("rust-kmipkit", "kmipkit::capability_is_available"),
-            ("java-kmipkit", "org.kmipkit.RuntimeMetadata"),
             ("java-kmipkit", "org.kmipkit.RuntimeMetadata.Version"),
             ("java-kmipkit", "org.kmipkit.RuntimeMetadata.version"),
             ("java-kmipkit", "org.kmipkit.RuntimeMetadata.capabilityIsAvailable"),
-            ("python-kmipkit", "kmipkit.metadata"),
             ("python-kmipkit", "kmipkit.metadata.Version"),
             ("python-kmipkit", "kmipkit.metadata.get_version"),
             ("python-kmipkit", "kmipkit.metadata.capability_is_available"),
@@ -294,6 +292,15 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
                 declaration = declarations[key]
                 self.assertEqual(declaration["capabilityId"], "ffi_runtime_metadata")
                 self.assertEqual(declaration["declarationState"], "declared")
+
+        for key in (
+            ("java-kmipkit", "org.kmipkit.RuntimeMetadata"),
+            ("python-kmipkit", "kmipkit.metadata"),
+        ):
+            with self.subTest(declaration=key):
+                declaration = declarations[key]
+                self.assertEqual(declaration["declarationState"], "blocked")
+                self.assertNotIn("languageMappings", declaration)
 
     def test_checked_in_manifest_retains_every_registry_slice_record(self) -> None:
         manifest = self.checked_in_manifest
@@ -891,20 +898,20 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
                     else "specs/005-ttlv-wire-codec/spec.md",
                 )
         self.assertTrue(ttlv_declarations)
-        self.assertEqual(len(ttlv_declarations), 101)
+        self.assertEqual(len(ttlv_declarations), 95)
         self.assertEqual(
             sum(
                 declaration["capabilityId"] == "generic_ttlv_model"
                 for declaration in ttlv_declarations
             ),
-            76,
+            71,
         )
         self.assertEqual(
             sum(
                 declaration["capabilityId"] == "ttlv_wire_codec"
                 for declaration in ttlv_declarations
             ),
-            25,
+            24,
         )
 
     def test_checked_in_manifest_inventories_all_java_public_access_paths(self) -> None:

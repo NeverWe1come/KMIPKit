@@ -61,7 +61,7 @@ changes to this table.
 | `ffi_runtime_metadata` | declared | Version and capability-query metadata is mapped in Rust, C, Java, and Python. |
 | `rust_transport_exchange` | declared | Rust-only transport exchange under accepted ADR-0014; it is not a foreign-language client operation. |
 | `public_binding_surface` | blocked | The complete public declaration inventory and mappings are not reconciled. |
-| `vendor_extension_registry` | blocked | Its full release API mapping remains blocked in the manifest. |
+| `vendor_extension_registry` | declared | Exact shared mappings are recorded; parity verification remains pending and unreconciled exports stay blocked. |
 
 All **56 / 56** KMIP `client_1_0` operation rows currently have manifest state
 `blocked`. Do not infer operation availability from types or implementation

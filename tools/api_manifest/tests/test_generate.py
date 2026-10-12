@@ -231,8 +231,8 @@ class ManifestGeneratorCliTests(unittest.TestCase):
         self.assertIn('"ffi_runtime_metadata"', generated)
         self.assertIn('"generic_ttlv_model"', generated)
         self.assertIn('"ttlv_wire_codec"', generated)
+        self.assertIn('"vendor_extension_registry"', generated)
         self.assertNotIn('"public_binding_surface"', generated)
-        self.assertNotIn('"vendor_extension_registry"', generated)
         self.assertNotIn('"rust_transport_exchange"', generated)
 
     def _run_generator(self, root: Path, *arguments: str) -> subprocess.CompletedProcess[str]:
