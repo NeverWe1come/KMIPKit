@@ -7,7 +7,9 @@ use std::cell::Cell;
 use std::rc::Rc;
 
 use kmipkit_protocol::{
-    ProfileValidationErrorCode, ProfileValidationSelection, profiles_generated::CLIENT_PROFILES,
+    ProfileTransport, ProfileValidationError, ProfileValidationErrorCode,
+    ProfileValidationSelection, RequestMessage, ResponseMessage,
+    profiles_generated::CLIENT_PROFILES,
 };
 use kmipkit_transport::{RequestDeliveryState, Transport, TransportError, TransportResponse};
 use kmipkit_ttlv::codec::CodecLimits;
@@ -98,4 +100,59 @@ fn unprofiled_base_operation_still_reaches_transport() {
         .expect("the existing unprofiled API remains usable");
 
     assert_eq!(exchanges.get(), 1);
+}
+
+struct ResponseRejectingProfile {
+    error: ProfileValidationError,
+}
+
+impl super::ProfileExchangeValidator for ResponseRejectingProfile {
+    fn validate_transport(
+        &self,
+        _transport: ProfileTransport,
+    ) -> Result<(), ProfileValidationError> {
+        Ok(())
+    }
+
+    fn validate_request(&self, _request: &RequestMessage) -> Result<(), ProfileValidationError> {
+        Ok(())
+    }
+
+    fn validate_response(
+        &self,
+        _request: &RequestMessage,
+        _response: &ResponseMessage,
+    ) -> Result<(), ProfileValidationError> {
+        Err(self.error.clone())
+    }
+}
+
+#[test]
+fn response_profile_rejection_after_exchange_preserves_response_started_delivery() {
+    let source_error = ProfileValidationSelection::new([BASELINE])
+        .validate()
+        .expect_err("the current Baseline mapping is incomplete");
+    let validator = ResponseRejectingProfile { error: source_error };
+    let exchanges = Rc::new(Cell::new(0));
+    let mut client = Client::for_test(CountingTransport::new(Rc::clone(&exchanges)));
+
+    let error = client
+        .execute_inner(
+            discover_versions_batch(),
+            &CodecLimits::defaults(),
+            &Default::default(),
+            Some(&validator),
+        )
+        .expect_err("profile response validation rejects the received response");
+
+    assert_eq!(exchanges.get(), 1);
+    assert_eq!(
+        error.delivery_state(),
+        Some(RequestDeliveryState::ResponseStarted)
+    );
+    let profile_error = error
+        .profile_validation_error()
+        .expect("response rejection remains a structured profile error");
+    assert_eq!(profile_error.code(), ProfileValidationErrorCode::UnresolvedRequirementScope);
+    assert_eq!(profile_error.profile_id(), Some(BASELINE));
 }
