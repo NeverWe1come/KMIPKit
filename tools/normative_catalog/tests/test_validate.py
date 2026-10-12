@@ -1380,6 +1380,17 @@ class CatalogValidationTests(unittest.TestCase):
             if row["requirement_id"] == requirement_id
         )
 
+    def test_feature_spec_requirement_lookup_accepts_qualified_and_short_fr_ids(self) -> None:
+        """Resolve prefixed feature FR IDs while preserving legacy short IDs."""
+        self.assertEqual(
+            catalog_validate._profile_oracle_feature_spec_requirement_ids(ROOT, "KMIPKIT-0017"),
+            {f"FR-{number:03}" for number in range(1, 14)},
+        )
+        self.assertEqual(
+            catalog_validate._profile_oracle_feature_spec_requirement_ids(ROOT, "KMIPKIT-0036"),
+            {f"FR-{number:03}" for number in range(1, 9)},
+        )
+
     def test_checked_in_clause_ledger_covers_all_keyword_strength_mappings(self) -> None:
         catalog = json.loads((ROOT / "specification/catalog/kmip-2.1.json").read_text(encoding="utf-8"))
         expected_keywords = set(catalog_validate.KEYWORD_STRENGTH)
