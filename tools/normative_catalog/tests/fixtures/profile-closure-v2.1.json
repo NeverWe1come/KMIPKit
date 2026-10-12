@@ -82210,16 +82210,17 @@
       "actor": "client",
       "direction": "client multi-part/single-part request and response processing",
       "condition": "applicable cryptographic operation sequence",
-      "scope_disposition": "client_1_0",
+      "scope_disposition": "unresolved",
       "candidate_requirement_id": null,
       "proposed_requirement_id": null,
       "status": "reviewed_procedure_context",
-      "review_note": "Retained as a client procedure step with its exact pinned locator. The imperative is not promoted to a formal uppercase RFC 2119 keyword or standalone catalog REQ.",
+      "review_note": "No approved feature contract and executable test currently maps the §6.1 instruction to provide Init Indicator=True across its applicable cryptographic request tables. Keep this imperative source gap unresolved; do not infer a formal requirement.",
       "source_resolution": {
         "kind": "procedure_context",
         "context_id": "KMIPKIT-PROC-SPEC-6.1-011",
         "related_requirement_ids": [],
-        "review_note": "Retained as a client procedure step with its exact pinned locator. The imperative is not promoted to a formal uppercase RFC 2119 keyword or standalone catalog REQ."
+        "review_note": "No approved feature contract and executable test currently maps the §6.1 instruction to provide Init Indicator=True across its applicable cryptographic request tables. Keep this imperative source gap unresolved; do not infer a formal requirement.",
+        "related_source_table_contract_ids": []
       }
     },
     {
@@ -82240,18 +82241,25 @@
       "actor": "client",
       "direction": "client multi-part/single-part request and response processing",
       "condition": "applicable cryptographic operation sequence",
-      "scope_disposition": "client_1_0",
+      "scope_disposition": "unresolved",
       "candidate_requirement_id": null,
       "proposed_requirement_id": null,
       "status": "reviewed_procedure_context",
-      "review_note": "Retained as a client procedure step with its exact pinned locator. The imperative is not promoted to a formal uppercase RFC 2119 keyword or standalone catalog REQ.",
+      "review_note": "Linked to existing KMIPKIT-REQ-SPEC-7.8-001. Five KMIPKIT-0021 Correlation Value request-table contracts provide field-level implementation and test evidence, but do not establish response-to-follow-up correlation round-trip behavior. The catalog requirement remains unassigned with no direct implementation or verification references, and KMIPKIT-0019 Encrypt/Decrypt lack source_table_contracts for their request Correlation Value fields. Keep this procedure context unresolved for full-scope closure; do not infer a formal requirement.",
       "source_resolution": {
         "kind": "procedure_context",
         "context_id": "KMIPKIT-PROC-SPEC-6.1-012",
         "related_requirement_ids": [
           "KMIPKIT-REQ-SPEC-7.8-001"
         ],
-        "review_note": "Retained as a client procedure step with its exact pinned locator. The imperative is not promoted to a formal uppercase RFC 2119 keyword or standalone catalog REQ."
+        "review_note": "Linked to existing KMIPKIT-REQ-SPEC-7.8-001. Five KMIPKIT-0021 Correlation Value request-table contracts provide field-level implementation and test evidence, but do not establish response-to-follow-up correlation round-trip behavior. The catalog requirement remains unassigned with no direct implementation or verification references, and KMIPKIT-0019 Encrypt/Decrypt lack source_table_contracts for their request Correlation Value fields. Keep this procedure context unresolved for full-scope closure; do not infer a formal requirement.",
+        "related_source_table_contract_ids": [
+          "KMIPKIT-SOURCE-GAP-SPEC-6.1.24-CORRELATION-VALUE-OPTIONAL",
+          "KMIPKIT-SOURCE-GAP-SPEC-6.1.32-CORRELATION-VALUE-OPTIONAL",
+          "KMIPKIT-SOURCE-GAP-SPEC-6.1.33-CORRELATION-VALUE-OPTIONAL",
+          "KMIPKIT-SOURCE-GAP-SPEC-6.1.55-CORRELATION-VALUE-OPTIONAL",
+          "KMIPKIT-SOURCE-GAP-SPEC-6.1.56-CORRELATION-VALUE-OPTIONAL"
+        ]
       }
     },
     {
@@ -82272,16 +82280,17 @@
       "actor": "client",
       "direction": "client multi-part/single-part request and response processing",
       "condition": "applicable cryptographic operation sequence",
-      "scope_disposition": "client_1_0",
+      "scope_disposition": "unresolved",
       "candidate_requirement_id": null,
       "proposed_requirement_id": null,
       "status": "reviewed_procedure_context",
-      "review_note": "Retained as a client procedure step with its exact pinned locator. The imperative is not promoted to a formal uppercase RFC 2119 keyword or standalone catalog REQ.",
+      "review_note": "No approved response-field contract and executable test currently maps how the client consumes response Data for this procedure step. Keep this imperative source gap unresolved; do not infer a formal requirement.",
       "source_resolution": {
         "kind": "procedure_context",
         "context_id": "KMIPKIT-PROC-SPEC-6.1-013",
         "related_requirement_ids": [],
-        "review_note": "Retained as a client procedure step with its exact pinned locator. The imperative is not promoted to a formal uppercase RFC 2119 keyword or standalone catalog REQ."
+        "review_note": "No approved response-field contract and executable test currently maps how the client consumes response Data for this procedure step. Keep this imperative source gap unresolved; do not infer a formal requirement.",
+        "related_source_table_contract_ids": []
       }
     },
     {
@@ -82302,18 +82311,25 @@
       "actor": "client",
       "direction": "client multi-part/single-part request and response processing",
       "condition": "applicable cryptographic operation sequence",
-      "scope_disposition": "client_1_0",
+      "scope_disposition": "unresolved",
       "candidate_requirement_id": null,
       "proposed_requirement_id": null,
       "status": "reviewed_procedure_context",
-      "review_note": "Retained as a client procedure step with its exact pinned locator. The imperative is not promoted to a formal uppercase RFC 2119 keyword or standalone catalog REQ.",
+      "review_note": "Linked to existing KMIPKIT-REQ-SPEC-7.8-001. Five KMIPKIT-0021 Correlation Value request-table contracts provide field-level implementation and test evidence, but do not establish response-to-follow-up correlation round-trip behavior. The catalog requirement remains unassigned with no direct implementation or verification references, and KMIPKIT-0019 Encrypt/Decrypt lack source_table_contracts for their request Correlation Value fields. Keep this procedure context unresolved for full-scope closure; do not infer a formal requirement.",
       "source_resolution": {
         "kind": "procedure_context",
         "context_id": "KMIPKIT-PROC-SPEC-6.1-014",
         "related_requirement_ids": [
           "KMIPKIT-REQ-SPEC-7.8-001"
         ],
-        "review_note": "Retained as a client procedure step with its exact pinned locator. The imperative is not promoted to a formal uppercase RFC 2119 keyword or standalone catalog REQ."
+        "review_note": "Linked to existing KMIPKIT-REQ-SPEC-7.8-001. Five KMIPKIT-0021 Correlation Value request-table contracts provide field-level implementation and test evidence, but do not establish response-to-follow-up correlation round-trip behavior. The catalog requirement remains unassigned with no direct implementation or verification references, and KMIPKIT-0019 Encrypt/Decrypt lack source_table_contracts for their request Correlation Value fields. Keep this procedure context unresolved for full-scope closure; do not infer a formal requirement.",
+        "related_source_table_contract_ids": [
+          "KMIPKIT-SOURCE-GAP-SPEC-6.1.24-CORRELATION-VALUE-OPTIONAL",
+          "KMIPKIT-SOURCE-GAP-SPEC-6.1.32-CORRELATION-VALUE-OPTIONAL",
+          "KMIPKIT-SOURCE-GAP-SPEC-6.1.33-CORRELATION-VALUE-OPTIONAL",
+          "KMIPKIT-SOURCE-GAP-SPEC-6.1.55-CORRELATION-VALUE-OPTIONAL",
+          "KMIPKIT-SOURCE-GAP-SPEC-6.1.56-CORRELATION-VALUE-OPTIONAL"
+        ]
       }
     },
     {
@@ -82334,16 +82350,17 @@
       "actor": "client",
       "direction": "client multi-part/single-part request and response processing",
       "condition": "applicable cryptographic operation sequence",
-      "scope_disposition": "client_1_0",
+      "scope_disposition": "unresolved",
       "candidate_requirement_id": null,
       "proposed_requirement_id": null,
       "status": "reviewed_procedure_context",
-      "review_note": "Retained as a client procedure step with its exact pinned locator. The imperative is not promoted to a formal uppercase RFC 2119 keyword or standalone catalog REQ.",
+      "review_note": "No approved response-field contract and executable test currently maps consumption of the next Data block for this procedure step. Keep this imperative source gap unresolved; do not infer a formal requirement.",
       "source_resolution": {
         "kind": "procedure_context",
         "context_id": "KMIPKIT-PROC-SPEC-6.1-015",
         "related_requirement_ids": [],
-        "review_note": "Retained as a client procedure step with its exact pinned locator. The imperative is not promoted to a formal uppercase RFC 2119 keyword or standalone catalog REQ."
+        "review_note": "No approved response-field contract and executable test currently maps consumption of the next Data block for this procedure step. Keep this imperative source gap unresolved; do not infer a formal requirement.",
+        "related_source_table_contract_ids": []
       }
     },
     {
@@ -82364,18 +82381,25 @@
       "actor": "client",
       "direction": "client multi-part/single-part request and response processing",
       "condition": "applicable cryptographic operation sequence",
-      "scope_disposition": "client_1_0",
+      "scope_disposition": "unresolved",
       "candidate_requirement_id": null,
       "proposed_requirement_id": null,
       "status": "reviewed_procedure_context",
-      "review_note": "Retained as a client procedure step with its exact pinned locator. The imperative is not promoted to a formal uppercase RFC 2119 keyword or standalone catalog REQ.",
+      "review_note": "Linked to existing KMIPKIT-REQ-SPEC-7.8-001. Five KMIPKIT-0021 Correlation Value request-table contracts provide field-level implementation and test evidence, but do not establish response-to-follow-up correlation round-trip behavior. The catalog requirement remains unassigned with no direct implementation or verification references, and KMIPKIT-0019 Encrypt/Decrypt lack source_table_contracts for their request Correlation Value fields. Keep this procedure context unresolved for full-scope closure; do not infer a formal requirement.",
       "source_resolution": {
         "kind": "procedure_context",
         "context_id": "KMIPKIT-PROC-SPEC-6.1-016",
         "related_requirement_ids": [
           "KMIPKIT-REQ-SPEC-7.8-001"
         ],
-        "review_note": "Retained as a client procedure step with its exact pinned locator. The imperative is not promoted to a formal uppercase RFC 2119 keyword or standalone catalog REQ."
+        "review_note": "Linked to existing KMIPKIT-REQ-SPEC-7.8-001. Five KMIPKIT-0021 Correlation Value request-table contracts provide field-level implementation and test evidence, but do not establish response-to-follow-up correlation round-trip behavior. The catalog requirement remains unassigned with no direct implementation or verification references, and KMIPKIT-0019 Encrypt/Decrypt lack source_table_contracts for their request Correlation Value fields. Keep this procedure context unresolved for full-scope closure; do not infer a formal requirement.",
+        "related_source_table_contract_ids": [
+          "KMIPKIT-SOURCE-GAP-SPEC-6.1.24-CORRELATION-VALUE-OPTIONAL",
+          "KMIPKIT-SOURCE-GAP-SPEC-6.1.32-CORRELATION-VALUE-OPTIONAL",
+          "KMIPKIT-SOURCE-GAP-SPEC-6.1.33-CORRELATION-VALUE-OPTIONAL",
+          "KMIPKIT-SOURCE-GAP-SPEC-6.1.55-CORRELATION-VALUE-OPTIONAL",
+          "KMIPKIT-SOURCE-GAP-SPEC-6.1.56-CORRELATION-VALUE-OPTIONAL"
+        ]
       }
     },
     {
@@ -82396,16 +82420,17 @@
       "actor": "client",
       "direction": "client multi-part/single-part request and response processing",
       "condition": "applicable cryptographic operation sequence",
-      "scope_disposition": "client_1_0",
+      "scope_disposition": "unresolved",
       "candidate_requirement_id": null,
       "proposed_requirement_id": null,
       "status": "reviewed_procedure_context",
-      "review_note": "Retained as a client procedure step with its exact pinned locator. The imperative is not promoted to a formal uppercase RFC 2119 keyword or standalone catalog REQ.",
+      "review_note": "No approved feature contract and executable test currently maps the §6.1 instruction to provide Final Indicator=True across its applicable cryptographic request tables. Keep this imperative source gap unresolved; do not infer a formal requirement.",
       "source_resolution": {
         "kind": "procedure_context",
         "context_id": "KMIPKIT-PROC-SPEC-6.1-017",
         "related_requirement_ids": [],
-        "review_note": "Retained as a client procedure step with its exact pinned locator. The imperative is not promoted to a formal uppercase RFC 2119 keyword or standalone catalog REQ."
+        "review_note": "No approved feature contract and executable test currently maps the §6.1 instruction to provide Final Indicator=True across its applicable cryptographic request tables. Keep this imperative source gap unresolved; do not infer a formal requirement.",
+        "related_source_table_contract_ids": []
       }
     },
     {
@@ -82426,16 +82451,17 @@
       "actor": "client",
       "direction": "client multi-part/single-part request and response processing",
       "condition": "applicable cryptographic operation sequence",
-      "scope_disposition": "client_1_0",
+      "scope_disposition": "unresolved",
       "candidate_requirement_id": null,
       "proposed_requirement_id": null,
       "status": "reviewed_procedure_context",
-      "review_note": "Retained as a client procedure step with its exact pinned locator. The imperative is not promoted to a formal uppercase RFC 2119 keyword or standalone catalog REQ.",
+      "review_note": "No approved response-field contract and executable test currently maps consumption of the final Data block for this procedure step. Keep this imperative source gap unresolved; do not infer a formal requirement.",
       "source_resolution": {
         "kind": "procedure_context",
         "context_id": "KMIPKIT-PROC-SPEC-6.1-018",
         "related_requirement_ids": [],
-        "review_note": "Retained as a client procedure step with its exact pinned locator. The imperative is not promoted to a formal uppercase RFC 2119 keyword or standalone catalog REQ."
+        "review_note": "No approved response-field contract and executable test currently maps consumption of the final Data block for this procedure step. Keep this imperative source gap unresolved; do not infer a formal requirement.",
+        "related_source_table_contract_ids": []
       }
     },
     {
@@ -82456,16 +82482,17 @@
       "actor": "client",
       "direction": "client multi-part/single-part request and response processing",
       "condition": "applicable cryptographic operation sequence",
-      "scope_disposition": "client_1_0",
+      "scope_disposition": "unresolved",
       "candidate_requirement_id": null,
       "proposed_requirement_id": null,
       "status": "reviewed_procedure_context",
-      "review_note": "Retained as a client procedure step with its exact pinned locator. The imperative is not promoted to a formal uppercase RFC 2119 keyword or standalone catalog REQ.",
+      "review_note": "The single-part indicator/correlation instruction remains blocked pending source review of its interaction with unresolved §6.1 paragraph 009; no conformance claim is made. Keep this imperative source gap unresolved; do not infer a formal requirement.",
       "source_resolution": {
         "kind": "procedure_context",
         "context_id": "KMIPKIT-PROC-SPEC-6.1-019",
         "related_requirement_ids": [],
-        "review_note": "Retained as a client procedure step with its exact pinned locator. The imperative is not promoted to a formal uppercase RFC 2119 keyword or standalone catalog REQ."
+        "review_note": "The single-part indicator/correlation instruction remains blocked pending source review of its interaction with unresolved §6.1 paragraph 009; no conformance claim is made. Keep this imperative source gap unresolved; do not infer a formal requirement.",
+        "related_source_table_contract_ids": []
       }
     },
     {
@@ -82486,16 +82513,17 @@
       "actor": "client",
       "direction": "client multi-part/single-part request and response processing",
       "condition": "applicable cryptographic operation sequence",
-      "scope_disposition": "client_1_0",
+      "scope_disposition": "unresolved",
       "candidate_requirement_id": null,
       "proposed_requirement_id": null,
       "status": "reviewed_procedure_context",
-      "review_note": "Retained as a client procedure step with its exact pinned locator. The imperative is not promoted to a formal uppercase RFC 2119 keyword or standalone catalog REQ.",
+      "review_note": "No approved response-field contract and executable test currently maps consumption of single-part response Data for this procedure step. Keep this imperative source gap unresolved; do not infer a formal requirement.",
       "source_resolution": {
         "kind": "procedure_context",
         "context_id": "KMIPKIT-PROC-SPEC-6.1-020",
         "related_requirement_ids": [],
-        "review_note": "Retained as a client procedure step with its exact pinned locator. The imperative is not promoted to a formal uppercase RFC 2119 keyword or standalone catalog REQ."
+        "review_note": "No approved response-field contract and executable test currently maps consumption of single-part response Data for this procedure step. Keep this imperative source gap unresolved; do not infer a formal requirement.",
+        "related_source_table_contract_ids": []
       }
     },
     {
@@ -83053,25 +83081,28 @@
       "source_locator_description": "§6.1 / paragraph (ordinal 006)",
       "html_line_range": [
         22433,
-        22434
+        22435
       ],
-      "source_excerpt": "b. Provide",
+      "source_excerpt": "b. Provide any other required parameters",
       "source_keywords": [],
       "audited_statement": "For the first multi-part request, provide the other required operation parameters.",
       "source_force": "imperative_procedure_without_formal_modal",
       "actor": "client",
       "direction": "client cryptographic-operation request parameters",
       "condition": "applicable multi-part or single-part cryptographic request",
-      "scope_disposition": "client_1_0",
+      "scope_disposition": "unresolved",
       "candidate_requirement_id": null,
       "proposed_requirement_id": null,
       "status": "reviewed_generic_parameter_context",
-      "review_note": "Generic instruction to supply operation-specific required parameters; the operation request table contracts define those fields. It does not create a separate formal requirement ID.",
+      "review_note": "KMIPKIT-0019 Encrypt Table 214 and Decrypt Table 196 are approved client 1.0 operations, but their request fields do not yet have source_table_contracts with implementation and executable verification evidence. Keep this generic parameter context unresolved for those operations until their request rows are source-audited and linked; do not infer a formal requirement.",
       "source_resolution": {
         "kind": "generic_parameter_context",
         "context_id": "KMIPKIT-CONTEXT-SPEC-6.1-006",
         "related_requirement_ids": [],
-        "review_note": "Generic instruction to supply operation-specific required parameters; the operation request table contracts define those fields. It does not create a separate formal requirement ID."
+        "related_source_table_contract_ids": [
+          "KMIPKIT-SOURCE-GAP-SPEC-6.1.24-CRYPTOGRAPHIC-PARAMETERS-REQUIRED"
+        ],
+        "review_note": "KMIPKIT-0019 Encrypt Table 214 and Decrypt Table 196 are approved client 1.0 operations, but their request fields do not yet have source_table_contracts with implementation and executable verification evidence. Keep this generic parameter context unresolved for those operations until their request rows are source-audited and linked; do not infer a formal requirement."
       }
     },
     {
@@ -83087,25 +83118,28 @@
       "source_locator_description": "§6.1 / paragraph (ordinal 007)",
       "html_line_range": [
         22453,
-        22454
+        22455
       ],
-      "source_excerpt": "b. Provide",
+      "source_excerpt": "b. Provide any other required parameters",
       "source_keywords": [],
       "audited_statement": "For subsequent multi-part requests, provide the other required operation parameters.",
       "source_force": "imperative_procedure_without_formal_modal",
       "actor": "client",
       "direction": "client cryptographic-operation request parameters",
       "condition": "applicable multi-part or single-part cryptographic request",
-      "scope_disposition": "client_1_0",
+      "scope_disposition": "unresolved",
       "candidate_requirement_id": null,
       "proposed_requirement_id": null,
       "status": "reviewed_generic_parameter_context",
-      "review_note": "Generic instruction to supply operation-specific required parameters; the operation request table contracts define those fields. It does not create a separate formal requirement ID.",
+      "review_note": "KMIPKIT-0019 Encrypt Table 214 and Decrypt Table 196 are approved client 1.0 operations, but their request fields do not yet have source_table_contracts with implementation and executable verification evidence. Keep this generic parameter context unresolved for those operations until their request rows are source-audited and linked; do not infer a formal requirement.",
       "source_resolution": {
         "kind": "generic_parameter_context",
         "context_id": "KMIPKIT-CONTEXT-SPEC-6.1-007",
         "related_requirement_ids": [],
-        "review_note": "Generic instruction to supply operation-specific required parameters; the operation request table contracts define those fields. It does not create a separate formal requirement ID."
+        "related_source_table_contract_ids": [
+          "KMIPKIT-SOURCE-GAP-SPEC-6.1.24-CRYPTOGRAPHIC-PARAMETERS-REQUIRED"
+        ],
+        "review_note": "KMIPKIT-0019 Encrypt Table 214 and Decrypt Table 196 are approved client 1.0 operations, but their request fields do not yet have source_table_contracts with implementation and executable verification evidence. Keep this generic parameter context unresolved for those operations until their request rows are source-audited and linked; do not infer a formal requirement."
       }
     },
     {
@@ -83121,25 +83155,34 @@
       "source_locator_description": "§6.1 / paragraph (ordinal 008)",
       "html_line_range": [
         22490,
-        22491
+        22492
       ],
-      "source_excerpt": "b. Provide",
+      "source_excerpt": "b. Provide any other required parameters",
       "source_keywords": [],
       "audited_statement": "For single-part cryptographic requests, provide the other required operation parameters.",
       "source_force": "imperative_procedure_without_formal_modal",
       "actor": "client",
       "direction": "client cryptographic-operation request parameters",
       "condition": "applicable multi-part or single-part cryptographic request",
-      "scope_disposition": "client_1_0",
+      "scope_disposition": "unresolved",
       "candidate_requirement_id": null,
       "proposed_requirement_id": null,
       "status": "reviewed_generic_parameter_context",
-      "review_note": "Generic instruction to supply operation-specific required parameters; the operation request table contracts define those fields. It does not create a separate formal requirement ID.",
+      "review_note": "KMIPKIT-0019 Encrypt Table 214 and Decrypt Table 196 are approved client 1.0 operations, but their request fields do not yet have source_table_contracts with implementation and executable verification evidence. Keep this generic parameter context unresolved for those operations until their request rows are source-audited and linked; do not infer a formal requirement.",
       "source_resolution": {
         "kind": "generic_parameter_context",
         "context_id": "KMIPKIT-CONTEXT-SPEC-6.1-008",
         "related_requirement_ids": [],
-        "review_note": "Generic instruction to supply operation-specific required parameters; the operation request table contracts define those fields. It does not create a separate formal requirement ID."
+        "related_source_table_contract_ids": [
+          "KMIPKIT-SOURCE-GAP-SPEC-6.1.24-CRYPTOGRAPHIC-PARAMETERS-REQUIRED",
+          "KMIPKIT-SOURCE-GAP-SPEC-6.1.24-DATA-REQUIRED",
+          "KMIPKIT-SOURCE-GAP-SPEC-6.1.32-DATA-REQUIRED",
+          "KMIPKIT-SOURCE-GAP-SPEC-6.1.33-MAC-DATA-REQUIRED",
+          "KMIPKIT-SOURCE-GAP-SPEC-6.1.55-DATA-CONDITIONAL",
+          "KMIPKIT-SOURCE-GAP-SPEC-6.1.55-DIGESTED-DATA-OPTIONAL",
+          "KMIPKIT-SOURCE-GAP-SPEC-6.1.56-SIGNATURE-DATA-CONDITIONAL"
+        ],
+        "review_note": "KMIPKIT-0019 Encrypt Table 214 and Decrypt Table 196 are approved client 1.0 operations, but their request fields do not yet have source_table_contracts with implementation and executable verification evidence. Keep this generic parameter context unresolved for those operations until their request rows are source-audited and linked; do not infer a formal requirement."
       }
     },
     {

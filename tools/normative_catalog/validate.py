@@ -1766,6 +1766,32 @@ def validate_source_table_contracts(oracle: object, repo_root: Path) -> list[str
     source_gap_ids = {
         row.get("gap_id") for row in gaps if isinstance(row, dict)
     } if isinstance(gaps, list) else set()
+    source_request_rows_by_gap: dict[str, list[dict[str, Any]]] = {}
+    source_reviews = oracle.get("source_requirement_reviews", [])
+    if not isinstance(source_reviews, list):
+        diagnostics.append("source_requirement_reviews must be an array")
+    else:
+        for review_index, review in enumerate(source_reviews):
+            review_label = f"source_requirement_reviews[{review_index}]"
+            if not isinstance(review, dict):
+                diagnostics.append(f"{review_label} must be an object")
+                continue
+            request_rows = review.get("source_request_rows", [])
+            if not isinstance(request_rows, list):
+                diagnostics.append(f"{review_label}.source_request_rows must be an array")
+                continue
+            for row_index, row in enumerate(request_rows):
+                row_label = f"{review_label}.source_request_rows[{row_index}]"
+                if not isinstance(row, dict):
+                    diagnostics.append(f"{row_label} must be an object")
+                    continue
+                source_gap_id = row.get("source_gap_id")
+                if source_gap_id is None:
+                    continue
+                if not isinstance(source_gap_id, str) or not source_gap_id.strip():
+                    diagnostics.append(f"{row_label}.source_gap_id must be a non-empty stable ID")
+                    continue
+                source_request_rows_by_gap.setdefault(source_gap_id, []).append(row)
     seen_ids: set[str] = set()
     required_fields = (
         "gap_id", "contract_kind", "source_id", "source_path", "source_section", "source_locator",
@@ -1850,6 +1876,27 @@ def validate_source_table_contracts(oracle: object, repo_root: Path) -> list[str
             diagnostics.append(
                 f"{label}.operation_element_id must reference a client-to-server operation with the request table"
             )
+        if isinstance(operation, dict):
+            operation_scope = operation.get("scope_state")
+            contract_scope = contract.get("scope_disposition")
+            if not isinstance(operation_scope, str) or not operation_scope.strip():
+                diagnostics.append(
+                    f"{label}.scope_disposition cannot resolve the linked operation scope_state"
+                )
+            elif contract_scope == "profile_conditional":
+                if operation_scope not in {"client_1_0", "client_1_1"}:
+                    diagnostics.append(
+                        f"{label}.scope_disposition profile_conditional requires an in-scope linked client operation"
+                    )
+                condition = contract.get("condition")
+                if not isinstance(condition, str) or not condition.strip():
+                    diagnostics.append(
+                        f"{label}.scope_disposition profile_conditional requires an explicit condition"
+                    )
+            elif contract_scope != operation_scope:
+                diagnostics.append(
+                    f"{label}.scope_disposition must match linked operation scope_state"
+                )
 
         source_path = contract.get("source_path")
         if not isinstance(source_path, str):
@@ -1866,6 +1913,43 @@ def validate_source_table_contracts(oracle: object, repo_root: Path) -> list[str
         for field in ("source_id", "source_section", "source_locator_description", "source_excerpt", "source_force", "requiredness", "actor", "direction", "condition", "scope_disposition", "operation_element_id"):
             if not isinstance(contract.get(field), str) or not contract[field].strip():
                 diagnostics.append(f"{label}.{field} must be a non-empty string")
+        if isinstance(gap_id, str) and gap_id.strip():
+            reviewed_rows = source_request_rows_by_gap.get(gap_id, [])
+            if not reviewed_rows:
+                diagnostics.append(
+                    f"{label}.requiredness and .actor must resolve a reviewed source_request_rows entry by source_gap_id"
+                )
+            else:
+                row_semantics: list[tuple[str, str]] = []
+                malformed_semantics = False
+                for row in reviewed_rows:
+                    requiredness = row.get("required")
+                    actor = row.get("actor")
+                    if (
+                        not isinstance(requiredness, str)
+                        or not requiredness.strip()
+                        or not isinstance(actor, str)
+                        or not actor.strip()
+                    ):
+                        malformed_semantics = True
+                        continue
+                    row_semantics.append((requiredness, actor))
+                if malformed_semantics or len(row_semantics) != len(reviewed_rows):
+                    diagnostics.append(
+                        f"{label}.requiredness and .actor cannot resolve malformed reviewed source_request_rows"
+                    )
+                elif len(set(row_semantics)) != 1:
+                    diagnostics.append(
+                        f"{label}.requiredness and .actor are ambiguous across reviewed source_request_rows for {gap_id}"
+                    )
+                else:
+                    reviewed_requiredness, reviewed_actor = row_semantics[0]
+                    if contract.get("requiredness") != reviewed_requiredness:
+                        diagnostics.append(
+                            f"{label}.requiredness must match reviewed source_request_rows.required"
+                        )
+                    if contract.get("actor") != reviewed_actor:
+                        diagnostics.append(f"{label}.actor must match reviewed source_request_rows.actor")
         if contract.get("contract_kind") != "operation_request_table_field":
             diagnostics.append(f"{label}.contract_kind must identify an operation request table field")
         functional_requirements = contract.get("functional_requirement_ids")
