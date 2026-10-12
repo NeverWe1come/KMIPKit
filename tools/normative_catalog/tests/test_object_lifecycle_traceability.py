@@ -31,7 +31,7 @@ def _cells(line: str) -> list[str]:
 
 
 class ObjectLifecycleTraceabilityTests(unittest.TestCase):
-    def test_all_39_requirements_link_to_their_operation_and_sources(self) -> None:
+    def test_all_38_requirements_link_to_their_operation_and_sources(self) -> None:
         trace = TRACEABILITY_PATH.read_text(encoding="utf-8")
         catalog = json.loads(CATALOG_PATH.read_text(encoding="utf-8"))
         requirements = {
@@ -44,9 +44,9 @@ class ObjectLifecycleTraceabilityTests(unittest.TestCase):
             if line.startswith("| KMIPKIT-REQ-SPEC-")
         ]
 
-        self.assertEqual(len(rows), 39)
-        self.assertEqual(len({row[0] for row in rows}), 39)
-        self.assertEqual(sum(record.get("feature_spec") == FEATURE_SPEC for record in requirements.values()), 39)
+        self.assertEqual(len(rows), 38)
+        self.assertEqual(len({row[0] for row in rows}), 38)
+        self.assertEqual(sum(record.get("feature_spec") == FEATURE_SPEC for record in requirements.values()), 38)
 
         operation_elements = [
             element
@@ -69,7 +69,7 @@ class ObjectLifecycleTraceabilityTests(unittest.TestCase):
             for path in (*element["implementation_refs"], *element["verification_refs"]):
                 self.assertTrue((ROOT / path).is_file(), f"{element['element_id']}: {path}")
 
-    def test_retired_server_obligations_are_not_assigned_to_client_operations(self) -> None:
+    def test_source_rejected_candidates_are_not_assigned_to_client_operations(self) -> None:
         catalog = json.loads(CATALOG_PATH.read_text(encoding="utf-8"))
         requirements = {
             record["requirement_id"]: record for record in catalog["requirements"]
@@ -78,6 +78,7 @@ class ObjectLifecycleTraceabilityTests(unittest.TestCase):
             "KMIPKIT-REQ-SPEC-6.1.44-001",
             "KMIPKIT-REQ-SPEC-6.1.45-002-002",
             "KMIPKIT-REQ-SPEC-6.1.45-006-002",
+            "KMIPKIT-REQ-SPEC-6.1.48-004",
         }
 
         for requirement_id in retired_ids:

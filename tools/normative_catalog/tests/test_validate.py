@@ -1618,8 +1618,16 @@ class CatalogValidationTests(unittest.TestCase):
                 if not actual:
                     review_note = requirement["review_note"]
                     self.assertIsInstance(review_note, str)
-                    self.assertIn("official Test Cases", review_note)
-                    self.assertIn("pinned", review_note)
+                    if requirement["role"] in {"server", "not_applicable", "unspecified"}:
+                        if requirement["role"] == "not_applicable":
+                            self.assertEqual(requirement["scope_state"], "out_of_scope")
+                        self.assertRegex(
+                            review_note,
+                            r"(?i)(source|pinned|OASIS|retired|normative|candidate|extract|cited|server|ambiguous|unresolved)",
+                        )
+                    else:
+                        self.assertIn("official Test Cases", review_note)
+                        self.assertIn("pinned", review_note)
 
     def test_json_preflight_enforces_depth_record_token_and_global_member_limits(self) -> None:
         cases = (
@@ -4161,6 +4169,9 @@ class CatalogValidationTests(unittest.TestCase):
         catalog = json.loads(
             (ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8")
         )
+        oracle = json.loads(
+            (ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json").read_text(encoding="utf-8")
+        )
         requirements = {
             requirement["requirement_id"]: requirement
             for requirement in catalog["requirements"]
@@ -4169,8 +4180,8 @@ class CatalogValidationTests(unittest.TestCase):
         self.assertIsNotNone(fourth_predicate)
         self.assertEqual(fourth_predicate["source_keyword"], "SHALL NOT")
         self.assertEqual(fourth_predicate["normative_strength"], "prohibited")
-        self.assertEqual(fourth_predicate["role"], "client")
-        self.assertEqual(fourth_predicate["scope_state"], "client_1_0")
+        self.assertEqual(fourth_predicate["role"], "unspecified")
+        self.assertEqual(fourth_predicate["scope_state"], "unclear")
         self.assertEqual(fourth_predicate["condition"], "Protect Stop attribute is set")
         self.assertTrue(fourth_predicate["negative_verification_required"])
         self.assertEqual(fourth_predicate["status"], "unassigned")
@@ -4180,15 +4191,13 @@ class CatalogValidationTests(unittest.TestCase):
             for row in oracle["requirement_crosswalk"]
             if row["requirement_id"] == "KMIPKIT-REQ-SPEC-4.57-003-004"
         ]
-        self.assertEqual(len(crosswalk), 1)
-        self.assertEqual(crosswalk[0]["source_clause_id"], active_clause["clause_id"])
-        self.assertEqual(crosswalk[0]["source_obligation_order"], 4)
+        self.assertEqual(crosswalk, [])
         reviewed_clause = next(
             row
             for row in oracle["source_requirement_reviews"]
             if row["source_clause_id"] == active_clause["clause_id"]
         )
-        self.assertIn("KMIPKIT-REQ-SPEC-4.57-003-004", reviewed_clause["expected_client_requirement_ids"])
+        self.assertEqual(reviewed_clause["expected_client_requirement_ids"], [])
         self.assertFalse(
             any(
                 row["gap_id"] == "KMIPKIT-SOURCE-GAP-SPEC-4.57-003-004"
@@ -4202,16 +4211,16 @@ class CatalogValidationTests(unittest.TestCase):
         )
         self.assertIn("KMIPKIT-REQ-SPEC-4.57-003-004", discrepancy["affected_requirement_ids"])
         client_profiles = [profile for profile in catalog["profiles"] if profile["role"] == "client"]
-        missing = {
-            profile["profile_id"]: sorted(expected_requirement_ids - set(profile["requirement_ids"]))
+        included = {
+            profile["profile_id"]: sorted(expected_requirement_ids & set(profile["requirement_ids"]))
             for profile in client_profiles
-            if expected_requirement_ids - set(profile["requirement_ids"])
+            if expected_requirement_ids & set(profile["requirement_ids"])
         }
 
         self.assertEqual(
-            missing,
+            included,
             {},
-            f"every source-ordered Active-state use predicate must retain its stable requirement label: {missing}",
+            f"Active-state object predicates with no endpoint actor must not become client obligations: {included}",
         )
 
     def test_requirement_crosswalk_accounts_for_every_catalog_requirement_id(self) -> None:
@@ -9292,13 +9301,10 @@ class CatalogValidationTests(unittest.TestCase):
                 (1, "SHALL", "KMIPKIT-REQ-SPEC-4.57-003-001"),
                 (2, "SHALL", "KMIPKIT-REQ-SPEC-4.57-003-002"),
                 (3, "SHALL NOT", "KMIPKIT-REQ-SPEC-4.57-003-003"),
-                (4, "SHALL NOT", None),
+                (4, "SHALL NOT", "KMIPKIT-REQ-SPEC-4.57-003-004"),
             ],
         )
-        self.assertEqual(
-            active["source_obligations"][3]["source_gap_id"],
-            "KMIPKIT-SOURCE-GAP-SPEC-4.57-003-004",
-        )
+        self.assertNotIn("source_gap_id", active["source_obligations"][3])
         self.assertIn("Protect Stop attribute", active["source_obligations"][3]["source_text"])
         self.assertIn("Process Stop Date", active["source_obligations"][3]["source_text"])
 
@@ -13449,8 +13455,6 @@ class CatalogValidationTests(unittest.TestCase):
             {
                 *(f"KMIPKIT-REQ-SPEC-6.1-{ordinal:03d}-001" for ordinal in range(6, 10)),
                 *(f"KMIPKIT-REQ-SPEC-6.1-{ordinal:03d}" for ordinal in range(11, 21)),
-                "KMIPKIT-REQ-SPEC-4.57-003-004",
-                "KMIPKIT-REQ-SPEC-9.17-001-001",
                 "KMIPKIT-REQ-SPEC-6.1.7-002-003",
                 "KMIPKIT-REQ-SPEC-4.30-001-002",
                 "KMIPKIT-REQ-SPEC-4.39-002-001",
@@ -13651,7 +13655,6 @@ class CatalogValidationTests(unittest.TestCase):
         self.assertEqual(
             reused_requirements,
             {
-                "8.4": "KMIPKIT-REQ-SPEC-6.1-001-003",
                 "11.46": "KMIPKIT-REQ-SPEC-6.1-005",
                 "6.1.14": "KMIPKIT-REQ-SPEC-6.1.14-007-001",
                 "6.1.23": "KMIPKIT-REQ-SPEC-6.1.23-002-001",
@@ -13712,6 +13715,7 @@ class CatalogValidationTests(unittest.TestCase):
             "KMIPKIT-REQ-SPEC-6.1.28-011",
             "KMIPKIT-REQ-SPEC-6.1.46-004-002",
             "KMIPKIT-REQ-SPEC-6.1.47-004-002",
+            "KMIPKIT-REQ-SPEC-6.1.48-004",
         }
         catalog = json.loads(
             (ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8")
@@ -13729,9 +13733,7 @@ class CatalogValidationTests(unittest.TestCase):
             if profile["role"] in {"client", "both"}
             for requirement_id in profile["requirement_ids"]
         }
-        actual_crosswalk_ids = {
-            row["requirement_id"]
-            for row in json.loads(
+        oracle = json.loads(
                 (
                     ROOT
                     / "tools"
@@ -13740,18 +13742,33 @@ class CatalogValidationTests(unittest.TestCase):
                     / "fixtures"
                     / "profile-closure-v2.1.json"
                 ).read_text(encoding="utf-8")
-            )["requirement_crosswalk"]
+            )
+        crosswalk_by_requirement: dict[str, list[dict[str, object]]] = {}
+        for row in oracle["requirement_crosswalk"]:
+            crosswalk_by_requirement.setdefault(row["requirement_id"], []).append(row)
+        server_only_candidates = {
+            "KMIPKIT-REQ-SPEC-6.1.25-004": 2,
+            "KMIPKIT-REQ-SPEC-6.1.28-011": 1,
         }
 
         for requirement_id in sorted(rejected_client_candidates):
             with self.subTest(requirement_id=requirement_id):
                 requirement = requirements[requirement_id]
-                self.assertEqual(requirement["role"], "not_applicable")
-                self.assertEqual(requirement["direction"], "not_applicable")
-                self.assertEqual(requirement["scope_state"], "out_of_scope")
                 self.assertNotIn(requirement_id, actual_client_scope)
                 self.assertNotIn(requirement_id, linked_client_profiles)
-                self.assertNotIn(requirement_id, actual_crosswalk_ids)
+                crosswalk_rows = crosswalk_by_requirement.get(requirement_id, [])
+                if requirement_id in server_only_candidates:
+                    self.assertEqual(requirement["role"], "server")
+                    self.assertEqual(requirement["direction"], "server_to_client")
+                    self.assertEqual(requirement["scope_state"], "server_only")
+                    self.assertEqual(len(crosswalk_rows), server_only_candidates[requirement_id])
+                    self.assertTrue(all(row["role"] == "server" for row in crosswalk_rows))
+                    self.assertTrue(all(row["source_actor"] == "server" for row in crosswalk_rows))
+                else:
+                    self.assertEqual(requirement["role"], "not_applicable")
+                    self.assertEqual(requirement["direction"], "not_applicable")
+                    self.assertEqual(requirement["scope_state"], "out_of_scope")
+                    self.assertEqual(crosswalk_rows, [])
 
     def test_non_normative_table_header_candidates_are_out_of_scope(self) -> None:
         """A table header's REQUIRED label is not a client obligation."""
@@ -13777,7 +13794,7 @@ class CatalogValidationTests(unittest.TestCase):
             if candidate["expected_disposition"] in header_dispositions
         }
 
-        self.assertEqual(len(header_ids), 34)
+        self.assertEqual(len(header_ids), 43)
         active_header_ids = sorted(
             requirement_id
             for requirement_id in header_ids
@@ -14660,8 +14677,8 @@ class CatalogValidationTests(unittest.TestCase):
                 (1, "The server SHALL copy the Unique Identifier returned by this operations into the ID Placeholder variable.", "SHALL", "server", "server_only", None),
             ],
             "KMIPKIT-CLAUSE-SPEC-6.1.25-004": [
-                (1, "If specified and true then any existing object with the same Unique Identifier SHALL be replaced by this operation.", "SHALL", "server", "server_only", None),
-                (2, "If absent or false and an object exists with the same Unique Identifier then an error SHALL be returned.", "SHALL", "server", "server_only", None),
+                (1, "If specified and true then any existing object with the same Unique Identifier SHALL be replaced by this operation.", "SHALL", "server", "server_only", "KMIPKIT-REQ-SPEC-6.1.25-004"),
+                (2, "If absent or false and an object exists with the same Unique Identifier then an error SHALL be returned.", "SHALL", "server", "server_only", "KMIPKIT-REQ-SPEC-6.1.25-004"),
             ],
             "KMIPKIT-CLAUSE-SPEC-6.1.25-005": [
                 (1, "If Not Wrapped then the server SHALL unwrap the object before storing it, and return an error if the wrapping key is not available.", "SHALL", "server", "server_only", None),
@@ -14703,9 +14720,14 @@ class CatalogValidationTests(unittest.TestCase):
         self.assertIn("does not unambiguously make it a client conformance duty", paragraph["rejected_candidate_mappings"][0]["source_review"])
         self.assertEqual(
             [row["requirement_id"] for row in reviews["KMIPKIT-CLAUSE-SPEC-6.1.25-004"]["rejected_candidate_mappings"]],
-            ["KMIPKIT-REQ-SPEC-6.1.25-004"],
+            [],
         )
-        self.assertIn("Both formal SHALL predicates assign", reviews["KMIPKIT-CLAUSE-SPEC-6.1.25-004"]["rejected_candidate_mappings"][0]["source_review"])
+        replace_crosswalk = [
+            row for row in oracle["requirement_crosswalk"]
+            if row["requirement_id"] == "KMIPKIT-REQ-SPEC-6.1.25-004"
+        ]
+        self.assertEqual([row["source_obligation_order"] for row in replace_crosswalk], [1, 2])
+        self.assertTrue(all(row["role"] == "server" and row["scope_state"] == "server_only" for row in replace_crosswalk))
         self.assertIn("does not name Import among the ID Placeholder-copy operations", reviews["KMIPKIT-CLAUSE-SPEC-6.1.25-001"]["review_note"])
 
         expected_request_gaps = {
@@ -14798,8 +14820,11 @@ class CatalogValidationTests(unittest.TestCase):
         self.assertEqual(len(set(reason_values)), 17)
         self.assertEqual(reason_values.count("Invalid Field"), 2)
         self.assertEqual(reviews["KMIPKIT-CLAUSE-SPEC-6.1.25.1-002"]["source_obligations"], [])
-        self.assertEqual(catalog_by_id["KMIPKIT-REQ-SPEC-6.1.25-001"]["role"], "client")
-        self.assertEqual(catalog_by_id["KMIPKIT-REQ-SPEC-6.1.25-004"]["role"], "client")
+        self.assertEqual(catalog_by_id["KMIPKIT-REQ-SPEC-6.1.25-001"]["role"], "unspecified")
+        self.assertEqual(catalog_by_id["KMIPKIT-REQ-SPEC-6.1.25-001"]["direction"], "unclear")
+        self.assertEqual(catalog_by_id["KMIPKIT-REQ-SPEC-6.1.25-001"]["scope_state"], "unclear")
+        self.assertEqual(catalog_by_id["KMIPKIT-REQ-SPEC-6.1.25-001"]["status"], "unassigned")
+        self.assertEqual(catalog_by_id["KMIPKIT-REQ-SPEC-6.1.25-004"]["role"], "server")
         self.assertEqual(catalog_by_id["KMIPKIT-REQ-SPEC-6.1.25-006"]["source_keyword"], "MAY")
 
         wrapped_atom = reviews["KMIPKIT-CLAUSE-SPEC-6.1.25-006"]["source_obligations"][0]
@@ -14825,7 +14850,6 @@ class CatalogValidationTests(unittest.TestCase):
             actual_ids = set(profile["requirement_ids"])
             self.assertIn("KMIPKIT-REQ-SPEC-6.1.25-006", actual_ids)
             rejected_client_labels = {
-                "KMIPKIT-REQ-SPEC-6.1.25-001",
                 "KMIPKIT-REQ-SPEC-6.1.25-004",
             }
             self.assertEqual(
@@ -15417,7 +15441,7 @@ class CatalogValidationTests(unittest.TestCase):
                 (2, "The server SHALL NOT return unique identifiers for objects that are archived unless the Storage Status Mask field includes the Archived Storage indicator.", "SHALL NOT", "server", "server_only", "KMIPKIT-REQ-SPEC-6.1.28-009-002"),
             ],
             "KMIPKIT-CLAUSE-SPEC-6.1.28-011": [
-                (1, "Maximum Items No An Integer object that indicates the maximum number of object identifiers the server MAY return.", "MAY", "server", "server_only", None),
+                (1, "Maximum Items No An Integer object that indicates the maximum number of object identifiers the server MAY return.", "MAY", "server", "server_only", "KMIPKIT-REQ-SPEC-6.1.28-011"),
             ],
             "KMIPKIT-CLAUSE-SPEC-6.1.28-012": [
                 (1, "If omitted, then only on-line objects SHALL be returned.", "SHALL", "server", "server_only", "KMIPKIT-REQ-SPEC-6.1.28-012"),
@@ -15487,6 +15511,7 @@ class CatalogValidationTests(unittest.TestCase):
             ("KMIPKIT-REQ-SPEC-6.1.28-012", "KMIPKIT-CLAUSE-SPEC-6.1.28-012", 1, "SHALL", "server", "server_only"),
             ("KMIPKIT-REQ-SPEC-6.1.28-013-001", "KMIPKIT-CLAUSE-SPEC-6.1.28-013", 1, "REQUIRED", "client", "client_1_0"),
             ("KMIPKIT-REQ-SPEC-6.1.28-013-002", "KMIPKIT-CLAUSE-SPEC-6.1.28-013", 2, "MAY", "client", "client_1_0"),
+            ("KMIPKIT-REQ-SPEC-6.1.28-011", "KMIPKIT-CLAUSE-SPEC-6.1.28-011", 1, "MAY", "server", "server_only"),
         }
         crosswalk = {
             (
@@ -15569,8 +15594,8 @@ class CatalogValidationTests(unittest.TestCase):
         self.assertEqual(
             reviews["KMIPKIT-CLAUSE-SPEC-6.1.28-014"]["source_payload_rows"],
             [
-                {"row_label": "Located Items", "required": "No", "actor": "server", "disposition": "response_payload_data", "html_line_range": [29397, 29419], "source_excerpt": pinned_source_excerpt(source_path, [29397, 29419])},
-                {"row_label": "Unique Identifier", "required": "No, MAY be repeated", "actor": "server", "disposition": "response_payload_data", "html_line_range": [29421, 29437], "source_excerpt": pinned_source_excerpt(source_path, [29421, 29437])},
+                {"row_label": "Located Items", "required": "No", "actor": "server", "disposition": "optional_response_payload", "html_line_range": [29397, 29419], "source_excerpt": pinned_source_excerpt(source_path, [29397, 29419])},
+                {"row_label": "Unique Identifier", "required": "No, MAY be repeated", "actor": "server", "disposition": "optional_repeatable_response_payload", "html_line_range": [29421, 29437], "source_excerpt": pinned_source_excerpt(source_path, [29421, 29437])},
             ],
         )
         self.assertEqual(reviews["KMIPKIT-CLAUSE-SPEC-6.1.28-010"]["source_payload_rows"], [])
