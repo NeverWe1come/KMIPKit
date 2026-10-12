@@ -18,6 +18,7 @@ public final class RuntimeMetadata {
     public static native Version version();
 
     /** Returns whether the named capability has an unblocked C mapping.
+     * @throws InvalidInputException if the identifier contains an unpaired surrogate
      * @throws ResourceLimitException if the UTF-8 identifier exceeds 128 bytes
      */
     public static native boolean capabilityIsAvailable(String capabilityId);
