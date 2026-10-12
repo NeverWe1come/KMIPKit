@@ -73,11 +73,11 @@
   },
   "counts": {
     "profiles": 18,
-    "requirement_crosswalk_records": 438,
+    "requirement_crosswalk_records": 439,
     "requirement_crosswalk_complete": false,
     "source_requirement_review_records": 889,
-    "source_only_requirement_gaps": 171,
-    "source_only_requirement_gap_proposals": 140
+    "source_only_requirement_gaps": 170,
+    "source_only_requirement_gap_proposals": 139
   },
   "source_clause_crosswalk": [
     {
@@ -23936,6 +23936,23 @@
       "applies_to": "all_client_profiles",
       "review_note": "Specification v2.1 §6.1.7 source atom 2; actor/scope reviewed against pinned source text.",
       "source_obligation_order": 2,
+      "source_actor": "client"
+    },
+    {
+      "requirement_id": "KMIPKIT-REQ-SPEC-6.1.7-002-003",
+      "source_clause_id": "KMIPKIT-CLAUSE-SPEC-6.1.7-002",
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_section": "6.1.7",
+      "source_locator": {
+        "ordinal": 2,
+        "block_kind": "paragraph"
+      },
+      "source_keyword": "MAY",
+      "role": "client",
+      "scope_state": "client_1_0",
+      "applies_to": "all_client_profiles",
+      "review_note": "Pinned Specification v2.1 §6.1.7 paragraph atom 3; the typed client Check request accepts only the listed additional request fields.",
+      "source_obligation_order": 3,
       "source_actor": "client"
     },
     {
@@ -75531,17 +75548,18 @@
           "direction": "client→server request payload",
           "condition": null,
           "scope_disposition": "client_1_0",
-          "candidate_requirement_id": null,
+          "candidate_requirement_id": "KMIPKIT-REQ-SPEC-6.1.7-002-003",
           "source_gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.7-002-MAY-LIMITED-ATTRIBUTES"
         }
       ],
       "rejected_candidate_mappings": [],
       "expected_client_requirement_ids": [
         "KMIPKIT-REQ-SPEC-6.1.7-002-001",
-        "KMIPKIT-REQ-SPEC-6.1.7-002-002"
+        "KMIPKIT-REQ-SPEC-6.1.7-002-002",
+        "KMIPKIT-REQ-SPEC-6.1.7-002-003"
       ],
       "applies_to": "all_client_profiles",
-      "review_note": "The two SHOULD atoms map to the existing labels; the limiting MAY is a separate in-scope source obligation without a catalog label and is recorded as a source-only gap."
+      "review_note": "The two batch option recommendations and the MAY limiting allowed additional Check request attributes are separately catalogued as client obligations. The typed request accepts only the Table 183 fields; generic TTLV remains structurally validated, not operation-aware."
     },
     {
       "source_id": "KMIPKIT-SRC-spec",
@@ -81990,37 +82008,6 @@
       "proposed_requirement_id": "KMIPKIT-REQ-SPEC-4.39-002-001",
       "status": "stable_label_proposed_not_in_catalog",
       "review_note": "The source sentence explicitly names clients as well as servers and uses formal SHOULD; the client half is a source-grounded in-scope recommendation. The proposed ID is not a catalog record."
-    },
-    {
-      "gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.7-002-MAY-LIMITED-ATTRIBUTES",
-      "source_id": "KMIPKIT-SRC-spec",
-      "source_path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
-      "source_section": "6.1.7",
-      "source_clause_id": "KMIPKIT-CLAUSE-SPEC-6.1.7-002",
-      "source_obligation_order": 3,
-      "source_locator": {
-        "ordinal": 2,
-        "block_kind": "paragraph"
-      },
-      "source_locator_description": "§6.1.7 / paragraph (ordinal 002), limit on optional Check request attributes",
-      "html_line_range": [
-        23730,
-        23734
-      ],
-      "source_excerpt": "In a batch containing a Check operation the Batch Order Option SHOULD be set to true. Only STOP or UNDO Batch Error Continuation Option values SHOULD be used by the client in such a batch. Additional attributes that MAY be specified in the request are limited to:",
-      "source_text": "Additional attributes that MAY be specified in the request are limited to:",
-      "source_keywords": [
-        "MAY"
-      ],
-      "source_force": "MAY",
-      "actor": "client",
-      "direction": "client→server request payload",
-      "condition": null,
-      "scope_disposition": "client_1_0",
-      "candidate_requirement_id": null,
-      "proposed_requirement_id": "KMIPKIT-REQ-SPEC-6.1.7-002-003",
-      "status": "stable_label_proposed_not_in_catalog",
-      "review_note": "The formal MAY limits which optional Check attributes the client can specify. It is a third source-ordered atom after the two SHOULD predicates; it has no catalog label, so the proposed stable ID remains a source-only gap."
     },
     {
       "gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.12-RIGHTS-REQUIRED",

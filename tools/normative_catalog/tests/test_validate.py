@@ -9871,7 +9871,7 @@ class CatalogValidationTests(unittest.TestCase):
             "KMIPKIT-CLAUSE-SPEC-6.1.7-002": [
                 (1, "In a batch containing a Check operation the Batch Order Option SHOULD be set to true.", "SHOULD", "client", "client→server request payload", "In a batch containing a Check operation", "client_1_0", "KMIPKIT-REQ-SPEC-6.1.7-002-001"),
                 (2, "Only STOP or UNDO Batch Error Continuation Option values SHOULD be used by the client in such a batch.", "SHOULD", "client", "client→server request payload", "in a batch containing a Check operation", "client_1_0", "KMIPKIT-REQ-SPEC-6.1.7-002-002"),
-                (3, "Additional attributes that MAY be specified in the request are limited to:", "MAY", "client", "client→server request payload", None, "client_1_0", None),
+                (3, "Additional attributes that MAY be specified in the request are limited to:", "MAY", "client", "client→server request payload", None, "client_1_0", "KMIPKIT-REQ-SPEC-6.1.7-002-003"),
             ],
             "KMIPKIT-CLAUSE-SPEC-6.1.7-003": [
                 (1, "The request MAY contain the usage amount that the client deems necessary to complete its needed function.", "MAY", "client", "client→server request payload", None, "client_1_0", "KMIPKIT-REQ-SPEC-6.1.7-003"),
@@ -9904,6 +9904,7 @@ class CatalogValidationTests(unittest.TestCase):
             "KMIPKIT-REQ-SPEC-6.1.7-001",
             "KMIPKIT-REQ-SPEC-6.1.7-002-001",
             "KMIPKIT-REQ-SPEC-6.1.7-002-002",
+            "KMIPKIT-REQ-SPEC-6.1.7-002-003",
             "KMIPKIT-REQ-SPEC-6.1.7-003",
             "KMIPKIT-REQ-SPEC-6.1.7-004-001",
             "KMIPKIT-REQ-SPEC-6.1.7-004-002",
@@ -9975,7 +9976,7 @@ class CatalogValidationTests(unittest.TestCase):
             atom[7] is not None
             for atom in all_atoms
         )
-        self.assertEqual(expected_mapping_count, 14)
+        self.assertEqual(expected_mapping_count, 15)
         slice_mappings = [mapping for mapping in crosswalk if mapping["source_clause_id"] in clause_ids]
         self.assertEqual(len(slice_mappings), expected_mapping_count)
         client_profiles = [profile for profile in catalog["profiles"] if profile["role"] == "client"]
@@ -9995,21 +9996,7 @@ class CatalogValidationTests(unittest.TestCase):
         self.assertEqual(closure_mismatches, {}, "source-reviewed client obligations must equal each client profile slice")
 
         slice_gaps = [gap for gap in oracle["source_only_requirement_gaps"] if gap["gap_id"] == expected_gap_id]
-        self.assertEqual(len(slice_gaps), 1, "the formal MAY limiting Check request attributes needs an explicit source-only gap")
-        gap = slice_gaps[0]
-        self.assertEqual(gap["source_clause_id"], "KMIPKIT-CLAUSE-SPEC-6.1.7-002")
-        self.assertEqual(gap["source_obligation_order"], 3)
-        self.assertEqual(gap["source_text"], expected_atoms["KMIPKIT-CLAUSE-SPEC-6.1.7-002"][2][1])
-        self.assertEqual(gap["html_line_range"], [23730, 23734])
-        self.assertEqual(gap["source_excerpt"], reviews["KMIPKIT-CLAUSE-SPEC-6.1.7-002"]["source_excerpt"])
-        self.assertEqual(gap["source_keywords"], ["MAY"])
-        self.assertEqual(gap["source_force"], "MAY")
-        self.assertEqual(gap["actor"], "client")
-        self.assertEqual(gap["direction"], "client→server request payload")
-        self.assertIsNone(gap["condition"])
-        self.assertEqual(gap["proposed_requirement_id"], "KMIPKIT-REQ-SPEC-6.1.7-002-003")
-        self.assertEqual(gap["candidate_requirement_id"], None)
-        self.assertEqual(gap["scope_disposition"], "client_1_0")
+        self.assertEqual(slice_gaps, [], "the Check attribute limit has a stable requirement crosswalk")
         self.assertEqual(oracle["oracle_status"], "partial-source-reviewed; not complete T003 oracle")
 
     def test_spec_6_1_8_through_6_1_10_complete_operations_have_source_review_rows(self) -> None:
@@ -13203,6 +13190,24 @@ class CatalogValidationTests(unittest.TestCase):
                 self.assertEqual(requirements[server_id]["role"], "server")
                 self.assertEqual(requirements[server_id]["scope_state"], "server_only")
 
+        for requirement_id in ("KMIPKIT-REQ-SPEC-6.1.9-006", "KMIPKIT-REQ-SPEC-6.1.9-007"):
+            self.assertTrue(
+                all("(split/shared)" in row["scope_state"] for row in mappings[requirement_id])
+            )
+            self.assertEqual(requirements[requirement_id]["scope_state"], "mixed")
+
+        unresolved_requirement_id = "KMIPKIT-REQ-SPEC-4.1-001-001"
+        self.assertEqual(
+            [row["scope_state"] for row in mappings[unresolved_requirement_id]],
+            ["unresolved"],
+        )
+        self.assertEqual(requirements[unresolved_requirement_id]["scope_state"], "unclear")
+
+        verify_rows = mappings["KMIPKIT-REQ-SPEC-6.1.20-001-002"]
+        verify_keywords = {row["source_keyword"] for row in verify_rows}
+        self.assertEqual(verify_keywords, {"SHALL", "SHALL NOT"})
+        self.assertIn(requirements["KMIPKIT-REQ-SPEC-6.1.20-001-002"]["source_keyword"], verify_keywords)
+
     def test_check_limited_additional_attributes_have_verified_client_evidence(self) -> None:
         """The client Check attribute limit has a stable ID and executable evidence."""
         oracle = json.loads(
@@ -13237,24 +13242,6 @@ class CatalogValidationTests(unittest.TestCase):
         self.assertFalse(
             any(gap["gap_id"] == "KMIPKIT-SOURCE-GAP-SPEC-6.1.7-002-MAY-LIMITED-ATTRIBUTES" for gap in oracle["source_only_requirement_gaps"])
         )
-
-        for requirement_id in ("KMIPKIT-REQ-SPEC-6.1.9-006", "KMIPKIT-REQ-SPEC-6.1.9-007"):
-            self.assertTrue(
-                all("(split/shared)" in row["scope_state"] for row in mappings[requirement_id])
-            )
-            self.assertEqual(requirements[requirement_id]["scope_state"], "mixed")
-
-        unresolved_requirement_id = "KMIPKIT-REQ-SPEC-4.1-001-001"
-        self.assertEqual(
-            [row["scope_state"] for row in mappings[unresolved_requirement_id]],
-            ["unresolved"],
-        )
-        self.assertEqual(requirements[unresolved_requirement_id]["scope_state"], "unclear")
-
-        verify_rows = mappings["KMIPKIT-REQ-SPEC-6.1.20-001-002"]
-        verify_keywords = {row["source_keyword"] for row in verify_rows}
-        self.assertEqual(verify_keywords, {"SHALL", "SHALL NOT"})
-        self.assertIn(requirements["KMIPKIT-REQ-SPEC-6.1.20-001-002"]["source_keyword"], verify_keywords)
 
     def test_requirement_crosswalk_rows_match_pinned_sources_and_catalog_labels(self) -> None:
         """Every accepted and rejected label is tied to its pinned source locator."""
@@ -13556,7 +13543,6 @@ class CatalogValidationTests(unittest.TestCase):
             {
                 *(f"KMIPKIT-REQ-SPEC-6.1-{ordinal:03d}-001" for ordinal in range(6, 10)),
                 *(f"KMIPKIT-REQ-SPEC-6.1-{ordinal:03d}" for ordinal in range(11, 21)),
-                "KMIPKIT-REQ-SPEC-6.1.7-002-003",
                 "KMIPKIT-REQ-SPEC-4.30-001-002",
                 "KMIPKIT-REQ-SPEC-4.39-002-001",
                 "KMIPKIT-REQ-SPEC-6.1.12-005",

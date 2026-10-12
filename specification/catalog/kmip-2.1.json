@@ -24053,7 +24053,8 @@
       "disposition": "requirement",
       "requirement_ids": [
         "KMIPKIT-REQ-SPEC-6.1.7-002-001",
-        "KMIPKIT-REQ-SPEC-6.1.7-002-002"
+        "KMIPKIT-REQ-SPEC-6.1.7-002-002",
+        "KMIPKIT-REQ-SPEC-6.1.7-002-003"
       ],
       "exclusion_rationale": null,
       "role": "client",
@@ -95245,6 +95246,46 @@
       "review_note": "Caller-facing behavior is verified within KMIPKit scope; see specs/022-object-lifecycle/traceability.md for the server/application boundary. No official Test Cases are linked to this requirement in the pinned OASIS source; this is not a full profile conformance claim."
     },
     {
+      "requirement_id": "KMIPKIT-REQ-SPEC-6.1.7-002-003",
+      "source_clause_ids": [
+        "KMIPKIT-CLAUSE-SPEC-6.1.7-002"
+      ],
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "6.1.7"
+        }
+      ],
+      "source_keyword": "MAY",
+      "normative_strength": "permission_or_optional",
+      "subject": "Check additional attributes",
+      "summary": "A client may include in a Check request only the additional attributes listed for Check in §6.1.7.",
+      "role": "client",
+      "direction": "client_to_server",
+      "condition": null,
+      "scope_state": "client_1_0",
+      "element_ids": [
+        "KMIPKIT-ELEM-TAG-42002C",
+        "KMIPKIT-ELEM-TAG-420049",
+        "KMIPKIT-ELEM-TAG-420096"
+      ],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": "KMIPKIT-0036",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/check.rs",
+        "crates/kmipkit-client/src/execute.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/check_operation_tests.rs",
+        "crates/kmipkit-client/tests/unit/check_execution_tests.rs"
+      ],
+      "negative_verification_required": false,
+      "decision_id": null,
+      "status": "verified",
+      "review_note": "The typed Check request exposes the optional additional request attributes from the §6.1.7 list (Usage Limits Count, Cryptographic Usage Mask, and Lease Time); protocol and fake-transport tests verify serialization. The generic TTLV API remains structurally validating rather than operation-aware, so this records the typed client capability and does not claim server conformance."
+    },
+    {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.7-003",
       "source_clause_ids": [
         "KMIPKIT-CLAUSE-SPEC-6.1.7-003"
@@ -99206,6 +99247,7 @@
         "KMIPKIT-REQ-SPEC-6.1.7-001",
         "KMIPKIT-REQ-SPEC-6.1.7-002-001",
         "KMIPKIT-REQ-SPEC-6.1.7-002-002",
+        "KMIPKIT-REQ-SPEC-6.1.7-002-003",
         "KMIPKIT-REQ-SPEC-6.1.7-003",
         "KMIPKIT-REQ-SPEC-6.1.7-004-001",
         "KMIPKIT-REQ-SPEC-6.1.7-004-002",
@@ -100539,6 +100581,7 @@
         "KMIPKIT-REQ-SPEC-6.1.7-001",
         "KMIPKIT-REQ-SPEC-6.1.7-002-001",
         "KMIPKIT-REQ-SPEC-6.1.7-002-002",
+        "KMIPKIT-REQ-SPEC-6.1.7-002-003",
         "KMIPKIT-REQ-SPEC-6.1.7-003",
         "KMIPKIT-REQ-SPEC-6.1.7-004-001",
         "KMIPKIT-REQ-SPEC-6.1.7-004-002",
@@ -101857,6 +101900,7 @@
         "KMIPKIT-REQ-SPEC-6.1.7-001",
         "KMIPKIT-REQ-SPEC-6.1.7-002-001",
         "KMIPKIT-REQ-SPEC-6.1.7-002-002",
+        "KMIPKIT-REQ-SPEC-6.1.7-002-003",
         "KMIPKIT-REQ-SPEC-6.1.7-003",
         "KMIPKIT-REQ-SPEC-6.1.7-004-001",
         "KMIPKIT-REQ-SPEC-6.1.7-004-002",
@@ -103503,6 +103547,7 @@
         "KMIPKIT-REQ-SPEC-6.1.7-001",
         "KMIPKIT-REQ-SPEC-6.1.7-002-001",
         "KMIPKIT-REQ-SPEC-6.1.7-002-002",
+        "KMIPKIT-REQ-SPEC-6.1.7-002-003",
         "KMIPKIT-REQ-SPEC-6.1.7-003",
         "KMIPKIT-REQ-SPEC-6.1.7-004-001",
         "KMIPKIT-REQ-SPEC-6.1.7-004-002",
@@ -104869,6 +104914,7 @@
         "KMIPKIT-REQ-SPEC-6.1.7-001",
         "KMIPKIT-REQ-SPEC-6.1.7-002-001",
         "KMIPKIT-REQ-SPEC-6.1.7-002-002",
+        "KMIPKIT-REQ-SPEC-6.1.7-002-003",
         "KMIPKIT-REQ-SPEC-6.1.7-003",
         "KMIPKIT-REQ-SPEC-6.1.7-004-001",
         "KMIPKIT-REQ-SPEC-6.1.7-004-002",
@@ -106238,6 +106284,7 @@
         "KMIPKIT-REQ-SPEC-6.1.7-001",
         "KMIPKIT-REQ-SPEC-6.1.7-002-001",
         "KMIPKIT-REQ-SPEC-6.1.7-002-002",
+        "KMIPKIT-REQ-SPEC-6.1.7-002-003",
         "KMIPKIT-REQ-SPEC-6.1.7-003",
         "KMIPKIT-REQ-SPEC-6.1.7-004-001",
         "KMIPKIT-REQ-SPEC-6.1.7-004-002",
@@ -107605,6 +107652,7 @@
         "KMIPKIT-REQ-SPEC-6.1.7-001",
         "KMIPKIT-REQ-SPEC-6.1.7-002-001",
         "KMIPKIT-REQ-SPEC-6.1.7-002-002",
+        "KMIPKIT-REQ-SPEC-6.1.7-002-003",
         "KMIPKIT-REQ-SPEC-6.1.7-003",
         "KMIPKIT-REQ-SPEC-6.1.7-004-001",
         "KMIPKIT-REQ-SPEC-6.1.7-004-002",
@@ -108957,6 +109005,7 @@
         "KMIPKIT-REQ-SPEC-6.1.7-001",
         "KMIPKIT-REQ-SPEC-6.1.7-002-001",
         "KMIPKIT-REQ-SPEC-6.1.7-002-002",
+        "KMIPKIT-REQ-SPEC-6.1.7-002-003",
         "KMIPKIT-REQ-SPEC-6.1.7-003",
         "KMIPKIT-REQ-SPEC-6.1.7-004-001",
         "KMIPKIT-REQ-SPEC-6.1.7-004-002",
@@ -110286,6 +110335,7 @@
         "KMIPKIT-REQ-SPEC-6.1.7-001",
         "KMIPKIT-REQ-SPEC-6.1.7-002-001",
         "KMIPKIT-REQ-SPEC-6.1.7-002-002",
+        "KMIPKIT-REQ-SPEC-6.1.7-002-003",
         "KMIPKIT-REQ-SPEC-6.1.7-003",
         "KMIPKIT-REQ-SPEC-6.1.7-004-001",
         "KMIPKIT-REQ-SPEC-6.1.7-004-002",
@@ -111623,6 +111673,7 @@
         "KMIPKIT-REQ-SPEC-6.1.7-001",
         "KMIPKIT-REQ-SPEC-6.1.7-002-001",
         "KMIPKIT-REQ-SPEC-6.1.7-002-002",
+        "KMIPKIT-REQ-SPEC-6.1.7-002-003",
         "KMIPKIT-REQ-SPEC-6.1.7-003",
         "KMIPKIT-REQ-SPEC-6.1.7-004-001",
         "KMIPKIT-REQ-SPEC-6.1.7-004-002",
@@ -112969,6 +113020,7 @@
         "KMIPKIT-REQ-SPEC-6.1.7-001",
         "KMIPKIT-REQ-SPEC-6.1.7-002-001",
         "KMIPKIT-REQ-SPEC-6.1.7-002-002",
+        "KMIPKIT-REQ-SPEC-6.1.7-002-003",
         "KMIPKIT-REQ-SPEC-6.1.7-003",
         "KMIPKIT-REQ-SPEC-6.1.7-004-001",
         "KMIPKIT-REQ-SPEC-6.1.7-004-002",
@@ -114323,6 +114375,7 @@
         "KMIPKIT-REQ-SPEC-6.1.7-001",
         "KMIPKIT-REQ-SPEC-6.1.7-002-001",
         "KMIPKIT-REQ-SPEC-6.1.7-002-002",
+        "KMIPKIT-REQ-SPEC-6.1.7-002-003",
         "KMIPKIT-REQ-SPEC-6.1.7-003",
         "KMIPKIT-REQ-SPEC-6.1.7-004-001",
         "KMIPKIT-REQ-SPEC-6.1.7-004-002",
@@ -115661,6 +115714,7 @@
         "KMIPKIT-REQ-SPEC-6.1.7-001",
         "KMIPKIT-REQ-SPEC-6.1.7-002-001",
         "KMIPKIT-REQ-SPEC-6.1.7-002-002",
+        "KMIPKIT-REQ-SPEC-6.1.7-002-003",
         "KMIPKIT-REQ-SPEC-6.1.7-003",
         "KMIPKIT-REQ-SPEC-6.1.7-004-001",
         "KMIPKIT-REQ-SPEC-6.1.7-004-002",
@@ -116858,6 +116912,7 @@
         "KMIPKIT-REQ-SPEC-6.1.7-001",
         "KMIPKIT-REQ-SPEC-6.1.7-002-001",
         "KMIPKIT-REQ-SPEC-6.1.7-002-002",
+        "KMIPKIT-REQ-SPEC-6.1.7-002-003",
         "KMIPKIT-REQ-SPEC-6.1.7-003",
         "KMIPKIT-REQ-SPEC-6.1.7-004-001",
         "KMIPKIT-REQ-SPEC-6.1.7-004-002",
@@ -118054,6 +118109,7 @@
         "KMIPKIT-REQ-SPEC-6.1.7-001",
         "KMIPKIT-REQ-SPEC-6.1.7-002-001",
         "KMIPKIT-REQ-SPEC-6.1.7-002-002",
+        "KMIPKIT-REQ-SPEC-6.1.7-002-003",
         "KMIPKIT-REQ-SPEC-6.1.7-003",
         "KMIPKIT-REQ-SPEC-6.1.7-004-001",
         "KMIPKIT-REQ-SPEC-6.1.7-004-002",
@@ -119411,6 +119467,7 @@
         "KMIPKIT-REQ-SPEC-6.1.7-001",
         "KMIPKIT-REQ-SPEC-6.1.7-002-001",
         "KMIPKIT-REQ-SPEC-6.1.7-002-002",
+        "KMIPKIT-REQ-SPEC-6.1.7-002-003",
         "KMIPKIT-REQ-SPEC-6.1.7-003",
         "KMIPKIT-REQ-SPEC-6.1.7-004-001",
         "KMIPKIT-REQ-SPEC-6.1.7-004-002",
@@ -120785,6 +120842,7 @@
         "KMIPKIT-REQ-SPEC-6.1.7-001",
         "KMIPKIT-REQ-SPEC-6.1.7-002-001",
         "KMIPKIT-REQ-SPEC-6.1.7-002-002",
+        "KMIPKIT-REQ-SPEC-6.1.7-002-003",
         "KMIPKIT-REQ-SPEC-6.1.7-003",
         "KMIPKIT-REQ-SPEC-6.1.7-004-001",
         "KMIPKIT-REQ-SPEC-6.1.7-004-002",
@@ -122140,6 +122198,7 @@
         "KMIPKIT-REQ-SPEC-6.1.7-001",
         "KMIPKIT-REQ-SPEC-6.1.7-002-001",
         "KMIPKIT-REQ-SPEC-6.1.7-002-002",
+        "KMIPKIT-REQ-SPEC-6.1.7-002-003",
         "KMIPKIT-REQ-SPEC-6.1.7-003",
         "KMIPKIT-REQ-SPEC-6.1.7-004-001",
         "KMIPKIT-REQ-SPEC-6.1.7-004-002",

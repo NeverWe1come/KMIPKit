@@ -373,6 +373,7 @@ Stable IDs and summaries below come from the checked-in normative catalog. The i
 | KMIPKIT-REQ-SPEC-6.1.7-001 | §6.1.7 | SHOULD | A client should use Check in a batch, generally after locating or creating an object and before Get. |
 | KMIPKIT-REQ-SPEC-6.1.7-002-001 | §6.1.7 | SHOULD | A client should set Batch Order Option to true in a batch containing Check. |
 | KMIPKIT-REQ-SPEC-6.1.7-002-002 | §6.1.7 | SHOULD | A client should use Stop or Undo as the Batch Error Continuation Option in a batch containing Check. |
+| KMIPKIT-REQ-SPEC-6.1.7-002-003 | §6.1.7 | MAY | A client may include in a Check request only the additional attributes listed for Check. |
 | KMIPKIT-REQ-SPEC-6.1.7-003 | §6.1.7 | MAY | A client may include the usage amount it considers necessary in Usage Limits Count. |
 | KMIPKIT-REQ-SPEC-6.1.7-004-001 | §6.1.7 | MAY | A client may specify intended cryptographic uses in Cryptographic Usage Mask. |
 | KMIPKIT-REQ-SPEC-6.1.7-004-002 | §6.1.7 | MAY | The Check mask may differ from the mask used in a preceding Locate. |
