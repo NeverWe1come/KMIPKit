@@ -6574,28 +6574,24 @@ class CatalogValidationTests(unittest.TestCase):
             }],
         )
 
-        expected_gaps = {
-            "KMIPKIT-SOURCE-GAP-SPEC-6.1.46-ATTRIBUTES-OPTIONAL": "KMIPKIT-REQ-SPEC-6.1.46-008",
-            "KMIPKIT-SOURCE-GAP-SPEC-6.1.46-PROTECTION-STORAGE-MASKS-OPTIONAL": "KMIPKIT-REQ-SPEC-6.1.46-009",
+        table_305_contract_ids = {
+            "KMIPKIT-SOURCE-GAP-SPEC-6.1.46-ATTRIBUTES-OPTIONAL",
+            "KMIPKIT-SOURCE-GAP-SPEC-6.1.46-PROTECTION-STORAGE-MASKS-OPTIONAL",
         }
         rekey_gaps = {
             row["gap_id"]: row
             for row in oracle["source_only_requirement_gaps"]
             if row["source_section"] == "6.1.46"
         }
-        self.assertEqual(set(rekey_gaps), set(expected_gaps))
-        for gap_id, proposed_id in expected_gaps.items():
-            gap = rekey_gaps[gap_id]
-            self.assertEqual(gap["proposed_requirement_id"], proposed_id)
-            self.assertEqual(gap["source_force"], "optional_table_body_value")
-            self.assertEqual(gap["actor"], "client")
-            self.assertEqual(gap["scope_disposition"], "client_1_0")
-            self.assertIsNone(gap["candidate_requirement_id"])
-            self.assertIsNone(gap["source_clause_id"])
-            self.assertEqual(gap["source_locator"]["kind"], "table_body_row")
-            self.assertEqual(gap["source_locator"]["html_line_range"], gap["html_line_range"])
-            self.assertEqual(gap["status"], "stable_label_proposed_not_in_catalog")
-            self.assertEqual(gap["source_excerpt"], pinned_source_excerpt(source_path, gap["html_line_range"]))
+        self.assertTrue(
+            table_305_contract_ids.isdisjoint(rekey_gaps),
+            "optional Table 305 request rows are source-table contracts, not proposed requirement gaps",
+        )
+        self.assertEqual(rekey_gaps, {})
+        for row in request_rows[2:]:
+            self.assertEqual(row["disposition"], "optional_request_table_contract")
+            self.assertEqual(row["source_note"],
+                             "This optional payload row is represented by an operation table field contract; it creates no standalone client requirement ID.")
 
         self.assertEqual(
             {
@@ -6732,10 +6728,10 @@ class CatalogValidationTests(unittest.TestCase):
         }
 
         self.assertEqual(set(contracts), set(expected))
-        self.assertEqual(len(oracle["source_table_contracts"]), 44)
-        self.assertEqual(oracle["counts"]["source_table_contracts"], 44)
-        self.assertEqual(oracle["counts"]["source_only_requirement_gaps"], 126)
-        self.assertEqual(oracle["counts"]["source_only_requirement_gap_proposals"], 73)
+        self.assertEqual(len(oracle["source_table_contracts"]), 46)
+        self.assertEqual(oracle["counts"]["source_table_contracts"], 46)
+        self.assertEqual(oracle["counts"]["source_only_requirement_gaps"], 124)
+        self.assertEqual(oracle["counts"]["source_only_requirement_gap_proposals"], 71)
         source_gap_ids = {gap["gap_id"] for gap in oracle["source_only_requirement_gaps"]}
         self.assertTrue(set(expected).isdisjoint(source_gap_ids))
         operation_element_id = "KMIPKIT-ELEM-OP-C2S-RE-KEY-KEY-PAIR"
@@ -8140,10 +8136,10 @@ class CatalogValidationTests(unittest.TestCase):
             set(expected),
             "all six audited Table 337 request rows are source-table contracts",
         )
-        self.assertEqual(len(oracle["source_table_contracts"]), 44)
-        self.assertEqual(oracle["counts"]["source_table_contracts"], 44)
-        self.assertEqual(oracle["counts"]["source_only_requirement_gaps"], 126)
-        self.assertEqual(oracle["counts"]["source_only_requirement_gap_proposals"], 73)
+        self.assertEqual(len(oracle["source_table_contracts"]), 46)
+        self.assertEqual(oracle["counts"]["source_table_contracts"], 46)
+        self.assertEqual(oracle["counts"]["source_only_requirement_gaps"], 124)
+        self.assertEqual(oracle["counts"]["source_only_requirement_gap_proposals"], 71)
 
         request_header = next(
             row for row in oracle["source_requirement_reviews"]
@@ -8304,10 +8300,10 @@ class CatalogValidationTests(unittest.TestCase):
         }
 
         self.assertEqual(set(contracts), set(expected))
-        self.assertEqual(len(oracle["source_table_contracts"]), 44)
-        self.assertEqual(oracle["counts"]["source_table_contracts"], 44)
-        self.assertEqual(oracle["counts"]["source_only_requirement_gaps"], 126)
-        self.assertEqual(oracle["counts"]["source_only_requirement_gap_proposals"], 73)
+        self.assertEqual(len(oracle["source_table_contracts"]), 46)
+        self.assertEqual(oracle["counts"]["source_table_contracts"], 46)
+        self.assertEqual(oracle["counts"]["source_only_requirement_gaps"], 124)
+        self.assertEqual(oracle["counts"]["source_only_requirement_gap_proposals"], 71)
         source_gap_ids = {gap["gap_id"] for gap in oracle["source_only_requirement_gaps"]}
         self.assertTrue(set(expected).isdisjoint(source_gap_ids))
 
@@ -8613,10 +8609,10 @@ class CatalogValidationTests(unittest.TestCase):
         }
 
         self.assertEqual(set(contracts), set(expected))
-        self.assertEqual(len(oracle["source_table_contracts"]), 44)
-        self.assertEqual(oracle["counts"]["source_table_contracts"], 44)
-        self.assertEqual(oracle["counts"]["source_only_requirement_gaps"], 126)
-        self.assertEqual(oracle["counts"]["source_only_requirement_gap_proposals"], 73)
+        self.assertEqual(len(oracle["source_table_contracts"]), 46)
+        self.assertEqual(oracle["counts"]["source_table_contracts"], 46)
+        self.assertEqual(oracle["counts"]["source_only_requirement_gaps"], 124)
+        self.assertEqual(oracle["counts"]["source_only_requirement_gap_proposals"], 71)
         source_gap_ids = {gap["gap_id"] for gap in oracle["source_only_requirement_gaps"]}
         self.assertTrue(set(expected).isdisjoint(source_gap_ids))
         self.assertIn(
@@ -15409,7 +15405,7 @@ class CatalogValidationTests(unittest.TestCase):
             if contract.get("source_section") in ("6.1.25", "6.1.27")
         }
         self.assertEqual(set(contracts), set(expected))
-        self.assertEqual(len(oracle["source_table_contracts"]), 44)
+        self.assertEqual(len(oracle["source_table_contracts"]), 46)
         self.assertEqual(oracle["oracle_status"], "partial-source-reviewed; not complete T003 oracle")
 
         catalog = json.loads((ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8"))
@@ -15477,10 +15473,10 @@ class CatalogValidationTests(unittest.TestCase):
         }
 
         self.assertEqual(set(contracts), set(expected))
-        self.assertEqual(len(oracle["source_table_contracts"]), 44)
-        self.assertEqual(oracle["counts"]["source_table_contracts"], 44)
-        self.assertEqual(oracle["counts"]["source_only_requirement_gaps"], 126)
-        self.assertEqual(oracle["counts"]["source_only_requirement_gap_proposals"], 73)
+        self.assertEqual(len(oracle["source_table_contracts"]), 46)
+        self.assertEqual(oracle["counts"]["source_table_contracts"], 46)
+        self.assertEqual(oracle["counts"]["source_only_requirement_gaps"], 124)
+        self.assertEqual(oracle["counts"]["source_only_requirement_gap_proposals"], 71)
         gap_ids = {row["gap_id"] for row in oracle["source_only_requirement_gaps"]}
         self.assertTrue(set(expected).isdisjoint(gap_ids))
         self.assertTrue(
@@ -15605,10 +15601,10 @@ class CatalogValidationTests(unittest.TestCase):
         }
 
         self.assertEqual(set(contracts), set(expected))
-        self.assertEqual(len(oracle["source_table_contracts"]), 44)
-        self.assertEqual(oracle["counts"]["source_table_contracts"], 44)
-        self.assertEqual(oracle["counts"]["source_only_requirement_gaps"], 126)
-        self.assertEqual(oracle["counts"]["source_only_requirement_gap_proposals"], 73)
+        self.assertEqual(len(oracle["source_table_contracts"]), 46)
+        self.assertEqual(oracle["counts"]["source_table_contracts"], 46)
+        self.assertEqual(oracle["counts"]["source_only_requirement_gaps"], 124)
+        self.assertEqual(oracle["counts"]["source_only_requirement_gap_proposals"], 71)
         source_gap_ids = {gap["gap_id"] for gap in oracle["source_only_requirement_gaps"]}
         self.assertTrue(set(expected).isdisjoint(source_gap_ids))
         self.assertTrue(

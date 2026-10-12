@@ -76,9 +76,9 @@
     "requirement_crosswalk_records": 466,
     "requirement_crosswalk_complete": false,
     "source_requirement_review_records": 889,
-    "source_only_requirement_gaps": 126,
-    "source_only_requirement_gap_proposals": 73,
-    "source_table_contracts": 44
+    "source_only_requirement_gaps": 124,
+    "source_only_requirement_gap_proposals": 71,
+    "source_table_contracts": 46
   },
   "source_clause_crosswalk": [
     {
@@ -72911,7 +72911,7 @@
           "row_label": "Attributes",
           "required": "No",
           "actor": "client",
-          "disposition": "optional_request_field_with_source_only_proposal",
+          "disposition": "optional_request_table_contract",
           "html_line_range": [
             34262,
             34279
@@ -72919,13 +72919,13 @@
           "source_excerpt": "Attributes No Specifies desired object attributes.",
           "source_gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.46-ATTRIBUTES-OPTIONAL",
           "source_requirement_ids": [],
-          "source_note": "The request table marks this field optional but no stable client requirement ID currently represents its exposure."
+          "source_note": "This optional payload row is represented by an operation table field contract; it creates no standalone client requirement ID."
         },
         {
           "row_label": "Protection Storage Masks",
           "required": "No",
           "actor": "client",
-          "disposition": "optional_request_field_with_source_only_proposal",
+          "disposition": "optional_request_table_contract",
           "html_line_range": [
             34280,
             34298
@@ -72933,7 +72933,7 @@
           "source_excerpt": "Protection Storage Masks No Specifies all permissible Protection Storage Mask selections for the new object",
           "source_gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.46-PROTECTION-STORAGE-MASKS-OPTIONAL",
           "source_requirement_ids": [],
-          "source_note": "The request table marks this field optional but no stable client requirement ID currently represents its exposure."
+          "source_note": "This optional payload row is represented by an operation table field contract; it creates no standalone client requirement ID."
         }
       ]
     },
@@ -84366,74 +84366,6 @@
       "review_note": "A source-only stable-label proposal remains outside the catalog until a separately approved normative catalog change assigns it."
     },
     {
-      "gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.46-ATTRIBUTES-OPTIONAL",
-      "source_id": "KMIPKIT-SRC-spec",
-      "source_path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
-      "source_section": "6.1.46",
-      "source_clause_id": null,
-      "source_locator": {
-        "kind": "table_body_row",
-        "section": "6.1.46",
-        "row_label": "Attributes",
-        "table": "request_payload",
-        "html_line_range": [
-          34262,
-          34279
-        ]
-      },
-      "source_locator_description": "Specification v2.1 section 6.1.46 Re-key request payload body row for Attributes (HTML lines 34262-34279)",
-      "html_line_range": [
-        34262,
-        34279
-      ],
-      "source_excerpt": "Attributes No Specifies desired object attributes.",
-      "source_keywords": [],
-      "source_force": "optional_table_body_value",
-      "audited_statement": "The request table exposes an optional Attributes field.",
-      "actor": "client",
-      "direction": "expose Attributes as an optional client request field",
-      "condition": "A client elects to specify the optional field.",
-      "scope_disposition": "client_1_0",
-      "candidate_requirement_id": null,
-      "proposed_requirement_id": "KMIPKIT-REQ-SPEC-6.1.46-008",
-      "status": "stable_label_proposed_not_in_catalog",
-      "review_note": "A source-only stable-label proposal remains outside the catalog until a separately approved normative catalog change assigns it."
-    },
-    {
-      "gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.46-PROTECTION-STORAGE-MASKS-OPTIONAL",
-      "source_id": "KMIPKIT-SRC-spec",
-      "source_path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
-      "source_section": "6.1.46",
-      "source_clause_id": null,
-      "source_locator": {
-        "kind": "table_body_row",
-        "section": "6.1.46",
-        "row_label": "Protection Storage Masks",
-        "table": "request_payload",
-        "html_line_range": [
-          34280,
-          34298
-        ]
-      },
-      "source_locator_description": "Specification v2.1 section 6.1.46 Re-key request payload body row for Protection Storage Masks (HTML lines 34280-34298)",
-      "html_line_range": [
-        34280,
-        34298
-      ],
-      "source_excerpt": "Protection Storage Masks No Specifies all permissible Protection Storage Mask selections for the new object",
-      "source_keywords": [],
-      "source_force": "optional_table_body_value",
-      "audited_statement": "The request table exposes optional Protection Storage Masks.",
-      "actor": "client",
-      "direction": "expose Protection Storage Masks as an optional client request field",
-      "condition": "A client elects to specify the optional field.",
-      "scope_disposition": "client_1_0",
-      "candidate_requirement_id": null,
-      "proposed_requirement_id": "KMIPKIT-REQ-SPEC-6.1.46-009",
-      "status": "stable_label_proposed_not_in_catalog",
-      "review_note": "A source-only stable-label proposal remains outside the catalog until a separately approved normative catalog change assigns it."
-    },
-    {
       "gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.49-DATA-LENGTH-REQUIRED",
       "source_id": "KMIPKIT-SRC-spec",
       "source_path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
@@ -86880,6 +86812,106 @@
       "evidence_disposition": {
         "status": "mapped_to_feature_contract",
         "statement": "The optional Protection Storage Masks field is emitted by the typed request and verified through KMIPKIT-ELEM-OP-C2S-RE-CERTIFY and KMIPKIT-0022 FR-001; no per-cell MUST/SHALL or standalone requirement ID is asserted."
+      }
+    },
+    {
+      "gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.46-ATTRIBUTES-OPTIONAL",
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+      "source_section": "6.1.46",
+      "source_clause_id": null,
+      "source_locator": {
+        "kind": "table_body_row",
+        "section": "6.1.46",
+        "row_label": "Attributes",
+        "table": "request_payload",
+        "html_line_range": [
+          34262,
+          34279
+        ]
+      },
+      "source_locator_description": "§6.1.46 Re-key request payload body row for Attributes (HTML lines 34262–34279)",
+      "html_line_range": [
+        34262,
+        34279
+      ],
+      "source_excerpt": "Attributes No Specifies desired object attributes.",
+      "source_keywords": [],
+      "source_force": "optional_table_body_value",
+      "audited_statement": "Table 305 exposes Attributes as an optional Re-key request field.",
+      "actor": "client",
+      "direction": "client→server Re-key request",
+      "condition": "The client elects to include this optional request field.",
+      "scope_disposition": "client_1_0",
+      "status": "mapped_to_approved_feature_contract",
+      "review_note": "Optional Table 305 field mapped through KMIPKIT-ELEM-OP-C2S-RE-KEY and KMIPKIT-0036 FR-001; no per-cell REQ identifier is created.",
+      "contract_kind": "operation_request_table_field",
+      "table_number": 305,
+      "requiredness": "No",
+      "operation_element_id": "KMIPKIT-ELEM-OP-C2S-RE-KEY",
+      "functional_requirement_ids": [
+        "FR-001"
+      ],
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/rekey.rs::RekeyRequest::into_ttlv_payload"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/rekey_operation_tests.rs::request_emits_table_305_fields_once_in_order_and_preserves_values",
+        "crates/kmipkit-client/tests/unit/rekey_execution_tests.rs::rekey_sends_one_table_305_request_and_exposes_replacement_identifier"
+      ],
+      "evidence_disposition": {
+        "status": "mapped_to_feature_contract",
+        "statement": "The optional Attributes field is emitted by the typed request and verified through KMIPKIT-ELEM-OP-C2S-RE-KEY and KMIPKIT-0036 FR-001; no per-cell MUST/SHALL or standalone requirement ID is asserted."
+      }
+    },
+    {
+      "gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.46-PROTECTION-STORAGE-MASKS-OPTIONAL",
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+      "source_section": "6.1.46",
+      "source_clause_id": null,
+      "source_locator": {
+        "kind": "table_body_row",
+        "section": "6.1.46",
+        "row_label": "Protection Storage Masks",
+        "table": "request_payload",
+        "html_line_range": [
+          34280,
+          34298
+        ]
+      },
+      "source_locator_description": "§6.1.46 Re-key request payload body row for Protection Storage Masks (HTML lines 34280–34298)",
+      "html_line_range": [
+        34280,
+        34298
+      ],
+      "source_excerpt": "Protection Storage Masks No Specifies all permissible Protection Storage Mask selections for the new object",
+      "source_keywords": [],
+      "source_force": "optional_table_body_value",
+      "audited_statement": "Table 305 exposes Protection Storage Masks as an optional Re-key request field.",
+      "actor": "client",
+      "direction": "client→server Re-key request",
+      "condition": "The client elects to include this optional request field.",
+      "scope_disposition": "client_1_0",
+      "status": "mapped_to_approved_feature_contract",
+      "review_note": "Optional Table 305 field mapped through KMIPKIT-ELEM-OP-C2S-RE-KEY and KMIPKIT-0036 FR-001; no per-cell REQ identifier is created.",
+      "contract_kind": "operation_request_table_field",
+      "table_number": 305,
+      "requiredness": "No",
+      "operation_element_id": "KMIPKIT-ELEM-OP-C2S-RE-KEY",
+      "functional_requirement_ids": [
+        "FR-001"
+      ],
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/rekey.rs::RekeyRequest::into_ttlv_payload"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/rekey_operation_tests.rs::request_emits_table_305_fields_once_in_order_and_preserves_values",
+        "crates/kmipkit-client/tests/unit/rekey_execution_tests.rs::rekey_sends_one_table_305_request_and_exposes_replacement_identifier"
+      ],
+      "evidence_disposition": {
+        "status": "mapped_to_feature_contract",
+        "statement": "The optional Protection Storage Masks field is emitted by the typed request and verified through KMIPKIT-ELEM-OP-C2S-RE-KEY and KMIPKIT-0036 FR-001; no per-cell MUST/SHALL or standalone requirement ID is asserted."
       }
     }
   ]
