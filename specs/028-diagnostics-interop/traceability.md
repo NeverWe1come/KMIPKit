@@ -5,7 +5,7 @@ The tables link each source row, stable element, requirement, implementation loc
 | Stable catalog element / requirement | Exact source | Coverage | Implementation / executable verification |
 |---|---|---|---|
 | KMIPKIT-ELEM-OP-C2S-INTEROP; KMIPKIT-ELEM-ENUM-VALUE-OPERATION-INTEROP-00000034 | §6.1.26 Tables 241–243; §11.36 | Interop payload and Operation value | interop.rs; protocol/client Interop suites |
-| KMIPKIT-ELEM-OPERATION-STRUCTURE-7-15-INTEROP-FUNCTION | §6.1.26 Table 241; §7.15 | Required open Enumeration | Required/type/unknown round trip |
+| KMIPKIT-ELEM-OPERATION-STRUCTURE-7-15-INTEROP-FUNCTION | §6.1.26 Table 241; §7.15 | Required open Enumeration; KMIPKIT-0028 FR-001/FR-008 | Required/type/unknown round trip; client serialization evidence only, no production-server availability claim |
 | KMIPKIT-ELEM-OPERATION-STRUCTURE-7-16-INTEROP-IDENTIFIER | §6.1.26 Table 241; §7.16 | Required Text String | Missing/type/round-trip tests |
 | Table 242 empty success; Table 243 errors | §6.1.26 | Empty payload and server result | Empty success and common-result preservation |
 | KMIPKIT-ELEM-OP-C2S-LOG; KMIPKIT-ELEM-ENUM-VALUE-OPERATION-LOG-0000002C | §6.1.29 Tables 250–252; §11.36 | Log payload and Operation value | log.rs; protocol/client Log suites |
