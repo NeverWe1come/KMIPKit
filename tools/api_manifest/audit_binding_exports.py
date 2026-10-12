@@ -40,19 +40,39 @@ def _report(records: list[dict[str, str]], issues: list[dict[str, str]]) -> dict
     return {"complete": not sorted_issues, "declarations": ordered, "issues": sorted_issues}
 
 
+def _complete_include_guard(lines: list[str]) -> str | None:
+    """Return a conventional guard only when it encloses the whole header."""
+    significant = [(index, line.strip()) for index, line in enumerate(lines) if line.strip()]
+    if len(significant) < 3:
+        return None
+    opening = re.fullmatch(r"#\s*ifndef\s+([A-Za-z_]\w*)", significant[0][1])
+    if opening is None:
+        return None
+    guard = opening.group(1)
+    definition = re.fullmatch(r"#\s*define\s+([A-Za-z_]\w*)", significant[1][1])
+    if definition is None or definition.group(1) != guard:
+        return None
+
+    depth = 0
+    for line_index, directive in significant:
+        if re.match(r"#\s*(?:if|ifdef|ifndef)\b", directive):
+            depth += 1
+        elif re.match(r"#\s*endif\b", directive):
+            depth -= 1
+            if depth < 0:
+                return None
+            if depth == 0:
+                return guard if line_index == significant[-1][0] else None
+    return None
+
+
 def inventory_c_header(source: str, package: str = "c-kmipkit") -> dict[str, Any]:
     """Read exported declarations from the installed public C header."""
     records: list[dict[str, str]] = []
     issues: list[dict[str, str]] = []
     cleaned = re.sub(r"/\*.*?\*/|//[^\n]*", " ", source, flags=re.S)
     lines = cleaned.splitlines()
-    directives = [(index, line.strip()) for index, line in enumerate(lines) if line.strip()]
-    include_guard: str | None = None
-    if len(directives) >= 2:
-        opening = re.fullmatch(r"#\s*ifndef\s+([A-Za-z_]\w*)", directives[0][1])
-        closing = re.fullmatch(r"#\s*define\s+([A-Za-z_]\w*)\b(?:\s+.*)?", directives[1][1])
-        if opening is not None and closing is not None and opening.group(1) == closing.group(1):
-            include_guard = opening.group(1)
+    include_guard = _complete_include_guard(lines)
     for line_number, line in enumerate(lines, 1):
         macro = re.match(r"\s*#\s*define\s+([A-Za-z_]\w*)\b", line)
         if macro:
