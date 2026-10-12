@@ -223,6 +223,14 @@ class ProfileSectionsThreeAndFourCrosswalkTests(unittest.TestCase):
         review = self.reviews[clause_id]
 
         self.assertEqual(requirement["direction"], "unclear")
+        self.assertTrue(
+            {
+                "KMIPKIT-PROFILE-HTTPS-CLIENT",
+                "KMIPKIT-PROFILE-HTTPS-SERVER",
+                "KMIPKIT-PROFILE-COMPLETE-SERVER",
+            }.issubset(requirement["profile_ids"])
+        )
+        self.assertNotIn("KMIPKIT-PROFILE-BASELINE-CLIENT", requirement["profile_ids"])
         self.assertEqual(review["expected_client_requirement_ids"], [requirement_id])
         self.assertEqual(review["source_obligations"][0]["actor"], "client")
         self.assertEqual(review["source_obligations"][0]["direction"], "unresolved")
