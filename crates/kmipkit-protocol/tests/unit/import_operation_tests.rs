@@ -124,6 +124,26 @@ fn wrapped_object_has_encryption_key_information(object: &Item) -> bool {
     })
 }
 
+fn wrapped_object_has_byte_string_key_value(object: &Item) -> bool {
+    object.with_value(|object_value| match object_value {
+        ValueView::Structure(object_fields) => object_fields.children().iter().any(|key_block| {
+            key_block.tag().raw() == KEY_BLOCK
+                && key_block.with_value(|key_block_value| match key_block_value {
+                    ValueView::Structure(key_block_fields) => {
+                        key_block_fields.children().iter().any(|field| {
+                            field.tag().raw() == KEY_VALUE
+                                && field.with_value(|value| {
+                                    matches!(value, ValueView::ByteString(_))
+                                })
+                        })
+                    }
+                    _ => false,
+                })
+        }),
+        _ => false,
+    })
+}
+
 fn response_message(
     status: u32,
     reason: Option<u32>,
@@ -239,6 +259,7 @@ fn replacement_and_conditional_wrap_type_are_preserved_without_unwrapping() {
     );
     assert!(fields[2].with_value(|value| matches!(value, ValueView::Boolean(true))));
     assert!(wrapped_object_has_encryption_key_information(&fields[5]));
+    assert!(wrapped_object_has_byte_string_key_value(&fields[5]));
     assert!(
         fields[3].with_value(
             |value| matches!(value, ValueView::Enumeration(raw) if *raw == 0xF123_4568)
