@@ -1752,6 +1752,41 @@ def validate_source_table_contracts(oracle: object, repo_root: Path) -> list[str
     except OSError:
         return ["repository root is unavailable"]
 
+    catalog_path = root / "specification" / "catalog" / "kmip-2.1.json"
+    try:
+        catalog_path.resolve(strict=True).relative_to(root)
+        catalog = json.loads(catalog_path.read_text(encoding="utf-8"))
+    except (OSError, ValueError, UnicodeError, json.JSONDecodeError):
+        return ["KMIP 2.1 catalog is unavailable for operation contract validation"]
+    elements = catalog.get("elements", []) if isinstance(catalog, dict) else []
+    operation_elements = {
+        element.get("element_id"): element
+        for element in elements
+        if isinstance(element, dict) and isinstance(element.get("element_id"), str)
+    }
+    feature_requirement_cache: dict[str, set[str] | None] = {}
+
+    def feature_requirements(feature_spec_id: str) -> set[str] | None:
+        if feature_spec_id in feature_requirement_cache:
+            return feature_requirement_cache[feature_spec_id]
+        specification_dir = root / "specs"
+        for specification_path in specification_dir.glob("*/spec.md"):
+            try:
+                specification = specification_path.read_text(encoding="utf-8")
+            except (OSError, UnicodeError):
+                continue
+            branch = re.search(
+                r"(?m)^\*\*Feature Branch\*\*:\s*`?feature/([^`\s]+)",
+                specification,
+            )
+            if branch is None or not branch.group(1).startswith(f"{feature_spec_id}-"):
+                continue
+            identifiers = set(re.findall(r"(?m)^\s*-\s+\*\*(FR-\d{3})\*\*:", specification))
+            feature_requirement_cache[feature_spec_id] = identifiers
+            return identifiers
+        feature_requirement_cache[feature_spec_id] = None
+        return None
+
     for index, contract in enumerate(contracts):
         label = f"source_table_contracts[{index}]"
         if not isinstance(contract, dict):
@@ -1790,6 +1825,25 @@ def validate_source_table_contracts(oracle: object, repo_root: Path) -> list[str
         if not isinstance(table_number, int) or isinstance(table_number, bool) or table_number < 1:
             diagnostics.append(f"{label}.table_number must be a positive integer")
 
+        operation_id = contract.get("operation_element_id")
+        operation = operation_elements.get(operation_id) if isinstance(operation_id, str) else None
+        operation_tables = operation.get("payload_tables", []) if isinstance(operation, dict) else []
+        if (
+            not isinstance(operation, dict)
+            or operation.get("kind") != "operation"
+            or operation.get("direction") != "client_to_server"
+            or not isinstance(operation_tables, list)
+            or not any(
+                isinstance(table, dict)
+                and table.get("role") == "request"
+                and table.get("table_number") == table_number
+                for table in operation_tables
+            )
+        ):
+            diagnostics.append(
+                f"{label}.operation_element_id must reference a client-to-server operation with the request table"
+            )
+
         source_path = contract.get("source_path")
         if not isinstance(source_path, str):
             diagnostics.append(f"{label}.source_path must name the pinned source file")
@@ -1807,15 +1861,26 @@ def validate_source_table_contracts(oracle: object, repo_root: Path) -> list[str
                 diagnostics.append(f"{label}.{field} must be a non-empty string")
         if contract.get("contract_kind") != "operation_request_table_field":
             diagnostics.append(f"{label}.contract_kind must identify an operation request table field")
-        if contract.get("operation_element_id") != "KMIPKIT-ELEM-OP-C2S-HASH":
-            diagnostics.append(f"{label}.operation_element_id must link to KMIPKIT-ELEM-OP-C2S-HASH")
         functional_requirements = contract.get("functional_requirement_ids")
         if (
             not isinstance(functional_requirements, list)
-            or "FR-002" not in functional_requirements
-            or any(not isinstance(value, str) for value in functional_requirements)
+            or not functional_requirements
+            or any(
+                not isinstance(value, str) or re.fullmatch(r"FR-\d{3}", value) is None
+                for value in functional_requirements
+            )
         ):
-            diagnostics.append(f"{label}.functional_requirement_ids must link the Hash request contract to FR-002")
+            diagnostics.append(f"{label}.functional_requirement_ids must contain feature requirement IDs")
+        elif isinstance(operation, dict):
+            feature_spec_id = operation.get("feature_spec")
+            if not isinstance(feature_spec_id, str) or not feature_spec_id.strip():
+                diagnostics.append(f"{label}.functional_requirement_ids cannot resolve the operation feature spec")
+            else:
+                approved_requirements = feature_requirements(feature_spec_id)
+                if approved_requirements is None:
+                    diagnostics.append(f"{label}.functional_requirement_ids cannot resolve the approved feature spec")
+                elif not set(functional_requirements).issubset(approved_requirements):
+                    diagnostics.append(f"{label}.functional_requirement_ids must reference declared feature requirements")
 
         for field, executable_test in (("implementation_refs", False), ("verification_refs", True)):
             references = contract.get(field)

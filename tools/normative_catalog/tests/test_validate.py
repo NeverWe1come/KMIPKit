@@ -14978,7 +14978,10 @@ class CatalogValidationTests(unittest.TestCase):
         )
         import_contract["functional_requirement_ids"] = ["FR-999"]
         self.assertTrue(
-            any("functional requirement" in diagnostic for diagnostic in validate_source_table_contracts(broken, ROOT)),
+            any(
+                "functional_requirement_ids" in diagnostic
+                for diagnostic in validate_source_table_contracts(broken, ROOT)
+            ),
         )
 
     def test_hash_data_row_keeps_its_conditional_source_force_and_disposition(self) -> None:
@@ -15389,7 +15392,14 @@ class CatalogValidationTests(unittest.TestCase):
                 self.assertNotIn("candidate_requirement_id", contract)
                 self.assertNotIn("proposed_requirement_id", contract)
                 self.assertNotIn("requirement_id", contract)
-        legacy_proposals = {f"KMIPKIT-REQ-SPEC-6.1.25-{ordinal:03d}" for ordinal in range(5, 12)}
+        legacy_proposals = {
+            "KMIPKIT-REQ-SPEC-6.1.25-005",
+            "KMIPKIT-REQ-SPEC-6.1.25-007",
+            "KMIPKIT-REQ-SPEC-6.1.25-008",
+            "KMIPKIT-REQ-SPEC-6.1.25-009",
+            "KMIPKIT-REQ-SPEC-6.1.25-010",
+            "KMIPKIT-REQ-SPEC-6.1.25-011",
+        }
         self.assertTrue(legacy_proposals.isdisjoint(catalog_ids))
         request_rows = reviews["KMIPKIT-CLAUSE-SPEC-6.1.25-003"]["source_request_rows"]
         self.assertEqual(

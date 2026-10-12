@@ -76,9 +76,9 @@
     "requirement_crosswalk_records": 466,
     "requirement_crosswalk_complete": false,
     "source_requirement_review_records": 889,
-    "source_only_requirement_gaps": 165,
-    "source_only_requirement_gap_proposals": 112,
-    "source_table_contracts": 5
+    "source_only_requirement_gaps": 156,
+    "source_only_requirement_gap_proposals": 103,
+    "source_table_contracts": 14
   },
   "source_clause_crosswalk": [
     {
@@ -65465,7 +65465,7 @@
           "row_label": "Unique Identifier",
           "required": "Yes",
           "actor": "client",
-          "disposition": "required_request_field_with_source_only_proposal",
+          "disposition": "required_request_table_contract",
           "html_line_range": [
             28510,
             28522
@@ -65477,7 +65477,7 @@
           "row_label": "Object Type",
           "required": "Yes",
           "actor": "client",
-          "disposition": "required_request_field_with_source_only_proposal",
+          "disposition": "required_request_table_contract",
           "html_line_range": [
             28527,
             28537
@@ -65489,7 +65489,7 @@
           "row_label": "Replace Existing",
           "required": "No",
           "actor": "client",
-          "disposition": "optional_request_field_with_source_only_proposal",
+          "disposition": "optional_request_table_contract",
           "html_line_range": [
             28543,
             28555
@@ -65501,7 +65501,7 @@
           "row_label": "Key Wrap Type",
           "required": "If and only if the key object is wrapped",
           "actor": "client",
-          "disposition": "conditional_request_field_with_source_only_proposal",
+          "disposition": "conditionally_required_request_table_contract",
           "html_line_range": [
             28561,
             28577
@@ -65513,7 +65513,7 @@
           "row_label": "Attributes",
           "required": "Yes",
           "actor": "client",
-          "disposition": "required_request_field_with_source_only_proposal",
+          "disposition": "required_request_table_contract",
           "html_line_range": [
             28583,
             28593
@@ -65525,7 +65525,7 @@
           "row_label": "Any Object (Section 2)",
           "required": "Yes",
           "actor": "client",
-          "disposition": "required_request_field_with_source_only_proposal",
+          "disposition": "required_request_table_contract",
           "html_line_range": [
             28599,
             28610
@@ -65654,7 +65654,7 @@
           "row_label": "Any Object (Section 2)",
           "required": "Yes",
           "actor": "client",
-          "disposition": "required_request_field_with_source_only_proposal",
+          "disposition": "required_request_table_contract",
           "html_line_range": [
             28599,
             28610
@@ -66052,7 +66052,7 @@
           "row_label": "Object Type",
           "required": "Yes",
           "actor": "client",
-          "disposition": "required_request_field_with_source_only_proposal",
+          "disposition": "required_request_table_contract",
           "html_line_range": [
             28943,
             28958
@@ -66096,7 +66096,7 @@
           "row_label": "Attributes",
           "required": "No",
           "actor": "client",
-          "disposition": "optional_request_field_with_source_only_proposal",
+          "disposition": "optional_request_table_contract",
           "html_line_range": [
             28996,
             29011
@@ -66109,7 +66109,7 @@
           "row_label": "Protection Storage Masks",
           "required": "No",
           "actor": "client",
-          "disposition": "optional_request_field_with_source_only_proposal",
+          "disposition": "optional_request_table_contract",
           "html_line_range": [
             29012,
             29028
@@ -83720,210 +83720,6 @@
       "review_note": "This Required=Yes table-body row reuses the existing stable label for specifying the number of protection units. Catalog source_keyword=SHALL points to a descriptive paragraph rather than this Required=Yes row; Green must correct the locator/keyword metadata while preserving the client requirement."
     },
     {
-      "gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.25-REPLACE-EXISTING-OPTIONAL",
-      "source_id": "KMIPKIT-SRC-spec",
-      "source_path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
-      "source_section": "6.1.25",
-      "source_clause_id": null,
-      "source_locator": {
-        "kind": "table_body_row",
-        "section": "6.1.25",
-        "row_label": "Replace Existing",
-        "table": "request_payload",
-        "html_line_range": [
-          28543,
-          28555
-        ]
-      },
-      "source_locator_description": "§6.1.25 Import request payload body row for Replace Existing (HTML lines 28543–28555)",
-      "html_line_range": [
-        28543,
-        28555
-      ],
-      "source_excerpt": "Replace Existing No A Boolean. If specified and true then any existing object with the same Unique Identifier SHALL be replaced by this operation. If absent or false and an object exists with the same Unique Identifier then an error SHALL be returned.",
-      "source_keywords": [],
-      "source_force": "optional_table_body_value",
-      "audited_statement": "The optional Replace Existing request field lets the client indicate whether an existing object with the same UID should be replaced; its server effects remain conditional and are not a client SHALL.",
-      "actor": "client",
-      "direction": "client→server Import request field",
-      "condition": "Client may specify the optional field when replacement is intended.",
-      "scope_disposition": "client_1_0",
-      "candidate_requirement_id": null,
-      "proposed_requirement_id": "KMIPKIT-REQ-SPEC-6.1.25-005",
-      "status": "stable_label_proposed_not_in_catalog",
-      "review_note": "The optional Replace Existing request field lets the client indicate whether an existing object with the same UID should be replaced; its server effects remain conditional and are not a client SHALL. This source-only label is not added to the catalog or client profile closures in Red."
-    },
-    {
-      "gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.25-UNIQUE-IDENTIFIER-REQUIRED",
-      "source_id": "KMIPKIT-SRC-spec",
-      "source_path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
-      "source_section": "6.1.25",
-      "source_clause_id": null,
-      "source_locator": {
-        "kind": "table_body_row",
-        "section": "6.1.25",
-        "row_label": "Unique Identifier",
-        "table": "request_payload",
-        "html_line_range": [
-          28510,
-          28522
-        ]
-      },
-      "source_locator_description": "§6.1.25 Import request payload body row for Unique Identifier (HTML lines 28510–28522)",
-      "html_line_range": [
-        28510,
-        28522
-      ],
-      "source_excerpt": "Unique Identifier Yes The Unique Identifier of the object to be imported",
-      "source_keywords": [],
-      "source_force": "required_table_body_value",
-      "audited_statement": "The Import request table marks Unique Identifier Required=Yes. Import does not state that this request may omit UID or reuse ID Placeholder.",
-      "actor": "client",
-      "direction": "client→server Import request field",
-      "condition": "Required by the Import request payload table",
-      "scope_disposition": "client_1_0",
-      "candidate_requirement_id": null,
-      "proposed_requirement_id": "KMIPKIT-REQ-SPEC-6.1.25-007",
-      "status": "stable_label_proposed_not_in_catalog",
-      "review_note": "The Import request table marks Unique Identifier Required=Yes. Import does not state that this request may omit UID or reuse ID Placeholder. This source-only label is not added to the catalog or client profile closures in Red."
-    },
-    {
-      "gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.25-OBJECT-TYPE-REQUIRED",
-      "source_id": "KMIPKIT-SRC-spec",
-      "source_path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
-      "source_section": "6.1.25",
-      "source_clause_id": null,
-      "source_locator": {
-        "kind": "table_body_row",
-        "section": "6.1.25",
-        "row_label": "Object Type",
-        "table": "request_payload",
-        "html_line_range": [
-          28527,
-          28537
-        ]
-      },
-      "source_locator_description": "§6.1.25 Import request payload body row for Object Type (HTML lines 28527–28537)",
-      "html_line_range": [
-        28527,
-        28537
-      ],
-      "source_excerpt": "Object Type Yes Determines the type of object being imported.",
-      "source_keywords": [],
-      "source_force": "required_table_body_value",
-      "audited_statement": "The Import request table marks Object Type Required=Yes and identifies the type of object being imported.",
-      "actor": "client",
-      "direction": "client→server Import request field",
-      "condition": "Required by the Import request payload table",
-      "scope_disposition": "client_1_0",
-      "candidate_requirement_id": null,
-      "proposed_requirement_id": "KMIPKIT-REQ-SPEC-6.1.25-008",
-      "status": "stable_label_proposed_not_in_catalog",
-      "review_note": "The Import request table marks Object Type Required=Yes and identifies the type of object being imported. This source-only label is not added to the catalog or client profile closures in Red."
-    },
-    {
-      "gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.25-ATTRIBUTES-REQUIRED",
-      "source_id": "KMIPKIT-SRC-spec",
-      "source_path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
-      "source_section": "6.1.25",
-      "source_clause_id": null,
-      "source_locator": {
-        "kind": "table_body_row",
-        "section": "6.1.25",
-        "row_label": "Attributes",
-        "table": "request_payload",
-        "html_line_range": [
-          28583,
-          28593
-        ]
-      },
-      "source_locator_description": "§6.1.25 Import request payload body row for Attributes (HTML lines 28583–28593)",
-      "html_line_range": [
-        28583,
-        28593
-      ],
-      "source_excerpt": "Attributes Yes Specifies object attributes to be associated with the new object.",
-      "source_keywords": [],
-      "source_force": "required_table_body_value",
-      "audited_statement": "The Import request table marks Attributes Required=Yes. This request-field presence is separate from the actor-ambiguous paragraph MUST about supplied/server-generated values.",
-      "actor": "client",
-      "direction": "client→server Import request field",
-      "condition": "Required by the Import request payload table",
-      "scope_disposition": "client_1_0",
-      "candidate_requirement_id": null,
-      "proposed_requirement_id": "KMIPKIT-REQ-SPEC-6.1.25-009",
-      "status": "stable_label_proposed_not_in_catalog",
-      "review_note": "The Import request table marks Attributes Required=Yes. This request-field presence is separate from the actor-ambiguous paragraph MUST about supplied/server-generated values. This source-only label is not added to the catalog or client profile closures in Red."
-    },
-    {
-      "gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.25-ANY-OBJECT-REQUIRED",
-      "source_id": "KMIPKIT-SRC-spec",
-      "source_path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
-      "source_section": "6.1.25",
-      "source_clause_id": null,
-      "source_locator": {
-        "kind": "table_body_row",
-        "section": "6.1.25",
-        "row_label": "Any Object (Section 2)",
-        "table": "request_payload",
-        "html_line_range": [
-          28599,
-          28610
-        ]
-      },
-      "source_locator_description": "§6.1.25 Import request payload body row for Any Object (Section 2) (HTML lines 28599–28610)",
-      "html_line_range": [
-        28599,
-        28610
-      ],
-      "source_excerpt": "Any Object (Section 2) Yes The object being imported. The object and attributes MAY be wrapped.",
-      "source_keywords": [],
-      "source_force": "required_table_body_value",
-      "audited_statement": "The Import request table marks Any Object Required=Yes. Its separate MAY says the object and attributes may be wrapped.",
-      "actor": "client",
-      "direction": "client→server Import request field",
-      "condition": "Required by the Import request payload table",
-      "scope_disposition": "client_1_0",
-      "candidate_requirement_id": null,
-      "proposed_requirement_id": "KMIPKIT-REQ-SPEC-6.1.25-010",
-      "status": "stable_label_proposed_not_in_catalog",
-      "review_note": "The Import request table marks Any Object Required=Yes. Its separate MAY says the object and attributes may be wrapped. This source-only label is not added to the catalog or client profile closures in Red."
-    },
-    {
-      "gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.25-KEY-WRAP-TYPE-CONDITIONAL",
-      "source_id": "KMIPKIT-SRC-spec",
-      "source_path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
-      "source_section": "6.1.25",
-      "source_clause_id": null,
-      "source_locator": {
-        "kind": "table_body_row",
-        "section": "6.1.25",
-        "row_label": "Key Wrap Type",
-        "table": "request_payload",
-        "html_line_range": [
-          28561,
-          28577
-        ]
-      },
-      "source_locator_description": "§6.1.25 Import request payload body row for Key Wrap Type (HTML lines 28561–28577)",
-      "html_line_range": [
-        28561,
-        28577
-      ],
-      "source_excerpt": "Key Wrap Type If and only if the key object is wrapped. If Not Wrapped then the server SHALL unwrap the object before storing it, and return an error if the wrapping key is not available. Otherwise the server SHALL store the object as provided.",
-      "source_keywords": [],
-      "source_force": "conditional_table_body_value",
-      "audited_statement": "The Required-column condition is If and only if the key object is wrapped. Preserve the printed condition and the server branch tension; do not infer behavior beyond the row.",
-      "actor": "client",
-      "direction": "client→server Import request field",
-      "condition": "Required if and only if the key object is wrapped, as printed in the table Required column.",
-      "scope_disposition": "client_1_0",
-      "candidate_requirement_id": null,
-      "proposed_requirement_id": "KMIPKIT-REQ-SPEC-6.1.25-011",
-      "status": "stable_label_proposed_not_in_catalog",
-      "review_note": "The Required-column condition is If and only if the key object is wrapped. Preserve the printed condition and the server branch tension; do not infer behavior beyond the row. This source-only label is not added to the catalog or client profile closures in Red."
-    },
-    {
       "gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.26-INTEROP-FUNCTION-REQUIRED",
       "source_id": "KMIPKIT-SRC-spec",
       "source_path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
@@ -83990,108 +83786,6 @@
       "proposed_requirement_id": "KMIPKIT-REQ-SPEC-6.1.26-002",
       "status": "stable_label_proposed_not_in_catalog",
       "review_note": "The source wording uses “if the test case” and is preserved verbatim. This source-only proposal is not added to the catalog or profile closure arrays in Red."
-    },
-    {
-      "gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.27-OBJECT-TYPE-REQUIRED",
-      "source_id": "KMIPKIT-SRC-spec",
-      "source_path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
-      "source_section": "6.1.27",
-      "source_clause_id": null,
-      "source_locator": {
-        "kind": "table_body_row",
-        "section": "6.1.27",
-        "row_label": "Object Type",
-        "table": "request_payload",
-        "html_line_range": [
-          28943,
-          28958
-        ]
-      },
-      "source_locator_description": "§6.1.27 Join Split Key request payload body row for Object Type (HTML lines 28943–28958)",
-      "html_line_range": [
-        28943,
-        28958
-      ],
-      "source_excerpt": "Object Type Yes Determines the type of object to be created.",
-      "source_keywords": [],
-      "source_force": "required_table_body_value",
-      "audited_statement": "The Join Split Key request payload marks Object Type Required=Yes. This is client request data; no optional Object Type MAY is present in the source.",
-      "actor": "client",
-      "direction": "client→server Join Split Key request field",
-      "condition": "Required in each Join Split Key request.",
-      "scope_disposition": "client_1_0",
-      "candidate_requirement_id": null,
-      "proposed_requirement_id": "KMIPKIT-REQ-SPEC-6.1.27-006",
-      "status": "stable_label_proposed_not_in_catalog",
-      "review_note": "Separate source-only proposal for the Required=Yes Object Type field; catalog candidate ...6.1.27-002-001 incorrectly claims a MAY for Object Type. Proposal remains outside catalog/profile closures in Red."
-    },
-    {
-      "gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.27-ATTRIBUTES-OPTIONAL",
-      "source_id": "KMIPKIT-SRC-spec",
-      "source_path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
-      "source_section": "6.1.27",
-      "source_clause_id": null,
-      "source_locator": {
-        "kind": "table_body_row",
-        "section": "6.1.27",
-        "row_label": "Attributes",
-        "table": "request_payload",
-        "html_line_range": [
-          28996,
-          29011
-        ]
-      },
-      "source_locator_description": "§6.1.27 Join Split Key request payload body row for Attributes (HTML lines 28996–29011)",
-      "html_line_range": [
-        28996,
-        29011
-      ],
-      "source_excerpt": "Attributes No Specifies desired object attributes.",
-      "source_keywords": [],
-      "source_force": "optional_table_body_value",
-      "audited_statement": "The Attributes request field is marked Required=No, preserving optional client request capability.",
-      "actor": "client",
-      "direction": "client→server Join Split Key request field",
-      "condition": "The client may include desired object attributes in the request.",
-      "scope_disposition": "client_1_0",
-      "candidate_requirement_id": null,
-      "proposed_requirement_id": "KMIPKIT-REQ-SPEC-6.1.27-007",
-      "status": "stable_label_proposed_not_in_catalog",
-      "review_note": "Required=No is recorded as an optional client capability, not a formal MAY atom. Source-only proposal remains outside catalog/profile closures in Red."
-    },
-    {
-      "gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.27-PROTECTION-STORAGE-MASKS-OPTIONAL",
-      "source_id": "KMIPKIT-SRC-spec",
-      "source_path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
-      "source_section": "6.1.27",
-      "source_clause_id": null,
-      "source_locator": {
-        "kind": "table_body_row",
-        "section": "6.1.27",
-        "row_label": "Protection Storage Masks",
-        "table": "request_payload",
-        "html_line_range": [
-          29012,
-          29028
-        ]
-      },
-      "source_locator_description": "§6.1.27 Join Split Key request payload body row for Protection Storage Masks (HTML lines 29012–29028)",
-      "html_line_range": [
-        29012,
-        29028
-      ],
-      "source_excerpt": "Protection Storage Masks No Specifies all permissible Protection Storage Mask selections for the new object",
-      "source_keywords": [],
-      "source_force": "optional_table_body_value",
-      "audited_statement": "The Protection Storage Masks request field is marked Required=No, preserving optional client request capability.",
-      "actor": "client",
-      "direction": "client→server Join Split Key request field",
-      "condition": "The client may provide permissible Protection Storage Mask selections for the new object.",
-      "scope_disposition": "client_1_0",
-      "candidate_requirement_id": null,
-      "proposed_requirement_id": "KMIPKIT-REQ-SPEC-6.1.27-008",
-      "status": "stable_label_proposed_not_in_catalog",
-      "review_note": "Required=No is recorded as an optional client capability, not a formal MAY atom. Source-only proposal remains outside catalog/profile closures in Red."
     },
     {
       "gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.28-STORAGE-STATUS-MASK-OPTIONAL",
@@ -86204,6 +85898,459 @@
       "evidence_disposition": {
         "status": "mapped_to_feature_contract",
         "statement": "Implementation and executable tests are linked through KMIPKIT-ELEM-OP-C2S-HASH and KMIPKIT-0021 FR-002; this table cell does not create a standalone REQ record."
+      }
+    },
+    {
+      "gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.25-UNIQUE-IDENTIFIER-REQUIRED",
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+      "source_section": "6.1.25",
+      "source_clause_id": null,
+      "source_locator": {
+        "kind": "table_body_row",
+        "section": "6.1.25",
+        "row_label": "Unique Identifier",
+        "table": "request_payload",
+        "html_line_range": [
+          28510,
+          28522
+        ]
+      },
+      "source_locator_description": "§6.1.25 Import request payload body row for Unique Identifier (HTML lines 28510–28522)",
+      "html_line_range": [
+        28510,
+        28522
+      ],
+      "source_excerpt": "Unique Identifier Yes The Unique Identifier of the object to be imported",
+      "source_keywords": [],
+      "source_force": "required_table_body_value",
+      "audited_statement": "The Import request table marks Unique Identifier Required=Yes. Import does not state that this request may omit UID or reuse ID Placeholder.",
+      "actor": "client",
+      "direction": "client→server Import request field",
+      "condition": "Required by the Import request payload table",
+      "scope_disposition": "client_1_0",
+      "status": "mapped_to_approved_feature_contract",
+      "review_note": "Source table field contract for Unique Identifier is mapped through KMIPKIT-ELEM-OP-C2S-IMPORT and its approved feature functional requirements FR-001, FR-002, FR-008; this row does not create a standalone REQ record.",
+      "contract_kind": "operation_request_table_field",
+      "table_number": 238,
+      "requiredness": "Yes",
+      "operation_element_id": "KMIPKIT-ELEM-OP-C2S-IMPORT",
+      "functional_requirement_ids": [
+        "FR-001",
+        "FR-002",
+        "FR-008"
+      ],
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/import.rs::ImportRequest::into_ttlv_payload"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/import_operation_tests.rs::request_preserves_required_fields_and_only_explicit_optional_choices"
+      ],
+      "evidence_disposition": {
+        "status": "mapped_to_feature_contract",
+        "statement": "Implementation and executable verification are linked through KMIPKIT-ELEM-OP-C2S-IMPORT and feature requirements FR-001, FR-002, FR-008; this table row does not create a standalone REQ record."
+      }
+    },
+    {
+      "gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.25-OBJECT-TYPE-REQUIRED",
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+      "source_section": "6.1.25",
+      "source_clause_id": null,
+      "source_locator": {
+        "kind": "table_body_row",
+        "section": "6.1.25",
+        "row_label": "Object Type",
+        "table": "request_payload",
+        "html_line_range": [
+          28527,
+          28537
+        ]
+      },
+      "source_locator_description": "§6.1.25 Import request payload body row for Object Type (HTML lines 28527–28537)",
+      "html_line_range": [
+        28527,
+        28537
+      ],
+      "source_excerpt": "Object Type Yes Determines the type of object being imported.",
+      "source_keywords": [],
+      "source_force": "required_table_body_value",
+      "audited_statement": "The Import request table marks Object Type Required=Yes and identifies the type of object being imported.",
+      "actor": "client",
+      "direction": "client→server Import request field",
+      "condition": "Required by the Import request payload table",
+      "scope_disposition": "client_1_0",
+      "status": "mapped_to_approved_feature_contract",
+      "review_note": "Source table field contract for Object Type is mapped through KMIPKIT-ELEM-OP-C2S-IMPORT and its approved feature functional requirements FR-001, FR-002, FR-008; this row does not create a standalone REQ record.",
+      "contract_kind": "operation_request_table_field",
+      "table_number": 238,
+      "requiredness": "Yes",
+      "operation_element_id": "KMIPKIT-ELEM-OP-C2S-IMPORT",
+      "functional_requirement_ids": [
+        "FR-001",
+        "FR-002",
+        "FR-008"
+      ],
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/import.rs::ImportRequest::into_ttlv_payload"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/import_operation_tests.rs::request_preserves_required_fields_and_only_explicit_optional_choices"
+      ],
+      "evidence_disposition": {
+        "status": "mapped_to_feature_contract",
+        "statement": "Implementation and executable verification are linked through KMIPKIT-ELEM-OP-C2S-IMPORT and feature requirements FR-001, FR-002, FR-008; this table row does not create a standalone REQ record."
+      }
+    },
+    {
+      "gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.25-REPLACE-EXISTING-OPTIONAL",
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+      "source_section": "6.1.25",
+      "source_clause_id": null,
+      "source_locator": {
+        "kind": "table_body_row",
+        "section": "6.1.25",
+        "row_label": "Replace Existing",
+        "table": "request_payload",
+        "html_line_range": [
+          28543,
+          28555
+        ]
+      },
+      "source_locator_description": "§6.1.25 Import request payload body row for Replace Existing (HTML lines 28543–28555)",
+      "html_line_range": [
+        28543,
+        28555
+      ],
+      "source_excerpt": "Replace Existing No A Boolean. If specified and true then any existing object with the same Unique Identifier SHALL be replaced by this operation. If absent or false and an object exists with the same Unique Identifier then an error SHALL be returned.",
+      "source_keywords": [],
+      "source_force": "optional_table_body_value",
+      "audited_statement": "The optional Replace Existing request field lets the client indicate whether an existing object with the same UID should be replaced; its server effects remain conditional and are not a client SHALL.",
+      "actor": "client",
+      "direction": "client→server Import request field",
+      "condition": "Client may specify the optional field when replacement is intended.",
+      "scope_disposition": "client_1_0",
+      "status": "mapped_to_approved_feature_contract",
+      "review_note": "Source table field contract for Replace Existing is mapped through KMIPKIT-ELEM-OP-C2S-IMPORT and its approved feature functional requirements FR-001; this row does not create a standalone REQ record.",
+      "contract_kind": "operation_request_table_field",
+      "table_number": 238,
+      "requiredness": "No",
+      "operation_element_id": "KMIPKIT-ELEM-OP-C2S-IMPORT",
+      "functional_requirement_ids": [
+        "FR-001"
+      ],
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/import.rs::ImportRequest::into_ttlv_payload"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/import_operation_tests.rs::replacement_and_conditional_wrap_type_are_preserved_without_unwrapping"
+      ],
+      "evidence_disposition": {
+        "status": "mapped_to_feature_contract",
+        "statement": "Implementation and executable verification are linked through KMIPKIT-ELEM-OP-C2S-IMPORT and feature requirements FR-001; this table row does not create a standalone REQ record."
+      }
+    },
+    {
+      "gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.25-KEY-WRAP-TYPE-CONDITIONAL",
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+      "source_section": "6.1.25",
+      "source_clause_id": null,
+      "source_locator": {
+        "kind": "table_body_row",
+        "section": "6.1.25",
+        "row_label": "Key Wrap Type",
+        "table": "request_payload",
+        "html_line_range": [
+          28561,
+          28577
+        ]
+      },
+      "source_locator_description": "§6.1.25 Import request payload body row for Key Wrap Type (HTML lines 28561–28577)",
+      "html_line_range": [
+        28561,
+        28577
+      ],
+      "source_excerpt": "Key Wrap Type If and only if the key object is wrapped. If Not Wrapped then the server SHALL unwrap the object before storing it, and return an error if the wrapping key is not available. Otherwise the server SHALL store the object as provided.",
+      "source_keywords": [],
+      "source_force": "conditional_table_body_value",
+      "audited_statement": "The Required-column condition is If and only if the key object is wrapped. Preserve the printed condition and the server branch tension; do not infer behavior beyond the row.",
+      "actor": "client",
+      "direction": "client→server Import request field",
+      "condition": "Required if and only if the key object is wrapped, as printed in the table Required column.",
+      "scope_disposition": "client_1_0",
+      "status": "mapped_to_approved_feature_contract",
+      "review_note": "Source table field contract for Key Wrap Type is mapped through KMIPKIT-ELEM-OP-C2S-IMPORT and its approved feature functional requirements FR-001, FR-002, FR-008; this row does not create a standalone REQ record.",
+      "contract_kind": "operation_request_table_field",
+      "table_number": 238,
+      "requiredness": "If and only if the key object is wrapped",
+      "operation_element_id": "KMIPKIT-ELEM-OP-C2S-IMPORT",
+      "functional_requirement_ids": [
+        "FR-001",
+        "FR-002",
+        "FR-008"
+      ],
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/import.rs::ImportRequest::into_ttlv_payload"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/import_operation_tests.rs::key_wrap_type_is_present_if_and_only_if_key_block_has_wrapping_data"
+      ],
+      "evidence_disposition": {
+        "status": "mapped_to_feature_contract",
+        "statement": "Implementation and executable verification are linked through KMIPKIT-ELEM-OP-C2S-IMPORT and feature requirements FR-001, FR-002, FR-008; this table row does not create a standalone REQ record."
+      }
+    },
+    {
+      "gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.25-ATTRIBUTES-REQUIRED",
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+      "source_section": "6.1.25",
+      "source_clause_id": null,
+      "source_locator": {
+        "kind": "table_body_row",
+        "section": "6.1.25",
+        "row_label": "Attributes",
+        "table": "request_payload",
+        "html_line_range": [
+          28583,
+          28593
+        ]
+      },
+      "source_locator_description": "§6.1.25 Import request payload body row for Attributes (HTML lines 28583–28593)",
+      "html_line_range": [
+        28583,
+        28593
+      ],
+      "source_excerpt": "Attributes Yes Specifies object attributes to be associated with the new object.",
+      "source_keywords": [],
+      "source_force": "required_table_body_value",
+      "audited_statement": "The Import request table marks Attributes Required=Yes. This request-field presence is separate from the actor-ambiguous paragraph MUST about supplied/server-generated values.",
+      "actor": "client",
+      "direction": "client→server Import request field",
+      "condition": "Required by the Import request payload table",
+      "scope_disposition": "client_1_0",
+      "status": "mapped_to_approved_feature_contract",
+      "review_note": "Source table field contract for Attributes is mapped through KMIPKIT-ELEM-OP-C2S-IMPORT and its approved feature functional requirements FR-001, FR-002, FR-008; this row does not create a standalone REQ record.",
+      "contract_kind": "operation_request_table_field",
+      "table_number": 238,
+      "requiredness": "Yes",
+      "operation_element_id": "KMIPKIT-ELEM-OP-C2S-IMPORT",
+      "functional_requirement_ids": [
+        "FR-001",
+        "FR-002",
+        "FR-008"
+      ],
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/import.rs::ImportRequest::into_ttlv_payload"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/import_operation_tests.rs::request_preserves_required_fields_and_only_explicit_optional_choices"
+      ],
+      "evidence_disposition": {
+        "status": "mapped_to_feature_contract",
+        "statement": "Implementation and executable verification are linked through KMIPKIT-ELEM-OP-C2S-IMPORT and feature requirements FR-001, FR-002, FR-008; this table row does not create a standalone REQ record."
+      }
+    },
+    {
+      "gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.25-ANY-OBJECT-REQUIRED",
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+      "source_section": "6.1.25",
+      "source_clause_id": null,
+      "source_locator": {
+        "kind": "table_body_row",
+        "section": "6.1.25",
+        "row_label": "Any Object (Section 2)",
+        "table": "request_payload",
+        "html_line_range": [
+          28599,
+          28610
+        ]
+      },
+      "source_locator_description": "§6.1.25 Import request payload body row for Any Object (Section 2) (HTML lines 28599–28610)",
+      "html_line_range": [
+        28599,
+        28610
+      ],
+      "source_excerpt": "Any Object (Section 2) Yes The object being imported. The object and attributes MAY be wrapped.",
+      "source_keywords": [],
+      "source_force": "required_table_body_value",
+      "audited_statement": "The Import request table marks Any Object Required=Yes. Its separate MAY says the object and attributes may be wrapped.",
+      "actor": "client",
+      "direction": "client→server Import request field",
+      "condition": "Required by the Import request payload table",
+      "scope_disposition": "client_1_0",
+      "status": "mapped_to_approved_feature_contract",
+      "review_note": "Source table field contract for Any Object (Section 2) is mapped through KMIPKIT-ELEM-OP-C2S-IMPORT and its approved feature functional requirements FR-001, FR-002, FR-008; this row does not create a standalone REQ record.",
+      "contract_kind": "operation_request_table_field",
+      "table_number": 238,
+      "requiredness": "Yes",
+      "operation_element_id": "KMIPKIT-ELEM-OP-C2S-IMPORT",
+      "functional_requirement_ids": [
+        "FR-001",
+        "FR-002",
+        "FR-008"
+      ],
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/import.rs::ImportRequest::into_ttlv_payload"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/import_operation_tests.rs::replacement_and_conditional_wrap_type_are_preserved_without_unwrapping"
+      ],
+      "evidence_disposition": {
+        "status": "mapped_to_feature_contract",
+        "statement": "Implementation and executable verification are linked through KMIPKIT-ELEM-OP-C2S-IMPORT and feature requirements FR-001, FR-002, FR-008; this table row does not create a standalone REQ record."
+      }
+    },
+    {
+      "gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.27-OBJECT-TYPE-REQUIRED",
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+      "source_section": "6.1.27",
+      "source_clause_id": null,
+      "source_locator": {
+        "kind": "table_body_row",
+        "section": "6.1.27",
+        "row_label": "Object Type",
+        "table": "request_payload",
+        "html_line_range": [
+          28943,
+          28958
+        ]
+      },
+      "source_locator_description": "§6.1.27 Join Split Key request payload body row for Object Type (HTML lines 28943–28958)",
+      "html_line_range": [
+        28943,
+        28958
+      ],
+      "source_excerpt": "Object Type Yes Determines the type of object to be created.",
+      "source_keywords": [],
+      "source_force": "required_table_body_value",
+      "audited_statement": "The Join Split Key request payload marks Object Type Required=Yes. This is client request data; no optional Object Type MAY is present in the source.",
+      "actor": "client",
+      "direction": "client→server Join Split Key request field",
+      "condition": "Required in each Join Split Key request.",
+      "scope_disposition": "client_1_0",
+      "status": "mapped_to_approved_feature_contract",
+      "review_note": "Source table field contract for Object Type is mapped through KMIPKIT-ELEM-OP-C2S-JOIN-SPLIT-KEY and its approved feature functional requirements FR-001, FR-002, FR-008; this row does not create a standalone REQ record.",
+      "contract_kind": "operation_request_table_field",
+      "table_number": 244,
+      "requiredness": "Yes",
+      "operation_element_id": "KMIPKIT-ELEM-OP-C2S-JOIN-SPLIT-KEY",
+      "functional_requirement_ids": [
+        "FR-001",
+        "FR-002",
+        "FR-008"
+      ],
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/join_split_key.rs::JoinSplitKeyRequest::into_ttlv_payload"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/join_split_key_operation_tests.rs::request_preserves_repeated_identifiers_in_order_and_keeps_thresholds_off_wire"
+      ],
+      "evidence_disposition": {
+        "status": "mapped_to_feature_contract",
+        "statement": "Implementation and executable verification are linked through KMIPKIT-ELEM-OP-C2S-JOIN-SPLIT-KEY and feature requirements FR-001, FR-002, FR-008; this table row does not create a standalone REQ record."
+      }
+    },
+    {
+      "gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.27-ATTRIBUTES-OPTIONAL",
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+      "source_section": "6.1.27",
+      "source_clause_id": null,
+      "source_locator": {
+        "kind": "table_body_row",
+        "section": "6.1.27",
+        "row_label": "Attributes",
+        "table": "request_payload",
+        "html_line_range": [
+          28996,
+          29011
+        ]
+      },
+      "source_locator_description": "§6.1.27 Join Split Key request payload body row for Attributes (HTML lines 28996–29011)",
+      "html_line_range": [
+        28996,
+        29011
+      ],
+      "source_excerpt": "Attributes No Specifies desired object attributes.",
+      "source_keywords": [],
+      "source_force": "optional_table_body_value",
+      "audited_statement": "The Attributes request field is marked Required=No, preserving optional client request capability.",
+      "actor": "client",
+      "direction": "client→server Join Split Key request field",
+      "condition": "The client may include desired object attributes in the request.",
+      "scope_disposition": "client_1_0",
+      "status": "mapped_to_approved_feature_contract",
+      "review_note": "Source table field contract for Attributes is mapped through KMIPKIT-ELEM-OP-C2S-JOIN-SPLIT-KEY and its approved feature functional requirements FR-001; this row does not create a standalone REQ record.",
+      "contract_kind": "operation_request_table_field",
+      "table_number": 244,
+      "requiredness": "No",
+      "operation_element_id": "KMIPKIT-ELEM-OP-C2S-JOIN-SPLIT-KEY",
+      "functional_requirement_ids": [
+        "FR-001"
+      ],
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/join_split_key.rs::JoinSplitKeyRequest::into_ttlv_payload"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/join_split_key_operation_tests.rs::request_preserves_repeated_identifiers_in_order_and_keeps_thresholds_off_wire"
+      ],
+      "evidence_disposition": {
+        "status": "mapped_to_feature_contract",
+        "statement": "Implementation and executable verification are linked through KMIPKIT-ELEM-OP-C2S-JOIN-SPLIT-KEY and feature requirements FR-001; this table row does not create a standalone REQ record."
+      }
+    },
+    {
+      "gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.27-PROTECTION-STORAGE-MASKS-OPTIONAL",
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+      "source_section": "6.1.27",
+      "source_clause_id": null,
+      "source_locator": {
+        "kind": "table_body_row",
+        "section": "6.1.27",
+        "row_label": "Protection Storage Masks",
+        "table": "request_payload",
+        "html_line_range": [
+          29012,
+          29028
+        ]
+      },
+      "source_locator_description": "§6.1.27 Join Split Key request payload body row for Protection Storage Masks (HTML lines 29012–29028)",
+      "html_line_range": [
+        29012,
+        29028
+      ],
+      "source_excerpt": "Protection Storage Masks No Specifies all permissible Protection Storage Mask selections for the new object",
+      "source_keywords": [],
+      "source_force": "optional_table_body_value",
+      "audited_statement": "The Protection Storage Masks request field is marked Required=No, preserving optional client request capability.",
+      "actor": "client",
+      "direction": "client→server Join Split Key request field",
+      "condition": "The client may provide permissible Protection Storage Mask selections for the new object.",
+      "scope_disposition": "client_1_0",
+      "status": "mapped_to_approved_feature_contract",
+      "review_note": "Source table field contract for Protection Storage Masks is mapped through KMIPKIT-ELEM-OP-C2S-JOIN-SPLIT-KEY and its approved feature functional requirements FR-001; this row does not create a standalone REQ record.",
+      "contract_kind": "operation_request_table_field",
+      "table_number": 244,
+      "requiredness": "No",
+      "operation_element_id": "KMIPKIT-ELEM-OP-C2S-JOIN-SPLIT-KEY",
+      "functional_requirement_ids": [
+        "FR-001"
+      ],
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/join_split_key.rs::JoinSplitKeyRequest::into_ttlv_payload"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/join_split_key_operation_tests.rs::request_preserves_repeated_identifiers_in_order_and_keeps_thresholds_off_wire"
+      ],
+      "evidence_disposition": {
+        "status": "mapped_to_feature_contract",
+        "statement": "Implementation and executable verification are linked through KMIPKIT-ELEM-OP-C2S-JOIN-SPLIT-KEY and feature requirements FR-001; this table row does not create a standalone REQ record."
       }
     }
   ]
