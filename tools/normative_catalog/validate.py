@@ -1689,6 +1689,36 @@ def load_validated_catalog(raw: bytes, repo_root: Path, *, require_complete: boo
     return catalog
 
 
+def _profile_oracle_reference_issue(
+    root: Path,
+    reference: object,
+    *,
+    executable_test: bool,
+) -> str | None:
+    """Return a diagnostic when a profile-oracle path::symbol reference is unresolved."""
+    if not isinstance(reference, str) or "::" not in reference:
+        return "reference must use path::symbol form"
+    relative_path, symbol_path = reference.split("::", 1)
+    symbol = symbol_path.rsplit("::", 1)[-1]
+    if not relative_path or not symbol or not re.fullmatch(r"[A-Za-z_][A-Za-z0-9_]*", symbol):
+        return "reference must name a source file and symbol"
+    if executable_test and "tests" not in Path(relative_path).parts:
+        return "verification reference must point into a tests directory"
+    try:
+        resolved = (root / relative_path).resolve(strict=True)
+        resolved.relative_to(root)
+        text = resolved.read_text(encoding="utf-8")
+    except (OSError, ValueError, UnicodeError):
+        return "reference path must resolve to a repository file"
+    if executable_test:
+        pattern = rf"#\[test\]\s*fn\s+{re.escape(symbol)}\b|\bdef\s+{re.escape(symbol)}\b"
+    else:
+        pattern = rf"\b(?:pub\s+)?fn\s+{re.escape(symbol)}\b|\bdef\s+{re.escape(symbol)}\b"
+    if re.search(pattern, text) is None:
+        return "reference symbol is not defined in the cited file"
+    return None
+
+
 def validate_source_table_contracts(oracle: object, repo_root: Path) -> list[str]:
     """Validate source-table contract evidence in the independent profile oracle.
 
@@ -1721,29 +1751,6 @@ def validate_source_table_contracts(oracle: object, repo_root: Path) -> list[str
         root = repo_root.resolve(strict=True)
     except OSError:
         return ["repository root is unavailable"]
-
-    def resolve_reference(reference: object, *, executable_test: bool) -> str | None:
-        if not isinstance(reference, str) or "::" not in reference:
-            return "reference must use path::symbol form"
-        relative_path, symbol_path = reference.split("::", 1)
-        symbol = symbol_path.rsplit("::", 1)[-1]
-        if not relative_path or not symbol or not re.fullmatch(r"[A-Za-z_][A-Za-z0-9_]*", symbol):
-            return "reference must name a source file and symbol"
-        if executable_test and "tests" not in Path(relative_path).parts:
-            return "verification reference must point into a tests directory"
-        try:
-            resolved = (root / relative_path).resolve(strict=True)
-            resolved.relative_to(root)
-            text = resolved.read_text(encoding="utf-8")
-        except (OSError, ValueError, UnicodeError):
-            return "reference path must resolve to a repository file"
-        if executable_test:
-            pattern = rf"#\[test\]\s*fn\s+{re.escape(symbol)}\b|\bdef\s+{re.escape(symbol)}\b"
-        else:
-            pattern = rf"\b(?:pub\s+)?fn\s+{re.escape(symbol)}\b|\bdef\s+{re.escape(symbol)}\b"
-        if re.search(pattern, text) is None:
-            return "reference symbol is not defined in the cited file"
-        return None
 
     for index, contract in enumerate(contracts):
         label = f"source_table_contracts[{index}]"
@@ -1816,7 +1823,11 @@ def validate_source_table_contracts(oracle: object, repo_root: Path) -> list[str
                 diagnostics.append(f"{label}.{field} must contain a resolved path::symbol reference")
                 continue
             for reference in references:
-                issue = resolve_reference(reference, executable_test=executable_test)
+                issue = _profile_oracle_reference_issue(
+                    root,
+                    reference,
+                    executable_test=executable_test,
+                )
                 if issue is not None:
                     diagnostics.append(f"{label}.{field}: {issue}")
 
