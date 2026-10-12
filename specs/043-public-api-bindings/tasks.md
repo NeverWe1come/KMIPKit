@@ -68,7 +68,7 @@
 - [ ] T033 [US2] Add mappings and parity fixtures for Hash, MAC, MAC Verify, Sign, and Signature Verify from approved `specs/021-hash-mac-signature-operations/spec.md`; cite §§6.1.24, 6.1.32–6.1.33, and 6.1.55–6.1.56.
 - [ ] T034 [US2] For T031–T033, use strict Red/Green/Refactor TDD with separate development commits for each phase; update manifest declarations and stable traceability, and preserve ABI compatibility and each owner specification's semantics.
 
-**Checkpoint**: Only operations with formally Approved/Accepted owner specifications may become declared or verified; the current release inventory has 37 approved owners and 19 candidate owners, which remain blocked.
+**Checkpoint**: Only operations with formally Approved/Accepted owner specifications may become declared or verified; the current release inventory has 37 operation rows linked to approved owners and 19 rows linked to candidate owners, which remain blocked.
 
 ## Phase 5: Linked but Unapproved API Dependencies (US1, US2)
 
