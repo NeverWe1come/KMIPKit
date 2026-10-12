@@ -66,6 +66,45 @@ OPTIONAL_CAPABILITY_TEST_REQUIREMENTS = {
     "crates/kmipkit-protocol/tests/unit/rekey_key_pair_operation_tests.rs::request_emits_table_310_fields_once_in_order_and_preserves_groups": (
         "KMIPKIT-REQ-SPEC-6.1.47-004-001",
     ),
+    "crates/kmipkit-protocol/tests/unit/import_operation_tests.rs::wrapped_pgp_key_accepts_key_wrap_type": (
+        "KMIPKIT-REQ-SPEC-3.3-001-001",
+    ),
+    "crates/kmipkit-protocol/tests/unit/import_operation_tests.rs::request_preserves_required_fields_and_only_explicit_optional_choices": (
+        "KMIPKIT-REQ-SPEC-3.3-001-002",
+    ),
+    "crates/kmipkit-protocol/tests/unit/import_operation_tests.rs::key_wrap_type_is_present_if_and_only_if_key_block_has_wrapping_data": (
+        "KMIPKIT-REQ-SPEC-3.3-001-002",
+    ),
+    "crates/kmipkit-protocol/tests/unit/cryptographic_parameters_tests.rs::omitted_cryptographic_parameters_remain_absent_without_validation": (
+        "KMIPKIT-REQ-SPEC-4.16-001-001",
+    ),
+    "crates/kmipkit-protocol/tests/unit/encrypt_tests.rs::request_omits_cryptographic_parameters_when_the_caller_omits_them": (
+        "KMIPKIT-REQ-SPEC-4.16-001-001",
+    ),
+    "crates/kmipkit-protocol/tests/unit/decrypt_tests.rs::request_omits_cryptographic_parameters_and_iv_when_the_caller_omits_them": (
+        "KMIPKIT-REQ-SPEC-4.16-001-001",
+    ),
+    "crates/kmipkit-protocol/tests/unit/revoke_operation_tests.rs::request_emits_table_295_fields_in_order_and_preserves_open_reason": (
+        "KMIPKIT-REQ-SPEC-4.47-001-001",
+    ),
+    "crates/kmipkit-protocol/tests/unit/revoke_operation_tests.rs::request_encodes_optional_audit_message_inside_revocation_reason_structure": (
+        "KMIPKIT-REQ-SPEC-4.47-001-002",
+    ),
+    "crates/kmipkit-protocol/tests/unit/create_key_pair_tests.rs::request_preserves_six_distinct_optional_groups_and_repeated_items_in_wire_order": (
+        "KMIPKIT-REQ-SPEC-5.2-002",
+    ),
+    "crates/kmipkit-client/tests/unit/encrypt_decrypt_fixture_execution_tests.rs::fixture_derived_encrypt_decrypt_pairs_execute_once_with_exact_wire_and_paired_response": (
+        "KMIPKIT-REQ-SPEC-6.1-001-001",
+    ),
+    "crates/kmipkit-client/tests/unit/encrypt_decrypt_id_placeholder_execution_tests.rs::later_encrypt_omits_identifier_with_batch_order_enabled": (
+        "KMIPKIT-REQ-SPEC-6.1-001-003",
+    ),
+    "crates/kmipkit-protocol/tests/unit/create_tests.rs::request_keeps_the_required_empty_attributes_structure_without_synthesizing_fields": (
+        "KMIPKIT-REQ-SPEC-6.1-004",
+    ),
+    "crates/kmipkit-protocol/tests/unit/register_operation_tests.rs::request_emits_table_291_fields_in_order_and_preserves_object_item": (
+        "KMIPKIT-REQ-SPEC-6.1-004",
+    ),
 }
 
 
