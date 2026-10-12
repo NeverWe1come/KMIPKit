@@ -151,6 +151,15 @@ final class NativeLibraryLoaderTest {
         assertTrue(Files.isDirectory(temporaryDirectory));
     }
 
+    @Test
+    void rejectsUnsupportedNativeAbiVersionsWithRedactedError() {
+        UnsatisfiedLinkError failure = assertThrows(UnsatisfiedLinkError.class,
+                () -> NativeLibraryLoader.validateNativeAbiVersion(2));
+
+        assertEquals(NativeLibraryLoader.LOAD_FAILURE_MESSAGE, failure.getMessage());
+        assertEquals(null, failure.getCause());
+    }
+
     private static ClassLoader classLoader(Map<String, byte[]> resources) {
         return new ClassLoader(null) {
             @Override
