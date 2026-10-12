@@ -16132,6 +16132,68 @@ class CatalogValidationTests(unittest.TestCase):
                     requirement = requirements[requirement_id]
                     self.assertIn(expected_test, requirement["verification_refs"])
 
+    def test_get_key_compression_request_has_scoped_implementation_and_positive_test_evidence(self) -> None:
+        """Get request selector evidence is linked narrowly and passes the optional-evidence gate."""
+        requirement_id = "KMIPKIT-REQ-SPEC-3.1-001"
+        expected_implementation_refs = {
+            "crates/kmipkit-protocol/src/get.rs::GetRequest::with_key_compression_type",
+            "crates/kmipkit-protocol/src/get.rs::GetRequest::into_ttlv_payload",
+        }
+        expected_verification_refs = {
+            "crates/kmipkit-protocol/tests/unit/get_tests.rs::request_preserves_the_optional_key_compression_type_enumeration",
+            "crates/kmipkit-protocol/tests/unit/get_tests.rs::request_serializes_present_table_220_fields_in_source_order",
+        }
+        catalog = json.loads(
+            (ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8")
+        )
+        requirement = next(
+            row for row in catalog["requirements"] if row["requirement_id"] == requirement_id
+        )
+
+        implementation_refs = set(requirement["implementation_refs"])
+        resolvable_implementation_refs = set()
+        if requirement["status"] == "scoped_verified":
+            repository_root = ROOT.resolve()
+            for reference in implementation_refs:
+                implementation_path = ROOT / reference.partition("::")[0]
+                try:
+                    resolved_implementation_path = implementation_path.resolve(strict=True)
+                    resolved_implementation_path.relative_to(repository_root)
+                except (OSError, ValueError):
+                    continue
+                if resolved_implementation_path.is_file():
+                    resolvable_implementation_refs.add(reference)
+
+        usable_positive_tests = set()
+        for reference in requirement["verification_refs"]:
+            test_path_reference, separator, test_name = reference.partition("::")
+            if not separator or not test_name:
+                continue
+            confined_test_source = test_feature_traceability._read_confined_test_source(
+                test_path_reference
+            )
+            if confined_test_source is None:
+                continue
+            test_path, test_source = confined_test_source
+            if _is_discoverable_positive_test(test_path, test_name, test_source):
+                usable_positive_tests.add(reference)
+
+        scoped_client_request_evidence = (
+            requirement["status"] == "scoped_verified"
+            and requirement["role"] == "client"
+            and requirement["direction"] == "client_to_server"
+            and requirement["scope_state"] == "client_1_0"
+            and expected_implementation_refs.issubset(resolvable_implementation_refs)
+            and expected_verification_refs.issubset(usable_positive_tests)
+        )
+        gaps = []
+        if not expected_implementation_refs.issubset(resolvable_implementation_refs):
+            gaps.append("no usable implementation mapping")
+        if not scoped_client_request_evidence:
+            gaps.append("no eligible implementation and positive-test evidence")
+
+        self.assertEqual(gaps, [], f"{requirement_id}: {'; '.join(gaps)}")
+
     def test_optional_attribute_evidence_rows_are_client_to_server_requests(self) -> None:
         """Attribute request permissions remain client-originated catalog evidence."""
         catalog = json.loads(
