@@ -250,7 +250,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
         verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "profile_conditional",
         source_clause_ids: &["KMIPKIT-CLAUSE-PROF-3.2.1-001"],
-        profile_ids: &[],
+        profile_ids: &["KMIPKIT-PROFILE-HTTPS-CLIENT"],
         official_test_case_ids: &[],
         has_accepted_deviation: false,
     },
@@ -260,7 +260,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
         verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "profile_conditional",
         source_clause_ids: &["KMIPKIT-CLAUSE-PROF-3.2.2-001"],
-        profile_ids: &[],
+        profile_ids: &["KMIPKIT-PROFILE-HTTPS-CLIENT"],
         official_test_case_ids: &[],
         has_accepted_deviation: false,
     },
@@ -270,7 +270,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
         verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "profile_conditional",
         source_clause_ids: &["KMIPKIT-CLAUSE-PROF-3.2.3-001"],
-        profile_ids: &[],
+        profile_ids: &["KMIPKIT-PROFILE-HTTPS-CLIENT"],
         official_test_case_ids: &[],
         has_accepted_deviation: false,
     },
@@ -280,7 +280,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
         verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "profile_conditional",
         source_clause_ids: &["KMIPKIT-CLAUSE-PROF-3.2.4-002"],
-        profile_ids: &[],
+        profile_ids: &["KMIPKIT-PROFILE-HTTPS-CLIENT"],
         official_test_case_ids: &[],
         has_accepted_deviation: false,
     },
@@ -4209,6 +4209,16 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
         has_accepted_deviation: false,
     },
     GeneratedClientRequirement {
+        requirement_id: "KMIPKIT-REQ-SPEC-9.3-001-001",
+        source_keyword: "SHALL",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
+        scope_state: "client_1_0",
+        source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-9.3-001"],
+        profile_ids: &[],
+        official_test_case_ids: &[],
+        has_accepted_deviation: false,
+    },
+    GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-9.4-001-001",
         source_keyword: "OPTIONAL",
         verification_category: GeneratedVerificationCategory::OptionalCapability,
@@ -5427,6 +5437,7 @@ pub const CLIENT_PROFILES: &[GeneratedClientProfile] = &[
             "KMIPKIT-REQ-SPEC-9.20-001-001",
             "KMIPKIT-REQ-SPEC-9.20-001-002",
             "KMIPKIT-REQ-SPEC-9.21-001-001",
+            "KMIPKIT-REQ-SPEC-9.3-001-001",
             "KMIPKIT-REQ-SPEC-9.4-001-001",
             "KMIPKIT-REQ-SPEC-9.4-001-002",
             "KMIPKIT-REQ-SPEC-9.4-002",
@@ -5851,11 +5862,6 @@ pub const CLIENT_PROFILES: &[GeneratedClientProfile] = &[
             GeneratedProfileScopeBlocker {
                 requirement_id: "KMIPKIT-REQ-SPEC-9.21-001-002",
                 source_clause_id: "KMIPKIT-CLAUSE-SPEC-9.21-001",
-                scope_state: "unclear",
-            },
-            GeneratedProfileScopeBlocker {
-                requirement_id: "KMIPKIT-REQ-SPEC-9.3-001-001",
-                source_clause_id: "KMIPKIT-CLAUSE-SPEC-9.3-001",
                 scope_state: "unclear",
             },
             GeneratedProfileScopeBlocker {
@@ -7104,6 +7110,7 @@ pub const CLIENT_PROFILES: &[GeneratedClientProfile] = &[
             "KMIPKIT-REQ-SPEC-9.20-001-001",
             "KMIPKIT-REQ-SPEC-9.20-001-002",
             "KMIPKIT-REQ-SPEC-9.21-001-001",
+            "KMIPKIT-REQ-SPEC-9.3-001-001",
             "KMIPKIT-REQ-SPEC-9.4-001-001",
             "KMIPKIT-REQ-SPEC-9.4-001-002",
             "KMIPKIT-REQ-SPEC-9.4-002",
@@ -7528,11 +7535,6 @@ pub const CLIENT_PROFILES: &[GeneratedClientProfile] = &[
             GeneratedProfileScopeBlocker {
                 requirement_id: "KMIPKIT-REQ-SPEC-9.21-001-002",
                 source_clause_id: "KMIPKIT-CLAUSE-SPEC-9.21-001",
-                scope_state: "unclear",
-            },
-            GeneratedProfileScopeBlocker {
-                requirement_id: "KMIPKIT-REQ-SPEC-9.3-001-001",
-                source_clause_id: "KMIPKIT-CLAUSE-SPEC-9.3-001",
                 scope_state: "unclear",
             },
             GeneratedProfileScopeBlocker {
@@ -8776,6 +8778,7 @@ pub const CLIENT_PROFILES: &[GeneratedClientProfile] = &[
             "KMIPKIT-REQ-SPEC-9.20-001-001",
             "KMIPKIT-REQ-SPEC-9.20-001-002",
             "KMIPKIT-REQ-SPEC-9.21-001-001",
+            "KMIPKIT-REQ-SPEC-9.3-001-001",
             "KMIPKIT-REQ-SPEC-9.4-001-001",
             "KMIPKIT-REQ-SPEC-9.4-001-002",
             "KMIPKIT-REQ-SPEC-9.4-002",
@@ -9200,11 +9203,6 @@ pub const CLIENT_PROFILES: &[GeneratedClientProfile] = &[
             GeneratedProfileScopeBlocker {
                 requirement_id: "KMIPKIT-REQ-SPEC-9.21-001-002",
                 source_clause_id: "KMIPKIT-CLAUSE-SPEC-9.21-001",
-                scope_state: "unclear",
-            },
-            GeneratedProfileScopeBlocker {
-                requirement_id: "KMIPKIT-REQ-SPEC-9.3-001-001",
-                source_clause_id: "KMIPKIT-CLAUSE-SPEC-9.3-001",
                 scope_state: "unclear",
             },
             GeneratedProfileScopeBlocker {
@@ -10444,6 +10442,7 @@ pub const CLIENT_PROFILES: &[GeneratedClientProfile] = &[
             "KMIPKIT-REQ-SPEC-9.20-001-001",
             "KMIPKIT-REQ-SPEC-9.20-001-002",
             "KMIPKIT-REQ-SPEC-9.21-001-001",
+            "KMIPKIT-REQ-SPEC-9.3-001-001",
             "KMIPKIT-REQ-SPEC-9.4-001-001",
             "KMIPKIT-REQ-SPEC-9.4-001-002",
             "KMIPKIT-REQ-SPEC-9.4-002",
@@ -10868,11 +10867,6 @@ pub const CLIENT_PROFILES: &[GeneratedClientProfile] = &[
             GeneratedProfileScopeBlocker {
                 requirement_id: "KMIPKIT-REQ-SPEC-9.21-001-002",
                 source_clause_id: "KMIPKIT-CLAUSE-SPEC-9.21-001",
-                scope_state: "unclear",
-            },
-            GeneratedProfileScopeBlocker {
-                requirement_id: "KMIPKIT-REQ-SPEC-9.3-001-001",
-                source_clause_id: "KMIPKIT-CLAUSE-SPEC-9.3-001",
                 scope_state: "unclear",
             },
             GeneratedProfileScopeBlocker {
@@ -12220,6 +12214,7 @@ pub const CLIENT_PROFILES: &[GeneratedClientProfile] = &[
             "KMIPKIT-REQ-SPEC-9.20-001-001",
             "KMIPKIT-REQ-SPEC-9.20-001-002",
             "KMIPKIT-REQ-SPEC-9.21-001-001",
+            "KMIPKIT-REQ-SPEC-9.3-001-001",
             "KMIPKIT-REQ-SPEC-9.4-001-001",
             "KMIPKIT-REQ-SPEC-9.4-001-002",
             "KMIPKIT-REQ-SPEC-9.4-002",
@@ -12644,11 +12639,6 @@ pub const CLIENT_PROFILES: &[GeneratedClientProfile] = &[
             GeneratedProfileScopeBlocker {
                 requirement_id: "KMIPKIT-REQ-SPEC-9.21-001-002",
                 source_clause_id: "KMIPKIT-CLAUSE-SPEC-9.21-001",
-                scope_state: "unclear",
-            },
-            GeneratedProfileScopeBlocker {
-                requirement_id: "KMIPKIT-REQ-SPEC-9.3-001-001",
-                source_clause_id: "KMIPKIT-CLAUSE-SPEC-9.3-001",
                 scope_state: "unclear",
             },
             GeneratedProfileScopeBlocker {
@@ -14014,6 +14004,7 @@ pub const CLIENT_PROFILES: &[GeneratedClientProfile] = &[
             "KMIPKIT-REQ-SPEC-9.20-001-001",
             "KMIPKIT-REQ-SPEC-9.20-001-002",
             "KMIPKIT-REQ-SPEC-9.21-001-001",
+            "KMIPKIT-REQ-SPEC-9.3-001-001",
             "KMIPKIT-REQ-SPEC-9.4-001-001",
             "KMIPKIT-REQ-SPEC-9.4-001-002",
             "KMIPKIT-REQ-SPEC-9.4-002",
@@ -14438,11 +14429,6 @@ pub const CLIENT_PROFILES: &[GeneratedClientProfile] = &[
             GeneratedProfileScopeBlocker {
                 requirement_id: "KMIPKIT-REQ-SPEC-9.21-001-002",
                 source_clause_id: "KMIPKIT-CLAUSE-SPEC-9.21-001",
-                scope_state: "unclear",
-            },
-            GeneratedProfileScopeBlocker {
-                requirement_id: "KMIPKIT-REQ-SPEC-9.3-001-001",
-                source_clause_id: "KMIPKIT-CLAUSE-SPEC-9.3-001",
                 scope_state: "unclear",
             },
             GeneratedProfileScopeBlocker {
@@ -15536,6 +15522,10 @@ pub const CLIENT_PROFILES: &[GeneratedClientProfile] = &[
         requirement_ids: &[
             "KMIPKIT-REQ-PROF-3.1-001",
             "KMIPKIT-REQ-PROF-3.2-001",
+            "KMIPKIT-REQ-PROF-3.2.1-001",
+            "KMIPKIT-REQ-PROF-3.2.2-001",
+            "KMIPKIT-REQ-PROF-3.2.3-001",
+            "KMIPKIT-REQ-PROF-3.2.4-002",
             "KMIPKIT-REQ-PROF-5.3.1-001",
             "KMIPKIT-REQ-PROF-5.3.1-002",
             "KMIPKIT-REQ-PROF-5.3.1-003",
@@ -15738,6 +15728,7 @@ pub const CLIENT_PROFILES: &[GeneratedClientProfile] = &[
             "KMIPKIT-REQ-SPEC-9.20-001-001",
             "KMIPKIT-REQ-SPEC-9.20-001-002",
             "KMIPKIT-REQ-SPEC-9.21-001-001",
+            "KMIPKIT-REQ-SPEC-9.3-001-001",
             "KMIPKIT-REQ-SPEC-9.4-001-001",
             "KMIPKIT-REQ-SPEC-9.4-001-002",
             "KMIPKIT-REQ-SPEC-9.4-002",
@@ -15749,26 +15740,6 @@ pub const CLIENT_PROFILES: &[GeneratedClientProfile] = &[
             "KMIPKIT-REQ-SPEC-9.9-001",
         ],
         unresolved_scope_obligations: &[
-            GeneratedProfileScopeBlocker {
-                requirement_id: "KMIPKIT-REQ-PROF-3.2.1-001",
-                source_clause_id: "KMIPKIT-CLAUSE-PROF-3.2.1-001",
-                scope_state: "profile_conditional",
-            },
-            GeneratedProfileScopeBlocker {
-                requirement_id: "KMIPKIT-REQ-PROF-3.2.2-001",
-                source_clause_id: "KMIPKIT-CLAUSE-PROF-3.2.2-001",
-                scope_state: "profile_conditional",
-            },
-            GeneratedProfileScopeBlocker {
-                requirement_id: "KMIPKIT-REQ-PROF-3.2.3-001",
-                source_clause_id: "KMIPKIT-CLAUSE-PROF-3.2.3-001",
-                scope_state: "profile_conditional",
-            },
-            GeneratedProfileScopeBlocker {
-                requirement_id: "KMIPKIT-REQ-PROF-3.2.4-002",
-                source_clause_id: "KMIPKIT-CLAUSE-PROF-3.2.4-002",
-                scope_state: "profile_conditional",
-            },
             GeneratedProfileScopeBlocker {
                 requirement_id: "KMIPKIT-REQ-SPEC-10.1.2-001",
                 source_clause_id: "KMIPKIT-CLAUSE-SPEC-10.1.2-001",
@@ -16182,11 +16153,6 @@ pub const CLIENT_PROFILES: &[GeneratedClientProfile] = &[
             GeneratedProfileScopeBlocker {
                 requirement_id: "KMIPKIT-REQ-SPEC-9.21-001-002",
                 source_clause_id: "KMIPKIT-CLAUSE-SPEC-9.21-001",
-                scope_state: "unclear",
-            },
-            GeneratedProfileScopeBlocker {
-                requirement_id: "KMIPKIT-REQ-SPEC-9.3-001-001",
-                source_clause_id: "KMIPKIT-CLAUSE-SPEC-9.3-001",
                 scope_state: "unclear",
             },
             GeneratedProfileScopeBlocker {
@@ -17423,6 +17389,7 @@ pub const CLIENT_PROFILES: &[GeneratedClientProfile] = &[
             "KMIPKIT-REQ-SPEC-9.20-001-001",
             "KMIPKIT-REQ-SPEC-9.20-001-002",
             "KMIPKIT-REQ-SPEC-9.21-001-001",
+            "KMIPKIT-REQ-SPEC-9.3-001-001",
             "KMIPKIT-REQ-SPEC-9.4-001-001",
             "KMIPKIT-REQ-SPEC-9.4-001-002",
             "KMIPKIT-REQ-SPEC-9.4-002",
@@ -17847,11 +17814,6 @@ pub const CLIENT_PROFILES: &[GeneratedClientProfile] = &[
             GeneratedProfileScopeBlocker {
                 requirement_id: "KMIPKIT-REQ-SPEC-9.21-001-002",
                 source_clause_id: "KMIPKIT-CLAUSE-SPEC-9.21-001",
-                scope_state: "unclear",
-            },
-            GeneratedProfileScopeBlocker {
-                requirement_id: "KMIPKIT-REQ-SPEC-9.3-001-001",
-                source_clause_id: "KMIPKIT-CLAUSE-SPEC-9.3-001",
                 scope_state: "unclear",
             },
             GeneratedProfileScopeBlocker {
@@ -19094,6 +19056,7 @@ pub const CLIENT_PROFILES: &[GeneratedClientProfile] = &[
             "KMIPKIT-REQ-SPEC-9.20-001-001",
             "KMIPKIT-REQ-SPEC-9.20-001-002",
             "KMIPKIT-REQ-SPEC-9.21-001-001",
+            "KMIPKIT-REQ-SPEC-9.3-001-001",
             "KMIPKIT-REQ-SPEC-9.4-001-001",
             "KMIPKIT-REQ-SPEC-9.4-001-002",
             "KMIPKIT-REQ-SPEC-9.4-002",
@@ -19518,11 +19481,6 @@ pub const CLIENT_PROFILES: &[GeneratedClientProfile] = &[
             GeneratedProfileScopeBlocker {
                 requirement_id: "KMIPKIT-REQ-SPEC-9.21-001-002",
                 source_clause_id: "KMIPKIT-CLAUSE-SPEC-9.21-001",
-                scope_state: "unclear",
-            },
-            GeneratedProfileScopeBlocker {
-                requirement_id: "KMIPKIT-REQ-SPEC-9.3-001-001",
-                source_clause_id: "KMIPKIT-CLAUSE-SPEC-9.3-001",
                 scope_state: "unclear",
             },
             GeneratedProfileScopeBlocker {
@@ -20776,6 +20734,7 @@ pub const CLIENT_PROFILES: &[GeneratedClientProfile] = &[
             "KMIPKIT-REQ-SPEC-9.20-001-001",
             "KMIPKIT-REQ-SPEC-9.20-001-002",
             "KMIPKIT-REQ-SPEC-9.21-001-001",
+            "KMIPKIT-REQ-SPEC-9.3-001-001",
             "KMIPKIT-REQ-SPEC-9.4-001-001",
             "KMIPKIT-REQ-SPEC-9.4-001-002",
             "KMIPKIT-REQ-SPEC-9.4-002",
@@ -21200,11 +21159,6 @@ pub const CLIENT_PROFILES: &[GeneratedClientProfile] = &[
             GeneratedProfileScopeBlocker {
                 requirement_id: "KMIPKIT-REQ-SPEC-9.21-001-002",
                 source_clause_id: "KMIPKIT-CLAUSE-SPEC-9.21-001",
-                scope_state: "unclear",
-            },
-            GeneratedProfileScopeBlocker {
-                requirement_id: "KMIPKIT-REQ-SPEC-9.3-001-001",
-                source_clause_id: "KMIPKIT-CLAUSE-SPEC-9.3-001",
                 scope_state: "unclear",
             },
             GeneratedProfileScopeBlocker {
@@ -22457,6 +22411,7 @@ pub const CLIENT_PROFILES: &[GeneratedClientProfile] = &[
             "KMIPKIT-REQ-SPEC-9.20-001-001",
             "KMIPKIT-REQ-SPEC-9.20-001-002",
             "KMIPKIT-REQ-SPEC-9.21-001-001",
+            "KMIPKIT-REQ-SPEC-9.3-001-001",
             "KMIPKIT-REQ-SPEC-9.4-001-001",
             "KMIPKIT-REQ-SPEC-9.4-001-002",
             "KMIPKIT-REQ-SPEC-9.4-002",
@@ -22896,11 +22851,6 @@ pub const CLIENT_PROFILES: &[GeneratedClientProfile] = &[
             GeneratedProfileScopeBlocker {
                 requirement_id: "KMIPKIT-REQ-SPEC-9.21-001-002",
                 source_clause_id: "KMIPKIT-CLAUSE-SPEC-9.21-001",
-                scope_state: "unclear",
-            },
-            GeneratedProfileScopeBlocker {
-                requirement_id: "KMIPKIT-REQ-SPEC-9.3-001-001",
-                source_clause_id: "KMIPKIT-CLAUSE-SPEC-9.3-001",
                 scope_state: "unclear",
             },
             GeneratedProfileScopeBlocker {
@@ -24152,6 +24102,7 @@ pub const CLIENT_PROFILES: &[GeneratedClientProfile] = &[
             "KMIPKIT-REQ-SPEC-9.20-001-001",
             "KMIPKIT-REQ-SPEC-9.20-001-002",
             "KMIPKIT-REQ-SPEC-9.21-001-001",
+            "KMIPKIT-REQ-SPEC-9.3-001-001",
             "KMIPKIT-REQ-SPEC-9.4-001-001",
             "KMIPKIT-REQ-SPEC-9.4-001-002",
             "KMIPKIT-REQ-SPEC-9.4-002",
@@ -24576,11 +24527,6 @@ pub const CLIENT_PROFILES: &[GeneratedClientProfile] = &[
             GeneratedProfileScopeBlocker {
                 requirement_id: "KMIPKIT-REQ-SPEC-9.21-001-002",
                 source_clause_id: "KMIPKIT-CLAUSE-SPEC-9.21-001",
-                scope_state: "unclear",
-            },
-            GeneratedProfileScopeBlocker {
-                requirement_id: "KMIPKIT-REQ-SPEC-9.3-001-001",
-                source_clause_id: "KMIPKIT-CLAUSE-SPEC-9.3-001",
                 scope_state: "unclear",
             },
             GeneratedProfileScopeBlocker {
@@ -25834,6 +25780,7 @@ pub const CLIENT_PROFILES: &[GeneratedClientProfile] = &[
             "KMIPKIT-REQ-SPEC-9.20-001-001",
             "KMIPKIT-REQ-SPEC-9.20-001-002",
             "KMIPKIT-REQ-SPEC-9.21-001-001",
+            "KMIPKIT-REQ-SPEC-9.3-001-001",
             "KMIPKIT-REQ-SPEC-9.4-001-001",
             "KMIPKIT-REQ-SPEC-9.4-001-002",
             "KMIPKIT-REQ-SPEC-9.4-002",
@@ -26258,11 +26205,6 @@ pub const CLIENT_PROFILES: &[GeneratedClientProfile] = &[
             GeneratedProfileScopeBlocker {
                 requirement_id: "KMIPKIT-REQ-SPEC-9.21-001-002",
                 source_clause_id: "KMIPKIT-CLAUSE-SPEC-9.21-001",
-                scope_state: "unclear",
-            },
-            GeneratedProfileScopeBlocker {
-                requirement_id: "KMIPKIT-REQ-SPEC-9.3-001-001",
-                source_clause_id: "KMIPKIT-CLAUSE-SPEC-9.3-001",
                 scope_state: "unclear",
             },
             GeneratedProfileScopeBlocker {
@@ -27523,6 +27465,7 @@ pub const CLIENT_PROFILES: &[GeneratedClientProfile] = &[
             "KMIPKIT-REQ-SPEC-9.20-001-001",
             "KMIPKIT-REQ-SPEC-9.20-001-002",
             "KMIPKIT-REQ-SPEC-9.21-001-001",
+            "KMIPKIT-REQ-SPEC-9.3-001-001",
             "KMIPKIT-REQ-SPEC-9.4-001-001",
             "KMIPKIT-REQ-SPEC-9.4-001-002",
             "KMIPKIT-REQ-SPEC-9.4-002",
@@ -27947,11 +27890,6 @@ pub const CLIENT_PROFILES: &[GeneratedClientProfile] = &[
             GeneratedProfileScopeBlocker {
                 requirement_id: "KMIPKIT-REQ-SPEC-9.21-001-002",
                 source_clause_id: "KMIPKIT-CLAUSE-SPEC-9.21-001",
-                scope_state: "unclear",
-            },
-            GeneratedProfileScopeBlocker {
-                requirement_id: "KMIPKIT-REQ-SPEC-9.3-001-001",
-                source_clause_id: "KMIPKIT-CLAUSE-SPEC-9.3-001",
                 scope_state: "unclear",
             },
             GeneratedProfileScopeBlocker {
@@ -29211,6 +29149,7 @@ pub const CLIENT_PROFILES: &[GeneratedClientProfile] = &[
             "KMIPKIT-REQ-SPEC-9.20-001-001",
             "KMIPKIT-REQ-SPEC-9.20-001-002",
             "KMIPKIT-REQ-SPEC-9.21-001-001",
+            "KMIPKIT-REQ-SPEC-9.3-001-001",
             "KMIPKIT-REQ-SPEC-9.4-001-001",
             "KMIPKIT-REQ-SPEC-9.4-001-002",
             "KMIPKIT-REQ-SPEC-9.4-002",
@@ -29635,11 +29574,6 @@ pub const CLIENT_PROFILES: &[GeneratedClientProfile] = &[
             GeneratedProfileScopeBlocker {
                 requirement_id: "KMIPKIT-REQ-SPEC-9.21-001-002",
                 source_clause_id: "KMIPKIT-CLAUSE-SPEC-9.21-001",
-                scope_state: "unclear",
-            },
-            GeneratedProfileScopeBlocker {
-                requirement_id: "KMIPKIT-REQ-SPEC-9.3-001-001",
-                source_clause_id: "KMIPKIT-CLAUSE-SPEC-9.3-001",
                 scope_state: "unclear",
             },
             GeneratedProfileScopeBlocker {
@@ -30900,6 +30834,7 @@ pub const CLIENT_PROFILES: &[GeneratedClientProfile] = &[
             "KMIPKIT-REQ-SPEC-9.20-001-001",
             "KMIPKIT-REQ-SPEC-9.20-001-002",
             "KMIPKIT-REQ-SPEC-9.21-001-001",
+            "KMIPKIT-REQ-SPEC-9.3-001-001",
             "KMIPKIT-REQ-SPEC-9.4-001-001",
             "KMIPKIT-REQ-SPEC-9.4-001-002",
             "KMIPKIT-REQ-SPEC-9.4-002",
@@ -31324,11 +31259,6 @@ pub const CLIENT_PROFILES: &[GeneratedClientProfile] = &[
             GeneratedProfileScopeBlocker {
                 requirement_id: "KMIPKIT-REQ-SPEC-9.21-001-002",
                 source_clause_id: "KMIPKIT-CLAUSE-SPEC-9.21-001",
-                scope_state: "unclear",
-            },
-            GeneratedProfileScopeBlocker {
-                requirement_id: "KMIPKIT-REQ-SPEC-9.3-001-001",
-                source_clause_id: "KMIPKIT-CLAUSE-SPEC-9.3-001",
                 scope_state: "unclear",
             },
             GeneratedProfileScopeBlocker {
@@ -32621,6 +32551,7 @@ pub const CLIENT_PROFILES: &[GeneratedClientProfile] = &[
             "KMIPKIT-REQ-SPEC-9.20-001-001",
             "KMIPKIT-REQ-SPEC-9.20-001-002",
             "KMIPKIT-REQ-SPEC-9.21-001-001",
+            "KMIPKIT-REQ-SPEC-9.3-001-001",
             "KMIPKIT-REQ-SPEC-9.4-001-001",
             "KMIPKIT-REQ-SPEC-9.4-001-002",
             "KMIPKIT-REQ-SPEC-9.4-002",
@@ -33045,11 +32976,6 @@ pub const CLIENT_PROFILES: &[GeneratedClientProfile] = &[
             GeneratedProfileScopeBlocker {
                 requirement_id: "KMIPKIT-REQ-SPEC-9.21-001-002",
                 source_clause_id: "KMIPKIT-CLAUSE-SPEC-9.21-001",
-                scope_state: "unclear",
-            },
-            GeneratedProfileScopeBlocker {
-                requirement_id: "KMIPKIT-REQ-SPEC-9.3-001-001",
-                source_clause_id: "KMIPKIT-CLAUSE-SPEC-9.3-001",
                 scope_state: "unclear",
             },
             GeneratedProfileScopeBlocker {
@@ -34298,6 +34224,7 @@ pub const CLIENT_PROFILES: &[GeneratedClientProfile] = &[
             "KMIPKIT-REQ-SPEC-9.20-001-001",
             "KMIPKIT-REQ-SPEC-9.20-001-002",
             "KMIPKIT-REQ-SPEC-9.21-001-001",
+            "KMIPKIT-REQ-SPEC-9.3-001-001",
             "KMIPKIT-REQ-SPEC-9.4-001-001",
             "KMIPKIT-REQ-SPEC-9.4-001-002",
             "KMIPKIT-REQ-SPEC-9.4-002",
@@ -34722,11 +34649,6 @@ pub const CLIENT_PROFILES: &[GeneratedClientProfile] = &[
             GeneratedProfileScopeBlocker {
                 requirement_id: "KMIPKIT-REQ-SPEC-9.21-001-002",
                 source_clause_id: "KMIPKIT-CLAUSE-SPEC-9.21-001",
-                scope_state: "unclear",
-            },
-            GeneratedProfileScopeBlocker {
-                requirement_id: "KMIPKIT-REQ-SPEC-9.3-001-001",
-                source_clause_id: "KMIPKIT-CLAUSE-SPEC-9.3-001",
                 scope_state: "unclear",
             },
             GeneratedProfileScopeBlocker {

@@ -79471,7 +79471,9 @@
         }
       ],
       "rejected_candidate_mappings": [],
-      "expected_client_requirement_ids": [],
+      "expected_client_requirement_ids": [
+        "KMIPKIT-REQ-SPEC-9.3-001-001"
+      ],
       "applies_to": "all_client_profiles",
       "review_note": "Source actors, directions, conditions, and client scope were reviewed against this exact pinned Specification v2.1 candidate. Ambiguous actors or scope remain unresolved without a client crosswalk."
     },
