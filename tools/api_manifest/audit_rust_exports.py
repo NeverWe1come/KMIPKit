@@ -247,8 +247,16 @@ def compare(observed: dict[str, Any], manifest: dict[str, Any]) -> dict[str, Any
     }
 
 
+def require_installed_toolchain(toolchains: str) -> None:
+    """Fail before invoking a rustup proxy that could install a missing compiler."""
+    if not any(line.split()[0].startswith(f"{TOOLCHAIN}-") for line in toolchains.splitlines() if line.strip()):
+        raise ValueError(f"Rust {TOOLCHAIN} must be already installed; the auditor never downloads a toolchain")
+
+
 def build_documents(repo_root: Path, target_dir: Path) -> dict[str, dict[str, Any]]:
     """Produce fresh JSON with an installed pinned compiler and no network fallback."""
+    installed = subprocess.run(["rustup", "toolchain", "list"], check=True, capture_output=True, text=True)
+    require_installed_toolchain(installed.stdout)
     version = subprocess.run(["rustc", f"+{TOOLCHAIN}", "--version"], check=True, capture_output=True, text=True)
     if not version.stdout.startswith(f"rustc {TOOLCHAIN} "):
         raise ValueError(f"the installed toolchain must be Rust {TOOLCHAIN}")
