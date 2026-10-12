@@ -307,11 +307,19 @@ fn key_wrap_type_is_present_if_and_only_if_key_block_has_wrapping_data() {
 
 #[test]
 fn wrapped_pgp_key_accepts_key_wrap_type() {
+    let pgp_key = wrapped_pgp_key_object();
+    assert!(
+        key_block_field_matches(&pgp_key, KEY_FORMAT_TYPE, |field| {
+            field.with_value(|value| matches!(value, ValueView::Enumeration(_)))
+        }),
+        "Key Block includes the required Key Format Type Enumeration"
+    );
+
     let request = ImportRequest::new(
         UniqueIdentifier::TextString("wrapped-pgp-key".to_owned()),
         ObjectType::from_raw(9),
         attributes(),
-        wrapped_pgp_key_object(),
+        pgp_key,
     )
     .with_key_wrap_type(KeyWrapType::from_raw(1));
 
