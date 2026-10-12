@@ -808,7 +808,7 @@
               "items": {
                 "type": "string",
                 "minLength": 1,
-                "pattern": "^(?!.*\\*/).*$"
+                "pattern": "^(?![\\s\\S]*\\*/)(?![\\s\\S]*[\\r\\n\\\\]).+$"
               },
               "description": "Optional C API documentation lines rendered as a block comment before the requirement references."
             },
