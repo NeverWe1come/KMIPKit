@@ -59,8 +59,7 @@ final class NativeLibraryLoader {
                 if (!explicitLibrary.isAbsolute()) {
                     throw loadFailure();
                 }
-                System.load(explicitLibrary.normalize().toString());
-                verifyNativeAbiVersion();
+                loadAndVerify(explicitLibrary);
                 return;
             }
 
@@ -70,8 +69,7 @@ final class NativeLibraryLoader {
                     System.getProperty("os.arch", ""),
                     Path.of(System.getProperty("java.io.tmpdir", "")),
                     NativeLibraryLoader::createPrivateDirectory);
-            System.load(library.toAbsolutePath().normalize().toString());
-            verifyNativeAbiVersion();
+            loadAndVerify(library);
         } catch (UnsatisfiedLinkError failure) {
             throw loadFailure();
         } catch (RuntimeException failure) {
@@ -85,7 +83,8 @@ final class NativeLibraryLoader {
         }
     }
 
-    private static void verifyNativeAbiVersion() {
+    private static void loadAndVerify(Path library) {
+        System.load(library.toAbsolutePath().normalize().toString());
         validateNativeAbiVersion(NativeExtensionRegistry.nativeAbiVersion());
     }
 

@@ -118,3 +118,18 @@ tasks.register<Jar>("nativeJar") {
     from(nativeResources)
     archiveClassifier.set(nativeTarget)
 }
+
+val nativeJarSmokeClasses = layout.buildDirectory.dir("classes/nativeJarSmoke")
+val compileNativeJarSmoke = tasks.register<JavaCompile>("compileNativeJarSmoke") {
+    source(file("src/test/nativeJarSmoke/java/NativeLibraryPackageSmoke.java"))
+    classpath = files()
+    destinationDirectory.set(nativeJarSmokeClasses)
+    options.release.set(17)
+    options.encoding = "UTF-8"
+}
+
+tasks.register<org.gradle.api.tasks.JavaExec>("nativeJarSmoke") {
+    dependsOn("nativeJar", compileNativeJarSmoke)
+    classpath = files(tasks.named<Jar>("nativeJar").flatMap { it.archiveFile }, nativeJarSmokeClasses)
+    mainClass.set("NativeLibraryPackageSmoke")
+}
