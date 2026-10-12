@@ -202,6 +202,17 @@ class BindingExportAuditTests(unittest.TestCase):
         self.assertIn("kmipkit.Client", names)
         self.assertTrue(result["complete"])
 
+    def test_python_inventory_ignores_future_imports_and_same_path_module_aliases(self):
+        sources = {
+            "kmipkit/__init__.py": "from . import errors\n__all__ = ['errors']\n",
+            "kmipkit/errors.py": "from __future__ import annotations\nclass Error: pass\n",
+        }
+        result = AUDIT.inventory_python_sources(sources)
+        names = [row["exportName"] for row in result["declarations"]]
+        self.assertEqual(names.count("kmipkit.errors"), 1)
+        self.assertNotIn("kmipkit.errors.annotations", names)
+        self.assertTrue(result["complete"])
+
     def test_python_inventory_resolves_inherited_members_through_module_attribute(self):
         sources = {
             "kmipkit/_handles.py": "class Base:\n    def close(self) -> None: ...\n",
