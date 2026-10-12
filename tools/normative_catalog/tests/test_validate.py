@@ -33,6 +33,30 @@ _is_discoverable_positive_test = test_feature_traceability._is_discoverable_posi
 
 ROOT = Path(__file__).resolve().parents[3]
 OPTIONAL_CAPABILITY_TEST_REQUIREMENTS = {
+    "crates/kmipkit-protocol/tests/unit/create_tests.rs::request_encodes_raw_key_format_for_server_generated_create": (
+        "KMIPKIT-REQ-SPEC-4.26-001",
+    ),
+    "crates/kmipkit-protocol/tests/unit/register_operation_tests.rs::request_encodes_nist_symmetric_data_encryption_key_type": (
+        "KMIPKIT-REQ-SPEC-4.34-001-001",
+    ),
+    "crates/kmipkit-protocol/tests/unit/register_operation_tests.rs::request_can_omit_original_creation_date_when_registering": (
+        "KMIPKIT-REQ-SPEC-4.38-001-001",
+    ),
+    "crates/kmipkit-protocol/tests/unit/register_operation_tests.rs::request_encodes_client_supplied_original_creation_date_on_register": (
+        "KMIPKIT-REQ-SPEC-4.38-001-002",
+    ),
+    "crates/kmipkit-protocol/tests/unit/add_attribute_tests.rs::request_encodes_original_creation_date_as_new_attribute": (
+        "KMIPKIT-REQ-SPEC-4.38-001-003",
+    ),
+    "crates/kmipkit-protocol/tests/unit/create_tests.rs::request_encodes_application_namespace_without_application_data": (
+        "KMIPKIT-REQ-SPEC-4.4-001",
+    ),
+    "crates/kmipkit-protocol/tests/unit/register_operation_tests.rs::request_encodes_rng_algorithm_directly_on_register": (
+        "KMIPKIT-REQ-SPEC-4.46-001-001",
+    ),
+    "crates/kmipkit-protocol/tests/unit/add_attribute_tests.rs::request_encodes_rng_algorithm_directly_in_new_attribute": (
+        "KMIPKIT-REQ-SPEC-4.46-001-002",
+    ),
     "crates/kmipkit-protocol/tests/unit/attribute_tests.rs::property_roundtrips_ordered_repeated_direct_attribute_items": (
         "KMIPKIT-REQ-SPEC-5.1-002",
     ),
@@ -139,6 +163,56 @@ OPTIONAL_CAPABILITY_TEST_REQUIREMENTS = {
 
 
 OPTIONAL_CAPABILITY_TEST_CONTENT_REQUIREMENTS = {
+    "crates/kmipkit-protocol/tests/unit/create_tests.rs::request_encodes_raw_key_format_for_server_generated_create": (
+        "KEY_FORMAT_TYPE",
+        "Value::enumeration(1)",
+        "ValueView::Enumeration(value) if *value == 1",
+    ),
+    "crates/kmipkit-protocol/tests/unit/register_operation_tests.rs::request_encodes_nist_symmetric_data_encryption_key_type": (
+        "CRYPTOGRAPHIC_ALGORITHM",
+        "CRYPTOGRAPHIC_LENGTH",
+        "NIST_KEY_TYPE",
+        "Value::enumeration(6)",
+        "ValueView::Enumeration(value) => Some(*value)",
+    ),
+    "crates/kmipkit-protocol/tests/unit/register_operation_tests.rs::request_can_omit_original_creation_date_when_registering": (
+        "CRYPTOGRAPHIC_ALGORITHM",
+        "CRYPTOGRAPHIC_LENGTH",
+        "ORIGINAL_CREATION_DATE",
+        ".contains(&ORIGINAL_CREATION_DATE)",
+    ),
+    "crates/kmipkit-protocol/tests/unit/register_operation_tests.rs::request_encodes_client_supplied_original_creation_date_on_register": (
+        "ORIGINAL_CREATION_DATE",
+        "Value::date_time(1_700_000_000)",
+        "ValueView::DateTime(value) if *value == 1_700_000_000",
+    ),
+    "crates/kmipkit-protocol/tests/unit/add_attribute_tests.rs::request_encodes_original_creation_date_as_new_attribute": (
+        "NEW_ATTRIBUTE",
+        "ORIGINAL_CREATION_DATE",
+        "Value::date_time(1_700_000_000)",
+        "ValueView::DateTime(value) if *value == 1_700_000_000",
+    ),
+    "crates/kmipkit-protocol/tests/unit/create_tests.rs::request_encodes_application_namespace_without_application_data": (
+        "APPLICATION_SPECIFIC_INFORMATION",
+        "APPLICATION_NAMESPACE",
+        "APPLICATION_DATA",
+        "members.len(), 1",
+    ),
+    "crates/kmipkit-protocol/tests/unit/register_operation_tests.rs::request_encodes_rng_algorithm_directly_on_register": (
+        "CRYPTOGRAPHIC_ALGORITHM",
+        "CRYPTOGRAPHIC_LENGTH",
+        "RANDOM_NUMBER_GENERATOR",
+        "RNG_ALGORITHM",
+        "RNG_PARAMETERS",
+        "Value::enumeration(1)",
+        "Some(vec![RNG_ALGORITHM])",
+    ),
+    "crates/kmipkit-protocol/tests/unit/add_attribute_tests.rs::request_encodes_rng_algorithm_directly_in_new_attribute": (
+        "RANDOM_NUMBER_GENERATOR",
+        "RNG_ALGORITHM",
+        "RNG_PARAMETERS",
+        "Value::enumeration(1)",
+    ),
     "crates/kmipkit-protocol/tests/unit/import_operation_tests.rs::wrapped_pgp_key_accepts_key_wrap_type": (
         "ObjectType::from_raw(9)",
         "with_key_wrap_type(KeyWrapType::from_raw(1))",
@@ -15945,6 +16019,30 @@ class CatalogValidationTests(unittest.TestCase):
                                     self.assertIn(fragment, source_without_comments_or_literals, expected_test)
                     requirement = requirements[requirement_id]
                     self.assertIn(expected_test, requirement["verification_refs"])
+
+    def test_optional_attribute_evidence_rows_are_client_to_server_requests(self) -> None:
+        """Attribute request permissions remain client-originated catalog evidence."""
+        catalog = json.loads(
+            (ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8")
+        )
+        requirements = {row["requirement_id"]: row for row in catalog["requirements"]}
+        requirement_ids = (
+            "KMIPKIT-REQ-SPEC-4.26-001",
+            "KMIPKIT-REQ-SPEC-4.34-001-001",
+            "KMIPKIT-REQ-SPEC-4.38-001-001",
+            "KMIPKIT-REQ-SPEC-4.38-001-002",
+            "KMIPKIT-REQ-SPEC-4.38-001-003",
+            "KMIPKIT-REQ-SPEC-4.4-001",
+            "KMIPKIT-REQ-SPEC-4.46-001-001",
+            "KMIPKIT-REQ-SPEC-4.46-001-002",
+        )
+
+        for requirement_id in requirement_ids:
+            with self.subTest(requirement_id=requirement_id):
+                requirement = requirements[requirement_id]
+                self.assertEqual(requirement["role"], "client")
+                self.assertEqual(requirement["direction"], "client_to_server")
+                self.assertEqual(requirement["test_case_ids"], [])
 
     def test_obtain_lease_evidence_uses_named_tests_without_reassigning_requirement_owner(self) -> None:
         """Obtain Lease evidence names positive client-visible tests under its existing owner."""

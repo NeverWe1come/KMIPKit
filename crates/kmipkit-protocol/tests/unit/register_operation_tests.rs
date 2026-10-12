@@ -24,6 +24,14 @@ const UNIQUE_IDENTIFIER: u32 = 0x0042_0094;
 const CRYPTOGRAPHIC_ALGORITHM: u32 = 0x0042_0028;
 const CRYPTOGRAPHIC_LENGTH: u32 = 0x0042_002A;
 const CRYPTOGRAPHIC_USAGE_MASK: u32 = 0x0042_002C;
+const KEY_FORMAT_TYPE: u32 = 0x0042_0042;
+const KEY_VALUE: u32 = 0x0042_0043;
+const KEY_MATERIAL: u32 = 0x0042_0044;
+const NIST_KEY_TYPE: u32 = 0x0042_013A;
+const ORIGINAL_CREATION_DATE: u32 = 0x0042_00BC;
+const RANDOM_NUMBER_GENERATOR: u32 = 0x0042_00DE;
+const RNG_PARAMETERS: u32 = 0x0042_00D9;
+const RNG_ALGORITHM: u32 = 0x0042_00DA;
 const CERTIFICATE_LENGTH: u32 = 0x0042_00AD;
 const DIGITAL_SIGNATURE_ALGORITHM: u32 = 0x0042_00AE;
 const KEY_BLOCK: u32 = 0x0042_0040;
@@ -55,6 +63,24 @@ fn key_object(algorithm: bool, length: bool) -> Item {
         key_block.push(item(CRYPTOGRAPHIC_LENGTH, Value::integer(256)));
     }
     let key_block = item(KEY_BLOCK, Value::structure(structure(key_block)));
+    item(SYMMETRIC_KEY, Value::structure(structure([key_block])))
+}
+
+fn valid_raw_symmetric_key_object() -> Item {
+    let key_value = item(
+        KEY_VALUE,
+        Value::structure(structure([item(
+            KEY_MATERIAL,
+            Value::byte_string(vec![0x01, 0x02, 0x03, 0x04]),
+        )])),
+    );
+    let key_block = item(
+        KEY_BLOCK,
+        Value::structure(structure([
+            item(KEY_FORMAT_TYPE, Value::enumeration(1)),
+            key_value,
+        ])),
+    );
     item(SYMMETRIC_KEY, Value::structure(structure([key_block])))
 }
 
@@ -182,6 +208,182 @@ fn request_requires_algorithm_and_length_attributes_as_a_pair() {
     .into_ttlv_payload();
     assert!(algorithm_only.is_err());
     assert!(length_only.is_err());
+}
+
+#[test]
+fn request_encodes_nist_symmetric_data_encryption_key_type() {
+    // OASIS KMIP v2.1 §4.34, Tables 97–98, §§11.32 and 11.56 permit NIST Key
+    // Type on §6.1.43, Table 291, Register; Table 293 requires the algorithm/
+    // length pair included here for a symmetric key. §3.1, Table 12, defines
+    // the Raw Key Block used by this request.
+    let request = RegisterRequest::new(
+        ObjectType::from_raw(2),
+        symmetric_attributes([
+            item(CRYPTOGRAPHIC_ALGORITHM, Value::enumeration(3)),
+            item(CRYPTOGRAPHIC_LENGTH, Value::integer(256)),
+            item(NIST_KEY_TYPE, Value::enumeration(6)),
+        ]),
+        valid_raw_symmetric_key_object(),
+    );
+    let payload = request
+        .into_ttlv_payload()
+        .expect("Register includes the Table 293 algorithm/length prerequisites");
+    let payload_view = payload.view();
+    let fields = payload_view.children();
+    assert_eq!(fields[1].tag().raw(), ATTRIBUTES);
+    let nist_key_type = fields[1].with_value(|value| match value {
+        ValueView::Structure(attributes) => attributes
+            .children()
+            .iter()
+            .find(|attribute| attribute.tag().raw() == NIST_KEY_TYPE)
+            .and_then(|attribute| {
+                attribute.with_value(|value| match value {
+                    ValueView::Enumeration(value) => Some(*value),
+                    _ => None,
+                })
+            }),
+        _ => None,
+    });
+    assert_eq!(nist_key_type, Some(6));
+}
+
+#[test]
+fn request_can_omit_original_creation_date_when_registering() {
+    // OASIS KMIP v2.1 §4.38, Table 105, and §11.56 make Original Creation
+    // Date optional for an object registered by §6.1.43, Table 291. Table 293
+    // prerequisites and the §3.1, Table 12, Raw Key Block are included.
+    let request = RegisterRequest::new(
+        ObjectType::from_raw(2),
+        symmetric_attributes([
+            item(CRYPTOGRAPHIC_ALGORITHM, Value::enumeration(3)),
+            item(CRYPTOGRAPHIC_LENGTH, Value::integer(256)),
+        ]),
+        valid_raw_symmetric_key_object(),
+    );
+    let payload = request
+        .into_ttlv_payload()
+        .expect("Register can omit Original Creation Date");
+    let payload_view = payload.view();
+    let fields = payload_view.children();
+    assert_eq!(fields[1].tag().raw(), ATTRIBUTES);
+    let attribute_tags = fields[1].with_value(|value| match value {
+        ValueView::Structure(attributes) => Some(
+            attributes
+                .children()
+                .iter()
+                .map(|attribute| attribute.tag().raw())
+                .collect::<Vec<_>>(),
+        ),
+        _ => None,
+    });
+    assert!(
+        !attribute_tags
+            .expect("Register Attributes remain a Structure")
+            .contains(&ORIGINAL_CREATION_DATE)
+    );
+}
+
+#[test]
+fn request_encodes_client_supplied_original_creation_date_on_register() {
+    // OASIS KMIP v2.1 §4.38, Table 105, and §11.56 permit the client to set
+    // this Date-Time in §6.1.43, Table 291, Register; Table 293 prerequisites
+    // and the §3.1, Table 12, Raw Key Block are included. This tests request
+    // serialization only.
+    let request = RegisterRequest::new(
+        ObjectType::from_raw(2),
+        symmetric_attributes([
+            item(CRYPTOGRAPHIC_ALGORITHM, Value::enumeration(3)),
+            item(CRYPTOGRAPHIC_LENGTH, Value::integer(256)),
+            item(ORIGINAL_CREATION_DATE, Value::date_time(1_700_000_000)),
+        ]),
+        valid_raw_symmetric_key_object(),
+    );
+    let payload = request
+        .into_ttlv_payload()
+        .expect("Register can carry a caller-supplied Original Creation Date");
+    let payload_view = payload.view();
+    let fields = payload_view.children();
+    let original_creation_date = fields[1].with_value(|value| match value {
+        ValueView::Structure(attributes) => attributes
+            .children()
+            .iter()
+            .find(|attribute| attribute.tag().raw() == ORIGINAL_CREATION_DATE)
+            .map(|attribute| {
+                attribute.with_value(
+                    |value| matches!(value, ValueView::DateTime(value) if *value == 1_700_000_000),
+                )
+            }),
+        _ => None,
+    });
+    assert_eq!(original_creation_date, Some(true));
+}
+
+#[test]
+fn request_encodes_rng_algorithm_directly_on_register() {
+    // OASIS KMIP v2.1 §4.46, Table 121, §§7.36, 11.49, and 11.56 permit a
+    // client Random Number Generator on §6.1.43, Table 291, Register. Its
+    // encoding uses RNG Parameters fields directly, without a nested member.
+    // Table 293 prerequisites and the §3.1, Table 12, Raw Key Block are included.
+    let request = RegisterRequest::new(
+        ObjectType::from_raw(2),
+        symmetric_attributes([
+            item(CRYPTOGRAPHIC_ALGORITHM, Value::enumeration(3)),
+            item(CRYPTOGRAPHIC_LENGTH, Value::integer(256)),
+            item(
+                RANDOM_NUMBER_GENERATOR,
+                Value::structure(structure([item(RNG_ALGORITHM, Value::enumeration(1))])),
+            ),
+        ]),
+        valid_raw_symmetric_key_object(),
+    );
+    let payload = request
+        .into_ttlv_payload()
+        .expect("Register includes the Table 293 algorithm/length prerequisites");
+    let payload_view = payload.view();
+    let fields = payload_view.children();
+    let rng_members = fields[1].with_value(|value| match value {
+        ValueView::Structure(attributes) => attributes
+            .children()
+            .iter()
+            .find(|attribute| attribute.tag().raw() == RANDOM_NUMBER_GENERATOR)
+            .and_then(|attribute| {
+                attribute.with_value(|value| match value {
+                    ValueView::Structure(rng) => Some(
+                        rng.children()
+                            .iter()
+                            .map(|member| member.tag().raw())
+                            .collect::<Vec<_>>(),
+                    ),
+                    _ => None,
+                })
+            }),
+        _ => None,
+    });
+    assert_eq!(rng_members, Some(vec![RNG_ALGORITHM]));
+    assert!(
+        !rng_members
+            .expect("Random Number Generator remains a Structure")
+            .contains(&RNG_PARAMETERS)
+    );
+    let rng_algorithm = fields[1].with_value(|value| match value {
+        ValueView::Structure(attributes) => attributes
+            .children()
+            .iter()
+            .find(|attribute| attribute.tag().raw() == RANDOM_NUMBER_GENERATOR)
+            .and_then(|attribute| {
+                attribute.with_value(|value| match value {
+                    ValueView::Structure(rng) => rng.children().first().and_then(|member| {
+                        member.with_value(|value| match value {
+                            ValueView::Enumeration(value) => Some(*value),
+                            _ => None,
+                        })
+                    }),
+                    _ => None,
+                })
+            }),
+        _ => None,
+    });
+    assert_eq!(rng_algorithm, Some(1));
 }
 
 #[test]
