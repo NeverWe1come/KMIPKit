@@ -370,7 +370,11 @@ class WorkflowContractTests(unittest.TestCase):
         jni_job = self.require_job(contents, "coverage-jni")
         self.assertIn("mvn --batch-mode --file bindings/java/pom.xml clean verify", java_job)
         self.assertIn("bindings/java/target/site/jacoco/jacoco.xml", java_job)
-        self.assertIn("name: coverage-java", java_job)
+        self.assertIn("name: Java coverage / ${{ matrix.platform }}", java_job)
+        self.assertIn("platform: linux", java_job)
+        self.assertIn("platform: windows", java_job)
+        self.assertIn("runs-on: ${{ matrix.os }}", java_job)
+        self.assertIn("name: coverage-java-${{ matrix.platform }}", java_job)
         self.assertIn("uv pip install --requirement bindings/python/requirements-coverage.txt", python_job)
         self.assertIn("--cov-report=xml:coverage-python/coverage.xml", python_job)
         self.assertIn("name: coverage-python", python_job)
@@ -461,7 +465,7 @@ class WorkflowContractTests(unittest.TestCase):
         normalized_guide = " ".join(guide.split())
         self.assertIn("coverage-ffi/coverage.json", normalized_guide)
         self.assertIn("bash scripts/collect_ffi_coverage.sh target/coverage-ffi", normalized_guide)
-        self.assertIn("downloads all seven coverage artifacts", normalized_guide)
+        self.assertIn("downloads all eight coverage artifacts", normalized_guide)
 
     def test_nightly_schedule_runs_only_the_informational_branch_job(self) -> None:
         contents = self.require_workflow()

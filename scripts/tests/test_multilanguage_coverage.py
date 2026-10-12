@@ -133,6 +133,33 @@ class MultiLanguageCoverageTests(unittest.TestCase):
 
         self.assertEqual({"bindings/java/src/main/java/org/kmipkit/extensions/Registry.java": {1: 0}}, parsed)
 
+    def test_adapter_loader_unions_linux_and_windows_jacoco_reports(self) -> None:
+        self.require_gate()
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            source_relative = "bindings/java/src/main/java/org/kmipkit/NativeLibraryLoader.java"
+            source = root / source_relative
+            source.parent.mkdir(parents=True)
+            source.write_text("line one\nline two\nline three\n", encoding="utf-8")
+            reports = {
+                "coverage-java-linux": '<report name="Linux"><package name="org/kmipkit"><sourcefile name="NativeLibraryLoader.java"><line nr="1" mi="0" ci="1" mb="0" cb="0"/><line nr="2" mi="1" ci="0" mb="0" cb="0"/></sourcefile></package></report>',
+                "coverage-java-windows": '<report name="Windows"><package name="org/kmipkit"><sourcefile name="NativeLibraryLoader.java"><line nr="1" mi="0" ci="1" mb="0" cb="0"/><line nr="2" mi="0" ci="1" mb="0" cb="0"/><line nr="3" mi="1" ci="0" mb="0" cb="0"/></sourcefile></package></report>',
+            }
+            for artifact, document in reports.items():
+                report_path = root / artifact / "jacoco.xml"
+                report_path.parent.mkdir(parents=True)
+                report_path.write_text(document, encoding="utf-8")
+
+            parsed = GATE._load_adapter_reports(root, root, {"java"})
+
+        self.assertIsNotNone(parsed)
+        assert parsed is not None
+        self.assertEqual(
+            {source_relative: {1: 1, 2: 1, 3: 0}},
+            parsed["Java adapters"],
+            "Java coverage should union independently covered Linux and Windows lines",
+        )
+
     def test_cobertura_parser_maps_python_sources_and_rejects_outside_sources(self) -> None:
         self.require_gate()
         with tempfile.TemporaryDirectory() as directory:
