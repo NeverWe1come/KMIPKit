@@ -1017,6 +1017,82 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
         }
         self.assertEqual(header_error_macros, manifest_error_macros)
 
+    def test_c_header_only_declares_ready_manifest_entries(self) -> None:
+        header = (ROOT / "bindings" / "c" / "include" / "kmipkit.h").read_text(
+            encoding="utf-8"
+        )
+        declarations = self.declarations_for_package("c-kmipkit")
+        approved_exclusions = {
+            exclusion["exportName"]
+            for exclusion in self.checked_in_manifest["approvedExclusions"]
+            if exclusion["packageId"] == "c-kmipkit"
+        }
+        ready_functions = {
+            declaration["exportName"]
+            for declaration in declarations
+            if declaration["kind"] == "c-symbol"
+            and declaration["declarationState"] in {"declared", "verified"}
+        } | approved_exclusions
+        ready_types = {
+            declaration["exportName"]
+            for declaration in declarations
+            if declaration["kind"] == "type"
+            and declaration["declarationState"] in {"declared", "verified"}
+        }
+        header_functions = set(
+            re.findall(
+                r"^(?:void|int32_t)\s+(kmipkit_[A-Za-z0-9_]+)\s*\(",
+                header,
+                re.MULTILINE,
+            )
+        )
+        header_types = set(
+            re.findall(r"^typedef struct \w+\s+(kmipkit_\w+);$", header, re.MULTILINE)
+        )
+        header_types.update(
+            re.findall(r"^typedef uint8_t (kmipkit_\w+);$", header, re.MULTILINE)
+        )
+        header_types.update(
+            re.findall(r"^typedef struct \{.*?\} (kmipkit_\w+);$", header, re.MULTILINE | re.DOTALL)
+        )
+
+        self.assertEqual(header_functions, ready_functions)
+        self.assertEqual(header_types, ready_types)
+
+    def test_declared_c_function_handle_types_are_ready(self) -> None:
+        declarations = self.declarations_for_package("c-kmipkit")
+        states = {
+            (declaration["kind"], declaration["exportName"]): declaration[
+                "declarationState"
+            ]
+            for declaration in declarations
+        }
+        ready_types = {
+            name
+            for (kind, name), state in states.items()
+            if kind == "type" and state in {"declared", "verified"}
+        }
+
+        for function in self.checked_in_manifest["functions"]:
+            if states.get(("c-symbol", function["c"]["symbol"])) not in {
+                "declared",
+                "verified",
+            }:
+                continue
+            parameter_types = [
+                parameter["type"] for parameter in function["c"]["parameters"]
+            ]
+            signature_types = [*parameter_types, function["c"]["returnType"]]
+            for signature_type in signature_types:
+                name = signature_type.strip()
+                while name.endswith("*"):
+                    name = name[:-1].strip()
+                if name.startswith("const "):
+                    name = name[6:]
+                if name.startswith("kmipkit_"):
+                    with self.subTest(symbol=function["c"]["symbol"], type=name):
+                        self.assertIn(name, ready_types)
+
     def test_checked_in_manifest_inventories_python_exports_and_lifecycle(self) -> None:
         declarations = self.declarations_for_package("python-kmipkit")
         self.assertEqual(len(declarations), 274)
