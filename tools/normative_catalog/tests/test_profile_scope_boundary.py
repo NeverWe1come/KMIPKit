@@ -185,6 +185,7 @@ class ProfileScopeBoundaryTests(unittest.TestCase):
 
             self.assertEqual(requirement["role"], "client")
             self.assertEqual(requirement["scope_state"], "out_of_scope")
+            self.assertIn(pkcs11_profile_id, requirement["profile_ids"])
             self.assertEqual(clauses[clause_id]["scope_state"], "out_of_scope")
             self.assertEqual(review["expected_client_requirement_ids"], [])
             self.assertTrue(
