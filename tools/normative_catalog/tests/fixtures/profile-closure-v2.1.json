@@ -76,9 +76,9 @@
     "requirement_crosswalk_records": 466,
     "requirement_crosswalk_complete": false,
     "source_requirement_review_records": 889,
-    "source_only_requirement_gaps": 118,
-    "source_only_requirement_gap_proposals": 65,
-    "source_table_contracts": 52
+    "source_only_requirement_gaps": 117,
+    "source_only_requirement_gap_proposals": 64,
+    "source_table_contracts": 53
   },
   "source_clause_crosswalk": [
     {
@@ -66685,7 +66685,7 @@
       "rejected_candidate_mappings": [],
       "expected_client_requirement_ids": [],
       "applies_to": "all_client_profiles",
-      "review_note": "Request Payload / Item / REQUIRED / Description is only a table header. The five request body rows are reviewed below. Maximum Items and Offset Items rows are covered by the client request MAY clauses; Attributes Required=Yes is mapped by ...013-001. Storage Status Mask and Object Group Member Required=No are separate optional client control proposals.",
+      "review_note": "Request Payload / Item / REQUIRED / Description is only a table header. The five request body rows are reviewed below. Maximum Items and Offset Items rows are covered by the client request MAY clauses; Attributes Required=Yes is mapped by ...013-001. Storage Status Mask and Object Group Member Required=No map to client request-field preservation contracts. Omission defaults and archived/destroyed response rules remain server duties.",
       "source_request_rows": [
         {
           "row_label": "Maximum Items",
@@ -66721,7 +66721,7 @@
           "row_label": "Storage Status Mask",
           "required": "No",
           "actor": "client",
-          "disposition": "optional_request_field_with_source_only_proposal",
+          "disposition": "optional_request_table_contract",
           "html_line_range": [
             29297,
             29316
@@ -83794,40 +83794,6 @@
       "review_note": "The source wording uses “if the test case” and is preserved verbatim. This source-only proposal is not added to the catalog or profile closure arrays in Red."
     },
     {
-      "gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.28-STORAGE-STATUS-MASK-OPTIONAL",
-      "source_id": "KMIPKIT-SRC-spec",
-      "source_path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
-      "source_section": "6.1.28",
-      "source_clause_id": null,
-      "source_locator": {
-        "kind": "table_body_row",
-        "section": "6.1.28",
-        "row_label": "Storage Status Mask",
-        "table": "request_payload",
-        "html_line_range": [
-          29297,
-          29316
-        ]
-      },
-      "source_locator_description": "§6.1.28 Locate request payload body row for Storage Status Mask (HTML lines 29297–29316)",
-      "html_line_range": [
-        29297,
-        29316
-      ],
-      "source_excerpt": "Storage Status Mask No An Integer object (used as a bit mask) that indicates whether only on-line objects, only archived objects, destroyed objects or any combination of these, are to be searched. If omitted, then only on-line objects SHALL be returned.",
-      "source_keywords": [],
-      "source_force": "optional_table_body_value",
-      "audited_statement": "The request table marks Storage Status Mask Required=No and describes selection of online, archived, destroyed, or combined storage classes.",
-      "actor": "client",
-      "direction": "client→server Locate request field",
-      "condition": "When a client chooses to constrain which storage-status classes Locate searches.",
-      "scope_disposition": "client_1_0",
-      "candidate_requirement_id": null,
-      "proposed_requirement_id": "KMIPKIT-REQ-SPEC-6.1.28-014",
-      "status": "stable_label_proposed_not_in_catalog",
-      "review_note": "Required=No is a distinct optional client request capability. The candidate catalog labels in adjacent paragraph/table clauses cover server response rules or other request options, not this field choice. This source-only proposal remains outside catalog/profile closure arrays in Red."
-    },
-    {
       "gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.29-LOG-MESSAGE-REQUIRED",
       "source_id": "KMIPKIT-SRC-spec",
       "source_path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
@@ -85104,6 +85070,58 @@
       "evidence_disposition": {
         "status": "mapped_to_feature_contract",
         "statement": "Implementation and executable verification are linked through KMIPKIT-ELEM-OP-C2S-JOIN-SPLIT-KEY and feature requirements FR-001; this table row does not create a standalone REQ record."
+      }
+    },
+    {
+      "gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.28-STORAGE-STATUS-MASK-OPTIONAL",
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+      "source_section": "6.1.28",
+      "source_clause_id": null,
+      "source_locator": {
+        "kind": "table_body_row",
+        "section": "6.1.28",
+        "row_label": "Storage Status Mask",
+        "table": "request_payload",
+        "html_line_range": [
+          29297,
+          29316
+        ]
+      },
+      "source_locator_description": "Specification v2.1 §6.1.28 Locate request payload body row for Storage Status Mask (HTML lines 29297–29316)",
+      "html_line_range": [
+        29297,
+        29316
+      ],
+      "source_excerpt": "Storage Status Mask No An Integer object (used as a bit mask) that indicates whether only on-line objects, only archived objects, destroyed objects or any combination of these, are to be searched. If omitted, then only on-line objects SHALL be returned.",
+      "source_force": "optional_table_body_value",
+      "audited_statement": "The request table marks Storage Status Mask Required=No and describes selection of online, archived, destroyed, or combined storage classes.",
+      "actor": "client",
+      "direction": "client→server Locate request",
+      "condition": "A client elects which storage-status classes to include in its Locate request.",
+      "scope_disposition": "client_1_0",
+      "status": "mapped_to_approved_feature_contract",
+      "review_note": "Maps the optional request field through KMIPKIT-ELEM-OP-C2S-LOCATE and KMIPKIT-0017 FR-006/FR-009. Evidence covers request omission/value and bit preservation only; omission defaults and archived/destroyed response rules remain server duties. No per-cell REQ identifier is created.",
+      "contract_kind": "operation_request_table_field",
+      "table_number": 247,
+      "requiredness": "No",
+      "operation_element_id": "KMIPKIT-ELEM-OP-C2S-LOCATE",
+      "functional_requirement_ids": [
+        "FR-006",
+        "FR-009"
+      ],
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/locate.rs::LocateRequest::to_ttlv_payload"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/locate_tests.rs::request_emits_supplied_optional_fields_in_table_247_order",
+        "crates/kmipkit-protocol/tests/unit/locate_tests.rs::storage_status_mask_preserves_assigned_and_unknown_bits",
+        "crates/kmipkit-client/tests/unit/object_read_execution_tests.rs::locate_forwards_assigned_and_unknown_storage_status_bits_unchanged",
+        "crates/kmipkit-client/tests/unit/object_read_execution_tests.rs::locate_without_storage_status_mask_preserves_all_server_returned_identifiers"
+      ],
+      "evidence_disposition": {
+        "status": "mapped_to_feature_contract",
+        "statement": "The typed Locate request preserves optional Storage Status Mask omission and supplied assigned/unknown bits. Evidence covers client request preservation only; omission defaults and archived/destroyed result exclusions are server duties, and no per-cell MUST/SHALL or standalone REQ identifier is created."
       }
     },
     {

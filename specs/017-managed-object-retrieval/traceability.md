@@ -35,6 +35,12 @@ The historical release-contract snapshot reviewed for the design refresh was `re
 | KMIPKIT-REQ-SPEC-6.1.28-013-001 | §6.1.28 | MUST; client request | FR-007; US2 AC-4 | locate.rs AttributeSet encoding | Exact ordered criteria; no local matching |
 | KMIPKIT-REQ-SPEC-6.1.28-013-002 | §6.1.28 | MAY; client request | FR-006; US2 AC-3 | locate.rs required Attributes Structure | Preserve present empty structure |
 
+## Optional Table 247 request field evidence
+
+| Source row | Approved feature mapping | Implementation and verification | Evidence boundary |
+| --- | --- | --- | --- |
+| KMIP v2.1 §6.1.28, Table 247, Storage Status Mask (Required=No) | KMIPKIT-ELEM-OP-C2S-LOCATE; KMIPKIT-0017 FR-006 and FR-009 | `crates/kmipkit-protocol/src/locate.rs::LocateRequest::to_ttlv_payload`; protocol tests `request_emits_supplied_optional_fields_in_table_247_order` and `storage_status_mask_preserves_assigned_and_unknown_bits`; client tests `locate_forwards_assigned_and_unknown_storage_status_bits_unchanged` and `locate_without_storage_status_mask_preserves_all_server_returned_identifiers` | Verifies client request omission/value and bit preservation only. Omission defaults and archived/destroyed response exclusions are server duties; no per-cell REQ identifier or server conformance claim is created. |
+
 ## Pinned OASIS and profile test-case evidence
 
 Catalog test IDs, source case IDs, fixture availability, and mapping confidence are kept in separate columns. The profile case has its own table so it is not presented as an OASIS conformance case. Fixture availability and mapping confidence match the corresponding catalog records. For the Get cases, the pinned Test Cases §§2.68–2.69 headings and hyperlink targets use `TC-PKCS12-…`, while visible link text inserts a hyphen as `TC-PKCS-12-…`. KMIPKIT-DEC-004 selects the heading/target identifiers and pins both XML files with URL and checksum; no official-case pass is claimed by fixture presence alone.
