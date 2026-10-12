@@ -7,6 +7,7 @@ import pytest
 from kmipkit._native import (
     NativeAbiMismatchError,
     NativeLibraryLoadError,
+    find_bundled_native_library,
     load_cffi_library,
     load_native_library,
 )
@@ -187,3 +188,30 @@ def test_reported_abi_mismatch_has_a_distinct_error(tmp_path: Path) -> None:
 
     assert "3" not in str(error.value)
     assert "4" not in str(error.value)
+
+
+@pytest.mark.parametrize("name", ["_native_ffi.dll", "_native_ffi.so", "_native_ffi.dylib"])
+def test_bundled_native_library_finds_shared_library_by_platform_suffix(
+    tmp_path: Path, name: str
+) -> None:
+    package_directory = tmp_path / "kmipkit" / "_native_ffi"
+    package_directory.mkdir(parents=True)
+    candidate = package_directory / name
+    candidate.touch()
+
+    assert find_bundled_native_library(package_directory) == candidate
+
+
+def test_bundled_native_library_rejects_missing_or_ambiguous_artifacts(
+    tmp_path: Path,
+) -> None:
+    package_directory = tmp_path / "kmipkit" / "_native_ffi"
+    package_directory.mkdir(parents=True)
+
+    with pytest.raises(NativeLibraryLoadError):
+        find_bundled_native_library(package_directory)
+
+    (package_directory / "_native_ffi.dll").touch()
+    (package_directory / "_native_ffi.so").touch()
+    with pytest.raises(NativeLibraryLoadError):
+        find_bundled_native_library(package_directory)
