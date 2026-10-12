@@ -1654,6 +1654,19 @@ class CatalogValidationTests(unittest.TestCase):
         self.assertIn("Table 315", discrepancy["summary"])
         self.assertIn("RNG Retrieve Errors", discrepancy["summary"])
 
+    def test_derive_key_scoped_evidence_names_missing_official_test_case(self) -> None:
+        catalog = json.loads((ROOT / "specification/catalog/kmip-2.1.json").read_text(encoding="utf-8"))
+        requirement = next(
+            row
+            for row in catalog["requirements"]
+            if row["requirement_id"] == "KMIPKIT-REQ-SPEC-6.1.14-002"
+        )
+
+        self.assertEqual(requirement["test_case_ids"], [])
+        self.assertEqual(requirement["role"], "unclear")
+        self.assertEqual(requirement["scope_state"], "unclear")
+        self.assertIn("official test case", requirement["review_note"].casefold())
+
     def test_requirement_test_evidence_is_bidirectional_or_has_gap_reason(self) -> None:
         catalog = json.loads((ROOT / "specification/catalog/kmip-2.1.json").read_text(encoding="utf-8"))
         expected_by_requirement: dict[str, set[str]] = {
