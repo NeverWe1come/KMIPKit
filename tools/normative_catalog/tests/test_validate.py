@@ -7512,6 +7512,71 @@ class CatalogValidationTests(unittest.TestCase):
             self.assertIn(caption, pinned_source_excerpt(source_path, line_range))
         self.assertEqual(oracle["oracle_status"], "partial-source-reviewed; not complete T003 oracle")
 
+    def test_rng_seed_table_319_data_is_a_required_client_source_contract(self) -> None:
+        """The required RNG Seed Data row maps to approved client and secret-handling evidence."""
+        fixture_path = ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json"
+        oracle = json.loads(fixture_path.read_text(encoding="utf-8"))
+        gap_id = "KMIPKIT-SOURCE-GAP-SPEC-6.1.50-DATA-REQUIRED"
+        proposed_id = "KMIPKIT-REQ-SPEC-6.1.50-004"
+        contracts = source_table_contracts_for_gap(oracle["source_table_contracts"], gap_id)
+
+        self.assertEqual(len(contracts), 1)
+        contract = contracts[0]
+        line_range = [35498, 35516]
+        source_path = "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
+        self.assertEqual(contract["source_id"], "KMIPKIT-SRC-spec")
+        self.assertEqual(contract["source_path"], source_path)
+        self.assertEqual(contract["source_section"], "6.1.50")
+        self.assertEqual(contract["source_locator"], {
+            "kind": "table_body_row",
+            "section": "6.1.50",
+            "row_label": "Data",
+            "table": "request_payload",
+            "html_line_range": line_range,
+        })
+        self.assertEqual(contract["source_excerpt"], pinned_source_excerpt(source_path, line_range))
+        self.assertEqual(contract["table_number"], 319)
+        self.assertEqual(contract["requiredness"], "Yes")
+        self.assertEqual(contract["source_force"], "required_table_body_value")
+        self.assertEqual(contract["actor"], "client")
+        self.assertEqual(contract["scope_disposition"], "client_1_0")
+        self.assertEqual(contract["operation_element_id"], "KMIPKIT-ELEM-OP-C2S-RNG-SEED")
+        self.assertEqual(contract["functional_requirement_ids"], ["FR-001", "FR-005", "FR-008"])
+        self.assertEqual(contract["implementation_refs"], [
+            "crates/kmipkit-protocol/src/rng_seed.rs::RngSeedRequest::to_ttlv_payload",
+        ])
+        self.assertEqual(contract["verification_refs"], [
+            "crates/kmipkit-protocol/tests/unit/rng_seed_operation_tests.rs::request_encodes_required_table_319_data_and_redacts_secret_bytes",
+            "crates/kmipkit-protocol/tests/unit/rng_seed_operation_tests.rs::request_preserves_arbitrary_seed_bytes_including_empty_and_non_utf8",
+            "crates/kmipkit-client/tests/unit/rng_seed_execution_tests.rs::rng_seed_sends_secret_once_and_accepts_zero_bytes_used",
+        ])
+        self.assertEqual(contract["status"], "mapped_to_approved_feature_contract")
+        self.assertEqual(contract["evidence_disposition"]["status"], "mapped_to_feature_contract")
+        self.assertIn("redact", contract["evidence_disposition"]["statement"].lower())
+        self.assertFalse(
+            {"candidate_requirement_id", "proposed_requirement_id", "requirement_id"}.intersection(contract),
+        )
+
+        self.assertFalse(any(row["gap_id"] == gap_id for row in oracle["source_only_requirement_gaps"]))
+        self.assertFalse(any(row["requirement_id"] == proposed_id for row in oracle["requirement_crosswalk"]))
+        self.assertFalse(any(row.get("proposed_requirement_id") == proposed_id
+                             for row in oracle["source_only_requirement_gaps"]))
+        catalog = json.loads((ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8"))
+        self.assertNotIn(proposed_id, {row["requirement_id"] for row in catalog["requirements"]})
+
+        request_review = next(
+            review for review in oracle["source_requirement_reviews"]
+            if review.get("source_clause_id") == "KMIPKIT-CLAUSE-SPEC-6.1.50-002"
+        )
+        request_row = next(row for row in request_review["source_request_rows"] if row["row_label"] == "Data")
+        self.assertEqual(request_row["source_gap_id"], gap_id)
+        self.assertEqual(request_row["disposition"], "required_request_table_contract")
+        self.assertEqual(request_row["source_requirement_ids"], [])
+        self.assertEqual(oracle["counts"]["source_table_contracts"], 56)
+        self.assertEqual(oracle["counts"]["source_only_requirement_gaps"], 114)
+        self.assertEqual(oracle["counts"]["source_only_requirement_gap_proposals"], 61)
+        self.assertEqual(validate_source_table_contracts(oracle, ROOT), [])
+
     def test_spec_6_1_50_rng_seed_error_clause_is_server_to_client(self) -> None:
         """The RNG Seed Result Reason obligation describes server response output."""
         catalog = json.loads((ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8"))
