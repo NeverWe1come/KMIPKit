@@ -10,6 +10,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[3]
 CATALOG = ROOT / "specification/catalog/kmip-2.1.json"
 TRACE = ROOT / "specs/028-diagnostics-interop/traceability.md"
+RESEARCH = ROOT / "specs/028-diagnostics-interop/research.md"
 EXPECTED = {
     "KMIPKIT-REQ-SPEC-6.1.57-001": "req_001_models_one_chain_and_rejects_malformed_certificate_wrapper",
     "KMIPKIT-REQ-SPEC-6.1.57-002-001": "req_002_001_certificate_identifier_and_mixed_inputs_are_available",
@@ -20,6 +21,16 @@ EXPECTED = {
 }
 UNSPECIFIED_ROLE_REQUIREMENTS = {"KMIPKIT-REQ-SPEC-6.1.57-006"}
 PROFILELESS_FEATURE_REQUIREMENTS = {"KMIPKIT-REQ-SPEC-6.1.57-006"}
+OMITTED_DATE_RESEARCH_CONTRACT = (
+    "source actor remains unspecified",
+    "Client verification covers preserving the omission in request serialization only",
+    "date evaluation is unverified",
+)
+OMITTED_DATE_TRACEABILITY_CONTRACT = (
+    "denotes feature/API serialization applicability",
+    "evaluation is unverified",
+    "req_006_omitted_date_remains_absent_in_request_serialization",
+)
 
 
 class DiagnosticsInteropTraceabilityTests(unittest.TestCase):
@@ -73,13 +84,11 @@ class DiagnosticsInteropTraceabilityTests(unittest.TestCase):
         self.assertEqual(len(rows), 12)
 
     def test_omitted_validity_date_evidence_stays_actor_neutral(self) -> None:
-        research = (ROOT / "specs/028-diagnostics-interop/research.md").read_text(encoding="utf-8")
-        self.assertIn("source actor remains unspecified", research)
-        self.assertIn("Client verification covers preserving the omission in request serialization only", research)
-        self.assertIn("date evaluation is unverified", research)
-        self.assertIn("denotes feature/API serialization applicability", self.trace)
-        self.assertIn("evaluation is unverified", self.trace)
-        self.assertIn("req_006_omitted_date_remains_absent_in_request_serialization", self.trace)
+        research = RESEARCH.read_text(encoding="utf-8")
+        for phrase in OMITTED_DATE_RESEARCH_CONTRACT:
+            self.assertIn(phrase, research)
+        for phrase in OMITTED_DATE_TRACEABILITY_CONTRACT:
+            self.assertIn(phrase, self.trace)
         self.assertNotIn("for_server_default", self.trace)
 
     def test_extension_and_unavailable_evidence_are_explicit(self) -> None:
