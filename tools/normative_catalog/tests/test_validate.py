@@ -13249,24 +13249,27 @@ class CatalogValidationTests(unittest.TestCase):
             (ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8")
         )
         profile_id = "KMIPKIT-PROFILE-TAPE-LIBRARY-CLIENT"
-        requirement_ids = {
-            "KMIPKIT-REQ-PROF-5.12.2-002",
-            "KMIPKIT-REQ-PROF-5.12.2-003",
-            "KMIPKIT-REQ-PROF-5.12.6.2-002",
-            "KMIPKIT-REQ-PROF-5.12.6.2-003",
-            "KMIPKIT-REQ-PROF-5.12.6.3-001",
+        requirement_clauses = {
+            "KMIPKIT-REQ-PROF-5.12.2-002": "KMIPKIT-CLAUSE-PROF-5.12.2-002",
+            "KMIPKIT-REQ-PROF-5.12.2-003": "KMIPKIT-CLAUSE-PROF-5.12.2-003",
+            "KMIPKIT-REQ-PROF-5.12.6.2-002": "KMIPKIT-CLAUSE-PROF-5.12.6.2-002",
+            "KMIPKIT-REQ-PROF-5.12.6.2-003": "KMIPKIT-CLAUSE-PROF-5.12.6.2-003",
+            "KMIPKIT-REQ-PROF-5.12.6.3-001": "KMIPKIT-CLAUSE-PROF-5.12.6.3-001",
         }
         requirements = {row["requirement_id"]: row for row in catalog["requirements"]}
         profile = next(row for row in catalog["profiles"] if row["profile_id"] == profile_id)
-        for requirement_id in requirement_ids:
+        for requirement_id, source_clause_id in requirement_clauses.items():
             with self.subTest(requirement_id=requirement_id):
                 requirement = requirements[requirement_id]
                 self.assertEqual(requirement["role"], "client")
                 self.assertEqual(requirement["scope_state"], "profile_conditional")
                 self.assertEqual(requirement["profile_ids"], [profile_id])
                 self.assertIn(requirement_id, profile["requirement_ids"])
+                self.assertIn(source_clause_id, profile["direct_source_clause_ids"])
+                self.assertIn(source_clause_id, profile["source_clause_ids"])
                 mappings = [row for row in oracle["requirement_crosswalk"] if row["requirement_id"] == requirement_id]
                 self.assertEqual(len(mappings), 1)
+                self.assertEqual(mappings[0]["source_clause_id"], source_clause_id)
                 self.assertEqual(mappings[0]["source_actor"], "client")
                 self.assertEqual(mappings[0]["role"], "client")
                 self.assertEqual(mappings[0]["scope_state"], "profile_conditional")
