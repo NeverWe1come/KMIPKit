@@ -88,7 +88,10 @@ def capability_is_available(capability_id: str) -> bool:
 
     if not isinstance(capability_id, str):
         raise TypeError("capability_id must be str")
-    encoded = capability_id.encode("utf-8")
+    try:
+        encoded = capability_id.encode("utf-8")
+    except UnicodeEncodeError:
+        raise errors.InvalidInputError() from None
     data = ffi.new("uint8_t[]", encoded if encoded else b"\0")
     available = ffi.new("uint8_t *")
     status = lib.kmipkit_capability_is_available(data, len(encoded), available)
