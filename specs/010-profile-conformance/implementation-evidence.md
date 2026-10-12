@@ -1556,3 +1556,48 @@ The gate now resolves verification source through the existing `_read_confined_t
 | Refactor - record the selected global MAY/OPTIONAL gate and immutable-source checks | `python -B -m unittest tools.normative_catalog.tests.test_validate.CatalogValidationTests.test_every_reviewed_client_may_or_optional_has_usable_positive_evidence -v`<br>`git diff --quiet e94a32c5..HEAD -- specification/oasis/kmip-2.1/upstream/`<br>`git diff --check` | The selected gate exits 1 with `FAILED (failures=1)` and reports `First list contains 76 additional elements`; first remaining gap: `KMIPKIT-REQ-SPEC-2.3-001: no usable implementation mapping`. This is 76 remaining gap entries, three fewer than the preceding 79-entry state; the three Obtain Lease IDs in this batch no longer appear as gaps. PASS: `git diff --quiet` exits 0 (no pinned upstream changes) and `git diff --check` exits 0 with no output. DCO Refactor commit: this evidence commit. |
 
 The source basis is the pinned OASIS KMIP Specification v2.1 §6.1.35, paragraphs 1–2, at `specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html:30817-30833`, and Table 269 at `:30983-30984` with its Lease Time and Last Change Date rows at `:30945-30957` and `:30963-30964`. The client tests establish preservation/exposure of zero Lease Time and Last Change Date, and exposure of a positive Lease Time value (30) through the response getter. They do not test server decisions, lease timing, caller enforcement, automatic cache refresh, renewal, or expiration behavior. These are request/response representation evidence links only; they do not close runtime rule mapping (FR-014), eligible CI evidence (FR-017), the global evidence gate, or profile readiness. The three requirements retain owner `KMIPKIT-0036`, verified local evidence status, and empty official `test_case_ids`. No production behavior or pinned OASIS file changed.
+
+### KMIPKIT-0010 - Rust evidence test-ref discovery correction
+
+| Stage | Exact command(s) | Exact result |
+|---|---|---|
+| Red 1 - reject comments, literals, and an empty cfg(any()) condition as test declarations | `python -B -m unittest tools.normative_catalog.tests.test_validate.CatalogValidationTests.test_optional_evidence_gate_accepts_only_scoped_client_request_evidence -v` | Expected Red: 3 subtests fail because test-shaped source in a block comment, a raw string, and `#[cfg(any())]` is accepted as a positive test ref. Existing negative cases for absolute/traversal/symlink paths, missing file/name, and ordinary functions remain in this regression. DCO Red commit: `48186fa9`. |
+| Green 1 - lex Rust comments/literals and reject inactive or unknown cfg conditions | Same focused gate command | PASS: 1 test. The scanner blanks line and nested block comments plus regular/raw string literals before recognizing declarations. It rejects cfg conditions that are false or not statically known true under a test build, and rejects cfg_attr conservatively. DCO Green commit: `52cb8746`. |
+| Red 2 - apply active-test discovery to the traceability helper as well | `python -B -m unittest tools.normative_catalog.tests.test_feature_traceability.FeatureTraceabilityTests.test_rust_executable_test_refs_require_an_active_test_declaration -v` | Expected Red: 4 subtests fail because the traceability helper accepts test-shaped source in a block comment, raw string, disabled cfg, and an undecorated ordinary function. DCO Red commit: `6140937b`. |
+| Green 2 - share the confined active-test recognizer across both evidence helpers | `python -B -m unittest tools.normative_catalog.tests.test_feature_traceability -v`<br>`python -B -m unittest tools.normative_catalog.tests.test_validate.CatalogValidationTests.test_optional_evidence_gate_accepts_only_scoped_client_request_evidence tools.normative_catalog.tests.test_validate.CatalogValidationTests.test_optional_capability_evidence_links_name_positive_tests tools.normative_catalog.tests.test_validate.CatalogValidationTests.test_obtain_lease_evidence_uses_named_tests_without_reassigning_requirement_owner tools.normative_catalog.tests.test_validate.CatalogValidationTests.test_requirement_test_evidence_is_bidirectional_or_has_gap_reason -v` | PASS: traceability suite ran 17 tests, `OK (skipped=1)`; the skip is the standalone symlink test because this Windows environment denies symlink creation. The four focused validator regressions ran 4 tests, `OK`. The positive fixtures cover `#[test]`, `#[cfg(test)]`, `#[tokio::test]`, pytest, and unittest; negative fixtures include ordinary declarations, block and nested comments, line comments, raw strings, empty/unknown cfg, plus the existing path-confinement cases. DCO Green 2 commit: `5844644f`. |
+| Green 2 - compile/list workspace tests and cross-check real catalog Rust refs | `cargo test --workspace --all-features -- --list`<br>PowerShell cross-check script below | PASS: Cargo exits 0. The script finds 134 distinct Rust verification refs; all 134 leaf test names appear in the compiled workspace test listing and all 134 source refs pass the repo-local active-test detector. Name matching against Cargo's combined listing does not prove that each same-named test came from the linked target; the local confined-source check separately confirms a runner-shaped declaration in each referenced file. |
+| Refactor - rerun catalog, focused, formatting, generated-output, and immutability checks | `python -B -m unittest tools.normative_catalog.tests.test_feature_traceability -v`<br>`python -B -m unittest tools.normative_catalog.tests.test_validate.CatalogValidationTests.test_optional_evidence_gate_accepts_only_scoped_client_request_evidence tools.normative_catalog.tests.test_validate.CatalogValidationTests.test_optional_capability_evidence_links_name_positive_tests tools.normative_catalog.tests.test_validate.CatalogValidationTests.test_obtain_lease_evidence_uses_named_tests_without_reassigning_requirement_owner tools.normative_catalog.tests.test_validate.CatalogValidationTests.test_requirement_test_evidence_is_bidirectional_or_has_gap_reason -v`<br>`python -B tools/normative_catalog/validate.py --repo-root .`<br>`python -B tools/normative_catalog/generate_profiles.py --repo-root . --check`<br>`python -B tools/normative_catalog/report.py --repo-root . --check`<br>`cargo fmt --all --check`<br>`git diff --quiet e94a32c5..HEAD -- specification/oasis/kmip-2.1/upstream/`<br>`git diff --check` | PASS: traceability suite 17 tests, one platform skip; focused validator suite 4 tests; `Catalog valid: sources=4 clauses=1411 records=4111`; profile metadata verified; coverage report verified; format, immutable-upstream, and whitespace checks exit 0. The selected global MAY/OPTIONAL evidence gate remains intentionally failing with 76 entries; first remaining gap is `KMIPKIT-REQ-SPEC-2.3-001: no usable implementation mapping`. No OASIS source, catalog rule, catalog data, production behavior, or generated output changed. DCO Refactor commit: this evidence commit. |
+
+The exact PowerShell cross-check used for the 134 catalogued Rust references was:
+
+```powershell
+@'
+import json
+import subprocess
+from pathlib import Path
+from tools.normative_catalog.tests import test_feature_traceability
+catalog = json.loads(Path('specification/catalog/kmip-2.1.json').read_text(encoding='utf-8'))
+refs = sorted({ref for row in catalog['requirements'] for ref in row.get('verification_refs', []) if '.rs::' in ref})
+listing = subprocess.run(['cargo', 'test', '--workspace', '--all-features', '--', '--list'], check=True, capture_output=True, text=True)
+listed_names = {line.split(': test', 1)[0].rsplit('::', 1)[-1] for line in listing.stdout.splitlines() if line.endswith(': test')}
+not_listed = [ref for ref in refs if ref.partition('::')[2] not in listed_names]
+not_discoverable = []
+for ref in refs:
+    path_ref, separator, test_name = ref.partition('::')
+    confined = test_feature_traceability._read_confined_test_source(path_ref) if separator and test_name else None
+    if confined is None or not test_feature_traceability._is_discoverable_positive_test(confined[0], test_name, confined[1]):
+        not_discoverable.append(ref)
+print(f'cargo --list exit: {listing.returncode}')
+print(f'catalogued Rust refs: {len(refs)}')
+print(f'names present in compiled test listing: {len(refs) - len(not_listed)}/{len(refs)}')
+print(f'names discoverable in repo-local source: {len(refs) - len(not_discoverable)}/{len(refs)}')
+if not_listed or not_discoverable:
+    for ref in not_listed:
+        print(f'not listed: {ref}')
+    for ref in not_discoverable:
+        print(f'not discoverable: {ref}')
+    raise SystemExit(1)
+'@ | python -B -
+```
+
+This remains a lexical, runner-shape check, not a Rust AST or assertion-semantics proof. It strips line/nested-block comments and regular/raw string literals, recognizes the currently supported Rust test attributes, and fails closed if any `cfg`/`cfg_attr` in the source file is not proven active in a test build. `#[cfg(test)]` is treated as active; empty `any()` is false; other unresolved predicates are rejected. The cfg scan is deliberately source-file-wide, so it can reject a valid referenced test when an unrelated item in the same file has an unresolved cfg. Reviewers still need to inspect the test body to confirm the positive assertion. No catalog requirement/status, runtime mapping, profile readiness, or official OASIS Test Cases claim changed.
