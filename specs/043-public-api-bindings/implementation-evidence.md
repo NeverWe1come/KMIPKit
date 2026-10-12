@@ -59,6 +59,21 @@ The shared capability query now maps unpaired Unicode surrogates consistently to
 
 `kmipkit_last_error_get` and `kmipkit_last_error_clear` are C ABI diagnostics required by FR-007. The language facades expose failures as caller-owned Rust errors and Java/Python exceptions; they do not expose the C thread-local slot or its explicit clear operation. These exact symbols are excluded only from the cross-language facade parity inventory and remain in the generated C header and C API tests. This is a reviewed surface distinction, not a claim that FR-007's C requirement is out of scope.
 
+## T027 — Python native loading and ABI verification
+
+The Python package loads exactly one regular shared library adjacent to its generated CFFI declarations, or the explicit `KMIPKIT_NATIVE_LIBRARY` administrator override. It rejects a missing/ambiguous bundled artifact and a missing override without fallback; it performs no directory search or runtime download. Before exposing the FFI, it queries `kmipkit_version_get` and requires ABI revision 1. Load and ABI errors redact native paths and implementation details.
+
+| Phase | Commit | Command | Result |
+|---|---|---|---|
+| Red | `874c697a` | `python -m pytest -q bindings/python/tests/test_native_loading.py` | Expected failure: the package-local loader helpers did not yet exist. |
+| Green | `6d4f8b3c` | Same focused command | Added the injectable loader with explicit override, no-fallback, ABI mismatch, and redacted-error behavior. |
+| Refactor | `ed920459` | Same focused command; reviewed `docs/architecture/ffi-and-bindings.md` | Clarified the administrator override contract and redacted failure expectations without changing loader behavior. |
+| Red | `67354b1b`, `b931cdb3` | `python -m pytest -q bindings/python/tests/test_native_loading.py` | Added failing specifications for the canonical C ABI handshake and deterministic package-local native-library discovery before wiring them into the package import. |
+| Green | `ac5df387` | `python -m pytest -q bindings/python/tests/test_native_loading.py` | Integrated CFFI loading with the generated package declarations, ABI query, and exact adjacent-library selection. |
+| Refactor | `701d3002` | `bindings/python/.venv/Scripts/python.exe -m pytest bindings/python/tests/test_native_loading.py -q`; `git diff --check` | PASS: 11 loader tests. Expanded the architecture contract to document recognized library suffixes, regular-file/symlink handling, ambiguity rejection, ABI handshake, and absence of fallback/search/download. |
+
+Final verification on Windows x86-64: `bindings/python/.venv/Scripts/python.exe -m pytest bindings/python/tests -q` passed 46 tests. `maturin build` produced `kmipkit-1.0.0-py3-none-win_amd64.whl`; installing it into an isolated target directory with `uv pip install --target ... --no-deps` and importing from that installed tree returned product version 1.0.0, ABI 1, and `generic_ttlv_model` available. QA independently reviewed the loader and wheel smoke, confirmed the no-fallback/redaction behavior, and approved closing T027. This does not close T028's Java/Python cross-platform CI matrix.
+
 ## T013 — Approved generic TTLV declaration ownership (partial)
 
 The canonical declaration slice whose Rust paths begin with `kmipkit_ttlv::` contains exactly 101 declarations: 76 generic-model declarations owned by KMIPKIT-0004 and 25 `CodecLimits` declarations owned by KMIPKIT-0005. The manifest maps these to the two approved shared capabilities with their owner requirements and evidence. This closes only this audited slice; T013 remains open until the remaining published Rust crate declarations are audited and mapped or explicitly excluded under an accepted authority.
