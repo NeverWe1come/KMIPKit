@@ -17,7 +17,9 @@ public final class RuntimeMetadata {
     /** Returns the loaded native package version and stable ABI revision. */
     public static native Version version();
 
-    /** Returns whether the named capability has an unblocked C mapping. */
+    /** Returns whether the named capability has an unblocked C mapping.
+     * @throws ResourceLimitException if the UTF-8 identifier exceeds 128 bytes
+     */
     public static native boolean capabilityIsAvailable(String capabilityId);
 
     static native ErrorSnapshot lastErrorSnapshot();

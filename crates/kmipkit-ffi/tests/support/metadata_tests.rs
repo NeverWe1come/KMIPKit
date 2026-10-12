@@ -32,10 +32,28 @@ fn version_query_matches_the_package_version_and_stable_abi() {
 
 #[test]
 fn capability_query_only_reports_c_mapped_nonblocked_capabilities() {
+    assert_eq!(
+        crate::public_api_generated::C_AVAILABLE_CAPABILITIES,
+        &[
+            "ffi_runtime_metadata",
+            "generic_ttlv_model",
+            "ttlv_wire_codec",
+        ]
+    );
     for capability in crate::public_api_generated::C_AVAILABLE_CAPABILITIES {
         assert!(
-            kmipkit::capability_is_available(capability),
+            matches!(kmipkit::capability_is_available(capability), Ok(true)),
             "Rust facade omitted ready manifest capability {capability}"
+        );
+    }
+    for unavailable in [
+        "public_binding_surface",
+        "rust_transport_exchange",
+        "vendor_extension_registry",
+    ] {
+        assert!(
+            matches!(kmipkit::capability_is_available(unavailable), Ok(false)),
+            "Rust facade advertised a capability outside its mapped surface: {unavailable}"
         );
     }
 
@@ -67,8 +85,79 @@ fn capability_query_only_reports_c_mapped_nonblocked_capabilities() {
 }
 
 #[test]
+fn oversized_capability_query_records_resource_limit_without_request_delivery() {
+    let identifier = vec![b'x'; 129];
+    let mut available = u8::MAX;
+
+    assert_eq!(
+        kmipkit_capability_is_available(
+            identifier.as_ptr(),
+            identifier.len() as u64,
+            &raw mut available,
+        ),
+        ERROR_RESOURCE_LIMIT
+    );
+    assert_eq!(
+        read_last_error(),
+        (
+            ERROR_RESOURCE_LIMIT,
+            ERROR_CATEGORY_VALIDATION,
+            ERROR_CAUSE_OTHER,
+            DELIVERY_STATE_NONE,
+        )
+    );
+    assert_eq!(available, u8::MAX);
+}
+
+#[test]
 fn last_error_is_redacted_thread_local_and_persists_until_explicitly_cleared() {
     kmipkit_last_error_clear();
+    assert_eq!(
+        read_last_error(),
+        (SUCCESS, ERROR_NONE, ERROR_NONE, DELIVERY_NONE)
+    );
+
+    assert_eq!(
+        kmipkit_ttlv_structure_create(std::ptr::null_mut()),
+        ERROR_INVALID_INPUT
+    );
+    assert_eq!(
+        read_last_error(),
+        (
+            ERROR_INVALID_INPUT,
+            ERROR_CATEGORY_VALIDATION,
+            ERROR_CAUSE_INVALID_INPUT,
+            DELIVERY_NONE
+        )
+    );
+
+    let child = std::thread::spawn(read_last_error);
+    assert_eq!(
+        child.join().expect("the thread-local query does not panic"),
+        (SUCCESS, ERROR_NONE, ERROR_NONE, DELIVERY_NONE)
+    );
+
+    let mut structure = std::ptr::null_mut();
+    assert_eq!(kmipkit_ttlv_structure_create(&raw mut structure), SUCCESS);
+    kmipkit_ttlv_structure_release(structure);
+    assert_eq!(
+        read_last_error(),
+        (
+            ERROR_INVALID_INPUT,
+            ERROR_CATEGORY_VALIDATION,
+            ERROR_CAUSE_INVALID_INPUT,
+            DELIVERY_NONE
+        )
+    );
+
+    kmipkit_last_error_clear();
+    assert_eq!(
+        read_last_error(),
+        (SUCCESS, ERROR_NONE, ERROR_NONE, DELIVERY_NONE)
+    );
+}
+
+fn read_last_error() -> (i32, u32, u32, u32) {
     let mut status = i32::MAX;
     let mut category = u32::MAX;
     let mut cause = u32::MAX;
@@ -82,103 +171,7 @@ fn last_error_is_redacted_thread_local_and_persists_until_explicitly_cleared() {
         ),
         SUCCESS
     );
-    assert_eq!(
-        (status, category, cause, delivery),
-        (SUCCESS, ERROR_NONE, ERROR_NONE, DELIVERY_NONE)
-    );
-
-    assert_eq!(
-        kmipkit_ttlv_structure_create(std::ptr::null_mut()),
-        ERROR_INVALID_INPUT
-    );
-    status = i32::MAX;
-    category = u32::MAX;
-    cause = u32::MAX;
-    delivery = u32::MAX;
-    assert_eq!(
-        kmipkit_last_error_get(
-            &raw mut status,
-            &raw mut category,
-            &raw mut cause,
-            &raw mut delivery,
-        ),
-        SUCCESS
-    );
-    assert_eq!(
-        (status, category, cause, delivery),
-        (
-            ERROR_INVALID_INPUT,
-            ERROR_CATEGORY_VALIDATION,
-            ERROR_CAUSE_INVALID_INPUT,
-            DELIVERY_NONE
-        )
-    );
-
-    let child = std::thread::spawn(|| {
-        let mut child_status = i32::MAX;
-        let mut child_category = u32::MAX;
-        let mut child_cause = u32::MAX;
-        let mut child_delivery = u32::MAX;
-        assert_eq!(
-            kmipkit_last_error_get(
-                &raw mut child_status,
-                &raw mut child_category,
-                &raw mut child_cause,
-                &raw mut child_delivery,
-            ),
-            SUCCESS
-        );
-        (child_status, child_category, child_cause, child_delivery)
-    });
-    assert_eq!(
-        child.join().expect("the thread-local query does not panic"),
-        (SUCCESS, ERROR_NONE, ERROR_NONE, DELIVERY_NONE)
-    );
-
-    let mut structure = std::ptr::null_mut();
-    assert_eq!(kmipkit_ttlv_structure_create(&raw mut structure), SUCCESS);
-    kmipkit_ttlv_structure_release(structure);
-    status = i32::MAX;
-    category = u32::MAX;
-    cause = u32::MAX;
-    delivery = u32::MAX;
-    assert_eq!(
-        kmipkit_last_error_get(
-            &raw mut status,
-            &raw mut category,
-            &raw mut cause,
-            &raw mut delivery,
-        ),
-        SUCCESS
-    );
-    assert_eq!(
-        (status, category, cause, delivery),
-        (
-            ERROR_INVALID_INPUT,
-            ERROR_CATEGORY_VALIDATION,
-            ERROR_CAUSE_INVALID_INPUT,
-            DELIVERY_NONE
-        )
-    );
-
-    kmipkit_last_error_clear();
-    status = i32::MAX;
-    category = u32::MAX;
-    cause = u32::MAX;
-    delivery = u32::MAX;
-    assert_eq!(
-        kmipkit_last_error_get(
-            &raw mut status,
-            &raw mut category,
-            &raw mut cause,
-            &raw mut delivery,
-        ),
-        SUCCESS
-    );
-    assert_eq!(
-        (status, category, cause, delivery),
-        (SUCCESS, ERROR_NONE, ERROR_NONE, DELIVERY_NONE)
-    );
+    (status, category, cause, delivery)
 }
 
 #[test]

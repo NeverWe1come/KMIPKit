@@ -9096,7 +9096,8 @@
     {
       "c": {
         "errorCategories": [
-          "invalid_input"
+          "invalid_input",
+          "resource_limit"
         ],
         "parameters": [
           {
@@ -9106,6 +9107,7 @@
             "kind": "byte-span",
             "lengthUnit": "bytes",
             "limitCheck": "before-dereference",
+            "maxBytes": 128,
             "name": "capability_id_data",
             "nulTerminatedScan": false,
             "type": "const uint8_t *"
@@ -9129,7 +9131,8 @@
       "java": {
         "class": "RuntimeMetadata",
         "errorCategories": [
-          "invalid_input"
+          "invalid_input",
+          "resource_limit"
         ],
         "jniSymbol": "Java_org_kmipkit_RuntimeMetadata_capabilityIsAvailable",
         "method": "capabilityIsAvailable",
@@ -9146,7 +9149,8 @@
       "python": {
         "cffiSymbol": "kmipkit_capability_is_available",
         "errorCategories": [
-          "invalid_input"
+          "invalid_input",
+          "resource_limit"
         ],
         "function": "capability_is_available",
         "module": "kmipkit.metadata",
@@ -25727,6 +25731,80 @@
     },
     {
       "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "ffi_runtime_metadata",
+      "declarationId": "java-observed-c0354148e2bd1ba4c8ec",
+      "declarationState": "declared",
+      "exportName": "org.kmipkit.ResourceLimitException",
+      "kind": "type",
+      "languageMappings": {
+        "c": {
+          "name": "KMIPKIT_ERROR_RESOURCE_LIMIT",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.ResourceLimitException",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.errors.ResourceLimitError",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit::RuntimeMetadataError::ResourceLimit",
+          "packageId": "rust-kmipkit"
+        }
+      },
+      "packageId": "java-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-013"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "ffi_runtime_metadata",
+      "declarationId": "python-observed-ef3623e7236b8fedc379",
+      "declarationState": "declared",
+      "exportName": "kmipkit.errors.ResourceLimitError",
+      "kind": "type",
+      "languageMappings": {
+        "c": {
+          "name": "KMIPKIT_ERROR_RESOURCE_LIMIT",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.ResourceLimitException",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.errors.ResourceLimitError",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit::RuntimeMetadataError::ResourceLimit",
+          "packageId": "rust-kmipkit"
+        }
+      },
+      "packageId": "python-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-013"
+      ]
+    },
+    {
+      "approvalSource": {
         "evidence": "**Status**: Accepted under delegated maintainer authorization on 2026-10-06.",
         "kind": "accepted-adr",
         "path": "docs/adr/0014-public-transport-exchange-contract.md",
@@ -26385,6 +26463,117 @@
       "parityScope": "four-language",
       "requirementIds": [
         "KMIPKIT-0043-FR-007"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "ffi_runtime_metadata",
+      "declarationId": "kmipkit.RuntimeMetadataError:rust",
+      "declarationState": "declared",
+      "exportName": "kmipkit::RuntimeMetadataError",
+      "kind": "type",
+      "languageMappings": {
+        "c": {
+          "name": "KMIPKIT_ERROR_RESOURCE_LIMIT",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.ResourceLimitException",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.errors.ResourceLimitError",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit::RuntimeMetadataError",
+          "packageId": "rust-kmipkit"
+        }
+      },
+      "packageId": "rust-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-013"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "ffi_runtime_metadata",
+      "declarationId": "kmipkit.RuntimeMetadataError.ResourceLimit:rust",
+      "declarationState": "declared",
+      "exportName": "kmipkit::RuntimeMetadataError::ResourceLimit",
+      "kind": "variant",
+      "languageMappings": {
+        "c": {
+          "name": "KMIPKIT_ERROR_RESOURCE_LIMIT",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.ResourceLimitException",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.errors.ResourceLimitError",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit::RuntimeMetadataError::ResourceLimit",
+          "packageId": "rust-kmipkit"
+        }
+      },
+      "packageId": "rust-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-013"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "ffi_runtime_metadata",
+      "declarationId": "KMIPKIT_ERROR_RESOURCE_LIMIT:c",
+      "declarationState": "declared",
+      "exportName": "KMIPKIT_ERROR_RESOURCE_LIMIT",
+      "kind": "constant",
+      "languageMappings": {
+        "c": {
+          "name": "KMIPKIT_ERROR_RESOURCE_LIMIT",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.ResourceLimitException",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.errors.ResourceLimitError",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit::RuntimeMetadataError::ResourceLimit",
+          "packageId": "rust-kmipkit"
+        }
+      },
+      "packageId": "c-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-013"
       ]
     }
   ],

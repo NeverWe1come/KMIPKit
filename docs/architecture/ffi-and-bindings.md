@@ -20,7 +20,9 @@ The C ABI is the shared boundary for C, Java, Python, and later adapters.
 `uint32_t` components and the stable C ABI revision (`1` for the initial 1.x
 ABI). `kmipkit_capability_is_available` accepts a UTF-8 capability ID and
 returns `1` only when the generated manifest declares a non-blocked C mapping;
-this does not imply that a remote KMIP server supports the capability.
+this does not imply that a remote KMIP server supports the capability. The
+identifier is limited to 128 UTF-8 bytes in all four language facades; an
+oversized identifier produces the shared validation/resource-limit failure.
 
 `kmipkit_last_error_get` copies the calling thread's most recent nonzero C
 status and safe metadata without clearing it. `kmipkit_last_error_clear` resets

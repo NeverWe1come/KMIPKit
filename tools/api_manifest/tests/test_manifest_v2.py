@@ -343,7 +343,7 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
             for declaration in self.checked_in_manifest["publicDeclarations"]
             if declaration["packageId"] in rust_packages
         ]
-        self.assertEqual(len(declarations), 1765)
+        self.assertEqual(len(declarations), 1767)
         by_package_and_name = {
             (declaration["packageId"], declaration["exportName"]): declaration
             for declaration in declarations
@@ -446,6 +446,18 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
         self.assertEqual(
             rust_limit_error["languageMappings"]["rust"]["name"],
             "kmipkit::RuntimeMetadataError::ResourceLimit",
+        )
+        self.assertEqual(
+            {
+                language: mapping["name"]
+                for language, mapping in rust_limit_error["languageMappings"].items()
+            },
+            {
+                "rust": "kmipkit::RuntimeMetadataError::ResourceLimit",
+                "c": "KMIPKIT_ERROR_RESOURCE_LIMIT",
+                "java": "org.kmipkit.ResourceLimitException",
+                "python": "kmipkit.errors.ResourceLimitError",
+            },
         )
 
         runtime_version = next(

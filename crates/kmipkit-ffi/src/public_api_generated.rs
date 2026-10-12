@@ -522,4 +522,14 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "rust-kmipkit",
         "kmipkit::ABI_VERSION",
     ),
+    (
+        "kmipkit.RuntimeMetadataError:rust",
+        "rust-kmipkit",
+        "kmipkit::RuntimeMetadataError",
+    ),
+    (
+        "kmipkit.RuntimeMetadataError.ResourceLimit:rust",
+        "rust-kmipkit",
+        "kmipkit::RuntimeMetadataError::ResourceLimit",
+    ),
 ];

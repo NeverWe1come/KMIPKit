@@ -2,6 +2,7 @@ package org.kmipkit;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.junit.jupiter.api.Test;
@@ -29,13 +30,19 @@ final class RuntimeMetadataTest {
     }
 
     @Test
+    void limitsCapabilityIdentifierByStandardUtf8ByteLength() {
+        assertFalse(RuntimeMetadata.capabilityIsAvailable("🔐".repeat(32)));
+        assertThrows(
+                ResourceLimitException.class,
+                () -> RuntimeMetadata.capabilityIsAvailable("🔐".repeat(33)));
+    }
+
+    @Test
     void exposesSafeNativeErrorSnapshotWithoutClearingItUntilRequested() {
         RuntimeMetadata.clearLastError();
-        try {
-            RuntimeMetadata.capabilityIsAvailable("x".repeat(129));
-        } catch (ResourceLimitException expected) {
-            // The safe snapshot is checked below; native details remain private.
-        }
+        assertThrows(
+                ResourceLimitException.class,
+                () -> RuntimeMetadata.capabilityIsAvailable("x".repeat(129)));
 
         RuntimeMetadata.ErrorSnapshot expected = new RuntimeMetadata.ErrorSnapshot(6, 1, 10, 0);
         assertEquals(expected, RuntimeMetadata.lastErrorSnapshot());

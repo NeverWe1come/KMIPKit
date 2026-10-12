@@ -81,7 +81,10 @@ def get_version() -> Version:
 
 
 def capability_is_available(capability_id: str) -> bool:
-    """Return whether the reviewed manifest has an unblocked C mapping."""
+    """Return whether the reviewed manifest has an unblocked C mapping.
+
+    Raises ``ResourceLimitError`` when the UTF-8 identifier exceeds 128 bytes.
+    """
 
     if not isinstance(capability_id, str):
         raise TypeError("capability_id must be str")

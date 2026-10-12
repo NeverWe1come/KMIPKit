@@ -14,6 +14,12 @@ def test_capability_query_only_reports_manifest_ready_c_capabilities() -> None:
     assert not metadata.capability_is_available("unknown_capability")
 
 
+def test_capability_query_limits_standard_utf8_encoded_bytes() -> None:
+    assert not metadata.capability_is_available("🔐" * 32)
+    with pytest.raises(errors.ResourceLimitError):
+        metadata.capability_is_available("🔐" * 33)
+
+
 def test_error_snapshot_is_safe_non_destructive_and_explicitly_clearable() -> None:
     metadata._clear_last_error()
     with pytest.raises(errors.ResourceLimitError):

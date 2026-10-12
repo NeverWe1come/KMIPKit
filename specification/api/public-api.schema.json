@@ -712,6 +712,11 @@
             "lengthUnit": {
               "const": "bytes"
             },
+            "maxBytes": {
+              "type": "integer",
+              "minimum": 1,
+              "description": "Maximum accepted input length in bytes when this span has a fixed bound."
+            },
             "limitCheck": {
               "const": "before-dereference"
             },
