@@ -24,7 +24,7 @@ class MultiLanguageCoverageTests(unittest.TestCase):
         ).read_text(encoding="utf-8")
 
         self.assertIn(
-            "from kmipkit._generated import public_api",
+            "from kmipkit._generated import extension_registry, public_api",
             test_source,
             "checked-in generated Python API metadata must be exercised and included in coverage",
         )
