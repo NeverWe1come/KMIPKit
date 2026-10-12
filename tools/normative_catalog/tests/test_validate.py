@@ -15322,6 +15322,89 @@ class CatalogValidationTests(unittest.TestCase):
 
         self.assertEqual(violations, [], "pinned-source requirement review mismatches: " + "; ".join(violations))
 
+    def test_three_specification_client_atoms_have_stable_catalog_mappings(self) -> None:
+        """Shared source clauses retain separate, exact client requirement mappings."""
+        catalog = json.loads(
+            (ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8")
+        )
+        oracle = json.loads(
+            (ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json").read_text(encoding="utf-8")
+        )
+        expected = (
+            (
+                "KMIPKIT-SOURCE-GAP-SPEC-4.39-LOWERCASE-FRIENDLY-NAME",
+                "KMIPKIT-CLAUSE-SPEC-4.39-002",
+                "KMIPKIT-REQ-SPEC-4.39-002-001",
+                3,
+                "SHOULD",
+                "client_to_server",
+                [17251, 17256],
+            ),
+            (
+                "KMIPKIT-SOURCE-GAP-SPEC-6.1.18-GET-SEMANTICS",
+                "KMIPKIT-CLAUSE-SPEC-6.1.18-001",
+                "KMIPKIT-REQ-SPEC-6.1.18-001-001",
+                1,
+                "SHALL",
+                "client_to_server",
+                [26846, 26849],
+            ),
+            (
+                "KMIPKIT-SOURCE-GAP-SPEC-6.1.45-CERTIFICATE-REQUEST-UID-ONLY",
+                "KMIPKIT-CLAUSE-SPEC-6.1.45-002",
+                "KMIPKIT-REQ-SPEC-6.1.45-002-003",
+                2,
+                "SHALL",
+                "client_to_server",
+                [33348, 33353],
+            ),
+        )
+        requirements = {row["requirement_id"]: row for row in catalog["requirements"]}
+        clauses = {row["clause_id"]: row for row in catalog["source_clauses"]}
+        reviews = {row["source_clause_id"]: row for row in oracle["source_requirement_reviews"]}
+        gaps = {row["gap_id"]: row for row in oracle["source_only_requirement_gaps"]}
+        crosswalk = {row["requirement_id"]: row for row in oracle["requirement_crosswalk"]}
+
+        for gap_id, clause_id, requirement_id, order, keyword, direction, html_lines in expected:
+            with self.subTest(requirement_id=requirement_id):
+                requirement = requirements[requirement_id]
+                clause = clauses[clause_id]
+                review = reviews[clause_id]
+                gap = gaps[gap_id]
+                source_atom = next(
+                    atom for atom in review["source_obligations"] if atom["source_order"] == order
+                )
+
+                self.assertEqual(requirement["source_clause_ids"], [clause_id])
+                self.assertEqual(requirement["source_keyword"], keyword)
+                self.assertEqual(requirement["role"], "client")
+                self.assertEqual(requirement["direction"], direction)
+                self.assertEqual(requirement["scope_state"], "client_1_0")
+                self.assertEqual(requirement["status"], "unassigned")
+                self.assertEqual(clause["disposition"], "requirement")
+                self.assertEqual(clause["scope_state"], "mixed")
+                self.assertIn(requirement_id, clause["requirement_ids"])
+                self.assertIn(requirement_id, review["expected_client_requirement_ids"])
+                self.assertEqual(source_atom["candidate_requirement_id"], requirement_id)
+                self.assertEqual(source_atom["actor"], "client")
+                self.assertEqual(source_atom["scope_disposition"], "client_1_0")
+                self.assertEqual(
+                    pinned_source_excerpt("specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html", html_lines),
+                    review["source_excerpt"],
+                )
+                self.assertEqual(gap["candidate_requirement_id"], requirement_id)
+                self.assertIsNone(gap["proposed_requirement_id"])
+                self.assertEqual(gap["status"], "source_obligation_covered_by_existing_stable_label")
+                self.assertEqual(crosswalk[requirement_id]["source_clause_id"], clause_id)
+                self.assertEqual(crosswalk[requirement_id]["source_obligation_order"], order)
+                for profile in oracle["profiles"]:
+                    self.assertIn(requirement_id, profile["requirement_ids_audited_subset"])
+
+        client_profiles = [row for row in catalog["profiles"] if row["role"] == "client"]
+        for profile in client_profiles:
+            for _, _, requirement_id, *_ in expected:
+                self.assertIn(requirement_id, profile["requirement_ids"])
+
     def test_profile_section_three_channel_clause_preserves_unresolved_scope(self) -> None:
         """Profiles §3 item 1 leaves endpoint role and direction unspecified."""
         catalog = json.loads(
