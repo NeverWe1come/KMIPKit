@@ -199,6 +199,39 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
         self.assertRegex(java_gradle, rf'(?m)^version = "{re.escape(expected)}"$')
         self.assertRegex(java_pom, rf"(?m)^\s*<version>{re.escape(expected)}</version>$")
 
+    def test_runtime_metadata_exports_are_inventoried_in_every_language(self) -> None:
+        declarations = {
+            (entry["packageId"], entry["exportName"]): entry
+            for entry in self.checked_in_manifest["publicDeclarations"]
+        }
+        expected = {
+            ("rust-kmipkit", "kmipkit::VERSION"),
+            ("java-kmipkit", "org.kmipkit.RuntimeMetadata"),
+            ("java-kmipkit", "org.kmipkit.RuntimeMetadata.Version"),
+            ("java-kmipkit", "org.kmipkit.RuntimeMetadata.ErrorSnapshot"),
+            ("java-kmipkit", "org.kmipkit.RuntimeMetadata.version"),
+            ("java-kmipkit", "org.kmipkit.RuntimeMetadata.capabilityIsAvailable"),
+            ("java-kmipkit", "org.kmipkit.RuntimeMetadata.lastErrorSnapshot"),
+            ("java-kmipkit", "org.kmipkit.RuntimeMetadata.clearLastError"),
+            ("python-kmipkit", "kmipkit.metadata"),
+            ("python-kmipkit", "kmipkit.metadata.Version"),
+            ("python-kmipkit", "kmipkit.metadata.FfiErrorSnapshot"),
+            ("python-kmipkit", "kmipkit.metadata.ClientErrorCategory"),
+            ("python-kmipkit", "kmipkit.metadata.ClientCauseCategory"),
+            ("python-kmipkit", "kmipkit.metadata.RequestDeliveryState"),
+            ("python-kmipkit", "kmipkit.metadata.get_version"),
+            ("python-kmipkit", "kmipkit.metadata.capability_is_available"),
+            ("python-kmipkit", "kmipkit.metadata.last_error_snapshot"),
+            ("python-kmipkit", "kmipkit.metadata.clear_last_error"),
+        }
+
+        self.assertTrue(expected <= declarations.keys())
+        for key in expected:
+            with self.subTest(declaration=key):
+                declaration = declarations[key]
+                self.assertEqual(declaration["capabilityId"], "ffi_runtime_metadata")
+                self.assertEqual(declaration["declarationState"], "declared")
+
     def test_checked_in_manifest_retains_every_registry_slice_record(self) -> None:
         manifest = self.checked_in_manifest
         registry = json.loads(REGISTRY_FIXTURE_PATH.read_text(encoding="utf-8"))
