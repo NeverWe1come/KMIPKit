@@ -72,6 +72,24 @@ final class NativeLibraryLoaderTest {
     }
 
     @Test
+    void resolvesUnixLibraryNameFromBundledResources() throws Exception {
+        byte[] libraryBytes = {0x4b, 0x4d, 0x49, 0x50};
+        String target = "linux-glibc-x86_64";
+        String libraryName = "libkmipkit_jni.so";
+        Map<String, byte[]> resources = Map.of(
+                "META-INF/native/" + target + "/" + libraryName, libraryBytes,
+                "META-INF/native/" + target + "/" + libraryName + ".sha256",
+                (sha256(libraryBytes) + "\n").getBytes(java.nio.charset.StandardCharsets.US_ASCII));
+
+        Path loadedPath = NativeLibraryLoader.extractBundled(
+                classLoader(resources), "Linux", "amd64", temporaryDirectory,
+                NativeLibraryLoader::createPrivateDirectory);
+
+        assertEquals(libraryName, loadedPath.getFileName().toString());
+        assertArrayEquals(libraryBytes, Files.readAllBytes(loadedPath));
+    }
+
+    @Test
     void missingResourceFailsWithRedactedError() {
         UnsatisfiedLinkError failure = assertThrows(UnsatisfiedLinkError.class,
                 () -> NativeLibraryLoader.extractBundled(
