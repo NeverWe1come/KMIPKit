@@ -86687,7 +86687,7 @@
       "subject": "Key Compression Type",
       "summary": "The client may encode or accept Key Compression Type for an elliptic-curve public key.",
       "role": "client",
-      "direction": "unclear",
+      "direction": "client_to_server",
       "condition": "Elliptic-curve public keys; the default form is uncompressed.",
       "scope_state": "profile_conditional",
       "element_ids": [],
@@ -86713,12 +86713,18 @@
       ],
       "test_case_ids": [],
       "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/get.rs::GetRequest::into_ttlv_payload",
+        "crates/kmipkit-protocol/src/get.rs::GetRequest::with_key_compression_type"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/get_tests.rs::request_preserves_the_optional_key_compression_type_enumeration",
+        "crates/kmipkit-protocol/tests/unit/get_tests.rs::request_serializes_present_table_220_fields_in_source_order"
+      ],
       "negative_verification_required": false,
       "decision_id": null,
-      "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
+      "status": "scoped_verified",
+      "review_note": "Pinned KMIP Specification v2.1 §3.1 says the Key Block MAY contain Key Compression Type. §6.1.19 Table 220 lists the Get request selector as optional, and §11.24 Table 459 defines its Enumeration values. The mapped implementation and tests prove only caller-issued Get request selector serialization. They do not prove server acceptance, response Key Block compression, a compressed EC-key fixture, or global profile conformance. No official Test Case ID is linked."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-3.1-002",

@@ -16182,7 +16182,7 @@ class CatalogValidationTests(unittest.TestCase):
             requirement["status"] == "scoped_verified"
             and requirement["role"] == "client"
             and requirement["direction"] == "client_to_server"
-            and requirement["scope_state"] == "client_1_0"
+            and requirement["scope_state"] == "profile_conditional"
             and expected_implementation_refs.issubset(resolvable_implementation_refs)
             and expected_verification_refs.issubset(usable_positive_tests)
         )
