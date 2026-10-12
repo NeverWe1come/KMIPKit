@@ -175,6 +175,26 @@ class DependencyPolicyApiTests(unittest.TestCase):
             )
             policy.validate_workspace_metadata(root, metadata)
 
+    def test_aws_lc_sys_vendor_allowlist_rejects_wrong_version_and_manifest_path(self) -> None:
+        policy = self.require_policy()
+        invalid_cases = (
+            ("vendor/aws-lc-sys-0.45.0/Cargo.toml", "aws-lc-sys", "0.46.0"),
+            ("vendor/other/Cargo.toml", "aws-lc-sys", "0.45.0"),
+        )
+        for relative_manifest, name, version in invalid_cases:
+            with self.subTest(relative_manifest=relative_manifest, version=version):
+                with tempfile.TemporaryDirectory() as directory:
+                    root = Path(directory)
+                    _, metadata = self.make_repository(root)
+                    vendor_manifest = root / relative_manifest
+                    vendor_manifest.parent.mkdir(parents=True)
+                    vendor_manifest.write_text(
+                        f"[package]\nname = '{name}'\nversion = '{version}'\n", encoding="utf-8"
+                    )
+                    metadata["root"]["packages"].append(package(name, version, vendor_manifest))
+                    with self.assertRaises(self.policy_error()):
+                        policy.validate_workspace_metadata(root, metadata)
+
     def test_checkout_root_symlink_alias_matches_metadata_paths(self) -> None:
         policy = self.require_policy()
         with tempfile.TemporaryDirectory() as directory:

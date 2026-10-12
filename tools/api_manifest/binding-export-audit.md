@@ -45,26 +45,27 @@ record, kind mismatch, duplicate, unsupported export, or traversal issue.
 
 The current Windows x86-64 snapshot is checked in at
 `specs/043-public-api-bindings/reports/binding-export-report-2026-10-12.json`.
-The complete audit command produced exit code 1, so T011 remains open:
+The complete C/Java/Python audit command produced exit code 0:
 
 | Package | Scanner complete | Observed | Manifest | Exact matches | Missing | Stale | Kind mismatches | Issues |
 | --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
-| C | no | 192 | 175 | 175 | 15 | 0 | 0 | 18 |
-| Java | yes | 329 | 319 | 318 | 11 | 1 | 0 | 0 |
-| Python | no | 274 | 262 | 262 | 12 | 0 | 2 | 2 |
+| C | yes | 182 | 180 | 180 | 0 | 0 | 0 | 0 |
+| Java | yes | 329 | 329 | 329 | 0 | 0 | 0 | 0 |
+| Python | yes | 274 | 274 | 274 | 0 | 0 | 0 | 0 |
 
-The C binary contains nine named `aws_lc_0_45_0_jent_*` exports absent from the
-header and outside the stable `kmipkit_` symbol prefix; they are recorded as
-observed exports and prevent exact accounting. Six other C missing paths are
-five public `KMIPKIT_ERROR_*` macros and the `KMIPKIT_H` include guard. The Java
-report identifies the generated `PublicApi` class and members plus the public
-record members of `RuntimeMetadata.Version` as missing, and
-`org.kmipkit.internal.NativeHandle.run` as stale in the manifest. Python is
-missing the root `kmipkit` module, seven error-category attributes, and four
-`Version` fields. Its two free-function kinds differ from the manifest, and
-`validate_extension_value` has overlapping declarations/manifest rows without
-a distinct export path. These are exact outstanding inventory or manifest
-reconciliation work, not approved exclusions.
+The C count intentionally includes the two exact C-only diagnostic functions
+`kmipkit_last_error_clear` and `kmipkit_last_error_get`; the approved exclusions
+represent them outside the shared cross-language capability inventory. Both
+remain in the C header and native ABI; they are exclusion records rather than
+`publicDeclarations` rows in manifest v2. The patched
+`aws-lc-sys@0.45.0` vendor source prevents the nine transitive
+`aws_lc_0_45_0_jent_*` functions from becoming public ABI symbols while
+preserving jitterentropy. CI repeats a C-only header/binary/manifest audit on
+Windows, Linux, and macOS using the library already built by the C job.
+
+This snapshot verifies the binding languages only; it does **not** close T011.
+The Rust export crawler and full Rust inventory reconciliation remain open and
+must pass their own exhaustive audit and QA review before T011 is complete.
 
 The scanner does not decide whether an unexpected native export should be
 removed or represented as an API, whether a public declaration needs an

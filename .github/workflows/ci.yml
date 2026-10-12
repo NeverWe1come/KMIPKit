@@ -313,6 +313,13 @@ jobs:
         id: install-rust-1-94
         run: rustup toolchain install 1.94 --profile minimal
 
+      - name: Set up Python 3.12 for the ABI inventory
+        id: set-up-python-3-12-for-the-abi-inventory
+        uses: astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9 # astral-sh/setup-uv v9.0.0
+        with:
+          version: '0.12.23'
+          python-version: '3.12'
+
       - name: Set up CMake 3.31.6
         id: set-up-cmake-3-31-6
         uses: lukka/get-cmake@fffaaafeea488556c2c12dad60690008bc1caacb # lukka/get-cmake v4.4.2
@@ -324,6 +331,20 @@ jobs:
         id: build-the-c-consumer-and-example
         run: |
           cargo build --locked -p kmipkit-ffi
+
+      - name: Audit the built C ABI export allowlist
+        id: audit-the-built-c-abi-export-allowlist
+        shell: pwsh
+        run: |
+          $python = Get-Command -Name python -ErrorAction SilentlyContinue
+          if (-not $python) { $python = Get-Command -Name python3 -ErrorAction SilentlyContinue }
+          if (-not $python) { throw 'Python 3 is required to audit the C ABI exports.' }
+          $nativeLibrary = Get-ChildItem -LiteralPath 'target/debug' -File |
+            Where-Object { $_.Name -like '*kmipkit_ffi*' -and $_.Extension -in @('.dll', '.dylib', '.so') } |
+            Select-Object -First 1
+          if (-not $nativeLibrary) { throw 'The C ABI shared library was not built.' }
+          & $python.Source -B tools/api_manifest/audit_binding_exports.py --repo-root . --c-only --c-binary $nativeLibrary.FullName --check
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
       - name: Configure the C consumer with MSVC
         id: configure-the-c-consumer-with-msvc

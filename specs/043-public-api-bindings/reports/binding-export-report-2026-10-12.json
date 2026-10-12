@@ -1,501 +1,60 @@
 {
-  "formatVersion": 1,
+  "formatVersion": 2,
   "packages": [
     {
-      "complete": false,
+      "complete": true,
       "counts": {
+        "exactMatches": 180,
         "kindMismatches": 0,
-        "manifest": 175,
-        "matched": 175,
-        "missingFromManifest": 15,
+        "manifest": 180,
+        "matched": 180,
+        "missingFromManifest": 0,
         "notObserved": 0,
-        "observed": 192
+        "observed": 182,
+        "pathMatches": 180
       },
-      "issues": [
-        {
-          "exportName": "aws_lc_0_45_0_jent_entropy_collector_alloc",
-          "packageId": "c-kmipkit",
-          "reason": "exported-symbol-missing-from-header"
-        },
-        {
-          "exportName": "aws_lc_0_45_0_jent_entropy_collector_alloc",
-          "packageId": "c-kmipkit",
-          "reason": "non-prefixed-c-abi-export"
-        },
-        {
-          "exportName": "aws_lc_0_45_0_jent_entropy_collector_free",
-          "packageId": "c-kmipkit",
-          "reason": "exported-symbol-missing-from-header"
-        },
-        {
-          "exportName": "aws_lc_0_45_0_jent_entropy_collector_free",
-          "packageId": "c-kmipkit",
-          "reason": "non-prefixed-c-abi-export"
-        },
-        {
-          "exportName": "aws_lc_0_45_0_jent_entropy_init",
-          "packageId": "c-kmipkit",
-          "reason": "exported-symbol-missing-from-header"
-        },
-        {
-          "exportName": "aws_lc_0_45_0_jent_entropy_init",
-          "packageId": "c-kmipkit",
-          "reason": "non-prefixed-c-abi-export"
-        },
-        {
-          "exportName": "aws_lc_0_45_0_jent_entropy_init_ex",
-          "packageId": "c-kmipkit",
-          "reason": "exported-symbol-missing-from-header"
-        },
-        {
-          "exportName": "aws_lc_0_45_0_jent_entropy_init_ex",
-          "packageId": "c-kmipkit",
-          "reason": "non-prefixed-c-abi-export"
-        },
-        {
-          "exportName": "aws_lc_0_45_0_jent_entropy_switch_notime_impl",
-          "packageId": "c-kmipkit",
-          "reason": "exported-symbol-missing-from-header"
-        },
-        {
-          "exportName": "aws_lc_0_45_0_jent_entropy_switch_notime_impl",
-          "packageId": "c-kmipkit",
-          "reason": "non-prefixed-c-abi-export"
-        },
-        {
-          "exportName": "aws_lc_0_45_0_jent_read_entropy",
-          "packageId": "c-kmipkit",
-          "reason": "exported-symbol-missing-from-header"
-        },
-        {
-          "exportName": "aws_lc_0_45_0_jent_read_entropy",
-          "packageId": "c-kmipkit",
-          "reason": "non-prefixed-c-abi-export"
-        },
-        {
-          "exportName": "aws_lc_0_45_0_jent_read_entropy_safe",
-          "packageId": "c-kmipkit",
-          "reason": "exported-symbol-missing-from-header"
-        },
-        {
-          "exportName": "aws_lc_0_45_0_jent_read_entropy_safe",
-          "packageId": "c-kmipkit",
-          "reason": "non-prefixed-c-abi-export"
-        },
-        {
-          "exportName": "aws_lc_0_45_0_jent_set_fips_failure_callback",
-          "packageId": "c-kmipkit",
-          "reason": "exported-symbol-missing-from-header"
-        },
-        {
-          "exportName": "aws_lc_0_45_0_jent_set_fips_failure_callback",
-          "packageId": "c-kmipkit",
-          "reason": "non-prefixed-c-abi-export"
-        },
-        {
-          "exportName": "aws_lc_0_45_0_jent_version",
-          "packageId": "c-kmipkit",
-          "reason": "exported-symbol-missing-from-header"
-        },
-        {
-          "exportName": "aws_lc_0_45_0_jent_version",
-          "packageId": "c-kmipkit",
-          "reason": "non-prefixed-c-abi-export"
-        }
-      ],
+      "issues": [],
       "kindMismatches": [],
-      "matchesManifest": false,
-      "missingFromManifest": [
-        {
-          "exportName": "KMIPKIT_ERROR_COMPATIBILITY_MISMATCH",
-          "kind": "constant",
-          "location": "112",
-          "packageId": "c-kmipkit"
-        },
-        {
-          "exportName": "KMIPKIT_ERROR_DUPLICATE_KEY",
-          "kind": "constant",
-          "location": "113",
-          "packageId": "c-kmipkit"
-        },
-        {
-          "exportName": "KMIPKIT_ERROR_INVALID_IDENTITY",
-          "kind": "constant",
-          "location": "114",
-          "packageId": "c-kmipkit"
-        },
-        {
-          "exportName": "KMIPKIT_ERROR_INVALID_INPUT",
-          "kind": "constant",
-          "location": "115",
-          "packageId": "c-kmipkit"
-        },
-        {
-          "exportName": "KMIPKIT_ERROR_INVALID_SCHEMA",
-          "kind": "constant",
-          "location": "116",
-          "packageId": "c-kmipkit"
-        },
-        {
-          "exportName": "KMIPKIT_H",
-          "kind": "macro",
-          "location": "3",
-          "packageId": "c-kmipkit"
-        },
-        {
-          "exportName": "aws_lc_0_45_0_jent_entropy_collector_alloc",
-          "kind": "c-symbol",
-          "location": "binary",
-          "packageId": "c-kmipkit"
-        },
-        {
-          "exportName": "aws_lc_0_45_0_jent_entropy_collector_free",
-          "kind": "c-symbol",
-          "location": "binary",
-          "packageId": "c-kmipkit"
-        },
-        {
-          "exportName": "aws_lc_0_45_0_jent_entropy_init",
-          "kind": "c-symbol",
-          "location": "binary",
-          "packageId": "c-kmipkit"
-        },
-        {
-          "exportName": "aws_lc_0_45_0_jent_entropy_init_ex",
-          "kind": "c-symbol",
-          "location": "binary",
-          "packageId": "c-kmipkit"
-        },
-        {
-          "exportName": "aws_lc_0_45_0_jent_entropy_switch_notime_impl",
-          "kind": "c-symbol",
-          "location": "binary",
-          "packageId": "c-kmipkit"
-        },
-        {
-          "exportName": "aws_lc_0_45_0_jent_read_entropy",
-          "kind": "c-symbol",
-          "location": "binary",
-          "packageId": "c-kmipkit"
-        },
-        {
-          "exportName": "aws_lc_0_45_0_jent_read_entropy_safe",
-          "kind": "c-symbol",
-          "location": "binary",
-          "packageId": "c-kmipkit"
-        },
-        {
-          "exportName": "aws_lc_0_45_0_jent_set_fips_failure_callback",
-          "kind": "c-symbol",
-          "location": "binary",
-          "packageId": "c-kmipkit"
-        },
-        {
-          "exportName": "aws_lc_0_45_0_jent_version",
-          "kind": "c-symbol",
-          "location": "binary",
-          "packageId": "c-kmipkit"
-        }
-      ],
+      "matchesManifest": true,
+      "missingFromManifest": [],
       "notObserved": [],
       "packageId": "c-kmipkit"
     },
     {
       "complete": true,
       "counts": {
+        "exactMatches": 329,
         "kindMismatches": 0,
-        "manifest": 319,
-        "matched": 318,
-        "missingFromManifest": 11,
-        "notObserved": 1,
-        "observed": 329
+        "manifest": 329,
+        "matched": 329,
+        "missingFromManifest": 0,
+        "notObserved": 0,
+        "observed": 329,
+        "pathMatches": 329
       },
       "issues": [],
       "kindMismatches": [],
-      "matchesManifest": false,
-      "missingFromManifest": [
-        {
-          "exportName": "org.kmipkit.RuntimeMetadata.Version.<init>",
-          "kind": "java-member",
-          "location": "org/kmipkit/RuntimeMetadata$Version.class:3",
-          "packageId": "java-kmipkit",
-          "signature": "public org.kmipkit.RuntimeMetadata$Version(int, int, int, int)"
-        },
-        {
-          "exportName": "org.kmipkit.RuntimeMetadata.Version.abiVersion",
-          "kind": "java-member",
-          "location": "org/kmipkit/RuntimeMetadata$Version.class:10",
-          "packageId": "java-kmipkit",
-          "signature": "public int abiVersion()"
-        },
-        {
-          "exportName": "org.kmipkit.RuntimeMetadata.Version.equals",
-          "kind": "java-member",
-          "location": "org/kmipkit/RuntimeMetadata$Version.class:6",
-          "packageId": "java-kmipkit",
-          "signature": "public final boolean equals(java.lang.Object)"
-        },
-        {
-          "exportName": "org.kmipkit.RuntimeMetadata.Version.hashCode",
-          "kind": "java-member",
-          "location": "org/kmipkit/RuntimeMetadata$Version.class:5",
-          "packageId": "java-kmipkit",
-          "signature": "public final int hashCode()"
-        },
-        {
-          "exportName": "org.kmipkit.RuntimeMetadata.Version.major",
-          "kind": "java-member",
-          "location": "org/kmipkit/RuntimeMetadata$Version.class:7",
-          "packageId": "java-kmipkit",
-          "signature": "public int major()"
-        },
-        {
-          "exportName": "org.kmipkit.RuntimeMetadata.Version.minor",
-          "kind": "java-member",
-          "location": "org/kmipkit/RuntimeMetadata$Version.class:8",
-          "packageId": "java-kmipkit",
-          "signature": "public int minor()"
-        },
-        {
-          "exportName": "org.kmipkit.RuntimeMetadata.Version.patch",
-          "kind": "java-member",
-          "location": "org/kmipkit/RuntimeMetadata$Version.class:9",
-          "packageId": "java-kmipkit",
-          "signature": "public int patch()"
-        },
-        {
-          "exportName": "org.kmipkit.RuntimeMetadata.Version.toString",
-          "kind": "java-member",
-          "location": "org/kmipkit/RuntimeMetadata$Version.class:4",
-          "packageId": "java-kmipkit",
-          "signature": "public final java.lang.String toString()"
-        },
-        {
-          "exportName": "org.kmipkit.generated.PublicApi",
-          "kind": "type",
-          "location": "org/kmipkit/generated/PublicApi.class",
-          "packageId": "java-kmipkit"
-        },
-        {
-          "exportName": "org.kmipkit.generated.PublicApi.DECLARATIONS_JSON",
-          "kind": "java-member",
-          "location": "org/kmipkit/generated/PublicApi.class:4",
-          "packageId": "java-kmipkit",
-          "signature": "public static final java.lang.String DECLARATIONS_JSON"
-        },
-        {
-          "exportName": "org.kmipkit.generated.PublicApi.FORMAT_VERSION",
-          "kind": "java-member",
-          "location": "org/kmipkit/generated/PublicApi.class:3",
-          "packageId": "java-kmipkit",
-          "signature": "public static final int FORMAT_VERSION"
-        }
-      ],
-      "notObserved": [
-        {
-          "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory.",
-          "candidateSpecId": "KMIPKIT-0043",
-          "capabilityId": "public_binding_surface",
-          "declarationId": "java-observed-80e4b358a41da3230d8a",
-          "declarationState": "blocked",
-          "exportName": "org.kmipkit.internal.NativeHandle.run",
-          "kind": "java-member",
-          "packageId": "java-kmipkit",
-          "parityScope": "four-language",
-          "requirementIds": [
-            "KMIPKIT-0043-FR-021"
-          ]
-        }
-      ],
+      "matchesManifest": true,
+      "missingFromManifest": [],
+      "notObserved": [],
       "packageId": "java-kmipkit"
     },
     {
-      "complete": false,
+      "complete": true,
       "counts": {
-        "kindMismatches": 2,
-        "manifest": 262,
-        "matched": 262,
-        "missingFromManifest": 12,
+        "exactMatches": 274,
+        "kindMismatches": 0,
+        "manifest": 274,
+        "matched": 274,
+        "missingFromManifest": 0,
         "notObserved": 0,
-        "observed": 274
+        "observed": 274,
+        "pathMatches": 274
       },
-      "issues": [
-        {
-          "exportName": "kmipkit.extensions.validate_extension_value",
-          "packageId": "python-kmipkit",
-          "reason": "duplicate-manifest-export-name"
-        },
-        {
-          "exportName": "kmipkit.extensions.validate_extension_value",
-          "packageId": "python-kmipkit",
-          "reason": "multiple-declarations-share-export-path"
-        }
-      ],
-      "kindMismatches": [
-        {
-          "manifest": {
-            "approvalSource": {
-              "evidence": "**Status**: Approved for implementation",
-              "kind": "feature-specification",
-              "path": "specs/043-public-api-bindings/spec.md",
-              "status": "Approved"
-            },
-            "capabilityId": "ffi_runtime_metadata",
-            "declarationId": "kmipkit.metadata.capability_is_available:python",
-            "declarationState": "declared",
-            "exportName": "kmipkit.metadata.capability_is_available",
-            "kind": "function",
-            "languageMappings": {
-              "c": {
-                "name": "kmipkit_capability_is_available",
-                "packageId": "c-kmipkit"
-              },
-              "java": {
-                "name": "org.kmipkit.RuntimeMetadata.capabilityIsAvailable",
-                "packageId": "java-kmipkit"
-              },
-              "python": {
-                "name": "kmipkit.metadata.capability_is_available",
-                "packageId": "python-kmipkit"
-              },
-              "rust": {
-                "name": "kmipkit::capability_is_available",
-                "packageId": "rust-kmipkit"
-              }
-            },
-            "packageId": "python-kmipkit",
-            "parityScope": "four-language",
-            "requirementIds": [
-              "KMIPKIT-0043-FR-007"
-            ]
-          },
-          "observed": {
-            "exportName": "kmipkit.metadata.capability_is_available",
-            "kind": "python-export",
-            "location": "kmipkit.metadata:83",
-            "packageId": "python-kmipkit"
-          }
-        },
-        {
-          "manifest": {
-            "approvalSource": {
-              "evidence": "**Status**: Approved for implementation",
-              "kind": "feature-specification",
-              "path": "specs/043-public-api-bindings/spec.md",
-              "status": "Approved"
-            },
-            "capabilityId": "ffi_runtime_metadata",
-            "declarationId": "kmipkit.metadata.get_version:python",
-            "declarationState": "declared",
-            "exportName": "kmipkit.metadata.get_version",
-            "kind": "function",
-            "languageMappings": {
-              "c": {
-                "name": "kmipkit_version_get",
-                "packageId": "c-kmipkit"
-              },
-              "java": {
-                "name": "org.kmipkit.RuntimeMetadata.version",
-                "packageId": "java-kmipkit"
-              },
-              "python": {
-                "name": "kmipkit.metadata.get_version",
-                "packageId": "python-kmipkit"
-              },
-              "rust": {
-                "name": "kmipkit::runtime_version",
-                "packageId": "rust-kmipkit"
-              }
-            },
-            "packageId": "python-kmipkit",
-            "parityScope": "four-language",
-            "requirementIds": [
-              "KMIPKIT-0043-FR-007"
-            ]
-          },
-          "observed": {
-            "exportName": "kmipkit.metadata.get_version",
-            "kind": "python-export",
-            "location": "kmipkit.metadata:72",
-            "packageId": "python-kmipkit"
-          }
-        }
-      ],
-      "matchesManifest": false,
-      "missingFromManifest": [
-        {
-          "exportName": "kmipkit",
-          "kind": "module",
-          "location": "kmipkit/__init__.py",
-          "packageId": "python-kmipkit"
-        },
-        {
-          "exportName": "kmipkit.errors.CompatibilityMismatchError.category",
-          "kind": "python-export",
-          "location": "kmipkit.errors:18",
-          "packageId": "python-kmipkit"
-        },
-        {
-          "exportName": "kmipkit.errors.DuplicateKeyError.category",
-          "kind": "python-export",
-          "location": "kmipkit.errors:24",
-          "packageId": "python-kmipkit"
-        },
-        {
-          "exportName": "kmipkit.errors.InvalidExtensionSchemaError.category",
-          "kind": "python-export",
-          "location": "kmipkit.errors:42",
-          "packageId": "python-kmipkit"
-        },
-        {
-          "exportName": "kmipkit.errors.InvalidIdentityError.category",
-          "kind": "python-export",
-          "location": "kmipkit.errors:30",
-          "packageId": "python-kmipkit"
-        },
-        {
-          "exportName": "kmipkit.errors.InvalidInputError.category",
-          "kind": "python-export",
-          "location": "kmipkit.errors:36",
-          "packageId": "python-kmipkit"
-        },
-        {
-          "exportName": "kmipkit.errors.KmipKitError.category",
-          "kind": "python-export",
-          "location": "kmipkit.errors:9",
-          "packageId": "python-kmipkit"
-        },
-        {
-          "exportName": "kmipkit.errors.ResourceLimitError.category",
-          "kind": "python-export",
-          "location": "kmipkit.errors:48",
-          "packageId": "python-kmipkit"
-        },
-        {
-          "exportName": "kmipkit.metadata.Version.abi_version",
-          "kind": "field",
-          "location": "kmipkit.metadata:59",
-          "packageId": "python-kmipkit"
-        },
-        {
-          "exportName": "kmipkit.metadata.Version.major",
-          "kind": "field",
-          "location": "kmipkit.metadata:56",
-          "packageId": "python-kmipkit"
-        },
-        {
-          "exportName": "kmipkit.metadata.Version.minor",
-          "kind": "field",
-          "location": "kmipkit.metadata:57",
-          "packageId": "python-kmipkit"
-        },
-        {
-          "exportName": "kmipkit.metadata.Version.patch",
-          "kind": "field",
-          "location": "kmipkit.metadata:58",
-          "packageId": "python-kmipkit"
-        }
-      ],
+      "issues": [],
+      "kindMismatches": [],
+      "matchesManifest": true,
+      "missingFromManifest": [],
       "notObserved": [],
       "packageId": "python-kmipkit"
     }

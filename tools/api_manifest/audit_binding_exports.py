@@ -631,13 +631,20 @@ def build_c_binary_exports(root: Path) -> list[str]:
         return read_native_exports(binaries[0])
 
 
-def run(root: Path) -> dict[str, Any]:
-    manifest = json.loads((root / "specification/api/public-api.json").read_text(encoding="utf-8"))
+def audit_c_package(root: Path, manifest: dict[str, Any], binary: Path | None = None) -> dict[str, Any]:
     c_header = (root / "bindings/c/include/kmipkit.h").read_text(encoding="utf-8")
-    native_exports = build_c_binary_exports(root)
+    native_exports = read_native_exports(binary) if binary is not None else build_c_binary_exports(root)
     c_exclusions = [row for row in manifest.get("approvedExclusions", [])
                     if row.get("packageId") == "c-kmipkit"]
     c = audit_c_surface(c_header, native_exports, approved_exclusions=c_exclusions)
+    return compare(c, manifest, "c-kmipkit")
+
+
+def run(root: Path, *, c_only: bool = False, c_binary: Path | None = None) -> dict[str, Any]:
+    manifest = json.loads((root / "specification/api/public-api.json").read_text(encoding="utf-8"))
+    packages = [audit_c_package(root, manifest, c_binary)]
+    if c_only:
+        return {"formatVersion": 2, "packages": packages}
     java_root = root / "bindings/java/src/main/java"
     java_sources = sorted(java_root.rglob("*.java"))
     if not java_sources:
@@ -664,19 +671,25 @@ def run(root: Path) -> dict[str, Any]:
     python_sources = {path.relative_to(python_root.parent).as_posix(): path.read_text(encoding="utf-8")
                       for path in sorted(python_root.rglob("*.py"))}
     python = inventory_python_sources(python_sources)
-    return {"formatVersion": 2, "packages": [compare(c, manifest, "c-kmipkit"),
-                                               compare(java, manifest, "java-kmipkit"),
-                                               compare(python, manifest, "python-kmipkit")]}
+    packages.extend([compare(java, manifest, "java-kmipkit"), compare(python, manifest, "python-kmipkit")])
+    return {"formatVersion": 2, "packages": packages}
 
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--repo-root", type=Path, default=Path.cwd())
     parser.add_argument("--report", type=Path)
+    parser.add_argument("--c-only", action="store_true",
+                        help="audit only C and optionally reuse a previously built native library")
+    parser.add_argument("--c-binary", type=Path,
+                        help="read C ABI exports from this library instead of building a temporary copy")
     parser.add_argument("--check", action="store_true")
     args = parser.parse_args()
     try:
-        result = run(args.repo_root.resolve())
+        if args.c_binary is not None and not args.c_only:
+            parser.error("--c-binary requires --c-only")
+        result = run(args.repo_root.resolve(), c_only=args.c_only,
+                     c_binary=args.c_binary.resolve(strict=True) if args.c_binary is not None else None)
         data = json.dumps(result, ensure_ascii=False, sort_keys=True, indent=2) + "\n"
         if args.report:
             args.report.write_text(data, encoding="utf-8", newline="\n")
