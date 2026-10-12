@@ -16986,13 +16986,6 @@ class CatalogValidationTests(unittest.TestCase):
         self.assertEqual(contract["functional_requirement_ids"], ["FR-001", "FR-008"])
         self.assertIn("KMIPKIT-0042 FR-001/FR-008", contract["review_note"])
         self.assertNotIn("KMIPKIT-0028", contract["review_note"])
-        traceability = (ROOT / "specs" / "028-diagnostics-interop" / "traceability.md").read_text(encoding="utf-8")
-        function_trace = next(
-            line for line in traceability.splitlines()
-            if line.startswith("| KMIPKIT-ELEM-OPERATION-STRUCTURE-7-15-INTEROP-FUNCTION |")
-        )
-        self.assertIn("KMIPKIT-0042 FR-001/FR-008", function_trace)
-        self.assertNotIn("KMIPKIT-0028", function_trace)
         self.assertEqual(contract["implementation_refs"], [
             "crates/kmipkit-protocol/src/interop.rs::InteropRequest::into_ttlv_payload",
         ])
@@ -17025,6 +17018,16 @@ class CatalogValidationTests(unittest.TestCase):
         self.assertEqual(oracle["counts"]["source_only_requirement_gaps"], 109)
         self.assertEqual(oracle["counts"]["source_only_requirement_gap_proposals"], 56)
         self.assertEqual(validate_source_table_contracts(oracle, ROOT), [])
+
+    def test_interop_feature_traceability_uses_approved_feature_id(self) -> None:
+        """The Interop feature traceability row names the owning approved spec."""
+        traceability = (ROOT / "specs" / "028-diagnostics-interop" / "traceability.md").read_text(encoding="utf-8")
+        function_trace = next(
+            line for line in traceability.splitlines()
+            if line.startswith("| KMIPKIT-ELEM-OPERATION-STRUCTURE-7-15-INTEROP-FUNCTION |")
+        )
+        self.assertIn("KMIPKIT-0042 FR-001/FR-008", function_trace)
+        self.assertNotIn("KMIPKIT-0028", function_trace)
 
     def test_interop_table_241_identifier_is_a_required_client_source_contract(self) -> None:
         """The required Interop Identifier maps to existing typed client request evidence."""
