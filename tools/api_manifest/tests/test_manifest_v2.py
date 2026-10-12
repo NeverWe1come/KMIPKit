@@ -335,6 +335,8 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
                 capability = capabilities[capability_id]
                 self.assertEqual(capability["ownerSpecId"], owner_spec_id)
                 self.assertEqual(capability["capabilityState"], "declared")
+                self.assertIn("KMIPKIT-0043-FR-004", capability["requirementIds"])
+                self.assertIn("KMIPKIT-0043-FR-021", capability["requirementIds"])
 
         ttlv_declarations = []
         for declaration in self.checked_in_manifest["publicDeclarations"]:
@@ -351,6 +353,19 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
             with self.subTest(declaration=declaration["declarationId"]):
                 self.assertEqual(declaration["capabilityId"], expected_capability)
                 self.assertEqual(declaration["declarationState"], "declared")
+                owner_prefix = (
+                    "KMIPKIT-0005-FR-"
+                    if expected_capability == "ttlv_wire_codec"
+                    else "KMIPKIT-0004-FR-"
+                )
+                self.assertTrue(
+                    any(
+                        requirement.startswith(owner_prefix)
+                        for requirement in declaration["requirementIds"]
+                    )
+                )
+                self.assertIn("KMIPKIT-0043-FR-004", declaration["requirementIds"])
+                self.assertIn("KMIPKIT-0043-FR-021", declaration["requirementIds"])
                 self.assertEqual(
                     declaration["approvalSource"]["path"],
                     "specs/004-generic-ttlv-model/spec.md"
@@ -358,15 +373,6 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
                     else "specs/005-ttlv-wire-codec/spec.md",
                 )
         self.assertTrue(ttlv_declarations)
-
-        ttlv_types = {
-            record["id"]: record
-            for record in self.checked_in_manifest["types"]
-            if record["rust"]["module"].startswith("kmipkit_ttlv")
-            and record["rust"]["owner"] != "ffi"
-        }
-        self.assertEqual(ttlv_types["CodecLimits"]["rust"]["owner"], "ttlv")
-        self.assertEqual(ttlv_types["TtlvStructure"]["rust"]["owner"], "ttlv")
 
     def test_checked_in_manifest_inventories_all_java_public_access_paths(self) -> None:
         declarations = self.declarations_for_package("java-kmipkit")

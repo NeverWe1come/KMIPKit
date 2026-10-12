@@ -27,3 +27,9 @@ The public Rust-only exchange declaration is not a KMIP operation and therefore 
 For a formally approved/accepted feature, the capability record references `featureSpecId`, requirement IDs, and repository-local approval evidence. For a draft, the record may keep a `candidateSpecId` and `blockedReason`, but it is not an available capability. A missing implementation keeps the capability declared-but-not-verified as appropriate; it never justifies advertising functionality that is not present.
 
 The 0009 and 0010 gates are independent of the 56-operation `client_1_0` inventory and apply to the corresponding shared async/profile capabilities. At 1.0 release review, every in-scope shared capability must have an approved owner and passing parity evidence. Do not infer that a capability is ready merely because an existing spec number appears in a catalog, roadmap, implementation branch, or merged code PR.
+
+## T013 audited declaration slice
+
+The manifest currently maps the 101 canonical declaration records whose Rust paths begin with `kmipkit_ttlv::`: 76 generic-model records are owned by approved KMIPKIT-0004 and 25 `CodecLimits` records are owned by approved KMIPKIT-0005. Their four-language mappings remain declared pending parity verification. Each record links to the applicable owner requirement IDs and KMIPKIT-0043 inventory requirements. Existing type and function records retained from the KMIPKIT-0012 registry slice remain unchanged.
+
+This is a bounded reconciliation, not completion of the five-crate inventory audit. Other observed declarations remain blocked where their approved owner mapping or implementation/parity evidence has not been reconciled. Draft-owned KMIPKIT-0009 and KMIPKIT-0010 surfaces remain blocked, and ADR-0014 remains the only Rust-only exception.

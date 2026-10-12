@@ -2,6 +2,19 @@
   "formatVersion": 2,
   "scope": "full-1.0",
   "requirementIds": [
+    "KMIPKIT-0004-FR-001",
+    "KMIPKIT-0004-FR-002",
+    "KMIPKIT-0004-FR-003",
+    "KMIPKIT-0004-FR-004",
+    "KMIPKIT-0004-FR-005",
+    "KMIPKIT-0004-FR-006",
+    "KMIPKIT-0004-FR-007",
+    "KMIPKIT-0004-FR-008",
+    "KMIPKIT-0004-FR-009",
+    "KMIPKIT-0004-FR-010",
+    "KMIPKIT-0004-FR-012",
+    "KMIPKIT-0004-FR-014",
+    "KMIPKIT-0005-FR-007",
     "KMIPKIT-0012-FR-001",
     "KMIPKIT-0012-FR-002",
     "KMIPKIT-0012-FR-003",
@@ -10645,20 +10658,19 @@
       "packageId": "c-kmipkit",
       "kind": "type",
       "exportName": "kmipkit_codec_limits_t",
-      "capabilityId": "vendor_extension_registry",
+      "capabilityId": "ttlv_wire_codec",
       "requirementIds": [
-        "KMIPKIT-0012-FR-005",
-        "KMIPKIT-0012-FR-007",
-        "KMIPKIT-0012-FR-010",
-        "KMIPKIT-0012-FR-012"
+        "KMIPKIT-0005-FR-007",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-021"
       ],
       "declarationState": "declared",
       "parityScope": "four-language",
       "approvalSource": {
         "kind": "feature-specification",
-        "path": "specs/012-vendor-extension-registry/spec.md",
+        "path": "specs/005-ttlv-wire-codec/spec.md",
         "status": "Approved",
-        "evidence": "**Status**: Approved for implementation under the maintainer's standing direct authorization to execute the complete KMIPKit plan without further approval requests."
+        "evidence": "**Status**: Approved — the maintainer delegated execution and approval of this plan without further manual intervention in the 2026-10-05 Codex conversation. The exact approved specification and boundary revisions, decisions, and limits of that authorization are recorded in [approval-record.md](approval-record.md)."
       },
       "languageMappings": {
         "rust": {
@@ -10684,20 +10696,19 @@
       "packageId": "c-kmipkit",
       "kind": "c-symbol",
       "exportName": "kmipkit_codec_limits_release",
-      "capabilityId": "vendor_extension_registry",
+      "capabilityId": "ttlv_wire_codec",
       "requirementIds": [
-        "KMIPKIT-0012-FR-005",
-        "KMIPKIT-0012-FR-007",
-        "KMIPKIT-0012-FR-010",
-        "KMIPKIT-0012-FR-012"
+        "KMIPKIT-0005-FR-007",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-021"
       ],
       "declarationState": "declared",
       "parityScope": "four-language",
       "approvalSource": {
         "kind": "feature-specification",
-        "path": "specs/012-vendor-extension-registry/spec.md",
+        "path": "specs/005-ttlv-wire-codec/spec.md",
         "status": "Approved",
-        "evidence": "**Status**: Approved for implementation under the maintainer's standing direct authorization to execute the complete KMIPKit plan without further approval requests."
+        "evidence": "**Status**: Approved — the maintainer delegated execution and approval of this plan without further manual intervention in the 2026-10-05 Codex conversation. The exact approved specification and boundary revisions, decisions, and limits of that authorization are recorded in [approval-record.md](approval-record.md)."
       },
       "languageMappings": {
         "rust": {
@@ -10723,20 +10734,19 @@
       "packageId": "java-kmipkit",
       "kind": "type",
       "exportName": "org.kmipkit.ttlv.CodecLimits",
-      "capabilityId": "vendor_extension_registry",
+      "capabilityId": "ttlv_wire_codec",
       "requirementIds": [
-        "KMIPKIT-0012-FR-005",
-        "KMIPKIT-0012-FR-007",
-        "KMIPKIT-0012-FR-010",
-        "KMIPKIT-0012-FR-012"
+        "KMIPKIT-0005-FR-007",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-021"
       ],
       "declarationState": "declared",
       "parityScope": "four-language",
       "approvalSource": {
         "kind": "feature-specification",
-        "path": "specs/012-vendor-extension-registry/spec.md",
+        "path": "specs/005-ttlv-wire-codec/spec.md",
         "status": "Approved",
-        "evidence": "**Status**: Approved for implementation under the maintainer's standing direct authorization to execute the complete KMIPKit plan without further approval requests."
+        "evidence": "**Status**: Approved — the maintainer delegated execution and approval of this plan without further manual intervention in the 2026-10-05 Codex conversation. The exact approved specification and boundary revisions, decisions, and limits of that authorization are recorded in [approval-record.md](approval-record.md)."
       },
       "languageMappings": {
         "rust": {
@@ -10762,20 +10772,19 @@
       "packageId": "python-kmipkit",
       "kind": "type",
       "exportName": "kmipkit.ttlv.CodecLimits",
-      "capabilityId": "vendor_extension_registry",
+      "capabilityId": "ttlv_wire_codec",
       "requirementIds": [
-        "KMIPKIT-0012-FR-005",
-        "KMIPKIT-0012-FR-007",
-        "KMIPKIT-0012-FR-010",
-        "KMIPKIT-0012-FR-012"
+        "KMIPKIT-0005-FR-007",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-021"
       ],
       "declarationState": "declared",
       "parityScope": "four-language",
       "approvalSource": {
         "kind": "feature-specification",
-        "path": "specs/012-vendor-extension-registry/spec.md",
+        "path": "specs/005-ttlv-wire-codec/spec.md",
         "status": "Approved",
-        "evidence": "**Status**: Approved for implementation under the maintainer's standing direct authorization to execute the complete KMIPKit plan without further approval requests."
+        "evidence": "**Status**: Approved — the maintainer delegated execution and approval of this plan without further manual intervention in the 2026-10-05 Codex conversation. The exact approved specification and boundary revisions, decisions, and limits of that authorization are recorded in [approval-record.md](approval-record.md)."
       },
       "languageMappings": {
         "rust": {
@@ -10801,20 +10810,19 @@
       "packageId": "rust-kmipkit-ttlv",
       "kind": "type",
       "exportName": "kmipkit_ttlv::codec::CodecLimits",
-      "capabilityId": "vendor_extension_registry",
+      "capabilityId": "ttlv_wire_codec",
       "requirementIds": [
-        "KMIPKIT-0012-FR-005",
-        "KMIPKIT-0012-FR-007",
-        "KMIPKIT-0012-FR-010",
-        "KMIPKIT-0012-FR-012"
+        "KMIPKIT-0005-FR-007",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-021"
       ],
       "declarationState": "declared",
       "parityScope": "four-language",
       "approvalSource": {
         "kind": "feature-specification",
-        "path": "specs/012-vendor-extension-registry/spec.md",
+        "path": "specs/005-ttlv-wire-codec/spec.md",
         "status": "Approved",
-        "evidence": "**Status**: Approved for implementation under the maintainer's standing direct authorization to execute the complete KMIPKit plan without further approval requests."
+        "evidence": "**Status**: Approved — the maintainer delegated execution and approval of this plan without further manual intervention in the 2026-10-05 Codex conversation. The exact approved specification and boundary revisions, decisions, and limits of that authorization are recorded in [approval-record.md](approval-record.md)."
       },
       "languageMappings": {
         "rust": {
@@ -12733,19 +12741,20 @@
       "packageId": "c-kmipkit",
       "kind": "type",
       "exportName": "kmipkit_raw_tag_t",
-      "capabilityId": "vendor_extension_registry",
+      "capabilityId": "generic_ttlv_model",
       "requirementIds": [
-        "KMIPKIT-0012-FR-005",
-        "KMIPKIT-0012-FR-007",
-        "KMIPKIT-0012-FR-010"
+        "KMIPKIT-0004-FR-002",
+        "KMIPKIT-0004-FR-003",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-021"
       ],
       "declarationState": "declared",
       "parityScope": "four-language",
       "approvalSource": {
         "kind": "feature-specification",
-        "path": "specs/012-vendor-extension-registry/spec.md",
+        "path": "specs/004-generic-ttlv-model/spec.md",
         "status": "Approved",
-        "evidence": "**Status**: Approved for implementation under the maintainer's standing direct authorization to execute the complete KMIPKit plan without further approval requests."
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`."
       },
       "languageMappings": {
         "rust": {
@@ -12771,19 +12780,20 @@
       "packageId": "c-kmipkit",
       "kind": "c-symbol",
       "exportName": "kmipkit_raw_tag_release",
-      "capabilityId": "vendor_extension_registry",
+      "capabilityId": "generic_ttlv_model",
       "requirementIds": [
-        "KMIPKIT-0012-FR-005",
-        "KMIPKIT-0012-FR-007",
-        "KMIPKIT-0012-FR-010"
+        "KMIPKIT-0004-FR-002",
+        "KMIPKIT-0004-FR-003",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-021"
       ],
       "declarationState": "declared",
       "parityScope": "four-language",
       "approvalSource": {
         "kind": "feature-specification",
-        "path": "specs/012-vendor-extension-registry/spec.md",
+        "path": "specs/004-generic-ttlv-model/spec.md",
         "status": "Approved",
-        "evidence": "**Status**: Approved for implementation under the maintainer's standing direct authorization to execute the complete KMIPKit plan without further approval requests."
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`."
       },
       "languageMappings": {
         "rust": {
@@ -12809,19 +12819,20 @@
       "packageId": "java-kmipkit",
       "kind": "type",
       "exportName": "org.kmipkit.ttlv.RawTag",
-      "capabilityId": "vendor_extension_registry",
+      "capabilityId": "generic_ttlv_model",
       "requirementIds": [
-        "KMIPKIT-0012-FR-005",
-        "KMIPKIT-0012-FR-007",
-        "KMIPKIT-0012-FR-010"
+        "KMIPKIT-0004-FR-002",
+        "KMIPKIT-0004-FR-003",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-021"
       ],
       "declarationState": "declared",
       "parityScope": "four-language",
       "approvalSource": {
         "kind": "feature-specification",
-        "path": "specs/012-vendor-extension-registry/spec.md",
+        "path": "specs/004-generic-ttlv-model/spec.md",
         "status": "Approved",
-        "evidence": "**Status**: Approved for implementation under the maintainer's standing direct authorization to execute the complete KMIPKit plan without further approval requests."
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`."
       },
       "languageMappings": {
         "rust": {
@@ -12847,19 +12858,20 @@
       "packageId": "python-kmipkit",
       "kind": "type",
       "exportName": "kmipkit.ttlv.RawTag",
-      "capabilityId": "vendor_extension_registry",
+      "capabilityId": "generic_ttlv_model",
       "requirementIds": [
-        "KMIPKIT-0012-FR-005",
-        "KMIPKIT-0012-FR-007",
-        "KMIPKIT-0012-FR-010"
+        "KMIPKIT-0004-FR-002",
+        "KMIPKIT-0004-FR-003",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-021"
       ],
       "declarationState": "declared",
       "parityScope": "four-language",
       "approvalSource": {
         "kind": "feature-specification",
-        "path": "specs/012-vendor-extension-registry/spec.md",
+        "path": "specs/004-generic-ttlv-model/spec.md",
         "status": "Approved",
-        "evidence": "**Status**: Approved for implementation under the maintainer's standing direct authorization to execute the complete KMIPKit plan without further approval requests."
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`."
       },
       "languageMappings": {
         "rust": {
@@ -12885,19 +12897,20 @@
       "packageId": "rust-kmipkit-ttlv",
       "kind": "type",
       "exportName": "kmipkit_ttlv::RawTag",
-      "capabilityId": "vendor_extension_registry",
+      "capabilityId": "generic_ttlv_model",
       "requirementIds": [
-        "KMIPKIT-0012-FR-005",
-        "KMIPKIT-0012-FR-007",
-        "KMIPKIT-0012-FR-010"
+        "KMIPKIT-0004-FR-002",
+        "KMIPKIT-0004-FR-003",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-021"
       ],
       "declarationState": "declared",
       "parityScope": "four-language",
       "approvalSource": {
         "kind": "feature-specification",
-        "path": "specs/012-vendor-extension-registry/spec.md",
+        "path": "specs/004-generic-ttlv-model/spec.md",
         "status": "Approved",
-        "evidence": "**Status**: Approved for implementation under the maintainer's standing direct authorization to execute the complete KMIPKit plan without further approval requests."
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`."
       },
       "languageMappings": {
         "rust": {
@@ -13118,19 +13131,20 @@
       "packageId": "c-kmipkit",
       "kind": "type",
       "exportName": "kmipkit_tag_t",
-      "capabilityId": "vendor_extension_registry",
+      "capabilityId": "generic_ttlv_model",
       "requirementIds": [
-        "KMIPKIT-0012-FR-005",
-        "KMIPKIT-0012-FR-007",
-        "KMIPKIT-0012-FR-010"
+        "KMIPKIT-0004-FR-002",
+        "KMIPKIT-0004-FR-003",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-021"
       ],
       "declarationState": "declared",
       "parityScope": "four-language",
       "approvalSource": {
         "kind": "feature-specification",
-        "path": "specs/012-vendor-extension-registry/spec.md",
+        "path": "specs/004-generic-ttlv-model/spec.md",
         "status": "Approved",
-        "evidence": "**Status**: Approved for implementation under the maintainer's standing direct authorization to execute the complete KMIPKit plan without further approval requests."
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`."
       },
       "languageMappings": {
         "rust": {
@@ -13156,19 +13170,20 @@
       "packageId": "c-kmipkit",
       "kind": "c-symbol",
       "exportName": "kmipkit_tag_release",
-      "capabilityId": "vendor_extension_registry",
+      "capabilityId": "generic_ttlv_model",
       "requirementIds": [
-        "KMIPKIT-0012-FR-005",
-        "KMIPKIT-0012-FR-007",
-        "KMIPKIT-0012-FR-010"
+        "KMIPKIT-0004-FR-002",
+        "KMIPKIT-0004-FR-003",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-021"
       ],
       "declarationState": "declared",
       "parityScope": "four-language",
       "approvalSource": {
         "kind": "feature-specification",
-        "path": "specs/012-vendor-extension-registry/spec.md",
+        "path": "specs/004-generic-ttlv-model/spec.md",
         "status": "Approved",
-        "evidence": "**Status**: Approved for implementation under the maintainer's standing direct authorization to execute the complete KMIPKit plan without further approval requests."
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`."
       },
       "languageMappings": {
         "rust": {
@@ -13194,19 +13209,20 @@
       "packageId": "java-kmipkit",
       "kind": "type",
       "exportName": "org.kmipkit.ttlv.Tag",
-      "capabilityId": "vendor_extension_registry",
+      "capabilityId": "generic_ttlv_model",
       "requirementIds": [
-        "KMIPKIT-0012-FR-005",
-        "KMIPKIT-0012-FR-007",
-        "KMIPKIT-0012-FR-010"
+        "KMIPKIT-0004-FR-002",
+        "KMIPKIT-0004-FR-003",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-021"
       ],
       "declarationState": "declared",
       "parityScope": "four-language",
       "approvalSource": {
         "kind": "feature-specification",
-        "path": "specs/012-vendor-extension-registry/spec.md",
+        "path": "specs/004-generic-ttlv-model/spec.md",
         "status": "Approved",
-        "evidence": "**Status**: Approved for implementation under the maintainer's standing direct authorization to execute the complete KMIPKit plan without further approval requests."
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`."
       },
       "languageMappings": {
         "rust": {
@@ -13232,19 +13248,20 @@
       "packageId": "python-kmipkit",
       "kind": "type",
       "exportName": "kmipkit.ttlv.Tag",
-      "capabilityId": "vendor_extension_registry",
+      "capabilityId": "generic_ttlv_model",
       "requirementIds": [
-        "KMIPKIT-0012-FR-005",
-        "KMIPKIT-0012-FR-007",
-        "KMIPKIT-0012-FR-010"
+        "KMIPKIT-0004-FR-002",
+        "KMIPKIT-0004-FR-003",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-021"
       ],
       "declarationState": "declared",
       "parityScope": "four-language",
       "approvalSource": {
         "kind": "feature-specification",
-        "path": "specs/012-vendor-extension-registry/spec.md",
+        "path": "specs/004-generic-ttlv-model/spec.md",
         "status": "Approved",
-        "evidence": "**Status**: Approved for implementation under the maintainer's standing direct authorization to execute the complete KMIPKit plan without further approval requests."
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`."
       },
       "languageMappings": {
         "rust": {
@@ -13270,19 +13287,20 @@
       "packageId": "rust-kmipkit-ttlv",
       "kind": "type",
       "exportName": "kmipkit_ttlv::Tag",
-      "capabilityId": "vendor_extension_registry",
+      "capabilityId": "generic_ttlv_model",
       "requirementIds": [
-        "KMIPKIT-0012-FR-005",
-        "KMIPKIT-0012-FR-007",
-        "KMIPKIT-0012-FR-010"
+        "KMIPKIT-0004-FR-002",
+        "KMIPKIT-0004-FR-003",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-021"
       ],
       "declarationState": "declared",
       "parityScope": "four-language",
       "approvalSource": {
         "kind": "feature-specification",
-        "path": "specs/012-vendor-extension-registry/spec.md",
+        "path": "specs/004-generic-ttlv-model/spec.md",
         "status": "Approved",
-        "evidence": "**Status**: Approved for implementation under the maintainer's standing direct authorization to execute the complete KMIPKit plan without further approval requests."
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`."
       },
       "languageMappings": {
         "rust": {
@@ -13308,19 +13326,22 @@
       "packageId": "c-kmipkit",
       "kind": "type",
       "exportName": "kmipkit_ttlv_item_t",
-      "capabilityId": "vendor_extension_registry",
+      "capabilityId": "generic_ttlv_model",
       "requirementIds": [
-        "KMIPKIT-0012-FR-005",
-        "KMIPKIT-0012-FR-007",
-        "KMIPKIT-0012-FR-010"
+        "KMIPKIT-0004-FR-003",
+        "KMIPKIT-0004-FR-006",
+        "KMIPKIT-0004-FR-008",
+        "KMIPKIT-0004-FR-012",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-021"
       ],
       "declarationState": "declared",
       "parityScope": "four-language",
       "approvalSource": {
         "kind": "feature-specification",
-        "path": "specs/012-vendor-extension-registry/spec.md",
+        "path": "specs/004-generic-ttlv-model/spec.md",
         "status": "Approved",
-        "evidence": "**Status**: Approved for implementation under the maintainer's standing direct authorization to execute the complete KMIPKit plan without further approval requests."
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`."
       },
       "languageMappings": {
         "rust": {
@@ -13346,19 +13367,22 @@
       "packageId": "c-kmipkit",
       "kind": "c-symbol",
       "exportName": "kmipkit_ttlv_item_release",
-      "capabilityId": "vendor_extension_registry",
+      "capabilityId": "generic_ttlv_model",
       "requirementIds": [
-        "KMIPKIT-0012-FR-005",
-        "KMIPKIT-0012-FR-007",
-        "KMIPKIT-0012-FR-010"
+        "KMIPKIT-0004-FR-003",
+        "KMIPKIT-0004-FR-006",
+        "KMIPKIT-0004-FR-008",
+        "KMIPKIT-0004-FR-012",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-021"
       ],
       "declarationState": "declared",
       "parityScope": "four-language",
       "approvalSource": {
         "kind": "feature-specification",
-        "path": "specs/012-vendor-extension-registry/spec.md",
+        "path": "specs/004-generic-ttlv-model/spec.md",
         "status": "Approved",
-        "evidence": "**Status**: Approved for implementation under the maintainer's standing direct authorization to execute the complete KMIPKit plan without further approval requests."
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`."
       },
       "languageMappings": {
         "rust": {
@@ -13384,19 +13408,22 @@
       "packageId": "java-kmipkit",
       "kind": "type",
       "exportName": "org.kmipkit.ttlv.TtlvItem",
-      "capabilityId": "vendor_extension_registry",
+      "capabilityId": "generic_ttlv_model",
       "requirementIds": [
-        "KMIPKIT-0012-FR-005",
-        "KMIPKIT-0012-FR-007",
-        "KMIPKIT-0012-FR-010"
+        "KMIPKIT-0004-FR-003",
+        "KMIPKIT-0004-FR-006",
+        "KMIPKIT-0004-FR-008",
+        "KMIPKIT-0004-FR-012",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-021"
       ],
       "declarationState": "declared",
       "parityScope": "four-language",
       "approvalSource": {
         "kind": "feature-specification",
-        "path": "specs/012-vendor-extension-registry/spec.md",
+        "path": "specs/004-generic-ttlv-model/spec.md",
         "status": "Approved",
-        "evidence": "**Status**: Approved for implementation under the maintainer's standing direct authorization to execute the complete KMIPKit plan without further approval requests."
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`."
       },
       "languageMappings": {
         "rust": {
@@ -13422,19 +13449,22 @@
       "packageId": "python-kmipkit",
       "kind": "type",
       "exportName": "kmipkit.ttlv.TtlvItem",
-      "capabilityId": "vendor_extension_registry",
+      "capabilityId": "generic_ttlv_model",
       "requirementIds": [
-        "KMIPKIT-0012-FR-005",
-        "KMIPKIT-0012-FR-007",
-        "KMIPKIT-0012-FR-010"
+        "KMIPKIT-0004-FR-003",
+        "KMIPKIT-0004-FR-006",
+        "KMIPKIT-0004-FR-008",
+        "KMIPKIT-0004-FR-012",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-021"
       ],
       "declarationState": "declared",
       "parityScope": "four-language",
       "approvalSource": {
         "kind": "feature-specification",
-        "path": "specs/012-vendor-extension-registry/spec.md",
+        "path": "specs/004-generic-ttlv-model/spec.md",
         "status": "Approved",
-        "evidence": "**Status**: Approved for implementation under the maintainer's standing direct authorization to execute the complete KMIPKit plan without further approval requests."
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`."
       },
       "languageMappings": {
         "rust": {
@@ -13460,19 +13490,22 @@
       "packageId": "rust-kmipkit-ttlv",
       "kind": "type",
       "exportName": "kmipkit_ttlv::Item",
-      "capabilityId": "vendor_extension_registry",
+      "capabilityId": "generic_ttlv_model",
       "requirementIds": [
-        "KMIPKIT-0012-FR-005",
-        "KMIPKIT-0012-FR-007",
-        "KMIPKIT-0012-FR-010"
+        "KMIPKIT-0004-FR-003",
+        "KMIPKIT-0004-FR-006",
+        "KMIPKIT-0004-FR-008",
+        "KMIPKIT-0004-FR-012",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-021"
       ],
       "declarationState": "declared",
       "parityScope": "four-language",
       "approvalSource": {
         "kind": "feature-specification",
-        "path": "specs/012-vendor-extension-registry/spec.md",
+        "path": "specs/004-generic-ttlv-model/spec.md",
         "status": "Approved",
-        "evidence": "**Status**: Approved for implementation under the maintainer's standing direct authorization to execute the complete KMIPKit plan without further approval requests."
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`."
       },
       "languageMappings": {
         "rust": {
@@ -13498,20 +13531,20 @@
       "packageId": "c-kmipkit",
       "kind": "type",
       "exportName": "kmipkit_ttlv_item_type_t",
-      "capabilityId": "vendor_extension_registry",
+      "capabilityId": "generic_ttlv_model",
       "requirementIds": [
-        "KMIPKIT-0012-FR-004",
-        "KMIPKIT-0012-FR-005",
-        "KMIPKIT-0012-FR-007",
-        "KMIPKIT-0012-FR-010"
+        "KMIPKIT-0004-FR-001",
+        "KMIPKIT-0004-FR-008",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-021"
       ],
       "declarationState": "declared",
       "parityScope": "four-language",
       "approvalSource": {
         "kind": "feature-specification",
-        "path": "specs/012-vendor-extension-registry/spec.md",
+        "path": "specs/004-generic-ttlv-model/spec.md",
         "status": "Approved",
-        "evidence": "**Status**: Approved for implementation under the maintainer's standing direct authorization to execute the complete KMIPKit plan without further approval requests."
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`."
       },
       "languageMappings": {
         "rust": {
@@ -13537,20 +13570,20 @@
       "packageId": "java-kmipkit",
       "kind": "type",
       "exportName": "org.kmipkit.ttlv.TtlvItemType",
-      "capabilityId": "vendor_extension_registry",
+      "capabilityId": "generic_ttlv_model",
       "requirementIds": [
-        "KMIPKIT-0012-FR-004",
-        "KMIPKIT-0012-FR-005",
-        "KMIPKIT-0012-FR-007",
-        "KMIPKIT-0012-FR-010"
+        "KMIPKIT-0004-FR-001",
+        "KMIPKIT-0004-FR-008",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-021"
       ],
       "declarationState": "declared",
       "parityScope": "four-language",
       "approvalSource": {
         "kind": "feature-specification",
-        "path": "specs/012-vendor-extension-registry/spec.md",
+        "path": "specs/004-generic-ttlv-model/spec.md",
         "status": "Approved",
-        "evidence": "**Status**: Approved for implementation under the maintainer's standing direct authorization to execute the complete KMIPKit plan without further approval requests."
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`."
       },
       "languageMappings": {
         "rust": {
@@ -13593,20 +13626,20 @@
       "packageId": "rust-kmipkit-ttlv",
       "kind": "type",
       "exportName": "kmipkit_ttlv::ItemType",
-      "capabilityId": "vendor_extension_registry",
+      "capabilityId": "generic_ttlv_model",
       "requirementIds": [
-        "KMIPKIT-0012-FR-004",
-        "KMIPKIT-0012-FR-005",
-        "KMIPKIT-0012-FR-007",
-        "KMIPKIT-0012-FR-010"
+        "KMIPKIT-0004-FR-001",
+        "KMIPKIT-0004-FR-008",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-021"
       ],
       "declarationState": "declared",
       "parityScope": "four-language",
       "approvalSource": {
         "kind": "feature-specification",
-        "path": "specs/012-vendor-extension-registry/spec.md",
+        "path": "specs/004-generic-ttlv-model/spec.md",
         "status": "Approved",
-        "evidence": "**Status**: Approved for implementation under the maintainer's standing direct authorization to execute the complete KMIPKit plan without further approval requests."
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`."
       },
       "languageMappings": {
         "rust": {
@@ -13891,20 +13924,22 @@
       "packageId": "c-kmipkit",
       "kind": "type",
       "exportName": "kmipkit_ttlv_structure_t",
-      "capabilityId": "vendor_extension_registry",
+      "capabilityId": "generic_ttlv_model",
       "requirementIds": [
-        "KMIPKIT-0012-FR-005",
-        "KMIPKIT-0012-FR-007",
-        "KMIPKIT-0012-FR-010",
-        "KMIPKIT-0012-FR-012"
+        "KMIPKIT-0004-FR-003",
+        "KMIPKIT-0004-FR-006",
+        "KMIPKIT-0004-FR-012",
+        "KMIPKIT-0004-FR-014",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-021"
       ],
       "declarationState": "declared",
       "parityScope": "four-language",
       "approvalSource": {
         "kind": "feature-specification",
-        "path": "specs/012-vendor-extension-registry/spec.md",
+        "path": "specs/004-generic-ttlv-model/spec.md",
         "status": "Approved",
-        "evidence": "**Status**: Approved for implementation under the maintainer's standing direct authorization to execute the complete KMIPKit plan without further approval requests."
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`."
       },
       "languageMappings": {
         "rust": {
@@ -13930,20 +13965,22 @@
       "packageId": "c-kmipkit",
       "kind": "c-symbol",
       "exportName": "kmipkit_ttlv_structure_release",
-      "capabilityId": "vendor_extension_registry",
+      "capabilityId": "generic_ttlv_model",
       "requirementIds": [
-        "KMIPKIT-0012-FR-005",
-        "KMIPKIT-0012-FR-007",
-        "KMIPKIT-0012-FR-010",
-        "KMIPKIT-0012-FR-012"
+        "KMIPKIT-0004-FR-003",
+        "KMIPKIT-0004-FR-006",
+        "KMIPKIT-0004-FR-012",
+        "KMIPKIT-0004-FR-014",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-021"
       ],
       "declarationState": "declared",
       "parityScope": "four-language",
       "approvalSource": {
         "kind": "feature-specification",
-        "path": "specs/012-vendor-extension-registry/spec.md",
+        "path": "specs/004-generic-ttlv-model/spec.md",
         "status": "Approved",
-        "evidence": "**Status**: Approved for implementation under the maintainer's standing direct authorization to execute the complete KMIPKit plan without further approval requests."
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`."
       },
       "languageMappings": {
         "rust": {
@@ -13969,20 +14006,22 @@
       "packageId": "java-kmipkit",
       "kind": "type",
       "exportName": "org.kmipkit.ttlv.TtlvStructure",
-      "capabilityId": "vendor_extension_registry",
+      "capabilityId": "generic_ttlv_model",
       "requirementIds": [
-        "KMIPKIT-0012-FR-005",
-        "KMIPKIT-0012-FR-007",
-        "KMIPKIT-0012-FR-010",
-        "KMIPKIT-0012-FR-012"
+        "KMIPKIT-0004-FR-003",
+        "KMIPKIT-0004-FR-006",
+        "KMIPKIT-0004-FR-012",
+        "KMIPKIT-0004-FR-014",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-021"
       ],
       "declarationState": "declared",
       "parityScope": "four-language",
       "approvalSource": {
         "kind": "feature-specification",
-        "path": "specs/012-vendor-extension-registry/spec.md",
+        "path": "specs/004-generic-ttlv-model/spec.md",
         "status": "Approved",
-        "evidence": "**Status**: Approved for implementation under the maintainer's standing direct authorization to execute the complete KMIPKit plan without further approval requests."
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`."
       },
       "languageMappings": {
         "rust": {
@@ -14008,20 +14047,22 @@
       "packageId": "python-kmipkit",
       "kind": "type",
       "exportName": "kmipkit.ttlv.Structure",
-      "capabilityId": "vendor_extension_registry",
+      "capabilityId": "generic_ttlv_model",
       "requirementIds": [
-        "KMIPKIT-0012-FR-005",
-        "KMIPKIT-0012-FR-007",
-        "KMIPKIT-0012-FR-010",
-        "KMIPKIT-0012-FR-012"
+        "KMIPKIT-0004-FR-003",
+        "KMIPKIT-0004-FR-006",
+        "KMIPKIT-0004-FR-012",
+        "KMIPKIT-0004-FR-014",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-021"
       ],
       "declarationState": "declared",
       "parityScope": "four-language",
       "approvalSource": {
         "kind": "feature-specification",
-        "path": "specs/012-vendor-extension-registry/spec.md",
+        "path": "specs/004-generic-ttlv-model/spec.md",
         "status": "Approved",
-        "evidence": "**Status**: Approved for implementation under the maintainer's standing direct authorization to execute the complete KMIPKit plan without further approval requests."
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`."
       },
       "languageMappings": {
         "rust": {
@@ -14047,20 +14088,22 @@
       "packageId": "rust-kmipkit-ttlv",
       "kind": "type",
       "exportName": "kmipkit_ttlv::Structure",
-      "capabilityId": "vendor_extension_registry",
+      "capabilityId": "generic_ttlv_model",
       "requirementIds": [
-        "KMIPKIT-0012-FR-005",
-        "KMIPKIT-0012-FR-007",
-        "KMIPKIT-0012-FR-010",
-        "KMIPKIT-0012-FR-012"
+        "KMIPKIT-0004-FR-003",
+        "KMIPKIT-0004-FR-006",
+        "KMIPKIT-0004-FR-012",
+        "KMIPKIT-0004-FR-014",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-021"
       ],
       "declarationState": "declared",
       "parityScope": "four-language",
       "approvalSource": {
         "kind": "feature-specification",
-        "path": "specs/012-vendor-extension-registry/spec.md",
+        "path": "specs/004-generic-ttlv-model/spec.md",
         "status": "Approved",
-        "evidence": "**Status**: Approved for implementation under the maintainer's standing direct authorization to execute the complete KMIPKit plan without further approval requests."
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`."
       },
       "languageMappings": {
         "rust": {
@@ -14150,20 +14193,26 @@
       "packageId": "c-kmipkit",
       "kind": "type",
       "exportName": "kmipkit_ttlv_value_t",
-      "capabilityId": "vendor_extension_registry",
+      "capabilityId": "generic_ttlv_model",
       "requirementIds": [
-        "KMIPKIT-0012-FR-002",
-        "KMIPKIT-0012-FR-005",
-        "KMIPKIT-0012-FR-007",
-        "KMIPKIT-0012-FR-010"
+        "KMIPKIT-0004-FR-001",
+        "KMIPKIT-0004-FR-004",
+        "KMIPKIT-0004-FR-005",
+        "KMIPKIT-0004-FR-007",
+        "KMIPKIT-0004-FR-008",
+        "KMIPKIT-0004-FR-009",
+        "KMIPKIT-0004-FR-010",
+        "KMIPKIT-0004-FR-012",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-021"
       ],
       "declarationState": "declared",
       "parityScope": "four-language",
       "approvalSource": {
         "kind": "feature-specification",
-        "path": "specs/012-vendor-extension-registry/spec.md",
+        "path": "specs/004-generic-ttlv-model/spec.md",
         "status": "Approved",
-        "evidence": "**Status**: Approved for implementation under the maintainer's standing direct authorization to execute the complete KMIPKit plan without further approval requests."
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`."
       },
       "languageMappings": {
         "rust": {
@@ -14189,20 +14238,26 @@
       "packageId": "c-kmipkit",
       "kind": "c-symbol",
       "exportName": "kmipkit_ttlv_value_release",
-      "capabilityId": "vendor_extension_registry",
+      "capabilityId": "generic_ttlv_model",
       "requirementIds": [
-        "KMIPKIT-0012-FR-002",
-        "KMIPKIT-0012-FR-005",
-        "KMIPKIT-0012-FR-007",
-        "KMIPKIT-0012-FR-010"
+        "KMIPKIT-0004-FR-001",
+        "KMIPKIT-0004-FR-004",
+        "KMIPKIT-0004-FR-005",
+        "KMIPKIT-0004-FR-007",
+        "KMIPKIT-0004-FR-008",
+        "KMIPKIT-0004-FR-009",
+        "KMIPKIT-0004-FR-010",
+        "KMIPKIT-0004-FR-012",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-021"
       ],
       "declarationState": "declared",
       "parityScope": "four-language",
       "approvalSource": {
         "kind": "feature-specification",
-        "path": "specs/012-vendor-extension-registry/spec.md",
+        "path": "specs/004-generic-ttlv-model/spec.md",
         "status": "Approved",
-        "evidence": "**Status**: Approved for implementation under the maintainer's standing direct authorization to execute the complete KMIPKit plan without further approval requests."
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`."
       },
       "languageMappings": {
         "rust": {
@@ -14228,20 +14283,26 @@
       "packageId": "java-kmipkit",
       "kind": "type",
       "exportName": "org.kmipkit.ttlv.TtlvValue",
-      "capabilityId": "vendor_extension_registry",
+      "capabilityId": "generic_ttlv_model",
       "requirementIds": [
-        "KMIPKIT-0012-FR-002",
-        "KMIPKIT-0012-FR-005",
-        "KMIPKIT-0012-FR-007",
-        "KMIPKIT-0012-FR-010"
+        "KMIPKIT-0004-FR-001",
+        "KMIPKIT-0004-FR-004",
+        "KMIPKIT-0004-FR-005",
+        "KMIPKIT-0004-FR-007",
+        "KMIPKIT-0004-FR-008",
+        "KMIPKIT-0004-FR-009",
+        "KMIPKIT-0004-FR-010",
+        "KMIPKIT-0004-FR-012",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-021"
       ],
       "declarationState": "declared",
       "parityScope": "four-language",
       "approvalSource": {
         "kind": "feature-specification",
-        "path": "specs/012-vendor-extension-registry/spec.md",
+        "path": "specs/004-generic-ttlv-model/spec.md",
         "status": "Approved",
-        "evidence": "**Status**: Approved for implementation under the maintainer's standing direct authorization to execute the complete KMIPKit plan without further approval requests."
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`."
       },
       "languageMappings": {
         "rust": {
@@ -14267,20 +14328,26 @@
       "packageId": "python-kmipkit",
       "kind": "type",
       "exportName": "kmipkit.ttlv.Value",
-      "capabilityId": "vendor_extension_registry",
+      "capabilityId": "generic_ttlv_model",
       "requirementIds": [
-        "KMIPKIT-0012-FR-002",
-        "KMIPKIT-0012-FR-005",
-        "KMIPKIT-0012-FR-007",
-        "KMIPKIT-0012-FR-010"
+        "KMIPKIT-0004-FR-001",
+        "KMIPKIT-0004-FR-004",
+        "KMIPKIT-0004-FR-005",
+        "KMIPKIT-0004-FR-007",
+        "KMIPKIT-0004-FR-008",
+        "KMIPKIT-0004-FR-009",
+        "KMIPKIT-0004-FR-010",
+        "KMIPKIT-0004-FR-012",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-021"
       ],
       "declarationState": "declared",
       "parityScope": "four-language",
       "approvalSource": {
         "kind": "feature-specification",
-        "path": "specs/012-vendor-extension-registry/spec.md",
+        "path": "specs/004-generic-ttlv-model/spec.md",
         "status": "Approved",
-        "evidence": "**Status**: Approved for implementation under the maintainer's standing direct authorization to execute the complete KMIPKit plan without further approval requests."
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`."
       },
       "languageMappings": {
         "rust": {
@@ -14306,20 +14373,26 @@
       "packageId": "rust-kmipkit-ttlv",
       "kind": "type",
       "exportName": "kmipkit_ttlv::Value",
-      "capabilityId": "vendor_extension_registry",
+      "capabilityId": "generic_ttlv_model",
       "requirementIds": [
-        "KMIPKIT-0012-FR-002",
-        "KMIPKIT-0012-FR-005",
-        "KMIPKIT-0012-FR-007",
-        "KMIPKIT-0012-FR-010"
+        "KMIPKIT-0004-FR-001",
+        "KMIPKIT-0004-FR-004",
+        "KMIPKIT-0004-FR-005",
+        "KMIPKIT-0004-FR-007",
+        "KMIPKIT-0004-FR-008",
+        "KMIPKIT-0004-FR-009",
+        "KMIPKIT-0004-FR-010",
+        "KMIPKIT-0004-FR-012",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-021"
       ],
       "declarationState": "declared",
       "parityScope": "four-language",
       "approvalSource": {
         "kind": "feature-specification",
-        "path": "specs/012-vendor-extension-registry/spec.md",
+        "path": "specs/004-generic-ttlv-model/spec.md",
         "status": "Approved",
-        "evidence": "**Status**: Approved for implementation under the maintainer's standing direct authorization to execute the complete KMIPKit plan without further approval requests."
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`."
       },
       "languageMappings": {
         "rust": {
@@ -16753,20 +16826,19 @@
       "packageId": "c-kmipkit",
       "kind": "c-symbol",
       "exportName": "kmipkit_codec_limits_create",
-      "capabilityId": "vendor_extension_registry",
+      "capabilityId": "ttlv_wire_codec",
       "requirementIds": [
-        "KMIPKIT-0012-FR-005",
-        "KMIPKIT-0012-FR-007",
-        "KMIPKIT-0012-FR-010",
-        "KMIPKIT-0012-FR-012"
+        "KMIPKIT-0005-FR-007",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-021"
       ],
       "declarationState": "declared",
       "parityScope": "four-language",
       "approvalSource": {
         "kind": "feature-specification",
-        "path": "specs/012-vendor-extension-registry/spec.md",
+        "path": "specs/005-ttlv-wire-codec/spec.md",
         "status": "Approved",
-        "evidence": "**Status**: Approved for implementation under the maintainer's standing direct authorization to execute the complete KMIPKit plan without further approval requests."
+        "evidence": "**Status**: Approved — the maintainer delegated execution and approval of this plan without further manual intervention in the 2026-10-05 Codex conversation. The exact approved specification and boundary revisions, decisions, and limits of that authorization are recorded in [approval-record.md](approval-record.md)."
       },
       "languageMappings": {
         "rust": {
@@ -16792,20 +16864,19 @@
       "packageId": "java-kmipkit",
       "kind": "java-member",
       "exportName": "org.kmipkit.ttlv.CodecLimits.create",
-      "capabilityId": "vendor_extension_registry",
+      "capabilityId": "ttlv_wire_codec",
       "requirementIds": [
-        "KMIPKIT-0012-FR-005",
-        "KMIPKIT-0012-FR-007",
-        "KMIPKIT-0012-FR-010",
-        "KMIPKIT-0012-FR-012"
+        "KMIPKIT-0005-FR-007",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-021"
       ],
       "declarationState": "declared",
       "parityScope": "four-language",
       "approvalSource": {
         "kind": "feature-specification",
-        "path": "specs/012-vendor-extension-registry/spec.md",
+        "path": "specs/005-ttlv-wire-codec/spec.md",
         "status": "Approved",
-        "evidence": "**Status**: Approved for implementation under the maintainer's standing direct authorization to execute the complete KMIPKit plan without further approval requests."
+        "evidence": "**Status**: Approved — the maintainer delegated execution and approval of this plan without further manual intervention in the 2026-10-05 Codex conversation. The exact approved specification and boundary revisions, decisions, and limits of that authorization are recorded in [approval-record.md](approval-record.md)."
       },
       "languageMappings": {
         "rust": {
@@ -16831,20 +16902,19 @@
       "packageId": "python-kmipkit",
       "kind": "python-export",
       "exportName": "kmipkit.ttlv.codec_limits_create",
-      "capabilityId": "vendor_extension_registry",
+      "capabilityId": "ttlv_wire_codec",
       "requirementIds": [
-        "KMIPKIT-0012-FR-005",
-        "KMIPKIT-0012-FR-007",
-        "KMIPKIT-0012-FR-010",
-        "KMIPKIT-0012-FR-012"
+        "KMIPKIT-0005-FR-007",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-021"
       ],
       "declarationState": "declared",
       "parityScope": "four-language",
       "approvalSource": {
         "kind": "feature-specification",
-        "path": "specs/012-vendor-extension-registry/spec.md",
+        "path": "specs/005-ttlv-wire-codec/spec.md",
         "status": "Approved",
-        "evidence": "**Status**: Approved for implementation under the maintainer's standing direct authorization to execute the complete KMIPKit plan without further approval requests."
+        "evidence": "**Status**: Approved — the maintainer delegated execution and approval of this plan without further manual intervention in the 2026-10-05 Codex conversation. The exact approved specification and boundary revisions, decisions, and limits of that authorization are recorded in [approval-record.md](approval-record.md)."
       },
       "languageMappings": {
         "rust": {
@@ -16870,20 +16940,19 @@
       "packageId": "rust-kmipkit-ttlv",
       "kind": "associated-item",
       "exportName": "kmipkit_ttlv::codec::CodecLimits::new",
-      "capabilityId": "vendor_extension_registry",
+      "capabilityId": "ttlv_wire_codec",
       "requirementIds": [
-        "KMIPKIT-0012-FR-005",
-        "KMIPKIT-0012-FR-007",
-        "KMIPKIT-0012-FR-010",
-        "KMIPKIT-0012-FR-012"
+        "KMIPKIT-0005-FR-007",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-021"
       ],
       "declarationState": "declared",
       "parityScope": "four-language",
       "approvalSource": {
         "kind": "feature-specification",
-        "path": "specs/012-vendor-extension-registry/spec.md",
+        "path": "specs/005-ttlv-wire-codec/spec.md",
         "status": "Approved",
-        "evidence": "**Status**: Approved for implementation under the maintainer's standing direct authorization to execute the complete KMIPKit plan without further approval requests."
+        "evidence": "**Status**: Approved — the maintainer delegated execution and approval of this plan without further manual intervention in the 2026-10-05 Codex conversation. The exact approved specification and boundary revisions, decisions, and limits of that authorization are recorded in [approval-record.md](approval-record.md)."
       },
       "languageMappings": {
         "rust": {
@@ -16909,19 +16978,19 @@
       "packageId": "c-kmipkit",
       "kind": "c-symbol",
       "exportName": "kmipkit_codec_limits_defaults",
-      "capabilityId": "vendor_extension_registry",
+      "capabilityId": "ttlv_wire_codec",
       "requirementIds": [
-        "KMIPKIT-0012-FR-005",
-        "KMIPKIT-0012-FR-007",
-        "KMIPKIT-0012-FR-010"
+        "KMIPKIT-0005-FR-007",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-021"
       ],
       "declarationState": "declared",
       "parityScope": "four-language",
       "approvalSource": {
         "kind": "feature-specification",
-        "path": "specs/012-vendor-extension-registry/spec.md",
+        "path": "specs/005-ttlv-wire-codec/spec.md",
         "status": "Approved",
-        "evidence": "**Status**: Approved for implementation under the maintainer's standing direct authorization to execute the complete KMIPKit plan without further approval requests."
+        "evidence": "**Status**: Approved — the maintainer delegated execution and approval of this plan without further manual intervention in the 2026-10-05 Codex conversation. The exact approved specification and boundary revisions, decisions, and limits of that authorization are recorded in [approval-record.md](approval-record.md)."
       },
       "languageMappings": {
         "rust": {
@@ -16947,19 +17016,19 @@
       "packageId": "java-kmipkit",
       "kind": "java-member",
       "exportName": "org.kmipkit.ttlv.CodecLimits.defaults",
-      "capabilityId": "vendor_extension_registry",
+      "capabilityId": "ttlv_wire_codec",
       "requirementIds": [
-        "KMIPKIT-0012-FR-005",
-        "KMIPKIT-0012-FR-007",
-        "KMIPKIT-0012-FR-010"
+        "KMIPKIT-0005-FR-007",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-021"
       ],
       "declarationState": "declared",
       "parityScope": "four-language",
       "approvalSource": {
         "kind": "feature-specification",
-        "path": "specs/012-vendor-extension-registry/spec.md",
+        "path": "specs/005-ttlv-wire-codec/spec.md",
         "status": "Approved",
-        "evidence": "**Status**: Approved for implementation under the maintainer's standing direct authorization to execute the complete KMIPKit plan without further approval requests."
+        "evidence": "**Status**: Approved — the maintainer delegated execution and approval of this plan without further manual intervention in the 2026-10-05 Codex conversation. The exact approved specification and boundary revisions, decisions, and limits of that authorization are recorded in [approval-record.md](approval-record.md)."
       },
       "languageMappings": {
         "rust": {
@@ -16985,19 +17054,19 @@
       "packageId": "python-kmipkit",
       "kind": "python-export",
       "exportName": "kmipkit.ttlv.codec_limits_defaults",
-      "capabilityId": "vendor_extension_registry",
+      "capabilityId": "ttlv_wire_codec",
       "requirementIds": [
-        "KMIPKIT-0012-FR-005",
-        "KMIPKIT-0012-FR-007",
-        "KMIPKIT-0012-FR-010"
+        "KMIPKIT-0005-FR-007",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-021"
       ],
       "declarationState": "declared",
       "parityScope": "four-language",
       "approvalSource": {
         "kind": "feature-specification",
-        "path": "specs/012-vendor-extension-registry/spec.md",
+        "path": "specs/005-ttlv-wire-codec/spec.md",
         "status": "Approved",
-        "evidence": "**Status**: Approved for implementation under the maintainer's standing direct authorization to execute the complete KMIPKit plan without further approval requests."
+        "evidence": "**Status**: Approved — the maintainer delegated execution and approval of this plan without further manual intervention in the 2026-10-05 Codex conversation. The exact approved specification and boundary revisions, decisions, and limits of that authorization are recorded in [approval-record.md](approval-record.md)."
       },
       "languageMappings": {
         "rust": {
@@ -17023,19 +17092,19 @@
       "packageId": "rust-kmipkit-ttlv",
       "kind": "associated-item",
       "exportName": "kmipkit_ttlv::codec::CodecLimits::defaults",
-      "capabilityId": "vendor_extension_registry",
+      "capabilityId": "ttlv_wire_codec",
       "requirementIds": [
-        "KMIPKIT-0012-FR-005",
-        "KMIPKIT-0012-FR-007",
-        "KMIPKIT-0012-FR-010"
+        "KMIPKIT-0005-FR-007",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-021"
       ],
       "declarationState": "declared",
       "parityScope": "four-language",
       "approvalSource": {
         "kind": "feature-specification",
-        "path": "specs/012-vendor-extension-registry/spec.md",
+        "path": "specs/005-ttlv-wire-codec/spec.md",
         "status": "Approved",
-        "evidence": "**Status**: Approved for implementation under the maintainer's standing direct authorization to execute the complete KMIPKit plan without further approval requests."
+        "evidence": "**Status**: Approved — the maintainer delegated execution and approval of this plan without further manual intervention in the 2026-10-05 Codex conversation. The exact approved specification and boundary revisions, decisions, and limits of that authorization are recorded in [approval-record.md](approval-record.md)."
       },
       "languageMappings": {
         "rust": {
@@ -17061,19 +17130,19 @@
       "packageId": "c-kmipkit",
       "kind": "c-symbol",
       "exportName": "kmipkit_codec_limits_max_elements",
-      "capabilityId": "vendor_extension_registry",
+      "capabilityId": "ttlv_wire_codec",
       "requirementIds": [
-        "KMIPKIT-0012-FR-005",
-        "KMIPKIT-0012-FR-007",
-        "KMIPKIT-0012-FR-010"
+        "KMIPKIT-0005-FR-007",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-021"
       ],
       "declarationState": "declared",
       "parityScope": "four-language",
       "approvalSource": {
         "kind": "feature-specification",
-        "path": "specs/012-vendor-extension-registry/spec.md",
+        "path": "specs/005-ttlv-wire-codec/spec.md",
         "status": "Approved",
-        "evidence": "**Status**: Approved for implementation under the maintainer's standing direct authorization to execute the complete KMIPKit plan without further approval requests."
+        "evidence": "**Status**: Approved — the maintainer delegated execution and approval of this plan without further manual intervention in the 2026-10-05 Codex conversation. The exact approved specification and boundary revisions, decisions, and limits of that authorization are recorded in [approval-record.md](approval-record.md)."
       },
       "languageMappings": {
         "rust": {
@@ -17099,19 +17168,19 @@
       "packageId": "java-kmipkit",
       "kind": "java-member",
       "exportName": "org.kmipkit.ttlv.CodecLimits.maxElements",
-      "capabilityId": "vendor_extension_registry",
+      "capabilityId": "ttlv_wire_codec",
       "requirementIds": [
-        "KMIPKIT-0012-FR-005",
-        "KMIPKIT-0012-FR-007",
-        "KMIPKIT-0012-FR-010"
+        "KMIPKIT-0005-FR-007",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-021"
       ],
       "declarationState": "declared",
       "parityScope": "four-language",
       "approvalSource": {
         "kind": "feature-specification",
-        "path": "specs/012-vendor-extension-registry/spec.md",
+        "path": "specs/005-ttlv-wire-codec/spec.md",
         "status": "Approved",
-        "evidence": "**Status**: Approved for implementation under the maintainer's standing direct authorization to execute the complete KMIPKit plan without further approval requests."
+        "evidence": "**Status**: Approved — the maintainer delegated execution and approval of this plan without further manual intervention in the 2026-10-05 Codex conversation. The exact approved specification and boundary revisions, decisions, and limits of that authorization are recorded in [approval-record.md](approval-record.md)."
       },
       "languageMappings": {
         "rust": {
@@ -17137,19 +17206,19 @@
       "packageId": "python-kmipkit",
       "kind": "python-export",
       "exportName": "kmipkit.ttlv.codec_limits_max_elements",
-      "capabilityId": "vendor_extension_registry",
+      "capabilityId": "ttlv_wire_codec",
       "requirementIds": [
-        "KMIPKIT-0012-FR-005",
-        "KMIPKIT-0012-FR-007",
-        "KMIPKIT-0012-FR-010"
+        "KMIPKIT-0005-FR-007",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-021"
       ],
       "declarationState": "declared",
       "parityScope": "four-language",
       "approvalSource": {
         "kind": "feature-specification",
-        "path": "specs/012-vendor-extension-registry/spec.md",
+        "path": "specs/005-ttlv-wire-codec/spec.md",
         "status": "Approved",
-        "evidence": "**Status**: Approved for implementation under the maintainer's standing direct authorization to execute the complete KMIPKit plan without further approval requests."
+        "evidence": "**Status**: Approved — the maintainer delegated execution and approval of this plan without further manual intervention in the 2026-10-05 Codex conversation. The exact approved specification and boundary revisions, decisions, and limits of that authorization are recorded in [approval-record.md](approval-record.md)."
       },
       "languageMappings": {
         "rust": {
@@ -17175,19 +17244,19 @@
       "packageId": "rust-kmipkit-ttlv",
       "kind": "associated-item",
       "exportName": "kmipkit_ttlv::codec::CodecLimits::max_elements",
-      "capabilityId": "vendor_extension_registry",
+      "capabilityId": "ttlv_wire_codec",
       "requirementIds": [
-        "KMIPKIT-0012-FR-005",
-        "KMIPKIT-0012-FR-007",
-        "KMIPKIT-0012-FR-010"
+        "KMIPKIT-0005-FR-007",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-021"
       ],
       "declarationState": "declared",
       "parityScope": "four-language",
       "approvalSource": {
         "kind": "feature-specification",
-        "path": "specs/012-vendor-extension-registry/spec.md",
+        "path": "specs/005-ttlv-wire-codec/spec.md",
         "status": "Approved",
-        "evidence": "**Status**: Approved for implementation under the maintainer's standing direct authorization to execute the complete KMIPKit plan without further approval requests."
+        "evidence": "**Status**: Approved — the maintainer delegated execution and approval of this plan without further manual intervention in the 2026-10-05 Codex conversation. The exact approved specification and boundary revisions, decisions, and limits of that authorization are recorded in [approval-record.md](approval-record.md)."
       },
       "languageMappings": {
         "rust": {
@@ -17213,19 +17282,19 @@
       "packageId": "c-kmipkit",
       "kind": "c-symbol",
       "exportName": "kmipkit_codec_limits_max_message_bytes",
-      "capabilityId": "vendor_extension_registry",
+      "capabilityId": "ttlv_wire_codec",
       "requirementIds": [
-        "KMIPKIT-0012-FR-005",
-        "KMIPKIT-0012-FR-007",
-        "KMIPKIT-0012-FR-010"
+        "KMIPKIT-0005-FR-007",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-021"
       ],
       "declarationState": "declared",
       "parityScope": "four-language",
       "approvalSource": {
         "kind": "feature-specification",
-        "path": "specs/012-vendor-extension-registry/spec.md",
+        "path": "specs/005-ttlv-wire-codec/spec.md",
         "status": "Approved",
-        "evidence": "**Status**: Approved for implementation under the maintainer's standing direct authorization to execute the complete KMIPKit plan without further approval requests."
+        "evidence": "**Status**: Approved — the maintainer delegated execution and approval of this plan without further manual intervention in the 2026-10-05 Codex conversation. The exact approved specification and boundary revisions, decisions, and limits of that authorization are recorded in [approval-record.md](approval-record.md)."
       },
       "languageMappings": {
         "rust": {
@@ -17251,19 +17320,19 @@
       "packageId": "java-kmipkit",
       "kind": "java-member",
       "exportName": "org.kmipkit.ttlv.CodecLimits.maxMessageBytes",
-      "capabilityId": "vendor_extension_registry",
+      "capabilityId": "ttlv_wire_codec",
       "requirementIds": [
-        "KMIPKIT-0012-FR-005",
-        "KMIPKIT-0012-FR-007",
-        "KMIPKIT-0012-FR-010"
+        "KMIPKIT-0005-FR-007",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-021"
       ],
       "declarationState": "declared",
       "parityScope": "four-language",
       "approvalSource": {
         "kind": "feature-specification",
-        "path": "specs/012-vendor-extension-registry/spec.md",
+        "path": "specs/005-ttlv-wire-codec/spec.md",
         "status": "Approved",
-        "evidence": "**Status**: Approved for implementation under the maintainer's standing direct authorization to execute the complete KMIPKit plan without further approval requests."
+        "evidence": "**Status**: Approved — the maintainer delegated execution and approval of this plan without further manual intervention in the 2026-10-05 Codex conversation. The exact approved specification and boundary revisions, decisions, and limits of that authorization are recorded in [approval-record.md](approval-record.md)."
       },
       "languageMappings": {
         "rust": {
@@ -17289,19 +17358,19 @@
       "packageId": "python-kmipkit",
       "kind": "python-export",
       "exportName": "kmipkit.ttlv.codec_limits_max_message_bytes",
-      "capabilityId": "vendor_extension_registry",
+      "capabilityId": "ttlv_wire_codec",
       "requirementIds": [
-        "KMIPKIT-0012-FR-005",
-        "KMIPKIT-0012-FR-007",
-        "KMIPKIT-0012-FR-010"
+        "KMIPKIT-0005-FR-007",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-021"
       ],
       "declarationState": "declared",
       "parityScope": "four-language",
       "approvalSource": {
         "kind": "feature-specification",
-        "path": "specs/012-vendor-extension-registry/spec.md",
+        "path": "specs/005-ttlv-wire-codec/spec.md",
         "status": "Approved",
-        "evidence": "**Status**: Approved for implementation under the maintainer's standing direct authorization to execute the complete KMIPKit plan without further approval requests."
+        "evidence": "**Status**: Approved — the maintainer delegated execution and approval of this plan without further manual intervention in the 2026-10-05 Codex conversation. The exact approved specification and boundary revisions, decisions, and limits of that authorization are recorded in [approval-record.md](approval-record.md)."
       },
       "languageMappings": {
         "rust": {
@@ -17327,19 +17396,19 @@
       "packageId": "rust-kmipkit-ttlv",
       "kind": "associated-item",
       "exportName": "kmipkit_ttlv::codec::CodecLimits::max_message_bytes",
-      "capabilityId": "vendor_extension_registry",
+      "capabilityId": "ttlv_wire_codec",
       "requirementIds": [
-        "KMIPKIT-0012-FR-005",
-        "KMIPKIT-0012-FR-007",
-        "KMIPKIT-0012-FR-010"
+        "KMIPKIT-0005-FR-007",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-021"
       ],
       "declarationState": "declared",
       "parityScope": "four-language",
       "approvalSource": {
         "kind": "feature-specification",
-        "path": "specs/012-vendor-extension-registry/spec.md",
+        "path": "specs/005-ttlv-wire-codec/spec.md",
         "status": "Approved",
-        "evidence": "**Status**: Approved for implementation under the maintainer's standing direct authorization to execute the complete KMIPKit plan without further approval requests."
+        "evidence": "**Status**: Approved — the maintainer delegated execution and approval of this plan without further manual intervention in the 2026-10-05 Codex conversation. The exact approved specification and boundary revisions, decisions, and limits of that authorization are recorded in [approval-record.md](approval-record.md)."
       },
       "languageMappings": {
         "rust": {
@@ -17365,19 +17434,19 @@
       "packageId": "c-kmipkit",
       "kind": "c-symbol",
       "exportName": "kmipkit_codec_limits_max_structure_depth",
-      "capabilityId": "vendor_extension_registry",
+      "capabilityId": "ttlv_wire_codec",
       "requirementIds": [
-        "KMIPKIT-0012-FR-005",
-        "KMIPKIT-0012-FR-007",
-        "KMIPKIT-0012-FR-010"
+        "KMIPKIT-0005-FR-007",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-021"
       ],
       "declarationState": "declared",
       "parityScope": "four-language",
       "approvalSource": {
         "kind": "feature-specification",
-        "path": "specs/012-vendor-extension-registry/spec.md",
+        "path": "specs/005-ttlv-wire-codec/spec.md",
         "status": "Approved",
-        "evidence": "**Status**: Approved for implementation under the maintainer's standing direct authorization to execute the complete KMIPKit plan without further approval requests."
+        "evidence": "**Status**: Approved — the maintainer delegated execution and approval of this plan without further manual intervention in the 2026-10-05 Codex conversation. The exact approved specification and boundary revisions, decisions, and limits of that authorization are recorded in [approval-record.md](approval-record.md)."
       },
       "languageMappings": {
         "rust": {
@@ -17403,19 +17472,19 @@
       "packageId": "java-kmipkit",
       "kind": "java-member",
       "exportName": "org.kmipkit.ttlv.CodecLimits.maxStructureDepth",
-      "capabilityId": "vendor_extension_registry",
+      "capabilityId": "ttlv_wire_codec",
       "requirementIds": [
-        "KMIPKIT-0012-FR-005",
-        "KMIPKIT-0012-FR-007",
-        "KMIPKIT-0012-FR-010"
+        "KMIPKIT-0005-FR-007",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-021"
       ],
       "declarationState": "declared",
       "parityScope": "four-language",
       "approvalSource": {
         "kind": "feature-specification",
-        "path": "specs/012-vendor-extension-registry/spec.md",
+        "path": "specs/005-ttlv-wire-codec/spec.md",
         "status": "Approved",
-        "evidence": "**Status**: Approved for implementation under the maintainer's standing direct authorization to execute the complete KMIPKit plan without further approval requests."
+        "evidence": "**Status**: Approved — the maintainer delegated execution and approval of this plan without further manual intervention in the 2026-10-05 Codex conversation. The exact approved specification and boundary revisions, decisions, and limits of that authorization are recorded in [approval-record.md](approval-record.md)."
       },
       "languageMappings": {
         "rust": {
@@ -17441,19 +17510,19 @@
       "packageId": "python-kmipkit",
       "kind": "python-export",
       "exportName": "kmipkit.ttlv.codec_limits_max_structure_depth",
-      "capabilityId": "vendor_extension_registry",
+      "capabilityId": "ttlv_wire_codec",
       "requirementIds": [
-        "KMIPKIT-0012-FR-005",
-        "KMIPKIT-0012-FR-007",
-        "KMIPKIT-0012-FR-010"
+        "KMIPKIT-0005-FR-007",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-021"
       ],
       "declarationState": "declared",
       "parityScope": "four-language",
       "approvalSource": {
         "kind": "feature-specification",
-        "path": "specs/012-vendor-extension-registry/spec.md",
+        "path": "specs/005-ttlv-wire-codec/spec.md",
         "status": "Approved",
-        "evidence": "**Status**: Approved for implementation under the maintainer's standing direct authorization to execute the complete KMIPKit plan without further approval requests."
+        "evidence": "**Status**: Approved — the maintainer delegated execution and approval of this plan without further manual intervention in the 2026-10-05 Codex conversation. The exact approved specification and boundary revisions, decisions, and limits of that authorization are recorded in [approval-record.md](approval-record.md)."
       },
       "languageMappings": {
         "rust": {
@@ -17479,19 +17548,19 @@
       "packageId": "rust-kmipkit-ttlv",
       "kind": "associated-item",
       "exportName": "kmipkit_ttlv::codec::CodecLimits::max_structure_depth",
-      "capabilityId": "vendor_extension_registry",
+      "capabilityId": "ttlv_wire_codec",
       "requirementIds": [
-        "KMIPKIT-0012-FR-005",
-        "KMIPKIT-0012-FR-007",
-        "KMIPKIT-0012-FR-010"
+        "KMIPKIT-0005-FR-007",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-021"
       ],
       "declarationState": "declared",
       "parityScope": "four-language",
       "approvalSource": {
         "kind": "feature-specification",
-        "path": "specs/012-vendor-extension-registry/spec.md",
+        "path": "specs/005-ttlv-wire-codec/spec.md",
         "status": "Approved",
-        "evidence": "**Status**: Approved for implementation under the maintainer's standing direct authorization to execute the complete KMIPKit plan without further approval requests."
+        "evidence": "**Status**: Approved — the maintainer delegated execution and approval of this plan without further manual intervention in the 2026-10-05 Codex conversation. The exact approved specification and boundary revisions, decisions, and limits of that authorization are recorded in [approval-record.md](approval-record.md)."
       },
       "languageMappings": {
         "rust": {
@@ -23885,19 +23954,20 @@
       "packageId": "c-kmipkit",
       "kind": "c-symbol",
       "exportName": "kmipkit_ttlv_raw_tag_create",
-      "capabilityId": "vendor_extension_registry",
+      "capabilityId": "generic_ttlv_model",
       "requirementIds": [
-        "KMIPKIT-0012-FR-005",
-        "KMIPKIT-0012-FR-007",
-        "KMIPKIT-0012-FR-010"
+        "KMIPKIT-0004-FR-002",
+        "KMIPKIT-0004-FR-003",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-021"
       ],
       "declarationState": "declared",
       "parityScope": "four-language",
       "approvalSource": {
         "kind": "feature-specification",
-        "path": "specs/012-vendor-extension-registry/spec.md",
+        "path": "specs/004-generic-ttlv-model/spec.md",
         "status": "Approved",
-        "evidence": "**Status**: Approved for implementation under the maintainer's standing direct authorization to execute the complete KMIPKit plan without further approval requests."
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`."
       },
       "languageMappings": {
         "rust": {
@@ -23923,19 +23993,20 @@
       "packageId": "java-kmipkit",
       "kind": "java-member",
       "exportName": "org.kmipkit.ttlv.RawTag.fromRaw",
-      "capabilityId": "vendor_extension_registry",
+      "capabilityId": "generic_ttlv_model",
       "requirementIds": [
-        "KMIPKIT-0012-FR-005",
-        "KMIPKIT-0012-FR-007",
-        "KMIPKIT-0012-FR-010"
+        "KMIPKIT-0004-FR-002",
+        "KMIPKIT-0004-FR-003",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-021"
       ],
       "declarationState": "declared",
       "parityScope": "four-language",
       "approvalSource": {
         "kind": "feature-specification",
-        "path": "specs/012-vendor-extension-registry/spec.md",
+        "path": "specs/004-generic-ttlv-model/spec.md",
         "status": "Approved",
-        "evidence": "**Status**: Approved for implementation under the maintainer's standing direct authorization to execute the complete KMIPKit plan without further approval requests."
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`."
       },
       "languageMappings": {
         "rust": {
@@ -23961,19 +24032,20 @@
       "packageId": "python-kmipkit",
       "kind": "python-export",
       "exportName": "kmipkit.ttlv.raw_tag_from_raw",
-      "capabilityId": "vendor_extension_registry",
+      "capabilityId": "generic_ttlv_model",
       "requirementIds": [
-        "KMIPKIT-0012-FR-005",
-        "KMIPKIT-0012-FR-007",
-        "KMIPKIT-0012-FR-010"
+        "KMIPKIT-0004-FR-002",
+        "KMIPKIT-0004-FR-003",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-021"
       ],
       "declarationState": "declared",
       "parityScope": "four-language",
       "approvalSource": {
         "kind": "feature-specification",
-        "path": "specs/012-vendor-extension-registry/spec.md",
+        "path": "specs/004-generic-ttlv-model/spec.md",
         "status": "Approved",
-        "evidence": "**Status**: Approved for implementation under the maintainer's standing direct authorization to execute the complete KMIPKit plan without further approval requests."
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`."
       },
       "languageMappings": {
         "rust": {
@@ -23999,19 +24071,20 @@
       "packageId": "rust-kmipkit-ttlv",
       "kind": "associated-item",
       "exportName": "kmipkit_ttlv::RawTag::new",
-      "capabilityId": "vendor_extension_registry",
+      "capabilityId": "generic_ttlv_model",
       "requirementIds": [
-        "KMIPKIT-0012-FR-005",
-        "KMIPKIT-0012-FR-007",
-        "KMIPKIT-0012-FR-010"
+        "KMIPKIT-0004-FR-002",
+        "KMIPKIT-0004-FR-003",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-021"
       ],
       "declarationState": "declared",
       "parityScope": "four-language",
       "approvalSource": {
         "kind": "feature-specification",
-        "path": "specs/012-vendor-extension-registry/spec.md",
+        "path": "specs/004-generic-ttlv-model/spec.md",
         "status": "Approved",
-        "evidence": "**Status**: Approved for implementation under the maintainer's standing direct authorization to execute the complete KMIPKit plan without further approval requests."
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`."
       },
       "languageMappings": {
         "rust": {
@@ -24037,19 +24110,20 @@
       "packageId": "c-kmipkit",
       "kind": "c-symbol",
       "exportName": "kmipkit_ttlv_raw_tag_try_checked",
-      "capabilityId": "vendor_extension_registry",
+      "capabilityId": "generic_ttlv_model",
       "requirementIds": [
-        "KMIPKIT-0012-FR-005",
-        "KMIPKIT-0012-FR-007",
-        "KMIPKIT-0012-FR-010"
+        "KMIPKIT-0004-FR-002",
+        "KMIPKIT-0004-FR-003",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-021"
       ],
       "declarationState": "declared",
       "parityScope": "four-language",
       "approvalSource": {
         "kind": "feature-specification",
-        "path": "specs/012-vendor-extension-registry/spec.md",
+        "path": "specs/004-generic-ttlv-model/spec.md",
         "status": "Approved",
-        "evidence": "**Status**: Approved for implementation under the maintainer's standing direct authorization to execute the complete KMIPKit plan without further approval requests."
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`."
       },
       "languageMappings": {
         "rust": {
@@ -24075,19 +24149,20 @@
       "packageId": "java-kmipkit",
       "kind": "java-member",
       "exportName": "org.kmipkit.ttlv.RawTag.checked",
-      "capabilityId": "vendor_extension_registry",
+      "capabilityId": "generic_ttlv_model",
       "requirementIds": [
-        "KMIPKIT-0012-FR-005",
-        "KMIPKIT-0012-FR-007",
-        "KMIPKIT-0012-FR-010"
+        "KMIPKIT-0004-FR-002",
+        "KMIPKIT-0004-FR-003",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-021"
       ],
       "declarationState": "declared",
       "parityScope": "four-language",
       "approvalSource": {
         "kind": "feature-specification",
-        "path": "specs/012-vendor-extension-registry/spec.md",
+        "path": "specs/004-generic-ttlv-model/spec.md",
         "status": "Approved",
-        "evidence": "**Status**: Approved for implementation under the maintainer's standing direct authorization to execute the complete KMIPKit plan without further approval requests."
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`."
       },
       "languageMappings": {
         "rust": {
@@ -24113,19 +24188,20 @@
       "packageId": "python-kmipkit",
       "kind": "python-export",
       "exportName": "kmipkit.ttlv.raw_tag_try_checked",
-      "capabilityId": "vendor_extension_registry",
+      "capabilityId": "generic_ttlv_model",
       "requirementIds": [
-        "KMIPKIT-0012-FR-005",
-        "KMIPKIT-0012-FR-007",
-        "KMIPKIT-0012-FR-010"
+        "KMIPKIT-0004-FR-002",
+        "KMIPKIT-0004-FR-003",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-021"
       ],
       "declarationState": "declared",
       "parityScope": "four-language",
       "approvalSource": {
         "kind": "feature-specification",
-        "path": "specs/012-vendor-extension-registry/spec.md",
+        "path": "specs/004-generic-ttlv-model/spec.md",
         "status": "Approved",
-        "evidence": "**Status**: Approved for implementation under the maintainer's standing direct authorization to execute the complete KMIPKit plan without further approval requests."
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`."
       },
       "languageMappings": {
         "rust": {
@@ -24151,19 +24227,20 @@
       "packageId": "rust-kmipkit-ttlv",
       "kind": "associated-item",
       "exportName": "kmipkit_ttlv::RawTag::try_checked",
-      "capabilityId": "vendor_extension_registry",
+      "capabilityId": "generic_ttlv_model",
       "requirementIds": [
-        "KMIPKIT-0012-FR-005",
-        "KMIPKIT-0012-FR-007",
-        "KMIPKIT-0012-FR-010"
+        "KMIPKIT-0004-FR-002",
+        "KMIPKIT-0004-FR-003",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-021"
       ],
       "declarationState": "declared",
       "parityScope": "four-language",
       "approvalSource": {
         "kind": "feature-specification",
-        "path": "specs/012-vendor-extension-registry/spec.md",
+        "path": "specs/004-generic-ttlv-model/spec.md",
         "status": "Approved",
-        "evidence": "**Status**: Approved for implementation under the maintainer's standing direct authorization to execute the complete KMIPKit plan without further approval requests."
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`."
       },
       "languageMappings": {
         "rust": {
@@ -24189,19 +24266,20 @@
       "packageId": "c-kmipkit",
       "kind": "c-symbol",
       "exportName": "kmipkit_ttlv_raw_tag_value",
-      "capabilityId": "vendor_extension_registry",
+      "capabilityId": "generic_ttlv_model",
       "requirementIds": [
-        "KMIPKIT-0012-FR-005",
-        "KMIPKIT-0012-FR-007",
-        "KMIPKIT-0012-FR-010"
+        "KMIPKIT-0004-FR-002",
+        "KMIPKIT-0004-FR-003",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-021"
       ],
       "declarationState": "declared",
       "parityScope": "four-language",
       "approvalSource": {
         "kind": "feature-specification",
-        "path": "specs/012-vendor-extension-registry/spec.md",
+        "path": "specs/004-generic-ttlv-model/spec.md",
         "status": "Approved",
-        "evidence": "**Status**: Approved for implementation under the maintainer's standing direct authorization to execute the complete KMIPKit plan without further approval requests."
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`."
       },
       "languageMappings": {
         "rust": {
@@ -24227,19 +24305,20 @@
       "packageId": "java-kmipkit",
       "kind": "java-member",
       "exportName": "org.kmipkit.ttlv.RawTag.raw",
-      "capabilityId": "vendor_extension_registry",
+      "capabilityId": "generic_ttlv_model",
       "requirementIds": [
-        "KMIPKIT-0012-FR-005",
-        "KMIPKIT-0012-FR-007",
-        "KMIPKIT-0012-FR-010"
+        "KMIPKIT-0004-FR-002",
+        "KMIPKIT-0004-FR-003",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-021"
       ],
       "declarationState": "declared",
       "parityScope": "four-language",
       "approvalSource": {
         "kind": "feature-specification",
-        "path": "specs/012-vendor-extension-registry/spec.md",
+        "path": "specs/004-generic-ttlv-model/spec.md",
         "status": "Approved",
-        "evidence": "**Status**: Approved for implementation under the maintainer's standing direct authorization to execute the complete KMIPKit plan without further approval requests."
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`."
       },
       "languageMappings": {
         "rust": {
@@ -24265,19 +24344,20 @@
       "packageId": "python-kmipkit",
       "kind": "python-export",
       "exportName": "kmipkit.ttlv.raw_tag_value",
-      "capabilityId": "vendor_extension_registry",
+      "capabilityId": "generic_ttlv_model",
       "requirementIds": [
-        "KMIPKIT-0012-FR-005",
-        "KMIPKIT-0012-FR-007",
-        "KMIPKIT-0012-FR-010"
+        "KMIPKIT-0004-FR-002",
+        "KMIPKIT-0004-FR-003",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-021"
       ],
       "declarationState": "declared",
       "parityScope": "four-language",
       "approvalSource": {
         "kind": "feature-specification",
-        "path": "specs/012-vendor-extension-registry/spec.md",
+        "path": "specs/004-generic-ttlv-model/spec.md",
         "status": "Approved",
-        "evidence": "**Status**: Approved for implementation under the maintainer's standing direct authorization to execute the complete KMIPKit plan without further approval requests."
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`."
       },
       "languageMappings": {
         "rust": {
@@ -24303,19 +24383,20 @@
       "packageId": "rust-kmipkit-ttlv",
       "kind": "associated-item",
       "exportName": "kmipkit_ttlv::RawTag::raw",
-      "capabilityId": "vendor_extension_registry",
+      "capabilityId": "generic_ttlv_model",
       "requirementIds": [
-        "KMIPKIT-0012-FR-005",
-        "KMIPKIT-0012-FR-007",
-        "KMIPKIT-0012-FR-010"
+        "KMIPKIT-0004-FR-002",
+        "KMIPKIT-0004-FR-003",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-021"
       ],
       "declarationState": "declared",
       "parityScope": "four-language",
       "approvalSource": {
         "kind": "feature-specification",
-        "path": "specs/012-vendor-extension-registry/spec.md",
+        "path": "specs/004-generic-ttlv-model/spec.md",
         "status": "Approved",
-        "evidence": "**Status**: Approved for implementation under the maintainer's standing direct authorization to execute the complete KMIPKit plan without further approval requests."
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`."
       },
       "languageMappings": {
         "rust": {
@@ -24341,19 +24422,22 @@
       "packageId": "c-kmipkit",
       "kind": "c-symbol",
       "exportName": "kmipkit_ttlv_structure_create",
-      "capabilityId": "vendor_extension_registry",
+      "capabilityId": "generic_ttlv_model",
       "requirementIds": [
-        "KMIPKIT-0012-FR-005",
-        "KMIPKIT-0012-FR-007",
-        "KMIPKIT-0012-FR-010"
+        "KMIPKIT-0004-FR-003",
+        "KMIPKIT-0004-FR-006",
+        "KMIPKIT-0004-FR-012",
+        "KMIPKIT-0004-FR-014",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-021"
       ],
       "declarationState": "declared",
       "parityScope": "four-language",
       "approvalSource": {
         "kind": "feature-specification",
-        "path": "specs/012-vendor-extension-registry/spec.md",
+        "path": "specs/004-generic-ttlv-model/spec.md",
         "status": "Approved",
-        "evidence": "**Status**: Approved for implementation under the maintainer's standing direct authorization to execute the complete KMIPKit plan without further approval requests."
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`."
       },
       "languageMappings": {
         "rust": {
@@ -24379,19 +24463,22 @@
       "packageId": "java-kmipkit",
       "kind": "java-member",
       "exportName": "org.kmipkit.ttlv.TtlvStructure.create",
-      "capabilityId": "vendor_extension_registry",
+      "capabilityId": "generic_ttlv_model",
       "requirementIds": [
-        "KMIPKIT-0012-FR-005",
-        "KMIPKIT-0012-FR-007",
-        "KMIPKIT-0012-FR-010"
+        "KMIPKIT-0004-FR-003",
+        "KMIPKIT-0004-FR-006",
+        "KMIPKIT-0004-FR-012",
+        "KMIPKIT-0004-FR-014",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-021"
       ],
       "declarationState": "declared",
       "parityScope": "four-language",
       "approvalSource": {
         "kind": "feature-specification",
-        "path": "specs/012-vendor-extension-registry/spec.md",
+        "path": "specs/004-generic-ttlv-model/spec.md",
         "status": "Approved",
-        "evidence": "**Status**: Approved for implementation under the maintainer's standing direct authorization to execute the complete KMIPKit plan without further approval requests."
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`."
       },
       "languageMappings": {
         "rust": {
@@ -24417,19 +24504,22 @@
       "packageId": "python-kmipkit",
       "kind": "python-export",
       "exportName": "kmipkit.ttlv.ttlv_structure_create",
-      "capabilityId": "vendor_extension_registry",
+      "capabilityId": "generic_ttlv_model",
       "requirementIds": [
-        "KMIPKIT-0012-FR-005",
-        "KMIPKIT-0012-FR-007",
-        "KMIPKIT-0012-FR-010"
+        "KMIPKIT-0004-FR-003",
+        "KMIPKIT-0004-FR-006",
+        "KMIPKIT-0004-FR-012",
+        "KMIPKIT-0004-FR-014",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-021"
       ],
       "declarationState": "declared",
       "parityScope": "four-language",
       "approvalSource": {
         "kind": "feature-specification",
-        "path": "specs/012-vendor-extension-registry/spec.md",
+        "path": "specs/004-generic-ttlv-model/spec.md",
         "status": "Approved",
-        "evidence": "**Status**: Approved for implementation under the maintainer's standing direct authorization to execute the complete KMIPKit plan without further approval requests."
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`."
       },
       "languageMappings": {
         "rust": {
@@ -24455,19 +24545,22 @@
       "packageId": "rust-kmipkit-ttlv",
       "kind": "associated-item",
       "exportName": "kmipkit_ttlv::Structure::new",
-      "capabilityId": "vendor_extension_registry",
+      "capabilityId": "generic_ttlv_model",
       "requirementIds": [
-        "KMIPKIT-0012-FR-005",
-        "KMIPKIT-0012-FR-007",
-        "KMIPKIT-0012-FR-010"
+        "KMIPKIT-0004-FR-003",
+        "KMIPKIT-0004-FR-006",
+        "KMIPKIT-0004-FR-012",
+        "KMIPKIT-0004-FR-014",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-021"
       ],
       "declarationState": "declared",
       "parityScope": "four-language",
       "approvalSource": {
         "kind": "feature-specification",
-        "path": "specs/012-vendor-extension-registry/spec.md",
+        "path": "specs/004-generic-ttlv-model/spec.md",
         "status": "Approved",
-        "evidence": "**Status**: Approved for implementation under the maintainer's standing direct authorization to execute the complete KMIPKit plan without further approval requests."
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`."
       },
       "languageMappings": {
         "rust": {
@@ -24688,19 +24781,20 @@
       "packageId": "c-kmipkit",
       "kind": "c-symbol",
       "exportName": "kmipkit_ttlv_tag_value",
-      "capabilityId": "vendor_extension_registry",
+      "capabilityId": "generic_ttlv_model",
       "requirementIds": [
-        "KMIPKIT-0012-FR-005",
-        "KMIPKIT-0012-FR-007",
-        "KMIPKIT-0012-FR-010"
+        "KMIPKIT-0004-FR-002",
+        "KMIPKIT-0004-FR-003",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-021"
       ],
       "declarationState": "declared",
       "parityScope": "four-language",
       "approvalSource": {
         "kind": "feature-specification",
-        "path": "specs/012-vendor-extension-registry/spec.md",
+        "path": "specs/004-generic-ttlv-model/spec.md",
         "status": "Approved",
-        "evidence": "**Status**: Approved for implementation under the maintainer's standing direct authorization to execute the complete KMIPKit plan without further approval requests."
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`."
       },
       "languageMappings": {
         "rust": {
@@ -24726,19 +24820,20 @@
       "packageId": "java-kmipkit",
       "kind": "java-member",
       "exportName": "org.kmipkit.ttlv.Tag.raw",
-      "capabilityId": "vendor_extension_registry",
+      "capabilityId": "generic_ttlv_model",
       "requirementIds": [
-        "KMIPKIT-0012-FR-005",
-        "KMIPKIT-0012-FR-007",
-        "KMIPKIT-0012-FR-010"
+        "KMIPKIT-0004-FR-002",
+        "KMIPKIT-0004-FR-003",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-021"
       ],
       "declarationState": "declared",
       "parityScope": "four-language",
       "approvalSource": {
         "kind": "feature-specification",
-        "path": "specs/012-vendor-extension-registry/spec.md",
+        "path": "specs/004-generic-ttlv-model/spec.md",
         "status": "Approved",
-        "evidence": "**Status**: Approved for implementation under the maintainer's standing direct authorization to execute the complete KMIPKit plan without further approval requests."
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`."
       },
       "languageMappings": {
         "rust": {
@@ -24764,19 +24859,20 @@
       "packageId": "python-kmipkit",
       "kind": "python-export",
       "exportName": "kmipkit.ttlv.tag_value",
-      "capabilityId": "vendor_extension_registry",
+      "capabilityId": "generic_ttlv_model",
       "requirementIds": [
-        "KMIPKIT-0012-FR-005",
-        "KMIPKIT-0012-FR-007",
-        "KMIPKIT-0012-FR-010"
+        "KMIPKIT-0004-FR-002",
+        "KMIPKIT-0004-FR-003",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-021"
       ],
       "declarationState": "declared",
       "parityScope": "four-language",
       "approvalSource": {
         "kind": "feature-specification",
-        "path": "specs/012-vendor-extension-registry/spec.md",
+        "path": "specs/004-generic-ttlv-model/spec.md",
         "status": "Approved",
-        "evidence": "**Status**: Approved for implementation under the maintainer's standing direct authorization to execute the complete KMIPKit plan without further approval requests."
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`."
       },
       "languageMappings": {
         "rust": {
@@ -24802,19 +24898,20 @@
       "packageId": "rust-kmipkit-ttlv",
       "kind": "associated-item",
       "exportName": "kmipkit_ttlv::Tag::raw",
-      "capabilityId": "vendor_extension_registry",
+      "capabilityId": "generic_ttlv_model",
       "requirementIds": [
-        "KMIPKIT-0012-FR-005",
-        "KMIPKIT-0012-FR-007",
-        "KMIPKIT-0012-FR-010"
+        "KMIPKIT-0004-FR-002",
+        "KMIPKIT-0004-FR-003",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-021"
       ],
       "declarationState": "declared",
       "parityScope": "four-language",
       "approvalSource": {
         "kind": "feature-specification",
-        "path": "specs/012-vendor-extension-registry/spec.md",
+        "path": "specs/004-generic-ttlv-model/spec.md",
         "status": "Approved",
-        "evidence": "**Status**: Approved for implementation under the maintainer's standing direct authorization to execute the complete KMIPKit plan without further approval requests."
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`."
       },
       "languageMappings": {
         "rust": {
@@ -24957,19 +25054,26 @@
       "packageId": "c-kmipkit",
       "kind": "c-symbol",
       "exportName": "kmipkit_ttlv_value_boolean",
-      "capabilityId": "vendor_extension_registry",
+      "capabilityId": "generic_ttlv_model",
       "requirementIds": [
-        "KMIPKIT-0012-FR-005",
-        "KMIPKIT-0012-FR-007",
-        "KMIPKIT-0012-FR-010"
+        "KMIPKIT-0004-FR-001",
+        "KMIPKIT-0004-FR-004",
+        "KMIPKIT-0004-FR-005",
+        "KMIPKIT-0004-FR-007",
+        "KMIPKIT-0004-FR-008",
+        "KMIPKIT-0004-FR-009",
+        "KMIPKIT-0004-FR-010",
+        "KMIPKIT-0004-FR-012",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-021"
       ],
       "declarationState": "declared",
       "parityScope": "four-language",
       "approvalSource": {
         "kind": "feature-specification",
-        "path": "specs/012-vendor-extension-registry/spec.md",
+        "path": "specs/004-generic-ttlv-model/spec.md",
         "status": "Approved",
-        "evidence": "**Status**: Approved for implementation under the maintainer's standing direct authorization to execute the complete KMIPKit plan without further approval requests."
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`."
       },
       "languageMappings": {
         "rust": {
@@ -24995,19 +25099,26 @@
       "packageId": "java-kmipkit",
       "kind": "java-member",
       "exportName": "org.kmipkit.ttlv.TtlvValue.Boolean",
-      "capabilityId": "vendor_extension_registry",
+      "capabilityId": "generic_ttlv_model",
       "requirementIds": [
-        "KMIPKIT-0012-FR-005",
-        "KMIPKIT-0012-FR-007",
-        "KMIPKIT-0012-FR-010"
+        "KMIPKIT-0004-FR-001",
+        "KMIPKIT-0004-FR-004",
+        "KMIPKIT-0004-FR-005",
+        "KMIPKIT-0004-FR-007",
+        "KMIPKIT-0004-FR-008",
+        "KMIPKIT-0004-FR-009",
+        "KMIPKIT-0004-FR-010",
+        "KMIPKIT-0004-FR-012",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-021"
       ],
       "declarationState": "declared",
       "parityScope": "four-language",
       "approvalSource": {
         "kind": "feature-specification",
-        "path": "specs/012-vendor-extension-registry/spec.md",
+        "path": "specs/004-generic-ttlv-model/spec.md",
         "status": "Approved",
-        "evidence": "**Status**: Approved for implementation under the maintainer's standing direct authorization to execute the complete KMIPKit plan without further approval requests."
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`."
       },
       "languageMappings": {
         "rust": {
@@ -25033,19 +25144,26 @@
       "packageId": "python-kmipkit",
       "kind": "python-export",
       "exportName": "kmipkit.ttlv.ttlv_value_boolean",
-      "capabilityId": "vendor_extension_registry",
+      "capabilityId": "generic_ttlv_model",
       "requirementIds": [
-        "KMIPKIT-0012-FR-005",
-        "KMIPKIT-0012-FR-007",
-        "KMIPKIT-0012-FR-010"
+        "KMIPKIT-0004-FR-001",
+        "KMIPKIT-0004-FR-004",
+        "KMIPKIT-0004-FR-005",
+        "KMIPKIT-0004-FR-007",
+        "KMIPKIT-0004-FR-008",
+        "KMIPKIT-0004-FR-009",
+        "KMIPKIT-0004-FR-010",
+        "KMIPKIT-0004-FR-012",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-021"
       ],
       "declarationState": "declared",
       "parityScope": "four-language",
       "approvalSource": {
         "kind": "feature-specification",
-        "path": "specs/012-vendor-extension-registry/spec.md",
+        "path": "specs/004-generic-ttlv-model/spec.md",
         "status": "Approved",
-        "evidence": "**Status**: Approved for implementation under the maintainer's standing direct authorization to execute the complete KMIPKit plan without further approval requests."
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`."
       },
       "languageMappings": {
         "rust": {
@@ -25071,19 +25189,26 @@
       "packageId": "rust-kmipkit-ttlv",
       "kind": "associated-item",
       "exportName": "kmipkit_ttlv::Value::boolean",
-      "capabilityId": "vendor_extension_registry",
+      "capabilityId": "generic_ttlv_model",
       "requirementIds": [
-        "KMIPKIT-0012-FR-005",
-        "KMIPKIT-0012-FR-007",
-        "KMIPKIT-0012-FR-010"
+        "KMIPKIT-0004-FR-001",
+        "KMIPKIT-0004-FR-004",
+        "KMIPKIT-0004-FR-005",
+        "KMIPKIT-0004-FR-007",
+        "KMIPKIT-0004-FR-008",
+        "KMIPKIT-0004-FR-009",
+        "KMIPKIT-0004-FR-010",
+        "KMIPKIT-0004-FR-012",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-021"
       ],
       "declarationState": "declared",
       "parityScope": "four-language",
       "approvalSource": {
         "kind": "feature-specification",
-        "path": "specs/012-vendor-extension-registry/spec.md",
+        "path": "specs/004-generic-ttlv-model/spec.md",
         "status": "Approved",
-        "evidence": "**Status**: Approved for implementation under the maintainer's standing direct authorization to execute the complete KMIPKit plan without further approval requests."
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`."
       },
       "languageMappings": {
         "rust": {
@@ -25226,19 +25351,26 @@
       "packageId": "c-kmipkit",
       "kind": "c-symbol",
       "exportName": "kmipkit_ttlv_value_date_time",
-      "capabilityId": "vendor_extension_registry",
+      "capabilityId": "generic_ttlv_model",
       "requirementIds": [
-        "KMIPKIT-0012-FR-005",
-        "KMIPKIT-0012-FR-007",
-        "KMIPKIT-0012-FR-010"
+        "KMIPKIT-0004-FR-001",
+        "KMIPKIT-0004-FR-004",
+        "KMIPKIT-0004-FR-005",
+        "KMIPKIT-0004-FR-007",
+        "KMIPKIT-0004-FR-008",
+        "KMIPKIT-0004-FR-009",
+        "KMIPKIT-0004-FR-010",
+        "KMIPKIT-0004-FR-012",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-021"
       ],
       "declarationState": "declared",
       "parityScope": "four-language",
       "approvalSource": {
         "kind": "feature-specification",
-        "path": "specs/012-vendor-extension-registry/spec.md",
+        "path": "specs/004-generic-ttlv-model/spec.md",
         "status": "Approved",
-        "evidence": "**Status**: Approved for implementation under the maintainer's standing direct authorization to execute the complete KMIPKit plan without further approval requests."
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`."
       },
       "languageMappings": {
         "rust": {
@@ -25264,19 +25396,26 @@
       "packageId": "java-kmipkit",
       "kind": "java-member",
       "exportName": "org.kmipkit.ttlv.TtlvValue.DateTime",
-      "capabilityId": "vendor_extension_registry",
+      "capabilityId": "generic_ttlv_model",
       "requirementIds": [
-        "KMIPKIT-0012-FR-005",
-        "KMIPKIT-0012-FR-007",
-        "KMIPKIT-0012-FR-010"
+        "KMIPKIT-0004-FR-001",
+        "KMIPKIT-0004-FR-004",
+        "KMIPKIT-0004-FR-005",
+        "KMIPKIT-0004-FR-007",
+        "KMIPKIT-0004-FR-008",
+        "KMIPKIT-0004-FR-009",
+        "KMIPKIT-0004-FR-010",
+        "KMIPKIT-0004-FR-012",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-021"
       ],
       "declarationState": "declared",
       "parityScope": "four-language",
       "approvalSource": {
         "kind": "feature-specification",
-        "path": "specs/012-vendor-extension-registry/spec.md",
+        "path": "specs/004-generic-ttlv-model/spec.md",
         "status": "Approved",
-        "evidence": "**Status**: Approved for implementation under the maintainer's standing direct authorization to execute the complete KMIPKit plan without further approval requests."
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`."
       },
       "languageMappings": {
         "rust": {
@@ -25302,19 +25441,26 @@
       "packageId": "python-kmipkit",
       "kind": "python-export",
       "exportName": "kmipkit.ttlv.ttlv_value_date_time",
-      "capabilityId": "vendor_extension_registry",
+      "capabilityId": "generic_ttlv_model",
       "requirementIds": [
-        "KMIPKIT-0012-FR-005",
-        "KMIPKIT-0012-FR-007",
-        "KMIPKIT-0012-FR-010"
+        "KMIPKIT-0004-FR-001",
+        "KMIPKIT-0004-FR-004",
+        "KMIPKIT-0004-FR-005",
+        "KMIPKIT-0004-FR-007",
+        "KMIPKIT-0004-FR-008",
+        "KMIPKIT-0004-FR-009",
+        "KMIPKIT-0004-FR-010",
+        "KMIPKIT-0004-FR-012",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-021"
       ],
       "declarationState": "declared",
       "parityScope": "four-language",
       "approvalSource": {
         "kind": "feature-specification",
-        "path": "specs/012-vendor-extension-registry/spec.md",
+        "path": "specs/004-generic-ttlv-model/spec.md",
         "status": "Approved",
-        "evidence": "**Status**: Approved for implementation under the maintainer's standing direct authorization to execute the complete KMIPKit plan without further approval requests."
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`."
       },
       "languageMappings": {
         "rust": {
@@ -25340,19 +25486,26 @@
       "packageId": "rust-kmipkit-ttlv",
       "kind": "associated-item",
       "exportName": "kmipkit_ttlv::Value::date_time",
-      "capabilityId": "vendor_extension_registry",
+      "capabilityId": "generic_ttlv_model",
       "requirementIds": [
-        "KMIPKIT-0012-FR-005",
-        "KMIPKIT-0012-FR-007",
-        "KMIPKIT-0012-FR-010"
+        "KMIPKIT-0004-FR-001",
+        "KMIPKIT-0004-FR-004",
+        "KMIPKIT-0004-FR-005",
+        "KMIPKIT-0004-FR-007",
+        "KMIPKIT-0004-FR-008",
+        "KMIPKIT-0004-FR-009",
+        "KMIPKIT-0004-FR-010",
+        "KMIPKIT-0004-FR-012",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-021"
       ],
       "declarationState": "declared",
       "parityScope": "four-language",
       "approvalSource": {
         "kind": "feature-specification",
-        "path": "specs/012-vendor-extension-registry/spec.md",
+        "path": "specs/004-generic-ttlv-model/spec.md",
         "status": "Approved",
-        "evidence": "**Status**: Approved for implementation under the maintainer's standing direct authorization to execute the complete KMIPKit plan without further approval requests."
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`."
       },
       "languageMappings": {
         "rust": {
@@ -25378,19 +25531,26 @@
       "packageId": "c-kmipkit",
       "kind": "c-symbol",
       "exportName": "kmipkit_ttlv_value_date_time_extended",
-      "capabilityId": "vendor_extension_registry",
+      "capabilityId": "generic_ttlv_model",
       "requirementIds": [
-        "KMIPKIT-0012-FR-005",
-        "KMIPKIT-0012-FR-007",
-        "KMIPKIT-0012-FR-010"
+        "KMIPKIT-0004-FR-001",
+        "KMIPKIT-0004-FR-004",
+        "KMIPKIT-0004-FR-005",
+        "KMIPKIT-0004-FR-007",
+        "KMIPKIT-0004-FR-008",
+        "KMIPKIT-0004-FR-009",
+        "KMIPKIT-0004-FR-010",
+        "KMIPKIT-0004-FR-012",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-021"
       ],
       "declarationState": "declared",
       "parityScope": "four-language",
       "approvalSource": {
         "kind": "feature-specification",
-        "path": "specs/012-vendor-extension-registry/spec.md",
+        "path": "specs/004-generic-ttlv-model/spec.md",
         "status": "Approved",
-        "evidence": "**Status**: Approved for implementation under the maintainer's standing direct authorization to execute the complete KMIPKit plan without further approval requests."
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`."
       },
       "languageMappings": {
         "rust": {
@@ -25416,19 +25576,26 @@
       "packageId": "java-kmipkit",
       "kind": "java-member",
       "exportName": "org.kmipkit.ttlv.TtlvValue.DateTimeExtended",
-      "capabilityId": "vendor_extension_registry",
+      "capabilityId": "generic_ttlv_model",
       "requirementIds": [
-        "KMIPKIT-0012-FR-005",
-        "KMIPKIT-0012-FR-007",
-        "KMIPKIT-0012-FR-010"
+        "KMIPKIT-0004-FR-001",
+        "KMIPKIT-0004-FR-004",
+        "KMIPKIT-0004-FR-005",
+        "KMIPKIT-0004-FR-007",
+        "KMIPKIT-0004-FR-008",
+        "KMIPKIT-0004-FR-009",
+        "KMIPKIT-0004-FR-010",
+        "KMIPKIT-0004-FR-012",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-021"
       ],
       "declarationState": "declared",
       "parityScope": "four-language",
       "approvalSource": {
         "kind": "feature-specification",
-        "path": "specs/012-vendor-extension-registry/spec.md",
+        "path": "specs/004-generic-ttlv-model/spec.md",
         "status": "Approved",
-        "evidence": "**Status**: Approved for implementation under the maintainer's standing direct authorization to execute the complete KMIPKit plan without further approval requests."
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`."
       },
       "languageMappings": {
         "rust": {
@@ -25454,19 +25621,26 @@
       "packageId": "python-kmipkit",
       "kind": "python-export",
       "exportName": "kmipkit.ttlv.ttlv_value_date_time_extended",
-      "capabilityId": "vendor_extension_registry",
+      "capabilityId": "generic_ttlv_model",
       "requirementIds": [
-        "KMIPKIT-0012-FR-005",
-        "KMIPKIT-0012-FR-007",
-        "KMIPKIT-0012-FR-010"
+        "KMIPKIT-0004-FR-001",
+        "KMIPKIT-0004-FR-004",
+        "KMIPKIT-0004-FR-005",
+        "KMIPKIT-0004-FR-007",
+        "KMIPKIT-0004-FR-008",
+        "KMIPKIT-0004-FR-009",
+        "KMIPKIT-0004-FR-010",
+        "KMIPKIT-0004-FR-012",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-021"
       ],
       "declarationState": "declared",
       "parityScope": "four-language",
       "approvalSource": {
         "kind": "feature-specification",
-        "path": "specs/012-vendor-extension-registry/spec.md",
+        "path": "specs/004-generic-ttlv-model/spec.md",
         "status": "Approved",
-        "evidence": "**Status**: Approved for implementation under the maintainer's standing direct authorization to execute the complete KMIPKit plan without further approval requests."
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`."
       },
       "languageMappings": {
         "rust": {
@@ -25492,19 +25666,26 @@
       "packageId": "rust-kmipkit-ttlv",
       "kind": "associated-item",
       "exportName": "kmipkit_ttlv::Value::date_time_extended",
-      "capabilityId": "vendor_extension_registry",
+      "capabilityId": "generic_ttlv_model",
       "requirementIds": [
-        "KMIPKIT-0012-FR-005",
-        "KMIPKIT-0012-FR-007",
-        "KMIPKIT-0012-FR-010"
+        "KMIPKIT-0004-FR-001",
+        "KMIPKIT-0004-FR-004",
+        "KMIPKIT-0004-FR-005",
+        "KMIPKIT-0004-FR-007",
+        "KMIPKIT-0004-FR-008",
+        "KMIPKIT-0004-FR-009",
+        "KMIPKIT-0004-FR-010",
+        "KMIPKIT-0004-FR-012",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-021"
       ],
       "declarationState": "declared",
       "parityScope": "four-language",
       "approvalSource": {
         "kind": "feature-specification",
-        "path": "specs/012-vendor-extension-registry/spec.md",
+        "path": "specs/004-generic-ttlv-model/spec.md",
         "status": "Approved",
-        "evidence": "**Status**: Approved for implementation under the maintainer's standing direct authorization to execute the complete KMIPKit plan without further approval requests."
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`."
       },
       "languageMappings": {
         "rust": {
@@ -25530,19 +25711,26 @@
       "packageId": "c-kmipkit",
       "kind": "c-symbol",
       "exportName": "kmipkit_ttlv_value_enumeration",
-      "capabilityId": "vendor_extension_registry",
+      "capabilityId": "generic_ttlv_model",
       "requirementIds": [
-        "KMIPKIT-0012-FR-005",
-        "KMIPKIT-0012-FR-007",
-        "KMIPKIT-0012-FR-010"
+        "KMIPKIT-0004-FR-001",
+        "KMIPKIT-0004-FR-004",
+        "KMIPKIT-0004-FR-005",
+        "KMIPKIT-0004-FR-007",
+        "KMIPKIT-0004-FR-008",
+        "KMIPKIT-0004-FR-009",
+        "KMIPKIT-0004-FR-010",
+        "KMIPKIT-0004-FR-012",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-021"
       ],
       "declarationState": "declared",
       "parityScope": "four-language",
       "approvalSource": {
         "kind": "feature-specification",
-        "path": "specs/012-vendor-extension-registry/spec.md",
+        "path": "specs/004-generic-ttlv-model/spec.md",
         "status": "Approved",
-        "evidence": "**Status**: Approved for implementation under the maintainer's standing direct authorization to execute the complete KMIPKit plan without further approval requests."
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`."
       },
       "languageMappings": {
         "rust": {
@@ -25568,19 +25756,26 @@
       "packageId": "java-kmipkit",
       "kind": "java-member",
       "exportName": "org.kmipkit.ttlv.TtlvValue.Enumeration",
-      "capabilityId": "vendor_extension_registry",
+      "capabilityId": "generic_ttlv_model",
       "requirementIds": [
-        "KMIPKIT-0012-FR-005",
-        "KMIPKIT-0012-FR-007",
-        "KMIPKIT-0012-FR-010"
+        "KMIPKIT-0004-FR-001",
+        "KMIPKIT-0004-FR-004",
+        "KMIPKIT-0004-FR-005",
+        "KMIPKIT-0004-FR-007",
+        "KMIPKIT-0004-FR-008",
+        "KMIPKIT-0004-FR-009",
+        "KMIPKIT-0004-FR-010",
+        "KMIPKIT-0004-FR-012",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-021"
       ],
       "declarationState": "declared",
       "parityScope": "four-language",
       "approvalSource": {
         "kind": "feature-specification",
-        "path": "specs/012-vendor-extension-registry/spec.md",
+        "path": "specs/004-generic-ttlv-model/spec.md",
         "status": "Approved",
-        "evidence": "**Status**: Approved for implementation under the maintainer's standing direct authorization to execute the complete KMIPKit plan without further approval requests."
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`."
       },
       "languageMappings": {
         "rust": {
@@ -25606,19 +25801,26 @@
       "packageId": "python-kmipkit",
       "kind": "python-export",
       "exportName": "kmipkit.ttlv.ttlv_value_enumeration",
-      "capabilityId": "vendor_extension_registry",
+      "capabilityId": "generic_ttlv_model",
       "requirementIds": [
-        "KMIPKIT-0012-FR-005",
-        "KMIPKIT-0012-FR-007",
-        "KMIPKIT-0012-FR-010"
+        "KMIPKIT-0004-FR-001",
+        "KMIPKIT-0004-FR-004",
+        "KMIPKIT-0004-FR-005",
+        "KMIPKIT-0004-FR-007",
+        "KMIPKIT-0004-FR-008",
+        "KMIPKIT-0004-FR-009",
+        "KMIPKIT-0004-FR-010",
+        "KMIPKIT-0004-FR-012",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-021"
       ],
       "declarationState": "declared",
       "parityScope": "four-language",
       "approvalSource": {
         "kind": "feature-specification",
-        "path": "specs/012-vendor-extension-registry/spec.md",
+        "path": "specs/004-generic-ttlv-model/spec.md",
         "status": "Approved",
-        "evidence": "**Status**: Approved for implementation under the maintainer's standing direct authorization to execute the complete KMIPKit plan without further approval requests."
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`."
       },
       "languageMappings": {
         "rust": {
@@ -25644,19 +25846,26 @@
       "packageId": "rust-kmipkit-ttlv",
       "kind": "associated-item",
       "exportName": "kmipkit_ttlv::Value::enumeration",
-      "capabilityId": "vendor_extension_registry",
+      "capabilityId": "generic_ttlv_model",
       "requirementIds": [
-        "KMIPKIT-0012-FR-005",
-        "KMIPKIT-0012-FR-007",
-        "KMIPKIT-0012-FR-010"
+        "KMIPKIT-0004-FR-001",
+        "KMIPKIT-0004-FR-004",
+        "KMIPKIT-0004-FR-005",
+        "KMIPKIT-0004-FR-007",
+        "KMIPKIT-0004-FR-008",
+        "KMIPKIT-0004-FR-009",
+        "KMIPKIT-0004-FR-010",
+        "KMIPKIT-0004-FR-012",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-021"
       ],
       "declarationState": "declared",
       "parityScope": "four-language",
       "approvalSource": {
         "kind": "feature-specification",
-        "path": "specs/012-vendor-extension-registry/spec.md",
+        "path": "specs/004-generic-ttlv-model/spec.md",
         "status": "Approved",
-        "evidence": "**Status**: Approved for implementation under the maintainer's standing direct authorization to execute the complete KMIPKit plan without further approval requests."
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`."
       },
       "languageMappings": {
         "rust": {
@@ -25682,19 +25891,26 @@
       "packageId": "c-kmipkit",
       "kind": "c-symbol",
       "exportName": "kmipkit_ttlv_value_integer",
-      "capabilityId": "vendor_extension_registry",
+      "capabilityId": "generic_ttlv_model",
       "requirementIds": [
-        "KMIPKIT-0012-FR-005",
-        "KMIPKIT-0012-FR-007",
-        "KMIPKIT-0012-FR-010"
+        "KMIPKIT-0004-FR-001",
+        "KMIPKIT-0004-FR-004",
+        "KMIPKIT-0004-FR-005",
+        "KMIPKIT-0004-FR-007",
+        "KMIPKIT-0004-FR-008",
+        "KMIPKIT-0004-FR-009",
+        "KMIPKIT-0004-FR-010",
+        "KMIPKIT-0004-FR-012",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-021"
       ],
       "declarationState": "declared",
       "parityScope": "four-language",
       "approvalSource": {
         "kind": "feature-specification",
-        "path": "specs/012-vendor-extension-registry/spec.md",
+        "path": "specs/004-generic-ttlv-model/spec.md",
         "status": "Approved",
-        "evidence": "**Status**: Approved for implementation under the maintainer's standing direct authorization to execute the complete KMIPKit plan without further approval requests."
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`."
       },
       "languageMappings": {
         "rust": {
@@ -25720,19 +25936,26 @@
       "packageId": "java-kmipkit",
       "kind": "java-member",
       "exportName": "org.kmipkit.ttlv.TtlvValue.Integer",
-      "capabilityId": "vendor_extension_registry",
+      "capabilityId": "generic_ttlv_model",
       "requirementIds": [
-        "KMIPKIT-0012-FR-005",
-        "KMIPKIT-0012-FR-007",
-        "KMIPKIT-0012-FR-010"
+        "KMIPKIT-0004-FR-001",
+        "KMIPKIT-0004-FR-004",
+        "KMIPKIT-0004-FR-005",
+        "KMIPKIT-0004-FR-007",
+        "KMIPKIT-0004-FR-008",
+        "KMIPKIT-0004-FR-009",
+        "KMIPKIT-0004-FR-010",
+        "KMIPKIT-0004-FR-012",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-021"
       ],
       "declarationState": "declared",
       "parityScope": "four-language",
       "approvalSource": {
         "kind": "feature-specification",
-        "path": "specs/012-vendor-extension-registry/spec.md",
+        "path": "specs/004-generic-ttlv-model/spec.md",
         "status": "Approved",
-        "evidence": "**Status**: Approved for implementation under the maintainer's standing direct authorization to execute the complete KMIPKit plan without further approval requests."
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`."
       },
       "languageMappings": {
         "rust": {
@@ -25758,19 +25981,26 @@
       "packageId": "python-kmipkit",
       "kind": "python-export",
       "exportName": "kmipkit.ttlv.ttlv_value_integer",
-      "capabilityId": "vendor_extension_registry",
+      "capabilityId": "generic_ttlv_model",
       "requirementIds": [
-        "KMIPKIT-0012-FR-005",
-        "KMIPKIT-0012-FR-007",
-        "KMIPKIT-0012-FR-010"
+        "KMIPKIT-0004-FR-001",
+        "KMIPKIT-0004-FR-004",
+        "KMIPKIT-0004-FR-005",
+        "KMIPKIT-0004-FR-007",
+        "KMIPKIT-0004-FR-008",
+        "KMIPKIT-0004-FR-009",
+        "KMIPKIT-0004-FR-010",
+        "KMIPKIT-0004-FR-012",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-021"
       ],
       "declarationState": "declared",
       "parityScope": "four-language",
       "approvalSource": {
         "kind": "feature-specification",
-        "path": "specs/012-vendor-extension-registry/spec.md",
+        "path": "specs/004-generic-ttlv-model/spec.md",
         "status": "Approved",
-        "evidence": "**Status**: Approved for implementation under the maintainer's standing direct authorization to execute the complete KMIPKit plan without further approval requests."
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`."
       },
       "languageMappings": {
         "rust": {
@@ -25796,19 +26026,26 @@
       "packageId": "rust-kmipkit-ttlv",
       "kind": "associated-item",
       "exportName": "kmipkit_ttlv::Value::integer",
-      "capabilityId": "vendor_extension_registry",
+      "capabilityId": "generic_ttlv_model",
       "requirementIds": [
-        "KMIPKIT-0012-FR-005",
-        "KMIPKIT-0012-FR-007",
-        "KMIPKIT-0012-FR-010"
+        "KMIPKIT-0004-FR-001",
+        "KMIPKIT-0004-FR-004",
+        "KMIPKIT-0004-FR-005",
+        "KMIPKIT-0004-FR-007",
+        "KMIPKIT-0004-FR-008",
+        "KMIPKIT-0004-FR-009",
+        "KMIPKIT-0004-FR-010",
+        "KMIPKIT-0004-FR-012",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-021"
       ],
       "declarationState": "declared",
       "parityScope": "four-language",
       "approvalSource": {
         "kind": "feature-specification",
-        "path": "specs/012-vendor-extension-registry/spec.md",
+        "path": "specs/004-generic-ttlv-model/spec.md",
         "status": "Approved",
-        "evidence": "**Status**: Approved for implementation under the maintainer's standing direct authorization to execute the complete KMIPKit plan without further approval requests."
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`."
       },
       "languageMappings": {
         "rust": {
@@ -25834,19 +26071,26 @@
       "packageId": "c-kmipkit",
       "kind": "c-symbol",
       "exportName": "kmipkit_ttlv_value_interval",
-      "capabilityId": "vendor_extension_registry",
+      "capabilityId": "generic_ttlv_model",
       "requirementIds": [
-        "KMIPKIT-0012-FR-005",
-        "KMIPKIT-0012-FR-007",
-        "KMIPKIT-0012-FR-010"
+        "KMIPKIT-0004-FR-001",
+        "KMIPKIT-0004-FR-004",
+        "KMIPKIT-0004-FR-005",
+        "KMIPKIT-0004-FR-007",
+        "KMIPKIT-0004-FR-008",
+        "KMIPKIT-0004-FR-009",
+        "KMIPKIT-0004-FR-010",
+        "KMIPKIT-0004-FR-012",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-021"
       ],
       "declarationState": "declared",
       "parityScope": "four-language",
       "approvalSource": {
         "kind": "feature-specification",
-        "path": "specs/012-vendor-extension-registry/spec.md",
+        "path": "specs/004-generic-ttlv-model/spec.md",
         "status": "Approved",
-        "evidence": "**Status**: Approved for implementation under the maintainer's standing direct authorization to execute the complete KMIPKit plan without further approval requests."
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`."
       },
       "languageMappings": {
         "rust": {
@@ -25872,19 +26116,26 @@
       "packageId": "java-kmipkit",
       "kind": "java-member",
       "exportName": "org.kmipkit.ttlv.TtlvValue.Interval",
-      "capabilityId": "vendor_extension_registry",
+      "capabilityId": "generic_ttlv_model",
       "requirementIds": [
-        "KMIPKIT-0012-FR-005",
-        "KMIPKIT-0012-FR-007",
-        "KMIPKIT-0012-FR-010"
+        "KMIPKIT-0004-FR-001",
+        "KMIPKIT-0004-FR-004",
+        "KMIPKIT-0004-FR-005",
+        "KMIPKIT-0004-FR-007",
+        "KMIPKIT-0004-FR-008",
+        "KMIPKIT-0004-FR-009",
+        "KMIPKIT-0004-FR-010",
+        "KMIPKIT-0004-FR-012",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-021"
       ],
       "declarationState": "declared",
       "parityScope": "four-language",
       "approvalSource": {
         "kind": "feature-specification",
-        "path": "specs/012-vendor-extension-registry/spec.md",
+        "path": "specs/004-generic-ttlv-model/spec.md",
         "status": "Approved",
-        "evidence": "**Status**: Approved for implementation under the maintainer's standing direct authorization to execute the complete KMIPKit plan without further approval requests."
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`."
       },
       "languageMappings": {
         "rust": {
@@ -25910,19 +26161,26 @@
       "packageId": "python-kmipkit",
       "kind": "python-export",
       "exportName": "kmipkit.ttlv.ttlv_value_interval",
-      "capabilityId": "vendor_extension_registry",
+      "capabilityId": "generic_ttlv_model",
       "requirementIds": [
-        "KMIPKIT-0012-FR-005",
-        "KMIPKIT-0012-FR-007",
-        "KMIPKIT-0012-FR-010"
+        "KMIPKIT-0004-FR-001",
+        "KMIPKIT-0004-FR-004",
+        "KMIPKIT-0004-FR-005",
+        "KMIPKIT-0004-FR-007",
+        "KMIPKIT-0004-FR-008",
+        "KMIPKIT-0004-FR-009",
+        "KMIPKIT-0004-FR-010",
+        "KMIPKIT-0004-FR-012",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-021"
       ],
       "declarationState": "declared",
       "parityScope": "four-language",
       "approvalSource": {
         "kind": "feature-specification",
-        "path": "specs/012-vendor-extension-registry/spec.md",
+        "path": "specs/004-generic-ttlv-model/spec.md",
         "status": "Approved",
-        "evidence": "**Status**: Approved for implementation under the maintainer's standing direct authorization to execute the complete KMIPKit plan without further approval requests."
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`."
       },
       "languageMappings": {
         "rust": {
@@ -25948,19 +26206,26 @@
       "packageId": "rust-kmipkit-ttlv",
       "kind": "associated-item",
       "exportName": "kmipkit_ttlv::Value::interval",
-      "capabilityId": "vendor_extension_registry",
+      "capabilityId": "generic_ttlv_model",
       "requirementIds": [
-        "KMIPKIT-0012-FR-005",
-        "KMIPKIT-0012-FR-007",
-        "KMIPKIT-0012-FR-010"
+        "KMIPKIT-0004-FR-001",
+        "KMIPKIT-0004-FR-004",
+        "KMIPKIT-0004-FR-005",
+        "KMIPKIT-0004-FR-007",
+        "KMIPKIT-0004-FR-008",
+        "KMIPKIT-0004-FR-009",
+        "KMIPKIT-0004-FR-010",
+        "KMIPKIT-0004-FR-012",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-021"
       ],
       "declarationState": "declared",
       "parityScope": "four-language",
       "approvalSource": {
         "kind": "feature-specification",
-        "path": "specs/012-vendor-extension-registry/spec.md",
+        "path": "specs/004-generic-ttlv-model/spec.md",
         "status": "Approved",
-        "evidence": "**Status**: Approved for implementation under the maintainer's standing direct authorization to execute the complete KMIPKit plan without further approval requests."
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`."
       },
       "languageMappings": {
         "rust": {
@@ -25986,19 +26251,26 @@
       "packageId": "c-kmipkit",
       "kind": "c-symbol",
       "exportName": "kmipkit_ttlv_value_long_integer",
-      "capabilityId": "vendor_extension_registry",
+      "capabilityId": "generic_ttlv_model",
       "requirementIds": [
-        "KMIPKIT-0012-FR-005",
-        "KMIPKIT-0012-FR-007",
-        "KMIPKIT-0012-FR-010"
+        "KMIPKIT-0004-FR-001",
+        "KMIPKIT-0004-FR-004",
+        "KMIPKIT-0004-FR-005",
+        "KMIPKIT-0004-FR-007",
+        "KMIPKIT-0004-FR-008",
+        "KMIPKIT-0004-FR-009",
+        "KMIPKIT-0004-FR-010",
+        "KMIPKIT-0004-FR-012",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-021"
       ],
       "declarationState": "declared",
       "parityScope": "four-language",
       "approvalSource": {
         "kind": "feature-specification",
-        "path": "specs/012-vendor-extension-registry/spec.md",
+        "path": "specs/004-generic-ttlv-model/spec.md",
         "status": "Approved",
-        "evidence": "**Status**: Approved for implementation under the maintainer's standing direct authorization to execute the complete KMIPKit plan without further approval requests."
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`."
       },
       "languageMappings": {
         "rust": {
@@ -26024,19 +26296,26 @@
       "packageId": "java-kmipkit",
       "kind": "java-member",
       "exportName": "org.kmipkit.ttlv.TtlvValue.LongInteger",
-      "capabilityId": "vendor_extension_registry",
+      "capabilityId": "generic_ttlv_model",
       "requirementIds": [
-        "KMIPKIT-0012-FR-005",
-        "KMIPKIT-0012-FR-007",
-        "KMIPKIT-0012-FR-010"
+        "KMIPKIT-0004-FR-001",
+        "KMIPKIT-0004-FR-004",
+        "KMIPKIT-0004-FR-005",
+        "KMIPKIT-0004-FR-007",
+        "KMIPKIT-0004-FR-008",
+        "KMIPKIT-0004-FR-009",
+        "KMIPKIT-0004-FR-010",
+        "KMIPKIT-0004-FR-012",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-021"
       ],
       "declarationState": "declared",
       "parityScope": "four-language",
       "approvalSource": {
         "kind": "feature-specification",
-        "path": "specs/012-vendor-extension-registry/spec.md",
+        "path": "specs/004-generic-ttlv-model/spec.md",
         "status": "Approved",
-        "evidence": "**Status**: Approved for implementation under the maintainer's standing direct authorization to execute the complete KMIPKit plan without further approval requests."
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`."
       },
       "languageMappings": {
         "rust": {
@@ -26062,19 +26341,26 @@
       "packageId": "python-kmipkit",
       "kind": "python-export",
       "exportName": "kmipkit.ttlv.ttlv_value_long_integer",
-      "capabilityId": "vendor_extension_registry",
+      "capabilityId": "generic_ttlv_model",
       "requirementIds": [
-        "KMIPKIT-0012-FR-005",
-        "KMIPKIT-0012-FR-007",
-        "KMIPKIT-0012-FR-010"
+        "KMIPKIT-0004-FR-001",
+        "KMIPKIT-0004-FR-004",
+        "KMIPKIT-0004-FR-005",
+        "KMIPKIT-0004-FR-007",
+        "KMIPKIT-0004-FR-008",
+        "KMIPKIT-0004-FR-009",
+        "KMIPKIT-0004-FR-010",
+        "KMIPKIT-0004-FR-012",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-021"
       ],
       "declarationState": "declared",
       "parityScope": "four-language",
       "approvalSource": {
         "kind": "feature-specification",
-        "path": "specs/012-vendor-extension-registry/spec.md",
+        "path": "specs/004-generic-ttlv-model/spec.md",
         "status": "Approved",
-        "evidence": "**Status**: Approved for implementation under the maintainer's standing direct authorization to execute the complete KMIPKit plan without further approval requests."
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`."
       },
       "languageMappings": {
         "rust": {
@@ -26100,19 +26386,26 @@
       "packageId": "rust-kmipkit-ttlv",
       "kind": "associated-item",
       "exportName": "kmipkit_ttlv::Value::long_integer",
-      "capabilityId": "vendor_extension_registry",
+      "capabilityId": "generic_ttlv_model",
       "requirementIds": [
-        "KMIPKIT-0012-FR-005",
-        "KMIPKIT-0012-FR-007",
-        "KMIPKIT-0012-FR-010"
+        "KMIPKIT-0004-FR-001",
+        "KMIPKIT-0004-FR-004",
+        "KMIPKIT-0004-FR-005",
+        "KMIPKIT-0004-FR-007",
+        "KMIPKIT-0004-FR-008",
+        "KMIPKIT-0004-FR-009",
+        "KMIPKIT-0004-FR-010",
+        "KMIPKIT-0004-FR-012",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-021"
       ],
       "declarationState": "declared",
       "parityScope": "four-language",
       "approvalSource": {
         "kind": "feature-specification",
-        "path": "specs/012-vendor-extension-registry/spec.md",
+        "path": "specs/004-generic-ttlv-model/spec.md",
         "status": "Approved",
-        "evidence": "**Status**: Approved for implementation under the maintainer's standing direct authorization to execute the complete KMIPKit plan without further approval requests."
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`."
       },
       "languageMappings": {
         "rust": {
@@ -55998,27 +56291,134 @@
   ],
   "capabilities": [
     {
-      "capabilityId": "vendor_extension_registry",
+      "capabilityId": "generic_ttlv_model",
       "requirementIds": [
-        "KMIPKIT-0012-FR-001",
-        "KMIPKIT-0012-FR-002",
-        "KMIPKIT-0012-FR-003",
-        "KMIPKIT-0012-FR-004",
-        "KMIPKIT-0012-FR-005",
-        "KMIPKIT-0012-FR-006",
-        "KMIPKIT-0012-FR-007",
-        "KMIPKIT-0012-FR-008",
-        "KMIPKIT-0012-FR-009",
-        "KMIPKIT-0012-FR-010",
-        "KMIPKIT-0012-FR-011",
-        "KMIPKIT-0012-FR-012",
-        "KMIPKIT-0043-FR-001",
-        "KMIPKIT-0043-FR-004"
+        "KMIPKIT-0004-FR-001",
+        "KMIPKIT-0004-FR-002",
+        "KMIPKIT-0004-FR-003",
+        "KMIPKIT-0004-FR-004",
+        "KMIPKIT-0004-FR-005",
+        "KMIPKIT-0004-FR-006",
+        "KMIPKIT-0004-FR-007",
+        "KMIPKIT-0004-FR-008",
+        "KMIPKIT-0004-FR-009",
+        "KMIPKIT-0004-FR-010",
+        "KMIPKIT-0004-FR-012",
+        "KMIPKIT-0004-FR-014",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-021"
       ],
-      "capabilityState": "blocked",
+      "capabilityState": "declared",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0012",
-      "blockedReason": "The full release inventory is still reconciling the published Rust paths and language-level exports before claiming complete API parity."
+      "ownerSpecId": "KMIPKIT-0004",
+      "approvalEvidence": {
+        "kind": "feature-specification",
+        "path": "specs/004-generic-ttlv-model/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`."
+      },
+      "mappings": {
+        "rust": [
+          "kmipkit_ttlv::Item",
+          "kmipkit_ttlv::Item (Drop)",
+          "kmipkit_ttlv::ItemType",
+          "kmipkit_ttlv::RawTag",
+          "kmipkit_ttlv::RawTag (Drop)",
+          "kmipkit_ttlv::RawTag::new",
+          "kmipkit_ttlv::RawTag::raw",
+          "kmipkit_ttlv::RawTag::try_checked",
+          "kmipkit_ttlv::Structure",
+          "kmipkit_ttlv::Structure (Drop)",
+          "kmipkit_ttlv::Structure::new",
+          "kmipkit_ttlv::Tag",
+          "kmipkit_ttlv::Tag (Drop)",
+          "kmipkit_ttlv::Tag::raw",
+          "kmipkit_ttlv::Value",
+          "kmipkit_ttlv::Value (Drop)",
+          "kmipkit_ttlv::Value::boolean",
+          "kmipkit_ttlv::Value::date_time",
+          "kmipkit_ttlv::Value::date_time_extended",
+          "kmipkit_ttlv::Value::enumeration",
+          "kmipkit_ttlv::Value::integer",
+          "kmipkit_ttlv::Value::interval",
+          "kmipkit_ttlv::Value::long_integer"
+        ],
+        "c": [
+          "kmipkit_raw_tag_release",
+          "kmipkit_raw_tag_t",
+          "kmipkit_tag_release",
+          "kmipkit_tag_t",
+          "kmipkit_ttlv_item_release",
+          "kmipkit_ttlv_item_t",
+          "kmipkit_ttlv_item_type_t",
+          "kmipkit_ttlv_raw_tag_create",
+          "kmipkit_ttlv_raw_tag_try_checked",
+          "kmipkit_ttlv_raw_tag_value",
+          "kmipkit_ttlv_structure_create",
+          "kmipkit_ttlv_structure_release",
+          "kmipkit_ttlv_structure_t",
+          "kmipkit_ttlv_tag_value",
+          "kmipkit_ttlv_value_boolean",
+          "kmipkit_ttlv_value_date_time",
+          "kmipkit_ttlv_value_date_time_extended",
+          "kmipkit_ttlv_value_enumeration",
+          "kmipkit_ttlv_value_integer",
+          "kmipkit_ttlv_value_interval",
+          "kmipkit_ttlv_value_long_integer",
+          "kmipkit_ttlv_value_release",
+          "kmipkit_ttlv_value_t"
+        ],
+        "java": [
+          "org.kmipkit.ttlv.RawTag",
+          "org.kmipkit.ttlv.RawTag.checked",
+          "org.kmipkit.ttlv.RawTag.close",
+          "org.kmipkit.ttlv.RawTag.fromRaw",
+          "org.kmipkit.ttlv.RawTag.raw",
+          "org.kmipkit.ttlv.Tag",
+          "org.kmipkit.ttlv.Tag.close",
+          "org.kmipkit.ttlv.Tag.raw",
+          "org.kmipkit.ttlv.TtlvItem",
+          "org.kmipkit.ttlv.TtlvItem.close",
+          "org.kmipkit.ttlv.TtlvItemType",
+          "org.kmipkit.ttlv.TtlvStructure",
+          "org.kmipkit.ttlv.TtlvStructure.close",
+          "org.kmipkit.ttlv.TtlvStructure.create",
+          "org.kmipkit.ttlv.TtlvValue",
+          "org.kmipkit.ttlv.TtlvValue.Boolean",
+          "org.kmipkit.ttlv.TtlvValue.DateTime",
+          "org.kmipkit.ttlv.TtlvValue.DateTimeExtended",
+          "org.kmipkit.ttlv.TtlvValue.Enumeration",
+          "org.kmipkit.ttlv.TtlvValue.Integer",
+          "org.kmipkit.ttlv.TtlvValue.Interval",
+          "org.kmipkit.ttlv.TtlvValue.LongInteger",
+          "org.kmipkit.ttlv.TtlvValue.close"
+        ],
+        "python": [
+          "kmipkit.ttlv.ItemType",
+          "kmipkit.ttlv.RawTag",
+          "kmipkit.ttlv.RawTag.close",
+          "kmipkit.ttlv.Structure",
+          "kmipkit.ttlv.Structure.close",
+          "kmipkit.ttlv.Tag",
+          "kmipkit.ttlv.Tag.close",
+          "kmipkit.ttlv.TtlvItem",
+          "kmipkit.ttlv.TtlvItem.close",
+          "kmipkit.ttlv.Value",
+          "kmipkit.ttlv.Value.close",
+          "kmipkit.ttlv.raw_tag_from_raw",
+          "kmipkit.ttlv.raw_tag_try_checked",
+          "kmipkit.ttlv.raw_tag_value",
+          "kmipkit.ttlv.tag_value",
+          "kmipkit.ttlv.ttlv_structure_create",
+          "kmipkit.ttlv.ttlv_value_boolean",
+          "kmipkit.ttlv.ttlv_value_date_time",
+          "kmipkit.ttlv.ttlv_value_date_time_extended",
+          "kmipkit.ttlv.ttlv_value_enumeration",
+          "kmipkit.ttlv.ttlv_value_integer",
+          "kmipkit.ttlv.ttlv_value_interval",
+          "kmipkit.ttlv.ttlv_value_long_integer"
+        ]
+      }
     },
     {
       "capabilityId": "public_binding_surface",
@@ -56051,6 +56451,84 @@
           "kmipkit_transport::TransportResponse"
         ]
       }
+    },
+    {
+      "capabilityId": "ttlv_wire_codec",
+      "requirementIds": [
+        "KMIPKIT-0005-FR-007",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-021"
+      ],
+      "capabilityState": "declared",
+      "parityScope": "four-language",
+      "ownerSpecId": "KMIPKIT-0005",
+      "approvalEvidence": {
+        "kind": "feature-specification",
+        "path": "specs/005-ttlv-wire-codec/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved — the maintainer delegated execution and approval of this plan without further manual intervention in the 2026-10-05 Codex conversation. The exact approved specification and boundary revisions, decisions, and limits of that authorization are recorded in [approval-record.md](approval-record.md)."
+      },
+      "mappings": {
+        "rust": [
+          "kmipkit_ttlv::codec::CodecLimits",
+          "kmipkit_ttlv::codec::CodecLimits (Drop)",
+          "kmipkit_ttlv::codec::CodecLimits::defaults",
+          "kmipkit_ttlv::codec::CodecLimits::max_elements",
+          "kmipkit_ttlv::codec::CodecLimits::max_message_bytes",
+          "kmipkit_ttlv::codec::CodecLimits::max_structure_depth",
+          "kmipkit_ttlv::codec::CodecLimits::new"
+        ],
+        "c": [
+          "kmipkit_codec_limits_create",
+          "kmipkit_codec_limits_defaults",
+          "kmipkit_codec_limits_max_elements",
+          "kmipkit_codec_limits_max_message_bytes",
+          "kmipkit_codec_limits_max_structure_depth",
+          "kmipkit_codec_limits_release",
+          "kmipkit_codec_limits_t"
+        ],
+        "java": [
+          "org.kmipkit.ttlv.CodecLimits",
+          "org.kmipkit.ttlv.CodecLimits.close",
+          "org.kmipkit.ttlv.CodecLimits.create",
+          "org.kmipkit.ttlv.CodecLimits.defaults",
+          "org.kmipkit.ttlv.CodecLimits.maxElements",
+          "org.kmipkit.ttlv.CodecLimits.maxMessageBytes",
+          "org.kmipkit.ttlv.CodecLimits.maxStructureDepth"
+        ],
+        "python": [
+          "kmipkit.ttlv.CodecLimits",
+          "kmipkit.ttlv.CodecLimits.close",
+          "kmipkit.ttlv.codec_limits_create",
+          "kmipkit.ttlv.codec_limits_defaults",
+          "kmipkit.ttlv.codec_limits_max_elements",
+          "kmipkit.ttlv.codec_limits_max_message_bytes",
+          "kmipkit.ttlv.codec_limits_max_structure_depth"
+        ]
+      }
+    },
+    {
+      "capabilityId": "vendor_extension_registry",
+      "requirementIds": [
+        "KMIPKIT-0012-FR-001",
+        "KMIPKIT-0012-FR-002",
+        "KMIPKIT-0012-FR-003",
+        "KMIPKIT-0012-FR-004",
+        "KMIPKIT-0012-FR-005",
+        "KMIPKIT-0012-FR-006",
+        "KMIPKIT-0012-FR-007",
+        "KMIPKIT-0012-FR-008",
+        "KMIPKIT-0012-FR-009",
+        "KMIPKIT-0012-FR-010",
+        "KMIPKIT-0012-FR-011",
+        "KMIPKIT-0012-FR-012",
+        "KMIPKIT-0043-FR-001",
+        "KMIPKIT-0043-FR-004"
+      ],
+      "capabilityState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0012",
+      "blockedReason": "The full release inventory is still reconciling the published Rust paths and language-level exports before claiming complete API parity."
     }
   ]
 }
