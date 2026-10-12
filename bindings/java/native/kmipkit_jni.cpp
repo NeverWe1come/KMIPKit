@@ -450,6 +450,27 @@ jlong make_bytes_value(JNIEnv* env, jbyteArray raw_value, jlongArray raw_limits)
     });
 }
 
+jobject four_integer_record(
+        JNIEnv* env,
+        const char* class_name,
+        jint first,
+        jint second,
+        jint third,
+        jint fourth) {
+    jclass record_class = env->FindClass(class_name);
+    if (record_class == nullptr) {
+        return nullptr;
+    }
+    const jmethodID constructor = env->GetMethodID(record_class, "<init>", "(IIII)V");
+    if (constructor == nullptr) {
+        env->DeleteLocalRef(record_class);
+        return nullptr;
+    }
+    jobject record = env->NewObject(record_class, constructor, first, second, third, fourth);
+    env->DeleteLocalRef(record_class);
+    return record;
+}
+
 } // namespace
 
 extern "C" {
@@ -1556,24 +1577,13 @@ JNIEXPORT jobject JNICALL Java_org_kmipkit_RuntimeMetadata_version(JNIEnv* env, 
             return static_cast<jobject>(nullptr);
         }
 
-        jclass version_class = env->FindClass("org/kmipkit/RuntimeMetadata$Version");
-        if (version_class == nullptr) {
-            return static_cast<jobject>(nullptr);
-        }
-        const jmethodID constructor = env->GetMethodID(version_class, "<init>", "(IIII)V");
-        if (constructor == nullptr) {
-            env->DeleteLocalRef(version_class);
-            return static_cast<jobject>(nullptr);
-        }
-        jobject version = env->NewObject(
-                version_class,
-                constructor,
+        return four_integer_record(
+                env,
+                "org/kmipkit/RuntimeMetadata$Version",
                 static_cast<jint>(major),
                 static_cast<jint>(minor),
                 static_cast<jint>(patch),
                 static_cast<jint>(abi_version));
-        env->DeleteLocalRef(version_class);
-        return version;
     });
 }
 
@@ -1617,24 +1627,13 @@ JNIEXPORT jobject JNICALL Java_org_kmipkit_RuntimeMetadata_lastErrorSnapshot(
             return static_cast<jobject>(nullptr);
         }
 
-        jclass snapshot_class = env->FindClass("org/kmipkit/RuntimeMetadata$ErrorSnapshot");
-        if (snapshot_class == nullptr) {
-            return static_cast<jobject>(nullptr);
-        }
-        const jmethodID constructor = env->GetMethodID(snapshot_class, "<init>", "(IIII)V");
-        if (constructor == nullptr) {
-            env->DeleteLocalRef(snapshot_class);
-            return static_cast<jobject>(nullptr);
-        }
-        jobject snapshot = env->NewObject(
-                snapshot_class,
-                constructor,
+        return four_integer_record(
+                env,
+                "org/kmipkit/RuntimeMetadata$ErrorSnapshot",
                 static_cast<jint>(status_value),
                 static_cast<jint>(category),
                 static_cast<jint>(cause),
                 static_cast<jint>(delivery));
-        env->DeleteLocalRef(snapshot_class);
-        return snapshot;
     });
 }
 
