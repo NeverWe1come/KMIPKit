@@ -88466,19 +88466,26 @@
       "subject": "Requested Key Format Type",
       "summary": "The client may request a Key Format Type when the server produces material on its behalf.",
       "role": "client",
-      "direction": "unclear",
+      "direction": "client_to_server",
       "condition": "Create, Create Key Pair, Create Split Key, Re-key, Re-key Key Pair, or Derive Key.",
       "scope_state": "client_1_0",
-      "element_ids": [],
+      "element_ids": [
+        "KMIPKIT-ELEM-ATTRIBUTE-KEY-FORMAT-TYPE",
+        "KMIPKIT-ELEM-OP-C2S-CREATE"
+      ],
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/create.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/create_tests.rs::request_encodes_raw_key_format_for_server_generated_create"
+      ],
       "negative_verification_required": false,
       "decision_id": null,
-      "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
+      "status": "verified",
+      "review_note": "OASIS KMIP v2.1 §4.26 Table 79 and §§11.25, 11.56 permit the client to request Key Format Type Raw (Enumeration 1) when the server generates key material. The linked test covers the Create request only; it does not evidence the other operations listed in the source condition or a server outcome. No requirement-specific official Test Case ID is linked by the pinned source; test_case_ids remains empty."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-4.27-001",
@@ -88875,19 +88882,27 @@
       "subject": "NIST SP800-57 Key Type",
       "summary": "The client may set NIST SP800-57 Key Type, preferably during Register or object creation.",
       "role": "client",
-      "direction": "unclear",
+      "direction": "client_to_server",
       "condition": null,
       "scope_state": "client_1_0",
-      "element_ids": [],
+      "element_ids": [
+        "KMIPKIT-ELEM-ATTRIBUTE-NIST-KEY-TYPE",
+        "KMIPKIT-ELEM-OP-C2S-REGISTER"
+      ],
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/register.rs",
+        "crates/kmipkit-protocol/src/attribute.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/register_operation_tests.rs::request_encodes_nist_symmetric_data_encryption_key_type"
+      ],
       "negative_verification_required": false,
       "decision_id": null,
-      "status": "unassigned",
-      "review_note": "MAY NOT update/delete is not a defined §1.2 keyword. Keep clear client MAY/SHOULD portions, but leave prohibition strength unresolved. Clear client sub-obligations are retained as separate records; disputed wording remains unresolved. No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
+      "status": "verified",
+      "review_note": "OASIS KMIP v2.1 §4.34 Tables 97–98 and §§11.32, 11.56 permit NIST Key Type Enumeration 6 for a symmetric data-encryption key. The Register request test includes the Table 293 Cryptographic Algorithm and Cryptographic Length prerequisites. Evidence covers request serialization only, not server acceptance or use-policy enforcement. No requirement-specific official Test Case ID is linked by the pinned source; test_case_ids remains empty."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-4.34-001-002",
@@ -89033,19 +89048,27 @@
       "subject": "Original Creation Date on Register",
       "summary": "The client may omit Original Creation Date when registering an object.",
       "role": "client",
-      "direction": "unclear",
+      "direction": "client_to_server",
       "condition": null,
       "scope_state": "client_1_0",
-      "element_ids": [],
+      "element_ids": [
+        "KMIPKIT-ELEM-ATTRIBUTE-ORIGINAL-CREATION-DATE",
+        "KMIPKIT-ELEM-OP-C2S-REGISTER"
+      ],
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/register.rs",
+        "crates/kmipkit-protocol/src/attribute.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/register_operation_tests.rs::request_can_omit_original_creation_date_when_registering"
+      ],
       "negative_verification_required": false,
       "decision_id": null,
-      "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
+      "status": "verified",
+      "review_note": "OASIS KMIP v2.1 §4.38 Table 105 marks Original Creation Date OPTIONAL on Register. The linked test asserts that this Date-Time attribute is omitted from the request while the Register Table 293 prerequisites are present. It does not assert registration success or server state. No requirement-specific official Test Case ID is linked by the pinned source; test_case_ids remains empty."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-4.38-001-002",
@@ -89063,19 +89086,27 @@
       "subject": "Original Creation Date on Register",
       "summary": "The client may set Original Creation Date in Register.",
       "role": "client",
-      "direction": "unclear",
+      "direction": "client_to_server",
       "condition": null,
       "scope_state": "client_1_0",
-      "element_ids": [],
+      "element_ids": [
+        "KMIPKIT-ELEM-ATTRIBUTE-ORIGINAL-CREATION-DATE",
+        "KMIPKIT-ELEM-OP-C2S-REGISTER"
+      ],
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/register.rs",
+        "crates/kmipkit-protocol/src/attribute.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/register_operation_tests.rs::request_encodes_client_supplied_original_creation_date_on_register"
+      ],
       "negative_verification_required": false,
       "decision_id": null,
-      "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
+      "status": "verified",
+      "review_note": "OASIS KMIP v2.1 §4.38 Table 105 and §11.56 permit the client to supply Original Creation Date as Date-Time on Register. The linked test checks serialization of the caller-supplied value; it makes no claim that a server stores it or that the stateful operation succeeds. No requirement-specific official Test Case ID is linked by the pinned source; test_case_ids remains empty."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-4.38-001-003",
@@ -89093,19 +89124,28 @@
       "subject": "Original Creation Date added later",
       "summary": "If omitted during Register, the client may add Original Creation Date later with Add Attribute.",
       "role": "client",
-      "direction": "unclear",
+      "direction": "client_to_server",
       "condition": "Not set during Register.",
       "scope_state": "client_1_0",
-      "element_ids": [],
+      "element_ids": [
+        "KMIPKIT-ELEM-ATTRIBUTE-ORIGINAL-CREATION-DATE",
+        "KMIPKIT-ELEM-ATTRIBUTE-STRUCTURE-5-7-NEW-ATTRIBUTE",
+        "KMIPKIT-ELEM-OP-C2S-ADD-ATTRIBUTE"
+      ],
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/add_attribute.rs",
+        "crates/kmipkit-protocol/src/attribute.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/add_attribute_tests.rs::request_encodes_original_creation_date_as_new_attribute"
+      ],
       "negative_verification_required": false,
       "decision_id": null,
-      "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
+      "status": "verified",
+      "review_note": "OASIS KMIP v2.1 §4.38 Table 105 and §11.56 permit the client to add a previously omitted Original Creation Date using Add Attribute. The linked test checks the exact Date-Time inside New Attribute serialization only; it makes no claim about server acceptance or stored state. No requirement-specific official Test Case ID is linked by the pinned source; test_case_ids remains empty."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-4.38-003",
@@ -89185,19 +89225,29 @@
       "subject": "Application Specific Information request",
       "summary": "The client may request this attribute with Application Namespace while omitting Application Data.",
       "role": "client",
-      "direction": "server_to_client",
+      "direction": "client_to_server",
       "condition": "Object creation or Add/Modify Attribute; namespace support is determined through Query.",
       "scope_state": "client_1_0",
-      "element_ids": [],
+      "element_ids": [
+        "KMIPKIT-ELEM-ATTRIBUTE-APPLICATION-SPECIFIC-INFORMATION",
+        "KMIPKIT-ELEM-STRUCTURE-MEMBER-4-4-APPLICATION-NAMESPACE",
+        "KMIPKIT-ELEM-STRUCTURE-MEMBER-4-4-APPLICATION-DATA",
+        "KMIPKIT-ELEM-OP-C2S-CREATE"
+      ],
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/create.rs",
+        "crates/kmipkit-protocol/src/attribute.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/create_tests.rs::request_encodes_application_namespace_without_application_data"
+      ],
       "negative_verification_required": false,
       "decision_id": null,
-      "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
+      "status": "verified",
+      "review_note": "OASIS KMIP v2.1 §4.4 Tables 35–36 and §11.56 permit a client Create request to include Application Specific Information with required Application Namespace (Text String, tag 0x420003) and omitted Application Data (tag 0x420002). The linked test covers this Create shape only; it does not cover Add/Modify Attribute or Query namespace negotiation, and does not assert a server outcome. No requirement-specific official Test Case ID is linked by the pinned source; test_case_ids remains empty."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-4.4-002",
@@ -89515,19 +89565,29 @@
       "subject": "Random Number Generator on Register",
       "summary": "The client may set Random Number Generator during Register.",
       "role": "client",
-      "direction": "unclear",
+      "direction": "client_to_server",
       "condition": null,
       "scope_state": "client_1_0",
-      "element_ids": [],
+      "element_ids": [
+        "KMIPKIT-ELEM-ATTRIBUTE-RANDOM-NUMBER-GENERATOR",
+        "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-36-RNG-PARAMETERS",
+        "KMIPKIT-ELEM-STRUCTURE-MEMBER-7-36-RNG-ALGORITHM",
+        "KMIPKIT-ELEM-OP-C2S-REGISTER"
+      ],
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/register.rs",
+        "crates/kmipkit-protocol/src/attribute.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/register_operation_tests.rs::request_encodes_rng_algorithm_directly_on_register"
+      ],
       "negative_verification_required": false,
       "decision_id": null,
-      "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
+      "status": "verified",
+      "review_note": "OASIS KMIP v2.1 §4.46 Table 121, §7.36 Table 388, and §§11.49, 11.56 permit the client to set Random Number Generator on Register. The test encodes the Structure with direct RNG Algorithm Enumeration Unspecified (1), without a nested RNG Parameters member, and includes Table 293 prerequisites. This is request serialization evidence only; it does not assert a server RNG outcome. No requirement-specific official Test Case ID is linked by the pinned source; test_case_ids remains empty."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-4.46-001-002",
@@ -89545,19 +89605,30 @@
       "subject": "Random Number Generator added later",
       "summary": "If omitted during Register, the client may add Random Number Generator later with Add Attribute.",
       "role": "client",
-      "direction": "unclear",
+      "direction": "client_to_server",
       "condition": "Not set during Register.",
       "scope_state": "client_1_0",
-      "element_ids": [],
+      "element_ids": [
+        "KMIPKIT-ELEM-ATTRIBUTE-RANDOM-NUMBER-GENERATOR",
+        "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-36-RNG-PARAMETERS",
+        "KMIPKIT-ELEM-STRUCTURE-MEMBER-7-36-RNG-ALGORITHM",
+        "KMIPKIT-ELEM-ATTRIBUTE-STRUCTURE-5-7-NEW-ATTRIBUTE",
+        "KMIPKIT-ELEM-OP-C2S-ADD-ATTRIBUTE"
+      ],
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/add_attribute.rs",
+        "crates/kmipkit-protocol/src/attribute.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/add_attribute_tests.rs::request_encodes_rng_algorithm_directly_in_new_attribute"
+      ],
       "negative_verification_required": false,
       "decision_id": null,
-      "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
+      "status": "verified",
+      "review_note": "OASIS KMIP v2.1 §4.46 Table 121, §7.36 Table 388, and §§11.49, 11.56 permit the client to add Random Number Generator using Add Attribute. The test encodes the Structure with direct RNG Algorithm Enumeration Unspecified (1), without a nested RNG Parameters member. This is request serialization evidence only; it does not assert a server RNG outcome. No requirement-specific official Test Case ID is linked by the pinned source; test_case_ids remains empty."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-4.47-001-001",
