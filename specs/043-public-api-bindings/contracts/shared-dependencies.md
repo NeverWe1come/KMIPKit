@@ -30,6 +30,19 @@ The 0009 and 0010 gates are independent of the 56-operation `client_1_0` invento
 
 ## T013 audited declaration slice
 
-The manifest currently has 101 cross-language declaration rows whose Rust mapping paths begin with `kmipkit_ttlv::`: 76 generic-model rows are owned by approved KMIPKIT-0004 and 25 `CodecLimits` rows are owned by approved KMIPKIT-0005. These rows are distributed across the Rust, C, Java, and Python package families; they are not the count of declarations in the Rust TTLV package. The `rust-kmipkit-ttlv` package itself has 95 rows: 24 `declared` and 71 `blocked`. The four-language mappings remain declared pending parity verification. Each row links to applicable owner requirement IDs and KMIPKIT-0043 inventory requirements. Existing type and function rows retained from the KMIPKIT-0012 registry slice remain unchanged.
+`reports/shared-rust-inventory-2026-10-12.json` is the generated T013 reconciliation artifact. It is derived from the complete Rust export audit and the manifest input; run `tools/api_manifest/audit_shared_rust_inventory.py` to regenerate it or add `--check` to verify it. The full audit observes 9,497 declarations across the five published Rust crates. T013 maps only 109 declarations with exact published Rust paths, an Approved/Accepted shared owner and linked owner requirements, and a ready four-language capability, plus the bounded ADR-0014 Rust-only exception. Each crate's observed, mapped, and still-blocked counts are:
 
-This is a bounded reconciliation, not completion of the five-crate inventory audit. Other observed declarations remain blocked where their approved owner mapping or implementation/parity evidence has not been reconciled. Draft-owned KMIPKIT-0009 and KMIPKIT-0010 surfaces remain blocked, and ADR-0014 remains the only Rust-only exception.
+| Published Rust crate | Observed | Mapped | Blocked |
+| --- | ---: | ---: | ---: |
+| `kmipkit-ttlv` | 331 | 24 | 307 |
+| `kmipkit-protocol` | 5,845 | 49 | 5,796 |
+| `kmipkit-transport` | 365 | 5 | 360 |
+| `kmipkit-client` | 1,031 | 22 | 1,009 |
+| `kmipkit` facade | 1,925 | 9 | 1,916 |
+| **Total** | **9,497** | **109** | **9,388** |
+
+The approved shared capabilities mapped by this slice are generic TTLV model (KMIPKIT-0004), TTLV wire codec (KMIPKIT-0005), vendor extension registry (KMIPKIT-0012), and FFI runtime metadata (KMIPKIT-0043). Capability mappings are derived from retained declaration rows and checked against the exact published Rust exports. Five transport declarations retain the sole `rust-only-adr` classification under ADR-0014. No other declaration is classified Rust-only.
+
+Thirty-six observed binding declarations remain blocked without signatures or language mappings: 22 C release functions have no callable Rust `Drop` export; 12 C/Java/Python TTLV helper declarations have no exact public Rust equivalent; and two Java/Python namespace wrappers map only to the Rust crate root, not an exported declaration. Their exact export names and reasons are preserved in the generated report and blocked manifest rows. The four `*_with_limits` names and the stale `ClientBatchItem` paths are not claimed as public Rust exports.
+
+Draft-owned KMIPKIT-0009 surfaces remain blocked (257 declarations and four operation rows); KMIPKIT-0010 has no declaration or operation rows yet and remains a candidate gate. These counts are recorded independently from the Rust export totals. The rest of the observed Rust exports remain blocked in the manifest pending an approved owner, an exact mapping, or parity evidence; this inventory does not assert release readiness.

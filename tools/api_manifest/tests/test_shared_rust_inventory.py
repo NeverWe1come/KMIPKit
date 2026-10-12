@@ -35,6 +35,8 @@ class SharedRustInventoryTests(unittest.TestCase):
 
         self.assertEqual(inventory["observedRustDeclarationCount"], 9497)
         self.assertEqual(inventory["mappedRustDeclarationCount"], 109)
+        self.assertEqual(len(inventory["blockedUnreconciledDeclarations"]), 36)
+        self.assertEqual(inventory["draftOwnerGates"]["KMIPKIT-0009"]["blockedOperations"], 4)
         self.assertEqual(
             {record["packageId"] for record in inventory["crates"]},
             {
@@ -64,7 +66,11 @@ class SharedRustInventoryTests(unittest.TestCase):
                 self.assertNotIn("approvalSource", record)
                 self.assertNotIn("languageMappings", record)
         for operation in self.manifest["operations"]:
-            if operation.get("candidateSpecId") in {"KMIPKIT-0009", "KMIPKIT-0010"}:
+            dependency = operation.get("ownerDependency", {})
+            if dependency.get("state") == "candidate" and dependency.get("specId") in {
+                "KMIPKIT-0009",
+                "KMIPKIT-0010",
+            }:
                 self.assertEqual(operation["apiState"], "blocked")
 
     def test_transport_is_the_only_accepted_rust_only_capability(self) -> None:
@@ -96,12 +102,48 @@ class SharedRustInventoryTests(unittest.TestCase):
             )
             self.assertEqual(capability["mappings"][language], expected)
 
+    def test_unreconciled_destructors_and_helpers_are_blocked_without_mappings(self) -> None:
+        inventory = AUDIT.build_inventory(self.manifest, self.rust_report, REPO_ROOT)
+        blocked = inventory["blockedUnreconciledDeclarations"]
+
+        self.assertEqual(len(blocked), 36)
+        self.assertEqual(
+            sum("callable public declaration" in row["blockedReason"] for row in blocked),
+            22,
+        )
+        self.assertEqual(
+            sum("No exact equivalent public Rust declaration" in row["blockedReason"] for row in blocked),
+            12,
+        )
+        for row in blocked:
+            source = next(
+                declaration
+                for declaration in self.manifest["publicDeclarations"]
+                if declaration["declarationId"] == row["declarationId"]
+            )
+            self.assertEqual(source["declarationState"], "blocked")
+            self.assertNotIn("languageMappings", source)
+            self.assertNotIn("approvalSource", source)
+
+    def test_ready_declaration_with_an_unobserved_rust_mapping_is_rejected(self) -> None:
+        altered = json.loads(json.dumps(self.manifest))
+        declaration = next(
+            row
+            for row in altered["publicDeclarations"]
+            if row.get("packageId") == "java-kmipkit"
+            and row.get("declarationState") == "declared"
+        )
+        declaration["languageMappings"]["rust"]["name"] = "kmipkit::invented_public_item"
+
+        with self.assertRaises(AUDIT.InventoryError):
+            AUDIT.build_inventory(altered, self.rust_report, REPO_ROOT)
+
     def test_unapproved_rust_only_owner_is_rejected(self) -> None:
         altered = json.loads(json.dumps(self.manifest))
         declaration = next(row for row in altered["publicDeclarations"] if row["parityScope"] == "rust-only-adr")
         declaration["capabilityId"] = "public_binding_surface"
 
-        with self.assertRaisesRegex(AUDIT.InventoryError, "sole accepted ADR-0014 transport exception"):
+        with self.assertRaises(AUDIT.InventoryError):
             AUDIT.build_inventory(altered, self.rust_report, REPO_ROOT)
 
 

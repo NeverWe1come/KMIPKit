@@ -5,6 +5,7 @@ pub(crate) const C_AVAILABLE_CAPABILITIES: &[&str] = &[
     "ffi_runtime_metadata",
     "generic_ttlv_model",
     "ttlv_wire_codec",
+    "vendor_extension_registry",
 ];
 pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
     (
