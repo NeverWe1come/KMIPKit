@@ -63,6 +63,9 @@ class ProfileScopeBoundaryTests(unittest.TestCase):
         source_clauses = {
             row["clause_id"]: row for row in oracle["source_clause_crosswalk"]
         }
+        clauses = {
+            row["clause_id"]: row for row in catalog["source_clauses"]
+        }
         review = next(
             row
             for row in oracle["source_requirement_reviews"]
@@ -123,6 +126,18 @@ class ProfileScopeBoundaryTests(unittest.TestCase):
                 for boundary in oracle["provenance"]["normative_boundaries"]
             )
         )
+        for clause_id in included_clause_ids:
+            self.assertEqual(clauses[clause_id]["scope_state"], "out_of_scope")
+        for ordinal in range(1, 4):
+            clause = clauses[f"KMIPKIT-CLAUSE-PROF-5.18.1-{ordinal:03}"]
+            self.assertEqual(clause["requirement_ids"], [])
+        for requirement_id in PKCS11_REQUIREMENT_IDS:
+            clause_id = next(
+                row["clause_id"]
+                for row in catalog["source_clauses"]
+                if requirement_id in row["requirement_ids"]
+            )
+            self.assertEqual(clauses[clause_id]["requirement_ids"], [requirement_id])
 
         closure = compute_profile_closure(
             catalog,
