@@ -25,7 +25,7 @@ KMIP 2.1 defines 57 client-initiated operation types. The 1.0 catalog contains 5
 | Green | `e8443f92` | `python -B -m unittest tools.api_manifest.tests.test_operation_readiness -v` | PASS: current approved owner records resolve by feature-branch metadata; remaining draft owners stay blocked. |
 | Refactor | `8b46a35b` | `python -B -m unittest discover -s tools/api_manifest/tests -v`; `python tools/api_manifest/generate.py --check`; `git diff --check` | PASS: 93 tests passed, 3 symlink tests skipped because Windows denied symlink creation (WinError 1314), all 11 generated outputs current, and no whitespace errors. Cached header-only owner resolution removes the full-suite slowdown. |
 
-T068 records the accepted release-scope decision only; it does not implement Set Endpoint Role. T011 remains open because a complete, reproducible export-audit report and reconciliation against every manifest row have not yet been committed; do not treat uncommitted audit observations as completion evidence.
+T068 records the accepted release-scope decision only; it does not implement Set Endpoint Role. The complete Rust export report and manifest reconciliation are now committed. T011 remains unchecked pending read-only QA and final cross-platform CI; do not treat earlier uncommitted audit observations as completion evidence.
 
 ## T016 — Runtime metadata mapping correction
 
@@ -109,11 +109,11 @@ The initial approved TTLV ownership slice remains historical evidence within thi
 | Green | `d98fa57a` | `.venv/Scripts/python.exe -B -m unittest tools.api_manifest.tests.test_shared_rust_inventory -v`; `.venv/Scripts/python.exe tools/api_manifest/audit_shared_rust_inventory.py` | PASS: all 8 inventory tests; regenerated report retains exactly 36 blocked rows, including the two namespaces under KMIPKIT-0043. |
 | Refactor | `49450cc4` | `.venv/Scripts/python.exe -B -m unittest tools.api_manifest.tests.test_shared_rust_inventory -v`; `.venv/Scripts/python.exe tools/api_manifest/generate.py --check`; `.venv/Scripts/python.exe tools/api_manifest/audit_shared_rust_inventory.py --check`; `git diff --check` | PASS: 8 inventory tests; 11 generated outputs and inventory report current; no whitespace errors. QA passed at this commit. |
 
-The original full API-manifest suite passed 224 tests with 3 Windows symlink-permission skips; the namespace follow-up passed all 33 `test_manifest_v2` tests and all 8 shared-inventory tests. The generator, shared-inventory auditor, and diff checks pass at QA-approved HEAD `49450cc4`. The Rust export audit still has a separate T011 limitation: 1,883 conditional declarations remain blocked, including 13 unresolved `core::any::Any` lifetime predicates. T011 remains unchecked pending its read-only QA and remote CI; it does not leave T013's approved shared-inventory work incomplete.
+The original full API-manifest suite passed 224 tests with 3 Windows symlink-permission skips; the namespace follow-up passed all 33 `test_manifest_v2` tests and all 8 shared-inventory tests. The generator, shared-inventory auditor, and diff checks pass at QA-approved HEAD `49450cc4`. The Rust export report contains 1,883 conditional declarations, including 13 `core::any::Any` lifetime surfaces whose exact predicates are preserved; those rows intentionally remain blocked without signatures or language mappings and are not auditor issues. T011 remains unchecked pending read-only QA and remote CI; it does not leave T013's approved shared-inventory work incomplete.
 
-### T011 — Reproducible Rust public-export audit limitations (current snapshot)
+### T011 — Rust public-export audit (current snapshot)
 
-The pinned Rust 1.94.0 / rustdoc JSON 57 audit report at [rust-export-report-2026-10-12.json](reports/rust-export-report-2026-10-12.json) was regenerated from the current continuation branch on Windows x64 with all Cargo features. The inventory keeps verified declarations separate from conditional blanket-impl declarations. Conditional records preserve their exact compiler predicates and remain blocked without signatures or language mappings. The audit exits **1 as expected** while 13 `Any` implementation predicates remain unresolved.
+The pinned Rust 1.94.0 / rustdoc JSON 57 audit report at [rust-export-report-2026-10-12.json](reports/rust-export-report-2026-10-12.json) was regenerated from the current continuation branch on Windows x64 with all Cargo features. The current `audit_rust_exports.py --check` passes: all 9,497 observed paths match, with zero missing, not-observed, kind-mismatch, issue, or conditional-state/condition-mismatch records. This includes 7,614 verified declarations and 1,883 conditional declarations. The 13 `core::any::Any` lifetime surfaces preserve their exact predicates and remain blocked without signatures or language mappings; they are not unresolved audit issues. T011 remains open pending read-only QA and final CI.
 
 > Historical pre-Green baseline. The following counts describe the audit before the lifetime-condition model was added and are superseded by the Green evidence later in this file.
 
@@ -126,7 +126,9 @@ The pinned Rust 1.94.0 / rustdoc JSON 57 audit report at [rust-export-report-202
 | `kmipkit` | 1,595 | 330 | 1,925 | 1,925 | 0 | 0 |
 | **Total** | **7,614** | **1,870** | **9,484** | **9,497** | **13** | **13** |
 
-There are no kind mismatches or approved Rust exclusions. Reconciliation added 49 exact blocked rows and recorded the exact conditions on 1,870 existing blocked rows; all conditional rows have no signatures or language mappings. The remaining 13 issues are the blanket `core::any::Any` implementation, whose rustdoc predicate is `T: 'static + ?Sized`. Since the current report and manifest condition shape represents trait bounds only, these lifetime predicates remain explicit issues and their 13 existing rows remain blocked and unobserved. `missingFromManifest` and conditional state/condition mismatches are zero, but `matchesManifest` and `complete` remain false. T011 remains unchecked.
+Historical pre-Green analysis (superseded by the passing current audit below): that earlier run had 13 unresolved `core::any::Any` predicates because lifetime bounds were not yet represented in the manifest condition model. Its 9,484-path counts and issue state are retained only as historical evidence. The later T011 Green work preserves those exact lifetime predicates; the current report matches all 9,497 observed paths with zero issues or mismatches.
+
+The following verification results are also historical pre-Green results, superseded by the current passing audit and full-suite evidence in the T011 Green section below.
 
 | Verification | Command | Result |
 |---|---|---|
