@@ -1841,6 +1841,20 @@ class CatalogValidationTests(unittest.TestCase):
                 self.assertEqual(requirement["direction"], "client_to_server")
                 self.assertEqual(requirement["test_case_ids"], [])
 
+    def test_register_wrapping_attributes_remain_unassigned_without_positive_evidence(self) -> None:
+        """Wrapped Key Value bytes alone do not evidence wrapped Key Value Attributes."""
+        catalog = json.loads(
+            (ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8")
+        )
+        requirement = next(
+            row
+            for row in catalog["requirements"]
+            if row["requirement_id"] == "KMIPKIT-REQ-SPEC-6.1.43-005"
+        )
+
+        self.assertEqual(requirement["status"], "unassigned")
+        self.assertIn("embedded Attributes within the wrapped Key Value are not evidenced", requirement["review_note"])
+
     def test_checked_in_catalog_orders_evidence_policies_and_relationships_deterministically(self) -> None:
         catalog = json.loads((ROOT / "specification/catalog/kmip-2.1.json").read_text(encoding="utf-8"))
 
