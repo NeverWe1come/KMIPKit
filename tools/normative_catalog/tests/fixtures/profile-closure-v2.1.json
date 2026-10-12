@@ -68245,9 +68245,7 @@
       "source_excerpt": "Item REQUIRED Description",
       "source_obligations": [],
       "rejected_candidate_mappings": [],
-      "expected_client_requirement_ids": [
-        "KMIPKIT-REQ-SPEC-6.1.38-001-001"
-      ],
+      "expected_client_requirement_ids": [],
       "applies_to": "all_client_profiles",
       "review_note": "The locator is the Poll request payload table header. Its REQUIRED text is a column heading, not an independent obligation; the Asynchronous Correlation Value body row is recorded as client request data.",
       "source_request_rows": [
