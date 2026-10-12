@@ -13926,6 +13926,26 @@ class CatalogValidationTests(unittest.TestCase):
             }.issubset(requirement["verification_refs"])
         )
 
+    def test_spec_6_1_38_table_header_does_not_claim_a_client_requirement(self) -> None:
+        """The `Item / REQUIRED / Description` header is not an operative client duty."""
+        oracle = json.loads(
+            (ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json").read_text(encoding="utf-8")
+        )
+        reviews = {
+            row["source_clause_id"]: row
+            for row in oracle["source_requirement_reviews"]
+        }
+        header_review = reviews["KMIPKIT-CLAUSE-SPEC-6.1.38-002"]
+        operative_review = reviews["KMIPKIT-CLAUSE-SPEC-6.1.38-001"]
+
+        self.assertEqual(header_review["source_excerpt"], "Item REQUIRED Description")
+        self.assertEqual(header_review["source_obligations"], [])
+        self.assertEqual(header_review["expected_client_requirement_ids"], [])
+        self.assertEqual(
+            operative_review["expected_client_requirement_ids"],
+            ["KMIPKIT-REQ-SPEC-6.1.38-001-001"],
+        )
+
     def test_reviewed_source_requirement_mappings_match_pinned_locators_and_scope(self) -> None:
         """Reviewed source atoms, stable labels, and client dispositions agree with pinned HTML."""
         oracle = json.loads(
@@ -14001,7 +14021,8 @@ class CatalogValidationTests(unittest.TestCase):
                                 f"{gap_ref} is a source-identified in-scope atom without a stable requirement ID"
                             )
                     continue
-                if obligation["scope_disposition"] in {"client_1_0", "profile_conditional"}:
+                reviewed_scope = obligation["scope_disposition"]
+                if reviewed_scope in {"client_1_0", "profile_conditional"} or reviewed_scope == "client_1_0 + server_only (split/shared)":
                     reviewed_client_ids.add(candidate_id)
                 candidate = candidate_requirements.get(candidate_id)
                 if candidate is None:
@@ -14009,11 +14030,20 @@ class CatalogValidationTests(unittest.TestCase):
                 else:
                     if review["source_clause_id"] not in candidate["source_clause_ids"]:
                         violations.append(f"{candidate_id} does not map to its reviewed source clause")
-                    reviewed_scope = obligation["scope_disposition"]
-                    # The source review vocabulary uses "unresolved" while the catalog enum
-                    # calls the same intentionally open classification "unclear".
-                    normalized_scope = {"unresolved": "unclear"}.get(reviewed_scope, reviewed_scope)
-                    if candidate["scope_state"] != normalized_scope:
+                    candidate_source_scopes = {
+                        {"unresolved": "unclear", "client_1_0 + server_only (split/shared)": "mixed"}.get(
+                            other["scope_disposition"], other["scope_disposition"]
+                        )
+                        for other in review["source_obligations"]
+                        if other.get("candidate_requirement_id") == candidate_id
+                    }
+                    if {"client_1_0", "server_only"}.issubset(candidate_source_scopes):
+                        candidate_source_scopes.add("mixed")
+                    normalized_scope = {
+                        "unresolved": "unclear",
+                        "client_1_0 + server_only (split/shared)": "mixed",
+                    }.get(reviewed_scope, reviewed_scope)
+                    if candidate["scope_state"] not in candidate_source_scopes or normalized_scope not in candidate_source_scopes:
                         violations.append(
                             f"{candidate_id} catalog scope differs from reviewed source disposition "
                             f"{reviewed_scope}"
@@ -14067,8 +14097,23 @@ class CatalogValidationTests(unittest.TestCase):
                 unexpected = sorted(rejected_ids & set(profile["requirement_ids"]))
                 if unexpected:
                     violations.append(f"{profile['profile_id']} includes source-rejected candidates {unexpected}")
-                if review.get("applies_to", "all_client_profiles") == "all_client_profiles":
-                    missing = sorted(expected_ids - set(profile["requirement_ids"]))
+                applies_to = review.get("applies_to", "all_client_profiles")
+                applies_to_profile = (
+                    applies_to == "all_client_profiles"
+                    or applies_to == profile["profile_id"]
+                    or (isinstance(applies_to, list) and profile["profile_id"] in applies_to)
+                )
+                if applies_to_profile:
+                    applicable_ids = {
+                        requirement_id
+                        for requirement_id in expected_ids
+                        if (requirement := candidate_requirements.get(requirement_id)) is not None
+                        and (
+                            requirement["scope_state"] != "profile_conditional"
+                            or profile["profile_id"] in requirement["profile_ids"]
+                        )
+                    }
+                    missing = sorted(applicable_ids - set(profile["requirement_ids"]))
                     if missing:
                         violations.append(f"{profile['profile_id']} omits reviewed requirements {missing}")
 
