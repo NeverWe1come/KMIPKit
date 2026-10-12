@@ -1544,6 +1544,107 @@ JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_codecLimitsCrea
     });
 }
 
+JNIEXPORT jobject JNICALL Java_org_kmipkit_RuntimeMetadata_version(JNIEnv* env, jclass) {
+    return guarded<jobject>(env, nullptr, [&] {
+        uint32_t major = 0;
+        uint32_t minor = 0;
+        uint32_t patch = 0;
+        uint32_t abi_version = 0;
+        const int32_t status = kmipkit_version_get(&major, &minor, &patch, &abi_version);
+        if (status != 0) {
+            throw_status(env, status);
+            return static_cast<jobject>(nullptr);
+        }
+
+        jclass version_class = env->FindClass("org/kmipkit/RuntimeMetadata$Version");
+        if (version_class == nullptr) {
+            return static_cast<jobject>(nullptr);
+        }
+        const jmethodID constructor = env->GetMethodID(version_class, "<init>", "(IIII)V");
+        if (constructor == nullptr) {
+            env->DeleteLocalRef(version_class);
+            return static_cast<jobject>(nullptr);
+        }
+        jobject version = env->NewObject(
+                version_class,
+                constructor,
+                static_cast<jint>(major),
+                static_cast<jint>(minor),
+                static_cast<jint>(patch),
+                static_cast<jint>(abi_version));
+        env->DeleteLocalRef(version_class);
+        return version;
+    });
+}
+
+JNIEXPORT jboolean JNICALL Java_org_kmipkit_RuntimeMetadata_capabilityIsAvailable(
+        JNIEnv* env, jclass, jstring capability_id) {
+    return guarded<jboolean>(env, JNI_FALSE, [&] {
+        if (capability_id == nullptr) {
+            throw_invalid_input(env);
+            return JNI_FALSE;
+        }
+        const char* data = env->GetStringUTFChars(capability_id, nullptr);
+        if (data == nullptr) {
+            return JNI_FALSE;
+        }
+        const jsize length = env->GetStringUTFLength(capability_id);
+        uint8_t available = 0;
+        const int32_t status = kmipkit_capability_is_available(
+                reinterpret_cast<const uint8_t*>(data),
+                static_cast<uint64_t>(length),
+                &available);
+        env->ReleaseStringUTFChars(capability_id, data);
+        if (status != 0) {
+            throw_status(env, status);
+            return JNI_FALSE;
+        }
+        return available == 0 ? JNI_FALSE : JNI_TRUE;
+    });
+}
+
+JNIEXPORT jobject JNICALL Java_org_kmipkit_RuntimeMetadata_lastErrorSnapshot(
+        JNIEnv* env, jclass) {
+    return guarded<jobject>(env, nullptr, [&] {
+        int32_t status_value = 0;
+        uint32_t category = 0;
+        uint32_t cause = 0;
+        uint32_t delivery = 0;
+        const int32_t status = kmipkit_last_error_get(
+                &status_value, &category, &cause, &delivery);
+        if (status != 0) {
+            throw_status(env, status);
+            return static_cast<jobject>(nullptr);
+        }
+
+        jclass snapshot_class = env->FindClass("org/kmipkit/RuntimeMetadata$ErrorSnapshot");
+        if (snapshot_class == nullptr) {
+            return static_cast<jobject>(nullptr);
+        }
+        const jmethodID constructor = env->GetMethodID(snapshot_class, "<init>", "(IIII)V");
+        if (constructor == nullptr) {
+            env->DeleteLocalRef(snapshot_class);
+            return static_cast<jobject>(nullptr);
+        }
+        jobject snapshot = env->NewObject(
+                snapshot_class,
+                constructor,
+                static_cast<jint>(status_value),
+                static_cast<jint>(category),
+                static_cast<jint>(cause),
+                static_cast<jint>(delivery));
+        env->DeleteLocalRef(snapshot_class);
+        return snapshot;
+    });
+}
+
+JNIEXPORT void JNICALL Java_org_kmipkit_RuntimeMetadata_clearLastError(JNIEnv* env, jclass) {
+    const int32_t status = kmipkit_last_error_clear();
+    if (status != 0) {
+        throw_status(env, status);
+    }
+}
+
 JNIEXPORT jint JNICALL Java_org_kmipkit_NativeExtensionRegistry_nativeAbiVersion(
         JNIEnv*, jclass) {
     uint32_t major = 0;

@@ -1,6 +1,9 @@
 //! The supported high-level Rust API for the `KMIPKit` client library.
 #![forbid(unsafe_code)]
 
+/// The synchronized KMIPKit package version compiled into this library.
+pub const VERSION: &str = env!("CARGO_PKG_VERSION");
+
 pub use kmipkit_client::{
     Client, ClientBatch, ClientBatchItem, ClientBatchItemResponse, ClientBatchOutcome,
     ClientBatchResponse, ClientCauseCategory, ClientError, ClientErrorCategory,

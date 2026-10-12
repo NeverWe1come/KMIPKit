@@ -13,7 +13,7 @@ dependencies = ["cffi>=1.15"]
 [tool.maturin]
 manifest-path = "../../crates/kmipkit-ffi/Cargo.toml"
 python-source = "src"
-module-name = "kmipkit._ffi"
+module-name = "kmipkit._native_ffi"
 bindings = "cffi"
 
 [tool.coverage.run]
