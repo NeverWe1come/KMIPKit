@@ -15509,6 +15509,40 @@ class CatalogValidationTests(unittest.TestCase):
         self.assertEqual(requirement["scope_state"], "unclear")
         self.assertEqual(requirement["profile_ids"], [])
 
+    def test_basic_authentication_suite_clause_is_client_applicable_through_profile_reference(self) -> None:
+        """Profiles §6.1 item 2 makes the §3.1 TLS SHALL applicable to client profiles."""
+        oracle = json.loads(
+            (ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json").read_text(encoding="utf-8")
+        )
+        catalog = json.loads(
+            (ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8")
+        )
+        clause_id = "KMIPKIT-CLAUSE-PROF-3.1-001"
+        requirement_id = "KMIPKIT-REQ-PROF-3.1-001"
+        review = next(
+            row
+            for row in oracle["source_requirement_reviews"]
+            if row["source_clause_id"] == clause_id
+        )
+        obligation = review["source_obligations"][0]
+        requirement = next(
+            row for row in catalog["requirements"] if row["requirement_id"] == requirement_id
+        )
+
+        source_path = ROOT / "specification" / "oasis" / "kmip-2.1" / "upstream" / "kmip-profiles-v2.1-os.html"
+        self.assertEqual(review["source_excerpt"], pinned_source_excerpt(source_path, [3999, 4001]))
+        client_inclusion = pinned_source_excerpt(source_path, [10481, 10485])
+        self.assertIn("SHALL support the Basic Authentication Suite conditions (3.1)", client_inclusion)
+        self.assertEqual(obligation["actor"], "client")
+        self.assertEqual(obligation["direction"], "unresolved")
+        self.assertEqual(obligation["scope_disposition"], "profile_conditional")
+        self.assertEqual(review["expected_client_requirement_ids"], [requirement_id])
+        self.assertIn("§6.1 item 2", review["review_note"])
+        self.assertEqual(requirement["role"], "both")
+        self.assertEqual(requirement["direction"], "unclear")
+        self.assertEqual(requirement["scope_state"], "profile_conditional")
+        self.assertIn("KMIPKIT-PROFILE-BASELINE-CLIENT", requirement["profile_ids"])
+
     def test_every_reviewed_client_may_or_optional_has_usable_positive_evidence(self) -> None:
         """A selected profile or summary cannot replace an implementation and positive test."""
         oracle = json.loads(
