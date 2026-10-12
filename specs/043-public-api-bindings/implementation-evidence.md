@@ -274,6 +274,19 @@ The Java matrix already tests loader errors and builds the JNI library on Ubuntu
 
 T028 remains unchecked until the updated Linux, Windows, and macOS CI jobs finish successfully.
 
+### T028 follow-up — Unix resource filename mismatch
+
+Run `38301807549` on `46f7a1da` reached the packaged Java smoke on Ubuntu and exposed a loader/package contract defect: the loader requested `kmipkit_jni.so`, while the Gradle classifier contains `libkmipkit_jni.so`. The matching macOS filenames had the same missing `lib` prefix. This was independent of the wrapper invocation fix; the Windows filename was already correct.
+
+| Phase | Commit | Verification | Result |
+|---|---|---|---|
+| Red | `39782570` | `NativeLibraryLoaderTest.resolvesUnixLibraryNameFromBundledResources` | Expected failure before the fix: the Unix loader selected a name that does not exist in the packaged resources. |
+| Green | `14b8dc10` | `mvn --batch-mode --file bindings/java/pom.xml verify`; Linux Gradle `nativeJarSmoke` under WSL Ubuntu 26.04 | PASS locally: 48 Java tests, JaCoCo coverage, and the vendor example passed; the Linux classifier JAR loaded its bundled JNI library and printed `bundled JNI loaded`. |
+| Refactor | `18abc7dd` | Same Maven verification; expanded filename test for x86_64/aarch64 Linux and x86_64/aarch64 macOS | PASS; Windows naming remains unchanged. |
+| Read-only QA | `18abc7dd` | Review of loader mapping, platform resource names, and temporary diagnostic cleanup | PASS; no findings and no diagnostic prints remain. |
+
+The Linux smoke failure from `38301807549` is historical evidence on the pre-fix head. A fresh remote CI run on the updated commits is required; leave T028 and T011 unchecked until all required checks on the final pushed head pass.
+
 ## T011 — CI follow-up for capability, generated C docs, and schema payload safety
 
 The subsequent PR run `38295045556` exposed three independent regressions. First, the manifest correctly declared the C-mapped `vendor_extension_registry` capability while the runtime query and FFI inventory test omitted it. Second, the checked-in generated C header had last-error documentation that was not represented in the manifest or generator. Third, QA demonstrated that a C documentation string containing a backslash-newline splice could escape the generated comment even though `*/` was rejected. Each behavior has a separate Red and Green commit; T011 stays open until remote CI on the new head passes.
