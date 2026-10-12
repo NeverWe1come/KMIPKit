@@ -8551,6 +8551,17 @@ class CatalogValidationTests(unittest.TestCase):
             ),
             "optional table cells must not become per-cell normative requirement identifiers",
         )
+        request_review = next(
+            review for review in oracle["source_requirement_reviews"]
+            if review.get("source_clause_id") == "KMIPKIT-CLAUSE-SPEC-6.1.45-007"
+        )
+        reviewed_rows = {row["row_label"]: row for row in request_review["source_request_rows"]}
+        for gap_id, (row_label, _line_range) in expected.items():
+            row = reviewed_rows[row_label]
+            with self.subTest(reviewed_request_row=row_label):
+                self.assertEqual(row["source_gap_id"], gap_id)
+                self.assertEqual(row["source_requirement_ids"], [])
+                self.assertEqual(row["disposition"], "optional_request_table_contract")
 
         operation_id = "KMIPKIT-ELEM-OP-C2S-RE-CERTIFY"
         implementation_ref = "crates/kmipkit-protocol/src/recertify.rs::RecertifyRequest::into_ttlv_payload"
@@ -8582,7 +8593,10 @@ class CatalogValidationTests(unittest.TestCase):
                 self.assertTrue(contract["condition"])
                 self.assertEqual(contract["status"], "mapped_to_approved_feature_contract")
                 self.assertEqual(contract["evidence_disposition"]["status"], "mapped_to_feature_contract")
-                self.assertIn("does not create a standalone REQ record", contract["evidence_disposition"]["statement"])
+                self.assertIn(
+                    "no per-cell MUST/SHALL or standalone requirement ID is asserted",
+                    contract["evidence_disposition"]["statement"],
+                )
 
         self.assertEqual(validate_source_table_contracts(oracle, ROOT), [])
 
@@ -8770,10 +8784,6 @@ class CatalogValidationTests(unittest.TestCase):
 
         expected_gaps = {
             "KMIPKIT-SOURCE-GAP-SPEC-6.1.45-CERTIFICATE-REQUEST-UID-ONLY": ("KMIPKIT-REQ-SPEC-6.1.45-002-003", "normative_SHALL"),
-            "KMIPKIT-SOURCE-GAP-SPEC-6.1.45-CERTIFICATE-REQUEST-UNIQUE-IDENTIFIER-OPTIONAL": ("KMIPKIT-REQ-SPEC-6.1.45-009", "optional_table_body_value"),
-            "KMIPKIT-SOURCE-GAP-SPEC-6.1.45-CERTIFICATE-REQUEST-VALUE-OPTIONAL": ("KMIPKIT-REQ-SPEC-6.1.45-010", "optional_table_body_value"),
-            "KMIPKIT-SOURCE-GAP-SPEC-6.1.45-ATTRIBUTES-OPTIONAL": ("KMIPKIT-REQ-SPEC-6.1.45-011", "optional_table_body_value"),
-            "KMIPKIT-SOURCE-GAP-SPEC-6.1.45-PROTECTION-STORAGE-MASKS-OPTIONAL": ("KMIPKIT-REQ-SPEC-6.1.45-012", "optional_table_body_value"),
         }
         recertify_gaps = {
             row["gap_id"]: row
@@ -14128,10 +14138,6 @@ class CatalogValidationTests(unittest.TestCase):
             "KMIPKIT-REQ-SPEC-6.1.43-012",
             "KMIPKIT-REQ-SPEC-6.1.44-004",
             "KMIPKIT-REQ-SPEC-6.1.45-002-003",
-            "KMIPKIT-REQ-SPEC-6.1.45-009",
-            "KMIPKIT-REQ-SPEC-6.1.45-010",
-            "KMIPKIT-REQ-SPEC-6.1.45-011",
-            "KMIPKIT-REQ-SPEC-6.1.45-012",
             "KMIPKIT-REQ-SPEC-6.1.46-008",
             "KMIPKIT-REQ-SPEC-6.1.46-009",
             "KMIPKIT-REQ-SPEC-6.1.49-001",
