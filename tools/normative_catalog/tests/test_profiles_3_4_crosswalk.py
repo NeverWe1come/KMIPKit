@@ -258,6 +258,33 @@ class ProfileSectionsThreeAndFourCrosswalkTests(unittest.TestCase):
         self.assertEqual(self.crosswalk[requirement_id]["applies_to"], baseline_profile_id)
         self.assertNotIn(requirement_id, UNRESOLVED_IDS)
 
+    def test_tls12_client_may_is_preserved_but_outside_the_10_profile_scope(self) -> None:
+        """Profiles §3.1.1's TLS 1.2 permission cannot expand the TLS 1.3-only ADR."""
+        requirement_id = "KMIPKIT-REQ-PROF-3.1.1-004"
+        clause_id = "KMIPKIT-CLAUSE-PROF-3.1.1-004"
+        requirement = self.requirements[requirement_id]
+        review = self.reviews[clause_id]
+        baseline = next(
+            row
+            for row in self.catalog["profiles"]
+            if row["profile_id"] == "KMIPKIT-PROFILE-BASELINE-CLIENT"
+        )
+        source_excerpt = pinned_excerpt([4030, 4037])
+        transport_decision = (ROOT / "docs/adr/0005-transport-and-tls.md").read_text(
+            encoding="utf-8"
+        )
+
+        self.assertIn("Conformant KMIP clients MAY support:", source_excerpt)
+        self.assertIn("TLS v1.2 [RFC5246]", source_excerpt)
+        self.assertEqual(review["source_obligations"][0]["source_keyword"], "MAY")
+        self.assertEqual(review["source_obligations"][0]["scope_disposition"], "out_of_scope")
+        self.assertEqual(requirement["scope_state"], "out_of_scope")
+        self.assertIn("ADR-0005", requirement["review_note"])
+        self.assertIn("TLS 1.3 only", transport_decision)
+        self.assertIn(clause_id, baseline["source_clause_ids"])
+        self.assertNotIn(requirement_id, baseline["requirement_ids"])
+        self.assertNotIn(requirement_id, self.crosswalk)
+
     def test_profile_test_variations_do_not_create_client_runtime_scope(self) -> None:
         """§§4.1 and 4.1.2 separate conformance-test variation from client obligations."""
         expected_scope = {
