@@ -206,13 +206,16 @@ Python uses the single exact-pinned test/build requirements set in
 6.2.1, pytest 8.4.2, CFFI 1.17.1, and Maturin 1.9.4. The committed
 coverage.py configuration selects `kmipkit` as the measured source package
 and excludes only the two Maturin-generated CFFI wrappers:
-`kmipkit/_ffi/__init__.py` and `kmipkit/_ffi/ffi.py`. They are created during
+`kmipkit/_native_ffi/__init__.py` and `kmipkit/_native_ffi/ffi.py`. They are created during
 package installation, ignored by Git, and absent from the clean checkout used
 by the aggregate job. Their behavior remains exercised through Python API
 parity tests and the CFFI, C consumer, and JNI integration suites. All
 handwritten and checked-in generated Python modules under
-`bindings/python/src/kmipkit` remain in the 85 percent gate. Tests and example
-consumers live outside that package and are not measured as product code.
+`bindings/python/src/kmipkit` remain in the 85 percent gate. In particular,
+`_generated/public_api.py` is imported and validated by
+`tests/test_generated_api_manifest.py`, so the generated API declaration
+metadata is included in the coverage report. Tests and example consumers live
+outside that package and are not measured as product code.
 Cross-platform adapter CI pins uv 0.12.23, installs CPython 3.12 through uv,
 and activates a clean virtual environment before installing this requirements
 set. This provides the same Python minor version across GitHub-hosted platforms. The C consumer CI pins CMake 3.31.6

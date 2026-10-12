@@ -246,7 +246,18 @@ Run `38299757432` on `7b26939f` showed that the C consumer, ABI export audit, C 
 | Green | `c8d0efbc` | Focused workflow contract test; `python -B -m unittest scripts.tests.test_workflow -v`; `git diff --check` | PASS: focused regression passes; all 41 workflow contract tests pass; whitespace check is clean. |
 | Read-only QA | `c8d0efbc` | Local review of the workflow diff, test, and adjacent commit history | PASS: only the C ABI inventory setup disables caching; Red and Green are separate DCO-signed commits. |
 
-The fix has not yet been pushed or verified by remote CI at this checkpoint. T011 and T028 remain open pending a complete successful run on the fixed head and passing language/platform matrices; this failure run is not completion evidence.
+The setup-uv correction is pushed. Run `38300751595` is checking commit `b79f2f81` and is still in progress at this evidence checkpoint; it does not include the Python coverage correction recorded below. T011 and T028 remain open pending a complete successful run on the final fixed head and passing language/platform matrices.
+
+## T011 — Exercise generated Python API metadata in coverage
+
+PR run `38299757432` also found that `_generated/public_api.py` was selected as eligible handwritten/check-in Python source by the coverage gate but did not appear in the Cobertura report. Keep the generated module measured: its public declaration metadata is now imported and checked by the Python manifest tests, and the coverage contract guards against silently dropping that exercise.
+
+| Phase | Commit | Verification | Result |
+|---|---|---|---|
+| Red | `f7c787c0` | `python -B -m unittest test_multilanguage_coverage.MultiLanguageCoverageTests.test_python_coverage_tests_execute_the_generated_public_api_manifest -v` from `scripts/tests` | Expected failure: the Python manifest suite did not import `public_api`. |
+| Green | `6677ea95` | Focused Python manifest tests with pinned coverage requirements; full Python coverage suite; `python -m unittest test_multilanguage_coverage -v` | PASS: 2 focused tests; full Python suite 48/48 and 97.22% coverage; the XML contains `bindings/python/src/kmipkit/_generated/public_api.py`; all 17 multi-language coverage contract tests pass. |
+
+The testing guide now documents that only the two generated `_native_ffi` wrappers are excluded and that the checked-in public API manifest stays inside the 85% coverage gate. The full suite produced local Windows evidence; the Linux CI run on the pushed head remains authoritative. T011 remains open pending final CI and read-only QA.
 
 ## T011 — CI follow-up for capability, generated C docs, and schema payload safety
 
