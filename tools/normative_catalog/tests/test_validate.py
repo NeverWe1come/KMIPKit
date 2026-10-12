@@ -16396,50 +16396,67 @@ class CatalogValidationTests(unittest.TestCase):
             ),
         }
 
+        def expected_client_request_row(
+            *,
+            row_label: str,
+            required: str,
+            disposition: str,
+            html_line_range: list[int],
+            source_excerpt: str,
+            source_gap_id: str,
+            requirement_id: str,
+        ) -> dict[str, object]:
+            return {
+                "row_label": row_label,
+                "required": required,
+                "actor": "client",
+                "disposition": disposition,
+                "html_line_range": html_line_range,
+                "source_excerpt": source_excerpt,
+                "source_gap_id": source_gap_id,
+                "source_requirement_ids": [requirement_id],
+            }
+
         expected_review_rows = {
             "KMIPKIT-CLAUSE-SPEC-6.1.30-001": [
-                {
-                    "row_label": "Lease Time",
-                    "required": "No",
-                    "actor": "client",
-                    "disposition": "optional_request_field",
-                    "html_line_range": [29673, 29688],
-                    "source_excerpt": "Lease Time No The lease time Interval or Date Time for the ticket",
-                    "source_gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.30-LEASE-TIME-OPTIONAL",
-                    "source_requirement_ids": ["KMIPKIT-REQ-SPEC-6.1.30-001"],
-                },
-                {
-                    "row_label": "Request Count",
-                    "required": "No",
-                    "actor": "client",
-                    "disposition": "optional_request_field",
-                    "html_line_range": [29689, 29704],
-                    "source_excerpt": "Request Count No The integer count of the number of requests that can be made with the ticket",
-                    "source_gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.30-REQUEST-COUNT-OPTIONAL",
-                    "source_requirement_ids": ["KMIPKIT-REQ-SPEC-6.1.30-002"],
-                },
-                {
-                    "row_label": "Usage Limits",
-                    "required": "No",
-                    "actor": "client",
-                    "disposition": "optional_request_field",
-                    "html_line_range": [29705, 29720],
-                    "source_excerpt": "Usage Limits No The usage limits for the operations performed",
-                    "source_gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.30-USAGE-LIMITS-OPTIONAL",
-                    "source_requirement_ids": ["KMIPKIT-REQ-SPEC-6.1.30-003"],
-                },
+                expected_client_request_row(
+                    row_label="Lease Time",
+                    required="No",
+                    disposition="optional_request_field",
+                    html_line_range=[29673, 29688],
+                    source_excerpt="Lease Time No The lease time Interval or Date Time for the ticket",
+                    source_gap_id="KMIPKIT-SOURCE-GAP-SPEC-6.1.30-LEASE-TIME-OPTIONAL",
+                    requirement_id="KMIPKIT-REQ-SPEC-6.1.30-001",
+                ),
+                expected_client_request_row(
+                    row_label="Request Count",
+                    required="No",
+                    disposition="optional_request_field",
+                    html_line_range=[29689, 29704],
+                    source_excerpt="Request Count No The integer count of the number of requests that can be made with the ticket",
+                    source_gap_id="KMIPKIT-SOURCE-GAP-SPEC-6.1.30-REQUEST-COUNT-OPTIONAL",
+                    requirement_id="KMIPKIT-REQ-SPEC-6.1.30-002",
+                ),
+                expected_client_request_row(
+                    row_label="Usage Limits",
+                    required="No",
+                    disposition="optional_request_field",
+                    html_line_range=[29705, 29720],
+                    source_excerpt="Usage Limits No The usage limits for the operations performed",
+                    source_gap_id="KMIPKIT-SOURCE-GAP-SPEC-6.1.30-USAGE-LIMITS-OPTIONAL",
+                    requirement_id="KMIPKIT-REQ-SPEC-6.1.30-003",
+                ),
             ],
             "KMIPKIT-CLAUSE-SPEC-6.1.31-001": [
-                {
-                    "row_label": "Ticket",
-                    "required": "Yes",
-                    "actor": "client",
-                    "disposition": "required_request_field",
-                    "html_line_range": [29866, 29881],
-                    "source_excerpt": "Ticket Yes The ticket to be invalidated",
-                    "source_gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.31-TICKET-REQUIRED",
-                    "source_requirement_ids": ["KMIPKIT-REQ-SPEC-6.1.31-001"],
-                }
+                expected_client_request_row(
+                    row_label="Ticket",
+                    required="Yes",
+                    disposition="required_request_field",
+                    html_line_range=[29866, 29881],
+                    source_excerpt="Ticket Yes The ticket to be invalidated",
+                    source_gap_id="KMIPKIT-SOURCE-GAP-SPEC-6.1.31-TICKET-REQUIRED",
+                    requirement_id="KMIPKIT-REQ-SPEC-6.1.31-001",
+                )
             ],
         }
         for clause_id, expected in expected_review_rows.items():
