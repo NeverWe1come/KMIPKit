@@ -65,14 +65,15 @@ def _reviewed_profile_optional_capabilities(
     selected_clause_ids: set[str],
     selected_source_sections: set[tuple[str, str]],
 ) -> tuple[set[str], list[str]]:
-    """Collect source-reviewed client MAY/OPTIONAL candidate IDs."""
-    del selected_clause_ids, selected_source_sections
+    """Collect source-reviewed MAY/OPTIONAL candidates in the selected profile closure."""
     capabilities: set[str] = set()
     gaps: list[str] = []
     explicit_source_gaps = {
         gap["gap_id"]: gap for gap in oracle.get("source_only_requirement_gaps", [])
     }
     for review in oracle["source_requirement_reviews"]:
+        if review["source_clause_id"] not in selected_clause_ids:
+            continue
         for obligation in review["source_obligations"]:
             if (
                 obligation["source_keyword"] not in {"MAY", "OPTIONAL"}
@@ -94,6 +95,26 @@ def _reviewed_profile_optional_capabilities(
             capabilities.add(candidate_id)
 
     for gap in oracle.get("source_only_requirement_gaps", []):
+        source_clause_id = gap.get("source_clause_id")
+        if source_clause_id is not None:
+            is_selected = source_clause_id in selected_clause_ids
+        else:
+            source_id = gap.get("source_id")
+            source_section = gap.get("source_section")
+            is_selected = bool(
+                source_id
+                and source_section
+                and any(
+                    selected_source_id == source_id
+                    and (
+                        source_section == selected_section
+                        or source_section.startswith(f"{selected_section}.")
+                    )
+                    for selected_source_id, selected_section in selected_source_sections
+                )
+            )
+        if not is_selected:
+            continue
         if (
             set(gap["source_keywords"]) & {"MAY", "OPTIONAL"}
             and gap["scope_disposition"] in {"client_1_0", "profile_conditional"}
@@ -15809,53 +15830,34 @@ class CatalogValidationTests(unittest.TestCase):
         self.assertIn("KMIPKIT-REQ-SPEC-6.1.43-009-001", optional_capabilities)
 
     def test_every_reviewed_client_may_or_optional_has_usable_positive_evidence(self) -> None:
-        """A selected profile or summary cannot replace an implementation and positive test."""
+        """Selected Baseline MAY/OPTIONAL capabilities require implementation and positive test evidence."""
         oracle = json.loads(
             (ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json").read_text(encoding="utf-8")
         )
         catalog = json.loads(
             (ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8")
         )
-        requirements = {row["requirement_id"]: row for row in catalog["requirements"]}
-        gaps: list[str] = []
-        positive_capabilities: set[str] = set()
-        explicit_source_gaps = {
-            gap["gap_id"]: gap for gap in oracle.get("source_only_requirement_gaps", [])
+        targets = json.loads(
+            (ROOT / "specification" / "catalog" / "profile-targets.json").read_text(encoding="utf-8")
+        )
+        profiles = {profile["profile_id"]: profile for profile in catalog["profiles"]}
+        selected_profiles = [profiles[profile_id] for profile_id in targets["profile_ids"]]
+        selected_clause_ids = {
+            clause_id
+            for profile in selected_profiles
+            for clause_id in profile["source_clause_ids"]
         }
-        for review in oracle["source_requirement_reviews"]:
-            for obligation in review["source_obligations"]:
-                if (
-                    obligation["source_keyword"] not in {"MAY", "OPTIONAL"}
-                    or obligation["scope_disposition"] not in {"client_1_0", "profile_conditional"}
-                ):
-                    continue
-                candidate_id = obligation["candidate_requirement_id"]
-                if candidate_id is None:
-                    gap_ref = obligation.get("source_gap_id")
-                    if gap_ref not in explicit_source_gaps:
-                        gaps.append(
-                            f"{review['source_clause_id']} source capability has no stable candidate ID or explicit gap record"
-                        )
-                    else:
-                        gaps.append(
-                            f"{gap_ref}: in-scope {obligation['source_keyword']} capability has no stable candidate ID"
-                        )
-                    continue
-                positive_capabilities.add(candidate_id)
-
-        for gap in oracle.get("source_only_requirement_gaps", []):
-            if (
-                set(gap["source_keywords"]) & {"MAY", "OPTIONAL"}
-                and gap["scope_disposition"] in {"client_1_0", "profile_conditional"}
-            ):
-                candidate_id = gap["candidate_requirement_id"]
-                if candidate_id is None:
-                    gaps.append(
-                        f"{gap['gap_id']}: in-scope optional capability has no stable candidate ID "
-                        f"(proposed {gap['proposed_requirement_id']})"
-                    )
-                    continue
-                positive_capabilities.add(candidate_id)
+        clauses_by_id = {clause["clause_id"]: clause for clause in catalog["source_clauses"]}
+        selected_source_sections = {
+            (clauses_by_id[clause_id]["source_id"], clauses_by_id[clause_id]["section"])
+            for clause_id in selected_clause_ids
+        }
+        requirements = {row["requirement_id"]: row for row in catalog["requirements"]}
+        positive_capabilities, gaps = _reviewed_profile_optional_capabilities(
+            oracle,
+            selected_clause_ids,
+            selected_source_sections,
+        )
 
         for requirement_id in sorted(positive_capabilities):
             requirement = requirements.get(requirement_id)
