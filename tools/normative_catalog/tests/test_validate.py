@@ -1746,14 +1746,25 @@ class CatalogValidationTests(unittest.TestCase):
                 catalog_validate.KEYWORD_STRENGTH[requirement["source_keyword"]],
             )
 
-    def test_application_specific_information_element_ids_are_sorted(self) -> None:
-        """The corrected 4.4 client request row keeps relationship IDs deterministic."""
+    def test_optional_request_evidence_element_ids_are_sorted(self) -> None:
+        """The eight reviewed optional request rows keep relationship IDs deterministic."""
         catalog = json.loads((ROOT / "specification/catalog/kmip-2.1.json").read_text(encoding="utf-8"))
-        requirement = next(
-            row for row in catalog["requirements"] if row["requirement_id"] == "KMIPKIT-REQ-SPEC-4.4-001"
+        requirement_ids = (
+            "KMIPKIT-REQ-SPEC-4.26-001",
+            "KMIPKIT-REQ-SPEC-4.34-001-001",
+            "KMIPKIT-REQ-SPEC-4.38-001-001",
+            "KMIPKIT-REQ-SPEC-4.38-001-002",
+            "KMIPKIT-REQ-SPEC-4.38-001-003",
+            "KMIPKIT-REQ-SPEC-4.4-001",
+            "KMIPKIT-REQ-SPEC-4.46-001-001",
+            "KMIPKIT-REQ-SPEC-4.46-001-002",
         )
+        requirements = {row["requirement_id"]: row for row in catalog["requirements"]}
 
-        self.assertEqual(requirement["element_ids"], sorted(requirement["element_ids"]))
+        for requirement_id in requirement_ids:
+            with self.subTest(requirement_id=requirement_id):
+                element_ids = requirements[requirement_id]["element_ids"]
+                self.assertEqual(element_ids, sorted(element_ids))
 
     def test_checked_in_catalog_orders_evidence_policies_and_relationships_deterministically(self) -> None:
         catalog = json.loads((ROOT / "specification/catalog/kmip-2.1.json").read_text(encoding="utf-8"))
