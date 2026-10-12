@@ -50,6 +50,18 @@ class BindingExportAuditTests(unittest.TestCase):
         })
         self.assertTrue(result["complete"])
 
+    def test_c_header_inventory_accounts_for_tagged_structs_and_union_fields(self):
+        header = "typedef struct Public { int field; } kmipkit_options_t;\ntypedef union { int integer; } kmipkit_value_t;\n"
+        result = AUDIT.inventory_c_header(header)
+        actual = {(row["kind"], row["exportName"]) for row in result["declarations"]}
+        self.assertEqual(actual, {
+            ("type", "kmipkit_options_t"),
+            ("field", "kmipkit_options_t.field"),
+            ("type", "kmipkit_value_t"),
+            ("field", "kmipkit_value_t.integer"),
+        })
+        self.assertTrue(result["complete"])
+
     def test_c_binary_export_audit_reconciles_header_and_dll_symbols(self):
         header = "int32_t kmipkit_client_create(void);\n"
         result = AUDIT.audit_c_surface(header, ["kmipkit_client_create", "kmipkit_client_destroy"])
