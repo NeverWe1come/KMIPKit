@@ -20,26 +20,18 @@ fn baseline_target_membership_does_not_make_runtime_selection_available() {
         .find(|profile| profile.profile_id == BASELINE)
         .expect("the generated catalog includes Baseline Client");
     assert!(target.selected_target);
-    for (requirement_id, source_clause_id) in [
-        ("KMIPKIT-REQ-SPEC-2.3-001", "KMIPKIT-CLAUSE-SPEC-2.3-001"),
-        (
-            "KMIPKIT-REQ-SPEC-4.1-001-001",
-            "KMIPKIT-CLAUSE-SPEC-4.1-001",
-        ),
-    ] {
-        assert!(
-            target
-                .unresolved_scope_obligations
-                .iter()
-                .any(|obligation| {
-                    obligation.requirement_id == requirement_id
-                        && obligation.source_clause_id == source_clause_id
-                })
-        );
-    }
+    assert!(
+        target
+            .unresolved_scope_obligations
+            .iter()
+            .any(|obligation| {
+                obligation.requirement_id == "KMIPKIT-REQ-SPEC-4.1-001-001"
+                    && obligation.source_clause_id == "KMIPKIT-CLAUSE-SPEC-4.1-001"
+            })
+    );
+    assert!(target.requirement_ids.contains(&"KMIPKIT-REQ-SPEC-2.3-001"));
     for inherited_requirement in [
         "KMIPKIT-REQ-PROF-3.1.1-002",
-        "KMIPKIT-REQ-PROF-3.1.1-004",
         "KMIPKIT-REQ-PROF-3.1.1-005",
         "KMIPKIT-REQ-PROF-3.1.2-002",
         "KMIPKIT-REQ-PROF-3.1.2-005",

@@ -43,7 +43,6 @@ def load_json(path: Path) -> dict[str, object]:
 CLIENT_IDS = {
     "KMIPKIT-REQ-PROF-3.1-001",
     "KMIPKIT-REQ-PROF-3.1.1-002",
-    "KMIPKIT-REQ-PROF-3.1.1-004",
     "KMIPKIT-REQ-PROF-3.1.1-005",
     "KMIPKIT-REQ-PROF-3.1.2-002",
     "KMIPKIT-REQ-PROF-3.1.2-005",
@@ -63,6 +62,7 @@ UNRESOLVED_IDS = {
     "KMIPKIT-REQ-PROF-4.1.2-005",
 }
 OUT_OF_SCOPE_IDS = {
+    "KMIPKIT-REQ-PROF-3.1.1-004",
     "KMIPKIT-REQ-PROF-4.1-001",
     "KMIPKIT-REQ-PROF-4.1-003",
     "KMIPKIT-REQ-PROF-4.1.2-008",
@@ -123,9 +123,9 @@ class ProfileSectionsThreeAndFourCrosswalkTests(unittest.TestCase):
         self.assertEqual(set(self.crosswalk), CLIENT_IDS)
         self.assertEqual(set(self.reviews), target_clause_ids)
 
-    def test_unresolved_and_test_only_rows_are_not_client_obligations(self) -> None:
+    def test_unresolved_and_out_of_scope_rows_are_not_client_obligations(self) -> None:
         self.assertEqual(len(UNRESOLVED_IDS), 6)
-        self.assertEqual(len(OUT_OF_SCOPE_IDS), 4)
+        self.assertEqual(len(OUT_OF_SCOPE_IDS), 5)
         self.assertFalse((UNRESOLVED_IDS | OUT_OF_SCOPE_IDS) & self.crosswalk.keys())
         reviewed_clause_ids = {
             self.requirements[requirement_id]["source_clause_ids"][0]
@@ -155,7 +155,6 @@ class ProfileSectionsThreeAndFourCrosswalkTests(unittest.TestCase):
         baseline_ids = {
             "KMIPKIT-REQ-PROF-3.1-001",
             "KMIPKIT-REQ-PROF-3.1.1-002",
-            "KMIPKIT-REQ-PROF-3.1.1-004",
             "KMIPKIT-REQ-PROF-3.1.1-005",
             "KMIPKIT-REQ-PROF-3.1.2-002",
             "KMIPKIT-REQ-PROF-3.1.2-005",
@@ -282,6 +281,9 @@ class ProfileSectionsThreeAndFourCrosswalkTests(unittest.TestCase):
         self.assertIn("ADR-0005", requirement["review_note"])
         self.assertIn("TLS 1.3 only", transport_decision)
         self.assertIn(clause_id, baseline["source_clause_ids"])
+        self.assertEqual(self.clauses[clause_id]["scope_state"], "out_of_scope")
+        self.assertIn(requirement_id, self.clauses[clause_id]["requirement_ids"])
+        self.assertIn("KMIPKIT-PROFILE-BASELINE-CLIENT", requirement["profile_ids"])
         self.assertNotIn(requirement_id, baseline["requirement_ids"])
         self.assertNotIn(requirement_id, self.crosswalk)
 

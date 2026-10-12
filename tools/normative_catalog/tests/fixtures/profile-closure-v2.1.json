@@ -88,7 +88,7 @@
   },
   "counts": {
     "profiles": 18,
-    "requirement_crosswalk_records": 503,
+    "requirement_crosswalk_records": 502,
     "requirement_crosswalk_complete": false,
     "source_requirement_review_records": 890,
     "source_only_requirement_gaps": 104,
@@ -17249,23 +17249,6 @@
       "source_actor": "client"
     },
     {
-      "requirement_id": "KMIPKIT-REQ-PROF-3.1.1-004",
-      "source_clause_id": "KMIPKIT-CLAUSE-PROF-3.1.1-004",
-      "source_id": "KMIPKIT-SRC-profiles",
-      "source_section": "3.1.1",
-      "source_locator": {
-        "ordinal": 4,
-        "block_kind": "paragraph"
-      },
-      "source_keyword": "MAY",
-      "role": "client",
-      "scope_state": "profile_conditional",
-      "applies_to": "KMIPKIT-PROFILE-BASELINE-CLIENT",
-      "review_note": "Profiles v2.1 §3.1.1 paragraph 4; Baseline Basic Authentication Suite.",
-      "source_obligation_order": 1,
-      "source_actor": "client"
-    },
-    {
       "requirement_id": "KMIPKIT-REQ-PROF-3.1.1-005",
       "source_clause_id": "KMIPKIT-CLAUSE-PROF-3.1.1-005",
       "source_id": "KMIPKIT-SRC-profiles",
@@ -30561,7 +30544,6 @@
       "requirement_ids_audited_subset": [
         "KMIPKIT-REQ-PROF-3.1-001",
         "KMIPKIT-REQ-PROF-3.1.1-002",
-        "KMIPKIT-REQ-PROF-3.1.1-004",
         "KMIPKIT-REQ-PROF-3.1.1-005",
         "KMIPKIT-REQ-PROF-3.1.2-002",
         "KMIPKIT-REQ-PROF-3.1.2-005",
@@ -30840,7 +30822,6 @@
       "requirement_ids": [
         "KMIPKIT-REQ-PROF-3.1-001",
         "KMIPKIT-REQ-PROF-3.1.1-002",
-        "KMIPKIT-REQ-PROF-3.1.1-004",
         "KMIPKIT-REQ-PROF-3.1.1-005",
         "KMIPKIT-REQ-PROF-3.1.2-002",
         "KMIPKIT-REQ-PROF-3.1.2-005",
@@ -58475,16 +58456,14 @@
           "actor": "client",
           "direction": "client TLS protocol or cipher-suite support",
           "condition": "within the Basic Authentication Suite and the protocol support condition stated in §3.1.1 or §3.1.2",
-          "scope_disposition": "profile_conditional",
+          "scope_disposition": "out_of_scope",
           "candidate_requirement_id": "KMIPKIT-REQ-PROF-3.1.1-004"
         }
       ],
       "rejected_candidate_mappings": [],
-      "expected_client_requirement_ids": [
-        "KMIPKIT-REQ-PROF-3.1.1-004"
-      ],
+      "expected_client_requirement_ids": [],
       "applies_to": "KMIPKIT-PROFILE-BASELINE-CLIENT",
-      "review_note": "Profiles v2.1 §3.1.1 paragraph 4; Baseline Basic Authentication Suite; the following TLS v1.2 list item scopes the optional support."
+      "review_note": "Profiles v2.1 §3.1.1 paragraph 4 permits optional TLS 1.2 support; ADR-0005 limits KMIPKit 1.0 to TLS 1.3, so this capability is outside the 1.0 client scope."
     },
     {
       "source_id": "KMIPKIT-SRC-profiles",
