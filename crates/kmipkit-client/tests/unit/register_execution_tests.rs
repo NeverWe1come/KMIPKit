@@ -131,6 +131,7 @@ fn request_fields(bytes: &[u8], item_index: usize) -> (Option<u32>, Vec<u32>, Ve
 }
 
 struct RegisterCertificateFields {
+    operation: u32,
     object_type: u32,
     attribute_tags: Vec<u32>,
     attribute_certificate_type: u32,
@@ -218,7 +219,10 @@ fn register_certificate_object_fields(certificate: &StructureView<'_>) -> (u32, 
     )
 }
 
-fn register_certificate_payload_fields(payload: &StructureView<'_>) -> RegisterCertificateFields {
+fn register_certificate_payload_fields(
+    payload: &StructureView<'_>,
+    operation: u32,
+) -> RegisterCertificateFields {
     let object_type = enumeration_field(payload, OBJECT_TYPE, "Register Object Type");
     let (attribute_tags, attribute_certificate_type, certificate_length) = with_structure(
         required_field(payload, ATTRIBUTES, "Register Attributes"),
@@ -231,6 +235,7 @@ fn register_certificate_payload_fields(payload: &StructureView<'_>) -> RegisterC
         register_certificate_object_fields,
     );
     RegisterCertificateFields {
+        operation,
         object_type,
         attribute_tags,
         attribute_certificate_type,
@@ -248,10 +253,11 @@ fn register_certificate_fields(bytes: &[u8]) -> RegisterCertificateFields {
                 required_field(message, BATCH_ITEM, "Register Batch Item"),
                 "Batch Item",
                 |batch| {
+                    let operation = enumeration_field(batch, OPERATION, "Batch Item Operation");
                     with_structure(
                         required_field(batch, REQUEST_PAYLOAD, "Register Request Payload"),
                         "Request Payload",
-                        register_certificate_payload_fields,
+                        |payload| register_certificate_payload_fields(payload, operation),
                     )
                 },
             )
@@ -445,6 +451,10 @@ fn register_client_omits_signature_algorithm_when_x509_certificate_encodes_it() 
     let request = captured.borrow();
     let request = request.as_deref().expect("fake transport captured request");
     let fields = register_certificate_fields(request);
+    assert_eq!(
+        fields.operation, REGISTER_OPERATION,
+        "Operation is Register"
+    );
     assert_eq!(fields.object_type, 1, "Object Type is Certificate");
     assert_eq!(
         fields.attribute_certificate_type, 1,
