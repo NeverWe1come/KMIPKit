@@ -24,6 +24,16 @@ RUST_PACKAGES = (
     "rust-kmipkit-client",
     "rust-kmipkit",
 )
+_RUNTIME_METADATA_NAMESPACE_BLOCKS = {
+    "org.kmipkit.RuntimeMetadata:java": (
+        "KMIPKIT-0043",
+        "The Rust crate root is not an exported declaration matching this binding namespace; parity remains blocked.",
+    ),
+    "kmipkit.metadata:python": (
+        "KMIPKIT-0043",
+        "The Rust crate root is not an exported declaration matching this binding namespace; parity remains blocked.",
+    ),
+}
 RUST_ONLY_CAPABILITY = "rust_transport_exchange"
 RUST_ONLY_DECLARATIONS = {
     "kmipkit_transport::Transport",
@@ -177,7 +187,13 @@ def _blocked_unreconciled_rows(manifest: dict[str, Any]) -> list[dict[str, str]]
     blocked: list[dict[str, str]] = []
     for row in manifest.get("publicDeclarations", []):
         reason = row.get("blockedReason", "")
-        if row.get("candidateSpecId") != "KMIPKIT-0012" or not reason:
+        declaration_id = row.get("declarationId")
+        registry_candidate = row.get("candidateSpecId") == "KMIPKIT-0012"
+        runtime_namespace_candidate = _RUNTIME_METADATA_NAMESPACE_BLOCKS.get(declaration_id) == (
+            row.get("candidateSpecId"),
+            reason,
+        )
+        if not (registry_candidate or runtime_namespace_candidate) or not reason:
             continue
         if "callable public declaration" not in reason and "No exact equivalent public Rust declaration" not in reason and "crate root is not an exported declaration" not in reason:
             continue
