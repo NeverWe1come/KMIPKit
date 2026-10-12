@@ -274,6 +274,36 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
                     f"{sorted(missing_requirement_ids)[:8]}",
                 )
 
+    def test_catalog_scopes_source_reviewed_conditional_requirements_to_profiles(self) -> None:
+        """Catalog profile IDs and closures match source-reviewed conditional applicability."""
+        catalog_path = ROOT / "specification" / "catalog" / "kmip-2.1.json"
+        catalog = json.loads(catalog_path.read_text(encoding="utf-8"))
+        oracle_path = ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json"
+        oracle = json.loads(oracle_path.read_text(encoding="utf-8"))
+        catalog_profiles = {item["profile_id"]: item for item in catalog["profiles"]}
+        requirements = {item["requirement_id"]: item for item in catalog["requirements"]}
+        mappings = oracle["requirement_crosswalk"]
+
+        for expected_profile in oracle["profiles"]:
+            profile_id = expected_profile["profile_id"]
+            source_clauses = set(expected_profile["source_clause_ids"])
+            applicable_mappings = [
+                mapping
+                for mapping in mappings
+                if mapping.get("source_clause_id") in source_clauses
+                and mapping.get("applies_to") in {"all_client_profiles", profile_id}
+                and mapping.get("role") in {"client", "both"}
+                and mapping.get("scope_state") == "profile_conditional"
+            ]
+            actual_profile = catalog_profiles[profile_id]
+
+            for mapping in applicable_mappings:
+                requirement_id = mapping["requirement_id"]
+                requirement = requirements[requirement_id]
+                with self.subTest(profile_id=profile_id, requirement_id=requirement_id):
+                    self.assertIn(profile_id, requirement["profile_ids"])
+                    self.assertIn(requirement_id, actual_profile["requirement_ids"])
+
     def test_source_oracle_covers_all_profiles_and_expected_scope_counts(self) -> None:
         oracle_path = ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json"
         oracle = json.loads(oracle_path.read_text(encoding="utf-8"))
