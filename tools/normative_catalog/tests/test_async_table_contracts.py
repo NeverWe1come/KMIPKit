@@ -4,8 +4,10 @@ from __future__ import annotations
 
 import copy
 import json
+import tempfile
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 
 from tools.normative_catalog.validate import validate_source_table_contracts
 
@@ -34,6 +36,23 @@ REVIEWED_ASYNC_CONTRACT_SEMANTICS = {
         "scope_disposition": "client_1_0",
     },
 }
+
+
+def validate_with_catalog_fixture(oracle: object, catalog: dict[str, object]) -> list[str]:
+    """Run the source-table validator against an isolated catalog file copy."""
+    original_read_text = Path.read_text
+    with tempfile.TemporaryDirectory() as temporary_directory:
+        fixture_path = Path(temporary_directory) / "kmip-2.1.json"
+        fixture_path.write_text(json.dumps(catalog), encoding="utf-8")
+        catalog_path = CATALOG_PATH.resolve()
+
+        def read_text(path: Path, *args: object, **kwargs: object) -> str:
+            if path.resolve() == catalog_path:
+                return original_read_text(fixture_path, *args, **kwargs)
+            return original_read_text(path, *args, **kwargs)
+
+        with patch.object(Path, "read_text", new=read_text):
+            return validate_source_table_contracts(oracle, ROOT)
 
 
 class AsyncTableContractTests(unittest.TestCase):
@@ -100,7 +119,6 @@ class AsyncTableContractTests(unittest.TestCase):
             for field, wrong_value in (
                 ("requiredness", "No" if semantics["requiredness"] == "Yes" else "Yes"),
                 ("actor", "server"),
-                ("direction", "server-to-client response payload value"),
                 ("scope_disposition", "client_1_1"),
             ):
                 with self.subTest(gap_id=gap_id, field=field):
@@ -115,6 +133,40 @@ class AsyncTableContractTests(unittest.TestCase):
                     self.assertTrue(
                         any(f".{field}" in diagnostic for diagnostic in diagnostics),
                         f"validator accepted wrong {field} for {gap_id}: {diagnostics!r}",
+                    )
+
+    def test_source_table_validator_checks_linked_operation_direction_and_request_table(self) -> None:
+        oracle = json.loads(ORACLE_PATH.read_text(encoding="utf-8"))
+        catalog = json.loads(CATALOG_PATH.read_text(encoding="utf-8"))
+        operation_ids = (
+            "KMIPKIT-ELEM-OP-C2S-PROCESS",
+            "KMIPKIT-ELEM-OP-C2S-QUERY-ASYNCHRONOUS-REQUESTS",
+        )
+
+        for operation_id in operation_ids:
+            for mutation in ("direction", "request_table_role"):
+                with self.subTest(operation_id=operation_id, mutation=mutation):
+                    mutated_catalog = copy.deepcopy(catalog)
+                    operation = next(
+                        row for row in mutated_catalog["elements"]
+                        if row.get("element_id") == operation_id
+                    )
+                    if mutation == "direction":
+                        operation["direction"] = "server_to_client"
+                    else:
+                        request_table = next(
+                            table for table in operation["payload_tables"]
+                            if table.get("role") == "request"
+                        )
+                        request_table["role"] = "response"
+
+                    diagnostics = validate_with_catalog_fixture(oracle, mutated_catalog)
+                    self.assertTrue(
+                        any(
+                            "operation_element_id must reference a client-to-server operation with the request table" in diagnostic
+                            for diagnostic in diagnostics
+                        ),
+                        f"validator accepted wrong linked operation {mutation} for {operation_id}: {diagnostics!r}",
                     )
 
 
