@@ -11498,6 +11498,39 @@ class CatalogValidationTests(unittest.TestCase):
                 )
         self.assertEqual(oracle["oracle_status"], "partial-source-reviewed; not complete T003 oracle")
 
+    def _assert_optional_request_row_gaps(
+        self,
+        *,
+        request_rows: dict[str, tuple[list[int], str, str]],
+        gaps: dict[str, dict[str, object]],
+        catalog_ids: set[str],
+        source_path: str,
+        section: str,
+        assert_gap_exists: bool = False,
+    ) -> None:
+        for row_label, (line_range, gap_id, requirement_id) in request_rows.items():
+            if assert_gap_exists:
+                self.assertTrue(gap_id in gaps, f"the optional {row_label} source row needs an independent gap record")
+            gap = gaps[gap_id]
+            excerpt = pinned_source_excerpt(source_path, line_range)
+            with self.subTest(request_row=row_label):
+                self.assertEqual(gap["source_locator"]["kind"], "table_body_row")
+                self.assertEqual(gap["source_locator"]["section"], section)
+                self.assertEqual(gap["source_locator"]["row_label"], row_label)
+                self.assertEqual(gap["source_locator"]["table"], "request_payload")
+                self.assertEqual(gap["source_locator"]["html_line_range"], line_range)
+                self.assertEqual(gap["html_line_range"], line_range)
+                self.assertEqual(gap["source_excerpt"], excerpt)
+                self.assertEqual(gap["source_force"], "optional_table_body_value")
+                self.assertEqual(gap["source_keywords"], [])
+                self.assertEqual(gap["actor"], "client")
+                self.assertEqual(gap["scope_disposition"], "client_1_0")
+                self.assertEqual(gap["candidate_requirement_id"], requirement_id)
+                self.assertIsNone(gap["proposed_requirement_id"])
+                self.assertEqual(gap["status"], "source_obligation_covered_by_existing_stable_label")
+                self.assertIn(requirement_id, catalog_ids)
+                self.assertIn(" No ", f" {excerpt} ")
+
     def test_spec_6_1_19_get_and_error_handling_have_source_review_rows(self) -> None:
         """Specification v2.1 §6.1.19 and §6.1.19.1 require pinned-source review rows."""
         oracle = json.loads(
@@ -11595,27 +11628,14 @@ class CatalogValidationTests(unittest.TestCase):
         gaps = {gap["gap_id"]: gap for gap in oracle["source_only_requirement_gaps"]}
         catalog = json.loads((ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8"))
         catalog_ids = {requirement["requirement_id"] for requirement in catalog["requirements"]}
-        for row_label, (line_range, gap_id, proposed_id) in request_rows.items():
-            self.assertTrue(gap_id in gaps, f"the optional {row_label} source row needs an independent gap record")
-            gap = gaps[gap_id]
-            excerpt = pinned_source_excerpt(source_path, line_range)
-            with self.subTest(request_row=row_label):
-                self.assertEqual(gap["source_locator"]["kind"], "table_body_row")
-                self.assertEqual(gap["source_locator"]["section"], "6.1.19")
-                self.assertEqual(gap["source_locator"]["row_label"], row_label)
-                self.assertEqual(gap["source_locator"]["table"], "request_payload")
-                self.assertEqual(gap["source_locator"]["html_line_range"], line_range)
-                self.assertEqual(gap["html_line_range"], line_range)
-                self.assertEqual(gap["source_excerpt"], excerpt)
-                self.assertEqual(gap["source_force"], "optional_table_body_value")
-                self.assertEqual(gap["source_keywords"], [])
-                self.assertEqual(gap["actor"], "client")
-                self.assertEqual(gap["scope_disposition"], "client_1_0")
-                self.assertEqual(gap["candidate_requirement_id"], proposed_id)
-                self.assertIsNone(gap["proposed_requirement_id"])
-                self.assertEqual(gap["status"], "source_obligation_covered_by_existing_stable_label")
-                self.assertIn(proposed_id, catalog_ids)
-                self.assertIn(" No ", f" {excerpt} ")
+        self._assert_optional_request_row_gaps(
+            request_rows=request_rows,
+            gaps=gaps,
+            catalog_ids=catalog_ids,
+            source_path=source_path,
+            section="6.1.19",
+            assert_gap_exists=True,
+        )
 
         request_header = reviews["KMIPKIT-CLAUSE-SPEC-6.1.19-006"]
         self.assertEqual(request_header["source_obligations"], [])
@@ -12547,26 +12567,13 @@ class CatalogValidationTests(unittest.TestCase):
         gaps = {gap["gap_id"]: gap for gap in oracle["source_only_requirement_gaps"]}
         catalog = json.loads((ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8"))
         catalog_ids = {requirement["requirement_id"] for requirement in catalog["requirements"]}
-        for row_label, (line_range, gap_id, proposed_id) in request_rows.items():
-            gap = gaps[gap_id]
-            excerpt = pinned_source_excerpt(source_path, line_range)
-            with self.subTest(request_row=row_label):
-                self.assertEqual(gap["source_locator"]["kind"], "table_body_row")
-                self.assertEqual(gap["source_locator"]["section"], "6.1.18")
-                self.assertEqual(gap["source_locator"]["row_label"], row_label)
-                self.assertEqual(gap["source_locator"]["table"], "request_payload")
-                self.assertEqual(gap["source_locator"]["html_line_range"], line_range)
-                self.assertEqual(gap["html_line_range"], line_range)
-                self.assertEqual(gap["source_excerpt"], excerpt)
-                self.assertEqual(gap["source_force"], "optional_table_body_value")
-                self.assertEqual(gap["source_keywords"], [])
-                self.assertEqual(gap["actor"], "client")
-                self.assertEqual(gap["scope_disposition"], "client_1_0")
-                self.assertEqual(gap["candidate_requirement_id"], proposed_id)
-                self.assertIsNone(gap["proposed_requirement_id"])
-                self.assertEqual(gap["status"], "source_obligation_covered_by_existing_stable_label")
-                self.assertIn(proposed_id, catalog_ids)
-                self.assertIn(" No ", f" {excerpt} ")
+        self._assert_optional_request_row_gaps(
+            request_rows=request_rows,
+            gaps=gaps,
+            catalog_ids=catalog_ids,
+            source_path=source_path,
+            section="6.1.18",
+        )
 
         uid_request_row = reviews["KMIPKIT-CLAUSE-SPEC-6.1.18-003"]["source_request_rows"]
         self.assertEqual(
