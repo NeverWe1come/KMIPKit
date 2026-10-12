@@ -246,8 +246,8 @@ static bool test_runtime_metadata_and_error_snapshot(void)
     REQUIRE_STATUS(kmipkit_last_error_get(&status, &category, &cause, &delivery),
         KMIPKIT_SUCCESS);
     REQUIRE(status == KMIPKIT_ERROR_INVALID_INPUT);
-    REQUIRE(category == KMIPKIT_CLIENT_ERROR_CATEGORY_VALIDATION);
-    REQUIRE(cause == KMIPKIT_CLIENT_ERROR_CAUSE_INVALID_INPUT);
+    REQUIRE(category == UINT32_C(1));
+    REQUIRE(cause == UINT32_C(1));
 
     REQUIRE_STATUS(kmipkit_last_error_clear(), KMIPKIT_SUCCESS);
     REQUIRE_STATUS(kmipkit_last_error_get(&status, &category, &cause, &delivery),
