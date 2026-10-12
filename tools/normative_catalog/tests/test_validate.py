@@ -14208,6 +14208,7 @@ class CatalogValidationTests(unittest.TestCase):
             for gap in gaps
             if gap["source_id"] == "KMIPKIT-SRC-spec" and gap["proposed_requirement_id"] is not None
         }
+        self.assertNotIn("KMIPKIT-REQ-SPEC-6.1.40-017", spec_proposals)
         required_body_proposals = {
             "KMIPKIT-REQ-SPEC-6.1.34-005",
             "KMIPKIT-REQ-SPEC-6.1.37-001",
@@ -14265,7 +14266,6 @@ class CatalogValidationTests(unittest.TestCase):
                 "KMIPKIT-REQ-SPEC-6.1.26-001",
                 "KMIPKIT-REQ-SPEC-6.1.26-002",
                 "KMIPKIT-REQ-SPEC-6.1.28-014",
-                "KMIPKIT-REQ-SPEC-6.1.40-017",
             "KMIPKIT-REQ-SPEC-6.1.41-005",
             "KMIPKIT-REQ-SPEC-6.1.41-006",
             "KMIPKIT-REQ-SPEC-6.1.44-004",
