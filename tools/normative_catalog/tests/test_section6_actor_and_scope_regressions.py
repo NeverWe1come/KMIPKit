@@ -27,7 +27,6 @@ VALIDATE_CANDIDATES = {
     "KMIPKIT-REQ-SPEC-6.1.57-002-002": "KMIPKIT-CLAUSE-SPEC-6.1.57-002",
     "KMIPKIT-REQ-SPEC-6.1.57-004": "KMIPKIT-CLAUSE-SPEC-6.1.57-004",
     "KMIPKIT-REQ-SPEC-6.1.57-005": "KMIPKIT-CLAUSE-SPEC-6.1.57-005",
-    "KMIPKIT-REQ-SPEC-6.1.57-006": "KMIPKIT-CLAUSE-SPEC-6.1.57-006",
 }
 
 VALIDATE_LOCATORS = {
@@ -153,7 +152,7 @@ class SectionSixActorAndScopeRegressionTests(unittest.TestCase):
             },
         )
 
-    def test_validate_candidates_have_individual_source_dispositions(self) -> None:
+    def test_validate_client_candidates_have_individual_source_dispositions(self) -> None:
         for requirement_id, clause_id in VALIDATE_CANDIDATES.items():
             with self.subTest(requirement_id=requirement_id):
                 review = self.reviews.get(clause_id)
@@ -176,23 +175,12 @@ class SectionSixActorAndScopeRegressionTests(unittest.TestCase):
                 self.assertIsNotNone(atom, f"missing source atom for {requirement_id}")
                 assert atom is not None
                 self.assertEqual(atom["source_keyword"], VALIDATE_KEYWORDS[requirement_id])
-
-                if requirement_id.endswith("6.1.57-006"):
-                    self.assertNotIn(requirement_id, self.crosswalk_ids)
-                    self.assertNotIn(requirement_id, self.client_profile_ids)
-                    requirement = self.requirements[requirement_id]
-                    self.assertEqual(requirement["role"], "unspecified")
-                    self.assertEqual(requirement["direction"], "client_to_server")
-                    self.assertEqual(requirement["scope_state"], "client_1_0")
-                    self.assertEqual(atom["actor"], "unresolved")
-                    self.assertEqual(atom["scope_disposition"], "unresolved")
-                else:
-                    self.assertIn(requirement_id, self.crosswalk_ids)
-                    self.assertIn(requirement_id, review["expected_client_requirement_ids"])
-                    requirement = self.requirements[requirement_id]
-                    self.assertEqual(requirement["role"], "client")
-                    self.assertEqual(requirement["direction"], "client_to_server")
-                    self.assertEqual(requirement["scope_state"], "client_1_0")
+                self.assertIn(requirement_id, self.crosswalk_ids)
+                self.assertIn(requirement_id, review["expected_client_requirement_ids"])
+                requirement = self.requirements[requirement_id]
+                self.assertEqual(requirement["role"], "client")
+                self.assertEqual(requirement["direction"], "client_to_server")
+                self.assertEqual(requirement["scope_state"], "client_1_0")
 
     def test_validate_feature_scope_does_not_attribute_passive_shall(self) -> None:
         requirement_id = "KMIPKIT-REQ-SPEC-6.1.57-006"
@@ -204,6 +192,8 @@ class SectionSixActorAndScopeRegressionTests(unittest.TestCase):
         self.assertEqual(requirement["role"], "unspecified")
         self.assertEqual(requirement["direction"], "client_to_server")
         self.assertEqual(requirement["scope_state"], "client_1_0")
+        self.assertEqual(atom["source_keyword"], "SHALL")
+        self.assertEqual(atom["candidate_requirement_id"], requirement_id)
         self.assertEqual(atom["actor"], "unresolved")
         self.assertEqual(atom["scope_disposition"], "unresolved")
         self.assertEqual(review["expected_client_requirement_ids"], [])
