@@ -206,8 +206,10 @@ def _typed_rule_coverage(
         from generate_profiles import _verification_category
 
     source_keyword = requirement.get("source_keyword")
+    source_force = requirement.get("source_force")
+    category_source = source_keyword if isinstance(source_keyword, str) else source_force
     try:
-        category = _verification_category(source_keyword) if isinstance(source_keyword, str) else "unknown"
+        category = _verification_category(category_source) if isinstance(category_source, str) else "unknown"
     except ValueError:
         category = "unknown"
 
@@ -259,7 +261,7 @@ def _typed_rule_coverage(
         if isinstance((value := mapping.get("test_id")), str) and value.strip()
     })
     return (
-        f"{source_keyword or 'unknown'} / {category}",
+        f"{category_source or 'unknown'} / {category}",
         mapping_status,
         test_status,
         mapping_test_ids,

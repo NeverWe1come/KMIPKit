@@ -84,7 +84,9 @@ fn requirement(
 ) -> GeneratedClientRequirement {
     GeneratedClientRequirement {
         requirement_id,
-        source_keyword: "SHALL",
+        source_keyword: Some("SHALL"),
+        source_force: None,
+        source_gap_id: None,
         verification_category: category,
         scope_state: "client_1_0",
         source_clause_ids: &["TEST-CLAUSE"],

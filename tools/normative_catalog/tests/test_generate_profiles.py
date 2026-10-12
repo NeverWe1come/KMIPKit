@@ -291,6 +291,38 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
             ),
         )
 
+    def test_table_body_requirements_follow_included_section_boundaries(self) -> None:
+        catalog = closure_catalog()
+        catalog["requirements"].append(
+            {
+                "requirement_id": "KMIPKIT-REQ-SPEC-1.1-TABLE-OPTIONAL",
+                "source_clause_ids": [],
+                "source_refs": [{"source_id": "spec", "section": "1.1"}],
+                "source_force": "optional_table_body_value",
+                "role": "client",
+                "scope_state": "client_1_0",
+            }
+        )
+        catalog["requirements"].append(
+            {
+                "requirement_id": "KMIPKIT-REQ-SPEC-1-TABLE-OPTIONAL",
+                "source_clause_ids": [],
+                "source_refs": [{"source_id": "spec", "section": "1"}],
+                "source_force": "optional_table_body_value",
+                "role": "client",
+                "scope_state": "client_1_0",
+            }
+        )
+
+        closure = compute_profile_closure(
+            catalog,
+            ["KMIPKIT-CLAUSE-SPEC-1.1-001"],
+            profile_id="KMIPKIT-PROFILE-BASELINE-CLIENT",
+        )
+
+        self.assertIn("KMIPKIT-REQ-SPEC-1.1-TABLE-OPTIONAL", closure.requirement_ids)
+        self.assertNotIn("KMIPKIT-REQ-SPEC-1-TABLE-OPTIONAL", closure.requirement_ids)
+
     def test_closure_does_not_expand_informative_references(self) -> None:
         catalog = closure_catalog()
         catalog["normative_inclusions"] = catalog["normative_inclusions"][:1]
@@ -744,10 +776,28 @@ class ProfileTargetManifestTests(unittest.TestCase):
             for requirement in catalog["requirements"]
             if requirement["role"] in {"client", "both"}
             and requirement["scope_state"] in {"client_1_0", "mixed", "profile_conditional"}
+            and isinstance(requirement.get("source_keyword"), str)
         }
         for keyword in expected_keywords:
             with self.subTest(keyword=keyword):
-                self.assertTrue(f'source_keyword: "{keyword}"' in generated)
+                self.assertTrue(f'source_keyword: Some("{keyword}")' in generated)
+
+        table_requirements = [
+            requirement
+            for requirement in catalog["requirements"]
+            if requirement.get("source_force") in {"required_table_body_value", "optional_table_body_value"}
+            and requirement["role"] in {"client", "both"}
+            and requirement["scope_state"] in {"client_1_0", "mixed", "profile_conditional"}
+        ]
+        for requirement in table_requirements:
+            marker = f'requirement_id: "{requirement["requirement_id"]}"'
+            row_start = generated.index(marker)
+            row_end = generated.index("    },", row_start)
+            row = generated[row_start:row_end]
+            with self.subTest(requirement_id=requirement["requirement_id"]):
+                self.assertIn("source_keyword: None", row)
+                self.assertIn(f'source_force: Some("{requirement["source_force"]}")', row)
+                self.assertIn(f'source_gap_id: Some("{requirement["source_gap_id"]}")', row)
         self.assertNotIn("ProfileRuleMapping", generated)
 
     def test_generated_requirements_classify_keyword_specific_verification_categories(self) -> None:
@@ -776,6 +826,7 @@ class ProfileTargetManifestTests(unittest.TestCase):
             for requirement in catalog["requirements"]
             if requirement["role"] in {"client", "both"}
             and requirement["scope_state"] in {"client_1_0", "mixed", "profile_conditional"}
+            and isinstance(requirement.get("source_keyword"), str)
         }
         template = next(
             requirement
@@ -809,12 +860,19 @@ class ProfileTargetManifestTests(unittest.TestCase):
             for requirement in catalog["requirements"]
             if requirement["role"] in {"client", "both"}
             and requirement["scope_state"] in {"client_1_0", "mixed", "profile_conditional"}
+            and isinstance(requirement.get("source_keyword"), str)
         }
         observed_scoped_keywords = {
             requirement["source_keyword"]
             for requirement in catalog["requirements"]
             if requirement["role"] in {"client", "both"}
             and requirement["scope_state"] in {"client_1_0", "mixed", "profile_conditional"}
+            and isinstance(requirement.get("source_keyword"), str)
+        }
+        actual_categories = {
+            requirement_id: category
+            for requirement_id, category in actual_categories.items()
+            if requirement_id in scoped_requirements
         }
 
         self.assertEqual(observed_scoped_keywords, set(expected_categories))

@@ -17332,7 +17332,7 @@
       "exclusion_rationale": null,
       "role": "client",
       "direction": "client_to_server",
-      "scope_state": "client_1_0",
+      "scope_state": "out_of_scope",
       "condition": null
     },
     {
@@ -57074,7 +57074,12 @@
       "direction": "client_to_server",
       "scope_state": "client_1_0",
       "parent_element_ids": [],
-      "requirement_ids": [],
+      "requirement_ids": [
+        "KMIPKIT-REQ-SPEC-6.1.12-003",
+        "KMIPKIT-REQ-SPEC-6.1.12-005",
+        "KMIPKIT-REQ-SPEC-6.1.12-006",
+        "KMIPKIT-REQ-SPEC-6.1.12-007"
+      ],
       "profile_ids": [],
       "test_case_ids": [
         "KMIPKIT-TEST-CN01-2-21",
@@ -57147,7 +57152,9 @@
         "KMIPKIT-REQ-SPEC-5.5-002",
         "KMIPKIT-REQ-SPEC-5.6-001",
         "KMIPKIT-REQ-SPEC-6.1.13-001-001",
-        "KMIPKIT-REQ-SPEC-6.1.13-001-002"
+        "KMIPKIT-REQ-SPEC-6.1.13-001-002",
+        "KMIPKIT-REQ-SPEC-6.1.13-005",
+        "KMIPKIT-REQ-SPEC-6.1.13-006"
       ],
       "profile_ids": [
         "KMIPKIT-PROFILE-AES-XTS-SERVER",
@@ -57220,6 +57227,10 @@
         "KMIPKIT-REQ-SPEC-6.1.14-006-002",
         "KMIPKIT-REQ-SPEC-6.1.14-007-001",
         "KMIPKIT-REQ-SPEC-6.1.14-007-002",
+        "KMIPKIT-REQ-SPEC-6.1.14-009",
+        "KMIPKIT-REQ-SPEC-6.1.14-010",
+        "KMIPKIT-REQ-SPEC-6.1.14-011",
+        "KMIPKIT-REQ-SPEC-6.1.14-012",
         "KMIPKIT-REQ-SPEC-7.12-003",
         "KMIPKIT-REQ-SPEC-7.12-005-001"
       ],
@@ -90283,12 +90294,16 @@
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0014",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/create_split_key.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/create_split_key_tests.rs::request_preserves_table_193_fields_order_and_exact_input_identifier"
+      ],
       "negative_verification_required": false,
       "decision_id": null,
-      "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
+      "status": "verified",
+      "review_note": "The linked local Rust request-construction test provides executable evidence for this client MAY/OPTIONAL request-field capability. No official OASIS test execution is claimed."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.11-001-001",
@@ -90313,12 +90328,16 @@
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0019",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/decrypt.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/decrypt_tests.rs::request_omits_cryptographic_parameters_and_iv_when_the_caller_omits_them"
+      ],
       "negative_verification_required": false,
       "decision_id": null,
-      "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
+      "status": "verified",
+      "review_note": "The linked local Rust request-construction test provides executable evidence for this client MAY/OPTIONAL request-field capability. No official OASIS test execution is claimed."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.11-001-002",
@@ -90343,12 +90362,16 @@
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0019",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/decrypt.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/decrypt_tests.rs::request_omits_cryptographic_parameters_and_iv_when_the_caller_omits_them"
+      ],
       "negative_verification_required": false,
       "decision_id": null,
-      "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
+      "status": "verified",
+      "review_note": "The linked local Rust request-construction test provides executable evidence for this client MAY/OPTIONAL request-field capability. No official OASIS test execution is claimed."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.11-003",
@@ -90501,6 +90524,186 @@
       "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
     },
     {
+      "requirement_id": "KMIPKIT-REQ-SPEC-6.1.12-003",
+      "source_clause_ids": [],
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "6.1.12"
+        }
+      ],
+      "source_keyword": null,
+      "normative_strength": "mandatory",
+      "source_force": "required_table_body_value",
+      "source_gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.12-RIGHTS-REQUIRED",
+      "source_locator": {
+        "kind": "table_body_row",
+        "section": "6.1.12",
+        "row_label": "Rights",
+        "html_line_range": [
+          25489,
+          25507
+        ]
+      },
+      "subject": "Rights",
+      "summary": "The client includes the required Rights list in the Delegated Login request.",
+      "role": "client",
+      "direction": "client_to_server",
+      "condition": "a Delegated Login request is sent",
+      "scope_state": "client_1_0",
+      "element_ids": [
+        "KMIPKIT-ELEM-OP-C2S-DELEGATED-LOGIN"
+      ],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": "KMIPKIT-0038",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/delegated_login.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/delegated_login_operation_tests.rs::request_emits_table_199_fields_in_order_and_preserves_both_lease_time_forms"
+      ],
+      "negative_verification_required": false,
+      "decision_id": null,
+      "status": "verified",
+      "review_note": "Pinned KMIP Specification v2.1 §6.1.12, request payload row Rights (HTML lines 25489-25507), records required_table_body_value. This is table-field semantics, not an RFC keyword. The linked local Rust request-construction test verifies field representation; no official OASIS test execution is claimed."
+    },
+    {
+      "requirement_id": "KMIPKIT-REQ-SPEC-6.1.12-005",
+      "source_clause_ids": [],
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "6.1.12"
+        }
+      ],
+      "source_keyword": null,
+      "normative_strength": "permission_or_optional",
+      "source_force": "optional_table_body_value",
+      "source_gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.12-LEASE-TIME-OPTIONAL",
+      "source_locator": {
+        "kind": "table_body_row",
+        "section": "6.1.12",
+        "row_label": "Lease Time",
+        "html_line_range": [
+          25434,
+          25451
+        ]
+      },
+      "subject": "Lease Time",
+      "summary": "The client can include Lease Time in the Delegated Login request.",
+      "role": "client",
+      "direction": "client_to_server",
+      "condition": "client chooses to supply the optional Lease Time field",
+      "scope_state": "client_1_0",
+      "element_ids": [
+        "KMIPKIT-ELEM-OP-C2S-DELEGATED-LOGIN"
+      ],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": "KMIPKIT-0038",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/delegated_login.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/delegated_login_operation_tests.rs::request_emits_table_199_fields_in_order_and_preserves_both_lease_time_forms"
+      ],
+      "negative_verification_required": false,
+      "decision_id": null,
+      "status": "verified",
+      "review_note": "Pinned KMIP Specification v2.1 §6.1.12, request payload row Lease Time (HTML lines 25434-25451), records optional_table_body_value. This is table-field semantics, not an RFC keyword. The linked local Rust request-construction test verifies field representation; no official OASIS test execution is claimed."
+    },
+    {
+      "requirement_id": "KMIPKIT-REQ-SPEC-6.1.12-006",
+      "source_clause_ids": [],
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "6.1.12"
+        }
+      ],
+      "source_keyword": null,
+      "normative_strength": "permission_or_optional",
+      "source_force": "optional_table_body_value",
+      "source_gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.12-REQUEST-COUNT-OPTIONAL",
+      "source_locator": {
+        "kind": "table_body_row",
+        "section": "6.1.12",
+        "row_label": "Request Count",
+        "html_line_range": [
+          25452,
+          25470
+        ]
+      },
+      "subject": "Request Count",
+      "summary": "The client can include Request Count in the Delegated Login request.",
+      "role": "client",
+      "direction": "client_to_server",
+      "condition": "client chooses to supply the optional Request Count field",
+      "scope_state": "client_1_0",
+      "element_ids": [
+        "KMIPKIT-ELEM-OP-C2S-DELEGATED-LOGIN"
+      ],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": "KMIPKIT-0038",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/delegated_login.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/delegated_login_operation_tests.rs::request_emits_table_199_fields_in_order_and_preserves_both_lease_time_forms"
+      ],
+      "negative_verification_required": false,
+      "decision_id": null,
+      "status": "verified",
+      "review_note": "Pinned KMIP Specification v2.1 §6.1.12, request payload row Request Count (HTML lines 25452-25470), records optional_table_body_value. This is table-field semantics, not an RFC keyword. The linked local Rust request-construction test verifies field representation; no official OASIS test execution is claimed."
+    },
+    {
+      "requirement_id": "KMIPKIT-REQ-SPEC-6.1.12-007",
+      "source_clause_ids": [],
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "6.1.12"
+        }
+      ],
+      "source_keyword": null,
+      "normative_strength": "permission_or_optional",
+      "source_force": "optional_table_body_value",
+      "source_gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.12-USAGE-LIMITS-OPTIONAL",
+      "source_locator": {
+        "kind": "table_body_row",
+        "section": "6.1.12",
+        "row_label": "Usage Limits",
+        "html_line_range": [
+          25471,
+          25488
+        ]
+      },
+      "subject": "Usage Limits",
+      "summary": "The client can include Usage Limits in the Delegated Login request.",
+      "role": "client",
+      "direction": "client_to_server",
+      "condition": "client chooses to supply the optional Usage Limits field",
+      "scope_state": "client_1_0",
+      "element_ids": [
+        "KMIPKIT-ELEM-OP-C2S-DELEGATED-LOGIN"
+      ],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": "KMIPKIT-0038",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/delegated_login.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/delegated_login_operation_tests.rs::request_emits_table_199_fields_in_order_and_preserves_both_lease_time_forms"
+      ],
+      "negative_verification_required": false,
+      "decision_id": null,
+      "status": "verified",
+      "review_note": "Pinned KMIP Specification v2.1 §6.1.12, request payload row Usage Limits (HTML lines 25471-25488), records optional_table_body_value. This is table-field semantics, not an RFC keyword. The linked local Rust request-construction test verifies field representation; no official OASIS test execution is claimed."
+    },
+    {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.13-001-001",
       "source_clause_ids": [
         "KMIPKIT-CLAUSE-SPEC-6.1.13-001"
@@ -90585,6 +90788,100 @@
       "decision_id": null,
       "status": "unassigned",
       "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
+    },
+    {
+      "requirement_id": "KMIPKIT-REQ-SPEC-6.1.13-005",
+      "source_clause_ids": [],
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "6.1.13"
+        }
+      ],
+      "source_keyword": null,
+      "normative_strength": "permission_or_optional",
+      "source_force": "optional_table_body_value",
+      "source_gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.13-CURRENT-ATTRIBUTE-OPTIONAL",
+      "source_locator": {
+        "kind": "table_body_row",
+        "section": "6.1.13",
+        "table": "request_payload",
+        "row_label": "Current Attribute",
+        "html_line_range": [
+          25681,
+          25699
+        ]
+      },
+      "subject": "Current Attribute",
+      "summary": "The client can select the Current Attribute in a Delete Attribute request.",
+      "role": "client",
+      "direction": "client_to_server",
+      "condition": "Required=No; if Current Attribute is omitted while Attribute Reference is supplied, §6.1.13 paragraph 1 explicitly says all instances of the specified attribute are deleted.",
+      "scope_state": "client_1_0",
+      "element_ids": [
+        "KMIPKIT-ELEM-OP-C2S-DELETE-ATTRIBUTE"
+      ],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": "KMIPKIT-0016",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/delete_attribute.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/delete_attribute_tests.rs::request_omits_current_attribute_and_preserves_name_reference",
+        "crates/kmipkit-protocol/tests/unit/delete_attribute_tests.rs::request_preserves_both_optional_selectors_as_absent"
+      ],
+      "negative_verification_required": false,
+      "decision_id": null,
+      "status": "verified",
+      "review_note": "Pinned KMIP Specification v2.1 §6.1.13, request payload row Current Attribute (HTML lines 25681-25699), records optional_table_body_value. This is table-field semantics, not an RFC keyword. The linked local Rust request-construction test verifies field representation; no official OASIS test execution is claimed."
+    },
+    {
+      "requirement_id": "KMIPKIT-REQ-SPEC-6.1.13-006",
+      "source_clause_ids": [],
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "6.1.13"
+        }
+      ],
+      "source_keyword": null,
+      "normative_strength": "permission_or_optional",
+      "source_force": "optional_table_body_value",
+      "source_gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.13-ATTRIBUTE-REFERENCE-OPTIONAL",
+      "source_locator": {
+        "kind": "table_body_row",
+        "section": "6.1.13",
+        "table": "request_payload",
+        "row_label": "Attribute Reference",
+        "html_line_range": [
+          25700,
+          25718
+        ]
+      },
+      "subject": "Attribute Reference",
+      "summary": "The client can select the Attribute Reference in a Delete Attribute request.",
+      "role": "client",
+      "direction": "client_to_server",
+      "condition": "Required=No; the row says this field specifies the reference for the attribute associated with the object, but the source does not state an omission condition for this field.",
+      "scope_state": "client_1_0",
+      "element_ids": [
+        "KMIPKIT-ELEM-OP-C2S-DELETE-ATTRIBUTE"
+      ],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": "KMIPKIT-0016",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/delete_attribute.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/delete_attribute_tests.rs::request_omits_current_attribute_and_preserves_name_reference",
+        "crates/kmipkit-protocol/tests/unit/delete_attribute_tests.rs::request_preserves_both_optional_selectors_as_absent"
+      ],
+      "negative_verification_required": false,
+      "decision_id": null,
+      "status": "verified",
+      "review_note": "Pinned KMIP Specification v2.1 §6.1.13, request payload row Attribute Reference (HTML lines 25700-25718), records optional_table_body_value. This is table-field semantics, not an RFC keyword. The linked local Rust request-construction test verifies field representation; no official OASIS test execution is claimed."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.14-001-001",
@@ -90943,6 +91240,190 @@
       "review_note": "No requirement-specific official Test Cases ID is asserted as executed against the pinned OASIS Test Cases source; local tests use source-derived table vectors."
     },
     {
+      "requirement_id": "KMIPKIT-REQ-SPEC-6.1.14-009",
+      "source_clause_ids": [],
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "6.1.14"
+        }
+      ],
+      "source_keyword": null,
+      "normative_strength": "mandatory",
+      "source_force": "required_table_body_value",
+      "source_gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.14-OBJECT-TYPE-REQUIRED",
+      "source_locator": {
+        "kind": "table_body_row",
+        "section": "6.1.14",
+        "row_label": "Object Type",
+        "table": "request_payload",
+        "html_line_range": [
+          25900,
+          25917
+        ]
+      },
+      "subject": "Object Type",
+      "summary": "The client includes Object Type in the Derive Key request.",
+      "role": "client",
+      "direction": "client_to_server",
+      "condition": "A Derive Key request is sent.",
+      "scope_state": "client_1_0",
+      "element_ids": [
+        "KMIPKIT-ELEM-OP-C2S-DERIVE-KEY"
+      ],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": "KMIPKIT-0037",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/derive_key.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/derive_key_operation_tests.rs::request_encodes_required_table_205_fields_in_order_and_repeats_identifiers"
+      ],
+      "negative_verification_required": false,
+      "decision_id": null,
+      "status": "verified",
+      "review_note": "Pinned KMIP Specification v2.1 §6.1.14, request payload row Object Type (HTML lines 25900-25917), records required_table_body_value. This is table-field semantics, not an RFC keyword. The linked local Rust request-construction test verifies field representation; no official OASIS test execution is claimed."
+    },
+    {
+      "requirement_id": "KMIPKIT-REQ-SPEC-6.1.14-010",
+      "source_clause_ids": [],
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "6.1.14"
+        }
+      ],
+      "source_keyword": null,
+      "normative_strength": "mandatory",
+      "source_force": "required_table_body_value",
+      "source_gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.14-UNIQUE-IDENTIFIER-REQUIRED",
+      "source_locator": {
+        "kind": "table_body_row",
+        "section": "6.1.14",
+        "row_label": "Unique Identifier",
+        "table": "request_payload",
+        "html_line_range": [
+          25919,
+          25938
+        ]
+      },
+      "subject": "Unique Identifier",
+      "summary": "The client includes a Unique Identifier in the Derive Key request; repetition remains a separate MAY capability.",
+      "role": "client",
+      "direction": "client_to_server",
+      "condition": "A Derive Key request is sent.",
+      "scope_state": "client_1_0",
+      "element_ids": [
+        "KMIPKIT-ELEM-OP-C2S-DERIVE-KEY"
+      ],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": "KMIPKIT-0037",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/derive_key.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/derive_key_operation_tests.rs::request_encodes_required_table_205_fields_in_order_and_repeats_identifiers"
+      ],
+      "negative_verification_required": false,
+      "decision_id": null,
+      "status": "verified",
+      "review_note": "Pinned KMIP Specification v2.1 §6.1.14, request payload row Unique Identifier (HTML lines 25919-25938), records required_table_body_value. This is table-field semantics, not an RFC keyword. The linked local Rust request-construction test verifies field representation; no official OASIS test execution is claimed."
+    },
+    {
+      "requirement_id": "KMIPKIT-REQ-SPEC-6.1.14-011",
+      "source_clause_ids": [],
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "6.1.14"
+        }
+      ],
+      "source_keyword": null,
+      "normative_strength": "mandatory",
+      "source_force": "required_table_body_value",
+      "source_gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.14-DERIVATION-METHOD-REQUIRED",
+      "source_locator": {
+        "kind": "table_body_row",
+        "section": "6.1.14",
+        "row_label": "Derivation Method",
+        "table": "request_payload",
+        "html_line_range": [
+          25940,
+          25958
+        ]
+      },
+      "subject": "Derivation Method",
+      "summary": "The client includes Derivation Method in the Derive Key request.",
+      "role": "client",
+      "direction": "client_to_server",
+      "condition": "A Derive Key request is sent.",
+      "scope_state": "client_1_0",
+      "element_ids": [
+        "KMIPKIT-ELEM-OP-C2S-DERIVE-KEY"
+      ],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": "KMIPKIT-0037",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/derive_key.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/derive_key_operation_tests.rs::request_encodes_required_table_205_fields_in_order_and_repeats_identifiers"
+      ],
+      "negative_verification_required": false,
+      "decision_id": null,
+      "status": "verified",
+      "review_note": "Pinned KMIP Specification v2.1 §6.1.14, request payload row Derivation Method (HTML lines 25940-25958), records required_table_body_value. This is table-field semantics, not an RFC keyword. The linked local Rust request-construction test verifies field representation; no official OASIS test execution is claimed."
+    },
+    {
+      "requirement_id": "KMIPKIT-REQ-SPEC-6.1.14-012",
+      "source_clause_ids": [],
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "6.1.14"
+        }
+      ],
+      "source_keyword": null,
+      "normative_strength": "mandatory",
+      "source_force": "required_table_body_value",
+      "source_gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.14-DERIVATION-PARAMETERS-REQUIRED",
+      "source_locator": {
+        "kind": "table_body_row",
+        "section": "6.1.14",
+        "row_label": "Derivation Parameters",
+        "table": "request_payload",
+        "html_line_range": [
+          25960,
+          25978
+        ]
+      },
+      "subject": "Derivation Parameters",
+      "summary": "The client includes Derivation Parameters in the Derive Key request.",
+      "role": "client",
+      "direction": "client_to_server",
+      "condition": "A Derive Key request is sent.",
+      "scope_state": "client_1_0",
+      "element_ids": [
+        "KMIPKIT-ELEM-OP-C2S-DERIVE-KEY"
+      ],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": "KMIPKIT-0037",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/derive_key.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/derive_key_operation_tests.rs::request_encodes_required_table_205_fields_in_order_and_repeats_identifiers"
+      ],
+      "negative_verification_required": false,
+      "decision_id": null,
+      "status": "verified",
+      "review_note": "Pinned KMIP Specification v2.1 §6.1.14, request payload row Derivation Parameters (HTML lines 25960-25978), records required_table_body_value. This is table-field semantics, not an RFC keyword. The linked local Rust request-construction test verifies field representation; no official OASIS test execution is claimed."
+    },
+    {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.16-001-001",
       "source_clause_ids": [
         "KMIPKIT-CLAUSE-SPEC-6.1.16-001"
@@ -90965,12 +91446,16 @@
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/discover_versions.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/discover_versions_tests.rs::request_advertises_only_kmip_2_1"
+      ],
       "negative_verification_required": false,
       "decision_id": null,
-      "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
+      "status": "verified",
+      "review_note": "The linked local Rust request-construction test provides executable evidence for this client MAY/OPTIONAL request-field capability. No official OASIS test execution is claimed."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.16-001-002",
@@ -91020,7 +91505,7 @@
       "role": "client",
       "direction": "client_to_server",
       "condition": null,
-      "scope_state": "client_1_0",
+      "scope_state": "out_of_scope",
       "element_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
@@ -91030,7 +91515,7 @@
       "negative_verification_required": false,
       "decision_id": null,
       "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
+      "review_note": "KMIPKit 1.0 advertises only its fixed KMIP 2.1 protocol version, so repetition of Protocol Version in requests is outside the 1.0 scope."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.17-001-001",
@@ -91055,12 +91540,16 @@
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0019",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/encrypt.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/encrypt_tests.rs::request_omits_cryptographic_parameters_when_the_caller_omits_them"
+      ],
       "negative_verification_required": false,
       "decision_id": null,
-      "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
+      "status": "verified",
+      "review_note": "The linked local Rust request-construction test provides executable evidence for this client MAY/OPTIONAL request-field capability. No official OASIS test execution is claimed."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.17-001-002",
@@ -91085,12 +91574,16 @@
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0019",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/encrypt.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/encrypt_tests.rs::request_omits_cryptographic_parameters_when_the_caller_omits_them"
+      ],
       "negative_verification_required": false,
       "decision_id": null,
-      "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
+      "status": "verified",
+      "review_note": "The linked local Rust request-construction test provides executable evidence for this client MAY/OPTIONAL request-field capability. No official OASIS test execution is claimed."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.17-004",
@@ -95504,12 +95997,16 @@
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0014",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/create_key_pair.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/create_key_pair_tests.rs::request_preserves_six_distinct_optional_groups_and_repeated_items_in_wire_order"
+      ],
       "negative_verification_required": false,
       "decision_id": null,
-      "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
+      "status": "verified",
+      "review_note": "The linked local Rust request-construction test provides executable evidence for this client MAY/OPTIONAL request-field capability. No official OASIS test execution is claimed."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.9-001-002",
@@ -95536,12 +96033,16 @@
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0014",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/create_key_pair.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/create_key_pair_tests.rs::request_distinguishes_absent_groups_from_present_empty_groups_without_synthesizing_choices"
+      ],
       "negative_verification_required": false,
       "decision_id": null,
-      "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
+      "status": "verified",
+      "review_note": "The linked local Rust request-construction test provides executable evidence for this client MAY/OPTIONAL request-field capability. No official OASIS test execution is claimed."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.9-006",
@@ -99172,6 +99673,12 @@
         "KMIPKIT-REQ-SPEC-6.1.11-001-002",
         "KMIPKIT-REQ-SPEC-6.1.11-005",
         "KMIPKIT-REQ-SPEC-6.1.11-006",
+        "KMIPKIT-REQ-SPEC-6.1.12-003",
+        "KMIPKIT-REQ-SPEC-6.1.12-005",
+        "KMIPKIT-REQ-SPEC-6.1.12-006",
+        "KMIPKIT-REQ-SPEC-6.1.12-007",
+        "KMIPKIT-REQ-SPEC-6.1.13-005",
+        "KMIPKIT-REQ-SPEC-6.1.13-006",
         "KMIPKIT-REQ-SPEC-6.1.14-001-001",
         "KMIPKIT-REQ-SPEC-6.1.14-001-002",
         "KMIPKIT-REQ-SPEC-6.1.14-001-003",
@@ -99181,9 +99688,12 @@
         "KMIPKIT-REQ-SPEC-6.1.14-006-002",
         "KMIPKIT-REQ-SPEC-6.1.14-007-001",
         "KMIPKIT-REQ-SPEC-6.1.14-007-002",
+        "KMIPKIT-REQ-SPEC-6.1.14-009",
+        "KMIPKIT-REQ-SPEC-6.1.14-010",
+        "KMIPKIT-REQ-SPEC-6.1.14-011",
+        "KMIPKIT-REQ-SPEC-6.1.14-012",
         "KMIPKIT-REQ-SPEC-6.1.16-001-001",
         "KMIPKIT-REQ-SPEC-6.1.16-001-002",
-        "KMIPKIT-REQ-SPEC-6.1.16-004",
         "KMIPKIT-REQ-SPEC-6.1.17-001-001",
         "KMIPKIT-REQ-SPEC-6.1.17-001-002",
         "KMIPKIT-REQ-SPEC-6.1.17-006",
@@ -100506,6 +101016,12 @@
         "KMIPKIT-REQ-SPEC-6.1.11-001-002",
         "KMIPKIT-REQ-SPEC-6.1.11-005",
         "KMIPKIT-REQ-SPEC-6.1.11-006",
+        "KMIPKIT-REQ-SPEC-6.1.12-003",
+        "KMIPKIT-REQ-SPEC-6.1.12-005",
+        "KMIPKIT-REQ-SPEC-6.1.12-006",
+        "KMIPKIT-REQ-SPEC-6.1.12-007",
+        "KMIPKIT-REQ-SPEC-6.1.13-005",
+        "KMIPKIT-REQ-SPEC-6.1.13-006",
         "KMIPKIT-REQ-SPEC-6.1.14-001-001",
         "KMIPKIT-REQ-SPEC-6.1.14-001-002",
         "KMIPKIT-REQ-SPEC-6.1.14-001-003",
@@ -100515,9 +101031,12 @@
         "KMIPKIT-REQ-SPEC-6.1.14-006-002",
         "KMIPKIT-REQ-SPEC-6.1.14-007-001",
         "KMIPKIT-REQ-SPEC-6.1.14-007-002",
+        "KMIPKIT-REQ-SPEC-6.1.14-009",
+        "KMIPKIT-REQ-SPEC-6.1.14-010",
+        "KMIPKIT-REQ-SPEC-6.1.14-011",
+        "KMIPKIT-REQ-SPEC-6.1.14-012",
         "KMIPKIT-REQ-SPEC-6.1.16-001-001",
         "KMIPKIT-REQ-SPEC-6.1.16-001-002",
-        "KMIPKIT-REQ-SPEC-6.1.16-004",
         "KMIPKIT-REQ-SPEC-6.1.17-001-001",
         "KMIPKIT-REQ-SPEC-6.1.17-001-002",
         "KMIPKIT-REQ-SPEC-6.1.17-006",
@@ -101825,6 +102344,12 @@
         "KMIPKIT-REQ-SPEC-6.1.11-001-002",
         "KMIPKIT-REQ-SPEC-6.1.11-005",
         "KMIPKIT-REQ-SPEC-6.1.11-006",
+        "KMIPKIT-REQ-SPEC-6.1.12-003",
+        "KMIPKIT-REQ-SPEC-6.1.12-005",
+        "KMIPKIT-REQ-SPEC-6.1.12-006",
+        "KMIPKIT-REQ-SPEC-6.1.12-007",
+        "KMIPKIT-REQ-SPEC-6.1.13-005",
+        "KMIPKIT-REQ-SPEC-6.1.13-006",
         "KMIPKIT-REQ-SPEC-6.1.14-001-001",
         "KMIPKIT-REQ-SPEC-6.1.14-001-002",
         "KMIPKIT-REQ-SPEC-6.1.14-001-003",
@@ -101834,9 +102359,12 @@
         "KMIPKIT-REQ-SPEC-6.1.14-006-002",
         "KMIPKIT-REQ-SPEC-6.1.14-007-001",
         "KMIPKIT-REQ-SPEC-6.1.14-007-002",
+        "KMIPKIT-REQ-SPEC-6.1.14-009",
+        "KMIPKIT-REQ-SPEC-6.1.14-010",
+        "KMIPKIT-REQ-SPEC-6.1.14-011",
+        "KMIPKIT-REQ-SPEC-6.1.14-012",
         "KMIPKIT-REQ-SPEC-6.1.16-001-001",
         "KMIPKIT-REQ-SPEC-6.1.16-001-002",
-        "KMIPKIT-REQ-SPEC-6.1.16-004",
         "KMIPKIT-REQ-SPEC-6.1.17-001-001",
         "KMIPKIT-REQ-SPEC-6.1.17-001-002",
         "KMIPKIT-REQ-SPEC-6.1.17-006",
@@ -103472,6 +104000,12 @@
         "KMIPKIT-REQ-SPEC-6.1.11-001-002",
         "KMIPKIT-REQ-SPEC-6.1.11-005",
         "KMIPKIT-REQ-SPEC-6.1.11-006",
+        "KMIPKIT-REQ-SPEC-6.1.12-003",
+        "KMIPKIT-REQ-SPEC-6.1.12-005",
+        "KMIPKIT-REQ-SPEC-6.1.12-006",
+        "KMIPKIT-REQ-SPEC-6.1.12-007",
+        "KMIPKIT-REQ-SPEC-6.1.13-005",
+        "KMIPKIT-REQ-SPEC-6.1.13-006",
         "KMIPKIT-REQ-SPEC-6.1.14-001-001",
         "KMIPKIT-REQ-SPEC-6.1.14-001-002",
         "KMIPKIT-REQ-SPEC-6.1.14-001-003",
@@ -103481,9 +104015,12 @@
         "KMIPKIT-REQ-SPEC-6.1.14-006-002",
         "KMIPKIT-REQ-SPEC-6.1.14-007-001",
         "KMIPKIT-REQ-SPEC-6.1.14-007-002",
+        "KMIPKIT-REQ-SPEC-6.1.14-009",
+        "KMIPKIT-REQ-SPEC-6.1.14-010",
+        "KMIPKIT-REQ-SPEC-6.1.14-011",
+        "KMIPKIT-REQ-SPEC-6.1.14-012",
         "KMIPKIT-REQ-SPEC-6.1.16-001-001",
         "KMIPKIT-REQ-SPEC-6.1.16-001-002",
-        "KMIPKIT-REQ-SPEC-6.1.16-004",
         "KMIPKIT-REQ-SPEC-6.1.17-001-001",
         "KMIPKIT-REQ-SPEC-6.1.17-001-002",
         "KMIPKIT-REQ-SPEC-6.1.17-006",
@@ -104839,6 +105376,12 @@
         "KMIPKIT-REQ-SPEC-6.1.11-001-002",
         "KMIPKIT-REQ-SPEC-6.1.11-005",
         "KMIPKIT-REQ-SPEC-6.1.11-006",
+        "KMIPKIT-REQ-SPEC-6.1.12-003",
+        "KMIPKIT-REQ-SPEC-6.1.12-005",
+        "KMIPKIT-REQ-SPEC-6.1.12-006",
+        "KMIPKIT-REQ-SPEC-6.1.12-007",
+        "KMIPKIT-REQ-SPEC-6.1.13-005",
+        "KMIPKIT-REQ-SPEC-6.1.13-006",
         "KMIPKIT-REQ-SPEC-6.1.14-001-001",
         "KMIPKIT-REQ-SPEC-6.1.14-001-002",
         "KMIPKIT-REQ-SPEC-6.1.14-001-003",
@@ -104848,9 +105391,12 @@
         "KMIPKIT-REQ-SPEC-6.1.14-006-002",
         "KMIPKIT-REQ-SPEC-6.1.14-007-001",
         "KMIPKIT-REQ-SPEC-6.1.14-007-002",
+        "KMIPKIT-REQ-SPEC-6.1.14-009",
+        "KMIPKIT-REQ-SPEC-6.1.14-010",
+        "KMIPKIT-REQ-SPEC-6.1.14-011",
+        "KMIPKIT-REQ-SPEC-6.1.14-012",
         "KMIPKIT-REQ-SPEC-6.1.16-001-001",
         "KMIPKIT-REQ-SPEC-6.1.16-001-002",
-        "KMIPKIT-REQ-SPEC-6.1.16-004",
         "KMIPKIT-REQ-SPEC-6.1.17-001-001",
         "KMIPKIT-REQ-SPEC-6.1.17-001-002",
         "KMIPKIT-REQ-SPEC-6.1.17-006",
@@ -106209,6 +106755,12 @@
         "KMIPKIT-REQ-SPEC-6.1.11-001-002",
         "KMIPKIT-REQ-SPEC-6.1.11-005",
         "KMIPKIT-REQ-SPEC-6.1.11-006",
+        "KMIPKIT-REQ-SPEC-6.1.12-003",
+        "KMIPKIT-REQ-SPEC-6.1.12-005",
+        "KMIPKIT-REQ-SPEC-6.1.12-006",
+        "KMIPKIT-REQ-SPEC-6.1.12-007",
+        "KMIPKIT-REQ-SPEC-6.1.13-005",
+        "KMIPKIT-REQ-SPEC-6.1.13-006",
         "KMIPKIT-REQ-SPEC-6.1.14-001-001",
         "KMIPKIT-REQ-SPEC-6.1.14-001-002",
         "KMIPKIT-REQ-SPEC-6.1.14-001-003",
@@ -106218,9 +106770,12 @@
         "KMIPKIT-REQ-SPEC-6.1.14-006-002",
         "KMIPKIT-REQ-SPEC-6.1.14-007-001",
         "KMIPKIT-REQ-SPEC-6.1.14-007-002",
+        "KMIPKIT-REQ-SPEC-6.1.14-009",
+        "KMIPKIT-REQ-SPEC-6.1.14-010",
+        "KMIPKIT-REQ-SPEC-6.1.14-011",
+        "KMIPKIT-REQ-SPEC-6.1.14-012",
         "KMIPKIT-REQ-SPEC-6.1.16-001-001",
         "KMIPKIT-REQ-SPEC-6.1.16-001-002",
-        "KMIPKIT-REQ-SPEC-6.1.16-004",
         "KMIPKIT-REQ-SPEC-6.1.17-001-001",
         "KMIPKIT-REQ-SPEC-6.1.17-001-002",
         "KMIPKIT-REQ-SPEC-6.1.17-006",
@@ -107577,6 +108132,12 @@
         "KMIPKIT-REQ-SPEC-6.1.11-001-002",
         "KMIPKIT-REQ-SPEC-6.1.11-005",
         "KMIPKIT-REQ-SPEC-6.1.11-006",
+        "KMIPKIT-REQ-SPEC-6.1.12-003",
+        "KMIPKIT-REQ-SPEC-6.1.12-005",
+        "KMIPKIT-REQ-SPEC-6.1.12-006",
+        "KMIPKIT-REQ-SPEC-6.1.12-007",
+        "KMIPKIT-REQ-SPEC-6.1.13-005",
+        "KMIPKIT-REQ-SPEC-6.1.13-006",
         "KMIPKIT-REQ-SPEC-6.1.14-001-001",
         "KMIPKIT-REQ-SPEC-6.1.14-001-002",
         "KMIPKIT-REQ-SPEC-6.1.14-001-003",
@@ -107586,9 +108147,12 @@
         "KMIPKIT-REQ-SPEC-6.1.14-006-002",
         "KMIPKIT-REQ-SPEC-6.1.14-007-001",
         "KMIPKIT-REQ-SPEC-6.1.14-007-002",
+        "KMIPKIT-REQ-SPEC-6.1.14-009",
+        "KMIPKIT-REQ-SPEC-6.1.14-010",
+        "KMIPKIT-REQ-SPEC-6.1.14-011",
+        "KMIPKIT-REQ-SPEC-6.1.14-012",
         "KMIPKIT-REQ-SPEC-6.1.16-001-001",
         "KMIPKIT-REQ-SPEC-6.1.16-001-002",
-        "KMIPKIT-REQ-SPEC-6.1.16-004",
         "KMIPKIT-REQ-SPEC-6.1.17-001-001",
         "KMIPKIT-REQ-SPEC-6.1.17-001-002",
         "KMIPKIT-REQ-SPEC-6.1.17-006",
@@ -108930,6 +109494,12 @@
         "KMIPKIT-REQ-SPEC-6.1.11-001-002",
         "KMIPKIT-REQ-SPEC-6.1.11-005",
         "KMIPKIT-REQ-SPEC-6.1.11-006",
+        "KMIPKIT-REQ-SPEC-6.1.12-003",
+        "KMIPKIT-REQ-SPEC-6.1.12-005",
+        "KMIPKIT-REQ-SPEC-6.1.12-006",
+        "KMIPKIT-REQ-SPEC-6.1.12-007",
+        "KMIPKIT-REQ-SPEC-6.1.13-005",
+        "KMIPKIT-REQ-SPEC-6.1.13-006",
         "KMIPKIT-REQ-SPEC-6.1.14-001-001",
         "KMIPKIT-REQ-SPEC-6.1.14-001-002",
         "KMIPKIT-REQ-SPEC-6.1.14-001-003",
@@ -108939,9 +109509,12 @@
         "KMIPKIT-REQ-SPEC-6.1.14-006-002",
         "KMIPKIT-REQ-SPEC-6.1.14-007-001",
         "KMIPKIT-REQ-SPEC-6.1.14-007-002",
+        "KMIPKIT-REQ-SPEC-6.1.14-009",
+        "KMIPKIT-REQ-SPEC-6.1.14-010",
+        "KMIPKIT-REQ-SPEC-6.1.14-011",
+        "KMIPKIT-REQ-SPEC-6.1.14-012",
         "KMIPKIT-REQ-SPEC-6.1.16-001-001",
         "KMIPKIT-REQ-SPEC-6.1.16-001-002",
-        "KMIPKIT-REQ-SPEC-6.1.16-004",
         "KMIPKIT-REQ-SPEC-6.1.17-001-001",
         "KMIPKIT-REQ-SPEC-6.1.17-001-002",
         "KMIPKIT-REQ-SPEC-6.1.17-006",
@@ -110260,6 +110833,12 @@
         "KMIPKIT-REQ-SPEC-6.1.11-001-002",
         "KMIPKIT-REQ-SPEC-6.1.11-005",
         "KMIPKIT-REQ-SPEC-6.1.11-006",
+        "KMIPKIT-REQ-SPEC-6.1.12-003",
+        "KMIPKIT-REQ-SPEC-6.1.12-005",
+        "KMIPKIT-REQ-SPEC-6.1.12-006",
+        "KMIPKIT-REQ-SPEC-6.1.12-007",
+        "KMIPKIT-REQ-SPEC-6.1.13-005",
+        "KMIPKIT-REQ-SPEC-6.1.13-006",
         "KMIPKIT-REQ-SPEC-6.1.14-001-001",
         "KMIPKIT-REQ-SPEC-6.1.14-001-002",
         "KMIPKIT-REQ-SPEC-6.1.14-001-003",
@@ -110269,9 +110848,12 @@
         "KMIPKIT-REQ-SPEC-6.1.14-006-002",
         "KMIPKIT-REQ-SPEC-6.1.14-007-001",
         "KMIPKIT-REQ-SPEC-6.1.14-007-002",
+        "KMIPKIT-REQ-SPEC-6.1.14-009",
+        "KMIPKIT-REQ-SPEC-6.1.14-010",
+        "KMIPKIT-REQ-SPEC-6.1.14-011",
+        "KMIPKIT-REQ-SPEC-6.1.14-012",
         "KMIPKIT-REQ-SPEC-6.1.16-001-001",
         "KMIPKIT-REQ-SPEC-6.1.16-001-002",
-        "KMIPKIT-REQ-SPEC-6.1.16-004",
         "KMIPKIT-REQ-SPEC-6.1.17-001-001",
         "KMIPKIT-REQ-SPEC-6.1.17-001-002",
         "KMIPKIT-REQ-SPEC-6.1.17-006",
@@ -111598,6 +112180,12 @@
         "KMIPKIT-REQ-SPEC-6.1.11-001-002",
         "KMIPKIT-REQ-SPEC-6.1.11-005",
         "KMIPKIT-REQ-SPEC-6.1.11-006",
+        "KMIPKIT-REQ-SPEC-6.1.12-003",
+        "KMIPKIT-REQ-SPEC-6.1.12-005",
+        "KMIPKIT-REQ-SPEC-6.1.12-006",
+        "KMIPKIT-REQ-SPEC-6.1.12-007",
+        "KMIPKIT-REQ-SPEC-6.1.13-005",
+        "KMIPKIT-REQ-SPEC-6.1.13-006",
         "KMIPKIT-REQ-SPEC-6.1.14-001-001",
         "KMIPKIT-REQ-SPEC-6.1.14-001-002",
         "KMIPKIT-REQ-SPEC-6.1.14-001-003",
@@ -111607,9 +112195,12 @@
         "KMIPKIT-REQ-SPEC-6.1.14-006-002",
         "KMIPKIT-REQ-SPEC-6.1.14-007-001",
         "KMIPKIT-REQ-SPEC-6.1.14-007-002",
+        "KMIPKIT-REQ-SPEC-6.1.14-009",
+        "KMIPKIT-REQ-SPEC-6.1.14-010",
+        "KMIPKIT-REQ-SPEC-6.1.14-011",
+        "KMIPKIT-REQ-SPEC-6.1.14-012",
         "KMIPKIT-REQ-SPEC-6.1.16-001-001",
         "KMIPKIT-REQ-SPEC-6.1.16-001-002",
-        "KMIPKIT-REQ-SPEC-6.1.16-004",
         "KMIPKIT-REQ-SPEC-6.1.17-001-001",
         "KMIPKIT-REQ-SPEC-6.1.17-001-002",
         "KMIPKIT-REQ-SPEC-6.1.17-006",
@@ -112945,6 +113536,12 @@
         "KMIPKIT-REQ-SPEC-6.1.11-001-002",
         "KMIPKIT-REQ-SPEC-6.1.11-005",
         "KMIPKIT-REQ-SPEC-6.1.11-006",
+        "KMIPKIT-REQ-SPEC-6.1.12-003",
+        "KMIPKIT-REQ-SPEC-6.1.12-005",
+        "KMIPKIT-REQ-SPEC-6.1.12-006",
+        "KMIPKIT-REQ-SPEC-6.1.12-007",
+        "KMIPKIT-REQ-SPEC-6.1.13-005",
+        "KMIPKIT-REQ-SPEC-6.1.13-006",
         "KMIPKIT-REQ-SPEC-6.1.14-001-001",
         "KMIPKIT-REQ-SPEC-6.1.14-001-002",
         "KMIPKIT-REQ-SPEC-6.1.14-001-003",
@@ -112954,9 +113551,12 @@
         "KMIPKIT-REQ-SPEC-6.1.14-006-002",
         "KMIPKIT-REQ-SPEC-6.1.14-007-001",
         "KMIPKIT-REQ-SPEC-6.1.14-007-002",
+        "KMIPKIT-REQ-SPEC-6.1.14-009",
+        "KMIPKIT-REQ-SPEC-6.1.14-010",
+        "KMIPKIT-REQ-SPEC-6.1.14-011",
+        "KMIPKIT-REQ-SPEC-6.1.14-012",
         "KMIPKIT-REQ-SPEC-6.1.16-001-001",
         "KMIPKIT-REQ-SPEC-6.1.16-001-002",
-        "KMIPKIT-REQ-SPEC-6.1.16-004",
         "KMIPKIT-REQ-SPEC-6.1.17-001-001",
         "KMIPKIT-REQ-SPEC-6.1.17-001-002",
         "KMIPKIT-REQ-SPEC-6.1.17-006",
@@ -114300,6 +114900,12 @@
         "KMIPKIT-REQ-SPEC-6.1.11-001-002",
         "KMIPKIT-REQ-SPEC-6.1.11-005",
         "KMIPKIT-REQ-SPEC-6.1.11-006",
+        "KMIPKIT-REQ-SPEC-6.1.12-003",
+        "KMIPKIT-REQ-SPEC-6.1.12-005",
+        "KMIPKIT-REQ-SPEC-6.1.12-006",
+        "KMIPKIT-REQ-SPEC-6.1.12-007",
+        "KMIPKIT-REQ-SPEC-6.1.13-005",
+        "KMIPKIT-REQ-SPEC-6.1.13-006",
         "KMIPKIT-REQ-SPEC-6.1.14-001-001",
         "KMIPKIT-REQ-SPEC-6.1.14-001-002",
         "KMIPKIT-REQ-SPEC-6.1.14-001-003",
@@ -114309,9 +114915,12 @@
         "KMIPKIT-REQ-SPEC-6.1.14-006-002",
         "KMIPKIT-REQ-SPEC-6.1.14-007-001",
         "KMIPKIT-REQ-SPEC-6.1.14-007-002",
+        "KMIPKIT-REQ-SPEC-6.1.14-009",
+        "KMIPKIT-REQ-SPEC-6.1.14-010",
+        "KMIPKIT-REQ-SPEC-6.1.14-011",
+        "KMIPKIT-REQ-SPEC-6.1.14-012",
         "KMIPKIT-REQ-SPEC-6.1.16-001-001",
         "KMIPKIT-REQ-SPEC-6.1.16-001-002",
-        "KMIPKIT-REQ-SPEC-6.1.16-004",
         "KMIPKIT-REQ-SPEC-6.1.17-001-001",
         "KMIPKIT-REQ-SPEC-6.1.17-001-002",
         "KMIPKIT-REQ-SPEC-6.1.17-006",
@@ -115639,6 +116248,12 @@
         "KMIPKIT-REQ-SPEC-6.1.11-001-002",
         "KMIPKIT-REQ-SPEC-6.1.11-005",
         "KMIPKIT-REQ-SPEC-6.1.11-006",
+        "KMIPKIT-REQ-SPEC-6.1.12-003",
+        "KMIPKIT-REQ-SPEC-6.1.12-005",
+        "KMIPKIT-REQ-SPEC-6.1.12-006",
+        "KMIPKIT-REQ-SPEC-6.1.12-007",
+        "KMIPKIT-REQ-SPEC-6.1.13-005",
+        "KMIPKIT-REQ-SPEC-6.1.13-006",
         "KMIPKIT-REQ-SPEC-6.1.14-001-001",
         "KMIPKIT-REQ-SPEC-6.1.14-001-002",
         "KMIPKIT-REQ-SPEC-6.1.14-001-003",
@@ -115648,9 +116263,12 @@
         "KMIPKIT-REQ-SPEC-6.1.14-006-002",
         "KMIPKIT-REQ-SPEC-6.1.14-007-001",
         "KMIPKIT-REQ-SPEC-6.1.14-007-002",
+        "KMIPKIT-REQ-SPEC-6.1.14-009",
+        "KMIPKIT-REQ-SPEC-6.1.14-010",
+        "KMIPKIT-REQ-SPEC-6.1.14-011",
+        "KMIPKIT-REQ-SPEC-6.1.14-012",
         "KMIPKIT-REQ-SPEC-6.1.16-001-001",
         "KMIPKIT-REQ-SPEC-6.1.16-001-002",
-        "KMIPKIT-REQ-SPEC-6.1.16-004",
         "KMIPKIT-REQ-SPEC-6.1.17-001-001",
         "KMIPKIT-REQ-SPEC-6.1.17-001-002",
         "KMIPKIT-REQ-SPEC-6.1.17-006",
@@ -116837,6 +117455,12 @@
         "KMIPKIT-REQ-SPEC-6.1.11-001-002",
         "KMIPKIT-REQ-SPEC-6.1.11-005",
         "KMIPKIT-REQ-SPEC-6.1.11-006",
+        "KMIPKIT-REQ-SPEC-6.1.12-003",
+        "KMIPKIT-REQ-SPEC-6.1.12-005",
+        "KMIPKIT-REQ-SPEC-6.1.12-006",
+        "KMIPKIT-REQ-SPEC-6.1.12-007",
+        "KMIPKIT-REQ-SPEC-6.1.13-005",
+        "KMIPKIT-REQ-SPEC-6.1.13-006",
         "KMIPKIT-REQ-SPEC-6.1.14-001-001",
         "KMIPKIT-REQ-SPEC-6.1.14-001-002",
         "KMIPKIT-REQ-SPEC-6.1.14-001-003",
@@ -116846,9 +117470,12 @@
         "KMIPKIT-REQ-SPEC-6.1.14-006-002",
         "KMIPKIT-REQ-SPEC-6.1.14-007-001",
         "KMIPKIT-REQ-SPEC-6.1.14-007-002",
+        "KMIPKIT-REQ-SPEC-6.1.14-009",
+        "KMIPKIT-REQ-SPEC-6.1.14-010",
+        "KMIPKIT-REQ-SPEC-6.1.14-011",
+        "KMIPKIT-REQ-SPEC-6.1.14-012",
         "KMIPKIT-REQ-SPEC-6.1.16-001-001",
         "KMIPKIT-REQ-SPEC-6.1.16-001-002",
-        "KMIPKIT-REQ-SPEC-6.1.16-004",
         "KMIPKIT-REQ-SPEC-6.1.17-001-001",
         "KMIPKIT-REQ-SPEC-6.1.17-001-002",
         "KMIPKIT-REQ-SPEC-6.1.17-006",
@@ -118034,6 +118661,12 @@
         "KMIPKIT-REQ-SPEC-6.1.11-001-002",
         "KMIPKIT-REQ-SPEC-6.1.11-005",
         "KMIPKIT-REQ-SPEC-6.1.11-006",
+        "KMIPKIT-REQ-SPEC-6.1.12-003",
+        "KMIPKIT-REQ-SPEC-6.1.12-005",
+        "KMIPKIT-REQ-SPEC-6.1.12-006",
+        "KMIPKIT-REQ-SPEC-6.1.12-007",
+        "KMIPKIT-REQ-SPEC-6.1.13-005",
+        "KMIPKIT-REQ-SPEC-6.1.13-006",
         "KMIPKIT-REQ-SPEC-6.1.14-001-001",
         "KMIPKIT-REQ-SPEC-6.1.14-001-002",
         "KMIPKIT-REQ-SPEC-6.1.14-001-003",
@@ -118043,9 +118676,12 @@
         "KMIPKIT-REQ-SPEC-6.1.14-006-002",
         "KMIPKIT-REQ-SPEC-6.1.14-007-001",
         "KMIPKIT-REQ-SPEC-6.1.14-007-002",
+        "KMIPKIT-REQ-SPEC-6.1.14-009",
+        "KMIPKIT-REQ-SPEC-6.1.14-010",
+        "KMIPKIT-REQ-SPEC-6.1.14-011",
+        "KMIPKIT-REQ-SPEC-6.1.14-012",
         "KMIPKIT-REQ-SPEC-6.1.16-001-001",
         "KMIPKIT-REQ-SPEC-6.1.16-001-002",
-        "KMIPKIT-REQ-SPEC-6.1.16-004",
         "KMIPKIT-REQ-SPEC-6.1.17-001-001",
         "KMIPKIT-REQ-SPEC-6.1.17-001-002",
         "KMIPKIT-REQ-SPEC-6.1.17-006",
@@ -119392,6 +120028,12 @@
         "KMIPKIT-REQ-SPEC-6.1.11-001-002",
         "KMIPKIT-REQ-SPEC-6.1.11-005",
         "KMIPKIT-REQ-SPEC-6.1.11-006",
+        "KMIPKIT-REQ-SPEC-6.1.12-003",
+        "KMIPKIT-REQ-SPEC-6.1.12-005",
+        "KMIPKIT-REQ-SPEC-6.1.12-006",
+        "KMIPKIT-REQ-SPEC-6.1.12-007",
+        "KMIPKIT-REQ-SPEC-6.1.13-005",
+        "KMIPKIT-REQ-SPEC-6.1.13-006",
         "KMIPKIT-REQ-SPEC-6.1.14-001-001",
         "KMIPKIT-REQ-SPEC-6.1.14-001-002",
         "KMIPKIT-REQ-SPEC-6.1.14-001-003",
@@ -119401,9 +120043,12 @@
         "KMIPKIT-REQ-SPEC-6.1.14-006-002",
         "KMIPKIT-REQ-SPEC-6.1.14-007-001",
         "KMIPKIT-REQ-SPEC-6.1.14-007-002",
+        "KMIPKIT-REQ-SPEC-6.1.14-009",
+        "KMIPKIT-REQ-SPEC-6.1.14-010",
+        "KMIPKIT-REQ-SPEC-6.1.14-011",
+        "KMIPKIT-REQ-SPEC-6.1.14-012",
         "KMIPKIT-REQ-SPEC-6.1.16-001-001",
         "KMIPKIT-REQ-SPEC-6.1.16-001-002",
-        "KMIPKIT-REQ-SPEC-6.1.16-004",
         "KMIPKIT-REQ-SPEC-6.1.17-001-001",
         "KMIPKIT-REQ-SPEC-6.1.17-001-002",
         "KMIPKIT-REQ-SPEC-6.1.17-006",
@@ -120781,6 +121426,12 @@
         "KMIPKIT-REQ-SPEC-6.1.11-001-002",
         "KMIPKIT-REQ-SPEC-6.1.11-005",
         "KMIPKIT-REQ-SPEC-6.1.11-006",
+        "KMIPKIT-REQ-SPEC-6.1.12-003",
+        "KMIPKIT-REQ-SPEC-6.1.12-005",
+        "KMIPKIT-REQ-SPEC-6.1.12-006",
+        "KMIPKIT-REQ-SPEC-6.1.12-007",
+        "KMIPKIT-REQ-SPEC-6.1.13-005",
+        "KMIPKIT-REQ-SPEC-6.1.13-006",
         "KMIPKIT-REQ-SPEC-6.1.14-001-001",
         "KMIPKIT-REQ-SPEC-6.1.14-001-002",
         "KMIPKIT-REQ-SPEC-6.1.14-001-003",
@@ -120790,9 +121441,12 @@
         "KMIPKIT-REQ-SPEC-6.1.14-006-002",
         "KMIPKIT-REQ-SPEC-6.1.14-007-001",
         "KMIPKIT-REQ-SPEC-6.1.14-007-002",
+        "KMIPKIT-REQ-SPEC-6.1.14-009",
+        "KMIPKIT-REQ-SPEC-6.1.14-010",
+        "KMIPKIT-REQ-SPEC-6.1.14-011",
+        "KMIPKIT-REQ-SPEC-6.1.14-012",
         "KMIPKIT-REQ-SPEC-6.1.16-001-001",
         "KMIPKIT-REQ-SPEC-6.1.16-001-002",
-        "KMIPKIT-REQ-SPEC-6.1.16-004",
         "KMIPKIT-REQ-SPEC-6.1.17-001-001",
         "KMIPKIT-REQ-SPEC-6.1.17-001-002",
         "KMIPKIT-REQ-SPEC-6.1.17-006",
@@ -122143,6 +122797,12 @@
         "KMIPKIT-REQ-SPEC-6.1.11-001-002",
         "KMIPKIT-REQ-SPEC-6.1.11-005",
         "KMIPKIT-REQ-SPEC-6.1.11-006",
+        "KMIPKIT-REQ-SPEC-6.1.12-003",
+        "KMIPKIT-REQ-SPEC-6.1.12-005",
+        "KMIPKIT-REQ-SPEC-6.1.12-006",
+        "KMIPKIT-REQ-SPEC-6.1.12-007",
+        "KMIPKIT-REQ-SPEC-6.1.13-005",
+        "KMIPKIT-REQ-SPEC-6.1.13-006",
         "KMIPKIT-REQ-SPEC-6.1.14-001-001",
         "KMIPKIT-REQ-SPEC-6.1.14-001-002",
         "KMIPKIT-REQ-SPEC-6.1.14-001-003",
@@ -122152,9 +122812,12 @@
         "KMIPKIT-REQ-SPEC-6.1.14-006-002",
         "KMIPKIT-REQ-SPEC-6.1.14-007-001",
         "KMIPKIT-REQ-SPEC-6.1.14-007-002",
+        "KMIPKIT-REQ-SPEC-6.1.14-009",
+        "KMIPKIT-REQ-SPEC-6.1.14-010",
+        "KMIPKIT-REQ-SPEC-6.1.14-011",
+        "KMIPKIT-REQ-SPEC-6.1.14-012",
         "KMIPKIT-REQ-SPEC-6.1.16-001-001",
         "KMIPKIT-REQ-SPEC-6.1.16-001-002",
-        "KMIPKIT-REQ-SPEC-6.1.16-004",
         "KMIPKIT-REQ-SPEC-6.1.17-001-001",
         "KMIPKIT-REQ-SPEC-6.1.17-001-002",
         "KMIPKIT-REQ-SPEC-6.1.17-006",

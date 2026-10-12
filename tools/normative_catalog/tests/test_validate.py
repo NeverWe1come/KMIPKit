@@ -4289,8 +4289,9 @@ class CatalogValidationTests(unittest.TestCase):
         crosswalk_mappings = [
             (
                 record["requirement_id"],
-                record["source_clause_id"],
+                record.get("source_clause_id"),
                 record.get("source_obligation_order"),
+                record.get("source_gap_id"),
             )
             for record in oracle["requirement_crosswalk"]
         ]
@@ -10513,10 +10514,12 @@ class CatalogValidationTests(unittest.TestCase):
                 self.assertEqual(gap["html_line_range"], line_range)
                 self.assertEqual(gap["source_locator"]["html_line_range"], line_range)
                 self.assertEqual(gap["source_force"], force)
-                self.assertEqual(gap["proposed_requirement_id"], proposal)
+                self.assertIsNone(gap["proposed_requirement_id"])
+                self.assertEqual(gap["candidate_requirement_id"], proposal)
+                self.assertEqual(gap["reused_requirement_id"], proposal)
+                self.assertEqual(gap["status"], "source_obligation_covered_by_existing_stable_label")
                 self.assertEqual(gap["scope_disposition"], "client_1_0")
                 self.assertEqual(gap["actor"], "client")
-                self.assertIsNone(gap["candidate_requirement_id"])
                 self.assertIsNone(gap["source_clause_id"])
                 self.assertEqual(gap["source_keywords"], [])
         self.assertEqual(
@@ -10540,7 +10543,7 @@ class CatalogValidationTests(unittest.TestCase):
             },
         )
         self.assertEqual(
-            rights_gaps["KMIPKIT-SOURCE-GAP-SPEC-6.1.12-RIGHTS-REQUIRED"]["proposed_requirement_id"],
+            rights_gaps["KMIPKIT-SOURCE-GAP-SPEC-6.1.12-RIGHTS-REQUIRED"]["reused_requirement_id"],
             "KMIPKIT-REQ-SPEC-6.1.12-003",
         )
         self.assertEqual(oracle["oracle_status"], "partial-source-reviewed; not complete T003 oracle")
@@ -10745,7 +10748,7 @@ class CatalogValidationTests(unittest.TestCase):
         crosswalk = [
             mapping
             for mapping in oracle["requirement_crosswalk"]
-            if mapping["source_clause_id"] == "KMIPKIT-CLAUSE-SPEC-6.1.13-001"
+            if mapping.get("source_clause_id") == "KMIPKIT-CLAUSE-SPEC-6.1.13-001"
         ]
         self.assertEqual(
             {
@@ -10788,14 +10791,16 @@ class CatalogValidationTests(unittest.TestCase):
                 self.assertEqual(gap["source_locator"]["table"], "request_payload")
                 self.assertEqual(gap["html_line_range"], details["line_range"])
                 self.assertEqual(gap["source_force"], "optional_table_body_value")
-                self.assertEqual(gap["proposed_requirement_id"], details["proposal"])
+                self.assertIsNone(gap["proposed_requirement_id"])
+                self.assertEqual(gap["candidate_requirement_id"], details["proposal"])
+                self.assertEqual(gap["reused_requirement_id"], details["proposal"])
+                self.assertEqual(gap["status"], "source_obligation_covered_by_existing_stable_label")
                 self.assertEqual(gap["scope_disposition"], "client_1_0")
                 self.assertEqual(gap["actor"], "client")
                 self.assertEqual(gap["direction"], details["direction"])
                 self.assertEqual(gap["condition"], details["condition"])
                 if "source_note" in details:
                     self.assertEqual(gap["source_note"], details["source_note"])
-                self.assertIsNone(gap["candidate_requirement_id"])
                 self.assertIsNone(gap["source_clause_id"])
                 self.assertEqual(gap["source_keywords"], [])
                 self.assertEqual(gap["source_excerpt"], pinned_source_excerpt(source_path, details["line_range"]))
@@ -11026,7 +11031,7 @@ class CatalogValidationTests(unittest.TestCase):
             if any(clause_id in expected_clause_ids for clause_id in requirement["source_clause_ids"])
         }
         self.assertEqual(catalog_ids_for_slice, candidate_ids)
-        crosswalk = [mapping for mapping in oracle["requirement_crosswalk"] if mapping["source_clause_id"] in expected_clause_ids]
+        crosswalk = [mapping for mapping in oracle["requirement_crosswalk"] if mapping.get("source_clause_id") in expected_clause_ids]
         expected_crosswalk = {
             "KMIPKIT-REQ-SPEC-6.1.14-001-001": ("KMIPKIT-CLAUSE-SPEC-6.1.14-001", 1, "SHALL", "client", "client_1_0"),
             "KMIPKIT-REQ-SPEC-6.1.14-001-002": ("KMIPKIT-CLAUSE-SPEC-6.1.14-001", 3, "SHALL", "client", "client_1_0"),
@@ -11055,9 +11060,15 @@ class CatalogValidationTests(unittest.TestCase):
         all_client_profiles = [profile for profile in oracle["profiles"] if profile["role"] == "client" and "6.1" in profile["direct_profiles_sections"]]
         self.assertEqual(len(all_client_profiles), 18)
         catalog_profiles = {profile["profile_id"]: profile for profile in catalog["profiles"] if profile["role"] == "client"}
+        expected_closed_ids = candidate_ids | {
+            "KMIPKIT-REQ-SPEC-6.1.14-009",
+            "KMIPKIT-REQ-SPEC-6.1.14-010",
+            "KMIPKIT-REQ-SPEC-6.1.14-011",
+            "KMIPKIT-REQ-SPEC-6.1.14-012",
+        }
         for profile in all_client_profiles:
             with self.subTest(profile_id=profile["profile_id"]):
-                self.assertEqual(set(catalog_profiles[profile["profile_id"]]["requirement_ids"]) & catalog_ids_for_slice, candidate_ids)
+                self.assertEqual(set(catalog_profiles[profile["profile_id"]]["requirement_ids"]) & expected_closed_ids, expected_closed_ids)
 
         gaps = {
             gap["gap_id"]: gap
@@ -11065,10 +11076,10 @@ class CatalogValidationTests(unittest.TestCase):
             if gap["source_section"] == "6.1.14"
         }
         expected_gaps = {
-            "KMIPKIT-SOURCE-GAP-SPEC-6.1.14-OBJECT-TYPE-REQUIRED": ("Object Type", [25900, 25917], "KMIPKIT-REQ-SPEC-6.1.14-009", None, None),
-            "KMIPKIT-SOURCE-GAP-SPEC-6.1.14-UNIQUE-IDENTIFIER-REQUIRED": ("Unique Identifier", [25919, 25938], "KMIPKIT-REQ-SPEC-6.1.14-010", None, None),
-            "KMIPKIT-SOURCE-GAP-SPEC-6.1.14-DERIVATION-METHOD-REQUIRED": ("Derivation Method", [25940, 25958], "KMIPKIT-REQ-SPEC-6.1.14-011", None, None),
-            "KMIPKIT-SOURCE-GAP-SPEC-6.1.14-DERIVATION-PARAMETERS-REQUIRED": ("Derivation Parameters", [25960, 25978], "KMIPKIT-REQ-SPEC-6.1.14-012", None, None),
+            "KMIPKIT-SOURCE-GAP-SPEC-6.1.14-OBJECT-TYPE-REQUIRED": ("Object Type", [25900, 25917], None, "KMIPKIT-REQ-SPEC-6.1.14-009", "KMIPKIT-REQ-SPEC-6.1.14-009"),
+            "KMIPKIT-SOURCE-GAP-SPEC-6.1.14-UNIQUE-IDENTIFIER-REQUIRED": ("Unique Identifier", [25919, 25938], None, "KMIPKIT-REQ-SPEC-6.1.14-010", "KMIPKIT-REQ-SPEC-6.1.14-010"),
+            "KMIPKIT-SOURCE-GAP-SPEC-6.1.14-DERIVATION-METHOD-REQUIRED": ("Derivation Method", [25940, 25958], None, "KMIPKIT-REQ-SPEC-6.1.14-011", "KMIPKIT-REQ-SPEC-6.1.14-011"),
+            "KMIPKIT-SOURCE-GAP-SPEC-6.1.14-DERIVATION-PARAMETERS-REQUIRED": ("Derivation Parameters", [25960, 25978], None, "KMIPKIT-REQ-SPEC-6.1.14-012", "KMIPKIT-REQ-SPEC-6.1.14-012"),
             "KMIPKIT-SOURCE-GAP-SPEC-6.1.14-ATTRIBUTES-REQUIRED": ("Attributes", [25980, 26001], None, "KMIPKIT-REQ-SPEC-6.1.14-007-001", "KMIPKIT-REQ-SPEC-6.1.14-007-001"),
         }
         self.assertEqual(set(gaps), set(expected_gaps))
@@ -11081,7 +11092,7 @@ class CatalogValidationTests(unittest.TestCase):
                 self.assertEqual(gap["source_force"], "required_table_body_value")
                 self.assertEqual(gap["scope_disposition"], "client_1_0")
                 self.assertEqual(gap["actor"], "client")
-                self.assertEqual(gap["proposed_requirement_id"], proposal)
+                self.assertIsNone(gap["proposed_requirement_id"])
                 self.assertEqual(gap["candidate_requirement_id"], candidate_id)
                 self.assertEqual(gap.get("reused_requirement_id"), reused_id)
                 self.assertEqual(
@@ -11214,7 +11225,7 @@ class CatalogValidationTests(unittest.TestCase):
             ],
             "KMIPKIT-CLAUSE-SPEC-6.1.16-003": [],
             "KMIPKIT-CLAUSE-SPEC-6.1.16-004": [
-                (1, "MAY be Repeated", "MAY", "client", "include repeated Protocol Version entries in the client request", "No additional condition is stated.", "client_1_0", "KMIPKIT-REQ-SPEC-6.1.16-004"),
+                (1, "MAY be Repeated", "MAY", "client", "include repeated Protocol Version entries in the client request", "No additional condition is stated.", "out_of_scope", "KMIPKIT-REQ-SPEC-6.1.16-004"),
             ],
             "KMIPKIT-CLAUSE-SPEC-6.1.16-005": [],
             "KMIPKIT-CLAUSE-SPEC-6.1.16-006": [
@@ -11241,7 +11252,7 @@ class CatalogValidationTests(unittest.TestCase):
             "KMIPKIT-CLAUSE-SPEC-6.1.16-001": ["KMIPKIT-REQ-SPEC-6.1.16-001-001", "KMIPKIT-REQ-SPEC-6.1.16-001-002"],
             "KMIPKIT-CLAUSE-SPEC-6.1.16-002": [],
             "KMIPKIT-CLAUSE-SPEC-6.1.16-003": [],
-            "KMIPKIT-CLAUSE-SPEC-6.1.16-004": ["KMIPKIT-REQ-SPEC-6.1.16-004"],
+            "KMIPKIT-CLAUSE-SPEC-6.1.16-004": [],
             "KMIPKIT-CLAUSE-SPEC-6.1.16-005": [],
             "KMIPKIT-CLAUSE-SPEC-6.1.16-006": [],
             "KMIPKIT-CLAUSE-SPEC-6.1.16.1-001": [],
@@ -11261,16 +11272,16 @@ class CatalogValidationTests(unittest.TestCase):
         expected_client_ids = {
             "KMIPKIT-REQ-SPEC-6.1.16-001-001",
             "KMIPKIT-REQ-SPEC-6.1.16-001-002",
-            "KMIPKIT-REQ-SPEC-6.1.16-004",
         }
         catalog = json.loads((ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8"))
         catalog_ids_for_slice = {
             requirement["requirement_id"]
             for requirement in catalog["requirements"]
+            if requirement["scope_state"] == "client_1_0"
             if any(clause_id in expected_sources for clause_id in requirement["source_clause_ids"])
         }
         self.assertEqual(catalog_ids_for_slice, expected_client_ids)
-        crosswalk = [row for row in oracle["requirement_crosswalk"] if row["source_clause_id"] in expected_sources]
+        crosswalk = [row for row in oracle["requirement_crosswalk"] if row.get("source_clause_id") in expected_sources]
         self.assertEqual(len(crosswalk), 3, "each of the three client labels has exactly one atom mapping")
         self.assertEqual(
             {
@@ -11283,7 +11294,7 @@ class CatalogValidationTests(unittest.TestCase):
             {
                 "KMIPKIT-REQ-SPEC-6.1.16-001-001": ("KMIPKIT-CLAUSE-SPEC-6.1.16-001", 1, "OPTIONAL", "client", "client_1_0"),
                 "KMIPKIT-REQ-SPEC-6.1.16-001-002": ("KMIPKIT-CLAUSE-SPEC-6.1.16-001", 2, "SHALL", "client", "client_1_0"),
-                "KMIPKIT-REQ-SPEC-6.1.16-004": ("KMIPKIT-CLAUSE-SPEC-6.1.16-004", 1, "MAY", "client", "client_1_0"),
+                "KMIPKIT-REQ-SPEC-6.1.16-004": ("KMIPKIT-CLAUSE-SPEC-6.1.16-004", 1, "MAY", "client", "out_of_scope"),
             },
         )
         client_profiles = [profile for profile in oracle["profiles"] if profile["role"] == "client" and "6.1" in profile["direct_profiles_sections"]]
@@ -13311,6 +13322,7 @@ class CatalogValidationTests(unittest.TestCase):
         obligations_by_locator: dict[tuple[str, int], list[dict[str, object]]] = {}
         obligations_by_id: dict[tuple[str, str], list[dict[str, object]]] = {}
         crosswalk_by_requirement: dict[str, list[dict[str, object]]] = {}
+        gaps_by_id = {gap["gap_id"]: gap for gap in oracle["source_only_requirement_gaps"]}
         for review in oracle["source_requirement_reviews"]:
             for obligation in review["source_obligations"]:
                 locator_key = (review["source_clause_id"], obligation["source_order"])
@@ -13324,15 +13336,16 @@ class CatalogValidationTests(unittest.TestCase):
         crosswalk_mappings = [
             (
                 mapping["requirement_id"],
-                mapping["source_clause_id"],
+                mapping.get("source_clause_id"),
                 mapping.get("source_obligation_order"),
+                mapping.get("source_gap_id"),
             )
             for mapping in oracle["requirement_crosswalk"]
         ]
         if len(crosswalk_mappings) != len(set(crosswalk_mappings)):
             violations.append("requirement_crosswalk contains duplicate label/clause/order mappings")
         crosswalk_atoms = [
-            (mapping["source_clause_id"], mapping.get("source_obligation_order"))
+            (mapping.get("source_clause_id"), mapping.get("source_obligation_order"), mapping.get("source_gap_id"))
             for mapping in oracle["requirement_crosswalk"]
         ]
         if len(crosswalk_atoms) != len(set(crosswalk_atoms)):
@@ -13342,6 +13355,40 @@ class CatalogValidationTests(unittest.TestCase):
             requirement_id = mapping["requirement_id"]
             crosswalk_by_requirement.setdefault(requirement_id, []).append(mapping)
             requirement = requirements.get(requirement_id)
+            source_gap_id = mapping.get("source_gap_id")
+            if source_gap_id is not None:
+                gap = gaps_by_id.get(source_gap_id)
+                if requirement is None:
+                    violations.append(f"table-row crosswalk label is absent from catalog: {requirement_id}")
+                    continue
+                if gap is None:
+                    violations.append(f"table-row crosswalk source gap is absent: {source_gap_id}")
+                    continue
+                if (
+                    mapping.get("source_force") not in {"required_table_body_value", "optional_table_body_value"}
+                    or mapping.get("source_force") != gap.get("source_force")
+                    or mapping.get("source_locator") != gap.get("source_locator")
+                    or mapping.get("source_id") != gap.get("source_id")
+                    or mapping.get("source_section") != gap.get("source_section")
+                    or mapping.get("requirement_id") != gap.get("candidate_requirement_id")
+                    or requirement.get("source_keyword") is not None
+                    or requirement.get("source_force") != mapping.get("source_force")
+                    or requirement.get("source_gap_id") != source_gap_id
+                    or requirement.get("source_locator") != mapping.get("source_locator")
+                    or requirement.get("source_clause_ids") != []
+                    or requirement.get("source_refs") != [{"source_id": gap.get("source_id"), "section": gap.get("source_section")}]
+                    or requirement.get("role") != mapping.get("role")
+                    or requirement.get("scope_state") != mapping.get("scope_state")
+                    or {"source_clause_id", "source_obligation_order", "source_keyword"} & set(mapping)
+                ):
+                    violations.append(f"{requirement_id} table-row crosswalk differs from its exact typed source gap")
+                if gap.get("source_excerpt") != pinned_source_excerpt(gap["source_path"], gap["html_line_range"]):
+                    violations.append(f"{requirement_id} table-row excerpt differs from pinned source lines")
+                if gap.get("source_keywords") != []:
+                    violations.append(f"{requirement_id} table-row force was incorrectly promoted to a formal keyword")
+                if not gap.get("source_locator", {}).get("row_label"):
+                    violations.append(f"{requirement_id} table-row locator has no exact row label")
+                continue
             clause = source_clauses.get(mapping["source_clause_id"])
             audited_clause = audited_sources.get(mapping["source_id"], {}).get(mapping["source_clause_id"])
             if requirement is None:
@@ -13409,8 +13456,9 @@ class CatalogValidationTests(unittest.TestCase):
                 mappings,
                 key=lambda mapping: (
                     mapping["source_id"],
-                    mapping["source_clause_id"],
-                    mapping["source_obligation_order"],
+                    mapping.get("source_clause_id", ""),
+                    mapping.get("source_obligation_order", 0),
+                    mapping.get("source_gap_id", ""),
                 ),
             )
             aggregate_scopes = list(dict.fromkeys(mapping["scope_state"] for mapping in ordered_mappings))
@@ -13425,9 +13473,13 @@ class CatalogValidationTests(unittest.TestCase):
                     f"{requirement_id} aggregate scope differs from its source atoms: "
                     f"expected={expected_scope!r}, actual={requirement['scope_state']!r}"
                 )
-            source_keywords = {mapping["source_keyword"] for mapping in mappings}
-            if requirement["source_keyword"] not in source_keywords:
-                violations.append(f"{requirement_id} catalog keyword is absent from its source atoms")
+            if requirement.get("source_force") is not None:
+                if len(mappings) != 1 or mappings[0].get("source_force") != requirement["source_force"]:
+                    violations.append(f"{requirement_id} table force is absent from its exact source gap")
+            else:
+                source_keywords = {mapping["source_keyword"] for mapping in mappings}
+                if requirement["source_keyword"] not in source_keywords:
+                    violations.append(f"{requirement_id} catalog keyword is absent from its source atoms")
 
         for review in oracle["source_requirement_reviews"]:
             source_id = review["source_id"]
@@ -13498,10 +13550,17 @@ class CatalogValidationTests(unittest.TestCase):
                         catalog_ids,
                         "a source reuse must name an existing stable requirement label",
                     )
-                    self.assertTrue(
-                        requirements_by_id[reused_id]["source_clause_ids"],
-                        "a reused label must retain its original source mapping",
-                    )
+                    reused_requirement = requirements_by_id[reused_id]
+                    if reused_requirement.get("source_gap_id") == gap["gap_id"]:
+                        self.assertEqual(reused_requirement.get("source_force"), gap["source_force"])
+                        self.assertEqual(reused_requirement.get("source_gap_id"), gap["gap_id"])
+                        self.assertEqual(reused_requirement.get("source_locator"), gap["source_locator"])
+                        self.assertEqual(reused_requirement.get("source_clause_ids"), [])
+                    else:
+                        self.assertTrue(
+                            reused_requirement["source_clause_ids"],
+                            "a reused label must retain its original source mapping",
+                        )
                     self.assertEqual(gap["reused_requirement_id"], reused_id)
                     self.assertEqual(
                         gap["status"],
@@ -13519,7 +13578,6 @@ class CatalogValidationTests(unittest.TestCase):
             if gap["source_id"] == "KMIPKIT-SRC-spec" and gap["proposed_requirement_id"] is not None
         }
         required_body_proposals = {
-            "KMIPKIT-REQ-SPEC-6.1.12-003",
             "KMIPKIT-REQ-SPEC-6.1.34-005",
             "KMIPKIT-REQ-SPEC-6.1.37-001",
             "KMIPKIT-REQ-SPEC-6.1.39-001",
@@ -13554,10 +13612,6 @@ class CatalogValidationTests(unittest.TestCase):
             "KMIPKIT-REQ-SPEC-3.11-003",
             "KMIPKIT-REQ-SPEC-3.12-002",
             "KMIPKIT-REQ-SPEC-3.12-003",
-            "KMIPKIT-REQ-SPEC-6.1.14-009",
-            "KMIPKIT-REQ-SPEC-6.1.14-010",
-            "KMIPKIT-REQ-SPEC-6.1.14-011",
-            "KMIPKIT-REQ-SPEC-6.1.14-012",
             "KMIPKIT-REQ-SPEC-6.1.24-001",
             "KMIPKIT-REQ-SPEC-6.1.25-007",
             "KMIPKIT-REQ-SPEC-6.1.25-008",
@@ -13589,11 +13643,6 @@ class CatalogValidationTests(unittest.TestCase):
                 *(f"KMIPKIT-REQ-SPEC-6.1-{ordinal:03d}" for ordinal in range(11, 21)),
                 "KMIPKIT-REQ-SPEC-4.30-001-002",
                 "KMIPKIT-REQ-SPEC-4.39-002-001",
-                "KMIPKIT-REQ-SPEC-6.1.12-005",
-                "KMIPKIT-REQ-SPEC-6.1.12-006",
-                "KMIPKIT-REQ-SPEC-6.1.12-007",
-                "KMIPKIT-REQ-SPEC-6.1.13-005",
-                "KMIPKIT-REQ-SPEC-6.1.13-006",
                 "KMIPKIT-REQ-SPEC-6.1.18-001-001",
                 "KMIPKIT-REQ-SPEC-6.1.18-005",
                 "KMIPKIT-REQ-SPEC-6.1.18-006",
@@ -13665,10 +13714,6 @@ class CatalogValidationTests(unittest.TestCase):
             "KMIPKIT-REQ-SPEC-6.1.56-011",
             "KMIPKIT-REQ-SPEC-6.1.56-012",
             "KMIPKIT-REQ-SPEC-6.1.56-013",
-            "KMIPKIT-REQ-SPEC-6.1.14-009",
-            "KMIPKIT-REQ-SPEC-6.1.14-010",
-            "KMIPKIT-REQ-SPEC-6.1.14-011",
-            "KMIPKIT-REQ-SPEC-6.1.14-012",
             } | required_body_proposals,
         )
         required_body_gaps = [
@@ -13745,11 +13790,6 @@ class CatalogValidationTests(unittest.TestCase):
             self.assertEqual(gap["source_keywords"], [])
             self.assertEqual(gap["actor"], "client")
             client_body_proposals = {
-                "KMIPKIT-REQ-SPEC-6.1.12-003",
-                "KMIPKIT-REQ-SPEC-6.1.14-009",
-                "KMIPKIT-REQ-SPEC-6.1.14-010",
-                "KMIPKIT-REQ-SPEC-6.1.14-011",
-                "KMIPKIT-REQ-SPEC-6.1.14-012",
                 "KMIPKIT-REQ-SPEC-6.1.24-001",
                 "KMIPKIT-REQ-SPEC-6.1.24-002",
                 "KMIPKIT-REQ-SPEC-6.1.25-007",
@@ -13791,6 +13831,8 @@ class CatalogValidationTests(unittest.TestCase):
             reused_requirements,
             {
                 "11.46": "KMIPKIT-REQ-SPEC-6.1-005",
+                "6.1.12": "KMIPKIT-REQ-SPEC-6.1.12-007",
+                "6.1.13": "KMIPKIT-REQ-SPEC-6.1.13-006",
                 "6.1.14": "KMIPKIT-REQ-SPEC-6.1.14-007-001",
                 "6.1.23": "KMIPKIT-REQ-SPEC-6.1.23-002-001",
             },
@@ -14042,8 +14084,8 @@ class CatalogValidationTests(unittest.TestCase):
         client_profiles = [row for row in catalog["profiles"] if row["role"] == "client"]
         parsed_sources: dict[str, dict[str, dict[str, object]]] = {}
         violations: list[str] = []
-        explicit_gap_ids = {
-            gap["gap_id"] for gap in oracle.get("source_only_requirement_gaps", [])
+        explicit_gaps = {
+            gap["gap_id"]: gap for gap in oracle.get("source_only_requirement_gaps", [])
         }
 
         for review in oracle["source_requirement_reviews"]:
@@ -14093,12 +14135,12 @@ class CatalogValidationTests(unittest.TestCase):
                 if candidate_id is None:
                     if obligation["scope_disposition"] in {"client_1_0", "profile_conditional"}:
                         gap_ref = obligation.get("source_gap_id")
-                        if gap_ref not in explicit_gap_ids:
+                        if gap_ref not in explicit_gaps:
                             violations.append(
                                 f"{review['source_clause_id']} in-scope source atom "
                                 f"{obligation['source_order']} has no stable requirement ID or explicit gap"
                             )
-                        else:
+                        elif explicit_gaps[gap_ref].get("candidate_requirement_id") is None:
                             violations.append(
                                 f"{gap_ref} is a source-identified in-scope atom without a stable requirement ID"
                             )
@@ -14110,7 +14152,17 @@ class CatalogValidationTests(unittest.TestCase):
                 if candidate is None:
                     violations.append(f"candidate stable label is unresolved: {candidate_id}")
                 else:
-                    if review["source_clause_id"] not in candidate["source_clause_ids"]:
+                    table_gap_id = candidate.get("source_gap_id")
+                    if table_gap_id is not None:
+                        table_gap = explicit_gaps.get(table_gap_id)
+                        if (
+                            table_gap is None
+                            or table_gap.get("candidate_requirement_id") != candidate_id
+                            or table_gap.get("source_locator") != candidate.get("source_locator")
+                            or table_gap.get("source_force") != candidate.get("source_force")
+                        ):
+                            violations.append(f"{candidate_id} does not map to its exact reviewed table-row gap")
+                    elif review["source_clause_id"] not in candidate["source_clause_ids"]:
                         violations.append(f"{candidate_id} does not map to its reviewed source clause")
                     candidate_source_scopes = {
                         {"unresolved": "unclear", "client_1_0 + server_only (split/shared)": "mixed"}.get(
@@ -14130,7 +14182,7 @@ class CatalogValidationTests(unittest.TestCase):
                             f"{candidate_id} catalog scope differs from reviewed source disposition "
                             f"{reviewed_scope}"
                         )
-                if obligation["source_keyword"] not in pinned_clause["source_keywords"]:
+                if candidate.get("source_gap_id") is None and obligation["source_keyword"] not in pinned_clause["source_keywords"]:
                     violations.append(
                         f"{review['source_clause_id']} source atom {obligation['source_order']} keyword is absent from the pinned locator"
                     )
@@ -14147,6 +14199,21 @@ class CatalogValidationTests(unittest.TestCase):
                 candidate = candidate_requirements.get(reused_id)
                 if candidate is None:
                     violations.append(f"reused source label is unresolved: {reused_id}")
+                    continue
+                table_gap_id = candidate.get("source_gap_id")
+                if table_gap_id is not None:
+                    if (
+                        table_gap_id != gap["gap_id"]
+                        or candidate.get("source_locator") != gap.get("source_locator")
+                        or candidate.get("source_force") != gap.get("source_force")
+                    ):
+                        violations.append(f"{gap['gap_id']} reuse {reused_id} does not map to the exact table-row gap")
+                    if gap["candidate_requirement_id"] != reused_id:
+                        violations.append(f"{gap['gap_id']} candidate and reused IDs differ")
+                    if gap["scope_disposition"] not in {"client_1_0", "profile_conditional"}:
+                        violations.append(f"{gap['gap_id']} reuses a label outside client scope")
+                    if " ".join(gap["source_excerpt"].split()) != " ".join(pinned_source_excerpt(gap["source_path"], gap["html_line_range"]).split()):
+                        violations.append(f"{gap['gap_id']} does not identify the exact pinned table row")
                     continue
                 if review["source_clause_id"] not in candidate["source_clause_ids"]:
                     violations.append(
@@ -16349,47 +16416,49 @@ class CatalogValidationTests(unittest.TestCase):
                 "KMIPKIT-SOURCE-GAP-SPEC-6.1.13-ATTRIBUTE-REFERENCE-OPTIONAL", "Attribute Reference", "optional_table_body_value", [25700, 25718]
             ),
             "KMIPKIT-REQ-SPEC-6.1.14-009": (
-                "KMIPKIT-SOURCE-GAP-SPEC-6.1.14-OBJECT-TYPE-REQUIRED", "Object Type", "required_table_body_value", [25900, 25918]
+                "KMIPKIT-SOURCE-GAP-SPEC-6.1.14-OBJECT-TYPE-REQUIRED", "Object Type", "required_table_body_value", [25900, 25917]
             ),
             "KMIPKIT-REQ-SPEC-6.1.14-010": (
-                "KMIPKIT-SOURCE-GAP-SPEC-6.1.14-UNIQUE-IDENTIFIER-REQUIRED", "Unique Identifier", "required_table_body_value", [25919, 25939]
+                "KMIPKIT-SOURCE-GAP-SPEC-6.1.14-UNIQUE-IDENTIFIER-REQUIRED", "Unique Identifier", "required_table_body_value", [25919, 25938]
             ),
             "KMIPKIT-REQ-SPEC-6.1.14-011": (
-                "KMIPKIT-SOURCE-GAP-SPEC-6.1.14-DERIVATION-METHOD-REQUIRED", "Derivation Method", "required_table_body_value", [25940, 25959]
+                "KMIPKIT-SOURCE-GAP-SPEC-6.1.14-DERIVATION-METHOD-REQUIRED", "Derivation Method", "required_table_body_value", [25940, 25958]
             ),
             "KMIPKIT-REQ-SPEC-6.1.14-012": (
-                "KMIPKIT-SOURCE-GAP-SPEC-6.1.14-DERIVATION-PARAMETERS-REQUIRED", "Derivation Parameters", "required_table_body_value", [25960, 25979]
+                "KMIPKIT-SOURCE-GAP-SPEC-6.1.14-DERIVATION-PARAMETERS-REQUIRED", "Derivation Parameters", "required_table_body_value", [25960, 25978]
             ),
         }
         gaps = {row["gap_id"]: row for row in oracle["source_only_requirement_gaps"]}
-        reviews_by_row = {
-            tuple(row["html_line_range"]): row
-            for row in oracle["source_requirement_reviews"]
-            if row["source_section"] in {"6.1.12", "6.1.13", "6.1.14"}
+        crosswalk_by_gap = {
+            row["source_gap_id"]: row
+            for row in oracle["requirement_crosswalk"]
+            if row.get("source_gap_id") is not None
         }
         for requirement_id, (gap_id, row_label, source_force, line_range) in expected_table_rows.items():
             with self.subTest(table_requirement_id=requirement_id):
                 requirement = requirements[requirement_id]
                 gap = gaps[gap_id]
-                source_review = reviews_by_row[line_range]
                 self.assertIsNone(requirement["source_keyword"])
                 self.assertEqual(requirement["source_force"], source_force)
                 self.assertEqual(requirement["normative_strength"], "mandatory" if source_force == "required_table_body_value" else "permission_or_optional")
                 self.assertEqual(requirement["source_gap_id"], gap_id)
-                self.assertEqual(requirement["source_clause_ids"], [source_review["source_clause_id"]])
+                self.assertEqual(requirement["source_clause_ids"], [])
                 self.assertEqual(requirement["source_locator"], gap["source_locator"])
                 self.assertEqual(requirement["source_locator"]["row_label"], row_label)
                 self.assertEqual(gap["source_force"], source_force)
                 self.assertEqual(gap["html_line_range"], line_range)
                 self.assertEqual(gap["candidate_requirement_id"], requirement_id)
                 self.assertIsNone(gap["proposed_requirement_id"])
-                matching_obligations = [
-                    atom for atom in source_review["source_obligations"]
-                    if atom.get("source_gap_id") == gap_id
-                ]
-                self.assertEqual(len(matching_obligations), 1)
-                self.assertEqual(matching_obligations[0]["source_keyword"], source_force)
-                self.assertEqual(matching_obligations[0]["candidate_requirement_id"], requirement_id)
+                self.assertEqual(gap["status"], "source_obligation_covered_by_existing_stable_label")
+                self.assertEqual(crosswalk_by_gap[gap_id]["requirement_id"], requirement_id)
+                self.assertEqual(crosswalk_by_gap[gap_id]["source_force"], source_force)
+                self.assertNotIn("source_keyword", crosswalk_by_gap[gap_id])
+                expected_feature = {
+                    "6.1.12": "KMIPKIT-0038",
+                    "6.1.13": "KMIPKIT-0016",
+                    "6.1.14": "KMIPKIT-0037",
+                }[requirement["source_locator"]["section"]]
+                self.assertEqual(requirement["feature_spec"], expected_feature)
 
         for requirement_id, (implementation_ref, verification_ref) in evidence_requirements.items():
             with self.subTest(requirement_id=requirement_id):
@@ -16402,6 +16471,14 @@ class CatalogValidationTests(unittest.TestCase):
                 self.assertIn(verification_ref, requirement["verification_refs"])
                 self.assertTrue((ROOT / implementation_ref).is_file())
                 self.assertTrue((ROOT / verification_ref.split("::", 1)[0]).is_file())
+
+        absent_selectors_test = (
+            "crates/kmipkit-protocol/tests/unit/delete_attribute_tests.rs::"
+            "request_preserves_both_optional_selectors_as_absent"
+        )
+        for requirement_id in ("KMIPKIT-REQ-SPEC-6.1.13-005", "KMIPKIT-REQ-SPEC-6.1.13-006"):
+            self.assertIn(absent_selectors_test, requirements[requirement_id]["verification_refs"])
+        self.assertTrue((ROOT / absent_selectors_test.split("::", 1)[0]).is_file())
 
         self.assertEqual(
             requirements["KMIPKIT-REQ-SPEC-6.1.16-004"]["scope_state"],

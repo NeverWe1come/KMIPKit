@@ -61,6 +61,10 @@ KEYWORD_STRENGTH = {
     "MAY": "permission_or_optional",
     "OPTIONAL": "permission_or_optional",
 }
+TABLE_BODY_STRENGTH = {
+    "required_table_body_value": "mandatory",
+    "optional_table_body_value": "permission_or_optional",
+}
 SOURCE_AUTHORITY_RANK = {
     "informative": 0,
     "test_evidence": 1,
@@ -976,20 +980,47 @@ def _check_semantics(
     decisions = _records_by_id(catalog, "decisions", "decision_id")
     for requirement in catalog["requirements"]:
         _source_refs(requirement.get("source_refs"), sources, "requirement source_refs")
-        if not requirement.get("source_clause_ids") or any(item not in clauses for item in requirement["source_clause_ids"]):
-            _fail("requirement has missing or unresolved source clause references")
         keyword = requirement.get("source_keyword")
-        if (
-            not isinstance(keyword, str)
-            or keyword not in KEYWORD_STRENGTH
-            or requirement.get("normative_strength") != KEYWORD_STRENGTH.get(keyword)
-        ):
-            _fail("requirement keyword and normative strength disagree")
-        if any(
-            keyword not in source_clauses[clause_id]["source_keywords"]
-            for clause_id in requirement["source_clause_ids"]
-        ):
-            _fail("requirement keyword is not present in every linked source clause")
+        source_force = requirement.get("source_force")
+        source_clause_ids = requirement.get("source_clause_ids")
+        if source_force in TABLE_BODY_STRENGTH:
+            locator = requirement.get("source_locator")
+            if (
+                keyword is not None
+                or requirement.get("normative_strength") != TABLE_BODY_STRENGTH[source_force]
+                or source_clause_ids != []
+                or not isinstance(requirement.get("source_gap_id"), str)
+                or not requirement["source_gap_id"].strip()
+                or not isinstance(locator, dict)
+                or locator.get("kind") != "table_body_row"
+                or not isinstance(locator.get("section"), str)
+                or not isinstance(locator.get("row_label"), str)
+                or not locator["row_label"].strip()
+                or not isinstance(locator.get("html_line_range"), list)
+                or len(locator["html_line_range"]) != 2
+                or any(not isinstance(line, int) or isinstance(line, bool) or line < 1 for line in locator["html_line_range"])
+                or locator["html_line_range"][0] > locator["html_line_range"][1]
+                or not any(
+                    reference.get("source_id") == requirement["source_refs"][0].get("source_id")
+                    and reference.get("section") == locator["section"]
+                    for reference in requirement["source_refs"]
+                )
+            ):
+                _fail("table-row requirement must use typed force and exact gap/locator metadata without a formal keyword")
+        else:
+            if not source_clause_ids or any(item not in clauses for item in source_clause_ids):
+                _fail("requirement has missing or unresolved source clause references")
+            if (
+                not isinstance(keyword, str)
+                or keyword not in KEYWORD_STRENGTH
+                or requirement.get("normative_strength") != KEYWORD_STRENGTH.get(keyword)
+            ):
+                _fail("requirement keyword and normative strength disagree")
+            if any(
+                keyword not in source_clauses[clause_id]["source_keywords"]
+                for clause_id in source_clause_ids
+            ):
+                _fail("requirement keyword is not present in every linked source clause")
         _enum(
             requirement.get("scope_state"),
             {"client_1_0", "client_1_1", "profile_conditional", "server_only", "out_of_scope", "mixed", "unclear"},

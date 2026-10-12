@@ -37,6 +37,8 @@ _VERIFICATION_CATEGORIES = {
     "SHOULD NOT": "DiscouragedAbsenceOrDeviation",
     "MAY": "OptionalCapability",
     "OPTIONAL": "OptionalCapability",
+    "required_table_body_value": "RequiredBehavior",
+    "optional_table_body_value": "OptionalCapability",
 }
 
 
@@ -270,6 +272,10 @@ def compute_profile_closure(
 
     requirement_ids: set[str] = set()
     unresolved_scope_obligations: set[UnresolvedProfileScopeObligation] = set()
+    closed_source_sections = {
+        (clauses_by_id[clause_id]["source_id"], clauses_by_id[clause_id]["section"])
+        for clause_id in source_clause_ids
+    }
     for requirement in raw_requirements:
         if not isinstance(requirement, dict):
             raise ProfileGenerationError("catalog has an invalid requirement record")
@@ -282,6 +288,20 @@ def compute_profile_closure(
             clause_id for clause_id in linked_clauses
             if isinstance(clause_id, str) and clause_id in source_clause_ids
         ]
+        table_row_intersects_closure = any(
+            isinstance(source_ref, dict)
+            and isinstance(source_ref.get("source_id"), str)
+            and isinstance(source_ref.get("section"), str)
+            and any(
+                closed_source_id == source_ref["source_id"]
+                and _section_in_scope(source_ref["section"], closed_section)
+                for closed_source_id, closed_section in closed_source_sections
+            )
+            for source_ref in requirement.get("source_refs", [])
+        ) and requirement.get("source_force") in {
+            "required_table_body_value",
+            "optional_table_body_value",
+        }
         if _is_unresolved_client_scope(requirement):
             unresolved_scope_obligations.update(
                 UnresolvedProfileScopeObligation(requirement_id, clause_id, scope_state)
@@ -294,7 +314,7 @@ def compute_profile_closure(
         if (
             requirement.get("role") in {"client", "both"}
             and in_scope
-            and any(clause_id in source_clause_ids for clause_id in linked_clauses)
+            and (any(clause_id in source_clause_ids for clause_id in linked_clauses) or table_row_intersects_closure)
         ):
             requirement_ids.add(requirement_id)
 
@@ -367,6 +387,14 @@ def _verification_category(source_keyword: str) -> str:
     return category
 
 
+def _rust_optional_string(value: Any) -> str:
+    if value is None:
+        return "None"
+    if not isinstance(value, str) or not value:
+        raise ProfileGenerationError("optional generated metadata must be null or non-empty text")
+    return f"Some({rust_string_literal(value)})"
+
+
 def render_profiles_source(catalog: Mapping[str, Any], targets: ProfileTargets) -> str:
     """Render deterministic immutable client metadata without executable rules."""
     raw_profiles = catalog.get("profiles")
@@ -435,7 +463,7 @@ def render_profiles_source(catalog: Mapping[str, Any], targets: ProfileTargets) 
         "    pub scope_state: &'static str,",
         "}",
         "",
-        "/// Verification obligation derived from an exact normative keyword.",
+        "/// Verification obligation derived from an exact keyword or typed table force.",
         "#[derive(Clone, Copy, Debug, Eq, PartialEq)]",
         "pub enum GeneratedVerificationCategory {",
         "    /// Positive tests must show that required behavior is provided.",
@@ -455,9 +483,13 @@ def render_profiles_source(catalog: Mapping[str, Any], targets: ProfileTargets) 
         "pub struct GeneratedClientRequirement {",
         "    /// Stable catalog requirement identifier.",
         "    pub requirement_id: &'static str,",
-        "    /// Exact OASIS keyword used by the requirement.",
-        "    pub source_keyword: &'static str,",
-        "    /// Category-specific verification obligation derived from the keyword.",
+        "    /// Exact OASIS keyword, absent for table-field classifications.",
+        "    pub source_keyword: Option<&'static str>,",
+        "    /// Typed table-field force, absent for formal keyword requirements.",
+        "    pub source_force: Option<&'static str>,",
+        "    /// Stable source-only gap ID for a table-field classification.",
+        "    pub source_gap_id: Option<&'static str>,",
+        "    /// Category-specific verification obligation derived from the source force.",
         "    pub verification_category: GeneratedVerificationCategory,",
         "    /// Catalogued client applicability state.",
         "    pub scope_state: &'static str,",
@@ -514,21 +546,25 @@ def render_profiles_source(catalog: Mapping[str, Any], targets: ProfileTargets) 
     for requirement in requirements:
         requirement_id = requirement.get("requirement_id")
         source_keyword = requirement.get("source_keyword")
+        source_force = requirement.get("source_force")
+        category_source = source_keyword if isinstance(source_keyword, str) else source_force
         if (
             not isinstance(requirement_id, str)
             or not requirement_id
-            or not isinstance(source_keyword, str)
-            or not source_keyword
+            or not isinstance(category_source, str)
+            or not category_source
         ):
             raise ProfileGenerationError("client requirement lacks stable source metadata")
         lines.extend(
             [
                 "    GeneratedClientRequirement {",
                 f"        requirement_id: {rust_string_literal(requirement_id)},",
-                f"        source_keyword: {rust_string_literal(source_keyword)},",
+                f"        source_keyword: {_rust_optional_string(source_keyword)},",
+                f"        source_force: {_rust_optional_string(source_force)},",
+                f"        source_gap_id: {_rust_optional_string(requirement.get('source_gap_id'))},",
                 (
                     "        verification_category: GeneratedVerificationCategory::"
-                    f"{_verification_category(source_keyword)},"
+                    f"{_verification_category(category_source)},"
                 ),
                 f"        scope_state: {_rust_string_field(requirement, 'scope_state')},",
                 f"        source_clause_ids: {_rust_string_array(requirement, 'source_clause_ids')},",
