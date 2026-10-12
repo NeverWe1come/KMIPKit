@@ -35,3 +35,17 @@ def test_error_snapshot_is_safe_non_destructive_and_explicitly_clearable() -> No
         cause=metadata.ClientCauseCategory.NONE,
         delivery=metadata.RequestDeliveryState.NONE,
     )
+
+
+def test_error_snapshot_helpers_are_not_part_of_python_facade_exports() -> None:
+    assert "last_error_snapshot" not in metadata.__all__
+    assert "clear_last_error" not in metadata.__all__
+    assert "FfiErrorSnapshot" not in metadata.__all__
+
+
+def test_internal_error_snapshot_helpers_use_private_names() -> None:
+    assert not hasattr(metadata, "last_error_snapshot")
+    assert not hasattr(metadata, "clear_last_error")
+    assert not hasattr(metadata, "FfiErrorSnapshot")
+    assert not hasattr(metadata, "ClientCauseCategory")
+    assert not hasattr(metadata, "RequestDeliveryState")
