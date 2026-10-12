@@ -965,6 +965,37 @@ def _check_normative_inclusions(catalog: dict[str, Any], sources: set[str], clau
             raise CatalogValidationError("normative inclusion closure is invalid") from error
 
 
+def _has_valid_table_body_source(requirement: dict[str, Any]) -> bool:
+    """Check that a table-derived requirement retains its exact source row."""
+    source_force = requirement.get("source_force")
+    locator = requirement.get("source_locator")
+    source_refs = requirement.get("source_refs", [])
+    if source_force not in TABLE_BODY_STRENGTH or not source_refs:
+        return False
+    line_range = locator.get("html_line_range") if isinstance(locator, dict) else None
+    return (
+        requirement.get("source_keyword") is None
+        and requirement.get("normative_strength") == TABLE_BODY_STRENGTH[source_force]
+        and requirement.get("source_clause_ids") == []
+        and isinstance(requirement.get("source_gap_id"), str)
+        and bool(requirement["source_gap_id"].strip())
+        and isinstance(locator, dict)
+        and locator.get("kind") == "table_body_row"
+        and isinstance(locator.get("section"), str)
+        and isinstance(locator.get("row_label"), str)
+        and bool(locator["row_label"].strip())
+        and isinstance(line_range, list)
+        and len(line_range) == 2
+        and all(isinstance(line, int) and not isinstance(line, bool) and line >= 1 for line in line_range)
+        and line_range[0] <= line_range[1]
+        and any(
+            reference.get("source_id") == source_refs[0].get("source_id")
+            and reference.get("section") == locator["section"]
+            for reference in source_refs
+        )
+    )
+
+
 def _check_semantics(
     catalog: dict[str, Any],
     sources: set[str],
@@ -984,28 +1015,7 @@ def _check_semantics(
         source_force = requirement.get("source_force")
         source_clause_ids = requirement.get("source_clause_ids")
         if source_force in TABLE_BODY_STRENGTH:
-            locator = requirement.get("source_locator")
-            if (
-                keyword is not None
-                or requirement.get("normative_strength") != TABLE_BODY_STRENGTH[source_force]
-                or source_clause_ids != []
-                or not isinstance(requirement.get("source_gap_id"), str)
-                or not requirement["source_gap_id"].strip()
-                or not isinstance(locator, dict)
-                or locator.get("kind") != "table_body_row"
-                or not isinstance(locator.get("section"), str)
-                or not isinstance(locator.get("row_label"), str)
-                or not locator["row_label"].strip()
-                or not isinstance(locator.get("html_line_range"), list)
-                or len(locator["html_line_range"]) != 2
-                or any(not isinstance(line, int) or isinstance(line, bool) or line < 1 for line in locator["html_line_range"])
-                or locator["html_line_range"][0] > locator["html_line_range"][1]
-                or not any(
-                    reference.get("source_id") == requirement["source_refs"][0].get("source_id")
-                    and reference.get("section") == locator["section"]
-                    for reference in requirement["source_refs"]
-                )
-            ):
+            if not _has_valid_table_body_source(requirement):
                 _fail("table-row requirement must use typed force and exact gap/locator metadata without a formal keyword")
         else:
             if not source_clause_ids or any(item not in clauses for item in source_clause_ids):
