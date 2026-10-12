@@ -1197,3 +1197,15 @@ Profiles v2.1 §3.1, locator 1 (pinned HTML lines 3999–4001), says that a prof
 | Refactor — document the two-section trace and retain distinct subclause requirements | `932168a8`; `git diff --check` | PASS: the trace and review decision are documented; no runtime behavior changes. |
 | Independent source audit | Read-only review of Profiles v2.1 §§3.1, 6.1 item 2, 6.2 item 2, and KMIPKIT-0010 FR-004 | Confirmed §3.1 is conditionally applicable to client and server profiles by explicit profile references. Client TLS version/cipher requirements in §§3.1.1/.2 remain separate. No OASIS source was edited. |
 | Evidence disposition | Profiles v2.1 §3.1 locator 1 and §6.1 item 2; KMIPKIT-0010 FR-004; `KMIPKIT-CLAUSE-PROF-3.1-001`; `KMIPKIT-REQ-PROF-3.1-001` | The conditional requirement remains applicable to Baseline Client and is traceable to the explicit client-profile reference. Direction is still unspecified; no broader profile conformance claim is made. |
+
+### KMIPKIT-0010 — Basic Authentication Suite aggregate client crosswalk correction (2026-10-12)
+
+Independent QA found that the source-review oracle recorded the §3.1 TLS condition as a client requirement after the §6.1 incorporation correction, but the aggregate requirement crosswalk still classified `KMIPKIT-REQ-PROF-3.1-001` as unresolved and omitted its client row. The correction moves that ID into the client crosswalk and Baseline Client mapping, and removes it from the unresolved set. It retains the requirement's conditional Basic Authentication Suite scope and unresolved endpoint direction. The TLS version/cipher clauses in §§3.1.1 and 3.1.2 remain separate.
+
+| Phase | Commit and command | Result |
+|---|---|---|
+| Red — require §3.1-001 in the audited client crosswalk and Baseline Client closure | `ad399726`; `python -m unittest tools.normative_catalog.tests.test_profiles_3_4_crosswalk` | Expected Red: 1 failure and 2 errors because the aggregate crosswalk omitted §3.1-001 and still treated it as unresolved. |
+| Green — add the source-backed client crosswalk row and update client/unresolved membership assertions | `1a1a831e`; `python -m unittest tools.normative_catalog.tests.test_profiles_3_4_crosswalk` | PASS: all 7 crosswalk tests pass, including the Baseline Client membership and profile-closure assertions. |
+| Refactor — record the QA correction and its scope | pending evidence commit; `git diff --check` | PASS: documentation records the repaired source-to-crosswalk chain; no runtime behavior or generated output changes. |
+| Independent QA | Read-only review of the QA finding and updated crosswalk assertions | The source-review update alone was insufficient; the aggregate fixture and client classification now agree with §§3.1 and 6.1. |
+| Evidence disposition | Profiles v2.1 §3.1 locator 1 and §6.1 item 2; `KMIPKIT-REQ-PROF-3.1-001`; Baseline Client crosswalk | The client profile evidence now includes the conditional TLS requirement. This is conformance inventory evidence only and does not add a new TLS implementation capability. |
