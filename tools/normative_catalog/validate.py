@@ -1705,7 +1705,14 @@ def _profile_oracle_feature_spec_requirement_ids(root: Path, feature_spec_id: st
         )
         if branch is None or not branch.group(1).startswith(f"{feature_spec_id}-"):
             continue
-        return set(re.findall(r"(?m)^\s*-\s+\*\*(FR-\d{3})\*\*:", specification))
+        declared_ids = set(re.findall(r"(?m)^\s*-\s+\*\*(FR-\d{3})\*\*:", specification))
+        qualified_ids = set(
+            re.findall(
+                rf"(?m)^\s*-\s+\*\*{re.escape(feature_spec_id)}-(FR-\d{{3}})\*\*:",
+                specification,
+            )
+        )
+        return declared_ids | qualified_ids
     return None
 
 
