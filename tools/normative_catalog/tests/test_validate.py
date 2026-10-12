@@ -13268,6 +13268,33 @@ class CatalogValidationTests(unittest.TestCase):
             any(gap["gap_id"] == "KMIPKIT-SOURCE-GAP-SPEC-6.1.7-002-MAY-LIMITED-ATTRIBUTES" for gap in oracle["source_only_requirement_gaps"])
         )
 
+    def test_check_additional_attributes_separates_local_evidence_from_official_case_gap(self) -> None:
+        """The pinned Test Cases source does not justify an official case link for §6.1.7."""
+        catalog = json.loads(
+            (ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8")
+        )
+        requirement = next(
+            row for row in catalog["requirements"]
+            if row["requirement_id"] == "KMIPKIT-REQ-SPEC-6.1.7-002-003"
+        )
+
+        self.assertEqual(requirement["test_case_ids"], [])
+        with self.subTest(evidence="qualified local verification"):
+            self.assertIn(
+                "crates/kmipkit-client/tests/unit/check_execution_tests.rs::check_sends_table_183_fields_and_exposes_table_184_response_once",
+                requirement["verification_refs"],
+            )
+        review_note = requirement["review_note"].casefold()
+        for evidence in (
+            "pinned kmip test cases v2.1 cn01",
+            "no official test cases id is explicitly linked",
+            "kmip specification v2.1 §6.1.7",
+            "derived local evidence",
+            "not an oasis test-case pass",
+        ):
+            with self.subTest(review_note_contains=evidence):
+                self.assertIn(evidence, review_note)
+
     def test_tape_library_client_requirements_use_explicit_profile_closure(self) -> None:
         """Tape Library client duties map only to that profile with source-backed actors."""
         oracle = json.loads(
@@ -14064,6 +14091,35 @@ class CatalogValidationTests(unittest.TestCase):
                 "crates/kmipkit-client/tests/unit/attestation_indicator_tests.rs::async_follow_up_request_advertises_attestation_capability",
             }.issubset(requirement["verification_refs"])
         )
+
+    def test_attestation_indicator_separates_local_evidence_from_official_case_gap(self) -> None:
+        """Pinned sources leave §9.3 without an official test-case link."""
+        catalog = json.loads(
+            (ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8")
+        )
+        requirement = next(
+            row for row in catalog["requirements"]
+            if row["requirement_id"] == "KMIPKIT-REQ-SPEC-9.3-001-001"
+        )
+
+        self.assertEqual(requirement["test_case_ids"], [])
+        with self.subTest(evidence="existing local verification"):
+            self.assertTrue(
+                {
+                    "crates/kmipkit-client/tests/unit/attestation_indicator_tests.rs::execute_advertises_attestation_without_authentication_or_credential_payload",
+                    "crates/kmipkit-client/tests/unit/attestation_indicator_tests.rs::async_follow_up_request_advertises_attestation_capability",
+                }.issubset(requirement["verification_refs"])
+            )
+        review_note = requirement["review_note"].casefold()
+        for evidence in (
+            "pinned kmip test cases v2.1 cn01",
+            "no official test cases id is explicitly linked",
+            "kmip specification v2.1 §9.3",
+            "derived local evidence",
+            "not an oasis test-case pass",
+        ):
+            with self.subTest(review_note_contains=evidence):
+                self.assertIn(evidence, review_note)
 
     def test_spec_6_1_38_table_header_does_not_claim_a_client_requirement(self) -> None:
         """The `Item / REQUIRED / Description` header is not an operative client duty."""
