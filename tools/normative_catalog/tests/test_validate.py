@@ -6618,6 +6618,89 @@ class CatalogValidationTests(unittest.TestCase):
             self.assertIn(caption, pinned_source_excerpt(source_path, line_range))
         self.assertEqual(oracle["oracle_status"], "partial-source-reviewed; not complete T003 oracle")
 
+    def test_rekey_key_pair_table_310_optional_rows_have_typed_contracts(self) -> None:
+        """Table 310 optional request fields map to the approved typed operation without REQ IDs."""
+        oracle = json.loads(
+            (ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json").read_text(encoding="utf-8")
+        )
+        expected = {
+            "KMIPKIT-SOURCE-GAP-SPEC-6.1.47-COMMON-ATTRIBUTES-OPTIONAL": (
+                "Common Attributes", [34796, 34816],
+                "crates/kmipkit-protocol/tests/unit/rekey_key_pair_operation_tests.rs::request_emits_table_310_fields_once_in_order_and_preserves_groups",
+            ),
+            "KMIPKIT-SOURCE-GAP-SPEC-6.1.47-PRIVATE-KEY-ATTRIBUTES-OPTIONAL": (
+                "Private Key Attributes", [34817, 34835],
+                "crates/kmipkit-protocol/tests/unit/rekey_key_pair_operation_tests.rs::request_emits_table_310_fields_once_in_order_and_preserves_groups",
+            ),
+            "KMIPKIT-SOURCE-GAP-SPEC-6.1.47-PUBLIC-KEY-ATTRIBUTES-OPTIONAL": (
+                "Public Key Attributes", [34836, 34854],
+                "crates/kmipkit-protocol/tests/unit/rekey_key_pair_operation_tests.rs::request_emits_table_310_fields_once_in_order_and_preserves_groups",
+            ),
+            "KMIPKIT-SOURCE-GAP-SPEC-6.1.47-COMMON-PROTECTION-STORAGE-MASKS-OPTIONAL": (
+                "Common Protection Storage Masks", [34855, 34873],
+                "crates/kmipkit-protocol/tests/unit/rekey_key_pair_operation_tests.rs::request_emits_table_310_fields_once_in_order_and_preserves_groups",
+            ),
+            "KMIPKIT-SOURCE-GAP-SPEC-6.1.47-PRIVATE-PROTECTION-STORAGE-MASKS-OPTIONAL": (
+                "Private Protection Storage Masks", [34874, 34897],
+                "crates/kmipkit-protocol/tests/unit/rekey_key_pair_operation_tests.rs::request_emits_table_310_fields_once_in_order_and_preserves_groups",
+            ),
+            "KMIPKIT-SOURCE-GAP-SPEC-6.1.47-PUBLIC-PROTECTION-STORAGE-MASKS-OPTIONAL": (
+                "Public Protection Storage Masks", [34898, 34921],
+                "crates/kmipkit-protocol/tests/unit/rekey_key_pair_operation_tests.rs::request_emits_table_310_fields_once_in_order_and_preserves_groups",
+            ),
+        }
+        contracts = {
+            row.get("gap_id"): row
+            for row in oracle.get("source_table_contracts", [])
+            if row.get("source_section") == "6.1.47" and row.get("table_number") == 310
+        }
+
+        self.assertEqual(set(contracts), set(expected))
+        self.assertEqual(len(oracle["source_table_contracts"]), 34)
+        self.assertEqual(oracle["counts"]["source_table_contracts"], 34)
+        self.assertEqual(oracle["counts"]["source_only_requirement_gaps"], 136)
+        self.assertEqual(oracle["counts"]["source_only_requirement_gap_proposals"], 83)
+        source_gap_ids = {gap["gap_id"] for gap in oracle["source_only_requirement_gaps"]}
+        self.assertTrue(set(expected).isdisjoint(source_gap_ids))
+        self.assertEqual(
+            {gap["gap_id"] for gap in oracle["source_only_requirement_gap_proposals"]} & set(expected),
+            set(),
+        )
+        operation_element_id = "KMIPKIT-ELEM-OP-C2S-RE-KEY-KEY-PAIR"
+        implementation_ref = "crates/kmipkit-protocol/src/rekey_key_pair.rs::RekeyKeyPairRequest::into_ttlv_payload"
+        client_test_ref = "crates/kmipkit-client/tests/unit/rekey_key_pair_execution_tests.rs::rekey_key_pair_sends_table_310_and_returns_both_identifiers_once"
+        for gap_id, (row_label, line_range, protocol_test_ref) in expected.items():
+            contract = contracts[gap_id]
+            with self.subTest(source_table_contract=gap_id):
+                self.assertEqual(contract["source_id"], "KMIPKIT-SRC-spec")
+                self.assertEqual(contract["source_path"], "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html")
+                self.assertEqual(contract["source_locator"], {
+                    "kind": "table_body_row",
+                    "section": "6.1.47",
+                    "row_label": row_label,
+                    "table": "request_payload",
+                    "html_line_range": line_range,
+                })
+                self.assertEqual(contract["html_line_range"], line_range)
+                self.assertEqual(contract["source_excerpt"], pinned_source_excerpt(contract["source_path"], line_range))
+                self.assertEqual(contract["table_number"], 310)
+                self.assertEqual(contract["requiredness"], "No")
+                self.assertEqual(contract["source_force"], "optional_table_body_value")
+                self.assertEqual(contract["contract_kind"], "operation_request_table_field")
+                self.assertEqual(contract["actor"], "client")
+                self.assertEqual(contract["direction"], "client→server Re-key Key Pair request")
+                self.assertEqual(contract["scope_disposition"], "client_1_0")
+                self.assertEqual(contract["operation_element_id"], operation_element_id)
+                self.assertEqual(contract["functional_requirement_ids"], ["FR-001"])
+                self.assertEqual(contract["implementation_refs"], [implementation_ref])
+                self.assertEqual(contract["verification_refs"], [protocol_test_ref, client_test_ref])
+                self.assertEqual(contract["status"], "mapped_to_approved_feature_contract")
+                self.assertNotIn("candidate_requirement_id", contract)
+                self.assertNotIn("proposed_requirement_id", contract)
+                self.assertNotIn("requirement_id", contract)
+
+        self.assertEqual(validate_source_table_contracts(oracle, ROOT), [])
+
     def test_spec_6_1_47_rekey_key_pair_reviews_client_inputs_and_server_effects(self) -> None:
         """Specification v2.1 §§6.1.47 and 6.1.47.1 preserve Re-key Key Pair source roles."""
         fixture_path = ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json"
