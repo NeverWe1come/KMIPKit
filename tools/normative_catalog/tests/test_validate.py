@@ -4613,6 +4613,10 @@ class CatalogValidationTests(unittest.TestCase):
             self.assertEqual(row["actor"], "client")
             self.assertEqual(row["source_excerpt"], pinned_source_excerpt(source_path, row["html_line_range"]))
             self.assertNotIn("style=", row["source_excerpt"])
+        new_attribute_row = request_rows[2]
+        self.assertEqual(new_attribute_row["source_element_id"], "KMIPKIT-ELEM-TAG-42013D")
+        self.assertEqual(new_attribute_row["source_requirement_ids"], [])
+        self.assertEqual(new_attribute_row["disposition"], "required_request_table_contract")
 
         response_header = reviews["KMIPKIT-CLAUSE-SPEC-6.1.32-005"]
         self.assertEqual(response_header["source_obligations"], [])
@@ -5275,22 +5279,14 @@ class CatalogValidationTests(unittest.TestCase):
         self.assertIn("non-exhaustive", result_inventory["review_note"].lower())
         self.assertIn("Attestation Required is a Result Reason enum value", result_inventory["review_note"])
 
-        gaps = {
-            gap["gap_id"]: gap
+        self.assertFalse(any(
+            gap["gap_id"] == "KMIPKIT-SOURCE-GAP-SPEC-6.1.34-NEW-ATTRIBUTE-REQUIRED"
             for gap in oracle["source_only_requirement_gaps"]
-            if gap["source_section"] == "6.1.34"
-        }
-        self.assertEqual(set(gaps), {"KMIPKIT-SOURCE-GAP-SPEC-6.1.34-NEW-ATTRIBUTE-REQUIRED"})
-        new_attribute_gap = gaps["KMIPKIT-SOURCE-GAP-SPEC-6.1.34-NEW-ATTRIBUTE-REQUIRED"]
-        self.assertEqual(new_attribute_gap["source_locator"]["row_label"], "New Attribute")
-        self.assertEqual(new_attribute_gap["html_line_range"], [30687, 30705])
-        self.assertEqual(new_attribute_gap["source_excerpt"], pinned_source_excerpt(source_path, [30687, 30705]))
-        self.assertEqual(new_attribute_gap["source_force"], "required_table_body_value")
-        self.assertEqual(new_attribute_gap["actor"], "client")
-        self.assertEqual(new_attribute_gap["scope_disposition"], "client_1_0")
-        self.assertIsNone(new_attribute_gap["candidate_requirement_id"])
-        self.assertEqual(new_attribute_gap["proposed_requirement_id"], "KMIPKIT-REQ-SPEC-6.1.34-005")
-        self.assertNotIn("KMIPKIT-REQ-SPEC-6.1.34-005", {row["requirement_id"] for row in json.loads((ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8"))["requirements"]})
+        ))
+        self.assertNotIn("KMIPKIT-REQ-SPEC-6.1.34-005", {
+            row["requirement_id"]
+            for row in json.loads((ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8"))["requirements"]
+        })
         self.assertEqual(oracle["oracle_status"], "partial-source-reviewed; not complete T003 oracle")
 
     def test_spec_6_1_35_obtain_lease_and_errors_have_source_review_rows(self) -> None:
@@ -7875,7 +7871,7 @@ class CatalogValidationTests(unittest.TestCase):
         self.assertEqual(oracle["counts"]["source_only_requirement_gap_proposals"], 58)
 
         review = next(row for row in oracle["source_requirement_reviews"]
-                      if row["source_clause_id"] == "KMIPKIT-CLAUSE-SPEC-6.1.34-001")
+                      if row["source_clause_id"] == "KMIPKIT-CLAUSE-SPEC-6.1.34-002")
         new_attribute = next(row for row in review["source_request_rows"]
                              if row["row_label"] == "New Attribute")
         self.assertEqual(new_attribute["source_gap_id"], gap_id)
@@ -14638,7 +14634,6 @@ class CatalogValidationTests(unittest.TestCase):
         }
         self.assertNotIn("KMIPKIT-REQ-SPEC-6.1.40-017", spec_proposals)
         required_body_proposals = {
-            "KMIPKIT-REQ-SPEC-6.1.34-005",
             "KMIPKIT-REQ-SPEC-6.1.37-001",
             "KMIPKIT-REQ-SPEC-6.1.39-001",
             "KMIPKIT-REQ-SPEC-5.5-003",
@@ -14760,7 +14755,6 @@ class CatalogValidationTests(unittest.TestCase):
             client_body_proposals = {
                 "KMIPKIT-REQ-SPEC-6.1.26-002",
                 "KMIPKIT-REQ-SPEC-6.1.31-001",
-                "KMIPKIT-REQ-SPEC-6.1.34-005",
                 "KMIPKIT-REQ-SPEC-6.1.37-001",
                 "KMIPKIT-REQ-SPEC-6.1.39-001",
             }
