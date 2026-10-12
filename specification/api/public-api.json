@@ -55143,7 +55143,7 @@
       ],
       "declarationState": "blocked",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0012",
+      "candidateSpecId": "KMIPKIT-0043",
       "blockedReason": "The Rust crate root is not an exported declaration matching this binding namespace; parity remains blocked."
     },
     {
@@ -55265,7 +55265,7 @@
       ],
       "declarationState": "blocked",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0012",
+      "candidateSpecId": "KMIPKIT-0043",
       "blockedReason": "The Rust crate root is not an exported declaration matching this binding namespace; parity remains blocked."
     },
     {
