@@ -182,6 +182,14 @@ mod process_execution_tests;
 mod ping_execution_tests;
 
 #[cfg(test)]
+#[path = "../tests/unit/rng_retrieve_execution_tests.rs"]
+mod rng_retrieve_execution_tests;
+
+#[cfg(test)]
+#[path = "../tests/unit/rng_seed_execution_tests.rs"]
+mod rng_seed_execution_tests;
+
+#[cfg(test)]
 #[path = "../tests/unit/query_execution_tests.rs"]
 mod query_execution_tests;
 

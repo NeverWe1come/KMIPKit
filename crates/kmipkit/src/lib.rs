@@ -14,8 +14,9 @@ pub use kmipkit_protocol::{
     LoginRequest, LoginResponse, LogoutError, LogoutRequest, LogoutResponse, PollRequest,
     ProcessRequest, ProtocolCauseCategory, ProtocolError, ProtocolErrorKind,
     QueryAsyncRequestsRequest, ResultMessage, ResultReason, ResultStatus, ResultValidationError,
-    SetConstraintsError, SetConstraintsRequest, SetConstraintsResponse, SetDefaultsError,
-    SetDefaultsRequest, SetDefaultsResponse, Ticket, TicketType, TicketValidationError,
-    TicketValidationErrorKind,
+    RngRetrieveError, RngRetrieveRequest, RngRetrieveResponse, RngSeedError, RngSeedRequest,
+    RngSeedResponse, SecretBytes, SetConstraintsError, SetConstraintsRequest,
+    SetConstraintsResponse, SetDefaultsError, SetDefaultsRequest, SetDefaultsResponse, Ticket,
+    TicketType, TicketValidationError, TicketValidationErrorKind,
 };
 pub use kmipkit_transport::{RequestDeliveryState, TransportCauseCategory, TransportError};
