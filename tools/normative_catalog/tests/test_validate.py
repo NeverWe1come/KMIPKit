@@ -7560,7 +7560,7 @@ class CatalogValidationTests(unittest.TestCase):
             self.assertIn(caption, pinned_source_excerpt(source_path, line_range))
 
     def test_spec_6_1_54_set_endpoint_role_reviews_payload_actor_direction_and_scope(self) -> None:
-        """Set Endpoint Role preserves required payload actors and its open role-switch scope tension."""
+        """Set Endpoint Role preserves source actors and defers role switching to 1.1."""
         fixture_path = ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json"
         oracle = json.loads(fixture_path.read_text(encoding="utf-8"))
         source_path = "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
@@ -7594,7 +7594,7 @@ class CatalogValidationTests(unittest.TestCase):
         self.assertEqual(
             (request_row["row_label"], request_row["required"], request_row["actor"],
              request_row["direction"], request_row["scope_disposition"]),
-            ("Endpoint Role", "Yes", "client", "client_to_server", "client_1_0"),
+            ("Endpoint Role", "Yes", "client", "client_to_server", "client_1_1"),
         )
         self.assertEqual(request_row["disposition"], "required_request_field_with_source_only_proposal")
         self.assertEqual(request_row["html_line_range"], [36165, 36187])
@@ -7614,7 +7614,7 @@ class CatalogValidationTests(unittest.TestCase):
         self.assertEqual(gap["source_excerpt"], pinned_source_excerpt(source_path, [36165, 36187]))
         self.assertEqual(gap["source_force"], "required_table_body_value")
         self.assertEqual((gap["actor"], gap["direction"], gap["scope_disposition"]),
-                         ("client", "client_to_server", "client_1_0"))
+                         ("client", "client_to_server", "client_1_1"))
         self.assertIsNone(gap["candidate_requirement_id"])
         self.assertEqual(gap["proposed_requirement_id"], "KMIPKIT-REQ-SPEC-6.1.54-001")
         self.assertEqual(gap["status"], "stable_label_proposed_not_in_catalog")
@@ -7627,7 +7627,7 @@ class CatalogValidationTests(unittest.TestCase):
         self.assertEqual(
             (response_row["row_label"], response_row["required"], response_row["actor"],
              response_row["direction"], response_row["scope_disposition"]),
-            ("Endpoint Role", "Yes", "server", "server_to_client", "client_1_0"),
+            ("Endpoint Role", "Yes", "server", "server_to_client", "client_1_1"),
         )
         self.assertEqual(response_row["html_line_range"], [36218, 36240])
         self.assertEqual(response_row["source_excerpt"], pinned_source_excerpt(source_path, [36218, 36240]))
@@ -7646,7 +7646,8 @@ class CatalogValidationTests(unittest.TestCase):
         server_operation = next(row for row in catalog["elements"]
                                 if row["element_id"] == "KMIPKIT-ELEM-OP-S2C-SET-ENDPOINT-ROLE")
         self.assertEqual((client_operation["direction"], client_operation["scope_state"]),
-                         ("client_to_server", "client_1_0"))
+                         ("client_to_server", "client_1_1"))
+        self.assertIn("deferred to 1.1 under an approved specification", client_operation["scope_reason"])
         self.assertEqual(client_operation["test_case_ids"], [])
         self.assertEqual((server_operation["direction"], server_operation["scope_state"]),
                          ("server_to_client", "client_1_1"))

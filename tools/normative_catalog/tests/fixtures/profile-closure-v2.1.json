@@ -73810,7 +73810,7 @@
           "required": "Yes",
           "actor": "client",
           "direction": "client_to_server",
-          "scope_disposition": "client_1_0",
+          "scope_disposition": "client_1_1",
           "disposition": "required_request_field_with_source_only_proposal",
           "html_line_range": [
             36165,
@@ -73855,7 +73855,7 @@
           "required": "Yes",
           "actor": "server",
           "direction": "server_to_client",
-          "scope_disposition": "client_1_0",
+          "scope_disposition": "client_1_1",
           "disposition": "required_response_field",
           "html_line_range": [
             36218,
@@ -84723,7 +84723,7 @@
       "actor": "client",
       "direction": "client_to_server",
       "condition": "Sending a Set Endpoint Role request.",
-      "scope_disposition": "client_1_0",
+      "scope_disposition": "client_1_1",
       "candidate_requirement_id": null,
       "proposed_requirement_id": "KMIPKIT-REQ-SPEC-6.1.54-001",
       "status": "stable_label_proposed_not_in_catalog",
