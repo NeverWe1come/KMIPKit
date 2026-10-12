@@ -76,9 +76,9 @@
     "requirement_crosswalk_records": 466,
     "requirement_crosswalk_complete": false,
     "source_requirement_review_records": 889,
-    "source_only_requirement_gaps": 111,
-    "source_only_requirement_gap_proposals": 58,
-    "source_table_contracts": 59
+    "source_only_requirement_gaps": 110,
+    "source_only_requirement_gap_proposals": 57,
+    "source_table_contracts": 60
   },
   "source_clause_crosswalk": [
     {
@@ -68950,7 +68950,7 @@
           "row_label": "PKCS#11 Function",
           "required": "Yes",
           "actor": "client",
-          "disposition": "required_request_field_with_source_only_proposal",
+          "disposition": "required_request_table_contract",
           "html_line_range": [
             31203,
             31221
@@ -83939,40 +83939,6 @@
       "reused_requirement_id": "KMIPKIT-REQ-SPEC-6.1.31-001"
     },
     {
-      "gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.37-PKCS11-FUNCTION-REQUIRED",
-      "source_id": "KMIPKIT-SRC-spec",
-      "source_path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
-      "source_section": "6.1.37",
-      "source_clause_id": null,
-      "source_locator": {
-        "kind": "table_body_row",
-        "section": "6.1.37",
-        "row_label": "PKCS#11 Function",
-        "table": "request_payload",
-        "html_line_range": [
-          31203,
-          31221
-        ]
-      },
-      "source_locator_description": "§6.1.37 PKCS#11 request payload body row for PKCS#11 Function (HTML lines 31203-31221)",
-      "html_line_range": [
-        31203,
-        31221
-      ],
-      "source_excerpt": "PKCS#11 Function Yes The function to perform. An Enumeration for PKCS#11 defined functions or an Integer for vendor defined function.",
-      "source_keywords": [],
-      "source_force": "required_table_body_value",
-      "audited_statement": "The PKCS#11 request payload marks PKCS#11 Function Required=Yes; the field identifies the function to perform.",
-      "actor": "client",
-      "direction": "include the PKCS#11 Function in the request payload",
-      "condition": "A PKCS#11 operation request is sent.",
-      "scope_disposition": "client_1_0",
-      "candidate_requirement_id": null,
-      "proposed_requirement_id": "KMIPKIT-REQ-SPEC-6.1.37-001",
-      "status": "stable_label_proposed_not_in_catalog",
-      "review_note": "Source-only proposal for the Required=Yes PKCS#11 Function request row. It remains outside the catalog and client profile closure arrays."
-    },
-    {
       "gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.39-ASYNC-CORRELATION-VALUE-REQUIRED",
       "source_id": "KMIPKIT-SRC-spec",
       "source_path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
@@ -87150,6 +87116,58 @@
       "evidence_disposition": {
         "status": "mapped_to_feature_contract",
         "statement": "The client tests verify that the caller-supplied New Attribute is emitted unchanged and Set Attribute is sent once through fake transport. They do not claim server-side mutation or object-instance selection."
+      }
+    },
+    {
+      "gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.37-PKCS11-FUNCTION-REQUIRED",
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+      "source_section": "6.1.37",
+      "source_clause_id": null,
+      "source_locator": {
+        "kind": "table_body_row",
+        "section": "6.1.37",
+        "row_label": "PKCS#11 Function",
+        "table": "request_payload",
+        "html_line_range": [
+          31203,
+          31221
+        ]
+      },
+      "source_locator_description": "Specification v2.1 §6.1.37 Table 273 required PKCS#11 Function request row (HTML lines 31203–31221).",
+      "html_line_range": [
+        31203,
+        31221
+      ],
+      "source_excerpt": "PKCS#11 Function Yes The function to perform. An Enumeration for PKCS#11 defined functions or an Integer for vendor defined function.",
+      "source_keywords": [],
+      "source_force": "required_table_body_value",
+      "audited_statement": "Table 273 requires the client PKCS#11 request payload to include the caller-selected Function Structure.",
+      "actor": "client",
+      "direction": "include the caller-selected PKCS#11 Function Structure in the client request payload",
+      "condition": "A PKCS#11 operation request is sent.",
+      "scope_disposition": "client_1_0",
+      "status": "mapped_to_approved_feature_contract",
+      "review_note": "The typed client preserves the caller-provided Function Structure, including the Enumeration form for PKCS#11 functions or Integer form for vendor functions. Evidence covers TTLV encoding and opaque request forwarding only; the client does not execute PKCS#11 functions.",
+      "contract_kind": "operation_request_table_field",
+      "table_number": 273,
+      "requiredness": "Yes",
+      "operation_element_id": "KMIPKIT-ELEM-OP-C2S-PKCS-11",
+      "functional_requirement_ids": [
+        "FR-001",
+        "FR-002",
+        "FR-008"
+      ],
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/pkcs11.rs::Pkcs11Request::into_ttlv_payload"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/pkcs11_operation_tests.rs::table_273_function_preserves_enumeration_or_integer",
+        "crates/kmipkit-client/tests/unit/pkcs11_execution_tests.rs::pkcs11_sends_table_273_once_and_exposes_table_274_losslessly"
+      ],
+      "evidence_disposition": {
+        "status": "mapped_to_feature_contract",
+        "statement": "The linked tests verify the caller-supplied required Function structure is encoded and forwarded opaquely, with the Enumeration or vendor Integer form preserved. They make no claim about local PKCS#11 execution, server-side function effects, certification, or profile conformance."
       }
     }
   ]
