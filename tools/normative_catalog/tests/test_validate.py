@@ -15010,6 +15010,20 @@ class CatalogValidationTests(unittest.TestCase):
             ),
             "table cells must not be promoted to standalone normative requirement IDs",
         )
+        source_review = next(
+            review for review in oracle["source_requirement_reviews"]
+            if review.get("source_clause_id") == "KMIPKIT-CLAUSE-SPEC-6.1.32-002"
+        )
+        reviewed_rows = {row["row_label"]: row for row in source_review["source_request_rows"]}
+        for gap_id, (row_label, *_rest) in expected.items():
+            reviewed_row = reviewed_rows[row_label]
+            with self.subTest(reviewed_request_row=row_label):
+                self.assertEqual(reviewed_row["source_gap_id"], gap_id)
+                self.assertEqual(
+                    reviewed_row["disposition"],
+                    "conditionally_required_request_table_contract" if row_label == "Data" else "optional_request_table_contract",
+                )
+                self.assertEqual(reviewed_row["source_requirement_ids"], [])
 
         operation_id = "KMIPKIT-ELEM-OP-C2S-MAC"
         implementation_ref = "crates/kmipkit-protocol/src/mac.rs::MacRequest::to_ttlv_payload"
