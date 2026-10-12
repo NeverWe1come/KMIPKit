@@ -40,6 +40,16 @@ class BindingExportAuditTests(unittest.TestCase):
         })
         self.assertTrue(result["complete"])
 
+    def test_c_header_inventory_accounts_for_enum_types_and_values(self):
+        result = AUDIT.inventory_c_header("typedef enum { KMIPKIT_A = 0, KMIPKIT_B = 1 } kmipkit_mode_t;\n")
+        actual = {(row["kind"], row["exportName"]) for row in result["declarations"]}
+        self.assertEqual(actual, {
+            ("type", "kmipkit_mode_t"),
+            ("constant", "KMIPKIT_A"),
+            ("constant", "KMIPKIT_B"),
+        })
+        self.assertTrue(result["complete"])
+
     def test_c_binary_export_audit_reconciles_header_and_dll_symbols(self):
         header = "int32_t kmipkit_client_create(void);\n"
         result = AUDIT.audit_c_surface(header, ["kmipkit_client_create", "kmipkit_client_destroy"])
@@ -171,6 +181,35 @@ class BindingExportAuditTests(unittest.TestCase):
         observed = {row["exportName"]: row["kind"] for row in result["declarations"]}
         self.assertEqual(observed["kmipkit.handles.Handle.closed"], "python-export")
         self.assertFalse(any(issue["reason"] == "unresolved-import-target" for issue in result["issues"]))
+        self.assertTrue(result["complete"])
+
+    def test_python_inventory_marks_explicit_external_imports_as_public_exports(self):
+        source = "from datetime import datetime\n__all__ = ['datetime']\n"
+        result = AUDIT.inventory_python_sources({"kmipkit/api.py": source})
+        names = {row["exportName"] for row in result["declarations"]}
+        self.assertIn("kmipkit.api.datetime", names)
+        self.assertFalse(result["complete"])
+        self.assertIn("unresolved-import-target", {issue["reason"] for issue in result["issues"]})
+
+    def test_python_inventory_resolves_reexports_through_multiple_modules(self):
+        sources = {
+            "kmipkit/core.py": "class Client:\n    pass\n",
+            "kmipkit/reexports.py": "from .core import Client\n__all__ = ['Client']\n",
+            "kmipkit/__init__.py": "from .reexports import Client\n__all__ = ['Client']\n",
+        }
+        result = AUDIT.inventory_python_sources(sources)
+        names = {row["exportName"] for row in result["declarations"]}
+        self.assertIn("kmipkit.Client", names)
+        self.assertTrue(result["complete"])
+
+    def test_python_inventory_resolves_inherited_members_through_module_attribute(self):
+        sources = {
+            "kmipkit/_handles.py": "class Base:\n    def close(self) -> None: ...\n",
+            "kmipkit/handle.py": "from . import _handles as _base\n__all__ = ['Handle']\nclass Handle(_base.Base):\n    pass\n",
+        }
+        result = AUDIT.inventory_python_sources(sources)
+        names = {row["exportName"] for row in result["declarations"]}
+        self.assertIn("kmipkit.handle.Handle.close", names)
         self.assertTrue(result["complete"])
 
     def test_java_overloads_that_share_a_manifest_path_remain_incomplete(self):
