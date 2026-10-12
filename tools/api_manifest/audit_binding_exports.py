@@ -332,6 +332,21 @@ def _literal_all(tree: ast.Module, visible_names: set[str]) -> tuple[list[str] |
     return current, None
 
 
+def _python_class_members(node: ast.ClassDef) -> list[tuple[str, str, int]]:
+    """Return the directly declared public members of one Python class."""
+    members: list[tuple[str, str, int]] = []
+    for child in node.body:
+        if isinstance(child, (ast.FunctionDef, ast.AsyncFunctionDef)):
+            if not child.name.startswith("_") or child.name in {"__enter__", "__exit__"}:
+                members.append((child.name, "python-export", child.lineno))
+        elif isinstance(child, ast.AnnAssign) and isinstance(child.target, ast.Name) and not child.target.id.startswith("_"):
+            members.append((child.target.id, "field", child.lineno))
+        elif isinstance(child, ast.Assign):
+            members.extend((target.id, "python-export", child.lineno) for target in child.targets
+                           if isinstance(target, ast.Name) and not target.id.startswith("_"))
+    return members
+
+
 def inventory_python_sources(sources: dict[str, str], package: str = "python-kmipkit") -> dict[str, Any]:
     """Inventory package modules, public definitions and literal ``__all__`` exports."""
     records: list[dict[str, str]] = []
@@ -374,16 +389,7 @@ def inventory_python_sources(sources: dict[str, str], package: str = "python-kmi
             issues.append({"packageId": package, "exportName": module, "reason": issue})
         for node in tree.body:
             if isinstance(node, ast.ClassDef):
-                members: list[tuple[str, str, int]] = []
-                for child in node.body:
-                    if isinstance(child, (ast.FunctionDef, ast.AsyncFunctionDef)):
-                        if not child.name.startswith("_") or child.name in {"__enter__", "__exit__"}:
-                            members.append((child.name, "python-export", child.lineno))
-                    elif isinstance(child, ast.AnnAssign) and isinstance(child.target, ast.Name) and not child.target.id.startswith("_"):
-                        members.append((child.target.id, "field", child.lineno))
-                    elif isinstance(child, ast.Assign):
-                        members.extend((target.id, "python-export", child.lineno) for target in child.targets
-                                       if isinstance(target, ast.Name) and not target.id.startswith("_"))
+                members = _python_class_members(node)
                 classes[f"{module}.{node.name}"] = (module, node.name, list(node.bases), members)
                 # Private helper modules are not emitted, but their class
                 # definitions must remain available for import and inheritance
