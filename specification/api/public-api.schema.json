@@ -41,6 +41,11 @@
       "minLength": 1,
       "pattern": "^[A-Za-z][A-Za-z0-9_]*$"
     },
+    "pythonFunctionName": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^_?[A-Za-z][A-Za-z0-9_]*$"
+    },
     "rustOwner": {
       "type": "string",
       "enum": [
@@ -869,7 +874,7 @@
               "pattern": "^kmipkit(?:\\.[a-z][A-Za-z0-9_]*)*$"
             },
             "function": {
-              "$ref": "#/$defs/identifier"
+              "$ref": "#/$defs/pythonFunctionName"
             },
             "parameters": {
               "type": "array",

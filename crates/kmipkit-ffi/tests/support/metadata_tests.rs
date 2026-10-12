@@ -26,12 +26,19 @@ fn version_query_matches_the_package_version_and_stable_abi() {
         [major, minor, patch],
         [components[0], components[1], components[2]]
     );
-    assert_eq!(abi, KMIPKIT_ABI_VERSION);
+    assert_eq!(abi, kmipkit::ABI_VERSION);
     assert_eq!(abi, 1);
 }
 
 #[test]
 fn capability_query_only_reports_c_mapped_nonblocked_capabilities() {
+    for capability in crate::public_api_generated::C_AVAILABLE_CAPABILITIES {
+        assert!(
+            kmipkit::capability_is_available(capability),
+            "Rust facade omitted ready manifest capability {capability}"
+        );
+    }
+
     let mut available = u8::MAX;
     let generic_ttlv = b"generic_ttlv_model";
     assert_eq!(

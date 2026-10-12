@@ -29,7 +29,7 @@ final class RuntimeMetadataTest {
     }
 
     @Test
-    void exposesSafeErrorSnapshotWithoutClearingItUntilRequested() {
+    void exposesSafeNativeErrorSnapshotWithoutClearingItUntilRequested() {
         RuntimeMetadata.clearLastError();
         try {
             RuntimeMetadata.capabilityIsAvailable("x".repeat(129));
@@ -44,4 +44,5 @@ final class RuntimeMetadataTest {
         RuntimeMetadata.clearLastError();
         assertEquals(new RuntimeMetadata.ErrorSnapshot(0, 0, 0, 0), RuntimeMetadata.lastErrorSnapshot());
     }
+
 }

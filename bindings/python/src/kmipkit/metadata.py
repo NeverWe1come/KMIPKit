@@ -1,4 +1,4 @@
-"""Runtime version, capability, and safe C ABI error metadata."""
+"""Runtime version and capability metadata."""
 
 from __future__ import annotations
 
@@ -21,7 +21,7 @@ class _OpenCode(IntEnum):
         return member
 
 
-class ClientErrorCategory(_OpenCode):
+class _ClientErrorCategory(_OpenCode):
     """Stable category of the last C ABI error; unknown values are preserved."""
 
     NONE = 0
@@ -32,7 +32,7 @@ class ClientErrorCategory(_OpenCode):
     OTHER = 5
 
 
-class ClientCauseCategory(_OpenCode):
+class _ClientCauseCategory(_OpenCode):
     """Safe cause category of the last C ABI error."""
 
     NONE = 0
@@ -40,7 +40,7 @@ class ClientCauseCategory(_OpenCode):
     OTHER = 10
 
 
-class RequestDeliveryState(_OpenCode):
+class _RequestDeliveryState(_OpenCode):
     """Request delivery evidence associated with an error snapshot."""
 
     NONE = 0
@@ -60,13 +60,13 @@ class Version:
 
 
 @dataclass(frozen=True, slots=True)
-class FfiErrorSnapshot:
-    """A non-destructive snapshot without native source text or payloads."""
+class _FfiErrorSnapshot:
+    """Internal non-destructive snapshot without native source text or payloads."""
 
     status: int
-    category: ClientErrorCategory
-    cause: ClientCauseCategory
-    delivery: RequestDeliveryState
+    category: _ClientErrorCategory
+    cause: _ClientCauseCategory
+    delivery: _RequestDeliveryState
 
 
 def get_version() -> Version:
@@ -93,8 +93,8 @@ def capability_is_available(capability_id: str) -> bool:
     return bool(available[0])
 
 
-def last_error_snapshot() -> FfiErrorSnapshot:
-    """Read the calling thread's safe error snapshot without clearing it."""
+def _last_error_snapshot() -> _FfiErrorSnapshot:
+    """Read the native calling thread's safe error snapshot without clearing it."""
 
     status = ffi.new("int32_t *")
     category = ffi.new("uint32_t *")
@@ -102,28 +102,22 @@ def last_error_snapshot() -> FfiErrorSnapshot:
     delivery = ffi.new("uint32_t *")
     result = lib.kmipkit_last_error_get(status, category, cause, delivery)
     errors.raise_for_status(result)
-    return FfiErrorSnapshot(
+    return _FfiErrorSnapshot(
         status=int(status[0]),
-        category=ClientErrorCategory(int(category[0])),
-        cause=ClientCauseCategory(int(cause[0])),
-        delivery=RequestDeliveryState(int(delivery[0])),
+        category=_ClientErrorCategory(int(category[0])),
+        cause=_ClientCauseCategory(int(cause[0])),
+        delivery=_RequestDeliveryState(int(delivery[0])),
     )
 
 
-def clear_last_error() -> None:
-    """Clear the calling thread's native error snapshot."""
+def _clear_last_error() -> None:
+    """Clear the native calling thread's error snapshot for adapter internals."""
 
     errors.raise_for_status(lib.kmipkit_last_error_clear())
 
 
 __all__ = [
-    "ClientCauseCategory",
-    "ClientErrorCategory",
-    "FfiErrorSnapshot",
-    "RequestDeliveryState",
     "Version",
     "capability_is_available",
-    "clear_last_error",
     "get_version",
-    "last_error_snapshot",
 ]

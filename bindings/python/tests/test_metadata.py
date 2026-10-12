@@ -15,25 +15,25 @@ def test_capability_query_only_reports_manifest_ready_c_capabilities() -> None:
 
 
 def test_error_snapshot_is_safe_non_destructive_and_explicitly_clearable() -> None:
-    metadata.clear_last_error()
+    metadata._clear_last_error()
     with pytest.raises(errors.ResourceLimitError):
         metadata.capability_is_available("x" * 129)
 
-    expected = metadata.FfiErrorSnapshot(
+    expected = metadata._FfiErrorSnapshot(
         status=6,
-        category=metadata.ClientErrorCategory.VALIDATION,
-        cause=metadata.ClientCauseCategory.OTHER,
-        delivery=metadata.RequestDeliveryState.NONE,
+        category=metadata._ClientErrorCategory.VALIDATION,
+        cause=metadata._ClientCauseCategory.OTHER,
+        delivery=metadata._RequestDeliveryState.NONE,
     )
-    assert metadata.last_error_snapshot() == expected
-    assert metadata.last_error_snapshot() == expected
+    assert metadata._last_error_snapshot() == expected
+    assert metadata._last_error_snapshot() == expected
 
-    metadata.clear_last_error()
-    assert metadata.last_error_snapshot() == metadata.FfiErrorSnapshot(
+    metadata._clear_last_error()
+    assert metadata._last_error_snapshot() == metadata._FfiErrorSnapshot(
         status=0,
-        category=metadata.ClientErrorCategory.NONE,
-        cause=metadata.ClientCauseCategory.NONE,
-        delivery=metadata.RequestDeliveryState.NONE,
+        category=metadata._ClientErrorCategory.NONE,
+        cause=metadata._ClientCauseCategory.NONE,
+        delivery=metadata._RequestDeliveryState.NONE,
     )
 
 

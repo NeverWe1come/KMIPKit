@@ -491,4 +491,35 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "rust-kmipkit-transport",
         "kmipkit_transport::TransportResponse::as_bytes",
     ),
+    ("kmipkit.VERSION:rust", "rust-kmipkit", "kmipkit::VERSION"),
+    (
+        "kmipkit.capability_is_available:rust",
+        "rust-kmipkit",
+        "kmipkit::capability_is_available",
+    ),
+    (
+        "kmipkit.RuntimeVersion:rust",
+        "rust-kmipkit",
+        "kmipkit::RuntimeVersion",
+    ),
+    (
+        "kmipkit.RuntimeVersion.product_version:rust",
+        "rust-kmipkit",
+        "kmipkit::RuntimeVersion::product_version",
+    ),
+    (
+        "kmipkit.RuntimeVersion.abi_version:rust",
+        "rust-kmipkit",
+        "kmipkit::RuntimeVersion::abi_version",
+    ),
+    (
+        "kmipkit.runtime_version:rust",
+        "rust-kmipkit",
+        "kmipkit::runtime_version",
+    ),
+    (
+        "kmipkit.ABI_VERSION:rust",
+        "rust-kmipkit",
+        "kmipkit::ABI_VERSION",
+    ),
 ];

@@ -22,7 +22,32 @@
       ]
     }
   ],
-  "approvedExclusions": [],
+  "approvedExclusions": [
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-007 and FR-021 in specs/043-public-api-bindings/implementation-evidence.md#reviewed-c-only-last-error-exclusions. The exact C exports remain in the generated header and satisfy FR-007; exclusion is only from the shared four-language facade capability inventory.",
+      "exportName": "kmipkit_last_error_clear",
+      "packageId": "c-kmipkit",
+      "reason": "Clearing a C thread-local last-error slot is specific to the C ABI. Rust returns caller-owned ClientError values, while Java and Python surface failures as exception objects; neither needs sticky error state or an explicit clear operation."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-007 and FR-021 in specs/043-public-api-bindings/implementation-evidence.md#reviewed-c-only-last-error-exclusions. The exact C exports remain in the generated header and satisfy FR-007; exclusion is only from the shared four-language facade capability inventory.",
+      "exportName": "kmipkit_last_error_get",
+      "packageId": "c-kmipkit",
+      "reason": "The per-thread sticky error snapshot is a C ABI diagnostic convenience required by FR-007. Rust exposes errors as caller-owned ClientError results; Java and Python facades report failures through their exception types. This C-only snapshot has no equivalent four-language observable behavior and is excluded from the shared facade capability inventory."
+    }
+  ],
   "capabilities": [
     {
       "approvalEvidence": {
@@ -243,26 +268,22 @@
       "mappings": {
         "c": [
           "kmipkit_version_get",
-          "kmipkit_capability_is_available",
-          "kmipkit_last_error_get",
-          "kmipkit_last_error_clear"
+          "kmipkit_capability_is_available"
         ],
         "java": [
           "org.kmipkit.RuntimeMetadata.version",
-          "org.kmipkit.RuntimeMetadata.capabilityIsAvailable",
-          "org.kmipkit.RuntimeMetadata.lastErrorSnapshot",
-          "org.kmipkit.RuntimeMetadata.clearLastError"
+          "org.kmipkit.RuntimeMetadata.capabilityIsAvailable"
         ],
         "python": [
           "kmipkit.metadata.get_version",
-          "kmipkit.metadata.capability_is_available",
-          "kmipkit.metadata.last_error_snapshot",
-          "kmipkit.metadata.clear_last_error"
+          "kmipkit.metadata.capability_is_available"
         ],
         "rust": [
           "kmipkit::VERSION",
-          "kmipkit_client::ClientErrorCategory",
-          "kmipkit_transport::RequestDeliveryState"
+          "kmipkit::ABI_VERSION",
+          "kmipkit::RuntimeVersion",
+          "kmipkit::runtime_version",
+          "kmipkit::capability_is_available"
         ]
       },
       "ownerSpecId": "KMIPKIT-0043",
@@ -9210,7 +9231,7 @@
       "python": {
         "cffiSymbol": "kmipkit_last_error_get",
         "errorCategories": [],
-        "function": "last_error_snapshot",
+        "function": "_last_error_snapshot",
         "module": "kmipkit.metadata",
         "parameters": [],
         "returnType": "FfiErrorSnapshot"
@@ -9266,7 +9287,7 @@
       "python": {
         "cffiSymbol": "kmipkit_last_error_clear",
         "errorCategories": [],
-        "function": "clear_last_error",
+        "function": "_clear_last_error",
         "module": "kmipkit.metadata",
         "parameters": [],
         "returnType": "None"
@@ -25780,7 +25801,7 @@
           "packageId": "python-kmipkit"
         },
         "rust": {
-          "name": "kmipkit::VERSION",
+          "name": "kmipkit::runtime_version",
           "packageId": "rust-kmipkit"
         }
       },
@@ -25834,33 +25855,32 @@
         "status": "Approved"
       },
       "capabilityId": "ffi_runtime_metadata",
-      "declarationId": "ffi_last_error_get:c",
+      "declarationId": "kmipkit.VERSION:rust",
       "declarationState": "declared",
-      "exportName": "kmipkit_last_error_get",
-      "kind": "c-symbol",
+      "exportName": "kmipkit::VERSION",
+      "kind": "constant",
       "languageMappings": {
         "c": {
-          "name": "kmipkit_last_error_get",
+          "name": "kmipkit_version_get",
           "packageId": "c-kmipkit"
         },
         "java": {
-          "name": "org.kmipkit.RuntimeMetadata.lastErrorSnapshot",
+          "name": "org.kmipkit.RuntimeMetadata.version",
           "packageId": "java-kmipkit"
         },
         "python": {
-          "name": "kmipkit.metadata.last_error_snapshot",
+          "name": "kmipkit.metadata.get_version",
           "packageId": "python-kmipkit"
         },
         "rust": {
-          "name": "kmipkit::ClientErrorCategory",
+          "name": "kmipkit::VERSION",
           "packageId": "rust-kmipkit"
         }
       },
-      "packageId": "c-kmipkit",
+      "packageId": "rust-kmipkit",
       "parityScope": "four-language",
       "requirementIds": [
-        "KMIPKIT-0043-FR-007",
-        "KMIPKIT-0043-FR-013"
+        "KMIPKIT-0043-FR-007"
       ]
     },
     {
@@ -25871,33 +25891,500 @@
         "status": "Approved"
       },
       "capabilityId": "ffi_runtime_metadata",
-      "declarationId": "ffi_last_error_clear:c",
+      "declarationId": "kmipkit.capability_is_available:rust",
       "declarationState": "declared",
-      "exportName": "kmipkit_last_error_clear",
-      "kind": "c-symbol",
+      "exportName": "kmipkit::capability_is_available",
+      "kind": "function",
       "languageMappings": {
         "c": {
-          "name": "kmipkit_last_error_clear",
+          "name": "kmipkit_capability_is_available",
           "packageId": "c-kmipkit"
         },
         "java": {
-          "name": "org.kmipkit.RuntimeMetadata.clearLastError",
+          "name": "org.kmipkit.RuntimeMetadata.capabilityIsAvailable",
           "packageId": "java-kmipkit"
         },
         "python": {
-          "name": "kmipkit.metadata.clear_last_error",
+          "name": "kmipkit.metadata.capability_is_available",
           "packageId": "python-kmipkit"
         },
         "rust": {
-          "name": "kmipkit::ClientError",
+          "name": "kmipkit::capability_is_available",
           "packageId": "rust-kmipkit"
         }
       },
-      "packageId": "c-kmipkit",
+      "packageId": "rust-kmipkit",
       "parityScope": "four-language",
       "requirementIds": [
-        "KMIPKIT-0043-FR-007",
-        "KMIPKIT-0043-FR-013"
+        "KMIPKIT-0043-FR-007"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "ffi_runtime_metadata",
+      "declarationId": "org.kmipkit.RuntimeMetadata:java",
+      "declarationState": "declared",
+      "exportName": "org.kmipkit.RuntimeMetadata",
+      "kind": "type",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit.h",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.RuntimeMetadata",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.metadata",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit",
+          "packageId": "rust-kmipkit"
+        }
+      },
+      "packageId": "java-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-007"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "ffi_runtime_metadata",
+      "declarationId": "org.kmipkit.RuntimeMetadata.Version:java",
+      "declarationState": "declared",
+      "exportName": "org.kmipkit.RuntimeMetadata.Version",
+      "kind": "type",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_version_get",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.RuntimeMetadata.version",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.metadata.get_version",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit::RuntimeVersion",
+          "packageId": "rust-kmipkit"
+        }
+      },
+      "packageId": "java-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-007"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "ffi_runtime_metadata",
+      "declarationId": "org.kmipkit.RuntimeMetadata.version:java",
+      "declarationState": "declared",
+      "exportName": "org.kmipkit.RuntimeMetadata.version",
+      "kind": "java-member",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_version_get",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.RuntimeMetadata.version",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.metadata.get_version",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit::runtime_version",
+          "packageId": "rust-kmipkit"
+        }
+      },
+      "packageId": "java-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-007"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "ffi_runtime_metadata",
+      "declarationId": "org.kmipkit.RuntimeMetadata.capabilityIsAvailable:java",
+      "declarationState": "declared",
+      "exportName": "org.kmipkit.RuntimeMetadata.capabilityIsAvailable",
+      "kind": "java-member",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_capability_is_available",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.RuntimeMetadata.capabilityIsAvailable",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.metadata.capability_is_available",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit::capability_is_available",
+          "packageId": "rust-kmipkit"
+        }
+      },
+      "packageId": "java-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-007"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "ffi_runtime_metadata",
+      "declarationId": "kmipkit.metadata:python",
+      "declarationState": "declared",
+      "exportName": "kmipkit.metadata",
+      "kind": "module",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit.h",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.RuntimeMetadata",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.metadata",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit",
+          "packageId": "rust-kmipkit"
+        }
+      },
+      "packageId": "python-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-007"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "ffi_runtime_metadata",
+      "declarationId": "kmipkit.metadata.Version:python",
+      "declarationState": "declared",
+      "exportName": "kmipkit.metadata.Version",
+      "kind": "type",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_version_get",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.RuntimeMetadata.version",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.metadata.get_version",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit::RuntimeVersion",
+          "packageId": "rust-kmipkit"
+        }
+      },
+      "packageId": "python-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-007"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "ffi_runtime_metadata",
+      "declarationId": "kmipkit.metadata.get_version:python",
+      "declarationState": "declared",
+      "exportName": "kmipkit.metadata.get_version",
+      "kind": "function",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_version_get",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.RuntimeMetadata.version",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.metadata.get_version",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit::runtime_version",
+          "packageId": "rust-kmipkit"
+        }
+      },
+      "packageId": "python-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-007"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "ffi_runtime_metadata",
+      "declarationId": "kmipkit.metadata.capability_is_available:python",
+      "declarationState": "declared",
+      "exportName": "kmipkit.metadata.capability_is_available",
+      "kind": "function",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_capability_is_available",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.RuntimeMetadata.capabilityIsAvailable",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.metadata.capability_is_available",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit::capability_is_available",
+          "packageId": "rust-kmipkit"
+        }
+      },
+      "packageId": "python-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-007"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "ffi_runtime_metadata",
+      "declarationId": "kmipkit.RuntimeVersion:rust",
+      "declarationState": "declared",
+      "exportName": "kmipkit::RuntimeVersion",
+      "kind": "type",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_version_get",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.RuntimeMetadata.Version",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.metadata.Version",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit::RuntimeVersion",
+          "packageId": "rust-kmipkit"
+        }
+      },
+      "packageId": "rust-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-007"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "ffi_runtime_metadata",
+      "declarationId": "kmipkit.RuntimeVersion.product_version:rust",
+      "declarationState": "declared",
+      "exportName": "kmipkit::RuntimeVersion::product_version",
+      "kind": "field",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_version_get",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.RuntimeMetadata.Version",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.metadata.Version",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit::RuntimeVersion::product_version",
+          "packageId": "rust-kmipkit"
+        }
+      },
+      "packageId": "rust-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-007"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "ffi_runtime_metadata",
+      "declarationId": "kmipkit.RuntimeVersion.abi_version:rust",
+      "declarationState": "declared",
+      "exportName": "kmipkit::RuntimeVersion::abi_version",
+      "kind": "field",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_version_get",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.RuntimeMetadata.Version.abiVersion",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.metadata.Version.abi_version",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit::RuntimeVersion::abi_version",
+          "packageId": "rust-kmipkit"
+        }
+      },
+      "packageId": "rust-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-007"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "ffi_runtime_metadata",
+      "declarationId": "kmipkit.runtime_version:rust",
+      "declarationState": "declared",
+      "exportName": "kmipkit::runtime_version",
+      "kind": "function",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_version_get",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.RuntimeMetadata.version",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.metadata.get_version",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit::runtime_version",
+          "packageId": "rust-kmipkit"
+        }
+      },
+      "packageId": "rust-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-007"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "ffi_runtime_metadata",
+      "declarationId": "kmipkit.ABI_VERSION:rust",
+      "declarationState": "declared",
+      "exportName": "kmipkit::ABI_VERSION",
+      "kind": "constant",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_version_get.out_abi_version",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.RuntimeMetadata.Version.abiVersion",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.metadata.Version.abi_version",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit::ABI_VERSION",
+          "packageId": "rust-kmipkit"
+        }
+      },
+      "packageId": "rust-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-007"
       ]
     }
   ],

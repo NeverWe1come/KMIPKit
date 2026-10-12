@@ -52,7 +52,6 @@ const ERROR_CAUSE_NONE: u32 = 0;
 const ERROR_CAUSE_INVALID_INPUT: u32 = 1;
 const ERROR_CAUSE_OTHER: u32 = 10;
 const DELIVERY_STATE_NONE: u32 = 0;
-const KMIPKIT_ABI_VERSION: u32 = 1;
 const MAX_CAPABILITY_ID_BYTES: u64 = 128;
 const MAX_TEXT_BYTES: u64 = 4_096;
 const MAX_CHILD_RULES: u64 = 4_096;
@@ -972,7 +971,7 @@ pub extern "C" fn kmipkit_version_get(
         *out_major = major;
         *out_minor = minor;
         *out_patch = patch;
-        *out_abi_version = KMIPKIT_ABI_VERSION;
+        *out_abi_version = kmipkit::ABI_VERSION;
     }
     SUCCESS
 }
