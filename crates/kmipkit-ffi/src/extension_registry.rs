@@ -29,6 +29,9 @@ mod registry_preflight_tests;
 #[cfg(test)]
 #[path = "../tests/support/view_ownership_tests.rs"]
 mod view_ownership_tests;
+#[cfg(test)]
+#[path = "../tests/support/metadata_tests.rs"]
+mod metadata_tests;
 
 #[cfg(test)]
 thread_local! {
