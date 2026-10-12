@@ -330,7 +330,7 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
             for declaration in self.checked_in_manifest["publicDeclarations"]
             if declaration["packageId"] in rust_packages
         ]
-        self.assertEqual(len(declarations), 1760)
+        self.assertEqual(len(declarations), 1764)
         by_package_and_name = {
             (declaration["packageId"], declaration["exportName"]): declaration
             for declaration in declarations
@@ -416,6 +416,24 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
         self.assertEqual(
             rust_lookup["languageMappings"]["rust"]["name"],
             "kmipkit::capability_is_available",
+        )
+
+        runtime_version = next(
+            item for item in self.checked_in_manifest["publicDeclarations"]
+            if item["exportName"] == "kmipkit::RuntimeVersion"
+        )
+        self.assertEqual(runtime_version["kind"], "type")
+        self.assertEqual(
+            runtime_version["languageMappings"]["rust"]["name"],
+            "kmipkit::RuntimeVersion",
+        )
+        self.assertEqual(
+            runtime_version["languageMappings"]["java"]["name"],
+            "org.kmipkit.RuntimeMetadata.Version",
+        )
+        self.assertEqual(
+            runtime_version["languageMappings"]["python"]["name"],
+            "kmipkit.metadata.Version",
         )
 
         exclusions = {
