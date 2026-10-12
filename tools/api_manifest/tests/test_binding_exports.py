@@ -293,6 +293,23 @@ class BindingExportAuditTests(unittest.TestCase):
         self.assertFalse(result["matchesManifest"])
         self.assertEqual(result["issues"][0]["reason"], "duplicate-manifest-export-name")
 
+    def test_comparison_counts_exact_matches_separately_from_path_matches(self):
+        manifest = {"publicDeclarations": [{
+            "packageId": "python-kmipkit",
+            "exportName": "kmipkit.metadata.get_version",
+            "kind": "function",
+        }]}
+        observed = {"complete": True, "declarations": [{
+            "packageId": "python-kmipkit",
+            "exportName": "kmipkit.metadata.get_version",
+            "kind": "python-export",
+        }], "issues": []}
+        result = AUDIT.compare(observed, manifest, "python-kmipkit")
+        self.assertEqual(result["counts"]["pathMatches"], 1)
+        self.assertEqual(result["counts"]["exactMatches"], 0)
+        self.assertEqual(result["counts"]["kindMismatches"], 1)
+        self.assertFalse(result["matchesManifest"])
+
 
 if __name__ == "__main__":
     unittest.main()
