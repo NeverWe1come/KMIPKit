@@ -34,7 +34,7 @@ class SharedRustInventoryTests(unittest.TestCase):
         inventory = AUDIT.build_inventory(self.manifest, self.rust_report, REPO_ROOT)
 
         self.assertEqual(inventory["observedRustDeclarationCount"], 9497)
-        self.assertEqual(inventory["mappedRustDeclarationCount"], 109)
+        self.assertEqual(inventory["mappedRustDeclarationCount"], 121)
         self.assertEqual(len(inventory["blockedUnreconciledDeclarations"]), 36)
         self.assertEqual(inventory["draftOwnerGates"]["KMIPKIT-0009"]["blockedOperations"], 4)
         self.assertEqual(
@@ -96,11 +96,71 @@ class SharedRustInventoryTests(unittest.TestCase):
         self.assertEqual(capability["capabilityState"], "declared")
         self.assertEqual(capability["ownerSpecId"], "KMIPKIT-0012")
         self.assertEqual(capability["approvalEvidence"]["status"], "Approved")
-        for language in ("rust", "c", "java", "python"):
+        language_packages = {
+            "rust": {
+                package["id"]
+                for package in self.manifest["publicPackages"]
+                if package["language"] == "rust"
+            },
+            "c": {"c-kmipkit"},
+            "java": {"java-kmipkit"},
+            "python": {"python-kmipkit"},
+        }
+        for language, packages in language_packages.items():
             expected = sorted(
-                {row["languageMappings"][language]["name"] for row in declarations}
+                {
+                    row["exportName"]
+                    for row in declarations
+                    if row["packageId"] in packages
+                }
             )
             self.assertEqual(capability["mappings"][language], expected)
+
+    def test_all_ready_capability_mappings_match_exact_ready_exports(self) -> None:
+        language_packages = {
+            language: {
+                package["id"]
+                for package in self.manifest["publicPackages"]
+                if package["language"] == language
+            }
+            for language in ("rust", "c", "java", "python")
+        }
+        for capability in self.manifest["capabilities"]:
+            for language, packages in language_packages.items():
+                expected = sorted(
+                    {
+                        row["exportName"]
+                        for row in self.manifest["publicDeclarations"]
+                        if row["capabilityId"] == capability["capabilityId"]
+                        and row["declarationState"] in {"declared", "verified"}
+                        and row["packageId"] in packages
+                    }
+                )
+                self.assertEqual(
+                    capability["mappings"].get(language, []),
+                    expected,
+                    f"{capability['capabilityId']} {language} mappings must name exact ready exports",
+                )
+
+    def test_every_ready_language_mapping_resolves_to_an_exact_ready_export(self) -> None:
+        declarations_by_export = {
+            (row["packageId"], row["exportName"]): row
+            for row in self.manifest["publicDeclarations"]
+        }
+        for declaration in self.manifest["publicDeclarations"]:
+            if declaration["declarationState"] not in {"declared", "verified"}:
+                continue
+            for language, mapping in declaration["languageMappings"].items():
+                target = declarations_by_export.get((mapping["packageId"], mapping["name"]))
+                self.assertIsNotNone(
+                    target,
+                    f"{declaration['declarationId']} maps {language} to an unlisted export",
+                )
+                self.assertIn(
+                    target["declarationState"],
+                    {"declared", "verified"},
+                    f"{declaration['declarationId']} maps {language} to a blocked export",
+                )
 
     def test_unreconciled_destructors_and_helpers_are_blocked_without_mappings(self) -> None:
         inventory = AUDIT.build_inventory(self.manifest, self.rust_report, REPO_ROOT)
