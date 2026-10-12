@@ -7638,14 +7638,14 @@ class CatalogValidationTests(unittest.TestCase):
         gap_id = "KMIPKIT-SOURCE-GAP-SPEC-6.1.52-CONSTRAINTS-REQUIRED"
         proposed_id = "KMIPKIT-REQ-SPEC-6.1.52-001"
         line_range = [35849, 35864]
-        contracts = {
-            row["gap_id"]: row
+        contracts = [
+            row
             for row in oracle["source_table_contracts"]
             if row["gap_id"] == gap_id
-        }
+        ]
 
-        self.assertEqual(set(contracts), {gap_id})
-        contract = contracts[gap_id]
+        self.assertEqual(len(contracts), 1)
+        contract = contracts[0]
         self.assertEqual(contract["source_id"], "KMIPKIT-SRC-spec")
         self.assertEqual(contract["source_path"], source_path)
         self.assertEqual(contract["source_section"], "6.1.52")
