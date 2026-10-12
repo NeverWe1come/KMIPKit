@@ -9,6 +9,7 @@ plugins {
 
 group = "org.kmipkit"
 version = "1.0.0"
+description = "KMIPKit Java 17 bindings, version 1.0.0 (unreleased)"
 
 repositories {
     mavenCentral()

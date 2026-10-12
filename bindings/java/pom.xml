@@ -6,6 +6,8 @@
   <groupId>org.kmipkit</groupId>
   <artifactId>kmipkit-java</artifactId>
   <version>1.0.0</version>
+  <name>KMIPKit Java bindings</name>
+  <description>Java 17 bindings for KMIPKit 1.0.0 (unreleased).</description>
   <properties>
     <maven.compiler.release>17</maven.compiler.release>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>

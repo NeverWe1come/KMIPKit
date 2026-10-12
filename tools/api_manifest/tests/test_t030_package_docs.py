@@ -59,6 +59,8 @@ class PackageDocumentationContractTests(unittest.TestCase):
         )
         self.assertEqual(release_version, pyproject["project"]["version"])
         self.assertEqual("kmipkit", pyproject["project"]["name"])
+        self.assertIn(release_version, pyproject["project"]["description"])
+        self.assertIn(release_version, pom.findtext("m:description", namespaces=namespace))
 
     def test_metadata_and_both_guides_name_the_supported_language_runtimes(self) -> None:
         java_build = (ROOT / "bindings" / "java" / "build.gradle.kts").read_text(
@@ -96,8 +98,12 @@ class PackageDocumentationContractTests(unittest.TestCase):
                 "SHA-256",
             ):
                 self.assertIn(contract_term, guide)
-            self.assertRegex(guide.lower(), r"no runtime (code )?download|no descarga")
-            self.assertRegex(guide.lower(), r"no fallback|sin fallback")
+        english = re.sub(r"\s+", " ", self.english.lower())
+        spanish = re.sub(r"\s+", " ", self.spanish.lower())
+        self.assertIn("do not perform a runtime executable-code download", english)
+        self.assertIn("no descargan código ejecutable durante la ejecución", spanish)
+        self.assertIn("no fallback", english)
+        self.assertIn("sin fallback", spanish)
 
     def test_bilingual_capability_summary_does_not_advertise_blocked_surface(self) -> None:
         capabilities = self.manifest["capabilities"]
@@ -107,21 +113,20 @@ class PackageDocumentationContractTests(unittest.TestCase):
         )
         self.assertEqual(len(operations), blocked_operations)
 
-        for guide in (self.english, self.spanish):
+        for guide, operation_phrase in (
+            (self.english, "full operation parity"),
+            (self.spanish, "paridad completa de operaciones"),
+        ):
             for capability in capabilities:
                 self.assertIn(capability["capabilityId"], guide)
                 status = capability["capabilityState"]
-                expected_status = {
-                    "declared": "declared" if guide is self.english else "declarada",
-                    "blocked": "blocked" if guide is self.english else "bloqueada",
-                }[status]
                 self.assertRegex(
                     guide.lower(),
-                    rf"{re.escape(capability['capabilityId'].lower())}[\s\S]{{0,100}}{expected_status}",
+                    rf"{re.escape(capability['capabilityId'].lower())}[\s\S]{{0,80}}{status}",
                 )
-            self.assertRegex(guide, rf"{blocked_operations}[/ de]{len(operations)}")
-            self.assertIn("full operation parity", guide.lower())
-            self.assertIn("paridad completa de operaciones", guide.lower())
+            self.assertIn(f"{blocked_operations} / {len(operations)}", guide)
+            normalized_guide = re.sub(r"\s+", " ", guide.lower())
+            self.assertIn(operation_phrase, normalized_guide)
 
 
 if __name__ == "__main__":
