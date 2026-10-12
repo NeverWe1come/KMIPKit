@@ -93,11 +93,12 @@ class RustExportLifetimeGapTests(unittest.TestCase):
 
         report = self.audit.inventory(documents)
         names = {declaration["exportName"] for declaration in report["declarations"]}
+        canonical_names = {self.audit._canonical_export_name(name) for name in names}
 
-        self.assertFalse(any(
-            "LifetimeBoundAlias" in name and name.endswith("::only_when_static")
-            for name in names
-        ))
+        self.assertNotIn(
+            "rustdoc_v57_fixture::LifetimeBoundAlias::only_when_static",
+            canonical_names,
+        )
         self.assertIn(
             "rustdoc_v57_fixture::StaticLifetimeBoundAlias::only_when_static",
             names,
@@ -135,11 +136,12 @@ class RustExportLifetimeGapTests(unittest.TestCase):
 
         report = self.audit.inventory(documents)
         names = {declaration["exportName"] for declaration in report["declarations"]}
+        canonical_names = {self.audit._canonical_export_name(name) for name in names}
 
-        self.assertFalse(any(
-            "InlineLifetimeBoundAlias" in name and name.endswith("::only_inline_static")
-            for name in names
-        ))
+        self.assertNotIn(
+            "rustdoc_v57_fixture::InlineLifetimeBoundAlias::only_inline_static",
+            canonical_names,
+        )
         self.assertIn(
             "rustdoc_v57_fixture::StaticInlineLifetimeBoundAlias::only_inline_static",
             names,
