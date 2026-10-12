@@ -33,6 +33,7 @@ ALL_GENERATED_OUTPUTS = [
     {"name": "javaParityTests", "path": "bindings/java/src/test/java/org/kmipkit/generated/PublicApiParityFixtures.java"},
     {"name": "pythonApi", "path": "bindings/python/src/kmipkit/_generated/public_api.py"},
     {"name": "parityFixtures", "path": "tests/fixtures/api/generated/public_api_parity.json"},
+    {"name": "internalCHeader", "path": "tests/fixtures/api/generated/kmipkit_internal.h"},
 ]
 LIMIT_IDS = (
     "maxDefinitions",
@@ -249,7 +250,7 @@ class PublicApiParityTests(unittest.TestCase):
     def test_adapter_symbols_have_stable_owners_and_no_collisions(self) -> None:
         functions = self.manifest["functions"]
         c_symbols: list[str] = []
-        jni_symbols: list[str] = []
+        jni_symbols: dict[str, list[dict[str, Any]]] = {}
         cffi_symbols: list[str] = []
 
         for function in functions:
@@ -269,7 +270,7 @@ class PublicApiParityTests(unittest.TestCase):
                     or java["package"].startswith("org.kmipkit.")
                 )
                 self.assertTrue(java["jniSymbol"].startswith("Java_org_kmipkit_"))
-                jni_symbols.append(java["jniSymbol"])
+                jni_symbols.setdefault(java["jniSymbol"], []).append(function)
 
                 python = function["python"]
                 self.assertTrue(
@@ -279,8 +280,22 @@ class PublicApiParityTests(unittest.TestCase):
                 cffi_symbols.append(python["cffiSymbol"])
 
         self.assertEqual(len(c_symbols), len(set(c_symbols)))
-        self.assertEqual(len(jni_symbols), len(set(jni_symbols)))
         self.assertEqual(len(cffi_symbols), len(set(cffi_symbols)))
+        for symbol, aliases in jni_symbols.items():
+            with self.subTest(jni_symbol=symbol):
+                # Additive C ABI compatibility symbols can share the one
+                # Java entrypoint when they describe the same Java operation.
+                java_signatures = {
+                    (
+                        row["java"]["package"],
+                        row["java"]["class"],
+                        row["java"]["method"],
+                        json.dumps(row["java"]["parameters"], sort_keys=True),
+                        row["java"]["returnType"],
+                    )
+                    for row in aliases
+                }
+                self.assertEqual(len(java_signatures), 1)
 
     def test_java_method_names_are_legal_java_identifiers(self) -> None:
         for function in self.manifest["functions"]:
@@ -303,7 +318,8 @@ class PublicApiParityTests(unittest.TestCase):
         registry_parity = json.loads(
             (ROOT / GENERATED_OUTPUTS["parityFixtures"]).read_text(encoding="utf-8")
         )
-        self.assertEqual(registry_parity, json.loads(REGISTRY_MANIFEST.read_text(encoding="utf-8")))
+        registry_baseline = json.loads(REGISTRY_MANIFEST.read_text(encoding="utf-8"))
+        self.assertEqual(registry_parity, registry_baseline)
 
         parity_path = ROOT / "tests/fixtures/api/generated/public_api_parity.json"
         parity: Any = json.loads(parity_path.read_text(encoding="utf-8"))

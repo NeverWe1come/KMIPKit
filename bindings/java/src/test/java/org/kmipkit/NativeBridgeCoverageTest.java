@@ -62,6 +62,16 @@ final class NativeBridgeCoverageTest {
     }
 
     @Test
+    void nativeStatusFailuresBecomeTypedErrorsForNullHandles() {
+        assertThrows(InvalidInputException.class,
+                () -> NativeExtensionRegistry.clientBatchItemExtensionCount(0));
+        assertThrows(InvalidInputException.class,
+                () -> NativeExtensionRegistry.clientBatchItemExtensionIdentityAt(0, 0));
+        assertThrows(InvalidInputException.class,
+                () -> NativeExtensionRegistry.clientBatchItemExtensionCriticalityIndicatorAt(0, 0));
+    }
+
+    @Test
     void nativeRegistryLookupsAndOptionalInformationUseTypedResults() {
         long identity = 0;
         long compatibility = 0;

@@ -2,6 +2,7 @@ package org.kmipkit;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -13,6 +14,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.attribute.AclEntry;
 import java.nio.file.attribute.AclEntryPermission;
 import java.nio.file.attribute.AclEntryType;
 import java.nio.file.attribute.AclFileAttributeView;
@@ -108,6 +110,37 @@ final class NativeLibraryLoaderTest {
     }
 
     @Test
+    void malformedDigestMetadataFailsBeforeCreatingPrivateDirectory() throws Exception {
+        byte[] libraryBytes = {4, 2};
+        String resourceName = "META-INF/native/" + WINDOWS_TARGET + "/" + WINDOWS_LIBRARY;
+        String[] malformedDigests = {
+            "f".repeat(63),
+            "f".repeat(64) + "x",
+            "f".repeat(64) + "xyz",
+            "f".repeat(64) + "\r",
+            "F".repeat(64),
+            "g".repeat(64),
+        };
+
+        for (String malformedDigest : malformedDigests) {
+            UnsatisfiedLinkError failure = assertThrows(UnsatisfiedLinkError.class,
+                    () -> NativeLibraryLoader.extractBundled(
+                            classLoader(Map.of(
+                                    resourceName, libraryBytes,
+                                    resourceName + ".sha256",
+                                    malformedDigest.getBytes(java.nio.charset.StandardCharsets.US_ASCII))),
+                            "Windows 11", "amd64", temporaryDirectory,
+                            NativeLibraryLoader::createPrivateDirectory));
+            assertEquals(NativeLibraryLoader.LOAD_FAILURE_MESSAGE, failure.getMessage());
+            assertNull(failure.getCause());
+        }
+
+        try (var files = Files.list(temporaryDirectory)) {
+            assertEquals(0, files.count());
+        }
+    }
+
+    @Test
     void corruptBundledLibraryIsRejectedBeforeItCanBeLoaded() throws Exception {
         byte[] libraryBytes = {1, 2, 3, 4};
         Map<String, byte[]> resources = Map.of(
@@ -169,6 +202,60 @@ final class NativeLibraryLoaderTest {
     }
 
     @Test
+    void rejectsDirectoryPermissionsThatAreNotPrivate() throws Exception {
+        Path privateDirectory = NativeLibraryLoader.createPrivateDirectory(temporaryDirectory);
+        byte[] libraryBytes = {6, 2, 6};
+        var fileStore = Files.getFileStore(privateDirectory);
+        Set<PosixFilePermission> originalPosixPermissions = null;
+        AclFileAttributeView aclView = null;
+        java.util.List<AclEntry> originalAcl = null;
+        try {
+            if (fileStore.supportsFileAttributeView("posix")) {
+                originalPosixPermissions = Files.getPosixFilePermissions(privateDirectory);
+                Set<PosixFilePermission> broaderPermissions = new java.util.HashSet<>(originalPosixPermissions);
+                broaderPermissions.add(PosixFilePermission.OTHERS_READ);
+                Files.setPosixFilePermissions(privateDirectory, broaderPermissions);
+            } else if (fileStore.supportsFileAttributeView("acl")) {
+                aclView = Files.getFileAttributeView(privateDirectory, AclFileAttributeView.class);
+                originalAcl = java.util.List.copyOf(aclView.getAcl());
+                AclEntry extraEntry = AclEntry.newBuilder()
+                        .setType(AclEntryType.DENY)
+                        .setPrincipal(Files.getOwner(privateDirectory))
+                        .setPermissions(EnumSet.of(AclEntryPermission.READ_DATA))
+                        .build();
+                java.util.List<AclEntry> broaderAcl = new java.util.ArrayList<>(originalAcl);
+                broaderAcl.add(extraEntry);
+                aclView.setAcl(broaderAcl);
+            } else {
+                return;
+            }
+
+            UnsatisfiedLinkError failure = assertThrows(UnsatisfiedLinkError.class,
+                    () -> NativeLibraryLoader.extractVerified(
+                            new ByteArrayInputStream(libraryBytes), sha256(libraryBytes),
+                            privateDirectory, WINDOWS_LIBRARY));
+            assertEquals(NativeLibraryLoader.LOAD_FAILURE_MESSAGE, failure.getMessage());
+            assertNull(failure.getCause());
+        } finally {
+            if (originalPosixPermissions != null) {
+                Files.setPosixFilePermissions(privateDirectory, originalPosixPermissions);
+            }
+            if (aclView != null && originalAcl != null) {
+                aclView.setAcl(originalAcl);
+            }
+        }
+    }
+
+    @Test
+    void createPrivateDirectoryRejectsTemporaryRootThatIsNotADirectory() throws Exception {
+        Path file = temporaryDirectory.resolve("not-a-temporary-directory");
+        Files.write(file, new byte[] {1});
+
+        assertThrows(IOException.class, () -> NativeLibraryLoader.createPrivateDirectory(file));
+        assertTrue(Files.isRegularFile(file));
+    }
+
+    @Test
     void permissionPolicyFailureFailsClosedWithoutExposingDetails() {
         byte[] libraryBytes = {1, 3, 3, 7};
         UnsatisfiedLinkError failure = assertThrows(UnsatisfiedLinkError.class,
@@ -201,6 +288,109 @@ final class NativeLibraryLoaderTest {
     }
 
     @Test
+    void explicitNativeLibraryOverrideMustBeAbsolute() {
+        Path absolute = temporaryDirectory.resolve("native.dll").toAbsolutePath().normalize();
+        assertEquals(absolute, NativeLibraryLoader.resolveExplicitLibrary(absolute.toString()));
+
+        for (String relative : new String[] {"native.dll", "subdir/native.dll"}) {
+            UnsatisfiedLinkError failure = assertThrows(
+                    UnsatisfiedLinkError.class,
+                    () -> NativeLibraryLoader.resolveExplicitLibrary(relative));
+            assertEquals(NativeLibraryLoader.LOAD_FAILURE_MESSAGE, failure.getMessage());
+            assertNull(failure.getCause());
+        }
+    }
+
+    @Test
+    void loadRedactsExplicitLibraryLoadingFailure() {
+        String previous = System.getProperty("kmipkit.nativeLibrary");
+        String invalidLibrary = temporaryDirectory.resolve("missing-native-library.dll").toString();
+        try {
+            System.setProperty("kmipkit.nativeLibrary", invalidLibrary);
+            UnsatisfiedLinkError failure = assertThrows(UnsatisfiedLinkError.class, NativeLibraryLoader::load);
+            assertEquals(NativeLibraryLoader.LOAD_FAILURE_MESSAGE, failure.getMessage());
+            assertNull(failure.getCause());
+            assertFalse(failure.getMessage().contains(invalidLibrary));
+        } finally {
+            restoreProperty("kmipkit.nativeLibrary", previous);
+        }
+    }
+
+    @Test
+    void loadRedactsInvalidTemporaryPathFailures() {
+        String previousLibrary = System.getProperty("kmipkit.nativeLibrary");
+        String previousTemporaryDirectory = System.getProperty("java.io.tmpdir");
+        try {
+            System.clearProperty("kmipkit.nativeLibrary");
+            System.setProperty("java.io.tmpdir", "invalid\u0000temporary-directory");
+            UnsatisfiedLinkError failure = assertThrows(UnsatisfiedLinkError.class, NativeLibraryLoader::load);
+            assertEquals(NativeLibraryLoader.LOAD_FAILURE_MESSAGE, failure.getMessage());
+            assertNull(failure.getCause());
+        } finally {
+            restoreProperty("kmipkit.nativeLibrary", previousLibrary);
+            restoreProperty("java.io.tmpdir", previousTemporaryDirectory);
+        }
+    }
+
+    @Test
+    void rejectsInvalidExtractionMetadataAndRemovesPartialFiles() throws Exception {
+        Path privateDirectory = NativeLibraryLoader.createPrivateDirectory(temporaryDirectory);
+        byte[] libraryBytes = {3, 1, 4};
+
+        for (String invalidName : new String[] {"", ".", "..", "nested/library.dll"}) {
+            UnsatisfiedLinkError failure = assertThrows(UnsatisfiedLinkError.class,
+                    () -> NativeLibraryLoader.extractVerified(
+                            new ByteArrayInputStream(libraryBytes), sha256(libraryBytes),
+                            privateDirectory, invalidName));
+            assertEquals(NativeLibraryLoader.LOAD_FAILURE_MESSAGE, failure.getMessage());
+            assertNull(failure.getCause());
+        }
+        UnsatisfiedLinkError invalidHash = assertThrows(UnsatisfiedLinkError.class,
+                () -> NativeLibraryLoader.extractVerified(
+                        new ByteArrayInputStream(libraryBytes), "A".repeat(64),
+                        privateDirectory, WINDOWS_LIBRARY));
+        assertEquals(NativeLibraryLoader.LOAD_FAILURE_MESSAGE, invalidHash.getMessage());
+        assertNull(invalidHash.getCause());
+
+        try (var files = Files.list(privateDirectory)) {
+            assertEquals(0, files.count());
+        }
+    }
+
+    @Test
+    void extractionReadFailureCleansStagingFileAndRedactsCause() throws Exception {
+        Path privateDirectory = NativeLibraryLoader.createPrivateDirectory(temporaryDirectory);
+        InputStream failingInput = new InputStream() {
+            private boolean firstRead = true;
+
+            @Override
+            public int read() throws IOException {
+                throw new IOException("simulated native contents read failure");
+            }
+
+            @Override
+            public int read(byte[] buffer, int offset, int length) throws IOException {
+                if (firstRead) {
+                    firstRead = false;
+                    buffer[offset] = 7;
+                    return Math.min(1, length);
+                }
+                throw new IOException("simulated native contents read failure");
+            }
+        };
+
+        UnsatisfiedLinkError failure = assertThrows(UnsatisfiedLinkError.class,
+                () -> NativeLibraryLoader.extractVerified(
+                        failingInput, "0".repeat(64), privateDirectory, WINDOWS_LIBRARY));
+
+        assertEquals(NativeLibraryLoader.LOAD_FAILURE_MESSAGE, failure.getMessage());
+        assertNull(failure.getCause());
+        try (var files = Files.list(privateDirectory)) {
+            assertEquals(0, files.count());
+        }
+    }
+
+    @Test
     void allowsBundledSelectionOnlyWhenNativeLibraryOverrideIsAbsent() {
         assertNull(NativeLibraryLoader.resolveExplicitLibrary(null));
     }
@@ -224,6 +414,14 @@ final class NativeLibraryLoaderTest {
 
     private static String sha256(byte[] bytes) throws Exception {
         return HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256").digest(bytes));
+    }
+
+    private static void restoreProperty(String name, String value) {
+        if (value == null) {
+            System.clearProperty(name);
+        } else {
+            System.setProperty(name, value);
+        }
     }
 
     private static void assertPrivateAcl(Path path) throws IOException {

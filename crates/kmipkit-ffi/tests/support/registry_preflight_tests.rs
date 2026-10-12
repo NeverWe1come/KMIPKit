@@ -41,21 +41,27 @@ fn call_registry_create(
     max_schema_nodes: u64,
 ) -> (i32, *mut kmipkit_client_extension_registry_t) {
     let mut registry = ptr::null_mut();
-    let status = kmipkit_client_extension_registry_create(
+    let limits = kmipkit_extension_registry_limits_v1_t {
+        struct_size: u32::try_from(std::mem::size_of::<kmipkit_extension_registry_limits_v1_t>())
+            .expect("v1 limits structure size fits the ABI field"),
+        abi_version: 1,
+        max_definitions: 1,
+        max_schema_nodes,
+        max_child_rules_per_structure: 4_096,
+        max_text_bytes_per_field: 4_096,
+        max_registry_text_bytes: 16 * 1024 * 1024,
+        max_discriminator_scalar_bytes: 4_096,
+        max_total_discriminator_scalar_bytes: 16 * 1024 * 1024,
+        max_constraint_members_per_rule: 4_096,
+        max_total_constraint_members: 100_000,
+        max_payload_index_records: 200_000,
+        max_lookup_comparisons: 4_194_304,
+        max_depth: 64,
+    };
+    let status = kmipkit_client_extension_registry_create_v1(
         definitions.as_mut_ptr(),
         definitions.len() as u64,
-        1,
-        max_schema_nodes,
-        4_096,
-        4_096,
-        16 * 1024 * 1024,
-        4_096,
-        16 * 1024 * 1024,
-        4_096,
-        100_000,
-        200_000,
-        4_194_304,
-        64,
+        &raw const limits,
         &raw mut registry,
     );
     (status, registry)

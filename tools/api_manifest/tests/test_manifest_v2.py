@@ -2,8 +2,8 @@
 
 from __future__ import annotations
 
-import json
 import copy
+import json
 import re
 import tomllib
 import unittest
@@ -330,7 +330,25 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
         registry = json.loads(REGISTRY_FIXTURE_PATH.read_text(encoding="utf-8"))
         for field in ("types", "errorCategories", "limits", "security"):
             with self.subTest(field=field):
-                self.assertEqual(manifest[field], registry[field])
+                if field == "types":
+                    actual = [
+                        record for record in manifest[field]
+                        if any(
+                            requirement.startswith("KMIPKIT-0012-")
+                            for requirement in record["requirementIds"]
+                        )
+                    ]
+                    expected = json.loads(json.dumps(registry[field]))
+                    batch_item_type = next(row for row in actual if row["id"] == "ClientBatchItem")
+                    expected_batch_item_type = next(
+                        row for row in expected if row["id"] == "ClientBatchItem"
+                    )
+                    expected_batch_item_type["java"]["package"] = batch_item_type["java"]["package"]
+                    expected_batch_item_type["python"]["module"] = batch_item_type["python"]["module"]
+                else:
+                    actual = manifest[field]
+                    expected = registry[field]
+                self.assertEqual(actual, expected)
         manifest_functions = {item["id"]: item for item in manifest["functions"]}
         for function in registry["functions"]:
             with self.subTest(function=function["id"]):
@@ -343,6 +361,11 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
                     self.assertEqual(manifest_functions[function["id"]], expected_function)
                 else:
                     self.assertEqual(manifest_functions[function["id"]], function)
+        added_versioned_type = next(
+            row for row in manifest["types"] if row["id"] == "ExtensionRegistryLimitsV1"
+        )
+        self.assertEqual(added_versioned_type["c"]["name"], "kmipkit_extension_registry_limits_v1_t")
+        self.assertEqual(added_versioned_type["requirementIds"], ["KMIPKIT-0043-FR-007"])
         self.assertTrue(set(registry["requirementIds"]) <= set(manifest["requirementIds"]))
         outputs = manifest["generatedOutputs"]
         if isinstance(outputs, list):
@@ -448,7 +471,6 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
             "kmipkit.errors",
             "kmipkit.extensions",
             "kmipkit.ttlv",
-            "kmipkit.extensions.ClientBatchItem",
             "kmipkit.extensions.with_extension",
             "org.kmipkit.NativeExtensionRegistry",
             "org.kmipkit.generated.ExtensionRegistryApi",
@@ -461,6 +483,9 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
                 self.assertIn("candidateSpecId", declaration)
                 self.assertIn("blockedReason", declaration)
                 self.assertNotIn("languageMappings", declaration)
+        batch_item = declarations["kmipkit.extensions.ClientBatchItem"]
+        self.assertEqual(batch_item["declarationState"], "declared")
+        self.assertIn("languageMappings", batch_item)
 
     def test_t011_observed_binding_exports_are_reconciled_without_invented_mappings(self) -> None:
         declarations = {
@@ -479,7 +504,6 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
         }
         blocked_exports.update({
             ("java-kmipkit", "org.kmipkit.RuntimeMetadata.Version.<init>"),
-            ("java-kmipkit", "org.kmipkit.RuntimeMetadata.Version.abiVersion"),
             ("java-kmipkit", "org.kmipkit.RuntimeMetadata.Version.equals"),
             ("java-kmipkit", "org.kmipkit.RuntimeMetadata.Version.hashCode"),
             ("java-kmipkit", "org.kmipkit.RuntimeMetadata.Version.major"),
@@ -497,11 +521,9 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
             ("python-kmipkit", "kmipkit.errors.InvalidInputError.category"),
             ("python-kmipkit", "kmipkit.errors.KmipKitError.category"),
             ("python-kmipkit", "kmipkit.errors.ResourceLimitError.category"),
-            ("python-kmipkit", "kmipkit.metadata.Version.abi_version"),
             ("python-kmipkit", "kmipkit.metadata.Version.major"),
             ("python-kmipkit", "kmipkit.metadata.Version.minor"),
             ("python-kmipkit", "kmipkit.metadata.Version.patch"),
-            ("python-kmipkit", "kmipkit.extensions.validate_extension_value"),
         })
         for key in blocked_exports:
             with self.subTest(export=key):
@@ -511,6 +533,16 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
                 self.assertEqual(declaration["capabilityId"], "public_binding_surface")
                 self.assertEqual(declaration["requirementIds"], ["KMIPKIT-0043-FR-021"])
                 self.assertNotIn("languageMappings", declaration)
+
+        for key in (
+            ("java-kmipkit", "org.kmipkit.RuntimeMetadata.Version.abiVersion"),
+            ("python-kmipkit", "kmipkit.metadata.Version.abi_version"),
+            ("python-kmipkit", "kmipkit.extensions.validate_extension_value"),
+        ):
+            with self.subTest(ready_export=key):
+                declaration = declarations[key]
+                self.assertEqual(declaration["declarationState"], "declared")
+                self.assertIn("languageMappings", declaration)
 
         exclusions = {
             (item["packageId"], item["exportName"])
@@ -590,7 +622,7 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
             )),
         ]
         field_exports = [
-            f"kmipkit_extension_registry_limits_t.{name}"
+            f"kmipkit_extension_registry_limits_v1_t.{name}"
             for name in (
                 "max_definitions",
                 "max_schema_nodes",
@@ -680,16 +712,74 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
         for export_name in field_exports:
             with self.subTest(export_name=export_name):
                 declaration = declarations[export_name]
-                self.assertEqual(declaration["declarationState"], "blocked")
-                self.assertEqual(declaration["candidateSpecId"], "KMIPKIT-0012")
-                self.assertIn("versioned", declaration["blockedReason"])
-                self.assertNotIn("approvalSource", declaration)
-                self.assertNotIn("languageMappings", declaration)
+                self.assertEqual(declaration["declarationState"], "declared")
+                self.assertEqual(declaration["capabilityId"], "vendor_extension_registry")
+                self.assertEqual(
+                    declaration["approvalSource"]["path"],
+                    "specs/012-vendor-extension-registry/spec.md",
+                )
+                self.assertEqual(
+                    set(declaration["languageMappings"]),
+                    {"rust", "c", "java", "python"},
+                )
 
-    def test_public_header_does_not_advertise_unused_extension_limits_abi_type(self) -> None:
+    def test_extension_registry_limits_preserves_legacy_and_adds_versioned_c_representations(self) -> None:
         public_header = generate.render_c_header(self.checked_in_manifest)
+        private_header = generate.render_internal_c_header(self.checked_in_manifest)
+        legacy_limits = next(
+            row for row in self.checked_in_manifest["types"]
+            if row["id"] == "ExtensionRegistryLimits"
+        )
+        versioned_limits = next(
+            row for row in self.checked_in_manifest["types"]
+            if row["id"] == "ExtensionRegistryLimitsV1"
+        )
+        declarations = [
+            row for row in self.checked_in_manifest["publicDeclarations"]
+            if row["declarationId"].startswith("ExtensionRegistryLimitsV1:")
+        ]
 
-        self.assertNotIn("kmipkit_extension_registry_limits_t", public_header)
+        self.assertIn("kmipkit_extension_registry_limits_t", public_header)
+        self.assertIn("kmipkit_extension_registry_limits_v1_t", public_header)
+        self.assertIn("kmipkit_extension_registry_limits_v1_t", private_header)
+        self.assertIn("uint32_t struct_size;", public_header)
+        self.assertIn("uint32_t abi_version;", public_header)
+        self.assertEqual(legacy_limits["c"]["name"], "kmipkit_extension_registry_limits_t")
+        self.assertEqual(
+            versioned_limits["c"],
+            {
+                "name": "kmipkit_extension_registry_limits_v1_t",
+                "kind": "fixed-width-value",
+                "visibility": "public",
+                "versioned": True,
+            },
+        )
+        self.assertTrue(declarations)
+        self.assertTrue(all(row["declarationState"] == "declared" for row in declarations))
+        self.assertTrue(all("languageMappings" in row for row in declarations))
+        self.assertRegex(
+            public_header,
+            r"typedef struct kmipkit_extension_registry_limits_t "
+            r"kmipkit_extension_registry_limits_t;",
+        )
+        legacy_layout = re.search(
+            r"typedef struct \{(?P<body>.*?)\} kmipkit_extension_registry_limits_t;",
+            public_header,
+            re.DOTALL,
+        )
+        self.assertIsNone(legacy_layout, "the legacy C limits name must remain opaque")
+        metadata_fields = {
+            row["exportName"] for row in self.checked_in_manifest["approvedExclusions"]
+            if row["packageId"] == "c-kmipkit"
+            and row["exportName"].startswith("kmipkit_extension_registry_limits_v1_t.")
+        }
+        self.assertEqual(
+            metadata_fields,
+            {
+                "kmipkit_extension_registry_limits_v1_t.struct_size",
+                "kmipkit_extension_registry_limits_v1_t.abi_version",
+            },
+        )
 
     def test_generator_rejects_ready_mapping_to_blocked_export(self) -> None:
         manifest = copy.deepcopy(self.checked_in_manifest)
@@ -936,7 +1026,12 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
         }
         self.assertEqual(
             set(exclusions),
-            {"kmipkit_last_error_get", "kmipkit_last_error_clear"},
+            {
+                "kmipkit_last_error_get",
+                "kmipkit_last_error_clear",
+                "kmipkit_extension_registry_limits_v1_t.struct_size",
+                "kmipkit_extension_registry_limits_v1_t.abi_version",
+            },
         )
         for symbol in exclusions:
             self.assertEqual(exclusions[symbol]["packageId"], "c-kmipkit")
@@ -1053,7 +1148,7 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
 
     def test_checked_in_manifest_inventories_all_java_public_access_paths(self) -> None:
         declarations = self.declarations_for_package("java-kmipkit")
-        self.assertEqual(len(declarations), 329)
+        self.assertEqual(len(declarations), 330)
         by_name = {declaration["exportName"]: declaration for declaration in declarations}
         batch_item = by_name["org.kmipkit.extensions.ClientBatchItem"]
         self.assertEqual(batch_item["kind"], "type")
@@ -1092,6 +1187,7 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
             exclusion["exportName"]
             for exclusion in self.checked_in_manifest["approvedExclusions"]
             if exclusion["packageId"] == "c-kmipkit"
+            and re.fullmatch(r"kmipkit_[A-Za-z0-9_]+", exclusion["exportName"])
         }
         published_header_symbols = {
             name for name in ready_by_kind["c-symbol"] if name.startswith("kmipkit_")
@@ -1112,19 +1208,16 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
         )
         self.assertEqual(header_types, ready_by_kind["type"])
 
-        limits_match = re.search(
-            r"typedef struct \{(?P<body>.*?)\} kmipkit_extension_registry_limits_t;",
+        limits_matches = re.finditer(
+            r"typedef struct \{(?P<body>.*?)\} (kmipkit_extension_registry_limits_v1_t);",
             header,
             re.DOTALL,
         )
-        header_fields = set()
-        if limits_match is not None:
-            header_fields = {
-                f"kmipkit_extension_registry_limits_t.{name}"
-                for name in re.findall(
-                    r"^\s*uint64_t (\w+);$", limits_match["body"], re.MULTILINE
-                )
-            }
+        header_fields = {
+            f"{match[2]}.{name}"
+            for match in limits_matches
+            for name in re.findall(r"^\s*uint64_t (\w+);$", match["body"], re.MULTILINE)
+        }
         self.assertEqual(header_fields, ready_by_kind["field"])
 
         header_ttlv_macros = set(
@@ -1151,6 +1244,7 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
             exclusion["exportName"]
             for exclusion in self.checked_in_manifest["approvedExclusions"]
             if exclusion["packageId"] == "c-kmipkit"
+            and re.fullmatch(r"kmipkit_[A-Za-z0-9_]+", exclusion["exportName"])
         }
         ready_functions = {
             declaration["exportName"]

@@ -59,37 +59,45 @@ def _ready_operation(manifest: dict[str, object]) -> dict[str, object]:
             "featureSpecId": "KMIPKIT-0007",
             "approvalEvidence": _approved_feature_source(),
             "declarations": {
-                language: ["discover_versions_execute"] for language in LANGUAGES
+                language: [f"discover_versions_execute_{language}"]
+                for language in LANGUAGES
             },
         }
     )
     return operation
 
 
-def _ready_declaration(
+def _ready_declarations(
     *, declaration_id: str = "shared_client_execute", capability_id: str = "shared_client"
-) -> dict[str, object]:
+) -> list[dict[str, object]]:
     package_ids = {
         "rust": "rust-kmipkit-protocol",
         "c": "c-kmipkit",
         "java": "java-kmipkit",
         "python": "python-kmipkit",
     }
-    return {
-        "declarationId": declaration_id,
-        "packageId": "rust-kmipkit-protocol",
-        "kind": "function",
-        "exportName": "kmipkit_protocol::ClientRequest",
-        "capabilityId": capability_id,
-        "requirementIds": ["KMIPKIT-0043-FR-001"],
-        "declarationState": "declared",
-        "parityScope": "four-language",
-        "approvalSource": _approved_feature_source(),
-        "languageMappings": {
-            language: {"packageId": package_id, "name": f"{language}.client_execute"}
-            for language, package_id in package_ids.items()
-        },
-    }
+    export_names = {language: f"{language}.{declaration_id}" for language in LANGUAGES}
+    return [
+        {
+            "declarationId": f"{declaration_id}_{language}",
+            "packageId": package_ids[language],
+            "kind": "function",
+            "exportName": export_names[language],
+            "capabilityId": capability_id,
+            "requirementIds": ["KMIPKIT-0043-FR-001"],
+            "declarationState": "declared",
+            "parityScope": "four-language",
+            "approvalSource": _approved_feature_source(),
+            "languageMappings": {
+                mapped_language: {
+                    "packageId": package_ids[mapped_language],
+                    "name": export_names[mapped_language],
+                }
+                for mapped_language in LANGUAGES
+            },
+        }
+        for language in LANGUAGES
+    ]
 
 
 def _ready_capability() -> dict[str, object]:
@@ -100,7 +108,10 @@ def _ready_capability() -> dict[str, object]:
         "parityScope": "four-language",
         "ownerSpecId": "KMIPKIT-0007",
         "approvalEvidence": _approved_feature_source(),
-        "mappings": {language: [f"{language}.shared_client"] for language in LANGUAGES},
+        "mappings": {
+            language: [f"{language}.shared_client_execute"]
+            for language in LANGUAGES
+        },
     }
 
 
@@ -129,10 +140,12 @@ def _complete_readiness_manifest(root: Path) -> dict[str, object]:
         "java": "java-kmipkit",
         "python": "python-kmipkit",
     }
-    declaration_ids: dict[str, str] = {}
+    declaration_ids: dict[str, dict[str, str]] = {}
     for index, operation in enumerate(manifest["operations"]):
         declaration_id = f"operation_{index:02d}"
-        declaration_ids[operation["operationId"]] = declaration_id
+        declaration_ids[operation["operationId"]] = {
+            language: f"{declaration_id}_{language}" for language in LANGUAGES
+        }
         operation.pop("blockedReason")
         operation.update(
             {
@@ -141,44 +154,50 @@ def _complete_readiness_manifest(root: Path) -> dict[str, object]:
                 "featureSpecId": "KMIPKIT-0007",
                 "approvalEvidence": _approved_feature_source(),
                 "declarations": {
-                    language: [declaration_id] for language in LANGUAGES
+                    language: [declaration_ids[operation["operationId"]][language]]
+                    for language in LANGUAGES
                 },
                 "parityEvidenceIds": ["tests/fixtures/api/parity.json"],
             }
         )
     manifest["publicDeclarations"] = [
         {
-            "declarationId": declaration_ids[operation["operationId"]],
-            "packageId": "rust-kmipkit-protocol",
+            "declarationId": declaration_ids[operation["operationId"]][language],
+            "packageId": language_packages[language],
             "kind": "function",
-            "exportName": f"kmipkit_protocol::{operation['name'].replace(' ', '_').lower()}",
+            "exportName": f"{language}.operation_{index:02d}",
             "capabilityId": operation["operationId"],
             "requirementIds": ["KMIPKIT-0043-FR-001"],
             "declarationState": "verified",
             "parityScope": "four-language",
             "approvalSource": _approved_feature_source(),
             "languageMappings": {
-                language: {
-                    "packageId": package_id,
-                    "name": f"{language}.operation_{index:02d}",
+                mapped_language: {
+                    "packageId": language_packages[mapped_language],
+                    "name": f"{mapped_language}.operation_{index:02d}",
                 }
-                for language, package_id in language_packages.items()
+                for mapped_language in LANGUAGES
             },
             "parityEvidenceIds": ["tests/fixtures/api/parity.json"],
         }
         for index, operation in enumerate(manifest["operations"])
+        for language in LANGUAGES
     ]
     manifest["capabilities"] = [
         {
-            "capabilityId": "shared_client",
+            "capabilityId": operation["operationId"],
             "requirementIds": ["KMIPKIT-0043-FR-001"],
             "capabilityState": "verified",
             "parityScope": "four-language",
             "ownerSpecId": "KMIPKIT-0007",
             "approvalEvidence": _approved_feature_source(),
-            "mappings": {language: [f"{language}.shared_client"] for language in LANGUAGES},
+            "mappings": {
+                language: [f"{language}.operation_{index:02d}"]
+                for language in LANGUAGES
+            },
             "parityEvidenceIds": ["tests/fixtures/api/parity.json"],
         }
+        for index, operation in enumerate(manifest["operations"])
     ]
     return manifest
 
@@ -384,12 +403,10 @@ class OperationReadinessSchemaTests(unittest.TestCase):
     def test_ready_owner_must_resolve_to_approved_feature_and_recorded_acceptance(self) -> None:
         manifest = _contract_manifest()
         _ready_operation(manifest)
-        manifest["publicDeclarations"] = [
-            _ready_declaration(
-                declaration_id="discover_versions_execute",
-                capability_id="KMIPKIT-ELEM-OP-C2S-DISCOVER-VERSIONS",
-            )
-        ]
+        manifest["publicDeclarations"] = _ready_declarations(
+            declaration_id="discover_versions_execute",
+            capability_id="KMIPKIT-ELEM-OP-C2S-DISCOVER-VERSIONS",
+        )
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
             _write_approved_feature(root)
@@ -417,7 +434,7 @@ class OperationReadinessSchemaTests(unittest.TestCase):
                     "status": "Accepted",
                     "evidence": "Maintainer acceptance for release 1.0.0",
                 },
-                "mappings": {"rust": ["kmipkit_transport::Transport::exchange"]},
+                "mappings": {"rust": []},
             }
         ]
         with tempfile.TemporaryDirectory() as temporary:
@@ -441,10 +458,10 @@ class OperationReadinessSchemaTests(unittest.TestCase):
 
     def test_language_declaration_mapping_must_name_a_package_in_that_language(self) -> None:
         manifest = _contract_manifest()
-        declaration = _ready_declaration()
+        declarations = _ready_declarations()
         manifest["capabilities"] = [_ready_capability()]
-        declaration["languageMappings"]["python"]["packageId"] = "java-kmipkit"
-        manifest["publicDeclarations"] = [declaration]
+        declarations[0]["languageMappings"]["python"]["packageId"] = "java-kmipkit"
+        manifest["publicDeclarations"] = declarations
 
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)

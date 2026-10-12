@@ -40,6 +40,7 @@ V2_GENERATED_OUTPUTS = (
     "bindings/java/src/test/java/org/kmipkit/generated/PublicApiParityFixtures.java",
     "bindings/python/src/kmipkit/_generated/public_api.py",
     "tests/fixtures/api/generated/public_api_parity.json",
+    "tests/fixtures/api/generated/kmipkit_internal.h",
 )
 GENERATED_OUTPUT_MAP = {
     "rustFfi": GENERATED_OUTPUTS[0],
@@ -219,6 +220,14 @@ class ManifestGeneratorCliTests(unittest.TestCase):
         self.assertIn("kmipkit_version_get", c_header)
         self.assertNotIn("version_get", registry_python)
 
+    def test_v2_rendering_does_not_mutate_the_canonical_manifest(self) -> None:
+        manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
+        original = copy.deepcopy(manifest)
+
+        generate.render_outputs(manifest)
+
+        self.assertEqual(manifest, original)
+
     def test_c_header_renders_manifest_documentation_for_error_snapshot_outputs(self) -> None:
         manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
         outputs = generate.render_outputs(manifest)
@@ -248,7 +257,7 @@ class ManifestGeneratorCliTests(unittest.TestCase):
         )
 
         self.assertEqual(set(outputs), set(generate.V2_OUTPUT_PATHS.values()))
-        self.assertEqual(len(outputs), 11)
+        self.assertEqual(len(outputs), 12)
         self.assertIn('"ffi_runtime_metadata"', generated)
         self.assertIn('"generic_ttlv_model"', generated)
         self.assertIn('"ttlv_wire_codec"', generated)

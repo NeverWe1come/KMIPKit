@@ -61,6 +61,50 @@ def test_cffi_loader_reads_canonical_abi_version_from_native_symbol(tmp_path: Pa
     assert ffi.loaded == [str(package_library)]
 
 
+def test_cffi_loader_redacts_nonzero_native_version_query(
+    tmp_path: Path,
+) -> None:
+    package_library = tmp_path / "kmipkit" / "_ffi" / "_ffi.dll"
+    package_library.parent.mkdir(parents=True)
+    package_library.touch()
+    ffi = FakeCffi(VersionLibrary(status=1))
+
+    with pytest.raises(NativeLibraryLoadError) as error:
+        load_cffi_library(
+            ffi=ffi,
+            bundled_path=package_library,
+            expected_abi_version=1,
+            environ={},
+        )
+
+    assert str(error.value) == (
+        "KMIPKit could not verify native library ABI compatibility."
+    )
+    assert error.value.__suppress_context__
+
+
+def test_bundled_native_library_redacts_directory_listing_oserror(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    package_directory = tmp_path / "kmipkit" / "_native_ffi"
+    package_directory.mkdir(parents=True)
+    original_iterdir = Path.iterdir
+
+    def fail_directory_listing(directory: Path):
+        if directory == package_directory:
+            raise OSError("private directory detail")
+        return original_iterdir(directory)
+
+    monkeypatch.setattr(Path, "iterdir", fail_directory_listing)
+
+    with pytest.raises(NativeLibraryLoadError) as error:
+        find_bundled_native_library(package_directory)
+
+    assert "private directory detail" not in str(error.value)
+    assert str(package_directory) not in str(error.value)
+    assert error.value.__suppress_context__
+
+
 def test_load_uses_library_adjacent_to_installed_package(tmp_path: Path) -> None:
     package_library = tmp_path / "kmipkit" / "_ffi" / "_ffi.dll"
     package_library.parent.mkdir(parents=True)

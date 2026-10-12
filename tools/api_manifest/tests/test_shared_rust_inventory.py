@@ -34,7 +34,7 @@ class SharedRustInventoryTests(unittest.TestCase):
         inventory = AUDIT.build_inventory(self.manifest, self.rust_report, REPO_ROOT)
 
         self.assertEqual(inventory["observedRustDeclarationCount"], 9497)
-        self.assertEqual(inventory["mappedRustDeclarationCount"], 121)
+        self.assertEqual(inventory["mappedRustDeclarationCount"], 134)
         self.assertEqual(len(inventory["blockedUnreconciledDeclarations"]), 36)
         self.assertEqual(inventory["draftOwnerGates"]["KMIPKIT-0009"]["blockedOperations"], 4)
         self.assertEqual(
@@ -126,7 +126,11 @@ class SharedRustInventoryTests(unittest.TestCase):
             for language in ("rust", "c", "java", "python")
         }
         for capability in self.manifest["capabilities"]:
+            if "mappings" not in capability:
+                continue
             for language, packages in language_packages.items():
+                if capability["parityScope"] == "rust-only-adr" and language != "rust":
+                    continue
                 expected = sorted(
                     {
                         row["exportName"]

@@ -1,13 +1,14 @@
 /*
- * Red-stage public C consumer coverage for KMIPKIT-0012 User Story 3.
+ * Internal FFI harness coverage for KMIPKIT-0012 User Story 3.
  *
  * This test checks that the shared corpus names and values remain present, then
  * constructs the C TTLV equivalent of `valid-recognized` from those values.
- * Its consumer assertions run through the public read-only view API.
+ * Its assertions exercise existing native exports through the private build
+ * header. This harness is not evidence of public C facade parity.
  * KMIP Specification v2.1 §11.56 permits the 0x54 extension Tag range; the
  * catalog policy accepts those unknown Tags for generic preservation.
  *
- * The public C header exposes ClientBatchItem construction and inspection, but
+ * The public C header does not expose blocked ClientBatchItem operations and
  * does not execute or encode requests. The C ABI exposes only stable int32_t
  * error categories, not diagnostic strings, so payload redaction is constrained
  * to verifying stable category-only results.
@@ -15,7 +16,7 @@
  * violations and are deliberately not probed here.
  */
 
-#include "kmipkit.h"
+#include "kmipkit_internal.h"
 #include "extension_fixtures.generated.h"
 
 #include <stdbool.h>
@@ -72,41 +73,19 @@ _Static_assert(sizeof(uint64_t) == 8, "the C ABI requires 64-bit byte lengths");
         }                                                                         \
     } while (0)
 
-static bool load_default_limits(kmipkit_extension_registry_limits_t *limits)
+static bool load_default_limits(kmipkit_extension_registry_limits_v1_t *limits)
 {
-    return kmipkit_extension_registry_limits_default_values(
-               &limits->max_definitions,
-               &limits->max_schema_nodes,
-               &limits->max_child_rules_per_structure,
-               &limits->max_text_bytes_per_field,
-               &limits->max_registry_text_bytes,
-               &limits->max_discriminator_scalar_bytes,
-               &limits->max_total_discriminator_scalar_bytes,
-               &limits->max_constraint_members_per_rule,
-               &limits->max_total_constraint_members,
-               &limits->max_payload_index_records,
-               &limits->max_lookup_comparisons,
-               &limits->max_depth) == KMIPKIT_SUCCESS;
+    limits->struct_size = (uint32_t)sizeof(*limits);
+    limits->abi_version = UINT32_C(1);
+    return kmipkit_extension_registry_limits_v1_default_values(limits) == KMIPKIT_SUCCESS;
 }
 
-static int32_t validate_limits(const kmipkit_extension_registry_limits_t *limits)
+static int32_t validate_limits(const kmipkit_extension_registry_limits_v1_t *limits)
 {
-    return kmipkit_extension_registry_limits_validate(
-        limits->max_definitions,
-        limits->max_schema_nodes,
-        limits->max_child_rules_per_structure,
-        limits->max_text_bytes_per_field,
-        limits->max_registry_text_bytes,
-        limits->max_discriminator_scalar_bytes,
-        limits->max_total_discriminator_scalar_bytes,
-        limits->max_constraint_members_per_rule,
-        limits->max_total_constraint_members,
-        limits->max_payload_index_records,
-        limits->max_lookup_comparisons,
-        limits->max_depth);
+    return kmipkit_extension_registry_limits_v1_validate(limits);
 }
 
-static void copy_limit_fields(const kmipkit_extension_registry_limits_t *limits,
+static void copy_limit_fields(const kmipkit_extension_registry_limits_v1_t *limits,
                               uint64_t fields[12])
 {
     fields[0] = limits->max_definitions;
@@ -123,7 +102,7 @@ static void copy_limit_fields(const kmipkit_extension_registry_limits_t *limits,
     fields[11] = limits->max_depth;
 }
 
-static void set_limit_field(kmipkit_extension_registry_limits_t *limits,
+static void set_limit_field(kmipkit_extension_registry_limits_v1_t *limits,
                             size_t index,
                             uint64_t value)
 {
@@ -156,10 +135,14 @@ static bool test_extension_registry_limits(void)
         UINT64_C(16777216), UINT64_C(4096), UINT64_C(16777216), UINT64_C(4096),
         UINT64_C(100000), UINT64_C(200000), UINT64_C(4194304), UINT64_C(64)
     };
-    kmipkit_extension_registry_limits_t limits;
+    kmipkit_extension_registry_limits_v1_t limits;
     uint64_t observed_defaults[12];
     size_t index;
 
+    REQUIRE_STATUS(kmipkit_extension_registry_limits_v1_validate(NULL),
+                   KMIPKIT_ERROR_INVALID_INPUT);
+    REQUIRE_STATUS(kmipkit_extension_registry_limits_v1_default_values(NULL),
+                   KMIPKIT_ERROR_INVALID_INPUT);
     REQUIRE(load_default_limits(&limits));
     REQUIRE_STATUS(validate_limits(&limits), KMIPKIT_SUCCESS);
     copy_limit_fields(&limits, observed_defaults);
@@ -167,7 +150,7 @@ static bool test_extension_registry_limits(void)
 
     for (index = 0; index < 12U; ++index) {
         uint64_t value;
-        kmipkit_extension_registry_limits_t candidate;
+        kmipkit_extension_registry_limits_v1_t candidate;
 
         candidate = limits;
         value = defaults[index] - 1U;
@@ -191,6 +174,51 @@ static bool test_extension_registry_limits(void)
         set_limit_field(&candidate, index, hard_maxima[index] + 1U);
         REQUIRE_STATUS(validate_limits(&candidate), KMIPKIT_ERROR_RESOURCE_LIMIT);
     }
+    {
+        kmipkit_extension_registry_limits_v1_t invalid = limits;
+        invalid.struct_size = (uint32_t)sizeof(invalid) - UINT32_C(1);
+        REQUIRE_STATUS(validate_limits(&invalid), KMIPKIT_ERROR_INVALID_INPUT);
+        REQUIRE_STATUS(kmipkit_extension_registry_limits_v1_default_values(&invalid),
+                       KMIPKIT_ERROR_INVALID_INPUT);
+
+        invalid = limits;
+        invalid.struct_size = (uint32_t)sizeof(invalid) + UINT32_C(1);
+        REQUIRE_STATUS(validate_limits(&invalid), KMIPKIT_ERROR_INVALID_INPUT);
+        REQUIRE_STATUS(kmipkit_extension_registry_limits_v1_default_values(&invalid),
+                       KMIPKIT_ERROR_INVALID_INPUT);
+
+        invalid = limits;
+        invalid.abi_version = UINT32_C(2);
+        REQUIRE_STATUS(validate_limits(&invalid), KMIPKIT_ERROR_INVALID_INPUT);
+        REQUIRE_STATUS(kmipkit_extension_registry_limits_v1_default_values(&invalid),
+                       KMIPKIT_ERROR_INVALID_INPUT);
+    }
+    return true;
+}
+
+static bool test_legacy_extension_registry_limits_abi(void)
+{
+    uint64_t values[12] = {UINT64_C(0)};
+    kmipkit_client_extension_registry_t *registry = NULL;
+
+    REQUIRE_STATUS(kmipkit_extension_registry_limits_default_values(
+                       &values[0], &values[1], &values[2], &values[3],
+                       &values[4], &values[5], &values[6], &values[7],
+                       &values[8], &values[9], &values[10], &values[11]),
+                   KMIPKIT_SUCCESS);
+    REQUIRE(values[0] > UINT64_C(0));
+    REQUIRE_STATUS(kmipkit_extension_registry_limits_validate(
+                       values[0], values[1], values[2], values[3], values[4],
+                       values[5], values[6], values[7], values[8], values[9],
+                       values[10], values[11]),
+                   KMIPKIT_SUCCESS);
+    REQUIRE_STATUS(kmipkit_client_extension_registry_create(
+                       NULL, UINT64_C(0), values[0], values[1], values[2],
+                       values[3], values[4], values[5], values[6], values[7],
+                       values[8], values[9], values[10], values[11], &registry),
+                   KMIPKIT_SUCCESS);
+    REQUIRE(registry != NULL);
+    kmipkit_client_extension_registry_release(registry);
     return true;
 }
 
@@ -249,6 +277,80 @@ static bool test_runtime_metadata_and_error_snapshot(void)
     REQUIRE(category == UINT32_C(1));
     REQUIRE(cause == UINT32_C(1));
 
+    REQUIRE_STATUS(kmipkit_last_error_clear(), KMIPKIT_SUCCESS);
+    REQUIRE_STATUS(kmipkit_last_error_get(&status, &category, &cause, &delivery),
+        KMIPKIT_SUCCESS);
+    REQUIRE(status == KMIPKIT_SUCCESS);
+    REQUIRE(category == UINT32_C(0));
+    REQUIRE(cause == UINT32_C(0));
+    REQUIRE(delivery == UINT32_C(0));
+    return true;
+}
+
+static bool test_capability_input_boundaries_and_error_categories(void)
+{
+    static const uint8_t invalid_utf8[] = {UINT8_C(0xff)};
+    uint8_t available = UINT8_C(0xa5);
+    int32_t status = INT32_C(0);
+    const int32_t invalid_input_status = INT32_C(4);
+    uint32_t category = UINT32_C(0);
+    uint32_t cause = UINT32_C(0);
+    uint32_t delivery = UINT32_C(0);
+
+    REQUIRE_STATUS(kmipkit_last_error_clear(), KMIPKIT_SUCCESS);
+
+    /* Oversize is rejected before the NULL data pointer is examined. */
+    REQUIRE_STATUS(kmipkit_capability_is_available(NULL, UINT64_C(129), &available),
+        KMIPKIT_ERROR_RESOURCE_LIMIT);
+    REQUIRE(available == UINT8_C(0xa5));
+    REQUIRE_STATUS(kmipkit_last_error_get(&status, &category, &cause, &delivery),
+        KMIPKIT_SUCCESS);
+    REQUIRE(status == KMIPKIT_ERROR_RESOURCE_LIMIT);
+    REQUIRE(category == UINT32_C(1)); /* Validation */
+    REQUIRE(cause == UINT32_C(10)); /* Other */
+    REQUIRE(delivery == UINT32_C(0)); /* No request delivery */
+
+    /* A rejected last-error output does not overwrite the saved failure. */
+    REQUIRE_STATUS(kmipkit_last_error_get(NULL, &category, &cause, &delivery),
+        invalid_input_status);
+    REQUIRE_STATUS(kmipkit_last_error_get(&status, &category, &cause, &delivery),
+        KMIPKIT_SUCCESS);
+    REQUIRE(status == KMIPKIT_ERROR_RESOURCE_LIMIT);
+    REQUIRE(category == UINT32_C(1));
+    REQUIRE(cause == UINT32_C(10));
+    REQUIRE(delivery == UINT32_C(0));
+
+    REQUIRE_STATUS(kmipkit_capability_is_available(invalid_utf8,
+        (uint64_t)sizeof(invalid_utf8), &available), invalid_input_status);
+    REQUIRE(available == UINT8_C(0xa5));
+    REQUIRE_STATUS(kmipkit_last_error_get(&status, &category, &cause, &delivery),
+        KMIPKIT_SUCCESS);
+    REQUIRE(status == invalid_input_status);
+    REQUIRE(category == UINT32_C(1)); /* Validation */
+    REQUIRE(cause == UINT32_C(1)); /* InvalidInput */
+    REQUIRE(delivery == UINT32_C(0)); /* No request delivery */
+
+    REQUIRE_STATUS(kmipkit_capability_is_available(NULL, UINT64_C(1), &available),
+        invalid_input_status);
+    REQUIRE(available == UINT8_C(0xa5));
+    REQUIRE_STATUS(kmipkit_last_error_get(&status, &category, &cause, &delivery),
+        KMIPKIT_SUCCESS);
+    REQUIRE(status == invalid_input_status);
+    REQUIRE(category == UINT32_C(1));
+    REQUIRE(cause == UINT32_C(1));
+    REQUIRE(delivery == UINT32_C(0));
+
+    REQUIRE_STATUS(kmipkit_capability_is_available(NULL, UINT64_C(0), &available),
+        KMIPKIT_SUCCESS);
+    REQUIRE(available == UINT8_C(0));
+    REQUIRE_STATUS(kmipkit_capability_is_available(NULL, UINT64_C(0), NULL),
+        invalid_input_status);
+    REQUIRE_STATUS(kmipkit_last_error_get(&status, &category, &cause, &delivery),
+        KMIPKIT_SUCCESS);
+    REQUIRE(status == invalid_input_status);
+    REQUIRE(category == UINT32_C(1));
+    REQUIRE(cause == UINT32_C(1));
+    REQUIRE(delivery == UINT32_C(0));
     REQUIRE_STATUS(kmipkit_last_error_clear(), KMIPKIT_SUCCESS);
     REQUIRE_STATUS(kmipkit_last_error_get(&status, &category, &cause, &delivery),
         KMIPKIT_SUCCESS);
@@ -399,29 +501,16 @@ cleanup:
 static int32_t create_registry_status(
     kmipkit_extension_definition_t **definitions,
     uint64_t definition_count,
-    const kmipkit_extension_registry_limits_t *limits,
+    const kmipkit_extension_registry_limits_v1_t *limits,
     kmipkit_client_extension_registry_t **out_registry)
 {
-    return kmipkit_client_extension_registry_create(
-               definitions, definition_count,
-               limits->max_definitions,
-               limits->max_schema_nodes,
-               limits->max_child_rules_per_structure,
-               limits->max_text_bytes_per_field,
-               limits->max_registry_text_bytes,
-               limits->max_discriminator_scalar_bytes,
-               limits->max_total_discriminator_scalar_bytes,
-               limits->max_constraint_members_per_rule,
-               limits->max_total_constraint_members,
-               limits->max_payload_index_records,
-               limits->max_lookup_comparisons,
-               limits->max_depth,
-               out_registry);
+    return kmipkit_client_extension_registry_create_v1(
+        definitions, definition_count, limits, out_registry);
 }
 
 static bool create_registry(kmipkit_extension_definition_t **definitions,
                             uint64_t definition_count,
-                            const kmipkit_extension_registry_limits_t *limits,
+                            const kmipkit_extension_registry_limits_v1_t *limits,
                             kmipkit_client_extension_registry_t **out_registry)
 {
     return create_registry_status(definitions, definition_count, limits,
@@ -628,7 +717,7 @@ static bool test_configuration_ownership_and_isolation(void)
     kmipkit_client_configuration_t *alpha_configuration = NULL;
     kmipkit_client_configuration_t *beta_configuration = NULL;
     kmipkit_extension_definition_t *found_definition = NULL;
-    kmipkit_extension_registry_limits_t limits;
+    kmipkit_extension_registry_limits_v1_t limits;
     kmipkit_extension_definition_t *alpha_definitions[2];
     kmipkit_extension_definition_t *beta_definitions[1];
     uint64_t definition_count = 0U;
@@ -1049,7 +1138,7 @@ static bool inspect_shared_fixture_case(kmipkit_client_extension_registry_t *reg
         (typed != NULL) != fixture->typed ||
         kmipkit_extension_recognition_generic_value(recognition, &generic) != KMIPKIT_SUCCESS ||
         !compare_fixture_structure(generic, fixture->payload, fixture->payload_count)) {
-        fprintf(stderr, "FAIL shared fixture %s: public C adapter parity mismatch\n", fixture->id);
+        fprintf(stderr, "FAIL shared fixture %s: internal C FFI behavior mismatch\n", fixture->id);
         goto cleanup;
     }
     succeeded = true;
@@ -1149,7 +1238,7 @@ static bool inspect_shared_outbound_request(
                 payload, limits, &registered) != KMIPKIT_SUCCESS) {
             goto cleanup;
         }
-        failure = "public C adapter creates an explicit-criticality wrapper";
+        failure = "internal C FFI creates an explicit-criticality wrapper";
         if (kmipkit_client_request_message_extension_create(registered,
                 attachment->criticality_indicator ? UINT8_C(1) : UINT8_C(0),
                 &extension) != KMIPKIT_SUCCESS) {
@@ -1157,7 +1246,7 @@ static bool inspect_shared_outbound_request(
             goto cleanup;
         }
         registered = NULL;
-        failure = "public C adapter appends the ordered outbound wrapper";
+        failure = "internal C FFI appends the ordered outbound wrapper";
         if (kmipkit_client_batch_item_with_extension(item, extension,
                 &updated_item) != KMIPKIT_SUCCESS) {
             item = NULL;
@@ -1172,7 +1261,7 @@ static bool inspect_shared_outbound_request(
         identity = NULL;
         kmipkit_ttlv_structure_release(payload);
         payload = NULL;
-        failure = "public C adapter exposes generated outbound order and criticality";
+        failure = "internal C FFI exposes generated outbound order and criticality";
         if (kmipkit_client_batch_item_extension_count(item, &count) != KMIPKIT_SUCCESS ||
             count != (uint64_t)(index + 1U) ||
             kmipkit_client_batch_item_extension_identity_at(item, (uint64_t)index,
@@ -1221,7 +1310,7 @@ static bool test_inbound_inspection_and_generic_preservation(void)
     kmipkit_extension_definition_t *definitions[KMIPKIT_FIXTURE_DEFINITION_COUNT] = {NULL};
     kmipkit_client_extension_registry_t *registry = NULL;
     kmipkit_codec_limits_t *codec_limits = NULL;
-    kmipkit_extension_registry_limits_t limits;
+    kmipkit_extension_registry_limits_v1_t limits;
     bool succeeded = false;
     size_t index;
     unsigned int order;
@@ -1288,7 +1377,7 @@ static bool test_redacted_stable_errors_and_invalid_handles(void)
     kmipkit_client_extension_registry_t *configuration_registry = NULL;
     kmipkit_validated_extension_value_t *inspected_value = NULL;
     kmipkit_ttlv_structure_view_t *generic = NULL;
-    kmipkit_extension_registry_limits_t limits;
+    kmipkit_extension_registry_limits_v1_t limits;
     uint64_t definition_count = 0U;
     uint64_t generic_item_count = 0U;
     uint32_t recognized = 0U;
@@ -1415,7 +1504,7 @@ static bool test_explicit_outbound_criticality(void)
     kmipkit_ttlv_structure_t *payload = NULL;
     kmipkit_registered_extension_value_t *registered = NULL;
     kmipkit_client_request_message_extension_t *extension = NULL;
-    kmipkit_extension_registry_limits_t limits;
+    kmipkit_extension_registry_limits_v1_t limits;
 
     REQUIRE_STATUS(kmipkit_codec_limits_defaults(&codec_limits), KMIPKIT_SUCCESS);
     REQUIRE(load_default_limits(&limits));
@@ -1558,7 +1647,7 @@ static bool test_identity_fields_and_batch_extension_order(void)
     kmipkit_client_batch_item_t *batch_item = NULL;
     kmipkit_client_batch_item_t *updated_batch_item = NULL;
     kmipkit_ttlv_value_t *field_value = NULL;
-    kmipkit_extension_registry_limits_t limits;
+    kmipkit_extension_registry_limits_v1_t limits;
     uint64_t extension_count = 0U;
     uint8_t criticality = UINT8_C(0xFF);
     int32_t status;
@@ -1728,7 +1817,7 @@ static bool test_handle_release_and_null_output_on_error(void)
     kmipkit_extension_definition_t *matched_definition = NULL;
     kmipkit_extension_identity_t *observed_identity = NULL;
     kmipkit_extension_information_t *observed_information = NULL;
-    kmipkit_extension_registry_limits_t limits;
+    kmipkit_extension_registry_limits_v1_t limits;
     uint64_t count = 0U;
 
     REQUIRE_STATUS(kmipkit_codec_limits_defaults(&codec_limits), KMIPKIT_SUCCESS);
@@ -2497,7 +2586,9 @@ int main(void)
         bool (*run)(void);
     } tests_without_arguments[] = {
         {"runtime metadata and error snapshot", test_runtime_metadata_and_error_snapshot},
+        {"capability input boundaries and error categories", test_capability_input_boundaries_and_error_categories},
         {"ExtensionRegistryLimits defaults and boundaries", test_extension_registry_limits},
+        {"legacy ExtensionRegistryLimits ABI remains callable", test_legacy_extension_registry_limits_abi},
         {"typed pointers and uint64_t length safety", test_typed_length_safety},
         {"client configuration ownership and isolation", test_configuration_ownership_and_isolation},
         {"inbound inspection and generic preservation", test_inbound_inspection_and_generic_preservation},
@@ -2526,6 +2617,6 @@ int main(void)
         fprintf(stderr, "%lu C consumer test(s) failed\n", (unsigned long)failures);
         return EXIT_FAILURE;
     }
-    puts("All KMIPKIT-0012 C consumer tests passed.");
+    puts("All KMIPKIT-0012 internal FFI harness tests passed.");
     return EXIT_SUCCESS;
 }
