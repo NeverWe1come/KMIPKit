@@ -157,10 +157,7 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
                 "source_locator": "Profiles v2.1 §6.28 item 7",
             },
         )
-        self.assertEqual(
-            test_case_clauses,
-            {item for item in expected["source_clause_ids"] if item in test_case_clauses},
-        )
+        self.assertTrue(test_case_clauses.issubset(expected["source_clause_ids"]))
         self.assertFalse(test_case_clauses.intersection(profile["direct_source_clause_ids"]))
         self.assertTrue(test_case_clauses.issubset(profile["source_clause_ids"]))
         self.assertTrue(
