@@ -16,6 +16,8 @@ const OBJECT_TYPE: u32 = 0x0042_0057;
 const KEY_WRAP_TYPE: u32 = 0x0042_00F8;
 const ATTRIBUTES: u32 = 0x0042_0125;
 const SYMMETRIC_KEY: u32 = 0x0042_008F;
+const PGP_KEY: u32 = 0x0042_00BD;
+const PGP_KEY_VERSION: u32 = 0x0042_00BE;
 const KEY_BLOCK: u32 = 0x0042_0040;
 const KEY_WRAPPING_DATA: u32 = 0x0042_0046;
 const KEY_FORMAT_TYPE: u32 = 0x0042_0042;
@@ -92,6 +94,33 @@ fn wrapped_key_object() -> Item {
     item(
         SYMMETRIC_KEY,
         Value::structure(structure([item(KEY_BLOCK, Value::structure(key_block))])),
+    )
+}
+
+fn wrapped_pgp_key_object() -> Item {
+    let key_wrapping_data = structure([
+        item(WRAPPING_METHOD, Value::enumeration(1)),
+        item(
+            ENCRYPTION_KEY_INFORMATION,
+            Value::structure(structure([item(
+                UNIQUE_IDENTIFIER,
+                Value::text_string("wrapping-key".to_owned()),
+            )])),
+        ),
+    ]);
+    let key_block = structure([
+        item(
+            KEY_VALUE,
+            Value::byte_string(b"synthetic-wrapped-pgp-key-value".to_vec()),
+        ),
+        item(KEY_WRAPPING_DATA, Value::structure(key_wrapping_data)),
+    ]);
+    item(
+        PGP_KEY,
+        Value::structure(structure([
+            item(PGP_KEY_VERSION, Value::integer(4)),
+            item(KEY_BLOCK, Value::structure(key_block)),
+        ])),
     )
 }
 
@@ -277,6 +306,27 @@ fn key_wrap_type_is_present_if_and_only_if_key_block_has_wrapping_data() {
     )
     .with_key_wrap_type(KeyWrapType::from_raw(1));
     assert!(unwrapped_with_type.into_ttlv_payload().is_err());
+}
+
+#[test]
+fn wrapped_pgp_key_accepts_key_wrap_type() {
+    let request = ImportRequest::new(
+        UniqueIdentifier::TextString("wrapped-pgp-key".to_owned()),
+        ObjectType::from_raw(9),
+        attributes(),
+        wrapped_pgp_key_object(),
+    )
+    .with_key_wrap_type(KeyWrapType::from_raw(1));
+
+    // OASIS KMIP 2.1 §2.4/Table 5 defines PGP Key as a key object with Key Block;
+    // §6.1.25/Table 238 requires Key Wrap Type iff the key object is wrapped.
+    let payload = request
+        .into_ttlv_payload()
+        .expect("wrapped PGP Key can carry its explicit Key Wrap Type");
+    assert!(payload.view().children().iter().any(|field| {
+        field.tag().raw() == KEY_WRAP_TYPE
+            && field.with_value(|value| matches!(value, ValueView::Enumeration(raw) if *raw == 1))
+    }));
 }
 
 #[test]
