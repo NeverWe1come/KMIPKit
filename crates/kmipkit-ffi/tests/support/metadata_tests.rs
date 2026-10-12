@@ -86,7 +86,7 @@ fn capability_query_only_reports_c_mapped_nonblocked_capabilities() {
 
 #[test]
 fn oversized_capability_query_records_resource_limit_without_request_delivery() {
-    let identifier = vec![b'x'; 129];
+    let identifier = [b'x'; 129];
     let mut available = u8::MAX;
 
     assert_eq!(
@@ -103,6 +103,31 @@ fn oversized_capability_query_records_resource_limit_without_request_delivery() 
             ERROR_RESOURCE_LIMIT,
             ERROR_CATEGORY_VALIDATION,
             ERROR_CAUSE_OTHER,
+            DELIVERY_STATE_NONE,
+        )
+    );
+    assert_eq!(available, u8::MAX);
+}
+
+#[test]
+fn capability_query_rejects_invalid_utf8_without_changing_the_output() {
+    let identifier = [u8::MAX];
+    let mut available = u8::MAX;
+
+    assert_eq!(
+        kmipkit_capability_is_available(
+            identifier.as_ptr(),
+            identifier.len() as u64,
+            &raw mut available,
+        ),
+        ERROR_INVALID_INPUT
+    );
+    assert_eq!(
+        read_last_error(),
+        (
+            ERROR_INVALID_INPUT,
+            ERROR_CATEGORY_VALIDATION,
+            ERROR_CAUSE_INVALID_INPUT,
             DELIVERY_STATE_NONE,
         )
     );

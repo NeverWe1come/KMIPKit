@@ -38,6 +38,13 @@ final class RuntimeMetadataTest {
     }
 
     @Test
+    void rejectsUnpairedSurrogatesAsInvalidInput() {
+        assertThrows(
+                InvalidInputException.class,
+                () -> RuntimeMetadata.capabilityIsAvailable("\uD800"));
+    }
+
+    @Test
     void exposesSafeNativeErrorSnapshotWithoutClearingItUntilRequested() {
         RuntimeMetadata.clearLastError();
         assertThrows(
