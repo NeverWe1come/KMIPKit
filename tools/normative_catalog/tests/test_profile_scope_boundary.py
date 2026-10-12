@@ -49,8 +49,19 @@ class ProfileScopeBoundaryTests(unittest.TestCase):
         oracle_profile = next(
             row for row in oracle["profiles"] if row["profile_id"] == profile_id
         )
+        oracle_edge = next(
+            (
+                row
+                for row in oracle["provenance"]["inclusion_edges"]
+                if row["inclusion_id"] == edge_id
+            ),
+            None,
+        )
         inclusions = {
             row["inclusion_id"]: row for row in catalog["normative_inclusions"]
+        }
+        source_clauses = {
+            row["clause_id"]: row for row in oracle["source_clause_crosswalk"]
         }
         review = next(
             row
@@ -70,9 +81,48 @@ class ProfileScopeBoundaryTests(unittest.TestCase):
                 "included_section": "5.18.1",
             },
         )
+        self.assertIsNotNone(oracle_edge)
+        self.assertEqual(
+            {
+                key: oracle_edge[key]
+                for key in (
+                    "inclusion_id",
+                    "source_clause_id",
+                    "included_source_id",
+                    "included_section",
+                )
+            },
+            inclusions[edge_id],
+        )
+        self.assertEqual(
+            oracle_edge["source_locator"], "Profiles v2.1 section 5.18.3 item 2"
+        )
         self.assertIn(edge_id, oracle_profile["normative_inclusion_ids"])
         self.assertTrue(included_clause_ids.issubset(oracle_profile["source_clause_ids"]))
         self.assertTrue(included_clause_ids.issubset(catalog_profile["source_clause_ids"]))
+        self.assertEqual(
+            {
+                clause_id: (
+                    source_clauses[clause_id]["locator"]["ordinal"],
+                    source_clauses[clause_id]["locator"]["block_kind"],
+                )
+                for clause_id in included_clause_ids
+            },
+            {
+                f"KMIPKIT-CLAUSE-PROF-5.18.1-{ordinal:03}": (ordinal, block_kind)
+                for ordinal, block_kind in enumerate(
+                    ("paragraph", "paragraph", "paragraph", "paragraph", "list_item"),
+                    start=1,
+                )
+            },
+        )
+        self.assertTrue(
+            any(
+                "lowercase may/required" in boundary
+                and "do not create normative requirements" in boundary
+                for boundary in oracle["provenance"]["normative_boundaries"]
+            )
+        )
 
         closure = compute_profile_closure(
             catalog,
