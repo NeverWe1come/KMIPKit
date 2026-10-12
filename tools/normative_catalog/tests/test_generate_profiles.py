@@ -431,6 +431,46 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
             ],
         )
 
+    def test_closure_fails_closed_for_unresolved_endpoint_attribution(self) -> None:
+        catalog = closure_catalog()
+        catalog["source_clauses"].append(
+            {
+                "clause_id": "KMIPKIT-CLAUSE-PROF-4.1.2-001",
+                "source_id": "profiles",
+                "section": "4.1.2",
+            }
+        )
+        catalog["requirements"].append(
+            {
+                "requirement_id": "KMIPKIT-REQ-PROF-4.1.2-001",
+                "source_clause_ids": ["KMIPKIT-CLAUSE-PROF-4.1.2-001"],
+                "role": "unclear",
+                "direction": "unclear",
+                "scope_state": "unclear",
+            }
+        )
+
+        closure = compute_profile_closure(
+            catalog,
+            ["KMIPKIT-CLAUSE-PROF-4.1.2-001"],
+            profile_id="KMIPKIT-PROFILE-BASELINE-CLIENT",
+        )
+
+        self.assertNotIn("KMIPKIT-REQ-PROF-4.1.2-001", closure.requirement_ids)
+        self.assertEqual(
+            [
+                (item.requirement_id, item.source_clause_id, item.scope_state)
+                for item in closure.unresolved_scope_obligations
+            ],
+            [
+                (
+                    "KMIPKIT-REQ-PROF-4.1.2-001",
+                    "KMIPKIT-CLAUSE-PROF-4.1.2-001",
+                    "unclear",
+                )
+            ],
+        )
+
     def test_closure_excludes_server_only_obligations_from_client_scope(self) -> None:
         catalog = closure_catalog()
         catalog["requirements"].extend(
