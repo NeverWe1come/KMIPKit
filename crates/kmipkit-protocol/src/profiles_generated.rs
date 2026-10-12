@@ -679,6 +679,18 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
         has_accepted_deviation: false,
     },
     GeneratedClientRequirement {
+        requirement_id: "KMIPKIT-REQ-PROF-5.13.1-002",
+        source_keyword: Some("MAY"),
+        source_force: None,
+        source_gap_id: None,
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
+        scope_state: "profile_conditional",
+        source_clause_ids: &["KMIPKIT-CLAUSE-PROF-5.13.1-002"],
+        profile_ids: &["KMIPKIT-PROFILE-AES-XTS-CLIENT"],
+        official_test_case_ids: &[],
+        has_accepted_deviation: false,
+    },
+    GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-PROF-5.13.1-003",
         source_keyword: Some("MAY"),
         source_force: None,
@@ -6068,6 +6080,7 @@ pub const CLIENT_PROFILES: &[GeneratedClientProfile] = &[
         requirement_ids: &[
             "KMIPKIT-REQ-PROF-3.1-001",
             "KMIPKIT-REQ-PROF-5.13.1-001",
+            "KMIPKIT-REQ-PROF-5.13.1-002",
             "KMIPKIT-REQ-PROF-5.13.1-003",
             "KMIPKIT-REQ-PROF-6.1-001",
             "KMIPKIT-REQ-PROF-6.1-002",

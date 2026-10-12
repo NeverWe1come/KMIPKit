@@ -132,6 +132,7 @@ HTML_LINES = {
     ("5.12.6.3", 3): [8962, 8965],
     ("5.12.6.3", 4): [8967, 8969],
     ("5.13.1", 1): [8989, 8989],
+    ("5.13.1", 2): [8990, 8991],
     ("5.13.1", 3): [8992, 8994],
     ("5.15", 1): [9106, 9106],
     ("5.15", 2): [9109, 9112],
@@ -168,10 +169,10 @@ class ProfileSectionFiveCrosswalkTests(unittest.TestCase):
             for requirement in catalog["requirements"]
             if any(clause_id in clauses for clause_id in requirement["source_clause_ids"])
         }
-        self.assertEqual(len(requirements), 84)
+        self.assertEqual(len(requirements), 85)
 
         expected_mappable_ids = set(requirements) - OUT_OF_SCOPE_IDS - UNRESOLVED_ACTOR_IDS
-        self.assertEqual(len(expected_mappable_ids), 74)
+        self.assertEqual(len(expected_mappable_ids), 75)
         crosswalk_rows = [
             row
             for row in fixture["requirement_crosswalk"]
@@ -426,6 +427,9 @@ class ProfileSectionFiveCrosswalkTests(unittest.TestCase):
         self.assertEqual(requirement["scope_state"], "profile_conditional")
         self.assertEqual(requirement["profile_ids"], [profile_id])
         self.assertEqual(requirement["status"], "unassigned")
+        self.assertIn("stated non-conflict reference to section 5.10.1", requirement["summary"])
+        self.assertIn("intended conflict boundary remains unresolved", requirement["condition"])
+        self.assertIn("without inferring the intended 5.10.1 reference", requirement["review_note"])
         self.assertEqual(requirement["implementation_refs"], [])
         self.assertEqual(requirement["verification_refs"], [])
         self.assertIn(requirement_id, profile["requirement_ids"])

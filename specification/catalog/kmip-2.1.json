@@ -3278,12 +3278,14 @@
         "MAY"
       ],
       "disposition": "source_discrepancy",
-      "requirement_ids": [],
-      "exclusion_rationale": "The AES XTS Client clause points to unrelated section 5.10.1; preserve the source cross-reference discrepancy.",
+      "requirement_ids": [
+        "KMIPKIT-REQ-PROF-5.13.1-002"
+      ],
+      "exclusion_rationale": null,
       "role": "client",
       "direction": "unclear",
-      "scope_state": "unclear",
-      "condition": null
+      "scope_state": "profile_conditional",
+      "condition": "Optional AES XTS Client profile capability. The source literally refers to 'this section 5.10.1'; its intended conflict boundary remains unresolved under KMIPKIT-DISC-007."
     },
     {
       "clause_id": "KMIPKIT-CLAUSE-PROF-5.13.1-003",
@@ -81053,6 +81055,38 @@
       "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
     },
     {
+      "requirement_id": "KMIPKIT-REQ-PROF-5.13.1-002",
+      "source_clause_ids": [
+        "KMIPKIT-CLAUSE-PROF-5.13.1-002"
+      ],
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-profiles",
+          "section": "5.13.1"
+        }
+      ],
+      "source_keyword": "MAY",
+      "normative_strength": "permission_or_optional",
+      "subject": "KMIP clause support under source discrepancy",
+      "summary": "May support clauses within [KMIP-SPEC]; the source's stated non-conflict reference to section 5.10.1 remains unresolved under KMIPKIT-DISC-007.",
+      "role": "client",
+      "direction": "unclear",
+      "condition": "Optional AES XTS Client profile capability. The source literally refers to 'this section 5.10.1'; its intended conflict boundary remains unresolved under KMIPKIT-DISC-007.",
+      "scope_state": "profile_conditional",
+      "element_ids": [],
+      "profile_ids": [
+        "KMIPKIT-PROFILE-AES-XTS-CLIENT"
+      ],
+      "test_case_ids": [],
+      "feature_spec": "KMIPKIT-0010",
+      "implementation_refs": [],
+      "verification_refs": [],
+      "negative_verification_required": false,
+      "decision_id": null,
+      "status": "unassigned",
+      "review_note": "The source atom is represented without inferring the intended 5.10.1 reference. Its implementation and positive verification are unassigned; the discrepancy remains open and no support is claimed."
+    },
+    {
       "requirement_id": "KMIPKIT-REQ-PROF-5.13.1-003",
       "source_clause_ids": [
         "KMIPKIT-CLAUSE-PROF-5.13.1-003"
@@ -100696,6 +100730,7 @@
       "requirement_ids": [
         "KMIPKIT-REQ-PROF-3.1-001",
         "KMIPKIT-REQ-PROF-5.13.1-001",
+        "KMIPKIT-REQ-PROF-5.13.1-002",
         "KMIPKIT-REQ-PROF-5.13.1-003",
         "KMIPKIT-REQ-PROF-6.1-001",
         "KMIPKIT-REQ-PROF-6.1-002",
@@ -129078,6 +129113,7 @@
         "KMIPKIT-REQ-PROF-5.10.1-002",
         "KMIPKIT-REQ-PROF-5.10.1-003",
         "KMIPKIT-REQ-PROF-5.13.1-001",
+        "KMIPKIT-REQ-PROF-5.13.1-002",
         "KMIPKIT-REQ-PROF-5.13.1-003"
       ],
       "affected_element_ids": [],
