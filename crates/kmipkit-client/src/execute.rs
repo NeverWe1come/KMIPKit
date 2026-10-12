@@ -28,13 +28,14 @@ use kmipkit_protocol::{
     LoginRequest, LoginResponse, LogoutRequest, LogoutResponse, MacRequest, MacResponse,
     MacVerifyRequest, MacVerifyResponse, MessageExtensionView, ModifyAttributeRequest,
     ModifyAttributeResponse, NewAttribute, ObtainLeaseRequest, ObtainLeaseResponse, PingRequest,
-    PingResponse, PollRequest, PollResponse, ProcessRequest, ProcessResponse,
-    ProtocolCauseCategory, ProtocolError, ProtocolErrorKind, ProtocolVersion,
+    PingResponse, Pkcs11Request, Pkcs11Response, PollRequest, PollResponse, ProcessRequest,
+    ProcessResponse, ProtocolCauseCategory, ProtocolError, ProtocolErrorKind, ProtocolVersion,
     QueryAsyncRequestsRequest, QueryAsyncRequestsResponse, QueryRequest, QueryResponse,
     ReProvisionRequest, ReProvisionResponse, RecertifyRequest, RecertifyResponse, RecoverRequest,
     RecoverResponse, RegisterRequest, RegisterResponse, RekeyKeyPairRequest, RekeyKeyPairResponse,
     RekeyRequest, RekeyResponse, RequestMessage, ResponseBatchItemView, ResponseMessage,
-    ResultStatus, RevokeRequest, RevokeResponse, SetAttributeRequest, SetAttributeResponse,
+    ResultStatus, RevokeRequest, RevokeResponse, RngRetrieveRequest, RngRetrieveResponse,
+    RngSeedRequest, RngSeedResponse, SetAttributeRequest, SetAttributeResponse,
     SetConstraintsRequest, SetConstraintsResponse, SetDefaultsRequest, SetDefaultsResponse,
     SignRequest, SignResponse, SignatureVerifyRequest, SignatureVerifyResponse,
 };
@@ -184,12 +185,15 @@ const CANCEL_OPERATION: u32 = 0x0000_0019;
 const POLL_OPERATION: u32 = 0x0000_001A;
 const QUERY_ASYNCHRONOUS_REQUESTS_OPERATION: u32 = 0x0000_0039;
 const PROCESS_OPERATION: u32 = 0x0000_003A;
+const PKCS11_OPERATION: u32 = 0x0000_0033; // KMIP v2.1 §6.1.37, Tables 273–275.
 const PING_OPERATION: u32 = 0x0000_003B;
 const GET_CONSTRAINTS_OPERATION: u32 = 0x0000_0038; // KMIP v2.1 §6.1.22, Table 229.
 const SET_CONSTRAINTS_OPERATION: u32 = 0x0000_0037; // KMIP v2.1 §6.1.52, Table 325.
 const SET_DEFAULTS_OPERATION: u32 = 0x0000_0036; // KMIP v2.1 §6.1.53, Table 328.
 const GET_USAGE_ALLOCATION_OPERATION: u32 = 0x0000_0011; // §6.1.23, Table 232.
 const QUERY_OPERATION: u32 = 0x0000_0018;
+const RNG_RETRIEVE_OPERATION: u32 = 0x0000_0025; // KMIP v2.1 §6.1.49, Tables 316–318.
+const RNG_SEED_OPERATION: u32 = 0x0000_0026; // KMIP v2.1 §6.1.50, Tables 319–321.
 const ASYNCHRONOUS_MANDATORY: u32 = 1;
 const ASYNCHRONOUS_OPTIONAL: u32 = 2;
 const ASYNCHRONOUS_PROHIBITED: u32 = 3;
@@ -264,6 +268,8 @@ pub enum ClientRequest {
     GetAttributeList(GetAttributeListRequest),
     /// An explicit client-to-server Ping request.
     Ping(PingRequest),
+    /// An explicit opaque PKCS#11 forwarding request.
+    Pkcs11(Pkcs11Request),
     /// An explicit client-to-server Get Constraints request.
     GetConstraints(GetConstraintsRequest),
     /// An explicit client-to-server Set Constraints request.
@@ -296,6 +302,10 @@ pub enum ClientRequest {
     Sign(SignRequest),
     /// An explicit client-to-server Signature Verify request.
     SignatureVerify(SignatureVerifyRequest),
+    /// An explicit client-to-server RNG Retrieve request.
+    RngRetrieve(RngRetrieveRequest),
+    /// An explicit client-to-server RNG Seed request.
+    RngSeed(RngSeedRequest),
 }
 
 impl ClientRequest {
@@ -303,6 +313,12 @@ impl ClientRequest {
     #[must_use]
     pub const fn discover_versions() -> Self {
         Self::DiscoverVersions(DiscoverVersionsRequest::new())
+    }
+
+    /// Creates an explicit opaque PKCS#11 forwarding request variant.
+    #[must_use]
+    pub const fn pkcs11(request: Pkcs11Request) -> Self {
+        Self::Pkcs11(request)
     }
 
     /// Creates an explicit client-to-server Ping request variant.
@@ -333,6 +349,18 @@ impl ClientRequest {
     #[must_use]
     pub fn get_usage_allocation(request: GetUsageAllocationRequest) -> Self {
         Self::GetUsageAllocation(request)
+    }
+
+    /// Creates a typed client-to-server RNG Retrieve request.
+    #[must_use]
+    pub fn rng_retrieve(request: RngRetrieveRequest) -> Self {
+        Self::RngRetrieve(request)
+    }
+
+    /// Creates a typed client-to-server RNG Seed request.
+    #[must_use]
+    pub fn rng_seed(request: RngSeedRequest) -> Self {
+        Self::RngSeed(request)
     }
 
     /// Creates a typed client-to-server Query request variant.
@@ -589,6 +617,7 @@ impl ClientRequest {
             Self::GetAttributes(_) => GET_ATTRIBUTES_OPERATION,
             Self::GetAttributeList(_) => GET_ATTRIBUTE_LIST_OPERATION,
             Self::Ping(_) => PING_OPERATION,
+            Self::Pkcs11(_) => PKCS11_OPERATION,
             Self::GetConstraints(_) => GET_CONSTRAINTS_OPERATION,
             Self::SetConstraints(_) => SET_CONSTRAINTS_OPERATION,
             Self::SetDefaults(_) => SET_DEFAULTS_OPERATION,
@@ -605,6 +634,8 @@ impl ClientRequest {
             Self::MacVerify(_) => MAC_VERIFY_OPERATION,
             Self::Sign(_) => SIGN_OPERATION,
             Self::SignatureVerify(_) => SIGNATURE_VERIFY_OPERATION,
+            Self::RngRetrieve(_) => RNG_RETRIEVE_OPERATION,
+            Self::RngSeed(_) => RNG_SEED_OPERATION,
         }
     }
 
@@ -694,6 +725,7 @@ impl ClientRequest {
             Self::GetAttributes(request) => request.to_ttlv_payload(),
             Self::GetAttributeList(request) => request.to_ttlv_payload(),
             Self::Ping(request) => request.to_ttlv_payload(),
+            Self::Pkcs11(request) => request.into_ttlv_payload(),
             Self::GetConstraints(request) => request.to_ttlv_payload(),
             Self::SetConstraints(request) => request.to_ttlv_payload(),
             Self::SetDefaults(request) => request.to_ttlv_payload(),
@@ -710,6 +742,8 @@ impl ClientRequest {
             Self::MacVerify(request) => request.to_ttlv_payload(),
             Self::Sign(request) => request.to_ttlv_payload(),
             Self::SignatureVerify(request) => request.to_ttlv_payload(),
+            Self::RngRetrieve(request) => request.to_ttlv_payload(),
+            Self::RngSeed(request) => request.to_ttlv_payload(),
         }
     }
 }
@@ -763,6 +797,7 @@ impl fmt::Debug for ClientRequest {
                 .field(request)
                 .finish(),
             Self::Ping(_) => formatter.write_str("Ping"),
+            Self::Pkcs11(request) => formatter.debug_tuple("Pkcs11").field(request).finish(),
             Self::GetConstraints(_) => formatter.write_str("GetConstraints"),
             Self::SetConstraints(request) => formatter
                 .debug_tuple("SetConstraints")
@@ -793,6 +828,10 @@ impl fmt::Debug for ClientRequest {
                 .debug_tuple("Signature Verify")
                 .field(request)
                 .finish(),
+            Self::RngRetrieve(request) => {
+                formatter.debug_tuple("RngRetrieve").field(request).finish()
+            }
+            Self::RngSeed(_) => formatter.write_str("RngSeed([REDACTED])"),
         }
     }
 }
@@ -1086,10 +1125,14 @@ enum PendingResponse {
     GetAttributes(GetAttributesResponse),
     GetAttributeList(GetAttributeListResponse),
     Ping(PingResponse),
+    /// The typed PKCS#11 result.
+    Pkcs11(Pkcs11Response),
     GetConstraints(GetConstraintsResponse),
     SetConstraints(SetConstraintsResponse),
     SetDefaults(SetDefaultsResponse),
     GetUsageAllocation(GetUsageAllocationResponse),
+    RngRetrieve(RngRetrieveResponse),
+    RngSeed(RngSeedResponse),
     Query(QueryResponse),
 }
 
@@ -1137,10 +1180,13 @@ impl PendingResponse {
             Self::GetAttributes(response) => ClientResponseRef::GetAttributes(response),
             Self::GetAttributeList(response) => ClientResponseRef::GetAttributeList(response),
             Self::Ping(response) => ClientResponseRef::Ping(response),
+            Self::Pkcs11(response) => ClientResponseRef::Pkcs11(response),
             Self::GetConstraints(response) => ClientResponseRef::GetConstraints(response),
             Self::SetConstraints(response) => ClientResponseRef::SetConstraints(response),
             Self::SetDefaults(response) => ClientResponseRef::SetDefaults(response),
             Self::GetUsageAllocation(response) => ClientResponseRef::GetUsageAllocation(response),
+            Self::RngRetrieve(response) => ClientResponseRef::RngRetrieve(response),
+            Self::RngSeed(response) => ClientResponseRef::RngSeed(response),
             Self::Query(response) => ClientResponseRef::Query(response),
         };
         ClientResponseView { response }
@@ -1362,6 +1408,8 @@ pub enum ClientOperation {
     GetAttributeList,
     /// Ping one server connection and observe its KMIP response.
     Ping,
+    /// Forward one caller-selected PKCS#11 function to the server.
+    Pkcs11,
     /// Read the server's Constraints Structure.
     GetConstraints,
     /// Configure the server's Constraints Structure.
@@ -1372,6 +1420,10 @@ pub enum ClientOperation {
     GetUsageAllocation,
     /// Query one server for explicitly requested protocol information.
     Query,
+    /// Retrieve random data from the KMIP server.
+    RngRetrieve,
+    /// Seed random data into the KMIP server.
+    RngSeed,
     /// Encrypt data with the explicitly selected server-side object.
     Encrypt,
     /// Decrypt data with the explicitly selected server-side object.
@@ -1558,10 +1610,14 @@ enum ClientResponseRef<'a> {
     GetAttributes(&'a GetAttributesResponse),
     GetAttributeList(&'a GetAttributeListResponse),
     Ping(&'a PingResponse),
+    /// A borrowed PKCS#11 result.
+    Pkcs11(&'a Pkcs11Response),
     GetConstraints(&'a GetConstraintsResponse),
     SetConstraints(&'a SetConstraintsResponse),
     SetDefaults(&'a SetDefaultsResponse),
     GetUsageAllocation(&'a GetUsageAllocationResponse),
+    RngRetrieve(&'a RngRetrieveResponse),
+    RngSeed(&'a RngSeedResponse),
     Query(&'a QueryResponse),
 }
 
@@ -1626,10 +1682,13 @@ impl<'a> ClientResponseView<'a> {
             ClientResponseRef::GetAttributes(response) => response.result(),
             ClientResponseRef::GetAttributeList(response) => response.result(),
             ClientResponseRef::Ping(response) => response.result(),
+            ClientResponseRef::Pkcs11(response) => response.result(),
             ClientResponseRef::GetConstraints(response) => response.result(),
             ClientResponseRef::SetConstraints(response) => response.result(),
             ClientResponseRef::SetDefaults(response) => response.result(),
             ClientResponseRef::GetUsageAllocation(response) => response.result(),
+            ClientResponseRef::RngRetrieve(response) => response.result(),
+            ClientResponseRef::RngSeed(response) => response.result(),
             ClientResponseRef::Query(response) => response.result(),
         }
     }
@@ -2007,6 +2066,15 @@ impl<'a> ClientResponseView<'a> {
         }
     }
 
+    /// Returns the PKCS#11 response when this view represents it, including Pending.
+    #[must_use]
+    pub const fn pkcs11(&self) -> Option<&'a Pkcs11Response> {
+        match self.response {
+            ClientResponseRef::Pkcs11(response) => Some(response),
+            _ => None,
+        }
+    }
+
     /// Returns the Ping response when this view represents it.
     #[must_use]
     pub const fn ping(&self) -> Option<&PingResponse> {
@@ -2048,6 +2116,24 @@ impl<'a> ClientResponseView<'a> {
     pub const fn get_usage_allocation(&self) -> Option<&GetUsageAllocationResponse> {
         match self.response {
             ClientResponseRef::GetUsageAllocation(response) => Some(response),
+            _ => None,
+        }
+    }
+
+    /// Returns an RNG Retrieve response when this view represents it.
+    #[must_use]
+    pub const fn rng_retrieve(&self) -> Option<&RngRetrieveResponse> {
+        match self.response {
+            ClientResponseRef::RngRetrieve(response) => Some(response),
+            _ => None,
+        }
+    }
+
+    /// Returns an RNG Seed response when this view represents it.
+    #[must_use]
+    pub const fn rng_seed(&self) -> Option<&RngSeedResponse> {
+        match self.response {
+            ClientResponseRef::RngSeed(response) => Some(response),
             _ => None,
         }
     }
@@ -2171,6 +2257,7 @@ impl fmt::Debug for ClientResponseView<'_> {
                 debug_response(formatter, "GetAttributeList", response)
             }
             ClientResponseRef::Ping(response) => debug_response(formatter, "Ping", response),
+            ClientResponseRef::Pkcs11(response) => debug_response(formatter, "Pkcs11", response),
             ClientResponseRef::GetConstraints(response) => {
                 debug_response(formatter, "GetConstraints", response)
             }
@@ -2183,6 +2270,10 @@ impl fmt::Debug for ClientResponseView<'_> {
             ClientResponseRef::GetUsageAllocation(response) => {
                 debug_response(formatter, "GetUsageAllocation", response)
             }
+            ClientResponseRef::RngRetrieve(response) => {
+                debug_response(formatter, "RngRetrieve", response)
+            }
+            ClientResponseRef::RngSeed(response) => debug_response(formatter, "RngSeed", response),
             ClientResponseRef::Query(response) => debug_response(formatter, "Query", response),
         }
     }
@@ -2275,6 +2366,8 @@ pub enum ClientBatchOutcome {
     GetAttributeList(GetAttributeListResponse),
     /// The server returned a Ping result.
     Ping(PingResponse),
+    /// The typed PKCS#11 result.
+    Pkcs11(Pkcs11Response),
     /// The server returned a Get Constraints result.
     GetConstraints(GetConstraintsResponse),
     /// The server returned a Set Constraints result.
@@ -2285,6 +2378,10 @@ pub enum ClientBatchOutcome {
     GetUsageAllocation(GetUsageAllocationResponse),
     /// The server returned a Query result.
     Query(QueryResponse),
+    /// The server returned an RNG Retrieve result.
+    RngRetrieve(RngRetrieveResponse),
+    /// The server returned an RNG Seed result.
+    RngSeed(RngSeedResponse),
 }
 
 impl ClientBatchOutcome {
@@ -2333,10 +2430,13 @@ impl ClientBatchOutcome {
             | Self::GetAttributes(_)
             | Self::GetAttributeList(_)
             | Self::Ping(_)
+            | Self::Pkcs11(_)
             | Self::GetConstraints(_)
             | Self::SetConstraints(_)
             | Self::SetDefaults(_)
             | Self::GetUsageAllocation(_)
+            | Self::RngRetrieve(_)
+            | Self::RngSeed(_)
             | Self::Query(_) => None,
             Self::Pending(pending) => Some(pending.asynchronous_correlation_value()),
         }
@@ -2387,10 +2487,13 @@ impl ClientBatchOutcome {
             Self::GetAttributes(response) => response.result(),
             Self::GetAttributeList(response) => response.result(),
             Self::Ping(response) => response.result(),
+            Self::Pkcs11(response) => response.result(),
             Self::GetConstraints(response) => response.result(),
             Self::SetConstraints(response) => response.result(),
             Self::SetDefaults(response) => response.result(),
             Self::GetUsageAllocation(response) => response.result(),
+            Self::RngRetrieve(response) => response.result(),
+            Self::RngSeed(response) => response.result(),
             Self::Query(response) => response.result(),
             Self::Pending(pending) => pending.result(),
         }
@@ -2441,10 +2544,13 @@ impl ClientBatchOutcome {
             Self::GetAttributes(_) => ClientOperation::GetAttributes,
             Self::GetAttributeList(_) => ClientOperation::GetAttributeList,
             Self::Ping(_) => ClientOperation::Ping,
+            Self::Pkcs11(_) => ClientOperation::Pkcs11,
             Self::GetConstraints(_) => ClientOperation::GetConstraints,
             Self::SetConstraints(_) => ClientOperation::SetConstraints,
             Self::SetDefaults(_) => ClientOperation::SetDefaults,
             Self::GetUsageAllocation(_) => ClientOperation::GetUsageAllocation,
+            Self::RngRetrieve(_) => ClientOperation::RngRetrieve,
+            Self::RngSeed(_) => ClientOperation::RngSeed,
             Self::Query(_) => ClientOperation::Query,
             Self::Pending(pending) => pending.operation(),
         }
@@ -2843,6 +2949,36 @@ impl ClientBatchOutcome {
         }
     }
 
+    /// Returns the typed RNG Retrieve response when this is one.
+    #[must_use]
+    pub const fn rng_retrieve_response(&self) -> Option<&RngRetrieveResponse> {
+        match self {
+            Self::RngRetrieve(response) => Some(response),
+            Self::Pending(pending) => match pending.response() {
+                ClientResponseView {
+                    response: ClientResponseRef::RngRetrieve(response),
+                } => Some(response),
+                _ => None,
+            },
+            _ => None,
+        }
+    }
+
+    /// Returns the typed RNG Seed response when this is one.
+    #[must_use]
+    pub const fn rng_seed_response(&self) -> Option<&RngSeedResponse> {
+        match self {
+            Self::RngSeed(response) => Some(response),
+            Self::Pending(pending) => match pending.response() {
+                ClientResponseView {
+                    response: ClientResponseRef::RngSeed(response),
+                } => Some(response),
+                _ => None,
+            },
+            _ => None,
+        }
+    }
+
     /// Returns a borrowed view of the typed operation response.
     ///
     /// Existing Discover Versions result access remains available through
@@ -2954,6 +3090,7 @@ impl ClientBatchOutcome {
                 ClientResponseView::new(ClientResponseRef::GetAttributeList(response))
             }
             Self::Ping(response) => ClientResponseView::new(ClientResponseRef::Ping(response)),
+            Self::Pkcs11(response) => ClientResponseView::new(ClientResponseRef::Pkcs11(response)),
             Self::GetConstraints(response) => {
                 ClientResponseView::new(ClientResponseRef::GetConstraints(response))
             }
@@ -2965,6 +3102,12 @@ impl ClientBatchOutcome {
             }
             Self::GetUsageAllocation(response) => {
                 ClientResponseView::new(ClientResponseRef::GetUsageAllocation(response))
+            }
+            Self::RngRetrieve(response) => {
+                ClientResponseView::new(ClientResponseRef::RngRetrieve(response))
+            }
+            Self::RngSeed(response) => {
+                ClientResponseView::new(ClientResponseRef::RngSeed(response))
             }
             Self::Query(response) => ClientResponseView::new(ClientResponseRef::Query(response)),
         }
@@ -3081,6 +3224,7 @@ impl fmt::Debug for ClientBatchOutcome {
                 .field(response)
                 .finish(),
             Self::Ping(response) => formatter.debug_tuple("Ping").field(response).finish(),
+            Self::Pkcs11(response) => formatter.debug_tuple("Pkcs11").field(response).finish(),
             Self::GetConstraints(response) => formatter
                 .debug_tuple("GetConstraints")
                 .field(response)
@@ -3098,6 +3242,11 @@ impl fmt::Debug for ClientBatchOutcome {
                 .field(response)
                 .finish(),
             Self::Query(response) => formatter.debug_tuple("Query").field(response).finish(),
+            Self::RngRetrieve(response) => formatter
+                .debug_tuple("RngRetrieve")
+                .field(response)
+                .finish(),
+            Self::RngSeed(response) => formatter.debug_tuple("RngSeed").field(response).finish(),
         }
     }
 }
@@ -3185,6 +3334,7 @@ impl fmt::Display for ClientBatchOutcome {
                 write!(formatter, "GetAttributeList({})", response.result())
             }
             Self::Ping(response) => write!(formatter, "Ping({})", response.result()),
+            Self::Pkcs11(response) => write!(formatter, "Pkcs11({})", response.result()),
             Self::GetConstraints(response) => {
                 write!(formatter, "GetConstraints({})", response.result())
             }
@@ -3198,6 +3348,8 @@ impl fmt::Display for ClientBatchOutcome {
                 write!(formatter, "GetUsageAllocation({})", response.result())
             }
             Self::Query(response) => write!(formatter, "Query({})", response.result()),
+            Self::RngRetrieve(response) => write!(formatter, "RngRetrieve({})", response.result()),
+            Self::RngSeed(response) => write!(formatter, "RngSeed({})", response.result()),
         }
     }
 }
@@ -4231,6 +4383,74 @@ impl Client {
             limits,
             &RequestOptions::default(),
         )
+    }
+
+    /// Executes one RNG Retrieve request through one transport exchange.
+    ///
+    /// Pending results remain explicit for the caller to resume. This method
+    /// does not poll or retry.
+    ///
+    /// # Errors
+    ///
+    /// Returns a sanitized validation, protocol, or transport error with the
+    /// strongest available request-delivery evidence.
+    pub fn rng_retrieve(
+        &mut self,
+        request: RngRetrieveRequest,
+        limits: &CodecLimits,
+    ) -> Result<ClientBatchItemResponse, ClientError> {
+        self.execute_one_typed_request(
+            ClientRequest::rng_retrieve(request),
+            limits,
+            &RequestOptions::default(),
+        )
+    }
+
+    /// Executes one RNG Seed request through one transport exchange.
+    ///
+    /// Seed bytes are treated as secret material. Pending results remain
+    /// explicit for the caller to resume; this method does not poll or retry.
+    ///
+    /// # Errors
+    ///
+    /// Returns a sanitized validation, protocol, or transport error with the
+    /// strongest available request-delivery evidence.
+    pub fn rng_seed(
+        &mut self,
+        request: RngSeedRequest,
+        limits: &CodecLimits,
+    ) -> Result<ClientBatchItemResponse, ClientError> {
+        self.execute_one_typed_request(
+            ClientRequest::rng_seed(request),
+            limits,
+            &RequestOptions::default(),
+        )
+    }
+
+    /// Forwards one explicit PKCS#11 request (§6.1.37, Table 273) in one exchange.
+    /// The server performs the function. No retry or implicit Poll occurs.
+    ///
+    /// # Errors
+    /// Returns sanitized validation/protocol/transport errors with delivery evidence.
+    pub fn pkcs11(
+        &mut self,
+        request: Pkcs11Request,
+        limits: &CodecLimits,
+    ) -> Result<ClientBatchItemResponse, ClientError> {
+        self.pkcs11_with_options(request, limits, &RequestOptions::default())
+    }
+
+    /// Forwards one PKCS#11 request using per-exchange timeout overrides.
+    ///
+    /// # Errors
+    /// Returns sanitized validation/protocol/transport errors with delivery evidence.
+    pub fn pkcs11_with_options(
+        &mut self,
+        request: Pkcs11Request,
+        limits: &CodecLimits,
+        options: &RequestOptions,
+    ) -> Result<ClientBatchItemResponse, ClientError> {
+        self.execute_one_typed_request(ClientRequest::pkcs11(request), limits, options)
     }
 
     /// Executes one client-to-server Ping request.
@@ -5364,6 +5584,7 @@ fn request_mutation_is_prohibited(request: &ClientRequest) -> bool {
         | ClientRequest::GetAttributes(_)
         | ClientRequest::GetAttributeList(_)
         | ClientRequest::Ping(_)
+        | ClientRequest::Pkcs11(_)
         | ClientRequest::GetConstraints(_)
         | ClientRequest::SetConstraints(_)
         | ClientRequest::SetDefaults(_)
@@ -5379,7 +5600,9 @@ fn request_mutation_is_prohibited(request: &ClientRequest) -> bool {
         | ClientRequest::Mac(_)
         | ClientRequest::MacVerify(_)
         | ClientRequest::Sign(_)
-        | ClientRequest::SignatureVerify(_) => false,
+        | ClientRequest::SignatureVerify(_)
+        | ClientRequest::RngRetrieve(_)
+        | ClientRequest::RngSeed(_) => false,
     }
 }
 
@@ -6012,6 +6235,7 @@ fn response_outcome(
             PendingResponse::Query,
             ClientBatchOutcome::Query,
         ),
+        PKCS11_OPERATION => pkcs11_response_outcome(item),
         PING_OPERATION => read_operation_outcome(
             ClientOperation::Ping,
             item,
@@ -6024,6 +6248,7 @@ fn response_outcome(
         SET_CONSTRAINTS_OPERATION => set_constraints_response_outcome(item),
         SET_DEFAULTS_OPERATION => set_defaults_response_outcome(item),
         GET_USAGE_ALLOCATION_OPERATION => get_usage_allocation_response_outcome(item),
+        RNG_RETRIEVE_OPERATION | RNG_SEED_OPERATION => rng_response_outcome(operation, item),
         DISCOVER_VERSIONS_OPERATION => {
             let response = DiscoverVersionsResponse::try_from_response_item(item)
                 .map_err(invalid_typed_response)?;
@@ -6057,6 +6282,19 @@ fn response_outcome(
         GET_ATTRIBUTE_LIST_OPERATION => get_attribute_list_response_outcome(item),
         _ => Err(protocol_error(ProtocolErrorKind::UnsupportedValue)),
     }
+}
+
+fn pkcs11_response_outcome(
+    item: ResponseBatchItemView<'_>,
+) -> Result<ClientBatchOutcome, ProtocolError> {
+    read_operation_outcome(
+        ClientOperation::Pkcs11,
+        item,
+        Pkcs11Response::try_from_response_item,
+        Pkcs11Response::result,
+        PendingResponse::Pkcs11,
+        ClientBatchOutcome::Pkcs11,
+    )
 }
 
 fn get_constraints_response_outcome(
@@ -6109,6 +6347,33 @@ fn get_usage_allocation_response_outcome(
         PendingResponse::GetUsageAllocation,
         ClientBatchOutcome::GetUsageAllocation,
     )
+}
+
+fn rng_response_outcome(
+    operation: u32,
+    item: ResponseBatchItemView<'_>,
+) -> Result<ClientBatchOutcome, ProtocolError> {
+    match operation {
+        RNG_RETRIEVE_OPERATION => read_crypto_operation_outcome(
+            ClientOperation::RngRetrieve,
+            item,
+            RngRetrieveResponse::try_from_pending_response_item,
+            RngRetrieveResponse::try_from_response_item,
+            RngRetrieveResponse::result,
+            PendingResponse::RngRetrieve,
+            ClientBatchOutcome::RngRetrieve,
+        ),
+        RNG_SEED_OPERATION => read_crypto_operation_outcome(
+            ClientOperation::RngSeed,
+            item,
+            RngSeedResponse::try_from_pending_response_item,
+            RngSeedResponse::try_from_response_item,
+            RngSeedResponse::result,
+            PendingResponse::RngSeed,
+            ClientBatchOutcome::RngSeed,
+        ),
+        _ => Err(protocol_error(ProtocolErrorKind::UnsupportedValue)),
+    }
 }
 
 fn credential_session_response_outcome(

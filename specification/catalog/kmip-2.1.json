@@ -42862,9 +42862,14 @@
       "requirement_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0040",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/pkcs11.rs",
+        "crates/kmipkit-client/src/execute.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-client/tests/unit/pkcs11_execution_tests.rs::pkcs11_sends_table_273_once_and_exposes_table_274_losslessly"
+      ],
       "wire_value": "00000033",
       "allocation": "assigned"
     },
@@ -43192,9 +43197,13 @@
       "requirement_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0041",
+      "implementation_refs": [
+        "crates/kmipkit-client/src/execute.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-client/tests/unit/rng_retrieve_execution_tests.rs::rng_retrieve_sends_required_length_once_and_returns_redacted_secret_output"
+      ],
       "wire_value": "00000025",
       "allocation": "assigned"
     },
@@ -43216,9 +43225,13 @@
       "requirement_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0041",
+      "implementation_refs": [
+        "crates/kmipkit-client/src/execute.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-client/tests/unit/rng_seed_execution_tests.rs::rng_seed_sends_secret_once_and_accepts_zero_bytes_used"
+      ],
       "wire_value": "00000026",
       "allocation": "assigned"
     },
@@ -48740,13 +48753,17 @@
       "feature_spec": "KMIPKIT-0003",
       "implementation_refs": [
         "crates/kmipkit-protocol/src/result.rs",
-        "crates/kmipkit-protocol/src/result_values_generated.rs"
+        "crates/kmipkit-protocol/src/result_values_generated.rs",
+        "crates/kmipkit-protocol/src/pkcs11.rs",
+        "crates/kmipkit-client/src/execute.rs"
       ],
       "verification_refs": [
         "crates/kmipkit-protocol/tests/result_contract.rs::known_reason_values_match_catalog",
         "crates/kmipkit-protocol/tests/result_contract.rs::unknown_reason_preserves_raw_value",
         "crates/kmipkit-protocol/tests/result_contract.rs::failure_requires_a_reason",
-        "crates/kmipkit-protocol/tests/result_contract.rs::success_forbids_a_reason"
+        "crates/kmipkit-protocol/tests/result_contract.rs::success_forbids_a_reason",
+        "crates/kmipkit-protocol/tests/unit/pkcs11_operation_tests.rs::table_275_preserves_failure_reasons",
+        "crates/kmipkit-client/tests/unit/pkcs11_execution_tests.rs::pkcs11_failure_preserves_all_table_275_reasons_without_retry"
       ],
       "wire_value": "00000045",
       "allocation": "assigned"
@@ -48772,13 +48789,17 @@
       "feature_spec": "KMIPKIT-0003",
       "implementation_refs": [
         "crates/kmipkit-protocol/src/result.rs",
-        "crates/kmipkit-protocol/src/result_values_generated.rs"
+        "crates/kmipkit-protocol/src/result_values_generated.rs",
+        "crates/kmipkit-protocol/src/pkcs11.rs",
+        "crates/kmipkit-client/src/execute.rs"
       ],
       "verification_refs": [
         "crates/kmipkit-protocol/tests/result_contract.rs::known_reason_values_match_catalog",
         "crates/kmipkit-protocol/tests/result_contract.rs::unknown_reason_preserves_raw_value",
         "crates/kmipkit-protocol/tests/result_contract.rs::failure_requires_a_reason",
-        "crates/kmipkit-protocol/tests/result_contract.rs::success_forbids_a_reason"
+        "crates/kmipkit-protocol/tests/result_contract.rs::success_forbids_a_reason",
+        "crates/kmipkit-protocol/tests/unit/pkcs11_operation_tests.rs::table_275_preserves_failure_reasons",
+        "crates/kmipkit-client/tests/unit/pkcs11_execution_tests.rs::pkcs11_failure_preserves_all_table_275_reasons_without_retry"
       ],
       "wire_value": "00000046",
       "allocation": "assigned"
@@ -48804,13 +48825,17 @@
       "feature_spec": "KMIPKIT-0003",
       "implementation_refs": [
         "crates/kmipkit-protocol/src/result.rs",
-        "crates/kmipkit-protocol/src/result_values_generated.rs"
+        "crates/kmipkit-protocol/src/result_values_generated.rs",
+        "crates/kmipkit-protocol/src/pkcs11.rs",
+        "crates/kmipkit-client/src/execute.rs"
       ],
       "verification_refs": [
         "crates/kmipkit-protocol/tests/result_contract.rs::known_reason_values_match_catalog",
         "crates/kmipkit-protocol/tests/result_contract.rs::unknown_reason_preserves_raw_value",
         "crates/kmipkit-protocol/tests/result_contract.rs::failure_requires_a_reason",
-        "crates/kmipkit-protocol/tests/result_contract.rs::success_forbids_a_reason"
+        "crates/kmipkit-protocol/tests/result_contract.rs::success_forbids_a_reason",
+        "crates/kmipkit-protocol/tests/unit/pkcs11_operation_tests.rs::table_275_preserves_failure_reasons",
+        "crates/kmipkit-client/tests/unit/pkcs11_execution_tests.rs::pkcs11_failure_preserves_all_table_275_reasons_without_retry"
       ],
       "wire_value": "00000047",
       "allocation": "assigned"
@@ -58583,9 +58608,20 @@
         "KMIPKIT-PROFILE-PKCS11-SERVER"
       ],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0040",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/pkcs11.rs",
+        "crates/kmipkit-client/src/execute.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/pkcs11_operation_tests.rs::table_273_request_preserves_order_and_opaque_members",
+        "crates/kmipkit-protocol/tests/unit/pkcs11_operation_tests.rs::table_274_success_retains_required_optional_and_unknown_fields",
+        "crates/kmipkit-protocol/tests/unit/pkcs11_operation_tests.rs::table_275_preserves_failure_reasons",
+        "crates/kmipkit-client/tests/unit/pkcs11_execution_tests.rs::pkcs11_sends_table_273_once_and_exposes_table_274_losslessly",
+        "crates/kmipkit-client/tests/unit/pkcs11_execution_tests.rs::pkcs11_pending_preserves_exact_batch_correlation_without_poll",
+        "crates/kmipkit-client/tests/unit/pkcs11_execution_tests.rs::pkcs11_malformed_known_nested_request_members_are_not_sent",
+        "crates/kmipkit-client/tests/unit/pkcs11_execution_tests.rs::pkcs11_malformed_known_nested_response_member_is_response_started"
+      ],
       "payload_tables": [
         {
           "role": "request",
@@ -59162,9 +59198,15 @@
         "KMIPKIT-PROFILE-CRYPTOGRAPHIC-RNG-SERVER"
       ],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0041",
+      "implementation_refs": [
+        "crates/kmipkit-client/src/execute.rs",
+        "crates/kmipkit-protocol/src/rng_retrieve.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-client/tests/unit/rng_retrieve_execution_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/rng_retrieve_operation_tests.rs"
+      ],
       "payload_tables": [
         {
           "role": "request",
@@ -59199,9 +59241,15 @@
         "KMIPKIT-PROFILE-CRYPTOGRAPHIC-RNG-SERVER"
       ],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0041",
+      "implementation_refs": [
+        "crates/kmipkit-client/src/execute.rs",
+        "crates/kmipkit-protocol/src/rng_seed.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-client/tests/unit/rng_seed_execution_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/rng_seed_operation_tests.rs"
+      ],
       "payload_tables": [
         {
           "role": "request",
@@ -60252,9 +60300,16 @@
       "requirement_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0040",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/pkcs11.rs",
+        "crates/kmipkit-client/src/execute.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/pkcs11_operation_tests.rs::table_273_function_preserves_enumeration_or_integer",
+        "crates/kmipkit-protocol/tests/unit/pkcs11_operation_tests.rs::table_273_rejects_missing_duplicate_or_wrong_function",
+        "crates/kmipkit-protocol/tests/unit/pkcs11_operation_tests.rs::table_274_rejects_missing_duplicate_wrong_type_and_out_of_order_fields"
+      ],
       "source_encoding": "Structure",
       "source_requiredness": ""
     },
@@ -60274,9 +60329,17 @@
       "requirement_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0040",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/pkcs11.rs",
+        "crates/kmipkit-client/src/execute.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/pkcs11_operation_tests.rs::table_273_request_preserves_order_and_opaque_members",
+        "crates/kmipkit-protocol/tests/unit/pkcs11_operation_tests.rs::tables_379_380_request_rejects_wrong_or_duplicate_known_nested_values",
+        "crates/kmipkit-protocol/tests/unit/pkcs11_operation_tests.rs::tables_379_380_381_preserve_absent_known_member_and_repeated_unknown_members",
+        "crates/kmipkit-client/tests/unit/pkcs11_execution_tests.rs::pkcs11_malformed_known_nested_request_members_are_not_sent"
+      ],
       "source_encoding": "Structure",
       "source_requiredness": ""
     },
@@ -60296,9 +60359,18 @@
       "requirement_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0040",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/pkcs11.rs",
+        "crates/kmipkit-client/src/execute.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/pkcs11_operation_tests.rs::table_274_absence_remains_absent",
+        "crates/kmipkit-protocol/tests/unit/pkcs11_operation_tests.rs::table_274_success_retains_required_optional_and_unknown_fields",
+        "crates/kmipkit-protocol/tests/unit/pkcs11_operation_tests.rs::tables_379_380_request_rejects_wrong_or_duplicate_known_nested_values",
+        "crates/kmipkit-protocol/tests/unit/pkcs11_operation_tests.rs::tables_380_381_response_rejects_wrong_or_duplicate_known_nested_values",
+        "crates/kmipkit-protocol/tests/unit/pkcs11_operation_tests.rs::tables_379_380_381_preserve_absent_known_member_and_repeated_unknown_members"
+      ],
       "source_encoding": "Structure",
       "source_requiredness": ""
     },
@@ -60318,9 +60390,18 @@
       "requirement_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0040",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/pkcs11.rs",
+        "crates/kmipkit-client/src/execute.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/pkcs11_operation_tests.rs::table_274_absence_remains_absent",
+        "crates/kmipkit-protocol/tests/unit/pkcs11_operation_tests.rs::table_274_success_retains_required_optional_and_unknown_fields",
+        "crates/kmipkit-protocol/tests/unit/pkcs11_operation_tests.rs::tables_380_381_response_rejects_wrong_or_duplicate_known_nested_values",
+        "crates/kmipkit-protocol/tests/unit/pkcs11_operation_tests.rs::tables_379_380_381_preserve_absent_known_member_and_repeated_unknown_members",
+        "crates/kmipkit-client/tests/unit/pkcs11_execution_tests.rs::pkcs11_malformed_known_nested_response_member_is_response_started"
+      ],
       "source_encoding": "Structure",
       "source_requiredness": ""
     },
@@ -60365,9 +60446,15 @@
       "requirement_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0040",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/pkcs11.rs",
+        "crates/kmipkit-client/src/execute.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/pkcs11_operation_tests.rs::table_274_success_retains_required_optional_and_unknown_fields",
+        "crates/kmipkit-protocol/tests/unit/pkcs11_operation_tests.rs::table_274_rejects_missing_duplicate_wrong_type_and_out_of_order_fields"
+      ],
       "source_encoding": "Structure",
       "source_requiredness": ""
     },
@@ -60750,8 +60837,14 @@
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0019",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/pkcs11.rs",
+        "crates/kmipkit-client/src/execute.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/pkcs11_operation_tests.rs::table_273_request_preserves_order_and_opaque_members",
+        "crates/kmipkit-protocol/tests/unit/pkcs11_operation_tests.rs::table_274_success_retains_required_optional_and_unknown_fields"
+      ],
       "source_encoding": "Byte String"
     },
     {
@@ -64743,9 +64836,16 @@
       "requirement_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0040",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/pkcs11.rs",
+        "crates/kmipkit-client/src/execute.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/pkcs11_operation_tests.rs::table_273_function_preserves_enumeration_or_integer",
+        "crates/kmipkit-protocol/tests/unit/pkcs11_operation_tests.rs::table_273_rejects_missing_duplicate_or_wrong_function",
+        "crates/kmipkit-protocol/tests/unit/pkcs11_operation_tests.rs::table_274_rejects_missing_duplicate_wrong_type_and_out_of_order_fields"
+      ],
       "source_encoding": "Enumeration",
       "source_requiredness": "Yes"
     },
@@ -64767,9 +64867,17 @@
       "requirement_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0040",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/pkcs11.rs",
+        "crates/kmipkit-client/src/execute.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/pkcs11_operation_tests.rs::table_273_request_preserves_order_and_opaque_members",
+        "crates/kmipkit-protocol/tests/unit/pkcs11_operation_tests.rs::tables_379_380_request_rejects_wrong_or_duplicate_known_nested_values",
+        "crates/kmipkit-protocol/tests/unit/pkcs11_operation_tests.rs::tables_379_380_381_preserve_absent_known_member_and_repeated_unknown_members",
+        "crates/kmipkit-client/tests/unit/pkcs11_execution_tests.rs::pkcs11_malformed_known_nested_request_members_are_not_sent"
+      ],
       "source_encoding": "ByteString",
       "source_requiredness": "No"
     },
@@ -64791,9 +64899,18 @@
       "requirement_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0040",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/pkcs11.rs",
+        "crates/kmipkit-client/src/execute.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/pkcs11_operation_tests.rs::table_274_absence_remains_absent",
+        "crates/kmipkit-protocol/tests/unit/pkcs11_operation_tests.rs::table_274_success_retains_required_optional_and_unknown_fields",
+        "crates/kmipkit-protocol/tests/unit/pkcs11_operation_tests.rs::tables_379_380_request_rejects_wrong_or_duplicate_known_nested_values",
+        "crates/kmipkit-protocol/tests/unit/pkcs11_operation_tests.rs::tables_380_381_response_rejects_wrong_or_duplicate_known_nested_values",
+        "crates/kmipkit-protocol/tests/unit/pkcs11_operation_tests.rs::tables_379_380_381_preserve_absent_known_member_and_repeated_unknown_members"
+      ],
       "source_encoding": "TextString",
       "source_requiredness": "No"
     },
@@ -64815,9 +64932,18 @@
       "requirement_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0040",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/pkcs11.rs",
+        "crates/kmipkit-client/src/execute.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/pkcs11_operation_tests.rs::table_274_absence_remains_absent",
+        "crates/kmipkit-protocol/tests/unit/pkcs11_operation_tests.rs::table_274_success_retains_required_optional_and_unknown_fields",
+        "crates/kmipkit-protocol/tests/unit/pkcs11_operation_tests.rs::tables_380_381_response_rejects_wrong_or_duplicate_known_nested_values",
+        "crates/kmipkit-protocol/tests/unit/pkcs11_operation_tests.rs::tables_379_380_381_preserve_absent_known_member_and_repeated_unknown_members",
+        "crates/kmipkit-client/tests/unit/pkcs11_execution_tests.rs::pkcs11_malformed_known_nested_response_member_is_response_started"
+      ],
       "source_encoding": "ByteString",
       "source_requiredness": "No"
     },
@@ -64839,9 +64965,15 @@
       "requirement_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0040",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/pkcs11.rs",
+        "crates/kmipkit-client/src/execute.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/pkcs11_operation_tests.rs::table_274_success_retains_required_optional_and_unknown_fields",
+        "crates/kmipkit-protocol/tests/unit/pkcs11_operation_tests.rs::table_274_rejects_missing_duplicate_wrong_type_and_out_of_order_fields"
+      ],
       "source_encoding": "Enumeration",
       "source_requiredness": "Yes"
     },
@@ -73625,12 +73757,16 @@
       "feature_spec": "KMIPKIT-0004",
       "implementation_refs": [
         "crates/kmipkit-ttlv/src/tag.rs",
-        "crates/kmipkit-ttlv/src/generated/tag_allocations.rs"
+        "crates/kmipkit-ttlv/src/generated/tag_allocations.rs",
+        "crates/kmipkit-protocol/src/pkcs11.rs",
+        "crates/kmipkit-client/src/execute.rs"
       ],
       "verification_refs": [
         "crates/kmipkit-ttlv/tests/tag_allocation.rs::every_exact_catalog_record_matches_public_allocation_check",
         "crates/kmipkit-ttlv/tests/tag_allocation.rs::every_allocation_range_boundary_and_adjacent_value_matches_catalog",
-        "crates/kmipkit-ttlv/tests/tag_allocation.rs::every_extension_range_tag_is_accepted"
+        "crates/kmipkit-ttlv/tests/tag_allocation.rs::every_extension_range_tag_is_accepted",
+        "crates/kmipkit-protocol/tests/unit/pkcs11_operation_tests.rs::table_273_request_preserves_order_and_opaque_members",
+        "crates/kmipkit-protocol/tests/unit/pkcs11_operation_tests.rs::table_274_success_retains_required_optional_and_unknown_fields"
       ]
     },
     {
@@ -77771,12 +77907,19 @@
       "feature_spec": "KMIPKIT-0004",
       "implementation_refs": [
         "crates/kmipkit-ttlv/src/tag.rs",
-        "crates/kmipkit-ttlv/src/generated/tag_allocations.rs"
+        "crates/kmipkit-ttlv/src/generated/tag_allocations.rs",
+        "crates/kmipkit-protocol/src/pkcs11.rs",
+        "crates/kmipkit-client/src/execute.rs"
       ],
       "verification_refs": [
         "crates/kmipkit-ttlv/tests/tag_allocation.rs::every_exact_catalog_record_matches_public_allocation_check",
         "crates/kmipkit-ttlv/tests/tag_allocation.rs::every_allocation_range_boundary_and_adjacent_value_matches_catalog",
-        "crates/kmipkit-ttlv/tests/tag_allocation.rs::every_extension_range_tag_is_accepted"
+        "crates/kmipkit-ttlv/tests/tag_allocation.rs::every_extension_range_tag_is_accepted",
+        "crates/kmipkit-protocol/tests/unit/pkcs11_operation_tests.rs::table_274_absence_remains_absent",
+        "crates/kmipkit-protocol/tests/unit/pkcs11_operation_tests.rs::table_274_success_retains_required_optional_and_unknown_fields",
+        "crates/kmipkit-protocol/tests/unit/pkcs11_operation_tests.rs::tables_379_380_request_rejects_wrong_or_duplicate_known_nested_values",
+        "crates/kmipkit-protocol/tests/unit/pkcs11_operation_tests.rs::tables_380_381_response_rejects_wrong_or_duplicate_known_nested_values",
+        "crates/kmipkit-protocol/tests/unit/pkcs11_operation_tests.rs::tables_379_380_381_preserve_absent_known_member_and_repeated_unknown_members"
       ]
     },
     {
@@ -77802,12 +77945,17 @@
       "feature_spec": "KMIPKIT-0004",
       "implementation_refs": [
         "crates/kmipkit-ttlv/src/tag.rs",
-        "crates/kmipkit-ttlv/src/generated/tag_allocations.rs"
+        "crates/kmipkit-ttlv/src/generated/tag_allocations.rs",
+        "crates/kmipkit-protocol/src/pkcs11.rs",
+        "crates/kmipkit-client/src/execute.rs"
       ],
       "verification_refs": [
         "crates/kmipkit-ttlv/tests/tag_allocation.rs::every_exact_catalog_record_matches_public_allocation_check",
         "crates/kmipkit-ttlv/tests/tag_allocation.rs::every_allocation_range_boundary_and_adjacent_value_matches_catalog",
-        "crates/kmipkit-ttlv/tests/tag_allocation.rs::every_extension_range_tag_is_accepted"
+        "crates/kmipkit-ttlv/tests/tag_allocation.rs::every_extension_range_tag_is_accepted",
+        "crates/kmipkit-protocol/tests/unit/pkcs11_operation_tests.rs::table_273_function_preserves_enumeration_or_integer",
+        "crates/kmipkit-protocol/tests/unit/pkcs11_operation_tests.rs::table_273_rejects_missing_duplicate_or_wrong_function",
+        "crates/kmipkit-protocol/tests/unit/pkcs11_operation_tests.rs::table_274_rejects_missing_duplicate_wrong_type_and_out_of_order_fields"
       ]
     },
     {
@@ -77833,12 +77981,18 @@
       "feature_spec": "KMIPKIT-0004",
       "implementation_refs": [
         "crates/kmipkit-ttlv/src/tag.rs",
-        "crates/kmipkit-ttlv/src/generated/tag_allocations.rs"
+        "crates/kmipkit-ttlv/src/generated/tag_allocations.rs",
+        "crates/kmipkit-protocol/src/pkcs11.rs",
+        "crates/kmipkit-client/src/execute.rs"
       ],
       "verification_refs": [
         "crates/kmipkit-ttlv/tests/tag_allocation.rs::every_exact_catalog_record_matches_public_allocation_check",
         "crates/kmipkit-ttlv/tests/tag_allocation.rs::every_allocation_range_boundary_and_adjacent_value_matches_catalog",
-        "crates/kmipkit-ttlv/tests/tag_allocation.rs::every_extension_range_tag_is_accepted"
+        "crates/kmipkit-ttlv/tests/tag_allocation.rs::every_extension_range_tag_is_accepted",
+        "crates/kmipkit-protocol/tests/unit/pkcs11_operation_tests.rs::table_273_request_preserves_order_and_opaque_members",
+        "crates/kmipkit-protocol/tests/unit/pkcs11_operation_tests.rs::tables_379_380_request_rejects_wrong_or_duplicate_known_nested_values",
+        "crates/kmipkit-protocol/tests/unit/pkcs11_operation_tests.rs::tables_379_380_381_preserve_absent_known_member_and_repeated_unknown_members",
+        "crates/kmipkit-client/tests/unit/pkcs11_execution_tests.rs::pkcs11_malformed_known_nested_request_members_are_not_sent"
       ]
     },
     {
@@ -77864,12 +78018,19 @@
       "feature_spec": "KMIPKIT-0004",
       "implementation_refs": [
         "crates/kmipkit-ttlv/src/tag.rs",
-        "crates/kmipkit-ttlv/src/generated/tag_allocations.rs"
+        "crates/kmipkit-ttlv/src/generated/tag_allocations.rs",
+        "crates/kmipkit-protocol/src/pkcs11.rs",
+        "crates/kmipkit-client/src/execute.rs"
       ],
       "verification_refs": [
         "crates/kmipkit-ttlv/tests/tag_allocation.rs::every_exact_catalog_record_matches_public_allocation_check",
         "crates/kmipkit-ttlv/tests/tag_allocation.rs::every_allocation_range_boundary_and_adjacent_value_matches_catalog",
-        "crates/kmipkit-ttlv/tests/tag_allocation.rs::every_extension_range_tag_is_accepted"
+        "crates/kmipkit-ttlv/tests/tag_allocation.rs::every_extension_range_tag_is_accepted",
+        "crates/kmipkit-protocol/tests/unit/pkcs11_operation_tests.rs::table_274_absence_remains_absent",
+        "crates/kmipkit-protocol/tests/unit/pkcs11_operation_tests.rs::table_274_success_retains_required_optional_and_unknown_fields",
+        "crates/kmipkit-protocol/tests/unit/pkcs11_operation_tests.rs::tables_380_381_response_rejects_wrong_or_duplicate_known_nested_values",
+        "crates/kmipkit-protocol/tests/unit/pkcs11_operation_tests.rs::tables_379_380_381_preserve_absent_known_member_and_repeated_unknown_members",
+        "crates/kmipkit-client/tests/unit/pkcs11_execution_tests.rs::pkcs11_malformed_known_nested_response_member_is_response_started"
       ]
     },
     {
@@ -77895,12 +78056,16 @@
       "feature_spec": "KMIPKIT-0004",
       "implementation_refs": [
         "crates/kmipkit-ttlv/src/tag.rs",
-        "crates/kmipkit-ttlv/src/generated/tag_allocations.rs"
+        "crates/kmipkit-ttlv/src/generated/tag_allocations.rs",
+        "crates/kmipkit-protocol/src/pkcs11.rs",
+        "crates/kmipkit-client/src/execute.rs"
       ],
       "verification_refs": [
         "crates/kmipkit-ttlv/tests/tag_allocation.rs::every_exact_catalog_record_matches_public_allocation_check",
         "crates/kmipkit-ttlv/tests/tag_allocation.rs::every_allocation_range_boundary_and_adjacent_value_matches_catalog",
-        "crates/kmipkit-ttlv/tests/tag_allocation.rs::every_extension_range_tag_is_accepted"
+        "crates/kmipkit-ttlv/tests/tag_allocation.rs::every_extension_range_tag_is_accepted",
+        "crates/kmipkit-protocol/tests/unit/pkcs11_operation_tests.rs::table_274_success_retains_required_optional_and_unknown_fields",
+        "crates/kmipkit-protocol/tests/unit/pkcs11_operation_tests.rs::table_274_rejects_missing_duplicate_wrong_type_and_out_of_order_fields"
       ]
     },
     {
@@ -95347,15 +95512,23 @@
       "direction": "server_to_client",
       "condition": "When the server ignores supplied seeding material.",
       "scope_state": "client_1_0",
-      "element_ids": [],
+      "element_ids": [
+        "KMIPKIT-ELEM-OP-C2S-RNG-SEED"
+      ],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0041",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/rng_seed.rs",
+        "crates/kmipkit-client/src/execute.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/rng_seed_operation_tests.rs::successful_response_preserves_zero_data_length_and_unknown_fields",
+        "crates/kmipkit-client/tests/unit/rng_seed_execution_tests.rs::rng_seed_sends_secret_once_and_accepts_zero_bytes_used"
+      ],
       "negative_verification_required": true,
       "decision_id": null,
-      "status": "unassigned",
+      "status": "verified",
       "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
     },
     {

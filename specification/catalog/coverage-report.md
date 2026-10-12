@@ -921,7 +921,6 @@ Every row summarizes audited candidate locators by their pinned source section. 
 | KMIPKIT-REQ-SPEC-6.1.48-004 | permission\_or\_optional | out\_of\_scope | KMIPKIT-SRC-spec §6.1.48 |
 | KMIPKIT-REQ-SPEC-6.1.5-001 | mandatory | client\_1\_0 | KMIPKIT-SRC-spec §6.1.5 |
 | KMIPKIT-REQ-SPEC-6.1.5-002 | mandatory | server\_only | KMIPKIT-SRC-spec §6.1.5 |
-| KMIPKIT-REQ-SPEC-6.1.50-001 | prohibited | client\_1\_0 | KMIPKIT-SRC-spec §6.1.50 |
 | KMIPKIT-REQ-SPEC-6.1.50-002 | permission\_or\_optional | server\_only | KMIPKIT-SRC-spec §6.1.50 |
 | KMIPKIT-REQ-SPEC-6.1.50-003 | permission\_or\_optional | server\_only | KMIPKIT-SRC-spec §6.1.50 |
 | KMIPKIT-REQ-SPEC-6.1.55-004 | mandatory | server\_only | KMIPKIT-SRC-spec §6.1.55 |
@@ -1615,7 +1614,7 @@ Every row summarizes audited candidate locators by their pinned source section. 
 | KMIPKIT-REQ-SPEC-6.1.35-001-002 | prohibited | required | scoped\_verified | KMIPKIT-SRC-spec §6.1.35 |
 | KMIPKIT-REQ-SPEC-6.1.38-001-002 | prohibited | required | unassigned | KMIPKIT-SRC-spec §6.1.38 |
 | KMIPKIT-REQ-SPEC-6.1.44-003-002 | prohibited | required | verified | KMIPKIT-SRC-spec §6.1.44 |
-| KMIPKIT-REQ-SPEC-6.1.50-001 | prohibited | required | unassigned | KMIPKIT-SRC-spec §6.1.50 |
+| KMIPKIT-REQ-SPEC-6.1.50-001 | prohibited | required | verified | KMIPKIT-SRC-spec §6.1.50 |
 | KMIPKIT-REQ-SPEC-6.1.51-001 | prohibited | required | unassigned | KMIPKIT-SRC-spec §6.1.51 |
 | KMIPKIT-REQ-SPEC-7.18-002 | prohibited | required | unassigned | KMIPKIT-SRC-spec §7.18 |
 
@@ -2027,7 +2026,6 @@ Every row summarizes audited candidate locators by their pinned source section. 
 | KMIPKIT-ELEM-ENUM-VALUE-OPERATION-MODIFY-ATTRIBUTE-0000000E | Modify Attribute | enumeration\_value | both | client\_1\_0 | 0000000E | assigned | KMIPKIT-SRC-spec §11.36 |
 | KMIPKIT-ELEM-ENUM-VALUE-OPERATION-NOTIFY-0000001B | Notify | enumeration\_value | both | client\_1\_0 | 0000001B | assigned | KMIPKIT-SRC-spec §11.36 |
 | KMIPKIT-ELEM-ENUM-VALUE-OPERATION-OBTAIN-LEASE-00000010 | Obtain Lease | enumeration\_value | both | client\_1\_0 | 00000010 | assigned | KMIPKIT-SRC-spec §11.36 |
-| KMIPKIT-ELEM-ENUM-VALUE-OPERATION-PKCS-11-00000033 | PKCS#11 | enumeration\_value | both | client\_1\_0 | 00000033 | assigned | KMIPKIT-SRC-spec §11.36 |
 | KMIPKIT-ELEM-ENUM-VALUE-OPERATION-POLL-0000001A | Poll | enumeration\_value | both | client\_1\_0 | 0000001A | assigned | KMIPKIT-SRC-spec §11.36 |
 | KMIPKIT-ELEM-ENUM-VALUE-OPERATION-PROCESS-0000003A | Process | enumeration\_value | both | client\_1\_0 | 0000003A | assigned | KMIPKIT-SRC-spec §11.36 |
 | KMIPKIT-ELEM-ENUM-VALUE-OPERATION-PUT-0000001C | Put | enumeration\_value | both | client\_1\_0 | 0000001C | assigned | KMIPKIT-SRC-spec §11.36 |
@@ -2038,8 +2036,6 @@ Every row summarizes audited candidate locators by their pinned source section. 
 | KMIPKIT-ELEM-ENUM-VALUE-OPERATION-RE-PROVISION-00000035 | Re-Provision | enumeration\_value | both | client\_1\_0 | 00000035 | assigned | KMIPKIT-SRC-spec §11.36 |
 | KMIPKIT-ELEM-ENUM-VALUE-OPERATION-REGISTER-00000003 | Register | enumeration\_value | both | client\_1\_0 | 00000003 | assigned | KMIPKIT-SRC-spec §11.36 |
 | KMIPKIT-ELEM-ENUM-VALUE-OPERATION-REVOKE-00000013 | Revoke | enumeration\_value | both | client\_1\_0 | 00000013 | assigned | KMIPKIT-SRC-spec §11.36 |
-| KMIPKIT-ELEM-ENUM-VALUE-OPERATION-RNG-RETRIEVE-00000025 | RNG Retrieve | enumeration\_value | both | client\_1\_0 | 00000025 | assigned | KMIPKIT-SRC-spec §11.36 |
-| KMIPKIT-ELEM-ENUM-VALUE-OPERATION-RNG-SEED-00000026 | RNG Seed | enumeration\_value | both | client\_1\_0 | 00000026 | assigned | KMIPKIT-SRC-spec §11.36 |
 | KMIPKIT-ELEM-ENUM-VALUE-OPERATION-SET-ATTRIBUTE-00000031 | Set Attribute | enumeration\_value | both | client\_1\_0 | 00000031 | assigned | KMIPKIT-SRC-spec §11.36 |
 | KMIPKIT-ELEM-ENUM-VALUE-OPERATION-SET-ENDPOINT-ROLE-00000032 | Set Endpoint Role | enumeration\_value | both | client\_1\_1 | 00000032 | assigned | KMIPKIT-SRC-spec §11.36 |
 | KMIPKIT-ELEM-ENUM-VALUE-OPERATION-VALIDATE-00000017 | Validate | enumeration\_value | both | client\_1\_0 | 00000017 | assigned | KMIPKIT-SRC-spec §11.36 |
@@ -2371,13 +2367,10 @@ Every row summarizes audited candidate locators by their pinned source section. 
 | KMIPKIT-ELEM-OP-C2S-INTEROP | Interop | operation | client\_to\_server | client\_1\_0 |  |  | KMIPKIT-SRC-spec §6.1.26 |
 | KMIPKIT-ELEM-OP-C2S-LOCATE | Locate | operation | client\_to\_server | client\_1\_0 |  |  | KMIPKIT-SRC-spec §6.1.28 |
 | KMIPKIT-ELEM-OP-C2S-LOG | Log | operation | client\_to\_server | client\_1\_0 |  |  | KMIPKIT-SRC-spec §6.1.29 |
-| KMIPKIT-ELEM-OP-C2S-PKCS-11 | PKCS#11 | operation | client\_to\_server | client\_1\_0 |  |  | KMIPKIT-SRC-spec §6.1.37 |
 | KMIPKIT-ELEM-OP-C2S-POLL | Poll | operation | client\_to\_server | client\_1\_0 |  |  | KMIPKIT-SRC-spec §6.1.38 |
 | KMIPKIT-ELEM-OP-C2S-PROCESS | Process | operation | client\_to\_server | client\_1\_0 |  |  | KMIPKIT-SRC-spec §6.1.39 |
 | KMIPKIT-ELEM-OP-C2S-QUERY-ASYNCHRONOUS-REQUESTS | Query Asynchronous Requests | operation | client\_to\_server | client\_1\_0 |  |  | KMIPKIT-SRC-spec §6.1.41 |
 | KMIPKIT-ELEM-OP-C2S-RECOVER | Recover | operation | client\_to\_server | client\_1\_0 |  |  | KMIPKIT-SRC-spec §6.1.42 |
-| KMIPKIT-ELEM-OP-C2S-RNG-RETRIEVE | RNG Retrieve | operation | client\_to\_server | client\_1\_0 |  |  | KMIPKIT-SRC-spec §6.1.49 |
-| KMIPKIT-ELEM-OP-C2S-RNG-SEED | RNG Seed | operation | client\_to\_server | client\_1\_0 |  |  | KMIPKIT-SRC-spec §6.1.50 |
 | KMIPKIT-ELEM-OP-C2S-SET-ENDPOINT-ROLE | Set Endpoint Role | operation | client\_to\_server | client\_1\_1 |  |  | KMIPKIT-SRC-spec §6.1.54 |
 | KMIPKIT-ELEM-OP-C2S-VALIDATE | Validate | operation | client\_to\_server | client\_1\_0 |  |  | KMIPKIT-SRC-spec §6.1.57 |
 | KMIPKIT-ELEM-OP-S2C-DISCOVER-VERSIONS | Discover Versions | operation | server\_to\_client | client\_1\_1 |  |  | KMIPKIT-SRC-spec §6.2.1 |
@@ -2400,12 +2393,7 @@ Every row summarizes audited candidate locators by their pinned source section. 
 | KMIPKIT-ELEM-OPERATION-STRUCTURE-7-22-OBJECT-DEFAULTS | Object Defaults | operation\_structure | both | client\_1\_0 |  |  | KMIPKIT-SRC-spec §7.22 |
 | KMIPKIT-ELEM-OPERATION-STRUCTURE-7-24-OBJECT-TYPES | Object Types | operation\_structure | both | client\_1\_0 |  |  | KMIPKIT-SRC-spec §7.24 |
 | KMIPKIT-ELEM-OPERATION-STRUCTURE-7-25-OPERATIONS | Operations | operation\_structure | both | client\_1\_0 |  |  | KMIPKIT-SRC-spec §7.25 |
-| KMIPKIT-ELEM-OPERATION-STRUCTURE-7-26-PKCS-11-FUNCTION | PKCS#11 Function | operation\_structure | both | client\_1\_0 |  |  | KMIPKIT-SRC-spec §7.26 |
-| KMIPKIT-ELEM-OPERATION-STRUCTURE-7-27-PKCS-11-INPUT-PARAMETERS | PKCS#11 Input Parameters | operation\_structure | both | client\_1\_0 |  |  | KMIPKIT-SRC-spec §7.27 |
-| KMIPKIT-ELEM-OPERATION-STRUCTURE-7-28-PKCS-11-INTERFACE | PKCS#11 Interface | operation\_structure | both | client\_1\_0 |  |  | KMIPKIT-SRC-spec §7.28 |
-| KMIPKIT-ELEM-OPERATION-STRUCTURE-7-29-PKCS-11-OUTPUT-PARAMETERS | PKCS#11 Output Parameters | operation\_structure | both | client\_1\_0 |  |  | KMIPKIT-SRC-spec §7.29 |
 | KMIPKIT-ELEM-OPERATION-STRUCTURE-7-3-AUTHENTICATED-ENCRYPTION-ADDITIONAL-DATA | Authenticated Encryption Additional Data | operation\_structure | both | client\_1\_0 |  |  | KMIPKIT-SRC-spec §7.3 |
-| KMIPKIT-ELEM-OPERATION-STRUCTURE-7-30-PKCS-11-RETURN-CODE | PKCS#11 Return Code | operation\_structure | both | client\_1\_0 |  |  | KMIPKIT-SRC-spec §7.30 |
 | KMIPKIT-ELEM-OPERATION-STRUCTURE-7-31-PROFILE-INFORMATION | Profile Information | operation\_structure | both | client\_1\_0 |  |  | KMIPKIT-SRC-spec §7.31 |
 | KMIPKIT-ELEM-OPERATION-STRUCTURE-7-32-PROFILE-VERSION | Profile Version | operation\_structure | both | client\_1\_0 |  |  | KMIPKIT-SRC-spec §7.32 |
 | KMIPKIT-ELEM-OPERATION-STRUCTURE-7-33-PROTECTION-STORAGE-MASKS | Protection Storage Masks | operation\_structure | both | client\_1\_0 |  |  | KMIPKIT-SRC-spec §7.33 |
@@ -2418,7 +2406,6 @@ Every row summarizes audited candidate locators by their pinned source section. 
 | KMIPKIT-ELEM-OPERATION-STRUCTURE-7-41-VALIDATION-INFORMATION | Validation Information | operation\_structure | both | client\_1\_0 |  |  | KMIPKIT-SRC-spec §7.41 |
 | KMIPKIT-ELEM-OPERATION-STRUCTURE-7-5-CAPABILITY-INFORMATION | Capability Information | operation\_structure | both | client\_1\_0 |  |  | KMIPKIT-SRC-spec §7.5 |
 | KMIPKIT-ELEM-OPERATION-STRUCTURE-7-6-CONSTRAINT | Constraint | operation\_structure | both | client\_1\_0 |  |  | KMIPKIT-SRC-spec §7.6 |
-| KMIPKIT-ELEM-OPERATION-STRUCTURE-7-8-CORRELATION-VALUE | Correlation Value | operation\_structure | both | client\_1\_0 |  |  | KMIPKIT-SRC-spec §7.8 |
 | KMIPKIT-ELEM-OPERATION-STRUCTURE-7-9-DATA | Data | operation\_structure | both | client\_1\_0 |  |  | KMIPKIT-SRC-spec §7.9 |
 | KMIPKIT-ELEM-OPTION-ASYNCHRONOUS-INDICATOR | Asynchronous Indicator | option | both | client\_1\_0 |  |  | KMIPKIT-SRC-spec §9.2, KMIPKIT-SRC-spec §11.3 |
 | KMIPKIT-ELEM-OPTION-BATCH-ERROR-CONTINUATION-OPTION | Batch Error Continuation Option | option | both | client\_1\_0 |  |  | KMIPKIT-SRC-spec §9.6, KMIPKIT-SRC-spec §11.5 |
@@ -2575,11 +2562,6 @@ Every row summarizes audited candidate locators by their pinned source section. 
 | KMIPKIT-ELEM-STRUCTURE-MEMBER-7-22-OBJECT-TYPE-OBJECTTYPES | Object Type \| ObjectTypes | structure\_member | both | client\_1\_0 |  |  | KMIPKIT-SRC-spec §7.22 |
 | KMIPKIT-ELEM-STRUCTURE-MEMBER-7-24-OBJECT-TYPE | Object Type | structure\_member | both | client\_1\_0 |  |  | KMIPKIT-SRC-spec §7.24 |
 | KMIPKIT-ELEM-STRUCTURE-MEMBER-7-25-OPERATION | Operation | structure\_member | both | client\_1\_0 |  |  | KMIPKIT-SRC-spec §7.25 |
-| KMIPKIT-ELEM-STRUCTURE-MEMBER-7-26-PKCS-11-FUNCTION | PKCS#11 Function | structure\_member | both | client\_1\_0 |  |  | KMIPKIT-SRC-spec §7.26 |
-| KMIPKIT-ELEM-STRUCTURE-MEMBER-7-27-PKCS-11-INPUT-PARAMETERS | PKCS#11 Input Parameters | structure\_member | both | client\_1\_0 |  |  | KMIPKIT-SRC-spec §7.27 |
-| KMIPKIT-ELEM-STRUCTURE-MEMBER-7-28-PKCS-11-INTERFACE | PKCS#11 Interface | structure\_member | both | client\_1\_0 |  |  | KMIPKIT-SRC-spec §7.28 |
-| KMIPKIT-ELEM-STRUCTURE-MEMBER-7-29-PKCS-11-OUTPUT-PARAMETERS | PKCS#11 Output Parameters | structure\_member | both | client\_1\_0 |  |  | KMIPKIT-SRC-spec §7.29 |
-| KMIPKIT-ELEM-STRUCTURE-MEMBER-7-30-PKCS-11-RETURN-CODE | PKCS#11 Return Code | structure\_member | both | client\_1\_0 |  |  | KMIPKIT-SRC-spec §7.30 |
 | KMIPKIT-ELEM-STRUCTURE-MEMBER-7-31-PROFILE-NAME | Profile Name | structure\_member | both | client\_1\_0 |  |  | KMIPKIT-SRC-spec §7.31 |
 | KMIPKIT-ELEM-STRUCTURE-MEMBER-7-31-PROFILE-VERSION | Profile Version | structure\_member | both | client\_1\_0 |  |  | KMIPKIT-SRC-spec §7.31 |
 | KMIPKIT-ELEM-STRUCTURE-MEMBER-7-31-SERVER-PORT | Server Port | structure\_member | both | client\_1\_0 |  |  | KMIPKIT-SRC-spec §7.31 |
@@ -2983,7 +2965,7 @@ Rows list each distinct requirement found in a client profile closure. Profile m
 | KMIPKIT-REQ-SPEC-6.1.48-001 | KMIPKIT-CLAUSE-SPEC-6.1.48-001 | SHALL / RequiredBehavior | No typed rule mapping | No category-appropriate rule test | — | — | crates/kmipkit-client/src/execute.rs, crates/kmipkit-protocol/src/reprovision.rs | crates/kmipkit-client/tests/unit/reprovision\_execution\_tests.rs, crates/kmipkit-protocol/tests/unit/reprovision\_operation\_tests.rs | — | none catalogued | KMIPKIT-SRC-spec §6.1.48 |
 | KMIPKIT-REQ-SPEC-6.1.48-006 | KMIPKIT-CLAUSE-SPEC-6.1.48-006 | SHALL / RequiredBehavior | No typed rule mapping | No category-appropriate rule test | — | — | crates/kmipkit-client/src/execute.rs, crates/kmipkit-protocol/src/reprovision.rs | crates/kmipkit-client/tests/unit/reprovision\_execution\_tests.rs, crates/kmipkit-protocol/tests/unit/reprovision\_operation\_tests.rs | — | none catalogued | KMIPKIT-SRC-spec §6.1.48 |
 | KMIPKIT-REQ-SPEC-6.1.5-001 | KMIPKIT-CLAUSE-SPEC-6.1.5-001 | SHALL / RequiredBehavior | No typed rule mapping | No category-appropriate rule test | — | — | — | — | — | none catalogued | KMIPKIT-SRC-spec §6.1.5 |
-| KMIPKIT-REQ-SPEC-6.1.50-001 | KMIPKIT-CLAUSE-SPEC-6.1.50-001 | SHALL NOT / ProhibitedBehavior | No typed rule mapping | No category-appropriate rule test | — | — | — | — | — | none catalogued | KMIPKIT-SRC-spec §6.1.50 |
+| KMIPKIT-REQ-SPEC-6.1.50-001 | KMIPKIT-CLAUSE-SPEC-6.1.50-001 | SHALL NOT / ProhibitedBehavior | No typed rule mapping | No category-appropriate rule test | — | — | crates/kmipkit-client/src/execute.rs, crates/kmipkit-protocol/src/rng\_seed.rs | crates/kmipkit-client/tests/unit/rng\_seed\_execution\_tests.rs::rng\_seed\_sends\_secret\_once\_and\_accepts\_zero\_bytes\_used, crates/kmipkit-protocol/tests/unit/rng\_seed\_operation\_tests.rs::successful\_response\_preserves\_zero\_data\_length\_and\_unknown\_fields | — | none catalogued | KMIPKIT-SRC-spec §6.1.50 |
 | KMIPKIT-REQ-SPEC-6.1.51-001 | KMIPKIT-CLAUSE-SPEC-6.1.51-001 | SHALL NOT / ProhibitedBehavior | No typed rule mapping | No category-appropriate rule test | — | — | crates/kmipkit-client/src/execute.rs, crates/kmipkit-protocol/src/attribute.rs, crates/kmipkit-protocol/src/attribute\_reference.rs, crates/kmipkit-protocol/src/set\_attribute.rs | crates/kmipkit-client/tests/unit/attribute\_execution\_contract\_tests.rs, crates/kmipkit-client/tests/unit/attribute\_mutation\_execution\_tests.rs, crates/kmipkit-protocol/tests/unit/attribute\_roundtrip\_tests.rs, crates/kmipkit-protocol/tests/unit/attribute\_tests.rs, crates/kmipkit-protocol/tests/unit/set\_attribute\_tests.rs | — | none catalogued | KMIPKIT-SRC-spec §6.1.51 |
 | KMIPKIT-REQ-SPEC-6.1.55-001 | KMIPKIT-CLAUSE-SPEC-6.1.55-001 | MAY / OptionalCapability | No typed rule mapping | No category-appropriate rule test | — | — | crates/kmipkit-client/src/execute.rs, crates/kmipkit-protocol/src/sign.rs | crates/kmipkit-client/tests/unit/sign\_execution\_tests.rs::explicit\_sign\_executes\_once\_and\_exposes\_server\_output, crates/kmipkit-protocol/tests/unit/sign\_operation\_tests.rs::request\_allows\_optional\_identifier\_and\_parameters\_to\_be\_omitted | — | none catalogued | KMIPKIT-SRC-spec §6.1.55 |
 | KMIPKIT-REQ-SPEC-6.1.56-001-001 | KMIPKIT-CLAUSE-SPEC-6.1.56-001 | MAY / OptionalCapability | No typed rule mapping | No category-appropriate rule test | — | — | crates/kmipkit-client/src/execute.rs, crates/kmipkit-protocol/src/signature\_verify.rs | crates/kmipkit-protocol/tests/unit/signature\_verify\_operation\_tests.rs::request\_allows\_optional\_key\_parameters\_and\_input\_data\_to\_be\_omitted, crates/kmipkit-protocol/tests/unit/signature\_verify\_operation\_tests.rs::request\_emits\_optional\_key\_parameters\_data\_digest\_signature\_and\_framing\_in\_order | — | none catalogued | KMIPKIT-SRC-spec §6.1.56 |
