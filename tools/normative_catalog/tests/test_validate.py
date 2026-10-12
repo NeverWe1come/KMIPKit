@@ -16536,16 +16536,18 @@ class CatalogValidationTests(unittest.TestCase):
                 "The identifier if the test case to be submitted.",
             ),
         }
-        gaps = {
-            gap["gap_id"]: gap
+        gaps = [
+            gap
             for gap in oracle["source_only_requirement_gaps"]
             if gap["source_section"] == "6.1.26"
-        }
-        self.assertEqual(set(gaps), set(proposed_rows))
+        ]
+        self.assertEqual({gap["gap_id"] for gap in gaps}, set(proposed_rows))
+        self.assertEqual(len(gaps), len(proposed_rows), "the remaining Interop gap must be unique")
+        gaps_by_id = {gap["gap_id"]: gap for gap in gaps}
         source_request_rows = reviews["KMIPKIT-CLAUSE-SPEC-6.1.26-002"]["source_request_rows"]
         self.assertEqual(len(source_request_rows), 2)
         for gap_id, (label, line_range, proposed_id, description) in proposed_rows.items():
-            gap = gaps[gap_id]
+            gap = gaps_by_id[gap_id]
             request_row = next(row for row in source_request_rows if row["row_label"] == label)
             excerpt = pinned_source_excerpt(source_path, line_range)
             with self.subTest(source_gap=gap_id):
