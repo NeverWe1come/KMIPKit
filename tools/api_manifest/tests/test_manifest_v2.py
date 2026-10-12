@@ -373,6 +373,21 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
                     else "specs/005-ttlv-wire-codec/spec.md",
                 )
         self.assertTrue(ttlv_declarations)
+        self.assertEqual(len(ttlv_declarations), 101)
+        self.assertEqual(
+            sum(
+                declaration["capabilityId"] == "generic_ttlv_model"
+                for declaration in ttlv_declarations
+            ),
+            76,
+        )
+        self.assertEqual(
+            sum(
+                declaration["capabilityId"] == "ttlv_wire_codec"
+                for declaration in ttlv_declarations
+            ),
+            25,
+        )
 
     def test_checked_in_manifest_inventories_all_java_public_access_paths(self) -> None:
         declarations = self.declarations_for_package("java-kmipkit")

@@ -26,3 +26,13 @@ KMIP 2.1 defines 57 client-initiated operation types. The 1.0 catalog contains 5
 | Refactor | `8b46a35b` | `python -B -m unittest discover -s tools/api_manifest/tests -v`; `python tools/api_manifest/generate.py --check`; `git diff --check` | PASS: 93 tests passed, 3 symlink tests skipped because Windows denied symlink creation (WinError 1314), all 11 generated outputs current, and no whitespace errors. Cached header-only owner resolution removes the full-suite slowdown. |
 
 T068 records the accepted release-scope decision only; it does not implement Set Endpoint Role. T011 remains open because a complete, reproducible export-audit report and reconciliation against every manifest row have not yet been committed; do not treat uncommitted audit observations as completion evidence.
+
+## T013 — Approved generic TTLV declaration ownership (partial)
+
+The canonical declaration slice whose Rust paths begin with `kmipkit_ttlv::` contains exactly 101 declarations: 76 generic-model declarations owned by KMIPKIT-0004 and 25 `CodecLimits` declarations owned by KMIPKIT-0005. The manifest maps these to the two approved shared capabilities with their owner requirements and evidence. This closes only this audited slice; T013 remains open until the remaining published Rust crate declarations are audited and mapped or explicitly excluded under an accepted authority.
+
+| Phase | Commit | Command | Result |
+|---|---|---|---|
+| Red | `0344edaf` | `python -B -m unittest tools.api_manifest.tests.test_manifest_v2.PublicApiManifestV2SchemaTests.test_ttlv_declarations_use_their_approved_shared_spec_owners -v` | Expected failure before owner reconciliation: the manifest had no `generic_ttlv_model` capability record, so the test failed with `KeyError`. |
+| Green | `c0cc2a31` | `python -B -m unittest discover -s tools/api_manifest/tests -v`; `python tools/api_manifest/generate.py --check`; `git diff --check` | PASS: 94 tests passed, 3 symlink tests skipped because Windows denied symlink creation (WinError 1314); all 11 generated outputs current; no whitespace errors. |
+| Refactor | this commit | `uv run --with jsonschema -- python -B -m unittest discover -s tools/api_manifest/tests -v`; `python tools/api_manifest/generate.py --check`; `git diff --check` | PASS: 94 tests passed, 3 symlink tests skipped because Windows denied symlink creation (WinError 1314); all 11 generated outputs current; no whitespace errors. Strengthened the inventory assertion to require exactly 101 declarations split 76/25; no API behavior or manifest data changed. |
