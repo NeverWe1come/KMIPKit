@@ -17085,6 +17085,71 @@ class CatalogValidationTests(unittest.TestCase):
         })
         self.assertEqual(validate_source_table_contracts(oracle, ROOT), [])
 
+    def test_log_table_250_required_message_is_a_conditional_client_source_contract(self) -> None:
+        """The required Log Message maps to the approved conditional client operation."""
+        oracle = json.loads(
+            (ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json").read_text(encoding="utf-8")
+        )
+        gap_id = "KMIPKIT-SOURCE-GAP-SPEC-6.1.29-LOG-MESSAGE-REQUIRED"
+        proposed_id = "KMIPKIT-REQ-SPEC-6.1.29-003"
+        contracts = source_table_contracts_for_gap(oracle["source_table_contracts"], gap_id)
+
+        self.assertEqual(len(contracts), 1)
+        self.assertEqual(len(oracle["source_table_contracts"]), 62)
+        contract = contracts[0]
+        source_path = "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
+        line_range = [29529, 29544]
+        self.assertEqual(contract["source_id"], "KMIPKIT-SRC-spec")
+        self.assertEqual(contract["source_path"], source_path)
+        self.assertEqual(contract["source_section"], "6.1.29")
+        self.assertEqual(contract["source_locator"], {
+            "kind": "table_body_row",
+            "section": "6.1.29",
+            "row_label": "Log Message",
+            "table": "request_payload",
+            "html_line_range": line_range,
+        })
+        self.assertEqual(contract["html_line_range"], line_range)
+        self.assertEqual(contract["source_excerpt"], pinned_source_excerpt(source_path, line_range))
+        self.assertEqual(contract["table_number"], 250)
+        self.assertEqual(contract["requiredness"], "Yes")
+        self.assertEqual(contract["source_force"], "required_table_body_value")
+        self.assertEqual(contract["actor"], "client")
+        self.assertEqual(contract["scope_disposition"], "profile_conditional")
+        self.assertEqual(contract["operation_element_id"], "KMIPKIT-ELEM-OP-C2S-LOG")
+        self.assertEqual(contract["functional_requirement_ids"], ["FR-001", "FR-008"])
+        self.assertIn("KMIPKIT-0042 FR-001/FR-008", contract["review_note"])
+        self.assertIn("conditional", contract["review_note"].lower())
+        self.assertEqual(contract["implementation_refs"], [
+            "crates/kmipkit-protocol/src/log.rs::LogRequest::into_ttlv_payload",
+        ])
+        self.assertEqual(contract["verification_refs"], [
+            "crates/kmipkit-protocol/tests/unit/log_operation_tests.rs::table_250_required_message_is_preserved_and_redacted",
+            "crates/kmipkit-client/tests/unit/log_execution_tests.rs::log_sends_required_fields_and_returns_empty_success",
+        ])
+        self.assertEqual(contract["status"], "mapped_to_approved_feature_contract")
+        self.assertEqual(contract["evidence_disposition"]["status"], "mapped_to_feature_contract")
+        self.assertIn("redact", contract["evidence_disposition"]["statement"].lower())
+        self.assertIn("caller", contract["evidence_disposition"]["statement"].lower())
+        self.assertNotIn(proposed_id, {
+            row["requirement_id"]
+            for row in json.loads((ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8"))["requirements"]
+        })
+        self.assertNotIn(proposed_id, {
+            row["requirement_id"] for row in oracle["requirement_crosswalk"]
+        })
+
+        review = next(
+            row for row in oracle["source_requirement_reviews"]
+            if row.get("source_clause_id") == "KMIPKIT-CLAUSE-SPEC-6.1.29-001"
+        )
+        request_row = next(row for row in review["source_request_rows"] if row["row_label"] == "Log Message")
+        self.assertEqual(request_row["source_gap_id"], gap_id)
+        self.assertEqual(request_row["disposition"], "required_request_table_contract")
+        self.assertEqual(request_row["source_requirement_ids"], [])
+        self.assertFalse(any(row["gap_id"] == gap_id for row in oracle["source_only_requirement_gaps"]))
+        self.assertEqual(validate_source_table_contracts(oracle, ROOT), [])
+
     def test_spec_6_1_27_join_split_key_and_errors_have_source_review_rows(self) -> None:
         """Specification v2.1 §§6.1.27 and 6.1.27.1 require a reviewed Join Split Key source slice."""
         oracle = json.loads(
