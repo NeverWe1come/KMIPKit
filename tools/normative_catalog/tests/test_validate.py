@@ -15921,6 +15921,33 @@ class CatalogValidationTests(unittest.TestCase):
                             reference,
                         )
 
+    def test_register_certificate_dsa_omission_evidence_names_client_test_under_existing_owner(self) -> None:
+        """Register DSA omission evidence names the client test without claiming an OASIS case."""
+        catalog = json.loads(
+            (ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8")
+        )
+        requirement = next(
+            row
+            for row in catalog["requirements"]
+            if row["requirement_id"] == "KMIPKIT-REQ-SPEC-6.1.43-011"
+        )
+        named_test = (
+            "crates/kmipkit-client/tests/unit/register_execution_tests.rs::"
+            "register_client_omits_signature_algorithm_when_x509_certificate_encodes_it"
+        )
+
+        self.assertEqual(requirement["feature_spec"], "KMIPKIT-0036")
+        self.assertEqual(requirement["scope_state"], "client_1_0")
+        self.assertEqual(requirement["status"], "verified")
+        self.assertEqual(requirement["test_case_ids"], [])
+        self.assertIn(named_test, requirement["verification_refs"])
+        test_path, _, test_name = named_test.partition("::")
+        confined_source = test_feature_traceability._read_confined_test_source(test_path)
+        self.assertIsNotNone(confined_source, named_test)
+        if confined_source is not None:
+            path, source = confined_source
+            self.assertTrue(_is_discoverable_positive_test(path, test_name, source), named_test)
+
     def test_unselected_profile_may_remains_catalogued_without_blocking_baseline_scope(self) -> None:
         """Only selected-profile closure requirements gate Baseline optional evidence."""
         oracle = json.loads(

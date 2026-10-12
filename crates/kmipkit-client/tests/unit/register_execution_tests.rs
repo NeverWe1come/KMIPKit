@@ -25,9 +25,12 @@ const REQUEST_PAYLOAD: u32 = 0x0042_0079;
 const OBJECT_TYPE: u32 = 0x0042_0057;
 const ATTRIBUTES: u32 = 0x0042_0125;
 const CERTIFICATE: u32 = 0x0042_0013;
+const CERTIFICATE_TYPE: u32 = 0x0042_001D;
+const CERTIFICATE_VALUE: u32 = 0x0042_001E;
 const PROTECTION_STORAGE_MASKS: u32 = 0x0042_015F;
 const PROTECTION_STORAGE_MASK: u32 = 0x0042_0160;
 const CERTIFICATE_LENGTH: u32 = 0x0042_00AD;
+const DIGITAL_SIGNATURE_ALGORITHM: u32 = 0x0042_00AE;
 const UNIQUE_IDENTIFIER: u32 = 0x0042_0094;
 const UNKNOWN_VENDOR_TAG: u32 = 0x0054_1234;
 const SUCCESS: u32 = 0;
@@ -35,6 +38,12 @@ const OPERATION_FAILED: u32 = 1;
 const OPERATION_PENDING: u32 = 2;
 const INVALID_OBJECT_TYPE: u32 = 0x0000_0038;
 const PENDING_CORRELATION: &[u8] = b"REGISTER_PENDING_CORRELATION\xFF";
+
+// Byte-for-byte extraction from the pinned OASIS KMIP 2.1 fixture
+// TC-PKCS12-1-21.xml, RequestMessage step 2. This local input does not execute
+// the official test case or claim a server-side conformance result.
+const OASIS_PKCS12_STEP_2_CERTIFICATE_DER: &[u8] =
+    include_bytes!("../fixtures/tc-pkcs12-step2-certificate.der");
 
 fn register_request() -> RegisterRequest {
     RegisterRequest::new(
@@ -121,6 +130,170 @@ fn request_fields(bytes: &[u8], item_index: usize) -> (Option<u32>, Vec<u32>, Ve
     })
 }
 
+fn register_certificate_fields(bytes: &[u8]) -> (u32, Vec<u32>, i32, u32, Vec<u8>) {
+    let message = decode(bytes).expect("captured request has valid TTLV framing");
+    message.with_value(|value| {
+        let ValueView::Structure(message) = value else {
+            panic!("KMIP request message is a Structure");
+        };
+        let batch = message
+            .children()
+            .iter()
+            .find(|field| field.tag().raw() == BATCH_ITEM)
+            .expect("Register request contains a Batch Item");
+        batch.with_value(|value| {
+            let ValueView::Structure(batch) = value else {
+                panic!("Batch Item is a Structure");
+            };
+            let payload = batch
+                .children()
+                .iter()
+                .find(|field| field.tag().raw() == REQUEST_PAYLOAD)
+                .expect("Register request contains a Request Payload");
+            payload.with_value(|value| {
+                let ValueView::Structure(payload) = value else {
+                    panic!("Request Payload is a Structure");
+                };
+                let object_type = payload
+                    .children()
+                    .iter()
+                    .find(|field| field.tag().raw() == OBJECT_TYPE)
+                    .expect("Register request contains Object Type")
+                    .with_value(|value| match value {
+                        ValueView::Enumeration(raw) => *raw,
+                        _ => panic!("Object Type is an Enumeration"),
+                    });
+                let attributes = payload
+                    .children()
+                    .iter()
+                    .find(|field| field.tag().raw() == ATTRIBUTES)
+                    .expect("Register request contains Attributes");
+                let (attribute_tags, certificate_length) = attributes.with_value(|value| {
+                    let ValueView::Structure(attributes) = value else {
+                        panic!("Attributes is a Structure");
+                    };
+                    let tags = attributes
+                        .children()
+                        .iter()
+                        .map(|field| field.tag().raw())
+                        .collect();
+                    let length = attributes
+                        .children()
+                        .iter()
+                        .find(|field| field.tag().raw() == CERTIFICATE_LENGTH)
+                        .expect("Attributes contains Certificate Length")
+                        .with_value(|value| match value {
+                            ValueView::Integer(length) => *length,
+                            _ => panic!("Certificate Length is an Integer"),
+                        });
+                    (tags, length)
+                });
+                let certificate = payload
+                    .children()
+                    .iter()
+                    .find(|field| field.tag().raw() == CERTIFICATE)
+                    .expect("Register request contains the Certificate object");
+                let (certificate_type, certificate_der) = certificate.with_value(|value| {
+                    let ValueView::Structure(certificate) = value else {
+                        panic!("Certificate object is a Structure");
+                    };
+                    let certificate_type = certificate
+                        .children()
+                        .iter()
+                        .find(|field| field.tag().raw() == CERTIFICATE_TYPE)
+                        .expect("Certificate object contains Certificate Type")
+                        .with_value(|value| match value {
+                            ValueView::Enumeration(raw) => *raw,
+                            _ => panic!("Certificate Type is an Enumeration"),
+                        });
+                    let certificate_der = certificate
+                        .children()
+                        .iter()
+                        .find(|field| field.tag().raw() == CERTIFICATE_VALUE)
+                        .expect("Certificate object contains Certificate Value")
+                        .with_value(|value| match value {
+                            ValueView::ByteString(bytes) => bytes.to_vec(),
+                            _ => panic!("Certificate Value is a Byte String"),
+                        });
+                    (certificate_type, certificate_der)
+                });
+                (
+                    object_type,
+                    attribute_tags,
+                    certificate_length,
+                    certificate_type,
+                    certificate_der,
+                )
+            })
+        })
+    })
+}
+
+fn certificate_signature_algorithm_oid(certificate_der: &[u8]) -> Vec<u8> {
+    fn element(data: &[u8], offset: usize) -> (u8, usize, usize) {
+        let tag = *data.get(offset).expect("DER element has a tag");
+        let first_length = *data.get(offset + 1).expect("DER element has a length");
+        let (length, content_start) = if first_length < 0x80 {
+            (usize::from(first_length), offset + 2)
+        } else {
+            let length_bytes = usize::from(first_length & 0x7f);
+            assert!(length_bytes > 0, "DER lengths are definite");
+            assert!(length_bytes <= size_of::<usize>(), "DER length fits usize");
+            let length_end = offset + 2 + length_bytes;
+            let encoded_length = data
+                .get(offset + 2..length_end)
+                .expect("DER long-form length is complete");
+            assert_ne!(encoded_length[0], 0, "DER length uses its shortest form");
+            let length = encoded_length.iter().fold(0_usize, |length, byte| {
+                length
+                    .checked_mul(256)
+                    .and_then(|length| length.checked_add(usize::from(*byte)))
+                    .expect("DER length does not overflow usize")
+            });
+            assert!(length >= 0x80, "DER long-form length is canonical");
+            (length, length_end)
+        };
+        let content_end = content_start
+            .checked_add(length)
+            .filter(|end| *end <= data.len())
+            .expect("DER element content is complete");
+        (tag, content_start, content_end)
+    }
+
+    let (certificate_tag, certificate_start, certificate_end) = element(certificate_der, 0);
+    assert_eq!(certificate_tag, 0x30, "X.509 Certificate is a SEQUENCE");
+    assert_eq!(
+        certificate_end,
+        certificate_der.len(),
+        "DER certificate has no trailing bytes"
+    );
+    let (tbs_tag, _, tbs_end) = element(certificate_der, certificate_start);
+    assert_eq!(tbs_tag, 0x30, "first Certificate field is TBSCertificate");
+    assert!(
+        tbs_end <= certificate_end,
+        "TBSCertificate ends inside Certificate"
+    );
+    let (algorithm_tag, algorithm_start, algorithm_end) = element(certificate_der, tbs_end);
+    assert_eq!(
+        algorithm_tag, 0x30,
+        "second Certificate field is signatureAlgorithm"
+    );
+    assert!(
+        algorithm_end <= certificate_end,
+        "signatureAlgorithm ends inside Certificate"
+    );
+    let (oid_tag, oid_start, oid_end) = element(certificate_der, algorithm_start);
+    assert_eq!(
+        oid_tag, 0x06,
+        "AlgorithmIdentifier starts with an OBJECT IDENTIFIER"
+    );
+    assert!(
+        oid_end <= algorithm_end,
+        "algorithm OID ends inside AlgorithmIdentifier"
+    );
+    certificate_der[oid_start..oid_end].to_vec()
+}
+
 #[test]
 fn register_sends_table_291_and_exposes_table_292_identifier_once() {
     crate::execute_test_support::assert_lifecycle_request_debug(
@@ -191,6 +364,78 @@ fn register_sends_table_291_and_exposes_table_292_identifier_once() {
             vec![UNKNOWN_VENDOR_TAG],
             vec![PROTECTION_STORAGE_MASK],
         ]
+    );
+    assert_eq!(fake.borrow().exchange_count(), 1);
+}
+
+#[test]
+fn register_client_omits_signature_algorithm_when_x509_certificate_encodes_it() {
+    let request = RegisterRequest::new(
+        ObjectType::from_raw(1),
+        AttributeSet::try_new([
+            test_item(CERTIFICATE_TYPE, Value::enumeration(1)),
+            test_item(
+                CERTIFICATE_LENGTH,
+                Value::integer(
+                    i32::try_from(OASIS_PKCS12_STEP_2_CERTIFICATE_DER.len())
+                        .expect("OASIS fixture length fits KMIP Integer"),
+                ),
+            ),
+        ])
+        .expect("X.509 certificate attributes are correctly typed"),
+        test_item(
+            CERTIFICATE,
+            Value::structure(test_structure([
+                test_item(CERTIFICATE_TYPE, Value::enumeration(1)),
+                test_item(
+                    CERTIFICATE_VALUE,
+                    Value::byte_string(OASIS_PKCS12_STEP_2_CERTIFICATE_DER.to_vec()),
+                ),
+            ])),
+        ),
+    );
+    // A failure response completes this local exchange without implying that
+    // a server accepted or validated the certificate.
+    let response = asynchronous_response_bytes(
+        REGISTER_OPERATION,
+        OPERATION_FAILED,
+        Some(INVALID_OBJECT_TYPE),
+        None,
+        None,
+    );
+    let (mut client, fake, captured) = client_for(ExchangeScript::Success {
+        response,
+        request_write_chunks: Vec::new(),
+    });
+
+    client
+        .register(request, &CodecLimits::defaults())
+        .expect("fake response completes the typed client exchange");
+
+    let request = captured.borrow();
+    let request = request.as_deref().expect("fake transport captured request");
+    let (object_type, attribute_tags, certificate_length, certificate_type, certificate_der) =
+        register_certificate_fields(request);
+    assert_eq!(object_type, 1, "Object Type is Certificate");
+    assert_eq!(certificate_type, 1, "Certificate Type is X.509");
+    assert_eq!(
+        certificate_length,
+        i32::try_from(OASIS_PKCS12_STEP_2_CERTIFICATE_DER.len())
+            .expect("OASIS fixture length fits KMIP Integer")
+    );
+    assert!(
+        attribute_tags.contains(&CERTIFICATE_LENGTH),
+        "Table 293 Certificate Length is serialized"
+    );
+    assert!(
+        !attribute_tags.contains(&DIGITAL_SIGNATURE_ALGORITHM),
+        "Digital Signature Algorithm is omitted from Attributes"
+    );
+    assert_eq!(certificate_der, OASIS_PKCS12_STEP_2_CERTIFICATE_DER);
+    assert_eq!(
+        certificate_signature_algorithm_oid(&certificate_der),
+        [0x2a, 0x86, 0x48, 0x86, 0xf7, 0x0d, 0x01, 0x01, 0x0b],
+        "X.509 signatureAlgorithm contains SHA256withRSA OID 1.2.840.113549.1.1.11"
     );
     assert_eq!(fake.borrow().exchange_count(), 1);
 }
