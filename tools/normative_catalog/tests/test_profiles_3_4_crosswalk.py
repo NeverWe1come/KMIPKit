@@ -188,6 +188,24 @@ class ProfileSectionsThreeAndFourCrosswalkTests(unittest.TestCase):
             self.assertEqual(row["source_actor"], expected_actor)
             self.assertEqual(row["applies_to"], expected_applies_to)
 
+    def test_https_profile_closure_includes_all_explicit_client_requirements(self) -> None:
+        """Sections 3.2.1–3.2.4 assign four client duties to the HTTPS profile."""
+        https_profile_id = "KMIPKIT-PROFILE-HTTPS-CLIENT"
+        https_profile = next(
+            row for row in self.catalog["profiles"] if row["profile_id"] == https_profile_id
+        )
+        expected_ids = {
+            "KMIPKIT-REQ-PROF-3.2.1-001",
+            "KMIPKIT-REQ-PROF-3.2.2-001",
+            "KMIPKIT-REQ-PROF-3.2.3-001",
+            "KMIPKIT-REQ-PROF-3.2.4-002",
+        }
+
+        for requirement_id in expected_ids:
+            requirement = self.requirements[requirement_id]
+            self.assertEqual(requirement["profile_ids"], [https_profile_id])
+            self.assertIn(requirement_id, https_profile["requirement_ids"])
+
     def test_profile_4_1_2_007_is_may_without_a_false_must_keyword(self) -> None:
         requirement_id = "KMIPKIT-REQ-PROF-4.1.2-007"
         requirement = self.requirements[requirement_id]

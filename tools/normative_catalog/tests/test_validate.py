@@ -13895,6 +13895,37 @@ class CatalogValidationTests(unittest.TestCase):
                 self.assertEqual(requirement["role"], "server")
                 self.assertEqual(requirement["scope_state"], "server_only")
 
+    def test_attestation_capable_indicator_requirement_has_client_implementation_evidence(self) -> None:
+        """Specification v2.1 §9.3 maps the client's indicator obligation to shipped behavior."""
+        catalog = json.loads(
+            (ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8")
+        )
+        requirement = next(
+            row for row in catalog["requirements"]
+            if row["requirement_id"] == "KMIPKIT-REQ-SPEC-9.3-001-001"
+        )
+
+        self.assertEqual(requirement["source_clause_ids"], ["KMIPKIT-CLAUSE-SPEC-9.3-001"])
+        self.assertEqual(
+            (requirement["role"], requirement["direction"], requirement["scope_state"]),
+            ("client", "client_to_server", "client_1_0"),
+        )
+        self.assertEqual(requirement["feature_spec"], "KMIPKIT-0008")
+        self.assertEqual(requirement["status"], "verified")
+        self.assertTrue(
+            {
+                "KMIPKIT-ELEM-MESSAGE-FIELD-8-2-ATTESTATION-CAPABLE-INDICATOR",
+                "KMIPKIT-ELEM-MESSAGE-FIELD-9-3-ATTESTATION-CAPABLE-INDICATOR",
+            }.issubset(requirement["element_ids"])
+        )
+        self.assertIn("crates/kmipkit-client/src/execute.rs", requirement["implementation_refs"])
+        self.assertTrue(
+            {
+                "crates/kmipkit-client/tests/unit/attestation_indicator_tests.rs::execute_advertises_attestation_without_authentication_or_credential_payload",
+                "crates/kmipkit-client/tests/unit/attestation_indicator_tests.rs::async_follow_up_request_advertises_attestation_capability",
+            }.issubset(requirement["verification_refs"])
+        )
+
     def test_reviewed_source_requirement_mappings_match_pinned_locators_and_scope(self) -> None:
         """Reviewed source atoms, stable labels, and client dispositions agree with pinned HTML."""
         oracle = json.loads(
@@ -13978,10 +14009,14 @@ class CatalogValidationTests(unittest.TestCase):
                 else:
                     if review["source_clause_id"] not in candidate["source_clause_ids"]:
                         violations.append(f"{candidate_id} does not map to its reviewed source clause")
-                    if candidate["scope_state"] != obligation["scope_disposition"]:
+                    reviewed_scope = obligation["scope_disposition"]
+                    # The source review vocabulary uses "unresolved" while the catalog enum
+                    # calls the same intentionally open classification "unclear".
+                    normalized_scope = {"unresolved": "unclear"}.get(reviewed_scope, reviewed_scope)
+                    if candidate["scope_state"] != normalized_scope:
                         violations.append(
                             f"{candidate_id} catalog scope differs from reviewed source disposition "
-                            f"{obligation['scope_disposition']}"
+                            f"{reviewed_scope}"
                         )
                 if obligation["source_keyword"] not in pinned_clause["source_keywords"]:
                     violations.append(
