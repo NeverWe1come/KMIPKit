@@ -16805,6 +16805,96 @@ class CatalogValidationTests(unittest.TestCase):
             )
         self.assertEqual(oracle["oracle_status"], "partial-source-reviewed; not complete T003 oracle")
 
+    def test_locate_table_247_object_group_member_is_a_client_source_contract(self) -> None:
+        """Locate Table 247's optional Object Group Member maps to client evidence."""
+        oracle = json.loads(
+            (ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json").read_text(encoding="utf-8")
+        )
+        gap_id = "KMIPKIT-SOURCE-GAP-SPEC-6.1.28-OBJECT-GROUP-MEMBER-OPTIONAL"
+        contracts = {
+            row["gap_id"]: row
+            for row in oracle.get("source_table_contracts", [])
+            if row.get("gap_id") == gap_id
+        }
+
+        self.assertEqual(set(contracts), {gap_id})
+        self.assertEqual(oracle["counts"]["source_table_contracts"], 49)
+        self.assertEqual(oracle["counts"]["source_only_requirement_gaps"], 121)
+        self.assertEqual(oracle["counts"]["source_only_requirement_gap_proposals"], 68)
+        contract = contracts[gap_id]
+        line_range = [29318, 29336]
+        source_path = "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
+        self.assertEqual(contract["source_id"], "KMIPKIT-SRC-spec")
+        self.assertEqual(contract["source_path"], source_path)
+        self.assertEqual(contract["source_section"], "6.1.28")
+        self.assertEqual(
+            contract["source_locator"],
+            {
+                "kind": "table_body_row",
+                "section": "6.1.28",
+                "row_label": "Object Group Member",
+                "table": "request_payload",
+                "html_line_range": line_range,
+            },
+        )
+        self.assertEqual(contract["html_line_range"], line_range)
+        self.assertEqual(contract["source_excerpt"], pinned_source_excerpt(source_path, line_range))
+        self.assertEqual(contract["table_number"], 247)
+        self.assertEqual(contract["requiredness"], "No")
+        self.assertEqual(contract["source_force"], "optional_table_body_value")
+        self.assertEqual(contract["contract_kind"], "operation_request_table_field")
+        self.assertEqual(contract["actor"], "client")
+        self.assertEqual(contract["direction"], "client→server Locate request")
+        self.assertEqual(contract["scope_disposition"], "client_1_0")
+        self.assertEqual(contract["operation_element_id"], "KMIPKIT-ELEM-OP-C2S-LOCATE")
+        self.assertEqual(contract["functional_requirement_ids"], ["FR-001", "FR-006"])
+        self.assertEqual(
+            contract["implementation_refs"],
+            ["crates/kmipkit-protocol/src/locate.rs::LocateRequest::to_ttlv_payload"],
+        )
+        self.assertEqual(
+            contract["verification_refs"],
+            [
+                "crates/kmipkit-protocol/tests/unit/locate_tests.rs::object_group_member_preserves_assigned_and_unknown_enumerations",
+                "crates/kmipkit-client/tests/unit/object_read_execution_tests.rs::locate_batch_preserves_criteria_results_and_server_placeholder_boundary",
+            ],
+        )
+        self.assertEqual(contract["status"], "mapped_to_approved_feature_contract")
+        self.assertEqual(contract["evidence_disposition"]["status"], "mapped_to_feature_contract")
+        self.assertNotIn(
+            "server matching",
+            contract["evidence_disposition"]["statement"].lower(),
+            "client request-preservation evidence must not claim server matching behavior",
+        )
+        self.assertFalse(
+            {"candidate_requirement_id", "proposed_requirement_id", "requirement_id"}.intersection(contract),
+            "Required=No must not create a standalone normative requirement ID",
+        )
+
+        source_gap_ids = {row["gap_id"] for row in oracle["source_only_requirement_gaps"]}
+        proposed_ids = {row["proposed_requirement_id"] for row in oracle["source_only_requirement_gaps"]}
+        self.assertNotIn(gap_id, source_gap_ids)
+        self.assertNotIn("KMIPKIT-REQ-SPEC-6.1.28-015", proposed_ids)
+        catalog = json.loads((ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8"))
+        self.assertNotIn(
+            "KMIPKIT-REQ-SPEC-6.1.28-015",
+            {row["requirement_id"] for row in catalog["requirements"]},
+        )
+
+        request_review = next(
+            review for review in oracle["source_requirement_reviews"]
+            if review.get("source_clause_id") == "KMIPKIT-CLAUSE-SPEC-6.1.28-010"
+        )
+        reviewed_row = next(
+            row for row in request_review["source_request_rows"]
+            if row["row_label"] == "Object Group Member"
+        )
+        self.assertEqual(reviewed_row["required"], "No")
+        self.assertEqual(reviewed_row["source_gap_id"], gap_id)
+        self.assertEqual(reviewed_row["disposition"], "optional_request_table_contract")
+        self.assertEqual(reviewed_row["source_requirement_ids"], [])
+        self.assertEqual(validate_source_table_contracts(oracle, ROOT), [])
+
     def test_spec_6_1_28_locate_and_errors_have_source_review_rows(self) -> None:
         """Specification v2.1 §§6.1.28 and 6.1.28.1 require a reviewed Locate source slice."""
         oracle = json.loads(
