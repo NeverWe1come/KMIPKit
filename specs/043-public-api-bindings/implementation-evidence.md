@@ -260,6 +260,20 @@ PR run `38299757432` also found that `_generated/public_api.py` was selected as 
 
 The testing guide now documents that only the two generated `_native_ffi` wrappers are excluded and that the checked-in public API manifest stays inside the 85% coverage gate. The full suite produced local Windows evidence; the Linux CI run on the pushed head remains authoritative. T011 remains open pending final CI and read-only QA.
 
+## T028 — Offline Java native package smoke in the platform matrix
+
+The Java matrix already tests loader errors and builds the JNI library on Ubuntu, Windows, and macOS, but did not launch the packaged classifier JAR. The CI job now runs `nativeJarSmoke` after Java tests on every runner. Gradle defaults the package target and library path to the current host and the JNI binary built by the preceding Maven step; its forked `JavaExec` starts a fresh JVM with the classifier JAR, and the smoke class loads the bundled JNI library without a server or runtime download. The Gradle invocation uses offline dependency resolution.
+
+| Phase | Commit | Verification | Result |
+|---|---|---|---|
+| Red | `8f2cb282` | `python -B -m unittest test_workflow.WorkflowContractTests.test_java_package_loader_smoke_runs_offline_on_every_platform -v` from `scripts/tests` | Expected failure: the Java workflow had no packaged native loader smoke step. |
+| Green | `4e4fd6e5` | Same workflow contract; `python -B -m unittest test_workflow -v`; `bindings/java/gradlew.bat --offline nativeJarSmoke` | PASS locally: all 42 workflow contracts pass; the Windows classifier JAR launches a fresh JVM and prints `bundled JNI loaded`. QA then identified that the Unix wrapper is tracked non-executable. |
+| Red | `9e80cb62` | Same focused workflow contract | Expected failure: the contract now requires `sh ./gradlew` because Git tracks `bindings/java/gradlew` as mode `100644`. |
+| Green | `854a5843` | Full workflow contract suite; offline Java package smoke on Windows; `git diff --check` | PASS locally: 42 workflow contracts and Windows packaged smoke pass. Linux/macOS invocation is through `sh`; final matrix verification is pending. |
+| Read-only QA | `854a5843` | Review of both CI fixes and the platform-specific command | PASS: Unix invokes the non-executable wrapper via `sh`; Windows keeps the `.bat` entry point; the workflow contract matches. |
+
+T028 remains unchecked until the updated Linux, Windows, and macOS CI jobs finish successfully.
+
 ## T011 — CI follow-up for capability, generated C docs, and schema payload safety
 
 The subsequent PR run `38295045556` exposed three independent regressions. First, the manifest correctly declared the C-mapped `vendor_extension_registry` capability while the runtime query and FFI inventory test omitted it. Second, the checked-in generated C header had last-error documentation that was not represented in the manifest or generator. Third, QA demonstrated that a C documentation string containing a backslash-newline splice could escape the generated comment even though `*/` was rejected. Each behavior has a separate Red and Green commit; T011 stays open until remote CI on the new head passes.
