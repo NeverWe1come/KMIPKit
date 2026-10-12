@@ -335,7 +335,7 @@ class WorkflowContractTests(unittest.TestCase):
         assert step is not None
         self.assertIn("shell: pwsh", step.group(1))
         self.assertIn(".\\gradlew.bat --offline nativeJarSmoke", step.group(1))
-        self.assertIn("./gradlew --offline nativeJarSmoke", step.group(1))
+        self.assertIn("sh ./gradlew --offline nativeJarSmoke", step.group(1))
 
         gradle = (REPOSITORY_ROOT / "bindings/java/build.gradle.kts").read_text(encoding="utf-8")
         self.assertIn('providers.gradleProperty("nativeTarget").orElse(hostTarget)', gradle)
