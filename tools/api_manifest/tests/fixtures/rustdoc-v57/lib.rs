@@ -56,6 +56,7 @@ pub struct LifetimeBound<T> {
 }
 
 pub type LifetimeBoundAlias<'a> = LifetimeBound<&'a u8>;
+pub type StaticLifetimeBoundAlias = LifetimeBound<&'static u8>;
 
 impl<'a> LifetimeBound<&'a u8>
 where
@@ -71,6 +72,7 @@ pub struct InlineLifetimeBound<T> {
 }
 
 pub type InlineLifetimeBoundAlias<'a> = InlineLifetimeBound<&'a u8>;
+pub type StaticInlineLifetimeBoundAlias = InlineLifetimeBound<&'static u8>;
 
 impl<'a: 'static> InlineLifetimeBound<&'a u8> {
     pub fn only_inline_static(&self) -> &u8 {

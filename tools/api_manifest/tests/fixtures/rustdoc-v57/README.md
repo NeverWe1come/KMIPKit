@@ -20,10 +20,10 @@ implementations for private `View` types re-exported as `Alias` and
 predicate, an inline `'a: 'static` lifetime parameter bound, one real synthetic
 `Send` implementation, one applicable blanket `Borrow<T>` implementation, and
 Rust's real blanket `Any` implementation.
-These cases test re-export paths, structured handling of outlives bounds, and
-concrete vs. open generic aliases without fabricated rustdoc item records. The
-associated type default uses Rust's `associated_type_defaults` feature only in
-this test fixture.
+Static aliases and open lifetime-generic aliases test proven vs. unresolved
+outlives predicates without fabricated rustdoc item records. The associated
+type default uses Rust's `associated_type_defaults` feature only in this test
+fixture.
 
 The source was captured with:
 

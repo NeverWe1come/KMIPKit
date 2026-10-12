@@ -98,6 +98,10 @@ class RustExportLifetimeGapTests(unittest.TestCase):
             "LifetimeBoundAlias" in name and name.endswith("::only_when_static")
             for name in names
         ))
+        self.assertIn(
+            "rustdoc_v57_fixture::StaticLifetimeBoundAlias::only_when_static",
+            names,
+        )
         self.assertTrue(any(
             issue["reason"] == "unresolved-rustdoc-implementation-predicate"
             and issue.get("implementationId") == implementation_id
@@ -136,6 +140,10 @@ class RustExportLifetimeGapTests(unittest.TestCase):
             "InlineLifetimeBoundAlias" in name and name.endswith("::only_inline_static")
             for name in names
         ))
+        self.assertIn(
+            "rustdoc_v57_fixture::StaticInlineLifetimeBoundAlias::only_inline_static",
+            names,
+        )
         self.assertTrue(any(
             issue["reason"] == "unresolved-rustdoc-implementation-predicate"
             and issue.get("implementationId") == implementation_id
