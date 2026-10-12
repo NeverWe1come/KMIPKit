@@ -7637,6 +7637,59 @@ class CatalogValidationTests(unittest.TestCase):
                                     ("Table 327", [35973, 35974])):
             self.assertIn(caption, pinned_source_excerpt(source_path, line_range))
 
+    def test_spec_6_1_52_table_325_required_constraints_row_is_contract(self) -> None:
+        """The required Table 325 field maps to Set Constraints evidence without inventing a REQ ID."""
+        fixture_path = ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json"
+        oracle = json.loads(fixture_path.read_text(encoding="utf-8"))
+        source_path = "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
+        gap_id = "KMIPKIT-SOURCE-GAP-SPEC-6.1.52-CONSTRAINTS-REQUIRED"
+        proposed_id = "KMIPKIT-REQ-SPEC-6.1.52-001"
+        line_range = [35849, 35864]
+        contracts = {
+            row["gap_id"]: row
+            for row in oracle["source_table_contracts"]
+            if row["gap_id"] == gap_id
+        }
+
+        self.assertEqual(set(contracts), {gap_id})
+        contract = contracts[gap_id]
+        self.assertEqual(contract["source_id"], "KMIPKIT-SRC-spec")
+        self.assertEqual(contract["source_path"], source_path)
+        self.assertEqual(contract["source_section"], "6.1.52")
+        self.assertEqual(contract["source_locator"], {
+            "kind": "table_body_row",
+            "section": "6.1.52",
+            "row_label": "Constraints",
+            "table": "request_payload",
+            "html_line_range": line_range,
+        })
+        self.assertEqual(contract["source_excerpt"], pinned_source_excerpt(source_path, line_range))
+        self.assertEqual(contract["table_number"], 325)
+        self.assertEqual(contract["requiredness"], "Yes")
+        self.assertEqual(contract["source_force"], "required_table_body_value")
+        self.assertEqual(contract["status"], "mapped_to_approved_feature_contract")
+        self.assertEqual(contract["operation_element_id"], "KMIPKIT-ELEM-OP-C2S-SET-CONSTRAINTS")
+        self.assertEqual(contract["functional_requirement_ids"], ["FR-001"])
+        self.assertEqual(contract["implementation_refs"], [
+            "crates/kmipkit-protocol/src/set_constraints.rs::SetConstraintsRequest::to_ttlv_payload",
+        ])
+        self.assertEqual(contract["verification_refs"], [
+            "crates/kmipkit-protocol/tests/unit/set_constraints_tests.rs::table_325_requires_and_preserves_the_ordered_constraints_structure",
+            "crates/kmipkit-client/tests/unit/set_constraints_execution_tests.rs::table_325_request_is_required_ordered_and_sent_once",
+        ])
+        self.assertEqual(contract["evidence_disposition"]["status"], "mapped_to_feature_contract")
+        self.assertEqual(contract["source_requirement_ids"], [])
+        self.assertNotIn(proposed_id, {row["requirement_id"] for row in oracle["requirement_crosswalk"]})
+        self.assertNotIn(proposed_id, {row["requirement_id"] for row in json.loads(
+            (ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8")
+        )["requirements"]})
+        self.assertEqual([row for row in oracle["source_only_requirement_gaps"]
+                          if row["gap_id"] == gap_id], [])
+        self.assertEqual(oracle["counts"]["source_table_contracts"], 51)
+        self.assertEqual(oracle["counts"]["source_only_requirement_gaps"], 119)
+        self.assertEqual(oracle["counts"]["source_only_requirement_gap_proposals"], 66)
+        self.assertEqual(validate_source_table_contracts(oracle, ROOT), [])
+
     def test_spec_6_1_53_set_defaults_reviews_optional_payload_and_approved_error_decision(self) -> None:
         """Set Defaults preserves optional request semantics and the accepted reading of DISC-020."""
         fixture_path = ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json"
