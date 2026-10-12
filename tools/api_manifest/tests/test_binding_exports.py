@@ -79,6 +79,35 @@ class BindingExportAuditTests(unittest.TestCase):
         self.assertEqual(names, {"kmipkit_client_create", "kmipkit_client_destroy"})
         self.assertEqual({issue["reason"] for issue in result["issues"]},
                          {"exported-symbol-missing-from-header"})
+
+    def test_c_binary_audit_honors_only_exact_approved_dependency_exclusions(self):
+        exclusions = [{
+            "packageId": "c-kmipkit",
+            "exportName": "aws_lc_0_45_0_jent_version",
+        }]
+        result = AUDIT.audit_c_surface(
+            "int32_t kmipkit_client_create(void);\n",
+            ["kmipkit_client_create", "aws_lc_0_45_0_jent_version"],
+            approved_exclusions=exclusions,
+        )
+        self.assertTrue(result["complete"])
+        self.assertEqual(result["issues"], [])
+        names = {row["exportName"] for row in result["declarations"]}
+        self.assertEqual(names, {"kmipkit_client_create", "aws_lc_0_45_0_jent_version"})
+
+    def test_c_binary_audit_still_reports_unapproved_transitive_exports(self):
+        exclusions = [{
+            "packageId": "c-kmipkit",
+            "exportName": "aws_lc_0_45_0_jent_version",
+        }]
+        result = AUDIT.audit_c_surface(
+            "int32_t kmipkit_client_create(void);\n",
+            ["kmipkit_client_create", "unreviewed_vendor_symbol"],
+            approved_exclusions=exclusions,
+        )
+        self.assertFalse(result["complete"])
+        self.assertEqual({issue["exportName"] for issue in result["issues"]},
+                         {"unreviewed_vendor_symbol"})
         self.assertFalse(result["complete"])
 
     def test_pe_export_reader_extracts_named_abi_exports(self):
@@ -243,6 +272,25 @@ class BindingExportAuditTests(unittest.TestCase):
         self.assertNotIn("kmipkit.errors.annotations", names)
         self.assertTrue(result["complete"])
 
+    def test_python_inventory_collapses_explicit_overload_group_to_one_export(self):
+        sources = {
+            "kmipkit/api.py": """
+                from typing import overload
+                __all__ = ['convert']
+                @overload
+                def convert(value: int) -> int: ...
+                @overload
+                def convert(value: str) -> str: ...
+                def convert(value):
+                    return value
+            """
+        }
+        result = AUDIT.inventory_python_sources(sources)
+        exports = [row for row in result["declarations"]
+                   if row["exportName"] == "kmipkit.api.convert"]
+        self.assertTrue(result["complete"])
+        self.assertEqual(len(exports), 1)
+
     def test_python_inventory_resolves_inherited_members_through_module_attribute(self):
         sources = {
             "kmipkit/_handles.py": "class Base:\n    def close(self) -> None: ...\n",
@@ -309,6 +357,23 @@ class BindingExportAuditTests(unittest.TestCase):
         self.assertEqual(result["counts"]["exactMatches"], 0)
         self.assertEqual(result["counts"]["kindMismatches"], 1)
         self.assertFalse(result["matchesManifest"])
+
+    def test_python_function_and_reexport_kinds_are_semantically_equivalent(self):
+        manifest = {"publicDeclarations": [{
+            "packageId": "python-kmipkit",
+            "exportName": "kmipkit.metadata.get_version",
+            "kind": "function",
+        }]}
+        observed = {"complete": True, "declarations": [{
+            "packageId": "python-kmipkit",
+            "exportName": "kmipkit.metadata.get_version",
+            "kind": "python-export",
+        }], "issues": []}
+        result = AUDIT.compare(observed, manifest, "python-kmipkit")
+        self.assertEqual(result["counts"]["pathMatches"], 1)
+        self.assertEqual(result["counts"]["exactMatches"], 1)
+        self.assertEqual(result["counts"]["kindMismatches"], 0)
+        self.assertTrue(result["matchesManifest"])
 
 
 if __name__ == "__main__":
