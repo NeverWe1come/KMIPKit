@@ -76,9 +76,9 @@
     "requirement_crosswalk_records": 466,
     "requirement_crosswalk_complete": false,
     "source_requirement_review_records": 889,
-    "source_only_requirement_gaps": 124,
-    "source_only_requirement_gap_proposals": 71,
-    "source_table_contracts": 46
+    "source_only_requirement_gaps": 123,
+    "source_only_requirement_gap_proposals": 70,
+    "source_table_contracts": 47
   },
   "source_clause_crosswalk": [
     {
@@ -71548,14 +71548,15 @@
           "row_label": "Protection Storage Masks",
           "required": "No",
           "actor": "client",
-          "disposition": "optional_request_field_with_source_only_proposal",
+          "disposition": "optional_request_table_contract",
           "html_line_range": [
             32890,
             32908
           ],
           "source_excerpt": "Protection Storage Masks No Specifies all permissible Protection Storage Mask selections for the new object",
           "source_gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.43-PROTECTION-STORAGE-MASKS-OPTIONAL",
-          "source_requirement_ids": []
+          "source_requirement_ids": [],
+          "review_note": "The Required=No request row is linked to the Register operation table contract; it creates no per-cell normative requirement."
         }
       ],
       "source_payload_rows": []
@@ -84268,40 +84269,6 @@
       "review_note": "The KMIP Usage Guide citation is informative and does not resolve the actor or scope for this formal SHOULD; preserve both as unresolved."
     },
     {
-      "gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.43-PROTECTION-STORAGE-MASKS-OPTIONAL",
-      "source_id": "KMIPKIT-SRC-spec",
-      "source_path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
-      "source_section": "6.1.43",
-      "source_clause_id": null,
-      "source_locator": {
-        "kind": "table_body_row",
-        "section": "6.1.43",
-        "row_label": "Protection Storage Masks",
-        "table": "request_payload",
-        "html_line_range": [
-          32890,
-          32908
-        ]
-      },
-      "source_locator_description": "§6.1.43 Register request payload body row for Protection Storage Masks (HTML lines 32890-32908)",
-      "html_line_range": [
-        32890,
-        32908
-      ],
-      "source_excerpt": "Protection Storage Masks No Specifies all permissible Protection Storage Mask selections for the new object",
-      "source_keywords": [],
-      "source_force": "optional_table_body_value",
-      "audited_statement": "The Register request payload marks Protection Storage Masks Required=No and describes all permissible Protection Storage Mask selections for the new object.",
-      "actor": "client",
-      "direction": "optional Protection Storage Masks request payload value",
-      "condition": "A client elects to specify permissible Protection Storage Mask selections for the new object.",
-      "scope_disposition": "client_1_0",
-      "candidate_requirement_id": null,
-      "proposed_requirement_id": "KMIPKIT-REQ-SPEC-6.1.43-012",
-      "status": "stable_label_proposed_not_in_catalog",
-      "review_note": "Source-only proposal for the Optional Protection Storage Masks request row. The row has Required=No and no formal keyword or active catalog requirement; do not create a requirement crosswalk."
-    },
-    {
       "gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.44-REVOCATION-REASON-REQUIRED",
       "source_id": "KMIPKIT-SRC-spec",
       "source_path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
@@ -86912,6 +86879,56 @@
       "evidence_disposition": {
         "status": "mapped_to_feature_contract",
         "statement": "The optional Protection Storage Masks field is emitted by the typed request and verified through KMIPKIT-ELEM-OP-C2S-RE-KEY and KMIPKIT-0036 FR-001; no per-cell MUST/SHALL or standalone requirement ID is asserted."
+      }
+    },
+    {
+      "gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.43-PROTECTION-STORAGE-MASKS-OPTIONAL",
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+      "source_section": "6.1.43",
+      "source_clause_id": null,
+      "source_locator": {
+        "kind": "table_body_row",
+        "section": "6.1.43",
+        "row_label": "Protection Storage Masks",
+        "table": "request_payload",
+        "html_line_range": [
+          32890,
+          32908
+        ]
+      },
+      "source_locator_description": "§6.1.43 Register request payload body row for Protection Storage Masks (HTML lines 32890-32908)",
+      "html_line_range": [
+        32890,
+        32908
+      ],
+      "source_excerpt": "Protection Storage Masks No Specifies all permissible Protection Storage Mask selections for the new object",
+      "source_keywords": [],
+      "source_force": "optional_table_body_value",
+      "audited_statement": "The Register request payload marks Protection Storage Masks Required=No and describes all permissible Protection Storage Mask selections for the new object.",
+      "actor": "client",
+      "direction": "client→server Register request",
+      "condition": "A client elects to specify permissible Protection Storage Mask selections for the new object.",
+      "scope_disposition": "client_1_0",
+      "review_note": "Optional Table 291 Protection Storage Masks field maps to the approved KMIPKIT-0036 FR-001 Register contract and its executable evidence; Required=No creates no per-cell requirement.",
+      "status": "mapped_to_approved_feature_contract",
+      "contract_kind": "operation_request_table_field",
+      "table_number": 291,
+      "requiredness": "No",
+      "operation_element_id": "KMIPKIT-ELEM-OP-C2S-REGISTER",
+      "functional_requirement_ids": [
+        "FR-001"
+      ],
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/register.rs::RegisterRequest::into_ttlv_payload"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/register_operation_tests.rs::request_emits_table_291_fields_in_order_and_preserves_object_item",
+        "crates/kmipkit-client/tests/unit/register_execution_tests.rs::register_sends_table_291_and_exposes_table_292_identifier_once"
+      ],
+      "evidence_disposition": {
+        "status": "mapped_to_feature_contract",
+        "statement": "The optional Register field is emitted by the typed request and verified through KMIPKIT-ELEM-OP-C2S-REGISTER and KMIPKIT-0036 FR-001; Required=No does not create a standalone REQ identifier or normative MUST/SHALL requirement."
       }
     }
   ]

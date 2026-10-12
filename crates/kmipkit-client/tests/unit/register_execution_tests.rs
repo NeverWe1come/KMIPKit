@@ -25,6 +25,8 @@ const REQUEST_PAYLOAD: u32 = 0x0042_0079;
 const OBJECT_TYPE: u32 = 0x0042_0057;
 const ATTRIBUTES: u32 = 0x0042_0125;
 const CERTIFICATE: u32 = 0x0042_0013;
+const PROTECTION_STORAGE_MASKS: u32 = 0x0042_015F;
+const PROTECTION_STORAGE_MASK: u32 = 0x0042_0160;
 const CERTIFICATE_LENGTH: u32 = 0x0042_00AD;
 const UNIQUE_IDENTIFIER: u32 = 0x0042_0094;
 const UNKNOWN_VENDOR_TAG: u32 = 0x0054_1234;
@@ -47,6 +49,13 @@ fn register_request() -> RegisterRequest {
             )])),
         ),
     )
+}
+
+fn register_request_with_protection_storage_masks() -> RegisterRequest {
+    register_request().with_protection_storage_masks(test_structure([test_item(
+        PROTECTION_STORAGE_MASK,
+        Value::integer(1),
+    )]))
 }
 
 fn request_fields(bytes: &[u8], item_index: usize) -> (Option<u32>, Vec<u32>, Vec<Vec<u32>>) {
@@ -115,7 +124,7 @@ fn request_fields(bytes: &[u8], item_index: usize) -> (Option<u32>, Vec<u32>, Ve
 #[test]
 fn register_sends_table_291_and_exposes_table_292_identifier_once() {
     crate::execute_test_support::assert_lifecycle_request_debug(
-        &crate::ClientRequest::register(register_request()),
+        &crate::ClientRequest::register(register_request_with_protection_storage_masks()),
         "Register",
     );
     let response = asynchronous_response_bytes(
@@ -134,7 +143,10 @@ fn register_sends_table_291_and_exposes_table_292_identifier_once() {
     });
 
     let item = client
-        .register(register_request(), &CodecLimits::defaults())
+        .register(
+            register_request_with_protection_storage_masks(),
+            &CodecLimits::defaults(),
+        )
         .expect("valid Table 291 request receives typed Table 292 success");
     let outcome = item.outcome();
     crate::execute_test_support::assert_lifecycle_outcome_surface(
@@ -163,8 +175,23 @@ fn register_sends_table_291_and_exposes_table_292_identifier_once() {
         Some(REGISTER_OPERATION),
         "§11.36 assigns Register Operation 0x00000003"
     );
-    assert_eq!(fields, [OBJECT_TYPE, ATTRIBUTES, CERTIFICATE]);
-    assert_eq!(nested, [vec![CERTIFICATE_LENGTH], vec![UNKNOWN_VENDOR_TAG]]);
+    assert_eq!(
+        fields,
+        [
+            OBJECT_TYPE,
+            ATTRIBUTES,
+            CERTIFICATE,
+            PROTECTION_STORAGE_MASKS
+        ]
+    );
+    assert_eq!(
+        nested,
+        [
+            vec![CERTIFICATE_LENGTH],
+            vec![UNKNOWN_VENDOR_TAG],
+            vec![PROTECTION_STORAGE_MASK],
+        ]
+    );
     assert_eq!(fake.borrow().exchange_count(), 1);
 }
 
