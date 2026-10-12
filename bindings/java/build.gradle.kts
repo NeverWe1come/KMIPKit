@@ -56,8 +56,9 @@ fun libraryName(target: String): String = when (target) {
 fun hostLibraryName(): String = libraryName(hostTargetId())
 
 val hostTarget = hostTargetId()
-val nativeTarget = providers.gradleProperty("nativeTarget")
-val nativeLibrary = providers.gradleProperty("nativeLibrary")
+val nativeTarget = providers.gradleProperty("nativeTarget").orElse(hostTarget)
+val nativeLibrary = providers.gradleProperty("nativeLibrary").orElse(
+    layout.projectDirectory.file("target/native/${hostLibraryName()}").asFile.absolutePath)
 val nativeResources = layout.buildDirectory.dir("generated/native-resources")
 
 tasks.register<org.gradle.api.tasks.Exec>("buildNativeLibrary") {
@@ -80,13 +81,11 @@ val prepareNativeResources = tasks.register("prepareNativeResources") {
     }
     outputs.dir(nativeResources)
     doLast {
-        val target = nativeTarget.orNull
-            ?: throw GradleException("Set -PnativeTarget to one supported KMIPKit platform target")
+        val target = nativeTarget.get()
         if (target != hostTarget) {
             throw GradleException("Native JAR packaging must run on its target OS and architecture")
         }
-        val binary = nativeLibrary.orNull?.let(::file)
-            ?: throw GradleException("Set -PnativeLibrary to the built native library file")
+        val binary = file(nativeLibrary.get())
         if (!binary.isFile) {
             throw GradleException("The configured native library file is unavailable")
         }

@@ -451,6 +451,17 @@ jobs:
         id: run-java-tests
         run: mvn --batch-mode --file bindings/java/pom.xml test
 
+      - name: Run packaged Java native loader smoke
+        id: run-java-native-package-smoke
+        shell: pwsh
+        working-directory: bindings/java
+        run: |
+          if ($IsWindows) {
+            .\gradlew.bat --offline nativeJarSmoke
+          } else {
+            ./gradlew --offline nativeJarSmoke
+          }
+
       - name: Diagnose job result
         id: ci-diagnostics
         if: always()
