@@ -16329,6 +16329,176 @@ class CatalogValidationTests(unittest.TestCase):
         self.assertEqual(ticket_gap["status"], "stable_label_proposed_not_in_catalog")
         self.assertEqual(oracle["oracle_status"], "partial-source-reviewed; not complete T003 oracle")
 
+    def test_login_logout_request_rows_have_catalog_mapping_and_evidence(self) -> None:
+        """Reviewed Login and Logout request rows map to independently evidenced requirements."""
+        catalog = json.loads(
+            (ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8")
+        )
+        requirements = {row["requirement_id"]: row for row in catalog["requirements"]}
+        oracle = json.loads(
+            (ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json").read_text(encoding="utf-8")
+        )
+        source_path = "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
+        gaps = {row["gap_id"]: row for row in oracle["source_only_requirement_gaps"]}
+        reviews = {
+            row["source_clause_id"]: row
+            for row in oracle["source_requirement_reviews"]
+            if row["source_section"] in {"6.1.30", "6.1.31"}
+        }
+        crosswalk_by_gap = {
+            row["source_gap_id"]: row
+            for row in oracle["requirement_crosswalk"]
+            if row.get("source_gap_id") is not None
+        }
+        expected_rows = {
+            "KMIPKIT-REQ-SPEC-6.1.30-001": (
+                "KMIPKIT-SOURCE-GAP-SPEC-6.1.30-LEASE-TIME-OPTIONAL",
+                "6.1.30",
+                "Lease Time",
+                "optional_table_body_value",
+                [29673, 29688],
+                "Lease Time No The lease time Interval or Date Time for the ticket",
+                "crates/kmipkit-protocol/src/login.rs",
+                "crates/kmipkit-protocol/tests/unit/login_operation_tests.rs::optional_request_fields_keep_table_253_order_and_both_lease_forms",
+            ),
+            "KMIPKIT-REQ-SPEC-6.1.30-002": (
+                "KMIPKIT-SOURCE-GAP-SPEC-6.1.30-REQUEST-COUNT-OPTIONAL",
+                "6.1.30",
+                "Request Count",
+                "optional_table_body_value",
+                [29689, 29704],
+                "Request Count No The integer count of the number of requests that can be made with the ticket",
+                "crates/kmipkit-protocol/src/login.rs",
+                "crates/kmipkit-protocol/tests/unit/login_operation_tests.rs::optional_request_fields_keep_table_253_order_and_both_lease_forms",
+            ),
+            "KMIPKIT-REQ-SPEC-6.1.30-003": (
+                "KMIPKIT-SOURCE-GAP-SPEC-6.1.30-USAGE-LIMITS-OPTIONAL",
+                "6.1.30",
+                "Usage Limits",
+                "optional_table_body_value",
+                [29705, 29720],
+                "Usage Limits No The usage limits for the operations performed",
+                "crates/kmipkit-protocol/src/login.rs",
+                "crates/kmipkit-protocol/tests/unit/login_operation_tests.rs::optional_request_fields_keep_table_253_order_and_both_lease_forms",
+            ),
+            "KMIPKIT-REQ-SPEC-6.1.31-001": (
+                "KMIPKIT-SOURCE-GAP-SPEC-6.1.31-TICKET-REQUIRED",
+                "6.1.31",
+                "Ticket",
+                "required_table_body_value",
+                [29866, 29881],
+                "Ticket Yes The ticket to be invalidated",
+                "crates/kmipkit-protocol/src/logout.rs",
+                "crates/kmipkit-protocol/tests/unit/logout_operation_tests.rs::table_256_request_requires_and_preserves_the_explicit_secret_ticket",
+            ),
+        }
+
+        expected_review_rows = {
+            "KMIPKIT-CLAUSE-SPEC-6.1.30-001": [
+                {
+                    "row_label": "Lease Time",
+                    "required": "No",
+                    "actor": "client",
+                    "disposition": "optional_request_field_with_source_only_proposal",
+                    "html_line_range": [29673, 29688],
+                    "source_excerpt": "Lease Time No The lease time Interval or Date Time for the ticket",
+                    "source_gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.30-LEASE-TIME-OPTIONAL",
+                },
+                {
+                    "row_label": "Request Count",
+                    "required": "No",
+                    "actor": "client",
+                    "disposition": "optional_request_field_with_source_only_proposal",
+                    "html_line_range": [29689, 29704],
+                    "source_excerpt": "Request Count No The integer count of the number of requests that can be made with the ticket",
+                    "source_gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.30-REQUEST-COUNT-OPTIONAL",
+                },
+                {
+                    "row_label": "Usage Limits",
+                    "required": "No",
+                    "actor": "client",
+                    "disposition": "optional_request_field_with_source_only_proposal",
+                    "html_line_range": [29705, 29720],
+                    "source_excerpt": "Usage Limits No The usage limits for the operations performed",
+                    "source_gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.30-USAGE-LIMITS-OPTIONAL",
+                },
+            ],
+            "KMIPKIT-CLAUSE-SPEC-6.1.31-001": [
+                {
+                    "row_label": "Ticket",
+                    "required": "Yes",
+                    "actor": "client",
+                    "disposition": "required_request_field_with_source_only_proposal",
+                    "html_line_range": [29866, 29881],
+                    "source_excerpt": "Ticket Yes The ticket to be invalidated",
+                    "source_gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.31-TICKET-REQUIRED",
+                }
+            ],
+        }
+        for clause_id, expected in expected_review_rows.items():
+            self.assertEqual(reviews[clause_id]["source_request_rows"], expected)
+
+        for requirement_id, (
+            gap_id,
+            section,
+            row_label,
+            source_force,
+            line_range,
+            source_excerpt,
+            implementation_ref,
+            verification_ref,
+        ) in expected_rows.items():
+            with self.subTest(requirement_id=requirement_id):
+                gap = gaps[gap_id]
+                self.assertEqual(
+                    gap["source_locator"],
+                    {
+                        "kind": "table_body_row",
+                        "section": section,
+                        "row_label": row_label,
+                        "table": "request_payload",
+                        "html_line_range": line_range,
+                    },
+                )
+                self.assertEqual(gap["html_line_range"], line_range)
+                self.assertEqual(gap["source_excerpt"], source_excerpt)
+                self.assertEqual(gap["source_excerpt"], pinned_source_excerpt(source_path, line_range))
+                self.assertEqual(gap["source_force"], source_force)
+                self.assertEqual(gap["source_keywords"], [])
+                self.assertEqual(gap["actor"], "client")
+                self.assertEqual(gap["scope_disposition"], "client_1_0")
+
+                requirement = requirements.get(requirement_id)
+                if requirement is None:
+                    self.fail(f"{requirement_id} is missing from the catalog")
+
+                self.assertEqual(requirement["source_gap_id"], gap_id)
+                self.assertEqual(requirement["source_clause_ids"], [])
+                self.assertIsNone(requirement["source_keyword"])
+                self.assertEqual(requirement["source_force"], source_force)
+                self.assertEqual(
+                    requirement["normative_strength"],
+                    "mandatory" if source_force == "required_table_body_value" else "permission_or_optional",
+                )
+                self.assertEqual(requirement["source_locator"], gap["source_locator"])
+                self.assertEqual(requirement["role"], "client")
+                self.assertEqual(requirement["direction"], "client_to_server")
+                self.assertEqual(requirement["scope_state"], "client_1_0")
+                self.assertEqual(requirement["feature_spec"], "KMIPKIT-0038")
+                self.assertEqual(requirement["status"], "verified")
+                self.assertEqual(requirement["implementation_refs"], [implementation_ref])
+                self.assertEqual(requirement["verification_refs"], [verification_ref])
+                self.assertEqual(requirement["test_case_ids"], [])
+                review_note = requirement["review_note"]
+                self.assertIn("No requirement-specific official Test Cases ID is explicitly linked", review_note)
+                self.assertIn("No official case-level pass is claimed.", review_note)
+                self.assertTrue((ROOT / implementation_ref).is_file())
+                self.assertTrue((ROOT / verification_ref.split("::", 1)[0]).is_file())
+                self.assertEqual(crosswalk_by_gap[gap_id]["requirement_id"], requirement_id)
+                self.assertEqual(crosswalk_by_gap[gap_id]["source_force"], source_force)
+                self.assertNotIn("source_clause_id", crosswalk_by_gap[gap_id])
+                self.assertNotIn("source_keyword", crosswalk_by_gap[gap_id])
+
     def test_operation_table_gaps_and_optional_capabilities_have_catalog_evidence(self) -> None:
         """Table-row capabilities and existing optional fields retain source-linked evidence."""
         catalog = json.loads(
