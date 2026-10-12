@@ -55,7 +55,7 @@
 - [X] T027 [US3] Implement Python native-library loading adjacent to the installed wheel, allow only the documented explicit administrator path, and reject ABI mismatch without a download fallback.
 - [ ] T028 [US3] Test Java/Python package loading offline on every platform in the existing CI matrix, including missing library, wrong architecture/ABI, and redacted error paths.
 - [ ] T029 [US2] Compare shared fixtures through Rust, C, Java, and Python for defaults, input ranges, result/status, order, unknown values, error category, secret redaction, and resource cleanup.
-- [ ] T030 [US3] Update Java/Python package metadata and user documentation to state synchronized official versions, supported runtimes, native loading behavior, and current capability scope.
+- [X] T030 [US3] Update Java/Python package metadata and user documentation to state synchronized official versions, supported runtimes, native loading behavior, and current capability scope.
 
 **Checkpoint**: Every implemented shared capability resolves to all four language surfaces and passes parity and offline native-loading checks.
 
