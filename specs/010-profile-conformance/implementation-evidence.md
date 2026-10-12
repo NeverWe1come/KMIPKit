@@ -1319,3 +1319,11 @@ T040 links reviewed source-table rows to operation contracts and records the §6
 | Remaining blockers | T040 oracle and catalog review | Encrypt/Decrypt Table 214/196 source-table contracts and implementation/test evidence are absent; generic contexts 006–008 stay unresolved for full scope. `KMIPKIT-REQ-SPEC-7.8-001` remains unassigned without direct implementation/verification refs; the five KMIPKIT-0021 field contracts do not establish correlation round-trip behavior, so steps 012/014/016 stay unresolved. Paragraph 009 remains unresolved. No formal REQ was invented and no conformance claim is made. |
 
 Refactor checks: the focused command ran 8 tests in 3.660s (`OK`); the broader 4-test validator subset ran in 1.419s (`OK`); `git diff --check` passed. No push was performed.
+
+### KMIPKIT-0010 — HTTPS Client Baseline root inheritance regression
+
+Profiles v2.1 §6.4 item 5 incorporates the Baseline Client profile; §6.1 item 2 incorporates the Basic Authentication Suite conditions in §3.1. Therefore `KMIPKIT-CLAUSE-PROF-3.1-001` belongs to the HTTPS Client closure as an inherited clause, not as a direct root. The pinned source states the chain at `specification/oasis/kmip-2.1/upstream/kmip-profiles-v2.1-os.html:10484-10486` and `:10532-10538`. The independent oracle records `inherited_not_direct` for this clause.
+
+| Phase | Command | Result |
+|---|---|---|
+| Red — require HTTPS Client to preserve the source-reviewed inherited/direct distinction | `py -3 -B -m unittest tools.normative_catalog.tests.test_generate_profiles.ProfileMetadataGeneratorTests.test_https_client_inherits_baseline_basic_authentication_root -v` | Expected Red: 1 failure because the catalog still lists `KMIPKIT-CLAUSE-PROF-3.1-001` in `direct_source_clause_ids`, despite the oracle classifying it as inherited. The test also requires the clause to remain in the computed profile closure. |

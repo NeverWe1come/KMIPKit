@@ -86,6 +86,26 @@ def closure_catalog() -> dict[str, object]:
 
 
 class ProfileMetadataGeneratorTests(unittest.TestCase):
+    def test_https_client_inherits_baseline_basic_authentication_root(self) -> None:
+        """Profiles v2.1 §§6.4 and 6.1 make §3.1 inherited, not direct."""
+        catalog_path = ROOT / "specification" / "catalog" / "kmip-2.1.json"
+        catalog = json.loads(catalog_path.read_text(encoding="utf-8"))
+        oracle_path = ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json"
+        oracle = json.loads(oracle_path.read_text(encoding="utf-8"))
+        profile_id = "KMIPKIT-PROFILE-HTTPS-CLIENT"
+        profile = next(item for item in catalog["profiles"] if item["profile_id"] == profile_id)
+        expected = next(item for item in oracle["profiles"] if item["profile_id"] == profile_id)
+        inherited_clause_id = "KMIPKIT-CLAUSE-PROF-3.1-001"
+        reviewed_exclusion = next(
+            item
+            for item in expected["direct_root_exclusions"]
+            if item["source_clause_id"] == inherited_clause_id
+        )
+
+        self.assertEqual(reviewed_exclusion["expected_disposition"], "inherited_not_direct")
+        self.assertNotIn(inherited_clause_id, profile["direct_source_clause_ids"])
+        self.assertIn(inherited_clause_id, profile["source_clause_ids"])
+
     def test_source_oracle_covers_all_profiles_and_expected_scope_counts(self) -> None:
         oracle_path = ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json"
         oracle = json.loads(oracle_path.read_text(encoding="utf-8"))
