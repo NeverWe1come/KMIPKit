@@ -320,6 +320,31 @@ class WorkflowContractTests(unittest.TestCase):
         self.assertIn('build-backend = "maturin"', python_project)
         self.assertIn('bindings = "cffi"', python_project)
 
+    def test_java_package_loader_smoke_runs_offline_on_every_platform(self) -> None:
+        contents = self.require_workflow()
+        java_job = self.require_job(contents, "language-java")
+
+        step = re.search(
+            r"(?ms)^      - name: Run packaged Java native loader smoke\n(.*?)(?=^      - name: |\\Z)",
+            java_job,
+        )
+        self.assertIsNotNone(
+            step,
+            "the Java OS matrix must launch the packaged JNI library from a fresh offline JVM",
+        )
+        assert step is not None
+        self.assertIn("shell: pwsh", step.group(1))
+        self.assertIn(".\\gradlew.bat --offline nativeJarSmoke", step.group(1))
+        self.assertIn("./gradlew --offline nativeJarSmoke", step.group(1))
+
+        gradle = (REPOSITORY_ROOT / "bindings/java/build.gradle.kts").read_text(encoding="utf-8")
+        self.assertIn('providers.gradleProperty("nativeTarget").orElse(hostTarget)', gradle)
+        self.assertIn(
+            'providers.gradleProperty("nativeLibrary").orElse(\n'
+            '    layout.projectDirectory.file("target/native/${hostLibraryName()}").asFile.absolutePath)',
+            gradle,
+            "the packaged smoke must select the just-built library for its current matrix host",
+        )
     def test_windows_c_consumer_uses_the_msvc_compatible_generator(self) -> None:
         contents = self.require_workflow()
         job = self.require_job(contents, "language-c")
