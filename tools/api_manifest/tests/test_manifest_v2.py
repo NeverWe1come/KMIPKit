@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import copy
 import re
 import tomllib
 import unittest
@@ -75,6 +76,7 @@ GENERATED_OUTPUTS = (
     ("javaParityTests", "bindings/java/src/test/java/org/kmipkit/generated/PublicApiParityFixtures.java"),
     ("pythonApi", "bindings/python/src/kmipkit/_generated/public_api.py"),
     ("parityFixtures", "tests/fixtures/api/generated/public_api_parity.json"),
+    ("internalCHeader", "tests/fixtures/api/generated/kmipkit_internal.h"),
 )
 LEGACY_GENERATED_OUTPUTS = {
     "rustFfi": "crates/kmipkit-ffi/src/extension_registry_generated.rs",
@@ -643,6 +645,7 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
                     set(declaration["requirementIds"]),
                     {
                         "KMIPKIT-0004-FR-001",
+                        "KMIPKIT-0004-FR-008",
                         "KMIPKIT-0043-FR-004",
                         "KMIPKIT-0043-FR-010",
                         "KMIPKIT-0043-FR-021",
@@ -687,6 +690,31 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
         public_header = generate.render_c_header(self.checked_in_manifest)
 
         self.assertNotIn("kmipkit_extension_registry_limits_t", public_header)
+
+    def test_generator_rejects_ready_mapping_to_blocked_export(self) -> None:
+        manifest = copy.deepcopy(self.checked_in_manifest)
+        declaration = next(
+            row for row in manifest["publicDeclarations"]
+            if row["declarationId"] == "ClientBatchItem:c"
+        )
+        declaration["languageMappings"]["python"] = {
+            "packageId": "python-kmipkit",
+            "name": "kmipkit.extensions.ClientBatchItem.close",
+        }
+
+        with self.assertRaisesRegex(ManifestError, "blocked|mapping target"):
+            _validate_v2_readiness(manifest, ROOT)
+
+    def test_generator_rejects_capability_mapping_without_a_ready_export(self) -> None:
+        manifest = copy.deepcopy(self.checked_in_manifest)
+        capability = next(
+            row for row in manifest["capabilities"]
+            if row["capabilityId"] == "vendor_extension_registry"
+        )
+        capability["mappings"]["rust"].append("kmipkit_client::NotARealExport")
+
+        with self.assertRaisesRegex(ManifestError, "capability.*mapping|exact.*export"):
+            _validate_v2_readiness(manifest, ROOT)
 
     def test_checked_in_manifest_inventories_all_rust_public_access_paths(self) -> None:
         rust_packages = EXPECTED_PACKAGES - {"c-kmipkit", "java-kmipkit", "python-kmipkit"}
@@ -1007,13 +1035,13 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
                     else "specs/005-ttlv-wire-codec/spec.md",
                 )
         self.assertTrue(ttlv_declarations)
-        self.assertEqual(len(ttlv_declarations), 95)
+        self.assertEqual(len(ttlv_declarations), 140)
         self.assertEqual(
             sum(
                 declaration["capabilityId"] == "generic_ttlv_model"
                 for declaration in ttlv_declarations
             ),
-            71,
+            116,
         )
         self.assertEqual(
             sum(
@@ -1198,9 +1226,9 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
         self.assertEqual(close_method["kind"], "python-export")
         self.assertEqual(close_method["declarationState"], "blocked")
         item_type = by_name["kmipkit.ttlv.ItemType"]
-        self.assertEqual(item_type["declarationState"], "blocked")
+        self.assertEqual(item_type["declarationState"], "declared")
         enum_value = by_name["kmipkit.ttlv.ItemType.Structure"]
-        self.assertEqual(enum_value["declarationState"], "blocked")
+        self.assertEqual(enum_value["declarationState"], "declared")
         error_type = by_name["kmipkit.errors.CompatibilityMismatchError"]
         self.assertEqual(error_type["kind"], "type")
         registry_field = by_name[
