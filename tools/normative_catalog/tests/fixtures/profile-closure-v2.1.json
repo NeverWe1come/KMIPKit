@@ -20099,6 +20099,24 @@
       "source_direction": "unspecified"
     },
     {
+      "requirement_id": "KMIPKIT-REQ-PROF-3.2-001",
+      "source_clause_id": "KMIPKIT-CLAUSE-PROF-3.2-001",
+      "source_id": "KMIPKIT-SRC-profiles",
+      "source_section": "3.2",
+      "source_locator": {
+        "ordinal": 1,
+        "block_kind": "paragraph"
+      },
+      "source_keyword": "SHALL",
+      "role": "both",
+      "scope_state": "profile_conditional",
+      "applies_to": "KMIPKIT-PROFILE-HTTPS-CLIENT",
+      "review_note": "Profiles v2.1 §3.2, locator 1; §§6.4 item 2 and 6.5 item 2 establish HTTPS client and server profile applicability. This row records the client closure; endpoint direction remains unresolved.",
+      "source_obligation_order": 1,
+      "source_actor": "client",
+      "source_direction": "unspecified"
+    },
+    {
       "requirement_id": "KMIPKIT-REQ-PROF-3.2.1-001",
       "source_clause_id": "KMIPKIT-CLAUSE-PROF-3.2.1-001",
       "source_id": "KMIPKIT-SRC-profiles",
@@ -48582,17 +48600,19 @@
           "source_order": 1,
           "source_text": "This authentication suite stipulates that a profile conforming to the HTTPS Authentication Suite SHALL use HTTP over TLS [RFC2818] to negotiate a secure channel.",
           "source_keyword": "SHALL",
-          "actor": "unresolved",
+          "actor": "client",
           "direction": "unresolved",
           "condition": "For a profile conforming to the HTTPS Authentication Suite.",
-          "scope_disposition": "unresolved",
+          "scope_disposition": "profile_conditional",
           "candidate_requirement_id": "KMIPKIT-REQ-PROF-3.2-001"
         }
       ],
       "rejected_candidate_mappings": [],
-      "expected_client_requirement_ids": [],
+      "expected_client_requirement_ids": [
+        "KMIPKIT-REQ-PROF-3.2-001"
+      ],
       "applies_to": "KMIPKIT-PROFILE-HTTPS-CLIENT",
-      "review_note": "Profiles v2.1 section 3.2, locator 1; The source assigns the duty to a conforming Profile, not an identified client or server endpoint; actor remains unresolved."
+      "review_note": "Profiles v2.1 §3.2, locator 1; §6.4 item 2 explicitly requires HTTPS Client implementations to support the HTTPS Authentication Suite conditions, while §6.5 item 2 separately establishes server applicability. The client inclusion is conditional; message direction remains unresolved."
     },
     {
       "source_id": "KMIPKIT-SRC-profiles",

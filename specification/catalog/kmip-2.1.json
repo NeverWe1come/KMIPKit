@@ -79606,7 +79606,7 @@
       "subject": "HTTPS Authentication Suite secure channel",
       "summary": "Use HTTP over TLS as specified by RFC 2818 to establish the secure channel when conforming to the HTTPS Authentication Suite.",
       "role": "both",
-      "direction": "client_to_server",
+      "direction": "unclear",
       "condition": "Only when claiming HTTPS Authentication Suite section 3.2.",
       "scope_state": "profile_conditional",
       "element_ids": [],

@@ -227,6 +227,14 @@ class ProfileSectionsThreeAndFourCrosswalkTests(unittest.TestCase):
         self.assertEqual(review["source_obligations"][0]["actor"], "client")
         self.assertEqual(review["source_obligations"][0]["direction"], "unresolved")
         self.assertEqual(review["html_line_range"], [4227, 4229])
+        self.assertIn(
+            "SHALL support the HTTPS Authentication Suite conditions (3.2)",
+            pinned_excerpt([10532, 10534]),
+        )
+        self.assertIn(
+            "SHALL support the HTTPS Authentication Suite conditions (3.2)",
+            pinned_excerpt([10550, 10552]),
+        )
 
     def test_basic_authentication_suite_requirement_is_in_baseline_client_closure(self) -> None:
         """Sections 3.1 and 6.1 make the conditional TLS requirement part of Baseline Client."""
