@@ -87067,7 +87067,7 @@
       "condition": "A RNG Seed request is sent.",
       "scope_disposition": "client_1_0",
       "status": "mapped_to_approved_feature_contract",
-      "review_note": "The approved client feature preserves arbitrary seed bytes and redacts secret values. The evidence does not infer additional input constraints or claim remote RNG behavior.",
+      "review_note": "The approved client feature preserves arbitrary seed bytes, redacts secret values, and transfers KMIPKit-owned storage through zeroizing SecretBytes and TTLV Value owners. The evidence does not infer additional input constraints or claim remote RNG behavior.",
       "contract_kind": "operation_request_table_field",
       "table_number": 319,
       "requiredness": "Yes",
@@ -87078,16 +87078,20 @@
         "FR-008"
       ],
       "implementation_refs": [
-        "crates/kmipkit-protocol/src/rng_seed.rs::RngSeedRequest::to_ttlv_payload"
+        "crates/kmipkit-protocol/src/rng_seed.rs::RngSeedRequest::to_ttlv_payload",
+        "crates/kmipkit-protocol/src/credential/secret.rs::SecretBytes::into_ttlv_value"
       ],
       "verification_refs": [
         "crates/kmipkit-protocol/tests/unit/rng_seed_operation_tests.rs::request_encodes_required_table_319_data_and_redacts_secret_bytes",
         "crates/kmipkit-protocol/tests/unit/rng_seed_operation_tests.rs::request_preserves_arbitrary_seed_bytes_including_empty_and_non_utf8",
-        "crates/kmipkit-client/tests/unit/rng_seed_execution_tests.rs::rng_seed_sends_secret_once_and_accepts_zero_bytes_used"
+        "crates/kmipkit-client/tests/unit/rng_seed_execution_tests.rs::rng_seed_sends_secret_once_and_accepts_zero_bytes_used",
+        "crates/kmipkit-protocol/tests/unit/credential_secret_tests.rs::owned_secret_storage_calls_zeroize_before_drop",
+        "crates/kmipkit-protocol/tests/unit/operation_data_tests.rs::byte_string_data_uses_secret_bytes_and_zeroizing_ttlv_ownership",
+        "crates/kmipkit-ttlv/tests/value_zeroization.rs::value::tests::live_zeroize_clears_each_payload_variant_and_nested_structure"
       ],
       "evidence_disposition": {
         "status": "mapped_to_feature_contract",
-        "statement": "The linked client evidence verifies opaque Data encoding, secret redaction, and one fake-transport exchange. It makes no claim about the server RNG result or additional client input constraints."
+        "statement": "The linked client evidence verifies opaque Data encoding, secret redaction, one fake-transport exchange, and zeroization by the SecretBytes and TTLV byte-string owners. It makes no claim about the server RNG result or additional client input constraints."
       }
     }
   ]

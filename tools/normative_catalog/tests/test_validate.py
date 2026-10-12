@@ -7541,6 +7541,7 @@ class CatalogValidationTests(unittest.TestCase):
         self.assertEqual(contract["functional_requirement_ids"], ["FR-001", "FR-005", "FR-008"])
         self.assertEqual(contract["implementation_refs"], [
             "crates/kmipkit-protocol/src/rng_seed.rs::RngSeedRequest::to_ttlv_payload",
+            "crates/kmipkit-protocol/src/credential/secret.rs::SecretBytes::into_ttlv_value",
         ])
         self.assertEqual(contract["verification_refs"], [
             "crates/kmipkit-protocol/tests/unit/rng_seed_operation_tests.rs::request_encodes_required_table_319_data_and_redacts_secret_bytes",
