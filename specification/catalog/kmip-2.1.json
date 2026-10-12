@@ -96339,12 +96339,12 @@
       ],
       "verification_refs": [
         "crates/kmipkit-protocol/tests/unit/check_operation_tests.rs",
-        "crates/kmipkit-client/tests/unit/check_execution_tests.rs"
+        "crates/kmipkit-client/tests/unit/check_execution_tests.rs::check_sends_table_183_fields_and_exposes_table_184_response_once"
       ],
       "negative_verification_required": false,
       "decision_id": null,
       "status": "verified",
-      "review_note": "The typed Check request exposes the optional additional request attributes from the §6.1.7 list (Usage Limits Count, Cryptographic Usage Mask, and Lease Time); protocol and fake-transport tests verify serialization. The generic TTLV API remains structurally validating rather than operation-aware, so this records the typed client capability and does not claim server conformance."
+      "review_note": "The typed Check request exposes the optional additional request attributes from the KMIP Specification v2.1 §6.1.7 list (Usage Limits Count, Cryptographic Usage Mask, and Lease Time); protocol and fake-transport tests verify serialization. No official Test Cases ID is explicitly linked from the pinned KMIP Test Cases v2.1 CN01 source (KMIPKIT-SRC-testcases) to KMIPKIT-REQ-SPEC-6.1.7-002-003 under the catalog's source-backed linking policy, so test_case_ids remains empty. The qualified client execution test is derived local evidence, not an OASIS test-case pass. The generic TTLV API remains structurally validating rather than operation-aware, so this does not claim server conformance."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.7-003",
@@ -98590,7 +98590,7 @@
       "negative_verification_required": false,
       "decision_id": null,
       "status": "verified",
-      "review_note": "The client sets Attestation Capable Indicator true on requests because its shipped API can create a structurally valid Attestation Credential. The two referenced tests are derived executable evidence, not official OASIS test cases; this does not claim attestation evidence generation or verification."
+      "review_note": "The client sets Attestation Capable Indicator true on requests because its shipped API can create a structurally valid Attestation Credential. No official Test Cases ID is explicitly linked from the pinned KMIP Test Cases v2.1 CN01 source (KMIPKIT-SRC-testcases) to KMIPKIT-REQ-SPEC-9.3-001-001 at KMIP Specification v2.1 §9.3 under the catalog's source-backed linking policy, so test_case_ids remains empty. The two referenced tests are derived local evidence, not an OASIS test-case pass; this does not claim attestation evidence generation or verification."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-9.3-001-002",
