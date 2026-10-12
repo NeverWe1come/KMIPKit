@@ -4364,6 +4364,13 @@ class CatalogValidationTests(unittest.TestCase):
             set(crosswalk_ids) == catalog_ids,
             "the flag covers direct crosswalk rows; source reviews and rejections are accounted for separately",
         )
+        missing_direct_crosswalks = sorted(catalog_ids - set(crosswalk_ids))
+        self.assertEqual(
+            missing_direct_crosswalks,
+            [],
+            "every stable catalog requirement needs a direct source disposition; "
+            f"missing {len(missing_direct_crosswalks)} IDs: {missing_direct_crosswalks[:12]}",
+        )
 
     def test_spec_4_1_through_4_18_source_review_slice_is_complete(self) -> None:
         """The first reviewed §4 slice retains every candidate and actor split."""

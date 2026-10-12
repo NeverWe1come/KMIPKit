@@ -274,6 +274,60 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
                     f"{sorted(missing_requirement_ids)[:8]}",
                 )
 
+    def test_profile_oracle_requirement_arrays_match_independent_source_reviews(self) -> None:
+        """Full profile requirement sets come from reviewed source records, not the catalog."""
+        oracle_path = ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json"
+        oracle = json.loads(oracle_path.read_text(encoding="utf-8"))
+        source_clauses = {row["clause_id"]: row for row in oracle["source_clause_crosswalk"]}
+
+        for profile in oracle["profiles"]:
+            profile_id = profile["profile_id"]
+            source_clause_ids = set(profile["source_clause_ids"])
+            included_sections = {
+                (source_clauses[clause_id]["source_id"], source_clauses[clause_id]["section"])
+                for clause_id in source_clause_ids
+            }
+            expected_requirement_ids: set[str] = set()
+
+            for review in oracle["source_requirement_reviews"]:
+                if (
+                    review["source_clause_id"] in source_clause_ids
+                    and review.get("applies_to") in {"all_client_profiles", profile_id}
+                ):
+                    expected_requirement_ids.update(review["expected_client_requirement_ids"])
+
+            for mapping in oracle["requirement_crosswalk"]:
+                if (
+                    mapping.get("applies_to") in {"all_client_profiles", profile_id}
+                    and mapping.get("role") in {"client", "both"}
+                    and mapping.get("scope_state") in {"client_1_0", "profile_conditional"}
+                    and (
+                        mapping.get("source_clause_id") in source_clause_ids
+                        or (mapping.get("source_id"), mapping.get("source_section")) in included_sections
+                    )
+                ):
+                    expected_requirement_ids.add(mapping["requirement_id"])
+
+            for gap in oracle["source_only_requirement_gaps"]:
+                if (
+                    gap.get("candidate_requirement_id") is not None
+                    and gap.get("scope_disposition") in {"client_1_0", "profile_conditional"}
+                    and (
+                        gap.get("source_clause_id") in source_clause_ids
+                        or (gap.get("source_id"), gap.get("source_section")) in included_sections
+                    )
+                ):
+                    expected_requirement_ids.add(gap["candidate_requirement_id"])
+
+            expected = sorted(expected_requirement_ids)
+            with self.subTest(profile_id=profile_id):
+                self.assertEqual(
+                    profile.get("requirement_ids"),
+                    expected,
+                    "full requirement closure must be independently enumerated from the source review fixture",
+                )
+                self.assertEqual(profile["requirement_ids_audited_subset"], expected)
+
     def test_catalog_scopes_source_reviewed_conditional_requirements_to_profiles(self) -> None:
         """Catalog profile IDs and closures match source-reviewed conditional applicability."""
         catalog_path = ROOT / "specification" / "catalog" / "kmip-2.1.json"
