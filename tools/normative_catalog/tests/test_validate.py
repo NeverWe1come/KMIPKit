@@ -6623,30 +6623,26 @@ class CatalogValidationTests(unittest.TestCase):
         oracle = json.loads(
             (ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json").read_text(encoding="utf-8")
         )
+        protocol_test_ref = "crates/kmipkit-protocol/tests/unit/rekey_key_pair_operation_tests.rs::request_emits_table_310_fields_once_in_order_and_preserves_groups"
+        client_test_ref = "crates/kmipkit-client/tests/unit/rekey_key_pair_execution_tests.rs::rekey_key_pair_sends_table_310_and_returns_both_identifiers_once"
         expected = {
             "KMIPKIT-SOURCE-GAP-SPEC-6.1.47-COMMON-ATTRIBUTES-OPTIONAL": (
                 "Common Attributes", [34796, 34816],
-                "crates/kmipkit-protocol/tests/unit/rekey_key_pair_operation_tests.rs::request_emits_table_310_fields_once_in_order_and_preserves_groups",
             ),
             "KMIPKIT-SOURCE-GAP-SPEC-6.1.47-PRIVATE-KEY-ATTRIBUTES-OPTIONAL": (
                 "Private Key Attributes", [34817, 34835],
-                "crates/kmipkit-protocol/tests/unit/rekey_key_pair_operation_tests.rs::request_emits_table_310_fields_once_in_order_and_preserves_groups",
             ),
             "KMIPKIT-SOURCE-GAP-SPEC-6.1.47-PUBLIC-KEY-ATTRIBUTES-OPTIONAL": (
                 "Public Key Attributes", [34836, 34854],
-                "crates/kmipkit-protocol/tests/unit/rekey_key_pair_operation_tests.rs::request_emits_table_310_fields_once_in_order_and_preserves_groups",
             ),
             "KMIPKIT-SOURCE-GAP-SPEC-6.1.47-COMMON-PROTECTION-STORAGE-MASKS-OPTIONAL": (
                 "Common Protection Storage Masks", [34855, 34873],
-                "crates/kmipkit-protocol/tests/unit/rekey_key_pair_operation_tests.rs::request_emits_table_310_fields_once_in_order_and_preserves_groups",
             ),
             "KMIPKIT-SOURCE-GAP-SPEC-6.1.47-PRIVATE-PROTECTION-STORAGE-MASKS-OPTIONAL": (
                 "Private Protection Storage Masks", [34874, 34897],
-                "crates/kmipkit-protocol/tests/unit/rekey_key_pair_operation_tests.rs::request_emits_table_310_fields_once_in_order_and_preserves_groups",
             ),
             "KMIPKIT-SOURCE-GAP-SPEC-6.1.47-PUBLIC-PROTECTION-STORAGE-MASKS-OPTIONAL": (
                 "Public Protection Storage Masks", [34898, 34921],
-                "crates/kmipkit-protocol/tests/unit/rekey_key_pair_operation_tests.rs::request_emits_table_310_fields_once_in_order_and_preserves_groups",
             ),
         }
         contracts = {
@@ -6664,8 +6660,7 @@ class CatalogValidationTests(unittest.TestCase):
         self.assertTrue(set(expected).isdisjoint(source_gap_ids))
         operation_element_id = "KMIPKIT-ELEM-OP-C2S-RE-KEY-KEY-PAIR"
         implementation_ref = "crates/kmipkit-protocol/src/rekey_key_pair.rs::RekeyKeyPairRequest::into_ttlv_payload"
-        client_test_ref = "crates/kmipkit-client/tests/unit/rekey_key_pair_execution_tests.rs::rekey_key_pair_sends_table_310_and_returns_both_identifiers_once"
-        for gap_id, (row_label, line_range, protocol_test_ref) in expected.items():
+        for gap_id, (row_label, line_range) in expected.items():
             contract = contracts[gap_id]
             with self.subTest(source_table_contract=gap_id):
                 self.assertEqual(contract["source_id"], "KMIPKIT-SRC-spec")
