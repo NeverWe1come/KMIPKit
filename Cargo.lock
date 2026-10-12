@@ -316,7 +316,7 @@ dependencies = [
 
 [[package]]
 name = "kmipkit"
-version = "0.1.0"
+version = "1.0.0"
 dependencies = [
  "kmipkit-client",
  "kmipkit-protocol",
@@ -326,7 +326,7 @@ dependencies = [
 
 [[package]]
 name = "kmipkit-client"
-version = "0.1.0"
+version = "1.0.0"
 dependencies = [
  "kmipkit-protocol",
  "kmipkit-test-support",
@@ -344,7 +344,7 @@ dependencies = [
 
 [[package]]
 name = "kmipkit-ffi"
-version = "0.1.0"
+version = "1.0.0"
 dependencies = [
  "cc",
  "kmipkit",
@@ -355,7 +355,7 @@ dependencies = [
 
 [[package]]
 name = "kmipkit-protocol"
-version = "0.1.0"
+version = "1.0.0"
 dependencies = [
  "kmipkit-ttlv",
  "quickcheck",
@@ -365,7 +365,7 @@ dependencies = [
 
 [[package]]
 name = "kmipkit-test-support"
-version = "0.1.0"
+version = "1.0.0"
 dependencies = [
  "aws-lc-rs",
  "kmipkit-protocol",
@@ -379,7 +379,7 @@ dependencies = [
 
 [[package]]
 name = "kmipkit-transport"
-version = "0.1.0"
+version = "1.0.0"
 dependencies = [
  "bytes",
  "hyper",
@@ -394,7 +394,7 @@ dependencies = [
 
 [[package]]
 name = "kmipkit-ttlv"
-version = "0.1.0"
+version = "1.0.0"
 dependencies = [
  "serde",
  "trybuild",
