@@ -185,8 +185,9 @@ one another's summaries.
 
 ### Adapter and FFI coverage
 
-The coverage aggregator also requires one JaCoCo XML report at
-`coverage-java/jacoco.xml`, one coverage.py Cobertura report at
+The coverage aggregator also requires JaCoCo XML reports from Linux and
+Windows at `coverage-java-linux/jacoco.xml` and
+`coverage-java-windows/jacoco.xml`, one coverage.py Cobertura report at
 `coverage-python/coverage.xml`, and one LLVM JSON report at
 `coverage-jni/coverage.json` whenever these source trees exist. It checks each
 scope independently at 85 percent, then includes all reported production
@@ -253,7 +254,8 @@ coverage-reports/
   coverage-windows/coverage.json
   coverage-macos/coverage.json
   coverage-ffi/coverage.json
-  coverage-java/jacoco.xml
+  coverage-java-linux/jacoco.xml
+  coverage-java-windows/jacoco.xml
   coverage-python/coverage.xml
   coverage-jni/coverage.json
 ```
@@ -267,7 +269,12 @@ virtual environment.
 cargo llvm-cov --workspace --all-features --locked --json --output-path coverage-raw.json
 python scripts/coverage_gate.py normalize --workspace . --input coverage-raw.json --output coverage.json
 
+# Run on both Linux and Windows; preserve each report under its platform name.
 mvn -B -f bindings/java/pom.xml clean verify
+mkdir -p coverage-reports/coverage-java-linux
+cp bindings/java/target/site/jacoco/jacoco.xml coverage-reports/coverage-java-linux/jacoco.xml
+# On Windows, use PowerShell: New-Item -ItemType Directory -Force coverage-reports/coverage-java-windows
+# Then copy bindings/java/target/site/jacoco/jacoco.xml to coverage-reports/coverage-java-windows/jacoco.xml
 
 python -m pip install -r bindings/python/requirements-coverage.txt
 python -m pip install --no-build-isolation --editable bindings/python
@@ -279,18 +286,18 @@ bash scripts/collect_jni_coverage.sh target/coverage-jni
 # Linux only; runs the C ABI consumer against the instrumented Rust library.
 bash scripts/collect_ffi_coverage.sh target/coverage-ffi
 
-mkdir -p coverage-reports/coverage-java coverage-reports/coverage-jni coverage-reports/coverage-ffi
-cp bindings/java/target/site/jacoco/jacoco.xml coverage-reports/coverage-java/jacoco.xml
+mkdir -p coverage-reports/coverage-jni coverage-reports/coverage-ffi
 cp target/coverage-jni/coverage.json coverage-reports/coverage-jni/coverage.json
 cp target/coverage-ffi/coverage.json coverage-reports/coverage-ffi/coverage.json
 python scripts/coverage_gate.py aggregate --workspace . --report-dir coverage-reports --base <full-base-sha> --merge <full-merge-sha>
 ```
 
 The pull-request workflow's Linux `coverage` job runs the C ABI collector and
-uploads `coverage-ffi`; its Linux `adapter-coverage` job runs the Java, Python,
-and JNI collectors and uploads their three reports. The `coverage-gate` job
-requires successful Rust and adapter collection, downloads all seven coverage
-artifacts into `coverage-reports`, and runs the aggregate command with the pull request
+uploads `coverage-ffi`. Java coverage runs on Linux and Windows and uploads one
+JaCoCo report per platform; the Linux adapter jobs collect Python and JNI
+coverage. The aggregator unions Java line hits across both operating systems.
+The `coverage-gate` job requires successful Rust and adapter collection,
+downloads all eight coverage artifacts into `coverage-reports`, and runs the aggregate command with the pull request
 base and merge commit SHAs shown above. A local aggregate run must supply real
 reports from Ubuntu, Windows, and macOS; missing platform or adapter artifacts
 fail closed.

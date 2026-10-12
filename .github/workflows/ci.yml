@@ -1113,8 +1113,16 @@ jobs:
       always() && github.event_name == 'pull_request' &&
       (needs.impact-plan.result != 'success' || needs.impact-plan.outputs.full == 'true' ||
        contains(format(',{0},', needs.impact-plan.outputs.selected_jobs), ',coverage-java,'))
-    name: Java coverage / Linux
-    runs-on: ubuntu-latest
+    name: Java coverage / ${{ matrix.platform }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - platform: linux
+            os: ubuntu-latest
+          - platform: windows
+            os: windows-latest
+    runs-on: ${{ matrix.os }}
     needs: impact-plan
     env:
       CARGO_TERM_COLOR: always
@@ -1152,15 +1160,15 @@ jobs:
         shell: bash
         run: |
           mvn --batch-mode --file bindings/java/pom.xml clean verify
-          mkdir -p coverage-java
-          cp bindings/java/target/site/jacoco/jacoco.xml coverage-java/jacoco.xml
+          mkdir -p coverage-java-${{ matrix.platform }}
+          cp bindings/java/target/site/jacoco/jacoco.xml coverage-java-${{ matrix.platform }}/jacoco.xml
 
       - name: Upload Java coverage report
         id: upload-java-coverage-report
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # actions/upload-artifact v7.0.1
         with:
-          name: coverage-java
-          path: coverage-java/jacoco.xml
+          name: coverage-java-${{ matrix.platform }}
+          path: coverage-java-${{ matrix.platform }}/jacoco.xml
           if-no-files-found: error
       - name: Diagnose job result
         id: ci-diagnostics

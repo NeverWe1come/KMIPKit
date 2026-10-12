@@ -1154,36 +1154,44 @@ def _load_adapter_reports(
     if not any(sources[scope_names[scope]] for scope in selected_scopes):
         return None
     inputs = {
-        "Java adapters": (report_root / "coverage-java" / "jacoco.xml", parse_jacoco_report),
-        "Python adapters": (report_root / "coverage-python" / "coverage.xml", parse_cobertura_report),
-        "JNI bridge": (report_root / "coverage-jni" / "coverage.json", parse_llvm_export),
+        "Java adapters": (
+            (report_root / "coverage-java-linux" / "jacoco.xml", parse_jacoco_report),
+            (report_root / "coverage-java-windows" / "jacoco.xml", parse_jacoco_report),
+        ),
+        "Python adapters": ((report_root / "coverage-python" / "coverage.xml", parse_cobertura_report),),
+        "JNI bridge": ((report_root / "coverage-jni" / "coverage.json", parse_llvm_export),),
     }
     parsed: dict[str, Mapping[str, Mapping[int, int]]] = {}
     for short_scope, scope in scope_names.items():
         if short_scope not in selected_scopes:
             continue
-        report_path, parser = inputs[scope]
         expected_sources = sources[scope]
         if not expected_sources:
             continue
-        if not report_path.is_file():
-            raise CoverageDataError(f"Required {scope} coverage artifact is missing: {report_path}.")
-        try:
-            document = report_path.read_bytes()
-            adapter_report = parser(document, workspace)
-        except OSError as error:
-            raise CoverageDataError(f"Could not read {scope} coverage report: {error}") from error
-        missing_sources = expected_sources.difference(adapter_report)
-        unexpected_sources = set(adapter_report).difference(expected_sources)
-        if missing_sources:
-            raise CoverageDataError(
-                f"Eligible {scope} source is missing from its coverage report: {', '.join(sorted(missing_sources))}"
-            )
-        if unexpected_sources:
-            raise CoverageDataError(
-                f"{scope} coverage report contains a source outside its package: {', '.join(sorted(unexpected_sources))}"
-            )
-        parsed[scope] = adapter_report
+        merged_report: dict[str, dict[int, int]] = {}
+        for report_path, parser in inputs[scope]:
+            if not report_path.is_file():
+                raise CoverageDataError(f"Required {scope} coverage artifact is missing: {report_path}.")
+            try:
+                document = report_path.read_bytes()
+                adapter_report = parser(document, workspace)
+            except OSError as error:
+                raise CoverageDataError(f"Could not read {scope} coverage report: {error}") from error
+            missing_sources = expected_sources.difference(adapter_report)
+            unexpected_sources = set(adapter_report).difference(expected_sources)
+            if missing_sources:
+                raise CoverageDataError(
+                    f"Eligible {scope} source is missing from its coverage report: {', '.join(sorted(missing_sources))}"
+                )
+            if unexpected_sources:
+                raise CoverageDataError(
+                    f"{scope} coverage report contains a source outside its package: {', '.join(sorted(unexpected_sources))}"
+                )
+            for source, lines in adapter_report.items():
+                merged_lines = merged_report.setdefault(source, {})
+                for line, hits in lines.items():
+                    merged_lines[line] = max(merged_lines.get(line, 0), hits)
+        parsed[scope] = merged_report
     return parsed
 
 
