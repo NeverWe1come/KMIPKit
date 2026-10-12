@@ -87,7 +87,7 @@ Seventeen client-profile records directly include `KMIPKIT-CLAUSE-PROF-3.1-001`;
 | HTTPS | `conditional` | 3.2, 5.3.1, 6.1, 6.4 | 918 | 363 | Baseline | 17 | all unavailable |
 | JSON | `out_of_scope` | 3.1, 5.5.2, 6.1, 6.8 | 905 | 349 | Baseline | 17 | all unavailable |
 | Opaque Managed Object Store | `client_1_0` | 3.1, 5.10.1, 6.1, 6.24 | 904 | 357 | Baseline | 18 | all unavailable |
-| PKCS#11 | `out_of_scope` | 3.1, 5.18.3, 6.1, 6.34 | 906 | 358 | Baseline | 17 | all unavailable |
+| PKCS#11 | `out_of_scope` | 3.1, 5.18.3, 6.1, 6.34 | 911 | 227 | Baseline | 17 | all unavailable |
 | Quantum Safe | `client_1_0` | 3.1, 5.15, 5.17, 6.1, 6.32 | 910 | 359 | Baseline | 18 | all unavailable |
 | Storage Array with Self-Encrypting Drives | `client_1_0` | 3.1, 5.11.1, 6.1, 6.26 | 905 | 358 | Baseline | 19 | all unavailable |
 | Symmetric Key Foundry Advanced | `client_1_0` | 3.1, 5.7.3, 6.1, 6.14 | 904 | 356 | Baseline | 20 | all unavailable |
@@ -96,6 +96,8 @@ Seventeen client-profile records directly include `KMIPKIT-CLAUSE-PROF-3.1-001`;
 | Symmetric Key Lifecycle | `client_1_0` | 3.1, 5.6.1, 6.1, 6.10 | 904 | 357 | Baseline | 17 | all unavailable |
 | Tape Library | `client_1_0` | 3.1, 5.12.2, 5.12.3, 5.12.4, 6.1, 6.28 | 922 | 374 | Baseline | 19 | all unavailable |
 | XML | `out_of_scope` | 3.1, 5.4.2, 6.1, 6.6 | 905 | 349 | Baseline | 17 | all unavailable |
+
+PKCS#11 Client closure includes Profiles §5.18.1 through the explicit inclusion in §5.18.3 item 2. The five clauses stay in its source closure, but their profile-specific requirements remain out of scope for the TTLV-only 1.0 line; the lowercase `may`/`required` wording in §5.18.1 ordinals 1–3 does not create normative requirement records. The stored 911-clause and 227-requirement counts above match the catalog closure.
 
 Every profile links the shared official IDs `BL-M-{1..13}-21` and `SKLC-M-{1..3}-21`. The following are the additional official IDs linked by each profile; numeric ranges are inclusive:
 

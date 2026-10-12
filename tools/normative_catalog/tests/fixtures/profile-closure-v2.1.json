@@ -20,6 +20,13 @@
     "direct_section_mapping": "Profiles v2.1 §§5.x and 6.1-6.35. HTTPS direct sections are §§3.2, 5.3.1, 6.1, and 6.4. It inherits §3.1 through its Baseline dependency and Profiles §6.1 item 2.",
     "inclusion_edges": [
       {
+        "inclusion_id": "KMIPKIT-INCLUSION-PROF-BASELINE-BASIC-AUTH",
+        "source_clause_id": "KMIPKIT-CLAUSE-PROF-6.1-002",
+        "included_source_id": "KMIPKIT-SRC-profiles",
+        "included_section": "3.1",
+        "source_locator": "Profiles v2.1 §6.1 item 2"
+      },
+      {
         "inclusion_id": "KMIPKIT-INCLUSION-PROF-BASELINE-SPEC",
         "source_clause_id": "KMIPKIT-CLAUSE-PROF-6.1-001",
         "included_source_id": "KMIPKIT-SRC-spec",
@@ -27,11 +34,11 @@
         "source_locator": "Profiles v2.1 §6.1 item 1"
       },
       {
-        "inclusion_id": "KMIPKIT-INCLUSION-PROF-BASELINE-BASIC-AUTH",
-        "source_clause_id": "KMIPKIT-CLAUSE-PROF-6.1-002",
+        "inclusion_id": "KMIPKIT-INCLUSION-PROF-PKCS11-ENCODING",
+        "source_clause_id": "KMIPKIT-CLAUSE-PROF-5.18.3-002",
         "included_source_id": "KMIPKIT-SRC-profiles",
-        "included_section": "3.1",
-        "source_locator": "Profiles v2.1 §6.1 item 2"
+        "included_section": "5.18.1",
+        "source_locator": "Profiles v2.1 section 5.18.3 item 2"
       }
     ],
     "normative_boundaries": [
@@ -42,7 +49,8 @@
       "All exact upstream XML href targets are unavailable in this worktree; hrefs and labels are retained as published.",
       "Requirement crosswalk, complete test-link provenance, keyword-category, target-manifest, adversarial parser, and generated-source compilation cases remain incomplete.",
       "Direct roots are source-reviewed client-facing profile obligations; candidate keyword blocks that are inherited, server-only, descriptive, or explicitly informative remain in the clause closure but are not direct client roots. HTTPS §3.1 is inherited from Baseline; Tape Library exclusions are individually locator- and span-documented.",
-      "Source-only gaps include ten §6.1 imperative procedure ID proposals, six optional §6.1.47 Request Payload rows mapped to typed operation-table contracts, an unresolved lowercase multipart-option preface, and every unlabeled formal/source-only Profile row from the independent client-roots audit; proposals are not catalog IDs and do not silently enter closure sets. The 26 Specification §§3.1-3.12 Required=Yes table-body rows are separate source-only proposed obligations; they do not reuse the rejected heading labels and are not formal uppercase RFC 2119 REQUIRED tokens."
+      "Source-only gaps include ten §6.1 imperative procedure ID proposals, six optional §6.1.47 Request Payload rows mapped to typed operation-table contracts, an unresolved lowercase multipart-option preface, and every unlabeled formal/source-only Profile row from the independent client-roots audit; proposals are not catalog IDs and do not silently enter closure sets. The 26 Specification §§3.1-3.12 Required=Yes table-body rows are separate source-only proposed obligations; they do not reuse the rejected heading labels and are not formal uppercase RFC 2119 REQUIRED tokens.",
+      "Profiles v2.1 section 5.18.1 ordinals 1-3 use lowercase may/required in descriptive encoding text; these source clauses are retained in the closure but do not create normative requirements."
     ],
     "case_label_href_mismatches": [
       {
@@ -37035,8 +37043,9 @@
         "KMIPKIT-CLAUSE-PROF-6.34-005"
       ],
       "normative_inclusion_ids": [
+        "KMIPKIT-INCLUSION-PROF-BASELINE-BASIC-AUTH",
         "KMIPKIT-INCLUSION-PROF-BASELINE-SPEC",
-        "KMIPKIT-INCLUSION-PROF-BASELINE-BASIC-AUTH"
+        "KMIPKIT-INCLUSION-PROF-PKCS11-ENCODING"
       ],
       "source_clause_ids": [
         "KMIPKIT-CLAUSE-PROF-3.1-001",
@@ -37054,6 +37063,11 @@
         "KMIPKIT-CLAUSE-PROF-3.1.3-002",
         "KMIPKIT-CLAUSE-PROF-3.1.3-003",
         "KMIPKIT-CLAUSE-PROF-3.1.4-001",
+        "KMIPKIT-CLAUSE-PROF-5.18.1-001",
+        "KMIPKIT-CLAUSE-PROF-5.18.1-002",
+        "KMIPKIT-CLAUSE-PROF-5.18.1-003",
+        "KMIPKIT-CLAUSE-PROF-5.18.1-004",
+        "KMIPKIT-CLAUSE-PROF-5.18.1-005",
         "KMIPKIT-CLAUSE-PROF-5.18.3-001",
         "KMIPKIT-CLAUSE-PROF-5.18.3-002",
         "KMIPKIT-CLAUSE-PROF-5.18.3-003",
