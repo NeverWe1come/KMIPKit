@@ -5,6 +5,7 @@ from __future__ import annotations
 import importlib.util
 import sys
 import tempfile
+import tomllib
 import unittest
 from pathlib import Path
 
@@ -70,10 +71,12 @@ class ExampleProjectTests(unittest.TestCase):
             project = Path(temporary) / "examples"
             runner.write_project(REPOSITORY_ROOT, project, examples)
 
-            manifest = (project / "Cargo.toml").read_text(encoding="utf-8")
-            self.assertIn(
-                f'aws-lc-sys = {{ path = "{(REPOSITORY_ROOT / "vendor" / "aws-lc-sys-0.45.0").as_posix()}" }}',
-                manifest,
+            manifest = tomllib.loads(
+                (project / "Cargo.toml").read_text(encoding="utf-8")
+            )
+            self.assertEqual(
+                manifest["patch"]["crates-io"]["aws-lc-sys"]["path"],
+                (REPOSITORY_ROOT / "vendor" / "aws-lc-sys-0.45.0").as_posix(),
             )
 
     def test_cargo_check_command_is_offline_and_can_require_the_resolved_lock(self) -> None:
