@@ -2,14 +2,38 @@
 
 from __future__ import annotations
 
+import copy
 import json
 import unittest
 from pathlib import Path
+
+from tools.normative_catalog.validate import validate_source_table_contracts
 
 
 ROOT = Path(__file__).resolve().parents[3]
 ORACLE_PATH = ROOT / "tools/normative_catalog/tests/fixtures/profile-closure-v2.1.json"
 CATALOG_PATH = ROOT / "specification/catalog/kmip-2.1.json"
+
+REVIEWED_ASYNC_CONTRACT_SEMANTICS = {
+    "KMIPKIT-SOURCE-GAP-SPEC-6.1.39-ASYNC-CORRELATION-VALUE-REQUIRED": {
+        "requiredness": "Yes",
+        "actor": "client",
+        "direction": "include the Asynchronous Correlation Value in the Process request payload",
+        "scope_disposition": "client_1_0",
+    },
+    "KMIPKIT-SOURCE-GAP-SPEC-6.1.41-ASYNC-CORRELATION-VALUES-OPTIONAL": {
+        "requiredness": "No",
+        "actor": "client",
+        "direction": "optional Asynchronous Correlation Values request payload value",
+        "scope_disposition": "client_1_0",
+    },
+    "KMIPKIT-SOURCE-GAP-SPEC-6.1.41-OPERATIONS-OPTIONAL": {
+        "requiredness": "No",
+        "actor": "client",
+        "direction": "optional Operations request payload value",
+        "scope_disposition": "client_1_0",
+    },
+}
 
 
 class AsyncTableContractTests(unittest.TestCase):
@@ -59,10 +83,39 @@ class AsyncTableContractTests(unittest.TestCase):
                 self.assertEqual(row["table_number"], table_number)
                 self.assertEqual(row["operation_element_id"], operation_id)
                 self.assertEqual(row["functional_requirement_ids"], fr_ids)
+                self.assertEqual(
+                    {field: row[field] for field in REVIEWED_ASYNC_CONTRACT_SEMANTICS[gap_id]},
+                    REVIEWED_ASYNC_CONTRACT_SEMANTICS[gap_id],
+                )
                 self.assertEqual(row["status"], "mapped_to_approved_feature_contract")
                 self.assertNotIn("candidate_requirement_id", row)
                 self.assertNotIn("proposed_requirement_id", row)
                 self.assertNotIn("requirement_id", row)
+
+    def test_source_table_validator_rejects_wrong_async_contract_semantics(self) -> None:
+        oracle = json.loads(ORACLE_PATH.read_text(encoding="utf-8"))
+        self.assertEqual(validate_source_table_contracts(oracle, ROOT), [])
+
+        for gap_id, semantics in REVIEWED_ASYNC_CONTRACT_SEMANTICS.items():
+            for field, wrong_value in (
+                ("requiredness", "No" if semantics["requiredness"] == "Yes" else "Yes"),
+                ("actor", "server"),
+                ("direction", "server-to-client response payload value"),
+                ("scope_disposition", "client_1_1"),
+            ):
+                with self.subTest(gap_id=gap_id, field=field):
+                    mutated_oracle = copy.deepcopy(oracle)
+                    contract = next(
+                        row for row in mutated_oracle["source_table_contracts"]
+                        if row.get("gap_id") == gap_id
+                    )
+                    contract[field] = wrong_value
+
+                    diagnostics = validate_source_table_contracts(mutated_oracle, ROOT)
+                    self.assertTrue(
+                        any(f".{field}" in diagnostic for diagnostic in diagnostics),
+                        f"validator accepted wrong {field} for {gap_id}: {diagnostics!r}",
+                    )
 
 
 if __name__ == "__main__":
