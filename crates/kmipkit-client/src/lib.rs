@@ -285,6 +285,10 @@ pub use execute::{
     ClientBatchResponse, ClientMessageExtension, ClientOperation, ClientOperationOutcome,
     ClientRequest, ClientResponseView, PendingOutcome,
 };
+pub use kmipkit_protocol::{
+    ProfileTransport, ProfileValidationError, ProfileValidationErrorCode,
+    ProfileValidationSelection,
+};
 pub use kmipkit_transport::RequestOptions;
 
 #[cfg(test)]

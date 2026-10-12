@@ -13,7 +13,7 @@ fn registry_provenance_precedes_request_build_codec_and_adapter_handoff() {
             _ => None,
         })
         .expect("Client implementation exists");
-    let execute = method(client_impl, "execute_with_options");
+    let execute = method(client_impl, "execute_inner");
     let provenance = call_position(
         execute.block.stmts.as_slice(),
         "validate_request_extension_ownership",

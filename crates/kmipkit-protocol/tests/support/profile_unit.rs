@@ -2,14 +2,28 @@ use std::fmt;
 use std::fmt::Write as _;
 
 use super::{
-    ProfileEvidenceRecord, ProfileReadiness, ProfileReadinessBlocker, ProfileValidationError,
-    ProfileValidationErrorCode, ProfileValidationSelection, RuleConstraint, RuleTestEvidence,
-    RuleTestKind, TypedRuleMapping, reconcile_effective_state, validate_mapping,
-    validate_selection_with_registry,
+    ProfileEvidenceRecord, ProfileReadiness, ProfileReadinessBlocker, ProfileTransport,
+    ProfileValidationError, ProfileValidationErrorCode, ProfileValidationResult,
+    ProfileValidationSelection, RuleConstraint, RuleTestEvidence, RuleTestKind, TypedRuleMapping,
+    reconcile_effective_state, validate_mapping, validate_selection_with_registry,
 };
 use crate::profiles_generated::{
     GeneratedClientProfile, GeneratedClientRequirement, GeneratedVerificationCategory,
 };
+use kmipkit_ttlv::{Item, RawTag, Structure, Tag, Value};
+
+const REQUEST_HEADER_TAG: u32 = 0x0042_0077;
+const RESPONSE_HEADER_TAG: u32 = 0x0042_007A;
+const PROTOCOL_VERSION_TAG: u32 = 0x0042_0069;
+const PROTOCOL_VERSION_MAJOR_TAG: u32 = 0x0042_006A;
+const PROTOCOL_VERSION_MINOR_TAG: u32 = 0x0042_006B;
+const BATCH_COUNT_TAG: u32 = 0x0042_000D;
+const BATCH_ITEM_TAG: u32 = 0x0042_000F;
+const OPERATION_TAG: u32 = 0x0042_005C;
+const REQUEST_PAYLOAD_TAG: u32 = 0x0042_0079;
+const RESPONSE_PAYLOAD_TAG: u32 = 0x0042_007C;
+const RESULT_STATUS_TAG: u32 = 0x0042_007F;
+const TIME_STAMP_TAG: u32 = 0x0042_0092;
 
 struct RejectingWriter;
 
@@ -26,6 +40,10 @@ static CONSTRAINTS_HTTPS: [RuleConstraint; 1] = [RuleConstraint {
 static CONSTRAINTS_RAW_TLS: [RuleConstraint; 1] = [RuleConstraint {
     key: "transport",
     value: "raw_tls",
+}];
+static UNKNOWN_CONSTRAINT: [RuleConstraint; 1] = [RuleConstraint {
+    key: "untyped-policy",
+    value: "opaque",
 }];
 static POSITIVE_TEST: [RuleTestEvidence; 1] = [RuleTestEvidence {
     test_id: "profile-rule-positive-test",
@@ -53,6 +71,90 @@ fn passing_rule(
     _response: Option<(&crate::RequestMessage, &crate::ResponseMessage)>,
 ) -> bool {
     true
+}
+
+fn reject_outbound_rule(
+    _request: Option<&crate::RequestMessage>,
+    response: Option<(&crate::RequestMessage, &crate::ResponseMessage)>,
+) -> bool {
+    response.is_some()
+}
+
+fn reject_response_rule(
+    _request: Option<&crate::RequestMessage>,
+    response: Option<(&crate::RequestMessage, &crate::ResponseMessage)>,
+) -> bool {
+    response.is_none()
+}
+
+fn tagged(raw_tag: u32, value: Value) -> Item {
+    let tag: Tag = RawTag::new(raw_tag)
+        .expect("test tag fits the TTLV width")
+        .try_checked()
+        .expect("test tag is allocated");
+    Item::new(tag, value).expect("test item is valid")
+}
+
+fn structure(items: impl IntoIterator<Item = Item>) -> Structure {
+    let mut result = Structure::new();
+    for item in items {
+        result
+            .try_push(item)
+            .expect("test structure depth is valid");
+    }
+    result
+}
+
+fn test_protocol_version() -> Item {
+    tagged(
+        PROTOCOL_VERSION_TAG,
+        Value::structure(structure([
+            tagged(PROTOCOL_VERSION_MAJOR_TAG, Value::integer(2)),
+            tagged(PROTOCOL_VERSION_MINOR_TAG, Value::integer(1)),
+        ])),
+    )
+}
+
+fn request_message() -> crate::RequestMessage {
+    crate::RequestMessage::try_from_ttlv(structure([
+        tagged(
+            REQUEST_HEADER_TAG,
+            Value::structure(structure([
+                test_protocol_version(),
+                tagged(BATCH_COUNT_TAG, Value::integer(1)),
+            ])),
+        ),
+        tagged(
+            BATCH_ITEM_TAG,
+            Value::structure(structure([
+                tagged(OPERATION_TAG, Value::enumeration(0x1E)),
+                tagged(REQUEST_PAYLOAD_TAG, Value::structure(Structure::new())),
+            ])),
+        ),
+    ]))
+    .expect("test Request Message is valid")
+}
+
+fn response_message() -> crate::ResponseMessage {
+    crate::ResponseMessage::try_from_ttlv(structure([
+        tagged(
+            RESPONSE_HEADER_TAG,
+            Value::structure(structure([
+                test_protocol_version(),
+                tagged(TIME_STAMP_TAG, Value::date_time(1)),
+                tagged(BATCH_COUNT_TAG, Value::integer(1)),
+            ])),
+        ),
+        tagged(
+            BATCH_ITEM_TAG,
+            Value::structure(structure([
+                tagged(OPERATION_TAG, Value::enumeration(0x1E)),
+                tagged(RESULT_STATUS_TAG, Value::enumeration(0)),
+                tagged(RESPONSE_PAYLOAD_TAG, Value::structure(Structure::new())),
+            ])),
+        ),
+    ]))
+    .expect("test Response Message is valid")
 }
 
 fn profile(
@@ -224,6 +326,131 @@ fn a_complete_synthetic_mapping_allows_selection_without_target_membership() {
 }
 
 #[test]
+fn mapped_request_and_response_rejections_keep_stable_source_metadata() {
+    let result = ProfileValidationResult {
+        profile_ids: vec!["TEST-PROFILE".to_owned()],
+        requirement_ids: vec!["TEST-REQ".to_owned()],
+    };
+    let required = requirement(
+        "TEST-REQ",
+        GeneratedVerificationCategory::RequiredBehavior,
+        false,
+    );
+    let outbound_mapping = [TypedRuleMapping {
+        evaluator: Some(reject_outbound_rule),
+        ..mapping(
+            "TEST-REQ",
+            GeneratedVerificationCategory::RequiredBehavior,
+            RuleTestKind::PositiveBehavior,
+            &[],
+        )
+    }];
+    assert!(validate_mapping("TEST-PROFILE", &required, &outbound_mapping[0]).is_ok());
+    let request = request_message();
+    let error = result
+        .evaluate_rules(
+            Some(&request),
+            None,
+            &outbound_mapping,
+            ProfileValidationErrorCode::RequestRuleRejected,
+        )
+        .expect_err("an outbound rule can reject the request before transport");
+    assert_eq!(
+        error.code(),
+        ProfileValidationErrorCode::RequestRuleRejected
+    );
+    assert_eq!(error.profile_id(), Some("TEST-PROFILE"));
+    assert_eq!(error.requirement_id(), Some("TEST-REQ"));
+    assert_eq!(error.source_clause_id(), Some("TEST-CLAUSE"));
+
+    let response_mapping = [TypedRuleMapping {
+        evaluator: Some(reject_response_rule),
+        ..mapping(
+            "TEST-REQ",
+            GeneratedVerificationCategory::RequiredBehavior,
+            RuleTestKind::PositiveBehavior,
+            &[],
+        )
+    }];
+    assert!(validate_mapping("TEST-PROFILE", &required, &response_mapping[0]).is_ok());
+    let error = result
+        .evaluate_rules(
+            Some(&request),
+            Some((&request, &response_message())),
+            &response_mapping,
+            ProfileValidationErrorCode::ResponseRuleRejected,
+        )
+        .expect_err("a response rule can reject a received response");
+    assert_eq!(
+        error.code(),
+        ProfileValidationErrorCode::ResponseRuleRejected
+    );
+    assert_eq!(error.profile_id(), Some("TEST-PROFILE"));
+    assert_eq!(error.requirement_id(), Some("TEST-REQ"));
+    assert_eq!(error.source_clause_id(), Some("TEST-CLAUSE"));
+}
+
+#[test]
+fn minimum_capability_rules_do_not_reject_an_extra_base_protocol_operation() {
+    let result = ProfileValidationResult {
+        profile_ids: vec!["TEST-PROFILE".to_owned()],
+        requirement_ids: vec!["TEST-REQ".to_owned()],
+    };
+    let mapping = [mapping(
+        "TEST-REQ",
+        GeneratedVerificationCategory::RequiredBehavior,
+        RuleTestKind::PositiveBehavior,
+        &[],
+    )];
+    let request = request_message();
+    assert_eq!(
+        request
+            .batch_items()
+            .next()
+            .and_then(|item| item.operation()),
+        Some(0x1E),
+        "the synthetic extra operation is Discover Versions"
+    );
+
+    result
+        .evaluate_rules(
+            Some(&request),
+            None,
+            &mapping,
+            ProfileValidationErrorCode::RequestRuleRejected,
+        )
+        .expect("an operation outside a profile minimum is not an allowlist violation");
+}
+
+#[test]
+fn selected_transport_constraints_match_or_reject_with_source_ids() {
+    let result = ProfileValidationResult {
+        profile_ids: vec!["TEST-PROFILE".to_owned()],
+        requirement_ids: vec!["TEST-REQ".to_owned()],
+    };
+    let mappings = [mapping(
+        "TEST-REQ",
+        GeneratedVerificationCategory::RequiredBehavior,
+        RuleTestKind::PositiveBehavior,
+        &CONSTRAINTS_HTTPS,
+    )];
+
+    result
+        .validate_transport_with_mappings(ProfileTransport::Https, &mappings)
+        .expect("HTTPS satisfies its selected typed constraint");
+    let error = result
+        .validate_transport_with_mappings(ProfileTransport::RawTtlvTls, &mappings)
+        .expect_err("raw TTLV/TLS violates the selected HTTPS constraint");
+    assert_eq!(
+        error.code(),
+        ProfileValidationErrorCode::TransportConstraintRejected
+    );
+    assert_eq!(error.profile_id(), Some("TEST-PROFILE"));
+    assert_eq!(error.requirement_id(), Some("TEST-REQ"));
+    assert_eq!(error.source_clause_id(), Some("TEST-CLAUSE"));
+}
+
+#[test]
 fn dependency_cycles_and_constraint_conflicts_fail_deterministically() {
     let cyclic_profiles = [
         profile("TEST-A", &[], &["TEST-B"]),
@@ -322,6 +549,22 @@ fn missing_evaluator_and_wrong_source_link_fail_closed() {
         error.code(),
         ProfileValidationErrorCode::RuleMappingMismatch
     );
+
+    let untyped_constraint = TypedRuleMapping {
+        constraints: &UNKNOWN_CONSTRAINT,
+        ..mapping(
+            "TEST-REQ",
+            GeneratedVerificationCategory::RequiredBehavior,
+            RuleTestKind::PositiveBehavior,
+            &[],
+        )
+    };
+    let error = validate_mapping("TEST-PROFILE", &requirement, &untyped_constraint)
+        .expect_err("unknown constraint keys cannot appear executable");
+    assert_eq!(
+        error.code(),
+        ProfileValidationErrorCode::RuleMappingMismatch
+    );
 }
 
 #[test]
@@ -378,6 +621,18 @@ fn validation_error_codes_and_readiness_blockers_have_stable_text() {
         (
             ProfileValidationErrorCode::ConflictingConstraints,
             "conflicting_constraints",
+        ),
+        (
+            ProfileValidationErrorCode::RequestRuleRejected,
+            "request_rule_rejected",
+        ),
+        (
+            ProfileValidationErrorCode::ResponseRuleRejected,
+            "response_rule_rejected",
+        ),
+        (
+            ProfileValidationErrorCode::TransportConstraintRejected,
+            "transport_constraint_rejected",
         ),
     ];
     for (code, expected) in validation_codes {

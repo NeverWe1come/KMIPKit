@@ -1,9 +1,31 @@
 # Evidencia de perfiles cliente KMIP 2.1
 
-Esta guía explica cómo leer la evidencia de los perfiles cliente de KMIPKit.
-No describe una API de validación de perfiles que pueda utilizarse actualmente.
-El registro tipado de reglas de perfil está vacío, por lo que ningún perfil
-está disponible para la validación en tiempo de ejecución.
+Esta guía explica cómo leer la evidencia de los perfiles cliente de KMIPKit y
+usar su punto de entrada explícito de validación. La selección en tiempo de
+ejecución falla de forma cerrada por ahora: el registro tipado de reglas está
+vacío, así que ningún perfil puede completar todavía un intercambio validado.
+
+## Selección explícita por intercambio
+
+La aplicación puede pasar una selección a `Client::execute_with_profiles`
+para un lote de solicitudes:
+
+```rust
+let selection = ProfileValidationSelection::new([
+    "KMIPKIT-PROFILE-BASELINE-CLIENT",
+]);
+let result = client.execute_with_profiles(batch, &selection, &limits);
+```
+
+El método valida aplicabilidad, dependencias y cobertura tipada completa antes
+de escribir en el transporte. Con el catálogo y registro de reglas actuales,
+Baseline Client falla de forma cerrada y el error devuelve identificadores
+estables del perfil, requisito y cláusula de origen, junto con el estado de
+envío `NotSent`. El error estructurado se consulta con
+`ClientError::profile_validation_error()`. `Client::execute` sigue sin perfil y
+no selecciona un valor predeterminado oculto. Un intercambio perfilado que
+termine correctamente estará disponible cuando se registren las reglas
+tipadas aplicables y sus pruebas de verificación.
 
 ## Estado actual
 

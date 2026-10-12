@@ -14,6 +14,7 @@ use kmipkit_protocol::{
 use kmipkit_transport::{RequestDeliveryState, Transport, TransportError, TransportResponse};
 use kmipkit_ttlv::codec::CodecLimits;
 
+use crate::execute::ProfileExchangeValidator;
 use crate::execute_test_support::{ResponseItemFixture, response_bytes};
 use crate::{Client, ClientBatch, ClientBatchItem, ClientErrorCategory, ClientRequest};
 
@@ -106,7 +107,7 @@ struct ResponseRejectingProfile {
     error: ProfileValidationError,
 }
 
-impl super::ProfileExchangeValidator for ResponseRejectingProfile {
+impl ProfileExchangeValidator for ResponseRejectingProfile {
     fn validate_transport(
         &self,
         _transport: ProfileTransport,
@@ -132,7 +133,9 @@ fn response_profile_rejection_after_exchange_preserves_response_started_delivery
     let source_error = ProfileValidationSelection::new([BASELINE])
         .validate()
         .expect_err("the current Baseline mapping is incomplete");
-    let validator = ResponseRejectingProfile { error: source_error };
+    let validator = ResponseRejectingProfile {
+        error: source_error,
+    };
     let exchanges = Rc::new(Cell::new(0));
     let mut client = Client::for_test(CountingTransport::new(Rc::clone(&exchanges)));
 
@@ -140,7 +143,7 @@ fn response_profile_rejection_after_exchange_preserves_response_started_delivery
         .execute_inner(
             discover_versions_batch(),
             &CodecLimits::defaults(),
-            &Default::default(),
+            &kmipkit_transport::RequestOptions::default(),
             Some(&validator),
         )
         .expect_err("profile response validation rejects the received response");
@@ -153,6 +156,9 @@ fn response_profile_rejection_after_exchange_preserves_response_started_delivery
     let profile_error = error
         .profile_validation_error()
         .expect("response rejection remains a structured profile error");
-    assert_eq!(profile_error.code(), ProfileValidationErrorCode::UnresolvedRequirementScope);
+    assert_eq!(
+        profile_error.code(),
+        ProfileValidationErrorCode::UnresolvedRequirementScope
+    );
     assert_eq!(profile_error.profile_id(), Some(BASELINE));
 }

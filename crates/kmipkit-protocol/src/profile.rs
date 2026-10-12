@@ -47,6 +47,12 @@ pub enum ProfileValidationErrorCode {
     MissingCategoryTest,
     /// Selected rules require incompatible values for the same typed constraint.
     ConflictingConstraints,
+    /// A mapped rule rejected the outbound request.
+    RequestRuleRejected,
+    /// A mapped rule rejected the received response.
+    ResponseRuleRejected,
+    /// The configured transport violates a selected profile rule.
+    TransportConstraintRejected,
 }
 
 impl ProfileValidationErrorCode {
@@ -67,6 +73,27 @@ impl ProfileValidationErrorCode {
             Self::RuleMappingMismatch => "rule_mapping_mismatch",
             Self::MissingCategoryTest => "missing_category_test",
             Self::ConflictingConstraints => "conflicting_constraints",
+            Self::RequestRuleRejected => "request_rule_rejected",
+            Self::ResponseRuleRejected => "response_rule_rejected",
+            Self::TransportConstraintRejected => "transport_constraint_rejected",
+        }
+    }
+}
+
+/// The KMIP 1.0 transport selected for one client exchange.
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub enum ProfileTransport {
+    /// Raw TTLV records over TLS.
+    RawTtlvTls,
+    /// TTLV over HTTPS using HTTP/1.1.
+    Https,
+}
+
+impl ProfileTransport {
+    const fn as_rule_value(self) -> &'static str {
+        match self {
+            Self::RawTtlvTls => "raw_tls",
+            Self::Https => "https",
         }
     }
 }
@@ -139,6 +166,142 @@ impl ProfileValidationResult {
     #[must_use]
     pub fn requirement_ids(&self) -> &[String] {
         &self.requirement_ids
+    }
+
+    /// Checks typed transport constraints attached to the selected rules.
+    ///
+    /// # Errors
+    ///
+    /// Returns a stable source-backed error when a selected rule requires a
+    /// different transport or its mapping is no longer present.
+    pub fn validate_transport(
+        &self,
+        transport: ProfileTransport,
+    ) -> Result<(), ProfileValidationError> {
+        self.validate_transport_with_mappings(transport, TYPED_RULE_MAPPINGS)
+    }
+
+    fn validate_transport_with_mappings(
+        &self,
+        transport: ProfileTransport,
+        rule_mappings: &[TypedRuleMapping],
+    ) -> Result<(), ProfileValidationError> {
+        for requirement_id in &self.requirement_ids {
+            let profile_id = self.profile_id_for_requirement(requirement_id);
+            let Some(mapping) = rule_mappings
+                .iter()
+                .find(|mapping| mapping.requirement_id == requirement_id.as_str())
+            else {
+                return Err(ProfileValidationError::for_requirement(
+                    ProfileValidationErrorCode::MissingRuleMapping,
+                    profile_id,
+                    requirement_id,
+                    None,
+                ));
+            };
+            for constraint in mapping.constraints {
+                if constraint.key == "transport" && constraint.value != transport.as_rule_value() {
+                    return Err(ProfileValidationError::for_requirement(
+                        ProfileValidationErrorCode::TransportConstraintRejected,
+                        profile_id,
+                        requirement_id,
+                        Some(mapping.source_clause_id),
+                    ));
+                }
+            }
+        }
+        Ok(())
+    }
+
+    /// Evaluates the selected typed rules against one complete outbound KMIP
+    /// request before the client sends it.
+    ///
+    /// # Errors
+    ///
+    /// Returns a stable requirement and source-clause error when a mapped
+    /// evaluator rejects the request or the validated registry is no longer
+    /// complete.
+    pub fn validate_request(&self, request: &RequestMessage) -> Result<(), ProfileValidationError> {
+        self.evaluate_rules(
+            Some(request),
+            None,
+            TYPED_RULE_MAPPINGS,
+            ProfileValidationErrorCode::RequestRuleRejected,
+        )
+    }
+
+    /// Evaluates the selected typed rules against one received response while
+    /// retaining its original request context.
+    ///
+    /// # Errors
+    ///
+    /// Returns a stable requirement and source-clause error when a mapped
+    /// evaluator rejects the response or the validated registry is no longer
+    /// complete.
+    pub fn validate_response(
+        &self,
+        request: &RequestMessage,
+        response: &ResponseMessage,
+    ) -> Result<(), ProfileValidationError> {
+        self.evaluate_rules(
+            Some(request),
+            Some((request, response)),
+            TYPED_RULE_MAPPINGS,
+            ProfileValidationErrorCode::ResponseRuleRejected,
+        )
+    }
+
+    fn evaluate_rules(
+        &self,
+        request: Option<&RequestMessage>,
+        response: Option<(&RequestMessage, &ResponseMessage)>,
+        rule_mappings: &[TypedRuleMapping],
+        rejection_code: ProfileValidationErrorCode,
+    ) -> Result<(), ProfileValidationError> {
+        for requirement_id in &self.requirement_ids {
+            let profile_id = self.profile_id_for_requirement(requirement_id);
+            let Some(mapping) = rule_mappings
+                .iter()
+                .find(|mapping| mapping.requirement_id == requirement_id.as_str())
+            else {
+                return Err(ProfileValidationError::for_requirement(
+                    ProfileValidationErrorCode::MissingRuleMapping,
+                    profile_id,
+                    requirement_id,
+                    None,
+                ));
+            };
+            let Some(evaluator) = mapping.evaluator else {
+                return Err(ProfileValidationError::for_requirement(
+                    ProfileValidationErrorCode::IncompleteRuleMapping,
+                    profile_id,
+                    requirement_id,
+                    Some(mapping.source_clause_id),
+                ));
+            };
+            if !evaluator(request, response) {
+                return Err(ProfileValidationError::for_requirement(
+                    rejection_code,
+                    profile_id,
+                    requirement_id,
+                    Some(mapping.source_clause_id),
+                ));
+            }
+        }
+        Ok(())
+    }
+
+    fn profile_id_for_requirement(&self, requirement_id: &str) -> &str {
+        self.profile_ids
+            .iter()
+            .find(|profile_id| {
+                find_profile(CLIENT_PROFILES, profile_id)
+                    .is_some_and(|profile| profile.requirement_ids.contains(&requirement_id))
+            })
+            .map_or_else(
+                || self.profile_ids.first().map_or("", String::as_str),
+                String::as_str,
+            )
     }
 }
 
@@ -504,7 +667,7 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[];
 pub struct ProfileValidationError {
     code: ProfileValidationErrorCode,
     profile_id: Option<String>,
-    requirement_id: Option<&'static str>,
+    requirement_id: Option<String>,
     source_clause_id: Option<&'static str>,
 }
 
@@ -530,13 +693,13 @@ impl ProfileValidationError {
     fn for_requirement(
         code: ProfileValidationErrorCode,
         profile_id: &str,
-        requirement_id: &'static str,
+        requirement_id: &str,
         source_clause_id: Option<&'static str>,
     ) -> Self {
         Self {
             code,
             profile_id: Some(profile_id.to_owned()),
-            requirement_id: Some(requirement_id),
+            requirement_id: Some(requirement_id.to_owned()),
             source_clause_id,
         }
     }
@@ -555,8 +718,8 @@ impl ProfileValidationError {
 
     /// Returns the source-backed requirement involved in the failure.
     #[must_use]
-    pub const fn requirement_id(&self) -> Option<&'static str> {
-        self.requirement_id
+    pub fn requirement_id(&self) -> Option<&str> {
+        self.requirement_id.as_deref()
     }
 
     /// Returns the exact source clause for a requirement failure.
@@ -576,7 +739,7 @@ impl fmt::Display for ProfileValidationError {
         if let Some(profile_id) = &self.profile_id {
             write!(formatter, "; profile {profile_id}")?;
         }
-        if let Some(requirement_id) = self.requirement_id {
+        if let Some(requirement_id) = &self.requirement_id {
             write!(formatter, "; requirement {requirement_id}")?;
         }
         if let Some(source_clause_id) = self.source_clause_id {
@@ -791,6 +954,14 @@ fn validate_mapping(
     }
     if mapping.evaluator.is_none() {
         return Err(error(ProfileValidationErrorCode::IncompleteRuleMapping));
+    }
+    if mapping.constraints.iter().any(|constraint| {
+        !matches!(
+            (constraint.key, constraint.value),
+            ("transport", "raw_tls" | "https") | ("encoding", "ttlv")
+        )
+    }) {
+        return Err(error(ProfileValidationErrorCode::RuleMappingMismatch));
     }
 
     let required_test_kind = match requirement.verification_category {

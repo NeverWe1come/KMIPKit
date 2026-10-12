@@ -1,8 +1,30 @@
 # KMIP 2.1 client profile evidence
 
-This guide explains how to read KMIPKit's client profile evidence. It does not
-provide a currently usable profile-validation API. The typed profile rule
-registry is empty, so no profile is available for runtime validation.
+This guide explains how to read KMIPKit's client profile evidence and use its
+explicit profile-validation entry point. Runtime selection fails closed today:
+the typed profile rule registry is empty, so no profile is yet available for a
+successful exchange.
+
+## Explicit per-exchange selection
+
+Applications can pass a selection to `Client::execute_with_profiles` for one
+request batch:
+
+```rust
+let selection = ProfileValidationSelection::new([
+    "KMIPKIT-PROFILE-BASELINE-CLIENT",
+]);
+let result = client.execute_with_profiles(batch, &selection, &limits);
+```
+
+The method validates applicability, dependencies, and complete typed rule
+coverage before any transport write. With the current catalog and rule
+registry, Baseline Client fails closed and the error reports stable profile,
+requirement, and source-clause IDs with `NotSent` delivery state. Inspect the
+structured error with `ClientError::profile_validation_error()`. The ordinary
+`Client::execute` method remains unprofiled and does not select a hidden
+default. A successful profiled exchange will become available only after the
+applicable typed rules and their verification tests are registered.
 
 ## Current status
 
