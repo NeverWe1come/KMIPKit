@@ -15,6 +15,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.AtomicMoveNotSupportedException;
 import java.nio.file.FileSystem;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
@@ -642,6 +643,9 @@ final class NativeLibraryLoaderTest {
                     () -> NativeLibraryLoader.createPrivateDirectory(filesystem.getPath("/")));
             assertEquals("Private permissions are unavailable", failure.getMessage());
             assertDirectoryEmpty(filesystem.getPath("/"));
+            IOException privateFileFailure = assertThrows(IOException.class,
+                    () -> NativeLibraryLoader.privateFileAttribute(filesystem.getPath("/")));
+            assertEquals("Private permissions are unavailable", privateFileFailure.getMessage());
 
             byte[] library = {1, 2};
             assertRedacted(assertThrows(UnsatisfiedLinkError.class,
@@ -649,6 +653,38 @@ final class NativeLibraryLoaderTest {
                             sha256(library), filesystem.getPath("/"), WINDOWS_LIBRARY)));
             assertDirectoryEmpty(filesystem.getPath("/"));
         }
+    }
+
+    @Test
+    void aclDirectoryVerificationFailureDeletesTheCreatedDirectory() throws Exception {
+        var fileStore = Files.getFileStore(temporaryDirectory);
+        Assumptions.assumeTrue(
+                !fileStore.supportsFileAttributeView("posix") && fileStore.supportsFileAttributeView("acl"),
+                "This cleanup path applies to ACL-only file stores");
+
+        IOException failure = assertThrows(IOException.class,
+                () -> NativeLibraryLoader.createPrivateDirectory(temporaryDirectory,
+                        ignored -> { throw new IOException("synthetic ACL verification failure"); }));
+
+        assertEquals("synthetic ACL verification failure", failure.getMessage());
+        assertDirectoryEmpty(temporaryDirectory);
+    }
+
+    @Test
+    void unsupportedAtomicPublicationFailsClosedAndCleansStagingFiles() throws Exception {
+        Path privateDirectory = NativeLibraryLoader.createPrivateDirectory(temporaryDirectory);
+        byte[] library = {0x4b, 0x4d, 0x49, 0x50};
+
+        UnsatisfiedLinkError failure = assertThrows(UnsatisfiedLinkError.class,
+                () -> NativeLibraryLoader.extractVerified(
+                        new ByteArrayInputStream(library), sha256(library), privateDirectory, WINDOWS_LIBRARY,
+                        (source, destination) -> {
+                            throw new AtomicMoveNotSupportedException(
+                                    source.toString(), destination.toString(), "synthetic unsupported move");
+                        }));
+
+        assertRedacted(failure);
+        assertDirectoryEmpty(privateDirectory);
     }
 
     @Test
