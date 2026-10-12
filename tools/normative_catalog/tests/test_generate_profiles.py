@@ -218,6 +218,32 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
                 self.assertNotIn(requirement_id, expected["requirement_ids_audited_subset"])
                 self.assertNotIn(requirement_id, actual["requirement_ids"])
 
+    def test_oracle_audits_all_mapped_client_1_0_requirements_in_each_profile_closure(self) -> None:
+        """Every source-reviewed client_1_0 requirement is represented in the profile audit subset."""
+        oracle_path = ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json"
+        oracle = json.loads(oracle_path.read_text(encoding="utf-8"))
+        mappings = oracle["requirement_crosswalk"]
+
+        for profile in oracle["profiles"]:
+            profile_id = profile["profile_id"]
+            closure_clause_ids = set(profile["source_clause_ids"])
+            expected_requirement_ids = {
+                mapping["requirement_id"]
+                for mapping in mappings
+                if mapping.get("source_clause_id") in closure_clause_ids
+                and mapping.get("applies_to") in {"all_client_profiles", profile_id}
+                and mapping.get("role") in {"client", "both"}
+                and mapping.get("scope_state") == "client_1_0"
+            }
+            missing_requirement_ids = expected_requirement_ids - set(profile["requirement_ids_audited_subset"])
+
+            with self.subTest(profile_id=profile_id):
+                self.assertFalse(
+                    missing_requirement_ids,
+                    f"missing {len(missing_requirement_ids)} source-mapped client_1_0 IDs: "
+                    f"{sorted(missing_requirement_ids)[:8]}",
+                )
+
     def test_source_oracle_covers_all_profiles_and_expected_scope_counts(self) -> None:
         oracle_path = ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json"
         oracle = json.loads(oracle_path.read_text(encoding="utf-8"))
