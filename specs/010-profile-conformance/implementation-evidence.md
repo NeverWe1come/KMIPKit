@@ -1639,6 +1639,14 @@ Pinned normative sources: KMIP Specification v2.1 §2.1, §4.22, and §6.1.43 Ta
 | Green - link the request test and regenerate the report | `30df0690` | `cargo test -p kmipkit-client register_client_omits_signature_algorithm_when_x509_certificate_encodes_it`<br>`python -B tools/normative_catalog/validate.py --repo-root .`<br>`python -B tools/normative_catalog/generate_profiles.py --repo-root . --check`<br>`python -B tools/normative_catalog/report.py --repo-root . --write`<br>`python -B tools/normative_catalog/report.py --repo-root . --check` | Focused client test passed 1/1; strict catalog validation reported 4 sources, 1,411 clauses, and 4,111 records; generated profile metadata and report checks passed. DCO Green commit: `30df0690`. |
 | Refactor - verify wire operation and record reviewer correction | `75e7565c` plus this follow-up | `cargo test -p kmipkit-client register_client_omits_signature_algorithm_when_x509_certificate_encodes_it`<br>`cargo fmt --all --check`<br>`git diff --check` | The reviewer found the original test did not assert the captured Operation field. The follow-up now asserts `Operation == Register`; the focused test passed 1/1. DCO Refactor commit: this follow-up. |
 
+### KMIPKIT-0010 - Runtime profile preflight Red batch
+
+Source basis: KMIP Specification v2.1 §14.1 requires a KMIP client profile, and KMIP Profiles v2.1 §6.1 defines Baseline Client. FR-014 and SC-014 require explicit runtime selection to fail closed before network I/O with stable source identifiers; the existing unprofiled `Client::execute` remains unchanged. The new client tests cover zero transport exchanges for an incomplete profile and continued use of the unprofiled API.
+
+| Stage | Exact command | Exact result |
+|---|---|---|
+| Red - add public per-exchange preflight contract tests | `cargo test -p kmipkit-client incomplete_profile_selection_fails_before_transport_with_stable_source_ids` | Expected Red: compilation failed because `Client::execute_with_profiles` does not exist. This confirms the current client has no per-exchange profile preflight API. The test also specifies stable profile error accessors and `NotSent` delivery evidence; the transport counter remains unobserved until Green. DCO Red commit: this commit. |
+
 
 | Phase | Commit | Exact command(s) | Exact result |
 |---|---|---|---|

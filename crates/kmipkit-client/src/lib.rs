@@ -275,6 +275,10 @@ mod object_read_execution_tests;
 #[path = "../tests/unit/transport_contract_tests.rs"]
 mod transport_contract_tests;
 
+#[cfg(test)]
+#[path = "../tests/unit/profile_preflight_tests.rs"]
+mod profile_preflight_tests;
+
 pub use error::{ClientCauseCategory, ClientError, ClientErrorCategory, ClientErrorResponseTtlv};
 pub use execute::{
     Client, ClientBatch, ClientBatchItem, ClientBatchItemResponse, ClientBatchOutcome,
