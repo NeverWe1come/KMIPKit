@@ -882,6 +882,19 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
         self.assertFalse(declaration["additionalProperties"])
         self.assertFalse(exclusion["additionalProperties"])
 
+    def test_schema_rejects_identical_duplicate_declarations_and_exclusions(self) -> None:
+        manifest = json.loads(json.dumps(self.checked_in_manifest))
+        manifest["publicDeclarations"].append(
+            json.loads(json.dumps(manifest["publicDeclarations"][0]))
+        )
+        manifest["approvedExclusions"].append(
+            json.loads(json.dumps(manifest["approvedExclusions"][0]))
+        )
+
+        errors = list(self.validator.iter_errors(manifest))
+
+        self.assertTrue(errors)
+
     def test_package_and_declaration_schema_reject_unknown_fields(self) -> None:
         for definition in ("publicPackage", "publicDeclaration", "approvedExclusion"):
             with self.subTest(definition=definition):
