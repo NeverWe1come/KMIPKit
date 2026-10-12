@@ -378,6 +378,79 @@ class ProfileSectionFiveCrosswalkTests(unittest.TestCase):
             for row in section_rows:
                 self.assertIn(discrepancy_id, row.get("discrepancy_ids", []))
 
+    def test_aes_xts_discrepant_may_keeps_literal_reference_and_stable_mapping(self) -> None:
+        """Profiles §5.13.1 item 2 remains traceable without silently fixing its bad reference."""
+        catalog = _load_json("specification/catalog/kmip-2.1.json")
+        fixture = _load_json("tools/normative_catalog/tests/fixtures/profile-closure-v2.1.json")
+        requirement_id = "KMIPKIT-REQ-PROF-5.13.1-002"
+        clause_id = "KMIPKIT-CLAUSE-PROF-5.13.1-002"
+        profile_id = "KMIPKIT-PROFILE-AES-XTS-CLIENT"
+        clause = next(row for row in catalog["source_clauses"] if row["clause_id"] == clause_id)
+        requirement = next(
+            (row for row in catalog["requirements"] if row["requirement_id"] == requirement_id),
+            None,
+        )
+        profile = next(row for row in catalog["profiles"] if row["profile_id"] == profile_id)
+        discrepancy = next(
+            row for row in catalog["discrepancies"] if row["discrepancy_id"] == "KMIPKIT-DISC-007"
+        )
+        gap = next(
+            row
+            for row in fixture["source_only_requirement_gaps"]
+            if row["gap_id"] == "KMIPKIT-SOURCE-GAP-PROF-5.13.1-8990"
+        )
+        review = next(
+            (row for row in fixture["source_requirement_reviews"] if row["source_clause_id"] == clause_id),
+            None,
+        )
+        crosswalk = next(
+            (row for row in fixture["requirement_crosswalk"] if row["requirement_id"] == requirement_id),
+            None,
+        )
+
+        self.assertIsNotNone(requirement, "the client MAY needs its own stable requirement ID")
+        self.assertIsNotNone(review, "the pinned source atom needs an independent source review")
+        self.assertIsNotNone(crosswalk, "the stable requirement needs a reviewed source crosswalk row")
+        self.assertEqual(
+            pinned_source_excerpt(SOURCE_PATH, [8990, 8991]),
+            "MAY support any clause within [KMIP-SPEC] provided it does not conflict with any other clause within this section 5.10.1",
+        )
+        self.assertEqual(clause["locator"], {"ordinal": 2, "block_kind": "list_item"})
+        self.assertEqual(clause["disposition"], "source_discrepancy")
+        self.assertEqual(clause["requirement_ids"], [requirement_id])
+        self.assertIsNone(clause["exclusion_rationale"])
+        assert requirement is not None
+        self.assertEqual(requirement["source_keyword"], "MAY")
+        self.assertEqual(requirement["role"], "client")
+        self.assertEqual(requirement["direction"], "unclear")
+        self.assertEqual(requirement["scope_state"], "profile_conditional")
+        self.assertEqual(requirement["profile_ids"], [profile_id])
+        self.assertEqual(requirement["status"], "unassigned")
+        self.assertEqual(requirement["implementation_refs"], [])
+        self.assertEqual(requirement["verification_refs"], [])
+        self.assertIn(requirement_id, profile["requirement_ids"])
+        self.assertEqual(discrepancy["state"], "open")
+        self.assertIn(requirement_id, discrepancy["affected_requirement_ids"])
+        self.assertIn("5.10.1", gap["source_excerpt"])
+        self.assertEqual(gap["candidate_requirement_id"], requirement_id)
+        self.assertIsNone(gap["proposed_requirement_id"])
+        self.assertEqual(gap["status"], "source_obligation_covered_by_existing_stable_label")
+        assert review is not None
+        self.assertEqual(review["source_excerpt"], pinned_source_excerpt(SOURCE_PATH, [8990, 8991]))
+        self.assertEqual(review["expected_client_requirement_ids"], [requirement_id])
+        self.assertEqual(review["source_obligations"][0]["actor"], "client")
+        self.assertEqual(review["source_obligations"][0]["direction"], "unspecified")
+        self.assertEqual(review["source_obligations"][0]["scope_disposition"], "profile_conditional")
+        assert crosswalk is not None
+        self.assertEqual(crosswalk["source_clause_id"], clause_id)
+        self.assertEqual(crosswalk["source_locator"], clause["locator"])
+        self.assertEqual(crosswalk["source_keyword"], "MAY")
+        self.assertEqual(crosswalk["role"], "client")
+        self.assertEqual(crosswalk["scope_state"], "profile_conditional")
+        self.assertEqual(crosswalk["applies_to"], profile_id)
+        self.assertIn("KMIPKIT-DISC-007", crosswalk["discrepancy_ids"])
+        self.assertEqual(fixture["counts"]["requirement_crosswalk_records"], 469)
+
 
 if __name__ == "__main__":
     unittest.main()
