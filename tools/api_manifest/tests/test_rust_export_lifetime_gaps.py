@@ -105,6 +105,44 @@ class RustExportLifetimeGapTests(unittest.TestCase):
             for issue in report["issues"]
         ))
 
+    def test_unproven_inline_lifetime_bound_fails_closed_for_generic_alias(self):
+        documents = self.fixture_without_static_contract()
+        document = documents["rustdoc_v57_fixture"]
+        index = document["index"]
+        owner = next(item for item in index.values() if item.get("name") == "InlineLifetimeBound")
+
+        def has_inline_lifetime_bound(implementation_id):
+            implementation = index[str(implementation_id)]["inner"]["impl"]
+            parameters = implementation.get("generics", {}).get("params", [])
+            return bool(parameters) and bool(
+                parameters[0].get("kind", {}).get("lifetime", {}).get("outlives")
+            )
+
+        implementation_id = next(
+            str(implementation_id)
+            for implementation_id in owner["inner"]["struct"]["impls"]
+            if has_inline_lifetime_bound(implementation_id)
+        )
+        implementation = index[implementation_id]["inner"]["impl"]
+        self.assertEqual(
+            implementation["generics"]["params"][0],
+            {"name": "'a", "kind": {"lifetime": {"outlives": ["'static"]}}},
+        )
+
+        report = self.audit.inventory(documents)
+        names = {declaration["exportName"] for declaration in report["declarations"]}
+
+        self.assertFalse(any(
+            "InlineLifetimeBoundAlias" in name and name.endswith("::only_inline_static")
+            for name in names
+        ))
+        self.assertTrue(any(
+            issue["reason"] == "unresolved-rustdoc-implementation-predicate"
+            and issue.get("implementationId") == implementation_id
+            and issue.get("exportName") == "rustdoc_v57_fixture::InlineLifetimeBoundAlias"
+            for issue in report["issues"]
+        ))
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -164,42 +164,12 @@
       "docs": null,
       "id": 113,
       "inner": {
-        "function": {
-          "generics": {
-            "params": [],
-            "where_predicates": []
-          },
-          "has_body": false,
-          "header": {
-            "abi": "Rust",
-            "is_async": false,
-            "is_const": false,
-            "is_unsafe": false
-          },
-          "sig": {
-            "inputs": [
-              [
-                "self",
-                {
-                  "borrowed_ref": {
-                    "is_mutable": false,
-                    "lifetime": null,
-                    "type": {
-                      "generic": "Self"
-                    }
-                  }
-                }
-              ]
-            ],
-            "is_c_variadic": false,
-            "output": {
-              "primitive": "u8"
-            }
-          }
+        "struct_field": {
+          "generic": "T"
         }
       },
       "links": {},
-      "name": "required",
+      "name": "value",
       "span": {
         "begin": [
           70,
@@ -207,11 +177,11 @@
         ],
         "end": [
           70,
-          30
+          13
         ],
         "filename": "tools/api_manifest/tests/fixtures/rustdoc-v57/lib.rs"
       },
-      "visibility": "default"
+      "visibility": "crate"
     },
     "114": {
       "attrs": [],
@@ -220,25 +190,37 @@
       "docs": null,
       "id": 114,
       "inner": {
-        "trait": {
-          "bounds": [],
+        "struct": {
           "generics": {
-            "params": [],
+            "params": [
+              {
+                "kind": {
+                  "type": {
+                    "bounds": [],
+                    "default": null,
+                    "is_synthetic": false
+                  }
+                },
+                "name": "T"
+              }
+            ],
             "where_predicates": []
           },
-          "implementations": [
+          "impls": [
             116
           ],
-          "is_auto": false,
-          "is_dyn_compatible": true,
-          "is_unsafe": false,
-          "items": [
-            113
-          ]
+          "kind": {
+            "plain": {
+              "fields": [
+                113
+              ],
+              "has_stripped_fields": false
+            }
+          }
         }
       },
       "links": {},
-      "name": "Audit",
+      "name": "InlineLifetimeBound",
       "span": {
         "begin": [
           69,
@@ -288,6 +270,203 @@
             ],
             "is_c_variadic": false,
             "output": {
+              "borrowed_ref": {
+                "is_mutable": false,
+                "lifetime": null,
+                "type": {
+                  "primitive": "u8"
+                }
+              }
+            }
+          }
+        }
+      },
+      "links": {},
+      "name": "only_inline_static",
+      "span": {
+        "begin": [
+          76,
+          5
+        ],
+        "end": [
+          78,
+          6
+        ],
+        "filename": "tools/api_manifest/tests/fixtures/rustdoc-v57/lib.rs"
+      },
+      "visibility": "public"
+    },
+    "116": {
+      "attrs": [],
+      "crate_id": 0,
+      "deprecation": null,
+      "docs": null,
+      "id": 116,
+      "inner": {
+        "impl": {
+          "blanket_impl": null,
+          "for": {
+            "resolved_path": {
+              "args": {
+                "angle_bracketed": {
+                  "args": [
+                    {
+                      "type": {
+                        "borrowed_ref": {
+                          "is_mutable": false,
+                          "lifetime": "'a",
+                          "type": {
+                            "primitive": "u8"
+                          }
+                        }
+                      }
+                    }
+                  ],
+                  "constraints": []
+                }
+              },
+              "id": 114,
+              "path": "InlineLifetimeBound"
+            }
+          },
+          "generics": {
+            "params": [
+              {
+                "kind": {
+                  "lifetime": {
+                    "outlives": [
+                      "'static"
+                    ]
+                  }
+                },
+                "name": "'a"
+              }
+            ],
+            "where_predicates": []
+          },
+          "is_negative": false,
+          "is_synthetic": false,
+          "is_unsafe": false,
+          "items": [
+            115
+          ],
+          "provided_trait_methods": [],
+          "trait": null
+        }
+      },
+      "links": {},
+      "name": null,
+      "span": {
+        "begin": [
+          75,
+          1
+        ],
+        "end": [
+          79,
+          2
+        ],
+        "filename": "tools/api_manifest/tests/fixtures/rustdoc-v57/lib.rs"
+      },
+      "visibility": "default"
+    },
+    "131": {
+      "attrs": [],
+      "crate_id": 0,
+      "deprecation": null,
+      "docs": null,
+      "id": 131,
+      "inner": {
+        "type_alias": {
+          "generics": {
+            "params": [
+              {
+                "kind": {
+                  "lifetime": {
+                    "outlives": []
+                  }
+                },
+                "name": "'a"
+              }
+            ],
+            "where_predicates": []
+          },
+          "type": {
+            "resolved_path": {
+              "args": {
+                "angle_bracketed": {
+                  "args": [
+                    {
+                      "type": {
+                        "borrowed_ref": {
+                          "is_mutable": false,
+                          "lifetime": "'a",
+                          "type": {
+                            "primitive": "u8"
+                          }
+                        }
+                      }
+                    }
+                  ],
+                  "constraints": []
+                }
+              },
+              "id": 114,
+              "path": "InlineLifetimeBound"
+            }
+          }
+        }
+      },
+      "links": {},
+      "name": "InlineLifetimeBoundAlias",
+      "span": {
+        "begin": [
+          73,
+          1
+        ],
+        "end": [
+          73,
+          69
+        ],
+        "filename": "tools/api_manifest/tests/fixtures/rustdoc-v57/lib.rs"
+      },
+      "visibility": "public"
+    },
+    "132": {
+      "attrs": [],
+      "crate_id": 0,
+      "deprecation": null,
+      "docs": null,
+      "id": 132,
+      "inner": {
+        "function": {
+          "generics": {
+            "params": [],
+            "where_predicates": []
+          },
+          "has_body": false,
+          "header": {
+            "abi": "Rust",
+            "is_async": false,
+            "is_const": false,
+            "is_unsafe": false
+          },
+          "sig": {
+            "inputs": [
+              [
+                "self",
+                {
+                  "borrowed_ref": {
+                    "is_mutable": false,
+                    "lifetime": null,
+                    "type": {
+                      "generic": "Self"
+                    }
+                  }
+                }
+              ]
+            ],
+            "is_c_variadic": false,
+            "output": {
               "primitive": "u8"
             }
           }
@@ -297,23 +476,118 @@
       "name": "required",
       "span": {
         "begin": [
-          159,
+          82,
           5
         ],
         "end": [
-          161,
+          82,
+          30
+        ],
+        "filename": "tools/api_manifest/tests/fixtures/rustdoc-v57/lib.rs"
+      },
+      "visibility": "default"
+    },
+    "133": {
+      "attrs": [],
+      "crate_id": 0,
+      "deprecation": null,
+      "docs": null,
+      "id": 133,
+      "inner": {
+        "trait": {
+          "bounds": [],
+          "generics": {
+            "params": [],
+            "where_predicates": []
+          },
+          "implementations": [
+            135
+          ],
+          "is_auto": false,
+          "is_dyn_compatible": true,
+          "is_unsafe": false,
+          "items": [
+            132
+          ]
+        }
+      },
+      "links": {},
+      "name": "Audit",
+      "span": {
+        "begin": [
+          81,
+          1
+        ],
+        "end": [
+          83,
+          2
+        ],
+        "filename": "tools/api_manifest/tests/fixtures/rustdoc-v57/lib.rs"
+      },
+      "visibility": "public"
+    },
+    "134": {
+      "attrs": [],
+      "crate_id": 0,
+      "deprecation": null,
+      "docs": null,
+      "id": 134,
+      "inner": {
+        "function": {
+          "generics": {
+            "params": [],
+            "where_predicates": []
+          },
+          "has_body": true,
+          "header": {
+            "abi": "Rust",
+            "is_async": false,
+            "is_const": false,
+            "is_unsafe": false
+          },
+          "sig": {
+            "inputs": [
+              [
+                "self",
+                {
+                  "borrowed_ref": {
+                    "is_mutable": false,
+                    "lifetime": null,
+                    "type": {
+                      "generic": "Self"
+                    }
+                  }
+                }
+              ]
+            ],
+            "is_c_variadic": false,
+            "output": {
+              "primitive": "u8"
+            }
+          }
+        }
+      },
+      "links": {},
+      "name": "required",
+      "span": {
+        "begin": [
+          171,
+          5
+        ],
+        "end": [
+          173,
           6
         ],
         "filename": "tools/api_manifest/tests/fixtures/rustdoc-v57/lib.rs"
       },
       "visibility": "default"
     },
-    "116": {
+    "135": {
       "attrs": [],
       "crate_id": 0,
       "deprecation": null,
       "docs": null,
-      "id": 116,
+      "id": 135,
       "inner": {
         "impl": {
           "blanket_impl": null,
@@ -332,12 +606,12 @@
           "is_synthetic": false,
           "is_unsafe": false,
           "items": [
-            115
+            134
           ],
           "provided_trait_methods": [],
           "trait": {
             "args": null,
-            "id": 114,
+            "id": 133,
             "path": "Audit"
           }
         }
@@ -346,23 +620,23 @@
       "name": null,
       "span": {
         "begin": [
-          158,
+          170,
           1
         ],
         "end": [
-          162,
+          174,
           2
         ],
         "filename": "tools/api_manifest/tests/fixtures/rustdoc-v57/lib.rs"
       },
       "visibility": "default"
     },
-    "117": {
+    "136": {
       "attrs": [],
       "crate_id": 0,
       "deprecation": null,
       "docs": null,
-      "id": 117,
+      "id": 136,
       "inner": {
         "function": {
           "generics": {
@@ -400,23 +674,23 @@
       "name": "static_bound",
       "span": {
         "begin": [
-          74,
+          86,
           5
         ],
         "end": [
-          74,
+          86,
           28
         ],
         "filename": "tools/api_manifest/tests/fixtures/rustdoc-v57/lib.rs"
       },
       "visibility": "default"
     },
-    "118": {
+    "137": {
       "attrs": [],
       "crate_id": 0,
       "deprecation": null,
       "docs": null,
-      "id": 118,
+      "id": 137,
       "inner": {
         "trait": {
           "bounds": [],
@@ -425,13 +699,13 @@
             "where_predicates": []
           },
           "implementations": [
-            120
+            139
           ],
           "is_auto": false,
           "is_dyn_compatible": true,
           "is_unsafe": false,
           "items": [
-            117
+            136
           ]
         }
       },
@@ -439,23 +713,23 @@
       "name": "StaticContract",
       "span": {
         "begin": [
-          73,
+          85,
           1
         ],
         "end": [
-          75,
+          87,
           2
         ],
         "filename": "tools/api_manifest/tests/fixtures/rustdoc-v57/lib.rs"
       },
       "visibility": "public"
     },
-    "119": {
+    "138": {
       "attrs": [],
       "crate_id": 0,
       "deprecation": null,
       "docs": null,
-      "id": 119,
+      "id": 138,
       "inner": {
         "function": {
           "generics": {
@@ -493,23 +767,23 @@
       "name": "static_bound",
       "span": {
         "begin": [
-          131,
+          143,
           5
         ],
         "end": [
-          131,
+          143,
           30
         ],
         "filename": "tools/api_manifest/tests/fixtures/rustdoc-v57/lib.rs"
       },
       "visibility": "default"
     },
-    "120": {
+    "139": {
       "attrs": [],
       "crate_id": 0,
       "deprecation": null,
       "docs": null,
-      "id": 120,
+      "id": 139,
       "inner": {
         "impl": {
           "blanket_impl": null,
@@ -554,12 +828,12 @@
           "is_synthetic": false,
           "is_unsafe": false,
           "items": [
-            119
+            138
           ],
           "provided_trait_methods": [],
           "trait": {
             "args": null,
-            "id": 118,
+            "id": 137,
             "path": "StaticContract"
           }
         }
@@ -568,23 +842,23 @@
       "name": null,
       "span": {
         "begin": [
-          130,
+          142,
           1
         ],
         "end": [
-          132,
+          144,
           2
         ],
         "filename": "tools/api_manifest/tests/fixtures/rustdoc-v57/lib.rs"
       },
       "visibility": "default"
     },
-    "121": {
+    "140": {
       "attrs": [],
       "crate_id": 0,
       "deprecation": null,
       "docs": null,
-      "id": 121,
+      "id": 140,
       "inner": {
         "assoc_const": {
           "type": {
@@ -597,23 +871,23 @@
       "name": "PRIVATE_LIMIT",
       "span": {
         "begin": [
-          78,
+          90,
           5
         ],
         "end": [
-          78,
+          90,
           36
         ],
         "filename": "tools/api_manifest/tests/fixtures/rustdoc-v57/lib.rs"
       },
       "visibility": "default"
     },
-    "122": {
+    "141": {
       "attrs": [],
       "crate_id": 0,
       "deprecation": null,
       "docs": null,
-      "id": 122,
+      "id": 141,
       "inner": {
         "function": {
           "generics": {
@@ -653,23 +927,23 @@
       "name": "hidden",
       "span": {
         "begin": [
-          80,
+          92,
           5
         ],
         "end": [
-          82,
+          94,
           6
         ],
         "filename": "tools/api_manifest/tests/fixtures/rustdoc-v57/lib.rs"
       },
       "visibility": "default"
     },
-    "123": {
+    "142": {
       "attrs": [],
       "crate_id": 0,
       "deprecation": null,
       "docs": null,
-      "id": 123,
+      "id": 142,
       "inner": {
         "trait": {
           "bounds": [],
@@ -678,14 +952,14 @@
             "where_predicates": []
           },
           "implementations": [
-            125
+            144
           ],
           "is_auto": false,
           "is_dyn_compatible": false,
           "is_unsafe": false,
           "items": [
-            121,
-            122
+            140,
+            141
           ]
         }
       },
@@ -693,23 +967,23 @@
       "name": "PrivateContract",
       "span": {
         "begin": [
-          77,
+          89,
           1
         ],
         "end": [
-          83,
+          95,
           2
         ],
         "filename": "tools/api_manifest/tests/fixtures/rustdoc-v57/lib.rs"
       },
       "visibility": "crate"
     },
-    "124": {
+    "143": {
       "attrs": [],
       "crate_id": 0,
       "deprecation": null,
       "docs": null,
-      "id": 124,
+      "id": 143,
       "inner": {
         "function": {
           "generics": {
@@ -749,23 +1023,23 @@
       "name": "hidden",
       "span": {
         "begin": [
-          165,
+          177,
           5
         ],
         "end": [
-          167,
+          179,
           6
         ],
         "filename": "tools/api_manifest/tests/fixtures/rustdoc-v57/lib.rs"
       },
       "visibility": "default"
     },
-    "125": {
+    "144": {
       "attrs": [],
       "crate_id": 0,
       "deprecation": null,
       "docs": null,
-      "id": 125,
+      "id": 144,
       "inner": {
         "impl": {
           "blanket_impl": null,
@@ -784,14 +1058,14 @@
           "is_synthetic": false,
           "is_unsafe": false,
           "items": [
-            124
+            143
           ],
           "provided_trait_methods": [
             "hidden"
           ],
           "trait": {
             "args": null,
-            "id": 123,
+            "id": 142,
             "path": "PrivateContract"
           }
         }
@@ -800,23 +1074,23 @@
       "name": null,
       "span": {
         "begin": [
-          164,
+          176,
           1
         ],
         "end": [
-          168,
+          180,
           2
         ],
         "filename": "tools/api_manifest/tests/fixtures/rustdoc-v57/lib.rs"
       },
       "visibility": "default"
     },
-    "126": {
+    "145": {
       "attrs": [],
       "crate_id": 0,
       "deprecation": null,
       "docs": null,
-      "id": 126,
+      "id": 145,
       "inner": {
         "function": {
           "generics": {
@@ -856,23 +1130,23 @@
       "name": "required",
       "span": {
         "begin": [
-          100,
+          112,
           5
         ],
         "end": [
-          102,
+          114,
           6
         ],
         "filename": "tools/api_manifest/tests/fixtures/rustdoc-v57/lib.rs"
       },
       "visibility": "public"
     },
-    "127": {
+    "146": {
       "attrs": [],
       "crate_id": 0,
       "deprecation": null,
       "docs": null,
-      "id": 127,
+      "id": 146,
       "inner": {
         "function": {
           "generics": {
@@ -912,23 +1186,23 @@
       "name": "inherent",
       "span": {
         "begin": [
-          104,
+          116,
           5
         ],
         "end": [
-          106,
+          118,
           6
         ],
         "filename": "tools/api_manifest/tests/fixtures/rustdoc-v57/lib.rs"
       },
       "visibility": "public"
     },
-    "128": {
+    "147": {
       "attrs": [],
       "crate_id": 0,
       "deprecation": null,
       "docs": null,
-      "id": 128,
+      "id": 147,
       "inner": {
         "impl": {
           "blanket_impl": null,
@@ -947,8 +1221,8 @@
           "is_synthetic": false,
           "is_unsafe": false,
           "items": [
-            126,
-            127
+            145,
+            146
           ],
           "provided_trait_methods": [],
           "trait": null
@@ -958,23 +1232,23 @@
       "name": null,
       "span": {
         "begin": [
-          99,
+          111,
           1
         ],
         "end": [
-          107,
+          119,
           2
         ],
         "filename": "tools/api_manifest/tests/fixtures/rustdoc-v57/lib.rs"
       },
       "visibility": "default"
     },
-    "143": {
+    "162": {
       "attrs": [],
       "crate_id": 0,
       "deprecation": null,
       "docs": null,
-      "id": 143,
+      "id": 162,
       "inner": {
         "struct_field": {
           "generic": "T"
@@ -984,23 +1258,23 @@
       "name": "value",
       "span": {
         "begin": [
-          92,
+          104,
           5
         ],
         "end": [
-          92,
+          104,
           17
         ],
         "filename": "tools/api_manifest/tests/fixtures/rustdoc-v57/lib.rs"
       },
       "visibility": "public"
     },
-    "144": {
+    "163": {
       "attrs": [],
       "crate_id": 0,
       "deprecation": null,
       "docs": null,
-      "id": 144,
+      "id": 163,
       "inner": {
         "function": {
           "generics": {
@@ -1040,23 +1314,23 @@
       "name": "only_tuple_u8",
       "span": {
         "begin": [
-          135,
+          147,
           5
         ],
         "end": [
-          137,
+          149,
           6
         ],
         "filename": "tools/api_manifest/tests/fixtures/rustdoc-v57/lib.rs"
       },
       "visibility": "public"
     },
-    "145": {
+    "164": {
       "attrs": [],
       "crate_id": 0,
       "deprecation": null,
       "docs": null,
-      "id": 145,
+      "id": 164,
       "inner": {
         "impl": {
           "blanket_impl": null,
@@ -1090,7 +1364,7 @@
           "is_synthetic": false,
           "is_unsafe": false,
           "items": [
-            144
+            163
           ],
           "provided_trait_methods": [],
           "trait": null
@@ -1100,23 +1374,23 @@
       "name": null,
       "span": {
         "begin": [
-          134,
+          146,
           1
         ],
         "end": [
-          138,
+          150,
           2
         ],
         "filename": "tools/api_manifest/tests/fixtures/rustdoc-v57/lib.rs"
       },
       "visibility": "default"
     },
-    "146": {
+    "165": {
       "attrs": [],
       "crate_id": 0,
       "deprecation": null,
       "docs": null,
-      "id": 146,
+      "id": 165,
       "inner": {
         "function": {
           "generics": {
@@ -1156,23 +1430,23 @@
       "name": "only_tuple_u16",
       "span": {
         "begin": [
-          141,
+          153,
           5
         ],
         "end": [
-          143,
+          155,
           6
         ],
         "filename": "tools/api_manifest/tests/fixtures/rustdoc-v57/lib.rs"
       },
       "visibility": "public"
     },
-    "147": {
+    "166": {
       "attrs": [],
       "crate_id": 0,
       "deprecation": null,
       "docs": null,
-      "id": 147,
+      "id": 166,
       "inner": {
         "impl": {
           "blanket_impl": null,
@@ -1206,7 +1480,7 @@
           "is_synthetic": false,
           "is_unsafe": false,
           "items": [
-            146
+            165
           ],
           "provided_trait_methods": [],
           "trait": null
@@ -1216,23 +1490,23 @@
       "name": null,
       "span": {
         "begin": [
-          140,
+          152,
           1
         ],
         "end": [
-          144,
+          156,
           2
         ],
         "filename": "tools/api_manifest/tests/fixtures/rustdoc-v57/lib.rs"
       },
       "visibility": "default"
     },
-    "161": {
+    "180": {
       "attrs": [],
       "crate_id": 0,
       "deprecation": null,
       "docs": null,
-      "id": 161,
+      "id": 180,
       "inner": {
         "impl": {
           "blanket_impl": {
@@ -1315,12 +1589,12 @@
       "span": null,
       "visibility": "default"
     },
-    "162": {
+    "181": {
       "attrs": [],
       "crate_id": 0,
       "deprecation": null,
       "docs": null,
-      "id": 162,
+      "id": 181,
       "inner": {
         "struct_field": {
           "generic": "T"
@@ -1330,23 +1604,23 @@
       "name": "value",
       "span": {
         "begin": [
-          96,
+          108,
           5
         ],
         "end": [
-          96,
+          108,
           17
         ],
         "filename": "tools/api_manifest/tests/fixtures/rustdoc-v57/lib.rs"
       },
       "visibility": "public"
     },
-    "163": {
+    "182": {
       "attrs": [],
       "crate_id": 0,
       "deprecation": null,
       "docs": null,
-      "id": 163,
+      "id": 182,
       "inner": {
         "function": {
           "generics": {
@@ -1386,23 +1660,23 @@
       "name": "only_u16",
       "span": {
         "begin": [
-          190,
+          202,
           5
         ],
         "end": [
-          192,
+          204,
           6
         ],
         "filename": "tools/api_manifest/tests/fixtures/rustdoc-v57/lib.rs"
       },
       "visibility": "public"
     },
-    "164": {
+    "183": {
       "attrs": [],
       "crate_id": 0,
       "deprecation": null,
       "docs": null,
-      "id": 164,
+      "id": 183,
       "inner": {
         "impl": {
           "blanket_impl": null,
@@ -1432,7 +1706,7 @@
           "is_synthetic": false,
           "is_unsafe": false,
           "items": [
-            163
+            182
           ],
           "provided_trait_methods": [],
           "trait": null
@@ -1442,23 +1716,23 @@
       "name": null,
       "span": {
         "begin": [
-          189,
+          201,
           1
         ],
         "end": [
-          193,
+          205,
           2
         ],
         "filename": "tools/api_manifest/tests/fixtures/rustdoc-v57/lib.rs"
       },
       "visibility": "default"
     },
-    "165": {
+    "184": {
       "attrs": [],
       "crate_id": 0,
       "deprecation": null,
       "docs": null,
-      "id": 165,
+      "id": 184,
       "inner": {
         "impl": {
           "blanket_impl": null,
@@ -1534,12 +1808,12 @@
       "span": null,
       "visibility": "default"
     },
-    "172": {
+    "191": {
       "attrs": [],
       "crate_id": 0,
       "deprecation": null,
       "docs": null,
-      "id": 172,
+      "id": 191,
       "inner": {
         "impl": {
           "blanket_impl": {
@@ -1630,12 +1904,12 @@
       "span": null,
       "visibility": "default"
     },
-    "179": {
+    "198": {
       "attrs": [],
       "crate_id": 0,
       "deprecation": null,
       "docs": null,
-      "id": 179,
+      "id": 198,
       "inner": {
         "struct": {
           "generics": {
@@ -1643,7 +1917,7 @@
             "where_predicates": []
           },
           "impls": [
-            197
+            216
           ],
           "kind": "unit"
         }
@@ -1652,18 +1926,67 @@
       "name": "Derived",
       "span": {
         "begin": [
-          171,
+          183,
           1
         ],
         "end": [
-          171,
+          183,
           20
         ],
         "filename": "tools/api_manifest/tests/fixtures/rustdoc-v57/lib.rs"
       },
       "visibility": "public"
     },
-    "194": {
+    "2": {
+      "attrs": [],
+      "crate_id": 0,
+      "deprecation": null,
+      "docs": null,
+      "id": 2,
+      "inner": {
+        "impl": {
+          "blanket_impl": null,
+          "for": {
+            "resolved_path": {
+              "args": null,
+              "id": 3,
+              "path": "Service"
+            }
+          },
+          "generics": {
+            "params": [],
+            "where_predicates": []
+          },
+          "is_negative": false,
+          "is_synthetic": false,
+          "is_unsafe": false,
+          "items": [],
+          "provided_trait_methods": [
+            "hidden_method"
+          ],
+          "trait": {
+            "args": null,
+            "id": 1,
+            "path": "HiddenContract"
+          }
+        }
+      },
+      "links": {},
+      "name": null,
+      "span": {
+        "begin": [
+          101,
+          1
+        ],
+        "end": [
+          101,
+          51
+        ],
+        "filename": "tools/api_manifest/tests/fixtures/rustdoc-v57/lib.rs"
+      },
+      "visibility": "default"
+    },
+    "213": {
       "attrs": [
         {
           "other": "#[attr = Inline(Hint)]"
@@ -1672,7 +1995,7 @@
       "crate_id": 0,
       "deprecation": null,
       "docs": null,
-      "id": 194,
+      "id": 213,
       "inner": {
         "function": {
           "generics": {
@@ -1718,7 +2041,7 @@
                             "constraints": []
                           }
                         },
-                        "id": 195,
+                        "id": 214,
                         "path": "$crate::fmt::Formatter"
                       }
                     }
@@ -1730,7 +2053,7 @@
             "output": {
               "resolved_path": {
                 "args": null,
-                "id": 196,
+                "id": 215,
                 "path": "$crate::fmt::Result"
               }
             }
@@ -1741,32 +2064,32 @@
       "name": "fmt",
       "span": {
         "begin": [
-          170,
+          182,
           10
         ],
         "end": [
-          170,
+          182,
           15
         ],
         "filename": "tools/api_manifest/tests/fixtures/rustdoc-v57/lib.rs"
       },
       "visibility": "default"
     },
-    "197": {
+    "216": {
       "attrs": [
         "automatically_derived"
       ],
       "crate_id": 0,
       "deprecation": null,
       "docs": null,
-      "id": 197,
+      "id": 216,
       "inner": {
         "impl": {
           "blanket_impl": null,
           "for": {
             "resolved_path": {
               "args": null,
-              "id": 179,
+              "id": 198,
               "path": "Derived"
             }
           },
@@ -1778,12 +2101,12 @@
           "is_synthetic": false,
           "is_unsafe": false,
           "items": [
-            194
+            213
           ],
           "provided_trait_methods": [],
           "trait": {
             "args": null,
-            "id": 198,
+            "id": 217,
             "path": "Debug"
           }
         }
@@ -1792,23 +2115,23 @@
       "name": null,
       "span": {
         "begin": [
-          170,
+          182,
           10
         ],
         "end": [
-          170,
+          182,
           15
         ],
         "filename": "tools/api_manifest/tests/fixtures/rustdoc-v57/lib.rs"
       },
       "visibility": "default"
     },
-    "199": {
+    "218": {
       "attrs": [],
       "crate_id": 0,
       "deprecation": null,
       "docs": null,
-      "id": 199,
+      "id": 218,
       "inner": {
         "variant": {
           "discriminant": null,
@@ -1819,72 +2142,23 @@
       "name": "Unit",
       "span": {
         "begin": [
-          174,
+          186,
           5
         ],
         "end": [
-          174,
+          186,
           9
         ],
         "filename": "tools/api_manifest/tests/fixtures/rustdoc-v57/lib.rs"
       },
       "visibility": "default"
     },
-    "2": {
+    "219": {
       "attrs": [],
       "crate_id": 0,
       "deprecation": null,
       "docs": null,
-      "id": 2,
-      "inner": {
-        "impl": {
-          "blanket_impl": null,
-          "for": {
-            "resolved_path": {
-              "args": null,
-              "id": 3,
-              "path": "Service"
-            }
-          },
-          "generics": {
-            "params": [],
-            "where_predicates": []
-          },
-          "is_negative": false,
-          "is_synthetic": false,
-          "is_unsafe": false,
-          "items": [],
-          "provided_trait_methods": [
-            "hidden_method"
-          ],
-          "trait": {
-            "args": null,
-            "id": 1,
-            "path": "HiddenContract"
-          }
-        }
-      },
-      "links": {},
-      "name": null,
-      "span": {
-        "begin": [
-          89,
-          1
-        ],
-        "end": [
-          89,
-          51
-        ],
-        "filename": "tools/api_manifest/tests/fixtures/rustdoc-v57/lib.rs"
-      },
-      "visibility": "default"
-    },
-    "200": {
-      "attrs": [],
-      "crate_id": 0,
-      "deprecation": null,
-      "docs": null,
-      "id": 200,
+      "id": 219,
       "inner": {
         "struct_field": {
           "primitive": "u8"
@@ -1894,29 +2168,29 @@
       "name": "0",
       "span": {
         "begin": [
-          175,
+          187,
           11
         ],
         "end": [
-          175,
+          187,
           13
         ],
         "filename": "tools/api_manifest/tests/fixtures/rustdoc-v57/lib.rs"
       },
       "visibility": "default"
     },
-    "201": {
+    "220": {
       "attrs": [],
       "crate_id": 0,
       "deprecation": null,
       "docs": null,
-      "id": 201,
+      "id": 220,
       "inner": {
         "variant": {
           "discriminant": null,
           "kind": {
             "tuple": [
-              200
+              219
             ]
           }
         }
@@ -1925,23 +2199,23 @@
       "name": "Tuple",
       "span": {
         "begin": [
-          175,
+          187,
           5
         ],
         "end": [
-          175,
+          187,
           14
         ],
         "filename": "tools/api_manifest/tests/fixtures/rustdoc-v57/lib.rs"
       },
       "visibility": "default"
     },
-    "202": {
+    "221": {
       "attrs": [],
       "crate_id": 0,
       "deprecation": null,
       "docs": null,
-      "id": 202,
+      "id": 221,
       "inner": {
         "struct_field": {
           "primitive": "u8"
@@ -1951,30 +2225,30 @@
       "name": "value",
       "span": {
         "begin": [
-          176,
+          188,
           13
         ],
         "end": [
-          176,
+          188,
           22
         ],
         "filename": "tools/api_manifest/tests/fixtures/rustdoc-v57/lib.rs"
       },
       "visibility": "default"
     },
-    "203": {
+    "222": {
       "attrs": [],
       "crate_id": 0,
       "deprecation": null,
       "docs": null,
-      "id": 203,
+      "id": 222,
       "inner": {
         "variant": {
           "discriminant": null,
           "kind": {
             "struct": {
               "fields": [
-                202
+                221
               ],
               "has_stripped_fields": false
             }
@@ -1985,23 +2259,23 @@
       "name": "Named",
       "span": {
         "begin": [
-          176,
+          188,
           5
         ],
         "end": [
-          176,
+          188,
           24
         ],
         "filename": "tools/api_manifest/tests/fixtures/rustdoc-v57/lib.rs"
       },
       "visibility": "default"
     },
-    "204": {
+    "223": {
       "attrs": [],
       "crate_id": 0,
       "deprecation": null,
       "docs": null,
-      "id": 204,
+      "id": 223,
       "inner": {
         "enum": {
           "generics": {
@@ -2011,9 +2285,9 @@
           "has_stripped_variants": false,
           "impls": [],
           "variants": [
-            199,
-            201,
-            203
+            218,
+            220,
+            222
           ]
         }
       },
@@ -2021,23 +2295,23 @@
       "name": "State",
       "span": {
         "begin": [
-          173,
+          185,
           1
         ],
         "end": [
-          177,
+          189,
           2
         ],
         "filename": "tools/api_manifest/tests/fixtures/rustdoc-v57/lib.rs"
       },
       "visibility": "public"
     },
-    "219": {
+    "238": {
       "attrs": [],
       "crate_id": 0,
       "deprecation": null,
       "docs": null,
-      "id": 219,
+      "id": 238,
       "inner": {
         "type_alias": {
           "generics": {
@@ -2057,23 +2331,23 @@
       "name": "ServiceAlias",
       "span": {
         "begin": [
-          179,
+          191,
           1
         ],
         "end": [
-          179,
+          191,
           33
         ],
         "filename": "tools/api_manifest/tests/fixtures/rustdoc-v57/lib.rs"
       },
       "visibility": "public"
     },
-    "220": {
+    "239": {
       "attrs": [],
       "crate_id": 0,
       "deprecation": null,
       "docs": null,
-      "id": 220,
+      "id": 239,
       "inner": {
         "type_alias": {
           "generics": {
@@ -2083,7 +2357,7 @@
           "type": {
             "resolved_path": {
               "args": null,
-              "id": 219,
+              "id": 238,
               "path": "ServiceAlias"
             }
           }
@@ -2093,415 +2367,12 @@
       "name": "ServiceAliasChain",
       "span": {
         "begin": [
-          180,
+          192,
           1
         ],
         "end": [
-          180,
+          192,
           43
-        ],
-        "filename": "tools/api_manifest/tests/fixtures/rustdoc-v57/lib.rs"
-      },
-      "visibility": "public"
-    },
-    "221": {
-      "attrs": [],
-      "crate_id": 0,
-      "deprecation": null,
-      "docs": null,
-      "id": 221,
-      "inner": {
-        "type_alias": {
-          "generics": {
-            "params": [],
-            "where_predicates": []
-          },
-          "type": {
-            "resolved_path": {
-              "args": null,
-              "id": 204,
-              "path": "State"
-            }
-          }
-        }
-      },
-      "links": {},
-      "name": "StateAlias",
-      "span": {
-        "begin": [
-          181,
-          1
-        ],
-        "end": [
-          181,
-          29
-        ],
-        "filename": "tools/api_manifest/tests/fixtures/rustdoc-v57/lib.rs"
-      },
-      "visibility": "public"
-    },
-    "222": {
-      "attrs": [],
-      "crate_id": 0,
-      "deprecation": null,
-      "docs": null,
-      "id": 222,
-      "inner": {
-        "type_alias": {
-          "generics": {
-            "params": [
-              {
-                "kind": {
-                  "type": {
-                    "bounds": [],
-                    "default": null,
-                    "is_synthetic": false
-                  }
-                },
-                "name": "T"
-              }
-            ],
-            "where_predicates": []
-          },
-          "type": {
-            "resolved_path": {
-              "args": {
-                "angle_bracketed": {
-                  "args": [
-                    {
-                      "type": {
-                        "generic": "T"
-                      }
-                    }
-                  ],
-                  "constraints": []
-                }
-              },
-              "id": 82,
-              "path": "Generic"
-            }
-          }
-        }
-      },
-      "links": {},
-      "name": "GenericAlias",
-      "span": {
-        "begin": [
-          182,
-          1
-        ],
-        "end": [
-          182,
-          39
-        ],
-        "filename": "tools/api_manifest/tests/fixtures/rustdoc-v57/lib.rs"
-      },
-      "visibility": "public"
-    },
-    "223": {
-      "attrs": [],
-      "crate_id": 0,
-      "deprecation": null,
-      "docs": null,
-      "id": 223,
-      "inner": {
-        "type_alias": {
-          "generics": {
-            "params": [],
-            "where_predicates": []
-          },
-          "type": {
-            "resolved_path": {
-              "args": {
-                "angle_bracketed": {
-                  "args": [
-                    {
-                      "type": {
-                        "resolved_path": {
-                          "args": null,
-                          "id": 179,
-                          "path": "Derived"
-                        }
-                      }
-                    }
-                  ],
-                  "constraints": []
-                }
-              },
-              "id": 82,
-              "path": "Generic"
-            }
-          }
-        }
-      },
-      "links": {},
-      "name": "GenericDerivedAlias",
-      "span": {
-        "begin": [
-          183,
-          1
-        ],
-        "end": [
-          183,
-          49
-        ],
-        "filename": "tools/api_manifest/tests/fixtures/rustdoc-v57/lib.rs"
-      },
-      "visibility": "public"
-    },
-    "224": {
-      "attrs": [],
-      "crate_id": 0,
-      "deprecation": null,
-      "docs": null,
-      "id": 224,
-      "inner": {
-        "type_alias": {
-          "generics": {
-            "params": [],
-            "where_predicates": []
-          },
-          "type": {
-            "resolved_path": {
-              "args": {
-                "angle_bracketed": {
-                  "args": [
-                    {
-                      "type": {
-                        "tuple": [
-                          {
-                            "primitive": "u8"
-                          }
-                        ]
-                      }
-                    }
-                  ],
-                  "constraints": []
-                }
-              },
-              "id": 82,
-              "path": "Generic"
-            }
-          }
-        }
-      },
-      "links": {},
-      "name": "GenericU8TupleAlias",
-      "span": {
-        "begin": [
-          184,
-          1
-        ],
-        "end": [
-          184,
-          47
-        ],
-        "filename": "tools/api_manifest/tests/fixtures/rustdoc-v57/lib.rs"
-      },
-      "visibility": "public"
-    },
-    "225": {
-      "attrs": [],
-      "crate_id": 0,
-      "deprecation": null,
-      "docs": null,
-      "id": 225,
-      "inner": {
-        "type_alias": {
-          "generics": {
-            "params": [],
-            "where_predicates": []
-          },
-          "type": {
-            "resolved_path": {
-              "args": {
-                "angle_bracketed": {
-                  "args": [
-                    {
-                      "type": {
-                        "tuple": [
-                          {
-                            "primitive": "u16"
-                          }
-                        ]
-                      }
-                    }
-                  ],
-                  "constraints": []
-                }
-              },
-              "id": 82,
-              "path": "Generic"
-            }
-          }
-        }
-      },
-      "links": {},
-      "name": "GenericU16TupleAlias",
-      "span": {
-        "begin": [
-          185,
-          1
-        ],
-        "end": [
-          185,
-          49
-        ],
-        "filename": "tools/api_manifest/tests/fixtures/rustdoc-v57/lib.rs"
-      },
-      "visibility": "public"
-    },
-    "226": {
-      "attrs": [],
-      "crate_id": 0,
-      "deprecation": null,
-      "docs": null,
-      "id": 226,
-      "inner": {
-        "type_alias": {
-          "generics": {
-            "params": [],
-            "where_predicates": []
-          },
-          "type": {
-            "resolved_path": {
-              "args": {
-                "angle_bracketed": {
-                  "args": [
-                    {
-                      "type": {
-                        "primitive": "u8"
-                      }
-                    }
-                  ],
-                  "constraints": []
-                }
-              },
-              "id": 85,
-              "path": "Fixed"
-            }
-          }
-        }
-      },
-      "links": {},
-      "name": "FixedU8Alias",
-      "span": {
-        "begin": [
-          186,
-          1
-        ],
-        "end": [
-          186,
-          35
-        ],
-        "filename": "tools/api_manifest/tests/fixtures/rustdoc-v57/lib.rs"
-      },
-      "visibility": "public"
-    },
-    "227": {
-      "attrs": [],
-      "crate_id": 0,
-      "deprecation": null,
-      "docs": null,
-      "id": 227,
-      "inner": {
-        "type_alias": {
-          "generics": {
-            "params": [],
-            "where_predicates": []
-          },
-          "type": {
-            "resolved_path": {
-              "args": {
-                "angle_bracketed": {
-                  "args": [
-                    {
-                      "type": {
-                        "primitive": "u16"
-                      }
-                    }
-                  ],
-                  "constraints": []
-                }
-              },
-              "id": 85,
-              "path": "Fixed"
-            }
-          }
-        }
-      },
-      "links": {},
-      "name": "FixedU16Alias",
-      "span": {
-        "begin": [
-          187,
-          1
-        ],
-        "end": [
-          187,
-          37
-        ],
-        "filename": "tools/api_manifest/tests/fixtures/rustdoc-v57/lib.rs"
-      },
-      "visibility": "public"
-    },
-    "228": {
-      "attrs": [
-        {
-          "other": "#[allow(dead_code)]"
-        },
-        {
-          "other": "#[feature(associated_type_defaults)]"
-        }
-      ],
-      "crate_id": 0,
-      "deprecation": null,
-      "docs": null,
-      "id": 228,
-      "inner": {
-        "module": {
-          "is_crate": true,
-          "is_stripped": false,
-          "items": [
-            4,
-            6,
-            52,
-            73,
-            90,
-            92,
-            93,
-            95,
-            112,
-            114,
-            118,
-            123,
-            3,
-            82,
-            85,
-            179,
-            204,
-            219,
-            220,
-            221,
-            222,
-            223,
-            224,
-            225,
-            226,
-            227
-          ]
-        }
-      },
-      "links": {},
-      "name": "rustdoc_v57_fixture",
-      "span": {
-        "begin": [
-          1,
-          1
-        ],
-        "end": [
-          193,
-          2
         ],
         "filename": "tools/api_manifest/tests/fixtures/rustdoc-v57/lib.rs"
       },
@@ -2563,6 +2434,411 @@
       "span": null,
       "visibility": "default"
     },
+    "240": {
+      "attrs": [],
+      "crate_id": 0,
+      "deprecation": null,
+      "docs": null,
+      "id": 240,
+      "inner": {
+        "type_alias": {
+          "generics": {
+            "params": [],
+            "where_predicates": []
+          },
+          "type": {
+            "resolved_path": {
+              "args": null,
+              "id": 223,
+              "path": "State"
+            }
+          }
+        }
+      },
+      "links": {},
+      "name": "StateAlias",
+      "span": {
+        "begin": [
+          193,
+          1
+        ],
+        "end": [
+          193,
+          29
+        ],
+        "filename": "tools/api_manifest/tests/fixtures/rustdoc-v57/lib.rs"
+      },
+      "visibility": "public"
+    },
+    "241": {
+      "attrs": [],
+      "crate_id": 0,
+      "deprecation": null,
+      "docs": null,
+      "id": 241,
+      "inner": {
+        "type_alias": {
+          "generics": {
+            "params": [
+              {
+                "kind": {
+                  "type": {
+                    "bounds": [],
+                    "default": null,
+                    "is_synthetic": false
+                  }
+                },
+                "name": "T"
+              }
+            ],
+            "where_predicates": []
+          },
+          "type": {
+            "resolved_path": {
+              "args": {
+                "angle_bracketed": {
+                  "args": [
+                    {
+                      "type": {
+                        "generic": "T"
+                      }
+                    }
+                  ],
+                  "constraints": []
+                }
+              },
+              "id": 82,
+              "path": "Generic"
+            }
+          }
+        }
+      },
+      "links": {},
+      "name": "GenericAlias",
+      "span": {
+        "begin": [
+          194,
+          1
+        ],
+        "end": [
+          194,
+          39
+        ],
+        "filename": "tools/api_manifest/tests/fixtures/rustdoc-v57/lib.rs"
+      },
+      "visibility": "public"
+    },
+    "242": {
+      "attrs": [],
+      "crate_id": 0,
+      "deprecation": null,
+      "docs": null,
+      "id": 242,
+      "inner": {
+        "type_alias": {
+          "generics": {
+            "params": [],
+            "where_predicates": []
+          },
+          "type": {
+            "resolved_path": {
+              "args": {
+                "angle_bracketed": {
+                  "args": [
+                    {
+                      "type": {
+                        "resolved_path": {
+                          "args": null,
+                          "id": 198,
+                          "path": "Derived"
+                        }
+                      }
+                    }
+                  ],
+                  "constraints": []
+                }
+              },
+              "id": 82,
+              "path": "Generic"
+            }
+          }
+        }
+      },
+      "links": {},
+      "name": "GenericDerivedAlias",
+      "span": {
+        "begin": [
+          195,
+          1
+        ],
+        "end": [
+          195,
+          49
+        ],
+        "filename": "tools/api_manifest/tests/fixtures/rustdoc-v57/lib.rs"
+      },
+      "visibility": "public"
+    },
+    "243": {
+      "attrs": [],
+      "crate_id": 0,
+      "deprecation": null,
+      "docs": null,
+      "id": 243,
+      "inner": {
+        "type_alias": {
+          "generics": {
+            "params": [],
+            "where_predicates": []
+          },
+          "type": {
+            "resolved_path": {
+              "args": {
+                "angle_bracketed": {
+                  "args": [
+                    {
+                      "type": {
+                        "tuple": [
+                          {
+                            "primitive": "u8"
+                          }
+                        ]
+                      }
+                    }
+                  ],
+                  "constraints": []
+                }
+              },
+              "id": 82,
+              "path": "Generic"
+            }
+          }
+        }
+      },
+      "links": {},
+      "name": "GenericU8TupleAlias",
+      "span": {
+        "begin": [
+          196,
+          1
+        ],
+        "end": [
+          196,
+          47
+        ],
+        "filename": "tools/api_manifest/tests/fixtures/rustdoc-v57/lib.rs"
+      },
+      "visibility": "public"
+    },
+    "244": {
+      "attrs": [],
+      "crate_id": 0,
+      "deprecation": null,
+      "docs": null,
+      "id": 244,
+      "inner": {
+        "type_alias": {
+          "generics": {
+            "params": [],
+            "where_predicates": []
+          },
+          "type": {
+            "resolved_path": {
+              "args": {
+                "angle_bracketed": {
+                  "args": [
+                    {
+                      "type": {
+                        "tuple": [
+                          {
+                            "primitive": "u16"
+                          }
+                        ]
+                      }
+                    }
+                  ],
+                  "constraints": []
+                }
+              },
+              "id": 82,
+              "path": "Generic"
+            }
+          }
+        }
+      },
+      "links": {},
+      "name": "GenericU16TupleAlias",
+      "span": {
+        "begin": [
+          197,
+          1
+        ],
+        "end": [
+          197,
+          49
+        ],
+        "filename": "tools/api_manifest/tests/fixtures/rustdoc-v57/lib.rs"
+      },
+      "visibility": "public"
+    },
+    "245": {
+      "attrs": [],
+      "crate_id": 0,
+      "deprecation": null,
+      "docs": null,
+      "id": 245,
+      "inner": {
+        "type_alias": {
+          "generics": {
+            "params": [],
+            "where_predicates": []
+          },
+          "type": {
+            "resolved_path": {
+              "args": {
+                "angle_bracketed": {
+                  "args": [
+                    {
+                      "type": {
+                        "primitive": "u8"
+                      }
+                    }
+                  ],
+                  "constraints": []
+                }
+              },
+              "id": 85,
+              "path": "Fixed"
+            }
+          }
+        }
+      },
+      "links": {},
+      "name": "FixedU8Alias",
+      "span": {
+        "begin": [
+          198,
+          1
+        ],
+        "end": [
+          198,
+          35
+        ],
+        "filename": "tools/api_manifest/tests/fixtures/rustdoc-v57/lib.rs"
+      },
+      "visibility": "public"
+    },
+    "246": {
+      "attrs": [],
+      "crate_id": 0,
+      "deprecation": null,
+      "docs": null,
+      "id": 246,
+      "inner": {
+        "type_alias": {
+          "generics": {
+            "params": [],
+            "where_predicates": []
+          },
+          "type": {
+            "resolved_path": {
+              "args": {
+                "angle_bracketed": {
+                  "args": [
+                    {
+                      "type": {
+                        "primitive": "u16"
+                      }
+                    }
+                  ],
+                  "constraints": []
+                }
+              },
+              "id": 85,
+              "path": "Fixed"
+            }
+          }
+        }
+      },
+      "links": {},
+      "name": "FixedU16Alias",
+      "span": {
+        "begin": [
+          199,
+          1
+        ],
+        "end": [
+          199,
+          37
+        ],
+        "filename": "tools/api_manifest/tests/fixtures/rustdoc-v57/lib.rs"
+      },
+      "visibility": "public"
+    },
+    "247": {
+      "attrs": [
+        {
+          "other": "#[allow(dead_code)]"
+        },
+        {
+          "other": "#[feature(associated_type_defaults)]"
+        }
+      ],
+      "crate_id": 0,
+      "deprecation": null,
+      "docs": null,
+      "id": 247,
+      "inner": {
+        "module": {
+          "is_crate": true,
+          "is_stripped": false,
+          "items": [
+            4,
+            6,
+            52,
+            73,
+            90,
+            92,
+            93,
+            95,
+            112,
+            114,
+            131,
+            133,
+            137,
+            142,
+            3,
+            82,
+            85,
+            198,
+            223,
+            238,
+            239,
+            240,
+            241,
+            242,
+            243,
+            244,
+            245,
+            246
+          ]
+        }
+      },
+      "links": {},
+      "name": "rustdoc_v57_fixture",
+      "span": {
+        "begin": [
+          1,
+          1
+        ],
+        "end": [
+          205,
+          2
+        ],
+        "filename": "tools/api_manifest/tests/fixtures/rustdoc-v57/lib.rs"
+      },
+      "visibility": "public"
+    },
     "3": {
       "attrs": [],
       "crate_id": 0,
@@ -2576,13 +2852,13 @@
             "where_predicates": []
           },
           "impls": [
-            128,
+            147,
             91,
             2,
             76,
             78,
-            116,
-            125
+            135,
+            144
           ],
           "kind": "unit"
         }
@@ -2591,11 +2867,11 @@
       "name": "Service",
       "span": {
         "begin": [
-          85,
+          97,
           1
         ],
         "end": [
-          85,
+          97,
           20
         ],
         "filename": "tools/api_manifest/tests/fixtures/rustdoc-v57/lib.rs"
@@ -3326,11 +3602,11 @@
       "name": "required",
       "span": {
         "begin": [
-          110,
+          122,
           5
         ],
         "end": [
-          112,
+          124,
           6
         ],
         "filename": "tools/api_manifest/tests/fixtures/rustdoc-v57/lib.rs"
@@ -3388,11 +3664,11 @@
       "name": null,
       "span": {
         "begin": [
-          109,
+          121,
           1
         ],
         "end": [
-          113,
+          125,
           2
         ],
         "filename": "tools/api_manifest/tests/fixtures/rustdoc-v57/lib.rs"
@@ -3444,11 +3720,11 @@
       "name": "required",
       "span": {
         "begin": [
-          116,
+          128,
           5
         ],
         "end": [
-          118,
+          130,
           6
         ],
         "filename": "tools/api_manifest/tests/fixtures/rustdoc-v57/lib.rs"
@@ -3506,11 +3782,11 @@
       "name": null,
       "span": {
         "begin": [
-          115,
+          127,
           1
         ],
         "end": [
-          119,
+          131,
           2
         ],
         "filename": "tools/api_manifest/tests/fixtures/rustdoc-v57/lib.rs"
@@ -3562,11 +3838,11 @@
       "name": "required",
       "span": {
         "begin": [
-          125,
+          137,
           5
         ],
         "end": [
-          127,
+          139,
           6
         ],
         "filename": "tools/api_manifest/tests/fixtures/rustdoc-v57/lib.rs"
@@ -3730,11 +4006,11 @@
       "name": null,
       "span": {
         "begin": [
-          121,
+          133,
           1
         ],
         "end": [
-          128,
+          140,
           2
         ],
         "filename": "tools/api_manifest/tests/fixtures/rustdoc-v57/lib.rs"
@@ -3765,16 +4041,16 @@
             "where_predicates": []
           },
           "impls": [
-            145,
-            147,
-            161,
+            164,
+            166,
+            180,
             80,
-            120
+            139
           ],
           "kind": {
             "plain": {
               "fields": [
-                143
+                162
               ],
               "has_stripped_fields": false
             }
@@ -3785,11 +4061,11 @@
       "name": "Generic",
       "span": {
         "begin": [
-          91,
+          103,
           1
         ],
         "end": [
-          93,
+          105,
           2
         ],
         "filename": "tools/api_manifest/tests/fixtures/rustdoc-v57/lib.rs"
@@ -3841,11 +4117,11 @@
       "name": "required",
       "span": {
         "begin": [
-          147,
+          159,
           5
         ],
         "end": [
-          149,
+          161,
           6
         ],
         "filename": "tools/api_manifest/tests/fixtures/rustdoc-v57/lib.rs"
@@ -3914,11 +4190,11 @@
       "name": null,
       "span": {
         "begin": [
-          146,
+          158,
           1
         ],
         "end": [
-          150,
+          162,
           2
         ],
         "filename": "tools/api_manifest/tests/fixtures/rustdoc-v57/lib.rs"
@@ -3949,16 +4225,16 @@
             "where_predicates": []
           },
           "impls": [
-            164,
-            165,
-            172,
+            183,
+            184,
+            191,
             84,
             87
           ],
           "kind": {
             "plain": {
               "fields": [
-                162
+                181
               ],
               "has_stripped_fields": false
             }
@@ -3969,11 +4245,11 @@
       "name": "Fixed",
       "span": {
         "begin": [
-          95,
+          107,
           1
         ],
         "end": [
-          97,
+          109,
           2
         ],
         "filename": "tools/api_manifest/tests/fixtures/rustdoc-v57/lib.rs"
@@ -4025,11 +4301,11 @@
       "name": "required",
       "span": {
         "begin": [
-          153,
+          165,
           5
         ],
         "end": [
-          155,
+          167,
           6
         ],
         "filename": "tools/api_manifest/tests/fixtures/rustdoc-v57/lib.rs"
@@ -4098,11 +4374,11 @@
       "name": null,
       "span": {
         "begin": [
-          152,
+          164,
           1
         ],
         "end": [
-          156,
+          168,
           2
         ],
         "filename": "tools/api_manifest/tests/fixtures/rustdoc-v57/lib.rs"
@@ -4301,11 +4577,11 @@
       "name": null,
       "span": {
         "begin": [
-          87,
+          99,
           1
         ],
         "end": [
-          87,
+          99,
           35
         ],
         "filename": "tools/api_manifest/tests/fixtures/rustdoc-v57/lib.rs"
@@ -4600,7 +4876,7 @@
         "Send"
       ]
     },
-    "195": {
+    "214": {
       "crate_id": 2,
       "kind": "struct",
       "path": [
@@ -4609,7 +4885,7 @@
         "Formatter"
       ]
     },
-    "196": {
+    "215": {
       "crate_id": 2,
       "kind": "type_alias",
       "path": [
@@ -4618,7 +4894,7 @@
         "Result"
       ]
     },
-    "198": {
+    "217": {
       "crate_id": 2,
       "kind": "trait",
       "path": [
@@ -4673,7 +4949,7 @@
       ]
     }
   },
-  "root": 228,
+  "root": 247,
   "target": {
     "triple": "x86_64-pc-windows-msvc"
   }

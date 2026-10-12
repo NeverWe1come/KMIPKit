@@ -66,6 +66,18 @@ where
     }
 }
 
+pub struct InlineLifetimeBound<T> {
+    value: T,
+}
+
+pub type InlineLifetimeBoundAlias<'a> = InlineLifetimeBound<&'a u8>;
+
+impl<'a: 'static> InlineLifetimeBound<&'a u8> {
+    pub fn only_inline_static(&self) -> &u8 {
+        self.value
+    }
+}
+
 pub trait Audit {
     fn required(&self) -> u8;
 }

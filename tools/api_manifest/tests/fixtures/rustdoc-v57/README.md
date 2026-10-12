@@ -17,8 +17,9 @@ matching, and a public trait nested in a private module tests export reachabilit
 The projection also retains elided and alpha-renamed lifetime inherent
 implementations for private `View` types re-exported as `Alias` and
 `AlphaAlias`, an inline `T: 'static` bound, a `where 'a: 'static` lifetime
-predicate, one real synthetic `Send` implementation, one applicable blanket
-`Borrow<T>` implementation, and Rust's real blanket `Any` implementation.
+predicate, an inline `'a: 'static` lifetime parameter bound, one real synthetic
+`Send` implementation, one applicable blanket `Borrow<T>` implementation, and
+Rust's real blanket `Any` implementation.
 These cases test re-export paths, structured handling of outlives bounds, and
 concrete vs. open generic aliases without fabricated rustdoc item records. The
 associated type default uses Rust's `associated_type_defaults` feature only in
