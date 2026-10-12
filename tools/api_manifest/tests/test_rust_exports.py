@@ -189,7 +189,7 @@ class RustExportAuditTests(unittest.TestCase):
         contract_impls = []
         for impl_id in service["inner"]["struct"]["impls"]:
             impl = doc["index"][str(impl_id)]["inner"]["impl"]
-            if impl.get("trait", {}).get("path") == "Contract":
+            if (impl.get("trait") or {}).get("path") == "Contract":
                 contract_impls.append(impl)
         self.assertEqual(len(contract_impls), 2)
         for impl in contract_impls:
@@ -197,7 +197,9 @@ class RustExportAuditTests(unittest.TestCase):
             self.assertEqual(impl["provided_trait_methods"], ["provided"])
 
     def test_rustdoc_v57_keeps_generic_owner_trait_arguments_and_predicates(self):
-        report = self.inventory(self.rustdoc_v57_fixture())
+        documents = self.rustdoc_v57_fixture()
+        doc = documents["rustdoc_v57_fixture"]
+        report = self.inventory(documents)
         generic = "<rustdoc_v57_fixture::Generic<T> as rustdoc_v57_fixture::Contract<T>>::required"
         generic_alias = "<rustdoc_v57_fixture::GenericAlias<T> as rustdoc_v57_fixture::Contract<T>>::required"
         self.assertIn(generic, self.names(report))
@@ -205,7 +207,16 @@ class RustExportAuditTests(unittest.TestCase):
         direct = next(r for r in report["declarations"] if r["exportName"] == generic)
         alias = next(r for r in report["declarations"] if r["exportName"] == generic_alias)
         self.assertEqual(direct["identity"], alias["identity"])
-        self.assertIn('"Copy"', direct["identity"])
+        generic_impl = next(
+            doc["index"][str(impl_id)]["inner"]["impl"]
+            for impl_id in next(item for item in doc["index"].values() if item.get("name") == "Generic")["inner"]["struct"]["impls"]
+            if (doc["index"][str(impl_id)]["inner"]["impl"].get("trait") or {}).get("path") == "Contract"
+        )
+        self.assertEqual([param["name"] for param in generic_impl["generics"]["params"]], ["T"])
+        self.assertEqual(
+            generic_impl["generics"]["where_predicates"][0]["bound_predicate"]["bounds"][0]["trait_bound"]["trait"]["path"],
+            "Copy",
+        )
 
     def test_rustdoc_v57_filters_generic_impls_for_concrete_type_aliases(self):
         names = self.names(self.inventory(self.rustdoc_v57_fixture()))
@@ -218,13 +229,31 @@ class RustExportAuditTests(unittest.TestCase):
             names,
         )
 
+    def test_rustdoc_v57_filters_inherent_impls_for_concrete_type_aliases(self):
+        names = self.names(self.inventory(self.rustdoc_v57_fixture()))
+        self.assertNotIn("rustdoc_v57_fixture::FixedU8Alias::only_u16", names)
+        self.assertIn("rustdoc_v57_fixture::FixedU16Alias::only_u16", names)
+
+    def test_rustdoc_v57_keeps_applicable_blanket_members_and_synthetic_impl_evidence(self):
+        documents = self.rustdoc_v57_fixture()
+        doc = documents["rustdoc_v57_fixture"]
+        fixed = next(item for item in doc["index"].values() if item.get("name") == "Fixed")
+        impls = [doc["index"][str(impl_id)]["inner"]["impl"] for impl_id in fixed["inner"]["struct"]["impls"]]
+        synthetic_send = next(impl for impl in impls if (impl.get("trait") or {}).get("path") == "Send")
+        blanket_borrow = next(impl for impl in impls if (impl.get("trait") or {}).get("path") == "Borrow")
+        self.assertTrue(synthetic_send["is_synthetic"])
+        self.assertEqual(synthetic_send["items"], [])
+        self.assertEqual(blanket_borrow["blanket_impl"], {"generic": "T"})
+        names = self.names(self.inventory(documents))
+        self.assertIn("<rustdoc_v57_fixture::Fixed<T> as core::borrow::Borrow<T>>::borrow", names)
+
     def test_rustdoc_v57_inventories_automatically_derived_trait_members(self):
         documents = self.rustdoc_v57_fixture()
         report = self.inventory(documents)
         doc = documents["rustdoc_v57_fixture"]
         derived = next(item for item in doc["index"].values() if item.get("name") == "Derived")
         derived_impl = next(doc["index"][str(i)] for i in derived["inner"]["struct"]["impls"]
-                            if doc["index"][str(i)]["inner"]["impl"].get("trait", {}).get("path") == "Debug")
+                            if (doc["index"][str(i)]["inner"]["impl"].get("trait") or {}).get("path") == "Debug")
         self.assertIn("automatically_derived", derived_impl["attrs"])
         self.assertFalse(derived_impl["inner"]["impl"]["is_synthetic"])
         self.assertIn(

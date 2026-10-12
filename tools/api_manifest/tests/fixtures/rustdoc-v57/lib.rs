@@ -56,7 +56,10 @@ impl Contract<u16> for Service {
     }
 }
 
-impl<T: Copy> Contract<T> for Generic<T> {
+impl<T> Contract<T> for Generic<T>
+where
+    T: Copy,
+{
     fn required(&self) -> T {
         self.value
     }
@@ -101,3 +104,9 @@ pub type StateAlias = State;
 pub type GenericAlias<T> = Generic<T>;
 pub type FixedU8Alias = Fixed<u8>;
 pub type FixedU16Alias = Fixed<u16>;
+
+impl Fixed<u16> {
+    pub fn only_u16(&self) -> u16 {
+        self.value
+    }
+}

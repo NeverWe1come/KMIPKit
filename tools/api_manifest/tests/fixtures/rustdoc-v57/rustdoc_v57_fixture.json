@@ -1,72 +1,4 @@
 {
-  "crate_version": null,
-  "external_crates": {
-    "1": {
-      "html_root_url": "https://doc.rust-lang.org/1.94.0/",
-      "name": "std",
-      "path": "C:\\Users\\ramp1953\\.rustup\\toolchains\\1.94.0-x86_64-pc-windows-msvc\\lib\\rustlib\\x86_64-pc-windows-msvc\\lib\\libstd-2137bdd3874dafb5.rmeta"
-    },
-    "10": {
-      "html_root_url": "https://doc.rust-lang.org/1.94.0/",
-      "name": "rustc_demangle",
-      "path": "C:\\Users\\ramp1953\\.rustup\\toolchains\\1.94.0-x86_64-pc-windows-msvc\\lib\\rustlib\\x86_64-pc-windows-msvc\\lib\\librustc_demangle-105b70207c8cdabe.rmeta"
-    },
-    "11": {
-      "html_root_url": "https://doc.rust-lang.org/1.94.0/",
-      "name": "windows_targets",
-      "path": "C:\\Users\\ramp1953\\.rustup\\toolchains\\1.94.0-x86_64-pc-windows-msvc\\lib\\rustlib\\x86_64-pc-windows-msvc\\lib\\libwindows_targets-1d988f59e953aa41.rmeta"
-    },
-    "12": {
-      "html_root_url": "https://doc.rust-lang.org/1.94.0/",
-      "name": "cfg_if",
-      "path": "C:\\Users\\ramp1953\\.rustup\\toolchains\\1.94.0-x86_64-pc-windows-msvc\\lib\\rustlib\\x86_64-pc-windows-msvc\\lib\\libcfg_if-2115bb4cb4db19cf.rmeta"
-    },
-    "13": {
-      "html_root_url": "https://doc.rust-lang.org/1.94.0/",
-      "name": "panic_unwind",
-      "path": "C:\\Users\\ramp1953\\.rustup\\toolchains\\1.94.0-x86_64-pc-windows-msvc\\lib\\rustlib\\x86_64-pc-windows-msvc\\lib\\libpanic_unwind-44c2097187f5e9f3.rmeta"
-    },
-    "2": {
-      "html_root_url": "https://doc.rust-lang.org/1.94.0/",
-      "name": "core",
-      "path": "C:\\Users\\ramp1953\\.rustup\\toolchains\\1.94.0-x86_64-pc-windows-msvc\\lib\\rustlib\\x86_64-pc-windows-msvc\\lib\\libcore-2dc1efaf7a721ce5.rmeta"
-    },
-    "3": {
-      "html_root_url": "https://doc.rust-lang.org/1.94.0/",
-      "name": "alloc",
-      "path": "C:\\Users\\ramp1953\\.rustup\\toolchains\\1.94.0-x86_64-pc-windows-msvc\\lib\\rustlib\\x86_64-pc-windows-msvc\\lib\\liballoc-9df789857261090a.rmeta"
-    },
-    "4": {
-      "html_root_url": "https://doc.rust-lang.org/1.94.0/",
-      "name": "compiler_builtins",
-      "path": "C:\\Users\\ramp1953\\.rustup\\toolchains\\1.94.0-x86_64-pc-windows-msvc\\lib\\rustlib\\x86_64-pc-windows-msvc\\lib\\libcompiler_builtins-7d3a0c55eac2cc40.rmeta"
-    },
-    "5": {
-      "html_root_url": "https://doc.rust-lang.org/1.94.0/",
-      "name": "unwind",
-      "path": "C:\\Users\\ramp1953\\.rustup\\toolchains\\1.94.0-x86_64-pc-windows-msvc\\lib\\rustlib\\x86_64-pc-windows-msvc\\lib\\libunwind-057148f5ceadfdcd.rmeta"
-    },
-    "6": {
-      "html_root_url": "https://doc.rust-lang.org/1.94.0/",
-      "name": "rustc_std_workspace_core",
-      "path": "C:\\Users\\ramp1953\\.rustup\\toolchains\\1.94.0-x86_64-pc-windows-msvc\\lib\\rustlib\\x86_64-pc-windows-msvc\\lib\\librustc_std_workspace_core-5c1f1a13cd5c811f.rmeta"
-    },
-    "7": {
-      "html_root_url": "https://doc.rust-lang.org/1.94.0/",
-      "name": "hashbrown",
-      "path": "C:\\Users\\ramp1953\\.rustup\\toolchains\\1.94.0-x86_64-pc-windows-msvc\\lib\\rustlib\\x86_64-pc-windows-msvc\\lib\\libhashbrown-95979db93eb3aaa1.rmeta"
-    },
-    "8": {
-      "html_root_url": "https://doc.rust-lang.org/1.94.0/",
-      "name": "rustc_std_workspace_alloc",
-      "path": "C:\\Users\\ramp1953\\.rustup\\toolchains\\1.94.0-x86_64-pc-windows-msvc\\lib\\rustlib\\x86_64-pc-windows-msvc\\lib\\librustc_std_workspace_alloc-bbb94ea5f6120a07.rmeta"
-    },
-    "9": {
-      "html_root_url": "https://doc.rust-lang.org/1.94.0/",
-      "name": "std_detect",
-      "path": "C:\\Users\\ramp1953\\.rustup\\toolchains\\1.94.0-x86_64-pc-windows-msvc\\lib\\rustlib\\x86_64-pc-windows-msvc\\lib\\libstd_detect-c018179ad7ae8382.rmeta"
-    }
-  },
   "format_version": 57,
   "includes_private": true,
   "index": {
@@ -99,7 +31,7 @@
           5,
           21
         ],
-        "filename": "C:\\Users\\ramp1953\\.codex\\worktrees\\kmipkit-0043-continuation\\KMIPKit\\tools\\api_manifest\\tests\\fixtures\\rustdoc-v57\\lib.rs"
+        "filename": "tools/api_manifest/tests/fixtures/rustdoc-v57/lib.rs"
       },
       "visibility": "default"
     },
@@ -128,7 +60,7 @@
           6,
           29
         ],
-        "filename": "C:\\Users\\ramp1953\\.codex\\worktrees\\kmipkit-0043-continuation\\KMIPKit\\tools\\api_manifest\\tests\\fixtures\\rustdoc-v57\\lib.rs"
+        "filename": "tools/api_manifest/tests/fixtures/rustdoc-v57/lib.rs"
       },
       "visibility": "default"
     },
@@ -177,23 +109,23 @@
       "name": "required",
       "span": {
         "begin": [
-          60,
+          63,
           5
         ],
         "end": [
-          62,
+          65,
           6
         ],
-        "filename": "C:\\Users\\ramp1953\\.codex\\worktrees\\kmipkit-0043-continuation\\KMIPKit\\tools\\api_manifest\\tests\\fixtures\\rustdoc-v57\\lib.rs"
+        "filename": "tools/api_manifest/tests/fixtures/rustdoc-v57/lib.rs"
       },
       "visibility": "default"
     },
-    "102": {
+    "104": {
       "attrs": [],
       "crate_id": 0,
       "deprecation": null,
       "docs": null,
-      "id": 102,
+      "id": 104,
       "inner": {
         "struct": {
           "generics": {
@@ -201,7 +133,7 @@
             "where_predicates": []
           },
           "impls": [
-            120
+            122
           ],
           "kind": "unit"
         }
@@ -210,14 +142,14 @@
       "name": "Derived",
       "span": {
         "begin": [
-          90,
+          93,
           1
         ],
         "end": [
-          90,
+          93,
           20
         ],
-        "filename": "C:\\Users\\ramp1953\\.codex\\worktrees\\kmipkit-0043-continuation\\KMIPKit\\tools\\api_manifest\\tests\\fixtures\\rustdoc-v57\\lib.rs"
+        "filename": "tools/api_manifest/tests/fixtures/rustdoc-v57/lib.rs"
       },
       "visibility": "public"
     },
@@ -253,19 +185,7 @@
               {
                 "kind": {
                   "type": {
-                    "bounds": [
-                      {
-                        "trait_bound": {
-                          "generic_params": [],
-                          "modifier": "none",
-                          "trait": {
-                            "args": null,
-                            "id": 12,
-                            "path": "Copy"
-                          }
-                        }
-                      }
-                    ],
+                    "bounds": [],
                     "default": null,
                     "is_synthetic": false
                   }
@@ -273,7 +193,29 @@
                 "name": "T"
               }
             ],
-            "where_predicates": []
+            "where_predicates": [
+              {
+                "bound_predicate": {
+                  "bounds": [
+                    {
+                      "trait_bound": {
+                        "generic_params": [],
+                        "modifier": "none",
+                        "trait": {
+                          "args": null,
+                          "id": 12,
+                          "path": "Copy"
+                        }
+                      }
+                    }
+                  ],
+                  "generic_params": [],
+                  "type": {
+                    "generic": "T"
+                  }
+                }
+              }
+            ]
           },
           "is_negative": false,
           "is_synthetic": false,
@@ -310,14 +252,14 @@
           1
         ],
         "end": [
-          63,
+          66,
           2
         ],
-        "filename": "C:\\Users\\ramp1953\\.codex\\worktrees\\kmipkit-0043-continuation\\KMIPKit\\tools\\api_manifest\\tests\\fixtures\\rustdoc-v57\\lib.rs"
+        "filename": "tools/api_manifest/tests/fixtures/rustdoc-v57/lib.rs"
       },
       "visibility": "default"
     },
-    "117": {
+    "119": {
       "attrs": [
         {
           "other": "#[attr = Inline(Hint)]"
@@ -326,7 +268,7 @@
       "crate_id": 0,
       "deprecation": null,
       "docs": null,
-      "id": 117,
+      "id": 119,
       "inner": {
         "function": {
           "generics": {
@@ -372,7 +314,7 @@
                             "constraints": []
                           }
                         },
-                        "id": 118,
+                        "id": 120,
                         "path": "$crate::fmt::Formatter"
                       }
                     }
@@ -384,7 +326,7 @@
             "output": {
               "resolved_path": {
                 "args": null,
-                "id": 119,
+                "id": 121,
                 "path": "$crate::fmt::Result"
               }
             }
@@ -395,32 +337,32 @@
       "name": "fmt",
       "span": {
         "begin": [
-          89,
+          92,
           10
         ],
         "end": [
-          89,
+          92,
           15
         ],
-        "filename": "C:\\Users\\ramp1953\\.codex\\worktrees\\kmipkit-0043-continuation\\KMIPKit\\tools\\api_manifest\\tests\\fixtures\\rustdoc-v57\\lib.rs"
+        "filename": "tools/api_manifest/tests/fixtures/rustdoc-v57/lib.rs"
       },
       "visibility": "default"
     },
-    "120": {
+    "122": {
       "attrs": [
         "automatically_derived"
       ],
       "crate_id": 0,
       "deprecation": null,
       "docs": null,
-      "id": 120,
+      "id": 122,
       "inner": {
         "impl": {
           "blanket_impl": null,
           "for": {
             "resolved_path": {
               "args": null,
-              "id": 102,
+              "id": 104,
               "path": "Derived"
             }
           },
@@ -432,12 +374,12 @@
           "is_synthetic": false,
           "is_unsafe": false,
           "items": [
-            117
+            119
           ],
           "provided_trait_methods": [],
           "trait": {
             "args": null,
-            "id": 121,
+            "id": 123,
             "path": "Debug"
           }
         }
@@ -446,67 +388,14 @@
       "name": null,
       "span": {
         "begin": [
-          89,
+          92,
           10
         ],
         "end": [
-          89,
+          92,
           15
         ],
-        "filename": "C:\\Users\\ramp1953\\.codex\\worktrees\\kmipkit-0043-continuation\\KMIPKit\\tools\\api_manifest\\tests\\fixtures\\rustdoc-v57\\lib.rs"
-      },
-      "visibility": "default"
-    },
-    "122": {
-      "attrs": [],
-      "crate_id": 0,
-      "deprecation": null,
-      "docs": null,
-      "id": 122,
-      "inner": {
-        "variant": {
-          "discriminant": null,
-          "kind": "plain"
-        }
-      },
-      "links": {},
-      "name": "Unit",
-      "span": {
-        "begin": [
-          93,
-          5
-        ],
-        "end": [
-          93,
-          9
-        ],
-        "filename": "C:\\Users\\ramp1953\\.codex\\worktrees\\kmipkit-0043-continuation\\KMIPKit\\tools\\api_manifest\\tests\\fixtures\\rustdoc-v57\\lib.rs"
-      },
-      "visibility": "default"
-    },
-    "123": {
-      "attrs": [],
-      "crate_id": 0,
-      "deprecation": null,
-      "docs": null,
-      "id": 123,
-      "inner": {
-        "struct_field": {
-          "primitive": "u8"
-        }
-      },
-      "links": {},
-      "name": "0",
-      "span": {
-        "begin": [
-          94,
-          11
-        ],
-        "end": [
-          94,
-          13
-        ],
-        "filename": "C:\\Users\\ramp1953\\.codex\\worktrees\\kmipkit-0043-continuation\\KMIPKit\\tools\\api_manifest\\tests\\fixtures\\rustdoc-v57\\lib.rs"
+        "filename": "tools/api_manifest/tests/fixtures/rustdoc-v57/lib.rs"
       },
       "visibility": "default"
     },
@@ -519,25 +408,21 @@
       "inner": {
         "variant": {
           "discriminant": null,
-          "kind": {
-            "tuple": [
-              123
-            ]
-          }
+          "kind": "plain"
         }
       },
       "links": {},
-      "name": "Tuple",
+      "name": "Unit",
       "span": {
         "begin": [
-          94,
+          96,
           5
         ],
         "end": [
-          94,
-          14
+          96,
+          9
         ],
-        "filename": "C:\\Users\\ramp1953\\.codex\\worktrees\\kmipkit-0043-continuation\\KMIPKit\\tools\\api_manifest\\tests\\fixtures\\rustdoc-v57\\lib.rs"
+        "filename": "tools/api_manifest/tests/fixtures/rustdoc-v57/lib.rs"
       },
       "visibility": "default"
     },
@@ -553,17 +438,17 @@
         }
       },
       "links": {},
-      "name": "value",
+      "name": "0",
       "span": {
         "begin": [
-          95,
-          13
+          97,
+          11
         ],
         "end": [
-          95,
-          22
+          97,
+          13
         ],
-        "filename": "C:\\Users\\ramp1953\\.codex\\worktrees\\kmipkit-0043-continuation\\KMIPKit\\tools\\api_manifest\\tests\\fixtures\\rustdoc-v57\\lib.rs"
+        "filename": "tools/api_manifest/tests/fixtures/rustdoc-v57/lib.rs"
       },
       "visibility": "default"
     },
@@ -577,27 +462,24 @@
         "variant": {
           "discriminant": null,
           "kind": {
-            "struct": {
-              "fields": [
-                125
-              ],
-              "has_stripped_fields": false
-            }
+            "tuple": [
+              125
+            ]
           }
         }
       },
       "links": {},
-      "name": "Named",
+      "name": "Tuple",
       "span": {
         "begin": [
-          95,
+          97,
           5
         ],
         "end": [
-          95,
-          24
+          97,
+          14
         ],
-        "filename": "C:\\Users\\ramp1953\\.codex\\worktrees\\kmipkit-0043-continuation\\KMIPKit\\tools\\api_manifest\\tests\\fixtures\\rustdoc-v57\\lib.rs"
+        "filename": "tools/api_manifest/tests/fixtures/rustdoc-v57/lib.rs"
       },
       "visibility": "default"
     },
@@ -608,6 +490,66 @@
       "docs": null,
       "id": 127,
       "inner": {
+        "struct_field": {
+          "primitive": "u8"
+        }
+      },
+      "links": {},
+      "name": "value",
+      "span": {
+        "begin": [
+          98,
+          13
+        ],
+        "end": [
+          98,
+          22
+        ],
+        "filename": "tools/api_manifest/tests/fixtures/rustdoc-v57/lib.rs"
+      },
+      "visibility": "default"
+    },
+    "128": {
+      "attrs": [],
+      "crate_id": 0,
+      "deprecation": null,
+      "docs": null,
+      "id": 128,
+      "inner": {
+        "variant": {
+          "discriminant": null,
+          "kind": {
+            "struct": {
+              "fields": [
+                127
+              ],
+              "has_stripped_fields": false
+            }
+          }
+        }
+      },
+      "links": {},
+      "name": "Named",
+      "span": {
+        "begin": [
+          98,
+          5
+        ],
+        "end": [
+          98,
+          24
+        ],
+        "filename": "tools/api_manifest/tests/fixtures/rustdoc-v57/lib.rs"
+      },
+      "visibility": "default"
+    },
+    "129": {
+      "attrs": [],
+      "crate_id": 0,
+      "deprecation": null,
+      "docs": null,
+      "id": 129,
+      "inner": {
         "enum": {
           "generics": {
             "params": [],
@@ -616,9 +558,9 @@
           "has_stripped_variants": false,
           "impls": [],
           "variants": [
-            122,
             124,
-            126
+            126,
+            128
           ]
         }
       },
@@ -626,14 +568,14 @@
       "name": "State",
       "span": {
         "begin": [
-          92,
+          95,
           1
         ],
         "end": [
-          96,
+          99,
           2
         ],
-        "filename": "C:\\Users\\ramp1953\\.codex\\worktrees\\kmipkit-0043-continuation\\KMIPKit\\tools\\api_manifest\\tests\\fixtures\\rustdoc-v57\\lib.rs"
+        "filename": "tools/api_manifest/tests/fixtures/rustdoc-v57/lib.rs"
       },
       "visibility": "public"
     },
@@ -684,7 +626,7 @@
           31,
           2
         ],
-        "filename": "C:\\Users\\ramp1953\\.codex\\worktrees\\kmipkit-0043-continuation\\KMIPKit\\tools\\api_manifest\\tests\\fixtures\\rustdoc-v57\\lib.rs"
+        "filename": "tools/api_manifest/tests/fixtures/rustdoc-v57/lib.rs"
       },
       "visibility": "public"
     },
@@ -733,23 +675,23 @@
       "name": "required",
       "span": {
         "begin": [
-          66,
+          69,
           5
         ],
         "end": [
-          68,
+          71,
           6
         ],
-        "filename": "C:\\Users\\ramp1953\\.codex\\worktrees\\kmipkit-0043-continuation\\KMIPKit\\tools\\api_manifest\\tests\\fixtures\\rustdoc-v57\\lib.rs"
+        "filename": "tools/api_manifest/tests/fixtures/rustdoc-v57/lib.rs"
       },
       "visibility": "default"
     },
-    "142": {
+    "144": {
       "attrs": [],
       "crate_id": 0,
       "deprecation": null,
       "docs": null,
-      "id": 142,
+      "id": 144,
       "inner": {
         "type_alias": {
           "generics": {
@@ -769,86 +711,14 @@
       "name": "ServiceAlias",
       "span": {
         "begin": [
-          98,
+          101,
           1
         ],
         "end": [
-          98,
+          101,
           33
         ],
-        "filename": "C:\\Users\\ramp1953\\.codex\\worktrees\\kmipkit-0043-continuation\\KMIPKit\\tools\\api_manifest\\tests\\fixtures\\rustdoc-v57\\lib.rs"
-      },
-      "visibility": "public"
-    },
-    "143": {
-      "attrs": [],
-      "crate_id": 0,
-      "deprecation": null,
-      "docs": null,
-      "id": 143,
-      "inner": {
-        "type_alias": {
-          "generics": {
-            "params": [],
-            "where_predicates": []
-          },
-          "type": {
-            "resolved_path": {
-              "args": null,
-              "id": 142,
-              "path": "ServiceAlias"
-            }
-          }
-        }
-      },
-      "links": {},
-      "name": "ServiceAliasChain",
-      "span": {
-        "begin": [
-          99,
-          1
-        ],
-        "end": [
-          99,
-          43
-        ],
-        "filename": "C:\\Users\\ramp1953\\.codex\\worktrees\\kmipkit-0043-continuation\\KMIPKit\\tools\\api_manifest\\tests\\fixtures\\rustdoc-v57\\lib.rs"
-      },
-      "visibility": "public"
-    },
-    "144": {
-      "attrs": [],
-      "crate_id": 0,
-      "deprecation": null,
-      "docs": null,
-      "id": 144,
-      "inner": {
-        "type_alias": {
-          "generics": {
-            "params": [],
-            "where_predicates": []
-          },
-          "type": {
-            "resolved_path": {
-              "args": null,
-              "id": 127,
-              "path": "State"
-            }
-          }
-        }
-      },
-      "links": {},
-      "name": "StateAlias",
-      "span": {
-        "begin": [
-          100,
-          1
-        ],
-        "end": [
-          100,
-          29
-        ],
-        "filename": "C:\\Users\\ramp1953\\.codex\\worktrees\\kmipkit-0043-continuation\\KMIPKit\\tools\\api_manifest\\tests\\fixtures\\rustdoc-v57\\lib.rs"
+        "filename": "tools/api_manifest/tests/fixtures/rustdoc-v57/lib.rs"
       },
       "visibility": "public"
     },
@@ -858,6 +728,78 @@
       "deprecation": null,
       "docs": null,
       "id": 145,
+      "inner": {
+        "type_alias": {
+          "generics": {
+            "params": [],
+            "where_predicates": []
+          },
+          "type": {
+            "resolved_path": {
+              "args": null,
+              "id": 144,
+              "path": "ServiceAlias"
+            }
+          }
+        }
+      },
+      "links": {},
+      "name": "ServiceAliasChain",
+      "span": {
+        "begin": [
+          102,
+          1
+        ],
+        "end": [
+          102,
+          43
+        ],
+        "filename": "tools/api_manifest/tests/fixtures/rustdoc-v57/lib.rs"
+      },
+      "visibility": "public"
+    },
+    "146": {
+      "attrs": [],
+      "crate_id": 0,
+      "deprecation": null,
+      "docs": null,
+      "id": 146,
+      "inner": {
+        "type_alias": {
+          "generics": {
+            "params": [],
+            "where_predicates": []
+          },
+          "type": {
+            "resolved_path": {
+              "args": null,
+              "id": 129,
+              "path": "State"
+            }
+          }
+        }
+      },
+      "links": {},
+      "name": "StateAlias",
+      "span": {
+        "begin": [
+          103,
+          1
+        ],
+        "end": [
+          103,
+          29
+        ],
+        "filename": "tools/api_manifest/tests/fixtures/rustdoc-v57/lib.rs"
+      },
+      "visibility": "public"
+    },
+    "147": {
+      "attrs": [],
+      "crate_id": 0,
+      "deprecation": null,
+      "docs": null,
+      "id": 147,
       "inner": {
         "type_alias": {
           "generics": {
@@ -899,23 +841,23 @@
       "name": "GenericAlias",
       "span": {
         "begin": [
-          101,
+          104,
           1
         ],
         "end": [
-          101,
+          104,
           39
         ],
-        "filename": "C:\\Users\\ramp1953\\.codex\\worktrees\\kmipkit-0043-continuation\\KMIPKit\\tools\\api_manifest\\tests\\fixtures\\rustdoc-v57\\lib.rs"
+        "filename": "tools/api_manifest/tests/fixtures/rustdoc-v57/lib.rs"
       },
       "visibility": "public"
     },
-    "146": {
+    "148": {
       "attrs": [],
       "crate_id": 0,
       "deprecation": null,
       "docs": null,
-      "id": 146,
+      "id": 148,
       "inner": {
         "type_alias": {
           "generics": {
@@ -946,23 +888,23 @@
       "name": "FixedU8Alias",
       "span": {
         "begin": [
-          102,
+          105,
           1
         ],
         "end": [
-          102,
+          105,
           35
         ],
-        "filename": "C:\\Users\\ramp1953\\.codex\\worktrees\\kmipkit-0043-continuation\\KMIPKit\\tools\\api_manifest\\tests\\fixtures\\rustdoc-v57\\lib.rs"
+        "filename": "tools/api_manifest/tests/fixtures/rustdoc-v57/lib.rs"
       },
       "visibility": "public"
     },
-    "147": {
+    "149": {
       "attrs": [],
       "crate_id": 0,
       "deprecation": null,
       "docs": null,
-      "id": 147,
+      "id": 149,
       "inner": {
         "type_alias": {
           "generics": {
@@ -993,64 +935,14 @@
       "name": "FixedU16Alias",
       "span": {
         "begin": [
-          103,
+          106,
           1
         ],
         "end": [
-          103,
+          106,
           37
         ],
-        "filename": "C:\\Users\\ramp1953\\.codex\\worktrees\\kmipkit-0043-continuation\\KMIPKit\\tools\\api_manifest\\tests\\fixtures\\rustdoc-v57\\lib.rs"
-      },
-      "visibility": "public"
-    },
-    "148": {
-      "attrs": [
-        {
-          "other": "#[allow(dead_code)]"
-        },
-        {
-          "other": "#[feature(associated_type_defaults)]"
-        }
-      ],
-      "crate_id": 0,
-      "deprecation": null,
-      "docs": null,
-      "id": 148,
-      "inner": {
-        "module": {
-          "is_crate": true,
-          "is_stripped": false,
-          "items": [
-            3,
-            20,
-            25,
-            7,
-            13,
-            16,
-            102,
-            127,
-            142,
-            143,
-            144,
-            145,
-            146,
-            147
-          ]
-        }
-      },
-      "links": {},
-      "name": "rustdoc_v57_fixture",
-      "span": {
-        "begin": [
-          1,
-          1
-        ],
-        "end": [
-          103,
-          37
-        ],
-        "filename": "C:\\Users\\ramp1953\\.codex\\worktrees\\kmipkit-0043-continuation\\KMIPKit\\tools\\api_manifest\\tests\\fixtures\\rustdoc-v57\\lib.rs"
+        "filename": "tools/api_manifest/tests/fixtures/rustdoc-v57/lib.rs"
       },
       "visibility": "public"
     },
@@ -1116,16 +1008,66 @@
       "name": null,
       "span": {
         "begin": [
-          65,
+          68,
           1
         ],
         "end": [
-          69,
+          72,
           2
         ],
-        "filename": "C:\\Users\\ramp1953\\.codex\\worktrees\\kmipkit-0043-continuation\\KMIPKit\\tools\\api_manifest\\tests\\fixtures\\rustdoc-v57\\lib.rs"
+        "filename": "tools/api_manifest/tests/fixtures/rustdoc-v57/lib.rs"
       },
       "visibility": "default"
+    },
+    "150": {
+      "attrs": [
+        {
+          "other": "#[allow(dead_code)]"
+        },
+        {
+          "other": "#[feature(associated_type_defaults)]"
+        }
+      ],
+      "crate_id": 0,
+      "deprecation": null,
+      "docs": null,
+      "id": 150,
+      "inner": {
+        "module": {
+          "is_crate": true,
+          "is_stripped": false,
+          "items": [
+            3,
+            20,
+            25,
+            7,
+            13,
+            16,
+            104,
+            129,
+            144,
+            145,
+            146,
+            147,
+            148,
+            149
+          ]
+        }
+      },
+      "links": {},
+      "name": "rustdoc_v57_fixture",
+      "span": {
+        "begin": [
+          1,
+          1
+        ],
+        "end": [
+          112,
+          2
+        ],
+        "filename": "tools/api_manifest/tests/fixtures/rustdoc-v57/lib.rs"
+      },
+      "visibility": "public"
     },
     "16": {
       "attrs": [],
@@ -1151,6 +1093,9 @@
             "where_predicates": []
           },
           "impls": [
+            89,
+            90,
+            97,
             15,
             18
           ],
@@ -1175,7 +1120,7 @@
           35,
           2
         ],
-        "filename": "C:\\Users\\ramp1953\\.codex\\worktrees\\kmipkit-0043-continuation\\KMIPKit\\tools\\api_manifest\\tests\\fixtures\\rustdoc-v57\\lib.rs"
+        "filename": "tools/api_manifest/tests/fixtures/rustdoc-v57/lib.rs"
       },
       "visibility": "public"
     },
@@ -1224,14 +1169,14 @@
       "name": "required",
       "span": {
         "begin": [
-          72,
+          75,
           5
         ],
         "end": [
-          74,
+          77,
           6
         ],
-        "filename": "C:\\Users\\ramp1953\\.codex\\worktrees\\kmipkit-0043-continuation\\KMIPKit\\tools\\api_manifest\\tests\\fixtures\\rustdoc-v57\\lib.rs"
+        "filename": "tools/api_manifest/tests/fixtures/rustdoc-v57/lib.rs"
       },
       "visibility": "default"
     },
@@ -1297,14 +1242,14 @@
       "name": null,
       "span": {
         "begin": [
-          71,
+          74,
           1
         ],
         "end": [
-          75,
+          78,
           2
         ],
-        "filename": "C:\\Users\\ramp1953\\.codex\\worktrees\\kmipkit-0043-continuation\\KMIPKit\\tools\\api_manifest\\tests\\fixtures\\rustdoc-v57\\lib.rs"
+        "filename": "tools/api_manifest/tests/fixtures/rustdoc-v57/lib.rs"
       },
       "visibility": "default"
     },
@@ -1360,7 +1305,7 @@
           16,
           30
         ],
-        "filename": "C:\\Users\\ramp1953\\.codex\\worktrees\\kmipkit-0043-continuation\\KMIPKit\\tools\\api_manifest\\tests\\fixtures\\rustdoc-v57\\lib.rs"
+        "filename": "tools/api_manifest/tests/fixtures/rustdoc-v57/lib.rs"
       },
       "visibility": "default"
     },
@@ -1427,7 +1372,7 @@
           8,
           40
         ],
-        "filename": "C:\\Users\\ramp1953\\.codex\\worktrees\\kmipkit-0043-continuation\\KMIPKit\\tools\\api_manifest\\tests\\fixtures\\rustdoc-v57\\lib.rs"
+        "filename": "tools/api_manifest/tests/fixtures/rustdoc-v57/lib.rs"
       },
       "visibility": "default"
     },
@@ -1466,7 +1411,7 @@
           17,
           2
         ],
-        "filename": "C:\\Users\\ramp1953\\.codex\\worktrees\\kmipkit-0043-continuation\\KMIPKit\\tools\\api_manifest\\tests\\fixtures\\rustdoc-v57\\lib.rs"
+        "filename": "tools/api_manifest/tests/fixtures/rustdoc-v57/lib.rs"
       },
       "visibility": "public"
     },
@@ -1515,14 +1460,14 @@
       "name": "required",
       "span": {
         "begin": [
-          78,
+          81,
           5
         ],
         "end": [
-          80,
+          83,
           6
         ],
-        "filename": "C:\\Users\\ramp1953\\.codex\\worktrees\\kmipkit-0043-continuation\\KMIPKit\\tools\\api_manifest\\tests\\fixtures\\rustdoc-v57\\lib.rs"
+        "filename": "tools/api_manifest/tests/fixtures/rustdoc-v57/lib.rs"
       },
       "visibility": "default"
     },
@@ -1564,14 +1509,14 @@
       "name": null,
       "span": {
         "begin": [
-          77,
+          80,
           1
         ],
         "end": [
-          81,
+          84,
           2
         ],
-        "filename": "C:\\Users\\ramp1953\\.codex\\worktrees\\kmipkit-0043-continuation\\KMIPKit\\tools\\api_manifest\\tests\\fixtures\\rustdoc-v57\\lib.rs"
+        "filename": "tools/api_manifest/tests/fixtures/rustdoc-v57/lib.rs"
       },
       "visibility": "default"
     },
@@ -1600,7 +1545,7 @@
           20,
           36
         ],
-        "filename": "C:\\Users\\ramp1953\\.codex\\worktrees\\kmipkit-0043-continuation\\KMIPKit\\tools\\api_manifest\\tests\\fixtures\\rustdoc-v57\\lib.rs"
+        "filename": "tools/api_manifest/tests/fixtures/rustdoc-v57/lib.rs"
       },
       "visibility": "default"
     },
@@ -1656,7 +1601,7 @@
           24,
           6
         ],
-        "filename": "C:\\Users\\ramp1953\\.codex\\worktrees\\kmipkit-0043-continuation\\KMIPKit\\tools\\api_manifest\\tests\\fixtures\\rustdoc-v57\\lib.rs"
+        "filename": "tools/api_manifest/tests/fixtures/rustdoc-v57/lib.rs"
       },
       "visibility": "default"
     },
@@ -1696,7 +1641,7 @@
           25,
           2
         ],
-        "filename": "C:\\Users\\ramp1953\\.codex\\worktrees\\kmipkit-0043-continuation\\KMIPKit\\tools\\api_manifest\\tests\\fixtures\\rustdoc-v57\\lib.rs"
+        "filename": "tools/api_manifest/tests/fixtures/rustdoc-v57/lib.rs"
       },
       "visibility": "crate"
     },
@@ -1745,14 +1690,14 @@
       "name": "hidden",
       "span": {
         "begin": [
-          84,
+          87,
           5
         ],
         "end": [
-          86,
+          89,
           6
         ],
-        "filename": "C:\\Users\\ramp1953\\.codex\\worktrees\\kmipkit-0043-continuation\\KMIPKit\\tools\\api_manifest\\tests\\fixtures\\rustdoc-v57\\lib.rs"
+        "filename": "tools/api_manifest/tests/fixtures/rustdoc-v57/lib.rs"
       },
       "visibility": "default"
     },
@@ -1796,14 +1741,14 @@
       "name": null,
       "span": {
         "begin": [
-          83,
+          86,
           1
         ],
         "end": [
-          87,
+          90,
           2
         ],
-        "filename": "C:\\Users\\ramp1953\\.codex\\worktrees\\kmipkit-0043-continuation\\KMIPKit\\tools\\api_manifest\\tests\\fixtures\\rustdoc-v57\\lib.rs"
+        "filename": "tools/api_manifest/tests/fixtures/rustdoc-v57/lib.rs"
       },
       "visibility": "default"
     },
@@ -1859,7 +1804,7 @@
           40,
           6
         ],
-        "filename": "C:\\Users\\ramp1953\\.codex\\worktrees\\kmipkit-0043-continuation\\KMIPKit\\tools\\api_manifest\\tests\\fixtures\\rustdoc-v57\\lib.rs"
+        "filename": "tools/api_manifest/tests/fixtures/rustdoc-v57/lib.rs"
       },
       "visibility": "public"
     },
@@ -1915,7 +1860,7 @@
           44,
           6
         ],
-        "filename": "C:\\Users\\ramp1953\\.codex\\worktrees\\kmipkit-0043-continuation\\KMIPKit\\tools\\api_manifest\\tests\\fixtures\\rustdoc-v57\\lib.rs"
+        "filename": "tools/api_manifest/tests/fixtures/rustdoc-v57/lib.rs"
       },
       "visibility": "public"
     },
@@ -1972,7 +1917,7 @@
           13,
           2
         ],
-        "filename": "C:\\Users\\ramp1953\\.codex\\worktrees\\kmipkit-0043-continuation\\KMIPKit\\tools\\api_manifest\\tests\\fixtures\\rustdoc-v57\\lib.rs"
+        "filename": "tools/api_manifest/tests/fixtures/rustdoc-v57/lib.rs"
       },
       "visibility": "public"
     },
@@ -2018,7 +1963,7 @@
           45,
           2
         ],
-        "filename": "C:\\Users\\ramp1953\\.codex\\worktrees\\kmipkit-0043-continuation\\KMIPKit\\tools\\api_manifest\\tests\\fixtures\\rustdoc-v57\\lib.rs"
+        "filename": "tools/api_manifest/tests/fixtures/rustdoc-v57/lib.rs"
       },
       "visibility": "default"
     },
@@ -2074,8 +2019,64 @@
           12,
           6
         ],
-        "filename": "C:\\Users\\ramp1953\\.codex\\worktrees\\kmipkit-0043-continuation\\KMIPKit\\tools\\api_manifest\\tests\\fixtures\\rustdoc-v57\\lib.rs"
+        "filename": "tools/api_manifest/tests/fixtures/rustdoc-v57/lib.rs"
       },
+      "visibility": "default"
+    },
+    "45": {
+      "attrs": [
+        {
+          "other": "#[rustc_diagnostic_item = \"noop_method_borrow\"]"
+        }
+      ],
+      "crate_id": 2,
+      "deprecation": null,
+      "docs": null,
+      "id": 45,
+      "inner": {
+        "function": {
+          "generics": {
+            "params": [],
+            "where_predicates": []
+          },
+          "has_body": true,
+          "header": {
+            "abi": "Rust",
+            "is_async": false,
+            "is_const": false,
+            "is_unsafe": false
+          },
+          "sig": {
+            "inputs": [
+              [
+                "self",
+                {
+                  "borrowed_ref": {
+                    "is_mutable": false,
+                    "lifetime": null,
+                    "type": {
+                      "generic": "Self"
+                    }
+                  }
+                }
+              ]
+            ],
+            "is_c_variadic": false,
+            "output": {
+              "borrowed_ref": {
+                "is_mutable": false,
+                "lifetime": null,
+                "type": {
+                  "generic": "T"
+                }
+              }
+            }
+          }
+        }
+      },
+      "links": {},
+      "name": "borrow",
+      "span": null,
       "visibility": "default"
     },
     "5": {
@@ -2130,7 +2131,7 @@
           50,
           6
         ],
-        "filename": "C:\\Users\\ramp1953\\.codex\\worktrees\\kmipkit-0043-continuation\\KMIPKit\\tools\\api_manifest\\tests\\fixtures\\rustdoc-v57\\lib.rs"
+        "filename": "tools/api_manifest/tests/fixtures/rustdoc-v57/lib.rs"
       },
       "visibility": "default"
     },
@@ -2192,7 +2193,7 @@
           51,
           2
         ],
-        "filename": "C:\\Users\\ramp1953\\.codex\\worktrees\\kmipkit-0043-continuation\\KMIPKit\\tools\\api_manifest\\tests\\fixtures\\rustdoc-v57\\lib.rs"
+        "filename": "tools/api_manifest/tests/fixtures/rustdoc-v57/lib.rs"
       },
       "visibility": "default"
     },
@@ -2229,7 +2230,7 @@
           27,
           20
         ],
-        "filename": "C:\\Users\\ramp1953\\.codex\\worktrees\\kmipkit-0043-continuation\\KMIPKit\\tools\\api_manifest\\tests\\fixtures\\rustdoc-v57\\lib.rs"
+        "filename": "tools/api_manifest/tests/fixtures/rustdoc-v57/lib.rs"
       },
       "visibility": "public"
     },
@@ -2255,7 +2256,7 @@
           30,
           17
         ],
-        "filename": "C:\\Users\\ramp1953\\.codex\\worktrees\\kmipkit-0043-continuation\\KMIPKit\\tools\\api_manifest\\tests\\fixtures\\rustdoc-v57\\lib.rs"
+        "filename": "tools/api_manifest/tests/fixtures/rustdoc-v57/lib.rs"
       },
       "visibility": "public"
     },
@@ -2311,7 +2312,7 @@
           56,
           6
         ],
-        "filename": "C:\\Users\\ramp1953\\.codex\\worktrees\\kmipkit-0043-continuation\\KMIPKit\\tools\\api_manifest\\tests\\fixtures\\rustdoc-v57\\lib.rs"
+        "filename": "tools/api_manifest/tests/fixtures/rustdoc-v57/lib.rs"
       },
       "visibility": "default"
     },
@@ -2337,9 +2338,121 @@
           34,
           17
         ],
-        "filename": "C:\\Users\\ramp1953\\.codex\\worktrees\\kmipkit-0043-continuation\\KMIPKit\\tools\\api_manifest\\tests\\fixtures\\rustdoc-v57\\lib.rs"
+        "filename": "tools/api_manifest/tests/fixtures/rustdoc-v57/lib.rs"
       },
       "visibility": "public"
+    },
+    "88": {
+      "attrs": [],
+      "crate_id": 0,
+      "deprecation": null,
+      "docs": null,
+      "id": 88,
+      "inner": {
+        "function": {
+          "generics": {
+            "params": [],
+            "where_predicates": []
+          },
+          "has_body": true,
+          "header": {
+            "abi": "Rust",
+            "is_async": false,
+            "is_const": false,
+            "is_unsafe": false
+          },
+          "sig": {
+            "inputs": [
+              [
+                "self",
+                {
+                  "borrowed_ref": {
+                    "is_mutable": false,
+                    "lifetime": null,
+                    "type": {
+                      "generic": "Self"
+                    }
+                  }
+                }
+              ]
+            ],
+            "is_c_variadic": false,
+            "output": {
+              "primitive": "u16"
+            }
+          }
+        }
+      },
+      "links": {},
+      "name": "only_u16",
+      "span": {
+        "begin": [
+          109,
+          5
+        ],
+        "end": [
+          111,
+          6
+        ],
+        "filename": "tools/api_manifest/tests/fixtures/rustdoc-v57/lib.rs"
+      },
+      "visibility": "public"
+    },
+    "89": {
+      "attrs": [],
+      "crate_id": 0,
+      "deprecation": null,
+      "docs": null,
+      "id": 89,
+      "inner": {
+        "impl": {
+          "blanket_impl": null,
+          "for": {
+            "resolved_path": {
+              "args": {
+                "angle_bracketed": {
+                  "args": [
+                    {
+                      "type": {
+                        "primitive": "u16"
+                      }
+                    }
+                  ],
+                  "constraints": []
+                }
+              },
+              "id": 16,
+              "path": "Fixed"
+            }
+          },
+          "generics": {
+            "params": [],
+            "where_predicates": []
+          },
+          "is_negative": false,
+          "is_synthetic": false,
+          "is_unsafe": false,
+          "items": [
+            88
+          ],
+          "provided_trait_methods": [],
+          "trait": null
+        }
+      },
+      "links": {},
+      "name": null,
+      "span": {
+        "begin": [
+          108,
+          1
+        ],
+        "end": [
+          112,
+          2
+        ],
+        "filename": "tools/api_manifest/tests/fixtures/rustdoc-v57/lib.rs"
+      },
+      "visibility": "default"
     },
     "9": {
       "attrs": [],
@@ -2399,21 +2512,190 @@
           57,
           2
         ],
-        "filename": "C:\\Users\\ramp1953\\.codex\\worktrees\\kmipkit-0043-continuation\\KMIPKit\\tools\\api_manifest\\tests\\fixtures\\rustdoc-v57\\lib.rs"
+        "filename": "tools/api_manifest/tests/fixtures/rustdoc-v57/lib.rs"
       },
+      "visibility": "default"
+    },
+    "90": {
+      "attrs": [],
+      "crate_id": 0,
+      "deprecation": null,
+      "docs": null,
+      "id": 90,
+      "inner": {
+        "impl": {
+          "blanket_impl": null,
+          "for": {
+            "resolved_path": {
+              "args": {
+                "angle_bracketed": {
+                  "args": [
+                    {
+                      "type": {
+                        "generic": "T"
+                      }
+                    }
+                  ],
+                  "constraints": []
+                }
+              },
+              "id": 16,
+              "path": "Fixed"
+            }
+          },
+          "generics": {
+            "params": [
+              {
+                "kind": {
+                  "type": {
+                    "bounds": [],
+                    "default": null,
+                    "is_synthetic": false
+                  }
+                },
+                "name": "T"
+              }
+            ],
+            "where_predicates": [
+              {
+                "bound_predicate": {
+                  "bounds": [
+                    {
+                      "trait_bound": {
+                        "generic_params": [],
+                        "modifier": "none",
+                        "trait": {
+                          "args": null,
+                          "id": 32,
+                          "path": "Send"
+                        }
+                      }
+                    }
+                  ],
+                  "generic_params": [],
+                  "type": {
+                    "generic": "T"
+                  }
+                }
+              }
+            ]
+          },
+          "is_negative": false,
+          "is_synthetic": true,
+          "is_unsafe": false,
+          "items": [],
+          "provided_trait_methods": [],
+          "trait": {
+            "args": null,
+            "id": 32,
+            "path": "Send"
+          }
+        }
+      },
+      "links": {},
+      "name": null,
+      "span": null,
+      "visibility": "default"
+    },
+    "97": {
+      "attrs": [],
+      "crate_id": 0,
+      "deprecation": null,
+      "docs": null,
+      "id": 97,
+      "inner": {
+        "impl": {
+          "blanket_impl": {
+            "generic": "T"
+          },
+          "for": {
+            "resolved_path": {
+              "args": {
+                "angle_bracketed": {
+                  "args": [
+                    {
+                      "type": {
+                        "generic": "T"
+                      }
+                    }
+                  ],
+                  "constraints": []
+                }
+              },
+              "id": 16,
+              "path": "Fixed"
+            }
+          },
+          "generics": {
+            "params": [
+              {
+                "kind": {
+                  "type": {
+                    "bounds": [],
+                    "default": null,
+                    "is_synthetic": false
+                  }
+                },
+                "name": "T"
+              }
+            ],
+            "where_predicates": [
+              {
+                "bound_predicate": {
+                  "bounds": [
+                    {
+                      "trait_bound": {
+                        "generic_params": [],
+                        "modifier": "maybe",
+                        "trait": {
+                          "args": null,
+                          "id": 47,
+                          "path": "Sized"
+                        }
+                      }
+                    }
+                  ],
+                  "generic_params": [],
+                  "type": {
+                    "generic": "T"
+                  }
+                }
+              }
+            ]
+          },
+          "is_negative": false,
+          "is_synthetic": false,
+          "is_unsafe": false,
+          "items": [
+            45
+          ],
+          "provided_trait_methods": [],
+          "trait": {
+            "args": {
+              "angle_bracketed": {
+                "args": [
+                  {
+                    "type": {
+                      "generic": "T"
+                    }
+                  }
+                ],
+                "constraints": []
+              }
+            },
+            "id": 48,
+            "path": "Borrow"
+          }
+        }
+      },
+      "links": {},
+      "name": null,
+      "span": null,
       "visibility": "default"
     }
   },
   "paths": {
-    "102": {
-      "crate_id": 0,
-      "kind": "struct",
-      "path": [
-        "rustdoc_v57_fixture",
-        "Derived"
-      ]
-    },
-    "121": {
+    "123": {
       "crate_id": 2,
       "kind": "trait",
       "path": [
@@ -2422,730 +2704,27 @@
         "Debug"
       ]
     },
-    "122": {
-      "crate_id": 0,
-      "kind": "variant",
-      "path": [
-        "rustdoc_v57_fixture",
-        "State",
-        "Unit"
-      ]
-    },
-    "124": {
-      "crate_id": 0,
-      "kind": "variant",
-      "path": [
-        "rustdoc_v57_fixture",
-        "State",
-        "Tuple"
-      ]
-    },
-    "126": {
-      "crate_id": 0,
-      "kind": "variant",
-      "path": [
-        "rustdoc_v57_fixture",
-        "State",
-        "Named"
-      ]
-    },
-    "127": {
-      "crate_id": 0,
-      "kind": "enum",
-      "path": [
-        "rustdoc_v57_fixture",
-        "State"
-      ]
-    },
-    "13": {
-      "crate_id": 0,
-      "kind": "struct",
-      "path": [
-        "rustdoc_v57_fixture",
-        "Generic"
-      ]
-    },
-    "142": {
-      "crate_id": 0,
-      "kind": "type_alias",
-      "path": [
-        "rustdoc_v57_fixture",
-        "ServiceAlias"
-      ]
-    },
-    "143": {
-      "crate_id": 0,
-      "kind": "type_alias",
-      "path": [
-        "rustdoc_v57_fixture",
-        "ServiceAliasChain"
-      ]
-    },
-    "144": {
-      "crate_id": 0,
-      "kind": "type_alias",
-      "path": [
-        "rustdoc_v57_fixture",
-        "StateAlias"
-      ]
-    },
-    "145": {
-      "crate_id": 0,
-      "kind": "type_alias",
-      "path": [
-        "rustdoc_v57_fixture",
-        "GenericAlias"
-      ]
-    },
-    "146": {
-      "crate_id": 0,
-      "kind": "type_alias",
-      "path": [
-        "rustdoc_v57_fixture",
-        "FixedU8Alias"
-      ]
-    },
-    "147": {
-      "crate_id": 0,
-      "kind": "type_alias",
-      "path": [
-        "rustdoc_v57_fixture",
-        "FixedU16Alias"
-      ]
-    },
-    "148": {
-      "crate_id": 0,
-      "kind": "module",
-      "path": [
-        "rustdoc_v57_fixture"
-      ]
-    },
-    "16": {
-      "crate_id": 0,
-      "kind": "struct",
-      "path": [
-        "rustdoc_v57_fixture",
-        "Fixed"
-      ]
-    },
-    "20": {
-      "crate_id": 0,
+    "32": {
+      "crate_id": 2,
       "kind": "trait",
       "path": [
-        "rustdoc_v57_fixture",
-        "Audit"
+        "core",
+        "marker",
+        "Send"
       ]
     },
-    "25": {
-      "crate_id": 0,
+    "48": {
+      "crate_id": 2,
       "kind": "trait",
       "path": [
-        "rustdoc_v57_fixture",
-        "PrivateContract"
-      ]
-    },
-    "3": {
-      "crate_id": 0,
-      "kind": "trait",
-      "path": [
-        "rustdoc_v57_fixture",
-        "Contract"
-      ]
-    },
-    "7": {
-      "crate_id": 0,
-      "kind": "struct",
-      "path": [
-        "rustdoc_v57_fixture",
-        "Service"
+        "core",
+        "borrow",
+        "Borrow"
       ]
     }
   },
-  "root": 148,
+  "root": 150,
   "target": {
-    "target_features": [
-      {
-        "globally_enabled": false,
-        "implies_features": [],
-        "name": "adx",
-        "unstable_feature_gate": null
-      },
-      {
-        "globally_enabled": false,
-        "implies_features": [
-          "sse2"
-        ],
-        "name": "aes",
-        "unstable_feature_gate": null
-      },
-      {
-        "globally_enabled": false,
-        "implies_features": [
-          "amx-tile"
-        ],
-        "name": "amx-avx512",
-        "unstable_feature_gate": "x86_amx_intrinsics"
-      },
-      {
-        "globally_enabled": false,
-        "implies_features": [
-          "amx-tile"
-        ],
-        "name": "amx-bf16",
-        "unstable_feature_gate": "x86_amx_intrinsics"
-      },
-      {
-        "globally_enabled": false,
-        "implies_features": [
-          "amx-tile"
-        ],
-        "name": "amx-complex",
-        "unstable_feature_gate": "x86_amx_intrinsics"
-      },
-      {
-        "globally_enabled": false,
-        "implies_features": [
-          "amx-tile"
-        ],
-        "name": "amx-fp8",
-        "unstable_feature_gate": "x86_amx_intrinsics"
-      },
-      {
-        "globally_enabled": false,
-        "implies_features": [
-          "amx-tile"
-        ],
-        "name": "amx-fp16",
-        "unstable_feature_gate": "x86_amx_intrinsics"
-      },
-      {
-        "globally_enabled": false,
-        "implies_features": [
-          "amx-tile"
-        ],
-        "name": "amx-int8",
-        "unstable_feature_gate": "x86_amx_intrinsics"
-      },
-      {
-        "globally_enabled": false,
-        "implies_features": [
-          "amx-tile"
-        ],
-        "name": "amx-movrs",
-        "unstable_feature_gate": "x86_amx_intrinsics"
-      },
-      {
-        "globally_enabled": false,
-        "implies_features": [
-          "amx-tile"
-        ],
-        "name": "amx-tf32",
-        "unstable_feature_gate": "x86_amx_intrinsics"
-      },
-      {
-        "globally_enabled": false,
-        "implies_features": [],
-        "name": "amx-tile",
-        "unstable_feature_gate": "x86_amx_intrinsics"
-      },
-      {
-        "globally_enabled": false,
-        "implies_features": [],
-        "name": "apxf",
-        "unstable_feature_gate": "apx_target_feature"
-      },
-      {
-        "globally_enabled": false,
-        "implies_features": [
-          "sse4.2"
-        ],
-        "name": "avx",
-        "unstable_feature_gate": null
-      },
-      {
-        "globally_enabled": false,
-        "implies_features": [
-          "avx"
-        ],
-        "name": "avx2",
-        "unstable_feature_gate": null
-      },
-      {
-        "globally_enabled": false,
-        "implies_features": [
-          "avx512bf16",
-          "avx512bitalg",
-          "avx512bw",
-          "avx512cd",
-          "avx512dq",
-          "avx512f",
-          "avx512fp16",
-          "avx512ifma",
-          "avx512vbmi",
-          "avx512vbmi2",
-          "avx512vl",
-          "avx512vnni",
-          "avx512vpopcntdq"
-        ],
-        "name": "avx10.1",
-        "unstable_feature_gate": "avx10_target_feature"
-      },
-      {
-        "globally_enabled": false,
-        "implies_features": [
-          "avx10.1"
-        ],
-        "name": "avx10.2",
-        "unstable_feature_gate": "avx10_target_feature"
-      },
-      {
-        "globally_enabled": false,
-        "implies_features": [
-          "avx512bw"
-        ],
-        "name": "avx512bf16",
-        "unstable_feature_gate": null
-      },
-      {
-        "globally_enabled": false,
-        "implies_features": [
-          "avx512bw"
-        ],
-        "name": "avx512bitalg",
-        "unstable_feature_gate": null
-      },
-      {
-        "globally_enabled": false,
-        "implies_features": [
-          "avx512f"
-        ],
-        "name": "avx512bw",
-        "unstable_feature_gate": null
-      },
-      {
-        "globally_enabled": false,
-        "implies_features": [
-          "avx512f"
-        ],
-        "name": "avx512cd",
-        "unstable_feature_gate": null
-      },
-      {
-        "globally_enabled": false,
-        "implies_features": [
-          "avx512f"
-        ],
-        "name": "avx512dq",
-        "unstable_feature_gate": null
-      },
-      {
-        "globally_enabled": false,
-        "implies_features": [
-          "avx2",
-          "fma",
-          "f16c"
-        ],
-        "name": "avx512f",
-        "unstable_feature_gate": null
-      },
-      {
-        "globally_enabled": false,
-        "implies_features": [
-          "avx512bw"
-        ],
-        "name": "avx512fp16",
-        "unstable_feature_gate": null
-      },
-      {
-        "globally_enabled": false,
-        "implies_features": [
-          "avx512f"
-        ],
-        "name": "avx512ifma",
-        "unstable_feature_gate": null
-      },
-      {
-        "globally_enabled": false,
-        "implies_features": [
-          "avx512bw"
-        ],
-        "name": "avx512vbmi",
-        "unstable_feature_gate": null
-      },
-      {
-        "globally_enabled": false,
-        "implies_features": [
-          "avx512bw"
-        ],
-        "name": "avx512vbmi2",
-        "unstable_feature_gate": null
-      },
-      {
-        "globally_enabled": false,
-        "implies_features": [
-          "avx512f"
-        ],
-        "name": "avx512vl",
-        "unstable_feature_gate": null
-      },
-      {
-        "globally_enabled": false,
-        "implies_features": [
-          "avx512f"
-        ],
-        "name": "avx512vnni",
-        "unstable_feature_gate": null
-      },
-      {
-        "globally_enabled": false,
-        "implies_features": [
-          "avx512f"
-        ],
-        "name": "avx512vp2intersect",
-        "unstable_feature_gate": null
-      },
-      {
-        "globally_enabled": false,
-        "implies_features": [
-          "avx512f"
-        ],
-        "name": "avx512vpopcntdq",
-        "unstable_feature_gate": null
-      },
-      {
-        "globally_enabled": false,
-        "implies_features": [
-          "avx2"
-        ],
-        "name": "avxifma",
-        "unstable_feature_gate": null
-      },
-      {
-        "globally_enabled": false,
-        "implies_features": [
-          "avx2"
-        ],
-        "name": "avxneconvert",
-        "unstable_feature_gate": null
-      },
-      {
-        "globally_enabled": false,
-        "implies_features": [
-          "avx2"
-        ],
-        "name": "avxvnni",
-        "unstable_feature_gate": null
-      },
-      {
-        "globally_enabled": false,
-        "implies_features": [
-          "avx2"
-        ],
-        "name": "avxvnniint8",
-        "unstable_feature_gate": null
-      },
-      {
-        "globally_enabled": false,
-        "implies_features": [
-          "avx2"
-        ],
-        "name": "avxvnniint16",
-        "unstable_feature_gate": null
-      },
-      {
-        "globally_enabled": false,
-        "implies_features": [],
-        "name": "bmi1",
-        "unstable_feature_gate": null
-      },
-      {
-        "globally_enabled": false,
-        "implies_features": [],
-        "name": "bmi2",
-        "unstable_feature_gate": null
-      },
-      {
-        "globally_enabled": true,
-        "implies_features": [],
-        "name": "cmpxchg16b",
-        "unstable_feature_gate": null
-      },
-      {
-        "globally_enabled": false,
-        "implies_features": [],
-        "name": "ermsb",
-        "unstable_feature_gate": "ermsb_target_feature"
-      },
-      {
-        "globally_enabled": false,
-        "implies_features": [
-          "avx"
-        ],
-        "name": "f16c",
-        "unstable_feature_gate": null
-      },
-      {
-        "globally_enabled": false,
-        "implies_features": [
-          "avx"
-        ],
-        "name": "fma",
-        "unstable_feature_gate": null
-      },
-      {
-        "globally_enabled": true,
-        "implies_features": [],
-        "name": "fxsr",
-        "unstable_feature_gate": null
-      },
-      {
-        "globally_enabled": false,
-        "implies_features": [
-          "sse2"
-        ],
-        "name": "gfni",
-        "unstable_feature_gate": null
-      },
-      {
-        "globally_enabled": false,
-        "implies_features": [
-          "sse2"
-        ],
-        "name": "kl",
-        "unstable_feature_gate": null
-      },
-      {
-        "globally_enabled": true,
-        "implies_features": [],
-        "name": "lahfsahf",
-        "unstable_feature_gate": "lahfsahf_target_feature"
-      },
-      {
-        "globally_enabled": false,
-        "implies_features": [],
-        "name": "lzcnt",
-        "unstable_feature_gate": null
-      },
-      {
-        "globally_enabled": false,
-        "implies_features": [],
-        "name": "movbe",
-        "unstable_feature_gate": null
-      },
-      {
-        "globally_enabled": false,
-        "implies_features": [],
-        "name": "movrs",
-        "unstable_feature_gate": "movrs_target_feature"
-      },
-      {
-        "globally_enabled": false,
-        "implies_features": [
-          "sse2"
-        ],
-        "name": "pclmulqdq",
-        "unstable_feature_gate": null
-      },
-      {
-        "globally_enabled": false,
-        "implies_features": [],
-        "name": "popcnt",
-        "unstable_feature_gate": null
-      },
-      {
-        "globally_enabled": false,
-        "implies_features": [],
-        "name": "prfchw",
-        "unstable_feature_gate": "prfchw_target_feature"
-      },
-      {
-        "globally_enabled": false,
-        "implies_features": [],
-        "name": "rdrand",
-        "unstable_feature_gate": null
-      },
-      {
-        "globally_enabled": false,
-        "implies_features": [],
-        "name": "rdseed",
-        "unstable_feature_gate": null
-      },
-      {
-        "globally_enabled": false,
-        "implies_features": [],
-        "name": "rtm",
-        "unstable_feature_gate": "rtm_target_feature"
-      },
-      {
-        "globally_enabled": false,
-        "implies_features": [
-          "sse2"
-        ],
-        "name": "sha",
-        "unstable_feature_gate": null
-      },
-      {
-        "globally_enabled": false,
-        "implies_features": [
-          "avx2"
-        ],
-        "name": "sha512",
-        "unstable_feature_gate": null
-      },
-      {
-        "globally_enabled": false,
-        "implies_features": [
-          "avx"
-        ],
-        "name": "sm3",
-        "unstable_feature_gate": null
-      },
-      {
-        "globally_enabled": false,
-        "implies_features": [
-          "avx2"
-        ],
-        "name": "sm4",
-        "unstable_feature_gate": null
-      },
-      {
-        "globally_enabled": false,
-        "implies_features": [],
-        "name": "soft-float",
-        "unstable_feature_gate": "x87_target_feature"
-      },
-      {
-        "globally_enabled": true,
-        "implies_features": [],
-        "name": "sse",
-        "unstable_feature_gate": null
-      },
-      {
-        "globally_enabled": true,
-        "implies_features": [
-          "sse"
-        ],
-        "name": "sse2",
-        "unstable_feature_gate": null
-      },
-      {
-        "globally_enabled": true,
-        "implies_features": [
-          "sse2"
-        ],
-        "name": "sse3",
-        "unstable_feature_gate": null
-      },
-      {
-        "globally_enabled": false,
-        "implies_features": [
-          "ssse3"
-        ],
-        "name": "sse4.1",
-        "unstable_feature_gate": null
-      },
-      {
-        "globally_enabled": false,
-        "implies_features": [
-          "sse4.1"
-        ],
-        "name": "sse4.2",
-        "unstable_feature_gate": null
-      },
-      {
-        "globally_enabled": false,
-        "implies_features": [
-          "sse3"
-        ],
-        "name": "sse4a",
-        "unstable_feature_gate": null
-      },
-      {
-        "globally_enabled": false,
-        "implies_features": [
-          "sse3"
-        ],
-        "name": "ssse3",
-        "unstable_feature_gate": null
-      },
-      {
-        "globally_enabled": false,
-        "implies_features": [],
-        "name": "tbm",
-        "unstable_feature_gate": null
-      },
-      {
-        "globally_enabled": false,
-        "implies_features": [
-          "avx2",
-          "aes"
-        ],
-        "name": "vaes",
-        "unstable_feature_gate": null
-      },
-      {
-        "globally_enabled": false,
-        "implies_features": [
-          "avx",
-          "pclmulqdq"
-        ],
-        "name": "vpclmulqdq",
-        "unstable_feature_gate": null
-      },
-      {
-        "globally_enabled": false,
-        "implies_features": [
-          "kl"
-        ],
-        "name": "widekl",
-        "unstable_feature_gate": null
-      },
-      {
-        "globally_enabled": true,
-        "implies_features": [],
-        "name": "x87",
-        "unstable_feature_gate": "x87_target_feature"
-      },
-      {
-        "globally_enabled": false,
-        "implies_features": [
-          "avx",
-          "sse4a"
-        ],
-        "name": "xop",
-        "unstable_feature_gate": "xop_target_feature"
-      },
-      {
-        "globally_enabled": false,
-        "implies_features": [],
-        "name": "xsave",
-        "unstable_feature_gate": null
-      },
-      {
-        "globally_enabled": false,
-        "implies_features": [
-          "xsave"
-        ],
-        "name": "xsavec",
-        "unstable_feature_gate": null
-      },
-      {
-        "globally_enabled": false,
-        "implies_features": [
-          "xsave"
-        ],
-        "name": "xsaveopt",
-        "unstable_feature_gate": null
-      },
-      {
-        "globally_enabled": false,
-        "implies_features": [
-          "xsave"
-        ],
-        "name": "xsaves",
-        "unstable_feature_gate": null
-      }
-    ],
     "triple": "x86_64-pc-windows-msvc"
   }
 }
