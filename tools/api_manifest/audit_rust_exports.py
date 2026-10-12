@@ -79,15 +79,15 @@ class _Inventory:
         inner = owner["inner"][kind]
         children = []
         if kind in {"struct", "variant"}:
-            children = self.fields(inner["kind"])
+            children = list(self.fields(inner["kind"]))
         elif kind == "union":
-            children = inner["fields"]
+            children = list(inner["fields"])
         elif kind == "enum":
-            children = inner["variants"]
+            children = list(inner["variants"])
         elif kind == "trait":
-            children = inner["items"]
+            children = list(inner["items"])
         for impl_id in inner.get("impls", []):
-            children = [*children, *self.documents[crate]["index"][str(impl_id)]["inner"]["impl"]["items"]]
+            children.extend(self.documents[crate]["index"][str(impl_id)]["inner"]["impl"]["items"])
         for identifier in children:
             if identifier is None:
                 continue

@@ -64,7 +64,9 @@ Different names therefore remain visible to the manifest comparison, while
 duplicate imports and repeated associated-item visits do not increase the
 count. Source locations identify original declarations; export locations
 identify their re-export sites. Definition identity excludes compiler item
-IDs, which can vary between builds.
+IDs, which can vary between builds. Member identity also includes the original
+owning type or trait, keeping macro-expanded methods with equal source spans
+distinct from one another.
 
 The following surfaces **remain explicitly unaudited**:
 
@@ -138,6 +140,9 @@ ordering, and the installed-toolchain guard. Red/Green commits are distinct:
   produced the mismatches above; `--check` correctly returned 1.
 - `90d1b6df`: the installed-toolchain guard regression failed.
 - `f110bd7c`: all 17 focused tests passed with the offline guard.
+- `f9ddc1d`: a macro-generated member identity regression failed when two
+  different types' methods had the same macro source span.
+- `9513ee17`: all 18 focused tests passed after retaining original owner paths.
 
 The pinned real compiler established JSON format 57; the initial exploratory
 stable compiler's format 61 is deliberately rejected by this runner.
