@@ -25,6 +25,7 @@ OPERATIONS = {
     "Revoke",
 }
 CHECK_ATTRIBUTE_REQUIREMENT_ID = "KMIPKIT-REQ-SPEC-6.1.7-002-003"
+UNASSIGNED_RECERTIFY_REQUIREMENT_ID = "KMIPKIT-REQ-SPEC-6.1.45-002-003"
 CHECK_ATTRIBUTE_ELEMENT_IDS = [
     "KMIPKIT-ELEM-TAG-42002C",
     "KMIPKIT-ELEM-TAG-420049",
@@ -41,7 +42,7 @@ def _reference_file(reference: str) -> Path:
 
 
 class ObjectLifecycleTraceabilityTests(unittest.TestCase):
-    def test_all_39_requirements_link_to_their_operation_and_sources(self) -> None:
+    def test_all_40_requirements_link_to_their_operation_and_sources(self) -> None:
         trace = TRACEABILITY_PATH.read_text(encoding="utf-8")
         spec = SPEC_PATH.read_text(encoding="utf-8")
         catalog = json.loads(CATALOG_PATH.read_text(encoding="utf-8"))
@@ -67,7 +68,7 @@ class ObjectLifecycleTraceabilityTests(unittest.TestCase):
             if record.get("feature_spec") == FEATURE_SPEC
         }
 
-        self.assertEqual(len(spec_requirement_ids), 39)
+        self.assertEqual(len(spec_requirement_ids), 40)
         self.assertEqual(len(rows), len(trace_requirement_ids))
         self.assertEqual(trace_requirement_ids, spec_requirement_ids)
         self.assertEqual(catalog_requirement_ids, spec_requirement_ids)
@@ -83,7 +84,14 @@ class ObjectLifecycleTraceabilityTests(unittest.TestCase):
         for row in rows:
             requirement = requirements[row[0]]
             self.assertEqual(requirement["feature_spec"], FEATURE_SPEC, row[0])
-            self.assertIn(requirement["status"], {"verified", "scoped_verified"}, row[0])
+            if row[0] == UNASSIGNED_RECERTIFY_REQUIREMENT_ID:
+                self.assertEqual(requirement["status"], "unassigned", row[0])
+                self.assertEqual(requirement["implementation_refs"], [], row[0])
+                self.assertEqual(requirement["verification_refs"], [], row[0])
+                self.assertEqual(row[4], "unassigned", row[0])
+                self.assertEqual(row[5:7], ["—", "—"], row[0])
+            else:
+                self.assertIn(requirement["status"], {"verified", "scoped_verified"}, row[0])
             expected_operation_element_id = (
                 f"KMIPKIT-ELEM-OP-C2S-{row[3].split('(')[0].strip().upper().replace(' ', '-')}"
             )
@@ -91,6 +99,12 @@ class ObjectLifecycleTraceabilityTests(unittest.TestCase):
             if row[0] == CHECK_ATTRIBUTE_REQUIREMENT_ID:
                 self.assertEqual(row[3].split("(")[0].strip(), "Check", row[0])
                 self.assertEqual(requirement["element_ids"], CHECK_ATTRIBUTE_ELEMENT_IDS, row[0])
+            elif row[0] == UNASSIGNED_RECERTIFY_REQUIREMENT_ID:
+                self.assertEqual(
+                    requirement["element_ids"],
+                    ["KMIPKIT-ELEM-ATTRIBUTE-UNIQUE-IDENTIFIER", "KMIPKIT-ELEM-OP-C2S-RE-CERTIFY"],
+                    row[0],
+                )
             else:
                 self.assertEqual(len(requirement["element_ids"]), 1, row[0])
                 self.assertEqual(

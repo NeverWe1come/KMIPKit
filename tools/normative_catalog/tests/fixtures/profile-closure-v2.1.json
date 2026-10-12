@@ -81,12 +81,12 @@
   },
   "counts": {
     "profiles": 18,
-    "requirement_crosswalk_records": 469,
+    "requirement_crosswalk_records": 502,
     "requirement_crosswalk_complete": false,
     "source_requirement_review_records": 890,
-    "source_only_requirement_gaps": 108,
-    "source_only_requirement_gap_proposals": 54,
-    "source_table_contracts": 62
+    "source_only_requirement_gaps": 104,
+    "source_only_requirement_gap_proposals": 2,
+    "source_table_contracts": 65
   },
   "source_clause_crosswalk": [
     {
@@ -22135,23 +22135,6 @@
       "source_actor": "client"
     },
     {
-      "requirement_id": "KMIPKIT-REQ-SPEC-6.1.14-002",
-      "source_clause_id": "KMIPKIT-CLAUSE-SPEC-6.1.14-002",
-      "source_id": "KMIPKIT-SRC-spec",
-      "source_section": "6.1.14",
-      "source_locator": {
-        "ordinal": 2,
-        "block_kind": "paragraph"
-      },
-      "source_keyword": "MAY",
-      "role": "client",
-      "scope_state": "client_1_0",
-      "applies_to": "all_client_profiles",
-      "review_note": "Client capability to supply multiple derivation inputs for supported methods.",
-      "source_obligation_order": 1,
-      "source_actor": "client"
-    },
-    {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.14-006-001",
       "source_clause_id": "KMIPKIT-CLAUSE-SPEC-6.1.14-006",
       "source_id": "KMIPKIT-SRC-spec",
@@ -25447,6 +25430,678 @@
       "scope_state": "client_1_0",
       "applies_to": "all_client_profiles",
       "review_note": "Exact Key Wrapping Specification 6.1.19 request body row; table-field force is not a formal RFC keyword."
+    },
+    {
+      "requirement_id": "KMIPKIT-REQ-SPEC-3.1-007",
+      "source_gap_id": "KMIPKIT-SOURCE-GAP-SPEC-3.1-KEY-FORMAT-TYPE",
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_section": "3.1",
+      "source_locator": {
+        "kind": "table_body_row",
+        "section": "3.1",
+        "row_label": "Key Format Type",
+        "html_line_range": [
+          7698,
+          7716
+        ]
+      },
+      "source_force": "required_table_body_value",
+      "role": "client",
+      "scope_state": "client_1_0",
+      "applies_to": "all_client_profiles",
+      "review_note": "Exact pinned table body row; Required=Yes applies when the enclosing structure is used, and is not a formal RFC keyword."
+    },
+    {
+      "requirement_id": "KMIPKIT-REQ-SPEC-3.10-002",
+      "source_gap_id": "KMIPKIT-SOURCE-GAP-SPEC-3.10-P",
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_section": "3.10",
+      "source_locator": {
+        "kind": "table_body_row",
+        "section": "3.10",
+        "row_label": "P",
+        "html_line_range": [
+          9283,
+          9301
+        ]
+      },
+      "source_force": "required_table_body_value",
+      "role": "client",
+      "scope_state": "client_1_0",
+      "applies_to": "all_client_profiles",
+      "review_note": "Exact pinned table body row; Required=Yes applies when the enclosing structure is used, and is not a formal RFC keyword."
+    },
+    {
+      "requirement_id": "KMIPKIT-REQ-SPEC-3.10-003",
+      "source_gap_id": "KMIPKIT-SOURCE-GAP-SPEC-3.10-G",
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_section": "3.10",
+      "source_locator": {
+        "kind": "table_body_row",
+        "section": "3.10",
+        "row_label": "G",
+        "html_line_range": [
+          9321,
+          9339
+        ]
+      },
+      "source_force": "required_table_body_value",
+      "role": "client",
+      "scope_state": "client_1_0",
+      "applies_to": "all_client_profiles",
+      "review_note": "Exact pinned table body row; Required=Yes applies when the enclosing structure is used, and is not a formal RFC keyword."
+    },
+    {
+      "requirement_id": "KMIPKIT-REQ-SPEC-3.10-004",
+      "source_gap_id": "KMIPKIT-SOURCE-GAP-SPEC-3.10-Y",
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_section": "3.10",
+      "source_locator": {
+        "kind": "table_body_row",
+        "section": "3.10",
+        "row_label": "Y",
+        "html_line_range": [
+          9359,
+          9377
+        ]
+      },
+      "source_force": "required_table_body_value",
+      "role": "client",
+      "scope_state": "client_1_0",
+      "applies_to": "all_client_profiles",
+      "review_note": "Exact pinned table body row; Required=Yes applies when the enclosing structure is used, and is not a formal RFC keyword."
+    },
+    {
+      "requirement_id": "KMIPKIT-REQ-SPEC-3.11-002",
+      "source_gap_id": "KMIPKIT-SOURCE-GAP-SPEC-3.11-RECOMMENDED-CURVE",
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_section": "3.11",
+      "source_locator": {
+        "kind": "table_body_row",
+        "section": "3.11",
+        "row_label": "Recommended Curve",
+        "html_line_range": [
+          9438,
+          9457
+        ]
+      },
+      "source_force": "required_table_body_value",
+      "role": "client",
+      "scope_state": "client_1_0",
+      "applies_to": "all_client_profiles",
+      "review_note": "Exact pinned table body row; Required=Yes applies when the enclosing structure is used, and is not a formal RFC keyword."
+    },
+    {
+      "requirement_id": "KMIPKIT-REQ-SPEC-3.11-003",
+      "source_gap_id": "KMIPKIT-SOURCE-GAP-SPEC-3.11-D",
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_section": "3.11",
+      "source_locator": {
+        "kind": "table_body_row",
+        "section": "3.11",
+        "row_label": "D",
+        "html_line_range": [
+          9458,
+          9476
+        ]
+      },
+      "source_force": "required_table_body_value",
+      "role": "client",
+      "scope_state": "client_1_0",
+      "applies_to": "all_client_profiles",
+      "review_note": "Exact pinned table body row; Required=Yes applies when the enclosing structure is used, and is not a formal RFC keyword."
+    },
+    {
+      "requirement_id": "KMIPKIT-REQ-SPEC-3.12-002",
+      "source_gap_id": "KMIPKIT-SOURCE-GAP-SPEC-3.12-RECOMMENDED-CURVE",
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_section": "3.12",
+      "source_locator": {
+        "kind": "table_body_row",
+        "section": "3.12",
+        "row_label": "Recommended Curve",
+        "html_line_range": [
+          9533,
+          9552
+        ]
+      },
+      "source_force": "required_table_body_value",
+      "role": "client",
+      "scope_state": "client_1_0",
+      "applies_to": "all_client_profiles",
+      "review_note": "Exact pinned table body row; Required=Yes applies when the enclosing structure is used, and is not a formal RFC keyword."
+    },
+    {
+      "requirement_id": "KMIPKIT-REQ-SPEC-3.12-003",
+      "source_gap_id": "KMIPKIT-SOURCE-GAP-SPEC-3.12-Q-STRING",
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_section": "3.12",
+      "source_locator": {
+        "kind": "table_body_row",
+        "section": "3.12",
+        "row_label": "Q String",
+        "html_line_range": [
+          9553,
+          9571
+        ]
+      },
+      "source_force": "required_table_body_value",
+      "role": "client",
+      "scope_state": "client_1_0",
+      "applies_to": "all_client_profiles",
+      "review_note": "Exact pinned table body row; Required=Yes applies when the enclosing structure is used, and is not a formal RFC keyword."
+    },
+    {
+      "requirement_id": "KMIPKIT-REQ-SPEC-3.2-003",
+      "source_gap_id": "KMIPKIT-SOURCE-GAP-SPEC-3.2-KEY-MATERIAL",
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_section": "3.2",
+      "source_locator": {
+        "kind": "table_body_row",
+        "section": "3.2",
+        "row_label": "Key Material",
+        "html_line_range": [
+          7893,
+          7914
+        ]
+      },
+      "source_force": "required_table_body_value",
+      "role": "client",
+      "scope_state": "client_1_0",
+      "applies_to": "all_client_profiles",
+      "review_note": "Exact pinned table body row; Required=Yes applies when the enclosing structure is used, and is not a formal RFC keyword."
+    },
+    {
+      "requirement_id": "KMIPKIT-REQ-SPEC-3.3-010",
+      "source_gap_id": "KMIPKIT-SOURCE-GAP-SPEC-3.3-WRAPPING-METHOD",
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_section": "3.3",
+      "source_locator": {
+        "kind": "table_body_row",
+        "section": "3.3",
+        "row_label": "Wrapping Method",
+        "html_line_range": [
+          8114,
+          8132
+        ]
+      },
+      "source_force": "required_table_body_value",
+      "role": "client",
+      "scope_state": "client_1_0",
+      "applies_to": "all_client_profiles",
+      "review_note": "Exact pinned table body row; Required=Yes applies when the enclosing structure is used, and is not a formal RFC keyword."
+    },
+    {
+      "requirement_id": "KMIPKIT-REQ-SPEC-3.3-011",
+      "source_gap_id": "KMIPKIT-SOURCE-GAP-SPEC-3.3-UNIQUE-IDENTIFIER",
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_section": "3.3",
+      "source_locator": {
+        "kind": "table_body_row",
+        "section": "3.3",
+        "row_label": "Unique Identifier",
+        "html_line_range": [
+          8284,
+          8302
+        ]
+      },
+      "source_force": "required_table_body_value",
+      "role": "client",
+      "scope_state": "client_1_0",
+      "applies_to": "all_client_profiles",
+      "review_note": "Exact pinned table body row; Required=Yes applies when the enclosing structure is used, and is not a formal RFC keyword."
+    },
+    {
+      "requirement_id": "KMIPKIT-REQ-SPEC-3.4-002",
+      "source_gap_id": "KMIPKIT-SOURCE-GAP-SPEC-3.4-KEY",
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_section": "3.4",
+      "source_locator": {
+        "kind": "table_body_row",
+        "section": "3.4",
+        "row_label": "Key",
+        "html_line_range": [
+          8468,
+          8486
+        ]
+      },
+      "source_force": "required_table_body_value",
+      "role": "client",
+      "scope_state": "client_1_0",
+      "applies_to": "all_client_profiles",
+      "review_note": "Exact pinned table body row; Required=Yes applies when the enclosing structure is used, and is not a formal RFC keyword."
+    },
+    {
+      "requirement_id": "KMIPKIT-REQ-SPEC-3.5-002",
+      "source_gap_id": "KMIPKIT-SOURCE-GAP-SPEC-3.5-P",
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_section": "3.5",
+      "source_locator": {
+        "kind": "table_body_row",
+        "section": "3.5",
+        "row_label": "P",
+        "html_line_range": [
+          8544,
+          8562
+        ]
+      },
+      "source_force": "required_table_body_value",
+      "role": "client",
+      "scope_state": "client_1_0",
+      "applies_to": "all_client_profiles",
+      "review_note": "Exact pinned table body row; Required=Yes applies when the enclosing structure is used, and is not a formal RFC keyword."
+    },
+    {
+      "requirement_id": "KMIPKIT-REQ-SPEC-3.5-003",
+      "source_gap_id": "KMIPKIT-SOURCE-GAP-SPEC-3.5-Q",
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_section": "3.5",
+      "source_locator": {
+        "kind": "table_body_row",
+        "section": "3.5",
+        "row_label": "Q",
+        "html_line_range": [
+          8563,
+          8581
+        ]
+      },
+      "source_force": "required_table_body_value",
+      "role": "client",
+      "scope_state": "client_1_0",
+      "applies_to": "all_client_profiles",
+      "review_note": "Exact pinned table body row; Required=Yes applies when the enclosing structure is used, and is not a formal RFC keyword."
+    },
+    {
+      "requirement_id": "KMIPKIT-REQ-SPEC-3.5-004",
+      "source_gap_id": "KMIPKIT-SOURCE-GAP-SPEC-3.5-G",
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_section": "3.5",
+      "source_locator": {
+        "kind": "table_body_row",
+        "section": "3.5",
+        "row_label": "G",
+        "html_line_range": [
+          8582,
+          8600
+        ]
+      },
+      "source_force": "required_table_body_value",
+      "role": "client",
+      "scope_state": "client_1_0",
+      "applies_to": "all_client_profiles",
+      "review_note": "Exact pinned table body row; Required=Yes applies when the enclosing structure is used, and is not a formal RFC keyword."
+    },
+    {
+      "requirement_id": "KMIPKIT-REQ-SPEC-3.5-005",
+      "source_gap_id": "KMIPKIT-SOURCE-GAP-SPEC-3.5-X",
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_section": "3.5",
+      "source_locator": {
+        "kind": "table_body_row",
+        "section": "3.5",
+        "row_label": "X",
+        "html_line_range": [
+          8601,
+          8619
+        ]
+      },
+      "source_force": "required_table_body_value",
+      "role": "client",
+      "scope_state": "client_1_0",
+      "applies_to": "all_client_profiles",
+      "review_note": "Exact pinned table body row; Required=Yes applies when the enclosing structure is used, and is not a formal RFC keyword."
+    },
+    {
+      "requirement_id": "KMIPKIT-REQ-SPEC-3.6-002",
+      "source_gap_id": "KMIPKIT-SOURCE-GAP-SPEC-3.6-P",
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_section": "3.6",
+      "source_locator": {
+        "kind": "table_body_row",
+        "section": "3.6",
+        "row_label": "P",
+        "html_line_range": [
+          8677,
+          8695
+        ]
+      },
+      "source_force": "required_table_body_value",
+      "role": "client",
+      "scope_state": "client_1_0",
+      "applies_to": "all_client_profiles",
+      "review_note": "Exact pinned table body row; Required=Yes applies when the enclosing structure is used, and is not a formal RFC keyword."
+    },
+    {
+      "requirement_id": "KMIPKIT-REQ-SPEC-3.6-004",
+      "source_gap_id": "KMIPKIT-SOURCE-GAP-SPEC-3.6-G",
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_section": "3.6",
+      "source_locator": {
+        "kind": "table_body_row",
+        "section": "3.6",
+        "row_label": "G",
+        "html_line_range": [
+          8715,
+          8733
+        ]
+      },
+      "source_force": "required_table_body_value",
+      "role": "client",
+      "scope_state": "client_1_0",
+      "applies_to": "all_client_profiles",
+      "review_note": "Exact pinned table body row; Required=Yes applies when the enclosing structure is used, and is not a formal RFC keyword."
+    },
+    {
+      "requirement_id": "KMIPKIT-REQ-SPEC-3.6-005",
+      "source_gap_id": "KMIPKIT-SOURCE-GAP-SPEC-3.6-Y",
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_section": "3.6",
+      "source_locator": {
+        "kind": "table_body_row",
+        "section": "3.6",
+        "row_label": "Y",
+        "html_line_range": [
+          8734,
+          8752
+        ]
+      },
+      "source_force": "required_table_body_value",
+      "role": "client",
+      "scope_state": "client_1_0",
+      "applies_to": "all_client_profiles",
+      "review_note": "Exact pinned table body row; Required=Yes applies when the enclosing structure is used, and is not a formal RFC keyword."
+    },
+    {
+      "requirement_id": "KMIPKIT-REQ-SPEC-3.7-003",
+      "source_gap_id": "KMIPKIT-SOURCE-GAP-SPEC-3.7-MODULUS",
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_section": "3.7",
+      "source_locator": {
+        "kind": "table_body_row",
+        "section": "3.7",
+        "row_label": "Modulus",
+        "html_line_range": [
+          8810,
+          8828
+        ]
+      },
+      "source_force": "required_table_body_value",
+      "role": "client",
+      "scope_state": "client_1_0",
+      "applies_to": "all_client_profiles",
+      "review_note": "Exact pinned table body row; Required=Yes applies when the enclosing structure is used, and is not a formal RFC keyword."
+    },
+    {
+      "requirement_id": "KMIPKIT-REQ-SPEC-3.8-002",
+      "source_gap_id": "KMIPKIT-SOURCE-GAP-SPEC-3.8-MODULUS",
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_section": "3.8",
+      "source_locator": {
+        "kind": "table_body_row",
+        "section": "3.8",
+        "row_label": "Modulus",
+        "html_line_range": [
+          9035,
+          9053
+        ]
+      },
+      "source_force": "required_table_body_value",
+      "role": "client",
+      "scope_state": "client_1_0",
+      "applies_to": "all_client_profiles",
+      "review_note": "Exact pinned table body row; Required=Yes applies when the enclosing structure is used, and is not a formal RFC keyword."
+    },
+    {
+      "requirement_id": "KMIPKIT-REQ-SPEC-3.8-003",
+      "source_gap_id": "KMIPKIT-SOURCE-GAP-SPEC-3.8-PUBLIC-EXPONENT",
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_section": "3.8",
+      "source_locator": {
+        "kind": "table_body_row",
+        "section": "3.8",
+        "row_label": "Public Exponent",
+        "html_line_range": [
+          9054,
+          9072
+        ]
+      },
+      "source_force": "required_table_body_value",
+      "role": "client",
+      "scope_state": "client_1_0",
+      "applies_to": "all_client_profiles",
+      "review_note": "Exact pinned table body row; Required=Yes applies when the enclosing structure is used, and is not a formal RFC keyword."
+    },
+    {
+      "requirement_id": "KMIPKIT-REQ-SPEC-3.9-002",
+      "source_gap_id": "KMIPKIT-SOURCE-GAP-SPEC-3.9-P",
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_section": "3.9",
+      "source_locator": {
+        "kind": "table_body_row",
+        "section": "3.9",
+        "row_label": "P",
+        "html_line_range": [
+          9130,
+          9148
+        ]
+      },
+      "source_force": "required_table_body_value",
+      "role": "client",
+      "scope_state": "client_1_0",
+      "applies_to": "all_client_profiles",
+      "review_note": "Exact pinned table body row; Required=Yes applies when the enclosing structure is used, and is not a formal RFC keyword."
+    },
+    {
+      "requirement_id": "KMIPKIT-REQ-SPEC-3.9-003",
+      "source_gap_id": "KMIPKIT-SOURCE-GAP-SPEC-3.9-G",
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_section": "3.9",
+      "source_locator": {
+        "kind": "table_body_row",
+        "section": "3.9",
+        "row_label": "G",
+        "html_line_range": [
+          9168,
+          9186
+        ]
+      },
+      "source_force": "required_table_body_value",
+      "role": "client",
+      "scope_state": "client_1_0",
+      "applies_to": "all_client_profiles",
+      "review_note": "Exact pinned table body row; Required=Yes applies when the enclosing structure is used, and is not a formal RFC keyword."
+    },
+    {
+      "requirement_id": "KMIPKIT-REQ-SPEC-3.9-004",
+      "source_gap_id": "KMIPKIT-SOURCE-GAP-SPEC-3.9-X",
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_section": "3.9",
+      "source_locator": {
+        "kind": "table_body_row",
+        "section": "3.9",
+        "row_label": "X",
+        "html_line_range": [
+          9206,
+          9224
+        ]
+      },
+      "source_force": "required_table_body_value",
+      "role": "client",
+      "scope_state": "client_1_0",
+      "applies_to": "all_client_profiles",
+      "review_note": "Exact pinned table body row; Required=Yes applies when the enclosing structure is used, and is not a formal RFC keyword."
+    },
+    {
+      "requirement_id": "KMIPKIT-REQ-SPEC-4.39-002-001",
+      "source_clause_id": "KMIPKIT-CLAUSE-SPEC-4.39-002",
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_section": "4.39",
+      "source_locator": {
+        "ordinal": 2,
+        "block_kind": "paragraph"
+      },
+      "source_keyword": "SHOULD",
+      "role": "client",
+      "scope_state": "client_1_0",
+      "applies_to": "all_client_profiles",
+      "review_note": "Specification v2.1 §4.39; client half of the shared lowercase Friendly Name SHOULD, source obligation 3.",
+      "source_obligation_order": 3,
+      "source_actor": "client and server"
+    },
+    {
+      "requirement_id": "KMIPKIT-REQ-SPEC-5.5-003",
+      "source_gap_id": "KMIPKIT-SOURCE-GAP-SPEC-5.5-VENDOR-IDENTIFICATION",
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_section": "5.5",
+      "source_locator": {
+        "kind": "table_body_row",
+        "section": "5.5",
+        "row_label": "Vendor Identification",
+        "html_line_range": [
+          22117,
+          22137
+        ]
+      },
+      "source_force": "required_table_body_value",
+      "role": "client",
+      "scope_state": "client_1_0",
+      "applies_to": "all_client_profiles",
+      "review_note": "Exact pinned table body row; Required=Yes applies when the enclosing structure is used, and is not a formal RFC keyword."
+    },
+    {
+      "requirement_id": "KMIPKIT-REQ-SPEC-5.5-004",
+      "source_gap_id": "KMIPKIT-SOURCE-GAP-SPEC-5.5-ATTRIBUTE-NAME",
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_section": "5.5",
+      "source_locator": {
+        "kind": "table_body_row",
+        "section": "5.5",
+        "row_label": "Attribute Name",
+        "html_line_range": [
+          22138,
+          22156
+        ]
+      },
+      "source_force": "required_table_body_value",
+      "role": "client",
+      "scope_state": "client_1_0",
+      "applies_to": "all_client_profiles",
+      "review_note": "Exact pinned table body row; Required=Yes applies when the enclosing structure is used, and is not a formal RFC keyword."
+    },
+    {
+      "requirement_id": "KMIPKIT-REQ-SPEC-5.5-005",
+      "source_gap_id": "KMIPKIT-SOURCE-GAP-SPEC-5.5-ATTRIBUTE-REFERENCE-TAG",
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_section": "5.5",
+      "source_locator": {
+        "kind": "table_body_row",
+        "section": "5.5",
+        "row_label": "Attribute Reference",
+        "html_line_range": [
+          22184,
+          22202
+        ]
+      },
+      "source_force": "required_table_body_value",
+      "role": "client",
+      "scope_state": "client_1_0",
+      "applies_to": "all_client_profiles",
+      "review_note": "Exact pinned table body row; Required=Yes applies when the enclosing structure is used, and is not a formal RFC keyword."
+    },
+    {
+      "requirement_id": "KMIPKIT-REQ-SPEC-5.6-002",
+      "source_gap_id": "KMIPKIT-SOURCE-GAP-SPEC-5.6-CURRENT-ATTRIBUTE",
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_section": "5.6",
+      "source_locator": {
+        "kind": "table_body_row",
+        "section": "5.6",
+        "row_label": "Any attribute in §4 - Object Attributes",
+        "html_line_range": [
+          22260,
+          22279
+        ]
+      },
+      "source_force": "required_table_body_value",
+      "role": "client",
+      "scope_state": "client_1_0",
+      "applies_to": "all_client_profiles",
+      "review_note": "Exact pinned table body row; Required=Yes applies when the enclosing structure is used, and is not a formal RFC keyword."
+    },
+    {
+      "requirement_id": "KMIPKIT-REQ-SPEC-5.7-002",
+      "source_gap_id": "KMIPKIT-SOURCE-GAP-SPEC-5.7-NEW-ATTRIBUTE",
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_section": "5.7",
+      "source_locator": {
+        "kind": "table_body_row",
+        "section": "5.7",
+        "row_label": "Any attribute in §4 - Object Attributes",
+        "html_line_range": [
+          22337,
+          22356
+        ]
+      },
+      "source_force": "required_table_body_value",
+      "role": "client",
+      "scope_state": "client_1_0",
+      "applies_to": "all_client_profiles",
+      "review_note": "Exact pinned table body row; Required=Yes applies when the enclosing structure is used, and is not a formal RFC keyword."
+    },
+    {
+      "requirement_id": "KMIPKIT-REQ-SPEC-6.1.14-007-001",
+      "source_gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.14-ATTRIBUTES-REQUIRED",
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_section": "6.1.14",
+      "source_locator": {
+        "kind": "table_body_row",
+        "section": "6.1.14",
+        "row_label": "Attributes",
+        "table": "request_payload",
+        "html_line_range": [
+          25980,
+          26001
+        ]
+      },
+      "source_force": "required_table_body_value",
+      "role": "client",
+      "scope_state": "client_1_0",
+      "applies_to": "all_client_profiles",
+      "review_note": "Exact Required=Yes request table body row. It is distinct from the conditional formal SHALL in Table 205."
+    },
+    {
+      "requirement_id": "KMIPKIT-REQ-SPEC-6.1.18-001-001",
+      "source_clause_id": "KMIPKIT-CLAUSE-SPEC-6.1.18-001",
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_section": "6.1.18",
+      "source_locator": {
+        "ordinal": 1,
+        "block_kind": "paragraph"
+      },
+      "source_keyword": "SHALL",
+      "role": "client",
+      "scope_state": "client_1_0",
+      "applies_to": "all_client_profiles",
+      "review_note": "Specification v2.1 §6.1.18; client Export request semantics, source obligation 1.",
+      "source_obligation_order": 1,
+      "source_actor": "client"
+    },
+    {
+      "requirement_id": "KMIPKIT-REQ-SPEC-6.1.45-002-003",
+      "source_clause_id": "KMIPKIT-CLAUSE-SPEC-6.1.45-002",
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_section": "6.1.45",
+      "source_locator": {
+        "ordinal": 2,
+        "block_kind": "paragraph"
+      },
+      "source_keyword": "SHALL",
+      "role": "client",
+      "scope_state": "client_1_0",
+      "applies_to": "all_client_profiles",
+      "review_note": "Specification v2.1 §6.1.45; conditional client Unique Identifier requirement, source obligation 2.",
+      "source_obligation_order": 2,
+      "source_actor": "client"
     }
   ],
   "profiles": [
@@ -26391,7 +27046,38 @@
         "KMIPKIT-REQ-SPEC-12-001-001",
         "KMIPKIT-REQ-SPEC-14.1-001",
         "KMIPKIT-REQ-SPEC-14.1-002",
+        "KMIPKIT-REQ-SPEC-3.1-007",
+        "KMIPKIT-REQ-SPEC-3.10-002",
+        "KMIPKIT-REQ-SPEC-3.10-003",
+        "KMIPKIT-REQ-SPEC-3.10-004",
+        "KMIPKIT-REQ-SPEC-3.11-002",
+        "KMIPKIT-REQ-SPEC-3.11-003",
+        "KMIPKIT-REQ-SPEC-3.12-002",
+        "KMIPKIT-REQ-SPEC-3.12-003",
+        "KMIPKIT-REQ-SPEC-3.2-003",
+        "KMIPKIT-REQ-SPEC-3.3-010",
+        "KMIPKIT-REQ-SPEC-3.3-011",
+        "KMIPKIT-REQ-SPEC-3.4-002",
+        "KMIPKIT-REQ-SPEC-3.5-002",
+        "KMIPKIT-REQ-SPEC-3.5-003",
+        "KMIPKIT-REQ-SPEC-3.5-004",
+        "KMIPKIT-REQ-SPEC-3.5-005",
+        "KMIPKIT-REQ-SPEC-3.6-002",
+        "KMIPKIT-REQ-SPEC-3.6-004",
+        "KMIPKIT-REQ-SPEC-3.6-005",
+        "KMIPKIT-REQ-SPEC-3.7-003",
+        "KMIPKIT-REQ-SPEC-3.8-002",
+        "KMIPKIT-REQ-SPEC-3.8-003",
+        "KMIPKIT-REQ-SPEC-3.9-002",
+        "KMIPKIT-REQ-SPEC-3.9-003",
+        "KMIPKIT-REQ-SPEC-3.9-004",
+        "KMIPKIT-REQ-SPEC-4.39-002-001",
         "KMIPKIT-REQ-SPEC-4.57-003-004",
+        "KMIPKIT-REQ-SPEC-5.5-003",
+        "KMIPKIT-REQ-SPEC-5.5-004",
+        "KMIPKIT-REQ-SPEC-5.5-005",
+        "KMIPKIT-REQ-SPEC-5.6-002",
+        "KMIPKIT-REQ-SPEC-5.7-002",
         "KMIPKIT-REQ-SPEC-6.1.12-003",
         "KMIPKIT-REQ-SPEC-6.1.12-005",
         "KMIPKIT-REQ-SPEC-6.1.12-006",
@@ -26402,6 +27088,7 @@
         "KMIPKIT-REQ-SPEC-6.1.14-010",
         "KMIPKIT-REQ-SPEC-6.1.14-011",
         "KMIPKIT-REQ-SPEC-6.1.14-012",
+        "KMIPKIT-REQ-SPEC-6.1.18-001-001",
         "KMIPKIT-REQ-SPEC-6.1.18-005",
         "KMIPKIT-REQ-SPEC-6.1.18-006",
         "KMIPKIT-REQ-SPEC-6.1.18-007",
@@ -26431,6 +27118,7 @@
         "KMIPKIT-REQ-SPEC-6.1.30-002",
         "KMIPKIT-REQ-SPEC-6.1.30-003",
         "KMIPKIT-REQ-SPEC-6.1.31-001",
+        "KMIPKIT-REQ-SPEC-6.1.45-002-003",
         "KMIPKIT-REQ-SPEC-9.11-001",
         "KMIPKIT-REQ-SPEC-9.11-004-001",
         "KMIPKIT-REQ-SPEC-9.11-004-002",
@@ -27623,7 +28311,38 @@
         "KMIPKIT-REQ-SPEC-12-001-001",
         "KMIPKIT-REQ-SPEC-14.1-001",
         "KMIPKIT-REQ-SPEC-14.1-002",
+        "KMIPKIT-REQ-SPEC-3.1-007",
+        "KMIPKIT-REQ-SPEC-3.10-002",
+        "KMIPKIT-REQ-SPEC-3.10-003",
+        "KMIPKIT-REQ-SPEC-3.10-004",
+        "KMIPKIT-REQ-SPEC-3.11-002",
+        "KMIPKIT-REQ-SPEC-3.11-003",
+        "KMIPKIT-REQ-SPEC-3.12-002",
+        "KMIPKIT-REQ-SPEC-3.12-003",
+        "KMIPKIT-REQ-SPEC-3.2-003",
+        "KMIPKIT-REQ-SPEC-3.3-010",
+        "KMIPKIT-REQ-SPEC-3.3-011",
+        "KMIPKIT-REQ-SPEC-3.4-002",
+        "KMIPKIT-REQ-SPEC-3.5-002",
+        "KMIPKIT-REQ-SPEC-3.5-003",
+        "KMIPKIT-REQ-SPEC-3.5-004",
+        "KMIPKIT-REQ-SPEC-3.5-005",
+        "KMIPKIT-REQ-SPEC-3.6-002",
+        "KMIPKIT-REQ-SPEC-3.6-004",
+        "KMIPKIT-REQ-SPEC-3.6-005",
+        "KMIPKIT-REQ-SPEC-3.7-003",
+        "KMIPKIT-REQ-SPEC-3.8-002",
+        "KMIPKIT-REQ-SPEC-3.8-003",
+        "KMIPKIT-REQ-SPEC-3.9-002",
+        "KMIPKIT-REQ-SPEC-3.9-003",
+        "KMIPKIT-REQ-SPEC-3.9-004",
+        "KMIPKIT-REQ-SPEC-4.39-002-001",
         "KMIPKIT-REQ-SPEC-4.57-003-004",
+        "KMIPKIT-REQ-SPEC-5.5-003",
+        "KMIPKIT-REQ-SPEC-5.5-004",
+        "KMIPKIT-REQ-SPEC-5.5-005",
+        "KMIPKIT-REQ-SPEC-5.6-002",
+        "KMIPKIT-REQ-SPEC-5.7-002",
         "KMIPKIT-REQ-SPEC-6.1.12-003",
         "KMIPKIT-REQ-SPEC-6.1.12-005",
         "KMIPKIT-REQ-SPEC-6.1.12-006",
@@ -27634,6 +28353,7 @@
         "KMIPKIT-REQ-SPEC-6.1.14-010",
         "KMIPKIT-REQ-SPEC-6.1.14-011",
         "KMIPKIT-REQ-SPEC-6.1.14-012",
+        "KMIPKIT-REQ-SPEC-6.1.18-001-001",
         "KMIPKIT-REQ-SPEC-6.1.18-005",
         "KMIPKIT-REQ-SPEC-6.1.18-006",
         "KMIPKIT-REQ-SPEC-6.1.18-007",
@@ -27663,6 +28383,7 @@
         "KMIPKIT-REQ-SPEC-6.1.30-002",
         "KMIPKIT-REQ-SPEC-6.1.30-003",
         "KMIPKIT-REQ-SPEC-6.1.31-001",
+        "KMIPKIT-REQ-SPEC-6.1.45-002-003",
         "KMIPKIT-REQ-SPEC-9.11-001",
         "KMIPKIT-REQ-SPEC-9.11-004-001",
         "KMIPKIT-REQ-SPEC-9.11-004-002",
@@ -28871,7 +29592,38 @@
         "KMIPKIT-REQ-SPEC-12-001-001",
         "KMIPKIT-REQ-SPEC-14.1-001",
         "KMIPKIT-REQ-SPEC-14.1-002",
+        "KMIPKIT-REQ-SPEC-3.1-007",
+        "KMIPKIT-REQ-SPEC-3.10-002",
+        "KMIPKIT-REQ-SPEC-3.10-003",
+        "KMIPKIT-REQ-SPEC-3.10-004",
+        "KMIPKIT-REQ-SPEC-3.11-002",
+        "KMIPKIT-REQ-SPEC-3.11-003",
+        "KMIPKIT-REQ-SPEC-3.12-002",
+        "KMIPKIT-REQ-SPEC-3.12-003",
+        "KMIPKIT-REQ-SPEC-3.2-003",
+        "KMIPKIT-REQ-SPEC-3.3-010",
+        "KMIPKIT-REQ-SPEC-3.3-011",
+        "KMIPKIT-REQ-SPEC-3.4-002",
+        "KMIPKIT-REQ-SPEC-3.5-002",
+        "KMIPKIT-REQ-SPEC-3.5-003",
+        "KMIPKIT-REQ-SPEC-3.5-004",
+        "KMIPKIT-REQ-SPEC-3.5-005",
+        "KMIPKIT-REQ-SPEC-3.6-002",
+        "KMIPKIT-REQ-SPEC-3.6-004",
+        "KMIPKIT-REQ-SPEC-3.6-005",
+        "KMIPKIT-REQ-SPEC-3.7-003",
+        "KMIPKIT-REQ-SPEC-3.8-002",
+        "KMIPKIT-REQ-SPEC-3.8-003",
+        "KMIPKIT-REQ-SPEC-3.9-002",
+        "KMIPKIT-REQ-SPEC-3.9-003",
+        "KMIPKIT-REQ-SPEC-3.9-004",
+        "KMIPKIT-REQ-SPEC-4.39-002-001",
         "KMIPKIT-REQ-SPEC-4.57-003-004",
+        "KMIPKIT-REQ-SPEC-5.5-003",
+        "KMIPKIT-REQ-SPEC-5.5-004",
+        "KMIPKIT-REQ-SPEC-5.5-005",
+        "KMIPKIT-REQ-SPEC-5.6-002",
+        "KMIPKIT-REQ-SPEC-5.7-002",
         "KMIPKIT-REQ-SPEC-6.1.12-003",
         "KMIPKIT-REQ-SPEC-6.1.12-005",
         "KMIPKIT-REQ-SPEC-6.1.12-006",
@@ -28882,6 +29634,7 @@
         "KMIPKIT-REQ-SPEC-6.1.14-010",
         "KMIPKIT-REQ-SPEC-6.1.14-011",
         "KMIPKIT-REQ-SPEC-6.1.14-012",
+        "KMIPKIT-REQ-SPEC-6.1.18-001-001",
         "KMIPKIT-REQ-SPEC-6.1.18-005",
         "KMIPKIT-REQ-SPEC-6.1.18-006",
         "KMIPKIT-REQ-SPEC-6.1.18-007",
@@ -28911,6 +29664,7 @@
         "KMIPKIT-REQ-SPEC-6.1.30-002",
         "KMIPKIT-REQ-SPEC-6.1.30-003",
         "KMIPKIT-REQ-SPEC-6.1.31-001",
+        "KMIPKIT-REQ-SPEC-6.1.45-002-003",
         "KMIPKIT-REQ-SPEC-9.11-001",
         "KMIPKIT-REQ-SPEC-9.11-004-001",
         "KMIPKIT-REQ-SPEC-9.11-004-002",
@@ -30077,7 +30831,38 @@
         "KMIPKIT-REQ-SPEC-12-001-001",
         "KMIPKIT-REQ-SPEC-14.1-001",
         "KMIPKIT-REQ-SPEC-14.1-002",
+        "KMIPKIT-REQ-SPEC-3.1-007",
+        "KMIPKIT-REQ-SPEC-3.10-002",
+        "KMIPKIT-REQ-SPEC-3.10-003",
+        "KMIPKIT-REQ-SPEC-3.10-004",
+        "KMIPKIT-REQ-SPEC-3.11-002",
+        "KMIPKIT-REQ-SPEC-3.11-003",
+        "KMIPKIT-REQ-SPEC-3.12-002",
+        "KMIPKIT-REQ-SPEC-3.12-003",
+        "KMIPKIT-REQ-SPEC-3.2-003",
+        "KMIPKIT-REQ-SPEC-3.3-010",
+        "KMIPKIT-REQ-SPEC-3.3-011",
+        "KMIPKIT-REQ-SPEC-3.4-002",
+        "KMIPKIT-REQ-SPEC-3.5-002",
+        "KMIPKIT-REQ-SPEC-3.5-003",
+        "KMIPKIT-REQ-SPEC-3.5-004",
+        "KMIPKIT-REQ-SPEC-3.5-005",
+        "KMIPKIT-REQ-SPEC-3.6-002",
+        "KMIPKIT-REQ-SPEC-3.6-004",
+        "KMIPKIT-REQ-SPEC-3.6-005",
+        "KMIPKIT-REQ-SPEC-3.7-003",
+        "KMIPKIT-REQ-SPEC-3.8-002",
+        "KMIPKIT-REQ-SPEC-3.8-003",
+        "KMIPKIT-REQ-SPEC-3.9-002",
+        "KMIPKIT-REQ-SPEC-3.9-003",
+        "KMIPKIT-REQ-SPEC-3.9-004",
+        "KMIPKIT-REQ-SPEC-4.39-002-001",
         "KMIPKIT-REQ-SPEC-4.57-003-004",
+        "KMIPKIT-REQ-SPEC-5.5-003",
+        "KMIPKIT-REQ-SPEC-5.5-004",
+        "KMIPKIT-REQ-SPEC-5.5-005",
+        "KMIPKIT-REQ-SPEC-5.6-002",
+        "KMIPKIT-REQ-SPEC-5.7-002",
         "KMIPKIT-REQ-SPEC-6.1.12-003",
         "KMIPKIT-REQ-SPEC-6.1.12-005",
         "KMIPKIT-REQ-SPEC-6.1.12-006",
@@ -30088,6 +30873,7 @@
         "KMIPKIT-REQ-SPEC-6.1.14-010",
         "KMIPKIT-REQ-SPEC-6.1.14-011",
         "KMIPKIT-REQ-SPEC-6.1.14-012",
+        "KMIPKIT-REQ-SPEC-6.1.18-001-001",
         "KMIPKIT-REQ-SPEC-6.1.18-005",
         "KMIPKIT-REQ-SPEC-6.1.18-006",
         "KMIPKIT-REQ-SPEC-6.1.18-007",
@@ -30117,6 +30903,7 @@
         "KMIPKIT-REQ-SPEC-6.1.30-002",
         "KMIPKIT-REQ-SPEC-6.1.30-003",
         "KMIPKIT-REQ-SPEC-6.1.31-001",
+        "KMIPKIT-REQ-SPEC-6.1.45-002-003",
         "KMIPKIT-REQ-SPEC-9.11-001",
         "KMIPKIT-REQ-SPEC-9.11-004-001",
         "KMIPKIT-REQ-SPEC-9.11-004-002",
@@ -31519,7 +32306,38 @@
         "KMIPKIT-REQ-SPEC-12-001-001",
         "KMIPKIT-REQ-SPEC-14.1-001",
         "KMIPKIT-REQ-SPEC-14.1-002",
+        "KMIPKIT-REQ-SPEC-3.1-007",
+        "KMIPKIT-REQ-SPEC-3.10-002",
+        "KMIPKIT-REQ-SPEC-3.10-003",
+        "KMIPKIT-REQ-SPEC-3.10-004",
+        "KMIPKIT-REQ-SPEC-3.11-002",
+        "KMIPKIT-REQ-SPEC-3.11-003",
+        "KMIPKIT-REQ-SPEC-3.12-002",
+        "KMIPKIT-REQ-SPEC-3.12-003",
+        "KMIPKIT-REQ-SPEC-3.2-003",
+        "KMIPKIT-REQ-SPEC-3.3-010",
+        "KMIPKIT-REQ-SPEC-3.3-011",
+        "KMIPKIT-REQ-SPEC-3.4-002",
+        "KMIPKIT-REQ-SPEC-3.5-002",
+        "KMIPKIT-REQ-SPEC-3.5-003",
+        "KMIPKIT-REQ-SPEC-3.5-004",
+        "KMIPKIT-REQ-SPEC-3.5-005",
+        "KMIPKIT-REQ-SPEC-3.6-002",
+        "KMIPKIT-REQ-SPEC-3.6-004",
+        "KMIPKIT-REQ-SPEC-3.6-005",
+        "KMIPKIT-REQ-SPEC-3.7-003",
+        "KMIPKIT-REQ-SPEC-3.8-002",
+        "KMIPKIT-REQ-SPEC-3.8-003",
+        "KMIPKIT-REQ-SPEC-3.9-002",
+        "KMIPKIT-REQ-SPEC-3.9-003",
+        "KMIPKIT-REQ-SPEC-3.9-004",
+        "KMIPKIT-REQ-SPEC-4.39-002-001",
         "KMIPKIT-REQ-SPEC-4.57-003-004",
+        "KMIPKIT-REQ-SPEC-5.5-003",
+        "KMIPKIT-REQ-SPEC-5.5-004",
+        "KMIPKIT-REQ-SPEC-5.5-005",
+        "KMIPKIT-REQ-SPEC-5.6-002",
+        "KMIPKIT-REQ-SPEC-5.7-002",
         "KMIPKIT-REQ-SPEC-6.1.12-003",
         "KMIPKIT-REQ-SPEC-6.1.12-005",
         "KMIPKIT-REQ-SPEC-6.1.12-006",
@@ -31530,6 +32348,7 @@
         "KMIPKIT-REQ-SPEC-6.1.14-010",
         "KMIPKIT-REQ-SPEC-6.1.14-011",
         "KMIPKIT-REQ-SPEC-6.1.14-012",
+        "KMIPKIT-REQ-SPEC-6.1.18-001-001",
         "KMIPKIT-REQ-SPEC-6.1.18-005",
         "KMIPKIT-REQ-SPEC-6.1.18-006",
         "KMIPKIT-REQ-SPEC-6.1.18-007",
@@ -31559,6 +32378,7 @@
         "KMIPKIT-REQ-SPEC-6.1.30-002",
         "KMIPKIT-REQ-SPEC-6.1.30-003",
         "KMIPKIT-REQ-SPEC-6.1.31-001",
+        "KMIPKIT-REQ-SPEC-6.1.45-002-003",
         "KMIPKIT-REQ-SPEC-9.11-001",
         "KMIPKIT-REQ-SPEC-9.11-004-001",
         "KMIPKIT-REQ-SPEC-9.11-004-002",
@@ -33000,7 +33820,38 @@
         "KMIPKIT-REQ-SPEC-12-001-001",
         "KMIPKIT-REQ-SPEC-14.1-001",
         "KMIPKIT-REQ-SPEC-14.1-002",
+        "KMIPKIT-REQ-SPEC-3.1-007",
+        "KMIPKIT-REQ-SPEC-3.10-002",
+        "KMIPKIT-REQ-SPEC-3.10-003",
+        "KMIPKIT-REQ-SPEC-3.10-004",
+        "KMIPKIT-REQ-SPEC-3.11-002",
+        "KMIPKIT-REQ-SPEC-3.11-003",
+        "KMIPKIT-REQ-SPEC-3.12-002",
+        "KMIPKIT-REQ-SPEC-3.12-003",
+        "KMIPKIT-REQ-SPEC-3.2-003",
+        "KMIPKIT-REQ-SPEC-3.3-010",
+        "KMIPKIT-REQ-SPEC-3.3-011",
+        "KMIPKIT-REQ-SPEC-3.4-002",
+        "KMIPKIT-REQ-SPEC-3.5-002",
+        "KMIPKIT-REQ-SPEC-3.5-003",
+        "KMIPKIT-REQ-SPEC-3.5-004",
+        "KMIPKIT-REQ-SPEC-3.5-005",
+        "KMIPKIT-REQ-SPEC-3.6-002",
+        "KMIPKIT-REQ-SPEC-3.6-004",
+        "KMIPKIT-REQ-SPEC-3.6-005",
+        "KMIPKIT-REQ-SPEC-3.7-003",
+        "KMIPKIT-REQ-SPEC-3.8-002",
+        "KMIPKIT-REQ-SPEC-3.8-003",
+        "KMIPKIT-REQ-SPEC-3.9-002",
+        "KMIPKIT-REQ-SPEC-3.9-003",
+        "KMIPKIT-REQ-SPEC-3.9-004",
+        "KMIPKIT-REQ-SPEC-4.39-002-001",
         "KMIPKIT-REQ-SPEC-4.57-003-004",
+        "KMIPKIT-REQ-SPEC-5.5-003",
+        "KMIPKIT-REQ-SPEC-5.5-004",
+        "KMIPKIT-REQ-SPEC-5.5-005",
+        "KMIPKIT-REQ-SPEC-5.6-002",
+        "KMIPKIT-REQ-SPEC-5.7-002",
         "KMIPKIT-REQ-SPEC-6.1.12-003",
         "KMIPKIT-REQ-SPEC-6.1.12-005",
         "KMIPKIT-REQ-SPEC-6.1.12-006",
@@ -33011,6 +33862,7 @@
         "KMIPKIT-REQ-SPEC-6.1.14-010",
         "KMIPKIT-REQ-SPEC-6.1.14-011",
         "KMIPKIT-REQ-SPEC-6.1.14-012",
+        "KMIPKIT-REQ-SPEC-6.1.18-001-001",
         "KMIPKIT-REQ-SPEC-6.1.18-005",
         "KMIPKIT-REQ-SPEC-6.1.18-006",
         "KMIPKIT-REQ-SPEC-6.1.18-007",
@@ -33040,6 +33892,7 @@
         "KMIPKIT-REQ-SPEC-6.1.30-002",
         "KMIPKIT-REQ-SPEC-6.1.30-003",
         "KMIPKIT-REQ-SPEC-6.1.31-001",
+        "KMIPKIT-REQ-SPEC-6.1.45-002-003",
         "KMIPKIT-REQ-SPEC-9.11-001",
         "KMIPKIT-REQ-SPEC-9.11-004-001",
         "KMIPKIT-REQ-SPEC-9.11-004-002",
@@ -34293,7 +35146,38 @@
         "KMIPKIT-REQ-SPEC-12-001-001",
         "KMIPKIT-REQ-SPEC-14.1-001",
         "KMIPKIT-REQ-SPEC-14.1-002",
+        "KMIPKIT-REQ-SPEC-3.1-007",
+        "KMIPKIT-REQ-SPEC-3.10-002",
+        "KMIPKIT-REQ-SPEC-3.10-003",
+        "KMIPKIT-REQ-SPEC-3.10-004",
+        "KMIPKIT-REQ-SPEC-3.11-002",
+        "KMIPKIT-REQ-SPEC-3.11-003",
+        "KMIPKIT-REQ-SPEC-3.12-002",
+        "KMIPKIT-REQ-SPEC-3.12-003",
+        "KMIPKIT-REQ-SPEC-3.2-003",
+        "KMIPKIT-REQ-SPEC-3.3-010",
+        "KMIPKIT-REQ-SPEC-3.3-011",
+        "KMIPKIT-REQ-SPEC-3.4-002",
+        "KMIPKIT-REQ-SPEC-3.5-002",
+        "KMIPKIT-REQ-SPEC-3.5-003",
+        "KMIPKIT-REQ-SPEC-3.5-004",
+        "KMIPKIT-REQ-SPEC-3.5-005",
+        "KMIPKIT-REQ-SPEC-3.6-002",
+        "KMIPKIT-REQ-SPEC-3.6-004",
+        "KMIPKIT-REQ-SPEC-3.6-005",
+        "KMIPKIT-REQ-SPEC-3.7-003",
+        "KMIPKIT-REQ-SPEC-3.8-002",
+        "KMIPKIT-REQ-SPEC-3.8-003",
+        "KMIPKIT-REQ-SPEC-3.9-002",
+        "KMIPKIT-REQ-SPEC-3.9-003",
+        "KMIPKIT-REQ-SPEC-3.9-004",
+        "KMIPKIT-REQ-SPEC-4.39-002-001",
         "KMIPKIT-REQ-SPEC-4.57-003-004",
+        "KMIPKIT-REQ-SPEC-5.5-003",
+        "KMIPKIT-REQ-SPEC-5.5-004",
+        "KMIPKIT-REQ-SPEC-5.5-005",
+        "KMIPKIT-REQ-SPEC-5.6-002",
+        "KMIPKIT-REQ-SPEC-5.7-002",
         "KMIPKIT-REQ-SPEC-6.1.12-003",
         "KMIPKIT-REQ-SPEC-6.1.12-005",
         "KMIPKIT-REQ-SPEC-6.1.12-006",
@@ -34304,6 +35188,7 @@
         "KMIPKIT-REQ-SPEC-6.1.14-010",
         "KMIPKIT-REQ-SPEC-6.1.14-011",
         "KMIPKIT-REQ-SPEC-6.1.14-012",
+        "KMIPKIT-REQ-SPEC-6.1.18-001-001",
         "KMIPKIT-REQ-SPEC-6.1.18-005",
         "KMIPKIT-REQ-SPEC-6.1.18-006",
         "KMIPKIT-REQ-SPEC-6.1.18-007",
@@ -34333,6 +35218,7 @@
         "KMIPKIT-REQ-SPEC-6.1.30-002",
         "KMIPKIT-REQ-SPEC-6.1.30-003",
         "KMIPKIT-REQ-SPEC-6.1.31-001",
+        "KMIPKIT-REQ-SPEC-6.1.45-002-003",
         "KMIPKIT-REQ-SPEC-9.11-001",
         "KMIPKIT-REQ-SPEC-9.11-004-001",
         "KMIPKIT-REQ-SPEC-9.11-004-002",
@@ -35525,7 +36411,38 @@
         "KMIPKIT-REQ-SPEC-12-001-001",
         "KMIPKIT-REQ-SPEC-14.1-001",
         "KMIPKIT-REQ-SPEC-14.1-002",
+        "KMIPKIT-REQ-SPEC-3.1-007",
+        "KMIPKIT-REQ-SPEC-3.10-002",
+        "KMIPKIT-REQ-SPEC-3.10-003",
+        "KMIPKIT-REQ-SPEC-3.10-004",
+        "KMIPKIT-REQ-SPEC-3.11-002",
+        "KMIPKIT-REQ-SPEC-3.11-003",
+        "KMIPKIT-REQ-SPEC-3.12-002",
+        "KMIPKIT-REQ-SPEC-3.12-003",
+        "KMIPKIT-REQ-SPEC-3.2-003",
+        "KMIPKIT-REQ-SPEC-3.3-010",
+        "KMIPKIT-REQ-SPEC-3.3-011",
+        "KMIPKIT-REQ-SPEC-3.4-002",
+        "KMIPKIT-REQ-SPEC-3.5-002",
+        "KMIPKIT-REQ-SPEC-3.5-003",
+        "KMIPKIT-REQ-SPEC-3.5-004",
+        "KMIPKIT-REQ-SPEC-3.5-005",
+        "KMIPKIT-REQ-SPEC-3.6-002",
+        "KMIPKIT-REQ-SPEC-3.6-004",
+        "KMIPKIT-REQ-SPEC-3.6-005",
+        "KMIPKIT-REQ-SPEC-3.7-003",
+        "KMIPKIT-REQ-SPEC-3.8-002",
+        "KMIPKIT-REQ-SPEC-3.8-003",
+        "KMIPKIT-REQ-SPEC-3.9-002",
+        "KMIPKIT-REQ-SPEC-3.9-003",
+        "KMIPKIT-REQ-SPEC-3.9-004",
+        "KMIPKIT-REQ-SPEC-4.39-002-001",
         "KMIPKIT-REQ-SPEC-4.57-003-004",
+        "KMIPKIT-REQ-SPEC-5.5-003",
+        "KMIPKIT-REQ-SPEC-5.5-004",
+        "KMIPKIT-REQ-SPEC-5.5-005",
+        "KMIPKIT-REQ-SPEC-5.6-002",
+        "KMIPKIT-REQ-SPEC-5.7-002",
         "KMIPKIT-REQ-SPEC-6.1.12-003",
         "KMIPKIT-REQ-SPEC-6.1.12-005",
         "KMIPKIT-REQ-SPEC-6.1.12-006",
@@ -35536,6 +36453,7 @@
         "KMIPKIT-REQ-SPEC-6.1.14-010",
         "KMIPKIT-REQ-SPEC-6.1.14-011",
         "KMIPKIT-REQ-SPEC-6.1.14-012",
+        "KMIPKIT-REQ-SPEC-6.1.18-001-001",
         "KMIPKIT-REQ-SPEC-6.1.18-005",
         "KMIPKIT-REQ-SPEC-6.1.18-006",
         "KMIPKIT-REQ-SPEC-6.1.18-007",
@@ -35565,6 +36483,7 @@
         "KMIPKIT-REQ-SPEC-6.1.30-002",
         "KMIPKIT-REQ-SPEC-6.1.30-003",
         "KMIPKIT-REQ-SPEC-6.1.31-001",
+        "KMIPKIT-REQ-SPEC-6.1.45-002-003",
         "KMIPKIT-REQ-SPEC-9.11-001",
         "KMIPKIT-REQ-SPEC-9.11-004-001",
         "KMIPKIT-REQ-SPEC-9.11-004-002",
@@ -36744,7 +37663,38 @@
         "KMIPKIT-REQ-SPEC-12-001-001",
         "KMIPKIT-REQ-SPEC-14.1-001",
         "KMIPKIT-REQ-SPEC-14.1-002",
+        "KMIPKIT-REQ-SPEC-3.1-007",
+        "KMIPKIT-REQ-SPEC-3.10-002",
+        "KMIPKIT-REQ-SPEC-3.10-003",
+        "KMIPKIT-REQ-SPEC-3.10-004",
+        "KMIPKIT-REQ-SPEC-3.11-002",
+        "KMIPKIT-REQ-SPEC-3.11-003",
+        "KMIPKIT-REQ-SPEC-3.12-002",
+        "KMIPKIT-REQ-SPEC-3.12-003",
+        "KMIPKIT-REQ-SPEC-3.2-003",
+        "KMIPKIT-REQ-SPEC-3.3-010",
+        "KMIPKIT-REQ-SPEC-3.3-011",
+        "KMIPKIT-REQ-SPEC-3.4-002",
+        "KMIPKIT-REQ-SPEC-3.5-002",
+        "KMIPKIT-REQ-SPEC-3.5-003",
+        "KMIPKIT-REQ-SPEC-3.5-004",
+        "KMIPKIT-REQ-SPEC-3.5-005",
+        "KMIPKIT-REQ-SPEC-3.6-002",
+        "KMIPKIT-REQ-SPEC-3.6-004",
+        "KMIPKIT-REQ-SPEC-3.6-005",
+        "KMIPKIT-REQ-SPEC-3.7-003",
+        "KMIPKIT-REQ-SPEC-3.8-002",
+        "KMIPKIT-REQ-SPEC-3.8-003",
+        "KMIPKIT-REQ-SPEC-3.9-002",
+        "KMIPKIT-REQ-SPEC-3.9-003",
+        "KMIPKIT-REQ-SPEC-3.9-004",
+        "KMIPKIT-REQ-SPEC-4.39-002-001",
         "KMIPKIT-REQ-SPEC-4.57-003-004",
+        "KMIPKIT-REQ-SPEC-5.5-003",
+        "KMIPKIT-REQ-SPEC-5.5-004",
+        "KMIPKIT-REQ-SPEC-5.5-005",
+        "KMIPKIT-REQ-SPEC-5.6-002",
+        "KMIPKIT-REQ-SPEC-5.7-002",
         "KMIPKIT-REQ-SPEC-6.1.12-003",
         "KMIPKIT-REQ-SPEC-6.1.12-005",
         "KMIPKIT-REQ-SPEC-6.1.12-006",
@@ -36755,6 +37705,7 @@
         "KMIPKIT-REQ-SPEC-6.1.14-010",
         "KMIPKIT-REQ-SPEC-6.1.14-011",
         "KMIPKIT-REQ-SPEC-6.1.14-012",
+        "KMIPKIT-REQ-SPEC-6.1.18-001-001",
         "KMIPKIT-REQ-SPEC-6.1.18-005",
         "KMIPKIT-REQ-SPEC-6.1.18-006",
         "KMIPKIT-REQ-SPEC-6.1.18-007",
@@ -36784,6 +37735,7 @@
         "KMIPKIT-REQ-SPEC-6.1.30-002",
         "KMIPKIT-REQ-SPEC-6.1.30-003",
         "KMIPKIT-REQ-SPEC-6.1.31-001",
+        "KMIPKIT-REQ-SPEC-6.1.45-002-003",
         "KMIPKIT-REQ-SPEC-9.11-001",
         "KMIPKIT-REQ-SPEC-9.11-004-001",
         "KMIPKIT-REQ-SPEC-9.11-004-002",
@@ -37986,7 +38938,38 @@
         "KMIPKIT-REQ-SPEC-12-001-001",
         "KMIPKIT-REQ-SPEC-14.1-001",
         "KMIPKIT-REQ-SPEC-14.1-002",
+        "KMIPKIT-REQ-SPEC-3.1-007",
+        "KMIPKIT-REQ-SPEC-3.10-002",
+        "KMIPKIT-REQ-SPEC-3.10-003",
+        "KMIPKIT-REQ-SPEC-3.10-004",
+        "KMIPKIT-REQ-SPEC-3.11-002",
+        "KMIPKIT-REQ-SPEC-3.11-003",
+        "KMIPKIT-REQ-SPEC-3.12-002",
+        "KMIPKIT-REQ-SPEC-3.12-003",
+        "KMIPKIT-REQ-SPEC-3.2-003",
+        "KMIPKIT-REQ-SPEC-3.3-010",
+        "KMIPKIT-REQ-SPEC-3.3-011",
+        "KMIPKIT-REQ-SPEC-3.4-002",
+        "KMIPKIT-REQ-SPEC-3.5-002",
+        "KMIPKIT-REQ-SPEC-3.5-003",
+        "KMIPKIT-REQ-SPEC-3.5-004",
+        "KMIPKIT-REQ-SPEC-3.5-005",
+        "KMIPKIT-REQ-SPEC-3.6-002",
+        "KMIPKIT-REQ-SPEC-3.6-004",
+        "KMIPKIT-REQ-SPEC-3.6-005",
+        "KMIPKIT-REQ-SPEC-3.7-003",
+        "KMIPKIT-REQ-SPEC-3.8-002",
+        "KMIPKIT-REQ-SPEC-3.8-003",
+        "KMIPKIT-REQ-SPEC-3.9-002",
+        "KMIPKIT-REQ-SPEC-3.9-003",
+        "KMIPKIT-REQ-SPEC-3.9-004",
+        "KMIPKIT-REQ-SPEC-4.39-002-001",
         "KMIPKIT-REQ-SPEC-4.57-003-004",
+        "KMIPKIT-REQ-SPEC-5.5-003",
+        "KMIPKIT-REQ-SPEC-5.5-004",
+        "KMIPKIT-REQ-SPEC-5.5-005",
+        "KMIPKIT-REQ-SPEC-5.6-002",
+        "KMIPKIT-REQ-SPEC-5.7-002",
         "KMIPKIT-REQ-SPEC-6.1.12-003",
         "KMIPKIT-REQ-SPEC-6.1.12-005",
         "KMIPKIT-REQ-SPEC-6.1.12-006",
@@ -37997,6 +38980,7 @@
         "KMIPKIT-REQ-SPEC-6.1.14-010",
         "KMIPKIT-REQ-SPEC-6.1.14-011",
         "KMIPKIT-REQ-SPEC-6.1.14-012",
+        "KMIPKIT-REQ-SPEC-6.1.18-001-001",
         "KMIPKIT-REQ-SPEC-6.1.18-005",
         "KMIPKIT-REQ-SPEC-6.1.18-006",
         "KMIPKIT-REQ-SPEC-6.1.18-007",
@@ -38026,6 +39010,7 @@
         "KMIPKIT-REQ-SPEC-6.1.30-002",
         "KMIPKIT-REQ-SPEC-6.1.30-003",
         "KMIPKIT-REQ-SPEC-6.1.31-001",
+        "KMIPKIT-REQ-SPEC-6.1.45-002-003",
         "KMIPKIT-REQ-SPEC-9.11-001",
         "KMIPKIT-REQ-SPEC-9.11-004-001",
         "KMIPKIT-REQ-SPEC-9.11-004-002",
@@ -39214,7 +40199,38 @@
         "KMIPKIT-REQ-SPEC-12-001-001",
         "KMIPKIT-REQ-SPEC-14.1-001",
         "KMIPKIT-REQ-SPEC-14.1-002",
+        "KMIPKIT-REQ-SPEC-3.1-007",
+        "KMIPKIT-REQ-SPEC-3.10-002",
+        "KMIPKIT-REQ-SPEC-3.10-003",
+        "KMIPKIT-REQ-SPEC-3.10-004",
+        "KMIPKIT-REQ-SPEC-3.11-002",
+        "KMIPKIT-REQ-SPEC-3.11-003",
+        "KMIPKIT-REQ-SPEC-3.12-002",
+        "KMIPKIT-REQ-SPEC-3.12-003",
+        "KMIPKIT-REQ-SPEC-3.2-003",
+        "KMIPKIT-REQ-SPEC-3.3-010",
+        "KMIPKIT-REQ-SPEC-3.3-011",
+        "KMIPKIT-REQ-SPEC-3.4-002",
+        "KMIPKIT-REQ-SPEC-3.5-002",
+        "KMIPKIT-REQ-SPEC-3.5-003",
+        "KMIPKIT-REQ-SPEC-3.5-004",
+        "KMIPKIT-REQ-SPEC-3.5-005",
+        "KMIPKIT-REQ-SPEC-3.6-002",
+        "KMIPKIT-REQ-SPEC-3.6-004",
+        "KMIPKIT-REQ-SPEC-3.6-005",
+        "KMIPKIT-REQ-SPEC-3.7-003",
+        "KMIPKIT-REQ-SPEC-3.8-002",
+        "KMIPKIT-REQ-SPEC-3.8-003",
+        "KMIPKIT-REQ-SPEC-3.9-002",
+        "KMIPKIT-REQ-SPEC-3.9-003",
+        "KMIPKIT-REQ-SPEC-3.9-004",
+        "KMIPKIT-REQ-SPEC-4.39-002-001",
         "KMIPKIT-REQ-SPEC-4.57-003-004",
+        "KMIPKIT-REQ-SPEC-5.5-003",
+        "KMIPKIT-REQ-SPEC-5.5-004",
+        "KMIPKIT-REQ-SPEC-5.5-005",
+        "KMIPKIT-REQ-SPEC-5.6-002",
+        "KMIPKIT-REQ-SPEC-5.7-002",
         "KMIPKIT-REQ-SPEC-6.1.12-003",
         "KMIPKIT-REQ-SPEC-6.1.12-005",
         "KMIPKIT-REQ-SPEC-6.1.12-006",
@@ -39225,6 +40241,7 @@
         "KMIPKIT-REQ-SPEC-6.1.14-010",
         "KMIPKIT-REQ-SPEC-6.1.14-011",
         "KMIPKIT-REQ-SPEC-6.1.14-012",
+        "KMIPKIT-REQ-SPEC-6.1.18-001-001",
         "KMIPKIT-REQ-SPEC-6.1.18-005",
         "KMIPKIT-REQ-SPEC-6.1.18-006",
         "KMIPKIT-REQ-SPEC-6.1.18-007",
@@ -39254,6 +40271,7 @@
         "KMIPKIT-REQ-SPEC-6.1.30-002",
         "KMIPKIT-REQ-SPEC-6.1.30-003",
         "KMIPKIT-REQ-SPEC-6.1.31-001",
+        "KMIPKIT-REQ-SPEC-6.1.45-002-003",
         "KMIPKIT-REQ-SPEC-9.11-001",
         "KMIPKIT-REQ-SPEC-9.11-004-001",
         "KMIPKIT-REQ-SPEC-9.11-004-002",
@@ -40448,7 +41466,38 @@
         "KMIPKIT-REQ-SPEC-12-001-001",
         "KMIPKIT-REQ-SPEC-14.1-001",
         "KMIPKIT-REQ-SPEC-14.1-002",
+        "KMIPKIT-REQ-SPEC-3.1-007",
+        "KMIPKIT-REQ-SPEC-3.10-002",
+        "KMIPKIT-REQ-SPEC-3.10-003",
+        "KMIPKIT-REQ-SPEC-3.10-004",
+        "KMIPKIT-REQ-SPEC-3.11-002",
+        "KMIPKIT-REQ-SPEC-3.11-003",
+        "KMIPKIT-REQ-SPEC-3.12-002",
+        "KMIPKIT-REQ-SPEC-3.12-003",
+        "KMIPKIT-REQ-SPEC-3.2-003",
+        "KMIPKIT-REQ-SPEC-3.3-010",
+        "KMIPKIT-REQ-SPEC-3.3-011",
+        "KMIPKIT-REQ-SPEC-3.4-002",
+        "KMIPKIT-REQ-SPEC-3.5-002",
+        "KMIPKIT-REQ-SPEC-3.5-003",
+        "KMIPKIT-REQ-SPEC-3.5-004",
+        "KMIPKIT-REQ-SPEC-3.5-005",
+        "KMIPKIT-REQ-SPEC-3.6-002",
+        "KMIPKIT-REQ-SPEC-3.6-004",
+        "KMIPKIT-REQ-SPEC-3.6-005",
+        "KMIPKIT-REQ-SPEC-3.7-003",
+        "KMIPKIT-REQ-SPEC-3.8-002",
+        "KMIPKIT-REQ-SPEC-3.8-003",
+        "KMIPKIT-REQ-SPEC-3.9-002",
+        "KMIPKIT-REQ-SPEC-3.9-003",
+        "KMIPKIT-REQ-SPEC-3.9-004",
+        "KMIPKIT-REQ-SPEC-4.39-002-001",
         "KMIPKIT-REQ-SPEC-4.57-003-004",
+        "KMIPKIT-REQ-SPEC-5.5-003",
+        "KMIPKIT-REQ-SPEC-5.5-004",
+        "KMIPKIT-REQ-SPEC-5.5-005",
+        "KMIPKIT-REQ-SPEC-5.6-002",
+        "KMIPKIT-REQ-SPEC-5.7-002",
         "KMIPKIT-REQ-SPEC-6.1.12-003",
         "KMIPKIT-REQ-SPEC-6.1.12-005",
         "KMIPKIT-REQ-SPEC-6.1.12-006",
@@ -40459,6 +41508,7 @@
         "KMIPKIT-REQ-SPEC-6.1.14-010",
         "KMIPKIT-REQ-SPEC-6.1.14-011",
         "KMIPKIT-REQ-SPEC-6.1.14-012",
+        "KMIPKIT-REQ-SPEC-6.1.18-001-001",
         "KMIPKIT-REQ-SPEC-6.1.18-005",
         "KMIPKIT-REQ-SPEC-6.1.18-006",
         "KMIPKIT-REQ-SPEC-6.1.18-007",
@@ -40488,6 +41538,7 @@
         "KMIPKIT-REQ-SPEC-6.1.30-002",
         "KMIPKIT-REQ-SPEC-6.1.30-003",
         "KMIPKIT-REQ-SPEC-6.1.31-001",
+        "KMIPKIT-REQ-SPEC-6.1.45-002-003",
         "KMIPKIT-REQ-SPEC-9.11-001",
         "KMIPKIT-REQ-SPEC-9.11-004-001",
         "KMIPKIT-REQ-SPEC-9.11-004-002",
@@ -41693,7 +42744,38 @@
         "KMIPKIT-REQ-SPEC-12-001-001",
         "KMIPKIT-REQ-SPEC-14.1-001",
         "KMIPKIT-REQ-SPEC-14.1-002",
+        "KMIPKIT-REQ-SPEC-3.1-007",
+        "KMIPKIT-REQ-SPEC-3.10-002",
+        "KMIPKIT-REQ-SPEC-3.10-003",
+        "KMIPKIT-REQ-SPEC-3.10-004",
+        "KMIPKIT-REQ-SPEC-3.11-002",
+        "KMIPKIT-REQ-SPEC-3.11-003",
+        "KMIPKIT-REQ-SPEC-3.12-002",
+        "KMIPKIT-REQ-SPEC-3.12-003",
+        "KMIPKIT-REQ-SPEC-3.2-003",
+        "KMIPKIT-REQ-SPEC-3.3-010",
+        "KMIPKIT-REQ-SPEC-3.3-011",
+        "KMIPKIT-REQ-SPEC-3.4-002",
+        "KMIPKIT-REQ-SPEC-3.5-002",
+        "KMIPKIT-REQ-SPEC-3.5-003",
+        "KMIPKIT-REQ-SPEC-3.5-004",
+        "KMIPKIT-REQ-SPEC-3.5-005",
+        "KMIPKIT-REQ-SPEC-3.6-002",
+        "KMIPKIT-REQ-SPEC-3.6-004",
+        "KMIPKIT-REQ-SPEC-3.6-005",
+        "KMIPKIT-REQ-SPEC-3.7-003",
+        "KMIPKIT-REQ-SPEC-3.8-002",
+        "KMIPKIT-REQ-SPEC-3.8-003",
+        "KMIPKIT-REQ-SPEC-3.9-002",
+        "KMIPKIT-REQ-SPEC-3.9-003",
+        "KMIPKIT-REQ-SPEC-3.9-004",
+        "KMIPKIT-REQ-SPEC-4.39-002-001",
         "KMIPKIT-REQ-SPEC-4.57-003-004",
+        "KMIPKIT-REQ-SPEC-5.5-003",
+        "KMIPKIT-REQ-SPEC-5.5-004",
+        "KMIPKIT-REQ-SPEC-5.5-005",
+        "KMIPKIT-REQ-SPEC-5.6-002",
+        "KMIPKIT-REQ-SPEC-5.7-002",
         "KMIPKIT-REQ-SPEC-6.1.12-003",
         "KMIPKIT-REQ-SPEC-6.1.12-005",
         "KMIPKIT-REQ-SPEC-6.1.12-006",
@@ -41704,6 +42786,7 @@
         "KMIPKIT-REQ-SPEC-6.1.14-010",
         "KMIPKIT-REQ-SPEC-6.1.14-011",
         "KMIPKIT-REQ-SPEC-6.1.14-012",
+        "KMIPKIT-REQ-SPEC-6.1.18-001-001",
         "KMIPKIT-REQ-SPEC-6.1.18-005",
         "KMIPKIT-REQ-SPEC-6.1.18-006",
         "KMIPKIT-REQ-SPEC-6.1.18-007",
@@ -41733,6 +42816,7 @@
         "KMIPKIT-REQ-SPEC-6.1.30-002",
         "KMIPKIT-REQ-SPEC-6.1.30-003",
         "KMIPKIT-REQ-SPEC-6.1.31-001",
+        "KMIPKIT-REQ-SPEC-6.1.45-002-003",
         "KMIPKIT-REQ-SPEC-9.11-001",
         "KMIPKIT-REQ-SPEC-9.11-004-001",
         "KMIPKIT-REQ-SPEC-9.11-004-002",
@@ -42951,7 +44035,38 @@
         "KMIPKIT-REQ-SPEC-12-001-001",
         "KMIPKIT-REQ-SPEC-14.1-001",
         "KMIPKIT-REQ-SPEC-14.1-002",
+        "KMIPKIT-REQ-SPEC-3.1-007",
+        "KMIPKIT-REQ-SPEC-3.10-002",
+        "KMIPKIT-REQ-SPEC-3.10-003",
+        "KMIPKIT-REQ-SPEC-3.10-004",
+        "KMIPKIT-REQ-SPEC-3.11-002",
+        "KMIPKIT-REQ-SPEC-3.11-003",
+        "KMIPKIT-REQ-SPEC-3.12-002",
+        "KMIPKIT-REQ-SPEC-3.12-003",
+        "KMIPKIT-REQ-SPEC-3.2-003",
+        "KMIPKIT-REQ-SPEC-3.3-010",
+        "KMIPKIT-REQ-SPEC-3.3-011",
+        "KMIPKIT-REQ-SPEC-3.4-002",
+        "KMIPKIT-REQ-SPEC-3.5-002",
+        "KMIPKIT-REQ-SPEC-3.5-003",
+        "KMIPKIT-REQ-SPEC-3.5-004",
+        "KMIPKIT-REQ-SPEC-3.5-005",
+        "KMIPKIT-REQ-SPEC-3.6-002",
+        "KMIPKIT-REQ-SPEC-3.6-004",
+        "KMIPKIT-REQ-SPEC-3.6-005",
+        "KMIPKIT-REQ-SPEC-3.7-003",
+        "KMIPKIT-REQ-SPEC-3.8-002",
+        "KMIPKIT-REQ-SPEC-3.8-003",
+        "KMIPKIT-REQ-SPEC-3.9-002",
+        "KMIPKIT-REQ-SPEC-3.9-003",
+        "KMIPKIT-REQ-SPEC-3.9-004",
+        "KMIPKIT-REQ-SPEC-4.39-002-001",
         "KMIPKIT-REQ-SPEC-4.57-003-004",
+        "KMIPKIT-REQ-SPEC-5.5-003",
+        "KMIPKIT-REQ-SPEC-5.5-004",
+        "KMIPKIT-REQ-SPEC-5.5-005",
+        "KMIPKIT-REQ-SPEC-5.6-002",
+        "KMIPKIT-REQ-SPEC-5.7-002",
         "KMIPKIT-REQ-SPEC-6.1.12-003",
         "KMIPKIT-REQ-SPEC-6.1.12-005",
         "KMIPKIT-REQ-SPEC-6.1.12-006",
@@ -42962,6 +44077,7 @@
         "KMIPKIT-REQ-SPEC-6.1.14-010",
         "KMIPKIT-REQ-SPEC-6.1.14-011",
         "KMIPKIT-REQ-SPEC-6.1.14-012",
+        "KMIPKIT-REQ-SPEC-6.1.18-001-001",
         "KMIPKIT-REQ-SPEC-6.1.18-005",
         "KMIPKIT-REQ-SPEC-6.1.18-006",
         "KMIPKIT-REQ-SPEC-6.1.18-007",
@@ -42991,6 +44107,7 @@
         "KMIPKIT-REQ-SPEC-6.1.30-002",
         "KMIPKIT-REQ-SPEC-6.1.30-003",
         "KMIPKIT-REQ-SPEC-6.1.31-001",
+        "KMIPKIT-REQ-SPEC-6.1.45-002-003",
         "KMIPKIT-REQ-SPEC-9.11-001",
         "KMIPKIT-REQ-SPEC-9.11-004-001",
         "KMIPKIT-REQ-SPEC-9.11-004-002",
@@ -44209,7 +45326,38 @@
         "KMIPKIT-REQ-SPEC-12-001-001",
         "KMIPKIT-REQ-SPEC-14.1-001",
         "KMIPKIT-REQ-SPEC-14.1-002",
+        "KMIPKIT-REQ-SPEC-3.1-007",
+        "KMIPKIT-REQ-SPEC-3.10-002",
+        "KMIPKIT-REQ-SPEC-3.10-003",
+        "KMIPKIT-REQ-SPEC-3.10-004",
+        "KMIPKIT-REQ-SPEC-3.11-002",
+        "KMIPKIT-REQ-SPEC-3.11-003",
+        "KMIPKIT-REQ-SPEC-3.12-002",
+        "KMIPKIT-REQ-SPEC-3.12-003",
+        "KMIPKIT-REQ-SPEC-3.2-003",
+        "KMIPKIT-REQ-SPEC-3.3-010",
+        "KMIPKIT-REQ-SPEC-3.3-011",
+        "KMIPKIT-REQ-SPEC-3.4-002",
+        "KMIPKIT-REQ-SPEC-3.5-002",
+        "KMIPKIT-REQ-SPEC-3.5-003",
+        "KMIPKIT-REQ-SPEC-3.5-004",
+        "KMIPKIT-REQ-SPEC-3.5-005",
+        "KMIPKIT-REQ-SPEC-3.6-002",
+        "KMIPKIT-REQ-SPEC-3.6-004",
+        "KMIPKIT-REQ-SPEC-3.6-005",
+        "KMIPKIT-REQ-SPEC-3.7-003",
+        "KMIPKIT-REQ-SPEC-3.8-002",
+        "KMIPKIT-REQ-SPEC-3.8-003",
+        "KMIPKIT-REQ-SPEC-3.9-002",
+        "KMIPKIT-REQ-SPEC-3.9-003",
+        "KMIPKIT-REQ-SPEC-3.9-004",
+        "KMIPKIT-REQ-SPEC-4.39-002-001",
         "KMIPKIT-REQ-SPEC-4.57-003-004",
+        "KMIPKIT-REQ-SPEC-5.5-003",
+        "KMIPKIT-REQ-SPEC-5.5-004",
+        "KMIPKIT-REQ-SPEC-5.5-005",
+        "KMIPKIT-REQ-SPEC-5.6-002",
+        "KMIPKIT-REQ-SPEC-5.7-002",
         "KMIPKIT-REQ-SPEC-6.1.12-003",
         "KMIPKIT-REQ-SPEC-6.1.12-005",
         "KMIPKIT-REQ-SPEC-6.1.12-006",
@@ -44220,6 +45368,7 @@
         "KMIPKIT-REQ-SPEC-6.1.14-010",
         "KMIPKIT-REQ-SPEC-6.1.14-011",
         "KMIPKIT-REQ-SPEC-6.1.14-012",
+        "KMIPKIT-REQ-SPEC-6.1.18-001-001",
         "KMIPKIT-REQ-SPEC-6.1.18-005",
         "KMIPKIT-REQ-SPEC-6.1.18-006",
         "KMIPKIT-REQ-SPEC-6.1.18-007",
@@ -44249,6 +45398,7 @@
         "KMIPKIT-REQ-SPEC-6.1.30-002",
         "KMIPKIT-REQ-SPEC-6.1.30-003",
         "KMIPKIT-REQ-SPEC-6.1.31-001",
+        "KMIPKIT-REQ-SPEC-6.1.45-002-003",
         "KMIPKIT-REQ-SPEC-9.11-001",
         "KMIPKIT-REQ-SPEC-9.11-004-001",
         "KMIPKIT-REQ-SPEC-9.11-004-002",
@@ -45467,7 +46617,38 @@
         "KMIPKIT-REQ-SPEC-12-001-001",
         "KMIPKIT-REQ-SPEC-14.1-001",
         "KMIPKIT-REQ-SPEC-14.1-002",
+        "KMIPKIT-REQ-SPEC-3.1-007",
+        "KMIPKIT-REQ-SPEC-3.10-002",
+        "KMIPKIT-REQ-SPEC-3.10-003",
+        "KMIPKIT-REQ-SPEC-3.10-004",
+        "KMIPKIT-REQ-SPEC-3.11-002",
+        "KMIPKIT-REQ-SPEC-3.11-003",
+        "KMIPKIT-REQ-SPEC-3.12-002",
+        "KMIPKIT-REQ-SPEC-3.12-003",
+        "KMIPKIT-REQ-SPEC-3.2-003",
+        "KMIPKIT-REQ-SPEC-3.3-010",
+        "KMIPKIT-REQ-SPEC-3.3-011",
+        "KMIPKIT-REQ-SPEC-3.4-002",
+        "KMIPKIT-REQ-SPEC-3.5-002",
+        "KMIPKIT-REQ-SPEC-3.5-003",
+        "KMIPKIT-REQ-SPEC-3.5-004",
+        "KMIPKIT-REQ-SPEC-3.5-005",
+        "KMIPKIT-REQ-SPEC-3.6-002",
+        "KMIPKIT-REQ-SPEC-3.6-004",
+        "KMIPKIT-REQ-SPEC-3.6-005",
+        "KMIPKIT-REQ-SPEC-3.7-003",
+        "KMIPKIT-REQ-SPEC-3.8-002",
+        "KMIPKIT-REQ-SPEC-3.8-003",
+        "KMIPKIT-REQ-SPEC-3.9-002",
+        "KMIPKIT-REQ-SPEC-3.9-003",
+        "KMIPKIT-REQ-SPEC-3.9-004",
+        "KMIPKIT-REQ-SPEC-4.39-002-001",
         "KMIPKIT-REQ-SPEC-4.57-003-004",
+        "KMIPKIT-REQ-SPEC-5.5-003",
+        "KMIPKIT-REQ-SPEC-5.5-004",
+        "KMIPKIT-REQ-SPEC-5.5-005",
+        "KMIPKIT-REQ-SPEC-5.6-002",
+        "KMIPKIT-REQ-SPEC-5.7-002",
         "KMIPKIT-REQ-SPEC-6.1.12-003",
         "KMIPKIT-REQ-SPEC-6.1.12-005",
         "KMIPKIT-REQ-SPEC-6.1.12-006",
@@ -45478,6 +46659,7 @@
         "KMIPKIT-REQ-SPEC-6.1.14-010",
         "KMIPKIT-REQ-SPEC-6.1.14-011",
         "KMIPKIT-REQ-SPEC-6.1.14-012",
+        "KMIPKIT-REQ-SPEC-6.1.18-001-001",
         "KMIPKIT-REQ-SPEC-6.1.18-005",
         "KMIPKIT-REQ-SPEC-6.1.18-006",
         "KMIPKIT-REQ-SPEC-6.1.18-007",
@@ -45507,6 +46689,7 @@
         "KMIPKIT-REQ-SPEC-6.1.30-002",
         "KMIPKIT-REQ-SPEC-6.1.30-003",
         "KMIPKIT-REQ-SPEC-6.1.31-001",
+        "KMIPKIT-REQ-SPEC-6.1.45-002-003",
         "KMIPKIT-REQ-SPEC-9.11-001",
         "KMIPKIT-REQ-SPEC-9.11-004-001",
         "KMIPKIT-REQ-SPEC-9.11-004-002",
@@ -46721,7 +47904,38 @@
         "KMIPKIT-REQ-SPEC-12-001-001",
         "KMIPKIT-REQ-SPEC-14.1-001",
         "KMIPKIT-REQ-SPEC-14.1-002",
+        "KMIPKIT-REQ-SPEC-3.1-007",
+        "KMIPKIT-REQ-SPEC-3.10-002",
+        "KMIPKIT-REQ-SPEC-3.10-003",
+        "KMIPKIT-REQ-SPEC-3.10-004",
+        "KMIPKIT-REQ-SPEC-3.11-002",
+        "KMIPKIT-REQ-SPEC-3.11-003",
+        "KMIPKIT-REQ-SPEC-3.12-002",
+        "KMIPKIT-REQ-SPEC-3.12-003",
+        "KMIPKIT-REQ-SPEC-3.2-003",
+        "KMIPKIT-REQ-SPEC-3.3-010",
+        "KMIPKIT-REQ-SPEC-3.3-011",
+        "KMIPKIT-REQ-SPEC-3.4-002",
+        "KMIPKIT-REQ-SPEC-3.5-002",
+        "KMIPKIT-REQ-SPEC-3.5-003",
+        "KMIPKIT-REQ-SPEC-3.5-004",
+        "KMIPKIT-REQ-SPEC-3.5-005",
+        "KMIPKIT-REQ-SPEC-3.6-002",
+        "KMIPKIT-REQ-SPEC-3.6-004",
+        "KMIPKIT-REQ-SPEC-3.6-005",
+        "KMIPKIT-REQ-SPEC-3.7-003",
+        "KMIPKIT-REQ-SPEC-3.8-002",
+        "KMIPKIT-REQ-SPEC-3.8-003",
+        "KMIPKIT-REQ-SPEC-3.9-002",
+        "KMIPKIT-REQ-SPEC-3.9-003",
+        "KMIPKIT-REQ-SPEC-3.9-004",
+        "KMIPKIT-REQ-SPEC-4.39-002-001",
         "KMIPKIT-REQ-SPEC-4.57-003-004",
+        "KMIPKIT-REQ-SPEC-5.5-003",
+        "KMIPKIT-REQ-SPEC-5.5-004",
+        "KMIPKIT-REQ-SPEC-5.5-005",
+        "KMIPKIT-REQ-SPEC-5.6-002",
+        "KMIPKIT-REQ-SPEC-5.7-002",
         "KMIPKIT-REQ-SPEC-6.1.12-003",
         "KMIPKIT-REQ-SPEC-6.1.12-005",
         "KMIPKIT-REQ-SPEC-6.1.12-006",
@@ -46732,6 +47946,7 @@
         "KMIPKIT-REQ-SPEC-6.1.14-010",
         "KMIPKIT-REQ-SPEC-6.1.14-011",
         "KMIPKIT-REQ-SPEC-6.1.14-012",
+        "KMIPKIT-REQ-SPEC-6.1.18-001-001",
         "KMIPKIT-REQ-SPEC-6.1.18-005",
         "KMIPKIT-REQ-SPEC-6.1.18-006",
         "KMIPKIT-REQ-SPEC-6.1.18-007",
@@ -46761,6 +47976,7 @@
         "KMIPKIT-REQ-SPEC-6.1.30-002",
         "KMIPKIT-REQ-SPEC-6.1.30-003",
         "KMIPKIT-REQ-SPEC-6.1.31-001",
+        "KMIPKIT-REQ-SPEC-6.1.45-002-003",
         "KMIPKIT-REQ-SPEC-9.11-001",
         "KMIPKIT-REQ-SPEC-9.11-004-001",
         "KMIPKIT-REQ-SPEC-9.11-004-002",
@@ -48014,7 +49230,38 @@
         "KMIPKIT-REQ-SPEC-12-001-001",
         "KMIPKIT-REQ-SPEC-14.1-001",
         "KMIPKIT-REQ-SPEC-14.1-002",
+        "KMIPKIT-REQ-SPEC-3.1-007",
+        "KMIPKIT-REQ-SPEC-3.10-002",
+        "KMIPKIT-REQ-SPEC-3.10-003",
+        "KMIPKIT-REQ-SPEC-3.10-004",
+        "KMIPKIT-REQ-SPEC-3.11-002",
+        "KMIPKIT-REQ-SPEC-3.11-003",
+        "KMIPKIT-REQ-SPEC-3.12-002",
+        "KMIPKIT-REQ-SPEC-3.12-003",
+        "KMIPKIT-REQ-SPEC-3.2-003",
+        "KMIPKIT-REQ-SPEC-3.3-010",
+        "KMIPKIT-REQ-SPEC-3.3-011",
+        "KMIPKIT-REQ-SPEC-3.4-002",
+        "KMIPKIT-REQ-SPEC-3.5-002",
+        "KMIPKIT-REQ-SPEC-3.5-003",
+        "KMIPKIT-REQ-SPEC-3.5-004",
+        "KMIPKIT-REQ-SPEC-3.5-005",
+        "KMIPKIT-REQ-SPEC-3.6-002",
+        "KMIPKIT-REQ-SPEC-3.6-004",
+        "KMIPKIT-REQ-SPEC-3.6-005",
+        "KMIPKIT-REQ-SPEC-3.7-003",
+        "KMIPKIT-REQ-SPEC-3.8-002",
+        "KMIPKIT-REQ-SPEC-3.8-003",
+        "KMIPKIT-REQ-SPEC-3.9-002",
+        "KMIPKIT-REQ-SPEC-3.9-003",
+        "KMIPKIT-REQ-SPEC-3.9-004",
+        "KMIPKIT-REQ-SPEC-4.39-002-001",
         "KMIPKIT-REQ-SPEC-4.57-003-004",
+        "KMIPKIT-REQ-SPEC-5.5-003",
+        "KMIPKIT-REQ-SPEC-5.5-004",
+        "KMIPKIT-REQ-SPEC-5.5-005",
+        "KMIPKIT-REQ-SPEC-5.6-002",
+        "KMIPKIT-REQ-SPEC-5.7-002",
         "KMIPKIT-REQ-SPEC-6.1.12-003",
         "KMIPKIT-REQ-SPEC-6.1.12-005",
         "KMIPKIT-REQ-SPEC-6.1.12-006",
@@ -48025,6 +49272,7 @@
         "KMIPKIT-REQ-SPEC-6.1.14-010",
         "KMIPKIT-REQ-SPEC-6.1.14-011",
         "KMIPKIT-REQ-SPEC-6.1.14-012",
+        "KMIPKIT-REQ-SPEC-6.1.18-001-001",
         "KMIPKIT-REQ-SPEC-6.1.18-005",
         "KMIPKIT-REQ-SPEC-6.1.18-006",
         "KMIPKIT-REQ-SPEC-6.1.18-007",
@@ -48054,6 +49302,7 @@
         "KMIPKIT-REQ-SPEC-6.1.30-002",
         "KMIPKIT-REQ-SPEC-6.1.30-003",
         "KMIPKIT-REQ-SPEC-6.1.31-001",
+        "KMIPKIT-REQ-SPEC-6.1.45-002-003",
         "KMIPKIT-REQ-SPEC-9.11-001",
         "KMIPKIT-REQ-SPEC-9.11-004-001",
         "KMIPKIT-REQ-SPEC-9.11-004-002",
@@ -59006,14 +60255,15 @@
           "direction": "use lowercase PKCS#12 Friendly Name text",
           "condition": "PKCS#12 Friendly Name is represented",
           "scope_disposition": "client_1_0",
-          "candidate_requirement_id": null,
-          "source_gap_id": "KMIPKIT-SOURCE-GAP-SPEC-4.39-LOWERCASE-FRIENDLY-NAME"
+          "candidate_requirement_id": "KMIPKIT-REQ-SPEC-4.39-002-001"
         }
       ],
       "rejected_candidate_mappings": [],
-      "expected_client_requirement_ids": [],
+      "expected_client_requirement_ids": [
+        "KMIPKIT-REQ-SPEC-4.39-002-001"
+      ],
       "applies_to": "all_client_profiles",
-      "review_note": "The default alias and response encoding are server duties. The shared lowercase SHOULD includes a client capability and receives an explicit source-only proposed label."
+      "review_note": "The default alias and response-encoding atoms remain server duties. The shared lowercase SHOULD expressly names both endpoints; its client half now has a separate requirement mapping."
     },
     {
       "source_id": "KMIPKIT-SRC-spec",
@@ -62447,7 +63697,9 @@
         }
       ],
       "rejected_candidate_mappings": [],
-      "expected_client_requirement_ids": [],
+      "expected_client_requirement_ids": [
+        "KMIPKIT-REQ-SPEC-6.1.12-003"
+      ],
       "applies_to": "all_client_profiles",
       "review_note": "The Required=Yes body value is a client request-field gap. The lowercase “may only perform” is not the §1.2 formal MAY keyword, and the description does not expressly assign a client actor; preserve it separately as unresolved rather than inventing a positive MAY capability."
     },
@@ -62786,19 +64038,24 @@
           "source_order": 1,
           "source_text": "some derivation methods MAY use multiple keys or Secret Data objects to derive the result",
           "source_keyword": "MAY",
-          "actor": "client",
-          "direction": "client→server Derive Key request",
+          "actor": "unresolved",
+          "direction": "unresolved",
           "condition": "The selected derivation method accepts multiple keys or Secret Data inputs.",
-          "scope_disposition": "client_1_0",
+          "scope_disposition": "unresolved",
           "candidate_requirement_id": "KMIPKIT-REQ-SPEC-6.1.14-002"
         }
       ],
-      "rejected_candidate_mappings": [],
-      "expected_client_requirement_ids": [
-        "KMIPKIT-REQ-SPEC-6.1.14-002"
+      "rejected_candidate_mappings": [
+        {
+          "requirement_id": "KMIPKIT-REQ-SPEC-6.1.14-002",
+          "claimed_keyword": "MAY",
+          "source_review": "The subject is some derivation methods; the pinned source does not assign this optionality to the client.",
+          "expected_disposition": "reject_client_actor_inference"
+        }
       ],
+      "expected_client_requirement_ids": [],
       "applies_to": "all_client_profiles",
-      "review_note": "The formal MAY makes multiple derivation inputs an available request capability for methods that support them. The remaining sentence describes the Derive Key request fields and does not add another modal obligation."
+      "review_note": "The MAY modifies some derivation methods, not an expressly identified endpoint. Preserve the candidate as unresolved and exclude it from the client profile closure pending source interpretation."
     },
     {
       "source_id": "KMIPKIT-SRC-spec",
@@ -62941,7 +64198,8 @@
       "rejected_candidate_mappings": [],
       "expected_client_requirement_ids": [
         "KMIPKIT-REQ-SPEC-6.1.14-006-001",
-        "KMIPKIT-REQ-SPEC-6.1.14-006-002"
+        "KMIPKIT-REQ-SPEC-6.1.14-006-002",
+        "KMIPKIT-REQ-SPEC-6.1.14-010"
       ],
       "applies_to": "all_client_profiles",
       "review_note": "Required=Yes establishes request-field presence and is separately gapped because neither candidate label covers that presence rule. MAY be repeated is a separate multiplicity capability; SHALL NOT use the ID Placeholder is another distinct client rule."
@@ -63789,8 +65047,7 @@
           "direction": "client→server Export request semantics",
           "condition": null,
           "scope_disposition": "client_1_0",
-          "candidate_requirement_id": null,
-          "source_gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.18-GET-SEMANTICS"
+          "candidate_requirement_id": "KMIPKIT-REQ-SPEC-6.1.18-001-001"
         },
         {
           "source_order": 2,
@@ -63805,9 +65062,11 @@
         }
       ],
       "rejected_candidate_mappings": [],
-      "expected_client_requirement_ids": [],
+      "expected_client_requirement_ids": [
+        "KMIPKIT-REQ-SPEC-6.1.18-001-001"
+      ],
       "applies_to": "all_client_profiles",
-      "review_note": "The first SHALL assigns client request semantics to the four Export controls by reference to Get and has no catalog requirement label. The second predicate withholds destroyed-object key material in the server response; its lowercase `not` is a source capitalization ambiguity. The clause-level catalog disposition currently says server_only, which conflicts with the first client atom and remains a Green correction."
+      "review_note": "The first SHALL is client Export-request semantics; the adjacent destroyed-object key-material predicate remains a separate server response duty. Preserve the lowercase `not` in its SHALL not predicate without reclassifying the server actor."
     },
     {
       "source_id": "KMIPKIT-SRC-spec",
@@ -71099,7 +72358,7 @@
           "row_label": "Asynchronous Correlation Values",
           "required": "No",
           "actor": "client",
-          "disposition": "optional_request_field_with_source_only_proposal",
+          "disposition": "optional_request_table_contract",
           "html_line_range": [
             32456,
             32474
@@ -71112,7 +72371,7 @@
           "row_label": "Operations",
           "required": "No",
           "actor": "client",
-          "disposition": "optional_request_field_with_source_only_proposal",
+          "disposition": "optional_request_table_contract",
           "html_line_range": [
             32475,
             32492
@@ -72379,8 +73638,7 @@
           "direction": "identify the public key only by Unique Identifier when Certificate Request is omitted",
           "condition": "When Certificate Request is omitted.",
           "scope_disposition": "client_1_0",
-          "candidate_requirement_id": null,
-          "source_gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.45-CERTIFICATE-REQUEST-UID-ONLY"
+          "candidate_requirement_id": "KMIPKIT-REQ-SPEC-6.1.45-002-003"
         },
         {
           "source_order": 3,
@@ -72402,10 +73660,11 @@
         }
       ],
       "expected_client_requirement_ids": [
-        "KMIPKIT-REQ-SPEC-6.1.45-002-001"
+        "KMIPKIT-REQ-SPEC-6.1.45-002-001",
+        "KMIPKIT-REQ-SPEC-6.1.45-002-003"
       ],
       "applies_to": "all_client_profiles",
-      "review_note": "The source assigns certificate-type fallback to the server. Existing catalog candidate KMIPKIT-REQ-SPEC-6.1.45-002-002 is an actor mismatch and is intentionally excluded from client crosswalk coverage. The false client candidate is explicitly rejected and retained only as a retired stable label."
+      "review_note": "The client MUST identify the public key only by Unique Identifier when Certificate Request is omitted. This resolves the prior candidate mismatch by mapping the source obligation to its stable client requirement. The Certificate Type fallback remains a separate server obligation; the retired client candidate stays excluded."
     },
     {
       "source_id": "KMIPKIT-SRC-spec",
@@ -80953,9 +82212,15 @@
       "condition": "applicable cryptographic operation sequence",
       "scope_disposition": "client_1_0",
       "candidate_requirement_id": null,
-      "proposed_requirement_id": "KMIPKIT-REQ-SPEC-6.1-011",
-      "status": "stable_label_proposed_not_in_catalog",
-      "review_note": "ID is a source-locator label proposal only; imperative procedure wording is retained without promoting it to a formal SHALL/REQUIRED keyword."
+      "proposed_requirement_id": null,
+      "status": "reviewed_procedure_context",
+      "review_note": "Retained as a client procedure step with its exact pinned locator. The imperative is not promoted to a formal uppercase RFC 2119 keyword or standalone catalog REQ.",
+      "source_resolution": {
+        "kind": "procedure_context",
+        "context_id": "KMIPKIT-PROC-SPEC-6.1-011",
+        "related_requirement_ids": [],
+        "review_note": "Retained as a client procedure step with its exact pinned locator. The imperative is not promoted to a formal uppercase RFC 2119 keyword or standalone catalog REQ."
+      }
     },
     {
       "gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1-PROCEDURE-012",
@@ -80977,9 +82242,17 @@
       "condition": "applicable cryptographic operation sequence",
       "scope_disposition": "client_1_0",
       "candidate_requirement_id": null,
-      "proposed_requirement_id": "KMIPKIT-REQ-SPEC-6.1-012",
-      "status": "stable_label_proposed_not_in_catalog",
-      "review_note": "ID is a source-locator label proposal only; imperative procedure wording is retained without promoting it to a formal SHALL/REQUIRED keyword."
+      "proposed_requirement_id": null,
+      "status": "reviewed_procedure_context",
+      "review_note": "Retained as a client procedure step with its exact pinned locator. The imperative is not promoted to a formal uppercase RFC 2119 keyword or standalone catalog REQ.",
+      "source_resolution": {
+        "kind": "procedure_context",
+        "context_id": "KMIPKIT-PROC-SPEC-6.1-012",
+        "related_requirement_ids": [
+          "KMIPKIT-REQ-SPEC-7.8-001"
+        ],
+        "review_note": "Retained as a client procedure step with its exact pinned locator. The imperative is not promoted to a formal uppercase RFC 2119 keyword or standalone catalog REQ."
+      }
     },
     {
       "gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1-PROCEDURE-013",
@@ -81001,9 +82274,15 @@
       "condition": "applicable cryptographic operation sequence",
       "scope_disposition": "client_1_0",
       "candidate_requirement_id": null,
-      "proposed_requirement_id": "KMIPKIT-REQ-SPEC-6.1-013",
-      "status": "stable_label_proposed_not_in_catalog",
-      "review_note": "ID is a source-locator label proposal only; imperative procedure wording is retained without promoting it to a formal SHALL/REQUIRED keyword."
+      "proposed_requirement_id": null,
+      "status": "reviewed_procedure_context",
+      "review_note": "Retained as a client procedure step with its exact pinned locator. The imperative is not promoted to a formal uppercase RFC 2119 keyword or standalone catalog REQ.",
+      "source_resolution": {
+        "kind": "procedure_context",
+        "context_id": "KMIPKIT-PROC-SPEC-6.1-013",
+        "related_requirement_ids": [],
+        "review_note": "Retained as a client procedure step with its exact pinned locator. The imperative is not promoted to a formal uppercase RFC 2119 keyword or standalone catalog REQ."
+      }
     },
     {
       "gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1-PROCEDURE-014",
@@ -81025,9 +82304,17 @@
       "condition": "applicable cryptographic operation sequence",
       "scope_disposition": "client_1_0",
       "candidate_requirement_id": null,
-      "proposed_requirement_id": "KMIPKIT-REQ-SPEC-6.1-014",
-      "status": "stable_label_proposed_not_in_catalog",
-      "review_note": "ID is a source-locator label proposal only; imperative procedure wording is retained without promoting it to a formal SHALL/REQUIRED keyword."
+      "proposed_requirement_id": null,
+      "status": "reviewed_procedure_context",
+      "review_note": "Retained as a client procedure step with its exact pinned locator. The imperative is not promoted to a formal uppercase RFC 2119 keyword or standalone catalog REQ.",
+      "source_resolution": {
+        "kind": "procedure_context",
+        "context_id": "KMIPKIT-PROC-SPEC-6.1-014",
+        "related_requirement_ids": [
+          "KMIPKIT-REQ-SPEC-7.8-001"
+        ],
+        "review_note": "Retained as a client procedure step with its exact pinned locator. The imperative is not promoted to a formal uppercase RFC 2119 keyword or standalone catalog REQ."
+      }
     },
     {
       "gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1-PROCEDURE-015",
@@ -81049,9 +82336,15 @@
       "condition": "applicable cryptographic operation sequence",
       "scope_disposition": "client_1_0",
       "candidate_requirement_id": null,
-      "proposed_requirement_id": "KMIPKIT-REQ-SPEC-6.1-015",
-      "status": "stable_label_proposed_not_in_catalog",
-      "review_note": "ID is a source-locator label proposal only; imperative procedure wording is retained without promoting it to a formal SHALL/REQUIRED keyword."
+      "proposed_requirement_id": null,
+      "status": "reviewed_procedure_context",
+      "review_note": "Retained as a client procedure step with its exact pinned locator. The imperative is not promoted to a formal uppercase RFC 2119 keyword or standalone catalog REQ.",
+      "source_resolution": {
+        "kind": "procedure_context",
+        "context_id": "KMIPKIT-PROC-SPEC-6.1-015",
+        "related_requirement_ids": [],
+        "review_note": "Retained as a client procedure step with its exact pinned locator. The imperative is not promoted to a formal uppercase RFC 2119 keyword or standalone catalog REQ."
+      }
     },
     {
       "gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1-PROCEDURE-016",
@@ -81073,9 +82366,17 @@
       "condition": "applicable cryptographic operation sequence",
       "scope_disposition": "client_1_0",
       "candidate_requirement_id": null,
-      "proposed_requirement_id": "KMIPKIT-REQ-SPEC-6.1-016",
-      "status": "stable_label_proposed_not_in_catalog",
-      "review_note": "ID is a source-locator label proposal only; imperative procedure wording is retained without promoting it to a formal SHALL/REQUIRED keyword."
+      "proposed_requirement_id": null,
+      "status": "reviewed_procedure_context",
+      "review_note": "Retained as a client procedure step with its exact pinned locator. The imperative is not promoted to a formal uppercase RFC 2119 keyword or standalone catalog REQ.",
+      "source_resolution": {
+        "kind": "procedure_context",
+        "context_id": "KMIPKIT-PROC-SPEC-6.1-016",
+        "related_requirement_ids": [
+          "KMIPKIT-REQ-SPEC-7.8-001"
+        ],
+        "review_note": "Retained as a client procedure step with its exact pinned locator. The imperative is not promoted to a formal uppercase RFC 2119 keyword or standalone catalog REQ."
+      }
     },
     {
       "gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1-PROCEDURE-017",
@@ -81097,9 +82398,15 @@
       "condition": "applicable cryptographic operation sequence",
       "scope_disposition": "client_1_0",
       "candidate_requirement_id": null,
-      "proposed_requirement_id": "KMIPKIT-REQ-SPEC-6.1-017",
-      "status": "stable_label_proposed_not_in_catalog",
-      "review_note": "ID is a source-locator label proposal only; imperative procedure wording is retained without promoting it to a formal SHALL/REQUIRED keyword."
+      "proposed_requirement_id": null,
+      "status": "reviewed_procedure_context",
+      "review_note": "Retained as a client procedure step with its exact pinned locator. The imperative is not promoted to a formal uppercase RFC 2119 keyword or standalone catalog REQ.",
+      "source_resolution": {
+        "kind": "procedure_context",
+        "context_id": "KMIPKIT-PROC-SPEC-6.1-017",
+        "related_requirement_ids": [],
+        "review_note": "Retained as a client procedure step with its exact pinned locator. The imperative is not promoted to a formal uppercase RFC 2119 keyword or standalone catalog REQ."
+      }
     },
     {
       "gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1-PROCEDURE-018",
@@ -81121,9 +82428,15 @@
       "condition": "applicable cryptographic operation sequence",
       "scope_disposition": "client_1_0",
       "candidate_requirement_id": null,
-      "proposed_requirement_id": "KMIPKIT-REQ-SPEC-6.1-018",
-      "status": "stable_label_proposed_not_in_catalog",
-      "review_note": "ID is a source-locator label proposal only; imperative procedure wording is retained without promoting it to a formal SHALL/REQUIRED keyword."
+      "proposed_requirement_id": null,
+      "status": "reviewed_procedure_context",
+      "review_note": "Retained as a client procedure step with its exact pinned locator. The imperative is not promoted to a formal uppercase RFC 2119 keyword or standalone catalog REQ.",
+      "source_resolution": {
+        "kind": "procedure_context",
+        "context_id": "KMIPKIT-PROC-SPEC-6.1-018",
+        "related_requirement_ids": [],
+        "review_note": "Retained as a client procedure step with its exact pinned locator. The imperative is not promoted to a formal uppercase RFC 2119 keyword or standalone catalog REQ."
+      }
     },
     {
       "gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1-PROCEDURE-019",
@@ -81145,9 +82458,15 @@
       "condition": "applicable cryptographic operation sequence",
       "scope_disposition": "client_1_0",
       "candidate_requirement_id": null,
-      "proposed_requirement_id": "KMIPKIT-REQ-SPEC-6.1-019",
-      "status": "stable_label_proposed_not_in_catalog",
-      "review_note": "ID is a source-locator label proposal only; imperative procedure wording is retained without promoting it to a formal SHALL/REQUIRED keyword."
+      "proposed_requirement_id": null,
+      "status": "reviewed_procedure_context",
+      "review_note": "Retained as a client procedure step with its exact pinned locator. The imperative is not promoted to a formal uppercase RFC 2119 keyword or standalone catalog REQ.",
+      "source_resolution": {
+        "kind": "procedure_context",
+        "context_id": "KMIPKIT-PROC-SPEC-6.1-019",
+        "related_requirement_ids": [],
+        "review_note": "Retained as a client procedure step with its exact pinned locator. The imperative is not promoted to a formal uppercase RFC 2119 keyword or standalone catalog REQ."
+      }
     },
     {
       "gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1-PROCEDURE-020",
@@ -81169,9 +82488,15 @@
       "condition": "applicable cryptographic operation sequence",
       "scope_disposition": "client_1_0",
       "candidate_requirement_id": null,
-      "proposed_requirement_id": "KMIPKIT-REQ-SPEC-6.1-020",
-      "status": "stable_label_proposed_not_in_catalog",
-      "review_note": "ID is a source-locator label proposal only; imperative procedure wording is retained without promoting it to a formal SHALL/REQUIRED keyword."
+      "proposed_requirement_id": null,
+      "status": "reviewed_procedure_context",
+      "review_note": "Retained as a client procedure step with its exact pinned locator. The imperative is not promoted to a formal uppercase RFC 2119 keyword or standalone catalog REQ.",
+      "source_resolution": {
+        "kind": "procedure_context",
+        "context_id": "KMIPKIT-PROC-SPEC-6.1-020",
+        "related_requirement_ids": [],
+        "review_note": "Retained as a client procedure step with its exact pinned locator. The imperative is not promoted to a formal uppercase RFC 2119 keyword or standalone catalog REQ."
+      }
     },
     {
       "gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1-MULTIPART-OPTIONAL-PREFACE",
@@ -81739,9 +83064,15 @@
       "condition": "applicable multi-part or single-part cryptographic request",
       "scope_disposition": "client_1_0",
       "candidate_requirement_id": null,
-      "proposed_requirement_id": "KMIPKIT-REQ-SPEC-6.1-006-001",
-      "status": "stable_label_proposed_not_in_catalog",
-      "review_note": "The source contains lowercase required/imperative procedure wording, not formal uppercase REQUIRED. Proposal follows the section-local candidate-block and atom label convention; it does not change source force."
+      "proposed_requirement_id": null,
+      "status": "reviewed_generic_parameter_context",
+      "review_note": "Generic instruction to supply operation-specific required parameters; the operation request table contracts define those fields. It does not create a separate formal requirement ID.",
+      "source_resolution": {
+        "kind": "generic_parameter_context",
+        "context_id": "KMIPKIT-CONTEXT-SPEC-6.1-006",
+        "related_requirement_ids": [],
+        "review_note": "Generic instruction to supply operation-specific required parameters; the operation request table contracts define those fields. It does not create a separate formal requirement ID."
+      }
     },
     {
       "gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1-PARAGRAPH-007",
@@ -81767,9 +83098,15 @@
       "condition": "applicable multi-part or single-part cryptographic request",
       "scope_disposition": "client_1_0",
       "candidate_requirement_id": null,
-      "proposed_requirement_id": "KMIPKIT-REQ-SPEC-6.1-007-001",
-      "status": "stable_label_proposed_not_in_catalog",
-      "review_note": "The source contains lowercase required/imperative procedure wording, not formal uppercase REQUIRED. Proposal follows the section-local candidate-block and atom label convention; it does not change source force."
+      "proposed_requirement_id": null,
+      "status": "reviewed_generic_parameter_context",
+      "review_note": "Generic instruction to supply operation-specific required parameters; the operation request table contracts define those fields. It does not create a separate formal requirement ID.",
+      "source_resolution": {
+        "kind": "generic_parameter_context",
+        "context_id": "KMIPKIT-CONTEXT-SPEC-6.1-007",
+        "related_requirement_ids": [],
+        "review_note": "Generic instruction to supply operation-specific required parameters; the operation request table contracts define those fields. It does not create a separate formal requirement ID."
+      }
     },
     {
       "gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1-PARAGRAPH-008",
@@ -81795,9 +83132,15 @@
       "condition": "applicable multi-part or single-part cryptographic request",
       "scope_disposition": "client_1_0",
       "candidate_requirement_id": null,
-      "proposed_requirement_id": "KMIPKIT-REQ-SPEC-6.1-008-001",
-      "status": "stable_label_proposed_not_in_catalog",
-      "review_note": "The source contains lowercase required/imperative procedure wording, not formal uppercase REQUIRED. Proposal follows the section-local candidate-block and atom label convention; it does not change source force."
+      "proposed_requirement_id": null,
+      "status": "reviewed_generic_parameter_context",
+      "review_note": "Generic instruction to supply operation-specific required parameters; the operation request table contracts define those fields. It does not create a separate formal requirement ID.",
+      "source_resolution": {
+        "kind": "generic_parameter_context",
+        "context_id": "KMIPKIT-CONTEXT-SPEC-6.1-008",
+        "related_requirement_ids": [],
+        "review_note": "Generic instruction to supply operation-specific required parameters; the operation request table contracts define those fields. It does not create a separate formal requirement ID."
+      }
     },
     {
       "gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1-PARAGRAPH-009",
@@ -81821,11 +83164,17 @@
       "actor": "client",
       "direction": "client cryptographic-operation request parameters",
       "condition": "applicable multi-part or single-part cryptographic request",
-      "scope_disposition": "client_1_0",
+      "scope_disposition": "unresolved",
       "candidate_requirement_id": null,
-      "proposed_requirement_id": "KMIPKIT-REQ-SPEC-6.1-009-001",
-      "status": "stable_label_proposed_not_in_catalog",
-      "review_note": "The source contains lowercase required/imperative procedure wording, not formal uppercase REQUIRED. Proposal follows the section-local candidate-block and atom label convention; it does not change source force."
+      "proposed_requirement_id": null,
+      "status": "unresolved_source_interpretation",
+      "review_note": "The lowercase required sentence is not a formal REQUIRED keyword. Its Data exception remains in tension with operation-table Required values; preserve the full exception and keep the interpretation unresolved.",
+      "source_resolution": {
+        "kind": "unresolved_source_interpretation",
+        "context_id": "KMIPKIT-CONTEXT-SPEC-6.1-009",
+        "related_requirement_ids": [],
+        "review_note": "The lowercase required sentence is not a formal REQUIRED keyword. Its Data exception remains in tension with operation-table Required values; preserve the full exception and keep the interpretation unresolved."
+      }
     },
     {
       "gap_id": "KMIPKIT-SOURCE-GAP-SPEC-8.4-002",
@@ -81948,10 +83297,10 @@
       "direction": "client encodes and decodes the Key Format Type component of key material",
       "condition": "Key Format Type representation",
       "scope_disposition": "profile_conditional",
-      "candidate_requirement_id": null,
-      "proposed_requirement_id": "KMIPKIT-REQ-SPEC-3.1-007",
-      "status": "stable_label_proposed_not_in_catalog",
-      "review_note": "This source-only proposal maps the actual Required=Yes body row. It does not reuse the separate rejected Object/Encoding/REQUIRED heading candidate."
+      "candidate_requirement_id": "KMIPKIT-REQ-SPEC-3.1-007",
+      "proposed_requirement_id": null,
+      "status": "source_obligation_covered_by_existing_stable_label",
+      "review_note": "Pinned KMIP Specification v2.1 table body row records Required=Yes for this member. The catalog maps it to KMIPKIT-REQ-SPEC-3.1-007; applicability is conditional on the enclosing structure. Implementation and positive verification remain unassigned."
     },
     {
       "gap_id": "KMIPKIT-SOURCE-GAP-SPEC-3.2-KEY-MATERIAL",
@@ -81981,10 +83330,10 @@
       "direction": "client encodes and decodes the Key Material component of key material",
       "condition": "Key Value representation",
       "scope_disposition": "profile_conditional",
-      "candidate_requirement_id": null,
-      "proposed_requirement_id": "KMIPKIT-REQ-SPEC-3.2-003",
-      "status": "stable_label_proposed_not_in_catalog",
-      "review_note": "This source-only proposal maps the actual Required=Yes body row. It does not reuse the separate rejected Object/Encoding/REQUIRED heading candidate."
+      "candidate_requirement_id": "KMIPKIT-REQ-SPEC-3.2-003",
+      "proposed_requirement_id": null,
+      "status": "source_obligation_covered_by_existing_stable_label",
+      "review_note": "Pinned KMIP Specification v2.1 table body row records Required=Yes for this member. The catalog maps it to KMIPKIT-REQ-SPEC-3.2-003; applicability is conditional on the enclosing structure. Implementation and positive verification remain unassigned."
     },
     {
       "gap_id": "KMIPKIT-SOURCE-GAP-SPEC-3.3-WRAPPING-METHOD",
@@ -82014,10 +83363,10 @@
       "direction": "client encodes and decodes the Wrapping Method component of key material",
       "condition": "Key Wrapping Data is present",
       "scope_disposition": "profile_conditional",
-      "candidate_requirement_id": null,
-      "proposed_requirement_id": "KMIPKIT-REQ-SPEC-3.3-010",
-      "status": "stable_label_proposed_not_in_catalog",
-      "review_note": "This source-only proposal maps the actual Required=Yes body row. It does not reuse the separate rejected Object/Encoding/REQUIRED heading candidate."
+      "candidate_requirement_id": "KMIPKIT-REQ-SPEC-3.3-010",
+      "proposed_requirement_id": null,
+      "status": "source_obligation_covered_by_existing_stable_label",
+      "review_note": "Pinned KMIP Specification v2.1 table body row records Required=Yes for this member. The catalog maps it to KMIPKIT-REQ-SPEC-3.3-010; applicability is conditional on the enclosing structure. Implementation and positive verification remain unassigned."
     },
     {
       "gap_id": "KMIPKIT-SOURCE-GAP-SPEC-3.3-UNIQUE-IDENTIFIER",
@@ -82047,10 +83396,10 @@
       "direction": "client encodes and decodes the Unique Identifier component of key material",
       "condition": "Key Wrapping Data is present",
       "scope_disposition": "profile_conditional",
-      "candidate_requirement_id": null,
-      "proposed_requirement_id": "KMIPKIT-REQ-SPEC-3.3-011",
-      "status": "stable_label_proposed_not_in_catalog",
-      "review_note": "This source-only proposal maps the actual Required=Yes body row. It does not reuse the separate rejected Object/Encoding/REQUIRED heading candidate."
+      "candidate_requirement_id": "KMIPKIT-REQ-SPEC-3.3-011",
+      "proposed_requirement_id": null,
+      "status": "source_obligation_covered_by_existing_stable_label",
+      "review_note": "Pinned KMIP Specification v2.1 table body row records Required=Yes for this member. The catalog maps it to KMIPKIT-REQ-SPEC-3.3-011; applicability is conditional on the enclosing structure. Implementation and positive verification remain unassigned."
     },
     {
       "gap_id": "KMIPKIT-SOURCE-GAP-SPEC-3.4-KEY",
@@ -82080,10 +83429,10 @@
       "direction": "client encodes and decodes the Key component of key material",
       "condition": "Transparent Symmetric Key Format",
       "scope_disposition": "profile_conditional",
-      "candidate_requirement_id": null,
-      "proposed_requirement_id": "KMIPKIT-REQ-SPEC-3.4-002",
-      "status": "stable_label_proposed_not_in_catalog",
-      "review_note": "This source-only proposal maps the actual Required=Yes body row. It does not reuse the separate rejected Object/Encoding/REQUIRED heading candidate."
+      "candidate_requirement_id": "KMIPKIT-REQ-SPEC-3.4-002",
+      "proposed_requirement_id": null,
+      "status": "source_obligation_covered_by_existing_stable_label",
+      "review_note": "Pinned KMIP Specification v2.1 table body row records Required=Yes for this member. The catalog maps it to KMIPKIT-REQ-SPEC-3.4-002; applicability is conditional on the enclosing structure. Implementation and positive verification remain unassigned."
     },
     {
       "gap_id": "KMIPKIT-SOURCE-GAP-SPEC-3.5-P",
@@ -82113,10 +83462,10 @@
       "direction": "client encodes and decodes the P component of key material",
       "condition": "Transparent DSA Private Key Format",
       "scope_disposition": "profile_conditional",
-      "candidate_requirement_id": null,
-      "proposed_requirement_id": "KMIPKIT-REQ-SPEC-3.5-002",
-      "status": "stable_label_proposed_not_in_catalog",
-      "review_note": "This source-only proposal maps the actual Required=Yes body row. It does not reuse the separate rejected Object/Encoding/REQUIRED heading candidate."
+      "candidate_requirement_id": "KMIPKIT-REQ-SPEC-3.5-002",
+      "proposed_requirement_id": null,
+      "status": "source_obligation_covered_by_existing_stable_label",
+      "review_note": "Pinned KMIP Specification v2.1 table body row records Required=Yes for this member. The catalog maps it to KMIPKIT-REQ-SPEC-3.5-002; applicability is conditional on the enclosing structure. Implementation and positive verification remain unassigned."
     },
     {
       "gap_id": "KMIPKIT-SOURCE-GAP-SPEC-3.5-Q",
@@ -82146,10 +83495,10 @@
       "direction": "client encodes and decodes the Q component of key material",
       "condition": "Transparent DSA Private Key Format",
       "scope_disposition": "profile_conditional",
-      "candidate_requirement_id": null,
-      "proposed_requirement_id": "KMIPKIT-REQ-SPEC-3.5-003",
-      "status": "stable_label_proposed_not_in_catalog",
-      "review_note": "This source-only proposal maps the actual Required=Yes body row. It does not reuse the separate rejected Object/Encoding/REQUIRED heading candidate."
+      "candidate_requirement_id": "KMIPKIT-REQ-SPEC-3.5-003",
+      "proposed_requirement_id": null,
+      "status": "source_obligation_covered_by_existing_stable_label",
+      "review_note": "Pinned KMIP Specification v2.1 table body row records Required=Yes for this member. The catalog maps it to KMIPKIT-REQ-SPEC-3.5-003; applicability is conditional on the enclosing structure. Implementation and positive verification remain unassigned."
     },
     {
       "gap_id": "KMIPKIT-SOURCE-GAP-SPEC-3.5-G",
@@ -82179,10 +83528,10 @@
       "direction": "client encodes and decodes the G component of key material",
       "condition": "Transparent DSA Private Key Format",
       "scope_disposition": "profile_conditional",
-      "candidate_requirement_id": null,
-      "proposed_requirement_id": "KMIPKIT-REQ-SPEC-3.5-004",
-      "status": "stable_label_proposed_not_in_catalog",
-      "review_note": "This source-only proposal maps the actual Required=Yes body row. It does not reuse the separate rejected Object/Encoding/REQUIRED heading candidate."
+      "candidate_requirement_id": "KMIPKIT-REQ-SPEC-3.5-004",
+      "proposed_requirement_id": null,
+      "status": "source_obligation_covered_by_existing_stable_label",
+      "review_note": "Pinned KMIP Specification v2.1 table body row records Required=Yes for this member. The catalog maps it to KMIPKIT-REQ-SPEC-3.5-004; applicability is conditional on the enclosing structure. Implementation and positive verification remain unassigned."
     },
     {
       "gap_id": "KMIPKIT-SOURCE-GAP-SPEC-3.5-X",
@@ -82212,10 +83561,10 @@
       "direction": "client encodes and decodes the X component of key material",
       "condition": "Transparent DSA Private Key Format",
       "scope_disposition": "profile_conditional",
-      "candidate_requirement_id": null,
-      "proposed_requirement_id": "KMIPKIT-REQ-SPEC-3.5-005",
-      "status": "stable_label_proposed_not_in_catalog",
-      "review_note": "This source-only proposal maps the actual Required=Yes body row. It does not reuse the separate rejected Object/Encoding/REQUIRED heading candidate."
+      "candidate_requirement_id": "KMIPKIT-REQ-SPEC-3.5-005",
+      "proposed_requirement_id": null,
+      "status": "source_obligation_covered_by_existing_stable_label",
+      "review_note": "Pinned KMIP Specification v2.1 table body row records Required=Yes for this member. The catalog maps it to KMIPKIT-REQ-SPEC-3.5-005; applicability is conditional on the enclosing structure. Implementation and positive verification remain unassigned."
     },
     {
       "gap_id": "KMIPKIT-SOURCE-GAP-SPEC-3.6-P",
@@ -82245,43 +83594,10 @@
       "direction": "client encodes and decodes the P component of key material",
       "condition": "Transparent DSA Public Key Format",
       "scope_disposition": "profile_conditional",
-      "candidate_requirement_id": null,
-      "proposed_requirement_id": "KMIPKIT-REQ-SPEC-3.6-002",
-      "status": "stable_label_proposed_not_in_catalog",
-      "review_note": "This source-only proposal maps the actual Required=Yes body row. It does not reuse the separate rejected Object/Encoding/REQUIRED heading candidate."
-    },
-    {
-      "gap_id": "KMIPKIT-SOURCE-GAP-SPEC-3.6-Q",
-      "source_id": "KMIPKIT-SRC-spec",
-      "source_path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
-      "source_section": "3.6",
-      "source_clause_id": null,
-      "source_locator": {
-        "kind": "table_body_row",
-        "section": "3.6",
-        "row_label": "Q",
-        "html_line_range": [
-          8696,
-          8714
-        ]
-      },
-      "source_locator_description": "§3.6 Required-column body row for Q (HTML lines 8696-8714)",
-      "html_line_range": [
-        8696,
-        8714
-      ],
-      "source_excerpt": "Q Big Integer Yes",
-      "source_keywords": [],
-      "source_force": "required_table_body_value",
-      "audited_statement": "The Q table body row has Required = Yes for the Transparent DSA Public Key Format.",
-      "actor": "client",
-      "direction": "client encodes and decodes the Q component of key material",
-      "condition": "Transparent DSA Public Key Format",
-      "scope_disposition": "profile_conditional",
-      "candidate_requirement_id": null,
-      "proposed_requirement_id": "KMIPKIT-REQ-SPEC-3.6-003",
-      "status": "stable_label_proposed_not_in_catalog",
-      "review_note": "This source-only proposal maps the actual Required=Yes body row. It does not reuse the separate rejected Object/Encoding/REQUIRED heading candidate."
+      "candidate_requirement_id": "KMIPKIT-REQ-SPEC-3.6-002",
+      "proposed_requirement_id": null,
+      "status": "source_obligation_covered_by_existing_stable_label",
+      "review_note": "Pinned KMIP Specification v2.1 table body row records Required=Yes for this member. The catalog maps it to KMIPKIT-REQ-SPEC-3.6-002; applicability is conditional on the enclosing structure. Implementation and positive verification remain unassigned."
     },
     {
       "gap_id": "KMIPKIT-SOURCE-GAP-SPEC-3.6-G",
@@ -82311,10 +83627,10 @@
       "direction": "client encodes and decodes the G component of key material",
       "condition": "Transparent DSA Public Key Format",
       "scope_disposition": "profile_conditional",
-      "candidate_requirement_id": null,
-      "proposed_requirement_id": "KMIPKIT-REQ-SPEC-3.6-004",
-      "status": "stable_label_proposed_not_in_catalog",
-      "review_note": "This source-only proposal maps the actual Required=Yes body row. It does not reuse the separate rejected Object/Encoding/REQUIRED heading candidate."
+      "candidate_requirement_id": "KMIPKIT-REQ-SPEC-3.6-004",
+      "proposed_requirement_id": null,
+      "status": "source_obligation_covered_by_existing_stable_label",
+      "review_note": "Pinned KMIP Specification v2.1 table body row records Required=Yes for this member. The catalog maps it to KMIPKIT-REQ-SPEC-3.6-004; applicability is conditional on the enclosing structure. Implementation and positive verification remain unassigned."
     },
     {
       "gap_id": "KMIPKIT-SOURCE-GAP-SPEC-3.6-Y",
@@ -82344,10 +83660,10 @@
       "direction": "client encodes and decodes the Y component of key material",
       "condition": "Transparent DSA Public Key Format",
       "scope_disposition": "profile_conditional",
-      "candidate_requirement_id": null,
-      "proposed_requirement_id": "KMIPKIT-REQ-SPEC-3.6-005",
-      "status": "stable_label_proposed_not_in_catalog",
-      "review_note": "This source-only proposal maps the actual Required=Yes body row. It does not reuse the separate rejected Object/Encoding/REQUIRED heading candidate."
+      "candidate_requirement_id": "KMIPKIT-REQ-SPEC-3.6-005",
+      "proposed_requirement_id": null,
+      "status": "source_obligation_covered_by_existing_stable_label",
+      "review_note": "Pinned KMIP Specification v2.1 table body row records Required=Yes for this member. The catalog maps it to KMIPKIT-REQ-SPEC-3.6-005; applicability is conditional on the enclosing structure. Implementation and positive verification remain unassigned."
     },
     {
       "gap_id": "KMIPKIT-SOURCE-GAP-SPEC-3.7-MODULUS",
@@ -82377,10 +83693,10 @@
       "direction": "client encodes and decodes the Modulus component of key material",
       "condition": "Transparent RSA Private Key Format",
       "scope_disposition": "profile_conditional",
-      "candidate_requirement_id": null,
-      "proposed_requirement_id": "KMIPKIT-REQ-SPEC-3.7-003",
-      "status": "stable_label_proposed_not_in_catalog",
-      "review_note": "This source-only proposal maps the actual Required=Yes body row. It does not reuse the separate rejected Object/Encoding/REQUIRED heading candidate."
+      "candidate_requirement_id": "KMIPKIT-REQ-SPEC-3.7-003",
+      "proposed_requirement_id": null,
+      "status": "source_obligation_covered_by_existing_stable_label",
+      "review_note": "Pinned KMIP Specification v2.1 table body row records Required=Yes for this member. The catalog maps it to KMIPKIT-REQ-SPEC-3.7-003; applicability is conditional on the enclosing structure. Implementation and positive verification remain unassigned."
     },
     {
       "gap_id": "KMIPKIT-SOURCE-GAP-SPEC-3.8-MODULUS",
@@ -82410,10 +83726,10 @@
       "direction": "client encodes and decodes the Modulus component of key material",
       "condition": "Transparent RSA Public Key Format",
       "scope_disposition": "profile_conditional",
-      "candidate_requirement_id": null,
-      "proposed_requirement_id": "KMIPKIT-REQ-SPEC-3.8-002",
-      "status": "stable_label_proposed_not_in_catalog",
-      "review_note": "This source-only proposal maps the actual Required=Yes body row. It does not reuse the separate rejected Object/Encoding/REQUIRED heading candidate."
+      "candidate_requirement_id": "KMIPKIT-REQ-SPEC-3.8-002",
+      "proposed_requirement_id": null,
+      "status": "source_obligation_covered_by_existing_stable_label",
+      "review_note": "Pinned KMIP Specification v2.1 table body row records Required=Yes for this member. The catalog maps it to KMIPKIT-REQ-SPEC-3.8-002; applicability is conditional on the enclosing structure. Implementation and positive verification remain unassigned."
     },
     {
       "gap_id": "KMIPKIT-SOURCE-GAP-SPEC-3.8-PUBLIC-EXPONENT",
@@ -82443,10 +83759,10 @@
       "direction": "client encodes and decodes the Public Exponent component of key material",
       "condition": "Transparent RSA Public Key Format",
       "scope_disposition": "profile_conditional",
-      "candidate_requirement_id": null,
-      "proposed_requirement_id": "KMIPKIT-REQ-SPEC-3.8-003",
-      "status": "stable_label_proposed_not_in_catalog",
-      "review_note": "This source-only proposal maps the actual Required=Yes body row. It does not reuse the separate rejected Object/Encoding/REQUIRED heading candidate."
+      "candidate_requirement_id": "KMIPKIT-REQ-SPEC-3.8-003",
+      "proposed_requirement_id": null,
+      "status": "source_obligation_covered_by_existing_stable_label",
+      "review_note": "Pinned KMIP Specification v2.1 table body row records Required=Yes for this member. The catalog maps it to KMIPKIT-REQ-SPEC-3.8-003; applicability is conditional on the enclosing structure. Implementation and positive verification remain unassigned."
     },
     {
       "gap_id": "KMIPKIT-SOURCE-GAP-SPEC-3.9-P",
@@ -82476,10 +83792,10 @@
       "direction": "client encodes and decodes the P component of key material",
       "condition": "Transparent Diffie-Hellman Private Key Format",
       "scope_disposition": "profile_conditional",
-      "candidate_requirement_id": null,
-      "proposed_requirement_id": "KMIPKIT-REQ-SPEC-3.9-002",
-      "status": "stable_label_proposed_not_in_catalog",
-      "review_note": "This source-only proposal maps the actual Required=Yes body row. It does not reuse the separate rejected Object/Encoding/REQUIRED heading candidate."
+      "candidate_requirement_id": "KMIPKIT-REQ-SPEC-3.9-002",
+      "proposed_requirement_id": null,
+      "status": "source_obligation_covered_by_existing_stable_label",
+      "review_note": "Pinned KMIP Specification v2.1 table body row records Required=Yes for this member. The catalog maps it to KMIPKIT-REQ-SPEC-3.9-002; applicability is conditional on the enclosing structure. Implementation and positive verification remain unassigned."
     },
     {
       "gap_id": "KMIPKIT-SOURCE-GAP-SPEC-3.9-G",
@@ -82509,10 +83825,10 @@
       "direction": "client encodes and decodes the G component of key material",
       "condition": "Transparent Diffie-Hellman Private Key Format",
       "scope_disposition": "profile_conditional",
-      "candidate_requirement_id": null,
-      "proposed_requirement_id": "KMIPKIT-REQ-SPEC-3.9-003",
-      "status": "stable_label_proposed_not_in_catalog",
-      "review_note": "This source-only proposal maps the actual Required=Yes body row. It does not reuse the separate rejected Object/Encoding/REQUIRED heading candidate."
+      "candidate_requirement_id": "KMIPKIT-REQ-SPEC-3.9-003",
+      "proposed_requirement_id": null,
+      "status": "source_obligation_covered_by_existing_stable_label",
+      "review_note": "Pinned KMIP Specification v2.1 table body row records Required=Yes for this member. The catalog maps it to KMIPKIT-REQ-SPEC-3.9-003; applicability is conditional on the enclosing structure. Implementation and positive verification remain unassigned."
     },
     {
       "gap_id": "KMIPKIT-SOURCE-GAP-SPEC-3.9-X",
@@ -82542,10 +83858,10 @@
       "direction": "client encodes and decodes the X component of key material",
       "condition": "Transparent Diffie-Hellman Private Key Format",
       "scope_disposition": "profile_conditional",
-      "candidate_requirement_id": null,
-      "proposed_requirement_id": "KMIPKIT-REQ-SPEC-3.9-004",
-      "status": "stable_label_proposed_not_in_catalog",
-      "review_note": "This source-only proposal maps the actual Required=Yes body row. It does not reuse the separate rejected Object/Encoding/REQUIRED heading candidate."
+      "candidate_requirement_id": "KMIPKIT-REQ-SPEC-3.9-004",
+      "proposed_requirement_id": null,
+      "status": "source_obligation_covered_by_existing_stable_label",
+      "review_note": "Pinned KMIP Specification v2.1 table body row records Required=Yes for this member. The catalog maps it to KMIPKIT-REQ-SPEC-3.9-004; applicability is conditional on the enclosing structure. Implementation and positive verification remain unassigned."
     },
     {
       "gap_id": "KMIPKIT-SOURCE-GAP-SPEC-3.10-P",
@@ -82575,10 +83891,10 @@
       "direction": "client encodes and decodes the P component of key material",
       "condition": "Transparent Diffie-Hellman Public Key Format",
       "scope_disposition": "profile_conditional",
-      "candidate_requirement_id": null,
-      "proposed_requirement_id": "KMIPKIT-REQ-SPEC-3.10-002",
-      "status": "stable_label_proposed_not_in_catalog",
-      "review_note": "This source-only proposal maps the actual Required=Yes body row. It does not reuse the separate rejected Object/Encoding/REQUIRED heading candidate."
+      "candidate_requirement_id": "KMIPKIT-REQ-SPEC-3.10-002",
+      "proposed_requirement_id": null,
+      "status": "source_obligation_covered_by_existing_stable_label",
+      "review_note": "Pinned KMIP Specification v2.1 table body row records Required=Yes for this member. The catalog maps it to KMIPKIT-REQ-SPEC-3.10-002; applicability is conditional on the enclosing structure. Implementation and positive verification remain unassigned."
     },
     {
       "gap_id": "KMIPKIT-SOURCE-GAP-SPEC-3.10-G",
@@ -82608,10 +83924,10 @@
       "direction": "client encodes and decodes the G component of key material",
       "condition": "Transparent Diffie-Hellman Public Key Format",
       "scope_disposition": "profile_conditional",
-      "candidate_requirement_id": null,
-      "proposed_requirement_id": "KMIPKIT-REQ-SPEC-3.10-003",
-      "status": "stable_label_proposed_not_in_catalog",
-      "review_note": "This source-only proposal maps the actual Required=Yes body row. It does not reuse the separate rejected Object/Encoding/REQUIRED heading candidate."
+      "candidate_requirement_id": "KMIPKIT-REQ-SPEC-3.10-003",
+      "proposed_requirement_id": null,
+      "status": "source_obligation_covered_by_existing_stable_label",
+      "review_note": "Pinned KMIP Specification v2.1 table body row records Required=Yes for this member. The catalog maps it to KMIPKIT-REQ-SPEC-3.10-003; applicability is conditional on the enclosing structure. Implementation and positive verification remain unassigned."
     },
     {
       "gap_id": "KMIPKIT-SOURCE-GAP-SPEC-3.10-Y",
@@ -82641,10 +83957,10 @@
       "direction": "client encodes and decodes the Y component of key material",
       "condition": "Transparent Diffie-Hellman Public Key Format",
       "scope_disposition": "profile_conditional",
-      "candidate_requirement_id": null,
-      "proposed_requirement_id": "KMIPKIT-REQ-SPEC-3.10-004",
-      "status": "stable_label_proposed_not_in_catalog",
-      "review_note": "This source-only proposal maps the actual Required=Yes body row. It does not reuse the separate rejected Object/Encoding/REQUIRED heading candidate."
+      "candidate_requirement_id": "KMIPKIT-REQ-SPEC-3.10-004",
+      "proposed_requirement_id": null,
+      "status": "source_obligation_covered_by_existing_stable_label",
+      "review_note": "Pinned KMIP Specification v2.1 table body row records Required=Yes for this member. The catalog maps it to KMIPKIT-REQ-SPEC-3.10-004; applicability is conditional on the enclosing structure. Implementation and positive verification remain unassigned."
     },
     {
       "gap_id": "KMIPKIT-SOURCE-GAP-SPEC-3.11-RECOMMENDED-CURVE",
@@ -82674,10 +83990,10 @@
       "direction": "client encodes and decodes the Recommended Curve component of key material",
       "condition": "Transparent EC Private Key Format",
       "scope_disposition": "profile_conditional",
-      "candidate_requirement_id": null,
-      "proposed_requirement_id": "KMIPKIT-REQ-SPEC-3.11-002",
-      "status": "stable_label_proposed_not_in_catalog",
-      "review_note": "This source-only proposal maps the actual Required=Yes body row. It does not reuse the separate rejected Object/Encoding/REQUIRED heading candidate."
+      "candidate_requirement_id": "KMIPKIT-REQ-SPEC-3.11-002",
+      "proposed_requirement_id": null,
+      "status": "source_obligation_covered_by_existing_stable_label",
+      "review_note": "Pinned KMIP Specification v2.1 table body row records Required=Yes for this member. The catalog maps it to KMIPKIT-REQ-SPEC-3.11-002; applicability is conditional on the enclosing structure. Implementation and positive verification remain unassigned."
     },
     {
       "gap_id": "KMIPKIT-SOURCE-GAP-SPEC-3.11-D",
@@ -82707,10 +84023,10 @@
       "direction": "client encodes and decodes the D component of key material",
       "condition": "Transparent EC Private Key Format",
       "scope_disposition": "profile_conditional",
-      "candidate_requirement_id": null,
-      "proposed_requirement_id": "KMIPKIT-REQ-SPEC-3.11-003",
-      "status": "stable_label_proposed_not_in_catalog",
-      "review_note": "This source-only proposal maps the actual Required=Yes body row. It does not reuse the separate rejected Object/Encoding/REQUIRED heading candidate."
+      "candidate_requirement_id": "KMIPKIT-REQ-SPEC-3.11-003",
+      "proposed_requirement_id": null,
+      "status": "source_obligation_covered_by_existing_stable_label",
+      "review_note": "Pinned KMIP Specification v2.1 table body row records Required=Yes for this member. The catalog maps it to KMIPKIT-REQ-SPEC-3.11-003; applicability is conditional on the enclosing structure. Implementation and positive verification remain unassigned."
     },
     {
       "gap_id": "KMIPKIT-SOURCE-GAP-SPEC-3.12-RECOMMENDED-CURVE",
@@ -82740,10 +84056,10 @@
       "direction": "client encodes and decodes the Recommended Curve component of key material",
       "condition": "Transparent EC Public Key Format",
       "scope_disposition": "profile_conditional",
-      "candidate_requirement_id": null,
-      "proposed_requirement_id": "KMIPKIT-REQ-SPEC-3.12-002",
-      "status": "stable_label_proposed_not_in_catalog",
-      "review_note": "This source-only proposal maps the actual Required=Yes body row. It does not reuse the separate rejected Object/Encoding/REQUIRED heading candidate."
+      "candidate_requirement_id": "KMIPKIT-REQ-SPEC-3.12-002",
+      "proposed_requirement_id": null,
+      "status": "source_obligation_covered_by_existing_stable_label",
+      "review_note": "Pinned KMIP Specification v2.1 table body row records Required=Yes for this member. The catalog maps it to KMIPKIT-REQ-SPEC-3.12-002; applicability is conditional on the enclosing structure. Implementation and positive verification remain unassigned."
     },
     {
       "gap_id": "KMIPKIT-SOURCE-GAP-SPEC-3.12-Q-STRING",
@@ -82773,10 +84089,10 @@
       "direction": "client encodes and decodes the Q String component of key material",
       "condition": "Transparent EC Public Key Format",
       "scope_disposition": "profile_conditional",
-      "candidate_requirement_id": null,
-      "proposed_requirement_id": "KMIPKIT-REQ-SPEC-3.12-003",
-      "status": "stable_label_proposed_not_in_catalog",
-      "review_note": "This source-only proposal maps the actual Required=Yes body row. It does not reuse the separate rejected Object/Encoding/REQUIRED heading candidate."
+      "candidate_requirement_id": "KMIPKIT-REQ-SPEC-3.12-003",
+      "proposed_requirement_id": null,
+      "status": "source_obligation_covered_by_existing_stable_label",
+      "review_note": "Pinned KMIP Specification v2.1 table body row records Required=Yes for this member. The catalog maps it to KMIPKIT-REQ-SPEC-3.12-003; applicability is conditional on the enclosing structure. Implementation and positive verification remain unassigned."
     },
     {
       "gap_id": "KMIPKIT-SOURCE-GAP-SPEC-5.5-VENDOR-IDENTIFICATION",
@@ -82806,10 +84122,10 @@
       "direction": "client encodes the vendor-name Attribute Reference in a request and decodes it in a response",
       "condition": "vendor-name form of Attribute Reference",
       "scope_disposition": "profile_conditional",
-      "candidate_requirement_id": null,
-      "proposed_requirement_id": "KMIPKIT-REQ-SPEC-5.5-003",
-      "status": "stable_label_proposed_not_in_catalog",
-      "review_note": "Pinned source table body value Required=Yes; this proposal is distinct from any formal keyword extracted from a heading row and is conditional on the corresponding request structure/form."
+      "candidate_requirement_id": "KMIPKIT-REQ-SPEC-5.5-003",
+      "proposed_requirement_id": null,
+      "status": "source_obligation_covered_by_existing_stable_label",
+      "review_note": "Pinned KMIP Specification v2.1 table body row records Required=Yes for this member. The catalog maps it to KMIPKIT-REQ-SPEC-5.5-003; applicability is conditional on the enclosing structure. Implementation and positive verification remain unassigned."
     },
     {
       "gap_id": "KMIPKIT-SOURCE-GAP-SPEC-5.5-ATTRIBUTE-NAME",
@@ -82839,10 +84155,10 @@
       "direction": "client encodes the vendor-name Attribute Reference in a request and decodes it in a response",
       "condition": "vendor-name form of Attribute Reference",
       "scope_disposition": "profile_conditional",
-      "candidate_requirement_id": null,
-      "proposed_requirement_id": "KMIPKIT-REQ-SPEC-5.5-004",
-      "status": "stable_label_proposed_not_in_catalog",
-      "review_note": "Pinned source table body value Required=Yes; this proposal is distinct from any formal keyword extracted from a heading row and is conditional on the corresponding request structure/form."
+      "candidate_requirement_id": "KMIPKIT-REQ-SPEC-5.5-004",
+      "proposed_requirement_id": null,
+      "status": "source_obligation_covered_by_existing_stable_label",
+      "review_note": "Pinned KMIP Specification v2.1 table body row records Required=Yes for this member. The catalog maps it to KMIPKIT-REQ-SPEC-5.5-004; applicability is conditional on the enclosing structure. Implementation and positive verification remain unassigned."
     },
     {
       "gap_id": "KMIPKIT-SOURCE-GAP-SPEC-5.5-ATTRIBUTE-REFERENCE-TAG",
@@ -82872,10 +84188,10 @@
       "direction": "client encodes the tag-form Attribute Reference in a request and decodes it in a response",
       "condition": "tag form of Attribute Reference",
       "scope_disposition": "profile_conditional",
-      "candidate_requirement_id": null,
-      "proposed_requirement_id": "KMIPKIT-REQ-SPEC-5.5-005",
-      "status": "stable_label_proposed_not_in_catalog",
-      "review_note": "Pinned source table body value Required=Yes; this proposal is distinct from any formal keyword extracted from a heading row and is conditional on the corresponding request structure/form."
+      "candidate_requirement_id": "KMIPKIT-REQ-SPEC-5.5-005",
+      "proposed_requirement_id": null,
+      "status": "source_obligation_covered_by_existing_stable_label",
+      "review_note": "Pinned KMIP Specification v2.1 table body row records Required=Yes for this member. The catalog maps it to KMIPKIT-REQ-SPEC-5.5-005; applicability is conditional on the enclosing structure. Implementation and positive verification remain unassigned."
     },
     {
       "gap_id": "KMIPKIT-SOURCE-GAP-SPEC-5.6-CURRENT-ATTRIBUTE",
@@ -82902,13 +84218,13 @@
       "source_force": "required_table_body_value",
       "audited_statement": "Current Attribute contains an attribute from §4 Object Attributes when that structure is used.",
       "actor": "client",
-      "direction": "client encodes Current Attribute in a request and decodes it in a response",
+      "direction": "client_to_server",
       "condition": "Current Attribute structure is used by the selected operation",
       "scope_disposition": "profile_conditional",
-      "candidate_requirement_id": null,
-      "proposed_requirement_id": "KMIPKIT-REQ-SPEC-5.6-002",
-      "status": "stable_label_proposed_not_in_catalog",
-      "review_note": "Pinned source table body value Required=Yes; this proposal is distinct from any formal keyword extracted from a heading row and is conditional on the corresponding request structure/form."
+      "candidate_requirement_id": "KMIPKIT-REQ-SPEC-5.6-002",
+      "proposed_requirement_id": null,
+      "status": "source_obligation_covered_by_existing_stable_label",
+      "review_note": "Pinned KMIP Specification v2.1 table body row records Required=Yes for this member. The catalog maps it to KMIPKIT-REQ-SPEC-5.6-002; applicability is conditional on the enclosing structure. Implementation and positive verification remain unassigned."
     },
     {
       "gap_id": "KMIPKIT-SOURCE-GAP-SPEC-5.7-NEW-ATTRIBUTE",
@@ -82935,13 +84251,13 @@
       "source_force": "required_table_body_value",
       "audited_statement": "New Attribute contains an attribute from §4 Object Attributes when that structure is used.",
       "actor": "client",
-      "direction": "client encodes New Attribute in a request and decodes it in a response",
+      "direction": "client_to_server",
       "condition": "New Attribute structure is used by the selected operation",
       "scope_disposition": "profile_conditional",
-      "candidate_requirement_id": null,
-      "proposed_requirement_id": "KMIPKIT-REQ-SPEC-5.7-002",
-      "status": "stable_label_proposed_not_in_catalog",
-      "review_note": "Pinned source table body value Required=Yes; this proposal is distinct from any formal keyword extracted from a heading row and is conditional on the corresponding request structure/form."
+      "candidate_requirement_id": "KMIPKIT-REQ-SPEC-5.7-002",
+      "proposed_requirement_id": null,
+      "status": "source_obligation_covered_by_existing_stable_label",
+      "review_note": "Pinned KMIP Specification v2.1 table body row records Required=Yes for this member. The catalog maps it to KMIPKIT-REQ-SPEC-5.7-002; applicability is conditional on the enclosing structure. Implementation and positive verification remain unassigned."
     },
     {
       "gap_id": "KMIPKIT-SOURCE-GAP-SPEC-4.21-CLIENT-LOWERCASE-MAY",
@@ -83060,9 +84376,15 @@
       "condition": "Lease Time attribute applies to Managed Object",
       "scope_disposition": "client_1_0",
       "candidate_requirement_id": null,
-      "proposed_requirement_id": "KMIPKIT-REQ-SPEC-4.30-001-002",
-      "status": "stable_label_proposed_not_in_catalog",
-      "review_note": "This client restriction is explicit prose but has no separate stable label in the current catalog; proposal retains it as a source-only mapping for Green review."
+      "proposed_requirement_id": null,
+      "status": "mapped_to_attribute_policy",
+      "review_note": "The client read-only property is represented in the Lease Time attribute policy metadata; it is not recast as the adjacent server-only SHALL.",
+      "source_resolution": {
+        "kind": "attribute_policy_mapping",
+        "element_id": "KMIPKIT-ELEM-ATTRIBUTE-LEASE-TIME",
+        "catalog_property": "source_modifiable_by_client",
+        "review_note": "The client read-only property is represented in the Lease Time attribute policy metadata; it is not recast as the adjacent server-only SHALL."
+      }
     },
     {
       "gap_id": "KMIPKIT-SOURCE-GAP-SPEC-4.31-MAY-ABSENT-LINKS",
@@ -83118,10 +84440,10 @@
       "direction": "use lowercase PKCS#12 Friendly Name text",
       "condition": "PKCS#12 Friendly Name is represented",
       "scope_disposition": "client_1_0",
-      "candidate_requirement_id": null,
-      "proposed_requirement_id": "KMIPKIT-REQ-SPEC-4.39-002-001",
-      "status": "stable_label_proposed_not_in_catalog",
-      "review_note": "The source sentence explicitly names clients as well as servers and uses formal SHOULD; the client half is a source-grounded in-scope recommendation. The proposed ID is not a catalog record."
+      "candidate_requirement_id": "KMIPKIT-REQ-SPEC-4.39-002-001",
+      "proposed_requirement_id": null,
+      "status": "source_obligation_covered_by_existing_stable_label",
+      "review_note": "Pinned Specification v2.1 source atom is assigned to KMIPKIT-REQ-SPEC-4.39-002-001; server-only neighbor atoms remain outside the client requirement mapping."
     },
     {
       "gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.12-RIGHTS-REQUIRED",
@@ -83504,7 +84826,7 @@
       "reused_requirement_id": "KMIPKIT-REQ-SPEC-6.1.14-007-001",
       "proposed_requirement_id": null,
       "status": "source_obligation_covered_by_existing_stable_label",
-      "review_note": "This Required=Yes table-body locator reuses the existing stable ID for client closure membership. Catalog source_keyword=SHALL does not match this pinned locator; Green must correct that metadata. The separate formal SHALL at the end of the row maps to ...007-002."
+      "review_note": "This Required=Yes table-body locator reuses the existing stable ID for client closure membership with source_force=required_table_body_value and no formal keyword. The separate formal SHALL at the end of the row maps to KMIPKIT-REQ-SPEC-6.1.14-007-002."
     },
     {
       "gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.18-GET-SEMANTICS",
@@ -83538,10 +84860,10 @@
       "direction": "client→server Export request semantics",
       "condition": null,
       "scope_disposition": "client_1_0",
-      "candidate_requirement_id": null,
-      "proposed_requirement_id": "KMIPKIT-REQ-SPEC-6.1.18-001-001",
-      "status": "stable_label_proposed_not_in_catalog",
-      "review_note": "This source predicate is client-applicable and distinct from the server-only destroyed-object response rule in the same paragraph. The current catalog has no requirement record mapped to §6.1.18; the proposed ID preserves paragraph atom order and remains outside catalog/profile membership until Green."
+      "candidate_requirement_id": "KMIPKIT-REQ-SPEC-6.1.18-001-001",
+      "proposed_requirement_id": null,
+      "status": "source_obligation_covered_by_existing_stable_label",
+      "review_note": "Pinned Specification v2.1 source atom is assigned to KMIPKIT-REQ-SPEC-6.1.18-001-001; server-only neighbor atoms remain outside the client requirement mapping."
     },
     {
       "gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.18-KEY-FORMAT-TYPE-OPTIONAL",
@@ -83991,108 +85313,6 @@
       "reused_requirement_id": "KMIPKIT-REQ-SPEC-6.1.31-001"
     },
     {
-      "gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.39-ASYNC-CORRELATION-VALUE-REQUIRED",
-      "source_id": "KMIPKIT-SRC-spec",
-      "source_path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
-      "source_section": "6.1.39",
-      "source_clause_id": null,
-      "source_locator": {
-        "kind": "table_body_row",
-        "section": "6.1.39",
-        "row_label": "Asynchronous Correlation Value",
-        "table": "request_payload",
-        "html_line_range": [
-          31618,
-          31636
-        ]
-      },
-      "source_locator_description": "§6.1.39 Process request payload body row for Asynchronous Correlation Value (HTML lines 31618-31636)",
-      "html_line_range": [
-        31618,
-        31636
-      ],
-      "source_excerpt": "Asynchronous Correlation Value Yes The value of the Asynchronous Correlation Value for the Batch Item to be made “synchronous”",
-      "source_keywords": [],
-      "source_force": "required_table_body_value",
-      "audited_statement": "The Process request payload marks Asynchronous Correlation Value Required=Yes and describes it as identifying the asynchronous batch item to be made synchronous.",
-      "actor": "client",
-      "direction": "include the Asynchronous Correlation Value in the Process request payload",
-      "condition": "A Process request is sent to change processing of a previously submitted asynchronous request.",
-      "scope_disposition": "client_1_0",
-      "candidate_requirement_id": null,
-      "proposed_requirement_id": "KMIPKIT-REQ-SPEC-6.1.39-001",
-      "status": "stable_label_proposed_not_in_catalog",
-      "review_note": "Source-only proposal for the Required=Yes Asynchronous Correlation Value Process request row. The stable ID is not present in the catalog and must not be added as a requirement crosswalk until catalog review."
-    },
-    {
-      "gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.41-ASYNC-CORRELATION-VALUES-OPTIONAL",
-      "source_id": "KMIPKIT-SRC-spec",
-      "source_path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
-      "source_section": "6.1.41",
-      "source_clause_id": null,
-      "source_locator": {
-        "kind": "table_body_row",
-        "section": "6.1.41",
-        "row_label": "Asynchronous Correlation Values",
-        "table": "request_payload",
-        "html_line_range": [
-          32456,
-          32474
-        ]
-      },
-      "source_locator_description": "§6.1.41 Query Asynchronous Requests request payload body row for Asynchronous Correlation Values (HTML lines 32456-32474)",
-      "html_line_range": [
-        32456,
-        32474
-      ],
-      "source_excerpt": "Asynchronous Correlation Values No Structure containing zero or more Asynchronous Correlation Value.",
-      "source_keywords": [],
-      "source_force": "optional_table_body_value",
-      "audited_statement": "The Query Asynchronous Requests request payload marks Asynchronous Correlation Values Required=No and describes it as Structure containing zero or more Asynchronous Correlation Value.",
-      "actor": "client",
-      "direction": "optional Asynchronous Correlation Values request payload value",
-      "condition": "A client elects to filter Query Asynchronous Requests by Asynchronous Correlation Values.",
-      "scope_disposition": "client_1_0",
-      "candidate_requirement_id": null,
-      "proposed_requirement_id": "KMIPKIT-REQ-SPEC-6.1.41-005",
-      "status": "stable_label_proposed_not_in_catalog",
-      "review_note": "Source-only proposal for the optional Asynchronous Correlation Values request row. The row has no formal keyword and no active catalog requirement or source clause; do not create a requirement crosswalk."
-    },
-    {
-      "gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.41-OPERATIONS-OPTIONAL",
-      "source_id": "KMIPKIT-SRC-spec",
-      "source_path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
-      "source_section": "6.1.41",
-      "source_clause_id": null,
-      "source_locator": {
-        "kind": "table_body_row",
-        "section": "6.1.41",
-        "row_label": "Operations",
-        "table": "request_payload",
-        "html_line_range": [
-          32475,
-          32492
-        ]
-      },
-      "source_locator_description": "§6.1.41 Query Asynchronous Requests request payload body row for Operations (HTML lines 32475-32492)",
-      "html_line_range": [
-        32475,
-        32492
-      ],
-      "source_excerpt": "Operations No Structure Containing zero or more Operation.",
-      "source_keywords": [],
-      "source_force": "optional_table_body_value",
-      "audited_statement": "The Query Asynchronous Requests request payload marks Operations Required=No and describes it as Structure Containing zero or more Operation.",
-      "actor": "client",
-      "direction": "optional Operations request payload value",
-      "condition": "A client elects to filter Query Asynchronous Requests by Operations.",
-      "scope_disposition": "client_1_0",
-      "candidate_requirement_id": null,
-      "proposed_requirement_id": "KMIPKIT-REQ-SPEC-6.1.41-006",
-      "status": "stable_label_proposed_not_in_catalog",
-      "review_note": "Source-only proposal for the optional Operations request row. The row has no formal keyword and no active catalog requirement or source clause; do not create a requirement crosswalk."
-    },
-    {
       "gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.42-RECOVER-AUTHENTICATION-SHOULD-ACTOR-UNRESOLVED",
       "source_id": "KMIPKIT-SRC-spec",
       "source_path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
@@ -84147,10 +85367,10 @@
       "direction": "identify the public key only by Unique Identifier when Certificate Request is omitted",
       "condition": "When Certificate Request is omitted.",
       "scope_disposition": "client_1_0",
-      "candidate_requirement_id": null,
-      "proposed_requirement_id": "KMIPKIT-REQ-SPEC-6.1.45-002-003",
-      "status": "stable_label_proposed_not_in_catalog",
-      "review_note": "A source-only stable-label proposal remains outside the catalog until a separately approved normative catalog change assigns it."
+      "candidate_requirement_id": "KMIPKIT-REQ-SPEC-6.1.45-002-003",
+      "proposed_requirement_id": null,
+      "status": "source_obligation_covered_by_existing_stable_label",
+      "review_note": "Pinned Specification v2.1 source atom is assigned to KMIPKIT-REQ-SPEC-6.1.45-002-003; server-only neighbor atoms remain outside the client requirement mapping."
     },
     {
       "gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.54-ENDPOINT-ROLE-REQUIRED",
@@ -87322,6 +88542,155 @@
       "evidence_disposition": {
         "status": "mapped_to_feature_contract",
         "statement": "The linked protocol test verifies the caller-supplied message is encoded in the required Log Message field and redacted from local Debug diagnostics; the fake-transport test confirms one Log exchange carries the required field. Log is not added to any profile, callers must not submit secrets, and these tests make no claim about server-side acceptance, storage, or logging effects."
+      }
+    },
+    {
+      "gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.39-ASYNC-CORRELATION-VALUE-REQUIRED",
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+      "source_section": "6.1.39",
+      "source_clause_id": null,
+      "source_locator": {
+        "kind": "table_body_row",
+        "section": "6.1.39",
+        "row_label": "Asynchronous Correlation Value",
+        "table": "request_payload",
+        "html_line_range": [
+          31618,
+          31636
+        ]
+      },
+      "source_locator_description": "§6.1.39 Table 278 request payload row Asynchronous Correlation Value (HTML lines 31618–31636)",
+      "html_line_range": [
+        31618,
+        31636
+      ],
+      "source_excerpt": "Asynchronous Correlation Value Yes The value of the Asynchronous Correlation Value for the Batch Item to be made “synchronous”",
+      "source_keywords": [],
+      "source_force": "required_table_body_value",
+      "audited_statement": "Source-only proposal for the Required=Yes Asynchronous Correlation Value Process request row. The stable ID is not present in the catalog and must not be added as a requirement crosswalk until catalog review.",
+      "actor": "client",
+      "direction": "include the Asynchronous Correlation Value in the Process request payload",
+      "condition": "A Process request changes handling of a prior asynchronous request.",
+      "scope_disposition": "client_1_0",
+      "status": "mapped_to_approved_feature_contract",
+      "review_note": "Source table field contract mapped through KMIPKIT-ELEM-OP-C2S-PROCESS and KMIPKIT-0009 FR-005; this row does not create a standalone REQ record.",
+      "contract_kind": "operation_request_table_field",
+      "table_number": 278,
+      "requiredness": "Yes",
+      "operation_element_id": "KMIPKIT-ELEM-OP-C2S-PROCESS",
+      "functional_requirement_ids": [
+        "FR-005"
+      ],
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/process.rs::ProcessRequest::to_ttlv_payload"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/process_tests.rs::process_request_contains_only_the_required_exact_correlation_field"
+      ],
+      "evidence_disposition": {
+        "status": "mapped_to_feature_contract",
+        "statement": "Implementation and executable tests are linked through KMIPKIT-ELEM-OP-C2S-PROCESS and KMIPKIT-0009 FR-005; this table cell does not create a standalone REQ record."
+      }
+    },
+    {
+      "gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.41-ASYNC-CORRELATION-VALUES-OPTIONAL",
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+      "source_section": "6.1.41",
+      "source_clause_id": null,
+      "source_locator": {
+        "kind": "table_body_row",
+        "section": "6.1.41",
+        "row_label": "Asynchronous Correlation Values",
+        "table": "request_payload",
+        "html_line_range": [
+          32456,
+          32474
+        ]
+      },
+      "source_locator_description": "§6.1.41 Table 285 request payload row Asynchronous Correlation Values (HTML lines 32456–32474)",
+      "html_line_range": [
+        32456,
+        32474
+      ],
+      "source_excerpt": "Asynchronous Correlation Values No Structure containing zero or more Asynchronous Correlation Value.",
+      "source_keywords": [],
+      "source_force": "optional_table_body_value",
+      "audited_statement": "Source-only proposal for the optional Asynchronous Correlation Values request row. The row has no formal keyword and no active catalog requirement or source clause; do not create a requirement crosswalk.",
+      "actor": "client",
+      "direction": "optional Asynchronous Correlation Values request payload value",
+      "condition": "The caller selects an optional asynchronous correlation-value filter.",
+      "scope_disposition": "client_1_0",
+      "status": "mapped_to_approved_feature_contract",
+      "review_note": "Source table field contract mapped through KMIPKIT-ELEM-OP-C2S-QUERY-ASYNCHRONOUS-REQUESTS and KMIPKIT-0009 FR-006; this row does not create a standalone REQ record.",
+      "contract_kind": "operation_request_table_field",
+      "table_number": 285,
+      "requiredness": "No",
+      "operation_element_id": "KMIPKIT-ELEM-OP-C2S-QUERY-ASYNCHRONOUS-REQUESTS",
+      "functional_requirement_ids": [
+        "FR-006"
+      ],
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/query_async_requests.rs::QueryAsyncRequestsRequest::with_correlation_values"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/query_async_requests_tests.rs::query_encodes_each_optional_filter_independently",
+        "crates/kmipkit-protocol/tests/unit/query_async_requests_tests.rs::query_filters_preserve_absence_order_repetition_and_arbitrary_bytes"
+      ],
+      "evidence_disposition": {
+        "status": "mapped_to_feature_contract",
+        "statement": "Implementation and executable tests are linked through KMIPKIT-ELEM-OP-C2S-QUERY-ASYNCHRONOUS-REQUESTS and KMIPKIT-0009 FR-006; this table cell does not create a standalone REQ record."
+      }
+    },
+    {
+      "gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.41-OPERATIONS-OPTIONAL",
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+      "source_section": "6.1.41",
+      "source_clause_id": null,
+      "source_locator": {
+        "kind": "table_body_row",
+        "section": "6.1.41",
+        "row_label": "Operations",
+        "table": "request_payload",
+        "html_line_range": [
+          32475,
+          32492
+        ]
+      },
+      "source_locator_description": "§6.1.41 Table 285 request payload row Operations (HTML lines 32475–32492)",
+      "html_line_range": [
+        32475,
+        32492
+      ],
+      "source_excerpt": "Operations No Structure Containing zero or more Operation.",
+      "source_keywords": [],
+      "source_force": "optional_table_body_value",
+      "audited_statement": "Source-only proposal for the optional Operations request row. The row has no formal keyword and no active catalog requirement or source clause; do not create a requirement crosswalk.",
+      "actor": "client",
+      "direction": "optional Operations request payload value",
+      "condition": "The caller selects an optional Operations filter.",
+      "scope_disposition": "client_1_0",
+      "status": "mapped_to_approved_feature_contract",
+      "review_note": "Source table field contract mapped through KMIPKIT-ELEM-OP-C2S-QUERY-ASYNCHRONOUS-REQUESTS and KMIPKIT-0009 FR-006; this row does not create a standalone REQ record.",
+      "contract_kind": "operation_request_table_field",
+      "table_number": 285,
+      "requiredness": "No",
+      "operation_element_id": "KMIPKIT-ELEM-OP-C2S-QUERY-ASYNCHRONOUS-REQUESTS",
+      "functional_requirement_ids": [
+        "FR-006"
+      ],
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/query_async_requests.rs::QueryAsyncRequestsRequest::with_operations"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/query_async_requests_tests.rs::query_encodes_each_optional_filter_independently",
+        "crates/kmipkit-protocol/tests/unit/query_async_requests_tests.rs::query_filters_preserve_absence_order_repetition_and_arbitrary_bytes"
+      ],
+      "evidence_disposition": {
+        "status": "mapped_to_feature_contract",
+        "statement": "Implementation and executable tests are linked through KMIPKIT-ELEM-OP-C2S-QUERY-ASYNCHRONOUS-REQUESTS and KMIPKIT-0009 FR-006; this table cell does not create a standalone REQ record."
       }
     }
   ]

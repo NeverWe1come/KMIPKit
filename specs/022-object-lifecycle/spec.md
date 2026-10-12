@@ -149,7 +149,7 @@ As a KMIPKit caller, I can send the §6.1.45 Re-certify request and inspect the 
 3. Given a Table 302 failure, malformed payload, or transport error, when the call completes, then status/reason or error and delivery state remain available without retry.
 4. Given Pending in a caller-enabled typed batch, when the response arrives, then Pending and the exact correlation bytes remain available without an implicit Poll.
 
-**Specific rules**: One certificate per request; support optional Offset, certificate request, attributes, masks, and the date/attribute rules in Tables 298–299. Under §6.1.45, the server SHALL create replacement/replaced links and update the public-key Certificate link.
+**Specific rules**: One certificate per request; support optional Offset, certificate request, attributes, masks, and the date/attribute rules in Tables 298–299. If Certificate Request is omitted, identify the public key for the generated Certificate by its Unique Identifier only. Under §6.1.45, the server SHALL create replacement/replaced links and update the public-key Certificate link.
 
 **Payload schema** (OASIS Specification v2.1 §6.1.45, Tables 300–301):
 
@@ -355,6 +355,7 @@ Stable IDs and summaries below come from the checked-in normative catalog. The i
 | KMIPKIT-REQ-SPEC-6.1.44-003-002 | §6.1.44 | SHALL NOT | Do not specify Compromise Occurrence Date for other revocation reasons. |
 | KMIPKIT-REQ-SPEC-6.1.45-001 | §6.1.45 | SHALL | A Re-certify request must renew only one certificate. |
 | KMIPKIT-REQ-SPEC-6.1.45-002-001 | §6.1.45 | MAY | A client may omit Certificate Request and identify the public key by Unique Identifier. |
+| KMIPKIT-REQ-SPEC-6.1.45-002-003 | §6.1.45 | SHALL | When omitting Certificate Request, the client identifies the public key only by Unique Identifier. |
 | KMIPKIT-REQ-SPEC-6.1.45-004 | §6.1.45 | SHOULD | A client should perform Re-certify no more than once on a given existing certificate. |
 | KMIPKIT-REQ-SPEC-6.1.45-006-001 | §6.1.45 | MAY | A client may set Offset to determine the date difference for the new certificate. |
 | KMIPKIT-REQ-SPEC-6.1.45-008 | §6.1.45 | REQUIRED | Certificate Request Type is required when Certificate Request is present. |

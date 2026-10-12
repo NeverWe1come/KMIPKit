@@ -66,7 +66,7 @@ class SourceGapAdjudicationTests(unittest.TestCase):
                 self.assertEqual(gap["status"], "source_obligation_covered_by_existing_stable_label")
                 self.assertEqual(requirement["source_gap_id"], gap_id)
                 self.assertEqual(requirement["source_force"], "required_table_body_value")
-                self.assertEqual(requirement["scope_state"], "profile_conditional")
+                self.assertEqual(requirement["scope_state"], "client_1_0")
 
     def test_optional_dsa_q_is_not_misclassified_as_a_required_source_gap(self) -> None:
         oracle = _load_json(ORACLE_PATH)

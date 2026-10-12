@@ -14336,13 +14336,15 @@
         "SHALL",
         "SHOULD"
       ],
-      "disposition": "server_only",
-      "requirement_ids": [],
-      "exclusion_rationale": "The clause assigns attribute creation/defaulting, server state, or response behavior to the server; it creates no client-duty record.",
-      "role": "server",
-      "direction": "unclear",
-      "scope_state": "server_only",
-      "condition": "Alias behavior applies to Get with PKCS#12 format."
+      "disposition": "requirement",
+      "requirement_ids": [
+        "KMIPKIT-REQ-SPEC-4.39-002-001"
+      ],
+      "exclusion_rationale": null,
+      "role": "both",
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "condition": "The client lowercase recommendation and server alias/response behavior apply to PKCS#12 Friendly Name use."
     },
     {
       "clause_id": "KMIPKIT-CLAUSE-SPEC-4.39-003",
@@ -16995,10 +16997,10 @@
         "KMIPKIT-REQ-SPEC-6.1.14-002"
       ],
       "exclusion_rationale": null,
-      "role": "client",
-      "direction": "client_to_server",
-      "scope_state": "client_1_0",
-      "condition": null
+      "role": "unclear",
+      "direction": "unclear",
+      "scope_state": "unclear",
+      "condition": "The source assigns multiple input keys or Secret Data objects to some derivation methods but does not identify the endpoint responsible for selecting or supplying them."
     },
     {
       "clause_id": "KMIPKIT-CLAUSE-SPEC-6.1.14-003",
@@ -17093,7 +17095,6 @@
       ],
       "disposition": "requirement",
       "requirement_ids": [
-        "KMIPKIT-REQ-SPEC-6.1.14-007-001",
         "KMIPKIT-REQ-SPEC-6.1.14-007-002"
       ],
       "exclusion_rationale": null,
@@ -17606,13 +17607,15 @@
         "SHALL",
         "SHALL NOT"
       ],
-      "disposition": "server_only",
-      "requirement_ids": [],
-      "exclusion_rationale": "Server behavior or output; no 1.0 client requirement.",
+      "disposition": "requirement",
+      "requirement_ids": [
+        "KMIPKIT-REQ-SPEC-6.1.18-001-001"
+      ],
+      "exclusion_rationale": null,
       "role": "both",
-      "direction": "client_to_server",
-      "scope_state": "server_only",
-      "condition": null
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "condition": "Client request controls and server response content are separate source obligations."
     },
     {
       "clause_id": "KMIPKIT-CLAUSE-SPEC-6.1.18-002",
@@ -21905,7 +21908,8 @@
       "disposition": "requirement",
       "requirement_ids": [
         "KMIPKIT-REQ-SPEC-6.1.45-002-001",
-        "KMIPKIT-REQ-SPEC-6.1.45-002-002"
+        "KMIPKIT-REQ-SPEC-6.1.45-002-002",
+        "KMIPKIT-REQ-SPEC-6.1.45-002-003"
       ],
       "exclusion_rationale": null,
       "role": "both",
@@ -58853,7 +58857,7 @@
       "requirement_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
+      "feature_spec": "KMIPKIT-0009",
       "implementation_refs": [],
       "verification_refs": [],
       "payload_tables": [
@@ -58977,7 +58981,7 @@
       "requirement_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
+      "feature_spec": "KMIPKIT-0009",
       "implementation_refs": [],
       "verification_refs": [],
       "payload_tables": [
@@ -61820,7 +61824,9 @@
       "parent_element_ids": [
         "KMIPKIT-ELEM-OBJECT-STRUCTURE-KEY-BLOCK"
       ],
-      "requirement_ids": [],
+      "requirement_ids": [
+        "KMIPKIT-REQ-SPEC-3.1-007"
+      ],
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": null,
@@ -61892,7 +61898,9 @@
       "parent_element_ids": [
         "KMIPKIT-ELEM-OBJECT-STRUCTURE-3-10-KEY-MATERIAL"
       ],
-      "requirement_ids": [],
+      "requirement_ids": [
+        "KMIPKIT-REQ-SPEC-3.10-003"
+      ],
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": null,
@@ -61940,7 +61948,9 @@
       "parent_element_ids": [
         "KMIPKIT-ELEM-OBJECT-STRUCTURE-3-10-KEY-MATERIAL"
       ],
-      "requirement_ids": [],
+      "requirement_ids": [
+        "KMIPKIT-REQ-SPEC-3.10-002"
+      ],
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": null,
@@ -61988,7 +61998,9 @@
       "parent_element_ids": [
         "KMIPKIT-ELEM-OBJECT-STRUCTURE-3-10-KEY-MATERIAL"
       ],
-      "requirement_ids": [],
+      "requirement_ids": [
+        "KMIPKIT-REQ-SPEC-3.10-004"
+      ],
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": null,
@@ -62012,7 +62024,9 @@
       "parent_element_ids": [
         "KMIPKIT-ELEM-OBJECT-STRUCTURE-3-11-KEY-MATERIAL"
       ],
-      "requirement_ids": [],
+      "requirement_ids": [
+        "KMIPKIT-REQ-SPEC-3.11-003"
+      ],
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": null,
@@ -62036,7 +62050,9 @@
       "parent_element_ids": [
         "KMIPKIT-ELEM-OBJECT-STRUCTURE-3-11-KEY-MATERIAL"
       ],
-      "requirement_ids": [],
+      "requirement_ids": [
+        "KMIPKIT-REQ-SPEC-3.11-002"
+      ],
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": null,
@@ -62060,7 +62076,9 @@
       "parent_element_ids": [
         "KMIPKIT-ELEM-OBJECT-STRUCTURE-3-12-KEY-MATERIAL"
       ],
-      "requirement_ids": [],
+      "requirement_ids": [
+        "KMIPKIT-REQ-SPEC-3.12-003"
+      ],
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": null,
@@ -62084,7 +62102,9 @@
       "parent_element_ids": [
         "KMIPKIT-ELEM-OBJECT-STRUCTURE-3-12-KEY-MATERIAL"
       ],
-      "requirement_ids": [],
+      "requirement_ids": [
+        "KMIPKIT-REQ-SPEC-3.12-002"
+      ],
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": null,
@@ -62132,7 +62152,9 @@
       "parent_element_ids": [
         "KMIPKIT-ELEM-OBJECT-STRUCTURE-KEY-VALUE"
       ],
-      "requirement_ids": [],
+      "requirement_ids": [
+        "KMIPKIT-REQ-SPEC-3.2-003"
+      ],
       "profile_ids": [],
       "test_case_ids": [
         "KMIPKIT-TEST-CN01-2-61",
@@ -62184,7 +62206,9 @@
       "parent_element_ids": [
         "KMIPKIT-ELEM-OBJECT-STRUCTURE-ENCRYPTION-KEY-INFORMATION"
       ],
-      "requirement_ids": [],
+      "requirement_ids": [
+        "KMIPKIT-REQ-SPEC-3.3-011"
+      ],
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": null,
@@ -62328,7 +62352,9 @@
       "parent_element_ids": [
         "KMIPKIT-ELEM-OBJECT-STRUCTURE-KEY-WRAPPING-DATA"
       ],
-      "requirement_ids": [],
+      "requirement_ids": [
+        "KMIPKIT-REQ-SPEC-3.3-010"
+      ],
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": null,
@@ -62400,7 +62426,9 @@
       "parent_element_ids": [
         "KMIPKIT-ELEM-OBJECT-STRUCTURE-3-4-KEY-MATERIAL"
       ],
-      "requirement_ids": [],
+      "requirement_ids": [
+        "KMIPKIT-REQ-SPEC-3.4-002"
+      ],
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": null,
@@ -62424,7 +62452,9 @@
       "parent_element_ids": [
         "KMIPKIT-ELEM-OBJECT-STRUCTURE-3-5-KEY-MATERIAL"
       ],
-      "requirement_ids": [],
+      "requirement_ids": [
+        "KMIPKIT-REQ-SPEC-3.5-004"
+      ],
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": null,
@@ -62448,7 +62478,9 @@
       "parent_element_ids": [
         "KMIPKIT-ELEM-OBJECT-STRUCTURE-3-5-KEY-MATERIAL"
       ],
-      "requirement_ids": [],
+      "requirement_ids": [
+        "KMIPKIT-REQ-SPEC-3.5-002"
+      ],
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": null,
@@ -62472,7 +62504,9 @@
       "parent_element_ids": [
         "KMIPKIT-ELEM-OBJECT-STRUCTURE-3-5-KEY-MATERIAL"
       ],
-      "requirement_ids": [],
+      "requirement_ids": [
+        "KMIPKIT-REQ-SPEC-3.5-003"
+      ],
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": null,
@@ -62496,7 +62530,9 @@
       "parent_element_ids": [
         "KMIPKIT-ELEM-OBJECT-STRUCTURE-3-5-KEY-MATERIAL"
       ],
-      "requirement_ids": [],
+      "requirement_ids": [
+        "KMIPKIT-REQ-SPEC-3.5-005"
+      ],
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": null,
@@ -62520,7 +62556,9 @@
       "parent_element_ids": [
         "KMIPKIT-ELEM-OBJECT-STRUCTURE-3-6-KEY-MATERIAL"
       ],
-      "requirement_ids": [],
+      "requirement_ids": [
+        "KMIPKIT-REQ-SPEC-3.6-004"
+      ],
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": null,
@@ -62544,7 +62582,9 @@
       "parent_element_ids": [
         "KMIPKIT-ELEM-OBJECT-STRUCTURE-3-6-KEY-MATERIAL"
       ],
-      "requirement_ids": [],
+      "requirement_ids": [
+        "KMIPKIT-REQ-SPEC-3.6-002"
+      ],
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": null,
@@ -62592,7 +62632,9 @@
       "parent_element_ids": [
         "KMIPKIT-ELEM-OBJECT-STRUCTURE-3-6-KEY-MATERIAL"
       ],
-      "requirement_ids": [],
+      "requirement_ids": [
+        "KMIPKIT-REQ-SPEC-3.6-005"
+      ],
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": null,
@@ -62640,7 +62682,9 @@
       "parent_element_ids": [
         "KMIPKIT-ELEM-OBJECT-STRUCTURE-3-7-KEY-MATERIAL"
       ],
-      "requirement_ids": [],
+      "requirement_ids": [
+        "KMIPKIT-REQ-SPEC-3.7-003"
+      ],
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": null,
@@ -62808,7 +62852,9 @@
       "parent_element_ids": [
         "KMIPKIT-ELEM-OBJECT-STRUCTURE-3-8-KEY-MATERIAL"
       ],
-      "requirement_ids": [],
+      "requirement_ids": [
+        "KMIPKIT-REQ-SPEC-3.8-002"
+      ],
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": null,
@@ -62832,7 +62878,9 @@
       "parent_element_ids": [
         "KMIPKIT-ELEM-OBJECT-STRUCTURE-3-8-KEY-MATERIAL"
       ],
-      "requirement_ids": [],
+      "requirement_ids": [
+        "KMIPKIT-REQ-SPEC-3.8-003"
+      ],
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": null,
@@ -62856,7 +62904,9 @@
       "parent_element_ids": [
         "KMIPKIT-ELEM-OBJECT-STRUCTURE-3-9-KEY-MATERIAL"
       ],
-      "requirement_ids": [],
+      "requirement_ids": [
+        "KMIPKIT-REQ-SPEC-3.9-003"
+      ],
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": null,
@@ -62904,7 +62954,9 @@
       "parent_element_ids": [
         "KMIPKIT-ELEM-OBJECT-STRUCTURE-3-9-KEY-MATERIAL"
       ],
-      "requirement_ids": [],
+      "requirement_ids": [
+        "KMIPKIT-REQ-SPEC-3.9-002"
+      ],
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": null,
@@ -62952,7 +63004,9 @@
       "parent_element_ids": [
         "KMIPKIT-ELEM-OBJECT-STRUCTURE-3-9-KEY-MATERIAL"
       ],
-      "requirement_ids": [],
+      "requirement_ids": [
+        "KMIPKIT-REQ-SPEC-3.9-004"
+      ],
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": null,
@@ -64217,7 +64271,9 @@
       "parent_element_ids": [
         "KMIPKIT-ELEM-ATTRIBUTE-STRUCTURE-5-5-ATTRIBUTE-REFERENCE"
       ],
-      "requirement_ids": [],
+      "requirement_ids": [
+        "KMIPKIT-REQ-SPEC-5.5-004"
+      ],
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": null,
@@ -64241,7 +64297,9 @@
       "parent_element_ids": [
         "KMIPKIT-ELEM-ATTRIBUTE-STRUCTURE-5-5-ATTRIBUTE-REFERENCE"
       ],
-      "requirement_ids": [],
+      "requirement_ids": [
+        "KMIPKIT-REQ-SPEC-5.5-005"
+      ],
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": null,
@@ -64265,7 +64323,9 @@
       "parent_element_ids": [
         "KMIPKIT-ELEM-ATTRIBUTE-STRUCTURE-5-5-ATTRIBUTE-REFERENCE"
       ],
-      "requirement_ids": [],
+      "requirement_ids": [
+        "KMIPKIT-REQ-SPEC-5.5-003"
+      ],
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": null,
@@ -64289,7 +64349,9 @@
       "parent_element_ids": [
         "KMIPKIT-ELEM-ATTRIBUTE-STRUCTURE-5-6-CURRENT-ATTRIBUTE"
       ],
-      "requirement_ids": [],
+      "requirement_ids": [
+        "KMIPKIT-REQ-SPEC-5.6-002"
+      ],
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": null,
@@ -64313,7 +64375,9 @@
       "parent_element_ids": [
         "KMIPKIT-ELEM-ATTRIBUTE-STRUCTURE-5-7-NEW-ATTRIBUTE"
       ],
-      "requirement_ids": [],
+      "requirement_ids": [
+        "KMIPKIT-REQ-SPEC-5.7-002"
+      ],
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": null,
@@ -81084,7 +81148,7 @@
       "negative_verification_required": false,
       "decision_id": null,
       "status": "unassigned",
-      "review_note": "The source atom is represented without inferring the intended 5.10.1 reference. Its implementation and positive verification are unassigned; the discrepancy remains open and no support is claimed."
+      "review_note": "The pinned source atom is represented without inferring the intended 5.10.1 reference. Its implementation, positive verification, and applicable official test cases remain unassigned; the discrepancy remains open and no support is claimed."
     },
     {
       "requirement_id": "KMIPKIT-REQ-PROF-5.13.1-003",
@@ -88765,6 +88829,38 @@
       "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
     },
     {
+      "requirement_id": "KMIPKIT-REQ-SPEC-4.39-002-001",
+      "source_clause_ids": [
+        "KMIPKIT-CLAUSE-SPEC-4.39-002"
+      ],
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "4.39"
+        }
+      ],
+      "source_keyword": "SHOULD",
+      "normative_strength": "recommended",
+      "subject": "PKCS#12 Friendly Name text",
+      "summary": "Clients should use lowercase text for a PKCS#12 Friendly Name.",
+      "role": "client",
+      "direction": "client_to_server",
+      "condition": "When the client represents a PKCS#12 Friendly Name value.",
+      "scope_state": "client_1_0",
+      "element_ids": [
+        "KMIPKIT-ELEM-ATTRIBUTE-PKCS-12-FRIENDLY-NAME"
+      ],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": "KMIPKIT-0016",
+      "implementation_refs": [],
+      "verification_refs": [],
+      "negative_verification_required": false,
+      "decision_id": null,
+      "status": "unassigned",
+      "review_note": "The pinned client-side SHOULD is separate from the server alias default and response-encoding duties. Implementation, positive verification, and applicable official test cases remain unassigned."
+    },
+    {
       "requirement_id": "KMIPKIT-REQ-SPEC-4.4-001",
       "source_clause_ids": [
         "KMIPKIT-CLAUSE-SPEC-4.4-001"
@@ -91579,10 +91675,10 @@
       "normative_strength": "permission_or_optional",
       "subject": "Derive Key request",
       "summary": "A client may identify derivation inputs, select a derivation method, and provide its parameters.",
-      "role": "client",
-      "direction": "client_to_server",
-      "condition": null,
-      "scope_state": "client_1_0",
+      "role": "unclear",
+      "direction": "unclear",
+      "condition": "The source assigns multiple input keys or Secret Data objects to some derivation methods but does not identify the endpoint responsible for selecting or supplying them.",
+      "scope_state": "unclear",
       "element_ids": [
         "KMIPKIT-ELEM-OP-C2S-DERIVE-KEY",
         "KMIPKIT-ELEM-TAG-420030",
@@ -91593,19 +91689,13 @@
       ],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": "KMIPKIT-0037",
-      "implementation_refs": [
-        "crates/kmipkit-protocol/src/derive_key.rs",
-        "crates/kmipkit-client/src/execute.rs"
-      ],
-      "verification_refs": [
-        "crates/kmipkit-protocol/tests/unit/derive_key_operation_tests.rs::request_encodes_required_table_205_fields_in_order_and_repeats_identifiers",
-        "crates/kmipkit-protocol/tests/unit/derive_key_operation_tests.rs::method_conditional_fields_are_checked_without_selecting_defaults"
-      ],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
       "negative_verification_required": false,
       "decision_id": null,
-      "status": "verified",
-      "review_note": "No requirement-specific official Test Cases ID is asserted as executed against the pinned OASIS Test Cases source; local tests use source-derived table vectors."
+      "status": "unassigned",
+      "review_note": "Pinned Specification v2.1 §6.1.14 says some derivation methods MAY use multiple keys or Secret Data objects. The normative subject is the method; client actor and client-profile applicability are unresolved, so no client conformance claim or executable mapping is assigned. No requirement-specific official test case is assigned for a client capability."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.14-006-001",
@@ -91685,16 +91775,14 @@
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.14-007-001",
-      "source_clause_ids": [
-        "KMIPKIT-CLAUSE-SPEC-6.1.14-007"
-      ],
+      "source_clause_ids": [],
       "source_refs": [
         {
           "source_id": "KMIPKIT-SRC-spec",
           "section": "6.1.14"
         }
       ],
-      "source_keyword": "SHALL",
+      "source_keyword": null,
       "normative_strength": "mandatory",
       "subject": "derived object attributes",
       "summary": "Specify the desired attributes for the new object.",
@@ -91719,7 +91807,19 @@
       "negative_verification_required": false,
       "decision_id": null,
       "status": "verified",
-      "review_note": "No requirement-specific official Test Cases ID is asserted as executed against the pinned OASIS Test Cases source; local tests use source-derived table vectors."
+      "review_note": "Pinned Specification v2.1 Table 205 marks the Attributes request member Required=Yes. This is table-field requiredness, not a formal SHALL; the local request-construction test verifies encoding. No requirement-specific official test case execution is claimed.",
+      "source_force": "required_table_body_value",
+      "source_gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.14-ATTRIBUTES-REQUIRED",
+      "source_locator": {
+        "kind": "table_body_row",
+        "section": "6.1.14",
+        "row_label": "Attributes",
+        "table": "request_payload",
+        "html_line_range": [
+          25980,
+          26001
+        ]
+      }
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.14-007-002",
@@ -92226,6 +92326,38 @@
       "decision_id": null,
       "status": "unassigned",
       "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
+    },
+    {
+      "requirement_id": "KMIPKIT-REQ-SPEC-6.1.18-001-001",
+      "source_clause_ids": [
+        "KMIPKIT-CLAUSE-SPEC-6.1.18-001"
+      ],
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "6.1.18"
+        }
+      ],
+      "source_keyword": "SHALL",
+      "normative_strength": "mandatory",
+      "subject": "Export request control semantics",
+      "summary": "The client applies the same semantics as Get to the four Export format and wrapping controls.",
+      "role": "client",
+      "direction": "client_to_server",
+      "condition": null,
+      "scope_state": "client_1_0",
+      "element_ids": [
+        "KMIPKIT-ELEM-OP-C2S-EXPORT"
+      ],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": "KMIPKIT-0037",
+      "implementation_refs": [],
+      "verification_refs": [],
+      "negative_verification_required": false,
+      "decision_id": null,
+      "status": "unassigned",
+      "review_note": "This pinned source atom is the client request duty only. The adjacent destroyed-object key-material SHALL not be returned predicate remains a separate server duty; implementation, positive verification, and applicable official test cases remain unassigned."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.18-005",
@@ -95323,6 +95455,39 @@
       "decision_id": null,
       "status": "retired",
       "review_note": "Source review found this stable label was falsely assigned to a client. The exact server-side source atom remains in the review record; this label is retained as a retired audit trail, not a client requirement."
+    },
+    {
+      "requirement_id": "KMIPKIT-REQ-SPEC-6.1.45-002-003",
+      "source_clause_ids": [
+        "KMIPKIT-CLAUSE-SPEC-6.1.45-002"
+      ],
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "6.1.45"
+        }
+      ],
+      "source_keyword": "SHALL",
+      "normative_strength": "mandatory",
+      "subject": "Re-certify public-key identifier when Certificate Request is omitted",
+      "summary": "When omitting Certificate Request, the client identifies the public key only by Unique Identifier.",
+      "role": "client",
+      "direction": "client_to_server",
+      "condition": "When Certificate Request is omitted.",
+      "scope_state": "client_1_0",
+      "element_ids": [
+        "KMIPKIT-ELEM-ATTRIBUTE-UNIQUE-IDENTIFIER",
+        "KMIPKIT-ELEM-OP-C2S-RE-CERTIFY"
+      ],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": "KMIPKIT-0036",
+      "implementation_refs": [],
+      "verification_refs": [],
+      "negative_verification_required": false,
+      "decision_id": null,
+      "status": "unassigned",
+      "review_note": "This pinned conditional client SHALL is distinct from the optional omission permission and from the server Certificate Type fallback. Implementation, positive verification, and applicable official test cases remain unassigned."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.45-004",
@@ -99720,6 +99885,1236 @@
       "decision_id": null,
       "status": "verified",
       "review_note": "KMIPKIT-0006 owns the in-memory client protocol model for this clause; outbound execution behavior remains assigned to its follow-on owner where specified. No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002."
+    },
+    {
+      "requirement_id": "KMIPKIT-REQ-SPEC-3.1-007",
+      "source_clause_ids": [],
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "3.1"
+        }
+      ],
+      "source_keyword": null,
+      "normative_strength": "mandatory",
+      "source_force": "required_table_body_value",
+      "source_gap_id": "KMIPKIT-SOURCE-GAP-SPEC-3.1-KEY-FORMAT-TYPE",
+      "source_locator": {
+        "kind": "table_body_row",
+        "section": "3.1",
+        "row_label": "Key Format Type",
+        "html_line_range": [
+          7698,
+          7716
+        ]
+      },
+      "subject": "Key Format Type structure member",
+      "summary": "Include the required Key Format Type member when its enclosing structure is present.",
+      "role": "client",
+      "direction": "both",
+      "condition": "A Key Block is present.",
+      "scope_state": "client_1_0",
+      "element_ids": [
+        "KMIPKIT-ELEM-STRUCTURE-MEMBER-3-1-KEY-BLOCK-KEY-FORMAT-TYPE"
+      ],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "negative_verification_required": false,
+      "decision_id": null,
+      "status": "unassigned",
+      "review_note": "Pinned OASIS KMIP Specification v2.1 table body row records Required=Yes, not a formal RFC keyword. The implementation and positive verification remain unassigned; the pinned OASIS Test Cases inventory has no linked official test case asserted here."
+    },
+    {
+      "requirement_id": "KMIPKIT-REQ-SPEC-3.2-003",
+      "source_clause_ids": [],
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "3.2"
+        }
+      ],
+      "source_keyword": null,
+      "normative_strength": "mandatory",
+      "source_force": "required_table_body_value",
+      "source_gap_id": "KMIPKIT-SOURCE-GAP-SPEC-3.2-KEY-MATERIAL",
+      "source_locator": {
+        "kind": "table_body_row",
+        "section": "3.2",
+        "row_label": "Key Material",
+        "html_line_range": [
+          7893,
+          7914
+        ]
+      },
+      "subject": "Key Material structure member",
+      "summary": "Include the required Key Material member when its enclosing structure is present.",
+      "role": "client",
+      "direction": "both",
+      "condition": "A Key Value is present.",
+      "scope_state": "client_1_0",
+      "element_ids": [
+        "KMIPKIT-ELEM-STRUCTURE-MEMBER-3-2-KEY-VALUE-KEY-MATERIAL"
+      ],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "negative_verification_required": false,
+      "decision_id": null,
+      "status": "unassigned",
+      "review_note": "Pinned OASIS KMIP Specification v2.1 table body row records Required=Yes, not a formal RFC keyword. The implementation and positive verification remain unassigned; the pinned OASIS Test Cases inventory has no linked official test case asserted here."
+    },
+    {
+      "requirement_id": "KMIPKIT-REQ-SPEC-3.3-010",
+      "source_clause_ids": [],
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "3.3"
+        }
+      ],
+      "source_keyword": null,
+      "normative_strength": "mandatory",
+      "source_force": "required_table_body_value",
+      "source_gap_id": "KMIPKIT-SOURCE-GAP-SPEC-3.3-WRAPPING-METHOD",
+      "source_locator": {
+        "kind": "table_body_row",
+        "section": "3.3",
+        "row_label": "Wrapping Method",
+        "html_line_range": [
+          8114,
+          8132
+        ]
+      },
+      "subject": "Wrapping Method structure member",
+      "summary": "Include the required Wrapping Method member when its enclosing structure is present.",
+      "role": "client",
+      "direction": "both",
+      "condition": "Key Wrapping Data is present.",
+      "scope_state": "client_1_0",
+      "element_ids": [
+        "KMIPKIT-ELEM-STRUCTURE-MEMBER-3-3-KEY-WRAPPING-DATA-WRAPPING-METHOD"
+      ],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "negative_verification_required": false,
+      "decision_id": null,
+      "status": "unassigned",
+      "review_note": "Pinned OASIS KMIP Specification v2.1 table body row records Required=Yes, not a formal RFC keyword. The implementation and positive verification remain unassigned; the pinned OASIS Test Cases inventory has no linked official test case asserted here."
+    },
+    {
+      "requirement_id": "KMIPKIT-REQ-SPEC-3.3-011",
+      "source_clause_ids": [],
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "3.3"
+        }
+      ],
+      "source_keyword": null,
+      "normative_strength": "mandatory",
+      "source_force": "required_table_body_value",
+      "source_gap_id": "KMIPKIT-SOURCE-GAP-SPEC-3.3-UNIQUE-IDENTIFIER",
+      "source_locator": {
+        "kind": "table_body_row",
+        "section": "3.3",
+        "row_label": "Unique Identifier",
+        "html_line_range": [
+          8284,
+          8302
+        ]
+      },
+      "subject": "Unique Identifier structure member",
+      "summary": "Include the required Unique Identifier member when its enclosing structure is present.",
+      "role": "client",
+      "direction": "both",
+      "condition": "Encryption Key Information is present.",
+      "scope_state": "client_1_0",
+      "element_ids": [
+        "KMIPKIT-ELEM-STRUCTURE-MEMBER-3-3-ENCRYPTION-KEY-INFORMATION-UNIQUE-IDENTIFIER"
+      ],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "negative_verification_required": false,
+      "decision_id": null,
+      "status": "unassigned",
+      "review_note": "Pinned OASIS KMIP Specification v2.1 table body row records Required=Yes, not a formal RFC keyword. The implementation and positive verification remain unassigned; the pinned OASIS Test Cases inventory has no linked official test case asserted here."
+    },
+    {
+      "requirement_id": "KMIPKIT-REQ-SPEC-3.4-002",
+      "source_clause_ids": [],
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "3.4"
+        }
+      ],
+      "source_keyword": null,
+      "normative_strength": "mandatory",
+      "source_force": "required_table_body_value",
+      "source_gap_id": "KMIPKIT-SOURCE-GAP-SPEC-3.4-KEY",
+      "source_locator": {
+        "kind": "table_body_row",
+        "section": "3.4",
+        "row_label": "Key",
+        "html_line_range": [
+          8468,
+          8486
+        ]
+      },
+      "subject": "Key structure member",
+      "summary": "Include the required Key member when its enclosing structure is present.",
+      "role": "client",
+      "direction": "both",
+      "condition": "Transparent Symmetric Key Material is present.",
+      "scope_state": "client_1_0",
+      "element_ids": [
+        "KMIPKIT-ELEM-STRUCTURE-MEMBER-3-4-KEY-MATERIAL-KEY"
+      ],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "negative_verification_required": false,
+      "decision_id": null,
+      "status": "unassigned",
+      "review_note": "Pinned OASIS KMIP Specification v2.1 table body row records Required=Yes, not a formal RFC keyword. The implementation and positive verification remain unassigned; the pinned OASIS Test Cases inventory has no linked official test case asserted here."
+    },
+    {
+      "requirement_id": "KMIPKIT-REQ-SPEC-3.5-002",
+      "source_clause_ids": [],
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "3.5"
+        }
+      ],
+      "source_keyword": null,
+      "normative_strength": "mandatory",
+      "source_force": "required_table_body_value",
+      "source_gap_id": "KMIPKIT-SOURCE-GAP-SPEC-3.5-P",
+      "source_locator": {
+        "kind": "table_body_row",
+        "section": "3.5",
+        "row_label": "P",
+        "html_line_range": [
+          8544,
+          8562
+        ]
+      },
+      "subject": "P structure member",
+      "summary": "Include the required P member when its enclosing structure is present.",
+      "role": "client",
+      "direction": "both",
+      "condition": "Transparent DSA Private Key Material is present.",
+      "scope_state": "client_1_0",
+      "element_ids": [
+        "KMIPKIT-ELEM-STRUCTURE-MEMBER-3-5-KEY-MATERIAL-P"
+      ],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "negative_verification_required": false,
+      "decision_id": null,
+      "status": "unassigned",
+      "review_note": "Pinned OASIS KMIP Specification v2.1 table body row records Required=Yes, not a formal RFC keyword. The implementation and positive verification remain unassigned; the pinned OASIS Test Cases inventory has no linked official test case asserted here."
+    },
+    {
+      "requirement_id": "KMIPKIT-REQ-SPEC-3.5-003",
+      "source_clause_ids": [],
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "3.5"
+        }
+      ],
+      "source_keyword": null,
+      "normative_strength": "mandatory",
+      "source_force": "required_table_body_value",
+      "source_gap_id": "KMIPKIT-SOURCE-GAP-SPEC-3.5-Q",
+      "source_locator": {
+        "kind": "table_body_row",
+        "section": "3.5",
+        "row_label": "Q",
+        "html_line_range": [
+          8563,
+          8581
+        ]
+      },
+      "subject": "Q structure member",
+      "summary": "Include the required Q member when its enclosing structure is present.",
+      "role": "client",
+      "direction": "both",
+      "condition": "Transparent DSA Private Key Material is present.",
+      "scope_state": "client_1_0",
+      "element_ids": [
+        "KMIPKIT-ELEM-STRUCTURE-MEMBER-3-5-KEY-MATERIAL-Q"
+      ],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "negative_verification_required": false,
+      "decision_id": null,
+      "status": "unassigned",
+      "review_note": "Pinned OASIS KMIP Specification v2.1 table body row records Required=Yes, not a formal RFC keyword. The implementation and positive verification remain unassigned; the pinned OASIS Test Cases inventory has no linked official test case asserted here."
+    },
+    {
+      "requirement_id": "KMIPKIT-REQ-SPEC-3.5-004",
+      "source_clause_ids": [],
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "3.5"
+        }
+      ],
+      "source_keyword": null,
+      "normative_strength": "mandatory",
+      "source_force": "required_table_body_value",
+      "source_gap_id": "KMIPKIT-SOURCE-GAP-SPEC-3.5-G",
+      "source_locator": {
+        "kind": "table_body_row",
+        "section": "3.5",
+        "row_label": "G",
+        "html_line_range": [
+          8582,
+          8600
+        ]
+      },
+      "subject": "G structure member",
+      "summary": "Include the required G member when its enclosing structure is present.",
+      "role": "client",
+      "direction": "both",
+      "condition": "Transparent DSA Private Key Material is present.",
+      "scope_state": "client_1_0",
+      "element_ids": [
+        "KMIPKIT-ELEM-STRUCTURE-MEMBER-3-5-KEY-MATERIAL-G"
+      ],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "negative_verification_required": false,
+      "decision_id": null,
+      "status": "unassigned",
+      "review_note": "Pinned OASIS KMIP Specification v2.1 table body row records Required=Yes, not a formal RFC keyword. The implementation and positive verification remain unassigned; the pinned OASIS Test Cases inventory has no linked official test case asserted here."
+    },
+    {
+      "requirement_id": "KMIPKIT-REQ-SPEC-3.5-005",
+      "source_clause_ids": [],
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "3.5"
+        }
+      ],
+      "source_keyword": null,
+      "normative_strength": "mandatory",
+      "source_force": "required_table_body_value",
+      "source_gap_id": "KMIPKIT-SOURCE-GAP-SPEC-3.5-X",
+      "source_locator": {
+        "kind": "table_body_row",
+        "section": "3.5",
+        "row_label": "X",
+        "html_line_range": [
+          8601,
+          8619
+        ]
+      },
+      "subject": "X structure member",
+      "summary": "Include the required X member when its enclosing structure is present.",
+      "role": "client",
+      "direction": "both",
+      "condition": "Transparent DSA Private Key Material is present.",
+      "scope_state": "client_1_0",
+      "element_ids": [
+        "KMIPKIT-ELEM-STRUCTURE-MEMBER-3-5-KEY-MATERIAL-X"
+      ],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "negative_verification_required": false,
+      "decision_id": null,
+      "status": "unassigned",
+      "review_note": "Pinned OASIS KMIP Specification v2.1 table body row records Required=Yes, not a formal RFC keyword. The implementation and positive verification remain unassigned; the pinned OASIS Test Cases inventory has no linked official test case asserted here."
+    },
+    {
+      "requirement_id": "KMIPKIT-REQ-SPEC-3.6-002",
+      "source_clause_ids": [],
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "3.6"
+        }
+      ],
+      "source_keyword": null,
+      "normative_strength": "mandatory",
+      "source_force": "required_table_body_value",
+      "source_gap_id": "KMIPKIT-SOURCE-GAP-SPEC-3.6-P",
+      "source_locator": {
+        "kind": "table_body_row",
+        "section": "3.6",
+        "row_label": "P",
+        "html_line_range": [
+          8677,
+          8695
+        ]
+      },
+      "subject": "P structure member",
+      "summary": "Include the required P member when its enclosing structure is present.",
+      "role": "client",
+      "direction": "both",
+      "condition": "Transparent DSA Public Key Material is present.",
+      "scope_state": "client_1_0",
+      "element_ids": [
+        "KMIPKIT-ELEM-STRUCTURE-MEMBER-3-6-KEY-MATERIAL-P"
+      ],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "negative_verification_required": false,
+      "decision_id": null,
+      "status": "unassigned",
+      "review_note": "Pinned OASIS KMIP Specification v2.1 table body row records Required=Yes, not a formal RFC keyword. The implementation and positive verification remain unassigned; the pinned OASIS Test Cases inventory has no linked official test case asserted here."
+    },
+    {
+      "requirement_id": "KMIPKIT-REQ-SPEC-3.6-004",
+      "source_clause_ids": [],
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "3.6"
+        }
+      ],
+      "source_keyword": null,
+      "normative_strength": "mandatory",
+      "source_force": "required_table_body_value",
+      "source_gap_id": "KMIPKIT-SOURCE-GAP-SPEC-3.6-G",
+      "source_locator": {
+        "kind": "table_body_row",
+        "section": "3.6",
+        "row_label": "G",
+        "html_line_range": [
+          8715,
+          8733
+        ]
+      },
+      "subject": "G structure member",
+      "summary": "Include the required G member when its enclosing structure is present.",
+      "role": "client",
+      "direction": "both",
+      "condition": "Transparent DSA Public Key Material is present.",
+      "scope_state": "client_1_0",
+      "element_ids": [
+        "KMIPKIT-ELEM-STRUCTURE-MEMBER-3-6-KEY-MATERIAL-G"
+      ],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "negative_verification_required": false,
+      "decision_id": null,
+      "status": "unassigned",
+      "review_note": "Pinned OASIS KMIP Specification v2.1 table body row records Required=Yes, not a formal RFC keyword. The implementation and positive verification remain unassigned; the pinned OASIS Test Cases inventory has no linked official test case asserted here."
+    },
+    {
+      "requirement_id": "KMIPKIT-REQ-SPEC-3.6-005",
+      "source_clause_ids": [],
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "3.6"
+        }
+      ],
+      "source_keyword": null,
+      "normative_strength": "mandatory",
+      "source_force": "required_table_body_value",
+      "source_gap_id": "KMIPKIT-SOURCE-GAP-SPEC-3.6-Y",
+      "source_locator": {
+        "kind": "table_body_row",
+        "section": "3.6",
+        "row_label": "Y",
+        "html_line_range": [
+          8734,
+          8752
+        ]
+      },
+      "subject": "Y structure member",
+      "summary": "Include the required Y member when its enclosing structure is present.",
+      "role": "client",
+      "direction": "both",
+      "condition": "Transparent DSA Public Key Material is present.",
+      "scope_state": "client_1_0",
+      "element_ids": [
+        "KMIPKIT-ELEM-STRUCTURE-MEMBER-3-6-KEY-MATERIAL-Y"
+      ],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "negative_verification_required": false,
+      "decision_id": null,
+      "status": "unassigned",
+      "review_note": "Pinned OASIS KMIP Specification v2.1 table body row records Required=Yes, not a formal RFC keyword. The implementation and positive verification remain unassigned; the pinned OASIS Test Cases inventory has no linked official test case asserted here."
+    },
+    {
+      "requirement_id": "KMIPKIT-REQ-SPEC-3.7-003",
+      "source_clause_ids": [],
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "3.7"
+        }
+      ],
+      "source_keyword": null,
+      "normative_strength": "mandatory",
+      "source_force": "required_table_body_value",
+      "source_gap_id": "KMIPKIT-SOURCE-GAP-SPEC-3.7-MODULUS",
+      "source_locator": {
+        "kind": "table_body_row",
+        "section": "3.7",
+        "row_label": "Modulus",
+        "html_line_range": [
+          8810,
+          8828
+        ]
+      },
+      "subject": "Modulus structure member",
+      "summary": "Include the required Modulus member when its enclosing structure is present.",
+      "role": "client",
+      "direction": "both",
+      "condition": "Transparent RSA Private Key Material is present.",
+      "scope_state": "client_1_0",
+      "element_ids": [
+        "KMIPKIT-ELEM-STRUCTURE-MEMBER-3-7-KEY-MATERIAL-MODULUS"
+      ],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "negative_verification_required": false,
+      "decision_id": null,
+      "status": "unassigned",
+      "review_note": "Pinned OASIS KMIP Specification v2.1 table body row records Required=Yes, not a formal RFC keyword. The implementation and positive verification remain unassigned; the pinned OASIS Test Cases inventory has no linked official test case asserted here."
+    },
+    {
+      "requirement_id": "KMIPKIT-REQ-SPEC-3.8-002",
+      "source_clause_ids": [],
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "3.8"
+        }
+      ],
+      "source_keyword": null,
+      "normative_strength": "mandatory",
+      "source_force": "required_table_body_value",
+      "source_gap_id": "KMIPKIT-SOURCE-GAP-SPEC-3.8-MODULUS",
+      "source_locator": {
+        "kind": "table_body_row",
+        "section": "3.8",
+        "row_label": "Modulus",
+        "html_line_range": [
+          9035,
+          9053
+        ]
+      },
+      "subject": "Modulus structure member",
+      "summary": "Include the required Modulus member when its enclosing structure is present.",
+      "role": "client",
+      "direction": "both",
+      "condition": "Transparent RSA Public Key Material is present.",
+      "scope_state": "client_1_0",
+      "element_ids": [
+        "KMIPKIT-ELEM-STRUCTURE-MEMBER-3-8-KEY-MATERIAL-MODULUS"
+      ],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "negative_verification_required": false,
+      "decision_id": null,
+      "status": "unassigned",
+      "review_note": "Pinned OASIS KMIP Specification v2.1 table body row records Required=Yes, not a formal RFC keyword. The implementation and positive verification remain unassigned; the pinned OASIS Test Cases inventory has no linked official test case asserted here."
+    },
+    {
+      "requirement_id": "KMIPKIT-REQ-SPEC-3.8-003",
+      "source_clause_ids": [],
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "3.8"
+        }
+      ],
+      "source_keyword": null,
+      "normative_strength": "mandatory",
+      "source_force": "required_table_body_value",
+      "source_gap_id": "KMIPKIT-SOURCE-GAP-SPEC-3.8-PUBLIC-EXPONENT",
+      "source_locator": {
+        "kind": "table_body_row",
+        "section": "3.8",
+        "row_label": "Public Exponent",
+        "html_line_range": [
+          9054,
+          9072
+        ]
+      },
+      "subject": "Public Exponent structure member",
+      "summary": "Include the required Public Exponent member when its enclosing structure is present.",
+      "role": "client",
+      "direction": "both",
+      "condition": "Transparent RSA Public Key Material is present.",
+      "scope_state": "client_1_0",
+      "element_ids": [
+        "KMIPKIT-ELEM-STRUCTURE-MEMBER-3-8-KEY-MATERIAL-PUBLIC-EXPONENT"
+      ],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "negative_verification_required": false,
+      "decision_id": null,
+      "status": "unassigned",
+      "review_note": "Pinned OASIS KMIP Specification v2.1 table body row records Required=Yes, not a formal RFC keyword. The implementation and positive verification remain unassigned; the pinned OASIS Test Cases inventory has no linked official test case asserted here."
+    },
+    {
+      "requirement_id": "KMIPKIT-REQ-SPEC-3.9-002",
+      "source_clause_ids": [],
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "3.9"
+        }
+      ],
+      "source_keyword": null,
+      "normative_strength": "mandatory",
+      "source_force": "required_table_body_value",
+      "source_gap_id": "KMIPKIT-SOURCE-GAP-SPEC-3.9-P",
+      "source_locator": {
+        "kind": "table_body_row",
+        "section": "3.9",
+        "row_label": "P",
+        "html_line_range": [
+          9130,
+          9148
+        ]
+      },
+      "subject": "P structure member",
+      "summary": "Include the required P member when its enclosing structure is present.",
+      "role": "client",
+      "direction": "both",
+      "condition": "Transparent DH Private Key Material is present.",
+      "scope_state": "client_1_0",
+      "element_ids": [
+        "KMIPKIT-ELEM-STRUCTURE-MEMBER-3-9-KEY-MATERIAL-P"
+      ],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "negative_verification_required": false,
+      "decision_id": null,
+      "status": "unassigned",
+      "review_note": "Pinned OASIS KMIP Specification v2.1 table body row records Required=Yes, not a formal RFC keyword. The implementation and positive verification remain unassigned; the pinned OASIS Test Cases inventory has no linked official test case asserted here."
+    },
+    {
+      "requirement_id": "KMIPKIT-REQ-SPEC-3.9-003",
+      "source_clause_ids": [],
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "3.9"
+        }
+      ],
+      "source_keyword": null,
+      "normative_strength": "mandatory",
+      "source_force": "required_table_body_value",
+      "source_gap_id": "KMIPKIT-SOURCE-GAP-SPEC-3.9-G",
+      "source_locator": {
+        "kind": "table_body_row",
+        "section": "3.9",
+        "row_label": "G",
+        "html_line_range": [
+          9168,
+          9186
+        ]
+      },
+      "subject": "G structure member",
+      "summary": "Include the required G member when its enclosing structure is present.",
+      "role": "client",
+      "direction": "both",
+      "condition": "Transparent DH Private Key Material is present.",
+      "scope_state": "client_1_0",
+      "element_ids": [
+        "KMIPKIT-ELEM-STRUCTURE-MEMBER-3-9-KEY-MATERIAL-G"
+      ],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "negative_verification_required": false,
+      "decision_id": null,
+      "status": "unassigned",
+      "review_note": "Pinned OASIS KMIP Specification v2.1 table body row records Required=Yes, not a formal RFC keyword. The implementation and positive verification remain unassigned; the pinned OASIS Test Cases inventory has no linked official test case asserted here."
+    },
+    {
+      "requirement_id": "KMIPKIT-REQ-SPEC-3.9-004",
+      "source_clause_ids": [],
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "3.9"
+        }
+      ],
+      "source_keyword": null,
+      "normative_strength": "mandatory",
+      "source_force": "required_table_body_value",
+      "source_gap_id": "KMIPKIT-SOURCE-GAP-SPEC-3.9-X",
+      "source_locator": {
+        "kind": "table_body_row",
+        "section": "3.9",
+        "row_label": "X",
+        "html_line_range": [
+          9206,
+          9224
+        ]
+      },
+      "subject": "X structure member",
+      "summary": "Include the required X member when its enclosing structure is present.",
+      "role": "client",
+      "direction": "both",
+      "condition": "Transparent DH Private Key Material is present.",
+      "scope_state": "client_1_0",
+      "element_ids": [
+        "KMIPKIT-ELEM-STRUCTURE-MEMBER-3-9-KEY-MATERIAL-X"
+      ],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "negative_verification_required": false,
+      "decision_id": null,
+      "status": "unassigned",
+      "review_note": "Pinned OASIS KMIP Specification v2.1 table body row records Required=Yes, not a formal RFC keyword. The implementation and positive verification remain unassigned; the pinned OASIS Test Cases inventory has no linked official test case asserted here."
+    },
+    {
+      "requirement_id": "KMIPKIT-REQ-SPEC-3.10-002",
+      "source_clause_ids": [],
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "3.10"
+        }
+      ],
+      "source_keyword": null,
+      "normative_strength": "mandatory",
+      "source_force": "required_table_body_value",
+      "source_gap_id": "KMIPKIT-SOURCE-GAP-SPEC-3.10-P",
+      "source_locator": {
+        "kind": "table_body_row",
+        "section": "3.10",
+        "row_label": "P",
+        "html_line_range": [
+          9283,
+          9301
+        ]
+      },
+      "subject": "P structure member",
+      "summary": "Include the required P member when its enclosing structure is present.",
+      "role": "client",
+      "direction": "both",
+      "condition": "Transparent DH Public Key Material is present.",
+      "scope_state": "client_1_0",
+      "element_ids": [
+        "KMIPKIT-ELEM-STRUCTURE-MEMBER-3-10-KEY-MATERIAL-P"
+      ],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "negative_verification_required": false,
+      "decision_id": null,
+      "status": "unassigned",
+      "review_note": "Pinned OASIS KMIP Specification v2.1 table body row records Required=Yes, not a formal RFC keyword. The implementation and positive verification remain unassigned; the pinned OASIS Test Cases inventory has no linked official test case asserted here."
+    },
+    {
+      "requirement_id": "KMIPKIT-REQ-SPEC-3.10-003",
+      "source_clause_ids": [],
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "3.10"
+        }
+      ],
+      "source_keyword": null,
+      "normative_strength": "mandatory",
+      "source_force": "required_table_body_value",
+      "source_gap_id": "KMIPKIT-SOURCE-GAP-SPEC-3.10-G",
+      "source_locator": {
+        "kind": "table_body_row",
+        "section": "3.10",
+        "row_label": "G",
+        "html_line_range": [
+          9321,
+          9339
+        ]
+      },
+      "subject": "G structure member",
+      "summary": "Include the required G member when its enclosing structure is present.",
+      "role": "client",
+      "direction": "both",
+      "condition": "Transparent DH Public Key Material is present.",
+      "scope_state": "client_1_0",
+      "element_ids": [
+        "KMIPKIT-ELEM-STRUCTURE-MEMBER-3-10-KEY-MATERIAL-G"
+      ],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "negative_verification_required": false,
+      "decision_id": null,
+      "status": "unassigned",
+      "review_note": "Pinned OASIS KMIP Specification v2.1 table body row records Required=Yes, not a formal RFC keyword. The implementation and positive verification remain unassigned; the pinned OASIS Test Cases inventory has no linked official test case asserted here."
+    },
+    {
+      "requirement_id": "KMIPKIT-REQ-SPEC-3.10-004",
+      "source_clause_ids": [],
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "3.10"
+        }
+      ],
+      "source_keyword": null,
+      "normative_strength": "mandatory",
+      "source_force": "required_table_body_value",
+      "source_gap_id": "KMIPKIT-SOURCE-GAP-SPEC-3.10-Y",
+      "source_locator": {
+        "kind": "table_body_row",
+        "section": "3.10",
+        "row_label": "Y",
+        "html_line_range": [
+          9359,
+          9377
+        ]
+      },
+      "subject": "Y structure member",
+      "summary": "Include the required Y member when its enclosing structure is present.",
+      "role": "client",
+      "direction": "both",
+      "condition": "Transparent DH Public Key Material is present.",
+      "scope_state": "client_1_0",
+      "element_ids": [
+        "KMIPKIT-ELEM-STRUCTURE-MEMBER-3-10-KEY-MATERIAL-Y"
+      ],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "negative_verification_required": false,
+      "decision_id": null,
+      "status": "unassigned",
+      "review_note": "Pinned OASIS KMIP Specification v2.1 table body row records Required=Yes, not a formal RFC keyword. The implementation and positive verification remain unassigned; the pinned OASIS Test Cases inventory has no linked official test case asserted here."
+    },
+    {
+      "requirement_id": "KMIPKIT-REQ-SPEC-3.11-002",
+      "source_clause_ids": [],
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "3.11"
+        }
+      ],
+      "source_keyword": null,
+      "normative_strength": "mandatory",
+      "source_force": "required_table_body_value",
+      "source_gap_id": "KMIPKIT-SOURCE-GAP-SPEC-3.11-RECOMMENDED-CURVE",
+      "source_locator": {
+        "kind": "table_body_row",
+        "section": "3.11",
+        "row_label": "Recommended Curve",
+        "html_line_range": [
+          9438,
+          9457
+        ]
+      },
+      "subject": "Recommended Curve structure member",
+      "summary": "Include the required Recommended Curve member when its enclosing structure is present.",
+      "role": "client",
+      "direction": "both",
+      "condition": "Transparent EC Private Key Material is present.",
+      "scope_state": "client_1_0",
+      "element_ids": [
+        "KMIPKIT-ELEM-STRUCTURE-MEMBER-3-11-KEY-MATERIAL-RECOMMENDED-CURVE"
+      ],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "negative_verification_required": false,
+      "decision_id": null,
+      "status": "unassigned",
+      "review_note": "Pinned OASIS KMIP Specification v2.1 table body row records Required=Yes, not a formal RFC keyword. The implementation and positive verification remain unassigned; the pinned OASIS Test Cases inventory has no linked official test case asserted here."
+    },
+    {
+      "requirement_id": "KMIPKIT-REQ-SPEC-3.11-003",
+      "source_clause_ids": [],
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "3.11"
+        }
+      ],
+      "source_keyword": null,
+      "normative_strength": "mandatory",
+      "source_force": "required_table_body_value",
+      "source_gap_id": "KMIPKIT-SOURCE-GAP-SPEC-3.11-D",
+      "source_locator": {
+        "kind": "table_body_row",
+        "section": "3.11",
+        "row_label": "D",
+        "html_line_range": [
+          9458,
+          9476
+        ]
+      },
+      "subject": "D structure member",
+      "summary": "Include the required D member when its enclosing structure is present.",
+      "role": "client",
+      "direction": "both",
+      "condition": "Transparent EC Private Key Material is present.",
+      "scope_state": "client_1_0",
+      "element_ids": [
+        "KMIPKIT-ELEM-STRUCTURE-MEMBER-3-11-KEY-MATERIAL-D"
+      ],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "negative_verification_required": false,
+      "decision_id": null,
+      "status": "unassigned",
+      "review_note": "Pinned OASIS KMIP Specification v2.1 table body row records Required=Yes, not a formal RFC keyword. The implementation and positive verification remain unassigned; the pinned OASIS Test Cases inventory has no linked official test case asserted here."
+    },
+    {
+      "requirement_id": "KMIPKIT-REQ-SPEC-3.12-002",
+      "source_clause_ids": [],
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "3.12"
+        }
+      ],
+      "source_keyword": null,
+      "normative_strength": "mandatory",
+      "source_force": "required_table_body_value",
+      "source_gap_id": "KMIPKIT-SOURCE-GAP-SPEC-3.12-RECOMMENDED-CURVE",
+      "source_locator": {
+        "kind": "table_body_row",
+        "section": "3.12",
+        "row_label": "Recommended Curve",
+        "html_line_range": [
+          9533,
+          9552
+        ]
+      },
+      "subject": "Recommended Curve structure member",
+      "summary": "Include the required Recommended Curve member when its enclosing structure is present.",
+      "role": "client",
+      "direction": "both",
+      "condition": "Transparent EC Public Key Material is present.",
+      "scope_state": "client_1_0",
+      "element_ids": [
+        "KMIPKIT-ELEM-STRUCTURE-MEMBER-3-12-KEY-MATERIAL-RECOMMENDED-CURVE"
+      ],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "negative_verification_required": false,
+      "decision_id": null,
+      "status": "unassigned",
+      "review_note": "Pinned OASIS KMIP Specification v2.1 table body row records Required=Yes, not a formal RFC keyword. The implementation and positive verification remain unassigned; the pinned OASIS Test Cases inventory has no linked official test case asserted here."
+    },
+    {
+      "requirement_id": "KMIPKIT-REQ-SPEC-3.12-003",
+      "source_clause_ids": [],
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "3.12"
+        }
+      ],
+      "source_keyword": null,
+      "normative_strength": "mandatory",
+      "source_force": "required_table_body_value",
+      "source_gap_id": "KMIPKIT-SOURCE-GAP-SPEC-3.12-Q-STRING",
+      "source_locator": {
+        "kind": "table_body_row",
+        "section": "3.12",
+        "row_label": "Q String",
+        "html_line_range": [
+          9553,
+          9571
+        ]
+      },
+      "subject": "Q String structure member",
+      "summary": "Include the required Q String member when its enclosing structure is present.",
+      "role": "client",
+      "direction": "both",
+      "condition": "Transparent EC Public Key Material is present.",
+      "scope_state": "client_1_0",
+      "element_ids": [
+        "KMIPKIT-ELEM-STRUCTURE-MEMBER-3-12-KEY-MATERIAL-Q-STRING"
+      ],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "negative_verification_required": false,
+      "decision_id": null,
+      "status": "unassigned",
+      "review_note": "Pinned OASIS KMIP Specification v2.1 table body row records Required=Yes, not a formal RFC keyword. The implementation and positive verification remain unassigned; the pinned OASIS Test Cases inventory has no linked official test case asserted here."
+    },
+    {
+      "requirement_id": "KMIPKIT-REQ-SPEC-5.5-003",
+      "source_clause_ids": [],
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "5.5"
+        }
+      ],
+      "source_keyword": null,
+      "normative_strength": "mandatory",
+      "source_force": "required_table_body_value",
+      "source_gap_id": "KMIPKIT-SOURCE-GAP-SPEC-5.5-VENDOR-IDENTIFICATION",
+      "source_locator": {
+        "kind": "table_body_row",
+        "section": "5.5",
+        "row_label": "Vendor Identification",
+        "html_line_range": [
+          22117,
+          22137
+        ]
+      },
+      "subject": "Vendor Identification structure member",
+      "summary": "Include the required Vendor Identification member when its enclosing structure is present.",
+      "role": "client",
+      "direction": "both",
+      "condition": "The corresponding Attribute Reference name or tag form is used.",
+      "scope_state": "client_1_0",
+      "element_ids": [
+        "KMIPKIT-ELEM-STRUCTURE-MEMBER-5-5-VENDOR-IDENTIFICATION"
+      ],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "negative_verification_required": false,
+      "decision_id": null,
+      "status": "unassigned",
+      "review_note": "Pinned OASIS KMIP Specification v2.1 table body row records Required=Yes, not a formal RFC keyword. The implementation and positive verification remain unassigned; the pinned OASIS Test Cases inventory has no linked official test case asserted here."
+    },
+    {
+      "requirement_id": "KMIPKIT-REQ-SPEC-5.5-004",
+      "source_clause_ids": [],
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "5.5"
+        }
+      ],
+      "source_keyword": null,
+      "normative_strength": "mandatory",
+      "source_force": "required_table_body_value",
+      "source_gap_id": "KMIPKIT-SOURCE-GAP-SPEC-5.5-ATTRIBUTE-NAME",
+      "source_locator": {
+        "kind": "table_body_row",
+        "section": "5.5",
+        "row_label": "Attribute Name",
+        "html_line_range": [
+          22138,
+          22156
+        ]
+      },
+      "subject": "Attribute Name structure member",
+      "summary": "Include the required Attribute Name member when its enclosing structure is present.",
+      "role": "client",
+      "direction": "both",
+      "condition": "The corresponding Attribute Reference name or tag form is used.",
+      "scope_state": "client_1_0",
+      "element_ids": [
+        "KMIPKIT-ELEM-STRUCTURE-MEMBER-5-5-ATTRIBUTE-NAME"
+      ],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "negative_verification_required": false,
+      "decision_id": null,
+      "status": "unassigned",
+      "review_note": "Pinned OASIS KMIP Specification v2.1 table body row records Required=Yes, not a formal RFC keyword. The implementation and positive verification remain unassigned; the pinned OASIS Test Cases inventory has no linked official test case asserted here."
+    },
+    {
+      "requirement_id": "KMIPKIT-REQ-SPEC-5.5-005",
+      "source_clause_ids": [],
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "5.5"
+        }
+      ],
+      "source_keyword": null,
+      "normative_strength": "mandatory",
+      "source_force": "required_table_body_value",
+      "source_gap_id": "KMIPKIT-SOURCE-GAP-SPEC-5.5-ATTRIBUTE-REFERENCE-TAG",
+      "source_locator": {
+        "kind": "table_body_row",
+        "section": "5.5",
+        "row_label": "Attribute Reference",
+        "html_line_range": [
+          22184,
+          22202
+        ]
+      },
+      "subject": "Attribute Reference structure member",
+      "summary": "Include the required Attribute Reference member when its enclosing structure is present.",
+      "role": "client",
+      "direction": "both",
+      "condition": "The corresponding Attribute Reference name or tag form is used.",
+      "scope_state": "client_1_0",
+      "element_ids": [
+        "KMIPKIT-ELEM-STRUCTURE-MEMBER-5-5-ATTRIBUTE-REFERENCE"
+      ],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "negative_verification_required": false,
+      "decision_id": null,
+      "status": "unassigned",
+      "review_note": "Pinned OASIS KMIP Specification v2.1 table body row records Required=Yes, not a formal RFC keyword. The implementation and positive verification remain unassigned; the pinned OASIS Test Cases inventory has no linked official test case asserted here."
+    },
+    {
+      "requirement_id": "KMIPKIT-REQ-SPEC-5.6-002",
+      "source_clause_ids": [],
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "5.6"
+        }
+      ],
+      "source_keyword": null,
+      "normative_strength": "mandatory",
+      "source_force": "required_table_body_value",
+      "source_gap_id": "KMIPKIT-SOURCE-GAP-SPEC-5.6-CURRENT-ATTRIBUTE",
+      "source_locator": {
+        "kind": "table_body_row",
+        "section": "5.6",
+        "row_label": "Any attribute in §4 - Object Attributes",
+        "html_line_range": [
+          22260,
+          22279
+        ]
+      },
+      "subject": "Any attribute in §4 - Object Attributes structure member",
+      "summary": "Include the required Any attribute in §4 - Object Attributes member when its enclosing structure is present.",
+      "role": "client",
+      "direction": "client_to_server",
+      "condition": "A Current Attribute structure is present.",
+      "scope_state": "client_1_0",
+      "element_ids": [
+        "KMIPKIT-ELEM-STRUCTURE-MEMBER-5-6-ANY-ATTRIBUTE-IN-4-OBJECT-ATTRIBUTES"
+      ],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "negative_verification_required": false,
+      "decision_id": null,
+      "status": "unassigned",
+      "review_note": "Pinned OASIS KMIP Specification v2.1 table body row records Required=Yes, not a formal RFC keyword. The implementation and positive verification remain unassigned; the pinned OASIS Test Cases inventory has no linked official test case asserted here."
+    },
+    {
+      "requirement_id": "KMIPKIT-REQ-SPEC-5.7-002",
+      "source_clause_ids": [],
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "5.7"
+        }
+      ],
+      "source_keyword": null,
+      "normative_strength": "mandatory",
+      "source_force": "required_table_body_value",
+      "source_gap_id": "KMIPKIT-SOURCE-GAP-SPEC-5.7-NEW-ATTRIBUTE",
+      "source_locator": {
+        "kind": "table_body_row",
+        "section": "5.7",
+        "row_label": "Any attribute in §4 - Object Attributes",
+        "html_line_range": [
+          22337,
+          22356
+        ]
+      },
+      "subject": "Any attribute in §4 - Object Attributes structure member",
+      "summary": "Include the required Any attribute in §4 - Object Attributes member when its enclosing structure is present.",
+      "role": "client",
+      "direction": "client_to_server",
+      "condition": "A New Attribute structure is present.",
+      "scope_state": "client_1_0",
+      "element_ids": [
+        "KMIPKIT-ELEM-STRUCTURE-MEMBER-5-7-ANY-ATTRIBUTE-IN-4-OBJECT-ATTRIBUTES"
+      ],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "negative_verification_required": false,
+      "decision_id": null,
+      "status": "unassigned",
+      "review_note": "Pinned OASIS KMIP Specification v2.1 table body row records Required=Yes, not a formal RFC keyword. The implementation and positive verification remain unassigned; the pinned OASIS Test Cases inventory has no linked official test case asserted here."
     }
   ],
   "policies": [
@@ -100755,13 +102150,38 @@
         "KMIPKIT-REQ-SPEC-3.1-005-001",
         "KMIPKIT-REQ-SPEC-3.1-005-002",
         "KMIPKIT-REQ-SPEC-3.1-006",
+        "KMIPKIT-REQ-SPEC-3.1-007",
+        "KMIPKIT-REQ-SPEC-3.10-002",
+        "KMIPKIT-REQ-SPEC-3.10-003",
+        "KMIPKIT-REQ-SPEC-3.10-004",
+        "KMIPKIT-REQ-SPEC-3.11-002",
+        "KMIPKIT-REQ-SPEC-3.11-003",
+        "KMIPKIT-REQ-SPEC-3.12-002",
+        "KMIPKIT-REQ-SPEC-3.12-003",
         "KMIPKIT-REQ-SPEC-3.2-001",
+        "KMIPKIT-REQ-SPEC-3.2-003",
         "KMIPKIT-REQ-SPEC-3.3-001-001",
         "KMIPKIT-REQ-SPEC-3.3-001-002",
         "KMIPKIT-REQ-SPEC-3.3-003",
         "KMIPKIT-REQ-SPEC-3.3-004",
         "KMIPKIT-REQ-SPEC-3.3-006",
         "KMIPKIT-REQ-SPEC-3.3-009",
+        "KMIPKIT-REQ-SPEC-3.3-010",
+        "KMIPKIT-REQ-SPEC-3.3-011",
+        "KMIPKIT-REQ-SPEC-3.4-002",
+        "KMIPKIT-REQ-SPEC-3.5-002",
+        "KMIPKIT-REQ-SPEC-3.5-003",
+        "KMIPKIT-REQ-SPEC-3.5-004",
+        "KMIPKIT-REQ-SPEC-3.5-005",
+        "KMIPKIT-REQ-SPEC-3.6-002",
+        "KMIPKIT-REQ-SPEC-3.6-004",
+        "KMIPKIT-REQ-SPEC-3.6-005",
+        "KMIPKIT-REQ-SPEC-3.7-003",
+        "KMIPKIT-REQ-SPEC-3.8-002",
+        "KMIPKIT-REQ-SPEC-3.8-003",
+        "KMIPKIT-REQ-SPEC-3.9-002",
+        "KMIPKIT-REQ-SPEC-3.9-003",
+        "KMIPKIT-REQ-SPEC-3.9-004",
         "KMIPKIT-REQ-SPEC-4-001-004",
         "KMIPKIT-REQ-SPEC-4-001-005",
         "KMIPKIT-REQ-SPEC-4.16-001-001",
@@ -100781,6 +102201,7 @@
         "KMIPKIT-REQ-SPEC-4.38-001-001",
         "KMIPKIT-REQ-SPEC-4.38-001-002",
         "KMIPKIT-REQ-SPEC-4.38-001-003",
+        "KMIPKIT-REQ-SPEC-4.39-002-001",
         "KMIPKIT-REQ-SPEC-4.4-001",
         "KMIPKIT-REQ-SPEC-4.46-001-001",
         "KMIPKIT-REQ-SPEC-4.46-001-002",
@@ -100791,6 +102212,11 @@
         "KMIPKIT-REQ-SPEC-5.2-002",
         "KMIPKIT-REQ-SPEC-5.3-002",
         "KMIPKIT-REQ-SPEC-5.4-002",
+        "KMIPKIT-REQ-SPEC-5.5-003",
+        "KMIPKIT-REQ-SPEC-5.5-004",
+        "KMIPKIT-REQ-SPEC-5.5-005",
+        "KMIPKIT-REQ-SPEC-5.6-002",
+        "KMIPKIT-REQ-SPEC-5.7-002",
         "KMIPKIT-REQ-SPEC-6.1-001-001",
         "KMIPKIT-REQ-SPEC-6.1-001-002",
         "KMIPKIT-REQ-SPEC-6.1-001-003",
@@ -100812,7 +102238,6 @@
         "KMIPKIT-REQ-SPEC-6.1.14-001-002",
         "KMIPKIT-REQ-SPEC-6.1.14-001-003",
         "KMIPKIT-REQ-SPEC-6.1.14-001-004",
-        "KMIPKIT-REQ-SPEC-6.1.14-002",
         "KMIPKIT-REQ-SPEC-6.1.14-006-001",
         "KMIPKIT-REQ-SPEC-6.1.14-006-002",
         "KMIPKIT-REQ-SPEC-6.1.14-007-001",
@@ -100826,6 +102251,7 @@
         "KMIPKIT-REQ-SPEC-6.1.17-001-001",
         "KMIPKIT-REQ-SPEC-6.1.17-001-002",
         "KMIPKIT-REQ-SPEC-6.1.17-006",
+        "KMIPKIT-REQ-SPEC-6.1.18-001-001",
         "KMIPKIT-REQ-SPEC-6.1.18-005",
         "KMIPKIT-REQ-SPEC-6.1.18-006",
         "KMIPKIT-REQ-SPEC-6.1.18-007",
@@ -100881,6 +102307,7 @@
         "KMIPKIT-REQ-SPEC-6.1.44-003-002",
         "KMIPKIT-REQ-SPEC-6.1.45-001",
         "KMIPKIT-REQ-SPEC-6.1.45-002-001",
+        "KMIPKIT-REQ-SPEC-6.1.45-002-003",
         "KMIPKIT-REQ-SPEC-6.1.45-004",
         "KMIPKIT-REQ-SPEC-6.1.45-006-001",
         "KMIPKIT-REQ-SPEC-6.1.45-008",
@@ -102110,13 +103537,38 @@
         "KMIPKIT-REQ-SPEC-3.1-005-001",
         "KMIPKIT-REQ-SPEC-3.1-005-002",
         "KMIPKIT-REQ-SPEC-3.1-006",
+        "KMIPKIT-REQ-SPEC-3.1-007",
+        "KMIPKIT-REQ-SPEC-3.10-002",
+        "KMIPKIT-REQ-SPEC-3.10-003",
+        "KMIPKIT-REQ-SPEC-3.10-004",
+        "KMIPKIT-REQ-SPEC-3.11-002",
+        "KMIPKIT-REQ-SPEC-3.11-003",
+        "KMIPKIT-REQ-SPEC-3.12-002",
+        "KMIPKIT-REQ-SPEC-3.12-003",
         "KMIPKIT-REQ-SPEC-3.2-001",
+        "KMIPKIT-REQ-SPEC-3.2-003",
         "KMIPKIT-REQ-SPEC-3.3-001-001",
         "KMIPKIT-REQ-SPEC-3.3-001-002",
         "KMIPKIT-REQ-SPEC-3.3-003",
         "KMIPKIT-REQ-SPEC-3.3-004",
         "KMIPKIT-REQ-SPEC-3.3-006",
         "KMIPKIT-REQ-SPEC-3.3-009",
+        "KMIPKIT-REQ-SPEC-3.3-010",
+        "KMIPKIT-REQ-SPEC-3.3-011",
+        "KMIPKIT-REQ-SPEC-3.4-002",
+        "KMIPKIT-REQ-SPEC-3.5-002",
+        "KMIPKIT-REQ-SPEC-3.5-003",
+        "KMIPKIT-REQ-SPEC-3.5-004",
+        "KMIPKIT-REQ-SPEC-3.5-005",
+        "KMIPKIT-REQ-SPEC-3.6-002",
+        "KMIPKIT-REQ-SPEC-3.6-004",
+        "KMIPKIT-REQ-SPEC-3.6-005",
+        "KMIPKIT-REQ-SPEC-3.7-003",
+        "KMIPKIT-REQ-SPEC-3.8-002",
+        "KMIPKIT-REQ-SPEC-3.8-003",
+        "KMIPKIT-REQ-SPEC-3.9-002",
+        "KMIPKIT-REQ-SPEC-3.9-003",
+        "KMIPKIT-REQ-SPEC-3.9-004",
         "KMIPKIT-REQ-SPEC-4-001-004",
         "KMIPKIT-REQ-SPEC-4-001-005",
         "KMIPKIT-REQ-SPEC-4.16-001-001",
@@ -102136,6 +103588,7 @@
         "KMIPKIT-REQ-SPEC-4.38-001-001",
         "KMIPKIT-REQ-SPEC-4.38-001-002",
         "KMIPKIT-REQ-SPEC-4.38-001-003",
+        "KMIPKIT-REQ-SPEC-4.39-002-001",
         "KMIPKIT-REQ-SPEC-4.4-001",
         "KMIPKIT-REQ-SPEC-4.46-001-001",
         "KMIPKIT-REQ-SPEC-4.46-001-002",
@@ -102146,6 +103599,11 @@
         "KMIPKIT-REQ-SPEC-5.2-002",
         "KMIPKIT-REQ-SPEC-5.3-002",
         "KMIPKIT-REQ-SPEC-5.4-002",
+        "KMIPKIT-REQ-SPEC-5.5-003",
+        "KMIPKIT-REQ-SPEC-5.5-004",
+        "KMIPKIT-REQ-SPEC-5.5-005",
+        "KMIPKIT-REQ-SPEC-5.6-002",
+        "KMIPKIT-REQ-SPEC-5.7-002",
         "KMIPKIT-REQ-SPEC-6.1-001-001",
         "KMIPKIT-REQ-SPEC-6.1-001-002",
         "KMIPKIT-REQ-SPEC-6.1-001-003",
@@ -102167,7 +103625,6 @@
         "KMIPKIT-REQ-SPEC-6.1.14-001-002",
         "KMIPKIT-REQ-SPEC-6.1.14-001-003",
         "KMIPKIT-REQ-SPEC-6.1.14-001-004",
-        "KMIPKIT-REQ-SPEC-6.1.14-002",
         "KMIPKIT-REQ-SPEC-6.1.14-006-001",
         "KMIPKIT-REQ-SPEC-6.1.14-006-002",
         "KMIPKIT-REQ-SPEC-6.1.14-007-001",
@@ -102181,6 +103638,7 @@
         "KMIPKIT-REQ-SPEC-6.1.17-001-001",
         "KMIPKIT-REQ-SPEC-6.1.17-001-002",
         "KMIPKIT-REQ-SPEC-6.1.17-006",
+        "KMIPKIT-REQ-SPEC-6.1.18-001-001",
         "KMIPKIT-REQ-SPEC-6.1.18-005",
         "KMIPKIT-REQ-SPEC-6.1.18-006",
         "KMIPKIT-REQ-SPEC-6.1.18-007",
@@ -102236,6 +103694,7 @@
         "KMIPKIT-REQ-SPEC-6.1.44-003-002",
         "KMIPKIT-REQ-SPEC-6.1.45-001",
         "KMIPKIT-REQ-SPEC-6.1.45-002-001",
+        "KMIPKIT-REQ-SPEC-6.1.45-002-003",
         "KMIPKIT-REQ-SPEC-6.1.45-004",
         "KMIPKIT-REQ-SPEC-6.1.45-006-001",
         "KMIPKIT-REQ-SPEC-6.1.45-008",
@@ -103450,13 +104909,38 @@
         "KMIPKIT-REQ-SPEC-3.1-005-001",
         "KMIPKIT-REQ-SPEC-3.1-005-002",
         "KMIPKIT-REQ-SPEC-3.1-006",
+        "KMIPKIT-REQ-SPEC-3.1-007",
+        "KMIPKIT-REQ-SPEC-3.10-002",
+        "KMIPKIT-REQ-SPEC-3.10-003",
+        "KMIPKIT-REQ-SPEC-3.10-004",
+        "KMIPKIT-REQ-SPEC-3.11-002",
+        "KMIPKIT-REQ-SPEC-3.11-003",
+        "KMIPKIT-REQ-SPEC-3.12-002",
+        "KMIPKIT-REQ-SPEC-3.12-003",
         "KMIPKIT-REQ-SPEC-3.2-001",
+        "KMIPKIT-REQ-SPEC-3.2-003",
         "KMIPKIT-REQ-SPEC-3.3-001-001",
         "KMIPKIT-REQ-SPEC-3.3-001-002",
         "KMIPKIT-REQ-SPEC-3.3-003",
         "KMIPKIT-REQ-SPEC-3.3-004",
         "KMIPKIT-REQ-SPEC-3.3-006",
         "KMIPKIT-REQ-SPEC-3.3-009",
+        "KMIPKIT-REQ-SPEC-3.3-010",
+        "KMIPKIT-REQ-SPEC-3.3-011",
+        "KMIPKIT-REQ-SPEC-3.4-002",
+        "KMIPKIT-REQ-SPEC-3.5-002",
+        "KMIPKIT-REQ-SPEC-3.5-003",
+        "KMIPKIT-REQ-SPEC-3.5-004",
+        "KMIPKIT-REQ-SPEC-3.5-005",
+        "KMIPKIT-REQ-SPEC-3.6-002",
+        "KMIPKIT-REQ-SPEC-3.6-004",
+        "KMIPKIT-REQ-SPEC-3.6-005",
+        "KMIPKIT-REQ-SPEC-3.7-003",
+        "KMIPKIT-REQ-SPEC-3.8-002",
+        "KMIPKIT-REQ-SPEC-3.8-003",
+        "KMIPKIT-REQ-SPEC-3.9-002",
+        "KMIPKIT-REQ-SPEC-3.9-003",
+        "KMIPKIT-REQ-SPEC-3.9-004",
         "KMIPKIT-REQ-SPEC-4-001-004",
         "KMIPKIT-REQ-SPEC-4-001-005",
         "KMIPKIT-REQ-SPEC-4.16-001-001",
@@ -103476,6 +104960,7 @@
         "KMIPKIT-REQ-SPEC-4.38-001-001",
         "KMIPKIT-REQ-SPEC-4.38-001-002",
         "KMIPKIT-REQ-SPEC-4.38-001-003",
+        "KMIPKIT-REQ-SPEC-4.39-002-001",
         "KMIPKIT-REQ-SPEC-4.4-001",
         "KMIPKIT-REQ-SPEC-4.46-001-001",
         "KMIPKIT-REQ-SPEC-4.46-001-002",
@@ -103486,6 +104971,11 @@
         "KMIPKIT-REQ-SPEC-5.2-002",
         "KMIPKIT-REQ-SPEC-5.3-002",
         "KMIPKIT-REQ-SPEC-5.4-002",
+        "KMIPKIT-REQ-SPEC-5.5-003",
+        "KMIPKIT-REQ-SPEC-5.5-004",
+        "KMIPKIT-REQ-SPEC-5.5-005",
+        "KMIPKIT-REQ-SPEC-5.6-002",
+        "KMIPKIT-REQ-SPEC-5.7-002",
         "KMIPKIT-REQ-SPEC-6.1-001-001",
         "KMIPKIT-REQ-SPEC-6.1-001-002",
         "KMIPKIT-REQ-SPEC-6.1-001-003",
@@ -103507,7 +104997,6 @@
         "KMIPKIT-REQ-SPEC-6.1.14-001-002",
         "KMIPKIT-REQ-SPEC-6.1.14-001-003",
         "KMIPKIT-REQ-SPEC-6.1.14-001-004",
-        "KMIPKIT-REQ-SPEC-6.1.14-002",
         "KMIPKIT-REQ-SPEC-6.1.14-006-001",
         "KMIPKIT-REQ-SPEC-6.1.14-006-002",
         "KMIPKIT-REQ-SPEC-6.1.14-007-001",
@@ -103521,6 +105010,7 @@
         "KMIPKIT-REQ-SPEC-6.1.17-001-001",
         "KMIPKIT-REQ-SPEC-6.1.17-001-002",
         "KMIPKIT-REQ-SPEC-6.1.17-006",
+        "KMIPKIT-REQ-SPEC-6.1.18-001-001",
         "KMIPKIT-REQ-SPEC-6.1.18-005",
         "KMIPKIT-REQ-SPEC-6.1.18-006",
         "KMIPKIT-REQ-SPEC-6.1.18-007",
@@ -103576,6 +105066,7 @@
         "KMIPKIT-REQ-SPEC-6.1.44-003-002",
         "KMIPKIT-REQ-SPEC-6.1.45-001",
         "KMIPKIT-REQ-SPEC-6.1.45-002-001",
+        "KMIPKIT-REQ-SPEC-6.1.45-002-003",
         "KMIPKIT-REQ-SPEC-6.1.45-004",
         "KMIPKIT-REQ-SPEC-6.1.45-006-001",
         "KMIPKIT-REQ-SPEC-6.1.45-008",
@@ -105118,13 +106609,38 @@
         "KMIPKIT-REQ-SPEC-3.1-005-001",
         "KMIPKIT-REQ-SPEC-3.1-005-002",
         "KMIPKIT-REQ-SPEC-3.1-006",
+        "KMIPKIT-REQ-SPEC-3.1-007",
+        "KMIPKIT-REQ-SPEC-3.10-002",
+        "KMIPKIT-REQ-SPEC-3.10-003",
+        "KMIPKIT-REQ-SPEC-3.10-004",
+        "KMIPKIT-REQ-SPEC-3.11-002",
+        "KMIPKIT-REQ-SPEC-3.11-003",
+        "KMIPKIT-REQ-SPEC-3.12-002",
+        "KMIPKIT-REQ-SPEC-3.12-003",
         "KMIPKIT-REQ-SPEC-3.2-001",
+        "KMIPKIT-REQ-SPEC-3.2-003",
         "KMIPKIT-REQ-SPEC-3.3-001-001",
         "KMIPKIT-REQ-SPEC-3.3-001-002",
         "KMIPKIT-REQ-SPEC-3.3-003",
         "KMIPKIT-REQ-SPEC-3.3-004",
         "KMIPKIT-REQ-SPEC-3.3-006",
         "KMIPKIT-REQ-SPEC-3.3-009",
+        "KMIPKIT-REQ-SPEC-3.3-010",
+        "KMIPKIT-REQ-SPEC-3.3-011",
+        "KMIPKIT-REQ-SPEC-3.4-002",
+        "KMIPKIT-REQ-SPEC-3.5-002",
+        "KMIPKIT-REQ-SPEC-3.5-003",
+        "KMIPKIT-REQ-SPEC-3.5-004",
+        "KMIPKIT-REQ-SPEC-3.5-005",
+        "KMIPKIT-REQ-SPEC-3.6-002",
+        "KMIPKIT-REQ-SPEC-3.6-004",
+        "KMIPKIT-REQ-SPEC-3.6-005",
+        "KMIPKIT-REQ-SPEC-3.7-003",
+        "KMIPKIT-REQ-SPEC-3.8-002",
+        "KMIPKIT-REQ-SPEC-3.8-003",
+        "KMIPKIT-REQ-SPEC-3.9-002",
+        "KMIPKIT-REQ-SPEC-3.9-003",
+        "KMIPKIT-REQ-SPEC-3.9-004",
         "KMIPKIT-REQ-SPEC-4-001-004",
         "KMIPKIT-REQ-SPEC-4-001-005",
         "KMIPKIT-REQ-SPEC-4.16-001-001",
@@ -105144,6 +106660,7 @@
         "KMIPKIT-REQ-SPEC-4.38-001-001",
         "KMIPKIT-REQ-SPEC-4.38-001-002",
         "KMIPKIT-REQ-SPEC-4.38-001-003",
+        "KMIPKIT-REQ-SPEC-4.39-002-001",
         "KMIPKIT-REQ-SPEC-4.4-001",
         "KMIPKIT-REQ-SPEC-4.46-001-001",
         "KMIPKIT-REQ-SPEC-4.46-001-002",
@@ -105154,6 +106671,11 @@
         "KMIPKIT-REQ-SPEC-5.2-002",
         "KMIPKIT-REQ-SPEC-5.3-002",
         "KMIPKIT-REQ-SPEC-5.4-002",
+        "KMIPKIT-REQ-SPEC-5.5-003",
+        "KMIPKIT-REQ-SPEC-5.5-004",
+        "KMIPKIT-REQ-SPEC-5.5-005",
+        "KMIPKIT-REQ-SPEC-5.6-002",
+        "KMIPKIT-REQ-SPEC-5.7-002",
         "KMIPKIT-REQ-SPEC-6.1-001-001",
         "KMIPKIT-REQ-SPEC-6.1-001-002",
         "KMIPKIT-REQ-SPEC-6.1-001-003",
@@ -105175,7 +106697,6 @@
         "KMIPKIT-REQ-SPEC-6.1.14-001-002",
         "KMIPKIT-REQ-SPEC-6.1.14-001-003",
         "KMIPKIT-REQ-SPEC-6.1.14-001-004",
-        "KMIPKIT-REQ-SPEC-6.1.14-002",
         "KMIPKIT-REQ-SPEC-6.1.14-006-001",
         "KMIPKIT-REQ-SPEC-6.1.14-006-002",
         "KMIPKIT-REQ-SPEC-6.1.14-007-001",
@@ -105189,6 +106710,7 @@
         "KMIPKIT-REQ-SPEC-6.1.17-001-001",
         "KMIPKIT-REQ-SPEC-6.1.17-001-002",
         "KMIPKIT-REQ-SPEC-6.1.17-006",
+        "KMIPKIT-REQ-SPEC-6.1.18-001-001",
         "KMIPKIT-REQ-SPEC-6.1.18-005",
         "KMIPKIT-REQ-SPEC-6.1.18-006",
         "KMIPKIT-REQ-SPEC-6.1.18-007",
@@ -105244,6 +106766,7 @@
         "KMIPKIT-REQ-SPEC-6.1.44-003-002",
         "KMIPKIT-REQ-SPEC-6.1.45-001",
         "KMIPKIT-REQ-SPEC-6.1.45-002-001",
+        "KMIPKIT-REQ-SPEC-6.1.45-002-003",
         "KMIPKIT-REQ-SPEC-6.1.45-004",
         "KMIPKIT-REQ-SPEC-6.1.45-006-001",
         "KMIPKIT-REQ-SPEC-6.1.45-008",
@@ -106506,13 +108029,38 @@
         "KMIPKIT-REQ-SPEC-3.1-005-001",
         "KMIPKIT-REQ-SPEC-3.1-005-002",
         "KMIPKIT-REQ-SPEC-3.1-006",
+        "KMIPKIT-REQ-SPEC-3.1-007",
+        "KMIPKIT-REQ-SPEC-3.10-002",
+        "KMIPKIT-REQ-SPEC-3.10-003",
+        "KMIPKIT-REQ-SPEC-3.10-004",
+        "KMIPKIT-REQ-SPEC-3.11-002",
+        "KMIPKIT-REQ-SPEC-3.11-003",
+        "KMIPKIT-REQ-SPEC-3.12-002",
+        "KMIPKIT-REQ-SPEC-3.12-003",
         "KMIPKIT-REQ-SPEC-3.2-001",
+        "KMIPKIT-REQ-SPEC-3.2-003",
         "KMIPKIT-REQ-SPEC-3.3-001-001",
         "KMIPKIT-REQ-SPEC-3.3-001-002",
         "KMIPKIT-REQ-SPEC-3.3-003",
         "KMIPKIT-REQ-SPEC-3.3-004",
         "KMIPKIT-REQ-SPEC-3.3-006",
         "KMIPKIT-REQ-SPEC-3.3-009",
+        "KMIPKIT-REQ-SPEC-3.3-010",
+        "KMIPKIT-REQ-SPEC-3.3-011",
+        "KMIPKIT-REQ-SPEC-3.4-002",
+        "KMIPKIT-REQ-SPEC-3.5-002",
+        "KMIPKIT-REQ-SPEC-3.5-003",
+        "KMIPKIT-REQ-SPEC-3.5-004",
+        "KMIPKIT-REQ-SPEC-3.5-005",
+        "KMIPKIT-REQ-SPEC-3.6-002",
+        "KMIPKIT-REQ-SPEC-3.6-004",
+        "KMIPKIT-REQ-SPEC-3.6-005",
+        "KMIPKIT-REQ-SPEC-3.7-003",
+        "KMIPKIT-REQ-SPEC-3.8-002",
+        "KMIPKIT-REQ-SPEC-3.8-003",
+        "KMIPKIT-REQ-SPEC-3.9-002",
+        "KMIPKIT-REQ-SPEC-3.9-003",
+        "KMIPKIT-REQ-SPEC-3.9-004",
         "KMIPKIT-REQ-SPEC-4-001-004",
         "KMIPKIT-REQ-SPEC-4-001-005",
         "KMIPKIT-REQ-SPEC-4.16-001-001",
@@ -106532,6 +108080,7 @@
         "KMIPKIT-REQ-SPEC-4.38-001-001",
         "KMIPKIT-REQ-SPEC-4.38-001-002",
         "KMIPKIT-REQ-SPEC-4.38-001-003",
+        "KMIPKIT-REQ-SPEC-4.39-002-001",
         "KMIPKIT-REQ-SPEC-4.4-001",
         "KMIPKIT-REQ-SPEC-4.46-001-001",
         "KMIPKIT-REQ-SPEC-4.46-001-002",
@@ -106542,6 +108091,11 @@
         "KMIPKIT-REQ-SPEC-5.2-002",
         "KMIPKIT-REQ-SPEC-5.3-002",
         "KMIPKIT-REQ-SPEC-5.4-002",
+        "KMIPKIT-REQ-SPEC-5.5-003",
+        "KMIPKIT-REQ-SPEC-5.5-004",
+        "KMIPKIT-REQ-SPEC-5.5-005",
+        "KMIPKIT-REQ-SPEC-5.6-002",
+        "KMIPKIT-REQ-SPEC-5.7-002",
         "KMIPKIT-REQ-SPEC-6.1-001-001",
         "KMIPKIT-REQ-SPEC-6.1-001-002",
         "KMIPKIT-REQ-SPEC-6.1-001-003",
@@ -106563,7 +108117,6 @@
         "KMIPKIT-REQ-SPEC-6.1.14-001-002",
         "KMIPKIT-REQ-SPEC-6.1.14-001-003",
         "KMIPKIT-REQ-SPEC-6.1.14-001-004",
-        "KMIPKIT-REQ-SPEC-6.1.14-002",
         "KMIPKIT-REQ-SPEC-6.1.14-006-001",
         "KMIPKIT-REQ-SPEC-6.1.14-006-002",
         "KMIPKIT-REQ-SPEC-6.1.14-007-001",
@@ -106577,6 +108130,7 @@
         "KMIPKIT-REQ-SPEC-6.1.17-001-001",
         "KMIPKIT-REQ-SPEC-6.1.17-001-002",
         "KMIPKIT-REQ-SPEC-6.1.17-006",
+        "KMIPKIT-REQ-SPEC-6.1.18-001-001",
         "KMIPKIT-REQ-SPEC-6.1.18-005",
         "KMIPKIT-REQ-SPEC-6.1.18-006",
         "KMIPKIT-REQ-SPEC-6.1.18-007",
@@ -106632,6 +108186,7 @@
         "KMIPKIT-REQ-SPEC-6.1.44-003-002",
         "KMIPKIT-REQ-SPEC-6.1.45-001",
         "KMIPKIT-REQ-SPEC-6.1.45-002-001",
+        "KMIPKIT-REQ-SPEC-6.1.45-002-003",
         "KMIPKIT-REQ-SPEC-6.1.45-004",
         "KMIPKIT-REQ-SPEC-6.1.45-006-001",
         "KMIPKIT-REQ-SPEC-6.1.45-008",
@@ -107897,13 +109452,38 @@
         "KMIPKIT-REQ-SPEC-3.1-005-001",
         "KMIPKIT-REQ-SPEC-3.1-005-002",
         "KMIPKIT-REQ-SPEC-3.1-006",
+        "KMIPKIT-REQ-SPEC-3.1-007",
+        "KMIPKIT-REQ-SPEC-3.10-002",
+        "KMIPKIT-REQ-SPEC-3.10-003",
+        "KMIPKIT-REQ-SPEC-3.10-004",
+        "KMIPKIT-REQ-SPEC-3.11-002",
+        "KMIPKIT-REQ-SPEC-3.11-003",
+        "KMIPKIT-REQ-SPEC-3.12-002",
+        "KMIPKIT-REQ-SPEC-3.12-003",
         "KMIPKIT-REQ-SPEC-3.2-001",
+        "KMIPKIT-REQ-SPEC-3.2-003",
         "KMIPKIT-REQ-SPEC-3.3-001-001",
         "KMIPKIT-REQ-SPEC-3.3-001-002",
         "KMIPKIT-REQ-SPEC-3.3-003",
         "KMIPKIT-REQ-SPEC-3.3-004",
         "KMIPKIT-REQ-SPEC-3.3-006",
         "KMIPKIT-REQ-SPEC-3.3-009",
+        "KMIPKIT-REQ-SPEC-3.3-010",
+        "KMIPKIT-REQ-SPEC-3.3-011",
+        "KMIPKIT-REQ-SPEC-3.4-002",
+        "KMIPKIT-REQ-SPEC-3.5-002",
+        "KMIPKIT-REQ-SPEC-3.5-003",
+        "KMIPKIT-REQ-SPEC-3.5-004",
+        "KMIPKIT-REQ-SPEC-3.5-005",
+        "KMIPKIT-REQ-SPEC-3.6-002",
+        "KMIPKIT-REQ-SPEC-3.6-004",
+        "KMIPKIT-REQ-SPEC-3.6-005",
+        "KMIPKIT-REQ-SPEC-3.7-003",
+        "KMIPKIT-REQ-SPEC-3.8-002",
+        "KMIPKIT-REQ-SPEC-3.8-003",
+        "KMIPKIT-REQ-SPEC-3.9-002",
+        "KMIPKIT-REQ-SPEC-3.9-003",
+        "KMIPKIT-REQ-SPEC-3.9-004",
         "KMIPKIT-REQ-SPEC-4-001-004",
         "KMIPKIT-REQ-SPEC-4-001-005",
         "KMIPKIT-REQ-SPEC-4.16-001-001",
@@ -107923,6 +109503,7 @@
         "KMIPKIT-REQ-SPEC-4.38-001-001",
         "KMIPKIT-REQ-SPEC-4.38-001-002",
         "KMIPKIT-REQ-SPEC-4.38-001-003",
+        "KMIPKIT-REQ-SPEC-4.39-002-001",
         "KMIPKIT-REQ-SPEC-4.4-001",
         "KMIPKIT-REQ-SPEC-4.46-001-001",
         "KMIPKIT-REQ-SPEC-4.46-001-002",
@@ -107933,6 +109514,11 @@
         "KMIPKIT-REQ-SPEC-5.2-002",
         "KMIPKIT-REQ-SPEC-5.3-002",
         "KMIPKIT-REQ-SPEC-5.4-002",
+        "KMIPKIT-REQ-SPEC-5.5-003",
+        "KMIPKIT-REQ-SPEC-5.5-004",
+        "KMIPKIT-REQ-SPEC-5.5-005",
+        "KMIPKIT-REQ-SPEC-5.6-002",
+        "KMIPKIT-REQ-SPEC-5.7-002",
         "KMIPKIT-REQ-SPEC-6.1-001-001",
         "KMIPKIT-REQ-SPEC-6.1-001-002",
         "KMIPKIT-REQ-SPEC-6.1-001-003",
@@ -107954,7 +109540,6 @@
         "KMIPKIT-REQ-SPEC-6.1.14-001-002",
         "KMIPKIT-REQ-SPEC-6.1.14-001-003",
         "KMIPKIT-REQ-SPEC-6.1.14-001-004",
-        "KMIPKIT-REQ-SPEC-6.1.14-002",
         "KMIPKIT-REQ-SPEC-6.1.14-006-001",
         "KMIPKIT-REQ-SPEC-6.1.14-006-002",
         "KMIPKIT-REQ-SPEC-6.1.14-007-001",
@@ -107968,6 +109553,7 @@
         "KMIPKIT-REQ-SPEC-6.1.17-001-001",
         "KMIPKIT-REQ-SPEC-6.1.17-001-002",
         "KMIPKIT-REQ-SPEC-6.1.17-006",
+        "KMIPKIT-REQ-SPEC-6.1.18-001-001",
         "KMIPKIT-REQ-SPEC-6.1.18-005",
         "KMIPKIT-REQ-SPEC-6.1.18-006",
         "KMIPKIT-REQ-SPEC-6.1.18-007",
@@ -108023,6 +109609,7 @@
         "KMIPKIT-REQ-SPEC-6.1.44-003-002",
         "KMIPKIT-REQ-SPEC-6.1.45-001",
         "KMIPKIT-REQ-SPEC-6.1.45-002-001",
+        "KMIPKIT-REQ-SPEC-6.1.45-002-003",
         "KMIPKIT-REQ-SPEC-6.1.45-004",
         "KMIPKIT-REQ-SPEC-6.1.45-006-001",
         "KMIPKIT-REQ-SPEC-6.1.45-008",
@@ -109286,13 +110873,38 @@
         "KMIPKIT-REQ-SPEC-3.1-005-001",
         "KMIPKIT-REQ-SPEC-3.1-005-002",
         "KMIPKIT-REQ-SPEC-3.1-006",
+        "KMIPKIT-REQ-SPEC-3.1-007",
+        "KMIPKIT-REQ-SPEC-3.10-002",
+        "KMIPKIT-REQ-SPEC-3.10-003",
+        "KMIPKIT-REQ-SPEC-3.10-004",
+        "KMIPKIT-REQ-SPEC-3.11-002",
+        "KMIPKIT-REQ-SPEC-3.11-003",
+        "KMIPKIT-REQ-SPEC-3.12-002",
+        "KMIPKIT-REQ-SPEC-3.12-003",
         "KMIPKIT-REQ-SPEC-3.2-001",
+        "KMIPKIT-REQ-SPEC-3.2-003",
         "KMIPKIT-REQ-SPEC-3.3-001-001",
         "KMIPKIT-REQ-SPEC-3.3-001-002",
         "KMIPKIT-REQ-SPEC-3.3-003",
         "KMIPKIT-REQ-SPEC-3.3-004",
         "KMIPKIT-REQ-SPEC-3.3-006",
         "KMIPKIT-REQ-SPEC-3.3-009",
+        "KMIPKIT-REQ-SPEC-3.3-010",
+        "KMIPKIT-REQ-SPEC-3.3-011",
+        "KMIPKIT-REQ-SPEC-3.4-002",
+        "KMIPKIT-REQ-SPEC-3.5-002",
+        "KMIPKIT-REQ-SPEC-3.5-003",
+        "KMIPKIT-REQ-SPEC-3.5-004",
+        "KMIPKIT-REQ-SPEC-3.5-005",
+        "KMIPKIT-REQ-SPEC-3.6-002",
+        "KMIPKIT-REQ-SPEC-3.6-004",
+        "KMIPKIT-REQ-SPEC-3.6-005",
+        "KMIPKIT-REQ-SPEC-3.7-003",
+        "KMIPKIT-REQ-SPEC-3.8-002",
+        "KMIPKIT-REQ-SPEC-3.8-003",
+        "KMIPKIT-REQ-SPEC-3.9-002",
+        "KMIPKIT-REQ-SPEC-3.9-003",
+        "KMIPKIT-REQ-SPEC-3.9-004",
         "KMIPKIT-REQ-SPEC-4-001-004",
         "KMIPKIT-REQ-SPEC-4-001-005",
         "KMIPKIT-REQ-SPEC-4.16-001-001",
@@ -109312,6 +110924,7 @@
         "KMIPKIT-REQ-SPEC-4.38-001-001",
         "KMIPKIT-REQ-SPEC-4.38-001-002",
         "KMIPKIT-REQ-SPEC-4.38-001-003",
+        "KMIPKIT-REQ-SPEC-4.39-002-001",
         "KMIPKIT-REQ-SPEC-4.4-001",
         "KMIPKIT-REQ-SPEC-4.46-001-001",
         "KMIPKIT-REQ-SPEC-4.46-001-002",
@@ -109322,6 +110935,11 @@
         "KMIPKIT-REQ-SPEC-5.2-002",
         "KMIPKIT-REQ-SPEC-5.3-002",
         "KMIPKIT-REQ-SPEC-5.4-002",
+        "KMIPKIT-REQ-SPEC-5.5-003",
+        "KMIPKIT-REQ-SPEC-5.5-004",
+        "KMIPKIT-REQ-SPEC-5.5-005",
+        "KMIPKIT-REQ-SPEC-5.6-002",
+        "KMIPKIT-REQ-SPEC-5.7-002",
         "KMIPKIT-REQ-SPEC-6.1-001-001",
         "KMIPKIT-REQ-SPEC-6.1-001-002",
         "KMIPKIT-REQ-SPEC-6.1-001-003",
@@ -109343,7 +110961,6 @@
         "KMIPKIT-REQ-SPEC-6.1.14-001-002",
         "KMIPKIT-REQ-SPEC-6.1.14-001-003",
         "KMIPKIT-REQ-SPEC-6.1.14-001-004",
-        "KMIPKIT-REQ-SPEC-6.1.14-002",
         "KMIPKIT-REQ-SPEC-6.1.14-006-001",
         "KMIPKIT-REQ-SPEC-6.1.14-006-002",
         "KMIPKIT-REQ-SPEC-6.1.14-007-001",
@@ -109357,6 +110974,7 @@
         "KMIPKIT-REQ-SPEC-6.1.17-001-001",
         "KMIPKIT-REQ-SPEC-6.1.17-001-002",
         "KMIPKIT-REQ-SPEC-6.1.17-006",
+        "KMIPKIT-REQ-SPEC-6.1.18-001-001",
         "KMIPKIT-REQ-SPEC-6.1.18-005",
         "KMIPKIT-REQ-SPEC-6.1.18-006",
         "KMIPKIT-REQ-SPEC-6.1.18-007",
@@ -109412,6 +111030,7 @@
         "KMIPKIT-REQ-SPEC-6.1.44-003-002",
         "KMIPKIT-REQ-SPEC-6.1.45-001",
         "KMIPKIT-REQ-SPEC-6.1.45-002-001",
+        "KMIPKIT-REQ-SPEC-6.1.45-002-003",
         "KMIPKIT-REQ-SPEC-6.1.45-004",
         "KMIPKIT-REQ-SPEC-6.1.45-006-001",
         "KMIPKIT-REQ-SPEC-6.1.45-008",
@@ -110660,13 +112279,38 @@
         "KMIPKIT-REQ-SPEC-3.1-005-001",
         "KMIPKIT-REQ-SPEC-3.1-005-002",
         "KMIPKIT-REQ-SPEC-3.1-006",
+        "KMIPKIT-REQ-SPEC-3.1-007",
+        "KMIPKIT-REQ-SPEC-3.10-002",
+        "KMIPKIT-REQ-SPEC-3.10-003",
+        "KMIPKIT-REQ-SPEC-3.10-004",
+        "KMIPKIT-REQ-SPEC-3.11-002",
+        "KMIPKIT-REQ-SPEC-3.11-003",
+        "KMIPKIT-REQ-SPEC-3.12-002",
+        "KMIPKIT-REQ-SPEC-3.12-003",
         "KMIPKIT-REQ-SPEC-3.2-001",
+        "KMIPKIT-REQ-SPEC-3.2-003",
         "KMIPKIT-REQ-SPEC-3.3-001-001",
         "KMIPKIT-REQ-SPEC-3.3-001-002",
         "KMIPKIT-REQ-SPEC-3.3-003",
         "KMIPKIT-REQ-SPEC-3.3-004",
         "KMIPKIT-REQ-SPEC-3.3-006",
         "KMIPKIT-REQ-SPEC-3.3-009",
+        "KMIPKIT-REQ-SPEC-3.3-010",
+        "KMIPKIT-REQ-SPEC-3.3-011",
+        "KMIPKIT-REQ-SPEC-3.4-002",
+        "KMIPKIT-REQ-SPEC-3.5-002",
+        "KMIPKIT-REQ-SPEC-3.5-003",
+        "KMIPKIT-REQ-SPEC-3.5-004",
+        "KMIPKIT-REQ-SPEC-3.5-005",
+        "KMIPKIT-REQ-SPEC-3.6-002",
+        "KMIPKIT-REQ-SPEC-3.6-004",
+        "KMIPKIT-REQ-SPEC-3.6-005",
+        "KMIPKIT-REQ-SPEC-3.7-003",
+        "KMIPKIT-REQ-SPEC-3.8-002",
+        "KMIPKIT-REQ-SPEC-3.8-003",
+        "KMIPKIT-REQ-SPEC-3.9-002",
+        "KMIPKIT-REQ-SPEC-3.9-003",
+        "KMIPKIT-REQ-SPEC-3.9-004",
         "KMIPKIT-REQ-SPEC-4-001-004",
         "KMIPKIT-REQ-SPEC-4-001-005",
         "KMIPKIT-REQ-SPEC-4.16-001-001",
@@ -110686,6 +112330,7 @@
         "KMIPKIT-REQ-SPEC-4.38-001-001",
         "KMIPKIT-REQ-SPEC-4.38-001-002",
         "KMIPKIT-REQ-SPEC-4.38-001-003",
+        "KMIPKIT-REQ-SPEC-4.39-002-001",
         "KMIPKIT-REQ-SPEC-4.4-001",
         "KMIPKIT-REQ-SPEC-4.46-001-001",
         "KMIPKIT-REQ-SPEC-4.46-001-002",
@@ -110696,6 +112341,11 @@
         "KMIPKIT-REQ-SPEC-5.2-002",
         "KMIPKIT-REQ-SPEC-5.3-002",
         "KMIPKIT-REQ-SPEC-5.4-002",
+        "KMIPKIT-REQ-SPEC-5.5-003",
+        "KMIPKIT-REQ-SPEC-5.5-004",
+        "KMIPKIT-REQ-SPEC-5.5-005",
+        "KMIPKIT-REQ-SPEC-5.6-002",
+        "KMIPKIT-REQ-SPEC-5.7-002",
         "KMIPKIT-REQ-SPEC-6.1-001-001",
         "KMIPKIT-REQ-SPEC-6.1-001-002",
         "KMIPKIT-REQ-SPEC-6.1-001-003",
@@ -110717,7 +112367,6 @@
         "KMIPKIT-REQ-SPEC-6.1.14-001-002",
         "KMIPKIT-REQ-SPEC-6.1.14-001-003",
         "KMIPKIT-REQ-SPEC-6.1.14-001-004",
-        "KMIPKIT-REQ-SPEC-6.1.14-002",
         "KMIPKIT-REQ-SPEC-6.1.14-006-001",
         "KMIPKIT-REQ-SPEC-6.1.14-006-002",
         "KMIPKIT-REQ-SPEC-6.1.14-007-001",
@@ -110731,6 +112380,7 @@
         "KMIPKIT-REQ-SPEC-6.1.17-001-001",
         "KMIPKIT-REQ-SPEC-6.1.17-001-002",
         "KMIPKIT-REQ-SPEC-6.1.17-006",
+        "KMIPKIT-REQ-SPEC-6.1.18-001-001",
         "KMIPKIT-REQ-SPEC-6.1.18-005",
         "KMIPKIT-REQ-SPEC-6.1.18-006",
         "KMIPKIT-REQ-SPEC-6.1.18-007",
@@ -110786,6 +112436,7 @@
         "KMIPKIT-REQ-SPEC-6.1.44-003-002",
         "KMIPKIT-REQ-SPEC-6.1.45-001",
         "KMIPKIT-REQ-SPEC-6.1.45-002-001",
+        "KMIPKIT-REQ-SPEC-6.1.45-002-003",
         "KMIPKIT-REQ-SPEC-6.1.45-004",
         "KMIPKIT-REQ-SPEC-6.1.45-006-001",
         "KMIPKIT-REQ-SPEC-6.1.45-008",
@@ -112011,13 +113662,38 @@
         "KMIPKIT-REQ-SPEC-3.1-005-001",
         "KMIPKIT-REQ-SPEC-3.1-005-002",
         "KMIPKIT-REQ-SPEC-3.1-006",
+        "KMIPKIT-REQ-SPEC-3.1-007",
+        "KMIPKIT-REQ-SPEC-3.10-002",
+        "KMIPKIT-REQ-SPEC-3.10-003",
+        "KMIPKIT-REQ-SPEC-3.10-004",
+        "KMIPKIT-REQ-SPEC-3.11-002",
+        "KMIPKIT-REQ-SPEC-3.11-003",
+        "KMIPKIT-REQ-SPEC-3.12-002",
+        "KMIPKIT-REQ-SPEC-3.12-003",
         "KMIPKIT-REQ-SPEC-3.2-001",
+        "KMIPKIT-REQ-SPEC-3.2-003",
         "KMIPKIT-REQ-SPEC-3.3-001-001",
         "KMIPKIT-REQ-SPEC-3.3-001-002",
         "KMIPKIT-REQ-SPEC-3.3-003",
         "KMIPKIT-REQ-SPEC-3.3-004",
         "KMIPKIT-REQ-SPEC-3.3-006",
         "KMIPKIT-REQ-SPEC-3.3-009",
+        "KMIPKIT-REQ-SPEC-3.3-010",
+        "KMIPKIT-REQ-SPEC-3.3-011",
+        "KMIPKIT-REQ-SPEC-3.4-002",
+        "KMIPKIT-REQ-SPEC-3.5-002",
+        "KMIPKIT-REQ-SPEC-3.5-003",
+        "KMIPKIT-REQ-SPEC-3.5-004",
+        "KMIPKIT-REQ-SPEC-3.5-005",
+        "KMIPKIT-REQ-SPEC-3.6-002",
+        "KMIPKIT-REQ-SPEC-3.6-004",
+        "KMIPKIT-REQ-SPEC-3.6-005",
+        "KMIPKIT-REQ-SPEC-3.7-003",
+        "KMIPKIT-REQ-SPEC-3.8-002",
+        "KMIPKIT-REQ-SPEC-3.8-003",
+        "KMIPKIT-REQ-SPEC-3.9-002",
+        "KMIPKIT-REQ-SPEC-3.9-003",
+        "KMIPKIT-REQ-SPEC-3.9-004",
         "KMIPKIT-REQ-SPEC-4-001-004",
         "KMIPKIT-REQ-SPEC-4-001-005",
         "KMIPKIT-REQ-SPEC-4.16-001-001",
@@ -112037,6 +113713,7 @@
         "KMIPKIT-REQ-SPEC-4.38-001-001",
         "KMIPKIT-REQ-SPEC-4.38-001-002",
         "KMIPKIT-REQ-SPEC-4.38-001-003",
+        "KMIPKIT-REQ-SPEC-4.39-002-001",
         "KMIPKIT-REQ-SPEC-4.4-001",
         "KMIPKIT-REQ-SPEC-4.46-001-001",
         "KMIPKIT-REQ-SPEC-4.46-001-002",
@@ -112047,6 +113724,11 @@
         "KMIPKIT-REQ-SPEC-5.2-002",
         "KMIPKIT-REQ-SPEC-5.3-002",
         "KMIPKIT-REQ-SPEC-5.4-002",
+        "KMIPKIT-REQ-SPEC-5.5-003",
+        "KMIPKIT-REQ-SPEC-5.5-004",
+        "KMIPKIT-REQ-SPEC-5.5-005",
+        "KMIPKIT-REQ-SPEC-5.6-002",
+        "KMIPKIT-REQ-SPEC-5.7-002",
         "KMIPKIT-REQ-SPEC-6.1-001-001",
         "KMIPKIT-REQ-SPEC-6.1-001-002",
         "KMIPKIT-REQ-SPEC-6.1-001-003",
@@ -112068,7 +113750,6 @@
         "KMIPKIT-REQ-SPEC-6.1.14-001-002",
         "KMIPKIT-REQ-SPEC-6.1.14-001-003",
         "KMIPKIT-REQ-SPEC-6.1.14-001-004",
-        "KMIPKIT-REQ-SPEC-6.1.14-002",
         "KMIPKIT-REQ-SPEC-6.1.14-006-001",
         "KMIPKIT-REQ-SPEC-6.1.14-006-002",
         "KMIPKIT-REQ-SPEC-6.1.14-007-001",
@@ -112082,6 +113763,7 @@
         "KMIPKIT-REQ-SPEC-6.1.17-001-001",
         "KMIPKIT-REQ-SPEC-6.1.17-001-002",
         "KMIPKIT-REQ-SPEC-6.1.17-006",
+        "KMIPKIT-REQ-SPEC-6.1.18-001-001",
         "KMIPKIT-REQ-SPEC-6.1.18-005",
         "KMIPKIT-REQ-SPEC-6.1.18-006",
         "KMIPKIT-REQ-SPEC-6.1.18-007",
@@ -112137,6 +113819,7 @@
         "KMIPKIT-REQ-SPEC-6.1.44-003-002",
         "KMIPKIT-REQ-SPEC-6.1.45-001",
         "KMIPKIT-REQ-SPEC-6.1.45-002-001",
+        "KMIPKIT-REQ-SPEC-6.1.45-002-003",
         "KMIPKIT-REQ-SPEC-6.1.45-004",
         "KMIPKIT-REQ-SPEC-6.1.45-006-001",
         "KMIPKIT-REQ-SPEC-6.1.45-008",
@@ -113371,13 +115054,38 @@
         "KMIPKIT-REQ-SPEC-3.1-005-001",
         "KMIPKIT-REQ-SPEC-3.1-005-002",
         "KMIPKIT-REQ-SPEC-3.1-006",
+        "KMIPKIT-REQ-SPEC-3.1-007",
+        "KMIPKIT-REQ-SPEC-3.10-002",
+        "KMIPKIT-REQ-SPEC-3.10-003",
+        "KMIPKIT-REQ-SPEC-3.10-004",
+        "KMIPKIT-REQ-SPEC-3.11-002",
+        "KMIPKIT-REQ-SPEC-3.11-003",
+        "KMIPKIT-REQ-SPEC-3.12-002",
+        "KMIPKIT-REQ-SPEC-3.12-003",
         "KMIPKIT-REQ-SPEC-3.2-001",
+        "KMIPKIT-REQ-SPEC-3.2-003",
         "KMIPKIT-REQ-SPEC-3.3-001-001",
         "KMIPKIT-REQ-SPEC-3.3-001-002",
         "KMIPKIT-REQ-SPEC-3.3-003",
         "KMIPKIT-REQ-SPEC-3.3-004",
         "KMIPKIT-REQ-SPEC-3.3-006",
         "KMIPKIT-REQ-SPEC-3.3-009",
+        "KMIPKIT-REQ-SPEC-3.3-010",
+        "KMIPKIT-REQ-SPEC-3.3-011",
+        "KMIPKIT-REQ-SPEC-3.4-002",
+        "KMIPKIT-REQ-SPEC-3.5-002",
+        "KMIPKIT-REQ-SPEC-3.5-003",
+        "KMIPKIT-REQ-SPEC-3.5-004",
+        "KMIPKIT-REQ-SPEC-3.5-005",
+        "KMIPKIT-REQ-SPEC-3.6-002",
+        "KMIPKIT-REQ-SPEC-3.6-004",
+        "KMIPKIT-REQ-SPEC-3.6-005",
+        "KMIPKIT-REQ-SPEC-3.7-003",
+        "KMIPKIT-REQ-SPEC-3.8-002",
+        "KMIPKIT-REQ-SPEC-3.8-003",
+        "KMIPKIT-REQ-SPEC-3.9-002",
+        "KMIPKIT-REQ-SPEC-3.9-003",
+        "KMIPKIT-REQ-SPEC-3.9-004",
         "KMIPKIT-REQ-SPEC-4-001-004",
         "KMIPKIT-REQ-SPEC-4-001-005",
         "KMIPKIT-REQ-SPEC-4.16-001-001",
@@ -113397,6 +115105,7 @@
         "KMIPKIT-REQ-SPEC-4.38-001-001",
         "KMIPKIT-REQ-SPEC-4.38-001-002",
         "KMIPKIT-REQ-SPEC-4.38-001-003",
+        "KMIPKIT-REQ-SPEC-4.39-002-001",
         "KMIPKIT-REQ-SPEC-4.4-001",
         "KMIPKIT-REQ-SPEC-4.46-001-001",
         "KMIPKIT-REQ-SPEC-4.46-001-002",
@@ -113407,6 +115116,11 @@
         "KMIPKIT-REQ-SPEC-5.2-002",
         "KMIPKIT-REQ-SPEC-5.3-002",
         "KMIPKIT-REQ-SPEC-5.4-002",
+        "KMIPKIT-REQ-SPEC-5.5-003",
+        "KMIPKIT-REQ-SPEC-5.5-004",
+        "KMIPKIT-REQ-SPEC-5.5-005",
+        "KMIPKIT-REQ-SPEC-5.6-002",
+        "KMIPKIT-REQ-SPEC-5.7-002",
         "KMIPKIT-REQ-SPEC-6.1-001-001",
         "KMIPKIT-REQ-SPEC-6.1-001-002",
         "KMIPKIT-REQ-SPEC-6.1-001-003",
@@ -113428,7 +115142,6 @@
         "KMIPKIT-REQ-SPEC-6.1.14-001-002",
         "KMIPKIT-REQ-SPEC-6.1.14-001-003",
         "KMIPKIT-REQ-SPEC-6.1.14-001-004",
-        "KMIPKIT-REQ-SPEC-6.1.14-002",
         "KMIPKIT-REQ-SPEC-6.1.14-006-001",
         "KMIPKIT-REQ-SPEC-6.1.14-006-002",
         "KMIPKIT-REQ-SPEC-6.1.14-007-001",
@@ -113442,6 +115155,7 @@
         "KMIPKIT-REQ-SPEC-6.1.17-001-001",
         "KMIPKIT-REQ-SPEC-6.1.17-001-002",
         "KMIPKIT-REQ-SPEC-6.1.17-006",
+        "KMIPKIT-REQ-SPEC-6.1.18-001-001",
         "KMIPKIT-REQ-SPEC-6.1.18-005",
         "KMIPKIT-REQ-SPEC-6.1.18-006",
         "KMIPKIT-REQ-SPEC-6.1.18-007",
@@ -113497,6 +115211,7 @@
         "KMIPKIT-REQ-SPEC-6.1.44-003-002",
         "KMIPKIT-REQ-SPEC-6.1.45-001",
         "KMIPKIT-REQ-SPEC-6.1.45-002-001",
+        "KMIPKIT-REQ-SPEC-6.1.45-002-003",
         "KMIPKIT-REQ-SPEC-6.1.45-004",
         "KMIPKIT-REQ-SPEC-6.1.45-006-001",
         "KMIPKIT-REQ-SPEC-6.1.45-008",
@@ -114739,13 +116454,38 @@
         "KMIPKIT-REQ-SPEC-3.1-005-001",
         "KMIPKIT-REQ-SPEC-3.1-005-002",
         "KMIPKIT-REQ-SPEC-3.1-006",
+        "KMIPKIT-REQ-SPEC-3.1-007",
+        "KMIPKIT-REQ-SPEC-3.10-002",
+        "KMIPKIT-REQ-SPEC-3.10-003",
+        "KMIPKIT-REQ-SPEC-3.10-004",
+        "KMIPKIT-REQ-SPEC-3.11-002",
+        "KMIPKIT-REQ-SPEC-3.11-003",
+        "KMIPKIT-REQ-SPEC-3.12-002",
+        "KMIPKIT-REQ-SPEC-3.12-003",
         "KMIPKIT-REQ-SPEC-3.2-001",
+        "KMIPKIT-REQ-SPEC-3.2-003",
         "KMIPKIT-REQ-SPEC-3.3-001-001",
         "KMIPKIT-REQ-SPEC-3.3-001-002",
         "KMIPKIT-REQ-SPEC-3.3-003",
         "KMIPKIT-REQ-SPEC-3.3-004",
         "KMIPKIT-REQ-SPEC-3.3-006",
         "KMIPKIT-REQ-SPEC-3.3-009",
+        "KMIPKIT-REQ-SPEC-3.3-010",
+        "KMIPKIT-REQ-SPEC-3.3-011",
+        "KMIPKIT-REQ-SPEC-3.4-002",
+        "KMIPKIT-REQ-SPEC-3.5-002",
+        "KMIPKIT-REQ-SPEC-3.5-003",
+        "KMIPKIT-REQ-SPEC-3.5-004",
+        "KMIPKIT-REQ-SPEC-3.5-005",
+        "KMIPKIT-REQ-SPEC-3.6-002",
+        "KMIPKIT-REQ-SPEC-3.6-004",
+        "KMIPKIT-REQ-SPEC-3.6-005",
+        "KMIPKIT-REQ-SPEC-3.7-003",
+        "KMIPKIT-REQ-SPEC-3.8-002",
+        "KMIPKIT-REQ-SPEC-3.8-003",
+        "KMIPKIT-REQ-SPEC-3.9-002",
+        "KMIPKIT-REQ-SPEC-3.9-003",
+        "KMIPKIT-REQ-SPEC-3.9-004",
         "KMIPKIT-REQ-SPEC-4-001-004",
         "KMIPKIT-REQ-SPEC-4-001-005",
         "KMIPKIT-REQ-SPEC-4.16-001-001",
@@ -114765,6 +116505,7 @@
         "KMIPKIT-REQ-SPEC-4.38-001-001",
         "KMIPKIT-REQ-SPEC-4.38-001-002",
         "KMIPKIT-REQ-SPEC-4.38-001-003",
+        "KMIPKIT-REQ-SPEC-4.39-002-001",
         "KMIPKIT-REQ-SPEC-4.4-001",
         "KMIPKIT-REQ-SPEC-4.46-001-001",
         "KMIPKIT-REQ-SPEC-4.46-001-002",
@@ -114775,6 +116516,11 @@
         "KMIPKIT-REQ-SPEC-5.2-002",
         "KMIPKIT-REQ-SPEC-5.3-002",
         "KMIPKIT-REQ-SPEC-5.4-002",
+        "KMIPKIT-REQ-SPEC-5.5-003",
+        "KMIPKIT-REQ-SPEC-5.5-004",
+        "KMIPKIT-REQ-SPEC-5.5-005",
+        "KMIPKIT-REQ-SPEC-5.6-002",
+        "KMIPKIT-REQ-SPEC-5.7-002",
         "KMIPKIT-REQ-SPEC-6.1-001-001",
         "KMIPKIT-REQ-SPEC-6.1-001-002",
         "KMIPKIT-REQ-SPEC-6.1-001-003",
@@ -114796,7 +116542,6 @@
         "KMIPKIT-REQ-SPEC-6.1.14-001-002",
         "KMIPKIT-REQ-SPEC-6.1.14-001-003",
         "KMIPKIT-REQ-SPEC-6.1.14-001-004",
-        "KMIPKIT-REQ-SPEC-6.1.14-002",
         "KMIPKIT-REQ-SPEC-6.1.14-006-001",
         "KMIPKIT-REQ-SPEC-6.1.14-006-002",
         "KMIPKIT-REQ-SPEC-6.1.14-007-001",
@@ -114810,6 +116555,7 @@
         "KMIPKIT-REQ-SPEC-6.1.17-001-001",
         "KMIPKIT-REQ-SPEC-6.1.17-001-002",
         "KMIPKIT-REQ-SPEC-6.1.17-006",
+        "KMIPKIT-REQ-SPEC-6.1.18-001-001",
         "KMIPKIT-REQ-SPEC-6.1.18-005",
         "KMIPKIT-REQ-SPEC-6.1.18-006",
         "KMIPKIT-REQ-SPEC-6.1.18-007",
@@ -114865,6 +116611,7 @@
         "KMIPKIT-REQ-SPEC-6.1.44-003-002",
         "KMIPKIT-REQ-SPEC-6.1.45-001",
         "KMIPKIT-REQ-SPEC-6.1.45-002-001",
+        "KMIPKIT-REQ-SPEC-6.1.45-002-003",
         "KMIPKIT-REQ-SPEC-6.1.45-004",
         "KMIPKIT-REQ-SPEC-6.1.45-006-001",
         "KMIPKIT-REQ-SPEC-6.1.45-008",
@@ -116115,13 +117862,38 @@
         "KMIPKIT-REQ-SPEC-3.1-005-001",
         "KMIPKIT-REQ-SPEC-3.1-005-002",
         "KMIPKIT-REQ-SPEC-3.1-006",
+        "KMIPKIT-REQ-SPEC-3.1-007",
+        "KMIPKIT-REQ-SPEC-3.10-002",
+        "KMIPKIT-REQ-SPEC-3.10-003",
+        "KMIPKIT-REQ-SPEC-3.10-004",
+        "KMIPKIT-REQ-SPEC-3.11-002",
+        "KMIPKIT-REQ-SPEC-3.11-003",
+        "KMIPKIT-REQ-SPEC-3.12-002",
+        "KMIPKIT-REQ-SPEC-3.12-003",
         "KMIPKIT-REQ-SPEC-3.2-001",
+        "KMIPKIT-REQ-SPEC-3.2-003",
         "KMIPKIT-REQ-SPEC-3.3-001-001",
         "KMIPKIT-REQ-SPEC-3.3-001-002",
         "KMIPKIT-REQ-SPEC-3.3-003",
         "KMIPKIT-REQ-SPEC-3.3-004",
         "KMIPKIT-REQ-SPEC-3.3-006",
         "KMIPKIT-REQ-SPEC-3.3-009",
+        "KMIPKIT-REQ-SPEC-3.3-010",
+        "KMIPKIT-REQ-SPEC-3.3-011",
+        "KMIPKIT-REQ-SPEC-3.4-002",
+        "KMIPKIT-REQ-SPEC-3.5-002",
+        "KMIPKIT-REQ-SPEC-3.5-003",
+        "KMIPKIT-REQ-SPEC-3.5-004",
+        "KMIPKIT-REQ-SPEC-3.5-005",
+        "KMIPKIT-REQ-SPEC-3.6-002",
+        "KMIPKIT-REQ-SPEC-3.6-004",
+        "KMIPKIT-REQ-SPEC-3.6-005",
+        "KMIPKIT-REQ-SPEC-3.7-003",
+        "KMIPKIT-REQ-SPEC-3.8-002",
+        "KMIPKIT-REQ-SPEC-3.8-003",
+        "KMIPKIT-REQ-SPEC-3.9-002",
+        "KMIPKIT-REQ-SPEC-3.9-003",
+        "KMIPKIT-REQ-SPEC-3.9-004",
         "KMIPKIT-REQ-SPEC-4-001-004",
         "KMIPKIT-REQ-SPEC-4-001-005",
         "KMIPKIT-REQ-SPEC-4.16-001-001",
@@ -116141,6 +117913,7 @@
         "KMIPKIT-REQ-SPEC-4.38-001-001",
         "KMIPKIT-REQ-SPEC-4.38-001-002",
         "KMIPKIT-REQ-SPEC-4.38-001-003",
+        "KMIPKIT-REQ-SPEC-4.39-002-001",
         "KMIPKIT-REQ-SPEC-4.4-001",
         "KMIPKIT-REQ-SPEC-4.46-001-001",
         "KMIPKIT-REQ-SPEC-4.46-001-002",
@@ -116151,6 +117924,11 @@
         "KMIPKIT-REQ-SPEC-5.2-002",
         "KMIPKIT-REQ-SPEC-5.3-002",
         "KMIPKIT-REQ-SPEC-5.4-002",
+        "KMIPKIT-REQ-SPEC-5.5-003",
+        "KMIPKIT-REQ-SPEC-5.5-004",
+        "KMIPKIT-REQ-SPEC-5.5-005",
+        "KMIPKIT-REQ-SPEC-5.6-002",
+        "KMIPKIT-REQ-SPEC-5.7-002",
         "KMIPKIT-REQ-SPEC-6.1-001-001",
         "KMIPKIT-REQ-SPEC-6.1-001-002",
         "KMIPKIT-REQ-SPEC-6.1-001-003",
@@ -116172,7 +117950,6 @@
         "KMIPKIT-REQ-SPEC-6.1.14-001-002",
         "KMIPKIT-REQ-SPEC-6.1.14-001-003",
         "KMIPKIT-REQ-SPEC-6.1.14-001-004",
-        "KMIPKIT-REQ-SPEC-6.1.14-002",
         "KMIPKIT-REQ-SPEC-6.1.14-006-001",
         "KMIPKIT-REQ-SPEC-6.1.14-006-002",
         "KMIPKIT-REQ-SPEC-6.1.14-007-001",
@@ -116186,6 +117963,7 @@
         "KMIPKIT-REQ-SPEC-6.1.17-001-001",
         "KMIPKIT-REQ-SPEC-6.1.17-001-002",
         "KMIPKIT-REQ-SPEC-6.1.17-006",
+        "KMIPKIT-REQ-SPEC-6.1.18-001-001",
         "KMIPKIT-REQ-SPEC-6.1.18-005",
         "KMIPKIT-REQ-SPEC-6.1.18-006",
         "KMIPKIT-REQ-SPEC-6.1.18-007",
@@ -116241,6 +118019,7 @@
         "KMIPKIT-REQ-SPEC-6.1.44-003-002",
         "KMIPKIT-REQ-SPEC-6.1.45-001",
         "KMIPKIT-REQ-SPEC-6.1.45-002-001",
+        "KMIPKIT-REQ-SPEC-6.1.45-002-003",
         "KMIPKIT-REQ-SPEC-6.1.45-004",
         "KMIPKIT-REQ-SPEC-6.1.45-006-001",
         "KMIPKIT-REQ-SPEC-6.1.45-008",
@@ -117475,13 +119254,38 @@
         "KMIPKIT-REQ-SPEC-3.1-005-001",
         "KMIPKIT-REQ-SPEC-3.1-005-002",
         "KMIPKIT-REQ-SPEC-3.1-006",
+        "KMIPKIT-REQ-SPEC-3.1-007",
+        "KMIPKIT-REQ-SPEC-3.10-002",
+        "KMIPKIT-REQ-SPEC-3.10-003",
+        "KMIPKIT-REQ-SPEC-3.10-004",
+        "KMIPKIT-REQ-SPEC-3.11-002",
+        "KMIPKIT-REQ-SPEC-3.11-003",
+        "KMIPKIT-REQ-SPEC-3.12-002",
+        "KMIPKIT-REQ-SPEC-3.12-003",
         "KMIPKIT-REQ-SPEC-3.2-001",
+        "KMIPKIT-REQ-SPEC-3.2-003",
         "KMIPKIT-REQ-SPEC-3.3-001-001",
         "KMIPKIT-REQ-SPEC-3.3-001-002",
         "KMIPKIT-REQ-SPEC-3.3-003",
         "KMIPKIT-REQ-SPEC-3.3-004",
         "KMIPKIT-REQ-SPEC-3.3-006",
         "KMIPKIT-REQ-SPEC-3.3-009",
+        "KMIPKIT-REQ-SPEC-3.3-010",
+        "KMIPKIT-REQ-SPEC-3.3-011",
+        "KMIPKIT-REQ-SPEC-3.4-002",
+        "KMIPKIT-REQ-SPEC-3.5-002",
+        "KMIPKIT-REQ-SPEC-3.5-003",
+        "KMIPKIT-REQ-SPEC-3.5-004",
+        "KMIPKIT-REQ-SPEC-3.5-005",
+        "KMIPKIT-REQ-SPEC-3.6-002",
+        "KMIPKIT-REQ-SPEC-3.6-004",
+        "KMIPKIT-REQ-SPEC-3.6-005",
+        "KMIPKIT-REQ-SPEC-3.7-003",
+        "KMIPKIT-REQ-SPEC-3.8-002",
+        "KMIPKIT-REQ-SPEC-3.8-003",
+        "KMIPKIT-REQ-SPEC-3.9-002",
+        "KMIPKIT-REQ-SPEC-3.9-003",
+        "KMIPKIT-REQ-SPEC-3.9-004",
         "KMIPKIT-REQ-SPEC-4-001-004",
         "KMIPKIT-REQ-SPEC-4-001-005",
         "KMIPKIT-REQ-SPEC-4.16-001-001",
@@ -117501,6 +119305,7 @@
         "KMIPKIT-REQ-SPEC-4.38-001-001",
         "KMIPKIT-REQ-SPEC-4.38-001-002",
         "KMIPKIT-REQ-SPEC-4.38-001-003",
+        "KMIPKIT-REQ-SPEC-4.39-002-001",
         "KMIPKIT-REQ-SPEC-4.4-001",
         "KMIPKIT-REQ-SPEC-4.46-001-001",
         "KMIPKIT-REQ-SPEC-4.46-001-002",
@@ -117511,6 +119316,11 @@
         "KMIPKIT-REQ-SPEC-5.2-002",
         "KMIPKIT-REQ-SPEC-5.3-002",
         "KMIPKIT-REQ-SPEC-5.4-002",
+        "KMIPKIT-REQ-SPEC-5.5-003",
+        "KMIPKIT-REQ-SPEC-5.5-004",
+        "KMIPKIT-REQ-SPEC-5.5-005",
+        "KMIPKIT-REQ-SPEC-5.6-002",
+        "KMIPKIT-REQ-SPEC-5.7-002",
         "KMIPKIT-REQ-SPEC-6.1-001-001",
         "KMIPKIT-REQ-SPEC-6.1-001-002",
         "KMIPKIT-REQ-SPEC-6.1-001-003",
@@ -117532,7 +119342,6 @@
         "KMIPKIT-REQ-SPEC-6.1.14-001-002",
         "KMIPKIT-REQ-SPEC-6.1.14-001-003",
         "KMIPKIT-REQ-SPEC-6.1.14-001-004",
-        "KMIPKIT-REQ-SPEC-6.1.14-002",
         "KMIPKIT-REQ-SPEC-6.1.14-006-001",
         "KMIPKIT-REQ-SPEC-6.1.14-006-002",
         "KMIPKIT-REQ-SPEC-6.1.14-007-001",
@@ -117546,6 +119355,7 @@
         "KMIPKIT-REQ-SPEC-6.1.17-001-001",
         "KMIPKIT-REQ-SPEC-6.1.17-001-002",
         "KMIPKIT-REQ-SPEC-6.1.17-006",
+        "KMIPKIT-REQ-SPEC-6.1.18-001-001",
         "KMIPKIT-REQ-SPEC-6.1.18-005",
         "KMIPKIT-REQ-SPEC-6.1.18-006",
         "KMIPKIT-REQ-SPEC-6.1.18-007",
@@ -117601,6 +119411,7 @@
         "KMIPKIT-REQ-SPEC-6.1.44-003-002",
         "KMIPKIT-REQ-SPEC-6.1.45-001",
         "KMIPKIT-REQ-SPEC-6.1.45-002-001",
+        "KMIPKIT-REQ-SPEC-6.1.45-002-003",
         "KMIPKIT-REQ-SPEC-6.1.45-004",
         "KMIPKIT-REQ-SPEC-6.1.45-006-001",
         "KMIPKIT-REQ-SPEC-6.1.45-008",
@@ -118694,13 +120505,38 @@
         "KMIPKIT-REQ-SPEC-3.1-005-001",
         "KMIPKIT-REQ-SPEC-3.1-005-002",
         "KMIPKIT-REQ-SPEC-3.1-006",
+        "KMIPKIT-REQ-SPEC-3.1-007",
+        "KMIPKIT-REQ-SPEC-3.10-002",
+        "KMIPKIT-REQ-SPEC-3.10-003",
+        "KMIPKIT-REQ-SPEC-3.10-004",
+        "KMIPKIT-REQ-SPEC-3.11-002",
+        "KMIPKIT-REQ-SPEC-3.11-003",
+        "KMIPKIT-REQ-SPEC-3.12-002",
+        "KMIPKIT-REQ-SPEC-3.12-003",
         "KMIPKIT-REQ-SPEC-3.2-001",
+        "KMIPKIT-REQ-SPEC-3.2-003",
         "KMIPKIT-REQ-SPEC-3.3-001-001",
         "KMIPKIT-REQ-SPEC-3.3-001-002",
         "KMIPKIT-REQ-SPEC-3.3-003",
         "KMIPKIT-REQ-SPEC-3.3-004",
         "KMIPKIT-REQ-SPEC-3.3-006",
         "KMIPKIT-REQ-SPEC-3.3-009",
+        "KMIPKIT-REQ-SPEC-3.3-010",
+        "KMIPKIT-REQ-SPEC-3.3-011",
+        "KMIPKIT-REQ-SPEC-3.4-002",
+        "KMIPKIT-REQ-SPEC-3.5-002",
+        "KMIPKIT-REQ-SPEC-3.5-003",
+        "KMIPKIT-REQ-SPEC-3.5-004",
+        "KMIPKIT-REQ-SPEC-3.5-005",
+        "KMIPKIT-REQ-SPEC-3.6-002",
+        "KMIPKIT-REQ-SPEC-3.6-004",
+        "KMIPKIT-REQ-SPEC-3.6-005",
+        "KMIPKIT-REQ-SPEC-3.7-003",
+        "KMIPKIT-REQ-SPEC-3.8-002",
+        "KMIPKIT-REQ-SPEC-3.8-003",
+        "KMIPKIT-REQ-SPEC-3.9-002",
+        "KMIPKIT-REQ-SPEC-3.9-003",
+        "KMIPKIT-REQ-SPEC-3.9-004",
         "KMIPKIT-REQ-SPEC-4-001-004",
         "KMIPKIT-REQ-SPEC-4-001-005",
         "KMIPKIT-REQ-SPEC-4.16-001-001",
@@ -118720,6 +120556,7 @@
         "KMIPKIT-REQ-SPEC-4.38-001-001",
         "KMIPKIT-REQ-SPEC-4.38-001-002",
         "KMIPKIT-REQ-SPEC-4.38-001-003",
+        "KMIPKIT-REQ-SPEC-4.39-002-001",
         "KMIPKIT-REQ-SPEC-4.4-001",
         "KMIPKIT-REQ-SPEC-4.46-001-001",
         "KMIPKIT-REQ-SPEC-4.46-001-002",
@@ -118730,6 +120567,11 @@
         "KMIPKIT-REQ-SPEC-5.2-002",
         "KMIPKIT-REQ-SPEC-5.3-002",
         "KMIPKIT-REQ-SPEC-5.4-002",
+        "KMIPKIT-REQ-SPEC-5.5-003",
+        "KMIPKIT-REQ-SPEC-5.5-004",
+        "KMIPKIT-REQ-SPEC-5.5-005",
+        "KMIPKIT-REQ-SPEC-5.6-002",
+        "KMIPKIT-REQ-SPEC-5.7-002",
         "KMIPKIT-REQ-SPEC-6.1-001-001",
         "KMIPKIT-REQ-SPEC-6.1-001-002",
         "KMIPKIT-REQ-SPEC-6.1-001-003",
@@ -118751,7 +120593,6 @@
         "KMIPKIT-REQ-SPEC-6.1.14-001-002",
         "KMIPKIT-REQ-SPEC-6.1.14-001-003",
         "KMIPKIT-REQ-SPEC-6.1.14-001-004",
-        "KMIPKIT-REQ-SPEC-6.1.14-002",
         "KMIPKIT-REQ-SPEC-6.1.14-006-001",
         "KMIPKIT-REQ-SPEC-6.1.14-006-002",
         "KMIPKIT-REQ-SPEC-6.1.14-007-001",
@@ -118765,6 +120606,7 @@
         "KMIPKIT-REQ-SPEC-6.1.17-001-001",
         "KMIPKIT-REQ-SPEC-6.1.17-001-002",
         "KMIPKIT-REQ-SPEC-6.1.17-006",
+        "KMIPKIT-REQ-SPEC-6.1.18-001-001",
         "KMIPKIT-REQ-SPEC-6.1.18-005",
         "KMIPKIT-REQ-SPEC-6.1.18-006",
         "KMIPKIT-REQ-SPEC-6.1.18-007",
@@ -118820,6 +120662,7 @@
         "KMIPKIT-REQ-SPEC-6.1.44-003-002",
         "KMIPKIT-REQ-SPEC-6.1.45-001",
         "KMIPKIT-REQ-SPEC-6.1.45-002-001",
+        "KMIPKIT-REQ-SPEC-6.1.45-002-003",
         "KMIPKIT-REQ-SPEC-6.1.45-004",
         "KMIPKIT-REQ-SPEC-6.1.45-006-001",
         "KMIPKIT-REQ-SPEC-6.1.45-008",
@@ -119912,13 +121755,38 @@
         "KMIPKIT-REQ-SPEC-3.1-005-001",
         "KMIPKIT-REQ-SPEC-3.1-005-002",
         "KMIPKIT-REQ-SPEC-3.1-006",
+        "KMIPKIT-REQ-SPEC-3.1-007",
+        "KMIPKIT-REQ-SPEC-3.10-002",
+        "KMIPKIT-REQ-SPEC-3.10-003",
+        "KMIPKIT-REQ-SPEC-3.10-004",
+        "KMIPKIT-REQ-SPEC-3.11-002",
+        "KMIPKIT-REQ-SPEC-3.11-003",
+        "KMIPKIT-REQ-SPEC-3.12-002",
+        "KMIPKIT-REQ-SPEC-3.12-003",
         "KMIPKIT-REQ-SPEC-3.2-001",
+        "KMIPKIT-REQ-SPEC-3.2-003",
         "KMIPKIT-REQ-SPEC-3.3-001-001",
         "KMIPKIT-REQ-SPEC-3.3-001-002",
         "KMIPKIT-REQ-SPEC-3.3-003",
         "KMIPKIT-REQ-SPEC-3.3-004",
         "KMIPKIT-REQ-SPEC-3.3-006",
         "KMIPKIT-REQ-SPEC-3.3-009",
+        "KMIPKIT-REQ-SPEC-3.3-010",
+        "KMIPKIT-REQ-SPEC-3.3-011",
+        "KMIPKIT-REQ-SPEC-3.4-002",
+        "KMIPKIT-REQ-SPEC-3.5-002",
+        "KMIPKIT-REQ-SPEC-3.5-003",
+        "KMIPKIT-REQ-SPEC-3.5-004",
+        "KMIPKIT-REQ-SPEC-3.5-005",
+        "KMIPKIT-REQ-SPEC-3.6-002",
+        "KMIPKIT-REQ-SPEC-3.6-004",
+        "KMIPKIT-REQ-SPEC-3.6-005",
+        "KMIPKIT-REQ-SPEC-3.7-003",
+        "KMIPKIT-REQ-SPEC-3.8-002",
+        "KMIPKIT-REQ-SPEC-3.8-003",
+        "KMIPKIT-REQ-SPEC-3.9-002",
+        "KMIPKIT-REQ-SPEC-3.9-003",
+        "KMIPKIT-REQ-SPEC-3.9-004",
         "KMIPKIT-REQ-SPEC-4-001-004",
         "KMIPKIT-REQ-SPEC-4-001-005",
         "KMIPKIT-REQ-SPEC-4.16-001-001",
@@ -119938,6 +121806,7 @@
         "KMIPKIT-REQ-SPEC-4.38-001-001",
         "KMIPKIT-REQ-SPEC-4.38-001-002",
         "KMIPKIT-REQ-SPEC-4.38-001-003",
+        "KMIPKIT-REQ-SPEC-4.39-002-001",
         "KMIPKIT-REQ-SPEC-4.4-001",
         "KMIPKIT-REQ-SPEC-4.46-001-001",
         "KMIPKIT-REQ-SPEC-4.46-001-002",
@@ -119948,6 +121817,11 @@
         "KMIPKIT-REQ-SPEC-5.2-002",
         "KMIPKIT-REQ-SPEC-5.3-002",
         "KMIPKIT-REQ-SPEC-5.4-002",
+        "KMIPKIT-REQ-SPEC-5.5-003",
+        "KMIPKIT-REQ-SPEC-5.5-004",
+        "KMIPKIT-REQ-SPEC-5.5-005",
+        "KMIPKIT-REQ-SPEC-5.6-002",
+        "KMIPKIT-REQ-SPEC-5.7-002",
         "KMIPKIT-REQ-SPEC-6.1-001-001",
         "KMIPKIT-REQ-SPEC-6.1-001-002",
         "KMIPKIT-REQ-SPEC-6.1-001-003",
@@ -119969,7 +121843,6 @@
         "KMIPKIT-REQ-SPEC-6.1.14-001-002",
         "KMIPKIT-REQ-SPEC-6.1.14-001-003",
         "KMIPKIT-REQ-SPEC-6.1.14-001-004",
-        "KMIPKIT-REQ-SPEC-6.1.14-002",
         "KMIPKIT-REQ-SPEC-6.1.14-006-001",
         "KMIPKIT-REQ-SPEC-6.1.14-006-002",
         "KMIPKIT-REQ-SPEC-6.1.14-007-001",
@@ -119983,6 +121856,7 @@
         "KMIPKIT-REQ-SPEC-6.1.17-001-001",
         "KMIPKIT-REQ-SPEC-6.1.17-001-002",
         "KMIPKIT-REQ-SPEC-6.1.17-006",
+        "KMIPKIT-REQ-SPEC-6.1.18-001-001",
         "KMIPKIT-REQ-SPEC-6.1.18-005",
         "KMIPKIT-REQ-SPEC-6.1.18-006",
         "KMIPKIT-REQ-SPEC-6.1.18-007",
@@ -120038,6 +121912,7 @@
         "KMIPKIT-REQ-SPEC-6.1.44-003-002",
         "KMIPKIT-REQ-SPEC-6.1.45-001",
         "KMIPKIT-REQ-SPEC-6.1.45-002-001",
+        "KMIPKIT-REQ-SPEC-6.1.45-002-003",
         "KMIPKIT-REQ-SPEC-6.1.45-004",
         "KMIPKIT-REQ-SPEC-6.1.45-006-001",
         "KMIPKIT-REQ-SPEC-6.1.45-008",
@@ -121291,13 +123166,38 @@
         "KMIPKIT-REQ-SPEC-3.1-005-001",
         "KMIPKIT-REQ-SPEC-3.1-005-002",
         "KMIPKIT-REQ-SPEC-3.1-006",
+        "KMIPKIT-REQ-SPEC-3.1-007",
+        "KMIPKIT-REQ-SPEC-3.10-002",
+        "KMIPKIT-REQ-SPEC-3.10-003",
+        "KMIPKIT-REQ-SPEC-3.10-004",
+        "KMIPKIT-REQ-SPEC-3.11-002",
+        "KMIPKIT-REQ-SPEC-3.11-003",
+        "KMIPKIT-REQ-SPEC-3.12-002",
+        "KMIPKIT-REQ-SPEC-3.12-003",
         "KMIPKIT-REQ-SPEC-3.2-001",
+        "KMIPKIT-REQ-SPEC-3.2-003",
         "KMIPKIT-REQ-SPEC-3.3-001-001",
         "KMIPKIT-REQ-SPEC-3.3-001-002",
         "KMIPKIT-REQ-SPEC-3.3-003",
         "KMIPKIT-REQ-SPEC-3.3-004",
         "KMIPKIT-REQ-SPEC-3.3-006",
         "KMIPKIT-REQ-SPEC-3.3-009",
+        "KMIPKIT-REQ-SPEC-3.3-010",
+        "KMIPKIT-REQ-SPEC-3.3-011",
+        "KMIPKIT-REQ-SPEC-3.4-002",
+        "KMIPKIT-REQ-SPEC-3.5-002",
+        "KMIPKIT-REQ-SPEC-3.5-003",
+        "KMIPKIT-REQ-SPEC-3.5-004",
+        "KMIPKIT-REQ-SPEC-3.5-005",
+        "KMIPKIT-REQ-SPEC-3.6-002",
+        "KMIPKIT-REQ-SPEC-3.6-004",
+        "KMIPKIT-REQ-SPEC-3.6-005",
+        "KMIPKIT-REQ-SPEC-3.7-003",
+        "KMIPKIT-REQ-SPEC-3.8-002",
+        "KMIPKIT-REQ-SPEC-3.8-003",
+        "KMIPKIT-REQ-SPEC-3.9-002",
+        "KMIPKIT-REQ-SPEC-3.9-003",
+        "KMIPKIT-REQ-SPEC-3.9-004",
         "KMIPKIT-REQ-SPEC-4-001-004",
         "KMIPKIT-REQ-SPEC-4-001-005",
         "KMIPKIT-REQ-SPEC-4.16-001-001",
@@ -121317,6 +123217,7 @@
         "KMIPKIT-REQ-SPEC-4.38-001-001",
         "KMIPKIT-REQ-SPEC-4.38-001-002",
         "KMIPKIT-REQ-SPEC-4.38-001-003",
+        "KMIPKIT-REQ-SPEC-4.39-002-001",
         "KMIPKIT-REQ-SPEC-4.4-001",
         "KMIPKIT-REQ-SPEC-4.46-001-001",
         "KMIPKIT-REQ-SPEC-4.46-001-002",
@@ -121327,6 +123228,11 @@
         "KMIPKIT-REQ-SPEC-5.2-002",
         "KMIPKIT-REQ-SPEC-5.3-002",
         "KMIPKIT-REQ-SPEC-5.4-002",
+        "KMIPKIT-REQ-SPEC-5.5-003",
+        "KMIPKIT-REQ-SPEC-5.5-004",
+        "KMIPKIT-REQ-SPEC-5.5-005",
+        "KMIPKIT-REQ-SPEC-5.6-002",
+        "KMIPKIT-REQ-SPEC-5.7-002",
         "KMIPKIT-REQ-SPEC-6.1-001-001",
         "KMIPKIT-REQ-SPEC-6.1-001-002",
         "KMIPKIT-REQ-SPEC-6.1-001-003",
@@ -121348,7 +123254,6 @@
         "KMIPKIT-REQ-SPEC-6.1.14-001-002",
         "KMIPKIT-REQ-SPEC-6.1.14-001-003",
         "KMIPKIT-REQ-SPEC-6.1.14-001-004",
-        "KMIPKIT-REQ-SPEC-6.1.14-002",
         "KMIPKIT-REQ-SPEC-6.1.14-006-001",
         "KMIPKIT-REQ-SPEC-6.1.14-006-002",
         "KMIPKIT-REQ-SPEC-6.1.14-007-001",
@@ -121362,6 +123267,7 @@
         "KMIPKIT-REQ-SPEC-6.1.17-001-001",
         "KMIPKIT-REQ-SPEC-6.1.17-001-002",
         "KMIPKIT-REQ-SPEC-6.1.17-006",
+        "KMIPKIT-REQ-SPEC-6.1.18-001-001",
         "KMIPKIT-REQ-SPEC-6.1.18-005",
         "KMIPKIT-REQ-SPEC-6.1.18-006",
         "KMIPKIT-REQ-SPEC-6.1.18-007",
@@ -121417,6 +123323,7 @@
         "KMIPKIT-REQ-SPEC-6.1.44-003-002",
         "KMIPKIT-REQ-SPEC-6.1.45-001",
         "KMIPKIT-REQ-SPEC-6.1.45-002-001",
+        "KMIPKIT-REQ-SPEC-6.1.45-002-003",
         "KMIPKIT-REQ-SPEC-6.1.45-004",
         "KMIPKIT-REQ-SPEC-6.1.45-006-001",
         "KMIPKIT-REQ-SPEC-6.1.45-008",
@@ -122701,13 +124608,38 @@
         "KMIPKIT-REQ-SPEC-3.1-005-001",
         "KMIPKIT-REQ-SPEC-3.1-005-002",
         "KMIPKIT-REQ-SPEC-3.1-006",
+        "KMIPKIT-REQ-SPEC-3.1-007",
+        "KMIPKIT-REQ-SPEC-3.10-002",
+        "KMIPKIT-REQ-SPEC-3.10-003",
+        "KMIPKIT-REQ-SPEC-3.10-004",
+        "KMIPKIT-REQ-SPEC-3.11-002",
+        "KMIPKIT-REQ-SPEC-3.11-003",
+        "KMIPKIT-REQ-SPEC-3.12-002",
+        "KMIPKIT-REQ-SPEC-3.12-003",
         "KMIPKIT-REQ-SPEC-3.2-001",
+        "KMIPKIT-REQ-SPEC-3.2-003",
         "KMIPKIT-REQ-SPEC-3.3-001-001",
         "KMIPKIT-REQ-SPEC-3.3-001-002",
         "KMIPKIT-REQ-SPEC-3.3-003",
         "KMIPKIT-REQ-SPEC-3.3-004",
         "KMIPKIT-REQ-SPEC-3.3-006",
         "KMIPKIT-REQ-SPEC-3.3-009",
+        "KMIPKIT-REQ-SPEC-3.3-010",
+        "KMIPKIT-REQ-SPEC-3.3-011",
+        "KMIPKIT-REQ-SPEC-3.4-002",
+        "KMIPKIT-REQ-SPEC-3.5-002",
+        "KMIPKIT-REQ-SPEC-3.5-003",
+        "KMIPKIT-REQ-SPEC-3.5-004",
+        "KMIPKIT-REQ-SPEC-3.5-005",
+        "KMIPKIT-REQ-SPEC-3.6-002",
+        "KMIPKIT-REQ-SPEC-3.6-004",
+        "KMIPKIT-REQ-SPEC-3.6-005",
+        "KMIPKIT-REQ-SPEC-3.7-003",
+        "KMIPKIT-REQ-SPEC-3.8-002",
+        "KMIPKIT-REQ-SPEC-3.8-003",
+        "KMIPKIT-REQ-SPEC-3.9-002",
+        "KMIPKIT-REQ-SPEC-3.9-003",
+        "KMIPKIT-REQ-SPEC-3.9-004",
         "KMIPKIT-REQ-SPEC-4-001-004",
         "KMIPKIT-REQ-SPEC-4-001-005",
         "KMIPKIT-REQ-SPEC-4.16-001-001",
@@ -122727,6 +124659,7 @@
         "KMIPKIT-REQ-SPEC-4.38-001-001",
         "KMIPKIT-REQ-SPEC-4.38-001-002",
         "KMIPKIT-REQ-SPEC-4.38-001-003",
+        "KMIPKIT-REQ-SPEC-4.39-002-001",
         "KMIPKIT-REQ-SPEC-4.4-001",
         "KMIPKIT-REQ-SPEC-4.46-001-001",
         "KMIPKIT-REQ-SPEC-4.46-001-002",
@@ -122737,6 +124670,11 @@
         "KMIPKIT-REQ-SPEC-5.2-002",
         "KMIPKIT-REQ-SPEC-5.3-002",
         "KMIPKIT-REQ-SPEC-5.4-002",
+        "KMIPKIT-REQ-SPEC-5.5-003",
+        "KMIPKIT-REQ-SPEC-5.5-004",
+        "KMIPKIT-REQ-SPEC-5.5-005",
+        "KMIPKIT-REQ-SPEC-5.6-002",
+        "KMIPKIT-REQ-SPEC-5.7-002",
         "KMIPKIT-REQ-SPEC-6.1-001-001",
         "KMIPKIT-REQ-SPEC-6.1-001-002",
         "KMIPKIT-REQ-SPEC-6.1-001-003",
@@ -122758,7 +124696,6 @@
         "KMIPKIT-REQ-SPEC-6.1.14-001-002",
         "KMIPKIT-REQ-SPEC-6.1.14-001-003",
         "KMIPKIT-REQ-SPEC-6.1.14-001-004",
-        "KMIPKIT-REQ-SPEC-6.1.14-002",
         "KMIPKIT-REQ-SPEC-6.1.14-006-001",
         "KMIPKIT-REQ-SPEC-6.1.14-006-002",
         "KMIPKIT-REQ-SPEC-6.1.14-007-001",
@@ -122772,6 +124709,7 @@
         "KMIPKIT-REQ-SPEC-6.1.17-001-001",
         "KMIPKIT-REQ-SPEC-6.1.17-001-002",
         "KMIPKIT-REQ-SPEC-6.1.17-006",
+        "KMIPKIT-REQ-SPEC-6.1.18-001-001",
         "KMIPKIT-REQ-SPEC-6.1.18-005",
         "KMIPKIT-REQ-SPEC-6.1.18-006",
         "KMIPKIT-REQ-SPEC-6.1.18-007",
@@ -122827,6 +124765,7 @@
         "KMIPKIT-REQ-SPEC-6.1.44-003-002",
         "KMIPKIT-REQ-SPEC-6.1.45-001",
         "KMIPKIT-REQ-SPEC-6.1.45-002-001",
+        "KMIPKIT-REQ-SPEC-6.1.45-002-003",
         "KMIPKIT-REQ-SPEC-6.1.45-004",
         "KMIPKIT-REQ-SPEC-6.1.45-006-001",
         "KMIPKIT-REQ-SPEC-6.1.45-008",
@@ -124084,13 +126023,38 @@
         "KMIPKIT-REQ-SPEC-3.1-005-001",
         "KMIPKIT-REQ-SPEC-3.1-005-002",
         "KMIPKIT-REQ-SPEC-3.1-006",
+        "KMIPKIT-REQ-SPEC-3.1-007",
+        "KMIPKIT-REQ-SPEC-3.10-002",
+        "KMIPKIT-REQ-SPEC-3.10-003",
+        "KMIPKIT-REQ-SPEC-3.10-004",
+        "KMIPKIT-REQ-SPEC-3.11-002",
+        "KMIPKIT-REQ-SPEC-3.11-003",
+        "KMIPKIT-REQ-SPEC-3.12-002",
+        "KMIPKIT-REQ-SPEC-3.12-003",
         "KMIPKIT-REQ-SPEC-3.2-001",
+        "KMIPKIT-REQ-SPEC-3.2-003",
         "KMIPKIT-REQ-SPEC-3.3-001-001",
         "KMIPKIT-REQ-SPEC-3.3-001-002",
         "KMIPKIT-REQ-SPEC-3.3-003",
         "KMIPKIT-REQ-SPEC-3.3-004",
         "KMIPKIT-REQ-SPEC-3.3-006",
         "KMIPKIT-REQ-SPEC-3.3-009",
+        "KMIPKIT-REQ-SPEC-3.3-010",
+        "KMIPKIT-REQ-SPEC-3.3-011",
+        "KMIPKIT-REQ-SPEC-3.4-002",
+        "KMIPKIT-REQ-SPEC-3.5-002",
+        "KMIPKIT-REQ-SPEC-3.5-003",
+        "KMIPKIT-REQ-SPEC-3.5-004",
+        "KMIPKIT-REQ-SPEC-3.5-005",
+        "KMIPKIT-REQ-SPEC-3.6-002",
+        "KMIPKIT-REQ-SPEC-3.6-004",
+        "KMIPKIT-REQ-SPEC-3.6-005",
+        "KMIPKIT-REQ-SPEC-3.7-003",
+        "KMIPKIT-REQ-SPEC-3.8-002",
+        "KMIPKIT-REQ-SPEC-3.8-003",
+        "KMIPKIT-REQ-SPEC-3.9-002",
+        "KMIPKIT-REQ-SPEC-3.9-003",
+        "KMIPKIT-REQ-SPEC-3.9-004",
         "KMIPKIT-REQ-SPEC-4-001-004",
         "KMIPKIT-REQ-SPEC-4-001-005",
         "KMIPKIT-REQ-SPEC-4.16-001-001",
@@ -124110,6 +126074,7 @@
         "KMIPKIT-REQ-SPEC-4.38-001-001",
         "KMIPKIT-REQ-SPEC-4.38-001-002",
         "KMIPKIT-REQ-SPEC-4.38-001-003",
+        "KMIPKIT-REQ-SPEC-4.39-002-001",
         "KMIPKIT-REQ-SPEC-4.4-001",
         "KMIPKIT-REQ-SPEC-4.46-001-001",
         "KMIPKIT-REQ-SPEC-4.46-001-002",
@@ -124120,6 +126085,11 @@
         "KMIPKIT-REQ-SPEC-5.2-002",
         "KMIPKIT-REQ-SPEC-5.3-002",
         "KMIPKIT-REQ-SPEC-5.4-002",
+        "KMIPKIT-REQ-SPEC-5.5-003",
+        "KMIPKIT-REQ-SPEC-5.5-004",
+        "KMIPKIT-REQ-SPEC-5.5-005",
+        "KMIPKIT-REQ-SPEC-5.6-002",
+        "KMIPKIT-REQ-SPEC-5.7-002",
         "KMIPKIT-REQ-SPEC-6.1-001-001",
         "KMIPKIT-REQ-SPEC-6.1-001-002",
         "KMIPKIT-REQ-SPEC-6.1-001-003",
@@ -124141,7 +126111,6 @@
         "KMIPKIT-REQ-SPEC-6.1.14-001-002",
         "KMIPKIT-REQ-SPEC-6.1.14-001-003",
         "KMIPKIT-REQ-SPEC-6.1.14-001-004",
-        "KMIPKIT-REQ-SPEC-6.1.14-002",
         "KMIPKIT-REQ-SPEC-6.1.14-006-001",
         "KMIPKIT-REQ-SPEC-6.1.14-006-002",
         "KMIPKIT-REQ-SPEC-6.1.14-007-001",
@@ -124155,6 +126124,7 @@
         "KMIPKIT-REQ-SPEC-6.1.17-001-001",
         "KMIPKIT-REQ-SPEC-6.1.17-001-002",
         "KMIPKIT-REQ-SPEC-6.1.17-006",
+        "KMIPKIT-REQ-SPEC-6.1.18-001-001",
         "KMIPKIT-REQ-SPEC-6.1.18-005",
         "KMIPKIT-REQ-SPEC-6.1.18-006",
         "KMIPKIT-REQ-SPEC-6.1.18-007",
@@ -124210,6 +126180,7 @@
         "KMIPKIT-REQ-SPEC-6.1.44-003-002",
         "KMIPKIT-REQ-SPEC-6.1.45-001",
         "KMIPKIT-REQ-SPEC-6.1.45-002-001",
+        "KMIPKIT-REQ-SPEC-6.1.45-002-003",
         "KMIPKIT-REQ-SPEC-6.1.45-004",
         "KMIPKIT-REQ-SPEC-6.1.45-006-001",
         "KMIPKIT-REQ-SPEC-6.1.45-008",
