@@ -1190,6 +1190,11 @@ def render_c_header(manifest: dict[str, Any]) -> str:
         lines.append(f"#define {error['cCode']} ((int32_t){error['cValue']})")
     lines.append("")
     for function in manifest["functions"]:
+        c_documentation = function["c"].get("documentation", [])
+        if c_documentation:
+            lines.append(f"/* {c_documentation[0]}")
+            lines.extend(f" * {line}" for line in c_documentation[1:])
+            lines.append(" */")
         requirement_comment = ", ".join(function["requirementIds"])
         if any(
             parameter["kind"] == "handle-array" and parameter["nullable"]

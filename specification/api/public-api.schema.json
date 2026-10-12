@@ -802,6 +802,16 @@
               "type": "string",
               "pattern": "^kmipkit_[a-z0-9_]+$"
             },
+            "documentation": {
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "type": "string",
+                "minLength": 1,
+                "pattern": "^(?!.*\\*/).*$"
+              },
+              "description": "Optional C API documentation lines rendered as a block comment before the requirement references."
+            },
             "parameters": {
               "type": "array",
               "items": {
