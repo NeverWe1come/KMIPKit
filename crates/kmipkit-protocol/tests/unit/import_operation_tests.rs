@@ -72,24 +72,10 @@ fn key_object() -> Item {
 }
 
 fn wrapped_key_object() -> Item {
-    let key_wrapping_data = structure([
-        item(WRAPPING_METHOD, Value::enumeration(1)),
-        item(
-            ENCRYPTION_KEY_INFORMATION,
-            Value::structure(structure([item(
-                UNIQUE_IDENTIFIER,
-                Value::text_string("wrapping-key".to_owned()),
-            )])),
-        ),
-    ]);
     let key_block = structure([
         item(KEY_FORMAT_TYPE, Value::enumeration(1)),
-        // Synthetic wrapped bytes; KMIPKit transports these and does not unwrap them.
-        item(
-            KEY_VALUE,
-            Value::byte_string(b"synthetic-wrapped-key-value".to_vec()),
-        ),
-        item(KEY_WRAPPING_DATA, Value::structure(key_wrapping_data)),
+        synthetic_wrapped_key_value(),
+        encryption_key_wrapping_data(),
     ]);
     item(
         SYMMETRIC_KEY,
@@ -98,28 +84,39 @@ fn wrapped_key_object() -> Item {
 }
 
 fn wrapped_pgp_key_object() -> Item {
-    let key_wrapping_data = structure([
-        item(WRAPPING_METHOD, Value::enumeration(1)),
-        item(
-            ENCRYPTION_KEY_INFORMATION,
-            Value::structure(structure([item(
-                UNIQUE_IDENTIFIER,
-                Value::text_string("wrapping-key".to_owned()),
-            )])),
-        ),
-    ]);
     let key_block = structure([
-        item(
-            KEY_VALUE,
-            Value::byte_string(b"synthetic-wrapped-pgp-key-value".to_vec()),
-        ),
-        item(KEY_WRAPPING_DATA, Value::structure(key_wrapping_data)),
+        synthetic_wrapped_key_value(),
+        encryption_key_wrapping_data(),
     ]);
     item(
         PGP_KEY,
         Value::structure(structure([
             item(PGP_KEY_VERSION, Value::integer(4)),
             item(KEY_BLOCK, Value::structure(key_block)),
+        ])),
+    )
+}
+
+fn synthetic_wrapped_key_value() -> Item {
+    // Synthetic ciphertext; KMIPKit transports these bytes and does not unwrap them.
+    item(
+        KEY_VALUE,
+        Value::byte_string(b"synthetic-wrapped-key-value".to_vec()),
+    )
+}
+
+fn encryption_key_wrapping_data() -> Item {
+    item(
+        KEY_WRAPPING_DATA,
+        Value::structure(structure([
+            item(WRAPPING_METHOD, Value::enumeration(1)),
+            item(
+                ENCRYPTION_KEY_INFORMATION,
+                Value::structure(structure([item(
+                    UNIQUE_IDENTIFIER,
+                    Value::text_string("wrapping-key".to_owned()),
+                )])),
+            ),
         ])),
     )
 }
