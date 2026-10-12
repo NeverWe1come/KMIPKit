@@ -7757,8 +7757,73 @@ class CatalogValidationTests(unittest.TestCase):
         identifier = next(row for row in review["source_request_rows"]
                           if row["row_label"] == "Unique Identifier")
         self.assertEqual(identifier["source_gap_id"], gap_id)
+        self.assertEqual(identifier["source_element_id"], "KMIPKIT-ELEM-TAG-420094")
         self.assertEqual(identifier["source_requirement_ids"], [])
         self.assertEqual(identifier["disposition"], "optional_request_table_contract")
+        self.assertEqual(validate_source_table_contracts(oracle, ROOT), [])
+
+    def test_set_attribute_table_322_required_new_attribute_is_a_client_source_contract(self) -> None:
+        """The required New Attribute row maps to existing Set Attribute evidence without a new REQ."""
+        fixture_path = ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json"
+        oracle = json.loads(fixture_path.read_text(encoding="utf-8"))
+        gap_id = "KMIPKIT-SOURCE-GAP-SPEC-6.1.51-NEW-ATTRIBUTE-REQUIRED"
+        proposed_id = "KMIPKIT-REQ-SPEC-6.1.51-002"
+        source_path = "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
+        line_range = [35685, 35699]
+        contracts = source_table_contracts_for_gap(oracle["source_table_contracts"], gap_id)
+
+        self.assertEqual(len(contracts), 1)
+        contract = contracts[0]
+        self.assertEqual(contract["source_id"], "KMIPKIT-SRC-spec")
+        self.assertEqual(contract["source_path"], source_path)
+        self.assertEqual(contract["source_section"], "6.1.51")
+        self.assertEqual(contract["source_locator"], {
+            "kind": "table_body_row",
+            "section": "6.1.51",
+            "row_label": "New Attribute",
+            "table": "request_payload",
+            "html_line_range": line_range,
+        })
+        self.assertEqual(contract["source_excerpt"], pinned_source_excerpt(source_path, line_range))
+        self.assertEqual(contract["table_number"], 322)
+        self.assertEqual(contract["requiredness"], "Yes")
+        self.assertEqual(contract["source_force"], "required_table_body_value")
+        self.assertEqual(contract["actor"], "client")
+        self.assertEqual(contract["scope_disposition"], "client_1_0")
+        self.assertEqual(contract["operation_element_id"], "KMIPKIT-ELEM-OP-C2S-SET-ATTRIBUTE")
+        self.assertEqual(contract["functional_requirement_ids"], ["FR-001", "FR-002", "FR-009"])
+        self.assertEqual(contract["implementation_refs"], [
+            "crates/kmipkit-protocol/src/set_attribute.rs::SetAttributeRequest::to_ttlv_payload",
+        ])
+        self.assertEqual(contract["verification_refs"], [
+            "crates/kmipkit-protocol/tests/unit/set_attribute_tests.rs::request_preserves_the_required_new_attribute_direct_item_and_table_322_order",
+            "crates/kmipkit-client/tests/unit/attribute_mutation_execution_tests.rs::add_and_set_send_the_new_attribute_as_one_unchanged_direct_item",
+        ])
+        self.assertEqual(contract["status"], "mapped_to_approved_feature_contract")
+        self.assertEqual(contract["evidence_disposition"]["status"], "mapped_to_feature_contract")
+        self.assertIn("unchanged", contract["evidence_disposition"]["statement"].lower())
+        self.assertIn("server", contract["evidence_disposition"]["statement"].lower())
+        for field in ("candidate_requirement_id", "proposed_requirement_id", "requirement_id"):
+            self.assertNotIn(field, contract)
+
+        self.assertFalse(any(row["gap_id"] == gap_id for row in oracle["source_only_requirement_gaps"]))
+        self.assertFalse(any(row["requirement_id"] == proposed_id for row in oracle["requirement_crosswalk"]))
+        self.assertFalse(any(row.get("proposed_requirement_id") == proposed_id
+                             for row in oracle["source_only_requirement_gaps"]))
+        catalog = json.loads((ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8"))
+        self.assertNotIn(proposed_id, {row["requirement_id"] for row in catalog["requirements"]})
+        self.assertEqual(oracle["counts"]["source_table_contracts"], 58)
+        self.assertEqual(oracle["counts"]["source_only_requirement_gaps"], 112)
+        self.assertEqual(oracle["counts"]["source_only_requirement_gap_proposals"], 59)
+
+        review = next(row for row in oracle["source_requirement_reviews"]
+                      if row["source_clause_id"] == "KMIPKIT-CLAUSE-SPEC-6.1.51-002")
+        new_attribute = next(row for row in review["source_request_rows"]
+                             if row["row_label"] == "New Attribute")
+        self.assertEqual(new_attribute["source_gap_id"], gap_id)
+        self.assertEqual(new_attribute["source_element_id"], "KMIPKIT-ELEM-TAG-42013D")
+        self.assertEqual(new_attribute["source_requirement_ids"], [])
+        self.assertEqual(new_attribute["disposition"], "required_request_table_contract")
         self.assertEqual(validate_source_table_contracts(oracle, ROOT), [])
 
     def test_spec_6_1_52_set_constraints_reviews_payload_and_approved_error_decision(self) -> None:
