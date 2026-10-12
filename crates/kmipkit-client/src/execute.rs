@@ -3880,12 +3880,7 @@ impl Client {
         let maximum_response_size = maximum_response_size_for_batch(&batch, limits);
         let request_message = build_request_message(batch, &options, maximum_response_size)
             .map_err(|error| protocol_failure_at(error, RequestDeliveryState::NotSent))?;
-        let profile_request = if let Some(profiles) = profiles {
-            profiles
-                .validate_request(&request_message)
-                .map_err(|error| {
-                    ClientError::profile_validation(error, RequestDeliveryState::NotSent)
-                })?;
+        let profile_request = if profiles.is_some() {
             Some(
                 clone_request_message(&request_message, limits)
                     .map_err(|error| protocol_failure_at(error, RequestDeliveryState::NotSent))?,
@@ -3893,6 +3888,13 @@ impl Client {
         } else {
             None
         };
+        if let Some(profiles) = profiles {
+            profiles
+                .validate_request(&request_message)
+                .map_err(|error| {
+                    ClientError::profile_validation(error, RequestDeliveryState::NotSent)
+                })?;
+        }
         let (response_message, response_delivery_state) =
             self.exchange_operation(request_message, limits, request_options)?;
         let profile_response = if profiles.is_some() {
