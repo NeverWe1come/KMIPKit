@@ -63,6 +63,27 @@ class AttributeScopeAdjudicationTests(unittest.TestCase):
         self.assertEqual(review["source_obligations"][0]["actor"], "unresolved")
         self.assertEqual(review["source_obligations"][0]["scope_disposition"], "unresolved")
 
+    def test_derive_key_method_evidence_does_not_expand_client_profile_scope(self) -> None:
+        catalog = _read(CATALOG_PATH)
+        oracle = _read(ORACLE_PATH)
+        requirement_id = "KMIPKIT-REQ-SPEC-6.1.14-002"
+        requirement = next(row for row in catalog["requirements"] if row["requirement_id"] == requirement_id)
+        review = next(
+            row for row in oracle["source_requirement_reviews"]
+            if row["source_clause_id"] == "KMIPKIT-CLAUSE-SPEC-6.1.14-002"
+        )
+
+        self.assertEqual(requirement["role"], "unclear")
+        self.assertEqual(requirement["scope_state"], "unclear")
+        self.assertEqual(requirement["feature_spec"], "KMIPKIT-0037")
+        self.assertEqual(requirement["status"], "scoped_verified")
+        self.assertTrue(requirement["implementation_refs"])
+        self.assertTrue(requirement["verification_refs"])
+        self.assertNotIn(requirement_id, review["expected_client_requirement_ids"])
+        for profile in catalog["profiles"]:
+            with self.subTest(profile_id=profile["profile_id"]):
+                self.assertNotIn(requirement_id, profile["requirement_ids"])
+
 
 if __name__ == "__main__":
     unittest.main()
