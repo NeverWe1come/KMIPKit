@@ -16245,6 +16245,170 @@ class CatalogValidationTests(unittest.TestCase):
         self.assertEqual(ticket_gap["status"], "stable_label_proposed_not_in_catalog")
         self.assertEqual(oracle["oracle_status"], "partial-source-reviewed; not complete T003 oracle")
 
+    def test_operation_table_gaps_and_optional_capabilities_have_catalog_evidence(self) -> None:
+        """Table-row capabilities and existing optional fields retain source-linked evidence."""
+        catalog = json.loads(
+            (ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8")
+        )
+        requirements = {row["requirement_id"]: row for row in catalog["requirements"]}
+        oracle = json.loads(
+            (ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json").read_text(encoding="utf-8")
+        )
+        evidence_requirements = {
+            "KMIPKIT-REQ-SPEC-6.1.12-003": (
+                "crates/kmipkit-protocol/src/delegated_login.rs",
+                "crates/kmipkit-protocol/tests/unit/delegated_login_operation_tests.rs::request_emits_table_199_fields_in_order_and_preserves_both_lease_time_forms",
+            ),
+            "KMIPKIT-REQ-SPEC-6.1.12-005": (
+                "crates/kmipkit-protocol/src/delegated_login.rs",
+                "crates/kmipkit-protocol/tests/unit/delegated_login_operation_tests.rs::request_emits_table_199_fields_in_order_and_preserves_both_lease_time_forms",
+            ),
+            "KMIPKIT-REQ-SPEC-6.1.12-006": (
+                "crates/kmipkit-protocol/src/delegated_login.rs",
+                "crates/kmipkit-protocol/tests/unit/delegated_login_operation_tests.rs::request_emits_table_199_fields_in_order_and_preserves_both_lease_time_forms",
+            ),
+            "KMIPKIT-REQ-SPEC-6.1.12-007": (
+                "crates/kmipkit-protocol/src/delegated_login.rs",
+                "crates/kmipkit-protocol/tests/unit/delegated_login_operation_tests.rs::request_emits_table_199_fields_in_order_and_preserves_both_lease_time_forms",
+            ),
+            "KMIPKIT-REQ-SPEC-6.1.13-005": (
+                "crates/kmipkit-protocol/src/delete_attribute.rs",
+                "crates/kmipkit-protocol/tests/unit/delete_attribute_tests.rs::request_omits_current_attribute_and_preserves_name_reference",
+            ),
+            "KMIPKIT-REQ-SPEC-6.1.13-006": (
+                "crates/kmipkit-protocol/src/delete_attribute.rs",
+                "crates/kmipkit-protocol/tests/unit/delete_attribute_tests.rs::request_omits_current_attribute_and_preserves_name_reference",
+            ),
+            "KMIPKIT-REQ-SPEC-6.1.14-009": (
+                "crates/kmipkit-protocol/src/derive_key.rs",
+                "crates/kmipkit-protocol/tests/unit/derive_key_operation_tests.rs::request_encodes_required_table_205_fields_in_order_and_repeats_identifiers",
+            ),
+            "KMIPKIT-REQ-SPEC-6.1.14-010": (
+                "crates/kmipkit-protocol/src/derive_key.rs",
+                "crates/kmipkit-protocol/tests/unit/derive_key_operation_tests.rs::request_encodes_required_table_205_fields_in_order_and_repeats_identifiers",
+            ),
+            "KMIPKIT-REQ-SPEC-6.1.14-011": (
+                "crates/kmipkit-protocol/src/derive_key.rs",
+                "crates/kmipkit-protocol/tests/unit/derive_key_operation_tests.rs::request_encodes_required_table_205_fields_in_order_and_repeats_identifiers",
+            ),
+            "KMIPKIT-REQ-SPEC-6.1.14-012": (
+                "crates/kmipkit-protocol/src/derive_key.rs",
+                "crates/kmipkit-protocol/tests/unit/derive_key_operation_tests.rs::request_encodes_required_table_205_fields_in_order_and_repeats_identifiers",
+            ),
+            "KMIPKIT-REQ-SPEC-6.1.9-001-001": (
+                "crates/kmipkit-protocol/src/create_key_pair.rs",
+                "crates/kmipkit-protocol/tests/unit/create_key_pair_tests.rs::request_preserves_six_distinct_optional_groups_and_repeated_items_in_wire_order",
+            ),
+            "KMIPKIT-REQ-SPEC-6.1.9-001-002": (
+                "crates/kmipkit-protocol/src/create_key_pair.rs",
+                "crates/kmipkit-protocol/tests/unit/create_key_pair_tests.rs::request_distinguishes_absent_groups_from_present_empty_groups_without_synthesizing_choices",
+            ),
+            "KMIPKIT-REQ-SPEC-6.1.10-001": (
+                "crates/kmipkit-protocol/src/create_split_key.rs",
+                "crates/kmipkit-protocol/tests/unit/create_split_key_tests.rs::request_preserves_table_193_fields_order_and_exact_input_identifier",
+            ),
+            "KMIPKIT-REQ-SPEC-6.1.11-001-001": (
+                "crates/kmipkit-protocol/src/decrypt.rs",
+                "crates/kmipkit-protocol/tests/unit/decrypt_tests.rs::request_omits_cryptographic_parameters_and_iv_when_the_caller_omits_them",
+            ),
+            "KMIPKIT-REQ-SPEC-6.1.11-001-002": (
+                "crates/kmipkit-protocol/src/decrypt.rs",
+                "crates/kmipkit-protocol/tests/unit/decrypt_tests.rs::request_omits_cryptographic_parameters_and_iv_when_the_caller_omits_them",
+            ),
+            "KMIPKIT-REQ-SPEC-6.1.16-001-001": (
+                "crates/kmipkit-protocol/src/discover_versions.rs",
+                "crates/kmipkit-protocol/tests/unit/discover_versions_tests.rs::request_advertises_only_kmip_2_1",
+            ),
+            "KMIPKIT-REQ-SPEC-6.1.17-001-001": (
+                "crates/kmipkit-protocol/src/encrypt.rs",
+                "crates/kmipkit-protocol/tests/unit/encrypt_tests.rs::request_omits_cryptographic_parameters_when_the_caller_omits_them",
+            ),
+            "KMIPKIT-REQ-SPEC-6.1.17-001-002": (
+                "crates/kmipkit-protocol/src/encrypt.rs",
+                "crates/kmipkit-protocol/tests/unit/encrypt_tests.rs::request_omits_cryptographic_parameters_when_the_caller_omits_them",
+            ),
+        }
+
+        expected_table_rows = {
+            "KMIPKIT-REQ-SPEC-6.1.12-003": (
+                "KMIPKIT-SOURCE-GAP-SPEC-6.1.12-RIGHTS-REQUIRED", "Rights", "required_table_body_value", [25489, 25507]
+            ),
+            "KMIPKIT-REQ-SPEC-6.1.12-005": (
+                "KMIPKIT-SOURCE-GAP-SPEC-6.1.12-LEASE-TIME-OPTIONAL", "Lease Time", "optional_table_body_value", [25434, 25451]
+            ),
+            "KMIPKIT-REQ-SPEC-6.1.12-006": (
+                "KMIPKIT-SOURCE-GAP-SPEC-6.1.12-REQUEST-COUNT-OPTIONAL", "Request Count", "optional_table_body_value", [25452, 25470]
+            ),
+            "KMIPKIT-REQ-SPEC-6.1.12-007": (
+                "KMIPKIT-SOURCE-GAP-SPEC-6.1.12-USAGE-LIMITS-OPTIONAL", "Usage Limits", "optional_table_body_value", [25471, 25488]
+            ),
+            "KMIPKIT-REQ-SPEC-6.1.13-005": (
+                "KMIPKIT-SOURCE-GAP-SPEC-6.1.13-CURRENT-ATTRIBUTE-OPTIONAL", "Current Attribute", "optional_table_body_value", [25681, 25699]
+            ),
+            "KMIPKIT-REQ-SPEC-6.1.13-006": (
+                "KMIPKIT-SOURCE-GAP-SPEC-6.1.13-ATTRIBUTE-REFERENCE-OPTIONAL", "Attribute Reference", "optional_table_body_value", [25700, 25718]
+            ),
+            "KMIPKIT-REQ-SPEC-6.1.14-009": (
+                "KMIPKIT-SOURCE-GAP-SPEC-6.1.14-OBJECT-TYPE-REQUIRED", "Object Type", "required_table_body_value", [25900, 25918]
+            ),
+            "KMIPKIT-REQ-SPEC-6.1.14-010": (
+                "KMIPKIT-SOURCE-GAP-SPEC-6.1.14-UNIQUE-IDENTIFIER-REQUIRED", "Unique Identifier", "required_table_body_value", [25919, 25939]
+            ),
+            "KMIPKIT-REQ-SPEC-6.1.14-011": (
+                "KMIPKIT-SOURCE-GAP-SPEC-6.1.14-DERIVATION-METHOD-REQUIRED", "Derivation Method", "required_table_body_value", [25940, 25959]
+            ),
+            "KMIPKIT-REQ-SPEC-6.1.14-012": (
+                "KMIPKIT-SOURCE-GAP-SPEC-6.1.14-DERIVATION-PARAMETERS-REQUIRED", "Derivation Parameters", "required_table_body_value", [25960, 25979]
+            ),
+        }
+        gaps = {row["gap_id"]: row for row in oracle["source_only_requirement_gaps"]}
+        reviews_by_row = {
+            tuple(row["html_line_range"]): row
+            for row in oracle["source_requirement_reviews"]
+            if row["source_section"] in {"6.1.12", "6.1.13", "6.1.14"}
+        }
+        for requirement_id, (gap_id, row_label, source_force, line_range) in expected_table_rows.items():
+            with self.subTest(table_requirement_id=requirement_id):
+                requirement = requirements[requirement_id]
+                gap = gaps[gap_id]
+                source_review = reviews_by_row[line_range]
+                self.assertIsNone(requirement["source_keyword"])
+                self.assertEqual(requirement["source_force"], source_force)
+                self.assertEqual(requirement["normative_strength"], "mandatory" if source_force == "required_table_body_value" else "permission_or_optional")
+                self.assertEqual(requirement["source_gap_id"], gap_id)
+                self.assertEqual(requirement["source_clause_ids"], [source_review["source_clause_id"]])
+                self.assertEqual(requirement["source_locator"], gap["source_locator"])
+                self.assertEqual(requirement["source_locator"]["row_label"], row_label)
+                self.assertEqual(gap["source_force"], source_force)
+                self.assertEqual(gap["html_line_range"], line_range)
+                self.assertEqual(gap["candidate_requirement_id"], requirement_id)
+                self.assertIsNone(gap["proposed_requirement_id"])
+                matching_obligations = [
+                    atom for atom in source_review["source_obligations"]
+                    if atom.get("source_gap_id") == gap_id
+                ]
+                self.assertEqual(len(matching_obligations), 1)
+                self.assertEqual(matching_obligations[0]["source_keyword"], source_force)
+                self.assertEqual(matching_obligations[0]["candidate_requirement_id"], requirement_id)
+
+        for requirement_id, (implementation_ref, verification_ref) in evidence_requirements.items():
+            with self.subTest(requirement_id=requirement_id):
+                requirement = requirements[requirement_id]
+                self.assertEqual(requirement["role"], "client")
+                self.assertEqual(requirement["direction"], "client_to_server")
+                self.assertEqual(requirement["scope_state"], "client_1_0")
+                self.assertEqual(requirement["status"], "verified")
+                self.assertIn(implementation_ref, requirement["implementation_refs"])
+                self.assertIn(verification_ref, requirement["verification_refs"])
+                self.assertTrue((ROOT / implementation_ref).is_file())
+                self.assertTrue((ROOT / verification_ref.split("::", 1)[0]).is_file())
+
+        self.assertEqual(
+            requirements["KMIPKIT-REQ-SPEC-6.1.16-004"]["scope_state"],
+            "out_of_scope",
+            "KMIPKit 1.0 advertises only its fixed KMIP 2.1 protocol version",
+        )
+
 
 if __name__ == "__main__":
     unittest.main()
