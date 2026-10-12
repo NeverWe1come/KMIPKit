@@ -723,9 +723,9 @@
         "KMIPKIT-REQ-PROF-3-003"
       ],
       "exclusion_rationale": null,
-      "role": "client",
+      "role": "unclear",
       "direction": "unclear",
-      "scope_state": "profile_conditional",
+      "scope_state": "unclear",
       "condition": "Only under the selected profile authentication provisions; formal claim remains unresolved."
     },
     {
@@ -79289,10 +79289,10 @@
       "normative_strength": "mandatory",
       "subject": "Server authenticity",
       "summary": "Establish assurance that the peer server is authentic.",
-      "role": "client",
+      "role": "unclear",
       "direction": "unclear",
       "condition": "Only under the selected profile authentication provisions; formal claim remains unresolved.",
-      "scope_state": "profile_conditional",
+      "scope_state": "unclear",
       "element_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
