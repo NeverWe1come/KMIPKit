@@ -61,14 +61,14 @@ This report records inventory coverage and evidence state. It does not claim pro
 | Scope | client\_1\_0 | 215 |
 | Scope | mixed | 2 |
 | Scope | out\_of\_scope | 66 |
-| Scope | profile\_conditional | 205 |
+| Scope | profile\_conditional | 204 |
 | Scope | server\_only | 42 |
-| Scope | unclear | 65 |
+| Scope | unclear | 66 |
 | Direction | both | 10 |
-| Direction | client\_to\_server | 365 |
+| Direction | client\_to\_server | 364 |
 | Direction | not\_applicable | 62 |
 | Direction | server\_to\_client | 19 |
-| Direction | unclear | 139 |
+| Direction | unclear | 140 |
 
 ## Tag allocation and ranges
 
@@ -553,7 +553,7 @@ Every row summarizes audited candidate locators by their pinned source section. 
 
 | Requirement | Strength | Scope | Source |
 | --- | --- | --- | --- |
-| KMIPKIT-REQ-PROF-3-002 | mandatory | profile\_conditional | KMIPKIT-SRC-profiles §3 |
+| KMIPKIT-REQ-PROF-3-002 | mandatory | unclear | KMIPKIT-SRC-profiles §3 |
 | KMIPKIT-REQ-PROF-3-003 | mandatory | profile\_conditional | KMIPKIT-SRC-profiles §3 |
 | KMIPKIT-REQ-PROF-3-004 | mandatory | profile\_conditional | KMIPKIT-SRC-profiles §3 |
 | KMIPKIT-REQ-PROF-3-006 | permission\_or\_optional | profile\_conditional | KMIPKIT-SRC-profiles §3 |

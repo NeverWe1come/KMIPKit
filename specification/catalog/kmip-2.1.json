@@ -702,9 +702,9 @@
         "KMIPKIT-REQ-PROF-3-002"
       ],
       "exclusion_rationale": null,
-      "role": "client",
-      "direction": "client_to_server",
-      "scope_state": "profile_conditional",
+      "role": "unclear",
+      "direction": "unclear",
+      "scope_state": "unclear",
       "condition": "Only when the claimed profile selects this channel; formal authentication-suite/profile claim remains unresolved."
     },
     {
@@ -79259,10 +79259,10 @@
       "normative_strength": "mandatory",
       "subject": "Security-channel confidentiality and integrity",
       "summary": "Protect security-channel communications against disclosure and alteration.",
-      "role": "client",
-      "direction": "client_to_server",
+      "role": "unclear",
+      "direction": "unclear",
       "condition": "Only when the claimed profile selects this channel; formal authentication-suite/profile claim remains unresolved.",
-      "scope_state": "profile_conditional",
+      "scope_state": "unclear",
       "element_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
