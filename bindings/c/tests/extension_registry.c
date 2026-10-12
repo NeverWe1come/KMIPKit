@@ -194,6 +194,71 @@ static bool test_extension_registry_limits(void)
     return true;
 }
 
+static bool test_runtime_metadata_and_error_snapshot(void)
+{
+    uint32_t major = UINT32_C(0);
+    uint32_t minor = UINT32_C(0);
+    uint32_t patch = UINT32_C(0);
+    uint32_t abi = UINT32_C(0);
+    uint8_t available = UINT8_C(0);
+    int32_t status = INT32_C(0);
+    uint32_t category = UINT32_C(0);
+    uint32_t cause = UINT32_C(0);
+    uint32_t delivery = UINT32_C(0);
+    static const uint8_t generic_ttlv[] = "generic_ttlv_model";
+    static const uint8_t unknown_capability[] = "not_a_capability";
+
+    REQUIRE_STATUS(kmipkit_version_get(NULL, &minor, &patch, &abi),
+        KMIPKIT_ERROR_INVALID_INPUT);
+    REQUIRE_STATUS(kmipkit_last_error_get(&status, &category, &cause, &delivery),
+        KMIPKIT_SUCCESS);
+    REQUIRE(status == KMIPKIT_ERROR_INVALID_INPUT);
+    REQUIRE(category == KMIPKIT_CLIENT_ERROR_CATEGORY_VALIDATION);
+    REQUIRE(cause == KMIPKIT_CLIENT_ERROR_CAUSE_INVALID_INPUT);
+    REQUIRE(delivery == KMIPKIT_REQUEST_DELIVERY_STATE_NONE);
+    REQUIRE_STATUS(kmipkit_last_error_clear(), KMIPKIT_SUCCESS);
+
+    REQUIRE_STATUS(kmipkit_version_get(&major, &minor, &patch, &abi), KMIPKIT_SUCCESS);
+    REQUIRE(major == UINT32_C(1));
+    REQUIRE(minor == UINT32_C(0));
+    REQUIRE(patch == UINT32_C(0));
+    REQUIRE(abi == UINT32_C(1));
+
+    REQUIRE_STATUS(kmipkit_capability_is_available(generic_ttlv,
+        (uint64_t)(sizeof(generic_ttlv) - 1U), &available), KMIPKIT_SUCCESS);
+    REQUIRE(available == UINT8_C(1));
+    REQUIRE_STATUS(kmipkit_capability_is_available(unknown_capability,
+        (uint64_t)(sizeof(unknown_capability) - 1U), &available), KMIPKIT_SUCCESS);
+    REQUIRE(available == UINT8_C(0));
+
+    REQUIRE_STATUS(kmipkit_capability_is_available(NULL, UINT64_C(1), &available),
+        KMIPKIT_ERROR_INVALID_INPUT);
+    REQUIRE_STATUS(kmipkit_last_error_get(&status, &category, &cause, &delivery),
+        KMIPKIT_SUCCESS);
+    REQUIRE(status == KMIPKIT_ERROR_INVALID_INPUT);
+    REQUIRE(category == KMIPKIT_CLIENT_ERROR_CATEGORY_VALIDATION);
+    REQUIRE(cause == KMIPKIT_CLIENT_ERROR_CAUSE_INVALID_INPUT);
+    REQUIRE(delivery == KMIPKIT_REQUEST_DELIVERY_STATE_NONE);
+
+    REQUIRE_STATUS(kmipkit_last_error_get(NULL, &category, &cause, &delivery),
+        KMIPKIT_ERROR_INVALID_INPUT);
+    status = INT32_C(0);
+    REQUIRE_STATUS(kmipkit_last_error_get(&status, &category, &cause, &delivery),
+        KMIPKIT_SUCCESS);
+    REQUIRE(status == KMIPKIT_ERROR_INVALID_INPUT);
+    REQUIRE(category == KMIPKIT_CLIENT_ERROR_CATEGORY_VALIDATION);
+    REQUIRE(cause == KMIPKIT_CLIENT_ERROR_CAUSE_INVALID_INPUT);
+
+    REQUIRE_STATUS(kmipkit_last_error_clear(), KMIPKIT_SUCCESS);
+    REQUIRE_STATUS(kmipkit_last_error_get(&status, &category, &cause, &delivery),
+        KMIPKIT_SUCCESS);
+    REQUIRE(status == KMIPKIT_SUCCESS);
+    REQUIRE(category == KMIPKIT_CLIENT_ERROR_CATEGORY_NONE);
+    REQUIRE(cause == KMIPKIT_CLIENT_ERROR_CAUSE_NONE);
+    REQUIRE(delivery == KMIPKIT_REQUEST_DELIVERY_STATE_NONE);
+    return true;
+}
+
 static bool create_fixture_definition(kmipkit_codec_limits_t *codec_limits,
                                       const uint8_t *name,
                                       uint64_t name_length,
@@ -2431,6 +2496,7 @@ int main(void)
         const char *name;
         bool (*run)(void);
     } tests_without_arguments[] = {
+        {"runtime metadata and error snapshot", test_runtime_metadata_and_error_snapshot},
         {"ExtensionRegistryLimits defaults and boundaries", test_extension_registry_limits},
         {"typed pointers and uint64_t length safety", test_typed_length_safety},
         {"client configuration ownership and isolation", test_configuration_ownership_and_isolation},
