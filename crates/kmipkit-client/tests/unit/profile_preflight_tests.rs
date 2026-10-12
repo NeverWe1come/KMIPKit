@@ -105,6 +105,7 @@ fn unprofiled_base_operation_still_reaches_transport() {
 
 struct ResponseRejectingProfile {
     error: ProfileValidationError,
+    request_checks: Option<Rc<Cell<usize>>>,
 }
 
 impl ProfileExchangeValidator for ResponseRejectingProfile {
@@ -116,6 +117,9 @@ impl ProfileExchangeValidator for ResponseRejectingProfile {
     }
 
     fn validate_request(&self, _request: &RequestMessage) -> Result<(), ProfileValidationError> {
+        if let Some(request_checks) = &self.request_checks {
+            request_checks.set(request_checks.get() + 1);
+        }
         Ok(())
     }
 
@@ -124,8 +128,14 @@ impl ProfileExchangeValidator for ResponseRejectingProfile {
         request: &RequestMessage,
         response: &ResponseMessage,
     ) -> Result<(), ProfileValidationError> {
-        let request_operation = request.batch_items().next().and_then(|item| item.operation());
-        let response_operation = response.batch_items().next().and_then(|item| item.operation());
+        let request_operation = request
+            .batch_items()
+            .next()
+            .and_then(|item| item.operation());
+        let response_operation = response
+            .batch_items()
+            .next()
+            .and_then(|item| item.operation());
         let has_matching_single_item = request.batch_items().len() == 1
             && response.batch_items().len() == 1
             && request_operation.is_some()
@@ -148,6 +158,7 @@ fn response_profile_rejection_after_exchange_preserves_response_started_delivery
             "KMIPKIT-TEST-REQUIREMENT",
             "KMIPKIT-TEST-CLAUSE",
         ),
+        request_checks: None,
     };
     let exchanges = Rc::new(Cell::new(0));
     let mut client = Client::for_test(CountingTransport::new(Rc::clone(&exchanges)));
@@ -182,4 +193,35 @@ fn response_profile_rejection_after_exchange_preserves_response_started_delivery
         profile_error.source_clause_id(),
         Some("KMIPKIT-TEST-CLAUSE")
     );
+}
+
+#[test]
+fn request_limits_are_checked_before_profile_evaluation() {
+    let exchanges = Rc::new(Cell::new(0));
+    let request_checks = Rc::new(Cell::new(0));
+    let validator = ResponseRejectingProfile {
+        error: ProfileValidationError::for_test(
+            ProfileValidationErrorCode::ResponseRuleRejected,
+            "KMIPKIT-TEST-PROFILE",
+            "KMIPKIT-TEST-REQUIREMENT",
+            "KMIPKIT-TEST-CLAUSE",
+        ),
+        request_checks: Some(Rc::clone(&request_checks)),
+    };
+    let mut client = Client::for_test(CountingTransport::new(Rc::clone(&exchanges)));
+    let limits = CodecLimits::new(0, CodecLimits::DEFAULT_MAX_STRUCTURE_DEPTH, 100_000)
+        .expect("zero message size is a valid configured limit");
+
+    let error = client
+        .execute_inner(
+            discover_versions_batch(),
+            &limits,
+            &kmipkit_transport::RequestOptions::default(),
+            Some(&validator),
+        )
+        .expect_err("an oversized request is rejected before profile traversal");
+
+    assert_eq!(error.delivery_state(), Some(RequestDeliveryState::NotSent));
+    assert_eq!(request_checks.get(), 0);
+    assert_eq!(exchanges.get(), 0);
 }
