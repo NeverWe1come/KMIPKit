@@ -284,6 +284,94 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
                 self.assertIn("blockedReason", declaration)
                 self.assertNotIn("languageMappings", declaration)
 
+    def test_t011_observed_binding_exports_are_reconciled_without_invented_mappings(self) -> None:
+        declarations = {
+            (item["packageId"], item["exportName"]): item
+            for item in self.checked_in_manifest["publicDeclarations"]
+        }
+        blocked_exports = {
+            ("c-kmipkit", f"KMIPKIT_ERROR_{name}")
+            for name in (
+                "COMPATIBILITY_MISMATCH",
+                "DUPLICATE_KEY",
+                "INVALID_IDENTITY",
+                "INVALID_INPUT",
+                "INVALID_SCHEMA",
+            )
+        }
+        blocked_exports.update({
+            ("java-kmipkit", "org.kmipkit.RuntimeMetadata.Version.<init>"),
+            ("java-kmipkit", "org.kmipkit.RuntimeMetadata.Version.abiVersion"),
+            ("java-kmipkit", "org.kmipkit.RuntimeMetadata.Version.equals"),
+            ("java-kmipkit", "org.kmipkit.RuntimeMetadata.Version.hashCode"),
+            ("java-kmipkit", "org.kmipkit.RuntimeMetadata.Version.major"),
+            ("java-kmipkit", "org.kmipkit.RuntimeMetadata.Version.minor"),
+            ("java-kmipkit", "org.kmipkit.RuntimeMetadata.Version.patch"),
+            ("java-kmipkit", "org.kmipkit.RuntimeMetadata.Version.toString"),
+            ("java-kmipkit", "org.kmipkit.generated.PublicApi"),
+            ("java-kmipkit", "org.kmipkit.generated.PublicApi.DECLARATIONS_JSON"),
+            ("java-kmipkit", "org.kmipkit.generated.PublicApi.FORMAT_VERSION"),
+            ("python-kmipkit", "kmipkit"),
+            ("python-kmipkit", "kmipkit.errors.CompatibilityMismatchError.category"),
+            ("python-kmipkit", "kmipkit.errors.DuplicateKeyError.category"),
+            ("python-kmipkit", "kmipkit.errors.InvalidExtensionSchemaError.category"),
+            ("python-kmipkit", "kmipkit.errors.InvalidIdentityError.category"),
+            ("python-kmipkit", "kmipkit.errors.InvalidInputError.category"),
+            ("python-kmipkit", "kmipkit.errors.KmipKitError.category"),
+            ("python-kmipkit", "kmipkit.errors.ResourceLimitError.category"),
+            ("python-kmipkit", "kmipkit.metadata.Version.abi_version"),
+            ("python-kmipkit", "kmipkit.metadata.Version.major"),
+            ("python-kmipkit", "kmipkit.metadata.Version.minor"),
+            ("python-kmipkit", "kmipkit.metadata.Version.patch"),
+            ("python-kmipkit", "kmipkit.extensions.validate_extension_value"),
+        })
+        for key in blocked_exports:
+            with self.subTest(export=key):
+                declaration = declarations[key]
+                self.assertEqual(declaration["declarationState"], "blocked")
+                self.assertEqual(declaration["candidateSpecId"], "KMIPKIT-0043")
+                self.assertEqual(declaration["capabilityId"], "public_binding_surface")
+                self.assertEqual(declaration["requirementIds"], ["KMIPKIT-0043-FR-021"])
+                self.assertNotIn("languageMappings", declaration)
+
+        exclusions = {
+            (item["packageId"], item["exportName"])
+            for item in self.checked_in_manifest["approvedExclusions"]
+        }
+        expected_exclusions = {
+            ("c-kmipkit", "KMIPKIT_H"),
+            *(
+                ("c-kmipkit", f"aws_lc_0_45_0_jent_{name}")
+                for name in (
+                    "entropy_collector_alloc",
+                    "entropy_collector_free",
+                    "entropy_init",
+                    "entropy_init_ex",
+                    "entropy_switch_notime_impl",
+                    "read_entropy",
+                    "read_entropy_safe",
+                    "set_fips_failure_callback",
+                    "version",
+                )
+            ),
+        }
+        self.assertTrue(expected_exclusions <= exclusions)
+        self.assertNotIn(
+            ("java-kmipkit", "org.kmipkit.internal.NativeHandle.run"),
+            declarations,
+        )
+        runtime_version = declarations[
+            ("java-kmipkit", "org.kmipkit.RuntimeMetadata.Version")
+        ]
+        self.assertEqual(
+            runtime_version["languageMappings"]["java"]["name"],
+            "org.kmipkit.RuntimeMetadata.Version",
+        )
+        self.assertEqual(
+            runtime_version["languageMappings"]["python"]["name"],
+            "kmipkit.metadata.Version",
+        )
+
     def test_checked_in_manifest_records_transport_as_the_only_rust_only_capability(self) -> None:
         transport = next(
             capability
@@ -682,7 +770,7 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
 
     def test_checked_in_manifest_inventories_python_exports_and_lifecycle(self) -> None:
         declarations = self.declarations_for_package("python-kmipkit")
-        self.assertEqual(len(declarations), 263)
+        self.assertEqual(len(declarations), 274)
         by_name = {declaration["exportName"]: declaration for declaration in declarations}
         close_method = by_name["kmipkit.extensions.ClientBatchItem.close"]
         self.assertEqual(close_method["kind"], "python-export")
