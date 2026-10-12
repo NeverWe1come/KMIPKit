@@ -41,6 +41,7 @@ def load_json(path: Path) -> dict[str, object]:
 
 
 CLIENT_IDS = {
+    "KMIPKIT-REQ-PROF-3.1-001",
     "KMIPKIT-REQ-PROF-3.1.1-002",
     "KMIPKIT-REQ-PROF-3.1.1-004",
     "KMIPKIT-REQ-PROF-3.1.1-005",
@@ -57,7 +58,6 @@ UNRESOLVED_IDS = {
     "KMIPKIT-REQ-PROF-3-003",
     "KMIPKIT-REQ-PROF-3-004",
     "KMIPKIT-REQ-PROF-3-006",
-    "KMIPKIT-REQ-PROF-3.1-001",
     "KMIPKIT-REQ-PROF-3.2-001",
     "KMIPKIT-REQ-PROF-4.1.2-001",
     "KMIPKIT-REQ-PROF-4.1.2-005",
@@ -124,7 +124,7 @@ class ProfileSectionsThreeAndFourCrosswalkTests(unittest.TestCase):
         self.assertEqual(set(self.reviews), target_clause_ids)
 
     def test_unresolved_and_test_only_rows_are_not_client_obligations(self) -> None:
-        self.assertEqual(len(UNRESOLVED_IDS), 8)
+        self.assertEqual(len(UNRESOLVED_IDS), 7)
         self.assertEqual(len(OUT_OF_SCOPE_IDS), 4)
         self.assertFalse((UNRESOLVED_IDS | OUT_OF_SCOPE_IDS) & self.crosswalk.keys())
         reviewed_clause_ids = {
@@ -152,6 +152,7 @@ class ProfileSectionsThreeAndFourCrosswalkTests(unittest.TestCase):
             "KMIPKIT-REQ-PROF-3.2.4-002",
         }
         baseline_ids = {
+            "KMIPKIT-REQ-PROF-3.1-001",
             "KMIPKIT-REQ-PROF-3.1.1-002",
             "KMIPKIT-REQ-PROF-3.1.1-004",
             "KMIPKIT-REQ-PROF-3.1.1-005",
@@ -205,6 +206,20 @@ class ProfileSectionsThreeAndFourCrosswalkTests(unittest.TestCase):
             requirement = self.requirements[requirement_id]
             self.assertEqual(requirement["profile_ids"], [https_profile_id])
             self.assertIn(requirement_id, https_profile["requirement_ids"])
+
+    def test_basic_authentication_suite_requirement_is_in_baseline_client_closure(self) -> None:
+        """Sections 3.1 and 6.1 make the conditional TLS requirement part of Baseline Client."""
+        requirement_id = "KMIPKIT-REQ-PROF-3.1-001"
+        baseline_profile_id = "KMIPKIT-PROFILE-BASELINE-CLIENT"
+        requirement = self.requirements[requirement_id]
+        profile = next(
+            row for row in self.catalog["profiles"] if row["profile_id"] == baseline_profile_id
+        )
+
+        self.assertIn(baseline_profile_id, requirement["profile_ids"])
+        self.assertIn(requirement_id, profile["requirement_ids"])
+        self.assertEqual(self.crosswalk[requirement_id]["applies_to"], baseline_profile_id)
+        self.assertNotIn(requirement_id, UNRESOLVED_IDS)
 
     def test_profile_4_1_2_007_is_may_without_a_false_must_keyword(self) -> None:
         requirement_id = "KMIPKIT-REQ-PROF-4.1.2-007"
