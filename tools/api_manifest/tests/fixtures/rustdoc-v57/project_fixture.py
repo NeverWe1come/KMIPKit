@@ -48,6 +48,14 @@ def project(raw_path: Path, output_path: Path) -> None:
         return names
 
     source_trait_names = source_traits(root_items)
+    external_traits = {"Clone", "Copy", "Debug", "Display", "CloneToUninit", "ToOwned", "ToString"}
+    predicate_traits = {
+        "RequiresClone", "RequiresDebug", "RequiresDisplay", "Printable", "RecursiveBound"
+    }
+    predicate_targets = {
+        "CloneDebug", "NoTraits", "Conditional", "Recursive", "PrintableValue", "CopyOnly",
+        "DebugOnly", "CoreTraitCycle"
+    }
     selected_impls: dict[str, list[Any]] = {}
     for item_id in source_item_ids:
         item = raw_index[str(item_id)]
@@ -66,7 +74,13 @@ def project(raw_path: Path, output_path: Path) -> None:
                 and trait.get("path") == "Borrow" and impl.get("blanket_impl") is not None
             representative_any = item.get("name") == "Generic" and trait is not None \
                 and trait.get("path") == "Any" and impl.get("blanket_impl") is not None
-            if trait is None or trait.get("path") in source_trait_names or derived \
+            trait_path = None if trait is None else trait.get("path")
+            predicate_impl = trait_path in predicate_traits and item.get("name") in predicate_targets
+            ordinary_local_trait_impl = trait_path in source_trait_names \
+                and trait_path not in predicate_traits
+            predicate_external_impl = trait_path in external_traits \
+                and item.get("name") in predicate_targets
+            if trait is None or ordinary_local_trait_impl or predicate_impl or predicate_external_impl or derived \
                     or representative_synthetic or representative_blanket or representative_any:
                 impl_ids.append(impl_id)
         selected_impls[str(item_id)] = impl_ids

@@ -98,6 +98,108 @@ trait PrivateContract {
 
 pub struct Service;
 
+#[derive(Clone, Debug)]
+pub struct CloneDebug;
+
+impl core::fmt::Display for CloneDebug {
+    fn fmt(&self, formatter: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        formatter.write_str("clone-debug")
+    }
+}
+
+pub struct NoTraits;
+
+#[derive(Clone)]
+pub struct Conditional<T>(pub T);
+
+pub trait RequiresClone {
+    fn clone_bound(&self);
+}
+
+impl<T: Clone> RequiresClone for T {
+    fn clone_bound(&self) {}
+}
+
+pub trait RequiresDebug {
+    fn debug_bound(&self);
+}
+
+impl<T: core::fmt::Debug> RequiresDebug for T {
+    fn debug_bound(&self) {}
+}
+
+pub trait RequiresDisplay {
+    fn display_bound(&self);
+}
+
+impl<T: core::fmt::Display> RequiresDisplay for T {
+    fn display_bound(&self) {}
+}
+
+pub trait Printable {
+    fn printable(&self);
+}
+
+impl<T: Copy + core::fmt::Debug> Printable for T {
+    fn printable(&self) {}
+}
+
+#[derive(Clone, Copy, Debug)]
+pub struct PrintableValue;
+
+#[derive(Clone, Copy)]
+pub struct CopyOnly;
+
+#[derive(Debug)]
+pub struct DebugOnly;
+
+#[derive(Clone)]
+pub struct CloneOnly;
+
+pub struct CoreTraitCycle<T>(pub core::marker::PhantomData<T>);
+
+impl<T: core::fmt::Debug> Clone for CoreTraitCycle<T> {
+    fn clone(&self) -> Self {
+        Self(self.0)
+    }
+}
+
+impl<T: Clone> core::fmt::Debug for CoreTraitCycle<T> {
+    fn fmt(&self, formatter: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        formatter.write_str("CoreTraitCycle")
+    }
+}
+
+pub struct Recursive<T>(pub core::marker::PhantomData<T>);
+
+pub trait RecursiveBound {
+    fn recurse(&self);
+}
+
+impl<T> RecursiveBound for T
+where
+    Recursive<T>: Clone,
+{
+    fn recurse(&self) {}
+}
+
+impl<T: RecursiveBound> Clone for Recursive<T> {
+    fn clone(&self) -> Self {
+        Self(self.0)
+    }
+}
+
+pub type CloneDebugAlias = CloneDebug;
+pub type NoTraitsAlias = NoTraits;
+pub type ConditionalCloneDebugAlias = Conditional<CloneDebug>;
+pub type ConditionalNoTraitsAlias = Conditional<NoTraits>;
+pub type ConditionalOpenAlias<T> = Conditional<T>;
+pub type RecursiveU8Alias = Recursive<u8>;
+pub type PrintableValueAlias = PrintableValue;
+pub type CopyOnlyAlias = CopyOnly;
+pub type DebugOnlyAlias = DebugOnly;
+pub type CloneOnlyAlias = CloneOnly;
+
 impl DefaultMembers for Service {}
 
 impl private_module::HiddenContract for Service {}
