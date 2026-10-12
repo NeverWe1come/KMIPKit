@@ -31,7 +31,7 @@ def _cells(line: str) -> list[str]:
 
 
 class ObjectLifecycleTraceabilityTests(unittest.TestCase):
-    def test_all_44_requirements_link_to_their_operation_and_sources(self) -> None:
+    def test_all_39_requirements_link_to_their_operation_and_sources(self) -> None:
         trace = TRACEABILITY_PATH.read_text(encoding="utf-8")
         catalog = json.loads(CATALOG_PATH.read_text(encoding="utf-8"))
         requirements = {
@@ -44,9 +44,9 @@ class ObjectLifecycleTraceabilityTests(unittest.TestCase):
             if line.startswith("| KMIPKIT-REQ-SPEC-")
         ]
 
-        self.assertEqual(len(rows), 44)
-        self.assertEqual(len({row[0] for row in rows}), 44)
-        self.assertEqual(sum(record.get("feature_spec") == FEATURE_SPEC for record in requirements.values()), 44)
+        self.assertEqual(len(rows), 39)
+        self.assertEqual(len({row[0] for row in rows}), 39)
+        self.assertEqual(sum(record.get("feature_spec") == FEATURE_SPEC for record in requirements.values()), 39)
 
         operation_elements = [
             element
@@ -68,6 +68,25 @@ class ObjectLifecycleTraceabilityTests(unittest.TestCase):
             self.assertTrue(element["requirement_ids"])
             for path in (*element["implementation_refs"], *element["verification_refs"]):
                 self.assertTrue((ROOT / path).is_file(), f"{element['element_id']}: {path}")
+
+    def test_retired_server_obligations_are_not_assigned_to_client_operations(self) -> None:
+        catalog = json.loads(CATALOG_PATH.read_text(encoding="utf-8"))
+        requirements = {
+            record["requirement_id"]: record for record in catalog["requirements"]
+        }
+        retired_ids = {
+            "KMIPKIT-REQ-SPEC-6.1.44-001",
+            "KMIPKIT-REQ-SPEC-6.1.45-002-002",
+            "KMIPKIT-REQ-SPEC-6.1.45-006-002",
+        }
+
+        for requirement_id in retired_ids:
+            self.assertEqual(requirements[requirement_id]["status"], "retired")
+            self.assertIsNone(requirements[requirement_id]["feature_spec"])
+
+        for element in catalog["elements"]:
+            if element.get("feature_spec") == FEATURE_SPEC:
+                self.assertFalse(retired_ids.intersection(element["requirement_ids"]))
 
     def test_every_payload_row_has_a_catalog_element_and_resolving_test_symbols(self) -> None:
         trace = TRACEABILITY_PATH.read_text(encoding="utf-8")
