@@ -22,6 +22,35 @@ RECONCILER_SPEC = importlib.util.spec_from_file_location(
 RECONCILER = importlib.util.module_from_spec(RECONCILER_SPEC)
 RECONCILER_SPEC.loader.exec_module(RECONCILER)
 CRATE = "rustdoc_v57_fixture"
+CONDITIONAL_CONVERSIONS = (
+    {
+        "trait": "Into<U>",
+        "condition": [{
+            "subject": "U",
+            "traitPath": ["core", "convert", "From"],
+            "arguments": ["rustdoc_v57_fixture::CloneDebug"],
+        }],
+        "members": ("into",),
+    },
+    {
+        "trait": "TryInto<U>",
+        "condition": [{
+            "subject": "U",
+            "traitPath": ["core", "convert", "TryFrom"],
+            "arguments": ["rustdoc_v57_fixture::CloneDebug"],
+        }],
+        "members": ("Error", "try_into"),
+    },
+    {
+        "trait": "TryFrom<U>",
+        "condition": [{
+            "subject": "U",
+            "traitPath": ["core", "convert", "Into"],
+            "arguments": ["rustdoc_v57_fixture::CloneDebug"],
+        }],
+        "members": ("Error", "try_from"),
+    },
+)
 
 
 class RustExportTraitPredicateTests(unittest.TestCase):
@@ -280,61 +309,83 @@ class RustExportTraitPredicateTests(unittest.TestCase):
             None,
         )
 
-    def test_blanket_into_with_free_target_is_conditional_not_verified(self):
+    def test_conversion_blankets_with_free_targets_are_conditional_not_verified(self):
         report = AUDIT.inventory(self.fixture())
         declarations = {entry["exportName"] for entry in report["declarations"]}
         conditional = report.get("conditionalDeclarations", [])
-        verified_paths = {
-            name for name in declarations
-            if " as core::convert::Into<U>>::" in name
-            and ("CloneDebug" in name or "CloneDebugAlias" in name)
+        expected = {
+            f"<rustdoc_v57_fixture::CloneDebug as core::convert::{case['trait']}>::{member}": case
+            for case in CONDITIONAL_CONVERSIONS
+            for member in case["members"]
         }
-        self.assertFalse(verified_paths, "a free target type parameter must not be advertised as verified")
-        matching = [
-            entry for entry in conditional
-            if " as core::convert::Into<U>>::" in entry["exportName"]
-            and "CloneDebug" in entry["exportName"]
-        ]
-        self.assertTrue(matching, "rustdoc's exact Into<U> predicate should be recorded as conditional")
-        self.assertTrue(all(entry["kind"] == "associated-item" for entry in matching))
-        self.assertTrue(all(entry["implementationId"] for entry in matching))
-        expected_condition = [{
-            "subject": "U",
-            "traitPath": ["core", "convert", "From"],
-            "arguments": ["rustdoc_v57_fixture::CloneDebug"],
-        }]
-        self.assertTrue(
-            all(entry["condition"] == expected_condition for entry in matching),
-            "conditional rows must preserve the canonical bound U: From<CloneDebug>",
+        verified_paths = set(expected) & declarations
+        self.assertFalse(
+            verified_paths,
+            "a free conversion target must not be advertised as a verified API",
         )
+        conditional_by_path = {entry["exportName"]: entry for entry in conditional}
+        self.assertTrue(
+            set(expected) <= conditional_by_path.keys(),
+            "each exact blanket conversion path should be recorded as conditional",
+        )
+        for export_name, case in expected.items():
+            entry = conditional_by_path[export_name]
+            self.assertEqual(entry["kind"], "associated-item", export_name)
+            self.assertTrue(entry["implementationId"], export_name)
+            self.assertEqual(entry["condition"], case["condition"], export_name)
         self.assertTrue(any(
             issue.get("reason") == "unresolved-rustdoc-implementation-predicate"
             and issue.get("implementationId")
             for issue in report["issues"]
         ), "unrelated predicates without proof must remain unresolved")
 
-    def test_conditional_blanket_reconciliation_preserves_bound_without_api_mapping(self):
-        condition = [{
-            "subject": "U",
-            "traitPath": ["core", "convert", "From"],
-            "arguments": ["rustdoc_v57_fixture::CloneDebug"],
-        }]
+    def test_conditional_conversion_reconciliation_preserves_bounds_without_api_mappings(self):
         manifest = {"capabilities": [], "approvedExclusions": [], "publicDeclarations": []}
-        observed = {
-            "packageId": "rust-kmipkit-protocol",
-            "exportName": "<rustdoc_v57_fixture::CloneDebug as core::convert::Into<U>>::into",
-            "kind": "associated-item",
-            "implementationId": "198",
-            "condition": condition,
+        observed = []
+        expected_conditions = {}
+        for case in CONDITIONAL_CONVERSIONS:
+            for member in case["members"]:
+                export_name = (
+                    f"<rustdoc_v57_fixture::CloneDebug as core::convert::{case['trait']}>::{member}"
+                )
+                expected_conditions[export_name] = case["condition"]
+                observed.append({
+                    "packageId": "rust-kmipkit-protocol",
+                    "exportName": export_name,
+                    "kind": "associated-item",
+                    "implementationId": f"impl-{len(observed)}",
+                    "condition": case["condition"],
+                })
+
+        report = {
+            "formatVersion": 1,
+            "rustdocFormat": 57,
+            "crates": ["rustdoc_v57_fixture"],
+            "missingFromManifest": observed,
+            "issues": [],
         }
+        additions = RECONCILER.reconcile(manifest, report)
+        reconciled = {record["exportName"]: record for record in additions}
 
-        record = RECONCILER.blocked_record(observed, manifest)
+        self.assertEqual(set(reconciled), set(expected_conditions))
+        for export_name, condition in expected_conditions.items():
+            record = reconciled[export_name]
+            self.assertEqual(record["declarationState"], "blocked", export_name)
+            self.assertEqual(record.get("condition"), condition, export_name)
+            self.assertNotIn("languageMappings", record, export_name)
+            self.assertNotIn("signature", record, export_name)
+            self.assertNotIn("rustSignature", record, export_name)
 
-        self.assertEqual(record["declarationState"], "blocked")
-        self.assertEqual(record.get("condition"), condition)
-        self.assertNotIn("languageMappings", record)
-        self.assertNotIn("signature", record)
-        self.assertNotIn("rustSignature", record)
+    def test_concrete_unconditional_trait_route_remains_verified(self):
+        report = AUDIT.inventory(self.fixture())
+        export_name = (
+            "<rustdoc_v57_fixture::Service as rustdoc_v57_fixture::Contract<u8>>::required"
+        )
+        declarations = {entry["exportName"] for entry in report["declarations"]}
+        conditional = {entry["exportName"] for entry in report.get("conditionalDeclarations", [])}
+
+        self.assertIn(export_name, declarations)
+        self.assertNotIn(export_name, conditional)
 
     def test_recursive_trait_proof_fails_closed_with_exact_impl_issue(self):
         documents = self.fixture()
