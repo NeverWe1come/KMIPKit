@@ -72,6 +72,8 @@ mod rekey_key_pair;
 mod reprovision;
 mod result;
 mod revoke;
+mod rng_retrieve;
+mod rng_seed;
 mod set_attribute;
 mod set_constraints;
 #[cfg(test)]
@@ -174,6 +176,8 @@ pub use result::{
     KmipOperationResult, ResultMessage, ResultReason, ResultStatus, ResultValidationError,
 };
 pub use revoke::{RevocationReason, RevokeError, RevokeRequest, RevokeResponse};
+pub use rng_retrieve::{RngRetrieveError, RngRetrieveRequest, RngRetrieveResponse};
+pub use rng_seed::{RngSeedError, RngSeedRequest, RngSeedResponse};
 pub use set_attribute::{SetAttributeError, SetAttributeRequest, SetAttributeResponse};
 pub use set_constraints::{SetConstraintsError, SetConstraintsRequest, SetConstraintsResponse};
 pub use set_defaults::{SetDefaultsError, SetDefaultsRequest, SetDefaultsResponse};
@@ -271,6 +275,14 @@ mod cryptographic_operation_contract_tests;
 #[cfg(test)]
 #[path = "../tests/unit/hash_operation_tests.rs"]
 mod hash_operation_tests;
+
+#[cfg(test)]
+#[path = "../tests/unit/rng_retrieve_operation_tests.rs"]
+mod rng_retrieve_operation_tests;
+
+#[cfg(test)]
+#[path = "../tests/unit/rng_seed_operation_tests.rs"]
+mod rng_seed_operation_tests;
 
 #[cfg(test)]
 #[path = "../tests/unit/mac_operation_tests.rs"]
