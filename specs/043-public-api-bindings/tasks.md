@@ -34,7 +34,7 @@
 - [ ] T013 [US2] Inventory canonical declarations across all five published Rust crates and map only formally Approved/Accepted shared capabilities in `contracts/shared-dependencies.md` whose implementations exist, linking each declaration to owner requirements and retaining public docs; keep candidate drafts blocked and classify only the ADR-0014 transport exception as Rust-only.
 - [ ] T014 [US2] Implement or generate fixed-width C declarations for the shared capabilities in `crates/kmipkit-ffi/` and `bindings/c/include/kmipkit.h`, retaining existing exported symbols and ABI behavior.
 - [ ] T015 [US2] Define and implement manifest-backed C handle ownership, retain/release behavior, UTF-8/span lengths, result/error status mappings, and closed/wrong-kind/null handle validation.
-- [ ] T016 [US2] Expose and test version/capability query functions, stable error categories, and delivery-state reporting through the C ABI without exposing raw secret or request payloads.
+- [X] T016 [US2] Expose and test version/capability query functions, stable error categories, and delivery-state reporting through the C ABI without exposing raw secret or request payloads.
 - [ ] T017 [US2] Add failing-then-passing C consumer tests compiled and called from C for success, validation error, resource limit, closed handle, release ordering, and existing ABI compatibility.
 - [ ] T018 [US2] Refactor common FFI lifecycle/error code to one reviewed path; retain Rust `forbid(unsafe_code)` outside `kmipkit-ffi` and document every unsafe block with a `SAFETY` rationale.
 - [ ] T019 [US2] Update C API documentation and generated symbol inventory from the complete v2 manifest.
