@@ -63,6 +63,23 @@ def inventory_c_header(source: str, package: str = "c-kmipkit") -> dict[str, Any
                 records.append(_record(package, f"{name}.{field_name.group(1)}", "field", str(line_number)))
             else:
                 issues.append({"packageId": package, "exportName": name, "reason": "unsupported-c-field"})
+    parsed_enum_spans: set[tuple[int, int]] = set()
+    enum_pattern = re.compile(r"\btypedef\s+enum(?:\s+[A-Za-z_]\w*)?\s*\{([^{}]*)\}\s*([A-Za-z_]\w*)\s*;", re.S)
+    for match in enum_pattern.finditer(cleaned):
+        parsed_enum_spans.add((match.start(), match.end()))
+        body, name = match.group(1), match.group(2)
+        line_number = cleaned.count("\n", 0, match.start()) + 1
+        records.append(_record(package, name, "type", str(line_number)))
+        for enumerator in body.split(","):
+            enumerator_name = enumerator.split("=", 1)[0].strip()
+            if re.fullmatch(r"[A-Za-z_]\w*", enumerator_name):
+                records.append(_record(package, enumerator_name, "constant", str(line_number)))
+            elif enumerator_name:
+                issues.append({"packageId": package, "exportName": name, "reason": "unsupported-c-enumerator"})
+    for match in re.finditer(r"\btypedef\s+enum\b", cleaned):
+        if not any(start <= match.start() < end for start, end in parsed_enum_spans):
+            issues.append({"packageId": package, "exportName": str(cleaned.count("\n", 0, match.start()) + 1),
+                           "reason": "unsupported-c-enum"})
     for match in re.finditer(r"\btypedef\s+(?:struct\s+[A-Za-z_]\w*|[^;{}]+?)\s+([A-Za-z_]\w*)\s*;", cleaned, re.S):
         name = match.group(1)
         line_number = cleaned.count("\n", 0, match.start()) + 1
@@ -327,8 +344,7 @@ def inventory_python_sources(sources: dict[str, str], package: str = "python-kmi
                 # Private helper modules are not emitted, but their class
                 # definitions must remain available for import and inheritance
                 # resolution in public modules.
-                if not node.name.startswith("_"):
-                    definitions[(module, node.name)] = "type"
+                definitions[(module, node.name)] = "type"
                 if module in public_modules and not node.name.startswith("_"):
                     records.append(_record(package, f"{module}.{node.name}", "type", f"{module}:{node.lineno}"))
                     records.extend(_record(package, f"{module}.{node.name}.{member}", kind, f"{module}:{line}")
@@ -350,16 +366,57 @@ def inventory_python_sources(sources: dict[str, str], package: str = "python-kmi
             elif isinstance(node, (ast.ImportFrom, ast.Import)):
                 for alias in node.names:
                     visible = alias.asname or alias.name
-                    if not visible.startswith("_") and module in public_modules:
-                        definitions[(module, visible)] = "import"
                     if not visible.startswith("_"):
-                        if isinstance(node, ast.ImportFrom):
-                            package_parts = module.split(".") if module in package_modules else module.rsplit(".", 1)[0].split(".")
-                            parent = package_parts[:len(package_parts) - node.level + 1]
-                            imported_module = ".".join(parent + ([node.module] if node.module else []))
-                            imported[(module, visible)] = (imported_module, alias.name)
+                        definitions[(module, visible)] = "import"
+                    if isinstance(node, ast.ImportFrom):
+                        package_parts = module.split(".") if module in package_modules else module.rsplit(".", 1)[0].split(".")
+                        parent = package_parts[:len(package_parts) - node.level + 1]
+                        imported_module = ".".join(parent + ([node.module] if node.module else []))
+                        child_module = f"{imported_module}.{alias.name}"
+                        if node.module is None and child_module in parsed:
+                            imported[(module, visible)] = (child_module, "")
                         else:
-                            imported[(module, visible)] = (alias.name, alias.name.rsplit(".", 1)[-1])
+                            imported[(module, visible)] = (imported_module, alias.name)
+                    else:
+                        imported[(module, visible)] = (alias.name, "")
+
+    def resolve_kind(module: str, name: str) -> str | None:
+        current = (module, name)
+        visited: set[tuple[str, str]] = set()
+        while current not in visited:
+            visited.add(current)
+            kind = definitions.get(current)
+            if kind != "import":
+                return kind
+            target = imported.get(current)
+            if target is None:
+                return None
+            source_module, source_name = target
+            if not source_name:
+                return "module" if source_module in parsed else None
+            if f"{source_module}.{source_name}" in parsed and (source_module, source_name) not in definitions:
+                return "module"
+            current = (source_module, source_name)
+        return None
+
+    def class_path(base: ast.expr, module: str) -> str | None:
+        if isinstance(base, ast.Subscript):
+            return class_path(base.value, module)
+        parts: list[str] = []
+        current = base
+        while isinstance(current, ast.Attribute):
+            parts.append(current.attr)
+            current = current.value
+        if not isinstance(current, ast.Name):
+            return None
+        parts.append(current.id)
+        parts.reverse()
+        imported_base = imported.get((module, parts[0]))
+        if imported_base is None:
+            return f"{module}.{'.'.join(parts)}"
+        source_module, source_name = imported_base
+        prefix = ".".join(part for part in (source_module, source_name) if part)
+        return ".".join([prefix, *parts[1:]])
 
     for qualified, (module, name, bases, direct_members) in sorted(classes.items()):
         if module not in public_modules or name.startswith("_"):
@@ -369,10 +426,9 @@ def inventory_python_sources(sources: dict[str, str], package: str = "python-kmi
         visited: set[str] = set()
         while pending:
             base = pending.pop(0)
-            if not isinstance(base, ast.Name):
+            base_path = class_path(base, module)
+            if base_path is None:
                 continue
-            source_module, source_name = imported.get((module, base.id), (module, base.id))
-            base_path = f"{source_module}.{source_name}"
             if base_path in visited:
                 continue
             visited.add(base_path)
@@ -395,20 +451,15 @@ def inventory_python_sources(sources: dict[str, str], package: str = "python-kmi
     for (module, name), (source_module, source_name) in sorted(imported.items()):
         if module not in public_modules:
             continue
-        target_kind = definitions.get((source_module, source_name))
-        if target_kind is None and f"{source_module}.{source_name}" in parsed:
-            target_kind = "module"
+        if explicit_exports.get(module) is not None and name not in (explicit_exports.get(module) or []):
+            continue
+        target_kind = resolve_kind(module, name)
+        export_name = f"{module}.{name}"
         if target_kind is None:
-            if source_module in parsed and any(candidate == source_name for candidate_module, candidate in definitions if candidate_module == source_module):
-                target_kind = definitions[(source_module, source_name)]
-            elif source_module in parsed:
-                issues.append({"packageId": package, "exportName": f"{module}.{name}", "reason": "unresolved-import-target"})
-                continue
-            else:
-                continue
-        if explicit_exports.get(module) is None or name in (explicit_exports.get(module) or []):
-            if target_kind != "import":
-                records.append(_record(package, f"{module}.{name}", target_kind, module))
+            records.append(_record(package, export_name, "python-export", module))
+            issues.append({"packageId": package, "exportName": export_name, "reason": "unresolved-import-target"})
+            continue
+        records.append(_record(package, export_name, target_kind, module))
     return _report(records, issues)
 
 
