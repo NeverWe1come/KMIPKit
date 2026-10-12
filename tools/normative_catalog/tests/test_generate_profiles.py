@@ -106,6 +106,95 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
         self.assertNotIn(inherited_clause_id, profile["direct_source_clause_ids"])
         self.assertIn(inherited_clause_id, profile["source_clause_ids"])
 
+    def test_tape_library_includes_normatively_referenced_mandatory_test_cases(self) -> None:
+        """Profiles v2.1 §6.28 item 7 incorporates the §5.12.6 test cases."""
+        catalog_path = ROOT / "specification" / "catalog" / "kmip-2.1.json"
+        catalog = json.loads(catalog_path.read_text(encoding="utf-8"))
+        oracle_path = ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json"
+        oracle = json.loads(oracle_path.read_text(encoding="utf-8"))
+        profile_id = "KMIPKIT-PROFILE-TAPE-LIBRARY-CLIENT"
+        profile = next(item for item in catalog["profiles"] if item["profile_id"] == profile_id)
+        expected = next(item for item in oracle["profiles"] if item["profile_id"] == profile_id)
+        test_case_clauses = {
+            "KMIPKIT-CLAUSE-PROF-5.12.6.1-001",
+            "KMIPKIT-CLAUSE-PROF-5.12.6.2-001",
+            "KMIPKIT-CLAUSE-PROF-5.12.6.2-002",
+            "KMIPKIT-CLAUSE-PROF-5.12.6.2-003",
+            "KMIPKIT-CLAUSE-PROF-5.12.6.2-004",
+            "KMIPKIT-CLAUSE-PROF-5.12.6.3-001",
+            "KMIPKIT-CLAUSE-PROF-5.12.6.3-002",
+            "KMIPKIT-CLAUSE-PROF-5.12.6.3-003",
+            "KMIPKIT-CLAUSE-PROF-5.12.6.3-004",
+        }
+        inclusion_id = "KMIPKIT-INCLUSION-PROF-TAPE-LIBRARY-TEST-CASES"
+        inclusion = next(
+            (item for item in catalog["normative_inclusions"] if item["inclusion_id"] == inclusion_id),
+            None,
+        )
+        oracle_edge = next(
+            (item for item in oracle["provenance"]["inclusion_edges"] if item["inclusion_id"] == inclusion_id),
+            None,
+        )
+
+        self.assertEqual(
+            inclusion,
+            {
+                "inclusion_id": inclusion_id,
+                "source_clause_id": "KMIPKIT-CLAUSE-PROF-6.28-007",
+                "included_source_id": "KMIPKIT-SRC-profiles",
+                "included_section": "5.12.6",
+            },
+        )
+        self.assertIn("5.12.6", expected["direct_profiles_sections"])
+        self.assertIn(inclusion_id, expected["normative_inclusion_ids"])
+        self.assertEqual(
+            oracle_edge,
+            {
+                "inclusion_id": inclusion_id,
+                "source_clause_id": "KMIPKIT-CLAUSE-PROF-6.28-007",
+                "included_source_id": "KMIPKIT-SRC-profiles",
+                "included_section": "5.12.6",
+                "source_locator": "Profiles v2.1 §6.28 item 7",
+            },
+        )
+        self.assertEqual(
+            test_case_clauses,
+            {item for item in expected["source_clause_ids"] if item in test_case_clauses},
+        )
+        self.assertFalse(test_case_clauses.intersection(profile["direct_source_clause_ids"]))
+        self.assertTrue(test_case_clauses.issubset(profile["source_clause_ids"]))
+        self.assertTrue(
+            test_case_clauses.issubset(
+                {
+                    item["source_clause_id"]
+                    for item in expected["direct_root_exclusions"]
+                    if item["expected_disposition"] == "included_not_direct"
+                }
+            )
+        )
+        reviewed_client_requirements = {
+            "KMIPKIT-REQ-PROF-5.12.6.1-001",
+            "KMIPKIT-REQ-PROF-5.12.6.2-002",
+            "KMIPKIT-REQ-PROF-5.12.6.2-003",
+            "KMIPKIT-REQ-PROF-5.12.6.2-004",
+            "KMIPKIT-REQ-PROF-5.12.6.3-001",
+            "KMIPKIT-REQ-PROF-5.12.6.3-002",
+            "KMIPKIT-REQ-PROF-5.12.6.3-003",
+        }
+        self.assertTrue(reviewed_client_requirements.issubset(expected["requirement_ids_audited_subset"]))
+        self.assertEqual(
+            reviewed_client_requirements,
+            {item for item in profile["requirement_ids"] if item in reviewed_client_requirements},
+        )
+        cleanup_requirement = next(
+            item
+            for item in catalog["requirements"]
+            if item["requirement_id"] == "KMIPKIT-REQ-PROF-5.12.6.3-004"
+        )
+        self.assertEqual(cleanup_requirement["role"], "unclear")
+        self.assertEqual(cleanup_requirement["scope_state"], "unclear")
+        self.assertNotIn(cleanup_requirement["requirement_id"], profile["requirement_ids"])
+
     def test_source_oracle_covers_all_profiles_and_expected_scope_counts(self) -> None:
         oracle_path = ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json"
         oracle = json.loads(oracle_path.read_text(encoding="utf-8"))
