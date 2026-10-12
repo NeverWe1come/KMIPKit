@@ -236,6 +236,18 @@ The PR run `38298147704` on `e3462e91` passed its core, language, sanitizer, dep
 
 The three commits above have not yet been verified by remote CI at this evidence checkpoint. T028 remains unchecked until its Java and Python platform matrices pass on Ubuntu, Windows, and macOS. T011 also remains unchecked until the regenerated export audits, full coverage gate, and final PR CI pass on the pushed head and read-only QA signs off. The prior run is failure evidence only; a fresh successful run is required.
 
+## T011 — Disable unused setup-uv cache in C ABI inventory jobs
+
+Run `38299757432` on `7b26939f` showed that the C consumer, ABI export audit, C compilation, and both C consumer tests passed on Ubuntu, Windows, and macOS. Each matrix job then failed only in `Post Set up Python 3.12 for the ABI inventory`: setup-uv's post-job cache save rejected a cache directory that did not exist because the job installs no uv dependencies. The job only needs setup-uv to provide Python 3.12 for the ABI audit, so caching is disabled for this setup step alone.
+
+| Phase | Commit | Verification | Result |
+|---|---|---|---|
+| Red | `7feb4cb5` | `python -B -m unittest scripts.tests.test_workflow.WorkflowContractTests.test_c_abi_inventory_does_not_cache_unused_uv_dependencies -v` | Expected failure: the `language-c` setup step did not declare caching behavior. |
+| Green | `c8d0efbc` | Focused workflow contract test; `python -B -m unittest scripts.tests.test_workflow -v`; `git diff --check` | PASS: focused regression passes; all 41 workflow contract tests pass; whitespace check is clean. |
+| Read-only QA | `c8d0efbc` | Local review of the workflow diff, test, and adjacent commit history | PASS: only the C ABI inventory setup disables caching; Red and Green are separate DCO-signed commits. |
+
+The fix has not yet been pushed or verified by remote CI at this checkpoint. T011 and T028 remain open pending a complete successful run on the fixed head and passing language/platform matrices; this failure run is not completion evidence.
+
 ## T011 — CI follow-up for capability, generated C docs, and schema payload safety
 
 The subsequent PR run `38295045556` exposed three independent regressions. First, the manifest correctly declared the C-mapped `vendor_extension_registry` capability while the runtime query and FFI inventory test omitted it. Second, the checked-in generated C header had last-error documentation that was not represented in the manifest or generator. Third, QA demonstrated that a C documentation string containing a backslash-newline splice could escape the generated comment even though `*/` was rejected. Each behavior has a separate Red and Green commit; T011 stays open until remote CI on the new head passes.
