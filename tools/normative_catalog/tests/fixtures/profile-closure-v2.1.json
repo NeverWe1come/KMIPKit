@@ -76,8 +76,9 @@
     "requirement_crosswalk_records": 466,
     "requirement_crosswalk_complete": false,
     "source_requirement_review_records": 889,
-    "source_only_requirement_gaps": 170,
-    "source_only_requirement_gap_proposals": 117
+    "source_only_requirement_gaps": 165,
+    "source_only_requirement_gap_proposals": 112,
+    "source_table_contracts": 5
   },
   "source_clause_crosswalk": [
     {
@@ -65194,13 +65195,13 @@
       "rejected_candidate_mappings": [],
       "expected_client_requirement_ids": [],
       "applies_to": "all_client_profiles",
-      "review_note": "Table 235 request header only; REQUIRED is a column heading, not a normative atom. The request has no Unique Identifier row and does not reuse the generic ID Placeholder omission capability. Five request rows are recorded separately: Cryptographic Parameters is Required=Yes; Data is Yes for single-part and No for multi-part; Correlation Value, Init Indicator, and Final Indicator are each Required=No. These body-row forces have source-only proposal IDs because this section has no catalog requirement labels. The operation description/parameter paragraphs contain no formal MUST/SHALL/SHOULD/MAY keyword.",
+      "review_note": "Table 235 request header only; REQUIRED is a column heading, not a normative atom. The request has no Unique Identifier row and does not reuse the generic ID Placeholder omission capability. Five request body rows are represented as source_table_contracts and mapped through KMIPKIT-ELEM-OP-C2S-HASH and KMIPKIT-0021 FR-002; no per-cell REQ identifier is created. Cryptographic Parameters is Required=Yes; Data is Yes for single-part and No for multi-part; Correlation Value, Init Indicator, and Final Indicator are each Required=No. The operation description/parameter paragraphs contain no formal MUST/SHALL/SHOULD/MAY keyword.",
       "source_request_rows": [
         {
           "row_label": "Cryptographic Parameters",
           "required": "Yes",
           "actor": "client",
-          "disposition": "required_request_field_with_source_only_proposal",
+          "disposition": "required_request_table_contract",
           "html_line_range": [
             28255,
             28267
@@ -65212,7 +65213,7 @@
           "row_label": "Data",
           "required": "Yes for single-part. No for multi-part.",
           "actor": "client",
-          "disposition": "conditionally_required_request_field_with_source_only_proposal",
+          "disposition": "conditionally_required_request_table_contract",
           "html_line_range": [
             28273,
             28284
@@ -65224,7 +65225,7 @@
           "row_label": "Correlation Value",
           "required": "No",
           "actor": "client",
-          "disposition": "optional_request_field_with_source_only_proposal",
+          "disposition": "optional_request_table_contract",
           "html_line_range": [
             28290,
             28302
@@ -65236,7 +65237,7 @@
           "row_label": "Init Indicator",
           "required": "No",
           "actor": "client",
-          "disposition": "optional_request_field_with_source_only_proposal",
+          "disposition": "optional_request_table_contract",
           "html_line_range": [
             28308,
             28319
@@ -65248,7 +65249,7 @@
           "row_label": "Final Indicator",
           "required": "No",
           "actor": "client",
-          "disposition": "optional_request_field_with_source_only_proposal",
+          "disposition": "optional_request_table_contract",
           "html_line_range": [
             28324,
             28334
@@ -83719,176 +83720,6 @@
       "review_note": "This Required=Yes table-body row reuses the existing stable label for specifying the number of protection units. Catalog source_keyword=SHALL points to a descriptive paragraph rather than this Required=Yes row; Green must correct the locator/keyword metadata while preserving the client requirement."
     },
     {
-      "gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.24-CRYPTOGRAPHIC-PARAMETERS-REQUIRED",
-      "source_id": "KMIPKIT-SRC-spec",
-      "source_path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
-      "source_section": "6.1.24",
-      "source_clause_id": null,
-      "source_locator": {
-        "kind": "table_body_row",
-        "section": "6.1.24",
-        "row_label": "Cryptographic Parameters",
-        "table": "request_payload",
-        "html_line_range": [
-          28255,
-          28267
-        ]
-      },
-      "source_locator_description": "§6.1.24 Hash request payload body row for Cryptographic Parameters (HTML lines 28255–28267)",
-      "html_line_range": [
-        28255,
-        28267
-      ],
-      "source_excerpt": "Cryptographic Parameters Yes The Cryptographic Parameters (Hashing Algorithm) corresponding to the particular hash method requested.",
-      "source_keywords": [],
-      "source_force": "required_table_body_value",
-      "audited_statement": "The Hash request payload marks Cryptographic Parameters Required=Yes and describes the parameters as corresponding to the particular hash method requested.",
-      "actor": "client",
-      "direction": "client→server Hash request",
-      "condition": "A Hash request is sent; the requested hash method determines the corresponding Cryptographic Parameters.",
-      "scope_disposition": "client_1_0",
-      "candidate_requirement_id": null,
-      "proposed_requirement_id": "KMIPKIT-REQ-SPEC-6.1.24-001",
-      "status": "stable_label_proposed_not_in_catalog",
-      "review_note": "The stable label is a source-only proposal because the current catalog has no requirement mapping to the Hash operation; no catalog or profile closure ID is created in Red. The row describes a requested hash method but does not enumerate or select an algorithm list in this section."
-    },
-    {
-      "gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.24-DATA-REQUIRED",
-      "source_id": "KMIPKIT-SRC-spec",
-      "source_path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
-      "source_section": "6.1.24",
-      "source_clause_id": null,
-      "source_locator": {
-        "kind": "table_body_row",
-        "section": "6.1.24",
-        "row_label": "Data",
-        "table": "request_payload",
-        "html_line_range": [
-          28273,
-          28284
-        ]
-      },
-      "source_locator_description": "§6.1.24 Hash request payload body row for Data (HTML lines 28273–28284)",
-      "html_line_range": [
-        28273,
-        28284
-      ],
-      "source_excerpt": "Data Yes for single-part. No for multi-part. The data to be hashed .",
-      "source_keywords": [],
-      "source_force": "conditional_required_table_body_value",
-      "audited_statement": "The Hash request payload marks Data Required=Yes for single-part and No for multi-part.",
-      "actor": "client",
-      "direction": "client→server Hash request",
-      "condition": "Single-part Hash requests mark Data Required=Yes; the table marks Data No for multi-part.",
-      "scope_disposition": "client_1_0",
-      "candidate_requirement_id": null,
-      "proposed_requirement_id": "KMIPKIT-REQ-SPEC-6.1.24-002",
-      "status": "stable_label_proposed_not_in_catalog",
-      "review_note": "The stable label is a source-only proposal because the current catalog has no requirement mapping to the Hash operation; no catalog or profile closure ID is created in Red. The table condition is preserved exactly as printed: Required is 'Yes for single-part. No for multi-part.' This Hash row links to the general §6.1 gap KMIPKIT-SOURCE-GAP-SPEC-6.1-PARAGRAPH-009 and proposal KMIPKIT-REQ-SPEC-6.1-009-001. Specification v2.1 §6.1 HTML lines 22498–22499 states: Data is always required in cryptographic operations except when either Init Indicator or Final Indicator is true. The §6.1 multipart sequence at lines 22418–22496 uses imperative procedure prose rather than a formal keyword. This apparent tension is not resolved here; this row does not make all multipart Data optional, and no additional multipart Data obligation is inferred."
-    },
-    {
-      "gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.24-CORRELATION-VALUE-OPTIONAL",
-      "source_id": "KMIPKIT-SRC-spec",
-      "source_path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
-      "source_section": "6.1.24",
-      "source_clause_id": null,
-      "source_locator": {
-        "kind": "table_body_row",
-        "section": "6.1.24",
-        "row_label": "Correlation Value",
-        "table": "request_payload",
-        "html_line_range": [
-          28290,
-          28302
-        ]
-      },
-      "source_locator_description": "§6.1.24 Hash request payload body row for Correlation Value (HTML lines 28290–28302)",
-      "html_line_range": [
-        28290,
-        28302
-      ],
-      "source_excerpt": "Correlation Value No Specifies the existing stream or by-parts cryptographic operation (as returned from a previous call to this operation).",
-      "source_keywords": [],
-      "source_force": "optional_table_body_value",
-      "audited_statement": "The Hash request payload marks Correlation Value Required=No for identifying an existing stream or by-parts operation returned by a previous call.",
-      "actor": "client",
-      "direction": "client→server Hash request",
-      "condition": "An existing stream or by-parts cryptographic operation is continued using a value returned from a previous call.",
-      "scope_disposition": "client_1_0",
-      "candidate_requirement_id": null,
-      "proposed_requirement_id": "KMIPKIT-REQ-SPEC-6.1.24-003",
-      "status": "stable_label_proposed_not_in_catalog",
-      "review_note": "The stable label is a source-only proposal because the current catalog has no requirement mapping to the Hash operation; no catalog or profile closure ID is created in Red. Required=No is the source indication for an optional client request control; no standalone correlation value is invented."
-    },
-    {
-      "gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.24-INIT-INDICATOR-OPTIONAL",
-      "source_id": "KMIPKIT-SRC-spec",
-      "source_path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
-      "source_section": "6.1.24",
-      "source_clause_id": null,
-      "source_locator": {
-        "kind": "table_body_row",
-        "section": "6.1.24",
-        "row_label": "Init Indicator",
-        "table": "request_payload",
-        "html_line_range": [
-          28308,
-          28319
-        ]
-      },
-      "source_locator_description": "§6.1.24 Hash request payload body row for Init Indicator (HTML lines 28308–28319)",
-      "html_line_range": [
-        28308,
-        28319
-      ],
-      "source_excerpt": "Init Indicator No Initial operation as Boolean",
-      "source_keywords": [],
-      "source_force": "optional_table_body_value",
-      "audited_statement": "The Hash request payload marks Init Indicator Required=No and describes it as a Boolean identifying an initial operation.",
-      "actor": "client",
-      "direction": "client→server Hash request",
-      "condition": "The client uses the optional Boolean field to identify an initial operation.",
-      "scope_disposition": "client_1_0",
-      "candidate_requirement_id": null,
-      "proposed_requirement_id": "KMIPKIT-REQ-SPEC-6.1.24-004",
-      "status": "stable_label_proposed_not_in_catalog",
-      "review_note": "The stable label is a source-only proposal because the current catalog has no requirement mapping to the Hash operation; no catalog or profile closure ID is created in Red. Required=No is recorded as the optional field capability. §6.1 multipart procedure prose states Init=true on the first request but is not promoted to a formal keyword atom."
-    },
-    {
-      "gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.24-FINAL-INDICATOR-OPTIONAL",
-      "source_id": "KMIPKIT-SRC-spec",
-      "source_path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
-      "source_section": "6.1.24",
-      "source_clause_id": null,
-      "source_locator": {
-        "kind": "table_body_row",
-        "section": "6.1.24",
-        "row_label": "Final Indicator",
-        "table": "request_payload",
-        "html_line_range": [
-          28324,
-          28334
-        ]
-      },
-      "source_locator_description": "§6.1.24 Hash request payload body row for Final Indicator (HTML lines 28324–28334)",
-      "html_line_range": [
-        28324,
-        28334
-      ],
-      "source_excerpt": "Final Indicator No Final operation as Boolean",
-      "source_keywords": [],
-      "source_force": "optional_table_body_value",
-      "audited_statement": "The Hash request payload marks Final Indicator Required=No and describes it as a Boolean identifying a final operation.",
-      "actor": "client",
-      "direction": "client→server Hash request",
-      "condition": "The client uses the optional Boolean field to identify a final operation.",
-      "scope_disposition": "client_1_0",
-      "candidate_requirement_id": null,
-      "proposed_requirement_id": "KMIPKIT-REQ-SPEC-6.1.24-005",
-      "status": "stable_label_proposed_not_in_catalog",
-      "review_note": "The stable label is a source-only proposal because the current catalog has no requirement mapping to the Hash operation; no catalog or profile closure ID is created in Red. Required=No is recorded as the optional field capability. §6.1 multipart procedure prose states Final=true on the final request but is not promoted to a formal keyword atom."
-    },
-    {
       "gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.25-REPLACE-EXISTING-OPTIONAL",
       "source_id": "KMIPKIT-SRC-spec",
       "source_path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
@@ -86121,6 +85952,259 @@
       "proposed_requirement_id": "KMIPKIT-REQ-SPEC-6.1.56-008",
       "status": "stable_label_proposed_not_in_catalog",
       "review_note": "This Table 337 row records client request-field support or conditional requiredness, not a separate modal requirement; keep the proposed label outside the catalog until source review assigns a stable requirement."
+    }
+  ],
+  "source_table_contracts": [
+    {
+      "gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.24-CRYPTOGRAPHIC-PARAMETERS-REQUIRED",
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+      "source_section": "6.1.24",
+      "source_clause_id": null,
+      "source_locator": {
+        "kind": "table_body_row",
+        "section": "6.1.24",
+        "row_label": "Cryptographic Parameters",
+        "table": "request_payload",
+        "html_line_range": [
+          28255,
+          28267
+        ]
+      },
+      "source_locator_description": "§6.1.24 Hash request payload body row for Cryptographic Parameters (HTML lines 28255–28267)",
+      "html_line_range": [
+        28255,
+        28267
+      ],
+      "source_excerpt": "Cryptographic Parameters Yes The Cryptographic Parameters (Hashing Algorithm) corresponding to the particular hash method requested.",
+      "source_keywords": [],
+      "source_force": "required_table_body_value",
+      "audited_statement": "The Hash request payload marks Cryptographic Parameters Required=Yes and describes the parameters as corresponding to the particular hash method requested.",
+      "actor": "client",
+      "direction": "client→server Hash request",
+      "condition": "A Hash request is sent; the requested hash method determines the corresponding Cryptographic Parameters.",
+      "scope_disposition": "client_1_0",
+      "status": "mapped_to_approved_feature_contract",
+      "review_note": "Source table field contract mapped through KMIPKIT-ELEM-OP-C2S-HASH and KMIPKIT-0021 FR-002; this row does not create a standalone REQ record.",
+      "contract_kind": "operation_request_table_field",
+      "table_number": 235,
+      "requiredness": "Yes",
+      "operation_element_id": "KMIPKIT-ELEM-OP-C2S-HASH",
+      "functional_requirement_ids": [
+        "FR-002"
+      ],
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/hash.rs::HashRequest::to_ttlv_payload"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/hash_operation_tests.rs::request_requires_a_hashing_algorithm_in_cryptographic_parameters",
+        "crates/kmipkit-protocol/tests/unit/hash_operation_tests.rs::request_emits_table_235_fields_in_order_and_preserves_caller_values"
+      ],
+      "evidence_disposition": {
+        "status": "mapped_to_feature_contract",
+        "statement": "Implementation and executable tests are linked through KMIPKIT-ELEM-OP-C2S-HASH and KMIPKIT-0021 FR-002; this table cell does not create a standalone REQ record."
+      }
+    },
+    {
+      "gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.24-DATA-REQUIRED",
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+      "source_section": "6.1.24",
+      "source_clause_id": null,
+      "source_locator": {
+        "kind": "table_body_row",
+        "section": "6.1.24",
+        "row_label": "Data",
+        "table": "request_payload",
+        "html_line_range": [
+          28273,
+          28284
+        ]
+      },
+      "source_locator_description": "§6.1.24 Hash request payload body row for Data (HTML lines 28273–28284)",
+      "html_line_range": [
+        28273,
+        28284
+      ],
+      "source_excerpt": "Data Yes for single-part. No for multi-part. The data to be hashed .",
+      "source_keywords": [],
+      "source_force": "conditional_required_table_body_value",
+      "audited_statement": "The Hash request payload marks Data Required=Yes for single-part and No for multi-part.",
+      "actor": "client",
+      "direction": "client→server Hash request",
+      "condition": "Single-part Hash requests mark Data Required=Yes; the table marks Data No for multi-part.",
+      "scope_disposition": "client_1_0",
+      "status": "mapped_to_approved_feature_contract",
+      "review_note": "Source table field contract mapped through KMIPKIT-ELEM-OP-C2S-HASH and KMIPKIT-0021 FR-002; this row does not create a standalone REQ record. The §6.1 Data tension remains unresolved; no additional multipart Data obligation is inferred.",
+      "contract_kind": "operation_request_table_field",
+      "table_number": 235,
+      "requiredness": "Yes for single-part. No for multi-part.",
+      "operation_element_id": "KMIPKIT-ELEM-OP-C2S-HASH",
+      "functional_requirement_ids": [
+        "FR-002"
+      ],
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/hash.rs::HashRequest::to_ttlv_payload"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/hash_operation_tests.rs::request_requires_single_part_data_and_omits_it_for_multipart"
+      ],
+      "evidence_disposition": {
+        "status": "unresolved_source_conflict",
+        "conflict_source_gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1-PARAGRAPH-009",
+        "conflicting_source": "KMIP Specification v2.1 §6.1 Table 235 marks Data Yes for single-part and No for multi-part; §6.1 lines 22498–22499 say Data is always required except when Init Indicator or Final Indicator is true.",
+        "claim": "No conformance claim is made for Data omission when both Init Indicator and Final Indicator are false."
+      }
+    },
+    {
+      "gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.24-CORRELATION-VALUE-OPTIONAL",
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+      "source_section": "6.1.24",
+      "source_clause_id": null,
+      "source_locator": {
+        "kind": "table_body_row",
+        "section": "6.1.24",
+        "row_label": "Correlation Value",
+        "table": "request_payload",
+        "html_line_range": [
+          28290,
+          28302
+        ]
+      },
+      "source_locator_description": "§6.1.24 Hash request payload body row for Correlation Value (HTML lines 28290–28302)",
+      "html_line_range": [
+        28290,
+        28302
+      ],
+      "source_excerpt": "Correlation Value No Specifies the existing stream or by-parts cryptographic operation (as returned from a previous call to this operation).",
+      "source_keywords": [],
+      "source_force": "optional_table_body_value",
+      "audited_statement": "The Hash request payload marks Correlation Value Required=No for identifying an existing stream or by-parts operation returned by a previous call.",
+      "actor": "client",
+      "direction": "client→server Hash request",
+      "condition": "An existing stream or by-parts cryptographic operation is continued using a value returned from a previous call.",
+      "scope_disposition": "client_1_0",
+      "status": "mapped_to_approved_feature_contract",
+      "review_note": "Source table field contract mapped through KMIPKIT-ELEM-OP-C2S-HASH and KMIPKIT-0021 FR-002; this row does not create a standalone REQ record.",
+      "contract_kind": "operation_request_table_field",
+      "table_number": 235,
+      "requiredness": "No",
+      "operation_element_id": "KMIPKIT-ELEM-OP-C2S-HASH",
+      "functional_requirement_ids": [
+        "FR-002"
+      ],
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/hash.rs::HashRequest::to_ttlv_payload"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/hash_operation_tests.rs::request_emits_table_235_fields_in_order_and_preserves_caller_values",
+        "crates/kmipkit-client/tests/unit/hash_execution_tests.rs::explicit_hash_executes_once_and_exposes_the_server_data"
+      ],
+      "evidence_disposition": {
+        "status": "mapped_to_feature_contract",
+        "statement": "Implementation and executable tests are linked through KMIPKIT-ELEM-OP-C2S-HASH and KMIPKIT-0021 FR-002; this table cell does not create a standalone REQ record."
+      }
+    },
+    {
+      "gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.24-INIT-INDICATOR-OPTIONAL",
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+      "source_section": "6.1.24",
+      "source_clause_id": null,
+      "source_locator": {
+        "kind": "table_body_row",
+        "section": "6.1.24",
+        "row_label": "Init Indicator",
+        "table": "request_payload",
+        "html_line_range": [
+          28308,
+          28319
+        ]
+      },
+      "source_locator_description": "§6.1.24 Hash request payload body row for Init Indicator (HTML lines 28308–28319)",
+      "html_line_range": [
+        28308,
+        28319
+      ],
+      "source_excerpt": "Init Indicator No Initial operation as Boolean",
+      "source_keywords": [],
+      "source_force": "optional_table_body_value",
+      "audited_statement": "The Hash request payload marks Init Indicator Required=No and describes it as a Boolean identifying an initial operation.",
+      "actor": "client",
+      "direction": "client→server Hash request",
+      "condition": "The client uses the optional Boolean field to identify an initial operation.",
+      "scope_disposition": "client_1_0",
+      "status": "mapped_to_approved_feature_contract",
+      "review_note": "Source table field contract mapped through KMIPKIT-ELEM-OP-C2S-HASH and KMIPKIT-0021 FR-002; this row does not create a standalone REQ record.",
+      "contract_kind": "operation_request_table_field",
+      "table_number": 235,
+      "requiredness": "No",
+      "operation_element_id": "KMIPKIT-ELEM-OP-C2S-HASH",
+      "functional_requirement_ids": [
+        "FR-002"
+      ],
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/hash.rs::HashRequest::to_ttlv_payload"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/hash_operation_tests.rs::request_emits_table_235_fields_in_order_and_preserves_caller_values",
+        "crates/kmipkit-client/tests/unit/hash_execution_tests.rs::explicit_hash_executes_once_and_exposes_the_server_data"
+      ],
+      "evidence_disposition": {
+        "status": "mapped_to_feature_contract",
+        "statement": "Implementation and executable tests are linked through KMIPKIT-ELEM-OP-C2S-HASH and KMIPKIT-0021 FR-002; this table cell does not create a standalone REQ record."
+      }
+    },
+    {
+      "gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.24-FINAL-INDICATOR-OPTIONAL",
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+      "source_section": "6.1.24",
+      "source_clause_id": null,
+      "source_locator": {
+        "kind": "table_body_row",
+        "section": "6.1.24",
+        "row_label": "Final Indicator",
+        "table": "request_payload",
+        "html_line_range": [
+          28324,
+          28334
+        ]
+      },
+      "source_locator_description": "§6.1.24 Hash request payload body row for Final Indicator (HTML lines 28324–28334)",
+      "html_line_range": [
+        28324,
+        28334
+      ],
+      "source_excerpt": "Final Indicator No Final operation as Boolean",
+      "source_keywords": [],
+      "source_force": "optional_table_body_value",
+      "audited_statement": "The Hash request payload marks Final Indicator Required=No and describes it as a Boolean identifying a final operation.",
+      "actor": "client",
+      "direction": "client→server Hash request",
+      "condition": "The client uses the optional Boolean field to identify a final operation.",
+      "scope_disposition": "client_1_0",
+      "status": "mapped_to_approved_feature_contract",
+      "review_note": "Source table field contract mapped through KMIPKIT-ELEM-OP-C2S-HASH and KMIPKIT-0021 FR-002; this row does not create a standalone REQ record.",
+      "contract_kind": "operation_request_table_field",
+      "table_number": 235,
+      "requiredness": "No",
+      "operation_element_id": "KMIPKIT-ELEM-OP-C2S-HASH",
+      "functional_requirement_ids": [
+        "FR-002"
+      ],
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/hash.rs::HashRequest::to_ttlv_payload"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/hash_operation_tests.rs::request_emits_table_235_fields_in_order_and_preserves_caller_values",
+        "crates/kmipkit-client/tests/unit/hash_execution_tests.rs::explicit_hash_executes_once_and_exposes_the_server_data"
+      ],
+      "evidence_disposition": {
+        "status": "mapped_to_feature_contract",
+        "statement": "Implementation and executable tests are linked through KMIPKIT-ELEM-OP-C2S-HASH and KMIPKIT-0021 FR-002; this table cell does not create a standalone REQ record."
+      }
     }
   ]
 }

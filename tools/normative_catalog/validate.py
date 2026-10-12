@@ -1689,6 +1689,154 @@ def load_validated_catalog(raw: bytes, repo_root: Path, *, require_complete: boo
     return catalog
 
 
+def validate_source_table_contracts(oracle: object, repo_root: Path) -> list[str]:
+    """Validate source-table contract evidence in the independent profile oracle.
+
+    This test-support validator keeps operation-table rows distinct from the
+    normative requirement catalog while requiring resolvable source, feature,
+    implementation, and executable-test references.
+    """
+    diagnostics: list[str] = []
+    if not isinstance(oracle, dict):
+        return ["profile closure oracle must be an object"]
+
+    contracts = oracle.get("source_table_contracts")
+    if not isinstance(contracts, list):
+        return ["source_table_contracts must be an array"]
+
+    gaps = oracle.get("source_only_requirement_gaps", [])
+    source_gap_ids = {
+        row.get("gap_id") for row in gaps if isinstance(row, dict)
+    } if isinstance(gaps, list) else set()
+    seen_ids: set[str] = set()
+    required_fields = (
+        "gap_id", "contract_kind", "source_id", "source_path", "source_section", "source_locator",
+        "source_locator_description", "html_line_range", "source_excerpt", "source_force",
+        "requiredness", "actor", "direction", "condition", "scope_disposition",
+        "table_number", "operation_element_id", "functional_requirement_ids",
+        "implementation_refs", "verification_refs", "evidence_disposition",
+    )
+
+    try:
+        root = repo_root.resolve(strict=True)
+    except OSError:
+        return ["repository root is unavailable"]
+
+    def resolve_reference(reference: object, *, executable_test: bool) -> str | None:
+        if not isinstance(reference, str) or "::" not in reference:
+            return "reference must use path::symbol form"
+        relative_path, symbol_path = reference.split("::", 1)
+        symbol = symbol_path.rsplit("::", 1)[-1]
+        if not relative_path or not symbol or not re.fullmatch(r"[A-Za-z_][A-Za-z0-9_]*", symbol):
+            return "reference must name a source file and symbol"
+        if executable_test and "tests" not in Path(relative_path).parts:
+            return "verification reference must point into a tests directory"
+        try:
+            resolved = (root / relative_path).resolve(strict=True)
+            resolved.relative_to(root)
+            text = resolved.read_text(encoding="utf-8")
+        except (OSError, ValueError, UnicodeError):
+            return "reference path must resolve to a repository file"
+        if executable_test:
+            pattern = rf"#\[test\]\s*fn\s+{re.escape(symbol)}\b|\bdef\s+{re.escape(symbol)}\b"
+        else:
+            pattern = rf"\b(?:pub\s+)?fn\s+{re.escape(symbol)}\b|\bdef\s+{re.escape(symbol)}\b"
+        if re.search(pattern, text) is None:
+            return "reference symbol is not defined in the cited file"
+        return None
+
+    for index, contract in enumerate(contracts):
+        label = f"source_table_contracts[{index}]"
+        if not isinstance(contract, dict):
+            diagnostics.append(f"{label} must be an object")
+            continue
+        for field in required_fields:
+            if field not in contract:
+                diagnostics.append(f"{label}.{field} is required")
+
+        gap_id = contract.get("gap_id")
+        if not isinstance(gap_id, str) or not gap_id.strip():
+            diagnostics.append(f"{label}.gap_id must be a non-empty stable ID")
+        else:
+            if gap_id in seen_ids:
+                diagnostics.append(f"{label}.gap_id must be unique")
+            seen_ids.add(gap_id)
+            if gap_id in source_gap_ids:
+                diagnostics.append(f"{label}.gap_id must not also be a source-only requirement gap")
+
+        for identifier_field in ("candidate_requirement_id", "proposed_requirement_id", "requirement_id"):
+            if identifier_field in contract:
+                diagnostics.append(f"{label}.{identifier_field} must not create a per-cell REQ mapping")
+
+        locator = contract.get("source_locator")
+        if not isinstance(locator, dict):
+            diagnostics.append(f"{label}.source_locator must identify the pinned table row")
+        elif (
+            locator.get("kind") != "table_body_row"
+            or locator.get("section") != contract.get("source_section")
+            or locator.get("table") != "request_payload"
+            or not isinstance(locator.get("row_label"), str)
+            or locator.get("html_line_range") != contract.get("html_line_range")
+        ):
+            diagnostics.append(f"{label}.source_locator must resolve the exact table body row")
+        table_number = contract.get("table_number")
+        if not isinstance(table_number, int) or isinstance(table_number, bool) or table_number < 1:
+            diagnostics.append(f"{label}.table_number must be a positive integer")
+
+        source_path = contract.get("source_path")
+        if not isinstance(source_path, str):
+            diagnostics.append(f"{label}.source_path must name the pinned source file")
+        else:
+            try:
+                source_file = (root / source_path).resolve(strict=True)
+                source_file.relative_to(root)
+                if not source_file.is_file():
+                    raise OSError("not a file")
+            except (OSError, ValueError):
+                diagnostics.append(f"{label}.source_path must resolve inside the repository")
+
+        for field in ("source_id", "source_section", "source_locator_description", "source_excerpt", "source_force", "requiredness", "actor", "direction", "condition", "scope_disposition", "operation_element_id"):
+            if not isinstance(contract.get(field), str) or not contract[field].strip():
+                diagnostics.append(f"{label}.{field} must be a non-empty string")
+        if contract.get("contract_kind") != "operation_request_table_field":
+            diagnostics.append(f"{label}.contract_kind must identify an operation request table field")
+        if contract.get("operation_element_id") != "KMIPKIT-ELEM-OP-C2S-HASH":
+            diagnostics.append(f"{label}.operation_element_id must link to KMIPKIT-ELEM-OP-C2S-HASH")
+        functional_requirements = contract.get("functional_requirement_ids")
+        if (
+            not isinstance(functional_requirements, list)
+            or "FR-002" not in functional_requirements
+            or any(not isinstance(value, str) for value in functional_requirements)
+        ):
+            diagnostics.append(f"{label}.functional_requirement_ids must link the Hash request contract to FR-002")
+
+        for field, executable_test in (("implementation_refs", False), ("verification_refs", True)):
+            references = contract.get(field)
+            if not isinstance(references, list) or not references:
+                diagnostics.append(f"{label}.{field} must contain a resolved path::symbol reference")
+                continue
+            for reference in references:
+                issue = resolve_reference(reference, executable_test=executable_test)
+                if issue is not None:
+                    diagnostics.append(f"{label}.{field}: {issue}")
+
+        disposition = contract.get("evidence_disposition")
+        if not isinstance(disposition, dict) or not isinstance(disposition.get("status"), str):
+            diagnostics.append(f"{label}.evidence_disposition must record an explicit status")
+        elif locator and locator.get("row_label") == "Data" and table_number == 235:
+            claim = disposition.get("claim")
+            if (
+                disposition.get("status") != "unresolved_source_conflict"
+                or disposition.get("conflict_source_gap_id") != "KMIPKIT-SOURCE-GAP-SPEC-6.1-PARAGRAPH-009"
+                or not isinstance(claim, str)
+                or "no conformance claim" not in claim.lower()
+                or "both Init Indicator and Final Indicator are false" not in claim
+            ):
+                diagnostics.append(f"{label}.evidence_disposition must preserve the unresolved Data conflict without an omission claim")
+
+    return diagnostics
+
+
 def validate_catalog(raw: bytes, repo_root: Path, *, require_complete: bool = False) -> dict[str, Any]:
     """Validate raw UTF-8 JSON bytes and return deterministic aggregate counts."""
     catalog = load_validated_catalog(raw, repo_root, require_complete=require_complete)
