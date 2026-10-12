@@ -245,7 +245,18 @@ class RustExportAuditTests(unittest.TestCase):
         self.assertEqual(synthetic_send["items"], [])
         self.assertEqual(blanket_borrow["blanket_impl"], {"generic": "T"})
         names = self.names(self.inventory(documents))
-        self.assertIn("<rustdoc_v57_fixture::Fixed<T> as core::borrow::Borrow<T>>::borrow", names)
+        self.assertIn(
+            "<rustdoc_v57_fixture::Fixed<T> as core::borrow::Borrow<rustdoc_v57_fixture::Fixed<T>>>::borrow",
+            names,
+        )
+        self.assertIn(
+            "<rustdoc_v57_fixture::FixedU8Alias as core::borrow::Borrow<rustdoc_v57_fixture::Fixed<u8>>>::borrow",
+            names,
+        )
+        self.assertNotIn(
+            "<rustdoc_v57_fixture::FixedU8Alias as core::borrow::Borrow<u8>>::borrow",
+            names,
+        )
 
     def test_rustdoc_v57_inventories_automatically_derived_trait_members(self):
         documents = self.rustdoc_v57_fixture()
