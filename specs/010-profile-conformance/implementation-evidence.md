@@ -1677,3 +1677,9 @@ Source basis: KMIP Specification v2.1 §14.1 and KMIP Profiles v2.1 §6.1; appro
 |---|---|---|
 | Red - reject over-limit requests before profile traversal | `cargo test -p kmipkit-client --lib request_limits_are_checked_before_profile_evaluation` | Expected Red: the request evaluator is called once before the clone helper detects the zero-byte message limit. The test requires a `NotSent` error, zero profile evaluations, and zero transport exchanges. DCO Red commit: this commit. |
 | Green - check structural request limits before profile traversal | `cargo test -p kmipkit-client --lib request_limits_are_checked_before_profile_evaluation`<br>`cargo test -p kmipkit-client --lib profile_message_clone_tests`<br>`cargo fmt --all --check`<br>`git diff --check` | PASS: structure size/depth/element validation now runs before any typed request rule evaluator, with no request copy allocated until the structure is within configured limits. The zero-byte regression confirms zero evaluator calls and zero transport exchanges, with `NotSent` delivery. DCO Green commit: this commit. |
+
+### Facade result type and response-body accessor
+
+| Stage | Exact command | Exact result |
+|---|---|---|
+| Red - name the profile result through the public facade | `cargo test -p kmipkit --test error_api facade_exports_profile_validation_result_and_omits_raw_body_for_profile_errors` | Expected Red: `kmipkit::ProfileValidationResult` is not currently re-exported. The test also requires profile errors to preserve delivery state while intentionally exposing no raw response TTLV. DCO Red commit: this commit. |
