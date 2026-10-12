@@ -195,7 +195,7 @@ class SectionSixActorAndScopeRegressionTests(unittest.TestCase):
         self.assertEqual(atom["source_keyword"], "SHALL")
         self.assertEqual(atom["candidate_requirement_id"], requirement_id)
         self.assertEqual(atom["actor"], "unresolved")
-        self.assertEqual(atom["scope_disposition"], "unresolved")
+        self.assertEqual(atom["scope_disposition"], "client_1_0")
         self.assertEqual(review["expected_client_requirement_ids"], [])
         self.assertNotIn(requirement_id, self.crosswalk_ids)
         self.assertNotIn(requirement_id, self.client_profile_ids)
