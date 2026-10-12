@@ -100,7 +100,7 @@ As a KMIPKit caller, I can send the §6.1.57 Validate request and inspect the ty
 3. Given a Table 342 failure, malformed payload, or transport error, when the call completes, then status/reason or error and delivery state remain available without retry.
 4. Given Pending in a caller-enabled typed batch, when the response arrives, then Pending and the exact correlation bytes remain available without an implicit Poll.
 
-**Specific rules**: One certificate chain using certificates, identifiers, or both; preserve order, optional Validity Date, and Validity Indicator without local validation.
+**Specific rules**: One certificate chain using certificates, identifiers, or both. Apply the common Structure description-order rule in section 10.1.2, unnumbered Type table Structure row: Table 340 encodes the Certificate list, then the Unique Identifier list, then optional Validity Date, preserving relative order inside each repeated list. Supplied Certificate structures require Certificate Type before Certificate Value (section 2.1, Table 2). Preserve Validity Indicator and unknown fields without local DER or trust validation.
 
 **Payload schema** (OASIS Specification v2.1 §6.1.57, Tables 340–341):
 
@@ -184,3 +184,17 @@ These are project interpretations, not official OASIS errata. The implementation
 | Operation | Discrepancy | Disposition |
 | --- | --- | --- |
 | Log | KMIPKIT-DISC-017 | Required Log Message and empty success payload. Approved KMIPKIT-DISC-017 assigns the mistaken Query error introduction to Log. Caller must not submit secrets. |
+
+
+### Implementation correction: normative Structure order (2026-10-12)
+
+The existing section 10.1.2 unnumbered Type table Structure row SHALL applies to every defined Structure
+and is cataloged as KMIPKIT-REQ-SPEC-10.1.2-001. Earlier design wording about
+mixed insertion/wire order is superseded by Table 340 description order:
+Certificates, Unique Identifiers, Validity Date. Relative order within each
+repeated list remains intact. Table 2 likewise requires Certificate Type
+before Certificate Value. This corrects a design ambiguity against the pinned
+normative source; it adds no local DER, chain-connectivity or trust policy.
+The global common-rule catalog record remains unassigned until all applicable
+structures have complete ownership/evidence; this feature verifies only its
+own operation structures and Certificate input shape.

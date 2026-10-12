@@ -204,3 +204,19 @@ recording secret parameters, correlation values or raw KMIP bodies.
 - [Oracle Key Vault 21.x KMIP profiles](https://docs.oracle.com/en/database/oracle/key-vault/21.10/okvag/okv_intro.html).
 
 Vendor capabilities, documentation URLs, product access, and licensing can change. Recheck them when arranging an external test. Vendor-supported versions are recorded as the vendor’s published statement, not independently validated KMIP behavior.
+
+
+## KMIPKIT-0042 diagnostics implementation evidence
+
+The Interop (section 6.1.26), Log (section 6.1.29) and Validate (section 6.1.57)
+Rust protocol/client implementation has source-derived payload and fake
+transport tests. These exercise one exchange, results, Pending, redaction and
+delivery metadata; they are not server integration results. No new server
+run or passing interoperability cell is recorded by this feature. The existing
+Cosmian cells remain pending and the separate two-independent-KMIP-2.1-server
+release gate remains open. Missing access, unsupported operations or unavailable
+fixtures must be recorded as their actual blocked/SKIP/N/A outcome rather than
+counted as a passing test. Interop production availability is a server-side
+restriction, not a KMIPKit availability promise. See
+[028 evidence](../../specs/028-diagnostics-interop/implementation-evidence.md)
+for local commands and dependency status.

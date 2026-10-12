@@ -39,6 +39,8 @@ use kmipkit_protocol::{
     SetConstraintsRequest, SetConstraintsResponse, SetDefaultsRequest, SetDefaultsResponse,
     SignRequest, SignResponse, SignatureVerifyRequest, SignatureVerifyResponse,
 };
+use kmipkit_protocol::{InteropRequest, InteropResponse, LogRequest, LogResponse};
+use kmipkit_protocol::{ValidateRequest, ValidateResponse};
 
 #[cfg(test)]
 use kmipkit_transport::Transport;
@@ -187,6 +189,9 @@ const QUERY_ASYNCHRONOUS_REQUESTS_OPERATION: u32 = 0x0000_0039;
 const PROCESS_OPERATION: u32 = 0x0000_003A;
 const PKCS11_OPERATION: u32 = 0x0000_0033; // KMIP v2.1 §6.1.37, Tables 273–275.
 const PING_OPERATION: u32 = 0x0000_003B;
+const VALIDATE_OPERATION: u32 = 0x0000_0017; // KMIP v2.1 section 6.1.57.
+const LOG_OPERATION: u32 = 0x0000_002c; // KMIP v2.1 section 6.1.29.
+const INTEROP_OPERATION: u32 = 0x0000_0034; // KMIP v2.1 section 6.1.26.
 const GET_CONSTRAINTS_OPERATION: u32 = 0x0000_0038; // KMIP v2.1 §6.1.22, Table 229.
 const SET_CONSTRAINTS_OPERATION: u32 = 0x0000_0037; // KMIP v2.1 §6.1.52, Table 325.
 const SET_DEFAULTS_OPERATION: u32 = 0x0000_0036; // KMIP v2.1 §6.1.53, Table 328.
@@ -268,6 +273,12 @@ pub enum ClientRequest {
     GetAttributeList(GetAttributeListRequest),
     /// An explicit client-to-server Ping request.
     Ping(PingRequest),
+    /// An explicit typed Interop request with caller-selected parameters.
+    Interop(InteropRequest),
+    /// An explicit typed Log request with caller-selected parameters.
+    Log(LogRequest),
+    /// An explicit typed Validate request with caller-selected parameters.
+    Validate(ValidateRequest),
     /// An explicit opaque PKCS#11 forwarding request.
     Pkcs11(Pkcs11Request),
     /// An explicit client-to-server Get Constraints request.
@@ -325,6 +336,24 @@ impl ClientRequest {
     #[must_use]
     pub const fn ping() -> Self {
         Self::Ping(PingRequest::new())
+    }
+
+    /// Selects one explicit typed Interop request.
+    #[must_use]
+    pub fn interop(request: InteropRequest) -> Self {
+        Self::Interop(request)
+    }
+
+    /// Selects one explicit typed Log request.
+    #[must_use]
+    pub fn log(request: LogRequest) -> Self {
+        Self::Log(request)
+    }
+
+    /// Selects one explicit typed Validate request.
+    #[must_use]
+    pub fn validate(request: ValidateRequest) -> Self {
+        Self::Validate(request)
     }
 
     /// Creates an empty client-to-server Get Constraints request.
@@ -617,6 +646,9 @@ impl ClientRequest {
             Self::GetAttributes(_) => GET_ATTRIBUTES_OPERATION,
             Self::GetAttributeList(_) => GET_ATTRIBUTE_LIST_OPERATION,
             Self::Ping(_) => PING_OPERATION,
+            Self::Interop(_) => INTEROP_OPERATION,
+            Self::Log(_) => LOG_OPERATION,
+            Self::Validate(_) => VALIDATE_OPERATION,
             Self::Pkcs11(_) => PKCS11_OPERATION,
             Self::GetConstraints(_) => GET_CONSTRAINTS_OPERATION,
             Self::SetConstraints(_) => SET_CONSTRAINTS_OPERATION,
@@ -725,6 +757,9 @@ impl ClientRequest {
             Self::GetAttributes(request) => request.to_ttlv_payload(),
             Self::GetAttributeList(request) => request.to_ttlv_payload(),
             Self::Ping(request) => request.to_ttlv_payload(),
+            Self::Interop(request) => request.into_ttlv_payload(),
+            Self::Log(request) => request.into_ttlv_payload(),
+            Self::Validate(request) => request.into_ttlv_payload(),
             Self::Pkcs11(request) => request.into_ttlv_payload(),
             Self::GetConstraints(request) => request.to_ttlv_payload(),
             Self::SetConstraints(request) => request.to_ttlv_payload(),
@@ -797,6 +832,9 @@ impl fmt::Debug for ClientRequest {
                 .field(request)
                 .finish(),
             Self::Ping(_) => formatter.write_str("Ping"),
+            Self::Interop(request) => formatter.debug_tuple("Interop").field(request).finish(),
+            Self::Log(request) => formatter.debug_tuple("Log").field(request).finish(),
+            Self::Validate(request) => formatter.debug_tuple("Validate").field(request).finish(),
             Self::Pkcs11(request) => formatter.debug_tuple("Pkcs11").field(request).finish(),
             Self::GetConstraints(_) => formatter.write_str("GetConstraints"),
             Self::SetConstraints(request) => formatter
@@ -1125,6 +1163,9 @@ enum PendingResponse {
     GetAttributes(GetAttributesResponse),
     GetAttributeList(GetAttributeListResponse),
     Ping(PingResponse),
+    Interop(InteropResponse),
+    Log(LogResponse),
+    Validate(ValidateResponse),
     /// The typed PKCS#11 result.
     Pkcs11(Pkcs11Response),
     GetConstraints(GetConstraintsResponse),
@@ -1180,6 +1221,9 @@ impl PendingResponse {
             Self::GetAttributes(response) => ClientResponseRef::GetAttributes(response),
             Self::GetAttributeList(response) => ClientResponseRef::GetAttributeList(response),
             Self::Ping(response) => ClientResponseRef::Ping(response),
+            Self::Interop(response) => ClientResponseRef::Interop(response),
+            Self::Log(response) => ClientResponseRef::Log(response),
+            Self::Validate(response) => ClientResponseRef::Validate(response),
             Self::Pkcs11(response) => ClientResponseRef::Pkcs11(response),
             Self::GetConstraints(response) => ClientResponseRef::GetConstraints(response),
             Self::SetConstraints(response) => ClientResponseRef::SetConstraints(response),
@@ -1408,6 +1452,12 @@ pub enum ClientOperation {
     GetAttributeList,
     /// Ping one server connection and observe its KMIP response.
     Ping,
+    /// Interop diagnostic operation.
+    Interop,
+    /// Log a caller-selected message on the server.
+    Log,
+    /// Validate one supplied certificate chain on the server.
+    Validate,
     /// Forward one caller-selected PKCS#11 function to the server.
     Pkcs11,
     /// Read the server's Constraints Structure.
@@ -1610,6 +1660,9 @@ enum ClientResponseRef<'a> {
     GetAttributes(&'a GetAttributesResponse),
     GetAttributeList(&'a GetAttributeListResponse),
     Ping(&'a PingResponse),
+    Interop(&'a InteropResponse),
+    Log(&'a LogResponse),
+    Validate(&'a ValidateResponse),
     /// A borrowed PKCS#11 result.
     Pkcs11(&'a Pkcs11Response),
     GetConstraints(&'a GetConstraintsResponse),
@@ -1682,6 +1735,9 @@ impl<'a> ClientResponseView<'a> {
             ClientResponseRef::GetAttributes(response) => response.result(),
             ClientResponseRef::GetAttributeList(response) => response.result(),
             ClientResponseRef::Ping(response) => response.result(),
+            ClientResponseRef::Interop(response) => response.result(),
+            ClientResponseRef::Log(response) => response.result(),
+            ClientResponseRef::Validate(response) => response.result(),
             ClientResponseRef::Pkcs11(response) => response.result(),
             ClientResponseRef::GetConstraints(response) => response.result(),
             ClientResponseRef::SetConstraints(response) => response.result(),
@@ -2066,6 +2122,33 @@ impl<'a> ClientResponseView<'a> {
         }
     }
 
+    /// Returns an Interop response, including a Pending result.
+    #[must_use]
+    pub const fn interop(&self) -> Option<&InteropResponse> {
+        match self.response {
+            ClientResponseRef::Interop(response) => Some(response),
+            _ => None,
+        }
+    }
+
+    /// Returns a Log response, including a Pending result.
+    #[must_use]
+    pub const fn log(&self) -> Option<&LogResponse> {
+        match self.response {
+            ClientResponseRef::Log(response) => Some(response),
+            _ => None,
+        }
+    }
+
+    /// Returns a Validate response, including a Pending result.
+    #[must_use]
+    pub const fn validate(&self) -> Option<&ValidateResponse> {
+        match self.response {
+            ClientResponseRef::Validate(response) => Some(response),
+            _ => None,
+        }
+    }
+
     /// Returns the PKCS#11 response when this view represents it, including Pending.
     #[must_use]
     pub const fn pkcs11(&self) -> Option<&'a Pkcs11Response> {
@@ -2257,6 +2340,11 @@ impl fmt::Debug for ClientResponseView<'_> {
                 debug_response(formatter, "GetAttributeList", response)
             }
             ClientResponseRef::Ping(response) => debug_response(formatter, "Ping", response),
+            ClientResponseRef::Interop(response) => debug_response(formatter, "Interop", response),
+            ClientResponseRef::Log(response) => debug_response(formatter, "Log", response),
+            ClientResponseRef::Validate(response) => {
+                debug_response(formatter, "Validate", response)
+            }
             ClientResponseRef::Pkcs11(response) => debug_response(formatter, "Pkcs11", response),
             ClientResponseRef::GetConstraints(response) => {
                 debug_response(formatter, "GetConstraints", response)
@@ -2366,6 +2454,12 @@ pub enum ClientBatchOutcome {
     GetAttributeList(GetAttributeListResponse),
     /// The server returned a Ping result.
     Ping(PingResponse),
+    /// The server returned a typed Interop result.
+    Interop(InteropResponse),
+    /// The server returned a typed Log result.
+    Log(LogResponse),
+    /// The server returned a typed Validate result.
+    Validate(ValidateResponse),
     /// The typed PKCS#11 result.
     Pkcs11(Pkcs11Response),
     /// The server returned a Get Constraints result.
@@ -2430,6 +2524,9 @@ impl ClientBatchOutcome {
             | Self::GetAttributes(_)
             | Self::GetAttributeList(_)
             | Self::Ping(_)
+            | Self::Interop(_)
+            | Self::Log(_)
+            | Self::Validate(_)
             | Self::Pkcs11(_)
             | Self::GetConstraints(_)
             | Self::SetConstraints(_)
@@ -2487,6 +2584,9 @@ impl ClientBatchOutcome {
             Self::GetAttributes(response) => response.result(),
             Self::GetAttributeList(response) => response.result(),
             Self::Ping(response) => response.result(),
+            Self::Interop(response) => response.result(),
+            Self::Log(response) => response.result(),
+            Self::Validate(response) => response.result(),
             Self::Pkcs11(response) => response.result(),
             Self::GetConstraints(response) => response.result(),
             Self::SetConstraints(response) => response.result(),
@@ -2544,6 +2644,9 @@ impl ClientBatchOutcome {
             Self::GetAttributes(_) => ClientOperation::GetAttributes,
             Self::GetAttributeList(_) => ClientOperation::GetAttributeList,
             Self::Ping(_) => ClientOperation::Ping,
+            Self::Interop(_) => ClientOperation::Interop,
+            Self::Log(_) => ClientOperation::Log,
+            Self::Validate(_) => ClientOperation::Validate,
             Self::Pkcs11(_) => ClientOperation::Pkcs11,
             Self::GetConstraints(_) => ClientOperation::GetConstraints,
             Self::SetConstraints(_) => ClientOperation::SetConstraints,
@@ -3090,6 +3193,13 @@ impl ClientBatchOutcome {
                 ClientResponseView::new(ClientResponseRef::GetAttributeList(response))
             }
             Self::Ping(response) => ClientResponseView::new(ClientResponseRef::Ping(response)),
+            Self::Interop(response) => {
+                ClientResponseView::new(ClientResponseRef::Interop(response))
+            }
+            Self::Log(response) => ClientResponseView::new(ClientResponseRef::Log(response)),
+            Self::Validate(response) => {
+                ClientResponseView::new(ClientResponseRef::Validate(response))
+            }
             Self::Pkcs11(response) => ClientResponseView::new(ClientResponseRef::Pkcs11(response)),
             Self::GetConstraints(response) => {
                 ClientResponseView::new(ClientResponseRef::GetConstraints(response))
@@ -3224,6 +3334,9 @@ impl fmt::Debug for ClientBatchOutcome {
                 .field(response)
                 .finish(),
             Self::Ping(response) => formatter.debug_tuple("Ping").field(response).finish(),
+            Self::Interop(response) => formatter.debug_tuple("Interop").field(response).finish(),
+            Self::Log(response) => formatter.debug_tuple("Log").field(response).finish(),
+            Self::Validate(response) => formatter.debug_tuple("Validate").field(response).finish(),
             Self::Pkcs11(response) => formatter.debug_tuple("Pkcs11").field(response).finish(),
             Self::GetConstraints(response) => formatter
                 .debug_tuple("GetConstraints")
@@ -3278,9 +3391,7 @@ impl fmt::Display for ClientBatchOutcome {
             Self::Activate(response) => write!(formatter, "Activate({})", response.result()),
             Self::Certify(response) => write!(formatter, "Certify({})", response.result()),
             Self::Check(response) => write!(formatter, "Check({})", response.result()),
-            Self::ObtainLease(response) => {
-                write!(formatter, "ObtainLease({})", response.result())
-            }
+            Self::ObtainLease(response) => write!(formatter, "ObtainLease({})", response.result()),
             Self::Recertify(response) => {
                 write!(formatter, "Re-certify({})", response.result())
             }
@@ -3334,6 +3445,9 @@ impl fmt::Display for ClientBatchOutcome {
                 write!(formatter, "GetAttributeList({})", response.result())
             }
             Self::Ping(response) => write!(formatter, "Ping({})", response.result()),
+            Self::Interop(response) => write!(formatter, "Interop({})", response.result()),
+            Self::Log(response) => write!(formatter, "Log({})", response.result()),
+            Self::Validate(response) => write!(formatter, "Validate({})", response.result()),
             Self::Pkcs11(response) => write!(formatter, "Pkcs11({})", response.result()),
             Self::GetConstraints(response) => {
                 write!(formatter, "GetConstraints({})", response.result())
@@ -4385,6 +4499,26 @@ impl Client {
         )
     }
 
+    /// Executes one certificate-chain Validate request with one exchange.
+    ///
+    /// The server selects trust and validation policy. Use an explicit
+    /// asynchronous batch to accept Pending; this call does not poll or retry.
+    ///
+    /// # Errors
+    ///
+    /// Returns a sanitized error with request-delivery evidence.
+    pub fn validate(
+        &mut self,
+        request: ValidateRequest,
+        limits: &CodecLimits,
+    ) -> Result<ClientBatchItemResponse, ClientError> {
+        self.execute_one_typed_request(
+            ClientRequest::validate(request),
+            limits,
+            &RequestOptions::default(),
+        )
+    }
+
     /// Executes one RNG Retrieve request through one transport exchange.
     ///
     /// Pending results remain explicit for the caller to resume. This method
@@ -4401,6 +4535,44 @@ impl Client {
     ) -> Result<ClientBatchItemResponse, ClientError> {
         self.execute_one_typed_request(
             ClientRequest::rng_retrieve(request),
+            limits,
+            &RequestOptions::default(),
+        )
+    }
+
+    /// Executes one explicitly selected Log request with one exchange.
+    ///
+    /// The caller must not send secrets to the server log. Use an explicit
+    /// asynchronous batch when Pending is desired; no implicit Poll occurs.
+    ///
+    /// # Errors
+    ///
+    /// Returns a sanitized error with request-delivery evidence.
+    pub fn log(
+        &mut self,
+        request: LogRequest,
+        limits: &CodecLimits,
+    ) -> Result<ClientBatchItemResponse, ClientError> {
+        self.execute_one_typed_request(
+            ClientRequest::log(request),
+            limits,
+            &RequestOptions::default(),
+        )
+    }
+
+    /// Executes one explicitly selected Interop request with one exchange.
+    ///
+    /// # Errors
+    ///
+    /// Returns a sanitized error with request-delivery evidence. The caller
+    /// can use an asynchronous batch to accept Pending without an implicit Poll.
+    pub fn interop(
+        &mut self,
+        request: InteropRequest,
+        limits: &CodecLimits,
+    ) -> Result<ClientBatchItemResponse, ClientError> {
+        self.execute_one_typed_request(
+            ClientRequest::interop(request),
             limits,
             &RequestOptions::default(),
         )
@@ -5584,6 +5756,9 @@ fn request_mutation_is_prohibited(request: &ClientRequest) -> bool {
         | ClientRequest::GetAttributes(_)
         | ClientRequest::GetAttributeList(_)
         | ClientRequest::Ping(_)
+        | ClientRequest::Interop(_)
+        | ClientRequest::Log(_)
+        | ClientRequest::Validate(_)
         | ClientRequest::Pkcs11(_)
         | ClientRequest::GetConstraints(_)
         | ClientRequest::SetConstraints(_)
@@ -6236,14 +6411,9 @@ fn response_outcome(
             ClientBatchOutcome::Query,
         ),
         PKCS11_OPERATION => pkcs11_response_outcome(item),
-        PING_OPERATION => read_operation_outcome(
-            ClientOperation::Ping,
-            item,
-            PingResponse::try_from_response_item,
-            PingResponse::result,
-            PendingResponse::Ping,
-            ClientBatchOutcome::Ping,
-        ),
+        PING_OPERATION | INTEROP_OPERATION | LOG_OPERATION | VALIDATE_OPERATION => {
+            diagnostics_response_outcome(operation, item)
+        }
         GET_CONSTRAINTS_OPERATION => get_constraints_response_outcome(item),
         SET_CONSTRAINTS_OPERATION => set_constraints_response_outcome(item),
         SET_DEFAULTS_OPERATION => set_defaults_response_outcome(item),
@@ -6429,6 +6599,47 @@ fn key_material_response_outcome(
     match operation {
         DERIVE_KEY_OPERATION => derive_key_response_outcome(item),
         EXPORT_OPERATION => export_response_outcome(item),
+        _ => Err(protocol_error(ProtocolErrorKind::UnsupportedValue)),
+    }
+}
+
+fn diagnostics_response_outcome(
+    operation: u32,
+    item: ResponseBatchItemView<'_>,
+) -> Result<ClientBatchOutcome, ProtocolError> {
+    match operation {
+        PING_OPERATION => read_operation_outcome(
+            ClientOperation::Ping,
+            item,
+            PingResponse::try_from_response_item,
+            PingResponse::result,
+            PendingResponse::Ping,
+            ClientBatchOutcome::Ping,
+        ),
+        INTEROP_OPERATION => read_operation_outcome(
+            ClientOperation::Interop,
+            item,
+            InteropResponse::try_from_response_item,
+            InteropResponse::result,
+            PendingResponse::Interop,
+            ClientBatchOutcome::Interop,
+        ),
+        LOG_OPERATION => read_operation_outcome(
+            ClientOperation::Log,
+            item,
+            LogResponse::try_from_response_item,
+            LogResponse::result,
+            PendingResponse::Log,
+            ClientBatchOutcome::Log,
+        ),
+        VALIDATE_OPERATION => read_operation_outcome(
+            ClientOperation::Validate,
+            item,
+            ValidateResponse::try_from_response_item,
+            ValidateResponse::result,
+            PendingResponse::Validate,
+            ClientBatchOutcome::Validate,
+        ),
         _ => Err(protocol_error(ProtocolErrorKind::UnsupportedValue)),
     }
 }

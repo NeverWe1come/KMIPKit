@@ -23,6 +23,9 @@ tests, and the conformance matrix.
 
 ## User guides
 
+- [Interop, Log and Validate (English)](user-guide/en/diagnostics-and-interop.md)
+- [Interop, Log y Validate (Español)](user-guide/es/diagnostico-e-interop.md)
+
 - [Typed client execution (English)](user-guide/en/client-execution.md)
 - [Typed client execution (Español)](user-guide/es/ejecucion-cliente.md)
 - [Query and Ping (English)](user-guide/en/query-ping.md)
