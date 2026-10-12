@@ -529,12 +529,15 @@ def compare(report: dict[str, Any], manifest: dict[str, Any], package: str) -> d
     stale = sorted(set(declared) - set(observed))
     mismatches = sorted(key for key in set(observed) & set(declared)
                         if observed[key]["kind"] != declared[key]["kind"])
+    path_matches = set(observed) & set(declared)
+    exact_matches = len(path_matches) - len(mismatches)
     issues = list(report["issues"])
     issues.extend({"packageId": package, "exportName": name, "reason": "duplicate-manifest-export-name"}
                   for name in duplicate_names)
     return {"packageId": package, "complete": report["complete"] and not duplicate_names,
             "matchesManifest": not missing and not stale and not mismatches and not duplicate_names and report["complete"],
-            "counts": {"observed": len(observed), "manifest": len(declared), "matched": len(set(observed) & set(declared)),
+            "counts": {"observed": len(observed), "manifest": len(declared), "matched": exact_matches,
+                       "pathMatches": len(path_matches), "exactMatches": exact_matches,
                        "missingFromManifest": len(missing), "notObserved": len(stale), "kindMismatches": len(mismatches)},
             "missingFromManifest": [observed[k] for k in missing],
             "notObserved": [declared[k] for k in stale],
@@ -583,7 +586,7 @@ def run(root: Path) -> dict[str, Any]:
     python_sources = {path.relative_to(python_root.parent).as_posix(): path.read_text(encoding="utf-8")
                       for path in sorted(python_root.rglob("*.py"))}
     python = inventory_python_sources(python_sources)
-    return {"formatVersion": 1, "packages": [compare(c, manifest, "c-kmipkit"),
+    return {"formatVersion": 2, "packages": [compare(c, manifest, "c-kmipkit"),
                                                compare(java, manifest, "java-kmipkit"),
                                                compare(python, manifest, "python-kmipkit")]}
 
