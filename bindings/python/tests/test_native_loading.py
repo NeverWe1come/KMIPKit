@@ -7,8 +7,57 @@ import pytest
 from kmipkit._native import (
     NativeAbiMismatchError,
     NativeLibraryLoadError,
+    load_cffi_library,
     load_native_library,
 )
+
+
+class FakePointer(list[int]):
+    def __init__(self) -> None:
+        super().__init__([0])
+
+
+class FakeCffi:
+    def __init__(self, library: object) -> None:
+        self.library = library
+        self.loaded: list[str] = []
+
+    def new(self, _: str) -> FakePointer:
+        return FakePointer()
+
+    def dlopen(self, path: str) -> object:
+        self.loaded.append(path)
+        return self.library
+
+
+class VersionLibrary:
+    def __init__(self, abi_version: int = 1, status: int = 0) -> None:
+        self.abi_version = abi_version
+        self.status = status
+
+    def kmipkit_version_get(
+        self, major: FakePointer, minor: FakePointer, patch: FakePointer, abi: FakePointer
+    ) -> int:
+        major[0], minor[0], patch[0], abi[0] = 1, 0, 0, self.abi_version
+        return self.status
+
+
+def test_cffi_loader_reads_canonical_abi_version_from_native_symbol(tmp_path: Path) -> None:
+    package_library = tmp_path / "kmipkit" / "_ffi" / "_ffi.dll"
+    package_library.parent.mkdir(parents=True)
+    package_library.touch()
+    native = VersionLibrary()
+    ffi = FakeCffi(native)
+
+    result = load_cffi_library(
+        ffi=ffi,
+        bundled_path=package_library,
+        expected_abi_version=1,
+        environ={},
+    )
+
+    assert result is native
+    assert ffi.loaded == [str(package_library)]
 
 
 def test_load_uses_library_adjacent_to_installed_package(tmp_path: Path) -> None:
