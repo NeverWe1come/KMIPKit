@@ -572,7 +572,6 @@ Every row summarizes audited candidate locators by their pinned source section. 
 | KMIPKIT-REQ-PROF-4.1-003 | mandatory | out\_of\_scope | KMIPKIT-SRC-profiles §4.1 |
 | KMIPKIT-REQ-PROF-4.1.2-001 | mandatory | unclear | KMIPKIT-SRC-profiles §4.1.2 |
 | KMIPKIT-REQ-PROF-4.1.2-005 | permission\_or\_optional | unclear | KMIPKIT-SRC-profiles §4.1.2 |
-| KMIPKIT-REQ-PROF-4.1.2-007 | permission\_or\_optional | profile\_conditional | KMIPKIT-SRC-profiles §4.1.2 |
 | KMIPKIT-REQ-PROF-4.1.2-008 | permission\_or\_optional | out\_of\_scope | KMIPKIT-SRC-profiles §4.1.2 |
 | KMIPKIT-REQ-PROF-4.1.2-009 | permission\_or\_optional | out\_of\_scope | KMIPKIT-SRC-profiles §4.1.2 |
 | KMIPKIT-REQ-PROF-5.10.1-001 | mandatory | profile\_conditional | KMIPKIT-SRC-profiles §5.10.1 |
@@ -1031,7 +1030,7 @@ Every row summarizes audited candidate locators by their pinned source section. 
 | KMIPKIT-REQ-PROF-4.1-003 | No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing. | KMIPKIT-SRC-profiles §4.1 |
 | KMIPKIT-REQ-PROF-4.1.2-001 | No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing. | KMIPKIT-SRC-profiles §4.1.2 |
 | KMIPKIT-REQ-PROF-4.1.2-005 | No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing. | KMIPKIT-SRC-profiles §4.1.2 |
-| KMIPKIT-REQ-PROF-4.1.2-007 | No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing. | KMIPKIT-SRC-profiles §4.1.2 |
+| KMIPKIT-REQ-PROF-4.1.2-007 | Profiles v2.1 §4.1.2, locator 7, permits a client to include or omit Unique Batch Item ID on a single-item request. The client batch builder and request encoder support both forms; the linked fake-transport wire test asserts both TTLV encodings. No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources. | KMIPKIT-SRC-profiles §4.1.2 |
 | KMIPKIT-REQ-PROF-4.1.2-008 | No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing. | KMIPKIT-SRC-profiles §4.1.2 |
 | KMIPKIT-REQ-PROF-4.1.2-009 | No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing. | KMIPKIT-SRC-profiles §4.1.2 |
 | KMIPKIT-REQ-PROF-5.10.1-001 | No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing. | KMIPKIT-SRC-profiles §5.10.1 |
