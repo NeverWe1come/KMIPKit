@@ -53,12 +53,9 @@ final class NativeLibraryLoader {
 
     static void load() {
         try {
-            String configuredPath = System.getProperty("kmipkit.nativeLibrary");
-            if (configuredPath != null && !configuredPath.isBlank()) {
-                Path explicitLibrary = Path.of(configuredPath);
-                if (!explicitLibrary.isAbsolute()) {
-                    throw loadFailure();
-                }
+            Path explicitLibrary = resolveExplicitLibrary(
+                    System.getProperty("kmipkit.nativeLibrary"));
+            if (explicitLibrary != null) {
                 loadAndVerify(explicitLibrary);
                 return;
             }
@@ -72,6 +69,24 @@ final class NativeLibraryLoader {
             loadAndVerify(library);
         } catch (UnsatisfiedLinkError failure) {
             throw loadFailure();
+        } catch (RuntimeException failure) {
+            throw loadFailure();
+        }
+    }
+
+    static Path resolveExplicitLibrary(String configuredPath) {
+        if (configuredPath == null) {
+            return null;
+        }
+        if (configuredPath.isBlank()) {
+            throw loadFailure();
+        }
+        try {
+            Path explicitLibrary = Path.of(configuredPath);
+            if (!explicitLibrary.isAbsolute()) {
+                throw loadFailure();
+            }
+            return explicitLibrary;
         } catch (RuntimeException failure) {
             throw loadFailure();
         }
