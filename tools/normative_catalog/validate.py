@@ -65,6 +65,8 @@ TABLE_BODY_STRENGTH = {
     "required_table_body_value": "mandatory",
     "optional_table_body_value": "permission_or_optional",
 }
+# §6.1's general Data rule conflicts with these multipart request-table rows.
+_SHARED_DATA_RULE_CONFLICT_TABLES = frozenset({235, 259, 334})
 SOURCE_AUTHORITY_RANK = {
     "informative": 0,
     "test_evidence": 1,
@@ -1901,7 +1903,7 @@ def validate_source_table_contracts(oracle: object, repo_root: Path) -> list[str
         disposition = contract.get("evidence_disposition")
         if not isinstance(disposition, dict) or not isinstance(disposition.get("status"), str):
             diagnostics.append(f"{label}.evidence_disposition must record an explicit status")
-        elif locator and locator.get("row_label") == "Data" and table_number in {235, 259, 334}:
+        elif locator and locator.get("row_label") == "Data" and table_number in _SHARED_DATA_RULE_CONFLICT_TABLES:
             claim = disposition.get("claim")
             if (
                 disposition.get("status") != "unresolved_source_conflict"
