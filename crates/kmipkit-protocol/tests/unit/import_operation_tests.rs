@@ -80,13 +80,13 @@ fn wrapped_key_object() -> Item {
             )])),
         ),
     ]);
-    let value = structure([item(
-        KEY_MATERIAL,
-        Value::byte_string(b"synthetic-import-material".to_vec()),
-    )]);
     let key_block = structure([
         item(KEY_FORMAT_TYPE, Value::enumeration(1)),
-        item(KEY_VALUE, Value::structure(value)),
+        // Synthetic wrapped bytes; KMIPKit transports these and does not unwrap them.
+        item(
+            KEY_VALUE,
+            Value::byte_string(b"synthetic-wrapped-key-value".to_vec()),
+        ),
         item(KEY_WRAPPING_DATA, Value::structure(key_wrapping_data)),
     ]);
     item(
@@ -132,9 +132,8 @@ fn wrapped_object_has_byte_string_key_value(object: &Item) -> bool {
                     ValueView::Structure(key_block_fields) => {
                         key_block_fields.children().iter().any(|field| {
                             field.tag().raw() == KEY_VALUE
-                                && field.with_value(|value| {
-                                    matches!(value, ValueView::ByteString(_))
-                                })
+                                && field
+                                    .with_value(|value| matches!(value, ValueView::ByteString(_)))
                         })
                     }
                     _ => false,
