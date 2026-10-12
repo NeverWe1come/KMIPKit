@@ -192,6 +192,32 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
         self.assertEqual(cleanup_requirement["scope_state"], "unclear")
         self.assertNotIn(cleanup_requirement["requirement_id"], profile["requirement_ids"])
 
+    def test_unresolved_actor_requirement_is_not_a_client_profile_obligation(self) -> None:
+        """Specification v2.1 §4.57 does not assign the Active predicates to a client."""
+        catalog_path = ROOT / "specification" / "catalog" / "kmip-2.1.json"
+        catalog = json.loads(catalog_path.read_text(encoding="utf-8"))
+        oracle_path = ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json"
+        oracle = json.loads(oracle_path.read_text(encoding="utf-8"))
+        clause_id = "KMIPKIT-CLAUSE-SPEC-4.57-003"
+        requirement_id = "KMIPKIT-REQ-SPEC-4.57-003-004"
+        requirement = next(item for item in catalog["requirements"] if item["requirement_id"] == requirement_id)
+        review = next(item for item in oracle["source_requirement_reviews"] if item["source_clause_id"] == clause_id)
+        crosswalk = [item for item in oracle["requirement_crosswalk"] if item["requirement_id"] == requirement_id]
+        catalog_profiles = {item["profile_id"]: item for item in catalog["profiles"]}
+
+        self.assertEqual(requirement["role"], "unspecified")
+        self.assertEqual(requirement["scope_state"], "unclear")
+        self.assertEqual(review["expected_client_requirement_ids"], [])
+        self.assertEqual(crosswalk, [])
+        self.assertEqual(len(oracle["profiles"]), 18)
+        for expected in oracle["profiles"]:
+            with self.subTest(profile_id=expected["profile_id"]):
+                actual = catalog_profiles[expected["profile_id"]]
+                self.assertIn(clause_id, expected["source_clause_ids"])
+                self.assertIn(clause_id, actual["source_clause_ids"])
+                self.assertNotIn(requirement_id, expected["requirement_ids_audited_subset"])
+                self.assertNotIn(requirement_id, actual["requirement_ids"])
+
     def test_source_oracle_covers_all_profiles_and_expected_scope_counts(self) -> None:
         oracle_path = ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json"
         oracle = json.loads(oracle_path.read_text(encoding="utf-8"))
