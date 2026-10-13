@@ -7,7 +7,8 @@ use super::{
     ProfileValidationSelection, RuleConstraint, RuleTestEvidence, RuleTestKind,
     TYPED_RULE_MAPPINGS, TypedRuleMapping,
     discover_versions_advertises_only_client_supported_versions, protocol_version_is_kmip_2_1,
-    reconcile_effective_state, validate_mapping, validate_selection_with_registry,
+    reconcile_effective_state, type_specific_parameters_do_not_infer_remote_object_type,
+    validate_mapping, validate_selection_with_registry,
 };
 use crate::profiles_generated::{
     GeneratedClientProfile, GeneratedClientRequirement, GeneratedVerificationCategory,
@@ -386,6 +387,10 @@ fn profile_allows_type_specific_cryptographic_parameters_without_remote_object_i
         profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
         requirement_ids: vec![REQUIREMENT_ID.to_owned()],
     };
+    assert!(!type_specific_parameters_do_not_infer_remote_object_type(
+        None, None
+    ));
+
     let parameters = structure([tagged(
         CRYPTOGRAPHIC_PARAMETERS_TAG,
         Value::structure(structure([tagged(
@@ -407,6 +412,26 @@ fn profile_allows_type_specific_cryptographic_parameters_without_remote_object_i
     result
         .validate_request(&request)
         .expect("profile validation does not infer a server-held object type");
+
+    let omitted_parameters = request_message_with_operation_payload(
+        0x0000_001F,
+        crate::EncryptRequest::new(
+            Some(crate::UniqueIdentifier::TextString(
+                "profile-key-id".to_owned(),
+            )),
+            Some(crate::OperationData::Integer(7)),
+        )
+        .to_ttlv_payload()
+        .expect("omitted optional parameters remain a valid Encrypt request"),
+    );
+    result
+        .validate_request(&omitted_parameters)
+        .expect("the optional Cryptographic Parameters structure may be omitted");
+
+    let other_operation = request_message_with_operation_payload(0x0000_0001, Structure::new());
+    result
+        .validate_request(&other_operation)
+        .expect("the rule leaves unrelated operation payloads unaffected");
 }
 
 #[test]

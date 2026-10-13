@@ -707,10 +707,6 @@ fn type_specific_parameters_do_not_infer_remote_object_type(
     };
 
     request.batch_items().all(|batch_item| {
-        let Some(_operation) = batch_item.operation() else {
-            return false;
-        };
-
         batch_item
             .with_request_payload(|payload| {
                 payload
