@@ -56395,7 +56395,9 @@
       "parent_element_ids": [
         "KMIPKIT-ELEM-OBJECT-TYPE-SECRET-DATA"
       ],
-      "requirement_ids": [],
+      "requirement_ids": [
+        "KMIPKIT-REQ-SPEC-2.7-001"
+      ],
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": null,
@@ -61546,7 +61548,9 @@
       "parent_element_ids": [
         "KMIPKIT-ELEM-OBJECT-STRUCTURE-SECRET-DATA"
       ],
-      "requirement_ids": [],
+      "requirement_ids": [
+        "KMIPKIT-REQ-SPEC-2.7-001"
+      ],
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": null,
@@ -61762,7 +61766,9 @@
       "parent_element_ids": [
         "KMIPKIT-ELEM-OBJECT-STRUCTURE-KEY-BLOCK"
       ],
-      "requirement_ids": [],
+      "requirement_ids": [
+        "KMIPKIT-REQ-SPEC-2.7-001"
+      ],
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": null,
@@ -86424,10 +86430,14 @@
       "subject": "Secret Data Key Value",
       "summary": "The client may represent a Secret Data Key Value as wrapped.",
       "role": "client",
-      "direction": "unclear",
-      "condition": null,
+      "direction": "client_to_server",
+      "condition": "This evidence covers a client Import request carrying a Secret Data object.",
       "scope_state": "profile_conditional",
-      "element_ids": [],
+      "element_ids": [
+        "KMIPKIT-ELEM-OBJECT-STRUCTURE-SECRET-DATA",
+        "KMIPKIT-ELEM-STRUCTURE-MEMBER-2-7-SECRET-DATA-KEY-BLOCK",
+        "KMIPKIT-ELEM-STRUCTURE-MEMBER-3-1-KEY-BLOCK-KEY-VALUE"
+      ],
       "profile_ids": [
         "KMIPKIT-PROFILE-AES-XTS-CLIENT",
         "KMIPKIT-PROFILE-ASYMMETRIC-KEY-LIFECYCLE-CLIENT",
@@ -86449,13 +86459,18 @@
         "KMIPKIT-PROFILE-XML-CLIENT"
       ],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0037",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/import.rs::ImportRequest::into_ttlv_payload",
+        "crates/kmipkit-protocol/src/import.rs::key_wrap_type_matches_object"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/import_operation_tests.rs::import_preserves_wrapped_secret_data_without_key_wrap_type"
+      ],
       "negative_verification_required": false,
       "decision_id": null,
-      "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
+      "status": "scoped_verified",
+      "review_note": "Pinned KMIP Specification v2.1 §2.7 permits wrapping a Secret Data Key Value. This evidence covers only client Import request serialization: it preserves a wrapped Key Value byte string with Key Wrapping Data and omits Key Wrap Type for Secret Data. The test uses synthetic fixture bytes; it does not inspect or unwrap ciphertext, prove server acceptance, or pass an official OASIS Test Case."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-2.7-002",

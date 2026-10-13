@@ -65,10 +65,10 @@ This report records inventory coverage and evidence state. It does not claim pro
 | Scope | server\_only | 42 |
 | Scope | unclear | 76 |
 | Direction | both | 38 |
-| Direction | client\_to\_server | 371 |
+| Direction | client\_to\_server | 372 |
 | Direction | not\_applicable | 64 |
 | Direction | server\_to\_client | 18 |
-| Direction | unclear | 138 |
+| Direction | unclear | 137 |
 
 ## Tag allocation and ranges
 
@@ -759,7 +759,6 @@ Every row summarizes audited candidate locators by their pinned source section. 
 | KMIPKIT-REQ-SPEC-2.4-003 | mandatory | out\_of\_scope | KMIPKIT-SRC-spec §2.4 |
 | KMIPKIT-REQ-SPEC-2.5-001 | mandatory | out\_of\_scope | KMIPKIT-SRC-spec §2.5 |
 | KMIPKIT-REQ-SPEC-2.6-001 | mandatory | out\_of\_scope | KMIPKIT-SRC-spec §2.6 |
-| KMIPKIT-REQ-SPEC-2.7-001 | permission\_or\_optional | profile\_conditional | KMIPKIT-SRC-spec §2.7 |
 | KMIPKIT-REQ-SPEC-2.7-002 | mandatory | out\_of\_scope | KMIPKIT-SRC-spec §2.7 |
 | KMIPKIT-REQ-SPEC-2.8-001-001 | permission\_or\_optional | out\_of\_scope | KMIPKIT-SRC-spec §2.8 |
 | KMIPKIT-REQ-SPEC-2.8-001-002 | mandatory | profile\_conditional | KMIPKIT-SRC-spec §2.8 |
@@ -1198,7 +1197,7 @@ Every row summarizes audited candidate locators by their pinned source section. 
 | KMIPKIT-REQ-SPEC-2.4-003 | Pinned KMIP Specification v2.1 source \(kmip-spec-v2.1-os.html\), §2.4, lines 6992-7008, contains only the table heading “Object / Encoding / REQUIRED”; it does not state that this object row is required. The separate §2.8 Prime Field Size data cell is reviewed as a conditional body value. No requirement-specific official Test Cases ID is linked in the pinned KMIP Test Cases inventory; implementation and verification are not claimed. | KMIPKIT-SRC-spec §2.4 |
 | KMIPKIT-REQ-SPEC-2.5-001 | Pinned KMIP Specification v2.1 source \(kmip-spec-v2.1-os.html\), §2.5, lines 7084-7100, contains only the table heading “Object / Encoding / REQUIRED”; it does not state that this object row is required. The separate §2.8 Prime Field Size data cell is reviewed as a conditional body value. No requirement-specific official Test Cases ID is linked in the pinned KMIP Test Cases inventory; implementation and verification are not claimed. | KMIPKIT-SRC-spec §2.5 |
 | KMIPKIT-REQ-SPEC-2.6-001 | Pinned KMIP Specification v2.1 source \(kmip-spec-v2.1-os.html\), §2.6, lines 7157-7173, contains only the table heading “Object / Encoding / REQUIRED”; it does not state that this object row is required. The separate §2.8 Prime Field Size data cell is reviewed as a conditional body value. No requirement-specific official Test Cases ID is linked in the pinned KMIP Test Cases inventory; implementation and verification are not claimed. | KMIPKIT-SRC-spec §2.6 |
-| KMIPKIT-REQ-SPEC-2.7-001 | No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing. | KMIPKIT-SRC-spec §2.7 |
+| KMIPKIT-REQ-SPEC-2.7-001 | Pinned KMIP Specification v2.1 §2.7 permits wrapping a Secret Data Key Value. This evidence covers only client Import request serialization: it preserves a wrapped Key Value byte string with Key Wrapping Data and omits Key Wrap Type for Secret Data. The test uses synthetic fixture bytes; it does not inspect or unwrap ciphertext, prove server acceptance, or pass an official OASIS Test Case. | KMIPKIT-SRC-spec §2.7 |
 | KMIPKIT-REQ-SPEC-2.7-002 | Pinned KMIP Specification v2.1 source \(kmip-spec-v2.1-os.html\), §2.7, lines 7232-7248, contains only the table heading “Object / Encoding / REQUIRED”; it does not state that this object row is required. The separate §2.8 Prime Field Size data cell is reviewed as a conditional body value. No requirement-specific official Test Cases ID is linked in the pinned KMIP Test Cases inventory; implementation and verification are not claimed. | KMIPKIT-SRC-spec §2.7 |
 | KMIPKIT-REQ-SPEC-2.8-001-001 | No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing. | KMIPKIT-SRC-spec §2.8 |
 | KMIPKIT-REQ-SPEC-2.8-001-002 | No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing. | KMIPKIT-SRC-spec §2.8 |
@@ -2860,7 +2859,7 @@ Rows list each distinct requirement found in a client profile closure. Profile m
 | KMIPKIT-REQ-SPEC-2.4-001-001 | KMIPKIT-CLAUSE-SPEC-2.4-001 | MAY / OptionalCapability | No typed rule mapping | No category-appropriate rule test | — | — | — | — | — | none catalogued | KMIPKIT-SRC-spec §2.4 |
 | KMIPKIT-REQ-SPEC-2.4-001-002 | KMIPKIT-CLAUSE-SPEC-2.4-001 | MAY / OptionalCapability | No typed rule mapping | No category-appropriate rule test | — | — | — | — | — | none catalogued | KMIPKIT-SRC-spec §2.4 |
 | KMIPKIT-REQ-SPEC-2.4-002-001 | KMIPKIT-CLAUSE-SPEC-2.4-002 | SHOULD / RecommendedBehaviorOrDeviation | No typed rule mapping | No category-appropriate rule test | — | — | — | — | — | none catalogued | KMIPKIT-SRC-spec §2.4 |
-| KMIPKIT-REQ-SPEC-2.7-001 | KMIPKIT-CLAUSE-SPEC-2.7-001 | MAY / OptionalCapability | No typed rule mapping | No category-appropriate rule test | — | — | — | — | — | none catalogued | KMIPKIT-SRC-spec §2.7 |
+| KMIPKIT-REQ-SPEC-2.7-001 | KMIPKIT-CLAUSE-SPEC-2.7-001 | MAY / OptionalCapability | No typed rule mapping | No category-appropriate rule test | — | — | crates/kmipkit-protocol/src/import.rs::ImportRequest::into\_ttlv\_payload, crates/kmipkit-protocol/src/import.rs::key\_wrap\_type\_matches\_object | crates/kmipkit-protocol/tests/unit/import\_operation\_tests.rs::import\_preserves\_wrapped\_secret\_data\_without\_key\_wrap\_type | — | none catalogued | KMIPKIT-SRC-spec §2.7 |
 | KMIPKIT-REQ-SPEC-2.8-001-002 | KMIPKIT-CLAUSE-SPEC-2.8-001 | SHALL / RequiredBehavior | No typed rule mapping | No category-appropriate rule test | — | — | — | — | — | none catalogued | KMIPKIT-SRC-spec §2.8 |
 | KMIPKIT-REQ-SPEC-2.8-003 | KMIPKIT-CLAUSE-SPEC-2.8-003 | REQUIRED / RequiredBehavior | No typed rule mapping | No category-appropriate rule test | — | — | — | — | — | none catalogued | KMIPKIT-SRC-spec §2.8 |
 | KMIPKIT-REQ-SPEC-3.1-001 | KMIPKIT-CLAUSE-SPEC-3.1-001 | MAY / OptionalCapability | No typed rule mapping | No category-appropriate rule test | — | — | crates/kmipkit-protocol/src/get.rs::GetRequest::into\_ttlv\_payload, crates/kmipkit-protocol/src/get.rs::GetRequest::with\_key\_compression\_type | crates/kmipkit-protocol/tests/unit/get\_tests.rs::request\_preserves\_the\_optional\_key\_compression\_type\_enumeration, crates/kmipkit-protocol/tests/unit/get\_tests.rs::request\_serializes\_present\_table\_220\_fields\_in\_source\_order | — | none catalogued | KMIPKIT-SRC-spec §3.1 |

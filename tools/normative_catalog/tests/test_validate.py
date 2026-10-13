@@ -16284,6 +16284,11 @@ class CatalogValidationTests(unittest.TestCase):
             "crates/kmipkit-protocol/src/import.rs::ImportRequest::into_ttlv_payload",
             "crates/kmipkit-protocol/src/import.rs::key_wrap_type_matches_object",
         }
+        expected_element_ids = {
+            "KMIPKIT-ELEM-OBJECT-STRUCTURE-SECRET-DATA",
+            "KMIPKIT-ELEM-STRUCTURE-MEMBER-2-7-SECRET-DATA-KEY-BLOCK",
+            "KMIPKIT-ELEM-STRUCTURE-MEMBER-3-1-KEY-BLOCK-KEY-VALUE",
+        }
         expected_verification_ref = (
             "crates/kmipkit-protocol/tests/unit/import_operation_tests.rs::"
             "import_preserves_wrapped_secret_data_without_key_wrap_type"
@@ -16329,9 +16334,12 @@ class CatalogValidationTests(unittest.TestCase):
             and requirement["scope_state"] == "profile_conditional"
             and requirement["feature_spec"] == "KMIPKIT-0037"
             and requirement["status"] == "scoped_verified"
+            and set(requirement["element_ids"]) == expected_element_ids
             and expected_implementation_refs.issubset(resolvable_implementation_refs)
             and expected_verification_ref in usable_positive_tests
             and requirement["test_case_ids"] == []
+            and "server acceptance" in requirement["review_note"].casefold()
+            and "official oasis test case" in requirement["review_note"].casefold()
         )
 
         self.assertTrue(
