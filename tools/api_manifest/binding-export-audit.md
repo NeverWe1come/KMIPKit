@@ -53,11 +53,12 @@ The complete C/Java/Python audit command produced exit code 0:
 | Java | yes | 330 | 330 | 330 | 0 | 0 | 0 | 0 |
 | Python | yes | 274 | 274 | 274 | 0 | 0 | 0 | 0 |
 
-The C count intentionally includes the two exact C-only diagnostic functions
-`kmipkit_last_error_clear` and `kmipkit_last_error_get`; the approved exclusions
-represent them outside the shared cross-language capability inventory. Both
-remain in the C header and native ABI; they are exclusion records rather than
-`publicDeclarations` rows in manifest v2. The patched
+The C count observes 182 exported paths: 178 manifest declarations and four
+approved C-specific exclusions. These include the `struct_size` and
+`abi_version` fields of the versioned limits structure plus the diagnostic
+functions `kmipkit_last_error_clear` and `kmipkit_last_error_get`. The
+diagnostic functions remain in the public C header and native ABI; their
+exclusions apply only to the shared cross-language capability inventory. The patched
 `aws-lc-sys@0.45.0` vendor source prevents the nine transitive
 `aws_lc_0_45_0_jent_*` functions from becoming public ABI symbols while
 preserving jitterentropy. CI repeats a C-only header/binary/manifest audit on
