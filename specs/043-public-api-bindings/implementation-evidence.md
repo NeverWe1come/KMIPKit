@@ -32,15 +32,29 @@ The implementation's TDD cycle is recorded in the original C ABI commits: `c73a8
 
 ## T012 — Shared Rust/C parity fixture corpus
 
-The source fixture corpus at `tests/fixtures/api/shared-capability-parity.json` defines six language-neutral cases for API-level discovery, per-configuration registry isolation, resource-limit error/redaction behavior, ordered mixed batch outcomes with a Pending correlation value, generic TTLV open-value/order preservation, and extension-registry recognition/preservation. Every case records stable 0043 and owning-feature requirement IDs, a literal input setup, expected observable output, error category when applicable, cleanup expectations, and Rust/C consuming test names. Extension cases resolve to the existing shared extension fixture source.
+The source fixture corpus at `tests/fixtures/api/shared-capability-parity.json` defines six planned parity cases for API-level discovery, per-configuration registry isolation, schema-error redaction, ordered mixed batch outcomes, generic TTLV open-value/order preservation, and extension-registry recognition/preservation. It records stable requirement IDs, planned expected output, Java-observed output, and the shared extension fixture source where applicable. The original v1 `consumerTests.rust` and `consumerTests.c` entries were intended as future test names; those referenced files and tests did not exist. Fixture v2 removes those claims and explicitly records Rust/C as planned consumers, Java as the only executable consumer language, and Java blocked capabilities separately from available mappings. T012 closes the shared contract-fixture creation only; it does not claim Rust/C runtime consumers or parity.
 
 | Phase | Commit | Command | Result |
 |---|---|---|---|
 | Red | `835b4e8c` | `python -B -m unittest tools.api_manifest.tests.test_parity.PublicApiParityTests.test_shared_capability_parity_fixtures_cover_rust_and_c_contracts -v` | Expected failure: the shared API parity corpus did not exist. |
-| Green | `6774abcc` | Same focused command | PASS: fixture corpus and the required capability, requirement, output, error, cleanup, consumer, and extension-source references were present and valid. |
+| Green | `6774abcc` | Same focused command | PASS: fixture corpus and planned capability, requirement, output, error, cleanup, and extension-source references were present and valid. Rust/C test-name strings in v1 were plans, not executable consumers. |
 | Refactor | `3c548559` | `python -B -m unittest tools.api_manifest.tests.test_parity -v`; `git diff --check` | PASS: all 8 parity tests passed; no whitespace errors. Reused one helper for capability-case lookup without changing fixture behavior. |
 
-The Rust and C consumer test names are the planned consumers for subsequent binding tasks; this task establishes the shared input and expected-output source. Runtime C/JNI/Python parity and manifest-backed evidence remain gated by their respective implementation tasks.
+Fixture v2 keeps planned outputs distinct from observed per-language results. The validator accepts executable test references only for Java and checks that each referenced method is a Java 17 JUnit test. The Rust/C consumer implementation and cross-language fixture execution remain outstanding under their own tasks.
+
+## T020 — Java 17 shared capability consumers and lifecycle
+
+The Java fixture mappings now cover only contracts present in the current facade: immutable per-configuration extension registries, schema-error diagnostic redaction, generic TTLV open Enumeration and byte preservation with child order, and extension recognition/payload preservation. The shared fixture points each available Java mapping to an executable JUnit method, and the Java test reflects over those references to reject missing or non-test targets. The configuration test closes both `AutoCloseable` configurations and registry views; the TTLV test closes its borrowed Structure view and verifies that the independent Structure owner remains usable afterward.
+
+API-level discovery and ordered batch outcomes remain blocked in the Java mapping. Separate Java tests read the case IDs/capability identifiers from the fixture and assert `RuntimeMetadata.capabilityIsAvailable` returns false; the fixture records no fabricated API-level list, batch statuses, or transport result as Java-observed output. Rust/C consumers remain planned and are not asserted by the Java task.
+
+| Phase | Commit | Command | Result |
+|---|---|---|---|
+| Red | `bf42c780` | `bindings/java/gradlew.bat test --tests org.kmipkit.SharedCapabilityParityFixtureTest` | Expected failure: the Java 17 test found no Java language/consumer mapping in shared fixture v1. |
+| Green | `6b1b3a52` | `bindings/java/gradlew.bat test --rerun-tasks`; `python -B -m unittest tools.api_manifest.tests.test_parity -v`; `git diff --check` | PASS: Java suite ran 88 tests with 0 failures; parity validator ran 8 tests with 0 failures; native DLL and JNI consumer built. AWS-LC emitted Windows compiler/NASM probe warnings, but all Gradle tasks succeeded. |
+| Refactor | `d312627d` | `bindings/java/gradlew.bat test --tests org.kmipkit.SharedCapabilityParityFixtureTest`; `python -B -m unittest tools.api_manifest.tests.test_parity -v`; `git diff --check` | PASS: all five shared fixture Java tests, all eight parity validator tests, and whitespace validation passed after centralizing Java mapping parsing. |
+
+This closes T020's Java test-writing and executable-mapping scope. It does not close Java facade expansion (T021–T022), Rust/C fixture execution, Python mapping, full four-language parity (T029/T071), or the blocked API-level and ordered-batch capabilities.
 
 ## T002, T006, T007, and T068 — Release inventory and owner resolution
 

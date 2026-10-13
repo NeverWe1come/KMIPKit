@@ -45,7 +45,7 @@
 
 **Purpose**: Expose the shared Rust/C capabilities idiomatically and with semantic parity.
 
-- [ ] T020 [US2] Write failing Java 17 JNI parity and lifecycle tests from the shared fixtures before adding generated/facade declarations in `bindings/java/`.
+- [X] T020 [US2] Write failing Java 17 JNI parity and lifecycle tests from the shared fixtures before adding generated/facade declarations in `bindings/java/`. Java mappings in the fixture resolve to executable JUnit tests; API-level discovery and ordered batch outcomes remain explicitly blocked. Rust/C consumers remain planned and are not claimed by T020; see `implementation-evidence.md`.
 - [ ] T021 [US2] Implement Java 17 shared typed/high-level/TTLV mappings over the C ABI, including `AutoCloseable` ownership, JSpecify nullness, stable exception categories, and redacted diagnostics.
 - [ ] T022 [US2] Refactor Java wrapper ownership so a live child view safely retains its owner, close is deterministic, and invalid/closed inputs fail before JNI calls.
 - [ ] T023 [US2] Write failing Python 3.12 CFFI parity, lifecycle, typing, and package tests from the shared fixtures before implementing the facade in `bindings/python/`.
