@@ -15,3 +15,5 @@ pub use kmipkit_protocol::{
 pub use kmipkit_transport::{RequestDeliveryState, TransportCauseCategory, TransportError};
 
 pub use kmipkit_protocol::{GetConstraintsRequest, GetConstraintsResponse};
+
+pub use kmipkit_protocol::{GetUsageAllocationRequest,GetUsageAllocationResponse};
