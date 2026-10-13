@@ -34,6 +34,10 @@
             <goals>
               <goal>prepare-agent</goal>
             </goals>
+            <configuration>
+              <!-- Isolated JVM probes append their JaCoCo data to the parent test report. -->
+              <append>true</append>
+            </configuration>
           </execution>
           <execution>
             <id>coverage-report</id>

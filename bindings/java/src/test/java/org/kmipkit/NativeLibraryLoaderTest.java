@@ -13,6 +13,7 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.management.ManagementFactory;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.AtomicMoveNotSupportedException;
@@ -364,9 +365,14 @@ final class NativeLibraryLoaderTest {
                 System.getProperty("os.name", "").startsWith("Windows") ? "java.exe" : "java");
         String classPath = String.join(File.pathSeparator,
                 resourceRoot.toString(), testClasses.toString(), mainClasses.toString());
-        Process process = new ProcessBuilder(
+        List<String> command = new java.util.ArrayList<>(List.of(
                 java.toString(), "-Djava.io.tmpdir=" + childTemporaryRoot,
-                "--class-path", classPath, NativeLibraryLoadProbe.class.getName())
+                "--class-path", classPath, NativeLibraryLoadProbe.class.getName()));
+        String jacocoAgent = childJacocoAgentArgument(ManagementFactory.getRuntimeMXBean().getInputArguments());
+        if (jacocoAgent != null) {
+            command.add(1, jacocoAgent);
+        }
+        Process process = new ProcessBuilder(command)
                 .redirectErrorStream(true)
                 .start();
         String output = new String(process.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
@@ -1009,9 +1015,14 @@ final class NativeLibraryLoaderTest {
         classPathEntries.add(testClasses.toString());
         classPathEntries.add(childMainClasses.toString());
         String classPath = String.join(File.pathSeparator, classPathEntries);
-        Process process = new ProcessBuilder(
+        List<String> command = new java.util.ArrayList<>(List.of(
                 java.toString(), "-Djava.io.tmpdir=" + childTemporaryRoot,
-                "--class-path", classPath, NativeLibraryLoadProbe.class.getName(), "version")
+                "--class-path", classPath, NativeLibraryLoadProbe.class.getName(), "version"));
+        String jacocoAgent = childJacocoAgentArgument(ManagementFactory.getRuntimeMXBean().getInputArguments());
+        if (jacocoAgent != null) {
+            command.add(1, jacocoAgent);
+        }
+        Process process = new ProcessBuilder(command)
                 .redirectErrorStream(true)
                 .start();
         // The child inherits LLVM_PROFILE_FILE so JNI execution is recorded in its own process profile.
@@ -1020,6 +1031,33 @@ final class NativeLibraryLoaderTest {
     }
 
     private record ProcessResult(int exitCode, String output) {}
+
+    private static String childJacocoAgentArgument(List<String> inputArguments) {
+        for (String argument : inputArguments) {
+            if (!argument.startsWith("-javaagent:")) {
+                continue;
+            }
+            int optionsStart = argument.indexOf('=');
+            String agentPath = optionsStart < 0
+                    ? argument.substring("-javaagent:".length())
+                    : argument.substring("-javaagent:".length(), optionsStart);
+            if (!agentPath.toLowerCase(java.util.Locale.ROOT).contains("jacoco")) {
+                continue;
+            }
+
+            List<String> options = new java.util.ArrayList<>();
+            if (optionsStart >= 0) {
+                for (String option : argument.substring(optionsStart + 1).split(",")) {
+                    if (!option.startsWith("append=")) {
+                        options.add(option);
+                    }
+                }
+            }
+            options.add("append=true");
+            return "-javaagent:" + agentPath + "=" + String.join(",", options);
+        }
+        return null;
+    }
 
     private static void restoreProperty(String name, String value) {
         if (value == null) {
