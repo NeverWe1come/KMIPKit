@@ -1,6 +1,7 @@
 package org.kmipkit;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import org.junit.jupiter.api.Test;
@@ -31,4 +32,28 @@ final class ClientFacadeContractTest {
         assertThrows(InvalidInputException.class, batch::itemCount);
     }
 
+    @Test
+    void asynchronousIndicatorRejectsValuesOutsideUint32BeforeNativeCalls() {
+        try (ClientBatch batch = ClientBatch.create()) {
+            assertThrows(InvalidInputException.class, () -> batch.asynchronousIndicator(-1));
+            assertThrows(
+                    InvalidInputException.class,
+                    () -> batch.asynchronousIndicator(0x1_0000_0000L));
+        }
+    }
+
+    @Test
+    void clientOperationExceptionsExposeStableRedactedMetadata() {
+        ClientOperationException generic = new ClientOperationException(7, 91, 92, 2);
+        assertEquals(7, generic.statusCode());
+        assertEquals(91, generic.categoryCode());
+        assertEquals(92, generic.causeCode());
+        assertEquals(2, generic.deliveryStateCode());
+        assertFalse(generic.getMessage().contains("secret-diagnostic-sentinel"));
+
+        ServerResultException server = new ServerResultException(8, 3, 4, 0);
+        TransportException transport = new TransportException(9, 5, 6, 2);
+        assertEquals(8, server.statusCode());
+        assertEquals(9, transport.statusCode());
+    }
 }
