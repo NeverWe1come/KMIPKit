@@ -92530,12 +92530,13 @@
         "crates/kmipkit-protocol/src/discover_versions.rs"
       ],
       "verification_refs": [
-        "crates/kmipkit-protocol/tests/unit/discover_versions_tests.rs::request_advertises_only_kmip_2_1"
+        "crates/kmipkit-protocol/tests/unit/discover_versions_tests.rs::request_advertises_only_kmip_2_1",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::production_discover_versions_rule_accepts_only_kmip_21_offers"
       ],
       "negative_verification_required": false,
       "decision_id": null,
       "status": "verified",
-      "review_note": "The linked local Rust request-construction test provides executable evidence for this client MAY/OPTIONAL request-field capability. No official OASIS test execution is claimed. The pinned official Test Cases inventory has no requirement-specific test ID for this requirement; no official test execution is claimed."
+      "review_note": "The linked request-construction and profile-preflight tests verify that the client advertises only KMIP 2.1, accepts omission of the optional list, rejects an unsupported advertised version, and leaves other operations unaffected. No official OASIS test execution is claimed. The pinned official Test Cases inventory has no requirement-specific test ID for this requirement; no official test execution is claimed."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.16-001-002",

@@ -27,6 +27,53 @@ PROFILE_RULE_SOURCE = "crates/kmipkit-protocol/src/profile.rs"
 _EMPTY_TYPED_RULE_REGISTRY = re.compile(
     r"(?m)^\s*const TYPED_RULE_MAPPINGS:\s*&\[TypedRuleMapping\]\s*=\s*&\[\];\s*$"
 )
+_TYPED_RULE_REGISTRY_DECLARATION = re.compile(
+    r"(?m)^\s*const TYPED_RULE_MAPPINGS:\s*&\[TypedRuleMapping\]\s*=\s*&\["
+)
+_TYPED_RULE_MAPPING_ENTRY = re.compile(
+    r'''\s*TypedRuleMapping\s*\{\s*
+    requirement_id:\s*"(?P<requirement_id>KMIPKIT-REQ-[A-Z0-9.-]+)",\s*
+    source_clause_id:\s*"(?P<source_clause_id>KMIPKIT-CLAUSE-[A-Z0-9.-]+)",\s*
+    verification_category:\s*GeneratedVerificationCategory::(?P<category>[A-Za-z][A-Za-z0-9_]*),\s*
+    evaluator:\s*(?P<evaluator>None|Some\([A-Za-z_][A-Za-z0-9_]*\)),\s*
+    test_evidence:\s*&\[(?P<test_evidence>.*?)\],\s*
+    constraints:\s*&\[(?P<constraints>.*?)\],?\s*
+    \}\s*''',
+    re.DOTALL | re.VERBOSE,
+)
+_RULE_TEST_EVIDENCE_ENTRY = re.compile(
+    r'''\s*RuleTestEvidence\s*\{\s*
+    test_id:\s*"(?P<test_id>[A-Za-z0-9_./:-]+)",\s*
+    kind:\s*RuleTestKind::(?P<kind>[A-Za-z][A-Za-z0-9_]*),?\s*
+    \}\s*''',
+    re.DOTALL | re.VERBOSE,
+)
+_RULE_CONSTRAINT_ENTRY = re.compile(
+    r'''\s*RuleConstraint\s*\{\s*
+    key:\s*"(?P<key>[A-Za-z][A-Za-z0-9_-]*)",\s*
+    value:\s*"(?P<value>[A-Za-z][A-Za-z0-9_-]*)",?\s*
+    \}\s*''',
+    re.DOTALL | re.VERBOSE,
+)
+_VERIFICATION_CATEGORIES = {
+    "RequiredBehavior",
+    "ProhibitedBehavior",
+    "RecommendedBehaviorOrDeviation",
+    "DiscouragedAbsenceOrDeviation",
+    "OptionalCapability",
+}
+_RULE_TEST_KINDS = {
+    "PositiveBehavior",
+    "NegativeBehavior",
+    "RecommendedBehavior",
+    "DiscouragedBehaviorAbsent",
+    "OptionalCapabilityUsable",
+}
+_RULE_CONSTRAINTS = {
+    ("transport", "raw_tls"),
+    ("transport", "https"),
+    ("encoding", "ttlv"),
+}
 _DOUBLE_QUOTED_SECRET_VALUE = r'"(?:\\.|[^"\\\r\n])*"'
 _SINGLE_QUOTED_SECRET_VALUE = r"'(?:\\.|[^'\\\r\n])*'"
 _SENSITIVE_VALUE = rf"(?:{_DOUBLE_QUOTED_SECRET_VALUE}|{_SINGLE_QUOTED_SECRET_VALUE}|[^\s,;]+)"
@@ -153,8 +200,149 @@ def _profile_target_state(profile_id: Any, selected_profile_ids: set[str] | None
     return "selected" if profile_id in selected_profile_ids else "not selected"
 
 
+def _split_rust_registry_entries(source: str) -> list[str]:
+    entries: list[str] = []
+    delimiters: list[str] = []
+    matching_delimiter = {"[": "]", "{": "}", "(": ")"}
+    start = 0
+    in_string = False
+    escaped = False
+    index = 0
+    while index < len(source):
+        character = source[index]
+        if in_string:
+            if escaped:
+                escaped = False
+            elif character == "\\":
+                escaped = True
+            elif character == '"':
+                in_string = False
+            index += 1
+            continue
+        if character == '"':
+            in_string = True
+        elif source.startswith(("//", "/*"), index):
+            raise ValueError("unsupported typed profile rule mapping")
+        elif character in matching_delimiter:
+            delimiters.append(matching_delimiter[character])
+        elif character in "]})":
+            if not delimiters or delimiters.pop() != character:
+                raise ValueError("unsupported typed profile rule mapping")
+        elif character == "," and not delimiters:
+            entry = source[start:index].strip()
+            if entry:
+                entries.append(entry)
+            start = index + 1
+        index += 1
+    if in_string or escaped or delimiters:
+        raise ValueError("unsupported typed profile rule mapping")
+    final_entry = source[start:].strip()
+    if final_entry:
+        entries.append(final_entry)
+    return entries
+
+
+def _typed_rule_registry_body(text: str) -> str:
+    declaration_count = len(
+        re.findall(r"(?m)^\s*const\s+TYPED_RULE_MAPPINGS\b", text)
+    )
+    declaration = _TYPED_RULE_REGISTRY_DECLARATION.search(text)
+    if declaration_count != 1 or declaration is None:
+        raise ValueError("unsupported typed profile rule mapping")
+
+    body_start = declaration.end()
+    delimiters = ["]"]
+    matching_delimiter = {"[": "]", "{": "}", "(": ")"}
+    in_string = False
+    escaped = False
+    index = body_start
+    while index < len(text):
+        character = text[index]
+        if in_string:
+            if escaped:
+                escaped = False
+            elif character == "\\":
+                escaped = True
+            elif character == '"':
+                in_string = False
+            index += 1
+            continue
+        if character == '"':
+            in_string = True
+        elif text.startswith(("//", "/*"), index):
+            raise ValueError("unsupported typed profile rule mapping")
+        elif character in matching_delimiter:
+            delimiters.append(matching_delimiter[character])
+        elif character in "]})":
+            if not delimiters or delimiters.pop() != character:
+                raise ValueError("unsupported typed profile rule mapping")
+            if not delimiters:
+                suffix = text[index + 1 :].lstrip()
+                if not suffix.startswith(";"):
+                    raise ValueError("unsupported typed profile rule mapping")
+                return text[body_start:index]
+        index += 1
+    raise ValueError("unsupported typed profile rule mapping")
+
+
+def _parse_typed_rule_registry(text: str) -> list[dict[str, Any]]:
+    body = _typed_rule_registry_body(text)
+    if not body.strip():
+        return []
+
+    mappings: list[dict[str, Any]] = []
+    seen_requirement_ids: set[str] = set()
+    for entry in _split_rust_registry_entries(body):
+        match = _TYPED_RULE_MAPPING_ENTRY.fullmatch(entry)
+        if match is None:
+            raise ValueError("unsupported typed profile rule mapping")
+        fields = match.groupdict()
+        requirement_id = fields["requirement_id"]
+        category = fields["category"]
+        if requirement_id in seen_requirement_ids or category not in _VERIFICATION_CATEGORIES:
+            raise ValueError("unsupported typed profile rule mapping")
+        seen_requirement_ids.add(requirement_id)
+
+        evaluator = fields["evaluator"]
+        if evaluator != "None" and not re.fullmatch(
+            r"Some\([A-Za-z_][A-Za-z0-9_]*\)", evaluator
+        ):
+            raise ValueError("unsupported typed profile rule mapping")
+
+        evidence: list[dict[str, str]] = []
+        for evidence_entry in _split_rust_registry_entries(fields["test_evidence"]):
+            evidence_match = _RULE_TEST_EVIDENCE_ENTRY.fullmatch(evidence_entry)
+            if evidence_match is None:
+                raise ValueError("unsupported typed profile rule mapping")
+            evidence_fields = evidence_match.groupdict()
+            if evidence_fields["kind"] not in _RULE_TEST_KINDS:
+                raise ValueError("unsupported typed profile rule mapping")
+            evidence.append(evidence_fields)
+
+        for constraint_entry in _split_rust_registry_entries(fields["constraints"]):
+            constraint_match = _RULE_CONSTRAINT_ENTRY.fullmatch(constraint_entry)
+            if constraint_match is None:
+                raise ValueError("unsupported typed profile rule mapping")
+            constraint = constraint_match.groupdict()
+            if (constraint["key"], constraint["value"]) not in _RULE_CONSTRAINTS:
+                raise ValueError("unsupported typed profile rule mapping")
+
+        if not evidence:
+            evidence.append({"test_id": "", "kind": ""})
+        for item in evidence:
+            mappings.append({
+                "requirement_id": requirement_id,
+                "source_clause_id": fields["source_clause_id"],
+                "verification_category": category,
+                "evaluator_present": evaluator != "None",
+                "test_kind": item["kind"] or None,
+                "test_id": item["test_id"] or None,
+            })
+    return mappings
+
+
 def load_typed_rule_mappings(repository: Path) -> list[dict[str, Any]]:
-    """Read the Rust registry only while it has the known fail-closed empty form."""
+    """Read only the explicit, static Rust profile-rule registry grammar."""
     source = safe_read_bytes(repository, PROFILE_RULE_SOURCE, max_bytes=4 * 1024 * 1024)
     try:
         text = source.decode("utf-8")
@@ -162,7 +350,7 @@ def load_typed_rule_mappings(repository: Path) -> list[dict[str, Any]]:
         raise ValueError("typed profile rule registry is not valid UTF-8") from error
     if _EMPTY_TYPED_RULE_REGISTRY.search(text):
         return []
-    raise ValueError("typed profile rule registry needs an explicit report reader")
+    return _parse_typed_rule_registry(text)
 
 
 def _clause_section_rows(clauses: list[dict[str, Any]]) -> list[tuple[str, str, int, str]]:

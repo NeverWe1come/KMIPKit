@@ -2,12 +2,12 @@ use std::fmt;
 use std::fmt::Write as _;
 
 use super::{
-    CLIENT_REQUIREMENTS,
-    ProfileEvidenceRecord, ProfileReadiness, ProfileReadinessBlocker, ProfileTransport,
-    ProfileValidationError, ProfileValidationErrorCode, ProfileValidationResult,
-    ProfileValidationSelection, RuleConstraint, RuleTestEvidence, RuleTestKind, TypedRuleMapping,
-    TYPED_RULE_MAPPINGS, reconcile_effective_state, validate_mapping,
-    validate_selection_with_registry,
+    CLIENT_REQUIREMENTS, ProfileEvidenceRecord, ProfileReadiness, ProfileReadinessBlocker,
+    ProfileTransport, ProfileValidationError, ProfileValidationErrorCode, ProfileValidationResult,
+    ProfileValidationSelection, RuleConstraint, RuleTestEvidence, RuleTestKind,
+    TYPED_RULE_MAPPINGS, TypedRuleMapping,
+    discover_versions_advertises_only_client_supported_versions, protocol_version_is_kmip_2_1,
+    reconcile_effective_state, validate_mapping, validate_selection_with_registry,
 };
 use crate::profiles_generated::{
     GeneratedClientProfile, GeneratedClientRequirement, GeneratedVerificationCategory,
@@ -326,6 +326,8 @@ fn production_discover_versions_rule_accepts_only_kmip_21_offers() {
         profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
         requirement_ids: vec![REQUIREMENT_ID.to_owned()],
     };
+    assert!(!discover_versions_advertises_only_client_supported_versions(None, None));
+
     let supported_request = request_message_with_operation_payload(
         0x0000_001E,
         crate::DiscoverVersionsRequest::new()
@@ -341,18 +343,81 @@ fn production_discover_versions_rule_accepts_only_kmip_21_offers() {
     let other_operation = request_message_with_operation_payload(0x0000_0001, Structure::new());
     assert!(result.validate_request(&other_operation).is_ok());
 
+    let malformed_version = request_message_with_operation_payload(
+        0x0000_001E,
+        structure([tagged(
+            PROTOCOL_VERSION_TAG,
+            Value::text_string("2.1".to_owned()),
+        )]),
+    );
+    assert!(result.validate_request(&malformed_version).is_err());
+
     let unsupported_request =
         request_message_with_operation_payload(0x0000_001E, discover_versions_payload(&[(3, 0)]));
     let error = result
         .validate_request(&unsupported_request)
         .expect_err("a 1.0 client must not advertise a protocol version it does not support");
-    assert_eq!(error.code(), ProfileValidationErrorCode::RequestRuleRejected);
+    assert_eq!(
+        error.code(),
+        ProfileValidationErrorCode::RequestRuleRejected
+    );
     assert_eq!(error.profile_id(), Some(BASELINE_PROFILE_ID));
     assert_eq!(error.requirement_id(), Some(REQUIREMENT_ID));
     assert_eq!(
         error.source_clause_id(),
         Some("KMIPKIT-CLAUSE-SPEC-6.1.16-001")
     );
+
+    let mixed_versions = request_message_with_operation_payload(
+        0x0000_001E,
+        discover_versions_payload(&[(2, 1), (3, 0)]),
+    );
+    assert!(result.validate_request(&mixed_versions).is_err());
+}
+
+#[test]
+fn discover_versions_protocol_version_requires_one_integer_major_minor_pair() {
+    let valid = structure([
+        tagged(PROTOCOL_VERSION_MAJOR_TAG, Value::integer(2)),
+        tagged(PROTOCOL_VERSION_MINOR_TAG, Value::integer(1)),
+    ]);
+    assert!(protocol_version_is_kmip_2_1(&valid.view()));
+
+    let missing_minor = structure([tagged(PROTOCOL_VERSION_MAJOR_TAG, Value::integer(2))]);
+    assert!(!protocol_version_is_kmip_2_1(&missing_minor.view()));
+
+    let duplicate_major = structure([
+        tagged(PROTOCOL_VERSION_MAJOR_TAG, Value::integer(2)),
+        tagged(PROTOCOL_VERSION_MAJOR_TAG, Value::integer(2)),
+        tagged(PROTOCOL_VERSION_MINOR_TAG, Value::integer(1)),
+    ]);
+    assert!(!protocol_version_is_kmip_2_1(&duplicate_major.view()));
+
+    let duplicate_minor = structure([
+        tagged(PROTOCOL_VERSION_MAJOR_TAG, Value::integer(2)),
+        tagged(PROTOCOL_VERSION_MINOR_TAG, Value::integer(1)),
+        tagged(PROTOCOL_VERSION_MINOR_TAG, Value::integer(1)),
+    ]);
+    assert!(!protocol_version_is_kmip_2_1(&duplicate_minor.view()));
+
+    let wrong_major_type = structure([
+        tagged(PROTOCOL_VERSION_MAJOR_TAG, Value::enumeration(2)),
+        tagged(PROTOCOL_VERSION_MINOR_TAG, Value::integer(1)),
+    ]);
+    assert!(!protocol_version_is_kmip_2_1(&wrong_major_type.view()));
+
+    let wrong_minor_type = structure([
+        tagged(PROTOCOL_VERSION_MAJOR_TAG, Value::integer(2)),
+        tagged(PROTOCOL_VERSION_MINOR_TAG, Value::enumeration(1)),
+    ]);
+    assert!(!protocol_version_is_kmip_2_1(&wrong_minor_type.view()));
+
+    let unknown_version_field = structure([
+        tagged(PROTOCOL_VERSION_MAJOR_TAG, Value::integer(2)),
+        tagged(PROTOCOL_VERSION_MINOR_TAG, Value::integer(1)),
+        tagged(PROTOCOL_VERSION_TAG, Value::integer(99)),
+    ]);
+    assert!(protocol_version_is_kmip_2_1(&unknown_version_field.view()));
 }
 
 #[test]

@@ -1,16 +1,17 @@
 //! Explicit, fail-closed client profile selection.
 //!
 //! Generated catalog records describe applicability and source obligations.
-//! They do not supply executable rules. The rule registry remains empty until
-//! a requirement has an explicit typed implementation and category-matched
-//! executable verification, so current catalog profiles cannot be selected
-//! for runtime validation. The profile prerequisite is KMIP Specification v2.1
-//! §14.1; Baseline Client's inherited profile closure follows KMIP Profiles
-//! v2.1 §6.1.
+//! Only explicitly mapped rules with category-matched executable verification
+//! are enforced; remaining unresolved or unmapped obligations keep a profile
+//! unavailable for runtime validation. The profile prerequisite is KMIP
+//! Specification v2.1 §14.1; Baseline Client's inherited profile closure
+//! follows KMIP Profiles v2.1 §6.1.
 
 use std::collections::{BTreeSet, HashMap};
 use std::error::Error;
 use std::fmt;
+
+use kmipkit_ttlv::{StructureView, ValueView};
 
 use crate::profiles_generated::{
     CLIENT_PROFILES, CLIENT_REQUIREMENTS, GeneratedClientProfile, GeneratedClientRequirement,
@@ -126,8 +127,8 @@ impl ProfileValidationSelection {
 
     /// Resolves profile dependencies and verifies that every applicable
     /// requirement has a typed rule mapping. Product target membership is not
-    /// consulted. Current profiles fail closed because no mappings are
-    /// registered yet.
+    /// consulted. Profiles fail closed while any applicable requirement
+    /// remains unresolved or unmapped.
     ///
     /// # Errors
     ///
@@ -658,9 +659,90 @@ struct TypedRuleMapping {
     constraints: &'static [RuleConstraint],
 }
 
-// This registry intentionally remains empty until each entry has a typed
-// evaluator and category-appropriate executable tests. Empty means unavailable.
-const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[];
+const DISCOVER_VERSIONS_OPERATION: u32 = 0x0000_001E;
+const PROTOCOL_VERSION: u32 = 0x0042_0069;
+const PROTOCOL_VERSION_MAJOR: u32 = 0x0042_006A;
+const PROTOCOL_VERSION_MINOR: u32 = 0x0042_006B;
+
+fn discover_versions_advertises_only_client_supported_versions(
+    request: Option<&RequestMessage>,
+    _response: Option<(&RequestMessage, &ResponseMessage)>,
+) -> bool {
+    let Some(request) = request else {
+        return false;
+    };
+
+    request.batch_items().all(|batch_item| {
+        let Some(operation) = batch_item.operation() else {
+            return false;
+        };
+        if operation != DISCOVER_VERSIONS_OPERATION {
+            return true;
+        }
+
+        batch_item
+            .with_request_payload(|payload| {
+                payload
+                    .children()
+                    .iter()
+                    .filter(|field| field.tag().raw() == PROTOCOL_VERSION)
+                    .all(|field| {
+                        field.with_value(|value| match value {
+                            ValueView::Structure(version) => protocol_version_is_kmip_2_1(&version),
+                            _ => false,
+                        })
+                    })
+            })
+            .unwrap_or(false)
+    })
+}
+
+fn protocol_version_is_kmip_2_1(version: &StructureView<'_>) -> bool {
+    let mut major_seen = false;
+    let mut minor_seen = false;
+    let mut major = None;
+    let mut minor = None;
+
+    for field in version.children() {
+        match field.tag().raw() {
+            PROTOCOL_VERSION_MAJOR => {
+                if major_seen {
+                    return false;
+                }
+                major_seen = true;
+                major = field.with_value(|value| match value {
+                    ValueView::Integer(value) => Some(*value),
+                    _ => None,
+                });
+            }
+            PROTOCOL_VERSION_MINOR => {
+                if minor_seen {
+                    return false;
+                }
+                minor_seen = true;
+                minor = field.with_value(|value| match value {
+                    ValueView::Integer(value) => Some(*value),
+                    _ => None,
+                });
+            }
+            _ => {}
+        }
+    }
+
+    major_seen && minor_seen && major == Some(2) && minor == Some(1)
+}
+
+const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[TypedRuleMapping {
+    requirement_id: "KMIPKIT-REQ-SPEC-6.1.16-001-001",
+    source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.16-001",
+    verification_category: GeneratedVerificationCategory::OptionalCapability,
+    evaluator: Some(discover_versions_advertises_only_client_supported_versions),
+    test_evidence: &[RuleTestEvidence {
+        test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::production_discover_versions_rule_accepts_only_kmip_21_offers",
+        kind: RuleTestKind::OptionalCapabilityUsable,
+    }],
+    constraints: &[],
+}];
 
 /// Redacted validation failure containing only stable IDs and a fixed code.
 #[derive(Clone, Debug, Eq, PartialEq)]
