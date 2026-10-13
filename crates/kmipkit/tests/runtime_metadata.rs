@@ -26,6 +26,10 @@ fn capability_query_matches_manifest_ready_capabilities() {
         Ok(true)
     );
     assert_eq!(
+        kmipkit::capability_is_available("discover_versions_request_item"),
+        Ok(true)
+    );
+    assert_eq!(
         kmipkit::capability_is_available("public_binding_surface"),
         Ok(false)
     );
