@@ -357,6 +357,23 @@
           "type": "boolean",
           "description": "Whether the public fixed-width structure begins with uint32_t struct_size and uint32_t abi_version fields."
         },
+        "fields": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "required": ["name", "type"],
+            "properties": {
+              "name": {"type": "string", "pattern": "^[a-z][a-z0-9_]*$"},
+              "type": {
+                "type": "string",
+                "pattern": "^(?:const\\s+)?[A-Za-z_][A-Za-z0-9_]*(?:\\s*\\*+)?$"
+              }
+            },
+            "additionalProperties": false
+          },
+          "description": "The complete ordered C field layout for a public fixed-width ABI value."
+        },
         "handleKind": {
           "type": "string",
           "pattern": "^[a-z][a-z0-9_]*$"
@@ -462,6 +479,22 @@
                   ]
                 }
               ]
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "kind": {
+                "const": "fixed-width-value"
+              }
+            },
+            "required": ["kind"]
+          },
+          "then": {},
+          "else": {
+            "not": {
+              "required": ["fields"]
             }
           }
         }
@@ -1008,6 +1041,22 @@
               "required": [
                 "criticalityIndicator"
               ]
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "kind": {
+                "const": "fixed-width-value"
+              }
+            },
+            "required": ["kind"]
+          },
+          "then": {},
+          "else": {
+            "not": {
+              "required": ["fields"]
             }
           }
         }

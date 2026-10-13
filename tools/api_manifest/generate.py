@@ -1193,6 +1193,24 @@ def _validate_references(manifest: dict[str, Any]) -> None:
         for record in manifest["types"]
         if record["c"]["kind"] == "opaque-handle"
     }
+    c_type_names = {record["c"]["name"] for record in manifest["types"]}
+    primitive_c_types = set(_C_INTEGER_TYPES)
+    for type_record in manifest["types"]:
+        c_type = type_record["c"]
+        fields = c_type.get("fields", [])
+        field_names = [field["name"] for field in fields]
+        if len(field_names) != len(set(field_names)):
+            raise ManifestError("C value type contains duplicate field names")
+        if fields and c_type["kind"] != "fixed-width-value":
+            raise ManifestError("only fixed-width C values may declare fields")
+        if c_type.get("versioned") and fields and [
+            (field["name"], field["type"]) for field in fields[:2]
+        ] != [("struct_size", "uint32_t"), ("abi_version", "uint32_t")]:
+            raise ManifestError("versioned C value must begin with its size and ABI version")
+        for field in fields:
+            base_type = field["type"].removeprefix("const ").rstrip().rstrip("*").strip()
+            if base_type not in primitive_c_types and base_type not in c_type_names:
+                raise ManifestError("C value field references an unknown type")
     for record in manifest["functions"]:
         for language in ("c", "java", "python"):
             function_errors = set(record[language]["errorCategories"])
@@ -1322,10 +1340,17 @@ def render_rust_ffi(manifest: dict[str, Any]) -> str:
                 lines.append(f"pub const {const_name}: {name} = {value['value']};")
         elif c_type["kind"] == "fixed-width-value":
             lines.extend(["#[repr(C)]", f"pub struct {name} {{"])
-            if c_type.get("versioned"):
-                lines.extend(["    pub struct_size: u32,", "    pub abi_version: u32,"])
-            for limit in manifest["limits"]:
-                lines.append(f"    pub {limit['cField']}: u64,")
+            fields = c_type.get("fields")
+            if fields:
+                for field in fields:
+                    lines.append(
+                        f"    pub {field['name']}: {_rust_c_type(field['type'])},"
+                    )
+            else:
+                if c_type.get("versioned"):
+                    lines.extend(["    pub struct_size: u32,", "    pub abi_version: u32,"])
+                for limit in manifest["limits"]:
+                    lines.append(f"    pub {limit['cField']}: u64,")
             lines.append("}")
         lines.append("")
     lines.extend(["unsafe extern \"C\" {"])
@@ -1403,25 +1428,41 @@ def render_c_header(
                     continue
                 lines.append(f"#define {const_name} (({name}){value['value']})")
         elif c_type["kind"] == "fixed-width-value":
-            ready_fields = [
-                limit["cField"]
-                for limit in manifest["limits"]
-                if f"{name}.{limit['cField']}" in declared_c_fields
-                and (
-                    ready_c_exports is None
-                    or f"{name}.{limit['cField']}" in ready_c_exports
+            fields = c_type.get("fields")
+            if fields:
+                field_exports = [f"{name}.{field['name']}" for field in fields]
+                fields_are_ready = all(
+                    field_export in declared_c_fields
+                    and (ready_c_exports is None or field_export in ready_c_exports)
+                    for field_export in field_exports
                 )
-            ]
-            if not ready_fields:
-                lines.append(f"typedef struct {name} {name};")
-                lines.append("")
-                continue
-            lines.append("typedef struct {")
-            if c_type.get("versioned"):
-                lines.extend(["    uint32_t struct_size;", "    uint32_t abi_version;"])
-            for field in ready_fields:
-                lines.append(f"    uint64_t {field};")
-            lines.append(f"}} {name};")
+                if not fields_are_ready:
+                    lines.append(f"typedef struct {name} {name};")
+                    lines.append("")
+                    continue
+                lines.append("typedef struct {")
+                lines.extend(f"    {field['type']} {field['name']};" for field in fields)
+                lines.append(f"}} {name};")
+            else:
+                ready_fields = [
+                    limit["cField"]
+                    for limit in manifest["limits"]
+                    if f"{name}.{limit['cField']}" in declared_c_fields
+                    and (
+                        ready_c_exports is None
+                        or f"{name}.{limit['cField']}" in ready_c_exports
+                    )
+                ]
+                if not ready_fields:
+                    lines.append(f"typedef struct {name} {name};")
+                    lines.append("")
+                    continue
+                lines.append("typedef struct {")
+                if c_type.get("versioned"):
+                    lines.extend(["    uint32_t struct_size;", "    uint32_t abi_version;"])
+                for field in ready_fields:
+                    lines.append(f"    uint64_t {field};")
+                lines.append(f"}} {name};")
         lines.append("")
     for declaration in manifest["types"]:
         c_type = declaration["c"]
