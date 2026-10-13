@@ -265,6 +265,27 @@ def test_timeout_and_unsigned_validation_cover_boundary_values() -> None:
             client.TimeoutLimit.bounded(1, nanoseconds)
 
 
+def test_fixed_width_integer_validation_ignores_subclass_comparisons() -> None:
+    class LyingInt(int):
+        def __lt__(self, other: object) -> bool:
+            return False
+
+        def __gt__(self, other: object) -> bool:
+            return False
+
+    oversized = LyingInt(1 << 100)
+    with pytest.raises(errors.InvalidInputError):
+        client.TimeoutLimit.bounded(oversized)
+    with pytest.raises(errors.InvalidInputError):
+        client.Endpoint(client.EndpointKind.RAW_TLS, "kms.example.test", oversized)
+
+    bounded = client.TimeoutLimit.bounded(LyingInt(3), LyingInt(5))
+    endpoint = client.Endpoint(client.EndpointKind.RAW_TLS, "kms.example.test", LyingInt(5696))
+    assert type(bounded.seconds) is int
+    assert type(bounded.nanoseconds) is int
+    assert type(endpoint.port) is int
+
+
 def test_transport_config_rejects_oversized_lists_before_iteration() -> None:
     class OversizedList(list[client.TransportInput]):
         iterated = False
