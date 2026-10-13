@@ -117,27 +117,28 @@ class SourceCoverageSectionsTwoThroughFiveTests(unittest.TestCase):
             self.assertEqual(review["source_locator"], clauses[clause_id]["locator"], clause_id)
 
     def test_object_encoding_required_headers_do_not_create_client_obligations(self) -> None:
-        catalog = json.loads(CATALOG_PATH.read_text(encoding="utf-8"))
         fixture = json.loads(FIXTURE_PATH.read_text(encoding="utf-8"))
         reviews = {
             row["source_clause_id"]: row
             for row in fixture["source_requirement_reviews"]
             if row["source_id"] == "KMIPKIT-SRC-spec"
         }
-        header_requirements = {
-            "KMIPKIT-REQ-SPEC-2.1-001": "KMIPKIT-CLAUSE-SPEC-2.1-001",
-            "KMIPKIT-REQ-SPEC-2.2-001": "KMIPKIT-CLAUSE-SPEC-2.2-001",
-            "KMIPKIT-REQ-SPEC-2.3-003": "KMIPKIT-CLAUSE-SPEC-2.3-003",
-            "KMIPKIT-REQ-SPEC-2.4-003": "KMIPKIT-CLAUSE-SPEC-2.4-003",
-            "KMIPKIT-REQ-SPEC-2.5-001": "KMIPKIT-CLAUSE-SPEC-2.5-001",
-            "KMIPKIT-REQ-SPEC-2.6-001": "KMIPKIT-CLAUSE-SPEC-2.6-001",
-            "KMIPKIT-REQ-SPEC-2.7-002": "KMIPKIT-CLAUSE-SPEC-2.7-002",
-            "KMIPKIT-REQ-SPEC-2.8-002": "KMIPKIT-CLAUSE-SPEC-2.8-002",
-            "KMIPKIT-REQ-SPEC-2.9-001": "KMIPKIT-CLAUSE-SPEC-2.9-001",
+        candidate_req_ids_by_header_clause = {
+            "KMIPKIT-CLAUSE-SPEC-2.1-001": "KMIPKIT-REQ-SPEC-2.1-001",
+            "KMIPKIT-CLAUSE-SPEC-2.2-001": "KMIPKIT-REQ-SPEC-2.2-001",
+            "KMIPKIT-CLAUSE-SPEC-2.3-003": "KMIPKIT-REQ-SPEC-2.3-003",
+            "KMIPKIT-CLAUSE-SPEC-2.4-003": "KMIPKIT-REQ-SPEC-2.4-003",
+            "KMIPKIT-CLAUSE-SPEC-2.5-001": "KMIPKIT-REQ-SPEC-2.5-001",
+            "KMIPKIT-CLAUSE-SPEC-2.6-001": "KMIPKIT-REQ-SPEC-2.6-001",
+            "KMIPKIT-CLAUSE-SPEC-2.7-002": "KMIPKIT-REQ-SPEC-2.7-002",
+            "KMIPKIT-CLAUSE-SPEC-2.8-002": "KMIPKIT-REQ-SPEC-2.8-002",
+            "KMIPKIT-CLAUSE-SPEC-2.9-001": "KMIPKIT-REQ-SPEC-2.9-001",
         }
 
-        self.assertTrue(set(header_requirements.values()).issubset(reviews))
-        for requirement_id, clause_id in header_requirements.items():
+        self.assertTrue(
+            set(candidate_req_ids_by_header_clause).issubset(reviews)
+        )
+        for clause_id, candidate_id in candidate_req_ids_by_header_clause.items():
             review = reviews[clause_id]
             self.assertEqual(review["expected_client_requirement_ids"], [])
             self.assertEqual(review["source_obligations"], [])
@@ -145,7 +146,7 @@ class SourceCoverageSectionsTwoThroughFiveTests(unittest.TestCase):
                 review["rejected_candidate_mappings"],
                 [
                     {
-                        "requirement_id": requirement_id,
+                        "requirement_id": candidate_id,
                         "claimed_keyword": "REQUIRED",
                         "source_review": review["review_note"],
                         "expected_disposition": "reject_candidate_non_normative_table_header",
