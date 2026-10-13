@@ -1006,6 +1006,63 @@ class ManifestGeneratorCliTests(unittest.TestCase):
                 self.assertNotEqual(result.returncode, 0, result.stderr)
                 self.assertIn("generation failed", result.stderr)
 
+    def test_approved_c_only_function_exclusion_keeps_exact_header_prototype(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = _create_repo(Path(directory))
+            manifest = self._load_manifest(root)
+            symbol = "kmipkit_client_batch_response_item_count"
+            manifest["publicDeclarations"] = [
+                declaration
+                for declaration in manifest["publicDeclarations"]
+                if not (
+                    declaration.get("packageId") == "c-kmipkit"
+                    and declaration.get("exportName") == symbol
+                )
+            ]
+            manifest["approvedExclusions"].append(
+                {
+                    "packageId": "c-kmipkit",
+                    "exportName": symbol,
+                    "reason": "Python exposes ordered results as a tuple; count is its standard sequence length.",
+                    "approvalSource": {
+                        "kind": "feature-specification",
+                        "path": "specs/043-public-api-bindings/spec.md",
+                        "status": "Approved",
+                        "evidence": "**Status**: Approved for implementation",
+                    },
+                    "evidence": "The C helper remains callable in C while other facades expose idiomatic sequence access.",
+                    "cFunction": {
+                        "symbol": symbol,
+                        "parameters": [
+                            {
+                                "name": "response",
+                                "kind": "handle",
+                                "type": "kmipkit_client_batch_response_t *",
+                                "ownership": "borrowed",
+                            },
+                            {
+                                "name": "out_count",
+                                "kind": "output",
+                                "type": "uint64_t *",
+                                "ownership": "none",
+                            },
+                        ],
+                        "returnType": "int32_t",
+                        "errorCategories": ["invalid_input"],
+                    },
+                }
+            )
+            self._write_manifest(root, manifest)
+
+            result = self._run_generator(root, "--write")
+
+            self.assertEqual(0, result.returncode, result.stderr)
+            public_header = (root / GENERATED_OUTPUTS[1]).read_text(encoding="utf-8")
+            self.assertIn(
+                "int32_t kmipkit_client_batch_response_item_count(kmipkit_client_batch_response_t * response, uint64_t * out_count);",
+                public_header,
+            )
+
     def test_handle_arrays_require_known_types_counts_and_invalid_input_mappings(self) -> None:
         def missing_invalid_input(language: str):
             def mutate(manifest: dict[str, object]) -> None:
