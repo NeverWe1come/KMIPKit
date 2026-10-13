@@ -42,6 +42,38 @@ pub struct kmipkit_client_configuration_t {
     _private: [u8; 0],
 }
 #[repr(C)]
+pub struct kmipkit_transport_config_t {
+    _private: [u8; 0],
+}
+#[repr(C)]
+pub struct kmipkit_client_t {
+    _private: [u8; 0],
+}
+#[repr(C)]
+pub struct kmipkit_client_batch_t {
+    _private: [u8; 0],
+}
+#[repr(C)]
+pub struct kmipkit_client_batch_response_t {
+    _private: [u8; 0],
+}
+#[repr(C)]
+pub struct kmipkit_client_batch_item_response_t {
+    _private: [u8; 0],
+}
+
+/// Common operation outcome fields, versioned independently from opaque handles.
+#[repr(C)]
+pub struct kmipkit_client_batch_item_metadata_v1_t {
+    pub struct_size: u32,
+    pub abi_version: u32,
+    /// `1` for a completed outcome and `2` for a Pending outcome.
+    pub outcome_kind: u32,
+    pub result_status: u32,
+    pub has_result_reason: u32,
+    pub result_reason: u32,
+}
+#[repr(C)]
 pub struct kmipkit_validated_extension_value_t {
     _private: [u8; 0],
 }
@@ -139,4 +171,59 @@ pub struct kmipkit_extension_registry_limits_v1_t {
     pub max_payload_index_records: u64,
     pub max_lookup_comparisons: u64,
     pub max_depth: u64,
+}
+
+/// A non-owning byte span supplied for one ABI call.
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct kmipkit_byte_span_v1_t {
+    pub data: *const u8,
+    pub length: u64,
+}
+
+/// One explicitly encoded transport certificate, key, or revocation input.
+#[repr(C)]
+pub struct kmipkit_transport_input_v1_t {
+    pub source_kind: u32,
+    pub encoding: u32,
+    pub data: kmipkit_byte_span_v1_t,
+}
+
+/// One connect, write, read, or total timeout setting.
+#[repr(C)]
+pub struct kmipkit_timeout_limit_v1_t {
+    pub kind: u32,
+    pub reserved: u32,
+    pub seconds: u64,
+    pub nanoseconds: u32,
+    pub reserved2: u32,
+}
+
+/// Versioned production transport inputs. All spans are borrowed only for the
+/// constructor call; the validated configuration owns its parsed material.
+#[repr(C)]
+pub struct kmipkit_transport_config_v1_t {
+    pub struct_size: u32,
+    pub abi_version: u32,
+    pub endpoint_kind: u32,
+    pub trust_kind: u32,
+    pub flags: u32,
+    pub reserved: u32,
+    pub endpoint: kmipkit_byte_span_v1_t,
+    pub endpoint_port: u16,
+    pub reserved2: u16,
+    pub client_certificates: *const kmipkit_transport_input_v1_t,
+    pub client_certificate_count: u64,
+    pub client_private_key: kmipkit_transport_input_v1_t,
+    pub trust_certificates: *const kmipkit_transport_input_v1_t,
+    pub trust_certificate_count: u64,
+    pub revocation_lists: *const kmipkit_transport_input_v1_t,
+    pub revocation_list_count: u64,
+    pub tls_server_name: kmipkit_byte_span_v1_t,
+    pub target_uri: kmipkit_byte_span_v1_t,
+    pub connect_timeout: kmipkit_timeout_limit_v1_t,
+    pub write_timeout: kmipkit_timeout_limit_v1_t,
+    pub read_timeout: kmipkit_timeout_limit_v1_t,
+    pub total_timeout: kmipkit_timeout_limit_v1_t,
+    pub max_request_bytes: u64,
 }
