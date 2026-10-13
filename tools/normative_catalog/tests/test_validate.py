@@ -365,7 +365,8 @@ def _has_reviewed_client_actor(record: dict[str, Any]) -> bool:
     if not isinstance(actor, str):
         return False
     normalized_actor = actor.strip().casefold()
-    return normalized_actor == "client" or normalized_actor.startswith("client ")
+    # Source reviews may elaborate the actor; only its leading role token is authoritative.
+    return normalized_actor.partition(" ")[0] == "client"
 
 
 def _reviewed_profile_optional_capabilities(
