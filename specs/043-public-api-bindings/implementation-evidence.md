@@ -313,7 +313,7 @@ Fresh local verification on this head:
 | Generated outputs | `python -B tools/api_manifest/generate.py --check` | PASS: all 11 outputs current. |
 | Coverage-gate preflight | `scripts/coverage_gate.py preflight --workspace .` | PASS: exit 0, eligible; source scan found 120 executable or ambiguous function bodies across 186 files. The PR's remote coverage jobs remain authoritative. |
 | Read-only QA | Review of the capability, generated-documentation, and C-comment payload fixes | PASS; no remaining injection path or contract inconsistency identified. |
-| Remote PR matrix | GitHub Actions after pushing this head | Pending; required before closing T011. |
+| Remote PR matrix | PR #100 CI run `38334999913` on pre-refresh head `e12a35fe` | PASS: 34 checks succeeded; the nightly informational and active-release-schedule checks were skipped by configuration. A refreshed Rust export report now requires a new run before T011 closes. |
 
 ## T013 — Post-audit Discover Versions metadata reconciliation
 
@@ -341,4 +341,15 @@ Fresh local verification after the Green change:
 | Extension fixture generator | `.venv/Scripts/python.exe -B tools/extension_fixtures/generate.py --check` | PASS. |
 | Shared Rust inventory | `.venv/Scripts/python.exe -B tools/api_manifest/audit_shared_rust_inventory.py --report specs/043-public-api-bindings/reports/shared-rust-inventory-2026-10-12.json --check` | PASS; report current. |
 | Binding exports | `.venv/Scripts/python.exe -B tools/api_manifest/audit_binding_exports.py --report specs/043-public-api-bindings/reports/binding-export-report-2026-10-12.json --check` | PASS; exit 0. |
-| Remote PR matrix | GitHub Actions on the final pushed head | Pending; T011 remains open until all required checks pass. |
+| Remote PR matrix | PR #100 CI run `38334999913` on pre-refresh head `e12a35fe` | PASS: all 34 required checks succeeded, including three-platform core tests and coverage; the two nightly/inactive schedule checks were skipped by configuration. A refreshed Rust export report now requires a new run before T011 closes. |
+
+## T011 — Rust export report reconciliation
+
+Independent QA found that 25 matched rows in the checked-in Rust export report retained `declarationState: blocked` after the current manifest had promoted those declarations to `declared`. Regenerated the report with the pinned `tools/api_manifest/audit_rust_exports.py` auditor; no report content was edited by hand. The refresh also updated source line locations following the T013 API metadata changes.
+
+| Check | Command | Result |
+|---|---|---|
+| Rust export report regeneration and audit | `.venv/Scripts/python.exe -B tools/api_manifest/audit_rust_exports.py --report specs/043-public-api-bindings/reports/rust-export-report-2026-10-12.json --check` | PASS: 9,497 observed and matched; zero missing, not-observed, kind/state mismatches, or issues. |
+| Report-to-manifest comparison | Recompute `audit_rust_exports.compare(report, manifest)` and compare matched rows by `_comparison_key` | PASS: 9,497 matched, zero report/manifest row differences, zero issues. |
+| Read-only QA after report refresh | Independent comparison of all matched rows, inventory totals, T011 claims, and generated artifact | PASS: all 9,497 rows match current manifest state; 25 stale states are gone; counts and audit totals are coherent. |
+| Remote PR matrix after report refresh | GitHub Actions | Pending; T011 remains open until the refreshed report is pushed and all required checks pass on that head. |
