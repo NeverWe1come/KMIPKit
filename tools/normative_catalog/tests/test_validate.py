@@ -441,6 +441,10 @@ def _reviewed_profile_optional_capabilities(
                     gaps.append(
                         f"{candidate_id}: conditional MAY/OPTIONAL source gap has no resolved condition"
                     )
+                if gap.get("actor") != "client":
+                    gaps.append(
+                        f"{candidate_id}: conditional MAY/OPTIONAL source gap has no reviewed client actor"
+                    )
             capabilities.add(candidate_id)
     return capabilities, gaps
 
@@ -489,6 +493,7 @@ def _reviewed_profile_conditional_capability_sources(
             is_selected
             and gap.get("scope_disposition") == "profile_conditional"
             and set(gap.get("source_keywords", [])) & {"MAY", "OPTIONAL"}
+            and gap.get("actor") == "client"
             and isinstance(source_clause_id, str)
             and isinstance(candidate_id, str)
         ):
