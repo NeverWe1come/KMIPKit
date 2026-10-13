@@ -99883,12 +99883,16 @@
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0008",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-client/src/execute.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-client/tests/unit/attestation_indicator_tests.rs::execute_advertises_attestation_without_authentication_or_credential_payload"
+      ],
       "negative_verification_required": false,
       "decision_id": null,
-      "status": "deferred",
-      "review_note": "Implementation and executable verification are assigned to KMIPKIT-0008; KMIPKIT-0006 only represents the optional Authentication header structure. The pinned KMIP Specification 2.1 section 9.4 uses lowercase “must” in the statement that multiple Credential structures must all be satisfied; section 1.2 defines uppercase key words by RFC 2119, so this classification remains unresolved in KMIPKIT-DISC-041. No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
+      "status": "scoped_verified",
+      "review_note": "Derived local positive evidence is limited to a successful unauthenticated Discover Versions request that omits Authentication and Credential from the outbound TTLV. It does not establish profile-based credential selection or authenticated send behavior. No official Test Cases ID is explicitly linked by the pinned OASIS sources; this derived local evidence is not an OASIS test-case pass."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-9.4-001-002",
@@ -99980,12 +99984,17 @@
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0008",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/credential/authentication.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/credential_contract.rs::authentication_preserves_nonempty_credential_order",
+        "crates/kmipkit-protocol/tests/credential_contract.rs::authentication_roundtrip_preserves_unknown_fields_and_credential_order"
+      ],
       "negative_verification_required": false,
       "decision_id": null,
-      "status": "deferred",
-      "review_note": "Implementation and executable verification are assigned to KMIPKIT-0008; KMIPKIT-0006 records this ownership transfer and does not claim the deferred client behavior. No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002."
+      "status": "scoped_verified",
+      "review_note": "Derived local positive evidence is limited to the in-memory Authentication model preserving repeated Credential structures and their order during parsing and roundtrip. It does not demonstrate profile-based selection, Client::execute transmission, or server-side credential satisfaction. No official Test Cases ID is explicitly linked by the pinned OASIS sources; this derived local evidence is not an OASIS test-case pass."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-9.5-001-001",

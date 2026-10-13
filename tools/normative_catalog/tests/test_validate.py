@@ -3815,7 +3815,7 @@ class CatalogValidationTests(unittest.TestCase):
                 "tests": {
                     "crates/kmipkit-client/tests/unit/attestation_indicator_tests.rs::execute_advertises_attestation_without_authentication_or_credential_payload",
                 },
-                "scope_note": "omission",
+                "scope_note": "omits authentication",
             },
             "KMIPKIT-REQ-SPEC-9.4-002": {
                 "implementation": {"crates/kmipkit-protocol/src/credential/authentication.rs"},
