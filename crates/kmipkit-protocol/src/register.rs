@@ -294,7 +294,8 @@ fn key_block_has(object: &Item, raw_tag: u32) -> bool {
             field.tag().raw() == KEY_BLOCK
                 && field.with_value(|value| match value {
                     ValueView::Structure(block) => block.children().iter().any(|entry| {
-                        entry.tag().raw() == raw_tag
+                        (entry.tag().raw() == raw_tag
+                            && cryptographic_metadata_has_expected_type(entry, raw_tag))
                             || (entry.tag().raw() == KEY_VALUE
                                 && key_value_has_attribute(entry, raw_tag))
                     }),
@@ -312,13 +313,23 @@ fn key_value_has_attribute(key_value: &Item, raw_tag: u32) -> bool {
         key_value.children().iter().any(|field| {
             field.tag().raw() == ATTRIBUTES
                 && field.with_value(|value| match value {
-                    ValueView::Structure(attributes) => attributes
-                        .children()
-                        .iter()
-                        .any(|attribute| attribute.tag().raw() == raw_tag),
+                    ValueView::Structure(attributes) => {
+                        attributes.children().iter().any(|attribute| {
+                            attribute.tag().raw() == raw_tag
+                                && cryptographic_metadata_has_expected_type(attribute, raw_tag)
+                        })
+                    }
                     _ => false,
                 })
         })
+    })
+}
+
+fn cryptographic_metadata_has_expected_type(attribute: &Item, raw_tag: u32) -> bool {
+    attribute.with_value(|value| match raw_tag {
+        CRYPTOGRAPHIC_ALGORITHM => matches!(value, ValueView::Enumeration(_)),
+        CRYPTOGRAPHIC_LENGTH => matches!(value, ValueView::Integer(_)),
+        _ => false,
     })
 }
 

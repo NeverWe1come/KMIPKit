@@ -1,5 +1,6 @@
 //! Register tests from OASIS KMIP v2.1 §6.1.43, Tables 291–294.
-//! Traceability covers `KMIPKIT-REQ-SPEC-6.1.43-001`, `-005`, `-007`,
+//! Traceability covers `KMIPKIT-REQ-SPEC-3.1-004-001`, `-005-001`, and
+//! `KMIPKIT-REQ-SPEC-6.1.43-001`, `-005`, `-007`,
 //! `-009-001`, `-009-002`, `-010-001`, `-010-002`, and `-011`.
 //! These vectors are derived from the pinned tables, not official fixture runs.
 
@@ -267,45 +268,52 @@ fn request_allows_algorithm_and_length_embedded_in_key_value() {
 fn request_rejects_mistyped_embedded_cryptographic_metadata() {
     // KMIP Specification v2.1 §3.1, Table 12 encodes Cryptographic Algorithm
     // as an Enumeration and Cryptographic Length as an Integer.
-    let malformed_object = item(
-        SYMMETRIC_KEY,
-        Value::structure(structure([item(
-            KEY_BLOCK,
-            Value::structure(structure([
-                item(KEY_FORMAT_TYPE, Value::enumeration(1)),
-                item(
-                    KEY_VALUE,
-                    Value::structure(structure([
-                        item(
-                            KEY_MATERIAL,
-                            Value::byte_string(vec![0x01, 0x02, 0x03, 0x04]),
-                        ),
-                        item(
-                            ATTRIBUTES,
-                            Value::structure(structure([
-                                item(
-                                    CRYPTOGRAPHIC_ALGORITHM,
-                                    Value::byte_string(vec![0x03]),
-                                ),
-                                item(CRYPTOGRAPHIC_LENGTH, Value::integer(256)),
-                            ])),
-                        ),
-                    ])),
-                ),
-            ])),
-        )])),
-    );
+    let malformed_attribute_pairs = [
+        [
+            item(CRYPTOGRAPHIC_ALGORITHM, Value::byte_string(vec![0x03])),
+            item(CRYPTOGRAPHIC_LENGTH, Value::integer(256)),
+        ],
+        [
+            item(CRYPTOGRAPHIC_ALGORITHM, Value::enumeration(3)),
+            item(CRYPTOGRAPHIC_LENGTH, Value::enumeration(256)),
+        ],
+    ];
 
-    let request = RegisterRequest::new(
-        ObjectType::from_raw(2),
-        symmetric_attributes([]),
-        malformed_object,
-    );
+    for malformed_attributes in malformed_attribute_pairs {
+        let malformed_object = item(
+            SYMMETRIC_KEY,
+            Value::structure(structure([item(
+                KEY_BLOCK,
+                Value::structure(structure([
+                    item(KEY_FORMAT_TYPE, Value::enumeration(1)),
+                    item(
+                        KEY_VALUE,
+                        Value::structure(structure([
+                            item(
+                                KEY_MATERIAL,
+                                Value::byte_string(vec![0x01, 0x02, 0x03, 0x04]),
+                            ),
+                            item(
+                                ATTRIBUTES,
+                                Value::structure(structure(malformed_attributes)),
+                            ),
+                        ])),
+                    ),
+                ])),
+            )])),
+        );
 
-    assert!(
-        request.into_ttlv_payload().is_err(),
-        "mistyped Cryptographic Algorithm cannot satisfy the Key Value requirement"
-    );
+        let request = RegisterRequest::new(
+            ObjectType::from_raw(2),
+            symmetric_attributes([]),
+            malformed_object,
+        );
+
+        assert!(
+            request.into_ttlv_payload().is_err(),
+            "mistyped required metadata cannot satisfy the Key Value requirement"
+        );
+    }
 }
 
 #[test]
