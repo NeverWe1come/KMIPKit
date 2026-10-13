@@ -65,10 +65,10 @@ This report records inventory coverage and evidence state. It does not claim pro
 | Scope | server\_only | 42 |
 | Scope | unclear | 76 |
 | Direction | both | 38 |
-| Direction | client\_to\_server | 376 |
+| Direction | client\_to\_server | 377 |
 | Direction | not\_applicable | 64 |
 | Direction | server\_to\_client | 18 |
-| Direction | unclear | 133 |
+| Direction | unclear | 132 |
 
 ## Tag allocation and ranges
 
@@ -784,7 +784,6 @@ Every row summarizes audited candidate locators by their pinned source section. 
 | KMIPKIT-REQ-SPEC-3.12-001 | mandatory | out\_of\_scope | KMIPKIT-SRC-spec §3.12 |
 | KMIPKIT-REQ-SPEC-3.12-002 | mandatory | client\_1\_0 | KMIPKIT-SRC-spec §3.12 |
 | KMIPKIT-REQ-SPEC-3.12-003 | mandatory | client\_1\_0 | KMIPKIT-SRC-spec §3.12 |
-| KMIPKIT-REQ-SPEC-3.2-001 | permission\_or\_optional | client\_1\_0 | KMIPKIT-SRC-spec §3.2 |
 | KMIPKIT-REQ-SPEC-3.2-002 | mandatory | out\_of\_scope | KMIPKIT-SRC-spec §3.2 |
 | KMIPKIT-REQ-SPEC-3.2-003 | mandatory | client\_1\_0 | KMIPKIT-SRC-spec §3.2 |
 | KMIPKIT-REQ-SPEC-3.3-001-001 | permission\_or\_optional | client\_1\_0 | KMIPKIT-SRC-spec §3.3 |
@@ -1222,7 +1221,7 @@ Every row summarizes audited candidate locators by their pinned source section. 
 | KMIPKIT-REQ-SPEC-3.12-001 | Pinned KMIP Specification v2.1 source \(kmip-spec-v2.1-os.html\), §3.12, lines 9497-9513, contains only the table-header candidate “Object Encoding REQUIRED”; it does not state an operative client protocol obligation. No requirement-specific official Test Cases ID is linked in the pinned KMIP Test Cases inventory; implementation and verification are not claimed. | KMIPKIT-SRC-spec §3.12 |
 | KMIPKIT-REQ-SPEC-3.12-002 | Pinned OASIS KMIP Specification v2.1 table body row records Required=Yes, not a formal RFC keyword. The implementation and positive verification remain unassigned; the pinned OASIS Test Cases inventory has no linked official test case asserted here. | KMIPKIT-SRC-spec §3.12 |
 | KMIPKIT-REQ-SPEC-3.12-003 | Pinned OASIS KMIP Specification v2.1 table body row records Required=Yes, not a formal RFC keyword. The implementation and positive verification remain unassigned; the pinned OASIS Test Cases inventory has no linked official test case asserted here. | KMIPKIT-SRC-spec §3.12 |
-| KMIPKIT-REQ-SPEC-3.2-001 | No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing. | KMIPKIT-SRC-spec §3.2 |
+| KMIPKIT-REQ-SPEC-3.2-001 | Scoped evidence: KMIP Specification v2.1 §3.2 Table 13 permits optional Attributes in Key Value; §5.1 Table 157 defines their child grammar; §6.1.43 Table 291 supplies the client Register request context. The positive test establishes serialization of plaintext Key Value Attributes in a client-originated Register payload only. It does not establish server acceptance, wrapped-byte contents, response handling, or profile conformance. No requirement-specific official Test Case is linked by the pinned OASIS sources. | KMIPKIT-SRC-spec §3.2 |
 | KMIPKIT-REQ-SPEC-3.2-002 | Pinned KMIP Specification v2.1 source \(kmip-spec-v2.1-os.html\), §3.2, lines 7857-7873, contains only the table-header candidate “Object Encoding REQUIRED”; it does not state an operative client protocol obligation. No requirement-specific official Test Cases ID is linked in the pinned KMIP Test Cases inventory; implementation and verification are not claimed. | KMIPKIT-SRC-spec §3.2 |
 | KMIPKIT-REQ-SPEC-3.2-003 | Pinned OASIS KMIP Specification v2.1 table body row records Required=Yes, not a formal RFC keyword. The implementation and positive verification remain unassigned; the pinned OASIS Test Cases inventory has no linked official test case asserted here. | KMIPKIT-SRC-spec §3.2 |
 | KMIPKIT-REQ-SPEC-3.3-001-001 | Specification v2.1 §3.3 permits a client to supply Key Wrapping Data in a Key Block. The PGP test asserts that a wrapped PGP Key request carries Key Wrap Type Enumeration 1. The Import replacement test asserts caller-supplied replacement and Key Wrap Type values and confirms the wrapped object contains generic TTLV Encryption Key Information and a ByteString Key Value. These tests do not validate every inner wrapping field or claim server-side unwrap behavior. No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002; these local tests are not official OASIS evidence or formal profile conformance. | KMIPKIT-SRC-spec §3.3 |
@@ -2876,7 +2875,7 @@ Rows list each distinct requirement found in a client profile closure. Profile m
 | KMIPKIT-REQ-SPEC-3.11-003 |  | required\_table\_body\_value / RequiredBehavior | No typed rule mapping | No category-appropriate rule test | — | — | — | — | — | none catalogued | KMIPKIT-SRC-spec §3.11 |
 | KMIPKIT-REQ-SPEC-3.12-002 |  | required\_table\_body\_value / RequiredBehavior | No typed rule mapping | No category-appropriate rule test | — | — | — | — | — | none catalogued | KMIPKIT-SRC-spec §3.12 |
 | KMIPKIT-REQ-SPEC-3.12-003 |  | required\_table\_body\_value / RequiredBehavior | No typed rule mapping | No category-appropriate rule test | — | — | — | — | — | none catalogued | KMIPKIT-SRC-spec §3.12 |
-| KMIPKIT-REQ-SPEC-3.2-001 | KMIPKIT-CLAUSE-SPEC-3.2-001 | OPTIONAL / OptionalCapability | No typed rule mapping | No category-appropriate rule test | — | — | — | — | — | none catalogued | KMIPKIT-SRC-spec §3.2 |
+| KMIPKIT-REQ-SPEC-3.2-001 | KMIPKIT-CLAUSE-SPEC-3.2-001 | OPTIONAL / OptionalCapability | No typed rule mapping | No category-appropriate rule test | — | — | crates/kmipkit-protocol/src/register.rs::RegisterRequest::into\_ttlv\_payload | crates/kmipkit-protocol/tests/unit/register\_operation\_tests.rs::request\_preserves\_key\_value\_attributes\_associated\_with\_raw\_key\_material | — | none catalogued | KMIPKIT-SRC-spec §3.2 |
 | KMIPKIT-REQ-SPEC-3.2-003 |  | required\_table\_body\_value / RequiredBehavior | No typed rule mapping | No category-appropriate rule test | — | — | — | — | — | none catalogued | KMIPKIT-SRC-spec §3.2 |
 | KMIPKIT-REQ-SPEC-3.3-001-001 | KMIPKIT-CLAUSE-SPEC-3.3-001 | MAY / OptionalCapability | No typed rule mapping | No category-appropriate rule test | — | — | crates/kmipkit-protocol/src/import.rs | crates/kmipkit-protocol/tests/unit/import\_operation\_tests.rs::replacement\_and\_conditional\_wrap\_type\_are\_preserved\_without\_unwrapping, crates/kmipkit-protocol/tests/unit/import\_operation\_tests.rs::wrapped\_pgp\_key\_accepts\_key\_wrap\_type | — | none catalogued | KMIPKIT-SRC-spec §3.3 |
 | KMIPKIT-REQ-SPEC-3.3-001-002 | KMIPKIT-CLAUSE-SPEC-3.3-001 | OPTIONAL / OptionalCapability | No typed rule mapping | No category-appropriate rule test | — | — | crates/kmipkit-protocol/src/import.rs | crates/kmipkit-protocol/tests/unit/import\_operation\_tests.rs::key\_wrap\_type\_is\_present\_if\_and\_only\_if\_key\_block\_has\_wrapping\_data, crates/kmipkit-protocol/tests/unit/import\_operation\_tests.rs::request\_preserves\_required\_fields\_and\_only\_explicit\_optional\_choices | — | none catalogued | KMIPKIT-SRC-spec §3.3 |

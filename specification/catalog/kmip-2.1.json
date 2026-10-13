@@ -30607,7 +30607,9 @@
       "direction": "both",
       "scope_state": "client_1_0",
       "parent_element_ids": [],
-      "requirement_ids": [],
+      "requirement_ids": [
+        "KMIPKIT-REQ-SPEC-3.2-001"
+      ],
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": null,
@@ -56227,7 +56229,9 @@
       "parent_element_ids": [
         "KMIPKIT-ELEM-OBJECT-STRUCTURE-KEY-BLOCK"
       ],
-      "requirement_ids": [],
+      "requirement_ids": [
+        "KMIPKIT-REQ-SPEC-3.2-001"
+      ],
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": null,
@@ -59255,6 +59259,7 @@
       "scope_state": "client_1_0",
       "parent_element_ids": [],
       "requirement_ids": [
+        "KMIPKIT-REQ-SPEC-3.2-001",
         "KMIPKIT-REQ-SPEC-6.1.43-001",
         "KMIPKIT-REQ-SPEC-6.1.43-005",
         "KMIPKIT-REQ-SPEC-6.1.43-007",
@@ -62144,7 +62149,9 @@
       "parent_element_ids": [
         "KMIPKIT-ELEM-OBJECT-STRUCTURE-KEY-VALUE"
       ],
-      "requirement_ids": [],
+      "requirement_ids": [
+        "KMIPKIT-REQ-SPEC-3.2-001"
+      ],
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": null,
@@ -62169,6 +62176,7 @@
         "KMIPKIT-ELEM-OBJECT-STRUCTURE-KEY-VALUE"
       ],
       "requirement_ids": [
+        "KMIPKIT-REQ-SPEC-3.2-001",
         "KMIPKIT-REQ-SPEC-3.2-003"
       ],
       "profile_ids": [],
@@ -64191,7 +64199,9 @@
       "parent_element_ids": [
         "KMIPKIT-ELEM-ATTRIBUTE-STRUCTURE-5-1-ATTRIBUTES"
       ],
-      "requirement_ids": [],
+      "requirement_ids": [
+        "KMIPKIT-REQ-SPEC-3.2-001"
+      ],
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": null,
@@ -87091,19 +87101,30 @@
       "subject": "Key Value attribute information",
       "summary": "The client may include the optional attribute information associated with key material in Key Value.",
       "role": "client",
-      "direction": "unclear",
+      "direction": "client_to_server",
       "condition": null,
       "scope_state": "client_1_0",
-      "element_ids": [],
+      "element_ids": [
+        "KMIPKIT-ELEM-ATTRIBUTE-STRUCTURE-5-1-ATTRIBUTES",
+        "KMIPKIT-ELEM-OBJECT-STRUCTURE-KEY-VALUE",
+        "KMIPKIT-ELEM-OP-C2S-REGISTER",
+        "KMIPKIT-ELEM-STRUCTURE-MEMBER-3-2-KEY-VALUE-ATTRIBUTES",
+        "KMIPKIT-ELEM-STRUCTURE-MEMBER-3-2-KEY-VALUE-KEY-MATERIAL",
+        "KMIPKIT-ELEM-STRUCTURE-MEMBER-5-1-ANY-ATTRIBUTE-IN-4-OBJECT-ATTRIBUTES"
+      ],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0036",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/register.rs::RegisterRequest::into_ttlv_payload"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/register_operation_tests.rs::request_preserves_key_value_attributes_associated_with_raw_key_material"
+      ],
       "negative_verification_required": false,
       "decision_id": null,
-      "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
+      "status": "scoped_verified",
+      "review_note": "Scoped evidence: KMIP Specification v2.1 \u00a73.2 Table 13 permits optional Attributes in Key Value; \u00a75.1 Table 157 defines their child grammar; \u00a76.1.43 Table 291 supplies the client Register request context. The positive test establishes serialization of plaintext Key Value Attributes in a client-originated Register payload only. It does not establish server acceptance, wrapped-byte contents, response handling, or profile conformance. No requirement-specific official Test Case is linked by the pinned OASIS sources."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-3.2-002",
