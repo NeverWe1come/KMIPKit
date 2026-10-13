@@ -19,6 +19,8 @@ fn both_guides_cover_default_and_explicit_managed_opaque_context() {
         assert!(guide.contains("Cryptographic Usage Mask"));
         assert!(guide.contains("Cryptographic Algorithm"));
         assert!(guide.contains("Cryptographic Length"));
+        assert!(guide.contains("0x80000001"));
+        assert!(guide.contains("Table 469") || guide.contains("Tabla 469"));
         assert!(guide.contains("KMIPKIT-REQ-SPEC-2.3-002"));
         assert!(guide.contains("KMIPKIT-REQ-SPEC-2.3-003"));
     }
@@ -87,7 +89,7 @@ fn marked_rust_example<'a>(guide: &'a str, section_heading: &str) -> &'a str {
 fn opaque_register(context: OpaqueObjectContext, attributes: AttributeSet) -> RegisterRequest {
     let mut opaque = Structure::new();
     opaque
-        .try_push(item(0x0042_0059, Value::enumeration(1)))
+        .try_push(item(0x0042_0059, Value::enumeration(0x8000_0001)))
         .unwrap();
     opaque
         .try_push(item(0x0042_005a, Value::byte_string(vec![0x01, 0x02])))

@@ -46,6 +46,39 @@ class OpaqueObjectTraceabilityTests(unittest.TestCase):
                 self._check_file_references(implementation)
                 self._check_test_references(positive)
                 self._check_test_references(negative)
+                if requirement_id == "KMIPKIT-REQ-SPEC-6.1.43-001":
+                    self.assertIn(
+                        "tools/normative_catalog/tests/test_opaque_object_traceability.py::"
+                        "test_register_request_constructor_requires_object_type_and_attributes",
+                        negative,
+                    )
+
+    def test_register_request_constructor_requires_object_type_and_attributes(self) -> None:
+        source = (ROOT / "crates/kmipkit-protocol/src/register.rs").read_text(
+            encoding="utf-8"
+        )
+        constructor = re.search(
+            r"pub const fn new\((?P<parameters>.*?)\)\s*->\s*Self",
+            source,
+            re.DOTALL,
+        )
+        self.assertIsNotNone(constructor)
+        parameters = constructor.group("parameters")
+        self.assertRegex(parameters, r"\bobject_type\s*:\s*ObjectType\b")
+        self.assertRegex(parameters, r"\battributes\s*:\s*AttributeSet\b")
+        self.assertRegex(parameters, r"\bobject\s*:\s*Item\b")
+
+        register_request_fields = re.search(
+            r"pub struct RegisterRequest\s*\{(?P<fields>[^}]*)\}",
+            source,
+            re.DOTALL,
+        )
+        self.assertIsNotNone(register_request_fields)
+        self.assertNotRegex(
+            register_request_fields.group("fields"),
+            r"(?m)^\s*pub(?:\([^)]*\))?\s+\w+",
+            "callers cannot construct an incomplete RegisterRequest literal",
+        )
 
     def _check_file_references(self, cell: str) -> None:
         references = re.findall(r"`([^`]+)`", cell)
@@ -62,4 +95,4 @@ class OpaqueObjectTraceabilityTests(unittest.TestCase):
             test_file = ROOT / relative_path
             self.assertTrue(test_file.is_file(), relative_path)
             source = test_file.read_text(encoding="utf-8")
-            self.assertRegex(source, rf"\bfn\s+{re.escape(test_name)}\s*\(", reference)
+            self.assertRegex(source, rf"\b(?:fn|def)\s+{re.escape(test_name)}\s*\(", reference)
