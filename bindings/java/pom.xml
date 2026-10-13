@@ -5,7 +5,9 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.kmipkit</groupId>
   <artifactId>kmipkit-java</artifactId>
-  <version>0.1.0-SNAPSHOT</version>
+  <version>1.0.0</version>
+  <name>KMIPKit Java bindings</name>
+  <description>Java 17 bindings for KMIPKit 1.0.0 (unreleased).</description>
   <properties>
     <maven.compiler.release>17</maven.compiler.release>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -13,6 +15,11 @@
     <jacoco.version>0.8.12</jacoco.version>
   </properties>
   <dependencies>
+    <dependency>
+      <groupId>org.jspecify</groupId>
+      <artifactId>jspecify</artifactId>
+      <version>1.0.0</version>
+    </dependency>
     <dependency>
       <groupId>org.junit.jupiter</groupId>
       <artifactId>junit-jupiter</artifactId>
@@ -32,6 +39,10 @@
             <goals>
               <goal>prepare-agent</goal>
             </goals>
+            <configuration>
+              <!-- Isolated JVM probes append their JaCoCo data to the parent test report. -->
+              <append>true</append>
+            </configuration>
           </execution>
           <execution>
             <id>coverage-report</id>

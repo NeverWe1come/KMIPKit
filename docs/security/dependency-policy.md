@@ -36,6 +36,17 @@ fail. Cached advisory data alone is not a successful fresh scan. The check
 does not update manifests or lockfiles; it uses locked operations and compares
 lockfile hashes so an accidental change fails.
 
+The root workspace has one exact path-patched vendor package:
+`aws-lc-sys@0.45.0` at `vendor/aws-lc-sys-0.45.0/Cargo.toml`. The local
+metadata validator permits that exact package/version/path in addition to
+canonical workspace members; another package, version, path, or symlink
+resolution remains rejected. The vendored package is the upstream crates.io
+archive with a narrowly scoped jitterentropy symbol-visibility patch. Its
+archive hash, source revision, license evidence, patch, and ABI verification
+are recorded in the [vendor provenance note](../development/aws-lc-sys-vendoring.md).
+This path allowance does not waive cargo-deny license, source, advisory,
+duplicate, or architecture checks.
+
 On a cargo-deny failure, the runner requests its JSON diagnostic format and
 prints only validated package coordinates, rule codes, known advisory
 identifiers, and a source reference with URL paths and credentials redacted.

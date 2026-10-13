@@ -1,0 +1,58 @@
+from pathlib import Path
+import json
+import unittest
+
+
+ROOT = Path(__file__).resolve().parents[3]
+DOC = ROOT / "docs" / "architecture" / "ffi-and-bindings.md"
+AUDIT_GUIDE = ROOT / "tools" / "api_manifest" / "binding-export-audit.md"
+AUDIT_REPORT = (
+    ROOT
+    / "specs"
+    / "043-public-api-bindings"
+    / "reports"
+    / "binding-export-report-2026-10-12.json"
+)
+
+
+class CApiDocumentationTests(unittest.TestCase):
+    def test_c_api_docs_point_to_the_generated_manifest_and_symbol_inventory(self) -> None:
+        documentation = DOC.read_text(encoding="utf-8")
+
+        self.assertIn("../../specification/api/public-api.json", documentation)
+        self.assertIn("../../bindings/c/include/kmipkit.h", documentation)
+        self.assertIn(
+            "../../specs/043-public-api-bindings/reports/binding-export-report-2026-10-12.json",
+            documentation,
+        )
+        self.assertIn("audit_binding_exports.py", documentation)
+        self.assertIn("blocked", documentation)
+
+    def test_audit_guide_snapshot_matches_the_generated_report(self) -> None:
+        guide = AUDIT_GUIDE.read_text(encoding="utf-8")
+        report = json.loads(AUDIT_REPORT.read_text(encoding="utf-8"))
+        labels = {"c-kmipkit": "C", "java-kmipkit": "Java", "python-kmipkit": "Python"}
+
+        guide_rows = {
+            fields[0]: fields
+            for line in guide.splitlines()
+            if line.startswith(("| C |", "| Java |", "| Python |"))
+            for fields in [[field.strip() for field in line.strip("|").split("|")]]
+        }
+
+        for package in report["packages"]:
+            with self.subTest(package=package["packageId"]):
+                fields = guide_rows[labels[package["packageId"]]]
+                counts = package["counts"]
+                self.assertEqual(
+                    fields[2:5],
+                    [
+                        str(counts["observed"]),
+                        str(counts["manifest"]),
+                        str(counts["exactMatches"]),
+                    ],
+                )
+
+
+if __name__ == "__main__":
+    unittest.main()

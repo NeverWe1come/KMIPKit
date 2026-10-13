@@ -4,7 +4,7 @@ import org.kmipkit.NativeExtensionRegistry;
 import org.kmipkit.internal.NativeHandle;
 
 /** Read-only view of a TTLV item in a borrowed Structure. */
-public final class TtlvItemView {
+public final class TtlvItemView implements AutoCloseable {
     private final NativeHandle handle;
     private final Object owner;
 
@@ -34,5 +34,9 @@ public final class TtlvItemView {
 
     long handle() {
         return handle.get();
+    }
+    @Override
+    public void close() {
+        handle.close();
     }
 }

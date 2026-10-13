@@ -4,7 +4,7 @@ import org.kmipkit.NativeExtensionRegistry;
 import org.kmipkit.internal.NativeHandle;
 
 /** A registry-validated value and caller-selected KMIP criticality flag. */
-public final class ClientRequestMessageExtension {
+public final class ClientRequestMessageExtension implements AutoCloseable {
     private final NativeHandle handle;
     private final RegisteredExtensionValue owner;
     private final boolean criticalityIndicator;
@@ -39,5 +39,9 @@ public final class ClientRequestMessageExtension {
 
     boolean criticalityIndicator() {
         return criticalityIndicator;
+    }
+    @Override
+    public void close() {
+        handle.close();
     }
 }

@@ -4,7 +4,7 @@ import org.kmipkit.NativeExtensionRegistry;
 import org.kmipkit.internal.NativeHandle;
 
 /** KMIP and KMIPKit version ranges supported by a definition. */
-public final class Compatibility {
+public final class Compatibility implements AutoCloseable {
     private final NativeHandle handle;
 
     private Compatibility(long nativeHandle) {
@@ -27,5 +27,9 @@ public final class Compatibility {
 
     NativeHandle nativeHandleOwner() {
         return handle;
+    }
+    @Override
+    public void close() {
+        handle.close();
     }
 }

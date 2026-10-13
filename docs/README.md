@@ -23,6 +23,8 @@ tests, and the conformance matrix.
 
 ## User guides
 
+- [Java and Python packages (English)](user-guide/en/language-packages.md)
+- [Paquetes para Java y Python (Español)](user-guide/es/paquetes-de-idiomas.md)
 - [Interop, Log and Validate (English)](user-guide/en/diagnostics-and-interop.md)
 - [Interop, Log y Validate (Español)](user-guide/es/diagnostico-e-interop.md)
 

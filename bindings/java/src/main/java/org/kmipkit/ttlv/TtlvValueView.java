@@ -4,7 +4,7 @@ import org.kmipkit.NativeExtensionRegistry;
 import org.kmipkit.internal.NativeHandle;
 
 /** Read-only typed access to a generic TTLV value. */
-public final class TtlvValueView {
+public final class TtlvValueView implements AutoCloseable {
     private final NativeHandle handle;
     private final Object owner;
 
@@ -65,5 +65,9 @@ public final class TtlvValueView {
 
     long handle() {
         return handle.get();
+    }
+    @Override
+    public void close() {
+        handle.close();
     }
 }

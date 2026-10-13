@@ -313,6 +313,14 @@ jobs:
         id: install-rust-1-94
         run: rustup toolchain install 1.94 --profile minimal
 
+      - name: Set up Python 3.12 for the ABI inventory
+        id: set-up-python-3-12-for-the-abi-inventory
+        uses: astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9 # astral-sh/setup-uv v9.0.0
+        with:
+          enable-cache: false
+          version: '0.12.23'
+          python-version: '3.12'
+
       - name: Set up CMake 3.31.6
         id: set-up-cmake-3-31-6
         uses: lukka/get-cmake@fffaaafeea488556c2c12dad60690008bc1caacb # lukka/get-cmake v4.4.2
@@ -324,6 +332,20 @@ jobs:
         id: build-the-c-consumer-and-example
         run: |
           cargo build --locked -p kmipkit-ffi
+
+      - name: Audit the built C ABI export allowlist
+        id: audit-the-built-c-abi-export-allowlist
+        shell: pwsh
+        run: |
+          $python = Get-Command -Name python -ErrorAction SilentlyContinue
+          if (-not $python) { $python = Get-Command -Name python3 -ErrorAction SilentlyContinue }
+          if (-not $python) { throw 'Python 3 is required to audit the C ABI exports.' }
+          $nativeLibrary = Get-ChildItem -LiteralPath 'target/debug' -File |
+            Where-Object { $_.Name -like '*kmipkit_ffi*' -and $_.Extension -in @('.dll', '.dylib', '.so') } |
+            Select-Object -First 1
+          if (-not $nativeLibrary) { throw 'The C ABI shared library was not built.' }
+          & $python.Source -B tools/api_manifest/audit_binding_exports.py --repo-root . --c-only --c-binary $nativeLibrary.FullName --check
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
       - name: Configure the C consumer with MSVC
         id: configure-the-c-consumer-with-msvc
@@ -428,6 +450,28 @@ jobs:
       - name: Run Java 17 JNI tests and example
         id: run-java-tests
         run: mvn --batch-mode --file bindings/java/pom.xml test
+
+      - name: Prime Gradle Java compile dependencies
+        id: prime-gradle-java-compile-dependencies
+        shell: pwsh
+        working-directory: bindings/java
+        run: |
+          if ($IsWindows) {
+            .\gradlew.bat compileJava
+          } else {
+            sh ./gradlew compileJava
+          }
+
+      - name: Run packaged Java native loader smoke
+        id: run-java-native-package-smoke
+        shell: pwsh
+        working-directory: bindings/java
+        run: |
+          if ($IsWindows) {
+            .\gradlew.bat --offline nativeJarSmoke
+          } else {
+            sh ./gradlew --offline nativeJarSmoke
+          }
 
       - name: Diagnose job result
         id: ci-diagnostics
@@ -567,7 +611,7 @@ jobs:
         id: run-the-c-consumer-against-the-instrumented-rust-ffi
         run: |
           mkdir -p target/sanitizers
-          cc -std=c11 -Wall -Wextra -Werror -fsanitize=address -fno-omit-frame-pointer -Ibindings/c/include bindings/c/tests/extension_registry.c -Ltarget/debug -Wl,-rpath,"$GITHUB_WORKSPACE/target/debug" -lkmipkit_ffi -o target/sanitizers/extension_registry_consumer
+          cc -std=c11 -Wall -Wextra -Werror -fsanitize=address -fno-omit-frame-pointer -Ibindings/c/include -Itests/fixtures/api/generated bindings/c/tests/extension_registry.c -Ltarget/debug -Wl,-rpath,"$GITHUB_WORKSPACE/target/debug" -lkmipkit_ffi -o target/sanitizers/extension_registry_consumer
           target/sanitizers/extension_registry_consumer
 
       - name: Diagnose job result
@@ -1080,8 +1124,16 @@ jobs:
       always() && github.event_name == 'pull_request' &&
       (needs.impact-plan.result != 'success' || needs.impact-plan.outputs.full == 'true' ||
        contains(format(',{0},', needs.impact-plan.outputs.selected_jobs), ',coverage-java,'))
-    name: Java coverage / Linux
-    runs-on: ubuntu-latest
+    name: Java coverage / ${{ matrix.platform }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - platform: linux
+            os: ubuntu-latest
+          - platform: windows
+            os: windows-latest
+    runs-on: ${{ matrix.os }}
     needs: impact-plan
     env:
       CARGO_TERM_COLOR: always
@@ -1119,15 +1171,15 @@ jobs:
         shell: bash
         run: |
           mvn --batch-mode --file bindings/java/pom.xml clean verify
-          mkdir -p coverage-java
-          cp bindings/java/target/site/jacoco/jacoco.xml coverage-java/jacoco.xml
+          mkdir -p coverage-java-${{ matrix.platform }}
+          cp bindings/java/target/site/jacoco/jacoco.xml coverage-java-${{ matrix.platform }}/jacoco.xml
 
       - name: Upload Java coverage report
         id: upload-java-coverage-report
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # actions/upload-artifact v7.0.1
         with:
-          name: coverage-java
-          path: coverage-java/jacoco.xml
+          name: coverage-java-${{ matrix.platform }}
+          path: coverage-java-${{ matrix.platform }}/jacoco.xml
           if-no-files-found: error
       - name: Diagnose job result
         id: ci-diagnostics

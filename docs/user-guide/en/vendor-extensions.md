@@ -10,6 +10,15 @@ attachment, response inspection, and generic TTLV preservation. The examples
 build a typed Discover Versions batch item and do not open a network
 connection.
 
+The examples below document implementation behavior and available local
+consumers. The current public API manifest marks `vendor_extension_registry`
+as `declared`: exact shared mappings are recorded, while parity verification
+remains pending. C release functions without callable Rust equivalents and
+TTLV helpers without exact public Rust mappings remain individually blocked.
+This guide does not claim a verified four-language 1.0 capability. See [Java
+and Python package scope](language-packages.md) for the
+current manifest status.
+
 ## Define an extension
 
 Each definition includes a non-empty Vendor Identification using ASCII

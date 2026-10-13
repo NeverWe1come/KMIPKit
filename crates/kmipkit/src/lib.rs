@@ -1,6 +1,78 @@
 //! The supported high-level Rust API for the `KMIPKit` client library.
 #![forbid(unsafe_code)]
 
+/// The synchronized `KMIPKit` package version compiled into this library.
+pub const VERSION: &str = env!("CARGO_PKG_VERSION");
+
+/// The stable C ABI revision reported by this release line.
+pub const ABI_VERSION: u32 = 1;
+
+/// Synchronized product and C ABI version metadata.
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub struct RuntimeVersion {
+    /// The package's synchronized semantic version.
+    pub product_version: &'static str,
+    /// The stable C ABI revision.
+    pub abi_version: u32,
+}
+
+/// Returns the synchronized product version and stable C ABI revision.
+#[must_use]
+pub const fn runtime_version() -> RuntimeVersion {
+    RuntimeVersion {
+        product_version: VERSION,
+        abi_version: ABI_VERSION,
+    }
+}
+
+/// A stable error returned by local runtime metadata queries.
+#[non_exhaustive]
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub enum RuntimeMetadataError {
+    /// The UTF-8 capability identifier exceeded the fixed 128-byte input limit.
+    ResourceLimit,
+}
+
+impl std::fmt::Display for RuntimeMetadataError {
+    fn fmt(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Self::ResourceLimit => {
+                formatter.write_str("capability identifier exceeds the 128-byte limit")
+            }
+        }
+    }
+}
+
+impl std::error::Error for RuntimeMetadataError {}
+
+/// Returns whether this build includes the named `KMIPKit` API capability.
+///
+/// This query reports the library's local API surface. It does not determine
+/// whether a remote KMIP server supports the capability. Unknown and blocked
+/// capability identifiers return `Ok(false)`. Identifiers longer than 128 UTF-8
+/// bytes return [`RuntimeMetadataError::ResourceLimit`], matching the fixed-width
+/// binding boundary. This local query does not send a KMIP request and therefore
+/// has no request-delivery state.
+///
+/// # Errors
+///
+/// Returns [`RuntimeMetadataError::ResourceLimit`] when the identifier exceeds
+/// 128 UTF-8 bytes.
+pub fn capability_is_available(capability_id: &str) -> Result<bool, RuntimeMetadataError> {
+    if capability_id.len() > 128 {
+        return Err(RuntimeMetadataError::ResourceLimit);
+    }
+
+    Ok(matches!(
+        capability_id,
+        "ffi_runtime_metadata"
+            | "generic_ttlv_model"
+            | "ttlv_wire_codec"
+            | "vendor_extension_registry"
+            | "discover_versions_request_item"
+    ))
+}
+
 pub use kmipkit_client::{
     Client, ClientBatch, ClientBatchItem, ClientBatchItemResponse, ClientBatchOutcome,
     ClientBatchResponse, ClientCauseCategory, ClientError, ClientErrorCategory,

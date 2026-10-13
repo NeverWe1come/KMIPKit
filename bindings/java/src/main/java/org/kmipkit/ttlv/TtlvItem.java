@@ -4,7 +4,7 @@ import org.kmipkit.NativeExtensionRegistry;
 import org.kmipkit.internal.NativeHandle;
 
 /** An owned tag/value pair for insertion into a generic TTLV Structure. */
-public final class TtlvItem {
+public final class TtlvItem implements AutoCloseable {
     private final NativeHandle handle;
 
     private TtlvItem(long nativeHandle) {
@@ -27,5 +27,9 @@ public final class TtlvItem {
 
     NativeHandle nativeHandleOwner() {
         return handle;
+    }
+    @Override
+    public void close() {
+        handle.close();
     }
 }
