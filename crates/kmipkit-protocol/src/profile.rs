@@ -672,6 +672,8 @@ const SECRET_DATA_TYPE: u32 = 0x0042_0086;
 const KEY_BLOCK: u32 = 0x0042_0040;
 const KEY_VALUE: u32 = 0x0042_0045;
 const KEY_WRAPPING_DATA: u32 = 0x0042_0046;
+const ENCRYPTION_KEY_INFORMATION: u32 = 0x0042_0036;
+const MAC_SIGNATURE_KEY_INFORMATION: u32 = 0x0042_004E;
 const CREATE_KEY_PAIR_OPERATION: u32 = 0x0000_0002;
 const CREATE_KEY_PAIR_ATTRIBUTE_GROUPS: [u32; 3] = [0x0042_0126, 0x0042_0127, 0x0042_0128];
 const CRYPTOGRAPHIC_DOMAIN_PARAMETERS: u32 = 0x0042_0029;
@@ -880,10 +882,30 @@ fn key_block_preserves_wrapping(key_block: &StructureView<'_>) -> bool {
         }
         FieldPresence::Unique(wrapping_data) => {
             key_value_is_byte_string
-                && wrapping_data.with_value(|value| matches!(value, ValueView::Structure(_)))
+                && wrapping_data.with_value(|value| match value {
+                    ValueView::Structure(data) => key_wrapping_data_has_key_information(&data),
+                    _ => false,
+                })
         }
         FieldPresence::Duplicate => false,
     }
+}
+
+fn key_wrapping_data_has_key_information(data: &StructureView<'_>) -> bool {
+    let mut has_key_information = false;
+    for tag in [ENCRYPTION_KEY_INFORMATION, MAC_SIGNATURE_KEY_INFORMATION] {
+        match field_presence(data, tag) {
+            FieldPresence::Missing => {}
+            FieldPresence::Unique(field) => {
+                if !field.with_value(|value| matches!(value, ValueView::Structure(_))) {
+                    return false;
+                }
+                has_key_information = true;
+            }
+            FieldPresence::Duplicate => return false,
+        }
+    }
+    has_key_information
 }
 
 fn protocol_version_is_kmip_2_1(version: &StructureView<'_>) -> bool {
