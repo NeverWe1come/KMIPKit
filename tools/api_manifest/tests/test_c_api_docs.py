@@ -53,6 +53,25 @@ class CApiDocumentationTests(unittest.TestCase):
                     ],
                 )
 
+    def test_checked_in_binding_export_report_reconciles_every_package(self) -> None:
+        report = json.loads(AUDIT_REPORT.read_text(encoding="utf-8"))
+
+        for package in report["packages"]:
+            with self.subTest(package=package["packageId"]):
+                self.assertTrue(package["complete"], "scanner inventory must be complete")
+                self.assertTrue(
+                    package["matchesManifest"],
+                    f"unreconciled exports for {package['packageId']}: "
+                    f"missing={len(package['missingFromManifest'])}, "
+                    f"stale={len(package['notObserved'])}, "
+                    f"kind={len(package['kindMismatches'])}, "
+                    f"issues={len(package['issues'])}",
+                )
+                self.assertEqual([], package["missingFromManifest"])
+                self.assertEqual([], package["notObserved"])
+                self.assertEqual([], package["kindMismatches"])
+                self.assertEqual([], package["issues"])
+
 
 if __name__ == "__main__":
     unittest.main()
