@@ -67,6 +67,14 @@ _FIXED_LIMIT_IDS = (
     "maxLookupComparisons",
     "maxDepth",
 )
+_REGISTRY_V1_ERROR_CATEGORY_IDS = (
+    "compatibility_mismatch",
+    "duplicate_key",
+    "invalid_identity",
+    "invalid_input",
+    "invalid_schema",
+    "resource_limit",
+)
 _C_INTEGER_TYPES = {
     "int8_t": ("i8", 8, True),
     "uint8_t": ("u8", 8, False),
@@ -1496,7 +1504,11 @@ def _registry_manifest_v2(manifest: dict[str, Any]) -> dict[str, Any]:
         "requirementIds": requirement_ids,
         "types": registry_types,
         "functions": registry_functions,
-        "errorCategories": manifest["errorCategories"],
+        "errorCategories": [
+            deepcopy(category)
+            for category in manifest["errorCategories"]
+            if category["id"] in _REGISTRY_V1_ERROR_CATEGORY_IDS
+        ],
         "limits": manifest["limits"],
         "security": manifest["security"],
         "generatedOutputs": OUTPUTS.copy(),
