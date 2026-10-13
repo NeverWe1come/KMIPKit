@@ -1805,6 +1805,7 @@ def render_c_header(
         lines.extend(f"    {field['type']} {field['name']};" for field in c_type["fields"])
         lines.extend(["};", ""])
     if ready_c_exports is not None:
+        carrier_layout_names = {layout["name"] for layout in c_layouts}
         emitted_type_names = {
             declaration["c"]["name"]
             for declaration in manifest["types"]
@@ -1817,7 +1818,7 @@ def render_c_header(
                 if (
                     base_type.startswith("kmipkit_")
                     and base_type not in emitted_type_names
-                    and base_type not in {layout["name"] for layout in c_layouts}
+                    and base_type not in carrier_layout_names
                 ):
                     raise ManifestError("approved C carrier references a blocked C type")
     for c_type in c_layouts:
