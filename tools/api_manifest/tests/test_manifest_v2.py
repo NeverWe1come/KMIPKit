@@ -1736,11 +1736,70 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
         )
         with self.assertRaises(generate.ManifestError):
             generate._ordered_approved_c_type_layouts(manifest)
-
         manifest["approvedExclusions"][1]["cType"]["fields"][0]["type"] = (
             "kmipkit_outer_v1_t"
         )
         with self.assertRaises(generate.ManifestError):
+            generate._ordered_approved_c_type_layouts(manifest)
+
+    def test_approved_c_carrier_rejects_reserved_c_and_cpp_field_names(self) -> None:
+        manifest = {
+            "approvedExclusions": [
+                {
+                    "packageId": "c-kmipkit",
+                    "exportName": "kmipkit_reserved_field_v1_t",
+                    "reason": "Native ABI carrier without a four-language value.",
+                    "approvalSource": {"kind": "feature-specification", "path": "unused"},
+                    "evidence": "The native ABI declares this fixed-width record.",
+                    "cType": {
+                        "name": "kmipkit_reserved_field_v1_t",
+                        "kind": "fixed-width-value",
+                        "fields": [{"name": "class", "type": "uint32_t"}],
+                    },
+                }
+            ],
+            "types": [],
+        }
+
+        with self.assertRaisesRegex(generate.ManifestError, "invalid or reserved fields"):
+            generate._ordered_approved_c_type_layouts(manifest)
+
+    def test_approved_c_carrier_rejects_partially_declared_value_dependency(self) -> None:
+        manifest = {
+            "approvedExclusions": [
+                {
+                    "packageId": "c-kmipkit",
+                    "exportName": "kmipkit_outer_v1_t",
+                    "reason": "Native ABI carrier without a four-language value.",
+                    "approvalSource": {"kind": "feature-specification", "path": "unused"},
+                    "evidence": "The native ABI declares this fixed-width record.",
+                    "cType": {
+                        "name": "kmipkit_outer_v1_t",
+                        "kind": "fixed-width-value",
+                        "fields": [{"name": "inner", "type": "kmipkit_partial_v1_t"}],
+                    },
+                }
+            ],
+            "types": [
+                {
+                    "c": {
+                        "name": "kmipkit_partial_v1_t",
+                        "kind": "fixed-width-value",
+                    }
+                }
+            ],
+            "limits": [{"cField": "first"}, {"cField": "second"}],
+            "publicDeclarations": [
+                {
+                    "packageId": "c-kmipkit",
+                    "kind": "field",
+                    "exportName": "kmipkit_partial_v1_t.first",
+                    "declarationState": "declared",
+                }
+            ],
+        }
+
+        with self.assertRaisesRegex(generate.ManifestError, "incomplete declared value"):
             generate._ordered_approved_c_type_layouts(manifest)
 
     def test_schema_rejects_identical_duplicate_declarations_and_exclusions(self) -> None:
