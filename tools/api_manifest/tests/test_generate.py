@@ -287,6 +287,27 @@ class ManifestGeneratorCliTests(unittest.TestCase):
         self.assertNotIn("typedef struct kmipkit_client_t kmipkit_client_t;", public_header)
         self.assertNotIn("kmipkit_transport_config_create_v1", public_header)
 
+    def test_t076_batch_metadata_carrier_is_not_approved_or_public(self) -> None:
+        manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
+        outputs = generate.render_outputs(manifest)
+        public_header = outputs["bindings/c/include/kmipkit.h"].decode("utf-8")
+        carrier_name = "kmipkit_client_batch_item_metadata_v1_t"
+        t076_declarations = [
+            row for row in manifest["publicDeclarations"]
+            if row["declarationId"].startswith("T076:")
+        ]
+
+        self.assertEqual(27, len(t076_declarations))
+        self.assertTrue(all(row["declarationState"] == "blocked" for row in t076_declarations))
+        self.assertFalse(
+            any(
+                row["packageId"] == "c-kmipkit" and row["exportName"] == carrier_name
+                for row in manifest["approvedExclusions"]
+            )
+        )
+        self.assertNotIn(f"typedef struct {carrier_name} {carrier_name};", public_header)
+        self.assertNotIn(f"struct {carrier_name} {{", public_header)
+
     def test_versioned_fixed_width_values_render_declared_c_fields(self) -> None:
         manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
         type_name = "kmipkit_test_config_v1_t"
