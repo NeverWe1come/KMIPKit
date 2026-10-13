@@ -350,6 +350,55 @@ class ManifestGeneratorCliTests(unittest.TestCase):
         self.assertIn("pub port: u16,", record)
         self.assertNotIn("pub max_definitions: u64,", record)
 
+    def test_references_reject_duplicate_fixed_width_value_field_names(self) -> None:
+        manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
+        manifest["types"].append(
+            {
+                "id": "DuplicateFieldConfig",
+                "kind": "struct",
+                "requirementIds": ["KMIPKIT-0043-FR-007"],
+                "rust": {"module": "kmipkit_ffi", "name": "DuplicateFieldConfig", "owner": "ffi"},
+                "c": {
+                    "name": "kmipkit_duplicate_field_config_t",
+                    "kind": "fixed-width-value",
+                    "fields": [
+                        {"name": "port", "type": "uint16_t"},
+                        {"name": "port", "type": "uint32_t"},
+                    ],
+                },
+                "java": {"package": "org.kmipkit", "name": "DuplicateFieldConfig"},
+                "python": {"module": "kmipkit", "name": "DuplicateFieldConfig"},
+            }
+        )
+
+        with self.assertRaisesRegex(generate.ManifestError, "duplicate field names"):
+            generate._validate_references(manifest)
+
+    def test_references_require_versioned_c_value_header_fields(self) -> None:
+        manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
+        manifest["types"].append(
+            {
+                "id": "MalformedVersionedConfig",
+                "kind": "struct",
+                "requirementIds": ["KMIPKIT-0043-FR-007"],
+                "rust": {"module": "kmipkit_ffi", "name": "MalformedVersionedConfig", "owner": "ffi"},
+                "c": {
+                    "name": "kmipkit_malformed_versioned_config_t",
+                    "kind": "fixed-width-value",
+                    "versioned": True,
+                    "fields": [
+                        {"name": "port", "type": "uint16_t"},
+                        {"name": "abi_version", "type": "uint32_t"},
+                    ],
+                },
+                "java": {"package": "org.kmipkit", "name": "MalformedVersionedConfig"},
+                "python": {"module": "kmipkit", "name": "MalformedVersionedConfig"},
+            }
+        )
+
+        with self.assertRaisesRegex(generate.ManifestError, "begin with its size and ABI version"):
+            generate._validate_references(manifest)
+
     def test_generated_rust_metadata_lists_only_unblocked_c_mapped_capabilities(self) -> None:
         manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
         outputs = generate.render_outputs(manifest)
