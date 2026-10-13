@@ -3882,7 +3882,7 @@ class CatalogValidationTests(unittest.TestCase):
                 self.assertIn(requirement_id, elements[element_id]["requirement_ids"])
                 review_note = requirement["review_note"].casefold()
                 self.assertIn("server-side union", review_note)
-                self.assertIn("not an oasis test-case pass", review_note)
+            self.assertIn("no official test case is claimed or passed", review_note)
 
     def test_checked_in_credential_catalog_links_authentication_and_credential_elements(self) -> None:
         catalog_path = ROOT / "specification" / "catalog" / "kmip-2.1.json"
