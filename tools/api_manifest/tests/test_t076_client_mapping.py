@@ -411,6 +411,28 @@ class T076ClientMappingTests(unittest.TestCase):
         self.assertEqual(
             {"rust", "c", "java", "python"}, set(declaration["languageMappings"])
         )
+        self.assertEqual(
+            {
+                "rust": "kmipkit_client::ClientError",
+                "c": "kmipkit_last_error_get",
+                "java": "org.kmipkit.ClientOperationException",
+                "python": "kmipkit.errors.ClientExecutionError",
+            },
+            {language: mapping["name"] for language, mapping in declaration["languageMappings"].items()},
+        )
+
+        declarations_by_path = {
+            row["exportName"]: row for row in self.manifest["publicDeclarations"]
+        }
+        for path in (
+            "org.kmipkit.ClientOperationException.statusCode",
+            "org.kmipkit.ClientOperationException.categoryCode",
+            "org.kmipkit.ClientOperationException.causeCode",
+            "org.kmipkit.ClientOperationException.deliveryStateCode",
+        ):
+            with self.subTest(java_error_accessor=path):
+                self.assertEqual("declared", declarations_by_path[path]["declarationState"])
+                self.assertIn("KMIPKIT-0043-FR-013", declarations_by_path[path]["requirementIds"])
 
         clear_exclusion = next(
             row
