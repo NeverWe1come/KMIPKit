@@ -1348,6 +1348,193 @@ def test_transport_input_snapshots_path_text_before_marshalling() -> None:
     assert client.ffi.buffer(span.data, span.length)[:] == b"safe.pem"
 
 
+@pytest.mark.parametrize(
+    "arguments",
+    [
+        (client.EndpointKind.RAW_TLS, "kms.example.test", 5696, None, "/not-allowed"),
+        (client.EndpointKind.HTTPS, "https://kms.example.test", 0, "server", None),
+        (99, "https://kms.example.test", 0, None, None),
+    ],
+)
+def test_endpoint_rejects_incompatible_kind_and_endpoint_fields(
+    arguments: tuple[object, ...],
+) -> None:
+    with pytest.raises(errors.InvalidInputError):
+        client.Endpoint(*arguments)  # type: ignore[arg-type]
+
+
+@pytest.mark.parametrize(
+    "path",
+    [object(), "nul\x00path.pem", "surrogate\ud800.pem", "p" * 4_097],
+)
+def test_transport_file_factory_rejects_invalid_or_oversized_paths(path: object) -> None:
+    with pytest.raises(errors.InvalidInputError):
+        client.TransportInput.file(path, client.CredentialEncoding.PEM)  # type: ignore[arg-type]
+
+
+@pytest.mark.parametrize(
+    "path",
+    [Path("nul\x00path.pem"), Path("surrogate\ud800.pem"), Path("p" * 4_097)],
+)
+def test_transport_input_constructor_rejects_nul_utf8_and_oversized_paths(
+    path: Path,
+) -> None:
+    with pytest.raises(errors.InvalidInputError):
+        client.TransportInput(path, client.CredentialEncoding.PEM)
+
+
+@pytest.mark.parametrize("value", [b"", bytearray(b"secret"), memoryview(b"secret")])
+def test_transport_input_constructor_rejects_empty_or_noncanonical_buffers(
+    value: bytes | bytearray | memoryview,
+) -> None:
+    with pytest.raises(errors.InvalidInputError):
+        client.TransportInput(value, client.CredentialEncoding.PEM)  # type: ignore[arg-type]
+
+
+def test_trust_and_transport_groups_reject_invalid_members_and_group_shapes() -> None:
+    certificate = client.TransportInput.memory(b"ca", client.CredentialEncoding.PEM)
+    with pytest.raises(errors.InvalidInputError):
+        client.TrustSource(client.TrustKind.PLATFORM, (certificate,))
+    with pytest.raises(errors.InvalidInputError):
+        client.TrustSource(client.TrustKind.CERTIFICATES, ())
+    with pytest.raises(errors.InvalidInputError):
+        client.TrustSource(client.TrustKind.PLATFORM, object())  # type: ignore[arg-type]
+    with pytest.raises(errors.InvalidInputError):
+        client.TrustSource(client.TrustKind.CERTIFICATES, (object(),))  # type: ignore[arg-type]
+    with pytest.raises(errors.InvalidInputError):
+        _transport_configuration(client_certificates=object())
+    with pytest.raises(errors.InvalidInputError):
+        _transport_configuration(client_certificates=(object(),))
+
+
+def test_transport_group_count_uses_the_real_tuple_subclass_length() -> None:
+    item = client.TransportInput.memory(b"certificate", client.CredentialEncoding.PEM)
+
+    class LyingTuple(tuple[client.TransportInput, ...]):
+        def __len__(self) -> int:
+            return 0
+
+    values = LyingTuple((item,) * 4_097)
+    with pytest.raises(errors.ResourceLimitError):
+        _transport_configuration(client_certificates=values)
+
+
+def test_transport_config_canonicalizes_a_valid_tuple_subclass() -> None:
+    item = client.TransportInput.memory(b"certificate", client.CredentialEncoding.PEM)
+
+    class TupleSubclass(tuple[client.TransportInput, ...]):
+        pass
+
+    values = TupleSubclass((item,))
+    configuration = _transport_configuration(client_certificates=values)
+    assert type(configuration.client_certificates) is tuple
+    assert configuration.client_certificates == (item,)
+
+
+def test_transport_input_rejects_buffer_exporter_failure() -> None:
+    class BrokenBuffer(bytes):
+        def __new__(cls) -> BrokenBuffer:
+            return super().__new__(cls, b"material")
+
+        def __buffer__(self, _flags: int) -> memoryview:
+            raise BufferError("buffer unavailable")
+
+    with pytest.raises(errors.InvalidInputError):
+        client.TransportInput(BrokenBuffer(), client.CredentialEncoding.PEM)
+
+
+def _unvalidated_transport_configuration(**overrides: object) -> client.TransportConfig:
+    class SkipsPostInit(client.TransportConfig):
+        def __post_init__(self) -> None:
+            pass
+
+    valid = _transport_configuration()
+    values: dict[str, object] = {
+        "endpoint": valid.endpoint,
+        "client_certificates": valid.client_certificates,
+        "client_private_key": valid.client_private_key,
+        "trust": valid.trust,
+        "revocation_lists": valid.revocation_lists,
+        "connect_timeout": valid.connect_timeout,
+        "write_timeout": valid.write_timeout,
+        "read_timeout": valid.read_timeout,
+        "total_timeout": valid.total_timeout,
+        "max_request_bytes": valid.max_request_bytes,
+    }
+    values.update(overrides)
+    return SkipsPostInit(**values)  # type: ignore[arg-type]
+
+
+@pytest.mark.parametrize(
+    "field,value",
+    [
+        ("endpoint", object()),
+        ("client_certificates", object()),
+        ("client_private_key", object()),
+        ("trust", object()),
+        ("connect_timeout", object()),
+    ],
+)
+def test_client_facade_rejects_unvalidated_config_subclass_groups_before_ffi(
+    monkeypatch: pytest.MonkeyPatch, field: str, value: object
+) -> None:
+    configuration = _extension_configuration()
+    transport = _unvalidated_transport_configuration(**{field: value})
+    calls: list[object] = []
+
+    def create_transport(record: object, _output: object) -> int:
+        calls.append(record)
+        return 4
+
+    monkeypatch.setattr(
+        client,
+        "lib",
+        SimpleNamespace(kmipkit_transport_config_create_v1=create_transport),
+    )
+    try:
+        with pytest.raises(errors.InvalidInputError):
+            client.Client.create(configuration, transport)
+        assert calls == []
+    finally:
+        configuration.close()
+
+
+def test_client_facade_reconstructs_timeout_and_trust_subclasses_before_ffi(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    class UnvalidatedTrust(client.TrustSource):
+        def __post_init__(self) -> None:
+            pass
+
+    class UnvalidatedTimeout(client.TimeoutLimit):
+        def __post_init__(self) -> None:
+            pass
+
+    certificate = client.TransportInput.memory(b"ca", client.CredentialEncoding.PEM)
+    invalid_trust = UnvalidatedTrust(client.TrustKind.PLATFORM, (certificate,))
+    invalid_timeout = UnvalidatedTimeout(client.TimeoutKind.DEFAULT, 1, 0)
+    configuration = _extension_configuration()
+    calls: list[object] = []
+    monkeypatch.setattr(
+        client,
+        "lib",
+        SimpleNamespace(
+            kmipkit_transport_config_create_v1=lambda record, _output: calls.append(record) or 4
+        ),
+    )
+
+    try:
+        for transport in (
+            _unvalidated_transport_configuration(trust=invalid_trust),
+            _unvalidated_transport_configuration(connect_timeout=invalid_timeout),
+        ):
+            with pytest.raises(errors.InvalidInputError):
+                client.Client.create(configuration, transport)
+        assert calls == []
+    finally:
+        configuration.close()
+
+
 def test_private_python_client_loader_redacts_native_path_failure(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
