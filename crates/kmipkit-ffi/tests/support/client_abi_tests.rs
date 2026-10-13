@@ -995,3 +995,84 @@ fn ffi_client_correlation_value_enforces_the_local_material_bound() {
     );
     kmipkit_client_batch_release(batch);
 }
+
+#[test]
+fn bounded_file_reader_rejects_growth_after_aggregate_preflight() {
+    let bound = usize::try_from(MAX_TRANSPORT_MATERIAL_BYTES)
+        .expect("the material cap fits this test target");
+    let per_file = bound / 2;
+    let original_bytes = vec![b'a'; per_file];
+    let grown_bytes = vec![b'b'; per_file + 1];
+    let mut files = TemporaryFiles::new();
+    let first_path = files.write("aggregate-first", &original_bytes);
+    let second_path = files.write("aggregate-second", &original_bytes);
+    let first_path_bytes = path_bytes(&first_path);
+    let second_path_bytes = path_bytes(&second_path);
+    let inputs = [
+        input(INPUT_FILE, ENCODING_DER, &first_path_bytes),
+        input(INPUT_FILE, ENCODING_DER, &second_path_bytes),
+    ];
+
+    validate_transport_input_total(&inputs)
+        .expect("the exact aggregate file size passes preflight");
+    fs::write(&second_path, grown_bytes).expect("second file grows after preflight");
+
+    let first_file = fs::File::open(&first_path).expect("first file opens");
+    let first = read_transport_reader_with_budget(first_file, per_file as u64, per_file as u64)
+        .expect("first file consumes half of the aggregate budget");
+    assert_eq!(first.len(), per_file);
+    let second_file = fs::File::open(&second_path).expect("grown second file opens");
+    let error = read_transport_reader_with_budget(second_file, per_file as u64, per_file as u64)
+        .expect_err("grown file must not exceed the remaining aggregate budget");
+    assert_eq!(error, ERROR_RESOURCE_LIMIT);
+}
+
+#[test]
+fn private_key_file_reader_zeroizes_partial_error_and_over_bound_bytes() {
+    let exact_observer = SecretBufferObserver::new();
+    let exact = SecretBuffer::read_from_with_observer_for_test(
+        std::io::Cursor::new(b"1234"),
+        4,
+        exact_observer.clone(),
+    )
+    .expect("the exact key-input bound is accepted");
+    drop(exact);
+    assert!(exact_observer.initialized_bytes_were_zeroized());
+
+    let partial_observer = SecretBufferObserver::new();
+    let partial_error = SecretBuffer::read_from_with_observer_for_test(
+        PartialThenErrorReader { emitted: false },
+        64,
+        partial_observer.clone(),
+    )
+    .expect_err("the reader reports its scripted I/O failure");
+    assert_eq!(partial_error, ERROR_INVALID_INPUT);
+    assert!(partial_observer.initialized_bytes_were_zeroized());
+
+    let oversized_observer = SecretBufferObserver::new();
+    let oversized_error = SecretBuffer::read_from_with_observer_for_test(
+        std::io::Cursor::new(b"12345"),
+        4,
+        oversized_observer.clone(),
+    )
+    .expect_err("one byte over the local cap is rejected");
+    assert_eq!(oversized_error, ERROR_RESOURCE_LIMIT);
+    assert!(oversized_observer.initialized_bytes_were_zeroized());
+}
+
+struct PartialThenErrorReader {
+    emitted: bool,
+}
+
+impl Read for PartialThenErrorReader {
+    fn read(&mut self, destination: &mut [u8]) -> std::io::Result<usize> {
+        if self.emitted {
+            return Err(std::io::Error::other("scripted partial-read failure"));
+        }
+        self.emitted = true;
+        let sentinel = b"PRIVATE-KEY-SENTINEL";
+        let count = destination.len().min(sentinel.len());
+        destination[..count].copy_from_slice(&sentinel[..count]);
+        Ok(count)
+    }
+}
