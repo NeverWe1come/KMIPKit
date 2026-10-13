@@ -434,6 +434,50 @@ class T076ClientMappingTests(unittest.TestCase):
                 self.assertEqual("declared", declarations_by_path[path]["declarationState"])
                 self.assertIn("KMIPKIT-0043-FR-013", declarations_by_path[path]["requirementIds"])
 
+        field_targets = {
+            "status": (
+                "kmipkit_client::ClientError",
+                "org.kmipkit.ClientOperationException.statusCode",
+            ),
+            "client_category": (
+                "kmipkit_client::ClientError::category",
+                "org.kmipkit.ClientOperationException.categoryCode",
+            ),
+            "cause": (
+                "kmipkit_client::ClientError::cause_category",
+                "org.kmipkit.ClientOperationException.causeCode",
+            ),
+            "delivery": (
+                "kmipkit_client::ClientError::delivery_state",
+                "org.kmipkit.ClientOperationException.deliveryStateCode",
+            ),
+        }
+        for field, (rust_target, java_target) in field_targets.items():
+            with self.subTest(error_field=field):
+                path = f"kmipkit.errors.ClientExecutionError.{field}"
+                field_row = declarations_by_path[path]
+                self.assertEqual(rust_target, field_row["languageMappings"]["rust"]["name"])
+                self.assertEqual("kmipkit_last_error_get", field_row["languageMappings"]["c"]["name"])
+                self.assertEqual(java_target, field_row["languageMappings"]["java"]["name"])
+
+        for category_id, (status, java_exception) in expected.items():
+            status_name = {
+                "protocol": "KMIPKIT_ERROR_PROTOCOL",
+                "transport": "KMIPKIT_ERROR_TRANSPORT",
+                "server_result": "KMIPKIT_ERROR_SERVER_RESULT",
+            }[category_id]
+            variant = {
+                "protocol": "Protocol",
+                "transport": "Transport",
+                "server_result": "ServerResult",
+            }[category_id]
+            status_declaration = declarations_by_path[status_name]
+            self.assertEqual(
+                f"kmipkit_client::ClientError::{variant}",
+                status_declaration["languageMappings"]["rust"]["name"],
+            )
+            self.assertEqual(java_exception, status_declaration["languageMappings"]["java"]["name"])
+
         clear_exclusion = next(
             row
             for row in self.manifest["approvedExclusions"]
