@@ -6,6 +6,8 @@ import org.kmipkit.internal.NativeHandle;
 
 /** One ordered, single-use collection of typed request batch items. */
 public final class ClientBatch implements AutoCloseable {
+    private static final long MAX_UINT32_VALUE = 0xffff_ffffL;
+
     private final NativeHandle handle;
     private long itemCount;
 
@@ -40,7 +42,7 @@ public final class ClientBatch implements AutoCloseable {
 
     /** Sets the raw forward-compatible KMIP Asynchronous Indicator value. */
     public ClientBatch asynchronousIndicator(long indicator) {
-        if (indicator < 0 || indicator > 0xffff_ffffL) {
+        if (indicator < 0 || indicator > MAX_UINT32_VALUE) {
             throw new InvalidInputException("asynchronous indicator is outside uint32");
         }
         NativeExtensionRegistry.ensureLoaded();
