@@ -542,6 +542,66 @@ fn profile_maps_client_get_key_compression_type_selector() {
 }
 
 #[test]
+fn profile_maps_client_export_key_compression_type_selector() {
+    // KMIP Specification v2.1 §3.1 permits Key Compression Type in a Key Block;
+    // §6.1.18 Table 217 exposes the caller-selected Export request field.
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-3.1-001";
+    const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
+    const EXPORT_OPERATION: u32 = 0x0000_002B;
+    const KEY_COMPRESSION_TYPE_TAG: u32 = 0x0042_0041;
+
+    let result = ProfileValidationResult {
+        profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
+        requirement_ids: vec![REQUIREMENT_ID.to_owned()],
+    };
+
+    let selected_compression = request_message_with_operation_payload(
+        EXPORT_OPERATION,
+        crate::ExportRequest::new()
+            .with_unique_identifier(crate::UniqueIdentifier::TextString("ec-key-id".to_owned()))
+            .with_key_compression_type(crate::KeyCompressionType::from_raw(0xFFFF_FF01))
+            .into_ttlv_payload()
+            .expect("the typed Export request encodes the caller-selected value"),
+    );
+    result
+        .validate_request(&selected_compression)
+        .expect("the profile permits an explicit Export compression selector");
+
+    let omitted_optional_selector = request_message_with_operation_payload(
+        EXPORT_OPERATION,
+        crate::ExportRequest::new()
+            .with_unique_identifier(crate::UniqueIdentifier::TextString("ec-key-id".to_owned()))
+            .into_ttlv_payload()
+            .expect("the optional Export selector remains absent by default"),
+    );
+    result
+        .validate_request(&omitted_optional_selector)
+        .expect("profile validation does not synthesize or require the optional selector");
+
+    let malformed_selector = request_message_with_operation_payload(
+        EXPORT_OPERATION,
+        structure([
+            tagged(0x0042_0094, Value::text_string("ec-key-id".to_owned())),
+            tagged(
+                KEY_COMPRESSION_TYPE_TAG,
+                Value::text_string("compressed".to_owned()),
+            ),
+        ]),
+    );
+    assert!(result.validate_request(&malformed_selector).is_err());
+
+    let duplicate_selector = request_message_with_operation_payload(
+        EXPORT_OPERATION,
+        structure([
+            tagged(0x0042_0094, Value::text_string("ec-key-id".to_owned())),
+            tagged(KEY_COMPRESSION_TYPE_TAG, Value::enumeration(1)),
+            tagged(KEY_COMPRESSION_TYPE_TAG, Value::enumeration(2)),
+        ]),
+    );
+    assert!(result.validate_request(&duplicate_selector).is_err());
+}
+
+#[test]
 fn profile_maps_client_pgp_key_forms_and_versions_as_opaque_bytes() {
     // KMIP Specification v2.1 §2.4/Table 5 permits PGP Key versions 3 and 4;
     // its Key Value is caller-owned opaque ASCII-armored data.
