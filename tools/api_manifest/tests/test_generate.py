@@ -316,7 +316,15 @@ class ManifestGeneratorCliTests(unittest.TestCase):
 
         header = generate.render_c_header(manifest)
 
-        self.assertIn("typedef struct {\n    uint32_t struct_size;\n    uint32_t abi_version;\n    uint16_t port;\n} kmipkit_test_config_v1_t;", header)
+        self.assertIn("typedef struct kmipkit_test_config_v1_t kmipkit_test_config_v1_t;", header)
+        self.assertIn(
+            "struct kmipkit_test_config_v1_t {\n"
+            "    uint32_t struct_size;\n"
+            "    uint32_t abi_version;\n"
+            "    uint16_t port;\n"
+            "};",
+            header,
+        )
 
     def test_rust_ffi_renders_fixed_width_value_fields_from_the_type_record(self) -> None:
         manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))

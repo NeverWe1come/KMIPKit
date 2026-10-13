@@ -1148,6 +1148,7 @@ def _validate_c_value_layout(c_type: dict[str, Any], declared_types: set[str]) -
     ] != [("struct_size", "uint32_t"), ("abi_version", "uint32_t")]:
         raise ManifestError("versioned C value must begin with its size and ABI version")
     for field in fields:
+        _rust_identifier(field["name"])
         base_type = re.sub(r"\s*\*+$", "", field["type"])
         base_type = base_type.removeprefix("const ").strip()
         if base_type not in _C_INTEGER_TYPES and base_type not in declared_types:
@@ -1301,6 +1302,153 @@ def _c_declaration(function: dict[str, Any]) -> str:
     return f"{function['c']['returnType']} {function['c']['symbol']}({arguments});"
 
 
+def _c_value_layout_is_complete(
+    declaration: dict[str, Any],
+    limits: list[dict[str, Any]],
+    declared_fields: set[str],
+    *,
+    include_blocked: bool,
+) -> bool:
+    c_type = declaration["c"]
+    name = c_type["name"]
+    fields = c_type.get("fields", [])
+    expected = (
+        [f"{name}.{field['name']}" for field in fields]
+        if fields
+        else [f"{name}.{limit['cField']}" for limit in limits]
+    )
+    return include_blocked or all(field_name in declared_fields for field_name in expected)
+
+
+def _c_field_base_and_pointer_count(c_type: str) -> tuple[str, int]:
+    match = re.fullmatch(r"(?:const\s+)?([A-Za-z_][A-Za-z0-9_]*)(?:\s*(\*+))?", c_type)
+    if match is None:
+        raise ManifestError("C value field type cannot be represented in a public layout")
+    base_type, pointers = match.groups()
+    return base_type, len(pointers) if pointers else 0
+
+
+def _validate_ready_c_value_layouts(
+    manifest: dict[str, Any],
+    ready_c_exports: set[str] | None,
+    declared_c_fields: set[str],
+    *,
+    include_blocked: bool,
+) -> None:
+    declarations = manifest["types"]
+    types_by_name = {record["c"]["name"]: record for record in declarations}
+    all_fields_ready = include_blocked or ready_c_exports is None
+
+    def type_is_ready(name: str) -> bool:
+        return ready_c_exports is None or name in ready_c_exports
+
+    def layout_is_complete(record: dict[str, Any]) -> bool:
+        return _c_value_layout_is_complete(
+            record,
+            manifest["limits"],
+            declared_c_fields,
+            include_blocked=all_fields_ready,
+        )
+
+    for record in declarations:
+        c_type = record["c"]
+        if c_type["kind"] != "fixed-width-value" or not type_is_ready(c_type["name"]):
+            continue
+        if not c_type.get("fields") or not layout_is_complete(record):
+            continue
+        for field in c_type["fields"]:
+            base_type, pointer_count = _c_field_base_and_pointer_count(field["type"])
+            if base_type in _C_INTEGER_TYPES:
+                continue
+            target = types_by_name.get(base_type)
+            if target is None or not type_is_ready(base_type):
+                raise ManifestError("ready C value references a blocked C type")
+            target_c_type = target["c"]
+            if target_c_type["kind"] == "opaque-handle" and pointer_count == 0:
+                raise ManifestError("opaque C handle cannot be embedded by value")
+            if (
+                target_c_type["kind"] == "fixed-width-value"
+                and pointer_count == 0
+                and not layout_is_complete(target)
+            ):
+                raise ManifestError("ready C value references an incomplete C type by value")
+
+    for function in manifest["functions"]:
+        c_function = function["c"]
+        if ready_c_exports is not None and c_function["symbol"] not in ready_c_exports:
+            continue
+        signature_types = [c_function["returnType"]]
+        signature_types.extend(parameter["type"] for parameter in c_function["parameters"])
+        for signature_type in signature_types:
+            for name, record in types_by_name.items():
+                match = re.search(
+                    rf"(?:const\s+)?{re.escape(name)}(?:\s*(\*+))?(?![A-Za-z0-9_])",
+                    signature_type,
+                )
+                if match is None:
+                    continue
+                if not type_is_ready(name):
+                    raise ManifestError("ready C function references a blocked C type")
+                if (
+                    record["c"]["kind"] == "fixed-width-value"
+                    and not layout_is_complete(record)
+                    and not match.group(1)
+                ):
+                    raise ManifestError("ready C function uses an incomplete C value by value")
+
+
+def _ordered_ready_c_value_layouts(
+    manifest: dict[str, Any],
+    ready_c_exports: set[str] | None,
+    declared_c_fields: set[str],
+    *,
+    include_blocked: bool,
+) -> list[dict[str, Any]]:
+    all_fields_ready = include_blocked or ready_c_exports is None
+    records = {
+        record["c"]["name"]: record
+        for record in manifest["types"]
+        if record["c"]["kind"] == "fixed-width-value"
+        and record["c"].get("fields")
+        and (ready_c_exports is None or record["c"]["name"] in ready_c_exports)
+        and _c_value_layout_is_complete(
+            record,
+            manifest["limits"],
+            declared_c_fields,
+            include_blocked=all_fields_ready,
+        )
+    }
+    types_by_name = {record["c"]["name"]: record for record in manifest["types"]}
+    ordered: list[dict[str, Any]] = []
+    visiting: set[str] = set()
+    visited: set[str] = set()
+
+    def visit(name: str) -> None:
+        if name in visited:
+            return
+        if name in visiting:
+            raise ManifestError("C fixed-width value layouts contain a by-value cycle")
+        visiting.add(name)
+        record = records[name]
+        for field in record["c"]["fields"]:
+            base_type, pointer_count = _c_field_base_and_pointer_count(field["type"])
+            target = types_by_name.get(base_type)
+            if (
+                pointer_count == 0
+                and target is not None
+                and target["c"]["kind"] == "fixed-width-value"
+                and base_type in records
+            ):
+                visit(base_type)
+        visiting.remove(name)
+        visited.add(name)
+        ordered.append(record)
+
+    for name in records:
+        visit(name)
+    return ordered
+
+
 def _rust_c_type(c_type: str) -> str:
     match = re.fullmatch(r"(const\s+)?([A-Za-z_][A-Za-z0-9_]*)(\s*\*+)?", c_type)
     if match is None:
@@ -1310,13 +1458,15 @@ def _rust_c_type(c_type: str) -> str:
     pointer_count = stars.count("*") if stars else 0
     if pointer_count == 0:
         return rust_base
-    pointer = "*const" if const and pointer_count == 1 else "*mut"
-    return " ".join([pointer] * pointer_count + [rust_base])
+    pointer_kinds = ["*mut"] * pointer_count
+    if const:
+        pointer_kinds[-1] = "*const"
+    return " ".join([*pointer_kinds, rust_base])
 
 
 def _rust_identifier(name: str) -> str:
     if name in _RUST_RAW_IDENTIFIER_FORBIDDEN:
-        raise ManifestError("C parameter name cannot be represented as a Rust FFI identifier")
+        raise ManifestError("name cannot be represented as a Rust FFI identifier")
     return f"r#{name}" if name in _RUST_2024_KEYWORDS else name
 
 
@@ -1348,7 +1498,7 @@ def render_rust_ffi(manifest: dict[str, Any]) -> str:
             if fields:
                 for field in fields:
                     lines.append(
-                        f"    pub {field['name']}: {_rust_c_type(field['type'])},"
+                        f"    pub {_rust_identifier(field['name'])}: {_rust_c_type(field['type'])},"
                     )
             else:
                 if c_type.get("versioned"):
@@ -1411,63 +1561,89 @@ def render_c_header(
         for declaration in manifest.get("publicDeclarations", [])
         if declaration.get("packageId") == "c-kmipkit"
         and declaration.get("kind") == "field"
+        and (
+            include_blocked
+            or declaration.get("declarationState") in {"declared", "verified"}
+        )
     }
+    _validate_ready_c_value_layouts(
+        manifest,
+        ready_c_exports,
+        declared_c_fields,
+        include_blocked=include_blocked,
+    )
     emitted: set[str] = set()
+    # Enums must be complete before value layouts can refer to them.
     for declaration in manifest["types"]:
         c_type = declaration["c"]
         name = c_type["name"]
         if ready_c_exports is not None and name not in ready_c_exports:
             continue
-        if name in emitted:
+        if c_type["kind"] != "enum" or name in emitted:
             continue
         emitted.add(name)
-        if c_type["kind"] == "opaque-handle":
-            lines.append(f"typedef struct {name} {name};")
-        elif c_type["kind"] == "enum":
-            lines.append(f"typedef {c_type['underlyingType']} {name};")
-            prefix = name[:-2].upper()
-            for value in declaration["enumRepresentation"]["values"]:
-                const_name = f"{prefix}_{re.sub(r'(?<!^)(?=[A-Z])', '_', value['name']).upper()}"
-                if ready_c_exports is not None and const_name not in ready_c_exports:
-                    continue
-                lines.append(f"#define {const_name} (({name}){value['value']})")
-        elif c_type["kind"] == "fixed-width-value":
-            fields = c_type.get("fields")
-            if fields:
-                field_exports = [f"{name}.{field['name']}" for field in fields]
-                fields_are_ready = all(
-                    field_export in declared_c_fields
-                    and (ready_c_exports is None or field_export in ready_c_exports)
-                    for field_export in field_exports
-                )
-                if not fields_are_ready:
-                    lines.append(f"typedef struct {name} {name};")
-                    lines.append("")
-                    continue
-                lines.append("typedef struct {")
-                lines.extend(f"    {field['type']} {field['name']};" for field in fields)
-                lines.append(f"}} {name};")
-            else:
-                ready_fields = [
-                    limit["cField"]
-                    for limit in manifest["limits"]
-                    if f"{name}.{limit['cField']}" in declared_c_fields
-                    and (
-                        ready_c_exports is None
-                        or f"{name}.{limit['cField']}" in ready_c_exports
-                    )
-                ]
-                if not ready_fields:
-                    lines.append(f"typedef struct {name} {name};")
-                    lines.append("")
-                    continue
-                lines.append("typedef struct {")
-                if c_type.get("versioned"):
-                    lines.extend(["    uint32_t struct_size;", "    uint32_t abi_version;"])
-                for field in ready_fields:
-                    lines.append(f"    uint64_t {field};")
-                lines.append(f"}} {name};")
+        lines.append(f"typedef {c_type['underlyingType']} {name};")
+        prefix = name[:-2].upper()
+        for value in declaration["enumRepresentation"]["values"]:
+            const_name = f"{prefix}_{re.sub(r'(?<!^)(?=[A-Z])', '_', value['name']).upper()}"
+            if ready_c_exports is not None and const_name not in ready_c_exports:
+                continue
+            lines.append(f"#define {const_name} (({name}){value['value']})")
         lines.append("")
+
+    # Forward declarations make pointer members independent of manifest order.
+    for declaration in manifest["types"]:
+        c_type = declaration["c"]
+        name = c_type["name"]
+        if ready_c_exports is not None and name not in ready_c_exports:
+            continue
+        if c_type["kind"] == "opaque-handle" or (
+            c_type["kind"] == "fixed-width-value" and c_type.get("fields")
+        ):
+            lines.append(f"typedef struct {name} {name};")
+            emitted.add(name)
+    if emitted:
+        lines.append("")
+
+    # Preserve the existing generated layout for limit records without explicit fields.
+    for declaration in manifest["types"]:
+        c_type = declaration["c"]
+        name = c_type["name"]
+        if (
+            c_type["kind"] != "fixed-width-value"
+            or c_type.get("fields")
+            or name in emitted
+            or (ready_c_exports is not None and name not in ready_c_exports)
+        ):
+            continue
+        emitted.add(name)
+        if not _c_value_layout_is_complete(
+            declaration,
+            manifest["limits"],
+            declared_c_fields,
+            include_blocked=include_blocked or ready_c_exports is None,
+        ):
+            lines.append(f"typedef struct {name} {name};")
+            lines.append("")
+            continue
+        lines.append("typedef struct {")
+        if c_type.get("versioned"):
+            lines.extend(["    uint32_t struct_size;", "    uint32_t abi_version;"])
+        for limit in manifest["limits"]:
+            lines.append(f"    uint64_t {limit['cField']};")
+        lines.append(f"}} {name};")
+        lines.append("")
+
+    for declaration in _ordered_ready_c_value_layouts(
+        manifest,
+        ready_c_exports,
+        declared_c_fields,
+        include_blocked=include_blocked,
+    ):
+        c_type = declaration["c"]
+        lines.append(f"struct {c_type['name']} {{")
+        lines.extend(f"    {field['type']} {field['name']};" for field in c_type["fields"])
+        lines.extend(["};", ""])
     for declaration in manifest["types"]:
         c_type = declaration["c"]
         if (
