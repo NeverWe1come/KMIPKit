@@ -180,6 +180,26 @@ class SharedRustInventoryTests(unittest.TestCase):
                     f"{capability['capabilityId']} {language} mappings must name exact ready exports",
                 )
 
+    def test_runtime_error_type_maps_to_type_and_variant_maps_to_variant(self) -> None:
+        declarations = {
+            row["exportName"]: row
+            for row in self.manifest["publicDeclarations"]
+            if row["packageId"] == "rust-kmipkit"
+        }
+        error_type = declarations["kmipkit::ClientCauseCategory"]
+        other_variant = declarations["kmipkit::ClientCauseCategory::Other"]
+
+        self.assertEqual(error_type["kind"], "type")
+        self.assertEqual(
+            error_type["languageMappings"]["rust"],
+            {"packageId": "rust-kmipkit", "name": "kmipkit::ClientCauseCategory"},
+        )
+        self.assertEqual(other_variant["kind"], "variant")
+        self.assertEqual(
+            other_variant["languageMappings"]["rust"],
+            {"packageId": "rust-kmipkit", "name": "kmipkit::ClientCauseCategory::Other"},
+        )
+
     def test_every_ready_language_mapping_resolves_to_an_exact_ready_export(self) -> None:
         declarations_by_export = {
             (row["packageId"], row["exportName"]): row
