@@ -342,3 +342,7 @@ mod attribute_limits_tests;
 #[cfg(test)]
 #[path = "../tests/unit/attribute_coverage_contract_tests.rs"]
 mod attribute_coverage_contract_tests;
+
+#[cfg(test)]
+#[path = "../tests/unit/get_constraints_tests.rs"]
+mod get_constraints_tests;

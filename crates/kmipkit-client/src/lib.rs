@@ -206,3 +206,7 @@ pub use execute::{
     ClientRequest, ClientResponseView, PendingOutcome,
 };
 pub use kmipkit_transport::RequestOptions;
+
+#[cfg(test)]
+#[path = "../tests/unit/get_constraints_execution_tests.rs"]
+mod get_constraints_execution_tests;
