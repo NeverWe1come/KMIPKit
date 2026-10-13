@@ -34,6 +34,9 @@ _is_discoverable_positive_test = test_feature_traceability._is_discoverable_posi
 
 ROOT = Path(__file__).resolve().parents[3]
 OPTIONAL_CAPABILITY_TEST_REQUIREMENTS = {
+    "crates/kmipkit-protocol/tests/unit/register_operation_tests.rs::request_preserves_key_value_attributes_associated_with_raw_key_material": (
+        "KMIPKIT-REQ-SPEC-3.2-001",
+    ),
     "crates/kmipkit-client/tests/unit/create_key_pair_execution_tests.rs::create_key_pair_sends_client_supplied_dsa_domain_parameter_qlength": (
         "KMIPKIT-REQ-SPEC-4.14-001-001",
     ),
@@ -185,6 +188,15 @@ OPTIONAL_CAPABILITY_TEST_REQUIREMENTS = {
 
 
 OPTIONAL_CAPABILITY_TEST_CONTENT_REQUIREMENTS = {
+    "crates/kmipkit-protocol/tests/unit/register_operation_tests.rs::request_preserves_key_value_attributes_associated_with_raw_key_material": (
+        "KEY_VALUE",
+        "KEY_BLOCK",
+        "CRYPTOGRAPHIC_ALGORITHM",
+        "CRYPTOGRAPHIC_LENGTH",
+        "ItemValueShape::ByteString",
+        "ItemValueShape::Enumeration(3)",
+        "ItemValueShape::Integer(256)",
+    ),
     "crates/kmipkit-client/tests/unit/create_key_pair_execution_tests.rs::create_key_pair_sends_client_supplied_dsa_domain_parameter_qlength": (
         "CRYPTOGRAPHIC_DOMAIN_PARAMETERS",
         "Value::enumeration(5)",
@@ -16552,6 +16564,7 @@ class CatalogValidationTests(unittest.TestCase):
         )
         requirements = {row["requirement_id"]: row for row in catalog["requirements"]}
         requirement_ids = (
+            "KMIPKIT-REQ-SPEC-3.2-001",
             "KMIPKIT-REQ-SPEC-4.14-001-001",
             "KMIPKIT-REQ-SPEC-4.26-001",
             "KMIPKIT-REQ-SPEC-4.34-001-001",
@@ -16569,6 +16582,51 @@ class CatalogValidationTests(unittest.TestCase):
                 self.assertEqual(requirement["role"], "client")
                 self.assertEqual(requirement["direction"], "client_to_server")
                 self.assertEqual(requirement["test_case_ids"], [])
+
+    def test_key_value_attributes_register_evidence_is_narrow_and_source_linked(self) -> None:
+        """Plaintext Register evidence links source shape without claiming server acceptance."""
+        requirement_id = "KMIPKIT-REQ-SPEC-3.2-001"
+        expected_element_ids = {
+            "KMIPKIT-ELEM-OP-C2S-REGISTER",
+            "KMIPKIT-ELEM-OBJECT-STRUCTURE-KEY-VALUE",
+            "KMIPKIT-ELEM-STRUCTURE-MEMBER-3-2-KEY-VALUE-ATTRIBUTES",
+            "KMIPKIT-ELEM-STRUCTURE-MEMBER-3-2-KEY-VALUE-KEY-MATERIAL",
+            "KMIPKIT-ELEM-ATTRIBUTE-STRUCTURE-5-1-ATTRIBUTES",
+            "KMIPKIT-ELEM-STRUCTURE-MEMBER-5-1-ANY-ATTRIBUTE-IN-4-OBJECT-ATTRIBUTES",
+        }
+        implementation_ref = (
+            "crates/kmipkit-protocol/src/register.rs::RegisterRequest::into_ttlv_payload"
+        )
+        verification_ref = (
+            "crates/kmipkit-protocol/tests/unit/register_operation_tests.rs::"
+            "request_preserves_key_value_attributes_associated_with_raw_key_material"
+        )
+        catalog = json.loads(
+            (ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8")
+        )
+        requirement = next(
+            row for row in catalog["requirements"] if row["requirement_id"] == requirement_id
+        )
+        linked_element_ids = {
+            element["element_id"]
+            for element in catalog["elements"]
+            if requirement_id in element["requirement_ids"]
+        }
+        review_note = requirement["review_note"].casefold()
+
+        self.assertEqual(requirement["role"], "client")
+        self.assertEqual(requirement["direction"], "client_to_server")
+        self.assertEqual(requirement["scope_state"], "client_1_0")
+        self.assertEqual(requirement["status"], "scoped_verified")
+        self.assertEqual(requirement["feature_spec"], "KMIPKIT-0036")
+        self.assertEqual(set(requirement["element_ids"]), expected_element_ids)
+        self.assertEqual(linked_element_ids, expected_element_ids)
+        self.assertIn(implementation_ref, requirement["implementation_refs"])
+        self.assertIn(verification_ref, requirement["verification_refs"])
+        self.assertEqual(requirement["test_case_ids"], [])
+        self.assertIn("plaintext", review_note)
+        self.assertIn("server acceptance", review_note)
+        self.assertIn("official test case", review_note)
 
     def test_obtain_lease_evidence_uses_named_tests_without_reassigning_requirement_owner(self) -> None:
         """Obtain Lease evidence names positive client-visible tests under its existing owner."""
