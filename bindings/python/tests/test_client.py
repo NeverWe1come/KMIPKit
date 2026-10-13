@@ -1211,6 +1211,53 @@ def test_endpoint_factories_and_transport_config_reject_validation_overrides() -
         _transport_configuration(endpoint=bypassed)
 
 
+def test_client_facade_revalidates_transport_config_subclasses_before_ffi(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    class UnvalidatedEndpoint(client.Endpoint):
+        def __post_init__(self) -> None:
+            pass
+
+    class UnvalidatedTransportConfig(client.TransportConfig):
+        def __post_init__(self) -> None:
+            pass
+
+    valid = _transport_configuration()
+    invalid_endpoint = UnvalidatedEndpoint(client.EndpointKind.RAW_TLS, "", 0)
+    transport = UnvalidatedTransportConfig(
+        endpoint=invalid_endpoint,
+        client_certificates=valid.client_certificates,
+        client_private_key=valid.client_private_key,
+        trust=valid.trust,
+        revocation_lists=valid.revocation_lists,
+        connect_timeout=valid.connect_timeout,
+        write_timeout=valid.write_timeout,
+        read_timeout=valid.read_timeout,
+        total_timeout=valid.total_timeout,
+        max_request_bytes=valid.max_request_bytes,
+    )
+    configuration = _extension_configuration()
+    ffi_records: list[tuple[int, int]] = []
+
+    def create_transport(record: object, _output: object) -> int:
+        ffi_records.append(
+            (int(record.endpoint.length), int(record.endpoint_port))  # type: ignore[attr-defined]
+        )
+        return 4
+
+    monkeypatch.setattr(
+        client,
+        "lib",
+        SimpleNamespace(kmipkit_transport_config_create_v1=create_transport),
+    )
+    try:
+        with pytest.raises(errors.InvalidInputError):
+            client.Client.create(configuration, transport)
+        assert ffi_records == []
+    finally:
+        configuration.close()
+
+
 def test_transport_input_measures_real_buffer_size_for_bytes_subclasses() -> None:
     class LyingBytes(bytes):
         def __len__(self) -> int:
