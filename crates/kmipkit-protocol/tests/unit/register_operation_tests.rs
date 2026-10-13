@@ -264,6 +264,51 @@ fn request_allows_algorithm_and_length_embedded_in_key_value() {
 }
 
 #[test]
+fn request_rejects_mistyped_embedded_cryptographic_metadata() {
+    // KMIP Specification v2.1 §3.1, Table 12 encodes Cryptographic Algorithm
+    // as an Enumeration and Cryptographic Length as an Integer.
+    let malformed_object = item(
+        SYMMETRIC_KEY,
+        Value::structure(structure([item(
+            KEY_BLOCK,
+            Value::structure(structure([
+                item(KEY_FORMAT_TYPE, Value::enumeration(1)),
+                item(
+                    KEY_VALUE,
+                    Value::structure(structure([
+                        item(
+                            KEY_MATERIAL,
+                            Value::byte_string(vec![0x01, 0x02, 0x03, 0x04]),
+                        ),
+                        item(
+                            ATTRIBUTES,
+                            Value::structure(structure([
+                                item(
+                                    CRYPTOGRAPHIC_ALGORITHM,
+                                    Value::byte_string(vec![0x03]),
+                                ),
+                                item(CRYPTOGRAPHIC_LENGTH, Value::integer(256)),
+                            ])),
+                        ),
+                    ])),
+                ),
+            ])),
+        )])),
+    );
+
+    let request = RegisterRequest::new(
+        ObjectType::from_raw(2),
+        symmetric_attributes([]),
+        malformed_object,
+    );
+
+    assert!(
+        request.into_ttlv_payload().is_err(),
+        "mistyped Cryptographic Algorithm cannot satisfy the Key Value requirement"
+    );
+}
+
+#[test]
 fn request_requires_algorithm_and_length_attributes_as_a_pair() {
     let algorithm_only = RegisterRequest::new(
         ObjectType::from_raw(2),
