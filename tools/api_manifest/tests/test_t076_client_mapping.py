@@ -66,7 +66,6 @@ C_SEMANTIC_FIELDS = {
     "kmipkit_timeout_limit_v1_t.nanoseconds",
     "kmipkit_transport_config_v1_t.endpoint_kind",
     "kmipkit_transport_config_v1_t.trust_kind",
-    "kmipkit_transport_config_v1_t.flags",
     "kmipkit_transport_config_v1_t.endpoint",
     "kmipkit_transport_config_v1_t.endpoint_port",
     "kmipkit_transport_config_v1_t.client_certificates",
@@ -86,6 +85,9 @@ C_SEMANTIC_FIELDS = {
     "kmipkit_transport_input_v1_t.source_kind",
     "kmipkit_transport_input_v1_t.encoding",
     "kmipkit_transport_input_v1_t.data",
+}
+C_REPRESENTATION_FIELD_EXCLUSIONS = {
+    "kmipkit_transport_config_v1_t.flags",
 }
 C_ABI_FIELD_EXCLUSIONS = {
     "kmipkit_byte_span_v1_t.data",
@@ -108,7 +110,7 @@ C_LAYOUT_TYPES = {
 }
 C_FIELD_TARGETS = {
     "kmipkit_client_batch_item_metadata_v1_t.has_result_reason": (
-        ("rust-kmipkit-client", "kmipkit_client::ClientBatchOutcome"),
+        ("rust-kmipkit-protocol", "kmipkit_protocol::KmipOperationResult::reason"),
         "org.kmipkit.extensions.ClientBatchItemResult.resultReason",
         "kmipkit.client.BatchItemResult.result_reason",
     ),
@@ -128,54 +130,54 @@ C_FIELD_TARGETS = {
         "kmipkit.client.BatchItemResult.result_status",
     ),
     "kmipkit_timeout_limit_v1_t.kind": (
-        ("rust-kmipkit-transport", "kmipkit_transport::TimeoutLimit::{Bounded(Duration),Unbounded}"),
-        "org.kmipkit.extensions.TransportConfiguration.Timeout.{defaultValue,bounded,unbounded}",
-        "kmipkit.client.TimeoutLimit.{default,bounded,unbounded}",
+        ("rust-kmipkit-transport", "kmipkit_transport::TimeoutLimit"),
+        "org.kmipkit.extensions.TransportConfiguration.Timeout.kind",
+        "kmipkit.client.TimeoutLimit.kind",
     ),
     "kmipkit_timeout_limit_v1_t.nanoseconds": (
-        ("rust-kmipkit-transport", "kmipkit_transport::TimeoutLimit::Bounded(Duration::new(seconds,nanoseconds))"),
-        "org.kmipkit.extensions.TransportConfiguration.Timeout.bounded(Duration)",
-        "kmipkit.client.TimeoutLimit.bounded(seconds,nanoseconds)",
+        ("rust-kmipkit-transport", "kmipkit_transport::TimeoutLimit::Bounded"),
+        "org.kmipkit.extensions.TransportConfiguration.Timeout.nanoseconds",
+        "kmipkit.client.TimeoutLimit.nanoseconds",
     ),
     "kmipkit_timeout_limit_v1_t.seconds": (
-        ("rust-kmipkit-transport", "kmipkit_transport::TimeoutLimit::Bounded(Duration::new(seconds,nanoseconds))"),
-        "org.kmipkit.extensions.TransportConfiguration.Timeout.bounded(Duration)",
-        "kmipkit.client.TimeoutLimit.bounded(seconds,nanoseconds)",
+        ("rust-kmipkit-transport", "kmipkit_transport::TimeoutLimit::Bounded"),
+        "org.kmipkit.extensions.TransportConfiguration.Timeout.seconds",
+        "kmipkit.client.TimeoutLimit.seconds",
     ),
     "kmipkit_transport_config_v1_t.client_certificate_count": (
-        ("rust-kmipkit-transport", "kmipkit_transport::ClientIdentity::new(certificate_chain,private_key)"),
-        "org.kmipkit.extensions.TransportConfiguration.Builder.{clientIdentityPem(certificateChain,privateKey),clientIdentityDer(certificateChain,privateKey),clientIdentityFiles(certificateChain,privateKeyFile,encoding)}",
-        "kmipkit.client.TransportConfig(client_certificates=...)",
+        ("rust-kmipkit-transport", "kmipkit_transport::ClientIdentity::new"),
+        "org.kmipkit.extensions.TransportConfiguration.Builder.clientIdentityPem",
+        "kmipkit.client.TransportConfig.client_certificates",
     ),
     "kmipkit_transport_config_v1_t.client_certificates": (
-        ("rust-kmipkit-transport", "kmipkit_transport::ClientIdentity::new(certificate_chain,private_key)"),
-        "org.kmipkit.extensions.TransportConfiguration.Builder.{clientIdentityPem(certificateChain,privateKey),clientIdentityDer(certificateChain,privateKey),clientIdentityFiles(certificateChain,privateKeyFile,encoding)}",
-        "kmipkit.client.TransportConfig(client_certificates=...)",
+        ("rust-kmipkit-transport", "kmipkit_transport::ClientIdentity::new"),
+        "org.kmipkit.extensions.TransportConfiguration.Builder.clientIdentityPem",
+        "kmipkit.client.TransportConfig.client_certificates",
     ),
     "kmipkit_transport_config_v1_t.client_private_key": (
-        ("rust-kmipkit-transport", "kmipkit_transport::ClientIdentity::new(certificate_chain,private_key)"),
-        "org.kmipkit.extensions.TransportConfiguration.Builder.{clientIdentityPem(certificateChain,privateKey),clientIdentityDer(certificateChain,privateKey),clientIdentityFiles(certificateChain,privateKeyFile,encoding)}",
-        "kmipkit.client.TransportConfig(client_private_key=...)",
+        ("rust-kmipkit-transport", "kmipkit_transport::ClientIdentity::new"),
+        "org.kmipkit.extensions.TransportConfiguration.Builder.clientIdentityPem",
+        "kmipkit.client.TransportConfig.client_private_key",
     ),
     "kmipkit_transport_config_v1_t.connect_timeout": (
-        ("rust-kmipkit-transport", "kmipkit_transport::TimeoutPolicy::with_connect"),
+        ("rust-kmipkit-transport", "kmipkit_transport::TransportConfigBuilder::timeouts"),
         "org.kmipkit.extensions.TransportConfiguration.Builder.timeouts",
         "kmipkit.client.TransportConfig.connect_timeout",
     ),
     "kmipkit_transport_config_v1_t.endpoint": (
-        ("rust-kmipkit-transport", "kmipkit_transport::Endpoint::{raw_tls(host,port),https(uri)}"),
-        "org.kmipkit.extensions.TransportConfiguration.Builder.{rawTls(host,port),https(target)}",
-        "kmipkit.client.Endpoint.{raw_tls(host,port),https(uri)}",
+        ("rust-kmipkit-transport", "kmipkit_transport::Endpoint"),
+        "org.kmipkit.extensions.TransportConfiguration.Builder",
+        "kmipkit.client.Endpoint",
     ),
     "kmipkit_transport_config_v1_t.endpoint_kind": (
-        ("rust-kmipkit-transport", "kmipkit_transport::Endpoint::{raw_tls(host,port),https(uri)}"),
-        "org.kmipkit.extensions.TransportConfiguration.Builder.{rawTls(host,port),https(target)}",
-        "kmipkit.client.Endpoint.{raw_tls(host,port),https(uri)}",
+        ("rust-kmipkit-transport", "kmipkit_transport::Endpoint"),
+        "org.kmipkit.extensions.TransportConfiguration.Builder",
+        "kmipkit.client.Endpoint",
     ),
     "kmipkit_transport_config_v1_t.endpoint_port": (
-        ("rust-kmipkit-transport", "kmipkit_transport::Endpoint::raw_tls(host,port)"),
-        "org.kmipkit.extensions.TransportConfiguration.Builder.rawTls(host,port)",
-        "kmipkit.client.Endpoint.raw_tls(host,port)",
+        ("rust-kmipkit-transport", "kmipkit_transport::Endpoint::raw_tls"),
+        "org.kmipkit.extensions.TransportConfiguration.Builder.rawTls",
+        "kmipkit.client.Endpoint.raw_tls",
     ),
     "kmipkit_transport_config_v1_t.flags": (
         ("rust-kmipkit-transport", "kmipkit_transport::TransportConfigBuilder::{tls_server_name,target_uri}"),
@@ -188,69 +190,69 @@ C_FIELD_TARGETS = {
         "kmipkit.client.TransportConfig.max_request_bytes",
     ),
     "kmipkit_transport_config_v1_t.read_timeout": (
-        ("rust-kmipkit-transport", "kmipkit_transport::TimeoutPolicy::with_read"),
+        ("rust-kmipkit-transport", "kmipkit_transport::TransportConfigBuilder::timeouts"),
         "org.kmipkit.extensions.TransportConfiguration.Builder.timeouts",
         "kmipkit.client.TransportConfig.read_timeout",
     ),
     "kmipkit_transport_config_v1_t.revocation_list_count": (
         ("rust-kmipkit-transport", "kmipkit_transport::TransportConfigBuilder::revocation_lists"),
-        "org.kmipkit.extensions.TransportConfiguration.Builder.{revocationListsPem,revocationListsDer}",
+        "org.kmipkit.extensions.TransportConfiguration.Builder.revocationListsPem",
         "kmipkit.client.TransportConfig.revocation_lists",
     ),
     "kmipkit_transport_config_v1_t.revocation_lists": (
-        ("rust-kmipkit-transport", "kmipkit_transport::RevocationListInput::{from_pem,from_der}"),
-        "org.kmipkit.extensions.TransportConfiguration.Builder.{revocationListsPem,revocationListsDer}",
+        ("rust-kmipkit-transport", "kmipkit_transport::RevocationListInput::from_pem"),
+        "org.kmipkit.extensions.TransportConfiguration.Builder.revocationListsPem",
         "kmipkit.client.TransportConfig.revocation_lists",
     ),
     "kmipkit_transport_config_v1_t.target_uri": (
         ("rust-kmipkit-transport", "kmipkit_transport::TransportConfigBuilder::target_uri"),
-        "org.kmipkit.extensions.TransportConfiguration.Builder.targetUri(value)",
-        "kmipkit.client.Endpoint.https(uri,target_uri=...)",
+        "org.kmipkit.extensions.TransportConfiguration.Builder.targetUri",
+        "kmipkit.client.Endpoint.target_uri",
     ),
     "kmipkit_transport_config_v1_t.tls_server_name": (
         ("rust-kmipkit-transport", "kmipkit_transport::TransportConfigBuilder::tls_server_name"),
-        "org.kmipkit.extensions.TransportConfiguration.Builder.tlsServerName(value)",
-        "kmipkit.client.Endpoint.raw_tls(host,port,tls_server_name=...)",
+        "org.kmipkit.extensions.TransportConfiguration.Builder.tlsServerName",
+        "kmipkit.client.Endpoint.tls_server_name",
     ),
     "kmipkit_transport_config_v1_t.total_timeout": (
-        ("rust-kmipkit-transport", "kmipkit_transport::TimeoutPolicy::with_total"),
+        ("rust-kmipkit-transport", "kmipkit_transport::TransportConfigBuilder::timeouts"),
         "org.kmipkit.extensions.TransportConfiguration.Builder.timeouts",
         "kmipkit.client.TransportConfig.total_timeout",
     ),
     "kmipkit_transport_config_v1_t.trust_certificate_count": (
         ("rust-kmipkit-transport", "kmipkit_transport::TrustSource::certificate_authorities"),
-        "org.kmipkit.extensions.TransportConfiguration.Builder.{trustCertificatesPem,trustCertificatesDer,trustCertificateFiles}",
-        "kmipkit.client.TrustSource.certificate_authorities(certificates)",
+        "org.kmipkit.extensions.TransportConfiguration.Builder.trustCertificatesPem",
+        "kmipkit.client.TrustSource.certificate_authorities",
     ),
     "kmipkit_transport_config_v1_t.trust_certificates": (
-        ("rust-kmipkit-transport", "kmipkit_transport::CertificateInput::{from_pem,from_der,from_pem_file,from_der_file}"),
-        "org.kmipkit.extensions.TransportConfiguration.Builder.{trustCertificatesPem,trustCertificatesDer,trustCertificateFiles}",
-        "kmipkit.client.TrustSource.certificate_authorities(certificates)",
+        ("rust-kmipkit-transport", "kmipkit_transport::CertificateInput::from_pem"),
+        "org.kmipkit.extensions.TransportConfiguration.Builder.trustCertificatesPem",
+        "kmipkit.client.TransportInput.memory",
     ),
     "kmipkit_transport_config_v1_t.trust_kind": (
-        ("rust-kmipkit-transport", "kmipkit_transport::TrustSource::{platform,certificate_authorities}"),
-        "org.kmipkit.extensions.TransportConfiguration.Builder.{trustPlatform,trustCertificatesPem,trustCertificatesDer,trustCertificateFiles}",
-        "kmipkit.client.TrustSource.{platform,certificate_authorities(certificates)}",
+        ("rust-kmipkit-transport", "kmipkit_transport::TrustSource"),
+        "org.kmipkit.extensions.TransportConfiguration.Builder",
+        "kmipkit.client.TrustSource.kind",
     ),
     "kmipkit_transport_config_v1_t.write_timeout": (
-        ("rust-kmipkit-transport", "kmipkit_transport::TimeoutPolicy::with_write"),
+        ("rust-kmipkit-transport", "kmipkit_transport::TransportConfigBuilder::timeouts"),
         "org.kmipkit.extensions.TransportConfiguration.Builder.timeouts",
         "kmipkit.client.TransportConfig.write_timeout",
     ),
     "kmipkit_transport_input_v1_t.data": (
-        ("rust-kmipkit-transport", "kmipkit_transport::{CertificateInput,PrivateKeyInput,RevocationListInput}::from_{pem,der}"),
-        "org.kmipkit.extensions.TransportConfiguration.Builder.{clientIdentityPem,clientIdentityDer,trustCertificatesPem,trustCertificatesDer,revocationListsPem,revocationListsDer}",
-        "kmipkit.client.TransportInput.{memory,file}",
+        ("rust-kmipkit-transport", "kmipkit_transport::CertificateInput::from_pem"),
+        "org.kmipkit.extensions.TransportConfiguration.Builder.clientIdentityPem",
+        "kmipkit.client.TransportInput.memory",
     ),
     "kmipkit_transport_input_v1_t.encoding": (
-        ("rust-kmipkit-transport", "kmipkit_transport::{CertificateInput,PrivateKeyInput,RevocationListInput}::{from_pem,from_der}"),
+        ("rust-kmipkit-transport", "kmipkit_transport::CertificateInput::from_pem"),
         "org.kmipkit.extensions.TransportConfiguration.Encoding",
-        "kmipkit.client.CredentialEncoding.{PEM,DER}",
+        "kmipkit.client.CredentialEncoding",
     ),
     "kmipkit_transport_input_v1_t.source_kind": (
-        ("rust-kmipkit-transport", "kmipkit_transport::{CertificateInput,PrivateKeyInput}::{from_pem_file,from_der_file}"),
-        "org.kmipkit.extensions.TransportConfiguration.Builder.{clientIdentityFiles,trustCertificateFiles}",
-        "kmipkit.client.TransportInput.{memory,file}",
+        ("rust-kmipkit-transport", "kmipkit_transport::CertificateInput"),
+        "org.kmipkit.extensions.TransportConfiguration.Builder",
+        "kmipkit.client.TransportInput",
     ),
 }
 
@@ -341,7 +343,7 @@ class T076ClientMappingTests(unittest.TestCase):
             if row["packageId"] == "c-kmipkit"
         }
 
-        self.assertEqual(29, len(C_SEMANTIC_FIELDS))
+        self.assertEqual(28, len(C_SEMANTIC_FIELDS))
         self.assertEqual(10, len(C_ABI_FIELD_EXCLUSIONS))
         self.assertTrue(
             C_SEMANTIC_FIELDS.issubset(declarations),
@@ -352,6 +354,10 @@ class T076ClientMappingTests(unittest.TestCase):
             f"unclassified C ABI fields: {sorted(C_ABI_FIELD_EXCLUSIONS - exclusions.keys())}",
         )
         self.assertEqual(C_LAYOUT_TYPES, C_LAYOUT_TYPES.intersection(exclusions))
+        self.assertTrue(
+            C_REPRESENTATION_FIELD_EXCLUSIONS.issubset(exclusions),
+            f"unclassified C representation fields: {sorted(C_REPRESENTATION_FIELD_EXCLUSIONS - exclusions.keys())}",
+        )
         for name in C_LAYOUT_TYPES:
             self.assertEqual(name, exclusions[name]["cType"]["name"])
 
@@ -394,8 +400,34 @@ class T076ClientMappingTests(unittest.TestCase):
                 self.assertIn("abi", exclusion["reason"].lower())
                 self.assertIn("KMIPKIT-0043-FR-007", exclusion["evidence"])
 
+        flags = exclusions["kmipkit_transport_config_v1_t.flags"]
+        self.assertIn("tls_server_name", flags["reason"])
+        self.assertIn("target_uri", flags["reason"])
+        self.assertIn("KMIPKIT-0013-FR-", flags["evidence"])
+
         last_error = declarations["kmipkit_last_error_get"]
         self.assertEqual("c-symbol", last_error["kind"])
+
+    def test_c_field_targets_are_exact_ready_public_exports(self) -> None:
+        declarations_by_path = {
+            (row["packageId"], row["exportName"]): row
+            for row in self.manifest["publicDeclarations"]
+        }
+        for field_path, targets in C_FIELD_TARGETS.items():
+            rust_target, java_target, python_target = targets
+            for language, package_and_path in (
+                ("rust", rust_target),
+                ("java", ("java-kmipkit", java_target)),
+                ("python", ("python-kmipkit", python_target)),
+            ):
+                package, path = package_and_path
+                with self.subTest(field=field_path, language=language, target=path):
+                    self.assertNotIn("{", path)
+                    self.assertNotIn("}", path)
+                    self.assertNotIn("(", path)
+                    target = declarations_by_path.get((package, path))
+                    self.assertIsNotNone(target, f"missing exact {language} export target: {path}")
+                    self.assertIn(target["declarationState"], {"declared", "verified"})
 
     def test_ready_function_mappings_resolve_to_real_four_language_apis(self) -> None:
         expected = {
