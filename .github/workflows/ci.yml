@@ -451,6 +451,17 @@ jobs:
         id: run-java-tests
         run: mvn --batch-mode --file bindings/java/pom.xml test
 
+      - name: Prime Gradle Java compile dependencies
+        id: prime-gradle-java-compile-dependencies
+        shell: pwsh
+        working-directory: bindings/java
+        run: |
+          if ($IsWindows) {
+            .\gradlew.bat compileJava
+          } else {
+            sh ./gradlew compileJava
+          }
+
       - name: Run packaged Java native loader smoke
         id: run-java-native-package-smoke
         shell: pwsh
