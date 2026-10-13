@@ -75,6 +75,25 @@ class Endpoint:
     tls_server_name: str | None = field(default=None, repr=False)
     target_uri: str | None = field(default=None, repr=False)
 
+    def __post_init__(self) -> None:
+        if not isinstance(self.kind, EndpointKind):
+            errors.raise_for_status(4)
+        _nonempty_text(self.address)
+        if self.kind is EndpointKind.RAW_TLS:
+            _unsigned(self.port, 16, allow_zero=False)
+            if self.tls_server_name is not None:
+                _nonempty_text(self.tls_server_name)
+            if self.target_uri is not None:
+                errors.raise_for_status(4)
+            return
+        if self.kind is EndpointKind.HTTPS:
+            if _unsigned(self.port, 16) != 0 or self.tls_server_name is not None:
+                errors.raise_for_status(4)
+            if self.target_uri is not None:
+                _nonempty_text(self.target_uri)
+            return
+        errors.raise_for_status(4)
+
     @classmethod
     def raw_tls(
         cls, host: str, port: int, *, tls_server_name: str | None = None
@@ -151,9 +170,13 @@ def _validate_transport_input(value: TransportInput) -> None:
     if not isinstance(value.encoding, CredentialEncoding):
         errors.raise_for_status(4)
     if isinstance(value.source, bytes):
-        if not value.source:
+        try:
+            byte_count = memoryview(value.source).nbytes
+        except (TypeError, ValueError):
             errors.raise_for_status(4)
-        if len(value.source) > _MAX_INPUT_BYTES:
+        if byte_count == 0:
+            errors.raise_for_status(4)
+        if byte_count > _MAX_INPUT_BYTES:
             errors.raise_for_status(6)
         return
     if not isinstance(value.source, Path):
@@ -176,7 +199,7 @@ def _validate_transport_input_group(values: tuple[TransportInput, ...]) -> None:
             errors.raise_for_status(4)
         _validate_transport_input(value)
         if isinstance(value.source, bytes):
-            total += len(value.source)
+            total += memoryview(value.source).nbytes
             if total > _MAX_INPUT_BYTES:
                 errors.raise_for_status(6)
 
@@ -607,13 +630,14 @@ def _transport_record(configuration: TransportConfig) -> tuple[Any, tuple[object
     owners: list[object] = []
 
     def span(value: bytes) -> Any:
-        if not value:
+        byte_count = memoryview(value).nbytes
+        if byte_count == 0:
             return ffi.new("kmipkit_byte_span_v1_t *", {"data": ffi.NULL, "length": 0})[0]
         data = ffi.new("uint8_t[]", value)
         owners.append(data)
         return ffi.new(
             "kmipkit_byte_span_v1_t *",
-            {"data": data, "length": len(value)},
+            {"data": data, "length": byte_count},
         )[0]
 
     def input_record(value: TransportInput) -> Any:
@@ -657,7 +681,7 @@ def _transport_record(configuration: TransportConfig) -> tuple[Any, tuple[object
             },
         )[0]
 
-    endpoint_bytes = configuration.endpoint.address.encode("utf-8")
+    endpoint_bytes = _utf8_bytes(configuration.endpoint.address)
     endpoint = span(endpoint_bytes)
     certificates = input_array(configuration.client_certificates)
     key = input_record(configuration.client_private_key)
@@ -667,11 +691,11 @@ def _transport_record(configuration: TransportConfig) -> tuple[Any, tuple[object
     server_name = ffi.new("kmipkit_byte_span_v1_t *", {"data": ffi.NULL, "length": 0})[0]
     if configuration.endpoint.tls_server_name is not None:
         flags |= 1
-        server_name = span(configuration.endpoint.tls_server_name.encode("utf-8"))
+        server_name = span(_utf8_bytes(configuration.endpoint.tls_server_name))
     target_uri = ffi.new("kmipkit_byte_span_v1_t *", {"data": ffi.NULL, "length": 0})[0]
     if configuration.endpoint.target_uri is not None:
         flags |= 2
-        target_uri = span(configuration.endpoint.target_uri.encode("utf-8"))
+        target_uri = span(_utf8_bytes(configuration.endpoint.target_uri))
     record = ffi.new("kmipkit_transport_config_v1_t *")
     record.struct_size = ffi.sizeof("kmipkit_transport_config_v1_t")
     record.abi_version = 1
@@ -733,12 +757,18 @@ def _raise_abi_status(status: int) -> None:
     errors.raise_for_status(int(status))
 
 
-def _nonempty_text(value: str) -> str:
-    if not isinstance(value, str) or not value or "\x00" in value:
+def _utf8_bytes(value: str) -> bytes:
+    if not isinstance(value, str):
         errors.raise_for_status(4)
     try:
-        encoded = value.encode("utf-8")
+        return str.encode(value, "utf-8")
     except UnicodeEncodeError:
+        errors.raise_for_status(4)
+
+
+def _nonempty_text(value: str) -> str:
+    encoded = _utf8_bytes(value)
+    if not encoded or b"\x00" in encoded:
         errors.raise_for_status(4)
     if len(encoded) > _MAX_TEXT_BYTES:
         errors.raise_for_status(6)
