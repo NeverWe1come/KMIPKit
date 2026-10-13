@@ -3804,6 +3804,43 @@ class CatalogValidationTests(unittest.TestCase):
         self.assertIn("uppercase", alternatives)
         self.assertIn("rfc 2119", alternatives)
 
+    def test_optional_authentication_capabilities_link_only_bounded_local_evidence(self) -> None:
+        catalog = json.loads(
+            (ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8")
+        )
+        requirements = {row["requirement_id"]: row for row in catalog["requirements"]}
+        expected_evidence = {
+            "KMIPKIT-REQ-SPEC-9.4-001-001": {
+                "implementation": {"crates/kmipkit-client/src/execute.rs"},
+                "tests": {
+                    "crates/kmipkit-client/tests/unit/attestation_indicator_tests.rs::execute_advertises_attestation_without_authentication_or_credential_payload",
+                },
+                "scope_note": "omission",
+            },
+            "KMIPKIT-REQ-SPEC-9.4-002": {
+                "implementation": {"crates/kmipkit-protocol/src/credential/authentication.rs"},
+                "tests": {
+                    "crates/kmipkit-protocol/tests/credential_contract.rs::authentication_preserves_nonempty_credential_order",
+                    "crates/kmipkit-protocol/tests/credential_contract.rs::authentication_roundtrip_preserves_unknown_fields_and_credential_order",
+                },
+                "scope_note": "in-memory",
+            },
+        }
+
+        for requirement_id, expected in expected_evidence.items():
+            requirement = requirements[requirement_id]
+            with self.subTest(requirement_id=requirement_id):
+                self.assertEqual(
+                    (requirement["role"], requirement["direction"], requirement["scope_state"]),
+                    ("client", "client_to_server", "client_1_0"),
+                )
+                self.assertEqual(requirement["status"], "scoped_verified")
+                self.assertTrue(expected["implementation"].issubset(requirement["implementation_refs"]))
+                self.assertTrue(expected["tests"].issubset(requirement["verification_refs"]))
+                self.assertEqual(requirement["test_case_ids"], [])
+                self.assertIn(expected["scope_note"], requirement["review_note"].casefold())
+                self.assertIn("not an oasis test-case pass", requirement["review_note"].casefold())
+
     def test_checked_in_credential_catalog_links_authentication_and_credential_elements(self) -> None:
         catalog_path = ROOT / "specification" / "catalog" / "kmip-2.1.json"
         document = json.loads(catalog_path.read_bytes())
