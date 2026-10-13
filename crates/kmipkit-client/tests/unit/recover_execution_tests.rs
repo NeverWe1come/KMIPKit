@@ -37,7 +37,7 @@ use crate::{
     ClientRequest,
 };
 
-const RECOVER_OPERATION: u32 = 0x0000_002A;
+const RECOVER_OPERATION: u32 = 0x0000_0016;
 const ENCRYPT_OPERATION: u32 = 0x0000_001F;
 const RESPONSE_HEADER: u32 = 0x0042_007A;
 const PROTOCOL_VERSION: u32 = 0x0042_0069;
@@ -53,6 +53,7 @@ const RESULT_REASON: u32 = 0x0042_007E;
 const RESULT_MESSAGE: u32 = 0x0042_007D;
 const ASYNCHRONOUS_CORRELATION_VALUE: u32 = 0x0042_0006;
 const RESPONSE_PAYLOAD: u32 = 0x0042_007C;
+
 const REQUEST_PAYLOAD: u32 = 0x0042_0079;
 const UNIQUE_IDENTIFIER: u32 = 0x0042_0094;
 
@@ -120,6 +121,34 @@ fn response_bytes(
         &CodecLimits::defaults(),
     )
     .expect("the Recover response fixture has valid KMIP 2.1 TTLV framing")
+}
+
+#[test]
+fn recover_wire_code_matches_kmip_table_470() {
+    // Pinned OASIS KMIP 2.1 §11.36 Table 470 assigns Recover 0x16.
+    let response = response_bytes(
+        SUCCESS,
+        None,
+        None,
+        None,
+        None,
+        Some(success_payload("recovered-object")),
+    );
+    let (mut client, _, request) = client_for(ExchangeScript::Success {
+        response,
+        request_write_chunks: vec![4],
+    });
+    let result = client.recover(RecoverRequest::new(None), &CodecLimits::defaults());
+
+    let request = request.borrow();
+    assert_recover_request(
+        request
+            .as_ref()
+            .expect("the fake transport captured the request")
+            .as_slice(),
+        None,
+    );
+    assert!(result.is_ok());
 }
 
 fn success_payload(identifier: &str) -> Structure {

@@ -1,19 +1,25 @@
 # Managed-object lifecycle operations
 
-KMIPKit exposes explicit client calls for Activate, Archive, Destroy, and
-Recover. Each call sends one typed request, performs one exchange, and returns
-the server's operation result. The client does not simulate remote object
-state, retry requests, or issue Poll/Get follow-ups automatically. For
-connection setup and TLS policy, see the [production transport guide](production-transports.md).
+KMIPKit exposes explicit client calls for Activate, Archive, Destroy, Recover,
+Re-certify, Re-key, Re-key Key Pair, and Re-Provision. Each call sends one typed request,
+performs one exchange, and returns the server's operation result. The client
+does not simulate remote object state, retry requests, or issue Poll/Get follow-ups
+automatically. For connection setup and TLS policy, see the
+[production transport guide](production-transports.md).
 
 The operation payloads follow OASIS KMIP Specification v2.1 §6.1.1 Tables
 164–166 (Activate), §6.1.4 Tables 173–175 (Archive), §6.1.15 Tables 208–210
-(Destroy), and §6.1.42 Tables 288–290 (Recover). Unique Identifier forms and
-the assigned tag are defined by §4.58 Tables 145–146 and §11.56 Table 487.
+(Destroy), §6.1.42 Tables 288–290 (Recover), §6.1.46 Tables 303–307
+(Re-key), §6.1.47 Tables 308–312 (Re-key Key Pair), and §6.1.48 Tables
+313–315 (Re-Provision). Unique Identifier
+forms and the assigned tag are defined by §4.58 Tables 145–146 and §11.56
+Table 487.
 
-All four requests accept an optional typed `UniqueIdentifier`. KMIPKit sends
-the supplied representation as given; omitting it does not select or discover
-an object locally. Successful responses expose the server-returned identifier.
+Activate, Archive, Destroy, and Recover accept an optional typed
+`UniqueIdentifier`. KMIPKit sends the supplied representation as given;
+omitting it does not select or discover an object locally. Successful
+responses expose the server-returned identifier. Re-certify, Re-key, and
+Re-key Key Pair have operation-specific identifier fields described below.
 Non-success responses preserve their result without interpreting a success
 payload as an object state.
 
@@ -153,6 +159,181 @@ fn recover(
 
 fn main() {
     let _example = recover;
+}
+```
+
+## Re-certify
+
+Re-certify asks the server to renew one certificate. The caller may identify
+the existing certificate explicitly or omit its Unique Identifier to use the
+batch ID Placeholder. The caller supplies any Certificate Request, request
+type, Offset, attributes, and protection masks; a Certificate Request Value
+requires its type. If request data and Certificate Type are omitted, the
+server uses the existing certificate type. The server creates and maintains
+the replacement links. KMIPKit does not create certificates or track which
+certificates have already been renewed, so callers should issue Re-certify no
+more than once for a given existing certificate.
+
+```rust,kmipkit-test
+use kmipkit_client::{Client, ClientOperation};
+use kmipkit_protocol::{RecertifyRequest, UniqueIdentifier};
+use kmipkit_ttlv::codec::CodecLimits;
+
+fn recertify(
+    client: &mut Client,
+    limits: &CodecLimits,
+) -> Result<(), kmipkit_client::ClientError> {
+    let request = RecertifyRequest::new().with_unique_identifier(
+        UniqueIdentifier::TextString("certificate-42".to_owned()),
+    );
+    let item = client.recertify(request, limits)?;
+    let outcome = item.outcome();
+    assert_eq!(outcome.operation(), ClientOperation::Recertify);
+    let response = outcome
+        .response()
+        .recertify()
+        .expect("Re-certify returns its typed response");
+    let _server_status = response.result().status().raw();
+    let _replacement_identifier = response.unique_identifier();
+    Ok(())
+}
+
+fn main() {
+    let _example = recertify;
+}
+```
+
+## Re-key
+
+Re-key asks the server to create a replacement Symmetric Key. The caller may
+identify the existing key explicitly or omit its Unique Identifier to use a
+preceding batch item's ID Placeholder. Offset, Attributes, and Protection
+Storage Masks are optional and are forwarded in KMIP-defined order. When
+Offset is omitted, the server applies the standard's lifecycle-date behavior.
+The server generates the replacement key and maintains its Replacement Object
+and Replaced Key links. KMIPKit does not generate key material or keep a local
+record of which keys were re-keyed; callers should issue Re-key no more than
+once for a given existing key.
+
+```rust,kmipkit-test
+use kmipkit_client::{Client, ClientOperation};
+use kmipkit_protocol::{RekeyRequest, UniqueIdentifier};
+use kmipkit_ttlv::codec::CodecLimits;
+
+fn rekey(
+    client: &mut Client,
+    limits: &CodecLimits,
+) -> Result<(), kmipkit_client::ClientError> {
+    let request = RekeyRequest::new()
+        .with_unique_identifier(UniqueIdentifier::TextString("key-42".to_owned()));
+    let item = client.rekey(request, limits)?;
+    let outcome = item.outcome();
+    assert_eq!(outcome.operation(), ClientOperation::Rekey);
+    let response = outcome
+        .response()
+        .rekey()
+        .expect("Re-key returns its typed response");
+    let _server_status = response.result().status().raw();
+    let _replacement_identifier = response.unique_identifier();
+    Ok(())
+}
+
+fn main() {
+    let _example = rekey;
+}
+```
+
+## Re-key Key Pair
+
+Re-key Key Pair asks the server to create a replacement public/private key
+pair. The caller may identify the existing pair with its Private Key Unique
+Identifier or omit that field to use a preceding batch item's ID Placeholder.
+The caller can set an Offset and separate Common, Private Key, and Public Key
+Attributes and Protection Storage Masks. If Offset is omitted, the server
+copies the existing pair's Activation Date and Deactivation Date. KMIPKit does
+not generate key material or maintain the replacement links; the caller should
+request Re-key Key Pair no more than once for a given pair.
+
+```rust,kmipkit-test
+use kmipkit_client::{Client, ClientOperation};
+use kmipkit_protocol::{RekeyKeyPairRequest, UniqueIdentifier};
+use kmipkit_ttlv::codec::CodecLimits;
+
+fn rekey_key_pair(
+    client: &mut Client,
+    limits: &CodecLimits,
+) -> Result<(), kmipkit_client::ClientError> {
+    let request = RekeyKeyPairRequest::new()
+        .with_private_key_unique_identifier(UniqueIdentifier::TextString(
+            "private-key-42".to_owned(),
+        ))
+        .with_offset(86_400);
+    let item = client.rekey_key_pair(request, limits)?;
+    let outcome = item.outcome();
+    assert_eq!(outcome.operation(), ClientOperation::RekeyKeyPair);
+    let response = outcome
+        .response()
+        .rekey_key_pair()
+        .expect("Re-key Key Pair returns its typed response");
+    let _server_status = response.result().status().raw();
+    let _replacement_private_identifier = response.private_key_unique_identifier();
+    let _replacement_public_identifier = response.public_key_unique_identifier();
+    Ok(())
+}
+
+fn main() {
+    let _example = rekey_key_pair;
+}
+```
+
+## Re-Provision
+
+Re-Provision requests a replacement client credential. Supply either a
+Certificate Request object for the server to sign, a Certificate object for
+the server to associate, or neither to ask the server to create credentials.
+The two object forms are mutually exclusive. KMIPKit forwards the supplied
+structures and does not parse them, retain local credentials, or perform a
+follow-up Get. Inspect the optional Unique Identifier returned by the server.
+The pinned OASIS source labels Table 315 “RNG Retrieve Errors”; the approved
+KMIPKit interpretation applies its listed failure reasons to Re-Provision
+without modifying the pinned source.
+
+```rust,kmipkit-test
+use kmipkit_client::{Client, ClientOperation};
+use kmipkit_protocol::{ReProvisionRequest, UniqueIdentifier};
+use kmipkit_ttlv::codec::CodecLimits;
+use kmipkit_ttlv::Structure;
+
+fn reprovision_with_certificate_request(
+    client: &mut Client,
+    limits: &CodecLimits,
+    certificate_request: Structure,
+) -> Result<(), kmipkit_client::ClientError> {
+    let request = ReProvisionRequest::new().with_certificate_request(certificate_request);
+    let item = client.reprovision(request, limits)?;
+    let outcome = item.outcome();
+    assert_eq!(outcome.operation(), ClientOperation::ReProvision);
+    let response = outcome
+        .response()
+        .reprovision()
+        .expect("Re-Provision returns its typed response");
+    let _server_status = response.result().status().raw();
+    let _credential_identifier: Option<&UniqueIdentifier> = response.unique_identifier();
+    Ok(())
+}
+
+fn reprovision_with_server_generated_credentials(
+    client: &mut Client,
+    limits: &CodecLimits,
+) -> Result<(), kmipkit_client::ClientError> {
+    let item = client.reprovision(ReProvisionRequest::new(), limits)?;
+    let _server_status = item.outcome().result().status().raw();
+    Ok(())
+}
+
+fn main() {
+    let _request_example = reprovision_with_certificate_request;
+    let _server_generated_example = reprovision_with_server_generated_credentials;
 }
 ```
 

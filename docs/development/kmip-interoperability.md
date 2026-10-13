@@ -2,11 +2,11 @@
 
 Status: research and integration-test planning, not a conformance claim
 
-Research checked: 2026-10-07
+Research checked: 2026-10-11
 
 This document keeps two questions separate: what a server publicly declares for each KMIP operation, and what KMIPKit has actually exercised against a server. A declared operation is not an integration-test result. A passing integration test proves interoperability only for the recorded operation, payload, transport, product version, and configuration.
 
-KMIPKit 1.0 targets KMIP 2.1, TTLV, and all client-initiated operations, including asynchronous request flows. Server-initiated operations are outside 1.0 and planned for 1.1. The normative operation inventory below follows KMIP 2.1 Specification §§6.1 (57 client-to-server headings) and 6.2 (5 server-to-client headings); duplicate operation names are shown once per direction.
+KMIPKit 1.0 targets KMIP 2.1, TTLV, and client-initiated operations, including asynchronous request flows. Set Endpoint Role (§6.1.54) is the explicit exception: its mandatory success transition makes the local endpoint assume the server role, so both it and reverse-direction §6.2.5 are deferred to 1.1. Other server-initiated operations are outside 1.0 and planned for 1.1. The normative operation inventory below follows KMIP 2.1 Specification §§6.1 (57 client-to-server headings) and 6.2 (5 server-to-client headings); duplicate operation names are shown once per direction.
 
 ## Published operation support: Cosmian KMS and PyKMIP
 
@@ -67,7 +67,7 @@ The first column is the operation heading in KMIP 2.1. “Yes” means the produ
 | Set Attribute (C→S, §6.1.51) | Yes¹,² / test pending | Yes³ / blocked at KMIP 2.1 |
 | Set Constraints (C→S, §6.1.52) | Undocumented¹ / probe | Undocumented³ / blocked at KMIP 2.1 |
 | Set Defaults (C→S, §6.1.53) | Undocumented¹ / probe | Undocumented³ / blocked at KMIP 2.1 |
-| Set Endpoint Role (C→S, §6.1.54) | Undocumented¹ / probe | Undocumented³ / blocked at KMIP 2.1 |
+| Set Endpoint Role (C→S, §6.1.54) | Undocumented¹ / probe; deferred from KMIPKit 1.0 | Undocumented³ / blocked at KMIP 2.1; deferred from KMIPKit 1.0 |
 | Sign (C→S, §6.1.55) | Yes¹ / test pending | Yes³ / blocked at KMIP 2.1 |
 | Signature Verify (C→S, §6.1.56) | Yes¹ / test pending | Yes³ / blocked at KMIP 2.1 |
 | Validate (C→S, §6.1.57) | Yes¹ / test pending | Undocumented³ / blocked at KMIP 2.1 |
@@ -79,14 +79,14 @@ The first column is the operation heading in KMIP 2.1. “Yes” means the produ
 
 **Legend and interpretation**
 
-**Testability suffixes in the cells:** `test pending` means the version and transport are compatible with a KMIPKit 1.0 test once the operation is implemented and exposed by KMIPKit; no test has run yet. `rejection test only` means the server explicitly documents that operation as unimplemented. `probe` means published operation support is unknown and must be checked. `blocked at KMIP 2.1` marks PyKMIP’s version ceiling. `out of scope 1.0` marks server-initiated operations.
+**Testability suffixes in the cells:** `test pending` means the version and transport are compatible with a KMIPKit 1.0 test once the operation is implemented and exposed by KMIPKit; no test has run yet. `rejection test only` means the server explicitly documents that operation as unimplemented. `probe` means published operation support is undocumented; check the results ledger for any live probe. `blocked at KMIP 2.1` marks PyKMIP’s version ceiling. `out of scope 1.0` marks server-initiated operations. `deferred from KMIPKit 1.0` marks Set Endpoint Role, whose OASIS-mandated role transition is incompatible with the client-only 1.0 runtime.
 
 - **Yes¹ / No¹ / Undocumented¹** come from the [Cosmian 5.28.0 KMIP support matrix](https://github.com/Cosmian/kms/blob/5.28.0/documentation/docs/kmip_support/support.md). Cosmian marks `Set Attribute (Modify)` as supported in KMIP 2.0 and 2.1; because the specification has separate `Modify Attribute` and `Set Attribute` headings, the row above records only the explicit `Set Attribute` entry and does not infer support for `Modify Attribute`.
 - **Yes³** means PyKMIP’s [server operation list](https://github.com/OpenKMIP/PyKMIP/blob/master/docs/source/server.rst) names the operation. **Undocumented³** means it is absent from that list, not proof that a request is rejected.
 - PyKMIP’s version enum currently exposes KMIP up to 2.0, not 2.1 ([source](https://github.com/OpenKMIP/PyKMIP/blob/master/kmip/core/enums.py)). Therefore PyKMIP is useful as a local KMIP reference server, but it cannot provide a strict KMIP 2.1 positive integration target for KMIPKit 1.0.
 - Cosmian KMS 5.28.0 declares KMIP 2.1 support. Its [binary socket listener](https://github.com/Cosmian/kms/blob/5.28.0/documentation/docs/configuration/tls.md) accepts binary KMIP on port 5696, requires TLS and client certificate authentication, and can be restricted to TLS 1.3. This is the relevant path for KMIPKit’s raw TTLV/mTLS transport. The HTTP `/kmip/2_1` endpoint carries **JSON TTLV**, so it is not a substitute for testing KMIPKit’s binary TTLV transport ([API docs](https://github.com/Cosmian/kms/blob/5.28.0/documentation/docs/integrations/openapi.md)).
 - The Cosmian 5.28.0 license is [Business Source License 1.1](https://github.com/Cosmian/kms/blob/5.28.0/LICENSE); its terms allow non-production use. Confirm the exact license terms for any redistribution or use beyond local tests.
-- KMIPKit’s planned 1.0 scope includes every C→S operation. The “Yes” cells identify potential positive tests once the corresponding KMIPKit API and test fixture exist; this matrix does not claim those tests have run. S→C rows are intentionally outside KMIPKit 1.0.
+- KMIPKit 1.0 covers approved in-scope C→S operations. Set Endpoint Role (§6.1.54) is explicitly deferred together with its S→C counterpart (§6.2.5), because §6.1.54 mandates an endpoint-role transition after success. The “Yes” cells identify potential positive tests once the corresponding KMIPKit API and test fixture exist; this matrix does not claim those tests have run. Other S→C rows are intentionally outside KMIPKit 1.0.
 
 ## Candidate servers and test-result matrix
 
@@ -103,7 +103,7 @@ Products marked as KMIP 2.1 candidates are targets for future access requests or
 | Fortanix DSM | Public coverage lists KMIP 1.0–1.4 | Access/licensing to be confirmed | Not compatible with KMIPKit 1.0’s fixed 2.1 version |
 | Oracle Key Vault 21.x | Public administrator documentation lists KMIP 1.1 profiles | Commercial access to be confirmed | Not compatible with KMIPKit 1.0’s fixed 2.1 version |
 
-The following test matrix is a **blank results ledger**. No cell currently records a successful test. `Pending` means test execution is still required; `Pending (access; operation support unverified)` means access/configuration is outstanding and no per-operation result is known; `Pending (access + HSM; ...)` additionally requires the HSM-backed GKLM setup; `Not applicable` means the target does not advertise KMIP 2.1 and is excluded from a strict 1.0 interoperability result; `—` marks a server-initiated operation outside KMIPKit 1.0.
+The following test matrix is the results ledger. No cell currently records a successful test; `FAIL` cells record observed incompatible behavior. `Pending` means test execution is still required; `Pending (access; operation support unverified)` means access/configuration is outstanding and no per-operation result is known; `Pending (access + HSM; ...)` additionally requires the HSM-backed GKLM setup; `Not applicable` means the target does not advertise KMIP 2.1 and is excluded from a strict 1.0 interoperability result; `—` marks a server-initiated operation outside KMIPKit 1.0.
 
 | KMIPKit (operation) | Cosmian 5.28.0 | PyKMIP | IBM GKLM 5.1 | IBM GKLM 5.1 + Thales Luna HSM client 7.x/10.x | IBM GKLM 5.1 + Entrust nShield 13.3.2 / Connect XC 12.60 | Entrust KeyControl | Utimaco ESKM | Thales CipherTrust | Fortanix DSM | Oracle Key Vault |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
@@ -118,7 +118,7 @@ The following test matrix is a **blank results ledger**. No cell currently recor
 | Create Key Pair (§6.1.9) | Pending | Not applicable: max 2.0 | Pending (access; operation support unverified) | Pending (access + HSM; operation support unverified) | Pending (access + HSM; operation support unverified) | Pending (access; operation support unverified) | Pending (access; operation support unverified) | Not applicable: up to 1.4 | Not applicable: up to 1.4 | Not applicable: 1.1 profiles |
 | Create Split Key (§6.1.10) | Pending | Not applicable: max 2.0 | Pending (access; operation support unverified) | Pending (access + HSM; operation support unverified) | Pending (access + HSM; operation support unverified) | Pending (access; operation support unverified) | Pending (access; operation support unverified) | Not applicable: up to 1.4 | Not applicable: up to 1.4 | Not applicable: 1.1 profiles |
 | Decrypt (§6.1.11) | Pending | Not applicable: max 2.0 | Pending (access; operation support unverified) | Pending (access + HSM; operation support unverified) | Pending (access + HSM; operation support unverified) | Pending (access; operation support unverified) | Pending (access; operation support unverified) | Not applicable: up to 1.4 | Not applicable: up to 1.4 | Not applicable: 1.1 profiles |
-| Delegated Login (§6.1.12) | Pending (support unconfirmed) | Not applicable: max 2.0 | Pending (access; operation support unverified) | Pending (access + HSM; operation support unverified) | Pending (access + HSM; operation support unverified) | Pending (access; operation support unverified) | Pending (access; operation support unverified) | Not applicable: up to 1.4 | Not applicable: up to 1.4 | Not applicable: 1.1 profiles |
+| Delegated Login (§6.1.12) | FAIL (5.28.0: Failure/Invalid Message omitted Operation; 2026-10-11) | Not applicable: max 2.0 | Pending (access; operation support unverified) | Pending (access + HSM; operation support unverified) | Pending (access + HSM; operation support unverified) | Pending (access; operation support unverified) | Pending (access; operation support unverified) | Not applicable: up to 1.4 | Not applicable: up to 1.4 | Not applicable: 1.1 profiles |
 | Delete Attribute (§6.1.13) | Pending | Not applicable: max 2.0 | Pending (access; operation support unverified) | Pending (access + HSM; operation support unverified) | Pending (access + HSM; operation support unverified) | Pending (access; operation support unverified) | Pending (access; operation support unverified) | Not applicable: up to 1.4 | Not applicable: up to 1.4 | Not applicable: 1.1 profiles |
 | Derive Key (§6.1.14) | Pending | Not applicable: max 2.0 | Pending (access; operation support unverified) | Pending (access + HSM; operation support unverified) | Pending (access + HSM; operation support unverified) | Pending (access; operation support unverified) | Pending (access; operation support unverified) | Not applicable: up to 1.4 | Not applicable: up to 1.4 | Not applicable: 1.1 profiles |
 | Destroy (§6.1.15) | Pending | Not applicable: max 2.0 | Pending (access; operation support unverified) | Pending (access + HSM; operation support unverified) | Pending (access + HSM; operation support unverified) | Pending (access; operation support unverified) | Pending (access; operation support unverified) | Not applicable: up to 1.4 | Not applicable: up to 1.4 | Not applicable: 1.1 profiles |
@@ -136,8 +136,8 @@ The following test matrix is a **blank results ledger**. No cell currently recor
 | Join Split Key (§6.1.27) | Pending | Not applicable: max 2.0 | Pending (access; operation support unverified) | Pending (access + HSM; operation support unverified) | Pending (access + HSM; operation support unverified) | Pending (access; operation support unverified) | Pending (access; operation support unverified) | Not applicable: up to 1.4 | Not applicable: up to 1.4 | Not applicable: 1.1 profiles |
 | Locate (§6.1.28) | Pending | Not applicable: max 2.0 | Pending (access; operation support unverified) | Pending (access + HSM; operation support unverified) | Pending (access + HSM; operation support unverified) | Pending (access; operation support unverified) | Pending (access; operation support unverified) | Not applicable: up to 1.4 | Not applicable: up to 1.4 | Not applicable: 1.1 profiles |
 | Log (§6.1.29) | Pending (support unconfirmed) | Not applicable: max 2.0 | Pending (access; operation support unverified) | Pending (access + HSM; operation support unverified) | Pending (access + HSM; operation support unverified) | Pending (access; operation support unverified) | Pending (access; operation support unverified) | Not applicable: up to 1.4 | Not applicable: up to 1.4 | Not applicable: 1.1 profiles |
-| Login (§6.1.30) | Pending (support unconfirmed) | Not applicable: max 2.0 | Pending (access; operation support unverified) | Pending (access + HSM; operation support unverified) | Pending (access + HSM; operation support unverified) | Pending (access; operation support unverified) | Pending (access; operation support unverified) | Not applicable: up to 1.4 | Not applicable: up to 1.4 | Not applicable: 1.1 profiles |
-| Logout (§6.1.31) | Pending (support unconfirmed) | Not applicable: max 2.0 | Pending (access; operation support unverified) | Pending (access + HSM; operation support unverified) | Pending (access + HSM; operation support unverified) | Pending (access; operation support unverified) | Pending (access; operation support unverified) | Not applicable: up to 1.4 | Not applicable: up to 1.4 | Not applicable: 1.1 profiles |
+| Login (§6.1.30) | FAIL (5.28.0: Failure/Invalid Message omitted Operation; 2026-10-11) | Not applicable: max 2.0 | Pending (access; operation support unverified) | Pending (access + HSM; operation support unverified) | Pending (access + HSM; operation support unverified) | Pending (access; operation support unverified) | Pending (access; operation support unverified) | Not applicable: up to 1.4 | Not applicable: up to 1.4 | Not applicable: 1.1 profiles |
+| Logout (§6.1.31) | FAIL (5.28.0: Failure/Invalid Message omitted Operation; 2026-10-11) | Not applicable: max 2.0 | Pending (access; operation support unverified) | Pending (access + HSM; operation support unverified) | Pending (access + HSM; operation support unverified) | Pending (access; operation support unverified) | Pending (access; operation support unverified) | Not applicable: up to 1.4 | Not applicable: up to 1.4 | Not applicable: 1.1 profiles |
 | MAC (§6.1.32) | Pending | Not applicable: max 2.0 | Pending (access; operation support unverified) | Pending (access + HSM; operation support unverified) | Pending (access + HSM; operation support unverified) | Pending (access; operation support unverified) | Pending (access; operation support unverified) | Not applicable: up to 1.4 | Not applicable: up to 1.4 | Not applicable: 1.1 profiles |
 | MAC Verify (§6.1.33) | Pending | Not applicable: max 2.0 | Pending (access; operation support unverified) | Pending (access + HSM; operation support unverified) | Pending (access + HSM; operation support unverified) | Pending (access; operation support unverified) | Pending (access; operation support unverified) | Not applicable: up to 1.4 | Not applicable: up to 1.4 | Not applicable: 1.1 profiles |
 | Modify Attribute (§6.1.34) | Pending (support unconfirmed) | Not applicable: max 2.0 | Pending (access; operation support unverified) | Pending (access + HSM; operation support unverified) | Pending (access + HSM; operation support unverified) | Pending (access; operation support unverified) | Pending (access; operation support unverified) | Not applicable: up to 1.4 | Not applicable: up to 1.4 | Not applicable: 1.1 profiles |
@@ -160,7 +160,7 @@ The following test matrix is a **blank results ledger**. No cell currently recor
 | Set Attribute (§6.1.51) | Pending | Not applicable: max 2.0 | Pending (access; operation support unverified) | Pending (access + HSM; operation support unverified) | Pending (access + HSM; operation support unverified) | Pending (access; operation support unverified) | Pending (access; operation support unverified) | Not applicable: up to 1.4 | Not applicable: up to 1.4 | Not applicable: 1.1 profiles |
 | Set Constraints (§6.1.52) | Pending (support unconfirmed) | Not applicable: max 2.0 | Pending (access; operation support unverified) | Pending (access + HSM; operation support unverified) | Pending (access + HSM; operation support unverified) | Pending (access; operation support unverified) | Pending (access; operation support unverified) | Not applicable: up to 1.4 | Not applicable: up to 1.4 | Not applicable: 1.1 profiles |
 | Set Defaults (§6.1.53) | Pending (support unconfirmed) | Not applicable: max 2.0 | Pending (access; operation support unverified) | Pending (access + HSM; operation support unverified) | Pending (access + HSM; operation support unverified) | Pending (access; operation support unverified) | Pending (access; operation support unverified) | Not applicable: up to 1.4 | Not applicable: up to 1.4 | Not applicable: 1.1 profiles |
-| Set Endpoint Role (§6.1.54) | Pending (support unconfirmed) | Not applicable: max 2.0 | Pending (access; operation support unverified) | Pending (access + HSM; operation support unverified) | Pending (access + HSM; operation support unverified) | Pending (access; operation support unverified) | Pending (access; operation support unverified) | Not applicable: up to 1.4 | Not applicable: up to 1.4 | Not applicable: 1.1 profiles |
+| Set Endpoint Role (§6.1.54) | Not tested by KMIPKit 1.0: operation deferred with §6.2.5 because success changes endpoint roles | Not applicable: max 2.0 | Not tested by KMIPKit 1.0 | Not tested by KMIPKit 1.0 | Not tested by KMIPKit 1.0 | Not tested by KMIPKit 1.0 | Not tested by KMIPKit 1.0 | Not applicable: up to 1.4 | Not applicable: up to 1.4 | Not applicable: 1.1 profiles |
 | Sign (§6.1.55) | Pending | Not applicable: max 2.0 | Pending (access; operation support unverified) | Pending (access + HSM; operation support unverified) | Pending (access + HSM; operation support unverified) | Pending (access; operation support unverified) | Pending (access; operation support unverified) | Not applicable: up to 1.4 | Not applicable: up to 1.4 | Not applicable: 1.1 profiles |
 | Signature Verify (§6.1.56) | Pending | Not applicable: max 2.0 | Pending (access; operation support unverified) | Pending (access + HSM; operation support unverified) | Pending (access + HSM; operation support unverified) | Pending (access; operation support unverified) | Pending (access; operation support unverified) | Not applicable: up to 1.4 | Not applicable: up to 1.4 | Not applicable: 1.1 profiles |
 | Validate (§6.1.57) | Pending | Not applicable: max 2.0 | Pending (access; operation support unverified) | Pending (access + HSM; operation support unverified) | Pending (access + HSM; operation support unverified) | Pending (access; operation support unverified) | Pending (access; operation support unverified) | Not applicable: up to 1.4 | Not applicable: up to 1.4 | Not applicable: 1.1 profiles |
@@ -177,6 +177,20 @@ When an integration test is run, replace only the matching `Pending` cell with a
 
 Suggested result values: `OK` (assertions passed), `FAIL` (unexpected behavior), `SKIP` (not run, with reason), and `N/A` (not in the client release scope). `OK` applies only to the exact recorded case; it does not claim profile conformance or certification.
 
+For KMIPKIT-0039, the Get Constraints (§6.1.22), Get Usage Allocation (§6.1.23), Set Constraints (§6.1.52), and Set Defaults (§6.1.53) result rows remain `Pending` for every server because no live exchange for these operations has been measured. When testing, record the exact KMIPKit commit, server product/build and image or package digest, listener and server configuration, transport and negotiated TLS version, client-certificate setup, operation and request table, response status/reason and delivery state, UTC run date, outcome, and any workaround. The explicit Usage Allocation guard is local client accounting; it is not a server interoperability result. Set Endpoint Role remains outside the 1.0 test scope.
+
+On 2026-10-11, the pinned Cosmian KMS 5.28.0 image was started with the local mTLS test certificates. Separate credential-session probes for Delegated Login (§6.1.12), Login (§6.1.30), and Logout (§6.1.31) sent binary TTLV/TLS requests. Each received Failure/Invalid Message without the Operation field, which OASIS KMIP 2.1 §8.6, Table 399 requires when the request batch item includes Operation. KMIPKit rejected each response after response delivery began and retained its generic TTLV for inspection. These are `FAIL` interoperability results for credential-session operations; they are unrelated to KMIPKIT-0039 and do not change its four still-pending result rows above. PyKMIP's current version enum lists KMIP 2.0 as its latest version and does not list 2.1, so it is not a strict KMIP 2.1 integration target. The two-independent-implementation release gate remains open. The focused live probes are in `crates/kmipkit-client/tests/credential_sessions_cosmian.rs` and remain ignored in ordinary test runs.
+
+For KMIPKIT-0040, the PKCS#11 (§6.1.37, Tables 273–275) row remains
+`Pending` for every KMIP 2.1 server. The Rust protocol and fake-transport tests
+are source-derived local evidence only; no live PKCS#11 exchange was executed
+for this increment. No configured pair of independent KMIP 2.1 implementations
+with PKCS#11 forwarding support was available for this work. This leaves the
+T022 two-server release gate open. When access is available, record the exact
+client/server builds, TLS transport, caller-selected interface/function and
+parameter profile, result/delivery state, UTC date and workaround, without
+recording secret parameters, correlation values or raw KMIP bodies.
+
 ## Sources
 
 - [OASIS KMIP Specification 2.1, §§6.1–6.2](https://docs.oasis-open.org/kmip/kmip-spec/v2.1/os/kmip-spec-v2.1-os.html); the repository’s pinned copy and source status are indexed in [the KMIP 2.1 source inventory](../../specification/oasis/kmip-2.1/README.md).
@@ -190,3 +204,19 @@ Suggested result values: `OK` (assertions passed), `FAIL` (unexpected behavior),
 - [Oracle Key Vault 21.x KMIP profiles](https://docs.oracle.com/en/database/oracle/key-vault/21.10/okvag/okv_intro.html).
 
 Vendor capabilities, documentation URLs, product access, and licensing can change. Recheck them when arranging an external test. Vendor-supported versions are recorded as the vendor’s published statement, not independently validated KMIP behavior.
+
+
+## KMIPKIT-0042 diagnostics implementation evidence
+
+The Interop (section 6.1.26), Log (section 6.1.29) and Validate (section 6.1.57)
+Rust protocol/client implementation has source-derived payload and fake
+transport tests. These exercise one exchange, results, Pending, redaction and
+delivery metadata; they are not server integration results. No new server
+run or passing interoperability cell is recorded by this feature. The existing
+Cosmian cells remain pending and the separate two-independent-KMIP-2.1-server
+release gate remains open. Missing access, unsupported operations or unavailable
+fixtures must be recorded as their actual blocked/SKIP/N/A outcome rather than
+counted as a passing test. Interop production availability is a server-side
+restriction, not a KMIPKit availability promise. See
+[028 evidence](../../specs/028-diagnostics-interop/implementation-evidence.md)
+for local commands and dependency status.

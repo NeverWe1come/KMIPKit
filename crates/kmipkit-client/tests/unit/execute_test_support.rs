@@ -5,6 +5,114 @@ use kmipkit_ttlv::codec::CodecLimits;
 use kmipkit_ttlv::{Item, RawTag, Structure, StructureView, Tag, Value, ValueView};
 
 use crate::execute::encode_message_for_test;
+use crate::{ClientBatchOutcome, ClientOperation, ClientRequest};
+
+pub(crate) fn assert_lifecycle_request_debug(request: &ClientRequest, expected_name: &str) {
+    let formatted = format!("{request:?}");
+    assert!(
+        formatted.starts_with(expected_name),
+        "request debug output should identify {expected_name}: {formatted}"
+    );
+}
+
+pub(crate) fn assert_lifecycle_outcome_surface(
+    outcome: &ClientBatchOutcome,
+    expected_operation: ClientOperation,
+    response_debug_name: &str,
+    display_prefix: &str,
+) {
+    let response = outcome.response();
+    assert_eq!(
+        outcome.certify_response().is_some(),
+        expected_operation == ClientOperation::Certify
+    );
+    assert_eq!(
+        response.certify().is_some(),
+        expected_operation == ClientOperation::Certify
+    );
+    assert_eq!(
+        outcome.check_response().is_some(),
+        expected_operation == ClientOperation::Check
+    );
+    assert_eq!(
+        response.check().is_some(),
+        expected_operation == ClientOperation::Check
+    );
+    assert_eq!(
+        outcome.obtain_lease_response().is_some(),
+        expected_operation == ClientOperation::ObtainLease
+    );
+    assert_eq!(
+        response.obtain_lease().is_some(),
+        expected_operation == ClientOperation::ObtainLease
+    );
+    assert_eq!(
+        outcome.recertify_response().is_some(),
+        expected_operation == ClientOperation::Recertify
+    );
+    assert_eq!(
+        response.recertify().is_some(),
+        expected_operation == ClientOperation::Recertify
+    );
+    assert_eq!(
+        outcome.rekey_response().is_some(),
+        expected_operation == ClientOperation::Rekey
+    );
+    assert_eq!(
+        response.rekey().is_some(),
+        expected_operation == ClientOperation::Rekey
+    );
+    assert_eq!(
+        outcome.rekey_key_pair_response().is_some(),
+        expected_operation == ClientOperation::RekeyKeyPair
+    );
+    assert_eq!(
+        response.rekey_key_pair().is_some(),
+        expected_operation == ClientOperation::RekeyKeyPair
+    );
+    assert_eq!(
+        outcome.reprovision_response().is_some(),
+        expected_operation == ClientOperation::ReProvision
+    );
+    assert_eq!(
+        response.reprovision().is_some(),
+        expected_operation == ClientOperation::ReProvision
+    );
+    assert_eq!(
+        outcome.register_response().is_some(),
+        expected_operation == ClientOperation::Register
+    );
+    assert_eq!(
+        response.register().is_some(),
+        expected_operation == ClientOperation::Register
+    );
+    assert_eq!(
+        outcome.revoke_response().is_some(),
+        expected_operation == ClientOperation::Revoke
+    );
+    assert_eq!(
+        response.revoke().is_some(),
+        expected_operation == ClientOperation::Revoke
+    );
+
+    assert_eq!(
+        response.result().status().raw(),
+        outcome.result().status().raw()
+    );
+    assert!(
+        format!("{response:?}").starts_with(response_debug_name),
+        "response debug output should identify {response_debug_name}"
+    );
+    let outcome_debug = format!("{outcome:?}");
+    assert!(
+        outcome_debug.contains(response_debug_name.trim_end_matches('(')),
+        "outcome debug output should identify {response_debug_name}"
+    );
+    assert!(
+        outcome.to_string().starts_with(display_prefix),
+        "outcome display should start with {display_prefix}"
+    );
+}
 
 pub(crate) struct TestTransport(Box<dyn Transport>);
 

@@ -11,16 +11,19 @@ Every response is paired with the existing typed KMIP operation result and batch
 | Model | Request fields | Response fields | Wire source |
 | --- | --- | --- | --- |
 | `GetConstraintsRequest` | No operation-specific members | `constraints: Structure` (required) | §6.1.22, Tables 229–230; Constraints §7.7 |
-| `GetUsageAllocationRequest` | `unique_identifier: Option<UniqueIdentifier>`; `usage_limits_count: Integer` (required) | `unique_identifier: UniqueIdentifier` (required) | §6.1.23, Tables 232–233 |
+| `GetUsageAllocationRequest` | `unique_identifier: Option<UniqueIdentifier>`; `usage_limits_count: i64` (required, TTLV Long Integer) | `unique_identifier: UniqueIdentifier` (required) | §6.1.23, Tables 232–233; §4.59, Table 148 |
 | `SetConstraintsRequest` | `constraints: Structure` (required) | Empty operation-specific payload | §6.1.52, Tables 325–326; Constraints §7.7 |
 | `SetDefaultsRequest` | `defaults_information: Option<Structure>` | Empty operation-specific payload | §6.1.53, Tables 328–329; Defaults Information §7.11 |
-| `SetEndpointRoleRequest` | `endpoint_role: OpenEnumeration` (required) | `endpoint_role: OpenEnumeration` (required) | §6.1.54, Tables 331–332; §11.39 |
 
-Structure members retain TTLV order and unknown nested elements. `OpenEnumeration` means raw numeric values are retained, including future/vendor values. Optional absence remains distinct from an empty Structure. `Usage Limits Count` uses the KMIP Integer wire type; the operation codec must not silently replace it with an unsigned wire encoding.
+Structure members retain TTLV order and unknown nested elements. `OpenEnumeration` means raw numeric values are retained, including future/vendor values. Optional absence remains distinct from an empty Structure. `Usage Limits Count` uses the KMIP Long Integer wire type (`i64`) specified by §4.59, Table 148; the operation codec must not encode it as Integer or unsigned Integer.
 
 ### Error forms
 
-Preserve the source Result Status and each Result Reason alternative listed in Tables 231, 234, 327, 330, and 333. Duplicate source alternatives remain documented in `spec.md`; the implementation should not deduplicate or reject unknown future reasons. A malformed or incomplete network response is handled through the common sanitized protocol-response error and delivery state.
+Preserve the source Result Status and each Result Reason alternative listed in Tables 231, 234, 327, and 330. Duplicate source alternatives remain documented in `spec.md`; the implementation should not deduplicate or reject unknown future reasons. A malformed or incomplete network response is handled through the common sanitized protocol-response error and delivery state.
+
+## Deferred Endpoint Role operation
+
+KMIPKit 1.0.0 does not define a typed Set Endpoint Role model. OASIS KMIP 2.1 §6.1.54 (Tables 331–333) mandates a role transition after success; §11.19 (Tables 451–452) defines the roles, and §6.2.5 defines the reverse operation. These semantics are incompatible with the client-only 1.0 boundary. Both directions are deferred to 1.1 and require an approved specification covering bidirectional channel handling.
 
 ## Usage allocation context and guard
 

@@ -1,7 +1,7 @@
 //! Synchronous typed KMIP client execution foundation for `KMIPKit`.
 //!
 //! The typed request enum supports explicit Discover Versions, Activate,
-//! Archive, Destroy, Recover, Create, Create Key Pair, Create Split Key, Add
+//! Archive, Certify, Destroy, Recover, Create, Create Key Pair, Create Split Key, Add
 //! Attribute, Adjust Attribute, Delete Attribute, Get Attributes, Get
 //! Attribute List, Modify Attribute, Set Attribute, Query, and Ping operations.
 //! Separate methods execute Poll, Cancel, Process, and Query Asynchronous
@@ -50,6 +50,12 @@ mod extension_registry_test_support;
 mod extension_execution_tests;
 
 mod execute;
+
+/// Typed opaque PKCS#11 forwarding models.
+pub use kmipkit_protocol::{Pkcs11Error, Pkcs11Request, Pkcs11Response};
+mod usage_allocation;
+
+pub use usage_allocation::{UsageAllocationContext, UsageAllocationContextError};
 
 #[cfg(test)]
 #[path = "../tests/unit/execution_tests.rs"]
@@ -104,12 +110,28 @@ mod create_key_pair_execution_tests;
 mod create_split_key_execution_tests;
 
 #[cfg(test)]
+#[path = "../tests/unit/join_split_key_execution_tests.rs"]
+mod join_split_key_execution_tests;
+
+#[cfg(test)]
 #[path = "../tests/unit/activate_execution_tests.rs"]
 mod activate_execution_tests;
 
 #[cfg(test)]
 #[path = "../tests/unit/archive_execution_tests.rs"]
 mod archive_execution_tests;
+
+#[cfg(test)]
+#[path = "../tests/unit/certify_execution_tests.rs"]
+mod certify_execution_tests;
+
+#[cfg(test)]
+#[path = "../tests/unit/check_execution_tests.rs"]
+mod check_execution_tests;
+
+#[cfg(test)]
+#[path = "../tests/unit/obtain_lease_execution_tests.rs"]
+mod obtain_lease_execution_tests;
 
 #[cfg(test)]
 #[path = "../tests/unit/destroy_execution_tests.rs"]
@@ -160,6 +182,14 @@ mod process_execution_tests;
 mod ping_execution_tests;
 
 #[cfg(test)]
+#[path = "../tests/unit/rng_retrieve_execution_tests.rs"]
+mod rng_retrieve_execution_tests;
+
+#[cfg(test)]
+#[path = "../tests/unit/rng_seed_execution_tests.rs"]
+mod rng_seed_execution_tests;
+
+#[cfg(test)]
 #[path = "../tests/unit/query_execution_tests.rs"]
 mod query_execution_tests;
 
@@ -184,12 +214,58 @@ mod attestation_indicator_tests;
 mod attribute_read_execution_tests;
 
 #[cfg(test)]
+#[path = "../tests/unit/get_constraints_execution_tests.rs"]
+mod get_constraints_execution_tests;
+
+#[cfg(test)]
+#[path = "../tests/unit/get_usage_allocation_execution_tests.rs"]
+mod get_usage_allocation_execution_tests;
+
+#[cfg(test)]
+#[path = "../tests/unit/set_constraints_execution_tests.rs"]
+mod set_constraints_execution_tests;
+#[cfg(test)]
+#[path = "../tests/unit/set_defaults_execution_tests.rs"]
+mod set_defaults_execution_tests;
+#[cfg(test)]
+#[path = "../tests/unit/usage_allocation_guard_tests.rs"]
+mod usage_allocation_guard_tests;
+
+#[cfg(test)]
+#[path = "../tests/unit/policy_controls_guide_examples.rs"]
+mod policy_controls_guide_examples;
+
+#[cfg(test)]
 #[path = "../tests/unit/attribute_mutation_execution_tests.rs"]
 mod attribute_mutation_execution_tests;
 
 #[cfg(test)]
 #[path = "../tests/unit/attribute_execution_contract_tests.rs"]
 mod attribute_execution_contract_tests;
+
+#[cfg(test)]
+#[path = "../tests/unit/recertify_execution_tests.rs"]
+mod recertify_execution_tests;
+
+#[cfg(test)]
+#[path = "../tests/unit/rekey_execution_tests.rs"]
+mod rekey_execution_tests;
+
+#[cfg(test)]
+#[path = "../tests/unit/rekey_key_pair_execution_tests.rs"]
+mod rekey_key_pair_execution_tests;
+
+#[cfg(test)]
+#[path = "../tests/unit/reprovision_execution_tests.rs"]
+mod reprovision_execution_tests;
+
+#[cfg(test)]
+#[path = "../tests/unit/register_execution_tests.rs"]
+mod register_execution_tests;
+
+#[cfg(test)]
+#[path = "../tests/unit/revoke_execution_tests.rs"]
+mod revoke_execution_tests;
 
 #[cfg(test)]
 #[path = "../tests/unit/object_read_execution_tests.rs"]
@@ -208,27 +284,17 @@ pub use execute::{
 pub use kmipkit_transport::RequestOptions;
 
 #[cfg(test)]
-#[path = "../tests/unit/get_constraints_execution_tests.rs"]
-mod get_constraints_execution_tests;
+#[path = "../tests/unit/interop_execution_tests.rs"]
+mod interop_execution_tests;
 
 #[cfg(test)]
-#[path = "../tests/unit/get_usage_allocation_execution_tests.rs"]
-mod get_usage_allocation_execution_tests;
-
-mod usage_allocation;
-#[cfg(test)]
-#[path = "../tests/unit/usage_allocation_guard_tests.rs"]
-mod usage_allocation_guard_tests;
-pub use usage_allocation::{GuardedProtectionRequest, UsageAllocationContext};
+#[path = "../tests/unit/log_execution_tests.rs"]
+mod log_execution_tests;
 
 #[cfg(test)]
-#[path = "../tests/unit/set_constraints_execution_tests.rs"]
-mod set_constraints_execution_tests;
+#[path = "../tests/unit/validate_execution_tests.rs"]
+mod validate_execution_tests;
 
 #[cfg(test)]
-#[path = "../tests/unit/set_defaults_execution_tests.rs"]
-mod set_defaults_execution_tests;
-
-#[cfg(test)]
-#[path = "../tests/unit/set_endpoint_role_execution_tests.rs"]
-mod set_endpoint_role_execution_tests;
+#[path = "../tests/unit/pkcs11_execution_tests.rs"]
+mod pkcs11_execution_tests;

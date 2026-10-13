@@ -5,23 +5,18 @@ pub use kmipkit_client::{
     Client, ClientBatch, ClientBatchItem, ClientBatchItemResponse, ClientBatchOutcome,
     ClientBatchResponse, ClientCauseCategory, ClientError, ClientErrorCategory,
     ClientMessageExtension, ClientOperation, ClientOperationOutcome, ClientRequest, PendingOutcome,
-    RequestOptions,
+    RequestOptions, UsageAllocationContext, UsageAllocationContextError,
 };
 pub use kmipkit_protocol::{
-    CancelRequest, KmipOperationResult, PollRequest, ProcessRequest, ProtocolCauseCategory,
-    ProtocolError, ProtocolErrorKind, QueryAsyncRequestsRequest, ResultMessage, ResultReason,
-    ResultStatus, ResultValidationError,
+    CancelRequest, DelegatedLoginError, DelegatedLoginRequest, DelegatedLoginResponse,
+    GetConstraintsError, GetConstraintsRequest, GetConstraintsResponse, GetUsageAllocationError,
+    GetUsageAllocationRequest, GetUsageAllocationResponse, KmipOperationResult, LoginError,
+    LoginRequest, LoginResponse, LogoutError, LogoutRequest, LogoutResponse, PollRequest,
+    ProcessRequest, ProtocolCauseCategory, ProtocolError, ProtocolErrorKind,
+    QueryAsyncRequestsRequest, ResultMessage, ResultReason, ResultStatus, ResultValidationError,
+    RngRetrieveError, RngRetrieveRequest, RngRetrieveResponse, RngSeedError, RngSeedRequest,
+    RngSeedResponse, SecretBytes, SetConstraintsError, SetConstraintsRequest,
+    SetConstraintsResponse, SetDefaultsError, SetDefaultsRequest, SetDefaultsResponse, Ticket,
+    TicketType, TicketValidationError, TicketValidationErrorKind,
 };
 pub use kmipkit_transport::{RequestDeliveryState, TransportCauseCategory, TransportError};
-
-pub use kmipkit_protocol::{GetConstraintsRequest, GetConstraintsResponse};
-
-pub use kmipkit_protocol::{GetUsageAllocationRequest, GetUsageAllocationResponse};
-
-pub use kmipkit_client::{GuardedProtectionRequest, UsageAllocationContext};
-
-pub use kmipkit_protocol::{SetConstraintsRequest, SetConstraintsResponse};
-
-pub use kmipkit_protocol::{SetDefaultsRequest, SetDefaultsResponse};
-
-pub use kmipkit_protocol::{SetEndpointRoleRequest, SetEndpointRoleResponse};

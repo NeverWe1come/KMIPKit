@@ -6,7 +6,7 @@
 
 ## Summary
 
-Add typed client request/response models and explicit one-exchange execution for Get Constraints (§6.1.22, Tables 229–231), Get Usage Allocation (§6.1.23, Tables 232–234), Set Constraints (§6.1.52, Tables 325–327), Set Defaults (§6.1.53, Tables 328–330), and client-to-server Set Endpoint Role (§6.1.54, Tables 331–333). Preserve common KMIP results, Pending correlation, unknown values, absent fields, and transport delivery evidence. Add the approved caller-supplied local usage-allocation guard for typed Encrypt, MAC, and Sign calls. Reuse existing TTLV, object, result, batch, client, transport, and secret-safe error contracts; no local cryptographic algorithm or remote state inference is introduced.
+Add typed client request/response models and explicit one-exchange execution for four operations: Get Constraints (§6.1.22, Tables 229–231), Get Usage Allocation (§6.1.23, Tables 232–234), Set Constraints (§6.1.52, Tables 325–327), and Set Defaults (§6.1.53, Tables 328–330). Preserve common KMIP results, Pending correlation, unknown values, absent fields, and transport delivery evidence. Add the approved caller-supplied local usage-allocation guard for typed Encrypt, MAC, and Sign calls. Reuse existing TTLV, object, result, batch, client, transport, and secret-safe error contracts; no local cryptographic algorithm or remote state inference is introduced. Set Endpoint Role (§6.1.54) is deferred to 1.1 because its successful result mandates an endpoint-role transition incompatible with the approved client-only 1.0 boundary.
 
 ## Technical Context
 
@@ -26,7 +26,7 @@ Add typed client request/response models and explicit one-exchange execution for
 
 **Constraints**: KMIP 2.1, client-to-server operations only, TTLV only, current typed batch and delivery-state contracts, no retry or automatic Poll, exact source citations, preserve open enums and unknown TTLV, no server policy inference. The §6.1.23 guard accounts only caller-supplied unit costs routed through one local context; it is not server-consumption evidence.
 
-**Scale/Scope**: Five KMIP operations and one local usage-allocation guard. No server-side Set Endpoint Role operation (§6.2.5), no local policy engine, no new cryptographic provider, and no raw-body execution path.
+**Scale/Scope**: Four KMIP operations and one local usage-allocation guard. Set Endpoint Role (§6.1.54) and its server-to-client counterpart (§6.2.5) are deferred to 1.1. No local policy engine, new cryptographic provider, or raw-body execution path.
 
 ## Constitution Check
 
@@ -47,9 +47,10 @@ Add typed client request/response models and explicit one-exchange execution for
 | Get Constraints | Specification v2.1 §6.1.22, Tables 229–231; Constraints §7.7 | Empty request, required Constraints response, preserve operation errors. |
 | Get Usage Allocation | Specification v2.1 §6.1.23, Tables 232–234; Usage Limits §4.59/Table 148; Unit §11.60/Table 491 | Optional Unique Identifier; required Usage Limits Count; required response Unique Identifier; apply four catalog requirement IDs through the approved local caller guard. |
 | Set Constraints | Specification v2.1 §6.1.52, Tables 325–327; Constraints §7.7 | Required Constraints request, empty success payload, preserve errors; follow approved DISC-020 interpretation. |
-| Set Defaults | Specification v2.1 §6.1.53, Tables 328–330; Defaults Information §7.11 | Optional Defaults Information; its absence requests removal of all Object Defaults; empty success payload; follow approved DISC-020 interpretation. |
-| Set Endpoint Role | Specification v2.1 §6.1.54, Tables 331–333; Endpoint Role §11.39 | Required open Enumeration on request and response; only client-to-server direction. |
+| Set Defaults | Specification v2.1 §6.1.53, Tables 328–330; Defaults Information §7.11 | Table 328 explicitly states that absent Defaults Information requests removal of all Object Defaults; empty success payload; approved DISC-020 interpretation applies to Table 330's truncated error introduction. |
 | Shared response contract | Constitution and existing batch/client contracts | Preserve Result Status/Reason/Message where permitted, Pending/correlation, unknown extensions, and delivery state. One explicit exchange; no retry or implicit Poll. |
+
+**Deferred normative operation**: §6.1.54, Tables 331–333, requires after successful completion that the server assume Client role and the client assume Server role on the channel. §11.19, Tables 451–452, provides no client-only exception; §6.2.5 defines the opposite-direction operation. To preserve the approved 1.0 client-only boundary, neither direction is exposed in 1.0. A future 1.1 specification must cover both directions and the channel transition. This release-scope decision does not alter the OASIS source or normative catalog inventory.
 
 The approved user-facing Rust/client interfaces for Encrypt, MAC, and Sign are the integration points for the guard. Reuse only the typed request path available on the active release baseline; do not reimplement those operation payloads. If a specific typed request is not present on that baseline, sequence its guard integration after its approved operation model lands. This is a sequencing dependency on typed request availability, not on the separate manifest/bindings work.
 
@@ -59,11 +60,11 @@ KMIPKIT-0043 is a dependency only for adding these operations and the guard to t
 
 ### Protocol models
 
-Implement one focused protocol module per operation under `crates/kmipkit-protocol/src/`: `get_constraints.rs`, `get_usage_allocation.rs`, `set_constraints.rs`, `set_defaults.rs`, and `set_endpoint_role.rs`. Keep nested Constraints and Defaults Information as ordered generic `Structure` values so unrecognized members are preserved. Represent Endpoint Role and Usage Limits Unit as open raw Enumeration values. Encode Usage Limits Count with the KMIP Integer representation and preserve the caller's requested value. Operation error results use the common result model rather than operation-local error enums that discard unknown values.
+Implement one focused protocol module per in-scope operation under `crates/kmipkit-protocol/src/`: `get_constraints.rs`, `get_usage_allocation.rs`, `set_constraints.rs`, and `set_defaults.rs`. Keep nested Constraints and Defaults Information as ordered generic `Structure` values so unrecognized members are preserved. Represent Usage Limits Unit as an open raw Enumeration. Encode Usage Limits Count as KMIP Long Integer (`i64`) per Specification §4.59, Table 148, and preserve the caller's requested value. Operation error results use the common result model rather than operation-local error enums that discard unknown values.
 
 ### Client execution
 
-Add explicit `ClientRequest` variants, typed response views, and one-item convenience methods for the five operations through the existing shared executor. All methods use the same validation, message building, bounded codec, transport, response matching, result handling, and delivery-state reporting as existing operations. Set Endpoint Role means only client request/response exchange; it does not add server-initiated behavior. No automatic retry, Poll, metadata lookup, or client policy mutation is added.
+Add explicit `ClientRequest` variants, typed response views, and one-item convenience methods for the four in-scope operations through the existing shared executor. All methods use the same validation, message building, bounded codec, transport, response matching, result handling, and delivery-state reporting as existing operations. Set Endpoint Role is not exposed in 1.0 because its successful exchange changes endpoint roles and requires the deferred bidirectional channel behavior. No automatic retry, Poll, metadata lookup, or client policy mutation is added.
 
 ### Caller-supplied usage-allocation guard
 
@@ -83,7 +84,7 @@ After the canonical API contract in KMIPKIT-0043 is approved and merged, add man
 
 ### TDD and review gates
 
-For each of the five operations and for the guard, retain distinct Red, Green, and Refactor development commits. Red commits introduce focused failing protocol/client tests, Green commits implement the smallest passing change, and Refactor commits preserve behavior while improving structure. Each stage records exact focused command/output. Cross-language work gets its own Red/Green/Refactor evidence after 0043 is available. Complete traceability and documentation before review.
+For each of the four in-scope operations and for the guard, retain distinct Red, Green, and Refactor development commits. Red commits introduce focused failing protocol/client tests, Green commits implement the smallest passing change, and Refactor commits preserve behavior while improving structure. Each stage records exact focused command/output. T017's Set Endpoint Role Red investigation established a scope conflict; T018–T019 document and verify the 1.0 deferral instead of implementing a partial operation. Cross-language work gets its own Red/Green/Refactor evidence after 0043 is available. Complete traceability and documentation before review.
 
 ## Project Structure
 
@@ -106,11 +107,11 @@ specs/025-policy-controls/
 ### Implementation and verification locations
 
 ```text
-crates/kmipkit-protocol/src/{get_constraints,get_usage_allocation,set_constraints,set_defaults,set_endpoint_role}.rs
+crates/kmipkit-protocol/src/{get_constraints,get_usage_allocation,set_constraints,set_defaults}.rs
 crates/kmipkit-protocol/src/lib.rs
-crates/kmipkit-protocol/tests/unit/{get_constraints,get_usage_allocation,set_constraints,set_defaults,set_endpoint_role}_tests.rs
+crates/kmipkit-protocol/tests/unit/{get_constraints,get_usage_allocation,set_constraints,set_defaults}_tests.rs
 crates/kmipkit-client/src/{execute,lib}.rs
-crates/kmipkit-client/tests/unit/{get_constraints,get_usage_allocation,set_constraints,set_defaults,set_endpoint_role}_execution_tests.rs
+crates/kmipkit-client/tests/unit/{get_constraints,get_usage_allocation,set_constraints,set_defaults}_execution_tests.rs
 crates/kmipkit-client/tests/unit/usage_allocation_guard_tests.rs
 crates/kmipkit/src/lib.rs
 crates/kmipkit-protocol/tests/attribute_operations_guide_examples.rs

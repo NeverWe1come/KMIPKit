@@ -1,17 +1,10 @@
 //! Closed typed request execution for the synchronous KMIP client.
 
-use kmipkit_protocol::{GetConstraintsRequest, GetConstraintsResponse};
-use kmipkit_protocol::{GetUsageAllocationRequest, GetUsageAllocationResponse};
-use kmipkit_protocol::{SetConstraintsRequest, SetConstraintsResponse};
-use kmipkit_protocol::{SetDefaultsRequest, SetDefaultsResponse};
-use kmipkit_protocol::{SetEndpointRoleRequest, SetEndpointRoleResponse};
 use std::collections::HashSet;
 use std::error::Error;
 use std::fmt;
 
 use crate::ClientErrorResponseTtlv;
-use crate::{GuardedProtectionRequest, UsageAllocationContext};
-use kmipkit_protocol::UniqueIdentifier;
 use kmipkit_protocol::attribute::{
     ClientAttributeMutation, client_attribute_mutation_is_prohibited,
     client_vendor_attribute_mutation_is_prohibited,
@@ -21,21 +14,33 @@ use kmipkit_protocol::{
     ActivateRequest, ActivateResponse, AddAttributeRequest, AddAttributeResponse,
     AdjustAttributeRequest, AdjustAttributeResponse, ArchiveRequest, ArchiveResponse,
     AsynchronousOperationError, AttributeReference, CancelRequest, CancelResponse,
-    CancellationResult, CreateKeyPairRequest, CreateKeyPairResponse, CreateRequest, CreateResponse,
+    CancellationResult, CertifyRequest, CertifyResponse, CheckRequest, CheckResponse,
+    CreateKeyPairRequest, CreateKeyPairResponse, CreateRequest, CreateResponse,
     CreateSplitKeyRequest, CreateSplitKeyResponse, CryptographicOperationResponseContext,
-    DecryptRequest, DecryptResponse, DeleteAttributeRequest, DeleteAttributeResponse,
+    DecryptRequest, DecryptResponse, DelegatedLoginRequest, DelegatedLoginResponse,
+    DeleteAttributeRequest, DeleteAttributeResponse, DeriveKeyRequest, DeriveKeyResponse,
     DestroyRequest, DestroyResponse, DiscoverVersionsRequest, DiscoverVersionsResponse,
-    EncryptRequest, EncryptResponse, GetAttributeListRequest, GetAttributeListResponse,
-    GetAttributesRequest, GetAttributesResponse, GetRequest, GetResponse, HashRequest,
-    HashResponse, KmipOperationResult, LocateRequest, LocateResponse, MacRequest, MacResponse,
+    EncryptRequest, EncryptResponse, ExportRequest, ExportResponse, GetAttributeListRequest,
+    GetAttributeListResponse, GetAttributesRequest, GetAttributesResponse, GetConstraintsRequest,
+    GetConstraintsResponse, GetRequest, GetResponse, GetUsageAllocationRequest,
+    GetUsageAllocationResponse, HashRequest, HashResponse, ImportRequest, ImportResponse,
+    JoinSplitKeyRequest, JoinSplitKeyResponse, KmipOperationResult, LocateRequest, LocateResponse,
+    LoginRequest, LoginResponse, LogoutRequest, LogoutResponse, MacRequest, MacResponse,
     MacVerifyRequest, MacVerifyResponse, MessageExtensionView, ModifyAttributeRequest,
-    ModifyAttributeResponse, NewAttribute, PingRequest, PingResponse, PollRequest, PollResponse,
-    ProcessRequest, ProcessResponse, ProtocolCauseCategory, ProtocolError, ProtocolErrorKind,
-    ProtocolVersion, QueryAsyncRequestsRequest, QueryAsyncRequestsResponse, QueryRequest,
-    QueryResponse, RecoverRequest, RecoverResponse, RequestMessage, ResponseBatchItemView,
-    ResponseMessage, ResultStatus, SetAttributeRequest, SetAttributeResponse, SignRequest,
-    SignResponse, SignatureVerifyRequest, SignatureVerifyResponse,
+    ModifyAttributeResponse, NewAttribute, ObtainLeaseRequest, ObtainLeaseResponse, PingRequest,
+    PingResponse, Pkcs11Request, Pkcs11Response, PollRequest, PollResponse, ProcessRequest,
+    ProcessResponse, ProtocolCauseCategory, ProtocolError, ProtocolErrorKind, ProtocolVersion,
+    QueryAsyncRequestsRequest, QueryAsyncRequestsResponse, QueryRequest, QueryResponse,
+    ReProvisionRequest, ReProvisionResponse, RecertifyRequest, RecertifyResponse, RecoverRequest,
+    RecoverResponse, RegisterRequest, RegisterResponse, RekeyKeyPairRequest, RekeyKeyPairResponse,
+    RekeyRequest, RekeyResponse, RequestMessage, ResponseBatchItemView, ResponseMessage,
+    ResultStatus, RevokeRequest, RevokeResponse, RngRetrieveRequest, RngRetrieveResponse,
+    RngSeedRequest, RngSeedResponse, SetAttributeRequest, SetAttributeResponse,
+    SetConstraintsRequest, SetConstraintsResponse, SetDefaultsRequest, SetDefaultsResponse,
+    SignRequest, SignResponse, SignatureVerifyRequest, SignatureVerifyResponse,
 };
+use kmipkit_protocol::{InteropRequest, InteropResponse, LogRequest, LogResponse};
+use kmipkit_protocol::{ValidateRequest, ValidateResponse};
 
 #[cfg(test)]
 use kmipkit_transport::Transport;
@@ -54,7 +59,9 @@ use crate::execute_test_support::TestTransport;
 use crate::extension_registry::{
     self, ClientConfiguration, ClientExtensionRegistry, ClientRequestMessageExtension,
 };
-use crate::{ClientCauseCategory, ClientError};
+use crate::{
+    ClientCauseCategory, ClientError, UsageAllocationContext, UsageAllocationContextError,
+};
 
 #[cfg(test)]
 #[path = "../tests/unit/single_item_response_tests.rs"]
@@ -63,6 +70,33 @@ mod single_item_response_tests;
 #[cfg(test)]
 #[path = "../tests/unit/hash_mac_signature_execution_tests.rs"]
 mod hash_mac_signature_execution_tests;
+
+#[cfg(test)]
+#[path = "../tests/unit/derive_key_execution_tests.rs"]
+mod derive_key_execution_tests;
+
+#[cfg(test)]
+#[path = "../tests/unit/export_execution_tests.rs"]
+mod export_execution_tests;
+#[cfg(test)]
+#[path = "../tests/unit/import_execution_tests.rs"]
+mod import_execution_tests;
+
+#[cfg(test)]
+#[path = "../tests/unit/key_transfer_operations_execution_tests.rs"]
+mod key_transfer_operations_execution_tests;
+
+#[cfg(test)]
+#[path = "../tests/unit/delegated_login_execution_tests.rs"]
+mod delegated_login_execution_tests;
+
+#[cfg(test)]
+#[path = "../tests/unit/login_execution_tests.rs"]
+mod login_execution_tests;
+
+#[cfg(test)]
+#[path = "../tests/unit/logout_execution_tests.rs"]
+mod logout_execution_tests;
 
 #[cfg(test)]
 #[path = "../tests/unit/hash_execution_tests.rs"]
@@ -114,20 +148,36 @@ const CLIENT_CORRELATION_VALUE: u32 = 0x0042_0105;
 const TIME_STAMP: u32 = 0x0042_0092;
 const UNIQUE_BATCH_ITEM_ID: u32 = 0x0042_0093;
 const DISCOVER_VERSIONS_OPERATION: u32 = 0x0000_001E;
-const ENCRYPT_OPERATION: u32 = 0x0000_001F; // KMIP v2.1 ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â§6.1.17, Table 214.
-const DECRYPT_OPERATION: u32 = 0x0000_0020; // KMIP v2.1 ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â§6.1.11, Table 196.
-const HASH_OPERATION: u32 = 0x0000_0027; // KMIP v2.1 ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â§6.1.24, Table 235.
-const MAC_OPERATION: u32 = 0x0000_0023; // KMIP v2.1 ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â§6.1.32, Table 259.
-const MAC_VERIFY_OPERATION: u32 = 0x0000_0024; // KMIP v2.1 ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â§6.1.33, Table 262.
-const SIGN_OPERATION: u32 = 0x0000_0021; // KMIP v2.1 ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â§6.1.55, Table 334.
-const SIGNATURE_VERIFY_OPERATION: u32 = 0x0000_0022; // KMIP v2.1 ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â§6.1.56, Table 337.
+const ENCRYPT_OPERATION: u32 = 0x0000_001F; // KMIP v2.1 §6.1.17, Table 214.
+const DECRYPT_OPERATION: u32 = 0x0000_0020; // KMIP v2.1 §6.1.11, Table 196.
+const DERIVE_KEY_OPERATION: u32 = 0x0000_0005; // KMIP v2.1 §6.1.14, Table 205.
+const EXPORT_OPERATION: u32 = 0x0000_002B; // KMIP v2.1 §6.1.18, Table 217.
+const IMPORT_OPERATION: u32 = 0x0000_002A; // KMIP v2.1 §§6.1.25, 11.36, Tables 238, 470.
+pub(super) const JOIN_SPLIT_KEY_OPERATION: u32 = 0x0000_0029; // KMIP v2.1 §§6.1.27, 11.36, Tables 244, 470.
+const HASH_OPERATION: u32 = 0x0000_0027; // KMIP v2.1 §6.1.24, Table 235.
+const MAC_OPERATION: u32 = 0x0000_0023; // KMIP v2.1 §6.1.32, Table 259.
+const MAC_VERIFY_OPERATION: u32 = 0x0000_0024; // KMIP v2.1 §6.1.33, Table 262.
+const SIGN_OPERATION: u32 = 0x0000_0021; // KMIP v2.1 §6.1.55, Table 334.
+const SIGNATURE_VERIFY_OPERATION: u32 = 0x0000_0022; // KMIP v2.1 §6.1.56, Table 337.
 const CREATE_OPERATION: u32 = 0x0000_0001;
+const CHECK_OPERATION: u32 = 0x0000_0009; // KMIP v2.1 §§6.1.7, 11.36.
+const OBTAIN_LEASE_OPERATION: u32 = 0x0000_0010; // KMIP v2.1 §§6.1.35, 11.36.
+const CERTIFY_OPERATION: u32 = 0x0000_0006; // KMIP v2.1 §6.1.6, Table 179.
+const RECERTIFY_OPERATION: u32 = 0x0000_0007; // KMIP v2.1 §6.1.45, Table 300.
+const REKEY_OPERATION: u32 = 0x0000_0004; // KMIP v2.1 §6.1.46, Table 305.
+const REKEY_KEY_PAIR_OPERATION: u32 = 0x0000_001d; // KMIP v2.1 §6.1.47, Table 310.
+const REPROVISION_OPERATION: u32 = 0x0000_0035; // KMIP v2.1 §6.1.48, Table 313.
+const REGISTER_OPERATION: u32 = 0x0000_0003; // KMIP v2.1 §6.1.43, Table 291.
+const REVOKE_OPERATION: u32 = 0x0000_0013; // KMIP v2.1 §6.1.44, Table 295.
+const DELEGATED_LOGIN_OPERATION: u32 = 0x0000_002F; // KMIP v2.1 §6.1.12, Table 199.
+const LOGIN_OPERATION: u32 = 0x0000_002D; // KMIP v2.1 §6.1.30, Table 253.
+const LOGOUT_OPERATION: u32 = 0x0000_002E; // KMIP v2.1 §6.1.31, Table 256.
 const CREATE_KEY_PAIR_OPERATION: u32 = 0x0000_0002;
-const CREATE_SPLIT_KEY_OPERATION: u32 = 0x0000_0028; // KMIP v2.1 ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â§11.36, Table 470.
-const ACTIVATE_OPERATION: u32 = 0x0000_0012; // KMIP v2.1 ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â§6.1.1, Table 164.
-const ARCHIVE_OPERATION: u32 = 0x0000_0013; // KMIP v2.1 ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â§6.1.4, Table 173.
-const DESTROY_OPERATION: u32 = 0x0000_0014; // KMIP v2.1 ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â§6.1.15, Table 208.
-const RECOVER_OPERATION: u32 = 0x0000_002A; // KMIP v2.1 ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â§6.1.42, Table 288.
+const CREATE_SPLIT_KEY_OPERATION: u32 = 0x0000_0028; // KMIP v2.1 §11.36, Table 470.
+const ACTIVATE_OPERATION: u32 = 0x0000_0012; // KMIP v2.1 §6.1.1, Table 164.
+const ARCHIVE_OPERATION: u32 = 0x0000_0015; // KMIP v2.1 §6.1.4, Table 173.
+const DESTROY_OPERATION: u32 = 0x0000_0014; // KMIP v2.1 §6.1.15, Table 208.
+const RECOVER_OPERATION: u32 = 0x0000_0016; // KMIP v2.1 §§6.1.42, 11.36, Tables 288, 470.
 const ADD_ATTRIBUTE_OPERATION: u32 = 0x0000_000D;
 const MODIFY_ATTRIBUTE_OPERATION: u32 = 0x0000_000E;
 const DELETE_ATTRIBUTE_OPERATION: u32 = 0x0000_000F;
@@ -137,13 +187,18 @@ const CANCEL_OPERATION: u32 = 0x0000_0019;
 const POLL_OPERATION: u32 = 0x0000_001A;
 const QUERY_ASYNCHRONOUS_REQUESTS_OPERATION: u32 = 0x0000_0039;
 const PROCESS_OPERATION: u32 = 0x0000_003A;
-const GET_CONSTRAINTS_OPERATION: u32 = 56; // OASIS ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â§6.1.22.
-const GET_USAGE_ALLOCATION_OPERATION: u32 = 17; // OASIS Ãƒâ€šÃ‚Â§6.1.23.
-const SET_CONSTRAINTS_OPERATION: u32 = 55; // OASIS Ã‚Â§6.1.52.
-const SET_DEFAULTS_OPERATION: u32 = 54; // OASIS Â§6.1.53.
-const SET_ENDPOINT_ROLE_OPERATION: u32 = 50; // OASIS §6.1.54.
+const PKCS11_OPERATION: u32 = 0x0000_0033; // KMIP v2.1 §6.1.37, Tables 273–275.
 const PING_OPERATION: u32 = 0x0000_003B;
+const VALIDATE_OPERATION: u32 = 0x0000_0017; // KMIP v2.1 section 6.1.57.
+const LOG_OPERATION: u32 = 0x0000_002c; // KMIP v2.1 section 6.1.29.
+const INTEROP_OPERATION: u32 = 0x0000_0034; // KMIP v2.1 section 6.1.26.
+const GET_CONSTRAINTS_OPERATION: u32 = 0x0000_0038; // KMIP v2.1 §6.1.22, Table 229.
+const SET_CONSTRAINTS_OPERATION: u32 = 0x0000_0037; // KMIP v2.1 §6.1.52, Table 325.
+const SET_DEFAULTS_OPERATION: u32 = 0x0000_0036; // KMIP v2.1 §6.1.53, Table 328.
+const GET_USAGE_ALLOCATION_OPERATION: u32 = 0x0000_0011; // §6.1.23, Table 232.
 const QUERY_OPERATION: u32 = 0x0000_0018;
+const RNG_RETRIEVE_OPERATION: u32 = 0x0000_0025; // KMIP v2.1 §6.1.49, Tables 316–318.
+const RNG_SEED_OPERATION: u32 = 0x0000_0026; // KMIP v2.1 §6.1.50, Tables 319–321.
 const ASYNCHRONOUS_MANDATORY: u32 = 1;
 const ASYNCHRONOUS_OPTIONAL: u32 = 2;
 const ASYNCHRONOUS_PROHIBITED: u32 = 3;
@@ -164,6 +219,30 @@ pub enum ClientRequest {
     Activate(ActivateRequest),
     /// An explicit client-to-server Archive request.
     Archive(ArchiveRequest),
+    /// An explicit client-to-server Certify request.
+    Certify(CertifyRequest),
+    /// An explicit client-to-server Check request.
+    Check(CheckRequest),
+    /// An explicit client-to-server Delegated Login request.
+    DelegatedLogin(DelegatedLoginRequest),
+    /// An explicit client-to-server Login request.
+    Login(LoginRequest),
+    /// An explicit client-to-server Logout request with a caller-supplied Ticket.
+    Logout(LogoutRequest),
+    /// An explicit client-to-server Obtain Lease request.
+    ObtainLease(ObtainLeaseRequest),
+    /// An explicit client-to-server Re-certify request.
+    Recertify(RecertifyRequest),
+    /// An explicit client-to-server Re-key request.
+    Rekey(RekeyRequest),
+    /// An explicit client-to-server Re-key Key Pair request.
+    RekeyKeyPair(RekeyKeyPairRequest),
+    /// An explicit client-to-server Re-Provision request.
+    ReProvision(ReProvisionRequest),
+    /// An explicit client-to-server Register request.
+    Register(RegisterRequest),
+    /// An explicit client-to-server Revoke request.
+    Revoke(RevokeRequest),
     /// An explicit client-to-server Destroy request.
     Destroy(DestroyRequest),
     /// An explicit client-to-server Recover request.
@@ -194,22 +273,36 @@ pub enum ClientRequest {
     GetAttributeList(GetAttributeListRequest),
     /// An explicit client-to-server Ping request.
     Ping(PingRequest),
-    /// Explicit SetEndpointRole policy operation.
-    SetEndpointRole(SetEndpointRoleRequest),
-    /// Explicit SetDefaults policy operation.
-    SetDefaults(SetDefaultsRequest),
-    /// Explicit SetConstraints policy operation.
-    SetConstraints(SetConstraintsRequest),
-    /// Explicit GetUsageAllocation policy operation.
-    GetUsageAllocation(GetUsageAllocationRequest),
-    /// Explicit GetConstraints policy operation.
+    /// An explicit typed Interop request with caller-selected parameters.
+    Interop(InteropRequest),
+    /// An explicit typed Log request with caller-selected parameters.
+    Log(LogRequest),
+    /// An explicit typed Validate request with caller-selected parameters.
+    Validate(ValidateRequest),
+    /// An explicit opaque PKCS#11 forwarding request.
+    Pkcs11(Pkcs11Request),
+    /// An explicit client-to-server Get Constraints request.
     GetConstraints(GetConstraintsRequest),
+    /// An explicit client-to-server Set Constraints request.
+    SetConstraints(SetConstraintsRequest),
+    /// An explicit client-to-server Set Defaults request.
+    SetDefaults(SetDefaultsRequest),
+    /// An explicit client-to-server Get Usage Allocation request.
+    GetUsageAllocation(GetUsageAllocationRequest),
     /// An explicit client-to-server Query request.
     Query(QueryRequest),
     /// An explicit client-to-server Encrypt request.
     Encrypt(EncryptRequest),
     /// An explicit client-to-server Decrypt request.
     Decrypt(DecryptRequest),
+    /// An explicit client-to-server Derive Key request.
+    DeriveKey(DeriveKeyRequest),
+    /// An explicit client-to-server Export request.
+    Export(ExportRequest),
+    /// An explicit client-to-server Import request.
+    Import(ImportRequest),
+    /// An explicit client-to-server Join Split Key request.
+    JoinSplitKey(JoinSplitKeyRequest),
     /// An explicit client-to-server Hash request.
     Hash(HashRequest),
     /// An explicit client-to-server MAC request.
@@ -220,6 +313,10 @@ pub enum ClientRequest {
     Sign(SignRequest),
     /// An explicit client-to-server Signature Verify request.
     SignatureVerify(SignatureVerifyRequest),
+    /// An explicit client-to-server RNG Retrieve request.
+    RngRetrieve(RngRetrieveRequest),
+    /// An explicit client-to-server RNG Seed request.
+    RngSeed(RngSeedRequest),
 }
 
 impl ClientRequest {
@@ -229,10 +326,70 @@ impl ClientRequest {
         Self::DiscoverVersions(DiscoverVersionsRequest::new())
     }
 
+    /// Creates an explicit opaque PKCS#11 forwarding request variant.
+    #[must_use]
+    pub const fn pkcs11(request: Pkcs11Request) -> Self {
+        Self::Pkcs11(request)
+    }
+
     /// Creates an explicit client-to-server Ping request variant.
     #[must_use]
     pub const fn ping() -> Self {
         Self::Ping(PingRequest::new())
+    }
+
+    /// Selects one explicit typed Interop request.
+    #[must_use]
+    pub fn interop(request: InteropRequest) -> Self {
+        Self::Interop(request)
+    }
+
+    /// Selects one explicit typed Log request.
+    #[must_use]
+    pub fn log(request: LogRequest) -> Self {
+        Self::Log(request)
+    }
+
+    /// Selects one explicit typed Validate request.
+    #[must_use]
+    pub fn validate(request: ValidateRequest) -> Self {
+        Self::Validate(request)
+    }
+
+    /// Creates an empty client-to-server Get Constraints request.
+    #[must_use]
+    pub const fn get_constraints() -> Self {
+        Self::GetConstraints(GetConstraintsRequest::new())
+    }
+
+    /// Creates a typed client-to-server Set Constraints request.
+    #[must_use]
+    pub fn set_constraints(request: SetConstraintsRequest) -> Self {
+        Self::SetConstraints(request)
+    }
+
+    /// Creates a typed client-to-server Set Defaults request.
+    #[must_use]
+    pub fn set_defaults(request: SetDefaultsRequest) -> Self {
+        Self::SetDefaults(request)
+    }
+
+    /// Creates a typed client-to-server Get Usage Allocation request.
+    #[must_use]
+    pub fn get_usage_allocation(request: GetUsageAllocationRequest) -> Self {
+        Self::GetUsageAllocation(request)
+    }
+
+    /// Creates a typed client-to-server RNG Retrieve request.
+    #[must_use]
+    pub fn rng_retrieve(request: RngRetrieveRequest) -> Self {
+        Self::RngRetrieve(request)
+    }
+
+    /// Creates a typed client-to-server RNG Seed request.
+    #[must_use]
+    pub fn rng_seed(request: RngSeedRequest) -> Self {
+        Self::RngSeed(request)
     }
 
     /// Creates a typed client-to-server Query request variant.
@@ -251,6 +408,30 @@ impl ClientRequest {
     #[must_use]
     pub fn decrypt(request: DecryptRequest) -> Self {
         Self::Decrypt(request)
+    }
+
+    /// Creates a typed client-to-server Derive Key request variant.
+    #[must_use]
+    pub fn derive_key(request: DeriveKeyRequest) -> Self {
+        Self::DeriveKey(request)
+    }
+
+    /// Creates a typed client-to-server Export request variant.
+    #[must_use]
+    pub fn export(request: ExportRequest) -> Self {
+        Self::Export(request)
+    }
+
+    /// Creates a typed client-to-server Import request variant.
+    #[must_use]
+    pub fn import(request: ImportRequest) -> Self {
+        Self::Import(request)
+    }
+
+    /// Creates a typed client-to-server Join Split Key request variant.
+    #[must_use]
+    pub fn join_split_key(request: JoinSplitKeyRequest) -> Self {
+        Self::JoinSplitKey(request)
     }
 
     /// Creates a typed client-to-server Hash request variant.
@@ -293,6 +474,78 @@ impl ClientRequest {
     #[must_use]
     pub fn archive(request: ArchiveRequest) -> Self {
         Self::Archive(request)
+    }
+
+    /// Creates a typed client-to-server Certify request variant.
+    #[must_use]
+    pub fn certify(request: CertifyRequest) -> Self {
+        Self::Certify(request)
+    }
+
+    /// Creates a typed client-to-server Check request variant.
+    #[must_use]
+    pub fn check(request: CheckRequest) -> Self {
+        Self::Check(request)
+    }
+
+    /// Creates a typed client-to-server Delegated Login request variant.
+    #[must_use]
+    pub fn delegated_login(request: DelegatedLoginRequest) -> Self {
+        Self::DelegatedLogin(request)
+    }
+
+    /// Creates a typed client-to-server Login request variant.
+    #[must_use]
+    pub fn login(request: LoginRequest) -> Self {
+        Self::Login(request)
+    }
+
+    /// Creates a typed client-to-server Logout request variant.
+    #[must_use]
+    pub fn logout(request: LogoutRequest) -> Self {
+        Self::Logout(request)
+    }
+
+    /// Creates a typed client-to-server Obtain Lease request variant.
+    #[must_use]
+    pub fn obtain_lease(request: ObtainLeaseRequest) -> Self {
+        Self::ObtainLease(request)
+    }
+
+    /// Creates a typed client-to-server Re-certify request variant.
+    #[must_use]
+    pub fn recertify(request: RecertifyRequest) -> Self {
+        Self::Recertify(request)
+    }
+
+    /// Creates a typed client-to-server Re-key request variant.
+    #[must_use]
+    pub fn rekey(request: RekeyRequest) -> Self {
+        Self::Rekey(request)
+    }
+
+    /// Creates a typed client-to-server Re-key Key Pair request variant.
+    #[must_use]
+    pub fn rekey_key_pair(request: RekeyKeyPairRequest) -> Self {
+        Self::RekeyKeyPair(request)
+    }
+
+    /// Creates an explicit client-to-server Re-Provision request variant.
+    #[must_use]
+    pub const fn reprovision(request: ReProvisionRequest) -> Self {
+        Self::ReProvision(request)
+    }
+
+    /// Creates an explicit client-to-server Register request variant.
+    #[must_use]
+    pub const fn register(request: RegisterRequest) -> Self {
+        Self::Register(request)
+    }
+
+    /// Creates an explicit client-to-server Revoke request variant.
+    #[must_use]
+    pub const fn revoke(request: RevokeRequest) -> Self {
+        Self::Revoke(request)
     }
 
     /// Creates a typed Destroy request variant.
@@ -366,6 +619,18 @@ impl ClientRequest {
             Self::DiscoverVersions(_) => DISCOVER_VERSIONS_OPERATION,
             Self::Activate(_) => ACTIVATE_OPERATION,
             Self::Archive(_) => ARCHIVE_OPERATION,
+            Self::Certify(_) => CERTIFY_OPERATION,
+            Self::Check(_) => CHECK_OPERATION,
+            Self::DelegatedLogin(_) => DELEGATED_LOGIN_OPERATION,
+            Self::Login(_) => LOGIN_OPERATION,
+            Self::Logout(_) => LOGOUT_OPERATION,
+            Self::ObtainLease(_) => OBTAIN_LEASE_OPERATION,
+            Self::Recertify(_) => RECERTIFY_OPERATION,
+            Self::Rekey(_) => REKEY_OPERATION,
+            Self::RekeyKeyPair(_) => REKEY_KEY_PAIR_OPERATION,
+            Self::ReProvision(_) => REPROVISION_OPERATION,
+            Self::Register(_) => REGISTER_OPERATION,
+            Self::Revoke(_) => REVOKE_OPERATION,
             Self::Destroy(_) => DESTROY_OPERATION,
             Self::Recover(_) => RECOVER_OPERATION,
             Self::Get(_) => GET_OPERATION,
@@ -381,19 +646,28 @@ impl ClientRequest {
             Self::GetAttributes(_) => GET_ATTRIBUTES_OPERATION,
             Self::GetAttributeList(_) => GET_ATTRIBUTE_LIST_OPERATION,
             Self::Ping(_) => PING_OPERATION,
-            Self::SetEndpointRole(_) => SET_ENDPOINT_ROLE_OPERATION,
-            Self::SetDefaults(_) => SET_DEFAULTS_OPERATION,
-            Self::SetConstraints(_) => SET_CONSTRAINTS_OPERATION,
-            Self::GetUsageAllocation(_) => GET_USAGE_ALLOCATION_OPERATION,
+            Self::Interop(_) => INTEROP_OPERATION,
+            Self::Log(_) => LOG_OPERATION,
+            Self::Validate(_) => VALIDATE_OPERATION,
+            Self::Pkcs11(_) => PKCS11_OPERATION,
             Self::GetConstraints(_) => GET_CONSTRAINTS_OPERATION,
+            Self::SetConstraints(_) => SET_CONSTRAINTS_OPERATION,
+            Self::SetDefaults(_) => SET_DEFAULTS_OPERATION,
+            Self::GetUsageAllocation(_) => GET_USAGE_ALLOCATION_OPERATION,
             Self::Query(_) => QUERY_OPERATION,
             Self::Encrypt(_) => ENCRYPT_OPERATION,
             Self::Decrypt(_) => DECRYPT_OPERATION,
+            Self::DeriveKey(_) => DERIVE_KEY_OPERATION,
+            Self::Export(_) => EXPORT_OPERATION,
+            Self::Import(_) => IMPORT_OPERATION,
+            Self::JoinSplitKey(_) => JOIN_SPLIT_KEY_OPERATION,
             Self::Hash(_) => HASH_OPERATION,
             Self::Mac(_) => MAC_OPERATION,
             Self::MacVerify(_) => MAC_VERIFY_OPERATION,
             Self::Sign(_) => SIGN_OPERATION,
             Self::SignatureVerify(_) => SIGNATURE_VERIFY_OPERATION,
+            Self::RngRetrieve(_) => RNG_RETRIEVE_OPERATION,
+            Self::RngSeed(_) => RNG_SEED_OPERATION,
         }
     }
 
@@ -423,6 +697,12 @@ impl ClientRequest {
 
     fn omits_identifier_for_id_placeholder(&self) -> bool {
         match self {
+            Self::Check(request) => request.unique_identifier().is_none(),
+            Self::ObtainLease(request) => request.unique_identifier().is_none(),
+            Self::Recertify(request) => request.unique_identifier().is_none(),
+            Self::Rekey(request) => request.unique_identifier().is_none(),
+            Self::RekeyKeyPair(request) => request.private_key_unique_identifier().is_none(),
+            Self::Revoke(request) => request.unique_identifier().is_none(),
             Self::Encrypt(request) => request.unique_identifier().is_none(),
             Self::Decrypt(request) => request.unique_identifier().is_none(),
             _ => false,
@@ -432,7 +712,16 @@ impl ClientRequest {
     const fn is_id_placeholder_producer(&self) -> bool {
         matches!(
             self,
-            Self::Create(_) | Self::CreateKeyPair(_) | Self::Recover(_)
+            Self::Create(_)
+                | Self::CreateKeyPair(_)
+                | Self::Recover(_)
+                | Self::Certify(_)
+                | Self::Recertify(_)
+                | Self::Rekey(_)
+                | Self::RekeyKeyPair(_)
+                | Self::Import(_)
+                | Self::JoinSplitKey(_)
+                | Self::Register(_)
         )
     }
 
@@ -441,6 +730,18 @@ impl ClientRequest {
             Self::DiscoverVersions(request) => request.to_ttlv_payload(),
             Self::Activate(request) => request.to_ttlv_payload(),
             Self::Archive(request) => request.to_ttlv_payload(),
+            Self::Certify(request) => request.into_ttlv_payload(),
+            Self::Check(request) => request.into_ttlv_payload(),
+            Self::DelegatedLogin(request) => request.into_ttlv_payload(),
+            Self::Login(request) => request.into_ttlv_payload(),
+            Self::Logout(request) => request.into_ttlv_payload(),
+            Self::ObtainLease(request) => request.into_ttlv_payload(),
+            Self::Recertify(request) => request.into_ttlv_payload(),
+            Self::Rekey(request) => request.into_ttlv_payload(),
+            Self::RekeyKeyPair(request) => request.into_ttlv_payload(),
+            Self::ReProvision(request) => request.into_ttlv_payload(),
+            Self::Register(request) => request.into_ttlv_payload(),
+            Self::Revoke(request) => request.into_ttlv_payload(),
             Self::Destroy(request) => request.to_ttlv_payload(),
             Self::Recover(request) => request.to_ttlv_payload(),
             Self::Get(request) => request.to_ttlv_payload(),
@@ -456,19 +757,28 @@ impl ClientRequest {
             Self::GetAttributes(request) => request.to_ttlv_payload(),
             Self::GetAttributeList(request) => request.to_ttlv_payload(),
             Self::Ping(request) => request.to_ttlv_payload(),
-            Self::SetEndpointRole(request) => request.to_ttlv_payload(),
-            Self::SetDefaults(request) => request.to_ttlv_payload(),
-            Self::SetConstraints(request) => request.to_ttlv_payload(),
-            Self::GetUsageAllocation(request) => request.to_ttlv_payload(),
+            Self::Interop(request) => request.into_ttlv_payload(),
+            Self::Log(request) => request.into_ttlv_payload(),
+            Self::Validate(request) => request.into_ttlv_payload(),
+            Self::Pkcs11(request) => request.into_ttlv_payload(),
             Self::GetConstraints(request) => request.to_ttlv_payload(),
+            Self::SetConstraints(request) => request.to_ttlv_payload(),
+            Self::SetDefaults(request) => request.to_ttlv_payload(),
+            Self::GetUsageAllocation(request) => request.to_ttlv_payload(),
             Self::Query(request) => request.to_ttlv_payload(),
             Self::Encrypt(request) => request.to_ttlv_payload(),
             Self::Decrypt(request) => request.to_ttlv_payload(),
+            Self::DeriveKey(request) => request.into_ttlv_payload(),
+            Self::Export(request) => request.into_ttlv_payload(),
+            Self::Import(request) => request.into_ttlv_payload(),
+            Self::JoinSplitKey(request) => request.into_ttlv_payload(),
             Self::Hash(request) => request.to_ttlv_payload(),
             Self::Mac(request) => request.to_ttlv_payload(),
             Self::MacVerify(request) => request.to_ttlv_payload(),
             Self::Sign(request) => request.to_ttlv_payload(),
             Self::SignatureVerify(request) => request.to_ttlv_payload(),
+            Self::RngRetrieve(request) => request.to_ttlv_payload(),
+            Self::RngSeed(request) => request.to_ttlv_payload(),
         }
     }
 }
@@ -479,6 +789,28 @@ impl fmt::Debug for ClientRequest {
             Self::DiscoverVersions(_) => formatter.write_str("DiscoverVersions"),
             Self::Activate(_) => formatter.write_str("Activate([REDACTED])"),
             Self::Archive(_) => formatter.write_str("Archive([REDACTED])"),
+            Self::Certify(request) => formatter.debug_tuple("Certify").field(request).finish(),
+            Self::Check(request) => formatter.debug_tuple("Check").field(request).finish(),
+            Self::DelegatedLogin(request) => formatter
+                .debug_tuple("DelegatedLogin")
+                .field(request)
+                .finish(),
+            Self::Login(request) => formatter.debug_tuple("Login").field(request).finish(),
+            Self::Logout(request) => formatter.debug_tuple("Logout").field(request).finish(),
+            Self::ObtainLease(request) => {
+                formatter.debug_tuple("ObtainLease").field(request).finish()
+            }
+            Self::Recertify(request) => formatter.debug_tuple("Recertify").field(request).finish(),
+            Self::Rekey(request) => formatter.debug_tuple("Rekey").field(request).finish(),
+            Self::RekeyKeyPair(request) => formatter
+                .debug_tuple("RekeyKeyPair")
+                .field(request)
+                .finish(),
+            Self::ReProvision(request) => {
+                formatter.debug_tuple("ReProvision").field(request).finish()
+            }
+            Self::Register(request) => formatter.debug_tuple("Register").field(request).finish(),
+            Self::Revoke(request) => formatter.debug_tuple("Revoke").field(request).finish(),
             Self::Destroy(_) => formatter.write_str("Destroy([REDACTED])"),
             Self::Recover(_) => formatter.write_str("Recover([REDACTED])"),
             Self::Get(_) => formatter.write_str("Get([REDACTED])"),
@@ -500,14 +832,32 @@ impl fmt::Debug for ClientRequest {
                 .field(request)
                 .finish(),
             Self::Ping(_) => formatter.write_str("Ping"),
-            Self::SetEndpointRole(_) => formatter.write_str("SetEndpointRole"),
-            Self::SetDefaults(_) => formatter.write_str("SetDefaults"),
-            Self::SetConstraints(_) => formatter.write_str("SetConstraints"),
-            Self::GetUsageAllocation(_) => formatter.write_str("GetUsageAllocation"),
+            Self::Interop(request) => formatter.debug_tuple("Interop").field(request).finish(),
+            Self::Log(request) => formatter.debug_tuple("Log").field(request).finish(),
+            Self::Validate(request) => formatter.debug_tuple("Validate").field(request).finish(),
+            Self::Pkcs11(request) => formatter.debug_tuple("Pkcs11").field(request).finish(),
             Self::GetConstraints(_) => formatter.write_str("GetConstraints"),
+            Self::SetConstraints(request) => formatter
+                .debug_tuple("SetConstraints")
+                .field(request)
+                .finish(),
+            Self::SetDefaults(request) => {
+                formatter.debug_tuple("SetDefaults").field(request).finish()
+            }
+            Self::GetUsageAllocation(request) => formatter
+                .debug_tuple("GetUsageAllocation")
+                .field(request)
+                .finish(),
             Self::Query(_) => formatter.write_str("Query([REDACTED])"),
             Self::Encrypt(_) => formatter.write_str("Encrypt([REDACTED])"),
             Self::Decrypt(_) => formatter.write_str("Decrypt([REDACTED])"),
+            Self::DeriveKey(request) => formatter.debug_tuple("DeriveKey").field(request).finish(),
+            Self::Export(_) => formatter.write_str("Export([REDACTED])"),
+            Self::Import(request) => formatter.debug_tuple("Import").field(request).finish(),
+            Self::JoinSplitKey(request) => formatter
+                .debug_tuple("JoinSplitKey")
+                .field(request)
+                .finish(),
             Self::Hash(request) => formatter.debug_tuple("Hash").field(request).finish(),
             Self::Mac(request) => formatter.debug_tuple("MAC").field(request).finish(),
             Self::MacVerify(request) => formatter.debug_tuple("MAC Verify").field(request).finish(),
@@ -516,6 +866,10 @@ impl fmt::Debug for ClientRequest {
                 .debug_tuple("Signature Verify")
                 .field(request)
                 .finish(),
+            Self::RngRetrieve(request) => {
+                formatter.debug_tuple("RngRetrieve").field(request).finish()
+            }
+            Self::RngSeed(_) => formatter.write_str("RngSeed([REDACTED])"),
         }
     }
 }
@@ -769,8 +1123,24 @@ impl fmt::Debug for ClientMessageExtension {
 
 enum PendingResponse {
     DiscoverVersions(DiscoverVersionsResponse),
+    DelegatedLogin(DelegatedLoginResponse),
+    Login(LoginResponse),
+    Logout(LogoutResponse),
+    Certify(CertifyResponse),
+    Check(CheckResponse),
+    ObtainLease(ObtainLeaseResponse),
+    Recertify(RecertifyResponse),
+    Rekey(RekeyResponse),
+    RekeyKeyPair(RekeyKeyPairResponse),
+    ReProvision(ReProvisionResponse),
+    Register(RegisterResponse),
+    Revoke(RevokeResponse),
     Encrypt(EncryptResponse),
     Decrypt(DecryptResponse),
+    DeriveKey(DeriveKeyResponse),
+    Export(ExportResponse),
+    Import(ImportResponse),
+    JoinSplitKey(JoinSplitKeyResponse),
     Hash(HashResponse),
     Mac(MacResponse),
     MacVerify(MacVerifyResponse),
@@ -793,16 +1163,17 @@ enum PendingResponse {
     GetAttributes(GetAttributesResponse),
     GetAttributeList(GetAttributeListResponse),
     Ping(PingResponse),
-    /// Explicit SetEndpointRole policy operation.
-    SetEndpointRole(SetEndpointRoleResponse),
-    /// Explicit SetDefaults policy operation.
-    SetDefaults(SetDefaultsResponse),
-    /// Explicit SetConstraints policy operation.
-    SetConstraints(SetConstraintsResponse),
-    /// Explicit GetUsageAllocation policy operation.
-    GetUsageAllocation(GetUsageAllocationResponse),
-    /// Explicit GetConstraints policy operation.
+    Interop(InteropResponse),
+    Log(LogResponse),
+    Validate(ValidateResponse),
+    /// The typed PKCS#11 result.
+    Pkcs11(Pkcs11Response),
     GetConstraints(GetConstraintsResponse),
+    SetConstraints(SetConstraintsResponse),
+    SetDefaults(SetDefaultsResponse),
+    GetUsageAllocation(GetUsageAllocationResponse),
+    RngRetrieve(RngRetrieveResponse),
+    RngSeed(RngSeedResponse),
     Query(QueryResponse),
 }
 
@@ -810,8 +1181,24 @@ impl PendingResponse {
     const fn view(&self) -> ClientResponseView<'_> {
         let response = match self {
             Self::DiscoverVersions(response) => ClientResponseRef::DiscoverVersions(response),
+            Self::DelegatedLogin(response) => ClientResponseRef::DelegatedLogin(response),
+            Self::Login(response) => ClientResponseRef::Login(response),
+            Self::Logout(response) => ClientResponseRef::Logout(response),
+            Self::Certify(response) => ClientResponseRef::Certify(response),
+            Self::Check(response) => ClientResponseRef::Check(response),
+            Self::ObtainLease(response) => ClientResponseRef::ObtainLease(response),
+            Self::Recertify(response) => ClientResponseRef::Recertify(response),
+            Self::Rekey(response) => ClientResponseRef::Rekey(response),
+            Self::RekeyKeyPair(response) => ClientResponseRef::RekeyKeyPair(response),
+            Self::ReProvision(response) => ClientResponseRef::ReProvision(response),
+            Self::Register(response) => ClientResponseRef::Register(response),
+            Self::Revoke(response) => ClientResponseRef::Revoke(response),
             Self::Encrypt(response) => ClientResponseRef::Encrypt(response),
             Self::Decrypt(response) => ClientResponseRef::Decrypt(response),
+            Self::DeriveKey(response) => ClientResponseRef::DeriveKey(response),
+            Self::Export(response) => ClientResponseRef::Export(response),
+            Self::Import(response) => ClientResponseRef::Import(response),
+            Self::JoinSplitKey(response) => ClientResponseRef::JoinSplitKey(response),
             Self::Hash(response) => ClientResponseRef::Hash(response),
             Self::Mac(response) => ClientResponseRef::Mac(response),
             Self::MacVerify(response) => ClientResponseRef::MacVerify(response),
@@ -834,11 +1221,16 @@ impl PendingResponse {
             Self::GetAttributes(response) => ClientResponseRef::GetAttributes(response),
             Self::GetAttributeList(response) => ClientResponseRef::GetAttributeList(response),
             Self::Ping(response) => ClientResponseRef::Ping(response),
-            Self::SetEndpointRole(response) => ClientResponseRef::SetEndpointRole(response),
-            Self::SetDefaults(response) => ClientResponseRef::SetDefaults(response),
-            Self::SetConstraints(response) => ClientResponseRef::SetConstraints(response),
-            Self::GetUsageAllocation(response) => ClientResponseRef::GetUsageAllocation(response),
+            Self::Interop(response) => ClientResponseRef::Interop(response),
+            Self::Log(response) => ClientResponseRef::Log(response),
+            Self::Validate(response) => ClientResponseRef::Validate(response),
+            Self::Pkcs11(response) => ClientResponseRef::Pkcs11(response),
             Self::GetConstraints(response) => ClientResponseRef::GetConstraints(response),
+            Self::SetConstraints(response) => ClientResponseRef::SetConstraints(response),
+            Self::SetDefaults(response) => ClientResponseRef::SetDefaults(response),
+            Self::GetUsageAllocation(response) => ClientResponseRef::GetUsageAllocation(response),
+            Self::RngRetrieve(response) => ClientResponseRef::RngRetrieve(response),
+            Self::RngSeed(response) => ClientResponseRef::RngSeed(response),
             Self::Query(response) => ClientResponseRef::Query(response),
         };
         ClientResponseView { response }
@@ -1002,8 +1394,32 @@ impl fmt::Debug for PendingOutcome {
 pub enum ClientOperation {
     /// Discover Versions.
     DiscoverVersions,
+    /// Delegated Login.
+    DelegatedLogin,
+    /// Login.
+    Login,
+    /// Logout.
+    Logout,
     /// Activate.
     Activate,
+    /// Certify.
+    Certify,
+    /// Check.
+    Check,
+    /// Obtain Lease.
+    ObtainLease,
+    /// Re-certify.
+    Recertify,
+    /// Re-key.
+    Rekey,
+    /// Re-key Key Pair.
+    RekeyKeyPair,
+    /// Re-Provision.
+    ReProvision,
+    /// Register.
+    Register,
+    /// Revoke.
+    Revoke,
     /// Archive.
     Archive,
     /// Destroy.
@@ -1036,22 +1452,40 @@ pub enum ClientOperation {
     GetAttributeList,
     /// Ping one server connection and observe its KMIP response.
     Ping,
-    /// Explicit SetEndpointRole policy operation.
-    SetEndpointRole,
-    /// Explicit SetDefaults policy operation.
-    SetDefaults,
-    /// Explicit SetConstraints policy operation.
-    SetConstraints,
-    /// Explicit GetUsageAllocation policy operation.
-    GetUsageAllocation,
-    /// Explicit GetConstraints policy operation.
+    /// Interop diagnostic operation.
+    Interop,
+    /// Log a caller-selected message on the server.
+    Log,
+    /// Validate one supplied certificate chain on the server.
+    Validate,
+    /// Forward one caller-selected PKCS#11 function to the server.
+    Pkcs11,
+    /// Read the server's Constraints Structure.
     GetConstraints,
+    /// Configure the server's Constraints Structure.
+    SetConstraints,
+    /// Configure the server's Object Defaults.
+    SetDefaults,
+    /// Allocate Usage Limits Units for a managed object.
+    GetUsageAllocation,
     /// Query one server for explicitly requested protocol information.
     Query,
+    /// Retrieve random data from the KMIP server.
+    RngRetrieve,
+    /// Seed random data into the KMIP server.
+    RngSeed,
     /// Encrypt data with the explicitly selected server-side object.
     Encrypt,
     /// Decrypt data with the explicitly selected server-side object.
     Decrypt,
+    /// Derive key material on the KMIP server using caller-selected parameters.
+    DeriveKey,
+    /// Export an object using caller-selected format and wrapping options.
+    Export,
+    /// Import caller-provided object material and attributes to the KMIP server.
+    Import,
+    /// Combine caller-identified Split Keys on the KMIP server.
+    JoinSplitKey,
     /// Hash data through the selected server-side operation.
     Hash,
     /// Calculate a MAC through the selected server-side object.
@@ -1186,8 +1620,24 @@ impl fmt::Debug for ClientOperationOutcome {
 #[derive(Clone, Copy)]
 enum ClientResponseRef<'a> {
     DiscoverVersions(&'a DiscoverVersionsResponse),
+    DelegatedLogin(&'a DelegatedLoginResponse),
+    Login(&'a LoginResponse),
+    Logout(&'a LogoutResponse),
+    Certify(&'a CertifyResponse),
+    Check(&'a CheckResponse),
+    ObtainLease(&'a ObtainLeaseResponse),
+    Recertify(&'a RecertifyResponse),
+    Rekey(&'a RekeyResponse),
+    RekeyKeyPair(&'a RekeyKeyPairResponse),
+    ReProvision(&'a ReProvisionResponse),
+    Register(&'a RegisterResponse),
+    Revoke(&'a RevokeResponse),
     Encrypt(&'a EncryptResponse),
     Decrypt(&'a DecryptResponse),
+    DeriveKey(&'a DeriveKeyResponse),
+    Export(&'a ExportResponse),
+    Import(&'a ImportResponse),
+    JoinSplitKey(&'a JoinSplitKeyResponse),
     Hash(&'a HashResponse),
     Mac(&'a MacResponse),
     MacVerify(&'a MacVerifyResponse),
@@ -1210,16 +1660,17 @@ enum ClientResponseRef<'a> {
     GetAttributes(&'a GetAttributesResponse),
     GetAttributeList(&'a GetAttributeListResponse),
     Ping(&'a PingResponse),
-    /// Explicit SetEndpointRole policy operation.
-    SetEndpointRole(&'a SetEndpointRoleResponse),
-    /// Explicit SetDefaults policy operation.
-    SetDefaults(&'a SetDefaultsResponse),
-    /// Explicit SetConstraints policy operation.
-    SetConstraints(&'a SetConstraintsResponse),
-    /// Explicit GetUsageAllocation policy operation.
-    GetUsageAllocation(&'a GetUsageAllocationResponse),
-    /// Explicit GetConstraints policy operation.
+    Interop(&'a InteropResponse),
+    Log(&'a LogResponse),
+    Validate(&'a ValidateResponse),
+    /// A borrowed PKCS#11 result.
+    Pkcs11(&'a Pkcs11Response),
     GetConstraints(&'a GetConstraintsResponse),
+    SetConstraints(&'a SetConstraintsResponse),
+    SetDefaults(&'a SetDefaultsResponse),
+    GetUsageAllocation(&'a GetUsageAllocationResponse),
+    RngRetrieve(&'a RngRetrieveResponse),
+    RngSeed(&'a RngSeedResponse),
     Query(&'a QueryResponse),
 }
 
@@ -1233,13 +1684,35 @@ pub struct ClientResponseView<'a> {
 }
 
 impl<'a> ClientResponseView<'a> {
+    const fn new(response: ClientResponseRef<'a>) -> Self {
+        Self { response }
+    }
+}
+
+impl<'a> ClientResponseView<'a> {
     /// Returns the complete KMIP status, reason, and optional Result Message.
     #[must_use]
     pub const fn result(&self) -> &KmipOperationResult {
         match self.response {
             ClientResponseRef::DiscoverVersions(response) => response.result(),
+            ClientResponseRef::DelegatedLogin(response) => response.result(),
+            ClientResponseRef::Login(response) => response.result(),
+            ClientResponseRef::Logout(response) => response.result(),
+            ClientResponseRef::Certify(response) => response.result(),
+            ClientResponseRef::Check(response) => response.result(),
+            ClientResponseRef::ObtainLease(response) => response.result(),
+            ClientResponseRef::Recertify(response) => response.result(),
+            ClientResponseRef::Rekey(response) => response.result(),
+            ClientResponseRef::RekeyKeyPair(response) => response.result(),
+            ClientResponseRef::ReProvision(response) => response.result(),
+            ClientResponseRef::Register(response) => response.result(),
+            ClientResponseRef::Revoke(response) => response.result(),
             ClientResponseRef::Encrypt(response) => response.result(),
             ClientResponseRef::Decrypt(response) => response.result(),
+            ClientResponseRef::DeriveKey(response) => response.result(),
+            ClientResponseRef::Export(response) => response.result(),
+            ClientResponseRef::Import(response) => response.result(),
+            ClientResponseRef::JoinSplitKey(response) => response.result(),
             ClientResponseRef::Hash(response) => response.result(),
             ClientResponseRef::Mac(response) => response.result(),
             ClientResponseRef::MacVerify(response) => response.result(),
@@ -1262,11 +1735,16 @@ impl<'a> ClientResponseView<'a> {
             ClientResponseRef::GetAttributes(response) => response.result(),
             ClientResponseRef::GetAttributeList(response) => response.result(),
             ClientResponseRef::Ping(response) => response.result(),
-            ClientResponseRef::SetEndpointRole(response) => response.result(),
-            ClientResponseRef::SetDefaults(response) => response.result(),
-            ClientResponseRef::SetConstraints(response) => response.result(),
-            ClientResponseRef::GetUsageAllocation(response) => response.result(),
+            ClientResponseRef::Interop(response) => response.result(),
+            ClientResponseRef::Log(response) => response.result(),
+            ClientResponseRef::Validate(response) => response.result(),
+            ClientResponseRef::Pkcs11(response) => response.result(),
             ClientResponseRef::GetConstraints(response) => response.result(),
+            ClientResponseRef::SetConstraints(response) => response.result(),
+            ClientResponseRef::SetDefaults(response) => response.result(),
+            ClientResponseRef::GetUsageAllocation(response) => response.result(),
+            ClientResponseRef::RngRetrieve(response) => response.result(),
+            ClientResponseRef::RngSeed(response) => response.result(),
             ClientResponseRef::Query(response) => response.result(),
         }
     }
@@ -1287,6 +1765,33 @@ impl<'a> ClientResponseView<'a> {
     pub const fn discover_versions(&self) -> Option<&DiscoverVersionsResponse> {
         match self.response {
             ClientResponseRef::DiscoverVersions(response) => Some(response),
+            _ => None,
+        }
+    }
+
+    /// Returns the Delegated Login response when this view represents it.
+    #[must_use]
+    pub const fn delegated_login(&self) -> Option<&'a DelegatedLoginResponse> {
+        match self.response {
+            ClientResponseRef::DelegatedLogin(response) => Some(response),
+            _ => None,
+        }
+    }
+
+    /// Returns the Login response when this view represents it.
+    #[must_use]
+    pub const fn login(&self) -> Option<&'a LoginResponse> {
+        match self.response {
+            ClientResponseRef::Login(response) => Some(response),
+            _ => None,
+        }
+    }
+
+    /// Returns the Logout response when this view represents it.
+    #[must_use]
+    pub const fn logout(&self) -> Option<&'a LogoutResponse> {
+        match self.response {
+            ClientResponseRef::Logout(response) => Some(response),
             _ => None,
         }
     }
@@ -1314,6 +1819,42 @@ impl<'a> ClientResponseView<'a> {
     pub const fn decrypt(&self) -> Option<&'a DecryptResponse> {
         match self.response {
             ClientResponseRef::Decrypt(response) => Some(response),
+            _ => None,
+        }
+    }
+
+    /// Returns the Derive Key response when this view represents one.
+    #[must_use]
+    pub const fn derive_key(&self) -> Option<&'a DeriveKeyResponse> {
+        match self.response {
+            ClientResponseRef::DeriveKey(response) => Some(response),
+            _ => None,
+        }
+    }
+
+    /// Returns the Export response when this view represents one.
+    #[must_use]
+    pub const fn export(&self) -> Option<&'a ExportResponse> {
+        match self.response {
+            ClientResponseRef::Export(response) => Some(response),
+            _ => None,
+        }
+    }
+
+    /// Returns the Import response when this view represents one.
+    #[must_use]
+    pub const fn import(&self) -> Option<&'a ImportResponse> {
+        match self.response {
+            ClientResponseRef::Import(response) => Some(response),
+            _ => None,
+        }
+    }
+
+    /// Returns the Join Split Key response when this view represents one.
+    #[must_use]
+    pub const fn join_split_key(&self) -> Option<&'a JoinSplitKeyResponse> {
+        match self.response {
+            ClientResponseRef::JoinSplitKey(response) => Some(response),
             _ => None,
         }
     }
@@ -1368,6 +1909,87 @@ impl<'a> ClientResponseView<'a> {
     pub const fn activate(&self) -> Option<&'a ActivateResponse> {
         match self.response {
             ClientResponseRef::Activate(response) => Some(response),
+            _ => None,
+        }
+    }
+
+    /// Returns the Certify response when this view represents it.
+    #[must_use]
+    pub const fn certify(&self) -> Option<&'a CertifyResponse> {
+        match self.response {
+            ClientResponseRef::Certify(response) => Some(response),
+            _ => None,
+        }
+    }
+
+    /// Returns the Check response when this view represents it.
+    #[must_use]
+    pub const fn check(&self) -> Option<&'a CheckResponse> {
+        match self.response {
+            ClientResponseRef::Check(response) => Some(response),
+            _ => None,
+        }
+    }
+
+    /// Returns the Obtain Lease response when this view represents it.
+    #[must_use]
+    pub const fn obtain_lease(&self) -> Option<&'a ObtainLeaseResponse> {
+        match self.response {
+            ClientResponseRef::ObtainLease(response) => Some(response),
+            _ => None,
+        }
+    }
+
+    /// Returns the Re-certify response when this view represents it.
+    #[must_use]
+    pub const fn recertify(&self) -> Option<&'a RecertifyResponse> {
+        match self.response {
+            ClientResponseRef::Recertify(response) => Some(response),
+            _ => None,
+        }
+    }
+
+    /// Returns the Re-key response when this view represents it.
+    #[must_use]
+    pub const fn rekey(&self) -> Option<&'a RekeyResponse> {
+        match self.response {
+            ClientResponseRef::Rekey(response) => Some(response),
+            _ => None,
+        }
+    }
+
+    /// Returns the Re-key Key Pair response when this view represents it.
+    #[must_use]
+    pub const fn rekey_key_pair(&self) -> Option<&'a RekeyKeyPairResponse> {
+        match self.response {
+            ClientResponseRef::RekeyKeyPair(response) => Some(response),
+            _ => None,
+        }
+    }
+
+    /// Returns the Re-Provision response when this view represents it.
+    #[must_use]
+    pub const fn reprovision(&self) -> Option<&'a ReProvisionResponse> {
+        match self.response {
+            ClientResponseRef::ReProvision(response) => Some(response),
+            _ => None,
+        }
+    }
+
+    /// Returns the Register response when this view represents it.
+    #[must_use]
+    pub const fn register(&self) -> Option<&'a RegisterResponse> {
+        match self.response {
+            ClientResponseRef::Register(response) => Some(response),
+            _ => None,
+        }
+    }
+
+    /// Returns the Revoke response when this view represents it.
+    #[must_use]
+    pub const fn revoke(&self) -> Option<&'a RevokeResponse> {
+        match self.response {
+            ClientResponseRef::Revoke(response) => Some(response),
             _ => None,
         }
     }
@@ -1500,47 +2122,38 @@ impl<'a> ClientResponseView<'a> {
         }
     }
 
-    /// Returns this policy response when its operation matches.
+    /// Returns an Interop response, including a Pending result.
     #[must_use]
-    pub const fn get_constraints(&self) -> Option<&GetConstraintsResponse> {
+    pub const fn interop(&self) -> Option<&InteropResponse> {
         match self.response {
-            ClientResponseRef::GetConstraints(response) => Some(response),
+            ClientResponseRef::Interop(response) => Some(response),
             _ => None,
         }
     }
 
-    /// Returns this policy response when its operation matches.
+    /// Returns a Log response, including a Pending result.
     #[must_use]
-    pub const fn get_usage_allocation(&self) -> Option<&GetUsageAllocationResponse> {
+    pub const fn log(&self) -> Option<&LogResponse> {
         match self.response {
-            ClientResponseRef::GetUsageAllocation(response) => Some(response),
+            ClientResponseRef::Log(response) => Some(response),
             _ => None,
         }
     }
 
-    /// Returns this policy response when its operation matches.
+    /// Returns a Validate response, including a Pending result.
     #[must_use]
-    pub const fn set_constraints(&self) -> Option<&SetConstraintsResponse> {
+    pub const fn validate(&self) -> Option<&ValidateResponse> {
         match self.response {
-            ClientResponseRef::SetConstraints(response) => Some(response),
+            ClientResponseRef::Validate(response) => Some(response),
             _ => None,
         }
     }
 
-    /// Returns this policy response when its operation matches.
+    /// Returns the PKCS#11 response when this view represents it, including Pending.
     #[must_use]
-    pub const fn set_defaults(&self) -> Option<&SetDefaultsResponse> {
+    pub const fn pkcs11(&self) -> Option<&'a Pkcs11Response> {
         match self.response {
-            ClientResponseRef::SetDefaults(response) => Some(response),
-            _ => None,
-        }
-    }
-
-    /// Returns this policy response when its operation matches.
-    #[must_use]
-    pub const fn set_endpoint_role(&self) -> Option<&SetEndpointRoleResponse> {
-        match self.response {
-            ClientResponseRef::SetEndpointRole(response) => Some(response),
+            ClientResponseRef::Pkcs11(response) => Some(response),
             _ => None,
         }
     }
@@ -1550,6 +2163,60 @@ impl<'a> ClientResponseView<'a> {
     pub const fn ping(&self) -> Option<&PingResponse> {
         match self.response {
             ClientResponseRef::Ping(response) => Some(response),
+            _ => None,
+        }
+    }
+
+    /// Returns a Get Constraints response, including a Pending result.
+    #[must_use]
+    pub const fn get_constraints(&self) -> Option<&GetConstraintsResponse> {
+        match self.response {
+            ClientResponseRef::GetConstraints(response) => Some(response),
+            _ => None,
+        }
+    }
+
+    /// Returns a Set Constraints response, including a Pending result.
+    #[must_use]
+    pub const fn set_constraints(&self) -> Option<&SetConstraintsResponse> {
+        match self.response {
+            ClientResponseRef::SetConstraints(response) => Some(response),
+            _ => None,
+        }
+    }
+
+    /// Returns a Set Defaults response, including a Pending result.
+    #[must_use]
+    pub const fn set_defaults(&self) -> Option<&SetDefaultsResponse> {
+        match self.response {
+            ClientResponseRef::SetDefaults(response) => Some(response),
+            _ => None,
+        }
+    }
+
+    /// Returns a Get Usage Allocation response, including a Pending result.
+    #[must_use]
+    pub const fn get_usage_allocation(&self) -> Option<&GetUsageAllocationResponse> {
+        match self.response {
+            ClientResponseRef::GetUsageAllocation(response) => Some(response),
+            _ => None,
+        }
+    }
+
+    /// Returns an RNG Retrieve response when this view represents it.
+    #[must_use]
+    pub const fn rng_retrieve(&self) -> Option<&RngRetrieveResponse> {
+        match self.response {
+            ClientResponseRef::RngRetrieve(response) => Some(response),
+            _ => None,
+        }
+    }
+
+    /// Returns an RNG Seed response when this view represents it.
+    #[must_use]
+    pub const fn rng_seed(&self) -> Option<&RngSeedResponse> {
+        match self.response {
+            ClientResponseRef::RngSeed(response) => Some(response),
             _ => None,
         }
     }
@@ -1564,110 +2231,138 @@ impl<'a> ClientResponseView<'a> {
     }
 }
 
+fn debug_response<T: fmt::Debug>(
+    formatter: &mut fmt::Formatter<'_>,
+    name: &str,
+    response: &T,
+) -> fmt::Result {
+    formatter.debug_tuple(name).field(response).finish()
+}
+
+fn debug_ticket_response(
+    formatter: &mut fmt::Formatter<'_>,
+    response: &DelegatedLoginResponse,
+) -> fmt::Result {
+    debug_response(formatter, "DelegatedLogin", response)
+}
+
+fn debug_login_response(
+    formatter: &mut fmt::Formatter<'_>,
+    response: &LoginResponse,
+) -> fmt::Result {
+    debug_response(formatter, "Login", response)
+}
+
 impl fmt::Debug for ClientResponseView<'_> {
+    // Keep the exhaustive label mapping together so adding an operation cannot
+    // silently omit its public response name or redaction behavior.
+    #[allow(clippy::too_many_lines)]
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self.response {
-            ClientResponseRef::DiscoverVersions(response) => formatter
-                .debug_tuple("DiscoverVersions")
-                .field(response)
-                .finish(),
-            ClientResponseRef::Encrypt(response) => {
-                formatter.debug_tuple("Encrypt").field(response).finish()
+            ClientResponseRef::DiscoverVersions(response) => {
+                debug_response(formatter, "DiscoverVersions", response)
             }
-            ClientResponseRef::Decrypt(response) => {
-                formatter.debug_tuple("Decrypt").field(response).finish()
+            ClientResponseRef::DelegatedLogin(response) => {
+                debug_ticket_response(formatter, response)
             }
-            ClientResponseRef::Hash(response) => {
-                formatter.debug_tuple("Hash").field(response).finish()
+            ClientResponseRef::Login(response) => debug_login_response(formatter, response),
+            ClientResponseRef::Logout(response) => debug_response(formatter, "Logout", response),
+            ClientResponseRef::Encrypt(response) => debug_response(formatter, "Encrypt", response),
+            ClientResponseRef::Decrypt(response) => debug_response(formatter, "Decrypt", response),
+            ClientResponseRef::DeriveKey(response) => {
+                debug_response(formatter, "DeriveKey", response)
             }
-            ClientResponseRef::Mac(response) => {
-                formatter.debug_tuple("MAC").field(response).finish()
+            ClientResponseRef::Export(response) => debug_response(formatter, "Export", response),
+            ClientResponseRef::Import(response) => debug_response(formatter, "Import", response),
+            ClientResponseRef::JoinSplitKey(response) => {
+                debug_response(formatter, "JoinSplitKey", response)
             }
+            ClientResponseRef::Hash(response) => debug_response(formatter, "Hash", response),
+            ClientResponseRef::Mac(response) => debug_response(formatter, "MAC", response),
             ClientResponseRef::MacVerify(response) => {
-                formatter.debug_tuple("MAC Verify").field(response).finish()
+                debug_response(formatter, "MAC Verify", response)
             }
-            ClientResponseRef::Sign(response) => {
-                formatter.debug_tuple("Sign").field(response).finish()
+            ClientResponseRef::Sign(response) => debug_response(formatter, "Sign", response),
+            ClientResponseRef::SignatureVerify(response) => {
+                debug_response(formatter, "Signature Verify", response)
             }
-            ClientResponseRef::SignatureVerify(response) => formatter
-                .debug_tuple("Signature Verify")
-                .field(response)
-                .finish(),
-            ClientResponseRef::Create(response) => {
-                formatter.debug_tuple("Create").field(response).finish()
+            ClientResponseRef::Create(response) => debug_response(formatter, "Create", response),
+            ClientResponseRef::Certify(response) => debug_response(formatter, "Certify", response),
+            ClientResponseRef::Check(response) => debug_response(formatter, "Check", response),
+            ClientResponseRef::ObtainLease(response) => {
+                debug_response(formatter, "ObtainLease", response)
             }
+            ClientResponseRef::Recertify(response) => {
+                debug_response(formatter, "Recertify", response)
+            }
+            ClientResponseRef::Rekey(response) => debug_response(formatter, "Rekey", response),
+            ClientResponseRef::RekeyKeyPair(response) => {
+                debug_response(formatter, "RekeyKeyPair", response)
+            }
+            ClientResponseRef::ReProvision(response) => {
+                debug_response(formatter, "ReProvision", response)
+            }
+            ClientResponseRef::Register(response) => {
+                debug_response(formatter, "Register", response)
+            }
+            ClientResponseRef::Revoke(response) => debug_response(formatter, "Revoke", response),
             ClientResponseRef::Activate(_) => formatter.write_str("Activate([REDACTED])"),
             ClientResponseRef::Archive(_) => formatter.write_str("Archive([REDACTED])"),
             ClientResponseRef::Destroy(_) => formatter.write_str("Destroy([REDACTED])"),
             ClientResponseRef::Recover(_) => formatter.write_str("Recover([REDACTED])"),
-            ClientResponseRef::Get(response) => {
-                formatter.debug_tuple("Get").field(response).finish()
+            ClientResponseRef::Get(response) => debug_response(formatter, "Get", response),
+            ClientResponseRef::Locate(response) => debug_response(formatter, "Locate", response),
+            ClientResponseRef::CreateKeyPair(response) => {
+                debug_response(formatter, "CreateKeyPair", response)
             }
-            ClientResponseRef::Locate(response) => {
-                formatter.debug_tuple("Locate").field(response).finish()
+            ClientResponseRef::CreateSplitKey(response) => {
+                debug_response(formatter, "CreateSplitKey", response)
             }
-            ClientResponseRef::CreateKeyPair(response) => formatter
-                .debug_tuple("CreateKeyPair")
-                .field(response)
-                .finish(),
-            ClientResponseRef::CreateSplitKey(response) => formatter
-                .debug_tuple("CreateSplitKey")
-                .field(response)
-                .finish(),
-            ClientResponseRef::AddAttribute(response) => formatter
-                .debug_tuple("AddAttribute")
-                .field(response)
-                .finish(),
-            ClientResponseRef::AdjustAttribute(response) => formatter
-                .debug_tuple("AdjustAttribute")
-                .field(response)
-                .finish(),
-            ClientResponseRef::DeleteAttribute(response) => formatter
-                .debug_tuple("DeleteAttribute")
-                .field(response)
-                .finish(),
-            ClientResponseRef::ModifyAttribute(response) => formatter
-                .debug_tuple("ModifyAttribute")
-                .field(response)
-                .finish(),
-            ClientResponseRef::SetAttribute(response) => formatter
-                .debug_tuple("SetAttribute")
-                .field(response)
-                .finish(),
-            ClientResponseRef::GetAttributes(response) => formatter
-                .debug_tuple("GetAttributes")
-                .field(response)
-                .finish(),
-            ClientResponseRef::GetAttributeList(response) => formatter
-                .debug_tuple("GetAttributeList")
-                .field(response)
-                .finish(),
-            ClientResponseRef::Ping(response) => {
-                formatter.debug_tuple("Ping").field(response).finish()
+            ClientResponseRef::AddAttribute(response) => {
+                debug_response(formatter, "AddAttribute", response)
             }
-            ClientResponseRef::SetEndpointRole(response) => formatter
-                .debug_tuple("SetEndpointRole")
-                .field(response)
-                .finish(),
-            ClientResponseRef::SetDefaults(response) => formatter
-                .debug_tuple("SetDefaults")
-                .field(response)
-                .finish(),
-            ClientResponseRef::SetConstraints(response) => formatter
-                .debug_tuple("SetConstraints")
-                .field(response)
-                .finish(),
-            ClientResponseRef::GetUsageAllocation(response) => formatter
-                .debug_tuple("GetUsageAllocation")
-                .field(response)
-                .finish(),
-            ClientResponseRef::GetConstraints(response) => formatter
-                .debug_tuple("GetConstraints")
-                .field(response)
-                .finish(),
-            ClientResponseRef::Query(response) => {
-                formatter.debug_tuple("Query").field(response).finish()
+            ClientResponseRef::AdjustAttribute(response) => {
+                debug_response(formatter, "AdjustAttribute", response)
             }
+            ClientResponseRef::DeleteAttribute(response) => {
+                debug_response(formatter, "DeleteAttribute", response)
+            }
+            ClientResponseRef::ModifyAttribute(response) => {
+                debug_response(formatter, "ModifyAttribute", response)
+            }
+            ClientResponseRef::SetAttribute(response) => {
+                debug_response(formatter, "SetAttribute", response)
+            }
+            ClientResponseRef::GetAttributes(response) => {
+                debug_response(formatter, "GetAttributes", response)
+            }
+            ClientResponseRef::GetAttributeList(response) => {
+                debug_response(formatter, "GetAttributeList", response)
+            }
+            ClientResponseRef::Ping(response) => debug_response(formatter, "Ping", response),
+            ClientResponseRef::Interop(response) => debug_response(formatter, "Interop", response),
+            ClientResponseRef::Log(response) => debug_response(formatter, "Log", response),
+            ClientResponseRef::Validate(response) => {
+                debug_response(formatter, "Validate", response)
+            }
+            ClientResponseRef::Pkcs11(response) => debug_response(formatter, "Pkcs11", response),
+            ClientResponseRef::GetConstraints(response) => {
+                debug_response(formatter, "GetConstraints", response)
+            }
+            ClientResponseRef::SetConstraints(response) => {
+                debug_response(formatter, "SetConstraints", response)
+            }
+            ClientResponseRef::SetDefaults(response) => {
+                debug_response(formatter, "SetDefaults", response)
+            }
+            ClientResponseRef::GetUsageAllocation(response) => {
+                debug_response(formatter, "GetUsageAllocation", response)
+            }
+            ClientResponseRef::RngRetrieve(response) => {
+                debug_response(formatter, "RngRetrieve", response)
+            }
+            ClientResponseRef::RngSeed(response) => debug_response(formatter, "RngSeed", response),
+            ClientResponseRef::Query(response) => debug_response(formatter, "Query", response),
         }
     }
 }
@@ -1677,10 +2372,42 @@ impl fmt::Debug for ClientResponseView<'_> {
 pub enum ClientBatchOutcome {
     /// The server returned a non-Pending KMIP result.
     Completed(DiscoverVersionsResponse),
+    /// The server returned a Delegated Login result.
+    DelegatedLogin(DelegatedLoginResponse),
+    /// The server returned a Login result.
+    Login(LoginResponse),
+    /// The server returned a Logout result.
+    Logout(LogoutResponse),
+    /// The server returned a Certify result.
+    Certify(CertifyResponse),
+    /// The server returned a Check result.
+    Check(CheckResponse),
+    /// The server returned an Obtain Lease result.
+    ObtainLease(ObtainLeaseResponse),
+    /// The server returned a Re-certify result.
+    Recertify(RecertifyResponse),
+    /// The server returned a Re-key result.
+    Rekey(RekeyResponse),
+    /// The server returned a Re-key Key Pair result.
+    RekeyKeyPair(RekeyKeyPairResponse),
+    /// The server returned a Re-Provision result.
+    ReProvision(ReProvisionResponse),
+    /// The server returned a Register result.
+    Register(RegisterResponse),
+    /// The server returned a Revoke result.
+    Revoke(RevokeResponse),
     /// The server returned an Encrypt result.
     Encrypt(EncryptResponse),
     /// The server returned a Decrypt result.
     Decrypt(DecryptResponse),
+    /// The server returned a Derive Key result.
+    DeriveKey(DeriveKeyResponse),
+    /// The server returned an Export result.
+    Export(ExportResponse),
+    /// The server returned an Import result.
+    Import(ImportResponse),
+    /// The server returned a Join Split Key result.
+    JoinSplitKeyCompleted(JoinSplitKeyResponse),
     /// The server returned a Hash result.
     Hash(HashResponse),
     /// The server returned a MAC result.
@@ -1727,18 +2454,28 @@ pub enum ClientBatchOutcome {
     GetAttributeList(GetAttributeListResponse),
     /// The server returned a Ping result.
     Ping(PingResponse),
-    /// Explicit SetEndpointRole policy operation.
-    SetEndpointRole(SetEndpointRoleResponse),
-    /// Explicit SetDefaults policy operation.
-    SetDefaults(SetDefaultsResponse),
-    /// Explicit SetConstraints policy operation.
-    SetConstraints(SetConstraintsResponse),
-    /// Explicit GetUsageAllocation policy operation.
-    GetUsageAllocation(GetUsageAllocationResponse),
-    /// Explicit GetConstraints policy operation.
+    /// The server returned a typed Interop result.
+    Interop(InteropResponse),
+    /// The server returned a typed Log result.
+    Log(LogResponse),
+    /// The server returned a typed Validate result.
+    Validate(ValidateResponse),
+    /// The typed PKCS#11 result.
+    Pkcs11(Pkcs11Response),
+    /// The server returned a Get Constraints result.
     GetConstraints(GetConstraintsResponse),
+    /// The server returned a Set Constraints result.
+    SetConstraints(SetConstraintsResponse),
+    /// The server returned a Set Defaults result.
+    SetDefaults(SetDefaultsResponse),
+    /// The server returned a Get Usage Allocation result.
+    GetUsageAllocation(GetUsageAllocationResponse),
     /// The server returned a Query result.
     Query(QueryResponse),
+    /// The server returned an RNG Retrieve result.
+    RngRetrieve(RngRetrieveResponse),
+    /// The server returned an RNG Seed result.
+    RngSeed(RngSeedResponse),
 }
 
 impl ClientBatchOutcome {
@@ -1747,8 +2484,24 @@ impl ClientBatchOutcome {
     pub fn asynchronous_correlation_value(&self) -> Option<&[u8]> {
         match self {
             Self::Completed(_)
+            | Self::DelegatedLogin(_)
+            | Self::Login(_)
+            | Self::Logout(_)
+            | Self::Certify(_)
+            | Self::Check(_)
+            | Self::ObtainLease(_)
+            | Self::Recertify(_)
+            | Self::Rekey(_)
+            | Self::RekeyKeyPair(_)
+            | Self::ReProvision(_)
+            | Self::Register(_)
+            | Self::Revoke(_)
             | Self::Encrypt(_)
             | Self::Decrypt(_)
+            | Self::DeriveKey(_)
+            | Self::Export(_)
+            | Self::Import(_)
+            | Self::JoinSplitKeyCompleted(_)
             | Self::Hash(_)
             | Self::Mac(_)
             | Self::MacVerify(_)
@@ -1771,11 +2524,16 @@ impl ClientBatchOutcome {
             | Self::GetAttributes(_)
             | Self::GetAttributeList(_)
             | Self::Ping(_)
-            | Self::SetEndpointRole(_)
-            | Self::SetDefaults(_)
-            | Self::SetConstraints(_)
-            | Self::GetUsageAllocation(_)
+            | Self::Interop(_)
+            | Self::Log(_)
+            | Self::Validate(_)
+            | Self::Pkcs11(_)
             | Self::GetConstraints(_)
+            | Self::SetConstraints(_)
+            | Self::SetDefaults(_)
+            | Self::GetUsageAllocation(_)
+            | Self::RngRetrieve(_)
+            | Self::RngSeed(_)
             | Self::Query(_) => None,
             Self::Pending(pending) => Some(pending.asynchronous_correlation_value()),
         }
@@ -1786,8 +2544,24 @@ impl ClientBatchOutcome {
     pub const fn result(&self) -> &KmipOperationResult {
         match self {
             Self::Completed(response) => response.result(),
+            Self::DelegatedLogin(response) => response.result(),
+            Self::Login(response) => response.result(),
+            Self::Logout(response) => response.result(),
+            Self::Certify(response) => response.result(),
+            Self::Check(response) => response.result(),
+            Self::ObtainLease(response) => response.result(),
+            Self::Recertify(response) => response.result(),
+            Self::Rekey(response) => response.result(),
+            Self::RekeyKeyPair(response) => response.result(),
+            Self::ReProvision(response) => response.result(),
+            Self::Register(response) => response.result(),
+            Self::Revoke(response) => response.result(),
             Self::Encrypt(response) => response.result(),
             Self::Decrypt(response) => response.result(),
+            Self::DeriveKey(response) => response.result(),
+            Self::Export(response) => response.result(),
+            Self::Import(response) => response.result(),
+            Self::JoinSplitKeyCompleted(response) => response.result(),
             Self::Hash(response) => response.result(),
             Self::Mac(response) => response.result(),
             Self::MacVerify(response) => response.result(),
@@ -1810,11 +2584,16 @@ impl ClientBatchOutcome {
             Self::GetAttributes(response) => response.result(),
             Self::GetAttributeList(response) => response.result(),
             Self::Ping(response) => response.result(),
-            Self::SetEndpointRole(response) => response.result(),
-            Self::SetDefaults(response) => response.result(),
-            Self::SetConstraints(response) => response.result(),
-            Self::GetUsageAllocation(response) => response.result(),
+            Self::Interop(response) => response.result(),
+            Self::Log(response) => response.result(),
+            Self::Validate(response) => response.result(),
+            Self::Pkcs11(response) => response.result(),
             Self::GetConstraints(response) => response.result(),
+            Self::SetConstraints(response) => response.result(),
+            Self::SetDefaults(response) => response.result(),
+            Self::GetUsageAllocation(response) => response.result(),
+            Self::RngRetrieve(response) => response.result(),
+            Self::RngSeed(response) => response.result(),
             Self::Query(response) => response.result(),
             Self::Pending(pending) => pending.result(),
         }
@@ -1825,8 +2604,24 @@ impl ClientBatchOutcome {
     pub const fn operation(&self) -> ClientOperation {
         match self {
             Self::Completed(_) => ClientOperation::DiscoverVersions,
+            Self::DelegatedLogin(_) => ClientOperation::DelegatedLogin,
+            Self::Login(_) => ClientOperation::Login,
+            Self::Logout(_) => ClientOperation::Logout,
+            Self::Certify(_) => ClientOperation::Certify,
+            Self::Check(_) => ClientOperation::Check,
+            Self::ObtainLease(_) => ClientOperation::ObtainLease,
+            Self::Recertify(_) => ClientOperation::Recertify,
+            Self::Rekey(_) => ClientOperation::Rekey,
+            Self::RekeyKeyPair(_) => ClientOperation::RekeyKeyPair,
+            Self::ReProvision(_) => ClientOperation::ReProvision,
+            Self::Register(_) => ClientOperation::Register,
+            Self::Revoke(_) => ClientOperation::Revoke,
             Self::Encrypt(_) => ClientOperation::Encrypt,
             Self::Decrypt(_) => ClientOperation::Decrypt,
+            Self::DeriveKey(_) => ClientOperation::DeriveKey,
+            Self::Export(_) => ClientOperation::Export,
+            Self::Import(_) => ClientOperation::Import,
+            Self::JoinSplitKeyCompleted(_) => ClientOperation::JoinSplitKey,
             Self::Hash(_) => ClientOperation::Hash,
             Self::Mac(_) => ClientOperation::Mac,
             Self::MacVerify(_) => ClientOperation::MacVerify,
@@ -1849,11 +2644,16 @@ impl ClientBatchOutcome {
             Self::GetAttributes(_) => ClientOperation::GetAttributes,
             Self::GetAttributeList(_) => ClientOperation::GetAttributeList,
             Self::Ping(_) => ClientOperation::Ping,
-            Self::SetEndpointRole(_) => ClientOperation::SetEndpointRole,
-            Self::SetDefaults(_) => ClientOperation::SetDefaults,
-            Self::SetConstraints(_) => ClientOperation::SetConstraints,
-            Self::GetUsageAllocation(_) => ClientOperation::GetUsageAllocation,
+            Self::Interop(_) => ClientOperation::Interop,
+            Self::Log(_) => ClientOperation::Log,
+            Self::Validate(_) => ClientOperation::Validate,
+            Self::Pkcs11(_) => ClientOperation::Pkcs11,
             Self::GetConstraints(_) => ClientOperation::GetConstraints,
+            Self::SetConstraints(_) => ClientOperation::SetConstraints,
+            Self::SetDefaults(_) => ClientOperation::SetDefaults,
+            Self::GetUsageAllocation(_) => ClientOperation::GetUsageAllocation,
+            Self::RngRetrieve(_) => ClientOperation::RngRetrieve,
+            Self::RngSeed(_) => ClientOperation::RngSeed,
             Self::Query(_) => ClientOperation::Query,
             Self::Pending(pending) => pending.operation(),
         }
@@ -1864,6 +2664,186 @@ impl ClientBatchOutcome {
     pub const fn discover_versions_response(&self) -> Option<&DiscoverVersionsResponse> {
         match self {
             Self::Completed(response) => Some(response),
+            _ => None,
+        }
+    }
+
+    /// Returns the typed Certify response, including when its result is Pending.
+    #[must_use]
+    pub const fn certify_response(&self) -> Option<&CertifyResponse> {
+        match self {
+            Self::Certify(response) => Some(response),
+            Self::Pending(pending) => match pending.response() {
+                ClientResponseView {
+                    response: ClientResponseRef::Certify(response),
+                } => Some(response),
+                _ => None,
+            },
+            _ => None,
+        }
+    }
+
+    /// Returns the typed Check response, including when its result is Pending.
+    #[must_use]
+    pub const fn check_response(&self) -> Option<&CheckResponse> {
+        match self {
+            Self::Check(response) => Some(response),
+            Self::Pending(pending) => match pending.response() {
+                ClientResponseView {
+                    response: ClientResponseRef::Check(response),
+                } => Some(response),
+                _ => None,
+            },
+            _ => None,
+        }
+    }
+
+    /// Returns the typed Delegated Login response, including when Pending.
+    #[must_use]
+    pub const fn delegated_login_response(&self) -> Option<&DelegatedLoginResponse> {
+        match self {
+            Self::DelegatedLogin(response) => Some(response),
+            Self::Pending(pending) => match pending.response() {
+                ClientResponseView {
+                    response: ClientResponseRef::DelegatedLogin(response),
+                } => Some(response),
+                _ => None,
+            },
+            _ => None,
+        }
+    }
+
+    /// Returns the typed Login response, including when Pending.
+    #[must_use]
+    pub const fn login_response(&self) -> Option<&LoginResponse> {
+        match self {
+            Self::Login(response) => Some(response),
+            Self::Pending(pending) => match pending.response() {
+                ClientResponseView {
+                    response: ClientResponseRef::Login(response),
+                } => Some(response),
+                _ => None,
+            },
+            _ => None,
+        }
+    }
+
+    /// Returns the typed Logout response, including when Pending.
+    #[must_use]
+    pub const fn logout_response(&self) -> Option<&LogoutResponse> {
+        match self {
+            Self::Logout(response) => Some(response),
+            Self::Pending(pending) => match pending.response() {
+                ClientResponseView {
+                    response: ClientResponseRef::Logout(response),
+                } => Some(response),
+                _ => None,
+            },
+            _ => None,
+        }
+    }
+
+    /// Returns the typed Obtain Lease response, including when its result is Pending.
+    #[must_use]
+    pub const fn obtain_lease_response(&self) -> Option<&ObtainLeaseResponse> {
+        match self {
+            Self::ObtainLease(response) => Some(response),
+            Self::Pending(pending) => match pending.response() {
+                ClientResponseView {
+                    response: ClientResponseRef::ObtainLease(response),
+                } => Some(response),
+                _ => None,
+            },
+            _ => None,
+        }
+    }
+
+    /// Returns the typed Re-certify response, including when its result is Pending.
+    #[must_use]
+    pub const fn recertify_response(&self) -> Option<&RecertifyResponse> {
+        match self {
+            Self::Recertify(response) => Some(response),
+            Self::Pending(pending) => match pending.response() {
+                ClientResponseView {
+                    response: ClientResponseRef::Recertify(response),
+                } => Some(response),
+                _ => None,
+            },
+            _ => None,
+        }
+    }
+
+    /// Returns the typed Re-key response, including when its result is Pending.
+    #[must_use]
+    pub const fn rekey_response(&self) -> Option<&RekeyResponse> {
+        match self {
+            Self::Rekey(response) => Some(response),
+            Self::Pending(pending) => match pending.response() {
+                ClientResponseView {
+                    response: ClientResponseRef::Rekey(response),
+                } => Some(response),
+                _ => None,
+            },
+            _ => None,
+        }
+    }
+
+    /// Returns the typed Re-key Key Pair response, including when its result is Pending.
+    #[must_use]
+    pub const fn rekey_key_pair_response(&self) -> Option<&RekeyKeyPairResponse> {
+        match self {
+            Self::RekeyKeyPair(response) => Some(response),
+            Self::Pending(pending) => match pending.response() {
+                ClientResponseView {
+                    response: ClientResponseRef::RekeyKeyPair(response),
+                } => Some(response),
+                _ => None,
+            },
+            _ => None,
+        }
+    }
+
+    /// Returns the typed Re-Provision response, including when its result is Pending.
+    #[must_use]
+    pub const fn reprovision_response(&self) -> Option<&ReProvisionResponse> {
+        match self {
+            Self::ReProvision(response) => Some(response),
+            Self::Pending(pending) => match pending.response() {
+                ClientResponseView {
+                    response: ClientResponseRef::ReProvision(response),
+                } => Some(response),
+                _ => None,
+            },
+            _ => None,
+        }
+    }
+
+    /// Returns the typed Register response, including when its result is Pending.
+    #[must_use]
+    pub const fn register_response(&self) -> Option<&RegisterResponse> {
+        match self {
+            Self::Register(response) => Some(response),
+            Self::Pending(pending) => match pending.response() {
+                ClientResponseView {
+                    response: ClientResponseRef::Register(response),
+                } => Some(response),
+                _ => None,
+            },
+            _ => None,
+        }
+    }
+
+    /// Returns the typed Revoke response, including when its result is Pending.
+    #[must_use]
+    pub const fn revoke_response(&self) -> Option<&RevokeResponse> {
+        match self {
+            Self::Revoke(response) => Some(response),
+            Self::Pending(pending) => match pending.response() {
+                ClientResponseView {
+                    response: ClientResponseRef::Revoke(response),
+                } => Some(response),
+                _ => None,
+            },
             _ => None,
         }
     }
@@ -1967,6 +2947,66 @@ impl ClientBatchOutcome {
         }
     }
 
+    /// Returns the typed Derive Key response, including when its result is Pending.
+    #[must_use]
+    pub const fn derive_key_response(&self) -> Option<&DeriveKeyResponse> {
+        match self {
+            Self::DeriveKey(response) => Some(response),
+            Self::Pending(pending) => match pending.response() {
+                ClientResponseView {
+                    response: ClientResponseRef::DeriveKey(response),
+                } => Some(response),
+                _ => None,
+            },
+            _ => None,
+        }
+    }
+
+    /// Returns the typed Export response, including when its result is Pending.
+    #[must_use]
+    pub const fn export_response(&self) -> Option<&ExportResponse> {
+        match self {
+            Self::Export(response) => Some(response),
+            Self::Pending(pending) => match pending.response() {
+                ClientResponseView {
+                    response: ClientResponseRef::Export(response),
+                } => Some(response),
+                _ => None,
+            },
+            _ => None,
+        }
+    }
+
+    /// Returns the typed Import response, including when its result is Pending.
+    #[must_use]
+    pub const fn import_response(&self) -> Option<&ImportResponse> {
+        match self {
+            Self::Import(response) => Some(response),
+            Self::Pending(pending) => match pending.response() {
+                ClientResponseView {
+                    response: ClientResponseRef::Import(response),
+                } => Some(response),
+                _ => None,
+            },
+            _ => None,
+        }
+    }
+
+    /// Returns the typed Join Split Key response, including when its result is Pending.
+    #[must_use]
+    pub const fn join_split_key_response(&self) -> Option<&JoinSplitKeyResponse> {
+        match self {
+            Self::JoinSplitKeyCompleted(response) => Some(response),
+            Self::Pending(pending) => match pending.response() {
+                ClientResponseView {
+                    response: ClientResponseRef::JoinSplitKey(response),
+                } => Some(response),
+                _ => None,
+            },
+            _ => None,
+        }
+    }
+
     /// Returns the typed Hash response, when this is one.
     #[must_use]
     pub const fn hash_response(&self) -> Option<&HashResponse> {
@@ -2012,117 +3052,213 @@ impl ClientBatchOutcome {
         }
     }
 
+    /// Returns the typed RNG Retrieve response when this is one.
+    #[must_use]
+    pub const fn rng_retrieve_response(&self) -> Option<&RngRetrieveResponse> {
+        match self {
+            Self::RngRetrieve(response) => Some(response),
+            Self::Pending(pending) => match pending.response() {
+                ClientResponseView {
+                    response: ClientResponseRef::RngRetrieve(response),
+                } => Some(response),
+                _ => None,
+            },
+            _ => None,
+        }
+    }
+
+    /// Returns the typed RNG Seed response when this is one.
+    #[must_use]
+    pub const fn rng_seed_response(&self) -> Option<&RngSeedResponse> {
+        match self {
+            Self::RngSeed(response) => Some(response),
+            Self::Pending(pending) => match pending.response() {
+                ClientResponseView {
+                    response: ClientResponseRef::RngSeed(response),
+                } => Some(response),
+                _ => None,
+            },
+            _ => None,
+        }
+    }
+
     /// Returns a borrowed view of the typed operation response.
     ///
     /// Existing Discover Versions result access remains available through
     /// [`ClientResponseView::result`] and [`ClientResponseView::supported_versions`].
     #[must_use]
+    // Keep the exhaustive response-to-view mapping together for API review.
+    #[allow(clippy::too_many_lines)]
     pub const fn response(&self) -> ClientResponseView<'_> {
         match self {
-            Self::Completed(response) => ClientResponseView {
-                response: ClientResponseRef::DiscoverVersions(response),
-            },
-            Self::Encrypt(response) => ClientResponseView {
-                response: ClientResponseRef::Encrypt(response),
-            },
-            Self::Decrypt(response) => ClientResponseView {
-                response: ClientResponseRef::Decrypt(response),
-            },
-            Self::Hash(response) => ClientResponseView {
-                response: ClientResponseRef::Hash(response),
-            },
-            Self::Mac(response) => ClientResponseView {
-                response: ClientResponseRef::Mac(response),
-            },
-            Self::MacVerify(response) => ClientResponseView {
-                response: ClientResponseRef::MacVerify(response),
-            },
-            Self::Sign(response) => ClientResponseView {
-                response: ClientResponseRef::Sign(response),
-            },
-            Self::SignatureVerify(response) => ClientResponseView {
-                response: ClientResponseRef::SignatureVerify(response),
-            },
-            Self::Activate(response) => ClientResponseView {
-                response: ClientResponseRef::Activate(response),
-            },
-            Self::Archive(response) => ClientResponseView {
-                response: ClientResponseRef::Archive(response),
-            },
-            Self::Destroy(response) => ClientResponseView {
-                response: ClientResponseRef::Destroy(response),
-            },
-            Self::Recover(response) => ClientResponseView {
-                response: ClientResponseRef::Recover(response),
-            },
-            Self::GetCompleted(response) => ClientResponseView {
-                response: ClientResponseRef::Get(response),
-            },
-            Self::LocateCompleted(response) => ClientResponseView {
-                response: ClientResponseRef::Locate(response),
-            },
-            Self::CreateCompleted(response) => ClientResponseView {
-                response: ClientResponseRef::Create(response),
-            },
-            Self::CreateKeyPairCompleted(response) => ClientResponseView {
-                response: ClientResponseRef::CreateKeyPair(response),
-            },
-            Self::CreateSplitKeyCompleted(response) => ClientResponseView {
-                response: ClientResponseRef::CreateSplitKey(response),
-            },
-            Self::AddAttribute(response) => ClientResponseView {
-                response: ClientResponseRef::AddAttribute(response),
-            },
-            Self::AdjustAttribute(response) => ClientResponseView {
-                response: ClientResponseRef::AdjustAttribute(response),
-            },
-            Self::DeleteAttribute(response) => ClientResponseView {
-                response: ClientResponseRef::DeleteAttribute(response),
-            },
-            Self::ModifyAttribute(response) => ClientResponseView {
-                response: ClientResponseRef::ModifyAttribute(response),
-            },
-            Self::SetAttribute(response) => ClientResponseView {
-                response: ClientResponseRef::SetAttribute(response),
-            },
+            Self::Completed(response) => {
+                ClientResponseView::new(ClientResponseRef::DiscoverVersions(response))
+            }
+            Self::DelegatedLogin(response) => {
+                ClientResponseView::new(ClientResponseRef::DelegatedLogin(response))
+            }
+            Self::Login(response) => ClientResponseView::new(ClientResponseRef::Login(response)),
+            Self::Logout(response) => ClientResponseView::new(ClientResponseRef::Logout(response)),
+            Self::Certify(response) => {
+                ClientResponseView::new(ClientResponseRef::Certify(response))
+            }
+            Self::Check(response) => ClientResponseView::new(ClientResponseRef::Check(response)),
+            Self::ObtainLease(response) => {
+                ClientResponseView::new(ClientResponseRef::ObtainLease(response))
+            }
+            Self::Recertify(response) => {
+                ClientResponseView::new(ClientResponseRef::Recertify(response))
+            }
+            Self::Rekey(response) => ClientResponseView::new(ClientResponseRef::Rekey(response)),
+            Self::RekeyKeyPair(response) => {
+                ClientResponseView::new(ClientResponseRef::RekeyKeyPair(response))
+            }
+            Self::ReProvision(response) => {
+                ClientResponseView::new(ClientResponseRef::ReProvision(response))
+            }
+            Self::Register(response) => {
+                ClientResponseView::new(ClientResponseRef::Register(response))
+            }
+            Self::Revoke(response) => ClientResponseView::new(ClientResponseRef::Revoke(response)),
+            Self::Encrypt(response) => {
+                ClientResponseView::new(ClientResponseRef::Encrypt(response))
+            }
+            Self::Decrypt(response) => {
+                ClientResponseView::new(ClientResponseRef::Decrypt(response))
+            }
+            Self::DeriveKey(response) => {
+                ClientResponseView::new(ClientResponseRef::DeriveKey(response))
+            }
+            Self::Export(response) => ClientResponseView::new(ClientResponseRef::Export(response)),
+            Self::Import(response) => ClientResponseView::new(ClientResponseRef::Import(response)),
+            Self::JoinSplitKeyCompleted(response) => {
+                ClientResponseView::new(ClientResponseRef::JoinSplitKey(response))
+            }
+            Self::Hash(response) => ClientResponseView::new(ClientResponseRef::Hash(response)),
+            Self::Mac(response) => ClientResponseView::new(ClientResponseRef::Mac(response)),
+            Self::MacVerify(response) => {
+                ClientResponseView::new(ClientResponseRef::MacVerify(response))
+            }
+            Self::Sign(response) => ClientResponseView::new(ClientResponseRef::Sign(response)),
+            Self::SignatureVerify(response) => {
+                ClientResponseView::new(ClientResponseRef::SignatureVerify(response))
+            }
+            Self::Activate(response) => {
+                ClientResponseView::new(ClientResponseRef::Activate(response))
+            }
+            Self::Archive(response) => {
+                ClientResponseView::new(ClientResponseRef::Archive(response))
+            }
+            Self::Destroy(response) => {
+                ClientResponseView::new(ClientResponseRef::Destroy(response))
+            }
+            Self::Recover(response) => {
+                ClientResponseView::new(ClientResponseRef::Recover(response))
+            }
+            Self::GetCompleted(response) => {
+                ClientResponseView::new(ClientResponseRef::Get(response))
+            }
+            Self::LocateCompleted(response) => {
+                ClientResponseView::new(ClientResponseRef::Locate(response))
+            }
+            Self::CreateCompleted(response) => {
+                ClientResponseView::new(ClientResponseRef::Create(response))
+            }
+            Self::CreateKeyPairCompleted(response) => {
+                ClientResponseView::new(ClientResponseRef::CreateKeyPair(response))
+            }
+            Self::CreateSplitKeyCompleted(response) => {
+                ClientResponseView::new(ClientResponseRef::CreateSplitKey(response))
+            }
+            Self::AddAttribute(response) => {
+                ClientResponseView::new(ClientResponseRef::AddAttribute(response))
+            }
+            Self::AdjustAttribute(response) => {
+                ClientResponseView::new(ClientResponseRef::AdjustAttribute(response))
+            }
+            Self::DeleteAttribute(response) => {
+                ClientResponseView::new(ClientResponseRef::DeleteAttribute(response))
+            }
+            Self::ModifyAttribute(response) => {
+                ClientResponseView::new(ClientResponseRef::ModifyAttribute(response))
+            }
+            Self::SetAttribute(response) => {
+                ClientResponseView::new(ClientResponseRef::SetAttribute(response))
+            }
             Self::Pending(pending) => pending.response(),
-            Self::GetAttributes(response) => ClientResponseView {
-                response: ClientResponseRef::GetAttributes(response),
-            },
-            Self::GetAttributeList(response) => ClientResponseView {
-                response: ClientResponseRef::GetAttributeList(response),
-            },
-            Self::Ping(response) => ClientResponseView {
-                response: ClientResponseRef::Ping(response),
-            },
-            Self::SetEndpointRole(response) => ClientResponseView {
-                response: ClientResponseRef::SetEndpointRole(response),
-            },
-            Self::SetDefaults(response) => ClientResponseView {
-                response: ClientResponseRef::SetDefaults(response),
-            },
-            Self::SetConstraints(response) => ClientResponseView {
-                response: ClientResponseRef::SetConstraints(response),
-            },
-            Self::GetUsageAllocation(response) => ClientResponseView {
-                response: ClientResponseRef::GetUsageAllocation(response),
-            },
-            Self::GetConstraints(response) => ClientResponseView {
-                response: ClientResponseRef::GetConstraints(response),
-            },
-            Self::Query(response) => ClientResponseView {
-                response: ClientResponseRef::Query(response),
-            },
+            Self::GetAttributes(response) => {
+                ClientResponseView::new(ClientResponseRef::GetAttributes(response))
+            }
+            Self::GetAttributeList(response) => {
+                ClientResponseView::new(ClientResponseRef::GetAttributeList(response))
+            }
+            Self::Ping(response) => ClientResponseView::new(ClientResponseRef::Ping(response)),
+            Self::Interop(response) => {
+                ClientResponseView::new(ClientResponseRef::Interop(response))
+            }
+            Self::Log(response) => ClientResponseView::new(ClientResponseRef::Log(response)),
+            Self::Validate(response) => {
+                ClientResponseView::new(ClientResponseRef::Validate(response))
+            }
+            Self::Pkcs11(response) => ClientResponseView::new(ClientResponseRef::Pkcs11(response)),
+            Self::GetConstraints(response) => {
+                ClientResponseView::new(ClientResponseRef::GetConstraints(response))
+            }
+            Self::SetConstraints(response) => {
+                ClientResponseView::new(ClientResponseRef::SetConstraints(response))
+            }
+            Self::SetDefaults(response) => {
+                ClientResponseView::new(ClientResponseRef::SetDefaults(response))
+            }
+            Self::GetUsageAllocation(response) => {
+                ClientResponseView::new(ClientResponseRef::GetUsageAllocation(response))
+            }
+            Self::RngRetrieve(response) => {
+                ClientResponseView::new(ClientResponseRef::RngRetrieve(response))
+            }
+            Self::RngSeed(response) => {
+                ClientResponseView::new(ClientResponseRef::RngSeed(response))
+            }
+            Self::Query(response) => ClientResponseView::new(ClientResponseRef::Query(response)),
         }
     }
 }
 
 impl fmt::Debug for ClientBatchOutcome {
+    // Keep the exhaustive outcome labels together so each new typed response
+    // has an explicit, reviewable debug name.
+    #[allow(clippy::too_many_lines)]
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             Self::Completed(response) => {
                 formatter.debug_tuple("Completed").field(response).finish()
             }
+            Self::DelegatedLogin(response) => formatter
+                .debug_tuple("DelegatedLogin")
+                .field(response)
+                .finish(),
+            Self::Login(response) => formatter.debug_tuple("Login").field(response).finish(),
+            Self::Logout(response) => formatter.debug_tuple("Logout").field(response).finish(),
+            Self::Certify(response) => formatter.debug_tuple("Certify").field(response).finish(),
+            Self::Check(response) => formatter.debug_tuple("Check").field(response).finish(),
+            Self::ObtainLease(response) => formatter
+                .debug_tuple("ObtainLease")
+                .field(response)
+                .finish(),
+            Self::Recertify(response) => {
+                formatter.debug_tuple("Recertify").field(response).finish()
+            }
+            Self::Rekey(response) => formatter.debug_tuple("Rekey").field(response).finish(),
+            Self::RekeyKeyPair(response) => formatter
+                .debug_tuple("RekeyKeyPair")
+                .field(response)
+                .finish(),
+            Self::ReProvision(response) => formatter
+                .debug_tuple("ReProvision")
+                .field(response)
+                .finish(),
+            Self::Register(response) => formatter.debug_tuple("Register").field(response).finish(),
+            Self::Revoke(response) => formatter.debug_tuple("Revoke").field(response).finish(),
             Self::GetCompleted(response) => formatter
                 .debug_tuple("GetCompleted")
                 .field(response)
@@ -2133,6 +3269,15 @@ impl fmt::Debug for ClientBatchOutcome {
                 .finish(),
             Self::Encrypt(response) => formatter.debug_tuple("Encrypt").field(response).finish(),
             Self::Decrypt(response) => formatter.debug_tuple("Decrypt").field(response).finish(),
+            Self::DeriveKey(response) => {
+                formatter.debug_tuple("DeriveKey").field(response).finish()
+            }
+            Self::Export(response) => formatter.debug_tuple("Export").field(response).finish(),
+            Self::Import(response) => formatter.debug_tuple("Import").field(response).finish(),
+            Self::JoinSplitKeyCompleted(response) => formatter
+                .debug_tuple("JoinSplitKeyCompleted")
+                .field(response)
+                .finish(),
             Self::Hash(response) => formatter.debug_tuple("Hash").field(response).finish(),
             Self::Mac(response) => formatter.debug_tuple("MAC").field(response).finish(),
             Self::MacVerify(response) => {
@@ -2189,27 +3334,32 @@ impl fmt::Debug for ClientBatchOutcome {
                 .field(response)
                 .finish(),
             Self::Ping(response) => formatter.debug_tuple("Ping").field(response).finish(),
-            Self::SetEndpointRole(response) => formatter
-                .debug_tuple("SetEndpointRole")
-                .field(response)
-                .finish(),
-            Self::SetDefaults(response) => formatter
-                .debug_tuple("SetDefaults")
+            Self::Interop(response) => formatter.debug_tuple("Interop").field(response).finish(),
+            Self::Log(response) => formatter.debug_tuple("Log").field(response).finish(),
+            Self::Validate(response) => formatter.debug_tuple("Validate").field(response).finish(),
+            Self::Pkcs11(response) => formatter.debug_tuple("Pkcs11").field(response).finish(),
+            Self::GetConstraints(response) => formatter
+                .debug_tuple("GetConstraints")
                 .field(response)
                 .finish(),
             Self::SetConstraints(response) => formatter
                 .debug_tuple("SetConstraints")
                 .field(response)
                 .finish(),
+            Self::SetDefaults(response) => formatter
+                .debug_tuple("SetDefaults")
+                .field(response)
+                .finish(),
             Self::GetUsageAllocation(response) => formatter
                 .debug_tuple("GetUsageAllocation")
                 .field(response)
                 .finish(),
-            Self::GetConstraints(response) => formatter
-                .debug_tuple("GetConstraints")
+            Self::Query(response) => formatter.debug_tuple("Query").field(response).finish(),
+            Self::RngRetrieve(response) => formatter
+                .debug_tuple("RngRetrieve")
                 .field(response)
                 .finish(),
-            Self::Query(response) => formatter.debug_tuple("Query").field(response).finish(),
+            Self::RngSeed(response) => formatter.debug_tuple("RngSeed").field(response).finish(),
         }
     }
 }
@@ -2218,8 +3368,19 @@ impl fmt::Display for ClientBatchOutcome {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             Self::Completed(response) => write!(formatter, "Completed({})", response.result()),
+            Self::DelegatedLogin(response) => {
+                write!(formatter, "DelegatedLogin({})", response.result())
+            }
+            Self::Login(response) => write!(formatter, "Login({})", response.result()),
+            Self::Logout(response) => write!(formatter, "Logout({})", response.result()),
             Self::Encrypt(response) => write!(formatter, "Encrypt({})", response.result()),
             Self::Decrypt(response) => write!(formatter, "Decrypt({})", response.result()),
+            Self::DeriveKey(response) => write!(formatter, "Derive Key({})", response.result()),
+            Self::Export(response) => write!(formatter, "Export({})", response.result()),
+            Self::Import(response) => write!(formatter, "Import({})", response.result()),
+            Self::JoinSplitKeyCompleted(response) => {
+                write!(formatter, "Join Split Key({})", response.result())
+            }
             Self::Hash(response) => write!(formatter, "Hash({})", response.result()),
             Self::Mac(response) => write!(formatter, "MAC({})", response.result()),
             Self::MacVerify(response) => write!(formatter, "MAC Verify({})", response.result()),
@@ -2228,6 +3389,21 @@ impl fmt::Display for ClientBatchOutcome {
                 write!(formatter, "Signature Verify({})", response.result())
             }
             Self::Activate(response) => write!(formatter, "Activate({})", response.result()),
+            Self::Certify(response) => write!(formatter, "Certify({})", response.result()),
+            Self::Check(response) => write!(formatter, "Check({})", response.result()),
+            Self::ObtainLease(response) => write!(formatter, "ObtainLease({})", response.result()),
+            Self::Recertify(response) => {
+                write!(formatter, "Re-certify({})", response.result())
+            }
+            Self::Rekey(response) => write!(formatter, "Re-key({})", response.result()),
+            Self::RekeyKeyPair(response) => {
+                write!(formatter, "Re-key Key Pair({})", response.result())
+            }
+            Self::ReProvision(response) => {
+                write!(formatter, "Re-Provision({})", response.result())
+            }
+            Self::Register(response) => write!(formatter, "Register({})", response.result()),
+            Self::Revoke(response) => write!(formatter, "Revoke({})", response.result()),
             Self::Archive(response) => write!(formatter, "Archive({})", response.result()),
             Self::Destroy(response) => write!(formatter, "Destroy({})", response.result()),
             Self::Recover(response) => write!(formatter, "Recover({})", response.result()),
@@ -2269,20 +3445,25 @@ impl fmt::Display for ClientBatchOutcome {
                 write!(formatter, "GetAttributeList({})", response.result())
             }
             Self::Ping(response) => write!(formatter, "Ping({})", response.result()),
-            Self::SetEndpointRole(response) => {
-                write!(formatter, "SetEndpointRole({})", response.result())
+            Self::Interop(response) => write!(formatter, "Interop({})", response.result()),
+            Self::Log(response) => write!(formatter, "Log({})", response.result()),
+            Self::Validate(response) => write!(formatter, "Validate({})", response.result()),
+            Self::Pkcs11(response) => write!(formatter, "Pkcs11({})", response.result()),
+            Self::GetConstraints(response) => {
+                write!(formatter, "GetConstraints({})", response.result())
             }
-            Self::SetDefaults(response) => write!(formatter, "SetDefaults({})", response.result()),
             Self::SetConstraints(response) => {
                 write!(formatter, "SetConstraints({})", response.result())
+            }
+            Self::SetDefaults(response) => {
+                write!(formatter, "SetDefaults({})", response.result())
             }
             Self::GetUsageAllocation(response) => {
                 write!(formatter, "GetUsageAllocation({})", response.result())
             }
-            Self::GetConstraints(response) => {
-                write!(formatter, "GetConstraints({})", response.result())
-            }
             Self::Query(response) => write!(formatter, "Query({})", response.result()),
+            Self::RngRetrieve(response) => write!(formatter, "RngRetrieve({})", response.result()),
+            Self::RngSeed(response) => write!(formatter, "RngSeed({})", response.result()),
         }
     }
 }
@@ -2561,47 +3742,6 @@ impl Client {
         limits: &CodecLimits,
         request_options: &RequestOptions,
     ) -> Result<ClientBatchResponse, ClientError> {
-        self.execute_inner(batch, limits, request_options, None)
-    }
-
-    /// Executes one caller-costed protection operation through its local allocation.
-    /// Pending is accepted only when the caller explicitly supplies its indicator.
-    /// # Errors
-    /// Invalid object, unit cost or allowance fails NotSent; possibly delivered
-    /// results retain the reservation. Errors preserve common delivery evidence.
-    pub fn execute_guarded(
-        &mut self,
-        context: &mut UsageAllocationContext,
-        request: GuardedProtectionRequest,
-        cost: i32,
-        asynchronous_indicator: Option<u32>,
-        limits: &CodecLimits,
-    ) -> Result<ClientBatchItemResponse, ClientError> {
-        let request = match request {
-            GuardedProtectionRequest::Encrypt(v) => ClientRequest::Encrypt(v),
-            GuardedProtectionRequest::Mac(v) => ClientRequest::Mac(v),
-            GuardedProtectionRequest::Sign(v) => ClientRequest::Sign(v),
-        };
-        let mut batch = ClientBatch::new(ClientBatchItem::new(request));
-        if let Some(indicator) = asynchronous_indicator {
-            batch = batch.with_asynchronous_indicator(indicator);
-        }
-        let response = self.execute_inner(
-            batch,
-            limits,
-            &RequestOptions::default(),
-            Some((context, cost)),
-        )?;
-        take_single_response(response)
-    }
-
-    fn execute_inner(
-        &mut self,
-        batch: ClientBatch,
-        limits: &CodecLimits,
-        request_options: &RequestOptions,
-        mut guard: Option<(&mut UsageAllocationContext, i32)>,
-    ) -> Result<ClientBatchResponse, ClientError> {
         let options = validate_batch(&batch).map_err(|error| {
             ClientError::validation(
                 ClientCauseCategory::InvalidInput,
@@ -2627,71 +3767,487 @@ impl Client {
         let maximum_response_size = maximum_response_size_for_batch(&batch, limits);
         let request_message = build_request_message(batch, &options, maximum_response_size)
             .map_err(|error| protocol_failure_at(error, RequestDeliveryState::NotSent))?;
-        if let Some((context, cost)) = guard.as_mut() {
-            let identifier = request_message
-                .with_ttlv(|root| {
-                    let batch = root
-                        .children()
-                        .iter()
-                        .find(|f| f.tag().raw() == BATCH_ITEM)?;
-                    batch.with_value(|v| {
-                        let ValueView::Structure(batch) = v else {
-                            return None;
-                        };
-                        let payload = batch
-                            .children()
-                            .iter()
-                            .find(|f| f.tag().raw() == REQUEST_PAYLOAD)?;
-                        payload.with_value(|v| {
-                            let ValueView::Structure(payload) = v else {
-                                return None;
-                            };
-                            payload
-                                .children()
-                                .iter()
-                                .find(|f| f.tag().raw() == 0x420094)?
-                                .with_value(|v| match v {
-                                    ValueView::TextString(id) => {
-                                        Some(UniqueIdentifier::TextString(id.to_owned()))
-                                    }
-                                    _ => None,
-                                })
-                        })
-                    })
-                })
-                .ok_or_else(crate::usage_allocation::validation_error)?;
-            context.reserve(&identifier, *cost)?;
-        }
-        let result = (|| {
-            let (response_message, response_delivery_state) =
-                self.exchange_operation(request_message, limits, request_options)?;
+        let (response_message, response_delivery_state) =
+            self.exchange_operation(request_message, limits, request_options)?;
 
-            validate_response(
-                &request_identities,
-                &options,
-                response_message,
-                self.configuration.extension_registry(),
-                limits,
-                #[cfg(test)]
-                self.pending_owner_observer.as_ref(),
+        validate_response(
+            &request_identities,
+            &options,
+            response_message,
+            self.configuration.extension_registry(),
+            limits,
+            #[cfg(test)]
+            self.pending_owner_observer.as_ref(),
+        )
+        .map_err(|failure| {
+            ClientError::protocol_response(
+                failure.error,
+                response_delivery_state,
+                failure.response_ttlv,
             )
-            .map_err(|failure| {
-                ClientError::protocol_response(
-                    failure.error,
-                    response_delivery_state,
-                    failure.response_ttlv,
-                )
-            })
-        })();
-        if result
-            .as_ref()
-            .is_err_and(|error| error.delivery_state() == Some(RequestDeliveryState::NotSent))
-        {
-            if let Some((context, cost)) = guard {
-                context.release(cost);
+        })
+    }
+
+    /// Executes one Encrypt, MAC, or Sign request through an explicit local
+    /// Usage Allocation guard.
+    ///
+    /// The request must name the exact object identifier returned by the
+    /// successful allocation. The caller supplies a positive cost in the
+    /// context's caller-known Usage Limits Unit. Cost is not inferred from
+    /// operation type or input length. This context accounts only for calls
+    /// routed through this method; reservations do not prove server use.
+    ///
+    /// A complete Success or Failure response keeps the reservation. Only
+    /// `NotSent` delivery evidence releases it. No retry or Poll is performed.
+    /// Use [`Self::execute_guarded_protection_with_asynchronous_indicator`]
+    /// when the caller explicitly permits a Pending response.
+    ///
+    /// # Errors
+    ///
+    /// Returns a sanitized `NotSent` validation error for an unsupported
+    /// operation, missing or mismatched identifier, invalid cost, or cost
+    /// above the locally available allocation. Otherwise returns the standard
+    /// execution error with the strongest available delivery evidence.
+    #[allow(clippy::needless_pass_by_value)]
+    pub fn execute_guarded_protection(
+        &mut self,
+        context: &mut UsageAllocationContext,
+        request: ClientRequest,
+        cost: i64,
+        limits: &CodecLimits,
+    ) -> Result<ClientBatchItemResponse, ClientError> {
+        self.execute_guarded_protection_inner(context, request, cost, None, limits)
+    }
+
+    /// Executes one guarded Encrypt, MAC, or Sign request with an explicit
+    /// KMIP Asynchronous Indicator.
+    ///
+    /// This method is the only guarded convenience path that accepts Pending.
+    /// Pending retains the local reservation, preserves its correlation value,
+    /// and never triggers Poll automatically.
+    ///
+    /// # Errors
+    ///
+    /// Returns a sanitized `NotSent` validation error for an unsupported
+    /// operation, missing or mismatched identifier, invalid cost, or cost
+    /// above the locally available allocation. Otherwise returns the standard
+    /// execution error with the strongest available delivery evidence.
+    #[allow(clippy::needless_pass_by_value)]
+    pub fn execute_guarded_protection_with_asynchronous_indicator(
+        &mut self,
+        context: &mut UsageAllocationContext,
+        request: ClientRequest,
+        cost: i64,
+        asynchronous_indicator: u32,
+        limits: &CodecLimits,
+    ) -> Result<ClientBatchItemResponse, ClientError> {
+        self.execute_guarded_protection_inner(
+            context,
+            request,
+            cost,
+            Some(asynchronous_indicator),
+            limits,
+        )
+    }
+
+    fn execute_guarded_protection_inner(
+        &mut self,
+        context: &mut UsageAllocationContext,
+        request: ClientRequest,
+        cost: i64,
+        asynchronous_indicator: Option<u32>,
+        limits: &CodecLimits,
+    ) -> Result<ClientBatchItemResponse, ClientError> {
+        let identifier = match &request {
+            ClientRequest::Encrypt(request) => request.unique_identifier(),
+            ClientRequest::Mac(request) => request.unique_identifier(),
+            ClientRequest::Sign(request) => request.unique_identifier(),
+            _ => {
+                return Err(guard_validation_error(
+                    UsageAllocationContextError::UnsupportedOperation,
+                ));
             }
         }
-        result
+        .ok_or_else(|| {
+            guard_validation_error(UsageAllocationContextError::MissingUniqueIdentifier)
+        })?;
+        if identifier != context.unique_identifier() {
+            return Err(guard_validation_error(
+                UsageAllocationContextError::MismatchedUniqueIdentifier,
+            ));
+        }
+        context.reserve(cost).map_err(guard_validation_error)?;
+
+        let mut batch = ClientBatch::new(ClientBatchItem::new(request));
+        if let Some(indicator) = asynchronous_indicator {
+            batch = batch.with_asynchronous_indicator(indicator);
+        }
+        match self.execute_one_typed_batch(batch, limits, &RequestOptions::default()) {
+            Ok(response) => Ok(response),
+            Err(error) => {
+                context.settle_after_error(cost, error.delivery_state());
+                Err(error)
+            }
+        }
+    }
+
+    /// Executes one typed Certify request through the shared batch writer.
+    ///
+    /// Use the execute method with a one-item batch and an explicit
+    /// Asynchronous Indicator when the caller wants to accept Operation
+    /// Pending. This convenience method leaves batch options at their defaults
+    /// and never performs an implicit Poll or retry.
+    ///
+    /// # Errors
+    ///
+    /// Returns a sanitized validation, protocol, or transport error with the
+    /// strongest available request-delivery evidence.
+    pub fn certify(
+        &mut self,
+        request: CertifyRequest,
+        limits: &CodecLimits,
+    ) -> Result<ClientBatchItemResponse, ClientError> {
+        self.certify_with_options(request, limits, &RequestOptions::default())
+    }
+
+    /// Executes one typed Certify request with transport timeout overrides.
+    ///
+    /// The request uses the shared writer and one-exchange lifecycle.
+    ///
+    /// # Errors
+    ///
+    /// Returns a sanitized validation, protocol, or transport error with the
+    /// strongest available request-delivery evidence.
+    pub fn certify_with_options(
+        &mut self,
+        request: CertifyRequest,
+        limits: &CodecLimits,
+        request_options: &RequestOptions,
+    ) -> Result<ClientBatchItemResponse, ClientError> {
+        let response = self.execute_with_options(
+            ClientBatch::new(ClientBatchItem::new(ClientRequest::Certify(request))),
+            limits,
+            request_options,
+        )?;
+        take_single_item_response(response.items)
+    }
+
+    /// Executes one typed Check request through the shared batch writer.
+    ///
+    /// Use an explicitly ordered multi-item [`ClientBatch`] when Check should
+    /// consume a preceding ID Placeholder. The convenience method does not
+    /// select batch policy options, perform an implicit Poll, or retry.
+    ///
+    /// # Errors
+    ///
+    /// Returns a sanitized validation, protocol, or transport error with the
+    /// strongest available request-delivery evidence.
+    pub fn check(
+        &mut self,
+        request: CheckRequest,
+        limits: &CodecLimits,
+    ) -> Result<ClientBatchItemResponse, ClientError> {
+        self.check_with_options(request, limits, &RequestOptions::default())
+    }
+
+    /// Executes one typed Check request with transport timeout overrides.
+    ///
+    /// The request uses the shared writer, response bounds, and one-exchange
+    /// lifecycle. It does not evaluate server policy locally or alter the
+    /// caller's batch options.
+    ///
+    /// # Errors
+    ///
+    /// Returns a sanitized validation, protocol, or transport error with the
+    /// strongest available request-delivery evidence.
+    pub fn check_with_options(
+        &mut self,
+        request: CheckRequest,
+        limits: &CodecLimits,
+        request_options: &RequestOptions,
+    ) -> Result<ClientBatchItemResponse, ClientError> {
+        let response = self.execute_with_options(
+            ClientBatch::new(ClientBatchItem::new(ClientRequest::Check(request))),
+            limits,
+            request_options,
+        )?;
+        take_single_item_response(response.items)
+    }
+
+    /// Executes one typed Obtain Lease request through the shared batch writer.
+    ///
+    /// Use an explicitly ordered multi-item [`ClientBatch`] when the request
+    /// should consume a preceding ID Placeholder. This method does not track
+    /// lease expiry, perform an implicit Poll, or retry.
+    ///
+    /// # Errors
+    ///
+    /// Returns a sanitized validation, protocol, or transport error with the
+    /// strongest available request-delivery evidence.
+    pub fn obtain_lease(
+        &mut self,
+        request: ObtainLeaseRequest,
+        limits: &CodecLimits,
+    ) -> Result<ClientBatchItemResponse, ClientError> {
+        self.obtain_lease_with_options(request, limits, &RequestOptions::default())
+    }
+
+    /// Executes one typed Obtain Lease request with transport timeout overrides.
+    ///
+    /// The shared writer performs one exchange and preserves the server's
+    /// returned Lease Time and Last Change Date without creating local state.
+    ///
+    /// # Errors
+    ///
+    /// Returns a sanitized validation, protocol, or transport error with the
+    /// strongest available request-delivery evidence.
+    pub fn obtain_lease_with_options(
+        &mut self,
+        request: ObtainLeaseRequest,
+        limits: &CodecLimits,
+        request_options: &RequestOptions,
+    ) -> Result<ClientBatchItemResponse, ClientError> {
+        let response = self.execute_with_options(
+            ClientBatch::new(ClientBatchItem::new(ClientRequest::ObtainLease(request))),
+            limits,
+            request_options,
+        )?;
+        take_single_item_response(response.items)
+    }
+
+    /// Executes one typed Re-certify request through the shared batch writer.
+    ///
+    /// Use an explicitly ordered multi-item [`ClientBatch`] when the request
+    /// should consume a preceding ID Placeholder. This method performs one
+    /// exchange and never polls or retries implicitly.
+    ///
+    /// # Errors
+    ///
+    /// Returns a sanitized validation, protocol, or transport error with the
+    /// strongest available request-delivery evidence.
+    pub fn recertify(
+        &mut self,
+        request: RecertifyRequest,
+        limits: &CodecLimits,
+    ) -> Result<ClientBatchItemResponse, ClientError> {
+        self.recertify_with_options(request, limits, &RequestOptions::default())
+    }
+
+    /// Executes one typed Re-certify request with transport timeout overrides.
+    ///
+    /// The server owns certificate creation and Replacement/Replaced links;
+    /// this method performs one exchange and preserves the typed result.
+    ///
+    /// # Errors
+    ///
+    /// Returns a sanitized validation, protocol, or transport error with the
+    /// strongest available request-delivery evidence.
+    pub fn recertify_with_options(
+        &mut self,
+        request: RecertifyRequest,
+        limits: &CodecLimits,
+        request_options: &RequestOptions,
+    ) -> Result<ClientBatchItemResponse, ClientError> {
+        let response = self.execute_with_options(
+            ClientBatch::new(ClientBatchItem::new(ClientRequest::Recertify(request))),
+            limits,
+            request_options,
+        )?;
+        take_single_item_response(response.items)
+    }
+
+    /// Executes one typed Re-key request through the shared batch writer.
+    ///
+    /// Use an explicitly ordered multi-item [`ClientBatch`] when the request
+    /// should consume a preceding ID Placeholder. This method performs one
+    /// exchange and never polls or retries implicitly.
+    ///
+    /// # Errors
+    ///
+    /// Returns a sanitized validation, protocol, or transport error with the
+    /// strongest available request-delivery evidence.
+    pub fn rekey(
+        &mut self,
+        request: RekeyRequest,
+        limits: &CodecLimits,
+    ) -> Result<ClientBatchItemResponse, ClientError> {
+        self.rekey_with_options(request, limits, &RequestOptions::default())
+    }
+
+    /// Executes one typed Re-key request with transport timeout overrides.
+    ///
+    /// The server owns replacement key generation and Replacement/Replaced
+    /// links; this method performs one exchange and preserves the typed result.
+    ///
+    /// # Errors
+    ///
+    /// Returns a sanitized validation, protocol, or transport error with the
+    /// strongest available request-delivery evidence.
+    pub fn rekey_with_options(
+        &mut self,
+        request: RekeyRequest,
+        limits: &CodecLimits,
+        request_options: &RequestOptions,
+    ) -> Result<ClientBatchItemResponse, ClientError> {
+        let response = self.execute_with_options(
+            ClientBatch::new(ClientBatchItem::new(ClientRequest::Rekey(request))),
+            limits,
+            request_options,
+        )?;
+        take_single_item_response(response.items)
+    }
+
+    /// Executes one typed Re-key Key Pair request through the shared batch writer.
+    ///
+    /// Use an explicitly ordered multi-item [`ClientBatch`] when the request
+    /// should consume a preceding ID Placeholder. This method performs one
+    /// exchange and never polls or retries implicitly.
+    ///
+    /// # Errors
+    ///
+    /// Returns a sanitized validation, protocol, or transport error with the
+    /// strongest available request-delivery evidence.
+    pub fn rekey_key_pair(
+        &mut self,
+        request: RekeyKeyPairRequest,
+        limits: &CodecLimits,
+    ) -> Result<ClientBatchItemResponse, ClientError> {
+        self.rekey_key_pair_with_options(request, limits, &RequestOptions::default())
+    }
+
+    /// Executes one typed Re-key Key Pair request with timeout overrides.
+    ///
+    /// The server generates the replacement key pair and maintains its links;
+    /// `KMIPKit` performs one exchange and preserves both returned identifiers.
+    ///
+    /// # Errors
+    ///
+    /// Returns a sanitized validation, protocol, or transport error with the
+    /// strongest available request-delivery evidence.
+    pub fn rekey_key_pair_with_options(
+        &mut self,
+        request: RekeyKeyPairRequest,
+        limits: &CodecLimits,
+        request_options: &RequestOptions,
+    ) -> Result<ClientBatchItemResponse, ClientError> {
+        let response = self.execute_with_options(
+            ClientBatch::new(ClientBatchItem::new(ClientRequest::RekeyKeyPair(request))),
+            limits,
+            request_options,
+        )?;
+        take_single_item_response(response.items)
+    }
+
+    /// Executes one typed Re-Provision request through the shared batch writer.
+    ///
+    /// Re-Provision replaces the server-side client credential. The method
+    /// sends one exchange, preserves the returned result, and does not retain
+    /// or alter local credential state.
+    ///
+    /// # Errors
+    ///
+    /// Returns a sanitized validation, protocol, or transport error with the
+    /// strongest available request-delivery evidence.
+    pub fn reprovision(
+        &mut self,
+        request: ReProvisionRequest,
+        limits: &CodecLimits,
+    ) -> Result<ClientBatchItemResponse, ClientError> {
+        self.reprovision_with_options(request, limits, &RequestOptions::default())
+    }
+
+    /// Executes one typed Re-Provision request with transport timeout overrides.
+    ///
+    /// # Errors
+    ///
+    /// Returns a sanitized validation, protocol, or transport error with the
+    /// strongest available request-delivery evidence.
+    pub fn reprovision_with_options(
+        &mut self,
+        request: ReProvisionRequest,
+        limits: &CodecLimits,
+        request_options: &RequestOptions,
+    ) -> Result<ClientBatchItemResponse, ClientError> {
+        let response = self.execute_with_options(
+            ClientBatch::new(ClientBatchItem::new(ClientRequest::ReProvision(request))),
+            limits,
+            request_options,
+        )?;
+        take_single_item_response(response.items)
+    }
+
+    /// Executes one typed Register request through the shared batch writer.
+    ///
+    /// A successful response exposes the server-assigned Unique Identifier.
+    /// The operation performs one exchange and never retries automatically.
+    ///
+    /// # Errors
+    ///
+    /// Returns a sanitized validation, protocol, or transport error with the
+    /// strongest available request-delivery evidence.
+    pub fn register(
+        &mut self,
+        request: RegisterRequest,
+        limits: &CodecLimits,
+    ) -> Result<ClientBatchItemResponse, ClientError> {
+        self.register_with_options(request, limits, &RequestOptions::default())
+    }
+
+    /// Executes one typed Register request with transport timeout overrides.
+    ///
+    /// # Errors
+    ///
+    /// Returns a sanitized validation, protocol, or transport error with the
+    /// strongest available request-delivery evidence.
+    pub fn register_with_options(
+        &mut self,
+        request: RegisterRequest,
+        limits: &CodecLimits,
+        request_options: &RequestOptions,
+    ) -> Result<ClientBatchItemResponse, ClientError> {
+        let response = self.execute_with_options(
+            ClientBatch::new(ClientBatchItem::new(ClientRequest::Register(request))),
+            limits,
+            request_options,
+        )?;
+        take_single_item_response(response.items)
+    }
+
+    /// Executes one typed Revoke request through the shared batch writer.
+    ///
+    /// The method reports the server result and does not simulate or track the
+    /// server-side lifecycle transition. It sends one exchange and never retries.
+    ///
+    /// # Errors
+    ///
+    /// Returns a sanitized validation, protocol, or transport error with the
+    /// strongest available request-delivery evidence.
+    pub fn revoke(
+        &mut self,
+        request: RevokeRequest,
+        limits: &CodecLimits,
+    ) -> Result<ClientBatchItemResponse, ClientError> {
+        self.revoke_with_options(request, limits, &RequestOptions::default())
+    }
+
+    /// Executes one typed Revoke request with transport timeout overrides.
+    ///
+    /// # Errors
+    ///
+    /// Returns a sanitized validation, protocol, or transport error with the
+    /// strongest available request-delivery evidence.
+    pub fn revoke_with_options(
+        &mut self,
+        request: RevokeRequest,
+        limits: &CodecLimits,
+        request_options: &RequestOptions,
+    ) -> Result<ClientBatchItemResponse, ClientError> {
+        let response = self.execute_with_options(
+            ClientBatch::new(ClientBatchItem::new(ClientRequest::Revoke(request))),
+            limits,
+            request_options,
+        )?;
+        take_single_item_response(response.items)
     }
 
     /// Executes one typed Activate request through the shared batch writer.
@@ -2718,7 +4274,7 @@ impl Client {
     ///
     /// The request uses the shared writer, response bounds, and one-exchange
     /// lifecycle. The client reports the server result without simulating the
-    /// server-only object-state effect from KMIP v2.1 ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â§6.1.1.
+    /// server-only object-state effect from KMIP v2.1 §6.1.1.
     ///
     /// # Errors
     ///
@@ -2806,7 +4362,7 @@ impl Client {
     ///
     /// The request uses the shared writer, response bounds, and one-exchange
     /// lifecycle. The client reports the server result without simulating the
-    /// server-only object-state effect from KMIP v2.1 ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â§6.1.15.
+    /// server-only object-state effect from KMIP v2.1 §6.1.15.
     ///
     /// # Errors
     ///
@@ -2869,84 +4425,204 @@ impl Client {
         take_single_item_response(response.items)
     }
 
-    /// Executes one explicit ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â§6.1.22 policy operation without retry.
+    /// Executes one Get Constraints request through one transport exchange.
+    ///
     /// # Errors
-    /// Returns sanitized validation, protocol or transport failure with delivery evidence.
+    ///
+    /// Returns a sanitized validation, protocol, or transport error with the
+    /// strongest available request-delivery evidence.
     pub fn get_constraints(
         &mut self,
         limits: &CodecLimits,
     ) -> Result<ClientBatchItemResponse, ClientError> {
-        let response = self.execute(
-            ClientBatch::new(ClientBatchItem::new(ClientRequest::GetConstraints(
-                GetConstraintsRequest::new(),
-            ))),
+        self.execute_one_typed_request(
+            ClientRequest::get_constraints(),
             limits,
-        )?;
-        take_single_response(response)
+            &RequestOptions::default(),
+        )
     }
 
-    /// Executes one explicit Ãƒâ€šÃ‚Â§6.1.23 policy operation without retry.
+    /// Executes one Set Constraints request through one transport exchange.
+    ///
     /// # Errors
-    /// Returns sanitized validation, protocol or transport failure with delivery evidence.
-    pub fn get_usage_allocation(
-        &mut self,
-        request: GetUsageAllocationRequest,
-        limits: &CodecLimits,
-    ) -> Result<ClientBatchItemResponse, ClientError> {
-        let response = self.execute(
-            ClientBatch::new(ClientBatchItem::new(ClientRequest::GetUsageAllocation(
-                request,
-            ))),
-            limits,
-        )?;
-        take_single_response(response)
-    }
-
-    /// Executes one explicit Ã‚Â§6.1.52 policy operation without retry.
-    /// # Errors
-    /// Returns sanitized validation, protocol or transport failure with delivery evidence.
+    ///
+    /// Returns a sanitized validation, protocol, or transport error with the
+    /// strongest available request-delivery evidence.
     pub fn set_constraints(
         &mut self,
         request: SetConstraintsRequest,
         limits: &CodecLimits,
     ) -> Result<ClientBatchItemResponse, ClientError> {
-        let response = self.execute(
-            ClientBatch::new(ClientBatchItem::new(ClientRequest::SetConstraints(request))),
+        self.execute_one_typed_request(
+            ClientRequest::set_constraints(request),
             limits,
-        )?;
-        take_single_response(response)
+            &RequestOptions::default(),
+        )
     }
 
-    /// Executes one explicit Â§6.1.53 policy operation without retry.
+    /// Executes one Set Defaults request through one transport exchange.
+    ///
     /// # Errors
-    /// Returns sanitized validation, protocol or transport failure with delivery evidence.
+    ///
+    /// Returns a sanitized validation, protocol, or transport error with the
+    /// strongest available request-delivery evidence.
     pub fn set_defaults(
         &mut self,
         request: SetDefaultsRequest,
         limits: &CodecLimits,
     ) -> Result<ClientBatchItemResponse, ClientError> {
-        let response = self.execute(
-            ClientBatch::new(ClientBatchItem::new(ClientRequest::SetDefaults(request))),
+        self.execute_one_typed_request(
+            ClientRequest::set_defaults(request),
             limits,
-        )?;
-        take_single_response(response)
+            &RequestOptions::default(),
+        )
     }
 
-    /// Executes one explicit §6.1.54 policy operation without retry.
+    /// Executes one Get Usage Allocation request through one transport exchange.
+    ///
+    /// Use `execute` with an explicit asynchronous indicator when the caller
+    /// wants to accept Operation Pending. This method does not poll or retry.
+    ///
     /// # Errors
-    /// Returns sanitized validation, protocol or transport failure with delivery evidence.
-    pub fn set_endpoint_role(
+    ///
+    /// Returns a sanitized validation, protocol, or transport error with the
+    /// strongest available request-delivery evidence.
+    pub fn get_usage_allocation(
         &mut self,
-        request: SetEndpointRoleRequest,
+        request: GetUsageAllocationRequest,
         limits: &CodecLimits,
     ) -> Result<ClientBatchItemResponse, ClientError> {
-        let response = self.execute(
-            ClientBatch::new(ClientBatchItem::new(ClientRequest::SetEndpointRole(
-                request,
-            ))),
+        self.execute_one_typed_request(
+            ClientRequest::get_usage_allocation(request),
             limits,
-        )?;
-        take_single_response(response)
+            &RequestOptions::default(),
+        )
+    }
+
+    /// Executes one certificate-chain Validate request with one exchange.
+    ///
+    /// The server selects trust and validation policy. Use an explicit
+    /// asynchronous batch to accept Pending; this call does not poll or retry.
+    ///
+    /// # Errors
+    ///
+    /// Returns a sanitized error with request-delivery evidence.
+    pub fn validate(
+        &mut self,
+        request: ValidateRequest,
+        limits: &CodecLimits,
+    ) -> Result<ClientBatchItemResponse, ClientError> {
+        self.execute_one_typed_request(
+            ClientRequest::validate(request),
+            limits,
+            &RequestOptions::default(),
+        )
+    }
+
+    /// Executes one RNG Retrieve request through one transport exchange.
+    ///
+    /// Pending results remain explicit for the caller to resume. This method
+    /// does not poll or retry.
+    ///
+    /// # Errors
+    ///
+    /// Returns a sanitized validation, protocol, or transport error with the
+    /// strongest available request-delivery evidence.
+    pub fn rng_retrieve(
+        &mut self,
+        request: RngRetrieveRequest,
+        limits: &CodecLimits,
+    ) -> Result<ClientBatchItemResponse, ClientError> {
+        self.execute_one_typed_request(
+            ClientRequest::rng_retrieve(request),
+            limits,
+            &RequestOptions::default(),
+        )
+    }
+
+    /// Executes one explicitly selected Log request with one exchange.
+    ///
+    /// The caller must not send secrets to the server log. Use an explicit
+    /// asynchronous batch when Pending is desired; no implicit Poll occurs.
+    ///
+    /// # Errors
+    ///
+    /// Returns a sanitized error with request-delivery evidence.
+    pub fn log(
+        &mut self,
+        request: LogRequest,
+        limits: &CodecLimits,
+    ) -> Result<ClientBatchItemResponse, ClientError> {
+        self.execute_one_typed_request(
+            ClientRequest::log(request),
+            limits,
+            &RequestOptions::default(),
+        )
+    }
+
+    /// Executes one explicitly selected Interop request with one exchange.
+    ///
+    /// # Errors
+    ///
+    /// Returns a sanitized error with request-delivery evidence. The caller
+    /// can use an asynchronous batch to accept Pending without an implicit Poll.
+    pub fn interop(
+        &mut self,
+        request: InteropRequest,
+        limits: &CodecLimits,
+    ) -> Result<ClientBatchItemResponse, ClientError> {
+        self.execute_one_typed_request(
+            ClientRequest::interop(request),
+            limits,
+            &RequestOptions::default(),
+        )
+    }
+
+    /// Executes one RNG Seed request through one transport exchange.
+    ///
+    /// Seed bytes are treated as secret material. Pending results remain
+    /// explicit for the caller to resume; this method does not poll or retry.
+    ///
+    /// # Errors
+    ///
+    /// Returns a sanitized validation, protocol, or transport error with the
+    /// strongest available request-delivery evidence.
+    pub fn rng_seed(
+        &mut self,
+        request: RngSeedRequest,
+        limits: &CodecLimits,
+    ) -> Result<ClientBatchItemResponse, ClientError> {
+        self.execute_one_typed_request(
+            ClientRequest::rng_seed(request),
+            limits,
+            &RequestOptions::default(),
+        )
+    }
+
+    /// Forwards one explicit PKCS#11 request (§6.1.37, Table 273) in one exchange.
+    /// The server performs the function. No retry or implicit Poll occurs.
+    ///
+    /// # Errors
+    /// Returns sanitized validation/protocol/transport errors with delivery evidence.
+    pub fn pkcs11(
+        &mut self,
+        request: Pkcs11Request,
+        limits: &CodecLimits,
+    ) -> Result<ClientBatchItemResponse, ClientError> {
+        self.pkcs11_with_options(request, limits, &RequestOptions::default())
+    }
+
+    /// Forwards one PKCS#11 request using per-exchange timeout overrides.
+    ///
+    /// # Errors
+    /// Returns sanitized validation/protocol/transport errors with delivery evidence.
+    pub fn pkcs11_with_options(
+        &mut self,
+        request: Pkcs11Request,
+        limits: &CodecLimits,
+        options: &RequestOptions,
+    ) -> Result<ClientBatchItemResponse, ClientError> {
+        self.execute_one_typed_request(ClientRequest::pkcs11(request), limits, options)
     }
 
     /// Executes one client-to-server Ping request.
@@ -3019,6 +4695,132 @@ impl Client {
             request_options,
         )?;
         take_single_response(response)
+    }
+
+    /// Executes one Derive Key request with caller-selected derivation inputs.
+    ///
+    /// The request travels through one server exchange. `KMIPKit` does not
+    /// perform local derivation and never retries an operation automatically.
+    ///
+    /// # Errors
+    /// Returns a sanitized validation, protocol, or transport error with the
+    /// strongest available request-delivery evidence.
+    pub fn derive_key(
+        &mut self,
+        request: DeriveKeyRequest,
+        limits: &CodecLimits,
+    ) -> Result<ClientBatchItemResponse, ClientError> {
+        self.derive_key_with_options(request, limits, &RequestOptions::default())
+    }
+
+    /// Executes one Derive Key request with transport timeout overrides.
+    ///
+    /// The operation uses the shared request writer and one exchange.
+    ///
+    /// # Errors
+    /// Returns a sanitized validation, protocol, or transport error with the
+    /// strongest available request-delivery evidence.
+    pub fn derive_key_with_options(
+        &mut self,
+        request: DeriveKeyRequest,
+        limits: &CodecLimits,
+        options: &RequestOptions,
+    ) -> Result<ClientBatchItemResponse, ClientError> {
+        self.execute_one_typed_request(ClientRequest::DeriveKey(request), limits, options)
+    }
+
+    /// Executes one typed Export request with caller-selected format and wrapping options.
+    ///
+    /// This method makes one server exchange. `KMIPKit` does not wrap,
+    /// compress, or convert the returned material locally and never retries.
+    ///
+    /// # Errors
+    /// Returns a sanitized validation, protocol, or transport error with the
+    /// strongest available request-delivery evidence.
+    pub fn export(
+        &mut self,
+        request: ExportRequest,
+        limits: &CodecLimits,
+    ) -> Result<ClientBatchItemResponse, ClientError> {
+        self.export_with_options(request, limits, &RequestOptions::default())
+    }
+
+    /// Executes one typed Export request with transport timeout overrides.
+    ///
+    /// # Errors
+    /// Returns a sanitized validation, protocol, or transport error with the
+    /// strongest available request-delivery evidence.
+    pub fn export_with_options(
+        &mut self,
+        request: ExportRequest,
+        limits: &CodecLimits,
+        options: &RequestOptions,
+    ) -> Result<ClientBatchItemResponse, ClientError> {
+        self.execute_one_typed_request(ClientRequest::Export(request), limits, options)
+    }
+
+    /// Executes one typed Import request without locally importing or unwrapping the object.
+    ///
+    /// This method makes one server exchange and never retries.
+    ///
+    /// # Errors
+    /// Returns a sanitized validation, protocol, or transport error with the
+    /// strongest available request-delivery evidence.
+    pub fn import(
+        &mut self,
+        request: ImportRequest,
+        limits: &CodecLimits,
+    ) -> Result<ClientBatchItemResponse, ClientError> {
+        self.import_with_options(request, limits, &RequestOptions::default())
+    }
+
+    /// Executes one typed Import request with transport timeout overrides.
+    ///
+    /// # Errors
+    /// Returns a sanitized validation, protocol, or transport error with the
+    /// strongest available request-delivery evidence.
+    pub fn import_with_options(
+        &mut self,
+        request: ImportRequest,
+        limits: &CodecLimits,
+        options: &RequestOptions,
+    ) -> Result<ClientBatchItemResponse, ClientError> {
+        self.execute_one_typed_request(ClientRequest::Import(request), limits, options)
+    }
+
+    /// Executes one typed Join Split Key request using caller-supplied threshold context.
+    ///
+    /// The client validates that every transmitted identifier has a known
+    /// threshold and that the identifier count meets the maximum threshold.
+    /// Thresholds remain local and are not encoded into the KMIP request. The
+    /// server performs the join; `KMIPKit` does not combine key material locally
+    /// and does not retry.
+    ///
+    /// # Errors
+    ///
+    /// Returns a sanitized validation, protocol, or transport error with the
+    /// strongest available request-delivery evidence.
+    pub fn join_split_key(
+        &mut self,
+        request: JoinSplitKeyRequest,
+        limits: &CodecLimits,
+    ) -> Result<ClientBatchItemResponse, ClientError> {
+        self.join_split_key_with_options(request, limits, &RequestOptions::default())
+    }
+
+    /// Executes one typed Join Split Key request with transport timeout overrides.
+    ///
+    /// # Errors
+    ///
+    /// Returns a sanitized validation, protocol, or transport error with the
+    /// strongest available request-delivery evidence.
+    pub fn join_split_key_with_options(
+        &mut self,
+        request: JoinSplitKeyRequest,
+        limits: &CodecLimits,
+        options: &RequestOptions,
+    ) -> Result<ClientBatchItemResponse, ClientError> {
+        self.execute_one_typed_request(ClientRequest::JoinSplitKey(request), limits, options)
     }
 
     /// Executes one Hash request through the shared writer and performs one
@@ -3167,11 +4969,20 @@ impl Client {
         limits: &CodecLimits,
         options: &RequestOptions,
     ) -> Result<ClientBatchItemResponse, ClientError> {
-        let response = self.execute_with_options(
+        self.execute_one_typed_batch(
             ClientBatch::new(ClientBatchItem::new(request)),
             limits,
             options,
-        )?;
+        )
+    }
+
+    fn execute_one_typed_batch(
+        &mut self,
+        batch: ClientBatch,
+        limits: &CodecLimits,
+        options: &RequestOptions,
+    ) -> Result<ClientBatchItemResponse, ClientError> {
+        let response = self.execute_with_options(batch, limits, options)?;
         take_single_item_response(response.items)
     }
 
@@ -3370,7 +5181,7 @@ impl Client {
     ///
     /// The request uses the exact correlation bytes in `request`. Poll itself
     /// is not marked asynchronous; its Pending result describes the original
-    /// operation under OASIS KMIP v2.1 ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â§6.1.38.
+    /// operation under OASIS KMIP v2.1 §6.1.38.
     ///
     /// The caller decides whether another Poll is appropriate:
     ///
@@ -3436,7 +5247,7 @@ impl Client {
     /// Executes one explicit Cancel request and verifies the successful response
     /// echoes the exact correlation bytes supplied by the caller.
     ///
-    /// Cancel is synchronous under OASIS KMIP v2.1 ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â§6.1.5; a Pending response
+    /// Cancel is synchronous under OASIS KMIP v2.1 §6.1.5; a Pending response
     /// is rejected even when the original operation was asynchronous.
     ///
     /// # Errors
@@ -3923,6 +5734,18 @@ fn request_mutation_is_prohibited(request: &ClientRequest) -> bool {
         ClientRequest::DiscoverVersions(_)
         | ClientRequest::Activate(_)
         | ClientRequest::Archive(_)
+        | ClientRequest::Certify(_)
+        | ClientRequest::Check(_)
+        | ClientRequest::DelegatedLogin(_)
+        | ClientRequest::Login(_)
+        | ClientRequest::Logout(_)
+        | ClientRequest::ObtainLease(_)
+        | ClientRequest::Recertify(_)
+        | ClientRequest::Rekey(_)
+        | ClientRequest::RekeyKeyPair(_)
+        | ClientRequest::ReProvision(_)
+        | ClientRequest::Register(_)
+        | ClientRequest::Revoke(_)
         | ClientRequest::Destroy(_)
         | ClientRequest::Recover(_)
         | ClientRequest::Get(_)
@@ -3933,19 +5756,28 @@ fn request_mutation_is_prohibited(request: &ClientRequest) -> bool {
         | ClientRequest::GetAttributes(_)
         | ClientRequest::GetAttributeList(_)
         | ClientRequest::Ping(_)
-        | ClientRequest::SetEndpointRole(_)
-        | ClientRequest::SetDefaults(_)
-        | ClientRequest::SetConstraints(_)
-        | ClientRequest::GetUsageAllocation(_)
+        | ClientRequest::Interop(_)
+        | ClientRequest::Log(_)
+        | ClientRequest::Validate(_)
+        | ClientRequest::Pkcs11(_)
         | ClientRequest::GetConstraints(_)
+        | ClientRequest::SetConstraints(_)
+        | ClientRequest::SetDefaults(_)
+        | ClientRequest::GetUsageAllocation(_)
         | ClientRequest::Query(_)
         | ClientRequest::Encrypt(_)
         | ClientRequest::Decrypt(_)
+        | ClientRequest::DeriveKey(_)
+        | ClientRequest::Export(_)
+        | ClientRequest::Import(_)
+        | ClientRequest::JoinSplitKey(_)
         | ClientRequest::Hash(_)
         | ClientRequest::Mac(_)
         | ClientRequest::MacVerify(_)
         | ClientRequest::Sign(_)
-        | ClientRequest::SignatureVerify(_) => false,
+        | ClientRequest::SignatureVerify(_)
+        | ClientRequest::RngRetrieve(_)
+        | ClientRequest::RngSeed(_) => false,
     }
 }
 
@@ -4525,14 +6357,10 @@ fn response_outcome(
     item: ResponseBatchItemView<'_>,
     response_context: Option<CryptographicOperationResponseContext>,
 ) -> Result<ClientBatchOutcome, ProtocolError> {
+    if is_crypto_operation(operation) {
+        return crypto_response_outcome(operation, item, response_context);
+    }
     match operation {
-        ENCRYPT_OPERATION
-        | DECRYPT_OPERATION
-        | HASH_OPERATION
-        | MAC_OPERATION
-        | MAC_VERIFY_OPERATION
-        | SIGN_OPERATION
-        | SIGNATURE_VERIFY_OPERATION => crypto_response_outcome(operation, item, response_context),
         ACTIVATE_OPERATION => read_operation_outcome(
             ClientOperation::Activate,
             item,
@@ -4541,6 +6369,15 @@ fn response_outcome(
             PendingResponse::Activate,
             ClientBatchOutcome::Activate,
         ),
+        DELEGATED_LOGIN_OPERATION | LOGIN_OPERATION | LOGOUT_OPERATION => {
+            credential_session_response_outcome(operation, item)
+        }
+        operation if is_lifecycle_operation(operation) => {
+            lifecycle_response_outcome(operation, item)
+        }
+        DERIVE_KEY_OPERATION | EXPORT_OPERATION => key_material_response_outcome(operation, item),
+        IMPORT_OPERATION => import_response_outcome(item),
+        JOIN_SPLIT_KEY_OPERATION => join_split_key_response_outcome(item),
         ARCHIVE_OPERATION => read_operation_outcome(
             ClientOperation::Archive,
             item,
@@ -4573,54 +6410,15 @@ fn response_outcome(
             PendingResponse::Query,
             ClientBatchOutcome::Query,
         ),
-        PING_OPERATION => read_operation_outcome(
-            ClientOperation::Ping,
-            item,
-            PingResponse::try_from_response_item,
-            PingResponse::result,
-            PendingResponse::Ping,
-            ClientBatchOutcome::Ping,
-        ),
-        SET_ENDPOINT_ROLE_OPERATION => read_operation_outcome(
-            ClientOperation::SetEndpointRole,
-            item,
-            SetEndpointRoleResponse::try_from_response_item,
-            SetEndpointRoleResponse::result,
-            PendingResponse::SetEndpointRole,
-            ClientBatchOutcome::SetEndpointRole,
-        ),
-        SET_DEFAULTS_OPERATION => read_operation_outcome(
-            ClientOperation::SetDefaults,
-            item,
-            SetDefaultsResponse::try_from_response_item,
-            SetDefaultsResponse::result,
-            PendingResponse::SetDefaults,
-            ClientBatchOutcome::SetDefaults,
-        ),
-        SET_CONSTRAINTS_OPERATION => read_operation_outcome(
-            ClientOperation::SetConstraints,
-            item,
-            SetConstraintsResponse::try_from_response_item,
-            SetConstraintsResponse::result,
-            PendingResponse::SetConstraints,
-            ClientBatchOutcome::SetConstraints,
-        ),
-        GET_USAGE_ALLOCATION_OPERATION => read_operation_outcome(
-            ClientOperation::GetUsageAllocation,
-            item,
-            GetUsageAllocationResponse::try_from_response_item,
-            GetUsageAllocationResponse::result,
-            PendingResponse::GetUsageAllocation,
-            ClientBatchOutcome::GetUsageAllocation,
-        ),
-        GET_CONSTRAINTS_OPERATION => read_operation_outcome(
-            ClientOperation::GetConstraints,
-            item,
-            GetConstraintsResponse::try_from_response_item,
-            GetConstraintsResponse::result,
-            PendingResponse::GetConstraints,
-            ClientBatchOutcome::GetConstraints,
-        ),
+        PKCS11_OPERATION => pkcs11_response_outcome(item),
+        PING_OPERATION | INTEROP_OPERATION | LOG_OPERATION | VALIDATE_OPERATION => {
+            diagnostics_response_outcome(operation, item)
+        }
+        GET_CONSTRAINTS_OPERATION => get_constraints_response_outcome(item),
+        SET_CONSTRAINTS_OPERATION => set_constraints_response_outcome(item),
+        SET_DEFAULTS_OPERATION => set_defaults_response_outcome(item),
+        GET_USAGE_ALLOCATION_OPERATION => get_usage_allocation_response_outcome(item),
+        RNG_RETRIEVE_OPERATION | RNG_SEED_OPERATION => rng_response_outcome(operation, item),
         DISCOVER_VERSIONS_OPERATION => {
             let response = DiscoverVersionsResponse::try_from_response_item(item)
                 .map_err(invalid_typed_response)?;
@@ -4651,14 +6449,243 @@ fn response_outcome(
         ),
         GET_OPERATION => get_response_outcome(item),
         LOCATE_OPERATION => locate_response_outcome(item),
-        GET_ATTRIBUTE_LIST_OPERATION => read_operation_outcome(
-            ClientOperation::GetAttributeList,
+        GET_ATTRIBUTE_LIST_OPERATION => get_attribute_list_response_outcome(item),
+        _ => Err(protocol_error(ProtocolErrorKind::UnsupportedValue)),
+    }
+}
+
+fn pkcs11_response_outcome(
+    item: ResponseBatchItemView<'_>,
+) -> Result<ClientBatchOutcome, ProtocolError> {
+    read_operation_outcome(
+        ClientOperation::Pkcs11,
+        item,
+        Pkcs11Response::try_from_response_item,
+        Pkcs11Response::result,
+        PendingResponse::Pkcs11,
+        ClientBatchOutcome::Pkcs11,
+    )
+}
+
+fn get_constraints_response_outcome(
+    item: ResponseBatchItemView<'_>,
+) -> Result<ClientBatchOutcome, ProtocolError> {
+    read_operation_outcome(
+        ClientOperation::GetConstraints,
+        item,
+        GetConstraintsResponse::try_from_response_item,
+        GetConstraintsResponse::result,
+        PendingResponse::GetConstraints,
+        ClientBatchOutcome::GetConstraints,
+    )
+}
+
+fn set_constraints_response_outcome(
+    item: ResponseBatchItemView<'_>,
+) -> Result<ClientBatchOutcome, ProtocolError> {
+    read_operation_outcome(
+        ClientOperation::SetConstraints,
+        item,
+        SetConstraintsResponse::try_from_response_item,
+        SetConstraintsResponse::result,
+        PendingResponse::SetConstraints,
+        ClientBatchOutcome::SetConstraints,
+    )
+}
+
+fn set_defaults_response_outcome(
+    item: ResponseBatchItemView<'_>,
+) -> Result<ClientBatchOutcome, ProtocolError> {
+    read_operation_outcome(
+        ClientOperation::SetDefaults,
+        item,
+        SetDefaultsResponse::try_from_response_item,
+        SetDefaultsResponse::result,
+        PendingResponse::SetDefaults,
+        ClientBatchOutcome::SetDefaults,
+    )
+}
+
+fn get_usage_allocation_response_outcome(
+    item: ResponseBatchItemView<'_>,
+) -> Result<ClientBatchOutcome, ProtocolError> {
+    read_operation_outcome(
+        ClientOperation::GetUsageAllocation,
+        item,
+        GetUsageAllocationResponse::try_from_response_item,
+        GetUsageAllocationResponse::result,
+        PendingResponse::GetUsageAllocation,
+        ClientBatchOutcome::GetUsageAllocation,
+    )
+}
+
+fn rng_response_outcome(
+    operation: u32,
+    item: ResponseBatchItemView<'_>,
+) -> Result<ClientBatchOutcome, ProtocolError> {
+    match operation {
+        RNG_RETRIEVE_OPERATION => read_crypto_operation_outcome(
+            ClientOperation::RngRetrieve,
             item,
-            GetAttributeListResponse::try_from_response_item,
-            GetAttributeListResponse::result,
-            PendingResponse::GetAttributeList,
-            ClientBatchOutcome::GetAttributeList,
+            RngRetrieveResponse::try_from_pending_response_item,
+            RngRetrieveResponse::try_from_response_item,
+            RngRetrieveResponse::result,
+            PendingResponse::RngRetrieve,
+            ClientBatchOutcome::RngRetrieve,
         ),
+        RNG_SEED_OPERATION => read_crypto_operation_outcome(
+            ClientOperation::RngSeed,
+            item,
+            RngSeedResponse::try_from_pending_response_item,
+            RngSeedResponse::try_from_response_item,
+            RngSeedResponse::result,
+            PendingResponse::RngSeed,
+            ClientBatchOutcome::RngSeed,
+        ),
+        _ => Err(protocol_error(ProtocolErrorKind::UnsupportedValue)),
+    }
+}
+
+fn credential_session_response_outcome(
+    operation: u32,
+    item: ResponseBatchItemView<'_>,
+) -> Result<ClientBatchOutcome, ProtocolError> {
+    match operation {
+        DELEGATED_LOGIN_OPERATION => read_operation_outcome(
+            ClientOperation::DelegatedLogin,
+            item,
+            DelegatedLoginResponse::try_from_response_item,
+            DelegatedLoginResponse::result,
+            PendingResponse::DelegatedLogin,
+            ClientBatchOutcome::DelegatedLogin,
+        ),
+        LOGIN_OPERATION => read_operation_outcome(
+            ClientOperation::Login,
+            item,
+            LoginResponse::try_from_response_item,
+            LoginResponse::result,
+            PendingResponse::Login,
+            ClientBatchOutcome::Login,
+        ),
+        LOGOUT_OPERATION => read_operation_outcome(
+            ClientOperation::Logout,
+            item,
+            LogoutResponse::try_from_response_item,
+            LogoutResponse::result,
+            PendingResponse::Logout,
+            ClientBatchOutcome::Logout,
+        ),
+        _ => Err(protocol_error(ProtocolErrorKind::UnsupportedValue)),
+    }
+}
+
+const fn is_crypto_operation(operation: u32) -> bool {
+    matches!(
+        operation,
+        ENCRYPT_OPERATION
+            | DECRYPT_OPERATION
+            | HASH_OPERATION
+            | MAC_OPERATION
+            | MAC_VERIFY_OPERATION
+            | SIGN_OPERATION
+            | SIGNATURE_VERIFY_OPERATION
+    )
+}
+
+fn key_material_response_outcome(
+    operation: u32,
+    item: ResponseBatchItemView<'_>,
+) -> Result<ClientBatchOutcome, ProtocolError> {
+    match operation {
+        DERIVE_KEY_OPERATION => derive_key_response_outcome(item),
+        EXPORT_OPERATION => export_response_outcome(item),
+        _ => Err(protocol_error(ProtocolErrorKind::UnsupportedValue)),
+    }
+}
+
+fn diagnostics_response_outcome(
+    operation: u32,
+    item: ResponseBatchItemView<'_>,
+) -> Result<ClientBatchOutcome, ProtocolError> {
+    match operation {
+        PING_OPERATION => read_operation_outcome(
+            ClientOperation::Ping,
+            item,
+            PingResponse::try_from_response_item,
+            PingResponse::result,
+            PendingResponse::Ping,
+            ClientBatchOutcome::Ping,
+        ),
+        INTEROP_OPERATION => read_operation_outcome(
+            ClientOperation::Interop,
+            item,
+            InteropResponse::try_from_response_item,
+            InteropResponse::result,
+            PendingResponse::Interop,
+            ClientBatchOutcome::Interop,
+        ),
+        LOG_OPERATION => read_operation_outcome(
+            ClientOperation::Log,
+            item,
+            LogResponse::try_from_response_item,
+            LogResponse::result,
+            PendingResponse::Log,
+            ClientBatchOutcome::Log,
+        ),
+        VALIDATE_OPERATION => read_operation_outcome(
+            ClientOperation::Validate,
+            item,
+            ValidateResponse::try_from_response_item,
+            ValidateResponse::result,
+            PendingResponse::Validate,
+            ClientBatchOutcome::Validate,
+        ),
+        _ => Err(protocol_error(ProtocolErrorKind::UnsupportedValue)),
+    }
+}
+
+fn get_attribute_list_response_outcome(
+    item: ResponseBatchItemView<'_>,
+) -> Result<ClientBatchOutcome, ProtocolError> {
+    read_operation_outcome(
+        ClientOperation::GetAttributeList,
+        item,
+        GetAttributeListResponse::try_from_response_item,
+        GetAttributeListResponse::result,
+        PendingResponse::GetAttributeList,
+        ClientBatchOutcome::GetAttributeList,
+    )
+}
+
+const fn is_lifecycle_operation(operation: u32) -> bool {
+    matches!(
+        operation,
+        CERTIFY_OPERATION
+            | CHECK_OPERATION
+            | OBTAIN_LEASE_OPERATION
+            | RECERTIFY_OPERATION
+            | REKEY_OPERATION
+            | REKEY_KEY_PAIR_OPERATION
+            | REPROVISION_OPERATION
+            | REGISTER_OPERATION
+            | REVOKE_OPERATION
+    )
+}
+
+fn lifecycle_response_outcome(
+    operation: u32,
+    item: ResponseBatchItemView<'_>,
+) -> Result<ClientBatchOutcome, ProtocolError> {
+    match operation {
+        CERTIFY_OPERATION => certify_response_outcome(item),
+        CHECK_OPERATION => check_response_outcome(item),
+        OBTAIN_LEASE_OPERATION => obtain_lease_response_outcome(item),
+        RECERTIFY_OPERATION => recertify_response_outcome(item),
+        REKEY_OPERATION => rekey_response_outcome(item),
+        REKEY_KEY_PAIR_OPERATION => rekey_key_pair_response_outcome(item),
+        REPROVISION_OPERATION => reprovision_response_outcome(item),
+        REGISTER_OPERATION => register_response_outcome(item),
+        REVOKE_OPERATION => revoke_response_outcome(item),
         _ => Err(protocol_error(ProtocolErrorKind::UnsupportedValue)),
     }
 }
@@ -4673,6 +6700,182 @@ fn get_response_outcome(
         GetResponse::result,
         PendingResponse::Get,
         ClientBatchOutcome::GetCompleted,
+    )
+}
+
+fn certify_response_outcome(
+    item: ResponseBatchItemView<'_>,
+) -> Result<ClientBatchOutcome, ProtocolError> {
+    read_operation_outcome(
+        ClientOperation::Certify,
+        item,
+        CertifyResponse::try_from_response_item,
+        CertifyResponse::result,
+        PendingResponse::Certify,
+        ClientBatchOutcome::Certify,
+    )
+}
+
+fn check_response_outcome(
+    item: ResponseBatchItemView<'_>,
+) -> Result<ClientBatchOutcome, ProtocolError> {
+    // Route denial payloads through Check's typed parser while preserving the
+    // shared result and Pending mapping used by the other client operations.
+    read_operation_outcome(
+        ClientOperation::Check,
+        item,
+        CheckResponse::try_from_response_item,
+        CheckResponse::result,
+        PendingResponse::Check,
+        ClientBatchOutcome::Check,
+    )
+}
+
+fn obtain_lease_response_outcome(
+    item: ResponseBatchItemView<'_>,
+) -> Result<ClientBatchOutcome, ProtocolError> {
+    // Keep lease time and change date as server values; this path owns no clock
+    // or object-use state and shares normal Pending/result conversion.
+    read_operation_outcome(
+        ClientOperation::ObtainLease,
+        item,
+        ObtainLeaseResponse::try_from_response_item,
+        ObtainLeaseResponse::result,
+        PendingResponse::ObtainLease,
+        ClientBatchOutcome::ObtainLease,
+    )
+}
+
+fn recertify_response_outcome(
+    item: ResponseBatchItemView<'_>,
+) -> Result<ClientBatchOutcome, ProtocolError> {
+    // The response parser requires its identifier on success and leaves
+    // server-maintained replacement links untouched.
+    read_operation_outcome(
+        ClientOperation::Recertify,
+        item,
+        RecertifyResponse::try_from_response_item,
+        RecertifyResponse::result,
+        PendingResponse::Recertify,
+        ClientBatchOutcome::Recertify,
+    )
+}
+
+fn rekey_response_outcome(
+    item: ResponseBatchItemView<'_>,
+) -> Result<ClientBatchOutcome, ProtocolError> {
+    // The server generates the replacement key and maintains its links.
+    read_operation_outcome(
+        ClientOperation::Rekey,
+        item,
+        RekeyResponse::try_from_response_item,
+        RekeyResponse::result,
+        PendingResponse::Rekey,
+        ClientBatchOutcome::Rekey,
+    )
+}
+
+fn rekey_key_pair_response_outcome(
+    item: ResponseBatchItemView<'_>,
+) -> Result<ClientBatchOutcome, ProtocolError> {
+    read_operation_outcome(
+        ClientOperation::RekeyKeyPair,
+        item,
+        RekeyKeyPairResponse::try_from_response_item,
+        RekeyKeyPairResponse::result,
+        PendingResponse::RekeyKeyPair,
+        ClientBatchOutcome::RekeyKeyPair,
+    )
+}
+
+fn reprovision_response_outcome(
+    item: ResponseBatchItemView<'_>,
+) -> Result<ClientBatchOutcome, ProtocolError> {
+    read_operation_outcome(
+        ClientOperation::ReProvision,
+        item,
+        ReProvisionResponse::try_from_response_item,
+        ReProvisionResponse::result,
+        PendingResponse::ReProvision,
+        ClientBatchOutcome::ReProvision,
+    )
+}
+
+fn register_response_outcome(
+    item: ResponseBatchItemView<'_>,
+) -> Result<ClientBatchOutcome, ProtocolError> {
+    read_operation_outcome(
+        ClientOperation::Register,
+        item,
+        RegisterResponse::try_from_response_item,
+        RegisterResponse::result,
+        PendingResponse::Register,
+        ClientBatchOutcome::Register,
+    )
+}
+
+fn revoke_response_outcome(
+    item: ResponseBatchItemView<'_>,
+) -> Result<ClientBatchOutcome, ProtocolError> {
+    read_operation_outcome(
+        ClientOperation::Revoke,
+        item,
+        RevokeResponse::try_from_response_item,
+        RevokeResponse::result,
+        PendingResponse::Revoke,
+        ClientBatchOutcome::Revoke,
+    )
+}
+
+fn derive_key_response_outcome(
+    item: ResponseBatchItemView<'_>,
+) -> Result<ClientBatchOutcome, ProtocolError> {
+    read_operation_outcome(
+        ClientOperation::DeriveKey,
+        item,
+        DeriveKeyResponse::try_from_response_item,
+        DeriveKeyResponse::result,
+        PendingResponse::DeriveKey,
+        ClientBatchOutcome::DeriveKey,
+    )
+}
+
+fn export_response_outcome(
+    item: ResponseBatchItemView<'_>,
+) -> Result<ClientBatchOutcome, ProtocolError> {
+    read_operation_outcome(
+        ClientOperation::Export,
+        item,
+        ExportResponse::try_from_response_item,
+        ExportResponse::result,
+        PendingResponse::Export,
+        ClientBatchOutcome::Export,
+    )
+}
+
+fn import_response_outcome(
+    item: ResponseBatchItemView<'_>,
+) -> Result<ClientBatchOutcome, ProtocolError> {
+    read_operation_outcome(
+        ClientOperation::Import,
+        item,
+        ImportResponse::try_from_response_item,
+        ImportResponse::result,
+        PendingResponse::Import,
+        ClientBatchOutcome::Import,
+    )
+}
+
+fn join_split_key_response_outcome(
+    item: ResponseBatchItemView<'_>,
+) -> Result<ClientBatchOutcome, ProtocolError> {
+    read_operation_outcome(
+        ClientOperation::JoinSplitKey,
+        item,
+        JoinSplitKeyResponse::try_from_response_item,
+        JoinSplitKeyResponse::result,
+        PendingResponse::JoinSplitKey,
+        ClientBatchOutcome::JoinSplitKeyCompleted,
     )
 }
 
@@ -4995,7 +7198,7 @@ fn validate_async_response(
         parse_async_operation_result(item, kind, expected_cancel_correlation)?;
 
     // Poll Pending reports the original operation's state and is explicitly
-    // permitted by ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â§6.1.38 without making Poll itself asynchronous. Cancel's
+    // permitted by §6.1.38 without making Poll itself asynchronous. Cancel's
     // typed model rejects Pending. Process and Query use the caller's indicator.
     if matches!(
         kind,
@@ -5195,6 +7398,14 @@ fn decode_transport_response(
 
 fn protocol_failure_at(error: ProtocolError, delivery_state: RequestDeliveryState) -> ClientError {
     ClientError::protocol(error, delivery_state)
+}
+
+fn guard_validation_error(error: UsageAllocationContextError) -> ClientError {
+    ClientError::validation(
+        ClientCauseCategory::InvalidInput,
+        RequestDeliveryState::NotSent,
+        error,
+    )
 }
 
 fn decode_response_message(
