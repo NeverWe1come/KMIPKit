@@ -21,6 +21,8 @@ No new behavior or executable contract was introduced in this closeout, so no ne
 
 The C consumer now explicitly demonstrates the agreed safe representation of a closed C handle in `test_null_closed_and_wrong_kind_handles_are_rejected`: create and use an identity, release it, set the caller-owned pointer to `NULL`, then assert that the accessor returns `KMIPKIT_ERROR_INVALID_INPUT` and leaves its output pointer `NULL`. The freed pointer is never passed to an accessor. Existing consumer cases cover successful ABI use, validation errors, resource-limit rejection, view/configuration release ordering, and the legacy limits ABI. No production code changed; the NULL guard was already implemented, so this is a characterization/coverage addition rather than a fabricated Red/Green behavior change.
 
+The implementation's TDD cycle is recorded in the original C ABI commits: `c73a89bb` (Red: failing vendor-registry binding parity test) → `d4528d9a` (expanded failing consumer coverage) → `f08dcf4d` (Green: C ABI implementation) → `c6afef98` (Refactor: shared validated handle-release path). The new release-then-clear-to-`NULL` assertion characterizes the existing NULL guard and changes no production behavior; it extends the consumer evidence for that completed contract.
+
 | Verification | Command or evidence | Result |
 |---|---|---|
 | Rust FFI implementation and guard tests | `cargo test -p kmipkit-ffi --lib` | PASS: 33 tests. AWS-LC emitted its existing Windows compiler/NASM probe warnings; Cargo completed successfully. |
