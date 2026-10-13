@@ -16690,6 +16690,58 @@ class CatalogValidationTests(unittest.TestCase):
                 self.assertIn("KMIPKIT-REQ-SPEC-TEST-CONDITIONAL-MAY", capabilities)
                 self.assertTrue(gaps, "unknown or missing condition evidence must fail closed")
 
+    def test_conditional_source_only_gap_requires_a_typed_client_actor(self) -> None:
+        """Conditional source gaps with unknown or server actors cannot authorize a client capability."""
+        requirement_id = "KMIPKIT-REQ-SPEC-TEST-SOURCE-GAP-MAY"
+        source_clause_id = "KMIPKIT-CLAUSE-SPEC-TEST-SOURCE-GAP"
+        for label, actor in (
+            ("missing actor", None),
+            ("unresolved actor", "unresolved"),
+            ("server actor", "server"),
+            ("reviewed client actor", "client"),
+        ):
+            with self.subTest(label):
+                oracle = {
+                    "source_requirement_reviews": [],
+                    "source_only_requirement_gaps": [
+                        {
+                            "gap_id": "KMIPKIT-SOURCE-GAP-SPEC-TEST-MAY",
+                            "candidate_requirement_id": requirement_id,
+                            "source_clause_id": source_clause_id,
+                            "source_id": "KMIPKIT-SRC-TEST",
+                            "source_section": "1.1",
+                            "scope_disposition": "profile_conditional",
+                            "source_keywords": ["MAY"],
+                            "condition": "The client elects to use the optional capability.",
+                            "actor": actor,
+                        }
+                    ],
+                }
+
+                capabilities, gaps = _reviewed_profile_optional_capabilities(
+                    oracle,
+                    {source_clause_id},
+                    {("KMIPKIT-SRC-TEST", "1.1")},
+                )
+                conditional_sources = _reviewed_profile_conditional_capability_sources(
+                    oracle,
+                    {source_clause_id},
+                    {("KMIPKIT-SRC-TEST", "1.1")},
+                )
+
+                self.assertIn(requirement_id, capabilities)
+                if actor == "client":
+                    self.assertFalse(
+                        any("no reviewed client actor" in gap for gap in gaps)
+                    )
+                    self.assertEqual(conditional_sources[requirement_id], {source_clause_id})
+                else:
+                    self.assertTrue(
+                        any("no reviewed client actor" in gap for gap in gaps),
+                        "conditional source gaps require an explicit client actor",
+                    )
+                    self.assertNotIn(requirement_id, conditional_sources)
+
     def test_optional_evidence_gate_accepts_only_scoped_client_request_evidence(self) -> None:
         """Scoped evidence counts only for representable in-scope client requests."""
         requirement_id = "KMIPKIT-REQ-SPEC-TEST-CLIENT-MAY"
