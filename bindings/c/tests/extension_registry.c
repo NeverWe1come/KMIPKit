@@ -1501,6 +1501,9 @@ static int32_t create_fixture_item_value(
     kmipkit_codec_limits_t *limits, const kmipkit_fixture_item_t *fixture,
     kmipkit_ttlv_value_t **out_value)
 {
+    if (fixture->type == KMIPKIT_TTLV_ITEM_TYPE_INTEGER) {
+        return kmipkit_ttlv_value_integer((int32_t)fixture->signed_value, out_value);
+    }
     if (fixture->type == KMIPKIT_TTLV_ITEM_TYPE_STRUCTURE) {
         kmipkit_ttlv_structure_t *nested = NULL;
         const int32_t status = create_fixture_structure(
@@ -1514,6 +1517,10 @@ static int32_t create_fixture_item_value(
         return kmipkit_ttlv_value_text_string(limits,
             (const uint8_t *)fixture->text, (uint64_t)strlen(fixture->text), out_value);
     }
+    if (fixture->type == KMIPKIT_TTLV_ITEM_TYPE_BYTE_STRING) {
+        return kmipkit_ttlv_value_byte_string(limits,
+            (const uint8_t *)fixture->text, (uint64_t)strlen(fixture->text), out_value);
+    }
     if (fixture->type == KMIPKIT_TTLV_ITEM_TYPE_ENUMERATION) {
         return kmipkit_ttlv_value_enumeration(fixture->enum_value, out_value);
     }
@@ -1521,6 +1528,80 @@ static int32_t create_fixture_item_value(
         return kmipkit_ttlv_value_long_integer(fixture->signed_value, out_value);
     }
     return KMIPKIT_ERROR_INVALID_INPUT;
+}
+
+static int32_t create_register_opaque_object(
+    kmipkit_codec_limits_t *limits, kmipkit_ttlv_item_t **out_object)
+{
+    static const kmipkit_fixture_item_t fields[] = {
+        {UINT32_C(0x420059), KMIPKIT_TTLV_ITEM_TYPE_ENUMERATION, NULL,
+            INT64_C(0), UINT32_C(0x80000001), NULL, 0U},
+        {UINT32_C(0x42005A), KMIPKIT_TTLV_ITEM_TYPE_BYTE_STRING, "opaque-data",
+            INT64_C(0), UINT32_C(0), NULL, 0U}
+    };
+    kmipkit_ttlv_structure_t *contents = NULL;
+    kmipkit_ttlv_value_t *value = NULL;
+    kmipkit_ttlv_item_t *object = NULL;
+    kmipkit_raw_tag_t *raw_tag = NULL;
+    kmipkit_tag_t *tag = NULL;
+    int32_t status;
+
+    *out_object = NULL;
+    status = create_fixture_structure(limits, fields,
+        sizeof(fields) / sizeof(fields[0]), &contents);
+    if (status == KMIPKIT_SUCCESS) {
+        status = kmipkit_ttlv_value_structure(contents, limits, &value);
+        contents = NULL;
+    }
+    if (status == KMIPKIT_SUCCESS) {
+        status = kmipkit_ttlv_raw_tag_create(UINT32_C(0x42005B), &raw_tag);
+    }
+    if (status == KMIPKIT_SUCCESS) {
+        status = kmipkit_ttlv_raw_tag_try_checked(raw_tag, &tag);
+    }
+    if (status == KMIPKIT_SUCCESS) {
+        status = kmipkit_ttlv_item_create(tag, value, limits, &object);
+        value = NULL;
+    }
+    if (status == KMIPKIT_SUCCESS) {
+        *out_object = object;
+        object = NULL;
+    }
+
+    kmipkit_tag_release(tag);
+    kmipkit_raw_tag_release(raw_tag);
+    kmipkit_ttlv_item_release(object);
+    kmipkit_ttlv_value_release(value);
+    kmipkit_ttlv_structure_release(contents);
+    return status;
+}
+
+static int32_t create_register_attributes(
+    kmipkit_codec_limits_t *limits, bool usage_mask, bool algorithm, bool length,
+    kmipkit_ttlv_structure_t **out_attributes)
+{
+    kmipkit_fixture_item_t items[4];
+    size_t count = 0U;
+
+    if (usage_mask) {
+        items[count++] = (kmipkit_fixture_item_t){
+            UINT32_C(0x42002C), KMIPKIT_TTLV_ITEM_TYPE_INTEGER, NULL,
+            INT64_C(3), UINT32_C(0), NULL, 0U};
+    }
+    if (algorithm) {
+        items[count++] = (kmipkit_fixture_item_t){
+            UINT32_C(0x420028), KMIPKIT_TTLV_ITEM_TYPE_ENUMERATION, NULL,
+            INT64_C(0), UINT32_C(3), NULL, 0U};
+    }
+    if (length) {
+        items[count++] = (kmipkit_fixture_item_t){
+            UINT32_C(0x42002A), KMIPKIT_TTLV_ITEM_TYPE_INTEGER, NULL,
+            INT64_C(256), UINT32_C(0), NULL, 0U};
+    }
+    items[count++] = (kmipkit_fixture_item_t){
+        UINT32_C(0x541234), KMIPKIT_TTLV_ITEM_TYPE_ENUMERATION, NULL,
+        INT64_C(0), UINT32_C(0xE1020304), NULL, 0U};
+    return create_fixture_structure(limits, items, count, out_attributes);
 }
 
 static bool compare_fixture_structure(kmipkit_ttlv_structure_view_t *view,
@@ -3067,6 +3148,71 @@ cleanup:
     return succeeded;
 }
 
+static bool run_register_context_case(
+    uint32_t object_type, bool usage_mask, bool algorithm, bool length,
+    bool select_context, uint32_t context, bool expect_success)
+{
+    kmipkit_codec_limits_t *limits = NULL;
+    kmipkit_ttlv_structure_t *attributes = NULL;
+    kmipkit_ttlv_item_t *object = NULL;
+    kmipkit_register_request_t *request = NULL;
+    kmipkit_register_request_t *context_request = NULL;
+    kmipkit_client_batch_item_t *batch_item = NULL;
+    int32_t status;
+    bool succeeded = false;
+
+    status = kmipkit_codec_limits_defaults(&limits);
+    if (status != KMIPKIT_SUCCESS ||
+        create_register_attributes(limits, usage_mask, algorithm, length,
+            &attributes) != KMIPKIT_SUCCESS ||
+        create_register_opaque_object(limits, &object) != KMIPKIT_SUCCESS ||
+        kmipkit_register_request_create(object_type, attributes, object,
+            &request) != KMIPKIT_SUCCESS) {
+        goto cleanup;
+    }
+
+    if (select_context) {
+        status = kmipkit_register_request_with_opaque_object_context(
+            request, context, &context_request);
+        if (status != KMIPKIT_SUCCESS) {
+            succeeded = !expect_success && status == KMIPKIT_ERROR_INVALID_INPUT;
+            goto cleanup;
+        }
+    }
+
+    status = kmipkit_client_batch_item_register(
+        select_context ? context_request : request, &batch_item);
+    succeeded = expect_success
+        ? status == KMIPKIT_SUCCESS && batch_item != NULL
+        : status == KMIPKIT_ERROR_INVALID_INPUT && batch_item == NULL;
+
+cleanup:
+    kmipkit_client_batch_item_release(batch_item);
+    kmipkit_register_request_release(context_request);
+    kmipkit_register_request_release(request);
+    kmipkit_ttlv_item_release(object);
+    kmipkit_ttlv_structure_release(attributes);
+    kmipkit_codec_limits_release(limits);
+    return succeeded;
+}
+
+static bool test_register_opaque_context_binding_contract(void)
+{
+    REQUIRE(run_register_context_case(UINT32_C(8), false, false, false,
+        false, UINT32_C(0), true));
+    REQUIRE(run_register_context_case(UINT32_C(8), true, true, true,
+        true, UINT32_C(2), true));
+    REQUIRE(run_register_context_case(UINT32_C(8), false, true, true,
+        true, UINT32_C(2), false));
+    REQUIRE(run_register_context_case(UINT32_C(8), true, false, true,
+        true, UINT32_C(2), false));
+    REQUIRE(run_register_context_case(UINT32_C(8), true, true, false,
+        true, UINT32_C(2), false));
+    REQUIRE(run_register_context_case(UINT32_C(2), true, true, true,
+        true, UINT32_C(1), false));
+    return true;
+}
+
 #undef REQUIRE_STATUS_CLEANUP
 #undef REQUIRE_CLEANUP
 
@@ -3085,6 +3231,8 @@ int main(int argc, char **argv)
         {"runtime metadata and error snapshot", test_runtime_metadata_and_error_snapshot},
         {"capability input boundaries and error categories", test_capability_input_boundaries_and_error_categories},
         {"ExtensionRegistryLimits defaults and boundaries", test_extension_registry_limits},
+        {"Register Opaque Object context binding contract",
+         test_register_opaque_context_binding_contract},
         {"legacy ExtensionRegistryLimits ABI remains callable", test_legacy_extension_registry_limits_abi},
         {"typed pointers and uint64_t length safety", test_typed_length_safety},
         {"client configuration ownership and isolation", test_configuration_ownership_and_isolation},
