@@ -55,6 +55,25 @@ class SourceScanResult:
         self.complete = complete
 
 
+# JaCoCo omits generated manifest metadata classes and these package-info
+# sources, which carry only @NullMarked package metadata and have no executable
+# lines. Keep one path inventory for source eligibility and JaCoCo parsing so
+# the gate excludes metadata without weakening executable-source coverage.
+_JAVA_METADATA_ONLY_SOURCE_EXCLUSIONS = frozenset(
+    {
+        # Generated API manifests contain metadata, not handwritten behavior.
+        "bindings/java/src/main/java/org/kmipkit/generated/ExtensionRegistryApi.java",
+        "bindings/java/src/main/java/org/kmipkit/generated/PublicApi.java",
+        # These package declarations only apply the NullMarked default.
+        "bindings/java/src/main/java/org/kmipkit/package-info.java",
+        "bindings/java/src/main/java/org/kmipkit/internal/package-info.java",
+        "bindings/java/src/main/java/org/kmipkit/ttlv/package-info.java",
+        "bindings/java/src/main/java/org/kmipkit/generated/package-info.java",
+        "bindings/java/src/main/java/org/kmipkit/extensions/package-info.java",
+    }
+)
+
+
 def _mask_rust_non_code(source: str) -> str:
     """Replace comments and literals with spaces while preserving newlines."""
     output = list(source)
@@ -211,6 +230,8 @@ def _is_rust_source_tree_path(path: str | Path) -> bool:
 def is_coverage_source_path(path: str | Path) -> bool:
     """Return whether a relative path names an audited production source file."""
     normalized = str(path).replace("\\", "/").lstrip("./")
+    if normalized in _JAVA_METADATA_ONLY_SOURCE_EXCLUSIONS:
+        return False
     if _is_rust_source_tree_path(normalized):
         return True
     parts = PurePosixPath(normalized).parts
@@ -228,7 +249,7 @@ def is_coverage_source_path(path: str | Path) -> bool:
 
 
 def scan_adapter_sources(workspace_root: str | Path) -> dict[str, set[str]]:
-    """List handwritten and generated product adapter sources, excluding consumers."""
+    """List executable product adapter sources, excluding consumers and metadata-only output."""
     root = Path(workspace_root).resolve()
     scopes = {
         "Java adapters": root / "bindings/java/src/main/java/org/kmipkit",
@@ -788,7 +809,10 @@ def parse_jacoco_report(document: str | bytes, workspace_root: str | Path) -> di
             source_name = source_file.get("name")
             if not isinstance(source_name, str) or Path(source_name).name != source_name:
                 raise CoverageDataError("JaCoCo sourcefile has an invalid name.")
-            source = _coverage_report_source(source_root.joinpath(*package_path.parts, source_name), root, "JaCoCo")
+            source_path = source_root.joinpath(*package_path.parts, source_name)
+            if source_path.relative_to(root).as_posix() in _JAVA_METADATA_ONLY_SOURCE_EXCLUSIONS:
+                continue
+            source = _coverage_report_source(source_path, root, "JaCoCo")
             if source in report:
                 raise CoverageDataError(f"JaCoCo report repeats source file: {source}.")
             lines: dict[int, int] = {}
@@ -1157,36 +1181,46 @@ def _load_adapter_reports(
     if not any(sources[scope_names[scope]] for scope in selected_scopes):
         return None
     inputs = {
-        "Java adapters": (report_root / "coverage-java" / "jacoco.xml", parse_jacoco_report),
-        "Python adapters": (report_root / "coverage-python" / "coverage.xml", parse_cobertura_report),
-        "JNI bridge": (report_root / "coverage-jni" / "coverage.json", parse_llvm_export),
+        "Java adapters": (
+            (report_root / "coverage-java-linux" / "jacoco.xml", parse_jacoco_report),
+            (report_root / "coverage-java-windows" / "jacoco.xml", parse_jacoco_report),
+        ),
+        "Python adapters": ((report_root / "coverage-python" / "coverage.xml", parse_cobertura_report),),
+        "JNI bridge": ((report_root / "coverage-jni" / "coverage.json", parse_llvm_export),),
     }
     parsed: dict[str, Mapping[str, Mapping[int, int]]] = {}
     for short_scope, scope in scope_names.items():
         if short_scope not in selected_scopes:
             continue
-        report_path, parser = inputs[scope]
         expected_sources = sources[scope]
         if not expected_sources:
             continue
-        if not report_path.is_file():
-            raise CoverageDataError(f"Required {scope} coverage artifact is missing: {report_path}.")
-        try:
-            document = report_path.read_bytes()
-            adapter_report = parser(document, workspace)
-        except OSError as error:
-            raise CoverageDataError(f"Could not read {scope} coverage report: {error}") from error
-        missing_sources = expected_sources.difference(adapter_report)
-        unexpected_sources = set(adapter_report).difference(expected_sources)
-        if missing_sources:
-            raise CoverageDataError(
-                f"Eligible {scope} source is missing from its coverage report: {', '.join(sorted(missing_sources))}"
-            )
-        if unexpected_sources:
-            raise CoverageDataError(
-                f"{scope} coverage report contains a source outside its package: {', '.join(sorted(unexpected_sources))}"
-            )
-        parsed[scope] = adapter_report
+        platform_reports: dict[str, Mapping[str, Mapping[int, int]]] = {}
+        for report_path, parser in inputs[scope]:
+            if not report_path.is_file():
+                raise CoverageDataError(f"Required {scope} coverage artifact is missing: {report_path}.")
+            try:
+                document = report_path.read_bytes()
+                adapter_report = parser(document, workspace)
+            except OSError as error:
+                raise CoverageDataError(f"Could not read {scope} coverage report: {error}") from error
+            missing_sources = expected_sources.difference(adapter_report)
+            unexpected_sources = set(adapter_report).difference(expected_sources)
+            if missing_sources:
+                raise CoverageDataError(
+                    f"Eligible {scope} source is missing from its coverage report: {', '.join(sorted(missing_sources))}"
+                )
+            if unexpected_sources:
+                raise CoverageDataError(
+                    f"{scope} coverage report contains a source outside its package: {', '.join(sorted(unexpected_sources))}"
+                )
+            platform_reports[report_path.parent.name] = adapter_report
+        if len(platform_reports) == 1:
+            # Preserve parser metadata such as LLVM's summary-only uncovered
+            # line counts; only multi-platform Java reports need a union.
+            parsed[scope] = next(iter(platform_reports.values()))
+        else:
+            parsed[scope] = merge_coverage_reports(platform_reports)
     return parsed
 
 

@@ -18,10 +18,18 @@ coverage-c-consumer = []
 kmipkit.workspace = true
 kmipkit-client.workspace = true
 kmipkit-protocol.workspace = true
+kmipkit-transport.workspace = true
 kmipkit-ttlv.workspace = true
+zeroize.workspace = true
 
 [build-dependencies]
 cc = "=1.6.0"
+
+[dev-dependencies]
+kmipkit-test-support = { workspace = true, features = ["fixtures"] }
+base64 = "=0.23.1"
+rcgen = { workspace = true, features = ["pem"] }
+rustls.workspace = true
 
 [lints]
 workspace = true

@@ -68,6 +68,7 @@ MATRIX_JOB_IDS = {
     "language-java",
     "language-python",
     "coverage",
+    "coverage-java",
 }
 IMPACT_API = None
 IMPACT_API_ERROR: Exception | None = None

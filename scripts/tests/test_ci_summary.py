@@ -224,6 +224,25 @@ class CiSummaryTests(unittest.TestCase):
                 self.assertIn("CI result: FAIL", markdown)
                 self.assertIn("Failures to fix", markdown)
 
+    def test_java_coverage_matrix_failure_does_not_use_an_arbitrary_leg_diagnosis(self) -> None:
+        summary_module = self.require_summary()
+        needs = self.pull_request_needs(**{"coverage-java": "failure"})
+        needs["coverage-java"]["outputs"] = {
+            "diagnostic_details": json.dumps(
+                [{"label": "Windows setup", "explanation": "This leg alone reports a test failure."}]
+            )
+        }
+
+        markdown, exit_code = summary_module.build_summary(
+            event_name="pull_request",
+            context=self.context(),
+            needs=needs,
+        )
+
+        self.assertEqual(1, exit_code)
+        self.assertIn("One or more matrix legs failed or were omitted", markdown)
+        self.assertNotIn("This leg alone reports a test failure", markdown)
+
     def test_required_skipped_and_missing_jobs_cannot_produce_a_passing_summary(self) -> None:
         summary_module = self.require_summary()
         skipped = self.pull_request_needs(**{"language-java": "skipped"})

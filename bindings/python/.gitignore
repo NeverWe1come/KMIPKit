@@ -1,1 +1,3 @@
-/src/kmipkit/_ffi/
+/src/kmipkit/_native_ffi/
+/src/kmipkit/_ffi/*
+!/src/kmipkit/_ffi/__init__.py

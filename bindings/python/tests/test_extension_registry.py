@@ -663,8 +663,9 @@ class ExtensionRegistryTests(unittest.TestCase):
             registry_api.definition_count(registry)
 
     def test_ttlv_scalar_views_cover_the_item_types_and_reject_invalid_python_inputs(self) -> None:
-        unknown_type = ttlv.ItemType(0xF0)
-        self.assertEqual(unknown_type.name, "Unknown_0xF0")
+        # KMIP Specification v2.1 §11.23 assigns only the eleven modeled item types.
+        with self.assertRaises(ValueError):
+            ttlv.ItemType(0xF0)
         with self.assertRaises(ValueError):
             ttlv.ItemType(0x100)
 
@@ -764,11 +765,13 @@ class ExtensionRegistryTests(unittest.TestCase):
 
         with self.assertRaises(errors.InvalidInputError):
             registry_api.structure_schema([], [], 1)
+        # KMIP Specification v2.1 §11.23 does not assign Item Type 0xF0.
+        with self.assertRaises(ValueError):
+            ttlv.ItemType(0xF0)
         with self.assertRaises(errors.InvalidInputError):
             registry_api.with_type(
-                registry_api.create_extension_information("name"), unknown_type := ttlv.ItemType(0xF0)
+                registry_api.create_extension_information("name"), 0xF0
             )
-        self.assertEqual(unknown_type.name, "Unknown_0xF0")
 
         definition = self.definitions["known.alpha"]
         value = _structure_from_fixture(

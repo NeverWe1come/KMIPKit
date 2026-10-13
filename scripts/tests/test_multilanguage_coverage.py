@@ -18,6 +18,17 @@ class MultiLanguageCoverageTests(unittest.TestCase):
     def require_gate(self) -> None:
         self.assertIsNotNone(GATE, "coverage_gate.py must provide the multi-language coverage contract")
 
+    def test_python_coverage_tests_execute_the_generated_public_api_manifest(self) -> None:
+        test_source = (
+            REPOSITORY_ROOT / "bindings/python/tests/test_generated_api_manifest.py"
+        ).read_text(encoding="utf-8")
+
+        self.assertIn(
+            "from kmipkit._generated import extension_registry, public_api",
+            test_source,
+            "checked-in generated Python API metadata must be exercised and included in coverage",
+        )
+
     def test_jni_collector_ignores_hosted_toolcache_jdk_header(self) -> None:
         self.require_gate()
         script = (REPOSITORY_ROOT / "scripts/collect_jni_coverage.sh").read_text(encoding="utf-8")
@@ -122,6 +133,148 @@ class MultiLanguageCoverageTests(unittest.TestCase):
 
         self.assertEqual({"bindings/java/src/main/java/org/kmipkit/extensions/Registry.java": {1: 0}}, parsed)
 
+    def test_jacoco_parser_ignores_only_generated_metadata_sources(self) -> None:
+        self.require_gate()
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            source_root = root / "bindings/java/src/main/java/org/kmipkit"
+            generated_root = source_root / "generated"
+            generated_root.mkdir(parents=True)
+            source_root.joinpath("Registry.java").write_text("class Registry {}\n", encoding="utf-8")
+            for name in ("PublicApi.java", "ExtensionRegistryApi.java"):
+                generated_root.joinpath(name).write_text("class Metadata {}\n", encoding="utf-8")
+            report = """<?xml version="1.0"?>
+            <report name="KMIPKit"><package name="org/kmipkit">
+              <sourcefile name="Registry.java"><line nr="1" mi="1" ci="0" mb="0" cb="0"/></sourcefile>
+            </package><package name="org/kmipkit/generated">
+              <sourcefile name="PublicApi.java"><line nr="1" mi="0" ci="1" mb="0" cb="0"/></sourcefile>
+              <sourcefile name="ExtensionRegistryApi.java"><line nr="1" mi="0" ci="1" mb="0" cb="0"/></sourcefile>
+            </package></report>"""
+
+            parsed = GATE.parse_jacoco_report(report, root)
+
+        self.assertEqual(
+            {"bindings/java/src/main/java/org/kmipkit/Registry.java": {1: 0}},
+            parsed,
+        )
+
+    def test_jacoco_parser_ignores_all_null_marked_package_info_sources(self) -> None:
+        self.require_gate()
+        metadata_packages = (
+            "org/kmipkit",
+            "org/kmipkit/internal",
+            "org/kmipkit/ttlv",
+            "org/kmipkit/generated",
+            "org/kmipkit/extensions",
+        )
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            source_root = root / "bindings/java/src/main/java"
+            report = ET.Element("report", {"name": "KMIPKit"})
+            for package_name in metadata_packages:
+                package_path = source_root.joinpath(*package_name.split("/"))
+                package_path.mkdir(parents=True, exist_ok=True)
+                (package_path / "package-info.java").write_text(
+                    "@NullMarked\n", encoding="utf-8"
+                )
+                package = ET.SubElement(report, "package", {"name": package_name})
+                source = ET.SubElement(package, "sourcefile", {"name": "package-info.java"})
+                ET.SubElement(
+                    source,
+                    "line",
+                    {"nr": "1", "mi": "0", "ci": "1", "mb": "0", "cb": "0"},
+                )
+
+            normal_package = ET.SubElement(report, "package", {"name": "org/kmipkit"})
+            normal_source = ET.SubElement(
+                normal_package, "sourcefile", {"name": "Registry.java"}
+            )
+            ET.SubElement(
+                normal_source,
+                "line",
+                {"nr": "1", "mi": "1", "ci": "0", "mb": "0", "cb": "0"},
+            )
+            (source_root / "org/kmipkit/Registry.java").write_text(
+                "class Registry {}\n", encoding="utf-8"
+            )
+
+            parsed = GATE.parse_jacoco_report(ET.tostring(report), root)
+
+        self.assertEqual(
+            {"bindings/java/src/main/java/org/kmipkit/Registry.java": {1: 0}},
+            parsed,
+        )
+
+    def test_adapter_loader_unions_linux_and_windows_jacoco_reports(self) -> None:
+        self.require_gate()
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            source_relative = "bindings/java/src/main/java/org/kmipkit/NativeLibraryLoader.java"
+            source = root / source_relative
+            source.parent.mkdir(parents=True)
+            source.write_text("".join(f"line {line}\n" for line in range(1, 21)), encoding="utf-8")
+
+            def jacoco_report(name: str, covered_lines: set[int]) -> str:
+                report = ET.Element("report", {"name": name})
+                package = ET.SubElement(report, "package", {"name": "org/kmipkit"})
+                source_file = ET.SubElement(package, "sourcefile", {"name": "NativeLibraryLoader.java"})
+                for line in range(1, 21):
+                    covered = line in covered_lines
+                    ET.SubElement(source_file, "line", {
+                        "nr": str(line), "mi": str(int(not covered)), "ci": str(int(covered)),
+                        "mb": "0", "cb": "0",
+                    })
+                return ET.tostring(report, encoding="unicode")
+
+            reports = {
+                "coverage-java-linux": jacoco_report("Linux", set(range(1, 20)) - {2}),
+                "coverage-java-windows": jacoco_report("Windows", {2}),
+            }
+            for artifact, document in reports.items():
+                report_path = root / artifact / "jacoco.xml"
+                report_path.parent.mkdir(parents=True)
+                report_path.write_text(document, encoding="utf-8")
+
+            parsed = GATE._load_adapter_reports(root, root, {"java"})
+            diff = (
+                f"diff --git a/{source_relative} b/{source_relative}\n"
+                f"--- a/{source_relative}\n+++ b/{source_relative}\n@@ -0,0 +1,20 @@\n"
+                + "".join(f"+line {line}\n" for line in range(1, 21))
+            )
+            results = GATE._evaluate_coverage(root, {}, diff, parsed, required_scopes={"java"})
+
+        self.assertIsNotNone(parsed)
+        assert parsed is not None
+        self.assertEqual(
+            {source_relative: {**{line: 1 for line in range(1, 20)}, 20: 0}},
+            parsed["Java adapters"],
+            "Java coverage should union independently covered Linux and Windows lines",
+        )
+        self.assertTrue(any(result.startswith("Changed production coverage: 19/20 (95.00%)") for result in results))
+
+    def test_adapter_loader_requires_both_platform_jacoco_reports(self) -> None:
+        self.require_gate()
+        source_relative = "bindings/java/src/main/java/org/kmipkit/NativeLibraryLoader.java"
+        for missing_platform in ("linux", "windows"):
+            with self.subTest(missing_platform=missing_platform), tempfile.TemporaryDirectory() as directory:
+                root = Path(directory)
+                source = root / source_relative
+                source.parent.mkdir(parents=True)
+                source.write_text("line one\n", encoding="utf-8")
+                available_platform = "windows" if missing_platform == "linux" else "linux"
+                artifact = root / f"coverage-java-{available_platform}" / "jacoco.xml"
+                artifact.parent.mkdir(parents=True)
+                artifact.write_text(
+                    '<report name="available"><package name="org/kmipkit">'
+                    '<sourcefile name="NativeLibraryLoader.java">'
+                    '<line nr="1" mi="0" ci="1" mb="0" cb="0"/>'
+                    '</sourcefile></package></report>',
+                    encoding="utf-8",
+                )
+
+                with self.assertRaisesRegex(GATE.CoverageDataError, "Required Java adapters coverage artifact is missing"):
+                    GATE._load_adapter_reports(root, root, {"java"})
+
     def test_cobertura_parser_maps_python_sources_and_rejects_outside_sources(self) -> None:
         self.require_gate()
         with tempfile.TemporaryDirectory() as directory:
@@ -139,18 +292,19 @@ class MultiLanguageCoverageTests(unittest.TestCase):
 
         self.assertEqual({"bindings/python/src/kmipkit/extensions.py": {1: 1, 2: 0}}, parsed)
 
-    def test_adapter_source_scan_includes_generated_package_code_but_not_consumers(self) -> None:
+    def test_adapter_source_scan_excludes_generated_metadata_only_and_consumer_sources(self) -> None:
         self.require_gate()
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
             expected_paths = (
                 "bindings/java/src/main/java/org/kmipkit/NativeExtensionRegistry.java",
-                "bindings/java/src/main/java/org/kmipkit/generated/ExtensionRegistryApi.java",
                 "bindings/python/src/kmipkit/extensions.py",
                 "bindings/python/src/kmipkit/_generated/extension_registry.py",
                 "bindings/java/native/kmipkit_jni.cpp",
             )
             excluded_paths = (
+                "bindings/java/src/main/java/org/kmipkit/generated/ExtensionRegistryApi.java",
+                "bindings/java/src/main/java/org/kmipkit/generated/PublicApi.java",
                 "bindings/java/src/test/java/org/kmipkit/RegistryTest.java",
                 "bindings/java/examples/RegistryExample.java",
                 "bindings/python/tests/test_registry.py",
@@ -165,6 +319,29 @@ class MultiLanguageCoverageTests(unittest.TestCase):
             sources = GATE.scan_adapter_sources(root)
 
         self.assertEqual(set(expected_paths), set().union(*sources.values()))
+
+    def test_java_null_marked_package_info_files_are_not_coverage_sources(self) -> None:
+        self.require_gate()
+        metadata_paths = (
+            "bindings/java/src/main/java/org/kmipkit/package-info.java",
+            "bindings/java/src/main/java/org/kmipkit/internal/package-info.java",
+            "bindings/java/src/main/java/org/kmipkit/ttlv/package-info.java",
+            "bindings/java/src/main/java/org/kmipkit/generated/package-info.java",
+            "bindings/java/src/main/java/org/kmipkit/extensions/package-info.java",
+        )
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            for relative in metadata_paths:
+                source = root / relative
+                source.parent.mkdir(parents=True, exist_ok=True)
+                source.write_text("@NullMarked\n", encoding="utf-8")
+
+            scanned = GATE.scan_adapter_sources(root)
+
+        for relative in metadata_paths:
+            with self.subTest(path=relative):
+                self.assertFalse(GATE.is_coverage_source_path(relative))
+                self.assertNotIn(relative, scanned["Java adapters"])
 
     def test_adapter_production_code_prevents_rust_only_unavailable_preflight(self) -> None:
         self.require_gate()
@@ -338,6 +515,37 @@ class MultiLanguageCoverageTests(unittest.TestCase):
 
         self.assertEqual({"bindings/java/native/kmipkit_jni.cpp": {1: 1}}, parsed)
 
+    def test_adapter_loader_preserves_jni_summary_only_uncovered_lines(self) -> None:
+        self.require_gate()
+        source_relative = "bindings/java/native/kmipkit_jni.cpp"
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            source = root / source_relative
+            source.parent.mkdir(parents=True)
+            source.write_text("int bridge() { return 1; }\n", encoding="utf-8")
+            report_path = root / "coverage-jni" / "coverage.json"
+            report_path.parent.mkdir(parents=True)
+            report_path.write_text(
+                llvm_document(
+                    [[1, 1, 1, len("int bridge() { return 1; }") + 1, 1, 0, 0, 0]],
+                    filename=source_relative,
+                    summary_lines=2,
+                ),
+                encoding="utf-8",
+            )
+
+            parsed = GATE._load_adapter_reports(root, root, {"jni"})
+
+        self.assertIsNotNone(parsed)
+        assert parsed is not None
+        jni_report = parsed["JNI bridge"]
+        self.assertEqual({source_relative: {1: 1}}, jni_report)
+        self.assertEqual(
+            {source_relative: 1},
+            jni_report.summary_uncovered_excess,
+            "adapter loading must retain conservative summary-only JNI uncovered lines",
+        )
+
     def test_changed_production_diff_includes_java_python_and_jni_lines(self) -> None:
         self.require_gate()
         diff = """diff --git a/bindings/java/src/main/java/org/kmipkit/Registry.java b/bindings/java/src/main/java/org/kmipkit/Registry.java
@@ -406,7 +614,7 @@ diff --git a/bindings/java/native/kmipkit_jni.cpp b/bindings/java/native/kmipkit
         self.assertEqual(85, pyproject["tool"]["coverage"]["report"]["fail_under"])
         self.assertEqual(
             pyproject["tool"]["coverage"]["run"].get("omit"),
-            ["*/kmipkit/_ffi/__init__.py", "*/kmipkit/_ffi/ffi.py"],
+            ["*/kmipkit/_native_ffi/__init__.py", "*/kmipkit/_native_ffi/ffi.py"],
             "only build-generated CFFI wrapper modules may be excluded from Python source coverage",
         )
 

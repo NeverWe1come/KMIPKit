@@ -59,7 +59,7 @@
 
 ## Python
 
-- Python 3.12 minimum.
+- Python 3.12 only for the 1.0 package.
 - Full type annotations and `py.typed`.
 - Ruff formatting/linting and Pyright.
 - Context-managed native resources.

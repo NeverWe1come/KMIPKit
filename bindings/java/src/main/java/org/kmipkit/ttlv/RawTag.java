@@ -4,7 +4,7 @@ import org.kmipkit.NativeExtensionRegistry;
 import org.kmipkit.internal.NativeHandle;
 
 /** A 24-bit TTLV tag value that may be checked for use as a KMIP tag. */
-public final class RawTag {
+public final class RawTag implements AutoCloseable {
     private final NativeHandle handle;
 
     private RawTag(long nativeHandle) {
@@ -30,5 +30,9 @@ public final class RawTag {
 
     NativeHandle nativeHandleOwner() {
         return handle;
+    }
+    @Override
+    public void close() {
+        handle.close();
     }
 }

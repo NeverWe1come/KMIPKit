@@ -5,6 +5,7 @@ from __future__ import annotations
 import importlib.util
 import sys
 import tempfile
+import tomllib
 import unittest
 from pathlib import Path
 
@@ -60,6 +61,24 @@ fn second() {}
 
 
 class ExampleProjectTests(unittest.TestCase):
+    def test_temp_manifest_uses_workspace_local_aws_lc_sys_patch(self) -> None:
+        source = Path("client-execution.md")
+        examples = runner.extract_examples(
+            "```rust,kmipkit-test\nfn main() { assert_eq!(2, 2); }\n```\n",
+            source,
+        )
+        with tempfile.TemporaryDirectory() as temporary:
+            project = Path(temporary) / "examples"
+            runner.write_project(REPOSITORY_ROOT, project, examples)
+
+            manifest = tomllib.loads(
+                (project / "Cargo.toml").read_text(encoding="utf-8")
+            )
+            self.assertEqual(
+                manifest["patch"]["crates-io"]["aws-lc-sys"]["path"],
+                (REPOSITORY_ROOT / "vendor" / "aws-lc-sys-0.45.0").as_posix(),
+            )
+
     def test_cargo_check_command_is_offline_and_can_require_the_resolved_lock(self) -> None:
         manifest = Path("examples") / "Cargo.toml"
 

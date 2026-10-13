@@ -18,3 +18,6 @@
 
 # Preserve pinned upstream standards byte-for-byte for checksum verification.
 specification/oasis/**/upstream/* -text -diff
+
+# Preserve upstream vendor whitespace without formatting the imported source.
+vendor/aws-lc-sys-0.45.0/** whitespace=-trailing-space,-blank-at-eof,-space-before-tab

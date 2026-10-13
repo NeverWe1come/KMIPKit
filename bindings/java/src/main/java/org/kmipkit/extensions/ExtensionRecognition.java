@@ -7,7 +7,7 @@ import org.kmipkit.internal.NativeHandle;
 import org.kmipkit.ttlv.TtlvStructureView;
 
 /** Result of inspecting one received vendor extension. */
-public final class ExtensionRecognition {
+public final class ExtensionRecognition implements AutoCloseable {
     private final NativeHandle handle;
     private final ClientExtensionRegistry registryOwner;
 
@@ -43,5 +43,9 @@ public final class ExtensionRecognition {
     @Override
     public String toString() {
         return "ExtensionRecognition([REDACTED])";
+    }
+    @Override
+    public void close() {
+        handle.close();
     }
 }

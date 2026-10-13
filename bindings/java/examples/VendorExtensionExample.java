@@ -128,7 +128,7 @@ public final class VendorExtensionExample {
         ExtensionSchema rootSchema = ExtensionSchema.structure(
                 List.of(ExtensionChildRule.required(nestedTag, nestedSchema)), List.of(), false);
 
-        Compatibility compatibility = Compatibility.create(2, 1, 2, 1, "0.1.0", "0.1.0");
+        Compatibility compatibility = Compatibility.create(2, 1, 2, 1, "1.0.0", "1.0.0");
         return ExtensionDefinition.create(identity, compatibility, discriminator, rootSchema);
     }
 

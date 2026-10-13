@@ -1,6 +1,7 @@
 package org.kmipkit.ttlv;
 
 import org.kmipkit.NativeExtensionRegistry;
+import org.kmipkit.InvalidInputException;
 import org.kmipkit.ResourceLimitException;
 
 import java.util.Arrays;
@@ -11,7 +12,7 @@ import org.kmipkit.internal.NativeHandle;
  * An owned generic TTLV value. KMIPKit clears its temporary Java byte-array
  * copies after native calls; copies internal to the JVM remain outside its control.
  */
-public final class TtlvValue {
+public final class TtlvValue implements AutoCloseable {
     private final NativeHandle handle;
 
     private TtlvValue(long nativeHandle) {
@@ -77,8 +78,11 @@ public final class TtlvValue {
     }
 
     private static void requireWithinMessageLimit(byte[] value, CodecLimits limits) {
+        if (value == null || limits == null) {
+            throw new InvalidInputException("TTLV byte input is invalid");
+        }
         long maximum = limits.maxMessageBytes();
-        if (value != null && value.length > maximum) {
+        if (value.length > maximum) {
             throw new ResourceLimitException("byte input exceeds configured limits");
         }
     }
@@ -103,5 +107,9 @@ public final class TtlvValue {
     /** Internal owner token used to atomically transfer this value to a consuming facade call. */
     public NativeHandle nativeHandleOwner() {
         return handle;
+    }
+    @Override
+    public void close() {
+        handle.close();
     }
 }

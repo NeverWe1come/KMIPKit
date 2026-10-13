@@ -19,6 +19,9 @@ from urllib.parse import SplitResult, parse_qsl, urlsplit
 REPOSITORY_ROOT = Path(__file__).resolve().parents[1]
 CRATES_IO_SOURCE = "registry+https://github.com/rust-lang/crates.io-index"
 ADR_0005_BANNED_PACKAGES = frozenset({"native-tls", "openssl", "openssl-sys"})
+VENDORED_LOCAL_PACKAGES = {
+    "aws-lc-sys": ("0.45.0", "vendor/aws-lc-sys-0.45.0/Cargo.toml"),
+}
 EXCEPTION_ID_PATTERN = re.compile(r"KMIPKIT-0011-EX-[0-9]{3,}")
 PACKAGE_PATTERN = re.compile(r"[A-Za-z0-9][A-Za-z0-9_-]*")
 VERSION_PATTERN = re.compile(
@@ -715,7 +718,8 @@ def validate_workspace_metadata(
     Both metadata graphs are considered together because the root workspace owns
     ``kmipkit-ttlv`` while the isolated fuzz workspace consumes that same path.
     Paths must be lexically inside the checkout and remain inside after resolving
-    symlinks; path packages must match a canonical root or fuzz member manifest.
+    symlinks; path packages must match a canonical root or fuzz member manifest,
+    except for exact vendored dependencies registered in this module.
     """
     root_input = Path(checkout_root)
     try:
@@ -797,8 +801,27 @@ def validate_workspace_metadata(
             )
             if not manifest.is_file() or manifest.name != "Cargo.toml":
                 raise PolicyError(f"{label} manifest is invalid")
-            if manifest not in member_manifests:
-                raise PolicyError(f"{label} is not a canonical member of either workspace")
+            if manifest in member_manifests:
+                continue
+            vendor_record = VENDORED_LOCAL_PACKAGES.get(name)
+            if vendor_record is None or version != vendor_record[0]:
+                raise PolicyError(f"{label} is not a canonical member or approved vendored dependency")
+            expected_vendor_manifest = root / vendor_record[1]
+            try:
+                expected_vendor_manifest = expected_vendor_manifest.resolve(strict=True)
+            except (OSError, RuntimeError, ValueError):
+                raise PolicyError(f"approved vendored dependency {name} is unavailable") from None
+            if manifest != expected_vendor_manifest:
+                raise PolicyError(f"{label} does not resolve to its approved vendor manifest")
+            try:
+                vendor_metadata = tomllib.loads(manifest.read_text(encoding="utf-8"))
+            except (OSError, UnicodeError, tomllib.TOMLDecodeError):
+                raise PolicyError(f"approved vendored dependency {name} manifest is malformed") from None
+            vendor_package = vendor_metadata.get("package")
+            if not isinstance(vendor_package, dict) or (
+                vendor_package.get("name") != name or vendor_package.get("version") != version
+            ):
+                raise PolicyError(f"approved vendored dependency {name} package identity is inconsistent")
     return validate_metadata_sources(metadata_by_workspace, exception_register, today=today)
 
 

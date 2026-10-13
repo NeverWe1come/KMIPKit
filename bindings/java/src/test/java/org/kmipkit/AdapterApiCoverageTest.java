@@ -192,12 +192,13 @@ final class AdapterApiCoverageTest {
         TtlvItem item = TtlvItem.create(tag(REQUIRED_TAG),
                 TtlvValue.Integer(9), CODEC_LIMITS);
         structure = TtlvStructure.withItem(structure, item, CODEC_LIMITS);
-        TtlvStructureView view = structure.view();
-        assertEquals(1, view.itemCount());
-        assertEquals(REQUIRED_TAG, view.itemAt(0).tag().raw());
-        assertEquals(TtlvItemType.Integer, view.itemAt(0).itemType());
-        assertEquals(9, view.itemAt(0).value().integer());
-        assertThrows(InvalidInputException.class, () -> view.itemAt(1));
+        try (TtlvStructureView view = structure.view()) {
+            assertEquals(1, view.itemCount());
+            assertEquals(REQUIRED_TAG, view.itemAt(0).tag().raw());
+            assertEquals(TtlvItemType.Integer, view.itemAt(0).itemType());
+            assertEquals(9, view.itemAt(0).value().integer());
+            assertThrows(InvalidInputException.class, () -> view.itemAt(1));
+        }
     }
 
     private static void assertByteValue(TtlvValueView value, TtlvItemType type, byte[] expected) {

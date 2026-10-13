@@ -5,7 +5,7 @@ import org.kmipkit.internal.NativeHandle;
 import org.kmipkit.ttlv.Tag;
 
 /** Required, optional, or repeated child constraint in a Structure schema. */
-public final class ExtensionChildRule {
+public final class ExtensionChildRule implements AutoCloseable {
     private final NativeHandle handle;
 
     private ExtensionChildRule(long nativeHandle) {
@@ -36,5 +36,9 @@ public final class ExtensionChildRule {
 
     NativeHandle nativeHandleOwner() {
         return handle;
+    }
+    @Override
+    public void close() {
+        handle.close();
     }
 }

@@ -60,6 +60,15 @@ class WorkflowContractTests(unittest.TestCase):
         self.assertRegex(step.group(1), rf"(?m)^        id: {re.escape(step_id)}$")
         self.assertRegex(step.group(1), rf"(?m)^        run: {re.escape(command)}$")
 
+    def require_named_step(self, job: str, name: str) -> re.Match[str]:
+        match = re.search(
+            rf"(?ms)^      - name: {re.escape(name)}\n(.*?)(?=^      - name: |\\Z)",
+            job,
+        )
+        self.assertIsNotNone(match, f"The {name} workflow step must exist.")
+        assert match is not None
+        return match
+
     def assert_github_hosted_runner(self, body: str, runner: str = "ubuntu-latest") -> None:
         self.assertRegex(body, rf"(?m)^    runs-on: {re.escape(runner)}$")
 
@@ -305,7 +314,6 @@ class WorkflowContractTests(unittest.TestCase):
             "fuzz-smoke",
             "normative-inventory",
             "coverage-gate",
-            "coverage-java",
             "coverage-python",
             "coverage-jni",
             "dependency-policy",
@@ -315,6 +323,11 @@ class WorkflowContractTests(unittest.TestCase):
             with self.subTest(job=job):
                 body = self.require_job(contents, job)
                 self.assert_github_hosted_runner(body)
+
+        java_coverage = self.require_job(contents, "coverage-java")
+        self.assertIn("runs-on: ${{ matrix.os }}", java_coverage)
+        self.assertIn("os: ubuntu-latest", java_coverage)
+        self.assertIn("os: windows-latest", java_coverage)
 
         branch_coverage = self.require_job(contents, "branch-coverage")
         self.assert_github_hosted_runner(branch_coverage, "ubuntu-24.04-arm")
@@ -342,6 +355,20 @@ class WorkflowContractTests(unittest.TestCase):
         python_job = self.require_job(contents, "language-python")
         self.assertIn("uv pip install --requirement bindings/python/requirements-coverage.txt", python_job)
         self.assert_uv_managed_python_312(python_job)
+
+    def test_c_abi_inventory_does_not_cache_unused_uv_dependencies(self) -> None:
+        contents = self.require_workflow()
+        job = self.require_job(contents, "language-c")
+        step = re.search(
+            r"(?ms)^      - name: Set up Python 3\.12 for the ABI inventory\n(.*?)(?=^      - name: |\Z)",
+            job,
+        )
+        self.assertIsNotNone(step, "The C ABI inventory job must set up its pinned Python runtime.")
+        self.assertRegex(
+            step.group(1),
+            r"(?m)^          enable-cache: false$",
+            "The C ABI inventory installs no uv dependencies, so setup-uv caching must be disabled.",
+        )
 
     def test_rust_built_adapter_jobs_install_the_pinned_rust_toolchain(self) -> None:
         contents = self.require_workflow()
@@ -383,6 +410,28 @@ class WorkflowContractTests(unittest.TestCase):
         self.assertIn('build-backend = "maturin"', python_project)
         self.assertIn('bindings = "cffi"', python_project)
 
+    def test_java_package_loader_smoke_runs_offline_on_every_platform(self) -> None:
+        contents = self.require_workflow()
+        java_job = self.require_job(contents, "language-java")
+
+        prime = self.require_named_step(java_job, "Prime Gradle Java compile dependencies")
+        self.assertIn("compileJava", prime.group(1))
+        self.assertNotIn("--offline", prime.group(1))
+
+        step = self.require_named_step(java_job, "Run packaged Java native loader smoke")
+        self.assertIn("shell: pwsh", step.group(1))
+        self.assertIn(".\\gradlew.bat --offline nativeJarSmoke", step.group(1))
+        self.assertIn("sh ./gradlew --offline nativeJarSmoke", step.group(1))
+        self.assertLess(contents.index(prime.group(0)), contents.index(step.group(0)))
+
+        gradle = (REPOSITORY_ROOT / "bindings/java/build.gradle.kts").read_text(encoding="utf-8")
+        self.assertIn('providers.gradleProperty("nativeTarget").orElse(hostTarget)', gradle)
+        self.assertIn(
+            'providers.gradleProperty("nativeLibrary").orElse(\n'
+            '    layout.projectDirectory.file("target/native/${hostLibraryName()}").asFile.absolutePath)',
+            gradle,
+            "the packaged smoke must select the just-built library for its current matrix host",
+        )
     def test_windows_c_consumer_uses_the_msvc_compatible_generator(self) -> None:
         contents = self.require_workflow()
         job = self.require_job(contents, "language-c")
@@ -408,7 +457,11 @@ class WorkflowContractTests(unittest.TestCase):
         jni_job = self.require_job(contents, "coverage-jni")
         self.assertIn("mvn --batch-mode --file bindings/java/pom.xml clean verify", java_job)
         self.assertIn("bindings/java/target/site/jacoco/jacoco.xml", java_job)
-        self.assertIn("name: coverage-java", java_job)
+        self.assertIn("name: Java coverage / ${{ matrix.platform }}", java_job)
+        self.assertIn("platform: linux", java_job)
+        self.assertIn("platform: windows", java_job)
+        self.assertIn("runs-on: ${{ matrix.os }}", java_job)
+        self.assertIn("name: coverage-java-${{ matrix.platform }}", java_job)
         self.assertIn("uv pip install --requirement bindings/python/requirements-coverage.txt", python_job)
         self.assertIn("--cov-report=xml:coverage-python/coverage.xml", python_job)
         self.assertIn("name: coverage-python", python_job)
@@ -472,6 +525,7 @@ class WorkflowContractTests(unittest.TestCase):
         self.assertIn("libkmipkit_ffi.so", collector)
         self.assertIn("--sources", collector)
         self.assertIn("crates/kmipkit-ffi/src/extension_registry.rs", collector)
+        self.assertIn("crates/kmipkit-ffi/src/extension_registry/client_abi.rs", collector)
         self.assertIn('--output "${report_dir}/coverage.json"', collector)
         self.assertNotIn("Install LLVM 20.1.8 for Linux FFI coverage export", job)
         self.assertNotIn('directory: ${{ runner.temp }}/llvm-20', job)
@@ -499,7 +553,7 @@ class WorkflowContractTests(unittest.TestCase):
         normalized_guide = " ".join(guide.split())
         self.assertIn("coverage-ffi/coverage.json", normalized_guide)
         self.assertIn("bash scripts/collect_ffi_coverage.sh target/coverage-ffi", normalized_guide)
-        self.assertIn("downloads all seven coverage artifacts", normalized_guide)
+        self.assertIn("downloads all eight coverage artifacts", normalized_guide)
 
     def test_nightly_schedule_runs_only_the_informational_branch_job(self) -> None:
         contents = self.require_workflow()

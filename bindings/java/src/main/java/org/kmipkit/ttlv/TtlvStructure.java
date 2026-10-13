@@ -4,7 +4,7 @@ import org.kmipkit.NativeExtensionRegistry;
 import org.kmipkit.internal.NativeHandle;
 
 /** An owned generic TTLV Structure that preserves child order and unknown tags. */
-public final class TtlvStructure {
+public final class TtlvStructure implements AutoCloseable {
     private final NativeHandle handle;
 
     private TtlvStructure(long nativeHandle) {
@@ -38,5 +38,9 @@ public final class TtlvStructure {
 
     NativeHandle nativeHandleOwner() {
         return handle;
+    }
+    @Override
+    public void close() {
+        handle.close();
     }
 }
