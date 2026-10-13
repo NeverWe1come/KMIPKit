@@ -29,6 +29,21 @@ _MIN_I64 = -(1 << 63)
 _MAX_I64 = (1 << 63) - 1
 
 
+def _integer_range(value: int, minimum: int, maximum: int) -> int:
+    if not isinstance(value, int) or isinstance(value, bool):
+        errors.raise_for_status(4)
+    if value < minimum or value > maximum:
+        errors.raise_for_status(4)
+    return value
+
+
+def _unsigned(value: int, bits: int, *, allow_zero: bool = True) -> int:
+    number = _integer_range(value, 0, (1 << bits) - 1)
+    if not allow_zero and number == 0:
+        errors.raise_for_status(4)
+    return number
+
+
 class CredentialEncoding(IntEnum):
     """Explicit encoding used for certificate, key, and revocation material."""
 
@@ -204,6 +219,21 @@ def _validate_transport_input_group(values: tuple[TransportInput, ...]) -> None:
                 errors.raise_for_status(6)
 
 
+def _bounded_transport_inputs(values: object) -> tuple[TransportInput, ...]:
+    if isinstance(values, tuple):
+        count = tuple.__len__(values)
+        if count > _MAX_TRANSPORT_CONFIG_ITEMS:
+            errors.raise_for_status(6)
+        if type(values) is tuple:
+            return values
+        return tuple(tuple.__iter__(values))
+    if isinstance(values, list):
+        if list.__len__(values) > _MAX_TRANSPORT_CONFIG_ITEMS:
+            errors.raise_for_status(6)
+        return tuple(list.__iter__(values))
+    errors.raise_for_status(4)
+
+
 @dataclass(frozen=True, slots=True)
 class TrustSource:
     """An explicit platform-root or caller-supplied certificate trust source."""
@@ -214,12 +244,8 @@ class TrustSource:
     def __post_init__(self) -> None:
         if not isinstance(self.kind, TrustKind):
             errors.raise_for_status(4)
-        if not isinstance(self.certificates, tuple):
-            try:
-                object.__setattr__(self, "certificates", tuple(self.certificates))
-            except TypeError:
-                errors.raise_for_status(4)
-        certificates = self.certificates
+        certificates = _bounded_transport_inputs(self.certificates)
+        object.__setattr__(self, "certificates", certificates)
         if self.kind is TrustKind.PLATFORM:
             if certificates:
                 errors.raise_for_status(4)
@@ -238,7 +264,7 @@ class TrustSource:
         cls, certificates: tuple[TransportInput, ...] | list[TransportInput]
     ) -> Self:
         """Use only the explicit server certificate authorities supplied by the caller."""
-        values = tuple(certificates)
+        values = _bounded_transport_inputs(certificates)
         if not values or any(not isinstance(item, TransportInput) for item in values):
             errors.raise_for_status(4)
         return cls(TrustKind.CERTIFICATES, values)
@@ -255,16 +281,15 @@ class TimeoutLimit:
     def __post_init__(self) -> None:
         if not isinstance(self.kind, TimeoutKind):
             errors.raise_for_status(4)
+        seconds = _unsigned(self.seconds, 64)
+        nanoseconds = _unsigned(self.nanoseconds, 32)
         if self.kind is TimeoutKind.DEFAULT:
-            if self.seconds != 0 or self.nanoseconds != 0:
+            if seconds != 0 or nanoseconds != 0:
                 errors.raise_for_status(4)
         elif self.kind is TimeoutKind.UNBOUNDED:
-            if self.seconds != 0 or self.nanoseconds != 0:
+            if seconds != 0 or nanoseconds != 0:
                 errors.raise_for_status(4)
-        elif (
-            _unsigned(self.seconds, 64) > 0
-            or self.seconds == 0
-        ) and 0 <= self.nanoseconds < 1_000_000_000:
+        elif nanoseconds < 1_000_000_000:
             return
         else:
             errors.raise_for_status(4)
@@ -306,21 +331,15 @@ class TransportConfig:
         _validate_transport_input(self.client_private_key)
         if not isinstance(self.trust, TrustSource):
             errors.raise_for_status(4)
-        if not isinstance(self.client_certificates, tuple):
-            try:
-                object.__setattr__(self, "client_certificates", tuple(self.client_certificates))
-            except TypeError:
-                errors.raise_for_status(4)
+        client_certificates = _bounded_transport_inputs(self.client_certificates)
+        object.__setattr__(self, "client_certificates", client_certificates)
         if not self.client_certificates or any(
             not isinstance(item, TransportInput) for item in self.client_certificates
         ):
             errors.raise_for_status(4)
         _validate_transport_input_group(self.client_certificates)
-        if not isinstance(self.revocation_lists, tuple):
-            try:
-                object.__setattr__(self, "revocation_lists", tuple(self.revocation_lists))
-            except TypeError:
-                errors.raise_for_status(4)
+        revocation_lists = _bounded_transport_inputs(self.revocation_lists)
+        object.__setattr__(self, "revocation_lists", revocation_lists)
         if any(not isinstance(item, TransportInput) for item in self.revocation_lists):
             errors.raise_for_status(4)
         _validate_transport_input_group(self.revocation_lists)
@@ -770,21 +789,6 @@ def _nonempty_text(value: str) -> str:
     if len(encoded) > _MAX_TEXT_BYTES:
         errors.raise_for_status(6)
     return value
-
-
-def _integer_range(value: int, minimum: int, maximum: int) -> int:
-    if not isinstance(value, int) or isinstance(value, bool):
-        errors.raise_for_status(4)
-    if value < minimum or value > maximum:
-        errors.raise_for_status(4)
-    return value
-
-
-def _unsigned(value: int, bits: int, *, allow_zero: bool = True) -> int:
-    number = _integer_range(value, 0, (1 << bits) - 1)
-    if not allow_zero and number == 0:
-        errors.raise_for_status(4)
-    return number
 
 
 __all__ = [
