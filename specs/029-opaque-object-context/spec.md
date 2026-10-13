@@ -137,4 +137,3 @@ Every supported 1.0 language binding must expose equivalent capability and behav
 - Adding a context marker or any other field to the KMIP wire request.
 - Changing Opaque Object Custom Attribute storage/retrieval behavior assigned to KMIPKIT-0010.
 - Server-initiated operations, JSON/XML, transports, or language adapters beyond Rust, C, Java, and Python.
-
