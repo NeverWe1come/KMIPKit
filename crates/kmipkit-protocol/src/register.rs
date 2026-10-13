@@ -21,6 +21,9 @@ const CRYPTOGRAPHIC_ALGORITHM: u32 = 0x0042_0028;
 const CRYPTOGRAPHIC_LENGTH: u32 = 0x0042_002a;
 const CRYPTOGRAPHIC_USAGE_MASK: u32 = 0x0042_002c;
 const KEY_BLOCK: u32 = 0x0042_0040;
+const OPAQUE_OBJECT: u32 = 0x0042_005b;
+const OPAQUE_DATA_TYPE: u32 = 0x0042_0059;
+const OPAQUE_DATA_VALUE: u32 = 0x0042_005a;
 const SUCCESS: u32 = 0;
 
 /// A KMIP 2.1 Register request from §6.1.43, Table 291.
@@ -256,6 +259,9 @@ fn attributes_satisfy_register_requirements(
         // Certificate Length is required for a Certificate. Table 293 does
         // not apply the managed-cryptographic-object requirements to it.
         1 => has_attribute(attributes, CERTIFICATE_LENGTH),
+        // Opaque Object has its own Table 4 Structure, independent of whether
+        // the caller selects generic or managed-cryptographic context.
+        8 => opaque_object_has_required_fields(object),
         // Table 293 applies to managed cryptographic objects. Secret Data
         // still requires a Usage Mask, but Algorithm and Length do not apply.
         2 | 3 | 4 | 5 | 7 | 9 => {
@@ -277,6 +283,38 @@ fn attributes_satisfy_register_requirements(
         // not parse certificate bytes locally.
         _ => true,
     }
+}
+
+fn opaque_object_has_required_fields(object: &Item) -> bool {
+    if object.tag().raw() != OPAQUE_OBJECT {
+        return false;
+    }
+
+    object.with_value(|value| {
+        let ValueView::Structure(fields) = value else {
+            return false;
+        };
+
+        let mut has_data_type = false;
+        let mut has_data_value = false;
+        let fields_have_valid_types =
+            fields
+                .children()
+                .iter()
+                .all(|field| match field.tag().raw() {
+                    OPAQUE_DATA_TYPE => {
+                        has_data_type = true;
+                        field.with_value(|value| matches!(value, ValueView::Enumeration(_)))
+                    }
+                    OPAQUE_DATA_VALUE => {
+                        has_data_value = true;
+                        field.with_value(|value| matches!(value, ValueView::ByteString(_)))
+                    }
+                    _ => true,
+                });
+
+        fields_have_valid_types && has_data_type && has_data_value
+    })
 }
 
 fn has_attribute(attributes: &AttributeSet, raw_tag: u32) -> bool {
