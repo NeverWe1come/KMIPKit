@@ -3,7 +3,7 @@
 use kmipkit_protocol::{GetConstraintsRequest, GetConstraintsResponse};
 use kmipkit_protocol::{GetUsageAllocationRequest, GetUsageAllocationResponse};
 use kmipkit_protocol::{SetConstraintsRequest, SetConstraintsResponse};
-use kmipkit_protocol::{SetDefaultsRequest,SetDefaultsResponse};
+use kmipkit_protocol::{SetDefaultsRequest, SetDefaultsResponse};
 use std::collections::HashSet;
 use std::error::Error;
 use std::fmt;
@@ -139,7 +139,7 @@ const PROCESS_OPERATION: u32 = 0x0000_003A;
 const GET_CONSTRAINTS_OPERATION: u32 = 56; // OASIS Ãƒâ€šÃ‚Â§6.1.22.
 const GET_USAGE_ALLOCATION_OPERATION: u32 = 17; // OASIS Ã‚Â§6.1.23.
 const SET_CONSTRAINTS_OPERATION: u32 = 55; // OASIS Â§6.1.52.
-const SET_DEFAULTS_OPERATION:u32=54; // OASIS §6.1.53.
+const SET_DEFAULTS_OPERATION: u32 = 54; // OASIS §6.1.53.
 const PING_OPERATION: u32 = 0x0000_003B;
 const QUERY_OPERATION: u32 = 0x0000_0018;
 const ASYNCHRONOUS_MANDATORY: u32 = 1;
@@ -1514,7 +1514,12 @@ impl<'a> ClientResponseView<'a> {
 
     /// Returns this policy response when its operation matches.
     #[must_use]
-    pub const fn set_defaults(&self)->Option<&SetDefaultsResponse>{match self.response{ClientResponseRef::SetDefaults(response)=>Some(response),_=>None}}
+    pub const fn set_defaults(&self) -> Option<&SetDefaultsResponse> {
+        match self.response {
+            ClientResponseRef::SetDefaults(response) => Some(response),
+            _ => None,
+        }
+    }
 
     /// Returns the Ping response when this view represents it.
     #[must_use]
@@ -1616,9 +1621,10 @@ impl fmt::Debug for ClientResponseView<'_> {
             ClientResponseRef::Ping(response) => {
                 formatter.debug_tuple("Ping").field(response).finish()
             }
-            ClientResponseRef::SetDefaults(response) => {
-                formatter.debug_tuple("SetDefaults").field(response).finish()
-            }
+            ClientResponseRef::SetDefaults(response) => formatter
+                .debug_tuple("SetDefaults")
+                .field(response)
+                .finish(),
             ClientResponseRef::SetConstraints(response) => formatter
                 .debug_tuple("SetConstraints")
                 .field(response)
@@ -2147,7 +2153,10 @@ impl fmt::Debug for ClientBatchOutcome {
                 .field(response)
                 .finish(),
             Self::Ping(response) => formatter.debug_tuple("Ping").field(response).finish(),
-            Self::SetDefaults(response) => formatter.debug_tuple("SetDefaults").field(response).finish(),
+            Self::SetDefaults(response) => formatter
+                .debug_tuple("SetDefaults")
+                .field(response)
+                .finish(),
             Self::SetConstraints(response) => formatter
                 .debug_tuple("SetConstraints")
                 .field(response)
@@ -2868,9 +2877,16 @@ impl Client {
     /// Executes one explicit §6.1.53 policy operation without retry.
     /// # Errors
     /// Returns sanitized validation, protocol or transport failure with delivery evidence.
-    pub fn set_defaults(&mut self,request:SetDefaultsRequest,limits:&CodecLimits)->Result<ClientBatchItemResponse,ClientError>{
-      let response=self.execute(ClientBatch::new(ClientBatchItem::new(ClientRequest::SetDefaults(request))),limits)?;
-      take_single_response(response)
+    pub fn set_defaults(
+        &mut self,
+        request: SetDefaultsRequest,
+        limits: &CodecLimits,
+    ) -> Result<ClientBatchItemResponse, ClientError> {
+        let response = self.execute(
+            ClientBatch::new(ClientBatchItem::new(ClientRequest::SetDefaults(request))),
+            limits,
+        )?;
+        take_single_response(response)
     }
 
     /// Executes one client-to-server Ping request.
