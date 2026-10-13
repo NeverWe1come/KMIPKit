@@ -683,6 +683,24 @@ final class NativeLibraryLoaderTest {
     }
 
     @Test
+    void privateFileVerificationFailureClosesAndDeletesTheStagingFile() throws Exception {
+        Path privateDirectory = NativeLibraryLoader.createPrivateDirectory(temporaryDirectory);
+        Path staging = privateDirectory.resolve(".verification-failure.part");
+
+        IOException failure = assertThrows(IOException.class,
+                () -> NativeLibraryLoader.openNewPrivateFile(staging, privateDirectory,
+                        (file, directory) -> {
+                            assertEquals(staging, file);
+                            assertEquals(privateDirectory, directory);
+                            throw new IOException("synthetic private-file verification failure");
+                        }));
+
+        assertEquals("synthetic private-file verification failure", failure.getMessage());
+        assertFalse(Files.exists(staging));
+        assertDirectoryEmpty(privateDirectory);
+    }
+
+    @Test
     void unsupportedAtomicPublicationFailsClosedAndCleansStagingFiles() throws Exception {
         Path privateDirectory = NativeLibraryLoader.createPrivateDirectory(temporaryDirectory);
         byte[] library = {0x4b, 0x4d, 0x49, 0x50};
