@@ -684,3 +684,11 @@ Independent QA reviewed the T076 inventory and found that requiring all 31 C exp
 - **Green commit**: `2c50f7e1`.
 - **Refactor**: Added C compile-time size and field-offset assertions for the test-local carrier, making its ABI shape explicit without publishing the type.
 - **Refactor command and result**: `cargo test -p kmipkit-ffi --features coverage-c-consumer --test c_api_coverage existing_c_consumer_exercises_the_exported_abi_in_the_coverage_process -- --nocapture` — PASS: the C translation unit compiled all layout assertions and the full loopback TLS scenario passed.
+
+### T076 Windows local FFI and C-consumer verification (2026-10-13)
+
+| Command | Result |
+|---|---|
+| `cargo test -p kmipkit-ffi --all-features` | PASS: 56 unit tests and 3 integration tests; the integration suite compiled and ran `blocked_client_abi_local_prototype_consumer_compiles_and_runs` and `existing_c_consumer_exercises_the_exported_abi_in_the_coverage_process`. |
+
+This is local execution evidence for the T076 ABI behavior and its test-local C consumer. The build emitted AWS-LC compiler-feature/NASM warnings and linker import warnings but completed successfully. The generated public header still omits T076 symbols while the four-language manifest declarations remain blocked, and remote CI has not run on this branch; keep T076 unchecked.
