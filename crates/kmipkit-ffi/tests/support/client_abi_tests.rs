@@ -1,5 +1,5 @@
 use std::fs::{self, OpenOptions};
-use std::io::{Read, Write};
+use std::io::{self, Read, Write};
 use std::net::TcpListener;
 use std::path::{Path, PathBuf};
 use std::ptr;
@@ -30,6 +30,7 @@ const INPUT_MEMORY: u32 = 1;
 const INPUT_FILE: u32 = 2;
 const ENCODING_PEM: u32 = 1;
 const ENCODING_DER: u32 = 2;
+const MAX_TEST_TTLV_BODY_BYTES: usize = 1_048_576;
 static TEMP_DIRECTORY_SEQUENCE: AtomicU64 = AtomicU64::new(0);
 
 fn byte_span(bytes: &[u8]) -> kmipkit_byte_span_v1_t {
@@ -194,17 +195,33 @@ impl Drop for TemporaryFiles {
 }
 
 fn create_private_test_directory() -> std::io::Result<PathBuf> {
+    #[cfg(windows)]
+    let parent = std::env::var_os("LOCALAPPDATA")
+        .map(PathBuf::from)
+        .ok_or_else(|| io::Error::other("LOCALAPPDATA is required for private test files"))?;
+    #[cfg(not(windows))]
+    let parent = std::env::temp_dir();
+
     for _ in 0..128 {
         let sequence = TEMP_DIRECTORY_SEQUENCE.fetch_add(1, Ordering::Relaxed);
         let nonce = std::time::SystemTime::now()
             .duration_since(std::time::UNIX_EPOCH)
             .unwrap_or_default()
             .as_nanos();
-        let path = std::env::temp_dir().join(format!(
+        let path = parent.join(format!(
             "kmipkit-ffi-client-{}-{nonce}-{sequence}",
             std::process::id()
         ));
-        match fs::create_dir(&path) {
+        #[cfg(unix)]
+        let builder = {
+            use std::os::unix::fs::DirBuilderExt;
+            let mut builder = fs::DirBuilder::new();
+            builder.mode(0o700);
+            builder
+        };
+        #[cfg(not(unix))]
+        let builder = fs::DirBuilder::new();
+        match builder.create(&path) {
             Ok(()) => return Ok(path),
             Err(error) if error.kind() == std::io::ErrorKind::AlreadyExists => {}
             Err(error) => return Err(error),
@@ -314,16 +331,31 @@ fn tls13_mtls_server_config(pki: &EphemeralPki) -> Arc<ServerConfig> {
     )
 }
 
-fn receive_ttlv_frame(stream: &mut impl Read) {
+fn receive_ttlv_frame(stream: &mut impl Read) -> io::Result<()> {
     let mut header = [0_u8; 8];
-    stream
-        .read_exact(&mut header)
-        .expect("the typed Locate request header arrives");
+    stream.read_exact(&mut header)?;
     let length = u32::from_be_bytes([header[4], header[5], header[6], header[7]]) as usize;
-    let mut body = vec![0; length.div_ceil(8) * 8];
-    stream
-        .read_exact(&mut body)
-        .expect("the typed Locate request body arrives");
+    if length > MAX_TEST_TTLV_BODY_BYTES {
+        return Err(io::Error::new(
+            io::ErrorKind::InvalidData,
+            "test peer refused an oversized TTLV body",
+        ));
+    }
+    let padded_length = length
+        .checked_add(7)
+        .map(|padded| padded / 8 * 8)
+        .ok_or_else(|| io::Error::new(io::ErrorKind::InvalidData, "TTLV padding overflow"))?;
+    let mut body = vec![0; padded_length];
+    stream.read_exact(&mut body)?;
+    Ok(())
+}
+
+#[test]
+fn test_peer_rejects_oversized_request_before_body_allocation() {
+    let mut stream = std::io::Cursor::new([0_u8, 0, 0, 0, 0xff, 0xff, 0xff, 0xff]);
+    let error = receive_ttlv_frame(&mut stream).expect_err("oversized TTLV body is rejected");
+    assert_eq!(error.kind(), io::ErrorKind::InvalidData);
+    assert_eq!(stream.position(), 8, "the body was not read");
 }
 
 fn pending_locate_result(async_requested: bool) -> Result<ClientBatchResponse, ClientError> {
@@ -349,7 +381,7 @@ fn pending_locate_result(async_requested: bool) -> Result<ClientBatchResponse, C
             .expect("peer write timeout is set");
         let connection = ServerConnection::new(server_config).expect("TLS 1.3 connection builds");
         let mut tls = StreamOwned::new(connection, stream);
-        receive_ttlv_frame(&mut tls);
+        receive_ttlv_frame(&mut tls).expect("the typed Locate request frame is bounded");
         tls.write_all(&response)
             .expect("Pending response is written");
         tls.flush().expect("Pending response is flushed");

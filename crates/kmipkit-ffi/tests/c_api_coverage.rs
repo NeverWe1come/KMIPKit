@@ -193,17 +193,33 @@ impl Drop for TemporaryCredentialFiles {
 }
 
 fn create_private_test_directory(prefix: &str) -> io::Result<PathBuf> {
+    #[cfg(windows)]
+    let parent = std::env::var_os("LOCALAPPDATA")
+        .map(PathBuf::from)
+        .ok_or_else(|| io::Error::other("LOCALAPPDATA is required for private test files"))?;
+    #[cfg(not(windows))]
+    let parent = std::env::temp_dir();
+
     for _ in 0..128 {
         let sequence = TEMP_DIRECTORY_SEQUENCE.fetch_add(1, Ordering::Relaxed);
         let nonce = std::time::SystemTime::now()
             .duration_since(std::time::UNIX_EPOCH)
             .unwrap_or_default()
             .as_nanos();
-        let path = std::env::temp_dir().join(format!(
+        let path = parent.join(format!(
             "{prefix}-{}-{nonce}-{sequence}",
             std::process::id()
         ));
-        match fs::create_dir(&path) {
+        #[cfg(unix)]
+        let builder = {
+            use std::os::unix::fs::DirBuilderExt;
+            let mut builder = fs::DirBuilder::new();
+            builder.mode(0o700);
+            builder
+        };
+        #[cfg(not(unix))]
+        let builder = fs::DirBuilder::new();
+        match builder.create(&path) {
             Ok(()) => return Ok(path),
             Err(error) if error.kind() == io::ErrorKind::AlreadyExists => {}
             Err(error) => return Err(error),
