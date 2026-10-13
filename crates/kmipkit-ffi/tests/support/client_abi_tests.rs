@@ -1045,7 +1045,8 @@ fn private_key_file_reader_zeroizes_partial_error_and_over_bound_bytes() {
         64,
         partial_observer.clone(),
     )
-    .expect_err("the reader reports its scripted I/O failure");
+    .err()
+    .expect("the reader reports its scripted I/O failure");
     assert_eq!(partial_error, ERROR_INVALID_INPUT);
     assert!(partial_observer.initialized_bytes_were_zeroized());
 
@@ -1055,7 +1056,8 @@ fn private_key_file_reader_zeroizes_partial_error_and_over_bound_bytes() {
         4,
         oversized_observer.clone(),
     )
-    .expect_err("one byte over the local cap is rejected");
+    .err()
+    .expect("one byte over the local cap is rejected");
     assert_eq!(oversized_error, ERROR_RESOURCE_LIMIT);
     assert!(oversized_observer.initialized_bytes_were_zeroized());
 }
