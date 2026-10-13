@@ -526,3 +526,11 @@ The full matrix for head `3c87f385` passed the language, platform, Java/Python c
 | Refactor | `8d54533c` | Clarified the exclusion rationale without changing behavior. |
 | Local verification and QA | `8d54533c` | Coverage-gate tests — PASS, 55 tests and three Windows symlink-permission skips; multilanguage coverage tests — PASS, 23 tests; `coverage_gate.py preflight --workspace .` — PASS. Independent QA found no blockers. |
 | Remote CI | Pending | The correction is local and awaits a fresh run on the pushed PR head. Keep T074 open until the final required matrix, including the aggregate coverage gate, passes. |
+
+## T076 shared client ABI public-header continuation (2026-10-13)
+
+- **Scope**: Promote the already implemented shared client, transport configuration, ordered batch, and common response ABI into reviewed four-language manifest declarations and the generated public C header. Add an external-style C consumer that compiles only against `bindings/c/include/kmipkit.h`; operation-specific builders and typed payload access remain separately gated by T031–T069.
+- **Red**: Added a generator regression requiring the generated public header to include the mapped client handle, transport constructor, and client execution entrypoint. Added a compiled C consumer for the public client and ordered-batch entrypoints. The generator regression fails on the release manifest because those observed T076 C symbols remain blocked and absent from the public header.
+- **Command**: `$env:PYTHONPATH = 'tools/api_manifest/tests'; uv run --with-requirements tools/api_manifest/requirements-test.txt python -m unittest test_generate.ManifestGeneratorCliTests.test_public_header_includes_shared_client_abi_after_binding_mapping -v`
+- **Result**: Expected Red: `FAILED (failures=1)` with `the public C header omits the mapped client handle`. C compilation is assigned to the repository's C consumer CI matrix because this Windows host has no C compiler or CMake on `PATH`.
+- **Commit**: Red test commit pending.

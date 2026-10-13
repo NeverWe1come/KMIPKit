@@ -249,6 +249,24 @@ class ManifestGeneratorCliTests(unittest.TestCase):
         self.assertIn("kmipkit_ttlv_item_create", private_header)
         self.assertNotIn("kmipkit_ttlv_item_create", public_header)
 
+    def test_public_header_includes_shared_client_abi_after_binding_mapping(self) -> None:
+        manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
+        outputs = generate.render_outputs(manifest)
+        public_header = outputs["bindings/c/include/kmipkit.h"].decode("utf-8")
+
+        self.assertTrue(
+            "typedef struct kmipkit_client_t kmipkit_client_t;" in public_header,
+            "the public C header omits the mapped client handle",
+        )
+        self.assertTrue(
+            "kmipkit_transport_config_create_v1" in public_header,
+            "the public C header omits the mapped transport constructor",
+        )
+        self.assertTrue(
+            "kmipkit_client_execute" in public_header,
+            "the public C header omits the mapped client execution entrypoint",
+        )
+
     def test_generated_rust_metadata_lists_only_unblocked_c_mapped_capabilities(self) -> None:
         manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
         outputs = generate.render_outputs(manifest)
