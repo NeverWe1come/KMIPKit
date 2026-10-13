@@ -16458,6 +16458,53 @@ class CatalogValidationTests(unittest.TestCase):
         )
         self.assertIn(verification_ref, requirement["verification_refs"])
 
+    def test_type_applicable_domain_parameter_evidence_has_a_bounded_typed_rule(self) -> None:
+        """The §4.14 optional mapping covers only the tested DSA Qlength representation."""
+        requirement_id = "KMIPKIT-REQ-SPEC-4.14-001-002"
+        expected_tests = {
+            "crates/kmipkit-protocol/tests/support/profile_unit.rs::"
+            "profile_maps_client_type_applicable_dsa_q_length_domain_parameter",
+            "crates/kmipkit-client/tests/unit/create_key_pair_execution_tests.rs::"
+            "create_key_pair_sends_client_supplied_dsa_domain_parameter_qlength",
+        }
+        expected_implementations = {
+            "crates/kmipkit-protocol/src/profile.rs::"
+            "client_supplied_create_key_pair_domain_parameters_are_structures",
+            "crates/kmipkit-protocol/src/create_key_pair.rs::"
+            "CreateKeyPairRequest::with_common_attributes",
+            "crates/kmipkit-protocol/src/create_key_pair.rs::"
+            "CreateKeyPairRequest::into_ttlv_payload",
+            "crates/kmipkit-client/src/execute.rs::ClientRequest::payload",
+        }
+        catalog = json.loads(
+            (ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8")
+        )
+        requirement = next(
+            row for row in catalog["requirements"] if row["requirement_id"] == requirement_id
+        )
+        mappings = [
+            mapping
+            for mapping in load_typed_rule_mappings(ROOT)
+            if mapping["requirement_id"] == requirement_id
+        ]
+
+        self.assertEqual({mapping["test_id"] for mapping in mappings}, expected_tests)
+        self.assertTrue(
+            all(
+                mapping["source_clause_id"] == "KMIPKIT-CLAUSE-SPEC-4.14-001"
+                and mapping["verification_category"] == "OptionalCapability"
+                and mapping["evaluator_present"] is True
+                and mapping["test_kind"] == "OptionalCapabilityUsable"
+                for mapping in mappings
+            )
+        )
+        self.assertEqual(set(requirement["implementation_refs"]), expected_implementations)
+        self.assertEqual(set(requirement["verification_refs"]), expected_tests)
+        self.assertEqual(requirement["direction"], "client_to_server")
+        self.assertEqual(requirement["status"], "scoped_verified")
+        self.assertIn("DSA Qlength", requirement["review_note"])
+        self.assertIn("not an exhaustive", requirement["review_note"])
+
     def test_get_key_compression_request_has_scoped_implementation_and_positive_test_evidence(
         self,
     ) -> None:

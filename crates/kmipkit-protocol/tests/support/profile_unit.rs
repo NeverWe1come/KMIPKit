@@ -925,6 +925,87 @@ fn profile_maps_client_supplied_create_key_pair_domain_parameters() {
 }
 
 #[test]
+fn profile_maps_client_type_applicable_dsa_q_length_domain_parameter() {
+    // KMIP Specification v2.1 §4.14 and Tables 55–56; §11.12, Table 443.
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-4.14-001-002";
+    const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
+    const CREATE_KEY_PAIR_OPERATION: u32 = 0x0000_0002;
+    const COMMON_ATTRIBUTES: u32 = 0x0042_0126;
+    const CRYPTOGRAPHIC_ALGORITHM: u32 = 0x0042_0028;
+    const CRYPTOGRAPHIC_DOMAIN_PARAMETERS: u32 = 0x0042_0029;
+    const QLENGTH: u32 = 0x0042_0073;
+
+    let mapping = TYPED_RULE_MAPPINGS
+        .iter()
+        .find(|mapping| mapping.requirement_id == REQUIREMENT_ID)
+        .expect("type-applicable domain parameters have an explicit production rule");
+    let requirement = CLIENT_REQUIREMENTS
+        .iter()
+        .find(|requirement| requirement.requirement_id == REQUIREMENT_ID)
+        .expect("the type-applicable field resolves to generated normative metadata");
+    validate_mapping(BASELINE_PROFILE_ID, requirement, mapping)
+        .expect("the typed rule links this requirement to its optional-capability evidence");
+
+    let result = ProfileValidationResult {
+        profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
+        requirement_ids: vec![REQUIREMENT_ID.to_owned()],
+    };
+    let parameters = structure([tagged(QLENGTH, Value::integer(256))]);
+    let common_attributes = structure([
+        // KMIP Specification v2.1 §11.12, Table 443: DSA is enumeration 5.
+        tagged(CRYPTOGRAPHIC_ALGORITHM, Value::enumeration(5)),
+        tagged(
+            CRYPTOGRAPHIC_DOMAIN_PARAMETERS,
+            Value::structure(parameters),
+        ),
+    ]);
+    let request = request_message_with_operation_payload(
+        CREATE_KEY_PAIR_OPERATION,
+        structure([tagged(
+            COMMON_ATTRIBUTES,
+            Value::structure(common_attributes),
+        )]),
+    );
+    result
+        .validate_request(&request)
+        .expect("the caller-selected DSA Qlength Integer is usable in Create Key Pair");
+
+    let omitted = request_message_with_operation_payload(
+        CREATE_KEY_PAIR_OPERATION,
+        Structure::new(),
+    );
+    result
+        .validate_request(&omitted)
+        .expect("the client may omit the optional domain-parameter field");
+
+    let malformed_parameters =
+        structure([tagged(QLENGTH, Value::text_string("256".to_owned()))]);
+    let malformed_attributes = structure([
+        tagged(CRYPTOGRAPHIC_ALGORITHM, Value::enumeration(5)),
+        tagged(
+            CRYPTOGRAPHIC_DOMAIN_PARAMETERS,
+            Value::structure(malformed_parameters),
+        ),
+    ]);
+    let malformed = request_message_with_operation_payload(
+        CREATE_KEY_PAIR_OPERATION,
+        structure([tagged(
+            COMMON_ATTRIBUTES,
+            Value::structure(malformed_attributes),
+        )]),
+    );
+    let error = result
+        .validate_request(&malformed)
+        .expect_err("Table 55 encodes Qlength as an Integer");
+    assert_eq!(error.code(), ProfileValidationErrorCode::RequestRuleRejected);
+    assert_eq!(error.requirement_id(), Some(REQUIREMENT_ID));
+    assert_eq!(
+        error.source_clause_id(),
+        Some("KMIPKIT-CLAUSE-SPEC-4.14-001")
+    );
+}
+
+#[test]
 fn profile_rejects_non_integer_q_length_in_client_supplied_domain_parameters() {
     // KMIP Specification v2.1 §4.14, Table 55; KMIPKIT-REQ-SPEC-4.14-001-001.
     const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-4.14-001-001";
