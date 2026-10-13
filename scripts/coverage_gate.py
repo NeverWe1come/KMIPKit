@@ -52,6 +52,14 @@ class SourceScanResult:
         self.complete = complete
 
 
+_JAVA_METADATA_ONLY_SOURCE_EXCLUSIONS = frozenset(
+    {
+        "bindings/java/src/main/java/org/kmipkit/generated/ExtensionRegistryApi.java",
+        "bindings/java/src/main/java/org/kmipkit/generated/PublicApi.java",
+    }
+)
+
+
 def _mask_rust_non_code(source: str) -> str:
     """Replace comments and literals with spaces while preserving newlines."""
     output = list(source)
@@ -208,6 +216,8 @@ def _is_rust_source_tree_path(path: str | Path) -> bool:
 def is_coverage_source_path(path: str | Path) -> bool:
     """Return whether a relative path names an audited production source file."""
     normalized = str(path).replace("\\", "/").lstrip("./")
+    if normalized in _JAVA_METADATA_ONLY_SOURCE_EXCLUSIONS:
+        return False
     if _is_rust_source_tree_path(normalized):
         return True
     parts = PurePosixPath(normalized).parts
@@ -225,7 +235,7 @@ def is_coverage_source_path(path: str | Path) -> bool:
 
 
 def scan_adapter_sources(workspace_root: str | Path) -> dict[str, set[str]]:
-    """List handwritten and generated product adapter sources, excluding consumers."""
+    """List executable product adapter sources, excluding consumers and metadata-only output."""
     root = Path(workspace_root).resolve()
     scopes = {
         "Java adapters": root / "bindings/java/src/main/java/org/kmipkit",
@@ -785,7 +795,10 @@ def parse_jacoco_report(document: str | bytes, workspace_root: str | Path) -> di
             source_name = source_file.get("name")
             if not isinstance(source_name, str) or Path(source_name).name != source_name:
                 raise CoverageDataError("JaCoCo sourcefile has an invalid name.")
-            source = _coverage_report_source(source_root.joinpath(*package_path.parts, source_name), root, "JaCoCo")
+            source_path = source_root.joinpath(*package_path.parts, source_name)
+            if source_path.relative_to(root).as_posix() in _JAVA_METADATA_ONLY_SOURCE_EXCLUSIONS:
+                continue
+            source = _coverage_report_source(source_path, root, "JaCoCo")
             if source in report:
                 raise CoverageDataError(f"JaCoCo report repeats source file: {source}.")
             lines: dict[int, int] = {}
