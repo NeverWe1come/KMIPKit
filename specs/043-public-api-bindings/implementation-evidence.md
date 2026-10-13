@@ -493,3 +493,24 @@ QA reproduced that an `int` subclass could override range comparisons so an out-
 | Local verification | `20c7ef51` | Python 3.12 binding suite with coverage — PASS, 126 tests, 98.16% package coverage; `git diff --check` — PASS. |
 
 The prior remote run `38364373798` at head `2cc478f4` failed Java JaCoCo on Linux at 84% against the required 85% threshold; Java tests themselves had zero failures. JNI coverage also stopped in the same Java Maven verification step. Added portable public-API boundary tests for Java transport timeout, endpoint, mutual-TLS, material-count, and path validation in `677aef81`. Full local Maven `clean verify` then passed 101 tests with zero failures/errors and three platform skips; JaCoCo reported 1,147/1,278 lines (89.75%). This update is local evidence only; the follow-up remote matrix is pending, so T076 and T074 remain unchecked.
+
+### T076 continuation — pre-copy limits and facade revalidation
+
+The Java transport builder now checks individual and aggregate memory/file-path input limits before cloning arrays or UTF-8 encoding paths. Replacement setters subtract the replaced group's prior size before calculating the projected aggregate. The Python `Client.create` boundary now rebuilds transport records through validated base dataclasses immediately before serialization and the FFI call, preventing subclasses from overriding `__post_init__` to bypass endpoint, trust, input, or timeout validation. The Java limit is a local resource guard; it does not create a KMIP requirement.
+
+| Language / phase | Commit(s) | Evidence |
+|---|---|---|
+| Python Red | `04ff015e` | An adversarial `TransportConfig`/`Endpoint` subclass reached the fake FFI with endpoint length 0 and port 0. The regression failed because FFI was called instead of rejecting the configuration. |
+| Python Green | `11aff8ed` | Rebuilt the full transport configuration from base dataclass slots at `Client.create` before record construction and FFI. The adversarial configuration is rejected before the FFI spy is called. |
+| Python Refactor | `857e8d4b` | Clarified the snapshot and base-slot invariant without changing behavior. |
+| Python QA and verification | `857e8d4b` | Independent QA found no residual subclass bypass. Python 3.12 suite — PASS, 128 tests; package coverage 97.34%, `client.py` 95%; focused facade review — PASS, 65 tests. |
+| Java Red | `8e50df3d` | New boundary tests failed as expected for an oversized individual input, aggregate certificate/key/trust/revocation input, and aggregate file-path input before the production fix. |
+| Java Green | `355bc7df` | Preflighted memory sizes and UTF-8 path lengths before copying/encoding, including aggregate replacement accounting. The focused boundary suite passed. |
+| Java Refactor | `f1ff525d` | Named the shared local material/path bounds; behavior unchanged. |
+| Java coverage tests | `f0210552` | Added valid file identity/trust, replacement, blank/oversized path, and multibyte/supplementary UTF-8 boundary cases. |
+| Java local verification | `ccb8c838` | `mvn --batch-mode --file bindings/java/pom.xml clean verify` — PASS, 110 tests, zero failures/errors, three skips; JaCoCo gates passed. `TransportConfiguration.java`: 255/263 lines (96.96%); Java bundle: 1,226/1,349 lines (90.88%). |
+| Java text-limit Red | `0e2398bd` | Added a child-JVM regression under `-Xmx48m` with a 24,000,000-character TLS server name. The prior implementation reproducibly exited with `encoding-allocation-failed` twice while the test expected a resource-limit result. |
+| Java text-limit Green | `820b4d66` | Changed `validateText()` to use the bounded UTF-8 length counter before any encoded copy; preserved the null handling and inclusive 4,096-byte limit. |
+| Java text-limit Refactor | `ccb8c838` | Clarified heap headroom accounting and added coverage for UTF-8 replacement of an isolated surrogate. The focused transport boundary class passed 12 tests. |
+| Final QA | `ccb8c838` | Independent review found no blockers across Java pre-copy limits, Python FFI-boundary snapshots, UTF-8 sizing, and the bounded-heap probe. All Red/Green/Refactor commits carry the authorized DCO sign-off. |
+| Remote CI | Pending | These commits are not yet on the PR head. T076 and T074 remain open until the complete required matrix passes on the final pushed head. |
