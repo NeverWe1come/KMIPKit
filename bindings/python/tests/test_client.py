@@ -1217,6 +1217,54 @@ def test_transport_path_uses_base_utf8_encoding_for_subclasses() -> None:
         client.TransportInput(path, client.CredentialEncoding.PEM)
 
 
+def test_transport_input_snapshots_a_dynamic_bytes_subclass_buffer() -> None:
+    class ChangingBuffer(bytes):
+        def __new__(cls) -> ChangingBuffer:
+            value = super().__new__(cls, b"underlying")
+            value.buffer_reads = 0
+            return value
+
+        def __buffer__(self, _flags: int) -> memoryview:
+            self.buffer_reads += 1
+            data = b"trusted" if self.buffer_reads == 1 else b"attacker-expanded"
+            return memoryview(data)
+
+    dynamic = ChangingBuffer()
+    item = client.TransportInput(dynamic, client.CredentialEncoding.PEM)
+
+    assert type(item.source) is bytes
+    assert item.source == b"trusted"
+    assert dynamic.buffer_reads == 1
+
+    configuration = _transport_configuration(client_private_key=item)
+    record, _owners = client._transport_record(configuration)
+    span = record.client_private_key.data
+    assert span.length == 7
+    assert client.ffi.buffer(span.data, span.length)[:] == b"trusted"
+
+
+def test_transport_input_snapshots_path_text_before_marshalling() -> None:
+    concrete_path = type(Path("ignored"))
+
+    class ChangingPath(concrete_path):
+        calls = 0
+
+        def __str__(self) -> str:
+            type(self).calls += 1
+            return "safe.pem" if type(self).calls == 1 else "bad\x00path"
+
+    ChangingPath.calls = 0
+    item = client.TransportInput(ChangingPath("ignored"), client.CredentialEncoding.PEM)
+
+    assert type(item.source) is type(Path("safe.pem"))
+    assert str(item.source) == "safe.pem"
+
+    configuration = _transport_configuration(client_private_key=item)
+    record, _owners = client._transport_record(configuration)
+    span = record.client_private_key.data
+    assert client.ffi.buffer(span.data, span.length)[:] == b"safe.pem"
+
+
 def test_private_python_client_loader_redacts_native_path_failure(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
