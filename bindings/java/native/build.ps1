@@ -10,6 +10,7 @@ $nativeOutput = Join-Path $PSScriptRoot '..\target\native'
 $rustLibrary = Join-Path $repositoryRoot 'target\debug\kmipkit_ffi.lib'
 $jniSource = Join-Path $PSScriptRoot 'kmipkit_jni.cpp'
 $zeroizingTestSource = Join-Path $PSScriptRoot 'tests\zeroizing_bytes_test.cpp'
+$clientBatchItemTransferTestSource = Join-Path $PSScriptRoot 'tests\client_batch_item_transfer_test.cpp'
 $cHeader = Join-Path $repositoryRoot 'bindings\c\include'
 $internalHeader = Join-Path $repositoryRoot 'tests\fixtures\api\generated'
 
@@ -47,6 +48,23 @@ if ($LASTEXITCODE -ne 0) {
 & $zeroizingTestExecutable
 if ($LASTEXITCODE -ne 0) {
     throw "JNI scratch zeroization test failed with exit code $LASTEXITCODE."
+}
+
+$clientBatchItemTransferTestObject = Join-Path $nativeOutput 'client_batch_item_transfer_test.obj'
+$clientBatchItemTransferTestExecutable = Join-Path $nativeOutput 'client_batch_item_transfer_test.exe'
+$clientBatchItemTransferTestCompiler = 'cl.exe /nologo /std:c++17 /EHsc /MD'
+$clientBatchItemTransferTestCompiler += ' /Fo' + '"' + $clientBatchItemTransferTestObject + '"'
+$clientBatchItemTransferTestCompiler += ' ' + '"' + $clientBatchItemTransferTestSource + '"'
+$clientBatchItemTransferTestCompiler += ' /Fe:' + '"' + $clientBatchItemTransferTestExecutable + '"'
+$clientBatchItemTransferTestCommand = 'call "' + $devCommand + '" -no_logo -arch=x64 -host_arch=x64 && '
+$clientBatchItemTransferTestCommand += $clientBatchItemTransferTestCompiler
+& $env:ComSpec /d /s /c $clientBatchItemTransferTestCommand
+if ($LASTEXITCODE -ne 0) {
+    throw "JNI client batch item transfer test compile failed with exit code $LASTEXITCODE."
+}
+& $clientBatchItemTransferTestExecutable
+if ($LASTEXITCODE -ne 0) {
+    throw "JNI client batch item transfer test failed with exit code $LASTEXITCODE."
 }
 
 $jniInclude = Join-Path $javaHome 'include'

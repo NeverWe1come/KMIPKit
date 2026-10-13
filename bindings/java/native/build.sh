@@ -28,6 +28,11 @@ zeroizing_bytes_test="$native_output/zeroizing_bytes_test"
     "$script_dir/tests/zeroizing_bytes_test.cpp" -o "$zeroizing_bytes_test"
 "$zeroizing_bytes_test"
 
+client_batch_item_transfer_test="$native_output/client_batch_item_transfer_test"
+"${CXX:-c++}" -std=c++17 -Wall -Wextra -Werror \
+    "$script_dir/tests/client_batch_item_transfer_test.cpp" -o "$client_batch_item_transfer_test"
+"$client_batch_item_transfer_test"
+
 cargo build --locked -p kmipkit-ffi --manifest-path "$repository_root/Cargo.toml"
 
 case "$(uname -s)" in
