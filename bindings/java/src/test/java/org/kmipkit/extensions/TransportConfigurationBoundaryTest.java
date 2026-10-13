@@ -5,9 +5,11 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.nio.file.Path;
+import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.Test;
 import org.kmipkit.InvalidInputException;
 import org.kmipkit.ResourceLimitException;
@@ -170,6 +172,46 @@ final class TransportConfigurationBoundaryTest {
         assertThrows(ResourceLimitException.class,
                 () -> builder.trustCertificateFiles(
                         List.of(Path.of("a".repeat(4_097))), TransportConfiguration.Encoding.PEM));
+    }
+
+    @Test
+    void enforcesTextLimitsByUtf8BytesForTlsNamesUrisAndEndpoints() {
+        TransportConfiguration.Builder builder = TransportConfiguration.builder();
+
+        assertDoesNotThrow(() -> builder.tlsServerName("é".repeat(2_048)));
+        assertThrows(ResourceLimitException.class,
+                () -> builder.tlsServerName("é".repeat(2_049)));
+        assertDoesNotThrow(() -> builder.targetUri("三".repeat(1_365) + "a"));
+        assertThrows(ResourceLimitException.class,
+                () -> builder.targetUri("三".repeat(1_365) + "ab"));
+        assertDoesNotThrow(() -> builder.tlsServerName("🔐".repeat(1_024)));
+        assertThrows(ResourceLimitException.class,
+                () -> builder.tlsServerName("🔐".repeat(1_025)));
+
+        TransportConfiguration.Builder oversizedEndpoint = TransportConfiguration.builder()
+                .rawTls("é".repeat(2_049), 5696)
+                .clientIdentityPem(new byte[][] {{1}}, new byte[] {2})
+                .trustPlatform();
+        assertThrows(ResourceLimitException.class, oversizedEndpoint::build);
+    }
+
+    @Test
+    void rejectsVeryLargeTextBeforeAllocatingAnEncodedCopy() throws Exception {
+        String javaExecutable = Path.of(System.getProperty("java.home"), "bin", "java").toString();
+        String classpath = System.getProperty("surefire.test.class.path", System.getProperty("java.class.path"));
+        Process process = new ProcessBuilder(javaExecutable, "-Xmx48m", "-cp", classpath,
+                TransportConfigurationTextLimitProbe.class.getName(), "24000000")
+                .redirectErrorStream(true)
+                .start();
+
+        if (!process.waitFor(30, TimeUnit.SECONDS)) {
+            process.destroyForcibly();
+            throw new AssertionError("bounded-heap text-limit probe did not finish");
+        }
+
+        String output = new String(process.getInputStream().readAllBytes(), StandardCharsets.UTF_8).trim();
+        assertEquals(0, process.exitValue(), output);
+        assertEquals("resource-limit", output);
     }
 
     @Test
