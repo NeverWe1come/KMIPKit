@@ -445,6 +445,78 @@ fn production_discover_versions_rule_accepts_only_kmip_21_offers() {
 }
 
 #[test]
+fn profile_maps_client_get_key_compression_type_selector() {
+    // KMIP Specification v2.1 §3.1 permits Key Compression Type in a Key Block;
+    // §6.1.19 Table 220 exposes the caller-selected Get request field.
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-3.1-001";
+    const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
+    const GET_OPERATION: u32 = 0x0000_000A;
+    const KEY_COMPRESSION_TYPE_TAG: u32 = 0x0042_0041;
+
+    let mapping = TYPED_RULE_MAPPINGS
+        .iter()
+        .find(|mapping| mapping.requirement_id == REQUIREMENT_ID)
+        .expect("Key Compression Type has an explicit production profile rule");
+    let requirement = CLIENT_REQUIREMENTS
+        .iter()
+        .find(|requirement| requirement.requirement_id == REQUIREMENT_ID)
+        .expect("Key Compression Type resolves to generated normative metadata");
+    validate_mapping(BASELINE_PROFILE_ID, requirement, mapping)
+        .expect("the rule is linked to this capability and its positive test");
+
+    let result = ProfileValidationResult {
+        profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
+        requirement_ids: vec![REQUIREMENT_ID.to_owned()],
+    };
+    let selected_compression = request_message_with_operation_payload(
+        GET_OPERATION,
+        crate::GetRequest::new()
+            .with_unique_identifier(crate::UniqueIdentifier::TextString(
+                "ec-key-id".to_owned(),
+            ))
+            .with_key_compression_type(crate::KeyCompressionType::from_raw(1))
+            .to_ttlv_payload()
+            .expect("the typed Get request encodes the caller-selected value"),
+    );
+    result
+        .validate_request(&selected_compression)
+        .expect("the selected client profile permits an explicit compression selector");
+
+    let omitted_optional_selector = request_message_with_operation_payload(
+        GET_OPERATION,
+        crate::GetRequest::new()
+            .with_unique_identifier(crate::UniqueIdentifier::TextString(
+                "ec-key-id".to_owned(),
+            ))
+            .to_ttlv_payload()
+            .expect("the optional compression selector remains absent by default"),
+    );
+    result
+        .validate_request(&omitted_optional_selector)
+        .expect("profile validation does not synthesize or require this optional selector");
+
+    let malformed_selector = request_message_with_operation_payload(
+        GET_OPERATION,
+        structure([
+            tagged(
+                0x0042_0094,
+                Value::text_string("ec-key-id".to_owned()),
+            ),
+            tagged(
+                KEY_COMPRESSION_TYPE_TAG,
+                Value::text_string("compressed".to_owned()),
+            ),
+        ]),
+    );
+    assert!(result.validate_request(&malformed_selector).is_err());
+
+    let unrelated_operation = request_message_with_operation_payload(0x0000_0001, Structure::new());
+    result
+        .validate_request(&unrelated_operation)
+        .expect("the Get-only selector rule leaves other operations unchanged");
+}
+
+#[test]
 fn profile_allows_type_specific_cryptographic_parameters_without_remote_object_inference() {
     const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-4.16-001-002";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
