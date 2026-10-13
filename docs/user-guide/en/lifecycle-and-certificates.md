@@ -239,6 +239,86 @@ fn register_certificate(
 fn main() { let _example = register_certificate; }
 ```
 
+### Registering an Opaque Object
+
+An Opaque Object is sent as the standard Opaque Object `Structure`. Its required
+`Opaque Data Type` is an Enumeration and its required `Opaque Data Value` is a
+Byte String. KMIPKit preserves unknown Enumeration values and child items; it
+does not inspect or interpret the data bytes.
+
+With no context selector, Register uses generic opaque handling. This keeps
+non-cryptographic Opaque Objects free of cryptographic attribute requirements.
+The caller may also select `OpaqueObjectContext::Generic` explicitly. To treat
+the object as managed cryptographic material for Register, select
+`ManagedCryptographicObject`; supply direct `Cryptographic Usage Mask`,
+`Cryptographic Algorithm`, and `Cryptographic Length` attributes. Algorithm
+and Length must appear together. The Opaque Object has no Key Block, so its
+opaque bytes are never used to infer those attributes.
+
+```rust,kmipkit-test
+use std::error::Error;
+
+use kmipkit_protocol::{AttributeSet, ObjectType, OpaqueObjectContext, RegisterRequest};
+use kmipkit_ttlv::{Item, RawTag, Structure, Value};
+
+fn tagged_item(tag: u32, value: Value) -> Result<Item, Box<dyn Error>> {
+    let tag = RawTag::new(tag)?.try_checked()?;
+    Ok(Item::new(tag, value)?)
+}
+
+fn opaque_object() -> Result<Item, Box<dyn Error>> {
+    let mut opaque = Structure::new();
+    opaque.try_push(tagged_item(0x0042_0059, Value::enumeration(1))?)?;
+    opaque.try_push(tagged_item(
+        0x0042_005a,
+        Value::byte_string(vec![0x01, 0x02]),
+    )?)?;
+    tagged_item(0x0042_005b, Value::structure(opaque))
+}
+
+fn generic_request() -> Result<RegisterRequest, Box<dyn Error>> {
+    Ok(RegisterRequest::new(
+        ObjectType::from_raw(8),
+        AttributeSet::new(),
+        opaque_object()?,
+    ))
+}
+
+fn managed_request() -> Result<RegisterRequest, Box<dyn Error>> {
+    let attributes = AttributeSet::try_new([
+        tagged_item(0x0042_002c, Value::integer(3))?,
+        tagged_item(0x0042_0028, Value::enumeration(3))?,
+        tagged_item(0x0042_002a, Value::integer(256))?,
+    ])?;
+    let request = RegisterRequest::new(ObjectType::from_raw(8), attributes, opaque_object()?)
+        .with_opaque_object_context(OpaqueObjectContext::ManagedCryptographicObject);
+    request.validate_local_shape()?;
+    Ok(request)
+}
+
+fn main() -> Result<(), Box<dyn Error>> {
+    let generic = generic_request()?;
+    generic.validate_local_shape()?;
+
+    let managed = managed_request()?;
+    managed.validate_local_shape()?;
+
+    println!("both Register contexts passed local validation");
+    Ok(())
+}
+```
+
+This complete example is checked in CI: [register_opaque_context.rs](../../../crates/kmipkit-protocol/examples/register_opaque_context.rs).
+
+The context selector is local metadata: it does not add a KMIP wire field or
+change the normal Register payload. Invalid local requests fail during
+preflight with delivery state `NotSent`, before the transport writes bytes.
+The server remains authoritative for accepting the object and its attributes;
+selecting this context does not authorize later cryptographic operations.
+These rules trace to OASIS KMIP 2.1 §2.3/Table 4, §6.1.43/Tables 291 and 293,
+and §11.34/Table 468 (`KMIPKIT-REQ-SPEC-2.3-002` and
+`KMIPKIT-REQ-SPEC-2.3-003`).
+
 ## Revoke
 
 Revoke sends an explicit reason. The optional message is for audit logging;
