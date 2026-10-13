@@ -572,7 +572,7 @@ def _has_usable_profile_optional_evidence(
     resolvable_implementation_refs: list[str],
     usable_positive_tests: list[str],
 ) -> bool:
-    """Apply the profile-specific conditional evidence gate without changing base scope rules."""
+    """Apply the profile-specific evidence gate without inferring source direction."""
     if not usable_positive_tests:
         return False
     if requirement["scope_state"] == "profile_conditional":
@@ -584,12 +584,40 @@ def _has_usable_profile_optional_evidence(
             usable_positive_tests,
         )
 
+    direction = requirement["direction"]
+    requirement_source_clause_ids = set(requirement.get("source_clause_ids", []))
+    requirement_test_refs = set(requirement.get("verification_refs", []))
+    condition = requirement.get("condition")
+    has_unambiguous_source_condition = isinstance(condition, str) and bool(condition.strip())
+    has_profile_rule_implementation = any(
+        reference.partition("::")[0] == PROFILE_RULE_SOURCE
+        for reference in resolvable_implementation_refs
+    )
+    has_linked_typed_positive_rule = any(
+        mapping.get("requirement_id") == requirement["requirement_id"]
+        and mapping.get("source_clause_id") in requirement_source_clause_ids
+        and mapping.get("verification_category") == "OptionalCapability"
+        and mapping.get("evaluator_present") is True
+        and mapping.get("test_kind") == "OptionalCapabilityUsable"
+        and mapping.get("test_id") in requirement_test_refs
+        and mapping.get("test_id") in usable_positive_tests
+        for mapping in typed_rule_mappings
+    )
+    unclear_direction_has_typed_evidence = (
+        direction != "unclear"
+        or (
+            has_unambiguous_source_condition
+            and has_profile_rule_implementation
+            and has_linked_typed_positive_rule
+        )
+    )
     scoped_client_request_evidence = (
         requirement["status"] == "scoped_verified"
         and requirement["role"] == "client"
-        and requirement["direction"] == "client_to_server"
+        and direction in {"client_to_server", "unclear"}
         and requirement["scope_state"] == "client_1_0"
         and bool(resolvable_implementation_refs)
+        and unclear_direction_has_typed_evidence
     )
     return requirement["status"] == "verified" or scoped_client_request_evidence
 
