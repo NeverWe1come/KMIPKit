@@ -21049,6 +21049,50 @@ class CatalogValidationTests(unittest.TestCase):
                 self.assertNotIn("source_clause_id", crosswalk)
                 self.assertNotIn("source_keyword", crosswalk)
 
+    def test_pgp_optional_evidence_is_scoped_to_client_import(self) -> None:
+        """PGP MAY evidence is outbound only when supplied through client Import."""
+        catalog = json.loads((ROOT / "specification/catalog/kmip-2.1.json").read_text(encoding="utf-8"))
+        requirements = {
+            row["requirement_id"]: row
+            for row in catalog["requirements"]
+            if row["requirement_id"] in {
+                "KMIPKIT-REQ-SPEC-2.4-001-001",
+                "KMIPKIT-REQ-SPEC-2.4-001-002",
+            }
+        }
+        fixture = json.loads(
+            (ROOT / "tools/normative_catalog/tests/fixtures/profile-closure-v2.1.json").read_text(encoding="utf-8")
+        )
+        source_review = next(
+            row
+            for row in fixture["source_requirement_reviews"]
+            if row["source_clause_id"] == "KMIPKIT-CLAUSE-SPEC-2.4-001"
+        )
+
+        self.assertEqual(set(requirements), {
+            "KMIPKIT-REQ-SPEC-2.4-001-001",
+            "KMIPKIT-REQ-SPEC-2.4-001-002",
+        })
+        for requirement in requirements.values():
+            with self.subTest(requirement_id=requirement["requirement_id"]):
+                self.assertEqual(requirement["direction"], "client_to_server")
+                self.assertIn(
+                    {"source_id": "KMIPKIT-SRC-spec", "section": "6.1.25"},
+                    requirement["source_refs"],
+                )
+                condition = requirement["condition"]
+                self.assertIsInstance(condition, str)
+                self.assertIn("client", condition.lower())
+                self.assertIn("import", condition.lower())
+                self.assertIn("table 238", condition.lower())
+
+        self.assertTrue(
+            all(obligation["direction"] == "unclear" for obligation in source_review["source_obligations"]),
+            "§2.4 alone does not establish a client-to-server message direction",
+        )
+        self.assertIn("§6.1.25", source_review["review_note"])
+        self.assertIn("Import", source_review["review_note"])
+
 
 if __name__ == "__main__":
     unittest.main()
