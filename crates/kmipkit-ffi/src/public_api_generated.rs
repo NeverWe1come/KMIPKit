@@ -623,6 +623,11 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "kmipkit_transport::TransportResponse::as_bytes",
     ),
     (
+        "rust-observed-5b73e45a58d3bc781ba7",
+        "rust-kmipkit-client",
+        "kmipkit_client::extension_registry::limits",
+    ),
+    (
         "rust-observed-0ded289e629aaa4269d6",
         "rust-kmipkit-client",
         "kmipkit_client::ClientError",
