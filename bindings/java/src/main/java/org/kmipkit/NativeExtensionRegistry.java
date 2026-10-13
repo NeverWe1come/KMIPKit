@@ -1,5 +1,6 @@
 package org.kmipkit;
 
+import org.jspecify.annotations.Nullable;
 import org.kmipkit.ttlv.CodecLimits;
 
 /**
@@ -7,8 +8,9 @@ import org.kmipkit.ttlv.CodecLimits;
  *
  * <p>Applications should use the typed classes in {@code org.kmipkit.extensions}
  * and {@code org.kmipkit.ttlv}. The native library is loaded lazily on the first
- * bridge call. Set {@code -Dkmipkit.nativeLibrary=/absolute/path/to/library}
- * to load a specific JNI library; otherwise {@code kmipkit_jni} is used.</p>
+ * bridge call. The packaged native library is selected and verified from the
+ * current platform resources. Set {@code -Dkmipkit.nativeLibrary=/absolute/path/to/library}
+ * to load an administrator-provided library instead.</p>
  */
 public final class NativeExtensionRegistry {
     public static final int IDENTITY = 1;
@@ -36,6 +38,12 @@ public final class NativeExtensionRegistry {
     public static final int CHILD_RULE = 23;
     public static final int ORDER_CONSTRAINT = 24;
     public static final int RECOGNITION = 25;
+    public static final int CODEC_LIMITS = 26;
+    public static final int TRANSPORT_CONFIGURATION = 27;
+    public static final int CLIENT = 28;
+    public static final int CLIENT_BATCH = 29;
+    public static final int CLIENT_BATCH_RESPONSE = 30;
+    public static final int CLIENT_BATCH_ITEM_RESPONSE = 31;
 
     private static volatile boolean loaded;
 
@@ -51,12 +59,7 @@ public final class NativeExtensionRegistry {
         }
         synchronized (NativeExtensionRegistry.class) {
             if (!loaded) {
-                String explicitLibrary = System.getProperty("kmipkit.nativeLibrary");
-                if (explicitLibrary == null || explicitLibrary.isBlank()) {
-                    System.loadLibrary("kmipkit_jni");
-                } else {
-                    System.load(explicitLibrary);
-                }
+                NativeLibraryLoader.load();
                 loaded = true;
             }
         }
@@ -67,6 +70,8 @@ public final class NativeExtensionRegistry {
                 limits.maxMessageBytes(), limits.maxStructureDepth(), limits.maxElements()
         };
     }
+
+    static native int nativeAbiVersion();
 
     public static native void release(int handleKind, long handle);
 
@@ -109,6 +114,23 @@ public final class NativeExtensionRegistry {
     public static native long clientBatchItemExtensionCount(long item);
     public static native long clientBatchItemExtensionIdentityAt(long item, long index);
     public static native boolean clientBatchItemExtensionCriticalityIndicatorAt(long item, long index);
+    public static native long transportConfigCreate(int endpointKind, String endpoint, int endpointPort,
+            int trustKind, int[] clientCertificateSources, int[] clientCertificateEncodings,
+            byte[][] clientCertificates, int privateKeySource, int privateKeyEncoding,
+            byte[] privateKey, int[] trustCertificateSources, int[] trustCertificateEncodings,
+            byte[][] trustCertificates, int[] revocationListSources, int[] revocationListEncodings,
+            byte[][] revocationLists, String tlsServerName, String targetUri, long[] timeouts,
+            long maxRequestBytes);
+    public static native long clientCreate(long extensionConfiguration, long transportConfiguration);
+    public static native long clientBatchCreate();
+    public static native void clientBatchAddItem(long batch, long item);
+    public static native void clientBatchSetAsynchronousIndicator(long batch, long indicator);
+    public static native long clientExecute(long client, long batch, long[] codecLimits);
+    public static native long clientBatchResponseItemCount(long response);
+    public static native long clientBatchResponseItemAt(long response, long index);
+    public static native long[] clientBatchItemResponseMetadata(long itemResponse);
+    public static native @Nullable byte[] clientBatchItemResponseUniqueBatchItemId(long itemResponse);
+    public static native @Nullable byte[] clientBatchItemResponsePendingCorrelationValue(long itemResponse);
     public static native long extensionInformationCreate(String extensionName);
     public static native long extensionInformationWithTag(long information, int tag);
     public static native long extensionInformationWithType(long information, int type);

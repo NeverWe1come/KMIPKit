@@ -8,7 +8,7 @@ import org.kmipkit.NativeExtensionRegistry;
 import org.kmipkit.internal.NativeHandle;
 
 /** Immutable local identity for one vendor extension definition. */
-public final class ExtensionIdentity {
+public final class ExtensionIdentity implements AutoCloseable {
     private static final Pattern VENDOR_PATTERN = Pattern.compile("[A-Za-z0-9_.]+");
     private final String vendorIdentifier;
     private final String name;
@@ -109,5 +109,9 @@ public final class ExtensionIdentity {
     @Override
     public String toString() {
         return "ExtensionIdentity[" + vendorIdentifier + ", " + name + ", " + version + "]";
+    }
+    @Override
+    public void close() {
+        handle.close();
     }
 }

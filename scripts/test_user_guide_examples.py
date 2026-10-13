@@ -118,6 +118,14 @@ def write_project(root: Path, project: Path, examples: list[Example]) -> None:
         )
         (project / relative_source).write_text(example.code, encoding="utf-8")
 
+    aws_lc_sys = repository / "vendor" / "aws-lc-sys-0.45.0"
+    manifest.extend(
+        (
+            "",
+            "[patch.crates-io]",
+            f"aws-lc-sys = {{ path = {_toml_string(aws_lc_sys.as_posix())} }}",
+        )
+    )
     (project / "Cargo.toml").write_text("\n".join(manifest) + "\n", encoding="utf-8")
     shutil.copyfile(repository / "Cargo.lock", project / "Cargo.lock")
     source_map = [

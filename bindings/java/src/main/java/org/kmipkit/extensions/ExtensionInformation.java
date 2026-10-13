@@ -6,7 +6,7 @@ import org.kmipkit.ttlv.TtlvItemType;
 import org.kmipkit.ttlv.TtlvStructure;
 
 /** Local KMIP §7.13 Extension Information metadata. */
-public final class ExtensionInformation {
+public final class ExtensionInformation implements AutoCloseable {
     private final NativeHandle handle;
 
     private ExtensionInformation(long nativeHandle) {
@@ -85,5 +85,9 @@ public final class ExtensionInformation {
             throw new org.kmipkit.InvalidInputException("extension metadata text is invalid");
         }
         ExtensionText.requireWithinLimit(value, "extension metadata text");
+    }
+    @Override
+    public void close() {
+        handle.close();
     }
 }

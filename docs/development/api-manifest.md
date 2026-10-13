@@ -1,10 +1,28 @@
 # Public API manifest maintenance
 
-The reviewed source of truth for the cross-language registry API is
+The reviewed source of truth for the complete 1.0 cross-language API is
 `specification/api/public-api.json`, validated by
-`specification/api/public-api.schema.json`. Rust FFI declarations, the C header,
-Java API metadata and parity fixtures, Python API metadata, and the shared parity
-fixture are generated from those inputs. Do not edit generated output by hand.
+`specification/api/public-api.schema.json`. It uses manifest v2 and retains the
+KMIPKIT-0012 registry declarations as a registry slice while owning the full
+public-package, declaration, operation-readiness, and parity inventory. The
+first six generated destinations preserve the registry slice; the five
+additional destinations carry the full public API contract. Only declarations
+and capabilities marked `declared` or `verified` may appear in generated API
+outputs. Blocked inventory records are review metadata and do not create API
+signatures. Do not edit generated output by hand.
+
+Ready language mappings resolve to exact declared or verified exports, and
+each ready capability mapping lists exactly those exports for its language.
+The Rust-only transport capability is the sole exception. C type records may
+mark a representation `internal-only` when native adapters need it; the
+generator keeps it out of the public header and rejects public mappings to it.
+Its generated declaration may appear only in the private test/build header,
+which is not installed or packaged.
+
+Ready function signatures also resolve every referenced manifest type to a
+ready declaration in that language. The extension registry's public C limits
+value uses the versioned `kmipkit_extension_registry_limits_v1_t` layout with
+`struct_size` and `abi_version` metadata, followed by the twelve limit fields.
 
 The generator uses only the Python standard library at runtime. Its tests use
 the pinned dependencies in `tools/api_manifest/requirements-test.txt`. Run the
@@ -32,10 +50,14 @@ git diff --check
 ```
 
 The `--write` command validates the manifest and schema before atomically
-writing the six fixed destinations. Review the source manifest change and all
-generated diffs together in the same PR. Update the handwritten adapters and
-their tests to match the manifest; generated signatures do not implement
-runtime behavior.
+writing the twelve fixed destinations, including a private C ABI header for the
+in-repository JNI build and C FFI harness. Version 2 also checks the 56-operation
+`client_1_0` inventory against the checked-in normative catalog, leaving Set
+Endpoint Role (§6.1.54) deferred to 1.1, and resolves all approval,
+declaration, and parity references offline. Review the source manifest change
+and all generated diffs together in the same PR. Update the handwritten
+adapters and their tests to match the manifest; generated signatures do not
+implement runtime behavior.
 
 ## Verify without changing files
 

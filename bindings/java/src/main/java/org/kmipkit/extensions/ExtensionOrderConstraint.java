@@ -5,7 +5,7 @@ import org.kmipkit.internal.NativeHandle;
 import org.kmipkit.ttlv.Tag;
 
 /** A deterministic before/after child-tag constraint. */
-public final class ExtensionOrderConstraint {
+public final class ExtensionOrderConstraint implements AutoCloseable {
     private final NativeHandle handle;
 
     private ExtensionOrderConstraint(long nativeHandle) {
@@ -24,5 +24,9 @@ public final class ExtensionOrderConstraint {
 
     NativeHandle nativeHandleOwner() {
         return handle;
+    }
+    @Override
+    public void close() {
+        handle.close();
     }
 }

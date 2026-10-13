@@ -9,7 +9,7 @@ import org.kmipkit.internal.NativeHandle;
 import org.kmipkit.ttlv.TtlvItemType;
 
 /** Data-only schema used to validate a vendor extension TTLV subtree. */
-public final class ExtensionSchema {
+public final class ExtensionSchema implements AutoCloseable {
     private final NativeHandle handle;
 
     private ExtensionSchema(long nativeHandle) {
@@ -91,5 +91,9 @@ public final class ExtensionSchema {
 
     NativeHandle nativeHandleOwner() {
         return handle;
+    }
+    @Override
+    public void close() {
+        handle.close();
     }
 }

@@ -101,7 +101,7 @@ fn build_client_configuration() -> Result<
     Box<dyn Error>,
 > {
     let identity = extension::extension_identity(VENDOR_IDENTIFIER, "key-policy", "1")?;
-    let compatibility = extension::compatibility(2, 1, 2, 1, "0.1.0", "0.1.0")?;
+    let compatibility = extension::compatibility(2, 1, 2, 1, "1.0.0", "1.0.0")?;
     let discriminator_tag = tag(DISCRIMINATOR_TAG)?;
     let nested_tag = tag(NESTED_TAG)?;
     let discriminator_path =

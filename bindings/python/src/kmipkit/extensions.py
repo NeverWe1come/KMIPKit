@@ -60,6 +60,17 @@ _LIMIT_FIELDS = (
     "max_depth",
 )
 
+_VERSIONED_LIMITS_TYPE = "kmipkit_extension_registry_limits_v1_t"
+
+
+def _native_limits(values: tuple[int, ...]) -> Any:
+    native = ffi.new(f"{_VERSIONED_LIMITS_TYPE} *")
+    native.struct_size = ffi.sizeof(_VERSIONED_LIMITS_TYPE)
+    native.abi_version = 1
+    for field, value in zip(_LIMIT_FIELDS, values, strict=True):
+        setattr(native, field, value)
+    return native
+
 _MAX_TEXT_BYTES_PER_FIELD = 4_096
 _MAX_CHILD_RULES_PER_STRUCTURE = 4_096
 
@@ -627,18 +638,20 @@ def create_extension_registry_limits(*values: int) -> ExtensionRegistryLimits:
         errors.raise_for_status(4)
     if any(value > 0xFFFF_FFFF_FFFF_FFFF for value in values):
         errors.raise_for_status(6)
-    status = _invoke(lib.kmipkit_extension_registry_limits_validate, *values)
+    status = _invoke(
+        lib.kmipkit_extension_registry_limits_v1_validate, _native_limits(values)
+    )
     errors.raise_for_status(status)
     return ExtensionRegistryLimits(**dict(zip(_LIMIT_FIELDS, values, strict=True)))
 
 
 def default_extension_registry_limits() -> ExtensionRegistryLimits:
-    outputs = [ffi.new("uint64_t *") for _ in _LIMIT_FIELDS]
+    output = _native_limits((0,) * len(_LIMIT_FIELDS))
     errors.raise_for_status(
-        _invoke(lib.kmipkit_extension_registry_limits_default_values, *outputs)
+        _invoke(lib.kmipkit_extension_registry_limits_v1_default_values, output)
     )
     return ExtensionRegistryLimits(
-        **dict(zip(_LIMIT_FIELDS, (int(value[0]) for value in outputs), strict=True))
+        **{field: int(getattr(output, field)) for field in _LIMIT_FIELDS}
     )
 
 
@@ -657,7 +670,10 @@ def create_client_extension_registry(
     if any(value > 0xFFFF_FFFF_FFFF_FFFF for value in limit_values):
         errors.raise_for_status(6)
     errors.raise_for_status(
-        _invoke(lib.kmipkit_extension_registry_limits_validate, *limit_values)
+        _invoke(
+            lib.kmipkit_extension_registry_limits_v1_validate,
+            _native_limits(limit_values),
+        )
     )
     bounded_definitions = _bounded_snapshot(definitions, limit_values[0])
     source = tuple(sorted(bounded_definitions, key=_identity_key))
@@ -671,8 +687,8 @@ def create_client_extension_registry(
     )
     handle = _make_handle(
         "kmipkit_client_extension_registry_t",
-        "kmipkit_client_extension_registry_create",
-        (definition_array, len(source), *limit_values),
+        "kmipkit_client_extension_registry_create_v1",
+        (definition_array, len(source), _native_limits(limit_values)),
     )
     return ClientExtensionRegistry(handle, source, limits)
 

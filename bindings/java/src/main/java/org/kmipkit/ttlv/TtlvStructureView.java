@@ -4,7 +4,7 @@ import org.kmipkit.NativeExtensionRegistry;
 import org.kmipkit.internal.NativeHandle;
 
 /** Read-only view of a generic TTLV Structure. The source owner is retained. */
-public final class TtlvStructureView {
+public final class TtlvStructureView implements AutoCloseable {
     private final NativeHandle handle;
     private final Object owner;
 
@@ -24,6 +24,12 @@ public final class TtlvStructureView {
     public TtlvItemView itemAt(long index) {
         return handle.withValue(value -> TtlvItemView.fromNative(
                 NativeExtensionRegistry.ttlvStructureViewItemAt(value, index), this));
+    }
+
+    /** Releases this native view. The source owner remains independently owned. */
+    @Override
+    public void close() {
+        handle.close();
     }
 
     long handle() {

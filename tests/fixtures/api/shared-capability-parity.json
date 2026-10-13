@@ -1,0 +1,193 @@
+{
+  "format": "kmipkit-shared-api-parity-fixtures",
+  "formatVersion": 2,
+  "releaseLine": "1.0.0",
+  "parityLanguages": ["rust", "c", "java"],
+  "plannedConsumerLanguages": ["rust", "c"],
+  "executableConsumerLanguages": ["java"],
+  "cases": [
+    {
+      "id": "api-levels.shared.v1",
+      "capability": "api_level_discovery",
+      "requirementIds": ["KMIPKIT-0043-FR-005", "KMIPKIT-0043-FR-010"],
+      "input": {"discovery": "local-api-levels"},
+      "expectedOutput": {
+        "apiLevels": ["high-level", "typed-protocol", "generic-ttlv"],
+        "networkCalls": 0
+      },
+      "javaObservedOutput": {"available": false, "networkCalls": 0},
+      "errorCategory": null,
+      "cleanup": ["no-handle-or-network-resource-created"],
+      "consumerTests": {
+        "java": {
+          "status": "blocked",
+          "reason": "The Java facade has no API-level discovery method or declared capability.",
+          "test": "org.kmipkit.SharedCapabilityParityFixtureTest#apiLevelDiscoveryRemainsUnavailableUntilTheFacadeExists"
+        }
+      }
+    },
+    {
+      "id": "client-configuration.registry-isolation.v1",
+      "capability": "vendor_extension_registry",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0012-FR-001"
+      ],
+      "input": {
+        "configurations": [
+          {"id": "configuration-a", "extensionIdentities": ["alpha"]},
+          {"id": "configuration-b", "extensionIdentities": ["beta"]}
+        ]
+      },
+      "expectedOutput": {
+        "configurationDefinitionCounts": [1, 1],
+        "configurationIdentities": [["alpha"], ["beta"]],
+        "registryStateIsShared": false
+      },
+      "javaObservedOutput": {
+        "configurationDefinitionCounts": [1, 1],
+        "configurationIdentities": [["alpha"], ["beta"]],
+        "registryStateIsShared": false
+      },
+      "errorCategory": null,
+      "cleanup": [
+        "close-configuration-owned-native-handles-once",
+        "release-returned-registry-views-once"
+      ],
+      "consumerTests": {
+        "java": {
+          "status": "available",
+          "test": "org.kmipkit.ExtensionRegistryTest#clientConfigurationsOwnImmutableIsolatedRegistrySnapshots"
+        }
+      }
+    },
+    {
+      "id": "errors.schema-redaction.v1",
+      "capability": "vendor_extension_registry",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0012-FR-007",
+        "KMIPKIT-0012-FR-011"
+      ],
+      "input": {"diagnosticMarker": "secret-value-must-not-appear-in-diagnostics"},
+      "expectedOutput": {
+        "errorCategory": "invalid_schema",
+        "diagnosticOmitsInputMarker": true,
+        "diagnosticContainsPayload": false
+      },
+      "javaObservedOutput": {
+        "errorCategory": "invalid_schema",
+        "diagnosticOmitsInputMarker": true,
+        "diagnosticContainsPayload": false
+      },
+      "errorCategory": "invalid_schema",
+      "cleanup": ["release-registry-and-payload-owners-once"],
+      "consumerTests": {
+        "java": {
+          "status": "available",
+          "test": "org.kmipkit.ExtensionRegistryTest#invalidSchemaErrorsAndValidatedValueFormattingRedactPayloadText"
+        }
+      }
+    },
+    {
+      "id": "batch.ordered-completed-pending-failed.v1",
+      "capability": "ordered_batch_outcomes",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0006-FR-010",
+        "KMIPKIT-0007-FR-008"
+      ],
+      "input": {"discovery": "ordered-client-batch-outcomes"},
+      "expectedOutput": {
+        "itemIndexes": [0, 1, 2],
+        "resultStatuses": ["Success", "Operation Pending", "Operation Failed"],
+        "pendingCount": 1,
+        "correlationValueHex": "00a17f",
+        "automaticFollowUp": false,
+        "transportExchangeCount": 1
+      },
+      "javaObservedOutput": {"available": false, "transportExchangeCount": 0},
+      "errorCategory": null,
+      "cleanup": ["no-batch-or-transport-resource-created"],
+      "consumerTests": {
+        "java": {
+          "status": "blocked",
+          "reason": "The Java facade has no KMIP batch executor or ordered result model.",
+          "test": "org.kmipkit.SharedCapabilityParityFixtureTest#orderedBatchOutcomesRemainUnavailableUntilTheExecutorExists"
+        }
+      }
+    },
+    {
+      "id": "ttlv.open-values-and-child-order.v1",
+      "capability": "generic_ttlv_model",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0004-FR-004",
+        "KMIPKIT-0004-FR-006"
+      ],
+      "input": {
+        "structure": {
+          "type": "Structure",
+          "children": [
+            {"tag": "0x540001", "type": "Enumeration", "value": 3775005444},
+            {"tag": "0x540002", "type": "ByteString", "valueHex": "80ff01"}
+          ]
+        }
+      },
+      "expectedOutput": {
+        "childTagsInOrder": ["0x540001", "0x540002"],
+        "enumerationValue": 3775005444,
+        "byteStringHex": "80ff01",
+        "unknownValuesPreserved": true
+      },
+      "javaObservedOutput": {
+        "childTagsInOrder": ["0x540001", "0x540002"],
+        "enumerationValue": 3775005444,
+        "byteStringHex": "80ff01",
+        "unknownValuesPreserved": true
+      },
+      "errorCategory": null,
+      "cleanup": ["close-structure-view-once", "retain-structure-owner-independently"],
+      "consumerTests": {
+        "java": {
+          "status": "available",
+          "test": "org.kmipkit.SharedCapabilityParityFixtureTest#genericTtlvFixturePreservesOpenEnumerationBytesOrderAndViewLifecycle"
+        }
+      }
+    },
+    {
+      "id": "extensions.recognition-and-generic-preservation.v1",
+      "capability": "vendor_extension_registry",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0012-FR-006",
+        "KMIPKIT-0012-FR-007",
+        "KMIPKIT-0012-FR-010"
+      ],
+      "input": {
+        "sourceFixture": "tests/fixtures/extensions/cases.json",
+        "caseIds": ["valid-recognized", "unknown-preserved"]
+      },
+      "expectedOutput": {
+        "caseOutcomes": ["recognized", "unrecognized.no_match"],
+        "genericPayloadPreserved": true,
+        "registrationOrderAffectsResult": false
+      },
+      "javaObservedOutput": {
+        "caseOutcomes": ["recognized", "unrecognized.no_match"],
+        "genericPayloadPreserved": true,
+        "registrationOrderAffectsResult": false
+      },
+      "errorCategory": null,
+      "cleanup": ["release-registry-recognition-value-and-payload-handles-once"],
+      "consumerTests": {
+        "java": {
+          "status": "available",
+          "test": "org.kmipkit.ExtensionRegistryTest#everySharedInboundFixtureRunsThroughThePublicJavaAdapterInBothOrders"
+        }
+      }
+    }
+  ]
+}

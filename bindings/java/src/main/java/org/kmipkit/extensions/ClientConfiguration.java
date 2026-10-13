@@ -32,6 +32,10 @@ public final class ClientConfiguration implements AutoCloseable {
                 NativeExtensionRegistry.clientConfigurationExtensionRegistry(value), definitions, limits));
     }
 
+    NativeHandle nativeHandleOwner() {
+        return handle;
+    }
+
     @Override
     public void close() {
         handle.close();

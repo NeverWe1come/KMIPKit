@@ -170,7 +170,7 @@ files.
 - Windows x86_64 MSVC, Windows 10 or Server 2019 and newer.
 - macOS x86_64 and aarch64, macOS 12 and newer.
 - Java 17 and newer.
-- Python 3.12 and newer.
+- Python 3.12 only for the 1.0 package.
 
 Musl, Alpine, Windows ARM64, and additional platforms are later work.
 

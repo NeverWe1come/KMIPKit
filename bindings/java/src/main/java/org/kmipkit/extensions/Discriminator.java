@@ -5,7 +5,7 @@ import org.kmipkit.internal.NativeHandle;
 import org.kmipkit.ttlv.TtlvValue;
 
 /** Exact path and scalar value used for conservative extension recognition. */
-public final class Discriminator {
+public final class Discriminator implements AutoCloseable {
     private final NativeHandle handle;
 
     private Discriminator(long nativeHandle) {
@@ -24,5 +24,9 @@ public final class Discriminator {
 
     NativeHandle nativeHandleOwner() {
         return handle;
+    }
+    @Override
+    public void close() {
+        handle.close();
     }
 }

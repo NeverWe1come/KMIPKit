@@ -10,8 +10,8 @@ license = "Apache-2.0"
 cargo-fuzz = true
 
 [dependencies]
-kmipkit-protocol = { path = "../crates/kmipkit-protocol", version = "0.1.0" }
-kmipkit-ttlv = { path = "../crates/kmipkit-ttlv", version = "0.1.0" }
+kmipkit-protocol = { path = "../crates/kmipkit-protocol", version = "1.0.0" }
+kmipkit-ttlv = { path = "../crates/kmipkit-ttlv", version = "1.0.0" }
 libfuzzer-sys = "=0.4.12"
 
 [[bin]]
