@@ -19,5 +19,6 @@ int main(void)
     (void)kmipkit_register_request_with_opaque_object_context(
         request, KMIPKIT_OPAQUE_OBJECT_CONTEXT_GENERIC, &request);
     (void)kmipkit_client_batch_item_register(request, &item);
+    kmipkit_register_request_release(request);
     return 0;
 }

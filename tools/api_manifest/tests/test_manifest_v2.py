@@ -1366,17 +1366,14 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
         by_name = {row["exportName"]: row for row in declarations}
 
         blocked_paths = {
-            "kmipkit_register_request_release": "c-symbol",
             "org.kmipkit.NativeExtensionRegistry.REGISTER_REQUEST": "java-member",
             "org.kmipkit.NativeExtensionRegistry.registerRequestCreate": "java-member",
             "org.kmipkit.NativeExtensionRegistry.registerRequestWithOpaqueObjectContext": "java-member",
             "org.kmipkit.NativeExtensionRegistry.clientBatchItemRegister": "java-member",
             "org.kmipkit.extensions.OpaqueObjectContext.valueOf": "java-member",
             "org.kmipkit.extensions.OpaqueObjectContext.values": "java-member",
-            "org.kmipkit.extensions.RegisterRequest.close": "java-member",
             "org.kmipkit.ttlv.TtlvItem.nativeHandleOwner": "java-member",
             "org.kmipkit.ttlv.TtlvStructure.nativeHandleOwner": "java-member",
-            "kmipkit.extensions.RegisterRequest.close": "python-export",
             "kmipkit.extensions.RegisterRequest.closed": "python-export",
             "kmipkit.extensions.RegisterRequest.__enter__": "python-export",
             "kmipkit.extensions.RegisterRequest.__exit__": "python-export",
@@ -1386,6 +1383,24 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
                 declaration = by_name[export_name]
                 self.assertEqual(declaration["kind"], kind)
                 self.assertEqual(declaration["declarationState"], "blocked")
+
+        lifecycle_exports = (
+            ("kmipkit_register_request_release", "c-symbol"),
+            ("org.kmipkit.extensions.RegisterRequest.close", "java-member"),
+            ("kmipkit.extensions.RegisterRequest.close", "python-export"),
+        )
+        for export_name, kind in lifecycle_exports:
+            with self.subTest(export_name=export_name):
+                declaration = by_name[export_name]
+                self.assertEqual(declaration["kind"], kind)
+                self.assertEqual(declaration["declarationState"], "declared")
+                self.assertEqual(
+                    declaration["mappingSemantics"], "native-handle-release"
+                )
+                self.assertEqual(
+                    declaration["languageMappings"]["rust"]["name"],
+                    "kmipkit_protocol::RegisterRequest",
+                )
 
         for export_name in (
             "KMIPKIT_OPAQUE_OBJECT_CONTEXT_GENERIC",
@@ -1401,6 +1416,14 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
         self.assertEqual(
             create["python"]["module"] + "." + create["python"]["function"],
             "kmipkit.extensions.RegisterRequest.create",
+        )
+        selector = next(
+            row for row in self.checked_in_manifest["functions"]
+            if row["id"] == "register_request_with_opaque_object_context"
+        )
+        self.assertEqual(
+            selector["python"]["module"] + "." + selector["python"]["function"],
+            "kmipkit.extensions.RegisterRequest.with_opaque_object_context",
         )
 
     def test_declared_c_function_handle_types_are_ready(self) -> None:
