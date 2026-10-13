@@ -709,8 +709,35 @@ def test_client_execute_restores_batch_on_ffi_conversion_error(
         handle.close()
 
 
+@pytest.mark.parametrize(
+    ("status", "category", "cause", "delivery"),
+    [
+        (
+            8,
+            errors.ClientErrorCategory.PROTOCOL,
+            errors.ClientErrorCause.PROTOCOL_OTHER,
+            errors.DeliveryState.RESPONSE_STARTED,
+        ),
+        (
+            9,
+            errors.ClientErrorCategory.TRANSPORT,
+            errors.ClientErrorCause.TIMEOUT,
+            errors.DeliveryState.POSSIBLY_SENT,
+        ),
+        (
+            10,
+            errors.ClientErrorCategory.SERVER_RESULT,
+            errors.ClientErrorCause.NONE,
+            errors.DeliveryState.NONE,
+        ),
+    ],
+)
 def test_client_execute_maps_failure_delivery_and_restores_unconsumed_batch(
     monkeypatch: pytest.MonkeyPatch,
+    status: int,
+    category: errors.ClientErrorCategory,
+    cause: errors.ClientErrorCause,
+    delivery: errors.DeliveryState,
 ) -> None:
     client_pointer, _client_storage = _opaque("kmipkit_client_t")
     batch_pointer, _batch_storage = _opaque("kmipkit_client_batch_t")
@@ -719,14 +746,19 @@ def test_client_execute_maps_failure_delivery_and_restores_unconsumed_batch(
     limits = ttlv.codec_limits_defaults()
 
     def last_error(status: object, category: object, cause: object, delivery: object) -> int:
-        status[0] = 9  # type: ignore[index]
-        category[0] = int(errors.ClientErrorCategory.TRANSPORT)  # type: ignore[index]
-        cause[0] = int(errors.ClientErrorCause.TIMEOUT)  # type: ignore[index]
-        delivery[0] = int(errors.DeliveryState.RESPONSE_STARTED)  # type: ignore[index]
+        status[0] = status_code  # type: ignore[index]
+        category[0] = int(client_category)  # type: ignore[index]
+        cause[0] = int(cause_code)  # type: ignore[index]
+        delivery[0] = int(delivery_state)  # type: ignore[index]
         return 0
 
+    status_code = status
+    client_category = category
+    cause_code = cause
+    delivery_state = delivery
+
     fake = SimpleNamespace(
-        kmipkit_client_execute=lambda _client, _batch, _limits, _output: 9,
+        kmipkit_client_execute=lambda _client, _batch, _limits, _output: status_code,
         kmipkit_last_error_get=last_error,
         kmipkit_client_release=lambda _ptr: None,
         kmipkit_client_batch_release=lambda _ptr: None,
@@ -735,9 +767,10 @@ def test_client_execute_maps_failure_delivery_and_restores_unconsumed_batch(
     try:
         with pytest.raises(errors.ClientExecutionError) as caught:
             handle.execute(batch, limits)
-        assert caught.value.client_category is errors.ClientErrorCategory.TRANSPORT
-        assert caught.value.cause is errors.ClientErrorCause.TIMEOUT
-        assert caught.value.delivery is errors.DeliveryState.RESPONSE_STARTED
+        assert caught.value.status == status_code
+        assert caught.value.client_category is client_category
+        assert caught.value.cause is cause_code
+        assert caught.value.delivery is delivery_state
         assert not batch.closed
     finally:
         limits.close()

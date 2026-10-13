@@ -332,6 +332,98 @@ class T076ClientMappingTests(unittest.TestCase):
         self.assertIn("kmipkit_transport_config_create_v1", python)
         self.assertIn("pub fn build(self)", rust)
 
+    def test_client_execution_error_taxonomy_is_public_and_mapped(self) -> None:
+        expected = {
+            "protocol": (8, "org.kmipkit.ProtocolException"),
+            "transport": (9, "org.kmipkit.TransportException"),
+            "server_result": (10, "org.kmipkit.ServerResultException"),
+        }
+        categories = {row["id"]: row for row in self.manifest["errorCategories"]}
+        execute = next(row for row in self.manifest["functions"] if row["id"] == "client_execute")
+        for category_id, (status, java_exception) in expected.items():
+            with self.subTest(category=category_id):
+                category = categories[category_id]
+                self.assertEqual(status, category["cValue"])
+                self.assertEqual(java_exception, category["javaException"])
+                self.assertEqual("kmipkit.errors.ClientExecutionError", category["pythonException"])
+                self.assertIn(category_id, execute["c"]["errorCategories"])
+                self.assertIn(category_id, execute["java"]["errorCategories"])
+                self.assertIn(category_id, execute["python"]["errorCategories"])
+
+        header = generate.render_c_header(self.manifest)
+        for name, status in (
+            ("KMIPKIT_ERROR_PROTOCOL", 8),
+            ("KMIPKIT_ERROR_TRANSPORT", 9),
+            ("KMIPKIT_ERROR_SERVER_RESULT", 10),
+        ):
+            self.assertIn(
+                f"#define {name} ((int32_t){status})",
+                header,
+                f"missing generated status macro {name}={status}",
+            )
+
+        last_error = next(
+            row for row in self.manifest["functions"] if row["id"] == "ffi_last_error_get"
+        )
+        last_error_docs = " ".join(last_error["c"].get("documentation", []))
+        self.assertIn("status 8", last_error_docs)
+        self.assertIn("status 9", last_error_docs)
+        self.assertIn("status 10", last_error_docs)
+        self.assertIn("delivery", last_error_docs)
+        self.assertNotIn("current C surface does not execute client requests", header)
+
+        ffi_source = (ROOT / "crates" / "kmipkit-ffi" / "src" / "extension_registry.rs").read_text(
+            encoding="utf-8"
+        )
+        jni_source = (ROOT / "bindings" / "java" / "native" / "kmipkit_jni.cpp").read_text(
+            encoding="utf-8"
+        )
+        python_errors = (ROOT / "bindings" / "python" / "src" / "kmipkit" / "errors.py").read_text(
+            encoding="utf-8"
+        )
+        for category_id, (status, java_exception) in expected.items():
+            rust_category = category_id.upper()
+            self.assertRegex(ffi_source, rf"const ERROR_{rust_category}: i32 = {status};")
+            self.assertRegex(
+                ffi_source,
+                rf"const ERROR_CATEGORY_{rust_category}: u32 = { {'protocol': 2, 'transport': 3, 'server_result': 4}[category_id] };",
+            )
+            java_simple_name = java_exception.rsplit(".", 1)[-1]
+            self.assertIn(java_simple_name, jni_source)
+            python_category = {"protocol": 2, "transport": 3, "server_result": 4}[category_id]
+            self.assertRegex(
+                python_errors,
+                rf"\b{rust_category}\s*=\s*{python_category}\b",
+            )
+
+    def test_client_response_byte_spans_document_their_borrowed_lifetime(self) -> None:
+        functions = {row["id"]: row for row in self.manifest["functions"]}
+        header = generate.render_c_header(self.manifest)
+        for function_id in (
+            "client_batch_item_response_unique_batch_item_id",
+            "client_batch_item_response_pending_correlation_value",
+        ):
+            with self.subTest(function=function_id):
+                documentation = " ".join(functions[function_id]["c"].get("documentation", []))
+                self.assertIn("borrowed", documentation.lower())
+                self.assertIn("item-response handle", documentation.lower())
+                self.assertIn("valid and unchanged only while", documentation.lower())
+                self.assertIn(documentation, header)
+
+    def test_unique_batch_item_id_documents_consumed_input_ownership(self) -> None:
+        function = next(
+            row
+            for row in self.manifest["functions"]
+            if row["id"] == "client_batch_item_with_unique_batch_item_id"
+        )
+        item = next(parameter for parameter in function["c"]["parameters"] if parameter["name"] == "item")
+        self.assertEqual("consumed", item["ownership"])
+        documentation = " ".join(function["c"].get("documentation", []))
+        self.assertIn("after the item handle and identifier span have been validated", documentation)
+        self.assertIn("must not use or release item", documentation)
+        self.assertIn("even if the call returns an error", documentation)
+        self.assertIn(documentation, generate.render_c_header(self.manifest))
+
 
 if __name__ == "__main__":
     unittest.main()

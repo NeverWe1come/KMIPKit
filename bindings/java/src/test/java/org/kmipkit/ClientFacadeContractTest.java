@@ -104,9 +104,15 @@ final class ClientFacadeContractTest {
         assertEquals(2, generic.deliveryStateCode());
         assertFalse(generic.getMessage().contains("secret-diagnostic-sentinel"));
 
-        ServerResultException server = new ServerResultException(8, 3, 4, 0);
-        TransportException transport = new TransportException(9, 5, 6, 2);
-        assertEquals(8, server.statusCode());
+        ProtocolException protocol = new ProtocolException(8, 2, 4, 3);
+        TransportException transport = new TransportException(9, 3, 8, 2);
+        ServerResultException server = new ServerResultException(10, 4, 0, 0);
+        assertEquals(8, protocol.statusCode());
+        assertEquals(2, protocol.categoryCode());
         assertEquals(9, transport.statusCode());
+        assertEquals(3, transport.categoryCode());
+        assertEquals(10, server.statusCode());
+        assertEquals(4, server.categoryCode());
+        assertEquals(0, server.deliveryStateCode());
     }
 }
