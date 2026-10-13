@@ -5,16 +5,11 @@ mod invariant_guard_tests;
 
 #[test]
 fn register_request_create_consumes_every_input_when_attributes_have_a_live_view() {
-    let attributes: *mut kmipkit_ttlv_structure_t = make_handle(
-        Kind::Structure,
-        HandleValue::Structure(Structure::new()),
-    );
+    let attributes: *mut kmipkit_ttlv_structure_t =
+        make_handle(Kind::Structure, HandleValue::Structure(Structure::new()));
     let mut attributes_view = ptr::null_mut();
     assert_eq!(
-        kmipkit_ttlv_structure_view(
-            attributes,
-            &raw mut attributes_view,
-        ),
+        kmipkit_ttlv_structure_view(attributes, &raw mut attributes_view,),
         SUCCESS
     );
 
@@ -35,12 +30,7 @@ fn register_request_create_consumes_every_input_when_attributes_have_a_live_view
 
     let mut request = ptr::null_mut();
     assert_eq!(
-        kmipkit_register_request_create(
-            8,
-            attributes,
-            object,
-            &raw mut request,
-        ),
+        kmipkit_register_request_create(8, attributes, object, &raw mut request,),
         ERROR_INVALID_INPUT,
         "the live Structure view prevents exclusive payload consumption"
     );
