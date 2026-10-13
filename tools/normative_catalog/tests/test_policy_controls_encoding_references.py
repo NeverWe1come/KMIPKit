@@ -9,6 +9,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[3]
 FEATURE = ROOT / "specs/025-policy-controls"
+ENCODING_REFERENCE = re.compile(r"§7\.40(?:, |/| )(?:Table|Tabla) 392")
 
 
 class PolicyControlsEncodingReferencesTests(unittest.TestCase):
@@ -40,10 +41,7 @@ class PolicyControlsEncodingReferencesTests(unittest.TestCase):
         for path in paths:
             with self.subTest(path=str(path.relative_to(ROOT))):
                 self.assertTrue(
-                    re.search(
-                        r"§7\.40(?:, |/| )(?:Table|Tabla) 392",
-                        path.read_text(encoding="utf-8"),
-                    ),
+                    ENCODING_REFERENCE.search(path.read_text(encoding="utf-8")),
                     "missing exact Usage Limits encoding section/table",
                 )
 
