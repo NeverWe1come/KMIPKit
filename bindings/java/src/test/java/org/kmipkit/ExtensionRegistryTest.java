@@ -133,24 +133,24 @@ final class ExtensionRegistryTest {
         callerDefinitions.add(alphaDefinition());
         ClientExtensionRegistry alphaRegistry = registry(callerDefinitions, defaults());
         callerDefinitions.clear();
-        ClientConfiguration alphaConfiguration = ClientConfiguration.create(alphaRegistry);
-
         ClientExtensionRegistry betaRegistry = registry(
                 List.of(definition("beta", "beta-v1", TtlvItemType.TextString)), defaults());
-        ClientConfiguration betaConfiguration = ClientConfiguration.create(betaRegistry);
-
-        ClientExtensionRegistry alphaOwnedRegistry = alphaConfiguration.extensionRegistry();
-        ClientExtensionRegistry betaOwnedRegistry = betaConfiguration.extensionRegistry();
-        assertEquals(1, alphaOwnedRegistry.definitionCount());
-        assertEquals(1, betaOwnedRegistry.definitionCount());
-        assertTrue(ClientExtensionRegistry.definitionForIdentity(
-                alphaOwnedRegistry, identity(ALPHA_NAME)).isPresent());
-        assertTrue(ClientExtensionRegistry.definitionForIdentity(
-                alphaOwnedRegistry, identity("beta")).isEmpty());
-        assertTrue(ClientExtensionRegistry.definitionForIdentity(
-                betaOwnedRegistry, identity("beta")).isPresent());
-        assertTrue(ClientExtensionRegistry.definitionForIdentity(
-                betaOwnedRegistry, identity(ALPHA_NAME)).isEmpty());
+        try (ClientConfiguration alphaConfiguration = ClientConfiguration.create(alphaRegistry);
+                ClientConfiguration betaConfiguration = ClientConfiguration.create(betaRegistry)) {
+            try (ClientExtensionRegistry alphaOwnedRegistry = alphaConfiguration.extensionRegistry();
+                    ClientExtensionRegistry betaOwnedRegistry = betaConfiguration.extensionRegistry()) {
+                assertEquals(1, alphaOwnedRegistry.definitionCount());
+                assertEquals(1, betaOwnedRegistry.definitionCount());
+                assertTrue(ClientExtensionRegistry.definitionForIdentity(
+                        alphaOwnedRegistry, identity(ALPHA_NAME)).isPresent());
+                assertTrue(ClientExtensionRegistry.definitionForIdentity(
+                        alphaOwnedRegistry, identity("beta")).isEmpty());
+                assertTrue(ClientExtensionRegistry.definitionForIdentity(
+                        betaOwnedRegistry, identity("beta")).isPresent());
+                assertTrue(ClientExtensionRegistry.definitionForIdentity(
+                        betaOwnedRegistry, identity(ALPHA_NAME)).isEmpty());
+            }
+        }
     }
 
     @Test
