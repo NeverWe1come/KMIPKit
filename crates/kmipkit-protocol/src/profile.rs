@@ -893,33 +893,46 @@ fn register_object_omits_key_value(payload: &StructureView<'_>) -> bool {
             continue;
         }
 
-        let key_value_presence = field.with_value(|value| match value {
-            ValueView::Structure(object) => match field_presence(&object, KEY_BLOCK) {
-                FieldPresence::Missing => None,
-                FieldPresence::Unique(key_block) => {
-                    Some(key_block.with_value(|value| match value {
-                        ValueView::Structure(key_block) => {
-                            match field_presence(&key_block, KEY_VALUE) {
-                                FieldPresence::Missing => Some(true),
-                                FieldPresence::Unique(_) => Some(false),
-                                FieldPresence::Duplicate => None,
-                            }
-                        }
-                        _ => None,
-                    }))
-                }
-                FieldPresence::Duplicate => Some(None),
-            },
-            _ => None,
-        });
-
-        if let Some(omits_key_value) = key_value_presence {
-            key_block_count = key_block_count.saturating_add(1);
-            every_key_block_omits_key_value &= omits_key_value == Some(true);
+        match register_object_key_value_state(field) {
+            RegisterObjectKeyValueState::NoKeyBlock => {}
+            RegisterObjectKeyValueState::KeyValueOmitted => {
+                key_block_count = key_block_count.saturating_add(1);
+            }
+            RegisterObjectKeyValueState::KeyValuePresent
+            | RegisterObjectKeyValueState::Malformed => {
+                key_block_count = key_block_count.saturating_add(1);
+                every_key_block_omits_key_value = false;
+            }
         }
     }
 
     key_block_count == 1 && every_key_block_omits_key_value
+}
+
+fn register_object_key_value_state(field: &Item) -> RegisterObjectKeyValueState {
+    field.with_value(|value| match value {
+        ValueView::Structure(object) => match field_presence(&object, KEY_BLOCK) {
+            FieldPresence::Missing => RegisterObjectKeyValueState::NoKeyBlock,
+            FieldPresence::Duplicate => RegisterObjectKeyValueState::Malformed,
+            FieldPresence::Unique(key_block) => key_block.with_value(|value| match value {
+                ValueView::Structure(key_block) => match field_presence(&key_block, KEY_VALUE) {
+                    FieldPresence::Missing => RegisterObjectKeyValueState::KeyValueOmitted,
+                    FieldPresence::Unique(_) => RegisterObjectKeyValueState::KeyValuePresent,
+                    FieldPresence::Duplicate => RegisterObjectKeyValueState::Malformed,
+                },
+                _ => RegisterObjectKeyValueState::Malformed,
+            }),
+        },
+        _ => RegisterObjectKeyValueState::NoKeyBlock,
+    })
+}
+
+#[derive(Clone, Copy)]
+enum RegisterObjectKeyValueState {
+    NoKeyBlock,
+    KeyValueOmitted,
+    KeyValuePresent,
+    Malformed,
 }
 
 #[derive(Clone, Copy)]
