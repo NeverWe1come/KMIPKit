@@ -48,7 +48,13 @@ const OPERATION_FAILED: u32 = 1;
 const OPERATION_PENDING: u32 = 2;
 const INVALID_OBJECT_TYPE: u32 = 0x0000_0038;
 const PENDING_CORRELATION: &[u8] = b"REGISTER_PENDING_CORRELATION\xFF";
-const SYNTHETIC_WRAP_ENVELOPE: &[u8] = b"test-only-wrapper:";
+const ENCODING_OPTION: u32 = 0x0042_00A3;
+const TTLV_ENCODING_OPTION: u32 = 2;
+// Deterministic AES-128-WRAP test fixture. OpenSSL 3.5.5 unwraps this byte string
+// to SYNTHETIC_PREWRAP_KEY_VALUE_TTLV using the published RFC 3394 Example 1 KEK.
+// The fixture is test-only and is not cryptographic validation by KMIPKit.
+const REGISTER_WRAPPED_KEY_VALUE: &[u8] =
+    include_bytes!("../fixtures/register-wrapped-key-value.bin");
 const SYNTHETIC_PREWRAP_KEY_VALUE_TTLV: &[u8] = &[
     0x42, 0x00, 0x45, 0x01, 0x00, 0x00, 0x00, 0x38, // Key Value Structure, 56-byte body.
     0x42, 0x00, 0x44, 0x08, 0x00, 0x00, 0x00, 0x04, // Key Material Byte String.
@@ -158,6 +164,7 @@ struct RegisterWrappingEvidence {
     key_block_fields: Vec<u32>,
     key_value_bytes: Vec<u8>,
     wrapping_method: u32,
+    encoding_option: u32,
     encryption_key_identifier: String,
 }
 
@@ -219,6 +226,11 @@ fn register_wrapping_evidence(bytes: &[u8]) -> RegisterWrappingEvidence {
                                 WRAPPING_METHOD,
                                 "Key Wrapping Data Wrapping Method",
                             );
+                            let encoding_option = enumeration_field(
+                                wrapping,
+                                ENCODING_OPTION,
+                                "Key Wrapping Data Encoding Option",
+                            );
                             let key_information = required_field(
                                 wrapping,
                                 ENCRYPTION_KEY_INFORMATION,
@@ -245,6 +257,7 @@ fn register_wrapping_evidence(bytes: &[u8]) -> RegisterWrappingEvidence {
                                         key_block_fields,
                                         key_value_bytes,
                                         wrapping_method,
+                                        encoding_option,
                                         encryption_key_identifier,
                                     }
                                 },
@@ -279,13 +292,6 @@ fn prewrap_key_value_attribute_tags(bytes: &[u8]) -> Vec<u32> {
                 .collect()
         })
     })
-}
-
-fn synthetic_wrapped_key_value(prewrap_ttlv: &[u8]) -> Vec<u8> {
-    let mut opaque_bytes = Vec::with_capacity(SYNTHETIC_WRAP_ENVELOPE.len() + prewrap_ttlv.len());
-    opaque_bytes.extend_from_slice(SYNTHETIC_WRAP_ENVELOPE);
-    opaque_bytes.extend_from_slice(prewrap_ttlv);
-    opaque_bytes
 }
 
 struct RegisterCertificateFields {
@@ -564,10 +570,11 @@ fn register_sends_table_291_and_exposes_table_292_identifier_once() {
 
 #[test]
 fn register_preserves_caller_supplied_opaque_key_value_bytes_with_wrapping_data_from_table_291() {
-    // OASIS KMIP v2.1 §3.1 Tables 11–12, §3.3 Tables 14–15, and §6.1.43 Tables 291 and 293.
-    // The test-only envelope is not cryptographic wrapping; it keeps a source-shaped pre-wrap
-    // Key Value Structure visible so this test can prove the opaque supplied bytes are forwarded.
-    let wrapped_key_value = synthetic_wrapped_key_value(SYNTHETIC_PREWRAP_KEY_VALUE_TTLV);
+    // OASIS KMIP v2.1 §§3.2–3.3, Tables 13–15; §11.18 Table 450; §6.1.43 Tables 291 and 293.
+    // The caller supplies a deterministic AES-128-WRAP fixture with TTLV Encoding Option. KMIPKit
+    // forwards it opaquely; this test does not exercise decryption, validate key material, or claim
+    // that the fake server accepts or unwraps the request.
+    let wrapped_key_value = REGISTER_WRAPPED_KEY_VALUE.to_vec();
     assert_eq!(
         prewrap_key_value_attribute_tags(SYNTHETIC_PREWRAP_KEY_VALUE_TTLV),
         [CRYPTOGRAPHIC_ALGORITHM, CRYPTOGRAPHIC_LENGTH],
@@ -594,6 +601,7 @@ fn register_preserves_caller_supplied_opaque_key_value_bytes_with_wrapping_data_
                         KEY_WRAPPING_DATA,
                         Value::structure(test_structure([
                             test_item(WRAPPING_METHOD, Value::enumeration(1)),
+                            test_item(ENCODING_OPTION, Value::enumeration(TTLV_ENCODING_OPTION)),
                             test_item(
                                 ENCRYPTION_KEY_INFORMATION,
                                 Value::structure(test_structure([test_item(
@@ -654,6 +662,7 @@ fn register_preserves_caller_supplied_opaque_key_value_bytes_with_wrapping_data_
     );
     assert_eq!(wrapped.key_value_bytes, wrapped_key_value);
     assert_eq!(wrapped.wrapping_method, 1);
+    assert_eq!(wrapped.encoding_option, TTLV_ENCODING_OPTION);
     assert_eq!(wrapped.encryption_key_identifier, "wrapping-key");
     assert_eq!(fake.borrow().exchange_count(), 1);
 }
