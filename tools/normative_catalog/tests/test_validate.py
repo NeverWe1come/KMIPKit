@@ -186,9 +186,13 @@ OPTIONAL_CAPABILITY_TEST_REQUIREMENTS = {
 OPTIONAL_CAPABILITY_TEST_CONTENT_REQUIREMENTS = {
     "crates/kmipkit-client/tests/unit/create_key_pair_execution_tests.rs::create_key_pair_sends_client_supplied_dsa_domain_parameter_qlength": (
         "CRYPTOGRAPHIC_DOMAIN_PARAMETERS",
+        "Value::enumeration(5)",
         "QLENGTH",
         "Value::integer(256)",
-        "ValueView::Integer(value) if *value == 256",
+        "contains_enumeration_at_path",
+        "assert!(dsa_algorithm_was_preserved)",
+        "contains_integer_at_path",
+        "assert!(qlength_was_preserved)",
     ),
     "crates/kmipkit-protocol/tests/unit/create_tests.rs::request_encodes_raw_key_format_for_server_generated_create": (
         "KEY_FORMAT_TYPE",

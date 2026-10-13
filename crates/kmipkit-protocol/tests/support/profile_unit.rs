@@ -450,7 +450,8 @@ fn profile_maps_client_supplied_create_key_pair_domain_parameters() {
     };
     let domain_parameters = structure([tagged(QLENGTH, Value::integer(256))]);
     let common_attributes = structure([
-        tagged(CRYPTOGRAPHIC_ALGORITHM, Value::enumeration(3)),
+        // KMIP Specification v2.1 §11.12, Table 443: DSA is enumeration 5.
+        tagged(CRYPTOGRAPHIC_ALGORITHM, Value::enumeration(5)),
         tagged(
             CRYPTOGRAPHIC_DOMAIN_PARAMETERS,
             Value::structure(domain_parameters),
@@ -465,6 +466,38 @@ fn profile_maps_client_supplied_create_key_pair_domain_parameters() {
     result
         .validate_request(&request)
         .expect("the optional Qlength value is usable in a Create Key Pair request");
+
+    let omitted =
+        request_message_with_operation_payload(CREATE_KEY_PAIR_OPERATION, Structure::new());
+    result
+        .validate_request(&omitted)
+        .expect("the client may omit Cryptographic Domain Parameters");
+
+    let unrelated = request_message_with_operation_payload(0x0000_0001, Structure::new());
+    result
+        .validate_request(&unrelated)
+        .expect("the Create Key Pair rule leaves other operations unaffected");
+
+    let malformed_domain_parameters =
+        structure([tagged(CRYPTOGRAPHIC_DOMAIN_PARAMETERS, Value::integer(256))]);
+    let malformed_attributes = structure([tagged(
+        COMMON_ATTRIBUTES,
+        Value::structure(malformed_domain_parameters),
+    )]);
+    let malformed =
+        request_message_with_operation_payload(CREATE_KEY_PAIR_OPERATION, malformed_attributes);
+    let error = result
+        .validate_request(&malformed)
+        .expect_err("Table 55 requires Cryptographic Domain Parameters to be a Structure");
+    assert_eq!(
+        error.code(),
+        ProfileValidationErrorCode::RequestRuleRejected
+    );
+    assert_eq!(error.requirement_id(), Some(REQUIREMENT_ID));
+    assert_eq!(
+        error.source_clause_id(),
+        Some("KMIPKIT-CLAUSE-SPEC-4.14-001")
+    );
 }
 
 #[test]

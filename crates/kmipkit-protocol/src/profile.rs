@@ -664,6 +664,9 @@ const PROTOCOL_VERSION: u32 = 0x0042_0069;
 const PROTOCOL_VERSION_MAJOR: u32 = 0x0042_006A;
 const PROTOCOL_VERSION_MINOR: u32 = 0x0042_006B;
 const CRYPTOGRAPHIC_PARAMETERS: u32 = 0x0042_002B;
+const CREATE_KEY_PAIR_OPERATION: u32 = 0x0000_0002;
+const CREATE_KEY_PAIR_ATTRIBUTE_GROUPS: [u32; 3] = [0x0042_0126, 0x0042_0127, 0x0042_0128];
+const CRYPTOGRAPHIC_DOMAIN_PARAMETERS: u32 = 0x0042_0029;
 
 fn discover_versions_advertises_only_client_supported_versions(
     request: Option<&RequestMessage>,
@@ -719,6 +722,49 @@ fn type_specific_parameters_do_not_infer_remote_object_type(
     })
 }
 
+fn client_supplied_create_key_pair_domain_parameters_are_structures(
+    request: Option<&RequestMessage>,
+    _response: Option<(&RequestMessage, &ResponseMessage)>,
+) -> bool {
+    let Some(request) = request else {
+        return false;
+    };
+
+    request.batch_items().all(|batch_item| {
+        let Some(operation) = batch_item.operation() else {
+            return false;
+        };
+        if operation != CREATE_KEY_PAIR_OPERATION {
+            return true;
+        }
+
+        batch_item
+            .with_request_payload(|payload| {
+                payload
+                    .children()
+                    .iter()
+                    .filter(|field| CREATE_KEY_PAIR_ATTRIBUTE_GROUPS.contains(&field.tag().raw()))
+                    .all(|group| {
+                        group.with_value(|value| match value {
+                            ValueView::Structure(attributes) => attributes
+                                .children()
+                                .iter()
+                                .filter(|attribute| {
+                                    attribute.tag().raw() == CRYPTOGRAPHIC_DOMAIN_PARAMETERS
+                                })
+                                .all(|attribute| {
+                                    attribute.with_value(|value| {
+                                        matches!(value, ValueView::Structure(_))
+                                    })
+                                }),
+                            _ => false,
+                        })
+                    })
+            })
+            .unwrap_or(false)
+    })
+}
+
 fn protocol_version_is_kmip_2_1(version: &StructureView<'_>) -> bool {
     let mut major_seen = false;
     let mut minor_seen = false;
@@ -755,6 +801,23 @@ fn protocol_version_is_kmip_2_1(version: &StructureView<'_>) -> bool {
 }
 
 const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
+    TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-4.14-001-001",
+        source_clause_id: "KMIPKIT-CLAUSE-SPEC-4.14-001",
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
+        evaluator: Some(client_supplied_create_key_pair_domain_parameters_are_structures),
+        test_evidence: &[
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_client_supplied_create_key_pair_domain_parameters",
+                kind: RuleTestKind::OptionalCapabilityUsable,
+            },
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-client/tests/unit/create_key_pair_execution_tests.rs::create_key_pair_sends_client_supplied_dsa_domain_parameter_qlength",
+                kind: RuleTestKind::OptionalCapabilityUsable,
+            },
+        ],
+        constraints: &[],
+    },
     TypedRuleMapping {
         requirement_id: "KMIPKIT-REQ-SPEC-4.16-001-002",
         source_clause_id: "KMIPKIT-CLAUSE-SPEC-4.16-001",

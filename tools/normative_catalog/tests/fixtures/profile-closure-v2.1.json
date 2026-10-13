@@ -20913,9 +20913,10 @@
       "role": "client",
       "scope_state": "profile_conditional",
       "applies_to": "all_client_profiles",
-      "review_note": "Pinned OASIS KMIP Specification v2.1 §4.14; source atom 1 was reviewed independently from catalog scope and profile closure arrays.",
+      "review_note": "Pinned OASIS KMIP Specification v2.1 §4.14 and Table 56: the optional field is in the Create Key Pair Request Payload and the client is its initial setter.",
       "source_obligation_order": 1,
-      "source_actor": "client"
+      "source_actor": "client",
+      "source_direction": "client_to_server"
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-4.14-001-002",
