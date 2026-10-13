@@ -56,7 +56,6 @@ typedef struct kmipkit_client_batch_item_response_t kmipkit_client_batch_item_re
 typedef struct kmipkit_register_request_t kmipkit_register_request_t;
 
 typedef struct kmipkit_byte_span_v1_t kmipkit_byte_span_v1_t;
-typedef struct kmipkit_client_batch_item_metadata_v1_t kmipkit_client_batch_item_metadata_v1_t;
 typedef struct kmipkit_timeout_limit_v1_t kmipkit_timeout_limit_v1_t;
 typedef struct kmipkit_transport_input_v1_t kmipkit_transport_input_v1_t;
 typedef struct kmipkit_transport_config_v1_t kmipkit_transport_config_v1_t;
@@ -96,15 +95,6 @@ typedef struct {
 struct kmipkit_byte_span_v1_t {
     const uint8_t * data;
     uint64_t length;
-};
-
-struct kmipkit_client_batch_item_metadata_v1_t {
-    uint32_t struct_size;
-    uint32_t abi_version;
-    uint32_t outcome_kind;
-    uint32_t result_status;
-    uint32_t has_result_reason;
-    uint32_t result_reason;
 };
 
 struct kmipkit_timeout_limit_v1_t {

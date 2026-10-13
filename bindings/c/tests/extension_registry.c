@@ -23,6 +23,18 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
+
+/* T076's batch metadata carrier is blocked from the public ABI until the
+ * Java/Python mappings are verified. Keep this exact layout local to the C
+ * implementation consumer so it does not imply public-header parity. */
+struct kmipkit_client_batch_item_metadata_v1_t {
+    uint32_t struct_size;
+    uint32_t abi_version;
+    uint32_t outcome_kind;
+    uint32_t result_status;
+    uint32_t has_result_reason;
+    uint32_t result_reason;
+};
 #include <string.h>
 
 /* T076 declarations remain test-local while Java/Python parity is blocked.
@@ -731,9 +743,11 @@ static bool test_t076_validated_client_reports_delivery_state(
     REQUIRE_STATUS(kmipkit_client_batch_create(&batch), KMIPKIT_SUCCESS);
     REQUIRE_STATUS(kmipkit_client_batch_item_discover_versions(&item), KMIPKIT_SUCCESS);
     REQUIRE_STATUS(kmipkit_client_batch_add_item(batch, &item), KMIPKIT_SUCCESS);
-    REQUIRE_STATUS(kmipkit_client_execute(client, &batch, limits, &response),
+    error_response_ttlv = (struct kmipkit_ttlv_structure_t *)(uintptr_t)1;
+    REQUIRE_STATUS(kmipkit_client_execute_with_error_ttlv_v1(
+                       client, &batch, limits, &response, &error_response_ttlv),
                    (int32_t)9);
-    REQUIRE(batch == NULL && response == NULL);
+    REQUIRE(batch == NULL && response == NULL && error_response_ttlv == NULL);
     REQUIRE_STATUS(kmipkit_last_error_get(&status, &category, &cause, &delivery),
                    KMIPKIT_SUCCESS);
     REQUIRE(status == (int32_t)9); /* Transport */
