@@ -220,18 +220,19 @@ class MultiLanguageCoverageTests(unittest.TestCase):
 
         self.assertEqual({"bindings/python/src/kmipkit/extensions.py": {1: 1, 2: 0}}, parsed)
 
-    def test_adapter_source_scan_includes_generated_package_code_but_not_consumers(self) -> None:
+    def test_adapter_source_scan_excludes_generated_metadata_only_and_consumer_sources(self) -> None:
         self.require_gate()
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
             expected_paths = (
                 "bindings/java/src/main/java/org/kmipkit/NativeExtensionRegistry.java",
-                "bindings/java/src/main/java/org/kmipkit/generated/ExtensionRegistryApi.java",
                 "bindings/python/src/kmipkit/extensions.py",
                 "bindings/python/src/kmipkit/_generated/extension_registry.py",
                 "bindings/java/native/kmipkit_jni.cpp",
             )
             excluded_paths = (
+                "bindings/java/src/main/java/org/kmipkit/generated/ExtensionRegistryApi.java",
+                "bindings/java/src/main/java/org/kmipkit/generated/PublicApi.java",
                 "bindings/java/src/test/java/org/kmipkit/RegistryTest.java",
                 "bindings/java/examples/RegistryExample.java",
                 "bindings/python/tests/test_registry.py",
