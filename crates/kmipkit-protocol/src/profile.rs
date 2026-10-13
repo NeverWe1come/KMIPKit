@@ -675,6 +675,7 @@ const KEY_WRAPPING_DATA: u32 = 0x0042_0046;
 const WRAPPING_METHOD: u32 = 0x0042_009E;
 const ENCRYPTION_KEY_INFORMATION: u32 = 0x0042_0036;
 const MAC_SIGNATURE_KEY_INFORMATION: u32 = 0x0042_004E;
+const UNIQUE_IDENTIFIER: u32 = 0x0042_0094;
 const CREATE_KEY_PAIR_OPERATION: u32 = 0x0000_0002;
 const CREATE_KEY_PAIR_ATTRIBUTE_GROUPS: [u32; 3] = [0x0042_0126, 0x0042_0127, 0x0042_0128];
 const CRYPTOGRAPHIC_DOMAIN_PARAMETERS: u32 = 0x0042_0029;
@@ -905,7 +906,12 @@ fn key_wrapping_data_has_key_information(data: &StructureView<'_>) -> bool {
         match field_presence(data, tag) {
             FieldPresence::Missing => {}
             FieldPresence::Unique(field) => {
-                if !field.with_value(|value| matches!(value, ValueView::Structure(_))) {
+                if !field.with_value(|value| match value {
+                    ValueView::Structure(information) => {
+                        key_information_has_unique_identifier(&information)
+                    }
+                    _ => false,
+                }) {
                     return false;
                 }
                 has_key_information = true;
@@ -914,6 +920,14 @@ fn key_wrapping_data_has_key_information(data: &StructureView<'_>) -> bool {
         }
     }
     has_key_information
+}
+
+fn key_information_has_unique_identifier(information: &StructureView<'_>) -> bool {
+    let FieldPresence::Unique(unique_identifier) = field_presence(information, UNIQUE_IDENTIFIER)
+    else {
+        return false;
+    };
+    unique_identifier.with_value(|value| matches!(value, ValueView::TextString(_)))
 }
 
 fn protocol_version_is_kmip_2_1(version: &StructureView<'_>) -> bool {
