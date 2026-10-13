@@ -18,7 +18,7 @@ use super::{
 use crate::profiles_generated::{
     GeneratedClientProfile, GeneratedClientRequirement, GeneratedVerificationCategory,
 };
-use kmipkit_ttlv::{Item, RawTag, Structure, Tag, Value};
+use kmipkit_ttlv::{Item, RawTag, Structure, Tag, Value, ValueView};
 
 const REQUEST_HEADER_TAG: u32 = 0x0042_0077;
 const RESPONSE_HEADER_TAG: u32 = 0x0042_007A;
@@ -32,6 +32,12 @@ const REQUEST_PAYLOAD_TAG: u32 = 0x0042_0079;
 const RESPONSE_PAYLOAD_TAG: u32 = 0x0042_007C;
 const RESULT_STATUS_TAG: u32 = 0x0042_007F;
 const TIME_STAMP_TAG: u32 = 0x0042_0092;
+const GET_ATTRIBUTES_OPERATION: u32 = 0x0000_000B;
+const ATTRIBUTES_TAG: u32 = 0x0042_0125;
+const UNIQUE_IDENTIFIER_TAG: u32 = 0x0042_0094;
+const ISSUER_ALTERNATIVE_NAME_TAG: u32 = 0x0042_00B1;
+const SUBJECT_ALTERNATIVE_NAME_TAG: u32 = 0x0042_00B3;
+const SUBJECT_DISTINGUISHED_NAME_TAG: u32 = 0x0042_00B4;
 
 struct RejectingWriter;
 
@@ -325,6 +331,61 @@ fn response_message() -> crate::ResponseMessage {
         ),
     ]))
     .expect("test Response Message is valid")
+}
+
+fn get_attributes_x509_response() -> crate::ResponseMessage {
+    crate::ResponseMessage::try_from_ttlv(structure([
+        tagged(
+            RESPONSE_HEADER_TAG,
+            Value::structure(structure([
+                test_protocol_version(),
+                tagged(TIME_STAMP_TAG, Value::date_time(1)),
+                tagged(BATCH_COUNT_TAG, Value::integer(1)),
+            ])),
+        ),
+        tagged(
+            BATCH_ITEM_TAG,
+            Value::structure(structure([
+                tagged(OPERATION_TAG, Value::enumeration(GET_ATTRIBUTES_OPERATION)),
+                tagged(RESULT_STATUS_TAG, Value::enumeration(0)),
+                tagged(
+                    RESPONSE_PAYLOAD_TAG,
+                    Value::structure(structure([
+                        tagged(
+                            UNIQUE_IDENTIFIER_TAG,
+                            Value::text_string("x509-object".to_owned()),
+                        ),
+                        tagged(
+                            ATTRIBUTES_TAG,
+                            Value::structure(structure([
+                                tagged(
+                                    ISSUER_ALTERNATIVE_NAME_TAG,
+                                    Value::byte_string(b"issuer-name-a".to_vec()),
+                                ),
+                                tagged(
+                                    SUBJECT_DISTINGUISHED_NAME_TAG,
+                                    Value::byte_string(Vec::new()),
+                                ),
+                                tagged(
+                                    SUBJECT_ALTERNATIVE_NAME_TAG,
+                                    Value::byte_string(b"subject-name-a".to_vec()),
+                                ),
+                                tagged(
+                                    ISSUER_ALTERNATIVE_NAME_TAG,
+                                    Value::byte_string(b"issuer-name-b".to_vec()),
+                                ),
+                                tagged(
+                                    SUBJECT_ALTERNATIVE_NAME_TAG,
+                                    Value::byte_string(b"subject-name-b".to_vec()),
+                                ),
+                            ])),
+                        ),
+                    ])),
+                ),
+            ])),
+        ),
+    ]))
+    .expect("test Get Attributes response carries valid X.509 Byte String attributes")
 }
 
 fn profile(
@@ -2527,6 +2588,65 @@ fn profile_maps_client_register_wrapped_key_value_with_embedded_attributes() {
         error.source_clause_id(),
         Some("KMIPKIT-CLAUSE-SPEC-6.1.43-005")
     );
+}
+
+#[test]
+fn profile_maps_client_get_attributes_response_x509_values() {
+    let request =
+        request_message_with_operation_payload(GET_ATTRIBUTES_OPERATION, Structure::new());
+    let response = get_attributes_x509_response();
+    let response_item = response
+        .batch_items()
+        .next()
+        .expect("test response contains one Get Attributes batch item");
+    let typed_response = crate::GetAttributesResponse::try_from_response_item(response_item)
+        .expect("the typed response model accepts the X.509 Byte String attributes");
+    let attributes = typed_response
+        .attributes()
+        .expect("successful Get Attributes exposes its attributes");
+    let retained_values = attributes
+        .as_items()
+        .iter()
+        .map(|attribute| {
+            let value = attribute.with_value(|value| match value {
+                ValueView::ByteString(bytes) => Some(bytes.to_vec()),
+                _ => None,
+            });
+            (attribute.tag().raw(), value)
+        })
+        .collect::<Vec<_>>();
+    assert_eq!(
+        retained_values,
+        [
+            (ISSUER_ALTERNATIVE_NAME_TAG, Some(b"issuer-name-a".to_vec())),
+            (SUBJECT_DISTINGUISHED_NAME_TAG, Some(Vec::new())),
+            (
+                SUBJECT_ALTERNATIVE_NAME_TAG,
+                Some(b"subject-name-a".to_vec())
+            ),
+            (ISSUER_ALTERNATIVE_NAME_TAG, Some(b"issuer-name-b".to_vec())),
+            (
+                SUBJECT_ALTERNATIVE_NAME_TAG,
+                Some(b"subject-name-b".to_vec())
+            ),
+        ],
+        "the response model preserves empty and repeated X.509 values in source order"
+    );
+
+    let selected = ProfileValidationResult {
+        profile_ids: vec!["KMIPKIT-PROFILE-TEST-CLIENT".to_owned()],
+        requirement_ids: [
+            "KMIPKIT-REQ-SPEC-4.62-003",
+            "KMIPKIT-REQ-SPEC-4.63-004",
+            "KMIPKIT-REQ-SPEC-4.63-005",
+        ]
+        .into_iter()
+        .map(str::to_owned)
+        .collect(),
+    };
+    selected
+        .validate_response(&request, &response)
+        .expect("mapped client response rules accept the retained optional X.509 values");
 }
 
 #[test]
