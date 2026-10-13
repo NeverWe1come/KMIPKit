@@ -1975,3 +1975,11 @@ The catalog README, conformance strategy, and English and Spanish profile guides
 |---|---|---|
 | Correct stale empty-registry wording in authored documentation | `rg -n -i "production typed-rule registry is empty|typed profile rule registry is empty|el registro tipado de reglas está vacío" specification/catalog/README.md docs/compliance/conformance.md docs/user-guide` | PASS: no stale empty-registry statements remain. |
 | Verify the generated coverage report and executable guide examples | `python -B tools/normative_catalog/report.py --repo-root . --check`<br>`python -B scripts/test_user_guide_examples.py`<br>`git diff --check` | PASS: generated report is current; 20 marked Rust guide examples compile; whitespace validation passes. |
+
+### KMIPKIT-0010 - Register Key Value Location optional capability
+
+Pinned KMIP Specification v2.1 §4.27 permits the client to include Key Value Location when a Register request omits Key Value from its Key Block. Table 82 defines the attribute as a Structure with required Key Value Location Value and Key Value Location Type members. The local profile rule regression uses synthetic TTLV; it does not claim server acceptance or completion of the official profile fixture.
+
+| Stage | Commit | Exact command | Exact result |
+|---|---|---|---|
+| Red - require typed profile evidence for Key Value Location | this commit | `cargo test -p kmipkit-protocol profile_maps_client_register_key_value_location_only_without_key_value -- --nocapture` | Expected Red: the valid Register case fails closed with `MissingRuleMapping` for `KMIPKIT-REQ-SPEC-4.27-001`. The regression also specifies acceptance when Key Value is omitted, continued optionality for ordinary Key Value requests, and rejection when Key Value Location conflicts with a present Key Value. No production or catalog implementation changed in this Red commit. |

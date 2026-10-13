@@ -161,6 +161,64 @@ fn request_message_with_operation_payload(
     .expect("test Request Message with operation payload is valid")
 }
 
+fn register_key_value_location_request(
+    include_location: bool,
+    include_key_value: bool,
+) -> crate::RequestMessage {
+    const REGISTER_OPERATION: u32 = 0x0000_0003;
+    const OBJECT_TYPE: u32 = 0x0042_0057;
+    const ATTRIBUTES: u32 = 0x0042_0125;
+    const SYMMETRIC_KEY: u32 = 0x0042_008F;
+    const KEY_BLOCK: u32 = 0x0042_0040;
+    const KEY_FORMAT_TYPE: u32 = 0x0042_0042;
+    const KEY_VALUE: u32 = 0x0042_0045;
+    const KEY_MATERIAL: u32 = 0x0042_0044;
+    const KEY_VALUE_LOCATION: u32 = 0x0042_00B8;
+    const KEY_VALUE_LOCATION_VALUE: u32 = 0x0042_00B9;
+    const KEY_VALUE_LOCATION_TYPE: u32 = 0x0042_00BA;
+
+    let mut key_block = vec![tagged(KEY_FORMAT_TYPE, Value::enumeration(1))];
+    if include_key_value {
+        key_block.push(tagged(
+            KEY_VALUE,
+            Value::structure(structure([tagged(
+                KEY_MATERIAL,
+                Value::byte_string(b"synthetic-key-material".to_vec()),
+            )])),
+        ));
+    }
+
+    let attributes = if include_location {
+        structure([tagged(
+            KEY_VALUE_LOCATION,
+            Value::structure(structure([
+                tagged(
+                    KEY_VALUE_LOCATION_VALUE,
+                    Value::text_string("pkcs11:object=key-1".to_owned()),
+                ),
+                tagged(KEY_VALUE_LOCATION_TYPE, Value::enumeration(2)),
+            ])),
+        )])
+    } else {
+        Structure::new()
+    };
+
+    request_message_with_operation_payload(
+        REGISTER_OPERATION,
+        structure([
+            tagged(OBJECT_TYPE, Value::enumeration(2)),
+            tagged(ATTRIBUTES, Value::structure(attributes)),
+            tagged(
+                SYMMETRIC_KEY,
+                Value::structure(structure([tagged(
+                    KEY_BLOCK,
+                    Value::structure(structure(key_block)),
+                )])),
+            ),
+        ]),
+    )
+}
+
 fn discover_versions_payload(versions: &[(i32, i32)]) -> Structure {
     let mut payload = Structure::new();
     for &(major, minor) in versions {
@@ -1691,4 +1749,40 @@ fn profile_rejects_wrapping_key_information_without_one_text_identifier() {
             Some("KMIPKIT-CLAUSE-SPEC-2.7-001")
         );
     }
+}
+
+#[test]
+fn profile_maps_client_register_key_value_location_only_without_key_value() {
+    // KMIP Specification v2.1 §4.27/Table 82 and §6.1.43/Table 291.
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-4.27-001";
+    const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
+
+    let result = ProfileValidationResult {
+        profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
+        requirement_ids: vec![REQUIREMENT_ID.to_owned()],
+    };
+
+    let external_key = register_key_value_location_request(true, false);
+    result.validate_request(&external_key).expect(
+        "Register may carry Key Value Location when its Key Block omits Key Value",
+    );
+
+    let ordinary_key = register_key_value_location_request(false, true);
+    result
+        .validate_request(&ordinary_key)
+        .expect("Key Value Location remains optional for a request containing Key Value");
+
+    let conflicting_location = register_key_value_location_request(true, true);
+    let error = result
+        .validate_request(&conflicting_location)
+        .expect_err("Key Value Location is scoped to a Register object with no Key Value");
+    assert_eq!(
+        error.code(),
+        ProfileValidationErrorCode::RequestRuleRejected
+    );
+    assert_eq!(error.requirement_id(), Some(REQUIREMENT_ID));
+    assert_eq!(
+        error.source_clause_id(),
+        Some("KMIPKIT-CLAUSE-SPEC-4.27-001")
+    );
 }
