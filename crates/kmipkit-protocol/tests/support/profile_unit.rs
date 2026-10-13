@@ -6,7 +6,10 @@ use super::{
     ProfileTransport, ProfileValidationError, ProfileValidationErrorCode, ProfileValidationResult,
     ProfileValidationSelection, RuleConstraint, RuleTestEvidence, RuleTestKind,
     TYPED_RULE_MAPPINGS, TypedRuleMapping,
-    discover_versions_advertises_only_client_supported_versions, protocol_version_is_kmip_2_1,
+    client_register_key_value_location_requires_omitted_key_value,
+    client_supplied_create_key_pair_domain_parameters_are_structures,
+    discover_versions_advertises_only_client_supported_versions,
+    import_preserves_wrapped_secret_data_shape, protocol_version_is_kmip_2_1,
     reconcile_effective_state, type_specific_parameters_do_not_infer_remote_object_type,
     validate_mapping, validate_selection_with_registry,
 };
@@ -1548,6 +1551,15 @@ fn valid_secret_data_wrapping() -> Value {
 }
 
 #[test]
+fn typed_rule_evaluators_fail_closed_without_a_request() {
+    // KMIP Specification v2.1 §§2.7, 4.14, and 4.27; the rules must fail closed
+    // when no request is available to evaluate.
+    assert!(!import_preserves_wrapped_secret_data_shape(None, None));
+    assert!(!client_supplied_create_key_pair_domain_parameters_are_structures(None, None));
+    assert!(!client_register_key_value_location_requires_omitted_key_value(None, None));
+}
+
+#[test]
 fn profile_maps_client_import_of_wrapped_secret_data() {
     // KMIP Specification v2.1 §2.7/Table 8 permits a wrapped Secret Data Key Value;
     // §3.1/Table 12 selects its encoding, and §3.3/Table 14 requires key information.
@@ -1623,6 +1635,117 @@ fn profile_maps_client_import_of_wrapped_secret_data() {
         error.source_clause_id(),
         Some("KMIPKIT-CLAUSE-SPEC-2.7-001")
     );
+}
+
+#[test]
+fn wrapped_secret_data_rule_fails_closed_for_malformed_payload_shapes() {
+    // KMIP Specification v2.1 §§2.7, 3.1, and 3.3; KMIPKIT-REQ-SPEC-2.7-001.
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-2.7-001";
+    const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
+    const IMPORT_OPERATION: u32 = 0x0000_002A;
+    const OBJECT_TYPE: u32 = 0x0042_0057;
+    const SECRET_DATA: u32 = 0x0042_0085;
+    const SECRET_DATA_TYPE: u32 = 0x0042_0086;
+    const KEY_BLOCK: u32 = 0x0042_0040;
+    const KEY_FORMAT_TYPE: u32 = 0x0042_0042;
+    const KEY_VALUE: u32 = 0x0042_0045;
+    const KEY_WRAPPING_DATA: u32 = 0x0042_0046;
+
+    let result = ProfileValidationResult {
+        profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
+        requirement_ids: vec![REQUIREMENT_ID.to_owned()],
+    };
+    let import_payload = |extra_fields: Vec<Item>| {
+        let mut fields = vec![tagged(OBJECT_TYPE, Value::enumeration(7))];
+        fields.extend(extra_fields);
+        structure(fields)
+    };
+    let secret_data = |fields: Vec<Item>| tagged(SECRET_DATA, Value::structure(structure(fields)));
+    let key_block = |fields: Vec<Item>| tagged(KEY_BLOCK, Value::structure(structure(fields)));
+    let request = |operation, payload| request_message_with_operation_payload(operation, payload);
+
+    let malformed_payloads = [
+        ("missing Object Type", structure([secret_data(Vec::new())])),
+        (
+            "wrong Object Type value type",
+            structure([tagged(
+                OBJECT_TYPE,
+                Value::text_string("Secret Data".to_owned()),
+            )]),
+        ),
+        ("missing Secret Data", import_payload(Vec::new())),
+        (
+            "wrong Secret Data value type",
+            import_payload(vec![tagged(SECRET_DATA, Value::integer(1))]),
+        ),
+        (
+            "missing Secret Data Type",
+            import_payload(vec![secret_data(vec![key_block(Vec::new())])]),
+        ),
+        (
+            "wrong Secret Data Type value type",
+            import_payload(vec![secret_data(vec![
+                tagged(SECRET_DATA_TYPE, Value::text_string("Password".to_owned())),
+                key_block(Vec::new()),
+            ])]),
+        ),
+        (
+            "missing Key Block",
+            import_payload(vec![secret_data(vec![tagged(
+                SECRET_DATA_TYPE,
+                Value::enumeration(1),
+            )])]),
+        ),
+        (
+            "wrong Key Block value type",
+            import_payload(vec![secret_data(vec![
+                tagged(SECRET_DATA_TYPE, Value::enumeration(1)),
+                tagged(KEY_BLOCK, Value::integer(1)),
+            ])]),
+        ),
+        (
+            "missing Key Value",
+            import_payload(vec![secret_data(vec![
+                tagged(SECRET_DATA_TYPE, Value::enumeration(1)),
+                key_block(vec![tagged(KEY_FORMAT_TYPE, Value::enumeration(1))]),
+            ])]),
+        ),
+        (
+            "duplicate Key Wrapping Data",
+            import_payload(vec![secret_data(vec![
+                tagged(SECRET_DATA_TYPE, Value::enumeration(1)),
+                key_block(vec![
+                    tagged(
+                        KEY_VALUE,
+                        Value::byte_string(b"synthetic-wrapped-secret-data".to_vec()),
+                    ),
+                    tagged(KEY_WRAPPING_DATA, valid_secret_data_wrapping()),
+                    tagged(KEY_WRAPPING_DATA, valid_secret_data_wrapping()),
+                ]),
+            ])]),
+        ),
+    ];
+
+    for (label, payload) in malformed_payloads {
+        let error = result
+            .validate_request(&request(IMPORT_OPERATION, payload))
+            .expect_err(label);
+        assert_eq!(
+            error.code(),
+            ProfileValidationErrorCode::RequestRuleRejected,
+            "{label}"
+        );
+        assert_eq!(error.requirement_id(), Some(REQUIREMENT_ID), "{label}");
+        assert_eq!(
+            error.source_clause_id(),
+            Some("KMIPKIT-CLAUSE-SPEC-2.7-001"),
+            "{label}"
+        );
+    }
+
+    result
+        .validate_request(&request(0x0000_0003, Structure::new()))
+        .expect("an unrelated Register request is outside the Secret Data Import rule");
 }
 
 #[test]
