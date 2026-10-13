@@ -686,6 +686,7 @@ const CRYPTOGRAPHIC_DOMAIN_PARAMETERS: u32 = 0x0042_0029;
 const QLENGTH_DOMAIN_PARAMETER: u32 = 0x0042_0073;
 const REGISTER_OPERATION: u32 = 0x0000_0003;
 const GET_OPERATION: u32 = 0x0000_000A;
+const EXPORT_OPERATION: u32 = 0x0000_002B;
 const REGISTER_ATTRIBUTES: u32 = 0x0042_0125;
 const REGISTER_OBJECT_TYPE: u32 = 0x0042_0057;
 const REGISTER_PROTECTION_STORAGE_MASKS: u32 = 0x0042_015F;
@@ -748,7 +749,7 @@ fn type_specific_parameters_do_not_infer_remote_object_type(
     })
 }
 
-fn client_get_key_compression_type_is_enumeration(
+fn client_get_or_export_key_compression_type_is_enumeration(
     request: Option<&RequestMessage>,
     _response: Option<(&RequestMessage, &ResponseMessage)>,
 ) -> bool {
@@ -760,7 +761,7 @@ fn client_get_key_compression_type_is_enumeration(
         let Some(operation) = batch_item.operation() else {
             return false;
         };
-        if operation != GET_OPERATION {
+        if operation != GET_OPERATION && operation != EXPORT_OPERATION {
             return true;
         }
 
@@ -1259,8 +1260,12 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         requirement_id: "KMIPKIT-REQ-SPEC-3.1-001",
         source_clause_id: "KMIPKIT-CLAUSE-SPEC-3.1-001",
         verification_category: GeneratedVerificationCategory::OptionalCapability,
-        evaluator: Some(client_get_key_compression_type_is_enumeration),
+        evaluator: Some(client_get_or_export_key_compression_type_is_enumeration),
         test_evidence: &[
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_client_export_key_compression_type_selector",
+                kind: RuleTestKind::OptionalCapabilityUsable,
+            },
             RuleTestEvidence {
                 test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_client_get_key_compression_type_selector",
                 kind: RuleTestKind::OptionalCapabilityUsable,

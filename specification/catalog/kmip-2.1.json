@@ -86757,19 +86757,23 @@
       "test_case_ids": [],
       "feature_spec": null,
       "implementation_refs": [
+        "crates/kmipkit-protocol/src/export.rs::ExportRequest::into_ttlv_payload",
+        "crates/kmipkit-protocol/src/export.rs::ExportRequest::with_key_compression_type",
         "crates/kmipkit-protocol/src/get.rs::GetRequest::into_ttlv_payload",
         "crates/kmipkit-protocol/src/get.rs::GetRequest::with_key_compression_type",
-        "crates/kmipkit-protocol/src/profile.rs::client_get_key_compression_type_is_enumeration"
+        "crates/kmipkit-protocol/src/profile.rs::client_get_or_export_key_compression_type_is_enumeration"
       ],
       "verification_refs": [
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_client_export_key_compression_type_selector",
         "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_client_get_key_compression_type_selector",
+        "crates/kmipkit-protocol/tests/unit/export_operation_tests.rs::request_preserves_all_explicit_optional_choices_and_omits_absent_fields",
         "crates/kmipkit-protocol/tests/unit/get_tests.rs::request_preserves_the_optional_key_compression_type_enumeration",
         "crates/kmipkit-protocol/tests/unit/get_tests.rs::request_serializes_present_table_220_fields_in_source_order"
       ],
       "negative_verification_required": false,
       "decision_id": null,
       "status": "scoped_verified",
-      "review_note": "Pinned KMIP Specification v2.1 §3.1 says the Key Block MAY contain Key Compression Type. §6.1.19 Table 220 lists the Get request selector as optional, and §11.24 Table 459 defines its Enumeration values. The mapped implementation and tests prove only caller-issued Get request selector serialization. They do not prove server acceptance, response Key Block compression, a compressed EC-key fixture, or global profile conformance. No official Test Case ID is linked."
+      "review_note": "Pinned KMIP Specification v2.1 §3.1 says the Key Block MAY contain Key Compression Type. §6.1.19 Table 220 lists the Get request selector as optional; §6.1.18 says Export has the same selector semantics and Table 217 lists its selector as optional. §11.24 Table 459 defines Enumeration values. The mapped implementation and tests prove caller-issued Get and Export selector serialization and local structural validation only. They do not prove server acceptance, response Key Block compression, a compressed EC-key fixture, or global profile conformance. No official Test Case ID is linked."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-3.1-002",

@@ -5,7 +5,8 @@ use super::{
     CLIENT_REQUIREMENTS, ProfileEvidenceRecord, ProfileReadiness, ProfileReadinessBlocker,
     ProfileTransport, ProfileValidationError, ProfileValidationErrorCode, ProfileValidationResult,
     ProfileValidationSelection, RuleConstraint, RuleTestEvidence, RuleTestKind,
-    TYPED_RULE_MAPPINGS, TypedRuleMapping, client_get_key_compression_type_is_enumeration,
+    TYPED_RULE_MAPPINGS, TypedRuleMapping,
+    client_get_or_export_key_compression_type_is_enumeration,
     client_register_key_value_location_requires_omitted_key_value,
     client_supplied_create_key_pair_domain_parameters_are_structures,
     discover_versions_advertises_only_client_supported_versions,
@@ -469,7 +470,9 @@ fn profile_maps_client_get_key_compression_type_selector() {
         profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
         requirement_ids: vec![REQUIREMENT_ID.to_owned()],
     };
-    assert!(!client_get_key_compression_type_is_enumeration(None, None));
+    assert!(!client_get_or_export_key_compression_type_is_enumeration(
+        None, None
+    ));
     let selected_compression = request_message_with_operation_payload(
         GET_OPERATION,
         crate::GetRequest::new()
@@ -481,7 +484,7 @@ fn profile_maps_client_get_key_compression_type_selector() {
     result
         .validate_request(&selected_compression)
         .expect("the selected client profile permits an explicit compression selector");
-    assert!(client_get_key_compression_type_is_enumeration(
+    assert!(client_get_or_export_key_compression_type_is_enumeration(
         Some(&selected_compression),
         None
     ));
@@ -496,7 +499,7 @@ fn profile_maps_client_get_key_compression_type_selector() {
     result
         .validate_request(&omitted_optional_selector)
         .expect("profile validation does not synthesize or require this optional selector");
-    assert!(client_get_key_compression_type_is_enumeration(
+    assert!(client_get_or_export_key_compression_type_is_enumeration(
         Some(&omitted_optional_selector),
         None
     ));
@@ -512,7 +515,7 @@ fn profile_maps_client_get_key_compression_type_selector() {
         ]),
     );
     assert!(result.validate_request(&malformed_selector).is_err());
-    assert!(!client_get_key_compression_type_is_enumeration(
+    assert!(!client_get_or_export_key_compression_type_is_enumeration(
         Some(&malformed_selector),
         None
     ));
@@ -526,7 +529,7 @@ fn profile_maps_client_get_key_compression_type_selector() {
         ]),
     );
     assert!(result.validate_request(&duplicate_selector).is_err());
-    assert!(!client_get_key_compression_type_is_enumeration(
+    assert!(!client_get_or_export_key_compression_type_is_enumeration(
         Some(&duplicate_selector),
         None
     ));
@@ -534,8 +537,8 @@ fn profile_maps_client_get_key_compression_type_selector() {
     let unrelated_operation = request_message_with_operation_payload(0x0000_0001, Structure::new());
     result
         .validate_request(&unrelated_operation)
-        .expect("the Get-only selector rule leaves other operations unchanged");
-    assert!(client_get_key_compression_type_is_enumeration(
+        .expect("the retrieval selector rule leaves other operations unchanged");
+    assert!(client_get_or_export_key_compression_type_is_enumeration(
         Some(&unrelated_operation),
         None
     ));
@@ -555,6 +558,17 @@ fn profile_maps_client_export_key_compression_type_selector() {
         requirement_ids: vec![REQUIREMENT_ID.to_owned()],
     };
 
+    let mapping = TYPED_RULE_MAPPINGS
+        .iter()
+        .find(|mapping| mapping.requirement_id == REQUIREMENT_ID)
+        .expect("Key Compression Type has an explicit production profile rule");
+    let requirement = CLIENT_REQUIREMENTS
+        .iter()
+        .find(|requirement| requirement.requirement_id == REQUIREMENT_ID)
+        .expect("Key Compression Type resolves to generated normative metadata");
+    validate_mapping(BASELINE_PROFILE_ID, requirement, mapping)
+        .expect("the rule links the Get and Export selector evidence");
+
     let selected_compression = request_message_with_operation_payload(
         EXPORT_OPERATION,
         crate::ExportRequest::new()
@@ -566,6 +580,10 @@ fn profile_maps_client_export_key_compression_type_selector() {
     result
         .validate_request(&selected_compression)
         .expect("the profile permits an explicit Export compression selector");
+    assert!(client_get_or_export_key_compression_type_is_enumeration(
+        Some(&selected_compression),
+        None
+    ));
 
     let omitted_optional_selector = request_message_with_operation_payload(
         EXPORT_OPERATION,
@@ -577,6 +595,10 @@ fn profile_maps_client_export_key_compression_type_selector() {
     result
         .validate_request(&omitted_optional_selector)
         .expect("profile validation does not synthesize or require the optional selector");
+    assert!(client_get_or_export_key_compression_type_is_enumeration(
+        Some(&omitted_optional_selector),
+        None
+    ));
 
     let malformed_selector = request_message_with_operation_payload(
         EXPORT_OPERATION,
@@ -599,6 +621,11 @@ fn profile_maps_client_export_key_compression_type_selector() {
         ]),
     );
     assert!(result.validate_request(&duplicate_selector).is_err());
+
+    let unrelated_operation = request_message_with_operation_payload(0x0000_0001, Structure::new());
+    result
+        .validate_request(&unrelated_operation)
+        .expect("the selector rule does not constrain unrelated operations");
 }
 
 #[test]
