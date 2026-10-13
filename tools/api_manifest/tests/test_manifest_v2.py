@@ -1611,6 +1611,10 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
 
         self.assertEqual(len(list(self.validator.iter_errors(manifest))), 0)
 
+        manifest["approvedExclusions"][0]["cType"]["fields"][0]["name"] = "class"
+        self.assertGreater(len(list(self.validator.iter_errors(manifest))), 0)
+
+        manifest["approvedExclusions"][0]["cType"]["fields"][0]["name"] = "struct_size"
         manifest["approvedExclusions"][0]["cType"]["fields"][0]["type"] = (
             "uint32_t; injected"
         )
