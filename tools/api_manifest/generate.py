@@ -1135,6 +1135,25 @@ def _require_unique(records: list[dict[str, Any]], field: str, label: str) -> se
     return set(values)
 
 
+def _validate_c_value_layout(c_type: dict[str, Any], declared_types: set[str]) -> None:
+    """Validate the complete ordered C layout before emitting a fixed-width value."""
+    fields = c_type.get("fields", [])
+    field_names = [field["name"] for field in fields]
+    if len(field_names) != len(set(field_names)):
+        raise ManifestError("C value type contains duplicate field names")
+    if fields and c_type["kind"] != "fixed-width-value":
+        raise ManifestError("only fixed-width C values may declare fields")
+    if c_type.get("versioned") and fields and [
+        (field["name"], field["type"]) for field in fields[:2]
+    ] != [("struct_size", "uint32_t"), ("abi_version", "uint32_t")]:
+        raise ManifestError("versioned C value must begin with its size and ABI version")
+    for field in fields:
+        base_type = re.sub(r"\s*\*+$", "", field["type"])
+        base_type = base_type.removeprefix("const ").strip()
+        if base_type not in _C_INTEGER_TYPES and base_type not in declared_types:
+            raise ManifestError("C value field references an unknown type")
+
+
 def _validate_references(manifest: dict[str, Any]) -> None:
     root_requirements = set(manifest["requirementIds"])
     error_ids = _require_unique(manifest["errorCategories"], "id", "error category IDs")
@@ -1194,23 +1213,8 @@ def _validate_references(manifest: dict[str, Any]) -> None:
         if record["c"]["kind"] == "opaque-handle"
     }
     c_type_names = {record["c"]["name"] for record in manifest["types"]}
-    primitive_c_types = set(_C_INTEGER_TYPES)
     for type_record in manifest["types"]:
-        c_type = type_record["c"]
-        fields = c_type.get("fields", [])
-        field_names = [field["name"] for field in fields]
-        if len(field_names) != len(set(field_names)):
-            raise ManifestError("C value type contains duplicate field names")
-        if fields and c_type["kind"] != "fixed-width-value":
-            raise ManifestError("only fixed-width C values may declare fields")
-        if c_type.get("versioned") and fields and [
-            (field["name"], field["type"]) for field in fields[:2]
-        ] != [("struct_size", "uint32_t"), ("abi_version", "uint32_t")]:
-            raise ManifestError("versioned C value must begin with its size and ABI version")
-        for field in fields:
-            base_type = field["type"].removeprefix("const ").rstrip().rstrip("*").strip()
-            if base_type not in primitive_c_types and base_type not in c_type_names:
-                raise ManifestError("C value field references an unknown type")
+        _validate_c_value_layout(type_record["c"], c_type_names)
     for record in manifest["functions"]:
         for language in ("c", "java", "python"):
             function_errors = set(record[language]["errorCategories"])
