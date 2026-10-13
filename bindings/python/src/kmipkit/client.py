@@ -382,6 +382,7 @@ class TransportConfig:
 def _snapshot_endpoint(value: Endpoint) -> Endpoint:
     if not isinstance(value, Endpoint):
         errors.raise_for_status(4)
+    # Base slot access and construction prevent subclass hooks from skipping validation.
     try:
         return Endpoint(
             Endpoint.kind.__get__(value, Endpoint),
@@ -397,6 +398,7 @@ def _snapshot_endpoint(value: Endpoint) -> Endpoint:
 def _snapshot_transport_input(value: TransportInput) -> TransportInput:
     if not isinstance(value, TransportInput):
         errors.raise_for_status(4)
+    # Reconstruct through the base dataclass so its input checks always run.
     try:
         source = TransportInput.source.__get__(value, TransportInput)
         encoding = TransportInput.encoding.__get__(value, TransportInput)
@@ -413,6 +415,7 @@ def _snapshot_transport_inputs(values: object) -> tuple[TransportInput, ...]:
 def _snapshot_trust_source(value: TrustSource) -> TrustSource:
     if not isinstance(value, TrustSource):
         errors.raise_for_status(4)
+    # TrustSource subclasses can also replace post-init validation.
     try:
         kind = TrustSource.kind.__get__(value, TrustSource)
         certificates = TrustSource.certificates.__get__(value, TrustSource)
@@ -424,6 +427,7 @@ def _snapshot_trust_source(value: TrustSource) -> TrustSource:
 def _snapshot_timeout(value: TimeoutLimit) -> TimeoutLimit:
     if not isinstance(value, TimeoutLimit):
         errors.raise_for_status(4)
+    # Copy the declared slots rather than reading potentially overridden properties.
     try:
         kind = TimeoutLimit.kind.__get__(value, TimeoutLimit)
         seconds = TimeoutLimit.seconds.__get__(value, TimeoutLimit)
@@ -437,17 +441,24 @@ def _validated_transport_config(value: TransportConfig) -> TransportConfig:
     """Rebuild config records through base constructors at the FFI boundary."""
     if not isinstance(value, TransportConfig):
         errors.raise_for_status(4)
+    # Direct slot reads make the values sent to the ABI the values revalidated here.
     try:
         endpoint = TransportConfig.endpoint.__get__(value, TransportConfig)
-        certificates = TransportConfig.client_certificates.__get__(value, TransportConfig)
+        certificates = TransportConfig.client_certificates.__get__(
+            value, TransportConfig
+        )
         private_key = TransportConfig.client_private_key.__get__(value, TransportConfig)
         trust = TransportConfig.trust.__get__(value, TransportConfig)
         revocations = TransportConfig.revocation_lists.__get__(value, TransportConfig)
-        connect_timeout = TransportConfig.connect_timeout.__get__(value, TransportConfig)
+        connect_timeout = TransportConfig.connect_timeout.__get__(
+            value, TransportConfig
+        )
         write_timeout = TransportConfig.write_timeout.__get__(value, TransportConfig)
         read_timeout = TransportConfig.read_timeout.__get__(value, TransportConfig)
         total_timeout = TransportConfig.total_timeout.__get__(value, TransportConfig)
-        max_request_bytes = TransportConfig.max_request_bytes.__get__(value, TransportConfig)
+        max_request_bytes = TransportConfig.max_request_bytes.__get__(
+            value, TransportConfig
+        )
     except (AttributeError, TypeError):
         errors.raise_for_status(4)
     return TransportConfig(
