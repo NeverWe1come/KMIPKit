@@ -53293,7 +53293,7 @@
       "languageMappings": {
         "rust": {
           "packageId": "rust-kmipkit",
-          "name": "kmipkit::ClientCauseCategory::Other"
+          "name": "kmipkit::ClientCauseCategory"
         },
         "c": {
           "packageId": "c-kmipkit",

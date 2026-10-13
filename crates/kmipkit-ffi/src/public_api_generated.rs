@@ -621,7 +621,7 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
     (
         "rust-observed-7f53123e4e90c5cfa9fe",
         "rust-kmipkit",
-        "kmipkit::ClientCauseCategory::Other",
+        "kmipkit::ClientCauseCategory",
     ),
     (
         "rust-observed-29383d8d0499ca959dc8",

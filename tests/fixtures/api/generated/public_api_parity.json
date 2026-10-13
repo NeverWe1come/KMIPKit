@@ -28928,7 +28928,7 @@
           "packageId": "python-kmipkit"
         },
         "rust": {
-          "name": "kmipkit::ClientCauseCategory::Other",
+          "name": "kmipkit::ClientCauseCategory",
           "packageId": "rust-kmipkit"
         }
       },
