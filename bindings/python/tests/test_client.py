@@ -260,6 +260,33 @@ def test_timeout_and_unsigned_validation_cover_boundary_values() -> None:
         client.TimeoutLimit(client.TimeoutKind.DEFAULT, 1)
     with pytest.raises(errors.InvalidInputError):
         client.TimeoutLimit(client.TimeoutKind.UNBOUNDED, nanoseconds=1)
+    for nanoseconds in (1.5, True):
+        with pytest.raises(errors.InvalidInputError):
+            client.TimeoutLimit.bounded(1, nanoseconds)
+
+
+def test_transport_config_rejects_oversized_lists_before_iteration() -> None:
+    class OversizedList(list[client.TransportInput]):
+        iterated = False
+
+        def __len__(self) -> int:
+            return 0
+
+        def __iter__(self):  # type: ignore[no-untyped-def]
+            self.iterated = True
+            return super().__iter__()
+
+    item = client.TransportInput.memory(b"certificate", client.CredentialEncoding.PEM)
+    values = OversizedList([item] * 4_097)
+
+    with pytest.raises(errors.ResourceLimitError):
+        _transport_configuration(client_certificates=values)
+    assert not values.iterated
+
+    values.iterated = False
+    with pytest.raises(errors.ResourceLimitError):
+        client.TrustSource(client.TrustKind.CERTIFICATES, values)
+    assert not values.iterated
 
 
 def test_transport_input_rejects_unencodable_file_path_without_exposing_it() -> None:
