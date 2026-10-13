@@ -311,8 +311,20 @@ class ManifestGeneratorCliTests(unittest.TestCase):
                 "requirementIds": ["KMIPKIT-0043-FR-007"],
                 "declarationState": "declared",
             }
-            for field in manifest["types"][-1]["c"]["fields"]
+            for field in manifest["types"][-1]["c"]["fields"][2:]
         )
+        prefix_exclusions = [
+            copy.deepcopy(exclusion)
+            for exclusion in manifest["approvedExclusions"]
+            if exclusion["exportName"]
+            in {
+                "kmipkit_extension_registry_limits_v1_t.struct_size",
+                "kmipkit_extension_registry_limits_v1_t.abi_version",
+            }
+        ]
+        for exclusion in prefix_exclusions:
+            exclusion["exportName"] = f"{type_name}.{exclusion['exportName'].rsplit('.', 1)[1]}"
+            manifest["approvedExclusions"].append(exclusion)
 
         header = generate.render_c_header(manifest)
 
@@ -574,6 +586,27 @@ class ManifestGeneratorCliTests(unittest.TestCase):
         )
 
         with self.assertRaisesRegex(generate.ManifestError, "duplicate field names"):
+            generate._validate_references(manifest)
+
+    def test_references_reject_c_keywords_as_fixed_width_field_names(self) -> None:
+        manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
+        manifest["types"].append(
+            {
+                "id": "ReservedCField",
+                "kind": "struct",
+                "requirementIds": ["KMIPKIT-0043-FR-007"],
+                "rust": {"module": "kmipkit_ffi", "name": "ReservedCField", "owner": "ffi"},
+                "c": {
+                    "name": "kmipkit_reserved_c_field_t",
+                    "kind": "fixed-width-value",
+                    "fields": [{"name": "struct", "type": "uint32_t"}],
+                },
+                "java": {"package": "org.kmipkit", "name": "ReservedCField"},
+                "python": {"module": "kmipkit", "name": "ReservedCField"},
+            }
+        )
+
+        with self.assertRaisesRegex(generate.ManifestError, "C keyword"):
             generate._validate_references(manifest)
 
     def test_references_require_versioned_c_value_header_fields(self) -> None:
