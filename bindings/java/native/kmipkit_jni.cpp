@@ -1267,7 +1267,7 @@ JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_clientBatchItem
         }
         const jsize length = env->GetArrayLength(raw_id);
         if (env->ExceptionCheck()) return static_cast<jlong>(0);
-        if (length < 0 || length > 16 * 1024 * 1024) {
+        if (!kmipkit::jni::valid_unique_batch_item_id_length(length)) {
             throw_java(env, "org/kmipkit/ResourceLimitException", "unique batch item ID exceeds the configured limit");
             return static_cast<jlong>(0);
         }
