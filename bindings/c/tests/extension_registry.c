@@ -1596,7 +1596,7 @@ static bool identity_name_matches(kmipkit_extension_identity_t *identity,
     return matches;
 }
 
-static bool test_null_and_wrong_kind_release_are_noops(void)
+static bool test_null_closed_and_wrong_kind_handles_are_rejected(void)
 {
     static const uint8_t vendor[] = "example.vendor";
     static const uint8_t name[] = "release-check";
@@ -1619,6 +1619,12 @@ static bool test_null_and_wrong_kind_release_are_noops(void)
 
     kmipkit_ttlv_value_release(identity_name);
     kmipkit_extension_identity_release(identity);
+    /* A caller represents closure with NULL; never pass the freed pointer. */
+    identity = NULL;
+    identity_name = NULL;
+    REQUIRE_STATUS(kmipkit_extension_identity_name(identity, &identity_name),
+        KMIPKIT_ERROR_INVALID_INPUT);
+    REQUIRE(identity_name == NULL);
     return true;
 }
 
@@ -2594,7 +2600,8 @@ int main(void)
         {"inbound inspection and generic preservation", test_inbound_inspection_and_generic_preservation},
         {"stable redacted errors and invalid handles", test_redacted_stable_errors_and_invalid_handles},
         {"explicit outbound criticality", test_explicit_outbound_criticality},
-        {"null and wrong-kind release no-ops", test_null_and_wrong_kind_release_are_noops},
+        {"null, closed, and wrong-kind handles are rejected",
+         test_null_closed_and_wrong_kind_handles_are_rejected},
         {"identity fields and batch extension order", test_identity_fields_and_batch_extension_order},
         {"handle release and null output semantics", test_handle_release_and_null_output_on_error},
         {"TTLV scalar views and limits", test_ttlv_scalar_views_and_limits},
