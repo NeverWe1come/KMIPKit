@@ -53282,32 +53282,10 @@
         "KMIPKIT-0043-FR-007",
         "KMIPKIT-0043-FR-013"
       ],
-      "declarationState": "declared",
+      "declarationState": "blocked",
       "parityScope": "four-language",
-      "approvalSource": {
-        "kind": "feature-specification",
-        "path": "specs/043-public-api-bindings/spec.md",
-        "status": "Approved",
-        "evidence": "**Status**: Approved for implementation"
-      },
-      "languageMappings": {
-        "rust": {
-          "packageId": "rust-kmipkit",
-          "name": "kmipkit::ClientCauseCategory"
-        },
-        "c": {
-          "packageId": "c-kmipkit",
-          "name": "KMIPKIT_ERROR_INTERNAL"
-        },
-        "java": {
-          "packageId": "java-kmipkit",
-          "name": "org.kmipkit.KmipException"
-        },
-        "python": {
-          "packageId": "python-kmipkit",
-          "name": "kmipkit.errors.KmipKitError"
-        }
-      }
+      "candidateSpecId": "KMIPKIT-0043",
+      "blockedReason": "The complete Rust enum includes invalid-input, protocol, and transport causes without semantically equivalent declarations in all three non-Rust bindings; only the Other variant is mapped in the current release."
     },
     {
       "declarationId": "rust-observed-d0793dd569b9e06c5c4a",
@@ -202974,7 +202952,6 @@
       "mappings": {
         "rust": [
           "kmipkit::ABI_VERSION",
-          "kmipkit::ClientCauseCategory",
           "kmipkit::ClientCauseCategory::Other",
           "kmipkit::RuntimeMetadataError",
           "kmipkit::RuntimeMetadataError::ResourceLimit",
