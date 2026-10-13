@@ -32,6 +32,8 @@ import java.util.HexFormat;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import javax.tools.JavaCompiler;
+import javax.tools.ToolProvider;
 
 import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.Test;
@@ -378,6 +380,42 @@ final class NativeLibraryLoaderTest {
             assertTrue(directories.get(0).getFileName().toString().startsWith("kmipkit-native-"));
             assertTrue(Files.isRegularFile(directories.get(0).resolve(nativeLibrary.getFileName())));
         }
+    }
+
+    @Test
+    void childJacocoAgentAppendsToTheActiveExecutionDataFile() {
+        assertEquals(
+                "-javaagent:/tools/jacoco-agent.jar=destfile=/tmp/kmipkit.exec,append=true",
+                NativeLibraryLoaderTest.childJacocoAgentArgument(List.of(
+                        "-Xmx256m",
+                        "-javaagent:/tools/jacoco-agent.jar=destfile=/tmp/kmipkit.exec")));
+    }
+
+    @Test
+    void nativeVersionLookupSurfacesMissingRecordClassFromJni() throws Exception {
+        Path resourceRoot = bundledResourcesForChild();
+        Path childTemporaryRoot = Files.createDirectory(temporaryDirectory.resolve("missing-version-tmp"));
+        Path childMainClasses = copyMainClassesWithoutVersionRecord(
+                temporaryDirectory.resolve("missing-version-classes"));
+
+        ProcessResult result = runVersionProbe(resourceRoot, childTemporaryRoot, null, childMainClasses);
+
+        assertNotEquals(0, result.exitCode());
+        assertTrue(result.output().contains("NoClassDefFoundError"), result.output());
+    }
+
+    @Test
+    void nativeVersionLookupSurfacesMissingRecordConstructorFromJni() throws Exception {
+        Path resourceRoot = bundledResourcesForChild();
+        Path childTemporaryRoot = Files.createDirectory(temporaryDirectory.resolve("missing-constructor-tmp"));
+        Path childMainClasses = classLocation(NativeExtensionRegistry.class);
+        Path classOverlay = compileVersionClassWithoutNativeConstructor(
+                temporaryDirectory.resolve("version-constructor-overlay"));
+
+        ProcessResult result = runVersionProbe(resourceRoot, childTemporaryRoot, classOverlay, childMainClasses);
+
+        assertNotEquals(0, result.exitCode());
+        assertTrue(result.output().contains("NoSuchMethodError"), result.output());
     }
 
     @Test
@@ -899,6 +937,89 @@ final class NativeLibraryLoaderTest {
     private static Path classLocation(Class<?> type) throws Exception {
         return Path.of(type.getProtectionDomain().getCodeSource().getLocation().toURI());
     }
+
+    private Path bundledResourcesForChild() throws Exception {
+        Path nativeLibrary = Path.of(System.getProperty("kmipkit.nativeLibrary", ""));
+        assertTrue(Files.isRegularFile(nativeLibrary), "Maven must build the JNI library before this test");
+        byte[] nativeBytes = Files.readAllBytes(nativeLibrary);
+        String targetId = NativeLibraryLoader.targetIdFor(
+                System.getProperty("os.name", ""), System.getProperty("os.arch", ""));
+        Path resourceRoot = Files.createDirectory(temporaryDirectory.resolve("version-probe-classpath"));
+        Path resourceLibrary = resourceRoot.resolve("META-INF/native")
+                .resolve(targetId).resolve(nativeLibrary.getFileName());
+        Files.createDirectories(resourceLibrary.getParent());
+        Files.write(resourceLibrary, nativeBytes);
+        Files.writeString(resourceLibrary.resolveSibling(resourceLibrary.getFileName() + ".sha256"),
+                sha256(nativeBytes) + "\n", StandardCharsets.US_ASCII);
+        return resourceRoot;
+    }
+
+    private Path copyMainClassesWithoutVersionRecord(Path destination) throws Exception {
+        Path mainClasses = classLocation(NativeExtensionRegistry.class);
+        Path omittedClass = Path.of("org", "kmipkit", "RuntimeMetadata$Version.class");
+        try (var paths = Files.walk(mainClasses)) {
+            for (Path source : paths.toList()) {
+                Path relative = mainClasses.relativize(source);
+                if (relative.equals(omittedClass)) {
+                    continue;
+                }
+                Path target = destination.resolve(relative);
+                if (Files.isDirectory(source)) {
+                    Files.createDirectories(target);
+                } else {
+                    Files.createDirectories(target.getParent());
+                    Files.copy(source, target);
+                }
+            }
+        }
+        assertFalse(Files.exists(destination.resolve(omittedClass)));
+        return destination;
+    }
+
+    private Path compileVersionClassWithoutNativeConstructor(Path outputDirectory) throws Exception {
+        Path source = temporaryDirectory.resolve("version-class-source/org/kmipkit/RuntimeMetadata$Version.java");
+        Files.createDirectories(source.getParent());
+        Files.createDirectories(outputDirectory);
+        Files.writeString(source, """
+                package org.kmipkit;
+                public final class RuntimeMetadata$Version {
+                    public RuntimeMetadata$Version() {}
+                }
+                """, StandardCharsets.UTF_8);
+
+        JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
+        assertNotNull(compiler, "A JDK compiler is required to compile the compatibility fixture");
+        int result = compiler.run(null, null, null,
+                "--release", "17", "-d", outputDirectory.toString(), source.toString());
+        assertEquals(0, result, "The incompatible Version class fixture must compile");
+        assertTrue(Files.isRegularFile(outputDirectory.resolve("org/kmipkit/RuntimeMetadata$Version.class")));
+        return outputDirectory;
+    }
+
+    private ProcessResult runVersionProbe(
+            Path resourceRoot, Path childTemporaryRoot, Path classOverlay, Path childMainClasses) throws Exception {
+        Path testClasses = classLocation(NativeLibraryLoadProbe.class);
+        Path java = Path.of(System.getProperty("java.home"), "bin",
+                System.getProperty("os.name", "").startsWith("Windows") ? "java.exe" : "java");
+        List<String> classPathEntries = new java.util.ArrayList<>();
+        classPathEntries.add(resourceRoot.toString());
+        if (classOverlay != null) {
+            classPathEntries.add(classOverlay.toString());
+        }
+        classPathEntries.add(testClasses.toString());
+        classPathEntries.add(childMainClasses.toString());
+        String classPath = String.join(File.pathSeparator, classPathEntries);
+        Process process = new ProcessBuilder(
+                java.toString(), "-Djava.io.tmpdir=" + childTemporaryRoot,
+                "--class-path", classPath, NativeLibraryLoadProbe.class.getName(), "version")
+                .redirectErrorStream(true)
+                .start();
+        // The child inherits LLVM_PROFILE_FILE so JNI execution is recorded in its own process profile.
+        String output = new String(process.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
+        return new ProcessResult(process.waitFor(), output);
+    }
+
+    private record ProcessResult(int exitCode, String output) {}
 
     private static void restoreProperty(String name, String value) {
         if (value == null) {
