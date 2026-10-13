@@ -399,7 +399,7 @@ T014's implementation was already present in PR #100 but its task checkbox and e
 
 ## T018 — Shared FFI panic boundary
 
-All 129 exported C functions in `kmipkit-ffi` now enter one `catch_unwind` boundary. Panics return the fixed, payload-free `KMIPKIT_ERROR_INTERNAL` status 7; `void` exports record the same status in the existing thread-local error snapshot. The status maps to Rust `Other`, Java's generic `KmipException`, and Python's generic `KmipKitError`. No panic payload is formatted, retained, or copied into the KMIPKit error snapshot. The embedding process still owns its global panic hook, which can observe a payload before unwinding reaches this boundary; the library does not replace that process-wide hook.
+All 129 exported C functions in `kmipkit-ffi` now enter one `catch_unwind` boundary. Panics return the fixed, payload-free `KMIPKIT_ERROR_INTERNAL` status 7; `void` exports record the same status in the existing thread-local error snapshot. The status maps to Rust `ClientCauseCategory::Other`, Java's generic `KmipException`, and Python's generic `KmipKitError`. No panic payload is formatted, retained, or copied into the KMIPKit error snapshot. The embedding process still owns its global panic hook, which can observe a payload before unwinding reaches this boundary; the library does not replace that process-wide hook. The full Rust `ClientCauseCategory` enum remains blocked in the public API manifest because C, Java, and Python do not expose semantically equivalent invalid-input, protocol, and transport causes; only the `Other` variant is claimed as four-language parity.
 
 | Phase | Commit | Evidence |
 |---|---|---|
@@ -407,5 +407,23 @@ All 129 exported C functions in `kmipkit-ffi` now enter one `catch_unwind` bound
 | Green | `35d30151` | Implemented and applied the boundary to 129/129 exports; added status 7 and regenerated manifest-backed Rust/C/Java/Python projections and parity fixtures; mapped Java/Python/Rust generic error variants. |
 | Refactor | `2ccda429` | Documented the boundary's generic fallback and process-owned panic-hook limitation at the shared helper. No behavior changed. |
 | Local verification | `2ccda429` | `cargo test --locked -p kmipkit-ffi` — PASS, 38 tests; `cargo test --locked --workspace --all-features` — PASS, exit 0; `cargo clippy --locked --workspace --all-targets --all-features -- -D warnings` — PASS; `cargo fmt --all --check` — PASS; Python binding pytest — PASS, 63 tests; API-manifest suite — PASS, 41 tests; Java Gradle tests — PASS; API generator — PASS, 12 generated outputs current; extension-fixture generator — PASS; `git diff --check` — PASS. The MSVC C consumer was compiled with `/W4 /WX` and all 16 harness groups passed during independent QA. |
-| QA | `2ccda429` | Independent QA previously found no blocking issues after reviewing all 129 exports, both panic fallback return kinds, cross-language mapping, the MSVC consumer, and the panic-hook caveat. Final revalidation on this commit is pending. |
+| Regression Red | `e71e55b9`, `4a14b366` | Added tests distinguishing the Rust enum type from its `Other` variant, then requiring the incomplete full enum to remain blocked rather than claiming false four-language parity. The semantic parity test failed before the manifest correction. |
+| Regression Green | `45cc38f5`, `1f62389a` | Corrected the Rust type/variant paths, then blocked the full enum with its missing cross-language semantics documented; retained the `Other` status-7 mapping and regenerated the API artifacts and inventory report. |
+| Regression Refactor | `d88f09b0` | Strengthened the blocked-enum test to pin each missing cause family (invalid input, protocol, and transport) in the recorded reason. |
+| Regression verification | `1f62389a` and `d88f09b0` | Full API-manifest suite — PASS, 248 tests, three platform-dependent skips on `1f62389a`; focused blocked-enum test — PASS on `d88f09b0`; shared Rust inventory suite — PASS, 12 tests; generator `--check` — PASS, 12 outputs; shared inventory auditor `--check` — PASS, 9,497 observed / 135 mapped / 36 blocked; binding export auditor — PASS, 182 C exports / 178 manifest matches; Java Gradle tests — PASS; Python bindings — PASS, 63 tests; `cargo fmt --all --check` and `git diff --check` — PASS. |
+| QA | `1f62389a` | Independent QA found no blockers after verifying that only `Other` is mapped across Rust/C/Java/Python, the complete enum is blocked, and generated outputs and inventory counts are consistent. The final evidence-only head still needs QA/CI revalidation. |
 | Remote CI | Pending | Do not check T018 until every required PR check succeeds on the final pushed head. |
+
+## T019 — C API documentation and generated symbol inventory
+
+The C API guide now links to the v2 manifest and generated header, explains how blocked records differ from declared and verified mappings, and records the source-level and compiled export audits. Its summary counts are checked against the generated binding-export report so documentation cannot silently drift.
+
+| Phase | Commit(s) | Evidence |
+|---|---|---|
+| Red | `b690d759`, `788e1073` | Added failing checks requiring a manifest-backed C API reference and exact documentation/report count agreement. |
+| Green | `7acedca7`, `223e8245` | Added the manifest and generated-header references, C export inventory/audit instructions, and corrected the guide counts to match the report. |
+| Refactor | `b86898f9`, `aeff4da1` | Clarified source-level versus compiled verification and documented the exact four intentionally excluded C entries. |
+| Compatibility projection correction | Red `e167a69c`; Green `844f063a`; Refactor `5a2e767a` | Pinned the registry-v1 error-category slice, filtered v2-only `internal` from that compatibility projection, and regenerated the fixture. Both focused projection tests pass. |
+| Verification | `aeff4da1` and regression head `1f62389a` | Documentation tests — PASS, 2 tests; C binding-export audit — PASS, 182 observed / 178 matched / zero issues; generated API check — PASS, 12 outputs; full API-manifest suite — PASS, 248 tests, three platform-dependent skips. |
+| QA | `aeff4da1` | Independent QA found no blockers: guide counts matched the checked-in report, all four C exclusions were accurate, links resolved, and generator/auditor checks passed. Latest manifest regression was separately reviewed at `1f62389a`; revalidate the final head before closing. |
+| Remote CI | Pending | Keep T019 unchecked until every required PR check succeeds on the final pushed head. |
