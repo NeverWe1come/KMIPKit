@@ -293,15 +293,19 @@ fn key_block_has(object: &Item, raw_tag: u32) -> bool {
         object.children().iter().any(|field| {
             field.tag().raw() == KEY_BLOCK
                 && field.with_value(|value| match value {
-                    ValueView::Structure(block) => block.children().iter().any(|entry| {
-                        (entry.tag().raw() == raw_tag
-                            && cryptographic_metadata_has_expected_type(entry, raw_tag))
-                            || (entry.tag().raw() == KEY_VALUE
-                                && key_value_has_attribute(entry, raw_tag))
-                    }),
+                    ValueView::Structure(block) => key_block_contains_attribute(&block, raw_tag),
                     _ => false,
                 })
         })
+    })
+}
+
+fn key_block_contains_attribute(block: &StructureView<'_>, raw_tag: u32) -> bool {
+    block.children().iter().any(|entry| {
+        if entry.tag().raw() == raw_tag {
+            return cryptographic_metadata_has_expected_type(entry, raw_tag);
+        }
+        entry.tag().raw() == KEY_VALUE && key_value_has_attribute(entry, raw_tag)
     })
 }
 
