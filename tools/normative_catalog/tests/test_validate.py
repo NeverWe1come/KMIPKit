@@ -16628,6 +16628,29 @@ class CatalogValidationTests(unittest.TestCase):
         self.assertIn("server acceptance", review_note)
         self.assertIn("official test case", review_note)
 
+    def test_optional_request_evidence_notes_retain_source_and_scope_context(self) -> None:
+        """Review notes preserve source provenance and the limits of request evidence."""
+        catalog = json.loads(
+            (ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8")
+        )
+        requirements = {row["requirement_id"]: row for row in catalog["requirements"]}
+        expected_fragments = {
+            "KMIPKIT-REQ-SPEC-3.1-004-001": ("pinned", "official test case"),
+            "KMIPKIT-REQ-SPEC-3.1-005-001": ("pinned", "official test case"),
+            "KMIPKIT-REQ-SPEC-4.27-001": ("pinned", "official test case"),
+            "KMIPKIT-REQ-SPEC-6.1.43-005": (
+                "embedded attributes",
+                "unassigned",
+                "server acceptance",
+            ),
+        }
+
+        for requirement_id, fragments in expected_fragments.items():
+            with self.subTest(requirement_id=requirement_id):
+                review_note = requirements[requirement_id]["review_note"].casefold()
+                for fragment in fragments:
+                    self.assertIn(fragment, review_note)
+
     def test_obtain_lease_evidence_uses_named_tests_without_reassigning_requirement_owner(self) -> None:
         """Obtain Lease evidence names positive client-visible tests under its existing owner."""
         catalog = json.loads(
