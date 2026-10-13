@@ -3165,15 +3165,22 @@ static bool run_register_context_case(
     if (status != KMIPKIT_SUCCESS ||
         create_register_attributes(limits, usage_mask, algorithm, length,
             &attributes) != KMIPKIT_SUCCESS ||
-        create_register_opaque_object(limits, &object) != KMIPKIT_SUCCESS ||
-        kmipkit_register_request_create(object_type, attributes, object,
-            &request) != KMIPKIT_SUCCESS) {
+        create_register_opaque_object(limits, &object) != KMIPKIT_SUCCESS) {
+        goto cleanup;
+    }
+
+    status = kmipkit_register_request_create(object_type, attributes, object,
+        &request);
+    attributes = NULL;
+    object = NULL;
+    if (status != KMIPKIT_SUCCESS) {
         goto cleanup;
     }
 
     if (select_context) {
         status = kmipkit_register_request_with_opaque_object_context(
             request, context, &context_request);
+        request = NULL;
         if (status != KMIPKIT_SUCCESS) {
             succeeded = !expect_success && status == KMIPKIT_ERROR_INVALID_INPUT;
             goto cleanup;
@@ -3182,6 +3189,11 @@ static bool run_register_context_case(
 
     status = kmipkit_client_batch_item_register(
         select_context ? context_request : request, &batch_item);
+    if (select_context) {
+        context_request = NULL;
+    } else {
+        request = NULL;
+    }
     succeeded = expect_success
         ? status == KMIPKIT_SUCCESS && batch_item != NULL
         : status == KMIPKIT_ERROR_INVALID_INPUT && batch_item == NULL;
