@@ -194,6 +194,31 @@ class OpaqueObjectTraceabilityTests(unittest.TestCase):
             "reject_candidate_non_normative_table_header",
         )
 
+    def test_table4_body_requirement_remains_in_profile_closures(self) -> None:
+        catalog = json.loads(CATALOG.read_text(encoding="utf-8"))
+        oracle = json.loads(
+            (ROOT / "tools/normative_catalog/tests/fixtures/profile-closure-v2.1.json").read_text(
+                encoding="utf-8"
+            )
+        )
+        oracle_profiles = {
+            profile["profile_id"]: profile for profile in oracle["profiles"]
+        }
+        requirement_id = "KMIPKIT-REQ-SPEC-2.3-003"
+        relevant_profiles = [
+            profile
+            for profile in catalog["profiles"]
+            if "KMIPKIT-CLAUSE-SPEC-2.3-003" in profile["source_clause_ids"]
+        ]
+        self.assertTrue(relevant_profiles)
+        for profile in relevant_profiles:
+            with self.subTest(profile_id=profile["profile_id"]):
+                self.assertIn(requirement_id, profile["requirement_ids"])
+                self.assertIn(
+                    requirement_id,
+                    oracle_profiles[profile["profile_id"]]["requirement_ids_audited_subset"],
+                )
+
     def test_each_context_requirement_has_source_code_positive_and_negative_evidence(self) -> None:
         self.assertTrue(TRACEABILITY.is_file(), "feature traceability ledger must exist")
         lines = TRACEABILITY.read_text(encoding="utf-8").splitlines()
