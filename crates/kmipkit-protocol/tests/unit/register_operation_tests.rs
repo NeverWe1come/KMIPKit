@@ -730,6 +730,31 @@ fn request_allows_algorithm_and_length_embedded_in_key_value() {
 }
 
 #[test]
+fn request_allows_algorithm_and_length_split_between_direct_and_key_value_attributes() {
+    let algorithm_in_key_value = RegisterRequest::new(
+        ObjectType::from_raw(2),
+        symmetric_attributes([item(CRYPTOGRAPHIC_LENGTH, Value::integer(256))]),
+        key_object_with_key_value_attributes(true, false),
+    )
+    .into_ttlv_payload();
+    assert!(
+        algorithm_in_key_value.is_ok(),
+        "Algorithm may be encapsulated while Length is a direct Attribute"
+    );
+
+    let length_in_key_value = RegisterRequest::new(
+        ObjectType::from_raw(2),
+        symmetric_attributes([item(CRYPTOGRAPHIC_ALGORITHM, Value::enumeration(3))]),
+        key_object_with_key_value_attributes(false, true),
+    )
+    .into_ttlv_payload();
+    assert!(
+        length_in_key_value.is_ok(),
+        "Length may be encapsulated while Algorithm is a direct Attribute"
+    );
+}
+
+#[test]
 fn request_preserves_key_value_attributes_associated_with_raw_key_material() {
     // `KMIPKIT-REQ-SPEC-3.2-001`: KMIP Specification v2.1 §3.2, Table 13
     // requires Key Material in a structured Key Value and permits associated
