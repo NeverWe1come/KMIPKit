@@ -150,14 +150,7 @@ final class ClientFacadeTlsIntegrationTest {
         listener.setEnabledProtocols(new String[] {"TLSv1.3"});
         listener.setNeedClientAuth(true);
         listener.setSoTimeout(10_000);
-        FutureTask<byte[]> peer = new FutureTask<>(() -> {
-            try (SSLSocket socket = (SSLSocket) listener.accept()) {
-                socket.setEnabledProtocols(new String[] {"TLSv1.3"});
-                socket.setSoTimeout(10_000);
-                socket.startHandshake();
-                return readFrame(socket.getInputStream());
-            }
-        });
+        FutureTask<byte[]> peer = peerThatClosesAfterOneRequest(listener);
         Thread peerThread = new Thread(peer, "kmipkit-java-tls-transport-error-fixture");
         peerThread.setDaemon(true);
         peerThread.start();
@@ -250,6 +243,17 @@ final class ClientFacadeTlsIntegrationTest {
             }
         }
         return requests;
+    }
+
+    private static FutureTask<byte[]> peerThatClosesAfterOneRequest(SSLServerSocket listener) {
+        return new FutureTask<>(() -> {
+            try (SSLSocket socket = (SSLSocket) listener.accept()) {
+                socket.setEnabledProtocols(new String[] {"TLSv1.3"});
+                socket.setSoTimeout(10_000);
+                socket.startHandshake();
+                return readFrame(socket.getInputStream());
+            }
+        });
     }
 
     private static byte[] readFrame(InputStream input) throws Exception {
