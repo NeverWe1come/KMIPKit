@@ -516,7 +516,9 @@ def _response_span(item: _ClientBatchItemResponse, function: Any) -> bytes | Non
         if value.data != ffi.NULL or value.length != 0:
             errors.raise_for_status(4)
         return None
-    if present[0] != 1 or value.length > _MAX_INPUT_BYTES:
+    if present[0] != 1:
+        errors.raise_for_status(4)
+    if value.length > _MAX_INPUT_BYTES:
         errors.raise_for_status(6)
     if value.length and value.data == ffi.NULL:
         errors.raise_for_status(4)
