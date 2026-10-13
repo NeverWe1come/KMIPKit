@@ -703,3 +703,8 @@ This is local execution evidence for the T076 ABI behavior and its test-local C 
 - **Green**: Updated the export-boundary count to the rebased release inventory and reran the full FFI suite.
 - **Commands and results**: `cargo test -p kmipkit-ffi --all-features` — PASS: 57 unit tests, 3 compiled C integration consumers, and doc tests passed. The focused export-boundary assertion also passed.
 - **Limit**: Windows emitted existing AWS-LC compiler-feature/NASM and linker import warnings; they did not prevent the test build or execution. This local evidence does not close T076 or establish remote CI status.
+
+### Rebased generator verification
+
+- **Commands and results**: `uv run --no-project --with-requirements tools/api_manifest/requirements-test.txt python -m unittest tools.api_manifest.tests.test_generate -v` — PASS: 56 tests, two Windows symlink-permission skips. `python tools/api_manifest/generate.py --check` — PASS: all 12 generated outputs match the merged manifest.
+- **Scope**: T076 remains open. The 27 observed T076 declarations remain blocked and the generated public C header still omits the shared client handle pending the required binding mappings.
