@@ -192,7 +192,9 @@ class SharedRustInventoryTests(unittest.TestCase):
         self.assertEqual(error_type["kind"], "type")
         self.assertEqual(error_type["declarationState"], "blocked")
         self.assertEqual(error_type["candidateSpecId"], "KMIPKIT-0043")
-        self.assertIn("complete Rust enum", error_type["blockedReason"])
+        for missing_category in ("invalid-input", "protocol", "transport"):
+            with self.subTest(category=missing_category):
+                self.assertIn(missing_category, error_type["blockedReason"])
         self.assertNotIn("languageMappings", error_type)
         self.assertNotIn("approvalSource", error_type)
         self.assertEqual(other_variant["kind"], "variant")
