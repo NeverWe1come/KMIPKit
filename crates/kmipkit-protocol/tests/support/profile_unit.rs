@@ -394,7 +394,9 @@ fn profile_allows_type_specific_cryptographic_parameters_without_remote_object_i
         )])),
     )]);
     let payload = crate::EncryptRequest::new(
-        Some(crate::UniqueIdentifier::TextString("profile-key-id".to_owned())),
+        Some(crate::UniqueIdentifier::TextString(
+            "profile-key-id".to_owned(),
+        )),
         Some(crate::OperationData::Integer(7)),
     )
     .with_cryptographic_parameters(parameters)

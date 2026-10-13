@@ -718,7 +718,10 @@ class CoverageReportTests(unittest.TestCase):
         )
 
         self.assertEqual(
-            ["KMIPKIT-REQ-SPEC-6.1.16-001-001"],
+            [
+                "KMIPKIT-REQ-SPEC-4.16-001-002",
+                "KMIPKIT-REQ-SPEC-6.1.16-001-001",
+            ],
             [mapping["requirement_id"] for mapping in typed_rule_mappings],
         )
         profile_state_section = report.split("## Profile states\n", 1)[1]

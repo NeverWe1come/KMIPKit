@@ -88186,16 +88186,16 @@
       "direction": "unclear",
       "condition": "Specific fields may apply only to certain Managed Object types.",
       "scope_state": "client_1_0",
-      "element_ids": [],
+      "element_ids": ["KMIPKIT-ELEM-ATTRIBUTE-CRYPTOGRAPHIC-PARAMETERS"],
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0019",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": ["crates/kmipkit-protocol/src/cryptographic_parameters.rs::validate_known_cryptographic_parameters_view", "crates/kmipkit-protocol/src/encrypt.rs::EncryptRequest::to_ttlv_payload", "crates/kmipkit-protocol/src/decrypt.rs::DecryptRequest::to_ttlv_payload", "crates/kmipkit-protocol/src/profile.rs::type_specific_parameters_do_not_infer_remote_object_type"],
+      "verification_refs": ["crates/kmipkit-protocol/tests/unit/cryptographic_parameters_tests.rs::unknown_parameter_members_survive_in_original_order_and_encoding", "crates/kmipkit-protocol/tests/unit/encrypt_tests.rs::request_preserves_supplied_cryptographic_parameters_members_and_order", "crates/kmipkit-protocol/tests/unit/decrypt_tests.rs::request_preserves_supplied_cryptographic_parameters_members_and_order", "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_allows_type_specific_cryptographic_parameters_without_remote_object_inference"],
       "negative_verification_required": false,
       "decision_id": null,
-      "status": "unassigned",
-      "review_note": "The source states a MAY permission; it does not require local type gating. Preserve caller values and do not infer unavailable server object types. No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources."
+      "status": "scoped_verified",
+      "review_note": "Pinned KMIP Specification v2.1 §4.16 permits Cryptographic Parameters fields that apply only to certain Managed Object types. KMIPKit preserves caller-supplied parameters and does not infer server-held object type. The linked local protocol and profile tests verify this bounded client behavior; they do not establish server acceptance, applicability for every operation, official OASIS test execution, or formal profile conformance. No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-4.16-002",
