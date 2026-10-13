@@ -1485,7 +1485,7 @@ fn valid_secret_data_wrapping() -> Value {
 #[test]
 fn profile_maps_client_import_of_wrapped_secret_data() {
     // KMIP Specification v2.1 §2.7/Table 8 permits a wrapped Secret Data Key Value;
-    // §3.1/Table 12 represents wrapped Key Value as a Byte String.
+    // §3.1/Table 12 selects its encoding, and §3.3/Table 14 requires key information.
     const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-2.7-001";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
 
@@ -1532,6 +1532,23 @@ fn profile_maps_client_import_of_wrapped_secret_data() {
     let error = result
         .validate_request(&malformed_wrapping_data)
         .expect_err("present Key Wrapping Data must keep its structure type");
+    assert_eq!(
+        error.code(),
+        ProfileValidationErrorCode::RequestRuleRejected
+    );
+    assert_eq!(error.requirement_id(), Some(REQUIREMENT_ID));
+    assert_eq!(
+        error.source_clause_id(),
+        Some("KMIPKIT-CLAUSE-SPEC-2.7-001")
+    );
+
+    let incomplete_wrapping_data = secret_data_import_request(
+        Value::byte_string(b"synthetic-wrapped-secret-data".to_vec()),
+        Some(Value::structure(Structure::new())),
+    );
+    let error = result
+        .validate_request(&incomplete_wrapping_data)
+        .expect_err("wrapped Key Value requires Encryption or MAC/Signature Key Information");
     assert_eq!(
         error.code(),
         ProfileValidationErrorCode::RequestRuleRejected
