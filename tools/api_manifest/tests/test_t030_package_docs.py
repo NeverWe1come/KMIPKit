@@ -62,6 +62,25 @@ class PackageDocumentationContractTests(unittest.TestCase):
         self.assertIn(release_version, pyproject["project"]["description"])
         self.assertIn(release_version, pom.findtext("m:description", namespaces=namespace))
 
+    def test_jspecify_is_a_public_compile_dependency_in_gradle_and_maven(self) -> None:
+        gradle = (ROOT / "bindings" / "java" / "build.gradle.kts").read_text(
+            encoding="utf-8"
+        )
+        self.assertIn('api("org.jspecify:jspecify:1.0.0")', gradle)
+
+        namespace = {"m": "http://maven.apache.org/POM/4.0.0"}
+        pom = ET.parse(ROOT / "bindings" / "java" / "pom.xml").getroot()
+        dependencies = pom.findall("m:dependencies/m:dependency", namespaces=namespace)
+        jspecify = [
+            dependency
+            for dependency in dependencies
+            if dependency.findtext("m:groupId", namespaces=namespace) == "org.jspecify"
+            and dependency.findtext("m:artifactId", namespaces=namespace) == "jspecify"
+        ]
+        self.assertEqual(1, len(jspecify))
+        self.assertEqual("1.0.0", jspecify[0].findtext("m:version", namespaces=namespace))
+        self.assertNotEqual("test", jspecify[0].findtext("m:scope", namespaces=namespace))
+
     def test_metadata_and_both_guides_name_the_supported_language_runtimes(self) -> None:
         java_build = (ROOT / "bindings" / "java" / "build.gradle.kts").read_text(
             encoding="utf-8"
