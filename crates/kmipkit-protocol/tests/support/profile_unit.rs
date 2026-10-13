@@ -165,6 +165,29 @@ fn register_key_value_location_request(
     include_location: bool,
     include_key_value: bool,
 ) -> crate::RequestMessage {
+    const KEY_VALUE_LOCATION: u32 = 0x0042_00B8;
+    const KEY_VALUE_LOCATION_VALUE: u32 = 0x0042_00B9;
+    const KEY_VALUE_LOCATION_TYPE: u32 = 0x0042_00BA;
+
+    let location = include_location.then(|| {
+        tagged(
+            KEY_VALUE_LOCATION,
+            Value::structure(structure([
+                tagged(
+                    KEY_VALUE_LOCATION_VALUE,
+                    Value::text_string("pkcs11:object=key-1".to_owned()),
+                ),
+                tagged(KEY_VALUE_LOCATION_TYPE, Value::enumeration(2)),
+            ])),
+        )
+    });
+    register_request_with_key_value_location(location, include_key_value)
+}
+
+fn register_request_with_key_value_location(
+    location: Option<Item>,
+    include_key_value: bool,
+) -> crate::RequestMessage {
     const REGISTER_OPERATION: u32 = 0x0000_0003;
     const OBJECT_TYPE: u32 = 0x0042_0057;
     const ATTRIBUTES: u32 = 0x0042_0125;
@@ -173,9 +196,6 @@ fn register_key_value_location_request(
     const KEY_FORMAT_TYPE: u32 = 0x0042_0042;
     const KEY_VALUE: u32 = 0x0042_0045;
     const KEY_MATERIAL: u32 = 0x0042_0044;
-    const KEY_VALUE_LOCATION: u32 = 0x0042_00B8;
-    const KEY_VALUE_LOCATION_VALUE: u32 = 0x0042_00B9;
-    const KEY_VALUE_LOCATION_TYPE: u32 = 0x0042_00BA;
 
     let mut key_block = vec![tagged(KEY_FORMAT_TYPE, Value::enumeration(1))];
     if include_key_value {
@@ -188,26 +208,16 @@ fn register_key_value_location_request(
         ));
     }
 
-    let attributes = if include_location {
-        structure([tagged(
-            KEY_VALUE_LOCATION,
-            Value::structure(structure([
-                tagged(
-                    KEY_VALUE_LOCATION_VALUE,
-                    Value::text_string("pkcs11:object=key-1".to_owned()),
-                ),
-                tagged(KEY_VALUE_LOCATION_TYPE, Value::enumeration(2)),
-            ])),
-        )])
-    } else {
-        Structure::new()
-    };
+    let attributes = location.into_iter().collect::<Vec<_>>();
 
     request_message_with_operation_payload(
         REGISTER_OPERATION,
         structure([
             tagged(OBJECT_TYPE, Value::enumeration(2)),
-            tagged(ATTRIBUTES, Value::structure(attributes)),
+            tagged(
+                ATTRIBUTES,
+                Value::structure(structure(attributes)),
+            ),
             tagged(
                 SYMMETRIC_KEY,
                 Value::structure(structure([tagged(
@@ -1785,4 +1795,60 @@ fn profile_maps_client_register_key_value_location_only_without_key_value() {
         error.source_clause_id(),
         Some("KMIPKIT-CLAUSE-SPEC-4.27-001")
     );
+}
+
+#[test]
+fn profile_rejects_malformed_register_key_value_location_members() {
+    // KMIP Specification v2.1 §4.27/Table 82 requires both typed members.
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-4.27-001";
+    const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
+    const KEY_VALUE_LOCATION: u32 = 0x0042_00B8;
+    const KEY_VALUE_LOCATION_VALUE: u32 = 0x0042_00B9;
+    const KEY_VALUE_LOCATION_TYPE: u32 = 0x0042_00BA;
+
+    let result = ProfileValidationResult {
+        profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
+        requirement_ids: vec![REQUIREMENT_ID.to_owned()],
+    };
+    let malformed_attributes = [
+        structure([tagged(
+            KEY_VALUE_LOCATION_VALUE,
+            Value::text_string("pkcs11:object=key-1".to_owned()),
+        )]),
+        structure([tagged(
+            KEY_VALUE_LOCATION_TYPE,
+            Value::enumeration(2),
+        )]),
+        structure([
+            tagged(
+                KEY_VALUE_LOCATION_VALUE,
+                Value::byte_string(b"pkcs11:object=key-1".to_vec()),
+            ),
+            tagged(KEY_VALUE_LOCATION_TYPE, Value::enumeration(2)),
+        ]),
+        structure([
+            tagged(
+                KEY_VALUE_LOCATION_VALUE,
+                Value::text_string("pkcs11:object=key-1".to_owned()),
+            ),
+            tagged(KEY_VALUE_LOCATION_TYPE, Value::integer(2)),
+        ]),
+    ];
+
+    for malformed in malformed_attributes {
+        let location = tagged(KEY_VALUE_LOCATION, Value::structure(malformed));
+        let request = register_request_with_key_value_location(Some(location), false);
+        let error = result
+            .validate_request(&request)
+            .expect_err("Key Value Location must contain one required field of each type");
+        assert_eq!(
+            error.code(),
+            ProfileValidationErrorCode::RequestRuleRejected
+        );
+        assert_eq!(error.requirement_id(), Some(REQUIREMENT_ID));
+        assert_eq!(
+            error.source_clause_id(),
+            Some("KMIPKIT-CLAUSE-SPEC-4.27-001")
+        );
+    }
 }
