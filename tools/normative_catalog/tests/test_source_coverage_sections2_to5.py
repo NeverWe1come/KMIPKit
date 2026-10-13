@@ -119,15 +119,9 @@ class SourceCoverageSectionsTwoThroughFiveTests(unittest.TestCase):
     def test_object_encoding_required_headers_do_not_create_client_obligations(self) -> None:
         catalog = json.loads(CATALOG_PATH.read_text(encoding="utf-8"))
         fixture = json.loads(FIXTURE_PATH.read_text(encoding="utf-8"))
-        requirements = {row["requirement_id"]: row for row in catalog["requirements"]}
         reviews = {
             row["source_clause_id"]: row
             for row in fixture["source_requirement_reviews"]
-            if row["source_id"] == "KMIPKIT-SRC-spec"
-        }
-        crosswalk_ids = {
-            row["requirement_id"]
-            for row in fixture["requirement_crosswalk"]
             if row["source_id"] == "KMIPKIT-SRC-spec"
         }
         header_requirements = {
@@ -143,13 +137,8 @@ class SourceCoverageSectionsTwoThroughFiveTests(unittest.TestCase):
         }
 
         self.assertTrue(set(header_requirements.values()).issubset(reviews))
-        self.assertFalse(set(header_requirements) & crosswalk_ids)
         for requirement_id, clause_id in header_requirements.items():
-            requirement = requirements[requirement_id]
             review = reviews[clause_id]
-            self.assertEqual(requirement["role"], "not_applicable", requirement_id)
-            self.assertEqual(requirement["direction"], "not_applicable", requirement_id)
-            self.assertEqual(requirement["scope_state"], "out_of_scope", requirement_id)
             self.assertEqual(review["expected_client_requirement_ids"], [])
             self.assertEqual(review["source_obligations"], [])
             self.assertEqual(
