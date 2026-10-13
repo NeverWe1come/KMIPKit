@@ -550,6 +550,17 @@ class ManifestGeneratorCliTests(unittest.TestCase):
             expected = json.loads(PUBLIC_API_V1_FIXTURE.read_text(encoding="utf-8"))
             self.assertEqual(parity, expected)
 
+    def test_registry_parity_excludes_v2_only_error_categories(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = _create_repo(Path(directory))
+            result = self._run_generator(root, "--write")
+            self.assertEqual(result.returncode, 0, result.stderr)
+
+            parity = json.loads((root / GENERATED_OUTPUTS[5]).read_text(encoding="utf-8"))
+            expected = json.loads(PUBLIC_API_V1_FIXTURE.read_text(encoding="utf-8"))
+
+            self.assertEqual(parity["errorCategories"], expected["errorCategories"])
+
     def test_check_mode_compares_outputs_without_rewriting_them(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             root = _create_repo(Path(directory))
