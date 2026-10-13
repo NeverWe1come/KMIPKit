@@ -1959,3 +1959,4 @@ KMIP Specification v2.1 Table 55 encodes Qlength as an Integer. The security rev
 | Stage | Commit | Exact command | Exact result |
 |---|---|---|---|
 | Red - reject Byte String when Secret Data Key Value is plaintext | this commit | `cargo test -p kmipkit-protocol profile_maps_client_import_of_wrapped_secret_data` | Expected Red: the new negative assertion fails because a plaintext Secret Data Key Value encoded as Byte String is currently accepted. Its valid counterpart now uses a Structure as required by KMIP Specification v2.1 §3.1/Table 12. |
+| Green - distinguish plaintext and wrapped Key Value encodings | this commit | `cargo test -p kmipkit-protocol profile_maps_client_import_of_wrapped_secret_data`<br>`cargo fmt --all --check`<br>`git diff --check` | PASS: plaintext Key Value must be a Structure; wrapped Key Value remains a Byte String. The profile rule test passes and keeps stable `KMIPKIT-REQ-SPEC-2.7-001` and source-clause diagnostics. |

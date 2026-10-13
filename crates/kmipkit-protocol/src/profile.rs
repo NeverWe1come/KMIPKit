@@ -875,7 +875,9 @@ fn key_block_preserves_wrapping(key_block: &StructureView<'_>) -> bool {
     let key_value_is_byte_string =
         key_value.with_value(|value| matches!(value, ValueView::ByteString(_)));
     match field_presence(key_block, KEY_WRAPPING_DATA) {
-        FieldPresence::Missing => true,
+        FieldPresence::Missing => {
+            key_value.with_value(|value| matches!(value, ValueView::Structure(_)))
+        }
         FieldPresence::Unique(wrapping_data) => {
             key_value_is_byte_string
                 && wrapping_data.with_value(|value| matches!(value, ValueView::Structure(_)))
