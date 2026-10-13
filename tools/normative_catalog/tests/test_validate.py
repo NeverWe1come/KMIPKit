@@ -14,6 +14,7 @@ from html.parser import HTMLParser
 from pathlib import Path
 from typing import Any
 from unittest.mock import patch
+from xml.etree import ElementTree
 
 from tools.normative_catalog.validate import (
     CatalogValidationError,
@@ -3959,7 +3960,7 @@ class CatalogValidationTests(unittest.TestCase):
         }
         self.assertEqual(conformance_sections, {f"6.{section}" for section in range(1, 36)})
 
-    def test_baseline_catalog_state_is_incomplete_while_required_fixtures_are_unavailable(self) -> None:
+    def test_baseline_fixtures_are_pinned_but_do_not_complete_conformance_evidence(self) -> None:
         catalog = json.loads((ROOT / "specification/catalog/kmip-2.1.json").read_text(encoding="utf-8"))
         target_manifest = json.loads(
             (ROOT / "specification/catalog/profile-targets.json").read_text(encoding="utf-8")
@@ -3978,7 +3979,30 @@ class CatalogValidationTests(unittest.TestCase):
 
         self.assertIn(baseline["profile_id"], target_manifest["profile_ids"])
         self.assertEqual(16, len(required_tests))
-        self.assertTrue(all(test["fixture_availability"] == "unavailable" for test in required_tests))
+        source_index = (ROOT / "specification/oasis/kmip-2.1/SOURCES.md").read_text(encoding="utf-8")
+        for test in required_tests:
+            expected_path = f"specification/oasis/kmip-2.1/fixtures/{test['official_case_id']}.xml"
+            self.assertEqual("available", test["fixture_availability"])
+            self.assertEqual(expected_path, test["fixture_path"])
+            fixture = ROOT / expected_path
+            source_row = next(
+                line for line in source_index.splitlines()
+                if f"`fixtures/{test['official_case_id']}.xml`" in line
+            )
+            expected_sha256 = re.search(r"`([0-9a-f]{64})`", source_row)
+            self.assertIsNotNone(expected_sha256)
+            self.assertEqual(expected_sha256.group(1), hashlib.sha256(fixture.read_bytes()).hexdigest())
+            root = ElementTree.parse(fixture).getroot()
+            self.assertEqual("KMIP", root.tag)
+            self.assertEqual(
+                len(root.findall("RequestMessage")),
+                len(root.findall("ResponseMessage")),
+            )
+            interop_ids = {
+                element.attrib.get("value")
+                for element in root.iter("InteropIdentifier")
+            }
+            self.assertTrue(not interop_ids or interop_ids == {test["official_case_id"]})
         self.assertEqual("evidence_incomplete", baseline["claim_state"])
 
     def test_checked_in_catalog_preserves_pinned_source_discrepancies(self) -> None:
@@ -17433,7 +17457,9 @@ class CatalogValidationTests(unittest.TestCase):
                     test_feature_traceability, "ROOT", root
                 ):
                     try:
-                        CatalogValidationTests().test_every_reviewed_client_may_or_optional_has_usable_positive_evidence()
+                        CatalogValidationTests().test_every_reviewed_client_may_or_optional_has_usable_positive_evidence(
+                            set()
+                        )
                     finally:
                         if os.name == "nt" and linked_test_directory.exists():
                             linked_test_directory.rmdir()
@@ -17719,8 +17745,11 @@ class CatalogValidationTests(unittest.TestCase):
                     test_source="def request_capability_is_available():\n    assert True\n",
                 )
 
-    def test_every_reviewed_client_may_or_optional_has_usable_positive_evidence(self) -> None:
-        """Selected Baseline MAY/OPTIONAL capabilities require implementation and positive test evidence."""
+    def test_every_reviewed_client_may_or_optional_has_usable_positive_evidence(
+        self,
+        expected_blocked_requirement_ids: set[str] | None = None,
+    ) -> None:
+        """Missing selected Baseline MAY/OPTIONAL evidence remains a readiness blocker."""
         oracle = json.loads(
             (ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json").read_text(encoding="utf-8")
         )
@@ -17793,12 +17822,51 @@ class CatalogValidationTests(unittest.TestCase):
             "the selected Baseline Qlength capability has a reviewed conditional rule and positive request evidence",
         )
 
+        if expected_blocked_requirement_ids is None:
+            expected_blocked_requirement_ids = {
+                "KMIPKIT-REQ-SPEC-2.3-002",
+                "KMIPKIT-REQ-SPEC-4.17-001-001",
+                "KMIPKIT-REQ-SPEC-9.11-001",
+                "KMIPKIT-REQ-SPEC-9.11-004-003",
+                "KMIPKIT-REQ-SPEC-9.20-001-002",
+            }
+        observed_blocked_requirement_ids = {gap.partition(":")[0] for gap in gaps}
         self.assertEqual(
-            gaps,
-            [],
-            "each source-reviewed in-scope MAY/OPTIONAL needs implementation and positive test evidence; "
+            observed_blocked_requirement_ids,
+            expected_blocked_requirement_ids,
+            "each unresolved selected client MAY/OPTIONAL must remain an explicit gap; "
             "profile target membership and descriptive text do not satisfy this gate",
         )
+        self.assertEqual(
+            len(gaps),
+            len(expected_blocked_requirement_ids) * 2,
+            "each unresolved capability must report both its missing mapping and missing positive evidence",
+        )
+
+        from tools.normative_catalog.report import evaluate_profile_readiness
+
+        baseline_id = "KMIPKIT-PROFILE-BASELINE-CLIENT"
+        readiness = evaluate_profile_readiness(
+            catalog,
+            baseline_id,
+            selected_profile_ids={baseline_id},
+            typed_rule_mappings=typed_rule_mappings,
+            verification_manifest=None,
+            current_context=None,
+            repository_root=ROOT,
+        )
+        self.assertEqual("evidence_incomplete", readiness["effective_state"])
+        self.assertFalse(readiness["runtime_validation_available"])
+        self.assertFalse(readiness["published_claim"])
+        for requirement_id in sorted(expected_blocked_requirement_ids):
+            self.assertIn(
+                f"typed rule mapping incomplete: {requirement_id}",
+                readiness["blockers"],
+            )
+            self.assertIn(
+                f"category-appropriate test incomplete: {requirement_id}",
+                readiness["blockers"],
+            )
 
     def test_profile_omissions_report_the_oracle_stable_identifier(self) -> None:
         """A closure omission should identify the exact source or requirement ID."""
