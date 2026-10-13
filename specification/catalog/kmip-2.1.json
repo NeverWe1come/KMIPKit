@@ -95617,36 +95617,53 @@
       "source_refs": [
         {
           "source_id": "KMIPKIT-SRC-spec",
+          "section": "3.2"
+        },
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "3.3"
+        },
+        {
+          "source_id": "KMIPKIT-SRC-spec",
           "section": "6.1.43"
+        },
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "11.18"
         }
       ],
       "source_keyword": "MAY",
       "normative_strength": "permission_or_optional",
       "subject": "registered object",
-      "summary": "A client may send the registered object and its attributes wrapped.",
+      "summary": "A client may send the registered object and its attributes wrapped; this evidence covers a TTLV-encoded wrapped Symmetric Key with associated Key Value Attributes.",
       "role": "client",
       "direction": "client_to_server",
-      "condition": null,
+      "condition": "When the client supplies a Register Symmetric Key whose Key Value is wrapped using TTLV encoding and includes associated Key Value Attributes.",
       "scope_state": "client_1_0",
       "element_ids": [
         "KMIPKIT-ELEM-OBJECT-STRUCTURE-KEY-WRAPPING-DATA",
         "KMIPKIT-ELEM-OP-C2S-REGISTER",
-        "KMIPKIT-ELEM-STRUCTURE-MEMBER-3-1-KEY-BLOCK-KEY-WRAPPING-DATA"
+        "KMIPKIT-ELEM-STRUCTURE-MEMBER-3-1-KEY-BLOCK-KEY-WRAPPING-DATA",
+        "KMIPKIT-ELEM-STRUCTURE-MEMBER-3-1-KEY-BLOCK-KEY-VALUE",
+        "KMIPKIT-ELEM-STRUCTURE-MEMBER-3-2-KEY-VALUE-ATTRIBUTES",
+        "KMIPKIT-ELEM-STRUCTURE-MEMBER-3-3-KEY-WRAPPING-DATA-ENCODING-OPTION"
       ],
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0036",
       "implementation_refs": [
         "crates/kmipkit-client/src/execute.rs",
-        "crates/kmipkit-protocol/src/register.rs"
+        "crates/kmipkit-protocol/src/register.rs",
+        "crates/kmipkit-protocol/src/profile.rs::client_register_preserves_optional_wrapped_key_value"
       ],
       "verification_refs": [
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_client_register_wrapped_key_value_with_embedded_attributes",
         "crates/kmipkit-client/tests/unit/register_execution_tests.rs::register_preserves_caller_supplied_opaque_key_value_bytes_with_wrapping_data_from_table_291"
       ],
       "negative_verification_required": false,
       "decision_id": null,
-      "status": "unassigned",
-      "review_note": "KMIP Specification 2.1 section 6.1.43 Table 291 permits the registered object and attributes to be wrapped. The named fake-transport test proves only that caller-supplied opaque Key Value bytes and Key Wrapping Data are forwarded with Register. Its test-only envelope prefixes a plaintext fixture and is not valid KMIP cryptographic wrapping; it does not establish a valid wrapped representation of associated attributes, including embedded attributes within the wrapped object, or server acceptance. Keep this optional client capability unassigned until valid wrapped-attributes request evidence is available. No requirement-specific official test case is linked in the pinned OASIS Test Cases source."
+      "status": "scoped_verified",
+      "review_note": "KMIP Specification v2.1 §6.1.43 Table 291 permits the client to wrap the registered object and attributes. Sections 3.2–3.3 Tables 13–15 describe the optional associated Attributes Structure and TTLV encoding of a wrapped Key Value; §11.18 Table 450 identifies TTLV Encoding. The fake-transport test forwards a deterministic AES-128-WRAP fixture whose unwrapped plaintext was verified to match a TTLV Key Value Structure containing Key Material and associated Attributes. This demonstrates caller-supplied wire preservation only: KMIPKit does not encrypt, decrypt, parse the wrapped contents, or assert server acceptance. The profile test checks the supported wire types and leaves wrapping optional. No requirement-specific official Test Cases ID is linked by the pinned OASIS sources."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.43-007",

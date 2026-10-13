@@ -680,6 +680,7 @@ const WRAPPING_METHOD: u32 = 0x0042_009E;
 const ENCRYPTION_KEY_INFORMATION: u32 = 0x0042_0036;
 const MAC_SIGNATURE_KEY_INFORMATION: u32 = 0x0042_004E;
 const UNIQUE_IDENTIFIER: u32 = 0x0042_0094;
+const ENCODING_OPTION: u32 = 0x0042_00A3;
 const CREATE_KEY_PAIR_OPERATION: u32 = 0x0000_0002;
 const CREATE_KEY_PAIR_ATTRIBUTE_GROUPS: [u32; 3] = [0x0042_0126, 0x0042_0127, 0x0042_0128];
 const CRYPTOGRAPHIC_DOMAIN_PARAMETERS: u32 = 0x0042_0029;
@@ -955,6 +956,76 @@ fn client_register_key_value_location_requires_omitted_key_value(
     })
 }
 
+fn client_register_preserves_optional_wrapped_key_value(
+    request: Option<&RequestMessage>,
+    _response: Option<(&RequestMessage, &ResponseMessage)>,
+) -> bool {
+    let Some(request) = request else {
+        return false;
+    };
+
+    request.batch_items().all(|batch_item| {
+        let Some(operation) = batch_item.operation() else {
+            return false;
+        };
+        if operation != REGISTER_OPERATION {
+            return true;
+        }
+
+        batch_item
+            .with_request_payload(|payload| {
+                register_payload_preserves_optional_key_wrapping(&payload)
+            })
+            .unwrap_or(false)
+    })
+}
+
+fn register_payload_preserves_optional_key_wrapping(payload: &StructureView<'_>) -> bool {
+    for object in payload.children().iter().filter(|field| {
+        !matches!(
+            field.tag().raw(),
+            REGISTER_OBJECT_TYPE | REGISTER_ATTRIBUTES | REGISTER_PROTECTION_STORAGE_MASKS
+        )
+    }) {
+        let object_has_valid_key_block = object.with_value(|value| match value {
+            ValueView::Structure(object) => match field_presence(&object, KEY_BLOCK) {
+                FieldPresence::Missing => true,
+                FieldPresence::Unique(key_block) => key_block.with_value(|value| match value {
+                    ValueView::Structure(key_block) => {
+                        register_key_block_preserves_optional_wrapping(&key_block)
+                    }
+                    _ => false,
+                }),
+                FieldPresence::Duplicate => false,
+            },
+            _ => true,
+        });
+        if !object_has_valid_key_block {
+            return false;
+        }
+    }
+    true
+}
+
+fn register_key_block_preserves_optional_wrapping(key_block: &StructureView<'_>) -> bool {
+    match field_presence(key_block, KEY_WRAPPING_DATA) {
+        FieldPresence::Missing => true,
+        FieldPresence::Unique(wrapping_data) => {
+            let FieldPresence::Unique(key_value) = field_presence(key_block, KEY_VALUE) else {
+                return false;
+            };
+            if !key_value.with_value(|value| matches!(value, ValueView::ByteString(_))) {
+                return false;
+            }
+            wrapping_data.with_value(|value| match value {
+                ValueView::Structure(data) => key_wrapping_data_has_key_information(&data),
+                _ => false,
+            })
+        }
+        FieldPresence::Duplicate => false,
+    }
+}
+
 fn register_key_value_location_is_valid(payload: &StructureView<'_>) -> bool {
     let location = match field_presence(payload, REGISTER_ATTRIBUTES) {
         FieldPresence::Missing => return true,
@@ -1140,6 +1211,16 @@ fn key_wrapping_data_has_key_information(data: &StructureView<'_>) -> bool {
         return false;
     }
 
+    match field_presence(data, ENCODING_OPTION) {
+        FieldPresence::Missing => {}
+        FieldPresence::Unique(encoding_option) => {
+            if !encoding_option.with_value(|value| matches!(value, ValueView::Enumeration(_))) {
+                return false;
+            }
+        }
+        FieldPresence::Duplicate => return false,
+    }
+
     let mut has_key_information = false;
     for tag in [ENCRYPTION_KEY_INFORMATION, MAC_SIGNATURE_KEY_INFORMATION] {
         match field_presence(data, tag) {
@@ -1320,6 +1401,23 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
             test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_client_register_key_value_location_only_without_key_value",
             kind: RuleTestKind::OptionalCapabilityUsable,
         }],
+        constraints: &[],
+    },
+    TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-6.1.43-005",
+        source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.43-005",
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
+        evaluator: Some(client_register_preserves_optional_wrapped_key_value),
+        test_evidence: &[
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_client_register_wrapped_key_value_with_embedded_attributes",
+                kind: RuleTestKind::OptionalCapabilityUsable,
+            },
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-client/tests/unit/register_execution_tests.rs::register_preserves_caller_supplied_opaque_key_value_bytes_with_wrapping_data_from_table_291",
+                kind: RuleTestKind::OptionalCapabilityUsable,
+            },
+        ],
         constraints: &[],
     },
     TypedRuleMapping {

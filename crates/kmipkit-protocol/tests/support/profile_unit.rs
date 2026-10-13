@@ -283,7 +283,7 @@ fn register_wrapped_key_value_request(encoding_option: Value) -> crate::RequestM
                             ])),
                         ),
                     ])),
-                )]))
+                )])),
             ),
         ]),
     )
@@ -2507,7 +2507,9 @@ fn profile_maps_client_register_wrapped_key_value_with_embedded_attributes() {
     };
     result
         .validate_request(&register_wrapped_key_value_request(Value::enumeration(2)))
-        .expect("caller-supplied TTLV-encoded wrapped Key Value with embedded attributes is usable");
+        .expect(
+            "caller-supplied TTLV-encoded wrapped Key Value with embedded attributes is usable",
+        );
     result
         .validate_request(&register_request_with_key_value_location(None, true))
         .expect("wrapping remains optional for a Register request");
@@ -2516,7 +2518,10 @@ fn profile_maps_client_register_wrapped_key_value_with_embedded_attributes() {
     let error = result
         .validate_request(&malformed)
         .expect_err("Encoding Option must use its source-defined Enumeration wire type");
-    assert_eq!(error.code(), ProfileValidationErrorCode::RequestRuleRejected);
+    assert_eq!(
+        error.code(),
+        ProfileValidationErrorCode::RequestRuleRejected
+    );
     assert_eq!(error.requirement_id(), Some(REQUIREMENT_ID));
     assert_eq!(
         error.source_clause_id(),
