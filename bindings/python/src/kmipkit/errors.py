@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from enum import IntEnum
+from enum import IntEnum as _IntEnum
 
 
 class KmipKitError(Exception):
@@ -50,7 +50,7 @@ class ResourceLimitError(KmipKitError):
     category = "resource_limit"
 
 
-class ClientErrorCategory(IntEnum):
+class ClientErrorCategory(_IntEnum):
     """Stable client execution categories returned by the C ABI."""
 
     VALIDATION = 1
@@ -60,7 +60,7 @@ class ClientErrorCategory(IntEnum):
     OTHER = 5
 
 
-class ClientErrorCause(IntEnum):
+class ClientErrorCause(_IntEnum):
     """Redacted client failure cause classifications returned by the C ABI."""
 
     NONE = 0
@@ -76,7 +76,7 @@ class ClientErrorCause(IntEnum):
     OTHER = 10
 
 
-class DeliveryState(IntEnum):
+class DeliveryState(_IntEnum):
     """Whether a failed client request reached the remote endpoint."""
 
     NONE = 0
@@ -85,7 +85,7 @@ class DeliveryState(IntEnum):
     RESPONSE_STARTED = 3
 
 
-def _known_or_raw(enum_type: type[IntEnum], value: int) -> IntEnum | int:
+def _known_or_raw(enum_type: type[_IntEnum], value: int) -> _IntEnum | int:
     try:
         return enum_type(value)
     except ValueError:
