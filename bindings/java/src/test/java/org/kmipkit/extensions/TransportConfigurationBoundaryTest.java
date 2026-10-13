@@ -33,6 +33,8 @@ final class TransportConfigurationBoundaryTest {
         assertInvalidTimeout(1, 0, 1_000_000_000);
         assertInvalidTimeout(2, 1, 0);
         assertInvalidTimeout(2, 0, 1);
+        assertThrows(InvalidInputException.class,
+                () -> TransportConfiguration.Timeout.bounded(Duration.ofSeconds(-1)));
     }
 
     @Test

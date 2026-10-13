@@ -5,12 +5,18 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import org.junit.jupiter.api.Test;
+import org.kmipkit.extensions.Client;
 import org.kmipkit.extensions.ClientBatch;
 import org.kmipkit.extensions.ClientBatchItem;
 import org.kmipkit.extensions.TransportConfiguration;
 
 /** Exercises the shared Java client and ordered batch facade over the native ABI. */
 final class ClientFacadeContractTest {
+    @Test
+    void clientCreationRejectsMissingConfigurationsBeforeLoadingNativeCode() {
+        assertThrows(InvalidInputException.class, () -> Client.create(null, null));
+    }
+
     @Test
     void transportConfigurationRejectsMissingMutualTlsIdentityBeforeNativeConstruction() {
         TransportConfiguration.Builder configuration = TransportConfiguration.builder()

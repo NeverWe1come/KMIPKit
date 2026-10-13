@@ -73,6 +73,28 @@ final class NativeTransportConfigurationBoundaryTest {
                 null, null, new long[12], 16 * 1024 * 1024L));
     }
 
+    @Test
+    void rejectsNullEndpointAtNativeBoundary() {
+        assertThrows(InvalidInputException.class, () -> NativeExtensionRegistry.transportConfigCreate(
+                1, null, 5696, 1,
+                new int[] {1}, new int[] {1}, new byte[][] {{1}},
+                1, 1, new byte[] {1},
+                new int[0], new int[0], new byte[0][],
+                new int[0], new int[0], new byte[0][],
+                null, null, new long[12], 16 * 1024 * 1024L));
+    }
+
+    @Test
+    void rejectsNullPrivateKeyAtNativeBoundary() {
+        assertThrows(InvalidInputException.class, () -> NativeExtensionRegistry.transportConfigCreate(
+                1, "kmip.example.test", 5696, 1,
+                new int[] {1}, new int[] {1}, new byte[][] {{1}},
+                1, 1, null,
+                new int[0], new int[0], new byte[0][],
+                new int[0], new int[0], new byte[0][],
+                null, null, new long[12], 16 * 1024 * 1024L));
+    }
+
     private static long create(int[] sources, int[] encodings, byte[][] certificates, long[] timeouts) {
         return NativeExtensionRegistry.transportConfigCreate(
                 1, "kmip.example.test", 5696, 1,
