@@ -50,7 +50,7 @@ The complete C/Java/Python audit command produced exit code 0:
 | Package | Scanner complete | Observed | Manifest | Exact matches | Missing | Stale | Kind mismatches | Issues |
 | --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
 | C | yes | 182 | 178 | 178 | 0 | 0 | 0 | 0 |
-| Java | yes | 330 | 330 | 330 | 0 | 0 | 0 | 0 |
+| Java | yes | 351 | 351 | 351 | 0 | 0 | 0 | 0 |
 | Python | yes | 274 | 274 | 274 | 0 | 0 | 0 | 0 |
 
 The C count observes 182 exported paths: 178 manifest declarations and four
