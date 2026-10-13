@@ -376,6 +376,38 @@ fn production_discover_versions_rule_accepts_only_kmip_21_offers() {
 }
 
 #[test]
+fn profile_allows_type_specific_cryptographic_parameters_without_remote_object_inference() {
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-4.16-001-002";
+    const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
+    const CRYPTOGRAPHIC_PARAMETERS_TAG: u32 = 0x0042_002B;
+    const DIGITAL_SIGNATURE_ALGORITHM_TAG: u32 = 0x0042_00AE;
+
+    let result = ProfileValidationResult {
+        profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
+        requirement_ids: vec![REQUIREMENT_ID.to_owned()],
+    };
+    let parameters = structure([tagged(
+        CRYPTOGRAPHIC_PARAMETERS_TAG,
+        Value::structure(structure([tagged(
+            DIGITAL_SIGNATURE_ALGORITHM_TAG,
+            Value::enumeration(1),
+        )])),
+    )]);
+    let payload = crate::EncryptRequest::new(
+        Some(crate::UniqueIdentifier::TextString("profile-key-id".to_owned())),
+        Some(crate::OperationData::Integer(7)),
+    )
+    .with_cryptographic_parameters(parameters)
+    .to_ttlv_payload()
+    .expect("the caller-supplied type-specific parameter is structurally valid");
+    let request = request_message_with_operation_payload(0x0000_001F, payload);
+
+    result
+        .validate_request(&request)
+        .expect("profile validation does not infer a server-held object type");
+}
+
+#[test]
 fn public_profile_result_entrypoints_validate_transport_and_responses() {
     // KMIP Specification v2.1 §14.1 and KMIP Profiles v2.1 §6.1; KMIPKIT-0010 FR-014.
     const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.16-001-001";
