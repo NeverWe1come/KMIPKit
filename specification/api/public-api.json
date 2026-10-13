@@ -201879,6 +201879,486 @@
       "parityScope": "four-language",
       "candidateSpecId": "KMIPKIT-0043",
       "blockedReason": "This Java AutoCloseable declaration has no reviewed equivalent mapping across the four public languages; it is inventoried without advertising complete parity."
+    },
+    {
+      "declarationId": "T076:kmipkit_byte_span_v1_t:c-observed",
+      "packageId": "c-kmipkit",
+      "kind": "type",
+      "exportName": "kmipkit_byte_span_v1_t",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0043",
+      "blockedReason": "Observed by T076 in the C binary. It remains blocked and is excluded from generated public declarations until T021 and T024 provide the approved Java and Python mappings; no public signature is recorded."
+    },
+    {
+      "declarationId": "T076:kmipkit_client_batch_add_error_continuation_value:c-observed",
+      "packageId": "c-kmipkit",
+      "kind": "c-symbol",
+      "exportName": "kmipkit_client_batch_add_error_continuation_value",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0043",
+      "blockedReason": "Observed by T076 in the C binary. It remains blocked and is excluded from generated public declarations until T021 and T024 provide the approved Java and Python mappings; no public signature is recorded."
+    },
+    {
+      "declarationId": "T076:kmipkit_client_batch_add_item:c-observed",
+      "packageId": "c-kmipkit",
+      "kind": "c-symbol",
+      "exportName": "kmipkit_client_batch_add_item",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0043",
+      "blockedReason": "Observed by T076 in the C binary. It remains blocked and is excluded from generated public declarations until T021 and T024 provide the approved Java and Python mappings; no public signature is recorded."
+    },
+    {
+      "declarationId": "T076:kmipkit_client_batch_create:c-observed",
+      "packageId": "c-kmipkit",
+      "kind": "c-symbol",
+      "exportName": "kmipkit_client_batch_create",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0043",
+      "blockedReason": "Observed by T076 in the C binary. It remains blocked and is excluded from generated public declarations until T021 and T024 provide the approved Java and Python mappings; no public signature is recorded."
+    },
+    {
+      "declarationId": "T076:kmipkit_client_batch_item_with_unique_batch_item_id:c-observed",
+      "packageId": "c-kmipkit",
+      "kind": "c-symbol",
+      "exportName": "kmipkit_client_batch_item_with_unique_batch_item_id",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0043",
+      "blockedReason": "Observed by T076 in the C binary. It remains blocked and is excluded from generated public declarations until T021 and T024 provide the approved Java and Python mappings; no public signature is recorded."
+    },
+    {
+      "declarationId": "T076:kmipkit_client_batch_item_metadata_v1_t:c-observed",
+      "packageId": "c-kmipkit",
+      "kind": "type",
+      "exportName": "kmipkit_client_batch_item_metadata_v1_t",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0043",
+      "blockedReason": "Observed by T076 in the C binary. It remains blocked and is excluded from generated public declarations until T021 and T024 provide the approved Java and Python mappings; no public signature is recorded."
+    },
+    {
+      "declarationId": "T076:kmipkit_client_batch_item_response_metadata_v1:c-observed",
+      "packageId": "c-kmipkit",
+      "kind": "c-symbol",
+      "exportName": "kmipkit_client_batch_item_response_metadata_v1",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0043",
+      "blockedReason": "Observed by T076 in the C binary. It remains blocked and is excluded from generated public declarations until T021 and T024 provide the approved Java and Python mappings; no public signature is recorded."
+    },
+    {
+      "declarationId": "T076:kmipkit_client_batch_item_response_pending_correlation_value:c-observed",
+      "packageId": "c-kmipkit",
+      "kind": "c-symbol",
+      "exportName": "kmipkit_client_batch_item_response_pending_correlation_value",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0043",
+      "blockedReason": "Observed by T076 in the C binary. It remains blocked and is excluded from generated public declarations until T021 and T024 provide the approved Java and Python mappings; no public signature is recorded."
+    },
+    {
+      "declarationId": "T076:kmipkit_client_batch_item_response_release:c-observed",
+      "packageId": "c-kmipkit",
+      "kind": "c-symbol",
+      "exportName": "kmipkit_client_batch_item_response_release",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0043",
+      "blockedReason": "Observed by T076 in the C binary. It remains blocked and is excluded from generated public declarations until T021 and T024 provide the approved Java and Python mappings; no public signature is recorded."
+    },
+    {
+      "declarationId": "T076:kmipkit_client_batch_item_response_t:c-observed",
+      "packageId": "c-kmipkit",
+      "kind": "type",
+      "exportName": "kmipkit_client_batch_item_response_t",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0043",
+      "blockedReason": "Observed by T076 in the C binary. It remains blocked and is excluded from generated public declarations until T021 and T024 provide the approved Java and Python mappings; no public signature is recorded."
+    },
+    {
+      "declarationId": "T076:kmipkit_client_batch_item_response_unique_batch_item_id:c-observed",
+      "packageId": "c-kmipkit",
+      "kind": "c-symbol",
+      "exportName": "kmipkit_client_batch_item_response_unique_batch_item_id",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0043",
+      "blockedReason": "Observed by T076 in the C binary. It remains blocked and is excluded from generated public declarations until T021 and T024 provide the approved Java and Python mappings; no public signature is recorded."
+    },
+    {
+      "declarationId": "T076:kmipkit_client_batch_release:c-observed",
+      "packageId": "c-kmipkit",
+      "kind": "c-symbol",
+      "exportName": "kmipkit_client_batch_release",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0043",
+      "blockedReason": "Observed by T076 in the C binary. It remains blocked and is excluded from generated public declarations until T021 and T024 provide the approved Java and Python mappings; no public signature is recorded."
+    },
+    {
+      "declarationId": "T076:kmipkit_client_batch_response_item_at:c-observed",
+      "packageId": "c-kmipkit",
+      "kind": "c-symbol",
+      "exportName": "kmipkit_client_batch_response_item_at",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0043",
+      "blockedReason": "Observed by T076 in the C binary. It remains blocked and is excluded from generated public declarations until T021 and T024 provide the approved Java and Python mappings; no public signature is recorded."
+    },
+    {
+      "declarationId": "T076:kmipkit_client_batch_response_item_count:c-observed",
+      "packageId": "c-kmipkit",
+      "kind": "c-symbol",
+      "exportName": "kmipkit_client_batch_response_item_count",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0043",
+      "blockedReason": "Observed by T076 in the C binary. It remains blocked and is excluded from generated public declarations until T021 and T024 provide the approved Java and Python mappings; no public signature is recorded."
+    },
+    {
+      "declarationId": "T076:kmipkit_client_batch_response_release:c-observed",
+      "packageId": "c-kmipkit",
+      "kind": "c-symbol",
+      "exportName": "kmipkit_client_batch_response_release",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0043",
+      "blockedReason": "Observed by T076 in the C binary. It remains blocked and is excluded from generated public declarations until T021 and T024 provide the approved Java and Python mappings; no public signature is recorded."
+    },
+    {
+      "declarationId": "T076:kmipkit_client_batch_response_t:c-observed",
+      "packageId": "c-kmipkit",
+      "kind": "type",
+      "exportName": "kmipkit_client_batch_response_t",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0043",
+      "blockedReason": "Observed by T076 in the C binary. It remains blocked and is excluded from generated public declarations until T021 and T024 provide the approved Java and Python mappings; no public signature is recorded."
+    },
+    {
+      "declarationId": "T076:kmipkit_client_batch_set_asynchronous_indicator:c-observed",
+      "packageId": "c-kmipkit",
+      "kind": "c-symbol",
+      "exportName": "kmipkit_client_batch_set_asynchronous_indicator",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0043",
+      "blockedReason": "Observed by T076 in the C binary. It remains blocked and is excluded from generated public declarations until T021 and T024 provide the approved Java and Python mappings; no public signature is recorded."
+    },
+    {
+      "declarationId": "T076:kmipkit_client_batch_set_client_correlation_value:c-observed",
+      "packageId": "c-kmipkit",
+      "kind": "c-symbol",
+      "exportName": "kmipkit_client_batch_set_client_correlation_value",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0043",
+      "blockedReason": "Observed by T076 in the C binary. It remains blocked and is excluded from generated public declarations until T021 and T024 provide the approved Java and Python mappings; no public signature is recorded."
+    },
+    {
+      "declarationId": "T076:kmipkit_client_batch_set_order_option:c-observed",
+      "packageId": "c-kmipkit",
+      "kind": "c-symbol",
+      "exportName": "kmipkit_client_batch_set_order_option",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0043",
+      "blockedReason": "Observed by T076 in the C binary. It remains blocked and is excluded from generated public declarations until T021 and T024 provide the approved Java and Python mappings; no public signature is recorded."
+    },
+    {
+      "declarationId": "T076:kmipkit_client_batch_set_request_time_stamp:c-observed",
+      "packageId": "c-kmipkit",
+      "kind": "c-symbol",
+      "exportName": "kmipkit_client_batch_set_request_time_stamp",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0043",
+      "blockedReason": "Observed by T076 in the C binary. It remains blocked and is excluded from generated public declarations until T021 and T024 provide the approved Java and Python mappings; no public signature is recorded."
+    },
+    {
+      "declarationId": "T076:kmipkit_client_batch_t:c-observed",
+      "packageId": "c-kmipkit",
+      "kind": "type",
+      "exportName": "kmipkit_client_batch_t",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0043",
+      "blockedReason": "Observed by T076 in the C binary. It remains blocked and is excluded from generated public declarations until T021 and T024 provide the approved Java and Python mappings; no public signature is recorded."
+    },
+    {
+      "declarationId": "T076:kmipkit_client_create:c-observed",
+      "packageId": "c-kmipkit",
+      "kind": "c-symbol",
+      "exportName": "kmipkit_client_create",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0043",
+      "blockedReason": "Observed by T076 in the C binary. It remains blocked and is excluded from generated public declarations until T021 and T024 provide the approved Java and Python mappings; no public signature is recorded."
+    },
+    {
+      "declarationId": "T076:kmipkit_client_execute:c-observed",
+      "packageId": "c-kmipkit",
+      "kind": "c-symbol",
+      "exportName": "kmipkit_client_execute",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0043",
+      "blockedReason": "Observed by T076 in the C binary. It remains blocked and is excluded from generated public declarations until T021 and T024 provide the approved Java and Python mappings; no public signature is recorded."
+    },
+    {
+      "declarationId": "T076:kmipkit_client_release:c-observed",
+      "packageId": "c-kmipkit",
+      "kind": "c-symbol",
+      "exportName": "kmipkit_client_release",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0043",
+      "blockedReason": "Observed by T076 in the C binary. It remains blocked and is excluded from generated public declarations until T021 and T024 provide the approved Java and Python mappings; no public signature is recorded."
+    },
+    {
+      "declarationId": "T076:kmipkit_client_t:c-observed",
+      "packageId": "c-kmipkit",
+      "kind": "type",
+      "exportName": "kmipkit_client_t",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0043",
+      "blockedReason": "Observed by T076 in the C binary. It remains blocked and is excluded from generated public declarations until T021 and T024 provide the approved Java and Python mappings; no public signature is recorded."
+    },
+    {
+      "declarationId": "T076:kmipkit_timeout_limit_v1_t:c-observed",
+      "packageId": "c-kmipkit",
+      "kind": "type",
+      "exportName": "kmipkit_timeout_limit_v1_t",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0043",
+      "blockedReason": "Observed by T076 in the C binary. It remains blocked and is excluded from generated public declarations until T021 and T024 provide the approved Java and Python mappings; no public signature is recorded."
+    },
+    {
+      "declarationId": "T076:kmipkit_transport_config_create_v1:c-observed",
+      "packageId": "c-kmipkit",
+      "kind": "c-symbol",
+      "exportName": "kmipkit_transport_config_create_v1",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0043",
+      "blockedReason": "Observed by T076 in the C binary. It remains blocked and is excluded from generated public declarations until T021 and T024 provide the approved Java and Python mappings; no public signature is recorded."
+    },
+    {
+      "declarationId": "T076:kmipkit_transport_config_release:c-observed",
+      "packageId": "c-kmipkit",
+      "kind": "c-symbol",
+      "exportName": "kmipkit_transport_config_release",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0043",
+      "blockedReason": "Observed by T076 in the C binary. It remains blocked and is excluded from generated public declarations until T021 and T024 provide the approved Java and Python mappings; no public signature is recorded."
+    },
+    {
+      "declarationId": "T076:kmipkit_transport_config_t:c-observed",
+      "packageId": "c-kmipkit",
+      "kind": "type",
+      "exportName": "kmipkit_transport_config_t",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0043",
+      "blockedReason": "Observed by T076 in the C binary. It remains blocked and is excluded from generated public declarations until T021 and T024 provide the approved Java and Python mappings; no public signature is recorded."
+    },
+    {
+      "declarationId": "T076:kmipkit_transport_config_v1_t:c-observed",
+      "packageId": "c-kmipkit",
+      "kind": "type",
+      "exportName": "kmipkit_transport_config_v1_t",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0043",
+      "blockedReason": "Observed by T076 in the C binary. It remains blocked and is excluded from generated public declarations until T021 and T024 provide the approved Java and Python mappings; no public signature is recorded."
+    },
+    {
+      "declarationId": "T076:kmipkit_transport_input_v1_t:c-observed",
+      "packageId": "c-kmipkit",
+      "kind": "type",
+      "exportName": "kmipkit_transport_input_v1_t",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0043",
+      "blockedReason": "Observed by T076 in the C binary. It remains blocked and is excluded from generated public declarations until T021 and T024 provide the approved Java and Python mappings; no public signature is recorded."
     }
   ],
   "approvedExclusions": [
