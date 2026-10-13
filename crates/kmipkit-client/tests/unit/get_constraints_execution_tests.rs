@@ -10,7 +10,7 @@ use crate::{ClientBatch,ClientBatchItem,ClientBatchOutcome,ClientRequest,ClientO
 
 #[test]
 fn get_constraints_one_exchange_returns_typed_success() {
- let response=asynchronous_response_bytes(56,0,None,None,Some(test_structure([test_item(0x420168, Value::test_structure(test_structure([])))])));
+ let response=asynchronous_response_bytes(56,0,None,None,Some(test_structure([test_item(0x420168, Value::structure(test_structure([])))])));
  let (mut client,transport,captured)=client_for(ExchangeScript::Success{response,request_write_chunks:vec![2,5]});
  let response=client.get_constraints(&CodecLimits::defaults()).expect("success");
  assert_eq!(response.outcome().operation(),ClientOperation::GetConstraints);
@@ -35,7 +35,7 @@ fn get_constraints_delivery_is_preserved_without_retry() {
 }
 #[test]
 fn get_constraints_pending_retains_correlation_and_response_without_poll() {
- let response=asynchronous_response_bytes(56,2,None,Some(b"policy-pending"),None);
+ let response=asynchronous_response_bytes(56,2,None,Some(b"policy-pending"),Some(test_structure([])));
  let (mut client,transport,_)=client_for(ExchangeScript::Success{response,request_write_chunks:vec![]});
  let batch=ClientBatch::new(ClientBatchItem::new(ClientRequest::GetConstraints(GetConstraintsRequest::new()))).with_asynchronous_indicator(1);
  let response=client.execute(batch,&CodecLimits::defaults()).expect("Pending");

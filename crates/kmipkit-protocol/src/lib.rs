@@ -346,3 +346,9 @@ mod attribute_coverage_contract_tests;
 #[cfg(test)]
 #[path = "../tests/unit/get_constraints_tests.rs"]
 mod get_constraints_tests;
+
+mod policy_controls;
+pub use policy_controls::PolicyControlsError;
+
+mod get_constraints;
+pub use get_constraints::{GetConstraintsRequest,GetConstraintsResponse};

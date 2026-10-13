@@ -13,3 +13,5 @@ pub use kmipkit_protocol::{
     ResultStatus, ResultValidationError,
 };
 pub use kmipkit_transport::{RequestDeliveryState, TransportCauseCategory, TransportError};
+
+pub use kmipkit_protocol::{GetConstraintsRequest,GetConstraintsResponse};

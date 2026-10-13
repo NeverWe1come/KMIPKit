@@ -29,8 +29,10 @@ fn failures_preserve_all_table_and_vendor_reasons() {
 }
 #[test]
 fn missing_success_payload_is_rejected() {
-    let message=response_message(56,0,None,None,None);
-    assert!(GetConstraintsResponse::try_from_response_item(response_item(&message)).is_err());
+    let version=structure([item(0x42006a,Value::integer(2)),item(0x42006b,Value::integer(1))]);
+ let header=structure([item(0x420069,Value::structure(version)),item(0x420092,Value::date_time(1)),item(0x42000d,Value::integer(1))]);
+ let batch=structure([item(0x42005c,Value::enumeration(56)),item(0x42007f,Value::enumeration(0))]);
+ assert!(crate::ResponseMessage::try_from_ttlv(structure([item(0x42007a,Value::structure(header)),item(0x42000f,Value::structure(batch))])).is_err());
 }
 #[test]
 fn malformed_required_fields_are_rejected() {

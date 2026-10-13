@@ -1,5 +1,6 @@
 //! Closed typed request execution for the synchronous KMIP client.
 
+use kmipkit_protocol::{GetConstraintsRequest,GetConstraintsResponse};
 use std::collections::HashSet;
 use std::error::Error;
 use std::fmt;
@@ -107,20 +108,20 @@ const CLIENT_CORRELATION_VALUE: u32 = 0x0042_0105;
 const TIME_STAMP: u32 = 0x0042_0092;
 const UNIQUE_BATCH_ITEM_ID: u32 = 0x0042_0093;
 const DISCOVER_VERSIONS_OPERATION: u32 = 0x0000_001E;
-const ENCRYPT_OPERATION: u32 = 0x0000_001F; // KMIP v2.1 §6.1.17, Table 214.
-const DECRYPT_OPERATION: u32 = 0x0000_0020; // KMIP v2.1 §6.1.11, Table 196.
-const HASH_OPERATION: u32 = 0x0000_0027; // KMIP v2.1 §6.1.24, Table 235.
-const MAC_OPERATION: u32 = 0x0000_0023; // KMIP v2.1 §6.1.32, Table 259.
-const MAC_VERIFY_OPERATION: u32 = 0x0000_0024; // KMIP v2.1 §6.1.33, Table 262.
-const SIGN_OPERATION: u32 = 0x0000_0021; // KMIP v2.1 §6.1.55, Table 334.
-const SIGNATURE_VERIFY_OPERATION: u32 = 0x0000_0022; // KMIP v2.1 §6.1.56, Table 337.
+const ENCRYPT_OPERATION: u32 = 0x0000_001F; // KMIP v2.1 Â§6.1.17, Table 214.
+const DECRYPT_OPERATION: u32 = 0x0000_0020; // KMIP v2.1 Â§6.1.11, Table 196.
+const HASH_OPERATION: u32 = 0x0000_0027; // KMIP v2.1 Â§6.1.24, Table 235.
+const MAC_OPERATION: u32 = 0x0000_0023; // KMIP v2.1 Â§6.1.32, Table 259.
+const MAC_VERIFY_OPERATION: u32 = 0x0000_0024; // KMIP v2.1 Â§6.1.33, Table 262.
+const SIGN_OPERATION: u32 = 0x0000_0021; // KMIP v2.1 Â§6.1.55, Table 334.
+const SIGNATURE_VERIFY_OPERATION: u32 = 0x0000_0022; // KMIP v2.1 Â§6.1.56, Table 337.
 const CREATE_OPERATION: u32 = 0x0000_0001;
 const CREATE_KEY_PAIR_OPERATION: u32 = 0x0000_0002;
-const CREATE_SPLIT_KEY_OPERATION: u32 = 0x0000_0028; // KMIP v2.1 §11.36, Table 470.
-const ACTIVATE_OPERATION: u32 = 0x0000_0012; // KMIP v2.1 §6.1.1, Table 164.
-const ARCHIVE_OPERATION: u32 = 0x0000_0013; // KMIP v2.1 §6.1.4, Table 173.
-const DESTROY_OPERATION: u32 = 0x0000_0014; // KMIP v2.1 §6.1.15, Table 208.
-const RECOVER_OPERATION: u32 = 0x0000_002A; // KMIP v2.1 §6.1.42, Table 288.
+const CREATE_SPLIT_KEY_OPERATION: u32 = 0x0000_0028; // KMIP v2.1 Â§11.36, Table 470.
+const ACTIVATE_OPERATION: u32 = 0x0000_0012; // KMIP v2.1 Â§6.1.1, Table 164.
+const ARCHIVE_OPERATION: u32 = 0x0000_0013; // KMIP v2.1 Â§6.1.4, Table 173.
+const DESTROY_OPERATION: u32 = 0x0000_0014; // KMIP v2.1 Â§6.1.15, Table 208.
+const RECOVER_OPERATION: u32 = 0x0000_002A; // KMIP v2.1 Â§6.1.42, Table 288.
 const ADD_ATTRIBUTE_OPERATION: u32 = 0x0000_000D;
 const MODIFY_ATTRIBUTE_OPERATION: u32 = 0x0000_000E;
 const DELETE_ATTRIBUTE_OPERATION: u32 = 0x0000_000F;
@@ -130,6 +131,7 @@ const CANCEL_OPERATION: u32 = 0x0000_0019;
 const POLL_OPERATION: u32 = 0x0000_001A;
 const QUERY_ASYNCHRONOUS_REQUESTS_OPERATION: u32 = 0x0000_0039;
 const PROCESS_OPERATION: u32 = 0x0000_003A;
+const GET_CONSTRAINTS_OPERATION:u32=56; // OASIS §6.1.22.
 const PING_OPERATION: u32 = 0x0000_003B;
 const QUERY_OPERATION: u32 = 0x0000_0018;
 const ASYNCHRONOUS_MANDATORY: u32 = 1;
@@ -182,6 +184,8 @@ pub enum ClientRequest {
     GetAttributeList(GetAttributeListRequest),
     /// An explicit client-to-server Ping request.
     Ping(PingRequest),
+    /// Explicit GetConstraints policy operation.
+    GetConstraints(GetConstraintsRequest),
     /// An explicit client-to-server Query request.
     Query(QueryRequest),
     /// An explicit client-to-server Encrypt request.
@@ -359,6 +363,7 @@ impl ClientRequest {
             Self::GetAttributes(_) => GET_ATTRIBUTES_OPERATION,
             Self::GetAttributeList(_) => GET_ATTRIBUTE_LIST_OPERATION,
             Self::Ping(_) => PING_OPERATION,
+            Self::GetConstraints(_) => GET_CONSTRAINTS_OPERATION,
             Self::Query(_) => QUERY_OPERATION,
             Self::Encrypt(_) => ENCRYPT_OPERATION,
             Self::Decrypt(_) => DECRYPT_OPERATION,
@@ -429,6 +434,7 @@ impl ClientRequest {
             Self::GetAttributes(request) => request.to_ttlv_payload(),
             Self::GetAttributeList(request) => request.to_ttlv_payload(),
             Self::Ping(request) => request.to_ttlv_payload(),
+            Self::GetConstraints(request) => request.to_ttlv_payload(),
             Self::Query(request) => request.to_ttlv_payload(),
             Self::Encrypt(request) => request.to_ttlv_payload(),
             Self::Decrypt(request) => request.to_ttlv_payload(),
@@ -468,6 +474,7 @@ impl fmt::Debug for ClientRequest {
                 .field(request)
                 .finish(),
             Self::Ping(_) => formatter.write_str("Ping"),
+            Self::GetConstraints(_) => formatter.write_str("GetConstraints"),
             Self::Query(_) => formatter.write_str("Query([REDACTED])"),
             Self::Encrypt(_) => formatter.write_str("Encrypt([REDACTED])"),
             Self::Decrypt(_) => formatter.write_str("Decrypt([REDACTED])"),
@@ -756,6 +763,8 @@ enum PendingResponse {
     GetAttributes(GetAttributesResponse),
     GetAttributeList(GetAttributeListResponse),
     Ping(PingResponse),
+    /// Explicit GetConstraints policy operation.
+    GetConstraints(GetConstraintsResponse),
     Query(QueryResponse),
 }
 
@@ -787,6 +796,7 @@ impl PendingResponse {
             Self::GetAttributes(response) => ClientResponseRef::GetAttributes(response),
             Self::GetAttributeList(response) => ClientResponseRef::GetAttributeList(response),
             Self::Ping(response) => ClientResponseRef::Ping(response),
+            Self::GetConstraints(response) => ClientResponseRef::GetConstraints(response),
             Self::Query(response) => ClientResponseRef::Query(response),
         };
         ClientResponseView { response }
@@ -984,6 +994,8 @@ pub enum ClientOperation {
     GetAttributeList,
     /// Ping one server connection and observe its KMIP response.
     Ping,
+    /// Explicit GetConstraints policy operation.
+    GetConstraints,
     /// Query one server for explicitly requested protocol information.
     Query,
     /// Encrypt data with the explicitly selected server-side object.
@@ -1148,6 +1160,8 @@ enum ClientResponseRef<'a> {
     GetAttributes(&'a GetAttributesResponse),
     GetAttributeList(&'a GetAttributeListResponse),
     Ping(&'a PingResponse),
+    /// Explicit GetConstraints policy operation.
+    GetConstraints(&'a GetConstraintsResponse),
     Query(&'a QueryResponse),
 }
 
@@ -1190,6 +1204,7 @@ impl<'a> ClientResponseView<'a> {
             ClientResponseRef::GetAttributes(response) => response.result(),
             ClientResponseRef::GetAttributeList(response) => response.result(),
             ClientResponseRef::Ping(response) => response.result(),
+            ClientResponseRef::GetConstraints(response) => response.result(),
             ClientResponseRef::Query(response) => response.result(),
         }
     }
@@ -1423,6 +1438,10 @@ impl<'a> ClientResponseView<'a> {
         }
     }
 
+    /// Returns this policy response when its operation matches.
+    #[must_use]
+    pub const fn get_constraints(&self)->Option<&GetConstraintsResponse>{match self.response{ClientResponseRef::GetConstraints(response)=>Some(response),_=>None}}
+
     /// Returns the Ping response when this view represents it.
     #[must_use]
     pub const fn ping(&self) -> Option<&PingResponse> {
@@ -1523,6 +1542,9 @@ impl fmt::Debug for ClientResponseView<'_> {
             ClientResponseRef::Ping(response) => {
                 formatter.debug_tuple("Ping").field(response).finish()
             }
+            ClientResponseRef::GetConstraints(response) => {
+                formatter.debug_tuple("GetConstraints").field(response).finish()
+            }
             ClientResponseRef::Query(response) => {
                 formatter.debug_tuple("Query").field(response).finish()
             }
@@ -1585,6 +1607,8 @@ pub enum ClientBatchOutcome {
     GetAttributeList(GetAttributeListResponse),
     /// The server returned a Ping result.
     Ping(PingResponse),
+    /// Explicit GetConstraints policy operation.
+    GetConstraints(GetConstraintsResponse),
     /// The server returned a Query result.
     Query(QueryResponse),
 }
@@ -1619,6 +1643,7 @@ impl ClientBatchOutcome {
             | Self::GetAttributes(_)
             | Self::GetAttributeList(_)
             | Self::Ping(_)
+            | Self::GetConstraints(_)
             | Self::Query(_) => None,
             Self::Pending(pending) => Some(pending.asynchronous_correlation_value()),
         }
@@ -1653,6 +1678,7 @@ impl ClientBatchOutcome {
             Self::GetAttributes(response) => response.result(),
             Self::GetAttributeList(response) => response.result(),
             Self::Ping(response) => response.result(),
+            Self::GetConstraints(response) => response.result(),
             Self::Query(response) => response.result(),
             Self::Pending(pending) => pending.result(),
         }
@@ -1687,6 +1713,7 @@ impl ClientBatchOutcome {
             Self::GetAttributes(_) => ClientOperation::GetAttributes,
             Self::GetAttributeList(_) => ClientOperation::GetAttributeList,
             Self::Ping(_) => ClientOperation::Ping,
+            Self::GetConstraints(_) => ClientOperation::GetConstraints,
             Self::Query(_) => ClientOperation::Query,
             Self::Pending(pending) => pending.operation(),
         }
@@ -1928,6 +1955,9 @@ impl ClientBatchOutcome {
             Self::Ping(response) => ClientResponseView {
                 response: ClientResponseRef::Ping(response),
             },
+            Self::GetConstraints(response) => ClientResponseView {
+                response: ClientResponseRef::GetConstraints(response),
+            },
             Self::Query(response) => ClientResponseView {
                 response: ClientResponseRef::Query(response),
             },
@@ -2007,6 +2037,7 @@ impl fmt::Debug for ClientBatchOutcome {
                 .field(response)
                 .finish(),
             Self::Ping(response) => formatter.debug_tuple("Ping").field(response).finish(),
+            Self::GetConstraints(response) => formatter.debug_tuple("GetConstraints").field(response).finish(),
             Self::Query(response) => formatter.debug_tuple("Query").field(response).finish(),
         }
     }
@@ -2067,6 +2098,7 @@ impl fmt::Display for ClientBatchOutcome {
                 write!(formatter, "GetAttributeList({})", response.result())
             }
             Self::Ping(response) => write!(formatter, "Ping({})", response.result()),
+            Self::GetConstraints(response) => write!(formatter, "GetConstraints({})", response.result()),
             Self::Query(response) => write!(formatter, "Query({})", response.result()),
         }
     }
@@ -2416,7 +2448,7 @@ impl Client {
     ///
     /// The request uses the shared writer, response bounds, and one-exchange
     /// lifecycle. The client reports the server result without simulating the
-    /// server-only object-state effect from KMIP v2.1 §6.1.1.
+    /// server-only object-state effect from KMIP v2.1 Â§6.1.1.
     ///
     /// # Errors
     ///
@@ -2504,7 +2536,7 @@ impl Client {
     ///
     /// The request uses the shared writer, response bounds, and one-exchange
     /// lifecycle. The client reports the server result without simulating the
-    /// server-only object-state effect from KMIP v2.1 §6.1.15.
+    /// server-only object-state effect from KMIP v2.1 Â§6.1.15.
     ///
     /// # Errors
     ///
@@ -2565,6 +2597,14 @@ impl Client {
             request_options,
         )?;
         take_single_item_response(response.items)
+    }
+
+    /// Executes one explicit §6.1.22 policy operation without retry.
+    /// # Errors
+    /// Returns sanitized validation, protocol or transport failure with delivery evidence.
+    pub fn get_constraints(&mut self,limits:&CodecLimits)->Result<ClientBatchItemResponse,ClientError>{
+      let response=self.execute(ClientBatch::new(ClientBatchItem::new(ClientRequest::GetConstraints(GetConstraintsRequest::new()))),limits)?;
+      take_single_response(response)
     }
 
     /// Executes one client-to-server Ping request.
@@ -2988,7 +3028,7 @@ impl Client {
     ///
     /// The request uses the exact correlation bytes in `request`. Poll itself
     /// is not marked asynchronous; its Pending result describes the original
-    /// operation under OASIS KMIP v2.1 §6.1.38.
+    /// operation under OASIS KMIP v2.1 Â§6.1.38.
     ///
     /// The caller decides whether another Poll is appropriate:
     ///
@@ -3054,7 +3094,7 @@ impl Client {
     /// Executes one explicit Cancel request and verifies the successful response
     /// echoes the exact correlation bytes supplied by the caller.
     ///
-    /// Cancel is synchronous under OASIS KMIP v2.1 §6.1.5; a Pending response
+    /// Cancel is synchronous under OASIS KMIP v2.1 Â§6.1.5; a Pending response
     /// is rejected even when the original operation was asynchronous.
     ///
     /// # Errors
@@ -3551,6 +3591,7 @@ fn request_mutation_is_prohibited(request: &ClientRequest) -> bool {
         | ClientRequest::GetAttributes(_)
         | ClientRequest::GetAttributeList(_)
         | ClientRequest::Ping(_)
+        | ClientRequest::GetConstraints(_)
         | ClientRequest::Query(_)
         | ClientRequest::Encrypt(_)
         | ClientRequest::Decrypt(_)
@@ -4194,6 +4235,14 @@ fn response_outcome(
             PendingResponse::Ping,
             ClientBatchOutcome::Ping,
         ),
+        GET_CONSTRAINTS_OPERATION => read_operation_outcome(
+            ClientOperation::GetConstraints,
+            item,
+            GetConstraintsResponse::try_from_response_item,
+            GetConstraintsResponse::result,
+            PendingResponse::GetConstraints,
+            ClientBatchOutcome::GetConstraints,
+        ),
         DISCOVER_VERSIONS_OPERATION => {
             let response = DiscoverVersionsResponse::try_from_response_item(item)
                 .map_err(invalid_typed_response)?;
@@ -4568,7 +4617,7 @@ fn validate_async_response(
         parse_async_operation_result(item, kind, expected_cancel_correlation)?;
 
     // Poll Pending reports the original operation's state and is explicitly
-    // permitted by §6.1.38 without making Poll itself asynchronous. Cancel's
+    // permitted by Â§6.1.38 without making Poll itself asynchronous. Cancel's
     // typed model rejects Pending. Process and Query use the caller's indicator.
     if matches!(
         kind,
