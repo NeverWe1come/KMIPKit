@@ -359,6 +359,11 @@ def _selected_profile_source_scope(
     return selected_clause_ids, selected_source_sections
 
 
+def _has_reviewed_client_actor(record: dict[str, Any]) -> bool:
+    """Return whether a source review explicitly assigns an obligation to the client."""
+    return record.get("actor") == "client"
+
+
 def _reviewed_profile_optional_capabilities(
     oracle: dict[str, Any],
     selected_clause_ids: set[str],
@@ -397,7 +402,7 @@ def _reviewed_profile_optional_capabilities(
                     gaps.append(
                         f"{candidate_id}: conditional MAY/OPTIONAL capability has no source condition"
                     )
-                if obligation.get("actor") != "client":
+                if not _has_reviewed_client_actor(obligation):
                     gaps.append(
                         f"{candidate_id}: conditional MAY/OPTIONAL capability has no reviewed client actor"
                     )
@@ -441,7 +446,7 @@ def _reviewed_profile_optional_capabilities(
                     gaps.append(
                         f"{candidate_id}: conditional MAY/OPTIONAL source gap has no resolved condition"
                     )
-                if gap.get("actor") != "client":
+                if not _has_reviewed_client_actor(gap):
                     gaps.append(
                         f"{candidate_id}: conditional MAY/OPTIONAL source gap has no reviewed client actor"
                     )
@@ -493,7 +498,7 @@ def _reviewed_profile_conditional_capability_sources(
             is_selected
             and gap.get("scope_disposition") == "profile_conditional"
             and set(gap.get("source_keywords", [])) & {"MAY", "OPTIONAL"}
-            and gap.get("actor") == "client"
+            and _has_reviewed_client_actor(gap)
             and isinstance(source_clause_id, str)
             and isinstance(candidate_id, str)
         ):
