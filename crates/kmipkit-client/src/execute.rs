@@ -1,7 +1,7 @@
 //! Closed typed request execution for the synchronous KMIP client.
 
 use kmipkit_protocol::{GetConstraintsRequest, GetConstraintsResponse};
-use kmipkit_protocol::{GetUsageAllocationRequest,GetUsageAllocationResponse};
+use kmipkit_protocol::{GetUsageAllocationRequest, GetUsageAllocationResponse};
 use std::collections::HashSet;
 use std::error::Error;
 use std::fmt;
@@ -133,7 +133,7 @@ const POLL_OPERATION: u32 = 0x0000_001A;
 const QUERY_ASYNCHRONOUS_REQUESTS_OPERATION: u32 = 0x0000_0039;
 const PROCESS_OPERATION: u32 = 0x0000_003A;
 const GET_CONSTRAINTS_OPERATION: u32 = 56; // OASIS Â§6.1.22.
-const GET_USAGE_ALLOCATION_OPERATION:u32=17; // OASIS §6.1.23.
+const GET_USAGE_ALLOCATION_OPERATION: u32 = 17; // OASIS §6.1.23.
 const PING_OPERATION: u32 = 0x0000_003B;
 const QUERY_OPERATION: u32 = 0x0000_0018;
 const ASYNCHRONOUS_MANDATORY: u32 = 1;
@@ -1464,7 +1464,12 @@ impl<'a> ClientResponseView<'a> {
 
     /// Returns this policy response when its operation matches.
     #[must_use]
-    pub const fn get_usage_allocation(&self)->Option<&GetUsageAllocationResponse>{match self.response{ClientResponseRef::GetUsageAllocation(response)=>Some(response),_=>None}}
+    pub const fn get_usage_allocation(&self) -> Option<&GetUsageAllocationResponse> {
+        match self.response {
+            ClientResponseRef::GetUsageAllocation(response) => Some(response),
+            _ => None,
+        }
+    }
 
     /// Returns the Ping response when this view represents it.
     #[must_use]
@@ -1566,9 +1571,10 @@ impl fmt::Debug for ClientResponseView<'_> {
             ClientResponseRef::Ping(response) => {
                 formatter.debug_tuple("Ping").field(response).finish()
             }
-            ClientResponseRef::GetUsageAllocation(response) => {
-                formatter.debug_tuple("GetUsageAllocation").field(response).finish()
-            }
+            ClientResponseRef::GetUsageAllocation(response) => formatter
+                .debug_tuple("GetUsageAllocation")
+                .field(response)
+                .finish(),
             ClientResponseRef::GetConstraints(response) => formatter
                 .debug_tuple("GetConstraints")
                 .field(response)
@@ -2073,7 +2079,10 @@ impl fmt::Debug for ClientBatchOutcome {
                 .field(response)
                 .finish(),
             Self::Ping(response) => formatter.debug_tuple("Ping").field(response).finish(),
-            Self::GetUsageAllocation(response) => formatter.debug_tuple("GetUsageAllocation").field(response).finish(),
+            Self::GetUsageAllocation(response) => formatter
+                .debug_tuple("GetUsageAllocation")
+                .field(response)
+                .finish(),
             Self::GetConstraints(response) => formatter
                 .debug_tuple("GetConstraints")
                 .field(response)
@@ -2138,7 +2147,9 @@ impl fmt::Display for ClientBatchOutcome {
                 write!(formatter, "GetAttributeList({})", response.result())
             }
             Self::Ping(response) => write!(formatter, "Ping({})", response.result()),
-            Self::GetUsageAllocation(response) => write!(formatter, "GetUsageAllocation({})", response.result()),
+            Self::GetUsageAllocation(response) => {
+                write!(formatter, "GetUsageAllocation({})", response.result())
+            }
             Self::GetConstraints(response) => {
                 write!(formatter, "GetConstraints({})", response.result())
             }
@@ -2661,9 +2672,18 @@ impl Client {
     /// Executes one explicit §6.1.23 policy operation without retry.
     /// # Errors
     /// Returns sanitized validation, protocol or transport failure with delivery evidence.
-    pub fn get_usage_allocation(&mut self,request:GetUsageAllocationRequest,limits:&CodecLimits)->Result<ClientBatchItemResponse,ClientError>{
-      let response=self.execute(ClientBatch::new(ClientBatchItem::new(ClientRequest::GetUsageAllocation(request))),limits)?;
-      take_single_response(response)
+    pub fn get_usage_allocation(
+        &mut self,
+        request: GetUsageAllocationRequest,
+        limits: &CodecLimits,
+    ) -> Result<ClientBatchItemResponse, ClientError> {
+        let response = self.execute(
+            ClientBatch::new(ClientBatchItem::new(ClientRequest::GetUsageAllocation(
+                request,
+            ))),
+            limits,
+        )?;
+        take_single_response(response)
     }
 
     /// Executes one client-to-server Ping request.

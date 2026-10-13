@@ -358,4 +358,4 @@ pub use get_constraints::{GetConstraintsRequest, GetConstraintsResponse};
 mod get_usage_allocation_tests;
 
 mod get_usage_allocation;
-pub use get_usage_allocation::{GetUsageAllocationRequest,GetUsageAllocationResponse};
+pub use get_usage_allocation::{GetUsageAllocationRequest, GetUsageAllocationResponse};
