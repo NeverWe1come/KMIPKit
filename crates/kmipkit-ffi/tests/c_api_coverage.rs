@@ -110,14 +110,14 @@ fn existing_c_consumer_exercises_the_exported_abi_in_the_coverage_process() {
 }
 
 #[test]
-fn blocked_client_abi_local_prototype_consumer_compiles_and_runs() {
-    // SAFETY: the compiled consumer has no arguments, uses test-local prototypes
-    // for blocked symbols, and releases every created handle before returning.
+fn generated_public_client_abi_consumer_compiles_and_runs() {
+    // SAFETY: the compiled consumer has no arguments, includes the generated
+    // public header, and releases every created handle before returning.
     let result = unsafe { kmipkit_client_abi_c_consumer_main() };
 
     assert_eq!(
         result, 0,
-        "blocked C client ABI consumer must pass its implementation checks"
+        "generated public C client ABI consumer must pass its implementation checks"
     );
 }
 

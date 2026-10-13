@@ -708,3 +708,43 @@ This is local execution evidence for the T076 ABI behavior and its test-local C 
 
 - **Commands and results**: `uv run --no-project --with-requirements tools/api_manifest/requirements-test.txt python -m unittest tools.api_manifest.tests.test_generate -v` — PASS: 56 tests, two Windows symlink-permission skips. `python tools/api_manifest/generate.py --check` — PASS: all 12 generated outputs match the merged manifest.
 - **Scope**: T076 remains open. The 27 observed T076 declarations remain blocked and the generated public C header still omits the shared client handle pending the required binding mappings.
+
+### T076 shared client manifest mapping — partial promotion (2026-10-13)
+
+This increment maps the exact shared Client, TransportConfig, ClientBatch,
+response collection, item identifier, and response-value surfaces owned by
+KMIPKIT-0005, -0006, -0007, -0013, and -0043. It does not complete T076: 19 of
+the 27 observed declarations are ready with four-language signatures, seven
+ABI-only C helpers retain their exact prototypes/layouts through reviewed
+C-only exclusions, and `kmipkit_client_execute_with_error_ttlv_v1` remains
+blocked because the corresponding four-language surface is not approved here.
+Per-operation APIs and draft-owned -0009/-0010 surfaces remain outside this
+promotion.
+
+This section supersedes earlier historical notes in this file stating that
+all 27 declarations remain blocked or that the generated public header omits
+the shared client ABI.
+
+| Phase | Commit | Command | Result |
+|---|---|---|---|
+| Red | `031bc626` | `uv run --offline --no-project --with-requirements tools/api_manifest/requirements-test.txt python -B -m unittest tools.api_manifest.tests.test_t076_client_mapping -v` | Expected Red: the comprehensive regression rejects declarations without exact cross-language mappings or reviewed C-only exclusions; no generated-header T076 promotion is accepted. |
+| Red (schema subset) | `e51652de` | `uv run --offline --no-project --with-requirements tools/api_manifest/requirements-test.txt python -B -m unittest tools.api_manifest.tests.test_generate.ManifestSchemaTests.test_schema_accepts_optional_java_byte_array_return -v` | Expected Red: the reviewed Java `Optional<byte[]>` signature is rejected by the previous generic-argument grammar. |
+| Green | `fcb7d7d3` | `uv run --offline --no-project --with-requirements tools/api_manifest/requirements-test.txt python -B -m unittest tools.api_manifest.tests.test_t076_client_mapping tools.api_manifest.tests.test_generate.ManifestSchemaTests.test_schema_accepts_optional_java_byte_array_return -v`; `python tools/api_manifest/generate.py --write`; `python tools/api_manifest/generate.py --check`; `cargo test -p kmipkit-client --test operation_boundary` | PASS: six manifest/mapping tests, all 12 generated outputs, and three Rust client boundary tests. The Java type grammar change is limited to reference-array generic arguments. |
+| Refactor | Recorded by the follow-up evidence commit | `cargo test -p kmipkit-ffi --features coverage-c-consumer --test c_api_coverage generated_public_client_abi_consumer_compiles_and_runs -- --nocapture`; `cargo test -p kmipkit-ffi --features coverage-c-consumer --test c_api_coverage existing_c_consumer_exercises_the_exported_abi_in_the_coverage_process -- --nocapture`; `cd bindings/java && .\\gradlew.bat test --tests org.kmipkit.ClientFacadeContractTest`; `uv run --offline --directory bindings/python --with-requirements requirements-coverage.txt --with-editable . python -m pytest tests/test_client.py tests/test_generated_api_manifest.py -q`; `git diff --check` | PASS: public generated-header consumer 1/1; runtime C consumer 1/1; Java JNI/native build and facade contract tests; 91 Python client/manifest tests; no whitespace errors. Refactor removes duplicate local carrier definitions so C and JNI consumers use the generated internal-header layouts. |
+
+The mapped records are checked against actual Rust declarations, C prototypes,
+Java methods, and Python methods. The C result-metadata helper and its six
+`uint32_t` fields remain available in the generated C ABI; Java copied getters,
+Python `BatchItemResult` fields, and Rust `ClientBatchItemResponse::outcome()`
+with typed KMIP result status/reason provide the equivalent value semantics.
+Transport configuration remains a four-language capability through Rust and
+Java builders, the Python immutable configuration value used by `Client.create`,
+and the C adapter. The exact `kmipkit_transport_config_create_v1` converter is
+therefore a C-only representation helper, not a missing transport capability.
+
+`ClientError::response_ttlv()` is described by approved KMIPKIT-0021 Rust
+requirements, but the additive C fallback
+`kmipkit_client_execute_with_error_ttlv_v1` has no approved Java/Python mapping
+contract in the owners in scope. It remains the single blocked declaration;
+the exact new cross-language facade would need approval before promotion.
+Remote CI has not run, and T076 plus dependent T021/T024 remain unchecked.

@@ -12,8 +12,8 @@
 #include <utility>
 #include <vector>
 
-// Private T076 ABI declarations. The generated/public C headers intentionally
-// remain blocked until every foreign-language facade has been mapped.
+// Shared T076 layouts and declarations come from the generated internal
+// header; this bridge retains ABI assertions and Java-specific adapters.
 typedef struct kmipkit_transport_config_t kmipkit_transport_config_t;
 typedef struct kmipkit_client_t kmipkit_client_t;
 typedef struct kmipkit_client_batch_t kmipkit_client_batch_t;
@@ -32,60 +32,8 @@ extern "C" int32_t kmipkit_client_batch_item_with_unique_batch_item_id(
         kmipkit_client_batch_item_t* item, const uint8_t* id_data, uint64_t id_length,
         kmipkit_client_batch_item_t** out_item);
 
-struct kmipkit_byte_span_v1_t {
-    const uint8_t* data;
-    uint64_t length;
-};
-
-struct kmipkit_transport_input_v1_t {
-    uint32_t source_kind;
-    uint32_t encoding;
-    kmipkit_byte_span_v1_t data;
-};
-
-struct kmipkit_timeout_limit_v1_t {
-    uint32_t kind;
-    uint32_t reserved;
-    uint64_t seconds;
-    uint32_t nanoseconds;
-    uint32_t reserved2;
-};
-
-struct kmipkit_transport_config_v1_t {
-    uint32_t struct_size;
-    uint32_t abi_version;
-    uint32_t endpoint_kind;
-    uint32_t trust_kind;
-    uint32_t flags;
-    uint32_t reserved;
-    kmipkit_byte_span_v1_t endpoint;
-    uint16_t endpoint_port;
-    uint16_t reserved2;
-    const kmipkit_transport_input_v1_t* client_certificates;
-    uint64_t client_certificate_count;
-    kmipkit_transport_input_v1_t client_private_key;
-    const kmipkit_transport_input_v1_t* trust_certificates;
-    uint64_t trust_certificate_count;
-    const kmipkit_transport_input_v1_t* revocation_lists;
-    uint64_t revocation_list_count;
-    kmipkit_byte_span_v1_t tls_server_name;
-    kmipkit_byte_span_v1_t target_uri;
-    kmipkit_timeout_limit_v1_t connect_timeout;
-    kmipkit_timeout_limit_v1_t write_timeout;
-    kmipkit_timeout_limit_v1_t read_timeout;
-    kmipkit_timeout_limit_v1_t total_timeout;
-    uint64_t max_request_bytes;
-};
-
-struct kmipkit_client_batch_item_metadata_v1_t {
-    uint32_t struct_size;
-    uint32_t abi_version;
-    uint32_t outcome_kind;
-    uint32_t result_status;
-    uint32_t has_result_reason;
-    uint32_t result_reason;
-};
-
+// Layouts come from the generated internal header. Keep compile-time checks
+// here so the JNI bridge consumes the same ABI definition as the C harness.
 static_assert(sizeof(kmipkit_byte_span_v1_t) == 16);
 static_assert(offsetof(kmipkit_byte_span_v1_t, length) == 8);
 static_assert(sizeof(kmipkit_transport_input_v1_t) == 24);

@@ -8,10 +8,10 @@
  * KMIP Specification v2.1 §11.56 permits the 0x54 extension Tag range; the
  * catalog policy accepts those unknown Tags for generic preservation.
  *
- * The public C header does not expose blocked ClientBatchItem operations and
- * does not execute or encode requests. The C ABI exposes only stable int32_t
- * error categories, not diagnostic strings, so payload redaction is constrained
- * to verifying stable category-only results.
+ * The public C header exposes the mapped shared-client batch surface but keeps
+ * per-operation builders and the generic error-TTLV fallback blocked. The C
+ * ABI exposes only stable int32_t error categories, not diagnostic strings,
+ * so payload redaction is constrained to stable category-only results.
  * Use-after-release, dangling, and foreign pointers are caller-precondition
  * violations and are deliberately not probed here.
  */
@@ -26,20 +26,10 @@
 #include <stdlib.h>
 #include <string.h>
 
-/* T076's batch metadata carrier is blocked from the public ABI until the
- * Java/Python mappings are verified. Keep this exact layout local to the C
- * implementation consumer so it does not imply public-header parity. */
-struct kmipkit_client_batch_item_metadata_v1_t {
-    uint32_t struct_size;
-    uint32_t abi_version;
-    uint32_t outcome_kind;
-    uint32_t result_status;
-    uint32_t has_result_reason;
-    uint32_t result_reason;
-};
-
+/* These assertions verify that generated internal-header consumers observe
+ * the exact T076 metadata carrier layout. */
 _Static_assert(sizeof(struct kmipkit_client_batch_item_metadata_v1_t) == 24,
-               "the local T076 metadata carrier is six fixed-width fields");
+               "T076 metadata is six fixed-width fields");
 _Static_assert(offsetof(struct kmipkit_client_batch_item_metadata_v1_t, struct_size) == 0,
                "T076 metadata begins with struct_size");
 _Static_assert(offsetof(struct kmipkit_client_batch_item_metadata_v1_t, abi_version) == 4,
@@ -149,8 +139,8 @@ extern int32_t kmipkit_client_batch_item_response_pending_correlation_value(
 extern void kmipkit_client_batch_item_response_release(
     struct kmipkit_client_batch_item_response_t *handle);
 
-/* T076 Red: the versioned production transport configuration constructor was
- * not exported at the initial test commit. */
+/* Keep invalid-input coverage for the versioned production transport
+ * configuration converter represented by the generated internal header. */
 
 #define KMIPKIT_SUCCESS ((int32_t)0)
 #define KMIPKIT_EXTENSION_TAG UINT32_C(0x540001)

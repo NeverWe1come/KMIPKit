@@ -204829,7 +204829,7 @@
       "declarationState": "blocked",
       "parityScope": "four-language",
       "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "Observed by T076 in the Rust/C implementation. Keep it blocked and out of generated public headers until Java/Python expose the retained complete ResponseMessage through an owned, closeable accessor and parity tests verify the behavior."
+      "blockedReason": "Rust exposes ClientError::response_ttlv() under KMIPKIT-0021-FR-015 and the T076 C implementation exposes this additive error-output symbol, but no approved Java/Python mapping contract exposes the retained complete ResponseMessage through an owned accessor. Keep it blocked from generated public headers pending an approved binding requirement and parity tests."
     },
     {
       "declarationId": "KMIPKIT-0044-opaque-object-context-type:rust",

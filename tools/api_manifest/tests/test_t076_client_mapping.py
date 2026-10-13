@@ -96,6 +96,12 @@ class T076ClientMappingTests(unittest.TestCase):
         self.assertEqual(T076_READY, ready)
         self.assertEqual(T076_BLOCKED, blocked)
         self.assertEqual(T076_EXCLUDED, {row["exportName"] for row in exclusions})
+        blocked_ttlv = next(
+            row
+            for row in c_rows
+            if row["exportName"] == "kmipkit_client_execute_with_error_ttlv_v1"
+        )
+        self.assertIn("no approved Java/Python mapping contract", blocked_ttlv["blockedReason"])
 
         for row in c_rows:
             if row["declarationState"] == "blocked":
@@ -292,6 +298,7 @@ class T076ClientMappingTests(unittest.TestCase):
             self.assertIn(member, python)
         self.assertRegex(rust, re.compile(r"pub\s+(?:const\s+)?fn\s+outcome\s*\("))
         self.assertRegex(rust, re.compile(r"pub\s+enum\s+ClientBatchOutcome\b"))
+        self.assertRegex(rust, re.compile(r"pub\s+const\s+fn\s+result\s*\("))
         self.assertRegex(result_model, re.compile(r"pub\s+const\s+fn\s+status\s*\("))
         self.assertRegex(result_model, re.compile(r"pub\s+const\s+fn\s+reason\s*\("))
         self.assertIn("pub enum ClientBatchOutcome", rust)
