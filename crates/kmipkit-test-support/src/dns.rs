@@ -223,27 +223,26 @@ fn bind_local_dns_sockets_with(
     loop {
         let tcp_listener = match bind_tcp() {
             Ok(listener) => listener,
-            Err(error) if is_retryable_socket_pair_bind_error(error.kind()) => {
-                attempts_remaining -= 1;
-                if attempts_remaining == 0 {
-                    return Err(error);
-                }
+            Err(error) => {
+                retry_socket_pair_bind(&mut attempts_remaining, error)?;
                 continue;
             }
-            Err(error) => return Err(error),
         };
         let local_addr = tcp_listener.local_addr()?;
         match bind_udp(local_addr) {
             Ok(socket) => return Ok((socket, tcp_listener)),
-            Err(error) if is_retryable_socket_pair_bind_error(error.kind()) => {
-                attempts_remaining -= 1;
-                if attempts_remaining == 0 {
-                    return Err(error);
-                }
-            }
-            Err(error) => return Err(error),
+            Err(error) => retry_socket_pair_bind(&mut attempts_remaining, error)?,
         }
     }
+}
+
+fn retry_socket_pair_bind(attempts_remaining: &mut usize, error: io::Error) -> io::Result<()> {
+    if !is_retryable_socket_pair_bind_error(error.kind()) || *attempts_remaining <= 1 {
+        return Err(error);
+    }
+
+    *attempts_remaining -= 1;
+    Ok(())
 }
 
 fn is_retryable_socket_pair_bind_error(kind: io::ErrorKind) -> bool {
