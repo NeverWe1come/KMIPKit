@@ -452,6 +452,17 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
             [1, 2, 3],
         )
 
+    def test_checked_in_internal_error_status_is_additive_and_uses_generic_facades(self) -> None:
+        categories = {
+            item["id"]: item for item in self.checked_in_manifest["errorCategories"]
+        }
+        self.assertIn("internal", categories)
+        internal = categories["internal"]
+        self.assertEqual(internal["cCode"], "KMIPKIT_ERROR_INTERNAL")
+        self.assertEqual(internal["cValue"], 7)
+        self.assertEqual(internal["javaException"], "org.kmipkit.KmipException")
+        self.assertEqual(internal["pythonException"], "kmipkit.errors.KmipKitError")
+
     def test_readiness_rejects_duplicate_package_export_declarations(self) -> None:
         manifest = json.loads(json.dumps(self.checked_in_manifest))
         declaration = next(

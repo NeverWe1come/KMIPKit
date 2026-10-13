@@ -241,3 +241,96 @@ fn last_error_get_rejects_null_outputs_without_overwriting_the_snapshot() {
         )
     );
 }
+
+#[test]
+fn versioned_limits_validator_records_its_error_in_the_shared_snapshot() {
+    kmipkit_last_error_clear();
+
+    assert_eq!(
+        kmipkit_extension_registry_limits_v1_validate(std::ptr::null()),
+        ERROR_INVALID_INPUT
+    );
+    assert_eq!(
+        read_last_error(),
+        (
+            ERROR_INVALID_INPUT,
+            ERROR_CATEGORY_VALIDATION,
+            ERROR_CAUSE_INVALID_INPUT,
+            DELIVERY_NONE
+        )
+    );
+}
+
+#[test]
+fn legacy_limits_validator_records_its_error_in_the_shared_snapshot() {
+    kmipkit_last_error_clear();
+
+    assert_eq!(
+        kmipkit_extension_registry_limits_validate(
+            u64::MAX,
+            u64::MAX,
+            u64::MAX,
+            u64::MAX,
+            u64::MAX,
+            u64::MAX,
+            u64::MAX,
+            u64::MAX,
+            u64::MAX,
+            u64::MAX,
+            u64::MAX,
+            u64::MAX,
+        ),
+        ERROR_RESOURCE_LIMIT
+    );
+    assert_eq!(
+        read_last_error(),
+        (
+            ERROR_RESOURCE_LIMIT,
+            ERROR_CATEGORY_VALIDATION,
+            ERROR_CAUSE_OTHER,
+            DELIVERY_NONE
+        )
+    );
+}
+
+#[test]
+fn every_exported_c_function_starts_inside_the_shared_panic_boundary() {
+    let source = include_str!("../../src/extension_registry.rs");
+    let exports: Vec<bool> = source
+        .split("#[unsafe(no_mangle)]")
+        .filter_map(|declaration| {
+            let function_start = declaration.find("pub extern \"C\" fn")?;
+            let function = &declaration[function_start..];
+            let body_start = function.find('{')?;
+            Some(
+                function[body_start + 1..]
+                    .trim_start()
+                    .starts_with("ffi_entrypoint(|| {"),
+            )
+        })
+        .collect();
+
+    assert_eq!(exports.len(), 129, "update the count when adding C exports");
+    assert!(
+        exports.iter().all(|uses_boundary| *uses_boundary),
+        "every exported C function must enter the shared panic boundary first"
+    );
+}
+
+#[test]
+fn panic_boundary_returns_a_redacted_internal_error_snapshot() {
+    kmipkit_last_error_clear();
+
+    let status = ffi_entrypoint(|| -> i32 { panic!("synthetic panic payload") });
+
+    assert_eq!(status, ERROR_INTERNAL);
+    assert_eq!(
+        read_last_error(),
+        (
+            ERROR_INTERNAL,
+            ERROR_CATEGORY_OTHER,
+            ERROR_CAUSE_OTHER,
+            DELIVERY_NONE
+        )
+    );
+}
