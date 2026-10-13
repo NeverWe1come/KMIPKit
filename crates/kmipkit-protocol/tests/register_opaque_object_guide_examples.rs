@@ -4,6 +4,7 @@ const ENGLISH_GUIDE: &str =
     include_str!("../../../docs/user-guide/en/lifecycle-and-certificates.md");
 const SPANISH_GUIDE: &str =
     include_str!("../../../docs/user-guide/es/operaciones-ciclo-vida-y-certificados.md");
+const EXECUTABLE_EXAMPLE: &str = include_str!("../examples/register_opaque_context.rs");
 
 use kmipkit_protocol::{AttributeSet, ObjectType, OpaqueObjectContext, RegisterRequest};
 use kmipkit_ttlv::{Item, RawTag, Structure, Value};
@@ -52,6 +53,35 @@ fn documented_context_examples_use_the_standard_register_shape() {
             [0x0042_0057, 0x0042_0125, 0x0042_005b]
         );
     }
+}
+
+#[test]
+fn both_documentation_snippets_match_the_compiled_example_source() {
+    let source = EXECUTABLE_EXAMPLE.trim_end();
+    assert_eq!(
+        marked_rust_example(ENGLISH_GUIDE, "### Registering an Opaque Object"),
+        source
+    );
+    assert_eq!(
+        marked_rust_example(SPANISH_GUIDE, "### Registrar un objeto opaco"),
+        source
+    );
+}
+
+fn marked_rust_example<'a>(guide: &'a str, section_heading: &str) -> &'a str {
+    let section = guide
+        .split_once(section_heading)
+        .expect("guide has the Opaque Object section")
+        .1;
+    let marker = "```rust,kmipkit-test\n";
+    let after_marker = section
+        .split_once(marker)
+        .expect("guide has its marked Rust example")
+        .1;
+    after_marker
+        .split_once("\n```")
+        .expect("marked Rust example has a closing fence")
+        .0
 }
 
 fn opaque_register(context: OpaqueObjectContext, attributes: AttributeSet) -> RegisterRequest {
