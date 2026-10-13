@@ -563,7 +563,7 @@ fn register_sends_table_291_and_exposes_table_292_identifier_once() {
 }
 
 #[test]
-fn register_sends_a_wrapped_key_value_with_associated_attributes_from_table_291() {
+fn register_preserves_caller_supplied_opaque_key_value_bytes_with_wrapping_data_from_table_291() {
     // OASIS KMIP v2.1 §3.1 Tables 11–12, §3.3 Tables 14–15, and §6.1.43 Tables 291 and 293.
     // The test-only envelope is not cryptographic wrapping; it keeps a source-shaped pre-wrap
     // Key Value Structure visible so this test can prove the opaque supplied bytes are forwarded.

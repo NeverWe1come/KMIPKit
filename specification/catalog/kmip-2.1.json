@@ -95586,12 +95586,12 @@
         "crates/kmipkit-protocol/src/register.rs"
       ],
       "verification_refs": [
-        "crates/kmipkit-client/tests/unit/register_execution_tests.rs::register_sends_a_wrapped_key_value_with_associated_attributes_from_table_291"
+        "crates/kmipkit-client/tests/unit/register_execution_tests.rs::register_preserves_caller_supplied_opaque_key_value_bytes_with_wrapping_data_from_table_291"
       ],
       "negative_verification_required": false,
       "decision_id": null,
-      "status": "verified",
-      "review_note": "KMIP Specification 2.1 section 6.1.43 Table 291 permits a wrapped object and attributes in Register. The named fake-transport test confirms that the request carries a caller-supplied opaque wrapped Key Value Byte String with Key Wrapping Data alongside the direct Register Attributes. KMIPKit preserves the supplied bytes; the test does not establish their hidden contents, cryptographic wrapping or unwrapping, server acceptance, or an official Test Case result. The outer Register Attributes and optional associated Key Value Attributes described by sections 3.1-3.2 are distinct structures; the direct attributes are not claimed to be inside the opaque wrapped bytes. No requirement-specific official Test Case is linked in the pinned OASIS Test Cases source."
+      "status": "unassigned",
+      "review_note": "KMIP Specification 2.1 section 6.1.43 Table 291 permits the registered object and attributes to be wrapped. The named fake-transport test proves only that caller-supplied opaque Key Value bytes and Key Wrapping Data are forwarded with Register. Its test-only envelope prefixes a plaintext fixture and is not valid KMIP cryptographic wrapping; it does not establish a valid wrapped representation of associated Attributes or server acceptance. Keep this optional client capability unassigned until valid wrapped-attributes request evidence is available. No requirement-specific official Test Case is linked in the pinned OASIS Test Cases source."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.43-007",
