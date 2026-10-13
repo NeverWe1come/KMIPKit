@@ -200,6 +200,9 @@ class ProfileSectionsThreeAndFourCrosswalkTests(unittest.TestCase):
 
         self.assertEqual(requirement["profile_ids"], all_client_profile_ids)
         self.assertEqual(self.crosswalk[requirement["requirement_id"]]["applies_to"], "all_client_profiles")
+        for profile_id in all_client_profile_ids:
+            profile = next(row for row in self.catalog["profiles"] if row["profile_id"] == profile_id)
+            self.assertIn(requirement["requirement_id"], profile["requirement_ids"], profile_id)
 
     def test_https_profile_closure_includes_all_explicit_client_requirements(self) -> None:
         """Sections 3.2 and 3.2.1–3.2.4 assign conditions to the HTTPS profile."""
