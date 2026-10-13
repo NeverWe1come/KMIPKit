@@ -185,6 +185,9 @@ void kmipkit_register_request_release(kmipkit_register_request_t *handle);
 #define KMIPKIT_ERROR_INVALID_SCHEMA ((int32_t)5)
 #define KMIPKIT_ERROR_RESOURCE_LIMIT ((int32_t)6)
 #define KMIPKIT_ERROR_INTERNAL ((int32_t)7)
+#define KMIPKIT_ERROR_PROTOCOL ((int32_t)8)
+#define KMIPKIT_ERROR_TRANSPORT ((int32_t)9)
+#define KMIPKIT_ERROR_SERVER_RESULT ((int32_t)10)
 
 /* KMIPKIT-0012-FR-002, KMIPKIT-0012-FR-010, KMIPKIT-0012-FR-012 */
 int32_t kmipkit_extension_identity_create(const uint8_t * vendor_identifier_data, uint64_t vendor_identifier_length, const uint8_t * name_data, uint64_t name_length, const uint8_t * version_data, uint64_t version_length, kmipkit_extension_identity_t ** out_identity);
@@ -393,8 +396,9 @@ int32_t kmipkit_capability_is_available(const uint8_t * capability_id_data, uint
 /* Copies the calling thread's most recent C error status and safe metadata without clearing the snapshot.
  * out_status receives an existing KMIPKIT_ERROR_* code, or KMIPKIT_SUCCESS when the snapshot is empty.
  * out_category receives 0 none, 1 validation, 2 protocol, 3 transport, 4 server result, or 5 other.
- * out_cause receives 0 none, 1 invalid input, or 10 other.
- * out_delivery is 0 when no KMIP request delivery information is attached; the current C surface does not execute client requests.
+ * Client execution status 8 means protocol (category 2). Status 9 means transport (category 3), and status 10 means a complete server result (category 4).
+ * out_cause receives 0 none, 1 invalid input, 2 protocol invalid value, 3 protocol invalid encoding, 4 other protocol, 5 transport I/O, 6 TLS, 7 HTTP, 8 timeout, 9 other transport, or 10 other.
+ * out_delivery receives 0 none, 1 not sent, 2 possibly sent, or 3 response started; server results use 0, while protocol and transport failures report the strongest observed delivery state.
  * Status codes are independent of category and cause values. The snapshot contains no source strings or request payloads.
  */
 /* KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-013 */
@@ -430,14 +434,24 @@ int32_t kmipkit_client_batch_add_item(kmipkit_client_batch_t * batch, kmipkit_cl
 int32_t kmipkit_client_batch_add_error_continuation_value(kmipkit_client_batch_t * batch, uint32_t value);
 /* KMIPKIT-0006-FR-005, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-021 */
 int32_t kmipkit_client_batch_set_client_correlation_value(kmipkit_client_batch_t * batch, const uint8_t * value, uint64_t value_length);
+/* The item handle is consumed after the item handle and identifier span have been validated.
+ * If either validation fails, the caller retains ownership. Once ownership transfer begins, the caller must not use or release item, even if the call returns an error.
+ * On success, out_item receives the replacement handle.
+ */
 /* KMIPKIT-0006-FR-005, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-021 */
 int32_t kmipkit_client_batch_item_with_unique_batch_item_id(kmipkit_client_batch_item_t * item, const uint8_t * id_data, uint64_t id_length, kmipkit_client_batch_item_t ** out_item);
 /* KMIPKIT-0007-FR-001, KMIPKIT-0007-FR-006, KMIPKIT-0007-FR-008, KMIPKIT-0043-FR-003, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-012, KMIPKIT-0043-FR-021 */
 int32_t kmipkit_client_batch_response_item_count(kmipkit_client_batch_response_t * response, uint64_t * out_count);
 /* KMIPKIT-0007-FR-001, KMIPKIT-0007-FR-006, KMIPKIT-0007-FR-008, KMIPKIT-0043-FR-003, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-012, KMIPKIT-0043-FR-021 */
 int32_t kmipkit_client_batch_response_item_at(kmipkit_client_batch_response_t * response, uint64_t index, kmipkit_client_batch_item_response_t ** out_item);
+/* The item-response handle retains its parent response, so closing the parent batch-response handle does not invalidate this span.
+ * The returned out_value is a borrowed byte span into the response-owned buffer. It remains valid and unchanged only while this item-response handle remains open; copy the bytes before releasing the handle.
+ */
 /* KMIPKIT-0007-FR-001, KMIPKIT-0007-FR-006, KMIPKIT-0007-FR-008, KMIPKIT-0043-FR-003, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-012, KMIPKIT-0043-FR-021 */
 int32_t kmipkit_client_batch_item_response_unique_batch_item_id(kmipkit_client_batch_item_response_t * item, uint8_t * out_present, kmipkit_byte_span_v1_t * out_value);
+/* The item-response handle retains its parent response, so closing the parent batch-response handle does not invalidate this span.
+ * The returned out_value is a borrowed byte span into the response-owned buffer. It remains valid and unchanged only while this item-response handle remains open; copy the bytes before releasing the handle.
+ */
 /* KMIPKIT-0007-FR-001, KMIPKIT-0007-FR-006, KMIPKIT-0007-FR-008, KMIPKIT-0043-FR-003, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-012, KMIPKIT-0043-FR-021 */
 int32_t kmipkit_client_batch_item_response_pending_correlation_value(kmipkit_client_batch_item_response_t * item, uint8_t * out_present, kmipkit_byte_span_v1_t * out_value);
 /* KMIPKIT-0007-FR-001, KMIPKIT-0007-FR-006, KMIPKIT-0007-FR-008, KMIPKIT-0043-FR-003, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-021 */

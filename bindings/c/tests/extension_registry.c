@@ -647,6 +647,24 @@ static bool test_t076_validated_client_reports_delivery_state(
 
     kmipkit_client_batch_response_release(response);
     response = NULL;
+    {
+        uint8_t copied_unique_id[4] = {0};
+        value = (struct kmipkit_byte_span_v1_t){0};
+        value_present = UINT8_C(0);
+        REQUIRE_STATUS(kmipkit_client_batch_item_response_unique_batch_item_id(
+                           response_item, &value_present, &value),
+                       KMIPKIT_SUCCESS);
+        REQUIRE(value_present == UINT8_C(1) && value.length == sizeof(copied_unique_id));
+        memcpy(copied_unique_id, value.data, sizeof(copied_unique_id));
+        value.data = NULL;
+        value.length = UINT64_C(0);
+        kmipkit_client_batch_item_response_release(response_item);
+        response_item = NULL;
+        REQUIRE(copied_unique_id[0] == 0x00 && copied_unique_id[1] == 0x81 &&
+                copied_unique_id[2] == 0xff && copied_unique_id[3] == 0x01);
+    }
+    kmipkit_client_batch_item_response_release(response_item_2);
+    response_item_2 = NULL;
 
     /* A typed response-shape error keeps the complete generic ResponseMessage
      * available as an independent, owned TTLV structure. */

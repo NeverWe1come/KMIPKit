@@ -623,6 +623,21 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "kmipkit_transport::TransportResponse::as_bytes",
     ),
     (
+        "rust-observed-5216dc70730e7acb8d97",
+        "rust-kmipkit-client",
+        "kmipkit_client::ClientErrorCategory::Protocol",
+    ),
+    (
+        "rust-observed-e64f0a3fab9d056a972b",
+        "rust-kmipkit-client",
+        "kmipkit_client::ClientErrorCategory::Transport",
+    ),
+    (
+        "rust-observed-63996547693118fd48a9",
+        "rust-kmipkit-client",
+        "kmipkit_client::ClientErrorCategory::ServerResult",
+    ),
+    (
         "rust-observed-f6e4d4378e1f420ba0e1",
         "rust-kmipkit-client",
         "kmipkit_client::Client",
