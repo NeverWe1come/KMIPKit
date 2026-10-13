@@ -20,6 +20,48 @@ SPEC.loader.exec_module(AUDIT)
 
 
 class BindingExportAuditTests(unittest.TestCase):
+    def test_java_compile_uses_gradle_configured_jspecify_classpath(self):
+        repo_root = Path(__file__).resolve().parents[3]
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            source_root = root / "src"
+            package_info = source_root / "org" / "example" / "package-info.java"
+            sample = source_root / "org" / "example" / "Sample.java"
+            package_info.parent.mkdir(parents=True)
+            package_info.write_text(
+                "@org.jspecify.annotations.NullMarked\npackage org.example;\n",
+                encoding="utf-8",
+            )
+            sample.write_text(
+                "package org.example;\npublic final class Sample { String value; }\n",
+                encoding="utf-8",
+            )
+            sources = [package_info, sample]
+            output = root / "classes"
+            output.mkdir()
+
+            bare_javac = subprocess.run(
+                ["javac", "--release", "17", "-d", str(output), *(str(path) for path in sources)],
+                check=False,
+                capture_output=True,
+                text=True,
+                encoding="utf-8",
+            )
+            self.assertNotEqual(bare_javac.returncode, 0)
+            self.assertIn("org.jspecify.annotations", bare_javac.stderr)
+
+            classpath = AUDIT.resolve_java_compile_classpath(repo_root)
+            compile_result = subprocess.run(
+                ["javac", "--release", "17", "-classpath", classpath, "-d", str(output),
+                 *(str(path) for path in sources)],
+                check=False,
+                capture_output=True,
+                text=True,
+                encoding="utf-8",
+            )
+
+        self.assertEqual(compile_result.returncode, 0, compile_result.stderr)
+
     def test_c_only_audit_reuses_the_existing_library_and_skips_other_bindings(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
