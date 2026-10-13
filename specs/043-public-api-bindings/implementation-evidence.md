@@ -534,3 +534,11 @@ The full matrix for head `3c87f385` passed the language, platform, Java/Python c
 - **Command**: `$env:PYTHONPATH = 'tools/api_manifest/tests'; uv run --with-requirements tools/api_manifest/requirements-test.txt python -m unittest test_generate.ManifestGeneratorCliTests.test_public_header_includes_shared_client_abi_after_binding_mapping -v`
 - **Result**: Expected Red: `FAILED (failures=1)` with `the public C header omits the mapped client handle`. C compilation is assigned to the repository's C consumer CI matrix because this Windows host has no C compiler or CMake on `PATH`.
 - **Commit**: Red test commit pending.
+
+## T021 Java shared batch-option parity (2026-10-13)
+
+- **Scope**: Expose the request timestamp, Batch Order Option, Batch Error Continuation Option, and exact client correlation bytes already accepted by the shared C ABI and Python facade.
+- **Red**: Added a Java facade contract test that invokes all four shared batch metadata options through the public `ClientBatch` API.
+- **Command**: `mvn --batch-mode --file bindings/java/pom.xml -Dtest=ClientFacadeContractTest test`
+- **Result**: Expected Red during test compilation: `ClientBatch` has no `requestTimestamp(long)` method. The remaining chained methods are likewise not available until the facade is implemented.
+- **Commit**: Red test commit pending.

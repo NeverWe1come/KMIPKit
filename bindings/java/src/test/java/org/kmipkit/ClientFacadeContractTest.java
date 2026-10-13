@@ -49,6 +49,16 @@ final class ClientFacadeContractTest {
     }
 
     @Test
+    void batchMapsAllSharedRequestMetadataOptions() {
+        try (ClientBatch batch = ClientBatch.create()) {
+            batch.requestTimestamp(1_800_000_000L)
+                    .ordered(true)
+                    .addErrorContinuationValue(0)
+                    .clientCorrelationValue(new byte[] {0x6b, 0x6d, 0x69, 0x70});
+        }
+    }
+
+    @Test
     void clientOperationExceptionsExposeStableRedactedMetadata() {
         ClientOperationException generic = new ClientOperationException(7, 91, 92, 2);
         assertEquals(7, generic.statusCode());
