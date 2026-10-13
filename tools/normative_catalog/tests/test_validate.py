@@ -626,13 +626,18 @@ def _has_usable_profile_optional_evidence(
             and has_linked_typed_positive_rule
         )
     )
+    response_direction_has_typed_evidence = (
+        direction not in {"server_to_client", "both"}
+        or has_linked_typed_positive_rule
+    )
     scoped_client_request_evidence = (
         requirement["status"] == "scoped_verified"
         and requirement["role"] == "client"
-        and direction in {"client_to_server", "unclear"}
+        and direction in {"client_to_server", "server_to_client", "both", "unclear"}
         and requirement["scope_state"] == "client_1_0"
         and bool(resolvable_implementation_refs)
         and unclear_direction_has_typed_evidence
+        and response_direction_has_typed_evidence
     )
     return requirement["status"] == "verified" or scoped_client_request_evidence
 
@@ -17125,6 +17130,7 @@ class CatalogValidationTests(unittest.TestCase):
                 test_path = root / test_path_reference
 
                 source_clause_id = "KMIPKIT-CLAUSE-SPEC-TEST-OPTIONAL"
+                test_name = first_test_reference.partition("::")[2]
 
                 def write_catalog() -> None:
                     catalog_path.write_text(
@@ -17157,7 +17163,11 @@ class CatalogValidationTests(unittest.TestCase):
                                 {
                                     "source_keyword": "MAY",
                                     "actor": row["role"],
-                                    "direction": "client request",
+                                    "direction": (
+                                        "client response"
+                                        if row["direction"] == "server_to_client"
+                                        else "client request"
+                                    ),
                                     "scope_disposition": row["scope_state"],
                                     "condition": row.get("condition"),
                                     "candidate_requirement_id": requirement_id,
@@ -17176,9 +17186,14 @@ class CatalogValidationTests(unittest.TestCase):
                 write_catalog()
                 if create_test:
                     test_path.parent.mkdir(parents=True, exist_ok=True)
+                    default_test_name = (
+                        "response_capability_is_preserved"
+                        if row["direction"] == "server_to_client"
+                        else "request_capability_is_available"
+                    )
                     test_path.write_text(
                         test_source
-                        or "#[test]\nfn request_capability_is_available() {\n    assert!(true);\n}\n",
+                        or f"#[test]\nfn {default_test_name}() {{\n    assert!(true);\n}}\n",
                         encoding="utf-8",
                     )
                 implementation_path = root / "src" / "request.rs"
@@ -17284,9 +17299,49 @@ class CatalogValidationTests(unittest.TestCase):
         ):
             run_gate(requirement(scope_state="profile_conditional"))
 
+        response_test_reference = (
+            "tests/positive_capability.rs::response_capability_is_preserved"
+        )
+        response_typed_rule_source = (
+            "const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[\n"
+            "    TypedRuleMapping {\n"
+            f'        requirement_id: "{requirement_id}",\n'
+            f'        source_clause_id: "KMIPKIT-CLAUSE-SPEC-TEST-OPTIONAL",\n'
+            "        verification_category: GeneratedVerificationCategory::OptionalCapability,\n"
+            "        evaluator: Some(response_capability_rule),\n"
+            "        test_evidence: &[RuleTestEvidence {\n"
+            f'            test_id: "{response_test_reference}",\n'
+            "            kind: RuleTestKind::OptionalCapabilityUsable,\n"
+            "        }],\n"
+            "        constraints: &[],\n"
+            "    },\n"
+            "];\n"
+        )
+        with self.subTest("linked client response rule and positive test are accepted"):
+            run_gate(
+                requirement(
+                    direction="server_to_client",
+                    condition=None,
+                    verification_refs=[response_test_reference],
+                ),
+                typed_rule_source=response_typed_rule_source,
+                test_source=(
+                    "#[test]\nfn response_capability_is_preserved() {\n"
+                    "    assert!(true);\n}\n"
+                ),
+            )
+
         rejected_rows = (
             ("server role", requirement(role="server"), True),
-            ("response direction", requirement(direction="server_to_client"), True),
+            (
+                "response direction without a linked response rule test",
+                requirement(
+                    direction="server_to_client",
+                    condition=None,
+                    verification_refs=[response_test_reference],
+                ),
+                True,
+            ),
             (
                 "conditional scope without a source condition",
                 requirement(scope_state="profile_conditional", condition=""),
