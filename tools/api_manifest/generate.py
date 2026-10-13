@@ -1173,6 +1173,8 @@ def _validate_c_value_layout(c_type: dict[str, Any], declared_types: set[str]) -
     ] != [("struct_size", "uint32_t"), ("abi_version", "uint32_t")]:
         raise ManifestError("versioned C value must begin with its size and ABI version")
     for field in fields:
+        if field["name"] in _C_FAMILY_KEYWORDS:
+            raise ManifestError("C or C++ keyword cannot be used as a fixed-width C field name")
         if not _is_c_layout_field_name(field["name"]):
             raise ManifestError("invalid fixed-width C field name")
         _rust_identifier(field["name"])
@@ -1212,7 +1214,13 @@ def _validate_references(manifest: dict[str, Any]) -> None:
                         raise ManifestError(
                             "error category does not resolve to its canonical language export"
                         )
+    excluded_c_functions = [
+        exclusion["cFunction"]
+        for exclusion in manifest.get("approvedExclusions", [])
+        if exclusion.get("cFunction") is not None
+    ]
     c_symbols = [function["c"]["symbol"] for function in manifest["functions"]]
+    c_symbols.extend(function["symbol"] for function in excluded_c_functions)
     release_symbols = [
         record["c"]["releaseFunction"]
         for record in manifest["types"]
@@ -1262,6 +1270,68 @@ def _validate_references(manifest: dict[str, Any]) -> None:
                 handle_name = param["type"].split()[0].rstrip("*").strip()
                 if handle_name not in c_handle_names:
                     raise ManifestError("function handle parameter references an unknown opaque type")
+            elif param["kind"] == "consumed-handle-slot":
+                handle_name = param["handleType"]
+                if handle_name not in c_handle_names:
+                    raise ManifestError("function consumed handle slot references an unknown opaque type")
+                if param["type"] != f"{handle_name} **":
+                    raise ManifestError("function consumed handle slot does not match its opaque type")
+            elif param["kind"] == "output-value-pointer":
+                value_name = param["valueType"]
+                regular_value = next(
+                    (
+                        record["c"]
+                        for record in manifest["types"]
+                        if record["c"]["name"] == value_name
+                    ),
+                    None,
+                )
+                carrier_value = next(
+                    (
+                        carrier
+                        for carrier in _ordered_approved_c_type_layouts(manifest)
+                        if carrier["name"] == value_name
+                    ),
+                    None,
+                )
+                if not any(
+                    value is not None and value.get("kind") == "fixed-width-value"
+                    for value in (regular_value, carrier_value)
+                ):
+                    raise ManifestError("function output value pointer references an unknown fixed-width type")
+                if param["type"] != f"{value_name} *":
+                    raise ManifestError("function output value pointer does not match its fixed-width type")
+            elif param["kind"] == "error-output":
+                value_name = param["valueType"]
+                if value_name not in c_handle_names:
+                    raise ManifestError("function error output references an unknown opaque handle")
+                if param["type"] != f"{value_name} **":
+                    raise ManifestError("function error output pointer does not match its opaque handle")
+            elif param["kind"] == "output-scalar-pointer":
+                if param["type"] != f"{param['valueType']} *":
+                    raise ManifestError("function scalar output pointer does not match its fixed-width type")
+            elif param["kind"] == "versioned-value-pointer":
+                value_name = param["type"].removeprefix("const ").removesuffix(" *")
+                value_record = next(
+                    (item["c"] for item in manifest["types"] if item["c"]["name"] == value_name),
+                    None,
+                )
+                carrier = next(
+                    (item for item in _ordered_approved_c_type_layouts(manifest) if item["name"] == value_name),
+                    None,
+                )
+                if not any(
+                    value is not None
+                    and value.get("kind") == "fixed-width-value"
+                    and value.get("versioned")
+                    for value in (value_record, carrier)
+                ):
+                    raise ManifestError("function versioned value pointer references an unknown versioned layout")
+                expected_const = param["direction"] == "input"
+                if param["type"] != f"{'const ' if expected_const else ''}{value_name} *":
+                    raise ManifestError("function versioned value pointer direction has the wrong const qualification")
+                if param["ownership"] != ("borrowed" if expected_const else "none"):
+                    raise ManifestError("function versioned value pointer direction has the wrong ownership")
             elif param["kind"] == "handle-array":
                 handle_name = param["handleType"]
                 if handle_name not in c_handle_names:
@@ -1275,7 +1345,10 @@ def _validate_references(manifest: dict[str, Any]) -> None:
                 handle_name = param["type"].split()[0].strip()
                 if handle_name not in c_handle_names:
                     raise ManifestError("function output references an unknown opaque type")
-        if any(parameter["kind"] in {"handle", "handle-array"} for parameter in params):
+        if any(
+            parameter["kind"] in {"handle", "handle-array", "consumed-handle-slot"}
+            for parameter in params
+        ):
             if any(
                 "invalid_input" not in record[language]["errorCategories"]
                 for language in ("c", "java", "python")
@@ -1289,6 +1362,40 @@ def _validate_references(manifest: dict[str, Any]) -> None:
                 raise ManifestError("Java and Python Enumeration/Interval constructors must map invalid_input")
         if record["id"] == "ttlv_value_boolean" and "invalid_input" not in record["c"]["errorCategories"]:
             raise ManifestError("C Boolean construction must map invalid_input")
+
+    for exclusion in manifest.get("approvedExclusions", []):
+        c_function = exclusion.get("cFunction")
+        if c_function is None:
+            continue
+        if (
+            exclusion.get("packageId") != "c-kmipkit"
+            or c_function.get("symbol") != exclusion.get("exportName")
+            or not set(c_function.get("errorCategories", [])) <= error_ids
+        ):
+            raise ManifestError("C-only excluded function does not match its exact C export")
+        parameters = c_function.get("parameters", [])
+        names = [parameter["name"] for parameter in parameters]
+        if len(set(names)) != len(names):
+            raise ManifestError("C-only excluded function has duplicate parameter names")
+        for parameter in parameters:
+            if parameter["kind"] == "handle":
+                handle_name = parameter["type"].split()[0].rstrip("*").strip()
+                if handle_name not in c_handle_names:
+                    raise ManifestError("C-only excluded function references an unknown opaque handle")
+            elif parameter["kind"] == "output-value-pointer":
+                value_name = parameter["valueType"]
+                values = [
+                    record["c"]
+                    for record in manifest["types"]
+                    if record["c"]["name"] == value_name
+                ]
+                values.extend(
+                    carrier
+                    for carrier in _ordered_approved_c_type_layouts(manifest)
+                    if carrier["name"] == value_name
+                )
+                if not values or not any(value.get("kind") == "fixed-width-value" for value in values):
+                    raise ManifestError("C-only excluded function output references an unknown value layout")
 
     for record in manifest["types"]:
         if record["kind"] != "enum":
@@ -1544,6 +1651,13 @@ def render_rust_ffi(manifest: dict[str, Any]) -> str:
                     lines.append(f"    pub {limit['cField']}: u64,")
             lines.append("}")
         lines.append("")
+    for c_type in _ordered_approved_c_type_layouts(manifest):
+        lines.extend(["#[repr(C)]", f"pub struct {c_type['name']} {{"])
+        for field in c_type["fields"]:
+            lines.append(
+                f"    pub {_rust_identifier(field['name'])}: {_rust_c_type(field['type'])},"
+            )
+        lines.extend(["}", ""])
     lines.extend(["unsafe extern \"C\" {"])
     for declaration in manifest["types"]:
         c_type = declaration["c"]
@@ -1890,6 +2004,20 @@ def render_c_header(
             ])
         lines.append(f"/* {requirement_comment} */")
         lines.append(_c_declaration(function))
+    for exclusion in manifest.get("approvedExclusions", []):
+        c_function = exclusion.get("cFunction")
+        if c_function is None or (
+            ready_c_exports is not None
+            and c_function["symbol"] not in ready_c_exports
+        ):
+            continue
+        documentation = c_function.get("documentation", [])
+        if documentation:
+            lines.append("/* " + documentation[0])
+            lines.extend(" * " + line for line in documentation[1:])
+            lines.append(" */")
+        lines.append(f"/* Approved exact C-only exclusion: {exclusion['exportName']} */")
+        lines.append(_c_declaration({"c": c_function}))
     lines.extend(["", "#ifdef __cplusplus", "}", "#endif", f"#endif /* {header_guard} */", ""])
     return "\n".join(lines)
 

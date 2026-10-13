@@ -716,52 +716,97 @@ pub extern "C" fn kmipkit_client_execute(
     limits: *mut kmipkit_codec_limits_t,
     out_response: *mut *mut kmipkit_client_batch_response_t,
 ) -> i32 {
-    ffi_entrypoint(|| {
-        let out = out_slot!(out_response);
-        if batch.is_null() {
-            return record_ffi_error(ERROR_INVALID_INPUT);
+    ffi_entrypoint(|| execute_client_batch(client, batch, limits, out_response, None))
+}
+
+/// Executes a typed batch and optionally returns an owned generic response on shape errors.
+fn execute_client_batch(
+    client: *mut kmipkit_client_t,
+    batch: *mut *mut kmipkit_client_batch_t,
+    limits: *mut kmipkit_codec_limits_t,
+    out_response: *mut *mut kmipkit_client_batch_response_t,
+    out_error_response_ttlv: Option<*mut *mut kmipkit_ttlv_structure_t>,
+) -> i32 {
+    let out = out_slot!(out_response);
+    let out_error = match out_error_response_ttlv {
+        Some(output) => Some(out_slot!(output)),
+        None => None,
+    };
+    if batch.is_null() {
+        return record_ffi_error(ERROR_INVALID_INPUT);
+    }
+    // SAFETY: the caller supplies a writable in/out slot holding the
+    // one-shot ordered batch consumed by execution.
+    let batch_slot = unsafe { &mut *batch };
+    let batch_handle = *batch_slot;
+    if batch_handle.is_null() {
+        return record_ffi_error(ERROR_INVALID_INPUT);
+    }
+    let client = read_handle!(client, Client);
+    let HandleValue::Client(client) = &client.value else {
+        return record_ffi_error(ERROR_INVALID_INPUT);
+    };
+    let limits_handle = read_handle!(limits, CodecLimits);
+    let HandleValue::CodecLimits(limits) = &limits_handle.value else {
+        return record_ffi_error(ERROR_INVALID_INPUT);
+    };
+    if let Err(status) = reference_handle(&batch_handle, Kind::ClientBatch) {
+        return record_ffi_error(status);
+    }
+    *batch_slot = ptr::null_mut();
+    let batch_payload = match owned_payload(batch_handle, Kind::ClientBatch) {
+        Ok(HandleValue::ClientBatch(batch)) => batch,
+        Ok(_) => return record_ffi_error(ERROR_INVALID_INPUT),
+        Err(status) => return record_ffi_error(status),
+    };
+    let batch = match batch_payload.into_inner() {
+        Ok(batch) => batch.into_batch(),
+        Err(_) => return record_ffi_error(ERROR_INTERNAL),
+    };
+    let Ok(mut client) = client.lock() else {
+        return record_ffi_error(ERROR_INTERNAL);
+    };
+    match client.execute(batch, limits) {
+        Ok(response) => {
+            *out = make_handle(
+                Kind::ClientBatchResponse,
+                HandleValue::ClientBatchResponse(Arc::new(response)),
+            );
+            SUCCESS
         }
-        // SAFETY: the caller supplies a writable in/out slot holding the
-        // one-shot ordered batch consumed by execution.
-        let batch_slot = unsafe { &mut *batch };
-        let batch_handle = *batch_slot;
-        if batch_handle.is_null() {
-            return record_ffi_error(ERROR_INVALID_INPUT);
-        }
-        let client = read_handle!(client, Client);
-        let HandleValue::Client(client) = &client.value else {
-            return record_ffi_error(ERROR_INVALID_INPUT);
-        };
-        let limits_handle = read_handle!(limits, CodecLimits);
-        let HandleValue::CodecLimits(limits) = &limits_handle.value else {
-            return record_ffi_error(ERROR_INVALID_INPUT);
-        };
-        if let Err(status) = reference_handle(&batch_handle, Kind::ClientBatch) {
-            return record_ffi_error(status);
-        }
-        let batch_payload = match owned_payload(batch_handle, Kind::ClientBatch) {
-            Ok(HandleValue::ClientBatch(batch)) => batch,
-            Ok(_) => return record_ffi_error(ERROR_INVALID_INPUT),
-            Err(status) => return record_ffi_error(status),
-        };
-        *batch_slot = ptr::null_mut();
-        let batch = match batch_payload.into_inner() {
-            Ok(batch) => batch.into_batch(),
-            Err(_) => return record_ffi_error(ERROR_INTERNAL),
-        };
-        let Ok(mut client) = client.lock() else {
-            return record_ffi_error(ERROR_INTERNAL);
-        };
-        match client.execute(batch, limits) {
-            Ok(response) => {
-                *out = make_handle(
-                    Kind::ClientBatchResponse,
-                    HandleValue::ClientBatchResponse(Arc::new(response)),
-                );
-                SUCCESS
+        Err(error) => {
+            let status = record_client_error(&error);
+            if let (Some(output), Some(response_ttlv)) = (out_error, error.response_ttlv()) {
+                let response = response_ttlv.with_ttlv(|view| super::clone_structure_view(&view));
+                match response {
+                    Ok(response) => {
+                        *output = make_handle(Kind::Structure, HandleValue::Structure(response));
+                    }
+                    Err(clone_status) => return record_ffi_error(clone_status),
+                }
             }
-            Err(error) => record_client_error(&error),
+            status
         }
+    }
+}
+
+/// Executes one batch with optional access to the complete generic response on shape errors.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_client_execute_with_error_ttlv_v1(
+    client: *mut kmipkit_client_t,
+    batch: *mut *mut kmipkit_client_batch_t,
+    limits: *mut kmipkit_codec_limits_t,
+    out_response: *mut *mut kmipkit_client_batch_response_t,
+    out_error_response_ttlv: *mut *mut kmipkit_ttlv_structure_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        execute_client_batch(
+            client,
+            batch,
+            limits,
+            out_response,
+            Some(out_error_response_ttlv),
+        )
     })
 }
 

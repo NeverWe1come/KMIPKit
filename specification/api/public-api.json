@@ -15,8 +15,24 @@
     "KMIPKIT-0004-FR-012",
     "KMIPKIT-0004-FR-014",
     "KMIPKIT-0005-FR-007",
+    "KMIPKIT-0006-FR-005",
+    "KMIPKIT-0006-FR-006",
+    "KMIPKIT-0006-FR-007",
+    "KMIPKIT-0006-FR-008",
+    "KMIPKIT-0006-FR-009",
+    "KMIPKIT-0006-FR-010",
+    "KMIPKIT-0006-FR-014",
+    "KMIPKIT-0006-FR-015",
     "KMIPKIT-0007-FR-001",
     "KMIPKIT-0007-FR-002",
+    "KMIPKIT-0007-FR-003",
+    "KMIPKIT-0007-FR-006",
+    "KMIPKIT-0007-FR-008",
+    "KMIPKIT-0007-FR-009",
+    "KMIPKIT-0007-FR-010",
+    "KMIPKIT-0007-FR-011",
+    "KMIPKIT-0007-FR-012",
+    "KMIPKIT-0007-FR-013",
     "KMIPKIT-0012-FR-001",
     "KMIPKIT-0012-FR-002",
     "KMIPKIT-0012-FR-003",
@@ -31,6 +47,24 @@
     "KMIPKIT-0012-FR-012",
     "KMIPKIT-0012-FR-013",
     "KMIPKIT-0012-FR-014",
+    "KMIPKIT-0013-FR-001",
+    "KMIPKIT-0013-FR-002",
+    "KMIPKIT-0013-FR-003",
+    "KMIPKIT-0013-FR-004",
+    "KMIPKIT-0013-FR-005",
+    "KMIPKIT-0013-FR-006",
+    "KMIPKIT-0013-FR-008",
+    "KMIPKIT-0013-FR-009",
+    "KMIPKIT-0013-FR-010",
+    "KMIPKIT-0013-FR-011",
+    "KMIPKIT-0013-FR-012",
+    "KMIPKIT-0013-FR-013",
+    "KMIPKIT-0013-FR-014",
+    "KMIPKIT-0013-FR-015",
+    "KMIPKIT-0013-FR-016",
+    "KMIPKIT-0013-FR-017",
+    "KMIPKIT-0013-FR-018",
+    "KMIPKIT-0021-FR-015",
     "KMIPKIT-0043-FR-001",
     "KMIPKIT-0043-FR-002",
     "KMIPKIT-0043-FR-003",
@@ -934,6 +968,162 @@
       "python": {
         "module": "kmipkit.extensions",
         "name": "ExtensionRegistryLimits"
+      }
+    },
+    {
+      "id": "TransportConfig",
+      "kind": "opaque-handle",
+      "requirementIds": [
+        "KMIPKIT-0013-FR-001",
+        "KMIPKIT-0043-FR-003",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-021"
+      ],
+      "rust": {
+        "module": "kmipkit_transport",
+        "name": "TransportConfig",
+        "owner": "client"
+      },
+      "c": {
+        "name": "kmipkit_transport_config_t",
+        "kind": "opaque-handle",
+        "handleKind": "transport_config",
+        "ownership": "library-owned",
+        "releaseFunction": "kmipkit_transport_config_release"
+      },
+      "java": {
+        "package": "org.kmipkit.extensions",
+        "name": "TransportConfiguration"
+      },
+      "python": {
+        "module": "kmipkit.client",
+        "name": "TransportConfig"
+      }
+    },
+    {
+      "id": "Client",
+      "kind": "opaque-handle",
+      "requirementIds": [
+        "KMIPKIT-0007-FR-001",
+        "KMIPKIT-0013-FR-001",
+        "KMIPKIT-0043-FR-003",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-021"
+      ],
+      "rust": {
+        "module": "kmipkit_client",
+        "name": "Client",
+        "owner": "client"
+      },
+      "c": {
+        "name": "kmipkit_client_t",
+        "kind": "opaque-handle",
+        "handleKind": "client",
+        "ownership": "library-owned",
+        "releaseFunction": "kmipkit_client_release"
+      },
+      "java": {
+        "package": "org.kmipkit.extensions",
+        "name": "Client"
+      },
+      "python": {
+        "module": "kmipkit.client",
+        "name": "Client"
+      }
+    },
+    {
+      "id": "ClientBatch",
+      "kind": "opaque-handle",
+      "requirementIds": [
+        "KMIPKIT-0007-FR-001",
+        "KMIPKIT-0043-FR-003",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-021"
+      ],
+      "rust": {
+        "module": "kmipkit_client",
+        "name": "ClientBatch",
+        "owner": "client"
+      },
+      "c": {
+        "name": "kmipkit_client_batch_t",
+        "kind": "opaque-handle",
+        "handleKind": "client_batch",
+        "ownership": "library-owned",
+        "releaseFunction": "kmipkit_client_batch_release"
+      },
+      "java": {
+        "package": "org.kmipkit.extensions",
+        "name": "ClientBatch"
+      },
+      "python": {
+        "module": "kmipkit.client",
+        "name": "Batch"
+      }
+    },
+    {
+      "id": "ClientBatchResponse",
+      "kind": "opaque-handle",
+      "requirementIds": [
+        "KMIPKIT-0007-FR-001",
+        "KMIPKIT-0043-FR-003",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-021"
+      ],
+      "rust": {
+        "module": "kmipkit_client",
+        "name": "ClientBatchResponse",
+        "owner": "client"
+      },
+      "c": {
+        "name": "kmipkit_client_batch_response_t",
+        "kind": "opaque-handle",
+        "handleKind": "client_batch_response",
+        "ownership": "library-owned",
+        "releaseFunction": "kmipkit_client_batch_response_release"
+      },
+      "java": {
+        "package": "org.kmipkit.extensions",
+        "name": "ClientBatchResponse"
+      },
+      "python": {
+        "module": "kmipkit.client",
+        "name": "BatchResult"
+      }
+    },
+    {
+      "id": "ClientBatchItemOutcome",
+      "kind": "opaque-handle",
+      "requirementIds": [
+        "KMIPKIT-0007-FR-001",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-021"
+      ],
+      "rust": {
+        "module": "kmipkit_client",
+        "name": "ClientBatchItemResponse",
+        "owner": "client"
+      },
+      "c": {
+        "name": "kmipkit_client_batch_item_response_t",
+        "kind": "opaque-handle",
+        "handleKind": "client_batch_item_response",
+        "ownership": "library-owned",
+        "releaseFunction": "kmipkit_client_batch_item_response_release"
+      },
+      "java": {
+        "package": "org.kmipkit.extensions",
+        "name": "ClientBatchItemResult"
+      },
+      "python": {
+        "module": "kmipkit.client",
+        "name": "BatchItemResult"
       }
     },
     {
@@ -202287,21 +202477,6 @@
       "blockedReason": "This Java AutoCloseable declaration has no reviewed equivalent mapping across the four public languages; it is inventoried without advertising complete parity."
     },
     {
-      "declarationId": "T076:kmipkit_byte_span_v1_t:c-observed",
-      "packageId": "c-kmipkit",
-      "kind": "type",
-      "exportName": "kmipkit_byte_span_v1_t",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-007",
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "Observed by T076 in the C binary. It remains blocked and is excluded from generated public declarations until T021 and T024 provide the approved Java and Python mappings; no public signature is recorded."
-    },
-    {
       "declarationId": "T076:kmipkit_client_batch_add_error_continuation_value:c-observed",
       "packageId": "c-kmipkit",
       "kind": "c-symbol",
@@ -202356,21 +202531,6 @@
       "capabilityId": "public_binding_surface",
       "requirementIds": [
         "KMIPKIT-0043-FR-005",
-        "KMIPKIT-0043-FR-007",
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "Observed by T076 in the C binary. It remains blocked and is excluded from generated public declarations until T021 and T024 provide the approved Java and Python mappings; no public signature is recorded."
-    },
-    {
-      "declarationId": "T076:kmipkit_client_batch_item_metadata_v1_t:c-observed",
-      "packageId": "c-kmipkit",
-      "kind": "type",
-      "exportName": "kmipkit_client_batch_item_metadata_v1_t",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
         "KMIPKIT-0043-FR-007",
         "KMIPKIT-0043-FR-021"
       ],
@@ -202636,15 +202796,15 @@
       "exportName": "kmipkit_client_execute",
       "capabilityId": "public_binding_surface",
       "requirementIds": [
+        "KMIPKIT-0007-FR-008",
+        "KMIPKIT-0043-FR-003",
         "KMIPKIT-0043-FR-005",
-        "KMIPKIT-0043-FR-007",
-        "KMIPKIT-0043-FR-012",
         "KMIPKIT-0043-FR-021"
       ],
       "declarationState": "blocked",
       "parityScope": "four-language",
       "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "Observed by T076 in the C binary. It remains blocked and is excluded from generated public declarations until T021 and T024 provide the approved Java and Python mappings; no public signature is recorded."
+      "blockedReason": "Observed compatibility C symbol. Keep it out of generated public declarations until T021 and T024 provide approved language mappings; no public signature is recorded."
     },
     {
       "declarationId": "T076:kmipkit_client_release:c-observed",
@@ -202666,21 +202826,6 @@
       "packageId": "c-kmipkit",
       "kind": "type",
       "exportName": "kmipkit_client_t",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-007",
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "Observed by T076 in the C binary. It remains blocked and is excluded from generated public declarations until T021 and T024 provide the approved Java and Python mappings; no public signature is recorded."
-    },
-    {
-      "declarationId": "T076:kmipkit_timeout_limit_v1_t:c-observed",
-      "packageId": "c-kmipkit",
-      "kind": "type",
-      "exportName": "kmipkit_timeout_limit_v1_t",
       "capabilityId": "public_binding_surface",
       "requirementIds": [
         "KMIPKIT-0043-FR-007",
@@ -202737,34 +202882,20 @@
       "blockedReason": "Observed by T076 in the C binary. It remains blocked and is excluded from generated public declarations until T021 and T024 provide the approved Java and Python mappings; no public signature is recorded."
     },
     {
-      "declarationId": "T076:kmipkit_transport_config_v1_t:c-observed",
+      "declarationId": "T076:kmipkit_client_execute_with_error_ttlv_v1:c-observed",
       "packageId": "c-kmipkit",
-      "kind": "type",
-      "exportName": "kmipkit_transport_config_v1_t",
+      "kind": "c-symbol",
+      "exportName": "kmipkit_client_execute_with_error_ttlv_v1",
       "capabilityId": "public_binding_surface",
       "requirementIds": [
-        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0021-FR-015",
+        "KMIPKIT-0043-FR-005",
         "KMIPKIT-0043-FR-021"
       ],
       "declarationState": "blocked",
       "parityScope": "four-language",
       "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "Observed by T076 in the C binary. It remains blocked and is excluded from generated public declarations until T021 and T024 provide the approved Java and Python mappings; no public signature is recorded."
-    },
-    {
-      "declarationId": "T076:kmipkit_transport_input_v1_t:c-observed",
-      "packageId": "c-kmipkit",
-      "kind": "type",
-      "exportName": "kmipkit_transport_input_v1_t",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-007",
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "Observed by T076 in the C binary. It remains blocked and is excluded from generated public declarations until T021 and T024 provide the approved Java and Python mappings; no public signature is recorded."
+      "blockedReason": "Observed by T076 in the Rust/C implementation. Keep it blocked and out of generated public headers until Java/Python expose the retained complete ResponseMessage through an owned, closeable accessor and parity tests verify the behavior."
     },
     {
       "declarationId": "KMIPKIT-0044-opaque-object-context-type:rust",
@@ -204117,6 +204248,252 @@
         "evidence": "**Status**: Approved for implementation"
       },
       "evidence": "Reviewed against KMIPKIT-0043-FR-007 and FR-021 in specs/043-public-api-bindings/implementation-evidence.md#reviewed-c-only-last-error-exclusions. The exact C exports remain in the generated header and satisfy FR-007; exclusion is only from the shared four-language facade capability inventory."
+    },
+    {
+      "packageId": "c-kmipkit",
+      "exportName": "kmipkit_byte_span_v1_t",
+      "reason": "This exact C record is a fixed-width ABI carrier. Rust exposes the validated configuration or outcome through idiomatic types; Java and Python expose typed configuration records and copied byte values rather than this C layout.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Exact ordered fields match the `#[repr(C)]` declaration in `crates/kmipkit-ffi/src/lib.rs`; the type remains generated for C consumers without advertising a same-shaped facade type.",
+      "cType": {
+        "name": "kmipkit_byte_span_v1_t",
+        "kind": "fixed-width-value",
+        "fields": [
+          {
+            "name": "data",
+            "type": "const uint8_t *"
+          },
+          {
+            "name": "length",
+            "type": "uint64_t"
+          }
+        ]
+      }
+    },
+    {
+      "packageId": "c-kmipkit",
+      "exportName": "kmipkit_client_batch_item_metadata_v1_t",
+      "reason": "This exact C record is a fixed-width ABI carrier. Rust exposes the validated configuration or outcome through idiomatic types; Java and Python expose typed configuration records and copied byte values rather than this C layout.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Exact ordered fields match the `#[repr(C)]` declaration in `crates/kmipkit-ffi/src/lib.rs`; the type remains generated for C consumers without advertising a same-shaped facade type.",
+      "cType": {
+        "name": "kmipkit_client_batch_item_metadata_v1_t",
+        "kind": "fixed-width-value",
+        "fields": [
+          {
+            "name": "struct_size",
+            "type": "uint32_t"
+          },
+          {
+            "name": "abi_version",
+            "type": "uint32_t"
+          },
+          {
+            "name": "outcome_kind",
+            "type": "uint32_t"
+          },
+          {
+            "name": "result_status",
+            "type": "uint32_t"
+          },
+          {
+            "name": "has_result_reason",
+            "type": "uint32_t"
+          },
+          {
+            "name": "result_reason",
+            "type": "uint32_t"
+          }
+        ]
+      }
+    },
+    {
+      "packageId": "c-kmipkit",
+      "exportName": "kmipkit_timeout_limit_v1_t",
+      "reason": "This exact C record is a fixed-width ABI carrier. Rust exposes the validated configuration or outcome through idiomatic types; Java and Python expose typed configuration records and copied byte values rather than this C layout.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Exact ordered fields match the `#[repr(C)]` declaration in `crates/kmipkit-ffi/src/lib.rs`; the type remains generated for C consumers without advertising a same-shaped facade type.",
+      "cType": {
+        "name": "kmipkit_timeout_limit_v1_t",
+        "kind": "fixed-width-value",
+        "fields": [
+          {
+            "name": "kind",
+            "type": "uint32_t"
+          },
+          {
+            "name": "reserved",
+            "type": "uint32_t"
+          },
+          {
+            "name": "seconds",
+            "type": "uint64_t"
+          },
+          {
+            "name": "nanoseconds",
+            "type": "uint32_t"
+          },
+          {
+            "name": "reserved2",
+            "type": "uint32_t"
+          }
+        ]
+      }
+    },
+    {
+      "packageId": "c-kmipkit",
+      "exportName": "kmipkit_transport_input_v1_t",
+      "reason": "This exact C record is a fixed-width ABI carrier. Rust exposes the validated configuration or outcome through idiomatic types; Java and Python expose typed configuration records and copied byte values rather than this C layout.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Exact ordered fields match the `#[repr(C)]` declaration in `crates/kmipkit-ffi/src/lib.rs`; the type remains generated for C consumers without advertising a same-shaped facade type.",
+      "cType": {
+        "name": "kmipkit_transport_input_v1_t",
+        "kind": "fixed-width-value",
+        "fields": [
+          {
+            "name": "source_kind",
+            "type": "uint32_t"
+          },
+          {
+            "name": "encoding",
+            "type": "uint32_t"
+          },
+          {
+            "name": "data",
+            "type": "kmipkit_byte_span_v1_t"
+          }
+        ]
+      }
+    },
+    {
+      "packageId": "c-kmipkit",
+      "exportName": "kmipkit_transport_config_v1_t",
+      "reason": "This exact C record is a fixed-width ABI carrier. Rust exposes the validated configuration or outcome through idiomatic types; Java and Python expose typed configuration records and copied byte values rather than this C layout.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Exact ordered fields match the `#[repr(C)]` declaration in `crates/kmipkit-ffi/src/lib.rs`; the type remains generated for C consumers without advertising a same-shaped facade type.",
+      "cType": {
+        "name": "kmipkit_transport_config_v1_t",
+        "kind": "fixed-width-value",
+        "fields": [
+          {
+            "name": "struct_size",
+            "type": "uint32_t"
+          },
+          {
+            "name": "abi_version",
+            "type": "uint32_t"
+          },
+          {
+            "name": "endpoint_kind",
+            "type": "uint32_t"
+          },
+          {
+            "name": "trust_kind",
+            "type": "uint32_t"
+          },
+          {
+            "name": "flags",
+            "type": "uint32_t"
+          },
+          {
+            "name": "reserved",
+            "type": "uint32_t"
+          },
+          {
+            "name": "endpoint",
+            "type": "kmipkit_byte_span_v1_t"
+          },
+          {
+            "name": "endpoint_port",
+            "type": "uint16_t"
+          },
+          {
+            "name": "reserved2",
+            "type": "uint16_t"
+          },
+          {
+            "name": "client_certificates",
+            "type": "const kmipkit_transport_input_v1_t *"
+          },
+          {
+            "name": "client_certificate_count",
+            "type": "uint64_t"
+          },
+          {
+            "name": "client_private_key",
+            "type": "kmipkit_transport_input_v1_t"
+          },
+          {
+            "name": "trust_certificates",
+            "type": "const kmipkit_transport_input_v1_t *"
+          },
+          {
+            "name": "trust_certificate_count",
+            "type": "uint64_t"
+          },
+          {
+            "name": "revocation_lists",
+            "type": "const kmipkit_transport_input_v1_t *"
+          },
+          {
+            "name": "revocation_list_count",
+            "type": "uint64_t"
+          },
+          {
+            "name": "tls_server_name",
+            "type": "kmipkit_byte_span_v1_t"
+          },
+          {
+            "name": "target_uri",
+            "type": "kmipkit_byte_span_v1_t"
+          },
+          {
+            "name": "connect_timeout",
+            "type": "kmipkit_timeout_limit_v1_t"
+          },
+          {
+            "name": "write_timeout",
+            "type": "kmipkit_timeout_limit_v1_t"
+          },
+          {
+            "name": "read_timeout",
+            "type": "kmipkit_timeout_limit_v1_t"
+          },
+          {
+            "name": "total_timeout",
+            "type": "kmipkit_timeout_limit_v1_t"
+          },
+          {
+            "name": "max_request_bytes",
+            "type": "uint64_t"
+          }
+        ]
+      }
     },
     {
       "packageId": "rust-kmipkit-protocol",

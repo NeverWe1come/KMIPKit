@@ -1001,6 +1001,12 @@ pub struct ClientBatch {
 }
 
 impl ClientBatch {
+    /// Creates an empty typed batch for incremental construction.
+    #[must_use]
+    pub fn empty() -> Self {
+        Self::from_items(std::iter::empty())
+    }
+
     /// Creates a batch with one typed request item.
     #[must_use]
     pub fn new(item: ClientBatchItem) -> Self {

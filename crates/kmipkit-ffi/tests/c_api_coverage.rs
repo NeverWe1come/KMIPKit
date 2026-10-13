@@ -110,12 +110,15 @@ fn existing_c_consumer_exercises_the_exported_abi_in_the_coverage_process() {
 }
 
 #[test]
-fn generated_public_header_client_consumer_compiles_and_runs() {
-    // SAFETY: the compiled consumer has no arguments, uses only public C ABI declarations,
-    // and keeps all handles locally scoped and released before returning.
+fn blocked_client_abi_local_prototype_consumer_compiles_and_runs() {
+    // SAFETY: the compiled consumer has no arguments, uses test-local prototypes
+    // for blocked symbols, and releases every created handle before returning.
     let result = unsafe { kmipkit_client_abi_c_consumer_main() };
 
-    assert_eq!(result, 0, "public C client consumer must pass its ABI checks");
+    assert_eq!(
+        result, 0,
+        "blocked C client ABI consumer must pass its implementation checks"
+    );
 }
 
 fn controlled_mtls_peer(
@@ -155,7 +158,8 @@ fn controlled_mtls_peer(
     assert!(request.starts_with(&[0x42, 0x00, 0x78]));
     tls.write_all(&mismatched_discover_versions_response())
         .expect("mismatched response fixture is written");
-    tls.flush().expect("the malformed typed response is flushed");
+    tls.flush()
+        .expect("the malformed typed response is flushed");
     let _ = tls.get_ref().shutdown(Shutdown::Both);
 
     let (third_stream, _) = listener

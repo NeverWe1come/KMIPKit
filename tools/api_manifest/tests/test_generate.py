@@ -249,7 +249,7 @@ class ManifestGeneratorCliTests(unittest.TestCase):
         self.assertIn("kmipkit_ttlv_item_create", private_header)
         self.assertNotIn("kmipkit_ttlv_item_create", public_header)
 
-    def test_public_header_includes_shared_client_abi_after_binding_mapping(self) -> None:
+    def test_public_header_keeps_shared_client_abi_blocked_until_binding_mapping(self) -> None:
         manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
         outputs = generate.render_outputs(manifest)
         public_header = outputs["bindings/c/include/kmipkit.h"].decode("utf-8")
@@ -259,35 +259,33 @@ class ManifestGeneratorCliTests(unittest.TestCase):
             for row in manifest["publicDeclarations"]
             if row["declarationId"].startswith("T076:")
         ]
-        resolved_t076_names = {
+        blocked_t076_names = {
             row["exportName"]
             for row in t076_declarations
-            if row["declarationState"] in {"declared", "verified"}
+            if row["packageId"] == "c-kmipkit" and row["declarationState"] == "blocked"
         }
         approved_t076_exclusions = {
             row["exportName"]
             for row in manifest["approvedExclusions"]
             if row["packageId"] == "c-kmipkit"
         }
-        observed_t076_names = {row["exportName"] for row in t076_declarations}
-        self.assertEqual(
-            [],
-            sorted(observed_t076_names - resolved_t076_names - approved_t076_exclusions),
-            "every observed T076 C ABI export needs complete mappings or an exact approved exclusion",
-        )
+        self.assertTrue(blocked_t076_names)
+        self.assertFalse(blocked_t076_names & approved_t076_exclusions)
+        for row in t076_declarations:
+            if row["packageId"] != "c-kmipkit" or row["declarationState"] != "blocked":
+                continue
+            if row["kind"] == "type":
+                self.assertNotIn(
+                    f"typedef struct {row['exportName']} {row['exportName']};",
+                    public_header,
+                )
+            elif row["kind"] == "c-symbol":
+                self.assertNotIn(f"{row['exportName']}(", public_header)
 
-        self.assertTrue(
-            "typedef struct kmipkit_client_t kmipkit_client_t;" in public_header,
-            "the public C header omits the mapped client handle",
-        )
-        self.assertTrue(
-            "kmipkit_transport_config_create_v1" in public_header,
-            "the public C header omits the mapped transport constructor",
-        )
-        self.assertTrue(
-            "kmipkit_client_execute" in public_header,
-            "the public C header omits the mapped client execution entrypoint",
-        )
+        self.assertIn("kmipkit_client_execute_with_error_ttlv_v1", blocked_t076_names)
+        self.assertIn("kmipkit_client_execute", blocked_t076_names)
+        self.assertNotIn("typedef struct kmipkit_client_t kmipkit_client_t;", public_header)
+        self.assertNotIn("kmipkit_transport_config_create_v1", public_header)
 
     def test_versioned_fixed_width_values_render_declared_c_fields(self) -> None:
         manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
@@ -923,6 +921,14 @@ class ManifestGeneratorCliTests(unittest.TestCase):
                     and declaration.get("exportName") == "kmipkit_byte_span_v1_t"
                 )
             ]
+            manifest["approvedExclusions"] = [
+                exclusion
+                for exclusion in manifest["approvedExclusions"]
+                if not (
+                    exclusion.get("packageId") == "c-kmipkit"
+                    and exclusion.get("exportName") == "kmipkit_byte_span_v1_t"
+                )
+            ]
             manifest["approvedExclusions"].append(
                 {
                     "packageId": "c-kmipkit",
@@ -979,7 +985,7 @@ class ManifestGeneratorCliTests(unittest.TestCase):
             function["python"]["function"] = "Client.create"
             self._write_manifest(root, manifest)
 
-            result = self._run_generator(root, "--check")
+            result = self._run_generator(root, "--write")
 
             self.assertEqual(0, result.returncode, result.stderr)
 

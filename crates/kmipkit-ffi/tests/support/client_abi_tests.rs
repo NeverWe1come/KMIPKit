@@ -1098,6 +1098,333 @@ fn private_key_file_reader_zeroizes_partial_error_and_over_bound_bytes() {
     assert!(oversized_observer.initialized_bytes_were_zeroized());
 }
 
+fn unconnected_client_handle() -> *mut kmipkit_client_t {
+    let registry = client_extension::client_extension_registry(Vec::new(), extension::defaults())
+        .expect("the empty extension registry is valid");
+    let configuration = client_extension::ClientConfiguration::new(registry);
+    let pki = EphemeralPki::generate().expect("ephemeral PKI generation succeeds");
+    let identity = pki.client_identity();
+    let certificates = identity
+        .certificate_chain_der()
+        .into_iter()
+        .map(<[u8]>::to_vec)
+        .collect();
+    let transport = TransportConfig::builder(Endpoint::raw_tls("127.0.0.1", 5696))
+        .client_identity(ClientIdentity::new(
+            CertificateInput::from_der(certificates),
+            PrivateKeyInput::from_der(identity.private_key_der().to_vec()),
+        ))
+        .trust_source(TrustSource::certificate_authorities(vec![
+            CertificateInput::from_der(vec![pki.authority_certificate_der().to_vec()]),
+        ]))
+        .tls_server_name("server.kmipkit.test")
+        .build()
+        .expect("the local TLS transport configuration is valid");
+    let client = Client::new(configuration, transport).expect("client construction succeeds");
+    make_handle(
+        Kind::Client,
+        HandleValue::Client(Box::new(std::sync::Mutex::new(client))),
+    )
+}
+
+fn client_configuration_handle() -> *mut kmipkit_client_configuration_t {
+    make_handle(
+        Kind::Configuration,
+        HandleValue::Configuration(empty_client_configuration()),
+    )
+}
+
+fn empty_client_configuration() -> client_extension::ClientConfiguration {
+    let registry = client_extension::client_extension_registry(Vec::new(), extension::defaults())
+        .expect("the empty extension registry is valid");
+    client_extension::ClientConfiguration::new(registry)
+}
+
+fn empty_client_batch_handle() -> *mut kmipkit_client_batch_t {
+    make_handle(
+        Kind::ClientBatch,
+        HandleValue::ClientBatch(std::sync::Mutex::new(ClientBatchBuilder::new())),
+    )
+}
+
+fn default_codec_limits_handle() -> *mut kmipkit_codec_limits_t {
+    make_handle(
+        Kind::CodecLimits,
+        HandleValue::CodecLimits(CodecLimits::defaults()),
+    )
+}
+
+#[test]
+fn ffi_execute_with_error_ttlv_clears_batch_slot_when_retained_owner_blocks_consumption() {
+    let client = unconnected_client_handle();
+    let limits = default_codec_limits_handle();
+    let mut batch = empty_client_batch_handle();
+    let retained_owner = clone_handle_owner(batch, Kind::ClientBatch)
+        .expect("the test retains one additional owner");
+    let mut response = ptr::null_mut();
+    let mut error_response = ptr::null_mut();
+
+    assert_eq!(
+        kmipkit_client_execute_with_error_ttlv_v1(
+            client,
+            &mut batch,
+            limits,
+            &mut response,
+            &mut error_response,
+        ),
+        ERROR_INVALID_INPUT
+    );
+    assert!(batch.is_null(), "consumption clears the caller's slot");
+    assert!(response.is_null());
+    assert!(error_response.is_null());
+
+    drop(retained_owner);
+    release(client, Kind::Client);
+    release(limits, Kind::CodecLimits);
+}
+
+#[test]
+fn ffi_execute_with_error_ttlv_rejects_null_slots_and_wrong_handle_kinds() {
+    let mut response = ptr::null_mut();
+    let mut error_response = ptr::null_mut();
+    assert_eq!(
+        kmipkit_client_execute_with_error_ttlv_v1(
+            ptr::null_mut(),
+            ptr::null_mut(),
+            ptr::null_mut(),
+            ptr::null_mut(),
+            &mut error_response,
+        ),
+        ERROR_INVALID_INPUT
+    );
+    assert!(error_response.is_null());
+
+    assert_eq!(
+        kmipkit_client_execute_with_error_ttlv_v1(
+            ptr::null_mut(),
+            ptr::null_mut(),
+            ptr::null_mut(),
+            &mut response,
+            ptr::null_mut(),
+        ),
+        ERROR_INVALID_INPUT
+    );
+    assert!(response.is_null());
+
+    assert_eq!(
+        kmipkit_client_execute_with_error_ttlv_v1(
+            ptr::null_mut(),
+            ptr::null_mut(),
+            ptr::null_mut(),
+            &mut response,
+            &mut error_response,
+        ),
+        ERROR_INVALID_INPUT
+    );
+    assert!(response.is_null());
+    assert!(error_response.is_null());
+
+    let mut batch = ptr::null_mut();
+    assert_eq!(
+        kmipkit_client_execute_with_error_ttlv_v1(
+            ptr::null_mut(),
+            &mut batch,
+            ptr::null_mut(),
+            &mut response,
+            &mut error_response,
+        ),
+        ERROR_INVALID_INPUT
+    );
+    assert!(batch.is_null());
+    assert!(response.is_null());
+    assert!(error_response.is_null());
+
+    let client = unconnected_client_handle();
+    let limits = default_codec_limits_handle();
+    let wrong_kind = client_configuration_handle();
+    let mut batch = empty_client_batch_handle();
+    assert_eq!(
+        kmipkit_client_execute_with_error_ttlv_v1(
+            wrong_kind.cast(),
+            &mut batch,
+            limits,
+            &mut response,
+            &mut error_response,
+        ),
+        ERROR_INVALID_INPUT
+    );
+    assert!(
+        !batch.is_null(),
+        "validation before consumption retains the batch"
+    );
+
+    assert_eq!(
+        kmipkit_client_execute_with_error_ttlv_v1(
+            client,
+            &mut batch,
+            wrong_kind.cast(),
+            &mut response,
+            &mut error_response,
+        ),
+        ERROR_INVALID_INPUT
+    );
+    assert!(!batch.is_null(), "wrong limits retain the batch");
+
+    let mut wrong_batch = wrong_kind.cast();
+    assert_eq!(
+        kmipkit_client_execute_with_error_ttlv_v1(
+            client,
+            &mut wrong_batch,
+            limits,
+            &mut response,
+            &mut error_response,
+        ),
+        ERROR_INVALID_INPUT
+    );
+    assert_eq!(
+        wrong_batch.cast::<kmipkit_client_configuration_t>(),
+        wrong_kind
+    );
+    assert!(response.is_null());
+    assert!(error_response.is_null());
+
+    release(batch, Kind::ClientBatch);
+    release(wrong_kind, Kind::Configuration);
+    release(client, Kind::Client);
+    release(limits, Kind::CodecLimits);
+}
+
+#[test]
+fn ffi_execute_fails_closed_for_poisoned_batch_and_client_locks() {
+    let client = unconnected_client_handle();
+    let limits = default_codec_limits_handle();
+    let mut poisoned_batch = empty_client_batch_handle();
+    {
+        // SAFETY: the handle was just allocated above and remains live while its mutex is poisoned.
+        let handle = unsafe { &*poisoned_batch.cast::<Handle>() };
+        let HandleValue::ClientBatch(batch) = &handle.value else {
+            unreachable!("the constructor created a client batch handle");
+        };
+        let panic = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+            let _guard = batch.lock().expect("batch mutex starts unpoisoned");
+            panic!("poison the test batch mutex");
+        }));
+        assert!(panic.is_err());
+    }
+
+    let mut response = ptr::null_mut();
+    let mut error_response = ptr::null_mut();
+    assert_eq!(
+        kmipkit_client_execute_with_error_ttlv_v1(
+            client,
+            &mut poisoned_batch,
+            limits,
+            &mut response,
+            &mut error_response,
+        ),
+        ERROR_INTERNAL
+    );
+    assert!(poisoned_batch.is_null());
+    assert!(response.is_null());
+    assert!(error_response.is_null());
+
+    {
+        // SAFETY: the handle was just allocated above and remains live while its mutex is poisoned.
+        let handle = unsafe { &*client.cast::<Handle>() };
+        let HandleValue::Client(client) = &handle.value else {
+            unreachable!("the constructor created a client handle");
+        };
+        let panic = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+            let _guard = client.lock().expect("client mutex starts unpoisoned");
+            panic!("poison the test client mutex");
+        }));
+        assert!(panic.is_err());
+    }
+
+    let mut healthy_batch = empty_client_batch_handle();
+    assert_eq!(
+        kmipkit_client_execute_with_error_ttlv_v1(
+            client,
+            &mut healthy_batch,
+            limits,
+            &mut response,
+            &mut error_response,
+        ),
+        ERROR_INTERNAL
+    );
+    assert!(healthy_batch.is_null());
+    assert!(response.is_null());
+    assert!(error_response.is_null());
+
+    release(client, Kind::Client);
+    release(limits, Kind::CodecLimits);
+}
+
+#[test]
+fn ffi_execute_rejects_inconsistent_client_abi_handle_envelopes() {
+    let client = unconnected_client_handle();
+    let limits = default_codec_limits_handle();
+    let mut response = ptr::null_mut();
+    let mut error_response = ptr::null_mut();
+
+    let wrong_client = make_handle(
+        Kind::Client,
+        HandleValue::Configuration(empty_client_configuration()),
+    );
+    let mut batch = empty_client_batch_handle();
+    assert_eq!(
+        kmipkit_client_execute_with_error_ttlv_v1(
+            wrong_client,
+            &mut batch,
+            limits,
+            &mut response,
+            &mut error_response,
+        ),
+        ERROR_INVALID_INPUT
+    );
+    assert!(!batch.is_null());
+    release(batch, Kind::ClientBatch);
+    release(wrong_client, Kind::Client);
+
+    let wrong_limits = make_handle(
+        Kind::CodecLimits,
+        HandleValue::Configuration(empty_client_configuration()),
+    );
+    let mut batch = empty_client_batch_handle();
+    assert_eq!(
+        kmipkit_client_execute_with_error_ttlv_v1(
+            client,
+            &mut batch,
+            wrong_limits,
+            &mut response,
+            &mut error_response,
+        ),
+        ERROR_INVALID_INPUT
+    );
+    assert!(!batch.is_null());
+    release(batch, Kind::ClientBatch);
+    release(wrong_limits, Kind::CodecLimits);
+
+    let mut wrong_batch = make_handle(
+        Kind::ClientBatch,
+        HandleValue::Configuration(empty_client_configuration()),
+    );
+    assert_eq!(
+        kmipkit_client_execute_with_error_ttlv_v1(
+            client,
+            &mut wrong_batch,
+            limits,
+            &mut response,
+            &mut error_response,
+        ),
+        ERROR_INVALID_INPUT
+    );
+    assert!(wrong_batch.is_null());
+
+    release(client, Kind::Client);
+    release(limits, Kind::CodecLimits);
+}
+
 struct PartialThenErrorReader {
     emitted: bool,
 }

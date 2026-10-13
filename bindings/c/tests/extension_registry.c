@@ -28,47 +28,6 @@
 /* T076 declarations remain test-local while Java/Python parity is blocked.
  * They exercise the binary symbols but are not public-header or readiness
  * evidence. */
-struct kmipkit_byte_span_v1_t {
-    const uint8_t *data;
-    uint64_t length;
-};
-struct kmipkit_transport_input_v1_t {
-    uint32_t source_kind;
-    uint32_t encoding;
-    struct kmipkit_byte_span_v1_t data;
-};
-struct kmipkit_timeout_limit_v1_t {
-    uint32_t kind;
-    uint32_t reserved;
-    uint64_t seconds;
-    uint32_t nanoseconds;
-    uint32_t reserved2;
-};
-struct kmipkit_transport_config_v1_t {
-    uint32_t struct_size;
-    uint32_t abi_version;
-    uint32_t endpoint_kind;
-    uint32_t trust_kind;
-    uint32_t flags;
-    uint32_t reserved;
-    struct kmipkit_byte_span_v1_t endpoint;
-    uint16_t endpoint_port;
-    uint16_t reserved2;
-    const struct kmipkit_transport_input_v1_t *client_certificates;
-    uint64_t client_certificate_count;
-    struct kmipkit_transport_input_v1_t client_private_key;
-    const struct kmipkit_transport_input_v1_t *trust_certificates;
-    uint64_t trust_certificate_count;
-    const struct kmipkit_transport_input_v1_t *revocation_lists;
-    uint64_t revocation_list_count;
-    struct kmipkit_byte_span_v1_t tls_server_name;
-    struct kmipkit_byte_span_v1_t target_uri;
-    struct kmipkit_timeout_limit_v1_t connect_timeout;
-    struct kmipkit_timeout_limit_v1_t write_timeout;
-    struct kmipkit_timeout_limit_v1_t read_timeout;
-    struct kmipkit_timeout_limit_v1_t total_timeout;
-    uint64_t max_request_bytes;
-};
 struct kmipkit_transport_config_t;
 struct kmipkit_client_t;
 struct kmipkit_client_batch_t;
@@ -76,14 +35,6 @@ struct kmipkit_client_batch_response_t;
 struct kmipkit_client_batch_item_response_t;
 struct kmipkit_ttlv_structure_t;
 struct kmipkit_ttlv_structure_view_t;
-struct kmipkit_client_batch_item_metadata_v1_t {
-    uint32_t struct_size;
-    uint32_t abi_version;
-    uint32_t outcome_kind;
-    uint32_t result_status;
-    uint32_t has_result_reason;
-    uint32_t result_reason;
-};
 extern int32_t kmipkit_extension_registry_limits_v1_default_values(
     kmipkit_extension_registry_limits_v1_t *limits);
 extern int32_t kmipkit_client_extension_registry_create_v1(

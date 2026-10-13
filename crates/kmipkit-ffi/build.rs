@@ -34,7 +34,10 @@ fn main() {
         .compile("kmipkit_extension_registry_c_consumer");
 
     let public_client_consumer = workspace_root.join("bindings/c/tests/client_abi_consumer.c");
-    println!("cargo:rerun-if-changed={}", public_client_consumer.display());
+    println!(
+        "cargo:rerun-if-changed={}",
+        public_client_consumer.display()
+    );
     cc::Build::new()
         .file(public_client_consumer)
         .include(&consumer_header)

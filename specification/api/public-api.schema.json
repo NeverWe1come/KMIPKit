@@ -565,6 +565,10 @@
         "kind": {
           "const": "fixed-width-value"
         },
+        "versioned": {
+          "type": "boolean",
+          "description": "Whether the layout starts with uint32_t struct_size and uint32_t abi_version fields."
+        },
         "fields": {
           "type": "array",
           "minItems": 1,
@@ -662,6 +666,44 @@
             "name",
             "kind",
             "type",
+            "valueType",
+            "ownership"
+          ],
+          "properties": {
+            "name": {
+              "$ref": "#/$defs/identifier"
+            },
+            "kind": {
+              "const": "output-scalar-pointer"
+            },
+            "type": {
+              "type": "string",
+              "pattern": "^(?:u?int(?:8|16|32|64)_t|size_t) \\*$"
+            },
+            "valueType": {
+              "type": "string",
+              "enum": [
+                "uint8_t",
+                "uint16_t",
+                "uint32_t",
+                "uint64_t",
+                "int32_t",
+                "int64_t",
+                "size_t"
+              ]
+            },
+            "ownership": {
+              "const": "none"
+            }
+          },
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "required": [
+            "name",
+            "kind",
+            "type",
             "direction",
             "ownership"
           ],
@@ -742,6 +784,37 @@
             "name",
             "kind",
             "type",
+            "valueType",
+            "ownership"
+          ],
+          "properties": {
+            "name": {
+              "$ref": "#/$defs/identifier"
+            },
+            "kind": {
+              "const": "error-output"
+            },
+            "type": {
+              "type": "string",
+              "pattern": "^kmipkit_[a-z0-9_]+_t \\*\\*$"
+            },
+            "valueType": {
+              "type": "string",
+              "pattern": "^kmipkit_[a-z0-9_]+_t$"
+            },
+            "ownership": {
+              "const": "library-owned"
+            }
+          },
+          "additionalProperties": false,
+          "description": "Owned optional handle returned only when response-shape validation fails after a complete generic TTLV response was received. The slot is initialized to NULL and remains NULL for success and all other failures."
+        },
+        {
+          "type": "object",
+          "required": [
+            "name",
+            "kind",
+            "type",
             "ownership"
           ],
           "properties": {
@@ -764,6 +837,66 @@
                 "uint64_t *"
               ],
               "description": "Pointer to one fixed-width integer result; not nullable."
+            },
+            "ownership": {
+              "const": "none"
+            }
+          },
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "required": [
+            "name",
+            "kind",
+            "type",
+            "handleType",
+            "ownership"
+          ],
+          "properties": {
+            "name": {
+              "$ref": "#/$defs/identifier"
+            },
+            "kind": {
+              "const": "consumed-handle-slot"
+            },
+            "type": {
+              "type": "string",
+              "pattern": "^kmipkit_[a-z0-9_]+_t \\*\\*$"
+            },
+            "handleType": {
+              "type": "string",
+              "pattern": "^kmipkit_[a-z0-9_]+_t$"
+            },
+            "ownership": {
+              "const": "consumed"
+            }
+          },
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "required": [
+            "name",
+            "kind",
+            "type",
+            "valueType",
+            "ownership"
+          ],
+          "properties": {
+            "name": {
+              "$ref": "#/$defs/identifier"
+            },
+            "kind": {
+              "const": "output-value-pointer"
+            },
+            "type": {
+              "type": "string",
+              "pattern": "^kmipkit_[a-z0-9_]+_t \\*$"
+            },
+            "valueType": {
+              "type": "string",
+              "pattern": "^kmipkit_[a-z0-9_]+_t$"
             },
             "ownership": {
               "const": "none"
@@ -1004,7 +1137,9 @@
               "pattern": "^org\\.kmipkit(?:\\.[a-z][A-Za-z0-9_]*)*$"
             },
             "class": {
-              "$ref": "#/$defs/identifier"
+              "type": "string",
+              "minLength": 1,
+              "pattern": "^[A-Za-z][A-Za-z0-9_]*(?:\\.[A-Za-z][A-Za-z0-9_]*)*$"
             },
             "method": {
               "$ref": "#/$defs/identifier"
@@ -1663,6 +1798,9 @@
           "pattern": "^[A-Za-z_][A-Za-z0-9_]*(?:::[A-Za-z_][A-Za-z0-9_]*)*\\s*<\\s*&(?:\\u0027[A-Za-z_][A-Za-z0-9_]*\\s+)?[A-Za-z_][A-Za-z0-9_]*(?:::[A-Za-z_][A-Za-z0-9_]*)*\\s*>$"
         },
         {
+          "pattern": "^[A-Za-z_][A-Za-z0-9_]*(?:::[A-Za-z_][A-Za-z0-9_]*)*\\s*<\\s*&(?:\\u0027[A-Za-z_][A-Za-z0-9_]*\\s+)?\\[\\s*[A-Za-z_][A-Za-z0-9_]*(?:::[A-Za-z_][A-Za-z0-9_]*)*\\s*\\]\\s*>$"
+        },
+        {
           "pattern": "^[A-Za-z_][A-Za-z0-9_]*(?:::[A-Za-z_][A-Za-z0-9_]*)*\\s*<\\s*[A-Za-z_][A-Za-z0-9_]*(?:::[A-Za-z_][A-Za-z0-9_]*)*(?:\\s*<\\s*[A-Za-z_][A-Za-z0-9_]*(?:::[A-Za-z_][A-Za-z0-9_]*)*(?:\\s*,\\s*[A-Za-z_][A-Za-z0-9_]*(?:::[A-Za-z_][A-Za-z0-9_]*)*)*\\s*>)?(?:\\s*,\\s*[A-Za-z_][A-Za-z0-9_]*(?:::[A-Za-z_][A-Za-z0-9_]*)*(?:\\s*<\\s*[A-Za-z_][A-Za-z0-9_]*(?:::[A-Za-z_][A-Za-z0-9_]*)*(?:\\s*,\\s*[A-Za-z_][A-Za-z0-9_]*(?:::[A-Za-z_][A-Za-z0-9_]*)*)*\\s*>)?)*\\s*>$"
         },
         {
@@ -2222,6 +2360,44 @@
         "cType": {
           "$ref": "#/$defs/cTypeLayout",
           "description": "Optional C-only ABI carrier layout retained in the generated header without declaring a four-language facade type."
+        },
+        "cFunction": {
+          "type": "object",
+          "required": [
+            "symbol",
+            "parameters",
+            "returnType",
+            "errorCategories"
+          ],
+          "properties": {
+            "symbol": {
+              "type": "string",
+              "pattern": "^kmipkit_[a-z0-9_]+$"
+            },
+            "documentation": {
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "type": "string",
+                "minLength": 1,
+                "pattern": "^(?![\\s\\S]*\\*/)(?![\\s\\S]*[\\r\\n\\\\]).+$"
+              }
+            },
+            "parameters": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/cParameter"
+              }
+            },
+            "returnType": {
+              "const": "int32_t"
+            },
+            "errorCategories": {
+              "$ref": "#/$defs/errorCategoryIds"
+            }
+          },
+          "additionalProperties": false,
+          "description": "Exact C prototype for a symbol whose idiomatic Rust, Java, or Python surface is represented through another declaration shape."
         }
       },
       "allOf": [
