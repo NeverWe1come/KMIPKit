@@ -69,12 +69,9 @@ C_SEMANTIC_FIELDS = {
     "kmipkit_transport_config_v1_t.endpoint",
     "kmipkit_transport_config_v1_t.endpoint_port",
     "kmipkit_transport_config_v1_t.client_certificates",
-    "kmipkit_transport_config_v1_t.client_certificate_count",
     "kmipkit_transport_config_v1_t.client_private_key",
     "kmipkit_transport_config_v1_t.trust_certificates",
-    "kmipkit_transport_config_v1_t.trust_certificate_count",
     "kmipkit_transport_config_v1_t.revocation_lists",
-    "kmipkit_transport_config_v1_t.revocation_list_count",
     "kmipkit_transport_config_v1_t.tls_server_name",
     "kmipkit_transport_config_v1_t.target_uri",
     "kmipkit_transport_config_v1_t.connect_timeout",
@@ -84,10 +81,13 @@ C_SEMANTIC_FIELDS = {
     "kmipkit_transport_config_v1_t.max_request_bytes",
     "kmipkit_transport_input_v1_t.source_kind",
     "kmipkit_transport_input_v1_t.encoding",
-    "kmipkit_transport_input_v1_t.data",
 }
 C_REPRESENTATION_FIELD_EXCLUSIONS = {
+    "kmipkit_transport_config_v1_t.client_certificate_count",
     "kmipkit_transport_config_v1_t.flags",
+    "kmipkit_transport_config_v1_t.revocation_list_count",
+    "kmipkit_transport_config_v1_t.trust_certificate_count",
+    "kmipkit_transport_input_v1_t.data",
 }
 C_ABI_FIELD_EXCLUSIONS = {
     "kmipkit_byte_span_v1_t.data",
@@ -130,7 +130,7 @@ C_FIELD_TARGETS = {
         "kmipkit.client.BatchItemResult.result_status",
     ),
     "kmipkit_timeout_limit_v1_t.kind": (
-        ("rust-kmipkit-transport", "kmipkit_transport::TimeoutLimit"),
+        ("rust-kmipkit-transport", "kmipkit_transport::TimeoutPolicy"),
         "org.kmipkit.extensions.TransportConfiguration.Timeout.kind",
         "kmipkit.client.TimeoutLimit.kind",
     ),
@@ -144,19 +144,14 @@ C_FIELD_TARGETS = {
         "org.kmipkit.extensions.TransportConfiguration.Timeout.seconds",
         "kmipkit.client.TimeoutLimit.seconds",
     ),
-    "kmipkit_transport_config_v1_t.client_certificate_count": (
-        ("rust-kmipkit-transport", "kmipkit_transport::ClientIdentity::new"),
-        "org.kmipkit.extensions.TransportConfiguration.Builder.clientIdentityPem",
-        "kmipkit.client.TransportConfig.client_certificates",
-    ),
     "kmipkit_transport_config_v1_t.client_certificates": (
-        ("rust-kmipkit-transport", "kmipkit_transport::ClientIdentity::new"),
-        "org.kmipkit.extensions.TransportConfiguration.Builder.clientIdentityPem",
+        ("rust-kmipkit-transport", "kmipkit_transport::CertificateInput"),
+        "org.kmipkit.extensions.TransportConfiguration.Builder",
         "kmipkit.client.TransportConfig.client_certificates",
     ),
     "kmipkit_transport_config_v1_t.client_private_key": (
-        ("rust-kmipkit-transport", "kmipkit_transport::ClientIdentity::new"),
-        "org.kmipkit.extensions.TransportConfiguration.Builder.clientIdentityPem",
+        ("rust-kmipkit-transport", "kmipkit_transport::PrivateKeyInput"),
+        "org.kmipkit.extensions.TransportConfiguration.Builder",
         "kmipkit.client.TransportConfig.client_private_key",
     ),
     "kmipkit_transport_config_v1_t.connect_timeout": (
@@ -179,11 +174,6 @@ C_FIELD_TARGETS = {
         "org.kmipkit.extensions.TransportConfiguration.Builder.rawTls",
         "kmipkit.client.Endpoint.raw_tls",
     ),
-    "kmipkit_transport_config_v1_t.flags": (
-        ("rust-kmipkit-transport", "kmipkit_transport::TransportConfigBuilder::{tls_server_name,target_uri}"),
-        "org.kmipkit.extensions.TransportConfiguration.Builder.{tlsServerName(value),targetUri(value)}",
-        "kmipkit.client.Endpoint.{raw_tls(tls_server_name=...),https(target_uri=...)}",
-    ),
     "kmipkit_transport_config_v1_t.max_request_bytes": (
         ("rust-kmipkit-transport", "kmipkit_transport::TransportConfigBuilder::max_request_bytes"),
         "org.kmipkit.extensions.TransportConfiguration.Builder.maxRequestBytes",
@@ -194,14 +184,9 @@ C_FIELD_TARGETS = {
         "org.kmipkit.extensions.TransportConfiguration.Builder.timeouts",
         "kmipkit.client.TransportConfig.read_timeout",
     ),
-    "kmipkit_transport_config_v1_t.revocation_list_count": (
-        ("rust-kmipkit-transport", "kmipkit_transport::TransportConfigBuilder::revocation_lists"),
-        "org.kmipkit.extensions.TransportConfiguration.Builder.revocationListsPem",
-        "kmipkit.client.TransportConfig.revocation_lists",
-    ),
     "kmipkit_transport_config_v1_t.revocation_lists": (
-        ("rust-kmipkit-transport", "kmipkit_transport::RevocationListInput::from_pem"),
-        "org.kmipkit.extensions.TransportConfiguration.Builder.revocationListsPem",
+        ("rust-kmipkit-transport", "kmipkit_transport::RevocationListInput"),
+        "org.kmipkit.extensions.TransportConfiguration.Builder",
         "kmipkit.client.TransportConfig.revocation_lists",
     ),
     "kmipkit_transport_config_v1_t.target_uri": (
@@ -219,15 +204,10 @@ C_FIELD_TARGETS = {
         "org.kmipkit.extensions.TransportConfiguration.Builder.timeouts",
         "kmipkit.client.TransportConfig.total_timeout",
     ),
-    "kmipkit_transport_config_v1_t.trust_certificate_count": (
-        ("rust-kmipkit-transport", "kmipkit_transport::TrustSource::certificate_authorities"),
-        "org.kmipkit.extensions.TransportConfiguration.Builder.trustCertificatesPem",
-        "kmipkit.client.TrustSource.certificate_authorities",
-    ),
     "kmipkit_transport_config_v1_t.trust_certificates": (
-        ("rust-kmipkit-transport", "kmipkit_transport::CertificateInput::from_pem"),
-        "org.kmipkit.extensions.TransportConfiguration.Builder.trustCertificatesPem",
-        "kmipkit.client.TransportInput.memory",
+        ("rust-kmipkit-transport", "kmipkit_transport::CertificateInput"),
+        "org.kmipkit.extensions.TransportConfiguration.Builder",
+        "kmipkit.client.TrustSource.certificate_authorities",
     ),
     "kmipkit_transport_config_v1_t.trust_kind": (
         ("rust-kmipkit-transport", "kmipkit_transport::TrustSource"),
@@ -239,13 +219,8 @@ C_FIELD_TARGETS = {
         "org.kmipkit.extensions.TransportConfiguration.Builder.timeouts",
         "kmipkit.client.TransportConfig.write_timeout",
     ),
-    "kmipkit_transport_input_v1_t.data": (
-        ("rust-kmipkit-transport", "kmipkit_transport::CertificateInput::from_pem"),
-        "org.kmipkit.extensions.TransportConfiguration.Builder.clientIdentityPem",
-        "kmipkit.client.TransportInput.memory",
-    ),
     "kmipkit_transport_input_v1_t.encoding": (
-        ("rust-kmipkit-transport", "kmipkit_transport::CertificateInput::from_pem"),
+        ("rust-kmipkit-transport", "kmipkit_transport::TransportConfigBuilder"),
         "org.kmipkit.extensions.TransportConfiguration.Encoding",
         "kmipkit.client.CredentialEncoding",
     ),
@@ -343,8 +318,17 @@ class T076ClientMappingTests(unittest.TestCase):
             if row["packageId"] == "c-kmipkit"
         }
 
-        self.assertEqual(28, len(C_SEMANTIC_FIELDS))
+        self.assertEqual(24, len(C_SEMANTIC_FIELDS))
         self.assertEqual(10, len(C_ABI_FIELD_EXCLUSIONS))
+        self.assertEqual(C_SEMANTIC_FIELDS, set(C_FIELD_TARGETS))
+        self.assertTrue(
+            C_REPRESENTATION_FIELD_EXCLUSIONS.isdisjoint(declarations),
+            "representation-only C fields must not also be semantic declarations",
+        )
+        self.assertTrue(
+            C_REPRESENTATION_FIELD_EXCLUSIONS.issubset(exclusions),
+            f"unclassified C representation fields: {sorted(C_REPRESENTATION_FIELD_EXCLUSIONS - exclusions.keys())}",
+        )
         self.assertTrue(
             C_SEMANTIC_FIELDS.issubset(declarations),
             f"unmapped C semantic fields: {sorted(C_SEMANTIC_FIELDS - declarations.keys())}",
@@ -404,9 +388,87 @@ class T076ClientMappingTests(unittest.TestCase):
         self.assertIn("tls_server_name", flags["reason"])
         self.assertIn("target_uri", flags["reason"])
         self.assertIn("KMIPKIT-0013-FR-", flags["evidence"])
+        for path in (
+            "kmipkit_transport_config_v1_t.client_certificate_count",
+            "kmipkit_transport_config_v1_t.trust_certificate_count",
+            "kmipkit_transport_config_v1_t.revocation_list_count",
+        ):
+            self.assertIn("length", exclusions[path]["reason"].lower())
+            self.assertIn("KMIPKIT-0043-FR-007", exclusions[path]["evidence"])
+        input_data = exclusions["kmipkit_transport_input_v1_t.data"]
+        self.assertIn("byte span", input_data["reason"].lower())
+        self.assertIn("KMIPKIT-0043-FR-007", input_data["evidence"])
 
         last_error = declarations["kmipkit_last_error_get"]
         self.assertEqual("c-symbol", last_error["kind"])
+
+
+    def test_transport_input_mappings_cover_specified_encodings_and_sources(self) -> None:
+        mappings = {
+            path: C_FIELD_TARGETS[path]
+            for path in (
+                "kmipkit_transport_config_v1_t.client_certificates",
+                "kmipkit_transport_config_v1_t.client_private_key",
+                "kmipkit_transport_config_v1_t.trust_certificates",
+                "kmipkit_transport_config_v1_t.revocation_lists",
+                "kmipkit_transport_input_v1_t.encoding",
+                "kmipkit_transport_input_v1_t.source_kind",
+            )
+        }
+        rust = (ROOT / "crates/kmipkit-transport/src/config.rs").read_text(encoding="utf-8")
+        java = (ROOT / "bindings/java/src/main/java/org/kmipkit/extensions/TransportConfiguration.java").read_text(encoding="utf-8")
+        python = (ROOT / "bindings/python/src/kmipkit/client.py").read_text(encoding="utf-8")
+        rust_symbols = (
+            "impl CertificateInput",
+            "pub fn from_pem(", "pub fn from_der(",
+            "pub fn from_pem_file(", "pub fn from_der_file(",
+            "impl PrivateKeyInput",
+            "pub fn from_pem(", "pub fn from_der(",
+            "pub fn from_pem_file(", "pub fn from_der_file(",
+            "impl RevocationListInput",
+            "pub fn from_pem(", "pub fn from_der(",
+            "pub struct TransportConfigBuilder",
+        )
+        for symbol in rust_symbols:
+            self.assertTrue(symbol in rust, f"missing Rust input mode declaration: {symbol}")
+        for symbol in (
+            "clientIdentityPem", "clientIdentityDer", "clientIdentityFiles",
+            "trustCertificatesPem", "trustCertificatesDer", "trustCertificateFiles",
+            "revocationListsPem", "revocationListsDer",
+        ):
+            self.assertIn(symbol, java)
+        self.assertIn("def memory(", python)
+        self.assertIn("def file(", python)
+        self.assertTrue(
+            "CredentialEncoding" in python,
+            "Python exposes the shared PEM/DER encoding selector",
+        )
+        self.assertIn("if any(isinstance(item.source, Path) for item in self.revocation_lists)", python)
+        self.assertEqual("org.kmipkit.extensions.TransportConfiguration.Builder", mappings["kmipkit_transport_config_v1_t.client_certificates"][1])
+        self.assertEqual("org.kmipkit.extensions.TransportConfiguration.Builder", mappings["kmipkit_transport_config_v1_t.client_private_key"][1])
+        self.assertEqual("org.kmipkit.extensions.TransportConfiguration.Builder", mappings["kmipkit_transport_config_v1_t.trust_certificates"][1])
+        self.assertEqual("org.kmipkit.extensions.TransportConfiguration.Builder", mappings["kmipkit_transport_config_v1_t.revocation_lists"][1])
+        self.assertEqual("kmipkit_transport::TransportConfigBuilder", mappings["kmipkit_transport_input_v1_t.encoding"][0][1])
+        self.assertEqual("org.kmipkit.extensions.TransportConfiguration.Encoding", mappings["kmipkit_transport_input_v1_t.encoding"][1])
+        self.assertEqual("kmipkit.client.CredentialEncoding", mappings["kmipkit_transport_input_v1_t.encoding"][2])
+
+    def test_endpoint_kind_mapping_names_the_constructor_selection(self) -> None:
+        mapping = C_FIELD_TARGETS["kmipkit_transport_config_v1_t.endpoint_kind"]
+        self.assertEqual("kmipkit_transport::Endpoint", mapping[0][1])
+        self.assertEqual("org.kmipkit.extensions.TransportConfiguration.Builder", mapping[1])
+        self.assertEqual("kmipkit.client.Endpoint", mapping[2])
+        rust = (ROOT / "crates/kmipkit-transport/src/config.rs").read_text(encoding="utf-8")
+        java = (ROOT / "bindings/java/src/main/java/org/kmipkit/extensions/TransportConfiguration.java").read_text(encoding="utf-8")
+        python = (ROOT / "bindings/python/src/kmipkit/client.py").read_text(encoding="utf-8")
+        evidence = (ROOT / "specs/043-public-api-bindings/implementation-evidence.md").read_text(encoding="utf-8")
+        for symbol in ("pub fn raw_tls", "pub fn https"):
+            self.assertIn(symbol, rust)
+        for symbol in ("public Builder rawTls(", "public Builder https("):
+            self.assertIn(symbol, java)
+        for symbol in ("def raw_tls(", "def https("):
+            self.assertIn(symbol, python)
+        for term in ("endpoint_kind", "raw_tls", "https"):
+            self.assertTrue(term in evidence, f"implementation evidence omits endpoint mapping term: {term}")
 
     def test_c_field_targets_are_exact_ready_public_exports(self) -> None:
         declarations_by_path = {
