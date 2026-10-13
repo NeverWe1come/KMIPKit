@@ -412,7 +412,7 @@ All 129 exported C functions in `kmipkit-ffi` now enter one `catch_unwind` bound
 | Regression Refactor | `d88f09b0` | Strengthened the blocked-enum test to pin each missing cause family (invalid input, protocol, and transport) in the recorded reason. |
 | Regression verification | `1f62389a` and `d88f09b0` | Full API-manifest suite — PASS, 248 tests, three platform-dependent skips on `1f62389a`; focused blocked-enum test — PASS on `d88f09b0`; shared Rust inventory suite — PASS, 12 tests; generator `--check` — PASS, 12 outputs; shared inventory auditor `--check` — PASS, 9,497 observed / 135 mapped / 36 blocked; binding export auditor — PASS, 182 C exports / 178 manifest matches; Java Gradle tests — PASS; Python bindings — PASS, 63 tests; `cargo fmt --all --check` and `git diff --check` — PASS. |
 | QA | `1f62389a` | Independent QA found no blockers after verifying that only `Other` is mapped across Rust/C/Java/Python, the complete enum is blocked, and generated outputs and inventory counts are consistent. The final evidence-only head still needs QA/CI revalidation. |
-| Remote CI | Pending | Do not check T018 until every required PR check succeeds on the final pushed head. |
+| Remote CI | Run `38344844982`, head `dcfefb14716f4e920ff71a5503037e8600e43af8` | PASS: all 34 required checks succeeded; two configured schedule/nightly checks were skipped; zero failures. This run includes the 129-export panic boundary, error mapping, and regenerated artifacts. |
 
 ## T019 — C API documentation and generated symbol inventory
 
@@ -426,4 +426,4 @@ The C API guide now links to the v2 manifest and generated header, explains how 
 | Compatibility projection correction | Red `e167a69c`; Green `844f063a`; Refactor `5a2e767a` | Pinned the registry-v1 error-category slice, filtered v2-only `internal` from that compatibility projection, and regenerated the fixture. Both focused projection tests pass. |
 | Verification | `aeff4da1` and regression head `1f62389a` | Documentation tests — PASS, 2 tests; C binding-export audit — PASS, 182 observed / 178 matched / zero issues; generated API check — PASS, 12 outputs; full API-manifest suite — PASS, 248 tests, three platform-dependent skips. |
 | QA | `aeff4da1` | Independent QA found no blockers: guide counts matched the checked-in report, all four C exclusions were accurate, links resolved, and generator/auditor checks passed. Latest manifest regression was separately reviewed at `1f62389a`; revalidate the final head before closing. |
-| Remote CI | Pending | Keep T019 unchecked until every required PR check succeeds on the final pushed head. |
+| Remote CI | Run `38344844982`, head `dcfefb14716f4e920ff71a5503037e8600e43af8` | PASS: all 34 required checks succeeded; two configured schedule/nightly checks were skipped; zero failures. The C consumer, export audit, generated-file check, and documentation contract checks passed. |
