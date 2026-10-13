@@ -367,6 +367,8 @@ class TransportConfig:
         object.__setattr__(self, "revocation_lists", revocation_lists)
         if any(not isinstance(item, TransportInput) for item in self.revocation_lists):
             errors.raise_for_status(4)
+        if any(isinstance(item.source, Path) for item in self.revocation_lists):
+            errors.raise_for_status(4)
         _validate_transport_input_group(self.revocation_lists)
         for timeout in (
             self.connect_timeout,

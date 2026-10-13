@@ -163,7 +163,7 @@ def _transport_configuration(**overrides: object) -> client.TransportConfig:
             (client.TransportInput.memory(b"root-ca", client.CredentialEncoding.DER),)
         ),
         "revocation_lists": (
-            client.TransportInput.file("revocations.der", client.CredentialEncoding.DER),
+            client.TransportInput.memory(b"revocation-list", client.CredentialEncoding.DER),
         ),
         "connect_timeout": client.TimeoutLimit.bounded(4, 123),
         "write_timeout": client.TimeoutLimit.unbounded(),
@@ -1094,12 +1094,12 @@ def test_secret_bearing_client_records_redact_repr() -> None:
         certificate_marker, client.CredentialEncoding.PEM
     )
     path = client.TransportInput.file(path_marker, client.CredentialEncoding.PEM)
-    trust = client.TrustSource.certificate_authorities((certificate,))
+    trust = client.TrustSource.certificate_authorities((path,))
     configuration = _transport_configuration(
         client_certificates=(certificate,),
         client_private_key=key,
         trust=trust,
-        revocation_lists=(path,),
+        revocation_lists=(),
     )
     pending = client.BatchItemResult(
         client.BatchOutcome.PENDING, 0, None, None, correlation_marker
