@@ -557,4 +557,15 @@ The full matrix for head `3c87f385` passed the language, platform, Java/Python c
 - **Red**: Added a Java contract test requiring `ClientBatchItem.withUniqueBatchItemId(byte[])` and a Python API contract test requiring `extensions.with_unique_batch_item_id`.
 - **Commands**: `mvn --batch-mode --file bindings/java/pom.xml -Dtest=ClientFacadeContractTest test`; `bindings/python/.venv/Scripts/python.exe -m pytest bindings/python/tests/test_client.py::test_typed_batch_item_exposes_unique_batch_item_id_builder -q`.
 - **Results**: Expected Red: Java compilation reports the missing `withUniqueBatchItemId(byte[])` method; Python fails because `with_unique_batch_item_id` is absent. The Python package was built and installed using the repository's CI steps before this test.
+- **Commit**: Red test commit `c4d4dd50`.
+- **Green**: Java and Python expose consuming item builders over the existing ABI. Both preserve opaque identifier bytes, enforce the 16 MiB local input bound before making their owned copies, and transfer the previous wrapper only when constructing the new typed item.
+- **Commands**: `mvn --batch-mode --file bindings/java/pom.xml -Dtest=ClientFacadeContractTest test`; `bindings/python/.venv/Scripts/python.exe -m pytest bindings/python/tests/test_client.py::test_typed_batch_item_unique_id_builder_preserves_bytes_and_transfers_ownership -q`.
+- **Results**: PASS: Java contract suite 8 tests, including a native JNI build; Python ownership/byte-preservation fake-ABI test 1 passed.
+- **Green commit**: Pending.
+
+### Java correlation UTF-8 and resource-limit QA follow-up
+
+- **Red**: Expanded the Java contract to exercise multibyte UTF-8, malformed UTF-8 rejection, and the 16 MiB input ceiling. The previous facade mapped oversized input to `InvalidInputException`, unlike Python's resource-limit category.
+- **Command**: `mvn --batch-mode --file bindings/java/pom.xml -Dtest=ClientFacadeContractTest test`
+- **Result**: Expected Red on the previous facade at the oversized correlation assertion; malformed UTF-8 is rejected by the shared C ABI before any request is sent.
 - **Commit**: Red test commit pending.

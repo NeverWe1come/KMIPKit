@@ -54,7 +54,7 @@ final class ClientFacadeContractTest {
             batch.requestTimestamp(1_800_000_000L)
                     .ordered(true)
                     .addErrorContinuationValue(0)
-                    .clientCorrelationValue(new byte[] {0x6b, 0x6d, 0x69, 0x70});
+                    .clientCorrelationValue(new byte[] {(byte) 0xc3, (byte) 0xa9});
         }
     }
 
@@ -70,6 +70,18 @@ final class ClientFacadeContractTest {
             assertThrows(
                     InvalidInputException.class,
                     () -> batch.clientCorrelationValue(null));
+        }
+    }
+
+    @Test
+    void clientCorrelationRequiresValidUtf8AndEnforcesTheInputLimit() {
+        try (ClientBatch batch = ClientBatch.create()) {
+            assertThrows(
+                    InvalidInputException.class,
+                    () -> batch.clientCorrelationValue(new byte[] {(byte) 0xc3, 0x28}));
+            assertThrows(
+                    ResourceLimitException.class,
+                    () -> batch.clientCorrelationValue(new byte[16 * 1024 * 1024 + 1]));
         }
     }
 
