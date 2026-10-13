@@ -16700,6 +16700,47 @@ class CatalogValidationTests(unittest.TestCase):
                 self.assertIn("KMIPKIT-REQ-SPEC-TEST-CONDITIONAL-MAY", capabilities)
                 self.assertTrue(gaps, "unknown or missing condition evidence must fail closed")
 
+    def test_conditional_optional_source_accepts_a_descriptive_reviewed_client_actor(self) -> None:
+        """Reviewed client decoder descriptions identify client obligations without a role field."""
+        requirement_id = "KMIPKIT-REQ-SPEC-TEST-CERTIFICATE-ATTRIBUTE-MAY"
+        source_clause_id = "KMIPKIT-CLAUSE-SPEC-TEST-CERTIFICATE-ATTRIBUTE"
+        actor = "client decoder when the X.509 Certificate Subject attribute is supported"
+        oracle = {
+            "source_requirement_reviews": [
+                {
+                    "source_clause_id": source_clause_id,
+                    "source_obligations": [
+                        {
+                            "source_keyword": "MAY",
+                            "scope_disposition": "profile_conditional",
+                            "candidate_requirement_id": requirement_id,
+                            "condition": "The X.509 Certificate Subject attribute is supported.",
+                            "actor": actor,
+                        }
+                    ],
+                }
+            ],
+            "source_only_requirement_gaps": [],
+        }
+
+        capabilities, gaps = _reviewed_profile_optional_capabilities(
+            oracle,
+            {source_clause_id},
+            set(),
+        )
+        conditional_sources = _reviewed_profile_conditional_capability_sources(
+            oracle,
+            {source_clause_id},
+            set(),
+        )
+
+        self.assertIn(requirement_id, capabilities)
+        self.assertFalse(
+            any("no reviewed client actor" in gap for gap in gaps),
+            "a source-reviewed client decoder actor must satisfy the client-role gate",
+        )
+        self.assertEqual(conditional_sources[requirement_id], {source_clause_id})
+
     def test_conditional_source_only_gap_requires_a_typed_client_actor(self) -> None:
         """Conditional source gaps with unknown or server actors cannot authorize a client capability."""
         requirement_id = "KMIPKIT-REQ-SPEC-TEST-SOURCE-GAP-MAY"
