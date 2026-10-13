@@ -3841,6 +3841,39 @@ class CatalogValidationTests(unittest.TestCase):
                 self.assertIn(expected["scope_note"], requirement["review_note"].casefold())
                 self.assertIn("not an oasis test-case pass", requirement["review_note"].casefold())
 
+    def test_private_and_public_key_attribute_repetition_maps_client_request_evidence(self) -> None:
+        catalog = json.loads(
+            (ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8")
+        )
+        requirements = {row["requirement_id"]: row for row in catalog["requirements"]}
+        elements = {row["element_id"]: row for row in catalog["elements"]}
+        verification_ref = (
+            "crates/kmipkit-protocol/tests/unit/create_key_pair_tests.rs::"
+            "request_preserves_six_distinct_optional_groups_and_repeated_items_in_wire_order"
+        )
+        expected_elements = {
+            "KMIPKIT-REQ-SPEC-5.3-002": "KMIPKIT-ELEM-ATTRIBUTE-STRUCTURE-5-3-PRIVATE-KEY-ATTRIBUTES",
+            "KMIPKIT-REQ-SPEC-5.4-002": "KMIPKIT-ELEM-ATTRIBUTE-STRUCTURE-5-4-PUBLIC-KEY-ATTRIBUTES",
+        }
+
+        for requirement_id, element_id in expected_elements.items():
+            requirement = requirements[requirement_id]
+            with self.subTest(requirement_id=requirement_id):
+                self.assertEqual(
+                    (requirement["role"], requirement["direction"], requirement["scope_state"]),
+                    ("client", "client_to_server", "client_1_0"),
+                )
+                self.assertEqual(requirement["feature_spec"], "KMIPKIT-0014")
+                self.assertEqual(requirement["status"], "scoped_verified")
+                self.assertEqual(requirement["element_ids"], [element_id])
+                self.assertIn("crates/kmipkit-protocol/src/create_key_pair.rs", requirement["implementation_refs"])
+                self.assertIn(verification_ref, requirement["verification_refs"])
+                self.assertEqual(requirement["test_case_ids"], [])
+                self.assertIn(requirement_id, elements[element_id]["requirement_ids"])
+                review_note = requirement["review_note"].casefold()
+                self.assertIn("server-side union", review_note)
+                self.assertIn("not an oasis test-case pass", review_note)
+
     def test_checked_in_credential_catalog_links_authentication_and_credential_elements(self) -> None:
         catalog_path = ROOT / "specification" / "catalog" / "kmip-2.1.json"
         document = json.loads(catalog_path.read_bytes())

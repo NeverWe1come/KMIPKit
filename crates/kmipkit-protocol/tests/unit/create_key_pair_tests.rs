@@ -253,8 +253,14 @@ fn request_preserves_six_distinct_optional_groups_and_repeated_items_in_wire_ord
         vendor_attribute(b"common-first"),
         vendor_attribute(b"common-second"),
     ]);
-    let private = attributes([vendor_attribute(b"private-value")]);
-    let public = attributes([vendor_attribute(b"public-value")]);
+    let private = attributes([
+        vendor_attribute(b"private-first"),
+        vendor_attribute(b"private-second"),
+    ]);
+    let public = attributes([
+        vendor_attribute(b"public-first"),
+        vendor_attribute(b"public-second"),
+    ]);
     let request = request_with_groups(Some(repeated_common), Some(private), Some(public))
         .with_common_protection_storage_masks(Structure::new())
         .with_private_protection_storage_masks(Structure::new())
@@ -299,6 +305,20 @@ fn request_preserves_six_distinct_optional_groups_and_repeated_items_in_wire_ord
         }
         _ => panic!("Common Attributes remains a Structure"),
     });
+    for field in &fields[1..3] {
+        field.with_value(|value| match value {
+            ValueView::Structure(group) => {
+                assert_eq!(group.children().len(), 2);
+                assert!(
+                    group
+                        .children()
+                        .iter()
+                        .all(|attribute| attribute.tag().raw() == 0x0042_0008)
+                );
+            }
+            _ => panic!("Private and Public Key Attributes remain Structures"),
+        });
+    }
     assert!(
         fields[3..]
             .iter()
