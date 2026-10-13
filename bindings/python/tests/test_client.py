@@ -74,7 +74,7 @@ def test_batch_and_client_are_context_managed_and_retain_ordered_typed_items() -
     assert client.Client.__enter__
     assert client.Batch.__enter__
     assert client.BatchResult.__enter__
-    assert client.BatchItemResult.__annotations__["pending_correlation_value"] == (
+    assert get_type_hints(client.BatchItemResult)["pending_correlation_value"] == (
         bytes | None
     )
     assert extensions.client_batch_item_discover_versions
