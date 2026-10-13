@@ -454,6 +454,14 @@ class BindingExportAuditTests(unittest.TestCase):
         self.assertNotIn("kmipkit.errors.annotations", names)
         self.assertTrue(result["complete"])
 
+    def test_python_inventory_omits_private_external_import_aliases(self):
+        source = "from enum import IntEnum as _IntEnum\nclass Choice(_IntEnum): pass\n"
+        result = AUDIT.inventory_python_sources({"kmipkit/errors.py": source})
+        names = {row["exportName"] for row in result["declarations"]}
+        self.assertIn("kmipkit.errors.Choice", names)
+        self.assertNotIn("kmipkit.errors._IntEnum", names)
+        self.assertTrue(result["complete"])
+
     def test_python_inventory_collapses_explicit_overload_group_to_one_export(self):
         sources = {
             "kmipkit/api.py": textwrap.dedent("""
