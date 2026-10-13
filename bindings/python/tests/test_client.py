@@ -7,6 +7,7 @@ transport-wire verification.
 
 from __future__ import annotations
 
+import importlib
 from pathlib import Path
 from typing import get_type_hints
 from types import SimpleNamespace
@@ -1102,3 +1103,60 @@ def test_batch_setters_hold_native_call_lock_for_the_full_abi_call(
     batch.set_client_correlation_value(b"correlation")
 
     assert observed == [True] * 5
+
+
+def test_endpoint_direct_constructor_enforces_text_shape_and_repr_redaction() -> None:
+    with pytest.raises(errors.ResourceLimitError):
+        client.Endpoint(client.EndpointKind.HTTPS, "x" * 4_097)
+    with pytest.raises(errors.ResourceLimitError):
+        client.Endpoint(
+            client.EndpointKind.RAW_TLS,
+            "kms.example.test",
+            5696,
+            tls_server_name="x" * 4_097,
+        )
+    with pytest.raises(errors.InvalidInputError):
+        client.Endpoint(client.EndpointKind.HTTPS, "bad\x00uri")
+    with pytest.raises(errors.InvalidInputError):
+        client.Endpoint(client.EndpointKind.HTTPS, "\ud800")
+    with pytest.raises(errors.InvalidInputError):
+        client.Endpoint(client.EndpointKind.RAW_TLS, "kms.example.test", 0)
+    with pytest.raises(errors.InvalidInputError):
+        client.Endpoint(client.EndpointKind.HTTPS, "https://kms.example.test", 443)
+
+    secret_uri = "https://user:uri-password-sentinel@kms.example.test/"
+    endpoint = client.Endpoint.https(secret_uri)
+    assert "uri-password-sentinel" not in repr(endpoint)
+
+
+def test_transport_input_measures_real_buffer_size_for_bytes_subclasses() -> None:
+    class LyingBytes(bytes):
+        def __len__(self) -> int:
+            return 1
+
+    oversized = LyingBytes(b"x" * (16 * 1024 * 1024 + 1))
+
+    with pytest.raises(errors.ResourceLimitError):
+        client.TransportInput(oversized, client.CredentialEncoding.PEM)
+
+
+def test_private_python_client_loader_redacts_native_path_failure(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    from cffi import FFI
+    from kmipkit import _client_ffi
+
+    path_marker = "private-native-path-sentinel"
+
+    def fail_dlopen(_ffi: object, path: str) -> object:
+        assert path == path_marker
+        raise OSError(path_marker)
+
+    with monkeypatch.context() as patch:
+        patch.setenv("KMIPKIT_NATIVE_LIBRARY", path_marker)
+        patch.setattr(FFI, "dlopen", fail_dlopen)
+        with pytest.raises(ImportError, match="KMIPKit native client ABI is unavailable") as caught:
+            importlib.reload(_client_ffi)
+
+    assert path_marker not in str(caught.value)
+    importlib.reload(_client_ffi)
