@@ -119,3 +119,19 @@ def test_register_consumer_rejects_opaque_context_for_a_non_opaque_object_type()
 
     with pytest.raises(errors.InvalidInputError):
         extensions.client_batch_item_register(request)
+
+
+def test_register_request_rejects_out_of_range_object_type_before_ffi() -> None:
+    with pytest.raises(errors.InvalidInputError):
+        extensions.RegisterRequest.create(-1, None, None)
+
+
+def test_register_request_rejects_unknown_context_without_consuming_request() -> None:
+    request = extensions.RegisterRequest.create(
+        _OBJECT_TYPE_OPAQUE, ttlv.ttlv_structure_create(), _opaque_object()
+    )
+    try:
+        with pytest.raises(errors.InvalidInputError):
+            request.with_opaque_object_context("managed")
+    finally:
+        request.close()

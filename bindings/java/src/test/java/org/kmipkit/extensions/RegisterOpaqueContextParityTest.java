@@ -68,6 +68,23 @@ final class RegisterOpaqueContextParityTest {
         assertThrows(InvalidInputException.class, () -> ClientBatchItem.register(request));
     }
 
+    @Test
+    void registerAdaptersRejectNullInputsAndContext() {
+        assertThrows(
+                InvalidInputException.class,
+                () -> RegisterRequest.create(OPAQUE_OBJECT_TYPE, null, null));
+
+        var request = RegisterRequest.create(
+                OPAQUE_OBJECT_TYPE, TtlvStructure.create(), opaqueObject());
+        try (request) {
+            assertThrows(
+                    InvalidInputException.class,
+                    () -> request.withOpaqueObjectContext(null));
+        }
+
+        assertThrows(InvalidInputException.class, () -> ClientBatchItem.register(null));
+    }
+
     private static TtlvItem opaqueObject() {
         TtlvStructure fields = TtlvStructure.create();
         fields = TtlvStructure.withItem(

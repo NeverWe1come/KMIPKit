@@ -3222,6 +3222,8 @@ static bool test_register_opaque_context_binding_contract(void)
         true, UINT32_C(2), false));
     REQUIRE(run_register_context_case(UINT32_C(2), true, true, true,
         true, UINT32_C(1), false));
+    REQUIRE(run_register_context_case(UINT32_C(8), true, true, true,
+        true, UINT32_C(3), false));
     return true;
 }
 
