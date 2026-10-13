@@ -124,6 +124,7 @@ public final class NativeExtensionRegistry {
     public static native long clientCreate(long extensionConfiguration, long transportConfiguration);
     public static native long clientBatchCreate();
     public static native void clientBatchAddItem(long batch, long item);
+    public static native void clientBatchSetAsynchronousIndicator(long batch, long indicator);
     public static native long clientExecute(long client, long batch, long[] codecLimits);
     public static native long clientBatchResponseItemCount(long response);
     public static native long clientBatchResponseItemAt(long response, long index);

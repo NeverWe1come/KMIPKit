@@ -38,6 +38,19 @@ public final class ClientBatch implements AutoCloseable {
         return this;
     }
 
+    /** Sets the raw forward-compatible KMIP Asynchronous Indicator value. */
+    public ClientBatch asynchronousIndicator(long indicator) {
+        if (indicator < 0 || indicator > 0xffff_ffffL) {
+            throw new InvalidInputException("asynchronous indicator is outside uint32");
+        }
+        NativeExtensionRegistry.ensureLoaded();
+        handle.withValue(batch -> {
+            NativeExtensionRegistry.clientBatchSetAsynchronousIndicator(batch, indicator);
+            return null;
+        });
+        return this;
+    }
+
     /** Returns the number of items added in caller order. */
     public long itemCount() {
         handle.get();

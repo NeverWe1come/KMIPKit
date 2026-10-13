@@ -95,6 +95,7 @@ int32_t kmipkit_client_create(kmipkit_client_configuration_t*, kmipkit_transport
 void kmipkit_client_release(kmipkit_client_t*);
 int32_t kmipkit_client_batch_create(kmipkit_client_batch_t**);
 int32_t kmipkit_client_batch_add_item(kmipkit_client_batch_t*, kmipkit_client_batch_item_t**);
+int32_t kmipkit_client_batch_set_asynchronous_indicator(kmipkit_client_batch_t*, uint32_t);
 void kmipkit_client_batch_item_release(kmipkit_client_batch_item_t*);
 void kmipkit_client_batch_release(kmipkit_client_batch_t*);
 int32_t kmipkit_client_execute(kmipkit_client_t*, kmipkit_client_batch_t**, kmipkit_codec_limits_t*, kmipkit_client_batch_response_t**);
@@ -1982,6 +1983,21 @@ JNIEXPORT void JNICALL Java_org_kmipkit_NativeExtensionRegistry_clientBatchAddIt
         if (status != 0) throw_status(env, status);
         if (item != nullptr) kmipkit_client_batch_item_release(item);
         if (status == 0 && item != nullptr) throw_invalid_input(env);
+        return 0;
+    });
+}
+
+JNIEXPORT void JNICALL Java_org_kmipkit_NativeExtensionRegistry_clientBatchSetAsynchronousIndicator(
+        JNIEnv* env, jclass, jlong raw_batch, jlong raw_indicator) {
+    guarded<int>(env, 0, [&] {
+        if (raw_batch == 0 || raw_indicator < 0 || raw_indicator > 0xffff'ffffLL) {
+            throw_invalid_input(env);
+            return 0;
+        }
+        const int32_t status = kmipkit_client_batch_set_asynchronous_indicator(
+                from_java_handle<kmipkit_client_batch_t>(raw_batch),
+                static_cast<uint32_t>(raw_indicator));
+        if (status != 0) throw_status(env, status);
         return 0;
     });
 }

@@ -70,7 +70,7 @@ final class ClientFacadeTlsIntegrationTest {
         listener.setEnabledProtocols(new String[] {"TLSv1.3"});
         listener.setNeedClientAuth(true);
         listener.setSoTimeout(10_000);
-        FutureTask<byte[]> peer = new FutureTask<>(() -> serveOneResponse(listener));
+        FutureTask<byte[][]> peer = new FutureTask<>(() -> serveTwoResponses(listener));
         Thread peerThread = new Thread(peer, "kmipkit-java-tls-fixture");
         peerThread.setDaemon(true);
         peerThread.start();
@@ -88,27 +88,42 @@ final class ClientFacadeTlsIntegrationTest {
                                 TransportConfiguration.Timeout.bounded(Duration.ofSeconds(8)))
                         .build();
                 Client client = Client.create(extensions, transport)) {
-            ClientBatch batch = ClientBatch.create();
-            batch.asynchronousIndicator(2)
-                    .add(ClientBatchItem.discoverVersions())
-                    .add(ClientBatchItem.discoverVersions());
-            try (ClientBatchResponse response = client.execute(batch, CodecLimits.defaults());
-                    ClientBatchItemResult pending = response.itemAt(0);
-                    ClientBatchItemResult completed = response.itemAt(1)) {
-                assertEquals(2, response.itemCount());
+            ClientBatch pendingBatch = ClientBatch.create();
+            pendingBatch.asynchronousIndicator(2).add(ClientBatchItem.discoverVersions());
+            ClientBatchResponse pendingResponse;
+            try {
+                pendingResponse = client.execute(pendingBatch, CodecLimits.defaults());
+            } catch (ClientOperationException exception) {
+                throw new AssertionError("Pending exchange failed with status " + exception.statusCode()
+                        + ", category " + exception.categoryCode() + ", cause " + exception.causeCode()
+                        + ", delivery " + exception.deliveryStateCode(), exception);
+            }
+            try (ClientBatchResponse response = pendingResponse;
+                    ClientBatchItemResult pending = response.itemAt(0)) {
+                assertEquals(1, response.itemCount());
                 assertEquals(2, pending.resultStatus());
                 assertTrue(pending.outcomeKind().isPending());
                 assertArrayEquals(CORRELATION, pending.pendingCorrelationValue().orElseThrow());
                 assertTrue(pending.resultReason().isEmpty());
+            }
+
+            ClientBatch completedBatch = ClientBatch.create();
+            completedBatch.add(ClientBatchItem.discoverVersions());
+            try (ClientBatchResponse response = client.execute(completedBatch, CodecLimits.defaults());
+                    ClientBatchItemResult completed = response.itemAt(0)) {
+                assertEquals(1, response.itemCount());
                 assertEquals(0, completed.resultStatus());
                 assertTrue(completed.outcomeKind().isCompleted());
                 assertTrue(completed.pendingCorrelationValue().isEmpty());
                 assertTrue(completed.resultReason().isEmpty());
             }
-            byte[] request = peer.get(12, TimeUnit.SECONDS);
-            assertTrue(request.length >= 8);
-            assertArrayEquals(new byte[] {0x42, 0x00, 0x78},
-                    new byte[] {request[0], request[1], request[2]});
+            byte[][] requests = peer.get(12, TimeUnit.SECONDS);
+            assertEquals(2, requests.length);
+            for (byte[] request : requests) {
+                assertTrue(request.length >= 8);
+                assertArrayEquals(new byte[] {0x42, 0x00, 0x78},
+                        new byte[] {request[0], request[1], request[2]});
+            }
         } finally {
             listener.close();
         }
@@ -159,17 +174,20 @@ final class ClientFacadeTlsIntegrationTest {
         return context;
     }
 
-    private static byte[] serveOneResponse(SSLServerSocket listener) throws Exception {
-        try (SSLSocket socket = (SSLSocket) listener.accept()) {
-            socket.setEnabledProtocols(new String[] {"TLSv1.3"});
-            socket.setSoTimeout(10_000);
-            socket.startHandshake();
-            byte[] request = readFrame(socket.getInputStream());
-            OutputStream output = socket.getOutputStream();
-            output.write(responseMessage());
-            output.flush();
-            return request;
+    private static byte[][] serveTwoResponses(SSLServerSocket listener) throws Exception {
+        byte[][] requests = new byte[2][];
+        for (int index = 0; index < requests.length; index++) {
+            try (SSLSocket socket = (SSLSocket) listener.accept()) {
+                socket.setEnabledProtocols(new String[] {"TLSv1.3"});
+                socket.setSoTimeout(10_000);
+                socket.startHandshake();
+                requests[index] = readFrame(socket.getInputStream());
+                OutputStream output = socket.getOutputStream();
+                output.write(responseMessage(index == 0));
+                output.flush();
+            }
         }
+        return requests;
     }
 
     private static byte[] readFrame(InputStream input) throws Exception {
@@ -187,25 +205,26 @@ final class ClientFacadeTlsIntegrationTest {
         return frame;
     }
 
-    private static byte[] responseMessage() throws Exception {
-        byte[] version = structure(item(0x42006a, 2, integer(2)), item(0x42006b, 2, integer(1)));
-        byte[] header = structure(item(0x420069, 1, version), item(0x420092, 9, longInteger(1)),
-                item(0x42000d, 2, integer(2)));
-        byte[] responseVersion = structure(item(0x42006a, 2, integer(2)), item(0x42006b, 2, integer(1)));
-        byte[] responsePayload = structure(item(0x420069, 1, responseVersion));
-        byte[] pending = structure(item(0x42005c, 5, integer(30)),
-                item(0x42007f, 5, integer(2)), item(0x420006, 8, CORRELATION),
-                item(0x42007c, 1, responsePayload));
-        byte[] completed = structure(item(0x42005c, 5, integer(30)),
-                item(0x42007f, 5, integer(0)), item(0x42007c, 1, responsePayload));
-        return structure(item(0x42007a, 1, header), item(0x42000f, 1, pending),
-                item(0x42000f, 1, completed));
+    private static byte[] responseMessage(boolean pendingResult) throws Exception {
+        byte[] version = structure(0x420069, item(0x42006a, 2, integer(2)),
+                item(0x42006b, 2, integer(1)));
+        byte[] header = structure(0x42007a, version, item(0x420092, 9, longInteger(1)),
+                item(0x42000d, 2, integer(1)));
+        byte[] responseVersion = structure(0x420069, item(0x42006a, 2, integer(2)),
+                item(0x42006b, 2, integer(1)));
+        byte[] responsePayload = structure(0x42007c, responseVersion);
+        byte[] batchResult = pendingResult
+                ? structure(0x42000f, item(0x42005c, 5, integer(30)), item(0x42007f, 5, integer(2)),
+                        item(0x420006, 8, CORRELATION), responsePayload)
+                : structure(0x42000f, item(0x42005c, 5, integer(30)), item(0x42007f, 5, integer(0)),
+                        responsePayload);
+        return structure(0x42007b, header, batchResult);
     }
 
-    private static byte[] structure(byte[]... items) throws Exception {
+    private static byte[] structure(int tag, byte[]... items) throws Exception {
         ByteArrayOutputStream output = new ByteArrayOutputStream();
         for (byte[] item : items) output.write(item);
-        return item(0x42007b, 1, output.toByteArray());
+        return item(tag, 1, output.toByteArray());
     }
 
     private static byte[] item(int tag, int type, byte[] value) throws Exception {
