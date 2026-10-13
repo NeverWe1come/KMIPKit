@@ -1626,6 +1626,34 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
         manifest["approvedExclusions"][0]["packageId"] = "java-kmipkit"
         self.assertGreater(len(list(self.validator.iter_errors(manifest))), 0)
 
+    def test_declared_c_value_fields_reject_reserved_c_and_cpp_names(self) -> None:
+        manifest = _valid_v2_manifest()
+        manifest["types"].append(
+            {
+                "id": "ExampleCValue",
+                "kind": "struct",
+                "requirementIds": ["KMIPKIT-0043-FR-001"],
+                "rust": {
+                    "module": "kmipkit_ffi::example",
+                    "name": "ExampleCValue",
+                    "owner": "ffi",
+                },
+                "c": {
+                    "name": "kmipkit_example_value_t",
+                    "kind": "fixed-width-value",
+                    "fields": [{"name": "valid_name", "type": "uint32_t"}],
+                },
+                "java": {"package": "org.kmipkit", "name": "ExampleCValue"},
+                "python": {"module": "kmipkit", "name": "ExampleCValue"},
+            }
+        )
+
+        self.assertEqual(len(list(self.validator.iter_errors(manifest))), 0)
+        manifest["types"][-1]["c"]["fields"][0]["name"] = "class"
+        self.assertGreater(len(list(self.validator.iter_errors(manifest))), 0)
+        manifest["types"][-1]["c"]["fields"][0]["name"] = "field__internal"
+        self.assertGreater(len(list(self.validator.iter_errors(manifest))), 0)
+
     def test_c_header_renders_approved_exclusion_carrier_layout(self) -> None:
         def exclusion(name: str, fields: list[dict[str, str]]) -> dict[str, object]:
             return {
