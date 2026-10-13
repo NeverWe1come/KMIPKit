@@ -597,6 +597,222 @@ class T076ClientMappingTests(unittest.TestCase):
         self.assertIsNotNone(args_exclusion)
         self.assertIn("BaseException", args_exclusion["reason"])
 
+    def test_python_extension_fields_map_to_0012_facade_operations(self) -> None:
+        expected = {
+            "kmipkit.extensions.ClientConfiguration.limits": (
+                "rust-kmipkit-client",
+                "kmipkit_client::extension_registry::limits",
+                "c-kmipkit",
+                "kmipkit_client_extension_registry_create_v1",
+                "java-kmipkit",
+                "org.kmipkit.extensions.ClientExtensionRegistry.limits",
+            ),
+            "kmipkit.extensions.ClientExtensionRegistry.limits": (
+                "rust-kmipkit-client",
+                "kmipkit_client::extension_registry::limits",
+                "c-kmipkit",
+                "kmipkit_client_extension_registry_create_v1",
+                "java-kmipkit",
+                "org.kmipkit.extensions.ClientExtensionRegistry.limits",
+            ),
+            "kmipkit.extensions.Discriminator.path_tags": (
+                "rust-kmipkit-protocol",
+                "kmipkit_protocol::extension::discriminator",
+                "c-kmipkit",
+                "kmipkit_extension_discriminator_create",
+                "java-kmipkit",
+                "org.kmipkit.extensions.Discriminator.create",
+            ),
+            "kmipkit.extensions.Discriminator.scalar_type": (
+                "rust-kmipkit-protocol",
+                "kmipkit_protocol::extension::discriminator",
+                "c-kmipkit",
+                "kmipkit_extension_discriminator_create",
+                "java-kmipkit",
+                "org.kmipkit.extensions.Discriminator.create",
+            ),
+            "kmipkit.extensions.Discriminator.scalar_value": (
+                "rust-kmipkit-protocol",
+                "kmipkit_protocol::extension::discriminator",
+                "c-kmipkit",
+                "kmipkit_extension_discriminator_create",
+                "java-kmipkit",
+                "org.kmipkit.extensions.Discriminator.create",
+            ),
+            "kmipkit.extensions.ExtensionDefinition.identity": (
+                "rust-kmipkit-protocol",
+                "kmipkit_protocol::extension::identity",
+                "c-kmipkit",
+                "kmipkit_extension_definition_identity",
+                "java-kmipkit",
+                "org.kmipkit.extensions.ExtensionDefinition.identity",
+            ),
+            "kmipkit.extensions.ExtensionDefinition.discriminator": (
+                "rust-kmipkit-protocol",
+                "kmipkit_protocol::extension::extension_definition",
+                "c-kmipkit",
+                "kmipkit_extension_definition_create",
+                "java-kmipkit",
+                "org.kmipkit.extensions.ExtensionDefinition.create",
+            ),
+            "kmipkit.extensions.ExtensionDefinition.information": (
+                "rust-kmipkit-protocol",
+                "kmipkit_protocol::extension::information",
+                "c-kmipkit",
+                "kmipkit_extension_definition_information",
+                "java-kmipkit",
+                "org.kmipkit.extensions.ExtensionDefinition.information",
+            ),
+            "kmipkit.extensions.ExtensionDefinition.compatibility": (
+                "rust-kmipkit-protocol",
+                "kmipkit_protocol::extension::extension_definition",
+                "c-kmipkit",
+                "kmipkit_extension_definition_create",
+                "java-kmipkit",
+                "org.kmipkit.extensions.ExtensionDefinition.create",
+            ),
+            "kmipkit.extensions.ExtensionDefinition.schema": (
+                "rust-kmipkit-protocol",
+                "kmipkit_protocol::extension::extension_definition",
+                "c-kmipkit",
+                "kmipkit_extension_definition_create",
+                "java-kmipkit",
+                "org.kmipkit.extensions.ExtensionDefinition.create",
+            ),
+            "kmipkit.extensions.ExtensionIdentity.vendor_identifier": (
+                "rust-kmipkit-protocol",
+                "kmipkit_protocol::extension::ExtensionIdentity::vendor_identifier",
+                "c-kmipkit",
+                "kmipkit_extension_identity_vendor_identifier",
+                "java-kmipkit",
+                "org.kmipkit.extensions.ExtensionIdentity.vendorIdentifier",
+            ),
+            "kmipkit.extensions.ExtensionIdentity.name": (
+                "rust-kmipkit-protocol",
+                "kmipkit_protocol::extension::ExtensionIdentity::name",
+                "c-kmipkit",
+                "kmipkit_extension_identity_name",
+                "java-kmipkit",
+                "org.kmipkit.extensions.ExtensionIdentity.name",
+            ),
+            "kmipkit.extensions.ExtensionIdentity.version": (
+                "rust-kmipkit-protocol",
+                "kmipkit_protocol::extension::ExtensionIdentity::version",
+                "c-kmipkit",
+                "kmipkit_extension_identity_version",
+                "java-kmipkit",
+                "org.kmipkit.extensions.ExtensionIdentity.version",
+            ),
+            "kmipkit.extensions.ExtensionInformation.extension_name": (
+                "rust-kmipkit-protocol",
+                "kmipkit_protocol::extension::extension_information",
+                "c-kmipkit",
+                "kmipkit_extension_information_create",
+                "java-kmipkit",
+                "org.kmipkit.extensions.ExtensionInformation.create",
+            ),
+            "kmipkit.extensions.ExtensionInformation.tag": (
+                "rust-kmipkit-protocol",
+                "kmipkit_protocol::extension::with_tag",
+                "c-kmipkit",
+                "kmipkit_extension_information_tag",
+                "java-kmipkit",
+                "org.kmipkit.extensions.ExtensionInformation.with_tag",
+            ),
+            "kmipkit.extensions.ExtensionInformation.item_type": (
+                "rust-kmipkit-protocol",
+                "kmipkit_protocol::extension::with_type",
+                "c-kmipkit",
+                "kmipkit_extension_information_type",
+                "java-kmipkit",
+                "org.kmipkit.extensions.ExtensionInformation.with_type",
+            ),
+            "kmipkit.extensions.ExtensionInformation.enumeration": (
+                "rust-kmipkit-protocol",
+                "kmipkit_protocol::extension::with_enumeration",
+                "c-kmipkit",
+                "kmipkit_extension_information_enumeration",
+                "java-kmipkit",
+                "org.kmipkit.extensions.ExtensionInformation.with_enumeration",
+            ),
+            "kmipkit.extensions.ExtensionInformation.attribute": (
+                "rust-kmipkit-protocol",
+                "kmipkit_protocol::extension::with_attribute",
+                "c-kmipkit",
+                "kmipkit_extension_information_attribute",
+                "java-kmipkit",
+                "org.kmipkit.extensions.ExtensionInformation.with_attribute",
+            ),
+            "kmipkit.extensions.ExtensionInformation.parent_structure_tag": (
+                "rust-kmipkit-protocol",
+                "kmipkit_protocol::extension::with_parent_structure_tag",
+                "c-kmipkit",
+                "kmipkit_extension_information_parent_structure_tag",
+                "java-kmipkit",
+                "org.kmipkit.extensions.ExtensionInformation.with_parent_structure_tag",
+            ),
+            "kmipkit.extensions.ExtensionInformation.description": (
+                "rust-kmipkit-protocol",
+                "kmipkit_protocol::extension::with_description",
+                "c-kmipkit",
+                "kmipkit_extension_information_description",
+                "java-kmipkit",
+                "org.kmipkit.extensions.ExtensionInformation.with_description",
+            ),
+            "kmipkit.extensions.RegisteredExtensionValue.identity": (
+                "rust-kmipkit-client",
+                "kmipkit_client::extension_registry::validate_extension_value",
+                "c-kmipkit",
+                "kmipkit_client_extension_registry_validate",
+                "java-kmipkit",
+                "org.kmipkit.extensions.ClientExtensionRegistry.validateExtensionValue",
+            ),
+            "kmipkit.extensions.TtlvPath.tags": (
+                "rust-kmipkit-protocol",
+                "kmipkit_protocol::extension::with_child_tag",
+                "c-kmipkit",
+                "kmipkit_ttlv_path_with_child_tag",
+                "java-kmipkit",
+                "org.kmipkit.extensions.TtlvPath.withChildTag",
+            ),
+            "kmipkit.extensions.ValidatedExtensionValue.identity": (
+                "rust-kmipkit-protocol",
+                "kmipkit_protocol::extension::validated_extension_value_identity",
+                "c-kmipkit",
+                "kmipkit_validated_extension_value_identity",
+                "java-kmipkit",
+                "org.kmipkit.extensions.ValidatedExtensionValue.identity",
+            ),
+        }
+        fields = {
+            row["exportName"]: row
+            for row in self.manifest["publicDeclarations"]
+            if row["packageId"] == "python-kmipkit" and row["kind"] == "field"
+        }
+        self.assertEqual(23, len(expected))
+        for path, (rust_package, rust_name, c_package, c_name, java_package, java_name) in expected.items():
+            with self.subTest(field=path):
+                self.assertEqual(
+                    {
+                        "rust": {"packageId": rust_package, "name": rust_name},
+                        "c": {"packageId": c_package, "name": c_name},
+                        "java": {"packageId": java_package, "name": java_name},
+                        "python": {"packageId": "python-kmipkit", "name": path},
+                    },
+                    fields[path]["languageMappings"],
+                )
+                self.assertEqual("declared", fields[path]["declarationState"])
+                self.assertIn("KMIPKIT-0012-FR-010", fields[path]["requirementIds"])
+                self.assertIn("KMIPKIT-0043-FR-021", fields[path]["requirementIds"])
+                self.assertEqual(
+                    "specs/012-vendor-extension-registry/spec.md",
+                    fields[path]["approvalSource"]["path"],
+                )
+        self.assertNotIn(
+            "org.kmipkit.extensions.Discriminator.path_tags",
+            {row["exportName"] for row in self.manifest["publicDeclarations"]},
+        )
+
 
 if __name__ == "__main__":
     unittest.main()
