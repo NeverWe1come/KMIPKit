@@ -129,6 +129,10 @@ public final class NativeExtensionRegistry {
     public static native long clientBatchCreate();
     public static native void clientBatchAddItem(long batch, long item);
     public static native void clientBatchSetAsynchronousIndicator(long batch, long indicator);
+    public static native void clientBatchSetRequestTimestamp(long batch, long timestamp);
+    public static native void clientBatchSetOrderOption(long batch, boolean enabled);
+    public static native void clientBatchAddErrorContinuationValue(long batch, long value);
+    public static native void clientBatchSetClientCorrelationValue(long batch, byte[] value);
     public static native long clientExecute(long client, long batch, long[] codecLimits);
     public static native long clientBatchResponseItemCount(long response);
     public static native long clientBatchResponseItemAt(long response, long index);

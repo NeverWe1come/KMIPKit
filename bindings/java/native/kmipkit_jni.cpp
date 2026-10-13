@@ -20,6 +20,15 @@ typedef struct kmipkit_client_batch_t kmipkit_client_batch_t;
 typedef struct kmipkit_client_batch_response_t kmipkit_client_batch_response_t;
 typedef struct kmipkit_client_batch_item_response_t kmipkit_client_batch_item_response_t;
 
+extern "C" int32_t kmipkit_client_batch_set_request_time_stamp(
+        kmipkit_client_batch_t* batch, int64_t timestamp);
+extern "C" int32_t kmipkit_client_batch_set_order_option(
+        kmipkit_client_batch_t* batch, uint8_t enabled);
+extern "C" int32_t kmipkit_client_batch_add_error_continuation_value(
+        kmipkit_client_batch_t* batch, uint32_t value);
+extern "C" int32_t kmipkit_client_batch_set_client_correlation_value(
+        kmipkit_client_batch_t* batch, const uint8_t* value, uint64_t value_length);
+
 struct kmipkit_byte_span_v1_t {
     const uint8_t* data;
     uint64_t length;
@@ -2034,6 +2043,78 @@ JNIEXPORT void JNICALL Java_org_kmipkit_NativeExtensionRegistry_clientBatchSetAs
         const int32_t status = kmipkit_client_batch_set_asynchronous_indicator(
                 from_java_handle<kmipkit_client_batch_t>(raw_batch),
                 static_cast<uint32_t>(raw_indicator));
+        if (status != 0) throw_status(env, status);
+        return 0;
+    });
+}
+
+JNIEXPORT void JNICALL Java_org_kmipkit_NativeExtensionRegistry_clientBatchSetRequestTimestamp(
+        JNIEnv* env, jclass, jlong raw_batch, jlong timestamp) {
+    guarded<int>(env, 0, [&] {
+        if (raw_batch == 0) {
+            throw_invalid_input(env);
+            return 0;
+        }
+        const int32_t status = kmipkit_client_batch_set_request_time_stamp(
+                from_java_handle<kmipkit_client_batch_t>(raw_batch),
+                static_cast<int64_t>(timestamp));
+        if (status != 0) throw_status(env, status);
+        return 0;
+    });
+}
+
+JNIEXPORT void JNICALL Java_org_kmipkit_NativeExtensionRegistry_clientBatchSetOrderOption(
+        JNIEnv* env, jclass, jlong raw_batch, jboolean enabled) {
+    guarded<int>(env, 0, [&] {
+        if (raw_batch == 0) {
+            throw_invalid_input(env);
+            return 0;
+        }
+        const int32_t status = kmipkit_client_batch_set_order_option(
+                from_java_handle<kmipkit_client_batch_t>(raw_batch),
+                enabled == JNI_TRUE ? UINT8_C(1) : UINT8_C(0));
+        if (status != 0) throw_status(env, status);
+        return 0;
+    });
+}
+
+JNIEXPORT void JNICALL Java_org_kmipkit_NativeExtensionRegistry_clientBatchAddErrorContinuationValue(
+        JNIEnv* env, jclass, jlong raw_batch, jlong raw_value) {
+    guarded<int>(env, 0, [&] {
+        if (raw_batch == 0 || raw_value < 0 || raw_value > 0xffff'ffffLL) {
+            throw_invalid_input(env);
+            return 0;
+        }
+        const int32_t status = kmipkit_client_batch_add_error_continuation_value(
+                from_java_handle<kmipkit_client_batch_t>(raw_batch),
+                static_cast<uint32_t>(raw_value));
+        if (status != 0) throw_status(env, status);
+        return 0;
+    });
+}
+
+JNIEXPORT void JNICALL Java_org_kmipkit_NativeExtensionRegistry_clientBatchSetClientCorrelationValue(
+        JNIEnv* env, jclass, jlong raw_batch, jbyteArray raw_value) {
+    guarded<int>(env, 0, [&] {
+        if (raw_batch == 0 || raw_value == nullptr) {
+            throw_invalid_input(env);
+            return 0;
+        }
+        const jsize length = env->GetArrayLength(raw_value);
+        if (env->ExceptionCheck()) return 0;
+        if (length < 0 || length > 16 * 1024 * 1024) {
+            throw_invalid_input(env);
+            return 0;
+        }
+        std::vector<jbyte> bytes(static_cast<size_t>(length));
+        if (length > 0) {
+            env->GetByteArrayRegion(raw_value, 0, length, bytes.data());
+            if (env->ExceptionCheck()) return 0;
+        }
+        const int32_t status = kmipkit_client_batch_set_client_correlation_value(
+                from_java_handle<kmipkit_client_batch_t>(raw_batch),
+                reinterpret_cast<const uint8_t*>(bytes.data()),
+                static_cast<uint64_t>(bytes.size()));
         if (status != 0) throw_status(env, status);
         return 0;
     });

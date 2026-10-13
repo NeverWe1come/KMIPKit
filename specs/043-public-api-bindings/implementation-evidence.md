@@ -533,7 +533,7 @@ The full matrix for head `3c87f385` passed the language, platform, Java/Python c
 - **Red**: Added a generator regression requiring the generated public header to include the mapped client handle, transport constructor, and client execution entrypoint. Added a compiled C consumer for the public client and ordered-batch entrypoints. The generator regression fails on the release manifest because those observed T076 C symbols remain blocked and absent from the public header.
 - **Command**: `$env:PYTHONPATH = 'tools/api_manifest/tests'; uv run --with-requirements tools/api_manifest/requirements-test.txt python -m unittest test_generate.ManifestGeneratorCliTests.test_public_header_includes_shared_client_abi_after_binding_mapping -v`
 - **Result**: Expected Red: `FAILED (failures=1)` with `the public C header omits the mapped client handle`. C compilation is assigned to the repository's C consumer CI matrix because this Windows host has no C compiler or CMake on `PATH`.
-- **Commit**: Red test commit pending.
+- **Commit**: Red test commit `4ca33256`.
 
 ## T021 Java shared batch-option parity (2026-10-13)
 
@@ -541,4 +541,8 @@ The full matrix for head `3c87f385` passed the language, platform, Java/Python c
 - **Red**: Added a Java facade contract test that invokes all four shared batch metadata options through the public `ClientBatch` API.
 - **Command**: `mvn --batch-mode --file bindings/java/pom.xml -Dtest=ClientFacadeContractTest test`
 - **Result**: Expected Red during test compilation: `ClientBatch` has no `requestTimestamp(long)` method. The remaining chained methods are likewise not available until the facade is implemented.
-- **Commit**: Red test commit pending.
+- **Commit**: Red test commit `cea357e3`.
+- **Green**: Added Java facade methods and JNI bridge calls for the four batch options. JNI validates uint32 and correlation byte length before conversion, forwards timestamp/ordering and exact copied correlation bytes to the existing C ABI, and maps native failures through the established exception path.
+- **Command**: `mvn --batch-mode --file bindings/java/pom.xml -Dtest=ClientFacadeContractTest test`
+- **Result**: PASS: 7 tests, including a native JNI build and a live native batch exercise. The first run caught missing private prototypes in the generated-header boundary; adding the exact ABI declarations to the existing T076 private declaration block resolved it. A second contract test covers unsigned range and null-correlation rejection.
+- **Green commit**: Pending.

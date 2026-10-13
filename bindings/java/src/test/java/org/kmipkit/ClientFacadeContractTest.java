@@ -59,6 +59,21 @@ final class ClientFacadeContractTest {
     }
 
     @Test
+    void batchOptionsRejectInvalidUnsignedValuesAndNullCorrelationBytes() {
+        try (ClientBatch batch = ClientBatch.create()) {
+            assertThrows(
+                    InvalidInputException.class,
+                    () -> batch.addErrorContinuationValue(-1));
+            assertThrows(
+                    InvalidInputException.class,
+                    () -> batch.addErrorContinuationValue(0x1_0000_0000L));
+            assertThrows(
+                    InvalidInputException.class,
+                    () -> batch.clientCorrelationValue(null));
+        }
+    }
+
+    @Test
     void clientOperationExceptionsExposeStableRedactedMetadata() {
         ClientOperationException generic = new ClientOperationException(7, 91, 92, 2);
         assertEquals(7, generic.statusCode());
