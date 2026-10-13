@@ -2885,43 +2885,54 @@ fn profile_rejects_malformed_managed_opaque_attribute_wire_types() {
         profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
         requirement_ids: vec![REQUIREMENT_ID.to_owned()],
     };
-    let payload = structure([
-        tagged(OBJECT_TYPE_TAG, Value::enumeration(8)),
-        tagged(
-            ATTRIBUTES_TAG,
-            Value::structure(structure([
-                tagged(CRYPTOGRAPHIC_USAGE_MASK_TAG, Value::integer(3)),
-                tagged(CRYPTOGRAPHIC_ALGORITHM_TAG, Value::integer(3)),
-                tagged(CRYPTOGRAPHIC_LENGTH_TAG, Value::integer(256)),
-            ])),
-        ),
-        tagged(
-            OPAQUE_OBJECT_TAG,
-            Value::structure(structure([
-                tagged(OPAQUE_DATA_TYPE_TAG, Value::enumeration(7)),
-                tagged(
-                    OPAQUE_DATA_VALUE_TAG,
-                    Value::byte_string(b"managed-opaque-object-data".to_vec()),
-                ),
-            ])),
-        ),
-    ]);
+    for managed_attributes in [
+        structure([
+            tagged(CRYPTOGRAPHIC_USAGE_MASK_TAG, Value::integer(3)),
+            tagged(CRYPTOGRAPHIC_ALGORITHM_TAG, Value::integer(3)),
+            tagged(CRYPTOGRAPHIC_LENGTH_TAG, Value::integer(256)),
+        ]),
+        structure([
+            tagged(CRYPTOGRAPHIC_USAGE_MASK_TAG, Value::enumeration(3)),
+            tagged(CRYPTOGRAPHIC_ALGORITHM_TAG, Value::enumeration(3)),
+            tagged(CRYPTOGRAPHIC_LENGTH_TAG, Value::integer(256)),
+        ]),
+        structure([
+            tagged(CRYPTOGRAPHIC_USAGE_MASK_TAG, Value::integer(3)),
+            tagged(CRYPTOGRAPHIC_ALGORITHM_TAG, Value::enumeration(3)),
+            tagged(CRYPTOGRAPHIC_LENGTH_TAG, Value::enumeration(256)),
+        ]),
+    ] {
+        let payload = structure([
+            tagged(OBJECT_TYPE_TAG, Value::enumeration(8)),
+            tagged(ATTRIBUTES_TAG, Value::structure(managed_attributes)),
+            tagged(
+                OPAQUE_OBJECT_TAG,
+                Value::structure(structure([
+                    tagged(OPAQUE_DATA_TYPE_TAG, Value::enumeration(7)),
+                    tagged(
+                        OPAQUE_DATA_VALUE_TAG,
+                        Value::byte_string(b"managed-opaque-object-data".to_vec()),
+                    ),
+                ])),
+            ),
+        ]);
 
-    let error = validation
-        .validate_request(&request_message_with_operation_payload(
-            REGISTER_OPERATION_TAG,
-            payload,
-        ))
-        .expect_err("Cryptographic Algorithm uses Enumeration encoding");
-    assert_eq!(
-        error.code(),
-        ProfileValidationErrorCode::RequestRuleRejected
-    );
-    assert_eq!(error.requirement_id(), Some(REQUIREMENT_ID));
-    assert_eq!(
-        error.source_clause_id(),
-        Some("KMIPKIT-CLAUSE-SPEC-2.3-002")
-    );
+        let error = validation
+            .validate_request(&request_message_with_operation_payload(
+                REGISTER_OPERATION_TAG,
+                payload,
+            ))
+            .expect_err("managed cryptographic attributes use their required TTLV wire types");
+        assert_eq!(
+            error.code(),
+            ProfileValidationErrorCode::RequestRuleRejected
+        );
+        assert_eq!(error.requirement_id(), Some(REQUIREMENT_ID));
+        assert_eq!(
+            error.source_clause_id(),
+            Some("KMIPKIT-CLAUSE-SPEC-2.3-002")
+        );
+    }
 }
 
 #[test]

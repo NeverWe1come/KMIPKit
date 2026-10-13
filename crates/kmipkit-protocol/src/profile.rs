@@ -994,13 +994,13 @@ fn client_opaque_object_context_managed_attributes(
 
 fn register_managed_opaque_attributes_are_well_formed(payload: &StructureView<'_>) -> bool {
     let FieldPresence::Unique(object_type) = field_presence(payload, REGISTER_OBJECT_TYPE) else {
-        return true;
+        return false;
     };
     let Some(object_type) = object_type.with_value(|value| match value {
         ValueView::Enumeration(value) => Some(*value),
         _ => None,
     }) else {
-        return true;
+        return false;
     };
     if object_type != OPAQUE_OBJECT_TYPE {
         return true;
