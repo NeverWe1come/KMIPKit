@@ -36,6 +36,10 @@ public final class ClientBatchItem implements AutoCloseable {
         return extensions;
     }
 
+    NativeHandle nativeHandleOwner() {
+        return handle;
+    }
+
     /** Returns the number of attached vendor extensions. */
     public long extensionCount() {
         NativeExtensionRegistry.ensureLoaded();
