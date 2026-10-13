@@ -1614,3 +1614,81 @@ fn profile_rejects_wrapped_secret_data_without_one_wrapping_method() {
         );
     }
 }
+
+#[test]
+fn profile_rejects_wrapping_key_information_without_one_text_identifier() {
+    // KMIP Specification v2.1 §3.3 Tables 15–17 define the required key-info identifier.
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-2.7-001";
+    const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
+    const WRAPPING_METHOD: u32 = 0x0042_009E;
+    const ENCRYPTION_KEY_INFORMATION: u32 = 0x0042_0036;
+    const MAC_SIGNATURE_KEY_INFORMATION: u32 = 0x0042_004E;
+    const UNIQUE_IDENTIFIER: u32 = 0x0042_0094;
+
+    let result = ProfileValidationResult {
+        profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
+        requirement_ids: vec![REQUIREMENT_ID.to_owned()],
+    };
+    let wrapping_data = |information: Vec<Item>| {
+        let mut fields = vec![tagged(WRAPPING_METHOD, Value::enumeration(1))];
+        fields.extend(information);
+        Value::structure(structure(fields))
+    };
+    let encryption_information = |value: Value| tagged(ENCRYPTION_KEY_INFORMATION, value);
+    let mac_signature_information = |value: Value| tagged(MAC_SIGNATURE_KEY_INFORMATION, value);
+    let valid_mac_only = secret_data_import_request(
+        Value::byte_string(b"synthetic-wrapped-secret-data".to_vec()),
+        Some(wrapping_data(vec![mac_signature_information(
+            Value::structure(structure([tagged(
+                UNIQUE_IDENTIFIER,
+                Value::text_string("mac-key".to_owned()),
+            )])),
+        )])),
+    );
+    result
+        .validate_request(&valid_mac_only)
+        .expect("MAC/Signature Key Information alone is permitted");
+
+    let malformed_wrapping_data = [
+        wrapping_data(vec![encryption_information(Value::structure(
+            Structure::new(),
+        ))]),
+        wrapping_data(vec![encryption_information(Value::structure(structure([
+            tagged(UNIQUE_IDENTIFIER, Value::integer(7)),
+        ])))]),
+        wrapping_data(vec![encryption_information(Value::structure(structure([
+            tagged(UNIQUE_IDENTIFIER, Value::text_string("one".to_owned())),
+            tagged(UNIQUE_IDENTIFIER, Value::text_string("two".to_owned())),
+        ])))]),
+        wrapping_data(vec![encryption_information(Value::integer(1))]),
+        wrapping_data(vec![
+            encryption_information(Value::structure(structure([tagged(
+                UNIQUE_IDENTIFIER,
+                Value::text_string("one".to_owned()),
+            )]))),
+            encryption_information(Value::structure(structure([tagged(
+                UNIQUE_IDENTIFIER,
+                Value::text_string("two".to_owned()),
+            )]))),
+        ]),
+    ];
+
+    for data in malformed_wrapping_data {
+        let request = secret_data_import_request(
+            Value::byte_string(b"synthetic-wrapped-secret-data".to_vec()),
+            Some(data),
+        );
+        let error = result
+            .validate_request(&request)
+            .expect_err("key information needs one Text String Unique Identifier");
+        assert_eq!(
+            error.code(),
+            ProfileValidationErrorCode::RequestRuleRejected
+        );
+        assert_eq!(error.requirement_id(), Some(REQUIREMENT_ID));
+        assert_eq!(
+            error.source_clause_id(),
+            Some("KMIPKIT-CLAUSE-SPEC-2.7-001")
+        );
+    }
+}
