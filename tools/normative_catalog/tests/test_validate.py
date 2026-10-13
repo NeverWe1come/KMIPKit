@@ -34,6 +34,27 @@ _is_discoverable_positive_test = test_feature_traceability._is_discoverable_posi
 
 
 ROOT = Path(__file__).resolve().parents[3]
+TABLE_HEADER_REJECTION_DISPOSITIONS = frozenset(
+    {
+        "reject_candidate_non_normative_table_header",
+        "table_header_only",
+        "header_only_metadata",
+        "header_only_keyword_label_not_normative_requirement",
+    }
+)
+
+
+def _is_required_table_body_requirement(requirement: dict[str, Any]) -> bool:
+    """Identify a required table-body mapping that has no clause-header link."""
+    locator = requirement.get("source_locator")
+    return (
+        requirement.get("source_force") == "required_table_body_value"
+        and isinstance(locator, dict)
+        and locator.get("kind") == "table_body_row"
+        and requirement.get("source_clause_ids") == []
+    )
+
+
 OPTIONAL_CAPABILITY_TEST_REQUIREMENTS = {
     "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_client_register_opaque_object_context_custom_attributes": (
         "KMIPKIT-REQ-SPEC-2.3-001",
@@ -15513,10 +15534,7 @@ class CatalogValidationTests(unittest.TestCase):
                 if requirement is None:
                     violations.append(f"rejected label is absent from catalog: {requirement_id}")
                     continue
-                is_reused_table_body_requirement = (
-                    requirement.get("source_force") == "required_table_body_value"
-                    and requirement.get("source_locator", {}).get("kind") == "table_body_row"
-                )
+                is_reused_table_body_requirement = _is_required_table_body_requirement(requirement)
                 if is_reused_table_body_requirement and rejected["expected_disposition"] == "reject_candidate_non_normative_table_header":
                     if clause_id in requirement["source_clause_ids"]:
                         violations.append(f"header-rejected label {requirement_id} still maps to {clause_id}")
@@ -15849,17 +15867,11 @@ class CatalogValidationTests(unittest.TestCase):
         requirements = {row["requirement_id"]: row for row in catalog["requirements"]}
         clauses = {row["clause_id"]: row for row in catalog["source_clauses"]}
         profiles = [row for row in catalog["profiles"] if row["role"] == "client"]
-        header_dispositions = {
-            "reject_candidate_non_normative_table_header",
-            "table_header_only",
-            "header_only_metadata",
-            "header_only_keyword_label_not_normative_requirement",
-        }
         header_ids = {
             candidate["requirement_id"]
             for review in oracle["source_requirement_reviews"]
             for candidate in review["rejected_candidate_mappings"]
-            if candidate["expected_disposition"] in header_dispositions
+            if candidate["expected_disposition"] in TABLE_HEADER_REJECTION_DISPOSITIONS
         }
 
         self.assertEqual(len(header_ids), 43)
@@ -15867,11 +15879,7 @@ class CatalogValidationTests(unittest.TestCase):
             requirement_id
             for requirement_id in header_ids
             if requirements[requirement_id]["scope_state"] != "out_of_scope"
-            and not (
-                requirements[requirement_id].get("source_force") == "required_table_body_value"
-                and requirements[requirement_id].get("source_locator", {}).get("kind") == "table_body_row"
-                and requirements[requirement_id].get("source_clause_ids") == []
-            )
+            and not _is_required_table_body_requirement(requirements[requirement_id])
         )
         self.assertEqual(
             active_header_ids,
@@ -15880,7 +15888,7 @@ class CatalogValidationTests(unittest.TestCase):
         )
         for requirement_id in sorted(header_ids):
             requirement = requirements[requirement_id]
-            if requirement.get("source_force") == "required_table_body_value" and requirement.get("source_locator", {}).get("kind") == "table_body_row":
+            if _is_required_table_body_requirement(requirement):
                 self.assertEqual(requirement["source_clause_ids"], [])
                 self.assertEqual(requirement["source_locator"]["section"], "2.3")
                 self.assertEqual(requirement["source_locator"]["row_label"], "Opaque Data Type")
@@ -16189,16 +16197,9 @@ class CatalogValidationTests(unittest.TestCase):
             reused_body_row_ids = {
                 candidate["requirement_id"]
                 for candidate in review["rejected_candidate_mappings"]
-                if candidate["expected_disposition"] in {
-                    "reject_candidate_non_normative_table_header",
-                    "table_header_only",
-                    "header_only_metadata",
-                    "header_only_keyword_label_not_normative_requirement",
-                }
+                if candidate["expected_disposition"] in TABLE_HEADER_REJECTION_DISPOSITIONS
                 and candidate["requirement_id"] in candidate_requirements
-                and candidate_requirements[candidate["requirement_id"]].get("source_force") == "required_table_body_value"
-                and candidate_requirements[candidate["requirement_id"]].get("source_locator", {}).get("kind") == "table_body_row"
-                and review["source_clause_id"] not in candidate_requirements[candidate["requirement_id"]].get("source_clause_ids", [])
+                and _is_required_table_body_requirement(candidate_requirements[candidate["requirement_id"]])
             }
             expected_ids = set(review["expected_client_requirement_ids"])
             if expected_ids & rejected_ids:
