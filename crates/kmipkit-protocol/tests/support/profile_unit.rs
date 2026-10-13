@@ -478,6 +478,23 @@ fn managed_opaque_object_register_payload() -> Structure {
     .expect("managed Opaque Object attributes serialize without adding a context marker")
 }
 
+fn managed_opaque_register_payload_with_attributes(attributes: Structure) -> Structure {
+    structure([
+        tagged(OBJECT_TYPE_TAG, Value::enumeration(8)),
+        tagged(ATTRIBUTES_TAG, Value::structure(attributes)),
+        tagged(
+            OPAQUE_OBJECT_TAG,
+            Value::structure(structure([
+                tagged(OPAQUE_DATA_TYPE_TAG, Value::enumeration(7)),
+                tagged(
+                    OPAQUE_DATA_VALUE_TAG,
+                    Value::byte_string(b"managed-opaque-object-data".to_vec()),
+                ),
+            ])),
+        ),
+    ])
+}
+
 fn opaque_context_get_attributes_response() -> crate::ResponseMessage {
     crate::ResponseMessage::try_from_ttlv(structure([
         tagged(
@@ -2902,25 +2919,10 @@ fn profile_rejects_malformed_managed_opaque_attribute_wire_types() {
             tagged(CRYPTOGRAPHIC_LENGTH_TAG, Value::enumeration(256)),
         ]),
     ] {
-        let payload = structure([
-            tagged(OBJECT_TYPE_TAG, Value::enumeration(8)),
-            tagged(ATTRIBUTES_TAG, Value::structure(managed_attributes)),
-            tagged(
-                OPAQUE_OBJECT_TAG,
-                Value::structure(structure([
-                    tagged(OPAQUE_DATA_TYPE_TAG, Value::enumeration(7)),
-                    tagged(
-                        OPAQUE_DATA_VALUE_TAG,
-                        Value::byte_string(b"managed-opaque-object-data".to_vec()),
-                    ),
-                ])),
-            ),
-        ]);
-
         let error = validation
             .validate_request(&request_message_with_operation_payload(
                 REGISTER_OPERATION_TAG,
-                payload,
+                managed_opaque_register_payload_with_attributes(managed_attributes),
             ))
             .expect_err("managed cryptographic attributes use their required TTLV wire types");
         assert_eq!(
