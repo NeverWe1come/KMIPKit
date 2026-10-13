@@ -1,6 +1,8 @@
 package org.kmipkit;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -80,5 +82,17 @@ final class JavaFacadeContractTest {
                         () -> packageInfo + " must be annotated with @NullMarked");
             }
         }
+    }
+
+    @Test
+    void ttlvOwnedValueCloseReleasesItsHandleAndIsIdempotent() {
+        TtlvValue value = TtlvValue.Integer(7);
+        assertTrue(AutoCloseable.class.isAssignableFrom(TtlvValue.class),
+                "owned TTLV values must expose deterministic close");
+        AutoCloseable resource = (AutoCloseable) (Object) value;
+
+        assertDoesNotThrow(resource::close);
+        assertDoesNotThrow(resource::close);
+        assertThrows(InvalidInputException.class, value::handle);
     }
 }
