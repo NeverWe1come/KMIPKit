@@ -2854,7 +2854,10 @@ fn profile_maps_client_register_opaque_object_context_managed_attributes() {
     let managed_payload_view = managed_payload.view();
     let fields = managed_payload_view.children();
     assert_eq!(
-        fields.iter().map(|field| field.tag().raw()).collect::<Vec<_>>(),
+        fields
+            .iter()
+            .map(|field| field.tag().raw())
+            .collect::<Vec<_>>(),
         [OBJECT_TYPE_TAG, ATTRIBUTES_TAG, OPAQUE_OBJECT_TAG],
         "managed client context is not transmitted as a wire marker"
     );
@@ -2919,6 +2922,83 @@ fn profile_rejects_malformed_managed_opaque_attribute_wire_types() {
         error.source_clause_id(),
         Some("KMIPKIT-CLAUSE-SPEC-2.3-002")
     );
+}
+
+#[test]
+fn profile_managed_opaque_rule_is_scoped_to_register_request_metadata() {
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-2.3-002";
+    const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
+    let validation = ProfileValidationResult {
+        profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
+        requirement_ids: vec![REQUIREMENT_ID.to_owned()],
+    };
+
+    for payload in [
+        Structure::new(),
+        structure([tagged(
+            OBJECT_TYPE_TAG,
+            Value::text_string("not an Enumeration".to_owned()),
+        )]),
+        structure([tagged(OBJECT_TYPE_TAG, Value::enumeration(2))]),
+        structure([tagged(OBJECT_TYPE_TAG, Value::enumeration(8))]),
+    ] {
+        validation
+            .validate_request(&request_message_with_operation_payload(
+                REGISTER_OPERATION_TAG,
+                payload,
+            ))
+            .expect("the rule leaves missing, malformed, non-Opaque, and attribute-free Register metadata to base schema handling");
+    }
+
+    let malformed_attributes = [
+        structure([
+            tagged(OBJECT_TYPE_TAG, Value::enumeration(8)),
+            tagged(ATTRIBUTES_TAG, Value::integer(1)),
+        ]),
+        structure([
+            tagged(OBJECT_TYPE_TAG, Value::enumeration(8)),
+            opaque_object_attributes_ttlv([
+                tagged(CRYPTOGRAPHIC_USAGE_MASK_TAG, Value::integer(3)),
+                tagged(CRYPTOGRAPHIC_USAGE_MASK_TAG, Value::integer(3)),
+            ]),
+        ]),
+        structure([
+            tagged(OBJECT_TYPE_TAG, Value::enumeration(8)),
+            opaque_object_attributes_ttlv([]),
+            opaque_object_attributes_ttlv([]),
+        ]),
+    ];
+
+    for payload in malformed_attributes {
+        let error = validation
+            .validate_request(&request_message_with_operation_payload(
+                REGISTER_OPERATION_TAG,
+                payload,
+            ))
+            .expect_err("malformed managed Opaque Object attribute metadata fails closed");
+        assert_eq!(
+            error.code(),
+            ProfileValidationErrorCode::RequestRuleRejected
+        );
+        assert_eq!(error.requirement_id(), Some(REQUIREMENT_ID));
+    }
+
+    validation
+        .validate_request(&request_message())
+        .expect("the managed Opaque Object rule does not constrain other client operations");
+
+    let register_request = request_message_with_operation_payload(
+        REGISTER_OPERATION_TAG,
+        managed_opaque_object_register_payload(),
+    );
+    validation
+        .validate_response(
+            &register_request,
+            &get_attributes_response_with_payload(REGISTER_OPERATION_TAG, Structure::new()),
+        )
+        .expect("the client-side capability rule does not revalidate server responses");
+
+    assert!(!crate::profile::client_opaque_object_context_managed_attributes(None, None));
 }
 
 #[test]

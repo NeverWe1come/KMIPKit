@@ -18318,7 +18318,7 @@ class CatalogValidationTests(unittest.TestCase):
                 self.assertEqual(requirement["feature_spec"], "KMIPKIT-0044")
                 self.assertEqual(requirement["role"], "client")
                 self.assertEqual(requirement["direction"], "client_to_server")
-                self.assertEqual(requirement["status"], "verified")
+                self.assertEqual(requirement["status"], "scoped_verified")
                 self.assertIn("KMIPKIT-ELEM-OP-C2S-REGISTER", requirement["element_ids"])
                 self.assertTrue(requirement["implementation_refs"])
                 self.assertTrue(requirement["verification_refs"])
