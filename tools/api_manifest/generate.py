@@ -93,6 +93,18 @@ _C_KEYWORDS = {
     "_Alignas", "_Alignof", "_Atomic", "_Bool", "_Complex", "_Generic", "_Imaginary",
     "_Noreturn", "_Static_assert", "_Thread_local",
 }
+_CPP_KEYWORDS = {
+    "alignas", "alignof", "and", "and_eq", "asm", "atomic_cancel", "atomic_commit",
+    "atomic_noexcept", "bitand", "bitor", "bool", "catch", "char8_t", "char16_t",
+    "char32_t", "class", "compl", "concept", "consteval", "constexpr", "constinit",
+    "const_cast", "co_await", "co_return", "co_yield", "decltype", "delete", "dynamic_cast",
+    "explicit", "export", "false", "friend", "mutable", "namespace", "new", "noexcept",
+    "not", "not_eq", "nullptr", "operator", "or", "or_eq", "private", "protected", "public",
+    "reinterpret_cast", "requires", "static_assert", "static_cast", "synchronized", "template",
+    "this", "thread_local", "throw", "true", "try", "typeid", "typename", "using", "virtual",
+    "wchar_t", "xor", "xor_eq",
+}
+_C_FAMILY_KEYWORDS = _C_KEYWORDS | _CPP_KEYWORDS
 _REQUIREMENT_PATTERN = re.compile(r"KMIPKIT-0012-FR-[0-9]{3}\Z")
 _EXPECTED_CLIENT_1_0_OPERATION_COUNT = 56
 _RUST_2024_KEYWORDS = {
@@ -1156,8 +1168,8 @@ def _validate_c_value_layout(c_type: dict[str, Any], declared_types: set[str]) -
     ] != [("struct_size", "uint32_t"), ("abi_version", "uint32_t")]:
         raise ManifestError("versioned C value must begin with its size and ABI version")
     for field in fields:
-        if field["name"] in _C_KEYWORDS:
-            raise ManifestError("C keyword cannot be used as a fixed-width field name")
+        if field["name"] in _C_FAMILY_KEYWORDS:
+            raise ManifestError("C/C++ keyword cannot be used as a fixed-width field name")
         _rust_identifier(field["name"])
         base_type, _ = _c_field_base_and_pointer_count(field["type"])
         if base_type not in _C_INTEGER_TYPES and base_type not in declared_types:
