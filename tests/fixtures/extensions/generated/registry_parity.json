@@ -47,14 +47,6 @@
       "javaException": "org.kmipkit.ResourceLimitException",
       "pythonException": "kmipkit.errors.ResourceLimitError",
       "rustVariant": "ResourceLimit"
-    },
-    {
-      "cCode": "KMIPKIT_ERROR_INTERNAL",
-      "cValue": 7,
-      "id": "internal",
-      "javaException": "org.kmipkit.KmipException",
-      "pythonException": "kmipkit.errors.KmipKitError",
-      "rustVariant": "Other"
     }
   ],
   "formatVersion": 1,
