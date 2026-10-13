@@ -397,6 +397,30 @@ fn managed_opaque_register_missing_direct_table_293_attribute_is_not_sent() {
     assert_eq!(fake.borrow().write_call_count(), 0);
 }
 
+// OASIS KMIP v2.1 §2.3 and §6.1.43, Table 291; local context never changes wire eligibility.
+#[test]
+fn selected_opaque_context_for_certificate_register_is_not_sent() {
+    let request = register_request().with_opaque_object_context(OpaqueObjectContext::Generic);
+    let (mut client, fake, captured) = client_for(ExchangeScript::Success {
+        response: Vec::new(),
+        request_write_chunks: Vec::new(),
+    });
+
+    let error = client
+        .register(request, &CodecLimits::defaults())
+        .expect_err("an Opaque Object context cannot be selected for a Certificate");
+
+    assert_eq!(error.category(), ClientErrorCategory::Validation);
+    assert_eq!(
+        error.cause_category(),
+        Some(crate::ClientCauseCategory::InvalidInput)
+    );
+    assert_eq!(error.delivery_state(), Some(RequestDeliveryState::NotSent));
+    assert!(captured.borrow().is_none(), "no request bytes are captured");
+    assert_eq!(fake.borrow().exchange_count(), 0);
+    assert_eq!(fake.borrow().write_call_count(), 0);
+}
+
 // OASIS KMIP v2.1 §2.3, Table 4; §6.1.43, Tables 291 and 293; §11.34, Table 468.
 #[test]
 fn managed_opaque_register_preserves_standard_table_291_wire_shape_and_attribute_order() {
