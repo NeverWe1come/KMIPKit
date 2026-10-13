@@ -359,3 +359,7 @@ mod get_usage_allocation_tests;
 
 mod get_usage_allocation;
 pub use get_usage_allocation::{GetUsageAllocationRequest, GetUsageAllocationResponse};
+
+#[cfg(test)]
+#[path = "../tests/unit/set_constraints_tests.rs"]
+mod set_constraints_tests;

@@ -220,3 +220,7 @@ mod usage_allocation;
 #[path = "../tests/unit/usage_allocation_guard_tests.rs"]
 mod usage_allocation_guard_tests;
 pub use usage_allocation::{GuardedProtectionRequest, UsageAllocationContext};
+
+#[cfg(test)]
+#[path = "../tests/unit/set_constraints_execution_tests.rs"]
+mod set_constraints_execution_tests;
