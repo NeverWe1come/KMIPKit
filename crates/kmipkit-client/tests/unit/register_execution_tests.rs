@@ -139,6 +139,72 @@ fn request_fields(bytes: &[u8], item_index: usize) -> (Option<u32>, Vec<u32>, Ve
     })
 }
 
+#[derive(Debug, Eq, PartialEq)]
+enum RegisterAttributeValue {
+    Integer(i32),
+    Enumeration(u32),
+    Other,
+}
+
+fn register_attribute_values(
+    bytes: &[u8],
+    item_index: usize,
+) -> Vec<(u32, RegisterAttributeValue)> {
+    let message = decode(bytes).expect("captured request has valid TTLV framing");
+    message.with_value(|value| {
+        let ValueView::Structure(message) = value else {
+            panic!("KMIP request message is a Structure");
+        };
+        let batch = message
+            .children()
+            .iter()
+            .filter(|field| field.tag().raw() == BATCH_ITEM)
+            .nth(item_index)
+            .expect("request contains the selected Batch Item");
+        batch.with_value(|value| {
+            let ValueView::Structure(batch) = value else {
+                panic!("Batch Item is a Structure");
+            };
+            let payload = batch
+                .children()
+                .iter()
+                .find(|field| field.tag().raw() == REQUEST_PAYLOAD)
+                .expect("request contains a Request Payload");
+            payload.with_value(|value| {
+                let ValueView::Structure(payload) = value else {
+                    panic!("Request Payload is a Structure");
+                };
+                let attributes = payload
+                    .children()
+                    .iter()
+                    .find(|field| field.tag().raw() == ATTRIBUTES)
+                    .expect("Register Request Payload contains Attributes");
+                attributes.with_value(|value| {
+                    let ValueView::Structure(attributes) = value else {
+                        panic!("Attributes is a Structure");
+                    };
+                    attributes
+                        .children()
+                        .iter()
+                        .map(|field| {
+                            let value = field.with_value(|value| match value {
+                                ValueView::Integer(value) => {
+                                    RegisterAttributeValue::Integer(*value)
+                                }
+                                ValueView::Enumeration(value) => {
+                                    RegisterAttributeValue::Enumeration(*value)
+                                }
+                                _ => RegisterAttributeValue::Other,
+                            });
+                            (field.tag().raw(), value)
+                        })
+                        .collect()
+                })
+            })
+        })
+    })
+}
+
 #[test]
 fn register_sends_table_291_and_exposes_table_292_identifier_once() {
     crate::execute_test_support::assert_lifecycle_request_debug(
@@ -384,6 +450,18 @@ fn managed_opaque_register_preserves_standard_table_291_wire_shape_and_attribute
             vec![OPAQUE_DATA_TYPE, OPAQUE_DATA_VALUE],
         ],
         "direct attributes retain caller order and the object remains Table 4"
+    );
+    assert_eq!(
+        register_attribute_values(request, 0),
+        [
+            (CRYPTOGRAPHIC_USAGE_MASK, RegisterAttributeValue::Integer(3),),
+            (
+                CRYPTOGRAPHIC_ALGORITHM,
+                RegisterAttributeValue::Enumeration(3),
+            ),
+            (CRYPTOGRAPHIC_LENGTH, RegisterAttributeValue::Integer(256),),
+        ],
+        "the Table 293 direct attribute values and TTLV types are retained"
     );
     assert_eq!(fake.borrow().exchange_count(), 1);
 }
