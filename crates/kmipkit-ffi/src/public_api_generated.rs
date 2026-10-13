@@ -2,6 +2,7 @@
 // Mechanical API inventory only; reviewed FFI code owns behavior.
 pub(crate) const PUBLIC_API_FORMAT_VERSION: u32 = 2;
 pub(crate) const C_AVAILABLE_CAPABILITIES: &[&str] = &[
+    "discover_versions_request_item",
     "ffi_runtime_metadata",
     "generic_ttlv_model",
     "ttlv_wire_codec",

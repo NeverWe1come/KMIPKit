@@ -66,6 +66,7 @@ tabla.
 | `rust_transport_exchange` | declared | Intercambio de transporte exclusivo de Rust según ADR-0014 aceptada; no es una operación de cliente para otros lenguajes. |
 | `public_binding_surface` | blocked | El inventario completo de declaraciones públicas y sus mapeos aún no está reconciliado. |
 | `vendor_extension_registry` | declared | Hay mapeos compartidos exactos; falta verificar la paridad y las declaraciones no reconciliadas siguen bloqueadas. |
+| `discover_versions_request_item` | declared | Hay mapeos de los constructores del elemento de solicitud en los cuatro lenguajes; la ejecución completa y la paridad de respuesta de Discover Versions siguen bloqueadas. |
 
 Las **56 / 56** filas de operaciones KMIP `client_1_0` tienen actualmente el
 estado `blocked` en el manifiesto. No se debe inferir que una operación está

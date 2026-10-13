@@ -1466,9 +1466,21 @@ def _registry_manifest_v2(manifest: dict[str, Any]) -> dict[str, Any]:
             record["java"] = {**record["java"], "package": "org.kmipkit"}
             record["python"] = {**record["python"], "module": "kmipkit"}
     registry_functions = [
-        record for record in manifest["functions"]
+        deepcopy(record) for record in manifest["functions"]
         if any(requirement.startswith("KMIPKIT-0012-") for requirement in record["requirementIds"])
     ]
+    for record in registry_functions:
+        record["requirementIds"] = [
+            requirement for requirement in record["requirementIds"]
+            if requirement.startswith("KMIPKIT-0012-")
+        ]
+        if record["id"] == "client_batch_item_discover_versions":
+            # Preserve the original v1 registry projection while the full v2
+            # manifest records the public Rust path and actual JNI bridge.
+            record["rust"]["module"] = "kmipkit_client::execute::ClientBatchItem"
+            record["java"]["jniSymbol"] = (
+                "Java_org_kmipkit_extensions_ClientBatchItem_discoverVersions"
+            )
     requirement_ids = [
         identifier
         for identifier in manifest["requirementIds"]

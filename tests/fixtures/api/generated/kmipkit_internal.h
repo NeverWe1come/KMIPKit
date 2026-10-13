@@ -153,7 +153,7 @@ int32_t kmipkit_client_extension_registry_validate(kmipkit_client_extension_regi
 int32_t kmipkit_client_request_message_extension_create(kmipkit_registered_extension_value_t * value, uint8_t criticality_indicator, kmipkit_client_request_message_extension_t ** out_extension);
 /* KMIPKIT-0012-FR-005, KMIPKIT-0012-FR-010, KMIPKIT-0012-FR-011 */
 int32_t kmipkit_client_batch_item_with_extension(kmipkit_client_batch_item_t * item, kmipkit_client_request_message_extension_t * extension, kmipkit_client_batch_item_t ** out_item);
-/* KMIPKIT-0012-FR-005, KMIPKIT-0012-FR-010, KMIPKIT-0012-FR-011 */
+/* KMIPKIT-0007-FR-001, KMIPKIT-0007-FR-002, KMIPKIT-0012-FR-005, KMIPKIT-0012-FR-010, KMIPKIT-0012-FR-011, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-021 */
 int32_t kmipkit_client_batch_item_discover_versions(kmipkit_client_batch_item_t ** out_item);
 /* KMIPKIT-0012-FR-005, KMIPKIT-0012-FR-010, KMIPKIT-0012-FR-011 */
 int32_t kmipkit_client_batch_item_extension_count(kmipkit_client_batch_item_t * item, uint64_t * out_count);

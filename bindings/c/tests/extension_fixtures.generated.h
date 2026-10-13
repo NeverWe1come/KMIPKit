@@ -1,4 +1,4 @@
-/* Generated from specification/api/public-api.json and tests/fixtures/extensions/cases.json. API contract sha256: d6906c09b535751cee1df96b6acd428eb398c01589bf9060194d5a1fe3ddea9f. Do not edit. */
+/* Generated from specification/api/public-api.json and tests/fixtures/extensions/cases.json. API contract sha256: 342aa42c61621ea9dbfecb901defe634953f9d46f19d5644ed9c74556d98c638. Do not edit. */
 #ifndef KMIPKIT_EXTENSION_FIXTURES_GENERATED_H
 #define KMIPKIT_EXTENSION_FIXTURES_GENERATED_H
 #include <stdbool.h>
