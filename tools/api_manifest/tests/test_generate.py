@@ -259,15 +259,21 @@ class ManifestGeneratorCliTests(unittest.TestCase):
             for row in manifest["publicDeclarations"]
             if row["declarationId"].startswith("T076:")
         ]
-        blocked_t076 = [
-            row["declarationId"]
+        resolved_t076_names = {
+            row["exportName"]
             for row in t076_declarations
-            if row["declarationState"] not in {"declared", "verified"}
-        ]
+            if row["declarationState"] in {"declared", "verified"}
+        }
+        approved_t076_exclusions = {
+            row["exportName"]
+            for row in manifest["approvedExclusions"]
+            if row["packageId"] == "c-kmipkit"
+        }
+        observed_t076_names = {row["exportName"] for row in t076_declarations}
         self.assertEqual(
             [],
-            blocked_t076,
-            "every observed T076 C ABI export needs reviewed Rust, Java, and Python mappings",
+            sorted(observed_t076_names - resolved_t076_names - approved_t076_exclusions),
+            "every observed T076 C ABI export needs complete mappings or an exact approved exclusion",
         )
 
         self.assertTrue(

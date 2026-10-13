@@ -628,4 +628,14 @@ On the layout-generator check head before the T076 manifest promotion, `python -
 - **Red**: Extended the public-header regression to require every observed T076 C ABI declaration to be ready only after its Rust, Java, and Python mappings are represented. The current manifest fails because all 31 observed T076 declarations are still blocked.
 - **Command**: `uv run --with-requirements tools/api_manifest/requirements-test.txt python -m unittest tools.api_manifest.tests.test_generate.ManifestGeneratorCliTests.test_public_header_includes_shared_client_abi_after_binding_mapping -v`
 - **Result**: Expected Red: `FAILED (failures=1)`; the assertion reports all 31 T076 declarations as blocked. The test now guards against exposing only a subset of the shared C client API.
-- **Commit**: Red test commit `4216bc72`.
+- **Commit**: Red test commit `afaa78d1`.
+
+### T076 gate refinement — exact C ABI exclusions (2026-10-13)
+
+Independent QA reviewed the T076 inventory and found that requiring all 31 C exports to be declared as four-language callable functions/types would misclassify C ABI carriers and manual handle release operations. The generator supports exact reviewed C exclusions while retaining their public C declarations in the generated header. The test now requires each observed T076 export to be either fully mapped or covered by an exact approved exclusion; it still requires the shared client ABI to appear in the public header.
+
+- **Red**: The focused test failed because the manifest resolves none of the 31 T076 observed C exports as mapped or exactly excluded.
+- **Command**: `uv run --with-requirements tools/api_manifest/requirements-test.txt python -m unittest tools.api_manifest.tests.test_generate.ManifestGeneratorCliTests.test_public_header_includes_shared_client_abi_after_binding_mapping -v`
+- **Result**: Expected Red: `FAILED (failures=1)`; all 31 exports are reported unresolved. Existing client-handle assertions remain as additional public-header gates.
+- **QA**: Read-only review by `/root/qa_010_audit`; no files or tests were changed by QA.
+- **Commit**: Pending the separate Red test commit.
