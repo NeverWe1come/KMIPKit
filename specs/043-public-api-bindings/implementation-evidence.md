@@ -692,3 +692,10 @@ Independent QA reviewed the T076 inventory and found that requiring all 31 C exp
 | `cargo test -p kmipkit-ffi --all-features` | PASS: 56 unit tests and 3 integration tests; the integration suite compiled and ran `blocked_client_abi_local_prototype_consumer_compiles_and_runs` and `existing_c_consumer_exercises_the_exported_abi_in_the_coverage_process`. |
 
 This is local execution evidence for the T076 ABI behavior and its test-local C consumer. The build emitted AWS-LC compiler-feature/NASM warnings and linker import warnings but completed successfully. The generated public header still omits T076 symbols while the four-language manifest declarations remain blocked, and remote CI has not run on this branch; keep T076 unchecked.
+
+
+## T076 release rebase verification (2026-10-13)
+
+- **Red**: Re-ran the complete FFI workspace feature suite after rebasing the T076 branch onto the current release, which includes KMIPKIT-0044. The export-boundary inventory found 155 C exports while the pinned assertion still expected 154.
+- **Command**: `cargo test -p kmipkit-ffi --all-features`
+- **Result**: 56 passed, one failed at `every_exported_c_function_starts_inside_the_shared_panic_boundary` (`left: 155`, `right: 154`). This is an expected maintenance failure caused by the merged release API surface.
