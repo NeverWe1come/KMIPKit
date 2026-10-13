@@ -887,7 +887,6 @@ class ManifestGeneratorCliTests(unittest.TestCase):
 
             self.assertEqual(result.returncode, 0, result.stderr)
             c_header = (root / GENERATED_OUTPUTS[1]).read_text(encoding="utf-8")
-            rust_ffi = (root / GENERATED_OUTPUTS[0]).read_text(encoding="utf-8")
             self.assertIn("NULL is valid only when the linked count is zero", c_header)
             self.assertIn("check the count before reading elements", c_header)
             for _, parameter_name, handle_type, _ in HANDLE_ARRAY_CONTRACTS:
@@ -910,11 +909,47 @@ class ManifestGeneratorCliTests(unittest.TestCase):
                 {
                     "name": "out_limits",
                     "kind": "output-value-pointer",
-                    "type": "kmipkit_extension_registry_limits_v1_t *",
-                    "valueType": "kmipkit_extension_registry_limits_v1_t",
+                    "type": "kmipkit_byte_span_v1_t *",
+                    "valueType": "kmipkit_byte_span_v1_t",
                     "ownership": "none",
                 },
             ]
+            manifest["publicDeclarations"] = [
+                declaration
+                for declaration in manifest["publicDeclarations"]
+                if not (
+                    declaration.get("packageId") == "c-kmipkit"
+                    and declaration.get("exportName") == "kmipkit_byte_span_v1_t"
+                )
+            ]
+            manifest["approvedExclusions"].append(
+                {
+                    "packageId": "c-kmipkit",
+                    "exportName": "kmipkit_byte_span_v1_t",
+                    "reason": (
+                        "The C byte-span carrier is an ABI layout; Rust exposes a byte slice, "
+                        "Java exposes copied byte arrays, and Python exposes copied bytes."
+                    ),
+                    "approvalSource": {
+                        "kind": "feature-specification",
+                        "path": "specs/043-public-api-bindings/spec.md",
+                        "status": "Approved",
+                        "evidence": "**Status**: Approved for implementation",
+                    },
+                    "evidence": (
+                        "The exact C layout is retained in the generated header; the "
+                        "cross-language value is the copied or borrowed byte sequence."
+                    ),
+                    "cType": {
+                        "name": "kmipkit_byte_span_v1_t",
+                        "kind": "fixed-width-value",
+                        "fields": [
+                            {"name": "data", "type": "const uint8_t *"},
+                            {"name": "length", "type": "uint64_t"},
+                        ],
+                    },
+                }
+            )
             self._write_manifest(root, manifest)
 
             result = self._run_generator(root, "--write")
@@ -930,9 +965,46 @@ class ManifestGeneratorCliTests(unittest.TestCase):
                 rust_ffi,
             )
             self.assertIn(
-                "kmipkit_extension_registry_limits_v1_t * out_limits", public_header
+                "kmipkit_byte_span_v1_t * out_limits", public_header
             )
-            self.assertIn("out_limits: *mut kmipkit_extension_registry_limits_v1_t", rust_ffi)
+            self.assertIn("struct kmipkit_byte_span_v1_t", public_header)
+            self.assertIn("const uint8_t * data", public_header)
+
+    def test_consumed_handle_slot_and_output_value_pointer_reject_type_mismatch(self) -> None:
+        mutations = (
+            (
+                "consumed handle slot type mismatch",
+                {
+                    "name": "extension_registry",
+                    "kind": "consumed-handle-slot",
+                    "type": "kmipkit_client_extension_registry_t **",
+                    "handleType": "kmipkit_client_configuration_t",
+                    "ownership": "consumed",
+                },
+            ),
+            (
+                "output value pointer type mismatch",
+                {
+                    "name": "out_limits",
+                    "kind": "output-value-pointer",
+                    "type": "kmipkit_extension_registry_limits_t *",
+                    "valueType": "kmipkit_extension_registry_limits_v1_t",
+                    "ownership": "none",
+                },
+            ),
+        )
+        for label, parameter in mutations:
+            with self.subTest(case=label), tempfile.TemporaryDirectory() as directory:
+                root = _create_repo(Path(directory))
+                manifest = self._load_manifest(root)
+                function = _find_function(manifest, "client_configuration_new")
+                function["c"]["parameters"] = [parameter]
+                self._write_manifest(root, manifest)
+
+                result = self._run_generator(root, "--write")
+
+                self.assertNotEqual(result.returncode, 0, result.stderr)
+                self.assertIn("generation failed", result.stderr)
 
     def test_handle_arrays_require_known_types_counts_and_invalid_input_mappings(self) -> None:
         def missing_invalid_input(language: str):
