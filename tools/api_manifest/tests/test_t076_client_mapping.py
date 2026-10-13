@@ -396,6 +396,31 @@ class T076ClientMappingTests(unittest.TestCase):
                 rf"\b{rust_category}\s*=\s*{python_category}\b",
             )
 
+    def test_last_error_get_is_mapped_to_shared_error_taxonomy(self) -> None:
+        declarations = {
+            row["exportName"]: row for row in self.manifest["publicDeclarations"]
+        }
+        declaration = declarations.get("kmipkit_last_error_get")
+        self.assertIsNotNone(
+            declaration,
+            "the C last-error getter exposes the shared category, cause, and delivery taxonomy",
+        )
+        self.assertEqual("declared", declaration["declarationState"])
+        self.assertEqual("client_execution", declaration["capabilityId"])
+        self.assertIn("KMIPKIT-0043-FR-013", declaration["requirementIds"])
+        self.assertEqual(
+            {"rust", "c", "java", "python"}, set(declaration["languageMappings"])
+        )
+
+        clear_exclusion = next(
+            row
+            for row in self.manifest["approvedExclusions"]
+            if row["packageId"] == "c-kmipkit"
+            and row["exportName"] == "kmipkit_last_error_clear"
+        )
+        self.assertIn("thread-local", clear_exclusion["reason"])
+        self.assertIn("mechanism", clear_exclusion["reason"])
+
     def test_client_response_byte_spans_document_their_borrowed_lifetime(self) -> None:
         functions = {row["id"]: row for row in self.manifest["functions"]}
         header = generate.render_c_header(self.manifest)
