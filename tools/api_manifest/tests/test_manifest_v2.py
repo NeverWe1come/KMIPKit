@@ -374,6 +374,26 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
         else:
             self.assertEqual(outputs, LEGACY_GENERATED_OUTPUTS)
 
+    def test_discover_versions_function_maps_the_public_item_builder(self) -> None:
+        function = next(
+            record for record in self.checked_in_manifest["functions"]
+            if record["id"] == "client_batch_item_discover_versions"
+        )
+
+        self.assertEqual(function["rust"]["module"], "kmipkit_client::ClientBatchItem")
+        self.assertEqual(
+            function["java"]["jniSymbol"],
+            "Java_org_kmipkit_NativeExtensionRegistry_clientBatchItemDiscoverVersions",
+        )
+        self.assertTrue(
+            {
+                "KMIPKIT-0007-FR-001",
+                "KMIPKIT-0007-FR-002",
+                "KMIPKIT-0043-FR-004",
+                "KMIPKIT-0043-FR-021",
+            } <= set(function["requirementIds"])
+        )
+
     def test_checked_in_operation_inventory_matches_the_normative_catalog(self) -> None:
         _validate_operation_inventory(self.checked_in_manifest, self.catalog)
 
@@ -1130,13 +1150,13 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
                     else "specs/005-ttlv-wire-codec/spec.md",
                 )
         self.assertTrue(ttlv_declarations)
-        self.assertEqual(len(ttlv_declarations), 140)
+        self.assertEqual(len(ttlv_declarations), 147)
         self.assertEqual(
             sum(
                 declaration["capabilityId"] == "generic_ttlv_model"
                 for declaration in ttlv_declarations
             ),
-            116,
+            123,
         )
         self.assertEqual(
             sum(
