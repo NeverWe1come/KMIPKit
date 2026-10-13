@@ -14,7 +14,8 @@ FEATURE = ROOT / "specs/025-policy-controls"
 class PolicyControlsEncodingReferencesTests(unittest.TestCase):
     def test_pinned_table_392_defines_usage_limits_count_as_long_integer(self):
         source = ROOT / "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
-        text = html.unescape(re.sub(r"<[^>]*>", " ", source.read_text(encoding="utf-8")))
+        # The immutable upstream HTML declares windows-1252.
+        text = html.unescape(re.sub(r"<[^>]*>", " ", source.read_text(encoding="cp1252")))
         text = re.sub(r"\s+", " ", text)
         self.assertIn(
             "Usage Limits Count Long Integer Yes Usage Limits Unit Enumeration Yes "
@@ -38,16 +39,19 @@ class PolicyControlsEncodingReferencesTests(unittest.TestCase):
         ]
         for path in paths:
             with self.subTest(path=str(path.relative_to(ROOT))):
-                self.assertRegex(
-                    path.read_text(encoding="utf-8"),
-                    r"§7\.40(?:, |/| )(?:Table|Tabla) 392",
+                self.assertTrue(
+                    re.search(
+                        r"§7\.40(?:, |/| )(?:Table|Tabla) 392",
+                        path.read_text(encoding="utf-8"),
+                    ),
+                    "missing exact Usage Limits encoding section/table",
                 )
 
     def test_allocation_acceptance_and_requirement_traceability_agree_on_wire_type(self):
         tasks = (FEATURE / "tasks.md").read_text(encoding="utf-8")
         traceability = (FEATURE / "traceability.md").read_text(encoding="utf-8")
-        self.assertIn("Tables 232–234, exact Long Integer count", tasks)
-        self.assertIn("Required Long Integer in typed request", traceability)
+        self.assertTrue("Tables 232–234, exact Long Integer count" in tasks)
+        self.assertTrue("Required Long Integer in typed request" in traceability)
 
 
 if __name__ == "__main__":
