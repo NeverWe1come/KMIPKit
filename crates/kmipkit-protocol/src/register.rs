@@ -26,6 +26,19 @@ const OPAQUE_DATA_TYPE: u32 = 0x0042_0059;
 const OPAQUE_DATA_VALUE: u32 = 0x0042_005a;
 const SUCCESS: u32 = 0;
 
+/// Local attribute-handling context for an Opaque Object in a Register request.
+///
+/// The selected context is client metadata and is never encoded in the KMIP
+/// request payload.
+#[non_exhaustive]
+#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
+pub enum OpaqueObjectContext {
+    /// Treat the Opaque Object as generic opaque data without crypto attributes.
+    Generic,
+    /// Apply Managed Cryptographic Object Register attribute requirements.
+    ManagedCryptographicObject,
+}
+
 /// A KMIP 2.1 Register request from §6.1.43, Table 291.
 ///
 /// The caller supplies the object type, its direct Attributes, and the full
@@ -37,6 +50,7 @@ pub struct RegisterRequest {
     attributes: AttributeSet,
     object: Item,
     protection_storage_masks: Option<Structure>,
+    opaque_object_context: Option<OpaqueObjectContext>,
 }
 
 impl RegisterRequest {
@@ -48,7 +62,18 @@ impl RegisterRequest {
             attributes,
             object,
             protection_storage_masks: None,
+            opaque_object_context: None,
         }
+    }
+
+    /// Selects local attribute handling for an Opaque Object.
+    ///
+    /// Supplying a context for any other Object Type makes this request
+    /// invalid. The context is never added to the KMIP wire payload.
+    #[must_use]
+    pub fn with_opaque_object_context(mut self, context: OpaqueObjectContext) -> Self {
+        self.opaque_object_context = Some(context);
+        self
     }
 
     /// Sets the optional generic Protection Storage Masks Structure.
@@ -76,6 +101,31 @@ impl RegisterRequest {
         &self.object
     }
 
+    /// Validates the caller-provided Register object and attributes in place.
+    ///
+    /// This check performs no allocation and does not inspect opaque payload
+    /// bytes.
+    ///
+    /// # Errors
+    ///
+    /// Returns a sanitized error if the object is not a Structure, a Table 4
+    /// or Table 293 requirement is not satisfied, or the selected opaque
+    /// context does not apply to the Object Type.
+    pub fn validate_local_shape(&self) -> Result<(), ProtocolError> {
+        if !matches!(self.object.item_type(), kmipkit_ttlv::ItemType::Structure)
+            || !attributes_satisfy_register_requirements(
+                self.object_type,
+                &self.attributes,
+                &self.object,
+                self.opaque_object_context,
+            )
+        {
+            return Err(invalid_request());
+        }
+
+        Ok(())
+    }
+
     /// Builds the ordered Request Payload from §6.1.43, Table 291.
     ///
     /// # Errors
@@ -84,15 +134,7 @@ impl RegisterRequest {
     /// required attribute is absent, paired key attributes disagree, or the
     /// generic TTLV model cannot represent the payload.
     pub fn into_ttlv_payload(self) -> Result<Structure, ProtocolError> {
-        if !matches!(self.object.item_type(), kmipkit_ttlv::ItemType::Structure)
-            || !attributes_satisfy_register_requirements(
-                self.object_type,
-                &self.attributes,
-                &self.object,
-            )
-        {
-            return Err(invalid_request());
-        }
+        self.validate_local_shape()?;
 
         let mut attributes = Structure::new();
         for attribute in self.attributes.into_items() {
@@ -250,14 +292,27 @@ fn attributes_satisfy_register_requirements(
     object_type: ObjectType,
     attributes: &AttributeSet,
     object: &Item,
+    opaque_object_context: Option<OpaqueObjectContext>,
 ) -> bool {
+    if opaque_object_context.is_some() && object_type.raw() != 8 {
+        return false;
+    }
+
     match object_type.raw() {
         // Certificate Length is required for a Certificate. Table 293 does
         // not apply the managed-cryptographic-object requirements to it.
         1 => has_attribute(attributes, CERTIFICATE_LENGTH),
         // Opaque Object has its own Table 4 Structure, independent of whether
         // the caller selects generic or managed-cryptographic context.
-        8 => opaque_object_has_required_fields(object),
+        8 => {
+            opaque_object_has_required_fields(object)
+                && match opaque_object_context {
+                    Some(OpaqueObjectContext::ManagedCryptographicObject) => {
+                        opaque_managed_crypto_attributes_satisfy_register_requirements(attributes)
+                    }
+                    Some(OpaqueObjectContext::Generic) | None => true,
+                }
+        }
         // Table 293 applies to managed cryptographic objects. Secret Data
         // still requires a Usage Mask, but Algorithm and Length do not apply.
         2 | 3 | 4 | 5 | 7 | 9 => {
@@ -268,6 +323,14 @@ fn attributes_satisfy_register_requirements(
         // not parse certificate bytes locally.
         _ => true,
     }
+}
+
+fn opaque_managed_crypto_attributes_satisfy_register_requirements(
+    attributes: &AttributeSet,
+) -> bool {
+    has_attribute(attributes, CRYPTOGRAPHIC_USAGE_MASK)
+        && has_attribute(attributes, CRYPTOGRAPHIC_ALGORITHM)
+        && has_attribute(attributes, CRYPTOGRAPHIC_LENGTH)
 }
 
 fn managed_crypto_attributes_satisfy_register_requirements(

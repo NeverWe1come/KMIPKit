@@ -691,6 +691,7 @@ impl ClientRequest {
             Self::MacVerify(request) => request.validate_multipart_shape(),
             Self::Sign(request) => request.validate_multipart_shape(),
             Self::SignatureVerify(request) => request.validate_multipart_shape(),
+            Self::Register(request) => request.validate_local_shape(),
             _ => Ok(()),
         }
     }
