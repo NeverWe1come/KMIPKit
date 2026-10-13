@@ -1174,6 +1174,22 @@ def test_transport_record_uses_real_bytes_subclass_buffer_length() -> None:
     assert record.client_private_key.data.length == 5
 
 
+def test_transport_path_uses_base_utf8_encoding_for_subclasses() -> None:
+    class LyingText(str):
+        def encode(self, *_args: object, **_kwargs: object) -> bytes:
+            return b"x"
+
+    concrete_path = type(Path("ignored"))
+
+    class LyingPath(concrete_path):
+        def __str__(self) -> str:
+            return LyingText("x" * 4_097)
+
+    path = LyingPath("ignored")
+    with pytest.raises(errors.InvalidInputError):
+        client.TransportInput(path, client.CredentialEncoding.PEM)
+
+
 def test_private_python_client_loader_redacts_native_path_failure(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
