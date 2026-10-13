@@ -1149,8 +1149,7 @@ def _validate_c_value_layout(c_type: dict[str, Any], declared_types: set[str]) -
         raise ManifestError("versioned C value must begin with its size and ABI version")
     for field in fields:
         _rust_identifier(field["name"])
-        base_type = re.sub(r"\s*\*+$", "", field["type"])
-        base_type = base_type.removeprefix("const ").strip()
+        base_type, _ = _c_field_base_and_pointer_count(field["type"])
         if base_type not in _C_INTEGER_TYPES and base_type not in declared_types:
             raise ManifestError("C value field references an unknown type")
 
