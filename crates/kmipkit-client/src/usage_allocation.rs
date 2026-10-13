@@ -1,9 +1,11 @@
 //! Explicit local reservations for OASIS KMIP v2.1 §6.1.23.
 
-use std::fmt;
-use kmipkit_protocol::{EncryptRequest, GetUsageAllocationResponse, MacRequest, SignRequest, UniqueIdentifier};
-use kmipkit_transport::RequestDeliveryState;
 use crate::{ClientCauseCategory, ClientError};
+use kmipkit_protocol::{
+    EncryptRequest, GetUsageAllocationResponse, MacRequest, SignRequest, UniqueIdentifier,
+};
+use kmipkit_transport::RequestDeliveryState;
+use std::fmt;
 
 /// One caller-owned successful allocation, bound to one concrete object and unit.
 ///
@@ -26,35 +28,68 @@ impl UsageAllocationContext {
     /// # Errors
     /// Returns sanitized NotSent validation for non-success, nonpositive count
     /// or an unresolved placeholder identifier.
-    pub fn from_allocation(response: &GetUsageAllocationResponse, requested_count: i32, usage_limits_unit: u32) -> Result<Self, ClientError> {
+    pub fn from_allocation(
+        response: &GetUsageAllocationResponse,
+        requested_count: i32,
+        usage_limits_unit: u32,
+    ) -> Result<Self, ClientError> {
         if response.result().status().raw() != 0 || requested_count <= 0 {
             return Err(validation_error());
         }
-        let identifier=response.unique_identifier().filter(|id| concrete(id)).ok_or_else(validation_error)?;
-        Ok(Self { unique_identifier:identifier.clone(), usage_limits_unit, allocated_units:requested_count, locally_reserved_units:0 })
+        let identifier = response
+            .unique_identifier()
+            .filter(|id| concrete(id))
+            .ok_or_else(validation_error)?;
+        Ok(Self {
+            unique_identifier: identifier.clone(),
+            usage_limits_unit,
+            allocated_units: requested_count,
+            locally_reserved_units: 0,
+        })
     }
 
     /// Returns the concrete allocation object identifier.
     #[must_use]
-    pub const fn unique_identifier(&self) -> &UniqueIdentifier { &self.unique_identifier }
+    pub const fn unique_identifier(&self) -> &UniqueIdentifier {
+        &self.unique_identifier
+    }
     /// Returns the caller-known open usage unit without conversion.
     #[must_use]
-    pub const fn usage_limits_unit(&self) -> u32 { self.usage_limits_unit }
+    pub const fn usage_limits_unit(&self) -> u32 {
+        self.usage_limits_unit
+    }
     /// Returns the exact requested allocation count.
     #[must_use]
-    pub const fn allocated_units(&self) -> i32 { self.allocated_units }
+    pub const fn allocated_units(&self) -> i32 {
+        self.allocated_units
+    }
     /// Returns conservative local reservations, without claiming remote consumption.
     #[must_use]
-    pub const fn locally_reserved_units(&self) -> i32 { self.locally_reserved_units }
+    pub const fn locally_reserved_units(&self) -> i32 {
+        self.locally_reserved_units
+    }
     /// Returns the unreserved local allowance.
     #[must_use]
-    pub const fn available_units(&self) -> i32 { self.allocated_units - self.locally_reserved_units }
+    pub const fn available_units(&self) -> i32 {
+        self.allocated_units - self.locally_reserved_units
+    }
 
-    pub(crate) fn reserve(&mut self, identifier: &UniqueIdentifier, cost: i32) -> Result<(), ClientError> {
-        if !concrete(identifier) || identifier != &self.unique_identifier || cost <= 0 || cost > self.available_units() {
+    pub(crate) fn reserve(
+        &mut self,
+        identifier: &UniqueIdentifier,
+        cost: i32,
+    ) -> Result<(), ClientError> {
+        if !concrete(identifier)
+            || identifier != &self.unique_identifier
+            || cost <= 0
+            || cost > self.available_units()
+        {
             return Err(validation_error());
         }
-        self.locally_reserved_units=self.locally_reserved_units.checked_add(cost).ok_or_else(validation_error)?;
+        self.locally_reserved_units = self
+            .locally_reserved_units
+            .checked_add(cost)
+            .ok_or_else(validation_error)?;
         Ok(())
     }
 
@@ -65,8 +100,12 @@ impl UsageAllocationContext {
 }
 
 impl fmt::Debug for UsageAllocationContext {
-    fn fmt(&self,f:&mut fmt::Formatter<'_>)->fmt::Result {
-        f.debug_struct("UsageAllocationContext").field("usage_limits_unit",&self.usage_limits_unit).field("allocated_units",&self.allocated_units).field("locally_reserved_units",&self.locally_reserved_units).finish_non_exhaustive()
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.debug_struct("UsageAllocationContext")
+            .field("usage_limits_unit", &self.usage_limits_unit)
+            .field("allocated_units", &self.allocated_units)
+            .field("locally_reserved_units", &self.locally_reserved_units)
+            .finish_non_exhaustive()
     }
 }
 
@@ -88,5 +127,8 @@ fn concrete(identifier: &UniqueIdentifier) -> bool {
 }
 
 pub(crate) fn validation_error() -> ClientError {
-    ClientError::Validation { cause:ClientCauseCategory::InvalidInput, delivery_state:RequestDeliveryState::NotSent }
+    ClientError::Validation {
+        cause: ClientCauseCategory::InvalidInput,
+        delivery_state: RequestDeliveryState::NotSent,
+    }
 }

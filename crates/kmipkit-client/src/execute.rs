@@ -7,7 +7,7 @@ use std::error::Error;
 use std::fmt;
 
 use crate::ClientErrorResponseTtlv;
-use crate::{UsageAllocationContext,GuardedProtectionRequest};
+use crate::{GuardedProtectionRequest, UsageAllocationContext};
 use kmipkit_protocol::UniqueIdentifier;
 use kmipkit_protocol::attribute::{
     ClientAttributeMutation, client_attribute_mutation_is_prohibited,
@@ -2450,14 +2450,21 @@ impl Client {
         asynchronous_indicator: Option<u32>,
         limits: &CodecLimits,
     ) -> Result<ClientBatchItemResponse, ClientError> {
-        let request=match request {
-            GuardedProtectionRequest::Encrypt(v)=>ClientRequest::Encrypt(v),
-            GuardedProtectionRequest::Mac(v)=>ClientRequest::Mac(v),
-            GuardedProtectionRequest::Sign(v)=>ClientRequest::Sign(v),
+        let request = match request {
+            GuardedProtectionRequest::Encrypt(v) => ClientRequest::Encrypt(v),
+            GuardedProtectionRequest::Mac(v) => ClientRequest::Mac(v),
+            GuardedProtectionRequest::Sign(v) => ClientRequest::Sign(v),
         };
-        let mut batch=ClientBatch::new(ClientBatchItem::new(request));
-        if let Some(indicator)=asynchronous_indicator { batch=batch.with_asynchronous_indicator(indicator); }
-        let response=self.execute_inner(batch,limits,&RequestOptions::default(),Some((context,cost)))?;
+        let mut batch = ClientBatch::new(ClientBatchItem::new(request));
+        if let Some(indicator) = asynchronous_indicator {
+            batch = batch.with_asynchronous_indicator(indicator);
+        }
+        let response = self.execute_inner(
+            batch,
+            limits,
+            &RequestOptions::default(),
+            Some((context, cost)),
+        )?;
         take_single_response(response)
     }
 
@@ -2466,8 +2473,8 @@ impl Client {
         batch: ClientBatch,
         limits: &CodecLimits,
         request_options: &RequestOptions,
-        mut guard: Option<(&mut UsageAllocationContext,i32)>,
-    ) -> Result<ClientBatchResponse,ClientError> {
+        mut guard: Option<(&mut UsageAllocationContext, i32)>,
+    ) -> Result<ClientBatchResponse, ClientError> {
         let options = validate_batch(&batch).map_err(|error| {
             ClientError::validation(
                 ClientCauseCategory::InvalidInput,
@@ -2493,49 +2500,71 @@ impl Client {
         let maximum_response_size = maximum_response_size_for_batch(&batch, limits);
         let request_message = build_request_message(batch, &options, maximum_response_size)
             .map_err(|error| protocol_failure_at(error, RequestDeliveryState::NotSent))?;
-        if let Some((context,cost))=guard.as_mut() {
-            let identifier=request_message.with_ttlv(|root| {
-                let batch=root.children().iter().find(|f|f.tag().raw()==BATCH_ITEM)?;
-                batch.with_value(|v| {
-                    let ValueView::Structure(batch)=v else { return None };
-                    let payload=batch.children().iter().find(|f|f.tag().raw()==REQUEST_PAYLOAD)?;
-                    payload.with_value(|v| {
-                        let ValueView::Structure(payload)=v else {return None};
-                        payload.children().iter().find(|f|f.tag().raw()==0x420094)?.with_value(|v|match v {
-                            ValueView::TextString(id)=>Some(UniqueIdentifier::TextString(id.to_owned())),
-                            _=>None,
+        if let Some((context, cost)) = guard.as_mut() {
+            let identifier = request_message
+                .with_ttlv(|root| {
+                    let batch = root
+                        .children()
+                        .iter()
+                        .find(|f| f.tag().raw() == BATCH_ITEM)?;
+                    batch.with_value(|v| {
+                        let ValueView::Structure(batch) = v else {
+                            return None;
+                        };
+                        let payload = batch
+                            .children()
+                            .iter()
+                            .find(|f| f.tag().raw() == REQUEST_PAYLOAD)?;
+                        payload.with_value(|v| {
+                            let ValueView::Structure(payload) = v else {
+                                return None;
+                            };
+                            payload
+                                .children()
+                                .iter()
+                                .find(|f| f.tag().raw() == 0x420094)?
+                                .with_value(|v| match v {
+                                    ValueView::TextString(id) => {
+                                        Some(UniqueIdentifier::TextString(id.to_owned()))
+                                    }
+                                    _ => None,
+                                })
                         })
                     })
                 })
-            }).ok_or_else(crate::usage_allocation::validation_error)?;
-            context.reserve(&identifier,*cost)?;
+                .ok_or_else(crate::usage_allocation::validation_error)?;
+            context.reserve(&identifier, *cost)?;
         }
-        let result=(|| {
-        let (response_message, response_delivery_state) =
-            self.exchange_operation(request_message, limits, request_options)?;
+        let result = (|| {
+            let (response_message, response_delivery_state) =
+                self.exchange_operation(request_message, limits, request_options)?;
 
-        validate_response(
-            &request_identities,
-            &options,
-            response_message,
-            self.configuration.extension_registry(),
-            limits,
-            #[cfg(test)]
-            self.pending_owner_observer.as_ref(),
-        )
-        .map_err(|failure| {
-            ClientError::protocol_response(
-                failure.error,
-                response_delivery_state,
-                failure.response_ttlv,
+            validate_response(
+                &request_identities,
+                &options,
+                response_message,
+                self.configuration.extension_registry(),
+                limits,
+                #[cfg(test)]
+                self.pending_owner_observer.as_ref(),
             )
-        })
+            .map_err(|failure| {
+                ClientError::protocol_response(
+                    failure.error,
+                    response_delivery_state,
+                    failure.response_ttlv,
+                )
+            })
         })();
-        if result.as_ref().is_err_and(|error| error.delivery_state()==Some(RequestDeliveryState::NotSent)) {
-            if let Some((context,cost))=guard { context.release(cost); }
+        if result
+            .as_ref()
+            .is_err_and(|error| error.delivery_state() == Some(RequestDeliveryState::NotSent))
+        {
+            if let Some((context, cost)) = guard {
+                context.release(cost);
+            }
         }
         result
-
     }
 
     /// Executes one typed Activate request through the shared batch writer.

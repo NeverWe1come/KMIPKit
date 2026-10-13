@@ -18,4 +18,4 @@ pub use kmipkit_protocol::{GetConstraintsRequest, GetConstraintsResponse};
 
 pub use kmipkit_protocol::{GetUsageAllocationRequest, GetUsageAllocationResponse};
 
-pub use kmipkit_client::{UsageAllocationContext,GuardedProtectionRequest};
+pub use kmipkit_client::{GuardedProtectionRequest, UsageAllocationContext};
