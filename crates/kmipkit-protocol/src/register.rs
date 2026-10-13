@@ -266,8 +266,10 @@ fn attributes_satisfy_register_requirements(
             if object_type.raw() == 7 {
                 return true;
             }
-            (has_algorithm || key_block_has(object, CRYPTOGRAPHIC_ALGORITHM))
-                && (has_length || key_block_has(object, CRYPTOGRAPHIC_LENGTH))
+            let algorithm_available =
+                has_algorithm || key_block_has(object, CRYPTOGRAPHIC_ALGORITHM);
+            let length_available = has_length || key_block_has(object, CRYPTOGRAPHIC_LENGTH);
+            algorithm_available && length_available
         }
         // Table 293's certificate-specific signature algorithm may be omitted
         // when it is encoded in the supplied Certificate object. KMIPKit does
