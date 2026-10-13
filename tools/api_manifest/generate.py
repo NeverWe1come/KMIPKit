@@ -94,15 +94,15 @@ _C_KEYWORDS = {
     "_Noreturn", "_Static_assert", "_Thread_local",
 }
 _CPP_KEYWORDS = {
-    "alignas", "alignof", "and", "and_eq", "asm", "atomic_cancel", "atomic_commit",
-    "atomic_noexcept", "bitand", "bitor", "bool", "catch", "char8_t", "char16_t",
+    "alignas", "alignof", "and", "and_eq", "asm", "bitand", "bitor", "bool", "catch",
+    "char8_t", "char16_t",
     "char32_t", "class", "compl", "concept", "consteval", "constexpr", "constinit",
     "const_cast", "co_await", "co_return", "co_yield", "decltype", "delete", "dynamic_cast",
     "explicit", "export", "false", "friend", "mutable", "namespace", "new", "noexcept",
     "not", "not_eq", "nullptr", "operator", "or", "or_eq", "private", "protected", "public",
-    "reinterpret_cast", "requires", "static_assert", "static_cast", "synchronized", "template",
-    "this", "thread_local", "throw", "true", "try", "typeid", "typename", "using", "virtual",
-    "wchar_t", "xor", "xor_eq",
+    "reinterpret_cast", "requires", "static_assert", "static_cast", "template", "this",
+    "thread_local", "throw", "true", "try", "typeid", "typename", "using", "virtual", "wchar_t",
+    "xor", "xor_eq",
 }
 _C_FAMILY_KEYWORDS = _C_KEYWORDS | _CPP_KEYWORDS
 _REQUIREMENT_PATTERN = re.compile(r"KMIPKIT-0012-FR-[0-9]{3}\Z")
