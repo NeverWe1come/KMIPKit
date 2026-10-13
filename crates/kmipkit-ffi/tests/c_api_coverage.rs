@@ -25,6 +25,11 @@ unsafe extern "C" {
     fn kmipkit_extension_registry_c_consumer_main(argc: i32, argv: *mut *mut c_char) -> i32;
 }
 
+#[link(name = "kmipkit_client_abi_c_consumer", kind = "static")]
+unsafe extern "C" {
+    fn kmipkit_client_abi_c_consumer_main() -> i32;
+}
+
 #[link(name = "kmipkit_ffi")]
 unsafe extern "C" {
     fn kmipkit_codec_limits_defaults(out_limits: *mut *mut kmipkit_codec_limits_t) -> i32;
@@ -102,6 +107,15 @@ fn existing_c_consumer_exercises_the_exported_abi_in_the_coverage_process() {
 
     assert_eq!(result, 0, "the existing C ABI behavior suite must pass");
     peer.join().expect("the loopback TLS peer completes");
+}
+
+#[test]
+fn generated_public_header_client_consumer_compiles_and_runs() {
+    // SAFETY: the compiled consumer has no arguments, uses only public C ABI declarations,
+    // and keeps all handles locally scoped and released before returning.
+    let result = unsafe { kmipkit_client_abi_c_consumer_main() };
+
+    assert_eq!(result, 0, "public C client consumer must pass its ABI checks");
 }
 
 fn controlled_mtls_peer(

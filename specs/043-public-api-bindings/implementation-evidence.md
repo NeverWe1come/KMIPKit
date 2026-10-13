@@ -651,3 +651,7 @@ Independent QA reviewed the T076 inventory and found that requiring all 31 C exp
 - **Red**: Added a client test for the exact zero-argument empty-batch constructor represented by the C, Java, and Python facades.
 - **Command**: `cargo test -p kmipkit-client --test operation_boundary empty_batch_constructor_creates_an_empty_batch_without_network_activity`
 - **Result**: Expected compile failure: `ClientBatch::empty` is not yet available; existing Rust constructors require one item or an iterator.
+
+- **Red**: Wired the existing C client consumer into the FFI feature build and Rust test harness so it includes only generated `kmipkit.h`.
+- **Command**: `cargo test -p kmipkit-ffi --features coverage-c-consumer --test c_api_coverage generated_public_header_client_consumer_compiles_and_runs`
+- **Result**: Expected C compile failure because the current generated public header omits the T076 client/transport types and declarations (`kmipkit_client_t`, `kmipkit_client_create`, `kmipkit_client_batch_create`, and related symbols).
