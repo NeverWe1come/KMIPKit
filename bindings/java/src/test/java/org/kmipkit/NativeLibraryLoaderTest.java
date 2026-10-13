@@ -671,6 +671,18 @@ final class NativeLibraryLoaderTest {
     }
 
     @Test
+    void posixDirectoryVerificationFailureDeletesTheCreatedDirectory() throws Exception {
+        Assumptions.assumeTrue(Files.getFileStore(temporaryDirectory).supportsFileAttributeView("posix"));
+
+        IOException failure = assertThrows(IOException.class,
+                () -> NativeLibraryLoader.createPrivateDirectory(temporaryDirectory,
+                        ignored -> { throw new IOException("synthetic POSIX verification failure"); }));
+
+        assertEquals("synthetic POSIX verification failure", failure.getMessage());
+        assertDirectoryEmpty(temporaryDirectory);
+    }
+
+    @Test
     void unsupportedAtomicPublicationFailsClosedAndCleansStagingFiles() throws Exception {
         Path privateDirectory = NativeLibraryLoader.createPrivateDirectory(temporaryDirectory);
         byte[] library = {0x4b, 0x4d, 0x49, 0x50};

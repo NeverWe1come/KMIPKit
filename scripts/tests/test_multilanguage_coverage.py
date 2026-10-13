@@ -419,6 +419,37 @@ class MultiLanguageCoverageTests(unittest.TestCase):
 
         self.assertEqual({"bindings/java/native/kmipkit_jni.cpp": {1: 1}}, parsed)
 
+    def test_adapter_loader_preserves_jni_summary_only_uncovered_lines(self) -> None:
+        self.require_gate()
+        source_relative = "bindings/java/native/kmipkit_jni.cpp"
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            source = root / source_relative
+            source.parent.mkdir(parents=True)
+            source.write_text("int bridge() { return 1; }\n", encoding="utf-8")
+            report_path = root / "coverage-jni" / "coverage.json"
+            report_path.parent.mkdir(parents=True)
+            report_path.write_text(
+                llvm_document(
+                    [[1, 1, 1, len("int bridge() { return 1; }") + 1, 1, 0, 0, 0]],
+                    filename=source_relative,
+                    summary_lines=2,
+                ),
+                encoding="utf-8",
+            )
+
+            parsed = GATE._load_adapter_reports(root, root, {"jni"})
+
+        self.assertIsNotNone(parsed)
+        assert parsed is not None
+        jni_report = parsed["JNI bridge"]
+        self.assertEqual({source_relative: {1: 1}}, jni_report)
+        self.assertEqual(
+            {source_relative: 1},
+            jni_report.summary_uncovered_excess,
+            "adapter loading must retain conservative summary-only JNI uncovered lines",
+        )
+
     def test_changed_production_diff_includes_java_python_and_jni_lines(self) -> None:
         self.require_gate()
         diff = """diff --git a/bindings/java/src/main/java/org/kmipkit/Registry.java b/bindings/java/src/main/java/org/kmipkit/Registry.java
