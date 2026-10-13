@@ -86126,18 +86126,20 @@
       "feature_spec": "KMIPKIT-0044",
       "implementation_refs": [
         "crates/kmipkit-protocol/src/register.rs",
-        "crates/kmipkit-client/src/execute.rs"
+        "crates/kmipkit-client/src/execute.rs",
+        "crates/kmipkit-protocol/src/profile.rs::client_opaque_object_context_managed_attributes"
       ],
       "verification_refs": [
         "crates/kmipkit-protocol/tests/unit/register_operation_tests.rs",
         "crates/kmipkit-client/tests/unit/register_execution_tests.rs",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_client_register_opaque_object_context_managed_attributes",
         "crates/kmipkit-protocol/tests/unit/register_operation_tests.rs::managed_opaque_context_accepts_table293_attributes_without_a_key_block_and_emits_no_marker",
         "crates/kmipkit-client/tests/unit/register_execution_tests.rs::managed_opaque_register_preserves_standard_table_291_wire_shape_and_attribute_order"
       ],
       "negative_verification_required": false,
       "decision_id": null,
-      "status": "verified",
-      "review_note": "No requirement-specific official Test Cases ID maps to this clause in the pinned OASIS source. Project tests verify the cited normative requirement; no official-case pass is claimed."
+      "status": "scoped_verified",
+      "review_note": "The client-selected ManagedCryptographicObject builder accepts and emits the ordinary Table 291/293 attributes for an Opaque Object, and the profile rule checks their observable TTLV types. The client context is local and does not add a wire marker. This verifies client-side capability only and does not claim server acceptance or storage. No requirement-specific official Test Cases ID maps to this clause in the pinned OASIS source."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-2.3-003",

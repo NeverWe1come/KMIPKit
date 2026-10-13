@@ -697,6 +697,9 @@ const REGISTER_ATTRIBUTES: u32 = 0x0042_0125;
 const REGISTER_OBJECT_TYPE: u32 = 0x0042_0057;
 const REGISTER_PROTECTION_STORAGE_MASKS: u32 = 0x0042_015F;
 const OPAQUE_OBJECT_TYPE: u32 = 8;
+const CRYPTOGRAPHIC_USAGE_MASK: u32 = 0x0042_002C;
+const CRYPTOGRAPHIC_ALGORITHM: u32 = 0x0042_0028;
+const CRYPTOGRAPHIC_LENGTH: u32 = 0x0042_002A;
 const VENDOR_ATTRIBUTE: u32 = 0x0042_0008;
 const GET_KEY_COMPRESSION_TYPE: u32 = 0x0042_0041;
 const KEY_VALUE_LOCATION: u32 = 0x0042_00B8;
@@ -962,6 +965,77 @@ fn register_opaque_context_is_well_formed(payload: &StructureView<'_>) -> bool {
         }),
         FieldPresence::Duplicate => false,
     }
+}
+
+fn client_opaque_object_context_managed_attributes(
+    request: Option<&RequestMessage>,
+    response: Option<(&RequestMessage, &ResponseMessage)>,
+) -> bool {
+    if response.is_some() {
+        return true;
+    }
+
+    let Some(request) = request else {
+        return false;
+    };
+
+    request.batch_items().all(|batch_item| {
+        if batch_item.operation() != Some(REGISTER_OPERATION) {
+            return true;
+        }
+
+        batch_item
+            .with_request_payload(|payload| {
+                register_managed_opaque_attributes_are_well_formed(&payload)
+            })
+            .unwrap_or(false)
+    })
+}
+
+fn register_managed_opaque_attributes_are_well_formed(payload: &StructureView<'_>) -> bool {
+    let FieldPresence::Unique(object_type) = field_presence(payload, REGISTER_OBJECT_TYPE) else {
+        return true;
+    };
+    let Some(object_type) = object_type.with_value(|value| match value {
+        ValueView::Enumeration(value) => Some(*value),
+        _ => None,
+    }) else {
+        return true;
+    };
+    if object_type != OPAQUE_OBJECT_TYPE {
+        return true;
+    }
+
+    match field_presence(payload, REGISTER_ATTRIBUTES) {
+        FieldPresence::Missing => true,
+        FieldPresence::Unique(attributes) => attributes.with_value(|value| match value {
+            ValueView::Structure(attributes) => {
+                managed_opaque_attribute_types_are_well_formed(&attributes)
+            }
+            _ => false,
+        }),
+        FieldPresence::Duplicate => false,
+    }
+}
+
+fn managed_opaque_attribute_types_are_well_formed(attributes: &StructureView<'_>) -> bool {
+    [
+        (CRYPTOGRAPHIC_USAGE_MASK, false),
+        (CRYPTOGRAPHIC_ALGORITHM, true),
+        (CRYPTOGRAPHIC_LENGTH, false),
+    ]
+    .into_iter()
+    .all(|(tag, enumeration)| match field_presence(attributes, tag) {
+        FieldPresence::Missing => true,
+        FieldPresence::Unique(field) => field.with_value(|value| {
+            if enumeration {
+                matches!(value, ValueView::Enumeration(_))
+            } else {
+                matches!(value, ValueView::Integer(_))
+            }
+        }),
+        FieldPresence::Duplicate => false,
+    })
 }
 
 fn vendor_attributes_are_well_formed(attributes: &StructureView<'_>) -> bool {
@@ -1448,6 +1522,27 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
             },
             RuleTestEvidence {
                 test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_client_get_attributes_opaque_object_custom_context",
+                kind: RuleTestKind::OptionalCapabilityUsable,
+            },
+        ],
+        constraints: &[],
+    },
+    TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-2.3-002",
+        source_clause_id: "KMIPKIT-CLAUSE-SPEC-2.3-002",
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
+        evaluator: Some(client_opaque_object_context_managed_attributes),
+        test_evidence: &[
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_client_register_opaque_object_context_managed_attributes",
+                kind: RuleTestKind::OptionalCapabilityUsable,
+            },
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/unit/register_operation_tests.rs::managed_opaque_context_accepts_table293_attributes_without_a_key_block_and_emits_no_marker",
+                kind: RuleTestKind::OptionalCapabilityUsable,
+            },
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-client/tests/unit/register_execution_tests.rs::managed_opaque_register_preserves_standard_table_291_wire_shape_and_attribute_order",
                 kind: RuleTestKind::OptionalCapabilityUsable,
             },
         ],
