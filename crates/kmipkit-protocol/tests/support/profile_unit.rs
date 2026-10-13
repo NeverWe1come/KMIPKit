@@ -2939,6 +2939,29 @@ fn profile_managed_opaque_rule_is_scoped_to_register_request_metadata() {
             OBJECT_TYPE_TAG,
             Value::text_string("not an Enumeration".to_owned()),
         )]),
+        structure([
+            tagged(OBJECT_TYPE_TAG, Value::enumeration(8)),
+            tagged(OBJECT_TYPE_TAG, Value::enumeration(8)),
+        ]),
+    ] {
+        let error = validation
+            .validate_request(&request_message_with_operation_payload(
+                REGISTER_OPERATION_TAG,
+                payload,
+            ))
+            .expect_err("Register requires one well-formed Object Type selector");
+        assert_eq!(
+            error.code(),
+            ProfileValidationErrorCode::RequestRuleRejected
+        );
+        assert_eq!(error.requirement_id(), Some(REQUIREMENT_ID));
+        assert_eq!(
+            error.source_clause_id(),
+            Some("KMIPKIT-CLAUSE-SPEC-2.3-002")
+        );
+    }
+
+    for payload in [
         structure([tagged(OBJECT_TYPE_TAG, Value::enumeration(2))]),
         structure([tagged(OBJECT_TYPE_TAG, Value::enumeration(8))]),
     ] {
@@ -2947,7 +2970,7 @@ fn profile_managed_opaque_rule_is_scoped_to_register_request_metadata() {
                 REGISTER_OPERATION_TAG,
                 payload,
             ))
-            .expect("the rule leaves missing, malformed, non-Opaque, and attribute-free Register metadata to base schema handling");
+            .expect("non-Opaque and attribute-free Register metadata remain outside this capability check");
     }
 
     let malformed_attributes = [
