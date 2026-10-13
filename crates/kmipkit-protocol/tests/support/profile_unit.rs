@@ -435,6 +435,39 @@ fn profile_allows_type_specific_cryptographic_parameters_without_remote_object_i
 }
 
 #[test]
+fn profile_maps_client_supplied_create_key_pair_domain_parameters() {
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-4.14-001-001";
+    const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
+    const CREATE_KEY_PAIR_OPERATION: u32 = 0x0000_0002;
+    const COMMON_ATTRIBUTES: u32 = 0x0042_0126;
+    const CRYPTOGRAPHIC_ALGORITHM: u32 = 0x0042_0028;
+    const CRYPTOGRAPHIC_DOMAIN_PARAMETERS: u32 = 0x0042_0029;
+    const QLENGTH: u32 = 0x0042_0073;
+
+    let result = ProfileValidationResult {
+        profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
+        requirement_ids: vec![REQUIREMENT_ID.to_owned()],
+    };
+    let domain_parameters = structure([tagged(QLENGTH, Value::integer(256))]);
+    let common_attributes = structure([
+        tagged(CRYPTOGRAPHIC_ALGORITHM, Value::enumeration(3)),
+        tagged(
+            CRYPTOGRAPHIC_DOMAIN_PARAMETERS,
+            Value::structure(domain_parameters),
+        ),
+    ]);
+    let payload = structure([tagged(
+        COMMON_ATTRIBUTES,
+        Value::structure(common_attributes),
+    )]);
+    let request = request_message_with_operation_payload(CREATE_KEY_PAIR_OPERATION, payload);
+
+    result
+        .validate_request(&request)
+        .expect("the optional Qlength value is usable in a Create Key Pair request");
+}
+
+#[test]
 fn public_profile_result_entrypoints_validate_transport_and_responses() {
     // KMIP Specification v2.1 §14.1 and KMIP Profiles v2.1 §6.1; KMIPKIT-0010 FR-014.
     const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.16-001-001";

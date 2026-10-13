@@ -33,6 +33,9 @@ _is_discoverable_positive_test = test_feature_traceability._is_discoverable_posi
 
 ROOT = Path(__file__).resolve().parents[3]
 OPTIONAL_CAPABILITY_TEST_REQUIREMENTS = {
+    "crates/kmipkit-client/tests/unit/create_key_pair_execution_tests.rs::create_key_pair_sends_client_supplied_dsa_domain_parameter_qlength": (
+        "KMIPKIT-REQ-SPEC-4.14-001-001",
+    ),
     "crates/kmipkit-protocol/tests/unit/create_tests.rs::request_encodes_raw_key_format_for_server_generated_create": (
         "KMIPKIT-REQ-SPEC-4.26-001",
     ),
@@ -181,6 +184,12 @@ OPTIONAL_CAPABILITY_TEST_REQUIREMENTS = {
 
 
 OPTIONAL_CAPABILITY_TEST_CONTENT_REQUIREMENTS = {
+    "crates/kmipkit-client/tests/unit/create_key_pair_execution_tests.rs::create_key_pair_sends_client_supplied_dsa_domain_parameter_qlength": (
+        "CRYPTOGRAPHIC_DOMAIN_PARAMETERS",
+        "QLENGTH",
+        "Value::integer(256)",
+        "ValueView::Integer(value) if *value == 256",
+    ),
     "crates/kmipkit-protocol/tests/unit/create_tests.rs::request_encodes_raw_key_format_for_server_generated_create": (
         "KEY_FORMAT_TYPE",
         "Value::enumeration(1)",
@@ -16360,6 +16369,7 @@ class CatalogValidationTests(unittest.TestCase):
         )
         requirements = {row["requirement_id"]: row for row in catalog["requirements"]}
         requirement_ids = (
+            "KMIPKIT-REQ-SPEC-4.14-001-001",
             "KMIPKIT-REQ-SPEC-4.26-001",
             "KMIPKIT-REQ-SPEC-4.34-001-001",
             "KMIPKIT-REQ-SPEC-4.38-001-001",
