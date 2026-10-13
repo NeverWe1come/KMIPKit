@@ -267,6 +267,89 @@ class ManifestGeneratorCliTests(unittest.TestCase):
             "the public C header omits the mapped client execution entrypoint",
         )
 
+    def test_versioned_fixed_width_values_render_declared_c_fields(self) -> None:
+        manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
+        type_name = "kmipkit_test_config_v1_t"
+        manifest["types"].append(
+            {
+                "id": "TestConfigV1",
+                "kind": "struct",
+                "requirementIds": ["KMIPKIT-0043-FR-007"],
+                "rust": {"module": "kmipkit_ffi", "name": "TestConfigV1", "owner": "ffi"},
+                "c": {
+                    "name": type_name,
+                    "kind": "fixed-width-value",
+                    "versioned": True,
+                    "fields": [
+                        {"name": "struct_size", "type": "uint32_t"},
+                        {"name": "abi_version", "type": "uint32_t"},
+                        {"name": "port", "type": "uint16_t"},
+                    ],
+                },
+                "java": {"package": "org.kmipkit", "name": "TestConfigV1"},
+                "python": {"module": "kmipkit", "name": "TestConfigV1"},
+            }
+        )
+        manifest["publicDeclarations"].append(
+            {
+                "declarationId": "test-config-v1:c",
+                "packageId": "c-kmipkit",
+                "kind": "type",
+                "exportName": type_name,
+                "capabilityId": "public_binding_surface",
+                "requirementIds": ["KMIPKIT-0043-FR-007"],
+                "declarationState": "declared",
+            }
+        )
+        manifest["publicDeclarations"].extend(
+            {
+                "declarationId": f"test-config-v1:{field['name']}",
+                "packageId": "c-kmipkit",
+                "kind": "field",
+                "exportName": f"{type_name}.{field['name']}",
+                "capabilityId": "public_binding_surface",
+                "requirementIds": ["KMIPKIT-0043-FR-007"],
+                "declarationState": "declared",
+            }
+            for field in manifest["types"][-1]["c"]["fields"]
+        )
+
+        header = generate.render_c_header(manifest)
+
+        self.assertIn("typedef struct {\n    uint32_t struct_size;\n    uint32_t abi_version;\n    uint16_t port;\n} kmipkit_test_config_v1_t;", header)
+
+    def test_rust_ffi_renders_fixed_width_value_fields_from_the_type_record(self) -> None:
+        manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
+        type_name = "kmipkit_test_config_v1_t"
+        manifest["types"].append(
+            {
+                "id": "TestConfigV1",
+                "kind": "struct",
+                "requirementIds": ["KMIPKIT-0043-FR-007"],
+                "rust": {"module": "kmipkit_ffi", "name": "TestConfigV1", "owner": "ffi"},
+                "c": {
+                    "name": type_name,
+                    "kind": "fixed-width-value",
+                    "versioned": True,
+                    "fields": [
+                        {"name": "struct_size", "type": "uint32_t"},
+                        {"name": "abi_version", "type": "uint32_t"},
+                        {"name": "port", "type": "uint16_t"},
+                    ],
+                },
+                "java": {"package": "org.kmipkit", "name": "TestConfigV1"},
+                "python": {"module": "kmipkit", "name": "TestConfigV1"},
+            }
+        )
+
+        generated = generate.render_rust_ffi(manifest)
+        record = generated.split(f"pub struct {type_name} {{", maxsplit=1)[1].split("}", maxsplit=1)[0]
+
+        self.assertIn("pub struct_size: u32,", record)
+        self.assertIn("pub abi_version: u32,", record)
+        self.assertIn("pub port: u16,", record)
+        self.assertNotIn("pub max_definitions: u64,", record)
+
     def test_generated_rust_metadata_lists_only_unblocked_c_mapped_capabilities(self) -> None:
         manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
         outputs = generate.render_outputs(manifest)
