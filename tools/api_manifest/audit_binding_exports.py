@@ -385,10 +385,27 @@ def _literal_all(tree: ast.Module, visible_names: set[str]) -> tuple[list[str] |
 def _python_class_members(node: ast.ClassDef) -> list[tuple[str, str, int]]:
     """Return the directly declared public members of one Python class."""
     members: list[tuple[str, str, int]] = []
+    observed_fields: set[str] = set()
     for child in node.body:
         if isinstance(child, (ast.FunctionDef, ast.AsyncFunctionDef)):
             if not child.name.startswith("_") or child.name in {"__enter__", "__exit__"}:
                 members.append((child.name, "python-export", child.lineno))
+            if child.name == "__init__":
+                for statement in ast.walk(child):
+                    if isinstance(statement, ast.Assign):
+                        targets = statement.targets
+                    elif isinstance(statement, ast.AnnAssign):
+                        targets = [statement.target]
+                    else:
+                        continue
+                    for target in targets:
+                        if (isinstance(target, ast.Attribute)
+                                and isinstance(target.value, ast.Name)
+                                and target.value.id == "self"
+                                and not target.attr.startswith("_")
+                                and target.attr not in observed_fields):
+                            members.append((target.attr, "field", statement.lineno))
+                            observed_fields.add(target.attr)
         elif isinstance(child, ast.AnnAssign) and isinstance(child.target, ast.Name) and not child.target.id.startswith("_"):
             members.append((child.target.id, "field", child.lineno))
         elif isinstance(child, ast.Assign):
