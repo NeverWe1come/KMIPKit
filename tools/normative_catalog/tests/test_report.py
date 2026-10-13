@@ -719,6 +719,8 @@ class CoverageReportTests(unittest.TestCase):
 
         self.assertEqual(
             [
+                "KMIPKIT-REQ-SPEC-2.3-001",
+                "KMIPKIT-REQ-SPEC-2.3-001",
                 "KMIPKIT-REQ-SPEC-2.4-001-001",
                 "KMIPKIT-REQ-SPEC-2.4-001-001",
                 "KMIPKIT-REQ-SPEC-2.4-001-002",
@@ -727,9 +729,17 @@ class CoverageReportTests(unittest.TestCase):
                 "KMIPKIT-REQ-SPEC-2.7-001",
                 "KMIPKIT-REQ-SPEC-3.1-001",
                 "KMIPKIT-REQ-SPEC-3.1-001",
+                "KMIPKIT-REQ-SPEC-3.1-001",
                 "KMIPKIT-REQ-SPEC-4.14-001-001",
                 "KMIPKIT-REQ-SPEC-4.14-001-001",
+                "KMIPKIT-REQ-SPEC-4.14-001-002",
+                "KMIPKIT-REQ-SPEC-4.14-001-002",
                 "KMIPKIT-REQ-SPEC-4.27-001",
+                "KMIPKIT-REQ-SPEC-6.1.43-005",
+                "KMIPKIT-REQ-SPEC-6.1.43-005",
+                "KMIPKIT-REQ-SPEC-4.62-003",
+                "KMIPKIT-REQ-SPEC-4.63-004",
+                "KMIPKIT-REQ-SPEC-4.63-005",
                 "KMIPKIT-REQ-SPEC-4.16-001-002",
                 "KMIPKIT-REQ-SPEC-6.1.16-001-001",
             ],

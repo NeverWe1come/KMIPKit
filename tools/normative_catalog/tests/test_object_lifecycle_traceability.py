@@ -26,7 +26,7 @@ OPERATIONS = {
 }
 CHECK_ATTRIBUTE_REQUIREMENT_ID = "KMIPKIT-REQ-SPEC-6.1.7-002-003"
 UNASSIGNED_RECERTIFY_REQUIREMENT_ID = "KMIPKIT-REQ-SPEC-6.1.45-002-003"
-UNASSIGNED_WRAPPED_ATTRIBUTES_REQUIREMENT_ID = "KMIPKIT-REQ-SPEC-6.1.43-005"
+SCOPED_WRAPPED_ATTRIBUTES_REQUIREMENT_ID = "KMIPKIT-REQ-SPEC-6.1.43-005"
 CHECK_ATTRIBUTE_ELEMENT_IDS = [
     "KMIPKIT-ELEM-TAG-42002C",
     "KMIPKIT-ELEM-TAG-420049",
@@ -92,11 +92,13 @@ class ObjectLifecycleTraceabilityTests(unittest.TestCase):
                 self.assertEqual(requirement["verification_refs"], [], row[0])
                 self.assertEqual(row[4], "unassigned", row[0])
                 self.assertEqual(row[5:7], ["—", "—"], row[0])
-            elif row[0] == UNASSIGNED_WRAPPED_ATTRIBUTES_REQUIREMENT_ID:
-                self.assertEqual(requirement["status"], "unassigned", row[0])
-                self.assertEqual(row[4], "unassigned", row[0])
-                self.assertIn("embedded attributes", requirement["review_note"].casefold(), row[0])
-                self.assertIn("unassigned", requirement["review_note"], row[0])
+            elif row[0] == SCOPED_WRAPPED_ATTRIBUTES_REQUIREMENT_ID:
+                self.assertEqual(requirement["status"], "scoped_verified", row[0])
+                self.assertEqual(row[4], "scoped_verified", row[0])
+                self.assertTrue(requirement["implementation_refs"], row[0])
+                self.assertTrue(requirement["verification_refs"], row[0])
+                self.assertIn("wire preservation only", requirement["review_note"], row[0])
+                self.assertIn("server acceptance", requirement["review_note"], row[0])
             else:
                 self.assertIn(requirement["status"], {"verified", "scoped_verified"}, row[0])
             expected_operation_element_id = (
@@ -112,13 +114,16 @@ class ObjectLifecycleTraceabilityTests(unittest.TestCase):
                     ["KMIPKIT-ELEM-ATTRIBUTE-UNIQUE-IDENTIFIER", "KMIPKIT-ELEM-OP-C2S-RE-CERTIFY"],
                     row[0],
                 )
-            elif row[0] == UNASSIGNED_WRAPPED_ATTRIBUTES_REQUIREMENT_ID:
+            elif row[0] == SCOPED_WRAPPED_ATTRIBUTES_REQUIREMENT_ID:
                 self.assertEqual(
                     requirement["element_ids"],
                     [
                         "KMIPKIT-ELEM-OBJECT-STRUCTURE-KEY-WRAPPING-DATA",
                         "KMIPKIT-ELEM-OP-C2S-REGISTER",
+                        "KMIPKIT-ELEM-STRUCTURE-MEMBER-3-1-KEY-BLOCK-KEY-VALUE",
                         "KMIPKIT-ELEM-STRUCTURE-MEMBER-3-1-KEY-BLOCK-KEY-WRAPPING-DATA",
+                        "KMIPKIT-ELEM-STRUCTURE-MEMBER-3-2-KEY-VALUE-ATTRIBUTES",
+                        "KMIPKIT-ELEM-STRUCTURE-MEMBER-3-3-KEY-WRAPPING-DATA-ENCODING-OPTION",
                     ],
                     row[0],
                 )
