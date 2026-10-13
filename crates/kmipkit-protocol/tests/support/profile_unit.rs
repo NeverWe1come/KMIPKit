@@ -541,6 +541,43 @@ fn profile_maps_client_get_key_compression_type_selector() {
 }
 
 #[test]
+fn profile_maps_client_pgp_key_forms_and_versions_as_opaque_bytes() {
+    // KMIP Specification v2.1 §2.4/Table 5 permits PGP Key versions 3 and 4;
+    // its Key Value is caller-owned opaque ASCII-armored data.
+    const REQUIREMENT_OBJECT_FORM: &str = "KMIPKIT-REQ-SPEC-2.4-001-001";
+    const REQUIREMENT_VERSION: &str = "KMIPKIT-REQ-SPEC-2.4-001-002";
+    const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
+
+    let requirement_ids = [REQUIREMENT_OBJECT_FORM, REQUIREMENT_VERSION];
+    for requirement_id in requirement_ids {
+        let mapping = TYPED_RULE_MAPPINGS
+            .iter()
+            .find(|mapping| mapping.requirement_id == requirement_id)
+            .expect("the PGP Key capability has an explicit production profile rule");
+        let requirement = CLIENT_REQUIREMENTS
+            .iter()
+            .find(|requirement| requirement.requirement_id == requirement_id)
+            .expect("the PGP Key capability resolves to normative metadata");
+        validate_mapping(BASELINE_PROFILE_ID, requirement, mapping)
+            .expect("the PGP Key rule has source-linked positive evidence");
+    }
+
+    let result = ProfileValidationResult {
+        profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
+        requirement_ids: requirement_ids.map(str::to_owned).to_vec(),
+    };
+    let public_key_only = pgp_key_import_request(3, b"synthetic-pgp-public-key-only");
+    let public_and_private_key = pgp_key_import_request(4, b"synthetic-pgp-public-and-private-key");
+
+    result
+        .validate_request(&public_key_only)
+        .expect("profile validation preserves caller-supplied PGP version 3 key bytes");
+    result
+        .validate_request(&public_and_private_key)
+        .expect("profile validation preserves caller-supplied PGP version 4 key bytes");
+}
+
+#[test]
 fn profile_allows_type_specific_cryptographic_parameters_without_remote_object_inference() {
     const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-4.16-001-002";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
@@ -1623,6 +1660,40 @@ fn secret_data_import_request(
                 Value::structure(structure([
                     tagged(SECRET_DATA_TYPE, Value::enumeration(1)),
                     tagged(KEY_BLOCK, Value::structure(structure(key_block_fields))),
+                ])),
+            ),
+        ]),
+    )
+}
+
+fn pgp_key_import_request(version: i32, key_bytes: &[u8]) -> crate::RequestMessage {
+    const IMPORT_OPERATION: u32 = 0x0000_002A;
+    const UNIQUE_IDENTIFIER: u32 = 0x0042_0094;
+    const OBJECT_TYPE: u32 = 0x0042_0057;
+    const ATTRIBUTES: u32 = 0x0042_0125;
+    const PGP_KEY: u32 = 0x0042_00BD;
+    const PGP_KEY_VERSION: u32 = 0x0042_00BE;
+    const KEY_BLOCK: u32 = 0x0042_0040;
+    const KEY_FORMAT_TYPE: u32 = 0x0042_0042;
+    const KEY_VALUE: u32 = 0x0042_0045;
+
+    request_message_with_operation_payload(
+        IMPORT_OPERATION,
+        structure([
+            tagged(UNIQUE_IDENTIFIER, Value::text_string("pgp-key".to_owned())),
+            tagged(OBJECT_TYPE, Value::enumeration(9)),
+            tagged(ATTRIBUTES, Value::structure(Structure::new())),
+            tagged(
+                PGP_KEY,
+                Value::structure(structure([
+                    tagged(PGP_KEY_VERSION, Value::integer(version)),
+                    tagged(
+                        KEY_BLOCK,
+                        Value::structure(structure([
+                            tagged(KEY_FORMAT_TYPE, Value::enumeration(1)),
+                            tagged(KEY_VALUE, Value::byte_string(key_bytes.to_vec())),
+                        ])),
+                    ),
                 ])),
             ),
         ]),
