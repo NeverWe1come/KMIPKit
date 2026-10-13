@@ -106,7 +106,8 @@ CI additionally audits the compiled C library on Windows, Linux, and macOS.
 - Minimal JNI bridge into the stable C ABI.
 - Unchecked exception hierarchy rooted at `KmipKitException`.
 - JSpecify nullness annotations.
-- `AutoCloseable` clients and secret values.
+- `AutoCloseable` wrappers for library-owned native handles; repeated close calls are safe.
+- JSpecify annotations are exposed as an API dependency so Java consumers compile against the documented nullness contract.
 - Platform native JARs selected automatically.
 - SLF4J integration for redacted structured events.
 

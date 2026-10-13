@@ -7,7 +7,6 @@ import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
-import java.nio.charset.StandardCharsets;
 
 import org.junit.jupiter.api.Test;
 import org.kmipkit.extensions.ClientBatchItem;
