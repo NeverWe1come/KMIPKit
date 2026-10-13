@@ -77,9 +77,13 @@ blocked rows remain inventory records and do not create callable declarations.
 The [binding export report](../../specs/043-public-api-bindings/reports/binding-export-report-2026-10-12.json)
 records the observed C, Java, and Python exports and their reconciliation with
 the manifest. Regenerate or validate that inventory with the pinned commands
-in [the export audit guide](../../tools/api_manifest/binding-export-audit.md);
-the C source-level check is `python -B
-tools/api_manifest/audit_binding_exports.py --repo-root . --c-only --check`.
+in [the export audit guide](../../tools/api_manifest/binding-export-audit.md).
+Run this C source-level check from the repository root:
+
+```sh
+python -B tools/api_manifest/audit_binding_exports.py --repo-root . --c-only --check
+```
+
 CI additionally audits the compiled C library on Windows, Linux, and macOS.
 
 ## C distribution
