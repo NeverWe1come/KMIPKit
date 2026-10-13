@@ -1643,6 +1643,41 @@ fn wrapped_secret_data_rule_fails_closed_for_malformed_payload_shapes() {
     const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-2.7-001";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
     const IMPORT_OPERATION: u32 = 0x0000_002A;
+
+    let result = ProfileValidationResult {
+        profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
+        requirement_ids: vec![REQUIREMENT_ID.to_owned()],
+    };
+
+    for (label, payload) in malformed_secret_data_import_payloads() {
+        let error = result
+            .validate_request(&request_message_with_operation_payload(
+                IMPORT_OPERATION,
+                payload,
+            ))
+            .expect_err(label);
+        assert_eq!(
+            error.code(),
+            ProfileValidationErrorCode::RequestRuleRejected,
+            "{label}"
+        );
+        assert_eq!(error.requirement_id(), Some(REQUIREMENT_ID), "{label}");
+        assert_eq!(
+            error.source_clause_id(),
+            Some("KMIPKIT-CLAUSE-SPEC-2.7-001"),
+            "{label}"
+        );
+    }
+
+    result
+        .validate_request(&request_message_with_operation_payload(
+            0x0000_0003,
+            Structure::new(),
+        ))
+        .expect("an unrelated Register request is outside the Secret Data Import rule");
+}
+
+fn malformed_secret_data_import_payloads() -> Vec<(&'static str, Structure)> {
     const OBJECT_TYPE: u32 = 0x0042_0057;
     const SECRET_DATA: u32 = 0x0042_0085;
     const SECRET_DATA_TYPE: u32 = 0x0042_0086;
@@ -1651,10 +1686,6 @@ fn wrapped_secret_data_rule_fails_closed_for_malformed_payload_shapes() {
     const KEY_VALUE: u32 = 0x0042_0045;
     const KEY_WRAPPING_DATA: u32 = 0x0042_0046;
 
-    let result = ProfileValidationResult {
-        profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
-        requirement_ids: vec![REQUIREMENT_ID.to_owned()],
-    };
     let import_payload = |extra_fields: Vec<Item>| {
         let mut fields = vec![tagged(OBJECT_TYPE, Value::enumeration(7))];
         fields.extend(extra_fields);
@@ -1662,9 +1693,8 @@ fn wrapped_secret_data_rule_fails_closed_for_malformed_payload_shapes() {
     };
     let secret_data = |fields: Vec<Item>| tagged(SECRET_DATA, Value::structure(structure(fields)));
     let key_block = |fields: Vec<Item>| tagged(KEY_BLOCK, Value::structure(structure(fields)));
-    let request = |operation, payload| request_message_with_operation_payload(operation, payload);
 
-    let malformed_payloads = [
+    vec![
         ("missing Object Type", structure([secret_data(Vec::new())])),
         (
             "wrong Object Type value type",
@@ -1724,28 +1754,7 @@ fn wrapped_secret_data_rule_fails_closed_for_malformed_payload_shapes() {
                 ]),
             ])]),
         ),
-    ];
-
-    for (label, payload) in malformed_payloads {
-        let error = result
-            .validate_request(&request(IMPORT_OPERATION, payload))
-            .expect_err(label);
-        assert_eq!(
-            error.code(),
-            ProfileValidationErrorCode::RequestRuleRejected,
-            "{label}"
-        );
-        assert_eq!(error.requirement_id(), Some(REQUIREMENT_ID), "{label}");
-        assert_eq!(
-            error.source_clause_id(),
-            Some("KMIPKIT-CLAUSE-SPEC-2.7-001"),
-            "{label}"
-        );
-    }
-
-    result
-        .validate_request(&request(0x0000_0003, Structure::new()))
-        .expect("an unrelated Register request is outside the Secret Data Import rule");
+    ]
 }
 
 #[test]
