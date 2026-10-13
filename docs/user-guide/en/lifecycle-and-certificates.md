@@ -294,18 +294,17 @@ fn managed_request() -> Result<RegisterRequest, Box<dyn Error>> {
     ])?;
     let request = RegisterRequest::new(ObjectType::from_raw(8), attributes, opaque_object()?)
         .with_opaque_object_context(OpaqueObjectContext::ManagedCryptographicObject);
-    request.validate_local_shape()?;
     Ok(request)
 }
 
 fn main() -> Result<(), Box<dyn Error>> {
     let generic = generic_request()?;
-    generic.validate_local_shape()?;
+    let _generic_payload = generic.into_ttlv_payload()?;
 
     let managed = managed_request()?;
-    managed.validate_local_shape()?;
+    let _managed_payload = managed.into_ttlv_payload()?;
 
-    println!("both Register contexts passed local validation");
+    println!("built generic and managed-context Register payloads");
     Ok(())
 }
 ```

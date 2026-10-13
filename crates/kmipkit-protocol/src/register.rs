@@ -111,6 +111,7 @@ impl RegisterRequest {
     /// Returns a sanitized error if the object is not a Structure, a Table 4
     /// or Table 293 requirement is not satisfied, or the selected opaque
     /// context does not apply to the Object Type.
+    #[doc(hidden)]
     pub fn validate_local_shape(&self) -> Result<(), ProtocolError> {
         if !matches!(self.object.item_type(), kmipkit_ttlv::ItemType::Structure)
             || !attributes_satisfy_register_requirements(

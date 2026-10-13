@@ -2,9 +2,10 @@
 
 Status: implementation snapshot and design baseline
 Scope: KMIPKit 1.0 architecture, including KMIPKIT-0005 TTLV, KMIPKIT-0007
-client execution, KMIPKIT-0013 production transport, and the Rust lifecycle
-operation additions in KMIPKIT-0036
-Last reviewed: 2026-10-11
+client execution, KMIPKIT-0013 production transport, the Rust lifecycle
+operation additions in KMIPKIT-0036, and Register Opaque Object context in
+KMIPKIT-0044
+Last reviewed: 2026-10-13
 
 This document models risks for the KMIPKit 1.0 architecture and distinguishes
 current executable controls from planned components. The repository includes
@@ -15,11 +16,12 @@ validated production adapters. The Rust client currently includes Certify,
 Check, Obtain Lease, Re-certify, Re-key, Re-key Key Pair, Re-Provision,
 Register, and Revoke in addition to its earlier typed request set. These
 operations do not establish complete KMIP 2.1 operation or profile coverage.
-C, Java, and Python operation parity for this addition remains assigned to
-KMIPKIT-0043 and is not established by this Rust-only branch. Publication
-remains planned. Scenarios below remain hypotheses and security requirements
-unless a control is explicitly tied to executable evidence. The model must be
-revised as each executable boundary is introduced.
+C, Java, and Python parity for the Register Opaque Object context is implemented
+under KMIPKIT-0044. Full parity for the nine KMIPKIT-0036 lifecycle operations
+remains assigned to KMIPKIT-0043 and is not established by this branch.
+Publication remains planned. Scenarios below remain hypotheses and security
+requirements unless a control is explicitly tied to executable evidence. The
+model must be revised as each executable boundary is introduced.
 Independent architecture mapping and a source-level security diff review were
 completed for KMIPKIT-0005 on 2026-10-05. A qualified human security review
 remains a release requirement before 1.0.
@@ -43,7 +45,7 @@ flowchart LR
         KMIP credentials and limits]
     end
     subgraph Native[KMIPKit process boundary]
-        Binding[Rust typed API; lifecycle parity in C/Java/Python deferred]
+        Binding[Rust typed API; KMIPKIT-0044 Register-context parity in C/Java/Python; full lifecycle parity deferred]
         Core[Protocol model and client]
         Parser[Bounded TTLV codec]
         TLS[TLS 1.3 transport]
@@ -71,7 +73,10 @@ low-level transport contract, and production raw TLS and HTTPS adapters are
 implemented. KMIPKIT-0013 connects the currently supported typed operations to
 those adapters through a private worker. KMIPKIT-0036 adds the nine listed
 Rust lifecycle operations through that same request path. C, Java, and Python
-parity for those operations is deferred to KMIPKIT-0043. This implementation
+parity for those nine operations is deferred to KMIPKIT-0043. KMIPKIT-0044
+also exposes the Register Opaque Object context across the four language
+facades; this single Register capability does not establish full lifecycle
+parity. This implementation
 snapshot does not claim OASIS certification, profile support, 1.0 release
 readiness, or completion of cross-platform, C ABI, fuzz, or coverage gates.
 Other product component rows describe target design unless marked implemented;

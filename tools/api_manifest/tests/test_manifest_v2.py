@@ -862,7 +862,13 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
             for declaration in self.checked_in_manifest["publicDeclarations"]
             if declaration["packageId"] in rust_packages
         ]
-        self.assertEqual(len(declarations), 9525)
+        exclusions = [
+            exclusion
+            for exclusion in self.checked_in_manifest["approvedExclusions"]
+            if exclusion["packageId"] in rust_packages
+        ]
+        self.assertEqual(len(declarations), 9503)
+        self.assertEqual(len(exclusions), 22)
         report = json.loads(RUST_EXPORT_REPORT_PATH.read_text(encoding="utf-8"))
         observed_keys = {
             (row["packageId"], _canonical_export_name(row["exportName"]), row["kind"])
@@ -876,6 +882,19 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
             (row["packageId"], _canonical_export_name(row["exportName"]), row["kind"])
             for row in declarations
         }
+        approved_exclusion_keys = {
+            (row["packageId"], _canonical_export_name(row["exportName"]))
+            for row in exclusions
+        }
+        reported_exclusion_keys = {
+            (row["packageId"], _canonical_export_name(row["exportName"]))
+            for row in report["excluded"]
+        }
+        manifest_export_keys = {(package, name) for package, name, _kind in manifest_keys}
+        observed_export_keys = {
+            (row["packageId"], _canonical_export_name(row["exportName"]))
+            for row in [*report["declarations"], *report["conditionalDeclarations"]]
+        }
         not_observed_keys = {
             (row["packageId"], _canonical_export_name(row["exportName"]), row["kind"])
             for row in report["notObserved"]
@@ -883,8 +902,14 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
         self.assertEqual(len(observed_keys), len(report["declarations"]))
         self.assertEqual(len(conditional_keys), len(report["conditionalDeclarations"]))
         self.assertEqual(len(not_observed_keys), len(report["notObserved"]))
-        self.assertEqual(manifest_keys - not_observed_keys, observed_keys | conditional_keys)
+        self.assertEqual(approved_exclusion_keys, reported_exclusion_keys)
+        self.assertFalse(manifest_export_keys & approved_exclusion_keys)
+        self.assertEqual(
+            manifest_export_keys | approved_exclusion_keys,
+            observed_export_keys,
+        )
         self.assertEqual(report["counts"]["missingFromManifest"], 0)
+        self.assertEqual(report["counts"]["excluded"], len(exclusions))
         self.assertEqual(report["counts"]["notObserved"], 0)
         self.assertEqual(report["counts"]["kindMismatches"], 0)
         self.assertEqual(report["counts"]["issues"], 0)
@@ -899,6 +924,11 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
             for declaration in declarations
         }
         for row in report["conditionalDeclarations"]:
+            if (
+                row["packageId"],
+                _canonical_export_name(row["exportName"]),
+            ) in approved_exclusion_keys:
+                continue
             with self.subTest(conditional=row["exportName"]):
                 manifest_row = by_package_and_export[(row["packageId"], row["exportName"])]
                 self.assertEqual(manifest_row["declarationState"], "blocked")
@@ -1069,12 +1099,13 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
             "kmipkit_version_get",
         )
 
-        exclusions = {
+        c_exclusions = {
             item["exportName"]: item
             for item in self.checked_in_manifest["approvedExclusions"]
+            if item["packageId"] == "c-kmipkit"
         }
         self.assertEqual(
-            set(exclusions),
+            set(c_exclusions),
             {
                 "kmipkit_last_error_get",
                 "kmipkit_last_error_clear",
@@ -1082,11 +1113,30 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
                 "kmipkit_extension_registry_limits_v1_t.abi_version",
             },
         )
-        for symbol in exclusions:
-            self.assertEqual(exclusions[symbol]["packageId"], "c-kmipkit")
-            self.assertTrue(exclusions[symbol]["reason"])
-            self.assertTrue(exclusions[symbol]["evidence"])
+        for symbol in c_exclusions:
+            self.assertTrue(c_exclusions[symbol]["reason"])
+            self.assertTrue(c_exclusions[symbol]["evidence"])
             self.assertNotIn(symbol, declarations)
+
+        rust_exclusions = [
+            item
+            for item in self.checked_in_manifest["approvedExclusions"]
+            if item["packageId"] == "rust-kmipkit-protocol"
+        ]
+        self.assertEqual(len(rust_exclusions), 22)
+        self.assertTrue(
+            any(
+                item["exportName"] == "kmipkit_protocol::RegisterRequest::validate_local_shape"
+                for item in rust_exclusions
+            )
+        )
+        self.assertEqual(
+            {
+                item["approvalSource"]["path"]
+                for item in rust_exclusions
+            },
+            {"specs/029-opaque-object-context/spec.md"},
+        )
 
         public_exports = {
             item["exportName"]

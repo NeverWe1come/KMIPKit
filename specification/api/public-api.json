@@ -203485,390 +203485,6 @@
       }
     },
     {
-      "declarationId": "rust-observed-3180c8c59ddd641e941e",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::OpaqueObjectContext as alloc::borrow::ToOwned>::Owned",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0044",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
-    },
-    {
-      "declarationId": "rust-observed-32e6ff6e130c77c5cd02",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::OpaqueObjectContext as alloc::borrow::ToOwned>::clone_into",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0044",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
-    },
-    {
-      "declarationId": "rust-observed-8e94ea27e39302f8bf9c",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::OpaqueObjectContext as alloc::borrow::ToOwned>::to_owned",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0044",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
-    },
-    {
-      "declarationId": "rust-observed-025dd9488b3123dace3b",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::OpaqueObjectContext as core::any::Any>::type_id",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0044",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
-    },
-    {
-      "declarationId": "rust-observed-c8b29fdde174696ab31e",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::OpaqueObjectContext as core::borrow::Borrow<kmipkit_protocol::register::OpaqueObjectContext>>::borrow",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0044",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
-    },
-    {
-      "declarationId": "rust-observed-2181f842fb56c7a6cc9e",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::OpaqueObjectContext as core::borrow::BorrowMut<kmipkit_protocol::register::OpaqueObjectContext>>::borrow_mut",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0044",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
-    },
-    {
-      "declarationId": "rust-observed-2335eeb832dafd78184d",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::OpaqueObjectContext as core::clone::Clone>::clone",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0044",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
-    },
-    {
-      "declarationId": "rust-observed-fe07a1760d761b4f525d",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::OpaqueObjectContext as core::clone::Clone>::clone_from",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0044",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
-    },
-    {
-      "declarationId": "rust-observed-c2fe894bf5d03fc7a062",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::OpaqueObjectContext as core::clone::CloneToUninit>::clone_to_uninit",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0044",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
-    },
-    {
-      "declarationId": "rust-observed-5c1beed8b5944d3e96b9",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::OpaqueObjectContext as core::cmp::Eq>::assert_receiver_is_total_eq",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0044",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
-    },
-    {
-      "declarationId": "rust-observed-d6275d96d1b228a91db4",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::OpaqueObjectContext as core::cmp::PartialEq>::eq",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0044",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
-    },
-    {
-      "declarationId": "rust-observed-4f9c3906242186136868",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::OpaqueObjectContext as core::cmp::PartialEq>::ne",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0044",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
-    },
-    {
-      "declarationId": "rust-observed-1b4e5ebe79edba13efef",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::OpaqueObjectContext as core::convert::From<kmipkit_protocol::register::OpaqueObjectContext>>::from",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0044",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
-    },
-    {
-      "declarationId": "rust-observed-dcd125a86289558e0694",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::OpaqueObjectContext as core::convert::Into<U>>::into",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0044",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest.",
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_protocol::register::OpaqueObjectContext"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "From"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      }
-    },
-    {
-      "declarationId": "rust-observed-a6a82a17fc502d1fa88e",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::OpaqueObjectContext as core::convert::TryFrom<U>>::Error",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0044",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest.",
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_protocol::register::OpaqueObjectContext"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "Into"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      }
-    },
-    {
-      "declarationId": "rust-observed-640358445935956d6cf4",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::OpaqueObjectContext as core::convert::TryFrom<U>>::try_from",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0044",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest.",
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_protocol::register::OpaqueObjectContext"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "Into"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      }
-    },
-    {
-      "declarationId": "rust-observed-42693e7dc35c55cb4a8e",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::OpaqueObjectContext as core::convert::TryInto<U>>::Error",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0044",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest.",
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_protocol::register::OpaqueObjectContext"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "TryFrom"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      }
-    },
-    {
-      "declarationId": "rust-observed-90aec37acb0b1ee08047",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::OpaqueObjectContext as core::convert::TryInto<U>>::try_into",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0044",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest.",
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_protocol::register::OpaqueObjectContext"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "TryFrom"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      }
-    },
-    {
-      "declarationId": "rust-observed-4fa286726b6afe5d6f1b",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::OpaqueObjectContext as core::fmt::Debug>::fmt",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0044",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
-    },
-    {
-      "declarationId": "rust-observed-6a55a6a483542c8a1be2",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::OpaqueObjectContext as core::hash::Hash>::hash",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0044",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
-    },
-    {
-      "declarationId": "rust-observed-bcd52c67cc062973797b",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::OpaqueObjectContext as core::hash::Hash>::hash_slice",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0044",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
-    },
-    {
       "declarationId": "KMIPKIT-0044-opaque-context-generic:rust",
       "packageId": "rust-kmipkit-protocol",
       "kind": "variant",
@@ -203946,20 +203562,6 @@
           "name": "kmipkit.extensions.OpaqueObjectContext.MANAGED_CRYPTOGRAPHIC_OBJECT"
         }
       }
-    },
-    {
-      "declarationId": "rust-observed-f4ef9f9d9c364891a2be",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "kmipkit_protocol::RegisterRequest::validate_local_shape",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0044",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
     },
     {
       "declarationId": "KMIPKIT-0044-opaque-context-generic:c",
@@ -204515,6 +204117,270 @@
         "evidence": "**Status**: Approved for implementation"
       },
       "evidence": "Reviewed against KMIPKIT-0043-FR-007 and FR-021 in specs/043-public-api-bindings/implementation-evidence.md#reviewed-c-only-last-error-exclusions. The exact C exports remain in the generated header and satisfy FR-007; exclusion is only from the shared four-language facade capability inventory."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::OpaqueObjectContext as alloc::borrow::ToOwned>::Owned",
+      "reason": "Standard and blanket Rust trait implementations are language-level facilities, not separate KMIPKit facade operations. The OpaqueObjectContext type and its two variants carry the four-language capability; this feature does not add parallel C, Java, or Python methods for Rust core trait paths.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/029-opaque-object-context/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation under the maintainer's autonomous roadmap instruction dated 2026-10-13"
+      },
+      "evidence": "KMIPKIT-0044-FR-001 and FR-007 require the explicit context choice with equivalent behavior in the supported languages. The approved spec maps the context type and variants; no acceptance criterion defines Rust core or blanket trait implementations as standalone facade operations."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::OpaqueObjectContext as alloc::borrow::ToOwned>::clone_into",
+      "reason": "Standard and blanket Rust trait implementations are language-level facilities, not separate KMIPKit facade operations. The OpaqueObjectContext type and its two variants carry the four-language capability; this feature does not add parallel C, Java, or Python methods for Rust core trait paths.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/029-opaque-object-context/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation under the maintainer's autonomous roadmap instruction dated 2026-10-13"
+      },
+      "evidence": "KMIPKIT-0044-FR-001 and FR-007 require the explicit context choice with equivalent behavior in the supported languages. The approved spec maps the context type and variants; no acceptance criterion defines Rust core or blanket trait implementations as standalone facade operations."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::OpaqueObjectContext as alloc::borrow::ToOwned>::to_owned",
+      "reason": "Standard and blanket Rust trait implementations are language-level facilities, not separate KMIPKit facade operations. The OpaqueObjectContext type and its two variants carry the four-language capability; this feature does not add parallel C, Java, or Python methods for Rust core trait paths.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/029-opaque-object-context/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation under the maintainer's autonomous roadmap instruction dated 2026-10-13"
+      },
+      "evidence": "KMIPKIT-0044-FR-001 and FR-007 require the explicit context choice with equivalent behavior in the supported languages. The approved spec maps the context type and variants; no acceptance criterion defines Rust core or blanket trait implementations as standalone facade operations."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::OpaqueObjectContext as core::any::Any>::type_id",
+      "reason": "Standard and blanket Rust trait implementations are language-level facilities, not separate KMIPKit facade operations. The OpaqueObjectContext type and its two variants carry the four-language capability; this feature does not add parallel C, Java, or Python methods for Rust core trait paths.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/029-opaque-object-context/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation under the maintainer's autonomous roadmap instruction dated 2026-10-13"
+      },
+      "evidence": "KMIPKIT-0044-FR-001 and FR-007 require the explicit context choice with equivalent behavior in the supported languages. The approved spec maps the context type and variants; no acceptance criterion defines Rust core or blanket trait implementations as standalone facade operations."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::OpaqueObjectContext as core::borrow::Borrow<kmipkit_protocol::register::OpaqueObjectContext>>::borrow",
+      "reason": "Standard and blanket Rust trait implementations are language-level facilities, not separate KMIPKit facade operations. The OpaqueObjectContext type and its two variants carry the four-language capability; this feature does not add parallel C, Java, or Python methods for Rust core trait paths.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/029-opaque-object-context/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation under the maintainer's autonomous roadmap instruction dated 2026-10-13"
+      },
+      "evidence": "KMIPKIT-0044-FR-001 and FR-007 require the explicit context choice with equivalent behavior in the supported languages. The approved spec maps the context type and variants; no acceptance criterion defines Rust core or blanket trait implementations as standalone facade operations."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::OpaqueObjectContext as core::borrow::BorrowMut<kmipkit_protocol::register::OpaqueObjectContext>>::borrow_mut",
+      "reason": "Standard and blanket Rust trait implementations are language-level facilities, not separate KMIPKit facade operations. The OpaqueObjectContext type and its two variants carry the four-language capability; this feature does not add parallel C, Java, or Python methods for Rust core trait paths.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/029-opaque-object-context/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation under the maintainer's autonomous roadmap instruction dated 2026-10-13"
+      },
+      "evidence": "KMIPKIT-0044-FR-001 and FR-007 require the explicit context choice with equivalent behavior in the supported languages. The approved spec maps the context type and variants; no acceptance criterion defines Rust core or blanket trait implementations as standalone facade operations."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::OpaqueObjectContext as core::clone::Clone>::clone",
+      "reason": "Standard and blanket Rust trait implementations are language-level facilities, not separate KMIPKit facade operations. The OpaqueObjectContext type and its two variants carry the four-language capability; this feature does not add parallel C, Java, or Python methods for Rust core trait paths.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/029-opaque-object-context/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation under the maintainer's autonomous roadmap instruction dated 2026-10-13"
+      },
+      "evidence": "KMIPKIT-0044-FR-001 and FR-007 require the explicit context choice with equivalent behavior in the supported languages. The approved spec maps the context type and variants; no acceptance criterion defines Rust core or blanket trait implementations as standalone facade operations."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::OpaqueObjectContext as core::clone::Clone>::clone_from",
+      "reason": "Standard and blanket Rust trait implementations are language-level facilities, not separate KMIPKit facade operations. The OpaqueObjectContext type and its two variants carry the four-language capability; this feature does not add parallel C, Java, or Python methods for Rust core trait paths.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/029-opaque-object-context/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation under the maintainer's autonomous roadmap instruction dated 2026-10-13"
+      },
+      "evidence": "KMIPKIT-0044-FR-001 and FR-007 require the explicit context choice with equivalent behavior in the supported languages. The approved spec maps the context type and variants; no acceptance criterion defines Rust core or blanket trait implementations as standalone facade operations."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::OpaqueObjectContext as core::clone::CloneToUninit>::clone_to_uninit",
+      "reason": "Standard and blanket Rust trait implementations are language-level facilities, not separate KMIPKit facade operations. The OpaqueObjectContext type and its two variants carry the four-language capability; this feature does not add parallel C, Java, or Python methods for Rust core trait paths.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/029-opaque-object-context/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation under the maintainer's autonomous roadmap instruction dated 2026-10-13"
+      },
+      "evidence": "KMIPKIT-0044-FR-001 and FR-007 require the explicit context choice with equivalent behavior in the supported languages. The approved spec maps the context type and variants; no acceptance criterion defines Rust core or blanket trait implementations as standalone facade operations."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::OpaqueObjectContext as core::cmp::Eq>::assert_receiver_is_total_eq",
+      "reason": "Standard and blanket Rust trait implementations are language-level facilities, not separate KMIPKit facade operations. The OpaqueObjectContext type and its two variants carry the four-language capability; this feature does not add parallel C, Java, or Python methods for Rust core trait paths.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/029-opaque-object-context/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation under the maintainer's autonomous roadmap instruction dated 2026-10-13"
+      },
+      "evidence": "KMIPKIT-0044-FR-001 and FR-007 require the explicit context choice with equivalent behavior in the supported languages. The approved spec maps the context type and variants; no acceptance criterion defines Rust core or blanket trait implementations as standalone facade operations."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::OpaqueObjectContext as core::cmp::PartialEq>::eq",
+      "reason": "Standard and blanket Rust trait implementations are language-level facilities, not separate KMIPKit facade operations. The OpaqueObjectContext type and its two variants carry the four-language capability; this feature does not add parallel C, Java, or Python methods for Rust core trait paths.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/029-opaque-object-context/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation under the maintainer's autonomous roadmap instruction dated 2026-10-13"
+      },
+      "evidence": "KMIPKIT-0044-FR-001 and FR-007 require the explicit context choice with equivalent behavior in the supported languages. The approved spec maps the context type and variants; no acceptance criterion defines Rust core or blanket trait implementations as standalone facade operations."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::OpaqueObjectContext as core::cmp::PartialEq>::ne",
+      "reason": "Standard and blanket Rust trait implementations are language-level facilities, not separate KMIPKit facade operations. The OpaqueObjectContext type and its two variants carry the four-language capability; this feature does not add parallel C, Java, or Python methods for Rust core trait paths.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/029-opaque-object-context/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation under the maintainer's autonomous roadmap instruction dated 2026-10-13"
+      },
+      "evidence": "KMIPKIT-0044-FR-001 and FR-007 require the explicit context choice with equivalent behavior in the supported languages. The approved spec maps the context type and variants; no acceptance criterion defines Rust core or blanket trait implementations as standalone facade operations."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::OpaqueObjectContext as core::convert::From<kmipkit_protocol::register::OpaqueObjectContext>>::from",
+      "reason": "Standard and blanket Rust trait implementations are language-level facilities, not separate KMIPKit facade operations. The OpaqueObjectContext type and its two variants carry the four-language capability; this feature does not add parallel C, Java, or Python methods for Rust core trait paths.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/029-opaque-object-context/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation under the maintainer's autonomous roadmap instruction dated 2026-10-13"
+      },
+      "evidence": "KMIPKIT-0044-FR-001 and FR-007 require the explicit context choice with equivalent behavior in the supported languages. The approved spec maps the context type and variants; no acceptance criterion defines Rust core or blanket trait implementations as standalone facade operations."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::OpaqueObjectContext as core::convert::Into<U>>::into",
+      "reason": "Standard and blanket Rust trait implementations are language-level facilities, not separate KMIPKit facade operations. The OpaqueObjectContext type and its two variants carry the four-language capability; this feature does not add parallel C, Java, or Python methods for Rust core trait paths.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/029-opaque-object-context/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation under the maintainer's autonomous roadmap instruction dated 2026-10-13"
+      },
+      "evidence": "KMIPKIT-0044-FR-001 and FR-007 require the explicit context choice with equivalent behavior in the supported languages. The approved spec maps the context type and variants; no acceptance criterion defines Rust core or blanket trait implementations as standalone facade operations."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::OpaqueObjectContext as core::convert::TryFrom<U>>::Error",
+      "reason": "Standard and blanket Rust trait implementations are language-level facilities, not separate KMIPKit facade operations. The OpaqueObjectContext type and its two variants carry the four-language capability; this feature does not add parallel C, Java, or Python methods for Rust core trait paths.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/029-opaque-object-context/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation under the maintainer's autonomous roadmap instruction dated 2026-10-13"
+      },
+      "evidence": "KMIPKIT-0044-FR-001 and FR-007 require the explicit context choice with equivalent behavior in the supported languages. The approved spec maps the context type and variants; no acceptance criterion defines Rust core or blanket trait implementations as standalone facade operations."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::OpaqueObjectContext as core::convert::TryFrom<U>>::try_from",
+      "reason": "Standard and blanket Rust trait implementations are language-level facilities, not separate KMIPKit facade operations. The OpaqueObjectContext type and its two variants carry the four-language capability; this feature does not add parallel C, Java, or Python methods for Rust core trait paths.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/029-opaque-object-context/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation under the maintainer's autonomous roadmap instruction dated 2026-10-13"
+      },
+      "evidence": "KMIPKIT-0044-FR-001 and FR-007 require the explicit context choice with equivalent behavior in the supported languages. The approved spec maps the context type and variants; no acceptance criterion defines Rust core or blanket trait implementations as standalone facade operations."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::OpaqueObjectContext as core::convert::TryInto<U>>::Error",
+      "reason": "Standard and blanket Rust trait implementations are language-level facilities, not separate KMIPKit facade operations. The OpaqueObjectContext type and its two variants carry the four-language capability; this feature does not add parallel C, Java, or Python methods for Rust core trait paths.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/029-opaque-object-context/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation under the maintainer's autonomous roadmap instruction dated 2026-10-13"
+      },
+      "evidence": "KMIPKIT-0044-FR-001 and FR-007 require the explicit context choice with equivalent behavior in the supported languages. The approved spec maps the context type and variants; no acceptance criterion defines Rust core or blanket trait implementations as standalone facade operations."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::OpaqueObjectContext as core::convert::TryInto<U>>::try_into",
+      "reason": "Standard and blanket Rust trait implementations are language-level facilities, not separate KMIPKit facade operations. The OpaqueObjectContext type and its two variants carry the four-language capability; this feature does not add parallel C, Java, or Python methods for Rust core trait paths.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/029-opaque-object-context/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation under the maintainer's autonomous roadmap instruction dated 2026-10-13"
+      },
+      "evidence": "KMIPKIT-0044-FR-001 and FR-007 require the explicit context choice with equivalent behavior in the supported languages. The approved spec maps the context type and variants; no acceptance criterion defines Rust core or blanket trait implementations as standalone facade operations."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::OpaqueObjectContext as core::fmt::Debug>::fmt",
+      "reason": "Standard and blanket Rust trait implementations are language-level facilities, not separate KMIPKit facade operations. The OpaqueObjectContext type and its two variants carry the four-language capability; this feature does not add parallel C, Java, or Python methods for Rust core trait paths.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/029-opaque-object-context/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation under the maintainer's autonomous roadmap instruction dated 2026-10-13"
+      },
+      "evidence": "KMIPKIT-0044-FR-001 and FR-007 require the explicit context choice with equivalent behavior in the supported languages. The approved spec maps the context type and variants; no acceptance criterion defines Rust core or blanket trait implementations as standalone facade operations."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::OpaqueObjectContext as core::hash::Hash>::hash",
+      "reason": "Standard and blanket Rust trait implementations are language-level facilities, not separate KMIPKit facade operations. The OpaqueObjectContext type and its two variants carry the four-language capability; this feature does not add parallel C, Java, or Python methods for Rust core trait paths.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/029-opaque-object-context/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation under the maintainer's autonomous roadmap instruction dated 2026-10-13"
+      },
+      "evidence": "KMIPKIT-0044-FR-001 and FR-007 require the explicit context choice with equivalent behavior in the supported languages. The approved spec maps the context type and variants; no acceptance criterion defines Rust core or blanket trait implementations as standalone facade operations."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::OpaqueObjectContext as core::hash::Hash>::hash_slice",
+      "reason": "Standard and blanket Rust trait implementations are language-level facilities, not separate KMIPKit facade operations. The OpaqueObjectContext type and its two variants carry the four-language capability; this feature does not add parallel C, Java, or Python methods for Rust core trait paths.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/029-opaque-object-context/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation under the maintainer's autonomous roadmap instruction dated 2026-10-13"
+      },
+      "evidence": "KMIPKIT-0044-FR-001 and FR-007 require the explicit context choice with equivalent behavior in the supported languages. The approved spec maps the context type and variants; no acceptance criterion defines Rust core or blanket trait implementations as standalone facade operations."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "kmipkit_protocol::RegisterRequest::validate_local_shape",
+      "reason": "This cross-crate preflight helper supports client-side Register validation and is not a separate caller-facing API operation. Callers use the typed Register payload/client paths, which perform the preflight as part of the supported request flow.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/029-opaque-object-context/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation under the maintainer's autonomous roadmap instruction dated 2026-10-13"
+      },
+      "evidence": "KMIPKIT-0044-FR-003 through FR-006 specify local validation as part of Register construction/execution behavior. The helper is consumed by the client implementation; the approved feature does not require a standalone validation method in the public facade inventory."
     }
   ],
   "apiLevels": [
