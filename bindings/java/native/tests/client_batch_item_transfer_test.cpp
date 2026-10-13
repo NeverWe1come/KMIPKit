@@ -40,6 +40,20 @@ bool consumer_transfer_disarms_guard() {
     return released_handle == 73 && release_count == 1;
 }
 
+bool invalid_length_preflight_keeps_transfer_guard_armed() {
+    released_handle = 0;
+    release_count = 0;
+    {
+        kmipkit::jni::ClientBatchItemTransferGuard<int, decltype(&release_handle)> guard(
+            97,
+            &release_handle);
+        if (kmipkit::jni::valid_unique_batch_item_id_length(16LL * 1024 * 1024 + 1)) {
+            return false;
+        }
+    }
+    return released_handle == 97 && release_count == 1;
+}
+
 } // namespace
 
 int main() {
@@ -49,6 +63,13 @@ int main() {
     }
     if (!consumer_transfer_disarms_guard()) {
         std::cerr << "JNI transfer guard released a handle after ownership reached the consumer\n";
+        return 1;
+    }
+    if (kmipkit::jni::valid_unique_batch_item_id_length(-1)
+            || !kmipkit::jni::valid_unique_batch_item_id_length(0)
+            || !kmipkit::jni::valid_unique_batch_item_id_length(16LL * 1024 * 1024)
+            || !invalid_length_preflight_keeps_transfer_guard_armed()) {
+        std::cerr << "JNI rejected-input preflight did not retain handle ownership\n";
         return 1;
     }
     return 0;
