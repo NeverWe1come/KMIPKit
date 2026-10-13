@@ -16224,6 +16224,25 @@ class CatalogValidationTests(unittest.TestCase):
                     requirement = requirements[requirement_id]
                     self.assertIn(expected_test, requirement["verification_refs"])
 
+    def test_q_length_integer_negative_validation_has_named_requirement_evidence(self) -> None:
+        """The Qlength field-type rejection test is linked to its normative requirement."""
+        requirement_id = "KMIPKIT-REQ-SPEC-4.14-001-001"
+        verification_ref = (
+            "crates/kmipkit-protocol/tests/support/profile_unit.rs::"
+            "profile_rejects_non_integer_q_length_in_client_supplied_domain_parameters"
+        )
+        catalog = json.loads(
+            (ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8")
+        )
+        requirement = next(
+            row for row in catalog["requirements"] if row["requirement_id"] == requirement_id
+        )
+
+        self.assertIsNotNone(
+            _rust_test_body(verification_ref)
+        )
+        self.assertIn(verification_ref, requirement["verification_refs"])
+
     def test_get_key_compression_request_has_scoped_implementation_and_positive_test_evidence(
         self,
     ) -> None:
