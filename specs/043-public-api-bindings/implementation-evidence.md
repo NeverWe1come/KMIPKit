@@ -532,7 +532,7 @@ The full matrix for head `3c87f385` passed the language, platform, Java/Python c
 - **Scope**: Promote the already implemented shared client, transport configuration, ordered batch, and common response ABI into reviewed four-language manifest declarations and the generated public C header. Add an external-style C consumer that compiles only against `bindings/c/include/kmipkit.h`; operation-specific builders and typed payload access remain separately gated by T031–T069.
 - **Red**: Added a generator regression requiring the generated public header to include the mapped client handle, transport constructor, and client execution entrypoint. Added a compiled C consumer for the public client and ordered-batch entrypoints. The generator regression fails on the release manifest because those observed T076 C symbols remain blocked and absent from the public header.
 - **Command**: `$env:PYTHONPATH = 'tools/api_manifest/tests'; uv run --with-requirements tools/api_manifest/requirements-test.txt python -m unittest test_generate.ManifestGeneratorCliTests.test_public_header_includes_shared_client_abi_after_binding_mapping -v`
-- **Result**: Expected Red: `FAILED (failures=1)` with `the public C header omits the mapped client handle`. C compilation is assigned to the repository's C consumer CI matrix because this Windows host has no C compiler or CMake on `PATH`.
+- **Result**: Expected Red: `FAILED (failures=1)` with `the public C header omits the mapped client handle`. The public C consumer still needs compilation in the repository CI matrix because CMake is unavailable on this host; the Java build separately compiled the JNI bridge with MSVC.
 - **Commit**: Red test commit `4ca33256`.
 
 ## T021 Java shared batch-option parity (2026-10-13)
@@ -561,7 +561,7 @@ The full matrix for head `3c87f385` passed the language, platform, Java/Python c
 - **Green**: Java and Python expose consuming item builders over the existing ABI. Both preserve opaque identifier bytes, enforce the 16 MiB local input bound before making their owned copies, and transfer the previous wrapper only when constructing the new typed item.
 - **Commands**: `mvn --batch-mode --file bindings/java/pom.xml -Dtest=ClientFacadeContractTest test`; `bindings/python/.venv/Scripts/python.exe -m pytest bindings/python/tests/test_client.py::test_typed_batch_item_unique_id_builder_preserves_bytes_and_transfers_ownership -q`.
 - **Results**: PASS: Java contract suite 8 tests, including a native JNI build; Python ownership/byte-preservation fake-ABI test 1 passed. The complete Python client contract suite also passes: 89 tests.
-- **Green commit**: Pending.
+- **Green commit**: `39eb07ef`.
 
 ### Java correlation UTF-8 and resource-limit QA follow-up
 
@@ -572,4 +572,13 @@ The full matrix for head `3c87f385` passed the language, platform, Java/Python c
 - **Green**: Oversized correlation input now raises `ResourceLimitException` before copying or entering JNI. Java documentation states the UTF-8 validity and bound, and clarifies that KMIP continuation semantics are checked at batch execution.
 - **Command**: `mvn --batch-mode --file bindings/java/pom.xml -Dtest=ClientFacadeContractTest test`
 - **Result**: PASS: 9 tests; C++ JNI bridge rebuilt successfully and all facade boundary tests passed.
-- **Green commit**: Pending.
+- **Green commit**: `39eb07ef`.
+
+### Adapter regression matrix on continuation head `39eb07ef`
+
+| Binding | Command | Result |
+|---|---|---|
+| Java 17/JNI | `mvn --batch-mode --file bindings/java/pom.xml verify` | PASS: 129 tests, 0 failures/errors, 3 documented platform skips; JaCoCo coverage checks passed; native JNI bridge compiled with MSVC. |
+| Python 3.12/CFFI | `bindings/python/.venv/Scripts/python.exe -m pytest bindings/python/tests -q` | PASS: 152 tests. |
+
+These local binding checks do not close T076: the C public header remains generated from blocked manifest declarations, the standalone compiled C consumer has not yet run, and remote CI has not run on this continuation head.
