@@ -2,7 +2,7 @@
 
 use kmipkit_protocol::{GetConstraintsRequest, GetConstraintsResponse};
 use kmipkit_protocol::{GetUsageAllocationRequest, GetUsageAllocationResponse};
-use kmipkit_protocol::{SetConstraintsRequest,SetConstraintsResponse};
+use kmipkit_protocol::{SetConstraintsRequest, SetConstraintsResponse};
 use std::collections::HashSet;
 use std::error::Error;
 use std::fmt;
@@ -137,7 +137,7 @@ const QUERY_ASYNCHRONOUS_REQUESTS_OPERATION: u32 = 0x0000_0039;
 const PROCESS_OPERATION: u32 = 0x0000_003A;
 const GET_CONSTRAINTS_OPERATION: u32 = 56; // OASIS Ã‚Â§6.1.22.
 const GET_USAGE_ALLOCATION_OPERATION: u32 = 17; // OASIS Â§6.1.23.
-const SET_CONSTRAINTS_OPERATION:u32=55; // OASIS §6.1.52.
+const SET_CONSTRAINTS_OPERATION: u32 = 55; // OASIS §6.1.52.
 const PING_OPERATION: u32 = 0x0000_003B;
 const QUERY_OPERATION: u32 = 0x0000_0018;
 const ASYNCHRONOUS_MANDATORY: u32 = 1;
@@ -1490,7 +1490,12 @@ impl<'a> ClientResponseView<'a> {
 
     /// Returns this policy response when its operation matches.
     #[must_use]
-    pub const fn set_constraints(&self)->Option<&SetConstraintsResponse>{match self.response{ClientResponseRef::SetConstraints(response)=>Some(response),_=>None}}
+    pub const fn set_constraints(&self) -> Option<&SetConstraintsResponse> {
+        match self.response {
+            ClientResponseRef::SetConstraints(response) => Some(response),
+            _ => None,
+        }
+    }
 
     /// Returns the Ping response when this view represents it.
     #[must_use]
@@ -1592,9 +1597,10 @@ impl fmt::Debug for ClientResponseView<'_> {
             ClientResponseRef::Ping(response) => {
                 formatter.debug_tuple("Ping").field(response).finish()
             }
-            ClientResponseRef::SetConstraints(response) => {
-                formatter.debug_tuple("SetConstraints").field(response).finish()
-            }
+            ClientResponseRef::SetConstraints(response) => formatter
+                .debug_tuple("SetConstraints")
+                .field(response)
+                .finish(),
             ClientResponseRef::GetUsageAllocation(response) => formatter
                 .debug_tuple("GetUsageAllocation")
                 .field(response)
@@ -2111,7 +2117,10 @@ impl fmt::Debug for ClientBatchOutcome {
                 .field(response)
                 .finish(),
             Self::Ping(response) => formatter.debug_tuple("Ping").field(response).finish(),
-            Self::SetConstraints(response) => formatter.debug_tuple("SetConstraints").field(response).finish(),
+            Self::SetConstraints(response) => formatter
+                .debug_tuple("SetConstraints")
+                .field(response)
+                .finish(),
             Self::GetUsageAllocation(response) => formatter
                 .debug_tuple("GetUsageAllocation")
                 .field(response)
@@ -2180,7 +2189,9 @@ impl fmt::Display for ClientBatchOutcome {
                 write!(formatter, "GetAttributeList({})", response.result())
             }
             Self::Ping(response) => write!(formatter, "Ping({})", response.result()),
-            Self::SetConstraints(response) => write!(formatter, "SetConstraints({})", response.result()),
+            Self::SetConstraints(response) => {
+                write!(formatter, "SetConstraints({})", response.result())
+            }
             Self::GetUsageAllocation(response) => {
                 write!(formatter, "GetUsageAllocation({})", response.result())
             }
@@ -2810,9 +2821,16 @@ impl Client {
     /// Executes one explicit §6.1.52 policy operation without retry.
     /// # Errors
     /// Returns sanitized validation, protocol or transport failure with delivery evidence.
-    pub fn set_constraints(&mut self,request:SetConstraintsRequest,limits:&CodecLimits)->Result<ClientBatchItemResponse,ClientError>{
-      let response=self.execute(ClientBatch::new(ClientBatchItem::new(ClientRequest::SetConstraints(request))),limits)?;
-      take_single_response(response)
+    pub fn set_constraints(
+        &mut self,
+        request: SetConstraintsRequest,
+        limits: &CodecLimits,
+    ) -> Result<ClientBatchItemResponse, ClientError> {
+        let response = self.execute(
+            ClientBatch::new(ClientBatchItem::new(ClientRequest::SetConstraints(request))),
+            limits,
+        )?;
+        take_single_response(response)
     }
 
     /// Executes one client-to-server Ping request.
