@@ -638,4 +638,6 @@ Independent QA reviewed the T076 inventory and found that requiring all 31 C exp
 - **Command**: `uv run --with-requirements tools/api_manifest/requirements-test.txt python -m unittest tools.api_manifest.tests.test_generate.ManifestGeneratorCliTests.test_public_header_includes_shared_client_abi_after_binding_mapping -v`
 - **Result**: Expected Red: `FAILED (failures=1)`; all 31 exports are reported unresolved. Existing client-handle assertions remain as additional public-header gates.
 - **QA**: Read-only review by `/root/qa_010_audit`; no files or tests were changed by QA.
-- **Commit**: Pending the separate Red test commit.
+- **Red refinement commit**: `25ed5389`.
+- **Fresh Red rerun**: `uv run --with-requirements tools/api_manifest/requirements-test.txt python -m unittest tools.api_manifest.tests.test_generate.ManifestGeneratorCliTests.test_public_header_includes_shared_client_abi_after_binding_mapping -v`.
+- **Fresh Red result**: Expected `FAILED (failures=1)`; the exact-exclusion gate reports all 31 observed T076 declarations unresolved. The base test still verifies the mapped client handle, transport constructor, and execution entry point are present in the generated public header.
