@@ -379,4 +379,4 @@ pub use set_defaults::{SetDefaultsRequest, SetDefaultsResponse};
 mod set_endpoint_role_tests;
 
 mod set_endpoint_role;
-pub use set_endpoint_role::{SetEndpointRoleRequest,SetEndpointRoleResponse};
+pub use set_endpoint_role::{SetEndpointRoleRequest, SetEndpointRoleResponse};

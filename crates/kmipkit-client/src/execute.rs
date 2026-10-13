@@ -4,7 +4,7 @@ use kmipkit_protocol::{GetConstraintsRequest, GetConstraintsResponse};
 use kmipkit_protocol::{GetUsageAllocationRequest, GetUsageAllocationResponse};
 use kmipkit_protocol::{SetConstraintsRequest, SetConstraintsResponse};
 use kmipkit_protocol::{SetDefaultsRequest, SetDefaultsResponse};
-use kmipkit_protocol::{SetEndpointRoleRequest,SetEndpointRoleResponse};
+use kmipkit_protocol::{SetEndpointRoleRequest, SetEndpointRoleResponse};
 use std::collections::HashSet;
 use std::error::Error;
 use std::fmt;
@@ -141,7 +141,7 @@ const GET_CONSTRAINTS_OPERATION: u32 = 56; // OASIS ÃƒÆ’Ã¢â‚¬Å¡Ãƒ
 const GET_USAGE_ALLOCATION_OPERATION: u32 = 17; // OASIS Ãƒâ€šÃ‚Â§6.1.23.
 const SET_CONSTRAINTS_OPERATION: u32 = 55; // OASIS Ã‚Â§6.1.52.
 const SET_DEFAULTS_OPERATION: u32 = 54; // OASIS Â§6.1.53.
-const SET_ENDPOINT_ROLE_OPERATION:u32=50; // OASIS §6.1.54.
+const SET_ENDPOINT_ROLE_OPERATION: u32 = 50; // OASIS §6.1.54.
 const PING_OPERATION: u32 = 0x0000_003B;
 const QUERY_OPERATION: u32 = 0x0000_0018;
 const ASYNCHRONOUS_MANDATORY: u32 = 1;
@@ -1538,7 +1538,12 @@ impl<'a> ClientResponseView<'a> {
 
     /// Returns this policy response when its operation matches.
     #[must_use]
-    pub const fn set_endpoint_role(&self)->Option<&SetEndpointRoleResponse>{match self.response{ClientResponseRef::SetEndpointRole(response)=>Some(response),_=>None}}
+    pub const fn set_endpoint_role(&self) -> Option<&SetEndpointRoleResponse> {
+        match self.response {
+            ClientResponseRef::SetEndpointRole(response) => Some(response),
+            _ => None,
+        }
+    }
 
     /// Returns the Ping response when this view represents it.
     #[must_use]
@@ -1640,9 +1645,10 @@ impl fmt::Debug for ClientResponseView<'_> {
             ClientResponseRef::Ping(response) => {
                 formatter.debug_tuple("Ping").field(response).finish()
             }
-            ClientResponseRef::SetEndpointRole(response) => {
-                formatter.debug_tuple("SetEndpointRole").field(response).finish()
-            }
+            ClientResponseRef::SetEndpointRole(response) => formatter
+                .debug_tuple("SetEndpointRole")
+                .field(response)
+                .finish(),
             ClientResponseRef::SetDefaults(response) => formatter
                 .debug_tuple("SetDefaults")
                 .field(response)
@@ -2183,7 +2189,10 @@ impl fmt::Debug for ClientBatchOutcome {
                 .field(response)
                 .finish(),
             Self::Ping(response) => formatter.debug_tuple("Ping").field(response).finish(),
-            Self::SetEndpointRole(response) => formatter.debug_tuple("SetEndpointRole").field(response).finish(),
+            Self::SetEndpointRole(response) => formatter
+                .debug_tuple("SetEndpointRole")
+                .field(response)
+                .finish(),
             Self::SetDefaults(response) => formatter
                 .debug_tuple("SetDefaults")
                 .field(response)
@@ -2260,7 +2269,9 @@ impl fmt::Display for ClientBatchOutcome {
                 write!(formatter, "GetAttributeList({})", response.result())
             }
             Self::Ping(response) => write!(formatter, "Ping({})", response.result()),
-            Self::SetEndpointRole(response) => write!(formatter, "SetEndpointRole({})", response.result()),
+            Self::SetEndpointRole(response) => {
+                write!(formatter, "SetEndpointRole({})", response.result())
+            }
             Self::SetDefaults(response) => write!(formatter, "SetDefaults({})", response.result()),
             Self::SetConstraints(response) => {
                 write!(formatter, "SetConstraints({})", response.result())
@@ -2924,9 +2935,18 @@ impl Client {
     /// Executes one explicit §6.1.54 policy operation without retry.
     /// # Errors
     /// Returns sanitized validation, protocol or transport failure with delivery evidence.
-    pub fn set_endpoint_role(&mut self,request:SetEndpointRoleRequest,limits:&CodecLimits)->Result<ClientBatchItemResponse,ClientError>{
-      let response=self.execute(ClientBatch::new(ClientBatchItem::new(ClientRequest::SetEndpointRole(request))),limits)?;
-      take_single_response(response)
+    pub fn set_endpoint_role(
+        &mut self,
+        request: SetEndpointRoleRequest,
+        limits: &CodecLimits,
+    ) -> Result<ClientBatchItemResponse, ClientError> {
+        let response = self.execute(
+            ClientBatch::new(ClientBatchItem::new(ClientRequest::SetEndpointRole(
+                request,
+            ))),
+            limits,
+        )?;
+        take_single_response(response)
     }
 
     /// Executes one client-to-server Ping request.
