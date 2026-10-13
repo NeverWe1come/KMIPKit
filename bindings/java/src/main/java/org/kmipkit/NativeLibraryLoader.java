@@ -59,6 +59,11 @@ final class NativeLibraryLoader {
         void publish(Path staging, Path destination) throws IOException;
     }
 
+    @FunctionalInterface
+    interface PrivateFileVerifier {
+        void verify(Path file, Path privateDirectory) throws IOException;
+    }
+
     private NativeLibraryLoader() {}
 
     static void load() {
@@ -316,10 +321,15 @@ final class NativeLibraryLoader {
     }
 
     private static SeekableByteChannel openNewPrivateFile(Path path, Path privateDirectory) throws IOException {
+        return openNewPrivateFile(path, privateDirectory, NativeLibraryLoader::verifyPrivateFile);
+    }
+
+    static SeekableByteChannel openNewPrivateFile(
+            Path path, Path privateDirectory, PrivateFileVerifier fileVerifier) throws IOException {
         FileAttribute<?> attribute = privateFileAttribute(privateDirectory);
         SeekableByteChannel channel = Files.newByteChannel(path, newFileOptions(), attribute);
         try {
-            verifyPrivateFile(path, privateDirectory);
+            fileVerifier.verify(path, privateDirectory);
             return channel;
         } catch (IOException failure) {
             channel.close();
