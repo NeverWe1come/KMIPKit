@@ -120,11 +120,18 @@ class Endpoint:
         cls, host: str, port: int, *, tls_server_name: str | None = None
     ) -> Self:
         """Create a raw TTLV-over-TLS endpoint."""
-        return cls(EndpointKind.RAW_TLS, host, port, tls_server_name)
+        _nonempty_text(host)
+        canonical_port = _unsigned(port, 16, allow_zero=False)
+        if tls_server_name is not None:
+            _nonempty_text(tls_server_name)
+        return cls(EndpointKind.RAW_TLS, host, canonical_port, tls_server_name)
 
     @classmethod
     def https(cls, uri: str, *, target_uri: str | None = None) -> Self:
         """Create a TTLV-over-HTTPS endpoint."""
+        _nonempty_text(uri)
+        if target_uri is not None:
+            _nonempty_text(target_uri)
         return cls(
             EndpointKind.HTTPS,
             uri,
@@ -333,6 +340,16 @@ class TransportConfig:
     def __post_init__(self) -> None:
         if not isinstance(self.endpoint, Endpoint):
             errors.raise_for_status(4)
+        # Read the base dataclass slots and reconstruct a validated value so a
+        # subclass cannot suppress Endpoint.__post_init__ and bypass FFI checks.
+        endpoint = Endpoint(
+            Endpoint.kind.__get__(self.endpoint, Endpoint),
+            Endpoint.address.__get__(self.endpoint, Endpoint),
+            Endpoint.port.__get__(self.endpoint, Endpoint),
+            Endpoint.tls_server_name.__get__(self.endpoint, Endpoint),
+            Endpoint.target_uri.__get__(self.endpoint, Endpoint),
+        )
+        object.__setattr__(self, "endpoint", endpoint)
         _validate_transport_input(self.client_private_key)
         if not isinstance(self.trust, TrustSource):
             errors.raise_for_status(4)
