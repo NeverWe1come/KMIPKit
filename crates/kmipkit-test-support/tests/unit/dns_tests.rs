@@ -121,8 +121,7 @@ fn parser_rejects_unsupported_types_and_truncated_labels() {
 fn retries_dns_fixture_tcp_bind_when_ephemeral_port_is_reserved() {
     let mut attempts = 0;
     let (udp_socket, tcp_listener) = super::bind_local_dns_sockets_with(
-        || UdpSocket::bind((Ipv4Addr::LOCALHOST, 0)),
-        |address| {
+        || {
             attempts += 1;
             if attempts == 1 {
                 Err(io::Error::new(
@@ -130,9 +129,10 @@ fn retries_dns_fixture_tcp_bind_when_ephemeral_port_is_reserved() {
                     "simulated Windows excluded TCP port",
                 ))
             } else {
-                std::net::TcpListener::bind(address)
+                TcpListener::bind((Ipv4Addr::LOCALHOST, 0))
             }
         },
+        UdpSocket::bind,
     )
     .expect("a reserved ephemeral port should be retried");
 
@@ -151,7 +151,8 @@ fn retries_dns_fixture_tcp_bind_when_ephemeral_port_is_reserved() {
 fn retries_dns_fixture_udp_bind_when_ephemeral_port_is_reserved() {
     let mut attempts = 0;
     let (udp_socket, tcp_listener) = super::bind_local_dns_sockets_with(
-        || {
+        || TcpListener::bind((Ipv4Addr::LOCALHOST, 0)),
+        |address| {
             attempts += 1;
             if attempts == 1 {
                 Err(io::Error::new(
@@ -159,10 +160,9 @@ fn retries_dns_fixture_udp_bind_when_ephemeral_port_is_reserved() {
                     "simulated Windows excluded UDP port",
                 ))
             } else {
-                UdpSocket::bind((Ipv4Addr::LOCALHOST, 0))
+                UdpSocket::bind(address)
             }
         },
-        TcpListener::bind,
     )
     .expect("a reserved ephemeral UDP port should be retried");
 
@@ -183,15 +183,15 @@ fn stops_retrying_dns_fixture_udp_bind_after_the_attempt_limit() {
     let mut tcp_attempts = 0;
     let error = super::bind_local_dns_sockets_with(
         || {
+            tcp_attempts += 1;
+            TcpListener::bind((Ipv4Addr::LOCALHOST, 0))
+        },
+        |_address| {
             attempts += 1;
             Err(io::Error::new(
                 io::ErrorKind::PermissionDenied,
                 "simulated reserved UDP port",
             ))
-        },
-        |_address| {
-            tcp_attempts += 1;
-            TcpListener::bind((Ipv4Addr::LOCALHOST, 0))
         },
     )
     .expect_err("UDP binding stops after its bounded retry limit");
@@ -205,14 +205,14 @@ fn stops_retrying_dns_fixture_udp_bind_after_the_attempt_limit() {
 fn does_not_retry_permanent_dns_fixture_udp_bind_errors() {
     let mut attempts = 0;
     let error = super::bind_local_dns_sockets_with(
-        || {
+        || TcpListener::bind((Ipv4Addr::LOCALHOST, 0)),
+        |_address| {
             attempts += 1;
             Err(io::Error::new(
                 io::ErrorKind::InvalidInput,
                 "simulated invalid UDP bind request",
             ))
         },
-        TcpListener::bind,
     )
     .expect_err("permanent UDP bind errors are returned immediately");
 
@@ -224,14 +224,14 @@ fn does_not_retry_permanent_dns_fixture_udp_bind_errors() {
 fn stops_retrying_dns_fixture_tcp_bind_after_the_attempt_limit() {
     let mut attempts = 0;
     let error = super::bind_local_dns_sockets_with(
-        || UdpSocket::bind((Ipv4Addr::LOCALHOST, 0)),
-        |_address| {
+        || {
             attempts += 1;
             Err(io::Error::new(
                 io::ErrorKind::PermissionDenied,
                 "simulated reserved TCP port",
             ))
         },
+        UdpSocket::bind,
     )
     .expect_err("socket-pair binding stops after its bounded retry limit");
 
@@ -243,14 +243,14 @@ fn stops_retrying_dns_fixture_tcp_bind_after_the_attempt_limit() {
 fn does_not_retry_permanent_dns_fixture_tcp_bind_errors() {
     let mut attempts = 0;
     let error = super::bind_local_dns_sockets_with(
-        || UdpSocket::bind((Ipv4Addr::LOCALHOST, 0)),
-        |_address| {
+        || {
             attempts += 1;
             Err(io::Error::new(
                 io::ErrorKind::InvalidInput,
                 "simulated invalid TCP bind request",
             ))
         },
+        UdpSocket::bind,
     )
     .expect_err("permanent socket-pair errors are returned immediately");
 
