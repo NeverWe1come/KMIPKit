@@ -680,6 +680,13 @@ const CREATE_KEY_PAIR_OPERATION: u32 = 0x0000_0002;
 const CREATE_KEY_PAIR_ATTRIBUTE_GROUPS: [u32; 3] = [0x0042_0126, 0x0042_0127, 0x0042_0128];
 const CRYPTOGRAPHIC_DOMAIN_PARAMETERS: u32 = 0x0042_0029;
 const QLENGTH_DOMAIN_PARAMETER: u32 = 0x0042_0073;
+const REGISTER_OPERATION: u32 = 0x0000_0003;
+const REGISTER_ATTRIBUTES: u32 = 0x0042_0125;
+const REGISTER_OBJECT_TYPE: u32 = 0x0042_0057;
+const REGISTER_PROTECTION_STORAGE_MASKS: u32 = 0x0042_015F;
+const KEY_VALUE_LOCATION: u32 = 0x0042_00B8;
+const KEY_VALUE_LOCATION_VALUE: u32 = 0x0042_00B9;
+const KEY_VALUE_LOCATION_TYPE: u32 = 0x0042_00BA;
 
 fn discover_versions_advertises_only_client_supported_versions(
     request: Option<&RequestMessage>,
@@ -809,6 +816,110 @@ fn import_preserves_wrapped_secret_data_shape(
             .with_request_payload(|payload| import_payload_preserves_secret_data_wrapping(&payload))
             .unwrap_or(false)
     })
+}
+
+fn client_register_key_value_location_requires_omitted_key_value(
+    request: Option<&RequestMessage>,
+    _response: Option<(&RequestMessage, &ResponseMessage)>,
+) -> bool {
+    let Some(request) = request else {
+        return false;
+    };
+
+    request.batch_items().all(|batch_item| {
+        let Some(operation) = batch_item.operation() else {
+            return false;
+        };
+        if operation != REGISTER_OPERATION {
+            return true;
+        }
+
+        batch_item
+            .with_request_payload(|payload| register_key_value_location_is_valid(&payload))
+            .unwrap_or(false)
+    })
+}
+
+fn register_key_value_location_is_valid(payload: &StructureView<'_>) -> bool {
+    let location = match field_presence(payload, REGISTER_ATTRIBUTES) {
+        FieldPresence::Missing => return true,
+        FieldPresence::Unique(attributes) => attributes.with_value(|value| match value {
+            ValueView::Structure(attributes) => {
+                match field_presence(&attributes, KEY_VALUE_LOCATION) {
+                    FieldPresence::Missing => None,
+                    FieldPresence::Unique(location) => {
+                        Some(location.with_value(|value| match value {
+                            ValueView::Structure(location) => {
+                                key_value_location_members_are_valid(&location)
+                            }
+                            _ => false,
+                        }))
+                    }
+                    FieldPresence::Duplicate => Some(false),
+                }
+            }
+            _ => Some(false),
+        }),
+        FieldPresence::Duplicate => return false,
+    };
+    let Some(location_is_valid) = location else {
+        return true;
+    };
+    location_is_valid && register_object_omits_key_value(payload)
+}
+
+fn key_value_location_members_are_valid(location: &StructureView<'_>) -> bool {
+    let FieldPresence::Unique(value) = field_presence(location, KEY_VALUE_LOCATION_VALUE) else {
+        return false;
+    };
+    let FieldPresence::Unique(location_type) = field_presence(location, KEY_VALUE_LOCATION_TYPE)
+    else {
+        return false;
+    };
+
+    value.with_value(|value| matches!(value, ValueView::TextString(_)))
+        && location_type.with_value(|value| matches!(value, ValueView::Enumeration(_)))
+}
+
+fn register_object_omits_key_value(payload: &StructureView<'_>) -> bool {
+    let mut key_block_count = 0_u8;
+    let mut every_key_block_omits_key_value = true;
+
+    for field in payload.children() {
+        if matches!(
+            field.tag().raw(),
+            REGISTER_OBJECT_TYPE | REGISTER_ATTRIBUTES | REGISTER_PROTECTION_STORAGE_MASKS
+        ) {
+            continue;
+        }
+
+        let key_value_presence = field.with_value(|value| match value {
+            ValueView::Structure(object) => match field_presence(&object, KEY_BLOCK) {
+                FieldPresence::Missing => None,
+                FieldPresence::Unique(key_block) => {
+                    Some(key_block.with_value(|value| match value {
+                        ValueView::Structure(key_block) => {
+                            match field_presence(&key_block, KEY_VALUE) {
+                                FieldPresence::Missing => Some(true),
+                                FieldPresence::Unique(_) => Some(false),
+                                FieldPresence::Duplicate => None,
+                            }
+                        }
+                        _ => None,
+                    }))
+                }
+                FieldPresence::Duplicate => Some(None),
+            },
+            _ => None,
+        });
+
+        if let Some(omits_key_value) = key_value_presence {
+            key_block_count = key_block_count.saturating_add(1);
+            every_key_block_omits_key_value &= omits_key_value == Some(true);
+        }
+    }
+
+    key_block_count == 1 && every_key_block_omits_key_value
 }
 
 #[derive(Clone, Copy)]
@@ -998,6 +1109,17 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
                 kind: RuleTestKind::OptionalCapabilityUsable,
             },
         ],
+        constraints: &[],
+    },
+    TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-4.27-001",
+        source_clause_id: "KMIPKIT-CLAUSE-SPEC-4.27-001",
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
+        evaluator: Some(client_register_key_value_location_requires_omitted_key_value),
+        test_evidence: &[RuleTestEvidence {
+            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_client_register_key_value_location_only_without_key_value",
+            kind: RuleTestKind::OptionalCapabilityUsable,
+        }],
         constraints: &[],
     },
     TypedRuleMapping {

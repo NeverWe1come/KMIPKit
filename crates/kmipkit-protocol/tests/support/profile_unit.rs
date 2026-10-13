@@ -214,10 +214,7 @@ fn register_request_with_key_value_location(
         REGISTER_OPERATION,
         structure([
             tagged(OBJECT_TYPE, Value::enumeration(2)),
-            tagged(
-                ATTRIBUTES,
-                Value::structure(structure(attributes)),
-            ),
+            tagged(ATTRIBUTES, Value::structure(structure(attributes))),
             tagged(
                 SYMMETRIC_KEY,
                 Value::structure(structure([tagged(
@@ -1773,9 +1770,9 @@ fn profile_maps_client_register_key_value_location_only_without_key_value() {
     };
 
     let external_key = register_key_value_location_request(true, false);
-    result.validate_request(&external_key).expect(
-        "Register may carry Key Value Location when its Key Block omits Key Value",
-    );
+    result
+        .validate_request(&external_key)
+        .expect("Register may carry Key Value Location when its Key Block omits Key Value");
 
     let ordinary_key = register_key_value_location_request(false, true);
     result
@@ -1815,10 +1812,7 @@ fn profile_rejects_malformed_register_key_value_location_members() {
             KEY_VALUE_LOCATION_VALUE,
             Value::text_string("pkcs11:object=key-1".to_owned()),
         )]),
-        structure([tagged(
-            KEY_VALUE_LOCATION_TYPE,
-            Value::enumeration(2),
-        )]),
+        structure([tagged(KEY_VALUE_LOCATION_TYPE, Value::enumeration(2))]),
         structure([
             tagged(
                 KEY_VALUE_LOCATION_VALUE,

@@ -88544,10 +88544,15 @@
       "subject": "Key Value Location",
       "summary": "The client may specify Key Value Location in Register when Key Value is omitted.",
       "role": "client",
-      "direction": "unclear",
-      "condition": "Register with Key Value absent.",
+      "direction": "client_to_server",
+      "condition": "Only in a Register request when the object's Key Block omits Key Value.",
       "scope_state": "profile_conditional",
-      "element_ids": [],
+      "element_ids": [
+        "KMIPKIT-ELEM-ATTRIBUTE-KEY-VALUE-LOCATION",
+        "KMIPKIT-ELEM-STRUCTURE-MEMBER-4-27-KEY-VALUE-LOCATION-TYPE",
+        "KMIPKIT-ELEM-STRUCTURE-MEMBER-4-27-KEY-VALUE-LOCATION-VALUE",
+        "KMIPKIT-ELEM-STRUCTURE-MEMBER-3-1-KEY-BLOCK-KEY-VALUE"
+      ],
       "profile_ids": [
         "KMIPKIT-PROFILE-AES-XTS-CLIENT",
         "KMIPKIT-PROFILE-ASYMMETRIC-KEY-LIFECYCLE-CLIENT",
@@ -88570,12 +88575,18 @@
       ],
       "test_case_ids": [],
       "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/profile.rs::client_register_key_value_location_requires_omitted_key_value",
+        "crates/kmipkit-protocol/src/register.rs::RegisterRequest::into_ttlv_payload"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_client_register_key_value_location_only_without_key_value",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_malformed_register_key_value_location_members"
+      ],
       "negative_verification_required": false,
       "decision_id": null,
-      "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
+      "status": "scoped_verified",
+      "review_note": "KMIP Specification v2.1 §4.27 permits a client Register request to include Key Value Location only when Key Value is omitted from the object's Key Block; Table 82's required Text String Value and Enumeration Type members are checked by the profile rule. The linked synthetic TTLV tests exercise this request shape and reject the conflicting present-Key-Value case. No official OASIS Test Case is claimed: pinned Test Cases v2.1 CN01 §2.63 describes retrieving a metadata-only object with Locate, not the Register request covered here."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-4.27-002",
