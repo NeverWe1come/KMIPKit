@@ -1211,14 +1211,8 @@ fn key_wrapping_data_has_key_information(data: &StructureView<'_>) -> bool {
         return false;
     }
 
-    match field_presence(data, ENCODING_OPTION) {
-        FieldPresence::Missing => {}
-        FieldPresence::Unique(encoding_option) => {
-            if !encoding_option.with_value(|value| matches!(value, ValueView::Enumeration(_))) {
-                return false;
-            }
-        }
-        FieldPresence::Duplicate => return false,
+    if !key_wrapping_data_has_valid_encoding_option(data) {
+        return false;
     }
 
     let mut has_key_information = false;
@@ -1240,6 +1234,19 @@ fn key_wrapping_data_has_key_information(data: &StructureView<'_>) -> bool {
         }
     }
     has_key_information
+}
+
+fn key_wrapping_data_has_valid_encoding_option(data: &StructureView<'_>) -> bool {
+    match field_presence(data, ENCODING_OPTION) {
+        FieldPresence::Missing => {}
+        FieldPresence::Unique(encoding_option) => {
+            if !encoding_option.with_value(|value| matches!(value, ValueView::Enumeration(_))) {
+                return false;
+            }
+        }
+        FieldPresence::Duplicate => return false,
+    }
+    true
 }
 
 fn key_information_has_unique_identifier(information: &StructureView<'_>) -> bool {
