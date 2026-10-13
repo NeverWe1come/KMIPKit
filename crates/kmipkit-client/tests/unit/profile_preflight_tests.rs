@@ -104,14 +104,14 @@ fn unprofiled_base_operation_still_reaches_transport() {
     assert_eq!(exchanges.get(), 1);
 }
 
-struct ResponseRejectingProfile {
+struct TestProfileValidator {
     error: ProfileValidationError,
     request_checks: Option<Rc<Cell<usize>>>,
     transport_error: Option<ProfileValidationError>,
     request_error: Option<ProfileValidationError>,
 }
 
-impl ProfileExchangeValidator for ResponseRejectingProfile {
+impl ProfileExchangeValidator for TestProfileValidator {
     fn validate_transport(
         &self,
         _transport: ProfileTransport,
@@ -154,7 +154,7 @@ impl ProfileExchangeValidator for ResponseRejectingProfile {
 
 #[test]
 fn response_profile_rejection_after_exchange_preserves_response_started_delivery() {
-    let validator = ResponseRejectingProfile {
+    let validator = TestProfileValidator {
         error: ProfileValidationError::for_test(
             ProfileValidationErrorCode::ResponseRuleRejected,
             "KMIPKIT-TEST-PROFILE",
@@ -210,7 +210,7 @@ fn response_profile_rejection_after_exchange_preserves_response_started_delivery
 fn request_limits_are_checked_before_profile_evaluation() {
     let exchanges = Rc::new(Cell::new(0));
     let request_checks = Rc::new(Cell::new(0));
-    let validator = ResponseRejectingProfile {
+    let validator = TestProfileValidator {
         error: ProfileValidationError::for_test(
             ProfileValidationErrorCode::ResponseRuleRejected,
             "KMIPKIT-TEST-PROFILE",
@@ -243,7 +243,7 @@ fn request_limits_are_checked_before_profile_evaluation() {
 fn transport_profile_rejection_is_not_sent_and_skips_the_exchange() {
     let exchanges = Rc::new(Cell::new(0));
     let mut client = Client::for_test(CountingTransport::new(Rc::clone(&exchanges)));
-    let validator = ResponseRejectingProfile {
+    let validator = TestProfileValidator {
         error: ProfileValidationError::for_test(
             ProfileValidationErrorCode::TransportConstraintRejected,
             "KMIPKIT-TEST-PROFILE",
@@ -289,7 +289,7 @@ fn request_profile_rejection_is_not_sent_and_skips_the_exchange() {
         "KMIPKIT-TEST-REQUIREMENT",
         "KMIPKIT-TEST-CLAUSE",
     );
-    let validator = ResponseRejectingProfile {
+    let validator = TestProfileValidator {
         error: error.clone(),
         request_checks: Some(Rc::clone(&request_checks)),
         transport_error: None,
