@@ -234,8 +234,17 @@ class ManifestGeneratorCliTests(unittest.TestCase):
         c_header = outputs["bindings/c/include/kmipkit.h"].decode("utf-8")
 
         self.assertIn("out_category receives 0 none, 1 validation, 2 protocol", c_header)
-        self.assertIn("out_cause receives 0 none, 1 invalid input, or 10 other", c_header)
-        self.assertIn("out_delivery is 0 when no KMIP request delivery information", c_header)
+        self.assertIn(
+            "out_cause receives 0 none, 1 invalid input, 2 protocol invalid value, "
+            "3 protocol invalid encoding, 4 other protocol, 5 transport I/O, 6 TLS, "
+            "7 HTTP, 8 timeout, 9 other transport, or 10 other.",
+            c_header,
+        )
+        self.assertIn(
+            "out_delivery receives 0 none, 1 not sent, 2 possibly sent, or 3 response started; "
+            "server results use 0, while protocol and transport failures report the strongest observed delivery state.",
+            c_header,
+        )
 
     def test_private_c_header_keeps_blocked_ffi_declarations_out_of_public_header(self) -> None:
         manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
@@ -262,30 +271,39 @@ class ManifestGeneratorCliTests(unittest.TestCase):
         blocked_t076_names = {
             row["exportName"]
             for row in t076_declarations
-            if row["packageId"] == "c-kmipkit" and row["declarationState"] == "blocked"
+            if row["packageId"] == "c-kmipkit"
+            and row["kind"] == "c-symbol"
+            and row["declarationState"] == "blocked"
         }
         approved_t076_exclusions = {
             row["exportName"]
             for row in manifest["approvedExclusions"]
             if row["packageId"] == "c-kmipkit"
         }
-        self.assertTrue(blocked_t076_names)
+        self.assertEqual({"kmipkit_client_execute_with_error_ttlv_v1"}, blocked_t076_names)
         self.assertFalse(blocked_t076_names & approved_t076_exclusions)
         for row in t076_declarations:
-            if row["packageId"] != "c-kmipkit" or row["declarationState"] != "blocked":
+            if row["packageId"] != "c-kmipkit" or row["kind"] not in {"c-symbol", "type"}:
                 continue
-            if row["kind"] == "type":
+            if row["declarationState"] == "blocked" and row["kind"] == "type":
                 self.assertNotIn(
                     f"typedef struct {row['exportName']} {row['exportName']};",
                     public_header,
                 )
-            elif row["kind"] == "c-symbol":
+            elif row["declarationState"] == "blocked" and row["kind"] == "c-symbol":
                 self.assertNotIn(f"{row['exportName']}(", public_header)
+            elif row["declarationState"] in {"declared", "verified"} and row["kind"] == "type":
+                self.assertIn(
+                    f"typedef struct {row['exportName']} {row['exportName']};",
+                    public_header,
+                )
+            elif row["declarationState"] in {"declared", "verified"} and row["kind"] == "c-symbol":
+                self.assertIn(f"{row['exportName']}(", public_header)
 
         self.assertIn("kmipkit_client_execute_with_error_ttlv_v1", blocked_t076_names)
-        self.assertIn("kmipkit_client_execute", blocked_t076_names)
-        self.assertNotIn("typedef struct kmipkit_client_t kmipkit_client_t;", public_header)
-        self.assertNotIn("kmipkit_transport_config_create_v1", public_header)
+        self.assertIn("kmipkit_client_execute(", public_header)
+        self.assertIn("typedef struct kmipkit_client_t kmipkit_client_t;", public_header)
+        self.assertIn("kmipkit_transport_config_create_v1(", public_header)
 
     def test_t076_batch_metadata_carrier_is_not_approved_or_public(self) -> None:
         manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
@@ -297,16 +315,19 @@ class ManifestGeneratorCliTests(unittest.TestCase):
             if row["declarationId"].startswith("T076:")
         ]
 
-        self.assertEqual(27, len(t076_declarations))
-        self.assertTrue(all(row["declarationState"] == "blocked" for row in t076_declarations))
-        self.assertFalse(
-            any(
-                row["packageId"] == "c-kmipkit" and row["exportName"] == carrier_name
-                for row in manifest["approvedExclusions"]
-            )
+        carrier = next(
+            row for row in manifest["approvedExclusions"]
+            if row["packageId"] == "c-kmipkit" and row["exportName"] == carrier_name
         )
-        self.assertNotIn(f"typedef struct {carrier_name} {carrier_name};", public_header)
-        self.assertNotIn(f"struct {carrier_name} {{", public_header)
+        self.assertEqual(carrier_name, carrier["cType"]["name"])
+        self.assertEqual(
+            ["struct_size", "abi_version", "outcome_kind", "result_status", "has_result_reason", "result_reason"],
+            [field["name"] for field in carrier["cType"]["fields"]],
+        )
+        self.assertIn(f"typedef struct {carrier_name} {carrier_name};", public_header)
+        self.assertIn(f"struct {carrier_name} {{", public_header)
+        self.assertIn("kmipkit_client_batch_item_response_metadata_v1(", public_header)
+        self.assertTrue(t076_declarations)
 
     def test_versioned_fixed_width_values_render_declared_c_fields(self) -> None:
         manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
