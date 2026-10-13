@@ -25,6 +25,15 @@
 #include <stdlib.h>
 #include <string.h>
 
+/* T076 Red: the versioned production transport configuration constructor is
+ * required by the approved shared client ABI but is not exported yet. Keep
+ * this test-local declaration until the public manifest generates the header. */
+struct kmipkit_transport_config_v1_t;
+struct kmipkit_transport_config_t;
+extern int32_t kmipkit_transport_config_create_v1(
+    const struct kmipkit_transport_config_v1_t *configuration,
+    struct kmipkit_transport_config_t **out_configuration);
+
 #define KMIPKIT_SUCCESS ((int32_t)0)
 #define KMIPKIT_EXTENSION_TAG UINT32_C(0x540001)
 #define KMIPKIT_PAYLOAD_TAG_DISCRIMINATOR UINT32_C(0x420001)
@@ -285,6 +294,17 @@ static bool test_runtime_metadata_and_error_snapshot(void)
     REQUIRE(category == UINT32_C(0));
     REQUIRE(cause == UINT32_C(0));
     REQUIRE(delivery == UINT32_C(0));
+    return true;
+}
+
+static bool test_t076_transport_config_null_input_contract(void)
+{
+    struct kmipkit_transport_config_t *configuration =
+        (struct kmipkit_transport_config_t *)(uintptr_t)1;
+
+    REQUIRE_STATUS(kmipkit_transport_config_create_v1(NULL, &configuration),
+                   KMIPKIT_ERROR_INVALID_INPUT);
+    REQUIRE(configuration == NULL);
     return true;
 }
 
@@ -2592,6 +2612,8 @@ int main(void)
         const char *name;
         bool (*run)(void);
     } tests_without_arguments[] = {
+        {"T076 versioned transport config rejects null input",
+         test_t076_transport_config_null_input_contract},
         {"runtime metadata and error snapshot", test_runtime_metadata_and_error_snapshot},
         {"capability input boundaries and error categories", test_capability_input_boundaries_and_error_categories},
         {"ExtensionRegistryLimits defaults and boundaries", test_extension_registry_limits},

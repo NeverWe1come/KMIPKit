@@ -1,5 +1,5 @@
 #![allow(unsafe_code)]
-#![cfg(all(feature = "coverage-c-consumer", target_os = "linux"))]
+#![cfg(feature = "coverage-c-consumer")]
 
 use std::ffi::{CString, c_char};
 use std::path::Path;
