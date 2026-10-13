@@ -88185,10 +88185,10 @@
       "source_keyword": "MAY",
       "normative_strength": "permission_or_optional",
       "subject": "Type-specific domain parameter fields",
-      "summary": "The client may represent only domain-parameter fields applicable to the object type.",
+      "summary": "The client may represent an optional domain-parameter field applicable to its managed object type; this evidence is limited to DSA Qlength.",
       "role": "client",
-      "direction": "unclear",
-      "condition": "Field applicability depends on object type.",
+      "direction": "client_to_server",
+      "condition": "Qlength applies to algorithms such as DSA and DH; this evidence covers only caller-supplied DSA Qlength as an Integer.",
       "scope_state": "profile_conditional",
       "element_ids": [],
       "profile_ids": [
@@ -88213,12 +88213,20 @@
       ],
       "test_case_ids": [],
       "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/create_key_pair.rs::CreateKeyPairRequest::with_common_attributes",
+        "crates/kmipkit-protocol/src/create_key_pair.rs::CreateKeyPairRequest::into_ttlv_payload",
+        "crates/kmipkit-client/src/execute.rs::ClientRequest::payload",
+        "crates/kmipkit-protocol/src/profile.rs::client_supplied_create_key_pair_domain_parameters_are_structures"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_client_type_applicable_dsa_q_length_domain_parameter",
+        "crates/kmipkit-client/tests/unit/create_key_pair_execution_tests.rs::create_key_pair_sends_client_supplied_dsa_domain_parameter_qlength"
+      ],
       "negative_verification_required": false,
       "decision_id": null,
-      "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
+      "status": "scoped_verified",
+      "review_note": "Pinned KMIP Specification v2.1 §4.14 and Tables 55–56 define optional Cryptographic Domain Parameters fields; Qlength is an Integer and applies to algorithms such as DSA and DH. The client supplies the attribute in a Create Key Pair request. This evidence covers the caller-selected DSA Qlength case, with Qlength encoded as an Integer and emitted in the request; the profile evaluator preserves omission and rejects a non-Integer Qlength. These examples are not an exhaustive list. No Recommended Curve, other domain-parameter field, object-type pairing matrix, algorithm/object mismatch rejection, server acceptance, official OASIS test pass, or formal profile conformance is evidenced. No requirement-specific official Test Cases ID is linked by the pinned OASIS sources."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-4.16-001-001",

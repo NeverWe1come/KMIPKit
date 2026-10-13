@@ -970,16 +970,13 @@ fn profile_maps_client_type_applicable_dsa_q_length_domain_parameter() {
         .validate_request(&request)
         .expect("the caller-selected DSA Qlength Integer is usable in Create Key Pair");
 
-    let omitted = request_message_with_operation_payload(
-        CREATE_KEY_PAIR_OPERATION,
-        Structure::new(),
-    );
+    let omitted =
+        request_message_with_operation_payload(CREATE_KEY_PAIR_OPERATION, Structure::new());
     result
         .validate_request(&omitted)
         .expect("the client may omit the optional domain-parameter field");
 
-    let malformed_parameters =
-        structure([tagged(QLENGTH, Value::text_string("256".to_owned()))]);
+    let malformed_parameters = structure([tagged(QLENGTH, Value::text_string("256".to_owned()))]);
     let malformed_attributes = structure([
         tagged(CRYPTOGRAPHIC_ALGORITHM, Value::enumeration(5)),
         tagged(
@@ -997,7 +994,10 @@ fn profile_maps_client_type_applicable_dsa_q_length_domain_parameter() {
     let error = result
         .validate_request(&malformed)
         .expect_err("Table 55 encodes Qlength as an Integer");
-    assert_eq!(error.code(), ProfileValidationErrorCode::RequestRuleRejected);
+    assert_eq!(
+        error.code(),
+        ProfileValidationErrorCode::RequestRuleRejected
+    );
     assert_eq!(error.requirement_id(), Some(REQUIREMENT_ID));
     assert_eq!(
         error.source_clause_id(),
