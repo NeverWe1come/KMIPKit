@@ -377,3 +377,6 @@ pub use set_defaults::{SetDefaultsRequest, SetDefaultsResponse};
 #[cfg(test)]
 #[path = "../tests/unit/set_endpoint_role_tests.rs"]
 mod set_endpoint_role_tests;
+
+mod set_endpoint_role;
+pub use set_endpoint_role::{SetEndpointRoleRequest,SetEndpointRoleResponse};

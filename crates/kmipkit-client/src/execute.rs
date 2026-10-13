@@ -4,6 +4,7 @@ use kmipkit_protocol::{GetConstraintsRequest, GetConstraintsResponse};
 use kmipkit_protocol::{GetUsageAllocationRequest, GetUsageAllocationResponse};
 use kmipkit_protocol::{SetConstraintsRequest, SetConstraintsResponse};
 use kmipkit_protocol::{SetDefaultsRequest, SetDefaultsResponse};
+use kmipkit_protocol::{SetEndpointRoleRequest,SetEndpointRoleResponse};
 use std::collections::HashSet;
 use std::error::Error;
 use std::fmt;
@@ -113,20 +114,20 @@ const CLIENT_CORRELATION_VALUE: u32 = 0x0042_0105;
 const TIME_STAMP: u32 = 0x0042_0092;
 const UNIQUE_BATCH_ITEM_ID: u32 = 0x0042_0093;
 const DISCOVER_VERSIONS_OPERATION: u32 = 0x0000_001E;
-const ENCRYPT_OPERATION: u32 = 0x0000_001F; // KMIP v2.1 ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â§6.1.17, Table 214.
-const DECRYPT_OPERATION: u32 = 0x0000_0020; // KMIP v2.1 ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â§6.1.11, Table 196.
-const HASH_OPERATION: u32 = 0x0000_0027; // KMIP v2.1 ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â§6.1.24, Table 235.
-const MAC_OPERATION: u32 = 0x0000_0023; // KMIP v2.1 ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â§6.1.32, Table 259.
-const MAC_VERIFY_OPERATION: u32 = 0x0000_0024; // KMIP v2.1 ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â§6.1.33, Table 262.
-const SIGN_OPERATION: u32 = 0x0000_0021; // KMIP v2.1 ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â§6.1.55, Table 334.
-const SIGNATURE_VERIFY_OPERATION: u32 = 0x0000_0022; // KMIP v2.1 ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â§6.1.56, Table 337.
+const ENCRYPT_OPERATION: u32 = 0x0000_001F; // KMIP v2.1 ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â§6.1.17, Table 214.
+const DECRYPT_OPERATION: u32 = 0x0000_0020; // KMIP v2.1 ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â§6.1.11, Table 196.
+const HASH_OPERATION: u32 = 0x0000_0027; // KMIP v2.1 ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â§6.1.24, Table 235.
+const MAC_OPERATION: u32 = 0x0000_0023; // KMIP v2.1 ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â§6.1.32, Table 259.
+const MAC_VERIFY_OPERATION: u32 = 0x0000_0024; // KMIP v2.1 ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â§6.1.33, Table 262.
+const SIGN_OPERATION: u32 = 0x0000_0021; // KMIP v2.1 ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â§6.1.55, Table 334.
+const SIGNATURE_VERIFY_OPERATION: u32 = 0x0000_0022; // KMIP v2.1 ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â§6.1.56, Table 337.
 const CREATE_OPERATION: u32 = 0x0000_0001;
 const CREATE_KEY_PAIR_OPERATION: u32 = 0x0000_0002;
-const CREATE_SPLIT_KEY_OPERATION: u32 = 0x0000_0028; // KMIP v2.1 ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â§11.36, Table 470.
-const ACTIVATE_OPERATION: u32 = 0x0000_0012; // KMIP v2.1 ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â§6.1.1, Table 164.
-const ARCHIVE_OPERATION: u32 = 0x0000_0013; // KMIP v2.1 ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â§6.1.4, Table 173.
-const DESTROY_OPERATION: u32 = 0x0000_0014; // KMIP v2.1 ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â§6.1.15, Table 208.
-const RECOVER_OPERATION: u32 = 0x0000_002A; // KMIP v2.1 ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â§6.1.42, Table 288.
+const CREATE_SPLIT_KEY_OPERATION: u32 = 0x0000_0028; // KMIP v2.1 ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â§11.36, Table 470.
+const ACTIVATE_OPERATION: u32 = 0x0000_0012; // KMIP v2.1 ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â§6.1.1, Table 164.
+const ARCHIVE_OPERATION: u32 = 0x0000_0013; // KMIP v2.1 ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â§6.1.4, Table 173.
+const DESTROY_OPERATION: u32 = 0x0000_0014; // KMIP v2.1 ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â§6.1.15, Table 208.
+const RECOVER_OPERATION: u32 = 0x0000_002A; // KMIP v2.1 ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â§6.1.42, Table 288.
 const ADD_ATTRIBUTE_OPERATION: u32 = 0x0000_000D;
 const MODIFY_ATTRIBUTE_OPERATION: u32 = 0x0000_000E;
 const DELETE_ATTRIBUTE_OPERATION: u32 = 0x0000_000F;
@@ -136,10 +137,11 @@ const CANCEL_OPERATION: u32 = 0x0000_0019;
 const POLL_OPERATION: u32 = 0x0000_001A;
 const QUERY_ASYNCHRONOUS_REQUESTS_OPERATION: u32 = 0x0000_0039;
 const PROCESS_OPERATION: u32 = 0x0000_003A;
-const GET_CONSTRAINTS_OPERATION: u32 = 56; // OASIS Ãƒâ€šÃ‚Â§6.1.22.
-const GET_USAGE_ALLOCATION_OPERATION: u32 = 17; // OASIS Ã‚Â§6.1.23.
-const SET_CONSTRAINTS_OPERATION: u32 = 55; // OASIS Â§6.1.52.
-const SET_DEFAULTS_OPERATION: u32 = 54; // OASIS §6.1.53.
+const GET_CONSTRAINTS_OPERATION: u32 = 56; // OASIS ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â§6.1.22.
+const GET_USAGE_ALLOCATION_OPERATION: u32 = 17; // OASIS Ãƒâ€šÃ‚Â§6.1.23.
+const SET_CONSTRAINTS_OPERATION: u32 = 55; // OASIS Ã‚Â§6.1.52.
+const SET_DEFAULTS_OPERATION: u32 = 54; // OASIS Â§6.1.53.
+const SET_ENDPOINT_ROLE_OPERATION:u32=50; // OASIS §6.1.54.
 const PING_OPERATION: u32 = 0x0000_003B;
 const QUERY_OPERATION: u32 = 0x0000_0018;
 const ASYNCHRONOUS_MANDATORY: u32 = 1;
@@ -192,6 +194,8 @@ pub enum ClientRequest {
     GetAttributeList(GetAttributeListRequest),
     /// An explicit client-to-server Ping request.
     Ping(PingRequest),
+    /// Explicit SetEndpointRole policy operation.
+    SetEndpointRole(SetEndpointRoleRequest),
     /// Explicit SetDefaults policy operation.
     SetDefaults(SetDefaultsRequest),
     /// Explicit SetConstraints policy operation.
@@ -377,6 +381,7 @@ impl ClientRequest {
             Self::GetAttributes(_) => GET_ATTRIBUTES_OPERATION,
             Self::GetAttributeList(_) => GET_ATTRIBUTE_LIST_OPERATION,
             Self::Ping(_) => PING_OPERATION,
+            Self::SetEndpointRole(_) => SET_ENDPOINT_ROLE_OPERATION,
             Self::SetDefaults(_) => SET_DEFAULTS_OPERATION,
             Self::SetConstraints(_) => SET_CONSTRAINTS_OPERATION,
             Self::GetUsageAllocation(_) => GET_USAGE_ALLOCATION_OPERATION,
@@ -451,6 +456,7 @@ impl ClientRequest {
             Self::GetAttributes(request) => request.to_ttlv_payload(),
             Self::GetAttributeList(request) => request.to_ttlv_payload(),
             Self::Ping(request) => request.to_ttlv_payload(),
+            Self::SetEndpointRole(request) => request.to_ttlv_payload(),
             Self::SetDefaults(request) => request.to_ttlv_payload(),
             Self::SetConstraints(request) => request.to_ttlv_payload(),
             Self::GetUsageAllocation(request) => request.to_ttlv_payload(),
@@ -494,6 +500,7 @@ impl fmt::Debug for ClientRequest {
                 .field(request)
                 .finish(),
             Self::Ping(_) => formatter.write_str("Ping"),
+            Self::SetEndpointRole(_) => formatter.write_str("SetEndpointRole"),
             Self::SetDefaults(_) => formatter.write_str("SetDefaults"),
             Self::SetConstraints(_) => formatter.write_str("SetConstraints"),
             Self::GetUsageAllocation(_) => formatter.write_str("GetUsageAllocation"),
@@ -786,6 +793,8 @@ enum PendingResponse {
     GetAttributes(GetAttributesResponse),
     GetAttributeList(GetAttributeListResponse),
     Ping(PingResponse),
+    /// Explicit SetEndpointRole policy operation.
+    SetEndpointRole(SetEndpointRoleResponse),
     /// Explicit SetDefaults policy operation.
     SetDefaults(SetDefaultsResponse),
     /// Explicit SetConstraints policy operation.
@@ -825,6 +834,7 @@ impl PendingResponse {
             Self::GetAttributes(response) => ClientResponseRef::GetAttributes(response),
             Self::GetAttributeList(response) => ClientResponseRef::GetAttributeList(response),
             Self::Ping(response) => ClientResponseRef::Ping(response),
+            Self::SetEndpointRole(response) => ClientResponseRef::SetEndpointRole(response),
             Self::SetDefaults(response) => ClientResponseRef::SetDefaults(response),
             Self::SetConstraints(response) => ClientResponseRef::SetConstraints(response),
             Self::GetUsageAllocation(response) => ClientResponseRef::GetUsageAllocation(response),
@@ -1026,6 +1036,8 @@ pub enum ClientOperation {
     GetAttributeList,
     /// Ping one server connection and observe its KMIP response.
     Ping,
+    /// Explicit SetEndpointRole policy operation.
+    SetEndpointRole,
     /// Explicit SetDefaults policy operation.
     SetDefaults,
     /// Explicit SetConstraints policy operation.
@@ -1198,6 +1210,8 @@ enum ClientResponseRef<'a> {
     GetAttributes(&'a GetAttributesResponse),
     GetAttributeList(&'a GetAttributeListResponse),
     Ping(&'a PingResponse),
+    /// Explicit SetEndpointRole policy operation.
+    SetEndpointRole(&'a SetEndpointRoleResponse),
     /// Explicit SetDefaults policy operation.
     SetDefaults(&'a SetDefaultsResponse),
     /// Explicit SetConstraints policy operation.
@@ -1248,6 +1262,7 @@ impl<'a> ClientResponseView<'a> {
             ClientResponseRef::GetAttributes(response) => response.result(),
             ClientResponseRef::GetAttributeList(response) => response.result(),
             ClientResponseRef::Ping(response) => response.result(),
+            ClientResponseRef::SetEndpointRole(response) => response.result(),
             ClientResponseRef::SetDefaults(response) => response.result(),
             ClientResponseRef::SetConstraints(response) => response.result(),
             ClientResponseRef::GetUsageAllocation(response) => response.result(),
@@ -1521,6 +1536,10 @@ impl<'a> ClientResponseView<'a> {
         }
     }
 
+    /// Returns this policy response when its operation matches.
+    #[must_use]
+    pub const fn set_endpoint_role(&self)->Option<&SetEndpointRoleResponse>{match self.response{ClientResponseRef::SetEndpointRole(response)=>Some(response),_=>None}}
+
     /// Returns the Ping response when this view represents it.
     #[must_use]
     pub const fn ping(&self) -> Option<&PingResponse> {
@@ -1621,6 +1640,9 @@ impl fmt::Debug for ClientResponseView<'_> {
             ClientResponseRef::Ping(response) => {
                 formatter.debug_tuple("Ping").field(response).finish()
             }
+            ClientResponseRef::SetEndpointRole(response) => {
+                formatter.debug_tuple("SetEndpointRole").field(response).finish()
+            }
             ClientResponseRef::SetDefaults(response) => formatter
                 .debug_tuple("SetDefaults")
                 .field(response)
@@ -1699,6 +1721,8 @@ pub enum ClientBatchOutcome {
     GetAttributeList(GetAttributeListResponse),
     /// The server returned a Ping result.
     Ping(PingResponse),
+    /// Explicit SetEndpointRole policy operation.
+    SetEndpointRole(SetEndpointRoleResponse),
     /// Explicit SetDefaults policy operation.
     SetDefaults(SetDefaultsResponse),
     /// Explicit SetConstraints policy operation.
@@ -1741,6 +1765,7 @@ impl ClientBatchOutcome {
             | Self::GetAttributes(_)
             | Self::GetAttributeList(_)
             | Self::Ping(_)
+            | Self::SetEndpointRole(_)
             | Self::SetDefaults(_)
             | Self::SetConstraints(_)
             | Self::GetUsageAllocation(_)
@@ -1779,6 +1804,7 @@ impl ClientBatchOutcome {
             Self::GetAttributes(response) => response.result(),
             Self::GetAttributeList(response) => response.result(),
             Self::Ping(response) => response.result(),
+            Self::SetEndpointRole(response) => response.result(),
             Self::SetDefaults(response) => response.result(),
             Self::SetConstraints(response) => response.result(),
             Self::GetUsageAllocation(response) => response.result(),
@@ -1817,6 +1843,7 @@ impl ClientBatchOutcome {
             Self::GetAttributes(_) => ClientOperation::GetAttributes,
             Self::GetAttributeList(_) => ClientOperation::GetAttributeList,
             Self::Ping(_) => ClientOperation::Ping,
+            Self::SetEndpointRole(_) => ClientOperation::SetEndpointRole,
             Self::SetDefaults(_) => ClientOperation::SetDefaults,
             Self::SetConstraints(_) => ClientOperation::SetConstraints,
             Self::GetUsageAllocation(_) => ClientOperation::GetUsageAllocation,
@@ -2062,6 +2089,9 @@ impl ClientBatchOutcome {
             Self::Ping(response) => ClientResponseView {
                 response: ClientResponseRef::Ping(response),
             },
+            Self::SetEndpointRole(response) => ClientResponseView {
+                response: ClientResponseRef::SetEndpointRole(response),
+            },
             Self::SetDefaults(response) => ClientResponseView {
                 response: ClientResponseRef::SetDefaults(response),
             },
@@ -2153,6 +2183,7 @@ impl fmt::Debug for ClientBatchOutcome {
                 .field(response)
                 .finish(),
             Self::Ping(response) => formatter.debug_tuple("Ping").field(response).finish(),
+            Self::SetEndpointRole(response) => formatter.debug_tuple("SetEndpointRole").field(response).finish(),
             Self::SetDefaults(response) => formatter
                 .debug_tuple("SetDefaults")
                 .field(response)
@@ -2229,6 +2260,7 @@ impl fmt::Display for ClientBatchOutcome {
                 write!(formatter, "GetAttributeList({})", response.result())
             }
             Self::Ping(response) => write!(formatter, "Ping({})", response.result()),
+            Self::SetEndpointRole(response) => write!(formatter, "SetEndpointRole({})", response.result()),
             Self::SetDefaults(response) => write!(formatter, "SetDefaults({})", response.result()),
             Self::SetConstraints(response) => {
                 write!(formatter, "SetConstraints({})", response.result())
@@ -2675,7 +2707,7 @@ impl Client {
     ///
     /// The request uses the shared writer, response bounds, and one-exchange
     /// lifecycle. The client reports the server result without simulating the
-    /// server-only object-state effect from KMIP v2.1 ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â§6.1.1.
+    /// server-only object-state effect from KMIP v2.1 ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â§6.1.1.
     ///
     /// # Errors
     ///
@@ -2763,7 +2795,7 @@ impl Client {
     ///
     /// The request uses the shared writer, response bounds, and one-exchange
     /// lifecycle. The client reports the server result without simulating the
-    /// server-only object-state effect from KMIP v2.1 ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â§6.1.15.
+    /// server-only object-state effect from KMIP v2.1 ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â§6.1.15.
     ///
     /// # Errors
     ///
@@ -2826,7 +2858,7 @@ impl Client {
         take_single_item_response(response.items)
     }
 
-    /// Executes one explicit Ãƒâ€šÃ‚Â§6.1.22 policy operation without retry.
+    /// Executes one explicit ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â§6.1.22 policy operation without retry.
     /// # Errors
     /// Returns sanitized validation, protocol or transport failure with delivery evidence.
     pub fn get_constraints(
@@ -2842,7 +2874,7 @@ impl Client {
         take_single_response(response)
     }
 
-    /// Executes one explicit Ã‚Â§6.1.23 policy operation without retry.
+    /// Executes one explicit Ãƒâ€šÃ‚Â§6.1.23 policy operation without retry.
     /// # Errors
     /// Returns sanitized validation, protocol or transport failure with delivery evidence.
     pub fn get_usage_allocation(
@@ -2859,7 +2891,7 @@ impl Client {
         take_single_response(response)
     }
 
-    /// Executes one explicit Â§6.1.52 policy operation without retry.
+    /// Executes one explicit Ã‚Â§6.1.52 policy operation without retry.
     /// # Errors
     /// Returns sanitized validation, protocol or transport failure with delivery evidence.
     pub fn set_constraints(
@@ -2874,7 +2906,7 @@ impl Client {
         take_single_response(response)
     }
 
-    /// Executes one explicit §6.1.53 policy operation without retry.
+    /// Executes one explicit Â§6.1.53 policy operation without retry.
     /// # Errors
     /// Returns sanitized validation, protocol or transport failure with delivery evidence.
     pub fn set_defaults(
@@ -2887,6 +2919,14 @@ impl Client {
             limits,
         )?;
         take_single_response(response)
+    }
+
+    /// Executes one explicit §6.1.54 policy operation without retry.
+    /// # Errors
+    /// Returns sanitized validation, protocol or transport failure with delivery evidence.
+    pub fn set_endpoint_role(&mut self,request:SetEndpointRoleRequest,limits:&CodecLimits)->Result<ClientBatchItemResponse,ClientError>{
+      let response=self.execute(ClientBatch::new(ClientBatchItem::new(ClientRequest::SetEndpointRole(request))),limits)?;
+      take_single_response(response)
     }
 
     /// Executes one client-to-server Ping request.
@@ -3310,7 +3350,7 @@ impl Client {
     ///
     /// The request uses the exact correlation bytes in `request`. Poll itself
     /// is not marked asynchronous; its Pending result describes the original
-    /// operation under OASIS KMIP v2.1 ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â§6.1.38.
+    /// operation under OASIS KMIP v2.1 ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â§6.1.38.
     ///
     /// The caller decides whether another Poll is appropriate:
     ///
@@ -3376,7 +3416,7 @@ impl Client {
     /// Executes one explicit Cancel request and verifies the successful response
     /// echoes the exact correlation bytes supplied by the caller.
     ///
-    /// Cancel is synchronous under OASIS KMIP v2.1 ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â§6.1.5; a Pending response
+    /// Cancel is synchronous under OASIS KMIP v2.1 ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â§6.1.5; a Pending response
     /// is rejected even when the original operation was asynchronous.
     ///
     /// # Errors
@@ -3873,6 +3913,7 @@ fn request_mutation_is_prohibited(request: &ClientRequest) -> bool {
         | ClientRequest::GetAttributes(_)
         | ClientRequest::GetAttributeList(_)
         | ClientRequest::Ping(_)
+        | ClientRequest::SetEndpointRole(_)
         | ClientRequest::SetDefaults(_)
         | ClientRequest::SetConstraints(_)
         | ClientRequest::GetUsageAllocation(_)
@@ -4520,6 +4561,14 @@ fn response_outcome(
             PendingResponse::Ping,
             ClientBatchOutcome::Ping,
         ),
+        SET_ENDPOINT_ROLE_OPERATION => read_operation_outcome(
+            ClientOperation::SetEndpointRole,
+            item,
+            SetEndpointRoleResponse::try_from_response_item,
+            SetEndpointRoleResponse::result,
+            PendingResponse::SetEndpointRole,
+            ClientBatchOutcome::SetEndpointRole,
+        ),
         SET_DEFAULTS_OPERATION => read_operation_outcome(
             ClientOperation::SetDefaults,
             item,
@@ -4926,7 +4975,7 @@ fn validate_async_response(
         parse_async_operation_result(item, kind, expected_cancel_correlation)?;
 
     // Poll Pending reports the original operation's state and is explicitly
-    // permitted by ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â§6.1.38 without making Poll itself asynchronous. Cancel's
+    // permitted by ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â§6.1.38 without making Poll itself asynchronous. Cancel's
     // typed model rejects Pending. Process and Query use the caller's indicator.
     if matches!(
         kind,
