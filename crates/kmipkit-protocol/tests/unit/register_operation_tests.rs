@@ -159,6 +159,28 @@ fn field_tags(payload: &Structure) -> Vec<u32> {
         .collect()
 }
 
+#[derive(Eq, PartialEq)]
+enum ItemValueShape {
+    Structure(Vec<(u32, Self)>),
+    Integer(i32),
+    Enumeration(u32),
+    ByteString(Vec<u8>),
+    Other,
+}
+
+fn item_shape(item: &Item) -> (u32, ItemValueShape) {
+    let value = item.with_value(|value| match value {
+        ValueView::Structure(structure) => {
+            ItemValueShape::Structure(structure.children().iter().map(item_shape).collect())
+        }
+        ValueView::Integer(value) => ItemValueShape::Integer(*value),
+        ValueView::Enumeration(value) => ItemValueShape::Enumeration(*value),
+        ValueView::ByteString(value) => ItemValueShape::ByteString(value.to_vec()),
+        _ => ItemValueShape::Other,
+    });
+    (item.tag().raw(), value)
+}
+
 #[test]
 fn request_emits_table_291_fields_in_order_and_preserves_object_item() {
     let sentinel = SECRET_SENTINEL.to_vec();
@@ -262,6 +284,66 @@ fn request_allows_algorithm_and_length_embedded_in_key_value() {
             "Algorithm and Length remain a required pair when omitted from Attributes"
         );
     }
+}
+
+#[test]
+fn request_preserves_key_value_attributes_associated_with_raw_key_material() {
+    // `KMIPKIT-REQ-SPEC-3.2-001`: KMIP Specification v2.1 §3.2, Table 13
+    // requires Key Material in a structured Key Value and permits associated
+    // Attributes. §5.1, Table 157 defines those children as §4 attributes with
+    // their defined TTLV types. This is an in-memory Register payload, not
+    // evidence of server acceptance.
+    let payload = RegisterRequest::new(
+        ObjectType::from_raw(2),
+        symmetric_attributes([]),
+        key_object_with_key_value_attributes(true, true),
+    )
+    .into_ttlv_payload()
+    .expect("Table 293 algorithm and length are available in Key Value Attributes");
+
+    let actual: Vec<_> = payload.view().children().iter().map(item_shape).collect();
+    assert!(
+        actual
+            == [
+                (OBJECT_TYPE, ItemValueShape::Enumeration(2),),
+                (
+                    ATTRIBUTES,
+                    ItemValueShape::Structure(vec![(
+                        CRYPTOGRAPHIC_USAGE_MASK,
+                        ItemValueShape::Integer(3),
+                    )]),
+                ),
+                (
+                    SYMMETRIC_KEY,
+                    ItemValueShape::Structure(vec![(
+                        KEY_BLOCK,
+                        ItemValueShape::Structure(vec![
+                            (KEY_FORMAT_TYPE, ItemValueShape::Enumeration(1)),
+                            (
+                                KEY_VALUE,
+                                ItemValueShape::Structure(vec![
+                                    (
+                                        0x0042_0043,
+                                        ItemValueShape::ByteString(vec![0x01, 0x02, 0x03, 0x04]),
+                                    ),
+                                    (
+                                        ATTRIBUTES,
+                                        ItemValueShape::Structure(vec![
+                                            (
+                                                CRYPTOGRAPHIC_ALGORITHM,
+                                                ItemValueShape::Enumeration(3),
+                                            ),
+                                            (CRYPTOGRAPHIC_LENGTH, ItemValueShape::Integer(256),),
+                                        ]),
+                                    ),
+                                ]),
+                            ),
+                        ]),
+                    )]),
+                ),
+            ],
+        "Register payload must preserve the source-defined nested Key Value shape"
+    );
 }
 
 #[test]
