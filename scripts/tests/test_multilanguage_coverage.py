@@ -133,6 +133,31 @@ class MultiLanguageCoverageTests(unittest.TestCase):
 
         self.assertEqual({"bindings/java/src/main/java/org/kmipkit/extensions/Registry.java": {1: 0}}, parsed)
 
+    def test_jacoco_parser_ignores_only_generated_metadata_sources(self) -> None:
+        self.require_gate()
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            source_root = root / "bindings/java/src/main/java/org/kmipkit"
+            generated_root = source_root / "generated"
+            generated_root.mkdir(parents=True)
+            source_root.joinpath("Registry.java").write_text("class Registry {}\n", encoding="utf-8")
+            for name in ("PublicApi.java", "ExtensionRegistryApi.java"):
+                generated_root.joinpath(name).write_text("class Metadata {}\n", encoding="utf-8")
+            report = """<?xml version="1.0"?>
+            <report name="KMIPKit"><package name="org/kmipkit">
+              <sourcefile name="Registry.java"><line nr="1" mi="1" ci="0" mb="0" cb="0"/></sourcefile>
+            </package><package name="org/kmipkit/generated">
+              <sourcefile name="PublicApi.java"><line nr="1" mi="0" ci="1" mb="0" cb="0"/></sourcefile>
+              <sourcefile name="ExtensionRegistryApi.java"><line nr="1" mi="0" ci="1" mb="0" cb="0"/></sourcefile>
+            </package></report>"""
+
+            parsed = GATE.parse_jacoco_report(report, root)
+
+        self.assertEqual(
+            {"bindings/java/src/main/java/org/kmipkit/Registry.java": {1: 0}},
+            parsed,
+        )
+
     def test_adapter_loader_unions_linux_and_windows_jacoco_reports(self) -> None:
         self.require_gate()
         with tempfile.TemporaryDirectory() as directory:
