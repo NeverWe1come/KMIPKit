@@ -2,6 +2,8 @@ package org.kmipkit;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.ByteArrayOutputStream;
@@ -124,6 +126,66 @@ final class ClientFacadeTlsIntegrationTest {
                 assertArrayEquals(new byte[] {0x42, 0x00, 0x78},
                         new byte[] {request[0], request[1], request[2]});
             }
+        } finally {
+            listener.close();
+        }
+    }
+
+    @Test
+    void peerClosingAfterRequestSurfacesSanitizedTypedTransportFailure() throws Exception {
+        Path serverStorePath = temporaryDirectory.resolve("transport-error-server.p12");
+        Path clientStorePath = temporaryDirectory.resolve("transport-error-client.p12");
+        createKeyStore(serverStorePath, "server");
+        createKeyStore(clientStorePath, "client");
+
+        KeyStore serverStore = loadKeyStore(serverStorePath);
+        KeyStore clientStore = loadKeyStore(clientStorePath);
+        X509Certificate serverCertificate = certificate(serverStore, "server");
+        X509Certificate clientCertificate = certificate(clientStore, "client");
+        PrivateKey clientKey = (PrivateKey) clientStore.getKey("client", STORE_PASSWORD);
+
+        SSLServerSocket listener = (SSLServerSocket) serverContext(serverStore, clientCertificate)
+                .getServerSocketFactory()
+                .createServerSocket(0, 1, InetAddress.getByName("127.0.0.1"));
+        listener.setEnabledProtocols(new String[] {"TLSv1.3"});
+        listener.setNeedClientAuth(true);
+        listener.setSoTimeout(10_000);
+        FutureTask<byte[]> peer = new FutureTask<>(() -> {
+            try (SSLSocket socket = (SSLSocket) listener.accept()) {
+                socket.setEnabledProtocols(new String[] {"TLSv1.3"});
+                socket.setSoTimeout(10_000);
+                socket.startHandshake();
+                return readFrame(socket.getInputStream());
+            }
+        });
+        Thread peerThread = new Thread(peer, "kmipkit-java-tls-transport-error-fixture");
+        peerThread.setDaemon(true);
+        peerThread.start();
+
+        try (ClientExtensionRegistry registry = ClientExtensionRegistry.create(
+                        List.of(), ExtensionRegistryLimits.defaults());
+                ClientConfiguration extensions = ClientConfiguration.create(registry);
+                TransportConfiguration transport = TransportConfiguration.builder()
+                        .rawTls("127.0.0.1", listener.getLocalPort())
+                        .clientIdentityDer(new byte[][] {clientCertificate.getEncoded()}, clientKey.getEncoded())
+                        .trustCertificatesDer(new byte[][] {serverCertificate.getEncoded()})
+                        .timeouts(TransportConfiguration.Timeout.bounded(Duration.ofSeconds(5)),
+                                TransportConfiguration.Timeout.bounded(Duration.ofSeconds(5)),
+                                TransportConfiguration.Timeout.bounded(Duration.ofSeconds(5)),
+                                TransportConfiguration.Timeout.bounded(Duration.ofSeconds(8)))
+                        .build();
+                Client client = Client.create(extensions, transport);
+                ClientBatch batch = ClientBatch.create()) {
+            batch.add(ClientBatchItem.discoverVersions());
+
+            TransportException failure = assertThrows(
+                    TransportException.class, () -> client.execute(batch, CodecLimits.defaults()));
+
+            assertEquals(9, failure.statusCode());
+            assertEquals(3, failure.categoryCode());
+            assertEquals(2, failure.deliveryStateCode());
+            assertFalse(failure.getMessage().contains("transport-error-server.p12"));
+            assertTrue(peer.get(12, TimeUnit.SECONDS).length >= 8);
         } finally {
             listener.close();
         }

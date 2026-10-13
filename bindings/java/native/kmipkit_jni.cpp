@@ -638,9 +638,12 @@ bool read_java_bytes(JNIEnv* env, jbyteArray input, std::vector<uint8_t>& output
         return false;
     }
     const jsize length = env->GetArrayLength(input);
-    if (length < 0 || static_cast<uint64_t>(length) > kMaximumTransportInputBytes
-            || (require_non_empty && length == 0)) {
+    if (length < 0 || (require_non_empty && length == 0)) {
         throw_invalid_input(env);
+        return false;
+    }
+    if (static_cast<uint64_t>(length) > kMaximumTransportInputBytes) {
+        throw_java(env, "org/kmipkit/ResourceLimitException", "transport material exceeds the bridge limit");
         return false;
     }
     output.resize(static_cast<size_t>(length));
