@@ -67,22 +67,28 @@ fn key_object(algorithm: bool, length: bool) -> Item {
 }
 
 fn key_object_with_key_value_attributes(algorithm: bool, length: bool) -> Item {
-    let mut key_value = vec![item(
-        KEY_MATERIAL,
-        Value::byte_string(vec![0x01, 0x02, 0x03, 0x04]),
-    )];
+    let mut attributes = Vec::new();
     if algorithm {
-        key_value.push(item(CRYPTOGRAPHIC_ALGORITHM, Value::enumeration(3)));
+        attributes.push(item(CRYPTOGRAPHIC_ALGORITHM, Value::enumeration(3)));
     }
     if length {
-        key_value.push(item(CRYPTOGRAPHIC_LENGTH, Value::integer(256)));
+        attributes.push(item(CRYPTOGRAPHIC_LENGTH, Value::integer(256)));
     }
 
     let key_block = item(
         KEY_BLOCK,
         Value::structure(structure([
             item(KEY_FORMAT_TYPE, Value::enumeration(1)),
-            item(KEY_VALUE, Value::structure(structure(key_value))),
+            item(
+                KEY_VALUE,
+                Value::structure(structure([
+                    item(
+                        KEY_MATERIAL,
+                        Value::byte_string(vec![0x01, 0x02, 0x03, 0x04]),
+                    ),
+                    item(ATTRIBUTES, Value::structure(structure(attributes))),
+                ])),
+            ),
         ])),
     );
     item(SYMMETRIC_KEY, Value::structure(structure([key_block])))
@@ -226,6 +232,22 @@ fn request_allows_algorithm_and_length_embedded_in_key_value() {
     )
     .into_ttlv_payload();
     assert!(embedded_pair.is_ok());
+
+    let algorithm_in_key_value = RegisterRequest::new(
+        ObjectType::from_raw(2),
+        symmetric_attributes([item(CRYPTOGRAPHIC_LENGTH, Value::integer(256))]),
+        key_object_with_key_value_attributes(true, false),
+    )
+    .into_ttlv_payload();
+    assert!(algorithm_in_key_value.is_ok());
+
+    let length_in_key_value = RegisterRequest::new(
+        ObjectType::from_raw(2),
+        symmetric_attributes([item(CRYPTOGRAPHIC_ALGORITHM, Value::enumeration(3))]),
+        key_object_with_key_value_attributes(false, true),
+    )
+    .into_ttlv_payload();
+    assert!(length_in_key_value.is_ok());
 
     for (algorithm, length) in [(true, false), (false, true)] {
         let incomplete = RegisterRequest::new(
