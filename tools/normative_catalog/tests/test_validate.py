@@ -16628,6 +16628,54 @@ class CatalogValidationTests(unittest.TestCase):
             "direction-unclear evidence without a typed mapping must remain ineligible",
         )
 
+    def test_client_response_optional_evidence_requires_a_linked_typed_rule(self) -> None:
+        """Response-side client capabilities need their own executable positive evidence."""
+        requirement_id = "KMIPKIT-REQ-SPEC-4.62-003"
+        source_clause_id = "KMIPKIT-CLAUSE-SPEC-4.62-003"
+        test_id = (
+            "crates/kmipkit-protocol/tests/support/profile_unit.rs::"
+            "profile_maps_client_get_attributes_response_x509_values"
+        )
+        requirement = {
+            "requirement_id": requirement_id,
+            "source_clause_ids": [source_clause_id],
+            "verification_refs": [test_id],
+            "scope_state": "client_1_0",
+            "status": "scoped_verified",
+            "role": "client",
+            "direction": "server_to_client",
+            "condition": None,
+        }
+        mapping = {
+            "requirement_id": requirement_id,
+            "source_clause_id": source_clause_id,
+            "verification_category": "OptionalCapability",
+            "evaluator_present": True,
+            "test_kind": "OptionalCapabilityUsable",
+            "test_id": test_id,
+        }
+
+        self.assertTrue(
+            _has_usable_profile_optional_evidence(
+                requirement,
+                set(),
+                [mapping],
+                ["crates/kmipkit-protocol/src/profile.rs::client_response_preserves_x509_optional_values"],
+                [test_id],
+            ),
+            "a typed, tested client response capability should be eligible without mislabeling it as an outbound request",
+        )
+        self.assertFalse(
+            _has_usable_profile_optional_evidence(
+                requirement,
+                set(),
+                [],
+                ["crates/kmipkit-protocol/src/profile.rs::client_response_preserves_x509_optional_values"],
+                [test_id],
+            ),
+            "a positive test without a linked typed response rule must remain ineligible",
+        )
+
     def test_wrapped_secret_data_import_has_scoped_implementation_and_positive_test_evidence(
         self,
     ) -> None:
