@@ -1106,8 +1106,14 @@ def test_batch_setters_hold_native_call_lock_for_the_full_abi_call(
 
 
 def test_endpoint_direct_constructor_enforces_text_shape_and_repr_redaction() -> None:
+    class LyingText(str):
+        def encode(self, *_args: object, **_kwargs: object) -> bytes:
+            return b"x"
+
     with pytest.raises(errors.ResourceLimitError):
         client.Endpoint(client.EndpointKind.HTTPS, "x" * 4_097)
+    with pytest.raises(errors.ResourceLimitError):
+        client.Endpoint(client.EndpointKind.HTTPS, LyingText("x" * 4_097))
     with pytest.raises(errors.ResourceLimitError):
         client.Endpoint(
             client.EndpointKind.RAW_TLS,
@@ -1121,6 +1127,8 @@ def test_endpoint_direct_constructor_enforces_text_shape_and_repr_redaction() ->
         client.Endpoint(client.EndpointKind.HTTPS, "\ud800")
     with pytest.raises(errors.InvalidInputError):
         client.Endpoint(client.EndpointKind.RAW_TLS, "kms.example.test", 0)
+    with pytest.raises(errors.InvalidInputError):
+        client.Endpoint(client.EndpointKind.HTTPS, "https://kms.example.test", False)
     with pytest.raises(errors.InvalidInputError):
         client.Endpoint(client.EndpointKind.HTTPS, "https://kms.example.test", 443)
     with pytest.raises(errors.InvalidInputError):
