@@ -17,7 +17,7 @@ public final class TransportConfigurationTextLimitProbe {
             oversized = "x".repeat(Integer.parseInt(arguments[0]));
             Runtime runtime = Runtime.getRuntime();
             long minimumHeadroom = 17 * 1024 * 1024L;
-            while (runtime.maxMemory() - runtime.totalMemory() + runtime.freeMemory() > minimumHeadroom) {
+            while (remainingHeapCapacity(runtime) > minimumHeadroom) {
                 heapPressure.add(new byte[1024 * 1024]);
             }
         } catch (OutOfMemoryError error) {
@@ -39,5 +39,10 @@ public final class TransportConfigurationTextLimitProbe {
             System.out.println("encoding-allocation-failed");
             System.exit(23);
         }
+    }
+
+    private static long remainingHeapCapacity(Runtime runtime) {
+        long usedMemory = runtime.totalMemory() - runtime.freeMemory();
+        return runtime.maxMemory() - usedMemory;
     }
 }

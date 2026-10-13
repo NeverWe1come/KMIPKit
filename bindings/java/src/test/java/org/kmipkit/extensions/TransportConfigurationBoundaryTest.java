@@ -4,8 +4,8 @@ import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import java.nio.file.Path;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
 import java.time.Duration;
 import java.util.Collections;
 import java.util.List;
@@ -193,6 +193,16 @@ final class TransportConfigurationBoundaryTest {
                 .clientIdentityPem(new byte[][] {{1}}, new byte[] {2})
                 .trustPlatform();
         assertThrows(ResourceLimitException.class, oversizedEndpoint::build);
+    }
+
+    @Test
+    void preservesUtf8ReplacementLengthForUnpairedSurrogates() {
+        TransportConfiguration.Builder builder = TransportConfiguration.builder();
+        String unpairedSurrogate = String.valueOf((char) 0xd800);
+
+        assertDoesNotThrow(() -> builder.tlsServerName("a".repeat(4_095) + unpairedSurrogate));
+        assertThrows(ResourceLimitException.class,
+                () -> builder.tlsServerName("a".repeat(4_096) + unpairedSurrogate));
     }
 
     @Test
