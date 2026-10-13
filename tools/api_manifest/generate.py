@@ -1175,6 +1175,8 @@ def _validate_c_value_layout(c_type: dict[str, Any], declared_types: set[str]) -
     for field in fields:
         if field["name"] in _C_FAMILY_KEYWORDS:
             raise ManifestError("C/C++ keyword cannot be used as a fixed-width field name")
+        if not _is_c_layout_field_name(field["name"]):
+            raise ManifestError("invalid fixed-width C field name")
         _rust_identifier(field["name"])
         base_type, _ = _c_field_base_and_pointer_count(field["type"])
         if base_type not in _C_INTEGER_TYPES and base_type not in declared_types:
@@ -1353,6 +1355,16 @@ def _c_field_base_and_pointer_count(c_type: str) -> tuple[str, int]:
         raise ManifestError("C value field type cannot be represented in a public layout")
     base_type, pointers = match.groups()
     return base_type, len(pointers) if pointers else 0
+
+
+def _is_c_layout_field_name(value: Any) -> bool:
+    """Return whether a C/C++ header field name is syntactically safe and unreserved."""
+    return (
+        isinstance(value, str)
+        and re.fullmatch(r"[A-Za-z][A-Za-z0-9_]*", value) is not None
+        and "__" not in value
+        and value not in _C_FAMILY_KEYWORDS
+    )
 
 
 def _validate_ready_c_value_layouts(
@@ -1649,10 +1661,8 @@ def _ordered_approved_c_type_layouts(
                 raise ManifestError("approved C carrier field is malformed")
             field_name = field.get("name")
             if (
-                not isinstance(field_name, str)
-                or re.fullmatch(r"[A-Za-z][A-Za-z0-9_]*", field_name) is None
+                not _is_c_layout_field_name(field_name)
                 or field_name in field_names
-                or field_name in _C_FAMILY_KEYWORDS
             ):
                 raise ManifestError(
                     "approved C carrier layout contains duplicate, invalid, or reserved fields"
