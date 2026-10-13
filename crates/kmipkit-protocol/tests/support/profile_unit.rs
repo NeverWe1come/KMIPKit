@@ -614,6 +614,106 @@ fn profile_maps_client_pgp_key_forms_and_versions_as_opaque_bytes() {
 }
 
 #[test]
+fn profile_rejects_malformed_pgp_key_import_shapes() {
+    let valid_version = || pgp_key_version_item(Value::integer(3));
+    let valid_block = || valid_pgp_key_block_item();
+    let key_without_version = pgp_key_item([valid_block()]);
+    let key_with_wrong_version = pgp_key_item([
+        pgp_key_version_item(Value::text_string("three".to_owned())),
+        valid_block(),
+    ]);
+    let key_with_duplicate_versions =
+        pgp_key_item([valid_version(), valid_version(), valid_block()]);
+    let key_without_block = pgp_key_item([valid_version()]);
+    let key_with_wrong_block = pgp_key_item([
+        valid_version(),
+        tagged(
+            0x0042_0040,
+            Value::text_string("not a structure".to_owned()),
+        ),
+    ]);
+    let key_with_missing_format = pgp_key_item([
+        valid_version(),
+        pgp_key_block_item([pgp_key_value_item(Value::byte_string(Vec::new()))]),
+    ]);
+    let key_with_wrong_format = pgp_key_item([
+        valid_version(),
+        pgp_key_block_item([
+            pgp_key_format_item(Value::integer(1)),
+            pgp_key_value_item(Value::byte_string(Vec::new())),
+        ]),
+    ]);
+    let key_with_duplicate_formats = pgp_key_item([
+        valid_version(),
+        pgp_key_block_item([
+            pgp_key_format_item(Value::enumeration(1)),
+            pgp_key_format_item(Value::enumeration(1)),
+            pgp_key_value_item(Value::byte_string(Vec::new())),
+        ]),
+    ]);
+    let key_with_missing_value = pgp_key_item([
+        valid_version(),
+        pgp_key_block_item([pgp_key_format_item(Value::enumeration(1))]),
+    ]);
+    let key_with_duplicate_values = pgp_key_item([
+        valid_version(),
+        pgp_key_block_item([
+            pgp_key_format_item(Value::enumeration(1)),
+            pgp_key_value_item(Value::byte_string(Vec::new())),
+            pgp_key_value_item(Value::byte_string(Vec::new())),
+        ]),
+    ]);
+
+    let malformed_requests = [
+        request_message_with_operation_payload(0x0000_002A, Structure::new()),
+        request_message_with_operation_payload(
+            0x0000_002A,
+            structure([tagged(
+                0x0042_0057,
+                Value::text_string("not an enumeration".to_owned()),
+            )]),
+        ),
+        request_message_with_operation_payload(
+            0x0000_002A,
+            structure([
+                tagged(0x0042_0057, Value::enumeration(9)),
+                tagged(0x0042_0057, Value::enumeration(9)),
+            ]),
+        ),
+        pgp_import_request_with_fields([]),
+        pgp_import_request_with_fields([tagged(
+            0x0042_00BD,
+            Value::text_string("not a structure".to_owned()),
+        )]),
+        pgp_import_request_with_fields([valid_pgp_key_item(), valid_pgp_key_item()]),
+        pgp_import_request_with_fields([key_without_version]),
+        pgp_import_request_with_fields([key_with_wrong_version]),
+        pgp_import_request_with_fields([key_with_duplicate_versions]),
+        pgp_import_request_with_fields([key_without_block]),
+        pgp_import_request_with_fields([key_with_wrong_block]),
+        pgp_import_request_with_fields([key_with_missing_format]),
+        pgp_import_request_with_fields([key_with_wrong_format]),
+        pgp_import_request_with_fields([key_with_duplicate_formats]),
+        pgp_import_request_with_fields([key_with_missing_value]),
+        pgp_import_request_with_fields([key_with_duplicate_values]),
+    ];
+
+    for malformed in malformed_requests {
+        assert!(!import_preserves_pgp_key_versions_and_opaque_bytes(
+            Some(&malformed),
+            None
+        ));
+    }
+    assert!(import_preserves_pgp_key_versions_and_opaque_bytes(
+        Some(&request_message_with_operation_payload(
+            0x0000_002A,
+            structure([tagged(0x0042_0057, Value::enumeration(2))]),
+        )),
+        None
+    ));
+}
+
+#[test]
 fn profile_allows_type_specific_cryptographic_parameters_without_remote_object_inference() {
     const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-4.16-001-002";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
@@ -1734,6 +1834,46 @@ fn pgp_key_import_request(version: i32, key_bytes: &[u8]) -> crate::RequestMessa
             ),
         ]),
     )
+}
+
+fn pgp_key_item(fields: impl IntoIterator<Item = Item>) -> Item {
+    tagged(0x0042_00BD, Value::structure(structure(fields)))
+}
+
+fn pgp_key_block_item(fields: impl IntoIterator<Item = Item>) -> Item {
+    tagged(0x0042_0040, Value::structure(structure(fields)))
+}
+
+fn pgp_import_request_with_fields(fields: impl IntoIterator<Item = Item>) -> crate::RequestMessage {
+    let mut payload = vec![tagged(0x0042_0057, Value::enumeration(9))];
+    payload.extend(fields);
+    request_message_with_operation_payload(0x0000_002A, structure(payload))
+}
+
+fn pgp_key_version_item(value: Value) -> Item {
+    tagged(0x0042_00BE, value)
+}
+
+fn pgp_key_format_item(value: Value) -> Item {
+    tagged(0x0042_0042, value)
+}
+
+fn pgp_key_value_item(value: Value) -> Item {
+    tagged(0x0042_0045, value)
+}
+
+fn valid_pgp_key_block_item() -> Item {
+    pgp_key_block_item([
+        pgp_key_format_item(Value::enumeration(1)),
+        pgp_key_value_item(Value::byte_string(b"synthetic-pgp-key".to_vec())),
+    ])
+}
+
+fn valid_pgp_key_item() -> Item {
+    pgp_key_item([
+        pgp_key_version_item(Value::integer(3)),
+        valid_pgp_key_block_item(),
+    ])
 }
 
 fn valid_secret_data_wrapping() -> Value {

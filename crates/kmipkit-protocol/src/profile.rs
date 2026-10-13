@@ -896,39 +896,40 @@ fn import_payload_preserves_pgp_key(payload: &StructureView<'_>) -> bool {
         return false;
     };
     pgp_key.with_value(|value| match value {
-        ValueView::Structure(pgp_key) => {
-            let FieldPresence::Unique(version) = field_presence(&pgp_key, PGP_KEY_VERSION) else {
-                return false;
-            };
-            if !version.with_value(|value| matches!(value, ValueView::Integer(_))) {
-                return false;
-            }
-
-            let FieldPresence::Unique(key_block) = field_presence(&pgp_key, KEY_BLOCK) else {
-                return false;
-            };
-            key_block.with_value(|value| match value {
-                ValueView::Structure(key_block) => {
-                    let FieldPresence::Unique(key_format) =
-                        field_presence(&key_block, KEY_FORMAT_TYPE)
-                    else {
-                        return false;
-                    };
-                    if !key_format.with_value(|value| matches!(value, ValueView::Enumeration(_))) {
-                        return false;
-                    }
-
-                    let FieldPresence::Unique(key_value) = field_presence(&key_block, KEY_VALUE)
-                    else {
-                        return false;
-                    };
-                    key_value.with_value(|value| matches!(value, ValueView::ByteString(_)))
-                }
-                _ => false,
-            })
-        }
+        ValueView::Structure(pgp_key) => pgp_key_preserves_required_fields(&pgp_key),
         _ => false,
     })
+}
+
+fn pgp_key_preserves_required_fields(pgp_key: &StructureView<'_>) -> bool {
+    let FieldPresence::Unique(version) = field_presence(pgp_key, PGP_KEY_VERSION) else {
+        return false;
+    };
+    if !version.with_value(|value| matches!(value, ValueView::Integer(_))) {
+        return false;
+    }
+
+    let FieldPresence::Unique(key_block) = field_presence(pgp_key, KEY_BLOCK) else {
+        return false;
+    };
+    key_block.with_value(|value| match value {
+        ValueView::Structure(key_block) => pgp_key_block_preserves_opaque_value(&key_block),
+        _ => false,
+    })
+}
+
+fn pgp_key_block_preserves_opaque_value(key_block: &StructureView<'_>) -> bool {
+    let FieldPresence::Unique(key_format) = field_presence(key_block, KEY_FORMAT_TYPE) else {
+        return false;
+    };
+    if !key_format.with_value(|value| matches!(value, ValueView::Enumeration(_))) {
+        return false;
+    }
+
+    let FieldPresence::Unique(key_value) = field_presence(key_block, KEY_VALUE) else {
+        return false;
+    };
+    key_value.with_value(|value| matches!(value, ValueView::ByteString(_)))
 }
 
 fn client_register_key_value_location_requires_omitted_key_value(
