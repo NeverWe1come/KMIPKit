@@ -43,12 +43,38 @@ class OpaqueObjectTraceabilityTests(unittest.TestCase):
         requirement = requirements["KMIPKIT-REQ-SPEC-2.3-003"]
         self.assertEqual(requirement["feature_spec"], "KMIPKIT-0044")
         self.assertEqual(requirement["source_clause_ids"], [])
+        self.assertEqual(requirement["source_keyword"], None)
+        self.assertEqual(requirement["source_force"], "required_table_body_value")
+        self.assertEqual(
+            requirement["source_gap_id"],
+            "KMIPKIT-SOURCE-GAP-SPEC-2.3-OPAQUE-DATA-TYPE-REQUIRED",
+        )
+        self.assertEqual(
+            requirement["source_locator"],
+            {
+                "kind": "table_body_row",
+                "section": "2.3",
+                "row_label": "Opaque Data Type",
+                "table": "object_definition",
+                "html_line_range": [6927, 6945],
+            },
+        )
         self.assertEqual(requirement["scope_state"], "client_1_0")
         self.assertEqual(requirement["role"], "client")
         self.assertEqual(requirement["direction"], "client_to_server")
         self.assertIn("Opaque Data Type", requirement["summary"])
         self.assertIn("Opaque Data Value", requirement["summary"])
         self.assertNotIn("heading", requirement["summary"].lower())
+        self.assertIn(
+            "crates/kmipkit-protocol/tests/unit/register_operation_tests.rs::"
+            "opaque_object_requires_typed_table4_data_type_and_data_value_children",
+            requirement["verification_refs"],
+        )
+        self.assertIn(
+            "crates/kmipkit-client/tests/unit/register_execution_tests.rs::"
+            "malformed_table_4_opaque_object_is_not_sent",
+            requirement["verification_refs"],
+        )
 
         required_children = {
             "KMIPKIT-ELEM-STRUCTURE-MEMBER-2-3-OPAQUE-OBJECT-OPAQUE-DATA-TYPE": "Enumeration",
@@ -97,6 +123,76 @@ class OpaqueObjectTraceabilityTests(unittest.TestCase):
                 self.assertEqual(linked["feature_spec"], "KMIPKIT-0036")
                 self.assertIn("crates/kmipkit-protocol/src/register.rs", linked["implementation_refs"])
                 self.assertIn(verification_ref, linked["verification_refs"])
+
+    def test_table4_required_child_rows_have_a_body_gap_separate_from_header(self) -> None:
+        oracle = json.loads(
+            (ROOT / "tools/normative_catalog/tests/fixtures/profile-closure-v2.1.json").read_text(
+                encoding="utf-8"
+            )
+        )
+        expected_rows = {
+            "KMIPKIT-SOURCE-GAP-SPEC-2.3-OPAQUE-DATA-TYPE-REQUIRED": (
+                "Opaque Data Type",
+                [6927, 6945],
+                "Opaque Data Type Enumeration Yes",
+            ),
+            "KMIPKIT-SOURCE-GAP-SPEC-2.3-OPAQUE-DATA-VALUE-REQUIRED": (
+                "Opaque Data Value",
+                [6946, 6964],
+                "Opaque Data Value Byte String Yes",
+            ),
+        }
+        gaps = {
+            gap["gap_id"]: gap
+            for gap in oracle["source_only_requirement_gaps"]
+            if gap["gap_id"] in expected_rows
+        }
+        self.assertEqual(set(gaps), set(expected_rows))
+        self.assertEqual(
+            oracle["counts"]["source_only_requirement_gaps"],
+            len(oracle["source_only_requirement_gaps"]),
+        )
+        for gap_id, (row_label, line_range, excerpt) in expected_rows.items():
+            with self.subTest(gap_id=gap_id):
+                gap = gaps[gap_id]
+                self.assertEqual(gap["source_id"], "KMIPKIT-SRC-spec")
+                self.assertEqual(
+                    gap["source_path"],
+                    "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+                )
+                self.assertEqual(gap["source_section"], "2.3")
+                self.assertIsNone(gap["source_clause_id"])
+                self.assertEqual(
+                    gap["source_locator"],
+                    {
+                        "kind": "table_body_row",
+                        "section": "2.3",
+                        "row_label": row_label,
+                        "table": "object_definition",
+                        "html_line_range": line_range,
+                    },
+                )
+                self.assertEqual(gap["html_line_range"], line_range)
+                self.assertEqual(gap["source_excerpt"], excerpt)
+                self.assertEqual(gap["source_keywords"], [])
+                self.assertEqual(gap["source_force"], "required_table_body_value")
+                self.assertEqual(gap["candidate_requirement_id"], "KMIPKIT-REQ-SPEC-2.3-003")
+                self.assertIsNone(gap["proposed_requirement_id"])
+                self.assertEqual(gap["reused_requirement_id"], "KMIPKIT-REQ-SPEC-2.3-003")
+                self.assertEqual(gap["status"], "source_obligation_covered_by_existing_stable_label")
+                self.assertIn(row_label, gap["audited_statement"])
+
+        header = next(
+            review
+            for review in oracle["source_requirement_reviews"]
+            if review["source_clause_id"] == "KMIPKIT-CLAUSE-SPEC-2.3-003"
+        )
+        self.assertEqual(header["source_obligations"], [])
+        self.assertEqual(header["expected_client_requirement_ids"], [])
+        self.assertEqual(
+            header["rejected_candidate_mappings"][0]["expected_disposition"],
+            "reject_candidate_non_normative_table_header",
+        )
 
     def test_each_context_requirement_has_source_code_positive_and_negative_evidence(self) -> None:
         self.assertTrue(TRACEABILITY.is_file(), "feature traceability ledger must exist")
