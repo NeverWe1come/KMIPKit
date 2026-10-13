@@ -201564,6 +201564,321 @@
           "name": "kmipkit.extensions.create_extension_registry_limits"
         }
       }
+    },
+    {
+      "declarationId": "java-observed-8fba8b1f9c4d2e0b48e5",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.extensions.ClientBatchItem.close",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0043",
+      "blockedReason": "This Java AutoCloseable declaration has no reviewed equivalent mapping across the four public languages; it is inventoried without advertising complete parity."
+    },
+    {
+      "declarationId": "java-observed-44e90613d9ef2766facc",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.extensions.ClientRequestMessageExtension.close",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0043",
+      "blockedReason": "This Java AutoCloseable declaration has no reviewed equivalent mapping across the four public languages; it is inventoried without advertising complete parity."
+    },
+    {
+      "declarationId": "java-observed-f6d780a5d0a849028aeb",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.extensions.Compatibility.close",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0043",
+      "blockedReason": "This Java AutoCloseable declaration has no reviewed equivalent mapping across the four public languages; it is inventoried without advertising complete parity."
+    },
+    {
+      "declarationId": "java-observed-c0fe7637a6ce25d103a5",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.extensions.Discriminator.close",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0043",
+      "blockedReason": "This Java AutoCloseable declaration has no reviewed equivalent mapping across the four public languages; it is inventoried without advertising complete parity."
+    },
+    {
+      "declarationId": "java-observed-d55ff55d1214a874190e",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.extensions.ExtensionChildRule.close",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0043",
+      "blockedReason": "This Java AutoCloseable declaration has no reviewed equivalent mapping across the four public languages; it is inventoried without advertising complete parity."
+    },
+    {
+      "declarationId": "java-observed-912255326d9326718ded",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.extensions.ExtensionDefinition.close",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0043",
+      "blockedReason": "This Java AutoCloseable declaration has no reviewed equivalent mapping across the four public languages; it is inventoried without advertising complete parity."
+    },
+    {
+      "declarationId": "java-observed-79d17229b725316d623a",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.extensions.ExtensionIdentity.close",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0043",
+      "blockedReason": "This Java AutoCloseable declaration has no reviewed equivalent mapping across the four public languages; it is inventoried without advertising complete parity."
+    },
+    {
+      "declarationId": "java-observed-067d11d9947e506913db",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.extensions.ExtensionInformation.close",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0043",
+      "blockedReason": "This Java AutoCloseable declaration has no reviewed equivalent mapping across the four public languages; it is inventoried without advertising complete parity."
+    },
+    {
+      "declarationId": "java-observed-073a259836842f849e21",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.extensions.ExtensionOrderConstraint.close",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0043",
+      "blockedReason": "This Java AutoCloseable declaration has no reviewed equivalent mapping across the four public languages; it is inventoried without advertising complete parity."
+    },
+    {
+      "declarationId": "java-observed-be2ed3836bdf64845b4d",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.extensions.ExtensionRecognition.close",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0043",
+      "blockedReason": "This Java AutoCloseable declaration has no reviewed equivalent mapping across the four public languages; it is inventoried without advertising complete parity."
+    },
+    {
+      "declarationId": "java-observed-a6486b077e3eddec1b5f",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.extensions.ExtensionSchema.close",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0043",
+      "blockedReason": "This Java AutoCloseable declaration has no reviewed equivalent mapping across the four public languages; it is inventoried without advertising complete parity."
+    },
+    {
+      "declarationId": "java-observed-806fd1143d9dd09e4e1b",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.extensions.RegisteredExtensionValue.close",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0043",
+      "blockedReason": "This Java AutoCloseable declaration has no reviewed equivalent mapping across the four public languages; it is inventoried without advertising complete parity."
+    },
+    {
+      "declarationId": "java-observed-d5ce76f8e74a2f0e476d",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.extensions.TtlvPath.close",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0043",
+      "blockedReason": "This Java AutoCloseable declaration has no reviewed equivalent mapping across the four public languages; it is inventoried without advertising complete parity."
+    },
+    {
+      "declarationId": "java-observed-03d4413300814620fdba",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.extensions.ValidatedExtensionValue.close",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0043",
+      "blockedReason": "This Java AutoCloseable declaration has no reviewed equivalent mapping across the four public languages; it is inventoried without advertising complete parity."
+    },
+    {
+      "declarationId": "java-observed-736b3ed1ddd99fd52d2d",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.ttlv.RawTag.close",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0043",
+      "blockedReason": "This Java AutoCloseable declaration has no reviewed equivalent mapping across the four public languages; it is inventoried without advertising complete parity."
+    },
+    {
+      "declarationId": "java-observed-9d92f64b187a72b540f8",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.ttlv.Tag.close",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0043",
+      "blockedReason": "This Java AutoCloseable declaration has no reviewed equivalent mapping across the four public languages; it is inventoried without advertising complete parity."
+    },
+    {
+      "declarationId": "java-observed-364841533079a886d2cd",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.ttlv.TtlvItem.close",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0043",
+      "blockedReason": "This Java AutoCloseable declaration has no reviewed equivalent mapping across the four public languages; it is inventoried without advertising complete parity."
+    },
+    {
+      "declarationId": "java-observed-904202341811dc6e8f4c",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.ttlv.TtlvItemView.close",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0043",
+      "blockedReason": "This Java AutoCloseable declaration has no reviewed equivalent mapping across the four public languages; it is inventoried without advertising complete parity."
+    },
+    {
+      "declarationId": "java-observed-cb734afb79f043daa7c5",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.ttlv.TtlvStructure.close",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0043",
+      "blockedReason": "This Java AutoCloseable declaration has no reviewed equivalent mapping across the four public languages; it is inventoried without advertising complete parity."
+    },
+    {
+      "declarationId": "java-observed-b8fd98112918cce0b82e",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.ttlv.TtlvValue.close",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0043",
+      "blockedReason": "This Java AutoCloseable declaration has no reviewed equivalent mapping across the four public languages; it is inventoried without advertising complete parity."
+    },
+    {
+      "declarationId": "java-observed-34aa1ad57dd64d49d05d",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.ttlv.TtlvValueView.close",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0043",
+      "blockedReason": "This Java AutoCloseable declaration has no reviewed equivalent mapping across the four public languages; it is inventoried without advertising complete parity."
     }
   ],
   "approvedExclusions": [

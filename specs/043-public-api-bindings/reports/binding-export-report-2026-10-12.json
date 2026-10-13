@@ -23,14 +23,14 @@
     {
       "complete": true,
       "counts": {
-        "exactMatches": 330,
+        "exactMatches": 351,
         "kindMismatches": 0,
-        "manifest": 330,
-        "matched": 330,
+        "manifest": 351,
+        "matched": 351,
         "missingFromManifest": 0,
         "notObserved": 0,
-        "observed": 330,
-        "pathMatches": 330
+        "observed": 351,
+        "pathMatches": 351
       },
       "issues": [],
       "kindMismatches": [],

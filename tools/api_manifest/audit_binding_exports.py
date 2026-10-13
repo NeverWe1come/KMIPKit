@@ -661,6 +661,28 @@ def audit_c_package(root: Path, manifest: dict[str, Any], binary: Path | None = 
     return compare(c, manifest, "c-kmipkit")
 
 
+def resolve_java_compile_classpath(root: Path) -> str:
+    """Resolve Java's configured compile classpath through offline Gradle."""
+    java_root = root / "bindings/java"
+    wrapper_name = "gradlew.bat" if os.name == "nt" else "gradlew"
+    wrapper = java_root / wrapper_name
+    if not wrapper.is_file():
+        raise ValueError(f"Gradle wrapper is missing: {wrapper}")
+    command = [str(wrapper), "--offline", "--console=plain", "--quiet", "apiAuditClasspath"]
+    if os.name == "nt":
+        command = [os.environ.get("COMSPEC", "cmd.exe"), "/d", "/s", "/c",
+                   subprocess.list2cmdline(command)]
+    result = subprocess.run(command, cwd=java_root, check=False, capture_output=True, text=True,
+                            encoding="utf-8")
+    if result.returncode != 0:
+        raise ValueError(f"Gradle could not resolve the offline Java compile classpath: {result.stderr.strip()}")
+    marker = "KMIPKIT_API_AUDIT_CLASSPATH="
+    classpath_lines = [line[len(marker):] for line in result.stdout.splitlines() if line.startswith(marker)]
+    if len(classpath_lines) != 1 or not classpath_lines[0]:
+        raise ValueError("Gradle did not emit exactly one Java API audit classpath")
+    return classpath_lines[0]
+
+
 def run(root: Path, *, c_only: bool = False, c_binary: Path | None = None) -> dict[str, Any]:
     manifest = json.loads((root / "specification/api/public-api.json").read_text(encoding="utf-8"))
     packages = [audit_c_package(root, manifest, c_binary)]
@@ -670,9 +692,11 @@ def run(root: Path, *, c_only: bool = False, c_binary: Path | None = None) -> di
     java_sources = sorted(java_root.rglob("*.java"))
     if not java_sources:
         raise ValueError("Java sources are missing")
+    java_classpath = resolve_java_compile_classpath(root)
     java_outputs: dict[str, str] = {}
     with tempfile.TemporaryDirectory(prefix="kmipkit-api-javac-") as temp_output:
-        compile_result = subprocess.run(["javac", "--release", "17", "-d", temp_output,
+        compile_result = subprocess.run(["javac", "--release", "17", "-classpath", java_classpath,
+                                         "-d", temp_output,
                                          *(str(path) for path in java_sources)],
                                         check=False, capture_output=True, text=True, encoding="utf-8")
         if compile_result.returncode != 0:

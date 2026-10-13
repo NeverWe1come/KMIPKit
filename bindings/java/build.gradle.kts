@@ -15,6 +15,12 @@ repositories {
     mavenCentral()
 }
 
+tasks.register("apiAuditClasspath") {
+    doLast {
+        println("KMIPKIT_API_AUDIT_CLASSPATH=" + sourceSets.main.get().compileClasspath.asPath)
+    }
+}
+
 dependencies {
     api("org.jspecify:jspecify:1.0.0")
     testImplementation("org.junit.jupiter:junit-jupiter:5.10.2")
