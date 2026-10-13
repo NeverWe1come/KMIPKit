@@ -32,9 +32,12 @@ _MAX_I64 = (1 << 63) - 1
 def _integer_range(value: int, minimum: int, maximum: int) -> int:
     if not isinstance(value, int) or isinstance(value, bool):
         errors.raise_for_status(4)
-    if value < minimum or value > maximum:
+    # Invoke the built-in descriptor to bypass rich-comparison overrides on
+    # int subclasses, then retain only the canonical fixed-width value.
+    number = int.__index__(value)
+    if number < minimum or number > maximum:
         errors.raise_for_status(4)
-    return value
+    return number
 
 
 def _unsigned(value: int, bits: int, *, allow_zero: bool = True) -> int:
@@ -95,14 +98,17 @@ class Endpoint:
             errors.raise_for_status(4)
         _nonempty_text(self.address)
         if self.kind is EndpointKind.RAW_TLS:
-            _unsigned(self.port, 16, allow_zero=False)
+            port = _unsigned(self.port, 16, allow_zero=False)
+            object.__setattr__(self, "port", port)
             if self.tls_server_name is not None:
                 _nonempty_text(self.tls_server_name)
             if self.target_uri is not None:
                 errors.raise_for_status(4)
             return
         if self.kind is EndpointKind.HTTPS:
-            if _unsigned(self.port, 16) != 0 or self.tls_server_name is not None:
+            port = _unsigned(self.port, 16)
+            object.__setattr__(self, "port", port)
+            if port != 0 or self.tls_server_name is not None:
                 errors.raise_for_status(4)
             if self.target_uri is not None:
                 _nonempty_text(self.target_uri)
@@ -287,6 +293,8 @@ class TimeoutLimit:
             errors.raise_for_status(4)
         seconds = _unsigned(self.seconds, 64)
         nanoseconds = _unsigned(self.nanoseconds, 32)
+        object.__setattr__(self, "seconds", seconds)
+        object.__setattr__(self, "nanoseconds", nanoseconds)
         if self.kind is TimeoutKind.DEFAULT:
             if seconds != 0 or nanoseconds != 0:
                 errors.raise_for_status(4)
