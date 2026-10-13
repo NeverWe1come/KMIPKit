@@ -1173,8 +1173,6 @@ def _validate_c_value_layout(c_type: dict[str, Any], declared_types: set[str]) -
     ] != [("struct_size", "uint32_t"), ("abi_version", "uint32_t")]:
         raise ManifestError("versioned C value must begin with its size and ABI version")
     for field in fields:
-        if field["name"] in _C_FAMILY_KEYWORDS:
-            raise ManifestError("C/C++ keyword cannot be used as a fixed-width field name")
         if not _is_c_layout_field_name(field["name"]):
             raise ManifestError("invalid fixed-width C field name")
         _rust_identifier(field["name"])
