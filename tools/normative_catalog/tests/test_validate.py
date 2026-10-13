@@ -537,6 +537,35 @@ def _has_usable_conditional_client_request_evidence(
     )
 
 
+def _has_usable_profile_optional_evidence(
+    requirement: dict[str, Any],
+    conditional_source_clause_ids: set[str],
+    typed_rule_mappings: list[dict[str, Any]],
+    resolvable_implementation_refs: list[str],
+    usable_positive_tests: list[str],
+) -> bool:
+    """Apply the profile-specific conditional evidence gate without changing base scope rules."""
+    if not usable_positive_tests:
+        return False
+    if requirement["scope_state"] == "profile_conditional":
+        return _has_usable_conditional_client_request_evidence(
+            requirement,
+            conditional_source_clause_ids,
+            typed_rule_mappings,
+            resolvable_implementation_refs,
+            usable_positive_tests,
+        )
+
+    scoped_client_request_evidence = (
+        requirement["status"] == "scoped_verified"
+        and requirement["role"] == "client"
+        and requirement["direction"] == "client_to_server"
+        and requirement["scope_state"] == "client_1_0"
+        and bool(resolvable_implementation_refs)
+    )
+    return requirement["status"] == "verified" or scoped_client_request_evidence
+
+
 def source_table_contracts_for_gap(
     contracts: list[dict[str, Any]], gap_id: str
 ) -> list[dict[str, Any]]:
@@ -17144,28 +17173,14 @@ class CatalogValidationTests(unittest.TestCase):
                 test_path, test_source = confined_test_source
                 if _is_discoverable_positive_test(test_path, test_name, test_source):
                     usable_positive_tests.append(reference)
-            if requirement["scope_state"] == "profile_conditional":
-                eligible_evidence = _has_usable_conditional_client_request_evidence(
-                    requirement,
-                    conditional_sources.get(requirement_id, set()),
-                    typed_rule_mappings,
-                    resolvable_implementation_refs,
-                    usable_positive_tests,
-                )
-            else:
-                scoped_client_request_evidence = (
-                    requirement["status"] == "scoped_verified"
-                    and requirement["role"] == "client"
-                    and requirement["direction"] == "client_to_server"
-                    and requirement["scope_state"] == "client_1_0"
-                    and bool(resolvable_implementation_refs)
-                    and bool(usable_positive_tests)
-                )
-                eligible_evidence = (
-                    requirement["status"] == "verified"
-                    or scoped_client_request_evidence
-                )
-            if not eligible_evidence or not usable_positive_tests:
+            eligible_evidence = _has_usable_profile_optional_evidence(
+                requirement,
+                conditional_sources.get(requirement_id, set()),
+                typed_rule_mappings,
+                resolvable_implementation_refs,
+                usable_positive_tests,
+            )
+            if not eligible_evidence:
                 gaps.append(f"{requirement_id}: no eligible implementation and positive-test evidence")
 
         self.assertFalse(
