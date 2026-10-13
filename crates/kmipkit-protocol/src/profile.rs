@@ -761,7 +761,7 @@ fn client_get_or_export_key_compression_type_is_enumeration(
         let Some(operation) = batch_item.operation() else {
             return false;
         };
-        if operation != GET_OPERATION && operation != EXPORT_OPERATION {
+        if !matches!(operation, GET_OPERATION | EXPORT_OPERATION) {
             return true;
         }
 
