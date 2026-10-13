@@ -544,7 +544,7 @@ The full matrix for head `3c87f385` passed the language, platform, Java/Python c
 - **Commit**: Red test commit `cea357e3`.
 - **Green**: Added Java facade methods and JNI bridge calls for the four batch options. JNI validates uint32 and correlation byte length before conversion, forwards timestamp/ordering and exact copied correlation bytes to the existing C ABI, and maps native failures through the established exception path.
 - **Command**: `mvn --batch-mode --file bindings/java/pom.xml -Dtest=ClientFacadeContractTest test`
-- **Result**: PASS: 7 tests, including a native JNI build and a live native batch exercise. The first run caught missing private prototypes in the generated-header boundary; adding the exact ABI declarations to the existing T076 private declaration block resolved it. A second contract test covers unsigned range and null-correlation rejection.
+- **Result**: PASS: 9 tests, including a native JNI build and live native batch exercise. The first run caught missing private prototypes in the generated-header boundary; adding the exact ABI declarations to the existing T076 private declaration block resolved it. Contract tests cover unsigned range, null and malformed UTF-8 correlation, and the 16 MiB input limit.
 - **Green commit**: `56d1b603`.
 - **Refactor**: Consolidated uint32 boundary validation shared by Asynchronous Indicator and Error Continuation values without changing their public exception categories.
 - **Command**: `mvn --batch-mode --file bindings/java/pom.xml -Dtest=ClientFacadeContractTest test`
@@ -560,7 +560,7 @@ The full matrix for head `3c87f385` passed the language, platform, Java/Python c
 - **Commit**: Red test commit `c4d4dd50`.
 - **Green**: Java and Python expose consuming item builders over the existing ABI. Both preserve opaque identifier bytes, enforce the 16 MiB local input bound before making their owned copies, and transfer the previous wrapper only when constructing the new typed item.
 - **Commands**: `mvn --batch-mode --file bindings/java/pom.xml -Dtest=ClientFacadeContractTest test`; `bindings/python/.venv/Scripts/python.exe -m pytest bindings/python/tests/test_client.py::test_typed_batch_item_unique_id_builder_preserves_bytes_and_transfers_ownership -q`.
-- **Results**: PASS: Java contract suite 8 tests, including a native JNI build; Python ownership/byte-preservation fake-ABI test 1 passed.
+- **Results**: PASS: Java contract suite 8 tests, including a native JNI build; Python ownership/byte-preservation fake-ABI test 1 passed. The complete Python client contract suite also passes: 89 tests.
 - **Green commit**: Pending.
 
 ### Java correlation UTF-8 and resource-limit QA follow-up
@@ -568,4 +568,8 @@ The full matrix for head `3c87f385` passed the language, platform, Java/Python c
 - **Red**: Expanded the Java contract to exercise multibyte UTF-8, malformed UTF-8 rejection, and the 16 MiB input ceiling. The previous facade mapped oversized input to `InvalidInputException`, unlike Python's resource-limit category.
 - **Command**: `mvn --batch-mode --file bindings/java/pom.xml -Dtest=ClientFacadeContractTest test`
 - **Result**: Expected Red on the previous facade at the oversized correlation assertion; malformed UTF-8 is rejected by the shared C ABI before any request is sent.
-- **Commit**: Red test commit pending.
+- **Commit**: Red test commit `63d723e6`.
+- **Green**: Oversized correlation input now raises `ResourceLimitException` before copying or entering JNI. Java documentation states the UTF-8 validity and bound, and clarifies that KMIP continuation semantics are checked at batch execution.
+- **Command**: `mvn --batch-mode --file bindings/java/pom.xml -Dtest=ClientFacadeContractTest test`
+- **Result**: PASS: 9 tests; C++ JNI bridge rebuilt successfully and all facade boundary tests passed.
+- **Green commit**: Pending.

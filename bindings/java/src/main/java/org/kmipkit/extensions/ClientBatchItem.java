@@ -5,10 +5,13 @@ import java.util.List;
 
 import org.kmipkit.InvalidInputException;
 import org.kmipkit.NativeExtensionRegistry;
+import org.kmipkit.ResourceLimitException;
 import org.kmipkit.internal.NativeHandle;
 
 /** Typed request batch item with caller-ordered registry-validated extensions. */
 public final class ClientBatchItem implements AutoCloseable {
+    private static final int MAX_UNIQUE_BATCH_ITEM_ID_BYTES = 16 * 1024 * 1024;
+
     private final NativeHandle handle;
     private final List<ClientRequestMessageExtension> extensions;
 
@@ -41,6 +44,22 @@ public final class ClientBatchItem implements AutoCloseable {
         ArrayList<ClientRequestMessageExtension> next = new ArrayList<>(extensions);
         next.add(extension);
         return new ClientBatchItem(nextHandle, next);
+    }
+
+    /** Returns a new item carrying the caller-selected opaque KMIP identifier bytes. */
+    public ClientBatchItem withUniqueBatchItemId(byte[] identifier) {
+        if (identifier == null) {
+            throw new InvalidInputException("unique batch item ID is invalid");
+        }
+        if (identifier.length > MAX_UNIQUE_BATCH_ITEM_ID_BYTES) {
+            throw new ResourceLimitException("unique batch item ID exceeds the configured limit");
+        }
+        byte[] copy = identifier.clone();
+        NativeExtensionRegistry.ensureLoaded();
+        long consumedItem = handle.transfer();
+        long nextHandle = NativeExtensionRegistry.clientBatchItemWithUniqueBatchItemId(
+                consumedItem, copy);
+        return new ClientBatchItem(nextHandle, extensions);
     }
 
     List<ClientRequestMessageExtension> extensions() {

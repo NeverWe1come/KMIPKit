@@ -154,6 +154,9 @@ ffi.cdef(
         kmipkit_register_request_t *request,
         kmipkit_client_batch_item_t **out_item);
     void kmipkit_register_request_release(kmipkit_register_request_t *handle);
+    int32_t kmipkit_client_batch_item_with_unique_batch_item_id(
+        kmipkit_client_batch_item_t *item, const uint8_t *id_data,
+        uint64_t id_length, kmipkit_client_batch_item_t **out_item);
     void kmipkit_client_batch_item_release(kmipkit_client_batch_item_t *handle);
     int32_t kmipkit_last_error_get(
         int32_t *out_status,

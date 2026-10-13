@@ -397,8 +397,41 @@ def test_batch_add_item_transfers_ownership_when_native_accepts_it(
     batch.close()
 
 
-def test_typed_batch_item_exposes_unique_batch_item_id_builder() -> None:
-    assert callable(extensions.with_unique_batch_item_id)
+def test_typed_batch_item_unique_id_builder_preserves_bytes_and_transfers_ownership(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    original_storage = extensions.ffi.new("uint8_t[]", 1)
+    original = extensions.ffi.cast("kmipkit_client_batch_item_t *", original_storage)
+    result_storage = extensions.ffi.new("uint8_t[]", 1)
+    result = extensions.ffi.cast("kmipkit_client_batch_item_t *", result_storage)
+    observed: list[bytes] = []
+
+    def create(output: object) -> int:
+        output[0] = original  # type: ignore[index]
+        return 0
+
+    def with_unique_id(
+        _item: object, data: object, length: int, output: object
+    ) -> int:
+        observed.append(bytes(extensions.ffi.buffer(data, length)))  # type: ignore[arg-type]
+        output[0] = result  # type: ignore[index]
+        return 0
+
+    monkeypatch.setattr(
+        extensions,
+        "lib",
+        SimpleNamespace(
+            kmipkit_client_batch_item_discover_versions=create,
+            kmipkit_client_batch_item_with_unique_batch_item_id=with_unique_id,
+            kmipkit_client_batch_item_release=lambda _pointer: None,
+        ),
+    )
+    item = extensions.client_batch_item_discover_versions()
+    identified = extensions.with_unique_batch_item_id(item, b"\x00\xffid")
+    assert item.closed
+    assert identified._pointer() == result
+    assert observed == [b"\x00\xffid"]
+    identified.close()
 
 
 def test_client_create_serializes_transport_and_returns_owned_client(

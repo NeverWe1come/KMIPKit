@@ -2,6 +2,7 @@ package org.kmipkit.extensions;
 
 import org.kmipkit.InvalidInputException;
 import org.kmipkit.NativeExtensionRegistry;
+import org.kmipkit.ResourceLimitException;
 import org.kmipkit.internal.NativeHandle;
 
 /** One ordered, single-use collection of typed request batch items. */
@@ -72,7 +73,10 @@ public final class ClientBatch implements AutoCloseable {
         return this;
     }
 
-    /** Appends a caller-selected KMIP Batch Error Continuation Option value. */
+    /**
+     * Appends a caller-selected KMIP Batch Error Continuation Option value.
+     * Duplicate or unassigned values are rejected when the batch is executed.
+     */
     public ClientBatch addErrorContinuationValue(long value) {
         validateUint32(value, "error continuation value");
         NativeExtensionRegistry.ensureLoaded();
@@ -83,10 +87,16 @@ public final class ClientBatch implements AutoCloseable {
         return this;
     }
 
-    /** Sets exact UTF-8 client correlation bytes, preserving their byte sequence. */
+    /**
+     * Sets exact UTF-8 client correlation bytes, preserving their byte sequence.
+     * The byte array must contain valid UTF-8 and may not exceed 16 MiB.
+     */
     public ClientBatch clientCorrelationValue(byte[] value) {
-        if (value == null || value.length > MAX_CORRELATION_BYTES) {
+        if (value == null) {
             throw new InvalidInputException("client correlation value is invalid");
+        }
+        if (value.length > MAX_CORRELATION_BYTES) {
+            throw new ResourceLimitException("client correlation value exceeds the configured limit");
         }
         byte[] copy = value.clone();
         NativeExtensionRegistry.ensureLoaded();

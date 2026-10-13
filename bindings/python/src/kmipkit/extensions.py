@@ -73,6 +73,7 @@ def _native_limits(values: tuple[int, ...]) -> Any:
     return native
 
 _MAX_TEXT_BYTES_PER_FIELD = 4_096
+_MAX_UNIQUE_BATCH_ITEM_ID_BYTES = 16 * 1024 * 1024
 _MAX_CHILD_RULES_PER_STRUCTURE = 4_096
 
 
@@ -1197,6 +1198,24 @@ def with_extension(
     return ClientBatchItem(handle)
 
 
+def with_unique_batch_item_id(
+    item: ClientBatchItem, identifier: bytes | bytearray | memoryview
+) -> ClientBatchItem:
+    """Return a new request item with the caller-selected opaque identity bytes."""
+    if not isinstance(item, ClientBatchItem) or not isinstance(
+        identifier, (bytes, bytearray, memoryview)
+    ):
+        errors.raise_for_status(4)
+    raw, data = _owned_bytes(identifier, _MAX_UNIQUE_BATCH_ITEM_ID_BYTES)
+    handle = _make_handle(
+        "kmipkit_client_batch_item_t",
+        "kmipkit_client_batch_item_with_unique_batch_item_id",
+        (item, data, len(raw)),
+        consumed_indices=(0,),
+    )
+    return ClientBatchItem(handle)
+
+
 def client_batch_item_discover_versions() -> ClientBatchItem:
     """Create an empty Discover Versions request batch item."""
     handle = _make_handle(
@@ -1286,6 +1305,7 @@ __all__ = [
     "client_batch_item_extension_count",
     "client_batch_item_extension_criticality_indicator_at",
     "client_batch_item_extension_identity_at",
+    "with_unique_batch_item_id",
     "client_configuration_extension_registry",
     "create_client_configuration",
     "create_client_extension_registry",

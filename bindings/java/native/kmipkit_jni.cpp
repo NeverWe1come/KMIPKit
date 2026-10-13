@@ -28,6 +28,9 @@ extern "C" int32_t kmipkit_client_batch_add_error_continuation_value(
         kmipkit_client_batch_t* batch, uint32_t value);
 extern "C" int32_t kmipkit_client_batch_set_client_correlation_value(
         kmipkit_client_batch_t* batch, const uint8_t* value, uint64_t value_length);
+extern "C" int32_t kmipkit_client_batch_item_with_unique_batch_item_id(
+        kmipkit_client_batch_item_t* item, const uint8_t* id_data, uint64_t id_length,
+        kmipkit_client_batch_item_t** out_item);
 
 struct kmipkit_byte_span_v1_t {
     const uint8_t* data;
@@ -1293,6 +1296,33 @@ JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_clientBatchItem
             return kmipkit_client_batch_item_with_extension(
                     from_java_handle<kmipkit_client_batch_item_t>(raw_item),
                     from_java_handle<kmipkit_client_request_message_extension_t>(raw_extension), output);
+        });
+    });
+}
+
+JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_clientBatchItemWithUniqueBatchItemId(
+        JNIEnv* env, jclass, jlong raw_item, jbyteArray raw_id) {
+    return guarded<jlong>(env, 0, [&] {
+        if (raw_item == 0 || raw_id == nullptr) {
+            throw_invalid_input(env);
+            return static_cast<jlong>(0);
+        }
+        const jsize length = env->GetArrayLength(raw_id);
+        if (env->ExceptionCheck()) return static_cast<jlong>(0);
+        if (length < 0 || length > 16 * 1024 * 1024) {
+            throw_java(env, "org/kmipkit/ResourceLimitException", "unique batch item ID exceeds the configured limit");
+            return static_cast<jlong>(0);
+        }
+        std::vector<jbyte> bytes(static_cast<size_t>(length));
+        if (length > 0) {
+            env->GetByteArrayRegion(raw_id, 0, length, bytes.data());
+            if (env->ExceptionCheck()) return static_cast<jlong>(0);
+        }
+        return return_handle<kmipkit_client_batch_item_t>(env, [&](auto output) {
+            return kmipkit_client_batch_item_with_unique_batch_item_id(
+                    from_java_handle<kmipkit_client_batch_item_t>(raw_item),
+                    reinterpret_cast<const uint8_t*>(bytes.data()),
+                    static_cast<uint64_t>(bytes.size()), output);
         });
     });
 }

@@ -115,6 +115,7 @@ public final class NativeExtensionRegistry {
     public static native long registerRequestCreate(int objectType, long attributes, long object);
     public static native long registerRequestWithOpaqueObjectContext(long request, int context);
     public static native long clientBatchItemRegister(long request);
+    public static native long clientBatchItemWithUniqueBatchItemId(long item, byte[] id);
     public static native long clientBatchItemExtensionCount(long item);
     public static native long clientBatchItemExtensionIdentityAt(long item, long index);
     public static native boolean clientBatchItemExtensionCriticalityIndicatorAt(long item, long index);
