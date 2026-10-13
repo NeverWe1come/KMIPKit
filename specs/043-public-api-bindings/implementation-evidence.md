@@ -28,7 +28,7 @@ The implementation's TDD cycle is recorded in the original C ABI commits: `c73a8
 | Rust FFI implementation and guard tests | `cargo test -p kmipkit-ffi --lib` | PASS: 33 tests. AWS-LC emitted its existing Windows compiler/NASM probe warnings; Cargo completed successfully. |
 | Compile the C ABI consumer with MSVC | `cmd.exe /c 'call "C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Auxiliary\Build\vcvars64.bat" >nul && cl.exe /nologo /std:c11 /W4 /WX /Ibindings/c/include /Itests/fixtures/api/generated bindings/c/tests/extension_registry.c target/debug/kmipkit_ffi.dll.lib /Fe:target/c_consumer.exe'` | PASS: compiled with warnings as errors. |
 | Execute compiled C ABI consumer | `$env:PATH = "$PWD\target\debug;$env:PATH"; & target\c_consumer.exe` | PASS: all 16 consumer cases, including `null, closed, and wrong-kind handles are rejected`, succeeded. |
-| Updated Linux C-consumer CI | `.github/workflows/ci.yml` AddressSanitizer C-consumer step | Pending: the current green GitHub run predates this test-only change. Leave T017 unchecked until the updated commit's Linux C consumer check passes. |
+| Updated Linux C-consumer CI | Run `38339977117`, head `08271ae4`, `C consumer / ubuntu-latest` and `C FFI sanitizer / Linux` | PASS: both Linux consumer and AddressSanitizer checks passed. The full run passed all 32 required checks; two configured checks were skipped. The separate Windows/MSVC consumer also passed locally and Windows/macOS C consumer checks passed in this run. |
 
 ## T012 — Shared Rust/C parity fixture corpus
 
