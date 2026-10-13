@@ -1,6 +1,6 @@
 //! Closed typed request execution for the synchronous KMIP client.
 
-use kmipkit_protocol::{GetConstraintsRequest,GetConstraintsResponse};
+use kmipkit_protocol::{GetConstraintsRequest, GetConstraintsResponse};
 use std::collections::HashSet;
 use std::error::Error;
 use std::fmt;
@@ -131,7 +131,7 @@ const CANCEL_OPERATION: u32 = 0x0000_0019;
 const POLL_OPERATION: u32 = 0x0000_001A;
 const QUERY_ASYNCHRONOUS_REQUESTS_OPERATION: u32 = 0x0000_0039;
 const PROCESS_OPERATION: u32 = 0x0000_003A;
-const GET_CONSTRAINTS_OPERATION:u32=56; // OASIS §6.1.22.
+const GET_CONSTRAINTS_OPERATION: u32 = 56; // OASIS §6.1.22.
 const PING_OPERATION: u32 = 0x0000_003B;
 const QUERY_OPERATION: u32 = 0x0000_0018;
 const ASYNCHRONOUS_MANDATORY: u32 = 1;
@@ -1440,7 +1440,12 @@ impl<'a> ClientResponseView<'a> {
 
     /// Returns this policy response when its operation matches.
     #[must_use]
-    pub const fn get_constraints(&self)->Option<&GetConstraintsResponse>{match self.response{ClientResponseRef::GetConstraints(response)=>Some(response),_=>None}}
+    pub const fn get_constraints(&self) -> Option<&GetConstraintsResponse> {
+        match self.response {
+            ClientResponseRef::GetConstraints(response) => Some(response),
+            _ => None,
+        }
+    }
 
     /// Returns the Ping response when this view represents it.
     #[must_use]
@@ -1542,9 +1547,10 @@ impl fmt::Debug for ClientResponseView<'_> {
             ClientResponseRef::Ping(response) => {
                 formatter.debug_tuple("Ping").field(response).finish()
             }
-            ClientResponseRef::GetConstraints(response) => {
-                formatter.debug_tuple("GetConstraints").field(response).finish()
-            }
+            ClientResponseRef::GetConstraints(response) => formatter
+                .debug_tuple("GetConstraints")
+                .field(response)
+                .finish(),
             ClientResponseRef::Query(response) => {
                 formatter.debug_tuple("Query").field(response).finish()
             }
@@ -2037,7 +2043,10 @@ impl fmt::Debug for ClientBatchOutcome {
                 .field(response)
                 .finish(),
             Self::Ping(response) => formatter.debug_tuple("Ping").field(response).finish(),
-            Self::GetConstraints(response) => formatter.debug_tuple("GetConstraints").field(response).finish(),
+            Self::GetConstraints(response) => formatter
+                .debug_tuple("GetConstraints")
+                .field(response)
+                .finish(),
             Self::Query(response) => formatter.debug_tuple("Query").field(response).finish(),
         }
     }
@@ -2098,7 +2107,9 @@ impl fmt::Display for ClientBatchOutcome {
                 write!(formatter, "GetAttributeList({})", response.result())
             }
             Self::Ping(response) => write!(formatter, "Ping({})", response.result()),
-            Self::GetConstraints(response) => write!(formatter, "GetConstraints({})", response.result()),
+            Self::GetConstraints(response) => {
+                write!(formatter, "GetConstraints({})", response.result())
+            }
             Self::Query(response) => write!(formatter, "Query({})", response.result()),
         }
     }
@@ -2602,9 +2613,17 @@ impl Client {
     /// Executes one explicit §6.1.22 policy operation without retry.
     /// # Errors
     /// Returns sanitized validation, protocol or transport failure with delivery evidence.
-    pub fn get_constraints(&mut self,limits:&CodecLimits)->Result<ClientBatchItemResponse,ClientError>{
-      let response=self.execute(ClientBatch::new(ClientBatchItem::new(ClientRequest::GetConstraints(GetConstraintsRequest::new()))),limits)?;
-      take_single_response(response)
+    pub fn get_constraints(
+        &mut self,
+        limits: &CodecLimits,
+    ) -> Result<ClientBatchItemResponse, ClientError> {
+        let response = self.execute(
+            ClientBatch::new(ClientBatchItem::new(ClientRequest::GetConstraints(
+                GetConstraintsRequest::new(),
+            ))),
+            limits,
+        )?;
+        take_single_response(response)
     }
 
     /// Executes one client-to-server Ping request.
