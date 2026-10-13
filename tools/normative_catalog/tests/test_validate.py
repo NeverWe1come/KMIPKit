@@ -108,6 +108,9 @@ OPTIONAL_CAPABILITY_TEST_REQUIREMENTS = {
     "crates/kmipkit-protocol/tests/unit/import_operation_tests.rs::key_wrap_type_is_present_if_and_only_if_key_block_has_wrapping_data": (
         "KMIPKIT-REQ-SPEC-3.3-001-002",
     ),
+    "crates/kmipkit-protocol/tests/unit/import_operation_tests.rs::import_preserves_wrapped_secret_data_without_key_wrap_type": (
+        "KMIPKIT-REQ-SPEC-2.7-001",
+    ),
     "crates/kmipkit-protocol/tests/unit/cryptographic_parameters_tests.rs::omitted_cryptographic_parameters_remain_absent_without_validation": (
         "KMIPKIT-REQ-SPEC-4.16-001-001",
     ),
@@ -239,6 +242,13 @@ OPTIONAL_CAPABILITY_TEST_CONTENT_REQUIREMENTS = {
         "with_key_wrap_type(KeyWrapType::from_raw(0xF123_4568))",
         "wrapped_object_has_encryption_key_information(&fields[5])",
         "wrapped_object_has_byte_string_key_value(&fields[5])",
+    ),
+    "crates/kmipkit-protocol/tests/unit/import_operation_tests.rs::import_preserves_wrapped_secret_data_without_key_wrap_type": (
+        "ObjectType::from_raw(7)",
+        "wrapped_object_has_byte_string_key_value(&payload_fields[3])",
+        "wrapped_object_has_key_value_bytes",
+        "wrapped_object_has_encryption_key_information",
+        "field.tag().raw() == KEY_WRAP_TYPE",
     ),
     "crates/kmipkit-protocol/tests/unit/create_tests.rs::request_keeps_the_required_empty_attributes_structure_without_synthesizing_fields": (
         "AttributeSet::new()",
@@ -16265,6 +16275,69 @@ class CatalogValidationTests(unittest.TestCase):
             gaps.append("no eligible implementation and positive-test evidence")
 
         self.assertEqual(gaps, [], f"{requirement_id}: {'; '.join(gaps)}")
+
+    def test_wrapped_secret_data_import_has_scoped_implementation_and_positive_test_evidence(
+        self,
+    ) -> None:
+        requirement_id = "KMIPKIT-REQ-SPEC-2.7-001"
+        expected_implementation_refs = {
+            "crates/kmipkit-protocol/src/import.rs::ImportRequest::into_ttlv_payload",
+            "crates/kmipkit-protocol/src/import.rs::key_wrap_type_matches_object",
+        }
+        expected_verification_ref = (
+            "crates/kmipkit-protocol/tests/unit/import_operation_tests.rs::"
+            "import_preserves_wrapped_secret_data_without_key_wrap_type"
+        )
+        catalog = json.loads(
+            (ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8")
+        )
+        requirement = next(
+            row for row in catalog["requirements"] if row["requirement_id"] == requirement_id
+        )
+
+        implementation_refs = set(requirement["implementation_refs"])
+        resolvable_implementation_refs = set()
+        repository_root = ROOT.resolve()
+        for reference in implementation_refs:
+            implementation_path = ROOT / reference.partition("::")[0]
+            try:
+                resolved_implementation_path = implementation_path.resolve(strict=True)
+                resolved_implementation_path.relative_to(repository_root)
+            except (OSError, ValueError):
+                continue
+            if resolved_implementation_path.is_file():
+                resolvable_implementation_refs.add(reference)
+
+        usable_positive_tests = {
+            reference
+            for reference in requirement["verification_refs"]
+            if (test_reference := reference.partition("::"))[1]
+            and test_reference[2]
+            and (
+                confined_test_source := test_feature_traceability._read_confined_test_source(
+                    test_reference[0]
+                )
+            )
+            is not None
+            and _is_discoverable_positive_test(
+                confined_test_source[0], test_reference[2], confined_test_source[1]
+            )
+        }
+        scoped_wrapped_secret_data_evidence = (
+            requirement["role"] == "client"
+            and requirement["direction"] == "client_to_server"
+            and requirement["scope_state"] == "profile_conditional"
+            and requirement["feature_spec"] == "KMIPKIT-0037"
+            and requirement["status"] == "scoped_verified"
+            and expected_implementation_refs.issubset(resolvable_implementation_refs)
+            and expected_verification_ref in usable_positive_tests
+            and requirement["test_case_ids"] == []
+        )
+
+        self.assertTrue(
+            scoped_wrapped_secret_data_evidence,
+            f"{requirement_id} must link Import's bounded Secret Data wire representation",
+        )
 
     def test_optional_attribute_evidence_rows_are_client_to_server_requests(self) -> None:
         """Attribute request permissions remain client-originated catalog evidence."""
