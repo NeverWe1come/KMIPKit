@@ -1765,7 +1765,7 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
             "types": [],
         }
 
-        with self.assertRaisesRegex(generate.ManifestError, "invalid or reserved fields"):
+        with self.assertRaisesRegex(generate.ManifestError, "reserved fields"):
             generate._ordered_approved_c_type_layouts(manifest)
 
     def test_approved_c_carrier_rejects_partially_declared_value_dependency(self) -> None:

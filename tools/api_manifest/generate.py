@@ -1610,7 +1610,16 @@ def _ordered_approved_c_type_layouts(
         for declaration in manifest.get("publicDeclarations", [])
         if declaration.get("packageId") == "c-kmipkit"
         and declaration.get("kind") == "field"
+        and (
+            ready_c_exports is None
+            or declaration.get("declarationState") in {"declared", "verified"}
+        )
     }
+    declared_c_fields.update(
+        exclusion.get("exportName")
+        for exclusion in manifest.get("approvedExclusions", [])
+        if exclusion.get("packageId") == "c-kmipkit"
+    )
 
     def regular_type_is_complete(name: str, record: dict[str, Any]) -> bool:
         c_type = record.get("c", {})
@@ -1618,13 +1627,15 @@ def _ordered_approved_c_type_layouts(
             return True
         if c_type.get("kind") != "fixed-width-value":
             return False
-        return any(
-            f"{name}.{limit.get('cField')}" in declared_c_fields
-            and (
-                ready_c_exports is None
-                or f"{name}.{limit.get('cField')}" in ready_c_exports
-            )
+        fields = c_type.get("fields") or [
+            {"name": limit.get("cField")}
             for limit in manifest.get("limits", [])
+        ]
+        expected_fields = [f"{name}.{field['name']}" for field in fields]
+        return bool(expected_fields) and all(
+            field_name in declared_c_fields
+            and (ready_c_exports is None or field_name in ready_c_exports)
+            for field_name in expected_fields
         )
 
     by_value_dependencies: dict[str, set[str]] = {name: set() for name in layouts}
@@ -1641,8 +1652,11 @@ def _ordered_approved_c_type_layouts(
                 not isinstance(field_name, str)
                 or re.fullmatch(r"[A-Za-z][A-Za-z0-9_]*", field_name) is None
                 or field_name in field_names
+                or field_name in _C_FAMILY_KEYWORDS
             ):
-                raise ManifestError("approved C carrier layout contains duplicate or invalid fields")
+                raise ManifestError(
+                    "approved C carrier layout contains duplicate, invalid, or reserved fields"
+                )
             field_names.add(field_name)
             field_type = field.get("type")
             match = (
