@@ -11,7 +11,7 @@ use std::collections::{BTreeSet, HashMap};
 use std::error::Error;
 use std::fmt;
 
-use kmipkit_ttlv::{StructureView, ValueView};
+use kmipkit_ttlv::{Item, StructureView, ValueView};
 
 use crate::profiles_generated::{
     CLIENT_PROFILES, CLIENT_REQUIREMENTS, GeneratedClientProfile, GeneratedClientRequirement,
@@ -664,6 +664,14 @@ const PROTOCOL_VERSION: u32 = 0x0042_0069;
 const PROTOCOL_VERSION_MAJOR: u32 = 0x0042_006A;
 const PROTOCOL_VERSION_MINOR: u32 = 0x0042_006B;
 const CRYPTOGRAPHIC_PARAMETERS: u32 = 0x0042_002B;
+const IMPORT_OPERATION: u32 = 0x0000_002A;
+const IMPORT_OBJECT_TYPE: u32 = 0x0042_0057;
+const SECRET_DATA_OBJECT_TYPE: u32 = 7;
+const SECRET_DATA: u32 = 0x0042_0085;
+const SECRET_DATA_TYPE: u32 = 0x0042_0086;
+const KEY_BLOCK: u32 = 0x0042_0040;
+const KEY_VALUE: u32 = 0x0042_0045;
+const KEY_WRAPPING_DATA: u32 = 0x0042_0046;
 const CREATE_KEY_PAIR_OPERATION: u32 = 0x0000_0002;
 const CREATE_KEY_PAIR_ATTRIBUTE_GROUPS: [u32; 3] = [0x0042_0126, 0x0042_0127, 0x0042_0128];
 const CRYPTOGRAPHIC_DOMAIN_PARAMETERS: u32 = 0x0042_0029;
@@ -777,6 +785,105 @@ fn client_supplied_create_key_pair_domain_parameters_are_structures(
     })
 }
 
+fn import_preserves_wrapped_secret_data_shape(
+    request: Option<&RequestMessage>,
+    _response: Option<(&RequestMessage, &ResponseMessage)>,
+) -> bool {
+    let Some(request) = request else {
+        return false;
+    };
+
+    request.batch_items().all(|batch_item| {
+        let Some(operation) = batch_item.operation() else {
+            return false;
+        };
+        if operation != IMPORT_OPERATION {
+            return true;
+        }
+
+        batch_item
+            .with_request_payload(|payload| import_payload_preserves_secret_data_wrapping(&payload))
+            .unwrap_or(false)
+    })
+}
+
+#[derive(Clone, Copy)]
+enum FieldPresence<'a> {
+    Missing,
+    Unique(&'a Item),
+    Duplicate,
+}
+
+fn field_presence<'a>(structure: &'a StructureView<'_>, tag: u32) -> FieldPresence<'a> {
+    let mut found = None;
+    for field in structure.children() {
+        if field.tag().raw() == tag {
+            if found.is_some() {
+                return FieldPresence::Duplicate;
+            }
+            found = Some(field);
+        }
+    }
+    found.map_or(FieldPresence::Missing, FieldPresence::Unique)
+}
+
+fn import_payload_preserves_secret_data_wrapping(payload: &StructureView<'_>) -> bool {
+    let FieldPresence::Unique(object_type) = field_presence(payload, IMPORT_OBJECT_TYPE) else {
+        return false;
+    };
+    let Some(object_type) = object_type.with_value(|value| match value {
+        ValueView::Enumeration(value) => Some(*value),
+        _ => None,
+    }) else {
+        return false;
+    };
+    if object_type != SECRET_DATA_OBJECT_TYPE {
+        return true;
+    }
+
+    let FieldPresence::Unique(secret_data) = field_presence(payload, SECRET_DATA) else {
+        return false;
+    };
+    secret_data.with_value(|value| match value {
+        ValueView::Structure(secret_data) => secret_data_preserves_wrapping(&secret_data),
+        _ => false,
+    })
+}
+
+fn secret_data_preserves_wrapping(secret_data: &StructureView<'_>) -> bool {
+    let FieldPresence::Unique(secret_data_type) = field_presence(secret_data, SECRET_DATA_TYPE)
+    else {
+        return false;
+    };
+    if !secret_data_type.with_value(|value| matches!(value, ValueView::Enumeration(_))) {
+        return false;
+    }
+
+    let FieldPresence::Unique(key_block) = field_presence(secret_data, KEY_BLOCK) else {
+        return false;
+    };
+    key_block.with_value(|value| match value {
+        ValueView::Structure(key_block) => key_block_preserves_wrapping(&key_block),
+        _ => false,
+    })
+}
+
+fn key_block_preserves_wrapping(key_block: &StructureView<'_>) -> bool {
+    let FieldPresence::Unique(key_value) = field_presence(key_block, KEY_VALUE) else {
+        return false;
+    };
+    let key_value_is_byte_string =
+        key_value.with_value(|value| matches!(value, ValueView::ByteString(_)));
+    match field_presence(key_block, KEY_WRAPPING_DATA) {
+        FieldPresence::Missing => true,
+        FieldPresence::Unique(wrapping_data) => {
+            key_value_is_byte_string
+                && wrapping_data.with_value(|value| matches!(value, ValueView::Structure(_)))
+        }
+        FieldPresence::Duplicate => false,
+    }
+}
+
 fn protocol_version_is_kmip_2_1(version: &StructureView<'_>) -> bool {
     let mut major_seen = false;
     let mut minor_seen = false;
@@ -813,6 +920,23 @@ fn protocol_version_is_kmip_2_1(version: &StructureView<'_>) -> bool {
 }
 
 const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
+    TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-2.7-001",
+        source_clause_id: "KMIPKIT-CLAUSE-SPEC-2.7-001",
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
+        evaluator: Some(import_preserves_wrapped_secret_data_shape),
+        test_evidence: &[
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_client_import_of_wrapped_secret_data",
+                kind: RuleTestKind::OptionalCapabilityUsable,
+            },
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/unit/import_operation_tests.rs::import_preserves_wrapped_secret_data_without_key_wrap_type",
+                kind: RuleTestKind::OptionalCapabilityUsable,
+            },
+        ],
+        constraints: &[],
+    },
     TypedRuleMapping {
         requirement_id: "KMIPKIT-REQ-SPEC-4.14-001-001",
         source_clause_id: "KMIPKIT-CLAUSE-SPEC-4.14-001",

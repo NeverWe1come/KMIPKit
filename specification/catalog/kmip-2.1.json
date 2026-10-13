@@ -86462,9 +86462,11 @@
       "feature_spec": "KMIPKIT-0037",
       "implementation_refs": [
         "crates/kmipkit-protocol/src/import.rs::ImportRequest::into_ttlv_payload",
-        "crates/kmipkit-protocol/src/import.rs::key_wrap_type_matches_object"
+        "crates/kmipkit-protocol/src/import.rs::key_wrap_type_matches_object",
+        "crates/kmipkit-protocol/src/profile.rs::import_preserves_wrapped_secret_data_shape"
       ],
       "verification_refs": [
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_client_import_of_wrapped_secret_data",
         "crates/kmipkit-protocol/tests/unit/import_operation_tests.rs::import_preserves_wrapped_secret_data_without_key_wrap_type"
       ],
       "negative_verification_required": false,
