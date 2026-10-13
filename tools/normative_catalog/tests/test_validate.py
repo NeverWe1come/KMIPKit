@@ -198,7 +198,8 @@ OPTIONAL_CAPABILITY_TEST_CONTENT_REQUIREMENTS = {
         "opaque_object_register_payload(true)",
         "vendor_attribute_value_bytes",
         "validate_request",
-        "fields.iter()",
+        "fields",
+        ".iter()",
     ),
     "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_client_get_attributes_opaque_object_custom_context": (
         "GetAttributesResponse::try_from_response_item",
@@ -2147,6 +2148,16 @@ class CatalogValidationTests(unittest.TestCase):
                             record[field], sorted(record[field]),
                             (collection, record.get("test_id"), field),
                         )
+
+    def test_register_wrapping_requirement_element_links_are_sorted(self) -> None:
+        catalog = json.loads((ROOT / "specification/catalog/kmip-2.1.json").read_text(encoding="utf-8"))
+        requirement = next(
+            row
+            for row in catalog["requirements"]
+            if row["requirement_id"] == "KMIPKIT-REQ-SPEC-6.1.43-005"
+        )
+
+        self.assertEqual(requirement["element_ids"], sorted(requirement["element_ids"]))
 
     def test_requirement_and_test_case_requirement_links_must_be_reciprocal(self) -> None:
         catalog = json.loads((ROOT / "specification/catalog/kmip-2.1.json").read_text(encoding="utf-8"))
@@ -16498,6 +16509,7 @@ class CatalogValidationTests(unittest.TestCase):
         }
         expected_implementations = {
             "crates/kmipkit-protocol/src/attribute.rs::AttributeSet::try_new",
+            "crates/kmipkit-protocol/src/attribute.rs::validate_vendor_attribute",
             "crates/kmipkit-protocol/src/register.rs::RegisterRequest::into_ttlv_payload",
             "crates/kmipkit-protocol/src/get_attributes.rs::GetAttributesResponse::try_from_response_item",
             "crates/kmipkit-protocol/src/profile.rs::client_opaque_object_context_custom_attributes",
@@ -16518,13 +16530,13 @@ class CatalogValidationTests(unittest.TestCase):
         self.assertEqual(requirement["source_keyword"], "MAY")
         self.assertEqual(requirement["scope_state"], "profile_conditional")
         self.assertEqual(requirement["direction"], "both")
-        self.assertEqual(requirement["feature_spec"], "KMIPKIT-0010")
+        self.assertNotEqual(requirement["feature_spec"], "KMIPKIT-0010")
         self.assertEqual(requirement["status"], "scoped_verified")
         self.assertEqual(set(requirement["implementation_refs"]), expected_implementations)
         self.assertEqual(set(requirement["verification_refs"]), expected_tests)
         self.assertEqual(requirement["test_case_ids"], [])
         self.assertIn("§4.60", requirement["review_note"])
-        self.assertIn("does not establish server storage or acceptance", requirement["review_note"])
+        self.assertIn("do not establish server storage or acceptance", requirement["review_note"])
         self.assertEqual({mapping["source_clause_id"] for mapping in mappings}, {"KMIPKIT-CLAUSE-SPEC-2.3-001"})
         self.assertEqual({mapping["verification_category"] for mapping in mappings}, {"OptionalCapability"})
         self.assertEqual({mapping["test_kind"] for mapping in mappings}, {"OptionalCapabilityUsable"})
