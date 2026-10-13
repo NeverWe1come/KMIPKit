@@ -376,6 +376,128 @@ fn production_discover_versions_rule_accepts_only_kmip_21_offers() {
 }
 
 #[test]
+fn public_profile_result_entrypoints_validate_transport_and_responses() {
+    // KMIP Specification v2.1 §14.1 and KMIP Profiles v2.1 §6.1; KMIPKIT-0010 FR-014.
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.16-001-001";
+    const PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
+    let result = ProfileValidationResult {
+        profile_ids: vec![PROFILE_ID.to_owned()],
+        requirement_ids: vec![REQUIREMENT_ID.to_owned()],
+    };
+
+    result
+        .validate_transport(ProfileTransport::Https)
+        .expect("the Discover Versions rule has no incompatible transport constraint");
+
+    let supported_request = request_message_with_operation_payload(
+        0x0000_001E,
+        crate::DiscoverVersionsRequest::new()
+            .to_ttlv_payload()
+            .expect("the typed request advertises KMIP 2.1"),
+    );
+    result
+        .validate_response(&supported_request, &response_message())
+        .expect("a KMIP 2.1 Discover Versions response satisfies the selected rule");
+
+    let unsupported_request =
+        request_message_with_operation_payload(0x0000_001E, discover_versions_payload(&[(3, 0)]));
+    let error = result
+        .validate_response(&unsupported_request, &response_message())
+        .expect_err("a response cannot validate a request advertising an unsupported version");
+    assert_eq!(
+        error.code(),
+        ProfileValidationErrorCode::ResponseRuleRejected
+    );
+    assert_eq!(error.profile_id(), Some(PROFILE_ID));
+    assert_eq!(error.requirement_id(), Some(REQUIREMENT_ID));
+    assert_eq!(
+        error.source_clause_id(),
+        Some("KMIPKIT-CLAUSE-SPEC-6.1.16-001")
+    );
+
+    let unmapped = ProfileValidationResult {
+        profile_ids: vec!["TEST-PROFILE".to_owned()],
+        requirement_ids: vec!["TEST-REQ".to_owned()],
+    };
+    let error = unmapped
+        .validate_transport(ProfileTransport::Https)
+        .expect_err("a selected result with a missing typed mapping fails closed");
+    assert_eq!(error.code(), ProfileValidationErrorCode::MissingRuleMapping);
+    assert_eq!(error.profile_id(), Some("TEST-PROFILE"));
+    assert_eq!(error.requirement_id(), Some("TEST-REQ"));
+    assert_eq!(error.source_clause_id(), None);
+}
+
+#[test]
+fn runtime_rule_evaluation_rejects_missing_and_incomplete_mappings() {
+    // KMIP Specification v2.1 §14.1 and KMIP Profiles v2.1 §6.1; KMIPKIT-0010 FR-014.
+    let result = ProfileValidationResult {
+        profile_ids: vec!["TEST-PROFILE".to_owned()],
+        requirement_ids: vec!["TEST-REQ".to_owned()],
+    };
+
+    let missing = result
+        .evaluate_rules(
+            None,
+            None,
+            &[],
+            ProfileValidationErrorCode::RequestRuleRejected,
+        )
+        .expect_err("runtime evaluation fails closed when a mapping is absent");
+    assert_eq!(
+        missing.code(),
+        ProfileValidationErrorCode::MissingRuleMapping
+    );
+    assert_eq!(missing.source_clause_id(), None);
+
+    let incomplete = [TypedRuleMapping {
+        evaluator: None,
+        ..mapping(
+            "TEST-REQ",
+            GeneratedVerificationCategory::RequiredBehavior,
+            RuleTestKind::PositiveBehavior,
+            &[],
+        )
+    }];
+    let error = result
+        .evaluate_rules(
+            None,
+            None,
+            &incomplete,
+            ProfileValidationErrorCode::RequestRuleRejected,
+        )
+        .expect_err("runtime evaluation rejects a mapping without executable code");
+    assert_eq!(
+        error.code(),
+        ProfileValidationErrorCode::IncompleteRuleMapping
+    );
+    assert_eq!(error.source_clause_id(), Some("TEST-CLAUSE"));
+}
+
+#[test]
+fn selection_rejects_a_requirement_without_a_typed_rule_mapping() {
+    // KMIP Specification v2.1 §14.1 and KMIP Profiles v2.1 §6.1; KMIPKIT-0010 FR-014.
+    let profiles = [profile("TEST-PROFILE", &["TEST-REQ"], &[])];
+    let requirements = [requirement(
+        "TEST-REQ",
+        GeneratedVerificationCategory::RequiredBehavior,
+        false,
+    )];
+    let error = validate_selection_with_registry(
+        &ProfileValidationSelection::new(["TEST-PROFILE"]),
+        &profiles,
+        &requirements,
+        &[],
+    )
+    .expect_err("selection fails closed when its applicable rule has no typed mapping");
+
+    assert_eq!(error.code(), ProfileValidationErrorCode::MissingRuleMapping);
+    assert_eq!(error.profile_id(), Some("TEST-PROFILE"));
+    assert_eq!(error.requirement_id(), Some("TEST-REQ"));
+    assert_eq!(error.source_clause_id(), Some("TEST-CLAUSE"));
+}
+
+#[test]
 fn discover_versions_protocol_version_requires_one_integer_major_minor_pair() {
     let valid = structure([
         tagged(PROTOCOL_VERSION_MAJOR_TAG, Value::integer(2)),
@@ -472,6 +594,10 @@ fn a_complete_synthetic_mapping_allows_selection_without_target_membership() {
     )];
     let selection = ProfileValidationSelection::new(["TEST-PROFILE"]);
     assert_eq!(&["TEST-PROFILE".to_owned()], selection.profile_ids());
+    assert_eq!(
+        format!("{selection:?}"),
+        "ProfileValidationSelection { profile_count: 1 }"
+    );
 
     let result = validate_selection_with_registry(&selection, &profiles, &requirements, &mappings)
         .expect("complete synthetic code and verification evidence is selectable");
@@ -872,6 +998,7 @@ fn readiness_blockers_have_stable_text_and_requirement_ids() {
     for (blocker, expected, requirement_id) in blockers {
         assert_eq!(expected, blocker.as_str());
         assert_eq!(requirement_id, blocker.requirement_id());
+        assert_eq!(None, blocker.source_clause_id());
     }
     let unresolved = ProfileReadinessBlocker::UnresolvedRequirementScope {
         requirement_id: "REQ-SCOPE-UNCLEAR",
@@ -955,10 +1082,26 @@ fn readiness_records_classify_duplicates_and_unknown_ids() {
     );
     assert!(readiness.target_selected());
     assert!(!readiness.runtime_validation_available());
+    assert!(
+        readiness
+            .blockers()
+            .contains(&ProfileReadinessBlocker::RuntimeValidationUnavailable)
+    );
     assert_eq!(baseline.profile_id, readiness.profile_id());
     assert_eq!("evidence_incomplete", readiness.effective_state());
     assert!(!readiness.published_claim());
     assert!(ProfileReadiness::evaluate("UNKNOWN-PROFILE", &[]).is_none());
+
+    let failed =
+        ProfileReadiness::evaluate(baseline.profile_id, &[ProfileEvidenceRecord::failed(first)])
+            .expect("generated Baseline Client resolves");
+    assert!(
+        failed
+            .blockers()
+            .contains(&ProfileReadinessBlocker::FailedRequirementRecord {
+                requirement_id: first
+            })
+    );
 }
 
 #[test]
@@ -1018,6 +1161,15 @@ fn readiness_reconciles_catalog_states_with_blockers() {
 
 #[test]
 fn selection_rejects_missing_catalog_metadata_and_skips_resolved_dependencies() {
+    let empty = validate_selection_with_registry(
+        &ProfileValidationSelection::new(std::iter::empty::<&str>()),
+        &[],
+        &[],
+        &[],
+    )
+    .expect_err("an empty explicit profile selection is invalid");
+    assert_eq!(ProfileValidationErrorCode::EmptySelection, empty.code());
+
     let unknown_duplicate = validate_selection_with_registry(
         &ProfileValidationSelection::new(["UNKNOWN", "UNKNOWN"]),
         &[],
@@ -1030,6 +1182,19 @@ fn selection_rejects_missing_catalog_metadata_and_skips_resolved_dependencies() 
         unknown_duplicate.code()
     );
     assert_eq!(None, unknown_duplicate.profile_id());
+
+    let known_duplicate = validate_selection_with_registry(
+        &ProfileValidationSelection::new(["TEST-PROFILE", "TEST-PROFILE"]),
+        &[profile("TEST-PROFILE", &[], &[])],
+        &[],
+        &[],
+    )
+    .expect_err("a known profile cannot be selected twice");
+    assert_eq!(
+        ProfileValidationErrorCode::DuplicateProfile,
+        known_duplicate.code()
+    );
+    assert_eq!(Some("TEST-PROFILE"), known_duplicate.profile_id());
 
     let unknown = validate_selection_with_registry(
         &ProfileValidationSelection::new(["UNKNOWN"]),

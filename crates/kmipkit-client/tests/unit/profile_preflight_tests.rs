@@ -4,6 +4,7 @@
 //! and SC-014.
 
 use std::cell::Cell;
+use std::error::Error;
 use std::rc::Rc;
 
 use kmipkit_protocol::{
@@ -106,6 +107,8 @@ fn unprofiled_base_operation_still_reaches_transport() {
 struct ResponseRejectingProfile {
     error: ProfileValidationError,
     request_checks: Option<Rc<Cell<usize>>>,
+    transport_error: Option<ProfileValidationError>,
+    request_error: Option<ProfileValidationError>,
 }
 
 impl ProfileExchangeValidator for ResponseRejectingProfile {
@@ -113,14 +116,14 @@ impl ProfileExchangeValidator for ResponseRejectingProfile {
         &self,
         _transport: ProfileTransport,
     ) -> Result<(), ProfileValidationError> {
-        Ok(())
+        self.transport_error.clone().map_or(Ok(()), Err)
     }
 
     fn validate_request(&self, _request: &RequestMessage) -> Result<(), ProfileValidationError> {
         if let Some(request_checks) = &self.request_checks {
             request_checks.set(request_checks.get() + 1);
         }
-        Ok(())
+        self.request_error.clone().map_or(Ok(()), Err)
     }
 
     fn validate_response(
@@ -159,6 +162,8 @@ fn response_profile_rejection_after_exchange_preserves_response_started_delivery
             "KMIPKIT-TEST-CLAUSE",
         ),
         request_checks: None,
+        transport_error: None,
+        request_error: None,
     };
     let exchanges = Rc::new(Cell::new(0));
     let mut client = Client::for_test(CountingTransport::new(Rc::clone(&exchanges)));
@@ -177,6 +182,12 @@ fn response_profile_rejection_after_exchange_preserves_response_started_delivery
         error.delivery_state(),
         Some(RequestDeliveryState::ResponseStarted)
     );
+    assert_eq!(
+        error.cause_category(),
+        Some(crate::ClientCauseCategory::Other)
+    );
+    assert!(error.to_string().contains("ResponseStarted"));
+    assert!(Error::source(&error).is_some());
     let profile_error = error
         .profile_validation_error()
         .expect("response rejection remains a structured profile error");
@@ -207,6 +218,8 @@ fn request_limits_are_checked_before_profile_evaluation() {
             "KMIPKIT-TEST-CLAUSE",
         ),
         request_checks: Some(Rc::clone(&request_checks)),
+        transport_error: None,
+        request_error: None,
     };
     let mut client = Client::for_test(CountingTransport::new(Rc::clone(&exchanges)));
     let limits = CodecLimits::new(0, CodecLimits::DEFAULT_MAX_STRUCTURE_DEPTH, 100_000)
@@ -224,4 +237,98 @@ fn request_limits_are_checked_before_profile_evaluation() {
     assert_eq!(error.delivery_state(), Some(RequestDeliveryState::NotSent));
     assert_eq!(request_checks.get(), 0);
     assert_eq!(exchanges.get(), 0);
+}
+
+#[test]
+fn transport_profile_rejection_is_not_sent_and_skips_the_exchange() {
+    let exchanges = Rc::new(Cell::new(0));
+    let mut client = Client::for_test(CountingTransport::new(Rc::clone(&exchanges)));
+    let validator = ResponseRejectingProfile {
+        error: ProfileValidationError::for_test(
+            ProfileValidationErrorCode::TransportConstraintRejected,
+            "KMIPKIT-TEST-PROFILE",
+            "KMIPKIT-TEST-REQUIREMENT",
+            "KMIPKIT-TEST-CLAUSE",
+        ),
+        request_checks: None,
+        transport_error: Some(ProfileValidationError::for_test(
+            ProfileValidationErrorCode::TransportConstraintRejected,
+            "KMIPKIT-TEST-PROFILE",
+            "KMIPKIT-TEST-REQUIREMENT",
+            "KMIPKIT-TEST-CLAUSE",
+        )),
+        request_error: None,
+    };
+
+    let error = client
+        .execute_inner(
+            discover_versions_batch(),
+            &CodecLimits::defaults(),
+            &kmipkit_transport::RequestOptions::default(),
+            Some(&validator),
+        )
+        .expect_err("a profile transport restriction fails before request preparation");
+
+    assert_eq!(exchanges.get(), 0);
+    assert_eq!(error.delivery_state(), Some(RequestDeliveryState::NotSent));
+    assert_eq!(
+        error
+            .profile_validation_error()
+            .map(ProfileValidationError::code),
+        Some(ProfileValidationErrorCode::TransportConstraintRejected)
+    );
+}
+
+#[test]
+fn request_profile_rejection_is_not_sent_and_skips_the_exchange() {
+    let exchanges = Rc::new(Cell::new(0));
+    let request_checks = Rc::new(Cell::new(0));
+    let error = ProfileValidationError::for_test(
+        ProfileValidationErrorCode::RequestRuleRejected,
+        "KMIPKIT-TEST-PROFILE",
+        "KMIPKIT-TEST-REQUIREMENT",
+        "KMIPKIT-TEST-CLAUSE",
+    );
+    let validator = ResponseRejectingProfile {
+        error: error.clone(),
+        request_checks: Some(Rc::clone(&request_checks)),
+        transport_error: None,
+        request_error: Some(error),
+    };
+    let mut client = Client::for_test(CountingTransport::new(Rc::clone(&exchanges)));
+
+    let error = client
+        .execute_inner(
+            discover_versions_batch(),
+            &CodecLimits::defaults(),
+            &kmipkit_transport::RequestOptions::default(),
+            Some(&validator),
+        )
+        .expect_err("a profile request rule fails before the transport exchange");
+
+    assert_eq!(request_checks.get(), 1);
+    assert_eq!(exchanges.get(), 0);
+    assert_eq!(error.delivery_state(), Some(RequestDeliveryState::NotSent));
+    assert_eq!(
+        error
+            .profile_validation_error()
+            .map(ProfileValidationError::code),
+        Some(ProfileValidationErrorCode::RequestRuleRejected)
+    );
+}
+
+#[test]
+fn server_result_has_no_local_profile_validation_error() {
+    let result = kmipkit_protocol::KmipOperationResult::new(
+        kmipkit_protocol::ResultStatus::from_raw(1),
+        Some(kmipkit_protocol::ResultReason::from_raw(1)),
+        None,
+    )
+    .expect("a Failure result includes a reason");
+    let error = crate::ClientError::server_result(result);
+
+    assert_eq!(error.profile_validation_error(), None);
+    assert_eq!(error.cause_category(), None);
+    assert_eq!(error.delivery_state(), None);
+    assert!(Error::source(&error).is_none());
 }

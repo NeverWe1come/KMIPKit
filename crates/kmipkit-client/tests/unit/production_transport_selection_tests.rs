@@ -1,3 +1,4 @@
+use kmipkit_protocol::ProfileTransport;
 use kmipkit_test_support::EphemeralPki;
 use kmipkit_transport::{
     CertificateInput, ClientIdentity, Endpoint, PrivateKeyInput, TransportConfig, TrustSource,
@@ -13,12 +14,14 @@ fn validated_endpoint_selects_the_matching_production_adapter() {
     )))
     .expect("raw TLS configuration creates the raw TLS adapter");
     assert!(matches!(raw, ClientTransport::RawTls(_)));
+    assert_eq!(raw.profile_transport(), ProfileTransport::RawTtlvTls);
 
     let https = ClientTransport::from_configuration(valid_transport_config(Endpoint::https(
         "https://localhost:5697",
     )))
     .expect("HTTPS configuration creates the HTTPS adapter");
     assert!(matches!(https, ClientTransport::Https(_)));
+    assert_eq!(https.profile_transport(), ProfileTransport::Https);
 }
 
 #[test]
