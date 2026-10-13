@@ -197,7 +197,7 @@ fn stops_retrying_dns_fixture_udp_bind_after_the_attempt_limit() {
     .expect_err("UDP binding stops after its bounded retry limit");
 
     assert_eq!(attempts, super::MAX_SOCKET_PAIR_BIND_ATTEMPTS);
-    assert_eq!(tcp_attempts, 0);
+    assert_eq!(tcp_attempts, super::MAX_SOCKET_PAIR_BIND_ATTEMPTS);
     assert_eq!(error.kind(), io::ErrorKind::PermissionDenied);
 }
 

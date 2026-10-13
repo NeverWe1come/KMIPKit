@@ -209,18 +209,32 @@ impl LocalDnsFixture {
 }
 
 fn bind_local_dns_sockets() -> io::Result<(UdpSocket, TcpListener)> {
-    bind_local_dns_sockets_with(TcpListener::bind)
+    bind_local_dns_sockets_with(
+        || TcpListener::bind((Ipv4Addr::LOCALHOST, 0)),
+        UdpSocket::bind,
+    )
 }
 
 fn bind_local_dns_sockets_with(
-    mut bind_tcp: impl FnMut(SocketAddr) -> io::Result<TcpListener>,
+    mut bind_tcp: impl FnMut() -> io::Result<TcpListener>,
+    mut bind_udp: impl FnMut(SocketAddr) -> io::Result<UdpSocket>,
 ) -> io::Result<(UdpSocket, TcpListener)> {
     let mut attempts_remaining = MAX_SOCKET_PAIR_BIND_ATTEMPTS;
     loop {
-        let socket = UdpSocket::bind((Ipv4Addr::LOCALHOST, 0))?;
-        let local_addr = socket.local_addr()?;
-        match bind_tcp(local_addr) {
-            Ok(tcp_listener) => return Ok((socket, tcp_listener)),
+        let tcp_listener = match bind_tcp() {
+            Ok(listener) => listener,
+            Err(error) if is_retryable_socket_pair_bind_error(error.kind()) => {
+                attempts_remaining -= 1;
+                if attempts_remaining == 0 {
+                    return Err(error);
+                }
+                continue;
+            }
+            Err(error) => return Err(error),
+        };
+        let local_addr = tcp_listener.local_addr()?;
+        match bind_udp(local_addr) {
+            Ok(socket) => return Ok((socket, tcp_listener)),
             Err(error) if is_retryable_socket_pair_bind_error(error.kind()) => {
                 attempts_remaining -= 1;
                 if attempts_remaining == 0 {
