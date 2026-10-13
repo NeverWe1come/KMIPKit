@@ -647,3 +647,7 @@ Independent QA reviewed the T076 inventory and found that requiring all 31 C exp
 - **Red**: Added a generator regression that models the observed consumed `handle **` slot and borrowed fixed-width value output pointer without changing their C ABI shapes.
 - **Command**: `uv run --with-requirements tools/api_manifest/requirements-test.txt python -m unittest tools.api_manifest.tests.test_generate.ManifestGeneratorCliTests.test_consumed_handle_slot_and_output_value_pointer_keep_exact_abi -v`
 - **Result**: Expected `FAIL`; the generator rejects the manifest because schema v2 cannot currently represent these exact pointer kinds.
+
+- **Red**: Added a client test for the exact zero-argument empty-batch constructor represented by the C, Java, and Python facades.
+- **Command**: `cargo test -p kmipkit-client --test operation_boundary empty_batch_constructor_creates_an_empty_batch_without_network_activity`
+- **Result**: Expected compile failure: `ClientBatch::empty` is not yet available; existing Rust constructors require one item or an iterator.

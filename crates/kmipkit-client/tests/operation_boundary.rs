@@ -20,6 +20,13 @@ use kmipkit_client::{
     Client, ClientBatch, ClientBatchItem, ClientBatchOutcome, ClientError, ClientOperation,
     ClientRequest,
 };
+
+#[test]
+fn empty_batch_constructor_creates_an_empty_batch_without_network_activity() {
+    let batch = ClientBatch::empty();
+
+    assert!(batch.items().is_empty());
+}
 use kmipkit_protocol::{AttributeSet, GetRequest, LocateRequest, UniqueIdentifier, extension};
 use kmipkit_test_support::{EphemeralPki, LoopbackTcpListener};
 use kmipkit_transport::{
