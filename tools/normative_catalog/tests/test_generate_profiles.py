@@ -764,6 +764,29 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
         self.assertIn("KMIPKIT-REQ-PROF-3.1.1-001", baseline.requirement_ids)
         self.assertNotIn("KMIPKIT-REQ-PROF-3.1.1-001", unrelated.requirement_ids)
 
+    def test_explicit_profile_membership_includes_requirement_outside_profile_clause_closure(self) -> None:
+        catalog = closure_catalog()
+        catalog["source_clauses"].append(
+            {"clause_id": "KMIPKIT-CLAUSE-PROF-4.1.2-007", "source_id": "profiles", "section": "4.1.2"}
+        )
+        catalog["requirements"].append(
+            {
+                "requirement_id": "KMIPKIT-REQ-PROF-4.1.2-007",
+                "source_clause_ids": ["KMIPKIT-CLAUSE-PROF-4.1.2-007"],
+                "role": "client",
+                "scope_state": "profile_conditional",
+                "profile_ids": ["KMIPKIT-PROFILE-BASELINE-CLIENT"],
+            }
+        )
+
+        closure = compute_profile_closure(
+            catalog,
+            ["KMIPKIT-CLAUSE-PROF-6.1-001"],
+            profile_id="KMIPKIT-PROFILE-BASELINE-CLIENT",
+        )
+
+        self.assertIn("KMIPKIT-REQ-PROF-4.1.2-007", closure.requirement_ids)
+
     def test_closure_reports_unresolved_client_scope_without_applying_it(self) -> None:
         catalog = closure_catalog()
         catalog["requirements"].extend(
