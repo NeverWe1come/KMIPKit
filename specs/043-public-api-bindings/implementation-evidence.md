@@ -1,5 +1,22 @@
 # Implementation Evidence
 
+## T015 — Manifest-backed handle lifecycle and C status contract
+
+This task closes the existing approved C ABI lifecycle implementation against the v2 manifest; it required no production-code change. Opaque handles are represented by one `Arc<Handle>` envelope with a private kind discriminator. Accessors reject null and wrong-kind live handles before reading payloads; views retain their owning handle, so releasing the original owner does not invalidate a child view. Every manifest opaque-handle type declares library ownership and its matching release symbol. Input byte spans carry explicit `uint64_t` byte lengths, apply bounds before dereferencing, and validate UTF-8 before model construction. C status values remain the manifest-declared stable codes, and safe category/cause/delivery snapshots are stored per thread. Java and Python resource wrappers reject operations on closed handles and serialize closure against native use.
+
+The C release ABI accepts an opaque pointer by value, so it cannot clear the caller's variable. A caller must not reuse a C pointer after release; use-after-release, dangling, and foreign pointers remain caller-precondition violations and are not dereferenced or claimed to be safely detectable. This preserves the accepted ABI and avoids a process-global handle registry or tombstone allocation scheme. Closed-handle rejection applies to the Java/Python wrappers, which retain local closed state.
+
+| Verification | Command or evidence | Result |
+|---|---|---|
+| Rust FFI lifecycle, metadata, ownership, kind, and null guards | `cargo test -p kmipkit-ffi --lib` | PASS: 33 tests. The Windows AWS-LC configure probe and missing NASM emitted build warnings; the test target completed successfully. |
+| C handle/error/span consumer coverage | `bindings/c/tests/extension_registry.c::test_redacted_stable_errors_and_invalid_handles`, `test_null_and_wrong_kind_release_are_noops`, `test_typed_length_safety`, and `test_handle_release_and_null_output_on_error` | Existing compiled C consumer covers null and wrong-kind validation, invalid UTF-8/explicit byte lengths, redacted status snapshots, resource limits, and release ordering. The consumer is compiled only on Linux and therefore was not run by this Windows-local verification. |
+| Java closed-handle and transfer lifecycle | `mvn -f bindings/java/pom.xml '-Dtest=NativeHandleTransferTest,ExtensionRegistryTest' test -q` | PASS: 20 tests, 0 failures (4 handle transfer tests and 16 extension registry tests). |
+| Python closed-handle and ownership lifecycle | `bindings/python/.venv/Scripts/python.exe -m pytest bindings/python/tests/test_handle_ownership.py bindings/python/tests/test_extension_registry.py -k 'closed or ownership or invalid_inputs' -q` | PASS: 6 tests, 20 deselected. |
+| Manifest-generated declarations | `python -B tools/api_manifest/generate.py --check` | PASS: all 12 fixed outputs verified. |
+| FFI lint | `cargo clippy -p kmipkit-ffi --all-targets --all-features -- -D warnings` | PASS. |
+
+No new behavior or executable contract was introduced in this closeout, so no new Red/Green/Refactor implementation commits were needed. The Linux C consumer remains covered by the PR's Linux CI matrix.
+
 ## T012 — Shared Rust/C parity fixture corpus
 
 The source fixture corpus at `tests/fixtures/api/shared-capability-parity.json` defines six language-neutral cases for API-level discovery, per-configuration registry isolation, resource-limit error/redaction behavior, ordered mixed batch outcomes with a Pending correlation value, generic TTLV open-value/order preservation, and extension-registry recognition/preservation. Every case records stable 0043 and owning-feature requirement IDs, a literal input setup, expected observable output, error category when applicable, cleanup expectations, and Rust/C consuming test names. Extension cases resolve to the existing shared extension fixture source.
