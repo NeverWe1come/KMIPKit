@@ -894,6 +894,46 @@ class ManifestGeneratorCliTests(unittest.TestCase):
                 self.assertIn(f"{handle_type} ** {parameter_name}", c_header)
                 self.assertIn(f"{parameter_name}: *mut *mut {handle_type}", rust_ffi)
 
+    def test_consumed_handle_slot_and_output_value_pointer_keep_exact_abi(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = _create_repo(Path(directory))
+            manifest = self._load_manifest(root)
+            function = _find_function(manifest, "client_configuration_new")
+            function["c"]["parameters"] = [
+                {
+                    "name": "extension_registry",
+                    "kind": "consumed-handle-slot",
+                    "type": "kmipkit_client_extension_registry_t **",
+                    "handleType": "kmipkit_client_extension_registry_t",
+                    "ownership": "consumed",
+                },
+                {
+                    "name": "out_limits",
+                    "kind": "output-value-pointer",
+                    "type": "kmipkit_extension_registry_limits_v1_t *",
+                    "valueType": "kmipkit_extension_registry_limits_v1_t",
+                    "ownership": "none",
+                },
+            ]
+            self._write_manifest(root, manifest)
+
+            result = self._run_generator(root, "--write")
+
+            self.assertEqual(0, result.returncode, result.stderr)
+            public_header = (root / GENERATED_OUTPUTS[1]).read_text(encoding="utf-8")
+            rust_ffi = (root / GENERATED_OUTPUTS[0]).read_text(encoding="utf-8")
+            self.assertIn(
+                "kmipkit_client_extension_registry_t ** extension_registry", public_header
+            )
+            self.assertIn(
+                "extension_registry: *mut *mut kmipkit_client_extension_registry_t",
+                rust_ffi,
+            )
+            self.assertIn(
+                "kmipkit_extension_registry_limits_v1_t * out_limits", public_header
+            )
+            self.assertIn("out_limits: *mut kmipkit_extension_registry_limits_v1_t", rust_ffi)
+
     def test_handle_arrays_require_known_types_counts_and_invalid_input_mappings(self) -> None:
         def missing_invalid_input(language: str):
             def mutate(manifest: dict[str, object]) -> None:

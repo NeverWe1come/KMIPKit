@@ -641,3 +641,9 @@ Independent QA reviewed the T076 inventory and found that requiring all 31 C exp
 - **Red refinement commit**: `25ed5389`.
 - **Fresh Red rerun**: `uv run --with-requirements tools/api_manifest/requirements-test.txt python -m unittest tools.api_manifest.tests.test_generate.ManifestGeneratorCliTests.test_public_header_includes_shared_client_abi_after_binding_mapping -v`.
 - **Fresh Red result**: Expected `FAILED (failures=1)`; the exact-exclusion gate reports all 31 observed T076 declarations unresolved. The base test still verifies the mapped client handle, transport constructor, and execution entry point are present in the generated public header.
+
+### T076 exact C pointer-shape support
+
+- **Red**: Added a generator regression that models the observed consumed `handle **` slot and borrowed fixed-width value output pointer without changing their C ABI shapes.
+- **Command**: `uv run --with-requirements tools/api_manifest/requirements-test.txt python -m unittest tools.api_manifest.tests.test_generate.ManifestGeneratorCliTests.test_consumed_handle_slot_and_output_value_pointer_keep_exact_abi -v`
+- **Result**: Expected `FAIL`; the generator rejects the manifest because schema v2 cannot currently represent these exact pointer kinds.
