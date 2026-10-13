@@ -2019,8 +2019,10 @@ class CatalogValidationTests(unittest.TestCase):
                 self.assertEqual(requirement["direction"], "client_to_server")
                 self.assertEqual(requirement["test_case_ids"], [])
 
-    def test_register_wrapping_attributes_have_positive_request_shape_evidence(self) -> None:
-        """Register links a positive request-shape test for caller-supplied wrapped data."""
+    def test_register_wrapped_capability_stays_unassigned_without_valid_wrapped_attribute_evidence(
+        self,
+    ) -> None:
+        """Opaque-byte passthrough alone does not verify wrapped Register attributes."""
         catalog = json.loads(
             (ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8")
         )
@@ -2030,13 +2032,13 @@ class CatalogValidationTests(unittest.TestCase):
             if row["requirement_id"] == "KMIPKIT-REQ-SPEC-6.1.43-005"
         )
 
-        self.assertEqual(requirement["status"], "verified")
+        self.assertEqual(requirement["status"], "unassigned")
         self.assertIn(
             "crates/kmipkit-client/tests/unit/register_execution_tests.rs::register_sends_a_wrapped_key_value_with_associated_attributes_from_table_291",
             requirement["verification_refs"],
         )
         self.assertIn(
-            "opaque wrapped key value byte string",
+            "does not establish a valid wrapped representation of associated attributes",
             requirement["review_note"].lower(),
         )
 
