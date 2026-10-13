@@ -328,6 +328,18 @@ class WorkflowContractTests(unittest.TestCase):
         contents = self.require_workflow()
         java_job = self.require_job(contents, "language-java")
 
+        prime = re.search(
+            r"(?ms)^      - name: Prime Gradle Java compile dependencies\n(.*?)(?=^      - name: |\\Z)",
+            java_job,
+        )
+        self.assertIsNotNone(
+            prime,
+            "Gradle must resolve its compile classpath before the offline packaged smoke",
+        )
+        assert prime is not None
+        self.assertIn("compileJava", prime.group(1))
+        self.assertNotIn("--offline", prime.group(1))
+
         step = re.search(
             r"(?ms)^      - name: Run packaged Java native loader smoke\n(.*?)(?=^      - name: |\\Z)",
             java_job,
@@ -340,6 +352,7 @@ class WorkflowContractTests(unittest.TestCase):
         self.assertIn("shell: pwsh", step.group(1))
         self.assertIn(".\\gradlew.bat --offline nativeJarSmoke", step.group(1))
         self.assertIn("sh ./gradlew --offline nativeJarSmoke", step.group(1))
+        self.assertLess(contents.index(prime.group(0)), contents.index(step.group(0)))
 
         gradle = (REPOSITORY_ROOT / "bindings/java/build.gradle.kts").read_text(encoding="utf-8")
         self.assertIn('providers.gradleProperty("nativeTarget").orElse(hostTarget)', gradle)
