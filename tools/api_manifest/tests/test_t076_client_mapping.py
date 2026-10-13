@@ -366,9 +366,9 @@ class T076ClientMappingTests(unittest.TestCase):
             row for row in self.manifest["functions"] if row["id"] == "ffi_last_error_get"
         )
         last_error_docs = " ".join(last_error["c"].get("documentation", []))
-        self.assertIn("status 8", last_error_docs)
-        self.assertIn("status 9", last_error_docs)
-        self.assertIn("status 10", last_error_docs)
+        self.assertIn("status 8", last_error_docs.lower())
+        self.assertIn("status 9", last_error_docs.lower())
+        self.assertIn("status 10", last_error_docs.lower())
         self.assertIn("delivery", last_error_docs)
         self.assertNotIn("current C surface does not execute client requests", header)
 
@@ -407,8 +407,10 @@ class T076ClientMappingTests(unittest.TestCase):
                 documentation = " ".join(functions[function_id]["c"].get("documentation", []))
                 self.assertIn("borrowed", documentation.lower())
                 self.assertIn("item-response handle", documentation.lower())
+                self.assertIn("closing the parent batch-response handle", documentation.lower())
                 self.assertIn("valid and unchanged only while", documentation.lower())
-                self.assertIn(documentation, header)
+                for line in functions[function_id]["c"]["documentation"]:
+                    self.assertIn(line, header)
 
     def test_unique_batch_item_id_documents_consumed_input_ownership(self) -> None:
         function = next(
@@ -422,7 +424,73 @@ class T076ClientMappingTests(unittest.TestCase):
         self.assertIn("after the item handle and identifier span have been validated", documentation)
         self.assertIn("must not use or release item", documentation)
         self.assertIn("even if the call returns an error", documentation)
-        self.assertIn(documentation, generate.render_c_header(self.manifest))
+        header = generate.render_c_header(self.manifest)
+        for line in function["c"]["documentation"]:
+            self.assertIn(line, header)
+
+    def test_public_python_instance_fields_are_mapped_or_exactly_excluded(self) -> None:
+        semantic_fields = {
+            "kmipkit.errors.ClientExecutionError.status",
+            "kmipkit.errors.ClientExecutionError.client_category",
+            "kmipkit.errors.ClientExecutionError.cause",
+            "kmipkit.errors.ClientExecutionError.delivery",
+            "kmipkit.extensions.ClientConfiguration.limits",
+            "kmipkit.extensions.ClientExtensionRegistry.limits",
+            "kmipkit.extensions.Discriminator.path_tags",
+            "kmipkit.extensions.Discriminator.scalar_type",
+            "kmipkit.extensions.Discriminator.scalar_value",
+            "kmipkit.extensions.ExtensionDefinition.identity",
+            "kmipkit.extensions.ExtensionDefinition.discriminator",
+            "kmipkit.extensions.ExtensionDefinition.information",
+            "kmipkit.extensions.ExtensionDefinition.compatibility",
+            "kmipkit.extensions.ExtensionDefinition.schema",
+            "kmipkit.extensions.ExtensionIdentity.vendor_identifier",
+            "kmipkit.extensions.ExtensionIdentity.name",
+            "kmipkit.extensions.ExtensionIdentity.version",
+            "kmipkit.extensions.ExtensionInformation.extension_name",
+            "kmipkit.extensions.ExtensionInformation.tag",
+            "kmipkit.extensions.ExtensionInformation.item_type",
+            "kmipkit.extensions.ExtensionInformation.enumeration",
+            "kmipkit.extensions.ExtensionInformation.attribute",
+            "kmipkit.extensions.ExtensionInformation.parent_structure_tag",
+            "kmipkit.extensions.ExtensionInformation.description",
+            "kmipkit.extensions.RegisteredExtensionValue.identity",
+            "kmipkit.extensions.TtlvPath.tags",
+            "kmipkit.extensions.ValidatedExtensionValue.identity",
+        }
+        fields = {
+            row["exportName"]: row
+            for row in self.manifest["publicDeclarations"]
+            if row["packageId"] == "python-kmipkit" and row["kind"] == "field"
+        }
+        self.assertEqual(27, len(semantic_fields))
+        self.assertTrue(semantic_fields.issubset(fields))
+        for path in semantic_fields:
+            with self.subTest(field=path):
+                declaration = fields[path]
+                self.assertIn(declaration["declarationState"], {"declared", "verified"})
+                self.assertEqual(
+                    {"rust", "c", "java", "python"},
+                    set(declaration["languageMappings"]),
+                )
+                for mapping in declaration["languageMappings"].values():
+                    self.assertTrue(mapping["name"])
+
+        batch_items = fields.get("kmipkit.client.BatchResult.items")
+        self.assertIsNotNone(batch_items)
+        self.assertEqual("declared", batch_items["declarationState"])
+
+        args_exclusion = next(
+            (
+                row
+                for row in self.manifest["approvedExclusions"]
+                if row["packageId"] == "python-kmipkit"
+                and row["exportName"] == "kmipkit.errors.ClientExecutionError.args"
+            ),
+            None,
+        )
+        self.assertIsNotNone(args_exclusion)
+        self.assertIn("BaseException", args_exclusion["reason"])
 
 
 if __name__ == "__main__":
