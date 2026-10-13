@@ -144,8 +144,38 @@ final class TransportConfigurationBoundaryTest {
     }
 
     @Test
+    void acceptsAndReplacesFileBasedIdentityAndTrustInputs() {
+        TransportConfiguration.Builder builder = TransportConfiguration.builder();
+
+        assertDoesNotThrow(() -> builder.clientIdentityFiles(
+                List.of(Path.of("client-cert.pem")), Path.of("client-key.pem"),
+                TransportConfiguration.Encoding.PEM));
+        assertDoesNotThrow(() -> builder.trustCertificateFiles(
+                List.of(Path.of("trust.pem")), TransportConfiguration.Encoding.PEM));
+        assertDoesNotThrow(() -> builder.clientIdentityFiles(
+                List.of(Path.of("replacement-cert.der")), Path.of("replacement-key.der"),
+                TransportConfiguration.Encoding.DER));
+        assertDoesNotThrow(() -> builder.trustCertificateFiles(
+                List.of(Path.of("replacement-trust.der")), TransportConfiguration.Encoding.DER));
+    }
+
+    @Test
+    void rejectsBlankAndOversizedFilePathsBeforeEncoding() {
+        TransportConfiguration.Builder builder = TransportConfiguration.builder();
+
+        assertThrows(InvalidInputException.class,
+                () -> builder.clientIdentityFiles(
+                        List.of(Path.of("client-cert.pem")), Path.of(""),
+                        TransportConfiguration.Encoding.PEM));
+        assertThrows(ResourceLimitException.class,
+                () -> builder.trustCertificateFiles(
+                        List.of(Path.of("a".repeat(4_097))), TransportConfiguration.Encoding.PEM));
+    }
+
+    @Test
     void countsUtf8FilePathBytesAcrossClientIdentityBeforeEncoding() {
-        Path maximumLengthPath = Path.of("é/".repeat(1_364) + "éab");
+        Path maximumLengthPath = Path.of("🔐/".repeat(500) + "é/".repeat(500)
+                + "三/".repeat(23) + "三a");
         TransportConfiguration.Builder builder = TransportConfiguration.builder();
 
         assertEquals(4_096,
