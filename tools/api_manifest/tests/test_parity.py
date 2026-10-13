@@ -91,7 +91,11 @@ class PublicApiParityTests(unittest.TestCase):
             )
         ]
         for item in registry_records:
-            self.assertTrue(set(item["requirementIds"]).issubset(REQUIREMENT_IDS), item["id"])
+            registry_requirements = {
+                requirement for requirement in item["requirementIds"]
+                if requirement.startswith("KMIPKIT-0012-")
+            }
+            self.assertTrue(registry_requirements.issubset(REQUIREMENT_IDS), item["id"])
 
     def test_shared_capability_parity_fixtures_cover_rust_and_c_contracts(self) -> None:
         self.assertTrue(

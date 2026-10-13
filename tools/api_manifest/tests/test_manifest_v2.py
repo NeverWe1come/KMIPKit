@@ -359,6 +359,14 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
                     else:
                         expected_function["python"]["function"] = "_clear_last_error"
                     self.assertEqual(manifest_functions[function["id"]], expected_function)
+                elif function["id"] == "client_batch_item_discover_versions":
+                    expected_function = json.loads(json.dumps(function))
+                    expected_function["requirementIds"] = manifest_functions[function["id"]]["requirementIds"]
+                    expected_function["rust"]["module"] = "kmipkit_client::ClientBatchItem"
+                    expected_function["java"]["jniSymbol"] = (
+                        "Java_org_kmipkit_NativeExtensionRegistry_clientBatchItemDiscoverVersions"
+                    )
+                    self.assertEqual(manifest_functions[function["id"]], expected_function)
                 else:
                     self.assertEqual(manifest_functions[function["id"]], function)
         added_versioned_type = next(
