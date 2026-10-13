@@ -469,7 +469,10 @@ fn generic_opaque_register_sends_once_without_a_context_wire_marker() {
         [vec![], vec![OPAQUE_DATA_TYPE, OPAQUE_DATA_VALUE]],
         "the local context is absent and Table 4 children stay ordered"
     );
-    assert!(register_attribute_values(request, 0).is_empty());
+    assert_eq!(
+        register_attribute_values(request, 0),
+        Vec::<(u32, RegisterAttributeValue)>::new()
+    );
     assert_eq!(fake.borrow().exchange_count(), 1);
     assert_eq!(fake.borrow().write_call_count(), 1);
 }
