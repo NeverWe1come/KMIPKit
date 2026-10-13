@@ -120,22 +120,25 @@ class Endpoint:
         cls, host: str, port: int, *, tls_server_name: str | None = None
     ) -> Self:
         """Create a raw TTLV-over-TLS endpoint."""
-        _nonempty_text(host)
-        canonical_port = _unsigned(port, 16, allow_zero=False)
-        if tls_server_name is not None:
-            _nonempty_text(tls_server_name)
-        return cls(EndpointKind.RAW_TLS, host, canonical_port, tls_server_name)
+        validated = Endpoint(EndpointKind.RAW_TLS, host, port, tls_server_name)
+        return cls(
+            validated.kind,
+            validated.address,
+            validated.port,
+            validated.tls_server_name,
+            validated.target_uri,
+        )
 
     @classmethod
     def https(cls, uri: str, *, target_uri: str | None = None) -> Self:
         """Create a TTLV-over-HTTPS endpoint."""
-        _nonempty_text(uri)
-        if target_uri is not None:
-            _nonempty_text(target_uri)
+        validated = Endpoint(EndpointKind.HTTPS, uri, target_uri=target_uri)
         return cls(
-            EndpointKind.HTTPS,
-            uri,
-            target_uri=target_uri,
+            validated.kind,
+            validated.address,
+            validated.port,
+            validated.tls_server_name,
+            validated.target_uri,
         )
 
 
