@@ -1573,6 +1573,46 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
             "    kmipkit_transport_input_v1_t client_private_key;", header
         )
 
+    def test_approved_c_carrier_layout_references_must_resolve_without_cycles(self) -> None:
+        def exclusion(name: str, field_type: str) -> dict[str, object]:
+            return {
+                "packageId": "c-kmipkit",
+                "exportName": name,
+                "reason": "This fixed ABI carrier has no four-language facade value.",
+                "approvalSource": {"kind": "feature-specification", "path": "unused"},
+                "evidence": "The versioned C ABI uses this carrier at a native boundary.",
+                "cType": {
+                    "name": name,
+                    "kind": "fixed-width-value",
+                    "fields": [{"name": "value", "type": field_type}],
+                },
+            }
+
+        manifest = {
+            "approvedExclusions": [
+                exclusion("kmipkit_outer_v1_t", "kmipkit_inner_v1_t"),
+                exclusion("kmipkit_inner_v1_t", "uint32_t"),
+            ],
+            "types": [],
+        }
+        ordered = generate._ordered_approved_c_type_layouts(manifest)
+        self.assertEqual(
+            [record["name"] for record in ordered],
+            ["kmipkit_inner_v1_t", "kmipkit_outer_v1_t"],
+        )
+
+        manifest["approvedExclusions"][1]["cType"]["fields"][0]["type"] = (
+            "kmipkit_missing_v1_t"
+        )
+        with self.assertRaises(generate.ManifestError):
+            generate._ordered_approved_c_type_layouts(manifest)
+
+        manifest["approvedExclusions"][1]["cType"]["fields"][0]["type"] = (
+            "kmipkit_outer_v1_t"
+        )
+        with self.assertRaises(generate.ManifestError):
+            generate._ordered_approved_c_type_layouts(manifest)
+
     def test_schema_rejects_identical_duplicate_declarations_and_exclusions(self) -> None:
         manifest = json.loads(json.dumps(self.checked_in_manifest))
         manifest["publicDeclarations"].append(

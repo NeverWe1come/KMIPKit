@@ -85,6 +85,10 @@ _C_INTEGER_TYPES = {
     "int64_t": ("i64", 64, True),
     "uint64_t": ("u64", 64, False),
 }
+_C_LAYOUT_FIELD_TYPE_PATTERN = re.compile(
+    r"(?P<const>const )?(?P<base>(?:u?int(?:8|16|32|64)_t|kmipkit_[a-z0-9_]+_t))"
+    r"(?P<pointer> \*)?\Z"
+)
 _REQUIREMENT_PATTERN = re.compile(r"KMIPKIT-0012-FR-[0-9]{3}\Z")
 _EXPECTED_CLIENT_1_0_OPERATION_COUNT = 56
 _RUST_2024_KEYWORDS = {
@@ -1116,6 +1120,7 @@ def _validate_references(manifest: dict[str, Any]) -> None:
     _require_unique(manifest["functions"], "id", "function IDs")
     _require_unique(manifest["errorCategories"], "cValue", "C error values")
     _require_unique(manifest["errorCategories"], "cCode", "C error codes")
+    _ordered_approved_c_type_layouts(manifest)
     if "publicDeclarations" in manifest:
         declarations_by_path = {
             (record["packageId"], record["exportName"]): record
@@ -1337,6 +1342,125 @@ def _ready_c_export_names(manifest: dict[str, Any]) -> set[str] | None:
     return names
 
 
+def _ordered_approved_c_type_layouts(
+    manifest: dict[str, Any],
+    *,
+    include_blocked: bool = False,
+) -> list[dict[str, Any]]:
+    """Validate and order approved C-only carrier layouts by value dependencies."""
+    layouts: dict[str, dict[str, Any]] = {}
+    for exclusion in manifest.get("approvedExclusions", []):
+        if not isinstance(exclusion, dict):
+            raise ManifestError("manifest approved exclusion is malformed")
+        c_type = exclusion.get("cType")
+        if c_type is None:
+            continue
+        if not isinstance(c_type, dict):
+            raise ManifestError("approved C carrier layout is malformed")
+        name = c_type.get("name")
+        if (
+            exclusion.get("packageId") != "c-kmipkit"
+            or name != exclusion.get("exportName")
+            or not isinstance(name, str)
+            or re.fullmatch(r"kmipkit_[a-z0-9_]+_t", name) is None
+            or c_type.get("kind") != "fixed-width-value"
+        ):
+            raise ManifestError("approved C carrier layout must match its excluded C export")
+        if name in layouts:
+            raise ManifestError("manifest contains a duplicate approved C carrier layout")
+        layouts[name] = c_type
+
+    regular_types = {
+        record.get("c", {}).get("name"): record
+        for record in manifest.get("types", [])
+        if isinstance(record.get("c", {}).get("name"), str)
+    }
+    if set(layouts) & set(regular_types):
+        raise ManifestError("approved C carrier layout duplicates a declared C type")
+    ready_c_exports = None if include_blocked else _ready_c_export_names(manifest)
+    declared_c_fields = {
+        declaration.get("exportName")
+        for declaration in manifest.get("publicDeclarations", [])
+        if declaration.get("packageId") == "c-kmipkit"
+        and declaration.get("kind") == "field"
+    }
+
+    def regular_type_is_complete(name: str, record: dict[str, Any]) -> bool:
+        c_type = record.get("c", {})
+        if c_type.get("kind") == "enum":
+            return True
+        if c_type.get("kind") != "fixed-width-value":
+            return False
+        return any(
+            f"{name}.{limit.get('cField')}" in declared_c_fields
+            and (
+                ready_c_exports is None
+                or f"{name}.{limit.get('cField')}" in ready_c_exports
+            )
+            for limit in manifest.get("limits", [])
+        )
+
+    by_value_dependencies: dict[str, set[str]] = {name: set() for name in layouts}
+    for name, c_type in layouts.items():
+        fields = c_type.get("fields")
+        if not isinstance(fields, list) or not fields:
+            raise ManifestError("approved C carrier layout must contain fields")
+        field_names: set[str] = set()
+        for field in fields:
+            if not isinstance(field, dict):
+                raise ManifestError("approved C carrier field is malformed")
+            field_name = field.get("name")
+            if (
+                not isinstance(field_name, str)
+                or re.fullmatch(r"[A-Za-z][A-Za-z0-9_]*", field_name) is None
+                or field_name in field_names
+            ):
+                raise ManifestError("approved C carrier layout contains duplicate or invalid fields")
+            field_names.add(field_name)
+            field_type = field.get("type")
+            match = (
+                _C_LAYOUT_FIELD_TYPE_PATTERN.fullmatch(field_type)
+                if isinstance(field_type, str)
+                else None
+            )
+            if match is None:
+                raise ManifestError("approved C carrier field has an unsafe or unsupported C type")
+            base_type = match.group("base")
+            if not base_type.startswith("kmipkit_"):
+                continue
+            if base_type in layouts:
+                if not match.group("pointer"):
+                    by_value_dependencies[name].add(base_type)
+                continue
+            referenced = regular_types.get(base_type)
+            if referenced is None:
+                raise ManifestError("approved C carrier field references an unknown KMIPKit type")
+            if not match.group("pointer") and referenced.get("c", {}).get("kind") == "opaque-handle":
+                raise ManifestError("approved C carrier cannot contain an opaque handle by value")
+            if not match.group("pointer") and not regular_type_is_complete(base_type, referenced):
+                raise ManifestError("approved C carrier contains an incomplete declared value by value")
+
+    ordered: list[dict[str, Any]] = []
+    visiting: set[str] = set()
+    visited: set[str] = set()
+
+    def visit(name: str) -> None:
+        if name in visited:
+            return
+        if name in visiting:
+            raise ManifestError("approved C carrier layouts contain a by-value dependency cycle")
+        visiting.add(name)
+        for dependency in sorted(by_value_dependencies[name]):
+            visit(dependency)
+        visiting.remove(name)
+        visited.add(name)
+        ordered.append(layouts[name])
+
+    for name in layouts:
+        visit(name)
+    return ordered
+
+
 def render_c_header(
     manifest: dict[str, Any], *, include_blocked: bool = False, header_guard: str = "KMIPKIT_H"
 ) -> str:
@@ -1396,6 +1520,36 @@ def render_c_header(
             for field in ready_fields:
                 lines.append(f"    uint64_t {field};")
             lines.append(f"}} {name};")
+        lines.append("")
+    c_layouts = _ordered_approved_c_type_layouts(
+        manifest,
+        include_blocked=include_blocked,
+    )
+    if ready_c_exports is not None:
+        emitted_type_names = {
+            declaration["c"]["name"]
+            for declaration in manifest["types"]
+            if declaration["c"]["name"] in ready_c_exports
+        }
+        for c_type in c_layouts:
+            for field in c_type["fields"]:
+                match = _C_LAYOUT_FIELD_TYPE_PATTERN.fullmatch(field["type"])
+                base_type = match.group("base") if match is not None else ""
+                if (
+                    base_type.startswith("kmipkit_")
+                    and base_type not in emitted_type_names
+                    and base_type not in {layout["name"] for layout in c_layouts}
+                ):
+                    raise ManifestError("approved C carrier references a blocked C type")
+    for c_type in c_layouts:
+        lines.append(f"typedef struct {c_type['name']} {c_type['name']};")
+    if c_layouts:
+        lines.append("")
+    for c_type in c_layouts:
+        lines.append(f"struct {c_type['name']} {{")
+        for field in c_type["fields"]:
+            lines.append(f"    {field['type']} {field['name']};")
+        lines.append("};")
         lines.append("")
     for declaration in manifest["types"]:
         c_type = declaration["c"]

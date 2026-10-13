@@ -468,6 +468,48 @@
       ],
       "additionalProperties": false
     },
+    "cLayoutField": {
+      "type": "object",
+      "required": [
+        "name",
+        "type"
+      ],
+      "properties": {
+        "name": {
+          "$ref": "#/$defs/identifier"
+        },
+        "type": {
+          "type": "string",
+          "pattern": "^(?:(?:u?int(?:8|16|32|64)_t|kmipkit_[a-z0-9_]+_t)|(?:const )?(?:u?int(?:8|16|32|64)_t|kmipkit_[a-z0-9_]+_t) \\*)$",
+          "description": "A fixed-width scalar or KMIPKit typedef, optionally as a pointer. No arbitrary C declarators are accepted."
+        }
+      },
+      "additionalProperties": false
+    },
+    "cTypeLayout": {
+      "type": "object",
+      "required": [
+        "name",
+        "kind",
+        "fields"
+      ],
+      "properties": {
+        "name": {
+          "$ref": "#/$defs/cType/properties/name"
+        },
+        "kind": {
+          "const": "fixed-width-value"
+        },
+        "fields": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/cLayoutField"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
     "errorCategoryId": {
       "type": "string",
       "pattern": "^[a-z][a-z0-9_]*$"
@@ -2089,8 +2131,28 @@
         "evidence": {
           "type": "string",
           "minLength": 1
+        },
+        "cType": {
+          "$ref": "#/$defs/cTypeLayout",
+          "description": "Optional C-only ABI carrier layout retained in the generated header without declaring a four-language facade type."
         }
       },
+      "allOf": [
+        {
+          "if": {
+            "required": [
+              "cType"
+            ]
+          },
+          "then": {
+            "properties": {
+              "packageId": {
+                "const": "c-kmipkit"
+              }
+            }
+          }
+        }
+      ],
       "additionalProperties": false
     },
     "apiLevel": {
