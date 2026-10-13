@@ -6812,6 +6812,7 @@ pub const CLIENT_PROFILES: &[GeneratedClientProfile] = &[
         ],
         requirement_ids: &[
             "KMIPKIT-REQ-PROF-3.1-001",
+            "KMIPKIT-REQ-PROF-4.1.2-007",
             "KMIPKIT-REQ-PROF-5.13.1-001",
             "KMIPKIT-REQ-PROF-5.13.1-002",
             "KMIPKIT-REQ-PROF-5.13.1-003",
@@ -8467,6 +8468,7 @@ pub const CLIENT_PROFILES: &[GeneratedClientProfile] = &[
         ],
         requirement_ids: &[
             "KMIPKIT-REQ-PROF-3.1-001",
+            "KMIPKIT-REQ-PROF-4.1.2-007",
             "KMIPKIT-REQ-PROF-5.8.1-001",
             "KMIPKIT-REQ-PROF-5.8.1-002",
             "KMIPKIT-REQ-PROF-5.8.1-003",
@@ -10124,6 +10126,7 @@ pub const CLIENT_PROFILES: &[GeneratedClientProfile] = &[
             "KMIPKIT-REQ-PROF-3.1.1-005",
             "KMIPKIT-REQ-PROF-3.1.2-002",
             "KMIPKIT-REQ-PROF-3.1.2-005",
+            "KMIPKIT-REQ-PROF-4.1.2-007",
             "KMIPKIT-REQ-PROF-6.1-001",
             "KMIPKIT-REQ-PROF-6.1-002",
             "KMIPKIT-REQ-PROF-6.1-003",
@@ -11761,6 +11764,7 @@ pub const CLIENT_PROFILES: &[GeneratedClientProfile] = &[
         ],
         requirement_ids: &[
             "KMIPKIT-REQ-PROF-3.1-001",
+            "KMIPKIT-REQ-PROF-4.1.2-007",
             "KMIPKIT-REQ-PROF-5.9.2-001",
             "KMIPKIT-REQ-PROF-5.9.2-002",
             "KMIPKIT-REQ-PROF-5.9.2-003",
@@ -13515,6 +13519,7 @@ pub const CLIENT_PROFILES: &[GeneratedClientProfile] = &[
         ],
         requirement_ids: &[
             "KMIPKIT-REQ-PROF-3.1-001",
+            "KMIPKIT-REQ-PROF-4.1.2-007",
             "KMIPKIT-REQ-PROF-5.9.1-001",
             "KMIPKIT-REQ-PROF-5.9.1-002",
             "KMIPKIT-REQ-PROF-5.9.1-003",
@@ -15287,6 +15292,7 @@ pub const CLIENT_PROFILES: &[GeneratedClientProfile] = &[
         ],
         requirement_ids: &[
             "KMIPKIT-REQ-PROF-3.1-001",
+            "KMIPKIT-REQ-PROF-4.1.2-007",
             "KMIPKIT-REQ-PROF-5.9.3-001",
             "KMIPKIT-REQ-PROF-5.9.3-002",
             "KMIPKIT-REQ-PROF-5.9.3-003",
@@ -16988,6 +16994,7 @@ pub const CLIENT_PROFILES: &[GeneratedClientProfile] = &[
             "KMIPKIT-REQ-PROF-3.2.2-001",
             "KMIPKIT-REQ-PROF-3.2.3-001",
             "KMIPKIT-REQ-PROF-3.2.4-002",
+            "KMIPKIT-REQ-PROF-4.1.2-007",
             "KMIPKIT-REQ-PROF-5.3.1-001",
             "KMIPKIT-REQ-PROF-5.3.1-002",
             "KMIPKIT-REQ-PROF-5.3.1-003",
@@ -18644,6 +18651,7 @@ pub const CLIENT_PROFILES: &[GeneratedClientProfile] = &[
         ],
         requirement_ids: &[
             "KMIPKIT-REQ-PROF-3.1-001",
+            "KMIPKIT-REQ-PROF-4.1.2-007",
             "KMIPKIT-REQ-PROF-6.1-001",
             "KMIPKIT-REQ-PROF-6.1-002",
             "KMIPKIT-REQ-PROF-6.1-003",
@@ -20285,6 +20293,7 @@ pub const CLIENT_PROFILES: &[GeneratedClientProfile] = &[
         ],
         requirement_ids: &[
             "KMIPKIT-REQ-PROF-3.1-001",
+            "KMIPKIT-REQ-PROF-4.1.2-007",
             "KMIPKIT-REQ-PROF-5.10.1-001",
             "KMIPKIT-REQ-PROF-5.10.1-002",
             "KMIPKIT-REQ-PROF-5.10.1-003",
@@ -21949,6 +21958,7 @@ pub const CLIENT_PROFILES: &[GeneratedClientProfile] = &[
         ],
         requirement_ids: &[
             "KMIPKIT-REQ-PROF-3.1-001",
+            "KMIPKIT-REQ-PROF-4.1.2-007",
             "KMIPKIT-REQ-PROF-6.1-001",
             "KMIPKIT-REQ-PROF-6.1-002",
             "KMIPKIT-REQ-PROF-6.1-003",
@@ -23603,6 +23613,7 @@ pub const CLIENT_PROFILES: &[GeneratedClientProfile] = &[
         ],
         requirement_ids: &[
             "KMIPKIT-REQ-PROF-3.1-001",
+            "KMIPKIT-REQ-PROF-4.1.2-007",
             "KMIPKIT-REQ-PROF-5.15-001",
             "KMIPKIT-REQ-PROF-5.15-002",
             "KMIPKIT-REQ-PROF-5.15-003",
@@ -25277,6 +25288,7 @@ pub const CLIENT_PROFILES: &[GeneratedClientProfile] = &[
         ],
         requirement_ids: &[
             "KMIPKIT-REQ-PROF-3.1-001",
+            "KMIPKIT-REQ-PROF-4.1.2-007",
             "KMIPKIT-REQ-PROF-5.11.1-001",
             "KMIPKIT-REQ-PROF-5.11.1-002",
             "KMIPKIT-REQ-PROF-5.11.1-003",
@@ -26939,6 +26951,7 @@ pub const CLIENT_PROFILES: &[GeneratedClientProfile] = &[
         ],
         requirement_ids: &[
             "KMIPKIT-REQ-PROF-3.1-001",
+            "KMIPKIT-REQ-PROF-4.1.2-007",
             "KMIPKIT-REQ-PROF-5.7.3-001",
             "KMIPKIT-REQ-PROF-5.7.3-002",
             "KMIPKIT-REQ-PROF-5.7.3-003",
@@ -28605,6 +28618,7 @@ pub const CLIENT_PROFILES: &[GeneratedClientProfile] = &[
         ],
         requirement_ids: &[
             "KMIPKIT-REQ-PROF-3.1-001",
+            "KMIPKIT-REQ-PROF-4.1.2-007",
             "KMIPKIT-REQ-PROF-5.7.1-001",
             "KMIPKIT-REQ-PROF-5.7.1-002",
             "KMIPKIT-REQ-PROF-5.7.1-003",
@@ -30272,6 +30286,7 @@ pub const CLIENT_PROFILES: &[GeneratedClientProfile] = &[
         ],
         requirement_ids: &[
             "KMIPKIT-REQ-PROF-3.1-001",
+            "KMIPKIT-REQ-PROF-4.1.2-007",
             "KMIPKIT-REQ-PROF-5.7.2-001",
             "KMIPKIT-REQ-PROF-5.7.2-002",
             "KMIPKIT-REQ-PROF-5.7.2-003",
@@ -31938,6 +31953,7 @@ pub const CLIENT_PROFILES: &[GeneratedClientProfile] = &[
         ],
         requirement_ids: &[
             "KMIPKIT-REQ-PROF-3.1-001",
+            "KMIPKIT-REQ-PROF-4.1.2-007",
             "KMIPKIT-REQ-PROF-5.6.1-001",
             "KMIPKIT-REQ-PROF-5.6.1-002",
             "KMIPKIT-REQ-PROF-5.6.1-003",
@@ -33629,6 +33645,7 @@ pub const CLIENT_PROFILES: &[GeneratedClientProfile] = &[
         ],
         requirement_ids: &[
             "KMIPKIT-REQ-PROF-3.1-001",
+            "KMIPKIT-REQ-PROF-4.1.2-007",
             "KMIPKIT-REQ-PROF-5.12.2-002",
             "KMIPKIT-REQ-PROF-5.12.2-003",
             "KMIPKIT-REQ-PROF-5.12.2-004-001",
@@ -35321,6 +35338,7 @@ pub const CLIENT_PROFILES: &[GeneratedClientProfile] = &[
         ],
         requirement_ids: &[
             "KMIPKIT-REQ-PROF-3.1-001",
+            "KMIPKIT-REQ-PROF-4.1.2-007",
             "KMIPKIT-REQ-PROF-6.1-001",
             "KMIPKIT-REQ-PROF-6.1-002",
             "KMIPKIT-REQ-PROF-6.1-003",

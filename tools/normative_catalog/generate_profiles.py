@@ -307,14 +307,19 @@ def compute_profile_closure(
                 UnresolvedProfileScopeObligation(requirement_id, clause_id, scope_state)
                 for clause_id in intersects_closure
             )
-        in_scope = scope_state in {"client_1_0", "mixed"} or (
+        profile_membership_applies = (
             scope_state == "profile_conditional"
             and profile_id in requirement.get("profile_ids", [])
         )
+        in_scope = scope_state in {"client_1_0", "mixed"} or profile_membership_applies
         if (
             requirement.get("role") in {"client", "both"}
             and in_scope
-            and (any(clause_id in source_clause_ids for clause_id in linked_clauses) or table_row_intersects_closure)
+            and (
+                profile_membership_applies
+                or any(clause_id in source_clause_ids for clause_id in linked_clauses)
+                or table_row_intersects_closure
+            )
         ):
             requirement_ids.add(requirement_id)
 

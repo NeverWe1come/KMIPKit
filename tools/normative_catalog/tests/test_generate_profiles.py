@@ -290,19 +290,45 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
             expected_requirement_ids: set[str] = set()
 
             for review in oracle["source_requirement_reviews"]:
+                applies_to = review.get("applies_to")
+                explicitly_client_applicable = any(
+                    obligation.get("actor") == "client"
+                    for obligation in review.get("source_obligations", [])
+                )
                 if (
-                    review["source_clause_id"] in source_clause_ids
-                    and review.get("applies_to") in {"all_client_profiles", profile_id}
+                    (
+                        applies_to == "all_client_profiles"
+                        and review.get("scope_state") == "profile_conditional"
+                        and explicitly_client_applicable
+                    )
+                    or (
+                        review["source_clause_id"] in source_clause_ids
+                        and applies_to in {"all_client_profiles", profile_id}
+                    )
                 ):
                     expected_requirement_ids.update(review["expected_client_requirement_ids"])
 
             for mapping in oracle["requirement_crosswalk"]:
+                applies_to_profile = mapping.get("applies_to") == "all_client_profiles" or (
+                    mapping.get("scope_state") == "profile_conditional"
+                    and mapping.get("applies_to") == profile_id
+                )
+                global_client_capability = (
+                    mapping.get("scope_state") == "profile_conditional"
+                    and mapping.get("applies_to") == "all_client_profiles"
+                    and mapping.get("role") == "client"
+                )
                 if (
-                    mapping.get("applies_to") in {"all_client_profiles", profile_id}
+                    applies_to_profile
                     and mapping.get("role") in {"client", "both"}
                     and mapping.get("scope_state") in {"client_1_0", "profile_conditional"}
                     and (
-                        mapping.get("source_clause_id") in source_clause_ids
+                        global_client_capability
+                        or (
+                            mapping.get("scope_state") == "profile_conditional"
+                            and mapping.get("applies_to") == profile_id
+                        )
+                        or mapping.get("source_clause_id") in source_clause_ids
                         or (mapping.get("source_id"), mapping.get("source_section")) in included_sections
                     )
                 ):

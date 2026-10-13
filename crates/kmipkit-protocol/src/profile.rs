@@ -696,6 +696,8 @@ const EXPORT_OPERATION: u32 = 0x0000_002B;
 const REGISTER_ATTRIBUTES: u32 = 0x0042_0125;
 const REGISTER_OBJECT_TYPE: u32 = 0x0042_0057;
 const REGISTER_PROTECTION_STORAGE_MASKS: u32 = 0x0042_015F;
+const OPAQUE_OBJECT_TYPE: u32 = 8;
+const VENDOR_ATTRIBUTE: u32 = 0x0042_0008;
 const GET_KEY_COMPRESSION_TYPE: u32 = 0x0042_0041;
 const KEY_VALUE_LOCATION: u32 = 0x0042_00B8;
 const KEY_VALUE_LOCATION_VALUE: u32 = 0x0042_00B9;
@@ -890,6 +892,91 @@ fn client_create_key_pair_domain_parameters_have_valid_wire_types(
             })
             .unwrap_or(false)
     })
+}
+
+fn client_opaque_object_context_custom_attributes(
+    request: Option<&RequestMessage>,
+    response: Option<(&RequestMessage, &ResponseMessage)>,
+) -> bool {
+    if let Some((request, response)) = response {
+        return request.batch_items().zip(response.batch_items()).all(
+            |(request_item, response_item)| {
+                if request_item.operation() != Some(GET_ATTRIBUTES_OPERATION) {
+                    return true;
+                }
+                if response_item.operation() != Some(GET_ATTRIBUTES_OPERATION) {
+                    return false;
+                }
+
+                response_item
+                    .with_response_payload(|payload| match field_presence(&payload, ATTRIBUTES) {
+                        FieldPresence::Missing => true,
+                        FieldPresence::Unique(attributes) => attributes.with_value(|value| {
+                            matches!(value, ValueView::Structure(attributes)
+                                    if vendor_attributes_are_well_formed(&attributes))
+                        }),
+                        FieldPresence::Duplicate => false,
+                    })
+                    .unwrap_or(true)
+            },
+        );
+    }
+
+    let Some(request) = request else {
+        return false;
+    };
+
+    request.batch_items().all(|batch_item| {
+        let Some(operation) = batch_item.operation() else {
+            return false;
+        };
+        if operation != REGISTER_OPERATION {
+            return true;
+        }
+
+        batch_item
+            .with_request_payload(|payload| register_opaque_context_is_well_formed(&payload))
+            .unwrap_or(false)
+    })
+}
+
+fn register_opaque_context_is_well_formed(payload: &StructureView<'_>) -> bool {
+    let FieldPresence::Unique(object_type) = field_presence(payload, REGISTER_OBJECT_TYPE) else {
+        return true;
+    };
+    let Some(object_type) = object_type.with_value(|value| match value {
+        ValueView::Enumeration(value) => Some(*value),
+        _ => None,
+    }) else {
+        return true;
+    };
+    if object_type != OPAQUE_OBJECT_TYPE {
+        return true;
+    }
+
+    match field_presence(payload, REGISTER_ATTRIBUTES) {
+        FieldPresence::Missing => true,
+        FieldPresence::Unique(attributes) => attributes.with_value(|value| match value {
+            ValueView::Structure(attributes) => vendor_attributes_are_well_formed(&attributes),
+            _ => false,
+        }),
+        FieldPresence::Duplicate => false,
+    }
+}
+
+fn vendor_attributes_are_well_formed(attributes: &StructureView<'_>) -> bool {
+    attributes
+        .children()
+        .iter()
+        .filter(|attribute| attribute.tag().raw() == VENDOR_ATTRIBUTE)
+        .all(|attribute| {
+            attribute.with_value(|value| match value {
+                ValueView::Structure(vendor_attribute) => {
+                    crate::attribute::validate_vendor_attribute(&vendor_attribute).is_ok()
+                }
+                _ => false,
+            })
+        })
 }
 
 fn import_preserves_wrapped_secret_data_shape(
@@ -1349,6 +1436,23 @@ fn protocol_version_is_kmip_2_1(version: &StructureView<'_>) -> bool {
 }
 
 const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
+    TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-2.3-001",
+        source_clause_id: "KMIPKIT-CLAUSE-SPEC-2.3-001",
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
+        evaluator: Some(client_opaque_object_context_custom_attributes),
+        test_evidence: &[
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_client_register_opaque_object_context_custom_attributes",
+                kind: RuleTestKind::OptionalCapabilityUsable,
+            },
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_client_get_attributes_opaque_object_custom_context",
+                kind: RuleTestKind::OptionalCapabilityUsable,
+            },
+        ],
+        constraints: &[],
+    },
     TypedRuleMapping {
         requirement_id: "KMIPKIT-REQ-SPEC-2.4-001-001",
         source_clause_id: "KMIPKIT-CLAUSE-SPEC-2.4-001",

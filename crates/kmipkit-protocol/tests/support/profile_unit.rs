@@ -8,6 +8,7 @@ use super::{
     TYPED_RULE_MAPPINGS, TypedRuleMapping,
     client_create_key_pair_domain_parameters_have_valid_wire_types,
     client_get_or_export_key_compression_type_is_enumeration,
+    client_opaque_object_context_custom_attributes,
     client_register_key_value_location_requires_omitted_key_value,
     discover_versions_advertises_only_client_supported_versions,
     import_preserves_pgp_key_versions_and_opaque_bytes, import_preserves_wrapped_secret_data_shape,
@@ -403,7 +404,7 @@ fn opaque_context_vendor_attribute(value: &[u8]) -> Item {
         Value::structure(structure([
             tagged(
                 VENDOR_IDENTIFICATION_TAG,
-                Value::text_string("x".to_owned()),
+                Value::text_string("example.invalid".to_owned()),
             ),
             tagged(
                 ATTRIBUTE_NAME_TAG,
@@ -419,10 +420,10 @@ fn opaque_object_register_payload(include_context: bool) -> Structure {
     if include_context {
         attributes
             .try_push(opaque_context_vendor_attribute(b"context-a"))
-            .expect("the first legacy Custom Attribute uses a valid Vendor Attribute shape");
+            .expect("the first synthetic Custom Attribute uses a valid Vendor Attribute shape");
         attributes
             .try_push(opaque_context_vendor_attribute(b"context-b"))
-            .expect("a repeated legacy Custom Attribute retains its value");
+            .expect("a repeated synthetic Custom Attribute retains its value");
     }
 
     crate::RegisterRequest::new(
@@ -478,6 +479,63 @@ fn opaque_context_get_attributes_response() -> crate::ResponseMessage {
         ),
     ]))
     .expect("the Get Attributes response preserves repeated Vendor Attributes")
+}
+
+fn get_attributes_response_with_payload(
+    operation: u32,
+    payload: Structure,
+) -> crate::ResponseMessage {
+    crate::ResponseMessage::try_from_ttlv(structure([
+        tagged(
+            RESPONSE_HEADER_TAG,
+            Value::structure(structure([
+                test_protocol_version(),
+                tagged(TIME_STAMP_TAG, Value::date_time(1)),
+                tagged(BATCH_COUNT_TAG, Value::integer(1)),
+            ])),
+        ),
+        tagged(
+            BATCH_ITEM_TAG,
+            Value::structure(structure([
+                tagged(OPERATION_TAG, Value::enumeration(operation)),
+                tagged(RESULT_STATUS_TAG, Value::enumeration(0)),
+                tagged(RESPONSE_PAYLOAD_TAG, Value::structure(payload)),
+            ])),
+        ),
+    ]))
+    .expect("test Get Attributes response payload has a valid message envelope")
+}
+
+fn opaque_object_attributes_ttlv(attributes: impl IntoIterator<Item = Item>) -> Item {
+    tagged(ATTRIBUTES_TAG, Value::structure(structure(attributes)))
+}
+
+fn malformed_opaque_register_metadata_payloads() -> Vec<Structure> {
+    let valid_attributes =
+        || opaque_object_attributes_ttlv([opaque_context_vendor_attribute(b"context")]);
+    let invalid_vendor_attribute = tagged(
+        VENDOR_ATTRIBUTE_TAG,
+        Value::text_string("not a Vendor Attribute structure".to_owned()),
+    );
+
+    vec![
+        structure([
+            tagged(OBJECT_TYPE_TAG, Value::enumeration(8)),
+            valid_attributes(),
+            valid_attributes(),
+        ]),
+        structure([
+            tagged(OBJECT_TYPE_TAG, Value::enumeration(8)),
+            tagged(
+                ATTRIBUTES_TAG,
+                Value::text_string("not a Structure".to_owned()),
+            ),
+        ]),
+        structure([
+            tagged(OBJECT_TYPE_TAG, Value::enumeration(8)),
+            opaque_object_attributes_ttlv([invalid_vendor_attribute]),
+        ]),
+    ]
 }
 
 fn vendor_attribute_value_bytes(attribute: &Item) -> Option<Vec<u8>> {
@@ -2710,7 +2768,10 @@ fn profile_maps_client_register_opaque_object_context_custom_attributes() {
     let payload_view = payload.view();
     let fields = payload_view.children();
     assert_eq!(
-        fields.iter().map(|field| field.tag().raw()).collect::<Vec<_>>(),
+        fields
+            .iter()
+            .map(|field| field.tag().raw())
+            .collect::<Vec<_>>(),
         [OBJECT_TYPE_TAG, ATTRIBUTES_TAG, OPAQUE_OBJECT_TAG]
     );
     let context_values = fields[1].with_value(|value| match value {
@@ -2764,7 +2825,7 @@ fn profile_maps_client_get_attributes_opaque_object_custom_context() {
         .next()
         .expect("the Get Attributes response contains one result item");
     let typed_response = crate::GetAttributesResponse::try_from_response_item(response_item)
-        .expect("Get Attributes retains legacy Custom Attribute values");
+        .expect("Get Attributes retains generic Vendor Attribute values");
     let attributes = typed_response
         .attributes()
         .expect("the successful response contains its ordered attributes");
@@ -2784,6 +2845,135 @@ fn profile_maps_client_get_attributes_opaque_object_custom_context() {
     validation
         .validate_response(&request, &response)
         .expect("the client can retrieve the same ordered Opaque Object context attributes");
+}
+
+#[test]
+fn profile_rejects_malformed_opaque_object_context_shapes() {
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-2.3-001";
+    const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
+
+    let result = ProfileValidationResult {
+        profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
+        requirement_ids: vec![REQUIREMENT_ID.to_owned()],
+    };
+    let invalid_payloads = malformed_opaque_register_metadata_payloads();
+
+    for payload in invalid_payloads {
+        let error = result
+            .validate_request(&request_message_with_operation_payload(
+                REGISTER_OPERATION_TAG,
+                payload,
+            ))
+            .expect_err("malformed Opaque Object context must fail closed");
+        assert_eq!(
+            error.code(),
+            ProfileValidationErrorCode::RequestRuleRejected
+        );
+        assert_eq!(error.requirement_id(), Some(REQUIREMENT_ID));
+        assert_eq!(
+            error.source_clause_id(),
+            Some("KMIPKIT-CLAUSE-SPEC-2.3-001")
+        );
+    }
+
+    result
+        .validate_request(&request_message_with_operation_payload(
+            REGISTER_OPERATION_TAG,
+            structure([tagged(OBJECT_TYPE_TAG, Value::enumeration(2))]),
+        ))
+        .expect("the Opaque Object capability rule does not constrain other object types");
+    result
+        .validate_request(&request_message())
+        .expect("the Opaque Object capability rule does not constrain unrelated operations");
+    assert!(!client_opaque_object_context_custom_attributes(None, None));
+}
+
+#[test]
+fn profile_rejects_malformed_opaque_context_get_attributes_responses() {
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-2.3-001";
+    const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
+
+    let result = ProfileValidationResult {
+        profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
+        requirement_ids: vec![REQUIREMENT_ID.to_owned()],
+    };
+    let request = request_message_with_operation_payload(
+        GET_ATTRIBUTES_OPERATION,
+        structure([tagged(
+            UNIQUE_IDENTIFIER_TAG,
+            Value::text_string("opaque-object".to_owned()),
+        )]),
+    );
+
+    result
+        .validate_response(
+            &request,
+            &get_attributes_response_with_payload(
+                GET_ATTRIBUTES_OPERATION,
+                structure([tagged(
+                    UNIQUE_IDENTIFIER_TAG,
+                    Value::text_string("opaque-object".to_owned()),
+                )]),
+            ),
+        )
+        .expect("the optional Attributes field may be absent from a Get Attributes response");
+
+    let malformed_responses = [
+        get_attributes_response_with_payload(
+            GET_ATTRIBUTES_OPERATION,
+            structure([
+                tagged(ATTRIBUTES_TAG, Value::structure(Structure::new())),
+                tagged(ATTRIBUTES_TAG, Value::structure(Structure::new())),
+            ]),
+        ),
+        get_attributes_response_with_payload(
+            GET_ATTRIBUTES_OPERATION,
+            structure([tagged(
+                ATTRIBUTES_TAG,
+                Value::text_string("not a Structure".to_owned()),
+            )]),
+        ),
+        get_attributes_response_with_payload(
+            GET_ATTRIBUTES_OPERATION,
+            structure([tagged(
+                ATTRIBUTES_TAG,
+                Value::structure(structure([tagged(
+                    VENDOR_ATTRIBUTE_TAG,
+                    Value::text_string("not a Vendor Attribute structure".to_owned()),
+                )])),
+            )]),
+        ),
+    ];
+
+    for response in malformed_responses {
+        let error = result
+            .validate_response(&request, &response)
+            .expect_err("malformed returned Vendor Attributes must fail closed");
+        assert_eq!(
+            error.code(),
+            ProfileValidationErrorCode::ResponseRuleRejected
+        );
+        assert_eq!(error.requirement_id(), Some(REQUIREMENT_ID));
+        assert_eq!(
+            error.source_clause_id(),
+            Some("KMIPKIT-CLAUSE-SPEC-2.3-001")
+        );
+    }
+
+    result
+        .validate_response(
+            &request_message(),
+            &opaque_context_get_attributes_response(),
+        )
+        .expect("a response to another operation is outside this optional capability");
+    let mismatched_operation = get_attributes_response_with_payload(0x0000_001E, Structure::new());
+    let error = result
+        .validate_response(&request, &mismatched_operation)
+        .expect_err("a Get Attributes request requires its matching response operation");
+    assert_eq!(
+        error.code(),
+        ProfileValidationErrorCode::ResponseRuleRejected
+    );
 }
 
 #[test]

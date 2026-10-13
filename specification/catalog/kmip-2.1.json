@@ -86083,8 +86083,8 @@
       "subject": "Opaque Object context information",
       "summary": "The client may carry opaque-object context through Custom Attributes when using that representation.",
       "role": "client",
-      "direction": "unclear",
-      "condition": null,
+      "direction": "both",
+      "condition": "Only when using Vendor Attributes to store or retrieve Opaque Object context information.",
       "scope_state": "profile_conditional",
       "element_ids": [],
       "profile_ids": [
@@ -86109,12 +86109,21 @@
       ],
       "test_case_ids": [],
       "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/attribute.rs::AttributeSet::try_new",
+        "crates/kmipkit-protocol/src/attribute.rs::validate_vendor_attribute",
+        "crates/kmipkit-protocol/src/register.rs::RegisterRequest::into_ttlv_payload",
+        "crates/kmipkit-protocol/src/get_attributes.rs::GetAttributesResponse::try_from_response_item",
+        "crates/kmipkit-protocol/src/profile.rs::client_opaque_object_context_custom_attributes"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_client_register_opaque_object_context_custom_attributes",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_client_get_attributes_opaque_object_custom_context"
+      ],
       "negative_verification_required": false,
       "decision_id": null,
-      "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
+      "status": "scoped_verified",
+      "review_note": "KMIP Specification v2.1 §2.3 permits Opaque Object context to be stored and retrieved using Custom Attributes. This scoped client encode/decode evidence exercises the §4.60 Table 150 Vendor Attribute structure with the synthetic Vendor Identification example.invalid; that value is test data, not a registered vendor identity. Section 2.3 does not name the §4.60 wire representation. The tests cover Register serialization and Get Attributes decoding, including repeated values, and do not establish server storage or acceptance. No requirement-specific official Test Cases ID is linked by the pinned OASIS sources."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-2.3-002",
@@ -90606,7 +90615,7 @@
       "negative_verification_required": false,
       "decision_id": null,
       "status": "scoped_verified",
-      "review_note": "Derived client response-decoder capability for Get Attributes (\u00a76.1.20, Table 224). \u00a74.62 Table 153 defines Issuer Alternative Name as a Byte String that MAY repeat. The client preserves each received value in order; the test does not claim that a server sets the attribute, that a certificate is valid, or that an official OASIS Test Case passed. Source: KMIP Specification v2.1 \u00a74.62, Table 153."
+      "review_note": "Derived client response-decoder capability for Get Attributes (\u00a76.1.20, Table 224). \u00a74.62 Table 153 defines Issuer Alternative Name as a Byte String that MAY repeat. The client preserves each received value in order; the test does not claim that a server sets the attribute, that a certificate is valid, or that an official OASIS Test Case passed. Source: pinned KMIP Specification v2.1 \u00a74.62, Table 153."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-4.63-003",
@@ -90685,7 +90694,7 @@
       "negative_verification_required": false,
       "decision_id": null,
       "status": "scoped_verified",
-      "review_note": "Derived client response-decoder capability for Get Attributes (\u00a76.1.20, Table 224). \u00a74.63 Table 155 permits the Subject Distinguished Name Byte String to be empty under the critical Subject Alternative Name certificate condition. The client preserves the received empty bytes but does not inspect or validate the certificate or impose the server's issuance condition. No official OASIS Test Case is linked or claimed passed. Source: KMIP Specification v2.1 \u00a74.63, Table 155."
+      "review_note": "Derived client response-decoder capability for Get Attributes (\u00a76.1.20, Table 224). \u00a74.63 Table 155 permits the Subject Distinguished Name Byte String to be empty under the critical Subject Alternative Name certificate condition. The client preserves the received empty bytes but does not inspect or validate the certificate or impose the server's issuance condition. No official OASIS Test Case is linked or claimed passed. Source: pinned KMIP Specification v2.1 \u00a74.63, Table 155."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-4.63-005",
@@ -90734,7 +90743,7 @@
       "negative_verification_required": false,
       "decision_id": null,
       "status": "scoped_verified",
-      "review_note": "Derived client response-decoder capability for Get Attributes (\u00a76.1.20, Table 224). \u00a74.63 Table 155 permits Subject Alternative Name Byte Strings to repeat; its separate REQUIRED column requires presence when Subject Distinguished Name is empty. The client preserves repeated values in order and does not enforce that server-side presence rule. No official OASIS Test Case is linked or claimed passed. Source: KMIP Specification v2.1 \u00a74.63, Table 155."
+      "review_note": "Derived client response-decoder capability for Get Attributes (\u00a76.1.20, Table 224). \u00a74.63 Table 155 permits Subject Alternative Name Byte Strings to repeat; its separate REQUIRED column requires presence when Subject Distinguished Name is empty. The client preserves repeated values in order and does not enforce that server-side presence rule. No official OASIS Test Case is linked or claimed passed. Source: pinned KMIP Specification v2.1 \u00a74.63, Table 155."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-5.1-001",
@@ -95662,8 +95671,8 @@
       "element_ids": [
         "KMIPKIT-ELEM-OBJECT-STRUCTURE-KEY-WRAPPING-DATA",
         "KMIPKIT-ELEM-OP-C2S-REGISTER",
-        "KMIPKIT-ELEM-STRUCTURE-MEMBER-3-1-KEY-BLOCK-KEY-WRAPPING-DATA",
         "KMIPKIT-ELEM-STRUCTURE-MEMBER-3-1-KEY-BLOCK-KEY-VALUE",
+        "KMIPKIT-ELEM-STRUCTURE-MEMBER-3-1-KEY-BLOCK-KEY-WRAPPING-DATA",
         "KMIPKIT-ELEM-STRUCTURE-MEMBER-3-2-KEY-VALUE-ATTRIBUTES",
         "KMIPKIT-ELEM-STRUCTURE-MEMBER-3-3-KEY-WRAPPING-DATA-ENCODING-OPTION"
       ],
@@ -102797,6 +102806,7 @@
       "claim_state": "not_claimed",
       "requirement_ids": [
         "KMIPKIT-REQ-PROF-3.1-001",
+        "KMIPKIT-REQ-PROF-4.1.2-007",
         "KMIPKIT-REQ-PROF-5.13.1-001",
         "KMIPKIT-REQ-PROF-5.13.1-002",
         "KMIPKIT-REQ-PROF-5.13.1-003",
@@ -104202,6 +104212,7 @@
       "claim_state": "not_claimed",
       "requirement_ids": [
         "KMIPKIT-REQ-PROF-3.1-001",
+        "KMIPKIT-REQ-PROF-4.1.2-007",
         "KMIPKIT-REQ-PROF-5.8.1-001",
         "KMIPKIT-REQ-PROF-5.8.1-002",
         "KMIPKIT-REQ-PROF-5.8.1-003",
@@ -105599,6 +105610,7 @@
         "KMIPKIT-REQ-PROF-3.1.1-005",
         "KMIPKIT-REQ-PROF-3.1.2-002",
         "KMIPKIT-REQ-PROF-3.1.2-005",
+        "KMIPKIT-REQ-PROF-4.1.2-007",
         "KMIPKIT-REQ-PROF-6.1-001",
         "KMIPKIT-REQ-PROF-6.1-002",
         "KMIPKIT-REQ-PROF-6.1-003",
@@ -107308,6 +107320,7 @@
       "claim_state": "not_claimed",
       "requirement_ids": [
         "KMIPKIT-REQ-PROF-3.1-001",
+        "KMIPKIT-REQ-PROF-4.1.2-007",
         "KMIPKIT-REQ-PROF-5.9.2-001",
         "KMIPKIT-REQ-PROF-5.9.2-002",
         "KMIPKIT-REQ-PROF-5.9.2-003",
@@ -108746,6 +108759,7 @@
       "claim_state": "not_claimed",
       "requirement_ids": [
         "KMIPKIT-REQ-PROF-3.1-001",
+        "KMIPKIT-REQ-PROF-4.1.2-007",
         "KMIPKIT-REQ-PROF-5.9.1-001",
         "KMIPKIT-REQ-PROF-5.9.1-002",
         "KMIPKIT-REQ-PROF-5.9.1-003",
@@ -110187,6 +110201,7 @@
       "claim_state": "not_claimed",
       "requirement_ids": [
         "KMIPKIT-REQ-PROF-3.1-001",
+        "KMIPKIT-REQ-PROF-4.1.2-007",
         "KMIPKIT-REQ-PROF-5.9.3-001",
         "KMIPKIT-REQ-PROF-5.9.3-002",
         "KMIPKIT-REQ-PROF-5.9.3-003",
@@ -111622,6 +111637,7 @@
         "KMIPKIT-REQ-PROF-3.2.2-001",
         "KMIPKIT-REQ-PROF-3.2.3-001",
         "KMIPKIT-REQ-PROF-3.2.4-002",
+        "KMIPKIT-REQ-PROF-4.1.2-007",
         "KMIPKIT-REQ-PROF-5.3.1-001",
         "KMIPKIT-REQ-PROF-5.3.1-002",
         "KMIPKIT-REQ-PROF-5.3.1-003",
@@ -113058,6 +113074,7 @@
       "claim_state": "not_claimed",
       "requirement_ids": [
         "KMIPKIT-REQ-PROF-3.1-001",
+        "KMIPKIT-REQ-PROF-4.1.2-007",
         "KMIPKIT-REQ-PROF-6.1-001",
         "KMIPKIT-REQ-PROF-6.1-002",
         "KMIPKIT-REQ-PROF-6.1-003",
@@ -114451,6 +114468,7 @@
       "claim_state": "not_claimed",
       "requirement_ids": [
         "KMIPKIT-REQ-PROF-3.1-001",
+        "KMIPKIT-REQ-PROF-4.1.2-007",
         "KMIPKIT-REQ-PROF-5.10.1-001",
         "KMIPKIT-REQ-PROF-5.10.1-002",
         "KMIPKIT-REQ-PROF-5.10.1-003",
@@ -115864,6 +115882,7 @@
       "claim_state": "not_claimed",
       "requirement_ids": [
         "KMIPKIT-REQ-PROF-3.1-001",
+        "KMIPKIT-REQ-PROF-4.1.2-007",
         "KMIPKIT-REQ-PROF-6.1-001",
         "KMIPKIT-REQ-PROF-6.1-002",
         "KMIPKIT-REQ-PROF-6.1-003",
@@ -117277,6 +117296,7 @@
       "claim_state": "not_claimed",
       "requirement_ids": [
         "KMIPKIT-REQ-PROF-3.1-001",
+        "KMIPKIT-REQ-PROF-4.1.2-007",
         "KMIPKIT-REQ-PROF-5.15-001",
         "KMIPKIT-REQ-PROF-5.15-002",
         "KMIPKIT-REQ-PROF-5.15-003",
@@ -118704,6 +118724,7 @@
       "claim_state": "not_claimed",
       "requirement_ids": [
         "KMIPKIT-REQ-PROF-3.1-001",
+        "KMIPKIT-REQ-PROF-4.1.2-007",
         "KMIPKIT-REQ-PROF-5.11.1-001",
         "KMIPKIT-REQ-PROF-5.11.1-002",
         "KMIPKIT-REQ-PROF-5.11.1-003",
@@ -120116,6 +120137,7 @@
       "claim_state": "not_claimed",
       "requirement_ids": [
         "KMIPKIT-REQ-PROF-3.1-001",
+        "KMIPKIT-REQ-PROF-4.1.2-007",
         "KMIPKIT-REQ-PROF-5.7.3-001",
         "KMIPKIT-REQ-PROF-5.7.3-002",
         "KMIPKIT-REQ-PROF-5.7.3-003",
@@ -121384,6 +121406,7 @@
       "claim_state": "not_claimed",
       "requirement_ids": [
         "KMIPKIT-REQ-PROF-3.1-001",
+        "KMIPKIT-REQ-PROF-4.1.2-007",
         "KMIPKIT-REQ-PROF-5.7.1-001",
         "KMIPKIT-REQ-PROF-5.7.1-002",
         "KMIPKIT-REQ-PROF-5.7.1-003",
@@ -122653,6 +122676,7 @@
       "claim_state": "not_claimed",
       "requirement_ids": [
         "KMIPKIT-REQ-PROF-3.1-001",
+        "KMIPKIT-REQ-PROF-4.1.2-007",
         "KMIPKIT-REQ-PROF-5.7.2-001",
         "KMIPKIT-REQ-PROF-5.7.2-002",
         "KMIPKIT-REQ-PROF-5.7.2-003",
@@ -124081,6 +124105,7 @@
       "claim_state": "not_claimed",
       "requirement_ids": [
         "KMIPKIT-REQ-PROF-3.1-001",
+        "KMIPKIT-REQ-PROF-4.1.2-007",
         "KMIPKIT-REQ-PROF-5.6.1-001",
         "KMIPKIT-REQ-PROF-5.6.1-002",
         "KMIPKIT-REQ-PROF-5.6.1-003",
@@ -125519,6 +125544,7 @@
       "claim_state": "not_claimed",
       "requirement_ids": [
         "KMIPKIT-REQ-PROF-3.1-001",
+        "KMIPKIT-REQ-PROF-4.1.2-007",
         "KMIPKIT-REQ-PROF-5.12.2-002",
         "KMIPKIT-REQ-PROF-5.12.2-003",
         "KMIPKIT-REQ-PROF-5.12.2-004-001",
@@ -126978,6 +127004,7 @@
       "claim_state": "not_claimed",
       "requirement_ids": [
         "KMIPKIT-REQ-PROF-3.1-001",
+        "KMIPKIT-REQ-PROF-4.1.2-007",
         "KMIPKIT-REQ-PROF-6.1-001",
         "KMIPKIT-REQ-PROF-6.1-002",
         "KMIPKIT-REQ-PROF-6.1-003",

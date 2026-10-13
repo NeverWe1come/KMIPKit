@@ -2097,10 +2097,10 @@ class CatalogValidationTests(unittest.TestCase):
                 self.assertEqual(requirement["direction"], "client_to_server")
                 self.assertEqual(requirement["test_case_ids"], [])
 
-    def test_register_wrapped_capability_stays_unassigned_without_valid_wrapped_attribute_evidence(
+    def test_register_wrapped_capability_has_scoped_evidence_without_server_acceptance_claim(
         self,
     ) -> None:
-        """Opaque-byte passthrough alone does not verify wrapped Register attributes."""
+        """The verified wrapped Register fixture does not claim server acceptance."""
         catalog = json.loads(
             (ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8")
         )
@@ -2110,13 +2110,13 @@ class CatalogValidationTests(unittest.TestCase):
             if row["requirement_id"] == "KMIPKIT-REQ-SPEC-6.1.43-005"
         )
 
-        self.assertEqual(requirement["status"], "unassigned")
+        self.assertEqual(requirement["status"], "scoped_verified")
         self.assertIn(
             "crates/kmipkit-client/tests/unit/register_execution_tests.rs::register_preserves_caller_supplied_opaque_key_value_bytes_with_wrapping_data_from_table_291",
             requirement["verification_refs"],
         )
         self.assertIn(
-            "does not establish a valid wrapped representation of associated attributes",
+            "does not encrypt, decrypt, parse the wrapped contents, or assert server acceptance",
             requirement["review_note"].lower(),
         )
 
@@ -2374,7 +2374,10 @@ class CatalogValidationTests(unittest.TestCase):
         self.assertEqual(requirement["test_case_ids"], [])
         self.assertEqual(requirement["role"], "unclear")
         self.assertEqual(requirement["scope_state"], "unclear")
-        self.assertIn("official test case", requirement["review_note"].casefold())
+        self.assertRegex(
+            requirement["review_note"].casefold(),
+            r"official(?: oasis)? test cases?",
+        )
 
     def test_requirement_test_evidence_is_bidirectional_or_has_gap_reason(self) -> None:
         catalog = json.loads((ROOT / "specification/catalog/kmip-2.1.json").read_text(encoding="utf-8"))
@@ -2402,7 +2405,10 @@ class CatalogValidationTests(unittest.TestCase):
                         )
                     else:
                         normalized_review_note = review_note.casefold()
-                        self.assertIn("official test case", normalized_review_note)
+                        self.assertRegex(
+                            normalized_review_note,
+                            r"official(?: oasis)? test cases?",
+                        )
                         self.assertIn("pinned", normalized_review_note)
 
     def test_json_preflight_enforces_depth_record_token_and_global_member_limits(self) -> None:
@@ -16617,7 +16623,7 @@ class CatalogValidationTests(unittest.TestCase):
         expected_implementation_refs = {
             "crates/kmipkit-protocol/src/get.rs::GetRequest::with_key_compression_type",
             "crates/kmipkit-protocol/src/get.rs::GetRequest::into_ttlv_payload",
-            "crates/kmipkit-protocol/src/profile.rs::client_get_key_compression_type_is_enumeration",
+            "crates/kmipkit-protocol/src/profile.rs::client_get_or_export_key_compression_type_is_enumeration",
         }
         expected_verification_refs = {
             "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_client_get_key_compression_type_selector",
@@ -16989,8 +16995,7 @@ class CatalogValidationTests(unittest.TestCase):
             "KMIPKIT-REQ-SPEC-3.1-005-001": ("pinned", "official test case"),
             "KMIPKIT-REQ-SPEC-4.27-001": ("pinned", "official test case"),
             "KMIPKIT-REQ-SPEC-6.1.43-005": (
-                "embedded attributes",
-                "unassigned",
+                "associated attributes",
                 "server acceptance",
             ),
         }
