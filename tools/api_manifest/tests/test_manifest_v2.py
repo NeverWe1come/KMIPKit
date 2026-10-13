@@ -1613,6 +1613,8 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
 
         manifest["approvedExclusions"][0]["cType"]["fields"][0]["name"] = "class"
         self.assertGreater(len(list(self.validator.iter_errors(manifest))), 0)
+        manifest["approvedExclusions"][0]["cType"]["fields"][0]["name"] = "field__internal"
+        self.assertGreater(len(list(self.validator.iter_errors(manifest))), 0)
 
         manifest["approvedExclusions"][0]["cType"]["fields"][0]["name"] = "struct_size"
         manifest["approvedExclusions"][0]["cType"]["fields"][0]["type"] = (
@@ -1765,6 +1767,11 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
             "types": [],
         }
 
+        with self.assertRaisesRegex(generate.ManifestError, "reserved fields"):
+            generate._ordered_approved_c_type_layouts(manifest)
+        manifest["approvedExclusions"][0]["cType"]["fields"][0]["name"] = (
+            "field__internal"
+        )
         with self.assertRaisesRegex(generate.ManifestError, "reserved fields"):
             generate._ordered_approved_c_type_layouts(manifest)
 
