@@ -2368,11 +2368,15 @@ pub extern "C" fn kmipkit_register_request_create(
         let _ = read_handle!(attributes, Structure);
         let _ = read_handle!(object, Item);
 
-        let attributes = try_ffi!(owned_payload(attributes, Kind::Structure));
+        // Transfer both owners before the first fallible unwrap so an error cannot strand the
+        // second consumed input in a language binding that has already disarmed both wrappers.
+        let attributes_owner = consume_owner(attributes);
+        let object_owner = consume_owner(object);
+        let attributes = try_ffi!(unwrap_payload(attributes_owner));
         let HandleValue::Structure(attributes) = attributes else {
             return record_ffi_error(ERROR_INVALID_INPUT);
         };
-        let object = try_ffi!(owned_payload(object, Kind::Item));
+        let object = try_ffi!(unwrap_payload(object_owner));
         let HandleValue::Item(object) = object else {
             return record_ffi_error(ERROR_INVALID_INPUT);
         };
