@@ -56,6 +56,204 @@ T076_EXCLUDED = {
 }
 T076_READY = T076_SYMBOLS - T076_BLOCKED - T076_EXCLUDED
 
+C_SEMANTIC_FIELDS = {
+    "kmipkit_client_batch_item_metadata_v1_t.has_result_reason",
+    "kmipkit_client_batch_item_metadata_v1_t.outcome_kind",
+    "kmipkit_client_batch_item_metadata_v1_t.result_reason",
+    "kmipkit_client_batch_item_metadata_v1_t.result_status",
+    "kmipkit_timeout_limit_v1_t.kind",
+    "kmipkit_timeout_limit_v1_t.seconds",
+    "kmipkit_timeout_limit_v1_t.nanoseconds",
+    "kmipkit_transport_config_v1_t.endpoint_kind",
+    "kmipkit_transport_config_v1_t.trust_kind",
+    "kmipkit_transport_config_v1_t.flags",
+    "kmipkit_transport_config_v1_t.endpoint",
+    "kmipkit_transport_config_v1_t.endpoint_port",
+    "kmipkit_transport_config_v1_t.client_certificates",
+    "kmipkit_transport_config_v1_t.client_certificate_count",
+    "kmipkit_transport_config_v1_t.client_private_key",
+    "kmipkit_transport_config_v1_t.trust_certificates",
+    "kmipkit_transport_config_v1_t.trust_certificate_count",
+    "kmipkit_transport_config_v1_t.revocation_lists",
+    "kmipkit_transport_config_v1_t.revocation_list_count",
+    "kmipkit_transport_config_v1_t.tls_server_name",
+    "kmipkit_transport_config_v1_t.target_uri",
+    "kmipkit_transport_config_v1_t.connect_timeout",
+    "kmipkit_transport_config_v1_t.write_timeout",
+    "kmipkit_transport_config_v1_t.read_timeout",
+    "kmipkit_transport_config_v1_t.total_timeout",
+    "kmipkit_transport_config_v1_t.max_request_bytes",
+    "kmipkit_transport_input_v1_t.source_kind",
+    "kmipkit_transport_input_v1_t.encoding",
+    "kmipkit_transport_input_v1_t.data",
+}
+C_ABI_FIELD_EXCLUSIONS = {
+    "kmipkit_byte_span_v1_t.data",
+    "kmipkit_byte_span_v1_t.length",
+    "kmipkit_client_batch_item_metadata_v1_t.struct_size",
+    "kmipkit_client_batch_item_metadata_v1_t.abi_version",
+    "kmipkit_timeout_limit_v1_t.reserved",
+    "kmipkit_timeout_limit_v1_t.reserved2",
+    "kmipkit_transport_config_v1_t.struct_size",
+    "kmipkit_transport_config_v1_t.abi_version",
+    "kmipkit_transport_config_v1_t.reserved",
+    "kmipkit_transport_config_v1_t.reserved2",
+}
+C_LAYOUT_TYPES = {
+    "kmipkit_byte_span_v1_t",
+    "kmipkit_client_batch_item_metadata_v1_t",
+    "kmipkit_timeout_limit_v1_t",
+    "kmipkit_transport_config_v1_t",
+    "kmipkit_transport_input_v1_t",
+}
+C_FIELD_TARGETS = {
+    "kmipkit_client_batch_item_metadata_v1_t.has_result_reason": (
+        ("rust-kmipkit-client", "kmipkit_client::ClientBatchOutcome"),
+        "org.kmipkit.extensions.ClientBatchItemResult.resultReason",
+        "kmipkit.client.BatchItemResult.result_reason",
+    ),
+    "kmipkit_client_batch_item_metadata_v1_t.outcome_kind": (
+        ("rust-kmipkit-client", "kmipkit_client::ClientBatchItemResponse::outcome"),
+        "org.kmipkit.extensions.ClientBatchItemResult.outcomeKind",
+        "kmipkit.client.BatchItemResult.outcome",
+    ),
+    "kmipkit_client_batch_item_metadata_v1_t.result_reason": (
+        ("rust-kmipkit-protocol", "kmipkit_protocol::KmipOperationResult::reason"),
+        "org.kmipkit.extensions.ClientBatchItemResult.resultReason",
+        "kmipkit.client.BatchItemResult.result_reason",
+    ),
+    "kmipkit_client_batch_item_metadata_v1_t.result_status": (
+        ("rust-kmipkit-protocol", "kmipkit_protocol::KmipOperationResult::status"),
+        "org.kmipkit.extensions.ClientBatchItemResult.resultStatus",
+        "kmipkit.client.BatchItemResult.result_status",
+    ),
+    "kmipkit_timeout_limit_v1_t.kind": (
+        ("rust-kmipkit-transport", "kmipkit_transport::TimeoutLimit::{Bounded(Duration),Unbounded}"),
+        "org.kmipkit.extensions.TransportConfiguration.Timeout.{defaultValue,bounded,unbounded}",
+        "kmipkit.client.TimeoutLimit.{default,bounded,unbounded}",
+    ),
+    "kmipkit_timeout_limit_v1_t.nanoseconds": (
+        ("rust-kmipkit-transport", "kmipkit_transport::TimeoutLimit::Bounded(Duration::new(seconds,nanoseconds))"),
+        "org.kmipkit.extensions.TransportConfiguration.Timeout.bounded(Duration)",
+        "kmipkit.client.TimeoutLimit.bounded(seconds,nanoseconds)",
+    ),
+    "kmipkit_timeout_limit_v1_t.seconds": (
+        ("rust-kmipkit-transport", "kmipkit_transport::TimeoutLimit::Bounded(Duration::new(seconds,nanoseconds))"),
+        "org.kmipkit.extensions.TransportConfiguration.Timeout.bounded(Duration)",
+        "kmipkit.client.TimeoutLimit.bounded(seconds,nanoseconds)",
+    ),
+    "kmipkit_transport_config_v1_t.client_certificate_count": (
+        ("rust-kmipkit-transport", "kmipkit_transport::ClientIdentity::new(certificate_chain,private_key)"),
+        "org.kmipkit.extensions.TransportConfiguration.Builder.{clientIdentityPem(certificateChain,privateKey),clientIdentityDer(certificateChain,privateKey),clientIdentityFiles(certificateChain,privateKeyFile,encoding)}",
+        "kmipkit.client.TransportConfig(client_certificates=...)",
+    ),
+    "kmipkit_transport_config_v1_t.client_certificates": (
+        ("rust-kmipkit-transport", "kmipkit_transport::ClientIdentity::new(certificate_chain,private_key)"),
+        "org.kmipkit.extensions.TransportConfiguration.Builder.{clientIdentityPem(certificateChain,privateKey),clientIdentityDer(certificateChain,privateKey),clientIdentityFiles(certificateChain,privateKeyFile,encoding)}",
+        "kmipkit.client.TransportConfig(client_certificates=...)",
+    ),
+    "kmipkit_transport_config_v1_t.client_private_key": (
+        ("rust-kmipkit-transport", "kmipkit_transport::ClientIdentity::new(certificate_chain,private_key)"),
+        "org.kmipkit.extensions.TransportConfiguration.Builder.{clientIdentityPem(certificateChain,privateKey),clientIdentityDer(certificateChain,privateKey),clientIdentityFiles(certificateChain,privateKeyFile,encoding)}",
+        "kmipkit.client.TransportConfig(client_private_key=...)",
+    ),
+    "kmipkit_transport_config_v1_t.connect_timeout": (
+        ("rust-kmipkit-transport", "kmipkit_transport::TimeoutPolicy::with_connect"),
+        "org.kmipkit.extensions.TransportConfiguration.Builder.timeouts",
+        "kmipkit.client.TransportConfig.connect_timeout",
+    ),
+    "kmipkit_transport_config_v1_t.endpoint": (
+        ("rust-kmipkit-transport", "kmipkit_transport::Endpoint::{raw_tls(host,port),https(uri)}"),
+        "org.kmipkit.extensions.TransportConfiguration.Builder.{rawTls(host,port),https(target)}",
+        "kmipkit.client.Endpoint.{raw_tls(host,port),https(uri)}",
+    ),
+    "kmipkit_transport_config_v1_t.endpoint_kind": (
+        ("rust-kmipkit-transport", "kmipkit_transport::Endpoint::{raw_tls(host,port),https(uri)}"),
+        "org.kmipkit.extensions.TransportConfiguration.Builder.{rawTls(host,port),https(target)}",
+        "kmipkit.client.Endpoint.{raw_tls(host,port),https(uri)}",
+    ),
+    "kmipkit_transport_config_v1_t.endpoint_port": (
+        ("rust-kmipkit-transport", "kmipkit_transport::Endpoint::raw_tls(host,port)"),
+        "org.kmipkit.extensions.TransportConfiguration.Builder.rawTls(host,port)",
+        "kmipkit.client.Endpoint.raw_tls(host,port)",
+    ),
+    "kmipkit_transport_config_v1_t.flags": (
+        ("rust-kmipkit-transport", "kmipkit_transport::TransportConfigBuilder::{tls_server_name,target_uri}"),
+        "org.kmipkit.extensions.TransportConfiguration.Builder.{tlsServerName(value),targetUri(value)}",
+        "kmipkit.client.Endpoint.{raw_tls(tls_server_name=...),https(target_uri=...)}",
+    ),
+    "kmipkit_transport_config_v1_t.max_request_bytes": (
+        ("rust-kmipkit-transport", "kmipkit_transport::TransportConfigBuilder::max_request_bytes"),
+        "org.kmipkit.extensions.TransportConfiguration.Builder.maxRequestBytes",
+        "kmipkit.client.TransportConfig.max_request_bytes",
+    ),
+    "kmipkit_transport_config_v1_t.read_timeout": (
+        ("rust-kmipkit-transport", "kmipkit_transport::TimeoutPolicy::with_read"),
+        "org.kmipkit.extensions.TransportConfiguration.Builder.timeouts",
+        "kmipkit.client.TransportConfig.read_timeout",
+    ),
+    "kmipkit_transport_config_v1_t.revocation_list_count": (
+        ("rust-kmipkit-transport", "kmipkit_transport::TransportConfigBuilder::revocation_lists"),
+        "org.kmipkit.extensions.TransportConfiguration.Builder.{revocationListsPem,revocationListsDer}",
+        "kmipkit.client.TransportConfig.revocation_lists",
+    ),
+    "kmipkit_transport_config_v1_t.revocation_lists": (
+        ("rust-kmipkit-transport", "kmipkit_transport::RevocationListInput::{from_pem,from_der}"),
+        "org.kmipkit.extensions.TransportConfiguration.Builder.{revocationListsPem,revocationListsDer}",
+        "kmipkit.client.TransportConfig.revocation_lists",
+    ),
+    "kmipkit_transport_config_v1_t.target_uri": (
+        ("rust-kmipkit-transport", "kmipkit_transport::TransportConfigBuilder::target_uri"),
+        "org.kmipkit.extensions.TransportConfiguration.Builder.targetUri(value)",
+        "kmipkit.client.Endpoint.https(uri,target_uri=...)",
+    ),
+    "kmipkit_transport_config_v1_t.tls_server_name": (
+        ("rust-kmipkit-transport", "kmipkit_transport::TransportConfigBuilder::tls_server_name"),
+        "org.kmipkit.extensions.TransportConfiguration.Builder.tlsServerName(value)",
+        "kmipkit.client.Endpoint.raw_tls(host,port,tls_server_name=...)",
+    ),
+    "kmipkit_transport_config_v1_t.total_timeout": (
+        ("rust-kmipkit-transport", "kmipkit_transport::TimeoutPolicy::with_total"),
+        "org.kmipkit.extensions.TransportConfiguration.Builder.timeouts",
+        "kmipkit.client.TransportConfig.total_timeout",
+    ),
+    "kmipkit_transport_config_v1_t.trust_certificate_count": (
+        ("rust-kmipkit-transport", "kmipkit_transport::TrustSource::certificate_authorities"),
+        "org.kmipkit.extensions.TransportConfiguration.Builder.{trustCertificatesPem,trustCertificatesDer,trustCertificateFiles}",
+        "kmipkit.client.TrustSource.certificate_authorities(certificates)",
+    ),
+    "kmipkit_transport_config_v1_t.trust_certificates": (
+        ("rust-kmipkit-transport", "kmipkit_transport::CertificateInput::{from_pem,from_der,from_pem_file,from_der_file}"),
+        "org.kmipkit.extensions.TransportConfiguration.Builder.{trustCertificatesPem,trustCertificatesDer,trustCertificateFiles}",
+        "kmipkit.client.TrustSource.certificate_authorities(certificates)",
+    ),
+    "kmipkit_transport_config_v1_t.trust_kind": (
+        ("rust-kmipkit-transport", "kmipkit_transport::TrustSource::{platform,certificate_authorities}"),
+        "org.kmipkit.extensions.TransportConfiguration.Builder.{trustPlatform,trustCertificatesPem,trustCertificatesDer,trustCertificateFiles}",
+        "kmipkit.client.TrustSource.{platform,certificate_authorities(certificates)}",
+    ),
+    "kmipkit_transport_config_v1_t.write_timeout": (
+        ("rust-kmipkit-transport", "kmipkit_transport::TimeoutPolicy::with_write"),
+        "org.kmipkit.extensions.TransportConfiguration.Builder.timeouts",
+        "kmipkit.client.TransportConfig.write_timeout",
+    ),
+    "kmipkit_transport_input_v1_t.data": (
+        ("rust-kmipkit-transport", "kmipkit_transport::{CertificateInput,PrivateKeyInput,RevocationListInput}::from_{pem,der}"),
+        "org.kmipkit.extensions.TransportConfiguration.Builder.{clientIdentityPem,clientIdentityDer,trustCertificatesPem,trustCertificatesDer,revocationListsPem,revocationListsDer}",
+        "kmipkit.client.TransportInput.{memory,file}",
+    ),
+    "kmipkit_transport_input_v1_t.encoding": (
+        ("rust-kmipkit-transport", "kmipkit_transport::{CertificateInput,PrivateKeyInput,RevocationListInput}::{from_pem,from_der}"),
+        "org.kmipkit.extensions.TransportConfiguration.Encoding",
+        "kmipkit.client.CredentialEncoding.{PEM,DER}",
+    ),
+    "kmipkit_transport_input_v1_t.source_kind": (
+        ("rust-kmipkit-transport", "kmipkit_transport::{CertificateInput,PrivateKeyInput}::{from_pem_file,from_der_file}"),
+        "org.kmipkit.extensions.TransportConfiguration.Builder.{clientIdentityFiles,trustCertificateFiles}",
+        "kmipkit.client.TransportInput.{memory,file}",
+    ),
+}
+
 
 class T076ClientMappingTests(unittest.TestCase):
     def setUp(self) -> None:
@@ -67,7 +265,11 @@ class T076ClientMappingTests(unittest.TestCase):
         ]
 
     def test_all_28_exports_are_mapped_or_remain_exactly_blocked(self) -> None:
-        c_rows = [row for row in self.declarations if row["packageId"] == "c-kmipkit"]
+        c_rows = [
+            row
+            for row in self.declarations
+            if row["packageId"] == "c-kmipkit" and row["exportName"] in T076_SYMBOLS
+        ]
         exclusions = [
             row
             for row in self.manifest["approvedExclusions"]
@@ -126,6 +328,74 @@ class T076ClientMappingTests(unittest.TestCase):
                 "kmipkit_transport_config_create_v1",
             }:
                 self.assertEqual(exclusion["exportName"], exclusion["cFunction"]["symbol"])
+
+    def test_c_transport_and_result_fields_are_semantically_mapped_or_exactly_excluded(self) -> None:
+        declarations = {
+            row["exportName"]: row
+            for row in self.manifest["publicDeclarations"]
+            if row["packageId"] == "c-kmipkit"
+        }
+        exclusions = {
+            row["exportName"]: row
+            for row in self.manifest["approvedExclusions"]
+            if row["packageId"] == "c-kmipkit"
+        }
+
+        self.assertEqual(29, len(C_SEMANTIC_FIELDS))
+        self.assertEqual(10, len(C_ABI_FIELD_EXCLUSIONS))
+        self.assertTrue(
+            C_SEMANTIC_FIELDS.issubset(declarations),
+            f"unmapped C semantic fields: {sorted(C_SEMANTIC_FIELDS - declarations.keys())}",
+        )
+        self.assertTrue(
+            C_ABI_FIELD_EXCLUSIONS.issubset(exclusions),
+            f"unclassified C ABI fields: {sorted(C_ABI_FIELD_EXCLUSIONS - exclusions.keys())}",
+        )
+        self.assertEqual(C_LAYOUT_TYPES, C_LAYOUT_TYPES.intersection(exclusions))
+        for name in C_LAYOUT_TYPES:
+            self.assertEqual(name, exclusions[name]["cType"]["name"])
+
+        for path in C_SEMANTIC_FIELDS:
+            with self.subTest(field=path):
+                declaration = declarations[path]
+                self.assertEqual("field", declaration["kind"])
+                self.assertEqual("declared", declaration["declarationState"])
+                self.assertIn(
+                    declaration["capabilityId"],
+                    {"client_execution", "production_transport"},
+                )
+                self.assertTrue(declaration["requirementIds"])
+                self.assertEqual(
+                    {"rust", "c", "java", "python"},
+                    set(declaration["languageMappings"]),
+                )
+                self.assertEqual(path, declaration["languageMappings"]["c"]["name"])
+                rust_target, java_target, python_target = C_FIELD_TARGETS[path]
+                self.assertEqual(
+                    rust_target,
+                    (
+                        declaration["languageMappings"]["rust"]["packageId"],
+                        declaration["languageMappings"]["rust"]["name"],
+                    ),
+                )
+                self.assertEqual(java_target, declaration["languageMappings"]["java"]["name"])
+                self.assertEqual(python_target, declaration["languageMappings"]["python"]["name"])
+                if path in {
+                    "kmipkit_transport_config_v1_t.endpoint",
+                    "kmipkit_transport_config_v1_t.endpoint_kind",
+                    "kmipkit_transport_config_v1_t.endpoint_port",
+                }:
+                    self.assertIn("KMIPKIT-0013-FR-007", declaration["requirementIds"])
+
+        for path in C_ABI_FIELD_EXCLUSIONS:
+            with self.subTest(exclusion=path):
+                exclusion = exclusions[path]
+                self.assertTrue(exclusion["reason"])
+                self.assertIn("abi", exclusion["reason"].lower())
+                self.assertIn("KMIPKIT-0043-FR-007", exclusion["evidence"])
+
+        last_error = declarations["kmipkit_last_error_get"]
+        self.assertEqual("c-symbol", last_error["kind"])
 
     def test_ready_function_mappings_resolve_to_real_four_language_apis(self) -> None:
         expected = {
