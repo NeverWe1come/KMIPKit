@@ -1,9 +1,18 @@
 from pathlib import Path
+import json
 import unittest
 
 
 ROOT = Path(__file__).resolve().parents[3]
 DOC = ROOT / "docs" / "architecture" / "ffi-and-bindings.md"
+AUDIT_GUIDE = ROOT / "tools" / "api_manifest" / "binding-export-audit.md"
+AUDIT_REPORT = (
+    ROOT
+    / "specs"
+    / "043-public-api-bindings"
+    / "reports"
+    / "binding-export-report-2026-10-12.json"
+)
 
 
 class CApiDocumentationTests(unittest.TestCase):
@@ -18,6 +27,31 @@ class CApiDocumentationTests(unittest.TestCase):
         )
         self.assertIn("audit_binding_exports.py", documentation)
         self.assertIn("blocked", documentation)
+
+    def test_audit_guide_snapshot_matches_the_generated_report(self) -> None:
+        guide = AUDIT_GUIDE.read_text(encoding="utf-8")
+        report = json.loads(AUDIT_REPORT.read_text(encoding="utf-8"))
+        labels = {"c-kmipkit": "C", "java-kmipkit": "Java", "python-kmipkit": "Python"}
+
+        guide_rows = {
+            fields[0]: fields
+            for line in guide.splitlines()
+            if line.startswith(("| C |", "| Java |", "| Python |"))
+            for fields in [[field.strip() for field in line.strip("|").split("|")]]
+        }
+
+        for package in report["packages"]:
+            with self.subTest(package=package["packageId"]):
+                fields = guide_rows[labels[package["packageId"]]]
+                counts = package["counts"]
+                self.assertEqual(
+                    fields[2:5],
+                    [
+                        str(counts["observed"]),
+                        str(counts["manifest"]),
+                        str(counts["exactMatches"]),
+                    ],
+                )
 
 
 if __name__ == "__main__":
