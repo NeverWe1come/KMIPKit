@@ -86218,12 +86218,18 @@
       ],
       "test_case_ids": [],
       "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/import.rs::ImportRequest::into_ttlv_payload",
+        "crates/kmipkit-protocol/src/profile.rs::import_preserves_pgp_key_versions_and_opaque_bytes"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_client_pgp_key_forms_and_versions_as_opaque_bytes",
+        "crates/kmipkit-protocol/tests/unit/import_operation_tests.rs::import_preserves_pgp_key_versions_and_opaque_key_bytes"
+      ],
       "negative_verification_required": false,
       "decision_id": null,
-      "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
+      "status": "scoped_verified",
+      "review_note": "KMIP Specification v2.1 §2.4/Table 5 defines the client PGP Key object shape. The generic Import Item preserves the caller-supplied PGP Key Structure and opaque Key Value Byte String without parsing the key. The linked profile test exercises two distinct caller-supplied byte strings and versions 3 and 4; its bytes are synthetic and do not assert valid PGP armor, public/private contents, cryptographic validity, or server acceptance. No requirement-specific official Test Cases ID is linked by the pinned OASIS sources."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-2.4-001-002",
@@ -86267,12 +86273,18 @@
       ],
       "test_case_ids": [],
       "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/import.rs::ImportRequest::into_ttlv_payload",
+        "crates/kmipkit-protocol/src/profile.rs::import_preserves_pgp_key_versions_and_opaque_bytes"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_client_pgp_key_forms_and_versions_as_opaque_bytes",
+        "crates/kmipkit-protocol/tests/unit/import_operation_tests.rs::import_preserves_pgp_key_versions_and_opaque_key_bytes"
+      ],
       "negative_verification_required": false,
       "decision_id": null,
-      "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
+      "status": "scoped_verified",
+      "review_note": "KMIP Specification v2.1 §2.4/Table 5 requires PGP Key Version as an Integer and §2.4 permits versions 3 and 4. The profile rule checks the required Integer field while preserving its raw value; the linked test exercises both source-listed versions. Synthetic key bytes are not validated as PGP armor, and no cryptographic processing or server acceptance is claimed. No requirement-specific official Test Cases ID is linked by the pinned OASIS sources."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-2.4-002-001",

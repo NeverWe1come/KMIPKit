@@ -666,11 +666,15 @@ const PROTOCOL_VERSION_MINOR: u32 = 0x0042_006B;
 const CRYPTOGRAPHIC_PARAMETERS: u32 = 0x0042_002B;
 const IMPORT_OPERATION: u32 = 0x0000_002A;
 const IMPORT_OBJECT_TYPE: u32 = 0x0042_0057;
+const PGP_KEY_OBJECT_TYPE: u32 = 9;
 const SECRET_DATA_OBJECT_TYPE: u32 = 7;
 const SECRET_DATA: u32 = 0x0042_0085;
 const SECRET_DATA_TYPE: u32 = 0x0042_0086;
 const KEY_BLOCK: u32 = 0x0042_0040;
+const KEY_FORMAT_TYPE: u32 = 0x0042_0042;
 const KEY_VALUE: u32 = 0x0042_0045;
+const PGP_KEY: u32 = 0x0042_00BD;
+const PGP_KEY_VERSION: u32 = 0x0042_00BE;
 const KEY_WRAPPING_DATA: u32 = 0x0042_0046;
 const WRAPPING_METHOD: u32 = 0x0042_009E;
 const ENCRYPTION_KEY_INFORMATION: u32 = 0x0042_0036;
@@ -849,6 +853,81 @@ fn import_preserves_wrapped_secret_data_shape(
         batch_item
             .with_request_payload(|payload| import_payload_preserves_secret_data_wrapping(&payload))
             .unwrap_or(false)
+    })
+}
+
+fn import_preserves_pgp_key_versions_and_opaque_bytes(
+    request: Option<&RequestMessage>,
+    _response: Option<(&RequestMessage, &ResponseMessage)>,
+) -> bool {
+    let Some(request) = request else {
+        return false;
+    };
+
+    request.batch_items().all(|batch_item| {
+        let Some(operation) = batch_item.operation() else {
+            return false;
+        };
+        if operation != IMPORT_OPERATION {
+            return true;
+        }
+
+        batch_item
+            .with_request_payload(|payload| import_payload_preserves_pgp_key(&payload))
+            .unwrap_or(false)
+    })
+}
+
+fn import_payload_preserves_pgp_key(payload: &StructureView<'_>) -> bool {
+    let FieldPresence::Unique(object_type) = field_presence(payload, IMPORT_OBJECT_TYPE) else {
+        return false;
+    };
+    let Some(object_type) = object_type.with_value(|value| match value {
+        ValueView::Enumeration(value) => Some(*value),
+        _ => None,
+    }) else {
+        return false;
+    };
+    if object_type != PGP_KEY_OBJECT_TYPE {
+        return true;
+    }
+
+    let FieldPresence::Unique(pgp_key) = field_presence(payload, PGP_KEY) else {
+        return false;
+    };
+    pgp_key.with_value(|value| match value {
+        ValueView::Structure(pgp_key) => {
+            let FieldPresence::Unique(version) = field_presence(&pgp_key, PGP_KEY_VERSION) else {
+                return false;
+            };
+            if !version.with_value(|value| matches!(value, ValueView::Integer(_))) {
+                return false;
+            }
+
+            let FieldPresence::Unique(key_block) = field_presence(&pgp_key, KEY_BLOCK) else {
+                return false;
+            };
+            key_block.with_value(|value| match value {
+                ValueView::Structure(key_block) => {
+                    let FieldPresence::Unique(key_format) =
+                        field_presence(&key_block, KEY_FORMAT_TYPE)
+                    else {
+                        return false;
+                    };
+                    if !key_format.with_value(|value| matches!(value, ValueView::Enumeration(_))) {
+                        return false;
+                    }
+
+                    let FieldPresence::Unique(key_value) = field_presence(&key_block, KEY_VALUE)
+                    else {
+                        return false;
+                    };
+                    key_value.with_value(|value| matches!(value, ValueView::ByteString(_)))
+                }
+                _ => false,
+            })
+        }
+        _ => false,
     })
 }
 
@@ -1124,6 +1203,40 @@ fn protocol_version_is_kmip_2_1(version: &StructureView<'_>) -> bool {
 }
 
 const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
+    TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-2.4-001-001",
+        source_clause_id: "KMIPKIT-CLAUSE-SPEC-2.4-001",
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
+        evaluator: Some(import_preserves_pgp_key_versions_and_opaque_bytes),
+        test_evidence: &[
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_client_pgp_key_forms_and_versions_as_opaque_bytes",
+                kind: RuleTestKind::OptionalCapabilityUsable,
+            },
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/unit/import_operation_tests.rs::import_preserves_pgp_key_versions_and_opaque_key_bytes",
+                kind: RuleTestKind::OptionalCapabilityUsable,
+            },
+        ],
+        constraints: &[],
+    },
+    TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-2.4-001-002",
+        source_clause_id: "KMIPKIT-CLAUSE-SPEC-2.4-001",
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
+        evaluator: Some(import_preserves_pgp_key_versions_and_opaque_bytes),
+        test_evidence: &[
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_client_pgp_key_forms_and_versions_as_opaque_bytes",
+                kind: RuleTestKind::OptionalCapabilityUsable,
+            },
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/unit/import_operation_tests.rs::import_preserves_pgp_key_versions_and_opaque_key_bytes",
+                kind: RuleTestKind::OptionalCapabilityUsable,
+            },
+        ],
+        constraints: &[],
+    },
     TypedRuleMapping {
         requirement_id: "KMIPKIT-REQ-SPEC-2.7-001",
         source_clause_id: "KMIPKIT-CLAUSE-SPEC-2.7-001",

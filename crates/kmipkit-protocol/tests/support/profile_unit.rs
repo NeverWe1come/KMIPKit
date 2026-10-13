@@ -9,9 +9,10 @@ use super::{
     client_register_key_value_location_requires_omitted_key_value,
     client_supplied_create_key_pair_domain_parameters_are_structures,
     discover_versions_advertises_only_client_supported_versions,
-    import_preserves_wrapped_secret_data_shape, protocol_version_is_kmip_2_1,
-    reconcile_effective_state, type_specific_parameters_do_not_infer_remote_object_type,
-    validate_mapping, validate_selection_with_registry,
+    import_preserves_pgp_key_versions_and_opaque_bytes, import_preserves_wrapped_secret_data_shape,
+    protocol_version_is_kmip_2_1, reconcile_effective_state,
+    type_specific_parameters_do_not_infer_remote_object_type, validate_mapping,
+    validate_selection_with_registry,
 };
 use crate::profiles_generated::{
     GeneratedClientProfile, GeneratedClientRequirement, GeneratedVerificationCategory,
@@ -575,6 +576,41 @@ fn profile_maps_client_pgp_key_forms_and_versions_as_opaque_bytes() {
     result
         .validate_request(&public_and_private_key)
         .expect("profile validation preserves caller-supplied PGP version 4 key bytes");
+
+    let malformed_key_value = request_message_with_operation_payload(
+        0x0000_002A,
+        structure([
+            tagged(0x0042_0057, Value::enumeration(9)),
+            tagged(
+                0x0042_00BD,
+                Value::structure(structure([
+                    tagged(0x0042_00BE, Value::integer(3)),
+                    tagged(
+                        0x0042_0040,
+                        Value::structure(structure([
+                            tagged(0x0042_0042, Value::enumeration(1)),
+                            tagged(0x0042_0045, Value::text_string("not bytes".to_owned())),
+                        ])),
+                    ),
+                ])),
+            ),
+        ]),
+    );
+    assert!(result.validate_request(&malformed_key_value).is_err());
+    assert!(!import_preserves_pgp_key_versions_and_opaque_bytes(
+        Some(&malformed_key_value),
+        None
+    ));
+    assert!(!import_preserves_pgp_key_versions_and_opaque_bytes(
+        None, None
+    ));
+    assert!(import_preserves_pgp_key_versions_and_opaque_bytes(
+        Some(&request_message_with_operation_payload(
+            0x0000_0003,
+            Structure::new()
+        )),
+        None
+    ));
 }
 
 #[test]
