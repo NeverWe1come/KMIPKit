@@ -10,7 +10,7 @@ zeroized by KMIPKit.
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from enum import IntEnum
 from pathlib import Path
 from typing import Any, Self
@@ -23,6 +23,7 @@ from ._handles import NativeHandle, _NATIVE_CALL_LOCK, _owned_bytes
 _MAX_INPUT_BYTES = 16 * 1024 * 1024
 _MAX_TEXT_BYTES = 4_096
 _MAX_BATCH_ITEMS = 4_096
+_MAX_TRANSPORT_CONFIG_ITEMS = 4_096
 _MAX_U64 = (1 << 64) - 1
 _MIN_I64 = -(1 << 63)
 _MAX_I64 = (1 << 63) - 1
@@ -69,10 +70,10 @@ class Endpoint:
     """A raw TLS host/port or HTTPS URI, with optional explicit routing values."""
 
     kind: EndpointKind
-    address: str
+    address: str = field(repr=False)
     port: int = 0
-    tls_server_name: str | None = None
-    target_uri: str | None = None
+    tls_server_name: str | None = field(default=None, repr=False)
+    target_uri: str | None = field(default=None, repr=False)
 
     @classmethod
     def raw_tls(
@@ -102,8 +103,11 @@ class Endpoint:
 class TransportInput:
     """Credential or trust material supplied as bytes or a local file path."""
 
-    source: bytes | Path
+    source: bytes | Path = field(repr=False)
     encoding: CredentialEncoding
+
+    def __post_init__(self) -> None:
+        _validate_transport_input(self)
 
     @classmethod
     def memory(
@@ -141,12 +145,65 @@ class TransportInput:
         return cls(path_value, encoding)
 
 
+def _validate_transport_input(value: TransportInput) -> None:
+    if not isinstance(value, TransportInput):
+        errors.raise_for_status(4)
+    if not isinstance(value.encoding, CredentialEncoding):
+        errors.raise_for_status(4)
+    if isinstance(value.source, bytes):
+        if not value.source:
+            errors.raise_for_status(4)
+        if len(value.source) > _MAX_INPUT_BYTES:
+            errors.raise_for_status(6)
+        return
+    if not isinstance(value.source, Path):
+        errors.raise_for_status(4)
+    try:
+        path_text = str(value.source)
+        path_bytes = path_text.encode("utf-8")
+    except (TypeError, ValueError, UnicodeEncodeError):
+        errors.raise_for_status(4)
+    if not path_text or "\x00" in path_text or len(path_bytes) > _MAX_TEXT_BYTES:
+        errors.raise_for_status(4)
+
+
+def _validate_transport_input_group(values: tuple[TransportInput, ...]) -> None:
+    if len(values) > _MAX_TRANSPORT_CONFIG_ITEMS:
+        errors.raise_for_status(6)
+    total = 0
+    for value in values:
+        if not isinstance(value, TransportInput):
+            errors.raise_for_status(4)
+        _validate_transport_input(value)
+        if isinstance(value.source, bytes):
+            total += len(value.source)
+            if total > _MAX_INPUT_BYTES:
+                errors.raise_for_status(6)
+
+
 @dataclass(frozen=True, slots=True)
 class TrustSource:
     """An explicit platform-root or caller-supplied certificate trust source."""
 
     kind: TrustKind
-    certificates: tuple[TransportInput, ...] = ()
+    certificates: tuple[TransportInput, ...] = field(default=(), repr=False)
+
+    def __post_init__(self) -> None:
+        if not isinstance(self.kind, TrustKind):
+            errors.raise_for_status(4)
+        if not isinstance(self.certificates, tuple):
+            try:
+                object.__setattr__(self, "certificates", tuple(self.certificates))
+            except TypeError:
+                errors.raise_for_status(4)
+        certificates = self.certificates
+        if self.kind is TrustKind.PLATFORM:
+            if certificates:
+                errors.raise_for_status(4)
+            return
+        if self.kind is not TrustKind.CERTIFICATES or not certificates:
+            errors.raise_for_status(4)
+        _validate_transport_input_group(certificates)
 
     @classmethod
     def platform(cls) -> Self:
@@ -209,11 +266,11 @@ class TimeoutLimit:
 class TransportConfig:
     """Validated-input description for TLS 1.3 mutual-TLS client construction."""
 
-    endpoint: Endpoint
-    client_certificates: tuple[TransportInput, ...]
-    client_private_key: TransportInput
-    trust: TrustSource
-    revocation_lists: tuple[TransportInput, ...] = ()
+    endpoint: Endpoint = field(repr=False)
+    client_certificates: tuple[TransportInput, ...] = field(repr=False)
+    client_private_key: TransportInput = field(repr=False)
+    trust: TrustSource = field(repr=False)
+    revocation_lists: tuple[TransportInput, ...] = field(default=(), repr=False)
     connect_timeout: TimeoutLimit = TimeoutLimit()
     write_timeout: TimeoutLimit = TimeoutLimit()
     read_timeout: TimeoutLimit = TimeoutLimit()
@@ -223,20 +280,27 @@ class TransportConfig:
     def __post_init__(self) -> None:
         if not isinstance(self.endpoint, Endpoint):
             errors.raise_for_status(4)
-        if not isinstance(self.client_private_key, TransportInput):
-            errors.raise_for_status(4)
+        _validate_transport_input(self.client_private_key)
         if not isinstance(self.trust, TrustSource):
             errors.raise_for_status(4)
         if not isinstance(self.client_certificates, tuple):
-            object.__setattr__(self, "client_certificates", tuple(self.client_certificates))
+            try:
+                object.__setattr__(self, "client_certificates", tuple(self.client_certificates))
+            except TypeError:
+                errors.raise_for_status(4)
         if not self.client_certificates or any(
             not isinstance(item, TransportInput) for item in self.client_certificates
         ):
             errors.raise_for_status(4)
+        _validate_transport_input_group(self.client_certificates)
         if not isinstance(self.revocation_lists, tuple):
-            object.__setattr__(self, "revocation_lists", tuple(self.revocation_lists))
+            try:
+                object.__setattr__(self, "revocation_lists", tuple(self.revocation_lists))
+            except TypeError:
+                errors.raise_for_status(4)
         if any(not isinstance(item, TransportInput) for item in self.revocation_lists):
             errors.raise_for_status(4)
+        _validate_transport_input_group(self.revocation_lists)
         for timeout in (
             self.connect_timeout,
             self.write_timeout,
@@ -299,43 +363,52 @@ class Batch(_ClientHandle):
     def set_request_timestamp(self, timestamp: int) -> Self:
         """Set the caller-selected KMIP request timestamp in signed Unix seconds."""
         value = _integer_range(timestamp, _MIN_I64, _MAX_I64)
-        _raise_abi_status(lib.kmipkit_client_batch_set_request_time_stamp(self._pointer(), value))
+        with _NATIVE_CALL_LOCK:
+            _raise_abi_status(
+                lib.kmipkit_client_batch_set_request_time_stamp(self._pointer(), value)
+            )
         return self
 
     def set_ordered(self, enabled: bool) -> Self:
         """Set the KMIP Batch Order Option explicitly."""
         if not isinstance(enabled, bool):
             errors.raise_for_status(4)
-        _raise_abi_status(
-            lib.kmipkit_client_batch_set_order_option(self._pointer(), int(enabled))
-        )
+        with _NATIVE_CALL_LOCK:
+            _raise_abi_status(
+                lib.kmipkit_client_batch_set_order_option(self._pointer(), int(enabled))
+            )
         return self
 
     def add_error_continuation_value(self, value: int) -> Self:
         """Append a caller-selected KMIP Batch Error Continuation Option value."""
         raw = _unsigned(value, 32)
-        _raise_abi_status(
-            lib.kmipkit_client_batch_add_error_continuation_value(self._pointer(), raw)
-        )
+        with _NATIVE_CALL_LOCK:
+            _raise_abi_status(
+                lib.kmipkit_client_batch_add_error_continuation_value(
+                    self._pointer(), raw
+                )
+            )
         return self
 
     def set_asynchronous_indicator(self, value: int) -> Self:
         """Set the caller-selected KMIP Asynchronous Indicator enumeration value."""
         raw = _unsigned(value, 32)
-        _raise_abi_status(
-            lib.kmipkit_client_batch_set_asynchronous_indicator(self._pointer(), raw)
-        )
+        with _NATIVE_CALL_LOCK:
+            _raise_abi_status(
+                lib.kmipkit_client_batch_set_asynchronous_indicator(self._pointer(), raw)
+            )
         return self
 
     def set_client_correlation_value(self, value: str | bytes) -> Self:
         """Set exact UTF-8 correlation bytes for the outgoing request."""
         raw, data = _owned_bytes(value, maximum=_MAX_INPUT_BYTES)
         pointer = data if raw else ffi.NULL
-        _raise_abi_status(
-            lib.kmipkit_client_batch_set_client_correlation_value(
-                self._pointer(), pointer, len(raw)
+        with _NATIVE_CALL_LOCK:
+            _raise_abi_status(
+                lib.kmipkit_client_batch_set_client_correlation_value(
+                    self._pointer(), pointer, len(raw)
+                )
             )
-        )
         return self
 
 
@@ -346,8 +419,8 @@ class BatchItemResult:
     outcome: BatchOutcome | int
     result_status: int
     result_reason: int | None
-    unique_batch_item_id: bytes | None
-    pending_correlation_value: bytes | None
+    unique_batch_item_id: bytes | None = field(repr=False)
+    pending_correlation_value: bytes | None = field(repr=False)
 
 
 class BatchResult(_ClientHandle):
@@ -476,8 +549,12 @@ def _batch_result(handle: Any) -> BatchResult:
                     outcome: BatchOutcome | int = BatchOutcome(metadata.outcome_kind)
                 except ValueError:
                     outcome = int(metadata.outcome_kind)
+                if metadata.has_result_reason not in (0, 1):
+                    errors.raise_for_status(4)
                 result_reason = (
-                    int(metadata.result_reason) if metadata.has_result_reason else None
+                    int(metadata.result_reason)
+                    if metadata.has_result_reason == 1
+                    else None
                 )
                 unique_id = _response_span(
                     item, lib.kmipkit_client_batch_item_response_unique_batch_item_id
@@ -540,6 +617,7 @@ def _transport_record(configuration: TransportConfig) -> tuple[Any, tuple[object
         )[0]
 
     def input_record(value: TransportInput) -> Any:
+        _validate_transport_input(value)
         if isinstance(value.source, bytes):
             source_kind = 1
             data = value.source
@@ -560,6 +638,7 @@ def _transport_record(configuration: TransportConfig) -> tuple[Any, tuple[object
     def input_array(values: tuple[TransportInput, ...]) -> Any:
         if not values:
             return ffi.NULL
+        _validate_transport_input_group(values)
         array = ffi.new("kmipkit_transport_input_v1_t[]", len(values))
         for index, value in enumerate(values):
             array[index] = input_record(value)

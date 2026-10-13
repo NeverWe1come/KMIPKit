@@ -261,13 +261,10 @@ def test_timeout_and_unsigned_validation_cover_boundary_values() -> None:
         client.TimeoutLimit(client.TimeoutKind.UNBOUNDED, nanoseconds=1)
 
 
-def test_transport_record_rejects_unencodable_file_path_without_exposing_it() -> None:
+def test_transport_input_rejects_unencodable_file_path_without_exposing_it() -> None:
     invalid_path = Path("\ud800")
-    configuration = _transport_configuration(
-        client_private_key=client.TransportInput(invalid_path, client.CredentialEncoding.PEM)
-    )
     with pytest.raises(errors.InvalidInputError) as caught:
-        client._transport_record(configuration)
+        client.TransportInput(invalid_path, client.CredentialEncoding.PEM)
     assert "\ud800" not in str(caught.value)
 
 
