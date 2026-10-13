@@ -119,6 +119,10 @@ impl FfiPanicFallback for () {
     }
 }
 
+/// Keeps Rust unwinding inside each exported C entry point and returns only a fixed fallback.
+///
+/// The panic payload is intentionally discarded; the process panic hook remains owned by the
+/// embedding application and may observe it before this boundary runs.
 fn ffi_entrypoint<R: FfiPanicFallback>(operation: impl FnOnce() -> R) -> R {
     match catch_unwind(AssertUnwindSafe(operation)) {
         Ok(result) => result,
