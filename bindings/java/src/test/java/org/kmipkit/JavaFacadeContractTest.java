@@ -7,6 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
+import java.nio.charset.StandardCharsets;
 
 import org.junit.jupiter.api.Test;
 import org.kmipkit.extensions.ClientBatchItem;
@@ -94,5 +95,15 @@ final class JavaFacadeContractTest {
         assertDoesNotThrow(resource::close);
         assertDoesNotThrow(resource::close);
         assertThrows(InvalidInputException.class, value::handle);
+    }
+
+    @Test
+    void invalidByteStringArgumentsUseRedactedStableInputErrors() {
+        byte[] secret = "private-payload-marker".getBytes(StandardCharsets.UTF_8);
+        InvalidInputException failure = assertThrows(InvalidInputException.class,
+                () -> TtlvValue.ByteString(secret, null));
+
+        assertTrue(!failure.getMessage().contains("private-payload-marker"),
+                "diagnostics must not include caller payload bytes");
     }
 }
