@@ -93,6 +93,7 @@ _C_KEYWORDS = {
     "_Alignas", "_Alignof", "_Atomic", "_Bool", "_Complex", "_Generic", "_Imaginary",
     "_Noreturn", "_Static_assert", "_Thread_local",
 }
+# The public header is C++-includable; keep this to reserved C++20 tokens, not TS names.
 _CPP_KEYWORDS = {
     "alignas", "alignof", "and", "and_eq", "asm", "bitand", "bitor", "bool", "catch",
     "char8_t", "char16_t",
