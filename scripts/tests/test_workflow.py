@@ -266,6 +266,23 @@ class WorkflowContractTests(unittest.TestCase):
             "The contract step must not select a system Python ahead of the uv environment.",
         )
 
+    def test_script_contract_diagnostics_use_the_uv_environment_python(self) -> None:
+        contents = self.require_workflow()
+        job = self.require_job(contents, "script-contracts")
+        diagnosis = re.search(
+            r"(?ms)^      - name: Diagnose job result\n(.*?)(?=^      - name: |\Z)",
+            job,
+        )
+        self.assertIsNotNone(diagnosis, "Script contracts need a final diagnosis step.")
+        diagnostic_body = diagnosis.group(1)
+        self.assertIn(
+            "$env:VIRTUAL_ENV",
+            diagnostic_body,
+            "Windows may not expose the uv-managed Python as a system `python` command.",
+        )
+        self.assertIn("Scripts/python.exe", diagnostic_body)
+        self.assertIn("bin/python", diagnostic_body)
+
     def test_ffi_sanitizer_job_runs_the_c_consumer_under_address_sanitizer(self) -> None:
         contents = self.require_workflow()
         job = self.require_job(contents, "ffi-sanitizer-c")
