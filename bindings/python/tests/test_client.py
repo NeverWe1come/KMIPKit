@@ -51,6 +51,19 @@ def test_transport_configuration_keeps_endpoint_trust_and_timeout_choices_explic
     assert configuration.connect_timeout == client.TimeoutLimit.bounded(3, 250_000_000)
 
 
+def test_transport_config_rejects_file_backed_revocation_lists_without_echoing_path() -> None:
+    path = Path("revocation-list-not-read.der")
+
+    with pytest.raises(errors.InvalidInputError) as caught:
+        _transport_configuration(
+            revocation_lists=(
+                client.TransportInput.file(path, client.CredentialEncoding.DER),
+            )
+        )
+
+    assert str(path) not in str(caught.value)
+
+
 def test_transport_inputs_reject_empty_or_invalid_values_without_echoing_them() -> None:
     with pytest.raises(errors.InvalidInputError):
         client.Endpoint.raw_tls("", 5696)
