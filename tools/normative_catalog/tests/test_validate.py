@@ -391,6 +391,16 @@ def _reviewed_profile_optional_capabilities(
                         f"{gap_ref}: in-scope {obligation['source_keyword']} capability has no stable candidate ID"
                     )
                 continue
+            if obligation["scope_disposition"] == "profile_conditional":
+                condition = obligation.get("condition")
+                if not isinstance(condition, str) or not condition.strip():
+                    gaps.append(
+                        f"{candidate_id}: conditional MAY/OPTIONAL capability has no source condition"
+                    )
+                if obligation.get("actor") != "client":
+                    gaps.append(
+                        f"{candidate_id}: conditional MAY/OPTIONAL capability has no reviewed client actor"
+                    )
             capabilities.add(candidate_id)
 
     for gap in oracle.get("source_only_requirement_gaps", []):
@@ -425,8 +435,106 @@ def _reviewed_profile_optional_capabilities(
                     f"(proposed {gap['proposed_requirement_id']})"
                 )
                 continue
+            if gap["scope_disposition"] == "profile_conditional":
+                condition = gap.get("condition")
+                if not isinstance(condition, str) or not condition.strip():
+                    gaps.append(
+                        f"{candidate_id}: conditional MAY/OPTIONAL source gap has no resolved condition"
+                    )
             capabilities.add(candidate_id)
     return capabilities, gaps
+
+
+def _reviewed_profile_conditional_capability_sources(
+    oracle: dict[str, Any],
+    selected_clause_ids: set[str],
+    selected_source_sections: set[tuple[str, str]],
+) -> dict[str, set[str]]:
+    """Return selected source clauses that conditionally authorize optional capabilities."""
+    conditional_sources: dict[str, set[str]] = {}
+    for review in oracle["source_requirement_reviews"]:
+        source_clause_id = review["source_clause_id"]
+        if source_clause_id not in selected_clause_ids:
+            continue
+        for obligation in review["source_obligations"]:
+            candidate_id = obligation.get("candidate_requirement_id")
+            if (
+                obligation.get("source_keyword") in {"MAY", "OPTIONAL"}
+                and obligation.get("scope_disposition") == "profile_conditional"
+                and isinstance(candidate_id, str)
+            ):
+                conditional_sources.setdefault(candidate_id, set()).add(source_clause_id)
+
+    for gap in oracle.get("source_only_requirement_gaps", []):
+        source_clause_id = gap.get("source_clause_id")
+        if source_clause_id is not None:
+            is_selected = source_clause_id in selected_clause_ids
+        else:
+            source_id = gap.get("source_id")
+            source_section = gap.get("source_section")
+            is_selected = bool(
+                source_id
+                and source_section
+                and any(
+                    selected_source_id == source_id
+                    and (
+                        source_section == selected_section
+                        or source_section.startswith(f"{selected_section}.")
+                    )
+                    for selected_source_id, selected_section in selected_source_sections
+                )
+            )
+        candidate_id = gap.get("candidate_requirement_id")
+        if (
+            is_selected
+            and gap.get("scope_disposition") == "profile_conditional"
+            and set(gap.get("source_keywords", [])) & {"MAY", "OPTIONAL"}
+            and isinstance(source_clause_id, str)
+            and isinstance(candidate_id, str)
+        ):
+            conditional_sources.setdefault(candidate_id, set()).add(source_clause_id)
+    return conditional_sources
+
+
+def _has_usable_conditional_client_request_evidence(
+    requirement: dict[str, Any],
+    conditional_source_clause_ids: set[str],
+    typed_rule_mappings: list[dict[str, Any]],
+    resolvable_implementation_refs: list[str],
+    usable_positive_tests: list[str],
+) -> bool:
+    """Require an exact typed source rule and named request test for conditional capability evidence."""
+    requirement_id = requirement["requirement_id"]
+    requirement_source_clause_ids = set(requirement.get("source_clause_ids", []))
+    requirement_test_refs = set(requirement.get("verification_refs", []))
+    condition = requirement.get("condition")
+    has_source_condition = isinstance(condition, str) and bool(condition.strip())
+    has_typed_rule_implementation = any(
+        reference.partition("::")[0] == PROFILE_RULE_SOURCE
+        for reference in resolvable_implementation_refs
+    )
+    has_linked_typed_positive_rule = any(
+        mapping.get("requirement_id") == requirement_id
+        and mapping.get("source_clause_id") in conditional_source_clause_ids
+        and mapping.get("source_clause_id") in requirement_source_clause_ids
+        and mapping.get("verification_category") == "OptionalCapability"
+        and mapping.get("evaluator_present") is True
+        and mapping.get("test_kind") == "OptionalCapabilityUsable"
+        and mapping.get("test_id") in requirement_test_refs
+        and mapping.get("test_id") in usable_positive_tests
+        for mapping in typed_rule_mappings
+    )
+    return (
+        requirement.get("scope_state") == "profile_conditional"
+        and requirement.get("status") == "scoped_verified"
+        and requirement.get("role") == "client"
+        and requirement.get("direction") == "client_to_server"
+        and has_source_condition
+        and bool(resolvable_implementation_refs)
+        and has_typed_rule_implementation
+        and bool(usable_positive_tests)
+        and has_linked_typed_positive_rule
+    )
 
 
 def source_table_contracts_for_gap(
@@ -16564,7 +16672,10 @@ class CatalogValidationTests(unittest.TestCase):
                 "scope_state": "client_1_0",
                 "source_clause_ids": ["KMIPKIT-CLAUSE-SPEC-TEST-OPTIONAL"],
                 "condition": "The client elects to include this request capability.",
-                "implementation_refs": ["src/request.rs"],
+                "implementation_refs": [
+                    "src/request.rs",
+                    f"{PROFILE_RULE_SOURCE}::request_capability_rule",
+                ],
                 "verification_refs": [test_reference],
                 "status": "scoped_verified",
                 "role": "client",
@@ -16994,6 +17105,12 @@ class CatalogValidationTests(unittest.TestCase):
             selected_clause_ids,
             selected_source_sections,
         )
+        conditional_sources = _reviewed_profile_conditional_capability_sources(
+            oracle,
+            selected_clause_ids,
+            selected_source_sections,
+        )
+        typed_rule_mappings = load_typed_rule_mappings(ROOT)
 
         for requirement_id in sorted(positive_capabilities):
             requirement = requirements.get(requirement_id)
@@ -17027,18 +17144,28 @@ class CatalogValidationTests(unittest.TestCase):
                 test_path, test_source = confined_test_source
                 if _is_discoverable_positive_test(test_path, test_name, test_source):
                     usable_positive_tests.append(reference)
-            scoped_client_request_evidence = (
-                requirement["status"] == "scoped_verified"
-                and requirement["role"] == "client"
-                and requirement["direction"] == "client_to_server"
-                and requirement["scope_state"] == "client_1_0"
-                and bool(resolvable_implementation_refs)
-                and bool(usable_positive_tests)
-            )
-            if (
-                requirement["status"] != "verified"
-                and not scoped_client_request_evidence
-            ) or not usable_positive_tests:
+            if requirement["scope_state"] == "profile_conditional":
+                eligible_evidence = _has_usable_conditional_client_request_evidence(
+                    requirement,
+                    conditional_sources.get(requirement_id, set()),
+                    typed_rule_mappings,
+                    resolvable_implementation_refs,
+                    usable_positive_tests,
+                )
+            else:
+                scoped_client_request_evidence = (
+                    requirement["status"] == "scoped_verified"
+                    and requirement["role"] == "client"
+                    and requirement["direction"] == "client_to_server"
+                    and requirement["scope_state"] == "client_1_0"
+                    and bool(resolvable_implementation_refs)
+                    and bool(usable_positive_tests)
+                )
+                eligible_evidence = (
+                    requirement["status"] == "verified"
+                    or scoped_client_request_evidence
+                )
+            if not eligible_evidence or not usable_positive_tests:
                 gaps.append(f"{requirement_id}: no eligible implementation and positive-test evidence")
 
         self.assertFalse(
