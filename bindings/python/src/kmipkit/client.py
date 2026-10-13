@@ -186,13 +186,16 @@ def _validate_transport_input(value: TransportInput) -> None:
         errors.raise_for_status(4)
     if isinstance(value.source, bytes):
         try:
-            byte_count = memoryview(value.source).nbytes
-        except (TypeError, ValueError):
+            view = memoryview(value.source)
+            byte_count = view.nbytes
+        except (BufferError, TypeError, ValueError):
             errors.raise_for_status(4)
         if byte_count == 0:
             errors.raise_for_status(4)
         if byte_count > _MAX_INPUT_BYTES:
             errors.raise_for_status(6)
+        if type(value.source) is not bytes:
+            object.__setattr__(value, "source", view.tobytes())
         return
     if not isinstance(value.source, Path):
         errors.raise_for_status(4)
@@ -203,6 +206,7 @@ def _validate_transport_input(value: TransportInput) -> None:
         errors.raise_for_status(4)
     if not path_bytes or b"\x00" in path_bytes or len(path_bytes) > _MAX_TEXT_BYTES:
         errors.raise_for_status(4)
+    object.__setattr__(value, "source", Path(path_bytes.decode("utf-8")))
 
 
 def _validate_transport_input_group(values: tuple[TransportInput, ...]) -> None:
