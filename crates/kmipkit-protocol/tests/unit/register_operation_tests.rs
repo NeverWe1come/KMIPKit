@@ -25,7 +25,7 @@ const CRYPTOGRAPHIC_ALGORITHM: u32 = 0x0042_0028;
 const CRYPTOGRAPHIC_LENGTH: u32 = 0x0042_002A;
 const CRYPTOGRAPHIC_USAGE_MASK: u32 = 0x0042_002C;
 const KEY_FORMAT_TYPE: u32 = 0x0042_0042;
-const KEY_VALUE: u32 = 0x0042_0043;
+const KEY_VALUE: u32 = 0x0042_0045;
 const KEY_MATERIAL: u32 = 0x0042_0044;
 const NIST_KEY_TYPE: u32 = 0x0042_013A;
 const ORIGINAL_CREATION_DATE: u32 = 0x0042_00BC;
@@ -63,6 +63,28 @@ fn key_object(algorithm: bool, length: bool) -> Item {
         key_block.push(item(CRYPTOGRAPHIC_LENGTH, Value::integer(256)));
     }
     let key_block = item(KEY_BLOCK, Value::structure(structure(key_block)));
+    item(SYMMETRIC_KEY, Value::structure(structure([key_block])))
+}
+
+fn key_object_with_key_value_attributes(algorithm: bool, length: bool) -> Item {
+    let mut key_value = vec![item(
+        KEY_MATERIAL,
+        Value::byte_string(vec![0x01, 0x02, 0x03, 0x04]),
+    )];
+    if algorithm {
+        key_value.push(item(CRYPTOGRAPHIC_ALGORITHM, Value::enumeration(3)));
+    }
+    if length {
+        key_value.push(item(CRYPTOGRAPHIC_LENGTH, Value::integer(256)));
+    }
+
+    let key_block = item(
+        KEY_BLOCK,
+        Value::structure(structure([
+            item(KEY_FORMAT_TYPE, Value::enumeration(1)),
+            item(KEY_VALUE, Value::structure(structure(key_value))),
+        ])),
+    );
     item(SYMMETRIC_KEY, Value::structure(structure([key_block])))
 }
 
@@ -190,6 +212,33 @@ fn request_requires_key_algorithm_and_length_in_attributes_or_key_block() {
     )
     .into_ttlv_payload();
     assert!(encoded_in_key_block.is_ok());
+}
+
+#[test]
+fn request_allows_algorithm_and_length_embedded_in_key_value() {
+    // KMIP Specification v2.1 §3.1, Tables 11–12 and §3.2 permit omitting
+    // Cryptographic Algorithm and Cryptographic Length when they are available
+    // in the Key Value Structure.
+    let embedded_pair = RegisterRequest::new(
+        ObjectType::from_raw(2),
+        symmetric_attributes([]),
+        key_object_with_key_value_attributes(true, true),
+    )
+    .into_ttlv_payload();
+    assert!(embedded_pair.is_ok());
+
+    for (algorithm, length) in [(true, false), (false, true)] {
+        let incomplete = RegisterRequest::new(
+            ObjectType::from_raw(2),
+            symmetric_attributes([]),
+            key_object_with_key_value_attributes(algorithm, length),
+        )
+        .into_ttlv_payload();
+        assert!(
+            incomplete.is_err(),
+            "Algorithm and Length remain a required pair when omitted from Attributes"
+        );
+    }
 }
 
 #[test]
