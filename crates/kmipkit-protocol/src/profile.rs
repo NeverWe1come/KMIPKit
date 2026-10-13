@@ -667,6 +667,7 @@ const CRYPTOGRAPHIC_PARAMETERS: u32 = 0x0042_002B;
 const CREATE_KEY_PAIR_OPERATION: u32 = 0x0000_0002;
 const CREATE_KEY_PAIR_ATTRIBUTE_GROUPS: [u32; 3] = [0x0042_0126, 0x0042_0127, 0x0042_0128];
 const CRYPTOGRAPHIC_DOMAIN_PARAMETERS: u32 = 0x0042_0029;
+const QLENGTH_DOMAIN_PARAMETER: u32 = 0x0042_0073;
 
 fn discover_versions_advertises_only_client_supported_versions(
     request: Option<&RequestMessage>,
@@ -753,8 +754,19 @@ fn client_supplied_create_key_pair_domain_parameters_are_structures(
                                     attribute.tag().raw() == CRYPTOGRAPHIC_DOMAIN_PARAMETERS
                                 })
                                 .all(|attribute| {
-                                    attribute.with_value(|value| {
-                                        matches!(value, ValueView::Structure(_))
+                                    attribute.with_value(|value| match value {
+                                        ValueView::Structure(parameters) => parameters
+                                            .children()
+                                            .iter()
+                                            .filter(|parameter| {
+                                                parameter.tag().raw() == QLENGTH_DOMAIN_PARAMETER
+                                            })
+                                            .all(|parameter| {
+                                                parameter.with_value(|value| {
+                                                    matches!(value, ValueView::Integer(_))
+                                                })
+                                            }),
+                                        _ => false,
                                     })
                                 }),
                             _ => false,

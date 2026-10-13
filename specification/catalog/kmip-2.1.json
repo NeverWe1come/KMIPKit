@@ -88053,10 +88053,10 @@
       "source_keyword": "MAY",
       "normative_strength": "permission_or_optional",
       "subject": "Domain Parameters in Create Key Pair",
-      "summary": "The client may supply the Cryptographic Domain Parameters Structure in a Create Key Pair Request Payload; Qlength applies to DSA and DH.",
+      "summary": "The client may supply the Cryptographic Domain Parameters Structure in a Create Key Pair Request Payload; Qlength applies to algorithms such as DSA and DH.",
       "role": "client",
       "direction": "client_to_server",
-      "condition": "Qlength is applicable to DSA and DH; callers may omit domain-parameter fields they do not need.",
+      "condition": "Qlength applies to algorithms such as DSA and DH; callers may omit domain-parameter fields they do not need.",
       "scope_state": "profile_conditional",
       "element_ids": [
         "KMIPKIT-ELEM-ATTRIBUTE-CRYPTOGRAPHIC-DOMAIN-PARAMETERS",
@@ -88099,7 +88099,7 @@
       "negative_verification_required": false,
       "decision_id": null,
       "status": "scoped_verified",
-      "review_note": "Pinned KMIP Specification v2.1 §4.14 and Tables 55–56 define the optional request field and identify the client as its initial setter; Table 55 encodes Qlength as an Integer, and §4.14 identifies it as applicable to DSA and DH. The local fake-transport test proves that caller-supplied Qlength is emitted unchanged in a Create Key Pair request, while the typed profile rule checks the outer Structure form and leaves omission and unrelated operations valid. This evidence does not establish server acceptance, all algorithm applicability, an official OASIS test pass, or formal profile conformance. No requirement-specific official Test Cases ID is linked by the pinned OASIS sources."
+      "review_note": "Pinned KMIP Specification v2.1 §4.14 and Tables 55–56 define the optional request field and identify the client as its initial setter; Table 55 encodes Qlength as an Integer, and §4.14 says it applies to algorithms such as DSA and DH. The local fake-transport test proves that caller-supplied DSA and Qlength are emitted unchanged in a Create Key Pair request. The typed profile rule checks the Cryptographic Domain Parameters Structure and every present Qlength member's Integer type while preserving omission and unrelated operations. The source's examples are not treated as an exhaustive algorithm allowlist. This evidence does not establish server acceptance, an official OASIS test pass, or formal profile conformance. No requirement-specific official Test Cases ID is linked by the pinned OASIS sources."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-4.14-001-002",
