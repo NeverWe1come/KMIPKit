@@ -15998,7 +15998,6 @@ class CatalogValidationTests(unittest.TestCase):
         requirement = next(
             row for row in catalog["requirements"] if row["requirement_id"] == requirement_id
         )
-
         self.assertEqual(review["source_excerpt"], pinned_source_excerpt(
             ROOT / "specification" / "oasis" / "kmip-2.1" / "upstream" / "kmip-profiles-v2.1-os.html",
             [3967, 3970],
@@ -16300,6 +16299,12 @@ class CatalogValidationTests(unittest.TestCase):
             row for row in catalog["requirements"] if row["requirement_id"] == requirement_id
         )
 
+        linked_element_ids = {
+            element["element_id"]
+            for element in catalog["elements"]
+            if requirement_id in element["requirement_ids"]
+        }
+
         implementation_refs = set(requirement["implementation_refs"])
         resolvable_implementation_refs = set()
         repository_root = ROOT.resolve()
@@ -16335,6 +16340,7 @@ class CatalogValidationTests(unittest.TestCase):
             and requirement["feature_spec"] == "KMIPKIT-0037"
             and requirement["status"] == "scoped_verified"
             and set(requirement["element_ids"]) == expected_element_ids
+            and linked_element_ids == expected_element_ids
             and expected_implementation_refs.issubset(resolvable_implementation_refs)
             and expected_verification_ref in usable_positive_tests
             and requirement["test_case_ids"] == []
