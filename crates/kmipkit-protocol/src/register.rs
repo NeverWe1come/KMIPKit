@@ -21,6 +21,7 @@ const CRYPTOGRAPHIC_ALGORITHM: u32 = 0x0042_0028;
 const CRYPTOGRAPHIC_LENGTH: u32 = 0x0042_002a;
 const CRYPTOGRAPHIC_USAGE_MASK: u32 = 0x0042_002c;
 const KEY_BLOCK: u32 = 0x0042_0040;
+const KEY_VALUE: u32 = 0x0042_0045;
 const SUCCESS: u32 = 0;
 
 /// A KMIP 2.1 Register request from §6.1.43, Table 291.
@@ -265,12 +266,8 @@ fn attributes_satisfy_register_requirements(
             if object_type.raw() == 7 {
                 return true;
             }
-            if has_algorithm != has_length {
-                return false;
-            }
-            has_algorithm
-                || (key_block_has(object, CRYPTOGRAPHIC_ALGORITHM)
-                    && key_block_has(object, CRYPTOGRAPHIC_LENGTH))
+            (has_algorithm || key_block_has(object, CRYPTOGRAPHIC_ALGORITHM))
+                && (has_length || key_block_has(object, CRYPTOGRAPHIC_LENGTH))
         }
         // Table 293's certificate-specific signature algorithm may be omitted
         // when it is encoded in the supplied Certificate object. KMIPKit does
@@ -294,10 +291,29 @@ fn key_block_has(object: &Item, raw_tag: u32) -> bool {
         object.children().iter().any(|field| {
             field.tag().raw() == KEY_BLOCK
                 && field.with_value(|value| match value {
-                    ValueView::Structure(block) => block
+                    ValueView::Structure(block) => block.children().iter().any(|entry| {
+                        entry.tag().raw() == raw_tag
+                            || (entry.tag().raw() == KEY_VALUE
+                                && key_value_has_attribute(entry, raw_tag))
+                    }),
+                    _ => false,
+                })
+        })
+    })
+}
+
+fn key_value_has_attribute(key_value: &Item, raw_tag: u32) -> bool {
+    key_value.with_value(|value| {
+        let ValueView::Structure(key_value) = value else {
+            return false;
+        };
+        key_value.children().iter().any(|field| {
+            field.tag().raw() == ATTRIBUTES
+                && field.with_value(|value| match value {
+                    ValueView::Structure(attributes) => attributes
                         .children()
                         .iter()
-                        .any(|entry| entry.tag().raw() == raw_tag),
+                        .any(|attribute| attribute.tag().raw() == raw_tag),
                     _ => false,
                 })
         })
