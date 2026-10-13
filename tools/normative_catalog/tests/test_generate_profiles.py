@@ -107,7 +107,7 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
         self.assertIn(inherited_clause_id, profile["source_clause_ids"])
 
     def test_tape_library_includes_normatively_referenced_mandatory_test_cases(self) -> None:
-        """Profiles v2.1 §6.28 item 7 incorporates the §5.12.6 test cases."""
+        """Profiles v2.1 §6.28 item 6 incorporates the §5.12.6 test cases."""
         catalog_path = ROOT / "specification" / "catalog" / "kmip-2.1.json"
         catalog = json.loads(catalog_path.read_text(encoding="utf-8"))
         oracle_path = ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json"
@@ -140,7 +140,7 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
             inclusion,
             {
                 "inclusion_id": inclusion_id,
-                "source_clause_id": "KMIPKIT-CLAUSE-PROF-6.28-007",
+                "source_clause_id": "KMIPKIT-CLAUSE-PROF-6.28-006",
                 "included_source_id": "KMIPKIT-SRC-profiles",
                 "included_section": "5.12.6",
             },
@@ -151,10 +151,10 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
             oracle_edge,
             {
                 "inclusion_id": inclusion_id,
-                "source_clause_id": "KMIPKIT-CLAUSE-PROF-6.28-007",
+                "source_clause_id": "KMIPKIT-CLAUSE-PROF-6.28-006",
                 "included_source_id": "KMIPKIT-SRC-profiles",
                 "included_section": "5.12.6",
-                "source_locator": "Profiles v2.1 §6.28 item 7",
+                "source_locator": "Profiles v2.1 §6.28 item 6",
             },
         )
         self.assertTrue(test_case_clauses.issubset(expected["source_clause_ids"]))

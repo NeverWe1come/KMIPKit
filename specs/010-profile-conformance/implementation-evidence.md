@@ -2225,3 +2225,9 @@ This audit closes only implementation and verification tasks with directly check
 | T041 | Keep open: independent QA confirmed remaining functional evidence gaps and an unresolved DCO-history issue. A local audit of `origin/release/1.0.0..HEAD` found 759 commits, 63 without a `Signed-off-by` trailer (including historical feature commits); this PR history must not be rewritten or retrospectively signed. |
 
 The remaining unchecked tasks are T001-T011, T026, T030-T031, T036, T040-T041, and T043. They represent source-closure/evidence incompleteness, absent fixture execution, or administrator-owned release controls; the CI run above closes only T037 and does not make KMIPKIT-0010 100% complete.
+
+### KMIPKIT-0010 TDD — Tape Library normative inclusion root
+
+| Stage | Commit | Exact command | Exact result |
+|---|---|---|---|
+| Red — assert the pinned Profiles source root for the Tape Library test-case inclusion | this Red commit | `py -3 -B -m unittest tools.normative_catalog.tests.test_generate_profiles.ProfileMetadataGeneratorTests.test_tape_library_includes_normatively_referenced_mandatory_test_cases -v` | Expected Red, observed: 1 test fails because the catalog inclusion points to `KMIPKIT-CLAUSE-PROF-6.28-007` while the pinned-source oracle expectation is `KMIPKIT-CLAUSE-PROF-6.28-006`. The pinned Profiles HTML §6.28 item 6 (lines 11139–40) incorporates §5.12.6; item 7 (lines 11141–42) is Baseline Client conformance. Only the test expectation and this evidence entry changed; catalog and oracle remain untouched for the Green stage. |
