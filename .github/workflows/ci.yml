@@ -275,15 +275,24 @@ jobs:
             Write-Error 'The CI job diagnostic script is unavailable.'
             exit 1
           }
-          $python = Get-Command -Name python -ErrorAction SilentlyContinue
-          if (-not $python) { $python = Get-Command -Name python3 -ErrorAction SilentlyContinue }
+          $python = $null
+          if ($env:VIRTUAL_ENV) {
+            $pythonRelativePath = if ($IsWindows) { 'Scripts/python.exe' } else { 'bin/python' }
+            $uvPython = Join-Path $env:VIRTUAL_ENV $pythonRelativePath
+            if (Test-Path -LiteralPath $uvPython -PathType Leaf) { $python = $uvPython }
+          }
+          if (-not $python) {
+            $pythonCommand = Get-Command -Name python -ErrorAction SilentlyContinue
+            if (-not $pythonCommand) { $pythonCommand = Get-Command -Name python3 -ErrorAction SilentlyContinue }
+            if ($pythonCommand) { $python = $pythonCommand.Source }
+          }
           if (-not $python) {
             '### ❌ Job diagnosis could not run' | Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY
             'Python 3 is unavailable on this runner, so the detailed job diagnosis could not be rendered.' | Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY
             Write-Error 'Python 3 is required to render CI job diagnostics.'
             exit 1
           }
-          & $python.Source $diagnosticScript
+          & $python $diagnosticScript
           $diagnosticExitCode = $LASTEXITCODE
           if ($diagnosticExitCode -ne 0) {
             '### ❌ Job diagnosis could not be written' | Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY
