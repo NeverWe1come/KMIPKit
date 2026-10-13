@@ -36,6 +36,7 @@ T076_SYMBOLS = {
     "kmipkit_client_execute",
     "kmipkit_client_release",
     "kmipkit_client_t",
+    "kmipkit_last_error_get",
     "kmipkit_transport_config_create_v1",
     "kmipkit_transport_config_release",
     "kmipkit_transport_config_t",
@@ -65,7 +66,7 @@ class T076ClientMappingTests(unittest.TestCase):
             if row.get("declarationId", "").startswith("T076:")
         ]
 
-    def test_all_27_exports_are_mapped_or_remain_exactly_blocked(self) -> None:
+    def test_all_28_exports_are_mapped_or_remain_exactly_blocked(self) -> None:
         c_rows = [row for row in self.declarations if row["packageId"] == "c-kmipkit"]
         exclusions = [
             row
@@ -81,7 +82,7 @@ class T076ClientMappingTests(unittest.TestCase):
             T076_SYMBOLS,
             {row["exportName"] for row in c_rows} | {row["exportName"] for row in exclusions},
         )
-        self.assertEqual(27, len(c_rows) + len(exclusions))
+        self.assertEqual(28, len(c_rows) + len(exclusions))
 
         ready = {
             row["exportName"]
@@ -581,9 +582,23 @@ class T076ClientMappingTests(unittest.TestCase):
                 for mapping in declaration["languageMappings"].values():
                     self.assertTrue(mapping["name"])
 
-        batch_items = fields.get("kmipkit.client.BatchResult.items")
-        self.assertIsNotNone(batch_items)
-        self.assertEqual("declared", batch_items["declarationState"])
+        python_export_paths = {
+            "kmipkit.client.BatchItemResult.pending_correlation_value",
+            "kmipkit.client.BatchItemResult.unique_batch_item_id",
+            "kmipkit.client.BatchResult.items",
+        }
+        all_declarations = {
+            row["exportName"]: row
+            for row in self.manifest["publicDeclarations"]
+            if row["packageId"] == "python-kmipkit"
+        }
+        for path in python_export_paths:
+            with self.subTest(field=path):
+                declaration = all_declarations.get(path)
+                self.assertIsNotNone(declaration)
+                if declaration is not None:
+                    self.assertEqual("field", declaration["kind"])
+                    self.assertEqual("declared", declaration["declarationState"])
 
         args_exclusion = next(
             (
