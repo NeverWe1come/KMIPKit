@@ -1833,8 +1833,8 @@
     "javaType": {
       "type": "string",
       "minLength": 1,
-      "pattern": "^(?!void\\b)[A-Za-z_][A-Za-z0-9_]*(?:\\.[A-Za-z_][A-Za-z0-9_]*)*(?:\\s*<\\s*(?!(?:boolean|byte|short|int|long|char|float|double|void)\\b)[A-Za-z_][A-Za-z0-9_]*(?:\\.[A-Za-z_][A-Za-z0-9_]*)*(?:\\s*,\\s*(?!(?:boolean|byte|short|int|long|char|float|double|void)\\b)[A-Za-z_][A-Za-z0-9_]*(?:\\.[A-Za-z_][A-Za-z0-9_]*)*)*\\s*>)?(?:\\[\\])*$",
-      "description": "Java parameter/type subset: primitive/simple or dot-qualified names, arrays, and one-level generic applications with non-empty reference-type arguments. Primitive and void arguments are not allowed; wildcards are unsupported."
+      "pattern": "^(?!void\\b)[A-Za-z_][A-Za-z0-9_]*(?:\\.[A-Za-z_][A-Za-z0-9_]*)*(?:\\s*<\\s*(?!(?:boolean|byte|short|int|long|char|float|double|void)\\s*(?:,|>))[A-Za-z_][A-Za-z0-9_]*(?:\\.[A-Za-z_][A-Za-z0-9_]*)*(?:\\s*\\[\\])*(?:\\s*,\\s*(?!(?:boolean|byte|short|int|long|char|float|double|void)\\s*(?:,|>))[A-Za-z_][A-Za-z0-9_]*(?:\\.[A-Za-z_][A-Za-z0-9_]*)*(?:\\s*\\[\\])*)*\\s*>)?(?:\\s*\\[\\])*$",
+      "description": "Java parameter/type subset: primitive/simple or dot-qualified names, arrays, and one-level generic applications with non-empty reference-type arguments, including array types. Primitive and void generic arguments and wildcards are unsupported."
     },
     "javaReturnType": {
       "anyOf": [

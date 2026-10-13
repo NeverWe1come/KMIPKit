@@ -2,10 +2,13 @@
 // Mechanical API inventory only; reviewed FFI code owns behavior.
 pub(crate) const PUBLIC_API_FORMAT_VERSION: u32 = 2;
 pub(crate) const C_AVAILABLE_CAPABILITIES: &[&str] = &[
+    "client_batch_model",
+    "client_execution",
     "discover_versions_request_item",
     "ffi_runtime_metadata",
     "generic_ttlv_model",
     "opaque_register_context",
+    "production_transport",
     "ttlv_wire_codec",
     "vendor_extension_registry",
 ];
@@ -605,6 +608,11 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "kmipkit_protocol::extension::ExtensionRegistryLimits::max_depth",
     ),
     (
+        "rust-observed-c85663a1dcd544c9e996",
+        "rust-kmipkit-transport",
+        "kmipkit_transport::TransportConfig",
+    ),
+    (
         "rust-adr0014-91e7a41f5f7a2bcb",
         "rust-kmipkit-transport",
         "kmipkit_transport::TransportResponse::new",
@@ -615,9 +623,94 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "kmipkit_transport::TransportResponse::as_bytes",
     ),
     (
+        "rust-observed-f6e4d4378e1f420ba0e1",
+        "rust-kmipkit-client",
+        "kmipkit_client::Client",
+    ),
+    (
+        "rust-observed-01082ae554319d9b06de",
+        "rust-kmipkit-client",
+        "kmipkit_client::Client::new",
+    ),
+    (
+        "rust-observed-198c6444748482084656",
+        "rust-kmipkit-client",
+        "kmipkit_client::Client::execute",
+    ),
+    (
+        "rust-observed-f5bbde677ed59bfed75e",
+        "rust-kmipkit-client",
+        "kmipkit_client::ClientBatch",
+    ),
+    (
+        "rust-observed-d82a2016da1d60b0b9ec",
+        "rust-kmipkit-client",
+        "kmipkit_client::ClientBatch::push",
+    ),
+    (
+        "rust-observed-d17e8917256ff4874c6a",
+        "rust-kmipkit-client",
+        "kmipkit_client::ClientBatch::with_request_time_stamp",
+    ),
+    (
+        "rust-observed-9c7a1b89fcd69e05d4e2",
+        "rust-kmipkit-client",
+        "kmipkit_client::ClientBatch::with_batch_order_option",
+    ),
+    (
+        "rust-observed-fe9ddf4e50fd41c0c739",
+        "rust-kmipkit-client",
+        "kmipkit_client::ClientBatch::with_batch_error_continuation_option",
+    ),
+    (
+        "rust-observed-380189b983d6c8ea0a03",
+        "rust-kmipkit-client",
+        "kmipkit_client::ClientBatch::with_asynchronous_indicator",
+    ),
+    (
+        "rust-observed-72011d0086a8e56e9af8",
+        "rust-kmipkit-client",
+        "kmipkit_client::ClientBatch::with_client_correlation_value",
+    ),
+    (
         "rust-observed-f6620e59c28f505087bc",
         "rust-kmipkit-client",
         "kmipkit_client::ClientBatchItem",
+    ),
+    (
+        "rust-observed-e830770db1404f15498c",
+        "rust-kmipkit-client",
+        "kmipkit_client::ClientBatchItem::with_unique_batch_item_id",
+    ),
+    (
+        "rust-observed-29253c56512c12ae406a",
+        "rust-kmipkit-client",
+        "kmipkit_client::ClientBatchItemResponse",
+    ),
+    (
+        "rust-observed-f1b456e2213ce1d12b27",
+        "rust-kmipkit-client",
+        "kmipkit_client::ClientBatchItemResponse::unique_batch_item_id",
+    ),
+    (
+        "rust-observed-805a39b3a86e22c4f86c",
+        "rust-kmipkit-client",
+        "kmipkit_client::ClientBatchOutcome::asynchronous_correlation_value",
+    ),
+    (
+        "rust-observed-daa81eca15ee8bda9d25",
+        "rust-kmipkit-client",
+        "kmipkit_client::ClientBatchResponse",
+    ),
+    (
+        "rust-observed-b5eb15018d69ca85a423",
+        "rust-kmipkit-client",
+        "kmipkit_client::ClientBatchResponse::len",
+    ),
+    (
+        "rust-observed-c5801bf699e48dbcf6bf",
+        "rust-kmipkit-client",
+        "kmipkit_client::ClientBatchResponse::get",
     ),
     (
         "rust-observed-29383d8d0499ca959dc8",
@@ -704,5 +797,10 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "KMIPKIT-0044-opaque-context-managed:rust",
         "rust-kmipkit-protocol",
         "kmipkit_protocol::OpaqueObjectContext::ManagedCryptographicObject",
+    ),
+    (
+        "T076:client-batch-create:rust",
+        "rust-kmipkit-client",
+        "kmipkit_client::ClientBatch::empty",
     ),
 ];
