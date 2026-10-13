@@ -48,7 +48,17 @@ const OPERATION_FAILED: u32 = 1;
 const OPERATION_PENDING: u32 = 2;
 const INVALID_OBJECT_TYPE: u32 = 0x0000_0038;
 const PENDING_CORRELATION: &[u8] = b"REGISTER_PENDING_CORRELATION\xFF";
-const SYNTHETIC_WRAPPED_KEY_VALUE: &[u8] = b"fixture-wrapped-key-bytes";
+const SYNTHETIC_WRAP_ENVELOPE: &[u8] = b"test-only-wrapper:";
+const SYNTHETIC_PREWRAP_KEY_VALUE_TTLV: &[u8] = &[
+    0x42, 0x00, 0x45, 0x01, 0x00, 0x00, 0x00, 0x38, // Key Value Structure, 56-byte body.
+    0x42, 0x00, 0x44, 0x08, 0x00, 0x00, 0x00, 0x04, // Key Material Byte String.
+    0x01, 0x02, 0x03, 0x04, 0x00, 0x00, 0x00, 0x00, 0x42, 0x01, 0x25, 0x01, 0x00, 0x00, 0x00,
+    0x20, // Key Value Attributes Structure.
+    0x42, 0x00, 0x28, 0x05, 0x00, 0x00, 0x00, 0x04, // Cryptographic Algorithm Enumeration.
+    0x00, 0x00, 0x00, 0x03, 0x00, 0x00, 0x00, 0x00, 0x42, 0x00, 0x2a, 0x02, 0x00, 0x00, 0x00,
+    0x04, // Cryptographic Length Integer.
+    0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00,
+];
 
 // Byte-for-byte extraction from the pinned OASIS KMIP 2.1 fixture
 // TC-PKCS12-1-21.xml, RequestMessage step 2. This local input does not execute
@@ -243,6 +253,30 @@ fn register_wrapping_evidence(bytes: &[u8]) -> RegisterWrappingEvidence {
                     })
                 })
             })
+        })
+    })
+}
+
+fn prewrap_key_value_attribute_tags(bytes: &[u8]) -> Vec<u32> {
+    let key_value = decode(bytes).expect("test fixture is a valid pre-wrap Key Value TTLV item");
+    key_value.with_value(|value| {
+        let ValueView::Structure(key_value) = value else {
+            panic!("pre-wrap Key Value is a Structure");
+        };
+        let attributes = key_value
+            .children()
+            .iter()
+            .find(|field| field.tag().raw() == ATTRIBUTES)
+            .expect("pre-wrap Key Value contains its associated Attributes Structure");
+        attributes.with_value(|value| {
+            let ValueView::Structure(attributes) = value else {
+                panic!("pre-wrap Key Value Attributes is a Structure");
+            };
+            attributes
+                .children()
+                .iter()
+                .map(|attribute| attribute.tag().raw())
+                .collect()
         })
     })
 }
@@ -522,9 +556,17 @@ fn register_sends_table_291_and_exposes_table_292_identifier_once() {
 }
 
 #[test]
-fn register_sends_a_wrapped_object_from_table_291() {
+fn register_sends_a_wrapped_key_value_with_associated_attributes_from_table_291() {
     // OASIS KMIP v2.1 §3.1 Tables 11–12, §3.3 Tables 14–15, and §6.1.43 Tables 291 and 293.
-    // Synthetic wrapped-value bytes exercise request shape, not cryptographic wrapping or server acceptance.
+    // The test-only envelope is not cryptographic wrapping; it keeps a source-shaped pre-wrap
+    // Key Value Structure visible so this test can prove the opaque supplied bytes are forwarded.
+    let mut synthetic_wrapped_key_value = SYNTHETIC_WRAP_ENVELOPE.to_vec();
+    synthetic_wrapped_key_value.extend_from_slice(SYNTHETIC_PREWRAP_KEY_VALUE_TTLV);
+    assert_eq!(
+        prewrap_key_value_attribute_tags(SYNTHETIC_PREWRAP_KEY_VALUE_TTLV),
+        [CRYPTOGRAPHIC_ALGORITHM, CRYPTOGRAPHIC_LENGTH],
+        "§3.2 Table 13 places associated attributes in the Key Value Structure"
+    );
     let request = RegisterRequest::new(
         ObjectType::from_raw(2),
         AttributeSet::try_new([
@@ -541,7 +583,7 @@ fn register_sends_a_wrapped_object_from_table_291() {
                     test_item(KEY_FORMAT_TYPE, Value::enumeration(1)),
                     test_item(
                         KEY_VALUE,
-                        Value::byte_string(SYNTHETIC_WRAPPED_KEY_VALUE.to_vec()),
+                        Value::byte_string(synthetic_wrapped_key_value.clone()),
                     ),
                     test_item(CRYPTOGRAPHIC_ALGORITHM, Value::enumeration(3)),
                     test_item(CRYPTOGRAPHIC_LENGTH, Value::integer(256)),
@@ -607,7 +649,7 @@ fn register_sends_a_wrapped_object_from_table_291() {
             KEY_WRAPPING_DATA,
         ]
     );
-    assert_eq!(wrapped.key_value_bytes, SYNTHETIC_WRAPPED_KEY_VALUE);
+    assert_eq!(wrapped.key_value_bytes, synthetic_wrapped_key_value);
     assert_eq!(wrapped.wrapping_method, 1);
     assert_eq!(wrapped.encryption_key_identifier, "wrapping-key");
     assert_eq!(fake.borrow().exchange_count(), 1);

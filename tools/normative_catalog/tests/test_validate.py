@@ -178,7 +178,7 @@ OPTIONAL_CAPABILITY_TEST_REQUIREMENTS = {
     "crates/kmipkit-client/tests/unit/object_read_execution_tests.rs::caller_directs_archived_locate_recover_then_get_as_three_exchanges": (
         "KMIPKIT-REQ-SPEC-6.1.42-001-002",
     ),
-    "crates/kmipkit-client/tests/unit/register_execution_tests.rs::register_sends_a_wrapped_key_value_with_embedded_attributes_from_table_291": (
+    "crates/kmipkit-client/tests/unit/register_execution_tests.rs::register_sends_a_wrapped_key_value_with_associated_attributes_from_table_291": (
         "KMIPKIT-REQ-SPEC-6.1.43-005",
     ),
 }
@@ -295,10 +295,12 @@ OPTIONAL_CAPABILITY_TEST_CONTENT_REQUIREMENTS = {
         "Some(&WireValue::Integer(0x2))",
         "Some(&WireValue::TextString(archived_identifier.to_owned()))",
     ),
-    "crates/kmipkit-client/tests/unit/register_execution_tests.rs::register_sends_a_wrapped_key_value_with_embedded_attributes_from_table_291": (
-        "Value::byte_string(SYNTHETIC_WRAPPED_KEY_VALUE_WITH_ATTRIBUTES.to_vec())",
-        "wrapped.direct_attribute_fields",
+    "crates/kmipkit-client/tests/unit/register_execution_tests.rs::register_sends_a_wrapped_key_value_with_associated_attributes_from_table_291": (
+        "SYNTHETIC_PREWRAP_KEY_VALUE_TTLV",
+        "prewrap_key_value_attribute_tags",
+        "Value::byte_string(synthetic_wrapped_key_value.clone())",
         "wrapped.key_value_bytes",
+        "SYNTHETIC_WRAP_ENVELOPE",
         "KEY_FORMAT_TYPE,",
         "KEY_VALUE,",
         "CRYPTOGRAPHIC_ALGORITHM,",
@@ -2030,11 +2032,11 @@ class CatalogValidationTests(unittest.TestCase):
 
         self.assertEqual(requirement["status"], "verified")
         self.assertIn(
-            "crates/kmipkit-client/tests/unit/register_execution_tests.rs::register_sends_a_wrapped_key_value_with_embedded_attributes_from_table_291",
+            "crates/kmipkit-client/tests/unit/register_execution_tests.rs::register_sends_a_wrapped_key_value_with_associated_attributes_from_table_291",
             requirement["verification_refs"],
         )
         self.assertIn(
-            "opaque caller-supplied wrapped key value",
+            "opaque wrapped key value byte string",
             requirement["review_note"].lower(),
         )
 
