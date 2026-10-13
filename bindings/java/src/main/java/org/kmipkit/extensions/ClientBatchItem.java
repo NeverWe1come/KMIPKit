@@ -7,7 +7,7 @@ import org.kmipkit.NativeExtensionRegistry;
 import org.kmipkit.internal.NativeHandle;
 
 /** Typed request batch item with caller-ordered registry-validated extensions. */
-public final class ClientBatchItem {
+public final class ClientBatchItem implements AutoCloseable {
     private final NativeHandle handle;
     private final List<ClientRequestMessageExtension> extensions;
 
@@ -54,5 +54,9 @@ public final class ClientBatchItem {
         NativeExtensionRegistry.ensureLoaded();
         return handle.withValue(value ->
                 NativeExtensionRegistry.clientBatchItemExtensionCriticalityIndicatorAt(value, index));
+    }
+    @Override
+    public void close() {
+        handle.close();
     }
 }

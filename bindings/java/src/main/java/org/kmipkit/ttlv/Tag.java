@@ -4,7 +4,7 @@ import org.kmipkit.NativeExtensionRegistry;
 import org.kmipkit.internal.NativeHandle;
 
 /** A validated KMIP TTLV tag. */
-public final class Tag {
+public final class Tag implements AutoCloseable {
     private final NativeHandle handle;
 
     private Tag(long nativeHandle) {
@@ -23,4 +23,8 @@ public final class Tag {
         return handle.get();
     }
 
+    @Override
+    public void close() {
+        handle.close();
+    }
 }

@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 import java.util.UUID;
+import org.jspecify.annotations.Nullable;
 
 /** Secure selection and loading of the bundled JNI library. */
 final class NativeLibraryLoader {
@@ -89,7 +90,7 @@ final class NativeLibraryLoader {
         }
     }
 
-    static Path resolveExplicitLibrary(String configuredPath) {
+    static @Nullable Path resolveExplicitLibrary(@Nullable String configuredPath) {
         if (configuredPath == null) {
             return null;
         }

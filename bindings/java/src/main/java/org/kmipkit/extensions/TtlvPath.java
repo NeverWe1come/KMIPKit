@@ -5,7 +5,7 @@ import org.kmipkit.internal.NativeHandle;
 import org.kmipkit.ttlv.Tag;
 
 /** Immutable finite path to a discriminator value in a vendor payload. */
-public final class TtlvPath {
+public final class TtlvPath implements AutoCloseable {
     private final NativeHandle handle;
 
     private TtlvPath(long nativeHandle) {
@@ -37,5 +37,9 @@ public final class TtlvPath {
     /** Internal owner token used when a consuming call takes this path with another handle. */
     public NativeHandle nativeHandleOwner() {
         return handle;
+    }
+    @Override
+    public void close() {
+        handle.close();
     }
 }

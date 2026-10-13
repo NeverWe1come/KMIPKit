@@ -5,7 +5,7 @@ import org.kmipkit.internal.NativeHandle;
 import org.kmipkit.ttlv.TtlvStructure;
 
 /** Sealed value validated by one immutable client registry. */
-public final class RegisteredExtensionValue {
+public final class RegisteredExtensionValue implements AutoCloseable {
     private final NativeHandle handle;
     private final ExtensionIdentity identity;
     private final ClientExtensionRegistry registryOwner;
@@ -30,5 +30,9 @@ public final class RegisteredExtensionValue {
     @Override
     public String toString() {
         return "RegisteredExtensionValue([REDACTED])";
+    }
+    @Override
+    public void close() {
+        handle.close();
     }
 }

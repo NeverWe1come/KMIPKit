@@ -6,7 +6,7 @@ import org.kmipkit.ttlv.TtlvStructureView;
 import org.kmipkit.ttlv.TtlvValueView;
 
 /** Schema-validated protocol value retaining its original generic TTLV tree. */
-public final class ValidatedExtensionValue {
+public final class ValidatedExtensionValue implements AutoCloseable {
     private final NativeHandle handle;
     private final ExtensionIdentity identity;
     private final Object owner;
@@ -48,5 +48,9 @@ public final class ValidatedExtensionValue {
     @Override
     public String toString() {
         return "ValidatedExtensionValue([REDACTED])";
+    }
+    @Override
+    public void close() {
+        handle.close();
     }
 }

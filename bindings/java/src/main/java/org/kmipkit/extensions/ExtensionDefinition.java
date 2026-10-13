@@ -1,6 +1,7 @@
 package org.kmipkit.extensions;
 
 import java.util.Optional;
+import org.jspecify.annotations.Nullable;
 
 import org.kmipkit.NativeExtensionRegistry;
 import org.kmipkit.internal.NativeHandle;
@@ -8,16 +9,16 @@ import org.kmipkit.ttlv.CodecLimits;
 import org.kmipkit.ttlv.TtlvStructure;
 
 /** Complete data-only extension identity, compatibility, discriminator, and schema. */
-public final class ExtensionDefinition {
+public final class ExtensionDefinition implements AutoCloseable {
     private final NativeHandle handle;
     private final ExtensionIdentity identity;
     private final Compatibility compatibility;
     private final Discriminator discriminator;
     private final ExtensionSchema schema;
-    private final ExtensionInformation information;
+    private final @Nullable ExtensionInformation information;
 
     private ExtensionDefinition(ExtensionIdentity identity, Compatibility compatibility,
-            Discriminator discriminator, ExtensionSchema schema, ExtensionInformation information,
+            Discriminator discriminator, ExtensionSchema schema, @Nullable ExtensionInformation information,
             long nativeHandle) {
         handle = NativeHandle.owned(nativeHandle, NativeExtensionRegistry.DEFINITION);
         this.identity = identity;
@@ -80,5 +81,9 @@ public final class ExtensionDefinition {
 
     ExtensionIdentity identityValue() {
         return identity;
+    }
+    @Override
+    public void close() {
+        handle.close();
     }
 }
