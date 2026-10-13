@@ -156,10 +156,10 @@ class TransportInput:
         try:
             path_value = Path(path)
             path_text = str(path_value)
-            path_bytes = path_text.encode("utf-8")
+            path_bytes = _utf8_bytes(path_text)
         except (TypeError, ValueError, UnicodeEncodeError):
             errors.raise_for_status(4)
-        if not path_text or len(path_bytes) > _MAX_TEXT_BYTES:
+        if not path_bytes or b"\x00" in path_bytes or len(path_bytes) > _MAX_TEXT_BYTES:
             errors.raise_for_status(4)
         return cls(path_value, encoding)
 
@@ -183,10 +183,10 @@ def _validate_transport_input(value: TransportInput) -> None:
         errors.raise_for_status(4)
     try:
         path_text = str(value.source)
-        path_bytes = path_text.encode("utf-8")
+        path_bytes = _utf8_bytes(path_text)
     except (TypeError, ValueError, UnicodeEncodeError):
         errors.raise_for_status(4)
-    if not path_text or "\x00" in path_text or len(path_bytes) > _MAX_TEXT_BYTES:
+    if not path_bytes or b"\x00" in path_bytes or len(path_bytes) > _MAX_TEXT_BYTES:
         errors.raise_for_status(4)
 
 
@@ -647,10 +647,7 @@ def _transport_record(configuration: TransportConfig) -> tuple[Any, tuple[object
             data = value.source
         else:
             source_kind = 2
-            try:
-                data = str(value.source).encode("utf-8")
-            except (UnicodeEncodeError, ValueError):
-                errors.raise_for_status(4)
+            data = _utf8_bytes(str(value.source))
             if not data or len(data) > _MAX_TEXT_BYTES:
                 errors.raise_for_status(4)
         record = ffi.new("kmipkit_transport_input_v1_t *")
