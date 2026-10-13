@@ -524,6 +524,37 @@ def _reviewed_profile_conditional_capability_sources(
     return conditional_sources
 
 
+def _has_linked_typed_optional_capability_rule(
+    requirement: dict[str, Any],
+    expected_source_clause_ids: set[str],
+    typed_rule_mappings: list[dict[str, Any]],
+    usable_positive_tests: list[str],
+) -> bool:
+    """Require a typed optional rule and its exact linked positive test."""
+    requirement_id = requirement["requirement_id"]
+    requirement_source_clause_ids = set(requirement.get("source_clause_ids", []))
+    requirement_test_refs = set(requirement.get("verification_refs", []))
+    return any(
+        mapping.get("requirement_id") == requirement_id
+        and mapping.get("source_clause_id") in expected_source_clause_ids
+        and mapping.get("source_clause_id") in requirement_source_clause_ids
+        and mapping.get("verification_category") == "OptionalCapability"
+        and mapping.get("evaluator_present") is True
+        and mapping.get("test_kind") == "OptionalCapabilityUsable"
+        and mapping.get("test_id") in requirement_test_refs
+        and mapping.get("test_id") in usable_positive_tests
+        for mapping in typed_rule_mappings
+    )
+
+
+def _has_profile_rule_implementation(resolvable_implementation_refs: list[str]) -> bool:
+    """Check that a runtime profile evaluator is among the resolvable implementations."""
+    return any(
+        reference.partition("::")[0] == PROFILE_RULE_SOURCE
+        for reference in resolvable_implementation_refs
+    )
+
+
 def _has_usable_conditional_client_request_evidence(
     requirement: dict[str, Any],
     conditional_source_clause_ids: set[str],
@@ -532,25 +563,16 @@ def _has_usable_conditional_client_request_evidence(
     usable_positive_tests: list[str],
 ) -> bool:
     """Require an exact typed source rule and named request test for conditional capability evidence."""
-    requirement_id = requirement["requirement_id"]
-    requirement_source_clause_ids = set(requirement.get("source_clause_ids", []))
-    requirement_test_refs = set(requirement.get("verification_refs", []))
     condition = requirement.get("condition")
     has_source_condition = isinstance(condition, str) and bool(condition.strip())
-    has_typed_rule_implementation = any(
-        reference.partition("::")[0] == PROFILE_RULE_SOURCE
-        for reference in resolvable_implementation_refs
+    has_typed_rule_implementation = _has_profile_rule_implementation(
+        resolvable_implementation_refs
     )
-    has_linked_typed_positive_rule = any(
-        mapping.get("requirement_id") == requirement_id
-        and mapping.get("source_clause_id") in conditional_source_clause_ids
-        and mapping.get("source_clause_id") in requirement_source_clause_ids
-        and mapping.get("verification_category") == "OptionalCapability"
-        and mapping.get("evaluator_present") is True
-        and mapping.get("test_kind") == "OptionalCapabilityUsable"
-        and mapping.get("test_id") in requirement_test_refs
-        and mapping.get("test_id") in usable_positive_tests
-        for mapping in typed_rule_mappings
+    has_linked_typed_positive_rule = _has_linked_typed_optional_capability_rule(
+        requirement,
+        conditional_source_clause_ids,
+        typed_rule_mappings,
+        usable_positive_tests,
     )
     return (
         requirement.get("scope_state") == "profile_conditional"
@@ -585,23 +607,16 @@ def _has_usable_profile_optional_evidence(
         )
 
     direction = requirement["direction"]
-    requirement_source_clause_ids = set(requirement.get("source_clause_ids", []))
-    requirement_test_refs = set(requirement.get("verification_refs", []))
     condition = requirement.get("condition")
     has_unambiguous_source_condition = isinstance(condition, str) and bool(condition.strip())
-    has_profile_rule_implementation = any(
-        reference.partition("::")[0] == PROFILE_RULE_SOURCE
-        for reference in resolvable_implementation_refs
+    has_profile_rule_implementation = _has_profile_rule_implementation(
+        resolvable_implementation_refs
     )
-    has_linked_typed_positive_rule = any(
-        mapping.get("requirement_id") == requirement["requirement_id"]
-        and mapping.get("source_clause_id") in requirement_source_clause_ids
-        and mapping.get("verification_category") == "OptionalCapability"
-        and mapping.get("evaluator_present") is True
-        and mapping.get("test_kind") == "OptionalCapabilityUsable"
-        and mapping.get("test_id") in requirement_test_refs
-        and mapping.get("test_id") in usable_positive_tests
-        for mapping in typed_rule_mappings
+    has_linked_typed_positive_rule = _has_linked_typed_optional_capability_rule(
+        requirement,
+        set(requirement.get("source_clause_ids", [])),
+        typed_rule_mappings,
+        usable_positive_tests,
     )
     unclear_direction_has_typed_evidence = (
         direction != "unclear"
