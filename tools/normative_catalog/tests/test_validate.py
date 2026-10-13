@@ -16595,7 +16595,7 @@ class CatalogValidationTests(unittest.TestCase):
             "KMIPKIT-ELEM-STRUCTURE-MEMBER-5-1-ANY-ATTRIBUTE-IN-4-OBJECT-ATTRIBUTES",
         }
         implementation_ref = (
-            "crates/kmipkit-protocol/src/register.rs::RegisterRequest::into_ttlv_payload"
+            "crates/kmipkit-protocol/src/register.rs::into_ttlv_payload"
         )
         verification_ref = (
             "crates/kmipkit-protocol/tests/unit/register_operation_tests.rs::"

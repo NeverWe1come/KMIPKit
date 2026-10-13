@@ -270,6 +270,7 @@ As a KMIPKit caller, I can send the §6.1.43 Register request and inspect the ty
 2. Given a valid Table 292 success, when decoded, then every present field is inspectable and absent fields remain absent.
 3. Given a Table 294 failure, malformed payload, or transport error, when the call completes, then status/reason or error and delivery state remain available without retry.
 4. Given Pending in a caller-enabled typed batch, when the response arrives, then Pending and the exact correlation bytes remain available without an implicit Poll.
+5. Given a plaintext Raw Key Value with associated Attributes, when the caller builds Register, then Key Material and each §4 attribute are preserved in their source-defined TTLV types and remain inside Key Value.
 
 **Specific rules**: Require type, attributes, and object; apply conditional algorithm, length, and signature-attribute rules from §6.1.43.
 
@@ -339,6 +340,7 @@ Stable IDs and summaries below come from the checked-in normative catalog. The i
 
 | Requirement ID | OASIS Specification section | Keyword | Client obligation or capability |
 | --- | --- | --- | --- |
+| KMIPKIT-REQ-SPEC-3.2-001 | §3.2 | OPTIONAL | A client may include the optional Attributes Structure associated with key material in Key Value. |
 | KMIPKIT-REQ-SPEC-6.1.35-001-001 | §6.1.35 | MAY | When Lease Time is zero, the client may use the object without a lease time limit. |
 | KMIPKIT-REQ-SPEC-6.1.35-001-002 | §6.1.35 | SHALL NOT | After a lease expires, do not use the cryptographic object until a new lease is obtained. |
 | KMIPKIT-REQ-SPEC-6.1.35-002 | §6.1.35 | MAY | A client may compare Last Change Date with its prior value to decide whether cached attributes need refreshing. |

@@ -43,7 +43,7 @@ def _reference_file(reference: str) -> Path:
 
 
 class ObjectLifecycleTraceabilityTests(unittest.TestCase):
-    def test_all_40_requirements_link_to_their_operation_and_sources(self) -> None:
+    def test_all_requirements_link_to_their_operation_and_sources(self) -> None:
         trace = TRACEABILITY_PATH.read_text(encoding="utf-8")
         spec = SPEC_PATH.read_text(encoding="utf-8")
         catalog = json.loads(CATALOG_PATH.read_text(encoding="utf-8"))
@@ -69,7 +69,8 @@ class ObjectLifecycleTraceabilityTests(unittest.TestCase):
             if record.get("feature_spec") == FEATURE_SPEC
         }
 
-        self.assertEqual(len(spec_requirement_ids), 40)
+        self.assertEqual(len(spec_requirement_ids), 41)
+        self.assertIn("KMIPKIT-REQ-SPEC-3.2-001", spec_requirement_ids)
         self.assertEqual(len(rows), len(trace_requirement_ids))
         self.assertEqual(trace_requirement_ids, spec_requirement_ids)
         self.assertEqual(catalog_requirement_ids, spec_requirement_ids)
@@ -118,6 +119,19 @@ class ObjectLifecycleTraceabilityTests(unittest.TestCase):
                         "KMIPKIT-ELEM-OBJECT-STRUCTURE-KEY-WRAPPING-DATA",
                         "KMIPKIT-ELEM-OP-C2S-REGISTER",
                         "KMIPKIT-ELEM-STRUCTURE-MEMBER-3-1-KEY-BLOCK-KEY-WRAPPING-DATA",
+                    ],
+                    row[0],
+                )
+            elif row[0] == "KMIPKIT-REQ-SPEC-3.2-001":
+                self.assertEqual(
+                    requirement["element_ids"],
+                    [
+                        "KMIPKIT-ELEM-ATTRIBUTE-STRUCTURE-5-1-ATTRIBUTES",
+                        "KMIPKIT-ELEM-OBJECT-STRUCTURE-KEY-VALUE",
+                        "KMIPKIT-ELEM-OP-C2S-REGISTER",
+                        "KMIPKIT-ELEM-STRUCTURE-MEMBER-3-2-KEY-VALUE-ATTRIBUTES",
+                        "KMIPKIT-ELEM-STRUCTURE-MEMBER-3-2-KEY-VALUE-KEY-MATERIAL",
+                        "KMIPKIT-ELEM-STRUCTURE-MEMBER-5-1-ANY-ATTRIBUTE-IN-4-OBJECT-ATTRIBUTES",
                     ],
                     row[0],
                 )
