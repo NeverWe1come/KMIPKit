@@ -22,6 +22,10 @@ def test_python_package_advertises_inline_typing_support() -> None:
     assert (package / "py.typed").is_file()
 
 
+def test_errors_module_does_not_export_its_intenum_implementation_base() -> None:
+    assert not hasattr(errors, "IntEnum")
+
+
 def test_transport_contract_types_expose_all_supported_input_sources() -> None:
     pem = client.TransportInput.memory(b"certificate", client.CredentialEncoding.PEM)
     der_file = client.TransportInput.file(Path("trust.der"), client.CredentialEncoding.DER)
