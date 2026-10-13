@@ -448,6 +448,7 @@ class WorkflowContractTests(unittest.TestCase):
         self.assertIn("libkmipkit_ffi.so", collector)
         self.assertIn("--sources", collector)
         self.assertIn("crates/kmipkit-ffi/src/extension_registry.rs", collector)
+        self.assertIn("crates/kmipkit-ffi/src/extension_registry/client_abi.rs", collector)
         self.assertIn('--output "${report_dir}/coverage.json"', collector)
         self.assertNotIn("Install LLVM 20.1.8 for Linux FFI coverage export", job)
         self.assertNotIn('directory: ${{ runner.temp }}/llvm-20', job)

@@ -7,17 +7,22 @@ report_dir="${1:-${repository_root}/coverage-ffi}"
 report_dir="$(mkdir -p -- "${report_dir}" && cd -- "${report_dir}" && pwd)"
 target_root="${CARGO_TARGET_DIR:-${repository_root}/target}"
 llvm_cov_target="${target_root}/llvm-cov-target"
-source_file="${repository_root}/crates/kmipkit-ffi/src/extension_registry.rs"
+source_files=(
+    "${repository_root}/crates/kmipkit-ffi/src/extension_registry.rs"
+    "${repository_root}/crates/kmipkit-ffi/src/extension_registry/client_abi.rs"
+)
 
 if [[ "$(uname -s)" != Linux ]]; then
     printf 'The C consumer FFI coverage collector currently supports Linux only.\n' >&2
     exit 2
 fi
 
-if [[ ! -f "${source_file}" ]]; then
-    printf 'Expected Rust C ABI implementation source is missing: %s\n' "${source_file}" >&2
-    exit 1
-fi
+for source_file in "${source_files[@]}"; do
+    if [[ ! -f "${source_file}" ]]; then
+        printf 'Expected Rust C ABI implementation source is missing: %s\n' "${source_file}" >&2
+        exit 1
+    fi
+done
 
 # Keep cargo-llvm-cov's target and merged profile from the workspace collection.
 readonly cargo_output="${report_dir}/cargo-llvm-cov.log"
@@ -70,7 +75,7 @@ readonly raw_report="${report_dir}/coverage-raw.json"
     -object "${ffi_dso}" \
     -object "${ffi_staticlib}" \
     -object "${test_binary}" \
-    --sources "${source_file}" > "${raw_report}"
+    --sources "${source_files[@]}" > "${raw_report}"
 
 python3 "${repository_root}/scripts/coverage_gate.py" normalize \
     --workspace "${repository_root}" \
