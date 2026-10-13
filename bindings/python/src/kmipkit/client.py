@@ -379,6 +379,91 @@ class TransportConfig:
         _unsigned(self.max_request_bytes, 64, allow_zero=False)
 
 
+def _snapshot_endpoint(value: Endpoint) -> Endpoint:
+    if not isinstance(value, Endpoint):
+        errors.raise_for_status(4)
+    try:
+        return Endpoint(
+            Endpoint.kind.__get__(value, Endpoint),
+            Endpoint.address.__get__(value, Endpoint),
+            Endpoint.port.__get__(value, Endpoint),
+            Endpoint.tls_server_name.__get__(value, Endpoint),
+            Endpoint.target_uri.__get__(value, Endpoint),
+        )
+    except (AttributeError, TypeError):
+        errors.raise_for_status(4)
+
+
+def _snapshot_transport_input(value: TransportInput) -> TransportInput:
+    if not isinstance(value, TransportInput):
+        errors.raise_for_status(4)
+    try:
+        source = TransportInput.source.__get__(value, TransportInput)
+        encoding = TransportInput.encoding.__get__(value, TransportInput)
+    except (AttributeError, TypeError):
+        errors.raise_for_status(4)
+    return TransportInput(source, encoding)
+
+
+def _snapshot_transport_inputs(values: object) -> tuple[TransportInput, ...]:
+    bounded_values = _bounded_transport_inputs(values)
+    return tuple(_snapshot_transport_input(value) for value in bounded_values)
+
+
+def _snapshot_trust_source(value: TrustSource) -> TrustSource:
+    if not isinstance(value, TrustSource):
+        errors.raise_for_status(4)
+    try:
+        kind = TrustSource.kind.__get__(value, TrustSource)
+        certificates = TrustSource.certificates.__get__(value, TrustSource)
+    except (AttributeError, TypeError):
+        errors.raise_for_status(4)
+    return TrustSource(kind, _snapshot_transport_inputs(certificates))
+
+
+def _snapshot_timeout(value: TimeoutLimit) -> TimeoutLimit:
+    if not isinstance(value, TimeoutLimit):
+        errors.raise_for_status(4)
+    try:
+        kind = TimeoutLimit.kind.__get__(value, TimeoutLimit)
+        seconds = TimeoutLimit.seconds.__get__(value, TimeoutLimit)
+        nanoseconds = TimeoutLimit.nanoseconds.__get__(value, TimeoutLimit)
+    except (AttributeError, TypeError):
+        errors.raise_for_status(4)
+    return TimeoutLimit(kind, seconds, nanoseconds)
+
+
+def _validated_transport_config(value: TransportConfig) -> TransportConfig:
+    """Rebuild config records through base constructors at the FFI boundary."""
+    if not isinstance(value, TransportConfig):
+        errors.raise_for_status(4)
+    try:
+        endpoint = TransportConfig.endpoint.__get__(value, TransportConfig)
+        certificates = TransportConfig.client_certificates.__get__(value, TransportConfig)
+        private_key = TransportConfig.client_private_key.__get__(value, TransportConfig)
+        trust = TransportConfig.trust.__get__(value, TransportConfig)
+        revocations = TransportConfig.revocation_lists.__get__(value, TransportConfig)
+        connect_timeout = TransportConfig.connect_timeout.__get__(value, TransportConfig)
+        write_timeout = TransportConfig.write_timeout.__get__(value, TransportConfig)
+        read_timeout = TransportConfig.read_timeout.__get__(value, TransportConfig)
+        total_timeout = TransportConfig.total_timeout.__get__(value, TransportConfig)
+        max_request_bytes = TransportConfig.max_request_bytes.__get__(value, TransportConfig)
+    except (AttributeError, TypeError):
+        errors.raise_for_status(4)
+    return TransportConfig(
+        endpoint=_snapshot_endpoint(endpoint),
+        client_certificates=_snapshot_transport_inputs(certificates),
+        client_private_key=_snapshot_transport_input(private_key),
+        trust=_snapshot_trust_source(trust),
+        revocation_lists=_snapshot_transport_inputs(revocations),
+        connect_timeout=_snapshot_timeout(connect_timeout),
+        write_timeout=_snapshot_timeout(write_timeout),
+        read_timeout=_snapshot_timeout(read_timeout),
+        total_timeout=_snapshot_timeout(total_timeout),
+        max_request_bytes=max_request_bytes,
+    )
+
+
 class _ClientHandle(NativeHandle):
     """Native handle released through the private T076 CFFI library."""
 
@@ -516,6 +601,7 @@ class Client(_ClientHandle):
             errors.raise_for_status(4)
         if not isinstance(transport, TransportConfig):
             errors.raise_for_status(4)
+        transport = _validated_transport_config(transport)
         record, owners = _transport_record(transport)
         transport_output = ffi.new("kmipkit_transport_config_t **")
         client_output = ffi.new("kmipkit_client_t **")
