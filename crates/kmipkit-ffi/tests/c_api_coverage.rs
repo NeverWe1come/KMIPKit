@@ -2,12 +2,13 @@
 #![cfg(feature = "coverage-c-consumer")]
 
 use std::ffi::{CString, c_char};
-use std::fs;
-use std::io::{Read, Write};
+use std::fs::{self, OpenOptions};
+use std::io::{self, Read, Write};
 use std::net::{Shutdown, TcpListener};
 use std::path::Path;
 use std::path::PathBuf;
 use std::sync::Arc;
+use std::sync::atomic::{AtomicU64, Ordering};
 use std::thread;
 
 use kmipkit_ffi::kmipkit_codec_limits_t;
@@ -15,6 +16,9 @@ use kmipkit_test_support::EphemeralPki;
 use rustls::pki_types::{CertificateDer, PrivateKeyDer, PrivatePkcs8KeyDer};
 use rustls::server::WebPkiClientVerifier;
 use rustls::{RootCertStore, ServerConfig, ServerConnection, StreamOwned};
+
+const MAX_TEST_TTLV_VALUE_BYTES: usize = 1_048_576;
+static TEMP_DIRECTORY_SEQUENCE: AtomicU64 = AtomicU64::new(0);
 
 #[link(name = "kmipkit_extension_registry_c_consumer", kind = "static")]
 unsafe extern "C" {
@@ -45,13 +49,13 @@ fn existing_c_consumer_exercises_the_exported_abi_in_the_coverage_process() {
         pki.client_identity().private_key_der(),
         pki.authority_certificate_der(),
     ]);
-    let certificate = CString::new(paths.0[0].to_string_lossy().as_bytes())
+    let certificate = CString::new(paths.paths[0].to_string_lossy().as_bytes())
         .expect("temporary path has no NUL byte");
-    let authority = CString::new(paths.0[1].to_string_lossy().as_bytes())
+    let authority = CString::new(paths.paths[1].to_string_lossy().as_bytes())
         .expect("temporary path has no NUL byte");
-    let private_key = CString::new(paths.0[2].to_string_lossy().as_bytes())
+    let private_key = CString::new(paths.paths[2].to_string_lossy().as_bytes())
         .expect("temporary path has no NUL byte");
-    let trust_root = CString::new(paths.0[3].to_string_lossy().as_bytes())
+    let trust_root = CString::new(paths.paths[3].to_string_lossy().as_bytes())
         .expect("temporary path has no NUL byte");
     let listener =
         TcpListener::bind(("127.0.0.1", 0)).expect("an ephemeral local TCP port is available");
@@ -61,29 +65,9 @@ fn existing_c_consumer_exercises_the_exported_abi_in_the_coverage_process() {
         .port();
     let port = CString::new(port.to_string()).expect("port has no NUL byte");
     let server_config = mtls_server_config(&pki);
+    let retry_server_config = Arc::clone(&server_config);
     let peer = thread::spawn(move || {
-        let (stream, _) = listener
-            .accept()
-            .expect("the C client connects to the local peer");
-        stream
-            .set_read_timeout(Some(std::time::Duration::from_secs(5)))
-            .expect("server read timeout is configured");
-        stream
-            .set_write_timeout(Some(std::time::Duration::from_secs(5)))
-            .expect("server write timeout is configured");
-        let connection = ServerConnection::new(server_config)
-            .expect("the TLS 1.3 server connection is configured");
-        let mut tls = StreamOwned::new(connection, stream);
-        let request = read_ttlv_frame(&mut tls);
-        assert!(request.starts_with(&[0x42, 0x00, 0x78]));
-        tls.write_all(&discover_versions_response())
-            .expect("the typed KMIP response is written");
-        tls.flush().expect("the TLS response is flushed");
-        let _ = tls.get_ref().shutdown(Shutdown::Both);
-        let (second_stream, _) = listener
-            .accept()
-            .expect("the explicit second call reaches the controlled peer");
-        let _ = second_stream.shutdown(Shutdown::Both);
+        controlled_mtls_peer(&listener, server_config, retry_server_config);
     });
     let mut arguments = [
         executable.as_ptr().cast_mut(),
@@ -120,34 +104,115 @@ fn existing_c_consumer_exercises_the_exported_abi_in_the_coverage_process() {
     peer.join().expect("the loopback TLS peer completes");
 }
 
-struct TemporaryCredentialFiles([PathBuf; 4]);
+fn controlled_mtls_peer(
+    listener: &TcpListener,
+    server_config: Arc<ServerConfig>,
+    retry_server_config: Arc<ServerConfig>,
+) {
+    let (stream, _) = listener
+        .accept()
+        .expect("the C client connects to the local peer");
+    stream
+        .set_read_timeout(Some(std::time::Duration::from_secs(5)))
+        .expect("server read timeout is configured");
+    stream
+        .set_write_timeout(Some(std::time::Duration::from_secs(5)))
+        .expect("server write timeout is configured");
+    let connection =
+        ServerConnection::new(server_config).expect("the TLS 1.3 server connection is configured");
+    let mut tls = StreamOwned::new(connection, stream);
+    let request = read_ttlv_frame(&mut tls).expect("bounded request frame arrives");
+    assert!(request.starts_with(&[0x42, 0x00, 0x78]));
+    tls.write_all(&discover_versions_response())
+        .expect("the typed KMIP response is written");
+    tls.flush().expect("the TLS response is flushed");
+    let _ = tls.get_ref().shutdown(Shutdown::Both);
+
+    let (second_stream, _) = listener
+        .accept()
+        .expect("the explicit post-dispatch call reaches the controlled peer");
+    second_stream
+        .set_read_timeout(Some(std::time::Duration::from_secs(5)))
+        .expect("post-dispatch peer read timeout is configured");
+    let connection = ServerConnection::new(retry_server_config)
+        .expect("the TLS 1.3 server connection is configured");
+    let mut tls = StreamOwned::new(connection, second_stream);
+    let request = read_ttlv_frame(&mut tls).expect("post-dispatch request arrives fully");
+    assert!(request.starts_with(&[0x42, 0x00, 0x78]));
+    let _ = tls.get_ref().shutdown(Shutdown::Both);
+
+    listener
+        .set_nonblocking(true)
+        .expect("peer can check for an automatic retry");
+    let retry_deadline = std::time::Instant::now() + std::time::Duration::from_millis(500);
+    loop {
+        match listener.accept() {
+            Err(error) if error.kind() == io::ErrorKind::WouldBlock => {
+                if std::time::Instant::now() >= retry_deadline {
+                    break;
+                }
+                thread::sleep(std::time::Duration::from_millis(10));
+            }
+            Ok((stream, _)) => {
+                let _ = stream.shutdown(Shutdown::Both);
+                panic!("the client automatically retried a dispatched KMIP request");
+            }
+            Err(error) => panic!("peer retry check failed: {error}"),
+        }
+    }
+}
+
+struct TemporaryCredentialFiles {
+    directory: PathBuf,
+    paths: [PathBuf; 4],
+}
 
 impl TemporaryCredentialFiles {
     fn create(contents: [&[u8]; 4]) -> Self {
-        let nonce = std::time::SystemTime::now()
-            .duration_since(std::time::UNIX_EPOCH)
-            .expect("system clock is after the Unix epoch")
-            .as_nanos();
-        let directory = std::env::temp_dir();
-        let paths = std::array::from_fn(|index| {
-            directory.join(format!(
-                "kmipkit-ffi-{}-{nonce}-{index}.der",
-                std::process::id()
-            ))
-        });
-        for (path, bytes) in paths.iter().zip(contents) {
-            fs::write(path, bytes).expect("ephemeral credential fixture is written");
+        let directory = create_private_test_directory("kmipkit-ffi-c-consumer")
+            .expect("private test directory is created exclusively");
+        let paths = std::array::from_fn(|index| directory.join(format!("credential-{index}.der")));
+        let files = Self { directory, paths };
+        for (path, bytes) in files.paths.iter().zip(contents) {
+            let mut file = OpenOptions::new()
+                .write(true)
+                .create_new(true)
+                .open(path)
+                .expect("ephemeral credential file is created exclusively");
+            file.write_all(bytes)
+                .expect("ephemeral credential fixture is written");
         }
-        Self(paths)
+        files
     }
 }
 
 impl Drop for TemporaryCredentialFiles {
     fn drop(&mut self) {
-        for path in &self.0 {
-            let _ = fs::remove_file(path);
+        let _ = fs::remove_dir_all(&self.directory);
+    }
+}
+
+fn create_private_test_directory(prefix: &str) -> io::Result<PathBuf> {
+    for _ in 0..128 {
+        let sequence = TEMP_DIRECTORY_SEQUENCE.fetch_add(1, Ordering::Relaxed);
+        let nonce = std::time::SystemTime::now()
+            .duration_since(std::time::UNIX_EPOCH)
+            .unwrap_or_default()
+            .as_nanos();
+        let path = std::env::temp_dir().join(format!(
+            "{prefix}-{}-{nonce}-{sequence}",
+            std::process::id()
+        ));
+        match fs::create_dir(&path) {
+            Ok(()) => return Ok(path),
+            Err(error) if error.kind() == io::ErrorKind::AlreadyExists => {}
+            Err(error) => return Err(error),
         }
     }
+    Err(io::Error::new(
+        io::ErrorKind::AlreadyExists,
+        "could not create a unique private test directory",
+    ))
 }
 
 fn mtls_server_config(pki: &EphemeralPki) -> Arc<ServerConfig> {
@@ -181,21 +246,36 @@ fn mtls_server_config(pki: &EphemeralPki) -> Arc<ServerConfig> {
     )
 }
 
-fn read_ttlv_frame(stream: &mut impl Read) -> Vec<u8> {
+fn read_ttlv_frame(stream: &mut impl Read) -> io::Result<Vec<u8>> {
     let mut header = [0_u8; 8];
-    stream
-        .read_exact(&mut header)
-        .expect("the request header arrives");
+    stream.read_exact(&mut header)?;
     let length = u32::from_be_bytes([header[4], header[5], header[6], header[7]]) as usize;
-    let padded_length = length.div_ceil(8) * 8;
+    if length > MAX_TEST_TTLV_VALUE_BYTES {
+        return Err(io::Error::new(
+            io::ErrorKind::InvalidData,
+            "test peer refused an oversized remote TTLV frame",
+        ));
+    }
+    let padded_length = length
+        .checked_add(7)
+        .map(|value| value / 8 * 8)
+        .ok_or_else(|| io::Error::new(io::ErrorKind::InvalidData, "TTLV padding overflow"))?;
+    let frame_length = 8_usize
+        .checked_add(padded_length)
+        .ok_or_else(|| io::Error::new(io::ErrorKind::InvalidData, "TTLV frame overflow"))?;
     let mut body = vec![0_u8; padded_length];
-    stream
-        .read_exact(&mut body)
-        .expect("the request body arrives");
-    let mut frame = Vec::with_capacity(8 + padded_length);
+    stream.read_exact(&mut body)?;
+    let mut frame = Vec::with_capacity(frame_length);
     frame.extend_from_slice(&header);
     frame.extend_from_slice(&body);
-    frame
+    Ok(frame)
+}
+
+#[test]
+fn test_peer_rejects_remote_ttlv_length_before_allocating() {
+    let mut stream = std::io::Cursor::new([0_u8, 0, 0, 0, 0xff, 0xff, 0xff, 0xff]);
+    let error = read_ttlv_frame(&mut stream).expect_err("oversized frame is rejected");
+    assert_eq!(error.kind(), io::ErrorKind::InvalidData);
 }
 
 fn discover_versions_response() -> Vec<u8> {

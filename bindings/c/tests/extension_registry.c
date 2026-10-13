@@ -455,7 +455,7 @@ static bool test_t076_transport_config_rejects_unknown_abi_version(void)
     return true;
 }
 
-static bool test_t076_validated_client_reports_not_sent(
+static bool test_t076_validated_client_reports_delivery_state(
     int argc,
     char **argv)
 {
@@ -544,7 +544,9 @@ static bool test_t076_validated_client_reports_not_sent(
     REQUIRE(transport_configuration == NULL);
     REQUIRE(client != NULL);
 
-    /* Invalid spans fail before dereferencing/copying and preserve the item owner. */
+    /* Invalid spans fail before dereferencing/copying and preserve the item owner.
+     * INVALID_INPUT_PTR is deliberately used only with an over-cap length, so the
+     * boundary must reject its length before any pointer dereference. */
     REQUIRE_STATUS(kmipkit_client_batch_item_discover_versions(&item), KMIPKIT_SUCCESS);
     {
         struct kmipkit_client_batch_item_t *identified_item = NULL;
@@ -708,8 +710,8 @@ static bool test_t076_validated_client_reports_not_sent(
                    KMIPKIT_SUCCESS);
     REQUIRE(category == UINT32_C(1) && delivery == UINT32_C(1)); /* invalid indicator / NotSent */
 
-    /* The peer accepts this explicit second call and closes during TLS setup.
-     * The client must report the request as not sent and must not retry it. */
+    /* The peer reads this explicit second request, then closes without a response.
+     * The client must report PossiblySent and must not retry the dispatched request. */
     REQUIRE_STATUS(kmipkit_client_batch_create(&batch), KMIPKIT_SUCCESS);
     REQUIRE_STATUS(kmipkit_client_batch_item_discover_versions(&item), KMIPKIT_SUCCESS);
     REQUIRE_STATUS(kmipkit_client_batch_add_item(batch, &item), KMIPKIT_SUCCESS);
@@ -720,7 +722,7 @@ static bool test_t076_validated_client_reports_not_sent(
                    KMIPKIT_SUCCESS);
     REQUIRE(status == (int32_t)9); /* Transport */
     REQUIRE(category == UINT32_C(3)); /* Transport */
-    REQUIRE(delivery == UINT32_C(1)); /* Not sent */
+    REQUIRE(delivery == UINT32_C(2)); /* Possibly sent */
 
     kmipkit_client_batch_release(batch);
     kmipkit_client_release(client);
@@ -3106,12 +3108,12 @@ int main(int argc, char **argv)
         fprintf(stderr, "%lu C consumer test(s) failed\n", (unsigned long)failures);
         return EXIT_FAILURE;
     }
-    if (argc == 7 && !test_t076_validated_client_reports_not_sent(argc, argv)) {
+    if (argc == 7 && !test_t076_validated_client_reports_delivery_state(argc, argv)) {
         fprintf(stderr, "T076 validated client response metadata test failed\n");
         return EXIT_FAILURE;
     }
     if (argc == 7) {
-        puts("PASS T076 validated client returns ordered metadata and not-sent delivery state");
+        puts("PASS T076 validated client returns ordered metadata and possibly-sent delivery state");
     }
     puts("All KMIPKIT-0012 internal FFI harness tests passed.");
     return EXIT_SUCCESS;

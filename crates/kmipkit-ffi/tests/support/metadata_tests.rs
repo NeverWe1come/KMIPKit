@@ -312,9 +312,13 @@ fn panic_boundary_records_internal_error_for_void_exports() {
 
 #[test]
 fn every_exported_c_function_starts_inside_the_shared_panic_boundary() {
-    let source = include_str!("../../src/extension_registry.rs");
-    let exports: Vec<bool> = source
-        .split("#[unsafe(no_mangle)]")
+    let sources = [
+        include_str!("../../src/extension_registry.rs"),
+        include_str!("../../src/extension_registry/client_abi.rs"),
+    ];
+    let exports: Vec<bool> = sources
+        .into_iter()
+        .flat_map(|source| source.split("#[unsafe(no_mangle)]"))
         .filter_map(|declaration| {
             let function_start = declaration.find("pub extern \"C\" fn")?;
             let function = &declaration[function_start..];

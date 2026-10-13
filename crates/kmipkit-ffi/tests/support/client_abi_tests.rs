@@ -1,9 +1,10 @@
-use std::fs;
+use std::fs::{self, OpenOptions};
 use std::io::{Read, Write};
 use std::net::TcpListener;
 use std::path::{Path, PathBuf};
 use std::ptr;
 use std::sync::Arc;
+use std::sync::atomic::{AtomicU64, Ordering};
 use std::thread;
 
 use base64::Engine;
@@ -29,6 +30,7 @@ const INPUT_MEMORY: u32 = 1;
 const INPUT_FILE: u32 = 2;
 const ENCODING_PEM: u32 = 1;
 const ENCODING_DER: u32 = 2;
+static TEMP_DIRECTORY_SEQUENCE: AtomicU64 = AtomicU64::new(0);
 
 fn byte_span(bytes: &[u8]) -> kmipkit_byte_span_v1_t {
     kmipkit_byte_span_v1_t {
@@ -153,34 +155,65 @@ fn crl_der() -> Vec<u8> {
     crl.der().as_ref().to_vec()
 }
 
-struct TemporaryFiles(Vec<PathBuf>);
+struct TemporaryFiles {
+    directory: PathBuf,
+    files: Vec<PathBuf>,
+}
 
 impl TemporaryFiles {
     fn new() -> Self {
-        Self(Vec::new())
+        let directory =
+            create_private_test_directory().expect("private test directory is created exclusively");
+        Self {
+            directory,
+            files: Vec::new(),
+        }
     }
 
     fn write(&mut self, label: &str, contents: &[u8]) -> PathBuf {
-        let nonce = std::time::SystemTime::now()
-            .duration_since(std::time::UNIX_EPOCH)
-            .expect("system clock is after the Unix epoch")
-            .as_nanos();
-        let path = std::env::temp_dir().join(format!(
-            "kmipkit-ffi-client-{label}-{}-{nonce}.tmp",
-            std::process::id()
-        ));
-        fs::write(&path, contents).expect("test-only input file is written");
-        self.0.push(path.clone());
+        let path = self.directory.join(format!("{label}.tmp"));
+        let mut file = OpenOptions::new()
+            .write(true)
+            .create_new(true)
+            .open(&path)
+            .expect("test-only input file is created exclusively");
+        file.write_all(contents)
+            .expect("test-only input file is written");
+        self.files.push(path.clone());
         path
     }
 }
 
 impl Drop for TemporaryFiles {
     fn drop(&mut self) {
-        for path in &self.0 {
+        for path in &self.files {
             let _ = fs::remove_file(path);
         }
+        let _ = fs::remove_dir(&self.directory);
     }
+}
+
+fn create_private_test_directory() -> std::io::Result<PathBuf> {
+    for _ in 0..128 {
+        let sequence = TEMP_DIRECTORY_SEQUENCE.fetch_add(1, Ordering::Relaxed);
+        let nonce = std::time::SystemTime::now()
+            .duration_since(std::time::UNIX_EPOCH)
+            .unwrap_or_default()
+            .as_nanos();
+        let path = std::env::temp_dir().join(format!(
+            "kmipkit-ffi-client-{}-{nonce}-{sequence}",
+            std::process::id()
+        ));
+        match fs::create_dir(&path) {
+            Ok(()) => return Ok(path),
+            Err(error) if error.kind() == std::io::ErrorKind::AlreadyExists => {}
+            Err(error) => return Err(error),
+        }
+    }
+    Err(std::io::Error::new(
+        std::io::ErrorKind::AlreadyExists,
+        "could not create a unique private test directory",
+    ))
 }
 
 fn path_bytes(path: &Path) -> Vec<u8> {
