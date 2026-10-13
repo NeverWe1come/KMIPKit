@@ -83,7 +83,7 @@ As a KMIPKit caller, I can send the §6.1.23 Get Usage Allocation request and in
 8. Given a guarded request that is known not to have been sent, when execution returns NotSent, then its local reservation is released; given PossiblySent, ResponseStarted, a complete KMIP result, or Pending, then the reservation remains unavailable locally because the client cannot infer remote consumption.
 9. Given an unguarded operation, raw TTLV value, or work from another process/client, when protection occurs, then it does not change this guard's local count and KMIPKit makes no claim that this guard prevents that external use.
 
-**Specific rules**: Usage Limits Count is required and uses the Long Integer wire type defined in §4.59, Table 148; protection-use and exhaustion rules in §6.1.23 apply.
+**Specific rules**: Usage Limits Count is required and uses the Long Integer wire type defined in §7.40, Table 392; protection-use and exhaustion rules in §6.1.23 apply.
 
 **Approved caller-guard interpretation**: For an object the caller knows has Usage Limits, the caller routes each protection request through the local usage-allocation guard described under Maintainer-approved interpretations below. The caller also ensures that Get Usage Allocation is requested only during the object's known protection-enabled window; KMIPKit does not fetch or infer Activation Date or Protect Stop Date. The caller supplies the usage unit from known object metadata and the cost for each guarded protection request; KMIPKit does not derive cost from payload size, operation type, or server state. The context is bound to the Unique Identifier returned by a successful allocation. It accounts only for requests routed through that context in this process. It does not track protection performed by another client, process, session, or an unguarded call, and it does not claim to know how much the server actually consumed.
 
@@ -92,7 +92,7 @@ As a KMIPKit caller, I can send the §6.1.23 Get Usage Allocation request and in
 | Side | Field | REQUIRED | Description or condition |
 | --- | --- | --- | --- |
 | Request | Unique Identifier | No | Determines the object whose usage allocation is being requested. If omitted, then the ID Placeholder is substituted by the server. |
-| Request | Usage Limits Count | Yes | The number of Usage Limits Units to be protected; encode as TTLV Long Integer (`i64`) per §4.59, Table 148. |
+| Request | Usage Limits Count | Yes | The number of Usage Limits Units to be protected; encode as TTLV Long Integer (`i64`) per §7.40, Table 392. |
 | Response | Unique Identifier | Yes | The Unique Identifier of the object. |
 
 ---

@@ -60,7 +60,7 @@ KMIPKIT-0043 is a dependency only for adding these operations and the guard to t
 
 ### Protocol models
 
-Implement one focused protocol module per in-scope operation under `crates/kmipkit-protocol/src/`: `get_constraints.rs`, `get_usage_allocation.rs`, `set_constraints.rs`, and `set_defaults.rs`. Keep nested Constraints and Defaults Information as ordered generic `Structure` values so unrecognized members are preserved. Represent Usage Limits Unit as an open raw Enumeration. Encode Usage Limits Count as KMIP Long Integer (`i64`) per Specification §4.59, Table 148, and preserve the caller's requested value. Operation error results use the common result model rather than operation-local error enums that discard unknown values.
+Implement one focused protocol module per in-scope operation under `crates/kmipkit-protocol/src/`: `get_constraints.rs`, `get_usage_allocation.rs`, `set_constraints.rs`, and `set_defaults.rs`. Keep nested Constraints and Defaults Information as ordered generic `Structure` values so unrecognized members are preserved. Represent Usage Limits Unit as an open raw Enumeration. Encode Usage Limits Count as KMIP Long Integer (`i64`) per Specification §7.40, Table 392, and preserve the caller's requested value. Operation error results use the common result model rather than operation-local error enums that discard unknown values.
 
 ### Client execution
 

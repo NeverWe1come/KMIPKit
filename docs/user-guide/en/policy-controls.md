@@ -20,7 +20,7 @@ fn build_policy_payloads(
 ) -> Result<(), Box<dyn std::error::Error>> {
     let _get_constraints = GetConstraintsRequest::new().to_ttlv_payload()?;
 
-    // Usage Limits Count is a signed Long Integer (i64), per §4.59, Table 148.
+    // Usage Limits Count is a signed Long Integer (i64), per §7.40, Table 392.
     let _get_allocation = GetUsageAllocationRequest::new(25)
         .with_unique_identifier(object_id)
         .to_ttlv_payload()?;
