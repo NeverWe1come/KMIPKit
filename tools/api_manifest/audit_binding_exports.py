@@ -82,11 +82,8 @@ def inventory_c_header(source: str, package: str = "c-kmipkit") -> dict[str, Any
             records.append(_record(package, name, "constant" if name.startswith("KMIPKIT_ERROR_") else "macro", str(line_number)))
     parsed_aggregate_spans: set[tuple[int, int]] = set()
     aggregate_pattern = re.compile(r"\btypedef\s+(struct|union)(?:\s+[A-Za-z_]\w*)?\s*\{([^{}]*)\}\s*([A-Za-z_]\w*)\s*;", re.S)
-    for match in aggregate_pattern.finditer(cleaned):
-        parsed_aggregate_spans.add((match.start(), match.end()))
-        body, name = match.group(2), match.group(3)
-        line_number = cleaned.count("\n", 0, match.start()) + 1
-        records.append(_record(package, name, "type", str(line_number)))
+
+    def record_aggregate_fields(body: str, name: str, line_number: int) -> None:
         for field in body.split(";"):
             field = field.strip()
             if not field:
@@ -124,6 +121,23 @@ def inventory_c_header(source: str, package: str = "c-kmipkit") -> dict[str, Any
                                for field_name in field_names)
             else:
                 issues.append({"packageId": package, "exportName": name, "reason": "unsupported-c-field"})
+
+    for match in aggregate_pattern.finditer(cleaned):
+        parsed_aggregate_spans.add((match.start(), match.end()))
+        body, name = match.group(2), match.group(3)
+        line_number = cleaned.count("\n", 0, match.start()) + 1
+        records.append(_record(package, name, "type", str(line_number)))
+        record_aggregate_fields(body, name, line_number)
+
+    parsed_tagged_aggregate_spans: set[tuple[int, int]] = set()
+    tagged_aggregate_pattern = re.compile(r"\b(?:struct|union)\s+([A-Za-z_]\w*)\s*\{([^{}]*)\}\s*;", re.S)
+    for match in tagged_aggregate_pattern.finditer(cleaned):
+        parsed_tagged_aggregate_spans.add((match.start(), match.end()))
+        name, body = match.group(1), match.group(2)
+        line_number = cleaned.count("\n", 0, match.start()) + 1
+        if not any(row["exportName"] == name and row["kind"] == "type" for row in records):
+            records.append(_record(package, name, "type", str(line_number)))
+        record_aggregate_fields(body, name, line_number)
     for match in re.finditer(r"\btypedef\s+(?:struct|union)\b[^;]*\{", cleaned, re.S):
         if not any(start <= match.start() < end for start, end in parsed_aggregate_spans):
             issues.append({"packageId": package, "exportName": str(cleaned.count("\n", 0, match.start()) + 1),
@@ -141,7 +155,7 @@ def inventory_c_header(source: str, package: str = "c-kmipkit") -> dict[str, Any
                 records.append(_record(package, enumerator_name, "constant", str(line_number)))
             elif enumerator_name:
                 issues.append({"packageId": package, "exportName": name, "reason": "unsupported-c-enumerator"})
-    parsed_type_spans = parsed_aggregate_spans | parsed_enum_spans
+    parsed_type_spans = parsed_aggregate_spans | parsed_tagged_aggregate_spans | parsed_enum_spans
     for match in re.finditer(r"\b(?:struct|union|enum)\b[^;{]*\{", cleaned, re.S):
         if not any(start <= match.start() < end for start, end in parsed_type_spans):
             issues.append({"packageId": package, "exportName": str(cleaned.count("\n", 0, match.start()) + 1),
