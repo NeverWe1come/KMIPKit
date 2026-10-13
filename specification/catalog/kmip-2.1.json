@@ -61766,9 +61766,7 @@
       "parent_element_ids": [
         "KMIPKIT-ELEM-OBJECT-STRUCTURE-KEY-BLOCK"
       ],
-      "requirement_ids": [
-        "KMIPKIT-REQ-SPEC-2.7-001"
-      ],
+      "requirement_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": null,
@@ -61866,7 +61864,9 @@
       "parent_element_ids": [
         "KMIPKIT-ELEM-OBJECT-STRUCTURE-KEY-BLOCK"
       ],
-      "requirement_ids": [],
+      "requirement_ids": [
+        "KMIPKIT-REQ-SPEC-2.7-001"
+      ],
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": null,
@@ -86470,7 +86470,7 @@
       "negative_verification_required": false,
       "decision_id": null,
       "status": "scoped_verified",
-      "review_note": "Pinned KMIP Specification v2.1 §2.7 permits wrapping a Secret Data Key Value. This evidence covers only client Import request serialization: it preserves a wrapped Key Value byte string with Key Wrapping Data and omits Key Wrap Type for Secret Data. The test uses synthetic fixture bytes; it does not inspect or unwrap ciphertext, prove server acceptance, or pass an official OASIS Test Case."
+      "review_note": "Pinned KMIP Specification v2.1 §2.7 permits wrapping a Secret Data Key Value. This evidence covers only client Import request serialization: it preserves a wrapped Key Value byte string with Key Wrapping Data and omits Key Wrap Type for Secret Data. The test uses synthetic fixture bytes; it does not inspect or unwrap ciphertext or prove server acceptance. No official test case is claimed or passed."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-2.7-002",
@@ -90848,7 +90848,7 @@
       "negative_verification_required": false,
       "decision_id": null,
       "status": "scoped_verified",
-      "review_note": "KMIP Specification v2.1 §5.3, Table 159 permits repeated §4 attributes. Scoped evidence covers two such items retained in the client Create Key Pair Private Key Attributes request group. It does not establish server-side union or processing. This is not an OASIS test-case pass."
+      "review_note": "Pinned KMIP Specification v2.1 §5.3, Table 159 permits repeated §4 attributes. Scoped evidence covers two such items retained in the client Create Key Pair Private Key Attributes request group. It does not establish server-side union or processing. No official test case is claimed or passed."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-5.4-001",
@@ -90914,7 +90914,7 @@
       "negative_verification_required": false,
       "decision_id": null,
       "status": "scoped_verified",
-      "review_note": "KMIP Specification v2.1 §5.4, Table 160 permits repeated §4 attributes. Scoped evidence covers two such items retained in the client Create Key Pair Public Key Attributes request group. It does not establish server-side union or processing. This is not an OASIS test-case pass."
+      "review_note": "Pinned KMIP Specification v2.1 §5.4, Table 160 permits repeated §4 attributes. Scoped evidence covers two such items retained in the client Create Key Pair Public Key Attributes request group. It does not establish server-side union or processing. No official test case is claimed or passed."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-5.5-001",
