@@ -2,11 +2,13 @@
 
 from __future__ import annotations
 
+import json
 import re
 import unittest
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[3]
+CATALOG = ROOT / "specification/catalog/kmip-2.1.json"
 TRACEABILITY = ROOT / "specs/029-opaque-object-context/traceability.md"
 
 REQUIREMENTS = {
@@ -22,6 +24,80 @@ REQUIREMENTS = {
 
 
 class OpaqueObjectTraceabilityTests(unittest.TestCase):
+    def test_table4_required_fields_are_traced_to_child_elements_not_heading(self) -> None:
+        catalog = json.loads(CATALOG.read_text(encoding="utf-8"))
+        clauses = {record["clause_id"]: record for record in catalog["source_clauses"]}
+        requirements = {
+            record["requirement_id"]: record for record in catalog["requirements"]
+        }
+        elements = {record["element_id"]: record for record in catalog["elements"]}
+
+        header = clauses["KMIPKIT-CLAUSE-SPEC-2.3-003"]
+        self.assertEqual(
+            header["locator"], {"ordinal": 3, "block_kind": "table_row"}
+        )
+        self.assertEqual(header["source_keywords"], ["REQUIRED"])
+        self.assertEqual(header["disposition"], "non_applicable")
+        self.assertEqual(header["requirement_ids"], [])
+
+        requirement = requirements["KMIPKIT-REQ-SPEC-2.3-003"]
+        self.assertEqual(requirement["feature_spec"], "KMIPKIT-0044")
+        self.assertEqual(requirement["source_clause_ids"], [])
+        self.assertEqual(requirement["scope_state"], "client_1_0")
+        self.assertEqual(requirement["role"], "client")
+        self.assertEqual(requirement["direction"], "client_to_server")
+        self.assertIn("Opaque Data Type", requirement["summary"])
+        self.assertIn("Opaque Data Value", requirement["summary"])
+        self.assertNotIn("heading", requirement["summary"].lower())
+
+        required_children = {
+            "KMIPKIT-ELEM-STRUCTURE-MEMBER-2-3-OPAQUE-OBJECT-OPAQUE-DATA-TYPE": "Enumeration",
+            "KMIPKIT-ELEM-STRUCTURE-MEMBER-2-3-OPAQUE-OBJECT-OPAQUE-DATA-VALUE": "Byte String",
+        }
+        for element_id, encoding in required_children.items():
+            with self.subTest(element_id=element_id):
+                element = elements[element_id]
+                self.assertEqual(element["source_requiredness"], "Yes")
+                self.assertEqual(element["source_encoding"], encoding)
+                self.assertIn("KMIPKIT-REQ-SPEC-2.3-003", element["requirement_ids"])
+                self.assertIn(
+                    {"source_id": "KMIPKIT-SRC-spec", "section": "2.3"},
+                    element["source_refs"],
+                )
+
+        register_evidence = {
+            "KMIPKIT-REQ-SPEC-6.1.43-001": (
+                "crates/kmipkit-client/tests/unit/register_execution_tests.rs::"
+                "managed_opaque_register_preserves_standard_table_291_wire_shape_and_attribute_order"
+            ),
+            "KMIPKIT-REQ-SPEC-6.1.43-007": (
+                "crates/kmipkit-protocol/tests/unit/register_operation_tests.rs::"
+                "managed_opaque_context_accepts_table293_attributes_without_a_key_block_and_emits_no_marker"
+            ),
+            "KMIPKIT-REQ-SPEC-6.1.43-009-001": (
+                "crates/kmipkit-protocol/tests/unit/register_operation_tests.rs::"
+                "managed_opaque_context_accepts_table293_attributes_without_a_key_block_and_emits_no_marker"
+            ),
+            "KMIPKIT-REQ-SPEC-6.1.43-009-002": (
+                "crates/kmipkit-protocol/tests/unit/register_operation_tests.rs::"
+                "managed_opaque_context_requires_algorithm_and_length_as_a_pair"
+            ),
+            "KMIPKIT-REQ-SPEC-6.1.43-010-001": (
+                "crates/kmipkit-protocol/tests/unit/register_operation_tests.rs::"
+                "managed_opaque_context_accepts_table293_attributes_without_a_key_block_and_emits_no_marker"
+            ),
+            "KMIPKIT-REQ-SPEC-6.1.43-010-002": (
+                "crates/kmipkit-protocol/tests/unit/register_operation_tests.rs::"
+                "managed_opaque_context_requires_algorithm_and_length_as_a_pair"
+            ),
+        }
+        for requirement_id, verification_ref in register_evidence.items():
+            with self.subTest(requirement_id=requirement_id):
+                linked = requirements[requirement_id]
+                self.assertEqual(linked["feature_spec"], "KMIPKIT-0036")
+                self.assertIn("crates/kmipkit-protocol/src/register.rs", linked["implementation_refs"])
+                self.assertIn(verification_ref, linked["verification_refs"])
+
     def test_each_context_requirement_has_source_code_positive_and_negative_evidence(self) -> None:
         self.assertTrue(TRACEABILITY.is_file(), "feature traceability ledger must exist")
         lines = TRACEABILITY.read_text(encoding="utf-8").splitlines()
