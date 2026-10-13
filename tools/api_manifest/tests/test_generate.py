@@ -606,7 +606,28 @@ class ManifestGeneratorCliTests(unittest.TestCase):
             }
         )
 
-        with self.assertRaisesRegex(generate.ManifestError, "C keyword"):
+        with self.assertRaisesRegex(generate.ManifestError, "C.*keyword"):
+            generate._validate_references(manifest)
+
+    def test_references_reject_cpp_keywords_as_fixed_width_field_names(self) -> None:
+        manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
+        manifest["types"].append(
+            {
+                "id": "ReservedCppField",
+                "kind": "struct",
+                "requirementIds": ["KMIPKIT-0043-FR-007"],
+                "rust": {"module": "kmipkit_ffi", "name": "ReservedCppField", "owner": "ffi"},
+                "c": {
+                    "name": "kmipkit_reserved_cpp_field_t",
+                    "kind": "fixed-width-value",
+                    "fields": [{"name": "class", "type": "uint32_t"}],
+                },
+                "java": {"package": "org.kmipkit", "name": "ReservedCppField"},
+                "python": {"module": "kmipkit", "name": "ReservedCppField"},
+            }
+        )
+
+        with self.assertRaisesRegex(generate.ManifestError, "keyword"):
             generate._validate_references(manifest)
 
     def test_references_require_versioned_c_value_header_fields(self) -> None:
