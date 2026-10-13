@@ -86118,12 +86118,13 @@
       ],
       "verification_refs": [
         "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_client_register_opaque_object_context_custom_attributes",
-        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_client_get_attributes_opaque_object_custom_context"
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_client_get_attributes_opaque_object_custom_context",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_opaque_context_capability_does_not_require_or_revalidate_other_register_fields"
       ],
       "negative_verification_required": false,
       "decision_id": null,
       "status": "scoped_verified",
-      "review_note": "KMIP Specification v2.1 §2.3 permits Opaque Object context to be stored and retrieved using Custom Attributes. This scoped client encode/decode evidence exercises the §4.60 Table 150 Vendor Attribute structure with the synthetic Vendor Identification example.invalid; that value is test data, not a registered vendor identity. Section 2.3 does not name the §4.60 wire representation. The tests cover Register serialization and Get Attributes decoding, including repeated values, and do not establish server storage or acceptance. No requirement-specific official Test Cases ID is linked by the pinned OASIS sources."
+      "review_note": "KMIP Specification v2.1 §2.3 permits Opaque Object context to be stored and retrieved using Custom Attributes. This scoped client encode/decode evidence exercises the §4.60 Table 150 Vendor Attribute structure with the synthetic Vendor Identification example.invalid; that value is test data, not a registered vendor identity. Section 2.3 does not name the §4.60 wire representation. The tests cover Register serialization and Get Attributes decoding, including repeated values; the optional Attributes field is not required and the rule does not replace Register schema validation. They do not establish server storage or acceptance. No requirement-specific official Test Cases ID is linked by the pinned OASIS sources."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-2.3-002",
@@ -88692,7 +88693,8 @@
       ],
       "verification_refs": [
         "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_client_register_key_value_location_only_without_key_value",
-        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_malformed_register_key_value_location_members"
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_malformed_register_key_value_location_members",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_malformed_register_object_key_block_shapes_for_key_value_location"
       ],
       "negative_verification_required": false,
       "decision_id": null,

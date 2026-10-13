@@ -2807,6 +2807,34 @@ fn profile_maps_client_register_opaque_object_context_custom_attributes() {
 }
 
 #[test]
+fn profile_opaque_context_capability_does_not_require_or_revalidate_other_register_fields() {
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-2.3-001";
+    const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
+    let result = ProfileValidationResult {
+        profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
+        requirement_ids: vec![REQUIREMENT_ID.to_owned()],
+    };
+
+    let out_of_scope_register_payloads = [
+        Structure::new(),
+        structure([tagged(
+            OBJECT_TYPE_TAG,
+            Value::text_string("not an Enumeration".to_owned()),
+        )]),
+        structure([tagged(OBJECT_TYPE_TAG, Value::enumeration(8))]),
+    ];
+
+    for payload in out_of_scope_register_payloads {
+        result
+            .validate_request(&request_message_with_operation_payload(
+                REGISTER_OPERATION_TAG,
+                payload,
+            ))
+            .expect("the optional context rule only checks an Opaque Register's Attributes");
+    }
+}
+
+#[test]
 fn profile_maps_client_get_attributes_opaque_object_custom_context() {
     // KMIP Specification v2.1 §2.3 and §6.1.20/Table 224.
     const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-2.3-001";
@@ -3091,5 +3119,86 @@ fn profile_rejects_malformed_register_key_value_location_members() {
             error.source_clause_id(),
             Some("KMIPKIT-CLAUSE-SPEC-4.27-001")
         );
+    }
+}
+
+#[test]
+fn profile_rejects_malformed_register_object_key_block_shapes_for_key_value_location() {
+    // KMIP Specification v2.1 §4.27/Table 82 and §6.1.43/Table 291.
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-4.27-001";
+    const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
+    const KEY_VALUE_LOCATION: u32 = 0x0042_00B8;
+    const KEY_VALUE_LOCATION_VALUE: u32 = 0x0042_00B9;
+    const KEY_VALUE_LOCATION_TYPE: u32 = 0x0042_00BA;
+    const SYMMETRIC_KEY: u32 = 0x0042_008F;
+    const KEY_BLOCK: u32 = 0x0042_0040;
+    const KEY_VALUE: u32 = 0x0042_0045;
+
+    let result = ProfileValidationResult {
+        profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
+        requirement_ids: vec![REQUIREMENT_ID.to_owned()],
+    };
+    let key_value_location = || {
+        tagged(
+            KEY_VALUE_LOCATION,
+            Value::structure(structure([
+                tagged(
+                    KEY_VALUE_LOCATION_VALUE,
+                    Value::text_string("pkcs11:object=key-1".to_owned()),
+                ),
+                tagged(KEY_VALUE_LOCATION_TYPE, Value::enumeration(2)),
+            ])),
+        )
+    };
+    let valid_key_block = || tagged(KEY_BLOCK, Value::structure(Structure::new()));
+    let malformed_objects = [
+        tagged(SYMMETRIC_KEY, Value::structure(Structure::new())),
+        tagged(
+            SYMMETRIC_KEY,
+            Value::structure(structure([valid_key_block(), valid_key_block()])),
+        ),
+        tagged(
+            SYMMETRIC_KEY,
+            Value::structure(structure([tagged(
+                KEY_BLOCK,
+                Value::structure(structure([
+                    tagged(KEY_VALUE, Value::byte_string(b"key-a".to_vec())),
+                    tagged(KEY_VALUE, Value::byte_string(b"key-b".to_vec())),
+                ])),
+            )])),
+        ),
+        tagged(
+            SYMMETRIC_KEY,
+            Value::structure(structure([tagged(
+                KEY_BLOCK,
+                Value::text_string("not a Structure".to_owned()),
+            )])),
+        ),
+        tagged(
+            SYMMETRIC_KEY,
+            Value::text_string("not an Object Structure".to_owned()),
+        ),
+    ];
+
+    for object in malformed_objects {
+        let request = request_message_with_operation_payload(
+            REGISTER_OPERATION_TAG,
+            structure([
+                tagged(OBJECT_TYPE_TAG, Value::enumeration(2)),
+                tagged(
+                    ATTRIBUTES_TAG,
+                    Value::structure(structure([key_value_location()])),
+                ),
+                object,
+            ]),
+        );
+        let error = result
+            .validate_request(&request)
+            .expect_err("Key Value Location requires one well-formed Key Block without Key Value");
+        assert_eq!(
+            error.code(),
+            ProfileValidationErrorCode::RequestRuleRejected
+        );
+        assert_eq!(error.requirement_id(), Some(REQUIREMENT_ID));
     }
 }

@@ -16507,11 +16507,15 @@ class CatalogValidationTests(unittest.TestCase):
     def test_opaque_object_context_capability_evidence_has_a_bounded_typed_rule(self) -> None:
         """The §2.3 capability is limited to tested client encode/decode paths."""
         requirement_id = "KMIPKIT-REQ-SPEC-2.3-001"
-        expected_tests = {
+        expected_mapping_tests = {
             "crates/kmipkit-protocol/tests/support/profile_unit.rs::"
             "profile_maps_client_register_opaque_object_context_custom_attributes",
             "crates/kmipkit-protocol/tests/support/profile_unit.rs::"
             "profile_maps_client_get_attributes_opaque_object_custom_context",
+        }
+        expected_tests = expected_mapping_tests | {
+            "crates/kmipkit-protocol/tests/support/profile_unit.rs::"
+            "profile_opaque_context_capability_does_not_require_or_revalidate_other_register_fields",
         }
         expected_implementations = {
             "crates/kmipkit-protocol/src/attribute.rs::AttributeSet::try_new",
@@ -16547,7 +16551,7 @@ class CatalogValidationTests(unittest.TestCase):
         self.assertEqual({mapping["verification_category"] for mapping in mappings}, {"OptionalCapability"})
         self.assertEqual({mapping["test_kind"] for mapping in mappings}, {"OptionalCapabilityUsable"})
         self.assertTrue(all(mapping["evaluator_present"] for mapping in mappings))
-        self.assertEqual({mapping["test_id"] for mapping in mappings}, expected_tests)
+        self.assertEqual({mapping["test_id"] for mapping in mappings}, expected_mapping_tests)
 
     def test_q_length_integer_negative_validation_has_named_requirement_evidence(self) -> None:
         """The Qlength field-type rejection test is linked to its normative requirement."""
