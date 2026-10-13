@@ -145,10 +145,11 @@ final class TransportConfigurationBoundaryTest {
 
     @Test
     void countsUtf8FilePathBytesAcrossClientIdentityBeforeEncoding() {
-        Path maximumLengthPath = Path.of("a/".repeat(2_047) + "ab");
+        Path maximumLengthPath = Path.of("é/".repeat(1_364) + "éab");
         TransportConfiguration.Builder builder = TransportConfiguration.builder();
 
-        assertEquals(4_096, maximumLengthPath.toString().length());
+        assertEquals(4_096,
+                maximumLengthPath.toString().getBytes(java.nio.charset.StandardCharsets.UTF_8).length);
         assertThrows(ResourceLimitException.class,
                 () -> builder.clientIdentityFiles(
                         Collections.nCopies(4_096, maximumLengthPath), Path.of("k"),

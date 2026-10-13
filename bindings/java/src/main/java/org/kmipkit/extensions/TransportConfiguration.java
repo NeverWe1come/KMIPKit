@@ -15,6 +15,8 @@ import org.kmipkit.internal.NativeHandle;
 /** Validated TLS 1.3 transport inputs consumed when constructing a client. */
 public final class TransportConfiguration implements AutoCloseable {
     private static final long MAX_INPUT_BYTES = 16 * 1024 * 1024L;
+    private static final int MAX_MATERIAL_ITEMS = 4_096;
+    private static final int MAX_TEXT_BYTES = 4_096;
     private static final int RAW_TLS = 1;
     private static final int HTTPS = 2;
     private static final int TRUST_PLATFORM = 1;
@@ -146,7 +148,7 @@ public final class TransportConfiguration implements AutoCloseable {
             long replacementBytes = Math.addExact(utf8Bytes(certificatePaths), utf8Length(keyPath));
             ensureAggregateLimit(replacementBytes, clientIdentityBytes());
 
-            List<Input> replacementCertificates = fileInputs(certificatePaths, encoding, false);
+            List<Input> replacementCertificates = fileInputs(certificatePaths, encoding);
             Input replacementKey = fileInput(keyPath, encoding, true);
             replacePrivateKey(replacementKey);
             clientCertificates = replacementCertificates;
@@ -176,7 +178,7 @@ public final class TransportConfiguration implements AutoCloseable {
             ensureMutable();
             List<String> certificatePaths = filePathTexts(certificates, encoding);
             ensureAggregateLimit(utf8Bytes(certificatePaths), inputBytes(trustCertificates));
-            List<Input> replacement = fileInputs(certificatePaths, encoding, false);
+            List<Input> replacement = fileInputs(certificatePaths, encoding);
             trustKind = TRUST_CERTIFICATES;
             trustCertificates = replacement;
             return this;
@@ -364,7 +366,7 @@ public final class TransportConfiguration implements AutoCloseable {
         if (values == null || values.length == 0 || encoding == null) {
             throw new InvalidInputException("transport material is incomplete");
         }
-        if (values.length > 4096) {
+        if (values.length > MAX_MATERIAL_ITEMS) {
             throw new ResourceLimitException("transport material count exceeds the local limit");
         }
         List<Input> result = new ArrayList<>(values.length);
@@ -381,7 +383,7 @@ public final class TransportConfiguration implements AutoCloseable {
         if (values == null || values.length == 0 || encoding == null) {
             throw new InvalidInputException("transport material is incomplete");
         }
-        if (values.length > 4096) {
+        if (values.length > MAX_MATERIAL_ITEMS) {
             throw new ResourceLimitException("transport material count exceeds the local limit");
         }
         long total = 0;
@@ -398,7 +400,7 @@ public final class TransportConfiguration implements AutoCloseable {
     }
 
     private static List<String> filePathTexts(List<Path> paths, Encoding encoding) {
-        if (paths == null || paths.isEmpty() || paths.size() > 4096 || encoding == null) {
+        if (paths == null || paths.isEmpty() || paths.size() > MAX_MATERIAL_ITEMS || encoding == null) {
             throw new InvalidInputException("transport file inputs are invalid");
         }
         List<String> result = new ArrayList<>(paths.size());
@@ -416,16 +418,16 @@ public final class TransportConfiguration implements AutoCloseable {
         if (text.isBlank()) {
             throw new InvalidInputException("transport file input is invalid");
         }
-        if (utf8Length(text) > 4096) {
+        if (utf8Length(text) > MAX_TEXT_BYTES) {
             throw new ResourceLimitException("transport file path exceeds the local text limit");
         }
         return text;
     }
 
-    private static List<Input> fileInputs(List<String> paths, Encoding encoding, boolean secret) {
+    private static List<Input> fileInputs(List<String> paths, Encoding encoding) {
         List<Input> result = new ArrayList<>(paths.size());
         for (String path : paths) {
-            result.add(fileInput(path, encoding, secret));
+            result.add(fileInput(path, encoding, false));
         }
         return List.copyOf(result);
     }
@@ -509,7 +511,7 @@ public final class TransportConfiguration implements AutoCloseable {
     }
 
     private static void validateText(String value, String field) {
-        if (value != null && value.getBytes(StandardCharsets.UTF_8).length > 4096) {
+        if (value != null && value.getBytes(StandardCharsets.UTF_8).length > MAX_TEXT_BYTES) {
             throw new ResourceLimitException(field + " exceeds the local text limit");
         }
     }
