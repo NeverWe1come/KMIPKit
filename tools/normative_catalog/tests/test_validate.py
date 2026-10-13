@@ -361,7 +361,11 @@ def _selected_profile_source_scope(
 
 def _has_reviewed_client_actor(record: dict[str, Any]) -> bool:
     """Return whether a source review explicitly assigns an obligation to the client."""
-    return record.get("actor") == "client"
+    actor = record.get("actor")
+    if not isinstance(actor, str):
+        return False
+    normalized_actor = actor.strip().casefold()
+    return normalized_actor == "client" or normalized_actor.startswith("client ")
 
 
 def _reviewed_profile_optional_capabilities(
