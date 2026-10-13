@@ -49,8 +49,8 @@ The complete C/Java/Python audit command produced exit code 0:
 
 | Package | Scanner complete | Observed | Manifest | Exact matches | Missing | Stale | Kind mismatches | Issues |
 | --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
-| C | yes | 182 | 180 | 180 | 0 | 0 | 0 | 0 |
-| Java | yes | 329 | 329 | 329 | 0 | 0 | 0 | 0 |
+| C | yes | 182 | 178 | 178 | 0 | 0 | 0 | 0 |
+| Java | yes | 330 | 330 | 330 | 0 | 0 | 0 | 0 |
 | Python | yes | 274 | 274 | 274 | 0 | 0 | 0 | 0 |
 
 The C count intentionally includes the two exact C-only diagnostic functions
