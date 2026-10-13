@@ -776,12 +776,12 @@ fn execute_client_batch(
         }
         Err(error) => {
             let status = record_client_error(&error);
-            if let (Some(output), Some(response_ttlv)) = (out_error, error.response_ttlv()) {
-                let response = response_ttlv.with_ttlv(|view| super::clone_structure_view(&view));
-                match response {
-                    Ok(response) => {
+            if let Some(output) = out_error {
+                match clone_error_response_ttlv(&error) {
+                    Ok(Some(response)) => {
                         *output = make_handle(Kind::Structure, HandleValue::Structure(response));
                     }
+                    Ok(None) => {}
                     Err(clone_status) => return record_ffi_error(clone_status),
                 }
             }
@@ -808,6 +808,14 @@ pub extern "C" fn kmipkit_client_execute_with_error_ttlv_v1(
             Some(out_error_response_ttlv),
         )
     })
+}
+
+/// Makes the optional protocol-error response independent of the temporary client error.
+fn clone_error_response_ttlv(error: &ClientError) -> Result<Option<Structure>, i32> {
+    error
+        .response_ttlv()
+        .map(|response_ttlv| response_ttlv.with_ttlv(|view| super::clone_structure_view(&view)))
+        .transpose()
 }
 
 #[unsafe(no_mangle)]
