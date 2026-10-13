@@ -31,6 +31,9 @@ ffi.cdef(
     typedef struct kmipkit_client_batch_response_t kmipkit_client_batch_response_t;
     typedef struct kmipkit_client_batch_item_response_t kmipkit_client_batch_item_response_t;
     typedef struct kmipkit_client_batch_item_t kmipkit_client_batch_item_t;
+    typedef struct kmipkit_register_request_t kmipkit_register_request_t;
+    typedef struct kmipkit_ttlv_structure_t kmipkit_ttlv_structure_t;
+    typedef struct kmipkit_ttlv_item_t kmipkit_ttlv_item_t;
     typedef struct kmipkit_codec_limits_t kmipkit_codec_limits_t;
 
     typedef struct {
@@ -138,6 +141,19 @@ ffi.cdef(
         kmipkit_byte_span_v1_t *out_value);
     int32_t kmipkit_client_batch_item_discover_versions(
         kmipkit_client_batch_item_t **out_item);
+    int32_t kmipkit_register_request_create(
+        uint32_t object_type,
+        kmipkit_ttlv_structure_t *attributes,
+        kmipkit_ttlv_item_t *object,
+        kmipkit_register_request_t **out_request);
+    int32_t kmipkit_register_request_with_opaque_object_context(
+        kmipkit_register_request_t *request,
+        uint32_t context,
+        kmipkit_register_request_t **out_request);
+    int32_t kmipkit_client_batch_item_register(
+        kmipkit_register_request_t *request,
+        kmipkit_client_batch_item_t **out_item);
+    void kmipkit_register_request_release(kmipkit_register_request_t *handle);
     void kmipkit_client_batch_item_release(kmipkit_client_batch_item_t *handle);
     int32_t kmipkit_last_error_get(
         int32_t *out_status,

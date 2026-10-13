@@ -22,7 +22,23 @@ const CRYPTOGRAPHIC_LENGTH: u32 = 0x0042_002a;
 const CRYPTOGRAPHIC_USAGE_MASK: u32 = 0x0042_002c;
 const KEY_BLOCK: u32 = 0x0042_0040;
 const KEY_VALUE: u32 = 0x0042_0045;
+const OPAQUE_OBJECT: u32 = 0x0042_005b;
+const OPAQUE_DATA_TYPE: u32 = 0x0042_0059;
+const OPAQUE_DATA_VALUE: u32 = 0x0042_005a;
 const SUCCESS: u32 = 0;
+
+/// Local attribute-handling context for an Opaque Object in a Register request.
+///
+/// The selected context is client metadata and is never encoded in the KMIP
+/// request payload.
+#[non_exhaustive]
+#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
+pub enum OpaqueObjectContext {
+    /// Treat the Opaque Object as generic opaque data without requiring crypto attributes.
+    Generic,
+    /// Apply Managed Cryptographic Object Register attribute requirements.
+    ManagedCryptographicObject,
+}
 
 /// A KMIP 2.1 Register request from §6.1.43, Table 291.
 ///
@@ -35,6 +51,7 @@ pub struct RegisterRequest {
     attributes: AttributeSet,
     object: Item,
     protection_storage_masks: Option<Structure>,
+    opaque_object_context: Option<OpaqueObjectContext>,
 }
 
 impl RegisterRequest {
@@ -46,7 +63,18 @@ impl RegisterRequest {
             attributes,
             object,
             protection_storage_masks: None,
+            opaque_object_context: None,
         }
+    }
+
+    /// Selects local attribute handling for an Opaque Object.
+    ///
+    /// Supplying a context for any other Object Type makes this request
+    /// invalid. The context is never added to the KMIP wire payload.
+    #[must_use]
+    pub fn with_opaque_object_context(mut self, context: OpaqueObjectContext) -> Self {
+        self.opaque_object_context = Some(context);
+        self
     }
 
     /// Sets the optional generic Protection Storage Masks Structure.
@@ -74,6 +102,32 @@ impl RegisterRequest {
         &self.object
     }
 
+    /// Validates the caller-provided Register object and attributes in place.
+    ///
+    /// This check performs no allocation and does not inspect opaque payload
+    /// bytes.
+    ///
+    /// # Errors
+    ///
+    /// Returns a sanitized error if the object is not a Structure, a Table 4
+    /// or Table 293 requirement is not satisfied, or the selected opaque
+    /// context does not apply to the Object Type.
+    #[doc(hidden)]
+    pub fn validate_local_shape(&self) -> Result<(), ProtocolError> {
+        if !matches!(self.object.item_type(), kmipkit_ttlv::ItemType::Structure)
+            || !attributes_satisfy_register_requirements(
+                self.object_type,
+                &self.attributes,
+                &self.object,
+                self.opaque_object_context,
+            )
+        {
+            return Err(invalid_request());
+        }
+
+        Ok(())
+    }
+
     /// Builds the ordered Request Payload from §6.1.43, Table 291.
     ///
     /// # Errors
@@ -82,15 +136,7 @@ impl RegisterRequest {
     /// required attribute is absent, paired key attributes disagree, or the
     /// generic TTLV model cannot represent the payload.
     pub fn into_ttlv_payload(self) -> Result<Structure, ProtocolError> {
-        if !matches!(self.object.item_type(), kmipkit_ttlv::ItemType::Structure)
-            || !attributes_satisfy_register_requirements(
-                self.object_type,
-                &self.attributes,
-                &self.object,
-            )
-        {
-            return Err(invalid_request());
-        }
+        self.validate_local_shape()?;
 
         let mut attributes = Structure::new();
         for attribute in self.attributes.into_items() {
@@ -116,6 +162,8 @@ impl RegisterRequest {
     }
 }
 
+// The context is local validation metadata and intentionally stays out of Debug output.
+#[allow(clippy::missing_fields_in_debug)]
 impl fmt::Debug for RegisterRequest {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         formatter
@@ -248,34 +296,111 @@ fn attributes_satisfy_register_requirements(
     object_type: ObjectType,
     attributes: &AttributeSet,
     object: &Item,
+    opaque_object_context: Option<OpaqueObjectContext>,
 ) -> bool {
-    let has_algorithm = has_attribute(attributes, CRYPTOGRAPHIC_ALGORITHM);
-    let has_length = has_attribute(attributes, CRYPTOGRAPHIC_LENGTH);
-    let has_usage_mask = has_attribute(attributes, CRYPTOGRAPHIC_USAGE_MASK);
+    if opaque_object_context.is_some() && object_type.raw() != 8 {
+        return false;
+    }
 
     match object_type.raw() {
         // Certificate Length is required for a Certificate. Table 293 does
         // not apply the managed-cryptographic-object requirements to it.
         1 => has_attribute(attributes, CERTIFICATE_LENGTH),
+        // Opaque Object has its own Table 4 Structure, independent of whether
+        // the caller selects generic or managed-cryptographic context.
+        8 => {
+            opaque_object_has_required_fields(object)
+                && match opaque_object_context {
+                    Some(OpaqueObjectContext::ManagedCryptographicObject) => {
+                        opaque_managed_crypto_attributes_satisfy_register_requirements(attributes)
+                    }
+                    Some(OpaqueObjectContext::Generic) | None => true,
+                }
+        }
         // Table 293 applies to managed cryptographic objects. Secret Data
         // still requires a Usage Mask, but Algorithm and Length do not apply.
         2 | 3 | 4 | 5 | 7 | 9 => {
-            if !has_usage_mask {
-                return false;
-            }
-            if object_type.raw() == 7 {
-                return true;
-            }
-            let algorithm_available =
-                has_algorithm || key_block_has(object, CRYPTOGRAPHIC_ALGORITHM);
-            let length_available = has_length || key_block_has(object, CRYPTOGRAPHIC_LENGTH);
-            algorithm_available && length_available
+            managed_crypto_attributes_satisfy_register_requirements(object_type, attributes, object)
         }
         // Table 293's certificate-specific signature algorithm may be omitted
         // when it is encoded in the supplied Certificate object. KMIPKit does
         // not parse certificate bytes locally.
         _ => true,
     }
+}
+
+fn opaque_managed_crypto_attributes_satisfy_register_requirements(
+    attributes: &AttributeSet,
+) -> bool {
+    has_attribute(attributes, CRYPTOGRAPHIC_USAGE_MASK)
+        && cryptographic_algorithm_and_length_satisfy_register_requirements(attributes, None)
+}
+
+fn managed_crypto_attributes_satisfy_register_requirements(
+    object_type: ObjectType,
+    attributes: &AttributeSet,
+    object: &Item,
+) -> bool {
+    if !has_attribute(attributes, CRYPTOGRAPHIC_USAGE_MASK) {
+        return false;
+    }
+    if object_type.raw() == 7 {
+        return true;
+    }
+
+    cryptographic_algorithm_and_length_satisfy_register_requirements(attributes, Some(object))
+}
+
+fn cryptographic_algorithm_and_length_satisfy_register_requirements(
+    attributes: &AttributeSet,
+    object: Option<&Item>,
+) -> bool {
+    let has_algorithm = has_attribute(attributes, CRYPTOGRAPHIC_ALGORITHM);
+    let has_length = has_attribute(attributes, CRYPTOGRAPHIC_LENGTH);
+    if has_algorithm != has_length {
+        return false;
+    }
+
+    has_algorithm
+        || object.is_some_and(|object| {
+            key_block_has(object, CRYPTOGRAPHIC_ALGORITHM)
+                && key_block_has(object, CRYPTOGRAPHIC_LENGTH)
+        })
+}
+
+fn opaque_object_has_required_fields(object: &Item) -> bool {
+    if object.tag().raw() != OPAQUE_OBJECT {
+        return false;
+    }
+
+    object.with_value(|value| {
+        let ValueView::Structure(fields) = value else {
+            return false;
+        };
+
+        opaque_object_fields_have_required_fields(&fields)
+    })
+}
+
+fn opaque_object_fields_have_required_fields(fields: &StructureView<'_>) -> bool {
+    let mut has_data_type = false;
+    let mut has_data_value = false;
+    let fields_have_valid_types = fields
+        .children()
+        .iter()
+        .all(|field| match field.tag().raw() {
+            OPAQUE_DATA_TYPE => {
+                has_data_type = true;
+                field.with_value(|value| matches!(value, ValueView::Enumeration(_)))
+            }
+            OPAQUE_DATA_VALUE => {
+                has_data_value = true;
+                field.with_value(|value| matches!(value, ValueView::ByteString(_)))
+            }
+            _ => true,
+        });
+
+    fields_have_valid_types && has_data_type && has_data_value
 }
 
 fn has_attribute(attributes: &AttributeSet, raw_tag: u32) -> bool {

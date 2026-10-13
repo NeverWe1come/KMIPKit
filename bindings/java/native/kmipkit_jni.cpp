@@ -769,6 +769,39 @@ JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_clientBatchItem
     });
 }
 
+JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_registerRequestCreate(
+        JNIEnv* env, jclass, jint object_type, jlong raw_attributes, jlong raw_object) {
+    return guarded<jlong>(env, 0, [&] {
+        return return_handle<kmipkit_register_request_t>(env, [&](auto output) {
+            return kmipkit_register_request_create(
+                    static_cast<uint32_t>(object_type),
+                    from_java_handle<kmipkit_ttlv_structure_t>(raw_attributes),
+                    from_java_handle<kmipkit_ttlv_item_t>(raw_object), output);
+        });
+    });
+}
+
+JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_registerRequestWithOpaqueObjectContext(
+        JNIEnv* env, jclass, jlong raw_request, jint context) {
+    return guarded<jlong>(env, 0, [&] {
+        return return_handle<kmipkit_register_request_t>(env, [&](auto output) {
+            return kmipkit_register_request_with_opaque_object_context(
+                    from_java_handle<kmipkit_register_request_t>(raw_request),
+                    static_cast<uint32_t>(context), output);
+        });
+    });
+}
+
+JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_clientBatchItemRegister(
+        JNIEnv* env, jclass, jlong raw_request) {
+    return guarded<jlong>(env, 0, [&] {
+        return return_handle<kmipkit_client_batch_item_t>(env, [&](auto output) {
+            return kmipkit_client_batch_item_register(
+                    from_java_handle<kmipkit_register_request_t>(raw_request), output);
+        });
+    });
+}
+
 JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_clientBatchItemExtensionCount(
         JNIEnv* env, jclass, jlong raw_item) {
     return guarded<jlong>(env, 0, [&] {
@@ -867,6 +900,7 @@ JNIEXPORT void JNICALL Java_org_kmipkit_NativeExtensionRegistry_release(
         case 29: kmipkit_client_batch_release(from_java_handle<kmipkit_client_batch_t>(raw_handle)); break;
         case 30: kmipkit_client_batch_response_release(from_java_handle<kmipkit_client_batch_response_t>(raw_handle)); break;
         case 31: kmipkit_client_batch_item_response_release(from_java_handle<kmipkit_client_batch_item_response_t>(raw_handle)); break;
+        case 32: kmipkit_register_request_release(from_java_handle<kmipkit_register_request_t>(raw_handle)); break;
         default: throw_invalid_input(env); break;
         }
         return 0;

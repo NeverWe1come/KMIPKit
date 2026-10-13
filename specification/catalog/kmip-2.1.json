@@ -11801,7 +11801,7 @@
       ],
       "exclusion_rationale": null,
       "role": "client",
-      "direction": "unclear",
+      "direction": "client_to_server",
       "scope_state": "profile_conditional",
       "condition": "Only when client context treats the opaque object as a Managed Cryptographic Object."
     },
@@ -27964,32 +27964,6 @@
       "direction": "client_to_server",
       "scope_state": "server_only",
       "condition": null
-    }
-  ],
-  "normative_inclusions": [
-    {
-      "inclusion_id": "KMIPKIT-INCLUSION-PROF-BASELINE-BASIC-AUTH",
-      "source_clause_id": "KMIPKIT-CLAUSE-PROF-6.1-002",
-      "included_source_id": "KMIPKIT-SRC-profiles",
-      "included_section": "3.1"
-    },
-    {
-      "inclusion_id": "KMIPKIT-INCLUSION-PROF-BASELINE-SPEC",
-      "source_clause_id": "KMIPKIT-CLAUSE-PROF-6.1-001",
-      "included_source_id": "KMIPKIT-SRC-spec",
-      "included_section": null
-    },
-    {
-      "inclusion_id": "KMIPKIT-INCLUSION-PROF-PKCS11-ENCODING",
-      "source_clause_id": "KMIPKIT-CLAUSE-PROF-5.18.3-002",
-      "included_source_id": "KMIPKIT-SRC-profiles",
-      "included_section": "5.18.1"
-    },
-    {
-      "inclusion_id": "KMIPKIT-INCLUSION-PROF-TAPE-LIBRARY-TEST-CASES",
-      "source_clause_id": "KMIPKIT-CLAUSE-PROF-6.28-006",
-      "included_source_id": "KMIPKIT-SRC-profiles",
-      "included_section": "5.12.6"
     }
   ],
   "elements": [
@@ -61409,12 +61383,18 @@
       "parent_element_ids": [
         "KMIPKIT-ELEM-OBJECT-STRUCTURE-OPAQUE-OBJECT"
       ],
-      "requirement_ids": [],
+      "requirement_ids": [
+        "KMIPKIT-REQ-SPEC-2.3-003"
+      ],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0044",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/register.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/register_operation_tests.rs"
+      ],
       "source_encoding": "Enumeration",
       "source_requiredness": "Yes"
     },
@@ -61433,12 +61413,18 @@
       "parent_element_ids": [
         "KMIPKIT-ELEM-OBJECT-STRUCTURE-OPAQUE-OBJECT"
       ],
-      "requirement_ids": [],
+      "requirement_ids": [
+        "KMIPKIT-REQ-SPEC-2.3-003"
+      ],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0044",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/register.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/register_operation_tests.rs"
+      ],
       "source_encoding": "Byte String",
       "source_requiredness": "Yes"
     },
@@ -81170,38 +81156,6 @@
       "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
     },
     {
-      "requirement_id": "KMIPKIT-REQ-PROF-5.13.1-002",
-      "source_clause_ids": [
-        "KMIPKIT-CLAUSE-PROF-5.13.1-002"
-      ],
-      "source_refs": [
-        {
-          "source_id": "KMIPKIT-SRC-profiles",
-          "section": "5.13.1"
-        }
-      ],
-      "source_keyword": "MAY",
-      "normative_strength": "permission_or_optional",
-      "subject": "KMIP clause support under source discrepancy",
-      "summary": "May support clauses within [KMIP-SPEC]; the source's stated non-conflict reference to section 5.10.1 remains unresolved under KMIPKIT-DISC-007.",
-      "role": "client",
-      "direction": "unclear",
-      "condition": "Optional AES XTS Client profile capability. The source literally refers to 'this section 5.10.1'; its intended conflict boundary remains unresolved under KMIPKIT-DISC-007.",
-      "scope_state": "profile_conditional",
-      "element_ids": [],
-      "profile_ids": [
-        "KMIPKIT-PROFILE-AES-XTS-CLIENT"
-      ],
-      "test_case_ids": [],
-      "feature_spec": "KMIPKIT-0010",
-      "implementation_refs": [],
-      "verification_refs": [],
-      "negative_verification_required": false,
-      "decision_id": null,
-      "status": "unassigned",
-      "review_note": "The pinned source atom is represented without inferring the intended 5.10.1 reference. Its implementation, positive verification, and applicable official test cases remain unassigned; the discrepancy remains open and no support is claimed."
-    },
-    {
       "requirement_id": "KMIPKIT-REQ-PROF-5.13.1-003",
       "source_clause_ids": [
         "KMIPKIT-CLAUSE-PROF-5.13.1-003"
@@ -86142,10 +86096,12 @@
       "subject": "Opaque Object attribute handling",
       "summary": "An Opaque Object may be treated as a Managed Cryptographic Object, depending on client context; in that case the client handles attributes using that model.",
       "role": "client",
-      "direction": "unclear",
+      "direction": "client_to_server",
       "condition": "Only when client context treats the opaque object as a Managed Cryptographic Object.",
       "scope_state": "profile_conditional",
-      "element_ids": [],
+      "element_ids": [
+        "KMIPKIT-ELEM-OP-C2S-REGISTER"
+      ],
       "profile_ids": [
         "KMIPKIT-PROFILE-AES-XTS-CLIENT",
         "KMIPKIT-PROFILE-ASYMMETRIC-KEY-LIFECYCLE-CLIENT",
@@ -86167,13 +86123,19 @@
         "KMIPKIT-PROFILE-XML-CLIENT"
       ],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0044",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/register.rs",
+        "crates/kmipkit-client/src/execute.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/register_operation_tests.rs",
+        "crates/kmipkit-client/tests/unit/register_execution_tests.rs"
+      ],
       "negative_verification_required": false,
       "decision_id": null,
-      "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
+      "status": "verified",
+      "review_note": "No requirement-specific official Test Cases ID maps to this clause in the pinned OASIS source. Project tests verify the cited normative requirement; no official-case pass is claimed."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-2.3-003",
@@ -86194,15 +86156,25 @@
       "direction": "not_applicable",
       "condition": null,
       "scope_state": "out_of_scope",
-      "element_ids": [],
+      "element_ids": [
+        "KMIPKIT-ELEM-OP-C2S-REGISTER",
+        "KMIPKIT-ELEM-STRUCTURE-MEMBER-2-3-OPAQUE-OBJECT-OPAQUE-DATA-TYPE",
+        "KMIPKIT-ELEM-STRUCTURE-MEMBER-2-3-OPAQUE-OBJECT-OPAQUE-DATA-VALUE"
+      ],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0044",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/register.rs",
+        "crates/kmipkit-client/src/execute.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/register_operation_tests.rs",
+        "crates/kmipkit-client/tests/unit/register_execution_tests.rs"
+      ],
       "negative_verification_required": false,
       "decision_id": null,
-      "status": "unassigned",
+      "status": "verified",
       "review_note": "Pinned KMIP Specification v2.1 source (kmip-spec-v2.1-os.html), §2.3, lines 6891-6907, contains only the table heading “Object / Encoding / REQUIRED”; it does not state that this object row is required. The separate §2.8 Prime Field Size data cell is reviewed as a conditional body value. No requirement-specific official Test Cases ID is linked in the pinned KMIP Test Cases inventory; implementation and verification are not claimed."
     },
     {
@@ -89373,38 +89345,6 @@
       "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
     },
     {
-      "requirement_id": "KMIPKIT-REQ-SPEC-4.39-002-001",
-      "source_clause_ids": [
-        "KMIPKIT-CLAUSE-SPEC-4.39-002"
-      ],
-      "source_refs": [
-        {
-          "source_id": "KMIPKIT-SRC-spec",
-          "section": "4.39"
-        }
-      ],
-      "source_keyword": "SHOULD",
-      "normative_strength": "recommended",
-      "subject": "PKCS#12 Friendly Name text",
-      "summary": "Clients should use lowercase text for a PKCS#12 Friendly Name.",
-      "role": "client",
-      "direction": "client_to_server",
-      "condition": "When the client represents a PKCS#12 Friendly Name value.",
-      "scope_state": "client_1_0",
-      "element_ids": [
-        "KMIPKIT-ELEM-ATTRIBUTE-PKCS-12-FRIENDLY-NAME"
-      ],
-      "profile_ids": [],
-      "test_case_ids": [],
-      "feature_spec": "KMIPKIT-0016",
-      "implementation_refs": [],
-      "verification_refs": [],
-      "negative_verification_required": false,
-      "decision_id": null,
-      "status": "unassigned",
-      "review_note": "The pinned client-side SHOULD is separate from the server alias default and response-encoding duties. Implementation, positive verification, and applicable official test cases remain unassigned."
-    },
-    {
       "requirement_id": "KMIPKIT-REQ-SPEC-4.4-001",
       "source_clause_ids": [
         "KMIPKIT-CLAUSE-SPEC-4.4-001"
@@ -90072,36 +90012,6 @@
       "decision_id": null,
       "status": "unassigned",
       "review_note": "§4.57 says “Protect Stop” then “Process Stop Date”; §4.41 defines Protect Stop Date. Preserve the state rules, leave this date reference unresolved. Clear client sub-obligations are retained as separate records; disputed wording remains unresolved. No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
-    },
-    {
-      "requirement_id": "KMIPKIT-REQ-SPEC-4.57-003-004",
-      "source_clause_ids": [
-        "KMIPKIT-CLAUSE-SPEC-4.57-003"
-      ],
-      "source_refs": [
-        {
-          "source_id": "KMIPKIT-SRC-spec",
-          "section": "4.57"
-        }
-      ],
-      "source_keyword": "SHALL NOT",
-      "normative_strength": "prohibited",
-      "subject": "Protect Stop / Process Stop Date restriction",
-      "summary": "If a Protect Stop attribute is set, then the object SHALL NOT be used for cryptographic purposes after the Process Stop Date.",
-      "role": "unspecified",
-      "direction": "unclear",
-      "condition": "Protect Stop attribute is set",
-      "scope_state": "unclear",
-      "element_ids": [],
-      "profile_ids": [],
-      "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
-      "negative_verification_required": true,
-      "decision_id": null,
-      "status": "unassigned",
-      "review_note": "The pinned source has no requirement-specific official Test Cases entry for this predicate. Preserve the Protect Stop / Process Stop Date source discrepancy in KMIPKIT-DISC-013; implementation and verification remain unassigned."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-4.57-004-001",
@@ -91839,186 +91749,6 @@
       "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
     },
     {
-      "requirement_id": "KMIPKIT-REQ-SPEC-6.1.12-003",
-      "source_clause_ids": [],
-      "source_refs": [
-        {
-          "source_id": "KMIPKIT-SRC-spec",
-          "section": "6.1.12"
-        }
-      ],
-      "source_keyword": null,
-      "normative_strength": "mandatory",
-      "source_force": "required_table_body_value",
-      "source_gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.12-RIGHTS-REQUIRED",
-      "source_locator": {
-        "kind": "table_body_row",
-        "section": "6.1.12",
-        "row_label": "Rights",
-        "html_line_range": [
-          25489,
-          25507
-        ]
-      },
-      "subject": "Rights",
-      "summary": "The client includes the required Rights list in the Delegated Login request.",
-      "role": "client",
-      "direction": "client_to_server",
-      "condition": "a Delegated Login request is sent",
-      "scope_state": "client_1_0",
-      "element_ids": [
-        "KMIPKIT-ELEM-OP-C2S-DELEGATED-LOGIN"
-      ],
-      "profile_ids": [],
-      "test_case_ids": [],
-      "feature_spec": "KMIPKIT-0038",
-      "implementation_refs": [
-        "crates/kmipkit-protocol/src/delegated_login.rs"
-      ],
-      "verification_refs": [
-        "crates/kmipkit-protocol/tests/unit/delegated_login_operation_tests.rs::request_emits_table_199_fields_in_order_and_preserves_both_lease_time_forms"
-      ],
-      "negative_verification_required": false,
-      "decision_id": null,
-      "status": "verified",
-      "review_note": "Pinned KMIP Specification v2.1 §6.1.12, request payload row Rights (HTML lines 25489-25507), records required_table_body_value. This is table-field semantics, not an RFC keyword. The linked local Rust request-construction test verifies field representation; no official OASIS test execution is claimed. The pinned official Test Cases inventory has no requirement-specific test ID for this requirement; no official test execution is claimed."
-    },
-    {
-      "requirement_id": "KMIPKIT-REQ-SPEC-6.1.12-005",
-      "source_clause_ids": [],
-      "source_refs": [
-        {
-          "source_id": "KMIPKIT-SRC-spec",
-          "section": "6.1.12"
-        }
-      ],
-      "source_keyword": null,
-      "normative_strength": "permission_or_optional",
-      "source_force": "optional_table_body_value",
-      "source_gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.12-LEASE-TIME-OPTIONAL",
-      "source_locator": {
-        "kind": "table_body_row",
-        "section": "6.1.12",
-        "row_label": "Lease Time",
-        "html_line_range": [
-          25434,
-          25451
-        ]
-      },
-      "subject": "Lease Time",
-      "summary": "The client can include Lease Time in the Delegated Login request.",
-      "role": "client",
-      "direction": "client_to_server",
-      "condition": "client chooses to supply the optional Lease Time field",
-      "scope_state": "client_1_0",
-      "element_ids": [
-        "KMIPKIT-ELEM-OP-C2S-DELEGATED-LOGIN"
-      ],
-      "profile_ids": [],
-      "test_case_ids": [],
-      "feature_spec": "KMIPKIT-0038",
-      "implementation_refs": [
-        "crates/kmipkit-protocol/src/delegated_login.rs"
-      ],
-      "verification_refs": [
-        "crates/kmipkit-protocol/tests/unit/delegated_login_operation_tests.rs::request_emits_table_199_fields_in_order_and_preserves_both_lease_time_forms"
-      ],
-      "negative_verification_required": false,
-      "decision_id": null,
-      "status": "verified",
-      "review_note": "Pinned KMIP Specification v2.1 §6.1.12, request payload row Lease Time (HTML lines 25434-25451), records optional_table_body_value. This is table-field semantics, not an RFC keyword. The linked local Rust request-construction test verifies field representation; no official OASIS test execution is claimed. The pinned official Test Cases inventory has no requirement-specific test ID for this requirement; no official test execution is claimed."
-    },
-    {
-      "requirement_id": "KMIPKIT-REQ-SPEC-6.1.12-006",
-      "source_clause_ids": [],
-      "source_refs": [
-        {
-          "source_id": "KMIPKIT-SRC-spec",
-          "section": "6.1.12"
-        }
-      ],
-      "source_keyword": null,
-      "normative_strength": "permission_or_optional",
-      "source_force": "optional_table_body_value",
-      "source_gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.12-REQUEST-COUNT-OPTIONAL",
-      "source_locator": {
-        "kind": "table_body_row",
-        "section": "6.1.12",
-        "row_label": "Request Count",
-        "html_line_range": [
-          25452,
-          25470
-        ]
-      },
-      "subject": "Request Count",
-      "summary": "The client can include Request Count in the Delegated Login request.",
-      "role": "client",
-      "direction": "client_to_server",
-      "condition": "client chooses to supply the optional Request Count field",
-      "scope_state": "client_1_0",
-      "element_ids": [
-        "KMIPKIT-ELEM-OP-C2S-DELEGATED-LOGIN"
-      ],
-      "profile_ids": [],
-      "test_case_ids": [],
-      "feature_spec": "KMIPKIT-0038",
-      "implementation_refs": [
-        "crates/kmipkit-protocol/src/delegated_login.rs"
-      ],
-      "verification_refs": [
-        "crates/kmipkit-protocol/tests/unit/delegated_login_operation_tests.rs::request_emits_table_199_fields_in_order_and_preserves_both_lease_time_forms"
-      ],
-      "negative_verification_required": false,
-      "decision_id": null,
-      "status": "verified",
-      "review_note": "Pinned KMIP Specification v2.1 §6.1.12, request payload row Request Count (HTML lines 25452-25470), records optional_table_body_value. This is table-field semantics, not an RFC keyword. The linked local Rust request-construction test verifies field representation; no official OASIS test execution is claimed. The pinned official Test Cases inventory has no requirement-specific test ID for this requirement; no official test execution is claimed."
-    },
-    {
-      "requirement_id": "KMIPKIT-REQ-SPEC-6.1.12-007",
-      "source_clause_ids": [],
-      "source_refs": [
-        {
-          "source_id": "KMIPKIT-SRC-spec",
-          "section": "6.1.12"
-        }
-      ],
-      "source_keyword": null,
-      "normative_strength": "permission_or_optional",
-      "source_force": "optional_table_body_value",
-      "source_gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.12-USAGE-LIMITS-OPTIONAL",
-      "source_locator": {
-        "kind": "table_body_row",
-        "section": "6.1.12",
-        "row_label": "Usage Limits",
-        "html_line_range": [
-          25471,
-          25488
-        ]
-      },
-      "subject": "Usage Limits",
-      "summary": "The client can include Usage Limits in the Delegated Login request.",
-      "role": "client",
-      "direction": "client_to_server",
-      "condition": "client chooses to supply the optional Usage Limits field",
-      "scope_state": "client_1_0",
-      "element_ids": [
-        "KMIPKIT-ELEM-OP-C2S-DELEGATED-LOGIN"
-      ],
-      "profile_ids": [],
-      "test_case_ids": [],
-      "feature_spec": "KMIPKIT-0038",
-      "implementation_refs": [
-        "crates/kmipkit-protocol/src/delegated_login.rs"
-      ],
-      "verification_refs": [
-        "crates/kmipkit-protocol/tests/unit/delegated_login_operation_tests.rs::request_emits_table_199_fields_in_order_and_preserves_both_lease_time_forms"
-      ],
-      "negative_verification_required": false,
-      "decision_id": null,
-      "status": "verified",
-      "review_note": "Pinned KMIP Specification v2.1 §6.1.12, request payload row Usage Limits (HTML lines 25471-25488), records optional_table_body_value. This is table-field semantics, not an RFC keyword. The linked local Rust request-construction test verifies field representation; no official OASIS test execution is claimed. The pinned official Test Cases inventory has no requirement-specific test ID for this requirement; no official test execution is claimed."
-    },
-    {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.13-001-001",
       "source_clause_ids": [
         "KMIPKIT-CLAUSE-SPEC-6.1.13-001"
@@ -92103,100 +91833,6 @@
       "decision_id": null,
       "status": "unassigned",
       "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
-    },
-    {
-      "requirement_id": "KMIPKIT-REQ-SPEC-6.1.13-005",
-      "source_clause_ids": [],
-      "source_refs": [
-        {
-          "source_id": "KMIPKIT-SRC-spec",
-          "section": "6.1.13"
-        }
-      ],
-      "source_keyword": null,
-      "normative_strength": "permission_or_optional",
-      "source_force": "optional_table_body_value",
-      "source_gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.13-CURRENT-ATTRIBUTE-OPTIONAL",
-      "source_locator": {
-        "kind": "table_body_row",
-        "section": "6.1.13",
-        "table": "request_payload",
-        "row_label": "Current Attribute",
-        "html_line_range": [
-          25681,
-          25699
-        ]
-      },
-      "subject": "Current Attribute",
-      "summary": "The client can select the Current Attribute in a Delete Attribute request.",
-      "role": "client",
-      "direction": "client_to_server",
-      "condition": "Required=No; if Current Attribute is omitted while Attribute Reference is supplied, §6.1.13 paragraph 1 explicitly says all instances of the specified attribute are deleted.",
-      "scope_state": "client_1_0",
-      "element_ids": [
-        "KMIPKIT-ELEM-OP-C2S-DELETE-ATTRIBUTE"
-      ],
-      "profile_ids": [],
-      "test_case_ids": [],
-      "feature_spec": "KMIPKIT-0016",
-      "implementation_refs": [
-        "crates/kmipkit-protocol/src/delete_attribute.rs"
-      ],
-      "verification_refs": [
-        "crates/kmipkit-protocol/tests/unit/delete_attribute_tests.rs::request_omits_current_attribute_and_preserves_name_reference",
-        "crates/kmipkit-protocol/tests/unit/delete_attribute_tests.rs::request_preserves_both_optional_selectors_as_absent"
-      ],
-      "negative_verification_required": false,
-      "decision_id": null,
-      "status": "verified",
-      "review_note": "Pinned KMIP Specification v2.1 §6.1.13, request payload row Current Attribute (HTML lines 25681-25699), records optional_table_body_value. This is table-field semantics, not an RFC keyword. The linked local Rust request-construction test verifies field representation; no official OASIS test execution is claimed. The pinned official Test Cases inventory has no requirement-specific test ID for this requirement; no official test execution is claimed."
-    },
-    {
-      "requirement_id": "KMIPKIT-REQ-SPEC-6.1.13-006",
-      "source_clause_ids": [],
-      "source_refs": [
-        {
-          "source_id": "KMIPKIT-SRC-spec",
-          "section": "6.1.13"
-        }
-      ],
-      "source_keyword": null,
-      "normative_strength": "permission_or_optional",
-      "source_force": "optional_table_body_value",
-      "source_gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.13-ATTRIBUTE-REFERENCE-OPTIONAL",
-      "source_locator": {
-        "kind": "table_body_row",
-        "section": "6.1.13",
-        "table": "request_payload",
-        "row_label": "Attribute Reference",
-        "html_line_range": [
-          25700,
-          25718
-        ]
-      },
-      "subject": "Attribute Reference",
-      "summary": "The client can select the Attribute Reference in a Delete Attribute request.",
-      "role": "client",
-      "direction": "client_to_server",
-      "condition": "Required=No; the row says this field specifies the reference for the attribute associated with the object, but the source does not state an omission condition for this field.",
-      "scope_state": "client_1_0",
-      "element_ids": [
-        "KMIPKIT-ELEM-OP-C2S-DELETE-ATTRIBUTE"
-      ],
-      "profile_ids": [],
-      "test_case_ids": [],
-      "feature_spec": "KMIPKIT-0016",
-      "implementation_refs": [
-        "crates/kmipkit-protocol/src/delete_attribute.rs"
-      ],
-      "verification_refs": [
-        "crates/kmipkit-protocol/tests/unit/delete_attribute_tests.rs::request_omits_current_attribute_and_preserves_name_reference",
-        "crates/kmipkit-protocol/tests/unit/delete_attribute_tests.rs::request_preserves_both_optional_selectors_as_absent"
-      ],
-      "negative_verification_required": false,
-      "decision_id": null,
-      "status": "verified",
-      "review_note": "Pinned KMIP Specification v2.1 §6.1.13, request payload row Attribute Reference (HTML lines 25700-25718), records optional_table_body_value. This is table-field semantics, not an RFC keyword. The linked local Rust request-construction test verifies field representation; no official OASIS test execution is claimed. The pinned official Test Cases inventory has no requirement-specific test ID for this requirement; no official test execution is claimed."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.14-001-001",
@@ -92564,190 +92200,6 @@
       "review_note": "No requirement-specific official Test Cases ID is asserted as executed against the pinned OASIS Test Cases source; local tests use source-derived table vectors."
     },
     {
-      "requirement_id": "KMIPKIT-REQ-SPEC-6.1.14-009",
-      "source_clause_ids": [],
-      "source_refs": [
-        {
-          "source_id": "KMIPKIT-SRC-spec",
-          "section": "6.1.14"
-        }
-      ],
-      "source_keyword": null,
-      "normative_strength": "mandatory",
-      "source_force": "required_table_body_value",
-      "source_gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.14-OBJECT-TYPE-REQUIRED",
-      "source_locator": {
-        "kind": "table_body_row",
-        "section": "6.1.14",
-        "row_label": "Object Type",
-        "table": "request_payload",
-        "html_line_range": [
-          25900,
-          25917
-        ]
-      },
-      "subject": "Object Type",
-      "summary": "The client includes Object Type in the Derive Key request.",
-      "role": "client",
-      "direction": "client_to_server",
-      "condition": "A Derive Key request is sent.",
-      "scope_state": "client_1_0",
-      "element_ids": [
-        "KMIPKIT-ELEM-OP-C2S-DERIVE-KEY"
-      ],
-      "profile_ids": [],
-      "test_case_ids": [],
-      "feature_spec": "KMIPKIT-0037",
-      "implementation_refs": [
-        "crates/kmipkit-protocol/src/derive_key.rs"
-      ],
-      "verification_refs": [
-        "crates/kmipkit-protocol/tests/unit/derive_key_operation_tests.rs::request_encodes_required_table_205_fields_in_order_and_repeats_identifiers"
-      ],
-      "negative_verification_required": false,
-      "decision_id": null,
-      "status": "verified",
-      "review_note": "Pinned KMIP Specification v2.1 §6.1.14, request payload row Object Type (HTML lines 25900-25917), records required_table_body_value. This is table-field semantics, not an RFC keyword. The linked local Rust request-construction test verifies field representation; no official OASIS test execution is claimed. The pinned official Test Cases inventory has no requirement-specific test ID for this requirement; no official test execution is claimed."
-    },
-    {
-      "requirement_id": "KMIPKIT-REQ-SPEC-6.1.14-010",
-      "source_clause_ids": [],
-      "source_refs": [
-        {
-          "source_id": "KMIPKIT-SRC-spec",
-          "section": "6.1.14"
-        }
-      ],
-      "source_keyword": null,
-      "normative_strength": "mandatory",
-      "source_force": "required_table_body_value",
-      "source_gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.14-UNIQUE-IDENTIFIER-REQUIRED",
-      "source_locator": {
-        "kind": "table_body_row",
-        "section": "6.1.14",
-        "row_label": "Unique Identifier",
-        "table": "request_payload",
-        "html_line_range": [
-          25919,
-          25938
-        ]
-      },
-      "subject": "Unique Identifier",
-      "summary": "The client includes a Unique Identifier in the Derive Key request; repetition remains a separate MAY capability.",
-      "role": "client",
-      "direction": "client_to_server",
-      "condition": "A Derive Key request is sent.",
-      "scope_state": "client_1_0",
-      "element_ids": [
-        "KMIPKIT-ELEM-OP-C2S-DERIVE-KEY"
-      ],
-      "profile_ids": [],
-      "test_case_ids": [],
-      "feature_spec": "KMIPKIT-0037",
-      "implementation_refs": [
-        "crates/kmipkit-protocol/src/derive_key.rs"
-      ],
-      "verification_refs": [
-        "crates/kmipkit-protocol/tests/unit/derive_key_operation_tests.rs::request_encodes_required_table_205_fields_in_order_and_repeats_identifiers"
-      ],
-      "negative_verification_required": false,
-      "decision_id": null,
-      "status": "verified",
-      "review_note": "Pinned KMIP Specification v2.1 §6.1.14, request payload row Unique Identifier (HTML lines 25919-25938), records required_table_body_value. This is table-field semantics, not an RFC keyword. The linked local Rust request-construction test verifies field representation; no official OASIS test execution is claimed. The pinned official Test Cases inventory has no requirement-specific test ID for this requirement; no official test execution is claimed."
-    },
-    {
-      "requirement_id": "KMIPKIT-REQ-SPEC-6.1.14-011",
-      "source_clause_ids": [],
-      "source_refs": [
-        {
-          "source_id": "KMIPKIT-SRC-spec",
-          "section": "6.1.14"
-        }
-      ],
-      "source_keyword": null,
-      "normative_strength": "mandatory",
-      "source_force": "required_table_body_value",
-      "source_gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.14-DERIVATION-METHOD-REQUIRED",
-      "source_locator": {
-        "kind": "table_body_row",
-        "section": "6.1.14",
-        "row_label": "Derivation Method",
-        "table": "request_payload",
-        "html_line_range": [
-          25940,
-          25958
-        ]
-      },
-      "subject": "Derivation Method",
-      "summary": "The client includes Derivation Method in the Derive Key request.",
-      "role": "client",
-      "direction": "client_to_server",
-      "condition": "A Derive Key request is sent.",
-      "scope_state": "client_1_0",
-      "element_ids": [
-        "KMIPKIT-ELEM-OP-C2S-DERIVE-KEY"
-      ],
-      "profile_ids": [],
-      "test_case_ids": [],
-      "feature_spec": "KMIPKIT-0037",
-      "implementation_refs": [
-        "crates/kmipkit-protocol/src/derive_key.rs"
-      ],
-      "verification_refs": [
-        "crates/kmipkit-protocol/tests/unit/derive_key_operation_tests.rs::request_encodes_required_table_205_fields_in_order_and_repeats_identifiers"
-      ],
-      "negative_verification_required": false,
-      "decision_id": null,
-      "status": "verified",
-      "review_note": "Pinned KMIP Specification v2.1 §6.1.14, request payload row Derivation Method (HTML lines 25940-25958), records required_table_body_value. This is table-field semantics, not an RFC keyword. The linked local Rust request-construction test verifies field representation; no official OASIS test execution is claimed. The pinned official Test Cases inventory has no requirement-specific test ID for this requirement; no official test execution is claimed."
-    },
-    {
-      "requirement_id": "KMIPKIT-REQ-SPEC-6.1.14-012",
-      "source_clause_ids": [],
-      "source_refs": [
-        {
-          "source_id": "KMIPKIT-SRC-spec",
-          "section": "6.1.14"
-        }
-      ],
-      "source_keyword": null,
-      "normative_strength": "mandatory",
-      "source_force": "required_table_body_value",
-      "source_gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.14-DERIVATION-PARAMETERS-REQUIRED",
-      "source_locator": {
-        "kind": "table_body_row",
-        "section": "6.1.14",
-        "row_label": "Derivation Parameters",
-        "table": "request_payload",
-        "html_line_range": [
-          25960,
-          25978
-        ]
-      },
-      "subject": "Derivation Parameters",
-      "summary": "The client includes Derivation Parameters in the Derive Key request.",
-      "role": "client",
-      "direction": "client_to_server",
-      "condition": "A Derive Key request is sent.",
-      "scope_state": "client_1_0",
-      "element_ids": [
-        "KMIPKIT-ELEM-OP-C2S-DERIVE-KEY"
-      ],
-      "profile_ids": [],
-      "test_case_ids": [],
-      "feature_spec": "KMIPKIT-0037",
-      "implementation_refs": [
-        "crates/kmipkit-protocol/src/derive_key.rs"
-      ],
-      "verification_refs": [
-        "crates/kmipkit-protocol/tests/unit/derive_key_operation_tests.rs::request_encodes_required_table_205_fields_in_order_and_repeats_identifiers"
-      ],
-      "negative_verification_required": false,
-      "decision_id": null,
-      "status": "verified",
-      "review_note": "Pinned KMIP Specification v2.1 §6.1.14, request payload row Derivation Parameters (HTML lines 25960-25978), records required_table_body_value. This is table-field semantics, not an RFC keyword. The linked local Rust request-construction test verifies field representation; no official OASIS test execution is claimed. The pinned official Test Cases inventory has no requirement-specific test ID for this requirement; no official test execution is claimed."
-    },
-    {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.16-001-001",
       "source_clause_ids": [
         "KMIPKIT-CLAUSE-SPEC-6.1.16-001"
@@ -93031,222 +92483,6 @@
       "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
     },
     {
-      "requirement_id": "KMIPKIT-REQ-SPEC-6.1.18-001-001",
-      "source_clause_ids": [
-        "KMIPKIT-CLAUSE-SPEC-6.1.18-001"
-      ],
-      "source_refs": [
-        {
-          "source_id": "KMIPKIT-SRC-spec",
-          "section": "6.1.18"
-        }
-      ],
-      "source_keyword": "SHALL",
-      "normative_strength": "mandatory",
-      "subject": "Export request control semantics",
-      "summary": "The client applies the same semantics as Get to the four Export format and wrapping controls.",
-      "role": "client",
-      "direction": "client_to_server",
-      "condition": null,
-      "scope_state": "client_1_0",
-      "element_ids": [
-        "KMIPKIT-ELEM-OP-C2S-EXPORT"
-      ],
-      "profile_ids": [],
-      "test_case_ids": [],
-      "feature_spec": "KMIPKIT-0037",
-      "implementation_refs": [],
-      "verification_refs": [],
-      "negative_verification_required": false,
-      "decision_id": null,
-      "status": "unassigned",
-      "review_note": "This pinned source atom is the client request duty only. The adjacent destroyed-object key-material SHALL not be returned predicate remains a separate server duty; implementation, positive verification, and applicable official test cases remain unassigned."
-    },
-    {
-      "requirement_id": "KMIPKIT-REQ-SPEC-6.1.18-005",
-      "source_clause_ids": [],
-      "source_refs": [
-        {
-          "source_id": "KMIPKIT-SRC-spec",
-          "section": "6.1.18"
-        }
-      ],
-      "source_keyword": null,
-      "normative_strength": "permission_or_optional",
-      "source_force": "optional_table_body_value",
-      "source_gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.18-KEY-FORMAT-TYPE-OPTIONAL",
-      "source_locator": {
-        "kind": "table_body_row",
-        "section": "6.1.18",
-        "row_label": "Key Format Type",
-        "table": "request_payload",
-        "html_line_range": [
-          26902,
-          26917
-        ]
-      },
-      "subject": "Key Format Type",
-      "summary": "The client can select the format of the key value returned by Export.",
-      "role": "client",
-      "direction": "client_to_server",
-      "condition": null,
-      "scope_state": "client_1_0",
-      "element_ids": [
-        "KMIPKIT-ELEM-OP-C2S-EXPORT"
-      ],
-      "profile_ids": [],
-      "test_case_ids": [],
-      "feature_spec": "KMIPKIT-0037",
-      "implementation_refs": [
-        "crates/kmipkit-protocol/src/export.rs"
-      ],
-      "verification_refs": [
-        "crates/kmipkit-protocol/tests/unit/export_operation_tests.rs::request_preserves_all_explicit_optional_choices_and_omits_absent_fields"
-      ],
-      "negative_verification_required": false,
-      "decision_id": null,
-      "status": "verified",
-      "review_note": "Pinned KMIP Specification v2.1 §6.1.18 request payload row Key Format Type (HTML lines 26902-26917) records optional_table_body_value. This table-field classification is distinct from RFC keywords. The linked local Rust request test verifies positive encoding of the caller-selected Key Format Type selector; the local request tests do not assert server-side behavior. No requirement-specific official Test Cases ID is explicitly linked by pinned OASIS sources in KMIPKIT-0002. No official case-level pass is claimed. The combined test's incidental empty-request Unique Identifier assertion creates no Unique Identifier omission requirement here; this label covers only this selector."
-    },
-    {
-      "requirement_id": "KMIPKIT-REQ-SPEC-6.1.18-006",
-      "source_clause_ids": [],
-      "source_refs": [
-        {
-          "source_id": "KMIPKIT-SRC-spec",
-          "section": "6.1.18"
-        }
-      ],
-      "source_keyword": null,
-      "normative_strength": "permission_or_optional",
-      "source_force": "optional_table_body_value",
-      "source_gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.18-KEY-WRAP-TYPE-OPTIONAL",
-      "source_locator": {
-        "kind": "table_body_row",
-        "section": "6.1.18",
-        "row_label": "Key Wrap Type",
-        "table": "request_payload",
-        "html_line_range": [
-          26918,
-          26933
-        ]
-      },
-      "subject": "Key Wrap Type",
-      "summary": "The client can select the wrap type of the key value returned by Export.",
-      "role": "client",
-      "direction": "client_to_server",
-      "condition": null,
-      "scope_state": "client_1_0",
-      "element_ids": [
-        "KMIPKIT-ELEM-OP-C2S-EXPORT"
-      ],
-      "profile_ids": [],
-      "test_case_ids": [],
-      "feature_spec": "KMIPKIT-0037",
-      "implementation_refs": [
-        "crates/kmipkit-protocol/src/export.rs"
-      ],
-      "verification_refs": [
-        "crates/kmipkit-protocol/tests/unit/export_operation_tests.rs::request_preserves_all_explicit_optional_choices_and_omits_absent_fields"
-      ],
-      "negative_verification_required": false,
-      "decision_id": null,
-      "status": "verified",
-      "review_note": "Pinned KMIP Specification v2.1 §6.1.18 request payload row Key Wrap Type (HTML lines 26918-26933) records optional_table_body_value. This table-field classification is distinct from RFC keywords. The linked local Rust request test verifies positive encoding of the caller-selected Key Wrap Type selector; the local request tests do not assert server-side behavior. No requirement-specific official Test Cases ID is explicitly linked by pinned OASIS sources in KMIPKIT-0002. No official case-level pass is claimed. The combined test's incidental empty-request Unique Identifier assertion creates no Unique Identifier omission requirement here; this label covers only this selector."
-    },
-    {
-      "requirement_id": "KMIPKIT-REQ-SPEC-6.1.18-007",
-      "source_clause_ids": [],
-      "source_refs": [
-        {
-          "source_id": "KMIPKIT-SRC-spec",
-          "section": "6.1.18"
-        }
-      ],
-      "source_keyword": null,
-      "normative_strength": "permission_or_optional",
-      "source_force": "optional_table_body_value",
-      "source_gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.18-KEY-COMPRESSION-TYPE-OPTIONAL",
-      "source_locator": {
-        "kind": "table_body_row",
-        "section": "6.1.18",
-        "row_label": "Key Compression Type",
-        "table": "request_payload",
-        "html_line_range": [
-          26934,
-          26950
-        ]
-      },
-      "subject": "Key Compression Type",
-      "summary": "The client can select the compression method for elliptic-curve public keys returned by Export.",
-      "role": "client",
-      "direction": "client_to_server",
-      "condition": null,
-      "scope_state": "client_1_0",
-      "element_ids": [
-        "KMIPKIT-ELEM-OP-C2S-EXPORT"
-      ],
-      "profile_ids": [],
-      "test_case_ids": [],
-      "feature_spec": "KMIPKIT-0037",
-      "implementation_refs": [
-        "crates/kmipkit-protocol/src/export.rs"
-      ],
-      "verification_refs": [
-        "crates/kmipkit-protocol/tests/unit/export_operation_tests.rs::request_preserves_all_explicit_optional_choices_and_omits_absent_fields"
-      ],
-      "negative_verification_required": false,
-      "decision_id": null,
-      "status": "verified",
-      "review_note": "Pinned KMIP Specification v2.1 §6.1.18 request payload row Key Compression Type (HTML lines 26934-26950) records optional_table_body_value. This table-field classification is distinct from RFC keywords. The linked local Rust request test verifies positive encoding of the caller-selected Key Compression Type selector; the local request tests do not assert server-side behavior. No requirement-specific official Test Cases ID is explicitly linked by pinned OASIS sources in KMIPKIT-0002. No official case-level pass is claimed. The combined test's incidental empty-request Unique Identifier assertion creates no Unique Identifier omission requirement here; this label covers only this selector."
-    },
-    {
-      "requirement_id": "KMIPKIT-REQ-SPEC-6.1.18-008",
-      "source_clause_ids": [],
-      "source_refs": [
-        {
-          "source_id": "KMIPKIT-SRC-spec",
-          "section": "6.1.18"
-        }
-      ],
-      "source_keyword": null,
-      "normative_strength": "permission_or_optional",
-      "source_force": "optional_table_body_value",
-      "source_gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.18-KEY-WRAPPING-SPECIFICATION-OPTIONAL",
-      "source_locator": {
-        "kind": "table_body_row",
-        "section": "6.1.18",
-        "row_label": "Key Wrapping Specification",
-        "table": "request_payload",
-        "html_line_range": [
-          26951,
-          26966
-        ]
-      },
-      "subject": "Key Wrapping Specification",
-      "summary": "The client can supply wrapping keys and other information for the object returned by Export.",
-      "role": "client",
-      "direction": "client_to_server",
-      "condition": null,
-      "scope_state": "client_1_0",
-      "element_ids": [
-        "KMIPKIT-ELEM-OP-C2S-EXPORT"
-      ],
-      "profile_ids": [],
-      "test_case_ids": [],
-      "feature_spec": "KMIPKIT-0037",
-      "implementation_refs": [
-        "crates/kmipkit-protocol/src/export.rs"
-      ],
-      "verification_refs": [
-        "crates/kmipkit-protocol/tests/unit/export_operation_tests.rs::request_preserves_all_explicit_optional_choices_and_omits_absent_fields"
-      ],
-      "negative_verification_required": false,
-      "decision_id": null,
-      "status": "verified",
-      "review_note": "Pinned KMIP Specification v2.1 §6.1.18 request payload row Key Wrapping Specification (HTML lines 26951-26966) records optional_table_body_value. This table-field classification is distinct from RFC keywords. The linked local Rust request test verifies positive encoding of the caller-selected Key Wrapping Specification selector; the local request tests do not assert server-side behavior. No requirement-specific official Test Cases ID is explicitly linked by pinned OASIS sources in KMIPKIT-0002. No official case-level pass is claimed. The combined test's incidental empty-request Unique Identifier assertion creates no Unique Identifier omission requirement here; this label covers only this selector."
-    },
-    {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.19-001",
       "source_clause_ids": [
         "KMIPKIT-CLAUSE-SPEC-6.1.19-001"
@@ -93317,194 +92553,6 @@
       "decision_id": null,
       "status": "verified",
       "review_note": "OASIS KMIP v2.1 §6.1.19 requires the client to assume the server can return a registered key in that same format; the server MAY support other conversions. KMIPKit forwards the caller's Key Format Type and preserves opaque TTLV. Local checks verify requested-value preservation and selected pinned PKCS#12 fixture items only; they do not establish remote server capabilities, conversion behavior, or PKCS#12 container validity. KMIPKIT-DEC-003 treats the lowercase PKCS#12 paragraph as informative guidance. No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002; no official case-level pass is claimed."
-    },
-    {
-      "requirement_id": "KMIPKIT-REQ-SPEC-6.1.19-003",
-      "source_clause_ids": [],
-      "source_refs": [
-        {
-          "source_id": "KMIPKIT-SRC-spec",
-          "section": "6.1.19"
-        }
-      ],
-      "source_keyword": null,
-      "normative_strength": "permission_or_optional",
-      "source_force": "optional_table_body_value",
-      "source_gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.19-KEY-FORMAT-TYPE-OPTIONAL",
-      "source_locator": {
-        "kind": "table_body_row",
-        "section": "6.1.19",
-        "row_label": "Key Format Type",
-        "table": "request_payload",
-        "html_line_range": [
-          27211,
-          27228
-        ]
-      },
-      "subject": "Key Format Type",
-      "summary": "The client can select the format of the key value returned by Get.",
-      "role": "client",
-      "direction": "client_to_server",
-      "condition": null,
-      "scope_state": "client_1_0",
-      "element_ids": [
-        "KMIPKIT-ELEM-OP-C2S-GET"
-      ],
-      "profile_ids": [],
-      "test_case_ids": [],
-      "feature_spec": "KMIPKIT-0017",
-      "implementation_refs": [
-        "crates/kmipkit-protocol/src/get.rs"
-      ],
-      "verification_refs": [
-        "crates/kmipkit-protocol/tests/unit/get_tests.rs::request_omits_every_optional_table_220_field_when_unspecified",
-        "crates/kmipkit-protocol/tests/unit/get_tests.rs::request_serializes_present_table_220_fields_in_source_order"
-      ],
-      "negative_verification_required": false,
-      "decision_id": null,
-      "status": "verified",
-      "review_note": "Pinned KMIP Specification v2.1 §6.1.19 request payload row Key Format Type (HTML lines 27211-27228) records optional_table_body_value. This table-field classification is distinct from RFC keywords. The linked local Rust request tests verify presence and omission of caller-selected Key Format Type selectors; the local request tests do not assert server-side behavior. No requirement-specific official Test Cases ID is explicitly linked by pinned OASIS sources in KMIPKIT-0002. No official case-level pass is claimed."
-    },
-    {
-      "requirement_id": "KMIPKIT-REQ-SPEC-6.1.19-004",
-      "source_clause_ids": [],
-      "source_refs": [
-        {
-          "source_id": "KMIPKIT-SRC-spec",
-          "section": "6.1.19"
-        }
-      ],
-      "source_keyword": null,
-      "normative_strength": "permission_or_optional",
-      "source_force": "optional_table_body_value",
-      "source_gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.19-KEY-WRAP-TYPE-OPTIONAL",
-      "source_locator": {
-        "kind": "table_body_row",
-        "section": "6.1.19",
-        "row_label": "Key Wrap Type",
-        "table": "request_payload",
-        "html_line_range": [
-          27229,
-          27247
-        ]
-      },
-      "subject": "Key Wrap Type",
-      "summary": "The client can select the wrap type of the key value returned by Get.",
-      "role": "client",
-      "direction": "client_to_server",
-      "condition": null,
-      "scope_state": "client_1_0",
-      "element_ids": [
-        "KMIPKIT-ELEM-OP-C2S-GET"
-      ],
-      "profile_ids": [],
-      "test_case_ids": [],
-      "feature_spec": "KMIPKIT-0017",
-      "implementation_refs": [
-        "crates/kmipkit-protocol/src/get.rs"
-      ],
-      "verification_refs": [
-        "crates/kmipkit-protocol/tests/unit/get_tests.rs::request_omits_every_optional_table_220_field_when_unspecified",
-        "crates/kmipkit-protocol/tests/unit/get_tests.rs::request_serializes_present_table_220_fields_in_source_order"
-      ],
-      "negative_verification_required": false,
-      "decision_id": null,
-      "status": "verified",
-      "review_note": "Pinned KMIP Specification v2.1 §6.1.19 request payload row Key Wrap Type (HTML lines 27229-27247) records optional_table_body_value. This table-field classification is distinct from RFC keywords. The linked local Rust request tests verify presence and omission of caller-selected Key Wrap Type selectors; the local request tests do not assert server-side behavior. No requirement-specific official Test Cases ID is explicitly linked by pinned OASIS sources in KMIPKIT-0002. No official case-level pass is claimed."
-    },
-    {
-      "requirement_id": "KMIPKIT-REQ-SPEC-6.1.19-005",
-      "source_clause_ids": [],
-      "source_refs": [
-        {
-          "source_id": "KMIPKIT-SRC-spec",
-          "section": "6.1.19"
-        }
-      ],
-      "source_keyword": null,
-      "normative_strength": "permission_or_optional",
-      "source_force": "optional_table_body_value",
-      "source_gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.19-KEY-COMPRESSION-TYPE-OPTIONAL",
-      "source_locator": {
-        "kind": "table_body_row",
-        "section": "6.1.19",
-        "row_label": "Key Compression Type",
-        "table": "request_payload",
-        "html_line_range": [
-          27248,
-          27266
-        ]
-      },
-      "subject": "Key Compression Type",
-      "summary": "The client can select the compression method for elliptic-curve public keys returned by Get.",
-      "role": "client",
-      "direction": "client_to_server",
-      "condition": null,
-      "scope_state": "client_1_0",
-      "element_ids": [
-        "KMIPKIT-ELEM-OP-C2S-GET"
-      ],
-      "profile_ids": [],
-      "test_case_ids": [],
-      "feature_spec": "KMIPKIT-0017",
-      "implementation_refs": [
-        "crates/kmipkit-protocol/src/get.rs"
-      ],
-      "verification_refs": [
-        "crates/kmipkit-protocol/tests/unit/get_tests.rs::request_omits_every_optional_table_220_field_when_unspecified",
-        "crates/kmipkit-protocol/tests/unit/get_tests.rs::request_serializes_present_table_220_fields_in_source_order"
-      ],
-      "negative_verification_required": false,
-      "decision_id": null,
-      "status": "verified",
-      "review_note": "Pinned KMIP Specification v2.1 §6.1.19 request payload row Key Compression Type (HTML lines 27248-27266) records optional_table_body_value. This table-field classification is distinct from RFC keywords. The linked local Rust request tests verify presence and omission of caller-selected Key Compression Type selectors; the local request tests do not assert server-side behavior. No requirement-specific official Test Cases ID is explicitly linked by pinned OASIS sources in KMIPKIT-0002. No official case-level pass is claimed."
-    },
-    {
-      "requirement_id": "KMIPKIT-REQ-SPEC-6.1.19-006",
-      "source_clause_ids": [],
-      "source_refs": [
-        {
-          "source_id": "KMIPKIT-SRC-spec",
-          "section": "6.1.19"
-        }
-      ],
-      "source_keyword": null,
-      "normative_strength": "permission_or_optional",
-      "source_force": "optional_table_body_value",
-      "source_gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.19-KEY-WRAPPING-SPECIFICATION-OPTIONAL",
-      "source_locator": {
-        "kind": "table_body_row",
-        "section": "6.1.19",
-        "row_label": "Key Wrapping Specification",
-        "table": "request_payload",
-        "html_line_range": [
-          27267,
-          27285
-        ]
-      },
-      "subject": "Key Wrapping Specification",
-      "summary": "The client can supply wrapping keys and other information for the object returned by Get.",
-      "role": "client",
-      "direction": "client_to_server",
-      "condition": null,
-      "scope_state": "client_1_0",
-      "element_ids": [
-        "KMIPKIT-ELEM-OP-C2S-GET"
-      ],
-      "profile_ids": [],
-      "test_case_ids": [],
-      "feature_spec": "KMIPKIT-0017",
-      "implementation_refs": [
-        "crates/kmipkit-protocol/src/get.rs"
-      ],
-      "verification_refs": [
-        "crates/kmipkit-protocol/tests/unit/get_tests.rs::request_omits_every_optional_table_220_field_when_unspecified",
-        "crates/kmipkit-protocol/tests/unit/get_tests.rs::request_serializes_present_table_220_fields_in_source_order"
-      ],
-      "negative_verification_required": false,
-      "decision_id": null,
-      "status": "verified",
-      "review_note": "Pinned KMIP Specification v2.1 §6.1.19 request payload row Key Wrapping Specification (HTML lines 27267-27285) records optional_table_body_value. This table-field classification is distinct from RFC keywords. The linked local Rust request tests verify presence and omission of caller-selected Key Wrapping Specification selectors; the local request tests do not assert server-side behavior. No requirement-specific official Test Cases ID is explicitly linked by pinned OASIS sources in KMIPKIT-0002. No official case-level pass is claimed."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.2-001-001",
@@ -94616,190 +93664,6 @@
       "decision_id": null,
       "status": "unassigned",
       "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
-    },
-    {
-      "requirement_id": "KMIPKIT-REQ-SPEC-6.1.30-001",
-      "source_clause_ids": [],
-      "source_refs": [
-        {
-          "source_id": "KMIPKIT-SRC-spec",
-          "section": "6.1.30"
-        }
-      ],
-      "source_keyword": null,
-      "normative_strength": "permission_or_optional",
-      "source_force": "optional_table_body_value",
-      "source_gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.30-LEASE-TIME-OPTIONAL",
-      "source_locator": {
-        "kind": "table_body_row",
-        "section": "6.1.30",
-        "row_label": "Lease Time",
-        "table": "request_payload",
-        "html_line_range": [
-          29673,
-          29688
-        ]
-      },
-      "subject": "Lease Time",
-      "summary": "The client can include Lease Time in the Login request.",
-      "role": "client",
-      "direction": "client_to_server",
-      "condition": "client chooses to supply the optional Lease Time field",
-      "scope_state": "client_1_0",
-      "element_ids": [
-        "KMIPKIT-ELEM-OP-C2S-LOGIN"
-      ],
-      "profile_ids": [],
-      "test_case_ids": [],
-      "feature_spec": "KMIPKIT-0038",
-      "implementation_refs": [
-        "crates/kmipkit-protocol/src/login.rs"
-      ],
-      "verification_refs": [
-        "crates/kmipkit-protocol/tests/unit/login_operation_tests.rs::optional_request_fields_keep_table_253_order_and_both_lease_forms"
-      ],
-      "negative_verification_required": false,
-      "decision_id": null,
-      "status": "verified",
-      "review_note": "Pinned KMIP Specification v2.1 §6.1.30, request payload row Lease Time (HTML lines 29673-29688), records optional_table_body_value. This is table-field semantics, not an RFC keyword. The linked local Rust request encoding/requiredness test provides verification; No requirement-specific official Test Cases ID is explicitly linked. No official case-level pass is claimed."
-    },
-    {
-      "requirement_id": "KMIPKIT-REQ-SPEC-6.1.30-002",
-      "source_clause_ids": [],
-      "source_refs": [
-        {
-          "source_id": "KMIPKIT-SRC-spec",
-          "section": "6.1.30"
-        }
-      ],
-      "source_keyword": null,
-      "normative_strength": "permission_or_optional",
-      "source_force": "optional_table_body_value",
-      "source_gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.30-REQUEST-COUNT-OPTIONAL",
-      "source_locator": {
-        "kind": "table_body_row",
-        "section": "6.1.30",
-        "row_label": "Request Count",
-        "table": "request_payload",
-        "html_line_range": [
-          29689,
-          29704
-        ]
-      },
-      "subject": "Request Count",
-      "summary": "The client can include Request Count in the Login request.",
-      "role": "client",
-      "direction": "client_to_server",
-      "condition": "client chooses to supply the optional Request Count field",
-      "scope_state": "client_1_0",
-      "element_ids": [
-        "KMIPKIT-ELEM-OP-C2S-LOGIN"
-      ],
-      "profile_ids": [],
-      "test_case_ids": [],
-      "feature_spec": "KMIPKIT-0038",
-      "implementation_refs": [
-        "crates/kmipkit-protocol/src/login.rs"
-      ],
-      "verification_refs": [
-        "crates/kmipkit-protocol/tests/unit/login_operation_tests.rs::optional_request_fields_keep_table_253_order_and_both_lease_forms"
-      ],
-      "negative_verification_required": false,
-      "decision_id": null,
-      "status": "verified",
-      "review_note": "Pinned KMIP Specification v2.1 §6.1.30, request payload row Request Count (HTML lines 29689-29704), records optional_table_body_value. This is table-field semantics, not an RFC keyword. The linked local Rust request encoding/requiredness test provides verification; No requirement-specific official Test Cases ID is explicitly linked. No official case-level pass is claimed."
-    },
-    {
-      "requirement_id": "KMIPKIT-REQ-SPEC-6.1.30-003",
-      "source_clause_ids": [],
-      "source_refs": [
-        {
-          "source_id": "KMIPKIT-SRC-spec",
-          "section": "6.1.30"
-        }
-      ],
-      "source_keyword": null,
-      "normative_strength": "permission_or_optional",
-      "source_force": "optional_table_body_value",
-      "source_gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.30-USAGE-LIMITS-OPTIONAL",
-      "source_locator": {
-        "kind": "table_body_row",
-        "section": "6.1.30",
-        "row_label": "Usage Limits",
-        "table": "request_payload",
-        "html_line_range": [
-          29705,
-          29720
-        ]
-      },
-      "subject": "Usage Limits",
-      "summary": "The client can include Usage Limits in the Login request.",
-      "role": "client",
-      "direction": "client_to_server",
-      "condition": "client chooses to supply the optional Usage Limits field",
-      "scope_state": "client_1_0",
-      "element_ids": [
-        "KMIPKIT-ELEM-OP-C2S-LOGIN"
-      ],
-      "profile_ids": [],
-      "test_case_ids": [],
-      "feature_spec": "KMIPKIT-0038",
-      "implementation_refs": [
-        "crates/kmipkit-protocol/src/login.rs"
-      ],
-      "verification_refs": [
-        "crates/kmipkit-protocol/tests/unit/login_operation_tests.rs::optional_request_fields_keep_table_253_order_and_both_lease_forms"
-      ],
-      "negative_verification_required": false,
-      "decision_id": null,
-      "status": "verified",
-      "review_note": "Pinned KMIP Specification v2.1 §6.1.30, request payload row Usage Limits (HTML lines 29705-29720), records optional_table_body_value. This is table-field semantics, not an RFC keyword. The linked local Rust request encoding/requiredness test provides verification; No requirement-specific official Test Cases ID is explicitly linked. No official case-level pass is claimed."
-    },
-    {
-      "requirement_id": "KMIPKIT-REQ-SPEC-6.1.31-001",
-      "source_clause_ids": [],
-      "source_refs": [
-        {
-          "source_id": "KMIPKIT-SRC-spec",
-          "section": "6.1.31"
-        }
-      ],
-      "source_keyword": null,
-      "normative_strength": "mandatory",
-      "source_force": "required_table_body_value",
-      "source_gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.31-TICKET-REQUIRED",
-      "source_locator": {
-        "kind": "table_body_row",
-        "section": "6.1.31",
-        "row_label": "Ticket",
-        "table": "request_payload",
-        "html_line_range": [
-          29866,
-          29881
-        ]
-      },
-      "subject": "Ticket",
-      "summary": "The client includes the required Ticket in the Logout request.",
-      "role": "client",
-      "direction": "client_to_server",
-      "condition": "a Logout request is sent",
-      "scope_state": "client_1_0",
-      "element_ids": [
-        "KMIPKIT-ELEM-OP-C2S-LOGOUT"
-      ],
-      "profile_ids": [],
-      "test_case_ids": [],
-      "feature_spec": "KMIPKIT-0038",
-      "implementation_refs": [
-        "crates/kmipkit-protocol/src/logout.rs"
-      ],
-      "verification_refs": [
-        "crates/kmipkit-protocol/tests/unit/logout_operation_tests.rs::table_256_request_requires_and_preserves_the_explicit_secret_ticket"
-      ],
-      "negative_verification_required": false,
-      "decision_id": null,
-      "status": "verified",
-      "review_note": "Pinned KMIP Specification v2.1 §6.1.31, request payload row Ticket (HTML lines 29866-29881), records required_table_body_value. This is table-field semantics, not an RFC keyword. The linked local Rust request encoding/requiredness test provides verification; No requirement-specific official Test Cases ID is explicitly linked. No official case-level pass is claimed."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.32-001",
@@ -96209,39 +95073,6 @@
       "review_note": "Source review found this stable label was falsely assigned to a client. The exact server-side source atom remains in the review record; this label is retained as a retired audit trail, not a client requirement."
     },
     {
-      "requirement_id": "KMIPKIT-REQ-SPEC-6.1.45-002-003",
-      "source_clause_ids": [
-        "KMIPKIT-CLAUSE-SPEC-6.1.45-002"
-      ],
-      "source_refs": [
-        {
-          "source_id": "KMIPKIT-SRC-spec",
-          "section": "6.1.45"
-        }
-      ],
-      "source_keyword": "SHALL",
-      "normative_strength": "mandatory",
-      "subject": "Re-certify public-key identifier when Certificate Request is omitted",
-      "summary": "When omitting Certificate Request, the client identifies the public key only by Unique Identifier.",
-      "role": "client",
-      "direction": "client_to_server",
-      "condition": "When Certificate Request is omitted.",
-      "scope_state": "client_1_0",
-      "element_ids": [
-        "KMIPKIT-ELEM-ATTRIBUTE-UNIQUE-IDENTIFIER",
-        "KMIPKIT-ELEM-OP-C2S-RE-CERTIFY"
-      ],
-      "profile_ids": [],
-      "test_case_ids": [],
-      "feature_spec": "KMIPKIT-0036",
-      "implementation_refs": [],
-      "verification_refs": [],
-      "negative_verification_required": false,
-      "decision_id": null,
-      "status": "unassigned",
-      "review_note": "This pinned conditional client SHALL is distinct from the optional omission permission and from the server Certificate Type fallback. Implementation, positive verification, and applicable official test cases remain unassigned."
-    },
-    {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.45-004",
       "source_clause_ids": [
         "KMIPKIT-CLAUSE-SPEC-6.1.45-004"
@@ -96735,36 +95566,6 @@
       "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
     },
     {
-      "requirement_id": "KMIPKIT-REQ-SPEC-6.1.5-002",
-      "source_clause_ids": [
-        "KMIPKIT-CLAUSE-SPEC-6.1.5-001"
-      ],
-      "source_refs": [
-        {
-          "source_id": "KMIPKIT-SRC-spec",
-          "section": "6.1.5"
-        }
-      ],
-      "source_keyword": "SHALL",
-      "normative_strength": "mandatory",
-      "subject": "Cancellation Result response",
-      "summary": "A server must respond to a Cancel operation with a Cancellation Result.",
-      "role": "server",
-      "direction": "server_to_client",
-      "condition": null,
-      "scope_state": "server_only",
-      "element_ids": [],
-      "profile_ids": [],
-      "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
-      "negative_verification_required": false,
-      "decision_id": null,
-      "status": "unassigned",
-      "review_note": "Pinned KMIP Specification v2.1 §6.1.5 assigns this response obligation to the server. It is separate from the client Cancel request obligation and has no client profile membership."
-    },
-    {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.50-001",
       "source_clause_ids": [
         "KMIPKIT-CLAUSE-SPEC-6.1.50-001"
@@ -96801,66 +95602,6 @@
       "decision_id": null,
       "status": "verified",
       "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
-    },
-    {
-      "source_clause_ids": [
-        "KMIPKIT-CLAUSE-SPEC-6.1.50-001"
-      ],
-      "source_refs": [
-        {
-          "source_id": "KMIPKIT-SRC-spec",
-          "section": "6.1.50"
-        }
-      ],
-      "source_keyword": "MAY",
-      "normative_strength": "permission_or_optional",
-      "role": "server",
-      "scope_state": "server_only",
-      "element_ids": [],
-      "profile_ids": [],
-      "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
-      "negative_verification_required": false,
-      "decision_id": null,
-      "status": "unassigned",
-      "requirement_id": "KMIPKIT-REQ-SPEC-6.1.50-002",
-      "subject": "RNG Seed request handling",
-      "summary": "The server MAY elect not to accept seeding material supplied by the client.",
-      "direction": "client_to_server",
-      "condition": "The client provides RNG Seed material.",
-      "review_note": "No entry in the pinned official Test Cases v2.1 Committee Note 01 inventory covers this server-side MAY in OASIS KMIP Specification v2.1 Section 6.1.50. It is outside client_1_0 implementation scope and must not be treated as a client obligation."
-    },
-    {
-      "source_clause_ids": [
-        "KMIPKIT-CLAUSE-SPEC-6.1.50-001"
-      ],
-      "source_refs": [
-        {
-          "source_id": "KMIPKIT-SRC-spec",
-          "section": "6.1.50"
-        }
-      ],
-      "source_keyword": "MAY",
-      "normative_strength": "permission_or_optional",
-      "role": "server",
-      "scope_state": "server_only",
-      "element_ids": [],
-      "profile_ids": [],
-      "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
-      "negative_verification_required": false,
-      "decision_id": null,
-      "status": "unassigned",
-      "requirement_id": "KMIPKIT-REQ-SPEC-6.1.50-003",
-      "subject": "RNG Seed response handling",
-      "summary": "The server MAY indicate that it ignored seeding material by returning zero as the Data Length response value.",
-      "direction": "server_to_client",
-      "condition": "The server elects not to accept the supplied seeding material.",
-      "review_note": "No entry in the pinned official Test Cases v2.1 Committee Note 01 inventory covers the server's optional zero Data Length response under OASIS KMIP Specification v2.1 Section 6.1.50. It is outside client_1_0 implementation scope and does not impose a client response obligation."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.51-001",
@@ -97791,46 +96532,6 @@
       "review_note": "Caller-facing behavior is verified within KMIPKit scope; see specs/022-object-lifecycle/traceability.md for the server/application boundary. No official Test Cases are linked to this requirement in the pinned OASIS source; this is not a full profile conformance claim."
     },
     {
-      "requirement_id": "KMIPKIT-REQ-SPEC-6.1.7-002-003",
-      "source_clause_ids": [
-        "KMIPKIT-CLAUSE-SPEC-6.1.7-002"
-      ],
-      "source_refs": [
-        {
-          "source_id": "KMIPKIT-SRC-spec",
-          "section": "6.1.7"
-        }
-      ],
-      "source_keyword": "MAY",
-      "normative_strength": "permission_or_optional",
-      "subject": "Check additional attributes",
-      "summary": "A client may include in a Check request only the additional attributes listed for Check in §6.1.7.",
-      "role": "client",
-      "direction": "client_to_server",
-      "condition": null,
-      "scope_state": "client_1_0",
-      "element_ids": [
-        "KMIPKIT-ELEM-TAG-42002C",
-        "KMIPKIT-ELEM-TAG-420049",
-        "KMIPKIT-ELEM-TAG-420096"
-      ],
-      "profile_ids": [],
-      "test_case_ids": [],
-      "feature_spec": "KMIPKIT-0036",
-      "implementation_refs": [
-        "crates/kmipkit-protocol/src/check.rs",
-        "crates/kmipkit-client/src/execute.rs"
-      ],
-      "verification_refs": [
-        "crates/kmipkit-protocol/tests/unit/check_operation_tests.rs",
-        "crates/kmipkit-client/tests/unit/check_execution_tests.rs::check_sends_table_183_fields_and_exposes_table_184_response_once"
-      ],
-      "negative_verification_required": false,
-      "decision_id": null,
-      "status": "verified",
-      "review_note": "The typed Check request exposes the optional additional request attributes from the KMIP Specification v2.1 §6.1.7 list (Usage Limits Count, Cryptographic Usage Mask, and Lease Time); protocol and fake-transport tests verify serialization. No official Test Cases ID is explicitly linked from the pinned KMIP Test Cases v2.1 CN01 source (KMIPKIT-SRC-testcases) to KMIPKIT-REQ-SPEC-6.1.7-002-003 under the catalog's source-backed linking policy, so test_case_ids remains empty. The qualified client execution test is derived local evidence, not an OASIS test-case pass. The generic TTLV API remains structurally validating rather than operation-aware, so this does not claim server conformance."
-    },
-    {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.7-003",
       "source_clause_ids": [
         "KMIPKIT-CLAUSE-SPEC-6.1.7-003"
@@ -97978,36 +96679,6 @@
       "decision_id": null,
       "status": "verified",
       "review_note": "Caller-facing behavior links to table-derived protocol and fake-transport tests in specs/022-object-lifecycle/traceability.md. No official Test Cases are linked to this requirement in the pinned OASIS source; no formal conformance is claimed."
-    },
-    {
-      "requirement_id": "KMIPKIT-REQ-SPEC-6.1.7-006",
-      "source_clause_ids": [
-        "KMIPKIT-CLAUSE-SPEC-6.1.7-005"
-      ],
-      "source_refs": [
-        {
-          "source_id": "KMIPKIT-SRC-spec",
-          "section": "6.1.7"
-        }
-      ],
-      "source_keyword": "MAY",
-      "normative_strength": "permission_or_optional",
-      "subject": "Lease Time grant policy",
-      "summary": "A server may grant the requested lease time only when it is requested by a subsequent batched Obtain Lease operation.",
-      "role": "server",
-      "direction": "server_to_client",
-      "condition": "If requested by a subsequent, batched Obtain Lease operation.",
-      "scope_state": "server_only",
-      "element_ids": [],
-      "profile_ids": [],
-      "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
-      "negative_verification_required": false,
-      "decision_id": null,
-      "status": "unassigned",
-      "review_note": "Pinned KMIP Specification v2.1 §6.1.7 states a server-side MAY for a later batched Obtain Lease operation. Check does not itself grant a lease; this server permission is separate from the client Lease Time capability and has no client profile membership."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.9-001-001",
@@ -100642,6 +99313,1339 @@
       "decision_id": null,
       "status": "verified",
       "review_note": "KMIPKIT-0006 owns the in-memory client protocol model for this clause; outbound execution behavior remains assigned to its follow-on owner where specified. No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002."
+    },
+    {
+      "requirement_id": "KMIPKIT-REQ-PROF-5.13.1-002",
+      "source_clause_ids": [
+        "KMIPKIT-CLAUSE-PROF-5.13.1-002"
+      ],
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-profiles",
+          "section": "5.13.1"
+        }
+      ],
+      "source_keyword": "MAY",
+      "normative_strength": "permission_or_optional",
+      "subject": "KMIP clause support under source discrepancy",
+      "summary": "May support clauses within [KMIP-SPEC]; the source's stated non-conflict reference to section 5.10.1 remains unresolved under KMIPKIT-DISC-007.",
+      "role": "client",
+      "direction": "unclear",
+      "condition": "Optional AES XTS Client profile capability. The source literally refers to 'this section 5.10.1'; its intended conflict boundary remains unresolved under KMIPKIT-DISC-007.",
+      "scope_state": "profile_conditional",
+      "element_ids": [],
+      "profile_ids": [
+        "KMIPKIT-PROFILE-AES-XTS-CLIENT"
+      ],
+      "test_case_ids": [],
+      "feature_spec": "KMIPKIT-0010",
+      "implementation_refs": [],
+      "verification_refs": [],
+      "negative_verification_required": false,
+      "decision_id": null,
+      "status": "unassigned",
+      "review_note": "The pinned source atom is represented without inferring the intended 5.10.1 reference. Its implementation, positive verification, and applicable official test cases remain unassigned; the discrepancy remains open and no support is claimed."
+    },
+    {
+      "requirement_id": "KMIPKIT-REQ-SPEC-4.39-002-001",
+      "source_clause_ids": [
+        "KMIPKIT-CLAUSE-SPEC-4.39-002"
+      ],
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "4.39"
+        }
+      ],
+      "source_keyword": "SHOULD",
+      "normative_strength": "recommended",
+      "subject": "PKCS#12 Friendly Name text",
+      "summary": "Clients should use lowercase text for a PKCS#12 Friendly Name.",
+      "role": "client",
+      "direction": "client_to_server",
+      "condition": "When the client represents a PKCS#12 Friendly Name value.",
+      "scope_state": "client_1_0",
+      "element_ids": [
+        "KMIPKIT-ELEM-ATTRIBUTE-PKCS-12-FRIENDLY-NAME"
+      ],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": "KMIPKIT-0016",
+      "implementation_refs": [],
+      "verification_refs": [],
+      "negative_verification_required": false,
+      "decision_id": null,
+      "status": "unassigned",
+      "review_note": "The pinned client-side SHOULD is separate from the server alias default and response-encoding duties. Implementation, positive verification, and applicable official test cases remain unassigned."
+    },
+    {
+      "requirement_id": "KMIPKIT-REQ-SPEC-4.57-003-004",
+      "source_clause_ids": [
+        "KMIPKIT-CLAUSE-SPEC-4.57-003"
+      ],
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "4.57"
+        }
+      ],
+      "source_keyword": "SHALL NOT",
+      "normative_strength": "prohibited",
+      "subject": "Protect Stop / Process Stop Date restriction",
+      "summary": "If a Protect Stop attribute is set, then the object SHALL NOT be used for cryptographic purposes after the Process Stop Date.",
+      "role": "unspecified",
+      "direction": "unclear",
+      "condition": "Protect Stop attribute is set",
+      "scope_state": "unclear",
+      "element_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "negative_verification_required": true,
+      "decision_id": null,
+      "status": "unassigned",
+      "review_note": "The pinned source has no requirement-specific official Test Cases entry for this predicate. Preserve the Protect Stop / Process Stop Date source discrepancy in KMIPKIT-DISC-013; implementation and verification remain unassigned."
+    },
+    {
+      "requirement_id": "KMIPKIT-REQ-SPEC-6.1.12-003",
+      "source_clause_ids": [],
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "6.1.12"
+        }
+      ],
+      "source_keyword": null,
+      "normative_strength": "mandatory",
+      "source_force": "required_table_body_value",
+      "source_gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.12-RIGHTS-REQUIRED",
+      "source_locator": {
+        "kind": "table_body_row",
+        "section": "6.1.12",
+        "row_label": "Rights",
+        "html_line_range": [
+          25489,
+          25507
+        ]
+      },
+      "subject": "Rights",
+      "summary": "The client includes the required Rights list in the Delegated Login request.",
+      "role": "client",
+      "direction": "client_to_server",
+      "condition": "a Delegated Login request is sent",
+      "scope_state": "client_1_0",
+      "element_ids": [
+        "KMIPKIT-ELEM-OP-C2S-DELEGATED-LOGIN"
+      ],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": "KMIPKIT-0038",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/delegated_login.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/delegated_login_operation_tests.rs::request_emits_table_199_fields_in_order_and_preserves_both_lease_time_forms"
+      ],
+      "negative_verification_required": false,
+      "decision_id": null,
+      "status": "verified",
+      "review_note": "Pinned KMIP Specification v2.1 §6.1.12, request payload row Rights (HTML lines 25489-25507), records required_table_body_value. This is table-field semantics, not an RFC keyword. The linked local Rust request-construction test verifies field representation; no official OASIS test execution is claimed. The pinned official Test Cases inventory has no requirement-specific test ID for this requirement; no official test execution is claimed."
+    },
+    {
+      "requirement_id": "KMIPKIT-REQ-SPEC-6.1.12-005",
+      "source_clause_ids": [],
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "6.1.12"
+        }
+      ],
+      "source_keyword": null,
+      "normative_strength": "permission_or_optional",
+      "source_force": "optional_table_body_value",
+      "source_gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.12-LEASE-TIME-OPTIONAL",
+      "source_locator": {
+        "kind": "table_body_row",
+        "section": "6.1.12",
+        "row_label": "Lease Time",
+        "html_line_range": [
+          25434,
+          25451
+        ]
+      },
+      "subject": "Lease Time",
+      "summary": "The client can include Lease Time in the Delegated Login request.",
+      "role": "client",
+      "direction": "client_to_server",
+      "condition": "client chooses to supply the optional Lease Time field",
+      "scope_state": "client_1_0",
+      "element_ids": [
+        "KMIPKIT-ELEM-OP-C2S-DELEGATED-LOGIN"
+      ],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": "KMIPKIT-0038",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/delegated_login.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/delegated_login_operation_tests.rs::request_emits_table_199_fields_in_order_and_preserves_both_lease_time_forms"
+      ],
+      "negative_verification_required": false,
+      "decision_id": null,
+      "status": "verified",
+      "review_note": "Pinned KMIP Specification v2.1 §6.1.12, request payload row Lease Time (HTML lines 25434-25451), records optional_table_body_value. This is table-field semantics, not an RFC keyword. The linked local Rust request-construction test verifies field representation; no official OASIS test execution is claimed. The pinned official Test Cases inventory has no requirement-specific test ID for this requirement; no official test execution is claimed."
+    },
+    {
+      "requirement_id": "KMIPKIT-REQ-SPEC-6.1.12-006",
+      "source_clause_ids": [],
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "6.1.12"
+        }
+      ],
+      "source_keyword": null,
+      "normative_strength": "permission_or_optional",
+      "source_force": "optional_table_body_value",
+      "source_gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.12-REQUEST-COUNT-OPTIONAL",
+      "source_locator": {
+        "kind": "table_body_row",
+        "section": "6.1.12",
+        "row_label": "Request Count",
+        "html_line_range": [
+          25452,
+          25470
+        ]
+      },
+      "subject": "Request Count",
+      "summary": "The client can include Request Count in the Delegated Login request.",
+      "role": "client",
+      "direction": "client_to_server",
+      "condition": "client chooses to supply the optional Request Count field",
+      "scope_state": "client_1_0",
+      "element_ids": [
+        "KMIPKIT-ELEM-OP-C2S-DELEGATED-LOGIN"
+      ],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": "KMIPKIT-0038",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/delegated_login.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/delegated_login_operation_tests.rs::request_emits_table_199_fields_in_order_and_preserves_both_lease_time_forms"
+      ],
+      "negative_verification_required": false,
+      "decision_id": null,
+      "status": "verified",
+      "review_note": "Pinned KMIP Specification v2.1 §6.1.12, request payload row Request Count (HTML lines 25452-25470), records optional_table_body_value. This is table-field semantics, not an RFC keyword. The linked local Rust request-construction test verifies field representation; no official OASIS test execution is claimed. The pinned official Test Cases inventory has no requirement-specific test ID for this requirement; no official test execution is claimed."
+    },
+    {
+      "requirement_id": "KMIPKIT-REQ-SPEC-6.1.12-007",
+      "source_clause_ids": [],
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "6.1.12"
+        }
+      ],
+      "source_keyword": null,
+      "normative_strength": "permission_or_optional",
+      "source_force": "optional_table_body_value",
+      "source_gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.12-USAGE-LIMITS-OPTIONAL",
+      "source_locator": {
+        "kind": "table_body_row",
+        "section": "6.1.12",
+        "row_label": "Usage Limits",
+        "html_line_range": [
+          25471,
+          25488
+        ]
+      },
+      "subject": "Usage Limits",
+      "summary": "The client can include Usage Limits in the Delegated Login request.",
+      "role": "client",
+      "direction": "client_to_server",
+      "condition": "client chooses to supply the optional Usage Limits field",
+      "scope_state": "client_1_0",
+      "element_ids": [
+        "KMIPKIT-ELEM-OP-C2S-DELEGATED-LOGIN"
+      ],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": "KMIPKIT-0038",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/delegated_login.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/delegated_login_operation_tests.rs::request_emits_table_199_fields_in_order_and_preserves_both_lease_time_forms"
+      ],
+      "negative_verification_required": false,
+      "decision_id": null,
+      "status": "verified",
+      "review_note": "Pinned KMIP Specification v2.1 §6.1.12, request payload row Usage Limits (HTML lines 25471-25488), records optional_table_body_value. This is table-field semantics, not an RFC keyword. The linked local Rust request-construction test verifies field representation; no official OASIS test execution is claimed. The pinned official Test Cases inventory has no requirement-specific test ID for this requirement; no official test execution is claimed."
+    },
+    {
+      "requirement_id": "KMIPKIT-REQ-SPEC-6.1.13-005",
+      "source_clause_ids": [],
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "6.1.13"
+        }
+      ],
+      "source_keyword": null,
+      "normative_strength": "permission_or_optional",
+      "source_force": "optional_table_body_value",
+      "source_gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.13-CURRENT-ATTRIBUTE-OPTIONAL",
+      "source_locator": {
+        "kind": "table_body_row",
+        "section": "6.1.13",
+        "table": "request_payload",
+        "row_label": "Current Attribute",
+        "html_line_range": [
+          25681,
+          25699
+        ]
+      },
+      "subject": "Current Attribute",
+      "summary": "The client can select the Current Attribute in a Delete Attribute request.",
+      "role": "client",
+      "direction": "client_to_server",
+      "condition": "Required=No; if Current Attribute is omitted while Attribute Reference is supplied, §6.1.13 paragraph 1 explicitly says all instances of the specified attribute are deleted.",
+      "scope_state": "client_1_0",
+      "element_ids": [
+        "KMIPKIT-ELEM-OP-C2S-DELETE-ATTRIBUTE"
+      ],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": "KMIPKIT-0016",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/delete_attribute.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/delete_attribute_tests.rs::request_omits_current_attribute_and_preserves_name_reference",
+        "crates/kmipkit-protocol/tests/unit/delete_attribute_tests.rs::request_preserves_both_optional_selectors_as_absent"
+      ],
+      "negative_verification_required": false,
+      "decision_id": null,
+      "status": "verified",
+      "review_note": "Pinned KMIP Specification v2.1 §6.1.13, request payload row Current Attribute (HTML lines 25681-25699), records optional_table_body_value. This is table-field semantics, not an RFC keyword. The linked local Rust request-construction test verifies field representation; no official OASIS test execution is claimed. The pinned official Test Cases inventory has no requirement-specific test ID for this requirement; no official test execution is claimed."
+    },
+    {
+      "requirement_id": "KMIPKIT-REQ-SPEC-6.1.13-006",
+      "source_clause_ids": [],
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "6.1.13"
+        }
+      ],
+      "source_keyword": null,
+      "normative_strength": "permission_or_optional",
+      "source_force": "optional_table_body_value",
+      "source_gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.13-ATTRIBUTE-REFERENCE-OPTIONAL",
+      "source_locator": {
+        "kind": "table_body_row",
+        "section": "6.1.13",
+        "table": "request_payload",
+        "row_label": "Attribute Reference",
+        "html_line_range": [
+          25700,
+          25718
+        ]
+      },
+      "subject": "Attribute Reference",
+      "summary": "The client can select the Attribute Reference in a Delete Attribute request.",
+      "role": "client",
+      "direction": "client_to_server",
+      "condition": "Required=No; the row says this field specifies the reference for the attribute associated with the object, but the source does not state an omission condition for this field.",
+      "scope_state": "client_1_0",
+      "element_ids": [
+        "KMIPKIT-ELEM-OP-C2S-DELETE-ATTRIBUTE"
+      ],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": "KMIPKIT-0016",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/delete_attribute.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/delete_attribute_tests.rs::request_omits_current_attribute_and_preserves_name_reference",
+        "crates/kmipkit-protocol/tests/unit/delete_attribute_tests.rs::request_preserves_both_optional_selectors_as_absent"
+      ],
+      "negative_verification_required": false,
+      "decision_id": null,
+      "status": "verified",
+      "review_note": "Pinned KMIP Specification v2.1 §6.1.13, request payload row Attribute Reference (HTML lines 25700-25718), records optional_table_body_value. This is table-field semantics, not an RFC keyword. The linked local Rust request-construction test verifies field representation; no official OASIS test execution is claimed. The pinned official Test Cases inventory has no requirement-specific test ID for this requirement; no official test execution is claimed."
+    },
+    {
+      "requirement_id": "KMIPKIT-REQ-SPEC-6.1.14-009",
+      "source_clause_ids": [],
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "6.1.14"
+        }
+      ],
+      "source_keyword": null,
+      "normative_strength": "mandatory",
+      "source_force": "required_table_body_value",
+      "source_gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.14-OBJECT-TYPE-REQUIRED",
+      "source_locator": {
+        "kind": "table_body_row",
+        "section": "6.1.14",
+        "row_label": "Object Type",
+        "table": "request_payload",
+        "html_line_range": [
+          25900,
+          25917
+        ]
+      },
+      "subject": "Object Type",
+      "summary": "The client includes Object Type in the Derive Key request.",
+      "role": "client",
+      "direction": "client_to_server",
+      "condition": "A Derive Key request is sent.",
+      "scope_state": "client_1_0",
+      "element_ids": [
+        "KMIPKIT-ELEM-OP-C2S-DERIVE-KEY"
+      ],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": "KMIPKIT-0037",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/derive_key.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/derive_key_operation_tests.rs::request_encodes_required_table_205_fields_in_order_and_repeats_identifiers"
+      ],
+      "negative_verification_required": false,
+      "decision_id": null,
+      "status": "verified",
+      "review_note": "Pinned KMIP Specification v2.1 §6.1.14, request payload row Object Type (HTML lines 25900-25917), records required_table_body_value. This is table-field semantics, not an RFC keyword. The linked local Rust request-construction test verifies field representation; no official OASIS test execution is claimed. The pinned official Test Cases inventory has no requirement-specific test ID for this requirement; no official test execution is claimed."
+    },
+    {
+      "requirement_id": "KMIPKIT-REQ-SPEC-6.1.14-010",
+      "source_clause_ids": [],
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "6.1.14"
+        }
+      ],
+      "source_keyword": null,
+      "normative_strength": "mandatory",
+      "source_force": "required_table_body_value",
+      "source_gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.14-UNIQUE-IDENTIFIER-REQUIRED",
+      "source_locator": {
+        "kind": "table_body_row",
+        "section": "6.1.14",
+        "row_label": "Unique Identifier",
+        "table": "request_payload",
+        "html_line_range": [
+          25919,
+          25938
+        ]
+      },
+      "subject": "Unique Identifier",
+      "summary": "The client includes a Unique Identifier in the Derive Key request; repetition remains a separate MAY capability.",
+      "role": "client",
+      "direction": "client_to_server",
+      "condition": "A Derive Key request is sent.",
+      "scope_state": "client_1_0",
+      "element_ids": [
+        "KMIPKIT-ELEM-OP-C2S-DERIVE-KEY"
+      ],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": "KMIPKIT-0037",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/derive_key.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/derive_key_operation_tests.rs::request_encodes_required_table_205_fields_in_order_and_repeats_identifiers"
+      ],
+      "negative_verification_required": false,
+      "decision_id": null,
+      "status": "verified",
+      "review_note": "Pinned KMIP Specification v2.1 §6.1.14, request payload row Unique Identifier (HTML lines 25919-25938), records required_table_body_value. This is table-field semantics, not an RFC keyword. The linked local Rust request-construction test verifies field representation; no official OASIS test execution is claimed. The pinned official Test Cases inventory has no requirement-specific test ID for this requirement; no official test execution is claimed."
+    },
+    {
+      "requirement_id": "KMIPKIT-REQ-SPEC-6.1.14-011",
+      "source_clause_ids": [],
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "6.1.14"
+        }
+      ],
+      "source_keyword": null,
+      "normative_strength": "mandatory",
+      "source_force": "required_table_body_value",
+      "source_gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.14-DERIVATION-METHOD-REQUIRED",
+      "source_locator": {
+        "kind": "table_body_row",
+        "section": "6.1.14",
+        "row_label": "Derivation Method",
+        "table": "request_payload",
+        "html_line_range": [
+          25940,
+          25958
+        ]
+      },
+      "subject": "Derivation Method",
+      "summary": "The client includes Derivation Method in the Derive Key request.",
+      "role": "client",
+      "direction": "client_to_server",
+      "condition": "A Derive Key request is sent.",
+      "scope_state": "client_1_0",
+      "element_ids": [
+        "KMIPKIT-ELEM-OP-C2S-DERIVE-KEY"
+      ],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": "KMIPKIT-0037",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/derive_key.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/derive_key_operation_tests.rs::request_encodes_required_table_205_fields_in_order_and_repeats_identifiers"
+      ],
+      "negative_verification_required": false,
+      "decision_id": null,
+      "status": "verified",
+      "review_note": "Pinned KMIP Specification v2.1 §6.1.14, request payload row Derivation Method (HTML lines 25940-25958), records required_table_body_value. This is table-field semantics, not an RFC keyword. The linked local Rust request-construction test verifies field representation; no official OASIS test execution is claimed. The pinned official Test Cases inventory has no requirement-specific test ID for this requirement; no official test execution is claimed."
+    },
+    {
+      "requirement_id": "KMIPKIT-REQ-SPEC-6.1.14-012",
+      "source_clause_ids": [],
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "6.1.14"
+        }
+      ],
+      "source_keyword": null,
+      "normative_strength": "mandatory",
+      "source_force": "required_table_body_value",
+      "source_gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.14-DERIVATION-PARAMETERS-REQUIRED",
+      "source_locator": {
+        "kind": "table_body_row",
+        "section": "6.1.14",
+        "row_label": "Derivation Parameters",
+        "table": "request_payload",
+        "html_line_range": [
+          25960,
+          25978
+        ]
+      },
+      "subject": "Derivation Parameters",
+      "summary": "The client includes Derivation Parameters in the Derive Key request.",
+      "role": "client",
+      "direction": "client_to_server",
+      "condition": "A Derive Key request is sent.",
+      "scope_state": "client_1_0",
+      "element_ids": [
+        "KMIPKIT-ELEM-OP-C2S-DERIVE-KEY"
+      ],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": "KMIPKIT-0037",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/derive_key.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/derive_key_operation_tests.rs::request_encodes_required_table_205_fields_in_order_and_repeats_identifiers"
+      ],
+      "negative_verification_required": false,
+      "decision_id": null,
+      "status": "verified",
+      "review_note": "Pinned KMIP Specification v2.1 §6.1.14, request payload row Derivation Parameters (HTML lines 25960-25978), records required_table_body_value. This is table-field semantics, not an RFC keyword. The linked local Rust request-construction test verifies field representation; no official OASIS test execution is claimed. The pinned official Test Cases inventory has no requirement-specific test ID for this requirement; no official test execution is claimed."
+    },
+    {
+      "requirement_id": "KMIPKIT-REQ-SPEC-6.1.18-001-001",
+      "source_clause_ids": [
+        "KMIPKIT-CLAUSE-SPEC-6.1.18-001"
+      ],
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "6.1.18"
+        }
+      ],
+      "source_keyword": "SHALL",
+      "normative_strength": "mandatory",
+      "subject": "Export request control semantics",
+      "summary": "The client applies the same semantics as Get to the four Export format and wrapping controls.",
+      "role": "client",
+      "direction": "client_to_server",
+      "condition": null,
+      "scope_state": "client_1_0",
+      "element_ids": [
+        "KMIPKIT-ELEM-OP-C2S-EXPORT"
+      ],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": "KMIPKIT-0037",
+      "implementation_refs": [],
+      "verification_refs": [],
+      "negative_verification_required": false,
+      "decision_id": null,
+      "status": "unassigned",
+      "review_note": "This pinned source atom is the client request duty only. The adjacent destroyed-object key-material SHALL not be returned predicate remains a separate server duty; implementation, positive verification, and applicable official test cases remain unassigned."
+    },
+    {
+      "requirement_id": "KMIPKIT-REQ-SPEC-6.1.18-005",
+      "source_clause_ids": [],
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "6.1.18"
+        }
+      ],
+      "source_keyword": null,
+      "normative_strength": "permission_or_optional",
+      "source_force": "optional_table_body_value",
+      "source_gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.18-KEY-FORMAT-TYPE-OPTIONAL",
+      "source_locator": {
+        "kind": "table_body_row",
+        "section": "6.1.18",
+        "row_label": "Key Format Type",
+        "table": "request_payload",
+        "html_line_range": [
+          26902,
+          26917
+        ]
+      },
+      "subject": "Key Format Type",
+      "summary": "The client can select the format of the key value returned by Export.",
+      "role": "client",
+      "direction": "client_to_server",
+      "condition": null,
+      "scope_state": "client_1_0",
+      "element_ids": [
+        "KMIPKIT-ELEM-OP-C2S-EXPORT"
+      ],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": "KMIPKIT-0037",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/export.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/export_operation_tests.rs::request_preserves_all_explicit_optional_choices_and_omits_absent_fields"
+      ],
+      "negative_verification_required": false,
+      "decision_id": null,
+      "status": "verified",
+      "review_note": "Pinned KMIP Specification v2.1 §6.1.18 request payload row Key Format Type (HTML lines 26902-26917) records optional_table_body_value. This table-field classification is distinct from RFC keywords. The linked local Rust request test verifies positive encoding of the caller-selected Key Format Type selector; the local request tests do not assert server-side behavior. No requirement-specific official Test Cases ID is explicitly linked by pinned OASIS sources in KMIPKIT-0002. No official case-level pass is claimed. The combined test's incidental empty-request Unique Identifier assertion creates no Unique Identifier omission requirement here; this label covers only this selector."
+    },
+    {
+      "requirement_id": "KMIPKIT-REQ-SPEC-6.1.18-006",
+      "source_clause_ids": [],
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "6.1.18"
+        }
+      ],
+      "source_keyword": null,
+      "normative_strength": "permission_or_optional",
+      "source_force": "optional_table_body_value",
+      "source_gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.18-KEY-WRAP-TYPE-OPTIONAL",
+      "source_locator": {
+        "kind": "table_body_row",
+        "section": "6.1.18",
+        "row_label": "Key Wrap Type",
+        "table": "request_payload",
+        "html_line_range": [
+          26918,
+          26933
+        ]
+      },
+      "subject": "Key Wrap Type",
+      "summary": "The client can select the wrap type of the key value returned by Export.",
+      "role": "client",
+      "direction": "client_to_server",
+      "condition": null,
+      "scope_state": "client_1_0",
+      "element_ids": [
+        "KMIPKIT-ELEM-OP-C2S-EXPORT"
+      ],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": "KMIPKIT-0037",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/export.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/export_operation_tests.rs::request_preserves_all_explicit_optional_choices_and_omits_absent_fields"
+      ],
+      "negative_verification_required": false,
+      "decision_id": null,
+      "status": "verified",
+      "review_note": "Pinned KMIP Specification v2.1 §6.1.18 request payload row Key Wrap Type (HTML lines 26918-26933) records optional_table_body_value. This table-field classification is distinct from RFC keywords. The linked local Rust request test verifies positive encoding of the caller-selected Key Wrap Type selector; the local request tests do not assert server-side behavior. No requirement-specific official Test Cases ID is explicitly linked by pinned OASIS sources in KMIPKIT-0002. No official case-level pass is claimed. The combined test's incidental empty-request Unique Identifier assertion creates no Unique Identifier omission requirement here; this label covers only this selector."
+    },
+    {
+      "requirement_id": "KMIPKIT-REQ-SPEC-6.1.18-007",
+      "source_clause_ids": [],
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "6.1.18"
+        }
+      ],
+      "source_keyword": null,
+      "normative_strength": "permission_or_optional",
+      "source_force": "optional_table_body_value",
+      "source_gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.18-KEY-COMPRESSION-TYPE-OPTIONAL",
+      "source_locator": {
+        "kind": "table_body_row",
+        "section": "6.1.18",
+        "row_label": "Key Compression Type",
+        "table": "request_payload",
+        "html_line_range": [
+          26934,
+          26950
+        ]
+      },
+      "subject": "Key Compression Type",
+      "summary": "The client can select the compression method for elliptic-curve public keys returned by Export.",
+      "role": "client",
+      "direction": "client_to_server",
+      "condition": null,
+      "scope_state": "client_1_0",
+      "element_ids": [
+        "KMIPKIT-ELEM-OP-C2S-EXPORT"
+      ],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": "KMIPKIT-0037",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/export.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/export_operation_tests.rs::request_preserves_all_explicit_optional_choices_and_omits_absent_fields"
+      ],
+      "negative_verification_required": false,
+      "decision_id": null,
+      "status": "verified",
+      "review_note": "Pinned KMIP Specification v2.1 §6.1.18 request payload row Key Compression Type (HTML lines 26934-26950) records optional_table_body_value. This table-field classification is distinct from RFC keywords. The linked local Rust request test verifies positive encoding of the caller-selected Key Compression Type selector; the local request tests do not assert server-side behavior. No requirement-specific official Test Cases ID is explicitly linked by pinned OASIS sources in KMIPKIT-0002. No official case-level pass is claimed. The combined test's incidental empty-request Unique Identifier assertion creates no Unique Identifier omission requirement here; this label covers only this selector."
+    },
+    {
+      "requirement_id": "KMIPKIT-REQ-SPEC-6.1.18-008",
+      "source_clause_ids": [],
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "6.1.18"
+        }
+      ],
+      "source_keyword": null,
+      "normative_strength": "permission_or_optional",
+      "source_force": "optional_table_body_value",
+      "source_gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.18-KEY-WRAPPING-SPECIFICATION-OPTIONAL",
+      "source_locator": {
+        "kind": "table_body_row",
+        "section": "6.1.18",
+        "row_label": "Key Wrapping Specification",
+        "table": "request_payload",
+        "html_line_range": [
+          26951,
+          26966
+        ]
+      },
+      "subject": "Key Wrapping Specification",
+      "summary": "The client can supply wrapping keys and other information for the object returned by Export.",
+      "role": "client",
+      "direction": "client_to_server",
+      "condition": null,
+      "scope_state": "client_1_0",
+      "element_ids": [
+        "KMIPKIT-ELEM-OP-C2S-EXPORT"
+      ],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": "KMIPKIT-0037",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/export.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/export_operation_tests.rs::request_preserves_all_explicit_optional_choices_and_omits_absent_fields"
+      ],
+      "negative_verification_required": false,
+      "decision_id": null,
+      "status": "verified",
+      "review_note": "Pinned KMIP Specification v2.1 §6.1.18 request payload row Key Wrapping Specification (HTML lines 26951-26966) records optional_table_body_value. This table-field classification is distinct from RFC keywords. The linked local Rust request test verifies positive encoding of the caller-selected Key Wrapping Specification selector; the local request tests do not assert server-side behavior. No requirement-specific official Test Cases ID is explicitly linked by pinned OASIS sources in KMIPKIT-0002. No official case-level pass is claimed. The combined test's incidental empty-request Unique Identifier assertion creates no Unique Identifier omission requirement here; this label covers only this selector."
+    },
+    {
+      "requirement_id": "KMIPKIT-REQ-SPEC-6.1.19-003",
+      "source_clause_ids": [],
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "6.1.19"
+        }
+      ],
+      "source_keyword": null,
+      "normative_strength": "permission_or_optional",
+      "source_force": "optional_table_body_value",
+      "source_gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.19-KEY-FORMAT-TYPE-OPTIONAL",
+      "source_locator": {
+        "kind": "table_body_row",
+        "section": "6.1.19",
+        "row_label": "Key Format Type",
+        "table": "request_payload",
+        "html_line_range": [
+          27211,
+          27228
+        ]
+      },
+      "subject": "Key Format Type",
+      "summary": "The client can select the format of the key value returned by Get.",
+      "role": "client",
+      "direction": "client_to_server",
+      "condition": null,
+      "scope_state": "client_1_0",
+      "element_ids": [
+        "KMIPKIT-ELEM-OP-C2S-GET"
+      ],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": "KMIPKIT-0017",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/get.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/get_tests.rs::request_omits_every_optional_table_220_field_when_unspecified",
+        "crates/kmipkit-protocol/tests/unit/get_tests.rs::request_serializes_present_table_220_fields_in_source_order"
+      ],
+      "negative_verification_required": false,
+      "decision_id": null,
+      "status": "verified",
+      "review_note": "Pinned KMIP Specification v2.1 §6.1.19 request payload row Key Format Type (HTML lines 27211-27228) records optional_table_body_value. This table-field classification is distinct from RFC keywords. The linked local Rust request tests verify presence and omission of caller-selected Key Format Type selectors; the local request tests do not assert server-side behavior. No requirement-specific official Test Cases ID is explicitly linked by pinned OASIS sources in KMIPKIT-0002. No official case-level pass is claimed."
+    },
+    {
+      "requirement_id": "KMIPKIT-REQ-SPEC-6.1.19-004",
+      "source_clause_ids": [],
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "6.1.19"
+        }
+      ],
+      "source_keyword": null,
+      "normative_strength": "permission_or_optional",
+      "source_force": "optional_table_body_value",
+      "source_gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.19-KEY-WRAP-TYPE-OPTIONAL",
+      "source_locator": {
+        "kind": "table_body_row",
+        "section": "6.1.19",
+        "row_label": "Key Wrap Type",
+        "table": "request_payload",
+        "html_line_range": [
+          27229,
+          27247
+        ]
+      },
+      "subject": "Key Wrap Type",
+      "summary": "The client can select the wrap type of the key value returned by Get.",
+      "role": "client",
+      "direction": "client_to_server",
+      "condition": null,
+      "scope_state": "client_1_0",
+      "element_ids": [
+        "KMIPKIT-ELEM-OP-C2S-GET"
+      ],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": "KMIPKIT-0017",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/get.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/get_tests.rs::request_omits_every_optional_table_220_field_when_unspecified",
+        "crates/kmipkit-protocol/tests/unit/get_tests.rs::request_serializes_present_table_220_fields_in_source_order"
+      ],
+      "negative_verification_required": false,
+      "decision_id": null,
+      "status": "verified",
+      "review_note": "Pinned KMIP Specification v2.1 §6.1.19 request payload row Key Wrap Type (HTML lines 27229-27247) records optional_table_body_value. This table-field classification is distinct from RFC keywords. The linked local Rust request tests verify presence and omission of caller-selected Key Wrap Type selectors; the local request tests do not assert server-side behavior. No requirement-specific official Test Cases ID is explicitly linked by pinned OASIS sources in KMIPKIT-0002. No official case-level pass is claimed."
+    },
+    {
+      "requirement_id": "KMIPKIT-REQ-SPEC-6.1.19-005",
+      "source_clause_ids": [],
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "6.1.19"
+        }
+      ],
+      "source_keyword": null,
+      "normative_strength": "permission_or_optional",
+      "source_force": "optional_table_body_value",
+      "source_gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.19-KEY-COMPRESSION-TYPE-OPTIONAL",
+      "source_locator": {
+        "kind": "table_body_row",
+        "section": "6.1.19",
+        "row_label": "Key Compression Type",
+        "table": "request_payload",
+        "html_line_range": [
+          27248,
+          27266
+        ]
+      },
+      "subject": "Key Compression Type",
+      "summary": "The client can select the compression method for elliptic-curve public keys returned by Get.",
+      "role": "client",
+      "direction": "client_to_server",
+      "condition": null,
+      "scope_state": "client_1_0",
+      "element_ids": [
+        "KMIPKIT-ELEM-OP-C2S-GET"
+      ],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": "KMIPKIT-0017",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/get.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/get_tests.rs::request_omits_every_optional_table_220_field_when_unspecified",
+        "crates/kmipkit-protocol/tests/unit/get_tests.rs::request_serializes_present_table_220_fields_in_source_order"
+      ],
+      "negative_verification_required": false,
+      "decision_id": null,
+      "status": "verified",
+      "review_note": "Pinned KMIP Specification v2.1 §6.1.19 request payload row Key Compression Type (HTML lines 27248-27266) records optional_table_body_value. This table-field classification is distinct from RFC keywords. The linked local Rust request tests verify presence and omission of caller-selected Key Compression Type selectors; the local request tests do not assert server-side behavior. No requirement-specific official Test Cases ID is explicitly linked by pinned OASIS sources in KMIPKIT-0002. No official case-level pass is claimed."
+    },
+    {
+      "requirement_id": "KMIPKIT-REQ-SPEC-6.1.19-006",
+      "source_clause_ids": [],
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "6.1.19"
+        }
+      ],
+      "source_keyword": null,
+      "normative_strength": "permission_or_optional",
+      "source_force": "optional_table_body_value",
+      "source_gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.19-KEY-WRAPPING-SPECIFICATION-OPTIONAL",
+      "source_locator": {
+        "kind": "table_body_row",
+        "section": "6.1.19",
+        "row_label": "Key Wrapping Specification",
+        "table": "request_payload",
+        "html_line_range": [
+          27267,
+          27285
+        ]
+      },
+      "subject": "Key Wrapping Specification",
+      "summary": "The client can supply wrapping keys and other information for the object returned by Get.",
+      "role": "client",
+      "direction": "client_to_server",
+      "condition": null,
+      "scope_state": "client_1_0",
+      "element_ids": [
+        "KMIPKIT-ELEM-OP-C2S-GET"
+      ],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": "KMIPKIT-0017",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/get.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/get_tests.rs::request_omits_every_optional_table_220_field_when_unspecified",
+        "crates/kmipkit-protocol/tests/unit/get_tests.rs::request_serializes_present_table_220_fields_in_source_order"
+      ],
+      "negative_verification_required": false,
+      "decision_id": null,
+      "status": "verified",
+      "review_note": "Pinned KMIP Specification v2.1 §6.1.19 request payload row Key Wrapping Specification (HTML lines 27267-27285) records optional_table_body_value. This table-field classification is distinct from RFC keywords. The linked local Rust request tests verify presence and omission of caller-selected Key Wrapping Specification selectors; the local request tests do not assert server-side behavior. No requirement-specific official Test Cases ID is explicitly linked by pinned OASIS sources in KMIPKIT-0002. No official case-level pass is claimed."
+    },
+    {
+      "requirement_id": "KMIPKIT-REQ-SPEC-6.1.30-001",
+      "source_clause_ids": [],
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "6.1.30"
+        }
+      ],
+      "source_keyword": null,
+      "normative_strength": "permission_or_optional",
+      "source_force": "optional_table_body_value",
+      "source_gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.30-LEASE-TIME-OPTIONAL",
+      "source_locator": {
+        "kind": "table_body_row",
+        "section": "6.1.30",
+        "row_label": "Lease Time",
+        "table": "request_payload",
+        "html_line_range": [
+          29673,
+          29688
+        ]
+      },
+      "subject": "Lease Time",
+      "summary": "The client can include Lease Time in the Login request.",
+      "role": "client",
+      "direction": "client_to_server",
+      "condition": "client chooses to supply the optional Lease Time field",
+      "scope_state": "client_1_0",
+      "element_ids": [
+        "KMIPKIT-ELEM-OP-C2S-LOGIN"
+      ],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": "KMIPKIT-0038",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/login.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/login_operation_tests.rs::optional_request_fields_keep_table_253_order_and_both_lease_forms"
+      ],
+      "negative_verification_required": false,
+      "decision_id": null,
+      "status": "verified",
+      "review_note": "Pinned KMIP Specification v2.1 §6.1.30, request payload row Lease Time (HTML lines 29673-29688), records optional_table_body_value. This is table-field semantics, not an RFC keyword. The linked local Rust request encoding/requiredness test provides verification; No requirement-specific official Test Cases ID is explicitly linked. No official case-level pass is claimed."
+    },
+    {
+      "requirement_id": "KMIPKIT-REQ-SPEC-6.1.30-002",
+      "source_clause_ids": [],
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "6.1.30"
+        }
+      ],
+      "source_keyword": null,
+      "normative_strength": "permission_or_optional",
+      "source_force": "optional_table_body_value",
+      "source_gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.30-REQUEST-COUNT-OPTIONAL",
+      "source_locator": {
+        "kind": "table_body_row",
+        "section": "6.1.30",
+        "row_label": "Request Count",
+        "table": "request_payload",
+        "html_line_range": [
+          29689,
+          29704
+        ]
+      },
+      "subject": "Request Count",
+      "summary": "The client can include Request Count in the Login request.",
+      "role": "client",
+      "direction": "client_to_server",
+      "condition": "client chooses to supply the optional Request Count field",
+      "scope_state": "client_1_0",
+      "element_ids": [
+        "KMIPKIT-ELEM-OP-C2S-LOGIN"
+      ],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": "KMIPKIT-0038",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/login.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/login_operation_tests.rs::optional_request_fields_keep_table_253_order_and_both_lease_forms"
+      ],
+      "negative_verification_required": false,
+      "decision_id": null,
+      "status": "verified",
+      "review_note": "Pinned KMIP Specification v2.1 §6.1.30, request payload row Request Count (HTML lines 29689-29704), records optional_table_body_value. This is table-field semantics, not an RFC keyword. The linked local Rust request encoding/requiredness test provides verification; No requirement-specific official Test Cases ID is explicitly linked. No official case-level pass is claimed."
+    },
+    {
+      "requirement_id": "KMIPKIT-REQ-SPEC-6.1.30-003",
+      "source_clause_ids": [],
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "6.1.30"
+        }
+      ],
+      "source_keyword": null,
+      "normative_strength": "permission_or_optional",
+      "source_force": "optional_table_body_value",
+      "source_gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.30-USAGE-LIMITS-OPTIONAL",
+      "source_locator": {
+        "kind": "table_body_row",
+        "section": "6.1.30",
+        "row_label": "Usage Limits",
+        "table": "request_payload",
+        "html_line_range": [
+          29705,
+          29720
+        ]
+      },
+      "subject": "Usage Limits",
+      "summary": "The client can include Usage Limits in the Login request.",
+      "role": "client",
+      "direction": "client_to_server",
+      "condition": "client chooses to supply the optional Usage Limits field",
+      "scope_state": "client_1_0",
+      "element_ids": [
+        "KMIPKIT-ELEM-OP-C2S-LOGIN"
+      ],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": "KMIPKIT-0038",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/login.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/login_operation_tests.rs::optional_request_fields_keep_table_253_order_and_both_lease_forms"
+      ],
+      "negative_verification_required": false,
+      "decision_id": null,
+      "status": "verified",
+      "review_note": "Pinned KMIP Specification v2.1 §6.1.30, request payload row Usage Limits (HTML lines 29705-29720), records optional_table_body_value. This is table-field semantics, not an RFC keyword. The linked local Rust request encoding/requiredness test provides verification; No requirement-specific official Test Cases ID is explicitly linked. No official case-level pass is claimed."
+    },
+    {
+      "requirement_id": "KMIPKIT-REQ-SPEC-6.1.31-001",
+      "source_clause_ids": [],
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "6.1.31"
+        }
+      ],
+      "source_keyword": null,
+      "normative_strength": "mandatory",
+      "source_force": "required_table_body_value",
+      "source_gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.31-TICKET-REQUIRED",
+      "source_locator": {
+        "kind": "table_body_row",
+        "section": "6.1.31",
+        "row_label": "Ticket",
+        "table": "request_payload",
+        "html_line_range": [
+          29866,
+          29881
+        ]
+      },
+      "subject": "Ticket",
+      "summary": "The client includes the required Ticket in the Logout request.",
+      "role": "client",
+      "direction": "client_to_server",
+      "condition": "a Logout request is sent",
+      "scope_state": "client_1_0",
+      "element_ids": [
+        "KMIPKIT-ELEM-OP-C2S-LOGOUT"
+      ],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": "KMIPKIT-0038",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/logout.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/logout_operation_tests.rs::table_256_request_requires_and_preserves_the_explicit_secret_ticket"
+      ],
+      "negative_verification_required": false,
+      "decision_id": null,
+      "status": "verified",
+      "review_note": "Pinned KMIP Specification v2.1 §6.1.31, request payload row Ticket (HTML lines 29866-29881), records required_table_body_value. This is table-field semantics, not an RFC keyword. The linked local Rust request encoding/requiredness test provides verification; No requirement-specific official Test Cases ID is explicitly linked. No official case-level pass is claimed."
+    },
+    {
+      "requirement_id": "KMIPKIT-REQ-SPEC-6.1.45-002-003",
+      "source_clause_ids": [
+        "KMIPKIT-CLAUSE-SPEC-6.1.45-002"
+      ],
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "6.1.45"
+        }
+      ],
+      "source_keyword": "SHALL",
+      "normative_strength": "mandatory",
+      "subject": "Re-certify public-key identifier when Certificate Request is omitted",
+      "summary": "When omitting Certificate Request, the client identifies the public key only by Unique Identifier.",
+      "role": "client",
+      "direction": "client_to_server",
+      "condition": "When Certificate Request is omitted.",
+      "scope_state": "client_1_0",
+      "element_ids": [
+        "KMIPKIT-ELEM-ATTRIBUTE-UNIQUE-IDENTIFIER",
+        "KMIPKIT-ELEM-OP-C2S-RE-CERTIFY"
+      ],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": "KMIPKIT-0036",
+      "implementation_refs": [],
+      "verification_refs": [],
+      "negative_verification_required": false,
+      "decision_id": null,
+      "status": "unassigned",
+      "review_note": "This pinned conditional client SHALL is distinct from the optional omission permission and from the server Certificate Type fallback. Implementation, positive verification, and applicable official test cases remain unassigned."
+    },
+    {
+      "requirement_id": "KMIPKIT-REQ-SPEC-6.1.5-002",
+      "source_clause_ids": [
+        "KMIPKIT-CLAUSE-SPEC-6.1.5-001"
+      ],
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "6.1.5"
+        }
+      ],
+      "source_keyword": "SHALL",
+      "normative_strength": "mandatory",
+      "subject": "Cancellation Result response",
+      "summary": "A server must respond to a Cancel operation with a Cancellation Result.",
+      "role": "server",
+      "direction": "server_to_client",
+      "condition": null,
+      "scope_state": "server_only",
+      "element_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "negative_verification_required": false,
+      "decision_id": null,
+      "status": "unassigned",
+      "review_note": "Pinned KMIP Specification v2.1 §6.1.5 assigns this response obligation to the server. It is separate from the client Cancel request obligation and has no client profile membership."
+    },
+    {
+      "source_clause_ids": [
+        "KMIPKIT-CLAUSE-SPEC-6.1.50-001"
+      ],
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "6.1.50"
+        }
+      ],
+      "source_keyword": "MAY",
+      "normative_strength": "permission_or_optional",
+      "role": "server",
+      "scope_state": "server_only",
+      "element_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "negative_verification_required": false,
+      "decision_id": null,
+      "status": "unassigned",
+      "requirement_id": "KMIPKIT-REQ-SPEC-6.1.50-002",
+      "subject": "RNG Seed request handling",
+      "summary": "The server MAY elect not to accept seeding material supplied by the client.",
+      "direction": "client_to_server",
+      "condition": "The client provides RNG Seed material.",
+      "review_note": "No entry in the pinned official Test Cases v2.1 Committee Note 01 inventory covers this server-side MAY in OASIS KMIP Specification v2.1 Section 6.1.50. It is outside client_1_0 implementation scope and must not be treated as a client obligation."
+    },
+    {
+      "source_clause_ids": [
+        "KMIPKIT-CLAUSE-SPEC-6.1.50-001"
+      ],
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "6.1.50"
+        }
+      ],
+      "source_keyword": "MAY",
+      "normative_strength": "permission_or_optional",
+      "role": "server",
+      "scope_state": "server_only",
+      "element_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "negative_verification_required": false,
+      "decision_id": null,
+      "status": "unassigned",
+      "requirement_id": "KMIPKIT-REQ-SPEC-6.1.50-003",
+      "subject": "RNG Seed response handling",
+      "summary": "The server MAY indicate that it ignored seeding material by returning zero as the Data Length response value.",
+      "direction": "server_to_client",
+      "condition": "The server elects not to accept the supplied seeding material.",
+      "review_note": "No entry in the pinned official Test Cases v2.1 Committee Note 01 inventory covers the server's optional zero Data Length response under OASIS KMIP Specification v2.1 Section 6.1.50. It is outside client_1_0 implementation scope and does not impose a client response obligation."
+    },
+    {
+      "requirement_id": "KMIPKIT-REQ-SPEC-6.1.7-002-003",
+      "source_clause_ids": [
+        "KMIPKIT-CLAUSE-SPEC-6.1.7-002"
+      ],
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "6.1.7"
+        }
+      ],
+      "source_keyword": "MAY",
+      "normative_strength": "permission_or_optional",
+      "subject": "Check additional attributes",
+      "summary": "A client may include in a Check request only the additional attributes listed for Check in §6.1.7.",
+      "role": "client",
+      "direction": "client_to_server",
+      "condition": null,
+      "scope_state": "client_1_0",
+      "element_ids": [
+        "KMIPKIT-ELEM-TAG-42002C",
+        "KMIPKIT-ELEM-TAG-420049",
+        "KMIPKIT-ELEM-TAG-420096"
+      ],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": "KMIPKIT-0036",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/check.rs",
+        "crates/kmipkit-client/src/execute.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/check_operation_tests.rs",
+        "crates/kmipkit-client/tests/unit/check_execution_tests.rs::check_sends_table_183_fields_and_exposes_table_184_response_once"
+      ],
+      "negative_verification_required": false,
+      "decision_id": null,
+      "status": "verified",
+      "review_note": "The typed Check request exposes the optional additional request attributes from the KMIP Specification v2.1 §6.1.7 list (Usage Limits Count, Cryptographic Usage Mask, and Lease Time); protocol and fake-transport tests verify serialization. No official Test Cases ID is explicitly linked from the pinned KMIP Test Cases v2.1 CN01 source (KMIPKIT-SRC-testcases) to KMIPKIT-REQ-SPEC-6.1.7-002-003 under the catalog's source-backed linking policy, so test_case_ids remains empty. The qualified client execution test is derived local evidence, not an OASIS test-case pass. The generic TTLV API remains structurally validating rather than operation-aware, so this does not claim server conformance."
+    },
+    {
+      "requirement_id": "KMIPKIT-REQ-SPEC-6.1.7-006",
+      "source_clause_ids": [
+        "KMIPKIT-CLAUSE-SPEC-6.1.7-005"
+      ],
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "6.1.7"
+        }
+      ],
+      "source_keyword": "MAY",
+      "normative_strength": "permission_or_optional",
+      "subject": "Lease Time grant policy",
+      "summary": "A server may grant the requested lease time only when it is requested by a subsequent batched Obtain Lease operation.",
+      "role": "server",
+      "direction": "server_to_client",
+      "condition": "If requested by a subsequent, batched Obtain Lease operation.",
+      "scope_state": "server_only",
+      "element_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "negative_verification_required": false,
+      "decision_id": null,
+      "status": "unassigned",
+      "review_note": "Pinned KMIP Specification v2.1 §6.1.7 states a server-side MAY for a later batched Obtain Lease operation. Check does not itself grant a lease; this server permission is separate from the client Lease Time capability and has no client profile membership."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-3.1-007",
@@ -134508,6 +134512,32 @@
       "approved_at": "2026-10-11",
       "consequence": "The current Re-Provision parser contract and optional-identifier tests remain unchanged. The specification and catalog now record the prose/table discrepancy and distinguish client parsing from the server-side SHALL. Pinned OASIS source files remain unchanged.",
       "status": "accepted"
+    }
+  ],
+  "normative_inclusions": [
+    {
+      "inclusion_id": "KMIPKIT-INCLUSION-PROF-BASELINE-BASIC-AUTH",
+      "source_clause_id": "KMIPKIT-CLAUSE-PROF-6.1-002",
+      "included_source_id": "KMIPKIT-SRC-profiles",
+      "included_section": "3.1"
+    },
+    {
+      "inclusion_id": "KMIPKIT-INCLUSION-PROF-BASELINE-SPEC",
+      "source_clause_id": "KMIPKIT-CLAUSE-PROF-6.1-001",
+      "included_source_id": "KMIPKIT-SRC-spec",
+      "included_section": null
+    },
+    {
+      "inclusion_id": "KMIPKIT-INCLUSION-PROF-PKCS11-ENCODING",
+      "source_clause_id": "KMIPKIT-CLAUSE-PROF-5.18.3-002",
+      "included_source_id": "KMIPKIT-SRC-profiles",
+      "included_section": "5.18.1"
+    },
+    {
+      "inclusion_id": "KMIPKIT-INCLUSION-PROF-TAPE-LIBRARY-TEST-CASES",
+      "source_clause_id": "KMIPKIT-CLAUSE-PROF-6.28-006",
+      "included_source_id": "KMIPKIT-SRC-profiles",
+      "included_section": "5.12.6"
     }
   ]
 }

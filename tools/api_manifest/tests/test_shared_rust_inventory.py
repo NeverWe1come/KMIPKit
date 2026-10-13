@@ -26,15 +26,36 @@ class SharedRustInventoryTests(unittest.TestCase):
                 / "specs"
                 / "043-public-api-bindings"
                 / "reports"
-                / "rust-export-report-2026-10-12.json"
+                / "rust-export-report-2026-10-13.json"
             ).read_text(encoding="utf-8")
+        )
+
+    def test_approved_owner_lookup_uses_feature_requirements_when_directory_number_differs(self) -> None:
+        owner_requirements = AUDIT._read_approved_owner("KMIPKIT-0044", REPO_ROOT)
+
+        self.assertIn("KMIPKIT-0044-FR-001", owner_requirements)
+        self.assertIn("KMIPKIT-0044-FR-007", owner_requirements)
+
+    def test_inventory_accounts_for_exact_approved_rust_exclusions_separately(self) -> None:
+        inventory = AUDIT.build_inventory(self.manifest, self.rust_report, REPO_ROOT)
+
+        self.assertEqual(inventory["approvedExcludedRustDeclarationCount"], 22)
+        self.assertEqual(
+            sum(record["excludedDeclarationCount"] for record in inventory["crates"]),
+            22,
+        )
+        self.assertEqual(
+            sum(record["blockedDeclarationCount"] for record in inventory["crates"]),
+            inventory["observedRustDeclarationCount"]
+            - inventory["mappedRustDeclarationCount"]
+            - inventory["approvedExcludedRustDeclarationCount"],
         )
 
     def test_current_inventory_links_every_mapped_rust_declaration_to_approved_owner_requirements(self) -> None:
         inventory = AUDIT.build_inventory(self.manifest, self.rust_report, REPO_ROOT)
 
-        self.assertEqual(inventory["observedRustDeclarationCount"], 9497)
-        self.assertEqual(inventory["mappedRustDeclarationCount"], 135)
+        self.assertEqual(inventory["observedRustDeclarationCount"], 9525)
+        self.assertEqual(inventory["mappedRustDeclarationCount"], 143)
         self.assertEqual(len(inventory["blockedUnreconciledDeclarations"]), 36)
         self.assertEqual(inventory["draftOwnerGates"]["KMIPKIT-0009"]["blockedOperations"], 4)
         self.assertEqual(

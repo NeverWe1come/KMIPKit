@@ -92,6 +92,7 @@ pub fn capability_is_available(capability_id: &str) -> Result<bool, RuntimeMetad
             | "ttlv_wire_codec"
             | "vendor_extension_registry"
             | "discover_versions_request_item"
+            | "opaque_register_context"
     ))
 }
 

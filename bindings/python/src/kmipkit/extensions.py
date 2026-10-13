@@ -13,6 +13,7 @@ from __future__ import annotations
 
 from collections.abc import Iterable
 from dataclasses import dataclass
+from enum import IntEnum
 from typing import Any, overload
 
 from . import errors, ttlv
@@ -247,6 +248,50 @@ class ClientRequestMessageExtension(NativeHandle):
 
 class ClientBatchItem(NativeHandle):
     _release_name = "kmipkit_client_batch_item_release"
+
+
+class OpaqueObjectContext(IntEnum):
+    """Local Register attribute-handling context for an Opaque Object."""
+
+    GENERIC = 1
+    MANAGED_CRYPTOGRAPHIC_OBJECT = 2
+
+
+class RegisterRequest(NativeHandle):
+    """Owned typed Register request with an optional local Opaque Object context."""
+
+    _release_name = "kmipkit_register_request_release"
+
+    @classmethod
+    def create(
+        cls, object_type: int, attributes: ttlv.Structure, object: ttlv.TtlvItem
+    ) -> RegisterRequest:
+        if (
+            not isinstance(object_type, int)
+            or isinstance(object_type, bool)
+            or not 0 <= object_type <= 0xFFFF_FFFF
+        ):
+            errors.raise_for_status(4)
+        handle = _make_handle(
+            "kmipkit_register_request_t",
+            "kmipkit_register_request_create",
+            (object_type, attributes, object),
+            consumed_indices=(1, 2),
+        )
+        return cls(handle)
+
+    def with_opaque_object_context(
+        self, context: OpaqueObjectContext
+    ) -> RegisterRequest:
+        if not isinstance(context, OpaqueObjectContext):
+            errors.raise_for_status(4)
+        handle = _make_handle(
+            "kmipkit_register_request_t",
+            "kmipkit_register_request_with_opaque_object_context",
+            (self, int(context)),
+            consumed_indices=(0,),
+        )
+        return RegisterRequest(handle)
 
 
 class ExtensionRecognition(NativeHandle):
@@ -1162,6 +1207,17 @@ def client_batch_item_discover_versions() -> ClientBatchItem:
     return ClientBatchItem(handle)
 
 
+def client_batch_item_register(request: RegisterRequest) -> ClientBatchItem:
+    """Create a Register batch item after local request validation."""
+    handle = _make_handle(
+        "kmipkit_client_batch_item_t",
+        "kmipkit_client_batch_item_register",
+        (request,),
+        consumed_indices=(0,),
+    )
+    return ClientBatchItem(handle)
+
+
 def client_batch_item_extension_count(item: ClientBatchItem) -> int:
     """Return the number of attached request extensions."""
     return _scalar(
@@ -1220,10 +1276,13 @@ __all__ = [
     "ExtensionRecognition",
     "ExtensionRegistryLimits",
     "ExtensionSchema",
+    "OpaqueObjectContext",
     "RegisteredExtensionValue",
+    "RegisterRequest",
     "TtlvPath",
     "ValidatedExtensionValue",
     "client_batch_item_discover_versions",
+    "client_batch_item_register",
     "client_batch_item_extension_count",
     "client_batch_item_extension_criticality_indicator_at",
     "client_batch_item_extension_identity_at",

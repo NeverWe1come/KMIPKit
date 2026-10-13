@@ -6,9 +6,10 @@
 
 use crate::async_operation_fixtures::{response_message, structure};
 use crate::{
-    AttributeSet, ObjectType, RegisterError, RegisterRequest, RegisterResponse,
-    ResponseBatchItemView, ResponseMessage, ResultReason, UniqueIdentifier,
+    AttributeSet, ObjectType, OpaqueObjectContext, RegisterError, RegisterRequest,
+    RegisterResponse, ResponseBatchItemView, ResponseMessage, ResultReason, UniqueIdentifier,
 };
+use kmipkit_ttlv::codec::decode;
 use kmipkit_ttlv::{Item, RawTag, Structure, Tag, Value, ValueView};
 
 const REGISTER_OPERATION: u32 = 0x0000_0003;
@@ -36,7 +37,19 @@ const RNG_ALGORITHM: u32 = 0x0042_00DA;
 const CERTIFICATE_LENGTH: u32 = 0x0042_00AD;
 const DIGITAL_SIGNATURE_ALGORITHM: u32 = 0x0042_00AE;
 const KEY_BLOCK: u32 = 0x0042_0040;
+const OPAQUE_OBJECT_TYPE: u32 = 8;
+const OPAQUE_OBJECT: u32 = 0x0042_005B;
+const OPAQUE_DATA_TYPE: u32 = 0x0042_0059;
+const OPAQUE_DATA_VALUE: u32 = 0x0042_005A;
+const KEY_BLOCK_WITH_ALGORITHM_AND_LENGTH_TTLV: [u8; 40] = [
+    0x42, 0x00, 0x40, 0x01, 0x00, 0x00, 0x00, 0x20, // Key Block-tagged Structure shape
+    0x42, 0x00, 0x28, 0x05, 0x00, 0x00, 0x00, 0x04, // Cryptographic Algorithm Enumeration
+    0x00, 0x00, 0x00, 0x03, 0x00, 0x00, 0x00, 0x00, // AES, then TTLV padding
+    0x42, 0x00, 0x2a, 0x02, 0x00, 0x00, 0x00, 0x04, // Cryptographic Length Integer
+    0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, // 256, then TTLV padding
+];
 const UNKNOWN_VENDOR_TAG: u32 = 0x0054_1234;
+const SECOND_UNKNOWN_VENDOR_TAG: u32 = 0x0054_1235;
 const RESPONSE_PAYLOAD: u32 = 0x0042_007C;
 const SECRET_SENTINEL: &[u8] = b"REGISTER_SECRET_OBJECT_SENTINEL";
 
@@ -53,6 +66,41 @@ fn item(raw_tag: u32, value: Value) -> Item {
 
 fn attrs(items: impl IntoIterator<Item = Item>) -> AttributeSet {
     AttributeSet::try_new(items).expect("fixture uses well-formed attributes")
+}
+
+fn opaque_object() -> Item {
+    opaque_object_with_data_value(vec![0x00, 0x80, 0xff])
+}
+
+fn opaque_object_with_data_value(data_value: Vec<u8>) -> Item {
+    item(
+        OPAQUE_OBJECT,
+        Value::structure(structure([
+            item(OPAQUE_DATA_TYPE, Value::enumeration(0x8000_0001)),
+            item(OPAQUE_DATA_VALUE, Value::byte_string(data_value)),
+        ])),
+    )
+}
+
+fn managed_opaque_request(attributes: AttributeSet) -> RegisterRequest {
+    RegisterRequest::new(
+        ObjectType::from_raw(OPAQUE_OBJECT_TYPE),
+        attributes,
+        opaque_object(),
+    )
+    .with_opaque_object_context(OpaqueObjectContext::ManagedCryptographicObject)
+}
+
+fn managed_opaque_request_with_data_value(
+    attributes: AttributeSet,
+    data_value: Vec<u8>,
+) -> RegisterRequest {
+    RegisterRequest::new(
+        ObjectType::from_raw(OPAQUE_OBJECT_TYPE),
+        attributes,
+        opaque_object_with_data_value(data_value),
+    )
+    .with_opaque_object_context(OpaqueObjectContext::ManagedCryptographicObject)
 }
 
 fn key_object(algorithm: bool, length: bool) -> Item {
@@ -179,6 +227,401 @@ fn item_shape(item: &Item) -> (u32, ItemValueShape) {
         _ => ItemValueShape::Other,
     });
     (item.tag().raw(), value)
+}
+
+#[test]
+fn opaque_object_defaults_to_generic_context_and_uses_table4_structure() {
+    // OASIS KMIP v2.1 §11.34, Table 468 assigns Object Type 8 to Opaque Object.
+    // §2.3, Table 4 defines its Opaque Object-tagged Structure and required children.
+    let request = RegisterRequest::new(
+        ObjectType::from_raw(OPAQUE_OBJECT_TYPE),
+        attrs([]),
+        item(
+            OPAQUE_OBJECT,
+            Value::structure(structure([
+                item(OPAQUE_DATA_TYPE, Value::enumeration(0x8000_0001)),
+                item(
+                    OPAQUE_DATA_VALUE,
+                    Value::byte_string(vec![0x00, 0x80, 0xff]),
+                ),
+            ])),
+        ),
+    );
+    let payload = request
+        .into_ttlv_payload()
+        .expect("generic Opaque Object needs no cryptographic attributes");
+
+    assert_eq!(
+        field_tags(&payload),
+        [OBJECT_TYPE, ATTRIBUTES, OPAQUE_OBJECT]
+    );
+    let payload_view = payload.view();
+    let fields = payload_view.children();
+    assert!(fields[0].with_value(|value| matches!(
+        value,
+        ValueView::Enumeration(object_type) if *object_type == OPAQUE_OBJECT_TYPE
+    )));
+    assert!(fields[1].with_value(|value| matches!(value, ValueView::Structure(attributes) if attributes.children().is_empty())));
+    assert_eq!(fields[2].tag().raw(), OPAQUE_OBJECT);
+    assert!(fields[2].with_value(|value| matches!(
+        value,
+        ValueView::Structure(object)
+            if object.children().iter().map(|child| child.tag().raw()).collect::<Vec<_>>()
+                == [OPAQUE_DATA_TYPE, OPAQUE_DATA_VALUE]
+    )));
+}
+
+#[test]
+fn explicitly_selected_generic_context_accepts_opaque_object_without_crypto_attributes() {
+    // OASIS KMIP v2.1 §2.3/Table 4 defines the Opaque Object value; §6.1.43, Table 291
+    // defines the Register payload, which carries no local context selector on the wire.
+    let request = RegisterRequest::new(
+        ObjectType::from_raw(OPAQUE_OBJECT_TYPE),
+        attrs([]),
+        opaque_object(),
+    )
+    .with_opaque_object_context(OpaqueObjectContext::Generic);
+    let payload = request
+        .into_ttlv_payload()
+        .expect("explicit generic context needs no cryptographic attributes");
+
+    assert_eq!(
+        field_tags(&payload),
+        [OBJECT_TYPE, ATTRIBUTES, OPAQUE_OBJECT],
+        "the caller-selected context must not add a wire marker"
+    );
+}
+
+#[test]
+fn managed_opaque_context_requires_each_direct_table293_attribute() {
+    // OASIS KMIP v2.1 §2.3 permits client-context treatment as managed cryptographic material;
+    // §6.1.43, Tables 291/293 require direct Usage Mask, Algorithm, and Length attributes here.
+    let missing_usage_mask = attrs([
+        item(CRYPTOGRAPHIC_ALGORITHM, Value::enumeration(3)),
+        item(CRYPTOGRAPHIC_LENGTH, Value::integer(256)),
+    ]);
+    let missing_algorithm = attrs([
+        item(CRYPTOGRAPHIC_USAGE_MASK, Value::integer(3)),
+        item(CRYPTOGRAPHIC_LENGTH, Value::integer(256)),
+    ]);
+    let missing_length = attrs([
+        item(CRYPTOGRAPHIC_USAGE_MASK, Value::integer(3)),
+        item(CRYPTOGRAPHIC_ALGORITHM, Value::enumeration(3)),
+    ]);
+
+    for (missing, attributes) in [
+        ("Cryptographic Usage Mask", missing_usage_mask),
+        ("Cryptographic Algorithm", missing_algorithm),
+        ("Cryptographic Length", missing_length),
+    ] {
+        assert!(
+            managed_opaque_request(attributes)
+                .into_ttlv_payload()
+                .is_err(),
+            "managed Opaque Object must require direct {missing}"
+        );
+    }
+}
+
+#[test]
+fn managed_opaque_context_requires_algorithm_and_length_as_a_pair() {
+    // OASIS KMIP v2.1 §6.1.43, Table 293 requires Cryptographic Algorithm and
+    // Cryptographic Length together; §2.3/Table 4 has no Key Block for either field.
+    let algorithm_only = attrs([
+        item(CRYPTOGRAPHIC_USAGE_MASK, Value::integer(3)),
+        item(CRYPTOGRAPHIC_ALGORITHM, Value::enumeration(3)),
+    ]);
+    let length_only = attrs([
+        item(CRYPTOGRAPHIC_USAGE_MASK, Value::integer(3)),
+        item(CRYPTOGRAPHIC_LENGTH, Value::integer(256)),
+    ]);
+
+    assert!(
+        managed_opaque_request(algorithm_only)
+            .into_ttlv_payload()
+            .is_err()
+    );
+    assert!(
+        managed_opaque_request(length_only)
+            .into_ttlv_payload()
+            .is_err()
+    );
+}
+
+#[test]
+fn managed_opaque_context_does_not_infer_attributes_from_opaque_data_value() {
+    // OASIS KMIP v2.1 §2.3, Table 4 defines Opaque Data Value as opaque bytes;
+    // §6.1.43, Table 293 requires Algorithm and Length in Register Attributes.
+    let decoded = decode(&KEY_BLOCK_WITH_ALGORITHM_AND_LENGTH_TTLV)
+        .expect("the opaque bytes are a structurally valid TTLV Structure shaped like a Key Block");
+    assert_eq!(decoded.tag().raw(), KEY_BLOCK);
+    assert!(decoded.with_value(|value| {
+        let ValueView::Structure(key_block) = value else {
+            return false;
+        };
+        let children = key_block.children();
+        children
+            .iter()
+            .map(|child| child.tag().raw())
+            .collect::<Vec<_>>()
+            == [CRYPTOGRAPHIC_ALGORITHM, CRYPTOGRAPHIC_LENGTH]
+            && children[0].with_value(|value| matches!(value, ValueView::Enumeration(3)))
+            && children[1].with_value(|value| matches!(value, ValueView::Integer(256)))
+    }));
+
+    let attributes = attrs([item(CRYPTOGRAPHIC_USAGE_MASK, Value::integer(3))]);
+
+    assert!(
+        managed_opaque_request_with_data_value(
+            attributes,
+            KEY_BLOCK_WITH_ALGORITHM_AND_LENGTH_TTLV.to_vec(),
+        )
+        .into_ttlv_payload()
+        .is_err()
+    );
+}
+
+#[test]
+fn opaque_context_selector_rejects_non_opaque_object_types() {
+    // OASIS KMIP v2.1 §2.3 scopes this context choice to Opaque Object;
+    // §11.34, Table 468 assigns Opaque Object the Object Type value 8.
+    let generic_context = RegisterRequest::new(
+        ObjectType::from_raw(2),
+        symmetric_attributes([
+            item(CRYPTOGRAPHIC_ALGORITHM, Value::enumeration(3)),
+            item(CRYPTOGRAPHIC_LENGTH, Value::integer(256)),
+        ]),
+        key_object(false, false),
+    )
+    .with_opaque_object_context(OpaqueObjectContext::Generic)
+    .into_ttlv_payload();
+    let managed_context = RegisterRequest::new(
+        ObjectType::from_raw(2),
+        symmetric_attributes([
+            item(CRYPTOGRAPHIC_ALGORITHM, Value::enumeration(3)),
+            item(CRYPTOGRAPHIC_LENGTH, Value::integer(256)),
+        ]),
+        key_object(false, false),
+    )
+    .with_opaque_object_context(OpaqueObjectContext::ManagedCryptographicObject)
+    .into_ttlv_payload();
+
+    assert!(generic_context.is_err());
+    assert!(managed_context.is_err());
+}
+
+#[test]
+fn managed_opaque_context_accepts_table293_attributes_without_a_key_block_and_emits_no_marker() {
+    // OASIS KMIP v2.1 §2.3/Table 4 defines the Opaque Object structure without a Key Block;
+    // §6.1.43, Tables 291/293 and §11.34, Table 468 define the normal Register wire fields.
+    let attributes = attrs([
+        item(CRYPTOGRAPHIC_USAGE_MASK, Value::integer(3)),
+        item(CRYPTOGRAPHIC_ALGORITHM, Value::enumeration(3)),
+        item(CRYPTOGRAPHIC_LENGTH, Value::integer(256)),
+        item(UNKNOWN_VENDOR_TAG, Value::integer(-17)),
+    ]);
+    let payload = managed_opaque_request(attributes)
+        .into_ttlv_payload()
+        .expect("direct Table 293 attributes satisfy managed Opaque Object context");
+
+    assert_eq!(
+        field_tags(&payload),
+        [OBJECT_TYPE, ATTRIBUTES, OPAQUE_OBJECT],
+        "the local context selector must not add a wire marker"
+    );
+    let payload_view = payload.view();
+    let fields = payload_view.children();
+    fields[1].with_value(|value| {
+        let ValueView::Structure(attributes) = value else {
+            panic!("Register Attributes are a Structure");
+        };
+        let attributes = attributes.children();
+        assert_eq!(
+            attributes
+                .iter()
+                .map(|attribute| attribute.tag().raw())
+                .collect::<Vec<_>>(),
+            [
+                CRYPTOGRAPHIC_USAGE_MASK,
+                CRYPTOGRAPHIC_ALGORITHM,
+                CRYPTOGRAPHIC_LENGTH,
+                UNKNOWN_VENDOR_TAG,
+            ]
+        );
+        assert!(attributes[0].with_value(|value| matches!(value, ValueView::Integer(3))));
+        assert!(attributes[1].with_value(|value| matches!(value, ValueView::Enumeration(3))));
+        assert!(attributes[2].with_value(|value| matches!(value, ValueView::Integer(256))));
+        assert!(attributes[3].with_value(|value| matches!(value, ValueView::Integer(-17))));
+    });
+    fields[2].with_value(|value| {
+        let ValueView::Structure(object) = value else {
+            panic!("Opaque Object is a Structure");
+        };
+        assert_eq!(
+            object
+                .children()
+                .iter()
+                .map(|child| child.tag().raw())
+                .collect::<Vec<_>>(),
+            [OPAQUE_DATA_TYPE, OPAQUE_DATA_VALUE],
+            "Table 4 Opaque Object has no Key Block"
+        );
+    });
+}
+
+#[test]
+fn opaque_object_requires_the_opaque_object_tag_and_structure_value() {
+    // OASIS KMIP v2.1 §2.3, Table 4 identifies the Opaque Object item tag and Structure.
+    // §11.34, Table 468 assigns this object type the Enumeration value 8.
+    let wrong_tag = item(
+        UNKNOWN_VENDOR_TAG,
+        Value::structure(structure([
+            item(OPAQUE_DATA_TYPE, Value::enumeration(0x8000_0001)),
+            item(OPAQUE_DATA_VALUE, Value::byte_string(vec![0x11])),
+        ])),
+    );
+    let wrong_value_type = item(
+        OPAQUE_OBJECT,
+        Value::text_string("not-a-structure".to_owned()),
+    );
+
+    for object in [wrong_tag, wrong_value_type] {
+        let result =
+            RegisterRequest::new(ObjectType::from_raw(OPAQUE_OBJECT_TYPE), attrs([]), object)
+                .into_ttlv_payload();
+        assert!(
+            result.is_err(),
+            "Object Type 8 requires its Opaque Object Structure"
+        );
+    }
+}
+
+#[test]
+fn opaque_object_requires_typed_table4_data_type_and_data_value_children() {
+    // OASIS KMIP v2.1 §2.3, Table 4 marks Opaque Data Type (Enumeration) and
+    // Opaque Data Value (Byte String) REQUIRED=Yes.
+    let invalid_objects = [
+        item(OPAQUE_OBJECT, Value::structure(structure([]))),
+        item(
+            OPAQUE_OBJECT,
+            Value::structure(structure([item(
+                OPAQUE_DATA_TYPE,
+                Value::enumeration(0x8000_0001),
+            )])),
+        ),
+        item(
+            OPAQUE_OBJECT,
+            Value::structure(structure([item(
+                OPAQUE_DATA_VALUE,
+                Value::byte_string(vec![0x22]),
+            )])),
+        ),
+        item(
+            OPAQUE_OBJECT,
+            Value::structure(structure([
+                item(OPAQUE_DATA_TYPE, Value::integer(1)),
+                item(OPAQUE_DATA_VALUE, Value::byte_string(vec![0x22])),
+            ])),
+        ),
+        item(
+            OPAQUE_OBJECT,
+            Value::structure(structure([
+                item(OPAQUE_DATA_TYPE, Value::enumeration(0x8000_0001)),
+                item(
+                    OPAQUE_DATA_VALUE,
+                    Value::text_string("not-bytes".to_owned()),
+                ),
+            ])),
+        ),
+    ];
+
+    for object in invalid_objects {
+        let result =
+            RegisterRequest::new(ObjectType::from_raw(OPAQUE_OBJECT_TYPE), attrs([]), object)
+                .into_ttlv_payload();
+        assert!(
+            result.is_err(),
+            "Opaque Object must satisfy the Table 4 child fields"
+        );
+    }
+}
+
+#[test]
+fn opaque_object_preserves_future_type_unknown_children_attribute_order_and_data_bytes() {
+    // OASIS KMIP v2.1 §2.3, Table 4 defines the required child encodings;
+    // §11.34, Table 468 assigns Object Type value 8; §11.35, Table 469 reserves
+    // 8XXXXXXX for Opaque Data Type extensions. Opaque Data Value stays opaque.
+    let opaque_bytes = vec![0x00, 0xff, 0x80, 0x42, 0x00, 0x7f];
+    let attributes = attrs([
+        item(UNKNOWN_VENDOR_TAG, Value::integer(-17)),
+        item(
+            SECOND_UNKNOWN_VENDOR_TAG,
+            Value::text_string("caller-ordered".to_owned()),
+        ),
+    ]);
+    let request = RegisterRequest::new(
+        ObjectType::from_raw(OPAQUE_OBJECT_TYPE),
+        attributes,
+        item(
+            OPAQUE_OBJECT,
+            Value::structure(structure([
+                item(OPAQUE_DATA_TYPE, Value::enumeration(0x8f23_4567)),
+                item(UNKNOWN_VENDOR_TAG, Value::integer(-23)),
+                item(OPAQUE_DATA_VALUE, Value::byte_string(opaque_bytes.clone())),
+            ])),
+        ),
+    );
+    let payload = request
+        .into_ttlv_payload()
+        .expect("future opaque values and generic attributes remain valid");
+
+    assert_eq!(
+        field_tags(&payload),
+        [OBJECT_TYPE, ATTRIBUTES, OPAQUE_OBJECT]
+    );
+    let payload_view = payload.view();
+    let fields = payload_view.children();
+    fields[1].with_value(|value| {
+        let ValueView::Structure(attributes) = value else {
+            panic!("Register Attributes are a Structure");
+        };
+        assert_eq!(
+            attributes
+                .children()
+                .iter()
+                .map(|attribute| attribute.tag().raw())
+                .collect::<Vec<_>>(),
+            [UNKNOWN_VENDOR_TAG, SECOND_UNKNOWN_VENDOR_TAG]
+        );
+        assert!(
+            attributes.children()[0].with_value(|value| matches!(value, ValueView::Integer(-17)))
+        );
+        assert!(
+            attributes.children()[1]
+                .with_value(|value| matches!(value, ValueView::TextString("caller-ordered")))
+        );
+    });
+    assert_eq!(fields[2].tag().raw(), OPAQUE_OBJECT);
+    fields[2].with_value(|value| {
+        let ValueView::Structure(object) = value else {
+            panic!("Opaque Object is a Structure");
+        };
+        let children = object.children();
+        assert_eq!(
+            children
+                .iter()
+                .map(|child| child.tag().raw())
+                .collect::<Vec<_>>(),
+            [OPAQUE_DATA_TYPE, UNKNOWN_VENDOR_TAG, OPAQUE_DATA_VALUE]
+        );
+        assert!(
+            children[0].with_value(|value| matches!(value, ValueView::Enumeration(0x8f23_4567)))
+        );
+        assert!(children[1].with_value(|value| matches!(value, ValueView::Integer(-23))));
+        assert!(children[2].with_value(
+            |value| matches!(value, ValueView::ByteString(bytes) if bytes == opaque_bytes)
+        ));
+    });
 }
 
 #[test]

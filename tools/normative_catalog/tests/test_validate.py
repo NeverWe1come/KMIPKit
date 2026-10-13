@@ -18181,6 +18181,151 @@ class CatalogValidationTests(unittest.TestCase):
         with self.assertRaises(CatalogValidationError):
             validate(document)
 
+    def test_opaque_object_context_requirements_retain_register_ownership_and_evidence(self) -> None:
+        catalog = json.loads((ROOT / "specification/catalog/kmip-2.1.json").read_text(encoding="utf-8"))
+        validate(catalog)
+        requirements = {row["requirement_id"]: row for row in catalog["requirements"]}
+        clauses = {row["clause_id"]: row for row in catalog["source_clauses"]}
+        elements = {row["element_id"]: row for row in catalog["elements"]}
+        opaque_child_elements = {
+            "KMIPKIT-ELEM-STRUCTURE-MEMBER-2-3-OPAQUE-OBJECT-OPAQUE-DATA-TYPE": (
+                "Opaque Data Type", "Enumeration",
+            ),
+            "KMIPKIT-ELEM-STRUCTURE-MEMBER-2-3-OPAQUE-OBJECT-OPAQUE-DATA-VALUE": (
+                "Opaque Data Value", "Byte String",
+            ),
+        }
+        expected_clause_links = {
+            "KMIPKIT-REQ-SPEC-2.3-002": (
+                "KMIPKIT-CLAUSE-SPEC-2.3-002",
+                {"ordinal": 2, "block_kind": "paragraph"},
+            ),
+            "KMIPKIT-REQ-SPEC-2.3-003": (
+                "KMIPKIT-CLAUSE-SPEC-2.3-003",
+                {"ordinal": 3, "block_kind": "table_row"},
+            ),
+        }
+        register_requirement_ids = (
+            "KMIPKIT-REQ-SPEC-6.1.43-001",
+            "KMIPKIT-REQ-SPEC-6.1.43-007",
+            "KMIPKIT-REQ-SPEC-6.1.43-009-001",
+            "KMIPKIT-REQ-SPEC-6.1.43-009-002",
+            "KMIPKIT-REQ-SPEC-6.1.43-010-001",
+            "KMIPKIT-REQ-SPEC-6.1.43-010-002",
+        )
+        implementation_refs = {
+            "crates/kmipkit-protocol/src/register.rs",
+            "crates/kmipkit-client/src/execute.rs",
+        }
+        verification_refs = {
+            "crates/kmipkit-protocol/tests/unit/register_operation_tests.rs",
+            "crates/kmipkit-client/tests/unit/register_execution_tests.rs",
+        }
+
+        source_path = ROOT / "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
+        source_bytes = source_path.read_bytes()
+        self.assertEqual(
+            hashlib.sha256(source_bytes).hexdigest(),
+            "8bf9d914c097e98a6509aa1ffcbf03406f738066e940597aee93d0a5e07addcf",
+        )
+        table_parser = _CaptionedTableParser()
+        table_parser.feed(source_bytes.decode("cp1252"))
+        table_parser.close()
+        table_4 = next(
+            table for table in table_parser.tables
+            if table.get("caption") == "Table 4: Opaque Object Structure"
+        )
+
+        # The clause locator identifies normative blocks. Exact Table 4 child rows are
+        # represented by the linked structure_member elements checked below.
+        self.assertEqual(
+            table_4["rows"],
+            [
+                ["Object", "Encoding", "REQUIRED"],
+                ["Opaque Object", "Structure", ""],
+                ["Opaque Data Type", "Enumeration", "Yes"],
+                ["Opaque Data Value", "Byte String", "Yes"],
+            ],
+        )
+
+        for requirement_id in (
+            "KMIPKIT-REQ-SPEC-2.3-002",
+            "KMIPKIT-REQ-SPEC-2.3-003",
+        ):
+            with self.subTest(requirement_id=requirement_id):
+                requirement = requirements[requirement_id]
+                clause_id, expected_locator = expected_clause_links[requirement_id]
+                self.assertEqual(requirement["feature_spec"], "KMIPKIT-0044")
+                self.assertEqual(requirement["role"], "client")
+                self.assertEqual(requirement["direction"], "client_to_server")
+                self.assertEqual(requirement["status"], "verified")
+                self.assertIn("KMIPKIT-ELEM-OP-C2S-REGISTER", requirement["element_ids"])
+                self.assertTrue(requirement["implementation_refs"])
+                self.assertTrue(requirement["verification_refs"])
+                self.assertEqual(requirement["test_case_ids"], [])
+                self.assertEqual(
+                    requirement["source_refs"],
+                    [{"source_id": "KMIPKIT-SRC-spec", "section": "2.3"}],
+                )
+                self.assertIn(
+                    "No requirement-specific official Test Cases",
+                    requirement["review_note"],
+                )
+                self.assertEqual(requirement["source_clause_ids"], [clause_id])
+                for path in implementation_refs:
+                    self.assertIn(path, requirement["implementation_refs"])
+                for path in verification_refs:
+                    self.assertIn(path, requirement["verification_refs"])
+                clause = clauses[clause_id]
+                self.assertEqual(clause["section"], "2.3")
+                self.assertEqual(clause["source_id"], "KMIPKIT-SRC-spec")
+                self.assertEqual(clause["role"], "client")
+                self.assertEqual(clause["direction"], "client_to_server")
+                self.assertEqual(clause["scope_state"], "client_1_0")
+                self.assertEqual(clause["locator"], expected_locator)
+                self.assertIn(requirement_id, clause["requirement_ids"])
+                if requirement_id == "KMIPKIT-REQ-SPEC-2.3-003":
+                    self.assertIn("REQUIRED", clause["source_keywords"])
+
+        opaque_structure_requirement = requirements["KMIPKIT-REQ-SPEC-2.3-003"]
+        opaque_structure_summary = opaque_structure_requirement["summary"]
+        opaque_structure_review = opaque_structure_requirement["review_note"]
+        self.assertIn("Opaque Data Type", opaque_structure_summary)
+        self.assertIn("Opaque Data Value", opaque_structure_summary)
+        self.assertIn("Table 4", opaque_structure_review)
+        self.assertIn("Opaque Data Type", opaque_structure_review)
+        self.assertIn("Opaque Data Value", opaque_structure_review)
+        self.assertNotIn("Opaque Object encoding field is required", opaque_structure_summary)
+        self.assertEqual(
+            set(opaque_structure_requirement["element_ids"]).intersection(opaque_child_elements),
+            set(opaque_child_elements),
+        )
+        for element_id, (name, encoding) in opaque_child_elements.items():
+            with self.subTest(element_id=element_id):
+                element = elements[element_id]
+                self.assertEqual(element["kind"], "structure_member")
+                self.assertEqual(element["name"], name)
+                self.assertEqual(
+                    element["source_refs"],
+                    [{"source_id": "KMIPKIT-SRC-spec", "section": "2.3"}],
+                )
+                self.assertEqual(element["source_encoding"], encoding)
+                self.assertEqual(element["source_requiredness"], "Yes")
+                self.assertIn("crates/kmipkit-protocol/src/register.rs", element["implementation_refs"])
+                self.assertIn(
+                    "crates/kmipkit-protocol/tests/unit/register_operation_tests.rs",
+                    element["verification_refs"],
+                )
+
+        for requirement_id in register_requirement_ids:
+            with self.subTest(register_requirement_id=requirement_id):
+                requirement = requirements[requirement_id]
+                self.assertEqual(requirement["feature_spec"], "KMIPKIT-0036")
+                for path in implementation_refs:
+                    self.assertIn(path, requirement["implementation_refs"])
+                for path in verification_refs:
+                    self.assertIn(path, requirement["verification_refs"])
+
 
     def test_hash_table_235_request_rows_are_contracts_not_requirement_gaps(self) -> None:
         """Hash request table cells map through operation metadata, not per-cell REQ IDs."""

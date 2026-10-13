@@ -134,7 +134,7 @@ dated source snapshot, not a coverage percentage or permanent expected test
 result; rerun after Rust or manifest changes.
 
 The full deterministic JSON from this snapshot is checked in at
-`specs/043-public-api-bindings/reports/rust-export-report-2026-10-12.json`.
+`specs/043-public-api-bindings/reports/rust-export-report-2026-10-13.json`.
 Regenerate the report after any Rust export or manifest change; the timestamped
 path identifies the source snapshot and is not a generated manifest output.
 

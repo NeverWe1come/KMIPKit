@@ -67,6 +67,7 @@ tabla.
 | `public_binding_surface` | blocked | El inventario completo de declaraciones públicas y sus mapeos aún no está reconciliado. |
 | `vendor_extension_registry` | declared | Hay mapeos compartidos exactos; falta verificar la paridad y las declaraciones no reconciliadas siguen bloqueadas. |
 | `discover_versions_request_item` | declared | Hay mapeos de los constructores del elemento de solicitud en los cuatro lenguajes; la ejecución completa y la paridad de respuesta de Discover Versions siguen bloqueadas. |
+| `opaque_register_context` | declared | El contexto explícito de Opaque Object y la validación de la forma de Register están mapeados en cuatro lenguajes; la paridad completa de la operación Register sigue bloqueada. |
 
 Las **56 / 56** filas de operaciones KMIP `client_1_0` tienen actualmente el
 estado `blocked` en el manifiesto. No se debe inferir que una operación está
