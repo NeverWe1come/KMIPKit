@@ -699,3 +699,7 @@ This is local execution evidence for the T076 ABI behavior and its test-local C 
 - **Red**: Re-ran the complete FFI workspace feature suite after rebasing the T076 branch onto the current release, which includes KMIPKIT-0044. The export-boundary inventory found 155 C exports while the pinned assertion still expected 154.
 - **Command**: `cargo test -p kmipkit-ffi --all-features`
 - **Result**: 56 passed, one failed at `every_exported_c_function_starts_inside_the_shared_panic_boundary` (`left: 155`, `right: 154`). This is an expected maintenance failure caused by the merged release API surface.
+
+- **Green**: Updated the export-boundary count to the rebased release inventory and reran the full FFI suite.
+- **Commands and results**: `cargo test -p kmipkit-ffi --all-features` — PASS: 57 unit tests, 3 compiled C integration consumers, and doc tests passed. The focused export-boundary assertion also passed.
+- **Limit**: Windows emitted existing AWS-LC compiler-feature/NASM and linker import warnings; they did not prevent the test build or execution. This local evidence does not close T076 or establish remote CI status.
