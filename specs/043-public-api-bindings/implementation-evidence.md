@@ -667,3 +667,20 @@ Independent QA reviewed the T076 inventory and found that requiring all 31 C exp
 - **Red: generic response access on typed execution failure**: Extended the compiled C client scenario to call the additive `kmipkit_client_execute_with_error_ttlv_v1` API. The fixture requires a NULL error-TTLV output after success and local validation failure, and requires a protocol status plus the complete ResponseMessage tree after a received response fails typed shape validation. The output is inspected through the existing generic TTLV structure view API.
 - **Command**: `cargo test -p kmipkit-ffi --features coverage-c-consumer --test c_api_coverage generated_public_header_client_consumer_compiles_and_runs -- --nocapture`
 - **Result**: Expected build failure because the current generated public header has no T076 shared client declarations and cannot compile the C consumer, including the new fallback call. The same invocation currently stops in `build.rs` with unknown T076 types/functions before reaching the linker; retain this as the public-header Red gate, then rerun after the manifest mapping is added.
+
+### T076 QA follow-up: keep batch metadata carrier test-local
+
+- **Red**: Added a generator regression that requires the batch metadata carrier to remain outside `approvedExclusions` and the public C header, while keeping all 27 T076 declarations blocked.
+- **Command**: `uv run --no-project --with-requirements tools/api_manifest/requirements-test.txt python -m unittest tools.api_manifest.tests.test_generate.ManifestGeneratorCliTests.test_t076_batch_metadata_carrier_is_not_approved_or_public -v`
+- **Result**: Expected failure: the assertion found `kmipkit_client_batch_item_metadata_v1_t` in `approvedExclusions` before checking the public header.
+- **Red commit**: `e06fe127`.
+- **Green**: Removed the C-only carrier from `approvedExclusions` and regenerated the 12 manifest outputs. Both generated C headers now omit the carrier; the exact six-`uint32_t` layout exists only in the compiled C test translation unit. The 27 T076 declarations remain blocked. The post-dispatch transport failure now calls `kmipkit_client_execute_with_error_ttlv_v1` with a sentinel output handle and asserts it is cleared to NULL while preserving Transport/PossiblySent metadata.
+- **Commands and results**:
+  - `uv run --no-project --with-requirements tools/api_manifest/requirements-test.txt python -m unittest tools.api_manifest.tests.test_generate -v` — PASS: 56 tests, 2 Windows symlink-permission skips.
+  - `python tools/api_manifest/generate.py --check` — PASS: all 12 outputs current.
+  - `cargo test -p kmipkit-ffi --features coverage-c-consumer --test c_api_coverage existing_c_consumer_exercises_the_exported_abi_in_the_coverage_process -- --nocapture` — PASS: compiled C consumer executed success, typed-response fallback, local validation, and post-dispatch transport-failure paths.
+  - `cargo llvm-cov -p kmipkit-ffi --all-features --summary-only` — PASS: 56 unit tests and 3 integration tests. `client_abi.rs` reports 89.43% line coverage for the entire historical file; the T076 changed executable Rust line delta remains 56/57 (98.25%) against base `4c1632eb`. The C consumer is executed by this suite; LLVM's Rust summary does not report a separate C translation-unit percentage.
+  - `cargo clippy -p kmipkit-ffi --all-targets --all-features -- -D warnings`, `cargo fmt --all --check`, and `git diff --check` — PASS.
+- **Green commit**: `2c50f7e1`.
+- **Refactor**: Added C compile-time size and field-offset assertions for the test-local carrier, making its ABI shape explicit without publishing the type.
+- **Refactor command and result**: `cargo test -p kmipkit-ffi --features coverage-c-consumer --test c_api_coverage existing_c_consumer_exercises_the_exported_abi_in_the_coverage_process -- --nocapture` — PASS: the C translation unit compiled all layout assertions and the full loopback TLS scenario passed.

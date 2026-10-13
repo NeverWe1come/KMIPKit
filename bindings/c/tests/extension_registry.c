@@ -20,9 +20,11 @@
 #include "extension_fixtures.generated.h"
 
 #include <stdbool.h>
+#include <stddef.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 /* T076's batch metadata carrier is blocked from the public ABI until the
  * Java/Python mappings are verified. Keep this exact layout local to the C
@@ -35,8 +37,21 @@ struct kmipkit_client_batch_item_metadata_v1_t {
     uint32_t has_result_reason;
     uint32_t result_reason;
 };
-#include <string.h>
 
+_Static_assert(sizeof(struct kmipkit_client_batch_item_metadata_v1_t) == 24,
+               "the local T076 metadata carrier is six fixed-width fields");
+_Static_assert(offsetof(struct kmipkit_client_batch_item_metadata_v1_t, struct_size) == 0,
+               "T076 metadata begins with struct_size");
+_Static_assert(offsetof(struct kmipkit_client_batch_item_metadata_v1_t, abi_version) == 4,
+               "T076 metadata keeps the ABI version at offset four");
+_Static_assert(offsetof(struct kmipkit_client_batch_item_metadata_v1_t, outcome_kind) == 8,
+               "T076 metadata keeps the outcome kind at offset eight");
+_Static_assert(offsetof(struct kmipkit_client_batch_item_metadata_v1_t, result_status) == 12,
+               "T076 metadata keeps result status at offset twelve");
+_Static_assert(offsetof(struct kmipkit_client_batch_item_metadata_v1_t, has_result_reason) == 16,
+               "T076 metadata keeps the reason presence flag at offset sixteen");
+_Static_assert(offsetof(struct kmipkit_client_batch_item_metadata_v1_t, result_reason) == 20,
+               "T076 metadata keeps the result reason at offset twenty");
 /* T076 declarations remain test-local while Java/Python parity is blocked.
  * They exercise the binary symbols but are not public-header or readiness
  * evidence. */
