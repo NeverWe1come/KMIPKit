@@ -704,7 +704,7 @@ class CoverageReportTests(unittest.TestCase):
         self.assertEqual("Accepted deviation: KMIPKIT-DEC-PROFILE-001", rows[0][4])
         self.assertTrue(runtime_availability["KMIPKIT-PROFILE-BASELINE-CLIENT"])
 
-    def test_full_profile_report_fails_closed_with_partial_runtime_registry_and_fixtures(self) -> None:
+    def test_full_profile_report_fails_closed_with_partial_runtime_registry_and_pinned_fixtures(self) -> None:
         from tools.normative_catalog import report as report_module
 
         catalog = json.loads((ROOT / "specification/catalog/kmip-2.1.json").read_text(encoding="utf-8"))
@@ -756,7 +756,13 @@ class CoverageReportTests(unittest.TestCase):
         self.assertIn("No category-appropriate rule test", report)
         self.assertIn("KMIPKIT-REQ-SPEC-6.1.16-001-001", report)
         self.assertIn("Category test reference: present", report)
-        self.assertIn("mandatory fixtures unavailable: 16", report)
+        profile_state_section = report.split("## Profile states\n", 1)[1]
+        baseline_row = next(
+            line for line in profile_state_section.splitlines()
+            if line.startswith("| KMIPKIT-PROFILE-BASELINE-CLIENT |")
+        )
+        self.assertNotIn("mandatory fixtures unavailable:", baseline_row)
+        self.assertIn("| available | 23 |", report)
         self.assertIn("KMIPKIT-TEST-PROF-5-1-3-1", report)
         self.assertIn("No public claim", report)
 
