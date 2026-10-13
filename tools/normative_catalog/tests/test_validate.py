@@ -578,7 +578,7 @@ def _has_usable_conditional_client_request_evidence(
         requirement.get("scope_state") == "profile_conditional"
         and requirement.get("status") == "scoped_verified"
         and requirement.get("role") == "client"
-        and requirement.get("direction") == "client_to_server"
+        and requirement.get("direction") in {"client_to_server", "server_to_client", "both"}
         and has_source_condition
         and bool(resolvable_implementation_refs)
         and has_typed_rule_implementation
@@ -11265,6 +11265,31 @@ class CatalogValidationTests(unittest.TestCase):
             0,
             f"{len(included_headers)} client profiles still include table-header requirement IDs: {sorted(header_only_ids)}",
         )
+
+    def test_subject_alternative_name_repeatability_is_not_conditioned_on_empty_subject(self) -> None:
+        """Table 155 separates repeatability from SAN presence when Subject DN is empty."""
+        requirement_id = "KMIPKIT-REQ-SPEC-4.63-005"
+        oracle = json.loads(
+            (ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json").read_text(encoding="utf-8")
+        )
+        catalog = json.loads(
+            (ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8")
+        )
+        source_obligation = next(
+            obligation
+            for review in oracle["source_requirement_reviews"]
+            for obligation in review["source_obligations"]
+            if obligation.get("candidate_requirement_id") == requirement_id
+        )
+        requirement = next(
+            row for row in catalog["requirements"] if row["requirement_id"] == requirement_id
+        )
+
+        self.assertIn("repeatability is unconditional", source_obligation["condition"].lower())
+        self.assertIn("separate presence", source_obligation["condition"].lower())
+        self.assertIn("repeat unconditionally", requirement["summary"].lower())
+        self.assertNotIn("may repeat when subject distinguished name is empty", requirement["summary"].lower())
+        self.assertEqual(requirement["direction"], "server_to_client")
 
     def test_spec_6_1_overview_source_rows_preserve_client_server_obligations(self) -> None:
         """Specification v2.1 §6.1 overview separates client capabilities from server state."""
