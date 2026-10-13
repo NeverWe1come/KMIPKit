@@ -116,6 +116,40 @@ class SharedRustInventoryTests(unittest.TestCase):
             )
             self.assertEqual(capability["mappings"][language], expected)
 
+    def test_typed_view_and_discover_versions_exports_use_their_semantic_owner_requirements(self) -> None:
+        inventory = AUDIT.build_inventory(self.manifest, self.rust_report, REPO_ROOT)
+        declarations = {row["exportName"]: row for row in inventory["mappedDeclarations"]}
+
+        structure_view = declarations["kmipkit_ttlv::StructureView"]
+        self.assertEqual(structure_view["capabilityId"], "generic_ttlv_model")
+        self.assertEqual(structure_view["ownerSpecId"], "KMIPKIT-0004")
+        self.assertTrue(
+            {
+                "KMIPKIT-0004-FR-009",
+                "KMIPKIT-0004-FR-010",
+                "KMIPKIT-0004-FR-012",
+            }
+            <= set(structure_view["requirementIds"])
+        )
+
+        batch_item = declarations["kmipkit_client::ClientBatchItem"]
+        self.assertEqual(batch_item["ownerSpecId"], "KMIPKIT-0012")
+        self.assertIn("KMIPKIT-0007-FR-001", batch_item["requirementIds"])
+
+        discover_versions = declarations["kmipkit_client::ClientBatchItem::discover_versions"]
+        self.assertEqual(discover_versions["capabilityId"], "discover_versions_request_item")
+        self.assertEqual(discover_versions["ownerSpecId"], "KMIPKIT-0007")
+        self.assertTrue(
+            {
+                "KMIPKIT-0007-FR-001",
+                "KMIPKIT-0007-FR-002",
+            }
+            <= set(discover_versions["ownerRequirementIds"])
+        )
+
+        operation = next(row for row in self.manifest["operations"] if row["name"] == "Discover Versions")
+        self.assertEqual(operation["apiState"], "blocked")
+
     def test_all_ready_capability_mappings_match_exact_ready_exports(self) -> None:
         language_packages = {
             language: {
