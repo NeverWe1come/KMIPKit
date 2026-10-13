@@ -516,6 +516,20 @@ fn profile_maps_client_get_key_compression_type_selector() {
         None
     ));
 
+    let duplicate_selector = request_message_with_operation_payload(
+        GET_OPERATION,
+        structure([
+            tagged(0x0042_0094, Value::text_string("ec-key-id".to_owned())),
+            tagged(KEY_COMPRESSION_TYPE_TAG, Value::enumeration(1)),
+            tagged(KEY_COMPRESSION_TYPE_TAG, Value::enumeration(2)),
+        ]),
+    );
+    assert!(result.validate_request(&duplicate_selector).is_err());
+    assert!(!client_get_key_compression_type_is_enumeration(
+        Some(&duplicate_selector),
+        None
+    ));
+
     let unrelated_operation = request_message_with_operation_payload(0x0000_0001, Structure::new());
     result
         .validate_request(&unrelated_operation)

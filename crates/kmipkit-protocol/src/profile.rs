@@ -762,14 +762,14 @@ fn client_get_key_compression_type_is_enumeration(
 
         batch_item
             .with_request_payload(|payload| {
-                let selectors: Vec<_> = payload
+                let mut selector_seen = false;
+                payload
                     .children()
                     .iter()
                     .filter(|field| field.tag().raw() == GET_KEY_COMPRESSION_TYPE)
-                    .collect();
-                selectors.len() <= 1
-                    && selectors.iter().all(|field| {
-                        field.with_value(|value| matches!(value, ValueView::Enumeration(_)))
+                    .all(|field| {
+                        !std::mem::replace(&mut selector_seen, true)
+                            && field.with_value(|value| matches!(value, ValueView::Enumeration(_)))
                     })
             })
             .unwrap_or(false)
