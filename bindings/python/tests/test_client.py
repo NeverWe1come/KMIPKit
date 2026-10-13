@@ -1196,6 +1196,21 @@ def test_endpoint_direct_constructor_enforces_text_shape_and_repr_redaction() ->
     assert "uri-password-sentinel" not in repr(endpoint)
 
 
+def test_endpoint_factories_and_transport_config_reject_validation_overrides() -> None:
+    class UnvalidatedEndpoint(client.Endpoint):
+        def __post_init__(self) -> None:
+            pass
+
+    with pytest.raises(errors.InvalidInputError):
+        UnvalidatedEndpoint.raw_tls("", 0)
+    with pytest.raises(errors.InvalidInputError):
+        UnvalidatedEndpoint.https("")
+
+    bypassed = UnvalidatedEndpoint(client.EndpointKind.RAW_TLS, "", 0)
+    with pytest.raises(errors.InvalidInputError):
+        _transport_configuration(endpoint=bypassed)
+
+
 def test_transport_input_measures_real_buffer_size_for_bytes_subclasses() -> None:
     class LyingBytes(bytes):
         def __len__(self) -> int:
