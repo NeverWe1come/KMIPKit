@@ -74,6 +74,8 @@ struct kmipkit_client_t;
 struct kmipkit_client_batch_t;
 struct kmipkit_client_batch_response_t;
 struct kmipkit_client_batch_item_response_t;
+struct kmipkit_ttlv_structure_t;
+struct kmipkit_ttlv_structure_view_t;
 struct kmipkit_client_batch_item_metadata_v1_t {
     uint32_t struct_size;
     uint32_t abi_version;
@@ -131,6 +133,20 @@ extern int32_t kmipkit_client_execute(
     struct kmipkit_client_batch_t **batch,
     struct kmipkit_codec_limits_t *limits,
     struct kmipkit_client_batch_response_t **out_response);
+extern int32_t kmipkit_client_execute_with_error_ttlv_v1(
+    struct kmipkit_client_t *client,
+    struct kmipkit_client_batch_t **batch,
+    struct kmipkit_codec_limits_t *limits,
+    struct kmipkit_client_batch_response_t **out_response,
+    struct kmipkit_ttlv_structure_t **out_error_response_ttlv);
+extern int32_t kmipkit_ttlv_structure_view(
+    struct kmipkit_ttlv_structure_t *structure,
+    struct kmipkit_ttlv_structure_view_t **out_view);
+extern int32_t kmipkit_ttlv_structure_view_item_count(
+    struct kmipkit_ttlv_structure_view_t *view,
+    uint64_t *out_count);
+extern void kmipkit_ttlv_structure_view_release(struct kmipkit_ttlv_structure_view_t *handle);
+extern void kmipkit_ttlv_structure_release(struct kmipkit_ttlv_structure_t *handle);
 extern void kmipkit_client_batch_release(struct kmipkit_client_batch_t *handle);
 extern void kmipkit_client_batch_response_release(
     struct kmipkit_client_batch_response_t *handle);
@@ -474,6 +490,8 @@ static bool test_t076_validated_client_reports_delivery_state(
     struct kmipkit_client_batch_response_t *response = NULL;
     struct kmipkit_client_batch_item_response_t *response_item = NULL;
     struct kmipkit_client_batch_item_response_t *response_item_2 = NULL;
+    struct kmipkit_ttlv_structure_t *error_response_ttlv = NULL;
+    struct kmipkit_ttlv_structure_view_t *error_response_view = NULL;
     struct kmipkit_client_batch_item_metadata_v1_t metadata = {0};
     struct kmipkit_byte_span_v1_t value = {0};
     uint64_t response_count = UINT64_C(0);
@@ -604,7 +622,8 @@ static bool test_t076_validated_client_reports_delivery_state(
                        batch, client_correlation, (uint64_t)sizeof(client_correlation)),
                    KMIPKIT_SUCCESS);
     REQUIRE_STATUS(kmipkit_codec_limits_defaults(&limits), KMIPKIT_SUCCESS);
-    status = kmipkit_client_execute(client, &batch, limits, &response);
+    status = kmipkit_client_execute_with_error_ttlv_v1(
+        client, &batch, limits, &response, &error_response_ttlv);
     if (status != KMIPKIT_SUCCESS) {
         const int32_t execution_status = status;
         (void)kmipkit_last_error_get(&status, &category, &cause, &delivery);
@@ -615,6 +634,7 @@ static bool test_t076_validated_client_reports_delivery_state(
     }
     REQUIRE(batch == NULL);
     REQUIRE(response != NULL);
+    REQUIRE(error_response_ttlv == NULL);
     REQUIRE_STATUS(kmipkit_client_batch_response_item_count(response, &response_count),
                    KMIPKIT_SUCCESS);
     REQUIRE(response_count == UINT64_C(2));
@@ -659,6 +679,44 @@ static bool test_t076_validated_client_reports_delivery_state(
 
     kmipkit_client_batch_response_release(response);
     response = NULL;
+
+    /* A typed response-shape error keeps the complete generic ResponseMessage
+     * available as an independent, owned TTLV structure. */
+    REQUIRE_STATUS(kmipkit_client_batch_create(&batch), KMIPKIT_SUCCESS);
+    REQUIRE_STATUS(kmipkit_client_batch_item_discover_versions(&item), KMIPKIT_SUCCESS);
+    {
+        static const uint8_t request_id[] = {0xaa};
+        struct kmipkit_client_batch_item_t *identified_item = NULL;
+        REQUIRE_STATUS(kmipkit_client_batch_item_with_unique_batch_item_id(
+                           item, request_id, (uint64_t)sizeof(request_id), &identified_item),
+                       KMIPKIT_SUCCESS);
+        item = identified_item;
+    }
+    REQUIRE_STATUS(kmipkit_client_batch_add_item(batch, &item), KMIPKIT_SUCCESS);
+    status = kmipkit_client_execute_with_error_ttlv_v1(
+        client, &batch, limits, &response, &error_response_ttlv);
+    REQUIRE(status == (int32_t)8); /* original sanitized protocol status */
+    REQUIRE(batch == NULL && response == NULL && error_response_ttlv != NULL);
+    REQUIRE_STATUS(kmipkit_last_error_get(&status, &category, &cause, &delivery),
+                   KMIPKIT_SUCCESS);
+    REQUIRE(status == (int32_t)8 && category == UINT32_C(2));
+    REQUIRE(delivery == UINT32_C(3)); /* response started */
+    REQUIRE_STATUS(kmipkit_ttlv_structure_view(error_response_ttlv, &error_response_view),
+                   KMIPKIT_SUCCESS);
+    REQUIRE_STATUS(kmipkit_ttlv_structure_view_item_count(error_response_view, &response_count),
+                   KMIPKIT_SUCCESS);
+    REQUIRE(response_count >= UINT64_C(2)); /* ResponseHeader and ResponseBatchItem */
+    kmipkit_ttlv_structure_view_release(error_response_view);
+    error_response_view = NULL;
+    kmipkit_ttlv_structure_release(error_response_ttlv);
+    error_response_ttlv = NULL;
+
+    /* A local validation failure keeps both optional output slots null. */
+    REQUIRE_STATUS(kmipkit_client_batch_create(&batch), KMIPKIT_SUCCESS);
+    status = kmipkit_client_execute_with_error_ttlv_v1(
+        client, &batch, limits, &response, &error_response_ttlv);
+    REQUIRE(status == (int32_t)4);
+    REQUIRE(batch == NULL && response == NULL && error_response_ttlv == NULL);
     kmipkit_client_batch_item_response_release(response_item);
     response_item = NULL;
     kmipkit_client_batch_item_response_release(response_item_2);

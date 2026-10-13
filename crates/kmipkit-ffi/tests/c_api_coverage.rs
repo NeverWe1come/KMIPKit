@@ -144,13 +144,29 @@ fn controlled_mtls_peer(
 
     let (second_stream, _) = listener
         .accept()
-        .expect("the explicit post-dispatch call reaches the controlled peer");
+        .expect("the response-shape-error call reaches the controlled peer");
     second_stream
         .set_read_timeout(Some(std::time::Duration::from_secs(5)))
         .expect("post-dispatch peer read timeout is configured");
-    let connection = ServerConnection::new(retry_server_config)
+    let connection = ServerConnection::new(Arc::clone(&retry_server_config))
         .expect("the TLS 1.3 server connection is configured");
     let mut tls = StreamOwned::new(connection, second_stream);
+    let request = read_ttlv_frame(&mut tls).expect("response-shape-error request arrives fully");
+    assert!(request.starts_with(&[0x42, 0x00, 0x78]));
+    tls.write_all(&mismatched_discover_versions_response())
+        .expect("mismatched response fixture is written");
+    tls.flush().expect("the malformed typed response is flushed");
+    let _ = tls.get_ref().shutdown(Shutdown::Both);
+
+    let (third_stream, _) = listener
+        .accept()
+        .expect("the explicit post-dispatch transport-failure call reaches the peer");
+    third_stream
+        .set_read_timeout(Some(std::time::Duration::from_secs(5)))
+        .expect("transport-failure peer read timeout is configured");
+    let connection = ServerConnection::new(retry_server_config)
+        .expect("the TLS 1.3 server connection is configured");
+    let mut tls = StreamOwned::new(connection, third_stream);
     let request = read_ttlv_frame(&mut tls).expect("post-dispatch request arrives fully");
     assert!(request.starts_with(&[0x42, 0x00, 0x78]));
     let _ = tls.get_ref().shutdown(Shutdown::Both);
@@ -343,6 +359,31 @@ fn discover_versions_response() -> Vec<u8> {
     );
     /* The peer returns a reversed batch; item IDs restore caller-request order. */
     structure(0x0042_007B, [header, failed_item, successful_item])
+}
+
+fn mismatched_discover_versions_response() -> Vec<u8> {
+    let protocol_version = structure(
+        0x0042_0069,
+        [integer(0x0042_006A, 2), integer(0x0042_006B, 1)],
+    );
+    let header = structure(
+        0x0042_007A,
+        [
+            protocol_version.clone(),
+            date_time(0x0042_0092, 1),
+            integer(0x0042_000D, 1),
+        ],
+    );
+    let item = structure(
+        0x0042_000F,
+        [
+            enumeration(0x0042_005C, 30),
+            ttlv_item(0x0042_0093, 0x08, &[0xbb]),
+            enumeration(0x0042_007F, 0),
+            structure(0x0042_007C, [protocol_version]),
+        ],
+    );
+    structure(0x0042_007B, [header, item])
 }
 
 fn structure<const N: usize>(tag: u32, children: [Vec<u8>; N]) -> Vec<u8> {
