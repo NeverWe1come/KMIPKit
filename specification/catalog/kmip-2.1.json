@@ -86130,7 +86130,9 @@
       ],
       "verification_refs": [
         "crates/kmipkit-protocol/tests/unit/register_operation_tests.rs",
-        "crates/kmipkit-client/tests/unit/register_execution_tests.rs"
+        "crates/kmipkit-client/tests/unit/register_execution_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/register_operation_tests.rs::managed_opaque_context_accepts_table293_attributes_without_a_key_block_and_emits_no_marker",
+        "crates/kmipkit-client/tests/unit/register_execution_tests.rs::managed_opaque_register_preserves_standard_table_291_wire_shape_and_attribute_order"
       ],
       "negative_verification_required": false,
       "decision_id": null,
@@ -86139,23 +86141,37 @@
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-2.3-003",
-      "source_clause_ids": [
-        "KMIPKIT-CLAUSE-SPEC-2.3-003"
-      ],
+      "source_clause_ids": [],
       "source_refs": [
         {
           "source_id": "KMIPKIT-SRC-spec",
           "section": "2.3"
+        },
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "6.1.43"
         }
       ],
-      "source_keyword": "REQUIRED",
+      "source_keyword": null,
       "normative_strength": "mandatory",
+      "source_force": "required_table_body_value",
+      "source_gap_id": "KMIPKIT-SOURCE-GAP-SPEC-2.3-OPAQUE-DATA-TYPE-REQUIRED",
+      "source_locator": {
+        "kind": "table_body_row",
+        "section": "2.3",
+        "row_label": "Opaque Data Type",
+        "table": "object_definition",
+        "html_line_range": [
+          6927,
+          6945
+        ]
+      },
       "subject": "Opaque Object",
-      "summary": "The REQUIRED table heading is metadata and does not state an operative protocol requirement.",
-      "role": "not_applicable",
-      "direction": "not_applicable",
-      "condition": null,
-      "scope_state": "out_of_scope",
+      "summary": "An Opaque Object contains required Opaque Data Type (Enumeration) and Opaque Data Value (Byte String) fields.",
+      "role": "client",
+      "direction": "client_to_server",
+      "condition": "An Opaque Object is included in a Register request.",
+      "scope_state": "client_1_0",
       "element_ids": [
         "KMIPKIT-ELEM-OP-C2S-REGISTER",
         "KMIPKIT-ELEM-STRUCTURE-MEMBER-2-3-OPAQUE-OBJECT-OPAQUE-DATA-TYPE",
@@ -86169,13 +86185,13 @@
         "crates/kmipkit-client/src/execute.rs"
       ],
       "verification_refs": [
-        "crates/kmipkit-protocol/tests/unit/register_operation_tests.rs",
-        "crates/kmipkit-client/tests/unit/register_execution_tests.rs"
+        "crates/kmipkit-protocol/tests/unit/register_operation_tests.rs::opaque_object_requires_typed_table4_data_type_and_data_value_children",
+        "crates/kmipkit-client/tests/unit/register_execution_tests.rs::malformed_table_4_opaque_object_is_not_sent"
       ],
       "negative_verification_required": false,
       "decision_id": null,
       "status": "verified",
-      "review_note": "Pinned KMIP Specification v2.1 source (kmip-spec-v2.1-os.html), §2.3, lines 6891-6907, contains only the table heading “Object / Encoding / REQUIRED”; it does not state that this object row is required. The separate §2.8 Prime Field Size data cell is reviewed as a conditional body value. No requirement-specific official Test Cases ID is linked in the pinned KMIP Test Cases inventory; implementation and verification are not claimed."
+      "review_note": "Pinned KMIP Specification v2.1 §2.3/Table 4 marks the Opaque Data Type (Enumeration) row required at HTML lines 6927-6945 and the Opaque Data Value (Byte String) row required at lines 6946-6964. The REQUIRED heading at lines 6891-6907 is a non-applicable table header, not an obligation. The Register request context is specified in §6.1.43/Table 291. No requirement-specific official Test Cases ID is linked in the pinned OASIS Test Cases inventory; the referenced local tests are project-derived and no official pass is claimed."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-2.4-001-001",
@@ -94569,7 +94585,8 @@
       ],
       "verification_refs": [
         "crates/kmipkit-protocol/tests/unit/register_operation_tests.rs",
-        "crates/kmipkit-client/tests/unit/register_execution_tests.rs"
+        "crates/kmipkit-client/tests/unit/register_execution_tests.rs",
+        "crates/kmipkit-client/tests/unit/register_execution_tests.rs::managed_opaque_register_preserves_standard_table_291_wire_shape_and_attribute_order"
       ],
       "negative_verification_required": false,
       "decision_id": null,
@@ -94662,6 +94679,8 @@
         "crates/kmipkit-client/src/execute.rs"
       ],
       "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/register_operation_tests.rs::managed_opaque_context_accepts_table293_attributes_without_a_key_block_and_emits_no_marker",
+        "crates/kmipkit-client/tests/unit/register_execution_tests.rs::managed_opaque_register_preserves_standard_table_291_wire_shape_and_attribute_order",
         "crates/kmipkit-protocol/tests/unit/register_operation_tests.rs",
         "crates/kmipkit-client/tests/unit/register_execution_tests.rs"
       ],
@@ -94700,7 +94719,10 @@
         "crates/kmipkit-client/src/execute.rs"
       ],
       "verification_refs": [
-        "crates/kmipkit-protocol/tests/unit/register_operation_tests.rs::request_requires_key_algorithm_and_length_in_attributes_or_key_block"
+        "crates/kmipkit-protocol/tests/unit/register_operation_tests.rs::managed_opaque_context_accepts_table293_attributes_without_a_key_block_and_emits_no_marker",
+        "crates/kmipkit-protocol/tests/unit/register_operation_tests.rs::request_requires_key_algorithm_and_length_in_attributes_or_key_block",
+        "crates/kmipkit-protocol/tests/unit/register_operation_tests.rs",
+        "crates/kmipkit-client/tests/unit/register_execution_tests.rs"
       ],
       "negative_verification_required": false,
       "decision_id": null,
@@ -94737,6 +94759,7 @@
         "crates/kmipkit-client/src/execute.rs"
       ],
       "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/register_operation_tests.rs::managed_opaque_context_requires_algorithm_and_length_as_a_pair",
         "crates/kmipkit-protocol/tests/unit/register_operation_tests.rs",
         "crates/kmipkit-client/tests/unit/register_execution_tests.rs"
       ],
@@ -94775,7 +94798,10 @@
         "crates/kmipkit-client/src/execute.rs"
       ],
       "verification_refs": [
-        "crates/kmipkit-protocol/tests/unit/register_operation_tests.rs::request_requires_key_algorithm_and_length_in_attributes_or_key_block"
+        "crates/kmipkit-protocol/tests/unit/register_operation_tests.rs::managed_opaque_context_accepts_table293_attributes_without_a_key_block_and_emits_no_marker",
+        "crates/kmipkit-protocol/tests/unit/register_operation_tests.rs::request_requires_key_algorithm_and_length_in_attributes_or_key_block",
+        "crates/kmipkit-protocol/tests/unit/register_operation_tests.rs",
+        "crates/kmipkit-client/tests/unit/register_execution_tests.rs"
       ],
       "negative_verification_required": false,
       "decision_id": null,
@@ -94812,6 +94838,7 @@
         "crates/kmipkit-client/src/execute.rs"
       ],
       "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/register_operation_tests.rs::managed_opaque_context_requires_algorithm_and_length_as_a_pair",
         "crates/kmipkit-protocol/tests/unit/register_operation_tests.rs",
         "crates/kmipkit-client/tests/unit/register_execution_tests.rs"
       ],
@@ -102907,6 +102934,7 @@
         "KMIPKIT-REQ-SPEC-14.1-002",
         "KMIPKIT-REQ-SPEC-2.3-001",
         "KMIPKIT-REQ-SPEC-2.3-002",
+        "KMIPKIT-REQ-SPEC-2.3-003",
         "KMIPKIT-REQ-SPEC-2.4-001-001",
         "KMIPKIT-REQ-SPEC-2.4-001-002",
         "KMIPKIT-REQ-SPEC-2.4-002-001",
@@ -104313,6 +104341,7 @@
         "KMIPKIT-REQ-SPEC-14.1-002",
         "KMIPKIT-REQ-SPEC-2.3-001",
         "KMIPKIT-REQ-SPEC-2.3-002",
+        "KMIPKIT-REQ-SPEC-2.3-003",
         "KMIPKIT-REQ-SPEC-2.4-001-001",
         "KMIPKIT-REQ-SPEC-2.4-001-002",
         "KMIPKIT-REQ-SPEC-2.4-002-001",
@@ -105703,6 +105732,7 @@
         "KMIPKIT-REQ-SPEC-14.1-002",
         "KMIPKIT-REQ-SPEC-2.3-001",
         "KMIPKIT-REQ-SPEC-2.3-002",
+        "KMIPKIT-REQ-SPEC-2.3-003",
         "KMIPKIT-REQ-SPEC-2.4-001-001",
         "KMIPKIT-REQ-SPEC-2.4-001-002",
         "KMIPKIT-REQ-SPEC-2.4-002-001",
@@ -107422,6 +107452,7 @@
         "KMIPKIT-REQ-SPEC-14.1-002",
         "KMIPKIT-REQ-SPEC-2.3-001",
         "KMIPKIT-REQ-SPEC-2.3-002",
+        "KMIPKIT-REQ-SPEC-2.3-003",
         "KMIPKIT-REQ-SPEC-2.4-001-001",
         "KMIPKIT-REQ-SPEC-2.4-001-002",
         "KMIPKIT-REQ-SPEC-2.4-002-001",
@@ -108861,6 +108892,7 @@
         "KMIPKIT-REQ-SPEC-14.1-002",
         "KMIPKIT-REQ-SPEC-2.3-001",
         "KMIPKIT-REQ-SPEC-2.3-002",
+        "KMIPKIT-REQ-SPEC-2.3-003",
         "KMIPKIT-REQ-SPEC-2.4-001-001",
         "KMIPKIT-REQ-SPEC-2.4-001-002",
         "KMIPKIT-REQ-SPEC-2.4-002-001",
@@ -110303,6 +110335,7 @@
         "KMIPKIT-REQ-SPEC-14.1-002",
         "KMIPKIT-REQ-SPEC-2.3-001",
         "KMIPKIT-REQ-SPEC-2.3-002",
+        "KMIPKIT-REQ-SPEC-2.3-003",
         "KMIPKIT-REQ-SPEC-2.4-001-001",
         "KMIPKIT-REQ-SPEC-2.4-001-002",
         "KMIPKIT-REQ-SPEC-2.4-002-001",
@@ -111743,6 +111776,7 @@
         "KMIPKIT-REQ-SPEC-14.1-002",
         "KMIPKIT-REQ-SPEC-2.3-001",
         "KMIPKIT-REQ-SPEC-2.3-002",
+        "KMIPKIT-REQ-SPEC-2.3-003",
         "KMIPKIT-REQ-SPEC-2.4-001-001",
         "KMIPKIT-REQ-SPEC-2.4-001-002",
         "KMIPKIT-REQ-SPEC-2.4-002-001",
@@ -113167,6 +113201,7 @@
         "KMIPKIT-REQ-SPEC-14.1-002",
         "KMIPKIT-REQ-SPEC-2.3-001",
         "KMIPKIT-REQ-SPEC-2.3-002",
+        "KMIPKIT-REQ-SPEC-2.3-003",
         "KMIPKIT-REQ-SPEC-2.4-001-001",
         "KMIPKIT-REQ-SPEC-2.4-001-002",
         "KMIPKIT-REQ-SPEC-2.4-002-001",
@@ -114569,6 +114604,7 @@
         "KMIPKIT-REQ-SPEC-14.1-002",
         "KMIPKIT-REQ-SPEC-2.3-001",
         "KMIPKIT-REQ-SPEC-2.3-002",
+        "KMIPKIT-REQ-SPEC-2.3-003",
         "KMIPKIT-REQ-SPEC-2.4-001-001",
         "KMIPKIT-REQ-SPEC-2.4-001-002",
         "KMIPKIT-REQ-SPEC-2.4-002-001",
@@ -115980,6 +116016,7 @@
         "KMIPKIT-REQ-SPEC-14.1-002",
         "KMIPKIT-REQ-SPEC-2.3-001",
         "KMIPKIT-REQ-SPEC-2.3-002",
+        "KMIPKIT-REQ-SPEC-2.3-003",
         "KMIPKIT-REQ-SPEC-2.4-001-001",
         "KMIPKIT-REQ-SPEC-2.4-001-002",
         "KMIPKIT-REQ-SPEC-2.4-002-001",
@@ -117399,6 +117436,7 @@
         "KMIPKIT-REQ-SPEC-14.1-002",
         "KMIPKIT-REQ-SPEC-2.3-001",
         "KMIPKIT-REQ-SPEC-2.3-002",
+        "KMIPKIT-REQ-SPEC-2.3-003",
         "KMIPKIT-REQ-SPEC-2.4-001-001",
         "KMIPKIT-REQ-SPEC-2.4-001-002",
         "KMIPKIT-REQ-SPEC-2.4-002-001",
@@ -118826,6 +118864,7 @@
         "KMIPKIT-REQ-SPEC-14.1-002",
         "KMIPKIT-REQ-SPEC-2.3-001",
         "KMIPKIT-REQ-SPEC-2.3-002",
+        "KMIPKIT-REQ-SPEC-2.3-003",
         "KMIPKIT-REQ-SPEC-2.4-001-001",
         "KMIPKIT-REQ-SPEC-2.4-001-002",
         "KMIPKIT-REQ-SPEC-2.4-002-001",
@@ -120237,6 +120276,7 @@
         "KMIPKIT-REQ-SPEC-14.1-002",
         "KMIPKIT-REQ-SPEC-2.3-001",
         "KMIPKIT-REQ-SPEC-2.3-002",
+        "KMIPKIT-REQ-SPEC-2.3-003",
         "KMIPKIT-REQ-SPEC-2.4-001-001",
         "KMIPKIT-REQ-SPEC-2.4-001-002",
         "KMIPKIT-REQ-SPEC-2.4-002-001",
@@ -121507,6 +121547,7 @@
         "KMIPKIT-REQ-SPEC-14.1-002",
         "KMIPKIT-REQ-SPEC-2.3-001",
         "KMIPKIT-REQ-SPEC-2.3-002",
+        "KMIPKIT-REQ-SPEC-2.3-003",
         "KMIPKIT-REQ-SPEC-2.4-001-001",
         "KMIPKIT-REQ-SPEC-2.4-001-002",
         "KMIPKIT-REQ-SPEC-2.4-002-001",
@@ -122776,6 +122817,7 @@
         "KMIPKIT-REQ-SPEC-14.1-002",
         "KMIPKIT-REQ-SPEC-2.3-001",
         "KMIPKIT-REQ-SPEC-2.3-002",
+        "KMIPKIT-REQ-SPEC-2.3-003",
         "KMIPKIT-REQ-SPEC-2.4-001-001",
         "KMIPKIT-REQ-SPEC-2.4-001-002",
         "KMIPKIT-REQ-SPEC-2.4-002-001",
@@ -124206,6 +124248,7 @@
         "KMIPKIT-REQ-SPEC-14.1-002",
         "KMIPKIT-REQ-SPEC-2.3-001",
         "KMIPKIT-REQ-SPEC-2.3-002",
+        "KMIPKIT-REQ-SPEC-2.3-003",
         "KMIPKIT-REQ-SPEC-2.4-001-001",
         "KMIPKIT-REQ-SPEC-2.4-001-002",
         "KMIPKIT-REQ-SPEC-2.4-002-001",
@@ -125669,6 +125712,7 @@
         "KMIPKIT-REQ-SPEC-14.1-002",
         "KMIPKIT-REQ-SPEC-2.3-001",
         "KMIPKIT-REQ-SPEC-2.3-002",
+        "KMIPKIT-REQ-SPEC-2.3-003",
         "KMIPKIT-REQ-SPEC-2.4-001-001",
         "KMIPKIT-REQ-SPEC-2.4-001-002",
         "KMIPKIT-REQ-SPEC-2.4-002-001",
@@ -127097,6 +127141,7 @@
         "KMIPKIT-REQ-SPEC-14.1-002",
         "KMIPKIT-REQ-SPEC-2.3-001",
         "KMIPKIT-REQ-SPEC-2.3-002",
+        "KMIPKIT-REQ-SPEC-2.3-003",
         "KMIPKIT-REQ-SPEC-2.4-001-001",
         "KMIPKIT-REQ-SPEC-2.4-001-002",
         "KMIPKIT-REQ-SPEC-2.4-002-001",
