@@ -514,3 +514,15 @@ The Java transport builder now checks individual and aggregate memory/file-path 
 | Java text-limit Refactor | `ccb8c838` | Clarified heap headroom accounting and added coverage for UTF-8 replacement of an isolated surrogate. The focused transport boundary class passed 12 tests. |
 | Final QA | `ccb8c838` | Independent review found no blockers across Java pre-copy limits, Python FFI-boundary snapshots, UTF-8 sizing, and the bounded-heap probe. All Red/Green/Refactor commits carry the authorized DCO sign-off. |
 | Remote CI | Pending | These commits are not yet on the PR head. T076 and T074 remain open until the complete required matrix passes on the final pushed head. |
+
+### CI coverage inventory correction
+
+The full matrix for head `3c87f385` passed the language, platform, Java/Python coverage, and documentation jobs, but the selected coverage gate failed because JaCoCo correctly omitted five `package-info.java` files containing only `@NullMarked` package metadata. The same five files were incorrectly classified as executable adapter sources. They are now documented as metadata-only and excluded by one exact-path inventory shared by source eligibility and JaCoCo parsing; executable Java sources remain required.
+
+| Phase / verification | Commit(s) | Evidence |
+|---|---|---|
+| Red | `a729810f` | Two regression tests failed before the fix: all five metadata-only files were treated as coverage sources, and the JaCoCo parser included them. |
+| Green | `247de035` | Added the five exact exclusions and documented why package metadata has no executable JaCoCo lines. The source scanner and JaCoCo parser use the same inventory. |
+| Refactor | `8d54533c` | Clarified the exclusion rationale without changing behavior. |
+| Local verification and QA | `8d54533c` | Coverage-gate tests — PASS, 55 tests and three Windows symlink-permission skips; multilanguage coverage tests — PASS, 23 tests; `coverage_gate.py preflight --workspace .` — PASS. Independent QA found no blockers. |
+| Remote CI | Pending | The correction is local and awaits a fresh run on the pushed PR head. Keep T074 open until the final required matrix, including the aggregate coverage gate, passes. |
