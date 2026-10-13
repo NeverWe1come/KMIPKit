@@ -79590,7 +79590,7 @@
       "negative_verification_required": false,
       "decision_id": null,
       "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources. Profiles v2.1 \u00a73.1.1 paragraph 4 permits optional TLS 1.2 support; ADR-0005 limits KMIPKit 1.0 to TLS 1.3, so this capability is outside the 1.0 client scope."
+      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources. Profiles v2.1 §3.1.1 paragraph 4 permits optional TLS 1.2 support; ADR-0005 limits KMIPKit 1.0 to TLS 1.3, so this capability is outside the 1.0 client scope."
     },
     {
       "requirement_id": "KMIPKIT-REQ-PROF-3.1.1-005",
@@ -86914,7 +86914,7 @@
       "negative_verification_required": false,
       "decision_id": null,
       "status": "scoped_verified",
-      "review_note": "The pinned KMIP Specification v2.1 \u00a73.1 Tables 11\u201312, \u00a73.2 Table 13, and \u00a75.1 Table 157 permit omitting Cryptographic Algorithm from direct Attributes when its value is available in Key Block, including the optional Attributes Structure inside a plaintext Key Value. Register request tests prove paired and independently omitted values, reject invalid TTLV types, and retain negative incomplete-pair cases. This evidence covers the plaintext Key Value Structure path only; it does not inspect wrapped Byte String contents, claim server acceptance, or claim an official test case result."
+      "review_note": "The pinned KMIP Specification v2.1 §3.1 Tables 11–12, §3.2 Table 13, and §5.1 Table 157 permit omitting Cryptographic Algorithm from direct Attributes when its value is available in Key Block, including the optional Attributes Structure inside a plaintext Key Value. Register request tests prove paired and independently omitted values, reject invalid TTLV types, and retain negative incomplete-pair cases. This evidence covers the plaintext Key Value Structure path only; it does not inspect wrapped Byte String contents, claim server acceptance, or claim an official test case result."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-3.1-004-002",
@@ -86988,7 +86988,7 @@
       "negative_verification_required": false,
       "decision_id": null,
       "status": "scoped_verified",
-      "review_note": "The pinned KMIP Specification v2.1 \u00a73.1 Tables 11\u201312, \u00a73.2 Table 13, and \u00a75.1 Table 157 permit omitting Cryptographic Length from direct Attributes when its value is available in Key Block, including the optional Attributes Structure inside a plaintext Key Value. Register request tests prove paired and independently omitted values, reject invalid TTLV types, and retain negative incomplete-pair cases. This evidence covers the plaintext Key Value Structure path only; it does not inspect wrapped Byte String contents, claim server acceptance, or claim an official test case result."
+      "review_note": "The pinned KMIP Specification v2.1 §3.1 Tables 11–12, §3.2 Table 13, and §5.1 Table 157 permit omitting Cryptographic Length from direct Attributes when its value is available in Key Block, including the optional Attributes Structure inside a plaintext Key Value. Register request tests prove paired and independently omitted values, reject invalid TTLV types, and retain negative incomplete-pair cases. This evidence covers the plaintext Key Value Structure path only; it does not inspect wrapped Byte String contents, claim server acceptance, or claim an official test case result."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-3.1-005-002",
@@ -87179,7 +87179,7 @@
       "negative_verification_required": false,
       "decision_id": null,
       "status": "scoped_verified",
-      "review_note": "Scoped evidence: KMIP Specification v2.1 \u00a73.2 Table 13 permits optional Attributes in Key Value; \u00a75.1 Table 157 defines their child grammar; \u00a76.1.43 Table 291 supplies the client Register request context. The positive test establishes serialization of plaintext Key Value Attributes in a client-originated Register payload only. It does not establish server acceptance, wrapped-byte contents, response handling, or profile conformance. No requirement-specific official Test Case is linked by the pinned OASIS sources."
+      "review_note": "Scoped evidence: KMIP Specification v2.1 §3.2 Table 13 permits optional Attributes in Key Value; §5.1 Table 157 defines their child grammar; §6.1.43 Table 291 supplies the client Register request context. The positive test establishes serialization of plaintext Key Value Attributes in a client-originated Register payload only. It does not establish server acceptance, wrapped-byte contents, response handling, or profile conformance. No requirement-specific official Test Case is linked by the pinned OASIS sources."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-3.2-002",
@@ -87234,8 +87234,13 @@
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": null,
-      "implementation_refs": ["crates/kmipkit-protocol/src/import.rs"],
-      "verification_refs": ["crates/kmipkit-protocol/tests/unit/import_operation_tests.rs::wrapped_pgp_key_accepts_key_wrap_type", "crates/kmipkit-protocol/tests/unit/import_operation_tests.rs::replacement_and_conditional_wrap_type_are_preserved_without_unwrapping"],
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/import.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/import_operation_tests.rs::wrapped_pgp_key_accepts_key_wrap_type",
+        "crates/kmipkit-protocol/tests/unit/import_operation_tests.rs::replacement_and_conditional_wrap_type_are_preserved_without_unwrapping"
+      ],
       "negative_verification_required": false,
       "decision_id": null,
       "status": "verified",
@@ -87264,8 +87269,13 @@
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": null,
-      "implementation_refs": ["crates/kmipkit-protocol/src/import.rs"],
-      "verification_refs": ["crates/kmipkit-protocol/tests/unit/import_operation_tests.rs::request_preserves_required_fields_and_only_explicit_optional_choices", "crates/kmipkit-protocol/tests/unit/import_operation_tests.rs::key_wrap_type_is_present_if_and_only_if_key_block_has_wrapping_data"],
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/import.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/import_operation_tests.rs::request_preserves_required_fields_and_only_explicit_optional_choices",
+        "crates/kmipkit-protocol/tests/unit/import_operation_tests.rs::key_wrap_type_is_present_if_and_only_if_key_block_has_wrapping_data"
+      ],
       "negative_verification_required": false,
       "decision_id": null,
       "status": "verified",
@@ -88288,8 +88298,16 @@
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0019",
-      "implementation_refs": ["crates/kmipkit-protocol/src/cryptographic_parameters.rs", "crates/kmipkit-protocol/src/encrypt.rs", "crates/kmipkit-protocol/src/decrypt.rs"],
-      "verification_refs": ["crates/kmipkit-protocol/tests/unit/cryptographic_parameters_tests.rs::omitted_cryptographic_parameters_remain_absent_without_validation", "crates/kmipkit-protocol/tests/unit/encrypt_tests.rs::request_omits_cryptographic_parameters_when_the_caller_omits_them", "crates/kmipkit-protocol/tests/unit/decrypt_tests.rs::request_omits_cryptographic_parameters_and_iv_when_the_caller_omits_them"],
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/cryptographic_parameters.rs",
+        "crates/kmipkit-protocol/src/encrypt.rs",
+        "crates/kmipkit-protocol/src/decrypt.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/cryptographic_parameters_tests.rs::omitted_cryptographic_parameters_remain_absent_without_validation",
+        "crates/kmipkit-protocol/tests/unit/encrypt_tests.rs::request_omits_cryptographic_parameters_when_the_caller_omits_them",
+        "crates/kmipkit-protocol/tests/unit/decrypt_tests.rs::request_omits_cryptographic_parameters_and_iv_when_the_caller_omits_them"
+      ],
       "negative_verification_required": false,
       "decision_id": null,
       "status": "verified",
@@ -88314,12 +88332,24 @@
       "direction": "unclear",
       "condition": "Specific fields may apply only to certain Managed Object types.",
       "scope_state": "client_1_0",
-      "element_ids": ["KMIPKIT-ELEM-ATTRIBUTE-CRYPTOGRAPHIC-PARAMETERS"],
+      "element_ids": [
+        "KMIPKIT-ELEM-ATTRIBUTE-CRYPTOGRAPHIC-PARAMETERS"
+      ],
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0019",
-      "implementation_refs": ["crates/kmipkit-protocol/src/cryptographic_parameters.rs::validate_known_cryptographic_parameters_view", "crates/kmipkit-protocol/src/encrypt.rs::EncryptRequest::to_ttlv_payload", "crates/kmipkit-protocol/src/decrypt.rs::DecryptRequest::to_ttlv_payload", "crates/kmipkit-protocol/src/profile.rs::type_specific_parameters_do_not_infer_remote_object_type"],
-      "verification_refs": ["crates/kmipkit-protocol/tests/unit/cryptographic_parameters_tests.rs::unknown_parameter_members_survive_in_original_order_and_encoding", "crates/kmipkit-protocol/tests/unit/encrypt_tests.rs::request_preserves_supplied_cryptographic_parameters_members_and_order", "crates/kmipkit-protocol/tests/unit/decrypt_tests.rs::request_preserves_supplied_cryptographic_parameters_members_and_order", "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_allows_type_specific_cryptographic_parameters_without_remote_object_inference"],
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/cryptographic_parameters.rs::validate_known_cryptographic_parameters_view",
+        "crates/kmipkit-protocol/src/encrypt.rs::EncryptRequest::to_ttlv_payload",
+        "crates/kmipkit-protocol/src/decrypt.rs::DecryptRequest::to_ttlv_payload",
+        "crates/kmipkit-protocol/src/profile.rs::type_specific_parameters_do_not_infer_remote_object_type"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/cryptographic_parameters_tests.rs::unknown_parameter_members_survive_in_original_order_and_encoding",
+        "crates/kmipkit-protocol/tests/unit/encrypt_tests.rs::request_preserves_supplied_cryptographic_parameters_members_and_order",
+        "crates/kmipkit-protocol/tests/unit/decrypt_tests.rs::request_preserves_supplied_cryptographic_parameters_members_and_order",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_allows_type_specific_cryptographic_parameters_without_remote_object_inference"
+      ],
       "negative_verification_required": false,
       "decision_id": null,
       "status": "scoped_verified",
@@ -88699,7 +88729,7 @@
       "negative_verification_required": false,
       "decision_id": null,
       "status": "scoped_verified",
-      "review_note": "KMIP Specification v2.1 \u00a74.27 permits a client Register request to include Key Value Location only when Key Value is omitted from the object's Key Block; Table 82's required Text String Value and Enumeration Type members are checked by the profile rule. The linked synthetic TTLV tests exercise this request shape and reject the conflicting present-Key-Value case. No official test case is claimed: the pinned OASIS Test Cases v2.1 CN01 \u00a72.63 describes retrieving a metadata-only object with Locate, not the Register request covered here."
+      "review_note": "KMIP Specification v2.1 §4.27 permits a client Register request to include Key Value Location only when Key Value is omitted from the object's Key Block; Table 82's required Text String Value and Enumeration Type members are checked by the profile rule. The linked synthetic TTLV tests exercise this request shape and reject the conflicting present-Key-Value case. No official test case is claimed: the pinned OASIS Test Cases v2.1 CN01 §2.63 describes retrieving a metadata-only object with Locate, not the Register request covered here."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-4.27-002",
@@ -89818,8 +89848,12 @@
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": null,
-      "implementation_refs": ["crates/kmipkit-protocol/src/revoke.rs"],
-      "verification_refs": ["crates/kmipkit-protocol/tests/unit/revoke_operation_tests.rs::request_emits_table_295_fields_in_order_and_preserves_open_reason"],
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/revoke.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/revoke_operation_tests.rs::request_emits_table_295_fields_in_order_and_preserves_open_reason"
+      ],
       "negative_verification_required": false,
       "decision_id": null,
       "status": "verified",
@@ -89848,8 +89882,12 @@
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": null,
-      "implementation_refs": ["crates/kmipkit-protocol/src/revoke.rs"],
-      "verification_refs": ["crates/kmipkit-protocol/tests/unit/revoke_operation_tests.rs::request_encodes_optional_audit_message_inside_revocation_reason_structure"],
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/revoke.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/revoke_operation_tests.rs::request_encodes_optional_audit_message_inside_revocation_reason_structure"
+      ],
       "negative_verification_required": false,
       "decision_id": null,
       "status": "verified",
@@ -90612,12 +90650,17 @@
       ],
       "test_case_ids": [],
       "feature_spec": null,
-      "implementation_refs": ["crates/kmipkit-protocol/src/profile.rs::client_response_preserves_x509_optional_values", "crates/kmipkit-protocol/src/get_attributes.rs::GetAttributesResponse::try_from_response_item"],
-      "verification_refs": ["crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_client_get_attributes_response_x509_values"],
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/profile.rs::client_response_preserves_x509_optional_values",
+        "crates/kmipkit-protocol/src/get_attributes.rs::GetAttributesResponse::try_from_response_item"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_client_get_attributes_response_x509_values"
+      ],
       "negative_verification_required": false,
       "decision_id": null,
       "status": "scoped_verified",
-      "review_note": "Derived client response-decoder capability for Get Attributes (\u00a76.1.20, Table 224). \u00a74.62 Table 153 defines Issuer Alternative Name as a Byte String that MAY repeat. The client preserves each received value in order; the test does not claim that a server sets the attribute, that a certificate is valid, or that an official OASIS Test Case passed. Source: pinned KMIP Specification v2.1 \u00a74.62, Table 153."
+      "review_note": "Derived client response-decoder capability for Get Attributes (§6.1.20, Table 224). §4.62 Table 153 defines Issuer Alternative Name as a Byte String that MAY repeat. The client preserves each received value in order; the test does not claim that a server sets the attribute, that a certificate is valid, or that an official OASIS Test Case passed. Source: pinned KMIP Specification v2.1 §4.62, Table 153."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-4.63-003",
@@ -90691,12 +90734,17 @@
       ],
       "test_case_ids": [],
       "feature_spec": null,
-      "implementation_refs": ["crates/kmipkit-protocol/src/profile.rs::client_response_preserves_x509_optional_values", "crates/kmipkit-protocol/src/get_attributes.rs::GetAttributesResponse::try_from_response_item"],
-      "verification_refs": ["crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_client_get_attributes_response_x509_values"],
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/profile.rs::client_response_preserves_x509_optional_values",
+        "crates/kmipkit-protocol/src/get_attributes.rs::GetAttributesResponse::try_from_response_item"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_client_get_attributes_response_x509_values"
+      ],
       "negative_verification_required": false,
       "decision_id": null,
       "status": "scoped_verified",
-      "review_note": "Derived client response-decoder capability for Get Attributes (\u00a76.1.20, Table 224). \u00a74.63 Table 155 permits the Subject Distinguished Name Byte String to be empty under the critical Subject Alternative Name certificate condition. The client preserves the received empty bytes but does not inspect or validate the certificate or impose the server's issuance condition. No official OASIS Test Case is linked or claimed passed. Source: pinned KMIP Specification v2.1 \u00a74.63, Table 155."
+      "review_note": "Derived client response-decoder capability for Get Attributes (§6.1.20, Table 224). §4.63 Table 155 permits the Subject Distinguished Name Byte String to be empty under the critical Subject Alternative Name certificate condition. The client preserves the received empty bytes but does not inspect or validate the certificate or impose the server's issuance condition. No official OASIS Test Case is linked or claimed passed. Source: pinned KMIP Specification v2.1 §4.63, Table 155."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-4.63-005",
@@ -90740,12 +90788,17 @@
       ],
       "test_case_ids": [],
       "feature_spec": null,
-      "implementation_refs": ["crates/kmipkit-protocol/src/profile.rs::client_response_preserves_x509_optional_values", "crates/kmipkit-protocol/src/get_attributes.rs::GetAttributesResponse::try_from_response_item"],
-      "verification_refs": ["crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_client_get_attributes_response_x509_values"],
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/profile.rs::client_response_preserves_x509_optional_values",
+        "crates/kmipkit-protocol/src/get_attributes.rs::GetAttributesResponse::try_from_response_item"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_client_get_attributes_response_x509_values"
+      ],
       "negative_verification_required": false,
       "decision_id": null,
       "status": "scoped_verified",
-      "review_note": "Derived client response-decoder capability for Get Attributes (\u00a76.1.20, Table 224). \u00a74.63 Table 155 permits Subject Alternative Name Byte Strings to repeat; its separate REQUIRED column requires presence when Subject Distinguished Name is empty. The client preserves repeated values in order and does not enforce that server-side presence rule. No official OASIS Test Case is linked or claimed passed. Source: pinned KMIP Specification v2.1 \u00a74.63, Table 155."
+      "review_note": "Derived client response-decoder capability for Get Attributes (§6.1.20, Table 224). §4.63 Table 155 permits Subject Alternative Name Byte Strings to repeat; its separate REQUIRED column requires presence when Subject Distinguished Name is empty. The client preserves repeated values in order and does not enforce that server-side presence rule. No official OASIS Test Case is linked or claimed passed. Source: pinned KMIP Specification v2.1 §4.63, Table 155."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-5.1-001",
@@ -90917,8 +90970,12 @@
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": null,
-      "implementation_refs": ["crates/kmipkit-protocol/src/create_key_pair.rs"],
-      "verification_refs": ["crates/kmipkit-protocol/tests/unit/create_key_pair_tests.rs::request_preserves_six_distinct_optional_groups_and_repeated_items_in_wire_order"],
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/create_key_pair.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/create_key_pair_tests.rs::request_preserves_six_distinct_optional_groups_and_repeated_items_in_wire_order"
+      ],
       "negative_verification_required": false,
       "decision_id": null,
       "status": "verified",
@@ -91284,8 +91341,14 @@
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0019",
-      "implementation_refs": ["crates/kmipkit-client/src/execute.rs", "crates/kmipkit-protocol/src/encrypt.rs", "crates/kmipkit-protocol/src/decrypt.rs"],
-      "verification_refs": ["crates/kmipkit-client/tests/unit/encrypt_decrypt_fixture_execution_tests.rs::fixture_derived_encrypt_decrypt_pairs_execute_once_with_exact_wire_and_paired_response"],
+      "implementation_refs": [
+        "crates/kmipkit-client/src/execute.rs",
+        "crates/kmipkit-protocol/src/encrypt.rs",
+        "crates/kmipkit-protocol/src/decrypt.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-client/tests/unit/encrypt_decrypt_fixture_execution_tests.rs::fixture_derived_encrypt_decrypt_pairs_execute_once_with_exact_wire_and_paired_response"
+      ],
       "negative_verification_required": false,
       "decision_id": null,
       "status": "verified",
@@ -91344,8 +91407,12 @@
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0019",
-      "implementation_refs": ["crates/kmipkit-client/src/execute.rs"],
-      "verification_refs": ["crates/kmipkit-client/tests/unit/encrypt_decrypt_id_placeholder_execution_tests.rs::later_encrypt_omits_identifier_with_batch_order_enabled"],
+      "implementation_refs": [
+        "crates/kmipkit-client/src/execute.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-client/tests/unit/encrypt_decrypt_id_placeholder_execution_tests.rs::later_encrypt_omits_identifier_with_batch_order_enabled"
+      ],
       "negative_verification_required": false,
       "decision_id": null,
       "status": "verified",
@@ -91474,8 +91541,14 @@
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": null,
-      "implementation_refs": ["crates/kmipkit-protocol/src/create.rs", "crates/kmipkit-protocol/src/register.rs"],
-      "verification_refs": ["crates/kmipkit-protocol/tests/unit/create_tests.rs::request_keeps_the_required_empty_attributes_structure_without_synthesizing_fields", "crates/kmipkit-protocol/tests/unit/create_tests.rs::create_only_oasis_fixtures_decode_with_the_expected_fields"],
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/create.rs",
+        "crates/kmipkit-protocol/src/register.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/create_tests.rs::request_keeps_the_required_empty_attributes_structure_without_synthesizing_fields",
+        "crates/kmipkit-protocol/tests/unit/create_tests.rs::create_only_oasis_fixtures_decode_with_the_expected_fields"
+      ],
       "negative_verification_required": false,
       "decision_id": null,
       "status": "verified",
@@ -93775,7 +93848,7 @@
       "negative_verification_required": false,
       "decision_id": null,
       "status": "scoped_verified",
-      "review_note": "Pinned KMIP Specification v2.1 \u00a76.1.23, request payload row Usage Limits Count (HTML lines 28080-28097), records required_table_body_value. This source force is table-field semantics, not an RFC keyword. The typed request carries the exact Long Integer count, and the guard binds the caller-supplied exact positive count and open unit to the successful response's resolved identifier. This scoped verification is not a full profile conformance claim. No requirement-specific official Test Cases are linked to this source row in the pinned OASIS test inventory."
+      "review_note": "Pinned KMIP Specification v2.1 §6.1.23, request payload row Usage Limits Count (HTML lines 28080-28097), records required_table_body_value. This source force is table-field semantics, not an RFC keyword. The typed request carries the exact Long Integer count, and the guard binds the caller-supplied exact positive count and open unit to the successful response's resolved identifier. This scoped verification is not a full profile conformance claim. No requirement-specific official Test Cases are linked to this source row in the pinned OASIS test inventory."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.23-002-002",
@@ -127502,8 +127575,8 @@
       ],
       "element_ids": [],
       "raw_href": "test-cases/kmip-v2.1/mandatory/BL-M-1-21.xml",
-      "fixture_path": null,
-      "fixture_availability": "unavailable",
+      "fixture_path": "specification/oasis/kmip-2.1/fixtures/BL-M-1-21.xml",
+      "fixture_availability": "available",
       "mapping_confidence": "explicit"
     },
     {
@@ -127555,8 +127628,8 @@
       ],
       "element_ids": [],
       "raw_href": "test-cases/kmip-v2.1/mandatory/BL-M-2-21.xml",
-      "fixture_path": null,
-      "fixture_availability": "unavailable",
+      "fixture_path": "specification/oasis/kmip-2.1/fixtures/BL-M-2-21.xml",
+      "fixture_availability": "available",
       "mapping_confidence": "explicit"
     },
     {
@@ -127608,8 +127681,8 @@
       ],
       "element_ids": [],
       "raw_href": "test-cases/kmip-v2.1/mandatory/BL-M-3-21.xml",
-      "fixture_path": null,
-      "fixture_availability": "unavailable",
+      "fixture_path": "specification/oasis/kmip-2.1/fixtures/BL-M-3-21.xml",
+      "fixture_availability": "available",
       "mapping_confidence": "explicit"
     },
     {
@@ -127661,8 +127734,8 @@
       ],
       "element_ids": [],
       "raw_href": "test-cases/kmip-v2.1/mandatory/BL-M-4-21.xml",
-      "fixture_path": null,
-      "fixture_availability": "unavailable",
+      "fixture_path": "specification/oasis/kmip-2.1/fixtures/BL-M-4-21.xml",
+      "fixture_availability": "available",
       "mapping_confidence": "explicit"
     },
     {
@@ -127714,8 +127787,8 @@
       ],
       "element_ids": [],
       "raw_href": "test-cases/kmip-v2.1/mandatory/BL-M-5-21.xml",
-      "fixture_path": null,
-      "fixture_availability": "unavailable",
+      "fixture_path": "specification/oasis/kmip-2.1/fixtures/BL-M-5-21.xml",
+      "fixture_availability": "available",
       "mapping_confidence": "explicit"
     },
     {
@@ -127767,8 +127840,8 @@
       ],
       "element_ids": [],
       "raw_href": "test-cases/kmip-v2.1/mandatory/BL-M-6-21.xml",
-      "fixture_path": null,
-      "fixture_availability": "unavailable",
+      "fixture_path": "specification/oasis/kmip-2.1/fixtures/BL-M-6-21.xml",
+      "fixture_availability": "available",
       "mapping_confidence": "explicit"
     },
     {
@@ -127820,8 +127893,8 @@
       ],
       "element_ids": [],
       "raw_href": "test-cases/kmip-v2.1/mandatory/BL-M-7-21.xml",
-      "fixture_path": null,
-      "fixture_availability": "unavailable",
+      "fixture_path": "specification/oasis/kmip-2.1/fixtures/BL-M-7-21.xml",
+      "fixture_availability": "available",
       "mapping_confidence": "explicit"
     },
     {
@@ -127873,8 +127946,8 @@
       ],
       "element_ids": [],
       "raw_href": "test-cases/kmip-v2.1/mandatory/BL-M-8-21.xml",
-      "fixture_path": null,
-      "fixture_availability": "unavailable",
+      "fixture_path": "specification/oasis/kmip-2.1/fixtures/BL-M-8-21.xml",
+      "fixture_availability": "available",
       "mapping_confidence": "explicit"
     },
     {
@@ -127926,8 +127999,8 @@
       ],
       "element_ids": [],
       "raw_href": "test-cases/kmip-v2.1/mandatory/BL-M-9-21.xml",
-      "fixture_path": null,
-      "fixture_availability": "unavailable",
+      "fixture_path": "specification/oasis/kmip-2.1/fixtures/BL-M-9-21.xml",
+      "fixture_availability": "available",
       "mapping_confidence": "explicit"
     },
     {
@@ -127979,8 +128052,8 @@
       ],
       "element_ids": [],
       "raw_href": "test-cases/kmip-v2.1/mandatory/BL-M-10-21.xml",
-      "fixture_path": null,
-      "fixture_availability": "unavailable",
+      "fixture_path": "specification/oasis/kmip-2.1/fixtures/BL-M-10-21.xml",
+      "fixture_availability": "available",
       "mapping_confidence": "explicit"
     },
     {
@@ -128032,8 +128105,8 @@
       ],
       "element_ids": [],
       "raw_href": "test-cases/kmip-v2.1/mandatory/BL-M-11-21.xml",
-      "fixture_path": null,
-      "fixture_availability": "unavailable",
+      "fixture_path": "specification/oasis/kmip-2.1/fixtures/BL-M-11-21.xml",
+      "fixture_availability": "available",
       "mapping_confidence": "explicit"
     },
     {
@@ -128085,8 +128158,8 @@
       ],
       "element_ids": [],
       "raw_href": "test-cases/kmip-v2.1/mandatory/BL-M-12-21.xml",
-      "fixture_path": null,
-      "fixture_availability": "unavailable",
+      "fixture_path": "specification/oasis/kmip-2.1/fixtures/BL-M-12-21.xml",
+      "fixture_availability": "available",
       "mapping_confidence": "explicit"
     },
     {
@@ -128138,8 +128211,8 @@
       ],
       "element_ids": [],
       "raw_href": "test-cases/kmip-v2.1/mandatory/BL-M-13-21.xml",
-      "fixture_path": null,
-      "fixture_availability": "unavailable",
+      "fixture_path": "specification/oasis/kmip-2.1/fixtures/BL-M-13-21.xml",
+      "fixture_availability": "available",
       "mapping_confidence": "explicit"
     },
     {
@@ -128300,8 +128373,8 @@
       ],
       "element_ids": [],
       "raw_href": "test-cases/kmip-v2.1/mandatory/SKLC-M-1-21.xml",
-      "fixture_path": null,
-      "fixture_availability": "unavailable",
+      "fixture_path": "specification/oasis/kmip-2.1/fixtures/SKLC-M-1-21.xml",
+      "fixture_availability": "available",
       "mapping_confidence": "explicit"
     },
     {
@@ -128354,8 +128427,8 @@
       ],
       "element_ids": [],
       "raw_href": "test-cases/kmip-v2.1/mandatory/SKLC-M-2-21.xml",
-      "fixture_path": null,
-      "fixture_availability": "unavailable",
+      "fixture_path": "specification/oasis/kmip-2.1/fixtures/SKLC-M-2-21.xml",
+      "fixture_availability": "available",
       "mapping_confidence": "explicit"
     },
     {
@@ -128408,8 +128481,8 @@
       ],
       "element_ids": [],
       "raw_href": "test-cases/kmip-v2.1/mandatory/SKLC-M-3-21.xml",
-      "fixture_path": null,
-      "fixture_availability": "unavailable",
+      "fixture_path": "specification/oasis/kmip-2.1/fixtures/SKLC-M-3-21.xml",
+      "fixture_availability": "available",
       "mapping_confidence": "explicit"
     },
     {
@@ -133117,7 +133190,7 @@
     },
     {
       "discrepancy_id": "KMIPKIT-DISC-036",
-      "summary": "199 of 203 referenced XML fixtures are absent from the pinned source tree",
+      "summary": "180 of 203 linked XML fixtures remain absent from the pinned source tree",
       "source_refs": [
         {
           "source_id": "KMIPKIT-SRC-profiles",
@@ -133132,13 +133205,13 @@
       "normative_status": "evidence_gap",
       "alternatives": [
         "The OASIS documents publish fixture identifiers and canonical links separately from the HTML documents.",
-        "The local fixture set remains incomplete; additional linked cases may be available from the canonical OASIS URLs."
+        "The local pinned set now includes 23 exact official fixtures; the remaining 180 linked cases are absent and may be available from their canonical OASIS URLs."
       ],
       "affected_requirement_ids": [],
       "affected_element_ids": [],
       "affected_profile_ids": [],
       "affected_policy_ids": [],
-      "downstream_impact": "Fixture-level assertions and reproducible conformance evidence are available only for the checked-in XML files; the 199 absent fixtures remain unavailable in local checks.",
+      "downstream_impact": "Fixture-level assertions and reproducible conformance evidence are available only for the 23 checked-in XML files; the 180 absent fixtures remain unavailable in local checks, and pinned fixtures are not passed until their complete official cases are executed.",
       "state": "open",
       "decision_id": null,
       "erratum_source_refs": []
