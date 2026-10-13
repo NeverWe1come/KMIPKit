@@ -10309,6 +10309,14 @@
       "cValue": 6,
       "javaException": "org.kmipkit.ResourceLimitException",
       "pythonException": "kmipkit.errors.ResourceLimitError"
+    },
+    {
+      "id": "internal",
+      "rustVariant": "Other",
+      "cCode": "KMIPKIT_ERROR_INTERNAL",
+      "cValue": 7,
+      "javaException": "org.kmipkit.KmipException",
+      "pythonException": "kmipkit.errors.KmipKitError"
     }
   ],
   "limits": [
@@ -23467,14 +23475,37 @@
       "packageId": "python-kmipkit",
       "kind": "type",
       "exportName": "kmipkit.errors.KmipKitError",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "ffi_runtime_metadata",
       "requirementIds": [
-        "KMIPKIT-0043-FR-021"
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-013"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "This public base exception has no explicit approved owner mapping in the current API inventory."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit",
+          "name": "kmipkit::ClientCauseCategory::Other"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "KMIPKIT_ERROR_INTERNAL"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.KmipException"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.errors.KmipKitError"
+        }
+      }
     },
     {
       "declarationId": "python-raise-for-status",
@@ -27446,14 +27477,37 @@
       "packageId": "java-kmipkit",
       "kind": "type",
       "exportName": "org.kmipkit.KmipException",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "ffi_runtime_metadata",
       "requirementIds": [
-        "KMIPKIT-0043-FR-021"
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-013"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit",
+          "name": "kmipkit::ClientCauseCategory::Other"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "KMIPKIT_ERROR_INTERNAL"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.KmipException"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.errors.KmipKitError"
+        }
+      }
     },
     {
       "declarationId": "java-observed-98e651f58bd4a1934fb4",
@@ -53223,14 +53277,37 @@
       "packageId": "rust-kmipkit",
       "kind": "type",
       "exportName": "kmipkit::ClientCauseCategory",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "ffi_runtime_metadata",
       "requirementIds": [
-        "KMIPKIT-0043-FR-021"
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-013"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0007",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit",
+          "name": "kmipkit::ClientCauseCategory::Other"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "KMIPKIT_ERROR_INTERNAL"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.KmipException"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.errors.KmipKitError"
+        }
+      }
     },
     {
       "declarationId": "rust-observed-d0793dd569b9e06c5c4a",
@@ -55155,14 +55232,37 @@
       "packageId": "rust-kmipkit",
       "kind": "variant",
       "exportName": "kmipkit::ClientCauseCategory::Other",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "ffi_runtime_metadata",
       "requirementIds": [
-        "KMIPKIT-0043-FR-021"
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-013"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0007",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit",
+          "name": "kmipkit::ClientCauseCategory::Other"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "KMIPKIT_ERROR_INTERNAL"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.KmipException"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.errors.KmipKitError"
+        }
+      }
     },
     {
       "declarationId": "rust-observed-d920e63cf46a9fff454e",
@@ -58178,6 +58278,43 @@
         "python": {
           "packageId": "python-kmipkit",
           "name": "kmipkit.errors.ResourceLimitError"
+        }
+      }
+    },
+    {
+      "declarationId": "KMIPKIT_ERROR_INTERNAL:c",
+      "packageId": "c-kmipkit",
+      "kind": "constant",
+      "exportName": "KMIPKIT_ERROR_INTERNAL",
+      "capabilityId": "ffi_runtime_metadata",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-013"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit",
+          "name": "kmipkit::ClientCauseCategory::Other"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "KMIPKIT_ERROR_INTERNAL"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.KmipException"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.errors.KmipKitError"
         }
       }
     },
@@ -202837,6 +202974,8 @@
       "mappings": {
         "rust": [
           "kmipkit::ABI_VERSION",
+          "kmipkit::ClientCauseCategory",
+          "kmipkit::ClientCauseCategory::Other",
           "kmipkit::RuntimeMetadataError",
           "kmipkit::RuntimeMetadataError::ResourceLimit",
           "kmipkit::RuntimeVersion",
@@ -202847,11 +202986,13 @@
           "kmipkit::runtime_version"
         ],
         "c": [
+          "KMIPKIT_ERROR_INTERNAL",
           "KMIPKIT_ERROR_RESOURCE_LIMIT",
           "kmipkit_capability_is_available",
           "kmipkit_version_get"
         ],
         "java": [
+          "org.kmipkit.KmipException",
           "org.kmipkit.ResourceLimitException",
           "org.kmipkit.RuntimeMetadata.Version",
           "org.kmipkit.RuntimeMetadata.Version.abiVersion",
@@ -202859,6 +203000,7 @@
           "org.kmipkit.RuntimeMetadata.version"
         ],
         "python": [
+          "kmipkit.errors.KmipKitError",
           "kmipkit.errors.ResourceLimitError",
           "kmipkit.metadata.Version",
           "kmipkit.metadata.Version.abi_version",

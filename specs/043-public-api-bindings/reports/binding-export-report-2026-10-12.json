@@ -4,14 +4,14 @@
     {
       "complete": true,
       "counts": {
-        "exactMatches": 177,
+        "exactMatches": 178,
         "kindMismatches": 0,
-        "manifest": 177,
-        "matched": 177,
+        "manifest": 178,
+        "matched": 178,
         "missingFromManifest": 0,
         "notObserved": 0,
-        "observed": 181,
-        "pathMatches": 177
+        "observed": 182,
+        "pathMatches": 178
       },
       "issues": [],
       "kindMismatches": [],

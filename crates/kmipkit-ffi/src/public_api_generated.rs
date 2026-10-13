@@ -618,6 +618,16 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "rust-kmipkit-client",
         "kmipkit_client::ClientBatchItem",
     ),
+    (
+        "rust-observed-7f53123e4e90c5cfa9fe",
+        "rust-kmipkit",
+        "kmipkit::ClientCauseCategory::Other",
+    ),
+    (
+        "rust-observed-29383d8d0499ca959dc8",
+        "rust-kmipkit",
+        "kmipkit::ClientCauseCategory::Other",
+    ),
     ("kmipkit.VERSION:rust", "rust-kmipkit", "kmipkit::VERSION"),
     (
         "kmipkit.capability_is_available:rust",

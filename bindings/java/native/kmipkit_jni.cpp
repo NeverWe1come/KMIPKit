@@ -56,6 +56,9 @@ void throw_status(JNIEnv* env, int32_t status) noexcept {
         throw_java(env, "org/kmipkit/ResourceLimitException",
                    "configured resource limit was exceeded");
         break;
+    case KMIPKIT_ERROR_INTERNAL:
+        throw_java(env, "org/kmipkit/KmipException", "native operation failed");
+        break;
     default:
         throw_java(env, "org/kmipkit/KmipException", "native operation failed");
         break;

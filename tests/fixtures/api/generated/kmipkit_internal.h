@@ -119,6 +119,7 @@ void kmipkit_ttlv_value_view_release(kmipkit_ttlv_value_view_t *handle);
 #define KMIPKIT_ERROR_INVALID_INPUT ((int32_t)4)
 #define KMIPKIT_ERROR_INVALID_SCHEMA ((int32_t)5)
 #define KMIPKIT_ERROR_RESOURCE_LIMIT ((int32_t)6)
+#define KMIPKIT_ERROR_INTERNAL ((int32_t)7)
 
 /* KMIPKIT-0012-FR-002, KMIPKIT-0012-FR-010, KMIPKIT-0012-FR-012 */
 int32_t kmipkit_extension_identity_create(const uint8_t * vendor_identifier_data, uint64_t vendor_identifier_length, const uint8_t * name_data, uint64_t name_length, const uint8_t * version_data, uint64_t version_length, kmipkit_extension_identity_t ** out_identity);

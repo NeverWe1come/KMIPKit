@@ -64,6 +64,14 @@ def test_capability_query_rejects_non_string_identifiers(
         metadata.capability_is_available(capability_id)  # type: ignore[arg-type]
 
 
+def test_internal_status_raises_redacted_generic_error() -> None:
+    with pytest.raises(errors.KmipKitError) as raised:
+        errors.raise_for_status(7)
+
+    assert type(raised.value) is errors.KmipKitError
+    assert str(raised.value) == "KMIPKit operation failed (kmipkit_error)"
+
+
 def test_error_snapshot_is_safe_non_destructive_and_explicitly_clearable() -> None:
     metadata._clear_last_error()
     with pytest.raises(errors.ResourceLimitError):

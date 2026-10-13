@@ -238448,7 +238448,7 @@
         "kmipkit::ClientCauseCategory",
         "kmipkit_client::ClientCauseCategory"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "exportLocations": [
         {
           "column": 26,
@@ -238494,7 +238494,7 @@
         "kmipkit::ClientCauseCategory::Other",
         "kmipkit_client::ClientCauseCategory::Other"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "exportLocations": [
         {
           "column": 26,

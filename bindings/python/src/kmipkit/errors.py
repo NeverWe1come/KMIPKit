@@ -55,6 +55,7 @@ _ERROR_TYPES: dict[int, type[KmipKitError]] = {
     4: InvalidInputError,
     5: InvalidExtensionSchemaError,
     6: ResourceLimitError,
+    7: KmipKitError,
 }
 
 

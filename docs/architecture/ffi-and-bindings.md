@@ -42,7 +42,13 @@ exposed by the C surface are `0` none, `1` invalid input, and `10` other. The
 delivery value `0` means no KMIP request delivery information is attached;
 the current C surface does not execute client requests. Status values remain
 the existing `KMIPKIT_ERROR_*` codes and are independent from category/cause
-values. Snapshots contain no source strings or request payloads.
+values. `KMIPKIT_ERROR_INTERNAL` (`7`) is the fixed fallback when a Rust panic
+is caught at an exported boundary; its snapshot uses category `5` (other),
+cause `10` (other), and delivery `0` (none). Bindings map it to their generic
+base exception types. The returned status and snapshot do not contain the panic
+payload. KMIPKit does not change Rust’s process-wide panic hook; an embedder’s
+hook may observe panic details, so KMIPKit panic messages must never include
+secrets. Snapshots contain no source strings or request payloads.
 
 ## Memory ownership
 

@@ -34,6 +34,7 @@
 #define INVALID_INPUT_PTR ((const uint8_t *)(uintptr_t)1)
 
 _Static_assert(sizeof(uint64_t) == 8, "the C ABI requires 64-bit byte lengths");
+_Static_assert(KMIPKIT_ERROR_INTERNAL == INT32_C(7), "internal errors keep their stable status");
 
 #define REQUIRE(condition)                                                        \
     do {                                                                          \

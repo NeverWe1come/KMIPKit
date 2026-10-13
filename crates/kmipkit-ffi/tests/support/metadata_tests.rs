@@ -294,6 +294,23 @@ fn legacy_limits_validator_records_its_error_in_the_shared_snapshot() {
 }
 
 #[test]
+fn panic_boundary_records_internal_error_for_void_exports() {
+    kmipkit_last_error_clear();
+
+    ffi_entrypoint(|| -> () { std::panic::panic_any(()) });
+
+    assert_eq!(
+        read_last_error(),
+        (
+            ERROR_INTERNAL,
+            ERROR_CATEGORY_OTHER,
+            ERROR_CAUSE_OTHER,
+            DELIVERY_NONE
+        )
+    );
+}
+
+#[test]
 fn every_exported_c_function_starts_inside_the_shared_panic_boundary() {
     let source = include_str!("../../src/extension_registry.rs");
     let exports: Vec<bool> = source
@@ -305,7 +322,7 @@ fn every_exported_c_function_starts_inside_the_shared_panic_boundary() {
             Some(
                 function[body_start + 1..]
                     .trim_start()
-                    .starts_with("ffi_entrypoint(|| {"),
+                    .starts_with("ffi_entrypoint(||"),
             )
         })
         .collect();

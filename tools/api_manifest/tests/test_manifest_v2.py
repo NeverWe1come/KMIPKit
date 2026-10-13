@@ -345,6 +345,9 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
                     )
                     expected_batch_item_type["java"]["package"] = batch_item_type["java"]["package"]
                     expected_batch_item_type["python"]["module"] = batch_item_type["python"]["module"]
+                elif field == "errorCategories":
+                    actual = [row for row in manifest[field] if row["id"] != "internal"]
+                    expected = registry[field]
                 else:
                     actual = manifest[field]
                     expected = registry[field]
@@ -513,7 +516,6 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
             "kmipkit.extensions.with_extension",
             "org.kmipkit.NativeExtensionRegistry",
             "org.kmipkit.generated.ExtensionRegistryApi",
-            "kmipkit.errors.KmipKitError",
             "kmipkit.errors.raise_for_status",
         ):
             with self.subTest(export_name=export_name):
@@ -522,6 +524,14 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
                 self.assertIn("candidateSpecId", declaration)
                 self.assertIn("blockedReason", declaration)
                 self.assertNotIn("languageMappings", declaration)
+        generic_python_error = declarations["kmipkit.errors.KmipKitError"]
+        self.assertEqual(generic_python_error["declarationState"], "declared")
+        self.assertEqual(generic_python_error["capabilityId"], "ffi_runtime_metadata")
+        self.assertIn("languageMappings", generic_python_error)
+        generic_java_error = declarations["org.kmipkit.KmipException"]
+        self.assertEqual(generic_java_error["declarationState"], "declared")
+        self.assertEqual(generic_java_error["capabilityId"], "ffi_runtime_metadata")
+        self.assertIn("languageMappings", generic_java_error)
         batch_item = declarations["kmipkit.extensions.ClientBatchItem"]
         self.assertEqual(batch_item["declarationState"], "declared")
         self.assertIn("languageMappings", batch_item)
