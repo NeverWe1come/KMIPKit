@@ -207332,7 +207332,7 @@
     {
       "declarationId": "T076:client_batch_response_item_count:python",
       "packageId": "python-kmipkit",
-      "kind": "python-export",
+      "kind": "field",
       "exportName": "kmipkit.client.BatchResult.items",
       "capabilityId": "client_execution",
       "requirementIds": [
@@ -207458,7 +207458,7 @@
     {
       "declarationId": "T076:client_batch_item_response_unique_batch_item_id:python",
       "packageId": "python-kmipkit",
-      "kind": "python-export",
+      "kind": "field",
       "exportName": "kmipkit.client.BatchItemResult.unique_batch_item_id",
       "capabilityId": "client_execution",
       "requirementIds": [
@@ -207542,7 +207542,7 @@
     {
       "declarationId": "T076:client_batch_item_response_pending_correlation_value:python",
       "packageId": "python-kmipkit",
-      "kind": "python-export",
+      "kind": "field",
       "exportName": "kmipkit.client.BatchItemResult.pending_correlation_value",
       "capabilityId": "client_execution",
       "requirementIds": [
@@ -210430,6 +210430,18 @@
           }
         ]
       }
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.errors.ClientExecutionError.args",
+      "reason": "This exact attribute is inherited from Python's standard `BaseException` and stores positional exception-constructor arguments. It is language runtime boilerplate, not a separate KMIPKit error category or delivery capability; the shared error contract is represented by status, client_category, cause, and delivery.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed as the exact inherited `BaseException.args` attribute under KMIPKIT-0043-FR-021; the shared taxonomy and delivery semantics are specified by KMIPKIT-0007-FR-013."
     }
   ],
   "apiLevels": [

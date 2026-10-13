@@ -699,6 +699,18 @@
       "exportName": "kmipkit_client_batch_item_metadata_v1_t",
       "packageId": "c-kmipkit",
       "reason": "This exact versioned struct is a C ABI value carrier for common batch-result metadata. Rust returns its typed outcome/result values, while Java and Python expose copied scalar fields through `ClientBatchItemResult` and `BatchItemResult`; their adapters translate this record at the native boundary."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed as the exact inherited `BaseException.args` attribute under KMIPKIT-0043-FR-021; the shared taxonomy and delivery semantics are specified by KMIPKIT-0007-FR-013.",
+      "exportName": "kmipkit.errors.ClientExecutionError.args",
+      "packageId": "python-kmipkit",
+      "reason": "This exact attribute is inherited from Python's standard `BaseException` and stores positional exception-constructor arguments. It is language runtime boilerplate, not a separate KMIPKit error category or delivery capability; the shared error contract is represented by status, client_category, cause, and delivery."
     }
   ],
   "capabilities": [
@@ -36744,7 +36756,7 @@
       "declarationId": "T076:client_batch_response_item_count:python",
       "declarationState": "declared",
       "exportName": "kmipkit.client.BatchResult.items",
-      "kind": "python-export",
+      "kind": "field",
       "languageMappings": {
         "c": {
           "name": "kmipkit_client_batch_response_item_at",
@@ -36870,7 +36882,7 @@
       "declarationId": "T076:client_batch_item_response_unique_batch_item_id:python",
       "declarationState": "declared",
       "exportName": "kmipkit.client.BatchItemResult.unique_batch_item_id",
-      "kind": "python-export",
+      "kind": "field",
       "languageMappings": {
         "c": {
           "name": "kmipkit_client_batch_item_response_unique_batch_item_id",
@@ -36954,7 +36966,7 @@
       "declarationId": "T076:client_batch_item_response_pending_correlation_value:python",
       "declarationState": "declared",
       "exportName": "kmipkit.client.BatchItemResult.pending_correlation_value",
-      "kind": "python-export",
+      "kind": "field",
       "languageMappings": {
         "c": {
           "name": "kmipkit_client_batch_item_response_pending_correlation_value",
