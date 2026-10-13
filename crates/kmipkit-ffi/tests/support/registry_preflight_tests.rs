@@ -3,6 +3,58 @@ use super::*;
 #[path = "invariant_guard_tests.rs"]
 mod invariant_guard_tests;
 
+#[test]
+fn register_request_create_consumes_every_input_when_attributes_have_a_live_view() {
+    let attributes: *mut kmipkit_ttlv_structure_t = make_handle(
+        Kind::Structure,
+        HandleValue::Structure(Structure::new()),
+    );
+    let mut attributes_view = ptr::null_mut();
+    assert_eq!(
+        kmipkit_ttlv_structure_view(
+            attributes,
+            &raw mut attributes_view,
+        ),
+        SUCCESS
+    );
+
+    let object_tag = RawTag::new(0x0042_005B)
+        .expect("Opaque Object tag is representable")
+        .try_checked()
+        .expect("Opaque Object tag is assigned");
+    let object: *mut kmipkit_ttlv_item_t = make_handle(
+        Kind::Item,
+        HandleValue::Item(
+            Item::new(object_tag, Value::structure(Structure::new()))
+                .expect("empty Opaque Object structure is representable"),
+        ),
+    );
+    let object_witness = clone_handle_owner(object, Kind::Item)
+        .expect("object witness clones the live native owner");
+    assert_eq!(Arc::strong_count(&object_witness), 2);
+
+    let mut request = ptr::null_mut();
+    assert_eq!(
+        kmipkit_register_request_create(
+            8,
+            attributes,
+            object,
+            &raw mut request,
+        ),
+        ERROR_INVALID_INPUT,
+        "the live Structure view prevents exclusive payload consumption"
+    );
+    assert!(request.is_null());
+    assert_eq!(
+        Arc::strong_count(&object_witness),
+        1,
+        "the second consumed input is released even when the first unwrap fails"
+    );
+
+    kmipkit_ttlv_structure_view_release(attributes_view);
+    drop(object_witness);
+}
+
 fn definition_handle() -> *mut kmipkit_extension_definition_t {
     let tag = RawTag::new(0x0042_0001)
         .expect("tag is representable")
