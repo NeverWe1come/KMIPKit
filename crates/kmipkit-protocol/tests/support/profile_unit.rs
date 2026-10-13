@@ -1423,7 +1423,7 @@ fn passing_evaluator_is_safe_for_absent_and_present_exchange_contexts() {
 }
 
 fn secret_data_import_request(
-    key_value: &[u8],
+    key_value: Value,
     wrapping_data: Option<Value>,
 ) -> crate::RequestMessage {
     const IMPORT_OPERATION: u32 = 0x0000_002A;
@@ -1439,7 +1439,7 @@ fn secret_data_import_request(
 
     let mut key_block_fields = vec![
         tagged(KEY_FORMAT_TYPE, Value::enumeration(1)),
-        tagged(KEY_VALUE, Value::byte_string(key_value.to_vec())),
+        tagged(KEY_VALUE, key_value),
     ];
     if let Some(wrapping_data) = wrapping_data {
         key_block_fields.push(tagged(KEY_WRAPPING_DATA, wrapping_data));
@@ -1494,7 +1494,7 @@ fn profile_maps_client_import_of_wrapped_secret_data() {
         requirement_ids: vec![REQUIREMENT_ID.to_owned()],
     };
     let wrapped_secret_data = secret_data_import_request(
-        b"synthetic-wrapped-secret-data",
+        Value::byte_string(b"synthetic-wrapped-secret-data".to_vec()),
         Some(valid_secret_data_wrapping()),
     );
 
@@ -1502,13 +1502,33 @@ fn profile_maps_client_import_of_wrapped_secret_data() {
         .validate_request(&wrapped_secret_data)
         .expect("the selected profile accepts a wrapped Secret Data Import request");
 
-    let unwrapped_secret_data = secret_data_import_request(b"synthetic-secret-data", None);
+    let unwrapped_secret_data =
+        secret_data_import_request(Value::structure(Structure::new()), None);
     result.validate_request(&unwrapped_secret_data).expect(
         "the optional wrapping capability does not require every Secret Data value to be wrapped",
     );
 
-    let malformed_wrapping_data =
-        secret_data_import_request(b"synthetic-wrapped-secret-data", Some(Value::integer(1)));
+    let invalid_unwrapped_secret_data = secret_data_import_request(
+        Value::byte_string(b"synthetic-plaintext-secret-data".to_vec()),
+        None,
+    );
+    let error = result
+        .validate_request(&invalid_unwrapped_secret_data)
+        .expect_err("plaintext Key Value must use its Structure encoding");
+    assert_eq!(
+        error.code(),
+        ProfileValidationErrorCode::RequestRuleRejected
+    );
+    assert_eq!(error.requirement_id(), Some(REQUIREMENT_ID));
+    assert_eq!(
+        error.source_clause_id(),
+        Some("KMIPKIT-CLAUSE-SPEC-2.7-001")
+    );
+
+    let malformed_wrapping_data = secret_data_import_request(
+        Value::byte_string(b"synthetic-wrapped-secret-data".to_vec()),
+        Some(Value::integer(1)),
+    );
     let error = result
         .validate_request(&malformed_wrapping_data)
         .expect_err("present Key Wrapping Data must keep its structure type");
