@@ -52,14 +52,16 @@ class SourceScanResult:
         self.complete = complete
 
 
-# JaCoCo omits these package-info sources because they carry only @NullMarked
-# package metadata and produce no executable lines. Keep one path inventory for
-# both source eligibility and JaCoCo parsing so the gate applies the exclusion
-# consistently without weakening coverage for executable Java sources.
+# JaCoCo omits generated manifest metadata classes and these package-info
+# sources, which carry only @NullMarked package metadata and have no executable
+# lines. Keep one path inventory for source eligibility and JaCoCo parsing so
+# the gate excludes metadata without weakening executable-source coverage.
 _JAVA_METADATA_ONLY_SOURCE_EXCLUSIONS = frozenset(
     {
+        # Generated API manifests contain metadata, not handwritten behavior.
         "bindings/java/src/main/java/org/kmipkit/generated/ExtensionRegistryApi.java",
         "bindings/java/src/main/java/org/kmipkit/generated/PublicApi.java",
+        # These package declarations only apply the NullMarked default.
         "bindings/java/src/main/java/org/kmipkit/package-info.java",
         "bindings/java/src/main/java/org/kmipkit/internal/package-info.java",
         "bindings/java/src/main/java/org/kmipkit/ttlv/package-info.java",
