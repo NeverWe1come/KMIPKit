@@ -88094,7 +88094,8 @@
       ],
       "verification_refs": [
         "crates/kmipkit-client/tests/unit/create_key_pair_execution_tests.rs::create_key_pair_sends_client_supplied_dsa_domain_parameter_qlength",
-        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_client_supplied_create_key_pair_domain_parameters"
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_client_supplied_create_key_pair_domain_parameters",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_non_integer_q_length_in_client_supplied_domain_parameters"
       ],
       "negative_verification_required": false,
       "decision_id": null,
