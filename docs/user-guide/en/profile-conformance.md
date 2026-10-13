@@ -2,8 +2,9 @@
 
 This guide explains how to read KMIPKit's client profile evidence and use its
 explicit profile-validation entry point. Runtime selection fails closed today:
-the typed profile rule registry is empty, so no profile is yet available for a
-successful exchange.
+the typed-rule registry contains a mapping for Wrapped Secret Data under §2.7,
+but Baseline still lacks complete applicable rule and test coverage, so no
+profile is yet available for a successful exchange.
 
 ## Explicit per-exchange selection
 

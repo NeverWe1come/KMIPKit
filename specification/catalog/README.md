@@ -62,8 +62,10 @@ never publishes a profile claim.
 Baseline Client is the selected initial 1.0 target and currently has
 `claim_state: evidence_incomplete`. Its 16 mandatory official fixture records
 are unavailable in the pinned tree, remain visible as blockers, and are not
-counted as passed. The production typed-rule registry is also empty, so no
-profile can currently be selected for runtime validation.
+counted as passed. The typed-rule registry is not empty: it includes a
+mapping for Wrapped Secret Data under KMIPKIT-REQ-SPEC-2.7-001. Baseline still
+has unresolved applicable rule and evidence gaps, so it fails closed and
+cannot complete a selected runtime validation.
 
 Readiness may accept test results only from a strict, ephemeral manifest made
 by the final aggregate job during a push to protected `release/1.0.0`. The

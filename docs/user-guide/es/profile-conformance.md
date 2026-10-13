@@ -2,8 +2,10 @@
 
 Esta guía explica cómo leer la evidencia de los perfiles cliente de KMIPKit y
 usar su punto de entrada explícito de validación. La selección en tiempo de
-ejecución falla de forma cerrada por ahora: el registro tipado de reglas está
-vacío, así que ningún perfil puede completar todavía un intercambio validado.
+ejecución falla de forma cerrada por ahora: el registro tipado incluye una
+regla para Wrapped Secret Data según §2.7, pero Baseline aún no tiene la
+cobertura completa de reglas y pruebas aplicables para completar un intercambio
+validado.
 
 ## Selección explícita por intercambio
 

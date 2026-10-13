@@ -106,9 +106,11 @@ Use the following stages independently:
    A catalog state advances only after its required human review, and any
    public claim remains a separate reviewed release decision.
 
-Baseline remains ineligible while its 16 fixtures are unavailable, the
-production typed-rule registry is empty, and current protected-branch policy
-and app-token evidence have not been established. See the
+Baseline remains ineligible while its 16 fixtures are unavailable, its typed
+rules do not cover the complete applicable requirement and test set, and
+current protected-branch policy and app-token evidence have not been
+established. The registry includes a mapping for Wrapped Secret Data under
+KMIPKIT-REQ-SPEC-2.7-001. See the
 [KMIPKIT-0010 specification](../../specs/010-profile-conformance/spec.md) for
 its exact scope and acceptance criteria.
 
