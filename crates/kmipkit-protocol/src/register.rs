@@ -251,10 +251,6 @@ fn attributes_satisfy_register_requirements(
     attributes: &AttributeSet,
     object: &Item,
 ) -> bool {
-    let has_algorithm = has_attribute(attributes, CRYPTOGRAPHIC_ALGORITHM);
-    let has_length = has_attribute(attributes, CRYPTOGRAPHIC_LENGTH);
-    let has_usage_mask = has_attribute(attributes, CRYPTOGRAPHIC_USAGE_MASK);
-
     match object_type.raw() {
         // Certificate Length is required for a Certificate. Table 293 does
         // not apply the managed-cryptographic-object requirements to it.
@@ -265,24 +261,43 @@ fn attributes_satisfy_register_requirements(
         // Table 293 applies to managed cryptographic objects. Secret Data
         // still requires a Usage Mask, but Algorithm and Length do not apply.
         2 | 3 | 4 | 5 | 7 | 9 => {
-            if !has_usage_mask {
-                return false;
-            }
-            if object_type.raw() == 7 {
-                return true;
-            }
-            if has_algorithm != has_length {
-                return false;
-            }
-            has_algorithm
-                || (key_block_has(object, CRYPTOGRAPHIC_ALGORITHM)
-                    && key_block_has(object, CRYPTOGRAPHIC_LENGTH))
+            managed_crypto_attributes_satisfy_register_requirements(object_type, attributes, object)
         }
         // Table 293's certificate-specific signature algorithm may be omitted
         // when it is encoded in the supplied Certificate object. KMIPKit does
         // not parse certificate bytes locally.
         _ => true,
     }
+}
+
+fn managed_crypto_attributes_satisfy_register_requirements(
+    object_type: ObjectType,
+    attributes: &AttributeSet,
+    object: &Item,
+) -> bool {
+    if !has_attribute(attributes, CRYPTOGRAPHIC_USAGE_MASK) {
+        return false;
+    }
+    if object_type.raw() == 7 {
+        return true;
+    }
+
+    cryptographic_algorithm_and_length_satisfy_register_requirements(attributes, object)
+}
+
+fn cryptographic_algorithm_and_length_satisfy_register_requirements(
+    attributes: &AttributeSet,
+    object: &Item,
+) -> bool {
+    let has_algorithm = has_attribute(attributes, CRYPTOGRAPHIC_ALGORITHM);
+    let has_length = has_attribute(attributes, CRYPTOGRAPHIC_LENGTH);
+    if has_algorithm != has_length {
+        return false;
+    }
+
+    has_algorithm
+        || (key_block_has(object, CRYPTOGRAPHIC_ALGORITHM)
+            && key_block_has(object, CRYPTOGRAPHIC_LENGTH))
 }
 
 fn opaque_object_has_required_fields(object: &Item) -> bool {
@@ -295,26 +310,29 @@ fn opaque_object_has_required_fields(object: &Item) -> bool {
             return false;
         };
 
-        let mut has_data_type = false;
-        let mut has_data_value = false;
-        let fields_have_valid_types =
-            fields
-                .children()
-                .iter()
-                .all(|field| match field.tag().raw() {
-                    OPAQUE_DATA_TYPE => {
-                        has_data_type = true;
-                        field.with_value(|value| matches!(value, ValueView::Enumeration(_)))
-                    }
-                    OPAQUE_DATA_VALUE => {
-                        has_data_value = true;
-                        field.with_value(|value| matches!(value, ValueView::ByteString(_)))
-                    }
-                    _ => true,
-                });
-
-        fields_have_valid_types && has_data_type && has_data_value
+        opaque_object_fields_have_required_fields(&fields)
     })
+}
+
+fn opaque_object_fields_have_required_fields(fields: &StructureView<'_>) -> bool {
+    let mut has_data_type = false;
+    let mut has_data_value = false;
+    let fields_have_valid_types = fields
+        .children()
+        .iter()
+        .all(|field| match field.tag().raw() {
+            OPAQUE_DATA_TYPE => {
+                has_data_type = true;
+                field.with_value(|value| matches!(value, ValueView::Enumeration(_)))
+            }
+            OPAQUE_DATA_VALUE => {
+                has_data_value = true;
+                field.with_value(|value| matches!(value, ValueView::ByteString(_)))
+            }
+            _ => true,
+        });
+
+    fields_have_valid_types && has_data_type && has_data_value
 }
 
 fn has_attribute(attributes: &AttributeSet, raw_tag: u32) -> bool {
