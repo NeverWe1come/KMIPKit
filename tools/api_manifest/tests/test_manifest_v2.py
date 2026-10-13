@@ -1585,6 +1585,124 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
         self.assertFalse(declaration["additionalProperties"])
         self.assertFalse(exclusion["additionalProperties"])
 
+    def test_approved_c_exclusion_can_describe_an_abi_only_carrier_layout(self) -> None:
+        manifest = _valid_v2_manifest()
+        manifest["approvedExclusions"] = [
+            {
+                "packageId": "c-kmipkit",
+                "exportName": "kmipkit_example_v1_t",
+                "reason": "This fixed ABI carrier has no four-language facade value.",
+                "approvalSource": copy.deepcopy(
+                    self.checked_in_manifest["approvedExclusions"][0]["approvalSource"]
+                ),
+                "evidence": "The versioned C ABI uses this carrier at a native boundary.",
+                "cType": {
+                    "name": "kmipkit_example_v1_t",
+                    "kind": "fixed-width-value",
+                    "fields": [
+                        {"name": "struct_size", "type": "uint32_t"},
+                        {"name": "abi_version", "type": "uint32_t"},
+                        {"name": "data", "type": "const uint8_t *"},
+                        {"name": "length", "type": "uint64_t"},
+                    ],
+                },
+            }
+        ]
+
+        self.assertEqual(len(list(self.validator.iter_errors(manifest))), 0)
+
+        manifest["approvedExclusions"][0]["cType"]["fields"][0]["type"] = (
+            "uint32_t; injected"
+        )
+        self.assertGreater(len(list(self.validator.iter_errors(manifest))), 0)
+
+        manifest["approvedExclusions"][0]["cType"]["fields"][0]["type"] = "uint32_t"
+        manifest["approvedExclusions"][0]["packageId"] = "java-kmipkit"
+        self.assertGreater(len(list(self.validator.iter_errors(manifest))), 0)
+
+    def test_c_header_renders_approved_exclusion_carrier_layout(self) -> None:
+        def exclusion(name: str, fields: list[dict[str, str]]) -> dict[str, object]:
+            return {
+                "packageId": "c-kmipkit",
+                "exportName": name,
+                "reason": "This fixed ABI carrier has no four-language facade value.",
+                "approvalSource": {"kind": "feature-specification", "path": "unused"},
+                "evidence": "The versioned C ABI uses this carrier at a native boundary.",
+                "cType": {"name": name, "kind": "fixed-width-value", "fields": fields},
+            }
+
+        manifest = {
+            "formatVersion": 2,
+            "approvedExclusions": [
+                exclusion(
+                    "kmipkit_transport_config_v1_t",
+                    [
+                        {"name": "struct_size", "type": "uint32_t"},
+                        {"name": "abi_version", "type": "uint32_t"},
+                        {"name": "client_certificates", "type": "const kmipkit_transport_input_v1_t *"},
+                        {"name": "client_private_key", "type": "kmipkit_transport_input_v1_t"},
+                        {"name": "connect_timeout", "type": "kmipkit_timeout_limit_v1_t"},
+                    ],
+                ),
+                exclusion(
+                    "kmipkit_transport_input_v1_t",
+                    [
+                        {"name": "source_kind", "type": "uint32_t"},
+                        {"name": "encoding", "type": "uint32_t"},
+                        {"name": "data", "type": "kmipkit_byte_span_v1_t"},
+                    ],
+                ),
+                exclusion(
+                    "kmipkit_timeout_limit_v1_t",
+                    [
+                        {"name": "kind", "type": "uint32_t"},
+                        {"name": "reserved", "type": "uint32_t"},
+                        {"name": "seconds", "type": "uint64_t"},
+                    ],
+                ),
+                exclusion(
+                    "kmipkit_byte_span_v1_t",
+                    [
+                        {"name": "data", "type": "const uint8_t *"},
+                        {"name": "length", "type": "uint64_t"},
+                    ],
+                ),
+            ],
+            "publicDeclarations": [],
+            "types": [],
+            "limits": [],
+            "errorCategories": [],
+            "functions": [],
+        }
+
+        header = generate.render_c_header(manifest)
+
+        for name in (
+            "kmipkit_transport_config_v1_t",
+            "kmipkit_transport_input_v1_t",
+            "kmipkit_timeout_limit_v1_t",
+            "kmipkit_byte_span_v1_t",
+        ):
+            self.assertIn(f"typedef struct {name} {name};", header)
+        self.assertLess(
+            header.index("struct kmipkit_byte_span_v1_t {"),
+            header.index("struct kmipkit_transport_input_v1_t {"),
+        )
+        self.assertLess(
+            header.index("struct kmipkit_transport_input_v1_t {"),
+            header.index("struct kmipkit_transport_config_v1_t {"),
+        )
+        self.assertLess(
+            header.index("struct kmipkit_timeout_limit_v1_t {"),
+            header.index("struct kmipkit_transport_config_v1_t {"),
+        )
+        self.assertIn(
+            "    const kmipkit_transport_input_v1_t * client_certificates;", header
+        )
+        self.assertIn(
+            "    kmipkit_transport_input_v1_t client_private_key;", header
+        )
+
     def test_schema_rejects_identical_duplicate_declarations_and_exclusions(self) -> None:
         manifest = json.loads(json.dumps(self.checked_in_manifest))
         manifest["publicDeclarations"].append(
