@@ -1,5 +1,6 @@
 #include <jni.h>
 #include "kmipkit_internal.h"
+#include "client_batch_item_transfer_guard.hpp"
 #include "secure_bytes.hpp"
 
 #include <algorithm>
@@ -1251,7 +1252,16 @@ JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_clientBatchItem
 JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_clientBatchItemWithUniqueBatchItemId(
         JNIEnv* env, jclass, jlong raw_item, jbyteArray raw_id) {
     return guarded<jlong>(env, 0, [&] {
-        if (raw_item == 0 || raw_id == nullptr) {
+        if (raw_item == 0) {
+            throw_invalid_input(env);
+            return static_cast<jlong>(0);
+        }
+        kmipkit::jni::ClientBatchItemTransferGuard<
+                kmipkit_client_batch_item_t*,
+                decltype(&kmipkit_client_batch_item_release)> item_transfer(
+                        from_java_handle<kmipkit_client_batch_item_t>(raw_item),
+                        kmipkit_client_batch_item_release);
+        if (raw_id == nullptr) {
             throw_invalid_input(env);
             return static_cast<jlong>(0);
         }
@@ -1266,9 +1276,10 @@ JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_clientBatchItem
             env->GetByteArrayRegion(raw_id, 0, length, bytes.data());
             if (env->ExceptionCheck()) return static_cast<jlong>(0);
         }
+        kmipkit_client_batch_item_t* consumed_item = item_transfer.transfer_to_consumer();
         return return_handle<kmipkit_client_batch_item_t>(env, [&](auto output) {
             return kmipkit_client_batch_item_with_unique_batch_item_id(
-                    from_java_handle<kmipkit_client_batch_item_t>(raw_item),
+                    consumed_item,
                     reinterpret_cast<const uint8_t*>(bytes.data()),
                     static_cast<uint64_t>(bytes.size()), output);
         });
