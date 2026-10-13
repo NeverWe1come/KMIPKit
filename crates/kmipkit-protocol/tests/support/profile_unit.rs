@@ -501,6 +501,49 @@ fn profile_maps_client_supplied_create_key_pair_domain_parameters() {
 }
 
 #[test]
+fn profile_rejects_non_integer_q_length_in_client_supplied_domain_parameters() {
+    // KMIP Specification v2.1 §4.14, Table 55; KMIPKIT-REQ-SPEC-4.14-001-001.
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-4.14-001-001";
+    const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
+    const CREATE_KEY_PAIR_OPERATION: u32 = 0x0000_0002;
+    const COMMON_ATTRIBUTES: u32 = 0x0042_0126;
+    const CRYPTOGRAPHIC_ALGORITHM: u32 = 0x0042_0028;
+    const CRYPTOGRAPHIC_DOMAIN_PARAMETERS: u32 = 0x0042_0029;
+    const QLENGTH: u32 = 0x0042_0073;
+
+    let result = ProfileValidationResult {
+        profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
+        requirement_ids: vec![REQUIREMENT_ID.to_owned()],
+    };
+    let domain_parameters = structure([tagged(QLENGTH, Value::text_string("256".to_owned()))]);
+    let common_attributes = structure([
+        tagged(CRYPTOGRAPHIC_ALGORITHM, Value::enumeration(5)),
+        tagged(
+            CRYPTOGRAPHIC_DOMAIN_PARAMETERS,
+            Value::structure(domain_parameters),
+        ),
+    ]);
+    let payload = structure([tagged(
+        COMMON_ATTRIBUTES,
+        Value::structure(common_attributes),
+    )]);
+    let request = request_message_with_operation_payload(CREATE_KEY_PAIR_OPERATION, payload);
+
+    let error = result
+        .validate_request(&request)
+        .expect_err("Table 55 encodes Qlength as an Integer");
+    assert_eq!(
+        error.code(),
+        ProfileValidationErrorCode::RequestRuleRejected
+    );
+    assert_eq!(error.requirement_id(), Some(REQUIREMENT_ID));
+    assert_eq!(
+        error.source_clause_id(),
+        Some("KMIPKIT-CLAUSE-SPEC-4.14-001")
+    );
+}
+
+#[test]
 fn public_profile_result_entrypoints_validate_transport_and_responses() {
     // KMIP Specification v2.1 §14.1 and KMIP Profiles v2.1 §6.1; KMIPKIT-0010 FR-014.
     const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.16-001-001";
