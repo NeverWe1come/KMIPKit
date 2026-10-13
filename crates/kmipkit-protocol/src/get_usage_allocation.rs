@@ -1,7 +1,7 @@
 //! Typed KMIP 2.1 Get Usage Allocation request and response payloads.
 //!
 //! OASIS KMIP Specification v2.1 §6.1.23, Tables 232–234 defines the
-//! operation; §4.59, Table 148 defines Usage Limits Count as a Long Integer.
+//! operation; §7.40, Table 392 defines Usage Limits Count as a Long Integer.
 
 use std::{error::Error, fmt};
 
