@@ -30647,7 +30647,9 @@
       "direction": "both",
       "scope_state": "client_1_0",
       "parent_element_ids": [],
-      "requirement_ids": [],
+      "requirement_ids": [
+        "KMIPKIT-REQ-SPEC-5.3-002"
+      ],
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": null,
@@ -30667,7 +30669,9 @@
       "direction": "both",
       "scope_state": "client_1_0",
       "parent_element_ids": [],
-      "requirement_ids": [],
+      "requirement_ids": [
+        "KMIPKIT-REQ-SPEC-5.4-002"
+      ],
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": null,
@@ -90811,19 +90815,25 @@
       "subject": "Attributes from §4 Object Attributes",
       "summary": "The client may represent repeated §4 attributes in the Private Key Attributes structure.",
       "role": "client",
-      "direction": "unclear",
+      "direction": "client_to_server",
       "condition": null,
       "scope_state": "client_1_0",
-      "element_ids": [],
+      "element_ids": [
+        "KMIPKIT-ELEM-ATTRIBUTE-STRUCTURE-5-3-PRIVATE-KEY-ATTRIBUTES"
+      ],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0014",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/create_key_pair.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/create_key_pair_tests.rs::request_preserves_six_distinct_optional_groups_and_repeated_items_in_wire_order"
+      ],
       "negative_verification_required": false,
       "decision_id": null,
-      "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
+      "status": "scoped_verified",
+      "review_note": "KMIP Specification v2.1 §5.3, Table 159 permits repeated §4 attributes. Scoped evidence covers two such items retained in the client Create Key Pair Private Key Attributes request group. It does not establish server-side union or processing. This is not an OASIS test-case pass."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-5.4-001",
@@ -90871,19 +90881,25 @@
       "subject": "Attributes from §4 Object Attributes",
       "summary": "The client may represent repeated §4 attributes in the Public Key Attributes structure.",
       "role": "client",
-      "direction": "unclear",
+      "direction": "client_to_server",
       "condition": null,
       "scope_state": "client_1_0",
-      "element_ids": [],
+      "element_ids": [
+        "KMIPKIT-ELEM-ATTRIBUTE-STRUCTURE-5-4-PUBLIC-KEY-ATTRIBUTES"
+      ],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0014",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/create_key_pair.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/create_key_pair_tests.rs::request_preserves_six_distinct_optional_groups_and_repeated_items_in_wire_order"
+      ],
       "negative_verification_required": false,
       "decision_id": null,
-      "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
+      "status": "scoped_verified",
+      "review_note": "KMIP Specification v2.1 §5.4, Table 160 permits repeated §4 attributes. Scoped evidence covers two such items retained in the client Create Key Pair Public Key Attributes request group. It does not establish server-side union or processing. This is not an OASIS test-case pass."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-5.5-001",
