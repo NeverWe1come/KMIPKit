@@ -33,7 +33,7 @@ const SUCCESS: u32 = 0;
 #[non_exhaustive]
 #[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
 pub enum OpaqueObjectContext {
-    /// Treat the Opaque Object as generic opaque data without crypto attributes.
+    /// Treat the Opaque Object as generic opaque data without requiring crypto attributes.
     Generic,
     /// Apply Managed Cryptographic Object Register attribute requirements.
     ManagedCryptographicObject,
@@ -160,6 +160,8 @@ impl RegisterRequest {
     }
 }
 
+// The context is local validation metadata and intentionally stays out of Debug output.
+#[allow(clippy::missing_fields_in_debug)]
 impl fmt::Debug for RegisterRequest {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         formatter
@@ -329,8 +331,7 @@ fn opaque_managed_crypto_attributes_satisfy_register_requirements(
     attributes: &AttributeSet,
 ) -> bool {
     has_attribute(attributes, CRYPTOGRAPHIC_USAGE_MASK)
-        && has_attribute(attributes, CRYPTOGRAPHIC_ALGORITHM)
-        && has_attribute(attributes, CRYPTOGRAPHIC_LENGTH)
+        && cryptographic_algorithm_and_length_satisfy_register_requirements(attributes, None)
 }
 
 fn managed_crypto_attributes_satisfy_register_requirements(
@@ -345,12 +346,12 @@ fn managed_crypto_attributes_satisfy_register_requirements(
         return true;
     }
 
-    cryptographic_algorithm_and_length_satisfy_register_requirements(attributes, object)
+    cryptographic_algorithm_and_length_satisfy_register_requirements(attributes, Some(object))
 }
 
 fn cryptographic_algorithm_and_length_satisfy_register_requirements(
     attributes: &AttributeSet,
-    object: &Item,
+    object: Option<&Item>,
 ) -> bool {
     let has_algorithm = has_attribute(attributes, CRYPTOGRAPHIC_ALGORITHM);
     let has_length = has_attribute(attributes, CRYPTOGRAPHIC_LENGTH);
@@ -359,8 +360,10 @@ fn cryptographic_algorithm_and_length_satisfy_register_requirements(
     }
 
     has_algorithm
-        || (key_block_has(object, CRYPTOGRAPHIC_ALGORITHM)
-            && key_block_has(object, CRYPTOGRAPHIC_LENGTH))
+        || object.is_some_and(|object| {
+            key_block_has(object, CRYPTOGRAPHIC_ALGORITHM)
+                && key_block_has(object, CRYPTOGRAPHIC_LENGTH)
+        })
 }
 
 fn opaque_object_has_required_fields(object: &Item) -> bool {
