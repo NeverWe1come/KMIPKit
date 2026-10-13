@@ -479,3 +479,17 @@ The FFI applies a 16 MiB local material ceiling before copying correlation bytes
 | Independent QA | frozen code `e2712633b99414a018ffeef4a18b024b2aacb1a8` | Static QA found no remaining blockers in the reviewed T076 diff. It confirmed 31 new declarations all remain blocked and FR-019 includes T076. |
 | Local verification | frozen code `e2712633b99414a018ffeef4a18b024b2aacb1a8` | `cargo fmt --all --check` — PASS; `cargo clippy -p kmipkit-ffi --all-targets --all-features -- -D warnings` — PASS; `cargo test -p kmipkit-ffi --all-features` — PASS, 52 unit tests and 2 C/consumer integration tests; `python -B tools/api_manifest/generate.py --check` — PASS, 12 outputs; `git diff --check` — PASS. Existing AWS-LC/MSVC probe, missing NASM, and linker LNK4217 diagnostics were non-fatal. |
 | Remote CI | Pending | The current implementation commits are not yet on the PR head. T076 remains unchecked until the branch is pushed and all applicable CI checks complete successfully. |
+
+## T076 continuation — Python integer boundaries and Java transport coverage
+
+QA reproduced that an `int` subclass could override range comparisons so an out-of-range port or timeout passed Python validation and later raised `OverflowError` during ABI conversion. Validation now extracts the built-in integer value with `int.__index__`, checks that canonical value, and stores canonical built-in integers in `Endpoint` and `TimeoutLimit`. The endpoint class factories now delegate to the canonical dataclass validation path.
+
+| Phase | Commit | Evidence |
+|---|---|---|
+| Red | `41aa5a63` | Added the malicious `int` subclass regression for over-range endpoint ports and timeout seconds, plus canonicalization assertions. The focused test failed because the over-range timeout was accepted. |
+| Green | `4c97b735` | Validated the base integer value and stored canonical values in the frozen public records. The focused regression passed. |
+| Refactor | `20c7ef51` | Removed duplicate validation in the Endpoint factories; `__post_init__` remains the single validation and canonicalization path. Python's full client suite remained green. |
+| QA | `4c97b735` | Independent read-only review confirmed the range bypass is closed, no equivalent residual was found, and T076 FR-007/FR-013 traceability applies. |
+| Local verification | `20c7ef51` | Python 3.12 binding suite with coverage — PASS, 126 tests, 98.16% package coverage; `git diff --check` — PASS. |
+
+The prior remote run `38364373798` at head `2cc478f4` failed Java JaCoCo on Linux at 84% against the required 85% threshold; Java tests themselves had zero failures. JNI coverage also stopped in the same Java Maven verification step. Added portable public-API boundary tests for Java transport timeout, endpoint, mutual-TLS, material-count, and path validation in `677aef81`. Full local Maven `clean verify` then passed 101 tests with zero failures/errors and three platform skips; JaCoCo reported 1,147/1,278 lines (89.75%). This update is local evidence only; the follow-up remote matrix is pending, so T076 and T074 remain unchecked.
