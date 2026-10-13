@@ -630,6 +630,35 @@ class ManifestGeneratorCliTests(unittest.TestCase):
         with self.assertRaisesRegex(generate.ManifestError, "keyword"):
             generate._validate_references(manifest)
 
+    def test_references_allow_nonstandard_cpp_extension_identifiers(self) -> None:
+        manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
+        manifest["types"].append(
+            {
+                "id": "ExtensionIdentifierFields",
+                "kind": "struct",
+                "requirementIds": ["KMIPKIT-0043-FR-007"],
+                "rust": {
+                    "module": "kmipkit_ffi",
+                    "name": "ExtensionIdentifierFields",
+                    "owner": "ffi",
+                },
+                "c": {
+                    "name": "kmipkit_extension_identifier_fields_t",
+                    "kind": "fixed-width-value",
+                    "fields": [
+                        {"name": "atomic_cancel", "type": "uint32_t"},
+                        {"name": "atomic_commit", "type": "uint32_t"},
+                        {"name": "atomic_noexcept", "type": "uint32_t"},
+                        {"name": "synchronized", "type": "uint32_t"},
+                    ],
+                },
+                "java": {"package": "org.kmipkit", "name": "ExtensionIdentifierFields"},
+                "python": {"module": "kmipkit", "name": "ExtensionIdentifierFields"},
+            }
+        )
+
+        generate._validate_references(manifest)
+
     def test_references_require_versioned_c_value_header_fields(self) -> None:
         manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
         manifest["types"].append(
