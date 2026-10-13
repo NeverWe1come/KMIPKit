@@ -1452,6 +1452,22 @@ def _encode_generated_text(value: str) -> bytes:
     return value.replace("\r\n", "\n").replace("\r", "\n").encode("utf-8")
 
 
+def _registry_function_v1_projection(record: dict[str, Any]) -> dict[str, Any]:
+    """Preserve one full-manifest function in the original registry-slice shape."""
+    projected = deepcopy(record)
+    projected["requirementIds"] = [
+        requirement for requirement in projected["requirementIds"]
+        if requirement.startswith("KMIPKIT-0012-")
+    ]
+    if projected["id"] == "client_batch_item_discover_versions":
+        # The full v2 record uses the public Rust path and actual JNI bridge.
+        projected["rust"]["module"] = "kmipkit_client::execute::ClientBatchItem"
+        projected["java"]["jniSymbol"] = (
+            "Java_org_kmipkit_extensions_ClientBatchItem_discoverVersions"
+        )
+    return projected
+
+
 def _registry_manifest_v2(manifest: dict[str, Any]) -> dict[str, Any]:
     """Project the preserved KMIPKIT-0012 registry slice into its v1 renderer shape."""
     registry_types = [
@@ -1466,21 +1482,9 @@ def _registry_manifest_v2(manifest: dict[str, Any]) -> dict[str, Any]:
             record["java"] = {**record["java"], "package": "org.kmipkit"}
             record["python"] = {**record["python"], "module": "kmipkit"}
     registry_functions = [
-        deepcopy(record) for record in manifest["functions"]
+        _registry_function_v1_projection(record) for record in manifest["functions"]
         if any(requirement.startswith("KMIPKIT-0012-") for requirement in record["requirementIds"])
     ]
-    for record in registry_functions:
-        record["requirementIds"] = [
-            requirement for requirement in record["requirementIds"]
-            if requirement.startswith("KMIPKIT-0012-")
-        ]
-        if record["id"] == "client_batch_item_discover_versions":
-            # Preserve the original v1 registry projection while the full v2
-            # manifest records the public Rust path and actual JNI bridge.
-            record["rust"]["module"] = "kmipkit_client::execute::ClientBatchItem"
-            record["java"]["jniSymbol"] = (
-                "Java_org_kmipkit_extensions_ClientBatchItem_discoverVersions"
-            )
     requirement_ids = [
         identifier
         for identifier in manifest["requirementIds"]
