@@ -352,3 +352,7 @@ pub use policy_controls::PolicyControlsError;
 
 mod get_constraints;
 pub use get_constraints::{GetConstraintsRequest, GetConstraintsResponse};
+
+#[cfg(test)]
+#[path = "../tests/unit/get_usage_allocation_tests.rs"]
+mod get_usage_allocation_tests;
