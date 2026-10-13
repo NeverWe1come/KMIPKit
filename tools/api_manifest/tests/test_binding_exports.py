@@ -387,6 +387,22 @@ class BindingExportAuditTests(unittest.TestCase):
         }.issubset(names))
         self.assertTrue(result["complete"])
 
+    def test_python_inventory_includes_public_instance_fields_assigned_in_init(self):
+        source = textwrap.dedent("""
+            class BatchResult:
+                def __init__(self, items):
+                    self.items = items
+
+            class ClientExecutionError(Exception):
+                def __init__(self, status):
+                    self.status = status
+        """)
+        result = AUDIT.inventory_python_sources({"kmipkit/client.py": source})
+        observed = {row["exportName"]: row["kind"] for row in result["declarations"]}
+        self.assertEqual(observed["kmipkit.client.BatchResult.items"], "field")
+        self.assertEqual(observed["kmipkit.client.ClientExecutionError.status"], "field")
+        self.assertTrue(result["complete"])
+
     def test_python_inventory_resolves_private_module_values_and_property_exports(self):
         sources = {
             "kmipkit/_ffi/__init__.py": "ffi = object()\nlib = object()\n",
