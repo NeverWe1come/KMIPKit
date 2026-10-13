@@ -9,6 +9,7 @@ from __future__ import annotations
 
 from pathlib import Path
 from typing import get_type_hints
+from types import SimpleNamespace
 
 import pytest
 
@@ -93,3 +94,36 @@ def test_execution_error_exposes_sanitized_delivery_metadata() -> None:
     assert error.delivery is errors.DeliveryState.POSSIBLY_SENT
     assert "private" not in str(error)
     assert "timeout" not in str(error).lower()
+
+
+def test_malformed_presence_flag_is_rejected_as_invalid_input(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    native = client.ffi.new("uint8_t[]", 1)
+    handle = client.ffi.cast("kmipkit_client_batch_item_response_t *", native)
+    item = client._ClientBatchItemResponse(handle)
+
+    def malformed_presence(
+        _item: object, present: object, value: object
+    ) -> int:
+        present[0] = 2  # type: ignore[index]
+        value.data = client.ffi.NULL  # type: ignore[attr-defined]
+        value.length = 0  # type: ignore[attr-defined]
+        return 0
+
+    monkeypatch.setattr(
+        client,
+        "lib",
+        SimpleNamespace(
+            kmipkit_client_batch_item_response_unique_batch_item_id=malformed_presence,
+            kmipkit_client_batch_item_response_release=lambda _handle: None,
+        ),
+    )
+    try:
+        with pytest.raises(errors.InvalidInputError):
+            client._response_span(
+                item,
+                client.lib.kmipkit_client_batch_item_response_unique_batch_item_id,
+            )
+    finally:
+        item.close()
