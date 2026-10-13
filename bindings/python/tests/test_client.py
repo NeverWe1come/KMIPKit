@@ -1140,6 +1140,21 @@ def test_transport_input_measures_real_buffer_size_for_bytes_subclasses() -> Non
         client.TransportInput(oversized, client.CredentialEncoding.PEM)
 
 
+def test_transport_record_uses_real_bytes_subclass_buffer_length() -> None:
+    class LyingBytes(bytes):
+        def __len__(self) -> int:
+            return 1
+
+    bounded = LyingBytes(b"small")
+    configuration = _transport_configuration(
+        client_private_key=client.TransportInput(
+            bounded, client.CredentialEncoding.PEM
+        )
+    )
+    record, _owners = client._transport_record(configuration)
+    assert record.client_private_key.data.length == 5
+
+
 def test_private_python_client_loader_redacts_native_path_failure(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
