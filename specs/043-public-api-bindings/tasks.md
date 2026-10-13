@@ -8,6 +8,8 @@
 
 **TDD and commit evidence**: Before changing behavior, add the failing test; implement until it passes; then refactor. Keep Red, Green, and Refactor evidence in distinct development commits for every behavior change, and record commands/results in the implementation PR.
 
+**Task numbering note**: T076–T077 were added after implementation review found two shared API requirements not covered by the original task breakdown. Their dependency edges make them prerequisites for adapter and operation mappings; earlier task IDs are retained to preserve existing evidence references.
+
 ## Phase 1: Manifest v2 and Inventory (US1)
 
 **Purpose**: Establish a complete, strict, reviewable 1.0 API contract without duplicating protocol semantics.
@@ -39,6 +41,11 @@
 - [X] T018 [US2] Refactor common FFI lifecycle/error code to one reviewed path; catch Rust panics at all 129 exported C functions as redacted `KMIPKIT_ERROR_INTERNAL` status 7; retain Rust `forbid(unsafe_code)` outside `kmipkit-ffi` and document every unsafe block with a `SAFETY` rationale.
 - [X] T019 [US2] Update C API documentation and generated symbol inventory from the complete v2 manifest.
 
+### Phase 2 follow-up: shared API-level metadata and typed client ABI
+
+- [ ] T076 [US2] Add the missing shared C ABI foundation for the approved Rust client: construct validated transport configuration and a production `Client` from separate transport and extension configurations; build ordered typed `ClientBatch` values; execute one batch with canonical `CodecLimits`; and expose ordered common result/outcome metadata, exact `Pending` correlation bytes, and sanitized error/delivery state. Generate and audit declarations through manifest v2; preserve ABI 1.x compatibility and add compiled C consumer tests. Map every accepted `Endpoint`, trust, certificate/private-key, revocation-list, timeout, and request-limit input supported by KMIPKIT-0013. Do not accept an arbitrary `Transport`, raw request bytes, generic TTLV as an execution request, or an operation-number-plus-generic-payload shortcut. Per-operation request constructors and typed response payloads remain T031–T069. Cite approved contracts in KMIPKIT-0004/0005/0006/0007/0012/0013 and KMIPKIT-0043-FR-003/005/007/012/013/019/021.
+- [ ] T077 [US2] Expose the local three-level API taxonomy (`high-level`, `typed-protocol`, `generic-ttlv`) consistently in Rust, C, Java, and Python with no network calls; test its output against `api-levels.shared.v1`. Make clear that this local API-surface query is distinct from the KMIP Discover Versions operation and does not assert that every operation mapping is complete. Cite KMIPKIT-0043-FR-005/010.
+
 **Checkpoint**: Every shared capability currently backed by an approved Rust implementation has a safe, documented C mapping and passing C consumer evidence.
 
 ## Phase 3: Java 17 and Python 3.12 Adapters (US2, US3)
@@ -46,17 +53,17 @@
 **Purpose**: Expose the shared Rust/C capabilities idiomatically and with semantic parity.
 
 - [X] T020 [US2] Write failing Java 17 JNI parity and lifecycle tests from the shared fixtures before adding generated/facade declarations in `bindings/java/`. Java mappings in the fixture resolve to executable JUnit tests; API-level discovery and ordered batch outcomes remain explicitly blocked. Rust/C consumers remain planned and are not claimed by T020; see `implementation-evidence.md`.
-- [ ] T021 [US2] Implement Java 17 shared typed/high-level/TTLV mappings over the C ABI, including `AutoCloseable` ownership, JSpecify nullness, stable exception categories, and redacted diagnostics.
+- [ ] T021 [US2] After T076, implement Java 17 shared typed/high-level/TTLV mappings over the C ABI, including client construction, batch execution/results, `AutoCloseable` ownership, JSpecify nullness, stable exception categories, and redacted diagnostics.
 - [ ] T022 [US2] Refactor Java wrapper ownership so a live child view safely retains its owner, close is deterministic, and invalid/closed inputs fail before JNI calls.
 
-T021 remains open. Its Java ownership/nullness/error contracts, existing TTLV/extension mappings, and export audit are implemented. The shared client/batch foundation is still missing: Java and the C ABI do not expose a general Client execution entry point, ordered heterogeneous batch submission/outcomes, or complete typed message/result models. Individual operation mappings remain separate work under T031–T069; this task did not invent C or Rust APIs.
+T021 remains open. Its Java ownership/nullness/error contracts, existing TTLV/extension mappings, and export audit are implemented. T076 must provide the C client/batch foundation before Java can expose execution and common outcomes. Individual operation mappings remain separate work under T031–T069; this task did not invent C or Rust APIs.
 - [ ] T023 [US2] Write failing Python 3.12 CFFI parity, lifecycle, typing, and package tests from the shared fixtures before implementing the facade in `bindings/python/`.
-- [ ] T024 [US2] Implement Python 3.12 shared typed/high-level/TTLV mappings over the C ABI, with complete annotations, `py.typed`, context managers, stable exceptions, and redacted diagnostics.
+- [ ] T024 [US2] After T076, implement Python 3.12 shared typed/high-level/TTLV mappings over the C ABI, including client construction, batch execution/results, complete annotations, `py.typed`, context managers, stable exceptions, and redacted diagnostics.
 - [ ] T025 [US2] Refactor Python wrapper ownership and integer conversions so closed handles, out-of-range fixed-width values, and unsupported item types fail consistently with C and Java.
 - [X] T026 [US3] Implement Java native-library selection, hash verification, private atomic extraction, and loading per `docs/architecture/ffi-and-bindings.md`; do not make network requests.
 - [X] T027 [US3] Implement Python native-library loading adjacent to the installed wheel, allow only the documented explicit administrator path, and reject ABI mismatch without a download fallback.
 - [ ] T028 [US3] Test Java/Python package loading offline on every platform in the existing CI matrix, including missing library, wrong architecture/ABI, and redacted error paths.
-- [ ] T029 [US2] Compare shared fixtures through Rust, C, Java, and Python for defaults, input ranges, result/status, order, unknown values, error category, secret redaction, and resource cleanup.
+- [ ] T029 [US2] After T076–T077, compare shared fixtures through Rust, C, Java, and Python for API-level metadata, defaults, input ranges, result/status, batch order, unknown values, error category, secret redaction, and resource cleanup.
 - [X] T030 [US3] Update Java/Python package metadata and user documentation to state synchronized official versions, supported runtimes, native loading behavior, and current capability scope.
 
 **Checkpoint**: Every implemented shared capability resolves to all four language surfaces and passes parity and offline native-loading checks.
@@ -93,7 +100,7 @@ T021 remains open. Its Java ownership/nullness/error contracts, existing TTLV/ex
 
 **Purpose**: Add four-language API mappings for operations whose owner specifications were approved after the initial inventory; do not duplicate their protocol contracts.
 
-> **Hard prerequisite for each task below**: its linked owner specification is formally approved/accepted in the active release line, includes the operation in the 1.0 scope, and its canonical Rust contract and implementation are available. Until the four-language mapping is verified, the manifest operation row remains blocked.
+> **Hard prerequisite for each task below**: its linked owner specification is formally approved/accepted in the active release line, includes the operation in the 1.0 scope, its canonical Rust contract and implementation are available, and T076's typed client/batch ABI exists. Until the four-language mapping is verified, the manifest operation row remains blocked.
 >
 > **TDD requirement**: Every implementation task in this phase uses strict Red/Green/Refactor TDD and keeps the failing test, passing implementation, and refactor in distinct development commits.
 
@@ -131,9 +138,9 @@ T021 remains open. Its Java ownership/nullness/error contracts, existing TTLV/ex
 
 **Purpose**: Verify the complete API contract and prepare it for human release review.
 
-- [ ] T070 [US1] Add `--check --require-complete` release validation that fails unless all 56 in-scope operations and all shared capabilities are verified, all eight package families are version-synchronized, every exported declaration is inventoried or explicitly excluded, and every requirement/type/function/error/output reference resolves.
-- [ ] T071 [US2] Run the shared parity corpus through Rust, compiled C, Java 17, and Python 3.12 on the complete API surface, including negative inputs, unknown values, asynchronous outcomes, ownership, and redaction.
+- [ ] T070 [US1] Add `--check --require-complete` release validation that fails unless T076–T077, all 56 in-scope operations, and all shared capabilities are verified; all eight package families are version-synchronized; every exported declaration is inventoried or explicitly excluded; and every requirement/type/function/error/output reference resolves.
+- [ ] T071 [US2] After T076–T077 and T031–T069, run the shared parity corpus through Rust, compiled C, Java 17, and Python 3.12 on the complete API surface, including negative inputs, unknown values, asynchronous outcomes, ownership, and redaction.
 - [ ] T072 [US3] Run offline native package load/install tests across the existing platform matrix and verify no executable runtime download path.
 - [ ] T073 [US1] Reconcile the public manifest, eight package identities/versions, exported-symbol inventory, fixed generated outputs, operation dependency matrix, compliance traceability, API reference, and English/Spanish user documentation.
 - [ ] T074 [US1] Run the repository-required formatting, lint, workspace, coverage, security, compatibility, and generated-file checks at the applicable AGENTS.md thresholds; verify separate ordered Red/Green/Refactor development commits and DCO sign-off, and record commands/results plus approved exclusions in the draft PR.
-- [ ] T075 [US1] Confirm zero blocked manifest operations/capabilities, 56/56 `client_1_0` inventory coverage, complete package export accounting, 100% requirement traceability, synchronized package versions, no unauthorized Rust-only surface, and no profile/certification claim without evidence before requesting human review.
+- [ ] T075 [US1] Confirm T076–T077 are complete; zero blocked manifest operations/capabilities; 56/56 `client_1_0` inventory coverage; complete package export accounting; 100% requirement traceability; synchronized package versions; no unauthorized Rust-only surface; and no profile/certification claim without evidence before requesting human review.
