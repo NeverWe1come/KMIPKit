@@ -281,6 +281,13 @@ fn prewrap_key_value_attribute_tags(bytes: &[u8]) -> Vec<u32> {
     })
 }
 
+fn synthetic_wrapped_key_value(prewrap_ttlv: &[u8]) -> Vec<u8> {
+    let mut opaque_bytes = Vec::with_capacity(SYNTHETIC_WRAP_ENVELOPE.len() + prewrap_ttlv.len());
+    opaque_bytes.extend_from_slice(SYNTHETIC_WRAP_ENVELOPE);
+    opaque_bytes.extend_from_slice(prewrap_ttlv);
+    opaque_bytes
+}
+
 struct RegisterCertificateFields {
     operation: u32,
     object_type: u32,
@@ -560,8 +567,7 @@ fn register_sends_a_wrapped_key_value_with_associated_attributes_from_table_291(
     // OASIS KMIP v2.1 §3.1 Tables 11–12, §3.3 Tables 14–15, and §6.1.43 Tables 291 and 293.
     // The test-only envelope is not cryptographic wrapping; it keeps a source-shaped pre-wrap
     // Key Value Structure visible so this test can prove the opaque supplied bytes are forwarded.
-    let mut synthetic_wrapped_key_value = SYNTHETIC_WRAP_ENVELOPE.to_vec();
-    synthetic_wrapped_key_value.extend_from_slice(SYNTHETIC_PREWRAP_KEY_VALUE_TTLV);
+    let wrapped_key_value = synthetic_wrapped_key_value(SYNTHETIC_PREWRAP_KEY_VALUE_TTLV);
     assert_eq!(
         prewrap_key_value_attribute_tags(SYNTHETIC_PREWRAP_KEY_VALUE_TTLV),
         [CRYPTOGRAPHIC_ALGORITHM, CRYPTOGRAPHIC_LENGTH],
@@ -581,10 +587,7 @@ fn register_sends_a_wrapped_key_value_with_associated_attributes_from_table_291(
                 KEY_BLOCK,
                 Value::structure(test_structure([
                     test_item(KEY_FORMAT_TYPE, Value::enumeration(1)),
-                    test_item(
-                        KEY_VALUE,
-                        Value::byte_string(synthetic_wrapped_key_value.clone()),
-                    ),
+                    test_item(KEY_VALUE, Value::byte_string(wrapped_key_value.clone())),
                     test_item(CRYPTOGRAPHIC_ALGORITHM, Value::enumeration(3)),
                     test_item(CRYPTOGRAPHIC_LENGTH, Value::integer(256)),
                     test_item(
@@ -649,7 +652,7 @@ fn register_sends_a_wrapped_key_value_with_associated_attributes_from_table_291(
             KEY_WRAPPING_DATA,
         ]
     );
-    assert_eq!(wrapped.key_value_bytes, synthetic_wrapped_key_value);
+    assert_eq!(wrapped.key_value_bytes, wrapped_key_value);
     assert_eq!(wrapped.wrapping_method, 1);
     assert_eq!(wrapped.encryption_key_identifier, "wrapping-key");
     assert_eq!(fake.borrow().exchange_count(), 1);
