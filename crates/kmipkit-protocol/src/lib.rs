@@ -366,3 +366,7 @@ mod set_constraints_tests;
 
 mod set_constraints;
 pub use set_constraints::{SetConstraintsRequest, SetConstraintsResponse};
+
+#[cfg(test)]
+#[path = "../tests/unit/set_defaults_tests.rs"]
+mod set_defaults_tests;
