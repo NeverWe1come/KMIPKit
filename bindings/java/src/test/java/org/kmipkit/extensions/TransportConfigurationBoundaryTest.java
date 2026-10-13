@@ -134,7 +134,7 @@ final class TransportConfigurationBoundaryTest {
     @Test
     void replacesExistingMaterialGroupsWhenCheckingAggregateInputLimit() {
         TransportConfiguration.Builder builder = TransportConfiguration.builder()
-                .clientIdentityPem(new byte[][] {new byte[12 * 1024 * 1024]}, new byte[] {1})
+                .clientIdentityPem(new byte[][] {new byte[12 * 1024 * 1024 - 1]}, new byte[] {1})
                 .trustCertificatesPem(new byte[][] {new byte[2 * 1024 * 1024]})
                 .revocationListsPem(new byte[][] {new byte[2 * 1024 * 1024]});
 

@@ -141,8 +141,15 @@ public final class TransportConfiguration implements AutoCloseable {
         public Builder clientIdentityFiles(List<Path> certificateChain, Path privateKeyFile,
                 Encoding encoding) {
             ensureMutable();
-            clientCertificates = fileInputs(certificateChain, encoding);
-            privateKey = fileInput(privateKeyFile, encoding, true);
+            List<String> certificatePaths = filePathTexts(certificateChain, encoding);
+            String keyPath = filePathText(privateKeyFile, encoding);
+            long replacementBytes = Math.addExact(utf8Bytes(certificatePaths), utf8Length(keyPath));
+            ensureAggregateLimit(replacementBytes, clientIdentityBytes());
+
+            List<Input> replacementCertificates = fileInputs(certificatePaths, encoding, false);
+            Input replacementKey = fileInput(keyPath, encoding, true);
+            replacePrivateKey(replacementKey);
+            clientCertificates = replacementCertificates;
             return this;
         }
 
@@ -167,8 +174,11 @@ public final class TransportConfiguration implements AutoCloseable {
         /** Supplies trust certificates from files using the selected encoding. */
         public Builder trustCertificateFiles(List<Path> certificates, Encoding encoding) {
             ensureMutable();
+            List<String> certificatePaths = filePathTexts(certificates, encoding);
+            ensureAggregateLimit(utf8Bytes(certificatePaths), inputBytes(trustCertificates));
+            List<Input> replacement = fileInputs(certificatePaths, encoding, false);
             trustKind = TRUST_CERTIFICATES;
-            trustCertificates = fileInputs(certificates, encoding);
+            trustCertificates = replacement;
             return this;
         }
 
@@ -247,28 +257,57 @@ public final class TransportConfiguration implements AutoCloseable {
 
         private Builder clientIdentity(byte[][] chain, byte[] key, Encoding encoding) {
             ensureMutable();
-            clientCertificates = memoryInputs(chain, encoding, false);
-            if (key == null || encoding == null) {
+            if (key == null || key.length == 0 || encoding == null) {
                 throw new InvalidInputException("client identity is incomplete");
             }
-            if (privateKey != null && privateKey.secret) {
-                Arrays.fill(privateKey.data, (byte) 0);
-            }
-            privateKey = new Input(SOURCE_MEMORY, encoding, key.clone(), true);
+            long replacementBytes = Math.addExact(memoryInputBytes(chain, encoding), key.length);
+            ensureAggregateLimit(replacementBytes, clientIdentityBytes());
+
+            List<Input> replacementCertificates = memoryInputs(chain, encoding, false);
+            Input replacementKey = new Input(SOURCE_MEMORY, encoding, key.clone(), true);
+            replacePrivateKey(replacementKey);
+            clientCertificates = replacementCertificates;
             return this;
         }
 
         private Builder trustCertificates(byte[][] certificates, Encoding encoding) {
             ensureMutable();
+            long replacementBytes = memoryInputBytes(certificates, encoding);
+            ensureAggregateLimit(replacementBytes, inputBytes(trustCertificates));
+            List<Input> replacement = memoryInputs(certificates, encoding, false);
             trustKind = TRUST_CERTIFICATES;
-            trustCertificates = memoryInputs(certificates, encoding, false);
+            trustCertificates = replacement;
             return this;
         }
 
         private Builder revocationLists(byte[][] lists, Encoding encoding) {
             ensureMutable();
-            revocationLists = memoryInputs(lists, encoding, false);
+            long replacementBytes = memoryInputBytes(lists, encoding);
+            ensureAggregateLimit(replacementBytes, inputBytes(revocationLists));
+            List<Input> replacement = memoryInputs(lists, encoding, false);
+            revocationLists = replacement;
             return this;
+        }
+
+        private long clientIdentityBytes() {
+            return Math.addExact(inputBytes(clientCertificates), inputBytes(privateKey));
+        }
+
+        private void ensureAggregateLimit(long replacementBytes, long replacedBytes) {
+            long projectedBytes = Math.addExact(
+                    Math.subtractExact(totalInputBytes(clientCertificates, privateKey, trustCertificates,
+                            revocationLists), replacedBytes),
+                    replacementBytes);
+            if (projectedBytes > MAX_INPUT_BYTES) {
+                throw new ResourceLimitException("transport material exceeds the local input limit");
+            }
+        }
+
+        private void replacePrivateKey(Input replacement) {
+            if (privateKey != null && privateKey.secret) {
+                Arrays.fill(privateKey.data, (byte) 0);
+            }
+            privateKey = replacement;
         }
 
         private void validate() {
@@ -290,7 +329,7 @@ public final class TransportConfiguration implements AutoCloseable {
             validateText(endpoint, "transport endpoint");
             validateText(tlsServerName, "TLS server name");
             validateText(targetUri, "HTTP target URI");
-            long total = totalBytes(clientCertificates, privateKey, trustCertificates, revocationLists);
+            long total = totalInputBytes(clientCertificates, privateKey, trustCertificates, revocationLists);
             if (total > MAX_INPUT_BYTES) {
                 throw new ResourceLimitException("transport material exceeds the local input limit");
             }
@@ -338,25 +377,61 @@ public final class TransportConfiguration implements AutoCloseable {
         return List.copyOf(result);
     }
 
-    private static List<Input> fileInputs(List<Path> paths, Encoding encoding) {
+    private static long memoryInputBytes(byte[][] values, Encoding encoding) {
+        if (values == null || values.length == 0 || encoding == null) {
+            throw new InvalidInputException("transport material is incomplete");
+        }
+        if (values.length > 4096) {
+            throw new ResourceLimitException("transport material count exceeds the local limit");
+        }
+        long total = 0;
+        for (byte[] value : values) {
+            if (value == null || value.length == 0) {
+                throw new InvalidInputException("transport material is empty");
+            }
+            total = Math.addExact(total, value.length);
+        }
+        if (total > MAX_INPUT_BYTES) {
+            throw new ResourceLimitException("transport material exceeds the local input limit");
+        }
+        return total;
+    }
+
+    private static List<String> filePathTexts(List<Path> paths, Encoding encoding) {
         if (paths == null || paths.isEmpty() || paths.size() > 4096 || encoding == null) {
             throw new InvalidInputException("transport file inputs are invalid");
         }
-        List<Input> result = new ArrayList<>(paths.size());
+        List<String> result = new ArrayList<>(paths.size());
         for (Path path : paths) {
-            result.add(fileInput(path, encoding, false));
+            result.add(filePathText(path, encoding));
         }
         return List.copyOf(result);
     }
 
-    private static Input fileInput(Path path, Encoding encoding, boolean secret) {
-        if (path == null || encoding == null || path.toString().isBlank()) {
+    private static String filePathText(Path path, Encoding encoding) {
+        if (path == null || encoding == null) {
             throw new InvalidInputException("transport file input is invalid");
         }
-        byte[] bytes = path.toString().getBytes(StandardCharsets.UTF_8);
-        if (bytes.length > 4096) {
+        String text = path.toString();
+        if (text.isBlank()) {
+            throw new InvalidInputException("transport file input is invalid");
+        }
+        if (utf8Length(text) > 4096) {
             throw new ResourceLimitException("transport file path exceeds the local text limit");
         }
+        return text;
+    }
+
+    private static List<Input> fileInputs(List<String> paths, Encoding encoding, boolean secret) {
+        List<Input> result = new ArrayList<>(paths.size());
+        for (String path : paths) {
+            result.add(fileInput(path, encoding, secret));
+        }
+        return List.copyOf(result);
+    }
+
+    private static Input fileInput(String path, Encoding encoding, boolean secret) {
+        byte[] bytes = path.getBytes(StandardCharsets.UTF_8);
         return new Input(SOURCE_FILE, encoding, bytes, secret);
     }
 
@@ -376,15 +451,53 @@ public final class TransportConfiguration implements AutoCloseable {
         return input.source;
     }
 
-    private static long totalBytes(List<Input> certificates, Input key, List<Input> trust,
+    private static long totalInputBytes(List<Input> certificates, Input key, List<Input> trust,
             List<Input> revocation) {
-        long total = key.data.length;
-        for (List<Input> group : List.of(certificates, trust, revocation)) {
-            for (Input input : group) {
-                total = Math.addExact(total, input.data.length);
-            }
+        long total = Math.addExact(inputBytes(certificates), inputBytes(key));
+        total = Math.addExact(total, inputBytes(trust));
+        total = Math.addExact(total, inputBytes(revocation));
+        return total;
+    }
+
+    private static long inputBytes(List<Input> inputs) {
+        long total = 0;
+        for (Input input : inputs) {
+            total = Math.addExact(total, input.data.length);
         }
         return total;
+    }
+
+    private static long inputBytes(Input input) {
+        return input == null ? 0 : input.data.length;
+    }
+
+    private static long utf8Bytes(List<String> values) {
+        long total = 0;
+        for (String value : values) {
+            total = Math.addExact(total, utf8Length(value));
+        }
+        return total;
+    }
+
+    private static long utf8Length(String value) {
+        long length = 0;
+        for (int index = 0; index < value.length(); index++) {
+            char current = value.charAt(index);
+            if (current <= 0x7f) {
+                length++;
+            } else if (current <= 0x7ff) {
+                length += 2;
+            } else if (Character.isHighSurrogate(current)
+                    && index + 1 < value.length() && Character.isLowSurrogate(value.charAt(index + 1))) {
+                length += 4;
+                index++;
+            } else if (Character.isSurrogate(current)) {
+                length++;
+            } else {
+                length += 3;
+            }
+        }
+        return length;
     }
 
     private static String requireText(String value, String field) {
