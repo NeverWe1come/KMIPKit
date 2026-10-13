@@ -26,6 +26,7 @@ from tools.normative_catalog.validate import (
 )
 from tools.normative_catalog.audit_sources import _CandidateParser, _decode_document, audit_document
 from tools.normative_catalog.tests import test_feature_traceability
+from tools.normative_catalog.report import PROFILE_RULE_SOURCE, load_typed_rule_mappings
 import tools.normative_catalog.validate as catalog_validate
 
 _is_discoverable_positive_test = test_feature_traceability._is_discoverable_positive_test
@@ -16516,6 +16517,42 @@ class CatalogValidationTests(unittest.TestCase):
         )
         self.assertIn("KMIPKIT-REQ-SPEC-6.1.43-009-001", optional_capabilities)
 
+    def test_conditional_optional_source_evidence_requires_a_reviewed_condition_and_client_actor(
+        self,
+    ) -> None:
+        """A conditional MAY without resolved source scope remains a source-review gap."""
+        for label, overrides in (
+            ("missing condition", {"condition": None}),
+            ("unknown actor", {"actor": "unresolved"}),
+        ):
+            with self.subTest(label):
+                obligation: dict[str, Any] = {
+                    "source_keyword": "MAY",
+                    "scope_disposition": "profile_conditional",
+                    "candidate_requirement_id": "KMIPKIT-REQ-SPEC-TEST-CONDITIONAL-MAY",
+                    "condition": "The caller selects the optional request capability.",
+                    "actor": "client",
+                }
+                obligation.update(overrides)
+                oracle = {
+                    "source_requirement_reviews": [
+                        {
+                            "source_clause_id": "KMIPKIT-CLAUSE-SPEC-TEST-CONDITIONAL",
+                            "source_obligations": [obligation],
+                        }
+                    ],
+                    "source_only_requirement_gaps": [],
+                }
+
+                capabilities, gaps = _reviewed_profile_optional_capabilities(
+                    oracle,
+                    {"KMIPKIT-CLAUSE-SPEC-TEST-CONDITIONAL"},
+                    set(),
+                )
+
+                self.assertIn("KMIPKIT-REQ-SPEC-TEST-CONDITIONAL-MAY", capabilities)
+                self.assertTrue(gaps, "unknown or missing condition evidence must fail closed")
+
     def test_optional_evidence_gate_accepts_only_scoped_client_request_evidence(self) -> None:
         """Scoped evidence counts only for representable in-scope client requests."""
         requirement_id = "KMIPKIT-REQ-SPEC-TEST-CLIENT-MAY"
@@ -16525,6 +16562,8 @@ class CatalogValidationTests(unittest.TestCase):
             row: dict[str, Any] = {
                 "requirement_id": requirement_id,
                 "scope_state": "client_1_0",
+                "source_clause_ids": ["KMIPKIT-CLAUSE-SPEC-TEST-OPTIONAL"],
+                "condition": "The client elects to include this request capability.",
                 "implementation_refs": ["src/request.rs"],
                 "verification_refs": [test_reference],
                 "status": "scoped_verified",
@@ -16541,6 +16580,7 @@ class CatalogValidationTests(unittest.TestCase):
             external_implementation_reference: str | None = None,
             external_verification_reference: str | None = None,
             test_source: str | None = None,
+            typed_rule_source: str | None = None,
         ) -> None:
             with tempfile.TemporaryDirectory() as temporary_directory:
                 root = Path(temporary_directory)
@@ -16550,13 +16590,57 @@ class CatalogValidationTests(unittest.TestCase):
                 first_test_reference = row["verification_refs"][0] if row["verification_refs"] else "tests/positive_capability.rs"
                 test_path_reference = first_test_reference.partition("::")[0]
                 test_path = root / test_path_reference
+
+                source_clause_id = "KMIPKIT-CLAUSE-SPEC-TEST-OPTIONAL"
+
+                def write_catalog() -> None:
+                    catalog_path.write_text(
+                        json.dumps(
+                            {
+                                "profiles": [
+                                    {
+                                        "profile_id": "KMIPKIT-PROFILE-TEST-CLIENT",
+                                        "source_clause_ids": [source_clause_id],
+                                    }
+                                ],
+                                "source_clauses": [
+                                    {
+                                        "clause_id": source_clause_id,
+                                        "source_id": "KMIPKIT-SRC-TEST",
+                                        "section": "1.1",
+                                    }
+                                ],
+                                "requirements": [row],
+                            }
+                        ),
+                        encoding="utf-8",
+                    )
+
+                oracle = {
+                    "source_requirement_reviews": [
+                        {
+                            "source_clause_id": source_clause_id,
+                            "source_obligations": [
+                                {
+                                    "source_keyword": "MAY",
+                                    "actor": row["role"],
+                                    "direction": "client request",
+                                    "scope_disposition": row["scope_state"],
+                                    "condition": row.get("condition"),
+                                    "candidate_requirement_id": requirement_id,
+                                }
+                            ],
+                        }
+                    ],
+                    "source_only_requirement_gaps": [],
+                }
                 for path, value in (
-                    (catalog_path, {"requirements": [row]}),
-                    (targets_path, {}),
-                    (oracle_path, {}),
+                    (targets_path, {"profile_ids": ["KMIPKIT-PROFILE-TEST-CLIENT"]}),
+                    (oracle_path, oracle),
                 ):
                     path.parent.mkdir(parents=True, exist_ok=True)
                     path.write_text(json.dumps(value), encoding="utf-8")
+                write_catalog()
                 if create_test:
                     test_path.parent.mkdir(parents=True, exist_ok=True)
                     test_path.write_text(
@@ -16567,6 +16651,27 @@ class CatalogValidationTests(unittest.TestCase):
                 implementation_path = root / "src" / "request.rs"
                 implementation_path.parent.mkdir(parents=True, exist_ok=True)
                 implementation_path.write_text("pub fn request_capability() {}\n", encoding="utf-8")
+                profile_rule_path = root / PROFILE_RULE_SOURCE
+                profile_rule_path.parent.mkdir(parents=True, exist_ok=True)
+                profile_rule_path.write_text(
+                    typed_rule_source
+                    or (
+                        "const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[\n"
+                        "    TypedRuleMapping {\n"
+                        f'        requirement_id: "{requirement_id}",\n'
+                        f'        source_clause_id: "{source_clause_id}",\n'
+                        "        verification_category: GeneratedVerificationCategory::OptionalCapability,\n"
+                        "        evaluator: Some(request_capability_rule),\n"
+                        "        test_evidence: &[RuleTestEvidence {\n"
+                        f'            test_id: "{test_reference}",\n'
+                        "            kind: RuleTestKind::OptionalCapabilityUsable,\n"
+                        "        }],\n"
+                        "        constraints: &[],\n"
+                        "    },\n"
+                        "];\n"
+                    ),
+                    encoding="utf-8",
+                )
                 external_implementation_path = root.parent / f"{root.name}-outside-implementation.rs"
                 if external_implementation_reference is not None:
                     external_implementation_path.write_text(
@@ -16577,9 +16682,7 @@ class CatalogValidationTests(unittest.TestCase):
                         if external_implementation_reference == "absolute"
                         else f"../{external_implementation_path.name}"
                     ]
-                    catalog_path.write_text(
-                        json.dumps({"requirements": [row]}), encoding="utf-8"
-                    )
+                    write_catalog()
                 external_test_directory = root.parent / f"{root.name}-outside-tests"
                 external_test_path = external_test_directory / "positive_capability.rs"
                 linked_test_directory = root / "tests" / "linked_tests"
@@ -16620,14 +16723,9 @@ class CatalogValidationTests(unittest.TestCase):
                         row["verification_refs"] = [
                             "tests/linked_tests/positive_capability.rs::request_capability_is_available"
                         ]
-                    catalog_path.write_text(
-                        json.dumps({"requirements": [row]}), encoding="utf-8"
-                    )
-                with (
-                    patch(__name__ + ".ROOT", root),
-                    patch.object(test_feature_traceability, "ROOT", root),
-                    patch(__name__ + "._selected_profile_source_scope", return_value=(set(), set())),
-                    patch(__name__ + "._reviewed_profile_optional_capabilities", return_value=({requirement_id}, [])),
+                    write_catalog()
+                with patch(__name__ + ".ROOT", root), patch.object(
+                    test_feature_traceability, "ROOT", root
                 ):
                     try:
                         CatalogValidationTests().test_every_reviewed_client_may_or_optional_has_usable_positive_evidence()
@@ -16648,10 +16746,24 @@ class CatalogValidationTests(unittest.TestCase):
         with self.subTest("bounded client request evidence is accepted"):
             run_gate(requirement())
 
+        with self.subTest(
+            "selected conditional client request with a resolved typed rule is accepted"
+        ):
+            run_gate(requirement(scope_state="profile_conditional"))
+
         rejected_rows = (
             ("server role", requirement(role="server"), True),
             ("response direction", requirement(direction="server_to_client"), True),
-            ("conditional scope", requirement(scope_state="profile_conditional"), True),
+            (
+                "conditional scope without a source condition",
+                requirement(scope_state="profile_conditional", condition=""),
+                True,
+            ),
+            (
+                "conditional evidence without reviewed resolution",
+                requirement(scope_state="profile_conditional", status="verified"),
+                True,
+            ),
             ("missing implementation reference", requirement(implementation_refs=[]), True),
             ("missing implementation file", requirement(implementation_refs=["src/missing.rs"]), True),
             ("missing positive-test reference", requirement(verification_refs=[]), True),
@@ -16664,6 +16776,64 @@ class CatalogValidationTests(unittest.TestCase):
             with self.subTest(label):
                 with self.assertRaises(AssertionError):
                     run_gate(row, create_test=create_test)
+
+        with self.subTest("conditional capability without a typed rule remains blocked"):
+            with self.assertRaises(AssertionError):
+                run_gate(
+                    requirement(scope_state="profile_conditional"),
+                    typed_rule_source="const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[];\n",
+                )
+
+        correct_conditional_rule = (
+            "const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[\n"
+            "    TypedRuleMapping {\n"
+            f'        requirement_id: "{requirement_id}",\n'
+            '        source_clause_id: "KMIPKIT-CLAUSE-SPEC-TEST-OPTIONAL",\n'
+            "        verification_category: GeneratedVerificationCategory::OptionalCapability,\n"
+            "        evaluator: Some(request_capability_rule),\n"
+            "        test_evidence: &[RuleTestEvidence {\n"
+            f'            test_id: "{test_reference}",\n'
+            "            kind: RuleTestKind::OptionalCapabilityUsable,\n"
+            "        }],\n"
+            "        constraints: &[],\n"
+            "    },\n"
+            "];\n"
+        )
+
+        for label, unsupported_rule in (
+            (
+                "conditional typed rule references another source clause",
+                correct_conditional_rule.replace(
+                    "KMIPKIT-CLAUSE-SPEC-TEST-OPTIONAL", "KMIPKIT-CLAUSE-SPEC-OTHER"
+                ),
+            ),
+            (
+                "conditional typed rule has no evaluator",
+                correct_conditional_rule.replace(
+                    "Some(request_capability_rule)", "None"
+                ),
+            ),
+            (
+                "conditional typed rule has the wrong evidence category",
+                correct_conditional_rule.replace(
+                    "GeneratedVerificationCategory::OptionalCapability",
+                    "GeneratedVerificationCategory::RequiredBehavior",
+                ),
+            ),
+            (
+                "conditional typed rule does not link the named positive test",
+                correct_conditional_rule.replace(
+                    test_reference,
+                    "tests/other_capability.rs::other_capability_is_available",
+                ),
+            ),
+        ):
+            with self.subTest(label):
+                with self.assertRaises(AssertionError):
+                    run_gate(
+                        requirement(scope_state="profile_conditional"),
+                        typed_rule_source=unsupported_rule,
+                    )
 
         for label, reference_style in (
             ("absolute implementation path outside repository", "absolute"),
@@ -16870,6 +17040,11 @@ class CatalogValidationTests(unittest.TestCase):
                 and not scoped_client_request_evidence
             ) or not usable_positive_tests:
                 gaps.append(f"{requirement_id}: no eligible implementation and positive-test evidence")
+
+        self.assertFalse(
+            any(gap.startswith("KMIPKIT-REQ-SPEC-4.14-001-001:") for gap in gaps),
+            "the selected Baseline Qlength capability has a reviewed conditional rule and positive request evidence",
+        )
 
         self.assertEqual(
             gaps,
