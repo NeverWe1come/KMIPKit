@@ -887,6 +887,7 @@ class ManifestGeneratorCliTests(unittest.TestCase):
 
             self.assertEqual(result.returncode, 0, result.stderr)
             c_header = (root / GENERATED_OUTPUTS[1]).read_text(encoding="utf-8")
+            rust_ffi = (root / GENERATED_OUTPUTS[0]).read_text(encoding="utf-8")
             self.assertIn("NULL is valid only when the linked count is zero", c_header)
             self.assertIn("check the count before reading elements", c_header)
             for _, parameter_name, handle_type, _ in HANDLE_ARRAY_CONTRACTS:
@@ -970,6 +971,18 @@ class ManifestGeneratorCliTests(unittest.TestCase):
             self.assertIn("struct kmipkit_byte_span_v1_t", public_header)
             self.assertIn("const uint8_t * data", public_header)
 
+    def test_python_function_mapping_accepts_qualified_facade_methods(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = _create_repo(Path(directory))
+            manifest = self._load_manifest(root)
+            function = _find_function(manifest, "client_configuration_new")
+            function["python"]["function"] = "Client.create"
+            self._write_manifest(root, manifest)
+
+            result = self._run_generator(root, "--check")
+
+            self.assertEqual(0, result.returncode, result.stderr)
+
     def test_consumed_handle_slot_and_output_value_pointer_reject_type_mismatch(self) -> None:
         mutations = (
             (
@@ -1009,8 +1022,11 @@ class ManifestGeneratorCliTests(unittest.TestCase):
     def test_approved_c_only_function_exclusion_keeps_exact_header_prototype(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             root = _create_repo(Path(directory))
+            approval_source = root / "specs" / "043-public-api-bindings" / "spec.md"
+            approval_source.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copy2(ROOT / "specs" / "043-public-api-bindings" / "spec.md", approval_source)
             manifest = self._load_manifest(root)
-            symbol = "kmipkit_client_batch_response_item_count"
+            symbol = "kmipkit_c_only_excluded_fixture"
             manifest["publicDeclarations"] = [
                 declaration
                 for declaration in manifest["publicDeclarations"]
@@ -1023,21 +1039,21 @@ class ManifestGeneratorCliTests(unittest.TestCase):
                 {
                     "packageId": "c-kmipkit",
                     "exportName": symbol,
-                    "reason": "Python exposes ordered results as a tuple; count is its standard sequence length.",
+                "reason": "The signature has no exact callable counterpart in the other facades.",
                     "approvalSource": {
                         "kind": "feature-specification",
                         "path": "specs/043-public-api-bindings/spec.md",
                         "status": "Approved",
                         "evidence": "**Status**: Approved for implementation",
                     },
-                    "evidence": "The C helper remains callable in C while other facades expose idiomatic sequence access.",
+                    "evidence": "The C-only function is retained in the public C ABI header with its exact prototype.",
                     "cFunction": {
                         "symbol": symbol,
                         "parameters": [
                             {
-                                "name": "response",
+                                "name": "schema",
                                 "kind": "handle",
-                                "type": "kmipkit_client_batch_response_t *",
+                                "type": "kmipkit_extension_schema_t *",
                                 "ownership": "borrowed",
                             },
                             {
@@ -1059,7 +1075,7 @@ class ManifestGeneratorCliTests(unittest.TestCase):
             self.assertEqual(0, result.returncode, result.stderr)
             public_header = (root / GENERATED_OUTPUTS[1]).read_text(encoding="utf-8")
             self.assertIn(
-                "int32_t kmipkit_client_batch_response_item_count(kmipkit_client_batch_response_t * response, uint64_t * out_count);",
+                "int32_t kmipkit_c_only_excluded_fixture(kmipkit_extension_schema_t * schema, uint64_t * out_count);",
                 public_header,
             )
 
