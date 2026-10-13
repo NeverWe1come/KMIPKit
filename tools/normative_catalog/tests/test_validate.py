@@ -21051,14 +21051,15 @@ class CatalogValidationTests(unittest.TestCase):
 
     def test_pgp_optional_evidence_is_scoped_to_client_import(self) -> None:
         """PGP MAY evidence is outbound only when supplied through client Import."""
+        expected_evidence = {
+            "KMIPKIT-REQ-SPEC-2.4-001-001": "evidence covers opaque Key Value byte preservation",
+            "KMIPKIT-REQ-SPEC-2.4-001-002": "evidence exercises Integer versions 3 and 4",
+        }
         catalog = json.loads((ROOT / "specification/catalog/kmip-2.1.json").read_text(encoding="utf-8"))
         requirements = {
             row["requirement_id"]: row
             for row in catalog["requirements"]
-            if row["requirement_id"] in {
-                "KMIPKIT-REQ-SPEC-2.4-001-001",
-                "KMIPKIT-REQ-SPEC-2.4-001-002",
-            }
+            if row["requirement_id"] in expected_evidence
         }
         fixture = json.loads(
             (ROOT / "tools/normative_catalog/tests/fixtures/profile-closure-v2.1.json").read_text(encoding="utf-8")
@@ -21069,11 +21070,9 @@ class CatalogValidationTests(unittest.TestCase):
             if row["source_clause_id"] == "KMIPKIT-CLAUSE-SPEC-2.4-001"
         )
 
-        self.assertEqual(set(requirements), {
-            "KMIPKIT-REQ-SPEC-2.4-001-001",
-            "KMIPKIT-REQ-SPEC-2.4-001-002",
-        })
-        for requirement in requirements.values():
+        self.assertEqual(set(requirements), set(expected_evidence))
+        for requirement_id, evidence_detail in expected_evidence.items():
+            requirement = requirements[requirement_id]
             with self.subTest(requirement_id=requirement["requirement_id"]):
                 self.assertEqual(requirement["direction"], "client_to_server")
                 self.assertIn(
@@ -21085,6 +21084,7 @@ class CatalogValidationTests(unittest.TestCase):
                 self.assertIn("client", condition.lower())
                 self.assertIn("import", condition.lower())
                 self.assertIn("table 238", condition.lower())
+                self.assertIn(evidence_detail, condition)
 
         self.assertTrue(
             all(obligation["direction"] == "unclear" for obligation in source_review["source_obligations"]),
