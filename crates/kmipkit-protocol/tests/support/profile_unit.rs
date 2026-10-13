@@ -2645,8 +2645,14 @@ fn profile_maps_client_get_attributes_response_x509_values() {
         .collect(),
     };
     selected
+        .validate_request(&request)
+        .expect("response-only optional rules do not reject the matching outbound request");
+    selected
         .validate_response(&request, &response)
         .expect("mapped client response rules accept the retained optional X.509 values");
+    selected
+        .validate_response(&request_message(), &response_message())
+        .expect("X.509 response rules do not constrain unrelated operations");
 }
 
 #[test]

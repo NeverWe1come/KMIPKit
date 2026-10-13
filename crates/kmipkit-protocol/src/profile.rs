@@ -678,6 +678,11 @@ const PGP_KEY_VERSION: u32 = 0x0042_00BE;
 const KEY_WRAPPING_DATA: u32 = 0x0042_0046;
 const WRAPPING_METHOD: u32 = 0x0042_009E;
 const ENCRYPTION_KEY_INFORMATION: u32 = 0x0042_0036;
+const GET_ATTRIBUTES_OPERATION: u32 = 0x0000_000B;
+const ATTRIBUTES: u32 = 0x0042_0125;
+const ISSUER_ALTERNATIVE_NAME: u32 = 0x0042_00B1;
+const SUBJECT_ALTERNATIVE_NAME: u32 = 0x0042_00B3;
+const SUBJECT_DISTINGUISHED_NAME: u32 = 0x0042_00B4;
 const MAC_SIGNATURE_KEY_INFORMATION: u32 = 0x0042_004E;
 const UNIQUE_IDENTIFIER: u32 = 0x0042_0094;
 const ENCODING_OPTION: u32 = 0x0042_00A3;
@@ -780,6 +785,57 @@ fn client_get_or_export_key_compression_type_is_enumeration(
             })
             .unwrap_or(false)
     })
+}
+
+fn client_response_preserves_x509_optional_values(
+    _request: Option<&RequestMessage>,
+    response: Option<(&RequestMessage, &ResponseMessage)>,
+) -> bool {
+    let Some((request, response)) = response else {
+        return true;
+    };
+
+    request
+        .batch_items()
+        .zip(response.batch_items())
+        .all(|(request_item, response_item)| {
+            if request_item.operation() != Some(GET_ATTRIBUTES_OPERATION) {
+                return true;
+            }
+            if response_item.operation() != Some(GET_ATTRIBUTES_OPERATION) {
+                return false;
+            }
+
+            response_item
+                .with_response_payload(|payload| {
+                    payload
+                        .children()
+                        .iter()
+                        .filter(|field| field.tag().raw() == ATTRIBUTES)
+                        .all(|field| {
+                            field.with_value(|value| match value {
+                                ValueView::Structure(attributes) => attributes
+                                    .children()
+                                    .iter()
+                                    .filter(|attribute| {
+                                        matches!(
+                                            attribute.tag().raw(),
+                                            ISSUER_ALTERNATIVE_NAME
+                                                | SUBJECT_ALTERNATIVE_NAME
+                                                | SUBJECT_DISTINGUISHED_NAME
+                                        )
+                                    })
+                                    .all(|attribute| {
+                                        attribute.with_value(|value| {
+                                            matches!(value, ValueView::ByteString(_))
+                                        })
+                                    }),
+                                _ => false,
+                            })
+                        })
+                })
+                .unwrap_or(true)
+        })
 }
 
 fn client_create_key_pair_domain_parameters_have_valid_wire_types(
@@ -1425,6 +1481,39 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
                 kind: RuleTestKind::OptionalCapabilityUsable,
             },
         ],
+        constraints: &[],
+    },
+    TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-4.62-003",
+        source_clause_id: "KMIPKIT-CLAUSE-SPEC-4.62-003",
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
+        evaluator: Some(client_response_preserves_x509_optional_values),
+        test_evidence: &[RuleTestEvidence {
+            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_client_get_attributes_response_x509_values",
+            kind: RuleTestKind::OptionalCapabilityUsable,
+        }],
+        constraints: &[],
+    },
+    TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-4.63-004",
+        source_clause_id: "KMIPKIT-CLAUSE-SPEC-4.63-004",
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
+        evaluator: Some(client_response_preserves_x509_optional_values),
+        test_evidence: &[RuleTestEvidence {
+            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_client_get_attributes_response_x509_values",
+            kind: RuleTestKind::OptionalCapabilityUsable,
+        }],
+        constraints: &[],
+    },
+    TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-4.63-005",
+        source_clause_id: "KMIPKIT-CLAUSE-SPEC-4.63-005",
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
+        evaluator: Some(client_response_preserves_x509_optional_values),
+        test_evidence: &[RuleTestEvidence {
+            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_client_get_attributes_response_x509_values",
+            kind: RuleTestKind::OptionalCapabilityUsable,
+        }],
         constraints: &[],
     },
     TypedRuleMapping {

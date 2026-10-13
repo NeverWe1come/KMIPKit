@@ -90554,10 +90554,10 @@
       "source_keyword": "MAY",
       "normative_strength": "permission_or_optional",
       "subject": "Issuer Alternative Name multiplicity",
-      "summary": "Issuer Alternative Name may occur more than once; the client response model should preserve repeated values.",
+      "summary": "The client response model preserves repeated Issuer Alternative Name Byte String values in source order without interpreting them.",
       "role": "client",
-      "direction": "unclear",
-      "condition": null,
+      "direction": "server_to_client",
+      "condition": "When the client supports the X.509 Certificate Issuer attribute.",
       "scope_state": "profile_conditional",
       "element_ids": [],
       "profile_ids": [
@@ -90582,12 +90582,12 @@
       ],
       "test_case_ids": [],
       "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": ["crates/kmipkit-protocol/src/profile.rs::client_response_preserves_x509_optional_values", "crates/kmipkit-protocol/src/get_attributes.rs::GetAttributesResponse::try_from_response_item"],
+      "verification_refs": ["crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_client_get_attributes_response_x509_values"],
       "negative_verification_required": false,
       "decision_id": null,
-      "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
+      "status": "scoped_verified",
+      "review_note": "Derived client response-decoder capability for Get Attributes (\u00a76.1.20, Table 224). \u00a74.62 Table 153 defines Issuer Alternative Name as a Byte String that MAY repeat. The client preserves each received value in order; the test does not claim that a server sets the attribute, that a certificate is valid, or that an official OASIS Test Case passed. Source: KMIP Specification v2.1 \u00a74.62, Table 153."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-4.63-003",
@@ -90633,10 +90633,10 @@
       "source_keyword": "MAY",
       "normative_strength": "permission_or_optional",
       "subject": "Subject Distinguished Name empty value",
-      "summary": "Subject Distinguished Name may be empty under the certificate conditions; the client response model should preserve that allowed empty value.",
+      "summary": "The client response model preserves an empty Subject Distinguished Name Byte String without validating the server-side critical Subject Alternative Name condition.",
       "role": "client",
-      "direction": "unclear",
-      "condition": "Subject may be empty only under the critical Subject Alternative Name condition in §4.63.",
+      "direction": "server_to_client",
+      "condition": "When the client supports the X.509 Certificate Subject attribute; the source-side critical Subject Alternative Name condition is not client-validated.",
       "scope_state": "profile_conditional",
       "element_ids": [],
       "profile_ids": [
@@ -90661,12 +90661,12 @@
       ],
       "test_case_ids": [],
       "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": ["crates/kmipkit-protocol/src/profile.rs::client_response_preserves_x509_optional_values", "crates/kmipkit-protocol/src/get_attributes.rs::GetAttributesResponse::try_from_response_item"],
+      "verification_refs": ["crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_client_get_attributes_response_x509_values"],
       "negative_verification_required": false,
       "decision_id": null,
-      "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
+      "status": "scoped_verified",
+      "review_note": "Derived client response-decoder capability for Get Attributes (\u00a76.1.20, Table 224). \u00a74.63 Table 155 permits the Subject Distinguished Name Byte String to be empty under the critical Subject Alternative Name certificate condition. The client preserves the received empty bytes but does not inspect or validate the certificate or impose the server's issuance condition. No official OASIS Test Case is linked or claimed passed. Source: KMIP Specification v2.1 \u00a74.63, Table 155."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-4.63-005",
@@ -90682,10 +90682,10 @@
       "source_keyword": "MAY",
       "normative_strength": "permission_or_optional",
       "subject": "Subject Alternative Name multiplicity",
-      "summary": "Subject Alternative Name may repeat when Subject Distinguished Name is empty; the client response model should preserve repeated values.",
+      "summary": "Subject Alternative Name Byte String values may repeat unconditionally; the client response model preserves each received value in order without applying the separate required-if-empty rule.",
       "role": "client",
-      "direction": "unclear",
-      "condition": "Only when Subject Distinguished Name is empty.",
+      "direction": "server_to_client",
+      "condition": "When the client supports the X.509 Certificate Subject attribute; repeatability is unconditional, while the separate presence requirement applies when Subject Distinguished Name is empty.",
       "scope_state": "profile_conditional",
       "element_ids": [],
       "profile_ids": [
@@ -90710,12 +90710,12 @@
       ],
       "test_case_ids": [],
       "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": ["crates/kmipkit-protocol/src/profile.rs::client_response_preserves_x509_optional_values", "crates/kmipkit-protocol/src/get_attributes.rs::GetAttributesResponse::try_from_response_item"],
+      "verification_refs": ["crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_client_get_attributes_response_x509_values"],
       "negative_verification_required": false,
       "decision_id": null,
-      "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
+      "status": "scoped_verified",
+      "review_note": "Derived client response-decoder capability for Get Attributes (\u00a76.1.20, Table 224). \u00a74.63 Table 155 permits Subject Alternative Name Byte Strings to repeat; its separate REQUIRED column requires presence when Subject Distinguished Name is empty. The client preserves repeated values in order and does not enforce that server-side presence rule. No official OASIS Test Case is linked or claimed passed. Source: KMIP Specification v2.1 \u00a74.63, Table 155."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-5.1-001",

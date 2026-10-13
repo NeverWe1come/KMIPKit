@@ -70903,8 +70903,8 @@
           "source_text": "Issuer Alternative Name Byte String, MAY be repeated No",
           "source_keyword": "MAY",
           "actor": "client decoder when the X.509 Certificate Issuer attribute is supported",
-          "direction": "preserve permitted repeated Issuer Alternative Name values",
-          "condition": "client supports the X.509 Certificate Issuer attribute",
+          "direction": "client receives the Get Attributes response and preserves repeated Issuer Alternative Name values",
+          "condition": "Client supports the X.509 Certificate Issuer attribute.",
           "scope_disposition": "profile_conditional",
           "candidate_requirement_id": "KMIPKIT-REQ-SPEC-4.62-003"
         }
@@ -71082,8 +71082,8 @@
           "source_text": "Subject Distinguished Name Byte String Yes, but MAY be the empty string",
           "source_keyword": "MAY",
           "actor": "client decoder when the X.509 Certificate Subject attribute is supported",
-          "direction": "accept an empty Subject Distinguished Name",
-          "condition": "Subject Alternative Name extension is included and marked critical in the certificate",
+          "direction": "client receives the Get Attributes response and preserves an empty Subject Distinguished Name value",
+          "condition": "Client supports the X.509 Certificate Subject attribute; the critical Subject Alternative Name condition is not client-validated.",
           "scope_disposition": "profile_conditional",
           "candidate_requirement_id": "KMIPKIT-REQ-SPEC-4.63-004"
         }
@@ -71116,8 +71116,8 @@
           "source_text": "Subject Alternative Name Byte String, MAY be repeated Yes, if the Subject Distinguished Name is an empty string.",
           "source_keyword": "MAY",
           "actor": "client decoder when the X.509 Certificate Subject attribute is supported",
-          "direction": "preserve repeated Subject Alternative Name values",
-          "condition": "Subject Distinguished Name is an empty string",
+          "direction": "client receives the Get Attributes response and preserves repeated Subject Alternative Name values",
+          "condition": "Client supports the X.509 Certificate Subject attribute; repeatability is unconditional and the separate presence rule applies when Subject Distinguished Name is empty.",
           "scope_disposition": "profile_conditional",
           "candidate_requirement_id": "KMIPKIT-REQ-SPEC-4.63-005"
         }
