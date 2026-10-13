@@ -25,13 +25,16 @@ class OpaqueObjectTraceabilityTests(unittest.TestCase):
     def test_each_context_requirement_has_source_code_positive_and_negative_evidence(self) -> None:
         self.assertTrue(TRACEABILITY.is_file(), "feature traceability ledger must exist")
         lines = TRACEABILITY.read_text(encoding="utf-8").splitlines()
-        rows = {
-            cells[0].strip("`"): cells
-            for line in lines
-            if line.startswith("|")
-            for cells in [[cell.strip() for cell in line.strip("|").split("|")]]
-            if len(cells) == 5 and cells[0].strip("`").startswith("KMIPKIT-REQ-SPEC-")
-        }
+        rows: dict[str, list[str]] = {}
+        for line in lines:
+            if not line.startswith("|"):
+                continue
+            cells = [cell.strip() for cell in line.strip("|").split("|")]
+            if len(cells) != 5 or not cells[0].strip("`").startswith("KMIPKIT-REQ-SPEC-"):
+                continue
+            requirement_id = cells[0].strip("`")
+            self.assertNotIn(requirement_id, rows, f"duplicate traceability row: {requirement_id}")
+            rows[requirement_id] = cells
 
         self.assertEqual(set(rows), set(REQUIREMENTS))
         for requirement_id, source_locator in REQUIREMENTS.items():
