@@ -421,6 +421,96 @@ fn selected_opaque_context_for_certificate_register_is_not_sent() {
     assert_eq!(fake.borrow().write_call_count(), 0);
 }
 
+// OASIS KMIP v2.1 §2.3, Table 4; §6.1.43, Table 291; generic context has no Table 293 override.
+#[test]
+fn generic_opaque_register_sends_once_without_a_context_wire_marker() {
+    let request = RegisterRequest::new(
+        ObjectType::from_raw(OPAQUE_OBJECT_TYPE),
+        AttributeSet::try_new([]).expect("an empty generic attribute set is valid"),
+        test_item(
+            OPAQUE_OBJECT,
+            Value::structure(test_structure([
+                test_item(OPAQUE_DATA_TYPE, Value::enumeration(0x8000_0001)),
+                test_item(
+                    OPAQUE_DATA_VALUE,
+                    Value::byte_string(b"generic-opaque-data".to_vec()),
+                ),
+            ])),
+        ),
+    );
+    let response = asynchronous_response_bytes(
+        REGISTER_OPERATION,
+        SUCCESS,
+        None,
+        None,
+        Some(test_structure([test_item(
+            UNIQUE_IDENTIFIER,
+            Value::text_string("registered-generic-opaque-object".to_owned()),
+        )])),
+    );
+    let (mut client, fake, captured) = client_for(ExchangeScript::Success {
+        response,
+        request_write_chunks: Vec::new(),
+    });
+
+    client
+        .register(request, &CodecLimits::defaults())
+        .expect("default Generic Opaque Object Register is eligible for one exchange");
+
+    let request = captured.borrow();
+    let request = request
+        .as_deref()
+        .expect("the fake transport captures the encoded Register request");
+    let (operation, fields, nested) = request_fields(request, 0);
+    assert_eq!(operation, Some(REGISTER_OPERATION));
+    assert_eq!(fields, [OBJECT_TYPE, ATTRIBUTES, OPAQUE_OBJECT]);
+    assert_eq!(
+        nested,
+        [vec![], vec![OPAQUE_DATA_TYPE, OPAQUE_DATA_VALUE]],
+        "the local context is absent and Table 4 children stay ordered"
+    );
+    assert!(register_attribute_values(request, 0).is_empty());
+    assert_eq!(fake.borrow().exchange_count(), 1);
+    assert_eq!(fake.borrow().write_call_count(), 1);
+}
+
+// OASIS KMIP v2.1 §2.3, Table 4 requires both Opaque Data Type and Opaque Data Value.
+#[test]
+fn malformed_table_4_opaque_object_is_not_sent() {
+    let request = RegisterRequest::new(
+        ObjectType::from_raw(OPAQUE_OBJECT_TYPE),
+        AttributeSet::try_new([]).expect("an empty generic attribute set is valid"),
+        test_item(
+            OPAQUE_OBJECT,
+            Value::structure(test_structure([test_item(
+                OPAQUE_DATA_TYPE,
+                Value::enumeration(0x8000_0001),
+            )])),
+        ),
+    );
+    let (mut client, fake, captured) = client_for(ExchangeScript::Success {
+        response: Vec::new(),
+        request_write_chunks: Vec::new(),
+    });
+
+    let error = client
+        .register(request, &CodecLimits::defaults())
+        .expect_err("Table 4 requires Opaque Data Value as well as Opaque Data Type");
+
+    assert_eq!(error.category(), ClientErrorCategory::Validation);
+    assert_eq!(
+        error.cause_category(),
+        Some(crate::ClientCauseCategory::InvalidInput)
+    );
+    assert_eq!(error.delivery_state(), Some(RequestDeliveryState::NotSent));
+    assert!(
+        captured.borrow().is_none(),
+        "malformed input is not encoded"
+    );
+    assert_eq!(fake.borrow().exchange_count(), 0);
+    assert_eq!(fake.borrow().write_call_count(), 0);
+}
+
 // OASIS KMIP v2.1 §2.3, Table 4; §6.1.43, Tables 291 and 293; §11.34, Table 468.
 #[test]
 fn managed_opaque_register_preserves_standard_table_291_wire_shape_and_attribute_order() {
