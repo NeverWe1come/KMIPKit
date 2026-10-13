@@ -11,11 +11,11 @@ Every response is paired with the existing typed KMIP operation result and batch
 | Model | Request fields | Response fields | Wire source |
 | --- | --- | --- | --- |
 | `GetConstraintsRequest` | No operation-specific members | `constraints: Structure` (required) | §6.1.22, Tables 229–230; Constraints §7.7 |
-| `GetUsageAllocationRequest` | `unique_identifier: Option<UniqueIdentifier>`; `usage_limits_count: i64` (required, TTLV Long Integer) | `unique_identifier: UniqueIdentifier` (required) | §6.1.23, Tables 232–233; §4.59, Table 148 |
+| `GetUsageAllocationRequest` | `unique_identifier: Option<UniqueIdentifier>`; `usage_limits_count: i64` (required, TTLV Long Integer) | `unique_identifier: UniqueIdentifier` (required) | §6.1.23, Tables 232–233; §7.40, Table 392 |
 | `SetConstraintsRequest` | `constraints: Structure` (required) | Empty operation-specific payload | §6.1.52, Tables 325–326; Constraints §7.7 |
 | `SetDefaultsRequest` | `defaults_information: Option<Structure>` | Empty operation-specific payload | §6.1.53, Tables 328–329; Defaults Information §7.11 |
 
-Structure members retain TTLV order and unknown nested elements. `OpenEnumeration` means raw numeric values are retained, including future/vendor values. Optional absence remains distinct from an empty Structure. `Usage Limits Count` uses the KMIP Long Integer wire type (`i64`) specified by §4.59, Table 148; the operation codec must not encode it as Integer or unsigned Integer.
+Structure members retain TTLV order and unknown nested elements. `OpenEnumeration` means raw numeric values are retained, including future/vendor values. Optional absence remains distinct from an empty Structure. `Usage Limits Count` uses the KMIP Long Integer wire type (`i64`) specified by §7.40, Table 392; the operation codec must not encode it as Integer or unsigned Integer.
 
 ### Error forms
 
