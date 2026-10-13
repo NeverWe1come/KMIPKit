@@ -357,15 +357,9 @@ fn cryptographic_algorithm_and_length_satisfy_register_requirements(
 ) -> bool {
     let has_algorithm = has_attribute(attributes, CRYPTOGRAPHIC_ALGORITHM);
     let has_length = has_attribute(attributes, CRYPTOGRAPHIC_LENGTH);
-    if has_algorithm != has_length {
-        return false;
-    }
 
-    has_algorithm
-        || object.is_some_and(|object| {
-            key_block_has(object, CRYPTOGRAPHIC_ALGORITHM)
-                && key_block_has(object, CRYPTOGRAPHIC_LENGTH)
-        })
+    (has_algorithm || object.is_some_and(|object| key_block_has(object, CRYPTOGRAPHIC_ALGORITHM)))
+        && (has_length || object.is_some_and(|object| key_block_has(object, CRYPTOGRAPHIC_LENGTH)))
 }
 
 fn opaque_object_has_required_fields(object: &Item) -> bool {
