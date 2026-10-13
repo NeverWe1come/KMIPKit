@@ -27629,8 +27629,8 @@
           "linked_case_id": "BL-M-1-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-1-3-1",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/BL-M-1-21.xml"
         },
         {
           "source_section": "5.1.3.10",
@@ -27642,8 +27642,8 @@
           "linked_case_id": "BL-M-10-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-1-3-10",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/BL-M-10-21.xml"
         },
         {
           "source_section": "5.1.3.11",
@@ -27655,8 +27655,8 @@
           "linked_case_id": "BL-M-11-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-1-3-11",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/BL-M-11-21.xml"
         },
         {
           "source_section": "5.1.3.12",
@@ -27668,8 +27668,8 @@
           "linked_case_id": "BL-M-12-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-1-3-12",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/BL-M-12-21.xml"
         },
         {
           "source_section": "5.1.3.13",
@@ -27681,8 +27681,8 @@
           "linked_case_id": "BL-M-13-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-1-3-13",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/BL-M-13-21.xml"
         },
         {
           "source_section": "5.1.3.2",
@@ -27694,8 +27694,8 @@
           "linked_case_id": "BL-M-2-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-1-3-2",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/BL-M-2-21.xml"
         },
         {
           "source_section": "5.1.3.3",
@@ -27707,8 +27707,8 @@
           "linked_case_id": "BL-M-3-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-1-3-3",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/BL-M-3-21.xml"
         },
         {
           "source_section": "5.1.3.4",
@@ -27720,8 +27720,8 @@
           "linked_case_id": "BL-M-4-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-1-3-4",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/BL-M-4-21.xml"
         },
         {
           "source_section": "5.1.3.5",
@@ -27733,8 +27733,8 @@
           "linked_case_id": "BL-M-5-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-1-3-5",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/BL-M-5-21.xml"
         },
         {
           "source_section": "5.1.3.6",
@@ -27746,8 +27746,8 @@
           "linked_case_id": "BL-M-6-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-1-3-6",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/BL-M-6-21.xml"
         },
         {
           "source_section": "5.1.3.7",
@@ -27759,8 +27759,8 @@
           "linked_case_id": "BL-M-7-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-1-3-7",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/BL-M-7-21.xml"
         },
         {
           "source_section": "5.1.3.8",
@@ -27772,8 +27772,8 @@
           "linked_case_id": "BL-M-8-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-1-3-8",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/BL-M-8-21.xml"
         },
         {
           "source_section": "5.1.3.9",
@@ -27785,8 +27785,8 @@
           "linked_case_id": "BL-M-9-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-1-3-9",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/BL-M-9-21.xml"
         },
         {
           "source_section": "5.13.3.1",
@@ -27824,8 +27824,8 @@
           "linked_case_id": "SKLC-M-1-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-6-3-1",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/SKLC-M-1-21.xml"
         },
         {
           "source_section": "5.6.3.2",
@@ -27837,8 +27837,8 @@
           "linked_case_id": "SKLC-M-2-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-6-3-2",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/SKLC-M-2-21.xml"
         },
         {
           "source_section": "5.6.3.3",
@@ -27850,8 +27850,8 @@
           "linked_case_id": "SKLC-M-3-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-6-3-3",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/SKLC-M-3-21.xml"
         }
       ],
       "direct_root_exclusions": []
@@ -29372,8 +29372,8 @@
           "linked_case_id": "BL-M-1-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-1-3-1",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/BL-M-1-21.xml"
         },
         {
           "source_section": "5.1.3.10",
@@ -29385,8 +29385,8 @@
           "linked_case_id": "BL-M-10-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-1-3-10",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/BL-M-10-21.xml"
         },
         {
           "source_section": "5.1.3.11",
@@ -29398,8 +29398,8 @@
           "linked_case_id": "BL-M-11-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-1-3-11",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/BL-M-11-21.xml"
         },
         {
           "source_section": "5.1.3.12",
@@ -29411,8 +29411,8 @@
           "linked_case_id": "BL-M-12-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-1-3-12",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/BL-M-12-21.xml"
         },
         {
           "source_section": "5.1.3.13",
@@ -29424,8 +29424,8 @@
           "linked_case_id": "BL-M-13-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-1-3-13",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/BL-M-13-21.xml"
         },
         {
           "source_section": "5.1.3.2",
@@ -29437,8 +29437,8 @@
           "linked_case_id": "BL-M-2-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-1-3-2",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/BL-M-2-21.xml"
         },
         {
           "source_section": "5.1.3.3",
@@ -29450,8 +29450,8 @@
           "linked_case_id": "BL-M-3-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-1-3-3",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/BL-M-3-21.xml"
         },
         {
           "source_section": "5.1.3.4",
@@ -29463,8 +29463,8 @@
           "linked_case_id": "BL-M-4-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-1-3-4",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/BL-M-4-21.xml"
         },
         {
           "source_section": "5.1.3.5",
@@ -29476,8 +29476,8 @@
           "linked_case_id": "BL-M-5-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-1-3-5",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/BL-M-5-21.xml"
         },
         {
           "source_section": "5.1.3.6",
@@ -29489,8 +29489,8 @@
           "linked_case_id": "BL-M-6-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-1-3-6",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/BL-M-6-21.xml"
         },
         {
           "source_section": "5.1.3.7",
@@ -29502,8 +29502,8 @@
           "linked_case_id": "BL-M-7-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-1-3-7",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/BL-M-7-21.xml"
         },
         {
           "source_section": "5.1.3.8",
@@ -29515,8 +29515,8 @@
           "linked_case_id": "BL-M-8-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-1-3-8",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/BL-M-8-21.xml"
         },
         {
           "source_section": "5.1.3.9",
@@ -29528,8 +29528,8 @@
           "linked_case_id": "BL-M-9-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-1-3-9",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/BL-M-9-21.xml"
         },
         {
           "source_section": "5.6.3.1",
@@ -29541,8 +29541,8 @@
           "linked_case_id": "SKLC-M-1-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-6-3-1",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/SKLC-M-1-21.xml"
         },
         {
           "source_section": "5.6.3.2",
@@ -29554,8 +29554,8 @@
           "linked_case_id": "SKLC-M-2-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-6-3-2",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/SKLC-M-2-21.xml"
         },
         {
           "source_section": "5.6.3.3",
@@ -29567,8 +29567,8 @@
           "linked_case_id": "SKLC-M-3-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-6-3-3",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/SKLC-M-3-21.xml"
         },
         {
           "source_section": "5.8.3.1",
@@ -31116,8 +31116,8 @@
           "linked_case_id": "BL-M-1-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-1-3-1",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/BL-M-1-21.xml"
         },
         {
           "source_section": "5.1.3.10",
@@ -31129,8 +31129,8 @@
           "linked_case_id": "BL-M-10-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-1-3-10",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/BL-M-10-21.xml"
         },
         {
           "source_section": "5.1.3.11",
@@ -31142,8 +31142,8 @@
           "linked_case_id": "BL-M-11-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-1-3-11",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/BL-M-11-21.xml"
         },
         {
           "source_section": "5.1.3.12",
@@ -31155,8 +31155,8 @@
           "linked_case_id": "BL-M-12-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-1-3-12",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/BL-M-12-21.xml"
         },
         {
           "source_section": "5.1.3.13",
@@ -31168,8 +31168,8 @@
           "linked_case_id": "BL-M-13-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-1-3-13",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/BL-M-13-21.xml"
         },
         {
           "source_section": "5.1.3.2",
@@ -31181,8 +31181,8 @@
           "linked_case_id": "BL-M-2-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-1-3-2",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/BL-M-2-21.xml"
         },
         {
           "source_section": "5.1.3.3",
@@ -31194,8 +31194,8 @@
           "linked_case_id": "BL-M-3-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-1-3-3",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/BL-M-3-21.xml"
         },
         {
           "source_section": "5.1.3.4",
@@ -31207,8 +31207,8 @@
           "linked_case_id": "BL-M-4-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-1-3-4",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/BL-M-4-21.xml"
         },
         {
           "source_section": "5.1.3.5",
@@ -31220,8 +31220,8 @@
           "linked_case_id": "BL-M-5-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-1-3-5",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/BL-M-5-21.xml"
         },
         {
           "source_section": "5.1.3.6",
@@ -31233,8 +31233,8 @@
           "linked_case_id": "BL-M-6-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-1-3-6",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/BL-M-6-21.xml"
         },
         {
           "source_section": "5.1.3.7",
@@ -31246,8 +31246,8 @@
           "linked_case_id": "BL-M-7-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-1-3-7",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/BL-M-7-21.xml"
         },
         {
           "source_section": "5.1.3.8",
@@ -31259,8 +31259,8 @@
           "linked_case_id": "BL-M-8-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-1-3-8",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/BL-M-8-21.xml"
         },
         {
           "source_section": "5.1.3.9",
@@ -31272,8 +31272,8 @@
           "linked_case_id": "BL-M-9-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-1-3-9",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/BL-M-9-21.xml"
         },
         {
           "source_section": "5.6.3.1",
@@ -31285,8 +31285,8 @@
           "linked_case_id": "SKLC-M-1-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-6-3-1",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/SKLC-M-1-21.xml"
         },
         {
           "source_section": "5.6.3.2",
@@ -31298,8 +31298,8 @@
           "linked_case_id": "SKLC-M-2-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-6-3-2",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/SKLC-M-2-21.xml"
         },
         {
           "source_section": "5.6.3.3",
@@ -31311,8 +31311,8 @@
           "linked_case_id": "SKLC-M-3-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-6-3-3",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/SKLC-M-3-21.xml"
         }
       ],
       "direct_root_exclusions": []
@@ -32837,8 +32837,8 @@
           "linked_case_id": "BL-M-1-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-1-3-1",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/BL-M-1-21.xml"
         },
         {
           "source_section": "5.1.3.10",
@@ -32850,8 +32850,8 @@
           "linked_case_id": "BL-M-10-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-1-3-10",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/BL-M-10-21.xml"
         },
         {
           "source_section": "5.1.3.11",
@@ -32863,8 +32863,8 @@
           "linked_case_id": "BL-M-11-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-1-3-11",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/BL-M-11-21.xml"
         },
         {
           "source_section": "5.1.3.12",
@@ -32876,8 +32876,8 @@
           "linked_case_id": "BL-M-12-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-1-3-12",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/BL-M-12-21.xml"
         },
         {
           "source_section": "5.1.3.13",
@@ -32889,8 +32889,8 @@
           "linked_case_id": "BL-M-13-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-1-3-13",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/BL-M-13-21.xml"
         },
         {
           "source_section": "5.1.3.2",
@@ -32902,8 +32902,8 @@
           "linked_case_id": "BL-M-2-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-1-3-2",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/BL-M-2-21.xml"
         },
         {
           "source_section": "5.1.3.3",
@@ -32915,8 +32915,8 @@
           "linked_case_id": "BL-M-3-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-1-3-3",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/BL-M-3-21.xml"
         },
         {
           "source_section": "5.1.3.4",
@@ -32928,8 +32928,8 @@
           "linked_case_id": "BL-M-4-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-1-3-4",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/BL-M-4-21.xml"
         },
         {
           "source_section": "5.1.3.5",
@@ -32941,8 +32941,8 @@
           "linked_case_id": "BL-M-5-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-1-3-5",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/BL-M-5-21.xml"
         },
         {
           "source_section": "5.1.3.6",
@@ -32954,8 +32954,8 @@
           "linked_case_id": "BL-M-6-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-1-3-6",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/BL-M-6-21.xml"
         },
         {
           "source_section": "5.1.3.7",
@@ -32967,8 +32967,8 @@
           "linked_case_id": "BL-M-7-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-1-3-7",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/BL-M-7-21.xml"
         },
         {
           "source_section": "5.1.3.8",
@@ -32980,8 +32980,8 @@
           "linked_case_id": "BL-M-8-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-1-3-8",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/BL-M-8-21.xml"
         },
         {
           "source_section": "5.1.3.9",
@@ -32993,8 +32993,8 @@
           "linked_case_id": "BL-M-9-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-1-3-9",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/BL-M-9-21.xml"
         },
         {
           "source_section": "5.6.3.1",
@@ -33006,8 +33006,8 @@
           "linked_case_id": "SKLC-M-1-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-6-3-1",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/SKLC-M-1-21.xml"
         },
         {
           "source_section": "5.6.3.2",
@@ -33019,8 +33019,8 @@
           "linked_case_id": "SKLC-M-2-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-6-3-2",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/SKLC-M-2-21.xml"
         },
         {
           "source_section": "5.6.3.3",
@@ -33032,8 +33032,8 @@
           "linked_case_id": "SKLC-M-3-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-6-3-3",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/SKLC-M-3-21.xml"
         },
         {
           "source_section": "5.9.8.1",
@@ -34792,8 +34792,8 @@
           "linked_case_id": "BL-M-1-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-1-3-1",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/BL-M-1-21.xml"
         },
         {
           "source_section": "5.1.3.10",
@@ -34805,8 +34805,8 @@
           "linked_case_id": "BL-M-10-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-1-3-10",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/BL-M-10-21.xml"
         },
         {
           "source_section": "5.1.3.11",
@@ -34818,8 +34818,8 @@
           "linked_case_id": "BL-M-11-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-1-3-11",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/BL-M-11-21.xml"
         },
         {
           "source_section": "5.1.3.12",
@@ -34831,8 +34831,8 @@
           "linked_case_id": "BL-M-12-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-1-3-12",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/BL-M-12-21.xml"
         },
         {
           "source_section": "5.1.3.13",
@@ -34844,8 +34844,8 @@
           "linked_case_id": "BL-M-13-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-1-3-13",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/BL-M-13-21.xml"
         },
         {
           "source_section": "5.1.3.2",
@@ -34857,8 +34857,8 @@
           "linked_case_id": "BL-M-2-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-1-3-2",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/BL-M-2-21.xml"
         },
         {
           "source_section": "5.1.3.3",
@@ -34870,8 +34870,8 @@
           "linked_case_id": "BL-M-3-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-1-3-3",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/BL-M-3-21.xml"
         },
         {
           "source_section": "5.1.3.4",
@@ -34883,8 +34883,8 @@
           "linked_case_id": "BL-M-4-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-1-3-4",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/BL-M-4-21.xml"
         },
         {
           "source_section": "5.1.3.5",
@@ -34896,8 +34896,8 @@
           "linked_case_id": "BL-M-5-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-1-3-5",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/BL-M-5-21.xml"
         },
         {
           "source_section": "5.1.3.6",
@@ -34909,8 +34909,8 @@
           "linked_case_id": "BL-M-6-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-1-3-6",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/BL-M-6-21.xml"
         },
         {
           "source_section": "5.1.3.7",
@@ -34922,8 +34922,8 @@
           "linked_case_id": "BL-M-7-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-1-3-7",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/BL-M-7-21.xml"
         },
         {
           "source_section": "5.1.3.8",
@@ -34935,8 +34935,8 @@
           "linked_case_id": "BL-M-8-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-1-3-8",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/BL-M-8-21.xml"
         },
         {
           "source_section": "5.1.3.9",
@@ -34948,8 +34948,8 @@
           "linked_case_id": "BL-M-9-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-1-3-9",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/BL-M-9-21.xml"
         },
         {
           "source_section": "5.6.3.1",
@@ -34961,8 +34961,8 @@
           "linked_case_id": "SKLC-M-1-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-6-3-1",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/SKLC-M-1-21.xml"
         },
         {
           "source_section": "5.6.3.2",
@@ -34974,8 +34974,8 @@
           "linked_case_id": "SKLC-M-2-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-6-3-2",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/SKLC-M-2-21.xml"
         },
         {
           "source_section": "5.6.3.3",
@@ -34987,8 +34987,8 @@
           "linked_case_id": "SKLC-M-3-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-6-3-3",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/SKLC-M-3-21.xml"
         },
         {
           "source_section": "5.9.7.1",
@@ -36786,8 +36786,8 @@
           "linked_case_id": "BL-M-1-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-1-3-1",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/BL-M-1-21.xml"
         },
         {
           "source_section": "5.1.3.10",
@@ -36799,8 +36799,8 @@
           "linked_case_id": "BL-M-10-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-1-3-10",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/BL-M-10-21.xml"
         },
         {
           "source_section": "5.1.3.11",
@@ -36812,8 +36812,8 @@
           "linked_case_id": "BL-M-11-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-1-3-11",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/BL-M-11-21.xml"
         },
         {
           "source_section": "5.1.3.12",
@@ -36825,8 +36825,8 @@
           "linked_case_id": "BL-M-12-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-1-3-12",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/BL-M-12-21.xml"
         },
         {
           "source_section": "5.1.3.13",
@@ -36838,8 +36838,8 @@
           "linked_case_id": "BL-M-13-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-1-3-13",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/BL-M-13-21.xml"
         },
         {
           "source_section": "5.1.3.2",
@@ -36851,8 +36851,8 @@
           "linked_case_id": "BL-M-2-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-1-3-2",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/BL-M-2-21.xml"
         },
         {
           "source_section": "5.1.3.3",
@@ -36864,8 +36864,8 @@
           "linked_case_id": "BL-M-3-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-1-3-3",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/BL-M-3-21.xml"
         },
         {
           "source_section": "5.1.3.4",
@@ -36877,8 +36877,8 @@
           "linked_case_id": "BL-M-4-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-1-3-4",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/BL-M-4-21.xml"
         },
         {
           "source_section": "5.1.3.5",
@@ -36890,8 +36890,8 @@
           "linked_case_id": "BL-M-5-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-1-3-5",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/BL-M-5-21.xml"
         },
         {
           "source_section": "5.1.3.6",
@@ -36903,8 +36903,8 @@
           "linked_case_id": "BL-M-6-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-1-3-6",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/BL-M-6-21.xml"
         },
         {
           "source_section": "5.1.3.7",
@@ -36916,8 +36916,8 @@
           "linked_case_id": "BL-M-7-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-1-3-7",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/BL-M-7-21.xml"
         },
         {
           "source_section": "5.1.3.8",
@@ -36929,8 +36929,8 @@
           "linked_case_id": "BL-M-8-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-1-3-8",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/BL-M-8-21.xml"
         },
         {
           "source_section": "5.1.3.9",
@@ -36942,8 +36942,8 @@
           "linked_case_id": "BL-M-9-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-1-3-9",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/BL-M-9-21.xml"
         },
         {
           "source_section": "5.6.3.1",
@@ -36955,8 +36955,8 @@
           "linked_case_id": "SKLC-M-1-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-6-3-1",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/SKLC-M-1-21.xml"
         },
         {
           "source_section": "5.6.3.2",
@@ -36968,8 +36968,8 @@
           "linked_case_id": "SKLC-M-2-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-6-3-2",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/SKLC-M-2-21.xml"
         },
         {
           "source_section": "5.6.3.3",
@@ -36981,8 +36981,8 @@
           "linked_case_id": "SKLC-M-3-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-6-3-3",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/SKLC-M-3-21.xml"
         },
         {
           "source_section": "5.9.10.1",
@@ -38610,8 +38610,8 @@
           "linked_case_id": "BL-M-1-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-1-3-1",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/BL-M-1-21.xml"
         },
         {
           "source_section": "5.1.3.10",
@@ -38623,8 +38623,8 @@
           "linked_case_id": "BL-M-10-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-1-3-10",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/BL-M-10-21.xml"
         },
         {
           "source_section": "5.1.3.11",
@@ -38636,8 +38636,8 @@
           "linked_case_id": "BL-M-11-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-1-3-11",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/BL-M-11-21.xml"
         },
         {
           "source_section": "5.1.3.12",
@@ -38649,8 +38649,8 @@
           "linked_case_id": "BL-M-12-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-1-3-12",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/BL-M-12-21.xml"
         },
         {
           "source_section": "5.1.3.13",
@@ -38662,8 +38662,8 @@
           "linked_case_id": "BL-M-13-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-1-3-13",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/BL-M-13-21.xml"
         },
         {
           "source_section": "5.1.3.2",
@@ -38675,8 +38675,8 @@
           "linked_case_id": "BL-M-2-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-1-3-2",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/BL-M-2-21.xml"
         },
         {
           "source_section": "5.1.3.3",
@@ -38688,8 +38688,8 @@
           "linked_case_id": "BL-M-3-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-1-3-3",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/BL-M-3-21.xml"
         },
         {
           "source_section": "5.1.3.4",
@@ -38701,8 +38701,8 @@
           "linked_case_id": "BL-M-4-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-1-3-4",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/BL-M-4-21.xml"
         },
         {
           "source_section": "5.1.3.5",
@@ -38714,8 +38714,8 @@
           "linked_case_id": "BL-M-5-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-1-3-5",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/BL-M-5-21.xml"
         },
         {
           "source_section": "5.1.3.6",
@@ -38727,8 +38727,8 @@
           "linked_case_id": "BL-M-6-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-1-3-6",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/BL-M-6-21.xml"
         },
         {
           "source_section": "5.1.3.7",
@@ -38740,8 +38740,8 @@
           "linked_case_id": "BL-M-7-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-1-3-7",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/BL-M-7-21.xml"
         },
         {
           "source_section": "5.1.3.8",
@@ -38753,8 +38753,8 @@
           "linked_case_id": "BL-M-8-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-1-3-8",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/BL-M-8-21.xml"
         },
         {
           "source_section": "5.1.3.9",
@@ -38766,8 +38766,8 @@
           "linked_case_id": "BL-M-9-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-1-3-9",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/BL-M-9-21.xml"
         },
         {
           "source_section": "5.3.3.1",
@@ -38792,8 +38792,8 @@
           "linked_case_id": "SKLC-M-1-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-6-3-1",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/SKLC-M-1-21.xml"
         },
         {
           "source_section": "5.6.3.2",
@@ -38805,8 +38805,8 @@
           "linked_case_id": "SKLC-M-2-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-6-3-2",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/SKLC-M-2-21.xml"
         },
         {
           "source_section": "5.6.3.3",
@@ -38818,8 +38818,8 @@
           "linked_case_id": "SKLC-M-3-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-6-3-3",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/SKLC-M-3-21.xml"
         }
       ],
       "direct_root_exclusions": [
@@ -40337,8 +40337,8 @@
           "linked_case_id": "BL-M-1-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-1-3-1",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/BL-M-1-21.xml"
         },
         {
           "source_section": "5.1.3.10",
@@ -40350,8 +40350,8 @@
           "linked_case_id": "BL-M-10-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-1-3-10",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/BL-M-10-21.xml"
         },
         {
           "source_section": "5.1.3.11",
@@ -40363,8 +40363,8 @@
           "linked_case_id": "BL-M-11-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-1-3-11",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/BL-M-11-21.xml"
         },
         {
           "source_section": "5.1.3.12",
@@ -40376,8 +40376,8 @@
           "linked_case_id": "BL-M-12-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-1-3-12",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/BL-M-12-21.xml"
         },
         {
           "source_section": "5.1.3.13",
@@ -40389,8 +40389,8 @@
           "linked_case_id": "BL-M-13-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-1-3-13",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/BL-M-13-21.xml"
         },
         {
           "source_section": "5.1.3.2",
@@ -40402,8 +40402,8 @@
           "linked_case_id": "BL-M-2-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-1-3-2",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/BL-M-2-21.xml"
         },
         {
           "source_section": "5.1.3.3",
@@ -40415,8 +40415,8 @@
           "linked_case_id": "BL-M-3-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-1-3-3",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/BL-M-3-21.xml"
         },
         {
           "source_section": "5.1.3.4",
@@ -40428,8 +40428,8 @@
           "linked_case_id": "BL-M-4-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-1-3-4",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/BL-M-4-21.xml"
         },
         {
           "source_section": "5.1.3.5",
@@ -40441,8 +40441,8 @@
           "linked_case_id": "BL-M-5-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-1-3-5",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/BL-M-5-21.xml"
         },
         {
           "source_section": "5.1.3.6",
@@ -40454,8 +40454,8 @@
           "linked_case_id": "BL-M-6-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-1-3-6",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/BL-M-6-21.xml"
         },
         {
           "source_section": "5.1.3.7",
@@ -40467,8 +40467,8 @@
           "linked_case_id": "BL-M-7-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-1-3-7",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/BL-M-7-21.xml"
         },
         {
           "source_section": "5.1.3.8",
@@ -40480,8 +40480,8 @@
           "linked_case_id": "BL-M-8-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-1-3-8",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/BL-M-8-21.xml"
         },
         {
           "source_section": "5.1.3.9",
@@ -40493,8 +40493,8 @@
           "linked_case_id": "BL-M-9-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-1-3-9",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/BL-M-9-21.xml"
         },
         {
           "source_section": "5.5.4.1",
@@ -40519,8 +40519,8 @@
           "linked_case_id": "SKLC-M-1-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-6-3-1",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/SKLC-M-1-21.xml"
         },
         {
           "source_section": "5.6.3.2",
@@ -40532,8 +40532,8 @@
           "linked_case_id": "SKLC-M-2-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-6-3-2",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/SKLC-M-2-21.xml"
         },
         {
           "source_section": "5.6.3.3",
@@ -40545,8 +40545,8 @@
           "linked_case_id": "SKLC-M-3-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-6-3-3",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/SKLC-M-3-21.xml"
         }
       ],
       "direct_root_exclusions": []
@@ -42067,8 +42067,8 @@
           "linked_case_id": "BL-M-1-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-1-3-1",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/BL-M-1-21.xml"
         },
         {
           "source_section": "5.1.3.10",
@@ -42080,8 +42080,8 @@
           "linked_case_id": "BL-M-10-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-1-3-10",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/BL-M-10-21.xml"
         },
         {
           "source_section": "5.1.3.11",
@@ -42093,8 +42093,8 @@
           "linked_case_id": "BL-M-11-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-1-3-11",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/BL-M-11-21.xml"
         },
         {
           "source_section": "5.1.3.12",
@@ -42106,8 +42106,8 @@
           "linked_case_id": "BL-M-12-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-1-3-12",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/BL-M-12-21.xml"
         },
         {
           "source_section": "5.1.3.13",
@@ -42119,8 +42119,8 @@
           "linked_case_id": "BL-M-13-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-1-3-13",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/BL-M-13-21.xml"
         },
         {
           "source_section": "5.1.3.2",
@@ -42132,8 +42132,8 @@
           "linked_case_id": "BL-M-2-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-1-3-2",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/BL-M-2-21.xml"
         },
         {
           "source_section": "5.1.3.3",
@@ -42145,8 +42145,8 @@
           "linked_case_id": "BL-M-3-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-1-3-3",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/BL-M-3-21.xml"
         },
         {
           "source_section": "5.1.3.4",
@@ -42158,8 +42158,8 @@
           "linked_case_id": "BL-M-4-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-1-3-4",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/BL-M-4-21.xml"
         },
         {
           "source_section": "5.1.3.5",
@@ -42171,8 +42171,8 @@
           "linked_case_id": "BL-M-5-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-1-3-5",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/BL-M-5-21.xml"
         },
         {
           "source_section": "5.1.3.6",
@@ -42184,8 +42184,8 @@
           "linked_case_id": "BL-M-6-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-1-3-6",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/BL-M-6-21.xml"
         },
         {
           "source_section": "5.1.3.7",
@@ -42197,8 +42197,8 @@
           "linked_case_id": "BL-M-7-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-1-3-7",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/BL-M-7-21.xml"
         },
         {
           "source_section": "5.1.3.8",
@@ -42210,8 +42210,8 @@
           "linked_case_id": "BL-M-8-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-1-3-8",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/BL-M-8-21.xml"
         },
         {
           "source_section": "5.1.3.9",
@@ -42223,8 +42223,8 @@
           "linked_case_id": "BL-M-9-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-1-3-9",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/BL-M-9-21.xml"
         },
         {
           "source_section": "5.10.3.1",
@@ -42262,8 +42262,8 @@
           "linked_case_id": "SKLC-M-1-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-6-3-1",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/SKLC-M-1-21.xml"
         },
         {
           "source_section": "5.6.3.2",
@@ -42275,8 +42275,8 @@
           "linked_case_id": "SKLC-M-2-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-6-3-2",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/SKLC-M-2-21.xml"
         },
         {
           "source_section": "5.6.3.3",
@@ -42288,8 +42288,8 @@
           "linked_case_id": "SKLC-M-3-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-6-3-3",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/SKLC-M-3-21.xml"
         }
       ],
       "direct_root_exclusions": []
@@ -43814,8 +43814,8 @@
           "linked_case_id": "BL-M-1-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-1-3-1",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/BL-M-1-21.xml"
         },
         {
           "source_section": "5.1.3.10",
@@ -43827,8 +43827,8 @@
           "linked_case_id": "BL-M-10-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-1-3-10",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/BL-M-10-21.xml"
         },
         {
           "source_section": "5.1.3.11",
@@ -43840,8 +43840,8 @@
           "linked_case_id": "BL-M-11-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-1-3-11",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/BL-M-11-21.xml"
         },
         {
           "source_section": "5.1.3.12",
@@ -43853,8 +43853,8 @@
           "linked_case_id": "BL-M-12-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-1-3-12",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/BL-M-12-21.xml"
         },
         {
           "source_section": "5.1.3.13",
@@ -43866,8 +43866,8 @@
           "linked_case_id": "BL-M-13-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-1-3-13",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/BL-M-13-21.xml"
         },
         {
           "source_section": "5.1.3.2",
@@ -43879,8 +43879,8 @@
           "linked_case_id": "BL-M-2-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-1-3-2",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/BL-M-2-21.xml"
         },
         {
           "source_section": "5.1.3.3",
@@ -43892,8 +43892,8 @@
           "linked_case_id": "BL-M-3-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-1-3-3",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/BL-M-3-21.xml"
         },
         {
           "source_section": "5.1.3.4",
@@ -43905,8 +43905,8 @@
           "linked_case_id": "BL-M-4-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-1-3-4",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/BL-M-4-21.xml"
         },
         {
           "source_section": "5.1.3.5",
@@ -43918,8 +43918,8 @@
           "linked_case_id": "BL-M-5-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-1-3-5",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/BL-M-5-21.xml"
         },
         {
           "source_section": "5.1.3.6",
@@ -43931,8 +43931,8 @@
           "linked_case_id": "BL-M-6-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-1-3-6",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/BL-M-6-21.xml"
         },
         {
           "source_section": "5.1.3.7",
@@ -43944,8 +43944,8 @@
           "linked_case_id": "BL-M-7-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-1-3-7",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/BL-M-7-21.xml"
         },
         {
           "source_section": "5.1.3.8",
@@ -43957,8 +43957,8 @@
           "linked_case_id": "BL-M-8-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-1-3-8",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/BL-M-8-21.xml"
         },
         {
           "source_section": "5.1.3.9",
@@ -43970,8 +43970,8 @@
           "linked_case_id": "BL-M-9-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-1-3-9",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/BL-M-9-21.xml"
         },
         {
           "source_section": "5.18.5.1",
@@ -43996,8 +43996,8 @@
           "linked_case_id": "SKLC-M-1-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-6-3-1",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/SKLC-M-1-21.xml"
         },
         {
           "source_section": "5.6.3.2",
@@ -44009,8 +44009,8 @@
           "linked_case_id": "SKLC-M-2-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-6-3-2",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/SKLC-M-2-21.xml"
         },
         {
           "source_section": "5.6.3.3",
@@ -44022,8 +44022,8 @@
           "linked_case_id": "SKLC-M-3-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-6-3-3",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/SKLC-M-3-21.xml"
         }
       ],
       "direct_root_exclusions": []
@@ -45557,8 +45557,8 @@
           "linked_case_id": "BL-M-1-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-1-3-1",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/BL-M-1-21.xml"
         },
         {
           "source_section": "5.1.3.10",
@@ -45570,8 +45570,8 @@
           "linked_case_id": "BL-M-10-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-1-3-10",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/BL-M-10-21.xml"
         },
         {
           "source_section": "5.1.3.11",
@@ -45583,8 +45583,8 @@
           "linked_case_id": "BL-M-11-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-1-3-11",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/BL-M-11-21.xml"
         },
         {
           "source_section": "5.1.3.12",
@@ -45596,8 +45596,8 @@
           "linked_case_id": "BL-M-12-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-1-3-12",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/BL-M-12-21.xml"
         },
         {
           "source_section": "5.1.3.13",
@@ -45609,8 +45609,8 @@
           "linked_case_id": "BL-M-13-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-1-3-13",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/BL-M-13-21.xml"
         },
         {
           "source_section": "5.1.3.2",
@@ -45622,8 +45622,8 @@
           "linked_case_id": "BL-M-2-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-1-3-2",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/BL-M-2-21.xml"
         },
         {
           "source_section": "5.1.3.3",
@@ -45635,8 +45635,8 @@
           "linked_case_id": "BL-M-3-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-1-3-3",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/BL-M-3-21.xml"
         },
         {
           "source_section": "5.1.3.4",
@@ -45648,8 +45648,8 @@
           "linked_case_id": "BL-M-4-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-1-3-4",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/BL-M-4-21.xml"
         },
         {
           "source_section": "5.1.3.5",
@@ -45661,8 +45661,8 @@
           "linked_case_id": "BL-M-5-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-1-3-5",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/BL-M-5-21.xml"
         },
         {
           "source_section": "5.1.3.6",
@@ -45674,8 +45674,8 @@
           "linked_case_id": "BL-M-6-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-1-3-6",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/BL-M-6-21.xml"
         },
         {
           "source_section": "5.1.3.7",
@@ -45687,8 +45687,8 @@
           "linked_case_id": "BL-M-7-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-1-3-7",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/BL-M-7-21.xml"
         },
         {
           "source_section": "5.1.3.8",
@@ -45700,8 +45700,8 @@
           "linked_case_id": "BL-M-8-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-1-3-8",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/BL-M-8-21.xml"
         },
         {
           "source_section": "5.1.3.9",
@@ -45713,8 +45713,8 @@
           "linked_case_id": "BL-M-9-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-1-3-9",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/BL-M-9-21.xml"
         },
         {
           "source_section": "5.17.1",
@@ -45752,8 +45752,8 @@
           "linked_case_id": "SKLC-M-1-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-6-3-1",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/SKLC-M-1-21.xml"
         },
         {
           "source_section": "5.6.3.2",
@@ -45765,8 +45765,8 @@
           "linked_case_id": "SKLC-M-2-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-6-3-2",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/SKLC-M-2-21.xml"
         },
         {
           "source_section": "5.6.3.3",
@@ -45778,8 +45778,8 @@
           "linked_case_id": "SKLC-M-3-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-6-3-3",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/SKLC-M-3-21.xml"
         }
       ],
       "direct_root_exclusions": []
@@ -47304,8 +47304,8 @@
           "linked_case_id": "BL-M-1-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-1-3-1",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/BL-M-1-21.xml"
         },
         {
           "source_section": "5.1.3.10",
@@ -47317,8 +47317,8 @@
           "linked_case_id": "BL-M-10-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-1-3-10",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/BL-M-10-21.xml"
         },
         {
           "source_section": "5.1.3.11",
@@ -47330,8 +47330,8 @@
           "linked_case_id": "BL-M-11-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-1-3-11",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/BL-M-11-21.xml"
         },
         {
           "source_section": "5.1.3.12",
@@ -47343,8 +47343,8 @@
           "linked_case_id": "BL-M-12-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-1-3-12",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/BL-M-12-21.xml"
         },
         {
           "source_section": "5.1.3.13",
@@ -47356,8 +47356,8 @@
           "linked_case_id": "BL-M-13-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-1-3-13",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/BL-M-13-21.xml"
         },
         {
           "source_section": "5.1.3.2",
@@ -47369,8 +47369,8 @@
           "linked_case_id": "BL-M-2-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-1-3-2",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/BL-M-2-21.xml"
         },
         {
           "source_section": "5.1.3.3",
@@ -47382,8 +47382,8 @@
           "linked_case_id": "BL-M-3-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-1-3-3",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/BL-M-3-21.xml"
         },
         {
           "source_section": "5.1.3.4",
@@ -47395,8 +47395,8 @@
           "linked_case_id": "BL-M-4-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-1-3-4",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/BL-M-4-21.xml"
         },
         {
           "source_section": "5.1.3.5",
@@ -47408,8 +47408,8 @@
           "linked_case_id": "BL-M-5-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-1-3-5",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/BL-M-5-21.xml"
         },
         {
           "source_section": "5.1.3.6",
@@ -47421,8 +47421,8 @@
           "linked_case_id": "BL-M-6-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-1-3-6",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/BL-M-6-21.xml"
         },
         {
           "source_section": "5.1.3.7",
@@ -47434,8 +47434,8 @@
           "linked_case_id": "BL-M-7-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-1-3-7",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/BL-M-7-21.xml"
         },
         {
           "source_section": "5.1.3.8",
@@ -47447,8 +47447,8 @@
           "linked_case_id": "BL-M-8-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-1-3-8",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/BL-M-8-21.xml"
         },
         {
           "source_section": "5.1.3.9",
@@ -47460,8 +47460,8 @@
           "linked_case_id": "BL-M-9-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-1-3-9",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/BL-M-9-21.xml"
         },
         {
           "source_section": "5.11.3.1",
@@ -47512,8 +47512,8 @@
           "linked_case_id": "SKLC-M-1-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-6-3-1",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/SKLC-M-1-21.xml"
         },
         {
           "source_section": "5.6.3.2",
@@ -47525,8 +47525,8 @@
           "linked_case_id": "SKLC-M-2-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-6-3-2",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/SKLC-M-2-21.xml"
         },
         {
           "source_section": "5.6.3.3",
@@ -47538,8 +47538,8 @@
           "linked_case_id": "SKLC-M-3-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-6-3-3",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/SKLC-M-3-21.xml"
         }
       ],
       "direct_root_exclusions": []
@@ -49058,8 +49058,8 @@
           "linked_case_id": "BL-M-1-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-1-3-1",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/BL-M-1-21.xml"
         },
         {
           "source_section": "5.1.3.10",
@@ -49071,8 +49071,8 @@
           "linked_case_id": "BL-M-10-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-1-3-10",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/BL-M-10-21.xml"
         },
         {
           "source_section": "5.1.3.11",
@@ -49084,8 +49084,8 @@
           "linked_case_id": "BL-M-11-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-1-3-11",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/BL-M-11-21.xml"
         },
         {
           "source_section": "5.1.3.12",
@@ -49097,8 +49097,8 @@
           "linked_case_id": "BL-M-12-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-1-3-12",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/BL-M-12-21.xml"
         },
         {
           "source_section": "5.1.3.13",
@@ -49110,8 +49110,8 @@
           "linked_case_id": "BL-M-13-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-1-3-13",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/BL-M-13-21.xml"
         },
         {
           "source_section": "5.1.3.2",
@@ -49123,8 +49123,8 @@
           "linked_case_id": "BL-M-2-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-1-3-2",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/BL-M-2-21.xml"
         },
         {
           "source_section": "5.1.3.3",
@@ -49136,8 +49136,8 @@
           "linked_case_id": "BL-M-3-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-1-3-3",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/BL-M-3-21.xml"
         },
         {
           "source_section": "5.1.3.4",
@@ -49149,8 +49149,8 @@
           "linked_case_id": "BL-M-4-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-1-3-4",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/BL-M-4-21.xml"
         },
         {
           "source_section": "5.1.3.5",
@@ -49162,8 +49162,8 @@
           "linked_case_id": "BL-M-5-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-1-3-5",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/BL-M-5-21.xml"
         },
         {
           "source_section": "5.1.3.6",
@@ -49175,8 +49175,8 @@
           "linked_case_id": "BL-M-6-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-1-3-6",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/BL-M-6-21.xml"
         },
         {
           "source_section": "5.1.3.7",
@@ -49188,8 +49188,8 @@
           "linked_case_id": "BL-M-7-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-1-3-7",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/BL-M-7-21.xml"
         },
         {
           "source_section": "5.1.3.8",
@@ -49201,8 +49201,8 @@
           "linked_case_id": "BL-M-8-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-1-3-8",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/BL-M-8-21.xml"
         },
         {
           "source_section": "5.1.3.9",
@@ -49214,8 +49214,8 @@
           "linked_case_id": "BL-M-9-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-1-3-9",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/BL-M-9-21.xml"
         },
         {
           "source_section": "5.6.3.1",
@@ -49227,8 +49227,8 @@
           "linked_case_id": "SKLC-M-1-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-6-3-1",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/SKLC-M-1-21.xml"
         },
         {
           "source_section": "5.6.3.2",
@@ -49240,8 +49240,8 @@
           "linked_case_id": "SKLC-M-2-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-6-3-2",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/SKLC-M-2-21.xml"
         },
         {
           "source_section": "5.6.3.3",
@@ -49253,8 +49253,8 @@
           "linked_case_id": "SKLC-M-3-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-6-3-3",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/SKLC-M-3-21.xml"
         },
         {
           "source_section": "5.7.7.1",
@@ -50827,8 +50827,8 @@
           "linked_case_id": "BL-M-1-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-1-3-1",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/BL-M-1-21.xml"
         },
         {
           "source_section": "5.1.3.10",
@@ -50840,8 +50840,8 @@
           "linked_case_id": "BL-M-10-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-1-3-10",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/BL-M-10-21.xml"
         },
         {
           "source_section": "5.1.3.11",
@@ -50853,8 +50853,8 @@
           "linked_case_id": "BL-M-11-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-1-3-11",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/BL-M-11-21.xml"
         },
         {
           "source_section": "5.1.3.12",
@@ -50866,8 +50866,8 @@
           "linked_case_id": "BL-M-12-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-1-3-12",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/BL-M-12-21.xml"
         },
         {
           "source_section": "5.1.3.13",
@@ -50879,8 +50879,8 @@
           "linked_case_id": "BL-M-13-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-1-3-13",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/BL-M-13-21.xml"
         },
         {
           "source_section": "5.1.3.2",
@@ -50892,8 +50892,8 @@
           "linked_case_id": "BL-M-2-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-1-3-2",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/BL-M-2-21.xml"
         },
         {
           "source_section": "5.1.3.3",
@@ -50905,8 +50905,8 @@
           "linked_case_id": "BL-M-3-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-1-3-3",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/BL-M-3-21.xml"
         },
         {
           "source_section": "5.1.3.4",
@@ -50918,8 +50918,8 @@
           "linked_case_id": "BL-M-4-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-1-3-4",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/BL-M-4-21.xml"
         },
         {
           "source_section": "5.1.3.5",
@@ -50931,8 +50931,8 @@
           "linked_case_id": "BL-M-5-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-1-3-5",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/BL-M-5-21.xml"
         },
         {
           "source_section": "5.1.3.6",
@@ -50944,8 +50944,8 @@
           "linked_case_id": "BL-M-6-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-1-3-6",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/BL-M-6-21.xml"
         },
         {
           "source_section": "5.1.3.7",
@@ -50957,8 +50957,8 @@
           "linked_case_id": "BL-M-7-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-1-3-7",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/BL-M-7-21.xml"
         },
         {
           "source_section": "5.1.3.8",
@@ -50970,8 +50970,8 @@
           "linked_case_id": "BL-M-8-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-1-3-8",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/BL-M-8-21.xml"
         },
         {
           "source_section": "5.1.3.9",
@@ -50983,8 +50983,8 @@
           "linked_case_id": "BL-M-9-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-1-3-9",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/BL-M-9-21.xml"
         },
         {
           "source_section": "5.6.3.1",
@@ -50996,8 +50996,8 @@
           "linked_case_id": "SKLC-M-1-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-6-3-1",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/SKLC-M-1-21.xml"
         },
         {
           "source_section": "5.6.3.2",
@@ -51009,8 +51009,8 @@
           "linked_case_id": "SKLC-M-2-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-6-3-2",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/SKLC-M-2-21.xml"
         },
         {
           "source_section": "5.6.3.3",
@@ -51022,8 +51022,8 @@
           "linked_case_id": "SKLC-M-3-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-6-3-3",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/SKLC-M-3-21.xml"
         },
         {
           "source_section": "5.7.5.1",
@@ -52594,8 +52594,8 @@
           "linked_case_id": "BL-M-1-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-1-3-1",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/BL-M-1-21.xml"
         },
         {
           "source_section": "5.1.3.10",
@@ -52607,8 +52607,8 @@
           "linked_case_id": "BL-M-10-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-1-3-10",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/BL-M-10-21.xml"
         },
         {
           "source_section": "5.1.3.11",
@@ -52620,8 +52620,8 @@
           "linked_case_id": "BL-M-11-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-1-3-11",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/BL-M-11-21.xml"
         },
         {
           "source_section": "5.1.3.12",
@@ -52633,8 +52633,8 @@
           "linked_case_id": "BL-M-12-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-1-3-12",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/BL-M-12-21.xml"
         },
         {
           "source_section": "5.1.3.13",
@@ -52646,8 +52646,8 @@
           "linked_case_id": "BL-M-13-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-1-3-13",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/BL-M-13-21.xml"
         },
         {
           "source_section": "5.1.3.2",
@@ -52659,8 +52659,8 @@
           "linked_case_id": "BL-M-2-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-1-3-2",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/BL-M-2-21.xml"
         },
         {
           "source_section": "5.1.3.3",
@@ -52672,8 +52672,8 @@
           "linked_case_id": "BL-M-3-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-1-3-3",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/BL-M-3-21.xml"
         },
         {
           "source_section": "5.1.3.4",
@@ -52685,8 +52685,8 @@
           "linked_case_id": "BL-M-4-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-1-3-4",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/BL-M-4-21.xml"
         },
         {
           "source_section": "5.1.3.5",
@@ -52698,8 +52698,8 @@
           "linked_case_id": "BL-M-5-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-1-3-5",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/BL-M-5-21.xml"
         },
         {
           "source_section": "5.1.3.6",
@@ -52711,8 +52711,8 @@
           "linked_case_id": "BL-M-6-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-1-3-6",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/BL-M-6-21.xml"
         },
         {
           "source_section": "5.1.3.7",
@@ -52724,8 +52724,8 @@
           "linked_case_id": "BL-M-7-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-1-3-7",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/BL-M-7-21.xml"
         },
         {
           "source_section": "5.1.3.8",
@@ -52737,8 +52737,8 @@
           "linked_case_id": "BL-M-8-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-1-3-8",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/BL-M-8-21.xml"
         },
         {
           "source_section": "5.1.3.9",
@@ -52750,8 +52750,8 @@
           "linked_case_id": "BL-M-9-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-1-3-9",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/BL-M-9-21.xml"
         },
         {
           "source_section": "5.6.3.1",
@@ -52763,8 +52763,8 @@
           "linked_case_id": "SKLC-M-1-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-6-3-1",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/SKLC-M-1-21.xml"
         },
         {
           "source_section": "5.6.3.2",
@@ -52776,8 +52776,8 @@
           "linked_case_id": "SKLC-M-2-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-6-3-2",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/SKLC-M-2-21.xml"
         },
         {
           "source_section": "5.6.3.3",
@@ -52789,8 +52789,8 @@
           "linked_case_id": "SKLC-M-3-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-6-3-3",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/SKLC-M-3-21.xml"
         },
         {
           "source_section": "5.7.6.1",
@@ -54363,8 +54363,8 @@
           "linked_case_id": "BL-M-1-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-1-3-1",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/BL-M-1-21.xml"
         },
         {
           "source_section": "5.1.3.10",
@@ -54376,8 +54376,8 @@
           "linked_case_id": "BL-M-10-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-1-3-10",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/BL-M-10-21.xml"
         },
         {
           "source_section": "5.1.3.11",
@@ -54389,8 +54389,8 @@
           "linked_case_id": "BL-M-11-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-1-3-11",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/BL-M-11-21.xml"
         },
         {
           "source_section": "5.1.3.12",
@@ -54402,8 +54402,8 @@
           "linked_case_id": "BL-M-12-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-1-3-12",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/BL-M-12-21.xml"
         },
         {
           "source_section": "5.1.3.13",
@@ -54415,8 +54415,8 @@
           "linked_case_id": "BL-M-13-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-1-3-13",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/BL-M-13-21.xml"
         },
         {
           "source_section": "5.1.3.2",
@@ -54428,8 +54428,8 @@
           "linked_case_id": "BL-M-2-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-1-3-2",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/BL-M-2-21.xml"
         },
         {
           "source_section": "5.1.3.3",
@@ -54441,8 +54441,8 @@
           "linked_case_id": "BL-M-3-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-1-3-3",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/BL-M-3-21.xml"
         },
         {
           "source_section": "5.1.3.4",
@@ -54454,8 +54454,8 @@
           "linked_case_id": "BL-M-4-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-1-3-4",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/BL-M-4-21.xml"
         },
         {
           "source_section": "5.1.3.5",
@@ -54467,8 +54467,8 @@
           "linked_case_id": "BL-M-5-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-1-3-5",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/BL-M-5-21.xml"
         },
         {
           "source_section": "5.1.3.6",
@@ -54480,8 +54480,8 @@
           "linked_case_id": "BL-M-6-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-1-3-6",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/BL-M-6-21.xml"
         },
         {
           "source_section": "5.1.3.7",
@@ -54493,8 +54493,8 @@
           "linked_case_id": "BL-M-7-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-1-3-7",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/BL-M-7-21.xml"
         },
         {
           "source_section": "5.1.3.8",
@@ -54506,8 +54506,8 @@
           "linked_case_id": "BL-M-8-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-1-3-8",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/BL-M-8-21.xml"
         },
         {
           "source_section": "5.1.3.9",
@@ -54519,8 +54519,8 @@
           "linked_case_id": "BL-M-9-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-1-3-9",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/BL-M-9-21.xml"
         },
         {
           "source_section": "5.6.3.1",
@@ -54532,8 +54532,8 @@
           "linked_case_id": "SKLC-M-1-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-6-3-1",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/SKLC-M-1-21.xml"
         },
         {
           "source_section": "5.6.3.2",
@@ -54545,8 +54545,8 @@
           "linked_case_id": "SKLC-M-2-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-6-3-2",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/SKLC-M-2-21.xml"
         },
         {
           "source_section": "5.6.3.3",
@@ -54558,8 +54558,8 @@
           "linked_case_id": "SKLC-M-3-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-6-3-3",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/SKLC-M-3-21.xml"
         },
         {
           "source_section": "5.6.4.1",
@@ -56187,8 +56187,8 @@
           "linked_case_id": "BL-M-1-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-1-3-1",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/BL-M-1-21.xml"
         },
         {
           "source_section": "5.1.3.10",
@@ -56200,8 +56200,8 @@
           "linked_case_id": "BL-M-10-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-1-3-10",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/BL-M-10-21.xml"
         },
         {
           "source_section": "5.1.3.11",
@@ -56213,8 +56213,8 @@
           "linked_case_id": "BL-M-11-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-1-3-11",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/BL-M-11-21.xml"
         },
         {
           "source_section": "5.1.3.12",
@@ -56226,8 +56226,8 @@
           "linked_case_id": "BL-M-12-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-1-3-12",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/BL-M-12-21.xml"
         },
         {
           "source_section": "5.1.3.13",
@@ -56239,8 +56239,8 @@
           "linked_case_id": "BL-M-13-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-1-3-13",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/BL-M-13-21.xml"
         },
         {
           "source_section": "5.1.3.2",
@@ -56252,8 +56252,8 @@
           "linked_case_id": "BL-M-2-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-1-3-2",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/BL-M-2-21.xml"
         },
         {
           "source_section": "5.1.3.3",
@@ -56265,8 +56265,8 @@
           "linked_case_id": "BL-M-3-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-1-3-3",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/BL-M-3-21.xml"
         },
         {
           "source_section": "5.1.3.4",
@@ -56278,8 +56278,8 @@
           "linked_case_id": "BL-M-4-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-1-3-4",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/BL-M-4-21.xml"
         },
         {
           "source_section": "5.1.3.5",
@@ -56291,8 +56291,8 @@
           "linked_case_id": "BL-M-5-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-1-3-5",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/BL-M-5-21.xml"
         },
         {
           "source_section": "5.1.3.6",
@@ -56304,8 +56304,8 @@
           "linked_case_id": "BL-M-6-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-1-3-6",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/BL-M-6-21.xml"
         },
         {
           "source_section": "5.1.3.7",
@@ -56317,8 +56317,8 @@
           "linked_case_id": "BL-M-7-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-1-3-7",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/BL-M-7-21.xml"
         },
         {
           "source_section": "5.1.3.8",
@@ -56330,8 +56330,8 @@
           "linked_case_id": "BL-M-8-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-1-3-8",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/BL-M-8-21.xml"
         },
         {
           "source_section": "5.1.3.9",
@@ -56343,8 +56343,8 @@
           "linked_case_id": "BL-M-9-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-1-3-9",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/BL-M-9-21.xml"
         },
         {
           "source_section": "5.12.6.1",
@@ -56395,8 +56395,8 @@
           "linked_case_id": "SKLC-M-1-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-6-3-1",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/SKLC-M-1-21.xml"
         },
         {
           "source_section": "5.6.3.2",
@@ -56408,8 +56408,8 @@
           "linked_case_id": "SKLC-M-2-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-6-3-2",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/SKLC-M-2-21.xml"
         },
         {
           "source_section": "5.6.3.3",
@@ -56421,8 +56421,8 @@
           "linked_case_id": "SKLC-M-3-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-6-3-3",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/SKLC-M-3-21.xml"
         }
       ],
       "direct_root_exclusions": [
@@ -58065,8 +58065,8 @@
           "linked_case_id": "BL-M-1-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-1-3-1",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/BL-M-1-21.xml"
         },
         {
           "source_section": "5.1.3.10",
@@ -58078,8 +58078,8 @@
           "linked_case_id": "BL-M-10-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-1-3-10",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/BL-M-10-21.xml"
         },
         {
           "source_section": "5.1.3.11",
@@ -58091,8 +58091,8 @@
           "linked_case_id": "BL-M-11-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-1-3-11",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/BL-M-11-21.xml"
         },
         {
           "source_section": "5.1.3.12",
@@ -58104,8 +58104,8 @@
           "linked_case_id": "BL-M-12-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-1-3-12",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/BL-M-12-21.xml"
         },
         {
           "source_section": "5.1.3.13",
@@ -58117,8 +58117,8 @@
           "linked_case_id": "BL-M-13-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-1-3-13",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/BL-M-13-21.xml"
         },
         {
           "source_section": "5.1.3.2",
@@ -58130,8 +58130,8 @@
           "linked_case_id": "BL-M-2-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-1-3-2",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/BL-M-2-21.xml"
         },
         {
           "source_section": "5.1.3.3",
@@ -58143,8 +58143,8 @@
           "linked_case_id": "BL-M-3-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-1-3-3",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/BL-M-3-21.xml"
         },
         {
           "source_section": "5.1.3.4",
@@ -58156,8 +58156,8 @@
           "linked_case_id": "BL-M-4-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-1-3-4",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/BL-M-4-21.xml"
         },
         {
           "source_section": "5.1.3.5",
@@ -58169,8 +58169,8 @@
           "linked_case_id": "BL-M-5-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-1-3-5",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/BL-M-5-21.xml"
         },
         {
           "source_section": "5.1.3.6",
@@ -58182,8 +58182,8 @@
           "linked_case_id": "BL-M-6-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-1-3-6",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/BL-M-6-21.xml"
         },
         {
           "source_section": "5.1.3.7",
@@ -58195,8 +58195,8 @@
           "linked_case_id": "BL-M-7-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-1-3-7",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/BL-M-7-21.xml"
         },
         {
           "source_section": "5.1.3.8",
@@ -58208,8 +58208,8 @@
           "linked_case_id": "BL-M-8-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-1-3-8",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/BL-M-8-21.xml"
         },
         {
           "source_section": "5.1.3.9",
@@ -58221,8 +58221,8 @@
           "linked_case_id": "BL-M-9-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-1-3-9",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/BL-M-9-21.xml"
         },
         {
           "source_section": "5.4.4.1",
@@ -58247,8 +58247,8 @@
           "linked_case_id": "SKLC-M-1-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-6-3-1",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/SKLC-M-1-21.xml"
         },
         {
           "source_section": "5.6.3.2",
@@ -58260,8 +58260,8 @@
           "linked_case_id": "SKLC-M-2-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-6-3-2",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/SKLC-M-2-21.xml"
         },
         {
           "source_section": "5.6.3.3",
@@ -58273,8 +58273,8 @@
           "linked_case_id": "SKLC-M-3-21",
           "link_pair_status": "matches",
           "test_id": "KMIPKIT-TEST-PROF-5-6-3-3",
-          "fixture_status": "unavailable",
-          "fixture_path": null
+          "fixture_status": "available",
+          "fixture_path": "specification/oasis/kmip-2.1/fixtures/SKLC-M-3-21.xml"
         }
       ],
       "direct_root_exclusions": []

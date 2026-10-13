@@ -123,7 +123,7 @@ The manifest and any readiness result derived from it are ephemeral outputs of t
 
 ## OfficialTestCaseEvidence
 
-An official test record preserves its catalog ID, OASIS case ID, profile links, requirement links, source section, mandatory/optional status, fixture path, and fixture availability. The test is evidence rather than an independent normative requirement. An unavailable or absent fixture cannot be passed or reconstructed.
+An official test record preserves its catalog ID, OASIS case ID, profile links, requirement links, source section, mandatory/optional status, fixture path, and fixture availability. The test is evidence rather than an independent normative requirement. Fixture availability means only that exact source bytes are pinned; it is not an execution result. An unavailable or absent fixture cannot be passed or reconstructed.
 
 ## ProfileReadiness
 

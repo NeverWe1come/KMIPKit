@@ -8,7 +8,7 @@ The source-clause and requirement lists MUST include the complete normative clos
 
 ## Evidence rules
 
-- Applicability, selected target, runtime validation selection, catalog `claim_state`, and published release claim are separate values. Baseline `claim_state` is `evidence_incomplete` while its required fixtures are unavailable; no public claim is emitted.
+- Applicability, selected target, runtime validation selection, catalog `claim_state`, and published release claim are separate values. Baseline `claim_state` is `evidence_incomplete` until all required tests have passing execution evidence; fixture availability alone does not pass a test. No public claim is emitted.
 - Readiness reports expose target membership and runtime validation availability as separate booleans and one effective evidence/readiness lifecycle value; they do not create a duplicate readiness enum. The evaluator recomputes all required evidence before comparing it with catalog `claim_state`.
 - Every applicable normative client requirement has an implementation and verification assignment before a claim is eligible.
 - A verification assignment uses stable test IDs and current CI check IDs. An arbitrary result artifact path or a manually asserted `verified` value is not evidence.
@@ -26,7 +26,7 @@ The source-clause and requirement lists MUST include the complete normative clos
 
 ## Current Baseline state
 
-The pinned inventory links 16 mandatory test cases to Baseline Client, and all 16 currently have unavailable fixture status. The readiness report must show this as a blocker and must not state or imply Baseline Client conformance.
+The pinned inventory links 16 mandatory test cases to Baseline Client. Their XML fixtures are now available in the repository, but none has been executed as a complete official profile case. The readiness report must not treat fixture availability as a pass, and must not state or imply Baseline Client conformance until all 16 tests and every other evidence gate pass.
 
 ## Stable output
 

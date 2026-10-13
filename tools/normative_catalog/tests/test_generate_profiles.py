@@ -508,12 +508,12 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
             profile for profile in profiles
             if profile["profile_id"] == "KMIPKIT-PROFILE-BASELINE-CLIENT"
         )
-        mandatory_unavailable = [
+        mandatory_available = [
             case for case in baseline["test_cases"]
-            if case["fixture_status"] == "unavailable"
+            if case["fixture_status"] == "available"
         ]
         self.assertEqual(len(baseline["test_cases"]), 16)
-        self.assertEqual(len(mandatory_unavailable), 16)
+        self.assertEqual(len(mandatory_available), 16)
         self.assertTrue(all("-M-" in case["official_case_id"] for case in baseline["test_cases"]))
 
     def test_checked_in_client_profile_closures_match_current_scope(self) -> None:

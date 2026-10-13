@@ -3984,6 +3984,10 @@ class CatalogValidationTests(unittest.TestCase):
             expected_path = f"specification/oasis/kmip-2.1/fixtures/{test['official_case_id']}.xml"
             self.assertEqual("available", test["fixture_availability"])
             self.assertEqual(expected_path, test["fixture_path"])
+            self.assertEqual(
+                f"test-cases/kmip-v2.1/mandatory/{test['official_case_id']}.xml",
+                test["raw_href"],
+            )
             fixture = ROOT / expected_path
             source_row = next(
                 line for line in source_index.splitlines()
@@ -3998,11 +4002,15 @@ class CatalogValidationTests(unittest.TestCase):
                 len(root.findall("RequestMessage")),
                 len(root.findall("ResponseMessage")),
             )
+            self.assertGreater(len(root.findall("RequestMessage")), 0)
             interop_ids = {
                 element.attrib.get("value")
                 for element in root.iter("InteropIdentifier")
             }
-            self.assertTrue(not interop_ids or interop_ids == {test["official_case_id"]})
+            if test["official_case_id"].startswith("BL-"):
+                self.assertEqual({test["official_case_id"]}, interop_ids)
+            else:
+                self.assertEqual(set(), interop_ids)
         self.assertEqual("evidence_incomplete", baseline["claim_state"])
 
     def test_checked_in_catalog_preserves_pinned_source_discrepancies(self) -> None:
@@ -4738,6 +4746,14 @@ class CatalogValidationTests(unittest.TestCase):
             if profile["profile_id"] == "KMIPKIT-PROFILE-BASELINE-CLIENT"
         )
         baseline["claim_state"] = "evidence_complete"
+        unavailable_case = next(
+            test_case
+            for test_case in catalog["test_cases"]
+            if test_case["test_id"] in baseline["test_case_ids"]
+            and test_case["mandatory_status"] == "mandatory"
+        )
+        unavailable_case["fixture_path"] = None
+        unavailable_case["fixture_availability"] = "unavailable"
         official_test = next(
             test_case
             for test_case in catalog["test_cases"]

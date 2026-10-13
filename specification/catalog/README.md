@@ -56,13 +56,13 @@ The catalog `claim_state` records evidence lifecycle; it is not a public
 conformance claim. `profile-targets.json` records the selected project target,
 while runtime validation availability is determined separately by complete
 typed rules and category-appropriate executable tests. The generated report
-shows these states and the mandatory fixture gaps independently. This feature
+shows these states and the mandatory fixture execution gaps independently. This feature
 never publishes a profile claim.
 
 Baseline Client is the selected initial 1.0 target and currently has
-`claim_state: evidence_incomplete`. Its 16 mandatory official fixture records
-are unavailable in the pinned tree, remain visible as blockers, and are not
-counted as passed. The typed-rule registry is not empty: it includes a
+`claim_state: evidence_incomplete`. Its 16 mandatory official XML fixtures
+are pinned, but remain unpassed until complete case execution evidence is
+recorded. The typed-rule registry is not empty: it includes a
 mapping for Wrapped Secret Data under KMIPKIT-REQ-SPEC-2.7-001. Baseline still
 has unresolved applicable rule and evidence gaps, so it fails closed and
 cannot complete a selected runtime validation.

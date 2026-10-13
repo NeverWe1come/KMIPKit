@@ -61,7 +61,7 @@ The selected target is stored in the project-owned `specification/catalog/profil
 
 **Alternatives considered**: Publishing a claim as soon as a local readiness function returns `evidence_complete` was rejected because release approval and evidence review are separate gates.
 
-## Current evidence baseline
+## Evidence baseline recorded on 2026-10-07
 
 - The catalog contains 18 client profile records; 15 are marked `client_1_0` or `conditional`.
 - On 2026-10-07, the GitHub branch-protection API returned `Branch not protected` for `release/1.0.0`, and the repository ruleset listing returned no rulesets. Therefore the protected-push evidence gate is currently unsatisfied and MUST remain incomplete until an administrator-owned policy is configured and the read-only API check passes during each eligible run.
@@ -98,6 +98,10 @@ Seventeen client-profile records directly include `KMIPKIT-CLAUSE-PROF-3.1-001`;
 | XML | `out_of_scope` | 3.1, 5.4.2, 6.1, 6.6 | 905 | 349 | Baseline | 17 | all unavailable |
 
 PKCS#11 Client closure includes Profiles §5.18.1 through the explicit inclusion in §5.18.3 item 2. The five clauses stay in its source closure, but their profile-specific requirements remain out of scope for the TTLV-only 1.0 line; the lowercase `may`/`required` wording in §5.18.1 ordinals 1–3 does not create normative requirement records. The stored 911-clause and 227-requirement counts above match the catalog closure.
+
+## Fixture inventory update - 2026-10-13
+
+The 16 Baseline mandatory XML fixtures linked from OASIS Profiles §§5.1.3 and 5.6.3 have since been pinned byte-for-byte from the OASIS Standard URLs. The catalog now records them as available, but no complete official-case execution result is recorded. Of 203 linked test-case XML fixtures, 23 are pinned and 180 remain absent. Fixture availability is not a passing result, and Baseline remains `evidence_incomplete`; see `implementation-evidence.md` for hashes, test commands, and the T036 execution gap.
 
 Every profile links the shared official IDs `BL-M-{1..13}-21` and `SKLC-M-{1..3}-21`. The following are the additional official IDs linked by each profile; numeric ranges are inclusive:
 

@@ -62,10 +62,11 @@ Inventory records keep profile applicability, selected target, runtime
 validation availability, catalog evidence state, fixture availability, and
 public claims separate. Baseline Client is the selected 1.0 evidence target,
 but its catalog `claim_state` is `evidence_incomplete`. Its 16 mandatory
-official fixture records are unavailable in the pinned repository and are
-never counted as passing tests. No profile conformance claim is published by
-KMIPKIT-0010. Other profile records retain their own catalog states; none of
-these fields is itself a public claim.
+official XML fixtures are pinned in the repository, but fixture availability
+is not a passing test result. No complete official-case execution evidence is
+recorded for them, and no profile conformance claim is published by KMIPKIT-0010.
+Other profile records retain their own catalog states; none of these fields is
+itself a public claim.
 
 The generated inventory report includes each profile's source clauses,
 requirements, elements, dependencies, linked official test IDs and status,
@@ -106,8 +107,9 @@ Use the following stages independently:
    A catalog state advances only after its required human review, and any
    public claim remains a separate reviewed release decision.
 
-Baseline remains ineligible while its 16 fixtures are unavailable, its typed
-rules do not cover the complete applicable requirement and test set, and
+Baseline remains ineligible while its 16 mandatory cases lack passing
+execution evidence, its typed rules do not cover the complete applicable
+requirement and test set, and
 current protected-branch policy and app-token evidence have not been
 established. The registry includes a mapping for Wrapped Secret Data under
 KMIPKIT-REQ-SPEC-2.7-001. See the
