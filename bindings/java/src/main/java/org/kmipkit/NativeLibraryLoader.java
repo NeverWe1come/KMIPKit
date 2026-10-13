@@ -50,7 +50,7 @@ final class NativeLibraryLoader {
     }
 
     @FunctionalInterface
-    interface AclDirectoryVerifier {
+    interface PrivateDirectoryVerifier {
         void verify(Path directory) throws IOException;
     }
 
@@ -171,7 +171,7 @@ final class NativeLibraryLoader {
         return createPrivateDirectory(temporaryRoot, NativeLibraryLoader::verifyPrivateDirectory);
     }
 
-    static Path createPrivateDirectory(Path temporaryRoot, AclDirectoryVerifier aclDirectoryVerifier)
+    static Path createPrivateDirectory(Path temporaryRoot, PrivateDirectoryVerifier directoryVerifier)
             throws IOException {
         Path root = temporaryRoot.toAbsolutePath().normalize();
         if (Files.isSymbolicLink(root) || !Files.isDirectory(root, LinkOption.NOFOLLOW_LINKS)) {
@@ -182,23 +182,32 @@ final class NativeLibraryLoader {
             FileAttribute<Set<PosixFilePermission>> permissions = PosixFilePermissions
                     .asFileAttribute(PRIVATE_DIRECTORY_PERMISSIONS);
             Path directory = Files.createTempDirectory(root, "kmipkit-native-", permissions);
-            verifyPrivateDirectory(directory);
-            return directory;
+            return verifyPrivateDirectoryAndCleanupOnFailure(directory, directoryVerifier);
         }
 
         if (Files.getFileStore(root).supportsFileAttributeView("acl")) {
             UserPrincipal owner = Files.getOwner(root, LinkOption.NOFOLLOW_LINKS);
             FileAttribute<List<AclEntry>> acl = privateAcl(owner);
             Path directory = Files.createTempDirectory(root, "kmipkit-native-", acl);
-            try {
-                aclDirectoryVerifier.verify(directory);
-                return directory;
-            } catch (IOException failure) {
-                Files.deleteIfExists(directory);
-                throw failure;
-            }
+            return verifyPrivateDirectoryAndCleanupOnFailure(directory, directoryVerifier);
         }
         throw new IOException("Private permissions are unavailable");
+    }
+
+    private static Path verifyPrivateDirectoryAndCleanupOnFailure(
+            Path directory,
+            PrivateDirectoryVerifier directoryVerifier) throws IOException {
+        try {
+            directoryVerifier.verify(directory);
+            return directory;
+        } catch (IOException | RuntimeException failure) {
+            try {
+                Files.deleteIfExists(directory);
+            } catch (IOException | RuntimeException cleanupFailure) {
+                failure.addSuppressed(cleanupFailure);
+            }
+            throw failure;
+        }
     }
 
     static Path extractVerified(InputStream library, String expectedHash, Path privateDirectory, String libraryName) {

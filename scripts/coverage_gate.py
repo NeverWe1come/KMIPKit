@@ -1188,7 +1188,12 @@ def _load_adapter_reports(
                     f"{scope} coverage report contains a source outside its package: {', '.join(sorted(unexpected_sources))}"
                 )
             platform_reports[report_path.parent.name] = adapter_report
-        parsed[scope] = merge_coverage_reports(platform_reports)
+        if len(platform_reports) == 1:
+            # Preserve parser metadata such as LLVM's summary-only uncovered
+            # line counts; only multi-platform Java reports need a union.
+            parsed[scope] = next(iter(platform_reports.values()))
+        else:
+            parsed[scope] = merge_coverage_reports(platform_reports)
     return parsed
 
 
