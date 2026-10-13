@@ -4,7 +4,9 @@
 //! Tables 291–294. Traceability: all `KMIPKIT-REQ-SPEC-6.1.43-*` rows.
 //! These are derived execution tests, not official fixture passes.
 
-use kmipkit_protocol::{AttributeSet, CheckRequest, ObjectType, RegisterRequest};
+use kmipkit_protocol::{
+    AttributeSet, CheckRequest, ObjectType, OpaqueObjectContext, RegisterRequest,
+};
 use kmipkit_test_support::ExchangeScript;
 use kmipkit_transport::RequestDeliveryState;
 use kmipkit_ttlv::codec::{CodecLimits, decode};
@@ -26,7 +28,14 @@ const OBJECT_TYPE: u32 = 0x0042_0057;
 const ATTRIBUTES: u32 = 0x0042_0125;
 const CERTIFICATE: u32 = 0x0042_0013;
 const CERTIFICATE_LENGTH: u32 = 0x0042_00AD;
+const CRYPTOGRAPHIC_ALGORITHM: u32 = 0x0042_0028;
+const CRYPTOGRAPHIC_LENGTH: u32 = 0x0042_002A;
+const CRYPTOGRAPHIC_USAGE_MASK: u32 = 0x0042_002C;
 const UNIQUE_IDENTIFIER: u32 = 0x0042_0094;
+const OPAQUE_OBJECT_TYPE: u32 = 8;
+const OPAQUE_OBJECT: u32 = 0x0042_005B;
+const OPAQUE_DATA_TYPE: u32 = 0x0042_0059;
+const OPAQUE_DATA_VALUE: u32 = 0x0042_005A;
 const UNKNOWN_VENDOR_TAG: u32 = 0x0054_1234;
 const SUCCESS: u32 = 0;
 const OPERATION_FAILED: u32 = 1;
@@ -47,6 +56,24 @@ fn register_request() -> RegisterRequest {
             )])),
         ),
     )
+}
+
+fn managed_opaque_register_request(attributes: AttributeSet) -> RegisterRequest {
+    RegisterRequest::new(
+        ObjectType::from_raw(OPAQUE_OBJECT_TYPE),
+        attributes,
+        test_item(
+            OPAQUE_OBJECT,
+            Value::structure(test_structure([
+                test_item(OPAQUE_DATA_TYPE, Value::enumeration(1)),
+                test_item(
+                    OPAQUE_DATA_VALUE,
+                    Value::byte_string(b"opaque-register-data".to_vec()),
+                ),
+            ])),
+        ),
+    )
+    .with_opaque_object_context(OpaqueObjectContext::ManagedCryptographicObject)
 }
 
 fn request_fields(bytes: &[u8], item_index: usize) -> (Option<u32>, Vec<u32>, Vec<Vec<u32>>) {
@@ -269,6 +296,94 @@ fn register_transport_failure_preserves_partial_write_delivery_without_retry() {
     assert_eq!(
         error.delivery_state(),
         Some(RequestDeliveryState::PossiblySent)
+    );
+    assert_eq!(fake.borrow().exchange_count(), 1);
+}
+
+// OASIS KMIP v2.1 §2.3, Table 4; §6.1.43, Tables 291 and 293; §11.34, Table 468.
+#[test]
+fn managed_opaque_register_missing_direct_table_293_attribute_is_not_sent() {
+    let attributes = AttributeSet::try_new([
+        test_item(CRYPTOGRAPHIC_ALGORITHM, Value::enumeration(3)),
+        test_item(CRYPTOGRAPHIC_LENGTH, Value::integer(256)),
+    ])
+    .expect("the supplied direct attributes are individually well-formed");
+    let (mut client, fake, captured) = client_for(ExchangeScript::Success {
+        response: Vec::new(),
+        request_write_chunks: Vec::new(),
+    });
+
+    let error = client
+        .register(
+            managed_opaque_register_request(attributes),
+            &CodecLimits::defaults(),
+        )
+        .expect_err("managed Opaque Object requires direct Cryptographic Usage Mask");
+
+    assert_eq!(error.category(), ClientErrorCategory::Validation);
+    assert_eq!(
+        error.cause_category(),
+        Some(crate::ClientCauseCategory::InvalidInput)
+    );
+    assert_eq!(error.delivery_state(), Some(RequestDeliveryState::NotSent));
+    assert!(captured.borrow().is_none(), "no request bytes are captured");
+    assert_eq!(fake.borrow().exchange_count(), 0);
+    assert_eq!(fake.borrow().write_call_count(), 0);
+}
+
+// OASIS KMIP v2.1 §2.3, Table 4; §6.1.43, Tables 291 and 293; §11.34, Table 468.
+#[test]
+fn managed_opaque_register_preserves_standard_table_291_wire_shape_and_attribute_order() {
+    let attributes = AttributeSet::try_new([
+        test_item(CRYPTOGRAPHIC_USAGE_MASK, Value::integer(3)),
+        test_item(CRYPTOGRAPHIC_ALGORITHM, Value::enumeration(3)),
+        test_item(CRYPTOGRAPHIC_LENGTH, Value::integer(256)),
+    ])
+    .expect("all direct Table 293 attributes are well-formed");
+    let response = asynchronous_response_bytes(
+        REGISTER_OPERATION,
+        SUCCESS,
+        None,
+        None,
+        Some(test_structure([test_item(
+            UNIQUE_IDENTIFIER,
+            Value::text_string("registered-opaque-object".to_owned()),
+        )])),
+    );
+    let (mut client, fake, captured) = client_for(ExchangeScript::Success {
+        response,
+        request_write_chunks: vec![4, 7],
+    });
+
+    client
+        .register(
+            managed_opaque_register_request(attributes),
+            &CodecLimits::defaults(),
+        )
+        .expect("managed Opaque Object with direct Table 293 attributes succeeds");
+
+    let request = captured.borrow();
+    let request = request
+        .as_deref()
+        .expect("the successful request is captured by the fake transport");
+    let (operation, fields, nested) = request_fields(request, 0);
+    assert_eq!(operation, Some(REGISTER_OPERATION));
+    assert_eq!(
+        fields,
+        [OBJECT_TYPE, ATTRIBUTES, OPAQUE_OBJECT],
+        "Table 291 remains unchanged and carries no local context marker"
+    );
+    assert_eq!(
+        nested,
+        [
+            vec![
+                CRYPTOGRAPHIC_USAGE_MASK,
+                CRYPTOGRAPHIC_ALGORITHM,
+                CRYPTOGRAPHIC_LENGTH,
+            ],
+            vec![OPAQUE_DATA_TYPE, OPAQUE_DATA_VALUE],
+        ],
+        "direct attributes retain caller order and the object remains Table 4"
     );
     assert_eq!(fake.borrow().exchange_count(), 1);
 }
