@@ -1421,3 +1421,101 @@ fn selection_rejects_missing_catalog_metadata_and_skips_resolved_dependencies() 
 fn passing_evaluator_is_safe_for_absent_and_present_exchange_contexts() {
     assert!(passing_rule(None, None));
 }
+
+#[test]
+fn profile_maps_client_import_of_wrapped_secret_data() {
+    // KMIP Specification v2.1 §2.7/Table 8 permits a wrapped Secret Data Key Value;
+    // §3.1/Table 12 represents wrapped Key Value as a Byte String.
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-2.7-001";
+    const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
+    const IMPORT_OPERATION: u32 = 0x0000_002A;
+    const UNIQUE_IDENTIFIER: u32 = 0x0042_0094;
+    const OBJECT_TYPE: u32 = 0x0042_0057;
+    const ATTRIBUTES: u32 = 0x0042_0125;
+    const SECRET_DATA: u32 = 0x0042_0085;
+    const SECRET_DATA_TYPE: u32 = 0x0042_0086;
+    const KEY_BLOCK: u32 = 0x0042_0040;
+    const KEY_FORMAT_TYPE: u32 = 0x0042_0042;
+    const KEY_VALUE: u32 = 0x0042_0045;
+    const KEY_WRAPPING_DATA: u32 = 0x0042_0046;
+    const WRAPPING_METHOD: u32 = 0x0042_009E;
+    const ENCRYPTION_KEY_INFORMATION: u32 = 0x0042_0036;
+
+    let result = ProfileValidationResult {
+        profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
+        requirement_ids: vec![REQUIREMENT_ID.to_owned()],
+    };
+    let wrapped_secret_data = request_message_with_operation_payload(
+        IMPORT_OPERATION,
+        structure([
+            tagged(
+                UNIQUE_IDENTIFIER,
+                Value::text_string("wrapped-secret-data".to_owned()),
+            ),
+            tagged(OBJECT_TYPE, Value::enumeration(7)),
+            tagged(ATTRIBUTES, Value::structure(Structure::new())),
+            tagged(
+                SECRET_DATA,
+                Value::structure(structure([
+                    tagged(SECRET_DATA_TYPE, Value::enumeration(1)),
+                    tagged(
+                        KEY_BLOCK,
+                        Value::structure(structure([
+                            tagged(KEY_FORMAT_TYPE, Value::enumeration(1)),
+                            tagged(
+                                KEY_VALUE,
+                                Value::byte_string(b"synthetic-wrapped-secret-data".to_vec()),
+                            ),
+                            tagged(
+                                KEY_WRAPPING_DATA,
+                                Value::structure(structure([
+                                    tagged(WRAPPING_METHOD, Value::enumeration(1)),
+                                    tagged(
+                                        ENCRYPTION_KEY_INFORMATION,
+                                        Value::structure(structure([tagged(
+                                            UNIQUE_IDENTIFIER,
+                                            Value::text_string("wrapping-key".to_owned()),
+                                        )])),
+                                    ),
+                                ])),
+                            ),
+                        ])),
+                    ),
+                ])),
+            ),
+        ]),
+    );
+
+    result
+        .validate_request(&wrapped_secret_data)
+        .expect("the selected profile accepts a wrapped Secret Data Import request");
+
+    let malformed_wrapping_data = request_message_with_operation_payload(
+        IMPORT_OPERATION,
+        structure([
+            tagged(OBJECT_TYPE, Value::enumeration(7)),
+            tagged(
+                SECRET_DATA,
+                Value::structure(structure([
+                    tagged(SECRET_DATA_TYPE, Value::enumeration(1)),
+                    tagged(
+                        KEY_BLOCK,
+                        Value::structure(structure([
+                            tagged(KEY_VALUE, Value::byte_string(b"wrapped".to_vec())),
+                            tagged(KEY_WRAPPING_DATA, Value::integer(1)),
+                        ])),
+                    ),
+                ])),
+            ),
+        ]),
+    );
+    let error = result
+        .validate_request(&malformed_wrapping_data)
+        .expect_err("present Key Wrapping Data must keep its structure type");
+    assert_eq!(error.code(), ProfileValidationErrorCode::RequestRuleRejected);
+    assert_eq!(error.requirement_id(), Some(REQUIREMENT_ID));
+    assert_eq!(
+        error.source_clause_id(),
+        Some("KMIPKIT-CLAUSE-SPEC-2.7-001")
+    );
+}
