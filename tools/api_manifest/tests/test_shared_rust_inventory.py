@@ -180,7 +180,7 @@ class SharedRustInventoryTests(unittest.TestCase):
                     f"{capability['capabilityId']} {language} mappings must name exact ready exports",
                 )
 
-    def test_runtime_error_type_maps_to_type_and_variant_maps_to_variant(self) -> None:
+    def test_unrepresented_runtime_error_enum_stays_blocked_but_other_variant_maps(self) -> None:
         declarations = {
             row["exportName"]: row
             for row in self.manifest["publicDeclarations"]
@@ -190,11 +190,13 @@ class SharedRustInventoryTests(unittest.TestCase):
         other_variant = declarations["kmipkit::ClientCauseCategory::Other"]
 
         self.assertEqual(error_type["kind"], "type")
-        self.assertEqual(
-            error_type["languageMappings"]["rust"],
-            {"packageId": "rust-kmipkit", "name": "kmipkit::ClientCauseCategory"},
-        )
+        self.assertEqual(error_type["declarationState"], "blocked")
+        self.assertEqual(error_type["candidateSpecId"], "KMIPKIT-0043")
+        self.assertIn("complete Rust enum", error_type["blockedReason"])
+        self.assertNotIn("languageMappings", error_type)
+        self.assertNotIn("approvalSource", error_type)
         self.assertEqual(other_variant["kind"], "variant")
+        self.assertEqual(other_variant["declarationState"], "declared")
         self.assertEqual(
             other_variant["languageMappings"]["rust"],
             {"packageId": "rust-kmipkit", "name": "kmipkit::ClientCauseCategory::Other"},
