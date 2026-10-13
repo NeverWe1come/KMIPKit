@@ -511,7 +511,7 @@ public final class TransportConfiguration implements AutoCloseable {
     }
 
     private static void validateText(String value, String field) {
-        if (value != null && value.getBytes(StandardCharsets.UTF_8).length > MAX_TEXT_BYTES) {
+        if (value != null && utf8Length(value) > MAX_TEXT_BYTES) {
             throw new ResourceLimitException(field + " exceeds the local text limit");
         }
     }
