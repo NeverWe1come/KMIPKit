@@ -350,6 +350,200 @@ class ManifestGeneratorCliTests(unittest.TestCase):
         self.assertIn("pub port: u16,", record)
         self.assertNotIn("pub max_definitions: u64,", record)
 
+    def test_rust_ffi_preserves_const_only_at_the_innermost_c_pointer_level(self) -> None:
+        self.assertEqual(generate._rust_c_type("const uint8_t **"), "*mut *const u8")
+
+    def test_rust_ffi_escapes_keyword_names_in_fixed_width_fields(self) -> None:
+        manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
+        manifest["types"].append(
+            {
+                "id": "KeywordFieldConfig",
+                "kind": "struct",
+                "requirementIds": ["KMIPKIT-0043-FR-007"],
+                "rust": {"module": "kmipkit_ffi", "name": "KeywordFieldConfig", "owner": "ffi"},
+                "c": {
+                    "name": "kmipkit_keyword_field_config_t",
+                    "kind": "fixed-width-value",
+                    "fields": [{"name": "type", "type": "uint32_t"}],
+                },
+                "java": {"package": "org.kmipkit", "name": "KeywordFieldConfig"},
+                "python": {"module": "kmipkit", "name": "KeywordFieldConfig"},
+            }
+        )
+
+        generated = generate.render_rust_ffi(manifest)
+
+        self.assertIn("pub r#type: u32,", generated)
+
+    def test_c_header_orders_nested_value_definitions_after_forward_declarations(self) -> None:
+        manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
+
+        def add_ready_value(name: str, fields: list[dict[str, str]]) -> None:
+            manifest["types"].append(
+                {
+                    "id": name.removeprefix("kmipkit_").removesuffix("_t").title(),
+                    "kind": "struct",
+                    "requirementIds": ["KMIPKIT-0043-FR-007"],
+                    "rust": {"module": "kmipkit_ffi", "name": "TestValue", "owner": "ffi"},
+                    "c": {"name": name, "kind": "fixed-width-value", "fields": fields},
+                    "java": {"package": "org.kmipkit", "name": "TestValue"},
+                    "python": {"module": "kmipkit", "name": "TestValue"},
+                }
+            )
+            manifest["publicDeclarations"].append(
+                {
+                    "declarationId": f"{name}:c",
+                    "packageId": "c-kmipkit",
+                    "kind": "type",
+                    "exportName": name,
+                    "capabilityId": "public_binding_surface",
+                    "requirementIds": ["KMIPKIT-0043-FR-007"],
+                    "declarationState": "declared",
+                }
+            )
+            for field in fields:
+                manifest["publicDeclarations"].append(
+                    {
+                        "declarationId": f"{name}.{field['name']}:c",
+                        "packageId": "c-kmipkit",
+                        "kind": "field",
+                        "exportName": f"{name}.{field['name']}",
+                        "capabilityId": "public_binding_surface",
+                        "requirementIds": ["KMIPKIT-0043-FR-007"],
+                        "declarationState": "declared",
+                    }
+                )
+
+        add_ready_value("kmipkit_outer_t", [{"name": "inner", "type": "kmipkit_inner_t"}])
+        add_ready_value("kmipkit_inner_t", [{"name": "value", "type": "uint32_t"}])
+
+        header = generate.render_c_header(manifest)
+
+        self.assertLess(header.index("uint32_t value;"), header.index("kmipkit_inner_t inner;"))
+        self.assertIn("typedef struct kmipkit_outer_t kmipkit_outer_t;", header)
+        self.assertIn("typedef struct kmipkit_inner_t kmipkit_inner_t;", header)
+
+    def test_c_header_rejects_ready_values_that_reference_blocked_types(self) -> None:
+        manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
+        outer_name = "kmipkit_outer_blocked_ref_t"
+        blocked_name = "kmipkit_blocked_inner_t"
+        for name, field, state in (
+            (outer_name, {"name": "inner", "type": blocked_name}, "declared"),
+            (blocked_name, {"name": "value", "type": "uint32_t"}, "blocked"),
+        ):
+            manifest["types"].append(
+                {
+                    "id": name,
+                    "kind": "struct",
+                    "requirementIds": ["KMIPKIT-0043-FR-007"],
+                    "rust": {"module": "kmipkit_ffi", "name": "TestValue", "owner": "ffi"},
+                    "c": {"name": name, "kind": "fixed-width-value", "fields": [field]},
+                    "java": {"package": "org.kmipkit", "name": "TestValue"},
+                    "python": {"module": "kmipkit", "name": "TestValue"},
+                }
+            )
+            manifest["publicDeclarations"].append(
+                {
+                    "declarationId": f"{name}:c",
+                    "packageId": "c-kmipkit",
+                    "kind": "type",
+                    "exportName": name,
+                    "capabilityId": "public_binding_surface",
+                    "requirementIds": ["KMIPKIT-0043-FR-007"],
+                    "declarationState": state,
+                }
+            )
+            manifest["publicDeclarations"].append(
+                {
+                    "declarationId": f"{name}.{field['name']}:c",
+                    "packageId": "c-kmipkit",
+                    "kind": "field",
+                    "exportName": f"{name}.{field['name']}",
+                    "capabilityId": "public_binding_surface",
+                    "requirementIds": ["KMIPKIT-0043-FR-007"],
+                    "declarationState": state,
+                }
+            )
+
+        with self.assertRaisesRegex(generate.ManifestError, "references a blocked C type"):
+            generate.render_c_header(manifest)
+
+    def test_c_header_rejects_ready_function_using_partial_value_by_value(self) -> None:
+        manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
+        type_name = "kmipkit_partial_value_t"
+        manifest["types"].append(
+            {
+                "id": "PartialValue",
+                "kind": "struct",
+                "requirementIds": ["KMIPKIT-0043-FR-007"],
+                "rust": {"module": "kmipkit_ffi", "name": "PartialValue", "owner": "ffi"},
+                "c": {
+                    "name": type_name,
+                    "kind": "fixed-width-value",
+                    "fields": [
+                        {"name": "first", "type": "uint32_t"},
+                        {"name": "second", "type": "uint32_t"},
+                    ],
+                },
+                "java": {"package": "org.kmipkit", "name": "PartialValue"},
+                "python": {"module": "kmipkit", "name": "PartialValue"},
+            }
+        )
+        manifest["publicDeclarations"].extend(
+            [
+                {
+                    "declarationId": f"{type_name}:c",
+                    "packageId": "c-kmipkit",
+                    "kind": "type",
+                    "exportName": type_name,
+                    "capabilityId": "public_binding_surface",
+                    "requirementIds": ["KMIPKIT-0043-FR-007"],
+                    "declarationState": "declared",
+                },
+                {
+                    "declarationId": f"{type_name}.first:c",
+                    "packageId": "c-kmipkit",
+                    "kind": "field",
+                    "exportName": f"{type_name}.first",
+                    "capabilityId": "public_binding_surface",
+                    "requirementIds": ["KMIPKIT-0043-FR-007"],
+                    "declarationState": "declared",
+                },
+                {
+                    "declarationId": f"{type_name}.second:c",
+                    "packageId": "c-kmipkit",
+                    "kind": "field",
+                    "exportName": f"{type_name}.second",
+                    "capabilityId": "public_binding_surface",
+                    "requirementIds": ["KMIPKIT-0043-FR-007"],
+                    "declarationState": "blocked",
+                },
+                {
+                    "declarationId": "partial_value_roundtrip:c",
+                    "packageId": "c-kmipkit",
+                    "kind": "function",
+                    "exportName": "kmipkit_partial_value_roundtrip",
+                    "capabilityId": "public_binding_surface",
+                    "requirementIds": ["KMIPKIT-0043-FR-007"],
+                    "declarationState": "declared",
+                },
+            ]
+        )
+        manifest["functions"].append(
+            {
+                "id": "partial_value_roundtrip",
+                "requirementIds": ["KMIPKIT-0043-FR-007"],
+                "c": {
+                    "symbol": "kmipkit_partial_value_roundtrip",
+                    "returnType": type_name,
+                    "parameters": [{"kind": "scalar", "type": type_name, "name": "value"}],
+                },
+            }
+        )
+
+        with self.assertRaisesRegex(generate.ManifestError, "incomplete C value by value"):
+            generate.render_c_header(manifest)
+
     def test_references_reject_duplicate_fixed_width_value_field_names(self) -> None:
         manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
         manifest["types"].append(
