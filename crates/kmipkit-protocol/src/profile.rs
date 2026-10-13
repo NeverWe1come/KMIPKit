@@ -681,9 +681,11 @@ const CREATE_KEY_PAIR_ATTRIBUTE_GROUPS: [u32; 3] = [0x0042_0126, 0x0042_0127, 0x
 const CRYPTOGRAPHIC_DOMAIN_PARAMETERS: u32 = 0x0042_0029;
 const QLENGTH_DOMAIN_PARAMETER: u32 = 0x0042_0073;
 const REGISTER_OPERATION: u32 = 0x0000_0003;
+const GET_OPERATION: u32 = 0x0000_000A;
 const REGISTER_ATTRIBUTES: u32 = 0x0042_0125;
 const REGISTER_OBJECT_TYPE: u32 = 0x0042_0057;
 const REGISTER_PROTECTION_STORAGE_MASKS: u32 = 0x0042_015F;
+const GET_KEY_COMPRESSION_TYPE: u32 = 0x0042_0041;
 const KEY_VALUE_LOCATION: u32 = 0x0042_00B8;
 const KEY_VALUE_LOCATION_VALUE: u32 = 0x0042_00B9;
 const KEY_VALUE_LOCATION_TYPE: u32 = 0x0042_00BA;
@@ -737,6 +739,38 @@ fn type_specific_parameters_do_not_infer_remote_object_type(
                     .iter()
                     .filter(|field| field.tag().raw() == CRYPTOGRAPHIC_PARAMETERS)
                     .all(|field| field.with_value(|value| matches!(value, ValueView::Structure(_))))
+            })
+            .unwrap_or(false)
+    })
+}
+
+fn client_get_key_compression_type_is_enumeration(
+    request: Option<&RequestMessage>,
+    _response: Option<(&RequestMessage, &ResponseMessage)>,
+) -> bool {
+    let Some(request) = request else {
+        return false;
+    };
+
+    request.batch_items().all(|batch_item| {
+        let Some(operation) = batch_item.operation() else {
+            return false;
+        };
+        if operation != GET_OPERATION {
+            return true;
+        }
+
+        batch_item
+            .with_request_payload(|payload| {
+                let selectors: Vec<_> = payload
+                    .children()
+                    .iter()
+                    .filter(|field| field.tag().raw() == GET_KEY_COMPRESSION_TYPE)
+                    .collect();
+                selectors.len() <= 1
+                    && selectors.iter().all(|field| {
+                        field.with_value(|value| matches!(value, ValueView::Enumeration(_)))
+                    })
             })
             .unwrap_or(false)
     })
@@ -1102,6 +1136,23 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
             },
             RuleTestEvidence {
                 test_id: "crates/kmipkit-protocol/tests/unit/import_operation_tests.rs::import_preserves_wrapped_secret_data_without_key_wrap_type",
+                kind: RuleTestKind::OptionalCapabilityUsable,
+            },
+        ],
+        constraints: &[],
+    },
+    TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-3.1-001",
+        source_clause_id: "KMIPKIT-CLAUSE-SPEC-3.1-001",
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
+        evaluator: Some(client_get_key_compression_type_is_enumeration),
+        test_evidence: &[
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_client_get_key_compression_type_selector",
+                kind: RuleTestKind::OptionalCapabilityUsable,
+            },
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/unit/get_tests.rs::request_preserves_the_optional_key_compression_type_enumeration",
                 kind: RuleTestKind::OptionalCapabilityUsable,
             },
         ],

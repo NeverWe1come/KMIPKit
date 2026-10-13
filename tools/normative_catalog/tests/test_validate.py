@@ -16466,8 +16466,10 @@ class CatalogValidationTests(unittest.TestCase):
         expected_implementation_refs = {
             "crates/kmipkit-protocol/src/get.rs::GetRequest::with_key_compression_type",
             "crates/kmipkit-protocol/src/get.rs::GetRequest::into_ttlv_payload",
+            "crates/kmipkit-protocol/src/profile.rs::client_get_key_compression_type_is_enumeration",
         }
         expected_verification_refs = {
+            "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_client_get_key_compression_type_selector",
             "crates/kmipkit-protocol/tests/unit/get_tests.rs::request_preserves_the_optional_key_compression_type_enumeration",
             "crates/kmipkit-protocol/tests/unit/get_tests.rs::request_serializes_present_table_220_fields_in_source_order",
         }

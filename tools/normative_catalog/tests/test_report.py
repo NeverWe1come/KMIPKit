@@ -721,6 +721,8 @@ class CoverageReportTests(unittest.TestCase):
             [
                 "KMIPKIT-REQ-SPEC-2.7-001",
                 "KMIPKIT-REQ-SPEC-2.7-001",
+                "KMIPKIT-REQ-SPEC-3.1-001",
+                "KMIPKIT-REQ-SPEC-3.1-001",
                 "KMIPKIT-REQ-SPEC-4.14-001-001",
                 "KMIPKIT-REQ-SPEC-4.14-001-001",
                 "KMIPKIT-REQ-SPEC-4.27-001",

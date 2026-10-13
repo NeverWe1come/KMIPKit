@@ -5,7 +5,7 @@ use super::{
     CLIENT_REQUIREMENTS, ProfileEvidenceRecord, ProfileReadiness, ProfileReadinessBlocker,
     ProfileTransport, ProfileValidationError, ProfileValidationErrorCode, ProfileValidationResult,
     ProfileValidationSelection, RuleConstraint, RuleTestEvidence, RuleTestKind,
-    TYPED_RULE_MAPPINGS, TypedRuleMapping,
+    TYPED_RULE_MAPPINGS, TypedRuleMapping, client_get_key_compression_type_is_enumeration,
     client_register_key_value_location_requires_omitted_key_value,
     client_supplied_create_key_pair_domain_parameters_are_structures,
     discover_versions_advertises_only_client_supported_versions,
@@ -468,12 +468,11 @@ fn profile_maps_client_get_key_compression_type_selector() {
         profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
         requirement_ids: vec![REQUIREMENT_ID.to_owned()],
     };
+    assert!(!client_get_key_compression_type_is_enumeration(None, None));
     let selected_compression = request_message_with_operation_payload(
         GET_OPERATION,
         crate::GetRequest::new()
-            .with_unique_identifier(crate::UniqueIdentifier::TextString(
-                "ec-key-id".to_owned(),
-            ))
+            .with_unique_identifier(crate::UniqueIdentifier::TextString("ec-key-id".to_owned()))
             .with_key_compression_type(crate::KeyCompressionType::from_raw(1))
             .to_ttlv_payload()
             .expect("the typed Get request encodes the caller-selected value"),
@@ -481,27 +480,30 @@ fn profile_maps_client_get_key_compression_type_selector() {
     result
         .validate_request(&selected_compression)
         .expect("the selected client profile permits an explicit compression selector");
+    assert!(client_get_key_compression_type_is_enumeration(
+        Some(&selected_compression),
+        None
+    ));
 
     let omitted_optional_selector = request_message_with_operation_payload(
         GET_OPERATION,
         crate::GetRequest::new()
-            .with_unique_identifier(crate::UniqueIdentifier::TextString(
-                "ec-key-id".to_owned(),
-            ))
+            .with_unique_identifier(crate::UniqueIdentifier::TextString("ec-key-id".to_owned()))
             .to_ttlv_payload()
             .expect("the optional compression selector remains absent by default"),
     );
     result
         .validate_request(&omitted_optional_selector)
         .expect("profile validation does not synthesize or require this optional selector");
+    assert!(client_get_key_compression_type_is_enumeration(
+        Some(&omitted_optional_selector),
+        None
+    ));
 
     let malformed_selector = request_message_with_operation_payload(
         GET_OPERATION,
         structure([
-            tagged(
-                0x0042_0094,
-                Value::text_string("ec-key-id".to_owned()),
-            ),
+            tagged(0x0042_0094, Value::text_string("ec-key-id".to_owned())),
             tagged(
                 KEY_COMPRESSION_TYPE_TAG,
                 Value::text_string("compressed".to_owned()),
@@ -509,11 +511,19 @@ fn profile_maps_client_get_key_compression_type_selector() {
         ]),
     );
     assert!(result.validate_request(&malformed_selector).is_err());
+    assert!(!client_get_key_compression_type_is_enumeration(
+        Some(&malformed_selector),
+        None
+    ));
 
     let unrelated_operation = request_message_with_operation_payload(0x0000_0001, Structure::new());
     result
         .validate_request(&unrelated_operation)
         .expect("the Get-only selector rule leaves other operations unchanged");
+    assert!(client_get_key_compression_type_is_enumeration(
+        Some(&unrelated_operation),
+        None
+    ));
 }
 
 #[test]
