@@ -101,7 +101,9 @@ The shared capability query now maps unpaired Unicode surrogates consistently to
 
 ### Reviewed C-only last-error exclusions
 
-`kmipkit_last_error_get` and `kmipkit_last_error_clear` are C ABI diagnostics required by FR-007. The language facades expose failures as caller-owned Rust errors and Java/Python exceptions; they do not expose the C thread-local slot or its explicit clear operation. These exact symbols are excluded only from the cross-language facade parity inventory and remain in the generated C header and C API tests. This is a reviewed surface distinction, not a claim that FR-007's C requirement is out of scope.
+`kmipkit_last_error_get` is declared as the C view of the shared error taxonomy, not excluded as C-only state. Its status output preserves the existing status values: `8` protocol, `9` transport, and `10` complete server result. The accompanying category, cause, and delivery outputs remain separate values. Rust exposes these semantics through `ClientError` and its `category`, `cause_category`, and `delivery_state` accessors; Java exposes `ClientOperationException.statusCode()`, `categoryCode()`, `causeCode()`, and `deliveryStateCode()`; Python exposes the corresponding `ClientExecutionError` fields. The status constants map to the Rust outcome variants and Java exception subclasses, while Python retains the raw status and safe category values.
+
+Only `kmipkit_last_error_clear` remains an exact C-only exclusion. It clears the calling thread's sticky C diagnostic slot and is an ABI mechanism rather than a shared error capability; Rust errors are caller-owned and Java/Python exceptions need no explicit clear operation. Both symbols remain generated and covered by C API tests. These mappings satisfy KMIPKIT-0043-FR-013 together with KMIPKIT-0007-FR-013 without changing runtime codes or delivery semantics.
 
 ## T027 — Python native loading and ABI verification
 
@@ -748,3 +750,42 @@ requirements, but the additive C fallback
 contract in the owners in scope. It remains the single blocked declaration;
 the exact new cross-language facade would need approval before promotion.
 Remote CI has not run, and T076 plus dependent T021/T024 remain unchecked.
+
+### T076 C transport field reconciliation — partial promotion
+
+The C transport field inventory is now classified without hiding whole
+records: 24 semantic fields have exact four-language mapping targets; the
+three adjacent slice lengths, the generic input byte span, and the optional
+value presence bitset are exact representation exclusions. The ten ABI
+framing/reserved fields remain separately excluded, and all five C carrier
+types retain their exact generated layouts. `transport_config.flags` records
+only whether `tls_server_name` and `target_uri` are present; both values are
+mapped independently. The three `*_count` fields are only derived lengths,
+and `transport_input.data` is the byte carrier whose complete value is
+represented by the input's encoding/source selectors and its parent
+configuration field.
+
+The C `endpoint_kind` discriminant maps to the existing public endpoint
+families: Rust `Endpoint::raw_tls`/`Endpoint::https`, Java builder
+`rawTls`/`https`, and Python `Endpoint.raw_tls`/`https`. `endpoint_port` is
+applicable only to RAW_TLS; HTTPS authority and port are supplied together by
+the configured URI. C timeout `kind` maps to Rust `TimeoutPolicy`, preserving
+the default policy as well as bounded and unbounded limits; the value fields
+map to the bounded timeout representation.
+
+Credential mapping covers the full supported input modes instead of only PEM
+entry points. Rust `CertificateInput` supports PEM/DER in-memory and file
+constructors, `PrivateKeyInput` supports PEM/DER in-memory and file
+constructors, and `RevocationListInput` supports in-memory PEM/DER. Java's
+transport builder exposes PEM/DER and approved file overloads for certificate
+and key inputs, plus PEM/DER CRL inputs. Python uses the shared
+`CredentialEncoding` and `TransportInput` selectors; file-backed CRLs are
+rejected during `TransportConfig` validation because KMIPKIT-0013-FR-003 does
+not authorize that source. C `encoding` and `source_kind` map to those
+selectors/constructor families, while `client_private_key` maps to the Rust
+`PrivateKeyInput` type.
+
+| Phase | Commit | Command | Result |
+|---|---|---|---|
+| Red | `72152b97` | `uv run --offline --no-project --with-requirements tools/api_manifest/requirements-test.txt python -B -m unittest tools.api_manifest.tests.test_t076_client_mapping.T076ClientMappingTests.test_c_transport_and_result_fields_are_semantically_mapped_or_exactly_excluded tools.api_manifest.tests.test_t076_client_mapping.T076ClientMappingTests.test_transport_input_mappings_cover_specified_encodings_and_sources tools.api_manifest.tests.test_t076_client_mapping.T076ClientMappingTests.test_endpoint_kind_mapping_names_the_constructor_selection tools.api_manifest.tests.test_t076_client_mapping.T076ClientMappingTests.test_c_field_targets_are_exact_ready_public_exports -v` | Expected failures: representation fields were still declared, four target types were blocked, and endpoint constructor evidence was absent. |
+| Green | This change | `uv run --offline --no-project --with-requirements tools/api_manifest/requirements-test.txt python -B -m unittest tools.api_manifest.tests.test_t076_client_mapping -v`; `python -B tools/api_manifest/generate.py --write`; `python -B tools/api_manifest/generate.py --check`; `git diff --check` | PASS: all 15 T076 mapping regressions; all 12 generated outputs are current. The generated export audit is refreshed separately and still reports Java/Python inventory gaps, so T011/T076/T021/T024 remain open. |

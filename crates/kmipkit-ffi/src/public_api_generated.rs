@@ -608,9 +608,114 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "kmipkit_protocol::extension::ExtensionRegistryLimits::max_depth",
     ),
     (
+        "T076:target:rust-kmipkit-protocol:kmipkit_protocol::KmipOperationResult::status",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::KmipOperationResult::status",
+    ),
+    (
+        "T076:target:rust-kmipkit-protocol:kmipkit_protocol::KmipOperationResult::reason",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::KmipOperationResult::reason",
+    ),
+    (
+        "T076:target:rust-kmipkit-transport:kmipkit_transport::CertificateInput",
+        "rust-kmipkit-transport",
+        "kmipkit_transport::CertificateInput",
+    ),
+    (
+        "T076:target:rust-kmipkit-transport:kmipkit_transport::CertificateInput::from_pem",
+        "rust-kmipkit-transport",
+        "kmipkit_transport::CertificateInput::from_pem",
+    ),
+    (
+        "T076:target:rust-kmipkit-transport:kmipkit_transport::ClientIdentity::new",
+        "rust-kmipkit-transport",
+        "kmipkit_transport::ClientIdentity::new",
+    ),
+    (
+        "T076:target:rust-kmipkit-transport:kmipkit_transport::Endpoint",
+        "rust-kmipkit-transport",
+        "kmipkit_transport::Endpoint",
+    ),
+    (
+        "T076:target:rust-kmipkit-transport:kmipkit_transport::Endpoint::raw_tls",
+        "rust-kmipkit-transport",
+        "kmipkit_transport::Endpoint::raw_tls",
+    ),
+    (
+        "T076:target:rust-kmipkit-transport:kmipkit_transport::PrivateKeyInput",
+        "rust-kmipkit-transport",
+        "kmipkit_transport::PrivateKeyInput",
+    ),
+    (
+        "T076:target:rust-kmipkit-transport:kmipkit_transport::RevocationListInput",
+        "rust-kmipkit-transport",
+        "kmipkit_transport::RevocationListInput",
+    ),
+    (
+        "T076:target:rust-kmipkit-transport:kmipkit_transport::RevocationListInput::from_pem",
+        "rust-kmipkit-transport",
+        "kmipkit_transport::RevocationListInput::from_pem",
+    ),
+    (
+        "T076:target:rust-kmipkit-transport:kmipkit_transport::TimeoutLimit",
+        "rust-kmipkit-transport",
+        "kmipkit_transport::TimeoutLimit",
+    ),
+    (
+        "T076:target:rust-kmipkit-transport:kmipkit_transport::TimeoutLimit::Bounded",
+        "rust-kmipkit-transport",
+        "kmipkit_transport::TimeoutLimit::Bounded",
+    ),
+    (
+        "T076:target:rust-kmipkit-transport:kmipkit_transport::TimeoutPolicy",
+        "rust-kmipkit-transport",
+        "kmipkit_transport::TimeoutPolicy",
+    ),
+    (
         "rust-observed-c85663a1dcd544c9e996",
         "rust-kmipkit-transport",
         "kmipkit_transport::TransportConfig",
+    ),
+    (
+        "T076:target:rust-kmipkit-transport:kmipkit_transport::TransportConfigBuilder",
+        "rust-kmipkit-transport",
+        "kmipkit_transport::TransportConfigBuilder",
+    ),
+    (
+        "T076:target:rust-kmipkit-transport:kmipkit_transport::TransportConfigBuilder::revocation_lists",
+        "rust-kmipkit-transport",
+        "kmipkit_transport::TransportConfigBuilder::revocation_lists",
+    ),
+    (
+        "T076:target:rust-kmipkit-transport:kmipkit_transport::TransportConfigBuilder::tls_server_name",
+        "rust-kmipkit-transport",
+        "kmipkit_transport::TransportConfigBuilder::tls_server_name",
+    ),
+    (
+        "T076:target:rust-kmipkit-transport:kmipkit_transport::TransportConfigBuilder::target_uri",
+        "rust-kmipkit-transport",
+        "kmipkit_transport::TransportConfigBuilder::target_uri",
+    ),
+    (
+        "T076:target:rust-kmipkit-transport:kmipkit_transport::TransportConfigBuilder::timeouts",
+        "rust-kmipkit-transport",
+        "kmipkit_transport::TransportConfigBuilder::timeouts",
+    ),
+    (
+        "T076:target:rust-kmipkit-transport:kmipkit_transport::TransportConfigBuilder::max_request_bytes",
+        "rust-kmipkit-transport",
+        "kmipkit_transport::TransportConfigBuilder::max_request_bytes",
+    ),
+    (
+        "T076:target:rust-kmipkit-transport:kmipkit_transport::TrustSource",
+        "rust-kmipkit-transport",
+        "kmipkit_transport::TrustSource",
+    ),
+    (
+        "T076:target:rust-kmipkit-transport:kmipkit_transport::TrustSource::certificate_authorities",
+        "rust-kmipkit-transport",
+        "kmipkit_transport::TrustSource::certificate_authorities",
     ),
     (
         "rust-adr0014-91e7a41f5f7a2bcb",
@@ -751,6 +856,11 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "rust-observed-f1b456e2213ce1d12b27",
         "rust-kmipkit-client",
         "kmipkit_client::ClientBatchItemResponse::unique_batch_item_id",
+    ),
+    (
+        "T076:target:rust-kmipkit-client:kmipkit_client::ClientBatchItemResponse::outcome",
+        "rust-kmipkit-client",
+        "kmipkit_client::ClientBatchItemResponse::outcome",
     ),
     (
         "rust-observed-805a39b3a86e22c4f86c",
