@@ -65521,7 +65521,7 @@
           "source_text": "It MAY contain only a public key block, or both a public and private key block.",
           "source_keyword": "MAY",
           "actor": "client",
-          "direction": "client encodes/decodes PGP Key Block",
+          "direction": "unclear",
           "condition": "PGP object representation may contain public-only or public-plus-private blocks",
           "scope_disposition": "profile_conditional",
           "candidate_requirement_id": "KMIPKIT-REQ-SPEC-2.4-001-001"
@@ -65531,7 +65531,7 @@
           "source_text": "Two different versions of PGP keys, version 3 and version 4, MAY be stored in this Managed Cryptographic Object.",
           "source_keyword": "MAY",
           "actor": "client",
-          "direction": "client encodes/decodes PGP Key Block",
+          "direction": "unclear",
           "condition": "PGP object versions 3 and 4",
           "scope_disposition": "profile_conditional",
           "candidate_requirement_id": "KMIPKIT-REQ-SPEC-2.4-001-002"
@@ -65543,7 +65543,7 @@
         "KMIPKIT-REQ-SPEC-2.4-001-002"
       ],
       "applies_to": "all_client_profiles",
-      "review_note": "§2.4 #1: both MAY permissions apply to the PGP-specific object representation, not all client objects."
+      "review_note": "§2.4 defines the PGP-specific object form and both MAY permissions but does not assign a message direction. The client-to-server evidence is limited to the client supplying this object as Import's Any Object under §6.1.25/Table 238."
     },
     {
       "source_id": "KMIPKIT-SRC-spec",

@@ -86185,6 +86185,10 @@
         {
           "source_id": "KMIPKIT-SRC-spec",
           "section": "2.4"
+        },
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "6.1.25"
         }
       ],
       "source_keyword": "MAY",
@@ -86192,8 +86196,8 @@
       "subject": "PGP Key object form",
       "summary": "A PGP Key object may contain only a public-key block or both public- and private-key blocks; the client model should preserve either form.",
       "role": "client",
-      "direction": "unclear",
-      "condition": null,
+      "direction": "client_to_server",
+      "condition": "When the client supplies a PGP Key Object as the Any Object in an Import Request (KMIP Specification v2.1 §6.1.25, Table 238); evidence covers opaque Key Value byte preservation.",
       "scope_state": "profile_conditional",
       "element_ids": [],
       "profile_ids": [
@@ -86229,7 +86233,7 @@
       "negative_verification_required": false,
       "decision_id": null,
       "status": "scoped_verified",
-      "review_note": "KMIP Specification v2.1 §2.4/Table 5 defines the client PGP Key object shape. The generic Import Item preserves the caller-supplied PGP Key Structure and opaque Key Value Byte String without parsing the key. The linked profile test exercises two distinct caller-supplied byte strings and versions 3 and 4; its bytes are synthetic and do not assert valid PGP armor, public/private contents, cryptographic validity, or server acceptance. No requirement-specific official Test Cases ID is linked by the pinned OASIS sources."
+      "review_note": "KMIP Specification v2.1 §2.4/Table 5 defines the PGP Key object shape and the MAY permissions; that section does not assign a message direction. The client-to-server direction for this evidence is derived from the client supplying the PGP Key as Import's Any Object under §6.1.25/Table 238. The generic Import Item preserves the caller-supplied PGP Key Structure and opaque Key Value Byte String without parsing the key. The linked profile test exercises two distinct caller-supplied byte strings; its bytes are synthetic and do not assert valid PGP armor, public/private contents, cryptographic validity, or server acceptance. No requirement-specific official Test Cases ID is linked by the pinned OASIS sources."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-2.4-001-002",
@@ -86240,6 +86244,10 @@
         {
           "source_id": "KMIPKIT-SRC-spec",
           "section": "2.4"
+        },
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "6.1.25"
         }
       ],
       "source_keyword": "MAY",
@@ -86247,8 +86255,8 @@
       "subject": "PGP Key version",
       "summary": "PGP key versions 3 and 4 may be stored in this object; the client model should preserve the versioned form.",
       "role": "client",
-      "direction": "unclear",
-      "condition": "PGP Key objects; versions 3 and 4.",
+      "direction": "client_to_server",
+      "condition": "When the client supplies a PGP Key Object as the Any Object in an Import Request (KMIP Specification v2.1 §6.1.25, Table 238); evidence exercises Integer versions 3 and 4 permitted by §2.4/Table 5.",
       "scope_state": "profile_conditional",
       "element_ids": [],
       "profile_ids": [
@@ -86284,7 +86292,7 @@
       "negative_verification_required": false,
       "decision_id": null,
       "status": "scoped_verified",
-      "review_note": "KMIP Specification v2.1 §2.4/Table 5 requires PGP Key Version as an Integer and §2.4 permits versions 3 and 4. The profile rule checks the required Integer field while preserving its raw value; the linked test exercises both source-listed versions. Synthetic key bytes are not validated as PGP armor, and no cryptographic processing or server acceptance is claimed. No requirement-specific official Test Cases ID is linked by the pinned OASIS sources."
+      "review_note": "KMIP Specification v2.1 §2.4/Table 5 requires PGP Key Version as an Integer and permits versions 3 and 4; §2.4 itself does not assign a message direction. The client-to-server direction for this evidence is derived from the client supplying the PGP Key as Import's Any Object under §6.1.25/Table 238. The profile rule checks the required Integer field while preserving its raw value; the linked test exercises both source-listed versions without claiming they are exhaustive. Synthetic key bytes are not validated as PGP armor, and no cryptographic processing or server acceptance is claimed. No requirement-specific official Test Cases ID is linked by the pinned OASIS sources."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-2.4-002-001",
