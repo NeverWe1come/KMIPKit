@@ -68,9 +68,23 @@ repetitive operation builders, accessors, constants, and declarations.
 The generated Rust exports are the input to cbindgen. Generated outputs are
 checked in and CI verifies deterministic regeneration and compatibility.
 
+### Public C declarations and symbol inventory
+
+The v2 [public API manifest](../../specification/api/public-api.json) owns the
+C declaration inventory. Its generated [public C header](../../bindings/c/include/kmipkit.h)
+contains only C mappings in the manifest's `declared` or `verified` state;
+blocked rows remain inventory records and do not create callable declarations.
+The [binding export report](../../specs/043-public-api-bindings/reports/binding-export-report-2026-10-12.json)
+records the observed C, Java, and Python exports and their reconciliation with
+the manifest. Regenerate or validate that inventory with the pinned commands
+in [the export audit guide](../../tools/api_manifest/binding-export-audit.md);
+the C source-level check is `python -B
+tools/api_manifest/audit_binding_exports.py --repo-root . --c-only --check`.
+CI additionally audits the compiled C library on Windows, Linux, and macOS.
+
 ## C distribution
 
-- C11 headers under `include/kmipkit/` with an umbrella `kmipkit.h`.
+- C11 public umbrella header: [`kmipkit.h`](../../bindings/c/include/kmipkit.h).
 - C++ compatibility through `extern "C"`.
 - Dynamic and static libraries.
 - Linux SONAME `libkmipkit.so.1`.
