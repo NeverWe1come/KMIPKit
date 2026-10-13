@@ -967,3 +967,31 @@ fn transport_material_accepts_exact_local_bound_and_rejects_over_bound() {
         "aggregate client, trust, and CRL inputs may not exceed the facade cap"
     );
 }
+
+#[test]
+fn ffi_client_correlation_value_enforces_the_local_material_bound() {
+    let maximum =
+        usize::try_from(MAX_TRANSPORT_MATERIAL_BYTES).expect("the ABI cap fits this test target");
+    let exact_value = vec![b'c'; maximum];
+    let mut batch = ptr::null_mut();
+    assert_eq!(kmipkit_client_batch_create(&mut batch), SUCCESS);
+    assert_eq!(
+        kmipkit_client_batch_set_client_correlation_value(
+            batch,
+            exact_value.as_ptr(),
+            u64::try_from(exact_value.len()).expect("exact cap fits the ABI"),
+        ),
+        SUCCESS,
+        "the exact local bound is accepted"
+    );
+    assert_eq!(
+        kmipkit_client_batch_set_client_correlation_value(
+            batch,
+            ptr::null(),
+            MAX_TRANSPORT_MATERIAL_BYTES + 1,
+        ),
+        ERROR_RESOURCE_LIMIT,
+        "an over-bound length is rejected before reading the input pointer"
+    );
+    kmipkit_client_batch_release(batch);
+}

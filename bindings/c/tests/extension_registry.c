@@ -563,6 +563,13 @@ static bool test_t076_validated_client_reports_delivery_state(
     item = NULL;
 
     REQUIRE_STATUS(kmipkit_client_batch_create(&batch), KMIPKIT_SUCCESS);
+    REQUIRE_STATUS(kmipkit_client_batch_set_client_correlation_value(
+                       batch, NULL, UINT64_C(16777217)),
+                   KMIPKIT_ERROR_RESOURCE_LIMIT);
+    kmipkit_client_batch_release(batch);
+    batch = NULL;
+
+    REQUIRE_STATUS(kmipkit_client_batch_create(&batch), KMIPKIT_SUCCESS);
     REQUIRE_STATUS(kmipkit_client_batch_item_discover_versions(&item), KMIPKIT_SUCCESS);
     {
         static const uint8_t first_id[] = {0x00, 0x81, 0xff, 0x01};
