@@ -76,18 +76,20 @@ Final verification on Windows x86-64: `bindings/python/.venv/Scripts/python.exe 
 
 ## T013 — Approved shared Rust declaration inventory (complete)
 
-T013 reconciles the canonical public declarations observed across all five published Rust crates with exact manifest paths. It maps 109 declarations whose shared capabilities have Approved/Accepted owners, existing implementations, and linked owner requirements; only the five bounded transport declarations use the accepted ADR-0014 Rust-only exception. The remaining 9,388 observed Rust declarations stay explicitly blocked pending an approved owner or exact parity evidence. This inventory completion does not promote blocked APIs or claim release readiness.
+T013 reconciles the canonical public declarations observed across all five published Rust crates with exact manifest paths. It maps 134 declarations whose shared capabilities have Approved/Accepted owners, existing implementations, and linked owner requirements; only the five bounded transport declarations use the accepted ADR-0014 Rust-only exception. The remaining 9,363 observed Rust declarations stay explicitly blocked pending an approved owner or exact parity evidence. This inventory completion does not promote blocked APIs or claim release readiness.
 
 | Published Rust crate | Observed | Mapped | Blocked |
 |---|---:|---:|---:|
-| `kmipkit-ttlv` | 331 | 24 | 307 |
-| `kmipkit-protocol` | 5,845 | 49 | 5,796 |
+| `kmipkit-ttlv` | 331 | 36 | 295 |
+| `kmipkit-protocol` | 5,845 | 61 | 5,784 |
 | `kmipkit-transport` | 365 | 5 | 360 |
-| `kmipkit-client` | 1,031 | 22 | 1,009 |
+| `kmipkit-client` | 1,031 | 23 | 1,008 |
 | `kmipkit` | 1,925 | 9 | 1,916 |
-| **Total** | **9,497** | **109** | **9,388** |
+| **Total** | **9,497** | **134** | **9,363** |
 
-The 109 mapped declarations comprise 18 generic TTLV model, 6 TTLV codec, 71 vendor-extension registry, 9 FFI runtime-metadata, and 5 Rust-only transport declarations. The 36 observed foreign-language declarations without exact callable Rust equivalents remain blocked without signatures or mappings: 22 C release/`Drop` rows, 12 TTLV helper rows, and the Java `RuntimeMetadata` and Python `metadata` namespace rows. Those two metadata namespaces now identify KMIPKIT-0043 as their candidate owner; they remain blocked because the Rust crate root is not an exported declaration matching either namespace. Candidate drafts 0009/0010 remain blocked. The generated T013 audit report preserves all 36 blocked cross-language rows and their exact reasons.
+The 134 mapped declarations comprise 30 generic TTLV model, 6 TTLV codec, 83 vendor-extension registry, 1 Discover Versions request-item builder, 9 FFI runtime-metadata, and 5 Rust-only transport declarations. The `StructureView` type and its view-wrapper lifecycle belong to the generic model's redaction, serialization, ordering, and lifetime requirements (KMIPKIT-0004-FR-006/009/010/012); registry functions that recognize extensions and return a view remain owned by KMIPKIT-0012. `ClientBatchItem` retains KMIPKIT-0012 ownership for extension attachment and inspection while also citing KMIPKIT-0007-FR-001 for the base typed-request contract. Its Discover Versions builders in Rust, C, Java, and Python are separately mapped to KMIPKIT-0007-FR-001/002. The Discover Versions operation itself remains blocked until typed execution and response parity are complete.
+
+The 36 observed foreign-language declarations without exact callable Rust equivalents remain blocked without signatures or mappings: 22 C release/`Drop` rows, 12 TTLV helper rows, and the Java `RuntimeMetadata` and Python `metadata` namespace rows. Those two metadata namespaces now identify KMIPKIT-0043 as their candidate owner; they remain blocked because the Rust crate root is not an exported declaration matching either namespace. Candidate drafts 0009/0010 remain blocked. The generated T013 audit report preserves all 36 blocked cross-language rows and their exact reasons.
 
 The initial approved TTLV ownership slice remains historical evidence within this task. It covers the four-language declaration rows mapped to `kmipkit_ttlv::` (76 generic-model rows owned by KMIPKIT-0004 and 25 `CodecLimits` rows owned by KMIPKIT-0005); it is a subset of the completed five-crate inventory above.
 
@@ -312,3 +314,31 @@ Fresh local verification on this head:
 | Coverage-gate preflight | `scripts/coverage_gate.py preflight --workspace .` | PASS: exit 0, eligible; source scan found 120 executable or ambiguous function bodies across 186 files. The PR's remote coverage jobs remain authoritative. |
 | Read-only QA | Review of the capability, generated-documentation, and C-comment payload fixes | PASS; no remaining injection path or contract inconsistency identified. |
 | Remote PR matrix | GitHub Actions after pushing this head | Pending; required before closing T011. |
+
+## T013 — Post-audit Discover Versions metadata reconciliation
+
+An independent QA review found that the full v2 manifest's Discover Versions request-item builder had stale owner requirements, a private Rust path, and a JNI symbol that did not match the native bridge. It also found that the Rust runtime query omitted the newly declared request-item capability. The correction maps the builder to KMIPKIT-0007-FR-001/002 and KMIPKIT-0043-FR-004/021, records the public Rust path and actual `NativeExtensionRegistry` JNI symbol, and keeps the operation itself blocked. The compatibility projection continues to reproduce the approved 0012 v1 registry fixture exactly.
+
+| Phase | Commit | Verification | Result |
+|---|---|---|---|
+| Red | `148410db`, `7dd2ce67` | Rust runtime metadata test and `cargo test --locked -p kmipkit-ffi --lib capability_query_only_reports_c_mapped_nonblocked_capabilities -- --nocapture` | Expected failures: Rust omitted `discover_versions_request_item` from runtime availability and the FFI inventory found that a ready generated capability was not available through the Rust facade. |
+| Red | `bf5ca24e` | `.venv/Scripts/python.exe -B -m unittest tools.api_manifest.tests.test_manifest_v2.PublicApiManifestV2SchemaTests.test_discover_versions_function_maps_the_public_item_builder -v` | Expected failure: the manifest pointed through private `kmipkit_client::execute` rather than the public path and recorded a non-existent JNI bridge. |
+| Red | `7c16b1ac` | Full API-manifest suite before projection fix | Expected failures exposed the v1 registry projection drift and a check that incorrectly treated 0007/0043 requirements as part of the 0012-only requirement slice. |
+| Green | `c1e601ba` | Focused capability/provenance tests; v1 projection, parity, and extension-fixture tests; API generator and extension-fixture checks | PASS. Runtime, manifest, generated outputs, bilingual docs, and the exact v1 compatibility projection are reconciled; Discover Versions remains blocked. |
+| Refactor | `b23dd5b1` | Registry-slice and Discover Versions provenance tests; API generator `--check`; extension-fixture generator `--check`; `git diff --check` | PASS. Extracted the v1 function projection into a dedicated helper without changing generated bytes. |
+| Read-only QA | `b23dd5b1` and evidence update | Independent review of runtime parity, ownership and requirement IDs, Rust/JNI paths, operation readiness, v1 projection, generated fixture fingerprints, inventory counts, and recorded verification | PASS; no actionable findings. |
+
+Fresh local verification after the Green change:
+
+| Check | Command | Result |
+|---|---|---|
+| API-manifest suite | `.venv/Scripts/python.exe -B -m unittest discover -s tools/api_manifest/tests -p 'test_*.py'` | PASS: 243 tests run; 240 passed and 3 skipped because Windows denied symlink creation. |
+| Changed Rust packages | `cargo test --locked -p kmipkit -p kmipkit-ffi` | PASS: 38 tests; no failures. |
+| Workspace lint | `cargo clippy --locked --workspace --all-targets --all-features -- -D warnings` | PASS. |
+| Formatting | `cargo fmt --all --check` | PASS. |
+| Full workspace tests | `cargo test --workspace --all-features` | Command exited 1: three `kmipkit-test-support::transport_fixtures` tests could not bind loopback sockets (Windows error 10013, access denied). Remote platform CI remains required. |
+| API generator | `.venv/Scripts/python.exe -B tools/api_manifest/generate.py --check` | PASS: 12 generated outputs current. |
+| Extension fixture generator | `.venv/Scripts/python.exe -B tools/extension_fixtures/generate.py --check` | PASS. |
+| Shared Rust inventory | `.venv/Scripts/python.exe -B tools/api_manifest/audit_shared_rust_inventory.py --report specs/043-public-api-bindings/reports/shared-rust-inventory-2026-10-12.json --check` | PASS; report current. |
+| Binding exports | `.venv/Scripts/python.exe -B tools/api_manifest/audit_binding_exports.py --report specs/043-public-api-bindings/reports/binding-export-report-2026-10-12.json --check` | PASS; exit 0. |
+| Remote PR matrix | GitHub Actions on the final pushed head | Pending; T011 remains open until all required checks pass. |

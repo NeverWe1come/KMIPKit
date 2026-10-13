@@ -4,14 +4,14 @@
     {
       "complete": true,
       "counts": {
-        "exactMatches": 180,
+        "exactMatches": 177,
         "kindMismatches": 0,
-        "manifest": 180,
-        "matched": 180,
+        "manifest": 177,
+        "matched": 177,
         "missingFromManifest": 0,
         "notObserved": 0,
-        "observed": 182,
-        "pathMatches": 180
+        "observed": 181,
+        "pathMatches": 177
       },
       "issues": [],
       "kindMismatches": [],
@@ -23,14 +23,14 @@
     {
       "complete": true,
       "counts": {
-        "exactMatches": 329,
+        "exactMatches": 330,
         "kindMismatches": 0,
-        "manifest": 329,
-        "matched": 329,
+        "manifest": 330,
+        "matched": 330,
         "missingFromManifest": 0,
         "notObserved": 0,
-        "observed": 329,
-        "pathMatches": 329
+        "observed": 330,
+        "pathMatches": 330
       },
       "issues": [],
       "kindMismatches": [],
