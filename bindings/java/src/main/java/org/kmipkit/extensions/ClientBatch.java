@@ -43,9 +43,7 @@ public final class ClientBatch implements AutoCloseable {
 
     /** Sets the raw forward-compatible KMIP Asynchronous Indicator value. */
     public ClientBatch asynchronousIndicator(long indicator) {
-        if (indicator < 0 || indicator > MAX_UINT32_VALUE) {
-            throw new InvalidInputException("asynchronous indicator is outside uint32");
-        }
+        validateUint32(indicator, "asynchronous indicator");
         NativeExtensionRegistry.ensureLoaded();
         handle.withValue(batch -> {
             NativeExtensionRegistry.clientBatchSetAsynchronousIndicator(batch, indicator);
@@ -76,9 +74,7 @@ public final class ClientBatch implements AutoCloseable {
 
     /** Appends a caller-selected KMIP Batch Error Continuation Option value. */
     public ClientBatch addErrorContinuationValue(long value) {
-        if (value < 0 || value > MAX_UINT32_VALUE) {
-            throw new InvalidInputException("error continuation value is outside uint32");
-        }
+        validateUint32(value, "error continuation value");
         NativeExtensionRegistry.ensureLoaded();
         handle.withValue(batch -> {
             NativeExtensionRegistry.clientBatchAddErrorContinuationValue(batch, value);
@@ -109,6 +105,12 @@ public final class ClientBatch implements AutoCloseable {
 
     NativeHandle nativeHandleOwner() {
         return handle;
+    }
+
+    private static void validateUint32(long value, String field) {
+        if (value < 0 || value > MAX_UINT32_VALUE) {
+            throw new InvalidInputException(field + " is outside uint32");
+        }
     }
 
     @Override

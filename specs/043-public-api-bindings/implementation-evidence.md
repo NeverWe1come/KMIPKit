@@ -546,3 +546,7 @@ The full matrix for head `3c87f385` passed the language, platform, Java/Python c
 - **Command**: `mvn --batch-mode --file bindings/java/pom.xml -Dtest=ClientFacadeContractTest test`
 - **Result**: PASS: 7 tests, including a native JNI build and a live native batch exercise. The first run caught missing private prototypes in the generated-header boundary; adding the exact ABI declarations to the existing T076 private declaration block resolved it. A second contract test covers unsigned range and null-correlation rejection.
 - **Green commit**: Pending.
+- **Refactor**: Consolidated uint32 boundary validation shared by Asynchronous Indicator and Error Continuation values without changing their public exception categories.
+- **Command**: `mvn --batch-mode --file bindings/java/pom.xml -Dtest=ClientFacadeContractTest test`
+- **Result**: PASS: 7 tests; native JNI rebuilt successfully and the batch facade contract passed.
+- **Refactor commit**: Pending.
