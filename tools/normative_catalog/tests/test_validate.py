@@ -17889,7 +17889,6 @@ class CatalogValidationTests(unittest.TestCase):
 
         if expected_blocked_requirement_ids is None:
             expected_blocked_requirement_ids = {
-                "KMIPKIT-REQ-SPEC-2.3-002",
                 "KMIPKIT-REQ-SPEC-4.17-001-001",
                 "KMIPKIT-REQ-SPEC-9.11-001",
                 "KMIPKIT-REQ-SPEC-9.11-004-003",
@@ -17909,8 +17908,8 @@ class CatalogValidationTests(unittest.TestCase):
         }
         self.assertEqual(
             implementation_mapping_gap_ids,
-            expected_blocked_requirement_ids - {"KMIPKIT-REQ-SPEC-2.3-002"},
-            "every blocked capability except the already mapped §2.3 context must report its missing implementation mapping",
+            expected_blocked_requirement_ids,
+            "every blocked capability must report its missing implementation mapping",
         )
         positive_evidence_gap_ids = {
             gap.partition(":")[0]
@@ -17924,8 +17923,7 @@ class CatalogValidationTests(unittest.TestCase):
         )
         self.assertEqual(
             len(gaps),
-            len(expected_blocked_requirement_ids)
-            + len(expected_blocked_requirement_ids - {"KMIPKIT-REQ-SPEC-2.3-002"}),
+            2 * len(expected_blocked_requirement_ids),
         )
 
         from tools.normative_catalog.report import evaluate_profile_readiness

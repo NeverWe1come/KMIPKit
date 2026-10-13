@@ -48,6 +48,9 @@ const VENDOR_ATTRIBUTE_TAG: u32 = 0x0042_0008;
 const VENDOR_IDENTIFICATION_TAG: u32 = 0x0042_009D;
 const ATTRIBUTE_NAME_TAG: u32 = 0x0042_000A;
 const ATTRIBUTE_VALUE_TAG: u32 = 0x0042_000B;
+const CRYPTOGRAPHIC_USAGE_MASK_TAG: u32 = 0x0042_002C;
+const CRYPTOGRAPHIC_ALGORITHM_TAG: u32 = 0x0042_0028;
+const CRYPTOGRAPHIC_LENGTH_TAG: u32 = 0x0042_002A;
 
 struct RejectingWriter;
 
@@ -442,6 +445,37 @@ fn opaque_object_register_payload(include_context: bool) -> Structure {
     )
     .into_ttlv_payload()
     .expect("the Opaque Object and its optional Attributes have valid TTLV shapes")
+}
+
+fn managed_opaque_object_register_payload() -> Structure {
+    let mut attributes = crate::AttributeSet::new();
+    for attribute in [
+        tagged(CRYPTOGRAPHIC_USAGE_MASK_TAG, Value::integer(3)),
+        tagged(CRYPTOGRAPHIC_ALGORITHM_TAG, Value::enumeration(3)),
+        tagged(CRYPTOGRAPHIC_LENGTH_TAG, Value::integer(256)),
+    ] {
+        attributes
+            .try_push(attribute)
+            .expect("managed Opaque Object attributes have valid TTLV shapes");
+    }
+
+    crate::RegisterRequest::new(
+        crate::ObjectType::from_raw(8),
+        attributes,
+        tagged(
+            OPAQUE_OBJECT_TAG,
+            Value::structure(structure([
+                tagged(OPAQUE_DATA_TYPE_TAG, Value::enumeration(7)),
+                tagged(
+                    OPAQUE_DATA_VALUE_TAG,
+                    Value::byte_string(b"managed-opaque-object-data".to_vec()),
+                ),
+            ])),
+        ),
+    )
+    .with_opaque_object_context(crate::OpaqueObjectContext::ManagedCryptographicObject)
+    .into_ttlv_payload()
+    .expect("managed Opaque Object attributes serialize without adding a context marker")
 }
 
 fn opaque_context_get_attributes_response() -> crate::ResponseMessage {
@@ -2804,6 +2838,87 @@ fn profile_maps_client_register_opaque_object_context_custom_attributes() {
             opaque_object_register_payload(false),
         ))
         .expect("using the optional context capability does not make it mandatory");
+}
+
+#[test]
+fn profile_maps_client_register_opaque_object_context_managed_attributes() {
+    // KMIP Specification v2.1 §2.3 and §6.1.43, Tables 291/293.
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-2.3-002";
+    const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
+
+    let validation = ProfileValidationResult {
+        profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
+        requirement_ids: vec![REQUIREMENT_ID.to_owned()],
+    };
+    let managed_payload = managed_opaque_object_register_payload();
+    let managed_payload_view = managed_payload.view();
+    let fields = managed_payload_view.children();
+    assert_eq!(
+        fields.iter().map(|field| field.tag().raw()).collect::<Vec<_>>(),
+        [OBJECT_TYPE_TAG, ATTRIBUTES_TAG, OPAQUE_OBJECT_TAG],
+        "managed client context is not transmitted as a wire marker"
+    );
+
+    validation
+        .validate_request(&request_message_with_operation_payload(
+            REGISTER_OPERATION_TAG,
+            managed_payload,
+        ))
+        .expect("the client can Register an Opaque Object using managed cryptographic attributes");
+    validation
+        .validate_request(&request_message_with_operation_payload(
+            REGISTER_OPERATION_TAG,
+            opaque_object_register_payload(false),
+        ))
+        .expect("the optional managed context does not make attributes mandatory");
+}
+
+#[test]
+fn profile_rejects_malformed_managed_opaque_attribute_wire_types() {
+    // KMIP Specification v2.1 §2.3 and §6.1.43, Tables 291/293.
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-2.3-002";
+    const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
+    let validation = ProfileValidationResult {
+        profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
+        requirement_ids: vec![REQUIREMENT_ID.to_owned()],
+    };
+    let payload = structure([
+        tagged(OBJECT_TYPE_TAG, Value::enumeration(8)),
+        tagged(
+            ATTRIBUTES_TAG,
+            Value::structure(structure([
+                tagged(CRYPTOGRAPHIC_USAGE_MASK_TAG, Value::integer(3)),
+                tagged(CRYPTOGRAPHIC_ALGORITHM_TAG, Value::integer(3)),
+                tagged(CRYPTOGRAPHIC_LENGTH_TAG, Value::integer(256)),
+            ])),
+        ),
+        tagged(
+            OPAQUE_OBJECT_TAG,
+            Value::structure(structure([
+                tagged(OPAQUE_DATA_TYPE_TAG, Value::enumeration(7)),
+                tagged(
+                    OPAQUE_DATA_VALUE_TAG,
+                    Value::byte_string(b"managed-opaque-object-data".to_vec()),
+                ),
+            ])),
+        ),
+    ]);
+
+    let error = validation
+        .validate_request(&request_message_with_operation_payload(
+            REGISTER_OPERATION_TAG,
+            payload,
+        ))
+        .expect_err("Cryptographic Algorithm uses Enumeration encoding");
+    assert_eq!(
+        error.code(),
+        ProfileValidationErrorCode::RequestRuleRejected
+    );
+    assert_eq!(error.requirement_id(), Some(REQUIREMENT_ID));
+    assert_eq!(
+        error.source_clause_id(),
+        Some("KMIPKIT-CLAUSE-SPEC-2.3-002")
+    );
 }
 
 #[test]
