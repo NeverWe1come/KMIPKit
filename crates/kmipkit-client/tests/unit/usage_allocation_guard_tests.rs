@@ -95,7 +95,7 @@ fn usage_allocation_guard_retains_failure_and_pending_reservations() {
     for (operation,variant) in [(0x1f,0),(0x23,1),(0x21,2)] {
         for status in [1,2] {
             let mut context=context(7,1);
-            let response=asynchronous_response_bytes(operation,status,if status==1{Some(1)}else{None},if status==2{Some(b"guard-pending")}else{None},Some(test_structure([])));
+            let response=asynchronous_response_bytes(operation,status,if status==1{Some(1)}else{None},if status==2{Some(b"guard-pending")}else{None},if status==2 {Some(test_structure([]))}else{None});
             let (mut client,transport,_)=client_for(ExchangeScript::Success{response,request_write_chunks:vec![]});
             let result=client.execute_guarded(&mut context,protection(Some(UniqueIdentifier::TextString("allocated-object".into())),variant),7,Some(2),&CodecLimits::defaults()).expect("complete result");
             assert_eq!(result.outcome().result().status().raw(),status);

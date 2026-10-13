@@ -7,6 +7,8 @@ use std::error::Error;
 use std::fmt;
 
 use crate::ClientErrorResponseTtlv;
+use crate::{UsageAllocationContext,GuardedProtectionRequest};
+use kmipkit_protocol::UniqueIdentifier;
 use kmipkit_protocol::attribute::{
     ClientAttributeMutation, client_attribute_mutation_is_prohibited,
     client_vendor_attribute_mutation_is_prohibited,
@@ -2432,6 +2434,40 @@ impl Client {
         limits: &CodecLimits,
         request_options: &RequestOptions,
     ) -> Result<ClientBatchResponse, ClientError> {
+        self.execute_inner(batch, limits, request_options, None)
+    }
+
+    /// Executes one caller-costed protection operation through its local allocation.
+    /// Pending is accepted only when the caller explicitly supplies its indicator.
+    /// # Errors
+    /// Invalid object, unit cost or allowance fails NotSent; possibly delivered
+    /// results retain the reservation. Errors preserve common delivery evidence.
+    pub fn execute_guarded(
+        &mut self,
+        context: &mut UsageAllocationContext,
+        request: GuardedProtectionRequest,
+        cost: i32,
+        asynchronous_indicator: Option<u32>,
+        limits: &CodecLimits,
+    ) -> Result<ClientBatchItemResponse, ClientError> {
+        let request=match request {
+            GuardedProtectionRequest::Encrypt(v)=>ClientRequest::Encrypt(v),
+            GuardedProtectionRequest::Mac(v)=>ClientRequest::Mac(v),
+            GuardedProtectionRequest::Sign(v)=>ClientRequest::Sign(v),
+        };
+        let mut batch=ClientBatch::new(ClientBatchItem::new(request));
+        if let Some(indicator)=asynchronous_indicator { batch=batch.with_asynchronous_indicator(indicator); }
+        let response=self.execute_inner(batch,limits,&RequestOptions::default(),Some((context,cost)))?;
+        take_single_response(response)
+    }
+
+    fn execute_inner(
+        &mut self,
+        batch: ClientBatch,
+        limits: &CodecLimits,
+        request_options: &RequestOptions,
+        mut guard: Option<(&mut UsageAllocationContext,i32)>,
+    ) -> Result<ClientBatchResponse,ClientError> {
         let options = validate_batch(&batch).map_err(|error| {
             ClientError::validation(
                 ClientCauseCategory::InvalidInput,
@@ -2457,6 +2493,24 @@ impl Client {
         let maximum_response_size = maximum_response_size_for_batch(&batch, limits);
         let request_message = build_request_message(batch, &options, maximum_response_size)
             .map_err(|error| protocol_failure_at(error, RequestDeliveryState::NotSent))?;
+        if let Some((context,cost))=guard.as_mut() {
+            let identifier=request_message.with_ttlv(|root| {
+                let batch=root.children().iter().find(|f|f.tag().raw()==BATCH_ITEM)?;
+                batch.with_value(|v| {
+                    let ValueView::Structure(batch)=v else { return None };
+                    let payload=batch.children().iter().find(|f|f.tag().raw()==REQUEST_PAYLOAD)?;
+                    payload.with_value(|v| {
+                        let ValueView::Structure(payload)=v else {return None};
+                        payload.children().iter().find(|f|f.tag().raw()==0x420094)?.with_value(|v|match v {
+                            ValueView::TextString(id)=>Some(UniqueIdentifier::TextString(id.to_owned())),
+                            _=>None,
+                        })
+                    })
+                })
+            }).ok_or_else(crate::usage_allocation::validation_error)?;
+            context.reserve(&identifier,*cost)?;
+        }
+        let result=(|| {
         let (response_message, response_delivery_state) =
             self.exchange_operation(request_message, limits, request_options)?;
 
@@ -2476,6 +2530,12 @@ impl Client {
                 failure.response_ttlv,
             )
         })
+        })();
+        if result.as_ref().is_err_and(|error| error.delivery_state()==Some(RequestDeliveryState::NotSent)) {
+            if let Some((context,cost))=guard { context.release(cost); }
+        }
+        result
+
     }
 
     /// Executes one typed Activate request through the shared batch writer.
