@@ -189,6 +189,18 @@ class ProfileSectionsThreeAndFourCrosswalkTests(unittest.TestCase):
             self.assertEqual(row["source_actor"], expected_actor)
             self.assertEqual(row["applies_to"], expected_applies_to)
 
+    def test_single_item_batch_id_requirement_lists_all_client_profiles(self) -> None:
+        """The reviewed §4.1.2 MAY applies across client profiles, not only Baseline."""
+        requirement = self.requirements["KMIPKIT-REQ-PROF-4.1.2-007"]
+        expected_profile_ids = sorted(
+            profile["profile_id"]
+            for profile in self.catalog["profiles"]
+            if profile["role"] == "client"
+        )
+
+        self.assertEqual(requirement["profile_ids"], expected_profile_ids)
+        self.assertEqual(self.crosswalk[requirement["requirement_id"]]["applies_to"], "all_client_profiles")
+
     def test_https_profile_closure_includes_all_explicit_client_requirements(self) -> None:
         """Sections 3.2 and 3.2.1–3.2.4 assign conditions to the HTTPS profile."""
         https_profile_id = "KMIPKIT-PROFILE-HTTPS-CLIENT"
