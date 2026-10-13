@@ -178,7 +178,7 @@ OPTIONAL_CAPABILITY_TEST_REQUIREMENTS = {
     "crates/kmipkit-client/tests/unit/object_read_execution_tests.rs::caller_directs_archived_locate_recover_then_get_as_three_exchanges": (
         "KMIPKIT-REQ-SPEC-6.1.42-001-002",
     ),
-    "crates/kmipkit-client/tests/unit/register_execution_tests.rs::register_sends_a_wrapped_object_from_table_291": (
+    "crates/kmipkit-client/tests/unit/register_execution_tests.rs::register_sends_a_wrapped_key_value_with_embedded_attributes_from_table_291": (
         "KMIPKIT-REQ-SPEC-6.1.43-005",
     ),
 }
@@ -295,8 +295,8 @@ OPTIONAL_CAPABILITY_TEST_CONTENT_REQUIREMENTS = {
         "Some(&WireValue::Integer(0x2))",
         "Some(&WireValue::TextString(archived_identifier.to_owned()))",
     ),
-    "crates/kmipkit-client/tests/unit/register_execution_tests.rs::register_sends_a_wrapped_object_from_table_291": (
-        "Value::byte_string(SYNTHETIC_WRAPPED_KEY_VALUE.to_vec())",
+    "crates/kmipkit-client/tests/unit/register_execution_tests.rs::register_sends_a_wrapped_key_value_with_embedded_attributes_from_table_291": (
+        "Value::byte_string(SYNTHETIC_WRAPPED_KEY_VALUE_WITH_ATTRIBUTES.to_vec())",
         "wrapped.direct_attribute_fields",
         "wrapped.key_value_bytes",
         "KEY_FORMAT_TYPE,",
@@ -2017,8 +2017,8 @@ class CatalogValidationTests(unittest.TestCase):
                 self.assertEqual(requirement["direction"], "client_to_server")
                 self.assertEqual(requirement["test_case_ids"], [])
 
-    def test_register_wrapping_attributes_remain_unassigned_without_positive_evidence(self) -> None:
-        """Wrapped Key Value bytes alone do not evidence wrapped Key Value Attributes."""
+    def test_register_wrapping_attributes_have_positive_request_shape_evidence(self) -> None:
+        """Register links a positive request-shape test for caller-supplied wrapped data."""
         catalog = json.loads(
             (ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8")
         )
@@ -2028,9 +2028,13 @@ class CatalogValidationTests(unittest.TestCase):
             if row["requirement_id"] == "KMIPKIT-REQ-SPEC-6.1.43-005"
         )
 
-        self.assertEqual(requirement["status"], "unassigned")
+        self.assertEqual(requirement["status"], "verified")
         self.assertIn(
-            "embedded attributes within the wrapped key value are not evidenced",
+            "crates/kmipkit-client/tests/unit/register_execution_tests.rs::register_sends_a_wrapped_key_value_with_embedded_attributes_from_table_291",
+            requirement["verification_refs"],
+        )
+        self.assertIn(
+            "opaque caller-supplied wrapped key value",
             requirement["review_note"].lower(),
         )
 
