@@ -1210,6 +1210,29 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
         native_handle = by_name["org.kmipkit.internal.NativeHandle"]
         self.assertEqual(native_handle["declarationState"], "blocked")
 
+    def test_new_java_close_declarations_remain_blocked_until_parity_is_reviewed(self) -> None:
+        declarations = self.declarations_for_package("java-kmipkit")
+        close_declarations = [
+            declaration
+            for declaration in declarations
+            if declaration["exportName"].endswith(".close")
+            and declaration.get("blockedReason", "").startswith(
+                "This Java AutoCloseable declaration has no reviewed equivalent mapping"
+            )
+        ]
+
+        self.assertEqual(len(close_declarations), 21)
+        self.assertTrue(
+            all(declaration["declarationState"] == "blocked" for declaration in close_declarations)
+        )
+        self.assertTrue(
+            all(
+                declaration["requirementIds"]
+                == ["KMIPKIT-0043-FR-008", "KMIPKIT-0043-FR-021"]
+                for declaration in close_declarations
+            )
+        )
+
     def test_checked_in_manifest_accounts_for_every_ready_c_header_declaration(self) -> None:
         header = (ROOT / "bindings" / "c" / "include" / "kmipkit.h").read_text(
             encoding="utf-8"
