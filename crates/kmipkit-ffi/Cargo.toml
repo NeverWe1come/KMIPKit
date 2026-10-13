@@ -20,6 +20,7 @@ kmipkit-client.workspace = true
 kmipkit-protocol.workspace = true
 kmipkit-transport.workspace = true
 kmipkit-ttlv.workspace = true
+zeroize.workspace = true
 
 [build-dependencies]
 cc = "=1.6.0"

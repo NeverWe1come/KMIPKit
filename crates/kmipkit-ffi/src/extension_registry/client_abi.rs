@@ -2,6 +2,7 @@
 #![allow(clippy::wildcard_imports)] // Shares the parent module's private FFI handle invariants.
 
 use super::*;
+use zeroize::{Zeroize, Zeroizing};
 
 #[cfg(test)]
 // These tests intentionally pass Rust references as raw C pointers and slice the byte above the
@@ -20,26 +21,178 @@ fn copy_transport_span(data: *const u8, length: u64, maximum: u64) -> FfiResult<
     Ok(owned)
 }
 
-fn read_transport_file(path: &str) -> FfiResult<Vec<u8>> {
+fn read_transport_file_with_budget(path: &str, budget: u64) -> FfiResult<Vec<u8>> {
+    let metadata = fs::metadata(path).map_err(|_| ERROR_INVALID_INPUT)?;
+    if metadata.len() > budget {
+        return Err(ERROR_RESOURCE_LIMIT);
+    }
+    let file = fs::File::open(path).map_err(|_| ERROR_INVALID_INPUT)?;
+    read_transport_reader_with_budget(file, metadata.len(), budget)
+}
+
+fn read_transport_reader_with_budget<R: Read>(
+    mut reader: R,
+    expected_length: u64,
+    budget: u64,
+) -> FfiResult<Vec<u8>> {
+    if expected_length > budget {
+        return Err(ERROR_RESOURCE_LIMIT);
+    }
+    let expected_length = usize::try_from(expected_length).map_err(|_| ERROR_RESOURCE_LIMIT)?;
+    let mut bytes = Vec::new();
+    bytes
+        .try_reserve_exact(expected_length)
+        .map_err(|_| ERROR_RESOURCE_LIMIT)?;
+    let mut scratch = [0_u8; 4096];
+    loop {
+        let current_length = u64::try_from(bytes.len()).map_err(|_| ERROR_RESOURCE_LIMIT)?;
+        let remaining = budget
+            .checked_sub(current_length)
+            .ok_or(ERROR_RESOURCE_LIMIT)?;
+        if remaining == 0 {
+            let mut overflow_probe = [0_u8; 1];
+            return match reader.read(&mut overflow_probe) {
+                Ok(0) => Ok(bytes),
+                Ok(_) => Err(ERROR_RESOURCE_LIMIT),
+                Err(_) => Err(ERROR_INVALID_INPUT),
+            };
+        }
+        let chunk_limit = usize::try_from(remaining.min(scratch.len() as u64))
+            .map_err(|_| ERROR_RESOURCE_LIMIT)?;
+        let count = reader
+            .read(&mut scratch[..chunk_limit])
+            .map_err(|_| ERROR_INVALID_INPUT)?;
+        if count == 0 {
+            return Ok(bytes);
+        }
+        bytes.try_reserve(count).map_err(|_| ERROR_RESOURCE_LIMIT)?;
+        bytes.extend_from_slice(&scratch[..count]);
+    }
+}
+
+struct SecretBuffer {
+    bytes: Vec<u8>,
+    #[cfg(test)]
+    observer: Option<SecretBufferObserver>,
+}
+
+impl SecretBuffer {
+    fn read_from<R: Read>(reader: R, maximum: u64) -> FfiResult<Self> {
+        Self::read_from_inner(
+            reader,
+            maximum,
+            #[cfg(test)]
+            None,
+        )
+    }
+
+    #[cfg(test)]
+    fn read_from_with_observer_for_test<R: Read>(
+        reader: R,
+        maximum: u64,
+        observer: SecretBufferObserver,
+    ) -> FfiResult<Self> {
+        Self::read_from_inner(reader, maximum, Some(observer))
+    }
+
+    fn read_from_inner<R: Read>(
+        mut reader: R,
+        maximum: u64,
+        #[cfg(test)] observer: Option<SecretBufferObserver>,
+    ) -> FfiResult<Self> {
+        let mut owned = Self {
+            bytes: Vec::new(),
+            #[cfg(test)]
+            observer,
+        };
+        let mut scratch = Zeroizing::new([0_u8; 4096]);
+        loop {
+            let count = reader
+                .read(&mut scratch[..])
+                .map_err(|_| ERROR_INVALID_INPUT)?;
+            if count == 0 {
+                return Ok(owned);
+            }
+            owned.append(&scratch[..count], maximum)?;
+            scratch[..count].zeroize();
+        }
+    }
+
+    fn append(&mut self, bytes: &[u8], maximum: u64) -> FfiResult<()> {
+        let next_length = self
+            .bytes
+            .len()
+            .checked_add(bytes.len())
+            .ok_or(ERROR_RESOURCE_LIMIT)?;
+        if u64::try_from(next_length).map_err(|_| ERROR_RESOURCE_LIMIT)? > maximum {
+            return Err(ERROR_RESOURCE_LIMIT);
+        }
+        if next_length > self.bytes.capacity() {
+            let mut replacement = Vec::new();
+            replacement
+                .try_reserve_exact(next_length)
+                .map_err(|_| ERROR_RESOURCE_LIMIT)?;
+            replacement.extend_from_slice(&self.bytes);
+            replacement.extend_from_slice(bytes);
+            self.scrub_current_allocation();
+            let previous = std::mem::replace(&mut self.bytes, replacement);
+            drop(previous);
+        } else {
+            self.bytes.extend_from_slice(bytes);
+        }
+        Ok(())
+    }
+
+    fn scrub_current_allocation(&mut self) {
+        self.bytes.zeroize();
+        #[cfg(test)]
+        if let Some(observer) = &self.observer {
+            observer.record(self.bytes.iter().all(|byte| *byte == 0));
+        }
+    }
+
+    fn into_vec(mut self) -> Vec<u8> {
+        std::mem::take(&mut self.bytes)
+    }
+}
+
+impl Drop for SecretBuffer {
+    fn drop(&mut self) {
+        self.scrub_current_allocation();
+    }
+}
+
+#[cfg(test)]
+#[derive(Clone, Default)]
+struct SecretBufferObserver(std::sync::Arc<std::sync::Mutex<Vec<bool>>>);
+
+#[cfg(test)]
+impl SecretBufferObserver {
+    fn new() -> Self {
+        Self::default()
+    }
+
+    fn record(&self, scrubbed: bool) {
+        if let Ok(mut records) = self.0.lock() {
+            records.push(scrubbed);
+        }
+    }
+
+    fn initialized_bytes_were_zeroized(&self) -> bool {
+        self.0
+            .lock()
+            .is_ok_and(|records| !records.is_empty() && records.iter().all(|record| *record))
+    }
+}
+
+fn private_key_file_bytes(path: &str) -> FfiResult<Vec<u8>> {
     let metadata = fs::metadata(path).map_err(|_| ERROR_INVALID_INPUT)?;
     if metadata.len() > MAX_TRANSPORT_MATERIAL_BYTES {
         return Err(ERROR_RESOURCE_LIMIT);
     }
-    let initial_length = usize::try_from(metadata.len()).map_err(|_| ERROR_RESOURCE_LIMIT)?;
-    let mut file = fs::File::open(path).map_err(|_| ERROR_INVALID_INPUT)?;
-    let mut bytes = Vec::new();
-    bytes
-        .try_reserve_exact(initial_length)
-        .map_err(|_| ERROR_RESOURCE_LIMIT)?;
-    file.by_ref()
-        .take(MAX_TRANSPORT_MATERIAL_BYTES + 1)
-        .read_to_end(&mut bytes)
-        .map_err(|_| ERROR_INVALID_INPUT)?;
-    if u64::try_from(bytes.len()).map_err(|_| ERROR_RESOURCE_LIMIT)? > MAX_TRANSPORT_MATERIAL_BYTES
-    {
-        return Err(ERROR_RESOURCE_LIMIT);
-    }
-    Ok(bytes)
+    let file = fs::File::open(path).map_err(|_| ERROR_INVALID_INPUT)?;
+    let secret = SecretBuffer::read_from(file, MAX_TRANSPORT_MATERIAL_BYTES)?;
+    Ok(secret.into_vec())
 }
 
 fn validate_transport_input_total(inputs: &[kmipkit_transport_input_v1_t]) -> FfiResult<()> {
@@ -107,38 +260,40 @@ fn transport_input_path(input: &kmipkit_transport_input_v1_t) -> FfiResult<Strin
     Ok(path.to_owned())
 }
 
-fn certificate_input(input: &kmipkit_transport_input_v1_t) -> FfiResult<CertificateInput> {
-    let encoding = transport_input_encoding(input)?;
-    match (input.source_kind, encoding) {
-        (TRANSPORT_SOURCE_MEMORY, TRANSPORT_ENCODING_PEM) => {
-            Ok(CertificateInput::from_pem(transport_input_bytes(input)?))
-        }
-        (TRANSPORT_SOURCE_MEMORY, TRANSPORT_ENCODING_DER) => {
-            Ok(CertificateInput::from_der(vec![transport_input_bytes(
-                input,
-            )?]))
-        }
-        (TRANSPORT_SOURCE_FILE, TRANSPORT_ENCODING_PEM) => {
-            Ok(CertificateInput::from_pem(certificate_input_bytes(input)?))
-        }
-        (TRANSPORT_SOURCE_FILE, TRANSPORT_ENCODING_DER) => {
-            Ok(CertificateInput::from_der(vec![certificate_input_bytes(
-                input,
-            )?]))
+#[cfg(test)]
+fn certificate_input_bytes(input: &kmipkit_transport_input_v1_t) -> FfiResult<Vec<u8>> {
+    certificate_input_bytes_with_budget(input, MAX_TRANSPORT_MATERIAL_BYTES)
+}
+
+fn certificate_input_bytes_with_budget(
+    input: &kmipkit_transport_input_v1_t,
+    budget: u64,
+) -> FfiResult<Vec<u8>> {
+    match input.source_kind {
+        TRANSPORT_SOURCE_MEMORY => copy_transport_span(input.data.data, input.data.length, budget),
+        TRANSPORT_SOURCE_FILE => {
+            let path = transport_input_path(input)?;
+            read_transport_file_with_budget(&path, budget)
         }
         _ => Err(ERROR_INVALID_INPUT),
     }
 }
 
-fn certificate_input_bytes(input: &kmipkit_transport_input_v1_t) -> FfiResult<Vec<u8>> {
-    match input.source_kind {
-        TRANSPORT_SOURCE_MEMORY => transport_input_bytes(input),
-        TRANSPORT_SOURCE_FILE => {
-            let path = transport_input_path(input)?;
-            read_transport_file(&path)
-        }
-        _ => Err(ERROR_INVALID_INPUT),
+fn certificate_input_materials(inputs: &[kmipkit_transport_input_v1_t]) -> FfiResult<Vec<Vec<u8>>> {
+    validate_transport_input_total(inputs)?;
+    let mut remaining = MAX_TRANSPORT_MATERIAL_BYTES;
+    let mut materials = Vec::new();
+    materials
+        .try_reserve_exact(inputs.len())
+        .map_err(|_| ERROR_RESOURCE_LIMIT)?;
+    for input in inputs {
+        let bytes = certificate_input_bytes_with_budget(input, remaining)?;
+        remaining = remaining
+            .checked_sub(u64::try_from(bytes.len()).map_err(|_| ERROR_RESOURCE_LIMIT)?)
+            .ok_or(ERROR_RESOURCE_LIMIT)?;
+        materials.push(bytes);
     }
+    Ok(materials)
 }
 
 fn client_certificate_chain(
@@ -154,17 +309,12 @@ fn client_certificate_chain(
     {
         return Err(ERROR_INVALID_INPUT);
     }
-    validate_transport_input_total(inputs)?;
+    let materials = certificate_input_materials(inputs)?;
     if encoding == TRANSPORT_ENCODING_DER {
-        let certificates = inputs
-            .iter()
-            .map(certificate_input_bytes)
-            .collect::<FfiResult<Vec<_>>>()?;
-        return Ok(CertificateInput::from_der(certificates));
+        return Ok(CertificateInput::from_der(materials));
     }
     let mut pem = Vec::new();
-    for input in inputs {
-        let bytes = certificate_input_bytes(input)?;
+    for bytes in materials {
         pem.try_reserve(bytes.len())
             .map_err(|_| ERROR_RESOURCE_LIMIT)?;
         pem.extend_from_slice(&bytes);
@@ -182,10 +332,12 @@ fn private_key_input(input: &kmipkit_transport_input_v1_t) -> FfiResult<PrivateK
             Ok(PrivateKeyInput::from_der(transport_input_bytes(input)?))
         }
         (TRANSPORT_SOURCE_FILE, TRANSPORT_ENCODING_PEM) => {
-            Ok(PrivateKeyInput::from_pem(certificate_input_bytes(input)?))
+            let path = transport_input_path(input)?;
+            Ok(PrivateKeyInput::from_pem(private_key_file_bytes(&path)?))
         }
         (TRANSPORT_SOURCE_FILE, TRANSPORT_ENCODING_DER) => {
-            Ok(PrivateKeyInput::from_der(certificate_input_bytes(input)?))
+            let path = transport_input_path(input)?;
+            Ok(PrivateKeyInput::from_der(private_key_file_bytes(&path)?))
         }
         _ => Err(ERROR_INVALID_INPUT),
     }
@@ -278,13 +430,17 @@ fn transport_config_from_v1(
     let trust = match input.trust_kind {
         TRANSPORT_TRUST_PLATFORM if trust_certificates.is_empty() => TrustSource::platform(),
         TRANSPORT_TRUST_CERTIFICATES if !trust_certificates.is_empty() => {
-            validate_transport_input_total(trust_certificates)?;
-            TrustSource::certificate_authorities(
-                trust_certificates
-                    .iter()
-                    .map(certificate_input)
-                    .collect::<FfiResult<Vec<_>>>()?,
-            )
+            let materials = certificate_input_materials(trust_certificates)?;
+            let authorities = trust_certificates
+                .iter()
+                .zip(materials)
+                .map(|(input, bytes)| match transport_input_encoding(input)? {
+                    TRANSPORT_ENCODING_PEM => Ok(CertificateInput::from_pem(bytes)),
+                    TRANSPORT_ENCODING_DER => Ok(CertificateInput::from_der(vec![bytes])),
+                    _ => Err(ERROR_INVALID_INPUT),
+                })
+                .collect::<FfiResult<Vec<_>>>()?;
+            TrustSource::certificate_authorities(authorities)
         }
         _ => return Err(ERROR_INVALID_INPUT),
     };
@@ -535,7 +691,11 @@ pub extern "C" fn kmipkit_client_batch_set_client_correlation_value(
     value_length: u64,
 ) -> i32 {
     ffi_entrypoint(|| {
-        let value = try_ffi!(input_span(value, value_length, u64::MAX));
+        let value = try_ffi!(input_span(
+            value,
+            value_length,
+            MAX_TRANSPORT_MATERIAL_BYTES
+        ));
         let value = try_ffi!(std::str::from_utf8(value).map_err(|_| ERROR_INVALID_INPUT));
         let batch = read_handle!(batch, ClientBatch);
         let HandleValue::ClientBatch(batch) = &batch.value else {
