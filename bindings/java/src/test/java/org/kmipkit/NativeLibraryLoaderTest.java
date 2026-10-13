@@ -683,6 +683,24 @@ final class NativeLibraryLoaderTest {
     }
 
     @Test
+    void failedDirectoryCleanupIsSuppressedOnTheOriginalVerificationFailure() throws Exception {
+        IOException verificationFailure = new IOException("synthetic directory verification failure");
+        Path[] retainedFile = new Path[1];
+
+        IOException failure = assertThrows(IOException.class,
+                () -> NativeLibraryLoader.createPrivateDirectory(temporaryDirectory, directory -> {
+                    retainedFile[0] = Files.write(directory.resolve("retained"), new byte[] {7});
+                    throw verificationFailure;
+                }));
+
+        assertEquals("synthetic directory verification failure", failure.getMessage());
+        assertEquals(1, failure.getSuppressed().length);
+        assertTrue(Files.isRegularFile(retainedFile[0]));
+        Files.delete(retainedFile[0]);
+        Files.delete(retainedFile[0].getParent());
+    }
+
+    @Test
     void privateFileVerificationFailureClosesAndDeletesTheStagingFile() throws Exception {
         Path privateDirectory = NativeLibraryLoader.createPrivateDirectory(temporaryDirectory);
         Path staging = privateDirectory.resolve(".verification-failure.part");
@@ -715,6 +733,75 @@ final class NativeLibraryLoaderTest {
 
         assertRedacted(failure);
         assertDirectoryEmpty(privateDirectory);
+    }
+
+    @Test
+    void rejectsNativeLibraryWhoseIdentityChangesDuringPublication() throws Exception {
+        Path privateDirectory = NativeLibraryLoader.createPrivateDirectory(temporaryDirectory);
+        byte[] library = {0x4b, 0x4d, 0x49, 0x50};
+        byte[] replacement = {1, 3, 3, 7};
+
+        UnsatisfiedLinkError failure = assertThrows(UnsatisfiedLinkError.class,
+                () -> NativeLibraryLoader.extractVerified(
+                        new ByteArrayInputStream(library), sha256(library), privateDirectory, WINDOWS_LIBRARY,
+                        (staging, destination) -> {
+                            Files.move(staging, destination, java.nio.file.StandardCopyOption.ATOMIC_MOVE);
+                            Files.delete(destination);
+                            Files.write(destination, replacement);
+                        }));
+
+        assertRedacted(failure);
+        assertArrayEquals(replacement, Files.readAllBytes(privateDirectory.resolve(WINDOWS_LIBRARY)));
+        assertDirectoryEmptyExcept(privateDirectory, WINDOWS_LIBRARY);
+    }
+
+    @Test
+    void rejectsNativeLibraryModifiedAfterPublication() throws Exception {
+        Path privateDirectory = NativeLibraryLoader.createPrivateDirectory(temporaryDirectory);
+        byte[] library = {0x4b, 0x4d, 0x49, 0x50};
+        byte[] modified = {1, 3, 3, 7};
+
+        UnsatisfiedLinkError failure = assertThrows(UnsatisfiedLinkError.class,
+                () -> NativeLibraryLoader.extractVerified(
+                        new ByteArrayInputStream(library), sha256(library), privateDirectory, WINDOWS_LIBRARY,
+                        (staging, destination) -> {
+                            Files.move(staging, destination, java.nio.file.StandardCopyOption.ATOMIC_MOVE);
+                            Files.write(destination, modified);
+                        }));
+
+        assertRedacted(failure);
+        assertArrayEquals(modified, Files.readAllBytes(privateDirectory.resolve(WINDOWS_LIBRARY)));
+        assertDirectoryEmptyExcept(privateDirectory, WINDOWS_LIBRARY);
+    }
+
+    @Test
+    void failedIdentityLinkCleanupDoesNotLeakItsPathOrDetails() throws Exception {
+        Path privateDirectory = NativeLibraryLoader.createPrivateDirectory(temporaryDirectory);
+        byte[] library = {0x4b, 0x4d, 0x49, 0x50};
+        Path[] retainedIdentityDirectory = new Path[1];
+
+        UnsatisfiedLinkError failure = assertThrows(UnsatisfiedLinkError.class,
+                () -> NativeLibraryLoader.extractVerified(
+                        new ByteArrayInputStream(library), sha256(library), privateDirectory, WINDOWS_LIBRARY,
+                        (staging, destination) -> {
+                            Files.move(staging, destination, java.nio.file.StandardCopyOption.ATOMIC_MOVE);
+                            try (var entries = Files.list(privateDirectory)) {
+                                Path identityLink = entries
+                                        .filter(path -> path.getFileName().toString().endsWith(".identity"))
+                                        .findFirst().orElseThrow();
+                                Files.delete(identityLink);
+                                Files.createDirectory(identityLink);
+                                Files.write(identityLink.resolve("retained"), new byte[] {9});
+                                retainedIdentityDirectory[0] = identityLink;
+                            }
+                        }));
+
+        assertRedacted(failure);
+        assertTrue(Files.isRegularFile(privateDirectory.resolve(WINDOWS_LIBRARY)));
+        assertTrue(Files.isRegularFile(retainedIdentityDirectory[0].resolve("retained")));
+        Files.delete(retainedIdentityDirectory[0].resolve("retained"));
+        Files.delete(retainedIdentityDirectory[0]);
+        assertDirectoryEmptyExcept(privateDirectory, WINDOWS_LIBRARY);
     }
 
     @Test
