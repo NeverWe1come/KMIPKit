@@ -1052,7 +1052,11 @@ fn private_key_file_reader_zeroizes_partial_error_and_over_bound_bytes() {
 
     let oversized_observer = SecretBufferObserver::new();
     let oversized_error = SecretBuffer::read_from_with_observer_for_test(
-        std::io::Cursor::new(b"12345"),
+        ChunkedReader {
+            bytes: b"12345",
+            position: 0,
+            max_chunk: 4,
+        },
         4,
         oversized_observer.clone(),
     )
@@ -1064,6 +1068,22 @@ fn private_key_file_reader_zeroizes_partial_error_and_over_bound_bytes() {
 
 struct PartialThenErrorReader {
     emitted: bool,
+}
+
+struct ChunkedReader {
+    bytes: &'static [u8],
+    position: usize,
+    max_chunk: usize,
+}
+
+impl Read for ChunkedReader {
+    fn read(&mut self, destination: &mut [u8]) -> std::io::Result<usize> {
+        let remaining = &self.bytes[self.position..];
+        let count = remaining.len().min(destination.len()).min(self.max_chunk);
+        destination[..count].copy_from_slice(&remaining[..count]);
+        self.position += count;
+        Ok(count)
+    }
 }
 
 impl Read for PartialThenErrorReader {
