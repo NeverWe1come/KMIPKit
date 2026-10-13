@@ -85,6 +85,14 @@ _C_INTEGER_TYPES = {
     "int64_t": ("i64", 64, True),
     "uint64_t": ("u64", 64, False),
 }
+_C_KEYWORDS = {
+    "auto", "break", "case", "char", "const", "continue", "default", "do", "double",
+    "else", "enum", "extern", "float", "for", "goto", "if", "inline", "int", "long",
+    "register", "restrict", "return", "short", "signed", "sizeof", "static", "struct",
+    "switch", "typedef", "union", "unsigned", "void", "volatile", "while",
+    "_Alignas", "_Alignof", "_Atomic", "_Bool", "_Complex", "_Generic", "_Imaginary",
+    "_Noreturn", "_Static_assert", "_Thread_local",
+}
 _REQUIREMENT_PATTERN = re.compile(r"KMIPKIT-0012-FR-[0-9]{3}\Z")
 _EXPECTED_CLIENT_1_0_OPERATION_COUNT = 56
 _RUST_2024_KEYWORDS = {
@@ -1148,6 +1156,8 @@ def _validate_c_value_layout(c_type: dict[str, Any], declared_types: set[str]) -
     ] != [("struct_size", "uint32_t"), ("abi_version", "uint32_t")]:
         raise ManifestError("versioned C value must begin with its size and ABI version")
     for field in fields:
+        if field["name"] in _C_KEYWORDS:
+            raise ManifestError("C keyword cannot be used as a fixed-width field name")
         _rust_identifier(field["name"])
         base_type, _ = _c_field_base_and_pointer_count(field["type"])
         if base_type not in _C_INTEGER_TYPES and base_type not in declared_types:
@@ -1565,6 +1575,11 @@ def render_c_header(
             or declaration.get("declarationState") in {"declared", "verified"}
         )
     }
+    declared_c_fields.update(
+        exclusion["exportName"]
+        for exclusion in manifest.get("approvedExclusions", [])
+        if exclusion.get("packageId") == "c-kmipkit"
+    )
     _validate_ready_c_value_layouts(
         manifest,
         ready_c_exports,
