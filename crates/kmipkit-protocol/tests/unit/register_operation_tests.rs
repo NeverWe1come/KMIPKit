@@ -33,7 +33,7 @@ const OPAQUE_OBJECT: u32 = 0x0042_005B;
 const OPAQUE_DATA_TYPE: u32 = 0x0042_0059;
 const OPAQUE_DATA_VALUE: u32 = 0x0042_005A;
 const KEY_BLOCK_WITH_ALGORITHM_AND_LENGTH_TTLV: [u8; 40] = [
-    0x42, 0x00, 0x40, 0x01, 0x00, 0x00, 0x00, 0x20, // Key Block Structure, 32-byte value
+    0x42, 0x00, 0x40, 0x01, 0x00, 0x00, 0x00, 0x20, // Key Block-tagged Structure shape
     0x42, 0x00, 0x28, 0x05, 0x00, 0x00, 0x00, 0x04, // Cryptographic Algorithm Enumeration
     0x00, 0x00, 0x00, 0x03, 0x00, 0x00, 0x00, 0x00, // AES, then TTLV padding
     0x42, 0x00, 0x2a, 0x02, 0x00, 0x00, 0x00, 0x04, // Cryptographic Length Integer
@@ -276,7 +276,7 @@ fn managed_opaque_context_does_not_infer_attributes_from_opaque_data_value() {
     // OASIS KMIP v2.1 §2.3, Table 4 defines Opaque Data Value as opaque bytes;
     // §6.1.43, Table 293 requires Algorithm and Length in Register Attributes.
     let decoded = decode(&KEY_BLOCK_WITH_ALGORITHM_AND_LENGTH_TTLV)
-        .expect("the opaque bytes are a well-formed Key Block TTLV Structure");
+        .expect("the opaque bytes are a structurally valid TTLV Structure shaped like a Key Block");
     assert_eq!(decoded.tag().raw(), KEY_BLOCK);
     assert!(decoded.with_value(|value| {
         let ValueView::Structure(key_block) = value else {
