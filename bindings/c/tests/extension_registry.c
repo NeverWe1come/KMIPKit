@@ -25,14 +25,138 @@
 #include <stdlib.h>
 #include <string.h>
 
-/* T076 Red: the versioned production transport configuration constructor is
- * required by the approved shared client ABI but is not exported yet. Keep
- * this test-local declaration until the public manifest generates the header. */
-struct kmipkit_transport_config_v1_t;
+/* T076 declarations remain test-local while Java/Python parity is blocked.
+ * They exercise the binary symbols but are not public-header or readiness
+ * evidence. */
+struct kmipkit_byte_span_v1_t {
+    const uint8_t *data;
+    uint64_t length;
+};
+struct kmipkit_transport_input_v1_t {
+    uint32_t source_kind;
+    uint32_t encoding;
+    struct kmipkit_byte_span_v1_t data;
+};
+struct kmipkit_timeout_limit_v1_t {
+    uint32_t kind;
+    uint32_t reserved;
+    uint64_t seconds;
+    uint32_t nanoseconds;
+    uint32_t reserved2;
+};
+struct kmipkit_transport_config_v1_t {
+    uint32_t struct_size;
+    uint32_t abi_version;
+    uint32_t endpoint_kind;
+    uint32_t trust_kind;
+    uint32_t flags;
+    uint32_t reserved;
+    struct kmipkit_byte_span_v1_t endpoint;
+    uint16_t endpoint_port;
+    uint16_t reserved2;
+    const struct kmipkit_transport_input_v1_t *client_certificates;
+    uint64_t client_certificate_count;
+    struct kmipkit_transport_input_v1_t client_private_key;
+    const struct kmipkit_transport_input_v1_t *trust_certificates;
+    uint64_t trust_certificate_count;
+    const struct kmipkit_transport_input_v1_t *revocation_lists;
+    uint64_t revocation_list_count;
+    struct kmipkit_byte_span_v1_t tls_server_name;
+    struct kmipkit_byte_span_v1_t target_uri;
+    struct kmipkit_timeout_limit_v1_t connect_timeout;
+    struct kmipkit_timeout_limit_v1_t write_timeout;
+    struct kmipkit_timeout_limit_v1_t read_timeout;
+    struct kmipkit_timeout_limit_v1_t total_timeout;
+    uint64_t max_request_bytes;
+};
 struct kmipkit_transport_config_t;
+struct kmipkit_client_t;
+struct kmipkit_client_batch_t;
+struct kmipkit_client_batch_response_t;
+struct kmipkit_client_batch_item_response_t;
+struct kmipkit_client_batch_item_metadata_v1_t {
+    uint32_t struct_size;
+    uint32_t abi_version;
+    uint32_t outcome_kind;
+    uint32_t result_status;
+    uint32_t has_result_reason;
+    uint32_t result_reason;
+};
+extern int32_t kmipkit_extension_registry_limits_v1_default_values(
+    kmipkit_extension_registry_limits_v1_t *limits);
+extern int32_t kmipkit_client_extension_registry_create_v1(
+    struct kmipkit_extension_definition_t **definitions,
+    uint64_t definition_count,
+    const kmipkit_extension_registry_limits_v1_t *limits,
+    struct kmipkit_client_extension_registry_t **out_registry);
+extern int32_t kmipkit_client_configuration_create(
+    struct kmipkit_client_extension_registry_t *registry,
+    struct kmipkit_client_configuration_t **out_configuration);
 extern int32_t kmipkit_transport_config_create_v1(
     const struct kmipkit_transport_config_v1_t *configuration,
     struct kmipkit_transport_config_t **out_configuration);
+extern void kmipkit_transport_config_release(struct kmipkit_transport_config_t *handle);
+extern int32_t kmipkit_client_create(
+    struct kmipkit_client_configuration_t *configuration,
+    struct kmipkit_transport_config_t **transport_configuration,
+    struct kmipkit_client_t **out_client);
+extern void kmipkit_client_release(struct kmipkit_client_t *handle);
+extern int32_t kmipkit_client_batch_create(struct kmipkit_client_batch_t **out_batch);
+extern int32_t kmipkit_client_batch_add_item(
+    struct kmipkit_client_batch_t *batch,
+    struct kmipkit_client_batch_item_t **inout_item);
+extern int32_t kmipkit_client_batch_item_with_unique_batch_item_id(
+    struct kmipkit_client_batch_item_t *item,
+    const uint8_t *id_data,
+    uint64_t id_length,
+    struct kmipkit_client_batch_item_t **out_item);
+extern int32_t kmipkit_client_batch_set_request_time_stamp(
+    struct kmipkit_client_batch_t *batch,
+    int64_t time_stamp);
+extern int32_t kmipkit_client_batch_set_order_option(
+    struct kmipkit_client_batch_t *batch,
+    uint8_t enabled);
+extern int32_t kmipkit_client_batch_add_error_continuation_value(
+    struct kmipkit_client_batch_t *batch,
+    uint32_t value);
+extern int32_t kmipkit_client_batch_set_asynchronous_indicator(
+    struct kmipkit_client_batch_t *batch,
+    uint32_t indicator);
+extern int32_t kmipkit_client_batch_set_client_correlation_value(
+    struct kmipkit_client_batch_t *batch,
+    const uint8_t *value,
+    uint64_t value_length);
+extern int32_t kmipkit_client_execute(
+    struct kmipkit_client_t *client,
+    struct kmipkit_client_batch_t **batch,
+    struct kmipkit_codec_limits_t *limits,
+    struct kmipkit_client_batch_response_t **out_response);
+extern void kmipkit_client_batch_release(struct kmipkit_client_batch_t *handle);
+extern void kmipkit_client_batch_response_release(
+    struct kmipkit_client_batch_response_t *handle);
+extern int32_t kmipkit_client_batch_response_item_count(
+    struct kmipkit_client_batch_response_t *response,
+    uint64_t *out_count);
+extern int32_t kmipkit_client_batch_response_item_at(
+    struct kmipkit_client_batch_response_t *response,
+    uint64_t index,
+    struct kmipkit_client_batch_item_response_t **out_item);
+extern int32_t kmipkit_client_batch_item_response_metadata_v1(
+    struct kmipkit_client_batch_item_response_t *item,
+    struct kmipkit_client_batch_item_metadata_v1_t *out_metadata);
+extern int32_t kmipkit_client_batch_item_response_unique_batch_item_id(
+    struct kmipkit_client_batch_item_response_t *item,
+    uint8_t *out_present,
+    struct kmipkit_byte_span_v1_t *out_value);
+extern int32_t kmipkit_client_batch_item_response_pending_correlation_value(
+    struct kmipkit_client_batch_item_response_t *item,
+    uint8_t *out_present,
+    struct kmipkit_byte_span_v1_t *out_value);
+extern void kmipkit_client_batch_item_response_release(
+    struct kmipkit_client_batch_item_response_t *handle);
+
+/* T076 Red: the versioned production transport configuration constructor was
+ * not exported at the initial test commit. */
 
 #define KMIPKIT_SUCCESS ((int32_t)0)
 #define KMIPKIT_EXTENSION_TAG UINT32_C(0x540001)
@@ -305,6 +429,337 @@ static bool test_t076_transport_config_null_input_contract(void)
     REQUIRE_STATUS(kmipkit_transport_config_create_v1(NULL, &configuration),
                    KMIPKIT_ERROR_INVALID_INPUT);
     REQUIRE(configuration == NULL);
+    return true;
+}
+
+static bool test_t076_transport_config_rejects_unknown_abi_version(void)
+{
+    struct kmipkit_transport_config_v1_t input = {0};
+    struct kmipkit_transport_config_t *configuration = NULL;
+    int32_t status = INT32_C(0);
+    uint32_t category = UINT32_C(0);
+    uint32_t cause = UINT32_C(0);
+    uint32_t delivery = UINT32_C(0);
+
+    input.struct_size = (uint32_t)sizeof(input);
+    input.abi_version = UINT32_C(2);
+    REQUIRE_STATUS(kmipkit_transport_config_create_v1(&input, &configuration),
+                   KMIPKIT_ERROR_INVALID_INPUT);
+    REQUIRE(configuration == NULL);
+    REQUIRE_STATUS(kmipkit_last_error_get(&status, &category, &cause, &delivery),
+                   KMIPKIT_SUCCESS);
+    REQUIRE(status == KMIPKIT_ERROR_INVALID_INPUT);
+    REQUIRE(category == UINT32_C(1));
+    REQUIRE(cause == UINT32_C(1));
+    REQUIRE(delivery == UINT32_C(0));
+    return true;
+}
+
+static bool test_t076_validated_client_reports_not_sent(
+    int argc,
+    char **argv)
+{
+    struct kmipkit_transport_input_v1_t client_certificates[2] = {{0}};
+    struct kmipkit_transport_input_v1_t trust_certificates[1] = {{0}};
+    struct kmipkit_transport_config_v1_t transport_input = {0};
+    kmipkit_extension_registry_limits_v1_t registry_limits = {0};
+    struct kmipkit_extension_definition_t **definitions = NULL;
+    struct kmipkit_client_extension_registry_t *registry = NULL;
+    struct kmipkit_client_configuration_t *configuration = NULL;
+    struct kmipkit_transport_config_t *transport_configuration = NULL;
+    struct kmipkit_client_t *client = NULL;
+    struct kmipkit_client_batch_t *batch = NULL;
+    struct kmipkit_client_batch_item_t *item = NULL;
+    struct kmipkit_codec_limits_t *limits = NULL;
+    struct kmipkit_client_batch_response_t *response = NULL;
+    struct kmipkit_client_batch_item_response_t *response_item = NULL;
+    struct kmipkit_client_batch_item_response_t *response_item_2 = NULL;
+    struct kmipkit_client_batch_item_metadata_v1_t metadata = {0};
+    struct kmipkit_byte_span_v1_t value = {0};
+    uint64_t response_count = UINT64_C(0);
+    uint8_t value_present = UINT8_C(0);
+    const char *host = "127.0.0.1";
+    const char *server_name = "server.kmipkit.test";
+    static const uint8_t client_correlation[] = {UINT8_C('c'), UINT8_C('0'), UINT8_C('1')};
+    const char *port_text;
+    char *end = NULL;
+    unsigned long port;
+    int32_t status = INT32_C(0);
+    uint32_t category = UINT32_C(0);
+    uint32_t cause = UINT32_C(0);
+    uint32_t delivery = UINT32_C(0);
+
+    REQUIRE(argc == 7);
+    client_certificates[0].source_kind = UINT32_C(2); /* file */
+    client_certificates[0].encoding = UINT32_C(2); /* DER */
+    client_certificates[0].data.data = (const uint8_t *)argv[2];
+    client_certificates[0].data.length = (uint64_t)strlen(argv[2]);
+    client_certificates[1] = client_certificates[0];
+    client_certificates[1].data.data = (const uint8_t *)argv[3];
+    client_certificates[1].data.length = (uint64_t)strlen(argv[3]);
+    trust_certificates[0].source_kind = UINT32_C(2);
+    trust_certificates[0].encoding = UINT32_C(2);
+    trust_certificates[0].data.data = (const uint8_t *)argv[5];
+    trust_certificates[0].data.length = (uint64_t)strlen(argv[5]);
+    port_text = argv[6];
+    port = strtoul(port_text, &end, 10);
+    REQUIRE(end != port_text && *end == '\0' && port > 0UL && port <= 65535UL);
+
+    transport_input.struct_size = (uint32_t)sizeof(transport_input);
+    transport_input.abi_version = UINT32_C(1);
+    transport_input.endpoint_kind = UINT32_C(1); /* raw TLS */
+    transport_input.trust_kind = UINT32_C(2); /* explicit CA list */
+    transport_input.endpoint.data = (const uint8_t *)host;
+    transport_input.endpoint.length = (uint64_t)strlen(host);
+    transport_input.endpoint_port = (uint16_t)port;
+    transport_input.flags = UINT32_C(1); /* explicit TLS server name */
+    transport_input.tls_server_name.data = (const uint8_t *)server_name;
+    transport_input.tls_server_name.length = (uint64_t)strlen(server_name);
+    transport_input.client_certificates = client_certificates;
+    transport_input.client_certificate_count = UINT64_C(2);
+    transport_input.client_private_key.source_kind = UINT32_C(2);
+    transport_input.client_private_key.encoding = UINT32_C(2);
+    transport_input.client_private_key.data.data = (const uint8_t *)argv[4];
+    transport_input.client_private_key.data.length = (uint64_t)strlen(argv[4]);
+    transport_input.trust_certificates = trust_certificates;
+    transport_input.trust_certificate_count = UINT64_C(1);
+    transport_input.max_request_bytes = UINT64_C(1048576);
+
+    registry_limits.struct_size = (uint32_t)sizeof(registry_limits);
+    registry_limits.abi_version = UINT32_C(1);
+    REQUIRE_STATUS(kmipkit_extension_registry_limits_v1_default_values(&registry_limits),
+                   KMIPKIT_SUCCESS);
+    REQUIRE_STATUS(kmipkit_client_extension_registry_create_v1(
+                       definitions, UINT64_C(0), &registry_limits, &registry),
+                   KMIPKIT_SUCCESS);
+    REQUIRE_STATUS(kmipkit_client_configuration_create(registry, &configuration),
+                   KMIPKIT_SUCCESS);
+    registry = NULL; /* consumed by client configuration */
+    REQUIRE_STATUS(kmipkit_transport_config_create_v1(
+                       &transport_input, &transport_configuration),
+                   KMIPKIT_SUCCESS);
+    REQUIRE(transport_configuration != NULL);
+    REQUIRE_STATUS(kmipkit_client_create(configuration, &transport_configuration, &client),
+                   KMIPKIT_SUCCESS);
+    REQUIRE(transport_configuration == NULL);
+    REQUIRE(client != NULL);
+
+    /* Invalid spans fail before dereferencing/copying and preserve the item owner. */
+    REQUIRE_STATUS(kmipkit_client_batch_item_discover_versions(&item), KMIPKIT_SUCCESS);
+    {
+        struct kmipkit_client_batch_item_t *identified_item = NULL;
+        REQUIRE_STATUS(kmipkit_client_batch_item_with_unique_batch_item_id(
+                           item, NULL, UINT64_C(1), &identified_item),
+                       (int32_t)4);
+        REQUIRE(item != NULL && identified_item == NULL);
+        REQUIRE_STATUS(kmipkit_client_batch_item_with_unique_batch_item_id(
+                           item, INVALID_INPUT_PTR, UINT64_C(16777217), &identified_item),
+                       (int32_t)6);
+        REQUIRE(item != NULL && identified_item == NULL);
+    }
+    kmipkit_client_batch_item_release(item);
+    item = NULL;
+
+    REQUIRE_STATUS(kmipkit_client_batch_create(&batch), KMIPKIT_SUCCESS);
+    REQUIRE_STATUS(kmipkit_client_batch_item_discover_versions(&item), KMIPKIT_SUCCESS);
+    {
+        static const uint8_t first_id[] = {0x00, 0x81, 0xff, 0x01};
+        struct kmipkit_client_batch_item_t *identified_item = NULL;
+        REQUIRE_STATUS(kmipkit_client_batch_item_with_unique_batch_item_id(
+                           item, first_id, (uint64_t)sizeof(first_id), &identified_item),
+                       KMIPKIT_SUCCESS);
+        item = identified_item;
+    }
+    REQUIRE_STATUS(kmipkit_client_batch_add_item(batch, &item), KMIPKIT_SUCCESS);
+    REQUIRE(item == NULL);
+    REQUIRE_STATUS(kmipkit_client_batch_item_discover_versions(&item), KMIPKIT_SUCCESS);
+    {
+        static const uint8_t second_id[] = {0x00, 0x82, 0xfe, 0x02};
+        struct kmipkit_client_batch_item_t *identified_item = NULL;
+        REQUIRE_STATUS(kmipkit_client_batch_item_with_unique_batch_item_id(
+                           item, second_id, (uint64_t)sizeof(second_id), &identified_item),
+                       KMIPKIT_SUCCESS);
+        item = identified_item;
+    }
+    REQUIRE_STATUS(kmipkit_client_batch_add_item(batch, &item), KMIPKIT_SUCCESS);
+    REQUIRE(item == NULL);
+    REQUIRE_STATUS(kmipkit_client_batch_set_order_option(batch, UINT8_C(0)),
+                   KMIPKIT_SUCCESS);
+    REQUIRE_STATUS(kmipkit_client_batch_set_request_time_stamp(batch, INT64_C(1)),
+                   KMIPKIT_SUCCESS);
+    REQUIRE_STATUS(kmipkit_client_batch_add_error_continuation_value(batch, UINT32_C(2)),
+                   KMIPKIT_SUCCESS);
+    REQUIRE_STATUS(kmipkit_client_batch_set_asynchronous_indicator(batch, UINT32_C(2)),
+                   KMIPKIT_SUCCESS);
+    REQUIRE_STATUS(kmipkit_client_batch_set_client_correlation_value(
+                       batch, client_correlation, (uint64_t)sizeof(client_correlation)),
+                   KMIPKIT_SUCCESS);
+    REQUIRE_STATUS(kmipkit_codec_limits_defaults(&limits), KMIPKIT_SUCCESS);
+    status = kmipkit_client_execute(client, &batch, limits, &response);
+    if (status != KMIPKIT_SUCCESS) {
+        const int32_t execution_status = status;
+        (void)kmipkit_last_error_get(&status, &category, &cause, &delivery);
+        fprintf(stderr, "T076 execute error snapshot: result=%ld category=%lu cause=%lu delivery=%lu\n",
+                (long)execution_status, (unsigned long)category, (unsigned long)cause,
+                (unsigned long)delivery);
+        return false;
+    }
+    REQUIRE(batch == NULL);
+    REQUIRE(response != NULL);
+    REQUIRE_STATUS(kmipkit_client_batch_response_item_count(response, &response_count),
+                   KMIPKIT_SUCCESS);
+    REQUIRE(response_count == UINT64_C(2));
+    REQUIRE_STATUS(kmipkit_client_batch_response_item_at(response, UINT64_C(0), &response_item),
+                   KMIPKIT_SUCCESS);
+    REQUIRE(response_item != NULL);
+    metadata.struct_size = (uint32_t)sizeof(metadata);
+    metadata.abi_version = UINT32_C(1);
+    REQUIRE_STATUS(kmipkit_client_batch_item_response_metadata_v1(response_item, &metadata),
+                   KMIPKIT_SUCCESS);
+    REQUIRE(metadata.struct_size == (uint32_t)sizeof(metadata));
+    REQUIRE(metadata.abi_version == UINT32_C(1));
+    REQUIRE(metadata.outcome_kind == UINT32_C(1)); /* completed */
+    REQUIRE(metadata.result_status == UINT32_C(0)); /* KMIP Success */
+    REQUIRE(metadata.has_result_reason == UINT32_C(0));
+    REQUIRE_STATUS(kmipkit_client_batch_item_response_unique_batch_item_id(
+                       response_item, &value_present, &value),
+                   KMIPKIT_SUCCESS);
+    REQUIRE(value_present == UINT8_C(1) && value.length == UINT64_C(4));
+    REQUIRE(value.data[0] == 0x00 && value.data[1] == 0x81 &&
+            value.data[2] == 0xff && value.data[3] == 0x01);
+    REQUIRE_STATUS(kmipkit_client_batch_item_response_pending_correlation_value(
+                       response_item, &value_present, &value),
+                   KMIPKIT_SUCCESS);
+    REQUIRE(value_present == UINT8_C(0) && value.data == NULL && value.length == UINT64_C(0));
+    REQUIRE_STATUS(kmipkit_client_batch_response_item_at(response, UINT64_C(1), &response_item_2),
+                   KMIPKIT_SUCCESS);
+    metadata.struct_size = (uint32_t)sizeof(metadata);
+    metadata.abi_version = UINT32_C(1);
+    REQUIRE_STATUS(kmipkit_client_batch_item_response_metadata_v1(response_item_2, &metadata),
+                   KMIPKIT_SUCCESS);
+    REQUIRE(metadata.outcome_kind == UINT32_C(1)); /* completed */
+    REQUIRE(metadata.result_status == UINT32_C(1)); /* Operation Failed */
+    REQUIRE(metadata.has_result_reason == UINT32_C(1));
+    REQUIRE(metadata.result_reason == UINT32_C(5)); /* Operation Not Supported */
+    REQUIRE_STATUS(kmipkit_client_batch_item_response_unique_batch_item_id(
+                       response_item_2, &value_present, &value),
+                   KMIPKIT_SUCCESS);
+    REQUIRE(value_present == UINT8_C(1) && value.length == UINT64_C(4));
+    REQUIRE(value.data[0] == 0x00 && value.data[1] == 0x82 &&
+            value.data[2] == 0xfe && value.data[3] == 0x02);
+
+    kmipkit_client_batch_response_release(response);
+    response = NULL;
+    kmipkit_client_batch_item_response_release(response_item);
+    response_item = NULL;
+    kmipkit_client_batch_item_response_release(response_item_2);
+    response_item_2 = NULL;
+
+    /* Duplicate and missing IDs are rejected before a request reaches the peer. */
+    REQUIRE_STATUS(kmipkit_client_batch_create(&batch), KMIPKIT_SUCCESS);
+    REQUIRE_STATUS(kmipkit_client_batch_item_discover_versions(&item), KMIPKIT_SUCCESS);
+    {
+        static const uint8_t duplicate_id[] = {0x44};
+        struct kmipkit_client_batch_item_t *identified_item = NULL;
+        REQUIRE_STATUS(kmipkit_client_batch_item_with_unique_batch_item_id(
+                           item, duplicate_id, (uint64_t)sizeof(duplicate_id), &identified_item),
+                       KMIPKIT_SUCCESS);
+        item = identified_item;
+    }
+    REQUIRE_STATUS(kmipkit_client_batch_add_item(batch, &item), KMIPKIT_SUCCESS);
+    REQUIRE_STATUS(kmipkit_client_batch_item_discover_versions(&item), KMIPKIT_SUCCESS);
+    {
+        static const uint8_t duplicate_id[] = {0x44};
+        struct kmipkit_client_batch_item_t *identified_item = NULL;
+        REQUIRE_STATUS(kmipkit_client_batch_item_with_unique_batch_item_id(
+                           item, duplicate_id, (uint64_t)sizeof(duplicate_id), &identified_item),
+                       KMIPKIT_SUCCESS);
+        item = identified_item;
+    }
+    REQUIRE_STATUS(kmipkit_client_batch_add_item(batch, &item), KMIPKIT_SUCCESS);
+    REQUIRE_STATUS(kmipkit_client_execute(client, &batch, limits, &response),
+                   (int32_t)4);
+    REQUIRE(batch == NULL && response == NULL);
+    REQUIRE_STATUS(kmipkit_last_error_get(&status, &category, &cause, &delivery),
+                   KMIPKIT_SUCCESS);
+    REQUIRE(category == UINT32_C(1) && delivery == UINT32_C(1)); /* validation / NotSent */
+
+    REQUIRE_STATUS(kmipkit_client_batch_create(&batch), KMIPKIT_SUCCESS);
+    REQUIRE_STATUS(kmipkit_client_batch_item_discover_versions(&item), KMIPKIT_SUCCESS);
+    REQUIRE_STATUS(kmipkit_client_batch_add_item(batch, &item), KMIPKIT_SUCCESS);
+    REQUIRE_STATUS(kmipkit_client_batch_item_discover_versions(&item), KMIPKIT_SUCCESS);
+    REQUIRE_STATUS(kmipkit_client_batch_add_item(batch, &item), KMIPKIT_SUCCESS);
+    REQUIRE_STATUS(kmipkit_client_execute(client, &batch, limits, &response),
+                   (int32_t)4);
+    REQUIRE(batch == NULL && response == NULL);
+    REQUIRE_STATUS(kmipkit_last_error_get(&status, &category, &cause, &delivery),
+                   KMIPKIT_SUCCESS);
+    REQUIRE(category == UINT32_C(1) && delivery == UINT32_C(1)); /* validation / NotSent */
+
+    REQUIRE_STATUS(kmipkit_client_batch_create(&batch), KMIPKIT_SUCCESS);
+    REQUIRE_STATUS(kmipkit_client_batch_item_discover_versions(&item), KMIPKIT_SUCCESS);
+    REQUIRE_STATUS(kmipkit_client_batch_add_item(batch, &item), KMIPKIT_SUCCESS);
+    REQUIRE_STATUS(kmipkit_client_batch_set_asynchronous_indicator(batch, UINT32_C(0)),
+                   KMIPKIT_SUCCESS);
+    REQUIRE_STATUS(kmipkit_client_execute(client, &batch, limits, &response),
+                   (int32_t)4);
+    REQUIRE(batch == NULL && response == NULL);
+    REQUIRE_STATUS(kmipkit_last_error_get(&status, &category, &cause, &delivery),
+                   KMIPKIT_SUCCESS);
+    REQUIRE(category == UINT32_C(1) && delivery == UINT32_C(1)); /* invalid indicator / NotSent */
+
+    /* The peer accepts this explicit second call and closes during TLS setup.
+     * The client must report the request as not sent and must not retry it. */
+    REQUIRE_STATUS(kmipkit_client_batch_create(&batch), KMIPKIT_SUCCESS);
+    REQUIRE_STATUS(kmipkit_client_batch_item_discover_versions(&item), KMIPKIT_SUCCESS);
+    REQUIRE_STATUS(kmipkit_client_batch_add_item(batch, &item), KMIPKIT_SUCCESS);
+    REQUIRE_STATUS(kmipkit_client_execute(client, &batch, limits, &response),
+                   (int32_t)9);
+    REQUIRE(batch == NULL && response == NULL);
+    REQUIRE_STATUS(kmipkit_last_error_get(&status, &category, &cause, &delivery),
+                   KMIPKIT_SUCCESS);
+    REQUIRE(status == (int32_t)9); /* Transport */
+    REQUIRE(category == UINT32_C(3)); /* Transport */
+    REQUIRE(delivery == UINT32_C(1)); /* Not sent */
+
+    kmipkit_client_batch_release(batch);
+    kmipkit_client_release(client);
+    kmipkit_codec_limits_release(limits);
+    kmipkit_client_configuration_release(configuration);
+    kmipkit_transport_config_release(transport_configuration);
+    return true;
+}
+
+static bool test_t076_transport_config_rejects_invalid_discriminators(void)
+{
+    struct kmipkit_transport_config_v1_t configuration = {0};
+    struct kmipkit_transport_config_t *out = NULL;
+
+    configuration.struct_size = (uint32_t)sizeof(configuration);
+    configuration.abi_version = UINT32_C(1);
+    configuration.endpoint_kind = UINT32_C(99);
+    REQUIRE_STATUS(kmipkit_transport_config_create_v1(&configuration, &out),
+                   (int32_t)4);
+    REQUIRE(out == NULL);
+
+    configuration.endpoint_kind = UINT32_C(1);
+    configuration.flags = UINT32_C(0x80000000);
+    REQUIRE_STATUS(kmipkit_transport_config_create_v1(&configuration, &out),
+                   (int32_t)4);
+    REQUIRE(out == NULL);
+
+    configuration.flags = UINT32_C(0);
+    configuration.connect_timeout.kind = UINT32_C(1);
+    configuration.connect_timeout.nanoseconds = UINT32_C(1000000000);
+    REQUIRE_STATUS(kmipkit_transport_config_create_v1(&configuration, &out),
+                   (int32_t)4);
+    REQUIRE(out == NULL);
+
+    configuration.connect_timeout = (struct kmipkit_timeout_limit_v1_t){0};
+    configuration.reserved = UINT32_C(1);
+    REQUIRE_STATUS(kmipkit_transport_config_create_v1(&configuration, &out),
+                   (int32_t)4);
+    REQUIRE(out == NULL);
     return true;
 }
 
@@ -2606,7 +3061,7 @@ cleanup:
 #undef REQUIRE_STATUS_CLEANUP
 #undef REQUIRE_CLEANUP
 
-int main(void)
+int main(int argc, char **argv)
 {
     struct test_case {
         const char *name;
@@ -2614,6 +3069,10 @@ int main(void)
     } tests_without_arguments[] = {
         {"T076 versioned transport config rejects null input",
          test_t076_transport_config_null_input_contract},
+        {"T076 transport config rejects unknown ABI version",
+         test_t076_transport_config_rejects_unknown_abi_version},
+        {"T076 transport config rejects unknown discriminators and reserved fields",
+         test_t076_transport_config_rejects_invalid_discriminators},
         {"runtime metadata and error snapshot", test_runtime_metadata_and_error_snapshot},
         {"capability input boundaries and error categories", test_capability_input_boundaries_and_error_categories},
         {"ExtensionRegistryLimits defaults and boundaries", test_extension_registry_limits},
@@ -2646,6 +3105,13 @@ int main(void)
     if (failures != 0U) {
         fprintf(stderr, "%lu C consumer test(s) failed\n", (unsigned long)failures);
         return EXIT_FAILURE;
+    }
+    if (argc == 7 && !test_t076_validated_client_reports_not_sent(argc, argv)) {
+        fprintf(stderr, "T076 validated client response metadata test failed\n");
+        return EXIT_FAILURE;
+    }
+    if (argc == 7) {
+        puts("PASS T076 validated client returns ordered metadata and not-sent delivery state");
     }
     puts("All KMIPKIT-0012 internal FFI harness tests passed.");
     return EXIT_SUCCESS;

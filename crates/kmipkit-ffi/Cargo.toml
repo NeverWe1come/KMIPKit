@@ -23,5 +23,12 @@ kmipkit-ttlv.workspace = true
 [build-dependencies]
 cc = "=1.6.0"
 
+[dev-dependencies]
+kmipkit-test-support = { workspace = true, features = ["fixtures"] }
+kmipkit-transport.workspace = true
+base64 = "=0.22.1"
+rcgen = { workspace = true, features = ["pem"] }
+rustls.workspace = true
+
 [lints]
 workspace = true
