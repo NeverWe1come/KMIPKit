@@ -184,6 +184,61 @@ final class ClientFacadeTlsIntegrationTest {
         }
     }
 
+    @Test
+    void malformedTtlvResponseSurfacesSanitizedTypedProtocolFailure() throws Exception {
+        Path serverStorePath = temporaryDirectory.resolve("protocol-error-server.p12");
+        Path clientStorePath = temporaryDirectory.resolve("protocol-error-client.p12");
+        createKeyStore(serverStorePath, "server");
+        createKeyStore(clientStorePath, "client");
+
+        KeyStore serverStore = loadKeyStore(serverStorePath);
+        KeyStore clientStore = loadKeyStore(clientStorePath);
+        X509Certificate serverCertificate = certificate(serverStore, "server");
+        X509Certificate clientCertificate = certificate(clientStore, "client");
+        PrivateKey clientKey = (PrivateKey) clientStore.getKey("client", STORE_PASSWORD);
+
+        SSLServerSocket listener = (SSLServerSocket) serverContext(serverStore, clientCertificate)
+                .getServerSocketFactory()
+                .createServerSocket(0, 1, InetAddress.getByName("127.0.0.1"));
+        listener.setEnabledProtocols(new String[] {"TLSv1.3"});
+        listener.setNeedClientAuth(true);
+        listener.setSoTimeout(10_000);
+        byte[] malformedTtlv = {0x42, 0x00, 0x7b, 1, 0, 0, 0, 0};
+        FutureTask<byte[]> peer = peerThatRespondsAfterOneRequest(listener, malformedTtlv);
+        Thread peerThread = new Thread(peer, "kmipkit-java-tls-protocol-error-fixture");
+        peerThread.setDaemon(true);
+        peerThread.start();
+
+        try (ClientExtensionRegistry registry = ClientExtensionRegistry.create(
+                        List.of(), ExtensionRegistryLimits.defaults());
+                ClientConfiguration extensions = ClientConfiguration.create(registry);
+                TransportConfiguration transport = TransportConfiguration.builder()
+                        .rawTls("127.0.0.1", listener.getLocalPort())
+                        .clientIdentityDer(new byte[][] {clientCertificate.getEncoded()}, clientKey.getEncoded())
+                        .trustCertificatesDer(new byte[][] {serverCertificate.getEncoded()})
+                        .timeouts(TransportConfiguration.Timeout.bounded(Duration.ofSeconds(5)),
+                                TransportConfiguration.Timeout.bounded(Duration.ofSeconds(5)),
+                                TransportConfiguration.Timeout.bounded(Duration.ofSeconds(5)),
+                                TransportConfiguration.Timeout.bounded(Duration.ofSeconds(8)))
+                        .build();
+                Client client = Client.create(extensions, transport);
+                ClientBatch batch = ClientBatch.create()) {
+            batch.add(ClientBatchItem.discoverVersions());
+
+            ClientOperationException failure = assertThrows(
+                    ClientOperationException.class, () -> client.execute(batch, CodecLimits.defaults()));
+            assertTrue(peer.get(12, TimeUnit.SECONDS).length >= 8);
+
+            assertEquals(8, failure.statusCode());
+            assertTrue(failure instanceof ProtocolException);
+            assertEquals(2, failure.categoryCode());
+            assertEquals(3, failure.deliveryStateCode());
+            assertFalse(failure.getMessage().contains("protocol-error-server.p12"));
+        } finally {
+            listener.close();
+        }
+    }
+
     private static void createKeyStore(Path path, String alias) throws Exception {
         String executableName = System.getProperty("os.name").startsWith("Windows")
                 ? "keytool.exe" : "keytool";
@@ -252,6 +307,21 @@ final class ClientFacadeTlsIntegrationTest {
                 socket.setSoTimeout(10_000);
                 socket.startHandshake();
                 return readFrame(socket.getInputStream());
+            }
+        });
+    }
+
+    private static FutureTask<byte[]> peerThatRespondsAfterOneRequest(SSLServerSocket listener, byte[] response) {
+        return new FutureTask<>(() -> {
+            try (SSLSocket socket = (SSLSocket) listener.accept()) {
+                socket.setEnabledProtocols(new String[] {"TLSv1.3"});
+                socket.setSoTimeout(10_000);
+                socket.startHandshake();
+                byte[] request = readFrame(socket.getInputStream());
+                OutputStream output = socket.getOutputStream();
+                output.write(response);
+                output.flush();
+                return request;
             }
         });
     }
