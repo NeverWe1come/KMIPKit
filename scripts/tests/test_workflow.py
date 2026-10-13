@@ -36,6 +36,15 @@ class WorkflowContractTests(unittest.TestCase):
         self.assertIsNotNone(match, f"The {job} job must exist.")
         return match.group(1)
 
+    def require_named_step(self, job: str, name: str) -> re.Match[str]:
+        match = re.search(
+            rf"(?ms)^      - name: {re.escape(name)}\n(.*?)(?=^      - name: |\\Z)",
+            job,
+        )
+        self.assertIsNotNone(match, f"The {name} workflow step must exist.")
+        assert match is not None
+        return match
+
     def assert_github_hosted_runner(self, body: str, runner: str = "ubuntu-latest") -> None:
         self.assertRegex(body, rf"(?m)^    runs-on: {re.escape(runner)}$")
 
@@ -328,27 +337,11 @@ class WorkflowContractTests(unittest.TestCase):
         contents = self.require_workflow()
         java_job = self.require_job(contents, "language-java")
 
-        prime = re.search(
-            r"(?ms)^      - name: Prime Gradle Java compile dependencies\n(.*?)(?=^      - name: |\\Z)",
-            java_job,
-        )
-        self.assertIsNotNone(
-            prime,
-            "Gradle must resolve its compile classpath before the offline packaged smoke",
-        )
-        assert prime is not None
+        prime = self.require_named_step(java_job, "Prime Gradle Java compile dependencies")
         self.assertIn("compileJava", prime.group(1))
         self.assertNotIn("--offline", prime.group(1))
 
-        step = re.search(
-            r"(?ms)^      - name: Run packaged Java native loader smoke\n(.*?)(?=^      - name: |\\Z)",
-            java_job,
-        )
-        self.assertIsNotNone(
-            step,
-            "the Java OS matrix must launch the packaged JNI library from a fresh offline JVM",
-        )
-        assert step is not None
+        step = self.require_named_step(java_job, "Run packaged Java native loader smoke")
         self.assertIn("shell: pwsh", step.group(1))
         self.assertIn(".\\gradlew.bat --offline nativeJarSmoke", step.group(1))
         self.assertIn("sh ./gradlew --offline nativeJarSmoke", step.group(1))
