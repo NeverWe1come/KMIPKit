@@ -623,6 +623,46 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "kmipkit_transport::TransportResponse::as_bytes",
     ),
     (
+        "rust-observed-0ded289e629aaa4269d6",
+        "rust-kmipkit-client",
+        "kmipkit_client::ClientError",
+    ),
+    (
+        "rust-observed-df50ffcdeb53d71be702",
+        "rust-kmipkit-client",
+        "kmipkit_client::ClientError::Protocol",
+    ),
+    (
+        "rust-observed-312db2f5affcb8d613c6",
+        "rust-kmipkit-client",
+        "kmipkit_client::ClientError::Transport",
+    ),
+    (
+        "rust-observed-c1aa5dc1e2622102db36",
+        "rust-kmipkit-client",
+        "kmipkit_client::ClientError::ServerResult",
+    ),
+    (
+        "rust-observed-4b3b9b38d4ffdb14b383",
+        "rust-kmipkit-client",
+        "kmipkit_client::ClientError::category",
+    ),
+    (
+        "rust-observed-516d40cbda4f965847b9",
+        "rust-kmipkit-client",
+        "kmipkit_client::ClientError::cause_category",
+    ),
+    (
+        "rust-observed-bd3e65dab346e9d71672",
+        "rust-kmipkit-client",
+        "kmipkit_client::ClientError::delivery_state",
+    ),
+    (
+        "rust-observed-5cc94254240bb94bfddb",
+        "rust-kmipkit-client",
+        "kmipkit_client::ClientErrorCategory",
+    ),
+    (
         "rust-observed-5216dc70730e7acb8d97",
         "rust-kmipkit-client",
         "kmipkit_client::ClientErrorCategory::Protocol",

@@ -460,7 +460,11 @@ class T076ClientMappingTests(unittest.TestCase):
                 self.assertEqual("kmipkit_last_error_get", field_row["languageMappings"]["c"]["name"])
                 self.assertEqual(java_target, field_row["languageMappings"]["java"]["name"])
 
-        for category_id, (status, java_exception) in expected.items():
+        for category_id, java_exception in (
+            ("protocol", "org.kmipkit.ProtocolException"),
+            ("transport", "org.kmipkit.TransportException"),
+            ("server_result", "org.kmipkit.ServerResultException"),
+        ):
             status_name = {
                 "protocol": "KMIPKIT_ERROR_PROTOCOL",
                 "transport": "KMIPKIT_ERROR_TRANSPORT",
