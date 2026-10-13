@@ -1559,3 +1559,58 @@ fn profile_maps_client_import_of_wrapped_secret_data() {
         Some("KMIPKIT-CLAUSE-SPEC-2.7-001")
     );
 }
+
+#[test]
+fn profile_rejects_wrapped_secret_data_without_one_wrapping_method() {
+    // KMIP Specification v2.1 §3.3/Table 15 requires one Wrapping Method Enumeration.
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-2.7-001";
+    const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
+    const WRAPPING_METHOD: u32 = 0x0042_009E;
+    const ENCRYPTION_KEY_INFORMATION: u32 = 0x0042_0036;
+    const UNIQUE_IDENTIFIER: u32 = 0x0042_0094;
+
+    let result = ProfileValidationResult {
+        profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
+        requirement_ids: vec![REQUIREMENT_ID.to_owned()],
+    };
+    let encryption_key_information = || {
+        tagged(
+            ENCRYPTION_KEY_INFORMATION,
+            Value::structure(structure([tagged(
+                UNIQUE_IDENTIFIER,
+                Value::text_string("wrapping-key".to_owned()),
+            )])),
+        )
+    };
+    let malformed_wrapping_data = [
+        Value::structure(structure([encryption_key_information()])),
+        Value::structure(structure([
+            tagged(WRAPPING_METHOD, Value::integer(1)),
+            encryption_key_information(),
+        ])),
+        Value::structure(structure([
+            tagged(WRAPPING_METHOD, Value::enumeration(1)),
+            tagged(WRAPPING_METHOD, Value::enumeration(2)),
+            encryption_key_information(),
+        ])),
+    ];
+
+    for wrapping_data in malformed_wrapping_data {
+        let request = secret_data_import_request(
+            Value::byte_string(b"synthetic-wrapped-secret-data".to_vec()),
+            Some(wrapping_data),
+        );
+        let error = result
+            .validate_request(&request)
+            .expect_err("wrapped Key Value must have exactly one Enumeration Wrapping Method");
+        assert_eq!(
+            error.code(),
+            ProfileValidationErrorCode::RequestRuleRejected
+        );
+        assert_eq!(error.requirement_id(), Some(REQUIREMENT_ID));
+        assert_eq!(
+            error.source_clause_id(),
+            Some("KMIPKIT-CLAUSE-SPEC-2.7-001")
+        );
+    }
+}
