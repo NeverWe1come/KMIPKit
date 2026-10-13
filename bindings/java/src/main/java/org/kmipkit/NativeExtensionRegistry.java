@@ -44,6 +44,7 @@ public final class NativeExtensionRegistry {
     public static final int CLIENT_BATCH = 29;
     public static final int CLIENT_BATCH_RESPONSE = 30;
     public static final int CLIENT_BATCH_ITEM_RESPONSE = 31;
+    public static final int REGISTER_REQUEST = 32;
 
     private static volatile boolean loaded;
 
@@ -111,6 +112,9 @@ public final class NativeExtensionRegistry {
             boolean criticalityIndicator);
     public static native long clientBatchItemWithExtension(long item, long requestExtension);
     public static native long clientBatchItemDiscoverVersions();
+    public static native long registerRequestCreate(int objectType, long attributes, long object);
+    public static native long registerRequestWithOpaqueObjectContext(long request, int context);
+    public static native long clientBatchItemRegister(long request);
     public static native long clientBatchItemExtensionCount(long item);
     public static native long clientBatchItemExtensionIdentityAt(long item, long index);
     public static native boolean clientBatchItemExtensionCriticalityIndicatorAt(long item, long index);

@@ -38,7 +38,7 @@ Add an explicit caller choice to Register so an Opaque Object can remain generic
 | Rust-only core and safe FFI boundaries | PASS | Core work stays in `kmipkit-protocol`; binding surfaces follow the public API manifest and generated workflow. |
 | Lossless values and secret redaction | PASS | No opaque data interpretation; generic values preserved; tests and docs prohibit payload logging. |
 | No automatic request retry or implicit server policy | PASS | Invalid request preflight is NotSent; valid requests use the normal single request execution path. |
-| 1.0 language parity | CONDITIONAL PASS | Manifest/binding implementation follows KMIPKIT-0043. Its PR #100 is open but not yet integrated; adapter work must wait for its accepted manifest to be available on the release branch. |
+| 1.0 language parity | CONDITIONAL PASS | KMIPKIT-0043 was merged as PR #100 and its manifest is available on `release/1.0.0` (merge commit `b499366b`). This feature now adds its Register context mapping and adapter surfaces; final parity checks remain in progress. |
 
 No constitution exception is requested. The public API manifest dependency is a sequencing gate, not a reason to weaken parity.
 
@@ -54,7 +54,7 @@ Implementation stays in the current Rust workspace and generated binding directo
 
 ## Sequencing and release dependencies
 
-1. Land KMIPKIT-0043's public API manifest contract on `release/1.0.0` before changing generated binding outputs. PR #100 is open and awaiting integration.
+1. Land KMIPKIT-0043's public API manifest contract on `release/1.0.0` before changing generated binding outputs. This dependency is satisfied by PR #100 (`b499366b`).
 2. Implement the Rust request model and tests with Red, Green, and Refactor commits.
 3. Update catalog requirement ownership and the Table 4 locator for KMIPKIT-REQ-SPEC-2.3-003; regenerate all derived inventory and report files.
 4. Generate equivalent C, Java, and Python selectors and run their parity tests.

@@ -84,7 +84,14 @@ typedef struct {
     uint64_t max_depth;
 } kmipkit_extension_registry_limits_v1_t;
 
+typedef struct kmipkit_register_request_t kmipkit_register_request_t;
+
+typedef uint32_t kmipkit_opaque_object_context_t;
+#define KMIPKIT_OPAQUE_OBJECT_CONTEXT_GENERIC ((kmipkit_opaque_object_context_t)1)
+#define KMIPKIT_OPAQUE_OBJECT_CONTEXT_MANAGED_CRYPTOGRAPHIC_OBJECT ((kmipkit_opaque_object_context_t)2)
+
 void kmipkit_ttlv_structure_view_release(kmipkit_ttlv_structure_view_t *handle);
+void kmipkit_register_request_release(kmipkit_register_request_t *handle);
 #define KMIPKIT_ERROR_RESOURCE_LIMIT ((int32_t)6)
 #define KMIPKIT_ERROR_INTERNAL ((int32_t)7)
 
@@ -262,6 +269,12 @@ int32_t kmipkit_client_extension_registry_create_v1(kmipkit_extension_definition
 int32_t kmipkit_extension_registry_limits_v1_default_values(kmipkit_extension_registry_limits_v1_t * out_limits);
 /* KMIPKIT-0043-FR-007 */
 int32_t kmipkit_extension_registry_limits_v1_validate(const kmipkit_extension_registry_limits_v1_t * limits);
+/* KMIPKIT-0044-FR-001, KMIPKIT-0044-FR-002, KMIPKIT-0044-FR-006, KMIPKIT-0044-FR-007 */
+int32_t kmipkit_register_request_create(uint32_t object_type, kmipkit_ttlv_structure_t * attributes, kmipkit_ttlv_item_t * object, kmipkit_register_request_t ** out_request);
+/* KMIPKIT-0044-FR-001, KMIPKIT-0044-FR-002, KMIPKIT-0044-FR-003, KMIPKIT-0044-FR-004, KMIPKIT-0044-FR-005, KMIPKIT-0044-FR-007 */
+int32_t kmipkit_register_request_with_opaque_object_context(kmipkit_register_request_t * request, uint32_t context, kmipkit_register_request_t ** out_request);
+/* KMIPKIT-0044-FR-001, KMIPKIT-0044-FR-003, KMIPKIT-0044-FR-004, KMIPKIT-0044-FR-005, KMIPKIT-0044-FR-006, KMIPKIT-0044-FR-007 */
+int32_t kmipkit_client_batch_item_register(kmipkit_register_request_t * request, kmipkit_client_batch_item_t ** out_item);
 
 #ifdef __cplusplus
 }

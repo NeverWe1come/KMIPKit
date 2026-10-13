@@ -94,6 +94,10 @@ pub struct kmipkit_client_batch_item_t {
     _private: [u8; 0],
 }
 #[repr(C)]
+pub struct kmipkit_register_request_t {
+    _private: [u8; 0],
+}
+#[repr(C)]
 pub struct kmipkit_extension_child_rule_t {
     _private: [u8; 0],
 }

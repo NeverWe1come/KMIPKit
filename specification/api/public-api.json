@@ -52,7 +52,14 @@
     "KMIPKIT-0043-FR-019",
     "KMIPKIT-0043-FR-020",
     "KMIPKIT-0043-FR-021",
-    "KMIPKIT-0043-FR-022"
+    "KMIPKIT-0043-FR-022",
+    "KMIPKIT-0044-FR-001",
+    "KMIPKIT-0044-FR-002",
+    "KMIPKIT-0044-FR-003",
+    "KMIPKIT-0044-FR-004",
+    "KMIPKIT-0044-FR-005",
+    "KMIPKIT-0044-FR-006",
+    "KMIPKIT-0044-FR-007"
   ],
   "types": [
     {
@@ -927,6 +934,78 @@
       "python": {
         "module": "kmipkit.extensions",
         "name": "ExtensionRegistryLimits"
+      }
+    },
+    {
+      "id": "RegisterRequest",
+      "kind": "opaque-handle",
+      "requirementIds": [
+        "KMIPKIT-0044-FR-001",
+        "KMIPKIT-0044-FR-007"
+      ],
+      "rust": {
+        "module": "kmipkit_protocol",
+        "name": "RegisterRequest",
+        "owner": "protocol"
+      },
+      "c": {
+        "name": "kmipkit_register_request_t",
+        "kind": "opaque-handle",
+        "handleKind": "register_request",
+        "ownership": "library-owned",
+        "releaseFunction": "kmipkit_register_request_release"
+      },
+      "java": {
+        "package": "org.kmipkit.extensions",
+        "name": "RegisterRequest"
+      },
+      "python": {
+        "module": "kmipkit.extensions",
+        "name": "RegisterRequest"
+      }
+    },
+    {
+      "id": "OpaqueObjectContext",
+      "kind": "enum",
+      "requirementIds": [
+        "KMIPKIT-0044-FR-001",
+        "KMIPKIT-0044-FR-002",
+        "KMIPKIT-0044-FR-003",
+        "KMIPKIT-0044-FR-005",
+        "KMIPKIT-0044-FR-007"
+      ],
+      "rust": {
+        "module": "kmipkit_protocol",
+        "name": "OpaqueObjectContext",
+        "owner": "protocol"
+      },
+      "c": {
+        "name": "kmipkit_opaque_object_context_t",
+        "kind": "enum",
+        "underlyingType": "uint32_t",
+        "unknownValuePolicy": "reject-unsupported"
+      },
+      "java": {
+        "package": "org.kmipkit.extensions",
+        "name": "OpaqueObjectContext"
+      },
+      "python": {
+        "module": "kmipkit.extensions",
+        "name": "OpaqueObjectContext"
+      },
+      "enumRepresentation": {
+        "shape": "closed-numeric",
+        "unknownValuePolicy": "reject-unsupported",
+        "values": [
+          {
+            "name": "Generic",
+            "value": 1
+          },
+          {
+            "name": "ManagedCryptographicObject",
+            "value": 2
+          }
+        ]
       }
     }
   ],
@@ -10257,6 +10336,285 @@
           "resource_limit"
         ],
         "returnType": "ExtensionRegistryLimits"
+      },
+      "ordering": "not-applicable"
+    },
+    {
+      "id": "register_request_create",
+      "requirementIds": [
+        "KMIPKIT-0044-FR-001",
+        "KMIPKIT-0044-FR-002",
+        "KMIPKIT-0044-FR-006",
+        "KMIPKIT-0044-FR-007"
+      ],
+      "rust": {
+        "module": "kmipkit_protocol::RegisterRequest",
+        "name": "new",
+        "owner": "protocol",
+        "requestBoundary": "not-applicable",
+        "parameters": [
+          {
+            "name": "object_type",
+            "type": "ObjectType"
+          },
+          {
+            "name": "attributes",
+            "type": "AttributeSet"
+          },
+          {
+            "name": "object",
+            "type": "Item"
+          }
+        ],
+        "returnType": "RegisterRequest"
+      },
+      "c": {
+        "symbol": "kmipkit_register_request_create",
+        "parameters": [
+          {
+            "name": "object_type",
+            "kind": "scalar",
+            "type": "uint32_t"
+          },
+          {
+            "name": "attributes",
+            "kind": "handle",
+            "type": "kmipkit_ttlv_structure_t *",
+            "ownership": "consumed"
+          },
+          {
+            "name": "object",
+            "kind": "handle",
+            "type": "kmipkit_ttlv_item_t *",
+            "ownership": "consumed"
+          },
+          {
+            "name": "out_request",
+            "kind": "output",
+            "type": "kmipkit_register_request_t **",
+            "ownership": "library-owned",
+            "nullable": false
+          }
+        ],
+        "returnType": "int32_t",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit"
+        ]
+      },
+      "java": {
+        "package": "org.kmipkit.extensions",
+        "class": "RegisterRequest",
+        "method": "create",
+        "parameters": [
+          {
+            "name": "objectType",
+            "type": "int"
+          },
+          {
+            "name": "attributes",
+            "type": "TtlvStructure"
+          },
+          {
+            "name": "object",
+            "type": "TtlvItem"
+          }
+        ],
+        "jniSymbol": "Java_org_kmipkit_NativeExtensionRegistry_registerRequestCreate",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit"
+        ],
+        "returnType": "RegisterRequest"
+      },
+      "python": {
+        "module": "kmipkit.extensions",
+        "function": "RegisterRequest.create",
+        "parameters": [
+          {
+            "name": "object_type",
+            "type": "int"
+          },
+          {
+            "name": "attributes",
+            "type": "TtlvStructure"
+          },
+          {
+            "name": "object",
+            "type": "TtlvItem"
+          }
+        ],
+        "cffiSymbol": "kmipkit_register_request_create",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit"
+        ],
+        "returnType": "RegisterRequest"
+      },
+      "ordering": "not-applicable"
+    },
+    {
+      "id": "register_request_with_opaque_object_context",
+      "requirementIds": [
+        "KMIPKIT-0044-FR-001",
+        "KMIPKIT-0044-FR-002",
+        "KMIPKIT-0044-FR-003",
+        "KMIPKIT-0044-FR-004",
+        "KMIPKIT-0044-FR-005",
+        "KMIPKIT-0044-FR-007"
+      ],
+      "rust": {
+        "module": "kmipkit_protocol::RegisterRequest",
+        "name": "with_opaque_object_context",
+        "owner": "protocol",
+        "requestBoundary": "not-applicable",
+        "parameters": [
+          {
+            "name": "request",
+            "type": "RegisterRequest"
+          },
+          {
+            "name": "context",
+            "type": "OpaqueObjectContext"
+          }
+        ],
+        "returnType": "RegisterRequest"
+      },
+      "c": {
+        "symbol": "kmipkit_register_request_with_opaque_object_context",
+        "parameters": [
+          {
+            "name": "request",
+            "kind": "handle",
+            "type": "kmipkit_register_request_t *",
+            "ownership": "consumed"
+          },
+          {
+            "name": "context",
+            "kind": "scalar",
+            "type": "uint32_t"
+          },
+          {
+            "name": "out_request",
+            "kind": "output",
+            "type": "kmipkit_register_request_t **",
+            "ownership": "library-owned",
+            "nullable": false
+          }
+        ],
+        "returnType": "int32_t",
+        "errorCategories": [
+          "invalid_input"
+        ]
+      },
+      "java": {
+        "package": "org.kmipkit.extensions",
+        "class": "RegisterRequest",
+        "method": "withOpaqueObjectContext",
+        "parameters": [
+          {
+            "name": "context",
+            "type": "OpaqueObjectContext"
+          }
+        ],
+        "jniSymbol": "Java_org_kmipkit_NativeExtensionRegistry_registerRequestWithOpaqueObjectContext",
+        "errorCategories": [
+          "invalid_input"
+        ],
+        "returnType": "RegisterRequest"
+      },
+      "python": {
+        "module": "kmipkit.extensions",
+        "function": "RegisterRequest.with_opaque_object_context",
+        "parameters": [
+          {
+            "name": "context",
+            "type": "OpaqueObjectContext"
+          }
+        ],
+        "cffiSymbol": "kmipkit_register_request_with_opaque_object_context",
+        "errorCategories": [
+          "invalid_input"
+        ],
+        "returnType": "RegisterRequest"
+      },
+      "ordering": "not-applicable"
+    },
+    {
+      "id": "client_batch_item_register",
+      "requirementIds": [
+        "KMIPKIT-0044-FR-001",
+        "KMIPKIT-0044-FR-003",
+        "KMIPKIT-0044-FR-004",
+        "KMIPKIT-0044-FR-005",
+        "KMIPKIT-0044-FR-006",
+        "KMIPKIT-0044-FR-007"
+      ],
+      "rust": {
+        "module": "kmipkit_client::ClientBatchItem",
+        "name": "register",
+        "owner": "client",
+        "requestBoundary": "not-applicable",
+        "parameters": [
+          {
+            "name": "request",
+            "type": "RegisterRequest"
+          }
+        ],
+        "returnType": "Result<ClientBatchItem, ProtocolError>"
+      },
+      "c": {
+        "symbol": "kmipkit_client_batch_item_register",
+        "parameters": [
+          {
+            "name": "request",
+            "kind": "handle",
+            "type": "kmipkit_register_request_t *",
+            "ownership": "consumed"
+          },
+          {
+            "name": "out_item",
+            "kind": "output",
+            "type": "kmipkit_client_batch_item_t **",
+            "ownership": "library-owned",
+            "nullable": false
+          }
+        ],
+        "returnType": "int32_t",
+        "errorCategories": [
+          "invalid_input"
+        ]
+      },
+      "java": {
+        "package": "org.kmipkit.extensions",
+        "class": "ClientBatchItem",
+        "method": "register",
+        "parameters": [
+          {
+            "name": "request",
+            "type": "RegisterRequest"
+          }
+        ],
+        "jniSymbol": "Java_org_kmipkit_NativeExtensionRegistry_clientBatchItemRegister",
+        "errorCategories": [
+          "invalid_input"
+        ],
+        "returnType": "ClientBatchItem"
+      },
+      "python": {
+        "module": "kmipkit.extensions",
+        "function": "client_batch_item_register",
+        "parameters": [
+          {
+            "name": "request",
+            "type": "RegisterRequest"
+          }
+        ],
+        "cffiSymbol": "kmipkit_client_batch_item_register",
+        "errorCategories": [
+          "invalid_input"
+        ],
+        "returnType": "ClientBatchItem"
       },
       "ordering": "not-applicable"
     }
@@ -187494,14 +187852,37 @@
       "packageId": "rust-kmipkit-protocol",
       "kind": "type",
       "exportName": "kmipkit_protocol::RegisterRequest",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "opaque_register_context",
       "requirementIds": [
-        "KMIPKIT-0043-FR-021"
+        "KMIPKIT-0044-FR-001",
+        "KMIPKIT-0044-FR-007"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/029-opaque-object-context/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation under the maintainer's autonomous roadmap instruction dated 2026-10-13"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::RegisterRequest"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_register_request_t"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.RegisterRequest"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.extensions.RegisterRequest"
+        }
+      }
     },
     {
       "declarationId": "rust-observed-92db6c972143c59934bc",
@@ -187536,14 +187917,39 @@
       "packageId": "rust-kmipkit-protocol",
       "kind": "associated-item",
       "exportName": "kmipkit_protocol::RegisterRequest::new",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "opaque_register_context",
       "requirementIds": [
-        "KMIPKIT-0043-FR-021"
+        "KMIPKIT-0044-FR-001",
+        "KMIPKIT-0044-FR-002",
+        "KMIPKIT-0044-FR-006",
+        "KMIPKIT-0044-FR-007"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/029-opaque-object-context/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation under the maintainer's autonomous roadmap instruction dated 2026-10-13"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::RegisterRequest::new"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_register_request_create"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.RegisterRequest.create"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.extensions.RegisterRequest.create"
+        }
+      }
     },
     {
       "declarationId": "rust-observed-aa4bae39527938a24e12",
@@ -202359,6 +202765,1706 @@
       "parityScope": "four-language",
       "candidateSpecId": "KMIPKIT-0043",
       "blockedReason": "Observed by T076 in the C binary. It remains blocked and is excluded from generated public declarations until T021 and T024 provide the approved Java and Python mappings; no public signature is recorded."
+    },
+    {
+      "declarationId": "KMIPKIT-0044-opaque-object-context-type:rust",
+      "packageId": "rust-kmipkit-protocol",
+      "kind": "type",
+      "exportName": "kmipkit_protocol::OpaqueObjectContext",
+      "capabilityId": "opaque_register_context",
+      "requirementIds": [
+        "KMIPKIT-0044-FR-001",
+        "KMIPKIT-0044-FR-007"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/029-opaque-object-context/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation under the maintainer's autonomous roadmap instruction dated 2026-10-13"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::OpaqueObjectContext"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_opaque_object_context_t"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.OpaqueObjectContext"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.extensions.OpaqueObjectContext"
+        }
+      }
+    },
+    {
+      "declarationId": "KMIPKIT-0044-register-context-selector:rust",
+      "packageId": "rust-kmipkit-protocol",
+      "kind": "associated-item",
+      "exportName": "kmipkit_protocol::RegisterRequest::with_opaque_object_context",
+      "capabilityId": "opaque_register_context",
+      "requirementIds": [
+        "KMIPKIT-0044-FR-001",
+        "KMIPKIT-0044-FR-005",
+        "KMIPKIT-0044-FR-007"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/029-opaque-object-context/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation under the maintainer's autonomous roadmap instruction dated 2026-10-13"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::RegisterRequest::with_opaque_object_context"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_register_request_with_opaque_object_context"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.RegisterRequest.withOpaqueObjectContext"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.extensions.RegisterRequest.with_opaque_object_context"
+        }
+      }
+    },
+    {
+      "declarationId": "KMIPKIT-0044-register-batch-item:rust",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::ClientBatchItem::register",
+      "capabilityId": "opaque_register_context",
+      "requirementIds": [
+        "KMIPKIT-0044-FR-003",
+        "KMIPKIT-0044-FR-005",
+        "KMIPKIT-0044-FR-007"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/029-opaque-object-context/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation under the maintainer's autonomous roadmap instruction dated 2026-10-13"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::ClientBatchItem::register"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_batch_item_register"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ClientBatchItem.register"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.extensions.client_batch_item_register"
+        }
+      }
+    },
+    {
+      "declarationId": "KMIPKIT-0044-register-request-type:c",
+      "packageId": "c-kmipkit",
+      "kind": "type",
+      "exportName": "kmipkit_register_request_t",
+      "capabilityId": "opaque_register_context",
+      "requirementIds": [
+        "KMIPKIT-0044-FR-001",
+        "KMIPKIT-0044-FR-007"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/029-opaque-object-context/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation under the maintainer's autonomous roadmap instruction dated 2026-10-13"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::RegisterRequest"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_register_request_t"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.RegisterRequest"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.extensions.RegisterRequest"
+        }
+      }
+    },
+    {
+      "declarationId": "KMIPKIT-0044-register-request-type:java",
+      "packageId": "java-kmipkit",
+      "kind": "type",
+      "exportName": "org.kmipkit.extensions.RegisterRequest",
+      "capabilityId": "opaque_register_context",
+      "requirementIds": [
+        "KMIPKIT-0044-FR-001",
+        "KMIPKIT-0044-FR-007"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/029-opaque-object-context/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation under the maintainer's autonomous roadmap instruction dated 2026-10-13"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::RegisterRequest"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_register_request_t"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.RegisterRequest"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.extensions.RegisterRequest"
+        }
+      }
+    },
+    {
+      "declarationId": "KMIPKIT-0044-register-request-type:python",
+      "packageId": "python-kmipkit",
+      "kind": "type",
+      "exportName": "kmipkit.extensions.RegisterRequest",
+      "capabilityId": "opaque_register_context",
+      "requirementIds": [
+        "KMIPKIT-0044-FR-001",
+        "KMIPKIT-0044-FR-007"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/029-opaque-object-context/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation under the maintainer's autonomous roadmap instruction dated 2026-10-13"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::RegisterRequest"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_register_request_t"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.RegisterRequest"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.extensions.RegisterRequest"
+        }
+      }
+    },
+    {
+      "declarationId": "KMIPKIT-0044-register-request-create:c",
+      "packageId": "c-kmipkit",
+      "kind": "c-symbol",
+      "exportName": "kmipkit_register_request_create",
+      "capabilityId": "opaque_register_context",
+      "requirementIds": [
+        "KMIPKIT-0044-FR-001",
+        "KMIPKIT-0044-FR-002",
+        "KMIPKIT-0044-FR-006",
+        "KMIPKIT-0044-FR-007"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/029-opaque-object-context/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation under the maintainer's autonomous roadmap instruction dated 2026-10-13"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::RegisterRequest::new"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_register_request_create"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.RegisterRequest.create"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.extensions.RegisterRequest.create"
+        }
+      }
+    },
+    {
+      "declarationId": "KMIPKIT-0044-register-request-create:java",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.extensions.RegisterRequest.create",
+      "capabilityId": "opaque_register_context",
+      "requirementIds": [
+        "KMIPKIT-0044-FR-001",
+        "KMIPKIT-0044-FR-002",
+        "KMIPKIT-0044-FR-006",
+        "KMIPKIT-0044-FR-007"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/029-opaque-object-context/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation under the maintainer's autonomous roadmap instruction dated 2026-10-13"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::RegisterRequest::new"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_register_request_create"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.RegisterRequest.create"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.extensions.RegisterRequest.create"
+        }
+      }
+    },
+    {
+      "declarationId": "KMIPKIT-0044-register-request-create:python",
+      "packageId": "python-kmipkit",
+      "kind": "python-export",
+      "exportName": "kmipkit.extensions.RegisterRequest.create",
+      "capabilityId": "opaque_register_context",
+      "requirementIds": [
+        "KMIPKIT-0044-FR-001",
+        "KMIPKIT-0044-FR-002",
+        "KMIPKIT-0044-FR-006",
+        "KMIPKIT-0044-FR-007"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/029-opaque-object-context/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation under the maintainer's autonomous roadmap instruction dated 2026-10-13"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::RegisterRequest::new"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_register_request_create"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.RegisterRequest.create"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.extensions.RegisterRequest.create"
+        }
+      }
+    },
+    {
+      "declarationId": "KMIPKIT-0044-opaque-context-type:c",
+      "packageId": "c-kmipkit",
+      "kind": "type",
+      "exportName": "kmipkit_opaque_object_context_t",
+      "capabilityId": "opaque_register_context",
+      "requirementIds": [
+        "KMIPKIT-0044-FR-001",
+        "KMIPKIT-0044-FR-007"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/029-opaque-object-context/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation under the maintainer's autonomous roadmap instruction dated 2026-10-13"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::OpaqueObjectContext"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_opaque_object_context_t"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.OpaqueObjectContext"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.extensions.OpaqueObjectContext"
+        }
+      }
+    },
+    {
+      "declarationId": "KMIPKIT-0044-opaque-context-type:java",
+      "packageId": "java-kmipkit",
+      "kind": "type",
+      "exportName": "org.kmipkit.extensions.OpaqueObjectContext",
+      "capabilityId": "opaque_register_context",
+      "requirementIds": [
+        "KMIPKIT-0044-FR-001",
+        "KMIPKIT-0044-FR-007"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/029-opaque-object-context/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation under the maintainer's autonomous roadmap instruction dated 2026-10-13"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::OpaqueObjectContext"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_opaque_object_context_t"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.OpaqueObjectContext"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.extensions.OpaqueObjectContext"
+        }
+      }
+    },
+    {
+      "declarationId": "KMIPKIT-0044-opaque-context-type:python",
+      "packageId": "python-kmipkit",
+      "kind": "type",
+      "exportName": "kmipkit.extensions.OpaqueObjectContext",
+      "capabilityId": "opaque_register_context",
+      "requirementIds": [
+        "KMIPKIT-0044-FR-001",
+        "KMIPKIT-0044-FR-007"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/029-opaque-object-context/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation under the maintainer's autonomous roadmap instruction dated 2026-10-13"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::OpaqueObjectContext"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_opaque_object_context_t"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.OpaqueObjectContext"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.extensions.OpaqueObjectContext"
+        }
+      }
+    },
+    {
+      "declarationId": "KMIPKIT-0044-register-context-selector:c",
+      "packageId": "c-kmipkit",
+      "kind": "c-symbol",
+      "exportName": "kmipkit_register_request_with_opaque_object_context",
+      "capabilityId": "opaque_register_context",
+      "requirementIds": [
+        "KMIPKIT-0044-FR-001",
+        "KMIPKIT-0044-FR-005",
+        "KMIPKIT-0044-FR-007"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/029-opaque-object-context/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation under the maintainer's autonomous roadmap instruction dated 2026-10-13"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::RegisterRequest::with_opaque_object_context"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_register_request_with_opaque_object_context"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.RegisterRequest.withOpaqueObjectContext"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.extensions.RegisterRequest.with_opaque_object_context"
+        }
+      }
+    },
+    {
+      "declarationId": "KMIPKIT-0044-register-context-selector:java",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.extensions.RegisterRequest.withOpaqueObjectContext",
+      "capabilityId": "opaque_register_context",
+      "requirementIds": [
+        "KMIPKIT-0044-FR-001",
+        "KMIPKIT-0044-FR-005",
+        "KMIPKIT-0044-FR-007"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/029-opaque-object-context/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation under the maintainer's autonomous roadmap instruction dated 2026-10-13"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::RegisterRequest::with_opaque_object_context"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_register_request_with_opaque_object_context"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.RegisterRequest.withOpaqueObjectContext"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.extensions.RegisterRequest.with_opaque_object_context"
+        }
+      }
+    },
+    {
+      "declarationId": "KMIPKIT-0044-register-context-selector:python",
+      "packageId": "python-kmipkit",
+      "kind": "python-export",
+      "exportName": "kmipkit.extensions.RegisterRequest.with_opaque_object_context",
+      "capabilityId": "opaque_register_context",
+      "requirementIds": [
+        "KMIPKIT-0044-FR-001",
+        "KMIPKIT-0044-FR-005",
+        "KMIPKIT-0044-FR-007"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/029-opaque-object-context/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation under the maintainer's autonomous roadmap instruction dated 2026-10-13"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::RegisterRequest::with_opaque_object_context"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_register_request_with_opaque_object_context"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.RegisterRequest.withOpaqueObjectContext"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.extensions.RegisterRequest.with_opaque_object_context"
+        }
+      }
+    },
+    {
+      "declarationId": "KMIPKIT-0044-register-batch-item-root:c",
+      "packageId": "c-kmipkit",
+      "kind": "c-symbol",
+      "exportName": "kmipkit_client_batch_item_register",
+      "capabilityId": "opaque_register_context",
+      "requirementIds": [
+        "KMIPKIT-0044-FR-003",
+        "KMIPKIT-0044-FR-005",
+        "KMIPKIT-0044-FR-007"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/029-opaque-object-context/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation under the maintainer's autonomous roadmap instruction dated 2026-10-13"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit",
+          "name": "kmipkit::ClientBatchItem::register"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_batch_item_register"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ClientBatchItem.register"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.extensions.client_batch_item_register"
+        }
+      }
+    },
+    {
+      "declarationId": "KMIPKIT-0044-register-batch-item-root:java",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.extensions.ClientBatchItem.register",
+      "capabilityId": "opaque_register_context",
+      "requirementIds": [
+        "KMIPKIT-0044-FR-003",
+        "KMIPKIT-0044-FR-005",
+        "KMIPKIT-0044-FR-007"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/029-opaque-object-context/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation under the maintainer's autonomous roadmap instruction dated 2026-10-13"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit",
+          "name": "kmipkit::ClientBatchItem::register"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_batch_item_register"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ClientBatchItem.register"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.extensions.client_batch_item_register"
+        }
+      }
+    },
+    {
+      "declarationId": "KMIPKIT-0044-register-batch-item-root:python",
+      "packageId": "python-kmipkit",
+      "kind": "python-export",
+      "exportName": "kmipkit.extensions.client_batch_item_register",
+      "capabilityId": "opaque_register_context",
+      "requirementIds": [
+        "KMIPKIT-0044-FR-003",
+        "KMIPKIT-0044-FR-005",
+        "KMIPKIT-0044-FR-007"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/029-opaque-object-context/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation under the maintainer's autonomous roadmap instruction dated 2026-10-13"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit",
+          "name": "kmipkit::ClientBatchItem::register"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_batch_item_register"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ClientBatchItem.register"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.extensions.client_batch_item_register"
+        }
+      }
+    },
+    {
+      "declarationId": "KMIPKIT-0044-register-batch-item-root:rust",
+      "packageId": "rust-kmipkit",
+      "kind": "associated-item",
+      "exportName": "kmipkit::ClientBatchItem::register",
+      "capabilityId": "opaque_register_context",
+      "requirementIds": [
+        "KMIPKIT-0044-FR-003",
+        "KMIPKIT-0044-FR-005",
+        "KMIPKIT-0044-FR-007"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/029-opaque-object-context/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation under the maintainer's autonomous roadmap instruction dated 2026-10-13"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit",
+          "name": "kmipkit::ClientBatchItem::register"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_batch_item_register"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ClientBatchItem.register"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.extensions.client_batch_item_register"
+        }
+      }
+    },
+    {
+      "declarationId": "rust-observed-3180c8c59ddd641e941e",
+      "packageId": "rust-kmipkit-protocol",
+      "kind": "associated-item",
+      "exportName": "<kmipkit_protocol::OpaqueObjectContext as alloc::borrow::ToOwned>::Owned",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0044",
+      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
+    },
+    {
+      "declarationId": "rust-observed-32e6ff6e130c77c5cd02",
+      "packageId": "rust-kmipkit-protocol",
+      "kind": "associated-item",
+      "exportName": "<kmipkit_protocol::OpaqueObjectContext as alloc::borrow::ToOwned>::clone_into",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0044",
+      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
+    },
+    {
+      "declarationId": "rust-observed-8e94ea27e39302f8bf9c",
+      "packageId": "rust-kmipkit-protocol",
+      "kind": "associated-item",
+      "exportName": "<kmipkit_protocol::OpaqueObjectContext as alloc::borrow::ToOwned>::to_owned",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0044",
+      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
+    },
+    {
+      "declarationId": "rust-observed-025dd9488b3123dace3b",
+      "packageId": "rust-kmipkit-protocol",
+      "kind": "associated-item",
+      "exportName": "<kmipkit_protocol::OpaqueObjectContext as core::any::Any>::type_id",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0044",
+      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
+    },
+    {
+      "declarationId": "rust-observed-c8b29fdde174696ab31e",
+      "packageId": "rust-kmipkit-protocol",
+      "kind": "associated-item",
+      "exportName": "<kmipkit_protocol::OpaqueObjectContext as core::borrow::Borrow<kmipkit_protocol::register::OpaqueObjectContext>>::borrow",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0044",
+      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
+    },
+    {
+      "declarationId": "rust-observed-2181f842fb56c7a6cc9e",
+      "packageId": "rust-kmipkit-protocol",
+      "kind": "associated-item",
+      "exportName": "<kmipkit_protocol::OpaqueObjectContext as core::borrow::BorrowMut<kmipkit_protocol::register::OpaqueObjectContext>>::borrow_mut",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0044",
+      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
+    },
+    {
+      "declarationId": "rust-observed-2335eeb832dafd78184d",
+      "packageId": "rust-kmipkit-protocol",
+      "kind": "associated-item",
+      "exportName": "<kmipkit_protocol::OpaqueObjectContext as core::clone::Clone>::clone",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0044",
+      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
+    },
+    {
+      "declarationId": "rust-observed-fe07a1760d761b4f525d",
+      "packageId": "rust-kmipkit-protocol",
+      "kind": "associated-item",
+      "exportName": "<kmipkit_protocol::OpaqueObjectContext as core::clone::Clone>::clone_from",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0044",
+      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
+    },
+    {
+      "declarationId": "rust-observed-c2fe894bf5d03fc7a062",
+      "packageId": "rust-kmipkit-protocol",
+      "kind": "associated-item",
+      "exportName": "<kmipkit_protocol::OpaqueObjectContext as core::clone::CloneToUninit>::clone_to_uninit",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0044",
+      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
+    },
+    {
+      "declarationId": "rust-observed-5c1beed8b5944d3e96b9",
+      "packageId": "rust-kmipkit-protocol",
+      "kind": "associated-item",
+      "exportName": "<kmipkit_protocol::OpaqueObjectContext as core::cmp::Eq>::assert_receiver_is_total_eq",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0044",
+      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
+    },
+    {
+      "declarationId": "rust-observed-d6275d96d1b228a91db4",
+      "packageId": "rust-kmipkit-protocol",
+      "kind": "associated-item",
+      "exportName": "<kmipkit_protocol::OpaqueObjectContext as core::cmp::PartialEq>::eq",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0044",
+      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
+    },
+    {
+      "declarationId": "rust-observed-4f9c3906242186136868",
+      "packageId": "rust-kmipkit-protocol",
+      "kind": "associated-item",
+      "exportName": "<kmipkit_protocol::OpaqueObjectContext as core::cmp::PartialEq>::ne",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0044",
+      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
+    },
+    {
+      "declarationId": "rust-observed-1b4e5ebe79edba13efef",
+      "packageId": "rust-kmipkit-protocol",
+      "kind": "associated-item",
+      "exportName": "<kmipkit_protocol::OpaqueObjectContext as core::convert::From<kmipkit_protocol::register::OpaqueObjectContext>>::from",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0044",
+      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
+    },
+    {
+      "declarationId": "rust-observed-dcd125a86289558e0694",
+      "packageId": "rust-kmipkit-protocol",
+      "kind": "associated-item",
+      "exportName": "<kmipkit_protocol::OpaqueObjectContext as core::convert::Into<U>>::into",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0044",
+      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest.",
+      "condition": {
+        "predicates": [
+          {
+            "arguments": [
+              "kmipkit_protocol::register::OpaqueObjectContext"
+            ],
+            "kind": "traitBound",
+            "modifier": "none",
+            "subject": "U",
+            "traitPath": [
+              "core",
+              "convert",
+              "From"
+            ]
+          }
+        ],
+        "subjectBindings": {}
+      }
+    },
+    {
+      "declarationId": "rust-observed-a6a82a17fc502d1fa88e",
+      "packageId": "rust-kmipkit-protocol",
+      "kind": "associated-item",
+      "exportName": "<kmipkit_protocol::OpaqueObjectContext as core::convert::TryFrom<U>>::Error",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0044",
+      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest.",
+      "condition": {
+        "predicates": [
+          {
+            "arguments": [
+              "kmipkit_protocol::register::OpaqueObjectContext"
+            ],
+            "kind": "traitBound",
+            "modifier": "none",
+            "subject": "U",
+            "traitPath": [
+              "core",
+              "convert",
+              "Into"
+            ]
+          }
+        ],
+        "subjectBindings": {}
+      }
+    },
+    {
+      "declarationId": "rust-observed-640358445935956d6cf4",
+      "packageId": "rust-kmipkit-protocol",
+      "kind": "associated-item",
+      "exportName": "<kmipkit_protocol::OpaqueObjectContext as core::convert::TryFrom<U>>::try_from",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0044",
+      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest.",
+      "condition": {
+        "predicates": [
+          {
+            "arguments": [
+              "kmipkit_protocol::register::OpaqueObjectContext"
+            ],
+            "kind": "traitBound",
+            "modifier": "none",
+            "subject": "U",
+            "traitPath": [
+              "core",
+              "convert",
+              "Into"
+            ]
+          }
+        ],
+        "subjectBindings": {}
+      }
+    },
+    {
+      "declarationId": "rust-observed-42693e7dc35c55cb4a8e",
+      "packageId": "rust-kmipkit-protocol",
+      "kind": "associated-item",
+      "exportName": "<kmipkit_protocol::OpaqueObjectContext as core::convert::TryInto<U>>::Error",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0044",
+      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest.",
+      "condition": {
+        "predicates": [
+          {
+            "arguments": [
+              "kmipkit_protocol::register::OpaqueObjectContext"
+            ],
+            "kind": "traitBound",
+            "modifier": "none",
+            "subject": "U",
+            "traitPath": [
+              "core",
+              "convert",
+              "TryFrom"
+            ]
+          }
+        ],
+        "subjectBindings": {}
+      }
+    },
+    {
+      "declarationId": "rust-observed-90aec37acb0b1ee08047",
+      "packageId": "rust-kmipkit-protocol",
+      "kind": "associated-item",
+      "exportName": "<kmipkit_protocol::OpaqueObjectContext as core::convert::TryInto<U>>::try_into",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0044",
+      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest.",
+      "condition": {
+        "predicates": [
+          {
+            "arguments": [
+              "kmipkit_protocol::register::OpaqueObjectContext"
+            ],
+            "kind": "traitBound",
+            "modifier": "none",
+            "subject": "U",
+            "traitPath": [
+              "core",
+              "convert",
+              "TryFrom"
+            ]
+          }
+        ],
+        "subjectBindings": {}
+      }
+    },
+    {
+      "declarationId": "rust-observed-4fa286726b6afe5d6f1b",
+      "packageId": "rust-kmipkit-protocol",
+      "kind": "associated-item",
+      "exportName": "<kmipkit_protocol::OpaqueObjectContext as core::fmt::Debug>::fmt",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0044",
+      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
+    },
+    {
+      "declarationId": "rust-observed-6a55a6a483542c8a1be2",
+      "packageId": "rust-kmipkit-protocol",
+      "kind": "associated-item",
+      "exportName": "<kmipkit_protocol::OpaqueObjectContext as core::hash::Hash>::hash",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0044",
+      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
+    },
+    {
+      "declarationId": "rust-observed-bcd52c67cc062973797b",
+      "packageId": "rust-kmipkit-protocol",
+      "kind": "associated-item",
+      "exportName": "<kmipkit_protocol::OpaqueObjectContext as core::hash::Hash>::hash_slice",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0044",
+      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
+    },
+    {
+      "declarationId": "KMIPKIT-0044-opaque-context-generic:rust",
+      "packageId": "rust-kmipkit-protocol",
+      "kind": "variant",
+      "exportName": "kmipkit_protocol::OpaqueObjectContext::Generic",
+      "capabilityId": "opaque_register_context",
+      "requirementIds": [
+        "KMIPKIT-0044-FR-001",
+        "KMIPKIT-0044-FR-002",
+        "KMIPKIT-0044-FR-005",
+        "KMIPKIT-0044-FR-007"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/029-opaque-object-context/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation under the maintainer's autonomous roadmap instruction dated 2026-10-13"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::OpaqueObjectContext::Generic"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "KMIPKIT_OPAQUE_OBJECT_CONTEXT_GENERIC"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.OpaqueObjectContext.GENERIC"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.extensions.OpaqueObjectContext.GENERIC"
+        }
+      }
+    },
+    {
+      "declarationId": "KMIPKIT-0044-opaque-context-managed:rust",
+      "packageId": "rust-kmipkit-protocol",
+      "kind": "variant",
+      "exportName": "kmipkit_protocol::OpaqueObjectContext::ManagedCryptographicObject",
+      "capabilityId": "opaque_register_context",
+      "requirementIds": [
+        "KMIPKIT-0044-FR-001",
+        "KMIPKIT-0044-FR-002",
+        "KMIPKIT-0044-FR-003",
+        "KMIPKIT-0044-FR-005",
+        "KMIPKIT-0044-FR-007"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/029-opaque-object-context/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation under the maintainer's autonomous roadmap instruction dated 2026-10-13"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::OpaqueObjectContext::ManagedCryptographicObject"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "KMIPKIT_OPAQUE_OBJECT_CONTEXT_MANAGED_CRYPTOGRAPHIC_OBJECT"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.OpaqueObjectContext.MANAGED_CRYPTOGRAPHIC_OBJECT"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.extensions.OpaqueObjectContext.MANAGED_CRYPTOGRAPHIC_OBJECT"
+        }
+      }
+    },
+    {
+      "declarationId": "rust-observed-f4ef9f9d9c364891a2be",
+      "packageId": "rust-kmipkit-protocol",
+      "kind": "associated-item",
+      "exportName": "kmipkit_protocol::RegisterRequest::validate_local_shape",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0044",
+      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
+    },
+    {
+      "declarationId": "KMIPKIT-0044-opaque-context-generic:c",
+      "packageId": "c-kmipkit",
+      "kind": "macro",
+      "exportName": "KMIPKIT_OPAQUE_OBJECT_CONTEXT_GENERIC",
+      "capabilityId": "opaque_register_context",
+      "requirementIds": [
+        "KMIPKIT-0044-FR-001",
+        "KMIPKIT-0044-FR-002",
+        "KMIPKIT-0044-FR-005",
+        "KMIPKIT-0044-FR-007"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/029-opaque-object-context/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation under the maintainer's autonomous roadmap instruction dated 2026-10-13"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::OpaqueObjectContext::Generic"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "KMIPKIT_OPAQUE_OBJECT_CONTEXT_GENERIC"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.OpaqueObjectContext.GENERIC"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.extensions.OpaqueObjectContext.GENERIC"
+        }
+      }
+    },
+    {
+      "declarationId": "KMIPKIT-0044-opaque-context-generic:java",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.extensions.OpaqueObjectContext.GENERIC",
+      "capabilityId": "opaque_register_context",
+      "requirementIds": [
+        "KMIPKIT-0044-FR-001",
+        "KMIPKIT-0044-FR-002",
+        "KMIPKIT-0044-FR-005",
+        "KMIPKIT-0044-FR-007"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/029-opaque-object-context/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation under the maintainer's autonomous roadmap instruction dated 2026-10-13"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::OpaqueObjectContext::Generic"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "KMIPKIT_OPAQUE_OBJECT_CONTEXT_GENERIC"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.OpaqueObjectContext.GENERIC"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.extensions.OpaqueObjectContext.GENERIC"
+        }
+      }
+    },
+    {
+      "declarationId": "KMIPKIT-0044-opaque-context-generic:python",
+      "packageId": "python-kmipkit",
+      "kind": "python-export",
+      "exportName": "kmipkit.extensions.OpaqueObjectContext.GENERIC",
+      "capabilityId": "opaque_register_context",
+      "requirementIds": [
+        "KMIPKIT-0044-FR-001",
+        "KMIPKIT-0044-FR-002",
+        "KMIPKIT-0044-FR-005",
+        "KMIPKIT-0044-FR-007"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/029-opaque-object-context/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation under the maintainer's autonomous roadmap instruction dated 2026-10-13"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::OpaqueObjectContext::Generic"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "KMIPKIT_OPAQUE_OBJECT_CONTEXT_GENERIC"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.OpaqueObjectContext.GENERIC"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.extensions.OpaqueObjectContext.GENERIC"
+        }
+      }
+    },
+    {
+      "declarationId": "KMIPKIT-0044-opaque-context-managed:c",
+      "packageId": "c-kmipkit",
+      "kind": "macro",
+      "exportName": "KMIPKIT_OPAQUE_OBJECT_CONTEXT_MANAGED_CRYPTOGRAPHIC_OBJECT",
+      "capabilityId": "opaque_register_context",
+      "requirementIds": [
+        "KMIPKIT-0044-FR-001",
+        "KMIPKIT-0044-FR-002",
+        "KMIPKIT-0044-FR-003",
+        "KMIPKIT-0044-FR-005",
+        "KMIPKIT-0044-FR-007"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/029-opaque-object-context/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation under the maintainer's autonomous roadmap instruction dated 2026-10-13"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::OpaqueObjectContext::ManagedCryptographicObject"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "KMIPKIT_OPAQUE_OBJECT_CONTEXT_MANAGED_CRYPTOGRAPHIC_OBJECT"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.OpaqueObjectContext.MANAGED_CRYPTOGRAPHIC_OBJECT"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.extensions.OpaqueObjectContext.MANAGED_CRYPTOGRAPHIC_OBJECT"
+        }
+      }
+    },
+    {
+      "declarationId": "KMIPKIT-0044-opaque-context-managed:java",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.extensions.OpaqueObjectContext.MANAGED_CRYPTOGRAPHIC_OBJECT",
+      "capabilityId": "opaque_register_context",
+      "requirementIds": [
+        "KMIPKIT-0044-FR-001",
+        "KMIPKIT-0044-FR-002",
+        "KMIPKIT-0044-FR-003",
+        "KMIPKIT-0044-FR-005",
+        "KMIPKIT-0044-FR-007"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/029-opaque-object-context/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation under the maintainer's autonomous roadmap instruction dated 2026-10-13"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::OpaqueObjectContext::ManagedCryptographicObject"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "KMIPKIT_OPAQUE_OBJECT_CONTEXT_MANAGED_CRYPTOGRAPHIC_OBJECT"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.OpaqueObjectContext.MANAGED_CRYPTOGRAPHIC_OBJECT"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.extensions.OpaqueObjectContext.MANAGED_CRYPTOGRAPHIC_OBJECT"
+        }
+      }
+    },
+    {
+      "declarationId": "KMIPKIT-0044-opaque-context-managed:python",
+      "packageId": "python-kmipkit",
+      "kind": "python-export",
+      "exportName": "kmipkit.extensions.OpaqueObjectContext.MANAGED_CRYPTOGRAPHIC_OBJECT",
+      "capabilityId": "opaque_register_context",
+      "requirementIds": [
+        "KMIPKIT-0044-FR-001",
+        "KMIPKIT-0044-FR-002",
+        "KMIPKIT-0044-FR-003",
+        "KMIPKIT-0044-FR-005",
+        "KMIPKIT-0044-FR-007"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/029-opaque-object-context/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation under the maintainer's autonomous roadmap instruction dated 2026-10-13"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::OpaqueObjectContext::ManagedCryptographicObject"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "KMIPKIT_OPAQUE_OBJECT_CONTEXT_MANAGED_CRYPTOGRAPHIC_OBJECT"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.OpaqueObjectContext.MANAGED_CRYPTOGRAPHIC_OBJECT"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.extensions.OpaqueObjectContext.MANAGED_CRYPTOGRAPHIC_OBJECT"
+        }
+      }
+    },
+    {
+      "declarationId": "KMIPKIT-0044-register-request-release:c",
+      "packageId": "c-kmipkit",
+      "kind": "c-symbol",
+      "exportName": "kmipkit_register_request_release",
+      "capabilityId": "opaque_register_context",
+      "requirementIds": [
+        "KMIPKIT-0044-FR-001",
+        "KMIPKIT-0044-FR-007"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "mappingSemantics": "native-handle-release",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/029-opaque-object-context/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation under the maintainer's autonomous roadmap instruction dated 2026-10-13"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::RegisterRequest"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_register_request_release"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.RegisterRequest.close"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.extensions.RegisterRequest.close"
+        }
+      }
+    },
+    {
+      "declarationId": "KMIPKIT-0043-observed-java-opaque-context-01",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.REGISTER_REQUEST",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0043",
+      "blockedReason": "This Java lifecycle or JNI bridge declaration is inventoried but has no reviewed public four-language mapping."
+    },
+    {
+      "declarationId": "KMIPKIT-0043-observed-java-opaque-context-02",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemRegister",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0043",
+      "blockedReason": "This Java lifecycle or JNI bridge declaration is inventoried but has no reviewed public four-language mapping."
+    },
+    {
+      "declarationId": "KMIPKIT-0043-observed-java-opaque-context-03",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.registerRequestCreate",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0043",
+      "blockedReason": "This Java lifecycle or JNI bridge declaration is inventoried but has no reviewed public four-language mapping."
+    },
+    {
+      "declarationId": "KMIPKIT-0043-observed-java-opaque-context-04",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.registerRequestWithOpaqueObjectContext",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0043",
+      "blockedReason": "This Java lifecycle or JNI bridge declaration is inventoried but has no reviewed public four-language mapping."
+    },
+    {
+      "declarationId": "KMIPKIT-0043-observed-java-opaque-context-05",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.extensions.OpaqueObjectContext.valueOf",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0043",
+      "blockedReason": "This Java lifecycle or JNI bridge declaration is inventoried but has no reviewed public four-language mapping."
+    },
+    {
+      "declarationId": "KMIPKIT-0043-observed-java-opaque-context-06",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.extensions.OpaqueObjectContext.values",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0043",
+      "blockedReason": "This Java lifecycle or JNI bridge declaration is inventoried but has no reviewed public four-language mapping."
+    },
+    {
+      "declarationId": "KMIPKIT-0044-register-request-release:java",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.extensions.RegisterRequest.close",
+      "capabilityId": "opaque_register_context",
+      "requirementIds": [
+        "KMIPKIT-0044-FR-001",
+        "KMIPKIT-0044-FR-007"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "mappingSemantics": "native-handle-release",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/029-opaque-object-context/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation under the maintainer's autonomous roadmap instruction dated 2026-10-13"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::RegisterRequest"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_register_request_release"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.RegisterRequest.close"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.extensions.RegisterRequest.close"
+        }
+      }
+    },
+    {
+      "declarationId": "KMIPKIT-0043-observed-java-opaque-context-08",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.ttlv.TtlvItem.nativeHandleOwner",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0043",
+      "blockedReason": "This Java lifecycle or JNI bridge declaration is inventoried but has no reviewed public four-language mapping."
+    },
+    {
+      "declarationId": "KMIPKIT-0043-observed-java-opaque-context-09",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.ttlv.TtlvStructure.nativeHandleOwner",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0043",
+      "blockedReason": "This Java lifecycle or JNI bridge declaration is inventoried but has no reviewed public four-language mapping."
+    },
+    {
+      "declarationId": "KMIPKIT-0043-observed-python-register-lifecycle-01",
+      "packageId": "python-kmipkit",
+      "kind": "python-export",
+      "exportName": "kmipkit.extensions.RegisterRequest.__enter__",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0043",
+      "blockedReason": "This inherited native-handle lifecycle member is public on this wrapper but lacks a reviewed four-language mapping."
+    },
+    {
+      "declarationId": "KMIPKIT-0043-observed-python-register-lifecycle-02",
+      "packageId": "python-kmipkit",
+      "kind": "python-export",
+      "exportName": "kmipkit.extensions.RegisterRequest.__exit__",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0043",
+      "blockedReason": "This inherited native-handle lifecycle member is public on this wrapper but lacks a reviewed four-language mapping."
+    },
+    {
+      "declarationId": "KMIPKIT-0044-register-request-release:python",
+      "packageId": "python-kmipkit",
+      "kind": "python-export",
+      "exportName": "kmipkit.extensions.RegisterRequest.close",
+      "capabilityId": "opaque_register_context",
+      "requirementIds": [
+        "KMIPKIT-0044-FR-001",
+        "KMIPKIT-0044-FR-007"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "mappingSemantics": "native-handle-release",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/029-opaque-object-context/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation under the maintainer's autonomous roadmap instruction dated 2026-10-13"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::RegisterRequest"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_register_request_release"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.RegisterRequest.close"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.extensions.RegisterRequest.close"
+        }
+      }
+    },
+    {
+      "declarationId": "KMIPKIT-0043-observed-python-register-lifecycle-04",
+      "packageId": "python-kmipkit",
+      "kind": "python-export",
+      "exportName": "kmipkit.extensions.RegisterRequest.closed",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0043",
+      "blockedReason": "This inherited native-handle lifecycle member is public on this wrapper but lacks a reviewed four-language mapping."
     }
   ],
   "approvedExclusions": [
@@ -203810,6 +205916,69 @@
         ],
         "python": [
           "kmipkit.extensions.client_batch_item_discover_versions"
+        ]
+      }
+    },
+    {
+      "capabilityId": "opaque_register_context",
+      "requirementIds": [
+        "KMIPKIT-0044-FR-001",
+        "KMIPKIT-0044-FR-002",
+        "KMIPKIT-0044-FR-003",
+        "KMIPKIT-0044-FR-004",
+        "KMIPKIT-0044-FR-005",
+        "KMIPKIT-0044-FR-006",
+        "KMIPKIT-0044-FR-007"
+      ],
+      "capabilityState": "declared",
+      "parityScope": "four-language",
+      "ownerSpecId": "KMIPKIT-0044",
+      "approvalEvidence": {
+        "kind": "feature-specification",
+        "path": "specs/029-opaque-object-context/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation under the maintainer's autonomous roadmap instruction dated 2026-10-13"
+      },
+      "mappings": {
+        "rust": [
+          "kmipkit::ClientBatchItem::register",
+          "kmipkit_client::ClientBatchItem::register",
+          "kmipkit_protocol::OpaqueObjectContext",
+          "kmipkit_protocol::OpaqueObjectContext::Generic",
+          "kmipkit_protocol::OpaqueObjectContext::ManagedCryptographicObject",
+          "kmipkit_protocol::RegisterRequest",
+          "kmipkit_protocol::RegisterRequest::new",
+          "kmipkit_protocol::RegisterRequest::with_opaque_object_context"
+        ],
+        "c": [
+          "KMIPKIT_OPAQUE_OBJECT_CONTEXT_GENERIC",
+          "KMIPKIT_OPAQUE_OBJECT_CONTEXT_MANAGED_CRYPTOGRAPHIC_OBJECT",
+          "kmipkit_client_batch_item_register",
+          "kmipkit_opaque_object_context_t",
+          "kmipkit_register_request_create",
+          "kmipkit_register_request_release",
+          "kmipkit_register_request_t",
+          "kmipkit_register_request_with_opaque_object_context"
+        ],
+        "java": [
+          "org.kmipkit.extensions.ClientBatchItem.register",
+          "org.kmipkit.extensions.OpaqueObjectContext",
+          "org.kmipkit.extensions.OpaqueObjectContext.GENERIC",
+          "org.kmipkit.extensions.OpaqueObjectContext.MANAGED_CRYPTOGRAPHIC_OBJECT",
+          "org.kmipkit.extensions.RegisterRequest",
+          "org.kmipkit.extensions.RegisterRequest.close",
+          "org.kmipkit.extensions.RegisterRequest.create",
+          "org.kmipkit.extensions.RegisterRequest.withOpaqueObjectContext"
+        ],
+        "python": [
+          "kmipkit.extensions.OpaqueObjectContext",
+          "kmipkit.extensions.OpaqueObjectContext.GENERIC",
+          "kmipkit.extensions.OpaqueObjectContext.MANAGED_CRYPTOGRAPHIC_OBJECT",
+          "kmipkit.extensions.RegisterRequest",
+          "kmipkit.extensions.RegisterRequest.close",
+          "kmipkit.extensions.RegisterRequest.create",
+          "kmipkit.extensions.RegisterRequest.with_opaque_object_context",
+          "kmipkit.extensions.client_batch_item_register"
         ]
       }
     }

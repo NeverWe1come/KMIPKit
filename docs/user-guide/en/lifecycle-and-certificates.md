@@ -312,6 +312,17 @@ fn main() -> Result<(), Box<dyn Error>> {
 
 This complete example is checked in CI: [register_opaque_context.rs](../../../crates/kmipkit-protocol/examples/register_opaque_context.rs).
 
+The language bindings expose the same context choices through
+`RegisterRequest.create(...).withOpaqueObjectContext(...)` in Java and
+`RegisterRequest.create(...).with_opaque_object_context(...)` in Python. Both
+selectors consume the previous request handle and return a new one. Creating a
+request consumes its attribute and object handles; adding it to a
+`ClientBatchItem` consumes the request. Close any request that is not transferred
+to a batch (`RegisterRequest.close()` in Java/Python, or
+`kmipkit_register_request_release` in C). C callers can select a context with
+`kmipkit_register_request_with_opaque_object_context` and use
+`kmipkit_client_batch_item_register` to build the executable batch item.
+
 The context selector is local metadata: it does not add a KMIP wire field or
 change the normal Register payload. Invalid local requests fail during
 preflight with delivery state `NotSent`, before the transport writes bytes.

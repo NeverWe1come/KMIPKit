@@ -906,6 +906,18 @@ impl ClientBatchItem {
         Self::new(ClientRequest::query(request))
     }
 
+    /// Creates a batch item for one locally validated KMIP 2.1 Register request.
+    ///
+    /// # Errors
+    ///
+    /// Returns the payload-free validation error when the request's object or
+    /// selected Opaque Object context does not satisfy the local Register
+    /// requirements.
+    pub fn register(request: RegisterRequest) -> Result<Self, ProtocolError> {
+        request.validate_local_shape()?;
+        Ok(Self::new(ClientRequest::Register(request)))
+    }
+
     /// Creates a batch item from an admitted typed request.
     #[must_use]
     pub const fn new(request: ClientRequest) -> Self {

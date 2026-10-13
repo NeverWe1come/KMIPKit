@@ -316,6 +316,17 @@ fn main() -> Result<(), Box<dyn Error>> {
 
 Este ejemplo completo se comprueba en CI: [register_opaque_context.rs](../../../crates/kmipkit-protocol/examples/register_opaque_context.rs).
 
+Los adaptadores exponen las mismas opciones mediante
+`RegisterRequest.create(...).withOpaqueObjectContext(...)` en Java y
+`RegisterRequest.create(...).with_opaque_object_context(...)` en Python. Ambos
+selectores consumen el handle anterior y devuelven uno nuevo. Crear la petición
+consume los handles de atributos y del objeto; añadirla a un
+`ClientBatchItem` consume la petición. Cierra toda petición que no transfieras a
+un lote (`RegisterRequest.close()` en Java/Python, o
+`kmipkit_register_request_release` en C). Desde C se selecciona el contexto con
+`kmipkit_register_request_with_opaque_object_context` y se crea el elemento de
+lote ejecutable con `kmipkit_client_batch_item_register`.
+
 El selector de contexto es metadato local: no añade campos KMIP ni modifica la
 estructura normal de Register. Las peticiones locales inválidas se rechazan
 durante la preparación, con estado de entrega `NotSent` y antes de que el

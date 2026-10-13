@@ -945,6 +945,9 @@ def _validate_ready_mapping_targets(
     for declaration in declarations:
         if declaration.get("declarationState") not in {"declared", "verified"}:
             continue
+        mapping_semantics = declaration.get("mappingSemantics")
+        if mapping_semantics not in {None, "native-handle-release"}:
+            raise ManifestError("public declaration uses unknown mapping semantics")
         mappings = declaration.get("languageMappings", {})
         required_languages = (
             ("rust",)
@@ -962,6 +965,29 @@ def _validate_ready_mapping_targets(
                 raise ManifestError("ready public declaration mapping target has the wrong language")
             if target.get("declarationState") not in {"declared", "verified"}:
                 raise ManifestError("ready public declaration mapping target is blocked")
+            if mapping_semantics == "native-handle-release":
+                expected_kind = {
+                    "rust": "type",
+                    "c": "c-symbol",
+                    "java": "java-member",
+                    "python": "python-export",
+                }[language]
+                if target.get("kind") != expected_kind:
+                    raise ManifestError(
+                        "native handle release mapping targets the wrong declaration kind"
+                    )
+                target_name = mapping.get("name", "")
+                expected_suffix = {
+                    "c": "_release",
+                    "java": ".close",
+                    "python": ".close",
+                }.get(language)
+                if expected_suffix is not None and not target_name.endswith(
+                    expected_suffix
+                ):
+                    raise ManifestError(
+                        "native handle release mapping targets the wrong lifecycle operation"
+                    )
 
 
 def _validate_capability_mapping_inventories(

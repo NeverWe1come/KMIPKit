@@ -1197,7 +1197,7 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
 
     def test_checked_in_manifest_inventories_all_java_public_access_paths(self) -> None:
         declarations = self.declarations_for_package("java-kmipkit")
-        self.assertEqual(len(declarations), 358)
+        self.assertEqual(len(declarations), 367)
         by_name = {declaration["exportName"]: declaration for declaration in declarations}
         batch_item = by_name["org.kmipkit.extensions.ClientBatchItem"]
         self.assertEqual(batch_item["kind"], "type")
@@ -1297,7 +1297,11 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
         self.assertEqual(header_fields, ready_by_kind["field"])
 
         header_ttlv_macros = set(
-            re.findall(r"^#define (KMIPKIT_TTLV_ITEM_TYPE_\w+)", header, re.MULTILINE)
+            re.findall(
+                r"^#define (KMIPKIT_(?:TTLV_ITEM_TYPE|OPAQUE_OBJECT_CONTEXT)_\w+)",
+                header,
+                re.MULTILINE,
+            )
         )
         self.assertEqual(header_ttlv_macros, ready_by_kind["macro"])
         header_error_macros = set(
@@ -1462,7 +1466,7 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
 
     def test_checked_in_manifest_inventories_python_exports_and_lifecycle(self) -> None:
         declarations = self.declarations_for_package("python-kmipkit")
-        self.assertEqual(len(declarations), 281)
+        self.assertEqual(len(declarations), 285)
         by_name = {declaration["exportName"]: declaration for declaration in declarations}
         close_method = by_name["kmipkit.extensions.ClientBatchItem.close"]
         self.assertEqual(close_method["kind"], "python-export")

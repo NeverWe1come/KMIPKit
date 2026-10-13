@@ -44,7 +44,7 @@
     "pythonFunctionName": {
       "type": "string",
       "minLength": 1,
-      "pattern": "^_?[A-Za-z][A-Za-z0-9_]*$"
+      "pattern": "^_?[A-Za-z][A-Za-z0-9_]*(?:\\.[A-Za-z][A-Za-z0-9_]*)*$"
     },
     "rustOwner": {
       "type": "string",
@@ -1830,6 +1830,12 @@
             "four-language",
             "rust-only-adr"
           ]
+        },
+        "mappingSemantics": {
+          "enum": [
+            "native-handle-release"
+          ],
+          "description": "Declares that Rust maps native handle release to dropping the owning public type."
         },
         "parityEvidenceIds": {
           "$ref": "#/$defs/parityEvidenceIds"

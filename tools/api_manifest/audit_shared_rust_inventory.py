@@ -47,7 +47,7 @@ RUST_ONLY_DECLARATIONS = {
     "kmipkit_transport::TransportResponse::as_bytes",
 }
 DRAFT_SPEC_IDS = {"KMIPKIT-0009", "KMIPKIT-0010"}
-REPORT_PATH = Path("specs/043-public-api-bindings/reports/shared-rust-inventory-2026-10-12.json")
+REPORT_PATH = Path("specs/043-public-api-bindings/reports/shared-rust-inventory-2026-10-13.json")
 _RUST_AUDIT_SPEC = importlib.util.spec_from_file_location(
     "audit_rust_exports", Path(__file__).with_name("audit_rust_exports.py")
 )
@@ -63,19 +63,58 @@ def _export_key(row: dict[str, Any]) -> tuple[str, str]:
     return row.get("packageId"), _RUST_AUDIT._canonical_export_name(row.get("exportName", ""))
 
 
-def _read_approved_owner(owner_spec_id: str, root: Path) -> set[str]:
-    spec_dir = next(
-        (path for path in (root / "specs").iterdir() if path.name.startswith(owner_spec_id[9:])),
-        None,
-    )
-    if spec_dir is None:
-        raise InventoryError(f"approved Rust declaration owner has no spec directory: {owner_spec_id}")
-    spec_file = spec_dir / "spec.md"
+def _read_approved_owner(
+    owner_spec_id: str,
+    root: Path,
+    approval_path: str | None = None,
+) -> set[str]:
+    root = root.resolve()
+    spec_file: Path | None = None
+    if approval_path is not None:
+        candidate = (root / approval_path).resolve()
+        try:
+            candidate.relative_to(root)
+        except ValueError as error:
+            raise InventoryError("approved Rust declaration owner path escapes the repository") from error
+        if candidate.is_file():
+            spec_file = candidate
+    else:
+        spec_dir = next(
+            (path for path in (root / "specs").iterdir() if path.name.startswith(owner_spec_id[9:])),
+            None,
+        )
+        if spec_dir is not None:
+            spec_file = spec_dir / "spec.md"
+        else:
+            owner_pattern = re.compile(
+                rf"(?:\*\*Feature Branch\*\*:\s*`feature/{re.escape(owner_spec_id)}(?:-|`)|"
+                rf"\b{re.escape(owner_spec_id)}-FR-\d{{3}}\b)"
+            )
+            matching_specs = [
+                path
+                for path in (root / "specs").glob("*/spec.md")
+                if owner_pattern.search(path.read_text(encoding="utf-8"))
+            ]
+            if len(matching_specs) == 1:
+                spec_file = matching_specs[0]
+    if spec_file is None:
+        raise InventoryError(f"approved Rust declaration owner has no spec document: {owner_spec_id}")
     text = spec_file.read_text(encoding="utf-8")
     status = re.search(r"^\*\*Status\*\*: *([^\r\n]+)", text, re.MULTILINE)
     if status is None or re.match(r"(?:Approved|Accepted)\b", status.group(1)) is None:
         raise InventoryError(f"Rust declaration owner is not formally Approved/Accepted: {owner_spec_id}")
-    return set(re.findall(r"\bKMIPKIT-\d{4}-FR-\d{3}\b", text))
+    owner_requirements = set(re.findall(rf"\b{re.escape(owner_spec_id)}-FR-\d{{3}}\b", text))
+    if not owner_requirements:
+        local_requirement_ids = re.findall(
+            r"^\s*-\s+\*\*FR-(\d{3})\*\*:", text, re.MULTILINE
+        )
+        owner_requirements = {
+            f"{owner_spec_id}-FR-{requirement_id}"
+            for requirement_id in local_requirement_ids
+        }
+    if not owner_requirements:
+        raise InventoryError(f"approved Rust declaration owner has no requirements: {owner_spec_id}")
+    return owner_requirements
 
 
 def _observed_exports(rust_report: dict[str, Any]) -> tuple[set[tuple[str, str]], int, int]:
@@ -263,7 +302,8 @@ def build_inventory(
                 for requirement_id in requirement_ids
                 if requirement_id.startswith(f"{owner_spec_id}-FR-")
             )
-            declared_owner_requirements = _read_approved_owner(owner_spec_id, root)
+            approved_path = capability.get("approvalEvidence", {}).get("path")
+            declared_owner_requirements = _read_approved_owner(owner_spec_id, root, approved_path)
             if not owner_requirements:
                 raise InventoryError(f"ready Rust declaration lacks owner requirements: {declaration['exportName']}")
             unknown = set(owner_requirements) - declared_owner_requirements
@@ -326,7 +366,7 @@ def build_inventory(
     return {
         "formatVersion": 1,
         "scope": "approved-shared-rust-api",
-        "source": "specs/043-public-api-bindings/reports/rust-export-report-2026-10-12.json",
+        "source": "specs/043-public-api-bindings/reports/rust-export-report-2026-10-13.json",
         "observedRustDeclarationCount": len(observed),
         "directRustDeclarationCount": direct_count,
         "conditionalRustDeclarationCount": conditional_count,
@@ -362,7 +402,7 @@ def main(argv: list[str] | None = None) -> int:
     root = args.repo_root.resolve()
     target = root / args.report
     manifest_path = root / "specification" / "api" / "public-api.json"
-    audit_path = root / "specs" / "043-public-api-bindings" / "reports" / "rust-export-report-2026-10-12.json"
+    audit_path = root / "specs" / "043-public-api-bindings" / "reports" / "rust-export-report-2026-10-13.json"
     try:
         manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
         rust_report = json.loads(audit_path.read_text(encoding="utf-8"))

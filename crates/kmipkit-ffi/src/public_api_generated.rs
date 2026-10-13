@@ -5,6 +5,7 @@ pub(crate) const C_AVAILABLE_CAPABILITIES: &[&str] = &[
     "discover_versions_request_item",
     "ffi_runtime_metadata",
     "generic_ttlv_model",
+    "opaque_register_context",
     "ttlv_wire_codec",
     "vendor_extension_registry",
 ];
@@ -663,5 +664,45 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "kmipkit.RuntimeMetadataError.ResourceLimit:rust",
         "rust-kmipkit",
         "kmipkit::RuntimeMetadataError::ResourceLimit",
+    ),
+    (
+        "rust-observed-5d253f0403ebfd0df573",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::RegisterRequest",
+    ),
+    (
+        "rust-observed-ab7fec008d9c62cd5adb",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::RegisterRequest::new",
+    ),
+    (
+        "KMIPKIT-0044-opaque-object-context-type:rust",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::OpaqueObjectContext",
+    ),
+    (
+        "KMIPKIT-0044-register-context-selector:rust",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::RegisterRequest::with_opaque_object_context",
+    ),
+    (
+        "KMIPKIT-0044-register-batch-item:rust",
+        "rust-kmipkit-client",
+        "kmipkit_client::ClientBatchItem::register",
+    ),
+    (
+        "KMIPKIT-0044-register-batch-item-root:rust",
+        "rust-kmipkit",
+        "kmipkit::ClientBatchItem::register",
+    ),
+    (
+        "KMIPKIT-0044-opaque-context-generic:rust",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::OpaqueObjectContext::Generic",
+    ),
+    (
+        "KMIPKIT-0044-opaque-context-managed:rust",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::OpaqueObjectContext::ManagedCryptographicObject",
     ),
 ];

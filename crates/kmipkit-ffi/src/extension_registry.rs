@@ -16,11 +16,11 @@ use crate::{
     kmipkit_extension_identity_t, kmipkit_extension_information_t,
     kmipkit_extension_order_constraint_t, kmipkit_extension_recognition_t,
     kmipkit_extension_registry_limits_v1_t, kmipkit_extension_schema_t, kmipkit_raw_tag_t,
-    kmipkit_registered_extension_value_t, kmipkit_tag_t, kmipkit_timeout_limit_v1_t,
-    kmipkit_transport_config_t, kmipkit_transport_config_v1_t, kmipkit_transport_input_v1_t,
-    kmipkit_ttlv_item_t, kmipkit_ttlv_item_view_t, kmipkit_ttlv_path_t, kmipkit_ttlv_structure_t,
-    kmipkit_ttlv_structure_view_t, kmipkit_ttlv_value_t, kmipkit_ttlv_value_view_t,
-    kmipkit_validated_extension_value_t,
+    kmipkit_register_request_t, kmipkit_registered_extension_value_t, kmipkit_tag_t,
+    kmipkit_timeout_limit_v1_t, kmipkit_transport_config_t, kmipkit_transport_config_v1_t,
+    kmipkit_transport_input_v1_t, kmipkit_ttlv_item_t, kmipkit_ttlv_item_view_t,
+    kmipkit_ttlv_path_t, kmipkit_ttlv_structure_t, kmipkit_ttlv_structure_view_t,
+    kmipkit_ttlv_value_t, kmipkit_ttlv_value_view_t, kmipkit_validated_extension_value_t,
 };
 use kmipkit_client::extension_registry as client_extension;
 use kmipkit_client::{
@@ -28,7 +28,10 @@ use kmipkit_client::{
     ClientErrorCategory,
 };
 use kmipkit_protocol::extension;
-use kmipkit_protocol::{ProtocolError, ProtocolErrorKind};
+use kmipkit_protocol::{
+    AttributeSet, ObjectType, OpaqueObjectContext, ProtocolError, ProtocolErrorKind,
+    RegisterRequest,
+};
 use kmipkit_transport::{
     CertificateInput, ClientIdentity, Endpoint, PrivateKeyInput, RequestDeliveryState,
     RevocationListInput, TimeoutLimit, TimeoutPolicy, TransportCauseCategory, TransportConfig,
@@ -248,6 +251,7 @@ enum Kind {
     MessageExtension,
     Structure,
     BatchItem,
+    RegisterRequest,
     ChildRule,
     OrderConstraint,
     Value,
@@ -286,6 +290,7 @@ enum HandleValue {
     MessageExtension(client_extension::ClientRequestMessageExtension),
     Structure(Structure),
     BatchItem(Box<ClientBatchItem>),
+    RegisterRequest(Box<RegisterRequest>),
     ChildRule(Box<extension::ExtensionChildRule>),
     OrderConstraint(extension::ExtensionOrderConstraint),
     Value(Value),
@@ -1111,6 +1116,13 @@ pub extern "C" fn kmipkit_client_request_message_extension_release(
 ) {
     ffi_entrypoint(|| {
         release(handle, Kind::MessageExtension);
+    });
+}
+
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_register_request_release(handle: *mut kmipkit_register_request_t) {
+    ffi_entrypoint(|| {
+        release(handle, Kind::RegisterRequest);
     });
 }
 
@@ -2340,6 +2352,96 @@ pub extern "C" fn kmipkit_client_batch_item_discover_versions(
             Kind::BatchItem,
             HandleValue::BatchItem(Box::new(ClientBatchItem::discover_versions())),
         );
+        SUCCESS
+    })
+}
+
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_register_request_create(
+    object_type: u32,
+    attributes: *mut kmipkit_ttlv_structure_t,
+    object: *mut kmipkit_ttlv_item_t,
+    out_request: *mut *mut kmipkit_register_request_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = out_slot!(out_request);
+        let _ = read_handle!(attributes, Structure);
+        let _ = read_handle!(object, Item);
+
+        let attributes = try_ffi!(owned_payload(attributes, Kind::Structure));
+        let HandleValue::Structure(attributes) = attributes else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        let object = try_ffi!(owned_payload(object, Kind::Item));
+        let HandleValue::Item(object) = object else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+
+        let attributes_view = attributes.view();
+        let source_items = attributes_view.children();
+        let mut items = Vec::new();
+        if items.try_reserve_exact(source_items.len()).is_err() {
+            return record_ffi_error(ERROR_RESOURCE_LIMIT);
+        }
+        for item in source_items {
+            items.push(try_ffi!(item.try_clone().map_err(model_status)));
+        }
+        let attributes = match AttributeSet::try_new(items) {
+            Ok(attributes) => attributes,
+            Err(_error) => return record_ffi_error(ERROR_INVALID_INPUT),
+        };
+        let request = RegisterRequest::new(ObjectType::from_raw(object_type), attributes, object);
+        *out = make_handle(
+            Kind::RegisterRequest,
+            HandleValue::RegisterRequest(Box::new(request)),
+        );
+        SUCCESS
+    })
+}
+
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_register_request_with_opaque_object_context(
+    request: *mut kmipkit_register_request_t,
+    context: u32,
+    out_request: *mut *mut kmipkit_register_request_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = out_slot!(out_request);
+        let _ = read_handle!(request, RegisterRequest);
+        let request = try_ffi!(owned_payload(request, Kind::RegisterRequest));
+        let HandleValue::RegisterRequest(request) = request else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        let context = match context {
+            1 => OpaqueObjectContext::Generic,
+            2 => OpaqueObjectContext::ManagedCryptographicObject,
+            _ => return record_ffi_error(ERROR_INVALID_INPUT),
+        };
+        *out = make_handle(
+            Kind::RegisterRequest,
+            HandleValue::RegisterRequest(Box::new(request.with_opaque_object_context(context))),
+        );
+        SUCCESS
+    })
+}
+
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_client_batch_item_register(
+    request: *mut kmipkit_register_request_t,
+    out_item: *mut *mut kmipkit_client_batch_item_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = out_slot!(out_item);
+        let _ = read_handle!(request, RegisterRequest);
+        let request = try_ffi!(owned_payload(request, Kind::RegisterRequest));
+        let HandleValue::RegisterRequest(request) = request else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        let item = match ClientBatchItem::register(*request) {
+            Ok(item) => item,
+            Err(error) => return record_ffi_error(protocol_status(&error)),
+        };
+        *out = make_handle(Kind::BatchItem, HandleValue::BatchItem(Box::new(item)));
         SUCCESS
     })
 }
