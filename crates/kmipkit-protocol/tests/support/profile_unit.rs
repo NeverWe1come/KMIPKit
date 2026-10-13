@@ -38,6 +38,15 @@ const UNIQUE_IDENTIFIER_TAG: u32 = 0x0042_0094;
 const ISSUER_ALTERNATIVE_NAME_TAG: u32 = 0x0042_00B1;
 const SUBJECT_ALTERNATIVE_NAME_TAG: u32 = 0x0042_00B3;
 const SUBJECT_DISTINGUISHED_NAME_TAG: u32 = 0x0042_00B4;
+const REGISTER_OPERATION_TAG: u32 = 0x0000_0003;
+const OBJECT_TYPE_TAG: u32 = 0x0042_0057;
+const OPAQUE_OBJECT_TAG: u32 = 0x0042_005B;
+const OPAQUE_DATA_TYPE_TAG: u32 = 0x0042_0059;
+const OPAQUE_DATA_VALUE_TAG: u32 = 0x0042_005A;
+const VENDOR_ATTRIBUTE_TAG: u32 = 0x0042_0008;
+const VENDOR_IDENTIFICATION_TAG: u32 = 0x0042_009D;
+const ATTRIBUTE_NAME_TAG: u32 = 0x0042_000A;
+const ATTRIBUTE_VALUE_TAG: u32 = 0x0042_000B;
 
 struct RejectingWriter;
 
@@ -386,6 +395,107 @@ fn get_attributes_x509_response() -> crate::ResponseMessage {
         ),
     ]))
     .expect("test Get Attributes response carries valid X.509 Byte String attributes")
+}
+
+fn opaque_context_vendor_attribute(value: &[u8]) -> Item {
+    tagged(
+        VENDOR_ATTRIBUTE_TAG,
+        Value::structure(structure([
+            tagged(
+                VENDOR_IDENTIFICATION_TAG,
+                Value::text_string("x".to_owned()),
+            ),
+            tagged(
+                ATTRIBUTE_NAME_TAG,
+                Value::text_string("KMIPKit.Context".to_owned()),
+            ),
+            tagged(ATTRIBUTE_VALUE_TAG, Value::byte_string(value.to_vec())),
+        ])),
+    )
+}
+
+fn opaque_object_register_payload(include_context: bool) -> Structure {
+    let mut attributes = crate::AttributeSet::new();
+    if include_context {
+        attributes
+            .try_push(opaque_context_vendor_attribute(b"context-a"))
+            .expect("the first legacy Custom Attribute uses a valid Vendor Attribute shape");
+        attributes
+            .try_push(opaque_context_vendor_attribute(b"context-b"))
+            .expect("a repeated legacy Custom Attribute retains its value");
+    }
+
+    crate::RegisterRequest::new(
+        crate::ObjectType::from_raw(8),
+        attributes,
+        tagged(
+            OPAQUE_OBJECT_TAG,
+            Value::structure(structure([
+                tagged(OPAQUE_DATA_TYPE_TAG, Value::enumeration(0xF123_4567)),
+                tagged(
+                    OPAQUE_DATA_VALUE_TAG,
+                    Value::byte_string(b"synthetic-opaque-object-data".to_vec()),
+                ),
+            ])),
+        ),
+    )
+    .into_ttlv_payload()
+    .expect("the Opaque Object and its optional Attributes have valid TTLV shapes")
+}
+
+fn opaque_context_get_attributes_response() -> crate::ResponseMessage {
+    crate::ResponseMessage::try_from_ttlv(structure([
+        tagged(
+            RESPONSE_HEADER_TAG,
+            Value::structure(structure([
+                test_protocol_version(),
+                tagged(TIME_STAMP_TAG, Value::date_time(1)),
+                tagged(BATCH_COUNT_TAG, Value::integer(1)),
+            ])),
+        ),
+        tagged(
+            BATCH_ITEM_TAG,
+            Value::structure(structure([
+                tagged(OPERATION_TAG, Value::enumeration(GET_ATTRIBUTES_OPERATION)),
+                tagged(RESULT_STATUS_TAG, Value::enumeration(0)),
+                tagged(
+                    RESPONSE_PAYLOAD_TAG,
+                    Value::structure(structure([
+                        tagged(
+                            UNIQUE_IDENTIFIER_TAG,
+                            Value::text_string("opaque-object".to_owned()),
+                        ),
+                        tagged(
+                            ATTRIBUTES_TAG,
+                            Value::structure(structure([
+                                opaque_context_vendor_attribute(b"context-a"),
+                                opaque_context_vendor_attribute(b"context-b"),
+                            ])),
+                        ),
+                    ])),
+                ),
+            ])),
+        ),
+    ]))
+    .expect("the Get Attributes response preserves repeated Vendor Attributes")
+}
+
+fn vendor_attribute_value_bytes(attribute: &Item) -> Option<Vec<u8>> {
+    attribute.with_value(|value| {
+        let ValueView::Structure(vendor_attribute) = value else {
+            return None;
+        };
+        vendor_attribute
+            .children()
+            .iter()
+            .find(|field| field.tag().raw() == ATTRIBUTE_VALUE_TAG)
+            .and_then(|field| {
+                field.with_value(|value| match value {
+                    ValueView::ByteString(bytes) => Some(bytes.to_vec()),
+                    _ => None,
+                })
+            })
+    })
 }
 
 fn profile(
@@ -2588,6 +2698,92 @@ fn profile_maps_client_register_wrapped_key_value_with_embedded_attributes() {
         error.source_clause_id(),
         Some("KMIPKIT-CLAUSE-SPEC-6.1.43-005")
     );
+}
+
+#[test]
+fn profile_maps_client_register_opaque_object_context_custom_attributes() {
+    // KMIP Specification v2.1 §2.3, §4.60/Table 150, and §6.1.43/Table 291.
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-2.3-001";
+    const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
+
+    let payload = opaque_object_register_payload(true);
+    let payload_view = payload.view();
+    let fields = payload_view.children();
+    assert_eq!(
+        fields.iter().map(|field| field.tag().raw()).collect::<Vec<_>>(),
+        [OBJECT_TYPE_TAG, ATTRIBUTES_TAG, OPAQUE_OBJECT_TAG]
+    );
+    let context_values = fields[1].with_value(|value| match value {
+        ValueView::Structure(attributes) => attributes
+            .children()
+            .iter()
+            .map(vendor_attribute_value_bytes)
+            .collect::<Vec<_>>(),
+        _ => Vec::new(),
+    });
+    assert_eq!(
+        context_values,
+        [Some(b"context-a".to_vec()), Some(b"context-b".to_vec())],
+        "Register preserves repeated caller-supplied Opaque Object context values in order"
+    );
+
+    let validation = ProfileValidationResult {
+        profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
+        requirement_ids: vec![REQUIREMENT_ID.to_owned()],
+    };
+    validation
+        .validate_request(&request_message_with_operation_payload(
+            REGISTER_OPERATION_TAG,
+            opaque_object_register_payload(true),
+        ))
+        .expect("the client can Register an Opaque Object with legacy Custom Attribute context");
+    validation
+        .validate_request(&request_message_with_operation_payload(
+            REGISTER_OPERATION_TAG,
+            opaque_object_register_payload(false),
+        ))
+        .expect("using the optional context capability does not make it mandatory");
+}
+
+#[test]
+fn profile_maps_client_get_attributes_opaque_object_custom_context() {
+    // KMIP Specification v2.1 §2.3 and §6.1.20/Table 224.
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-2.3-001";
+    const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
+
+    let request = request_message_with_operation_payload(
+        GET_ATTRIBUTES_OPERATION,
+        structure([tagged(
+            UNIQUE_IDENTIFIER_TAG,
+            Value::text_string("opaque-object".to_owned()),
+        )]),
+    );
+    let response = opaque_context_get_attributes_response();
+    let response_item = response
+        .batch_items()
+        .next()
+        .expect("the Get Attributes response contains one result item");
+    let typed_response = crate::GetAttributesResponse::try_from_response_item(response_item)
+        .expect("Get Attributes retains legacy Custom Attribute values");
+    let attributes = typed_response
+        .attributes()
+        .expect("the successful response contains its ordered attributes");
+    assert_eq!(
+        attributes
+            .as_items()
+            .iter()
+            .map(vendor_attribute_value_bytes)
+            .collect::<Vec<_>>(),
+        [Some(b"context-a".to_vec()), Some(b"context-b".to_vec())]
+    );
+
+    let validation = ProfileValidationResult {
+        profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
+        requirement_ids: vec![REQUIREMENT_ID.to_owned()],
+    };
+    validation
+        .validate_response(&request, &response)
+        .expect("the client can retrieve the same ordered Opaque Object context attributes");
 }
 
 #[test]

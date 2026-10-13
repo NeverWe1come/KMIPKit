@@ -34,6 +34,12 @@ _is_discoverable_positive_test = test_feature_traceability._is_discoverable_posi
 
 ROOT = Path(__file__).resolve().parents[3]
 OPTIONAL_CAPABILITY_TEST_REQUIREMENTS = {
+    "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_client_register_opaque_object_context_custom_attributes": (
+        "KMIPKIT-REQ-SPEC-2.3-001",
+    ),
+    "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_client_get_attributes_opaque_object_custom_context": (
+        "KMIPKIT-REQ-SPEC-2.3-001",
+    ),
     "crates/kmipkit-protocol/tests/unit/register_operation_tests.rs::request_preserves_key_value_attributes_associated_with_raw_key_material": (
         "KMIPKIT-REQ-SPEC-3.2-001",
     ),
@@ -188,6 +194,18 @@ OPTIONAL_CAPABILITY_TEST_REQUIREMENTS = {
 
 
 OPTIONAL_CAPABILITY_TEST_CONTENT_REQUIREMENTS = {
+    "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_client_register_opaque_object_context_custom_attributes": (
+        "opaque_object_register_payload(true)",
+        "vendor_attribute_value_bytes",
+        "validate_request",
+        "fields.iter()",
+    ),
+    "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_client_get_attributes_opaque_object_custom_context": (
+        "GetAttributesResponse::try_from_response_item",
+        "vendor_attribute_value_bytes",
+        ".as_items()",
+        ".validate_response(&request, &response)",
+    ),
     "crates/kmipkit-protocol/tests/unit/register_operation_tests.rs::request_preserves_key_value_attributes_associated_with_raw_key_material": (
         "KEY_VALUE",
         "KEY_BLOCK",
@@ -16468,6 +16486,50 @@ class CatalogValidationTests(unittest.TestCase):
                                     self.assertIn(fragment, source_without_comments_or_literals, expected_test)
                     requirement = requirements[requirement_id]
                     self.assertIn(expected_test, requirement["verification_refs"])
+
+    def test_opaque_object_context_capability_evidence_has_a_bounded_typed_rule(self) -> None:
+        """The §2.3 capability is limited to tested client encode/decode paths."""
+        requirement_id = "KMIPKIT-REQ-SPEC-2.3-001"
+        expected_tests = {
+            "crates/kmipkit-protocol/tests/support/profile_unit.rs::"
+            "profile_maps_client_register_opaque_object_context_custom_attributes",
+            "crates/kmipkit-protocol/tests/support/profile_unit.rs::"
+            "profile_maps_client_get_attributes_opaque_object_custom_context",
+        }
+        expected_implementations = {
+            "crates/kmipkit-protocol/src/attribute.rs::AttributeSet::try_new",
+            "crates/kmipkit-protocol/src/register.rs::RegisterRequest::into_ttlv_payload",
+            "crates/kmipkit-protocol/src/get_attributes.rs::GetAttributesResponse::try_from_response_item",
+            "crates/kmipkit-protocol/src/profile.rs::client_opaque_object_context_custom_attributes",
+        }
+        catalog = json.loads(
+            (ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8")
+        )
+        requirement = next(
+            row for row in catalog["requirements"] if row["requirement_id"] == requirement_id
+        )
+        mappings = [
+            mapping
+            for mapping in load_typed_rule_mappings(ROOT)
+            if mapping["requirement_id"] == requirement_id
+        ]
+
+        self.assertEqual(requirement["source_clause_ids"], ["KMIPKIT-CLAUSE-SPEC-2.3-001"])
+        self.assertEqual(requirement["source_keyword"], "MAY")
+        self.assertEqual(requirement["scope_state"], "profile_conditional")
+        self.assertEqual(requirement["direction"], "both")
+        self.assertEqual(requirement["feature_spec"], "KMIPKIT-0010")
+        self.assertEqual(requirement["status"], "scoped_verified")
+        self.assertEqual(set(requirement["implementation_refs"]), expected_implementations)
+        self.assertEqual(set(requirement["verification_refs"]), expected_tests)
+        self.assertEqual(requirement["test_case_ids"], [])
+        self.assertIn("§4.60", requirement["review_note"])
+        self.assertIn("does not establish server storage or acceptance", requirement["review_note"])
+        self.assertEqual({mapping["source_clause_id"] for mapping in mappings}, {"KMIPKIT-CLAUSE-SPEC-2.3-001"})
+        self.assertEqual({mapping["verification_category"] for mapping in mappings}, {"OptionalCapability"})
+        self.assertEqual({mapping["test_kind"] for mapping in mappings}, {"OptionalCapabilityUsable"})
+        self.assertTrue(all(mapping["evaluator_present"] for mapping in mappings))
+        self.assertEqual({mapping["test_id"] for mapping in mappings}, expected_tests)
 
     def test_q_length_integer_negative_validation_has_named_requirement_evidence(self) -> None:
         """The Qlength field-type rejection test is linked to its normative requirement."""
