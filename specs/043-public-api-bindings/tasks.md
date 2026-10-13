@@ -32,7 +32,7 @@
 
 - [X] T012 [US2] Write failing Rust/C parity fixtures for shared API-level discovery, client construction, errors, batch outcomes, generic TTLV, and extension registry in `tests/fixtures/api/`.
 - [X] T013 [US2] Inventory canonical declarations across all five published Rust crates and map only formally Approved/Accepted shared capabilities in `contracts/shared-dependencies.md` whose implementations exist, linking each declaration to owner requirements and retaining public docs; keep candidate drafts blocked and classify only the ADR-0014 transport exception as Rust-only.
-- [ ] T014 [US2] Implement or generate fixed-width C declarations for the shared capabilities in `crates/kmipkit-ffi/` and `bindings/c/include/kmipkit.h`, retaining existing exported symbols and ABI behavior.
+- [X] T014 [US2] Implement or generate fixed-width C declarations for the shared capabilities in `crates/kmipkit-ffi/` and `bindings/c/include/kmipkit.h`, retaining existing exported symbols and ABI behavior. The generated header, FFI implementations, and ABI audit are complete; see T014 evidence in `implementation-evidence.md`.
 - [ ] T015 [US2] Define and implement manifest-backed C handle ownership, retain/release behavior, UTF-8/span lengths, result/error status mappings, and closed/wrong-kind/null handle validation.
 - [X] T016 [US2] Expose and test version/capability query functions, stable error categories, and delivery-state reporting through the C ABI without exposing raw secret or request payloads.
 - [ ] T017 [US2] Add failing-then-passing C consumer tests compiled and called from C for success, validation error, resource limit, closed handle, release ordering, and existing ABI compatibility.
