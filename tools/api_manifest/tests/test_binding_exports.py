@@ -194,6 +194,24 @@ class BindingExportAuditTests(unittest.TestCase):
         })
         self.assertTrue(result["complete"])
 
+    def test_c_header_inventory_accounts_for_forward_declared_tagged_struct_fields(self):
+        header = (
+            "typedef struct kmipkit_transport_config_v1_t "
+            "kmipkit_transport_config_v1_t;\n"
+            "struct kmipkit_transport_config_v1_t {\n"
+            "    uint32_t struct_size;\n"
+            "    uint16_t endpoint_port;\n"
+            "};\n"
+        )
+        result = AUDIT.inventory_c_header(header)
+        actual = {(row["kind"], row["exportName"]) for row in result["declarations"]}
+        self.assertEqual(actual, {
+            ("type", "kmipkit_transport_config_v1_t"),
+            ("field", "kmipkit_transport_config_v1_t.struct_size"),
+            ("field", "kmipkit_transport_config_v1_t.endpoint_port"),
+        })
+        self.assertTrue(result["complete"])
+
     def test_c_header_inventory_accounts_for_multiple_fields_in_one_declaration(self):
         result = AUDIT.inventory_c_header("typedef struct { int left, right; } kmipkit_pair_t;\n")
         actual = {(row["kind"], row["exportName"]) for row in result["declarations"]}
