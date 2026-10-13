@@ -781,7 +781,7 @@ fn client_get_or_export_key_compression_type_is_enumeration(
     })
 }
 
-fn client_supplied_create_key_pair_domain_parameters_are_structures(
+fn client_create_key_pair_domain_parameters_have_valid_wire_types(
     request: Option<&RequestMessage>,
     _response: Option<(&RequestMessage, &ResponseMessage)>,
 ) -> bool {
@@ -1281,7 +1281,7 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         requirement_id: "KMIPKIT-REQ-SPEC-4.14-001-001",
         source_clause_id: "KMIPKIT-CLAUSE-SPEC-4.14-001",
         verification_category: GeneratedVerificationCategory::OptionalCapability,
-        evaluator: Some(client_supplied_create_key_pair_domain_parameters_are_structures),
+        evaluator: Some(client_create_key_pair_domain_parameters_have_valid_wire_types),
         test_evidence: &[
             RuleTestEvidence {
                 test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_client_supplied_create_key_pair_domain_parameters",
@@ -1298,7 +1298,7 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         requirement_id: "KMIPKIT-REQ-SPEC-4.14-001-002",
         source_clause_id: "KMIPKIT-CLAUSE-SPEC-4.14-001",
         verification_category: GeneratedVerificationCategory::OptionalCapability,
-        evaluator: Some(client_supplied_create_key_pair_domain_parameters_are_structures),
+        evaluator: Some(client_create_key_pair_domain_parameters_have_valid_wire_types),
         test_evidence: &[
             RuleTestEvidence {
                 test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_client_type_applicable_dsa_q_length_domain_parameter",

@@ -6,9 +6,9 @@ use super::{
     ProfileTransport, ProfileValidationError, ProfileValidationErrorCode, ProfileValidationResult,
     ProfileValidationSelection, RuleConstraint, RuleTestEvidence, RuleTestKind,
     TYPED_RULE_MAPPINGS, TypedRuleMapping,
+    client_create_key_pair_domain_parameters_have_valid_wire_types,
     client_get_or_export_key_compression_type_is_enumeration,
     client_register_key_value_location_requires_omitted_key_value,
-    client_supplied_create_key_pair_domain_parameters_are_structures,
     discover_versions_advertises_only_client_supported_versions,
     import_preserves_pgp_key_versions_and_opaque_bytes, import_preserves_wrapped_secret_data_shape,
     protocol_version_is_kmip_2_1, reconcile_effective_state,
@@ -2066,7 +2066,7 @@ fn typed_rule_evaluators_fail_closed_without_a_request() {
     // KMIP Specification v2.1 §§2.7, 4.14, and 4.27; the rules must fail closed
     // when no request is available to evaluate.
     assert!(!import_preserves_wrapped_secret_data_shape(None, None));
-    assert!(!client_supplied_create_key_pair_domain_parameters_are_structures(None, None));
+    assert!(!client_create_key_pair_domain_parameters_have_valid_wire_types(None, None));
     assert!(!client_register_key_value_location_requires_omitted_key_value(None, None));
 }
 

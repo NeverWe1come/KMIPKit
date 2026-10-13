@@ -16469,7 +16469,7 @@ class CatalogValidationTests(unittest.TestCase):
         }
         expected_implementations = {
             "crates/kmipkit-protocol/src/profile.rs::"
-            "client_supplied_create_key_pair_domain_parameters_are_structures",
+            "client_create_key_pair_domain_parameters_have_valid_wire_types",
             "crates/kmipkit-protocol/src/create_key_pair.rs::"
             "CreateKeyPairRequest::with_common_attributes",
             "crates/kmipkit-protocol/src/create_key_pair.rs::"

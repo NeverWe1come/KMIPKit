@@ -88159,7 +88159,7 @@
         "crates/kmipkit-protocol/src/create_key_pair.rs::CreateKeyPairRequest::with_common_attributes",
         "crates/kmipkit-protocol/src/create_key_pair.rs::CreateKeyPairRequest::into_ttlv_payload",
         "crates/kmipkit-client/src/execute.rs::ClientRequest::payload",
-        "crates/kmipkit-protocol/src/profile.rs::client_supplied_create_key_pair_domain_parameters_are_structures"
+        "crates/kmipkit-protocol/src/profile.rs::client_create_key_pair_domain_parameters_have_valid_wire_types"
       ],
       "verification_refs": [
         "crates/kmipkit-client/tests/unit/create_key_pair_execution_tests.rs::create_key_pair_sends_client_supplied_dsa_domain_parameter_qlength",
@@ -88217,7 +88217,7 @@
         "crates/kmipkit-protocol/src/create_key_pair.rs::CreateKeyPairRequest::with_common_attributes",
         "crates/kmipkit-protocol/src/create_key_pair.rs::CreateKeyPairRequest::into_ttlv_payload",
         "crates/kmipkit-client/src/execute.rs::ClientRequest::payload",
-        "crates/kmipkit-protocol/src/profile.rs::client_supplied_create_key_pair_domain_parameters_are_structures"
+        "crates/kmipkit-protocol/src/profile.rs::client_create_key_pair_domain_parameters_have_valid_wire_types"
       ],
       "verification_refs": [
         "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_client_type_applicable_dsa_q_length_domain_parameter",
