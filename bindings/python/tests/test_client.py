@@ -1123,6 +1123,17 @@ def test_endpoint_direct_constructor_enforces_text_shape_and_repr_redaction() ->
         client.Endpoint(client.EndpointKind.RAW_TLS, "kms.example.test", 0)
     with pytest.raises(errors.InvalidInputError):
         client.Endpoint(client.EndpointKind.HTTPS, "https://kms.example.test", 443)
+    with pytest.raises(errors.InvalidInputError):
+        client.Endpoint("https", "https://kms.example.test")  # type: ignore[arg-type]
+    with pytest.raises(errors.InvalidInputError):
+        client.Endpoint(client.EndpointKind.HTTPS, None)  # type: ignore[arg-type]
+    with pytest.raises(errors.InvalidInputError):
+        client.Endpoint(
+            client.EndpointKind.RAW_TLS,
+            "kms.example.test",
+            5696,
+            tls_server_name=42,  # type: ignore[arg-type]
+        )
 
     secret_uri = "https://user:uri-password-sentinel@kms.example.test/"
     endpoint = client.Endpoint.https(secret_uri)
