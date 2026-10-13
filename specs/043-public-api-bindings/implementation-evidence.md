@@ -582,3 +582,50 @@ The full matrix for head `3c87f385` passed the language, platform, Java/Python c
 | Python 3.12/CFFI | `bindings/python/.venv/Scripts/python.exe -m pytest bindings/python/tests -q` | PASS: 152 tests. |
 
 These local binding checks do not close T076: the C public header remains generated from blocked manifest declarations, the standalone compiled C consumer has not yet run, and remote CI has not run on this continuation head.
+
+## T076 generator layout correctness follow-up (2026-10-13)
+
+QA found correctness gaps in the new versioned C-value layout generator: nested `const` pointer levels were mapped incorrectly to Rust, nested C records were emitted in manifest order without readiness checks, an incomplete value could appear in a ready by-value function signature, and Rust keyword field names could generate invalid source.
+
+| Phase | Commit | Command | Result |
+|---|---|---|---|
+| Red | `f850cac5` | `.venv\Scripts\python.exe -m unittest tools.api_manifest.tests.test_generate.ManifestGeneratorCliTests.test_rust_ffi_preserves_const_only_at_the_innermost_c_pointer_level tools.api_manifest.tests.test_generate.ManifestGeneratorCliTests.test_rust_ffi_escapes_keyword_names_in_fixed_width_fields tools.api_manifest.tests.test_generate.ManifestGeneratorCliTests.test_c_header_orders_nested_value_definitions_after_forward_declarations tools.api_manifest.tests.test_generate.ManifestGeneratorCliTests.test_c_header_rejects_ready_values_that_reference_blocked_types tools.api_manifest.tests.test_generate.ManifestGeneratorCliTests.test_c_header_rejects_ready_function_using_partial_value_by_value -v` | Expected Red: all five focused regressions failed against the previous generator. |
+| Green | `21bffe4b` | Same focused command plus the versioned-value and Rust-field renderer tests | PASS: all seven focused tests. C layouts now have forward declarations, complete by-value dependencies are topologically emitted, blocked/incomplete references are rejected, Rust field names use raw identifiers where needed, and `const` applies to the innermost C pointer level. |
+| Refactor | `510fbc8a` | `.venv\Scripts\python.exe -m unittest tools.api_manifest.tests.test_generate.ManifestGeneratorCliTests.test_references_reject_duplicate_fixed_width_value_field_names tools.api_manifest.tests.test_generate.ManifestGeneratorCliTests.test_references_require_versioned_c_value_header_fields tools.api_manifest.tests.test_generate.ManifestGeneratorCliTests.test_c_header_orders_nested_value_definitions_after_forward_declarations tools.api_manifest.tests.test_generate.ManifestGeneratorCliTests.test_c_header_rejects_ready_values_that_reference_blocked_types tools.api_manifest.tests.test_generate.ManifestGeneratorCliTests.test_c_header_rejects_ready_function_using_partial_value_by_value tools.api_manifest.tests.test_generate.ManifestGeneratorCliTests.test_rust_ffi_preserves_const_only_at_the_innermost_c_pointer_level -v` | PASS: six focused tests; C field parsing is shared by validation and layout ordering. |
+
+The complete local API-manifest suite ran 261 tests: 257 passed, three Windows symlink-permission tests were skipped, and one pre-existing T076 regression failed because the current blocked manifest still omits `kmipkit_client_t` and related shared client entries from the public C header. That failure is the remaining T076 mapping/promotion work, not a generator-layout regression. `cargo test -p kmipkit-ffi metadata_tests` passed 11 tests. The generator wrote and then verified all 12 checked-in outputs; only the public and internal C headers changed from the corrected struct emission. Remote CI has not run for these commits.
+
+### QA follow-up: exclusions and C identifiers
+
+| Phase | Commit | Command | Result |
+|---|---|---|---|
+| Red | `b0b5d022` | `.venv\Scripts\python.exe -m unittest tools.api_manifest.tests.test_generate.ManifestGeneratorCliTests.test_versioned_fixed_width_values_render_declared_c_fields tools.api_manifest.tests.test_generate.ManifestGeneratorCliTests.test_references_reject_c_keywords_as_fixed_width_field_names -v` | Expected Red: excluded ABI prefix fields left a versioned C value opaque, and `struct` was accepted as a field name. |
+| Green | `70bb2d46` | Same two focused tests plus the nested value readiness and by-value signature regressions | PASS: five focused tests. Approved C field exclusions now count toward C layout completeness; C reserved words are rejected. |
+
+These changes affect generator validation and do not alter current T076 declarations, which remain blocked pending exact Rust/C/Java/Python signatures and mapping evidence. A compiled public C consumer and remote CI remain required before T076 can close.
+
+### QA follow-up: C++ header compatibility
+
+| Phase | Commit | Command | Result |
+|---|---|---|---|
+| Red | `5a2d1541` | `.venv\Scripts\python.exe -m unittest tools.api_manifest.tests.test_generate.ManifestGeneratorCliTests.test_references_reject_cpp_keywords_as_fixed_width_field_names -v` | Expected Red: `class` was accepted as a C-layout field name although the public header has a C++ `extern "C"` inclusion guard. |
+| Green | `274971e4` | `.venv\Scripts\python.exe -m unittest tools.api_manifest.tests.test_generate.ManifestGeneratorCliTests.test_references_reject_c_keywords_as_fixed_width_field_names tools.api_manifest.tests.test_generate.ManifestGeneratorCliTests.test_references_reject_cpp_keywords_as_fixed_width_field_names -v`; MSVC `cl /nologo /TP /Zs /I bindings/c/include <temporary source including kmipkit.h>` | PASS: both C and C++ reserved-field regressions; the generated public header also passed a C++ syntax-only include check. |
+
+Independent QA reviewed the generated layout and confirmed that approved ABI prefix exclusions now complete versioned value layouts. The public T076 client entries themselves remain blocked until their API signatures and language mappings are represented in the manifest; consumer compilation and remote CI are still required for closure.
+
+### C++20 reserved-name precision follow-up
+
+| Phase | Commit | Command | Result |
+|---|---|---|---|
+| Red | `422d34dd` | `.venv\Scripts\python.exe -m unittest tools.api_manifest.tests.test_generate.ManifestGeneratorCliTests.test_references_allow_nonstandard_cpp_extension_identifiers -v` | Expected Red: the generator incorrectly rejected the transactional-memory TS identifiers `atomic_cancel`, `atomic_commit`, and `atomic_noexcept`, plus `synchronized`. |
+| Green | `23f6ae32` | `.venv\Scripts\python.exe -m unittest tools.api_manifest.tests.test_generate.ManifestGeneratorCliTests.test_references_reject_c_keywords_as_fixed_width_field_names tools.api_manifest.tests.test_generate.ManifestGeneratorCliTests.test_references_reject_cpp_keywords_as_fixed_width_field_names tools.api_manifest.tests.test_generate.ManifestGeneratorCliTests.test_references_allow_nonstandard_cpp_extension_identifiers -v` | PASS: reserved C/C++20 identifiers are rejected while those four non-keyword identifiers remain accepted. |
+| Refactor | `95cf4653` | `.venv\Scripts\python.exe -m unittest tools.api_manifest.tests.test_generate.ManifestGeneratorCliTests.test_references_reject_cpp_keywords_as_fixed_width_field_names tools.api_manifest.tests.test_generate.ManifestGeneratorCliTests.test_references_allow_nonstandard_cpp_extension_identifiers -v`; `cl /nologo /TP /std:c++20 /Zs /I bindings/c/include <temporary source including kmipkit.h>` | PASS: two focused tests and a C++20 syntax-only include check; the keyword set documents its language-version scope. |
+
+On the layout-generator check head before the T076 manifest promotion, `python -m unittest tools.api_manifest.tests.test_generate -v` ran 50 tests: 47 passed, two Windows symlink-permission tests were skipped, and the only failure was the expected public-header T076 gate (`kmipkit_client_t` is still blocked). `python tools/api_manifest/generate.py --check` passed for all 12 fixed outputs. The new C++ keyword-precision changes then passed their focused Red/Green/Refactor checks; rerun the full suite after T076 mappings are promoted.
+
+### T076 public shared-client mapping completeness gate (2026-10-13)
+
+- **Red**: Extended the public-header regression to require every observed T076 C ABI declaration to be ready only after its Rust, Java, and Python mappings are represented. The current manifest fails because all 31 observed T076 declarations are still blocked.
+- **Command**: `uv run --with-requirements tools/api_manifest/requirements-test.txt python -m unittest tools.api_manifest.tests.test_generate.ManifestGeneratorCliTests.test_public_header_includes_shared_client_abi_after_binding_mapping -v`
+- **Result**: Expected Red: `FAILED (failures=1)`; the assertion reports all 31 T076 declarations as blocked. The test now guards against exposing only a subset of the shared C client API.
+- **Commit**: Red test commit `4216bc72`.

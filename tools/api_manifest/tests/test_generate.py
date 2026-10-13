@@ -254,6 +254,22 @@ class ManifestGeneratorCliTests(unittest.TestCase):
         outputs = generate.render_outputs(manifest)
         public_header = outputs["bindings/c/include/kmipkit.h"].decode("utf-8")
 
+        t076_declarations = [
+            row
+            for row in manifest["publicDeclarations"]
+            if row["declarationId"].startswith("T076:")
+        ]
+        blocked_t076 = [
+            row["declarationId"]
+            for row in t076_declarations
+            if row["declarationState"] not in {"declared", "verified"}
+        ]
+        self.assertEqual(
+            [],
+            blocked_t076,
+            "every observed T076 C ABI export needs reviewed Rust, Java, and Python mappings",
+        )
+
         self.assertTrue(
             "typedef struct kmipkit_client_t kmipkit_client_t;" in public_header,
             "the public C header omits the mapped client handle",
