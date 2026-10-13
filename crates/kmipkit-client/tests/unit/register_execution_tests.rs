@@ -65,7 +65,7 @@ fn managed_opaque_register_request(attributes: AttributeSet) -> RegisterRequest 
         test_item(
             OPAQUE_OBJECT,
             Value::structure(test_structure([
-                test_item(OPAQUE_DATA_TYPE, Value::enumeration(1)),
+                test_item(OPAQUE_DATA_TYPE, Value::enumeration(0x8000_0001)),
                 test_item(
                     OPAQUE_DATA_VALUE,
                     Value::byte_string(b"opaque-register-data".to_vec()),

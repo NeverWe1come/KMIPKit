@@ -251,7 +251,9 @@ interpreta los bytes de datos.
 Si no se selecciona un contexto, Register usa el tratamiento opaco genérico.
 Así, los objetos opacos que no representan material criptográfico no necesitan
 atributos criptográficos. El llamador también puede seleccionar
-`OpaqueObjectContext::Generic` explícitamente. Para tratar el objeto como
+`OpaqueObjectContext::Generic` explícitamente. El ejemplo usa `0x80000001`, un
+valor del rango de extensiones de OASIS (§11.35, Tabla 469); cada aplicación
+debe usar el valor asignado a su extensión. Para tratar el objeto como
 material criptográfico administrado durante Register, selecciona
 `ManagedCryptographicObject` y proporciona directamente los atributos
 `Cryptographic Usage Mask`, `Cryptographic Algorithm` y
@@ -272,7 +274,7 @@ fn tagged_item(tag: u32, value: Value) -> Result<Item, Box<dyn Error>> {
 
 fn opaque_object() -> Result<Item, Box<dyn Error>> {
     let mut opaque = Structure::new();
-    opaque.try_push(tagged_item(0x0042_0059, Value::enumeration(1))?)?;
+    opaque.try_push(tagged_item(0x0042_0059, Value::enumeration(0x8000_0001))?)?;
     opaque.try_push(tagged_item(
         0x0042_005a,
         Value::byte_string(vec![0x01, 0x02]),

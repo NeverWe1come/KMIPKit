@@ -10,7 +10,7 @@ fn tagged_item(tag: u32, value: Value) -> Result<Item, Box<dyn Error>> {
 
 fn opaque_object() -> Result<Item, Box<dyn Error>> {
     let mut opaque = Structure::new();
-    opaque.try_push(tagged_item(0x0042_0059, Value::enumeration(1))?)?;
+    opaque.try_push(tagged_item(0x0042_0059, Value::enumeration(0x8000_0001))?)?;
     opaque.try_push(tagged_item(
         0x0042_005a,
         Value::byte_string(vec![0x01, 0x02]),

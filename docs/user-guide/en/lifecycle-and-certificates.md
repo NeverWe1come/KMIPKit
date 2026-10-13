@@ -248,8 +248,10 @@ does not inspect or interpret the data bytes.
 
 With no context selector, Register uses generic opaque handling. This keeps
 non-cryptographic Opaque Objects free of cryptographic attribute requirements.
-The caller may also select `OpaqueObjectContext::Generic` explicitly. To treat
-the object as managed cryptographic material for Register, select
+The caller may also select `OpaqueObjectContext::Generic` explicitly. The
+example uses `0x80000001`, a value in the OASIS extension range from §11.35,
+Table 469; an application should use the value assigned to its extension. To
+treat the object as managed cryptographic material for Register, select
 `ManagedCryptographicObject`; supply direct `Cryptographic Usage Mask`,
 `Cryptographic Algorithm`, and `Cryptographic Length` attributes. Algorithm
 and Length must appear together. The Opaque Object has no Key Block, so its
@@ -268,7 +270,7 @@ fn tagged_item(tag: u32, value: Value) -> Result<Item, Box<dyn Error>> {
 
 fn opaque_object() -> Result<Item, Box<dyn Error>> {
     let mut opaque = Structure::new();
-    opaque.try_push(tagged_item(0x0042_0059, Value::enumeration(1))?)?;
+    opaque.try_push(tagged_item(0x0042_0059, Value::enumeration(0x8000_0001))?)?;
     opaque.try_push(tagged_item(
         0x0042_005a,
         Value::byte_string(vec![0x01, 0x02]),

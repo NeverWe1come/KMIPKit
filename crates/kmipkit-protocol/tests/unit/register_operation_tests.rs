@@ -67,7 +67,7 @@ fn opaque_object_with_data_value(data_value: Vec<u8>) -> Item {
     item(
         OPAQUE_OBJECT,
         Value::structure(structure([
-            item(OPAQUE_DATA_TYPE, Value::enumeration(1)),
+            item(OPAQUE_DATA_TYPE, Value::enumeration(0x8000_0001)),
             item(OPAQUE_DATA_VALUE, Value::byte_string(data_value)),
         ])),
     )
@@ -162,7 +162,7 @@ fn opaque_object_defaults_to_generic_context_and_uses_table4_structure() {
         item(
             OPAQUE_OBJECT,
             Value::structure(structure([
-                item(OPAQUE_DATA_TYPE, Value::enumeration(1)),
+                item(OPAQUE_DATA_TYPE, Value::enumeration(0x8000_0001)),
                 item(
                     OPAQUE_DATA_VALUE,
                     Value::byte_string(vec![0x00, 0x80, 0xff]),
@@ -399,7 +399,7 @@ fn opaque_object_requires_the_opaque_object_tag_and_structure_value() {
     let wrong_tag = item(
         UNKNOWN_VENDOR_TAG,
         Value::structure(structure([
-            item(OPAQUE_DATA_TYPE, Value::enumeration(1)),
+            item(OPAQUE_DATA_TYPE, Value::enumeration(0x8000_0001)),
             item(OPAQUE_DATA_VALUE, Value::byte_string(vec![0x11])),
         ])),
     );
@@ -427,7 +427,10 @@ fn opaque_object_requires_typed_table4_data_type_and_data_value_children() {
         item(OPAQUE_OBJECT, Value::structure(structure([]))),
         item(
             OPAQUE_OBJECT,
-            Value::structure(structure([item(OPAQUE_DATA_TYPE, Value::enumeration(1))])),
+            Value::structure(structure([item(
+                OPAQUE_DATA_TYPE,
+                Value::enumeration(0x8000_0001),
+            )])),
         ),
         item(
             OPAQUE_OBJECT,
@@ -446,7 +449,7 @@ fn opaque_object_requires_typed_table4_data_type_and_data_value_children() {
         item(
             OPAQUE_OBJECT,
             Value::structure(structure([
-                item(OPAQUE_DATA_TYPE, Value::enumeration(1)),
+                item(OPAQUE_DATA_TYPE, Value::enumeration(0x8000_0001)),
                 item(
                     OPAQUE_DATA_VALUE,
                     Value::text_string("not-bytes".to_owned()),
@@ -469,7 +472,8 @@ fn opaque_object_requires_typed_table4_data_type_and_data_value_children() {
 #[test]
 fn opaque_object_preserves_future_type_unknown_children_attribute_order_and_data_bytes() {
     // OASIS KMIP v2.1 §2.3, Table 4 defines the required child encodings;
-    // §11.34, Table 468 assigns Object Type value 8. Opaque Data Value stays opaque.
+    // §11.34, Table 468 assigns Object Type value 8; §11.35, Table 469 reserves
+    // 8XXXXXXX for Opaque Data Type extensions. Opaque Data Value stays opaque.
     let opaque_bytes = vec![0x00, 0xff, 0x80, 0x42, 0x00, 0x7f];
     let attributes = attrs([
         item(UNKNOWN_VENDOR_TAG, Value::integer(-17)),
@@ -484,7 +488,7 @@ fn opaque_object_preserves_future_type_unknown_children_attribute_order_and_data
         item(
             OPAQUE_OBJECT,
             Value::structure(structure([
-                item(OPAQUE_DATA_TYPE, Value::enumeration(0xf123_4567)),
+                item(OPAQUE_DATA_TYPE, Value::enumeration(0x8f23_4567)),
                 item(UNKNOWN_VENDOR_TAG, Value::integer(-23)),
                 item(OPAQUE_DATA_VALUE, Value::byte_string(opaque_bytes.clone())),
             ])),
@@ -534,7 +538,7 @@ fn opaque_object_preserves_future_type_unknown_children_attribute_order_and_data
             [OPAQUE_DATA_TYPE, UNKNOWN_VENDOR_TAG, OPAQUE_DATA_VALUE]
         );
         assert!(
-            children[0].with_value(|value| matches!(value, ValueView::Enumeration(0xf123_4567)))
+            children[0].with_value(|value| matches!(value, ValueView::Enumeration(0x8f23_4567)))
         );
         assert!(children[1].with_value(|value| matches!(value, ValueView::Integer(-23))));
         assert!(children[2].with_value(
