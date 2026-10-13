@@ -672,6 +672,7 @@ const SECRET_DATA_TYPE: u32 = 0x0042_0086;
 const KEY_BLOCK: u32 = 0x0042_0040;
 const KEY_VALUE: u32 = 0x0042_0045;
 const KEY_WRAPPING_DATA: u32 = 0x0042_0046;
+const WRAPPING_METHOD: u32 = 0x0042_009E;
 const ENCRYPTION_KEY_INFORMATION: u32 = 0x0042_0036;
 const MAC_SIGNATURE_KEY_INFORMATION: u32 = 0x0042_004E;
 const CREATE_KEY_PAIR_OPERATION: u32 = 0x0000_0002;
@@ -892,6 +893,13 @@ fn key_block_preserves_wrapping(key_block: &StructureView<'_>) -> bool {
 }
 
 fn key_wrapping_data_has_key_information(data: &StructureView<'_>) -> bool {
+    let FieldPresence::Unique(wrapping_method) = field_presence(data, WRAPPING_METHOD) else {
+        return false;
+    };
+    if !wrapping_method.with_value(|value| matches!(value, ValueView::Enumeration(_))) {
+        return false;
+    }
+
     let mut has_key_information = false;
     for tag in [ENCRYPTION_KEY_INFORMATION, MAC_SIGNATURE_KEY_INFORMATION] {
         match field_presence(data, tag) {
