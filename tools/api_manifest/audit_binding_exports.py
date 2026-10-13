@@ -588,7 +588,7 @@ def inventory_python_sources(sources: dict[str, str], package: str = "python-kmi
             if (module, name) not in definitions:
                 issues.append({"packageId": package, "exportName": f"{module}.{name}", "reason": "unresolved-python-export"})
     for (module, name), (source_module, source_name) in sorted(imported.items()):
-        if module not in public_modules:
+        if module not in public_modules or name.startswith("_"):
             continue
         if explicit_exports.get(module) is not None and name not in (explicit_exports.get(module) or []):
             continue
