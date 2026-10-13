@@ -11803,7 +11803,7 @@
       ],
       "exclusion_rationale": null,
       "role": "client",
-      "direction": "unclear",
+      "direction": "client_to_server",
       "scope_state": "client_1_0",
       "condition": "Only when client context treats the opaque object as a Managed Cryptographic Object."
     },
@@ -11824,7 +11824,7 @@
       ],
       "exclusion_rationale": null,
       "role": "client",
-      "direction": "unclear",
+      "direction": "client_to_server",
       "scope_state": "client_1_0",
       "condition": null
     },
@@ -61448,12 +61448,18 @@
       "parent_element_ids": [
         "KMIPKIT-ELEM-OBJECT-STRUCTURE-OPAQUE-OBJECT"
       ],
-      "requirement_ids": [],
+      "requirement_ids": [
+        "KMIPKIT-REQ-SPEC-2.3-003"
+      ],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0044",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/register.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/register_operation_tests.rs"
+      ],
       "source_encoding": "Enumeration",
       "source_requiredness": "Yes"
     },
@@ -61472,12 +61478,18 @@
       "parent_element_ids": [
         "KMIPKIT-ELEM-OBJECT-STRUCTURE-OPAQUE-OBJECT"
       ],
-      "requirement_ids": [],
+      "requirement_ids": [
+        "KMIPKIT-REQ-SPEC-2.3-003"
+      ],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0044",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/register.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/register_operation_tests.rs"
+      ],
       "source_encoding": "Byte String",
       "source_requiredness": "Yes"
     },
@@ -85973,19 +85985,27 @@
       "subject": "Opaque Object attribute handling",
       "summary": "An Opaque Object may be treated as a Managed Cryptographic Object, depending on client context; in that case the client handles attributes using that model.",
       "role": "client",
-      "direction": "unclear",
+      "direction": "client_to_server",
       "condition": "Only when client context treats the opaque object as a Managed Cryptographic Object.",
       "scope_state": "client_1_0",
-      "element_ids": [],
+      "element_ids": [
+        "KMIPKIT-ELEM-OP-C2S-REGISTER"
+      ],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0044",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/register.rs",
+        "crates/kmipkit-client/src/execute.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/register_operation_tests.rs",
+        "crates/kmipkit-client/tests/unit/register_execution_tests.rs"
+      ],
       "negative_verification_required": false,
       "decision_id": null,
-      "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
+      "status": "verified",
+      "review_note": "No requirement-specific official Test Cases ID maps to this clause in the pinned OASIS source. Project tests verify the cited normative requirement; no official-case pass is claimed."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-2.3-003",
@@ -86001,21 +86021,31 @@
       "source_keyword": "REQUIRED",
       "normative_strength": "mandatory",
       "subject": "Opaque Object",
-      "summary": "The Opaque Object encoding field is required.",
+      "summary": "The Opaque Object structure contains the required Opaque Data Type and Opaque Data Value children.",
       "role": "client",
-      "direction": "unclear",
+      "direction": "client_to_server",
       "condition": null,
       "scope_state": "client_1_0",
-      "element_ids": [],
+      "element_ids": [
+        "KMIPKIT-ELEM-OP-C2S-REGISTER",
+        "KMIPKIT-ELEM-STRUCTURE-MEMBER-2-3-OPAQUE-OBJECT-OPAQUE-DATA-TYPE",
+        "KMIPKIT-ELEM-STRUCTURE-MEMBER-2-3-OPAQUE-OBJECT-OPAQUE-DATA-VALUE"
+      ],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0044",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/register.rs",
+        "crates/kmipkit-client/src/execute.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/register_operation_tests.rs",
+        "crates/kmipkit-client/tests/unit/register_execution_tests.rs"
+      ],
       "negative_verification_required": false,
       "decision_id": null,
-      "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
+      "status": "verified",
+      "review_note": "Table 4 marks Opaque Data Type and Opaque Data Value as REQUIRED=Yes; the enclosing Opaque Object row has a blank requiredness cell. No requirement-specific official Test Cases ID maps to this clause in the pinned OASIS source; project verification is derived from the cited normative source and no official-case pass is claimed."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-2.4-001-001",

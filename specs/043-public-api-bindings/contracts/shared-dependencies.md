@@ -30,18 +30,18 @@ The 0009 and 0010 gates are independent of the 56-operation `client_1_0` invento
 
 ## T013 audited declaration slice
 
-`reports/shared-rust-inventory-2026-10-12.json` is the generated T013 reconciliation artifact. It is derived from the complete Rust export audit and the manifest input; run `tools/api_manifest/audit_shared_rust_inventory.py` to regenerate it or add `--check` to verify it. The full audit observes 9,497 declarations across the five published Rust crates. T013 maps 134 declarations in total, including five transport declarations under the bounded ADR-0014 Rust-only exception. Every mapped declaration has an exact published Rust path, an Approved/Accepted shared owner, and linked owner requirements. This inventory records exact declaration ownership; it does not mark the capability as four-language verified before its parity tasks pass. Each crate's observed, mapped, and still-blocked counts are:
+`reports/shared-rust-inventory-2026-10-13.json` is the generated reconciliation artifact for the current manifest snapshot. It is derived from the complete Rust export audit and manifest input; run `tools/api_manifest/audit_shared_rust_inventory.py` to regenerate it or add `--check` to verify it. The full audit observes 9,525 declarations across the five published Rust crates. It maps 143 declarations, including five transport declarations under the bounded ADR-0014 Rust-only exception. Every mapped declaration has an exact published Rust path, an Approved/Accepted owner, and linked owner requirements. This inventory records exact declaration ownership; it does not mark a capability four-language verified before its parity tasks pass. Each crate's observed, mapped, and still-blocked counts are:
 
 | Published Rust crate | Observed | Mapped | Blocked |
 | --- | ---: | ---: | ---: |
 | `kmipkit-ttlv` | 331 | 36 | 295 |
-| `kmipkit-protocol` | 5,845 | 61 | 5,784 |
+| `kmipkit-protocol` | 5,871 | 67 | 5,804 |
 | `kmipkit-transport` | 365 | 5 | 360 |
-| `kmipkit-client` | 1,031 | 23 | 1,008 |
-| `kmipkit` facade | 1,925 | 9 | 1,916 |
-| **Total** | **9,497** | **134** | **9,363** |
+| `kmipkit-client` | 1,032 | 24 | 1,008 |
+| `kmipkit` facade | 1,926 | 11 | 1,915 |
+| **Total** | **9,525** | **143** | **9,382** |
 
-The approved shared capabilities mapped by this slice are generic TTLV model (KMIPKIT-0004, 30 Rust declarations), TTLV wire codec (KMIPKIT-0005, 6), vendor extension registry (KMIPKIT-0012, 83), Discover Versions request-item construction (KMIPKIT-0007, 1), and FFI runtime metadata (KMIPKIT-0043, 9). Five transport declarations retain the sole `rust-only-adr` classification under ADR-0014. Capability mappings are derived from retained declaration rows and checked against the exact published Rust exports. The Discover Versions request-item builder is mapped in Rust, C, Java, and Python; this does not implement or unblock the operation's execution and response API. No other declaration is classified Rust-only.
+The approved shared capabilities mapped by this slice are generic TTLV model (KMIPKIT-0004, 30 Rust declarations), TTLV wire codec (KMIPKIT-0005, 6), vendor extension registry (KMIPKIT-0012, 83), Discover Versions request-item construction (KMIPKIT-0007, 1), FFI runtime metadata (KMIPKIT-0043, 10), and opaque Register context (KMIPKIT-0044, 8). Five transport declarations retain the sole `rust-only-adr` classification under ADR-0014. Capability mappings are derived from retained declaration rows and checked against exact published Rust exports. The Discover Versions request-item builder is mapped in Rust, C, Java, and Python; this does not implement or unblock the operation's execution and response API. Opaque Register context remains declared, not parity-verified. No other declaration is classified Rust-only.
 
 The `StructureView` type, its four-language view wrappers, and their handle/resource release methods are attributed to generic TTLV model requirements KMIPKIT-0004-FR-006, FR-009, FR-010, and FR-012. Registry recognition functions that return a view remain owned by KMIPKIT-0012. `ClientBatchItem` remains owned by KMIPKIT-0012 for extension attachment and inspection, with KMIPKIT-0007-FR-001 recorded for its typed request-item base contract. Its four Discover Versions builder exports have their own KMIPKIT-0007-owned capability and requirements FR-001/FR-002.
 

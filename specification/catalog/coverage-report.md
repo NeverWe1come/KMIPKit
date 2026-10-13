@@ -63,10 +63,10 @@ This report records inventory coverage and evidence state. It does not claim pro
 | Scope | profile\_conditional | 194 |
 | Scope | server\_only | 21 |
 | Direction | both | 14 |
-| Direction | client\_to\_server | 369 |
+| Direction | client\_to\_server | 371 |
 | Direction | not\_applicable | 7 |
 | Direction | server\_to\_client | 19 |
-| Direction | unclear | 158 |
+| Direction | unclear | 156 |
 
 ## Tag allocation and ranges
 
@@ -748,8 +748,6 @@ Every row summarizes audited candidate locators by their pinned source section. 
 | KMIPKIT-REQ-SPEC-2.1-001 | mandatory | client\_1\_0 | KMIPKIT-SRC-spec §2.1 |
 | KMIPKIT-REQ-SPEC-2.2-001 | mandatory | client\_1\_0 | KMIPKIT-SRC-spec §2.2 |
 | KMIPKIT-REQ-SPEC-2.3-001 | permission\_or\_optional | client\_1\_0 | KMIPKIT-SRC-spec §2.3 |
-| KMIPKIT-REQ-SPEC-2.3-002 | permission\_or\_optional | client\_1\_0 | KMIPKIT-SRC-spec §2.3 |
-| KMIPKIT-REQ-SPEC-2.3-003 | mandatory | client\_1\_0 | KMIPKIT-SRC-spec §2.3 |
 | KMIPKIT-REQ-SPEC-2.4-001-001 | permission\_or\_optional | client\_1\_0 | KMIPKIT-SRC-spec §2.4 |
 | KMIPKIT-REQ-SPEC-2.4-001-002 | permission\_or\_optional | client\_1\_0 | KMIPKIT-SRC-spec §2.4 |
 | KMIPKIT-REQ-SPEC-2.4-002-001 | recommended | client\_1\_0 | KMIPKIT-SRC-spec §2.4 |
@@ -1156,8 +1154,8 @@ Every row summarizes audited candidate locators by their pinned source section. 
 | KMIPKIT-REQ-SPEC-2.1-001 | No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing. | KMIPKIT-SRC-spec §2.1 |
 | KMIPKIT-REQ-SPEC-2.2-001 | No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing. | KMIPKIT-SRC-spec §2.2 |
 | KMIPKIT-REQ-SPEC-2.3-001 | No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing. | KMIPKIT-SRC-spec §2.3 |
-| KMIPKIT-REQ-SPEC-2.3-002 | No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing. | KMIPKIT-SRC-spec §2.3 |
-| KMIPKIT-REQ-SPEC-2.3-003 | No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing. | KMIPKIT-SRC-spec §2.3 |
+| KMIPKIT-REQ-SPEC-2.3-002 | No requirement-specific official Test Cases ID maps to this clause in the pinned OASIS source. Project tests verify the cited normative requirement; no official-case pass is claimed. | KMIPKIT-SRC-spec §2.3 |
+| KMIPKIT-REQ-SPEC-2.3-003 | Table 4 marks Opaque Data Type and Opaque Data Value as REQUIRED=Yes; the enclosing Opaque Object row has a blank requiredness cell. No requirement-specific official Test Cases ID maps to this clause in the pinned OASIS source; project verification is derived from the cited normative source and no official-case pass is claimed. | KMIPKIT-SRC-spec §2.3 |
 | KMIPKIT-REQ-SPEC-2.4-001-001 | No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing. | KMIPKIT-SRC-spec §2.4 |
 | KMIPKIT-REQ-SPEC-2.4-001-002 | No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing. | KMIPKIT-SRC-spec §2.4 |
 | KMIPKIT-REQ-SPEC-2.4-002-001 | No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing. | KMIPKIT-SRC-spec §2.4 |
@@ -2356,8 +2354,6 @@ Every row summarizes audited candidate locators by their pinned source section. 
 | KMIPKIT-ELEM-STRUCTURE-MEMBER-2-1-CERTIFICATE-CERTIFICATE-VALUE | Certificate Value | structure\_member | both | client\_1\_0 |  |  | KMIPKIT-SRC-spec §2.1 |
 | KMIPKIT-ELEM-STRUCTURE-MEMBER-2-2-CERTIFICATE-REQUEST-CERTIFICATE-REQUEST-TYPE | Certificate Request Type | structure\_member | both | client\_1\_0 |  |  | KMIPKIT-SRC-spec §2.2 |
 | KMIPKIT-ELEM-STRUCTURE-MEMBER-2-2-CERTIFICATE-REQUEST-CERTIFICATE-REQUEST-VALUE | Certificate Request Value | structure\_member | both | client\_1\_0 |  |  | KMIPKIT-SRC-spec §2.2 |
-| KMIPKIT-ELEM-STRUCTURE-MEMBER-2-3-OPAQUE-OBJECT-OPAQUE-DATA-TYPE | Opaque Data Type | structure\_member | both | client\_1\_0 |  |  | KMIPKIT-SRC-spec §2.3 |
-| KMIPKIT-ELEM-STRUCTURE-MEMBER-2-3-OPAQUE-OBJECT-OPAQUE-DATA-VALUE | Opaque Data Value | structure\_member | both | client\_1\_0 |  |  | KMIPKIT-SRC-spec §2.3 |
 | KMIPKIT-ELEM-STRUCTURE-MEMBER-2-4-PGP-KEY-KEY-BLOCK | Key Block | structure\_member | both | client\_1\_0 |  |  | KMIPKIT-SRC-spec §2.4 |
 | KMIPKIT-ELEM-STRUCTURE-MEMBER-2-4-PGP-KEY-PGP-KEY-VERSION | PGP Key Version | structure\_member | both | client\_1\_0 |  |  | KMIPKIT-SRC-spec §2.4 |
 | KMIPKIT-ELEM-STRUCTURE-MEMBER-2-5-PRIVATE-KEY-KEY-BLOCK | Key Block | structure\_member | both | client\_1\_0 |  |  | KMIPKIT-SRC-spec §2.5 |

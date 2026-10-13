@@ -3,6 +3,7 @@ package org.kmipkit.extensions;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.kmipkit.InvalidInputException;
 import org.kmipkit.NativeExtensionRegistry;
 import org.kmipkit.internal.NativeHandle;
 
@@ -20,6 +21,16 @@ public final class ClientBatchItem implements AutoCloseable {
     public static ClientBatchItem discoverVersions() {
         NativeExtensionRegistry.ensureLoaded();
         return new ClientBatchItem(NativeExtensionRegistry.clientBatchItemDiscoverVersions(), List.of());
+    }
+
+    /** Creates a Register request batch item and consumes the request handle. */
+    public static ClientBatchItem register(RegisterRequest request) {
+        NativeExtensionRegistry.ensureLoaded();
+        if (request == null) {
+            throw new InvalidInputException("Register request is invalid");
+        }
+        long consumed = NativeHandle.transferAll(request.nativeHandleOwner())[0];
+        return new ClientBatchItem(NativeExtensionRegistry.clientBatchItemRegister(consumed), List.of());
     }
 
     public ClientBatchItem withExtension(ClientRequestMessageExtension extension) {

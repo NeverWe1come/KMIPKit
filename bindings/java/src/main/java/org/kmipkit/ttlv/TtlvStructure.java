@@ -36,7 +36,8 @@ public final class TtlvStructure implements AutoCloseable {
         return handle.get();
     }
 
-    NativeHandle nativeHandleOwner() {
+    /** Internal lifecycle bridge for KMIPKit's typed request constructors. */
+    public NativeHandle nativeHandleOwner() {
         return handle;
     }
     @Override

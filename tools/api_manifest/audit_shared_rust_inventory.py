@@ -47,7 +47,7 @@ RUST_ONLY_DECLARATIONS = {
     "kmipkit_transport::TransportResponse::as_bytes",
 }
 DRAFT_SPEC_IDS = {"KMIPKIT-0009", "KMIPKIT-0010"}
-REPORT_PATH = Path("specs/043-public-api-bindings/reports/shared-rust-inventory-2026-10-12.json")
+REPORT_PATH = Path("specs/043-public-api-bindings/reports/shared-rust-inventory-2026-10-13.json")
 _RUST_AUDIT_SPEC = importlib.util.spec_from_file_location(
     "audit_rust_exports", Path(__file__).with_name("audit_rust_exports.py")
 )
@@ -63,22 +63,63 @@ def _export_key(row: dict[str, Any]) -> tuple[str, str]:
     return row.get("packageId"), _RUST_AUDIT._canonical_export_name(row.get("exportName", ""))
 
 
-def _read_approved_owner(owner_spec_id: str, root: Path) -> set[str]:
-    spec_dir = next(
-        (path for path in (root / "specs").iterdir() if path.name.startswith(owner_spec_id[9:])),
-        None,
-    )
-    if spec_dir is None:
-        raise InventoryError(f"approved Rust declaration owner has no spec directory: {owner_spec_id}")
-    spec_file = spec_dir / "spec.md"
+def _read_approved_owner(
+    owner_spec_id: str,
+    root: Path,
+    approval_path: str | None = None,
+) -> set[str]:
+    root = root.resolve()
+    spec_file: Path | None = None
+    if approval_path is not None:
+        candidate = (root / approval_path).resolve()
+        try:
+            candidate.relative_to(root)
+        except ValueError as error:
+            raise InventoryError("approved Rust declaration owner path escapes the repository") from error
+        if candidate.is_file():
+            spec_file = candidate
+    else:
+        spec_dir = next(
+            (path for path in (root / "specs").iterdir() if path.name.startswith(owner_spec_id[9:])),
+            None,
+        )
+        if spec_dir is not None:
+            spec_file = spec_dir / "spec.md"
+        else:
+            owner_pattern = re.compile(
+                rf"(?:\*\*Feature Branch\*\*:\s*`feature/{re.escape(owner_spec_id)}(?:-|`)|"
+                rf"\b{re.escape(owner_spec_id)}-FR-\d{{3}}\b)"
+            )
+            matching_specs = [
+                path
+                for path in (root / "specs").glob("*/spec.md")
+                if owner_pattern.search(path.read_text(encoding="utf-8"))
+            ]
+            if len(matching_specs) == 1:
+                spec_file = matching_specs[0]
+    if spec_file is None:
+        raise InventoryError(f"approved Rust declaration owner has no spec document: {owner_spec_id}")
     text = spec_file.read_text(encoding="utf-8")
     status = re.search(r"^\*\*Status\*\*: *([^\r\n]+)", text, re.MULTILINE)
     if status is None or re.match(r"(?:Approved|Accepted)\b", status.group(1)) is None:
         raise InventoryError(f"Rust declaration owner is not formally Approved/Accepted: {owner_spec_id}")
-    return set(re.findall(r"\bKMIPKIT-\d{4}-FR-\d{3}\b", text))
+    owner_requirements = set(re.findall(rf"\b{re.escape(owner_spec_id)}-FR-\d{{3}}\b", text))
+    if not owner_requirements:
+        local_requirement_ids = re.findall(
+            r"^\s*-\s+\*\*FR-(\d{3})\*\*:", text, re.MULTILINE
+        )
+        owner_requirements = {
+            f"{owner_spec_id}-FR-{requirement_id}"
+            for requirement_id in local_requirement_ids
+        }
+    if not owner_requirements:
+        raise InventoryError(f"approved Rust declaration owner has no requirements: {owner_spec_id}")
+    return owner_requirements
 
 
-def _observed_exports(rust_report: dict[str, Any]) -> tuple[set[tuple[str, str]], int, int]:
+def _observed_exports(
+    rust_report: dict[str, Any],
+) -> tuple[set[tuple[str, str]], set[tuple[str, str]], int, int]:
     if rust_report.get("complete") is not True:
         raise InventoryError("Rust export audit is not complete")
     for field in (
@@ -94,15 +135,24 @@ def _observed_exports(rust_report: dict[str, Any]) -> tuple[set[tuple[str, str]]
     direct = rust_report.get("declarations")
     conditional = rust_report.get("conditionalDeclarations")
     matched = rust_report.get("matched")
-    if not isinstance(direct, list) or not isinstance(conditional, list) or not isinstance(matched, list):
+    excluded = rust_report.get("excluded")
+    if (
+        not isinstance(direct, list)
+        or not isinstance(conditional, list)
+        or not isinstance(matched, list)
+        or not isinstance(excluded, list)
+    ):
         raise InventoryError("Rust export audit is missing canonical declaration arrays")
     observed_keys = {_export_key(row) for row in [*direct, *conditional]}
     matched_keys = {_export_key(row) for row in matched}
-    if len(matched_keys) != len(matched) or matched_keys != observed_keys:
-        raise InventoryError("Rust export audit matched count differs from observed paths")
+    excluded_keys = {_export_key(row) for row in excluded}
+    if len(matched_keys) != len(matched) or len(excluded_keys) != len(excluded):
+        raise InventoryError("Rust export audit has duplicate matched or excluded paths")
+    if matched_keys & excluded_keys or matched_keys | excluded_keys != observed_keys:
+        raise InventoryError("Rust export audit matched and excluded paths differ from observed paths")
     if rust_report.get("matchesManifest") is not True:
         raise InventoryError("Rust export audit did not reconcile the observed paths to the manifest")
-    return observed_keys, len(direct), len(conditional)
+    return observed_keys, excluded_keys, len(direct), len(conditional)
 
 
 def _verify_draft_gates(manifest: dict[str, Any]) -> dict[str, dict[str, int]]:
@@ -228,13 +278,23 @@ def build_inventory(
     if set(packages) != set(RUST_PACKAGES):
         raise InventoryError("public package inventory does not contain the exact five published Rust crates")
 
-    observed, direct_count, conditional_count = _observed_exports(rust_report)
+    observed, audited_exclusions, direct_count, conditional_count = _observed_exports(rust_report)
     _verify_ready_mapping_exports(manifest, rust_report)
     manifest_rows = [
         row for row in manifest.get("publicDeclarations", []) if row.get("packageId") in RUST_PACKAGES
     ]
     manifest_by_key = {_export_key(row): row for row in manifest_rows}
-    missing = observed - set(manifest_by_key)
+    approved_exclusion_rows = [
+        row for row in manifest.get("approvedExclusions", []) if row.get("packageId") in RUST_PACKAGES
+    ]
+    approved_exclusions = {_export_key(row) for row in approved_exclusion_rows}
+    if len(approved_exclusions) != len(approved_exclusion_rows):
+        raise InventoryError("approved Rust export exclusions contain duplicate exact paths")
+    if approved_exclusions != audited_exclusions:
+        raise InventoryError("Rust export audit exclusions differ from exact approved manifest exclusions")
+    if set(manifest_by_key) & approved_exclusions:
+        raise InventoryError("a Rust export is listed as both a public declaration and an approved exclusion")
+    missing = observed - set(manifest_by_key) - approved_exclusions
     if missing:
         package_id, export_name = sorted(missing)[0]
         raise InventoryError(f"observed Rust export is missing a manifest row: {package_id} {export_name}")
@@ -245,6 +305,8 @@ def build_inventory(
     mapped: list[dict[str, Any]] = []
     rust_only: list[dict[str, Any]] = []
     for key in sorted(observed):
+        if key in approved_exclusions:
+            continue
         declaration = manifest_by_key[key]
         if declaration.get("declarationState") not in {"declared", "verified"}:
             continue
@@ -263,7 +325,8 @@ def build_inventory(
                 for requirement_id in requirement_ids
                 if requirement_id.startswith(f"{owner_spec_id}-FR-")
             )
-            declared_owner_requirements = _read_approved_owner(owner_spec_id, root)
+            approved_path = capability.get("approvalEvidence", {}).get("path")
+            declared_owner_requirements = _read_approved_owner(owner_spec_id, root, approved_path)
             if not owner_requirements:
                 raise InventoryError(f"ready Rust declaration lacks owner requirements: {declaration['exportName']}")
             unknown = set(owner_requirements) - declared_owner_requirements
@@ -312,6 +375,7 @@ def build_inventory(
     draft_gates = _verify_draft_gates(manifest)
     blocked_rows = _blocked_unreconciled_rows(manifest)
     mapped_by_package = Counter(row["packageId"] for row in mapped)
+    excluded_by_package = Counter(package_id for package_id, _ in approved_exclusions)
     observed_by_package = Counter(package_id for package_id, _ in observed)
     crate_inventory = [
         {
@@ -319,18 +383,24 @@ def build_inventory(
             "crateName": package_id.removeprefix("rust-"),
             "observedDeclarationCount": observed_by_package[package_id],
             "mappedDeclarationCount": mapped_by_package[package_id],
-            "blockedDeclarationCount": observed_by_package[package_id] - mapped_by_package[package_id],
+            "excludedDeclarationCount": excluded_by_package[package_id],
+            "blockedDeclarationCount": (
+                observed_by_package[package_id]
+                - mapped_by_package[package_id]
+                - excluded_by_package[package_id]
+            ),
         }
         for package_id in RUST_PACKAGES
     ]
     return {
         "formatVersion": 1,
         "scope": "approved-shared-rust-api",
-        "source": "specs/043-public-api-bindings/reports/rust-export-report-2026-10-12.json",
+        "source": "specs/043-public-api-bindings/reports/rust-export-report-2026-10-13.json",
         "observedRustDeclarationCount": len(observed),
         "directRustDeclarationCount": direct_count,
         "conditionalRustDeclarationCount": conditional_count,
         "mappedRustDeclarationCount": len(mapped),
+        "approvedExcludedRustDeclarationCount": len(approved_exclusions),
         "crates": crate_inventory,
         "mappedDeclarations": mapped,
         "rustOnlyDeclarations": [
@@ -362,7 +432,7 @@ def main(argv: list[str] | None = None) -> int:
     root = args.repo_root.resolve()
     target = root / args.report
     manifest_path = root / "specification" / "api" / "public-api.json"
-    audit_path = root / "specs" / "043-public-api-bindings" / "reports" / "rust-export-report-2026-10-12.json"
+    audit_path = root / "specs" / "043-public-api-bindings" / "reports" / "rust-export-report-2026-10-13.json"
     try:
         manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
         rust_report = json.loads(audit_path.read_text(encoding="utf-8"))

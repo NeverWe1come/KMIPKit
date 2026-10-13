@@ -240,6 +240,101 @@ fn register_certificate(
 fn main() { let _example = register_certificate; }
 ```
 
+### Registrar un objeto opaco
+
+Un objeto opaco se envía como la `Structure` estándar de Opaque Object. Sus
+campos obligatorios son `Opaque Data Type`, de tipo Enumeration, y
+`Opaque Data Value`, de tipo Byte String. KMIPKit conserva los valores de
+Enumeration desconocidos y los campos no reconocidos; no inspecciona ni
+interpreta los bytes de datos.
+
+Si no se selecciona un contexto, Register usa el tratamiento opaco genérico.
+Así, los objetos opacos que no representan material criptográfico no necesitan
+atributos criptográficos. El llamador también puede seleccionar
+`OpaqueObjectContext::Generic` explícitamente. El ejemplo usa `0x80000001`, un
+valor del rango de extensiones de OASIS (§11.35, Tabla 469); cada aplicación
+debe usar el valor asignado a su extensión. Para tratar el objeto como
+material criptográfico administrado durante Register, selecciona
+`ManagedCryptographicObject` y proporciona directamente los atributos
+`Cryptographic Usage Mask`, `Cryptographic Algorithm` y
+`Cryptographic Length`. Algorithm y Length deben aparecer juntos. Opaque
+Object no contiene Key Block; por tanto, los atributos nunca se infieren de los
+bytes opacos.
+
+```rust,kmipkit-test
+use std::error::Error;
+
+use kmipkit_protocol::{AttributeSet, ObjectType, OpaqueObjectContext, RegisterRequest};
+use kmipkit_ttlv::{Item, RawTag, Structure, Value};
+
+fn tagged_item(tag: u32, value: Value) -> Result<Item, Box<dyn Error>> {
+    let tag = RawTag::new(tag)?.try_checked()?;
+    Ok(Item::new(tag, value)?)
+}
+
+fn opaque_object() -> Result<Item, Box<dyn Error>> {
+    let mut opaque = Structure::new();
+    opaque.try_push(tagged_item(0x0042_0059, Value::enumeration(0x8000_0001))?)?;
+    opaque.try_push(tagged_item(
+        0x0042_005a,
+        Value::byte_string(vec![0x01, 0x02]),
+    )?)?;
+    tagged_item(0x0042_005b, Value::structure(opaque))
+}
+
+fn generic_request() -> Result<RegisterRequest, Box<dyn Error>> {
+    Ok(RegisterRequest::new(
+        ObjectType::from_raw(8),
+        AttributeSet::new(),
+        opaque_object()?,
+    ))
+}
+
+fn managed_request() -> Result<RegisterRequest, Box<dyn Error>> {
+    let attributes = AttributeSet::try_new([
+        tagged_item(0x0042_002c, Value::integer(3))?,
+        tagged_item(0x0042_0028, Value::enumeration(3))?,
+        tagged_item(0x0042_002a, Value::integer(256))?,
+    ])?;
+    let request = RegisterRequest::new(ObjectType::from_raw(8), attributes, opaque_object()?)
+        .with_opaque_object_context(OpaqueObjectContext::ManagedCryptographicObject);
+    Ok(request)
+}
+
+fn main() -> Result<(), Box<dyn Error>> {
+    let generic = generic_request()?;
+    let _generic_payload = generic.into_ttlv_payload()?;
+
+    let managed = managed_request()?;
+    let _managed_payload = managed.into_ttlv_payload()?;
+
+    println!("built generic and managed-context Register payloads");
+    Ok(())
+}
+```
+
+Este ejemplo completo se comprueba en CI: [register_opaque_context.rs](../../../crates/kmipkit-protocol/examples/register_opaque_context.rs).
+
+Los adaptadores exponen las mismas opciones mediante
+`RegisterRequest.create(...).withOpaqueObjectContext(...)` en Java y
+`RegisterRequest.create(...).with_opaque_object_context(...)` en Python. Ambos
+selectores consumen el handle anterior y devuelven uno nuevo. Crear la petición
+consume los handles de atributos y del objeto; añadirla a un
+`ClientBatchItem` consume la petición. Cierra toda petición que no transfieras a
+un lote (`RegisterRequest.close()` en Java/Python, o
+`kmipkit_register_request_release` en C). Desde C se selecciona el contexto con
+`kmipkit_register_request_with_opaque_object_context` y se crea el elemento de
+lote ejecutable con `kmipkit_client_batch_item_register`.
+
+El selector de contexto es metadato local: no añade campos KMIP ni modifica la
+estructura normal de Register. Las peticiones locales inválidas se rechazan
+durante la preparación, con estado de entrega `NotSent` y antes de que el
+transporte escriba bytes. El servidor decide si acepta el objeto y sus
+atributos; este contexto no autoriza operaciones criptográficas posteriores.
+Estas reglas se trazan a OASIS KMIP 2.1 §2.3/Tabla 4, §6.1.43/Tablas 291 y 293,
+y §11.34/Tabla 468 (`KMIPKIT-REQ-SPEC-2.3-002` y
+`KMIPKIT-REQ-SPEC-2.3-003`).
+
 ## Revoke
 
 Revoke envía un motivo explícito. El mensaje opcional se reserva para el

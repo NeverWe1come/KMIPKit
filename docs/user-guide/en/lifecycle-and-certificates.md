@@ -239,6 +239,98 @@ fn register_certificate(
 fn main() { let _example = register_certificate; }
 ```
 
+### Registering an Opaque Object
+
+An Opaque Object is sent as the standard Opaque Object `Structure`. Its required
+`Opaque Data Type` is an Enumeration and its required `Opaque Data Value` is a
+Byte String. KMIPKit preserves unknown Enumeration values and child items; it
+does not inspect or interpret the data bytes.
+
+With no context selector, Register uses generic opaque handling. This keeps
+non-cryptographic Opaque Objects free of cryptographic attribute requirements.
+The caller may also select `OpaqueObjectContext::Generic` explicitly. The
+example uses `0x80000001`, a value in the OASIS extension range from §11.35,
+Table 469; an application should use the value assigned to its extension. To
+treat the object as managed cryptographic material for Register, select
+`ManagedCryptographicObject`; supply direct `Cryptographic Usage Mask`,
+`Cryptographic Algorithm`, and `Cryptographic Length` attributes. Algorithm
+and Length must appear together. The Opaque Object has no Key Block, so its
+opaque bytes are never used to infer those attributes.
+
+```rust,kmipkit-test
+use std::error::Error;
+
+use kmipkit_protocol::{AttributeSet, ObjectType, OpaqueObjectContext, RegisterRequest};
+use kmipkit_ttlv::{Item, RawTag, Structure, Value};
+
+fn tagged_item(tag: u32, value: Value) -> Result<Item, Box<dyn Error>> {
+    let tag = RawTag::new(tag)?.try_checked()?;
+    Ok(Item::new(tag, value)?)
+}
+
+fn opaque_object() -> Result<Item, Box<dyn Error>> {
+    let mut opaque = Structure::new();
+    opaque.try_push(tagged_item(0x0042_0059, Value::enumeration(0x8000_0001))?)?;
+    opaque.try_push(tagged_item(
+        0x0042_005a,
+        Value::byte_string(vec![0x01, 0x02]),
+    )?)?;
+    tagged_item(0x0042_005b, Value::structure(opaque))
+}
+
+fn generic_request() -> Result<RegisterRequest, Box<dyn Error>> {
+    Ok(RegisterRequest::new(
+        ObjectType::from_raw(8),
+        AttributeSet::new(),
+        opaque_object()?,
+    ))
+}
+
+fn managed_request() -> Result<RegisterRequest, Box<dyn Error>> {
+    let attributes = AttributeSet::try_new([
+        tagged_item(0x0042_002c, Value::integer(3))?,
+        tagged_item(0x0042_0028, Value::enumeration(3))?,
+        tagged_item(0x0042_002a, Value::integer(256))?,
+    ])?;
+    let request = RegisterRequest::new(ObjectType::from_raw(8), attributes, opaque_object()?)
+        .with_opaque_object_context(OpaqueObjectContext::ManagedCryptographicObject);
+    Ok(request)
+}
+
+fn main() -> Result<(), Box<dyn Error>> {
+    let generic = generic_request()?;
+    let _generic_payload = generic.into_ttlv_payload()?;
+
+    let managed = managed_request()?;
+    let _managed_payload = managed.into_ttlv_payload()?;
+
+    println!("built generic and managed-context Register payloads");
+    Ok(())
+}
+```
+
+This complete example is checked in CI: [register_opaque_context.rs](../../../crates/kmipkit-protocol/examples/register_opaque_context.rs).
+
+The language bindings expose the same context choices through
+`RegisterRequest.create(...).withOpaqueObjectContext(...)` in Java and
+`RegisterRequest.create(...).with_opaque_object_context(...)` in Python. Both
+selectors consume the previous request handle and return a new one. Creating a
+request consumes its attribute and object handles; adding it to a
+`ClientBatchItem` consumes the request. Close any request that is not transferred
+to a batch (`RegisterRequest.close()` in Java/Python, or
+`kmipkit_register_request_release` in C). C callers can select a context with
+`kmipkit_register_request_with_opaque_object_context` and use
+`kmipkit_client_batch_item_register` to build the executable batch item.
+
+The context selector is local metadata: it does not add a KMIP wire field or
+change the normal Register payload. Invalid local requests fail during
+preflight with delivery state `NotSent`, before the transport writes bytes.
+The server remains authoritative for accepting the object and its attributes;
+selecting this context does not authorize later cryptographic operations.
+These rules trace to OASIS KMIP 2.1 §2.3/Table 4, §6.1.43/Tables 291 and 293,
+and §11.34/Table 468 (`KMIPKIT-REQ-SPEC-2.3-002` and
+`KMIPKIT-REQ-SPEC-2.3-003`).
+
 ## Revoke
 
 Revoke sends an explicit reason. The optional message is for audit logging;

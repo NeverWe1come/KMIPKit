@@ -22,6 +22,12 @@ set_target_properties(kmipkit_extension_registry_consumer PROPERTIES
     BUILD_RPATH "${KMIPKIT_TARGET_DIR}"
 )
 
+add_library(kmipkit_register_opaque_context_consumer OBJECT
+    tests/register_opaque_context.c
+)
+target_compile_features(kmipkit_register_opaque_context_consumer PRIVATE c_std_11)
+target_include_directories(kmipkit_register_opaque_context_consumer PRIVATE include)
+
 add_executable(kmipkit_vendor_extension_example examples/vendor_extension.c)
 target_compile_features(kmipkit_vendor_extension_example PRIVATE c_std_11)
 target_include_directories(kmipkit_vendor_extension_example PRIVATE
