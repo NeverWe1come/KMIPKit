@@ -27987,7 +27987,7 @@
     },
     {
       "inclusion_id": "KMIPKIT-INCLUSION-PROF-TAPE-LIBRARY-TEST-CASES",
-      "source_clause_id": "KMIPKIT-CLAUSE-PROF-6.28-007",
+      "source_clause_id": "KMIPKIT-CLAUSE-PROF-6.28-006",
       "included_source_id": "KMIPKIT-SRC-profiles",
       "included_section": "5.12.6"
     }
