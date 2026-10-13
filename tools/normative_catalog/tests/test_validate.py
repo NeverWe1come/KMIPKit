@@ -16681,6 +16681,55 @@ class CatalogValidationTests(unittest.TestCase):
             "a positive test without a linked typed response rule must remain ineligible",
         )
 
+    def test_conditional_client_response_optional_evidence_is_not_request_only(self) -> None:
+        """A profile-conditional decoder capability may be evidenced on the response path."""
+        requirement_id = "KMIPKIT-REQ-SPEC-4.63-004"
+        source_clause_id = "KMIPKIT-CLAUSE-SPEC-4.63-004"
+        test_id = (
+            "crates/kmipkit-protocol/tests/support/profile_unit.rs::"
+            "profile_maps_client_get_attributes_response_x509_values"
+        )
+        requirement = {
+            "requirement_id": requirement_id,
+            "source_clause_ids": [source_clause_id],
+            "verification_refs": [test_id],
+            "scope_state": "profile_conditional",
+            "status": "scoped_verified",
+            "role": "client",
+            "direction": "server_to_client",
+            "condition": "The client supports the X.509 Certificate Subject attribute.",
+        }
+        mapping = {
+            "requirement_id": requirement_id,
+            "source_clause_id": source_clause_id,
+            "verification_category": "OptionalCapability",
+            "evaluator_present": True,
+            "test_kind": "OptionalCapabilityUsable",
+            "test_id": test_id,
+        }
+        args = (
+            requirement,
+            {source_clause_id},
+            [mapping],
+            ["crates/kmipkit-protocol/src/profile.rs::client_response_preserves_x509_optional_values"],
+            [test_id],
+        )
+
+        self.assertTrue(
+            _has_usable_profile_optional_evidence(*args),
+            "conditional response evidence should remain directionally accurate and rule-backed",
+        )
+        self.assertFalse(
+            _has_usable_profile_optional_evidence(
+                requirement,
+                {source_clause_id},
+                [],
+                args[3],
+                [test_id],
+            ),
+            "a response test without a linked typed rule cannot close the conditional capability",
+        )
+
     def test_wrapped_secret_data_import_has_scoped_implementation_and_positive_test_evidence(
         self,
     ) -> None:
