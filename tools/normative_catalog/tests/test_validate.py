@@ -555,14 +555,14 @@ def _has_profile_rule_implementation(resolvable_implementation_refs: list[str]) 
     )
 
 
-def _has_usable_conditional_client_request_evidence(
+def _has_usable_conditional_client_exchange_evidence(
     requirement: dict[str, Any],
     conditional_source_clause_ids: set[str],
     typed_rule_mappings: list[dict[str, Any]],
     resolvable_implementation_refs: list[str],
     usable_positive_tests: list[str],
 ) -> bool:
-    """Require an exact typed source rule and named request test for conditional capability evidence."""
+    """Require an exact typed source rule and named test for conditional client capability evidence."""
     condition = requirement.get("condition")
     has_source_condition = isinstance(condition, str) and bool(condition.strip())
     has_typed_rule_implementation = _has_profile_rule_implementation(
@@ -598,7 +598,7 @@ def _has_usable_profile_optional_evidence(
     if not usable_positive_tests:
         return False
     if requirement["scope_state"] == "profile_conditional":
-        return _has_usable_conditional_client_request_evidence(
+        return _has_usable_conditional_client_exchange_evidence(
             requirement,
             conditional_source_clause_ids,
             typed_rule_mappings,
@@ -630,7 +630,7 @@ def _has_usable_profile_optional_evidence(
         direction not in {"server_to_client", "both"}
         or has_linked_typed_positive_rule
     )
-    scoped_client_request_evidence = (
+    scoped_client_exchange_evidence = (
         requirement["status"] == "scoped_verified"
         and requirement["role"] == "client"
         and direction in {"client_to_server", "server_to_client", "both", "unclear"}
@@ -639,7 +639,7 @@ def _has_usable_profile_optional_evidence(
         and unclear_direction_has_typed_evidence
         and response_direction_has_typed_evidence
     )
-    return requirement["status"] == "verified" or scoped_client_request_evidence
+    return requirement["status"] == "verified" or scoped_client_exchange_evidence
 
 
 def source_table_contracts_for_gap(
@@ -17162,8 +17162,8 @@ class CatalogValidationTests(unittest.TestCase):
                     )
                     self.assertNotIn(requirement_id, conditional_sources)
 
-    def test_optional_evidence_gate_accepts_only_scoped_client_request_evidence(self) -> None:
-        """Scoped evidence counts only for representable in-scope client requests."""
+    def test_optional_evidence_gate_accepts_only_scoped_client_exchange_evidence(self) -> None:
+        """Scoped evidence counts only for representable in-scope client exchanges."""
         requirement_id = "KMIPKIT-REQ-SPEC-TEST-CLIENT-MAY"
         test_reference = "tests/positive_capability.rs::request_capability_is_available"
 
