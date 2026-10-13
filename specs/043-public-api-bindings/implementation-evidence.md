@@ -545,8 +545,16 @@ The full matrix for head `3c87f385` passed the language, platform, Java/Python c
 - **Green**: Added Java facade methods and JNI bridge calls for the four batch options. JNI validates uint32 and correlation byte length before conversion, forwards timestamp/ordering and exact copied correlation bytes to the existing C ABI, and maps native failures through the established exception path.
 - **Command**: `mvn --batch-mode --file bindings/java/pom.xml -Dtest=ClientFacadeContractTest test`
 - **Result**: PASS: 7 tests, including a native JNI build and a live native batch exercise. The first run caught missing private prototypes in the generated-header boundary; adding the exact ABI declarations to the existing T076 private declaration block resolved it. A second contract test covers unsigned range and null-correlation rejection.
-- **Green commit**: Pending.
+- **Green commit**: `56d1b603`.
 - **Refactor**: Consolidated uint32 boundary validation shared by Asynchronous Indicator and Error Continuation values without changing their public exception categories.
 - **Command**: `mvn --batch-mode --file bindings/java/pom.xml -Dtest=ClientFacadeContractTest test`
 - **Result**: PASS: 7 tests; native JNI rebuilt successfully and the batch facade contract passed.
-- **Refactor commit**: Pending.
+- **Refactor commit**: `df81c124`.
+
+## T021/T024 unique batch item identity mapping (2026-10-13)
+
+- **Scope**: Expose the approved Rust `ClientBatchItem::with_unique_batch_item_id` builder in Java and Python over the existing consuming C ABI, preserving caller bytes and explicit ownership transfer.
+- **Red**: Added a Java contract test requiring `ClientBatchItem.withUniqueBatchItemId(byte[])` and a Python API contract test requiring `extensions.with_unique_batch_item_id`.
+- **Commands**: `mvn --batch-mode --file bindings/java/pom.xml -Dtest=ClientFacadeContractTest test`; `bindings/python/.venv/Scripts/python.exe -m pytest bindings/python/tests/test_client.py::test_typed_batch_item_exposes_unique_batch_item_id_builder -q`.
+- **Results**: Expected Red: Java compilation reports the missing `withUniqueBatchItemId(byte[])` method; Python fails because `with_unique_batch_item_id` is absent. The Python package was built and installed using the repository's CI steps before this test.
+- **Commit**: Red test commit pending.

@@ -397,6 +397,10 @@ def test_batch_add_item_transfers_ownership_when_native_accepts_it(
     batch.close()
 
 
+def test_typed_batch_item_exposes_unique_batch_item_id_builder() -> None:
+    assert callable(extensions.with_unique_batch_item_id)
+
+
 def test_client_create_serializes_transport_and_returns_owned_client(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:

@@ -74,6 +74,16 @@ final class ClientFacadeContractTest {
     }
 
     @Test
+    void typedBatchItemCanCarryCallerSelectedUniqueBatchItemId() {
+        try (ClientBatch batch = ClientBatch.create();
+                ClientBatchItem item = ClientBatchItem.discoverVersions()
+                        .withUniqueBatchItemId(new byte[] {0x01, 0x02, 0x03})) {
+            batch.add(item);
+            assertEquals(1, batch.itemCount());
+        }
+    }
+
+    @Test
     void clientOperationExceptionsExposeStableRedactedMetadata() {
         ClientOperationException generic = new ClientOperationException(7, 91, 92, 2);
         assertEquals(7, generic.statusCode());
