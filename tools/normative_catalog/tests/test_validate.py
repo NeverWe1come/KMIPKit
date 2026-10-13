@@ -16479,6 +16479,63 @@ class CatalogValidationTests(unittest.TestCase):
 
         self.assertEqual(gaps, [], f"{requirement_id}: {'; '.join(gaps)}")
 
+    def test_unclear_direction_client_optional_requires_typed_positive_evidence(self) -> None:
+        """Client evidence with an unclear direction is eligible only with a typed rule and test."""
+        requirement_id = "KMIPKIT-REQ-SPEC-4.16-001-002"
+        catalog = json.loads(
+            (ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8")
+        )
+        requirement = next(
+            row for row in catalog["requirements"] if row["requirement_id"] == requirement_id
+        )
+        resolvable_implementation_refs = []
+        repository_root = ROOT.resolve()
+        if requirement["status"] == "scoped_verified":
+            for reference in requirement["implementation_refs"]:
+                implementation_path = ROOT / reference.partition("::")[0]
+                try:
+                    resolved_implementation_path = implementation_path.resolve(strict=True)
+                    resolved_implementation_path.relative_to(repository_root)
+                except (OSError, ValueError):
+                    continue
+                if resolved_implementation_path.is_file():
+                    resolvable_implementation_refs.append(reference)
+
+        usable_positive_tests = []
+        for reference in requirement["verification_refs"]:
+            test_path_reference, separator, test_name = reference.partition("::")
+            if not separator or not test_name:
+                continue
+            confined_test_source = test_feature_traceability._read_confined_test_source(
+                test_path_reference
+            )
+            if confined_test_source is None:
+                continue
+            test_path, test_source = confined_test_source
+            if _is_discoverable_positive_test(test_path, test_name, test_source):
+                usable_positive_tests.append(reference)
+
+        self.assertTrue(
+            _has_usable_profile_optional_evidence(
+                requirement,
+                set(),
+                load_typed_rule_mappings(ROOT),
+                resolvable_implementation_refs,
+                usable_positive_tests,
+            ),
+            "direction-unclear client capabilities need an exact typed optional rule and linked positive test",
+        )
+        self.assertFalse(
+            _has_usable_profile_optional_evidence(
+                requirement,
+                set(),
+                [],
+                resolvable_implementation_refs,
+                usable_positive_tests,
+            ),
+            "direction-unclear evidence without a typed mapping must remain ineligible",
+        )
+
     def test_wrapped_secret_data_import_has_scoped_implementation_and_positive_test_evidence(
         self,
     ) -> None:
