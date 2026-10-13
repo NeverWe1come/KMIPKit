@@ -16339,7 +16339,7 @@ class CatalogValidationTests(unittest.TestCase):
             and expected_verification_ref in usable_positive_tests
             and requirement["test_case_ids"] == []
             and "server acceptance" in requirement["review_note"].casefold()
-            and "official oasis test case" in requirement["review_note"].casefold()
+            and "official test case" in requirement["review_note"].casefold()
         )
 
         self.assertTrue(
