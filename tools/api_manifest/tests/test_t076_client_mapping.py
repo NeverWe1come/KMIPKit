@@ -437,10 +437,12 @@ class T076ClientMappingTests(unittest.TestCase):
                 for line in functions[function_id]["c"]["documentation"]:
                     self.assertIn(line, header)
 
-        architecture = (ROOT / "docs" / "architecture" / "ffi-and-bindings.md").read_text(
-            encoding="utf-8"
-        )
-        self.assertIn("ClientBatchItemResponse", architecture)
+        architecture = " ".join(
+            (ROOT / "docs" / "architecture" / "ffi-and-bindings.md")
+            .read_text(encoding="utf-8")
+            .split()
+        ).lower()
+        self.assertIn("clientbatchitemresponse", architecture)
         self.assertIn("retains the response owner", architecture)
         self.assertIn("valid only while the item-response handle remains open", architecture)
         self.assertIn("copy the bytes to keep them longer", architecture)

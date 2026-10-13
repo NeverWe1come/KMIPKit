@@ -38,10 +38,15 @@ oversized identifier produces the shared validation/resource-limit failure.
 status and safe metadata without clearing it. `kmipkit_last_error_clear` resets
 that snapshot. The category values are `0` none, `1` validation, `2` protocol,
 `3` transport, `4` server result, and `5` other. Cause values currently
-exposed by the C surface are `0` none, `1` invalid input, and `10` other. The
-delivery value `0` means no KMIP request delivery information is attached;
-the current C surface does not execute client requests. Status values remain
-the existing `KMIPKIT_ERROR_*` codes and are independent from category/cause
+exposed by the C surface are `0` none, `1` invalid input, `2` protocol invalid
+value, `3` protocol invalid encoding, `4` other protocol, `5` transport I/O,
+`6` TLS, `7` HTTP, `8` timeout, `9` other transport, and `10` other. Delivery
+values are `0` none, `1` not sent, `2` possibly sent, and `3` response started.
+Client execution status `8` means protocol (category `2`), status `9` means
+transport (category `3`), and status `10` means a complete server result
+(category `4`). Protocol and transport failures include the strongest observed
+delivery state; a complete server result uses `0`. Status values remain the
+existing `KMIPKIT_ERROR_*` codes and are independent from category/cause
 values. `KMIPKIT_ERROR_INTERNAL` (`7`) is the fixed fallback when a Rust panic
 is caught at an exported boundary; its snapshot uses category `5` (other),
 cause `10` (other), and delivery `0` (none). Bindings map it to their generic
@@ -56,7 +61,12 @@ secrets. Snapshots contain no source strings or request payloads.
 - Results are Rust-owned handles or buffers with matching free functions.
 - Callers never use the platform allocator to release Rust memory.
 - Text is UTF-8 with an explicit length.
-- Borrowed views with parent-dependent lifetimes are avoided.
+- Borrowed views with parent-dependent lifetimes are avoided except for the
+  zero-copy C spans returned by `ClientBatchItemResponse` accessors. The child
+  item-response handle retains the response owner, so each span is valid only
+  while the item-response handle remains open and remains unchanged throughout
+  that lifetime, including after the parent batch-response handle is closed.
+  Copy the bytes to keep them longer before releasing the item-response handle.
 - Secret outputs use zeroizing opaque handles.
 
 ## Generated and manual portions
