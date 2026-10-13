@@ -24,6 +24,8 @@ import org.kmipkit.ttlv.TtlvValue;
 
 /** Executes the Java mappings declared by the shared API capability fixture. */
 final class SharedCapabilityParityFixtureTest {
+    private record JavaConsumerMapping(String status, String test, String json) {}
+
     private static final Pattern STATUS = Pattern.compile("\\\"status\\\"\\s*:\\s*\\\"([^\\\"]+)\\\"");
     private static final Pattern TEST = Pattern.compile("\\\"test\\\"\\s*:\\s*\\\"([^\\\"]+)\\\"");
     private static final String API_LEVEL_CASE = "api-levels.shared.v1";
@@ -45,13 +47,11 @@ final class SharedCapabilityParityFixtureTest {
         assertEquals(ids.size(), ids.stream().distinct().count());
         for (String id : ids) {
             String item = caseById(fixture, id);
-            String mapping = javaMapping(item);
-            String status = field(STATUS, mapping, "Java mapping status is required");
-            String target = field(TEST, mapping, "Java consumer test is required");
-            assertTrue(status.equals("available") || status.equals("blocked"), id);
-            assertJUnitTestExists(target, id);
-            if (status.equals("blocked")) {
-                assertTrue(mapping.contains("\"reason\""), id + " needs a blocker reason");
+            JavaConsumerMapping mapping = javaConsumerMapping(item);
+            assertTrue(mapping.status().equals("available") || mapping.status().equals("blocked"), id);
+            assertJUnitTestExists(mapping.test(), id);
+            if (mapping.status().equals("blocked")) {
+                assertTrue(mapping.json().contains("\"reason\""), id + " needs a blocker reason");
             }
         }
     }
@@ -61,8 +61,8 @@ final class SharedCapabilityParityFixtureTest {
         String fixture = Files.readString(sharedFixturePath());
         for (String id : caseIds(fixture)) {
             String item = caseById(fixture, id);
-            String mapping = javaMapping(item);
-            if (field(STATUS, mapping, "Java mapping status is required").equals("available")) {
+            JavaConsumerMapping mapping = javaConsumerMapping(item);
+            if (mapping.status().equals("available")) {
                 String capability = stringField(item, "capability");
                 assertTrue(RuntimeMetadata.capabilityIsAvailable(capability),
                         id + " must map to a capability declared by the native runtime");
@@ -178,7 +178,7 @@ final class SharedCapabilityParityFixtureTest {
         throw new AssertionError("shared capability fixture case is not a complete JSON object: " + id);
     }
 
-    private static String javaMapping(String item) {
+    private static JavaConsumerMapping javaConsumerMapping(String item) {
         int javaOffset = item.indexOf("\"java\"");
         if (javaOffset < 0) {
             throw new AssertionError("shared capability case has no Java mapping");
@@ -188,7 +188,11 @@ final class SharedCapabilityParityFixtureTest {
         if (start < 0 || end < 0) {
             throw new AssertionError("shared capability Java mapping is malformed");
         }
-        return item.substring(start, end + 1);
+        String mapping = item.substring(start, end + 1);
+        return new JavaConsumerMapping(
+                field(STATUS, mapping, "Java mapping status is required"),
+                field(TEST, mapping, "Java consumer test is required"),
+                mapping);
     }
 
     private static String field(Pattern pattern, String source, String failure) {
