@@ -48,9 +48,6 @@ T076_BLOCKED = {
 T076_EXCLUDED = {
     "kmipkit_client_batch_item_response_metadata_v1",
     "kmipkit_client_batch_item_response_release",
-    "kmipkit_client_batch_release",
-    "kmipkit_client_batch_response_release",
-    "kmipkit_client_release",
     "kmipkit_transport_config_create_v1",
     "kmipkit_transport_config_release",
 }
