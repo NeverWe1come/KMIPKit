@@ -479,6 +479,40 @@ def test_fixed_width_integer_validation_ignores_subclass_comparisons() -> None:
     assert type(endpoint.port) is int
 
 
+def test_ttlv_fixed_width_integer_inputs_reject_boolean_values() -> None:
+    with pytest.raises(errors.InvalidInputError):
+        ttlv.ttlv_value_integer(True)
+
+    information = extensions.create_extension_information("typed-extension")
+    try:
+        with pytest.raises(errors.InvalidInputError):
+            extensions.with_tag(information, True)
+        assert not information.closed
+    finally:
+        information.close()
+
+
+def test_ttlv_fixed_width_integer_inputs_reject_out_of_range_values() -> None:
+    for constructor, value in (
+        (ttlv.ttlv_value_integer, 1 << 31),
+        (ttlv.ttlv_value_long_integer, 1 << 63),
+        (ttlv.ttlv_value_enumeration, 1 << 32),
+        (ttlv.ttlv_value_date_time, -(1 << 63) - 1),
+        (ttlv.ttlv_value_interval, 1 << 32),
+        (ttlv.ttlv_value_date_time_extended, 1 << 63),
+    ):
+        with pytest.raises(errors.InvalidInputError):
+            constructor(value)
+
+    information = extensions.create_extension_information("typed-extension")
+    try:
+        with pytest.raises(errors.InvalidInputError):
+            extensions.with_tag(information, 1 << 32)
+        assert not information.closed
+    finally:
+        information.close()
+
+
 def test_transport_config_rejects_oversized_lists_before_iteration() -> None:
     class OversizedList(list[client.TransportInput]):
         iterated = False
@@ -1620,6 +1654,120 @@ def test_client_execute_rejects_wrong_facade_types_and_null_response(
     finally:
         limits.close()
         handle.close()
+
+
+@pytest.mark.parametrize("operation", ["execute", "execute_with_options"])
+@pytest.mark.parametrize("closed_input", ["client", "limits"])
+def test_client_execute_rejects_closed_borrowed_handles_before_consuming_batch(
+    monkeypatch: pytest.MonkeyPatch, operation: str, closed_input: str
+) -> None:
+    client_pointer, _client_storage = _opaque("kmipkit_client_t")
+    batch_pointer, _batch_storage = _opaque("kmipkit_client_batch_t")
+    client_handle = _wrap_owned_handle(client.Client, client_pointer)
+    batch = _wrap_owned_handle(client.Batch, batch_pointer)
+    limits = ttlv.codec_limits_defaults()
+    released: list[tuple[str, object]] = []
+    fake = SimpleNamespace(
+        kmipkit_client_release=lambda pointer: released.append(("client", pointer)),
+        kmipkit_client_batch_release=lambda pointer: released.append(("batch", pointer)),
+        kmipkit_client_execute=lambda *_arguments: pytest.fail(
+            "closed client inputs must fail before native execution"
+        ),
+        kmipkit_client_execute_with_options_v1=lambda *_arguments: pytest.fail(
+            "closed client inputs must fail before native execution"
+        ),
+    )
+    monkeypatch.setattr(client, "lib", fake)
+
+    try:
+        if closed_input == "client":
+            client_handle.close()
+        else:
+            limits.close()
+
+        with pytest.raises(errors.InvalidInputError):
+            if operation == "execute":
+                client_handle.execute(batch, limits)
+            else:
+                client_handle.execute_with_options(
+                    batch, limits, client.RequestOptions()
+                )
+
+        assert not batch.closed
+    finally:
+        batch.close()
+        limits.close()
+        client_handle.close()
+
+    assert ("batch", batch_pointer) in released
+
+
+def test_batch_add_item_rejects_closed_batch_before_consuming_item(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    batch_pointer, _batch_storage = _opaque("kmipkit_client_batch_t")
+    batch = _wrap_owned_handle(client.Batch, batch_pointer)
+    item = extensions.client_batch_item_discover_versions()
+    released: list[tuple[str, object]] = []
+    monkeypatch.setattr(
+        client,
+        "lib",
+        SimpleNamespace(
+            kmipkit_client_batch_release=lambda pointer: released.append(
+                ("batch", pointer)
+            ),
+            kmipkit_client_batch_item_release=lambda pointer: released.append(
+                ("item", pointer)
+            ),
+            kmipkit_client_batch_add_item=lambda *_arguments: pytest.fail(
+                "closed batch inputs must fail before native execution"
+            ),
+        ),
+    )
+
+    try:
+        batch.close()
+        with pytest.raises(errors.InvalidInputError):
+            batch.add_item(item)
+        assert not item.closed
+    finally:
+        item.close()
+
+    assert released == [("batch", batch_pointer)]
+
+
+@pytest.mark.parametrize(
+    ("wrapper", "accessor"),
+    [
+        (ttlv.TtlvItemView, "kmipkit_ttlv_item_view_type"),
+        (ttlv.TtlvValueView, "kmipkit_ttlv_value_view_type"),
+    ],
+)
+def test_native_unknown_ttlv_item_type_maps_to_invalid_input(
+    monkeypatch: pytest.MonkeyPatch, wrapper: type, accessor: str
+) -> None:
+    handle_type = (
+        "kmipkit_ttlv_item_view_t"
+        if wrapper is ttlv.TtlvItemView
+        else "kmipkit_ttlv_value_view_t"
+    )
+    storage = ttlv.ffi.new("uint8_t[]", 1)
+    pointer = ttlv.ffi.cast(f"{handle_type} *", storage)
+    view = _wrap_owned_handle(wrapper, pointer)
+
+    def unknown_type(_view: object, output: object) -> int:
+        output[0] = 0xFF  # type: ignore[index]
+        return 0
+
+    monkeypatch.setattr(ttlv, "lib", SimpleNamespace(**{accessor: unknown_type}))
+    try:
+        with pytest.raises(errors.InvalidInputError):
+            if wrapper is ttlv.TtlvItemView:
+                ttlv.ttlv_item_view_type(view)
+            else:
+                ttlv.ttlv_value_view_type(view)
+    finally:
+        view.close()
 
 
 def test_zero_client_status_does_not_read_last_error() -> None:
