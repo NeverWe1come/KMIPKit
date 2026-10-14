@@ -652,6 +652,7 @@ class BindingExportAuditTests(unittest.TestCase):
             "CLIENT", "CLIENT_BATCH", "CLIENT_BATCH_ITEM_RESPONSE",
             "CLIENT_BATCH_RESPONSE", "CODEC_LIMITS", "TRANSPORT_CONFIGURATION",
             "clientBatchAddErrorContinuationValue", "clientBatchAddItem",
+            "clientExecuteWithOptions",
             "clientBatchCreate", "clientBatchItemResponseMetadata",
             "clientBatchItemResponsePendingCorrelationValue",
             "clientBatchItemResponseUniqueBatchItemId",
@@ -715,10 +716,25 @@ class BindingExportAuditTests(unittest.TestCase):
         }
         for key in expected_python:
             self.assertIn(key, exclusions)
+        approved_constructor_exclusions = {
+            "kmipkit.client.BatchItemResult": (
+                "read-only ClientBatchResponse traversal",
+                "KMIPKIT-0043-FR-012",
+            ),
+            "kmipkit.metadata.Version": (
+                "runtime metadata query remain mapped",
+                "KMIPKIT-0043-FR-021",
+            ),
+        }
         for class_name in dataclass_names:
-            self.assertNotIn(
-                ("python-kmipkit", f"{class_name}.__init__"), exclusions
-            )
+            constructor = ("python-kmipkit", f"{class_name}.__init__")
+            if class_name in approved_constructor_exclusions:
+                exclusion = exclusions[constructor]
+                evidence_phrase, requirement = approved_constructor_exclusions[class_name]
+                self.assertIn(evidence_phrase, exclusion["evidence"])
+                self.assertIn(requirement, exclusion["evidence"])
+            else:
+                self.assertNotIn(constructor, exclusions)
         for class_name in dataclass_names:
             repr_exclusion = exclusions[("python-kmipkit", f"{class_name}.__repr__")]
             self.assertIn("test_secret_bearing_client_records_redact_repr", repr_exclusion["evidence"])
@@ -737,7 +753,7 @@ class BindingExportAuditTests(unittest.TestCase):
             self.assertIn("KMIPKIT-0043-FR-021", exclusions[key]["evidence"])
     def test_checked_in_binding_export_report_reconciles_every_package(self):
         repo_root = Path(__file__).resolve().parents[3]
-        report_path = repo_root / "specs/043-public-api-bindings/reports/binding-export-report-2026-10-12.json"
+        report_path = repo_root / "specs/043-public-api-bindings/reports/binding-export-report-2026-10-14.json"
         report = json.loads(report_path.read_text(encoding="utf-8"))
         self.assertEqual(
             {package["packageId"] for package in report["packages"]},
