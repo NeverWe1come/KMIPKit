@@ -170,17 +170,39 @@ final class TransportConfigurationBoundaryTest {
                         List.of(TransportConfiguration.TransportInput.memory(
                                 new byte[] {1}, TransportConfiguration.Encoding.PEM)),
                         privateKey);
+        byte[] ownedCopy = builderPrivateKeyBytes(builder);
+
+        assertArrayEquals(marker, ownedCopy);
+        builder.close();
+        builder.close();
+        assertArrayEquals(new byte[marker.length], ownedCopy);
+        assertArrayEquals(new byte[] {0x31, 0x42, 0x53}, marker);
+        assertThrows(InvalidInputException.class, builder::build);
+    }
+
+    @Test
+    void closingUnbuiltBuilderZeroizesKeyCopiedFromLegacyPemSetter() throws Exception {
+        byte[] marker = {0x41, 0x52, 0x63};
+        TransportConfiguration.Builder builder = TransportConfiguration.builder()
+                .clientIdentityPem(new byte[][] {{1}}, marker);
+        byte[] ownedCopy = builderPrivateKeyBytes(builder);
+
+        assertArrayEquals(marker, ownedCopy);
+        builder.close();
+        assertArrayEquals(new byte[marker.length], ownedCopy);
+        assertArrayEquals(new byte[] {0x41, 0x52, 0x63}, marker);
+        assertThrows(InvalidInputException.class, () -> builder.clientIdentityPem(
+                new byte[][] {{1}}, new byte[] {9}));
+    }
+
+    private static byte[] builderPrivateKeyBytes(TransportConfiguration.Builder builder)
+            throws ReflectiveOperationException {
         java.lang.reflect.Field privateKeyField = builder.getClass().getDeclaredField("privateKey");
         privateKeyField.setAccessible(true);
         Object ownedInput = privateKeyField.get(builder);
         java.lang.reflect.Field dataField = ownedInput.getClass().getDeclaredField("data");
         dataField.setAccessible(true);
-        byte[] ownedCopy = (byte[]) dataField.get(ownedInput);
-
-        assertArrayEquals(marker, ownedCopy);
-        builder.close();
-        assertArrayEquals(new byte[marker.length], ownedCopy);
-        assertThrows(InvalidInputException.class, builder::build);
+        return (byte[]) dataField.get(ownedInput);
     }
 
     @Test
