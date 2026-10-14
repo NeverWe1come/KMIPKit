@@ -1178,9 +1178,43 @@ message, and the clients issue no follow-up exchange.
 | Green | `faf14ad3` | `mvn -q -f bindings/java/pom.xml "-Dtest=ClientFacadeTlsIntegrationTest,SharedCapabilityParityFixtureTest" test`; `cargo test --locked -p kmipkit-client --lib ordered_mixed_batch_outcomes_preserve_ids_and_use_one_exchange -- --nocapture`; `cargo test --locked -p kmipkit-ffi --features coverage-c-consumer --test c_api_coverage generated_public_client_abi_consumer_executes_a_typed_batch_over_mtls -- --nocapture`; `uv run --offline --project bindings/python --frozen pytest -q bindings/python/tests/test_client.py::test_batch_result_preserves_ordered_mixed_outcomes_ids_and_pending_correlation`; `cargo fmt --all --check`; JSON validation; `git diff --check` | PASS: Java integration and fixture contracts; Rust fake transport; C mTLS public consumer; Python ordered mapping. Each reports the three statuses, all IDs, exact correlation bytes, and one exchange where network execution is exercised. |
 | Refactor | This commit | Rerun the focused Java integration and shared-fixture tests after factoring the stable ID helper; `cargo fmt --all --check`; JSON validation; `git diff --check` | PASS: tests retain fixture semantics with one helper for consistent request/response IDs. Rust/C/Python focused tests passed in the Green phase; final PR-head CI remains required. |
 
-T076 remains open. The mixed-outcome parity gap is now covered locally, but the
-preceding pushed head's CI run (`38521381500`) failed its six Core matrix legs
-only at `Check formatting`; local `cargo fmt --all --check` now passes after
-formatting the affected Rust files. The selected-scope coverage gate and a new
-full CI run on the current commits are still required. Independent human
-semantic/security review also remains a gate.
+T076 remains open. The mixed-outcome parity gap is covered locally. The latest
+published CI run (`38522806517`) passed the platform, adapter, sanitizer,
+documentation, inventory, and other selected checks, but the aggregate changed
+code coverage gate failed at 499/527 (94.69%), below the 95% requirement.
+Independent human semantic/security review and a passing CI run on the final
+PR head also remain gates.
+
+### T076 shared parity contract and changed-code coverage follow-up (2026-10-14)
+
+The shared API parity contract now requires an explicit available or blocked
+mapping for every language on every case. Available non-Java mappings identify
+the repository-relative consumer source and exact test function; Java mappings
+identify the JUnit class and method. The validator confirms that each available
+consumer target exists. Per-case blockers are recorded for the API-level
+taxonomy assigned to T077 and for C/Python consumers that do not yet exercise
+the exact open-enumeration and child-order case; Rust's separate tests do not
+consume this exact case either. The four languages each have
+at least one available consumer overall; that aggregate does not imply every
+case is complete in every language. The contract runs in the cross-platform
+Python workflow.
+
+The failed aggregate coverage run showed two uncovered Python wrapper fallback
+lines in `bindings/python/src/kmipkit/extensions.py`: the registry lookup when
+the Python definition cache lacks a native result, and the information lookup
+when native information exists but cached Python metadata is absent. Focused
+tests exercise both paths while asserting that the native identity and TTLV
+value remain intact. Running the full Python coverage producer locally reports
+98.56% total coverage and records one hit at each changed fallback line. The
+coverage thresholds remain unchanged.
+
+| Phase | Commit | Command | Result |
+|---|---|---|---|
+| Red | `2a2acd00` (CI run `38522806517`) | GitHub `Coverage gate / selected scopes` | Expected failure: changed production coverage was 499/527 (94.69%), below the 95% gate. |
+| Red | `c9a8689d` | `python -B -m unittest tools.api_manifest.tests.test_parity.PublicApiParityTests.test_shared_capability_fixture_maps_executable_consumer_contracts -v` | Expected failure before fixture completion: five cases had no Rust, C, or Python mapping; the union-only check had hidden those per-case gaps. |
+| Green | `f7e7caa7` | Focused fallback tests; full Python coverage suite; `python -B -m unittest tools.api_manifest.tests.test_parity tools.api_manifest.tests.test_t076_client_mapping -q`; mapped Rust client/protocol/extension tests; `cargo test --locked -p kmipkit-ffi --features coverage-c-consumer --test c_api_coverage`; focused Java parity, extension, and client TLS tests | PASS: Python 183/183 at 98.56%; contract tests 42/42; mapped Rust tests passed; C consumer 4/4; Java selected suites passed. Final PR-head aggregate gate remains pending. |
+| Refactor | This commit | `python -B -m unittest scripts.tests.test_workflow -q`; `python -B tools/api_manifest/generate.py --check`; `cargo fmt --all --check`; `git diff --check` | Local checks pass; final PR-head CI and aggregate changed-code gate are pending. |
+
+This follow-up does not change production behavior or lower coverage gates. T076
+remains open pending the aggregate coverage result on the updated report, final
+PR-head CI, semantic parity review, and independent human security review.
