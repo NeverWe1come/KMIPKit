@@ -51,7 +51,7 @@ import org.kmipkit.ttlv.CodecLimits;
 /** Exercises the T076 client ABI through the Java facade against a local TLS 1.3 peer. */
 final class ClientFacadeTlsIntegrationTest {
     private static final char[] STORE_PASSWORD = "kmipkit-test".toCharArray();
-    private static final byte[] CORRELATION = {0, 0x41, (byte) 0xff, 0x42};
+    private static final byte[] CORRELATION = {0, (byte) 0xa1, 0x7f};
 
     @TempDir
     Path temporaryDirectory;
@@ -109,7 +109,7 @@ final class ClientFacadeTlsIntegrationTest {
     }
 
     @Test
-    void executionPreservesOrderedPendingAndCompletedMetadataOverMutualTls() throws Exception {
+    void executionPreservesOrderedMixedOutcomesOverOneMutualTlsExchange() throws Exception {
         Path serverStorePath = temporaryDirectory.resolve("server.p12");
         Path clientStorePath = temporaryDirectory.resolve("client.p12");
         createKeyStore(serverStorePath, "server");
@@ -127,7 +127,7 @@ final class ClientFacadeTlsIntegrationTest {
         listener.setEnabledProtocols(new String[] {"TLSv1.3"});
         listener.setNeedClientAuth(true);
         listener.setSoTimeout(10_000);
-        FutureTask<byte[][]> peer = new FutureTask<>(() -> serveTwoResponses(listener));
+        FutureTask<byte[]> peer = new FutureTask<>(() -> serveOneResponse(listener));
         Thread peerThread = new Thread(peer, "kmipkit-java-tls-fixture");
         peerThread.setDaemon(true);
         peerThread.start();
@@ -147,43 +147,42 @@ final class ClientFacadeTlsIntegrationTest {
                 Client client = Client.create(extensions, transport)) {
             assertThrows(InvalidInputException.class,
                     () -> client.executeWithOptions(null, null, null));
-            ClientBatch pendingBatch = ClientBatch.create();
-            pendingBatch.asynchronousIndicator(2).add(ClientBatchItem.discoverVersions());
-            ClientBatchResponse pendingResponse;
+            ClientBatch batch = ClientBatch.create();
+            batch.asynchronousIndicator(2)
+                    .add(ClientBatchItem.discoverVersions())
+                    .add(ClientBatchItem.discoverVersions())
+                    .add(ClientBatchItem.discoverVersions());
+            ClientBatchResponse batchResponse;
             try {
-                pendingResponse = client.executeWithOptions(
-                        pendingBatch, CodecLimits.defaults(), RequestOptions.defaults());
+                batchResponse = client.executeWithOptions(
+                        batch, CodecLimits.defaults(), RequestOptions.defaults());
             } catch (ClientOperationException exception) {
-                throw new AssertionError("Pending exchange failed with status " + exception.statusCode()
+                throw new AssertionError("Mixed batch exchange failed with status " + exception.statusCode()
                         + ", category " + exception.categoryCode() + ", cause " + exception.causeCode()
                         + ", delivery " + exception.deliveryStateCode(), exception);
             }
-            try (ClientBatchResponse response = pendingResponse;
-                    ClientBatchItemResult pending = response.itemAt(0)) {
-                assertEquals(1, response.itemCount());
-                assertEquals(2, pending.resultStatus());
-                assertTrue(pending.outcomeKind().isPending());
-                assertArrayEquals(CORRELATION, pending.pendingCorrelationValue().orElseThrow());
-                assertTrue(pending.resultReason().isEmpty());
-            }
-
-            ClientBatch completedBatch = ClientBatch.create();
-            completedBatch.add(ClientBatchItem.discoverVersions());
-            try (ClientBatchResponse response = client.execute(completedBatch, CodecLimits.defaults());
-                    ClientBatchItemResult completed = response.itemAt(0)) {
-                assertEquals(1, response.itemCount());
+            try (ClientBatchResponse response = batchResponse;
+                    ClientBatchItemResult completed = response.itemAt(0);
+                    ClientBatchItemResult pending = response.itemAt(1);
+                    ClientBatchItemResult failed = response.itemAt(2)) {
+                assertEquals(3, response.itemCount());
                 assertEquals(0, completed.resultStatus());
                 assertTrue(completed.outcomeKind().isCompleted());
                 assertTrue(completed.pendingCorrelationValue().isEmpty());
                 assertTrue(completed.resultReason().isEmpty());
+                assertEquals(2, pending.resultStatus());
+                assertTrue(pending.outcomeKind().isPending());
+                assertArrayEquals(CORRELATION, pending.pendingCorrelationValue().orElseThrow());
+                assertTrue(pending.resultReason().isEmpty());
+                assertEquals(1, failed.resultStatus());
+                assertTrue(failed.outcomeKind().isCompleted());
+                assertTrue(failed.pendingCorrelationValue().isEmpty());
+                assertEquals(1, failed.resultReason().orElseThrow());
             }
-            byte[][] requests = peer.get(12, TimeUnit.SECONDS);
-            assertEquals(2, requests.length);
-            for (byte[] request : requests) {
-                assertTrue(request.length >= 8);
-                assertArrayEquals(new byte[] {0x42, 0x00, 0x78},
-                        new byte[] {request[0], request[1], request[2]});
-            }
+            byte[] request = peer.get(12, TimeUnit.SECONDS);
+            assertTrue(request.length >= 8);
+            assertArrayEquals(new byte[] {0x42, 0x00, 0x78},
+                    new byte[] {request[0], request[1], request[2]});
         } finally {
             listener.close();
         }
@@ -348,20 +347,17 @@ final class ClientFacadeTlsIntegrationTest {
         return context;
     }
 
-    private static byte[][] serveTwoResponses(SSLServerSocket listener) throws Exception {
-        byte[][] requests = new byte[2][];
-        for (int index = 0; index < requests.length; index++) {
-            try (SSLSocket socket = (SSLSocket) listener.accept()) {
-                socket.setEnabledProtocols(new String[] {"TLSv1.3"});
-                socket.setSoTimeout(10_000);
-                socket.startHandshake();
-                requests[index] = readFrame(socket.getInputStream());
-                OutputStream output = socket.getOutputStream();
-                output.write(responseMessage(index == 0));
-                output.flush();
-            }
+    private static byte[] serveOneResponse(SSLServerSocket listener) throws Exception {
+        try (SSLSocket socket = (SSLSocket) listener.accept()) {
+            socket.setEnabledProtocols(new String[] {"TLSv1.3"});
+            socket.setSoTimeout(10_000);
+            socket.startHandshake();
+            byte[] request = readFrame(socket.getInputStream());
+            OutputStream output = socket.getOutputStream();
+            output.write(responseMessage(true));
+            output.flush();
+            return request;
         }
-        return requests;
     }
 
     private static FutureTask<byte[]> peerThatClosesAfterOneRequest(SSLServerSocket listener) {
