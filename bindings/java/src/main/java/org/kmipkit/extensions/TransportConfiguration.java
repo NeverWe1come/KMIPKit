@@ -377,9 +377,6 @@ public final class TransportConfiguration implements AutoCloseable {
                         tlsServerName, targetUri, timeoutValues(), maxRequestBytes);
                 return new TransportConfiguration(nativeHandle);
             } finally {
-                if (privateKey != null && privateKey.secret) {
-                    Arrays.fill(privateKey.data, (byte) 0);
-                }
                 wipeSecretInputReferences();
             }
         }
