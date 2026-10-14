@@ -1150,8 +1150,37 @@ remain unchanged. The isolated Linux run reported line coverage of 95.01% for
 | Green | `da6cfb09` | T076 manifest tests; `python -B tools/api_manifest/generate.py --check`; focused Java C/JNI tests; focused Python adapter tests; `cargo test --locked -p kmipkit-ffi --test c_api_coverage --all-features` | PASS: manifest tests 34/34; 12 generated outputs current; Java tests 18/18; Python tests 135/135; Windows C ABI integration tests 4/4. |
 | Refactor | This commit | `python -B tools/api_manifest/audit_binding_exports.py --repo-root . --report specs/043-public-api-bindings/reports/binding-export-report-2026-10-12.json --check`; `git diff --check` | PASS: C 272 observed / 242 exact matches, Java 481 / 442, Python 556 / 425; no missing, stale, kind-mismatched, or issue paths. |
 
-T076 remains open. The shared batch fixture still does not demonstrate one
-ordered mixed-result exchange with identical Pending correlation bytes and no
-automatic follow-up through Rust, C, Java, and Python. Final PR-head CI and
-independent human semantic/security review also remain outstanding. This
-checkpoint does not complete T011, T071, T076, or release readiness.
+The shared batch fixture and Rust, C, Java, and Python regressions now cover an
+ordered three-item result (`Success`, `Operation Pending`, `Operation Failed`),
+matching Unique Batch Item IDs, and the exact `00a17f` Pending correlation value.
+The Rust fake transport, C mTLS consumer, and Java mTLS facade test each assert
+one exchange; Python asserts the same copied adapter result mapping. No layer
+polls or follows up automatically. Final PR-head CI and independent human
+semantic/security review remain outstanding. This checkpoint does not complete
+T011, T071, T076, or release readiness.
+
+### T076 ordered mixed-outcome parity follow-up (2026-10-14)
+
+The shared `batch.ordered-completed-pending-failed.v1` fixture now records
+three stable request IDs, the exact ordered statuses, one Pending correlation
+value, and one transport exchange. Each consumer has a named regression: Rust
+uses the scripted transport; C drives the generated public ABI over local TLS
+1.3 mTLS; Java drives the facade over local TLS 1.3 mTLS; Python validates the
+same ordered FFI-to-dataclass mapping. OASIS KMIP v2.1 §9.21 says the field is
+optional and that a response SHALL echo it when present in the request; the
+tests use it to assert request/response correlation, not as a requirement that
+every multi-item request carry an ID. The server peer returns one response
+message, and the clients issue no follow-up exchange.
+
+| Phase | Commit | Command | Result |
+|---|---|---|---|
+| Red | `e18db839` | Focused Java mTLS and C ABI mixed-outcome regressions before request IDs were assigned | Expected failure before network exchange: multi-item client batch validation requires a Unique Batch Item ID for every item. |
+| Green | `faf14ad3` | `mvn -q -f bindings/java/pom.xml "-Dtest=ClientFacadeTlsIntegrationTest,SharedCapabilityParityFixtureTest" test`; `cargo test --locked -p kmipkit-client --lib ordered_mixed_batch_outcomes_preserve_ids_and_use_one_exchange -- --nocapture`; `cargo test --locked -p kmipkit-ffi --features coverage-c-consumer --test c_api_coverage generated_public_client_abi_consumer_executes_a_typed_batch_over_mtls -- --nocapture`; `uv run --offline --project bindings/python --frozen pytest -q bindings/python/tests/test_client.py::test_batch_result_preserves_ordered_mixed_outcomes_ids_and_pending_correlation`; `cargo fmt --all --check`; JSON validation; `git diff --check` | PASS: Java integration and fixture contracts; Rust fake transport; C mTLS public consumer; Python ordered mapping. Each reports the three statuses, all IDs, exact correlation bytes, and one exchange where network execution is exercised. |
+| Refactor | This commit | Rerun the focused Java integration and shared-fixture tests after factoring the stable ID helper; `cargo fmt --all --check`; JSON validation; `git diff --check` | PASS: tests retain fixture semantics with one helper for consistent request/response IDs. Rust/C/Python focused tests passed in the Green phase; final PR-head CI remains required. |
+
+T076 remains open. The mixed-outcome parity gap is now covered locally, but the
+preceding pushed head's CI run (`38521381500`) failed its six Core matrix legs
+only at `Check formatting`; local `cargo fmt --all --check` now passes after
+formatting the affected Rust files. The selected-scope coverage gate and a new
+full CI run on the current commits are still required. Independent human
+semantic/security review also remains a gate.

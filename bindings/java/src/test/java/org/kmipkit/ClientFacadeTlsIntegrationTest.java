@@ -150,9 +150,9 @@ final class ClientFacadeTlsIntegrationTest {
                     () -> client.executeWithOptions(null, null, null));
             ClientBatch batch = ClientBatch.create();
             batch.asynchronousIndicator(2)
-                    .add(ClientBatchItem.discoverVersions().withUniqueBatchItemId("item-0".getBytes(StandardCharsets.US_ASCII)))
-                    .add(ClientBatchItem.discoverVersions().withUniqueBatchItemId("item-1".getBytes(StandardCharsets.US_ASCII)))
-                    .add(ClientBatchItem.discoverVersions().withUniqueBatchItemId("item-2".getBytes(StandardCharsets.US_ASCII)));
+                    .add(ClientBatchItem.discoverVersions().withUniqueBatchItemId(uniqueBatchItemId(0)))
+                    .add(ClientBatchItem.discoverVersions().withUniqueBatchItemId(uniqueBatchItemId(1)))
+                    .add(ClientBatchItem.discoverVersions().withUniqueBatchItemId(uniqueBatchItemId(2)));
             ClientBatchResponse batchResponse = client.executeWithOptions(
                     batch, CodecLimits.defaults(), RequestOptions.defaults());
             try (ClientBatchResponse response = batchResponse;
@@ -162,20 +162,17 @@ final class ClientFacadeTlsIntegrationTest {
                 assertEquals(3, response.itemCount());
                 assertEquals(0, completed.resultStatus());
                 assertTrue(completed.outcomeKind().isCompleted());
-                assertArrayEquals("item-0".getBytes(StandardCharsets.US_ASCII),
-                        completed.uniqueBatchItemId().orElseThrow());
+                assertArrayEquals(uniqueBatchItemId(0), completed.uniqueBatchItemId().orElseThrow());
                 assertTrue(completed.pendingCorrelationValue().isEmpty());
                 assertTrue(completed.resultReason().isEmpty());
                 assertEquals(2, pending.resultStatus());
                 assertTrue(pending.outcomeKind().isPending());
-                assertArrayEquals("item-1".getBytes(StandardCharsets.US_ASCII),
-                        pending.uniqueBatchItemId().orElseThrow());
+                assertArrayEquals(uniqueBatchItemId(1), pending.uniqueBatchItemId().orElseThrow());
                 assertArrayEquals(CORRELATION, pending.pendingCorrelationValue().orElseThrow());
                 assertTrue(pending.resultReason().isEmpty());
                 assertEquals(1, failed.resultStatus());
                 assertTrue(failed.outcomeKind().isCompleted());
-                assertArrayEquals("item-2".getBytes(StandardCharsets.US_ASCII),
-                        failed.uniqueBatchItemId().orElseThrow());
+                assertArrayEquals(uniqueBatchItemId(2), failed.uniqueBatchItemId().orElseThrow());
                 assertTrue(failed.pendingCorrelationValue().isEmpty());
                 assertEquals(1, failed.resultReason().orElseThrow());
             }
@@ -411,19 +408,23 @@ final class ClientFacadeTlsIntegrationTest {
         byte[] responsePayload = structure(0x42007c, responseVersion);
         byte[] successfulItem = structure(0x42000f,
                 item(0x42005c, 5, integer(30)),
-                item(0x420093, 8, "item-0".getBytes(StandardCharsets.US_ASCII)),
+                item(0x420093, 8, uniqueBatchItemId(0)),
                 item(0x42007f, 5, integer(0)), responsePayload);
         byte[] pendingItem = structure(0x42000f,
                 item(0x42005c, 5, integer(30)),
-                item(0x420093, 8, "item-1".getBytes(StandardCharsets.US_ASCII)),
+                item(0x420093, 8, uniqueBatchItemId(1)),
                 item(0x42007f, 5, integer(2)),
                 item(0x420006, 8, CORRELATION), structure(0x42007c));
         byte[] failedItem = structure(0x42000f,
                 item(0x42005c, 5, integer(30)),
-                item(0x420093, 8, "item-2".getBytes(StandardCharsets.US_ASCII)),
+                item(0x420093, 8, uniqueBatchItemId(2)),
                 item(0x42007f, 5, integer(1)),
                 enumeration(0x42007e, 1));
         return structure(0x42007b, header, successfulItem, pendingItem, failedItem);
+    }
+
+    private static byte[] uniqueBatchItemId(int index) {
+        return ("item-" + index).getBytes(StandardCharsets.US_ASCII);
     }
 
     private static byte[] structure(int tag, byte[]... items) throws Exception {
