@@ -133467,7 +133467,7 @@
     },
     {
       "discrepancy_id": "KMIPKIT-DISC-045",
-      "summary": "Single-request Encrypt/Decrypt Data optionality when both Init and Final Indicator are true",
+      "summary": "Single-request cryptographic Data optionality when both Init and Final Indicator are true",
       "source_refs": [
         {
           "source_id": "KMIPKIT-SRC-spec",
@@ -133480,25 +133480,42 @@
         {
           "source_id": "KMIPKIT-SRC-spec",
           "section": "6.1.17"
+        },
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "6.1.24"
+        },
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "6.1.32"
+        },
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "6.1.55"
         }
       ],
       "source_authority": "primary_normative",
       "normative_status": "normative_conflict",
       "alternatives": [
-        "Apply Tables 196 and 214 single-part Data Yes rows to any one-request operation; a single-part request requires Data even if both indicators are present.",
-        "Apply §6.1's general exception literally; Data may be absent in any request when Init Indicator or Final Indicator is true, including a one-request form with both indicators true."
+        "Apply Tables 196, 214, 235, 259, and 334: single-part requests require Data, except Sign may use Digested Data, even when both indicators are true.",
+        "Apply §6.1 paragraph 009 literally: Data may be omitted when either indicator is true, including the framed single-request form with both indicators true and no Correlation Value; for Sign, the independent Digested Data alternative remains subject to Table 334."
       ],
       "affected_requirement_ids": [],
       "affected_element_ids": [
         "KMIPKIT-ELEM-OP-C2S-ENCRYPT",
         "KMIPKIT-ELEM-OP-C2S-DECRYPT",
+        "KMIPKIT-ELEM-OP-C2S-HASH",
+        "KMIPKIT-ELEM-OP-C2S-MAC",
+        "KMIPKIT-ELEM-OP-C2S-SIGN",
+        "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-8-CORRELATION-VALUE",
         "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-9-DATA",
         "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-17-INIT-INDICATOR",
-        "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-14-FINAL-INDICATOR"
+        "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-14-FINAL-INDICATOR",
+        "KMIPKIT-ELEM-TAG-420107"
       ],
       "affected_profile_ids": [],
       "affected_policy_ids": [],
-      "downstream_impact": "Accept the one-request Init=true/Final=true Encrypt/Decrypt form when Data is present, as permitted by §6.1 and required by Tables 196 and 214. While this conflict remains unresolved, gate only the Data-omission variant with a local validation error before transmission; ordinary single-part and multipart forms remain implementable.",
+      "downstream_impact": "The same §6.1 conflict applies to the single-part Data rows for Encrypt, Decrypt, Hash, MAC, and Sign. Current approved operation models use the table-side rule for the framed single-request form: Encrypt, Decrypt, Hash, and MAC require Data; Sign requires Data or its Table 334 Digested Data alternative. Keep this local validation behavior while the discrepancy remains open, and make no conformance claim for the disputed omission. MAC Verify and Signature Verify are outside this discrepancy because their payloads use MAC Data and Signature Data, not Data. No standalone requirement IDs are created by this source conflict.",
       "state": "open",
       "decision_id": null,
       "erratum_source_refs": []

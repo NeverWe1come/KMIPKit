@@ -207,9 +207,7 @@ class SourceGapAdjudicationTests(unittest.TestCase):
         self.assertEqual("normative_conflict", discrepancy["normative_status"])
         self.assertEqual("open", discrepancy["state"])
         conflict_text = " ".join(discrepancy["alternatives"] + [discrepancy["downstream_impact"]])
-        self.assertIn("Table 235", conflict_text)
-        self.assertIn("Table 259", conflict_text)
-        self.assertIn("Table 334", conflict_text)
+        self.assertIn("Tables 196, 214, 235, 259, and 334", conflict_text)
         self.assertIn("Digested Data", conflict_text)
 
     def test_profile_conditional_structural_rows_are_not_client_profile_requirements(self) -> None:
