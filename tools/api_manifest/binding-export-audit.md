@@ -114,18 +114,18 @@ unclassified exports, so this snapshot is not a passing export gate:
 | --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | --- |
 | C | yes | 264 | 237 | 237 | 27 | 0 | 0 | 0 | 0 | yes |
 | Java | yes | 469 | 434 | 434 | 35 | 0 | 0 | 0 | 0 | yes |
-| Python | yes | 540 | 415 | 415 | 77 | 48 | 0 | 0 | 0 | no |
+| Python | yes | 540 | 415 | 415 | 78 | 47 | 0 | 0 | 0 | no |
 
 The C inventory's 27 paths outside the 237 declarations and Java's 35 paths
 outside the 434 declarations have exact approved exclusions. Java's transport
 builder, encoding, and timeout exports now have exact manifest classifications.
-Python's 77 exact exclusions and 415 declarations account for 492 paths; the
-48 remaining gaps include value and dataclass constructors/members, enum
+Python's 78 exact exclusions and 415 declarations account for 493 paths; the
+47 remaining gaps include value and dataclass constructors/members, enum
 members, error constructors/category exports, context methods, and inherited
 handle constructors. Resolve value construction separately from wrappers that
 could adopt a native handle; the latter must not permit arbitrary or duplicate
 ownership. The audit `--check` command writes the current report and exits 1
-because Python has 48 missing classifications; that is the expected gate
+because Python has 47 missing classifications; that is the expected gate
 result, not a scanner or report-generation failure. Regenerate the report after
 each reconciliation batch. T011, T076, T021, and T024 remain open until every
 observed export is mapped or has an exact approved exclusion and required

@@ -46,7 +46,7 @@
         "kindMismatches": 0,
         "manifest": 415,
         "matched": 415,
-        "missingFromManifest": 48,
+        "missingFromManifest": 47,
         "notObserved": 0,
         "observed": 540,
         "pathMatches": 415
@@ -72,13 +72,6 @@
           "kind": "python-export",
           "location": "inherited:kmipkit._handles.NativeHandle:47",
           "packageId": "python-kmipkit"
-        },
-        {
-          "exportName": "kmipkit.client.BatchItemResult.__init__",
-          "kind": "python-export",
-          "location": "kmipkit.client:581",
-          "packageId": "python-kmipkit",
-          "signature": "(outcome: BatchOutcome | int, result_status: int, result_reason: int | None, unique_batch_item_id: bytes | None, pending_correlation_value: bytes | None) -> None"
         },
         {
           "exportName": "kmipkit.client.BatchResult.__enter__",
