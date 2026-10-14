@@ -56,10 +56,10 @@ typedef struct kmipkit_client_batch_item_response_t kmipkit_client_batch_item_re
 typedef struct kmipkit_register_request_t kmipkit_register_request_t;
 
 typedef struct kmipkit_byte_span_v1_t kmipkit_byte_span_v1_t;
+typedef struct kmipkit_client_batch_item_metadata_v1_t kmipkit_client_batch_item_metadata_v1_t;
 typedef struct kmipkit_timeout_limit_v1_t kmipkit_timeout_limit_v1_t;
 typedef struct kmipkit_transport_input_v1_t kmipkit_transport_input_v1_t;
 typedef struct kmipkit_transport_config_v1_t kmipkit_transport_config_v1_t;
-typedef struct kmipkit_client_batch_item_metadata_v1_t kmipkit_client_batch_item_metadata_v1_t;
 
 typedef struct {
     uint64_t max_definitions;
@@ -96,6 +96,15 @@ typedef struct {
 struct kmipkit_byte_span_v1_t {
     const uint8_t * data;
     uint64_t length;
+};
+
+struct kmipkit_client_batch_item_metadata_v1_t {
+    uint32_t struct_size;
+    uint32_t abi_version;
+    uint32_t outcome_kind;
+    uint32_t result_status;
+    uint32_t has_result_reason;
+    uint32_t result_reason;
 };
 
 struct kmipkit_timeout_limit_v1_t {
@@ -136,15 +145,6 @@ struct kmipkit_transport_config_v1_t {
     kmipkit_timeout_limit_v1_t read_timeout;
     kmipkit_timeout_limit_v1_t total_timeout;
     uint64_t max_request_bytes;
-};
-
-struct kmipkit_client_batch_item_metadata_v1_t {
-    uint32_t struct_size;
-    uint32_t abi_version;
-    uint32_t outcome_kind;
-    uint32_t result_status;
-    uint32_t has_result_reason;
-    uint32_t result_reason;
 };
 
 void kmipkit_extension_identity_release(kmipkit_extension_identity_t *handle);
@@ -458,10 +458,10 @@ int32_t kmipkit_client_batch_item_response_pending_correlation_value(kmipkit_cli
 int32_t kmipkit_client_create(kmipkit_client_configuration_t * configuration, kmipkit_transport_config_t ** transport_configuration, kmipkit_client_t ** out_client);
 /* KMIPKIT-0007-FR-001, KMIPKIT-0007-FR-006, KMIPKIT-0007-FR-008, KMIPKIT-0043-FR-003, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-021 */
 int32_t kmipkit_client_execute(kmipkit_client_t * client, kmipkit_client_batch_t ** batch, kmipkit_codec_limits_t * limits, kmipkit_client_batch_response_t ** out_response);
-/* Approved exact C-only exclusion: kmipkit_transport_config_create_v1 */
-int32_t kmipkit_transport_config_create_v1(const kmipkit_transport_config_v1_t * configuration, kmipkit_transport_config_t ** out_configuration);
 /* Approved exact C-only exclusion: kmipkit_client_batch_item_response_metadata_v1 */
 int32_t kmipkit_client_batch_item_response_metadata_v1(kmipkit_client_batch_item_response_t * item, kmipkit_client_batch_item_metadata_v1_t * out_metadata);
+/* Approved exact C-only exclusion: kmipkit_transport_config_create_v1 */
+int32_t kmipkit_transport_config_create_v1(const kmipkit_transport_config_v1_t * configuration, kmipkit_transport_config_t ** out_configuration);
 
 #ifdef __cplusplus
 }

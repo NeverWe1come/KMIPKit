@@ -212943,6 +212943,205 @@
   "approvedExclusions": [
     {
       "packageId": "c-kmipkit",
+      "exportName": "kmipkit_byte_span_v1_t",
+      "reason": "This exact C record is a fixed-width ABI carrier. Rust exposes the validated configuration or outcome through idiomatic types; Java and Python expose typed configuration records and copied byte values rather than this C layout.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Exact ordered fields match the `#[repr(C)]` declaration in `crates/kmipkit-ffi/src/lib.rs`; the type remains generated for C consumers without advertising a same-shaped facade type.",
+      "cType": {
+        "name": "kmipkit_byte_span_v1_t",
+        "kind": "fixed-width-value",
+        "fields": [
+          {
+            "name": "data",
+            "type": "const uint8_t *"
+          },
+          {
+            "name": "length",
+            "type": "uint64_t"
+          }
+        ]
+      }
+    },
+    {
+      "packageId": "c-kmipkit",
+      "exportName": "kmipkit_byte_span_v1_t.data",
+      "reason": "This exact member is the pointer or length framing field of the C byte-span ABI carrier. The complete byte value is mapped through its typed input or response API; pointer and length are not separate cross-language product fields.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "KMIPKIT-0043-FR-007 defines explicit pointer lengths and fixed-width C ABI framing. This exact carrier member is excluded while the containing semantic value remains mapped."
+    },
+    {
+      "packageId": "c-kmipkit",
+      "exportName": "kmipkit_byte_span_v1_t.length",
+      "reason": "This exact member is the pointer or length framing field of the C byte-span ABI carrier. The complete byte value is mapped through its typed input or response API; pointer and length are not separate cross-language product fields.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "KMIPKIT-0043-FR-007 defines explicit pointer lengths and fixed-width C ABI framing. This exact carrier member is excluded while the containing semantic value remains mapped."
+    },
+    {
+      "packageId": "c-kmipkit",
+      "exportName": "kmipkit_client_batch_item_metadata_v1_t",
+      "reason": "This exact versioned struct is a C ABI value carrier for common batch-result metadata. Rust returns its typed outcome/result values, while Java and Python expose copied scalar fields through `ClientBatchItemResult` and `BatchItemResult`; their adapters translate this record at the native boundary.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Exact field order and widths match `kmipkit_client_batch_item_metadata_v1_t` in `crates/kmipkit-ffi/src/lib.rs`; this C layout is retained for callers of the versioned metadata function.",
+      "cType": {
+        "name": "kmipkit_client_batch_item_metadata_v1_t",
+        "kind": "fixed-width-value",
+        "fields": [
+          {
+            "name": "struct_size",
+            "type": "uint32_t"
+          },
+          {
+            "name": "abi_version",
+            "type": "uint32_t"
+          },
+          {
+            "name": "outcome_kind",
+            "type": "uint32_t"
+          },
+          {
+            "name": "result_status",
+            "type": "uint32_t"
+          },
+          {
+            "name": "has_result_reason",
+            "type": "uint32_t"
+          },
+          {
+            "name": "result_reason",
+            "type": "uint32_t"
+          }
+        ]
+      }
+    },
+    {
+      "packageId": "c-kmipkit",
+      "exportName": "kmipkit_client_batch_item_metadata_v1_t.abi_version",
+      "reason": "This exact member is ABI size, version, or reserved layout metadata rather than a cross-language product value; only this named C ABI field is excluded.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "KMIPKIT-0043-FR-007 requires versioned public structures and stable C ABI layout. This exact member is layout framing; sibling semantic fields remain independently mapped."
+    },
+    {
+      "packageId": "c-kmipkit",
+      "exportName": "kmipkit_client_batch_item_metadata_v1_t.struct_size",
+      "reason": "This exact member is ABI size, version, or reserved layout metadata rather than a cross-language product value; only this named C ABI field is excluded.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "KMIPKIT-0043-FR-007 requires versioned public structures and stable C ABI layout. This exact member is layout framing; sibling semantic fields remain independently mapped."
+    },
+    {
+      "packageId": "c-kmipkit",
+      "exportName": "kmipkit_client_batch_item_response_metadata_v1",
+      "reason": "C returns common response metadata in its versioned fixed-width ABI carrier. Rust exposes the typed `ClientBatchItemResponse::outcome()` and `ClientBatchOutcome::result()` values; Java exposes `outcomeKind()`, `resultStatus()`, and `resultReason()`; Python exposes `outcome`, `result_status`, and `result_reason` on the copied `BatchItemResult`. The C aggregate and its version prefix are representation-specific; its exact function and layout remain available to C callers without inventing a shared aggregate type.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0007-FR-001/-006/-008 and KMIPKIT-0043-FR-005/-007/-012/-013/-021. Java and Python wrappers call this exact C function to populate the returned value fields.",
+      "cFunction": {
+        "symbol": "kmipkit_client_batch_item_response_metadata_v1",
+        "parameters": [
+          {
+            "name": "item",
+            "kind": "handle",
+            "type": "kmipkit_client_batch_item_response_t *",
+            "ownership": "borrowed"
+          },
+          {
+            "name": "out_metadata",
+            "kind": "output-value-pointer",
+            "type": "kmipkit_client_batch_item_metadata_v1_t *",
+            "valueType": "kmipkit_client_batch_item_metadata_v1_t",
+            "ownership": "none"
+          }
+        ],
+        "returnType": "int32_t",
+        "errorCategories": [
+          "invalid_input",
+          "internal"
+        ]
+      }
+    },
+    {
+      "packageId": "c-kmipkit",
+      "exportName": "kmipkit_client_batch_item_response_release",
+      "reason": "This C ABI release function frees an opaque native handle. Rust releases the owned value through ordinary drop, while Java and Python expose deterministic `close()` methods on their owned wrappers. The C helper is the required caller-owned lifecycle counterpart and does not add a separate four-language capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-007 and FR-021; the exact public C release prototype is generated from the associated opaque type record."
+    },
+    {
+      "packageId": "c-kmipkit",
+      "exportName": "kmipkit_client_batch_release",
+      "reason": "This C ABI release function frees an opaque native handle. Rust releases the owned value through ordinary drop, while Java and Python expose deterministic `close()` methods on their owned wrappers. The C helper is the required caller-owned lifecycle counterpart and does not add a separate four-language capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-007 and FR-021; the exact public C release prototype is generated from the associated opaque type record."
+    },
+    {
+      "packageId": "c-kmipkit",
+      "exportName": "kmipkit_client_batch_response_release",
+      "reason": "This C ABI release function frees an opaque native handle. Rust releases the owned value through ordinary drop, while Java and Python expose deterministic `close()` methods on their owned wrappers. The C helper is the required caller-owned lifecycle counterpart and does not add a separate four-language capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-007 and FR-021; the exact public C release prototype is generated from the associated opaque type record."
+    },
+    {
+      "packageId": "c-kmipkit",
+      "exportName": "kmipkit_client_release",
+      "reason": "This C ABI release function frees an opaque native handle. Rust releases the owned value through ordinary drop, while Java and Python expose deterministic `close()` methods on their owned wrappers. The C helper is the required caller-owned lifecycle counterpart and does not add a separate four-language capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-007 and FR-021; the exact public C release prototype is generated from the associated opaque type record."
+    },
+    {
+      "packageId": "c-kmipkit",
       "exportName": "kmipkit_extension_registry_limits_v1_t.abi_version",
       "reason": "The version and byte-size prefix is C ABI compatibility metadata, not a facade value. C callers initialize it; Java JNI and Python CFFI adapters set it at the ABI boundary, where native functions validate and preserve it while all four facades expose the twelve limit values.",
       "approvalSource": {
@@ -212976,32 +213175,6 @@
         "evidence": "**Status**: Approved for implementation"
       },
       "evidence": "Reviewed against KMIPKIT-0043-FR-007 and FR-021 in specs/043-public-api-bindings/implementation-evidence.md#reviewed-c-only-last-error-exclusions. The exact C clear operation remains generated for C consumers; exclusion is limited to this thread-local implementation mechanism, not the shared error status/category/cause/delivery taxonomy."
-    },
-    {
-      "packageId": "c-kmipkit",
-      "exportName": "kmipkit_byte_span_v1_t",
-      "reason": "This exact C record is a fixed-width ABI carrier. Rust exposes the validated configuration or outcome through idiomatic types; Java and Python expose typed configuration records and copied byte values rather than this C layout.",
-      "approvalSource": {
-        "kind": "feature-specification",
-        "path": "specs/043-public-api-bindings/spec.md",
-        "status": "Approved",
-        "evidence": "**Status**: Approved for implementation"
-      },
-      "evidence": "Exact ordered fields match the `#[repr(C)]` declaration in `crates/kmipkit-ffi/src/lib.rs`; the type remains generated for C consumers without advertising a same-shaped facade type.",
-      "cType": {
-        "name": "kmipkit_byte_span_v1_t",
-        "kind": "fixed-width-value",
-        "fields": [
-          {
-            "name": "data",
-            "type": "const uint8_t *"
-          },
-          {
-            "name": "length",
-            "type": "uint64_t"
-          }
-        ]
-      }
     },
     {
       "packageId": "c-kmipkit",
@@ -213043,33 +213216,75 @@
     },
     {
       "packageId": "c-kmipkit",
-      "exportName": "kmipkit_transport_input_v1_t",
-      "reason": "This exact C record is a fixed-width ABI carrier. Rust exposes the validated configuration or outcome through idiomatic types; Java and Python expose typed configuration records and copied byte values rather than this C layout.",
+      "exportName": "kmipkit_timeout_limit_v1_t.reserved",
+      "reason": "This exact member is ABI size, version, or reserved layout metadata rather than a cross-language product value; only this named C ABI field is excluded.",
       "approvalSource": {
         "kind": "feature-specification",
         "path": "specs/043-public-api-bindings/spec.md",
         "status": "Approved",
         "evidence": "**Status**: Approved for implementation"
       },
-      "evidence": "Exact ordered fields match the `#[repr(C)]` declaration in `crates/kmipkit-ffi/src/lib.rs`; the type remains generated for C consumers without advertising a same-shaped facade type.",
-      "cType": {
-        "name": "kmipkit_transport_input_v1_t",
-        "kind": "fixed-width-value",
-        "fields": [
+      "evidence": "KMIPKIT-0043-FR-007 requires versioned public structures and stable C ABI layout. This exact member is layout framing; sibling semantic fields remain independently mapped."
+    },
+    {
+      "packageId": "c-kmipkit",
+      "exportName": "kmipkit_timeout_limit_v1_t.reserved2",
+      "reason": "This exact member is ABI size, version, or reserved layout metadata rather than a cross-language product value; only this named C ABI field is excluded.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "KMIPKIT-0043-FR-007 requires versioned public structures and stable C ABI layout. This exact member is layout framing; sibling semantic fields remain independently mapped."
+    },
+    {
+      "packageId": "c-kmipkit",
+      "exportName": "kmipkit_transport_config_create_v1",
+      "reason": "This C ABI adapter converts the versioned fixed-width transport record into the opaque handle consumed by `kmipkit_client_create`. Java exposes `TransportConfiguration.Builder.build()` and Python passes an immutable `TransportConfig` value to `Client.create()`, where adapters perform this representation conversion internally. The helper remains available to C callers but is not a separate cross-language capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0013-FR-001 and KMIPKIT-0043-FR-003/-007/-021; the exact input layout is `kmipkit_transport_config_v1_t` and the output is the public opaque transport handle.",
+      "cFunction": {
+        "symbol": "kmipkit_transport_config_create_v1",
+        "parameters": [
           {
-            "name": "source_kind",
-            "type": "uint32_t"
+            "name": "configuration",
+            "kind": "versioned-value-pointer",
+            "type": "const kmipkit_transport_config_v1_t *",
+            "direction": "input",
+            "ownership": "borrowed"
           },
           {
-            "name": "encoding",
-            "type": "uint32_t"
-          },
-          {
-            "name": "data",
-            "type": "kmipkit_byte_span_v1_t"
+            "name": "out_configuration",
+            "kind": "output",
+            "type": "kmipkit_transport_config_t **",
+            "ownership": "library-owned",
+            "nullable": false
           }
+        ],
+        "returnType": "int32_t",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit"
         ]
       }
+    },
+    {
+      "packageId": "c-kmipkit",
+      "exportName": "kmipkit_transport_config_release",
+      "reason": "This C ABI release function frees an opaque native handle. Rust releases the owned value through ordinary drop, while Java and Python expose deterministic `close()` methods on their owned wrappers. The C helper is the required caller-owned lifecycle counterpart and does not add a separate four-language capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-007 and FR-021; the exact public C release prototype is generated from the associated opaque type record."
     },
     {
       "packageId": "c-kmipkit",
@@ -213180,6 +213395,1392 @@
           }
         ]
       }
+    },
+    {
+      "packageId": "c-kmipkit",
+      "exportName": "kmipkit_transport_config_v1_t.abi_version",
+      "reason": "This exact member is ABI size, version, or reserved layout metadata rather than a cross-language product value; only this named C ABI field is excluded.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "KMIPKIT-0043-FR-007 requires versioned public structures and stable C ABI layout. This exact member is layout framing; sibling semantic fields remain independently mapped."
+    },
+    {
+      "packageId": "c-kmipkit",
+      "exportName": "kmipkit_transport_config_v1_t.client_certificate_count",
+      "reason": "This exact C field is the derived length of its adjacent input slice; the list contents are mapped through the parent configuration API and the length is not independently configurable.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "KMIPKIT-0043-FR-007 defines the fixed-width C ABI layout. KMIPKIT-0013-FR-004 defines caller-selected certificate/key input values; KMIPKIT-0013-FR-003 defines caller-selected trust roots and in-memory CRLs. The count is only the ABI slice length."
+    },
+    {
+      "packageId": "c-kmipkit",
+      "exportName": "kmipkit_transport_config_v1_t.flags",
+      "reason": "This exact C bitset only records whether tls_server_name and target_uri are present. Those optional values remain mapped through their configuration fields and public builder/endpoint APIs, so the presence bitset is representation detail rather than an independent cross-language capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "KMIPKIT-0043-FR-007 defines the C ABI layout; KMIPKIT-0013-FR-008 defines the optional TLS server name and target URI inputs. This exact bitset duplicates presence for those separately mapped semantic values."
+    },
+    {
+      "packageId": "c-kmipkit",
+      "exportName": "kmipkit_transport_config_v1_t.reserved",
+      "reason": "This exact member is ABI size, version, or reserved layout metadata rather than a cross-language product value; only this named C ABI field is excluded.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "KMIPKIT-0043-FR-007 requires versioned public structures and stable C ABI layout. This exact member is layout framing; sibling semantic fields remain independently mapped."
+    },
+    {
+      "packageId": "c-kmipkit",
+      "exportName": "kmipkit_transport_config_v1_t.reserved2",
+      "reason": "This exact member is ABI size, version, or reserved layout metadata rather than a cross-language product value; only this named C ABI field is excluded.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "KMIPKIT-0043-FR-007 requires versioned public structures and stable C ABI layout. This exact member is layout framing; sibling semantic fields remain independently mapped."
+    },
+    {
+      "packageId": "c-kmipkit",
+      "exportName": "kmipkit_transport_config_v1_t.revocation_list_count",
+      "reason": "This exact C field is the derived length of its adjacent input slice; the list contents are mapped through the parent configuration API and the length is not independently configurable.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "KMIPKIT-0043-FR-007 defines the fixed-width C ABI layout. KMIPKIT-0013-FR-004 defines caller-selected certificate/key input values; KMIPKIT-0013-FR-003 defines caller-selected trust roots and in-memory CRLs. The count is only the ABI slice length."
+    },
+    {
+      "packageId": "c-kmipkit",
+      "exportName": "kmipkit_transport_config_v1_t.struct_size",
+      "reason": "This exact member is ABI size, version, or reserved layout metadata rather than a cross-language product value; only this named C ABI field is excluded.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "KMIPKIT-0043-FR-007 requires versioned public structures and stable C ABI layout. This exact member is layout framing; sibling semantic fields remain independently mapped."
+    },
+    {
+      "packageId": "c-kmipkit",
+      "exportName": "kmipkit_transport_config_v1_t.trust_certificate_count",
+      "reason": "This exact C field is the derived length of its adjacent input slice; the list contents are mapped through the parent configuration API and the length is not independently configurable.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "KMIPKIT-0043-FR-007 defines the fixed-width C ABI layout. KMIPKIT-0013-FR-004 defines caller-selected certificate/key input values; KMIPKIT-0013-FR-003 defines caller-selected trust roots and in-memory CRLs. The count is only the ABI slice length."
+    },
+    {
+      "packageId": "c-kmipkit",
+      "exportName": "kmipkit_transport_input_v1_t",
+      "reason": "This exact C record is a fixed-width ABI carrier. Rust exposes the validated configuration or outcome through idiomatic types; Java and Python expose typed configuration records and copied byte values rather than this C layout.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Exact ordered fields match the `#[repr(C)]` declaration in `crates/kmipkit-ffi/src/lib.rs`; the type remains generated for C consumers without advertising a same-shaped facade type.",
+      "cType": {
+        "name": "kmipkit_transport_input_v1_t",
+        "kind": "fixed-width-value",
+        "fields": [
+          {
+            "name": "source_kind",
+            "type": "uint32_t"
+          },
+          {
+            "name": "encoding",
+            "type": "uint32_t"
+          },
+          {
+            "name": "data",
+            "type": "kmipkit_byte_span_v1_t"
+          }
+        ]
+      }
+    },
+    {
+      "packageId": "c-kmipkit",
+      "exportName": "kmipkit_transport_input_v1_t.data",
+      "reason": "This exact C byte span is a representation carrier for the parent transport input value, not an independent semantic value.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "KMIPKIT-0043-FR-007 defines the C span representation. The full input value is mapped through its encoding and source-kind selectors plus the parent configuration field; approved PEM/DER and permitted file/memory modes are covered by KMIPKIT-0013-FR-003 and KMIPKIT-0013-FR-004."
+    },
+    {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.CLIENT",
+      "reason": "This public static member is a raw-handle JNI bridge entry point. Java exposes it for native binding dispatch; applications are directed to the typed org.kmipkit.extensions and org.kmipkit.ttlv facade. The bridge member has no independent product-level capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021. The NativeExtensionRegistry class documentation identifies it as an internal JNI bridge and directs applications to typed facade classes; docs/architecture/ffi-and-bindings.md describes the supported Java-to-C boundary as a minimal JNI bridge."
+    },
+    {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.CLIENT_BATCH",
+      "reason": "This public static member is a raw-handle JNI bridge entry point. Java exposes it for native binding dispatch; applications are directed to the typed org.kmipkit.extensions and org.kmipkit.ttlv facade. The bridge member has no independent product-level capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021. The NativeExtensionRegistry class documentation identifies it as an internal JNI bridge and directs applications to typed facade classes; docs/architecture/ffi-and-bindings.md describes the supported Java-to-C boundary as a minimal JNI bridge."
+    },
+    {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.CLIENT_BATCH_ITEM_RESPONSE",
+      "reason": "This public static member is a raw-handle JNI bridge entry point. Java exposes it for native binding dispatch; applications are directed to the typed org.kmipkit.extensions and org.kmipkit.ttlv facade. The bridge member has no independent product-level capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021. The NativeExtensionRegistry class documentation identifies it as an internal JNI bridge and directs applications to typed facade classes; docs/architecture/ffi-and-bindings.md describes the supported Java-to-C boundary as a minimal JNI bridge."
+    },
+    {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.CLIENT_BATCH_RESPONSE",
+      "reason": "This public static member is a raw-handle JNI bridge entry point. Java exposes it for native binding dispatch; applications are directed to the typed org.kmipkit.extensions and org.kmipkit.ttlv facade. The bridge member has no independent product-level capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021. The NativeExtensionRegistry class documentation identifies it as an internal JNI bridge and directs applications to typed facade classes; docs/architecture/ffi-and-bindings.md describes the supported Java-to-C boundary as a minimal JNI bridge."
+    },
+    {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.CODEC_LIMITS",
+      "reason": "This public static member is a raw-handle JNI bridge entry point. Java exposes it for native binding dispatch; applications are directed to the typed org.kmipkit.extensions and org.kmipkit.ttlv facade. The bridge member has no independent product-level capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021. The NativeExtensionRegistry class documentation identifies it as an internal JNI bridge and directs applications to typed facade classes; docs/architecture/ffi-and-bindings.md describes the supported Java-to-C boundary as a minimal JNI bridge."
+    },
+    {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.TRANSPORT_CONFIGURATION",
+      "reason": "This public static member is a raw-handle JNI bridge entry point. Java exposes it for native binding dispatch; applications are directed to the typed org.kmipkit.extensions and org.kmipkit.ttlv facade. The bridge member has no independent product-level capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021. The NativeExtensionRegistry class documentation identifies it as an internal JNI bridge and directs applications to typed facade classes; docs/architecture/ffi-and-bindings.md describes the supported Java-to-C boundary as a minimal JNI bridge."
+    },
+    {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchAddErrorContinuationValue",
+      "reason": "This public static member is a raw-handle JNI bridge entry point. Java exposes it for native binding dispatch; applications are directed to the typed org.kmipkit.extensions and org.kmipkit.ttlv facade. The bridge member has no independent product-level capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021. The NativeExtensionRegistry class documentation identifies it as an internal JNI bridge and directs applications to typed facade classes; docs/architecture/ffi-and-bindings.md describes the supported Java-to-C boundary as a minimal JNI bridge."
+    },
+    {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchAddItem",
+      "reason": "This public static member is a raw-handle JNI bridge entry point. Java exposes it for native binding dispatch; applications are directed to the typed org.kmipkit.extensions and org.kmipkit.ttlv facade. The bridge member has no independent product-level capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021. The NativeExtensionRegistry class documentation identifies it as an internal JNI bridge and directs applications to typed facade classes; docs/architecture/ffi-and-bindings.md describes the supported Java-to-C boundary as a minimal JNI bridge."
+    },
+    {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchCreate",
+      "reason": "This public static member is a raw-handle JNI bridge entry point. Java exposes it for native binding dispatch; applications are directed to the typed org.kmipkit.extensions and org.kmipkit.ttlv facade. The bridge member has no independent product-level capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021. The NativeExtensionRegistry class documentation identifies it as an internal JNI bridge and directs applications to typed facade classes; docs/architecture/ffi-and-bindings.md describes the supported Java-to-C boundary as a minimal JNI bridge."
+    },
+    {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemResponseMetadata",
+      "reason": "This public static member is a raw-handle JNI bridge entry point. Java exposes it for native binding dispatch; applications are directed to the typed org.kmipkit.extensions and org.kmipkit.ttlv facade. The bridge member has no independent product-level capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021. The NativeExtensionRegistry class documentation identifies it as an internal JNI bridge and directs applications to typed facade classes; docs/architecture/ffi-and-bindings.md describes the supported Java-to-C boundary as a minimal JNI bridge."
+    },
+    {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemResponsePendingCorrelationValue",
+      "reason": "This public static member is a raw-handle JNI bridge entry point. Java exposes it for native binding dispatch; applications are directed to the typed org.kmipkit.extensions and org.kmipkit.ttlv facade. The bridge member has no independent product-level capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021. The NativeExtensionRegistry class documentation identifies it as an internal JNI bridge and directs applications to typed facade classes; docs/architecture/ffi-and-bindings.md describes the supported Java-to-C boundary as a minimal JNI bridge."
+    },
+    {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemResponseUniqueBatchItemId",
+      "reason": "This public static member is a raw-handle JNI bridge entry point. Java exposes it for native binding dispatch; applications are directed to the typed org.kmipkit.extensions and org.kmipkit.ttlv facade. The bridge member has no independent product-level capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021. The NativeExtensionRegistry class documentation identifies it as an internal JNI bridge and directs applications to typed facade classes; docs/architecture/ffi-and-bindings.md describes the supported Java-to-C boundary as a minimal JNI bridge."
+    },
+    {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemWithUniqueBatchItemId",
+      "reason": "This public static member is a raw-handle JNI bridge entry point. Java exposes it for native binding dispatch; applications are directed to the typed org.kmipkit.extensions and org.kmipkit.ttlv facade. The bridge member has no independent product-level capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021. The NativeExtensionRegistry class documentation identifies it as an internal JNI bridge and directs applications to typed facade classes; docs/architecture/ffi-and-bindings.md describes the supported Java-to-C boundary as a minimal JNI bridge."
+    },
+    {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchResponseItemAt",
+      "reason": "This public static member is a raw-handle JNI bridge entry point. Java exposes it for native binding dispatch; applications are directed to the typed org.kmipkit.extensions and org.kmipkit.ttlv facade. The bridge member has no independent product-level capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021. The NativeExtensionRegistry class documentation identifies it as an internal JNI bridge and directs applications to typed facade classes; docs/architecture/ffi-and-bindings.md describes the supported Java-to-C boundary as a minimal JNI bridge."
+    },
+    {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchResponseItemCount",
+      "reason": "This public static member is a raw-handle JNI bridge entry point. Java exposes it for native binding dispatch; applications are directed to the typed org.kmipkit.extensions and org.kmipkit.ttlv facade. The bridge member has no independent product-level capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021. The NativeExtensionRegistry class documentation identifies it as an internal JNI bridge and directs applications to typed facade classes; docs/architecture/ffi-and-bindings.md describes the supported Java-to-C boundary as a minimal JNI bridge."
+    },
+    {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchSetAsynchronousIndicator",
+      "reason": "This public static member is a raw-handle JNI bridge entry point. Java exposes it for native binding dispatch; applications are directed to the typed org.kmipkit.extensions and org.kmipkit.ttlv facade. The bridge member has no independent product-level capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021. The NativeExtensionRegistry class documentation identifies it as an internal JNI bridge and directs applications to typed facade classes; docs/architecture/ffi-and-bindings.md describes the supported Java-to-C boundary as a minimal JNI bridge."
+    },
+    {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchSetClientCorrelationValue",
+      "reason": "This public static member is a raw-handle JNI bridge entry point. Java exposes it for native binding dispatch; applications are directed to the typed org.kmipkit.extensions and org.kmipkit.ttlv facade. The bridge member has no independent product-level capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021. The NativeExtensionRegistry class documentation identifies it as an internal JNI bridge and directs applications to typed facade classes; docs/architecture/ffi-and-bindings.md describes the supported Java-to-C boundary as a minimal JNI bridge."
+    },
+    {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchSetOrderOption",
+      "reason": "This public static member is a raw-handle JNI bridge entry point. Java exposes it for native binding dispatch; applications are directed to the typed org.kmipkit.extensions and org.kmipkit.ttlv facade. The bridge member has no independent product-level capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021. The NativeExtensionRegistry class documentation identifies it as an internal JNI bridge and directs applications to typed facade classes; docs/architecture/ffi-and-bindings.md describes the supported Java-to-C boundary as a minimal JNI bridge."
+    },
+    {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchSetRequestTimestamp",
+      "reason": "This public static member is a raw-handle JNI bridge entry point. Java exposes it for native binding dispatch; applications are directed to the typed org.kmipkit.extensions and org.kmipkit.ttlv facade. The bridge member has no independent product-level capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021. The NativeExtensionRegistry class documentation identifies it as an internal JNI bridge and directs applications to typed facade classes; docs/architecture/ffi-and-bindings.md describes the supported Java-to-C boundary as a minimal JNI bridge."
+    },
+    {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.clientCreate",
+      "reason": "This public static member is a raw-handle JNI bridge entry point. Java exposes it for native binding dispatch; applications are directed to the typed org.kmipkit.extensions and org.kmipkit.ttlv facade. The bridge member has no independent product-level capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021. The NativeExtensionRegistry class documentation identifies it as an internal JNI bridge and directs applications to typed facade classes; docs/architecture/ffi-and-bindings.md describes the supported Java-to-C boundary as a minimal JNI bridge."
+    },
+    {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.clientExecute",
+      "reason": "This public static member is a raw-handle JNI bridge entry point. Java exposes it for native binding dispatch; applications are directed to the typed org.kmipkit.extensions and org.kmipkit.ttlv facade. The bridge member has no independent product-level capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021. The NativeExtensionRegistry class documentation identifies it as an internal JNI bridge and directs applications to typed facade classes; docs/architecture/ffi-and-bindings.md describes the supported Java-to-C boundary as a minimal JNI bridge."
+    },
+    {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.transportConfigCreate",
+      "reason": "This public static member is a raw-handle JNI bridge entry point. Java exposes it for native binding dispatch; applications are directed to the typed org.kmipkit.extensions and org.kmipkit.ttlv facade. The bridge member has no independent product-level capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021. The NativeExtensionRegistry class documentation identifies it as an internal JNI bridge and directs applications to typed facade classes; docs/architecture/ffi-and-bindings.md describes the supported Java-to-C boundary as a minimal JNI bridge."
+    },
+    {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.extensions.BatchOutcomeKind.equals",
+      "reason": "This exact Java member is compiler-provided record value boilerplate, not a separately specified KMIPKit capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-021 and the Java declaration inventory. The corresponding record or enum is mapped as a public facade value; only the compiler-generated method is excluded."
+    },
+    {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.extensions.BatchOutcomeKind.hashCode",
+      "reason": "This exact Java member is compiler-provided record value boilerplate, not a separately specified KMIPKit capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-021 and the Java declaration inventory. The corresponding record or enum is mapped as a public facade value; only the compiler-generated method is excluded."
+    },
+    {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.extensions.BatchOutcomeKind.toString",
+      "reason": "This exact Java member is compiler-provided record value boilerplate, not a separately specified KMIPKit capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-021 and the Java declaration inventory. The corresponding record or enum is mapped as a public facade value; only the compiler-generated method is excluded."
+    },
+    {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.extensions.TransportConfiguration.Encoding.valueOf",
+      "reason": "This exact Java member is compiler-provided enum lookup boilerplate; the enum type and its declared values carry the product capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-021 and the Java declaration inventory. The corresponding record or enum is mapped as a public facade value; only the compiler-generated method is excluded."
+    },
+    {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.extensions.TransportConfiguration.Encoding.values",
+      "reason": "This exact Java member is compiler-provided enum lookup boilerplate; the enum type and its declared values carry the product capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-021 and the Java declaration inventory. The corresponding record or enum is mapped as a public facade value; only the compiler-generated method is excluded."
+    },
+    {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.extensions.TransportConfiguration.Timeout.equals",
+      "reason": "This exact Java member is compiler-provided record value boilerplate, not a separately specified KMIPKit capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-021 and the Java declaration inventory. The corresponding record or enum is mapped as a public facade value; only the compiler-generated method is excluded."
+    },
+    {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.extensions.TransportConfiguration.Timeout.hashCode",
+      "reason": "This exact Java member is compiler-provided record value boilerplate, not a separately specified KMIPKit capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-021 and the Java declaration inventory. The corresponding record or enum is mapped as a public facade value; only the compiler-generated method is excluded."
+    },
+    {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.extensions.TransportConfiguration.Timeout.toString",
+      "reason": "This exact Java member is compiler-provided record value boilerplate, not a separately specified KMIPKit capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-021 and the Java declaration inventory. The corresponding record or enum is mapped as a public facade value; only the compiler-generated method is excluded."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client",
+      "reason": "This exact Python module path is an import namespace that groups the declared client facade symbols; it has no independent callable product capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-021. Public declarations in kmipkit.client remain inventoried and mapped individually; this exclusion applies only to the module container."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.BatchItemResult.__dataclass_fields__",
+      "reason": "This exact member is Python dataclass introspection or storage metadata generated from the class declaration, not an independent cross-language product capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-021 and the source declaration. The dataclass constructor and semantic fields are inventoried separately; the exclusion applies only to this generated member."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.BatchItemResult.__dataclass_params__",
+      "reason": "This exact member is Python dataclass introspection or storage metadata generated from the class declaration, not an independent cross-language product capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-021 and the source declaration. The dataclass constructor and semantic fields are inventoried separately; the exclusion applies only to this generated member."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.BatchItemResult.__delattr__",
+      "reason": "This exact member is generated Python dataclass value or frozen-instance machinery, not an independently specified cross-language product capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-021 and the source declaration. The dataclass constructor and semantic fields are inventoried separately; the exclusion applies only to this generated member."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.BatchItemResult.__eq__",
+      "reason": "This exact member is generated Python dataclass value or frozen-instance machinery, not an independently specified cross-language product capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-021 and the source declaration. The dataclass constructor and semantic fields are inventoried separately; the exclusion applies only to this generated member."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.BatchItemResult.__hash__",
+      "reason": "This exact member is generated Python dataclass value or frozen-instance machinery, not an independently specified cross-language product capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-021 and the source declaration. The dataclass constructor and semantic fields are inventoried separately; the exclusion applies only to this generated member."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.BatchItemResult.__match_args__",
+      "reason": "This exact member is Python dataclass introspection or storage metadata generated from the class declaration, not an independent cross-language product capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-021 and the source declaration. The dataclass constructor and semantic fields are inventoried separately; the exclusion applies only to this generated member."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.BatchItemResult.__repr__",
+      "reason": "This exact member is generated Python presentation behavior, not a shared KMIPKit capability. Its output remains subject to secret-redaction tests.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-021 and the source declaration. The dataclass constructor and semantic fields are inventoried separately; the exclusion applies only to this generated member. Redaction is covered by bindings/python/tests/test_client.py::test_secret_bearing_client_records_redact_repr and bindings/python/tests/test_client.py::test_endpoint_direct_constructor_enforces_text_shape_and_repr_redaction."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.BatchItemResult.__setattr__",
+      "reason": "This exact member is generated Python dataclass value or frozen-instance machinery, not an independently specified cross-language product capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-021 and the source declaration. The dataclass constructor and semantic fields are inventoried separately; the exclusion applies only to this generated member."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.BatchItemResult.__slots__",
+      "reason": "This exact member is Python dataclass introspection or storage metadata generated from the class declaration, not an independent cross-language product capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-021 and the source declaration. The dataclass constructor and semantic fields are inventoried separately; the exclusion applies only to this generated member."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.Endpoint.__dataclass_fields__",
+      "reason": "This exact member is Python dataclass introspection or storage metadata generated from the class declaration, not an independent cross-language product capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-021 and the source declaration. The dataclass constructor and semantic fields are inventoried separately; the exclusion applies only to this generated member."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.Endpoint.__dataclass_params__",
+      "reason": "This exact member is Python dataclass introspection or storage metadata generated from the class declaration, not an independent cross-language product capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-021 and the source declaration. The dataclass constructor and semantic fields are inventoried separately; the exclusion applies only to this generated member."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.Endpoint.__delattr__",
+      "reason": "This exact member is generated Python dataclass value or frozen-instance machinery, not an independently specified cross-language product capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-021 and the source declaration. The dataclass constructor and semantic fields are inventoried separately; the exclusion applies only to this generated member."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.Endpoint.__eq__",
+      "reason": "This exact member is generated Python dataclass value or frozen-instance machinery, not an independently specified cross-language product capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-021 and the source declaration. The dataclass constructor and semantic fields are inventoried separately; the exclusion applies only to this generated member."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.Endpoint.__hash__",
+      "reason": "This exact member is generated Python dataclass value or frozen-instance machinery, not an independently specified cross-language product capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-021 and the source declaration. The dataclass constructor and semantic fields are inventoried separately; the exclusion applies only to this generated member."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.Endpoint.__match_args__",
+      "reason": "This exact member is Python dataclass introspection or storage metadata generated from the class declaration, not an independent cross-language product capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-021 and the source declaration. The dataclass constructor and semantic fields are inventoried separately; the exclusion applies only to this generated member."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.Endpoint.__repr__",
+      "reason": "This exact member is generated Python presentation behavior, not a shared KMIPKit capability. Its output remains subject to secret-redaction tests.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-021 and the source declaration. The dataclass constructor and semantic fields are inventoried separately; the exclusion applies only to this generated member. Redaction is covered by bindings/python/tests/test_client.py::test_secret_bearing_client_records_redact_repr and bindings/python/tests/test_client.py::test_endpoint_direct_constructor_enforces_text_shape_and_repr_redaction."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.Endpoint.__setattr__",
+      "reason": "This exact member is generated Python dataclass value or frozen-instance machinery, not an independently specified cross-language product capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-021 and the source declaration. The dataclass constructor and semantic fields are inventoried separately; the exclusion applies only to this generated member."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.Endpoint.__slots__",
+      "reason": "This exact member is Python dataclass introspection or storage metadata generated from the class declaration, not an independent cross-language product capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-021 and the source declaration. The dataclass constructor and semantic fields are inventoried separately; the exclusion applies only to this generated member."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.TimeoutLimit.__dataclass_fields__",
+      "reason": "This exact member is Python dataclass introspection or storage metadata generated from the class declaration, not an independent cross-language product capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-021 and the source declaration. The dataclass constructor and semantic fields are inventoried separately; the exclusion applies only to this generated member."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.TimeoutLimit.__dataclass_params__",
+      "reason": "This exact member is Python dataclass introspection or storage metadata generated from the class declaration, not an independent cross-language product capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-021 and the source declaration. The dataclass constructor and semantic fields are inventoried separately; the exclusion applies only to this generated member."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.TimeoutLimit.__delattr__",
+      "reason": "This exact member is generated Python dataclass value or frozen-instance machinery, not an independently specified cross-language product capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-021 and the source declaration. The dataclass constructor and semantic fields are inventoried separately; the exclusion applies only to this generated member."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.TimeoutLimit.__eq__",
+      "reason": "This exact member is generated Python dataclass value or frozen-instance machinery, not an independently specified cross-language product capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-021 and the source declaration. The dataclass constructor and semantic fields are inventoried separately; the exclusion applies only to this generated member."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.TimeoutLimit.__hash__",
+      "reason": "This exact member is generated Python dataclass value or frozen-instance machinery, not an independently specified cross-language product capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-021 and the source declaration. The dataclass constructor and semantic fields are inventoried separately; the exclusion applies only to this generated member."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.TimeoutLimit.__match_args__",
+      "reason": "This exact member is Python dataclass introspection or storage metadata generated from the class declaration, not an independent cross-language product capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-021 and the source declaration. The dataclass constructor and semantic fields are inventoried separately; the exclusion applies only to this generated member."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.TimeoutLimit.__repr__",
+      "reason": "This exact member is generated Python presentation behavior, not a shared KMIPKit capability. Its output remains subject to secret-redaction tests.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-021 and the source declaration. The dataclass constructor and semantic fields are inventoried separately; the exclusion applies only to this generated member. Redaction is covered by bindings/python/tests/test_client.py::test_secret_bearing_client_records_redact_repr and bindings/python/tests/test_client.py::test_endpoint_direct_constructor_enforces_text_shape_and_repr_redaction."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.TimeoutLimit.__setattr__",
+      "reason": "This exact member is generated Python dataclass value or frozen-instance machinery, not an independently specified cross-language product capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-021 and the source declaration. The dataclass constructor and semantic fields are inventoried separately; the exclusion applies only to this generated member."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.TimeoutLimit.__slots__",
+      "reason": "This exact member is Python dataclass introspection or storage metadata generated from the class declaration, not an independent cross-language product capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-021 and the source declaration. The dataclass constructor and semantic fields are inventoried separately; the exclusion applies only to this generated member."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.TransportConfig.__dataclass_fields__",
+      "reason": "This exact member is Python dataclass introspection or storage metadata generated from the class declaration, not an independent cross-language product capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-021 and the source declaration. The dataclass constructor and semantic fields are inventoried separately; the exclusion applies only to this generated member."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.TransportConfig.__dataclass_params__",
+      "reason": "This exact member is Python dataclass introspection or storage metadata generated from the class declaration, not an independent cross-language product capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-021 and the source declaration. The dataclass constructor and semantic fields are inventoried separately; the exclusion applies only to this generated member."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.TransportConfig.__delattr__",
+      "reason": "This exact member is generated Python dataclass value or frozen-instance machinery, not an independently specified cross-language product capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-021 and the source declaration. The dataclass constructor and semantic fields are inventoried separately; the exclusion applies only to this generated member."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.TransportConfig.__eq__",
+      "reason": "This exact member is generated Python dataclass value or frozen-instance machinery, not an independently specified cross-language product capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-021 and the source declaration. The dataclass constructor and semantic fields are inventoried separately; the exclusion applies only to this generated member."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.TransportConfig.__hash__",
+      "reason": "This exact member is generated Python dataclass value or frozen-instance machinery, not an independently specified cross-language product capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-021 and the source declaration. The dataclass constructor and semantic fields are inventoried separately; the exclusion applies only to this generated member."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.TransportConfig.__match_args__",
+      "reason": "This exact member is Python dataclass introspection or storage metadata generated from the class declaration, not an independent cross-language product capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-021 and the source declaration. The dataclass constructor and semantic fields are inventoried separately; the exclusion applies only to this generated member."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.TransportConfig.__repr__",
+      "reason": "This exact member is generated Python presentation behavior, not a shared KMIPKit capability. Its output remains subject to secret-redaction tests.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-021 and the source declaration. The dataclass constructor and semantic fields are inventoried separately; the exclusion applies only to this generated member. Redaction is covered by bindings/python/tests/test_client.py::test_secret_bearing_client_records_redact_repr and bindings/python/tests/test_client.py::test_endpoint_direct_constructor_enforces_text_shape_and_repr_redaction."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.TransportConfig.__setattr__",
+      "reason": "This exact member is generated Python dataclass value or frozen-instance machinery, not an independently specified cross-language product capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-021 and the source declaration. The dataclass constructor and semantic fields are inventoried separately; the exclusion applies only to this generated member."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.TransportConfig.__slots__",
+      "reason": "This exact member is Python dataclass introspection or storage metadata generated from the class declaration, not an independent cross-language product capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-021 and the source declaration. The dataclass constructor and semantic fields are inventoried separately; the exclusion applies only to this generated member."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.TransportInput.__dataclass_fields__",
+      "reason": "This exact member is Python dataclass introspection or storage metadata generated from the class declaration, not an independent cross-language product capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-021 and the source declaration. The dataclass constructor and semantic fields are inventoried separately; the exclusion applies only to this generated member."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.TransportInput.__dataclass_params__",
+      "reason": "This exact member is Python dataclass introspection or storage metadata generated from the class declaration, not an independent cross-language product capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-021 and the source declaration. The dataclass constructor and semantic fields are inventoried separately; the exclusion applies only to this generated member."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.TransportInput.__delattr__",
+      "reason": "This exact member is generated Python dataclass value or frozen-instance machinery, not an independently specified cross-language product capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-021 and the source declaration. The dataclass constructor and semantic fields are inventoried separately; the exclusion applies only to this generated member."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.TransportInput.__eq__",
+      "reason": "This exact member is generated Python dataclass value or frozen-instance machinery, not an independently specified cross-language product capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-021 and the source declaration. The dataclass constructor and semantic fields are inventoried separately; the exclusion applies only to this generated member."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.TransportInput.__hash__",
+      "reason": "This exact member is generated Python dataclass value or frozen-instance machinery, not an independently specified cross-language product capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-021 and the source declaration. The dataclass constructor and semantic fields are inventoried separately; the exclusion applies only to this generated member."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.TransportInput.__match_args__",
+      "reason": "This exact member is Python dataclass introspection or storage metadata generated from the class declaration, not an independent cross-language product capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-021 and the source declaration. The dataclass constructor and semantic fields are inventoried separately; the exclusion applies only to this generated member."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.TransportInput.__repr__",
+      "reason": "This exact member is generated Python presentation behavior, not a shared KMIPKit capability. Its output remains subject to secret-redaction tests.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-021 and the source declaration. The dataclass constructor and semantic fields are inventoried separately; the exclusion applies only to this generated member. Redaction is covered by bindings/python/tests/test_client.py::test_secret_bearing_client_records_redact_repr and bindings/python/tests/test_client.py::test_endpoint_direct_constructor_enforces_text_shape_and_repr_redaction."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.TransportInput.__setattr__",
+      "reason": "This exact member is generated Python dataclass value or frozen-instance machinery, not an independently specified cross-language product capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-021 and the source declaration. The dataclass constructor and semantic fields are inventoried separately; the exclusion applies only to this generated member."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.TransportInput.__slots__",
+      "reason": "This exact member is Python dataclass introspection or storage metadata generated from the class declaration, not an independent cross-language product capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-021 and the source declaration. The dataclass constructor and semantic fields are inventoried separately; the exclusion applies only to this generated member."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.TrustSource.__dataclass_fields__",
+      "reason": "This exact member is Python dataclass introspection or storage metadata generated from the class declaration, not an independent cross-language product capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-021 and the source declaration. The dataclass constructor and semantic fields are inventoried separately; the exclusion applies only to this generated member."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.TrustSource.__dataclass_params__",
+      "reason": "This exact member is Python dataclass introspection or storage metadata generated from the class declaration, not an independent cross-language product capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-021 and the source declaration. The dataclass constructor and semantic fields are inventoried separately; the exclusion applies only to this generated member."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.TrustSource.__delattr__",
+      "reason": "This exact member is generated Python dataclass value or frozen-instance machinery, not an independently specified cross-language product capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-021 and the source declaration. The dataclass constructor and semantic fields are inventoried separately; the exclusion applies only to this generated member."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.TrustSource.__eq__",
+      "reason": "This exact member is generated Python dataclass value or frozen-instance machinery, not an independently specified cross-language product capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-021 and the source declaration. The dataclass constructor and semantic fields are inventoried separately; the exclusion applies only to this generated member."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.TrustSource.__hash__",
+      "reason": "This exact member is generated Python dataclass value or frozen-instance machinery, not an independently specified cross-language product capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-021 and the source declaration. The dataclass constructor and semantic fields are inventoried separately; the exclusion applies only to this generated member."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.TrustSource.__match_args__",
+      "reason": "This exact member is Python dataclass introspection or storage metadata generated from the class declaration, not an independent cross-language product capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-021 and the source declaration. The dataclass constructor and semantic fields are inventoried separately; the exclusion applies only to this generated member."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.TrustSource.__repr__",
+      "reason": "This exact member is generated Python presentation behavior, not a shared KMIPKit capability. Its output remains subject to secret-redaction tests.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-021 and the source declaration. The dataclass constructor and semantic fields are inventoried separately; the exclusion applies only to this generated member. Redaction is covered by bindings/python/tests/test_client.py::test_secret_bearing_client_records_redact_repr and bindings/python/tests/test_client.py::test_endpoint_direct_constructor_enforces_text_shape_and_repr_redaction."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.TrustSource.__setattr__",
+      "reason": "This exact member is generated Python dataclass value or frozen-instance machinery, not an independently specified cross-language product capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-021 and the source declaration. The dataclass constructor and semantic fields are inventoried separately; the exclusion applies only to this generated member."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.TrustSource.__slots__",
+      "reason": "This exact member is Python dataclass introspection or storage metadata generated from the class declaration, not an independent cross-language product capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-021 and the source declaration. The dataclass constructor and semantic fields are inventoried separately; the exclusion applies only to this generated member."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.errors.ClientExecutionError.args",
+      "reason": "This exact attribute is inherited from Python's standard `BaseException` and stores positional exception-constructor arguments. It is language runtime boilerplate, not a separate KMIPKit error category or delivery capability; the shared error contract is represented by status, client_category, cause, and delivery.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed as the exact inherited `BaseException.args` attribute under KMIPKIT-0043-FR-021; the shared taxonomy and delivery semantics are specified by KMIPKIT-0007-FR-013."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.extensions.ExtensionRegistryLimits.__dataclass_fields__",
+      "reason": "This exact member is Python dataclass introspection or storage metadata generated from the class declaration, not an independent cross-language product capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-021 and the source declaration. The dataclass constructor and semantic fields are inventoried separately; the exclusion applies only to this generated member."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.extensions.ExtensionRegistryLimits.__dataclass_params__",
+      "reason": "This exact member is Python dataclass introspection or storage metadata generated from the class declaration, not an independent cross-language product capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-021 and the source declaration. The dataclass constructor and semantic fields are inventoried separately; the exclusion applies only to this generated member."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.extensions.ExtensionRegistryLimits.__delattr__",
+      "reason": "This exact member is generated Python dataclass value or frozen-instance machinery, not an independently specified cross-language product capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-021 and the source declaration. The dataclass constructor and semantic fields are inventoried separately; the exclusion applies only to this generated member."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.extensions.ExtensionRegistryLimits.__eq__",
+      "reason": "This exact member is generated Python dataclass value or frozen-instance machinery, not an independently specified cross-language product capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-021 and the source declaration. The dataclass constructor and semantic fields are inventoried separately; the exclusion applies only to this generated member."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.extensions.ExtensionRegistryLimits.__hash__",
+      "reason": "This exact member is generated Python dataclass value or frozen-instance machinery, not an independently specified cross-language product capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-021 and the source declaration. The dataclass constructor and semantic fields are inventoried separately; the exclusion applies only to this generated member."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.extensions.ExtensionRegistryLimits.__match_args__",
+      "reason": "This exact member is Python dataclass introspection or storage metadata generated from the class declaration, not an independent cross-language product capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-021 and the source declaration. The dataclass constructor and semantic fields are inventoried separately; the exclusion applies only to this generated member."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.extensions.ExtensionRegistryLimits.__repr__",
+      "reason": "This exact member is generated Python presentation behavior, not a shared KMIPKit capability. Its output remains subject to secret-redaction tests.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-021 and the source declaration. The dataclass constructor and semantic fields are inventoried separately; the exclusion applies only to this generated member. Redaction is covered by bindings/python/tests/test_client.py::test_secret_bearing_client_records_redact_repr and bindings/python/tests/test_client.py::test_endpoint_direct_constructor_enforces_text_shape_and_repr_redaction."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.extensions.ExtensionRegistryLimits.__setattr__",
+      "reason": "This exact member is generated Python dataclass value or frozen-instance machinery, not an independently specified cross-language product capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-021 and the source declaration. The dataclass constructor and semantic fields are inventoried separately; the exclusion applies only to this generated member."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.extensions.ExtensionRegistryLimits.__slots__",
+      "reason": "This exact member is Python dataclass introspection or storage metadata generated from the class declaration, not an independent cross-language product capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-021 and the source declaration. The dataclass constructor and semantic fields are inventoried separately; the exclusion applies only to this generated member."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.metadata.Version.__dataclass_fields__",
+      "reason": "This exact member is Python dataclass introspection or storage metadata generated from the class declaration, not an independent cross-language product capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-021 and the source declaration. The dataclass constructor and semantic fields are inventoried separately; the exclusion applies only to this generated member."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.metadata.Version.__dataclass_params__",
+      "reason": "This exact member is Python dataclass introspection or storage metadata generated from the class declaration, not an independent cross-language product capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-021 and the source declaration. The dataclass constructor and semantic fields are inventoried separately; the exclusion applies only to this generated member."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.metadata.Version.__delattr__",
+      "reason": "This exact member is generated Python dataclass value or frozen-instance machinery, not an independently specified cross-language product capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-021 and the source declaration. The dataclass constructor and semantic fields are inventoried separately; the exclusion applies only to this generated member."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.metadata.Version.__eq__",
+      "reason": "This exact member is generated Python dataclass value or frozen-instance machinery, not an independently specified cross-language product capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-021 and the source declaration. The dataclass constructor and semantic fields are inventoried separately; the exclusion applies only to this generated member."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.metadata.Version.__hash__",
+      "reason": "This exact member is generated Python dataclass value or frozen-instance machinery, not an independently specified cross-language product capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-021 and the source declaration. The dataclass constructor and semantic fields are inventoried separately; the exclusion applies only to this generated member."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.metadata.Version.__match_args__",
+      "reason": "This exact member is Python dataclass introspection or storage metadata generated from the class declaration, not an independent cross-language product capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-021 and the source declaration. The dataclass constructor and semantic fields are inventoried separately; the exclusion applies only to this generated member."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.metadata.Version.__repr__",
+      "reason": "This exact member is generated Python presentation behavior, not a shared KMIPKit capability. Its output remains subject to secret-redaction tests.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-021 and the source declaration. The dataclass constructor and semantic fields are inventoried separately; the exclusion applies only to this generated member. Redaction is covered by bindings/python/tests/test_client.py::test_secret_bearing_client_records_redact_repr and bindings/python/tests/test_client.py::test_endpoint_direct_constructor_enforces_text_shape_and_repr_redaction."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.metadata.Version.__setattr__",
+      "reason": "This exact member is generated Python dataclass value or frozen-instance machinery, not an independently specified cross-language product capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-021 and the source declaration. The dataclass constructor and semantic fields are inventoried separately; the exclusion applies only to this generated member."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.metadata.Version.__slots__",
+      "reason": "This exact member is Python dataclass introspection or storage metadata generated from the class declaration, not an independent cross-language product capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-021 and the source declaration. The dataclass constructor and semantic fields are inventoried separately; the exclusion applies only to this generated member."
     },
     {
       "packageId": "rust-kmipkit-protocol",
@@ -213444,371 +215045,6 @@
         "evidence": "**Status**: Approved for implementation under the maintainer's autonomous roadmap instruction dated 2026-10-13"
       },
       "evidence": "KMIPKIT-0044-FR-003 through FR-006 specify local validation as part of Register construction/execution behavior. The helper is consumed by the client implementation; the approved feature does not require a standalone validation method in the public facade inventory."
-    },
-    {
-      "packageId": "c-kmipkit",
-      "exportName": "kmipkit_client_release",
-      "reason": "This C ABI release function frees an opaque native handle. Rust releases the owned value through ordinary drop, while Java and Python expose deterministic `close()` methods on their owned wrappers. The C helper is the required caller-owned lifecycle counterpart and does not add a separate four-language capability.",
-      "approvalSource": {
-        "kind": "feature-specification",
-        "path": "specs/043-public-api-bindings/spec.md",
-        "status": "Approved",
-        "evidence": "**Status**: Approved for implementation"
-      },
-      "evidence": "Reviewed against KMIPKIT-0043-FR-007 and FR-021; the exact public C release prototype is generated from the associated opaque type record."
-    },
-    {
-      "packageId": "c-kmipkit",
-      "exportName": "kmipkit_client_batch_release",
-      "reason": "This C ABI release function frees an opaque native handle. Rust releases the owned value through ordinary drop, while Java and Python expose deterministic `close()` methods on their owned wrappers. The C helper is the required caller-owned lifecycle counterpart and does not add a separate four-language capability.",
-      "approvalSource": {
-        "kind": "feature-specification",
-        "path": "specs/043-public-api-bindings/spec.md",
-        "status": "Approved",
-        "evidence": "**Status**: Approved for implementation"
-      },
-      "evidence": "Reviewed against KMIPKIT-0043-FR-007 and FR-021; the exact public C release prototype is generated from the associated opaque type record."
-    },
-    {
-      "packageId": "c-kmipkit",
-      "exportName": "kmipkit_client_batch_response_release",
-      "reason": "This C ABI release function frees an opaque native handle. Rust releases the owned value through ordinary drop, while Java and Python expose deterministic `close()` methods on their owned wrappers. The C helper is the required caller-owned lifecycle counterpart and does not add a separate four-language capability.",
-      "approvalSource": {
-        "kind": "feature-specification",
-        "path": "specs/043-public-api-bindings/spec.md",
-        "status": "Approved",
-        "evidence": "**Status**: Approved for implementation"
-      },
-      "evidence": "Reviewed against KMIPKIT-0043-FR-007 and FR-021; the exact public C release prototype is generated from the associated opaque type record."
-    },
-    {
-      "packageId": "c-kmipkit",
-      "exportName": "kmipkit_client_batch_item_response_release",
-      "reason": "This C ABI release function frees an opaque native handle. Rust releases the owned value through ordinary drop, while Java and Python expose deterministic `close()` methods on their owned wrappers. The C helper is the required caller-owned lifecycle counterpart and does not add a separate four-language capability.",
-      "approvalSource": {
-        "kind": "feature-specification",
-        "path": "specs/043-public-api-bindings/spec.md",
-        "status": "Approved",
-        "evidence": "**Status**: Approved for implementation"
-      },
-      "evidence": "Reviewed against KMIPKIT-0043-FR-007 and FR-021; the exact public C release prototype is generated from the associated opaque type record."
-    },
-    {
-      "packageId": "c-kmipkit",
-      "exportName": "kmipkit_transport_config_release",
-      "reason": "This C ABI release function frees an opaque native handle. Rust releases the owned value through ordinary drop, while Java and Python expose deterministic `close()` methods on their owned wrappers. The C helper is the required caller-owned lifecycle counterpart and does not add a separate four-language capability.",
-      "approvalSource": {
-        "kind": "feature-specification",
-        "path": "specs/043-public-api-bindings/spec.md",
-        "status": "Approved",
-        "evidence": "**Status**: Approved for implementation"
-      },
-      "evidence": "Reviewed against KMIPKIT-0043-FR-007 and FR-021; the exact public C release prototype is generated from the associated opaque type record."
-    },
-    {
-      "packageId": "c-kmipkit",
-      "exportName": "kmipkit_transport_config_create_v1",
-      "reason": "This C ABI adapter converts the versioned fixed-width transport record into the opaque handle consumed by `kmipkit_client_create`. Java exposes `TransportConfiguration.Builder.build()` and Python passes an immutable `TransportConfig` value to `Client.create()`, where adapters perform this representation conversion internally. The helper remains available to C callers but is not a separate cross-language capability.",
-      "approvalSource": {
-        "kind": "feature-specification",
-        "path": "specs/043-public-api-bindings/spec.md",
-        "status": "Approved",
-        "evidence": "**Status**: Approved for implementation"
-      },
-      "evidence": "Reviewed against KMIPKIT-0013-FR-001 and KMIPKIT-0043-FR-003/-007/-021; the exact input layout is `kmipkit_transport_config_v1_t` and the output is the public opaque transport handle.",
-      "cFunction": {
-        "symbol": "kmipkit_transport_config_create_v1",
-        "parameters": [
-          {
-            "name": "configuration",
-            "kind": "versioned-value-pointer",
-            "type": "const kmipkit_transport_config_v1_t *",
-            "direction": "input",
-            "ownership": "borrowed"
-          },
-          {
-            "name": "out_configuration",
-            "kind": "output",
-            "type": "kmipkit_transport_config_t **",
-            "ownership": "library-owned",
-            "nullable": false
-          }
-        ],
-        "returnType": "int32_t",
-        "errorCategories": [
-          "invalid_input",
-          "resource_limit"
-        ]
-      }
-    },
-    {
-      "packageId": "c-kmipkit",
-      "exportName": "kmipkit_client_batch_item_response_metadata_v1",
-      "reason": "C returns common response metadata in its versioned fixed-width ABI carrier. Rust exposes the typed `ClientBatchItemResponse::outcome()` and `ClientBatchOutcome::result()` values; Java exposes `outcomeKind()`, `resultStatus()`, and `resultReason()`; Python exposes `outcome`, `result_status`, and `result_reason` on the copied `BatchItemResult`. The C aggregate and its version prefix are representation-specific; its exact function and layout remain available to C callers without inventing a shared aggregate type.",
-      "approvalSource": {
-        "kind": "feature-specification",
-        "path": "specs/043-public-api-bindings/spec.md",
-        "status": "Approved",
-        "evidence": "**Status**: Approved for implementation"
-      },
-      "evidence": "Reviewed against KMIPKIT-0007-FR-001/-006/-008 and KMIPKIT-0043-FR-005/-007/-012/-013/-021. Java and Python wrappers call this exact C function to populate the returned value fields.",
-      "cFunction": {
-        "symbol": "kmipkit_client_batch_item_response_metadata_v1",
-        "parameters": [
-          {
-            "name": "item",
-            "kind": "handle",
-            "type": "kmipkit_client_batch_item_response_t *",
-            "ownership": "borrowed"
-          },
-          {
-            "name": "out_metadata",
-            "kind": "output-value-pointer",
-            "type": "kmipkit_client_batch_item_metadata_v1_t *",
-            "valueType": "kmipkit_client_batch_item_metadata_v1_t",
-            "ownership": "none"
-          }
-        ],
-        "returnType": "int32_t",
-        "errorCategories": [
-          "invalid_input",
-          "internal"
-        ]
-      }
-    },
-    {
-      "packageId": "c-kmipkit",
-      "exportName": "kmipkit_client_batch_item_metadata_v1_t",
-      "reason": "This exact versioned struct is a C ABI value carrier for common batch-result metadata. Rust returns its typed outcome/result values, while Java and Python expose copied scalar fields through `ClientBatchItemResult` and `BatchItemResult`; their adapters translate this record at the native boundary.",
-      "approvalSource": {
-        "kind": "feature-specification",
-        "path": "specs/043-public-api-bindings/spec.md",
-        "status": "Approved",
-        "evidence": "**Status**: Approved for implementation"
-      },
-      "evidence": "Exact field order and widths match `kmipkit_client_batch_item_metadata_v1_t` in `crates/kmipkit-ffi/src/lib.rs`; this C layout is retained for callers of the versioned metadata function.",
-      "cType": {
-        "name": "kmipkit_client_batch_item_metadata_v1_t",
-        "kind": "fixed-width-value",
-        "fields": [
-          {
-            "name": "struct_size",
-            "type": "uint32_t"
-          },
-          {
-            "name": "abi_version",
-            "type": "uint32_t"
-          },
-          {
-            "name": "outcome_kind",
-            "type": "uint32_t"
-          },
-          {
-            "name": "result_status",
-            "type": "uint32_t"
-          },
-          {
-            "name": "has_result_reason",
-            "type": "uint32_t"
-          },
-          {
-            "name": "result_reason",
-            "type": "uint32_t"
-          }
-        ]
-      }
-    },
-    {
-      "packageId": "python-kmipkit",
-      "exportName": "kmipkit.errors.ClientExecutionError.args",
-      "reason": "This exact attribute is inherited from Python's standard `BaseException` and stores positional exception-constructor arguments. It is language runtime boilerplate, not a separate KMIPKit error category or delivery capability; the shared error contract is represented by status, client_category, cause, and delivery.",
-      "approvalSource": {
-        "kind": "feature-specification",
-        "path": "specs/043-public-api-bindings/spec.md",
-        "status": "Approved",
-        "evidence": "**Status**: Approved for implementation"
-      },
-      "evidence": "Reviewed as the exact inherited `BaseException.args` attribute under KMIPKIT-0043-FR-021; the shared taxonomy and delivery semantics are specified by KMIPKIT-0007-FR-013."
-    },
-    {
-      "packageId": "c-kmipkit",
-      "exportName": "kmipkit_byte_span_v1_t.data",
-      "reason": "This exact member is the pointer or length framing field of the C byte-span ABI carrier. The complete byte value is mapped through its typed input or response API; pointer and length are not separate cross-language product fields.",
-      "approvalSource": {
-        "kind": "feature-specification",
-        "path": "specs/043-public-api-bindings/spec.md",
-        "status": "Approved",
-        "evidence": "**Status**: Approved for implementation"
-      },
-      "evidence": "KMIPKIT-0043-FR-007 defines explicit pointer lengths and fixed-width C ABI framing. This exact carrier member is excluded while the containing semantic value remains mapped."
-    },
-    {
-      "packageId": "c-kmipkit",
-      "exportName": "kmipkit_byte_span_v1_t.length",
-      "reason": "This exact member is the pointer or length framing field of the C byte-span ABI carrier. The complete byte value is mapped through its typed input or response API; pointer and length are not separate cross-language product fields.",
-      "approvalSource": {
-        "kind": "feature-specification",
-        "path": "specs/043-public-api-bindings/spec.md",
-        "status": "Approved",
-        "evidence": "**Status**: Approved for implementation"
-      },
-      "evidence": "KMIPKIT-0043-FR-007 defines explicit pointer lengths and fixed-width C ABI framing. This exact carrier member is excluded while the containing semantic value remains mapped."
-    },
-    {
-      "packageId": "c-kmipkit",
-      "exportName": "kmipkit_client_batch_item_metadata_v1_t.abi_version",
-      "reason": "This exact member is ABI size, version, or reserved layout metadata rather than a cross-language product value; only this named C ABI field is excluded.",
-      "approvalSource": {
-        "kind": "feature-specification",
-        "path": "specs/043-public-api-bindings/spec.md",
-        "status": "Approved",
-        "evidence": "**Status**: Approved for implementation"
-      },
-      "evidence": "KMIPKIT-0043-FR-007 requires versioned public structures and stable C ABI layout. This exact member is layout framing; sibling semantic fields remain independently mapped."
-    },
-    {
-      "packageId": "c-kmipkit",
-      "exportName": "kmipkit_client_batch_item_metadata_v1_t.struct_size",
-      "reason": "This exact member is ABI size, version, or reserved layout metadata rather than a cross-language product value; only this named C ABI field is excluded.",
-      "approvalSource": {
-        "kind": "feature-specification",
-        "path": "specs/043-public-api-bindings/spec.md",
-        "status": "Approved",
-        "evidence": "**Status**: Approved for implementation"
-      },
-      "evidence": "KMIPKIT-0043-FR-007 requires versioned public structures and stable C ABI layout. This exact member is layout framing; sibling semantic fields remain independently mapped."
-    },
-    {
-      "packageId": "c-kmipkit",
-      "exportName": "kmipkit_timeout_limit_v1_t.reserved",
-      "reason": "This exact member is ABI size, version, or reserved layout metadata rather than a cross-language product value; only this named C ABI field is excluded.",
-      "approvalSource": {
-        "kind": "feature-specification",
-        "path": "specs/043-public-api-bindings/spec.md",
-        "status": "Approved",
-        "evidence": "**Status**: Approved for implementation"
-      },
-      "evidence": "KMIPKIT-0043-FR-007 requires versioned public structures and stable C ABI layout. This exact member is layout framing; sibling semantic fields remain independently mapped."
-    },
-    {
-      "packageId": "c-kmipkit",
-      "exportName": "kmipkit_timeout_limit_v1_t.reserved2",
-      "reason": "This exact member is ABI size, version, or reserved layout metadata rather than a cross-language product value; only this named C ABI field is excluded.",
-      "approvalSource": {
-        "kind": "feature-specification",
-        "path": "specs/043-public-api-bindings/spec.md",
-        "status": "Approved",
-        "evidence": "**Status**: Approved for implementation"
-      },
-      "evidence": "KMIPKIT-0043-FR-007 requires versioned public structures and stable C ABI layout. This exact member is layout framing; sibling semantic fields remain independently mapped."
-    },
-    {
-      "packageId": "c-kmipkit",
-      "exportName": "kmipkit_transport_config_v1_t.abi_version",
-      "reason": "This exact member is ABI size, version, or reserved layout metadata rather than a cross-language product value; only this named C ABI field is excluded.",
-      "approvalSource": {
-        "kind": "feature-specification",
-        "path": "specs/043-public-api-bindings/spec.md",
-        "status": "Approved",
-        "evidence": "**Status**: Approved for implementation"
-      },
-      "evidence": "KMIPKIT-0043-FR-007 requires versioned public structures and stable C ABI layout. This exact member is layout framing; sibling semantic fields remain independently mapped."
-    },
-    {
-      "packageId": "c-kmipkit",
-      "exportName": "kmipkit_transport_config_v1_t.reserved",
-      "reason": "This exact member is ABI size, version, or reserved layout metadata rather than a cross-language product value; only this named C ABI field is excluded.",
-      "approvalSource": {
-        "kind": "feature-specification",
-        "path": "specs/043-public-api-bindings/spec.md",
-        "status": "Approved",
-        "evidence": "**Status**: Approved for implementation"
-      },
-      "evidence": "KMIPKIT-0043-FR-007 requires versioned public structures and stable C ABI layout. This exact member is layout framing; sibling semantic fields remain independently mapped."
-    },
-    {
-      "packageId": "c-kmipkit",
-      "exportName": "kmipkit_transport_config_v1_t.reserved2",
-      "reason": "This exact member is ABI size, version, or reserved layout metadata rather than a cross-language product value; only this named C ABI field is excluded.",
-      "approvalSource": {
-        "kind": "feature-specification",
-        "path": "specs/043-public-api-bindings/spec.md",
-        "status": "Approved",
-        "evidence": "**Status**: Approved for implementation"
-      },
-      "evidence": "KMIPKIT-0043-FR-007 requires versioned public structures and stable C ABI layout. This exact member is layout framing; sibling semantic fields remain independently mapped."
-    },
-    {
-      "packageId": "c-kmipkit",
-      "exportName": "kmipkit_transport_config_v1_t.struct_size",
-      "reason": "This exact member is ABI size, version, or reserved layout metadata rather than a cross-language product value; only this named C ABI field is excluded.",
-      "approvalSource": {
-        "kind": "feature-specification",
-        "path": "specs/043-public-api-bindings/spec.md",
-        "status": "Approved",
-        "evidence": "**Status**: Approved for implementation"
-      },
-      "evidence": "KMIPKIT-0043-FR-007 requires versioned public structures and stable C ABI layout. This exact member is layout framing; sibling semantic fields remain independently mapped."
-    },
-    {
-      "packageId": "c-kmipkit",
-      "exportName": "kmipkit_transport_config_v1_t.flags",
-      "reason": "This exact C bitset only records whether tls_server_name and target_uri are present. Those optional values remain mapped through their configuration fields and public builder/endpoint APIs, so the presence bitset is representation detail rather than an independent cross-language capability.",
-      "approvalSource": {
-        "kind": "feature-specification",
-        "path": "specs/043-public-api-bindings/spec.md",
-        "status": "Approved",
-        "evidence": "**Status**: Approved for implementation"
-      },
-      "evidence": "KMIPKIT-0043-FR-007 defines the C ABI layout; KMIPKIT-0013-FR-008 defines the optional TLS server name and target URI inputs. This exact bitset duplicates presence for those separately mapped semantic values."
-    },
-    {
-      "packageId": "c-kmipkit",
-      "exportName": "kmipkit_transport_config_v1_t.client_certificate_count",
-      "reason": "This exact C field is the derived length of its adjacent input slice; the list contents are mapped through the parent configuration API and the length is not independently configurable.",
-      "approvalSource": {
-        "kind": "feature-specification",
-        "path": "specs/043-public-api-bindings/spec.md",
-        "status": "Approved",
-        "evidence": "**Status**: Approved for implementation"
-      },
-      "evidence": "KMIPKIT-0043-FR-007 defines the fixed-width C ABI layout. KMIPKIT-0013-FR-004 defines caller-selected certificate/key input values; KMIPKIT-0013-FR-003 defines caller-selected trust roots and in-memory CRLs. The count is only the ABI slice length."
-    },
-    {
-      "packageId": "c-kmipkit",
-      "exportName": "kmipkit_transport_config_v1_t.revocation_list_count",
-      "reason": "This exact C field is the derived length of its adjacent input slice; the list contents are mapped through the parent configuration API and the length is not independently configurable.",
-      "approvalSource": {
-        "kind": "feature-specification",
-        "path": "specs/043-public-api-bindings/spec.md",
-        "status": "Approved",
-        "evidence": "**Status**: Approved for implementation"
-      },
-      "evidence": "KMIPKIT-0043-FR-007 defines the fixed-width C ABI layout. KMIPKIT-0013-FR-004 defines caller-selected certificate/key input values; KMIPKIT-0013-FR-003 defines caller-selected trust roots and in-memory CRLs. The count is only the ABI slice length."
-    },
-    {
-      "packageId": "c-kmipkit",
-      "exportName": "kmipkit_transport_config_v1_t.trust_certificate_count",
-      "reason": "This exact C field is the derived length of its adjacent input slice; the list contents are mapped through the parent configuration API and the length is not independently configurable.",
-      "approvalSource": {
-        "kind": "feature-specification",
-        "path": "specs/043-public-api-bindings/spec.md",
-        "status": "Approved",
-        "evidence": "**Status**: Approved for implementation"
-      },
-      "evidence": "KMIPKIT-0043-FR-007 defines the fixed-width C ABI layout. KMIPKIT-0013-FR-004 defines caller-selected certificate/key input values; KMIPKIT-0013-FR-003 defines caller-selected trust roots and in-memory CRLs. The count is only the ABI slice length."
-    },
-    {
-      "packageId": "c-kmipkit",
-      "exportName": "kmipkit_transport_input_v1_t.data",
-      "reason": "This exact C byte span is a representation carrier for the parent transport input value, not an independent semantic value.",
-      "approvalSource": {
-        "kind": "feature-specification",
-        "path": "specs/043-public-api-bindings/spec.md",
-        "status": "Approved",
-        "evidence": "**Status**: Approved for implementation"
-      },
-      "evidence": "KMIPKIT-0043-FR-007 defines the C span representation. The full input value is mapped through its encoding and source-kind selectors plus the parent configuration field; approved PEM/DER and permitted file/memory modes are covered by KMIPKIT-0013-FR-003 and KMIPKIT-0013-FR-004."
     }
   ],
   "apiLevels": [
