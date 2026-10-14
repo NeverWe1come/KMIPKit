@@ -5,20 +5,24 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
-import os
 import re
-import stat
 import sys
 from dataclasses import dataclass, field
 from html.parser import HTMLParser
 from pathlib import Path, PurePosixPath
 from typing import Any
 
+if __package__:
+    from .safe_io import PathSecurityError, safe_read_bytes
+else:
+    from safe_io import PathSecurityError, safe_read_bytes
+
 MAX_CATALOG_BYTES = 16 * 1024 * 1024
 MAX_SOURCE_BYTES = 16 * 1024 * 1024
 MAX_HTML_DEPTH = 64
 MAX_HTML_EVENTS = 1_000_000
 MAX_EXTRACTED_TEXT_BYTES = 8 * 1024 * 1024
+CASE_ID_TOKEN_PATTERN = re.compile(r"[A-Za-z0-9-]+")
 
 SOURCE_BY_CATEGORY = {
     "profile_test_case": "KMIPKIT-SRC-profiles",
@@ -80,50 +84,6 @@ def _raw_href_value(raw_tag: str) -> str | None:
     return None
 
 
-def _safe_read_bytes(repository: Path, relative_path: str, max_bytes: int) -> bytes:
-    """Read a bounded regular file without following repository links."""
-    if (
-        not relative_path
-        or "\\" in relative_path
-        or ":" in relative_path
-        or relative_path.startswith("/")
-        or any(part in {"", ".", ".."} for part in relative_path.split("/"))
-    ):
-        raise CaseAuditError("catalog paths must be confined repository-relative POSIX paths")
-    try:
-        root = repository.resolve(strict=True)
-        current = root
-        parts = PurePosixPath(relative_path).parts
-        for index, part in enumerate(parts):
-            current = current / part
-            metadata = current.lstat()
-            is_reparse = bool(getattr(metadata, "st_file_attributes", 0) & 0x400)
-            if stat.S_ISLNK(metadata.st_mode) or is_reparse:
-                raise CaseAuditError("catalog paths cannot contain links or reparse points")
-            if index < len(parts) - 1 and not stat.S_ISDIR(metadata.st_mode):
-                raise CaseAuditError("catalog path parent is not a directory")
-            resolved = current.resolve(strict=True)
-            resolved.relative_to(root)
-        flags = os.O_RDONLY | getattr(os, "O_NOFOLLOW", 0) | getattr(os, "O_NONBLOCK", 0)
-        flags |= getattr(os, "O_BINARY", 0)
-        descriptor = os.open(current, flags)
-        try:
-            metadata = os.fstat(descriptor)
-            if not stat.S_ISREG(metadata.st_mode):
-                raise CaseAuditError("catalog input must be a regular file")
-            with os.fdopen(descriptor, "rb", closefd=False) as stream:
-                raw = stream.read(max_bytes + 1)
-        finally:
-            os.close(descriptor)
-        if len(raw) > max_bytes:
-            raise CaseAuditError("catalog input exceeds its size limit")
-        return raw
-    except CaseAuditError:
-        raise
-    except (OSError, ValueError) as error:
-        raise CaseAuditError("catalog input cannot be read safely") from error
-
-
 @dataclass
 class _CaseEvidence:
     section: str
@@ -161,16 +121,13 @@ class _CaseHeadingParser(HTMLParser):
             self.active_case = None
             return
         section = section_match.group(1)
-        matches = [
-            case_id
-            for case_id in self.official_ids
-            if re.search(
-                rf"(?<![A-Za-z0-9-]){re.escape(case_id)}(?![A-Za-z0-9-])",
-                text,
-            )
-        ]
+        matches = {
+            token.group(0)
+            for token in CASE_ID_TOKEN_PATTERN.finditer(text)
+            if token.group(0) in self.official_ids
+        }
         if len(matches) == 1:
-            self.active_case = _CaseEvidence(section, matches[0])
+            self.active_case = _CaseEvidence(section, next(iter(matches)))
             self.cases.append(self.active_case)
         else:
             self.active_case = None
@@ -300,8 +257,8 @@ def audit_catalog_cases(repository: Path, catalog: dict[str, Any]) -> tuple[dict
         if re.fullmatch(r"[0-9a-f]{64}", expected_digest) is None:
             raise CaseAuditError(f"catalog source record has an invalid SHA-256: {source_id}")
         try:
-            raw = _safe_read_bytes(repository, relative_path, MAX_SOURCE_BYTES)
-        except (OSError, CaseAuditError) as error:
+            raw = safe_read_bytes(repository, relative_path, max_bytes=MAX_SOURCE_BYTES)
+        except (OSError, PathSecurityError) as error:
             raise CaseAuditError(f"pinned source cannot be read safely: {source_id}") from error
         if hashlib.sha256(raw).hexdigest() != expected_digest:
             raise CaseAuditError(f"SHA-256 does not match the catalog source record: {source_id}")
@@ -311,18 +268,21 @@ def audit_catalog_cases(repository: Path, catalog: dict[str, Any]) -> tuple[dict
         )]}
         parsed_by_source[source_id] = _parse_case_evidence(raw, official_ids)
 
+    evidence_by_source: dict[str, dict[tuple[str, str], list[_CaseEvidence]]] = {}
+    for source_id, evidence in parsed_by_source.items():
+        evidence_index: dict[tuple[str, str], list[_CaseEvidence]] = {}
+        for item in evidence:
+            evidence_index.setdefault((item.section, item.official_case_id), []).append(item)
+        evidence_by_source[source_id] = evidence_index
+
     counts: dict[str, int] = {}
     divergences: list[dict[str, str]] = []
     for category, expected_source_id in SOURCE_BY_CATEGORY.items():
         rows = categories[category]
         counts[category] = len(rows)
-        evidence = parsed_by_source[expected_source_id]
+        evidence_index = evidence_by_source[expected_source_id]
         for row in rows:
-            matches = [
-                item
-                for item in evidence
-                if item.section == row["source_section"] and item.official_case_id == row["official_case_id"]
-            ]
+            matches = evidence_index.get((row["source_section"], row["official_case_id"]), [])
             if len(matches) != 1 or row["raw_href"] not in matches[0].hrefs:
                 raise CaseAuditError(
                     "catalog section, official ID, and exact href do not match the pinned source"
@@ -349,9 +309,9 @@ def audit_catalog_cases(repository: Path, catalog: dict[str, Any]) -> tuple[dict
 
 def _load_catalog(repository: Path, relative_path: str) -> dict[str, Any]:
     try:
-        raw = _safe_read_bytes(repository, relative_path, MAX_CATALOG_BYTES)
+        raw = safe_read_bytes(repository, relative_path, max_bytes=MAX_CATALOG_BYTES)
         catalog = json.loads(raw.decode("utf-8"))
-    except (OSError, UnicodeDecodeError, json.JSONDecodeError, CaseAuditError) as error:
+    except (OSError, UnicodeDecodeError, json.JSONDecodeError, PathSecurityError) as error:
         raise CaseAuditError("catalog is unavailable or invalid JSON") from error
     if not isinstance(catalog, dict):
         raise CaseAuditError("catalog root must be an object")
