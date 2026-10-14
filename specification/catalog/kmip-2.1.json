@@ -23760,7 +23760,7 @@
         "KMIPKIT-REQ-SPEC-6.1.57-006"
       ],
       "exclusion_rationale": null,
-      "role": "client",
+      "role": "unclear",
       "direction": "client_to_server",
       "scope_state": "client_1_0",
       "condition": "When the field is omitted."
