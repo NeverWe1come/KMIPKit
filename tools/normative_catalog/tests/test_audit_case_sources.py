@@ -161,6 +161,35 @@ class CaseSourceAuditTests(unittest.TestCase):
         self.assertNotEqual(result.returncode, 0)
         self.assertIn("section, official ID, and exact href do not match", result.stderr)
 
+    def test_rejects_href_text_inside_another_quoted_attribute(self) -> None:
+        result = self._run_audit(
+            profile_html=(
+                b"<h4>5.1.3.1 BL-M-1-21</h4>"
+                b"<p><a title='label href=\"case.xml\"'>fixture</a></p>"
+            ),
+            testcases_html=b"",
+            cases=[
+                self._case("P-1", "BL-M-1-21", "KMIPKIT-SRC-profiles", "5.1.3.1", "profile_test_case", "case.xml"),
+            ],
+        )
+
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("section, official ID, and exact href do not match", result.stderr)
+
+    def test_uses_real_href_after_decoy_text_in_a_quoted_attribute(self) -> None:
+        result = self._run_audit(
+            profile_html=(
+                b"<h4>5.1.3.1 BL-M-1-21</h4>"
+                b"<p><a title='label href=\"decoy.xml\"' href=\"case.xml\">fixture</a></p>"
+            ),
+            testcases_html=b"",
+            cases=[
+                self._case("P-1", "BL-M-1-21", "KMIPKIT-SRC-profiles", "5.1.3.1", "profile_test_case", "case.xml"),
+            ],
+        )
+
+        self.assertEqual(result.returncode, 0, result.stderr)
+
     def test_verifies_catalog_source_sha256_before_parsing(self) -> None:
         result = self._run_audit(
             profile_html=b"<h4>5.1.3.1 BL-M-1-21</h4><a href=\"case.xml\">fixture</a>",
