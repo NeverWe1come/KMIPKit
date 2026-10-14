@@ -426,7 +426,18 @@ class BindingExportAuditTests(unittest.TestCase):
             ("python-export", "kmipkit.client.BatchItemResult.__eq__"),
             ("python-export", "kmipkit.client.BatchItemResult.__hash__"),
         }.issubset(observed))
-        self.assertFalse(any(name.startswith("kmipkit.client.CustomValue.__") for _, name in observed))
+        custom = "kmipkit.client.CustomValue"
+        self.assertTrue({
+            ("field", f"{custom}.__dataclass_fields__"),
+            ("field", f"{custom}.__dataclass_params__"),
+            ("field", f"{custom}.__match_args__"),
+        }.issubset(observed))
+        self.assertFalse(any(
+            name in {f"{custom}.__init__", f"{custom}.__repr__", f"{custom}.__eq__",
+                     f"{custom}.__hash__", f"{custom}.__slots__", f"{custom}.__setattr__",
+                     f"{custom}.__delattr__"}
+            for _, name in observed
+        ))
         self.assertTrue(result["complete"])
 
     def test_python_inventory_audits_dataclass_generated_metadata_and_constructor_signature(self):
@@ -444,6 +455,17 @@ class BindingExportAuditTests(unittest.TestCase):
                               frozen=False, repr=False, eq=False)
                 class ManualRecord:
                     value: int
+
+                @dc.dataclass
+                class MutableRecord:
+                    value: int
+
+                @dc.dataclass
+                class ExplicitHashRecord:
+                    value: int
+
+                    def __hash__(self):
+                        return 1
             """),
         }
         result = AUDIT.inventory_python_sources(sources)
@@ -471,6 +493,8 @@ class BindingExportAuditTests(unittest.TestCase):
         self.assertNotIn(f"{manual}.__init__", declarations)
         self.assertNotIn(f"{manual}.__match_args__", declarations)
         self.assertNotIn(f"{manual}.__slots__", declarations)
+        self.assertEqual(declarations["kmipkit.models.MutableRecord.__hash__"]["kind"], "field")
+        self.assertEqual(declarations["kmipkit.models.ExplicitHashRecord.__hash__"]["kind"], "python-export")
         self.assertTrue(result["complete"])
 
     def test_python_inventory_fails_closed_for_dynamic_dataclass_options(self):
