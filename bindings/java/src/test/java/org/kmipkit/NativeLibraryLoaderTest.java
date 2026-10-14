@@ -285,7 +285,7 @@ final class NativeLibraryLoaderTest {
         UnsatisfiedLinkError failure = assertThrows(UnsatisfiedLinkError.class,
                 () -> NativeLibraryLoader.validateNativeAbiVersion(2));
 
-        assertEquals(NativeLibraryLoader.LOAD_FAILURE_MESSAGE, failure.getMessage());
+        assertEquals(NativeLibraryLoader.ABI_FAILURE_MESSAGE, failure.getMessage());
         assertEquals(null, failure.getCause());
     }
 
