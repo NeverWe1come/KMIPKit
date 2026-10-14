@@ -333,6 +333,18 @@ class WorkflowContractTests(unittest.TestCase):
         self.assertIn('build-backend = "maturin"', python_project)
         self.assertIn('bindings = "cffi"', python_project)
 
+    def test_c_api_level_consumer_receives_expected_local_taxonomy(self) -> None:
+        cmake = (REPOSITORY_ROOT / "bindings" / "c" / "CMakeLists.txt").read_text(
+            encoding="utf-8"
+        )
+        self.assertRegex(
+            cmake,
+            r"(?ms)NAME kmipkit_client_abi_consumer\s+"
+            r"COMMAND kmipkit_client_abi_consumer\s+"
+            r"high-level\s+typed-protocol\s+generic-ttlv\s*\)",
+            "The standalone CTest consumer must receive the expected API-level values.",
+        )
+
     def test_java_package_loader_smoke_runs_offline_on_every_platform(self) -> None:
         contents = self.require_workflow()
         java_job = self.require_job(contents, "language-java")
