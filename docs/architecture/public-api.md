@@ -2,6 +2,16 @@
 
 ## Three supported levels
 
+### Local API-level metadata
+
+The local API taxonomy is available through Rust `kmipkit::api_levels`, C
+`kmipkit_api_levels_get_v1`, Java `RuntimeMetadata.apiLevels()`, and Python
+`kmipkit.metadata.get_api_levels()`. Each query returns the fixed-order
+`high-level`, `typed-protocol`, and `generic-ttlv` levels without a network
+call. It describes the KMIPKit facade surface, is distinct from the KMIP
+Discover Versions operation, and does not assert that every KMIP operation is
+mapped or complete.
+
 ### High level
 
 The 1.0 target includes idiomatic operation builders, but KMIPKIT-0007 does

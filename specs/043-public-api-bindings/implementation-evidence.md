@@ -1771,3 +1771,33 @@ closes the cross-platform CI acceptance gap for T028/T072. No genuine
 foreign-architecture shared library was available, so the negative
 architecture checks remain simulated through unsupported-target selection and
 the injected loader fixture; no physical cross-architecture load is claimed.
+
+
+## T077 — Local API-level taxonomy parity
+
+Rust, C, Java, and Python now expose the ordered local API taxonomy
+`high-level`, `typed-protocol`, and `generic-ttlv`. The C ABI returns borrowed
+spans into static strings; Java and Python adapt those values to `List<String>`
+and `tuple[str, ...]`. Each facade test reads `api-levels.shared.v1` and calls
+its real local facade entry point. The query performs no network exchange and
+is documented as distinct from the KMIP Discover Versions operation; the
+fixture explicitly leaves operation-mapping completeness unasserted. The API
+manifest records KMIPKIT-0043-FR-005/010 and the generator owns all checked-in
+bindings and parity output.
+
+| Phase | Commit | Command | Result |
+|---|---|---|---|
+| Red | `a05cc14ca74336053e40a4f76c8244ee521b9b0b` | Focused Rust, C, Java, and Python API-level fixture tests | Expected failures: missing Rust `api_levels`, unresolved C API-level symbols, missing Java `RuntimeMetadata.apiLevels()`, and missing Python `metadata.get_api_levels()`. |
+| Green | `fd4f4c23` | `cargo test -p kmipkit api_levels_match_the_shared_fixture_without_network_calls` | PASS: 1 focused Rust test. |
+| Green | `fd4f4c23` | `cargo test -p kmipkit-ffi --features coverage-c-consumer generated_public_client_abi_consumer_compiles_and_runs` | PASS: the C ABI consumer compared all three actual C spans with expected values read from the shared fixture; fixture assertions require zero network calls, distinguish Discover Versions, and leave operation completeness unasserted. |
+| Green | `fd4f4c23` | `mvn --batch-mode --file bindings/java/pom.xml -Dtest=SharedCapabilityParityFixtureTest#apiLevelQueryMatchesSharedFixtureLocally test` | PASS: 1 JNI parity test; Maven's existing extension example also completed and reported no network calls. |
+| Green | `fd4f4c23` | `PYTHONPATH=src .venv/Scripts/python.exe -m pytest tests/test_shared_parity_fixtures.py -k api_level_query_matches_shared_fixture_locally -q` | PASS: 1 CFFI parity test, 16 deselected; the test observed only the local API-level ABI symbol. |
+| Refactor | this evidence/refactor commit | `cargo fmt --all --check`; `git diff --check`; `python -B tools/api_manifest/generate.py --check` | PASS: formatting and whitespace clean; all 12 generated outputs current. |
+| Refactor | this evidence/refactor commit | `cargo clippy -p kmipkit -p kmipkit-ffi --all-targets --all-features -- -D warnings` | PASS: affected Rust packages are warning-free. |
+| Refactor | this evidence/refactor commit | `python -B tools/api_manifest/audit_binding_exports.py --repo-root . --check` | PASS: C 243/243, Java 450/450, Python 426/426 exact declaration matches; zero missing paths, kind mismatches, or issues. |
+
+The Windows Rust/JNI builds emitted existing AWS-LC compiler-probe and
+missing-NASM warnings, and the C test link emitted LNK4217 warnings; all
+focused consumers completed successfully. The taxonomy query does not perform
+or imply a KMIP operation and makes no claim that every in-scope operation is
+mapped or complete.

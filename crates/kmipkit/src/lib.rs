@@ -27,7 +27,7 @@ pub const fn runtime_version() -> RuntimeVersion {
 
 /// Returns the local facade levels provided by this library build.
 ///
-/// The ordered levels describe the KMIPKit API surface: high-level builders,
+/// The ordered levels describe the `KMIPKit` API surface: high-level builders,
 /// typed protocol requests and responses, and generic structurally valid TTLV.
 /// This metadata query does not send a request and is distinct from the KMIP
 /// Discover Versions operation. It reports the API taxonomy only; it does not
