@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+import os
 import tempfile
 import unittest
 from pathlib import Path
@@ -15,7 +16,7 @@ class PythonNativePackageSmokeTests(unittest.TestCase):
     def test_main_preserves_consumer_virtualenv_interpreter_path(self) -> None:
         consumer_environment = Path.cwd() / "consumer-env"
         consumer_python = consumer_environment / (
-            "Scripts/python.exe" if __import__("os").name == "nt" else "bin/python"
+            "Scripts/python.exe" if os.name == "nt" else "bin/python"
         )
         resolved_system_python = Path.cwd() / "system-python" / "python3.12"
         wrong_abi_library = Path.cwd() / "wrong-abi.so"

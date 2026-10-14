@@ -72,7 +72,7 @@ def require_output(result: subprocess.CompletedProcess[str], marker: str, *, sta
 
 def package_native_directory(python: Path) -> Path:
     result = subprocess.run(
-        [str(python), "-c", "import sysconfig; print(sysconfig.get_path('purelib'))"],
+        [str(python), "-I", "-c", "import sysconfig; print(sysconfig.get_path('purelib'))"],
         check=True,
         capture_output=True,
         errors="replace",
@@ -137,7 +137,7 @@ def main() -> None:
     parser.add_argument("--smoke-root", required=True, type=Path)
     arguments = parser.parse_args()
     arguments.smoke_root.mkdir(parents=True, exist_ok=True)
-    run_smokes(arguments.consumer_python.resolve(), arguments.wrong_abi_library.resolve(), arguments.smoke_root)
+    run_smokes(arguments.consumer_python.absolute(), arguments.wrong_abi_library.resolve(), arguments.smoke_root)
     print("installed Python wheel load, missing-library, and ABI mismatch probes passed offline")
 
 
