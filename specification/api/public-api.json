@@ -218479,6 +218479,293 @@
       }
     },
     {
+      "declarationId": "T076:transport:java-kmipkit:org.kmipkit.extensions.TransportConfiguration.TransportInput",
+      "packageId": "java-kmipkit",
+      "kind": "type",
+      "exportName": "org.kmipkit.extensions.TransportConfiguration.TransportInput",
+      "capabilityId": "production_transport",
+      "requirementIds": [
+        "KMIPKIT-0013-FR-003",
+        "KMIPKIT-0013-FR-004",
+        "KMIPKIT-0013-FR-005",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/013-production-transport/spec.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-transport",
+          "name": "kmipkit_transport::TransportConfig"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_transport_config_t"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.TransportConfiguration.TransportInput"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.TransportInput"
+        }
+      }
+    },
+    {
+      "declarationId": "T076:transport:java-kmipkit:org.kmipkit.extensions.TransportConfiguration.TransportInput.memory",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.extensions.TransportConfiguration.TransportInput.memory",
+      "capabilityId": "production_transport",
+      "requirementIds": [
+        "KMIPKIT-0013-FR-003",
+        "KMIPKIT-0013-FR-004",
+        "KMIPKIT-0013-FR-005",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/013-production-transport/spec.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-transport",
+          "name": "kmipkit_transport::CertificateInput::from_pem"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_transport_config_v1_t.client_certificates"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.TransportConfiguration.TransportInput.memory"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.TransportInput.memory"
+        }
+      }
+    },
+    {
+      "declarationId": "T076:transport:java-kmipkit:org.kmipkit.extensions.TransportConfiguration.TransportInput.file",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.extensions.TransportConfiguration.TransportInput.file",
+      "capabilityId": "production_transport",
+      "requirementIds": [
+        "KMIPKIT-0013-FR-003",
+        "KMIPKIT-0013-FR-004",
+        "KMIPKIT-0013-FR-005",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/013-production-transport/spec.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-transport",
+          "name": "kmipkit_transport::CertificateInput::from_pem_file"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_transport_config_v1_t.client_certificates"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.TransportConfiguration.TransportInput.file"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.TransportInput.file"
+        }
+      }
+    },
+    {
+      "declarationId": "T076:transport:java-kmipkit:org.kmipkit.extensions.TransportConfiguration.TransportInput.encoding",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.extensions.TransportConfiguration.TransportInput.encoding",
+      "capabilityId": "production_transport",
+      "requirementIds": [
+        "KMIPKIT-0013-FR-003",
+        "KMIPKIT-0013-FR-004",
+        "KMIPKIT-0013-FR-005",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/013-production-transport/spec.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-transport",
+          "name": "kmipkit_transport::CertificateInput"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_transport_config_t"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.TransportConfiguration.TransportInput.encoding"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.TransportInput.encoding"
+        }
+      }
+    },
+    {
+      "declarationId": "T076:transport:java-kmipkit:org.kmipkit.extensions.TransportConfiguration.Builder.clientIdentity",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.extensions.TransportConfiguration.Builder.clientIdentity",
+      "capabilityId": "production_transport",
+      "requirementIds": [
+        "KMIPKIT-0013-FR-003",
+        "KMIPKIT-0013-FR-004",
+        "KMIPKIT-0013-FR-005",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/013-production-transport/spec.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-transport",
+          "name": "kmipkit_transport::ClientIdentity::new"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_transport_config_v1_t.client_private_key"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.TransportConfiguration.Builder.clientIdentity"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.TransportConfig.client_private_key"
+        }
+      }
+    },
+    {
+      "declarationId": "T076:transport:java-kmipkit:org.kmipkit.extensions.TransportConfiguration.Builder.trustCertificates",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.extensions.TransportConfiguration.Builder.trustCertificates",
+      "capabilityId": "production_transport",
+      "requirementIds": [
+        "KMIPKIT-0013-FR-003",
+        "KMIPKIT-0013-FR-004",
+        "KMIPKIT-0013-FR-005",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/013-production-transport/spec.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-transport",
+          "name": "kmipkit_transport::TrustSource::certificate_authorities"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_transport_config_v1_t.trust_certificates"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.TransportConfiguration.Builder.trustCertificates"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.TrustSource.certificate_authorities"
+        }
+      }
+    },
+    {
+      "declarationId": "T076:transport:java-kmipkit:org.kmipkit.extensions.TransportConfiguration.Builder.revocationLists",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.extensions.TransportConfiguration.Builder.revocationLists",
+      "capabilityId": "production_transport",
+      "requirementIds": [
+        "KMIPKIT-0013-FR-003",
+        "KMIPKIT-0013-FR-004",
+        "KMIPKIT-0013-FR-005",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/013-production-transport/spec.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-transport",
+          "name": "kmipkit_transport::RevocationListInput"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_transport_config_v1_t.revocation_lists"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.TransportConfiguration.Builder.revocationLists"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.TransportConfig.revocation_lists"
+        }
+      }
+    },
+    {
       "declarationId": "T076:request-options:python-field:total_timeout",
       "packageId": "python-kmipkit",
       "kind": "field",
@@ -219541,6 +219828,18 @@
         "evidence": "**Status**: Approved for implementation"
       },
       "evidence": "Reviewed against KMIPKIT-0043-FR-021 and the Java declaration inventory. The corresponding record or enum is mapped as a public facade value; only the compiler-generated method is excluded."
+    },
+    {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.extensions.TransportConfiguration.Builder.close",
+      "reason": "This exact Java member zeroizes builder-owned private-key bytes and consumes an unbuilt builder; it is runtime-specific cleanup, not a separate KMIP transport capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/013-production-transport/spec.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted"
+      },
+      "evidence": "KMIPKIT-0013-FR-005 requires zeroization of KMIPKit-owned key copies. This Java lifecycle method clears the builder's retained copy while the key selectors remain mapped across Rust, C, Java, and Python."
     },
     {
       "packageId": "java-kmipkit",
@@ -221545,6 +221844,30 @@
         "evidence": "**Status**: Approved for implementation"
       },
       "evidence": "KMIPKIT-0043-FR-007 requires an exact layout classification for versioned C records; the semantic timeout fields remain mapped under KMIPKIT-0013-FR-011."
+    },
+    {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.extensions.TransportConfiguration.TransportInput.close",
+      "reason": "This exact Java member deterministically zeroizes the byte copy owned by TransportInput; it is runtime-specific cleanup and does not add a KMIP transport mode or operation.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/013-production-transport/spec.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted"
+      },
+      "evidence": "KMIPKIT-0013-FR-005 requires zeroization of KMIPKit-owned key copies and documents the limits of foreign-runtime memory. The TransportInput type and its source/encoding factories remain separately mapped; only the Java AutoCloseable hygiene method is excluded from cross-language capability parity."
+    },
+    {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.extensions.TransportConfiguration.TransportInput.toString",
+      "reason": "This exact Java member is a redacted diagnostic representation for a credential-bearing input wrapper, not a separately specified KMIP transport capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/013-production-transport/spec.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted"
+      },
+      "evidence": "KMIPKIT-0013-FR-005 requires credential-bearing inputs to remain redacted from diagnostic formatting. The TransportInput type and its source/encoding factories remain separately mapped; this method is only the Java diagnostic counterpart."
     }
   ],
   "apiLevels": [
@@ -223379,18 +223702,21 @@
           "org.kmipkit.extensions.TransportConfiguration",
           "org.kmipkit.extensions.TransportConfiguration.Builder",
           "org.kmipkit.extensions.TransportConfiguration.Builder.build",
+          "org.kmipkit.extensions.TransportConfiguration.Builder.clientIdentity",
           "org.kmipkit.extensions.TransportConfiguration.Builder.clientIdentityDer",
           "org.kmipkit.extensions.TransportConfiguration.Builder.clientIdentityFiles",
           "org.kmipkit.extensions.TransportConfiguration.Builder.clientIdentityPem",
           "org.kmipkit.extensions.TransportConfiguration.Builder.https",
           "org.kmipkit.extensions.TransportConfiguration.Builder.maxRequestBytes",
           "org.kmipkit.extensions.TransportConfiguration.Builder.rawTls",
+          "org.kmipkit.extensions.TransportConfiguration.Builder.revocationLists",
           "org.kmipkit.extensions.TransportConfiguration.Builder.revocationListsDer",
           "org.kmipkit.extensions.TransportConfiguration.Builder.revocationListsPem",
           "org.kmipkit.extensions.TransportConfiguration.Builder.targetUri",
           "org.kmipkit.extensions.TransportConfiguration.Builder.timeouts",
           "org.kmipkit.extensions.TransportConfiguration.Builder.tlsServerName",
           "org.kmipkit.extensions.TransportConfiguration.Builder.trustCertificateFiles",
+          "org.kmipkit.extensions.TransportConfiguration.Builder.trustCertificates",
           "org.kmipkit.extensions.TransportConfiguration.Builder.trustCertificatesDer",
           "org.kmipkit.extensions.TransportConfiguration.Builder.trustCertificatesPem",
           "org.kmipkit.extensions.TransportConfiguration.Builder.trustPlatform",
@@ -223405,6 +223731,10 @@
           "org.kmipkit.extensions.TransportConfiguration.Timeout.nanoseconds",
           "org.kmipkit.extensions.TransportConfiguration.Timeout.seconds",
           "org.kmipkit.extensions.TransportConfiguration.Timeout.unbounded",
+          "org.kmipkit.extensions.TransportConfiguration.TransportInput",
+          "org.kmipkit.extensions.TransportConfiguration.TransportInput.encoding",
+          "org.kmipkit.extensions.TransportConfiguration.TransportInput.file",
+          "org.kmipkit.extensions.TransportConfiguration.TransportInput.memory",
           "org.kmipkit.extensions.TransportConfiguration.builder"
         ],
         "python": [
