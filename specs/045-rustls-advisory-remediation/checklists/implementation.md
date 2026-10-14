@@ -24,4 +24,4 @@
 
 - [x] Advisory scope and patched-version evidence match the pinned RustSec records
 - [x] Manifest and lockfile changes do not alter TLS security properties or expose secret data
-- [ ] Remaining limitations are stated accurately
+- [x] Remaining limitations are stated accurately
