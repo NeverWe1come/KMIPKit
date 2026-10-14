@@ -117,9 +117,8 @@
           "test": "schema_error_debug_display_and_source_chain_redact_payload_secrets"
         },
         "c": {
-          "status": "available",
-          "testFile": "bindings/c/tests/extension_registry.c",
-          "test": "test_redacted_stable_errors_and_invalid_handles"
+          "status": "blocked",
+          "reason": "The C error ABI exposes numeric status, category, cause, and delivery only; it has no diagnostic text channel to exercise this string-redaction assertion."
         },
         "java": {
           "status": "available",
@@ -175,7 +174,7 @@
         "c": {
           "status": "available",
           "testFile": "bindings/c/tests/client_abi_consumer.c",
-          "test": "main"
+          "test": "execute_public_tls_request"
         },
         "java": {
           "status": "available",
@@ -184,7 +183,7 @@
         "python": {
           "status": "available",
           "testFile": "bindings/python/tests/test_client.py",
-          "test": "test_batch_result_preserves_ordered_mixed_outcomes_ids_and_pending_correlation"
+          "test": "test_batch_execute_preserves_ordered_mixed_outcomes_and_uses_one_exchange"
         }
       }
     },
