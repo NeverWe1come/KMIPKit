@@ -150,13 +150,41 @@ class SourceGapAdjudicationTests(unittest.TestCase):
                 gap = gaps[gap_id]
                 self.assertEqual(requirement["feature_spec"], "KMIPKIT-0016")
                 self.assertEqual(requirement["status"], "scoped_verified")
-                self.assertEqual(requirement["scope_state"], "client_1_0")
+                self.assertEqual(requirement["scope_state"], "profile_conditional")
                 self.assertEqual(requirement["profile_ids"], [])
                 self.assertEqual(gap["scope_disposition"], "profile_conditional")
                 self.assertIn("KMIPKIT-0016", gap["review_note"])
                 self.assertNotIn("remain unassigned", gap["review_note"])
                 self.assertIn(implementation_ref, requirement["implementation_refs"])
                 self.assertIn(verification_ref, requirement["verification_refs"])
+
+    def test_profile_conditional_structural_rows_are_not_client_profile_requirements(self) -> None:
+        catalog = _load_json(CATALOG_PATH)
+        oracle = _load_json(ORACLE_PATH)
+        gaps = {row["gap_id"]: row for row in oracle["source_only_requirement_gaps"]}
+        requirements = {row["requirement_id"]: row for row in catalog["requirements"]}
+        client_profiles = [row for row in catalog["profiles"] if row["role"] == "client"]
+        oracle_profiles = [row for row in oracle["profiles"] if row["role"] == "client"]
+
+        for gap_id, requirement_id in AUDITED_REQUIREMENTS.items():
+            with self.subTest(gap_id=gap_id):
+                gap = gaps[gap_id]
+                requirement = requirements[requirement_id]
+                self.assertEqual(gap["scope_disposition"], "profile_conditional")
+                self.assertEqual(requirement["scope_state"], "profile_conditional")
+                self.assertEqual(requirement["profile_ids"], [])
+                self.assertFalse(
+                    any(requirement_id in profile["requirement_ids"] for profile in client_profiles),
+                    f"{requirement_id} must not be asserted for every client profile",
+                )
+                self.assertFalse(
+                    any(
+                        requirement_id in profile["requirement_ids"]
+                        or requirement_id in profile["requirement_ids_audited_subset"]
+                        for profile in oracle_profiles
+                    ),
+                    f"{requirement_id} must not appear in the independent client-profile oracle",
+                )
 
 
 if __name__ == "__main__":
