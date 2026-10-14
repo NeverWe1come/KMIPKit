@@ -1437,3 +1437,36 @@ fix; regression tests now preserve both replacement and hash behavior. The
 binding exporter audit is structural evidence and does not by itself prove
 semantic parity. T076 remains open pending the separate whole-task QA review
 and closure of any concrete four-language shared-mapping or parity gaps.
+
+### T076 independent QA, security review, and final-head CI (2026-10-14)
+
+The independent read-only T076 QA review found no remaining implementation
+gate in the task. It verified exact shared-client mappings across Rust, C,
+Java, and Python; the typed public C mTLS consumer; ordered mixed Success,
+Pending, and Failure outcomes; exact Pending correlation; no automatic
+follow-up; complete binding-export reconciliation; and preservation of the
+blocked generic error-TTLV helper. The audit totals are C 242/242, Java
+449/449, and Python 425/425 declarations, with no missing, stale,
+kind-mismatched, or unobserved paths. The reviewer distinguished T021/T022,
+T024/T025, T029/T071, T077/T078, and KMIPKIT-0010 as separate remaining work.
+
+The independent security review identified one low-severity misuse risk in
+the documented-internal Java JNI bridge: public
+`NativeExtensionRegistry.release(int, long)` forwards known handle kinds to
+Rust, where a non-null arbitrary value may be dereferenced before its kind is
+checked. `NativeHandle.owned(long, int)` is also public. This is not reachable
+through the typed T076 facade, but direct use of the documented-internal
+bridge can crash or invoke undefined behavior. The path predates T076 for
+existing handle kinds; T076 adds new handle kinds to the same bridge. It is
+recorded under T022 for a Java ownership/bridge hardening follow-up and must be
+closed before 1.0 release. No unauthenticated network path was identified.
+
+GitHub Actions run `38545593697` completed successfully on PR head
+`bd4390023bd24dbf0e245190fdf1f1e6b5013f12`, including the Rust stable/MSRV
+matrix on Linux, Windows, and macOS; selected coverage gates; Java/JNI and C
+consumers; Python bindings and coverage; sanitizers; dependency policy; and
+normative inventory checks. The informational nightly and inactive-release
+schedule checks were skipped by workflow conditions. T076 is complete; the
+Java bridge finding remains explicitly assigned to T022 and blocks the 1.0
+security exit gate until resolved. PR #104 remains a draft while the other
+KMIPKIT-0043 tasks continue.
