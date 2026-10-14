@@ -934,7 +934,7 @@ class T076ClientMappingTests(unittest.TestCase):
                     self.assertIn("local", exclusion["reason"])
                 else:
                     self.assertIn("runtime metadata", exclusion["reason"].lower())
-                    self.assertIn("local value", exclusion["reason"].lower())
+                    self.assertIn("local runtime metadata value", exclusion["reason"].lower())
 
         trust_source = declarations["kmipkit.client.TrustSource"]
         self.assertEqual("type", trust_source["kind"])
@@ -942,7 +942,7 @@ class T076ClientMappingTests(unittest.TestCase):
         self.assertEqual(
             {
                 "rust": ("rust-kmipkit-transport", "kmipkit_transport::TrustSource"),
-                "c": ("c-kmipkit", "kmipkit_transport_config_v1_t"),
+                "c": ("c-kmipkit", "kmipkit_transport_config_t"),
                 "java": (
                     "java-kmipkit",
                     "org.kmipkit.extensions.TransportConfiguration.Builder",

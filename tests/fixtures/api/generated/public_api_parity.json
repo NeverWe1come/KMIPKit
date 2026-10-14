@@ -2547,6 +2547,186 @@
       "exportName": "org.kmipkit.extensions.TransportConfiguration.close",
       "packageId": "java-kmipkit",
       "reason": "This exact Java close method is the transport config release adapter for its opaque native configuration handle. Rust TransportConfig and Python TransportConfig are value models, while kmipkit_transport_config_release remains an exact C ABI helper; this adapter is not a separate cross-language configuration capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-021 and T024 for kmipkit.client.Batch.__enter__. __enter__ validates and returns the same wrapper; __exit__ calls its existing close operation. The wrapper and close/release lifecycle remain separately inventoried.",
+      "exportName": "kmipkit.client.Batch.__enter__",
+      "packageId": "python-kmipkit",
+      "reason": "This exact Python context-manager syntax method delegates to the already mapped close lifecycle; it is not a separate cross-language product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-021 and T024 for kmipkit.client.Batch.__exit__. __enter__ validates and returns the same wrapper; __exit__ calls its existing close operation. The wrapper and close/release lifecycle remain separately inventoried.",
+      "exportName": "kmipkit.client.Batch.__exit__",
+      "packageId": "python-kmipkit",
+      "reason": "This exact Python context-manager syntax method delegates to the already mapped close lifecycle; it is not a separate cross-language product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-021 and T024 for kmipkit.client.BatchResult.__enter__. __enter__ validates and returns the same wrapper; __exit__ calls its existing close operation. The wrapper and close/release lifecycle remain separately inventoried.",
+      "exportName": "kmipkit.client.BatchResult.__enter__",
+      "packageId": "python-kmipkit",
+      "reason": "This exact Python context-manager syntax method delegates to the already mapped close lifecycle; it is not a separate cross-language product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-021 and T024 for kmipkit.client.BatchResult.__exit__. __enter__ validates and returns the same wrapper; __exit__ calls its existing close operation. The wrapper and close/release lifecycle remain separately inventoried.",
+      "exportName": "kmipkit.client.BatchResult.__exit__",
+      "packageId": "python-kmipkit",
+      "reason": "This exact Python context-manager syntax method delegates to the already mapped close lifecycle; it is not a separate cross-language product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-021 and T024 for kmipkit.client.Client.__enter__. __enter__ validates and returns the same wrapper; __exit__ calls its existing close operation. The wrapper and close/release lifecycle remain separately inventoried.",
+      "exportName": "kmipkit.client.Client.__enter__",
+      "packageId": "python-kmipkit",
+      "reason": "This exact Python context-manager syntax method delegates to the already mapped close lifecycle; it is not a separate cross-language product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-021 and T024 for kmipkit.client.Client.__exit__. __enter__ validates and returns the same wrapper; __exit__ calls its existing close operation. The wrapper and close/release lifecycle remain separately inventoried.",
+      "exportName": "kmipkit.client.Client.__exit__",
+      "packageId": "python-kmipkit",
+      "reason": "This exact Python context-manager syntax method delegates to the already mapped close lifecycle; it is not a separate cross-language product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-013 and KMIPKIT-0043-FR-021 for kmipkit.errors.ClientExecutionError.__init__. This local construction path is excluded individually; the public exception type and applicable category/cause/delivery mappings remain inventoried.",
+      "exportName": "kmipkit.errors.ClientExecutionError.__init__",
+      "packageId": "python-kmipkit",
+      "reason": "This exact Python exception constructor creates a local exception value; it does not execute a KMIP operation. The exception type and stable error taxonomy remain mapped."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-013 and KMIPKIT-0043-FR-021 for kmipkit.errors.CompatibilityMismatchError.__init__. This local construction path is excluded individually; the public exception type and applicable category/cause/delivery mappings remain inventoried.",
+      "exportName": "kmipkit.errors.CompatibilityMismatchError.__init__",
+      "packageId": "python-kmipkit",
+      "reason": "This exact Python exception constructor creates a local exception value; it does not execute a KMIP operation. The exception type and stable error taxonomy remain mapped."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-013 and KMIPKIT-0043-FR-021 for kmipkit.errors.DuplicateKeyError.__init__. This local construction path is excluded individually; the public exception type and applicable category/cause/delivery mappings remain inventoried.",
+      "exportName": "kmipkit.errors.DuplicateKeyError.__init__",
+      "packageId": "python-kmipkit",
+      "reason": "This exact Python exception constructor creates a local exception value; it does not execute a KMIP operation. The exception type and stable error taxonomy remain mapped."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-013 and KMIPKIT-0043-FR-021 for kmipkit.errors.InvalidExtensionSchemaError.__init__. This local construction path is excluded individually; the public exception type and applicable category/cause/delivery mappings remain inventoried.",
+      "exportName": "kmipkit.errors.InvalidExtensionSchemaError.__init__",
+      "packageId": "python-kmipkit",
+      "reason": "This exact Python exception constructor creates a local exception value; it does not execute a KMIP operation. The exception type and stable error taxonomy remain mapped."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-013 and KMIPKIT-0043-FR-021 for kmipkit.errors.InvalidIdentityError.__init__. This local construction path is excluded individually; the public exception type and applicable category/cause/delivery mappings remain inventoried.",
+      "exportName": "kmipkit.errors.InvalidIdentityError.__init__",
+      "packageId": "python-kmipkit",
+      "reason": "This exact Python exception constructor creates a local exception value; it does not execute a KMIP operation. The exception type and stable error taxonomy remain mapped."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-013 and KMIPKIT-0043-FR-021 for kmipkit.errors.InvalidInputError.__init__. This local construction path is excluded individually; the public exception type and applicable category/cause/delivery mappings remain inventoried.",
+      "exportName": "kmipkit.errors.InvalidInputError.__init__",
+      "packageId": "python-kmipkit",
+      "reason": "This exact Python exception constructor creates a local exception value; it does not execute a KMIP operation. The exception type and stable error taxonomy remain mapped."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-013 and KMIPKIT-0043-FR-021 for kmipkit.errors.KmipKitError.__init__. This local construction path is excluded individually; the public exception type and applicable category/cause/delivery mappings remain inventoried.",
+      "exportName": "kmipkit.errors.KmipKitError.__init__",
+      "packageId": "python-kmipkit",
+      "reason": "This exact Python exception constructor creates a local exception value; it does not execute a KMIP operation. The exception type and stable error taxonomy remain mapped."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-013 and KMIPKIT-0043-FR-021 for kmipkit.errors.ResourceLimitError.__init__. This local construction path is excluded individually; the public exception type and applicable category/cause/delivery mappings remain inventoried.",
+      "exportName": "kmipkit.errors.ResourceLimitError.__init__",
+      "packageId": "python-kmipkit",
+      "reason": "This exact Python exception constructor creates a local exception value; it does not execute a KMIP operation. The exception type and stable error taxonomy remain mapped."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-021 for this exact path. The Version type and runtime metadata query remain mapped; this local snapshot constructor adds no query capability.",
+      "exportName": "kmipkit.metadata.Version.__init__",
+      "packageId": "python-kmipkit",
+      "reason": "This exact Python constructor creates a local runtime metadata value; it does not perform the mapped runtime metadata query."
     }
   ],
   "capabilities": [
@@ -3009,6 +3189,7 @@
           "kmipkit.extensions.ExtensionOrderConstraint",
           "kmipkit.extensions.ExtensionRecognition",
           "kmipkit.extensions.ExtensionRegistryLimits",
+          "kmipkit.extensions.ExtensionRegistryLimits.__init__",
           "kmipkit.extensions.ExtensionRegistryLimits.max_child_rules_per_structure",
           "kmipkit.extensions.ExtensionRegistryLimits.max_constraint_members_per_rule",
           "kmipkit.extensions.ExtensionRegistryLimits.max_definitions",
@@ -3498,6 +3679,7 @@
           "kmipkit.errors.ClientErrorCause.TRANSPORT_OTHER",
           "kmipkit.errors.ClientErrorCause.TRANSPORT_TLS",
           "kmipkit.errors.ClientExecutionError",
+          "kmipkit.errors.ClientExecutionError.category",
           "kmipkit.errors.ClientExecutionError.cause",
           "kmipkit.errors.ClientExecutionError.client_category",
           "kmipkit.errors.ClientExecutionError.delivery",
@@ -3661,6 +3843,7 @@
           "kmipkit.client.TrustKind",
           "kmipkit.client.TrustKind.CERTIFICATES",
           "kmipkit.client.TrustKind.PLATFORM",
+          "kmipkit.client.TrustSource",
           "kmipkit.client.TrustSource.__init__",
           "kmipkit.client.TrustSource.certificate_authorities",
           "kmipkit.client.TrustSource.certificates",
@@ -48942,6 +49125,130 @@
         "KMIPKIT-0013-FR-007",
         "KMIPKIT-0043-FR-003",
         "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-021"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Accepted",
+        "kind": "feature-specification",
+        "path": "specs/013-production-transport/spec.md",
+        "status": "Accepted"
+      },
+      "capabilityId": "production_transport",
+      "declarationId": "T076:transport:python-kmipkit:kmipkit.client.TrustSource",
+      "declarationState": "declared",
+      "exportName": "kmipkit.client.TrustSource",
+      "kind": "type",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_transport_config_t",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.TransportConfiguration.Builder",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.client.TrustSource",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_transport::TrustSource",
+          "packageId": "rust-kmipkit-transport"
+        }
+      },
+      "packageId": "python-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0013-FR-001",
+        "KMIPKIT-0013-FR-007",
+        "KMIPKIT-0043-FR-003",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-021"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the maintainer's standing direct authorization to execute the complete KMIPKit plan without further approval requests.",
+        "kind": "feature-specification",
+        "path": "specs/012-vendor-extension-registry/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "vendor_extension_registry",
+      "declarationId": "T024:python:kmipkit.extensions.ExtensionRegistryLimits.__init__",
+      "declarationState": "declared",
+      "exportName": "kmipkit.extensions.ExtensionRegistryLimits.__init__",
+      "kind": "python-export",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_extension_registry_limits_v1_t",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ExtensionRegistryLimits",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.extensions.ExtensionRegistryLimits.__init__",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::extension::ExtensionRegistryLimits",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "python-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0012-FR-010",
+        "KMIPKIT-0012-FR-012",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-021"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — delegated maintainer authorization, independent reviews, and merge of correction PR #39 are recorded in `approval-record.md`.",
+        "kind": "feature-specification",
+        "path": "specs/007-client-execution/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "client_execution",
+      "declarationId": "T076:python:client-execution-error-family-category",
+      "declarationState": "declared",
+      "exportName": "kmipkit.errors.ClientExecutionError.category",
+      "kind": "python-export",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_last_error_get",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.ClientOperationException",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.errors.ClientExecutionError",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::ClientError",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "python-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0007-FR-001",
+        "KMIPKIT-0007-FR-006",
+        "KMIPKIT-0007-FR-008",
+        "KMIPKIT-0007-FR-013",
+        "KMIPKIT-0043-FR-003",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
         "KMIPKIT-0043-FR-021"
       ]
     }
