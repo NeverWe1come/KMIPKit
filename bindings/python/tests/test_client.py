@@ -1971,7 +1971,6 @@ def test_transport_input_snapshots_path_text_before_marshalling() -> None:
     "arguments",
     [
         (client.EndpointKind.RAW_TLS, "kms.example.test", 5696, None, "/not-allowed"),
-        (client.EndpointKind.HTTPS, "https://kms.example.test", 0, "server", None),
         (99, "https://kms.example.test", 0, None, None),
     ],
 )
@@ -1980,6 +1979,20 @@ def test_endpoint_rejects_incompatible_kind_and_endpoint_fields(
 ) -> None:
     with pytest.raises(errors.InvalidInputError):
         client.Endpoint(*arguments)  # type: ignore[arg-type]
+
+
+@pytest.mark.parametrize(
+    "kind,address,port",
+    [
+        (client.EndpointKind.RAW_TLS, "kms.example.test", 5696),
+        (client.EndpointKind.HTTPS, "https://kms.example.test", 0),
+    ],
+)
+def test_endpoint_rejects_tls_name_override_for_dns_host(
+    kind: client.EndpointKind, address: str, port: int
+) -> None:
+    with pytest.raises(errors.InvalidInputError):
+        client.Endpoint(kind, address, port, "server.example.test")
 
 
 @pytest.mark.parametrize(
