@@ -578,7 +578,11 @@ class T076ClientMappingTests(unittest.TestCase):
             for row in self.manifest["capabilities"]
             if row["capabilityId"] == "production_transport"
         )
-        self.assertIn("kmipkit_transport_config_v1_t", production["mappings"]["c"])
+        self.assertNotIn(
+            "kmipkit_transport_config_v1_t",
+            production["mappings"]["c"],
+            "the exact ABI carrier is excluded while its semantic fields remain mapped",
+        )
         self.assertTrue(
             {
                 "kmipkit_transport_config_v1_t.client_certificates",
