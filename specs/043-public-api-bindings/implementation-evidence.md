@@ -1474,11 +1474,12 @@ Rust, where a non-null arbitrary value may be dereferenced before its kind is
 checked. `NativeHandle.owned(long, int)` is also public. This is not reachable
 through the typed T076 facade, but direct use of the documented-internal
 bridge can crash or invoke undefined behavior. The path predates T076 for
-existing handle kinds; T076 adds new handle kinds to the same bridge. It is
-recorded under T022 for a Java ownership/bridge hardening follow-up and must be
-closed before 1.0 release. No unauthenticated network path was identified.
+existing handle kinds; T076 adds new handle kinds to the same bridge. At review
+time it was recorded under T022 for Java ownership/bridge hardening and was
+required to close before 1.0 release; the final T022 acceptance below records
+its local closure. No unauthenticated network path was identified.
 
-### T022 security follow-up (in progress)
+### T022 security follow-up (interim checkpoint; superseded by final acceptance below)
 
 - Red commit `01254256` adds an isolated-process FFI regression for forged,
   wrong-kind, and stale handle values. Before the registry change, the forged
@@ -1509,22 +1510,44 @@ closed before 1.0 release. No unauthenticated network path was identified.
   passes 64 unit and 4 C consumer tests. `mvn --batch-mode --file
   bindings/java/pom.xml verify` passes 145 tests (3 documented skips) and the
   configured JaCoCo gate. The JNI integration test also calls release with a
-  forged positive `long` and completes safely. The independent review found no
-  surviving concrete bypass in the candidate and its bounded-walk concern is
-  addressed. Cross-platform CI and the full parent T022 acceptance review
-  remain pending; the parent task remains unchecked.
+  forged positive `long` and completes safely. At this interim checkpoint, the
+  independent security review found no surviving concrete bypass in the
+  candidate and its bounded-walk concern was addressed. The later final T022
+  acceptance record below supersedes this checkpoint's pending-review status.
 
-GitHub Actions run `38545593697` completed successfully on PR head
+Historical interim CI run `38545593697` completed successfully on PR head
 `bd4390023bd24dbf0e245190fdf1f1e6b5013f12`, including the Rust stable/MSRV
 matrix on Linux, Windows, and macOS; selected coverage gates; Java/JNI and C
 consumers; Python bindings and coverage; sanitizers; dependency policy; and
 normative inventory checks. The informational nightly and inactive-release
-schedule checks were skipped by workflow conditions. T076 is complete. The
-Java bridge finding assigned to T022 has an implementation in local commits
+schedule checks were skipped by workflow conditions. This run is an interim
+checkpoint superseded by the final T022 acceptance record below. It predates
+the ownership commits and does not validate them. T076 is complete. The Java
+bridge finding assigned to T022 has an implementation in local commits
 `01254256`, `6bd59a62`, `9e2ae3a2`, and `b04d7d70`; local Windows Rust/C and
-Java/JNI checks pass. The release security exit gate remains open until the
-updated branch passes cross-platform CI and the full T022 acceptance review.
-PR #104 remains a draft while the other KMIPKIT-0043 tasks continue.
+Java/JNI checks pass. Current-final-head cross-platform CI remains a PR-matrix
+check. PR #104 remains a draft while the other KMIPKIT-0043 tasks continue.
+
+### T022 final acceptance (2026-10-14)
+
+T022's Java child-owner retention and deterministic close behavior, together
+with the forged/stale JNI handle hardening, are complete locally. The
+implementation history records behavior commits `c719aaa6` (Red), `81aaaeaf`
+(Green), and `6f796605` (Refactor), followed by evidence commit `8d740e3c`.
+Commit `1eb8c0ec` corrects the deterministic owner-retention test, and
+`ec1c92f1` corrects stale evidence statements in this documentation.
+
+Focused Java ownership/lifecycle checks pass 16 tests. Windows
+`mvn --batch-mode --file bindings/java/pom.xml verify` passes 153 tests with
+zero failures, zero errors, and 3 documented skips. JaCoCo reports 95.43%
+coverage (1,461 covered, 70 missed). Independent review approved the
+deterministic owner-retention test and this documentation correction.
+
+Cross-platform CI on the current final head is still pending. Earlier
+successful run `38556076834` covered only ancestor
+`8b3314c676c06c276b2bd1d0121193f631390da0`; it does not validate the ownership
+commits. PR #104 remains a draft pending the remaining PR matrix and feature
+exit gates.
 
 ### T021 Java shared facade acceptance (2026-10-14)
 
@@ -1566,6 +1589,5 @@ Operation-specific request ownership remains with its owning feature task.
 The Maven native build emitted non-fatal AWS-LC compiler-probe and missing
 NASM warnings in this Windows environment; JNI compilation, tests, example,
 and coverage verification all completed successfully. The current Java source
-surface required no production repair. The remaining T022 child-owner
-retention acceptance work and T029/T071 complete cross-language fixture gate
-remain separate tasks.
+surface required no production repair. T022 child-owner retention is accepted
+above; T029/T071 complete cross-language fixture gate remains separate work.
