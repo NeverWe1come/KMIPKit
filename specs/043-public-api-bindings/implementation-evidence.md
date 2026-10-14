@@ -1801,3 +1801,30 @@ missing-NASM warnings, and the C test link emitted LNK4217 warnings; all
 focused consumers completed successfully. The taxonomy query does not perform
 or imply a KMIP operation and makes no claim that every in-scope operation is
 mapped or complete.
+
+#### Cross-platform CI correction after run `38586769029`
+
+The first full run after T077 identified three branch defects. The shared C
+capability test still expected the pre-T077 list; the standalone CMake consumer
+invoked `main()` without the three expected API-level arguments; and the new
+Rust fixture test lived inline in `crates/kmipkit/src/lib.rs`, which the
+coverage-source preflight correctly rejects. The resulting Rust matrix,
+script-contract, coverage-source, and selected-coverage failures traced to
+those defects. Python package setup on Ubuntu separately failed because the
+runner could not connect to `static.crates.io`; this is an external download
+failure and still requires a clean CI rerun.
+
+| Phase | Commit | Command | Result |
+|---|---|---|---|
+| Red correction | `bf6ab7aa` | `python -m unittest discover -s scripts/tests -p test_workflow.py` | Expected failure: the new contract detected that CTest did not pass `high-level`, `typed-protocol`, and `generic-ttlv` to the C consumer. The failed T077 CI run also reproduced this at runtime on the C matrix. |
+| Green correction | `546fa00c` | `cargo test -p kmipkit api_levels_match_the_shared_fixture_without_network_calls`; `cargo test -p kmipkit-ffi --lib` | PASS: the fixture test passes from the integration-test path; all 64 FFI library tests pass, including the updated capability inventory. |
+| Green correction | `546fa00c` | `python -m unittest discover -s scripts/tests -p test_workflow.py`; `python -m unittest discover -s scripts/tests -p test_coverage_gate.py` | PASS: workflow contracts 45/45; coverage-gate contracts 55 passed, 3 skipped. Repository source preflight now accepts `crates/kmipkit/src/lib.rs`. |
+| Green correction | `546fa00c` | `cmake -G Ninja -S bindings/c -B build/c-consumer`; `cmake --build build/c-consumer --config Release`; `ctest --test-dir build/c-consumer -C Release --output-on-failure` | Not run locally because CMake is unavailable in this Windows environment. The corrected CTest invocation will be verified by the new full PR matrix. |
+| Refactor | this evidence/refactor commit | `python -B tools/api_manifest/generate.py --check`; `python -B tools/api_manifest/audit_binding_exports.py --repo-root . --check`; `cargo fmt --all --check`; `git diff --check` | PASS: all 12 generated outputs current; C 243/243, Java 450/450, Python 426/426 declarations exact; formatting and whitespace clean. |
+
+Run `38586769029` also showed the security report's coverage artifact was not
+resolved by the Codex Security workbench at finalization. Its findings list
+was empty, but the persisted coverage remained partial; it is not counted as
+a completed security gate. A source-level review did inspect all 11 changed
+files and found no reportable candidate. The full CI matrix and a valid
+security-coverage record remain open for this draft PR.
