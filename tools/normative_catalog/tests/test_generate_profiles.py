@@ -365,6 +365,7 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
                 )
                 for requirement_id in requirement_ids_by_source_gap.get(contract["gap_id"], set())
             }
+            expected_requirement_ids.update(source_table_requirement_ids)
 
             expected = sorted(expected_requirement_ids)
             with self.subTest(profile_id=profile_id):
