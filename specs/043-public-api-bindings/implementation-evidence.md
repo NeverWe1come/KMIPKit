@@ -1822,9 +1822,27 @@ failure and still requires a clean CI rerun.
 | Green correction | `546fa00c` | `cmake -G Ninja -S bindings/c -B build/c-consumer`; `cmake --build build/c-consumer --config Release`; `ctest --test-dir build/c-consumer -C Release --output-on-failure` | Not run locally because CMake is unavailable in this Windows environment. The corrected CTest invocation will be verified by the new full PR matrix. |
 | Refactor | this evidence/refactor commit | `python -B tools/api_manifest/generate.py --check`; `python -B tools/api_manifest/audit_binding_exports.py --repo-root . --check`; `cargo fmt --all --check`; `git diff --check` | PASS: all 12 generated outputs current; C 243/243, Java 450/450, Python 426/426 declarations exact; formatting and whitespace clean. |
 
-Run `38586769029` also showed the security report's coverage artifact was not
-resolved by the Codex Security workbench at finalization. Its findings list
-was empty, but the persisted coverage remained partial; it is not counted as
-a completed security gate. A source-level review did inspect all 11 changed
-files and found no reportable candidate. The full CI matrix and a valid
-security-coverage record remain open for this draft PR.
+Run `38586769029` also showed the first security report's coverage artifact
+was not resolved by the Codex Security workbench at finalization. Its findings
+list was empty, but persisted coverage remained partial, so that scan is not
+counted as a completed security gate. A corrected diff scan,
+`94b34370-bbb4-42db-a5dc-76f72a5b3f44`, completed against the corrected T077
+head with complete coverage of all 11 security surfaces and no reportable
+findings. The full CI matrix remains open for this draft PR.
+
+#### Rust parity mapping correction after run `38588319434`
+
+The corrected CI run found one more stale fixture reference on Ubuntu and
+macOS. After moving the Rust parity test out of production sources, the shared
+fixture still pointed to `crates/kmipkit/src/lib.rs`; the parity contract
+therefore searched production code for a test declaration. The test now
+requires the fixture to map this case to the Rust integration-test file, and
+the fixture points to `crates/kmipkit/tests/api_levels.rs`.
+
+| Phase | Commit | Command | Result |
+|---|---|---|---|
+| Red | `abe393f5` | `python -m unittest tools.api_manifest.tests.test_parity.PublicApiParityTests.test_shared_capability_fixture_maps_executable_consumer_contracts` | Expected failure: fixture mapped the Rust test to `src/lib.rs` instead of the integration test path. |
+| Green | `1b1f7da1` | `python -m unittest tools.api_manifest.tests.test_parity.PublicApiParityTests.test_shared_capability_fixture_maps_executable_consumer_contracts`; `python -m unittest discover -s scripts/tests -p test_workflow.py` | PASS: parity mapping contract 1/1; workflow contracts 45/45. |
+
+The corrected fixture and guard require a fresh full CI run before the PR can
+leave draft status.
