@@ -88,7 +88,7 @@ def _raw_href_value(raw_tag: str) -> str | None:
 class _CaseEvidence:
     section: str
     official_case_id: str
-    hrefs: list[str] = field(default_factory=list)
+    hrefs: set[str] = field(default_factory=set)
 
 
 class _CaseHeadingParser(HTMLParser):
@@ -145,7 +145,7 @@ class _CaseHeadingParser(HTMLParser):
             raw_tag = self.get_starttag_text() or ""
             href = _raw_href_value(raw_tag) if any(name.casefold() == "href" for name, _ in attrs) else None
             if href is not None:
-                self.active_case.hrefs.append(href)
+                self.active_case.hrefs.add(href)
         self.stack.append(tag)
 
     def handle_startendtag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
