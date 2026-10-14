@@ -66460,7 +66460,7 @@
         "KMIPKIT-REQ-SPEC-4.26-001"
       ],
       "applies_to": "all_client_profiles",
-      "review_note": "Source obligation 5 is a traceability pointer to existing KMIPKIT-REQ-SPEC-4.26-001 only; lowercase “may” remains non-normative under §1.2. The formal client capability and its six eligible operations come from §4.26, and this pointer neither creates a new requirement nor adds Register. Source obligation 6, the following server SHALL response, and the neighboring digest computation/lifecycle duties remain server_only. The linked local test covers only Create request serialization; it does not verify the remaining five operations or a server outcome."
+      "review_note": "Source atom 5 is a traceability pointer to existing KMIPKIT-REQ-SPEC-4.26-001 only; lowercase “may” remains non-normative under §1.2. The formal client capability and its six eligible operations come from §4.26, and this pointer neither creates a new requirement nor adds Register. Source obligation 6, the following server SHALL response, and the neighboring digest computation/lifecycle duties remain server_only. The linked local test covers only Create request serialization; it does not verify the remaining five operations or a server outcome."
     },
     {
       "source_id": "KMIPKIT-SRC-spec",
