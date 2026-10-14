@@ -102,7 +102,18 @@ final class ClientFacadeTlsIntegrationTest {
                     TransportConfiguration.builder().https("https://127.0.0.1:5696/kmip")
                             .clientIdentityPem(new byte[][] {certificatePem}, privateKeyPem)
                             .trustCertificatesPem(new byte[][] {certificatePem})
-                            .tlsServerName("localhost"));
+                            .tlsServerName("localhost"),
+                    TransportConfiguration.builder().rawTls("127.0.0.1", 5696)
+                            .clientIdentity(
+                                    List.of(TransportConfiguration.TransportInput.memory(
+                                            certificatePem, TransportConfiguration.Encoding.PEM)),
+                                    TransportConfiguration.TransportInput.file(
+                                            privateKeyDerPath, TransportConfiguration.Encoding.DER))
+                            .trustCertificates(List.of(
+                                    TransportConfiguration.TransportInput.file(
+                                            trustPemPath, TransportConfiguration.Encoding.PEM),
+                                    TransportConfiguration.TransportInput.memory(
+                                            certificateDer, TransportConfiguration.Encoding.DER))));
 
             for (TransportConfiguration.Builder builder : configurations) {
                 try (TransportConfiguration transport = builder.build();
