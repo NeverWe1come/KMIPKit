@@ -1497,6 +1497,61 @@ class T076ClientMappingTests(unittest.TestCase):
         self.assertEqual("blocked", generic_ttlv["declarationState"])
         self.assertNotIn("kmipkit_client_execute_with_error_ttlv_v1(", header)
 
+    def test_request_options_type_maps_all_four_timeout_overrides(self) -> None:
+        request_options = next(
+            (row for row in self.manifest["types"] if row["id"] == "RequestOptions"),
+            None,
+        )
+        self.assertIsNotNone(
+            request_options,
+            "RequestOptions must be a shared product type, not only a C layout carrier",
+        )
+        self.assertEqual("kmipkit_request_options_v1_t", request_options["c"]["name"])
+        self.assertEqual("fixed-width-value", request_options["c"]["kind"])
+        self.assertTrue(request_options["c"]["versioned"])
+        self.assertEqual(
+            [
+                "struct_size",
+                "abi_version",
+                "connect_timeout",
+                "write_timeout",
+                "read_timeout",
+                "total_timeout",
+            ],
+            [field["name"] for field in request_options["c"]["fields"]],
+        )
+
+        expected_fields = {
+            "connect_timeout": "with_connect",
+            "write_timeout": "with_write",
+            "read_timeout": "with_read",
+            "total_timeout": "with_total",
+        }
+        declarations = {
+            row["exportName"]: row
+            for row in self.manifest["publicDeclarations"]
+            if row["packageId"] == "c-kmipkit"
+        }
+        for field, builder_method in expected_fields.items():
+            path = f"kmipkit_request_options_v1_t.{field}"
+            with self.subTest(field=field):
+                declaration = declarations[path]
+                self.assertEqual("field", declaration["kind"])
+                self.assertEqual("client_execution", declaration["capabilityId"])
+                self.assertIn("KMIPKIT-0013-FR-011", declaration["requirementIds"])
+                self.assertEqual(
+                    f"kmipkit_transport::RequestOptions::{builder_method}",
+                    declaration["languageMappings"]["rust"]["name"],
+                )
+                self.assertEqual(
+                    f"org.kmipkit.extensions.RequestOptions.{field.removesuffix('_timeout')}Timeout",
+                    declaration["languageMappings"]["java"]["name"],
+                )
+                self.assertEqual(
+                    f"kmipkit.client.RequestOptions.{field}",
+                    declaration["languageMappings"]["python"]["name"],
+                )
+
     def test_last_error_get_is_mapped_to_shared_error_taxonomy(self) -> None:
         declarations = {
             row["exportName"]: row for row in self.manifest["publicDeclarations"]
