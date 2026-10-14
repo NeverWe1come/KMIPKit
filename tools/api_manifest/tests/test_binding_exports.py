@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import importlib.util
+import json
 import subprocess
 import struct
 import tempfile
@@ -637,6 +638,23 @@ class BindingExportAuditTests(unittest.TestCase):
         self.assertIn("kmipkit.errors.Choice", names)
         self.assertNotIn("kmipkit.errors._IntEnum", names)
         self.assertTrue(result["complete"])
+
+    def test_checked_in_binding_export_report_reconciles_every_package(self):
+        repo_root = Path(__file__).resolve().parents[3]
+        report_path = repo_root / "specs/043-public-api-bindings/reports/binding-export-report-2026-10-12.json"
+        report = json.loads(report_path.read_text(encoding="utf-8"))
+        self.assertEqual(
+            {package["packageId"] for package in report["packages"]},
+            {"c-kmipkit", "java-kmipkit", "python-kmipkit"},
+        )
+        for package in report["packages"]:
+            with self.subTest(package=package["packageId"]):
+                self.assertTrue(package["complete"])
+                self.assertTrue(package["matchesManifest"])
+                self.assertEqual(package["missingFromManifest"], [])
+                self.assertEqual(package["notObserved"], [])
+                self.assertEqual(package["kindMismatches"], [])
+                self.assertEqual(package["issues"], [])
 
     def test_python_inventory_collapses_explicit_overload_group_to_one_export(self):
         sources = {
