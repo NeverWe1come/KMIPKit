@@ -78,6 +78,8 @@ final class ClientFacadeTlsIntegrationTest {
         Files.write(certificateDerPath, certificateDer);
         Files.write(privateKeyDerPath, privateKeyDer);
         Files.write(trustDerPath, certificateDer);
+        byte[] crlDer = testCrlDer();
+        byte[] crlPem = pem("X509 CRL", crlDer);
 
         try (ClientExtensionRegistry registry = ClientExtensionRegistry.create(
                         List.of(), ExtensionRegistryLimits.defaults());
@@ -113,7 +115,12 @@ final class ClientFacadeTlsIntegrationTest {
                                     TransportConfiguration.TransportInput.file(
                                             trustPemPath, TransportConfiguration.Encoding.PEM),
                                     TransportConfiguration.TransportInput.memory(
-                                            certificateDer, TransportConfiguration.Encoding.DER))));
+                                            certificateDer, TransportConfiguration.Encoding.DER)))
+                            .revocationLists(List.of(
+                                    TransportConfiguration.TransportInput.memory(
+                                            crlPem, TransportConfiguration.Encoding.PEM),
+                                    TransportConfiguration.TransportInput.memory(
+                                            crlDer, TransportConfiguration.Encoding.DER))));
 
             for (TransportConfiguration.Builder builder : configurations) {
                 try (TransportConfiguration transport = builder.build();
@@ -342,6 +349,16 @@ final class ClientFacadeTlsIntegrationTest {
         String encoded = Base64.getMimeEncoder(64, new byte[] {'\n'}).encodeToString(der);
         return ("-----BEGIN " + label + "-----\n" + encoded + "\n-----END " + label + "-----\n")
                 .getBytes(java.nio.charset.StandardCharsets.US_ASCII);
+    }
+
+    private static byte[] testCrlDer() throws Exception {
+        try (InputStream input = ClientFacadeTlsIntegrationTest.class
+                .getResourceAsStream("/t076-test-crl.der")) {
+            if (input == null) {
+                throw new IllegalStateException("test CRL fixture is missing");
+            }
+            return input.readAllBytes();
+        }
     }
 
     private static SSLContext serverContext(KeyStore serverStore, X509Certificate clientCertificate)
