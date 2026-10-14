@@ -13,4 +13,4 @@
 - [x] Existing TLS 1.3/mTLS policy, Rustls backend, and secret-redaction behavior remain intact
 - [x] Current online policy results cover both root and fuzz workspaces
 - [x] No raw advisory scanner output, secrets, or credentials are added to logs or documentation
-- [ ] Review conclusion and any residual risk are recorded in the PR evidence
+- [x] Review conclusion and any residual risk are recorded in the PR evidence
