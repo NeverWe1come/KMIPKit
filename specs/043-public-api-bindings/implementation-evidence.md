@@ -1525,8 +1525,9 @@ checkpoint superseded by the final T022 acceptance record below. It predates
 the ownership commits and does not validate them. T076 is complete. The Java
 bridge finding assigned to T022 has an implementation in local commits
 `01254256`, `6bd59a62`, `9e2ae3a2`, and `b04d7d70`; local Windows Rust/C and
-Java/JNI checks pass. Current-final-head cross-platform CI remains a PR-matrix
-check. PR #104 remains a draft while the other KMIPKIT-0043 tasks continue.
+Java/JNI checks pass. At this interim checkpoint, cross-platform CI was still
+outstanding; the subsequent T022 code-head run is recorded below. PR #104
+remains a draft while the other KMIPKIT-0043 tasks continue.
 
 ### T022 final acceptance (2026-10-14)
 
@@ -1545,8 +1546,10 @@ errors, and 3 documented skips. JaCoCo reports 95.43% coverage (1,461
 covered, 70 missed). Independent review approved the deterministic
 owner-retention test and the documentation correction in `ec1c92f1`.
 
-Cross-platform CI on the current final head is still pending. Earlier
-successful run `38556076834` covered only ancestor
+GitHub Actions run `38559053899` passed on the validated T022 code head
+`6f1f06c729c074ae2eef304a6a1f541930670e0d`: 36 jobs completed, 0 failed, and
+2 were conditionally skipped. This validates the T022 code head; it does not
+cover any subsequent T023 changes. Earlier successful run `38556076834` covered only ancestor
 `8b3314c676c06c276b2bd1d0121193f631390da0`; it does not validate the ownership
 commits. PR #104 remains a draft pending the remaining PR matrix and feature
 exit gates.
