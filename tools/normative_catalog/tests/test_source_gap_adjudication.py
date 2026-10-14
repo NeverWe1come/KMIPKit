@@ -181,9 +181,10 @@ class SourceGapAdjudicationTests(unittest.TestCase):
         )
 
         source_sections = {reference["section"] for reference in discrepancy["source_refs"]}
-        self.assertTrue(
-            {"6.1", "6.1.11", "6.1.17", "6.1.24", "6.1.32", "6.1.55"} <= source_sections,
-            "the general Data rule and every affected operation table must be linked",
+        self.assertEqual(
+            source_sections,
+            {"6.1", "6.1.11", "6.1.17", "6.1.24", "6.1.32", "6.1.55"},
+            "only the general Data rule and affected single-part operation tables belong",
         )
         affected_elements = set(discrepancy["affected_element_ids"])
         self.assertTrue(
