@@ -86,6 +86,31 @@ class SourceGapAdjudicationTests(unittest.TestCase):
                 self.assertEqual(gaps[gap_id]["actor"], "client")
                 self.assertEqual(gaps[gap_id]["direction"], "client_to_server")
 
+    def test_table_161_conditions_match_the_attribute_reference_form(self) -> None:
+        catalog = _load_json(CATALOG_PATH)
+        oracle = _load_json(ORACLE_PATH)
+        gaps = {row["gap_id"]: row for row in oracle["source_only_requirement_gaps"]}
+        requirements = {row["requirement_id"]: row for row in catalog["requirements"]}
+        expected_conditions = {
+            "KMIPKIT-SOURCE-GAP-SPEC-5.5-VENDOR-IDENTIFICATION": (
+                "KMIPKIT-REQ-SPEC-5.5-003",
+                "vendor-name form of Attribute Reference",
+            ),
+            "KMIPKIT-SOURCE-GAP-SPEC-5.5-ATTRIBUTE-NAME": (
+                "KMIPKIT-REQ-SPEC-5.5-004",
+                "vendor-name form of Attribute Reference",
+            ),
+            "KMIPKIT-SOURCE-GAP-SPEC-5.5-ATTRIBUTE-REFERENCE-TAG": (
+                "KMIPKIT-REQ-SPEC-5.5-005",
+                "tag form of Attribute Reference",
+            ),
+        }
+
+        for gap_id, (requirement_id, expected_condition) in expected_conditions.items():
+            with self.subTest(gap_id=gap_id):
+                self.assertEqual(gaps[gap_id]["condition"], expected_condition)
+                self.assertEqual(requirements[requirement_id]["condition"], expected_condition)
+
 
 if __name__ == "__main__":
     unittest.main()
