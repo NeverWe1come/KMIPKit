@@ -760,30 +760,58 @@ value presence bitset are exact representation exclusions. The ten ABI
 framing/reserved fields remain separately excluded, and all five C carrier
 types retain their exact generated layouts. `transport_config.flags` records
 only whether `tls_server_name` and `target_uri` are present; both values are
-mapped independently. The three `*_count` fields are only derived lengths,
-and `transport_input.data` is the byte carrier whose complete value is
-represented by the input's encoding/source selectors and its parent
-configuration field.
+mapped independently. The three `*_count` fields are only derived slice
+lengths. `transport_input.data` is an exact nested-record field exclusion,
+while `byte_span.data` and `byte_span.length` are separately excluded pointer
+and length framing fields. The generated layouts retain the parent input's
+`source_kind`, `encoding`, and nested byte-span fields. The input bytes alone
+are not a capability: they are interpreted with their parent configuration
+context and selectors.
 
 The C `endpoint_kind` discriminant maps to the existing public endpoint
 families: Rust `Endpoint::raw_tls`/`Endpoint::https`, Java builder
 `rawTls`/`https`, and Python `Endpoint.raw_tls`/`https`. `endpoint_port` is
-applicable only to RAW_TLS; HTTPS authority and port are supplied together by
-the configured URI. C timeout `kind` maps to Rust `TimeoutPolicy`, preserving
-the default policy as well as bounded and unbounded limits; the value fields
-map to the bounded timeout representation.
+applicable only to RAW_TLS. For HTTPS, the `endpoint` field is the absolute
+URI and carries its authority, including an explicit port; C requires
+`endpoint_port == 0`. `target_uri` remains the separate origin-form path and
+optional query. The FFI parser, Java `https` builder, and Python HTTPS
+endpoint all preserve this separation. The C ABI regression accepts
+`https://server.kmipkit.test:8443` with `endpoint_port == 0` and
+`target_uri == "/kms/kmip"`, and rejects putting `8443` in the separate port
+field.
 
-Credential mapping covers the full supported input modes instead of only PEM
-entry points. Rust `CertificateInput` supports PEM/DER in-memory and file
-constructors, `PrivateKeyInput` supports PEM/DER in-memory and file
-constructors, and `RevocationListInput` supports in-memory PEM/DER. Java's
-transport builder exposes PEM/DER and approved file overloads for certificate
-and key inputs, plus PEM/DER CRL inputs. Python uses the shared
-`CredentialEncoding` and `TransportInput` selectors; file-backed CRLs are
-rejected during `TransportConfig` validation because KMIPKIT-0013-FR-003 does
-not authorize that source. C `encoding` and `source_kind` map to those
-selectors/constructor families, while `client_private_key` maps to the Rust
-`PrivateKeyInput` type.
+C timeout `kind` maps to Rust `TimeoutPolicy`, Java `Timeout.kind`, and Python
+`TimeoutLimit.kind`. Kind zero selects the matching member of
+`TimeoutPolicy::default()`; Java `Timeout.defaultValue()` and Python
+`TimeoutLimit.default()` expose that same default selector. Kinds BOUNDED and
+UNBOUNDED remain distinct, with seconds/nanoseconds used only for BOUNDED.
+The FFI regression checks DEFAULT for connect, write, read, and total against
+the accepted Rust policy, in addition to the existing bounded/unbounded
+cases.
+
+Credential mapping covers the complete approved mode matrix, rather than
+assuming that a PEM-memory constructor stands for all inputs:
+
+| C parent field | Rust public API | Java public API | Python public API | Supported C input modes |
+|---|---|---|---|---|
+| `client_certificates` | `CertificateInput` PEM/DER and file constructors | `clientIdentityPem`, `clientIdentityDer`, `clientIdentityFiles` | `TransportConfig.client_certificates` with `TransportInput.memory/file` and `CredentialEncoding` | PEM/DER memory and selected files |
+| `client_private_key` | `PrivateKeyInput` PEM/DER and file constructors | `clientIdentityPem`, `clientIdentityDer`, `clientIdentityFiles` | `TransportConfig.client_private_key` with `TransportInput.memory/file` and `CredentialEncoding` | PEM/DER memory and selected files |
+| `trust_certificates` | `TrustSource::certificate_authorities` over `CertificateInput` PEM/DER and file constructors | `trustCertificatesPem`, `trustCertificatesDer`, `trustCertificateFiles` | `TrustSource.certificate_authorities` over `TransportInput.memory/file` | PEM/DER memory and selected files |
+| `revocation_lists` | `RevocationListInput::from_pem/from_der` | `revocationListsPem`, `revocationListsDer` | `TransportConfig.revocation_lists` with in-memory `TransportInput` | PEM/DER memory only |
+
+For each `kmipkit_transport_input_v1_t`, `encoding` selects PEM or DER and
+`source_kind` selects material bytes or a UTF-8 path carried in `data`; the
+parent configuration field determines whether those bytes/path represent a
+certificate chain, private key, trust certificate, or CRL. The FFI's
+`certificate_input_bytes_with_budget`, `private_key_input`, and
+`revocation_input` implement those contexts. File-backed CRLs are not
+approved by KMIPKIT-0013-FR-003 and are rejected before reading in Rust FFI
+and Python. The exact `kmipkit_transport_input_v1_t.data` exclusion therefore
+does not hide any mode or material kind: source/encoding selectors and each
+parent capability are independently mapped, and the nested C layouts remain
+generated. `client_private_key` maps to Rust `PrivateKeyInput` and trust
+certificates map to the Rust `TrustSource::certificate_authorities` public
+constructor.
 
 | Phase | Commit | Command | Result |
 |---|---|---|---|
@@ -983,3 +1011,24 @@ checkbox was changed.
 | Red | `cf358e53` | `python -B -m unittest tools.api_manifest.tests.test_t076_client_mapping.T076ClientMappingTests.test_remaining_python_exports_are_mapped_or_exactly_excluded -v` | Expected failure listed the exact 18 unclassified exports across context-manager methods, `TrustSource`, exception constructors, `ClientExecutionError.category`, and the two dataclass constructors. |
 | Green | `8aba7d66` | `python -B -m unittest tools.api_manifest.tests.test_t076_client_mapping -v`; `wsl --exec bash -lc 'cd /mnt/c/Users/ramp1953/.codex/worktrees/0043-t076-client-mapping/KMIPKit && python3 -B -m unittest tools.api_manifest.tests.test_generate'`; `python -B tools/api_manifest/generate.py --check`; `git diff --check` | PASS: T076 mapping suite 23/23; generator suite 57/57; all 12 generated outputs current. |
 | Refactor | This commit | `python -B tools/api_manifest/audit_binding_exports.py --repo-root . --report specs/043-public-api-bindings/reports/binding-export-report-2026-10-12.json --check`; `python -B tools/api_manifest/generate.py --check`; `git diff --check` | PASS: report refreshed; C 264 observed (237 declarations, 27 exclusions), Java 469 (434, 35), and Python 540 (418, 122) all have `matchesManifest=true`, complete scans, and zero missing/stale/kind-mismatched/issue paths. Semantic field review and required parity/CI remain open, so T011, T076, T021, and T024 remain open. |
+
+### T076 semantic transport field review — partial promotion (2026-10-14)
+
+This follow-up closes the semantic review gates left open at the preceding
+structural-inventory checkpoint. The C `endpoint_kind` selection is supported
+by the RAW_TLS and HTTPS constructors; the port is conditional on RAW_TLS,
+while HTTPS carries its authority and optional port in the absolute endpoint
+URI and keeps the KMIP target as a separate origin-form path/query. Timeout
+DEFAULT selects the approved Rust `TimeoutPolicy::default()` behavior, with
+bounded and unbounded policies remaining distinct. The credential mode matrix
+and exact carrier exclusions are recorded above. No new exports or transport
+behavior were introduced. The audit snapshot did not change because every
+observed export was already accounted for; semantic correctness required this
+additional review and regression coverage beyond the structural scanner.
+
+| Phase | Commit | Command | Result |
+|---|---|---|---|
+| Red | `f5c38f0d` | `uv run --offline --no-project --with-requirements tools/api_manifest/requirements-test.txt python -B -m unittest tools.api_manifest.tests.test_t076_client_mapping.T076ClientMappingTests.test_transport_field_mappings_cover_policy_modes_and_exact_c_carriers -v`; `cargo test -p kmipkit-ffi --features coverage-c-consumer --test c_api_coverage -- --nocapture` | Expected mapping failure: the Rust trust target did not identify `TrustSource::certificate_authorities`; C ABI consumer checks passed 3/3 before the mapping correction. |
+| Red | `2d9901ba` | `cargo test -p kmipkit-ffi --lib capability_query_only_reports_c_mapped_nonblocked_capabilities` | Expected failure after updating the assertion: the Rust facade omitted ready capability `client_batch_model` (0 passed, 1 failed). |
+| Green | `f57988ca` | `uv run --offline --no-project --with-requirements tools/api_manifest/requirements-test.txt python -B -m unittest tools.api_manifest.tests.test_t076_client_mapping -v`; `cargo test -p kmipkit-ffi --lib`; `python -B tools/api_manifest/generate.py --check`; `cargo test -p kmipkit-ffi --features coverage-c-consumer --test c_api_coverage -- --nocapture` | PASS: T076 mappings 24/24; FFI unit tests 57/57; all 12 generated outputs current; C ABI coverage consumer 3/3. The generated C header and parity fixtures preserve exact ABI layouts. |
+| Refactor | This commit | `uv run --offline --no-project --with-requirements tools/api_manifest/requirements-test.txt python -B -m unittest tools.api_manifest.tests.test_generate -v`; `python -B tools/api_manifest/audit_binding_exports.py --check --report specs/043-public-api-bindings/reports/binding-export-report-2026-10-12.json`; `python -B tools/api_manifest/generate.py --check`; `cargo fmt --all --check`; `git diff --check` | PASS: generator suite 57 passed, 2 Windows symlink-permission skips; audit exit 0 with C 264 observed/237 matched, Java 469/434, Python 540/418, each `matchesManifest=true` with zero missing, stale, kind-mismatched, or issue paths; all 12 generated outputs verified. T011, T076, T021, and T024 remain open pending remaining parity and CI review; `kmipkit_client_execute_with_error_ttlv_v1` remains blocked. |
