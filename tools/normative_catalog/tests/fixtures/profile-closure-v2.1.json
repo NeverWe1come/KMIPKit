@@ -93145,7 +93145,7 @@
       "candidate_requirement_id": "KMIPKIT-REQ-SPEC-5.5-003",
       "proposed_requirement_id": null,
       "status": "source_obligation_covered_by_existing_stable_label",
-      "review_note": "Pinned KMIP Specification v2.1 table body row records Required=Yes for this member. The catalog maps it to KMIPKIT-REQ-SPEC-5.5-003; applicability is conditional on the enclosing structure. Implementation and positive verification remain unassigned."
+      "review_note": "KMIPKIT-0016 covers the shared Attribute Reference and Current/New Attribute wrapper models and their operation shapes. The corresponding typed encoder and local protocol-test references are recorded on the stable catalog requirement. Applicability remains conditional on the named form or wrapper being present; this does not require every client profile to use it. No linked official OASIS Test Case is asserted."
     },
     {
       "gap_id": "KMIPKIT-SOURCE-GAP-SPEC-5.5-ATTRIBUTE-NAME",
@@ -93178,7 +93178,7 @@
       "candidate_requirement_id": "KMIPKIT-REQ-SPEC-5.5-004",
       "proposed_requirement_id": null,
       "status": "source_obligation_covered_by_existing_stable_label",
-      "review_note": "Pinned KMIP Specification v2.1 table body row records Required=Yes for this member. The catalog maps it to KMIPKIT-REQ-SPEC-5.5-004; applicability is conditional on the enclosing structure. Implementation and positive verification remain unassigned."
+      "review_note": "KMIPKIT-0016 covers the shared Attribute Reference and Current/New Attribute wrapper models and their operation shapes. The corresponding typed encoder and local protocol-test references are recorded on the stable catalog requirement. Applicability remains conditional on the named form or wrapper being present; this does not require every client profile to use it. No linked official OASIS Test Case is asserted."
     },
     {
       "gap_id": "KMIPKIT-SOURCE-GAP-SPEC-5.5-ATTRIBUTE-REFERENCE-TAG",
@@ -93211,7 +93211,7 @@
       "candidate_requirement_id": "KMIPKIT-REQ-SPEC-5.5-005",
       "proposed_requirement_id": null,
       "status": "source_obligation_covered_by_existing_stable_label",
-      "review_note": "Pinned KMIP Specification v2.1 table body row records Required=Yes for this member. The catalog maps it to KMIPKIT-REQ-SPEC-5.5-005; applicability is conditional on the enclosing structure. Implementation and positive verification remain unassigned."
+      "review_note": "KMIPKIT-0016 covers the shared Attribute Reference and Current/New Attribute wrapper models and their operation shapes. The corresponding typed encoder and local protocol-test references are recorded on the stable catalog requirement. Applicability remains conditional on the named form or wrapper being present; this does not require every client profile to use it. No linked official OASIS Test Case is asserted."
     },
     {
       "gap_id": "KMIPKIT-SOURCE-GAP-SPEC-5.6-CURRENT-ATTRIBUTE",
@@ -93244,7 +93244,7 @@
       "candidate_requirement_id": "KMIPKIT-REQ-SPEC-5.6-002",
       "proposed_requirement_id": null,
       "status": "source_obligation_covered_by_existing_stable_label",
-      "review_note": "Pinned KMIP Specification v2.1 table body row records Required=Yes for this member. The catalog maps it to KMIPKIT-REQ-SPEC-5.6-002; applicability is conditional on the enclosing structure. Implementation and positive verification remain unassigned."
+      "review_note": "KMIPKIT-0016 covers the shared Attribute Reference and Current/New Attribute wrapper models and their operation shapes. The corresponding typed encoder and local protocol-test references are recorded on the stable catalog requirement. Applicability remains conditional on the named form or wrapper being present; this does not require every client profile to use it. No linked official OASIS Test Case is asserted."
     },
     {
       "gap_id": "KMIPKIT-SOURCE-GAP-SPEC-5.7-NEW-ATTRIBUTE",
@@ -93277,7 +93277,7 @@
       "candidate_requirement_id": "KMIPKIT-REQ-SPEC-5.7-002",
       "proposed_requirement_id": null,
       "status": "source_obligation_covered_by_existing_stable_label",
-      "review_note": "Pinned KMIP Specification v2.1 table body row records Required=Yes for this member. The catalog maps it to KMIPKIT-REQ-SPEC-5.7-002; applicability is conditional on the enclosing structure. Implementation and positive verification remain unassigned."
+      "review_note": "KMIPKIT-0016 covers the shared Attribute Reference and Current/New Attribute wrapper models and their operation shapes. The corresponding typed encoder and local protocol-test references are recorded on the stable catalog requirement. Applicability remains conditional on the named form or wrapper being present; this does not require every client profile to use it. No linked official OASIS Test Case is asserted."
     },
     {
       "gap_id": "KMIPKIT-SOURCE-GAP-SPEC-4.21-CLIENT-LOWERCASE-MAY",
