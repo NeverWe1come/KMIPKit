@@ -100,6 +100,93 @@ def test_batch_and_client_are_context_managed_and_retain_ordered_typed_items() -
     assert ttlv.CodecLimits
 
 
+def test_public_native_handle_wrappers_reject_direct_cffi_handle_adoption() -> None:
+    pointer = client.ffi.cast("void *", 1)
+    wrappers = (
+        ("client.Batch", lambda: client.Batch(pointer)),
+        ("client.BatchResult", lambda: client.BatchResult(pointer, ())),
+        ("client.Client", lambda: client.Client(pointer)),
+        ("ttlv.RawTag", lambda: ttlv.RawTag(pointer)),
+        ("ttlv.Tag", lambda: ttlv.Tag(pointer)),
+        ("ttlv.CodecLimits", lambda: ttlv.CodecLimits(pointer)),
+        ("ttlv.Value", lambda: ttlv.Value(pointer)),
+        ("ttlv.Structure", lambda: ttlv.Structure(pointer)),
+        ("ttlv.TtlvItem", lambda: ttlv.TtlvItem(pointer)),
+        ("ttlv.TtlvStructureView", lambda: ttlv.TtlvStructureView(pointer)),
+        ("ttlv.TtlvItemView", lambda: ttlv.TtlvItemView(pointer)),
+        ("ttlv.TtlvValueView", lambda: ttlv.TtlvValueView(pointer)),
+        ("extensions.ExtensionIdentity", lambda: extensions.ExtensionIdentity(pointer, None, None, None)),
+        ("extensions.Compatibility", lambda: extensions.Compatibility(pointer)),
+        ("extensions.TtlvPath", lambda: extensions.TtlvPath(pointer, ())),
+        (
+            "extensions.Discriminator",
+            lambda: extensions.Discriminator(
+                pointer, SimpleNamespace(tags=()), ttlv.ItemType.Integer, 0
+            ),
+        ),
+        ("extensions.ExtensionSchema", lambda: extensions.ExtensionSchema(pointer)),
+        ("extensions.ExtensionChildRule", lambda: extensions.ExtensionChildRule(pointer)),
+        (
+            "extensions.ExtensionOrderConstraint",
+            lambda: extensions.ExtensionOrderConstraint(pointer),
+        ),
+        ("extensions.ExtensionInformation", lambda: extensions.ExtensionInformation(pointer, None)),
+        (
+            "extensions.ExtensionDefinition",
+            lambda: extensions.ExtensionDefinition(pointer, object()),
+        ),
+        (
+            "extensions.ClientExtensionRegistry",
+            lambda: extensions.ClientExtensionRegistry(pointer, (), object()),
+        ),
+        (
+            "extensions.ClientConfiguration",
+            lambda: extensions.ClientConfiguration(pointer, (), object()),
+        ),
+        (
+            "extensions.ValidatedExtensionValue",
+            lambda: extensions.ValidatedExtensionValue(pointer),
+        ),
+        (
+            "extensions.RegisteredExtensionValue",
+            lambda: extensions.RegisteredExtensionValue(pointer, object()),
+        ),
+        (
+            "extensions.ClientRequestMessageExtension",
+            lambda: extensions.ClientRequestMessageExtension(pointer),
+        ),
+        ("extensions.ClientBatchItem", lambda: extensions.ClientBatchItem(pointer)),
+        ("extensions.RegisterRequest", lambda: extensions.RegisterRequest(pointer)),
+        (
+            "extensions.ExtensionRecognition",
+            lambda: extensions.ExtensionRecognition(pointer, object(), "vendor", object()),
+        ),
+    )
+
+    for path, construct in wrappers:
+        candidate = None
+        try:
+            with pytest.raises(errors.InvalidInputError):
+                candidate = construct()
+        finally:
+            if candidate is not None:
+                object.__setattr__(candidate, "_NativeHandle__handle", client.ffi.NULL)
+
+
+def test_live_batch_handle_cannot_be_adopted_by_a_second_wrapper() -> None:
+    original = client.Batch.create()
+    duplicate = None
+    pointer = original._pointer()
+    try:
+        with pytest.raises(errors.InvalidInputError):
+            duplicate = client.Batch(pointer)
+        assert original._pointer() == pointer
+    finally:
+        if duplicate is not None:
+            object.__setattr__(duplicate, "_NativeHandle__handle", client.ffi.NULL)
+        original.close()
+
+
 def test_execution_error_exposes_sanitized_delivery_metadata() -> None:
     error = errors.ClientExecutionError(
         status=9,
