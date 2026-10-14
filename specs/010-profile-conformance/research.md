@@ -1,5 +1,7 @@
 # Research: KMIP 2.1 Client Profile Conformance
 
+**Snapshot note:** The dated 2026-10-13 sections below are historical. The source-review audit dated 2026-10-14 at the end of this file supersedes their current counts and task status.
+
 **Date**: 2026-10-07
 **Feature**: `KMIPKIT-0010-profile-conformance`
 
@@ -70,7 +72,7 @@ The selected target is stored in the project-owned `specification/catalog/profil
 - The source catalog at that snapshot marked profiles `not_claimed`; this feature recorded Baseline readiness as `evidence_incomplete` because its 16 mandatory fixtures were unavailable. No public profile claim was emitted.
 - The 1.0 target remains TTLV, KMIP 2.1, TLS 1.3 with mutual TLS, raw TLS and HTTP/1.1 over HTTPS. JSON/XML and server-initiated operations remain outside this feature's scope.
 
-## Pinned-source client-profile closure baseline (reviewed 2026-10-13)
+## Pinned-source client-profile closure baseline (2026-10-13 historical snapshot; superseded below)
 
 This is a current-state audit of the checked-in catalog against the pinned KMIP Specification v2.1 and Profiles v2.1 HTML, not a conformance result. The exact catalog sets remain in each profile's `direct_source_clause_ids`, `source_clause_ids`, `requirement_ids`, `dependency_profile_ids`, and `test_case_ids` arrays in `specification/catalog/kmip-2.1.json`. The pinned-source oracle at `tools/normative_catalog/tests/fixtures/profile-closure-v2.1.json` records 18 profiles and `source_closure_status: complete`, but that status is not yet independently validated: the Tape Library inclusion-root defect found by T001 is corrected and tested, while the broader clause and requirement review remains open. The requirement crosswalk is explicitly incomplete (`requirement_crosswalk_complete: false`, 104 source-only requirement gaps, and two gap proposals). T003's source review and regression tests remain open; the current oracle status is not proof of a complete source or requirement mapping. Counts below distinguish actual stored profile arrays from normative closure counts.
 
@@ -103,7 +105,7 @@ These values were recomputed read-only from the catalog: the client profiles hav
 
 PKCS#11 Client closure includes Profiles §5.18.1 through the explicit inclusion in §5.18.3 item 2. The five clauses stay in its source closure, but their profile-specific requirements remain out of scope for the TTLV-only 1.0 line; the lowercase `may`/`required` wording in §5.18.1 ordinals 1–3 does not create normative requirement records. Its current catalog record stores 911 clause IDs and 278 `requirement_ids`; these raw counts do not independently certify requirement closure.
 
-## Normative-reference cross-check for T002 (2026-10-13)
+## Normative-reference cross-check for T002 (2026-10-13 historical snapshot; superseded below)
 
 The pinned Profiles HTML supports the two shared Baseline roots and the profile sections in the 18-row table above. Profiles §6.1 item 1 says client implementations SHALL support `[KMIP-SPEC]` (lines 10479–84); the corresponding whole-source inclusion means all 877 catalogued Specification clauses are in the Baseline clause closure, including clauses that later need a client/server/out-of-scope disposition. Profiles §6.1 item 2 says SHALL support the Basic Authentication Suite conditions in §3.1 (lines 10484–85); the applicable §3.1, §3.1.1, and §3.1.2 records are included through the section edge. This source wording and closure do not imply that every Specification clause becomes a client 1.0 implementation obligation: the actor, direction, applicability, conditions, and source keyword remain attached to each reviewed requirement.
 
@@ -185,3 +187,77 @@ The Baseline target and runtime-availability statuses must be exposed separately
 ## Implementation boundary
 
 The runtime validator belongs in the Rust protocol/client boundary and consumes generated immutable profile metadata. The generator and report extension use the repository's pinned Python tooling and the catalog as input. Public C, Java, and Python selection surfaces and their parity belong to the later API/bindings work, which must expose equivalent behavior. No dependency on network access, dynamic OASIS parsing, or executable plug-ins is introduced.
+
+
+## Source-review audit — 2026-10-14
+
+This is the current T001–T002 source-review record. It uses only the pinned Specification, Profiles, and Test Cases files under `specification/oasis/kmip-2.1/upstream/`, the checked-in catalog, and the independently maintained closure fixture. No upstream source or generated file was changed.
+
+### Task disposition
+
+- **T001 complete:** all 18 client-profile inventory records were compared with the source-reviewed closure fixture for direct roots, computed source-clause closure, requirement IDs, dependencies, test IDs, and fixture status. The full transitive Baseline clause baseline and its known requirement-mapping gaps are recorded below. This records the requested baseline; it does not certify a complete requirement crosswalk or profile conformance.
+- **T002 remains open:** all direct roots and clause closures match the pinned-source oracle, and the source text supports the four normative inclusion edges. Exact requirement mapping is not complete: the oracle sets `requirement_crosswalk_complete: false` and records 106 source-only review rows; 55 catalog requirements marked `client_1_0` have no `source_clause_ids`. T003 was not started.
+
+### Baseline Client closure and source rulings
+
+KMIP Profiles v2.1 §6.1 item 1 says client implementations SHALL support `[KMIP-SPEC]` (pinned Profiles HTML lines 10479–10484). Its whole-source edge is `KMIPKIT-INCLUSION-PROF-BASELINE-SPEC`, from `KMIPKIT-CLAUSE-PROF-6.1-001` to `KMIPKIT-SRC-spec` with `included_section: null`. All 877 catalogued Specification clauses are in Baseline Client's computed closure. This includes source clauses later dispositioned as server-only or out of scope; source inclusion does not make those client 1.0 requirements.
+
+Profiles §6.1 item 2 says clients SHALL support Basic Authentication Suite conditions in §3.1 (lines 10484–10485). Its edge is `KMIPKIT-INCLUSION-PROF-BASELINE-BASIC-AUTH`, from `KMIPKIT-CLAUSE-PROF-6.1-002` to `KMIPKIT-SRC-profiles` §3.1. Same-source subclause expansion includes §§3.1.1–3.1.4. Baseline's full 897-clause closure is 877 Specification clauses plus 20 Profiles clauses: §3.1 (1), §3.1.1 (5), §3.1.2 (5), §3.1.3 (3), §3.1.4 (1), §5.1.1 (1), and §6.1 (4). Baseline has six direct Profiles roots across §§3.1, 5.1.1, and 6.1. The 278 stored requirement IDs are 268 Specification IDs plus 10 Profiles IDs; this stored count is not proof that the underlying source-to-requirement mapping is complete.
+
+The source-reviewed §3.1.1/§3.1.2 records preserve actor, keyword, condition, and scope. `KMIPKIT-REQ-PROF-3.1.1-002` is a conditional client SHOULD; `KMIPKIT-REQ-PROF-3.1.1-004` is a client MAY marked `out_of_scope` under the approved TLS 1.3-only product boundary; `KMIPKIT-REQ-PROF-3.1.1-005` is a client/server SHALL NOT. `KMIPKIT-REQ-PROF-3.1.2-002` is a conditional client SHALL; `KMIPKIT-REQ-PROF-3.1.2-005` is a client/server SHALL NOT. The client-specific records are in Baseline's stored requirement set. The §3.1.3/§3.1.4 source clauses remain in closure with their source actor and applicability dispositions; they are not silently converted to client obligations.
+
+The four reviewed normative inclusions are:
+
+| Inclusion | Pinned Profiles reference | Included source scope |
+|---|---|---|
+| `KMIPKIT-INCLUSION-PROF-BASELINE-SPEC` | §6.1 item 1 | Entire KMIP Specification v2.1 |
+| `KMIPKIT-INCLUSION-PROF-BASELINE-BASIC-AUTH` | §6.1 item 2 | Profiles §3.1 and subclauses |
+| `KMIPKIT-INCLUSION-PROF-PKCS11-ENCODING` | §5.18.3 item 2 | Profiles §5.18.1 |
+| `KMIPKIT-INCLUSION-PROF-TAPE-LIBRARY-TEST-CASES` | §6.28 item 6 | Profiles §5.12.6 |
+
+The Tape Library edge is rooted at `KMIPKIT-CLAUSE-PROF-6.28-006`, item 6; item 7 is the separate Baseline conformance clause. PKCS#11 §5.18.1 remains in source closure while the profile is out of scope for the TTLV-only 1.0 line. The Usage Guide and Test Cases documents add no normative inclusion edges. Focused checks confirm informative references do not expand closure and server-only requirements do not enter the client requirement set.
+
+The whole-Spec closure includes `KMIPKIT-REQ-SPEC-14.1-002`, the claim-level SHALL concerning every normative statement in a claimed profile's clauses and subclauses. The current catalog and oracle both include this requirement ID in all 18 client profile requirement arrays. It is a readiness gate, not a stand-alone operation rule, test case, conformance result, or public claim.
+
+### Current client-profile inventory
+
+The oracle contains 18 client profiles: 14 `client_1_0`, one `conditional` (HTTPS), and three `out_of_scope` (JSON, PKCS#11, XML). The following stored counts and case records were recomputed from the current catalog and compared with the pinned-source oracle. The section column shows Profiles sections attributed to a closure, including normative inclusion targets; dependency-derived Baseline membership is shown separately. Counts describe current metadata, not a complete source-requirement mapping.
+
+| Client profile | Applicability | Profiles sections attributed to closure | Clauses | Requirement IDs | Dependency | Linked test IDs | Fixtures available / unavailable |
+|---|---|---|---:|---:|---|---:|---:|
+| AES XTS Client | `client_1_0` | 3.1, 5.13.1, 6.1, 6.30 | 904 | 282 | Baseline | 18 | 16 / 2 |
+| Asymmetric Key Lifecycle Client | `client_1_0` | 3.1, 5.8.1, 6.1, 6.16 | 904 | 282 | Baseline | 20 | 16 / 4 |
+| Baseline Client | `client_1_0` | 3.1, 5.1.1, 6.1 | 897 | 278 | none | 16 | 16 / 0 |
+| Advanced Cryptographic Client | `client_1_0` | 3.1, 5.9.2, 6.1, 6.19 | 905 | 283 | Baseline | 34 | 16 / 18 |
+| Basic Cryptographic Client | `client_1_0` | 3.1, 5.9.1, 6.1, 6.18 | 905 | 283 | Baseline | 37 | 16 / 21 |
+| RNG Cryptographic Client | `client_1_0` | 3.1, 5.9.3, 6.1, 6.20 | 905 | 283 | Baseline | 21 | 16 / 5 |
+| HTTPS Client | `conditional` | 3.2, 5.3.1, 6.1, 6.4 | 918 | 292 | Baseline | 17 | 16 / 1 |
+| JSON Client | `out_of_scope` | 3.1, 5.5.2, 6.1, 6.8 | 905 | 274 | Baseline | 17 | 16 / 1 |
+| Opaque Managed Object Store Client | `client_1_0` | 3.1, 5.10.1, 6.1, 6.24 | 904 | 282 | Baseline | 18 | 16 / 2 |
+| PKCS#11 Client | `out_of_scope` | 3.1, 5.18.1, 5.18.3, 6.1, 6.34 | 911 | 279 | Baseline | 17 | 16 / 1 |
+| Quantum Safe Client | `client_1_0` | 3.1, 5.15, 5.17, 6.1, 6.32 | 910 | 284 | Baseline | 18 | 16 / 2 |
+| Storage Array with Self-Encrypting Drives Client | `client_1_0` | 3.1, 5.11.1, 6.1, 6.26 | 905 | 283 | Baseline | 19 | 16 / 3 |
+| Advanced Symmetric Key Foundry Client | `client_1_0` | 3.1, 5.7.3, 6.1, 6.14 | 904 | 281 | Baseline | 20 | 16 / 4 |
+| Basic Symmetric Key Foundry Client | `client_1_0` | 3.1, 5.7.1, 6.1, 6.12 | 904 | 282 | Baseline | 20 | 16 / 4 |
+| Intermediate Symmetric Key Foundry Client | `client_1_0` | 3.1, 5.7.2, 6.1, 6.13 | 904 | 281 | Baseline | 20 | 16 / 4 |
+| Symmetric Key Lifecycle Client | `client_1_0` | 3.1, 5.6.1, 6.1, 6.10 | 904 | 282 | Baseline | 17 | 16 / 1 |
+| Tape Library Client | `client_1_0` | 3.1, 5.12.2, 5.12.3, 5.12.4, 5.12.6, 6.1, 6.28 | 931 | 306 | Baseline | 19 | 16 / 3 |
+| XML Client | `out_of_scope` | 3.1, 5.4.2, 6.1, 6.6 | 905 | 274 | Baseline | 17 | 16 / 1 |
+
+All 17 non-Baseline client profiles depend on Baseline. There are 365 profile-to-test associations and 93 distinct official profile test IDs. All share the 16 mandatory Baseline IDs (`BL-M-1-21` through `BL-M-13-21` and `SKLC-M-1-21` through `SKLC-M-3-21`); their XML fixtures are pinned. Seventy-seven other distinct linked fixture records remain unavailable. Fixture presence is not execution evidence, and no profile claim is made. The Profiles v2.1 source supplies these profile-case IDs and links. The separate pinned Test Cases v2.1 CN01 HTML contains none of the 93 IDs, so it does not independently cross-reference these Profiles test cases.
+
+Three source label/href/display mismatches remain recorded as catalog discrepancies and are not repaired by inference: Profiles §5.9.7.13 labels `CS-BC-M-13-21` but points to `CS-BC-M-14-21.xml` and displays `CS-BC-M-21-21.xml`; §5.9.7.14 labels `CS-BC-M-14-21`, points to the same `CS-BC-M-14-21.xml`, and displays `CS-BC-M-20-21.xml`; §5.17.1 labels `QS-M-1-12` but points to and displays `QS-M-1-21.xml`. The catalog records these under `KMIPKIT-DISC-027` and `KMIPKIT-DISC-028`.
+
+### Exact requirement-mapping gaps
+
+The oracle records 502 requirement-crosswalk rows, 890 source-requirement review rows, and `requirement_crosswalk_complete: false`. Its 106 `source_only_requirement_gaps` are source-review records, not 106 confirmed client requirements: 84 cite the pinned Specification and 22 cite the pinned Profiles document. Status counts are 61 source obligations covered by an existing stable label, 20 unlabeled source statements or boundary items, 10 reviewed procedure-context rows, 3 reviewed generic-parameter-context rows, two scope-unresolved rows, and one each for unresolved force/actor, missing stable label, unresolved source interpretation, unresolved keyword force, unresolved actor/capability classification, server-actor disposition, mapping to attribute policy, unresolved actor/client-capability, unresolved actor/scope, and a stable-label proposal not yet catalogued. Exact `gap_id`, source section, source line span, excerpt, and disposition are preserved in `tools/normative_catalog/tests/fixtures/profile-closure-v2.1.json`.
+
+Separately, 55 catalog requirements with `scope_state: client_1_0` have no `source_clause_ids`. All 55 point to row-level Specification references, carry a `source_gap_id`, and are present in Baseline's stored requirement array; catalog statuses are 24 `verified`, one `scoped_verified`, and 30 `unassigned`. A verified row locator is not a source-clause mapping or proof of actor, scope, or category coverage. The affected stable IDs are:
+
+`KMIPKIT-REQ-SPEC-2.3-003`, `KMIPKIT-REQ-SPEC-3.1-007`, `KMIPKIT-REQ-SPEC-3.10-002`, `KMIPKIT-REQ-SPEC-3.10-003`, `KMIPKIT-REQ-SPEC-3.10-004`, `KMIPKIT-REQ-SPEC-3.11-002`, `KMIPKIT-REQ-SPEC-3.11-003`, `KMIPKIT-REQ-SPEC-3.12-002`, `KMIPKIT-REQ-SPEC-3.12-003`, `KMIPKIT-REQ-SPEC-3.2-003`, `KMIPKIT-REQ-SPEC-3.3-010`, `KMIPKIT-REQ-SPEC-3.3-011`, `KMIPKIT-REQ-SPEC-3.4-002`, `KMIPKIT-REQ-SPEC-3.5-002`, `KMIPKIT-REQ-SPEC-3.5-003`, `KMIPKIT-REQ-SPEC-3.5-004`, `KMIPKIT-REQ-SPEC-3.5-005`, `KMIPKIT-REQ-SPEC-3.6-002`, `KMIPKIT-REQ-SPEC-3.6-004`, `KMIPKIT-REQ-SPEC-3.6-005`, `KMIPKIT-REQ-SPEC-3.7-003`, `KMIPKIT-REQ-SPEC-3.8-002`, `KMIPKIT-REQ-SPEC-3.8-003`, `KMIPKIT-REQ-SPEC-3.9-002`, `KMIPKIT-REQ-SPEC-3.9-003`, `KMIPKIT-REQ-SPEC-3.9-004`, `KMIPKIT-REQ-SPEC-5.5-003`, `KMIPKIT-REQ-SPEC-5.5-004`, `KMIPKIT-REQ-SPEC-5.5-005`, `KMIPKIT-REQ-SPEC-5.6-002`, `KMIPKIT-REQ-SPEC-5.7-002`, `KMIPKIT-REQ-SPEC-6.1.12-003`, `KMIPKIT-REQ-SPEC-6.1.12-005`, `KMIPKIT-REQ-SPEC-6.1.12-006`, `KMIPKIT-REQ-SPEC-6.1.12-007`, `KMIPKIT-REQ-SPEC-6.1.13-005`, `KMIPKIT-REQ-SPEC-6.1.13-006`, `KMIPKIT-REQ-SPEC-6.1.14-007-001`, `KMIPKIT-REQ-SPEC-6.1.14-009`, `KMIPKIT-REQ-SPEC-6.1.14-010`, `KMIPKIT-REQ-SPEC-6.1.14-011`, `KMIPKIT-REQ-SPEC-6.1.14-012`, `KMIPKIT-REQ-SPEC-6.1.18-005`, `KMIPKIT-REQ-SPEC-6.1.18-006`, `KMIPKIT-REQ-SPEC-6.1.18-007`, `KMIPKIT-REQ-SPEC-6.1.18-008`, `KMIPKIT-REQ-SPEC-6.1.19-003`, `KMIPKIT-REQ-SPEC-6.1.19-004`, `KMIPKIT-REQ-SPEC-6.1.19-005`, `KMIPKIT-REQ-SPEC-6.1.19-006`, `KMIPKIT-REQ-SPEC-6.1.23-002-001`, `KMIPKIT-REQ-SPEC-6.1.30-001`, `KMIPKIT-REQ-SPEC-6.1.30-002`, `KMIPKIT-REQ-SPEC-6.1.30-003`, and `KMIPKIT-REQ-SPEC-6.1.31-001`.
+
+The oracle preserves two proposed stable IDs without adding them to the catalog: `KMIPKIT-REQ-PROF-5.18.3-004` for a Profiles §5.18.3 MAY statement (outside the TTLV-only 1.0 scope), and `KMIPKIT-REQ-SPEC-6.1.54-001` for the Specification §6.1.54 REQUIRED Endpoint Role row. These proposals and remaining gap dispositions need the separate T003 review/test tranche; this audit does not assign ownership or invent requirement mappings.
+
+### Scoped source-consistency checks
+
+Focused source checks passed: all-profile direct roots and closure match the independently reviewed oracle; Baseline includes every Specification clause plus the Profiles §3.1 inherited clauses; §14.1-002 appears in each client closure; test IDs, hrefs, mandatory status, dependencies, and fixture records match the source fixture; informative references do not expand closure; and server-only requirements remain excluded. These checks establish equality with the current closure fixture, not completion of the requirement crosswalk.
