@@ -7,7 +7,7 @@ import re
 import unittest
 from pathlib import Path
 
-from tools.api_manifest import generate
+from tools.api_manifest import audit_binding_exports, generate
 
 
 ROOT = Path(__file__).resolve().parents[3]
@@ -748,6 +748,113 @@ class T076ClientMappingTests(unittest.TestCase):
                 self.assertIsNotNone(row, f"missing mapped result metadata field: {field}")
                 assert row is not None
                 self.assertEqual("declared", row["declarationState"])
+
+    def test_python_native_handle_initializers_are_exact_internal_factory_exclusions(self) -> None:
+        wrapper_types = {
+            "kmipkit.client.Batch",
+            "kmipkit.client.BatchResult",
+            "kmipkit.client.Client",
+            "kmipkit.ttlv.RawTag",
+            "kmipkit.ttlv.Tag",
+            "kmipkit.ttlv.CodecLimits",
+            "kmipkit.ttlv.Value",
+            "kmipkit.ttlv.Structure",
+            "kmipkit.ttlv.TtlvItem",
+            "kmipkit.ttlv.TtlvStructureView",
+            "kmipkit.ttlv.TtlvItemView",
+            "kmipkit.ttlv.TtlvValueView",
+            "kmipkit.extensions.ExtensionIdentity",
+            "kmipkit.extensions.Compatibility",
+            "kmipkit.extensions.TtlvPath",
+            "kmipkit.extensions.Discriminator",
+            "kmipkit.extensions.ExtensionSchema",
+            "kmipkit.extensions.ExtensionChildRule",
+            "kmipkit.extensions.ExtensionOrderConstraint",
+            "kmipkit.extensions.ExtensionInformation",
+            "kmipkit.extensions.ExtensionDefinition",
+            "kmipkit.extensions.ClientExtensionRegistry",
+            "kmipkit.extensions.ClientConfiguration",
+            "kmipkit.extensions.ValidatedExtensionValue",
+            "kmipkit.extensions.RegisteredExtensionValue",
+            "kmipkit.extensions.ClientRequestMessageExtension",
+            "kmipkit.extensions.ClientBatchItem",
+            "kmipkit.extensions.RegisterRequest",
+            "kmipkit.extensions.ExtensionRecognition",
+        }
+        expected_initializers = {f"{wrapper}.__init__" for wrapper in wrapper_types}
+        python_root = ROOT / "bindings" / "python" / "src" / "kmipkit"
+        sources = {
+            path.relative_to(python_root.parent).as_posix(): path.read_text(encoding="utf-8")
+            for path in sorted(python_root.rglob("*.py"))
+        }
+        inventory = audit_binding_exports.inventory_python_sources(sources)
+        observed = {row["exportName"] for row in inventory["declarations"]}
+        declarations = {
+            row["exportName"]: row
+            for row in self.manifest["publicDeclarations"]
+            if row["packageId"] == "python-kmipkit"
+        }
+        exclusions = {
+            row["exportName"]: row
+            for row in self.manifest["approvedExclusions"]
+            if row["packageId"] == "python-kmipkit"
+        }
+
+        observed_initializers = {
+            path for path in observed if path in expected_initializers
+        }
+        self.assertEqual(expected_initializers, observed_initializers)
+        matching_exclusions = {
+            path for path in exclusions if path in expected_initializers
+        }
+        self.assertEqual(expected_initializers, matching_exclusions)
+        for path in sorted(expected_initializers):
+            with self.subTest(path=path):
+                self.assertNotIn(path, declarations)
+                exclusion = exclusions[path]
+                self.assertIn("private identity token", exclusion["reason"].lower())
+                self.assertIn("internal factory", exclusion["reason"].lower())
+                self.assertEqual(
+                    "specs/043-public-api-bindings/spec.md",
+                    exclusion["approvalSource"]["path"],
+                )
+                self.assertIn("KMIPKIT-0043-FR-021", exclusion["evidence"])
+                self.assertIn("T024", exclusion["evidence"])
+
+        for wrapper in wrapper_types:
+            with self.subTest(wrapper=wrapper):
+                declaration = declarations[wrapper]
+                self.assertEqual("type", declaration["kind"])
+                self.assertEqual("declared", declaration["declarationState"])
+                self.assertEqual(
+                    {"rust", "c", "java", "python"},
+                    set(declaration["languageMappings"]),
+                )
+
+        factories = {
+            "kmipkit.client.Batch.create",
+            "kmipkit.client.Client.create",
+            "kmipkit.extensions.RegisterRequest.create",
+            "kmipkit.extensions.create_client_configuration",
+            "kmipkit.extensions.create_client_extension_registry",
+            "kmipkit.extensions.create_extension_definition",
+            "kmipkit.extensions.create_extension_identity",
+            "kmipkit.extensions.inspect_extension",
+            "kmipkit.extensions.client_batch_item_discover_versions",
+            "kmipkit.extensions.client_batch_item_register",
+            "kmipkit.ttlv.codec_limits_create",
+            "kmipkit.ttlv.codec_limits_defaults",
+            "kmipkit.ttlv.raw_tag_from_raw",
+            "kmipkit.ttlv.raw_tag_try_checked",
+            "kmipkit.ttlv.ttlv_item_create",
+            "kmipkit.ttlv.ttlv_structure_create",
+            "kmipkit.ttlv.ttlv_structure_view",
+            "kmipkit.ttlv.ttlv_value_integer",
+        }
+        for path in factories:
+            with self.subTest(factory=path):
+                declaration = declarations[path]
+                self.assertEqual("declared", declaration["declarationState"])
 
     def test_transport_handle_adapter_is_backed_by_four_language_configuration_values(self) -> None:
         capability = next(
