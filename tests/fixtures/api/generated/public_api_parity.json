@@ -923,6 +923,18 @@
         "path": "specs/043-public-api-bindings/spec.md",
         "status": "Approved"
       },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-021. The callable close lifecycle remains mapped across languages. If a consumer need justifies promoting this convenience later, add equivalent four-language APIs under an approved specification. This is the Java-only count maintained by ClientBatch.add.",
+      "exportName": "org.kmipkit.extensions.ClientBatch.itemCount",
+      "packageId": "java-kmipkit",
+      "reason": "This exact member is a language-only convenience derived from wrapper-local state; it does not add a KMIP capability or alter the shared resource lifecycle. Java keeps this counter locally; Rust, C, and Python do not expose a separate batch-size query."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
       "evidence": "Reviewed against KMIPKIT-0043-FR-021 and the Java declaration inventory. The corresponding record or enum is mapped as a public facade value; only the compiler-generated method is excluded.",
       "exportName": "org.kmipkit.extensions.TransportConfiguration.Encoding.valueOf",
       "packageId": "java-kmipkit",
@@ -987,6 +999,18 @@
       "exportName": "kmipkit.client",
       "packageId": "python-kmipkit",
       "reason": "This exact Python module path is an import namespace that groups the declared client facade symbols; it has no independent callable product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-021. The callable close lifecycle remains mapped across languages. If a consumer need justifies promoting this convenience later, add equivalent four-language APIs under an approved specification. bindings/python/src/kmipkit/_handles.py derives it from the local null-handle slot; close and methods that require a handle remain audited separately.",
+      "exportName": "kmipkit.client.Batch.closed",
+      "packageId": "python-kmipkit",
+      "reason": "This exact member is a language-only convenience derived from wrapper-local state; it does not add a KMIP capability or alter the shared resource lifecycle. Python exposes this boolean as native-wrapper state; Java exposes AutoCloseable.close without a closed-state getter."
     },
     {
       "approvalSource": {
@@ -1095,6 +1119,30 @@
       "exportName": "kmipkit.client.BatchItemResult.__slots__",
       "packageId": "python-kmipkit",
       "reason": "This exact member is Python dataclass introspection or storage metadata generated from the class declaration, not an independent cross-language product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-021. The callable close lifecycle remains mapped across languages. If a consumer need justifies promoting this convenience later, add equivalent four-language APIs under an approved specification. bindings/python/src/kmipkit/_handles.py derives it from the local null-handle slot; close and methods that require a handle remain audited separately.",
+      "exportName": "kmipkit.client.BatchResult.closed",
+      "packageId": "python-kmipkit",
+      "reason": "This exact member is a language-only convenience derived from wrapper-local state; it does not add a KMIP capability or alter the shared resource lifecycle. Python exposes this boolean as native-wrapper state; Java exposes AutoCloseable.close without a closed-state getter."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-021. The callable close lifecycle remains mapped across languages. If a consumer need justifies promoting this convenience later, add equivalent four-language APIs under an approved specification. bindings/python/src/kmipkit/_handles.py derives it from the local null-handle slot; close and methods that require a handle remain audited separately.",
+      "exportName": "kmipkit.client.Client.closed",
+      "packageId": "python-kmipkit",
+      "reason": "This exact member is a language-only convenience derived from wrapper-local state; it does not add a KMIP capability or alter the shared resource lifecycle. Python exposes this boolean as native-wrapper state; Java exposes AutoCloseable.close without a closed-state getter."
     },
     {
       "approvalSource": {
