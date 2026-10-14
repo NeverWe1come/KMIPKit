@@ -836,6 +836,10 @@ class ExtensionRegistryTests(unittest.TestCase):
                 registry_api.client_batch_item_extension_criticality_indicator_at(
                     item, True
                 )
+            with self.assertRaises(errors.InvalidInputError):
+                registry_api.with_unique_batch_item_id(item, object())
+            with self.assertRaises(errors.InvalidInputError):
+                registry_api.with_unique_batch_item_id(object(), b"id")
 
             nested_structure = ttlv.ttlv_structure_create()
             nested_value = ttlv.ttlv_value_structure(nested_structure, limits)

@@ -12766,14 +12766,39 @@
       "packageId": "c-kmipkit",
       "kind": "c-symbol",
       "exportName": "kmipkit_client_configuration_release",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "vendor_extension_registry",
       "requirementIds": [
+        "KMIPKIT-0012-FR-010",
+        "KMIPKIT-0043-FR-007",
         "KMIPKIT-0043-FR-021"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0012",
-      "blockedReason": "The C release export represents destruction, but Rust Drop has no callable public declaration; parity remains blocked."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/012-vendor-extension-registry/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation under the maintainer's standing direct authorization to execute the complete KMIPKit plan without further approval requests."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::extension_registry::ClientConfiguration"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_configuration_release"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ClientConfiguration.close"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.extensions.ClientConfiguration.close"
+        }
+      },
+      "mappingSemantics": "native-handle-release"
     },
     {
       "declarationId": "ClientConfiguration:java",
@@ -12940,14 +12965,39 @@
       "packageId": "c-kmipkit",
       "kind": "c-symbol",
       "exportName": "kmipkit_client_extension_registry_release",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "vendor_extension_registry",
       "requirementIds": [
+        "KMIPKIT-0012-FR-010",
+        "KMIPKIT-0043-FR-007",
         "KMIPKIT-0043-FR-021"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0012",
-      "blockedReason": "The C release export represents destruction, but Rust Drop has no callable public declaration; parity remains blocked."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/012-vendor-extension-registry/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation under the maintainer's standing direct authorization to execute the complete KMIPKit plan without further approval requests."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::extension_registry::ClientExtensionRegistry"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_extension_registry_release"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ClientExtensionRegistry.close"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.extensions.ClientExtensionRegistry.close"
+        }
+      },
+      "mappingSemantics": "native-handle-release"
     },
     {
       "declarationId": "ClientExtensionRegistry:java",
@@ -31208,28 +31258,80 @@
       "packageId": "java-kmipkit",
       "kind": "java-member",
       "exportName": "org.kmipkit.extensions.ClientConfiguration.close",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "vendor_extension_registry",
       "requirementIds": [
+        "KMIPKIT-0012-FR-010",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
         "KMIPKIT-0043-FR-021"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0012",
-      "blockedReason": "The observed Java declaration owned by KMIPKIT-0012 has no reviewed four-language mapping for this exact path in the current API inventory."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/012-vendor-extension-registry/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation under the maintainer's standing direct authorization to execute the complete KMIPKit plan without further approval requests."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::extension_registry::ClientConfiguration"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_configuration_release"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ClientConfiguration.close"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.extensions.ClientConfiguration.close"
+        }
+      },
+      "mappingSemantics": "native-handle-release"
     },
     {
       "declarationId": "java-observed-bd3237ce35234f3f46ba",
       "packageId": "java-kmipkit",
       "kind": "java-member",
       "exportName": "org.kmipkit.extensions.ClientExtensionRegistry.close",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "vendor_extension_registry",
       "requirementIds": [
+        "KMIPKIT-0012-FR-010",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
         "KMIPKIT-0043-FR-021"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0012",
-      "blockedReason": "The observed Java declaration owned by KMIPKIT-0012 has no reviewed four-language mapping for this exact path in the current API inventory."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/012-vendor-extension-registry/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation under the maintainer's standing direct authorization to execute the complete KMIPKit plan without further approval requests."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::extension_registry::ClientExtensionRegistry"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_extension_registry_release"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ClientExtensionRegistry.close"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.extensions.ClientExtensionRegistry.close"
+        }
+      },
+      "mappingSemantics": "native-handle-release"
     },
     {
       "declarationId": "java-observed-0861e2f9391345fb3f2c",
@@ -33014,14 +33116,40 @@
       "packageId": "python-kmipkit",
       "kind": "python-export",
       "exportName": "kmipkit.extensions.ClientConfiguration.close",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "vendor_extension_registry",
       "requirementIds": [
+        "KMIPKIT-0012-FR-010",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-009",
         "KMIPKIT-0043-FR-021"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The inherited native-handle lifecycle member is public on this wrapper but lacks a reviewed four-language mapping."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/012-vendor-extension-registry/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation under the maintainer's standing direct authorization to execute the complete KMIPKit plan without further approval requests."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::extension_registry::ClientConfiguration"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_configuration_release"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ClientConfiguration.close"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.extensions.ClientConfiguration.close"
+        }
+      },
+      "mappingSemantics": "native-handle-release"
     },
     {
       "declarationId": "python-observed-fcaebf454b749649a925",
@@ -33070,14 +33198,40 @@
       "packageId": "python-kmipkit",
       "kind": "python-export",
       "exportName": "kmipkit.extensions.ClientExtensionRegistry.close",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "vendor_extension_registry",
       "requirementIds": [
+        "KMIPKIT-0012-FR-010",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-009",
         "KMIPKIT-0043-FR-021"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The inherited native-handle lifecycle member is public on this wrapper but lacks a reviewed four-language mapping."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/012-vendor-extension-registry/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation under the maintainer's standing direct authorization to execute the complete KMIPKit plan without further approval requests."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::extension_registry::ClientExtensionRegistry"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_extension_registry_release"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ClientExtensionRegistry.close"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.extensions.ClientExtensionRegistry.close"
+        }
+      },
+      "mappingSemantics": "native-handle-release"
     },
     {
       "declarationId": "python-observed-267734f1d8a6dba03897",
@@ -222461,6 +222615,7 @@
           "kmipkit_client_batch_item_with_extension",
           "kmipkit_client_configuration_create",
           "kmipkit_client_configuration_extension_registry",
+          "kmipkit_client_configuration_release",
           "kmipkit_client_configuration_t",
           "kmipkit_client_extension_registry_create",
           "kmipkit_client_extension_registry_create_v1",
@@ -222468,6 +222623,7 @@
           "kmipkit_client_extension_registry_definition_count",
           "kmipkit_client_extension_registry_definition_for_identity",
           "kmipkit_client_extension_registry_inspect",
+          "kmipkit_client_extension_registry_release",
           "kmipkit_client_extension_registry_t",
           "kmipkit_client_extension_registry_validate",
           "kmipkit_client_request_message_extension_create",
@@ -222550,9 +222706,11 @@
           "org.kmipkit.extensions.ClientBatchItem.extensionIdentityAt",
           "org.kmipkit.extensions.ClientBatchItem.withExtension",
           "org.kmipkit.extensions.ClientConfiguration",
+          "org.kmipkit.extensions.ClientConfiguration.close",
           "org.kmipkit.extensions.ClientConfiguration.create",
           "org.kmipkit.extensions.ClientConfiguration.extensionRegistry",
           "org.kmipkit.extensions.ClientExtensionRegistry",
+          "org.kmipkit.extensions.ClientExtensionRegistry.close",
           "org.kmipkit.extensions.ClientExtensionRegistry.create",
           "org.kmipkit.extensions.ClientExtensionRegistry.definitionAt",
           "org.kmipkit.extensions.ClientExtensionRegistry.definitionCount",
@@ -222633,8 +222791,10 @@
           "kmipkit.extensions.ClientBatchItem",
           "kmipkit.extensions.ClientBatchItem.close",
           "kmipkit.extensions.ClientConfiguration",
+          "kmipkit.extensions.ClientConfiguration.close",
           "kmipkit.extensions.ClientConfiguration.limits",
           "kmipkit.extensions.ClientExtensionRegistry",
+          "kmipkit.extensions.ClientExtensionRegistry.close",
           "kmipkit.extensions.ClientExtensionRegistry.limits",
           "kmipkit.extensions.ClientRequestMessageExtension",
           "kmipkit.extensions.Compatibility",

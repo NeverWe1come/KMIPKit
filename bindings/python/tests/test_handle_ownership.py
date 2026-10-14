@@ -151,6 +151,11 @@ class ConsumedHandleTests(unittest.TestCase):
         try:
             with self.assertRaises(handles.errors.InvalidInputError):
                 handles._wrap_owned_handle(handles.NativeHandle, native.ffi.NULL)
+            uninitialized = object.__new__(handles.NativeHandle)
+            with self.assertRaises(handles.errors.InvalidInputError):
+                handles.NativeHandle.__init__(
+                    uninitialized, object(), _token=object()
+                )
             with self.assertRaises(handles.errors.InvalidInputError):
                 handles._owned_bytes("\ud800")
             with self.assertRaises(handles.errors.InvalidInputError):

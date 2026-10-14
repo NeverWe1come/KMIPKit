@@ -142,6 +142,8 @@ struct kmipkit_transport_config_v1_t {
     uint64_t max_request_bytes;
 };
 
+void kmipkit_client_extension_registry_release(kmipkit_client_extension_registry_t *handle);
+void kmipkit_client_configuration_release(kmipkit_client_configuration_t *handle);
 void kmipkit_client_batch_item_release(kmipkit_client_batch_item_t *handle);
 void kmipkit_ttlv_structure_view_release(kmipkit_ttlv_structure_view_t *handle);
 void kmipkit_transport_config_release(kmipkit_transport_config_t *handle);

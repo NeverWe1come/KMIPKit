@@ -27,7 +27,12 @@ unsafe extern "C" {
 
 #[link(name = "kmipkit_client_abi_c_consumer", kind = "static")]
 unsafe extern "C" {
-    fn kmipkit_client_abi_c_consumer_main() -> i32;
+    fn kmipkit_client_abi_c_consumer_main(argc: i32, argv: *mut *mut c_char) -> i32;
+    fn kmipkit_client_abi_c_consumer_execute_tls(
+        argc: i32,
+        argv: *mut *mut c_char,
+        limits: *mut kmipkit_codec_limits_t,
+    ) -> i32;
 }
 
 #[link(name = "kmipkit_ffi")]
@@ -111,14 +116,106 @@ fn existing_c_consumer_exercises_the_exported_abi_in_the_coverage_process() {
 
 #[test]
 fn generated_public_client_abi_consumer_compiles_and_runs() {
-    // SAFETY: the compiled consumer has no arguments, includes the generated
-    // public header, and releases every created handle before returning.
-    let result = unsafe { kmipkit_client_abi_c_consumer_main() };
+    let executable = CString::new("kmipkit_public_client_consumer")
+        .expect("test executable name has no NUL byte");
+    let mut arguments = [executable.as_ptr().cast_mut()];
+    let argument_count = i32::try_from(arguments.len()).expect("argument count fits in i32");
+    // SAFETY: the compiled consumer includes the generated public header, receives
+    // one live argv string, and releases every created handle before returning.
+    let result = unsafe {
+        kmipkit_client_abi_c_consumer_main(argument_count, arguments.as_mut_ptr())
+    };
 
     assert_eq!(
         result, 0,
         "generated public C client ABI consumer must pass its implementation checks"
     );
+}
+
+#[test]
+fn generated_public_client_abi_consumer_executes_a_typed_batch_over_mtls() {
+    let pki = EphemeralPki::generate().expect("ephemeral test PKI is generated");
+    let client_chain = pki.client_identity().certificate_chain_der();
+    let paths = TemporaryCredentialFiles::create([
+        client_chain[0],
+        client_chain[1],
+        pki.client_identity().private_key_der(),
+        pki.authority_certificate_der(),
+    ]);
+    let listener = TcpListener::bind(("127.0.0.1", 0))
+        .expect("an ephemeral local TCP port is available");
+    let port = listener
+        .local_addr()
+        .expect("listener has a local address")
+        .port();
+    let port = CString::new(port.to_string()).expect("port has no NUL byte");
+    let server_config = mtls_server_config(&pki);
+    let peer = thread::spawn(move || {
+        let (stream, _) = listener
+            .accept()
+            .expect("the public C client connects to the local peer");
+        stream
+            .set_read_timeout(Some(std::time::Duration::from_secs(5)))
+            .expect("server read timeout is configured");
+        stream
+            .set_write_timeout(Some(std::time::Duration::from_secs(5)))
+            .expect("server write timeout is configured");
+        let connection = ServerConnection::new(server_config)
+            .expect("the TLS 1.3 server connection is configured");
+        let mut tls = StreamOwned::new(connection, stream);
+        let request = read_ttlv_frame(&mut tls).expect("bounded request frame arrives");
+        assert!(request.starts_with(&[0x42, 0x00, 0x78]));
+        tls.write_all(&single_discover_versions_response())
+            .expect("the typed KMIP response is written");
+        tls.flush().expect("the TLS response is flushed");
+        let _ = tls.get_ref().shutdown(Shutdown::Both);
+    });
+
+    let executable = CString::new("kmipkit_public_client_consumer")
+        .expect("test executable name has no NUL byte");
+    let certificate = CString::new(paths.paths[0].to_string_lossy().as_bytes())
+        .expect("temporary path has no NUL byte");
+    let authority = CString::new(paths.paths[1].to_string_lossy().as_bytes())
+        .expect("temporary path has no NUL byte");
+    let private_key = CString::new(paths.paths[2].to_string_lossy().as_bytes())
+        .expect("temporary path has no NUL byte");
+    let trust_root = CString::new(paths.paths[3].to_string_lossy().as_bytes())
+        .expect("temporary path has no NUL byte");
+    let mut arguments = [
+        executable.as_ptr().cast_mut(),
+        certificate.as_ptr().cast_mut(),
+        authority.as_ptr().cast_mut(),
+        private_key.as_ptr().cast_mut(),
+        trust_root.as_ptr().cast_mut(),
+        port.as_ptr().cast_mut(),
+    ];
+    let argument_count = i32::try_from(arguments.len()).expect("argument count fits in i32");
+    let mut limits = std::ptr::null_mut();
+    // SAFETY: `limits` is a writable output slot and the successful handle is
+    // retained for the C call, then released by this Rust test harness.
+    let status = unsafe { kmipkit_codec_limits_defaults(&raw mut limits) };
+    assert_eq!(status, 0, "codec limits defaults must succeed");
+    assert!(!limits.is_null(), "codec limits defaults must return a handle");
+    // SAFETY: all argv entries remain live and NUL terminated for the synchronous
+    // C call; the consumer is compiled against the generated public header only.
+    let result = unsafe {
+        kmipkit_client_abi_c_consumer_execute_tls(
+            argument_count,
+            arguments.as_mut_ptr(),
+            limits,
+        )
+    };
+    // SAFETY: the defaults call returned this live handle and the C consumer only
+    // borrowed it while synchronously executing the batch.
+    unsafe {
+        kmipkit_codec_limits_release(limits);
+    }
+
+    assert_eq!(
+        result, 0,
+        "generated public C consumer must create a client and execute the typed batch"
+    );
+    peer.join().expect("the loopback TLS peer completes");
 }
 
 fn controlled_mtls_peer(
@@ -363,6 +460,31 @@ fn discover_versions_response() -> Vec<u8> {
     );
     /* The peer returns a reversed batch; item IDs restore caller-request order. */
     structure(0x0042_007B, [header, failed_item, successful_item])
+}
+
+fn single_discover_versions_response() -> Vec<u8> {
+    let protocol_version = structure(
+        0x0042_0069,
+        [integer(0x0042_006A, 2), integer(0x0042_006B, 1)],
+    );
+    let header = structure(
+        0x0042_007A,
+        [
+            protocol_version.clone(),
+            date_time(0x0042_0092, 1),
+            integer(0x0042_000D, 1),
+        ],
+    );
+    let response_payload = structure(0x0042_007C, [protocol_version]);
+    let successful_item = structure(
+        0x0042_000F,
+        [
+            enumeration(0x0042_005C, 30),
+            enumeration(0x0042_007F, 0),
+            response_payload,
+        ],
+    );
+    structure(0x0042_007B, [header, successful_item])
 }
 
 fn mismatched_discover_versions_response() -> Vec<u8> {

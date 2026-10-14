@@ -590,8 +590,7 @@ static bool test_t076_validated_client_reports_delivery_state(
                        batch, client_correlation, (uint64_t)sizeof(client_correlation)),
                    KMIPKIT_SUCCESS);
     REQUIRE_STATUS(kmipkit_codec_limits_defaults(&limits), KMIPKIT_SUCCESS);
-    status = kmipkit_client_execute_with_error_ttlv_v1(
-        client, &batch, limits, &response, &error_response_ttlv);
+    status = kmipkit_client_execute(client, &batch, limits, &response);
     if (status != KMIPKIT_SUCCESS) {
         const int32_t execution_status = status;
         (void)kmipkit_last_error_get(&status, &category, &cause, &delivery);
@@ -602,7 +601,6 @@ static bool test_t076_validated_client_reports_delivery_state(
     }
     REQUIRE(batch == NULL);
     REQUIRE(response != NULL);
-    REQUIRE(error_response_ttlv == NULL);
     REQUIRE_STATUS(kmipkit_client_batch_response_item_count(response, &response_count),
                    KMIPKIT_SUCCESS);
     REQUIRE(response_count == UINT64_C(2));

@@ -1010,6 +1010,117 @@ def test_client_execute_with_options_preserves_timeout_kinds_and_consumes_batch(
         handle.close()
 
 
+def test_request_options_and_execution_validate_types_before_native_calls(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    timeout = client.TimeoutLimit.default()
+    with pytest.raises(errors.InvalidInputError):
+        client.RequestOptions(None, timeout, timeout, timeout)  # type: ignore[arg-type]
+
+    with pytest.raises(errors.InvalidInputError):
+        client._validated_request_options(object())  # type: ignore[arg-type]
+
+    forged = object.__new__(client.RequestOptions)
+    for name in ("connect_timeout", "write_timeout", "read_timeout", "total_timeout"):
+        object.__setattr__(forged, name, timeout)
+    object.__setattr__(forged, "read_timeout", object())
+    with pytest.raises(errors.InvalidInputError):
+        client._validated_request_options(forged)
+
+    client_pointer, _client_storage = _opaque("kmipkit_client_t")
+    batch_pointer, _batch_storage = _opaque("kmipkit_client_batch_t")
+    handle = _wrap_owned_handle(client.Client, client_pointer)
+    batch = _wrap_owned_handle(client.Batch, batch_pointer)
+    limits = ttlv.codec_limits_defaults()
+    options = client.RequestOptions(timeout, timeout, timeout, timeout)
+    monkeypatch.setattr(
+        client,
+        "lib",
+        SimpleNamespace(
+            kmipkit_client_release=lambda _ptr: None,
+            kmipkit_client_batch_release=lambda _ptr: None,
+        ),
+    )
+    try:
+        for arguments in (
+            (object(), limits, options),
+            (batch, object(), options),
+            (batch, limits, object()),
+        ):
+            with pytest.raises(errors.InvalidInputError):
+                handle.execute_with_options(*arguments)  # type: ignore[arg-type]
+    finally:
+        limits.close()
+        batch.close()
+        handle.close()
+
+
+@pytest.mark.parametrize("failure", [TypeError, ValueError, OverflowError])
+def test_client_execute_with_options_restores_batch_on_ffi_conversion_error(
+    monkeypatch: pytest.MonkeyPatch, failure: type[Exception]
+) -> None:
+    client_pointer, _client_storage = _opaque("kmipkit_client_t")
+    batch_pointer, _batch_storage = _opaque("kmipkit_client_batch_t")
+    handle = _wrap_owned_handle(client.Client, client_pointer)
+    batch = _wrap_owned_handle(client.Batch, batch_pointer)
+    limits = ttlv.codec_limits_defaults()
+
+    def execute(*_arguments: object) -> int:
+        raise failure("secret native conversion diagnostic")
+
+    monkeypatch.setattr(
+        client,
+        "lib",
+        SimpleNamespace(
+            kmipkit_client_execute_with_options_v1=execute,
+            kmipkit_client_release=lambda _ptr: None,
+            kmipkit_client_batch_release=lambda _ptr: None,
+        ),
+    )
+    options = client.RequestOptions(*(client.TimeoutLimit.default() for _ in range(4)))
+    try:
+        with pytest.raises(errors.InvalidInputError) as caught:
+            handle.execute_with_options(batch, limits, options)
+        assert "secret native conversion diagnostic" not in str(caught.value)
+        assert not batch.closed
+        assert batch._pointer() == batch_pointer
+    finally:
+        limits.close()
+        batch.close()
+        handle.close()
+
+
+def test_client_execute_with_options_restores_batch_if_native_success_omits_response(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    client_pointer, _client_storage = _opaque("kmipkit_client_t")
+    batch_pointer, _batch_storage = _opaque("kmipkit_client_batch_t")
+    handle = _wrap_owned_handle(client.Client, client_pointer)
+    batch = _wrap_owned_handle(client.Batch, batch_pointer)
+    limits = ttlv.codec_limits_defaults()
+    monkeypatch.setattr(
+        client,
+        "lib",
+        SimpleNamespace(
+            kmipkit_client_execute_with_options_v1=lambda *_arguments: 0,
+            kmipkit_client_release=lambda _ptr: None,
+            kmipkit_client_batch_release=lambda _ptr: None,
+        ),
+    )
+    options = client.RequestOptions(
+        *(client.TimeoutLimit.default() for _ in range(4))
+    )
+    try:
+        with pytest.raises(errors.KmipKitError):
+            handle.execute_with_options(batch, limits, options)
+        assert not batch.closed
+        assert batch._pointer() == batch_pointer
+    finally:
+        limits.close()
+        batch.close()
+        handle.close()
+
+
 def test_client_execute_restores_batch_on_ffi_conversion_error(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:

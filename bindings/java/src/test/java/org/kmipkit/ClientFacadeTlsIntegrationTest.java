@@ -145,6 +145,8 @@ final class ClientFacadeTlsIntegrationTest {
                                 TransportConfiguration.Timeout.bounded(Duration.ofSeconds(8)))
                         .build();
                 Client client = Client.create(extensions, transport)) {
+            assertThrows(InvalidInputException.class,
+                    () -> client.executeWithOptions(null, null, null));
             ClientBatch pendingBatch = ClientBatch.create();
             pendingBatch.asynchronousIndicator(2).add(ClientBatchItem.discoverVersions());
             ClientBatchResponse pendingResponse;

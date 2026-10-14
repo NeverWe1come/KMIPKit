@@ -30,6 +30,20 @@ final class ClientFacadeContractTest {
     }
 
     @Test
+    void requestOptionsRejectsEveryMissingTimeoutValue() {
+        TransportConfiguration.Timeout timeout = TransportConfiguration.Timeout.defaultValue();
+
+        assertThrows(InvalidInputException.class,
+                () -> new RequestOptions(null, timeout, timeout, timeout));
+        assertThrows(InvalidInputException.class,
+                () -> new RequestOptions(timeout, null, timeout, timeout));
+        assertThrows(InvalidInputException.class,
+                () -> new RequestOptions(timeout, timeout, null, timeout));
+        assertThrows(InvalidInputException.class,
+                () -> new RequestOptions(timeout, timeout, timeout, null));
+    }
+
+    @Test
     void clientCreationRejectsMissingConfigurationsBeforeLoadingNativeCode() {
         assertThrows(InvalidInputException.class, () -> Client.create(null, null));
     }
@@ -110,6 +124,61 @@ final class ClientFacadeContractTest {
             batch.add(item);
             assertEquals(1, batch.itemCount());
         }
+    }
+
+    @Test
+    void uniqueBatchItemIdRejectsNullAndOversizedInputsBeforeConsumingItem() {
+        try (ClientBatchItem item = ClientBatchItem.discoverVersions()) {
+            assertThrows(InvalidInputException.class, () -> item.withUniqueBatchItemId(null));
+            assertThrows(ResourceLimitException.class,
+                    () -> item.withUniqueBatchItemId(new byte[16 * 1024 * 1024 + 1]));
+            assertEquals(0, item.extensionCount(), "rejected inputs must retain the item handle");
+        }
+    }
+
+    @Test
+    void nativeBatchSetterBoundaryRejectsNullHandlesAndInvalidUnsignedValues() {
+        NativeExtensionRegistry.ensureLoaded();
+        long batch = NativeExtensionRegistry.clientBatchCreate();
+        try {
+            assertThrows(InvalidInputException.class,
+                    () -> NativeExtensionRegistry.clientBatchSetAsynchronousIndicator(0, 0));
+            assertThrows(InvalidInputException.class,
+                    () -> NativeExtensionRegistry.clientBatchSetAsynchronousIndicator(batch, -1));
+            assertThrows(InvalidInputException.class,
+                    () -> NativeExtensionRegistry.clientBatchSetAsynchronousIndicator(batch, 0x1_0000_0000L));
+            assertThrows(InvalidInputException.class,
+                    () -> NativeExtensionRegistry.clientBatchSetRequestTimestamp(0, 1));
+            assertThrows(InvalidInputException.class,
+                    () -> NativeExtensionRegistry.clientBatchSetOrderOption(0, true));
+            assertThrows(InvalidInputException.class,
+                    () -> NativeExtensionRegistry.clientBatchAddErrorContinuationValue(batch, -1));
+            assertThrows(InvalidInputException.class,
+                    () -> NativeExtensionRegistry.clientBatchAddErrorContinuationValue(batch, 0x1_0000_0000L));
+            assertThrows(InvalidInputException.class,
+                    () -> NativeExtensionRegistry.clientBatchSetClientCorrelationValue(batch, null));
+            assertThrows(InvalidInputException.class,
+                    () -> NativeExtensionRegistry.clientBatchSetClientCorrelationValue(
+                            batch, new byte[16 * 1024 * 1024 + 1]));
+        } finally {
+            NativeExtensionRegistry.release(NativeExtensionRegistry.CLIENT_BATCH, batch);
+        }
+    }
+
+    @Test
+    void nativeUniqueBatchIdBoundaryRejectsNullHandlesAndIds() {
+        NativeExtensionRegistry.ensureLoaded();
+        assertThrows(InvalidInputException.class,
+                () -> NativeExtensionRegistry.clientBatchItemWithUniqueBatchItemId(0, new byte[] {1}));
+
+        long nullIdItem = NativeExtensionRegistry.clientBatchItemDiscoverVersions();
+        assertThrows(InvalidInputException.class,
+                () -> NativeExtensionRegistry.clientBatchItemWithUniqueBatchItemId(nullIdItem, null));
+
+        long oversizedIdItem = NativeExtensionRegistry.clientBatchItemDiscoverVersions();
+        assertThrows(ResourceLimitException.class,
+                () -> NativeExtensionRegistry.clientBatchItemWithUniqueBatchItemId(
+                        oversizedIdItem, new byte[16 * 1024 * 1024 + 1]));
     }
 
     @Test

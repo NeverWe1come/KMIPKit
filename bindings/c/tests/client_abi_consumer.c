@@ -1,10 +1,142 @@
 #include "kmipkit.h"
 
 #include <stdint.h>
+#include <stdlib.h>
+#include <string.h>
 
 #define T076_ERROR_INVALID_INPUT ((int32_t)4)
 
-int main(void) {
+static int execute_with_options_returns(
+    const kmipkit_request_options_v1_t *options, int32_t expected_status) {
+    kmipkit_client_batch_response_t *response = 0;
+    const int32_t status = kmipkit_client_execute_with_options_v1(
+        0, 0, 0, options, &response);
+    if (response != 0) {
+        kmipkit_client_batch_response_release(response);
+        return 0;
+    }
+    return status == expected_status;
+}
+
+static int execute_public_tls_request(char **argv, kmipkit_codec_limits_t *limits) {
+    static const uint8_t host[] = "127.0.0.1";
+    static const uint8_t server_name[] = "server.kmipkit.test";
+    kmipkit_transport_input_v1_t client_certificates[2] = {{0}};
+    kmipkit_transport_input_v1_t trust_certificates[1] = {{0}};
+    kmipkit_transport_config_v1_t transport_input = {0};
+    kmipkit_extension_registry_limits_v1_t registry_limits = {0};
+    kmipkit_extension_definition_t **definitions = 0;
+    kmipkit_client_extension_registry_t *registry = 0;
+    kmipkit_client_configuration_t *configuration = 0;
+    kmipkit_transport_config_t *transport = 0;
+    kmipkit_client_t *client = 0;
+    kmipkit_client_batch_t *batch = 0;
+    kmipkit_client_batch_item_t *item = 0;
+    kmipkit_client_batch_response_t *response = 0;
+    uint64_t response_count = 0;
+    char *port_end = 0;
+    const unsigned long port = strtoul(argv[5], &port_end, 10);
+    int result = 1;
+
+    if (port_end == argv[5] || *port_end != '\0' || port == 0 || port > 65535UL) {
+        return 2;
+    }
+    client_certificates[0].source_kind = 2; /* file */
+    client_certificates[0].encoding = 2; /* DER */
+    client_certificates[0].data.data = (const uint8_t *)argv[1];
+    client_certificates[0].data.length = (uint64_t)strlen(argv[1]);
+    client_certificates[1] = client_certificates[0];
+    client_certificates[1].data.data = (const uint8_t *)argv[2];
+    client_certificates[1].data.length = (uint64_t)strlen(argv[2]);
+    trust_certificates[0].source_kind = 2;
+    trust_certificates[0].encoding = 2;
+    trust_certificates[0].data.data = (const uint8_t *)argv[4];
+    trust_certificates[0].data.length = (uint64_t)strlen(argv[4]);
+
+    transport_input.struct_size = (uint32_t)sizeof(transport_input);
+    transport_input.abi_version = 1;
+    transport_input.endpoint_kind = 1; /* raw TLS */
+    transport_input.trust_kind = 2; /* explicit CA list */
+    transport_input.flags = 1; /* explicit TLS server name */
+    transport_input.endpoint.data = host;
+    transport_input.endpoint.length = (uint64_t)(sizeof(host) - 1);
+    transport_input.endpoint_port = (uint16_t)port;
+    transport_input.tls_server_name.data = server_name;
+    transport_input.tls_server_name.length = (uint64_t)(sizeof(server_name) - 1);
+    transport_input.client_certificates = client_certificates;
+    transport_input.client_certificate_count = 2;
+    transport_input.client_private_key.source_kind = 2;
+    transport_input.client_private_key.encoding = 2;
+    transport_input.client_private_key.data.data = (const uint8_t *)argv[3];
+    transport_input.client_private_key.data.length = (uint64_t)strlen(argv[3]);
+    transport_input.trust_certificates = trust_certificates;
+    transport_input.trust_certificate_count = 1;
+    transport_input.max_request_bytes = UINT64_C(1048576);
+
+    registry_limits.struct_size = (uint32_t)sizeof(registry_limits);
+    registry_limits.abi_version = 1;
+    if (kmipkit_extension_registry_limits_v1_default_values(&registry_limits) != 0 ||
+        kmipkit_client_extension_registry_create_v1(
+            definitions, 0, &registry_limits, &registry) != 0) {
+        goto cleanup;
+    }
+    if (kmipkit_client_configuration_create(registry, &configuration) != 0) {
+        goto cleanup;
+    }
+    registry = 0; /* consumed by client configuration */
+    if (kmipkit_transport_config_create_v1(&transport_input, &transport) != 0) {
+        goto cleanup;
+    }
+    if (kmipkit_client_create(configuration, &transport, &client) != 0) {
+        goto cleanup;
+    }
+    transport = 0; /* consumed by client */
+    if (kmipkit_client_batch_create(&batch) != 0 ||
+        kmipkit_client_batch_item_discover_versions(&item) != 0 ||
+        kmipkit_client_batch_add_item(batch, &item) != 0) {
+        goto cleanup;
+    }
+    item = 0; /* consumed by batch */
+    if (kmipkit_client_execute((kmipkit_client_t *)limits, &batch, limits, &response)
+            != T076_ERROR_INVALID_INPUT ||
+        batch == 0 || response != 0) {
+        goto cleanup;
+    }
+    if (kmipkit_client_execute(client, &batch, (kmipkit_codec_limits_t *)client, &response)
+            != T076_ERROR_INVALID_INPUT ||
+        batch == 0 || response != 0) {
+        goto cleanup;
+    }
+    if (kmipkit_client_execute(client, &batch, limits, &response) != 0) {
+        goto cleanup;
+    }
+    batch = 0; /* consumed by execution */
+    if (kmipkit_client_batch_response_item_count(response, &response_count) != 0 ||
+        response_count != 1) {
+        goto cleanup;
+    }
+    result = 0;
+
+cleanup:
+    kmipkit_client_batch_response_release(response);
+    kmipkit_client_batch_release(batch);
+    kmipkit_client_batch_item_release(item);
+    kmipkit_client_release(client);
+    kmipkit_transport_config_release(transport);
+    kmipkit_client_configuration_release(configuration);
+    kmipkit_client_extension_registry_release(registry);
+    return result;
+}
+
+int kmipkit_client_abi_c_consumer_execute_tls(
+    int argc, char **argv, kmipkit_codec_limits_t *limits) {
+    if (argc != 6 || limits == 0) {
+        return 22;
+    }
+    return execute_public_tls_request(argv, limits);
+}
+
+int main(int argc, char **argv) {
     kmipkit_client_t *client = 0;
     if (kmipkit_client_create(0, 0, &client) != T076_ERROR_INVALID_INPUT) {
         return 1;
@@ -27,31 +159,91 @@ int main(void) {
     request_options.struct_size = (uint32_t)sizeof(request_options);
     request_options.abi_version = 1;
     kmipkit_client_batch_response_t *response = 0;
-    if (kmipkit_client_execute_with_options_v1(
-                0, 0, 0, &request_options, &response) != T076_ERROR_INVALID_INPUT) {
+    if (!execute_with_options_returns(&request_options, T076_ERROR_INVALID_INPUT)) {
         return 5;
     }
-    if (response != 0) {
+    if (!execute_with_options_returns(0, T076_ERROR_INVALID_INPUT)) {
         return 6;
     }
-    if (kmipkit_client_execute(0, 0, 0, &response) != T076_ERROR_INVALID_INPUT) {
+    request_options.connect_timeout.kind = 1;
+    request_options.connect_timeout.seconds = 1;
+    request_options.connect_timeout.nanoseconds = 999999999;
+    request_options.write_timeout.kind = 2;
+    request_options.read_timeout.kind = 1;
+    request_options.read_timeout.nanoseconds = 0;
+    request_options.total_timeout.kind = 1;
+    if (!execute_with_options_returns(&request_options, T076_ERROR_INVALID_INPUT)) {
         return 7;
+    }
+    request_options = (kmipkit_request_options_v1_t){0};
+    request_options.struct_size = (uint32_t)sizeof(request_options) - 1;
+    request_options.abi_version = 1;
+    if (!execute_with_options_returns(&request_options, T076_ERROR_INVALID_INPUT)) {
+        return 8;
+    }
+    request_options.struct_size = (uint32_t)sizeof(request_options);
+    request_options.abi_version = 2;
+    if (!execute_with_options_returns(&request_options, T076_ERROR_INVALID_INPUT)) {
+        return 9;
+    }
+    request_options.abi_version = 1;
+    request_options.connect_timeout.reserved = 1;
+    if (!execute_with_options_returns(&request_options, T076_ERROR_INVALID_INPUT)) {
+        return 10;
+    }
+    request_options.connect_timeout = (kmipkit_timeout_limit_v1_t){0};
+    request_options.write_timeout.reserved2 = 1;
+    if (!execute_with_options_returns(&request_options, T076_ERROR_INVALID_INPUT)) {
+        return 11;
+    }
+    request_options.write_timeout = (kmipkit_timeout_limit_v1_t){0};
+    request_options.read_timeout.seconds = 1;
+    if (!execute_with_options_returns(&request_options, T076_ERROR_INVALID_INPUT)) {
+        return 12;
+    }
+    request_options.read_timeout = (kmipkit_timeout_limit_v1_t){0};
+    request_options.total_timeout.kind = 1;
+    request_options.total_timeout.nanoseconds = 1000000000;
+    if (!execute_with_options_returns(&request_options, T076_ERROR_INVALID_INPUT)) {
+        return 13;
+    }
+    request_options.total_timeout = (kmipkit_timeout_limit_v1_t){0};
+    request_options.connect_timeout.kind = 2;
+    request_options.connect_timeout.seconds = 1;
+    if (!execute_with_options_returns(&request_options, T076_ERROR_INVALID_INPUT)) {
+        return 14;
+    }
+    request_options.connect_timeout = (kmipkit_timeout_limit_v1_t){0};
+    request_options.write_timeout.kind = 99;
+    if (!execute_with_options_returns(&request_options, T076_ERROR_INVALID_INPUT)) {
+        return 15;
+    }
+    if (kmipkit_client_execute(0, 0, 0, &response) != T076_ERROR_INVALID_INPUT) {
+        return 16;
+    }
+    kmipkit_client_batch_t *empty_batch = 0;
+    if (kmipkit_client_execute(0, &empty_batch, 0, &response) != T076_ERROR_INVALID_INPUT) {
+        return 17;
     }
 
     kmipkit_client_batch_t *batch = 0;
     if (kmipkit_client_batch_create(&batch) != 0 || batch == 0) {
-        return 8;
+        return 18;
     }
     kmipkit_client_batch_item_t *item = 0;
     if (kmipkit_client_batch_item_discover_versions(&item) != 0 || item == 0) {
         kmipkit_client_batch_release(batch);
-        return 9;
+        return 19;
     }
     if (kmipkit_client_batch_add_item(batch, &item) != 0 || item != 0) {
         kmipkit_client_batch_item_release(item);
         kmipkit_client_batch_release(batch);
-        return 10;
+        return 20;
     }
     kmipkit_client_batch_release(batch);
+    if (argc != 1) {
+        return 21;
+    }
+    (void)argv;
     return 0;
 }
