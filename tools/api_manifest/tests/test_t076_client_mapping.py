@@ -76,8 +76,10 @@ C_SEMANTIC_FIELDS = {
     "kmipkit_transport_config_v1_t.read_timeout",
     "kmipkit_transport_config_v1_t.total_timeout",
     "kmipkit_transport_config_v1_t.max_request_bytes",
-    "kmipkit_transport_input_v1_t.source_kind",
-    "kmipkit_transport_input_v1_t.encoding",
+    "kmipkit_request_options_v1_t.connect_timeout",
+    "kmipkit_request_options_v1_t.write_timeout",
+    "kmipkit_request_options_v1_t.read_timeout",
+    "kmipkit_request_options_v1_t.total_timeout",
 }
 C_REPRESENTATION_FIELD_EXCLUSIONS = {
     "kmipkit_transport_config_v1_t.client_certificate_count",
@@ -85,6 +87,8 @@ C_REPRESENTATION_FIELD_EXCLUSIONS = {
     "kmipkit_transport_config_v1_t.revocation_list_count",
     "kmipkit_transport_config_v1_t.trust_certificate_count",
     "kmipkit_transport_input_v1_t.data",
+    "kmipkit_transport_input_v1_t.encoding",
+    "kmipkit_transport_input_v1_t.source_kind",
 }
 C_ABI_FIELD_EXCLUSIONS = {
     "kmipkit_byte_span_v1_t.data",
@@ -97,6 +101,8 @@ C_ABI_FIELD_EXCLUSIONS = {
     "kmipkit_transport_config_v1_t.abi_version",
     "kmipkit_transport_config_v1_t.reserved",
     "kmipkit_transport_config_v1_t.reserved2",
+    "kmipkit_request_options_v1_t.struct_size",
+    "kmipkit_request_options_v1_t.abi_version",
 }
 C_LAYOUT_TYPES = {
     "kmipkit_byte_span_v1_t",
@@ -176,6 +182,26 @@ C_FIELD_TARGETS = {
         "org.kmipkit.extensions.TransportConfiguration.Builder.maxRequestBytes",
         "kmipkit.client.TransportConfig.max_request_bytes",
     ),
+    "kmipkit_request_options_v1_t.connect_timeout": (
+        ("rust-kmipkit-transport", "kmipkit_transport::RequestOptions::with_connect"),
+        "org.kmipkit.extensions.RequestOptions.connectTimeout",
+        "kmipkit.client.RequestOptions.connect_timeout",
+    ),
+    "kmipkit_request_options_v1_t.write_timeout": (
+        ("rust-kmipkit-transport", "kmipkit_transport::RequestOptions::with_write"),
+        "org.kmipkit.extensions.RequestOptions.writeTimeout",
+        "kmipkit.client.RequestOptions.write_timeout",
+    ),
+    "kmipkit_request_options_v1_t.read_timeout": (
+        ("rust-kmipkit-transport", "kmipkit_transport::RequestOptions::with_read"),
+        "org.kmipkit.extensions.RequestOptions.readTimeout",
+        "kmipkit.client.RequestOptions.read_timeout",
+    ),
+    "kmipkit_request_options_v1_t.total_timeout": (
+        ("rust-kmipkit-transport", "kmipkit_transport::RequestOptions::with_total"),
+        "org.kmipkit.extensions.RequestOptions.totalTimeout",
+        "kmipkit.client.RequestOptions.total_timeout",
+    ),
     "kmipkit_transport_config_v1_t.read_timeout": (
         ("rust-kmipkit-transport", "kmipkit_transport::TransportConfigBuilder::timeouts"),
         "org.kmipkit.extensions.TransportConfiguration.Builder.timeouts",
@@ -215,16 +241,6 @@ C_FIELD_TARGETS = {
         ("rust-kmipkit-transport", "kmipkit_transport::TransportConfigBuilder::timeouts"),
         "org.kmipkit.extensions.TransportConfiguration.Builder.timeouts",
         "kmipkit.client.TransportConfig.write_timeout",
-    ),
-    "kmipkit_transport_input_v1_t.encoding": (
-        ("rust-kmipkit-transport", "kmipkit_transport::TransportConfigBuilder"),
-        "org.kmipkit.extensions.TransportConfiguration.Encoding",
-        "kmipkit.client.CredentialEncoding",
-    ),
-    "kmipkit_transport_input_v1_t.source_kind": (
-        ("rust-kmipkit-transport", "kmipkit_transport::TransportConfigBuilder"),
-        "org.kmipkit.extensions.TransportConfiguration.Builder",
-        "kmipkit.client.TransportInput",
     ),
 }
 
@@ -365,8 +381,8 @@ class T076ClientMappingTests(unittest.TestCase):
             if row["packageId"] == "c-kmipkit"
         }
 
-        self.assertEqual(24, len(C_SEMANTIC_FIELDS))
-        self.assertEqual(10, len(C_ABI_FIELD_EXCLUSIONS))
+        self.assertEqual(26, len(C_SEMANTIC_FIELDS))
+        self.assertEqual(12, len(C_ABI_FIELD_EXCLUSIONS))
         self.assertEqual(C_SEMANTIC_FIELDS, set(C_FIELD_TARGETS))
         self.assertTrue(
             C_REPRESENTATION_FIELD_EXCLUSIONS.isdisjoint(declarations),
@@ -451,6 +467,11 @@ class T076ClientMappingTests(unittest.TestCase):
 
 
     def test_transport_input_mappings_cover_specified_encodings_and_sources(self) -> None:
+        declarations = {
+            row["exportName"]: row
+            for row in self.manifest["publicDeclarations"]
+            if row["packageId"] == "c-kmipkit"
+        }
         mappings = {
             path: C_FIELD_TARGETS[path]
             for path in (
@@ -458,8 +479,6 @@ class T076ClientMappingTests(unittest.TestCase):
                 "kmipkit_transport_config_v1_t.client_private_key",
                 "kmipkit_transport_config_v1_t.trust_certificates",
                 "kmipkit_transport_config_v1_t.revocation_lists",
-                "kmipkit_transport_input_v1_t.encoding",
-                "kmipkit_transport_input_v1_t.source_kind",
             )
         }
         rust = (ROOT / "crates/kmipkit-transport/src/config.rs").read_text(encoding="utf-8")
@@ -495,9 +514,31 @@ class T076ClientMappingTests(unittest.TestCase):
         self.assertEqual("org.kmipkit.extensions.TransportConfiguration.Builder", mappings["kmipkit_transport_config_v1_t.client_private_key"][1])
         self.assertEqual("org.kmipkit.extensions.TransportConfiguration.Builder", mappings["kmipkit_transport_config_v1_t.trust_certificates"][1])
         self.assertEqual("org.kmipkit.extensions.TransportConfiguration.Builder", mappings["kmipkit_transport_config_v1_t.revocation_lists"][1])
-        self.assertEqual("kmipkit_transport::TransportConfigBuilder", mappings["kmipkit_transport_input_v1_t.encoding"][0][1])
-        self.assertEqual("org.kmipkit.extensions.TransportConfiguration.Encoding", mappings["kmipkit_transport_input_v1_t.encoding"][1])
-        self.assertEqual("kmipkit.client.CredentialEncoding", mappings["kmipkit_transport_input_v1_t.encoding"][2])
+        for path, (rust_target, requirement) in {
+            "kmipkit_transport_config_v1_t.client_certificates": (
+                "kmipkit_transport::CertificateInput",
+                "KMIPKIT-0013-FR-004",
+            ),
+            "kmipkit_transport_config_v1_t.client_private_key": (
+                "kmipkit_transport::PrivateKeyInput",
+                "KMIPKIT-0013-FR-004",
+            ),
+            "kmipkit_transport_config_v1_t.trust_certificates": (
+                "kmipkit_transport::TrustSource::certificate_authorities",
+                "KMIPKIT-0013-FR-003",
+            ),
+            "kmipkit_transport_config_v1_t.revocation_lists": (
+                "kmipkit_transport::RevocationListInput",
+                "KMIPKIT-0013-FR-003",
+            ),
+        }.items():
+            declaration = declarations[path]
+            self.assertIn(requirement, declaration["requirementIds"])
+            self.assertEqual(rust_target, declaration["languageMappings"]["rust"]["name"])
+            self.assertEqual("org.kmipkit.extensions.TransportConfiguration.Builder", mappings[path][1])
+
+        self.assertNotIn("kmipkit_transport_input_v1_t.encoding", mappings)
+        self.assertNotIn("kmipkit_transport_input_v1_t.source_kind", mappings)
 
     def test_transport_field_mappings_cover_policy_modes_and_exact_c_carriers(self) -> None:
         declarations = {
