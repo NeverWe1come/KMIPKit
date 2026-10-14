@@ -516,9 +516,23 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
                     expected_requirement_ids.add(mapping["requirement_id"])
 
             for gap in oracle["source_only_requirement_gaps"]:
+                conditional_mapping_applies_to_profile = any(
+                    mapping.get("requirement_id") == gap.get("candidate_requirement_id")
+                    and mapping.get("role") in {"client", "both"}
+                    and mapping.get("scope_state") == "profile_conditional"
+                    and _mapping_applies_to_profile(mapping, profile_id)
+                    for mapping in oracle["requirement_crosswalk"]
+                )
+                gap_applies_to_profile = (
+                    gap.get("scope_disposition") == "client_1_0"
+                    or (
+                        gap.get("scope_disposition") == "profile_conditional"
+                        and conditional_mapping_applies_to_profile
+                    )
+                )
                 if (
                     gap.get("candidate_requirement_id") is not None
-                    and gap.get("scope_disposition") in {"client_1_0", "profile_conditional"}
+                    and gap_applies_to_profile
                     and (
                         gap.get("source_clause_id") in source_clause_ids
                         or (gap.get("source_id"), gap.get("source_section")) in included_sections
