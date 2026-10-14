@@ -1592,6 +1592,13 @@ class T076ClientMappingTests(unittest.TestCase):
         self.assertEqual("kmipkit_request_options_v1_t", request_options["c"]["name"])
         self.assertEqual("fixed-width-value", request_options["c"]["kind"])
         self.assertTrue(request_options["c"]["versioned"])
+        c_type_declaration = next(
+            row
+            for row in self.manifest["publicDeclarations"]
+            if row["packageId"] == "c-kmipkit"
+            and row["exportName"] == "kmipkit_request_options_v1_t"
+        )
+        self.assertEqual("production_transport", c_type_declaration["capabilityId"])
         self.assertEqual(
             [
                 "struct_size",
@@ -1620,7 +1627,7 @@ class T076ClientMappingTests(unittest.TestCase):
             with self.subTest(field=field):
                 declaration = declarations[path]
                 self.assertEqual("field", declaration["kind"])
-                self.assertEqual("client_execution", declaration["capabilityId"])
+                self.assertEqual("production_transport", declaration["capabilityId"])
                 self.assertIn("KMIPKIT-0013-FR-011", declaration["requirementIds"])
                 self.assertEqual(
                     f"kmipkit_transport::RequestOptions::{builder_method}",
