@@ -766,6 +766,7 @@ class T076ClientMappingTests(unittest.TestCase):
                 "kmipkit.client.TimeoutKind.BOUNDED",
                 "kmipkit.client.TimeoutKind.DEFAULT",
                 "kmipkit.client.TimeoutKind.UNBOUNDED",
+                "kmipkit.client.TimeoutLimit",
                 "kmipkit.client.TimeoutLimit.__init__",
                 "kmipkit.client.TimeoutLimit.bounded",
                 "kmipkit.client.TimeoutLimit.default",
