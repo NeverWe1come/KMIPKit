@@ -1535,7 +1535,9 @@ shared client lifecycle and nullness`). It explicitly checks the T076 client,
 batch, result, and transport wrapper classes are `AutoCloseable`, and checks
 all five package annotations. No production behavior or generated output
 changed, so this closeout does not claim a new Red/Green/Refactor behavior
-cycle.
+cycle. Independent review found the ownership inventory name broader than its
+scope; the follow-up narrows it to the T021 shared-facade resource contract.
+Operation-specific request ownership remains with its owning feature task.
 
 | Verification | Command | Result |
 |---|---|---|

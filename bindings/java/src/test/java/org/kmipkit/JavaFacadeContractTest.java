@@ -40,7 +40,7 @@ import org.kmipkit.ttlv.TtlvValue;
 import org.kmipkit.ttlv.TtlvValueView;
 
 final class JavaFacadeContractTest {
-    private static final List<Class<?>> NATIVE_RESOURCE_TYPES = List.of(
+    private static final List<Class<?>> T021_NATIVE_RESOURCE_TYPES = List.of(
             Client.class,
             ClientBatch.class,
             ClientBatchItem.class,
@@ -74,10 +74,10 @@ final class JavaFacadeContractTest {
             TtlvValueView.class);
 
     @Test
-    void everyOwnedNativeFacadeTypeIsAutoCloseable() {
-        for (Class<?> type : NATIVE_RESOURCE_TYPES) {
+    void everyT021NativeResourceTypeIsAutoCloseable() {
+        for (Class<?> type : T021_NATIVE_RESOURCE_TYPES) {
             assertTrue(AutoCloseable.class.isAssignableFrom(type),
-                    () -> type.getName() + " must expose deterministic AutoCloseable ownership");
+                    () -> type.getName() + " must expose T021 AutoCloseable ownership");
         }
     }
 
