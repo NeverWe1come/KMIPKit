@@ -1230,6 +1230,12 @@ absent. The C batch mapping now points to `execute_public_tls_request`, which
 the compiled C consumer harness invokes over TLS 1.3 mTLS. The Python batch
 consumer now calls `Client.execute`, verifies all three ordered outcomes, IDs,
 and Pending correlation bytes, and asserts one FFI execute call.
+That Python facade test uses a stub FFI library, so it proves one native execute
+invocation and the returned mapping; it does not directly count network
+exchanges. The shared mapping now cites the Rust client test for the native
+one-exchange behavior. The C mapping separately cites its compiled TLS 1.3
+mTLS harness, which counts exactly one server exchange while invoking the C
+consumer.
 
 For schema redaction, the C ABI exposes only numeric status, category, cause,
 and delivery outputs; it has no diagnostic text channel. Its consumer checks
@@ -1251,3 +1257,26 @@ The remaining explicit shared-fixture blockers are the API-level taxonomy
 assigned to T077 and exact open-enumeration/child-order consumers in Rust, C,
 and Python. T076 therefore remains open; these entries are not counted as
 four-language parity evidence.
+
+### T076 composite batch exchange evidence (2026-10-14)
+
+The batch fixture now distinguishes each adapter's observable assertions from
+supporting evidence for the shared native transport behavior. C verifies the
+ordered mixed statuses, IDs, and Pending correlation in its public ABI
+consumer; its Rust TLS harness verifies exactly one mTLS server exchange.
+Python's test name and mapping state its actual assertion precisely: the
+facade invokes the native execute function once and maps ordered outcomes,
+IDs, and Pending correlation. A Rust client test is linked as supporting
+evidence that the shared execute operation performs one transport exchange.
+The Python facade test itself does not claim to observe a real network
+exchange.
+
+| Phase | Commit | Command | Result |
+|---|---|---|---|
+| Red | `1539d541` | `uv run --offline --no-project --with-requirements tools/api_manifest/requirements-test.txt python -B -m unittest tools.api_manifest.tests.test_parity.PublicApiParityTests.test_shared_capability_fixture_maps_executable_consumer_contracts -v` | Expected failure: C and Python batch mappings did not yet declare adapter assertions or supporting evidence for `transportExchangeCount`. |
+| Green | `f22e992e` | Shared parity and T076 mapping tests; focused Python batch facade test; `cargo test --locked -p kmipkit-ffi --features coverage-c-consumer --test c_api_coverage generated_public_client_abi_consumer_executes_a_typed_batch_over_mtls -- --exact` | PASS: 42 manifest tests; Python adapter 1/1; compiled C mTLS consumer 1/1 and observed exactly one server exchange. The parity validator verifies the cited Rust source contains the corresponding one-exchange assertion. |
+| Refactor | This commit | `git diff --check`; review fixture labels and implementation evidence against test behavior | Corrected the Python test name and recorded adapter-level versus transport-level evidence without overstating what the fake FFI observes. |
+
+This closes the batch evidence mapping correction only. T076 remains open for
+the previously recorded fixture blockers, final PR-head CI and coverage gates,
+and independent human review requirements.
