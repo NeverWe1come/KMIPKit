@@ -1075,3 +1075,28 @@ introduced by RequestOptions; it does not close T076 or the related task gates.
 | Refactor | This commit | `git diff --check`; inspect the refreshed audit report and evidence against generated outputs | Record the exact partial gate state and clarify that structural export matching does not complete T076, T021, T024, or T011. |
 
 Independent semantic review and the remaining cross-platform/required CI gates are still outstanding. T011, T076, T021, and T024 remain open; no generic error-TTLV API was promoted.
+
+### T076 Python native-constructor input evidence and FFI error output (2026-10-14)
+
+The Python `Client.create` adapter test now captures the record at the
+`kmipkit_transport_config_create_v1` native-call boundary and asserts that
+client certificate chains, private keys, and trust certificates preserve each
+supported PEM/DER and memory/file discriminator with the corresponding bytes
+or encoded path. CRL inputs are asserted as in-memory PEM/DER. This strengthens
+adapter evidence without changing Python production behavior.
+
+The versioned C execute function now initializes a valid response output slot
+to null before validating its options pointer. A null options pointer returns
+`KMIPKIT_ERROR_INVALID_INPUT` and leaves the output slot null, matching the
+output contract used by the other C entry points.
+
+The T076 checkpoint now uses the pinned report's current inventory totals: C
+272 observed (242 declarations, 30 exclusions), Java 481 (442, 39), and Python
+556 (425, 131). Each scanner is complete and `matchesManifest=true`; this does
+not close T076 or the related task gates.
+
+| Phase | Commit | Command | Result |
+|---|---|---|---|
+| Red | `31c5080c` | `uv run --offline --project bindings/python --frozen pytest -q bindings/python/tests/test_client.py::test_client_create_forwards_identity_and_trust_modes_to_native_constructor`; `cargo test -p kmipkit-ffi --lib execute_with_options_invalid_options_nulls_response_output -- --nocapture` | Expected failures: Python produced 4 failing parameter cases because the native-constructor stub recorded only `abi_version`; FFI produced 1 failure because the stale response pointer remained unchanged for null options. |
+| Green | `2afbdaee` | `uv run --offline --project bindings/python --frozen pytest -q bindings/python/tests/test_client.py::test_client_create_forwards_identity_and_trust_modes_to_native_constructor bindings/python/tests/test_client.py::test_transport_record_forwards_identity_and_trust_source_modes`; `cargo test -p kmipkit-ffi --lib execute_with_options_invalid_options_nulls_response_output -- --nocapture` | PASS: Python focused adapter tests 8/8; FFI output-slot regression 1/1. Cargo emitted nonfatal AWS-LC `stdalign_check.c` and missing-NASM feature-probe warnings, then compiled and passed. |
+| Refactor | This commit | `git diff --check` | PASS: checkpoint totals and phase evidence are updated; no task checkbox changed. |
