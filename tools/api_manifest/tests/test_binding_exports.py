@@ -407,6 +407,7 @@ class BindingExportAuditTests(unittest.TestCase):
         sources = {
             "kmipkit/client.py": textwrap.dedent("""
                 from dataclasses import dataclass
+                __all__ = ["BatchItemResult", "CustomValue"]
 
                 @dataclass(frozen=True)
                 class BatchItemResult:
@@ -426,6 +427,50 @@ class BindingExportAuditTests(unittest.TestCase):
             ("python-export", "kmipkit.client.BatchItemResult.__hash__"),
         }.issubset(observed))
         self.assertFalse(any(name.startswith("kmipkit.client.CustomValue.__") for _, name in observed))
+        self.assertTrue(result["complete"])
+
+    def test_python_inventory_audits_dataclass_generated_metadata_and_constructor_signature(self):
+        sources = {
+            "kmipkit/models.py": textwrap.dedent("""
+                import dataclasses as dc
+                __all__ = ["FrozenRecord", "ManualRecord"]
+
+                @dc.dataclass(frozen=True, slots=True)
+                class FrozenRecord:
+                    required: int
+                    label: str = "x"
+
+                @dc.dataclass(init=False, match_args=False, slots=False,
+                              frozen=False, repr=False, eq=False)
+                class ManualRecord:
+                    value: int
+            """),
+        }
+        result = AUDIT.inventory_python_sources(sources)
+        declarations = {row["exportName"]: row for row in result["declarations"]}
+        frozen = "kmipkit.models.FrozenRecord"
+        self.assertTrue({
+            f"{frozen}.__init__",
+            f"{frozen}.__repr__",
+            f"{frozen}.__eq__",
+            f"{frozen}.__hash__",
+            f"{frozen}.__setattr__",
+            f"{frozen}.__delattr__",
+            f"{frozen}.__match_args__",
+            f"{frozen}.__slots__",
+            f"{frozen}.__dataclass_fields__",
+            f"{frozen}.__dataclass_params__",
+        }.issubset(declarations))
+        self.assertEqual(
+            declarations[f"{frozen}.__init__"].get("signature"),
+            "(required: int, label: str = 'x') -> None",
+        )
+        manual = "kmipkit.models.ManualRecord"
+        self.assertIn(f"{manual}.__dataclass_fields__", declarations)
+        self.assertIn(f"{manual}.__dataclass_params__", declarations)
+        self.assertNotIn(f"{manual}.__init__", declarations)
+        self.assertNotIn(f"{manual}.__match_args__", declarations)
+        self.assertNotIn(f"{manual}.__slots__", declarations)
         self.assertTrue(result["complete"])
 
     def test_python_inventory_resolves_private_module_values_and_property_exports(self):
