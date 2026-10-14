@@ -54,10 +54,11 @@ typedef struct kmipkit_client_batch_t kmipkit_client_batch_t;
 typedef struct kmipkit_client_batch_response_t kmipkit_client_batch_response_t;
 typedef struct kmipkit_client_batch_item_response_t kmipkit_client_batch_item_response_t;
 typedef struct kmipkit_register_request_t kmipkit_register_request_t;
+typedef struct kmipkit_request_options_v1_t kmipkit_request_options_v1_t;
+typedef struct kmipkit_timeout_limit_v1_t kmipkit_timeout_limit_v1_t;
 
 typedef struct kmipkit_byte_span_v1_t kmipkit_byte_span_v1_t;
 typedef struct kmipkit_client_batch_item_metadata_v1_t kmipkit_client_batch_item_metadata_v1_t;
-typedef struct kmipkit_timeout_limit_v1_t kmipkit_timeout_limit_v1_t;
 typedef struct kmipkit_transport_input_v1_t kmipkit_transport_input_v1_t;
 typedef struct kmipkit_transport_config_v1_t kmipkit_transport_config_v1_t;
 
@@ -93,6 +94,23 @@ typedef struct {
     uint64_t max_depth;
 } kmipkit_extension_registry_limits_v1_t;
 
+struct kmipkit_timeout_limit_v1_t {
+    uint32_t kind;
+    uint32_t reserved;
+    uint64_t seconds;
+    uint32_t nanoseconds;
+    uint32_t reserved2;
+};
+
+struct kmipkit_request_options_v1_t {
+    uint32_t struct_size;
+    uint32_t abi_version;
+    kmipkit_timeout_limit_v1_t connect_timeout;
+    kmipkit_timeout_limit_v1_t write_timeout;
+    kmipkit_timeout_limit_v1_t read_timeout;
+    kmipkit_timeout_limit_v1_t total_timeout;
+};
+
 struct kmipkit_byte_span_v1_t {
     const uint8_t * data;
     uint64_t length;
@@ -105,14 +123,6 @@ struct kmipkit_client_batch_item_metadata_v1_t {
     uint32_t result_status;
     uint32_t has_result_reason;
     uint32_t result_reason;
-};
-
-struct kmipkit_timeout_limit_v1_t {
-    uint32_t kind;
-    uint32_t reserved;
-    uint64_t seconds;
-    uint32_t nanoseconds;
-    uint32_t reserved2;
 };
 
 struct kmipkit_transport_input_v1_t {
@@ -458,6 +468,12 @@ int32_t kmipkit_client_batch_item_response_pending_correlation_value(kmipkit_cli
 int32_t kmipkit_client_create(kmipkit_client_configuration_t * configuration, kmipkit_transport_config_t ** transport_configuration, kmipkit_client_t ** out_client);
 /* KMIPKIT-0007-FR-001, KMIPKIT-0007-FR-006, KMIPKIT-0007-FR-008, KMIPKIT-0043-FR-003, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-021 */
 int32_t kmipkit_client_execute(kmipkit_client_t * client, kmipkit_client_batch_t ** batch, kmipkit_codec_limits_t * limits, kmipkit_client_batch_response_t ** out_response);
+/* Executes one caller-ordered batch with exchange-local timeout overrides.
+ * Timeout kind 0 inherits the client policy; kind 1 is bounded, including zero for an immediate deadline; kind 2 is unbounded.
+ * The existing kmipkit_client_execute symbol and signature remain available with inherited client-policy timeouts.
+ */
+/* KMIPKIT-0007-FR-001, KMIPKIT-0007-FR-006, KMIPKIT-0007-FR-008, KMIPKIT-0013-FR-011, KMIPKIT-0043-FR-021 */
+int32_t kmipkit_client_execute_with_options_v1(kmipkit_client_t * client, kmipkit_client_batch_t ** batch, kmipkit_codec_limits_t * limits, const kmipkit_request_options_v1_t * options, kmipkit_client_batch_response_t ** out_response);
 /* Approved exact C-only exclusion: kmipkit_client_batch_item_response_metadata_v1 */
 int32_t kmipkit_client_batch_item_response_metadata_v1(kmipkit_client_batch_item_response_t * item, kmipkit_client_batch_item_metadata_v1_t * out_metadata);
 /* Approved exact C-only exclusion: kmipkit_transport_config_create_v1 */

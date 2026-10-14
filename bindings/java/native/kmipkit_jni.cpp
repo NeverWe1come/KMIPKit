@@ -42,6 +42,8 @@ static_assert(offsetof(kmipkit_transport_input_v1_t, data) == 8);
 static_assert(sizeof(kmipkit_timeout_limit_v1_t) == 24);
 static_assert(offsetof(kmipkit_timeout_limit_v1_t, seconds) == 8);
 static_assert(offsetof(kmipkit_timeout_limit_v1_t, nanoseconds) == 16);
+static_assert(sizeof(kmipkit_request_options_v1_t) == 104);
+static_assert(offsetof(kmipkit_request_options_v1_t, connect_timeout) == 8);
 static_assert(sizeof(kmipkit_transport_config_v1_t) == 256);
 static_assert(offsetof(kmipkit_transport_config_v1_t, client_certificates) == 48);
 static_assert(offsetof(kmipkit_transport_config_v1_t, connect_timeout) == 152);
@@ -60,6 +62,7 @@ int32_t kmipkit_client_batch_set_asynchronous_indicator(kmipkit_client_batch_t*,
 void kmipkit_client_batch_item_release(kmipkit_client_batch_item_t*);
 void kmipkit_client_batch_release(kmipkit_client_batch_t*);
 int32_t kmipkit_client_execute(kmipkit_client_t*, kmipkit_client_batch_t**, kmipkit_codec_limits_t*, kmipkit_client_batch_response_t**);
+int32_t kmipkit_client_execute_with_options_v1(kmipkit_client_t*, kmipkit_client_batch_t**, kmipkit_codec_limits_t*, const kmipkit_request_options_v1_t*, kmipkit_client_batch_response_t**);
 void kmipkit_client_batch_response_release(kmipkit_client_batch_response_t*);
 void kmipkit_client_batch_item_response_release(kmipkit_client_batch_item_response_t*);
 int32_t kmipkit_client_batch_response_item_count(kmipkit_client_batch_response_t*, uint64_t*);
@@ -85,6 +88,7 @@ constexpr uint32_t kTransportEncodingPem = 1;
 constexpr uint32_t kTransportEncodingDer = 2;
 constexpr uint32_t kTransportTimeoutBounded = 1;
 constexpr uint32_t kTransportTimeoutUnbounded = 2;
+constexpr uint32_t kTransportTimeoutDefault = 0;
 constexpr uint32_t kTransportFlagTlsServerName = 1;
 constexpr uint32_t kTransportFlagTargetUri = 2;
 constexpr uint64_t kMaximumTransportInputBytes = 16 * 1024 * 1024;
@@ -2124,6 +2128,69 @@ JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_clientExecute(
         const int32_t status = kmipkit_client_execute(client, &batch, limits.get(), &response);
         if (status != 0) throw_status(env, status);
         if (batch != nullptr) kmipkit_client_batch_release(batch);
+        if (status != 0) return static_cast<jlong>(0);
+        if (response == nullptr) {
+            throw_invalid_input(env);
+            return static_cast<jlong>(0);
+        }
+        return to_java_handle(response);
+    });
+}
+
+struct ClientBatchReleaseGuard {
+    kmipkit_client_batch_t*& handle;
+    ~ClientBatchReleaseGuard() {
+        if (handle != nullptr) {
+            kmipkit_client_batch_release(handle);
+            handle = nullptr;
+        }
+    }
+};
+
+JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_clientExecuteWithOptions(
+        JNIEnv* env, jclass, jlong raw_client, jlong raw_batch,
+        jlongArray raw_limits, jlongArray raw_timeouts) {
+    return guarded<jlong>(env, 0, [&] {
+        auto* batch = from_java_handle<kmipkit_client_batch_t>(raw_batch);
+        ClientBatchReleaseGuard batch_guard{batch};
+        auto* client = from_java_handle<kmipkit_client_t>(raw_client);
+        if (client == nullptr || batch == nullptr) {
+            throw_invalid_input(env);
+            return static_cast<jlong>(0);
+        }
+        CodecLimits limits;
+        if (!limits.initialize(env, raw_limits)) return static_cast<jlong>(0);
+        std::vector<uint64_t> timeout_values;
+        if (!read_long_array(env, raw_timeouts, 12, timeout_values, 12)) {
+            return static_cast<jlong>(0);
+        }
+
+        kmipkit_request_options_v1_t options{};
+        options.struct_size = static_cast<uint32_t>(sizeof(options));
+        options.abi_version = 1;
+        kmipkit_timeout_limit_v1_t* outputs[] = {
+                &options.connect_timeout, &options.write_timeout,
+                &options.read_timeout, &options.total_timeout};
+        for (size_t index = 0; index < 4; ++index) {
+            const uint64_t kind = timeout_values[index * 3];
+            const uint64_t seconds = timeout_values[index * 3 + 1];
+            const uint64_t nanos = timeout_values[index * 3 + 2];
+            if (kind > kTransportTimeoutUnbounded || nanos >= 1'000'000'000
+                    || ((kind == kTransportTimeoutDefault
+                            || kind == kTransportTimeoutUnbounded)
+                        && (seconds != 0 || nanos != 0))) {
+                throw_invalid_input(env);
+                return static_cast<jlong>(0);
+            }
+            outputs[index]->kind = static_cast<uint32_t>(kind);
+            outputs[index]->seconds = seconds;
+            outputs[index]->nanoseconds = static_cast<uint32_t>(nanos);
+        }
+
+        kmipkit_client_batch_response_t* response = nullptr;
+        const int32_t status = kmipkit_client_execute_with_options_v1(
+                client, &batch, limits.get(), &options, &response);
+        if (status != 0) throw_status(env, status);
         if (status != 0) return static_cast<jlong>(0);
         if (response == nullptr) {
             throw_invalid_input(env);

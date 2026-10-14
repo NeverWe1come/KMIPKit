@@ -693,6 +693,31 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "kmipkit_transport::PrivateKeyInput::from_der_file",
     ),
     (
+        "rust-observed-d0499787d666f110ac4f",
+        "rust-kmipkit-transport",
+        "kmipkit_transport::RequestOptions",
+    ),
+    (
+        "rust-observed-f928ddd6a1ee46ca05b7",
+        "rust-kmipkit-transport",
+        "kmipkit_transport::RequestOptions::with_connect",
+    ),
+    (
+        "rust-observed-ddf7a3426e0132dc1a56",
+        "rust-kmipkit-transport",
+        "kmipkit_transport::RequestOptions::with_write",
+    ),
+    (
+        "rust-observed-9c2b5f2810e5b4c41655",
+        "rust-kmipkit-transport",
+        "kmipkit_transport::RequestOptions::with_read",
+    ),
+    (
+        "rust-observed-b509a6eeaccaeef22043",
+        "rust-kmipkit-transport",
+        "kmipkit_transport::RequestOptions::with_total",
+    ),
+    (
         "T076:target:rust-kmipkit-transport:kmipkit_transport::RevocationListInput",
         "rust-kmipkit-transport",
         "kmipkit_transport::RevocationListInput",
@@ -878,6 +903,11 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "kmipkit_client::Client::execute",
     ),
     (
+        "rust-observed-91b0b1e0353030f504da",
+        "rust-kmipkit-client",
+        "kmipkit_client::Client::execute_with_options",
+    ),
+    (
         "rust-observed-f5bbde677ed59bfed75e",
         "rust-kmipkit-client",
         "kmipkit_client::ClientBatch",
@@ -958,9 +988,44 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "kmipkit_client::ClientBatchResponse::get",
     ),
     (
+        "rust-observed-6ed66240b515e2c819ae",
+        "rust-kmipkit-client",
+        "kmipkit_client::RequestOptions",
+    ),
+    (
+        "rust-observed-22976759b915f2710e42",
+        "rust-kmipkit",
+        "kmipkit::RequestOptions",
+    ),
+    (
+        "rust-observed-fa01f6842c586977f615",
+        "rust-kmipkit",
+        "kmipkit::Client::execute_with_options",
+    ),
+    (
         "rust-observed-29383d8d0499ca959dc8",
         "rust-kmipkit",
         "kmipkit::ClientCauseCategory::Other",
+    ),
+    (
+        "rust-observed-ef90ad73fdd1935fad25",
+        "rust-kmipkit",
+        "kmipkit::RequestOptions::with_connect",
+    ),
+    (
+        "rust-observed-b55b2e7a901c647ff032",
+        "rust-kmipkit",
+        "kmipkit::RequestOptions::with_write",
+    ),
+    (
+        "rust-observed-7050e23aadd7e2e2ca8e",
+        "rust-kmipkit",
+        "kmipkit::RequestOptions::with_read",
+    ),
+    (
+        "rust-observed-97415371bcbfa5beb4b9",
+        "rust-kmipkit",
+        "kmipkit::RequestOptions::with_total",
     ),
     ("kmipkit.VERSION:rust", "rust-kmipkit", "kmipkit::VERSION"),
     (
@@ -1004,6 +1069,36 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "kmipkit::RuntimeMetadataError::ResourceLimit",
     ),
     (
+        "rust-observed-402da4ce974b9ad99b17",
+        "rust-kmipkit",
+        "<kmipkit::RequestOptions as core::default::Default>::default",
+    ),
+    (
+        "rust-observed-d1197da70a234b98ce0e",
+        "rust-kmipkit-client",
+        "<kmipkit_client::RequestOptions as core::default::Default>::default",
+    ),
+    (
+        "rust-observed-08ebb047e2dc8a7d19bc",
+        "rust-kmipkit-client",
+        "kmipkit_client::RequestOptions::with_connect",
+    ),
+    (
+        "rust-observed-2c75727268f7fbc9970c",
+        "rust-kmipkit-client",
+        "kmipkit_client::RequestOptions::with_read",
+    ),
+    (
+        "rust-observed-bbeaeab80a426dd07449",
+        "rust-kmipkit-client",
+        "kmipkit_client::RequestOptions::with_total",
+    ),
+    (
+        "rust-observed-c99d843068b468497399",
+        "rust-kmipkit-client",
+        "kmipkit_client::RequestOptions::with_write",
+    ),
+    (
         "rust-observed-5d253f0403ebfd0df573",
         "rust-kmipkit-protocol",
         "kmipkit_protocol::RegisterRequest",
@@ -1012,6 +1107,11 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "rust-observed-ab7fec008d9c62cd5adb",
         "rust-kmipkit-protocol",
         "kmipkit_protocol::RegisterRequest::new",
+    ),
+    (
+        "rust-observed-4c6d6a9625864ba8b0a4",
+        "rust-kmipkit-transport",
+        "<kmipkit_transport::RequestOptions as core::default::Default>::default",
     ),
     (
         "KMIPKIT-0044-opaque-object-context-type:rust",

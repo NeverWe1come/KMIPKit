@@ -1197,6 +1197,107 @@
           }
         ]
       }
+    },
+    {
+      "id": "RequestOptions",
+      "kind": "struct",
+      "requirementIds": [
+        "KMIPKIT-0013-FR-011",
+        "KMIPKIT-0043-FR-021"
+      ],
+      "rust": {
+        "module": "kmipkit_transport",
+        "name": "RequestOptions",
+        "owner": "client"
+      },
+      "c": {
+        "name": "kmipkit_request_options_v1_t",
+        "kind": "fixed-width-value",
+        "visibility": "public",
+        "versioned": true,
+        "fields": [
+          {
+            "name": "struct_size",
+            "type": "uint32_t"
+          },
+          {
+            "name": "abi_version",
+            "type": "uint32_t"
+          },
+          {
+            "name": "connect_timeout",
+            "type": "kmipkit_timeout_limit_v1_t"
+          },
+          {
+            "name": "write_timeout",
+            "type": "kmipkit_timeout_limit_v1_t"
+          },
+          {
+            "name": "read_timeout",
+            "type": "kmipkit_timeout_limit_v1_t"
+          },
+          {
+            "name": "total_timeout",
+            "type": "kmipkit_timeout_limit_v1_t"
+          }
+        ]
+      },
+      "java": {
+        "package": "org.kmipkit.extensions",
+        "name": "RequestOptions"
+      },
+      "python": {
+        "module": "kmipkit.client",
+        "name": "RequestOptions"
+      }
+    },
+    {
+      "id": "TimeoutLimit",
+      "kind": "struct",
+      "requirementIds": [
+        "KMIPKIT-0013-FR-011",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-021"
+      ],
+      "rust": {
+        "module": "kmipkit_transport",
+        "name": "TimeoutLimit",
+        "owner": "client"
+      },
+      "c": {
+        "name": "kmipkit_timeout_limit_v1_t",
+        "kind": "fixed-width-value",
+        "fields": [
+          {
+            "name": "kind",
+            "type": "uint32_t"
+          },
+          {
+            "name": "reserved",
+            "type": "uint32_t"
+          },
+          {
+            "name": "seconds",
+            "type": "uint64_t"
+          },
+          {
+            "name": "nanoseconds",
+            "type": "uint32_t"
+          },
+          {
+            "name": "reserved2",
+            "type": "uint32_t"
+          }
+        ]
+      },
+      "java": {
+        "package": "org.kmipkit.extensions",
+        "name": "Timeout"
+      },
+      "python": {
+        "module": "kmipkit.client",
+        "name": "TimeoutLimit"
+      }
     }
   ],
   "functions": [
@@ -11934,6 +12035,147 @@
           }
         ],
         "cffiSymbol": "kmipkit_client_execute",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal",
+          "protocol",
+          "transport",
+          "server_result"
+        ],
+        "returnType": "BatchResult"
+      },
+      "ordering": "not-applicable"
+    },
+    {
+      "id": "client_execute_with_options",
+      "requirementIds": [
+        "KMIPKIT-0007-FR-001",
+        "KMIPKIT-0007-FR-006",
+        "KMIPKIT-0007-FR-008",
+        "KMIPKIT-0013-FR-011",
+        "KMIPKIT-0043-FR-021"
+      ],
+      "rust": {
+        "module": "kmipkit_client::Client",
+        "name": "execute_with_options",
+        "owner": "client",
+        "requestBoundary": "not-applicable",
+        "parameters": [
+          {
+            "name": "batch",
+            "type": "ClientBatch"
+          },
+          {
+            "name": "limits",
+            "type": "&CodecLimits"
+          },
+          {
+            "name": "options",
+            "type": "&RequestOptions"
+          }
+        ],
+        "returnType": "Result<ClientBatchResponse, ClientError>"
+      },
+      "c": {
+        "symbol": "kmipkit_client_execute_with_options_v1",
+        "parameters": [
+          {
+            "name": "client",
+            "kind": "handle",
+            "type": "kmipkit_client_t *",
+            "ownership": "borrowed"
+          },
+          {
+            "name": "batch",
+            "kind": "consumed-handle-slot",
+            "type": "kmipkit_client_batch_t **",
+            "handleType": "kmipkit_client_batch_t",
+            "ownership": "consumed"
+          },
+          {
+            "name": "limits",
+            "kind": "handle",
+            "type": "kmipkit_codec_limits_t *",
+            "ownership": "borrowed"
+          },
+          {
+            "name": "options",
+            "kind": "versioned-value-pointer",
+            "type": "const kmipkit_request_options_v1_t *",
+            "direction": "input",
+            "ownership": "borrowed"
+          },
+          {
+            "name": "out_response",
+            "kind": "output",
+            "type": "kmipkit_client_batch_response_t **",
+            "ownership": "library-owned",
+            "nullable": false
+          }
+        ],
+        "returnType": "int32_t",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal",
+          "protocol",
+          "transport",
+          "server_result"
+        ],
+        "documentation": [
+          "Executes one caller-ordered batch with exchange-local timeout overrides.",
+          "Timeout kind 0 inherits the client policy; kind 1 is bounded, including zero for an immediate deadline; kind 2 is unbounded.",
+          "The existing kmipkit_client_execute symbol and signature remain available with inherited client-policy timeouts."
+        ]
+      },
+      "java": {
+        "package": "org.kmipkit.extensions",
+        "class": "Client",
+        "method": "executeWithOptions",
+        "parameters": [
+          {
+            "name": "batch",
+            "type": "ClientBatch"
+          },
+          {
+            "name": "limits",
+            "type": "CodecLimits"
+          },
+          {
+            "name": "options",
+            "type": "RequestOptions"
+          }
+        ],
+        "jniSymbol": "Java_org_kmipkit_NativeExtensionRegistry_clientExecuteWithOptions",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal",
+          "protocol",
+          "transport",
+          "server_result"
+        ],
+        "returnType": "ClientBatchResponse"
+      },
+      "python": {
+        "module": "kmipkit.client",
+        "function": "Client.execute_with_options",
+        "parameters": [
+          {
+            "name": "batch",
+            "type": "Batch"
+          },
+          {
+            "name": "limits",
+            "type": "CodecLimits"
+          },
+          {
+            "name": "options",
+            "type": "RequestOptions"
+          }
+        ],
+        "cffiSymbol": "kmipkit_client_execute_with_options_v1",
         "errorCategories": [
           "invalid_input",
           "resource_limit",
@@ -50040,7 +50282,7 @@
         },
         "c": {
           "packageId": "c-kmipkit",
-          "name": "kmipkit_transport_input_v1_t.source_kind"
+          "name": "kmipkit_transport_config_v1_t.client_certificates"
         },
         "java": {
           "packageId": "java-kmipkit",
@@ -50080,7 +50322,7 @@
         },
         "c": {
           "packageId": "c-kmipkit",
-          "name": "kmipkit_transport_input_v1_t.encoding"
+          "name": "kmipkit_transport_config_v1_t.client_certificates"
         },
         "java": {
           "packageId": "java-kmipkit",
@@ -50120,7 +50362,7 @@
         },
         "c": {
           "packageId": "c-kmipkit",
-          "name": "kmipkit_transport_input_v1_t.source_kind"
+          "name": "kmipkit_transport_config_v1_t.client_certificates"
         },
         "java": {
           "packageId": "java-kmipkit",
@@ -50439,7 +50681,7 @@
         },
         "c": {
           "packageId": "c-kmipkit",
-          "name": "kmipkit_transport_input_v1_t.source_kind"
+          "name": "kmipkit_transport_config_v1_t.client_private_key"
         },
         "java": {
           "packageId": "java-kmipkit",
@@ -50519,7 +50761,7 @@
         },
         "c": {
           "packageId": "c-kmipkit",
-          "name": "kmipkit_transport_input_v1_t.source_kind"
+          "name": "kmipkit_transport_config_v1_t.client_private_key"
         },
         "java": {
           "packageId": "java-kmipkit",
@@ -50536,70 +50778,185 @@
       "packageId": "rust-kmipkit-transport",
       "kind": "type",
       "exportName": "kmipkit_transport::RequestOptions",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "production_transport",
       "requirementIds": [
+        "KMIPKIT-0013-FR-011",
         "KMIPKIT-0043-FR-021"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0013",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/013-production-transport/spec.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-transport",
+          "name": "kmipkit_transport::RequestOptions"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_request_options_v1_t"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.RequestOptions"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.RequestOptions"
+        }
+      }
     },
     {
       "declarationId": "rust-observed-f928ddd6a1ee46ca05b7",
       "packageId": "rust-kmipkit-transport",
       "kind": "associated-item",
       "exportName": "kmipkit_transport::RequestOptions::with_connect",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "production_transport",
       "requirementIds": [
+        "KMIPKIT-0013-FR-011",
         "KMIPKIT-0043-FR-021"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0013",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/013-production-transport/spec.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-transport",
+          "name": "kmipkit_transport::RequestOptions::with_connect"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_request_options_v1_t.connect_timeout"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.RequestOptions.connectTimeout"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.RequestOptions.connect_timeout"
+        }
+      }
     },
     {
       "declarationId": "rust-observed-ddf7a3426e0132dc1a56",
       "packageId": "rust-kmipkit-transport",
       "kind": "associated-item",
       "exportName": "kmipkit_transport::RequestOptions::with_write",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "production_transport",
       "requirementIds": [
+        "KMIPKIT-0013-FR-011",
         "KMIPKIT-0043-FR-021"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0013",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/013-production-transport/spec.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-transport",
+          "name": "kmipkit_transport::RequestOptions::with_write"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_request_options_v1_t.write_timeout"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.RequestOptions.writeTimeout"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.RequestOptions.write_timeout"
+        }
+      }
     },
     {
       "declarationId": "rust-observed-9c2b5f2810e5b4c41655",
       "packageId": "rust-kmipkit-transport",
       "kind": "associated-item",
       "exportName": "kmipkit_transport::RequestOptions::with_read",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "production_transport",
       "requirementIds": [
+        "KMIPKIT-0013-FR-011",
         "KMIPKIT-0043-FR-021"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0013",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/013-production-transport/spec.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-transport",
+          "name": "kmipkit_transport::RequestOptions::with_read"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_request_options_v1_t.read_timeout"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.RequestOptions.readTimeout"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.RequestOptions.read_timeout"
+        }
+      }
     },
     {
       "declarationId": "rust-observed-b509a6eeaccaeef22043",
       "packageId": "rust-kmipkit-transport",
       "kind": "associated-item",
       "exportName": "kmipkit_transport::RequestOptions::with_total",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "production_transport",
       "requirementIds": [
+        "KMIPKIT-0013-FR-011",
         "KMIPKIT-0043-FR-021"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0013",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/013-production-transport/spec.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-transport",
+          "name": "kmipkit_transport::RequestOptions::with_total"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_request_options_v1_t.total_timeout"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.RequestOptions.totalTimeout"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.RequestOptions.total_timeout"
+        }
+      }
     },
     {
       "declarationId": "T076:target:rust-kmipkit-transport:kmipkit_transport::RevocationListInput",
@@ -50748,7 +51105,7 @@
         },
         "c": {
           "packageId": "c-kmipkit",
-          "name": "kmipkit_transport_config_t"
+          "name": "kmipkit_timeout_limit_v1_t"
         },
         "java": {
           "packageId": "java-kmipkit",
@@ -53177,14 +53534,40 @@
       "packageId": "rust-kmipkit-client",
       "kind": "associated-item",
       "exportName": "kmipkit_client::Client::execute_with_options",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "client_execution",
       "requirementIds": [
+        "KMIPKIT-0007-FR-001",
+        "KMIPKIT-0007-FR-006",
+        "KMIPKIT-0007-FR-008",
+        "KMIPKIT-0013-FR-011",
         "KMIPKIT-0043-FR-021"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0007",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/007-client-execution/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation — delegated maintainer authorization, independent reviews, and merge of correction PR #39 are recorded in `approval-record.md`."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::Client::execute_with_options"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_execute_with_options_v1"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.Client.executeWithOptions"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.Client.execute_with_options"
+        }
+      }
     },
     {
       "declarationId": "rust-observed-e891f359e4e65865be31",
@@ -56771,14 +57154,37 @@
       "packageId": "rust-kmipkit-client",
       "kind": "type",
       "exportName": "kmipkit_client::RequestOptions",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "production_transport",
       "requirementIds": [
+        "KMIPKIT-0013-FR-011",
         "KMIPKIT-0043-FR-021"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0013",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/013-production-transport/spec.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::RequestOptions"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_request_options_v1_t"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.RequestOptions"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.RequestOptions"
+        }
+      }
     },
     {
       "declarationId": "rust-observed-0ea966087301e239f7b7",
@@ -56968,14 +57374,37 @@
       "packageId": "rust-kmipkit",
       "kind": "type",
       "exportName": "kmipkit::RequestOptions",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "production_transport",
       "requirementIds": [
+        "KMIPKIT-0013-FR-011",
         "KMIPKIT-0043-FR-021"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0013",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/013-production-transport/spec.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit",
+          "name": "kmipkit::RequestOptions"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_request_options_v1_t"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.RequestOptions"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.RequestOptions"
+        }
+      }
     },
     {
       "declarationId": "rust-observed-bb7b3adcd159f5958716",
@@ -57220,14 +57649,40 @@
       "packageId": "rust-kmipkit",
       "kind": "associated-item",
       "exportName": "kmipkit::Client::execute_with_options",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "client_execution",
       "requirementIds": [
+        "KMIPKIT-0007-FR-001",
+        "KMIPKIT-0007-FR-006",
+        "KMIPKIT-0007-FR-008",
+        "KMIPKIT-0013-FR-011",
         "KMIPKIT-0043-FR-021"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0007",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/007-client-execution/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation — delegated maintainer authorization, independent reviews, and merge of correction PR #39 are recorded in `approval-record.md`."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit",
+          "name": "kmipkit::Client::execute_with_options"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_execute_with_options_v1"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.Client.executeWithOptions"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.Client.execute_with_options"
+        }
+      }
     },
     {
       "declarationId": "rust-observed-4e77cd82f13163be6c38",
@@ -60295,56 +60750,148 @@
       "packageId": "rust-kmipkit",
       "kind": "associated-item",
       "exportName": "kmipkit::RequestOptions::with_connect",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "production_transport",
       "requirementIds": [
+        "KMIPKIT-0013-FR-011",
         "KMIPKIT-0043-FR-021"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0013",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/013-production-transport/spec.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit",
+          "name": "kmipkit::RequestOptions::with_connect"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_request_options_v1_t.connect_timeout"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.RequestOptions.connectTimeout"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.RequestOptions.connect_timeout"
+        }
+      }
     },
     {
       "declarationId": "rust-observed-b55b2e7a901c647ff032",
       "packageId": "rust-kmipkit",
       "kind": "associated-item",
       "exportName": "kmipkit::RequestOptions::with_write",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "production_transport",
       "requirementIds": [
+        "KMIPKIT-0013-FR-011",
         "KMIPKIT-0043-FR-021"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0013",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/013-production-transport/spec.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit",
+          "name": "kmipkit::RequestOptions::with_write"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_request_options_v1_t.write_timeout"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.RequestOptions.writeTimeout"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.RequestOptions.write_timeout"
+        }
+      }
     },
     {
       "declarationId": "rust-observed-7050e23aadd7e2e2ca8e",
       "packageId": "rust-kmipkit",
       "kind": "associated-item",
       "exportName": "kmipkit::RequestOptions::with_read",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "production_transport",
       "requirementIds": [
+        "KMIPKIT-0013-FR-011",
         "KMIPKIT-0043-FR-021"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0013",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/013-production-transport/spec.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit",
+          "name": "kmipkit::RequestOptions::with_read"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_request_options_v1_t.read_timeout"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.RequestOptions.readTimeout"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.RequestOptions.read_timeout"
+        }
+      }
     },
     {
       "declarationId": "rust-observed-97415371bcbfa5beb4b9",
       "packageId": "rust-kmipkit",
       "kind": "associated-item",
       "exportName": "kmipkit::RequestOptions::with_total",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "production_transport",
       "requirementIds": [
+        "KMIPKIT-0013-FR-011",
         "KMIPKIT-0043-FR-021"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0013",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/013-production-transport/spec.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit",
+          "name": "kmipkit::RequestOptions::with_total"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_request_options_v1_t.total_timeout"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.RequestOptions.totalTimeout"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.RequestOptions.total_timeout"
+        }
+      }
     },
     {
       "declarationId": "rust-observed-7ba0a2c39ec777de3a16",
@@ -74685,14 +75232,37 @@
       "packageId": "rust-kmipkit",
       "kind": "associated-item",
       "exportName": "<kmipkit::RequestOptions as core::default::Default>::default",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "production_transport",
       "requirementIds": [
+        "KMIPKIT-0013-FR-011",
         "KMIPKIT-0043-FR-021"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0013",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/013-production-transport/spec.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit",
+          "name": "<kmipkit::RequestOptions as core::default::Default>::default"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_request_options_v1_t"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.RequestOptions.defaults"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.RequestOptions.__init__"
+        }
+      }
     },
     {
       "declarationId": "rust-observed-d02ba57b5f99be9e1ad3",
@@ -96522,14 +97092,37 @@
       "packageId": "rust-kmipkit-client",
       "kind": "associated-item",
       "exportName": "<kmipkit_client::RequestOptions as core::default::Default>::default",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "production_transport",
       "requirementIds": [
+        "KMIPKIT-0013-FR-011",
         "KMIPKIT-0043-FR-021"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0013",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/013-production-transport/spec.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "<kmipkit_client::RequestOptions as core::default::Default>::default"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_request_options_v1_t"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.RequestOptions.defaults"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.RequestOptions.__init__"
+        }
+      }
     },
     {
       "declarationId": "rust-observed-a8123df115cb1524dcb1",
@@ -103130,56 +103723,148 @@
       "packageId": "rust-kmipkit-client",
       "kind": "associated-item",
       "exportName": "kmipkit_client::RequestOptions::with_connect",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "production_transport",
       "requirementIds": [
+        "KMIPKIT-0013-FR-011",
         "KMIPKIT-0043-FR-021"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0013",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/013-production-transport/spec.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::RequestOptions::with_connect"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_request_options_v1_t.connect_timeout"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.RequestOptions.connectTimeout"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.RequestOptions.connect_timeout"
+        }
+      }
     },
     {
       "declarationId": "rust-observed-2c75727268f7fbc9970c",
       "packageId": "rust-kmipkit-client",
       "kind": "associated-item",
       "exportName": "kmipkit_client::RequestOptions::with_read",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "production_transport",
       "requirementIds": [
+        "KMIPKIT-0013-FR-011",
         "KMIPKIT-0043-FR-021"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0013",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/013-production-transport/spec.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::RequestOptions::with_read"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_request_options_v1_t.read_timeout"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.RequestOptions.readTimeout"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.RequestOptions.read_timeout"
+        }
+      }
     },
     {
       "declarationId": "rust-observed-bbeaeab80a426dd07449",
       "packageId": "rust-kmipkit-client",
       "kind": "associated-item",
       "exportName": "kmipkit_client::RequestOptions::with_total",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "production_transport",
       "requirementIds": [
+        "KMIPKIT-0013-FR-011",
         "KMIPKIT-0043-FR-021"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0013",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/013-production-transport/spec.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::RequestOptions::with_total"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_request_options_v1_t.total_timeout"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.RequestOptions.totalTimeout"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.RequestOptions.total_timeout"
+        }
+      }
     },
     {
       "declarationId": "rust-observed-c99d843068b468497399",
       "packageId": "rust-kmipkit-client",
       "kind": "associated-item",
       "exportName": "kmipkit_client::RequestOptions::with_write",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "production_transport",
       "requirementIds": [
+        "KMIPKIT-0013-FR-011",
         "KMIPKIT-0043-FR-021"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0013",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/013-production-transport/spec.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::RequestOptions::with_write"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_request_options_v1_t.write_timeout"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.RequestOptions.writeTimeout"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.RequestOptions.write_timeout"
+        }
+      }
     },
     {
       "declarationId": "rust-observed-6b5c506371c76c806161",
@@ -196068,14 +196753,37 @@
       "packageId": "rust-kmipkit-transport",
       "kind": "associated-item",
       "exportName": "<kmipkit_transport::RequestOptions as core::default::Default>::default",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "production_transport",
       "requirementIds": [
+        "KMIPKIT-0013-FR-011",
         "KMIPKIT-0043-FR-021"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0013",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/013-production-transport/spec.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-transport",
+          "name": "<kmipkit_transport::RequestOptions as core::default::Default>::default"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_request_options_v1_t"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.RequestOptions.defaults"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.RequestOptions.__init__"
+        }
+      }
     },
     {
       "declarationId": "rust-observed-1628fa328903bcdfc0a5",
@@ -211668,84 +212376,6 @@
       }
     },
     {
-      "declarationId": "T076:c-field:kmipkit_transport_input_v1_t.encoding",
-      "packageId": "c-kmipkit",
-      "kind": "field",
-      "exportName": "kmipkit_transport_input_v1_t.encoding",
-      "capabilityId": "production_transport",
-      "requirementIds": [
-        "KMIPKIT-0013-FR-004",
-        "KMIPKIT-0043-FR-004",
-        "KMIPKIT-0043-FR-007",
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "declared",
-      "parityScope": "four-language",
-      "approvalSource": {
-        "kind": "feature-specification",
-        "path": "specs/013-production-transport/spec.md",
-        "status": "Accepted",
-        "evidence": "**Status**: Accepted"
-      },
-      "languageMappings": {
-        "rust": {
-          "packageId": "rust-kmipkit-transport",
-          "name": "kmipkit_transport::TransportConfigBuilder"
-        },
-        "c": {
-          "packageId": "c-kmipkit",
-          "name": "kmipkit_transport_input_v1_t.encoding"
-        },
-        "java": {
-          "packageId": "java-kmipkit",
-          "name": "org.kmipkit.extensions.TransportConfiguration.Encoding"
-        },
-        "python": {
-          "packageId": "python-kmipkit",
-          "name": "kmipkit.client.CredentialEncoding"
-        }
-      }
-    },
-    {
-      "declarationId": "T076:c-field:kmipkit_transport_input_v1_t.source_kind",
-      "packageId": "c-kmipkit",
-      "kind": "field",
-      "exportName": "kmipkit_transport_input_v1_t.source_kind",
-      "capabilityId": "production_transport",
-      "requirementIds": [
-        "KMIPKIT-0013-FR-004",
-        "KMIPKIT-0043-FR-004",
-        "KMIPKIT-0043-FR-007",
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "declared",
-      "parityScope": "four-language",
-      "approvalSource": {
-        "kind": "feature-specification",
-        "path": "specs/013-production-transport/spec.md",
-        "status": "Accepted",
-        "evidence": "**Status**: Accepted"
-      },
-      "languageMappings": {
-        "rust": {
-          "packageId": "rust-kmipkit-transport",
-          "name": "kmipkit_transport::TransportConfigBuilder"
-        },
-        "c": {
-          "packageId": "c-kmipkit",
-          "name": "kmipkit_transport_input_v1_t.source_kind"
-        },
-        "java": {
-          "packageId": "java-kmipkit",
-          "name": "org.kmipkit.extensions.TransportConfiguration.Builder"
-        },
-        "python": {
-          "packageId": "python-kmipkit",
-          "name": "kmipkit.client.TransportInput"
-        }
-      }
-    },
-    {
       "declarationId": "T076:target:java-kmipkit:org.kmipkit.extensions.ClientBatchItemResult.resultReason",
       "packageId": "java-kmipkit",
       "kind": "java-member",
@@ -213113,7 +213743,7 @@
       "languageMappings": {
         "rust": {
           "packageId": "rust-kmipkit-transport",
-          "name": "kmipkit_transport::TransportConfig"
+          "name": "kmipkit_transport::TransportConfigBuilder"
         },
         "c": {
           "packageId": "c-kmipkit",
@@ -215089,7 +215719,7 @@
         },
         "c": {
           "packageId": "c-kmipkit",
-          "name": "kmipkit_transport_config_v1_t.client_private_key"
+          "name": "kmipkit_transport_config_v1_t.client_certificates"
         },
         "java": {
           "packageId": "java-kmipkit",
@@ -215129,7 +215759,7 @@
         },
         "c": {
           "packageId": "c-kmipkit",
-          "name": "kmipkit_transport_input_v1_t.source_kind"
+          "name": "kmipkit_transport_config_v1_t.client_certificates"
         },
         "java": {
           "packageId": "java-kmipkit",
@@ -215245,11 +215875,11 @@
       "languageMappings": {
         "rust": {
           "packageId": "rust-kmipkit-transport",
-          "name": "kmipkit_transport::CertificateInput"
+          "name": "kmipkit_transport::TrustSource::certificate_authorities"
         },
         "c": {
           "packageId": "c-kmipkit",
-          "name": "kmipkit_transport_input_v1_t.source_kind"
+          "name": "kmipkit_transport_config_v1_t.trust_certificates"
         },
         "java": {
           "packageId": "java-kmipkit",
@@ -215285,11 +215915,11 @@
       "languageMappings": {
         "rust": {
           "packageId": "rust-kmipkit-transport",
-          "name": "kmipkit_transport::CertificateInput::from_der"
+          "name": "kmipkit_transport::TrustSource::certificate_authorities"
         },
         "c": {
           "packageId": "c-kmipkit",
-          "name": "kmipkit_transport_input_v1_t.encoding"
+          "name": "kmipkit_transport_config_v1_t.trust_certificates"
         },
         "java": {
           "packageId": "java-kmipkit",
@@ -215365,11 +215995,11 @@
       "languageMappings": {
         "rust": {
           "packageId": "rust-kmipkit-transport",
-          "name": "kmipkit_transport::CertificateInput::from_der"
+          "name": "kmipkit_transport::TransportConfigBuilder"
         },
         "c": {
           "packageId": "c-kmipkit",
-          "name": "kmipkit_transport_input_v1_t.encoding"
+          "name": "kmipkit_transport_config_v1_t.client_certificates"
         },
         "java": {
           "packageId": "java-kmipkit",
@@ -215405,11 +216035,11 @@
       "languageMappings": {
         "rust": {
           "packageId": "rust-kmipkit-transport",
-          "name": "kmipkit_transport::CertificateInput::from_pem"
+          "name": "kmipkit_transport::TransportConfigBuilder"
         },
         "c": {
           "packageId": "c-kmipkit",
-          "name": "kmipkit_transport_input_v1_t.encoding"
+          "name": "kmipkit_transport_config_v1_t.client_certificates"
         },
         "java": {
           "packageId": "java-kmipkit",
@@ -215449,7 +216079,7 @@
         },
         "c": {
           "packageId": "c-kmipkit",
-          "name": "kmipkit_timeout_limit_v1_t.kind"
+          "name": "kmipkit_timeout_limit_v1_t"
         },
         "java": {
           "packageId": "java-kmipkit",
@@ -215685,11 +216315,11 @@
       "languageMappings": {
         "rust": {
           "packageId": "rust-kmipkit-transport",
-          "name": "kmipkit_transport::CertificateInput::from_der"
+          "name": "kmipkit_transport::TransportConfigBuilder"
         },
         "c": {
           "packageId": "c-kmipkit",
-          "name": "kmipkit_transport_input_v1_t.encoding"
+          "name": "kmipkit_transport_config_v1_t.client_certificates"
         },
         "java": {
           "packageId": "java-kmipkit",
@@ -215725,11 +216355,11 @@
       "languageMappings": {
         "rust": {
           "packageId": "rust-kmipkit-transport",
-          "name": "kmipkit_transport::CertificateInput::from_pem"
+          "name": "kmipkit_transport::TransportConfigBuilder"
         },
         "c": {
           "packageId": "c-kmipkit",
-          "name": "kmipkit_transport_input_v1_t.encoding"
+          "name": "kmipkit_transport_config_v1_t.client_certificates"
         },
         "java": {
           "packageId": "java-kmipkit",
@@ -216525,11 +217155,11 @@
       "languageMappings": {
         "rust": {
           "packageId": "rust-kmipkit-transport",
-          "name": "kmipkit_transport::CertificateInput"
+          "name": "kmipkit_transport::TransportConfigBuilder"
         },
         "c": {
           "packageId": "c-kmipkit",
-          "name": "kmipkit_transport_input_v1_t.source_kind"
+          "name": "kmipkit_transport_config_v1_t.client_certificates"
         },
         "java": {
           "packageId": "java-kmipkit",
@@ -216565,11 +217195,11 @@
       "languageMappings": {
         "rust": {
           "packageId": "rust-kmipkit-transport",
-          "name": "kmipkit_transport::CertificateInput"
+          "name": "kmipkit_transport::TransportConfigBuilder"
         },
         "c": {
           "packageId": "c-kmipkit",
-          "name": "kmipkit_transport_input_v1_t.encoding"
+          "name": "kmipkit_transport_config_v1_t.client_certificates"
         },
         "java": {
           "packageId": "java-kmipkit",
@@ -216609,7 +217239,7 @@
         },
         "c": {
           "packageId": "c-kmipkit",
-          "name": "kmipkit_transport_input_v1_t.source_kind"
+          "name": "kmipkit_transport_config_v1_t.client_certificates"
         },
         "java": {
           "packageId": "java-kmipkit",
@@ -216645,11 +217275,11 @@
       "languageMappings": {
         "rust": {
           "packageId": "rust-kmipkit-transport",
-          "name": "kmipkit_transport::CertificateInput"
+          "name": "kmipkit_transport::TransportConfigBuilder"
         },
         "c": {
           "packageId": "c-kmipkit",
-          "name": "kmipkit_transport_input_v1_t.source_kind"
+          "name": "kmipkit_transport_config_v1_t.client_certificates"
         },
         "java": {
           "packageId": "java-kmipkit",
@@ -216929,7 +217559,7 @@
         },
         "c": {
           "packageId": "c-kmipkit",
-          "name": "kmipkit_timeout_limit_v1_t.kind"
+          "name": "kmipkit_timeout_limit_v1_t"
         },
         "java": {
           "packageId": "java-kmipkit",
@@ -217062,6 +217692,830 @@
         "python": {
           "packageId": "python-kmipkit",
           "name": "kmipkit.errors.ClientExecutionError"
+        }
+      }
+    },
+    {
+      "declarationId": "T076:request-options:c-type",
+      "packageId": "c-kmipkit",
+      "kind": "type",
+      "exportName": "kmipkit_request_options_v1_t",
+      "capabilityId": "production_transport",
+      "requirementIds": [
+        "KMIPKIT-0013-FR-011",
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/013-production-transport/spec.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-transport",
+          "name": "kmipkit_transport::RequestOptions"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_request_options_v1_t"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.RequestOptions"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.RequestOptions"
+        }
+      }
+    },
+    {
+      "declarationId": "T076:request-options:java-type",
+      "packageId": "java-kmipkit",
+      "kind": "type",
+      "exportName": "org.kmipkit.extensions.RequestOptions",
+      "capabilityId": "production_transport",
+      "requirementIds": [
+        "KMIPKIT-0013-FR-011",
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/013-production-transport/spec.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-transport",
+          "name": "kmipkit_transport::RequestOptions"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_request_options_v1_t"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.RequestOptions"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.RequestOptions"
+        }
+      }
+    },
+    {
+      "declarationId": "T076:request-options:python-type",
+      "packageId": "python-kmipkit",
+      "kind": "type",
+      "exportName": "kmipkit.client.RequestOptions",
+      "capabilityId": "production_transport",
+      "requirementIds": [
+        "KMIPKIT-0013-FR-011",
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/013-production-transport/spec.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-transport",
+          "name": "kmipkit_transport::RequestOptions"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_request_options_v1_t"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.RequestOptions"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.RequestOptions"
+        }
+      }
+    },
+    {
+      "declarationId": "T076:request-options:java-defaults",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.extensions.RequestOptions.defaults",
+      "capabilityId": "production_transport",
+      "requirementIds": [
+        "KMIPKIT-0013-FR-011",
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/013-production-transport/spec.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-transport",
+          "name": "<kmipkit_transport::RequestOptions as core::default::Default>::default"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_request_options_v1_t"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.RequestOptions.defaults"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.RequestOptions.__init__"
+        }
+      }
+    },
+    {
+      "declarationId": "T076:request-options:python-init",
+      "packageId": "python-kmipkit",
+      "kind": "python-export",
+      "exportName": "kmipkit.client.RequestOptions.__init__",
+      "capabilityId": "production_transport",
+      "requirementIds": [
+        "KMIPKIT-0013-FR-011",
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/013-production-transport/spec.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-transport",
+          "name": "kmipkit_transport::RequestOptions"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_request_options_v1_t"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.RequestOptions.<init>"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.RequestOptions.__init__"
+        }
+      }
+    },
+    {
+      "declarationId": "T076:request-options:java-init",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.extensions.RequestOptions.<init>",
+      "capabilityId": "production_transport",
+      "requirementIds": [
+        "KMIPKIT-0013-FR-011",
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/013-production-transport/spec.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-transport",
+          "name": "kmipkit_transport::RequestOptions"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_request_options_v1_t"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.RequestOptions.<init>"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.RequestOptions.__init__"
+        }
+      }
+    },
+    {
+      "declarationId": "T076:request-options:c-field:connect_timeout",
+      "packageId": "c-kmipkit",
+      "kind": "field",
+      "exportName": "kmipkit_request_options_v1_t.connect_timeout",
+      "capabilityId": "production_transport",
+      "requirementIds": [
+        "KMIPKIT-0013-FR-011",
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/013-production-transport/spec.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-transport",
+          "name": "kmipkit_transport::RequestOptions::with_connect"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_request_options_v1_t.connect_timeout"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.RequestOptions.connectTimeout"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.RequestOptions.connect_timeout"
+        }
+      }
+    },
+    {
+      "declarationId": "T076:request-options:java-field:connect_timeout",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.extensions.RequestOptions.connectTimeout",
+      "capabilityId": "production_transport",
+      "requirementIds": [
+        "KMIPKIT-0013-FR-011",
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/013-production-transport/spec.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-transport",
+          "name": "kmipkit_transport::RequestOptions::with_connect"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_request_options_v1_t.connect_timeout"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.RequestOptions.connectTimeout"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.RequestOptions.connect_timeout"
+        }
+      }
+    },
+    {
+      "declarationId": "T076:request-options:python-field:connect_timeout",
+      "packageId": "python-kmipkit",
+      "kind": "field",
+      "exportName": "kmipkit.client.RequestOptions.connect_timeout",
+      "capabilityId": "production_transport",
+      "requirementIds": [
+        "KMIPKIT-0013-FR-011",
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/013-production-transport/spec.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-transport",
+          "name": "kmipkit_transport::RequestOptions::with_connect"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_request_options_v1_t.connect_timeout"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.RequestOptions.connectTimeout"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.RequestOptions.connect_timeout"
+        }
+      }
+    },
+    {
+      "declarationId": "T076:request-options:c-field:write_timeout",
+      "packageId": "c-kmipkit",
+      "kind": "field",
+      "exportName": "kmipkit_request_options_v1_t.write_timeout",
+      "capabilityId": "production_transport",
+      "requirementIds": [
+        "KMIPKIT-0013-FR-011",
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/013-production-transport/spec.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-transport",
+          "name": "kmipkit_transport::RequestOptions::with_write"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_request_options_v1_t.write_timeout"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.RequestOptions.writeTimeout"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.RequestOptions.write_timeout"
+        }
+      }
+    },
+    {
+      "declarationId": "T076:request-options:java-field:write_timeout",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.extensions.RequestOptions.writeTimeout",
+      "capabilityId": "production_transport",
+      "requirementIds": [
+        "KMIPKIT-0013-FR-011",
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/013-production-transport/spec.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-transport",
+          "name": "kmipkit_transport::RequestOptions::with_write"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_request_options_v1_t.write_timeout"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.RequestOptions.writeTimeout"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.RequestOptions.write_timeout"
+        }
+      }
+    },
+    {
+      "declarationId": "T076:request-options:python-field:write_timeout",
+      "packageId": "python-kmipkit",
+      "kind": "field",
+      "exportName": "kmipkit.client.RequestOptions.write_timeout",
+      "capabilityId": "production_transport",
+      "requirementIds": [
+        "KMIPKIT-0013-FR-011",
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/013-production-transport/spec.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-transport",
+          "name": "kmipkit_transport::RequestOptions::with_write"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_request_options_v1_t.write_timeout"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.RequestOptions.writeTimeout"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.RequestOptions.write_timeout"
+        }
+      }
+    },
+    {
+      "declarationId": "T076:request-options:c-field:read_timeout",
+      "packageId": "c-kmipkit",
+      "kind": "field",
+      "exportName": "kmipkit_request_options_v1_t.read_timeout",
+      "capabilityId": "production_transport",
+      "requirementIds": [
+        "KMIPKIT-0013-FR-011",
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/013-production-transport/spec.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-transport",
+          "name": "kmipkit_transport::RequestOptions::with_read"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_request_options_v1_t.read_timeout"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.RequestOptions.readTimeout"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.RequestOptions.read_timeout"
+        }
+      }
+    },
+    {
+      "declarationId": "T076:request-options:java-field:read_timeout",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.extensions.RequestOptions.readTimeout",
+      "capabilityId": "production_transport",
+      "requirementIds": [
+        "KMIPKIT-0013-FR-011",
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/013-production-transport/spec.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-transport",
+          "name": "kmipkit_transport::RequestOptions::with_read"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_request_options_v1_t.read_timeout"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.RequestOptions.readTimeout"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.RequestOptions.read_timeout"
+        }
+      }
+    },
+    {
+      "declarationId": "T076:request-options:python-field:read_timeout",
+      "packageId": "python-kmipkit",
+      "kind": "field",
+      "exportName": "kmipkit.client.RequestOptions.read_timeout",
+      "capabilityId": "production_transport",
+      "requirementIds": [
+        "KMIPKIT-0013-FR-011",
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/013-production-transport/spec.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-transport",
+          "name": "kmipkit_transport::RequestOptions::with_read"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_request_options_v1_t.read_timeout"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.RequestOptions.readTimeout"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.RequestOptions.read_timeout"
+        }
+      }
+    },
+    {
+      "declarationId": "T076:request-options:c-field:total_timeout",
+      "packageId": "c-kmipkit",
+      "kind": "field",
+      "exportName": "kmipkit_request_options_v1_t.total_timeout",
+      "capabilityId": "production_transport",
+      "requirementIds": [
+        "KMIPKIT-0013-FR-011",
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/013-production-transport/spec.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-transport",
+          "name": "kmipkit_transport::RequestOptions::with_total"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_request_options_v1_t.total_timeout"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.RequestOptions.totalTimeout"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.RequestOptions.total_timeout"
+        }
+      }
+    },
+    {
+      "declarationId": "T076:request-options:java-field:total_timeout",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.extensions.RequestOptions.totalTimeout",
+      "capabilityId": "production_transport",
+      "requirementIds": [
+        "KMIPKIT-0013-FR-011",
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/013-production-transport/spec.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-transport",
+          "name": "kmipkit_transport::RequestOptions::with_total"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_request_options_v1_t.total_timeout"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.RequestOptions.totalTimeout"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.RequestOptions.total_timeout"
+        }
+      }
+    },
+    {
+      "declarationId": "T076:request-options:python-field:total_timeout",
+      "packageId": "python-kmipkit",
+      "kind": "field",
+      "exportName": "kmipkit.client.RequestOptions.total_timeout",
+      "capabilityId": "production_transport",
+      "requirementIds": [
+        "KMIPKIT-0013-FR-011",
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/013-production-transport/spec.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-transport",
+          "name": "kmipkit_transport::RequestOptions::with_total"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_request_options_v1_t.total_timeout"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.RequestOptions.totalTimeout"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.RequestOptions.total_timeout"
+        }
+      }
+    },
+    {
+      "declarationId": "T076:client-execute-with-options:c",
+      "packageId": "c-kmipkit",
+      "kind": "c-symbol",
+      "exportName": "kmipkit_client_execute_with_options_v1",
+      "capabilityId": "client_execution",
+      "requirementIds": [
+        "KMIPKIT-0007-FR-001",
+        "KMIPKIT-0007-FR-006",
+        "KMIPKIT-0007-FR-008",
+        "KMIPKIT-0013-FR-011",
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/007-client-execution/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation — delegated maintainer authorization, independent reviews, and merge of correction PR #39 are recorded in `approval-record.md`."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::Client::execute_with_options"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_execute_with_options_v1"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.Client.executeWithOptions"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.Client.execute_with_options"
+        }
+      }
+    },
+    {
+      "declarationId": "T076:client-execute-with-options:java",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.extensions.Client.executeWithOptions",
+      "capabilityId": "client_execution",
+      "requirementIds": [
+        "KMIPKIT-0007-FR-001",
+        "KMIPKIT-0007-FR-006",
+        "KMIPKIT-0007-FR-008",
+        "KMIPKIT-0013-FR-011",
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/007-client-execution/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation — delegated maintainer authorization, independent reviews, and merge of correction PR #39 are recorded in `approval-record.md`."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::Client::execute_with_options"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_execute_with_options_v1"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.Client.executeWithOptions"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.Client.execute_with_options"
+        }
+      }
+    },
+    {
+      "declarationId": "T076:client-execute-with-options:python",
+      "packageId": "python-kmipkit",
+      "kind": "python-export",
+      "exportName": "kmipkit.client.Client.execute_with_options",
+      "capabilityId": "client_execution",
+      "requirementIds": [
+        "KMIPKIT-0007-FR-001",
+        "KMIPKIT-0007-FR-006",
+        "KMIPKIT-0007-FR-008",
+        "KMIPKIT-0013-FR-011",
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/007-client-execution/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation — delegated maintainer authorization, independent reviews, and merge of correction PR #39 are recorded in `approval-record.md`."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::Client::execute_with_options"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_execute_with_options_v1"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.Client.executeWithOptions"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.Client.execute_with_options"
+        }
+      }
+    },
+    {
+      "declarationId": "T076:timeout-limit:c-type",
+      "packageId": "c-kmipkit",
+      "kind": "type",
+      "exportName": "kmipkit_timeout_limit_v1_t",
+      "capabilityId": "production_transport",
+      "requirementIds": [
+        "KMIPKIT-0013-FR-011",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/013-production-transport/spec.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-transport",
+          "name": "kmipkit_transport::TimeoutLimit"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_timeout_limit_v1_t"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.TransportConfiguration.Timeout"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.TimeoutLimit"
         }
       }
     }
@@ -217265,44 +218719,6 @@
         "evidence": "**Status**: Approved for implementation"
       },
       "evidence": "Reviewed against KMIPKIT-0043-FR-007 and FR-021 in specs/043-public-api-bindings/implementation-evidence.md#reviewed-c-only-last-error-exclusions. The exact C clear operation remains generated for C consumers; exclusion is limited to this thread-local implementation mechanism, not the shared error status/category/cause/delivery taxonomy."
-    },
-    {
-      "packageId": "c-kmipkit",
-      "exportName": "kmipkit_timeout_limit_v1_t",
-      "reason": "This exact C record is a fixed-width ABI carrier. Rust exposes the validated configuration or outcome through idiomatic types; Java and Python expose typed configuration records and copied byte values rather than this C layout.",
-      "approvalSource": {
-        "kind": "feature-specification",
-        "path": "specs/043-public-api-bindings/spec.md",
-        "status": "Approved",
-        "evidence": "**Status**: Approved for implementation"
-      },
-      "evidence": "Exact ordered fields match the `#[repr(C)]` declaration in `crates/kmipkit-ffi/src/lib.rs`; the type remains generated for C consumers without advertising a same-shaped facade type.",
-      "cType": {
-        "name": "kmipkit_timeout_limit_v1_t",
-        "kind": "fixed-width-value",
-        "fields": [
-          {
-            "name": "kind",
-            "type": "uint32_t"
-          },
-          {
-            "name": "reserved",
-            "type": "uint32_t"
-          },
-          {
-            "name": "seconds",
-            "type": "uint64_t"
-          },
-          {
-            "name": "nanoseconds",
-            "type": "uint32_t"
-          },
-          {
-            "name": "reserved2",
-            "type": "uint32_t"
-          }
-        ]
-      }
     },
     {
       "packageId": "c-kmipkit",
@@ -218307,6 +219723,114 @@
         "evidence": "**Status**: Approved for implementation"
       },
       "evidence": "Reviewed against KMIPKIT-0043-FR-021 and the source declaration. The dataclass constructor and semantic fields are inventoried separately; the exclusion applies only to this generated member."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.RequestOptions.__dataclass_fields__",
+      "reason": "This exact member is Python dataclass introspection or storage metadata generated from the class declaration, not an independent cross-language product capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "KMIPKIT-0043-FR-021 inventories source/API declarations; this exact artifact is generated by the frozen, slotted RequestOptions dataclass and adds no timeout behavior beyond its declared fields and constructor."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.RequestOptions.__dataclass_params__",
+      "reason": "This exact member is Python dataclass introspection or storage metadata generated from the class declaration, not an independent cross-language product capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "KMIPKIT-0043-FR-021 inventories source/API declarations; this exact artifact is generated by the frozen, slotted RequestOptions dataclass and adds no timeout behavior beyond its declared fields and constructor."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.RequestOptions.__delattr__",
+      "reason": "This exact member is generated Python frozen-dataclass assignment machinery, not an independently specified cross-language product capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "KMIPKIT-0043-FR-021 inventories source/API declarations; frozen assignment behavior enforces the immutable timeout options value and adds no transport capability."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.RequestOptions.__eq__",
+      "reason": "This exact member is generated Python dataclass value behavior, not an independently specified cross-language product capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "KMIPKIT-0043-FR-021 inventories source/API declarations; generated value comparison and hashing add no timeout behavior beyond the declared fields."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.RequestOptions.__hash__",
+      "reason": "This exact member is generated Python dataclass value behavior, not an independently specified cross-language product capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "KMIPKIT-0043-FR-021 inventories source/API declarations; generated value comparison and hashing add no timeout behavior beyond the declared fields."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.RequestOptions.__match_args__",
+      "reason": "This exact member is Python dataclass introspection or storage metadata generated from the class declaration, not an independent cross-language product capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "KMIPKIT-0043-FR-021 inventories source/API declarations; this exact artifact is generated by the frozen, slotted RequestOptions dataclass and adds no timeout behavior beyond its declared fields and constructor."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.RequestOptions.__repr__",
+      "reason": "This exact member is generated Python presentation behavior, not a shared KMIPKit capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "KMIPKIT-0043-FR-021 inventories source/API declarations; this generated representation contains only RequestOptions timeout values and no credentials or transport input bytes."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.RequestOptions.__setattr__",
+      "reason": "This exact member is generated Python frozen-dataclass assignment machinery, not an independently specified cross-language product capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "KMIPKIT-0043-FR-021 inventories source/API declarations; frozen assignment behavior enforces the immutable timeout options value and adds no transport capability."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.RequestOptions.__slots__",
+      "reason": "This exact member is Python dataclass introspection or storage metadata generated from the class declaration, not an independent cross-language product capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "KMIPKIT-0043-FR-021 inventories source/API declarations; this exact artifact is generated by the frozen, slotted RequestOptions dataclass and adds no timeout behavior beyond its declared fields and constructor."
     },
     {
       "packageId": "python-kmipkit",
@@ -219771,6 +221295,54 @@
         "evidence": "**Status**: Approved for implementation"
       },
       "evidence": "Reviewed against KMIPKIT-0043-FR-021 for this exact path. The Version type and runtime metadata query remain mapped; this local snapshot constructor adds no query capability."
+    },
+    {
+      "packageId": "c-kmipkit",
+      "exportName": "kmipkit_transport_input_v1_t.encoding",
+      "reason": "This exact C field is an ABI discriminant for a transport-input carrier, not a standalone cross-language capability. The parent transport configuration selects the certificate, key, trust, or revocation-list context, while the approved input APIs determine PEM/DER and memory/file behavior.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "KMIPKIT-0043-FR-007 classifies the field as an ABI representation discriminant. KMIPKIT-0013-FR-003 and KMIPKIT-0013-FR-004 define the parent configuration semantics: identity, trust, and CRL inputs are represented by their parent fields, and input source/encoding discriminants select the approved PEM/DER and memory/file modes (CRLs remain memory-only)."
+    },
+    {
+      "packageId": "c-kmipkit",
+      "exportName": "kmipkit_transport_input_v1_t.source_kind",
+      "reason": "This exact C field is an ABI discriminant for a transport-input carrier, not a standalone cross-language capability. The parent transport configuration selects the certificate, key, trust, or revocation-list context, while the approved input APIs determine PEM/DER and memory/file behavior.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "KMIPKIT-0043-FR-007 classifies the field as an ABI representation discriminant. KMIPKIT-0013-FR-003 and KMIPKIT-0013-FR-004 define the parent configuration semantics: identity, trust, and CRL inputs are represented by their parent fields, and input source/encoding discriminants select the approved PEM/DER and memory/file modes (CRLs remain memory-only)."
+    },
+    {
+      "packageId": "c-kmipkit",
+      "exportName": "kmipkit_request_options_v1_t.struct_size",
+      "reason": "This exact field is versioned C ABI framing metadata, not an independent timeout capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "KMIPKIT-0043-FR-007 requires an exact layout classification for versioned C records; the semantic timeout fields remain mapped under KMIPKIT-0013-FR-011."
+    },
+    {
+      "packageId": "c-kmipkit",
+      "exportName": "kmipkit_request_options_v1_t.abi_version",
+      "reason": "This exact field is versioned C ABI framing metadata, not an independent timeout capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "KMIPKIT-0043-FR-007 requires an exact layout classification for versioned C records; the semantic timeout fields remain mapped under KMIPKIT-0013-FR-011."
     }
   ],
   "apiLevels": [
@@ -221340,6 +222912,7 @@
         "KMIPKIT-0007-FR-001",
         "KMIPKIT-0007-FR-006",
         "KMIPKIT-0007-FR-008",
+        "KMIPKIT-0013-FR-011",
         "KMIPKIT-0043-FR-003",
         "KMIPKIT-0043-FR-005",
         "KMIPKIT-0043-FR-012",
@@ -221357,8 +222930,10 @@
       },
       "mappings": {
         "rust": [
+          "kmipkit::Client::execute_with_options",
           "kmipkit_client::Client",
           "kmipkit_client::Client::execute",
+          "kmipkit_client::Client::execute_with_options",
           "kmipkit_client::Client::new",
           "kmipkit_client::ClientBatchItemResponse",
           "kmipkit_client::ClientBatchItemResponse::outcome",
@@ -221398,6 +222973,7 @@
           "kmipkit_client_batch_response_t",
           "kmipkit_client_create",
           "kmipkit_client_execute",
+          "kmipkit_client_execute_with_options_v1",
           "kmipkit_client_release",
           "kmipkit_client_t",
           "kmipkit_last_error_get"
@@ -221420,6 +222996,7 @@
           "org.kmipkit.extensions.Client.close",
           "org.kmipkit.extensions.Client.create",
           "org.kmipkit.extensions.Client.execute",
+          "org.kmipkit.extensions.Client.executeWithOptions",
           "org.kmipkit.extensions.ClientBatchItemResult",
           "org.kmipkit.extensions.ClientBatchItemResult.outcomeKind",
           "org.kmipkit.extensions.ClientBatchItemResult.pendingCorrelationValue",
@@ -221448,6 +223025,7 @@
           "kmipkit.client.Client.close",
           "kmipkit.client.Client.create",
           "kmipkit.client.Client.execute",
+          "kmipkit.client.Client.execute_with_options",
           "kmipkit.errors.ClientErrorCategory",
           "kmipkit.errors.ClientErrorCategory.OTHER",
           "kmipkit.errors.ClientErrorCategory.PROTOCOL",
@@ -221485,6 +223063,7 @@
       "requirementIds": [
         "KMIPKIT-0013-FR-001",
         "KMIPKIT-0013-FR-007",
+        "KMIPKIT-0013-FR-011",
         "KMIPKIT-0043-FR-003",
         "KMIPKIT-0043-FR-007",
         "KMIPKIT-0043-FR-021"
@@ -221500,6 +223079,19 @@
       },
       "mappings": {
         "rust": [
+          "<kmipkit::RequestOptions as core::default::Default>::default",
+          "<kmipkit_client::RequestOptions as core::default::Default>::default",
+          "<kmipkit_transport::RequestOptions as core::default::Default>::default",
+          "kmipkit::RequestOptions",
+          "kmipkit::RequestOptions::with_connect",
+          "kmipkit::RequestOptions::with_read",
+          "kmipkit::RequestOptions::with_total",
+          "kmipkit::RequestOptions::with_write",
+          "kmipkit_client::RequestOptions",
+          "kmipkit_client::RequestOptions::with_connect",
+          "kmipkit_client::RequestOptions::with_read",
+          "kmipkit_client::RequestOptions::with_total",
+          "kmipkit_client::RequestOptions::with_write",
           "kmipkit_transport::CertificateInput",
           "kmipkit_transport::CertificateInput::from_der",
           "kmipkit_transport::CertificateInput::from_der_file",
@@ -221515,6 +223107,11 @@
           "kmipkit_transport::PrivateKeyInput::from_der_file",
           "kmipkit_transport::PrivateKeyInput::from_pem",
           "kmipkit_transport::PrivateKeyInput::from_pem_file",
+          "kmipkit_transport::RequestOptions",
+          "kmipkit_transport::RequestOptions::with_connect",
+          "kmipkit_transport::RequestOptions::with_read",
+          "kmipkit_transport::RequestOptions::with_total",
+          "kmipkit_transport::RequestOptions::with_write",
           "kmipkit_transport::RevocationListInput",
           "kmipkit_transport::RevocationListInput::from_der",
           "kmipkit_transport::RevocationListInput::from_pem",
@@ -221537,6 +223134,12 @@
           "kmipkit_transport::TrustSource::platform"
         ],
         "c": [
+          "kmipkit_request_options_v1_t",
+          "kmipkit_request_options_v1_t.connect_timeout",
+          "kmipkit_request_options_v1_t.read_timeout",
+          "kmipkit_request_options_v1_t.total_timeout",
+          "kmipkit_request_options_v1_t.write_timeout",
+          "kmipkit_timeout_limit_v1_t",
           "kmipkit_timeout_limit_v1_t.kind",
           "kmipkit_timeout_limit_v1_t.nanoseconds",
           "kmipkit_timeout_limit_v1_t.seconds",
@@ -221555,11 +223158,16 @@
           "kmipkit_transport_config_v1_t.total_timeout",
           "kmipkit_transport_config_v1_t.trust_certificates",
           "kmipkit_transport_config_v1_t.trust_kind",
-          "kmipkit_transport_config_v1_t.write_timeout",
-          "kmipkit_transport_input_v1_t.encoding",
-          "kmipkit_transport_input_v1_t.source_kind"
+          "kmipkit_transport_config_v1_t.write_timeout"
         ],
         "java": [
+          "org.kmipkit.extensions.RequestOptions",
+          "org.kmipkit.extensions.RequestOptions.<init>",
+          "org.kmipkit.extensions.RequestOptions.connectTimeout",
+          "org.kmipkit.extensions.RequestOptions.defaults",
+          "org.kmipkit.extensions.RequestOptions.readTimeout",
+          "org.kmipkit.extensions.RequestOptions.totalTimeout",
+          "org.kmipkit.extensions.RequestOptions.writeTimeout",
           "org.kmipkit.extensions.TransportConfiguration",
           "org.kmipkit.extensions.TransportConfiguration.Builder",
           "org.kmipkit.extensions.TransportConfiguration.Builder.build",
@@ -221607,6 +223215,12 @@
           "kmipkit.client.EndpointKind",
           "kmipkit.client.EndpointKind.HTTPS",
           "kmipkit.client.EndpointKind.RAW_TLS",
+          "kmipkit.client.RequestOptions",
+          "kmipkit.client.RequestOptions.__init__",
+          "kmipkit.client.RequestOptions.connect_timeout",
+          "kmipkit.client.RequestOptions.read_timeout",
+          "kmipkit.client.RequestOptions.total_timeout",
+          "kmipkit.client.RequestOptions.write_timeout",
           "kmipkit.client.TimeoutKind",
           "kmipkit.client.TimeoutKind.BOUNDED",
           "kmipkit.client.TimeoutKind.DEFAULT",

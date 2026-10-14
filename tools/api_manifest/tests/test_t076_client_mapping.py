@@ -1365,7 +1365,10 @@ class T076ClientMappingTests(unittest.TestCase):
         for path, exclusion in exclusions.items():
             with self.subTest(excluded_export=path):
                 self.assertEqual(path, exclusion["exportName"])
-                self.assertIn("dataclass", exclusion["reason"].lower())
+                if path.endswith(".__repr__"):
+                    self.assertIn("presentation", exclusion["reason"].lower())
+                else:
+                    self.assertIn("dataclass", exclusion["reason"].lower())
                 self.assertIn("KMIPKIT-0043-FR-021", exclusion["evidence"])
 
     def test_transport_handle_adapter_is_backed_by_four_language_configuration_values(self) -> None:

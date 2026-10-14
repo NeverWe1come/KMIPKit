@@ -331,6 +331,74 @@ class TimeoutLimit:
 
 
 @dataclass(frozen=True, slots=True)
+class RequestOptions:
+    """Optional connect, write, read, and total timeout overrides for one exchange."""
+
+    connect_timeout: TimeoutLimit = TimeoutLimit()
+    write_timeout: TimeoutLimit = TimeoutLimit()
+    read_timeout: TimeoutLimit = TimeoutLimit()
+    total_timeout: TimeoutLimit = TimeoutLimit()
+
+    def __post_init__(self) -> None:
+        if any(
+            not isinstance(value, TimeoutLimit)
+            for value in (
+                self.connect_timeout,
+                self.write_timeout,
+                self.read_timeout,
+                self.total_timeout,
+            )
+        ):
+            errors.raise_for_status(4)
+
+
+def _validated_request_options(options: RequestOptions) -> RequestOptions:
+    """Copy the approved dataclass fields so subclasses cannot bypass validation."""
+    if not isinstance(options, RequestOptions):
+        errors.raise_for_status(4)
+
+    fields = (
+        RequestOptions.connect_timeout.__get__(options, RequestOptions),
+        RequestOptions.write_timeout.__get__(options, RequestOptions),
+        RequestOptions.read_timeout.__get__(options, RequestOptions),
+        RequestOptions.total_timeout.__get__(options, RequestOptions),
+    )
+    normalized: list[TimeoutLimit] = []
+    for value in fields:
+        if not isinstance(value, TimeoutLimit):
+            errors.raise_for_status(4)
+        normalized.append(
+            TimeoutLimit(
+                TimeoutLimit.kind.__get__(value, TimeoutLimit),
+                TimeoutLimit.seconds.__get__(value, TimeoutLimit),
+                TimeoutLimit.nanoseconds.__get__(value, TimeoutLimit),
+            )
+        )
+    return RequestOptions(*normalized)
+
+
+def _request_options_record(options: RequestOptions) -> Any:
+    """Build the versioned FFI record while retaining explicit timeout kinds."""
+    validated = _validated_request_options(options)
+    record = ffi.new("kmipkit_request_options_v1_t *")
+    record.struct_size = ffi.sizeof("kmipkit_request_options_v1_t")
+    record.abi_version = 1
+    for name, value in (
+        ("connect_timeout", validated.connect_timeout),
+        ("write_timeout", validated.write_timeout),
+        ("read_timeout", validated.read_timeout),
+        ("total_timeout", validated.total_timeout),
+    ):
+        target = getattr(record, name)
+        target.kind = int(value.kind)
+        target.reserved = 0
+        target.seconds = value.seconds
+        target.nanoseconds = value.nanoseconds
+        target.reserved2 = 0
+    return record
+
+
+@dataclass(frozen=True, slots=True)
 class TransportConfig:
     """Validated-input description for TLS 1.3 mutual-TLS client construction."""
 
@@ -686,6 +754,46 @@ class Client(_ClientHandle):
                 errors.raise_for_status(7)
             return _batch_result(response_output[0])
 
+    def execute_with_options(
+        self,
+        batch: Batch,
+        limits: ttlv.CodecLimits,
+        options: RequestOptions,
+    ) -> BatchResult:
+        """Execute one batch with exchange-local timeout overrides."""
+        if (
+            not isinstance(batch, Batch)
+            or not isinstance(limits, ttlv.CodecLimits)
+            or not isinstance(options, RequestOptions)
+        ):
+            errors.raise_for_status(4)
+        request_options = _request_options_record(options)
+        response_output = ffi.new("kmipkit_client_batch_response_t **")
+        with _NATIVE_CALL_LOCK:
+            batch._acquire_ownership_lock()
+            try:
+                original, owner = batch._take()
+                batch_slot = ffi.new("kmipkit_client_batch_t **", original)
+                try:
+                    status = lib.kmipkit_client_execute_with_options_v1(
+                        self._pointer(),
+                        batch_slot,
+                        ffi.cast("kmipkit_codec_limits_t *", limits._pointer()),
+                        request_options,
+                        response_output,
+                    )
+                except (OverflowError, TypeError, ValueError):
+                    batch._restore(original, owner)
+                    raise errors.InvalidInputError() from None
+                if batch_slot[0] != ffi.NULL:
+                    batch._restore(original, owner)
+                _raise_client_status(status)
+            finally:
+                batch._release_ownership_lock()
+            if response_output[0] == ffi.NULL:
+                errors.raise_for_status(7)
+            return _batch_result(response_output[0])
+
 
 def _batch_result(handle: Any) -> BatchResult:
     response = _wrap_owned_handle(BatchResult, handle, ())
@@ -935,6 +1043,7 @@ __all__ = [
     "CredentialEncoding",
     "Endpoint",
     "EndpointKind",
+    "RequestOptions",
     "TimeoutKind",
     "TimeoutLimit",
     "TransportConfig",

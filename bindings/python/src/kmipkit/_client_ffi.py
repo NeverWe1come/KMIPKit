@@ -58,6 +58,15 @@ ffi.cdef(
     typedef struct {
         uint32_t struct_size;
         uint32_t abi_version;
+        kmipkit_timeout_limit_v1_t connect_timeout;
+        kmipkit_timeout_limit_v1_t write_timeout;
+        kmipkit_timeout_limit_v1_t read_timeout;
+        kmipkit_timeout_limit_v1_t total_timeout;
+    } kmipkit_request_options_v1_t;
+
+    typedef struct {
+        uint32_t struct_size;
+        uint32_t abi_version;
         uint32_t endpoint_kind;
         uint32_t trust_kind;
         uint32_t flags;
@@ -119,6 +128,12 @@ ffi.cdef(
         kmipkit_client_t *client,
         kmipkit_client_batch_t **batch,
         kmipkit_codec_limits_t *limits,
+        kmipkit_client_batch_response_t **out_response);
+    int32_t kmipkit_client_execute_with_options_v1(
+        kmipkit_client_t *client,
+        kmipkit_client_batch_t **batch,
+        kmipkit_codec_limits_t *limits,
+        const kmipkit_request_options_v1_t *options,
         kmipkit_client_batch_response_t **out_response);
     void kmipkit_client_batch_response_release(kmipkit_client_batch_response_t *handle);
     int32_t kmipkit_client_batch_response_item_count(
