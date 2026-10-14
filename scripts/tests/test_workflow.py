@@ -355,6 +355,35 @@ class WorkflowContractTests(unittest.TestCase):
             gradle,
             "the packaged smoke must select the just-built library for its current matrix host",
         )
+
+        smoke = (REPOSITORY_ROOT / "bindings/java/src/test/nativeJarSmoke/java/NativeLibraryPackageSmoke.java").read_text(
+            encoding="utf-8"
+        )
+        for required in (
+            "verifyLoadSuccess",
+            "verifyMissingBundle",
+            "verifyUnsupportedArchitecture",
+            "verifyWrongAbi",
+            "checkNetworkWasBlocked",
+        ):
+            with self.subTest(required=required):
+                self.assertIn(required, smoke)
+
+    def test_python_installed_wheel_smoke_runs_offline_in_isolated_environment(self) -> None:
+        contents = self.require_workflow()
+        python_job = self.require_job(contents, "language-python")
+        self.assertIn("os: [ubuntu-latest, windows-2022, macos-latest]", python_job)
+
+        step = self.require_named_step(python_job, "Run isolated offline Python wheel smoke")
+        for required in (
+            "maturin build --offline",
+            "uv venv --offline",
+            "uv pip install --offline --no-deps",
+            "native_package_smoke.py",
+            "wrong_abi.rs",
+        ):
+            with self.subTest(required=required):
+                self.assertIn(required, step.group(1))
     def test_windows_c_consumer_uses_the_msvc_compatible_generator(self) -> None:
         contents = self.require_workflow()
         job = self.require_job(contents, "language-c")
