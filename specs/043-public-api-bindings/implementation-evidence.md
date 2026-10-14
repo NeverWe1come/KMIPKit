@@ -1410,3 +1410,30 @@ of source control. It used the run's downloaded LLVM/JaCoCo reports and a
 fresh Python report collected after the new test. Full CI run `38537129710`
 passed on head `53a028e7`. The PR remains a draft pending the remaining T076
 exit gates and review.
+
+### T076 Python-owned private-key zeroization and dataclass compatibility (2026-10-14)
+
+Python in-memory transport inputs now keep KMIPKit-owned bytes in mutable
+storage that is zeroized before release. `Client.create` wipes its per-call
+private-key snapshot and CFFI key spans immediately after the native
+transport-config constructor has synchronously copied them, including status
+and exception paths. `_transport_record` also wipes partial spans if record
+construction fails. The caller's original buffer and reusable
+`TransportConfig` remain unchanged. Public `TransportInput.source` retains its
+dataclass field behavior, `dataclasses.replace()`, equality, hashing, `bytes |`
+`Path` access, and repr redaction.
+
+| Phase | Commit | Command | Result |
+|---|---|---|---|
+| Red | `205af3d0` | Focused Python zeroization regression cases in `bindings/python/tests/test_client.py` | Expected failures against the prior implementation: private mutable ownership and `_transport_source` cleanup support were absent. |
+| Red | `8589a195` | `bindings/python/.venv/Scripts/python.exe -m pytest bindings/python/tests/test_client.py -q -k transport_input_preserves_dataclass_replace_and_hash_behavior` | Expected failure: `dataclasses.replace()` passed the changed `_source` field to a constructor that accepted only `source`. |
+| Green | `81f882b8` | `& bindings/python/.venv/Scripts/python.exe -m pytest bindings/python/tests -q` | PASS after implementation; final suite now has 193 passing tests. Private owners and CFFI spans are wiped on success, native status failure, exceptions, and partial record-construction failure; caller buffers and reusable configs remain intact. |
+| Refactor | `8a8b6047` | `python -B tools/api_manifest/generate.py --check`; T076 manifest/parity unit tests; `python -B tools/api_manifest/audit_binding_exports.py --repo-root . --check`; Python coverage suite | PASS: 12 generated outputs current; 42 manifest/parity tests; C 242/242, Java 449/449, Python 425/425 exact declaration matches; 98% overall Python coverage and 96% for `client.py`. Added FR-005 traceability and user-guide lifecycle limits. |
+| Follow-up | `8026d12b` | `cargo clippy --workspace --all-targets --all-features -- -D warnings`; GitHub Actions run `38543732660` | PASS: local Clippy and all required current-head CI checks, including Linux/Windows/macOS, coverage thresholds, language bindings, C/JNI consumers, sanitizers, and inventory checks. |
+
+An independent read-only Python lifecycle review confirmed the key-copy cleanup
+paths and identified the dataclass compatibility regression before the Green
+fix; regression tests now preserve both replacement and hash behavior. The
+binding exporter audit is structural evidence and does not by itself prove
+semantic parity. T076 remains open pending the separate whole-task QA review
+and closure of any concrete four-language shared-mapping or parity gaps.

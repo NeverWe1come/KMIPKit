@@ -49,6 +49,8 @@ T076 checkpoint: the Rust/C runtime foundation and Java/Python shared client fac
 
 T076 follow-up (2026-10-14): the public manifest and generated C header now include four-language `ClientConfiguration.close` and `ClientExtensionRegistry.close` mappings. The public C consumer constructs a validated client and executes a typed batch over a local TLS 1.3 mTLS peer. The Linux FFI coverage collector now includes both crate unit tests and the compiled C consumer; the measured line coverage is 95.01% for `extension_registry.rs` and 90.57% for `extension_registry/client_abi.rs`. The shared mixed-outcome fixture now has Rust, C, Java, and Python consumer regressions for ordered Success/Pending/Failure results, echoed IDs, exact Pending correlation, and no automatic follow-up. Final-head CI and remaining semantic/security review gates are still open.
 
+T076 follow-up (2026-10-14; current head `8026d12b`): Python-owned private-key input and temporary CFFI copies now have zeroization coverage, with public dataclass replacement and hash behavior preserved. The API manifest records KMIPKIT-0013-FR-005 for the Python input mappings. Final-head CI run `38543732660` passed on the current PR head; the independent T076 QA review and any resulting semantic-parity fixes remain open. Do not mark T076 complete until those gates and all four-language mappings are verified.
+
 **Checkpoint**: Every shared capability currently backed by an approved Rust implementation has a safe, documented C mapping and passing C consumer evidence.
 
 ## Phase 3: Java 17 and Python 3.12 Adapters (US2, US3)
