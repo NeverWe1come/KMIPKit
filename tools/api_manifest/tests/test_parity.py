@@ -154,6 +154,23 @@ class PublicApiParityTests(unittest.TestCase):
                 for language, mapping in case["consumerTests"].items():
                     with self.subTest(fixture=case["id"], language=language):
                         self.assertIn(mapping["status"], {"available", "blocked"})
+                        if case["id"] == "errors.schema-redaction.v1" and language == "c":
+                            self.assertEqual(
+                                mapping["status"],
+                                "available",
+                                "the C numeric-only error surface can satisfy redaction by exposing no diagnostic text",
+                            )
+                            self.assertEqual(mapping.get("diagnosticSurface"), "none")
+                            c_header = (ROOT / "bindings" / "c" / "include" / "kmipkit.h").read_text(
+                                encoding="utf-8"
+                            )
+                            last_error = re.search(
+                                r"int32_t\s+kmipkit_last_error_get\s*\(([^;]+)\)\s*;",
+                                c_header,
+                            )
+                            self.assertIsNotNone(last_error)
+                            assert last_error is not None
+                            self.assertNotRegex(last_error.group(1), r"\b(?:char|uint8_t)\s*\*")
                         if mapping["status"] == "available":
                             available_languages.add(language)
                             self.assertTrue(mapping["test"])
