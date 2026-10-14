@@ -51,6 +51,9 @@ mod registry_preflight_tests;
 #[cfg(test)]
 #[path = "../tests/support/view_ownership_tests.rs"]
 mod view_ownership_tests;
+#[cfg(test)]
+#[path = "../tests/support/opaque_handle_validation_tests.rs"]
+mod opaque_handle_validation_tests;
 
 #[cfg(test)]
 thread_local! {
