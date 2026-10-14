@@ -91,9 +91,9 @@
     "requirement_crosswalk_records": 502,
     "requirement_crosswalk_complete": false,
     "source_requirement_review_records": 890,
-    "source_only_requirement_gaps": 106,
+    "source_only_requirement_gaps": 105,
     "source_only_requirement_gap_proposals": 2,
-    "source_table_contracts": 65
+    "source_table_contracts": 66
   },
   "source_clause_crosswalk": [
     {
@@ -75229,6 +75229,22 @@
           "reused_requirement_id": "KMIPKIT-REQ-SPEC-6.1-003-002",
           "reuse_condition": "The Batch Order Option is true or unspecified and the request is a subsequent operation in the batched request; the ID Placeholder must be available for the specified fallback.",
           "source_note": "If omitted, the server substitutes the ID Placeholder. This is provenance for the existing generic §6.1 optional capability only when its eligible batch condition and placeholder availability hold; no standalone omission behavior is inferred."
+        },
+        {
+          "row_label": "Usage Limits Count",
+          "required": "Yes",
+          "actor": "client",
+          "disposition": "required_request_table_contract",
+          "html_line_range": [
+            28080,
+            28097
+          ],
+          "source_excerpt": "Usage Limits Count Yes The number of Usage Limits Units to be protected.",
+          "source_gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.23-USAGE-LIMITS-COUNT-REQUIRED",
+          "source_requirement_ids": [
+            "KMIPKIT-REQ-SPEC-6.1.23-002-001"
+          ],
+          "source_note": "Table 232 requires the client request to include the Usage Limits Count. This row maps to the approved Get Usage Allocation FR-001 feature contract without creating a formal source-clause crosswalk ID or a new normative requirement."
         }
       ],
       "source_payload_rows": []
@@ -94022,41 +94038,6 @@
       "review_note": "The exact 6.1.19 request body row Key Wrapping Specification is represented by KMIPKIT-REQ-SPEC-6.1.19-006; its optional_table_body_value force stays distinct from RFC keyword requirements. Linked local Rust request evidence verifies caller-selected request encoding only; no server behavior or official OASIS Test Cases pass is claimed."
     },
     {
-      "gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.23-USAGE-LIMITS-COUNT-REQUIRED",
-      "source_id": "KMIPKIT-SRC-spec",
-      "source_path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
-      "source_section": "6.1.23",
-      "source_clause_id": null,
-      "source_locator": {
-        "kind": "table_body_row",
-        "section": "6.1.23",
-        "row_label": "Usage Limits Count",
-        "table": "request_payload",
-        "html_line_range": [
-          28080,
-          28097
-        ]
-      },
-      "source_locator_description": "§6.1.23 request payload body row for Usage Limits Count (HTML lines 28080-28097)",
-      "html_line_range": [
-        28080,
-        28097
-      ],
-      "source_excerpt": "Usage Limits Count Yes The number of Usage Limits Units to be protected.",
-      "source_keywords": [],
-      "source_force": "required_table_body_value",
-      "audited_statement": "The request table marks Usage Limits Count Required=Yes, specifying the number of Usage Limits Units the client needs to protect.",
-      "actor": "client",
-      "direction": "include the number of Usage Limits Units to protect in the request",
-      "condition": "A Get Usage Allocation request is sent.",
-      "scope_disposition": "client_1_0",
-      "candidate_requirement_id": "KMIPKIT-REQ-SPEC-6.1.23-002-001",
-      "reused_requirement_id": "KMIPKIT-REQ-SPEC-6.1.23-002-001",
-      "proposed_requirement_id": null,
-      "status": "source_obligation_covered_by_existing_stable_label",
-      "review_note": "This Required=Yes table-body row reuses the existing stable label for specifying the number of protection units. The catalog record links this exact table row using source_gap_id, source_locator, and source_force; source_keyword is absent because Required=Yes is table-field semantics, not an RFC keyword. The requirement remains conditioned on sending Get Usage Allocation."
-    },
-    {
       "gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.30-LEASE-TIME-OPTIONAL",
       "source_id": "KMIPKIT-SRC-spec",
       "source_path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
@@ -97575,6 +97556,56 @@
       "evidence_disposition": {
         "status": "mapped_to_feature_contract",
         "statement": "Implementation and executable tests are linked through KMIPKIT-ELEM-OP-C2S-QUERY-ASYNCHRONOUS-REQUESTS and KMIPKIT-0009 FR-006; this table cell does not create a standalone REQ record."
+      }
+    },
+    {
+      "gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.23-USAGE-LIMITS-COUNT-REQUIRED",
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+      "source_section": "6.1.23",
+      "source_clause_id": null,
+      "source_locator": {
+        "kind": "table_body_row",
+        "section": "6.1.23",
+        "row_label": "Usage Limits Count",
+        "table": "request_payload",
+        "html_line_range": [
+          28080,
+          28097
+        ]
+      },
+      "source_locator_description": "Specification v2.1 §6.1.23 Table 232 required Usage Limits Count request row (HTML lines 28080–28097).",
+      "html_line_range": [
+        28080,
+        28097
+      ],
+      "source_excerpt": "Usage Limits Count Yes The number of Usage Limits Units to be protected.",
+      "source_keywords": [],
+      "source_force": "required_table_body_value",
+      "audited_statement": "Table 232 marks Usage Limits Count Required=Yes and describes the number of Usage Limits Units to be protected.",
+      "actor": "client",
+      "direction": "include Usage Limits Count in the client request",
+      "condition": "A Get Usage Allocation request is sent.",
+      "scope_disposition": "client_1_0",
+      "status": "mapped_to_approved_feature_contract",
+      "review_note": "The required Table 232 request field maps through KMIPKIT-ELEM-OP-C2S-GET-USAGE-ALLOCATION and KMIPKIT-0039 FR-001. The existing typed request encodes the count as a Long Integer; linked tests verify the required value, encoding, and one fake-transport exchange. This row-level contract does not create a formal source-clause crosswalk ID or a new normative requirement.",
+      "contract_kind": "operation_request_table_field",
+      "table_number": 232,
+      "requiredness": "Yes",
+      "operation_element_id": "KMIPKIT-ELEM-OP-C2S-GET-USAGE-ALLOCATION",
+      "functional_requirement_ids": [
+        "FR-001"
+      ],
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/get_usage_allocation.rs::GetUsageAllocationRequest::to_ttlv_payload"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/get_usage_allocation_tests.rs::table_232_preserves_optional_identifier_and_required_long_integer_count",
+        "crates/kmipkit-client/tests/unit/get_usage_allocation_execution_tests.rs::table_232_one_exchange_encodes_optional_id_and_long_integer_count"
+      ],
+      "evidence_disposition": {
+        "status": "mapped_to_feature_contract",
+        "statement": "The linked protocol and fake-transport tests verify the required Usage Limits Count is encoded as a Long Integer and carried in one Get Usage Allocation request. This source-table contract adds no formal clause crosswalk ID or standalone normative requirement."
       }
     }
   ]
