@@ -16247,10 +16247,10 @@
       ],
       "disposition": "informative_context",
       "requirement_ids": [],
-      "exclusion_rationale": "Context/lowercase prose does not establish an independent uppercase-keyword obligation.",
+      "exclusion_rationale": "Procedure context refers to other required parameters without mapping them to a single client operation or independent RFC 2119 requirement. The normalized REQUIRED keyword hit comes from lowercase prose; actor, direction, and operation-level scope remain unclear.",
       "role": "unclear",
       "direction": "unclear",
-      "scope_state": "out_of_scope",
+      "scope_state": "unclear",
       "condition": null
     },
     {
@@ -16266,10 +16266,10 @@
       ],
       "disposition": "informative_context",
       "requirement_ids": [],
-      "exclusion_rationale": "Context/lowercase prose does not establish an independent uppercase-keyword obligation.",
+      "exclusion_rationale": "Procedure context refers to other required parameters without mapping them to a single client operation or independent RFC 2119 requirement. The normalized REQUIRED keyword hit comes from lowercase prose; actor, direction, and operation-level scope remain unclear.",
       "role": "unclear",
       "direction": "unclear",
-      "scope_state": "out_of_scope",
+      "scope_state": "unclear",
       "condition": null
     },
     {
@@ -16285,10 +16285,10 @@
       ],
       "disposition": "informative_context",
       "requirement_ids": [],
-      "exclusion_rationale": "Context/lowercase prose does not establish an independent uppercase-keyword obligation.",
+      "exclusion_rationale": "Procedure context refers to other required parameters without mapping them to a single client operation or independent RFC 2119 requirement. The normalized REQUIRED keyword hit comes from lowercase prose; actor, direction, and operation-level scope remain unclear.",
       "role": "unclear",
       "direction": "unclear",
-      "scope_state": "out_of_scope",
+      "scope_state": "unclear",
       "condition": null
     },
     {
@@ -16302,12 +16302,12 @@
       "source_keywords": [
         "REQUIRED"
       ],
-      "disposition": "informative_context",
+      "disposition": "source_discrepancy",
       "requirement_ids": [],
-      "exclusion_rationale": "Context/lowercase prose does not establish an independent uppercase-keyword obligation.",
+      "exclusion_rationale": "The normative Specification says Data is always required except when an indicator is true, while single-part request tables for Hash and MAC, and conditionally Sign, conflict with that statement. The normalized REQUIRED keyword hit comes from lowercase prose and is not evidence of the uppercase RFC keyword. Operation-level scope remains unclear; no standalone requirement ID is assigned while the source interpretation is unresolved.",
       "role": "unclear",
       "direction": "unclear",
-      "scope_state": "out_of_scope",
+      "scope_state": "unclear",
       "condition": null
     },
     {

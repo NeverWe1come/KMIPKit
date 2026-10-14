@@ -93,13 +93,13 @@ This report records inventory coverage and evidence state. It does not claim pro
 
 | Disposition | Count |
 | --- | --- |
-| informative\_context | 122 |
+| informative\_context | 121 |
 | later\_1\_1 | 38 |
 | non\_applicable | 389 |
 | profile\_conditional | 184 |
 | requirement | 217 |
 | server\_only | 437 |
-| source\_discrepancy | 24 |
+| source\_discrepancy | 25 |
 
 ## Source clause review by section
 
@@ -347,7 +347,7 @@ Every row summarizes audited candidate locators by their pinned source section. 
 | KMIPKIT-SRC-spec | 5.5 | 2 | non\_applicable: 2 |
 | KMIPKIT-SRC-spec | 5.6 | 1 | non\_applicable: 1 |
 | KMIPKIT-SRC-spec | 5.7 | 1 | non\_applicable: 1 |
-| KMIPKIT-SRC-spec | 6.1 | 10 | informative\_context: 4, requirement: 5, server\_only: 1 |
+| KMIPKIT-SRC-spec | 6.1 | 10 | informative\_context: 3, requirement: 5, server\_only: 1, source\_discrepancy: 1 |
 | KMIPKIT-SRC-spec | 6.1.1 | 3 | non\_applicable: 2, server\_only: 1 |
 | KMIPKIT-SRC-spec | 6.1.1.1 | 2 | non\_applicable: 1, server\_only: 1 |
 | KMIPKIT-SRC-spec | 6.1.2 | 3 | non\_applicable: 2, requirement: 1 |
