@@ -775,6 +775,8 @@ pub extern "C" fn kmipkit_client_execute_with_options_v1(
     out_response: *mut *mut kmipkit_client_batch_response_t,
 ) -> i32 {
     ffi_entrypoint(|| {
+        // Validate and clear the caller's output before any request-options validation can fail.
+        let _ = out_slot!(out_response);
         if options.is_null() {
             return record_ffi_error(ERROR_INVALID_INPUT);
         }

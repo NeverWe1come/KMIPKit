@@ -663,9 +663,34 @@ def test_client_create_forwards_identity_and_trust_modes_to_native_constructor(
         revocation_lists=(revocation_list,),
     )
 
+    def input_mode(value: object) -> tuple[int, int, bytes]:
+        source = value.data  # type: ignore[attr-defined]
+        data = client.ffi.string(source.data, int(source.length))
+        return (
+            int(value.source_kind),  # type: ignore[attr-defined]
+            int(value.encoding),  # type: ignore[attr-defined]
+            data,
+        )
+
     def create_transport(record: object, output: object) -> int:
-        # The existing stub checks only this ABI marker; Green adds the mode snapshot.
-        observed.append(int(record.abi_version))  # type: ignore[attr-defined]
+        observed.append(
+            {
+                "abi_version": int(record.abi_version),  # type: ignore[attr-defined]
+                "client_certificates": tuple(
+                    input_mode(record.client_certificates[index])  # type: ignore[attr-defined]
+                    for index in range(int(record.client_certificate_count))  # type: ignore[attr-defined]
+                ),
+                "client_private_key": input_mode(record.client_private_key),  # type: ignore[attr-defined]
+                "trust_certificates": tuple(
+                    input_mode(record.trust_certificates[index])  # type: ignore[attr-defined]
+                    for index in range(int(record.trust_certificate_count))  # type: ignore[attr-defined]
+                ),
+                "revocation_lists": tuple(
+                    input_mode(record.revocation_lists[index])  # type: ignore[attr-defined]
+                    for index in range(int(record.revocation_list_count))  # type: ignore[attr-defined]
+                ),
+            }
+        )
         output[0] = transport_pointer  # type: ignore[index]
         return 0
 
