@@ -80,11 +80,9 @@ def test_generic_ttlv_shared_fixture_has_an_executable_python_link() -> None:
     )
 
 
-def test_generic_ttlv_shared_fixture_preserves_open_values_order_and_owner_lifecycle() -> None:
-    case = _parity_cases()["ttlv.open-values-and-child-order.v1"]
-    structure_input = case["input"]["structure"]
-    expected = case["expectedOutput"]
-    limits = ttlv.codec_limits_defaults()
+def _structure_from_shared_ttlv_fixture(
+    structure_input: dict[str, Any], limits: ttlv.CodecLimits
+) -> ttlv.Structure:
     structure = ttlv.ttlv_structure_create()
     for child in structure_input["children"]:
         raw_tag = ttlv.raw_tag_from_raw(int(child["tag"], 16))
@@ -101,6 +99,15 @@ def test_generic_ttlv_shared_fixture_preserves_open_values_order_and_owner_lifec
         item = ttlv.ttlv_item_create(tag, value, limits)
         structure = ttlv.ttlv_structure_with_item(structure, item, limits)
         tag.close()
+    return structure
+
+
+def test_generic_ttlv_shared_fixture_preserves_open_values_order_and_owner_lifecycle() -> None:
+    case = _parity_cases()["ttlv.open-values-and-child-order.v1"]
+    structure_input = case["input"]["structure"]
+    expected = case["expectedOutput"]
+    limits = ttlv.codec_limits_defaults()
+    structure = _structure_from_shared_ttlv_fixture(structure_input, limits)
 
     released: list[str] = []
     native_library = _handles.lib
@@ -306,19 +313,23 @@ def test_complete_public_python_api_has_resolvable_parameter_and_return_annotati
     assert not missing, f"public Python API declarations without complete annotations: {missing}"
 
 
-def test_installed_wheel_contains_py_typed_and_adjacent_native_library(
+def test_built_wheel_artifact_contains_py_typed_and_adjacent_native_library(
     tmp_path: Path,
 ) -> None:
     wheelhouse = tmp_path / "wheelhouse"
     wheelhouse.mkdir()
     executable_name = "maturin.exe" if sys.platform == "win32" else "maturin"
-    maturin = shutil.which("maturin") or str(Path(sys.prefix) / "Scripts" / executable_name)
-    if sys.platform != "win32" and not Path(maturin).is_file():
-        maturin = str(Path(sys.prefix) / "bin" / executable_name)
-    assert Path(maturin).is_file(), "the Python package build requires the pinned maturin tool"
+    executable_directory = "Scripts" if sys.platform == "win32" else "bin"
+    maturin_path = Path(sys.prefix) / executable_directory / executable_name
+    if not maturin_path.is_file():
+        path_executable = shutil.which("maturin")
+        assert path_executable is not None, (
+            "the Python package build requires the pinned maturin tool"
+        )
+        maturin_path = Path(path_executable)
     result = subprocess.run(
         [
-            maturin,
+            str(maturin_path),
             "build",
             "--offline",
             "--interpreter",
