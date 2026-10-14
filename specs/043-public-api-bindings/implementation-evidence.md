@@ -1378,10 +1378,13 @@ fixture now checks that absent optional values produce no ABI flags.
 | Phase | Commit | Command | Result |
 |---|---|---|---|
 | Red | `89781d20` | `uv run --offline --project bindings/python --frozen pytest -q bindings/python/tests/test_client.py::test_endpoint_rejects_tls_name_override_for_dns_host` | Expected failure in both RAW_TLS and HTTPS cases: Python accepted the DNS override while Rust rejects it. |
-| Green | This commit | `uv run --offline --project bindings/python --frozen pytest -q bindings/python/tests`; `uv run --offline --project bindings/python --frozen --with-requirements bindings/python/requirements-coverage.txt pytest -q bindings/python/tests --cov=kmipkit --cov-config=bindings/python/pyproject.toml --cov-report=term-missing`; `uv run --offline --project bindings/python --frozen python bindings/python/examples/vendor_extension_registry.py` | PASS: 186 Python tests; 98.52% package coverage against the 85% gate; vendor extension example executes. |
-| Refactor | Pending | Pending | Pending. |
+| Green | `b602dd11` | `uv run --offline --project bindings/python --frozen pytest -q bindings/python/tests`; `uv run --offline --project bindings/python --frozen --with-requirements bindings/python/requirements-coverage.txt pytest -q bindings/python/tests --cov=kmipkit --cov-config=bindings/python/pyproject.toml --cov-report=term-missing`; `uv run --offline --project bindings/python --frozen python bindings/python/examples/vendor_extension_registry.py` | PASS: 186 Python tests; 98.52% package coverage against the 85% gate; vendor extension example executes. |
+| Refactor | This commit | `uv run --offline --project bindings/python --frozen pytest -q bindings/python/tests`; `uv run --offline --project bindings/python --frozen --with-requirements bindings/python/requirements-coverage.txt pytest -q bindings/python/tests --cov=kmipkit --cov-config=bindings/python/pyproject.toml --cov-report=term-missing`; `git diff --check` | PASS: 186 Python tests; 98.46% package coverage against the 85% gate. A shared IP-literal helper keeps RAW_TLS and HTTPS checks consistent; URL parse failures remain mapped to `InvalidInputError`. |
 
-GitHub run `38532790231` was still executing against the earlier head
-`6f4f1ffa` while this correction was prepared; its Python jobs failed before
-the fix. The PR stays in draft until CI completes on the corrected head and
-all T076 exit gates are met.
+GitHub run `38532790231` completed against the earlier head `6f4f1ffa`. The
+Python platform jobs and Python coverage failed on the same stale parameterized
+case, which still expected an HTTPS DNS verification-name override to be
+rejected after HTTPS override support had been added. Red commit `89781d20`
+removed that obsolete expectation and added explicit RAW_TLS and HTTPS DNS
+rejection coverage. The PR stays in draft until CI completes on the corrected
+head and all T076 exit gates are met.

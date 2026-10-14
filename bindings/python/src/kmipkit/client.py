@@ -54,6 +54,14 @@ def _unsigned(value: int, bits: int, *, allow_zero: bool = True) -> int:
     return number
 
 
+def _is_ip_literal(host: str) -> bool:
+    try:
+        ipaddress.ip_address(host.strip("[]"))
+    except ValueError:
+        return False
+    return True
+
+
 class CredentialEncoding(IntEnum):
     """Explicit encoding used for certificate, key, and revocation material."""
 
@@ -109,9 +117,7 @@ class Endpoint:
             object.__setattr__(self, "port", port)
             if self.tls_server_name is not None:
                 _nonempty_text(self.tls_server_name)
-                try:
-                    ipaddress.ip_address(self.address.strip("[]"))
-                except ValueError:
+                if not _is_ip_literal(self.address):
                     errors.raise_for_status(4)
             if self.target_uri is not None:
                 errors.raise_for_status(4)
@@ -125,10 +131,9 @@ class Endpoint:
                 _nonempty_text(self.tls_server_name)
                 try:
                     host = urlsplit(self.address).hostname
-                    if host is None:
-                        errors.raise_for_status(4)
-                    ipaddress.ip_address(host.strip("[]"))
                 except ValueError:
+                    errors.raise_for_status(4)
+                if host is None or not _is_ip_literal(host):
                     errors.raise_for_status(4)
             if self.target_uri is not None:
                 _nonempty_text(self.target_uri)
