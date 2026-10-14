@@ -17,7 +17,7 @@
 
 **Purpose**: Prove the repository currently permits the affected pin before changing the dependency.
 
-- [x] T003 Add `scripts/tests/test_rustls_advisory_pin.py` with a contract asserting that the workspace Rustls version is an exact stable 0.23.x pin at or above 0.23.46, and that the matching root lockfile entry has the same version. Run the focused test against 0.23.45 and retain its expected failure output.
+- [x] T003 Add `scripts/tests/test_rustls_advisory_pin.py` with a contract asserting that the workspace Rustls version is an exact stable 0.23.x pin at or above 0.23.46, and that the matching root lockfile entry has the same version. Run the focused test against 0.23.45 and record the failing assertion, expected patched floor, and observed version in implementation evidence.
 - [x] T004 Commit only the failing regression contract and its Red evidence as a separate DCO-signed commit; do not alter Cargo manifests or lockfiles in this commit (`test(deps): expose patched rustls floor requirement`).
 
 ## Phase 3: User Story 1 — Use the patched Rustls release (Priority: P1)
