@@ -8,7 +8,11 @@ import subprocess
 import sys
 import tempfile
 import unittest
+from unittest.mock import patch
 from pathlib import Path
+
+from tools.normative_catalog import audit_case_sources
+from tools.normative_catalog.safe_io import PathSecurityError
 
 
 ROOT = Path(__file__).resolve().parents[3]
@@ -201,6 +205,177 @@ class CaseSourceAuditTests(unittest.TestCase):
         )
         self.assertNotEqual(result.returncode, 0)
         self.assertIn("SHA-256 does not match the catalog source record", result.stderr)
+
+    def test_translates_safe_io_path_errors_to_redacted_catalog_errors(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary_directory:
+            repository = Path(temporary_directory)
+            (repository / "catalog.json").write_text("{}", encoding="utf-8")
+            path_marker = "private/path/marker"
+
+            with patch.object(
+                audit_case_sources,
+                "safe_read_bytes",
+                side_effect=PathSecurityError(path_marker),
+                create=True,
+            ) as safe_read:
+                with self.assertRaises(audit_case_sources.CaseAuditError) as error:
+                    audit_case_sources._load_catalog(repository, "catalog.json")
+
+            self.assertEqual(str(error.exception), "catalog is unavailable or invalid JSON")
+            self.assertNotIn(path_marker, str(error.exception))
+            safe_read.assert_called_once_with(
+                repository,
+                "catalog.json",
+                max_bytes=audit_case_sources.MAX_CATALOG_BYTES,
+            )
+
+    def test_rejects_symlinked_pinned_source_without_disclosing_target(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary_directory:
+            repository = Path(temporary_directory)
+            sources = repository / "sources"
+            sources.mkdir()
+            profile_html = b'<h4>5.1.3.1 BL-M-1-21</h4><a href="case.xml">fixture</a>'
+            profile_target = repository / "external-profiles.html"
+            profile_target.write_bytes(profile_html)
+            try:
+                (sources / "profiles.html").symlink_to(profile_target)
+            except (OSError, NotImplementedError) as error:
+                self.skipTest(f"symlink creation is unavailable: {error}")
+
+            testcases_html = b""
+            (sources / "testcases.html").write_bytes(testcases_html)
+            catalog = {
+                "sources": [
+                    {
+                        "source_id": "KMIPKIT-SRC-profiles",
+                        "local_path": "sources/profiles.html",
+                        "sha256": hashlib.sha256(profile_html).hexdigest(),
+                    },
+                    {
+                        "source_id": "KMIPKIT-SRC-testcases",
+                        "local_path": "sources/testcases.html",
+                        "sha256": hashlib.sha256(testcases_html).hexdigest(),
+                    },
+                ],
+                "test_cases": [
+                    self._case(
+                        "P-1", "BL-M-1-21", "KMIPKIT-SRC-profiles", "5.1.3.1",
+                        "profile_test_case", "case.xml",
+                    ),
+                ],
+            }
+            (repository / "catalog.json").write_text(json.dumps(catalog), encoding="utf-8")
+            result = subprocess.run(
+                [
+                    sys.executable,
+                    str(SCRIPT),
+                    "--repo-root",
+                    str(repository),
+                    "--catalog",
+                    "catalog.json",
+                ],
+                cwd=ROOT,
+                capture_output=True,
+                check=False,
+                text=True,
+            )
+
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("pinned source cannot be read safely: KMIPKIT-SRC-profiles", result.stderr)
+        self.assertNotIn(str(profile_target), result.stderr)
+
+    def test_many_ids_and_rows_keep_candidate_and_evidence_visits_linear(self) -> None:
+        case_count = 120
+        rows: list[dict[str, str]] = []
+        html_parts: list[str] = []
+        for index in range(case_count):
+            official_id = f"CASE-{index:03d}-21"
+            section = f"5.{index + 1}.1"
+            href = f"cases/{official_id}.xml"
+            html_parts.append(
+                f'<h4>{section} {official_id}</h4><a href="{href}">fixture</a>'
+            )
+            rows.append(
+                self._case(
+                    f"P-{index}", official_id, "KMIPKIT-SRC-profiles", section,
+                    "profile_test_case", href,
+                )
+            )
+        profile_html = "".join(html_parts).encode("utf-8")
+        testcases_html = b""
+
+        class CountingIds(set[str]):
+            item_visits = 0
+
+            def __iter__(self):
+                for item in super().__iter__():
+                    type(self).item_visits += 1
+                    yield item
+
+        class CountingEvidence(list):
+            item_visits = 0
+
+            def __iter__(self):
+                for item in super().__iter__():
+                    type(self).item_visits += 1
+                    yield item
+
+        with tempfile.TemporaryDirectory() as temporary_directory:
+            repository = Path(temporary_directory)
+            sources = repository / "sources"
+            sources.mkdir()
+            (sources / "profiles.html").write_bytes(profile_html)
+            (sources / "testcases.html").write_bytes(testcases_html)
+            catalog = {
+                "sources": [
+                    {
+                        "source_id": "KMIPKIT-SRC-profiles",
+                        "local_path": "sources/profiles.html",
+                        "sha256": hashlib.sha256(profile_html).hexdigest(),
+                    },
+                    {
+                        "source_id": "KMIPKIT-SRC-testcases",
+                        "local_path": "sources/testcases.html",
+                        "sha256": hashlib.sha256(testcases_html).hexdigest(),
+                    },
+                ],
+                "test_cases": rows,
+            }
+            parse_case_evidence = audit_case_sources._parse_case_evidence
+
+            def counted_parse(raw: bytes, official_ids: set[str]) -> CountingEvidence:
+                evidence = parse_case_evidence(raw, CountingIds(official_ids))
+                return CountingEvidence(evidence)
+
+            with patch.object(
+                audit_case_sources,
+                "_parse_case_evidence",
+                side_effect=counted_parse,
+            ):
+                counts, divergences = audit_case_sources.audit_catalog_cases(repository, catalog)
+
+        self.assertEqual(counts["profile_test_case"], case_count)
+        self.assertEqual(divergences, [])
+        self.assertLessEqual(CountingIds.item_visits, case_count * 2)
+        self.assertLessEqual(CountingEvidence.item_visits, case_count * 2)
+
+    def test_rejects_duplicate_headings_for_the_same_section_and_case(self) -> None:
+        result = self._run_audit(
+            profile_html=(
+                b"<h4>5.1.3.1 BL-M-1-21</h4><a href=\"case.xml\">first</a>"
+                b"<h4>5.1.3.1 BL-M-1-21</h4><a href=\"case.xml\">duplicate</a>"
+            ),
+            testcases_html=b"",
+            cases=[
+                self._case(
+                    "P-1", "BL-M-1-21", "KMIPKIT-SRC-profiles", "5.1.3.1",
+                    "profile_test_case", "case.xml",
+                ),
+            ],
+        )
+
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("section, official ID, and exact href do not match", result.stderr)
 
     def test_audits_all_pinned_catalogued_cases_offline(self) -> None:
         result = subprocess.run(
