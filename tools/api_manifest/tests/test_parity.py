@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import re
 import unittest
 from pathlib import Path
 from typing import Any
@@ -59,6 +60,12 @@ SHARED_PARITY_CASES = {
     "ttlv.open-values-and-child-order.v1",
     "extensions.recognition-and-generic-preservation.v1",
 }
+SHARED_PARITY_LANGUAGES = ["rust", "c", "java", "python"]
+SHARED_CONSUMER_TESTS = {
+    "rust": ROOT / "crates" / "kmipkit-client" / "tests" / "unit" / "execute_lifecycle_tests.rs",
+    "c": ROOT / "crates" / "kmipkit-ffi" / "tests" / "c_api_coverage.rs",
+    "python": ROOT / "bindings" / "python" / "tests" / "test_client.py",
+}
 JAVA_TEST_ROOT = ROOT / "bindings" / "java" / "src" / "test" / "java"
 JAVA_KEYWORDS = {
     "abstract", "assert", "boolean", "break", "byte", "case", "catch", "char",
@@ -94,7 +101,7 @@ class PublicApiParityTests(unittest.TestCase):
             }
             self.assertTrue(registry_requirements.issubset(REQUIREMENT_IDS), item["id"])
 
-    def test_shared_capability_fixture_maps_only_executable_java_contracts(self) -> None:
+    def test_shared_capability_fixture_maps_executable_consumer_contracts(self) -> None:
         self.assertTrue(
             SHARED_PARITY_FIXTURE.is_file(),
             "shared API capability fixture corpus is missing",
@@ -104,9 +111,11 @@ class PublicApiParityTests(unittest.TestCase):
         self.assertEqual(fixtures["format"], "kmipkit-shared-api-parity-fixtures")
         self.assertEqual(fixtures["formatVersion"], 2)
         self.assertEqual(fixtures["releaseLine"], "1.0.0")
-        self.assertEqual(fixtures["parityLanguages"], ["rust", "c", "java"])
-        self.assertEqual(fixtures["plannedConsumerLanguages"], ["rust", "c"])
-        self.assertEqual(fixtures["executableConsumerLanguages"], ["java"])
+        self.assertEqual(fixtures["parityLanguages"], SHARED_PARITY_LANGUAGES)
+        self.assertEqual(fixtures["plannedConsumerLanguages"], [])
+        self.assertEqual(
+            fixtures["executableConsumerLanguages"], SHARED_PARITY_LANGUAGES
+        )
 
         cases = fixtures["cases"]
         case_ids = [case["id"] for case in cases]
@@ -116,6 +125,7 @@ class PublicApiParityTests(unittest.TestCase):
             SHARED_PARITY_CASES,
         )
 
+        available_languages: set[str] = set()
         for case in cases:
             with self.subTest(fixture=case["id"]):
                 self.assertRegex(case["id"], r"^[a-z0-9]+(?:[.-][a-z0-9]+)*\.v1$")
@@ -140,18 +150,43 @@ class PublicApiParityTests(unittest.TestCase):
                 self.assertTrue(case["javaObservedOutput"])
                 self.assertTrue(case["cleanup"])
                 self.assertEqual(len(case["cleanup"]), len(set(case["cleanup"])))
-                self.assertEqual(set(case["consumerTests"]), {"java"})
+                self.assertIn("java", case["consumerTests"])
+                self.assertTrue(set(case["consumerTests"]).issubset(SHARED_PARITY_LANGUAGES))
+                for language, mapping in case["consumerTests"].items():
+                    with self.subTest(fixture=case["id"], language=language):
+                        self.assertIn(mapping["status"], {"available", "blocked"})
+                        self.assertTrue(mapping["test"])
+                        if mapping["status"] == "available":
+                            available_languages.add(language)
+                        else:
+                            self.assertTrue(mapping.get("reason"), case["id"])
+
+                        if language == "java":
+                            java_mapping = mapping
+                            class_name, method_name = java_mapping["test"].split("#", 1)
+                            source_path = JAVA_TEST_ROOT / Path(*class_name.split(".")).with_suffix(".java")
+                            self.assertTrue(source_path.is_file(), case["id"])
+                            source = source_path.read_text(encoding="utf-8")
+                            self.assertRegex(
+                                source,
+                                rf"@Test\s+void\s+{method_name}\s*\(",
+                                f"{case['id']} must map to an executable Java 17 JUnit test",
+                            )
+                            continue
+
+                        if mapping["status"] == "available":
+                            source_path = SHARED_CONSUMER_TESTS[language]
+                            self.assertTrue(source_path.is_file(), case["id"])
+                            source = source_path.read_text(encoding="utf-8")
+                            test_name = mapping["test"].rsplit("::", 1)[-1]
+                            declaration = "def" if language == "python" else "fn"
+                            self.assertRegex(
+                                source,
+                                rf"\b{declaration}\s+{re.escape(test_name)}\s*\(",
+                                f"{case['id']} must map to an executable {language} consumer test",
+                            )
+
                 java_mapping = case["consumerTests"]["java"]
-                self.assertIn(java_mapping["status"], {"available", "blocked"})
-                class_name, method_name = java_mapping["test"].split("#", 1)
-                source_path = JAVA_TEST_ROOT / Path(*class_name.split(".")).with_suffix(".java")
-                self.assertTrue(source_path.is_file(), case["id"])
-                source = source_path.read_text(encoding="utf-8")
-                self.assertRegex(
-                    source,
-                    rf"@Test\s+void\s+{method_name}\s*\(",
-                    f"{case['id']} must map to an executable Java 17 JUnit test",
-                )
                 declared_capabilities = {
                     entry["capabilityId"]
                     for entry in self.manifest.get("capabilities", [])
@@ -159,11 +194,25 @@ class PublicApiParityTests(unittest.TestCase):
                 }
                 if java_mapping["status"] == "available":
                     self.assertIn(case["capability"], declared_capabilities, case["id"])
-                    self.assertEqual(case["javaObservedOutput"], case["expectedOutput"], case["id"])
+                    observed = {
+                        key: value
+                        for key, value in case["javaObservedOutput"].items()
+                        if key != "available"
+                    }
+                    self.assertEqual(observed, case["expectedOutput"], case["id"])
                 else:
                     self.assertNotIn(case["capability"], declared_capabilities, case["id"])
                     self.assertTrue(java_mapping.get("reason"), case["id"])
                     self.assertFalse(case["javaObservedOutput"].get("available", True), case["id"])
+
+        self.assertEqual(
+            available_languages,
+            set(fixtures["executableConsumerLanguages"]),
+        )
+        self.assertEqual(
+            set(fixtures["plannedConsumerLanguages"]),
+            set(fixtures["parityLanguages"]) - available_languages,
+        )
 
         redaction = next(case for case in cases if case["id"] == "errors.schema-redaction.v1")
         self.assertEqual(redaction["errorCategory"], "invalid_schema")
@@ -173,10 +222,12 @@ class PublicApiParityTests(unittest.TestCase):
         self.assertEqual(batch["expectedOutput"]["resultStatuses"], [
             "Success", "Operation Pending", "Operation Failed"
         ])
-        self.assertEqual(batch["javaObservedOutput"], {
-            "available": False,
-            "transportExchangeCount": 0,
-        })
+        batch_java_output = {
+            key: value
+            for key, value in batch["javaObservedOutput"].items()
+            if key != "available"
+        }
+        self.assertEqual(batch_java_output, batch["expectedOutput"])
 
         ttlv = next(case for case in cases if case["id"] == "ttlv.open-values-and-child-order.v1")
         self.assertEqual(ttlv["javaObservedOutput"]["childTagsInOrder"], ["0x540001", "0x540002"])

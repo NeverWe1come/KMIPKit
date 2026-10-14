@@ -38,9 +38,9 @@ final class SharedCapabilityParityFixtureTest {
     @Test
     void everyJavaFixtureMappingTargetsAnExecutableJUnitConsumer() throws Exception {
         String fixture = Files.readString(sharedFixturePath());
-        assertTrue(fixture.contains("\"parityLanguages\": [\"rust\", \"c\", \"java\"]"));
-        assertTrue(fixture.contains("\"plannedConsumerLanguages\": [\"rust\", \"c\"]"));
-        assertTrue(fixture.contains("\"executableConsumerLanguages\": [\"java\"]"));
+        assertTrue(fixture.contains("\"parityLanguages\": [\"rust\", \"c\", \"java\", \"python\"]"));
+        assertTrue(fixture.contains("\"plannedConsumerLanguages\": []"));
+        assertTrue(fixture.contains("\"executableConsumerLanguages\": [\"rust\", \"c\", \"java\", \"python\"]"));
 
         List<String> ids = caseIds(fixture);
         assertEquals(6, ids.size());
