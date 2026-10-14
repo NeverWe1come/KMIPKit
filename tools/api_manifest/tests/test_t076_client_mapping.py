@@ -2420,6 +2420,44 @@ class T076ClientMappingTests(unittest.TestCase):
         self.assertIn("transport config release", config_close["reason"].lower())
         self.assertIn("KMIPKIT-0043-FR-007", config_close["evidence"])
 
+    def test_java_request_options_bridge_and_record_artifacts_are_exactly_accounted(self) -> None:
+        expected = {
+            "org.kmipkit.NativeExtensionRegistry.clientExecuteWithOptions",
+            "org.kmipkit.extensions.RequestOptions.equals",
+            "org.kmipkit.extensions.RequestOptions.hashCode",
+            "org.kmipkit.extensions.RequestOptions.toString",
+        }
+        exclusions = {
+            row["exportName"]: row
+            for row in self.manifest["approvedExclusions"]
+            if row["packageId"] == "java-kmipkit" and row["exportName"] in expected
+        }
+        self.assertEqual(expected, set(exclusions))
+        self.assertEqual(4, len(exclusions))
+
+        bridge = exclusions["org.kmipkit.NativeExtensionRegistry.clientExecuteWithOptions"]
+        self.assertIn("raw-handle JNI bridge", bridge["reason"])
+        self.assertIn("KMIPKIT-0043-FR-008", bridge["evidence"])
+        self.assertIn("minimal JNI bridge", bridge["evidence"])
+
+        for path in (
+            "org.kmipkit.extensions.RequestOptions.equals",
+            "org.kmipkit.extensions.RequestOptions.hashCode",
+            "org.kmipkit.extensions.RequestOptions.toString",
+        ):
+            with self.subTest(record_artifact=path):
+                exclusion = exclusions[path]
+                self.assertIn("compiler-provided record", exclusion["reason"])
+                self.assertIn("KMIPKIT-0043-FR-021", exclusion["evidence"])
+
+        self.assertTrue(
+            all(
+                row["exportName"] not in expected
+                for row in self.manifest["publicDeclarations"]
+                if row["packageId"] == "java-kmipkit"
+            )
+        )
+
 
 
 if __name__ == "__main__":
