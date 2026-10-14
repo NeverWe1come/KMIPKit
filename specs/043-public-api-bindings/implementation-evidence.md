@@ -73,6 +73,19 @@ Verification ran on Windows x86-64 with the locally built JNI library. Cargo emi
 Independent review rejected the original single-`System.gc()` owner-retention assertion as nondeterministic. The follow-up replaces it with exact assertions that each private view owner field points to the expected parent, then reads the borrowed value. This verifies the declared strong-reference chain without relying on garbage-collector scheduling.
 The corrected `TtlvViewOwnerRetentionTest` passed locally (1 test, 0 failures/errors), and `git diff --check` passed.
 
+## T023 — Python shared parity, lifecycle, typing, and package tests
+
+The Python 3.12 tests validate every currently available Python consumer link in the shared capability fixture, preserve the intentionally blocked T077 API-level case, and link the generic TTLV case to an executable consumer. That consumer reads the shared structure, preserves unknown Enumeration `3775005444`, ByteString `80ff01`, and child order, and verifies the view retains its owner until deterministic one-time cleanup. Parameterized wrapper tests exercise normal and exceptional context-manager exits and idempotent close for `Client`, `Batch`, and `BatchResult`. The public API annotation inventory checks parameters, returns, and property accessors. The package test builds an offline wheel with pinned Maturin 1.9.4 and checks `py.typed` plus the adjacent native library in the archive; it does not install or load the wheel.
+
+| Phase | Commit | Command | Result |
+|---|---|---|---|
+| Red | `03d2376e` | `python -m pytest bindings/python/tests/test_shared_parity_fixtures.py -q` | Expected failure: 14 passed, 1 failed because the Python generic-TTLV fixture consumer was still blocked. No runtime defect was found in the other cases. |
+| Red correction | `7ae7ea76` | Same focused command | Added property getter/setter/deleter annotation inspection after independent review identified that omission; expected fixture-status failure remained the only failure. |
+| Green | `76841807` | Same focused command; `git diff --check` | PASS: 16 tests. The fixture maps the TTLV case to the new Python consumer; T077 remains blocked. |
+| Refactor | `c4b69988` | Same focused command; `git diff --check` | PASS: 16 tests. Extracted fixture structure construction, made Maturin selection prefer the active project environment, and clarified that the test inspects a built wheel. |
+
+Independent review approved the corrected Red, Green, and Refactor evidence. Root reran the Python 3.12 focused suite after Green and Refactor; both runs passed 16/16. This task adds tests and fixture evidence only; it changes no runtime or generated code. T024's broader facade parity remains open.
+
 ## T002, T006, T007, and T068 — Release inventory and owner resolution
 
 KMIP 2.1 defines 57 client-initiated operation types. The 1.0 catalog contains 56 `client_1_0` entries; Set Endpoint Role (§6.1.54) remains cataloged as `client_1_1` per the disposition recorded in specification 025. The release manifest and generator validate the 56-operation 1.0 inventory without changing the normative catalog.
