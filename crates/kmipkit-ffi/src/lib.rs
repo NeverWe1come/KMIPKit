@@ -203,6 +203,18 @@ pub struct kmipkit_timeout_limit_v1_t {
     pub reserved2: u32,
 }
 
+/// Versioned per-exchange timeout overrides for `kmipkit_client_execute_with_options_v1`.
+/// A timeout with kind zero and zero duration inherits the client's configured policy.
+#[repr(C)]
+pub struct kmipkit_request_options_v1_t {
+    pub struct_size: u32,
+    pub abi_version: u32,
+    pub connect_timeout: kmipkit_timeout_limit_v1_t,
+    pub write_timeout: kmipkit_timeout_limit_v1_t,
+    pub read_timeout: kmipkit_timeout_limit_v1_t,
+    pub total_timeout: kmipkit_timeout_limit_v1_t,
+}
+
 /// Versioned production transport inputs. All spans are borrowed only for the
 /// constructor call; the validated configuration owns its parsed material.
 #[repr(C)]

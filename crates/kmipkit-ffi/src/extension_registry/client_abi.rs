@@ -376,6 +376,43 @@ fn timeout_limit_v1(
     }
 }
 
+fn request_timeout_override_v1(
+    input: &kmipkit_timeout_limit_v1_t,
+) -> FfiResult<Option<TimeoutLimit>> {
+    if input.reserved != 0 || input.reserved2 != 0 {
+        return Err(ERROR_INVALID_INPUT);
+    }
+    match input.kind {
+        0 if input.seconds == 0 && input.nanoseconds == 0 => Ok(None),
+        TRANSPORT_TIMEOUT_BOUNDED if input.nanoseconds < 1_000_000_000 => Ok(Some(
+            TimeoutLimit::Bounded(Duration::new(input.seconds, input.nanoseconds)),
+        )),
+        TRANSPORT_TIMEOUT_UNBOUNDED if input.seconds == 0 && input.nanoseconds == 0 => {
+            Ok(Some(TimeoutLimit::Unbounded))
+        }
+        _ => Err(ERROR_INVALID_INPUT),
+    }
+}
+
+fn request_options_from_v1(input: &kmipkit_request_options_v1_t) -> FfiResult<RequestOptions> {
+    let required_size = u32::try_from(std::mem::size_of::<kmipkit_request_options_v1_t>())
+        .map_err(|_| ERROR_INVALID_INPUT)?;
+    if input.abi_version != 1 || input.struct_size < required_size {
+        return Err(ERROR_INVALID_INPUT);
+    }
+
+    let connect = request_timeout_override_v1(&input.connect_timeout)?;
+    let write = request_timeout_override_v1(&input.write_timeout)?;
+    let read = request_timeout_override_v1(&input.read_timeout)?;
+    let total = request_timeout_override_v1(&input.total_timeout)?;
+    let options = RequestOptions::default();
+    let options = connect.map_or(options, |value| options.with_connect(value));
+    let options = write.map_or(options, |value| options.with_write(value));
+    let options = read.map_or(options, |value| options.with_read(value));
+    let options = total.map_or(options, |value| options.with_total(value));
+    Ok(options)
+}
+
 fn transport_text(span: crate::kmipkit_byte_span_v1_t) -> FfiResult<String> {
     let bytes = copy_transport_span(span.data, span.length, MAX_TRANSPORT_TEXT_BYTES)?;
     let text = std::str::from_utf8(&bytes).map_err(|_| ERROR_INVALID_INPUT)?;
@@ -716,7 +753,39 @@ pub extern "C" fn kmipkit_client_execute(
     limits: *mut kmipkit_codec_limits_t,
     out_response: *mut *mut kmipkit_client_batch_response_t,
 ) -> i32 {
-    ffi_entrypoint(|| execute_client_batch(client, batch, limits, out_response, None))
+    ffi_entrypoint(|| {
+        execute_client_batch(
+            client,
+            batch,
+            limits,
+            out_response,
+            None,
+            &RequestOptions::default(),
+        )
+    })
+}
+
+/// Executes one typed batch with per-exchange timeout overrides.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_client_execute_with_options_v1(
+    client: *mut kmipkit_client_t,
+    batch: *mut *mut kmipkit_client_batch_t,
+    limits: *mut kmipkit_codec_limits_t,
+    options: *const kmipkit_request_options_v1_t,
+    out_response: *mut *mut kmipkit_client_batch_response_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        if options.is_null() {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        }
+        // SAFETY: non-null options must point to a readable v1 prefix for this call.
+        let options = unsafe { &*options };
+        let options = match request_options_from_v1(options) {
+            Ok(options) => options,
+            Err(status) => return record_ffi_error(status),
+        };
+        execute_client_batch(client, batch, limits, out_response, None, &options)
+    })
 }
 
 /// Executes a typed batch and optionally returns an owned generic response on shape errors.
@@ -726,6 +795,7 @@ fn execute_client_batch(
     limits: *mut kmipkit_codec_limits_t,
     out_response: *mut *mut kmipkit_client_batch_response_t,
     out_error_response_ttlv: Option<*mut *mut kmipkit_ttlv_structure_t>,
+    request_options: &RequestOptions,
 ) -> i32 {
     let out = out_slot!(out_response);
     let out_error = match out_error_response_ttlv {
@@ -766,7 +836,7 @@ fn execute_client_batch(
     let Ok(mut client) = client.lock() else {
         return record_ffi_error(ERROR_INTERNAL);
     };
-    match client.execute(batch, limits) {
+    match client.execute_with_options(batch, limits, request_options) {
         Ok(response) => {
             *out = make_handle(
                 Kind::ClientBatchResponse,
@@ -806,6 +876,7 @@ pub extern "C" fn kmipkit_client_execute_with_error_ttlv_v1(
             limits,
             out_response,
             Some(out_error_response_ttlv),
+            &RequestOptions::default(),
         )
     })
 }

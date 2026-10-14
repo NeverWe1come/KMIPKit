@@ -735,12 +735,18 @@ fn request_options_v1_inherits_defaults_and_preserves_zero_and_unbounded_overrid
     let expected = RequestOptions::default()
         .with_write(TimeoutLimit::Bounded(std::time::Duration::ZERO))
         .with_read(TimeoutLimit::Unbounded)
-        .with_total(TimeoutLimit::Bounded(std::time::Duration::new(2, 125_000_000)));
+        .with_total(TimeoutLimit::Bounded(std::time::Duration::new(
+            2,
+            125_000_000,
+        )));
     assert_eq!(parsed, expected);
 
     let effective = TimeoutPolicy::default().with_overrides(&parsed);
     assert_eq!(effective.connect(), TimeoutPolicy::default().connect());
-    assert_eq!(effective.write(), TimeoutLimit::Bounded(std::time::Duration::ZERO));
+    assert_eq!(
+        effective.write(),
+        TimeoutLimit::Bounded(std::time::Duration::ZERO)
+    );
     assert_eq!(effective.read(), TimeoutLimit::Unbounded);
     assert_eq!(
         effective.total(),
@@ -756,13 +762,19 @@ fn request_options_v1_rejects_bad_versions_and_timeout_encodings() {
         timeout(TRANSPORT_TIMEOUT_BOUNDED, 0, 1_000_000_000),
         timeout(TRANSPORT_TIMEOUT_UNBOUNDED, 1, 0),
     );
-    assert_eq!(request_options_from_v1(&input).err(), Some(ERROR_INVALID_INPUT));
+    assert_eq!(
+        request_options_from_v1(&input).err(),
+        Some(ERROR_INVALID_INPUT)
+    );
 
     input.write_timeout = timeout(0, 0, 0);
     input.read_timeout = timeout(0, 0, 0);
     input.total_timeout = timeout(0, 0, 0);
     input.abi_version = 2;
-    assert_eq!(request_options_from_v1(&input).err(), Some(ERROR_INVALID_INPUT));
+    assert_eq!(
+        request_options_from_v1(&input).err(),
+        Some(ERROR_INVALID_INPUT)
+    );
 }
 
 #[test]

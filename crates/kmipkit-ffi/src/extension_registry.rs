@@ -16,11 +16,12 @@ use crate::{
     kmipkit_extension_identity_t, kmipkit_extension_information_t,
     kmipkit_extension_order_constraint_t, kmipkit_extension_recognition_t,
     kmipkit_extension_registry_limits_v1_t, kmipkit_extension_schema_t, kmipkit_raw_tag_t,
-    kmipkit_register_request_t, kmipkit_registered_extension_value_t, kmipkit_tag_t,
-    kmipkit_timeout_limit_v1_t, kmipkit_transport_config_t, kmipkit_transport_config_v1_t,
-    kmipkit_transport_input_v1_t, kmipkit_ttlv_item_t, kmipkit_ttlv_item_view_t,
-    kmipkit_ttlv_path_t, kmipkit_ttlv_structure_t, kmipkit_ttlv_structure_view_t,
-    kmipkit_ttlv_value_t, kmipkit_ttlv_value_view_t, kmipkit_validated_extension_value_t,
+    kmipkit_register_request_t, kmipkit_registered_extension_value_t, kmipkit_request_options_v1_t,
+    kmipkit_tag_t, kmipkit_timeout_limit_v1_t, kmipkit_transport_config_t,
+    kmipkit_transport_config_v1_t, kmipkit_transport_input_v1_t, kmipkit_ttlv_item_t,
+    kmipkit_ttlv_item_view_t, kmipkit_ttlv_path_t, kmipkit_ttlv_structure_t,
+    kmipkit_ttlv_structure_view_t, kmipkit_ttlv_value_t, kmipkit_ttlv_value_view_t,
+    kmipkit_validated_extension_value_t,
 };
 use kmipkit_client::extension_registry as client_extension;
 use kmipkit_client::{
@@ -34,8 +35,8 @@ use kmipkit_protocol::{
 };
 use kmipkit_transport::{
     CertificateInput, ClientIdentity, Endpoint, PrivateKeyInput, RequestDeliveryState,
-    RevocationListInput, TimeoutLimit, TimeoutPolicy, TransportCauseCategory, TransportConfig,
-    TrustSource,
+    RequestOptions, RevocationListInput, TimeoutLimit, TimeoutPolicy, TransportCauseCategory,
+    TransportConfig, TrustSource,
 };
 use kmipkit_ttlv::codec::CodecLimits;
 use kmipkit_ttlv::{Item, ItemType, RawTag, Structure, Tag, Value, ValueView};
