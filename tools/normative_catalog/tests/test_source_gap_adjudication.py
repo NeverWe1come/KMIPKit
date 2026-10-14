@@ -105,6 +105,89 @@ class SourceGapAdjudicationTests(unittest.TestCase):
         self.assertTrue(all(requirement_id in row["requirement_ids"] for row in catalog_profiles))
         self.assertTrue(all(requirement_id in row["requirement_ids"] for row in oracle_profiles))
 
+    def test_section_4_31_absent_link_may_is_a_client_capability_without_implementation_evidence(self) -> None:
+        catalog = _load_json(CATALOG_PATH)
+        oracle = _load_json(ORACLE_PATH)
+        requirements = {row["requirement_id"]: row for row in catalog["requirements"]}
+        clauses = {row["clause_id"]: row for row in catalog["source_clauses"]}
+        reviews = {row["source_clause_id"]: row for row in oracle["source_requirement_reviews"]}
+        gaps = {row["gap_id"]: row for row in oracle["source_only_requirement_gaps"]}
+        requirement_id = "KMIPKIT-REQ-SPEC-4.31-002"
+        gap_id = "KMIPKIT-SOURCE-GAP-SPEC-4.31-MAY-ABSENT-LINKS"
+        gap = gaps[gap_id]
+        review = reviews["KMIPKIT-CLAUSE-SPEC-4.31-002"]
+        atom = review["source_obligations"][0]
+        self.assertTrue(
+            requirement_id in requirements,
+            "the client absent-Link MAY needs its own stable requirement",
+        )
+        requirement = requirements[requirement_id]
+
+        self.assertEqual(gap["source_clause_id"], "KMIPKIT-CLAUSE-SPEC-4.31-002")
+        self.assertEqual(gap["html_line_range"], [15815, 15819])
+        self.assertEqual(
+            gap["source_excerpt"],
+            "It is also possible that a Managed Object does not have links to associated cryptographic objects. "
+            "This MAY occur in cases where the associated key material is not available to the server or client "
+            "(e.g., the registration of a CA Signer certificate with a server, where the corresponding private "
+            "key is held in a different manner).",
+        )
+        self.assertEqual(gap["source_keywords"], ["MAY"])
+        self.assertEqual(gap["source_force"], "MAY")
+        self.assertEqual(gap["actor"], "client")
+        self.assertEqual(gap["direction"], "unclear")
+        self.assertEqual(
+            gap["condition"],
+            "associated cryptographic key material is unavailable to the server or client",
+        )
+        self.assertEqual(gap["scope_disposition"], "client_1_0")
+        self.assertEqual(gap["candidate_requirement_id"], requirement_id)
+        self.assertIsNone(gap["proposed_requirement_id"])
+        self.assertEqual(gap["status"], "source_obligation_covered_by_existing_stable_label")
+
+        self.assertEqual(review["expected_client_requirement_ids"], [requirement_id])
+        self.assertEqual(atom["source_keyword"], "MAY")
+        self.assertEqual(atom["actor"], "client")
+        self.assertEqual(atom["scope_disposition"], "client_1_0")
+        self.assertEqual(atom["candidate_requirement_id"], requirement_id)
+
+        self.assertEqual(requirement["source_keyword"], "MAY")
+        self.assertEqual(requirement["normative_strength"], "permission_or_optional")
+        self.assertEqual(requirement["role"], "client")
+        self.assertEqual(requirement["direction"], "unclear")
+        self.assertEqual(requirement["scope_state"], "client_1_0")
+        self.assertEqual(
+            requirement["condition"],
+            "associated cryptographic key material is unavailable to the server or client",
+        )
+        self.assertEqual(requirement["source_clause_ids"], ["KMIPKIT-CLAUSE-SPEC-4.31-002"])
+        self.assertEqual(requirement["test_case_ids"], [])
+        self.assertEqual(requirement["implementation_refs"], [])
+        self.assertEqual(requirement["verification_refs"], [])
+        self.assertEqual(requirement["status"], "unassigned")
+        self.assertIn("inbound or outbound", requirement["review_note"])
+        self.assertIn("does not assign message direction", requirement["review_note"])
+        self.assertIn("operation-specific Link requirements", requirement["review_note"])
+
+        clause = clauses["KMIPKIT-CLAUSE-SPEC-4.31-002"]
+        self.assertEqual(clause["disposition"], "requirement")
+        self.assertEqual(clause["requirement_ids"], [requirement_id])
+        self.assertEqual(clause["role"], "client")
+        self.assertEqual(clause["direction"], "unclear")
+        self.assertEqual(clause["scope_state"], "client_1_0")
+        self.assertEqual(clauses["KMIPKIT-CLAUSE-SPEC-4.31-001"]["requirement_ids"], [])
+
+        server_should = reviews["KMIPKIT-CLAUSE-SPEC-4.31-001"]["source_obligations"][0]
+        self.assertEqual(server_should["source_keyword"], "SHOULD")
+        self.assertEqual(server_should["actor"], "server")
+        self.assertEqual(server_should["scope_disposition"], "server_only")
+        self.assertIsNone(server_should["candidate_requirement_id"])
+
+        header_requirement = requirements["KMIPKIT-REQ-SPEC-4.31-003"]
+        self.assertEqual(header_requirement["role"], "not_applicable")
+        self.assertEqual(header_requirement["scope_state"], "out_of_scope")
+        self.assertEqual(header_requirement["source_clause_ids"], ["KMIPKIT-CLAUSE-SPEC-4.31-003"])
+
     def test_reviewed_structural_requirements_have_stable_catalog_mappings(self) -> None:
         catalog = _load_json(CATALOG_PATH)
         oracle = _load_json(ORACLE_PATH)

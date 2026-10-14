@@ -2539,6 +2539,15 @@ The independent audit confirmed that `source_keywords` in the normative catalog 
 The report output was regenerated from the catalog; generated Rust profile metadata did not change. No runtime behavior or pinned OASIS source changed, and no new requirement ID or interpretation was introduced. T002 remains open for the remaining actor/scope/force adjudications and exact profile mapping across the full set of 18 client profiles.
 
 
+### KMIPKIT-0010 T002 follow-up — §4.31 absent-Link MAY (2026-10-15)
+
+The pinned Specification v2.1 §4.31 paragraph 2 at lines 15815–15819 says a Managed Object may lack links when associated key material is unavailable to the server or client. Table 92 supplies context that Link is not always present, is initially set by a Client or Server, and is modifiable or deletable by a client. The client capability applies to representing or accepting an absent-Link object state when that condition holds; the source does not identify a message direction, and client-visible object representations can be inbound or outbound. This does not assert that every operation permits omission or override operation-specific Link requirements. The §4.31 server SHOULD remains separate. No typed Link behavior test or implementation evidence is available, and the §4.31-003 REQUIRED header record does not cover Table 91 body rows.
+
+| Stage | DCO-signed commit and command | Result |
+|---|---|---|
+| Red — require the distinct §4.31-002 client MAY, exact source text and locator, evidence limits, separate server SHOULD, header-ID ownership, and all client profile closures | This DCO-signed Red commit; `py -3 -B -m unittest tools.normative_catalog.tests.test_source_gap_adjudication.SourceGapAdjudicationTests.test_section_4_31_absent_link_may_is_a_client_capability_without_implementation_evidence -v`<br>`py -3 -B -m unittest tools.normative_catalog.tests.test_generate_profiles.ProfileMetadataGeneratorTests.test_absent_link_may_is_in_each_independently_computed_client_profile_closure -v` | Expected Red: source adjudication fails because `KMIPKIT-REQ-SPEC-4.31-002` is absent; the independent `compute_profile_closure` regression fails for all 18 client profiles because the capability is not mapped. |
+
+
 ### KMIPKIT-0010 T002 follow-up — §4.21 lowercase Key Format request (2026-10-15)
 
 The pinned Specification v2.1 paragraph at lines 13894–13901 contains the lowercase client request clause and adjacent server digest obligations. Before this tranche, the §4.21 source-only review row was unresolved and had a short source range. The existing §4.26 client requirement, `KMIPKIT-REQ-SPEC-4.26-001`, already names only Create, Create Key Pair, Create Split Key, Re-key, Re-key Key Pair, and Derive Key. Its local executable evidence covers Create request serialization only; no official Test Case ID is linked. The client clause must remain lowercase and trace only to that existing capability, while the following §4.21 server SHALL remains server-side. This work does not add a §4.21 source clause to the requirement, add Register, or claim evidence for the other five operations.

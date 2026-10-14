@@ -413,6 +413,43 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
                     f"{sorted(missing_requirement_ids)[:8]}",
                 )
 
+    def test_absent_link_may_is_in_each_independently_computed_client_profile_closure(self) -> None:
+        """The §4.31 client MAY is inherited by each profile through its source closure."""
+        catalog_path = ROOT / "specification" / "catalog" / "kmip-2.1.json"
+        catalog = json.loads(catalog_path.read_text(encoding="utf-8"))
+        oracle_path = ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json"
+        oracle = json.loads(oracle_path.read_text(encoding="utf-8"))
+        requirement_id = "KMIPKIT-REQ-SPEC-4.31-002"
+        clause_id = "KMIPKIT-CLAUSE-SPEC-4.31-002"
+        catalog_profiles = {item["profile_id"]: item for item in catalog["profiles"] if item["role"] == "client"}
+        oracle_profiles = [item for item in oracle["profiles"] if item["role"] == "client"]
+
+        self.assertEqual(len(catalog_profiles), 18)
+        self.assertEqual(len(oracle_profiles), 18)
+        for audited_profile in oracle_profiles:
+            profile_id = audited_profile["profile_id"]
+            catalog_profile = catalog_profiles[profile_id]
+            computed = compute_profile_closure(
+                catalog,
+                catalog_profile["direct_source_clause_ids"],
+                profile_id=profile_id,
+            )
+            with self.subTest(profile_id=profile_id):
+                self.assertIn(clause_id, audited_profile["source_clause_ids"])
+                self.assertIn(clause_id, computed.source_clause_ids)
+                self.assertTrue(
+                    requirement_id in computed.requirement_ids,
+                    f"the independently computed source closure omits {requirement_id}",
+                )
+                self.assertTrue(
+                    requirement_id in catalog_profile["requirement_ids"],
+                    f"the generated catalog profile omits {requirement_id}",
+                )
+                self.assertTrue(
+                    requirement_id in audited_profile["requirement_ids_audited_subset"],
+                    f"the independent oracle subset omits {requirement_id}",
+                )
+
     def test_oracle_audits_all_mapped_conditional_requirements_in_each_profile_closure(self) -> None:
         """Every source-reviewed conditional client requirement is scoped to its applicable profile."""
         oracle_path = ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json"
