@@ -31,6 +31,21 @@ def _integer_range(value: int, minimum: int, maximum: int) -> int:
     return number
 
 
+def _fixed_width_integer_bounds(argument_type: Any) -> tuple[int, int] | None:
+    """Return the representable range for a fixed-width C integer argument."""
+    if argument_type.kind != "primitive":
+        return None
+    name = argument_type.cname
+    if not name.endswith("_t"):
+        return None
+    width = ffi.sizeof(argument_type) * 8
+    if name.startswith("uint"):
+        return 0, (1 << width) - 1
+    if name.startswith("int"):
+        return -(1 << (width - 1)), (1 << (width - 1)) - 1
+    return None
+
+
 def _normalize_integer_arguments(
     function: Callable[..., int], arguments: tuple[object, ...]
 ) -> tuple[object, ...]:
@@ -44,19 +59,10 @@ def _normalize_integer_arguments(
 
     normalized = list(arguments)
     for index, argument_type in enumerate(signature.args[: len(arguments)]):
-        name = argument_type.cname
-        if argument_type.kind != "primitive" or not name.endswith("_t"):
+        bounds = _fixed_width_integer_bounds(argument_type)
+        if bounds is None:
             continue
-        if name.startswith("uint"):
-            minimum = 0
-            maximum = (1 << (ffi.sizeof(argument_type) * 8)) - 1
-        elif name.startswith("int"):
-            width = ffi.sizeof(argument_type) * 8
-            minimum = -(1 << (width - 1))
-            maximum = (1 << (width - 1)) - 1
-        else:
-            continue
-        normalized[index] = _integer_range(normalized[index], minimum, maximum)
+        normalized[index] = _integer_range(normalized[index], *bounds)
     return tuple(normalized)
 
 

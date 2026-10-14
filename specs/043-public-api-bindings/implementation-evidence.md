@@ -1643,3 +1643,25 @@ NASM warnings in this Windows environment; JNI compilation, tests, example,
 and coverage verification all completed successfully. The current Java source
 surface required no production repair. T022 child-owner retention is accepted
 above; T029/T071 complete cross-language fixture gate remains separate work.
+
+## T025 — Python wrapper ownership and fixed-width input boundaries
+
+Python client methods now validate every borrowed handle before transferring a
+batch or item wrapper. The shared CFFI call path validates and canonicalizes
+fixed-width `int*_t` and `uint*_t` arguments before CFFI conversion and before
+consuming ownership. Unknown native TTLV item-type codes map to the stable
+Python `InvalidInputError`, matching the Java `InvalidInputException` boundary.
+These changes close the T025 Python portion of KMIPKIT-0043-FR-009 and
+KMIPKIT-0043-FR-013; they do not expand the binding API.
+
+| Phase | Commit | Command | Result |
+|---|---|---|---|
+| Red | `e9a121cc` | `$env:PYTHONPATH = 'bindings/python/src'; & '.\bindings\python\.venv\Scripts\python.exe' -m pytest -q --tb=short bindings/python/tests/test_client.py -k 'fixed_width_integer_inputs or client_execute_rejects_closed_borrowed or batch_add_item_rejects_closed or native_unknown_ttlv_item_type'` | Expected failure: 8 failed, 1 passed, 120 deselected. Failures demonstrated bool acceptance, batch/item consumption when borrowed handles were closed, and raw `ValueError` for unknown item types. |
+| Green | `79229cb5` | Same focused command | PASS: 9 passed, 120 deselected after validating integer arguments, preflighting borrowed handles, and mapping unsupported item types. |
+| Refactor | this evidence/refactor commit | `$env:PYTHONPATH = 'bindings/python/src'; & '.\bindings\python\.venv\Scripts\python.exe' -m pytest -q --tb=short bindings/python/tests` | PASS: 218 tests. The integer-bound calculation was extracted into a private helper without changing behavior. `git diff --check` passed. |
+
+The initial full-suite check exposed ownership unit tests that replace CFFI
+with a fake object without `typeof`; the normalizer treats that test seam as a
+non-introspectable callable and preserves the existing ownership behavior.
+Ruff is not installed in the project virtual environment, and this binding
+project does not configure it.
