@@ -275,10 +275,19 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
                 )
 
     def test_profile_oracle_requirement_arrays_match_independent_source_reviews(self) -> None:
-        """Full profile requirement sets come from reviewed source records, not the catalog."""
+        """Full profile requirement sets come from reviewed source records, not profile arrays."""
         oracle_path = ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json"
         oracle = json.loads(oracle_path.read_text(encoding="utf-8"))
+        catalog_path = ROOT / "specification" / "catalog" / "kmip-2.1.json"
+        catalog = json.loads(catalog_path.read_text(encoding="utf-8"))
         source_clauses = {row["clause_id"]: row for row in oracle["source_clause_crosswalk"]}
+        requirement_ids_by_source_gap: dict[str, set[str]] = {}
+        for requirement in catalog["requirements"]:
+            source_gap_id = requirement.get("source_gap_id")
+            if isinstance(source_gap_id, str):
+                requirement_ids_by_source_gap.setdefault(source_gap_id, set()).add(
+                    requirement["requirement_id"]
+                )
 
         for profile in oracle["profiles"]:
             profile_id = profile["profile_id"]
@@ -345,8 +354,28 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
                 ):
                     expected_requirement_ids.add(gap["candidate_requirement_id"])
 
+            source_table_requirement_ids = {
+                requirement_id
+                for contract in oracle.get("source_table_contracts", [])
+                if contract.get("actor") in {"client", "both"}
+                and contract.get("scope_disposition") in {"client_1_0", "profile_conditional"}
+                and (
+                    contract.get("source_clause_id") in source_clause_ids
+                    or (contract.get("source_id"), contract.get("source_section")) in included_sections
+                )
+                for requirement_id in requirement_ids_by_source_gap.get(contract["gap_id"], set())
+            }
+
             expected = sorted(expected_requirement_ids)
             with self.subTest(profile_id=profile_id):
+                missing_source_table_requirement_ids = sorted(
+                    source_table_requirement_ids - expected_requirement_ids
+                )
+                self.assertEqual(
+                    missing_source_table_requirement_ids,
+                    [],
+                    "client source-table contracts in the profile closure must contribute their existing stable labels",
+                )
                 self.assertEqual(
                     profile.get("requirement_ids"),
                     expected,
