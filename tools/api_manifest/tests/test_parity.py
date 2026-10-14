@@ -150,6 +150,11 @@ class PublicApiParityTests(unittest.TestCase):
                 self.assertTrue(case["javaObservedOutput"])
                 self.assertTrue(case["cleanup"])
                 self.assertEqual(len(case["cleanup"]), len(set(case["cleanup"])))
+                self.assertEqual(
+                    set(case["consumerTests"]),
+                    set(SHARED_PARITY_LANGUAGES),
+                    f"{case['id']} must declare an available or blocked mapping for every parity language",
+                )
                 self.assertIn("java", case["consumerTests"])
                 self.assertTrue(set(case["consumerTests"]).issubset(SHARED_PARITY_LANGUAGES))
                 for language, mapping in case["consumerTests"].items():
