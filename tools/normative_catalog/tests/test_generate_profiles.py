@@ -244,6 +244,37 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
                 self.assertTrue(source_clause_ids.issubset(closure.source_clause_ids))
                 self.assertTrue(requirement_ids.issubset(closure.requirement_ids))
 
+    def test_foundry_basic_condition_text_names_its_inheriting_profiles(self) -> None:
+        """The catalog and source review describe the same normative inheritance."""
+        catalog = json.loads((ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8"))
+        oracle = json.loads(
+            (ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json")
+            .read_text(encoding="utf-8")
+        )
+        clause_id = "KMIPKIT-CLAUSE-PROF-5.7.1-001"
+        requirement_id = "KMIPKIT-REQ-PROF-5.7.1-001"
+        expected_condition = (
+            "Applies to the Basic Symmetric Key Foundry Client profile and to Intermediate and Advanced "
+            "Symmetric Key Foundry Client profiles that incorporate section 5.7.1 by reference; "
+            "no support claim is inferred."
+        )
+        clause = next(item for item in catalog["source_clauses"] if item["clause_id"] == clause_id)
+        requirement = next(item for item in catalog["requirements"] if item["requirement_id"] == requirement_id)
+        review = next(item for item in oracle["source_requirement_reviews"] if item["source_clause_id"] == clause_id)
+        obligation = review["source_obligations"][0]
+
+        self.assertEqual(clause["condition"], expected_condition)
+        self.assertEqual(obligation["condition"], expected_condition)
+        self.assertEqual(requirement["condition"], expected_condition)
+        self.assertEqual(review["applies_to"], "KMIPKIT-PROFILE-SYMMETRIC-KEY-FOUNDRY-BASIC-CLIENT")
+        self.assertEqual(
+            review["inherited_by_profiles"],
+            [
+                "KMIPKIT-PROFILE-SYMMETRIC-KEY-FOUNDRY-ADVANCED-CLIENT",
+                "KMIPKIT-PROFILE-SYMMETRIC-KEY-FOUNDRY-INTERMEDIATE-CLIENT",
+            ],
+        )
+
     def test_tape_library_includes_normatively_referenced_mandatory_test_cases(self) -> None:
         """Profiles v2.1 §6.28 item 6 incorporates the §5.12.6 test cases."""
         catalog_path = ROOT / "specification" / "catalog" / "kmip-2.1.json"
