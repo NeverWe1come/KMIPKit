@@ -7,13 +7,13 @@ transport-wire verification.
 
 from __future__ import annotations
 
-import importlib
 import gc
+import importlib
+import weakref
 from dataclasses import replace
 from pathlib import Path
-from typing import get_type_hints
 from types import SimpleNamespace
-import weakref
+from typing import get_type_hints
 
 import pytest
 
@@ -2253,7 +2253,7 @@ def test_client_create_zeroizes_temporary_key_copies_and_keeps_config_reusable(
         captured_secret_owners.extend(
             owner for owner in owners if isinstance(owner, client._SecretBytes)
         )
-        original_wipe(owners)  # type: ignore[arg-type]
+        original_wipe(owners)
 
     monkeypatch.setattr(client, "_wipe_transport_secrets", capture_wiped_owners)
     transport_pointer, _transport_storage = _opaque("kmipkit_transport_config_t")
@@ -2353,7 +2353,9 @@ def test_transport_record_wipes_key_span_when_later_record_validation_fails(
         client._transport_record(transport)
 
     assert captured_secret_owners
-    assert all(owner.buffer == bytes(len(owner.buffer)) for owner in captured_secret_owners)
+    assert all(
+        owner.buffer == bytes(len(owner.buffer)) for owner in captured_secret_owners
+    )
     assert client._transport_source(key).buffer == b"private-key-sentinel"
     assert client._transport_source(certificate).buffer == b"client-certificate"
 

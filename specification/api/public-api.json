@@ -213881,6 +213881,7 @@
       "capabilityId": "production_transport",
       "requirementIds": [
         "KMIPKIT-0013-FR-001",
+        "KMIPKIT-0013-FR-005",
         "KMIPKIT-0013-FR-007",
         "KMIPKIT-0043-FR-003",
         "KMIPKIT-0043-FR-007",
@@ -214081,6 +214082,7 @@
       "capabilityId": "production_transport",
       "requirementIds": [
         "KMIPKIT-0013-FR-001",
+        "KMIPKIT-0013-FR-005",
         "KMIPKIT-0013-FR-007",
         "KMIPKIT-0043-FR-003",
         "KMIPKIT-0043-FR-007",
@@ -217293,6 +217295,7 @@
       "capabilityId": "production_transport",
       "requirementIds": [
         "KMIPKIT-0013-FR-001",
+        "KMIPKIT-0013-FR-005",
         "KMIPKIT-0013-FR-007",
         "KMIPKIT-0043-FR-003",
         "KMIPKIT-0043-FR-007",

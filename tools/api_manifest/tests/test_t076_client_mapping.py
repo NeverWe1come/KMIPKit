@@ -511,7 +511,8 @@ class T076ClientMappingTests(unittest.TestCase):
             "CredentialEncoding" in python,
             "Python exposes the shared PEM/DER encoding selector",
         )
-        self.assertIn("if any(isinstance(item.source, Path) for item in self.revocation_lists)", python)
+        self.assertIn("isinstance(_transport_source(item), Path)", python)
+        self.assertIn("for item in self.revocation_lists", python)
         self.assertEqual("org.kmipkit.extensions.TransportConfiguration.Builder", mappings["kmipkit_transport_config_v1_t.client_certificates"][1])
         self.assertEqual("org.kmipkit.extensions.TransportConfiguration.Builder", mappings["kmipkit_transport_config_v1_t.client_private_key"][1])
         self.assertEqual("org.kmipkit.extensions.TransportConfiguration.Builder", mappings["kmipkit_transport_config_v1_t.trust_certificates"][1])

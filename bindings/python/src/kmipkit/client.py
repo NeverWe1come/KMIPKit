@@ -560,7 +560,9 @@ class TransportConfig:
         object.__setattr__(self, "revocation_lists", revocation_lists)
         if any(not isinstance(item, TransportInput) for item in self.revocation_lists):
             errors.raise_for_status(4)
-        if any(isinstance(_transport_source(item), Path) for item in self.revocation_lists):
+        if any(
+            isinstance(_transport_source(item), Path) for item in self.revocation_lists
+        ):
             errors.raise_for_status(4)
         _validate_transport_input_group(self.revocation_lists)
         for timeout in (
@@ -827,11 +829,8 @@ class Client(_ClientHandle):
                         record, transport_output
                     )
                 finally:
-                    _wipe_transport_secrets(owners)
+                    _wipe_client_transport_secrets(owners, transport)
                     owners = ()
-                    key_source = _transport_source(transport.client_private_key)
-                    if isinstance(key_source, _SecretBytes):
-                        key_source.wipe()
                 _raise_abi_status(status)
                 transport_slot = ffi.new(
                     "kmipkit_transport_config_t **", transport_output[0]
@@ -853,10 +852,7 @@ class Client(_ClientHandle):
                     lib.kmipkit_transport_config_release(transport_slot[0])
                 _raise_abi_status(status)
         finally:
-            _wipe_transport_secrets(owners)
-            key_source = _transport_source(transport.client_private_key)
-            if isinstance(key_source, _SecretBytes):
-                key_source.wipe()
+            _wipe_client_transport_secrets(owners, transport)
         if client_output[0] == ffi.NULL:
             errors.raise_for_status(7)
         return _wrap_owned_handle(cls, client_output[0])
@@ -1143,6 +1139,16 @@ def _wipe_transport_secrets(owners: tuple[object, ...] | list[object]) -> None:
     for owner in owners:
         if isinstance(owner, _SecretBytes):
             owner.wipe()
+
+
+def _wipe_client_transport_secrets(
+    owners: tuple[object, ...] | list[object], configuration: TransportConfig
+) -> None:
+    """Wipe ABI spans and the per-call key snapshot after native copying."""
+    _wipe_transport_secrets(owners)
+    key_source = _transport_source(configuration.client_private_key)
+    if isinstance(key_source, _SecretBytes):
+        key_source.wipe()
 
 
 def _read_last_error() -> tuple[int, int, int, int]:
