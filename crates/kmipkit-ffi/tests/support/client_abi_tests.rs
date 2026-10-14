@@ -790,7 +790,10 @@ fn execute_with_options_invalid_options_nulls_response_output() {
     );
 
     assert_eq!(status, ERROR_INVALID_INPUT);
-    assert!(response.is_null(), "error output slots must be initialized to NULL");
+    assert!(
+        response.is_null(),
+        "error output slots must be initialized to NULL"
+    );
 }
 
 #[test]
