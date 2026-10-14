@@ -853,19 +853,19 @@ class T076ClientMappingTests(unittest.TestCase):
             ),
             ("java-kmipkit", "org.kmipkit.extensions.TransportConfiguration.Builder.trustCertificatesDer"): (
                 "kmipkit_transport::CertificateInput::from_der",
-                "kmipkit_transport_config_v1_t.trust_certificates",
+                "kmipkit_transport_input_v1_t.encoding",
                 "org.kmipkit.extensions.TransportConfiguration.Builder.trustCertificatesDer",
-                "kmipkit.client.TransportInput.memory",
+                "kmipkit.client.CredentialEncoding.DER",
             ),
             ("java-kmipkit", "org.kmipkit.extensions.TransportConfiguration.Builder.trustCertificateFiles"): (
                 "kmipkit_transport::CertificateInput",
-                "kmipkit_transport_config_v1_t.trust_certificates",
+                "kmipkit_transport_input_v1_t.source_kind",
                 "org.kmipkit.extensions.TransportConfiguration.Builder.trustCertificateFiles",
                 "kmipkit.client.TransportInput.file",
             ),
             ("java-kmipkit", "org.kmipkit.extensions.TransportConfiguration.Builder.clientIdentityFiles"): (
                 "kmipkit_transport::ClientIdentity",
-                "kmipkit_transport_config_t",
+                "kmipkit_transport_input_v1_t.source_kind",
                 "org.kmipkit.extensions.TransportConfiguration.Builder.clientIdentityFiles",
                 "kmipkit.client.TransportInput.file",
             ),
