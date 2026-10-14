@@ -793,6 +793,70 @@ def test_last_error_metadata_preserves_unknown_discriminators_and_fallback(
     assert client._read_last_error() == (7, 5, 10, 0)
 
 
+def test_client_execute_with_options_preserves_timeout_kinds_and_consumes_batch(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    client_pointer, _client_storage = _opaque("kmipkit_client_t")
+    batch_pointer, _batch_storage = _opaque("kmipkit_client_batch_t")
+    response_pointer, _response_storage = _opaque("kmipkit_client_batch_response_t")
+    handle = _wrap_owned_handle(client.Client, client_pointer)
+    batch = _wrap_owned_handle(client.Batch, batch_pointer)
+    limits = ttlv.codec_limits_defaults()
+    options = client.RequestOptions(
+        connect_timeout=client.TimeoutLimit.default(),
+        write_timeout=client.TimeoutLimit.bounded(0),
+        read_timeout=client.TimeoutLimit.unbounded(),
+        total_timeout=client.TimeoutLimit.bounded(2, 125_000_000),
+    )
+    observed: list[tuple[int, int, int]] = []
+
+    def execute(
+        _client: object,
+        batch_slot: object,
+        _limits: object,
+        request_options: object,
+        output: object,
+    ) -> int:
+        observed.extend(
+            (
+                int(getattr(request_options, name).kind),
+                int(getattr(request_options, name).seconds),
+                int(getattr(request_options, name).nanoseconds),
+            )
+            for name in (
+                "connect_timeout",
+                "write_timeout",
+                "read_timeout",
+                "total_timeout",
+            )
+        )
+        batch_slot[0] = client.ffi.NULL  # type: ignore[index]
+        output[0] = response_pointer  # type: ignore[index]
+        return 0
+
+    monkeypatch.setattr(
+        client,
+        "lib",
+        SimpleNamespace(
+            kmipkit_client_execute_with_options_v1=execute,
+            kmipkit_client_batch_response_item_count=lambda _response, count: count.__setitem__(0, 0) or 0,
+            kmipkit_client_batch_response_release=lambda _ptr: None,
+            kmipkit_client_release=lambda _ptr: None,
+            kmipkit_client_batch_release=lambda _ptr: None,
+        ),
+    )
+    try:
+        result = handle.execute_with_options(batch, limits, options)
+        assert observed == [(0, 0, 0), (1, 0, 0), (2, 0, 0), (1, 2, 125_000_000)]
+        assert batch.closed
+        assert result.items == ()
+        result.close()
+    finally:
+        limits.close()
+        batch.close()
+        handle.close()
+
+
 def test_client_execute_restores_batch_on_ffi_conversion_error(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
