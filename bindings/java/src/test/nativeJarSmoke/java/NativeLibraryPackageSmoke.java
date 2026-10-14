@@ -184,6 +184,7 @@ public final class NativeLibraryPackageSmoke {
     private static Path createVariant(
             Path source, Path destination, Path replacementLibrary, boolean omitNativeResources) throws Exception {
         int libraryEntries = 0;
+        int omittedNativeLibraryEntries = 0;
         try (JarFile input = new JarFile(source.toFile());
                 JarOutputStream output = new JarOutputStream(Files.newOutputStream(destination))) {
             Enumeration<JarEntry> entries = input.entries();
@@ -191,6 +192,9 @@ public final class NativeLibraryPackageSmoke {
                 JarEntry entry = entries.nextElement();
                 String name = entry.getName();
                 if (omitNativeResources && name.startsWith(NATIVE_RESOURCE_PREFIX)) {
+                    if (isNativeLibrary(name)) {
+                        omittedNativeLibraryEntries++;
+                    }
                     continue;
                 }
 
@@ -212,8 +216,8 @@ public final class NativeLibraryPackageSmoke {
             }
         }
 
-        if (omitNativeResources && libraryEntries != 0) {
-            throw new IllegalStateException("The missing-library package variant retained native resources.");
+        if (omitNativeResources && omittedNativeLibraryEntries != 1) {
+            throw new IllegalStateException("The missing-library package variant did not omit its native library.");
         }
         if (replacementLibrary != null && libraryEntries != 1) {
             throw new IllegalStateException("The package must contain exactly one host-native resource.");

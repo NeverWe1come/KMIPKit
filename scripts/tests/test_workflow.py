@@ -379,7 +379,7 @@ class WorkflowContractTests(unittest.TestCase):
             "maturin build --offline",
             "uv venv --offline",
             "uv pip install --offline --no-deps",
-            "native_package_smoke.py",
+            "python_smoke.py",
             "wrong_abi.rs",
         ):
             with self.subTest(required=required):

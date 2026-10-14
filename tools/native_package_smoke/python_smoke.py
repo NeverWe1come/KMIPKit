@@ -23,8 +23,12 @@ def deny_network(*_args, **_kwargs):
 
 socket.socket.connect = deny_network
 socket.socket.connect_ex = deny_network
+socket.socket.sendto = deny_network
 socket.create_connection = deny_network
 socket.getaddrinfo = deny_network
+for operation in ("bind", "listen", "accept"):
+    if hasattr(socket.socket, operation):
+        setattr(socket.socket, operation, deny_network)
 
 try:
     from kmipkit.metadata import get_version

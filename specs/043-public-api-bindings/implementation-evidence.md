@@ -399,6 +399,53 @@ Run `38301807549` on `46f7a1da` reached the packaged Java smoke on Ubuntu and ex
 
 The Linux smoke failure from `38301807549` is historical evidence on the pre-fix head. A fresh remote CI run on the updated commits is required; leave T028 and T011 unchecked until all required checks on the final pushed head pass.
 
+## T028 — Java and Python offline packaged-consumer probes
+
+The CI keeps the approved `ubuntu-latest`, `windows-2022`, and `macos-latest` matrix. Java's `nativeJarSmoke` now launches isolated JVM consumers against the classifier JAR and verifies packaged load success, a JAR with native resources removed, unsupported `os.arch` selection, and an ABI-2 native fixture. The Java guard blocks socket connect/listen/accept checks; each subprocess reports zero network attempts. The ABI fixture is compiled locally with `rustc`, returns ABI 2 through both KMIPKit's C version symbol and the JNI ABI query, and its digest replaces the packaged checksum so the ABI validation path is reached.
+
+Python CI now builds a wheel with Cargo offline, primes a fresh Python 3.12 consumer environment with CFFI, installs the wheel using `uv pip install --offline --no-deps`, then runs the installed package under `python -I`. The consumer process blocks socket connect, connect-ex, send-to, DNS resolution, and server socket operations, and records any attempted connection. It exercises successful packaged loading, a missing native library, and the ABI-2 fixture; its diagnostics must remain actionable and redact both installed-library and fixture paths. Build/dependency priming is offline as well, while the no-network assertion specifically covers the installed consumer runtime.
+
+Architecture evidence is deliberately narrow. The Java packaged probe verifies that an unsupported architecture is rejected during target selection; it does not pretend that this is a real foreign-machine shared library load. The Python packaged smoke does not load a foreign-architecture binary. `test_wrong_architecture_binary_failure_is_redacted` retains explicit loader-level coverage by injecting an architecture-specific loader error and asserting actionable, path-redacted output. A genuine foreign-architecture shared library was not available for the local Windows run.
+
+| Phase | Commit | Verification | Result |
+|---|---|---|---|
+| Red | `ad5f0685` | `$env:PYTHONPATH='bindings/python/src'; & '.\bindings\python\.venv\Scripts\python.exe' -B -m pytest -p no:cacheprovider -q --tb=short bindings/python/tests/test_native_loading.py -k 'wrong_architecture or abi_mismatch'` | Expected failure: 2 assertions rejected generic, non-actionable loader/ABI messages. |
+| Red | `66809f0c` | `python -B -m unittest scripts.tests.test_workflow.WorkflowContractTests.test_java_package_loader_smoke_runs_offline_on_every_platform scripts.tests.test_workflow.WorkflowContractTests.test_python_installed_wheel_smoke_runs_offline_in_isolated_environment -v` | Expected failure: 6 missing workflow/package-smoke contract assertions. |
+| Green | `00703bc1` | Focused Python native-loader suite; both workflow contracts; Java `nativeJarSmoke`; Java `compileTestJava`; Python installed-wheel smoke | PASS locally on Windows. Python loader tests: 14 passed. Both workflow contracts passed. Java packaged success, missing-resource, unsupported-architecture, and wrong-ABI probes passed offline. `compileTestJava` passed. The Python CPython 3.12.14 wheel loaded successfully and passed missing-library and ABI mismatch probes offline. |
+| Refactor/evidence | this commit | Re-run the focused loader suite, both packaged-workflow contracts, Java packaged smoke, Python installed-wheel smoke, and `git diff --check` after the harness cleanup | PASS: 14 Python loader tests; 2 workflow contracts; Java packaged smoke and Python installed-wheel smoke passed; no whitespace errors. The updated Java missing-resource variant now asserts that it removed exactly one native library, and the Python consumer guard also blocks UDP sends and socket server operations. |
+
+Focused local commands and results from the repository root:
+
+```text
+$env:PYTHONPATH='bindings/python/src'; & '.\bindings\python\.venv\Scripts\python.exe' -B -m pytest -p no:cacheprovider -q --tb=short bindings/python/tests/test_native_loading.py
+python -B -m unittest scripts.tests.test_workflow.WorkflowContractTests.test_java_package_loader_smoke_runs_offline_on_every_platform scripts.tests.test_workflow.WorkflowContractTests.test_python_installed_wheel_smoke_runs_offline_in_isolated_environment -v
+git diff --check
+```
+
+Results: `14 passed`; both named workflow contract tests passed; and `git diff --check` returned exit 0. From `bindings/java`, `./gradlew.bat --offline compileTestJava` passed, followed by the `nativeJarSmoke` command above. Re-running the consumer helper against the already installed isolated wheel with the expanded network guard printed `installed Python wheel load, missing-library, and ABI mismatch probes passed offline` (exit 0).
+
+Local Windows Java commands, run from `bindings/java`:
+
+```text
+./gradlew.bat --offline "-PnativeLibrary=target/native/kmipkit_jni.dll" nativeJarSmoke
+./gradlew.bat --offline compileTestJava
+```
+
+The native library argument pointed at the existing `target/native/kmipkit_jni.dll`; Gradle only read that artifact and wrote smoke outputs under `bindings/java/build/`. The packaged smoke printed `packaged JNI load and negative probes passed offline`; Gradle reported six tasks successful. Java ran locally on 21.0.12, with compilation targeting release 17. The Java 17 CI matrix remains authoritative.
+
+Local Python wheel sequence, run from `bindings/python` with a fresh temporary smoke root and `CARGO_TARGET_DIR` outside the worktree:
+
+```text
+maturin build --offline --release --out <smoke-root>/wheel
+rustc --edition=2024 --crate-name kmipkit_wrong_abi --crate-type cdylib ../../tools/native_package_smoke/wrong_abi.rs -o <smoke-root>/wrong-abi.dll
+uv venv --offline --python 3.12 <smoke-root>/consumer-env
+uv pip install --offline --python <smoke-root>/consumer-env/Scripts/python.exe cffi==1.17.1
+uv pip install --offline --no-deps --python <smoke-root>/consumer-env/Scripts/python.exe <smoke-root>/wheel/kmipkit-1.0.0-py3-none-win_amd64.whl
+python -B ../../tools/native_package_smoke/python_smoke.py --consumer-python <smoke-root>/consumer-env/Scripts/python.exe --wrong-abi-library <smoke-root>/wrong-abi.dll --smoke-root <smoke-root>
+```
+
+Result: Maturin built the wheel offline; CFFI 1.17.1 and the wheel were installed offline; output was `installed Python wheel load, missing-library, and ABI mismatch probes passed offline` (exit 0). The focused workflow tests assert that this wheel smoke and Java packaged probes are wired to the same three CI OS labels. Remote Ubuntu/macOS results and a fresh final-head three-OS CI run are pending; T028 remains unchecked until that matrix passes.
+
 ## T011 — CI follow-up for capability, generated C docs, and schema payload safety
 
 The subsequent PR run `38295045556` exposed three independent regressions. First, the manifest correctly declared the C-mapped `vendor_extension_registry` capability while the runtime query and FFI inventory test omitted it. Second, the checked-in generated C header had last-error documentation that was not represented in the manifest or generator. Third, QA demonstrated that a C documentation string containing a backslash-newline splice could escape the generated comment even though `*/` was rejected. Each behavior has a separate Red and Green commit; T011 stays open until remote CI on the new head passes.
