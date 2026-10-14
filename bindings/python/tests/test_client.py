@@ -368,6 +368,13 @@ def test_https_tls_server_name_is_forwarded_separately_from_authority() -> None:
     assert client.ffi.string(record.target_uri.data, record.target_uri.length) == b"/kmip"
 
 
+def test_https_tls_server_name_override_rejects_malformed_authority() -> None:
+    with pytest.raises(errors.InvalidInputError):
+        client.Endpoint.https(
+            "https://[invalid", tls_server_name="kms.example.test"
+        )
+
+
 def test_raw_tls_ip_accepts_an_explicit_tls_server_name() -> None:
     endpoint = client.Endpoint.raw_tls(
         "192.0.2.10", 5696, tls_server_name="kms.example.test"
