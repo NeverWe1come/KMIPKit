@@ -1074,7 +1074,7 @@ introduced by RequestOptions; it does not close T076 or the related task gates.
 | Green | `b604b984` | Same focused test; `uv run --offline --no-project --with-requirements tools/api_manifest/requirements-test.txt python -B -m unittest tools.api_manifest.tests.test_t076_client_mapping -v`; `uv run --offline --no-project --with-requirements tools/api_manifest/requirements-test.txt python -B tools/api_manifest/generate.py --write`; `uv run --offline --no-project --with-requirements tools/api_manifest/requirements-test.txt python -B tools/api_manifest/generate.py --check`; `uv run --offline --no-project --with-requirements tools/api_manifest/requirements-test.txt python -B -m unittest tools.api_manifest.tests.test_generate -v`; pinned binding-export audit with `--check` | PASS: focused Red regression 1/1; T076 mapping tests 33/33; generator tests 57 passed with 2 Windows symlink-permission skips; all 12 outputs current; audit exit 0 with C 272/242, Java 481/442, Python 556/425, and every package `matchesManifest=true`. |
 | Refactor | This commit | `git diff --check`; inspect the refreshed audit report and evidence against generated outputs | Record the exact partial gate state and clarify that structural export matching does not complete T076, T021, T024, or T011. |
 
-Independent semantic review and the remaining cross-platform/required CI gates are still outstanding. T011, T076, T021, and T024 remain open; no generic error-TTLV API was promoted.
+The recorded internal QA review and automated security diff scans are complete for their reviewed ranges; they do not replace the qualified human security review required before release. Required CI on the final PR head and complete four-language semantic parity remain outstanding. T011, T076, T021, and T024 remain open; no generic error-TTLV API was promoted.
 
 ### T076 Python native-constructor input evidence and FFI error output (2026-10-14)
 
@@ -1100,3 +1100,24 @@ not close T076 or the related task gates.
 | Red | `31c5080c` | `uv run --offline --project bindings/python --frozen pytest -q bindings/python/tests/test_client.py::test_client_create_forwards_identity_and_trust_modes_to_native_constructor`; `cargo test -p kmipkit-ffi --lib execute_with_options_invalid_options_nulls_response_output -- --nocapture` | Expected failures: Python produced 4 failing parameter cases because the native-constructor stub recorded only `abi_version`; FFI produced 1 failure because the stale response pointer remained unchanged for null options. |
 | Green | `2afbdaee` | `uv run --offline --project bindings/python --frozen pytest -q bindings/python/tests/test_client.py::test_client_create_forwards_identity_and_trust_modes_to_native_constructor bindings/python/tests/test_client.py::test_transport_record_forwards_identity_and_trust_source_modes`; `cargo test -p kmipkit-ffi --lib execute_with_options_invalid_options_nulls_response_output -- --nocapture` | PASS: Python focused adapter tests 8/8; FFI output-slot regression 1/1. Cargo emitted nonfatal AWS-LC `stdalign_check.c` and missing-NASM feature-probe warnings, then compiled and passed. |
 | Refactor | This commit | `git diff --check` | PASS: checkpoint totals and phase evidence are updated; no task checkbox changed. |
+
+### T076 C export-boundary count and workspace verification (2026-10-14)
+
+The full Rust workspace run exposed that the shared panic-boundary metadata
+test still expected 155 C exports after the approved options-aware execute
+entry point raised the observed total to 156. The test expectation now tracks
+the current ABI surface. This is test accounting only; it changes no runtime
+behavior or public ABI. The test suite then passed across all workspace crates
+and doctests on Windows. AWS-LC emitted nonfatal compiler-feature and missing
+NASM probe warnings.
+
+| Phase | Commit | Command | Result |
+|---|---|---|---|
+| Red | `04cd36a4` | `cargo test --workspace --all-features` | Expected failure: `every_exported_c_function_starts_inside_the_shared_panic_boundary` observed 156 exports while the assertion still expected 155. |
+| Green | `c1fd34be` | `cargo test --workspace --all-features`; `cargo fmt --all --check`; `git diff --check` | PASS: full workspace tests and doctests, formatting, and whitespace checks; no failing tests. |
+| Refactor | This commit | Review the updated T076 checkpoint and evidence table | Record the export-count correction and distinguish automated review from the required human release review; task status remains open. |
+
+The T076 completion gates remain open: final PR CI, complete four-language
+semantic parity, and independent human semantic/security review. The public
+binding-export inventory is structurally complete at the latest pinned report,
+but it does not prove semantic parity or release readiness.
