@@ -60,5 +60,18 @@ class RustlsAdvisoryPinTests(unittest.TestCase):
         self.assertTrue(all(re.fullmatch(r"FR-\d{3}", row["requirement_id"]) for row in rows))
 
 
+    def test_fr004_traceability_references_tls_policy_tests(self) -> None:
+        with TRACEABILITY.open(encoding="utf-8", newline="") as source:
+            rows = list(csv.DictReader(source))
+        fr004 = next(row for row in rows if row["requirement_id"] == "FR-004")
+        references = set(fr004["test_reference"].split(";"))
+        tls_policy_tests = {
+            "crates/kmipkit-transport/tests/unit/tls_policy_tests.rs::caller_ca_and_matching_mtls_identity_build_a_tls13_only_config",
+            "crates/kmipkit-transport/tests/unit/tls_policy_tests.rs::untrusted_chain_expired_leaf_and_hostname_mismatch_fail_closed",
+        }
+
+        self.assertTrue(tls_policy_tests.issubset(references), "FR-004 must link TLS 1.3, mTLS, and peer-validation tests.")
+
+
 if __name__ == "__main__":
     unittest.main()
