@@ -1388,3 +1388,24 @@ rejected after HTTPS override support had been added. Red commit `89781d20`
 removed that obsolete expectation and added explicit RAW_TLS and HTTPS DNS
 rejection coverage. The PR stays in draft until CI completes on the corrected
 head and all T076 exit gates are met.
+
+### T076 changed-code coverage threshold correction (2026-10-14)
+
+CI run `38533936756` passed its platform and component coverage jobs but the
+aggregate gate measured 596/628 changed production lines (94.90%). Inspection
+of the merged line reports traced two uncovered changed lines to Python's
+`urlsplit` error translation for an HTTPS URI with a malformed bracketed
+authority. A negative test now verifies that the facade maps this malformed
+authority to `InvalidInputError`.
+
+| Phase | Commit | Command | Result |
+|---|---|---|---|
+| Red | CI run `38533936756` | `gh run view 38533936756 --repo NeverWe1come/KMIPKit --job 115755618530 --log` | Failure: changed production coverage was 596/628 (94.90%), below 95%. Downloaded line reports showed the malformed-authority error path was not exercised. |
+| Green | `1cbaf9c6` | Focused malformed-authority test; full Python coverage suite; coverage gate aggregate replay against the downloaded run reports | PASS: focused test 1/1; 187 Python tests; 98.58% Python coverage; aggregate changed production coverage 598/628 (95.22%). The aggregate replay also passed every selected component and workspace threshold. |
+| Refactor | This commit | Review TDD evidence and changed-line report; `git diff --check` | Documented the CI failure and report-backed correction. |
+
+The aggregate replay used a clean detached worktree at `d010054b` because local
+editable-package test artifacts add generated CFFI wrappers that are not part
+of source control. It used the run's downloaded LLVM/JaCoCo reports and a
+fresh Python report collected after the new test. A new full CI run on the
+updated PR head remains required.
