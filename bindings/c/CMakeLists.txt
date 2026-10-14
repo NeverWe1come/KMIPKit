@@ -54,7 +54,7 @@ add_test(
 
 add_test(
     NAME kmipkit_client_abi_consumer
-    COMMAND kmipkit_client_abi_consumer
+    COMMAND kmipkit_client_abi_consumer high-level typed-protocol generic-ttlv
 )
 
 add_test(

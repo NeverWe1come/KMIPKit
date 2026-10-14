@@ -35,6 +35,7 @@ fn capability_query_only_reports_c_mapped_nonblocked_capabilities() {
     assert_eq!(
         crate::public_api_generated::C_AVAILABLE_CAPABILITIES,
         &[
+            "api_level_discovery",
             "client_batch_model",
             "client_execution",
             "discover_versions_request_item",
