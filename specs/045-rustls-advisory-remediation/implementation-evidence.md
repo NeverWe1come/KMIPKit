@@ -24,7 +24,7 @@ python -m unittest scripts.tests.test_rustls_advisory_pin -v
 
 Result before changing the manifest or lockfile: **failed as expected**. Four tests ran; the exact-version/feature and traceability contracts passed, and `test_workspace_pin_is_exact_stable_patched_release` failed because `(0, 23, 45)` is below `(0, 23, 46)`.
 
-The failure is the intended Red signal. Green results are recorded below; final cross-platform CI and independent review remain open.
+The failure is the intended Red signal. Green results are recorded below. Independent QA and security reviews completed against the implementation through `4eef85dd`; required CI for the draft PR remains pending.
 
 ### QA traceability correction (2026-10-14)
 
@@ -41,7 +41,7 @@ After changing only the exact workspace pin to `=0.23.46` and updating `Cargo.lo
 - `pwsh -NoLogo -NoProfile -File .\scripts\Test-DependencyPolicy.ps1`: **passed** for root and fuzz workspaces with successful online RustSec refresh. Both report database commit `caee11f41fab07d676c0a4655a2a5dd1f94da97c`, timestamp `2026-10-14T15:17:45+02:00`. Existing dependency-policy exception IDs `KMIPKIT-0011-EX-003` and `KMIPKIT-0011-EX-004` remain reported; no Rustls advisory exception was added.
 - Cargo reported only `rustls 0.23.45 -> 0.23.46` in `Cargo.lock`; no other package resolution changed. The manifest's `aws_lc_rs` and `std` feature list and disabled defaults are unchanged.
 
-Full workspace verification, coverage, cross-platform CI, and independent QA/security review remain open; no final readiness claim is made yet.
+The workspace checks and coverage completed below, and independent QA/security review passed for the implementation. The final full script-contract suite and fresh online dependency-policy check are recorded below. Cross-platform PR CI remains pending, so this branch is not yet ready to leave draft.
 
 ## Local verification after Refactor
 
@@ -62,4 +62,18 @@ Full workspace verification, coverage, cross-platform CI, and independent QA/sec
 | `git diff --check` | Passed |
 | `pwsh -NoLogo -NoProfile -File .\scripts\Test-DependencyPolicy.ps1` | Passed for both workspaces with fresh RustSec evidence recorded above |
 
-The full `tools/normative_catalog` test discovery was started but its final result was not retained by the local command session. It is not counted as passed. The CI-specific feature-traceability suite, normative catalog validation, and generated report check above did complete successfully. Local Rust builds emitted non-fatal AWS-LC/NASM environment warnings; the affected test, lint, coverage, and documentation commands still returned success. Cross-platform CI and independent QA/security review remain pending.
+The full `tools/normative_catalog` test discovery was started but its final result was not retained by the local command session. It is not counted as passed. The CI-specific feature-traceability suite, normative catalog validation, and generated report check above did complete successfully. Local Rust builds emitted non-fatal AWS-LC/NASM environment warnings; the affected test, lint, coverage, and documentation commands still returned success.
+
+## Final verification and review snapshot
+
+The following checks ran at branch head `4e8d926a` on 2026-10-14. Subsequent evidence, task-status, and reviewer-owned checklist changes are documentation-only; the dependency and runtime code are unchanged.
+
+| Check | Result |
+|---|---|
+| `python -B -m unittest discover -s scripts/tests -p 'test_*.py' -q` | 273 passed, 26 skipped; exit code 0. The suite intentionally prints a synthetic failed-CI summary fixture. |
+| `pwsh -NoLogo -NoProfile -File .\scripts\Test-DependencyPolicy.ps1` | Passed for root and fuzz workspaces after online RustSec refresh; database commit `caee11f41fab07d676c0a4655a2a5dd1f94da97c`, timestamp `2026-10-14T15:17:45+02:00`; lockfile hashes unchanged. |
+| Independent QA review | Passed with no remaining findings on implementation through `4eef85dd`; reviewer checklist recorded in `4e8d926a` and its accurate-limitations confirmation in `6e840e8a`. |
+| Independent security review | Passed with no actionable findings on implementation through `4eef85dd`; no TLS policy, feature, secret handling, or dependency exception changes. Checklist recorded in `e537cbe1`; the PR-evidence item remains open until the draft PR exists. |
+| Required GitHub PR CI | Pending; no PR has been opened yet. |
+
+The implementation and security reviews examined the same code and dependency diff. Commit `4e8d926a` only records QA checklist results. The draft PR must remain open until required platform CI completes successfully.
