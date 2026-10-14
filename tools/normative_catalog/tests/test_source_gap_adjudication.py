@@ -176,6 +176,7 @@ class SourceGapAdjudicationTests(unittest.TestCase):
         catalog = _load_json(CATALOG_PATH)
         oracle = _load_json(ORACLE_PATH)
         gaps = {row["gap_id"]: row for row in oracle["source_only_requirement_gaps"]}
+        crosswalk = {row["requirement_id"]: row for row in oracle["requirement_crosswalk"]}
         requirements = {row["requirement_id"]: row for row in catalog["requirements"]}
         client_profiles = [row for row in catalog["profiles"] if row["role"] == "client"]
         oracle_profiles = [row for row in oracle["profiles"] if row["role"] == "client"]
@@ -183,8 +184,11 @@ class SourceGapAdjudicationTests(unittest.TestCase):
         for gap_id, requirement_id in AUDITED_REQUIREMENTS.items():
             with self.subTest(gap_id=gap_id):
                 gap = gaps[gap_id]
+                mapping = crosswalk[requirement_id]
                 requirement = requirements[requirement_id]
                 self.assertEqual(gap["scope_disposition"], "profile_conditional")
+                self.assertEqual(mapping["scope_state"], "profile_conditional")
+                self.assertEqual(mapping["applies_to"], [])
                 self.assertEqual(requirement["scope_state"], "profile_conditional")
                 self.assertEqual(requirement["profile_ids"], [])
                 self.assertFalse(
