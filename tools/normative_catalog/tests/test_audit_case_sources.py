@@ -56,7 +56,14 @@ class CaseSourceAuditTests(unittest.TestCase):
             )
 
     @staticmethod
-    def _case(test_id: str, official_id: str, source_id: str, section: str, category: str, href: str) -> dict[str, str]:
+    def _case(
+        test_id: str,
+        official_id: str,
+        source_id: str,
+        section: str,
+        category: str,
+        href: str,
+    ) -> dict[str, str]:
         return {
             "test_id": test_id,
             "official_case_id": official_id,
@@ -77,8 +84,14 @@ class CaseSourceAuditTests(unittest.TestCase):
                 b'<p><a href="test-cases/TC-ASYNC-1-21.xml">fixture</a></p>'
             ),
             cases=[
-                self._case("P-1", "BL-M-1-21", "KMIPKIT-SRC-profiles", "5.1.3.1", "profile_test_case", "test-cases/BL-M-1-21.xml"),
-                self._case("T-1", "TC-ASYNC-1-21", "KMIPKIT-SRC-testcases", "2.1", "official_conformance_test", "test-cases/TC-ASYNC-1-21.xml"),
+                self._case(
+                    "P-1", "BL-M-1-21", "KMIPKIT-SRC-profiles", "5.1.3.1",
+                    "profile_test_case", "test-cases/BL-M-1-21.xml",
+                ),
+                self._case(
+                    "T-1", "TC-ASYNC-1-21", "KMIPKIT-SRC-testcases", "2.1",
+                    "official_conformance_test", "test-cases/TC-ASYNC-1-21.xml",
+                ),
             ],
         )
 
@@ -95,7 +108,10 @@ class CaseSourceAuditTests(unittest.TestCase):
             ),
             testcases_html=b"",
             cases=[
-                self._case("P-13", "CS-BC-M-13-21", "KMIPKIT-SRC-profiles", "5.9.7.13", "profile_test_case", "test-cases/CS-BC-M-14-21.xml"),
+                self._case(
+                    "P-13", "CS-BC-M-13-21", "KMIPKIT-SRC-profiles", "5.9.7.13",
+                    "profile_test_case", "test-cases/CS-BC-M-14-21.xml",
+                ),
             ],
         )
 
