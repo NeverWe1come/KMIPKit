@@ -171,6 +171,10 @@ class PublicApiParityTests(unittest.TestCase):
                             self.assertIsNotNone(last_error)
                             assert last_error is not None
                             self.assertNotRegex(last_error.group(1), r"\b(?:char|uint8_t)\s*\*")
+                            c_test_source = (ROOT / mapping["testFile"]).read_text(
+                                encoding="utf-8"
+                            )
+                            self.assertIn("this ABI has no text channel", c_test_source)
                         if mapping["status"] == "available":
                             available_languages.add(language)
                             self.assertTrue(mapping["test"])

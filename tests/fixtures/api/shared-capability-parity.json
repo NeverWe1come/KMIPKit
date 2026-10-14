@@ -117,8 +117,10 @@
           "test": "schema_error_debug_display_and_source_chain_redact_payload_secrets"
         },
         "c": {
-          "status": "blocked",
-          "reason": "The C error ABI exposes numeric status, category, cause, and delivery only; it has no diagnostic text channel to exercise this string-redaction assertion."
+          "status": "available",
+          "diagnosticSurface": "none",
+          "testFile": "bindings/c/tests/extension_registry.c",
+          "test": "test_redacted_stable_errors_and_invalid_handles"
         },
         "java": {
           "status": "available",
