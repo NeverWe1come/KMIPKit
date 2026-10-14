@@ -1761,9 +1761,13 @@ and confirms both lockfiles remain unchanged by the policy check itself.
 | Rust transport | `cargo +1.94 test --locked -p kmipkit-transport --all-features` | PASS: 136 unit tests, 6 delivery-state tests, 1 dependency-policy test, 88 HTTPS tests, and 5 doctests. |
 | Dependency policy | `pwsh -NoProfile -File scripts/Test-DependencyPolicy.ps1` | PASS: current RustSec database, no new exception, lockfile hashes unchanged. |
 
-Run `38576144875` passed dependency policy, but failed the Ubuntu Python
-packaged-consumer smoke for the symlink-resolution defect described above; its
-remaining required matrix was still running when this evidence was written.
-These corrections do not establish T028 acceptance. T028 remains open until a
-new run on the corrected pushed head passes the required Ubuntu, Windows, and
-macOS packaged-consumer jobs and the full PR gate.
+Run `38576144875` passed dependency policy but failed the Ubuntu and macOS
+Python packaged-consumer smokes for the symlink-resolution defect described
+above. The corrected head `eb05ed01c16106519f21717c26e51add87e787a9` passed
+full CI run `38577034594`: 34 jobs succeeded and 2 schedule-only jobs were
+skipped. Java/JNI and Python package smokes passed on Ubuntu, Windows, and
+macOS; the dependency-policy and selected-scope coverage gates passed. This
+closes the cross-platform CI acceptance gap for T028/T072. No genuine
+foreign-architecture shared library was available, so the negative
+architecture checks remain simulated through unsupported-target selection and
+the injected loader fixture; no physical cross-architecture load is claimed.
