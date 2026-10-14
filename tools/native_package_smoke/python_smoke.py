@@ -72,7 +72,7 @@ def require_output(result: subprocess.CompletedProcess[str], marker: str, *, sta
 
 def package_native_directory(python: Path) -> Path:
     result = subprocess.run(
-        [str(python), "-I", "-c", "import sysconfig; print(sysconfig.get_path('purelib'))"],
+        [str(python), "-c", "import sysconfig; print(sysconfig.get_path('purelib'))"],
         check=True,
         capture_output=True,
         errors="replace",
