@@ -540,6 +540,49 @@ class T076ClientMappingTests(unittest.TestCase):
         self.assertNotIn("kmipkit_transport_input_v1_t.encoding", mappings)
         self.assertNotIn("kmipkit_transport_input_v1_t.source_kind", mappings)
 
+    def test_transport_mode_exports_map_to_the_parent_c_configuration(self) -> None:
+        declarations = {
+            (row["packageId"], row["exportName"]): row
+            for row in self.manifest["publicDeclarations"]
+        }
+        mode_exports = {
+            ("rust-kmipkit-transport", "kmipkit_transport::CertificateInput::from_der"),
+            ("rust-kmipkit-transport", "kmipkit_transport::CertificateInput::from_der_file"),
+            ("rust-kmipkit-transport", "kmipkit_transport::CertificateInput::from_pem_file"),
+            ("rust-kmipkit-transport", "kmipkit_transport::PrivateKeyInput::from_der_file"),
+            ("rust-kmipkit-transport", "kmipkit_transport::PrivateKeyInput::from_pem_file"),
+            ("java-kmipkit", "org.kmipkit.extensions.TransportConfiguration.Builder.clientIdentityDer"),
+            ("java-kmipkit", "org.kmipkit.extensions.TransportConfiguration.Builder.clientIdentityFiles"),
+            ("java-kmipkit", "org.kmipkit.extensions.TransportConfiguration.Builder.trustCertificateFiles"),
+            ("java-kmipkit", "org.kmipkit.extensions.TransportConfiguration.Builder.trustCertificatesDer"),
+            ("java-kmipkit", "org.kmipkit.extensions.TransportConfiguration.Encoding.DER"),
+            ("java-kmipkit", "org.kmipkit.extensions.TransportConfiguration.Encoding.PEM"),
+            ("python-kmipkit", "kmipkit.client.CredentialEncoding.DER"),
+            ("python-kmipkit", "kmipkit.client.CredentialEncoding.PEM"),
+            ("python-kmipkit", "kmipkit.client.TransportInput.__init__"),
+            ("python-kmipkit", "kmipkit.client.TransportInput.encoding"),
+            ("python-kmipkit", "kmipkit.client.TransportInput.file"),
+            ("python-kmipkit", "kmipkit.client.TransportInput.source"),
+        }
+        for key in mode_exports:
+            with self.subTest(export=key[1]):
+                declaration = declarations[key]
+                self.assertEqual("declared", declaration["declarationState"])
+                self.assertEqual(
+                    "kmipkit_transport_config_v1_t",
+                    declaration["languageMappings"]["c"]["name"],
+                    "per-input encoding/source discriminants are represented by the parent config",
+                )
+
+        production = next(
+            row
+            for row in self.manifest["capabilities"]
+            if row["capabilityId"] == "production_transport"
+        )
+        self.assertIn("kmipkit_transport_config_v1_t", production["mappings"]["c"])
+        self.assertNotIn("kmipkit_transport_input_v1_t.encoding", production["mappings"]["c"])
+        self.assertNotIn("kmipkit_transport_input_v1_t.source_kind", production["mappings"]["c"])
+
     def test_transport_field_mappings_cover_policy_modes_and_exact_c_carriers(self) -> None:
         declarations = {
             (row["packageId"], row["exportName"]): row
