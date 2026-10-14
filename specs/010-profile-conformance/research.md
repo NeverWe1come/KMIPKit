@@ -261,3 +261,197 @@ The oracle preserves two proposed stable IDs without adding them to the catalog:
 ### Scoped source-consistency checks
 
 Focused source checks passed: all-profile direct roots and closure match the independently reviewed oracle; Baseline includes every Specification clause plus the Profiles §3.1 inherited clauses; §14.1-002 appears in each client closure; test IDs, hrefs, mandatory status, dependencies, and fixture records match the source fixture; informative references do not expand closure; and server-only requirements remain excluded. These checks establish equality with the current closure fixture, not completion of the requirement crosswalk.
+
+## Independent row-level source audit — 2026-10-14
+
+An independent pass compared the 55 `client_1_0` requirement records without `source_clause_ids` and all 106 oracle source-gap records with the exact pinned Specification and Profiles HTML. A read-only locator check resolved every stored HTML line range to the specified source; nested ranges matched. Counts were recomputed from the catalog and oracle rather than inferred from this narrative. The audit did not assign new clause or requirement IDs, and did not change the catalog, closure oracle, generator, generated artifacts, or upstream source copies.
+
+### Disposition of the 55 source-link gaps
+
+All 55 requirement IDs are stable existing catalog labels and all are present in Baseline Client’s stored requirement list. Their gap is the missing source-clause link and independently reviewed row-to-requirement crosswalk, not an absent requirement label. All 55 locators are table-body rows (39 `required_table_body_value`, 16 `optional_table_body_value`); a table-body `Yes`/`No` value has no formal RFC keyword and does not itself produce a clause ID in the current source-clause extraction. Do not link a neighboring `REQUIRED` table-header clause to the body row or mint a clause ID for a table row.
+
+Of the 55 rows, 25 are operation-request rows in §§6.1.12–6.1.31 and the source-gap oracle classifies them `client_1_0` (9 required, 16 optional). The other 30 are object/attribute-definition rows in §§3.1–3.12 and 5.5–5.7: their `Required=Yes` fields are required when that enclosing format, object, key material, or attribute reference is used. The source-gap oracle therefore marks them `profile_conditional`, while the catalog and its requirement crosswalk call them `client_1_0` / `all_client_profiles`. The pinned rows alone do not establish that every client must implement every enclosing key format or attribute domain. This is a source/catalog scope discrepancy requiring the later catalog-review decision; it is not resolved here.
+
+| Requirement ID | Pinned table-body locator and field | Oracle source-gap scope | Force | Catalog status | Oracle row-level crosswalk |
+|---|---|---|---|---|---|
+| `KMIPKIT-REQ-SPEC-2.3-003` | §2.3, lines 6927–6945: Opaque Data Type | `client_1_0` | `required_table_body_value` | `verified` | **missing** |
+| `KMIPKIT-REQ-SPEC-3.1-007` | §3.1, lines 7698–7716: Key Format Type | `profile_conditional` | `required_table_body_value` | `unassigned` | present |
+| `KMIPKIT-REQ-SPEC-3.10-002` | §3.10, lines 9283–9301: P | `profile_conditional` | `required_table_body_value` | `unassigned` | present |
+| `KMIPKIT-REQ-SPEC-3.10-003` | §3.10, lines 9321–9339: G | `profile_conditional` | `required_table_body_value` | `unassigned` | present |
+| `KMIPKIT-REQ-SPEC-3.10-004` | §3.10, lines 9359–9377: Y | `profile_conditional` | `required_table_body_value` | `unassigned` | present |
+| `KMIPKIT-REQ-SPEC-3.11-002` | §3.11, lines 9438–9457: Recommended Curve | `profile_conditional` | `required_table_body_value` | `unassigned` | present |
+| `KMIPKIT-REQ-SPEC-3.11-003` | §3.11, lines 9458–9476: D | `profile_conditional` | `required_table_body_value` | `unassigned` | present |
+| `KMIPKIT-REQ-SPEC-3.12-002` | §3.12, lines 9533–9552: Recommended Curve | `profile_conditional` | `required_table_body_value` | `unassigned` | present |
+| `KMIPKIT-REQ-SPEC-3.12-003` | §3.12, lines 9553–9571: Q String | `profile_conditional` | `required_table_body_value` | `unassigned` | present |
+| `KMIPKIT-REQ-SPEC-3.2-003` | §3.2, lines 7893–7914: Key Material | `profile_conditional` | `required_table_body_value` | `unassigned` | present |
+| `KMIPKIT-REQ-SPEC-3.3-010` | §3.3, lines 8114–8132: Wrapping Method | `profile_conditional` | `required_table_body_value` | `unassigned` | present |
+| `KMIPKIT-REQ-SPEC-3.3-011` | §3.3, lines 8284–8302: Unique Identifier | `profile_conditional` | `required_table_body_value` | `unassigned` | present |
+| `KMIPKIT-REQ-SPEC-3.4-002` | §3.4, lines 8468–8486: Key | `profile_conditional` | `required_table_body_value` | `unassigned` | present |
+| `KMIPKIT-REQ-SPEC-3.5-002` | §3.5, lines 8544–8562: P | `profile_conditional` | `required_table_body_value` | `unassigned` | present |
+| `KMIPKIT-REQ-SPEC-3.5-003` | §3.5, lines 8563–8581: Q | `profile_conditional` | `required_table_body_value` | `unassigned` | present |
+| `KMIPKIT-REQ-SPEC-3.5-004` | §3.5, lines 8582–8600: G | `profile_conditional` | `required_table_body_value` | `unassigned` | present |
+| `KMIPKIT-REQ-SPEC-3.5-005` | §3.5, lines 8601–8619: X | `profile_conditional` | `required_table_body_value` | `unassigned` | present |
+| `KMIPKIT-REQ-SPEC-3.6-002` | §3.6, lines 8677–8695: P | `profile_conditional` | `required_table_body_value` | `unassigned` | present |
+| `KMIPKIT-REQ-SPEC-3.6-004` | §3.6, lines 8715–8733: G | `profile_conditional` | `required_table_body_value` | `unassigned` | present |
+| `KMIPKIT-REQ-SPEC-3.6-005` | §3.6, lines 8734–8752: Y | `profile_conditional` | `required_table_body_value` | `unassigned` | present |
+| `KMIPKIT-REQ-SPEC-3.7-003` | §3.7, lines 8810–8828: Modulus | `profile_conditional` | `required_table_body_value` | `unassigned` | present |
+| `KMIPKIT-REQ-SPEC-3.8-002` | §3.8, lines 9035–9053: Modulus | `profile_conditional` | `required_table_body_value` | `unassigned` | present |
+| `KMIPKIT-REQ-SPEC-3.8-003` | §3.8, lines 9054–9072: Public Exponent | `profile_conditional` | `required_table_body_value` | `unassigned` | present |
+| `KMIPKIT-REQ-SPEC-3.9-002` | §3.9, lines 9130–9148: P | `profile_conditional` | `required_table_body_value` | `unassigned` | present |
+| `KMIPKIT-REQ-SPEC-3.9-003` | §3.9, lines 9168–9186: G | `profile_conditional` | `required_table_body_value` | `unassigned` | present |
+| `KMIPKIT-REQ-SPEC-3.9-004` | §3.9, lines 9206–9224: X | `profile_conditional` | `required_table_body_value` | `unassigned` | present |
+| `KMIPKIT-REQ-SPEC-5.5-003` | §5.5, lines 22117–22137: Vendor Identification | `profile_conditional` | `required_table_body_value` | `unassigned` | present |
+| `KMIPKIT-REQ-SPEC-5.5-004` | §5.5, lines 22138–22156: Attribute Name | `profile_conditional` | `required_table_body_value` | `unassigned` | present |
+| `KMIPKIT-REQ-SPEC-5.5-005` | §5.5, lines 22184–22202: Attribute Reference | `profile_conditional` | `required_table_body_value` | `unassigned` | present |
+| `KMIPKIT-REQ-SPEC-5.6-002` | §5.6, lines 22260–22279: Any attribute in §4 - Object Attributes | `profile_conditional` | `required_table_body_value` | `unassigned` | present |
+| `KMIPKIT-REQ-SPEC-5.7-002` | §5.7, lines 22337–22356: Any attribute in §4 - Object Attributes | `profile_conditional` | `required_table_body_value` | `unassigned` | present |
+| `KMIPKIT-REQ-SPEC-6.1.12-003` | §6.1.12, lines 25489–25507: Rights | `client_1_0` | `required_table_body_value` | `verified` | present |
+| `KMIPKIT-REQ-SPEC-6.1.12-005` | §6.1.12, lines 25434–25451: Lease Time | `client_1_0` | `optional_table_body_value` | `verified` | present |
+| `KMIPKIT-REQ-SPEC-6.1.12-006` | §6.1.12, lines 25452–25470: Request Count | `client_1_0` | `optional_table_body_value` | `verified` | present |
+| `KMIPKIT-REQ-SPEC-6.1.12-007` | §6.1.12, lines 25471–25488: Usage Limits | `client_1_0` | `optional_table_body_value` | `verified` | present |
+| `KMIPKIT-REQ-SPEC-6.1.13-005` | §6.1.13, lines 25681–25699: Current Attribute | `client_1_0` | `optional_table_body_value` | `verified` | present |
+| `KMIPKIT-REQ-SPEC-6.1.13-006` | §6.1.13, lines 25700–25718: Attribute Reference | `client_1_0` | `optional_table_body_value` | `verified` | present |
+| `KMIPKIT-REQ-SPEC-6.1.14-007-001` | §6.1.14, lines 25980–26001: Attributes | `client_1_0` | `required_table_body_value` | `verified` | present |
+| `KMIPKIT-REQ-SPEC-6.1.14-009` | §6.1.14, lines 25900–25917: Object Type | `client_1_0` | `required_table_body_value` | `verified` | present |
+| `KMIPKIT-REQ-SPEC-6.1.14-010` | §6.1.14, lines 25919–25938: Unique Identifier | `client_1_0` | `required_table_body_value` | `verified` | present |
+| `KMIPKIT-REQ-SPEC-6.1.14-011` | §6.1.14, lines 25940–25958: Derivation Method | `client_1_0` | `required_table_body_value` | `verified` | present |
+| `KMIPKIT-REQ-SPEC-6.1.14-012` | §6.1.14, lines 25960–25978: Derivation Parameters | `client_1_0` | `required_table_body_value` | `verified` | present |
+| `KMIPKIT-REQ-SPEC-6.1.18-005` | §6.1.18, lines 26902–26917: Key Format Type | `client_1_0` | `optional_table_body_value` | `verified` | present |
+| `KMIPKIT-REQ-SPEC-6.1.18-006` | §6.1.18, lines 26918–26933: Key Wrap Type | `client_1_0` | `optional_table_body_value` | `verified` | present |
+| `KMIPKIT-REQ-SPEC-6.1.18-007` | §6.1.18, lines 26934–26950: Key Compression Type | `client_1_0` | `optional_table_body_value` | `verified` | present |
+| `KMIPKIT-REQ-SPEC-6.1.18-008` | §6.1.18, lines 26951–26966: Key Wrapping Specification | `client_1_0` | `optional_table_body_value` | `verified` | present |
+| `KMIPKIT-REQ-SPEC-6.1.19-003` | §6.1.19, lines 27211–27228: Key Format Type | `client_1_0` | `optional_table_body_value` | `verified` | present |
+| `KMIPKIT-REQ-SPEC-6.1.19-004` | §6.1.19, lines 27229–27247: Key Wrap Type | `client_1_0` | `optional_table_body_value` | `verified` | present |
+| `KMIPKIT-REQ-SPEC-6.1.19-005` | §6.1.19, lines 27248–27266: Key Compression Type | `client_1_0` | `optional_table_body_value` | `verified` | present |
+| `KMIPKIT-REQ-SPEC-6.1.19-006` | §6.1.19, lines 27267–27285: Key Wrapping Specification | `client_1_0` | `optional_table_body_value` | `verified` | present |
+| `KMIPKIT-REQ-SPEC-6.1.23-002-001` | §6.1.23, lines 28080–28097: Usage Limits Count | `client_1_0` | `required_table_body_value` | `scoped_verified` | **missing** |
+| `KMIPKIT-REQ-SPEC-6.1.30-001` | §6.1.30, lines 29673–29688: Lease Time | `client_1_0` | `optional_table_body_value` | `verified` | present |
+| `KMIPKIT-REQ-SPEC-6.1.30-002` | §6.1.30, lines 29689–29704: Request Count | `client_1_0` | `optional_table_body_value` | `verified` | present |
+| `KMIPKIT-REQ-SPEC-6.1.30-003` | §6.1.30, lines 29705–29720: Usage Limits | `client_1_0` | `optional_table_body_value` | `verified` | present |
+| `KMIPKIT-REQ-SPEC-6.1.31-001` | §6.1.31, lines 29866–29881: Ticket | `client_1_0` | `required_table_body_value` | `verified` | present |
+
+Two crosswalk absences are exact and independently confirmed: `KMIPKIT-REQ-SPEC-2.3-003` has two source rows—Opaque Data Type (lines 6927–6945) and Opaque Data Value (lines 6946–6964)—but no requirement-crosswalk row; both oracle gaps already reuse this one stable requirement ID, while the requirement’s `source_gap_id` points only to the Type row. `KMIPKIT-REQ-SPEC-6.1.23-002-001` (Usage Limits Count, §6.1.23, lines 28080–28097) has no requirement-crosswalk row and empty `source_clause_ids`, although existing `KMIPKIT-CLAUSE-SPEC-6.1.23-002` lists the requirement in its reverse `requirement_ids`. These need explicit later crosswalk/source-link reconciliation. The other 53 requirement IDs have a row-level oracle crosswalk record, but that row-level record does not turn a table row into a formal source-clause ID.
+
+### Review of all 106 source-gap records
+
+The following compact inventory gives each oracle gap’s exact section and pinned HTML line range, source-derived scope disposition, review status, and current reused/proposed/candidate ID. Full normalized source excerpts, force, actor, direction, condition, locator kind, and review note remain in the oracle record keyed by the same gap ID. Of 106 records, 61 have a `reused_requirement_id` stable owner; the remaining 45 do not. Candidate IDs in the inventory are not approved stable owners. `—` means no reused, proposed, or candidate ID is recorded. This audit leaves unresolved actors and candidates as recorded.
+
+| Source-gap ID | Pinned source locator | Scope disposition | Review status | Reused ID / proposal / candidate |
+|---|---|---|---|---|
+| `KMIPKIT-SOURCE-GAP-PROF-3.1.1-4009` | profiles, §3.1.1 4009–4014 | `server_only` | `unlabeled_source_statement_or_boundary_item` | `—` |
+| `KMIPKIT-SOURCE-GAP-PROF-3.1.1-4023` | profiles, §3.1.1 4023–4028 | `server_only` | `unlabeled_source_statement_or_boundary_item` | `—` |
+| `KMIPKIT-SOURCE-GAP-PROF-3.1.2-4060` | profiles, §3.1.2 4060–4065 | `server_only` | `unlabeled_source_statement_or_boundary_item` | `—` |
+| `KMIPKIT-SOURCE-GAP-PROF-3.1.2-4076` | profiles, §3.1.2 4076–4087 | `server_only` | `unlabeled_source_statement_or_boundary_item` | `—` |
+| `KMIPKIT-SOURCE-GAP-PROF-3.1.2-4089` | profiles, §3.1.2 4089–4185 | `mixed_server_and_out_of_scope` | `unlabeled_source_statement_or_boundary_item` | `—` |
+| `KMIPKIT-SOURCE-GAP-PROF-3.1.3-4196` | profiles, §3.1.3 4196–4198 | `server_only` | `unlabeled_source_statement_or_boundary_item` | `—` |
+| `KMIPKIT-SOURCE-GAP-PROF-3.1.3-4200` | profiles, §3.1.3 4200–4202 | `server_only` | `unlabeled_source_statement_or_boundary_item` | `—` |
+| `KMIPKIT-SOURCE-GAP-PROF-3.1.3-4204` | profiles, §3.1.3 4204–4206 | `server_only` | `unlabeled_source_statement_or_boundary_item` | `—` |
+| `KMIPKIT-SOURCE-GAP-PROF-3.1.4-4217` | profiles, §3.1.4 4217–4218 | `server_only` | `unlabeled_source_statement_or_boundary_item` | `—` |
+| `KMIPKIT-SOURCE-GAP-PROF-3.2.4-4260` | profiles, §3.2.4 4260–4262 | `server_only` | `unlabeled_source_statement_or_boundary_item` | `—` |
+| `KMIPKIT-SOURCE-GAP-PROF-5.12.3-8658` | profiles, §5.12.3 8658–8663 | `server_only` | `unlabeled_source_statement_or_boundary_item` | `—` |
+| `KMIPKIT-SOURCE-GAP-PROF-5.13.1-8990` | profiles, §5.13.1 8990–8991 | `profile_conditional` | `source_obligation_covered_by_existing_stable_label` | `KMIPKIT-REQ-PROF-5.13.1-002` |
+| `KMIPKIT-SOURCE-GAP-PROF-5.18.3-10411` | profiles, §5.18.3 10411–10412 | `out_of_scope` | `stable_requirement_label_missing` | `KMIPKIT-REQ-PROF-5.18.3-004` |
+| `KMIPKIT-SOURCE-GAP-PROF-5.3.1-5139` | profiles, §5.3.1 5139–5140 | `out_of_scope` | `unlabeled_source_statement_or_boundary_item` | `—` |
+| `KMIPKIT-SOURCE-GAP-PROF-5.3.1-5141` | profiles, §5.3.1 5141–5142 | `out_of_scope` | `unlabeled_source_statement_or_boundary_item` | `—` |
+| `KMIPKIT-SOURCE-GAP-PROF-5.3.1-5149` | profiles, §5.3.1 5149–5150 | `out_of_scope` | `unlabeled_source_statement_or_boundary_item` | `—` |
+| `KMIPKIT-SOURCE-GAP-PROF-5.4.2-5980` | profiles, §5.4.2 5980–5986 | `out_of_scope` | `unlabeled_source_statement_or_boundary_item` | `—` |
+| `KMIPKIT-SOURCE-GAP-PROF-5.5.2-6613` | profiles, §5.5.2 6613–6619 | `out_of_scope` | `unlabeled_source_statement_or_boundary_item` | `—` |
+| `KMIPKIT-SOURCE-GAP-PROF-6.13-10848` | profiles, §6.13 10848–10849 | `unresolved` | `unlabeled_source_statement_or_boundary_item` | `—` |
+| `KMIPKIT-SOURCE-GAP-PROF-6.14-10867` | profiles, §6.14 10867–10868 | `unresolved` | `unlabeled_source_statement_or_boundary_item` | `—` |
+| `KMIPKIT-SOURCE-GAP-PROF-6.6-10708` | profiles, §6.6 10708–10714 | `out_of_scope` | `unlabeled_source_statement_or_boundary_item` | `—` |
+| `KMIPKIT-SOURCE-GAP-PROF-6.8-10746` | profiles, §6.8 10746–10753 | `out_of_scope` | `unlabeled_source_statement_or_boundary_item` | `—` |
+| `KMIPKIT-SOURCE-GAP-SPEC-11.46-005` | spec, §11.46 56537–56549 | `client_1_0` | `source_obligation_covered_by_existing_stable_label` | `KMIPKIT-REQ-SPEC-6.1-005` |
+| `KMIPKIT-SOURCE-GAP-SPEC-2.3-OPAQUE-DATA-TYPE-REQUIRED` | spec, §2.3 6927–6945 | `client_1_0` | `source_obligation_covered_by_existing_stable_label` | `KMIPKIT-REQ-SPEC-2.3-003` |
+| `KMIPKIT-SOURCE-GAP-SPEC-2.3-OPAQUE-DATA-VALUE-REQUIRED` | spec, §2.3 6946–6964 | `client_1_0` | `source_obligation_covered_by_existing_stable_label` | `KMIPKIT-REQ-SPEC-2.3-003` |
+| `KMIPKIT-SOURCE-GAP-SPEC-3.1-KEY-FORMAT-TYPE` | spec, §3.1 7698–7716 | `profile_conditional` | `source_obligation_covered_by_existing_stable_label` | `KMIPKIT-REQ-SPEC-3.1-007` |
+| `KMIPKIT-SOURCE-GAP-SPEC-3.10-P` | spec, §3.10 9283–9301 | `profile_conditional` | `source_obligation_covered_by_existing_stable_label` | `KMIPKIT-REQ-SPEC-3.10-002` |
+| `KMIPKIT-SOURCE-GAP-SPEC-3.10-G` | spec, §3.10 9321–9339 | `profile_conditional` | `source_obligation_covered_by_existing_stable_label` | `KMIPKIT-REQ-SPEC-3.10-003` |
+| `KMIPKIT-SOURCE-GAP-SPEC-3.10-Y` | spec, §3.10 9359–9377 | `profile_conditional` | `source_obligation_covered_by_existing_stable_label` | `KMIPKIT-REQ-SPEC-3.10-004` |
+| `KMIPKIT-SOURCE-GAP-SPEC-3.11-RECOMMENDED-CURVE` | spec, §3.11 9438–9457 | `profile_conditional` | `source_obligation_covered_by_existing_stable_label` | `KMIPKIT-REQ-SPEC-3.11-002` |
+| `KMIPKIT-SOURCE-GAP-SPEC-3.11-D` | spec, §3.11 9458–9476 | `profile_conditional` | `source_obligation_covered_by_existing_stable_label` | `KMIPKIT-REQ-SPEC-3.11-003` |
+| `KMIPKIT-SOURCE-GAP-SPEC-3.12-RECOMMENDED-CURVE` | spec, §3.12 9533–9552 | `profile_conditional` | `source_obligation_covered_by_existing_stable_label` | `KMIPKIT-REQ-SPEC-3.12-002` |
+| `KMIPKIT-SOURCE-GAP-SPEC-3.12-Q-STRING` | spec, §3.12 9553–9571 | `profile_conditional` | `source_obligation_covered_by_existing_stable_label` | `KMIPKIT-REQ-SPEC-3.12-003` |
+| `KMIPKIT-SOURCE-GAP-SPEC-3.2-KEY-MATERIAL` | spec, §3.2 7893–7914 | `profile_conditional` | `source_obligation_covered_by_existing_stable_label` | `KMIPKIT-REQ-SPEC-3.2-003` |
+| `KMIPKIT-SOURCE-GAP-SPEC-3.3-WRAPPING-METHOD` | spec, §3.3 8114–8132 | `profile_conditional` | `source_obligation_covered_by_existing_stable_label` | `KMIPKIT-REQ-SPEC-3.3-010` |
+| `KMIPKIT-SOURCE-GAP-SPEC-3.3-UNIQUE-IDENTIFIER` | spec, §3.3 8284–8302 | `profile_conditional` | `source_obligation_covered_by_existing_stable_label` | `KMIPKIT-REQ-SPEC-3.3-011` |
+| `KMIPKIT-SOURCE-GAP-SPEC-3.4-KEY` | spec, §3.4 8468–8486 | `profile_conditional` | `source_obligation_covered_by_existing_stable_label` | `KMIPKIT-REQ-SPEC-3.4-002` |
+| `KMIPKIT-SOURCE-GAP-SPEC-3.5-P` | spec, §3.5 8544–8562 | `profile_conditional` | `source_obligation_covered_by_existing_stable_label` | `KMIPKIT-REQ-SPEC-3.5-002` |
+| `KMIPKIT-SOURCE-GAP-SPEC-3.5-Q` | spec, §3.5 8563–8581 | `profile_conditional` | `source_obligation_covered_by_existing_stable_label` | `KMIPKIT-REQ-SPEC-3.5-003` |
+| `KMIPKIT-SOURCE-GAP-SPEC-3.5-G` | spec, §3.5 8582–8600 | `profile_conditional` | `source_obligation_covered_by_existing_stable_label` | `KMIPKIT-REQ-SPEC-3.5-004` |
+| `KMIPKIT-SOURCE-GAP-SPEC-3.5-X` | spec, §3.5 8601–8619 | `profile_conditional` | `source_obligation_covered_by_existing_stable_label` | `KMIPKIT-REQ-SPEC-3.5-005` |
+| `KMIPKIT-SOURCE-GAP-SPEC-3.6-P` | spec, §3.6 8677–8695 | `profile_conditional` | `source_obligation_covered_by_existing_stable_label` | `KMIPKIT-REQ-SPEC-3.6-002` |
+| `KMIPKIT-SOURCE-GAP-SPEC-3.6-G` | spec, §3.6 8715–8733 | `profile_conditional` | `source_obligation_covered_by_existing_stable_label` | `KMIPKIT-REQ-SPEC-3.6-004` |
+| `KMIPKIT-SOURCE-GAP-SPEC-3.6-Y` | spec, §3.6 8734–8752 | `profile_conditional` | `source_obligation_covered_by_existing_stable_label` | `KMIPKIT-REQ-SPEC-3.6-005` |
+| `KMIPKIT-SOURCE-GAP-SPEC-3.7-MODULUS` | spec, §3.7 8810–8828 | `profile_conditional` | `source_obligation_covered_by_existing_stable_label` | `KMIPKIT-REQ-SPEC-3.7-003` |
+| `KMIPKIT-SOURCE-GAP-SPEC-3.8-MODULUS` | spec, §3.8 9035–9053 | `profile_conditional` | `source_obligation_covered_by_existing_stable_label` | `KMIPKIT-REQ-SPEC-3.8-002` |
+| `KMIPKIT-SOURCE-GAP-SPEC-3.8-PUBLIC-EXPONENT` | spec, §3.8 9054–9072 | `profile_conditional` | `source_obligation_covered_by_existing_stable_label` | `KMIPKIT-REQ-SPEC-3.8-003` |
+| `KMIPKIT-SOURCE-GAP-SPEC-3.9-P` | spec, §3.9 9130–9148 | `profile_conditional` | `source_obligation_covered_by_existing_stable_label` | `KMIPKIT-REQ-SPEC-3.9-002` |
+| `KMIPKIT-SOURCE-GAP-SPEC-3.9-G` | spec, §3.9 9168–9186 | `profile_conditional` | `source_obligation_covered_by_existing_stable_label` | `KMIPKIT-REQ-SPEC-3.9-003` |
+| `KMIPKIT-SOURCE-GAP-SPEC-3.9-X` | spec, §3.9 9206–9224 | `profile_conditional` | `source_obligation_covered_by_existing_stable_label` | `KMIPKIT-REQ-SPEC-3.9-004` |
+| `KMIPKIT-SOURCE-GAP-SPEC-4.21-CLIENT-LOWERCASE-MAY` | spec, §4.21 13894–13898 | `unresolved` | `keyword_force_unresolved` | `—` |
+| `KMIPKIT-SOURCE-GAP-SPEC-4.24-CLIENT-FRESH-INPUT-EXCEPTION` | spec, §4.24 14444–14449 | `unresolved` | `actor-capability-classification-unresolved` | `—` |
+| `KMIPKIT-SOURCE-GAP-SPEC-4.28-001-SERVER-NONMUTATION` | spec, §4.28 15308–15313 | `server_only` | `server_actor_disposition_recorded` | `—` |
+| `KMIPKIT-SOURCE-GAP-SPEC-4.30-CLIENT-LEASE-READ-ONLY` | spec, §4.30 15638–15646 | `client_1_0` | `mapped_to_attribute_policy` | `—` |
+| `KMIPKIT-SOURCE-GAP-SPEC-4.31-MAY-ABSENT-LINKS` | spec, §4.31 15815–15819 | `unresolved` | `actor_and_client_capability_unresolved` | `—` |
+| `KMIPKIT-SOURCE-GAP-SPEC-4.39-LOWERCASE-FRIENDLY-NAME` | spec, §4.39 17251–17256 | `client_1_0` | `source_obligation_covered_by_existing_stable_label` | `KMIPKIT-REQ-SPEC-4.39-002-001` |
+| `KMIPKIT-SOURCE-GAP-SPEC-5.5-VENDOR-IDENTIFICATION` | spec, §5.5 22117–22137 | `profile_conditional` | `source_obligation_covered_by_existing_stable_label` | `KMIPKIT-REQ-SPEC-5.5-003` |
+| `KMIPKIT-SOURCE-GAP-SPEC-5.5-ATTRIBUTE-NAME` | spec, §5.5 22138–22156 | `profile_conditional` | `source_obligation_covered_by_existing_stable_label` | `KMIPKIT-REQ-SPEC-5.5-004` |
+| `KMIPKIT-SOURCE-GAP-SPEC-5.5-ATTRIBUTE-REFERENCE-TAG` | spec, §5.5 22184–22202 | `profile_conditional` | `source_obligation_covered_by_existing_stable_label` | `KMIPKIT-REQ-SPEC-5.5-005` |
+| `KMIPKIT-SOURCE-GAP-SPEC-5.6-CURRENT-ATTRIBUTE` | spec, §5.6 22260–22279 | `profile_conditional` | `source_obligation_covered_by_existing_stable_label` | `KMIPKIT-REQ-SPEC-5.6-002` |
+| `KMIPKIT-SOURCE-GAP-SPEC-5.7-NEW-ATTRIBUTE` | spec, §5.7 22337–22356 | `profile_conditional` | `source_obligation_covered_by_existing_stable_label` | `KMIPKIT-REQ-SPEC-5.7-002` |
+| `KMIPKIT-SOURCE-GAP-SPEC-6.1-MULTIPART-OPTIONAL-PREFACE` | spec, §6.1 22417–22420 | `unresolved` | `force_and_actor_unresolved` | `—` |
+| `KMIPKIT-SOURCE-GAP-SPEC-6.1-PROCEDURE-011` | spec, §6.1 22429–22431 | `unresolved` | `reviewed_procedure_context` | `—` |
+| `KMIPKIT-SOURCE-GAP-SPEC-6.1-PARAGRAPH-006` | spec, §6.1 22433–22435 | `unresolved` | `reviewed_generic_parameter_context` | `—` |
+| `KMIPKIT-SOURCE-GAP-SPEC-6.1-PROCEDURE-012` | spec, §6.1 22437–22439 | `unresolved` | `reviewed_procedure_context` | `—` |
+| `KMIPKIT-SOURCE-GAP-SPEC-6.1-PROCEDURE-013` | spec, §6.1 22441–22443 | `unresolved` | `reviewed_procedure_context` | `—` |
+| `KMIPKIT-SOURCE-GAP-SPEC-6.1-PROCEDURE-014` | spec, §6.1 22449–22451 | `unresolved` | `reviewed_procedure_context` | `—` |
+| `KMIPKIT-SOURCE-GAP-SPEC-6.1-PARAGRAPH-007` | spec, §6.1 22453–22455 | `unresolved` | `reviewed_generic_parameter_context` | `—` |
+| `KMIPKIT-SOURCE-GAP-SPEC-6.1-PROCEDURE-015` | spec, §6.1 22457–22459 | `unresolved` | `reviewed_procedure_context` | `—` |
+| `KMIPKIT-SOURCE-GAP-SPEC-6.1-PROCEDURE-016` | spec, §6.1 22465–22467 | `unresolved` | `reviewed_procedure_context` | `—` |
+| `KMIPKIT-SOURCE-GAP-SPEC-6.1-PROCEDURE-017` | spec, §6.1 22469–22471 | `unresolved` | `reviewed_procedure_context` | `—` |
+| `KMIPKIT-SOURCE-GAP-SPEC-6.1-PROCEDURE-018` | spec, §6.1 22473–22475 | `unresolved` | `reviewed_procedure_context` | `—` |
+| `KMIPKIT-SOURCE-GAP-SPEC-6.1-PROCEDURE-019` | spec, §6.1 22485–22488 | `unresolved` | `reviewed_procedure_context` | `—` |
+| `KMIPKIT-SOURCE-GAP-SPEC-6.1-PARAGRAPH-008` | spec, §6.1 22490–22492 | `unresolved` | `reviewed_generic_parameter_context` | `—` |
+| `KMIPKIT-SOURCE-GAP-SPEC-6.1-PROCEDURE-020` | spec, §6.1 22494–22496 | `unresolved` | `reviewed_procedure_context` | `—` |
+| `KMIPKIT-SOURCE-GAP-SPEC-6.1-PARAGRAPH-009` | spec, §6.1 22498–22499 | `unresolved` | `unresolved_source_interpretation` | `—` |
+| `KMIPKIT-SOURCE-GAP-SPEC-6.1.12-LEASE-TIME-OPTIONAL` | spec, §6.1.12 25434–25451 | `client_1_0` | `source_obligation_covered_by_existing_stable_label` | `KMIPKIT-REQ-SPEC-6.1.12-005` |
+| `KMIPKIT-SOURCE-GAP-SPEC-6.1.12-REQUEST-COUNT-OPTIONAL` | spec, §6.1.12 25452–25470 | `client_1_0` | `source_obligation_covered_by_existing_stable_label` | `KMIPKIT-REQ-SPEC-6.1.12-006` |
+| `KMIPKIT-SOURCE-GAP-SPEC-6.1.12-USAGE-LIMITS-OPTIONAL` | spec, §6.1.12 25471–25488 | `client_1_0` | `source_obligation_covered_by_existing_stable_label` | `KMIPKIT-REQ-SPEC-6.1.12-007` |
+| `KMIPKIT-SOURCE-GAP-SPEC-6.1.12-RIGHTS-REQUIRED` | spec, §6.1.12 25489–25507 | `client_1_0` | `source_obligation_covered_by_existing_stable_label` | `KMIPKIT-REQ-SPEC-6.1.12-003` |
+| `KMIPKIT-SOURCE-GAP-SPEC-6.1.13-CURRENT-ATTRIBUTE-OPTIONAL` | spec, §6.1.13 25681–25699 | `client_1_0` | `source_obligation_covered_by_existing_stable_label` | `KMIPKIT-REQ-SPEC-6.1.13-005` |
+| `KMIPKIT-SOURCE-GAP-SPEC-6.1.13-ATTRIBUTE-REFERENCE-OPTIONAL` | spec, §6.1.13 25700–25718 | `client_1_0` | `source_obligation_covered_by_existing_stable_label` | `KMIPKIT-REQ-SPEC-6.1.13-006` |
+| `KMIPKIT-SOURCE-GAP-SPEC-6.1.14-OBJECT-TYPE-REQUIRED` | spec, §6.1.14 25900–25917 | `client_1_0` | `source_obligation_covered_by_existing_stable_label` | `KMIPKIT-REQ-SPEC-6.1.14-009` |
+| `KMIPKIT-SOURCE-GAP-SPEC-6.1.14-UNIQUE-IDENTIFIER-REQUIRED` | spec, §6.1.14 25919–25938 | `client_1_0` | `source_obligation_covered_by_existing_stable_label` | `KMIPKIT-REQ-SPEC-6.1.14-010` |
+| `KMIPKIT-SOURCE-GAP-SPEC-6.1.14-DERIVATION-METHOD-REQUIRED` | spec, §6.1.14 25940–25958 | `client_1_0` | `source_obligation_covered_by_existing_stable_label` | `KMIPKIT-REQ-SPEC-6.1.14-011` |
+| `KMIPKIT-SOURCE-GAP-SPEC-6.1.14-DERIVATION-PARAMETERS-REQUIRED` | spec, §6.1.14 25960–25978 | `client_1_0` | `source_obligation_covered_by_existing_stable_label` | `KMIPKIT-REQ-SPEC-6.1.14-012` |
+| `KMIPKIT-SOURCE-GAP-SPEC-6.1.14-ATTRIBUTES-REQUIRED` | spec, §6.1.14 25980–26001 | `client_1_0` | `source_obligation_covered_by_existing_stable_label` | `KMIPKIT-REQ-SPEC-6.1.14-007-001` |
+| `KMIPKIT-SOURCE-GAP-SPEC-6.1.18-GET-SEMANTICS` | spec, §6.1.18 26846–26849 | `client_1_0` | `source_obligation_covered_by_existing_stable_label` | `KMIPKIT-REQ-SPEC-6.1.18-001-001` |
+| `KMIPKIT-SOURCE-GAP-SPEC-6.1.18-KEY-FORMAT-TYPE-OPTIONAL` | spec, §6.1.18 26902–26917 | `client_1_0` | `source_obligation_covered_by_existing_stable_label` | `KMIPKIT-REQ-SPEC-6.1.18-005` |
+| `KMIPKIT-SOURCE-GAP-SPEC-6.1.18-KEY-WRAP-TYPE-OPTIONAL` | spec, §6.1.18 26918–26933 | `client_1_0` | `source_obligation_covered_by_existing_stable_label` | `KMIPKIT-REQ-SPEC-6.1.18-006` |
+| `KMIPKIT-SOURCE-GAP-SPEC-6.1.18-KEY-COMPRESSION-TYPE-OPTIONAL` | spec, §6.1.18 26934–26950 | `client_1_0` | `source_obligation_covered_by_existing_stable_label` | `KMIPKIT-REQ-SPEC-6.1.18-007` |
+| `KMIPKIT-SOURCE-GAP-SPEC-6.1.18-KEY-WRAPPING-SPECIFICATION-OPTIONAL` | spec, §6.1.18 26951–26966 | `client_1_0` | `source_obligation_covered_by_existing_stable_label` | `KMIPKIT-REQ-SPEC-6.1.18-008` |
+| `KMIPKIT-SOURCE-GAP-SPEC-6.1.19-KEY-FORMAT-TYPE-OPTIONAL` | spec, §6.1.19 27211–27228 | `client_1_0` | `source_obligation_covered_by_existing_stable_label` | `KMIPKIT-REQ-SPEC-6.1.19-003` |
+| `KMIPKIT-SOURCE-GAP-SPEC-6.1.19-KEY-WRAP-TYPE-OPTIONAL` | spec, §6.1.19 27229–27247 | `client_1_0` | `source_obligation_covered_by_existing_stable_label` | `KMIPKIT-REQ-SPEC-6.1.19-004` |
+| `KMIPKIT-SOURCE-GAP-SPEC-6.1.19-KEY-COMPRESSION-TYPE-OPTIONAL` | spec, §6.1.19 27248–27266 | `client_1_0` | `source_obligation_covered_by_existing_stable_label` | `KMIPKIT-REQ-SPEC-6.1.19-005` |
+| `KMIPKIT-SOURCE-GAP-SPEC-6.1.19-KEY-WRAPPING-SPECIFICATION-OPTIONAL` | spec, §6.1.19 27267–27285 | `client_1_0` | `source_obligation_covered_by_existing_stable_label` | `KMIPKIT-REQ-SPEC-6.1.19-006` |
+| `KMIPKIT-SOURCE-GAP-SPEC-6.1.23-USAGE-LIMITS-COUNT-REQUIRED` | spec, §6.1.23 28080–28097 | `client_1_0` | `source_obligation_covered_by_existing_stable_label` | `KMIPKIT-REQ-SPEC-6.1.23-002-001` |
+| `KMIPKIT-SOURCE-GAP-SPEC-6.1.30-LEASE-TIME-OPTIONAL` | spec, §6.1.30 29673–29688 | `client_1_0` | `source_obligation_covered_by_existing_stable_label` | `KMIPKIT-REQ-SPEC-6.1.30-001` |
+| `KMIPKIT-SOURCE-GAP-SPEC-6.1.30-REQUEST-COUNT-OPTIONAL` | spec, §6.1.30 29689–29704 | `client_1_0` | `source_obligation_covered_by_existing_stable_label` | `KMIPKIT-REQ-SPEC-6.1.30-002` |
+| `KMIPKIT-SOURCE-GAP-SPEC-6.1.30-USAGE-LIMITS-OPTIONAL` | spec, §6.1.30 29705–29720 | `client_1_0` | `source_obligation_covered_by_existing_stable_label` | `KMIPKIT-REQ-SPEC-6.1.30-003` |
+| `KMIPKIT-SOURCE-GAP-SPEC-6.1.31-TICKET-REQUIRED` | spec, §6.1.31 29866–29881 | `client_1_0` | `source_obligation_covered_by_existing_stable_label` | `KMIPKIT-REQ-SPEC-6.1.31-001` |
+| `KMIPKIT-SOURCE-GAP-SPEC-6.1.42-RECOVER-AUTHENTICATION-SHOULD-ACTOR-UNRESOLVED` | spec, §6.1.42 32613–32618 | `unresolved` | `actor_and_scope_unresolved` | `—` |
+| `KMIPKIT-SOURCE-GAP-SPEC-6.1.45-CERTIFICATE-REQUEST-UID-ONLY` | spec, §6.1.45 33348–33353 | `client_1_0` | `source_obligation_covered_by_existing_stable_label` | `KMIPKIT-REQ-SPEC-6.1.45-002-003` |
+| `KMIPKIT-SOURCE-GAP-SPEC-6.1.54-ENDPOINT-ROLE-REQUIRED` | spec, §6.1.54 36165–36187 | `client_1_1` | `stable_label_proposed_not_in_catalog` | `KMIPKIT-REQ-SPEC-6.1.54-001` |
+| `KMIPKIT-SOURCE-GAP-SPEC-8.4-002` | spec, §8.4 43045–43062 | `server_only` | `scope_unresolved` | `—` |
+| `KMIPKIT-SOURCE-GAP-SPEC-9.17-001` | spec, §9.17 45156–45158 | `unresolved` | `scope_unresolved` | `—` |
+
+### Remaining T002 blockers and exact dispositions
+
+- **30 conditional definition rows:** the 30 IDs in the preceding 55-row table have pinned `Required=Yes` field rows, but their enclosing choices are conditional. Catalog all-profile assignments are not supported by those rows alone. Preserve the source text and stable IDs; resolve intended feature/profile scope through the approved catalog review before adding links or changing applicability.
+- **Procedure and generic-parameter context:** ten §6.1 multipart procedure records (`KMIPKIT-SOURCE-GAP-SPEC-6.1-PROCEDURE-011` through `-020`) and three §6.1 generic-parameter records (`KMIPKIT-SOURCE-GAP-SPEC-6.1-PARAGRAPH-006` through `-008`) remain contextual source obligations without formal keyword/operation-contract resolution. §6.1 paragraph 009, the multipart preface, and the lowercase “may”/“optionally” records also retain unresolved force or actor. No new stable IDs are assigned.
+- **Other unresolved actor/scope/force records:** the source-gap inventory preserves the exact rows for §4.21 lowercase `may`, the §4.24 client Fresh=False input exception, §4.31 MAY absent links, §6.1.42 authentication SHOULD, §8.4-002 response MAY, §9.17-001 response/end-user MAY, and server/attribute-policy boundary rows in §§4.28 and 4.30. The recorded server-only and out-of-scope dispositions stand; ambiguous actors remain unresolved.
+- **Profiles §6.13 and §6.14:** the pinned clauses at lines 10848–10849 and 10867–10868 each say the respective Foundry Client SHALL support Basic Symmetric Key Foundry conditions (§5.7.1). The source closure currently omits the §5.7.1 edge for Intermediate (§6.13) and Advanced (§6.14), while open `KMIPKIT-DISC-011` and `KMIPKIT-DISC-012` retain two possible readings: an intentional Basic-profile dependency or a likely reference error for each profile’s own §5.7.2/§5.7.3 conditions. Do not select either interpretation without resolving those source discrepancies. This prevents T002 closure.
+- **Official test IDs:** profile test IDs are named and linked in the pinned Profiles document, but none of the 93 linked profile test IDs occurs in the pinned Test Cases CN01 HTML. This source limitation prevents independently verifying those profile IDs against that separate Test Cases source; it does not invalidate the profile-source links or fixture-availability inventory.
+- **Closure basis:** Baseline’s current clause closure is 897 clauses: all 877 Specification clauses plus 20 inherited/direct Profiles clauses. The 877 count is the full Specification source inventory; it includes server-only and out-of-scope clauses due to Profiles §6.1 item 1’s whole-Spec inclusion. Those clauses remain excluded from the client requirement closure where the source actors/applicability require it.
+
+T002 remains unchecked. The row locators and source-gap dispositions are reviewed and count-validated, but the 30 scope conflicts, two missing requirement-crosswalk rows/source links, unresolved §§6.13/6.14 normative-reference discrepancies, and inability to cross-reference profile test IDs in the pinned Test Cases document mean the acceptance text is not fully satisfied. T003/catalog changes and implementation were not started.
