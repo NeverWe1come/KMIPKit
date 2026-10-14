@@ -724,6 +724,17 @@ class BindingExportAuditTests(unittest.TestCase):
             self.assertIn("test_secret_bearing_client_records_redact_repr", repr_exclusion["evidence"])
 
         self.assertIn(("python-kmipkit", "kmipkit.client"), exclusions)
+
+        local_conveniences = {
+            ("java-kmipkit", "org.kmipkit.extensions.ClientBatch.itemCount"),
+            ("python-kmipkit", "kmipkit.client.Client.closed"),
+            ("python-kmipkit", "kmipkit.client.Batch.closed"),
+            ("python-kmipkit", "kmipkit.client.BatchResult.closed"),
+        }
+        for key in local_conveniences:
+            self.assertTrue(key in exclusions, f"missing exact exclusion {key}")
+            self.assertIn("language-only convenience", exclusions[key]["reason"])
+            self.assertIn("KMIPKIT-0043-FR-021", exclusions[key]["evidence"])
     def test_checked_in_binding_export_report_reconciles_every_package(self):
         repo_root = Path(__file__).resolve().parents[3]
         report_path = repo_root / "specs/043-public-api-bindings/reports/binding-export-report-2026-10-12.json"
