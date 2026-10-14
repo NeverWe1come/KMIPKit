@@ -218,6 +218,46 @@ class PublicApiParityTests(unittest.TestCase):
                                 f"{case['id']} must map to an executable {language} consumer test",
                             )
 
+                        if (
+                            case["id"] == "batch.ordered-completed-pending-failed.v1"
+                            and language in {"c", "python"}
+                            and mapping["status"] == "available"
+                        ):
+                            adapter_assertions = mapping.get("adapterAssertions", [])
+                            self.assertIn("ordered-mixed-outcomes", adapter_assertions)
+                            support = next(
+                                (
+                                    item
+                                    for item in mapping.get("supportingTests", [])
+                                    if "transportExchangeCount" in item.get("assertions", [])
+                                ),
+                                None,
+                                f"{language} must map evidence for the shared one-exchange result",
+                            )
+                            self.assertIsNotNone(support)
+                            assert support is not None
+                            self.assertEqual(support["language"], "rust")
+                            support_source = (ROOT / support["testFile"]).read_text(
+                                encoding="utf-8"
+                            )
+                            self.assertRegex(
+                                support_source,
+                                rf"\bfn\s+{re.escape(support['test'])}\s*\(",
+                            )
+                            if language == "c":
+                                self.assertIn(
+                                    "assert_eq!(exchange_count.load(Ordering::Relaxed), 1);",
+                                    support_source,
+                                )
+                            else:
+                                self.assertIn(
+                                    "assert_eq!(fake.borrow().exchange_count(), 1);",
+                                    support_source,
+                                )
+                                self.assertIn(
+                                    "singleNativeExecuteInvocation", adapter_assertions
+                                )
+
                 java_mapping = case["consumerTests"]["java"]
                 declared_capabilities = {
                     entry["capabilityId"]
