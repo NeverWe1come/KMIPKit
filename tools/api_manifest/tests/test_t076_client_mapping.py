@@ -813,7 +813,7 @@ class T076ClientMappingTests(unittest.TestCase):
                 self.assertNotIn(path, declarations)
                 exclusion = exclusions[path]
                 self.assertIn("private identity token", exclusion["reason"].lower())
-                self.assertIn("internal factory", exclusion["reason"].lower())
+                self.assertIn("private factory", exclusion["reason"].lower())
                 self.assertEqual(
                     "specs/043-public-api-bindings/spec.md",
                     exclusion["approvalSource"]["path"],
@@ -821,15 +821,21 @@ class T076ClientMappingTests(unittest.TestCase):
                 self.assertIn("KMIPKIT-0043-FR-021", exclusion["evidence"])
                 self.assertIn("T024", exclusion["evidence"])
 
+        blocked_wrappers = {
+            "kmipkit.ttlv.TtlvItemView",
+            "kmipkit.ttlv.TtlvValueView",
+        }
         for wrapper in wrapper_types:
             with self.subTest(wrapper=wrapper):
                 declaration = declarations[wrapper]
                 self.assertEqual("type", declaration["kind"])
-                self.assertEqual("declared", declaration["declarationState"])
-                self.assertEqual(
-                    {"rust", "c", "java", "python"},
-                    set(declaration["languageMappings"]),
-                )
+                expected_state = "blocked" if wrapper in blocked_wrappers else "declared"
+                self.assertEqual(expected_state, declaration["declarationState"])
+                if expected_state == "declared":
+                    self.assertEqual(
+                        {"rust", "c", "java", "python"},
+                        set(declaration["languageMappings"]),
+                    )
 
         factories = {
             "kmipkit.client.Batch.create",
@@ -846,15 +852,23 @@ class T076ClientMappingTests(unittest.TestCase):
             "kmipkit.ttlv.codec_limits_defaults",
             "kmipkit.ttlv.raw_tag_from_raw",
             "kmipkit.ttlv.raw_tag_try_checked",
-            "kmipkit.ttlv.ttlv_item_create",
             "kmipkit.ttlv.ttlv_structure_create",
-            "kmipkit.ttlv.ttlv_structure_view",
             "kmipkit.ttlv.ttlv_value_integer",
         }
         for path in factories:
             with self.subTest(factory=path):
                 declaration = declarations[path]
                 self.assertEqual("declared", declaration["declarationState"])
+                self.assertEqual(
+                    {"rust", "c", "java", "python"},
+                    set(declaration["languageMappings"]),
+                )
+        for path in (
+            "kmipkit.ttlv.ttlv_item_create",
+            "kmipkit.ttlv.ttlv_structure_view",
+        ):
+            with self.subTest(blocked_factory=path):
+                self.assertEqual("blocked", declarations[path]["declarationState"])
 
     def test_transport_handle_adapter_is_backed_by_four_language_configuration_values(self) -> None:
         capability = next(

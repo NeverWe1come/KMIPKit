@@ -971,6 +971,18 @@
         "path": "specs/043-public-api-bindings/spec.md",
         "status": "Approved"
       },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-021 and T024 for this exact export path. The mandatory identity token is checked before wrapper initialization and supplied only by the private _wrap_owned_handle factory. Public wrapper types and their factory operations remain declared and mapped; direct raw-pointer adoption and duplicate handle ownership are not product capabilities.",
+      "exportName": "kmipkit.client.Batch.__init__",
+      "packageId": "python-kmipkit",
+      "reason": "This exact Python native-handle initializer requires KMIPKit's private identity token and is used only by the private factory; it is ownership plumbing, not a product constructor."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
       "evidence": "Reviewed against KMIPKIT-0043-FR-021. The callable close lifecycle remains mapped across languages. If a consumer need justifies promoting this convenience later, add equivalent four-language APIs under an approved specification. bindings/python/src/kmipkit/_handles.py derives it from the local null-handle slot; close and methods that require a handle remain audited separately.",
       "exportName": "kmipkit.client.Batch.closed",
       "packageId": "python-kmipkit",
@@ -1007,18 +1019,6 @@
         "path": "specs/043-public-api-bindings/spec.md",
         "status": "Approved"
       },
-      "evidence": "Reviewed against KMIPKIT-0043-FR-012 and KMIPKIT-0043-FR-021. The shared result capability remains the read-only ClientBatchResponse traversal and the mapped BatchItemResult type and fields; this exclusion applies only to the exact constructor path.",
-      "exportName": "kmipkit.client.BatchItemResult.__init__",
-      "packageId": "python-kmipkit",
-      "reason": "This exact Python record constructor is an idiomatic dataclass convenience for instantiating a result DTO from copied response metadata; it does not execute or alter a KMIP operation."
-    },
-    {
-      "approvalSource": {
-        "evidence": "**Status**: Approved for implementation",
-        "kind": "feature-specification",
-        "path": "specs/043-public-api-bindings/spec.md",
-        "status": "Approved"
-      },
       "evidence": "Reviewed against KMIPKIT-0043-FR-021 and the source declaration. The dataclass constructor and semantic fields are inventoried separately; the exclusion applies only to this generated member.",
       "exportName": "kmipkit.client.BatchItemResult.__delattr__",
       "packageId": "python-kmipkit",
@@ -1047,6 +1047,18 @@
       "exportName": "kmipkit.client.BatchItemResult.__hash__",
       "packageId": "python-kmipkit",
       "reason": "This exact member is generated Python dataclass value or frozen-instance machinery, not an independently specified cross-language product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-012 and KMIPKIT-0043-FR-021. The shared result capability remains the read-only ClientBatchResponse traversal and the mapped BatchItemResult type and fields; this exclusion applies only to the exact constructor path.",
+      "exportName": "kmipkit.client.BatchItemResult.__init__",
+      "packageId": "python-kmipkit",
+      "reason": "This exact Python record constructor is an idiomatic dataclass convenience for instantiating a result DTO from copied response metadata; it does not execute or alter a KMIP operation."
     },
     {
       "approvalSource": {
@@ -1103,10 +1115,34 @@
         "path": "specs/043-public-api-bindings/spec.md",
         "status": "Approved"
       },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-021 and T024 for this exact export path. The mandatory identity token is checked before wrapper initialization and supplied only by the private _wrap_owned_handle factory. Public wrapper types and their factory operations remain declared and mapped; direct raw-pointer adoption and duplicate handle ownership are not product capabilities.",
+      "exportName": "kmipkit.client.BatchResult.__init__",
+      "packageId": "python-kmipkit",
+      "reason": "This exact Python native-handle initializer requires KMIPKit's private identity token and is used only by the private factory; it is ownership plumbing, not a product constructor."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
       "evidence": "Reviewed against KMIPKIT-0043-FR-021. The callable close lifecycle remains mapped across languages. If a consumer need justifies promoting this convenience later, add equivalent four-language APIs under an approved specification. bindings/python/src/kmipkit/_handles.py derives it from the local null-handle slot; close and methods that require a handle remain audited separately.",
       "exportName": "kmipkit.client.BatchResult.closed",
       "packageId": "python-kmipkit",
       "reason": "This exact member is a language-only convenience derived from wrapper-local state; it does not add a KMIP capability or alter the shared resource lifecycle. Python exposes this boolean as native-wrapper state; Java exposes AutoCloseable.close without a closed-state getter."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-021 and T024 for this exact export path. The mandatory identity token is checked before wrapper initialization and supplied only by the private _wrap_owned_handle factory. Public wrapper types and their factory operations remain declared and mapped; direct raw-pointer adoption and duplicate handle ownership are not product capabilities.",
+      "exportName": "kmipkit.client.Client.__init__",
+      "packageId": "python-kmipkit",
+      "reason": "This exact Python native-handle initializer requires KMIPKit's private identity token and is used only by the private factory; it is ownership plumbing, not a product constructor."
     },
     {
       "approvalSource": {
@@ -1679,6 +1715,150 @@
         "path": "specs/043-public-api-bindings/spec.md",
         "status": "Approved"
       },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-021 and T024 for this exact export path. The mandatory identity token is checked before wrapper initialization and supplied only by the private _wrap_owned_handle factory. Public wrapper types and their factory operations remain declared and mapped; direct raw-pointer adoption and duplicate handle ownership are not product capabilities.",
+      "exportName": "kmipkit.extensions.ClientBatchItem.__init__",
+      "packageId": "python-kmipkit",
+      "reason": "This exact Python native-handle initializer requires KMIPKit's private identity token and is used only by the private factory; it is ownership plumbing, not a product constructor."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-021 and T024 for this exact export path. The mandatory identity token is checked before wrapper initialization and supplied only by the private _wrap_owned_handle factory. Public wrapper types and their factory operations remain declared and mapped; direct raw-pointer adoption and duplicate handle ownership are not product capabilities.",
+      "exportName": "kmipkit.extensions.ClientConfiguration.__init__",
+      "packageId": "python-kmipkit",
+      "reason": "This exact Python native-handle initializer requires KMIPKit's private identity token and is used only by the private factory; it is ownership plumbing, not a product constructor."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-021 and T024 for this exact export path. The mandatory identity token is checked before wrapper initialization and supplied only by the private _wrap_owned_handle factory. Public wrapper types and their factory operations remain declared and mapped; direct raw-pointer adoption and duplicate handle ownership are not product capabilities.",
+      "exportName": "kmipkit.extensions.ClientExtensionRegistry.__init__",
+      "packageId": "python-kmipkit",
+      "reason": "This exact Python native-handle initializer requires KMIPKit's private identity token and is used only by the private factory; it is ownership plumbing, not a product constructor."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-021 and T024 for this exact export path. The mandatory identity token is checked before wrapper initialization and supplied only by the private _wrap_owned_handle factory. Public wrapper types and their factory operations remain declared and mapped; direct raw-pointer adoption and duplicate handle ownership are not product capabilities.",
+      "exportName": "kmipkit.extensions.ClientRequestMessageExtension.__init__",
+      "packageId": "python-kmipkit",
+      "reason": "This exact Python native-handle initializer requires KMIPKit's private identity token and is used only by the private factory; it is ownership plumbing, not a product constructor."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-021 and T024 for this exact export path. The mandatory identity token is checked before wrapper initialization and supplied only by the private _wrap_owned_handle factory. Public wrapper types and their factory operations remain declared and mapped; direct raw-pointer adoption and duplicate handle ownership are not product capabilities.",
+      "exportName": "kmipkit.extensions.Compatibility.__init__",
+      "packageId": "python-kmipkit",
+      "reason": "This exact Python native-handle initializer requires KMIPKit's private identity token and is used only by the private factory; it is ownership plumbing, not a product constructor."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-021 and T024 for this exact export path. The mandatory identity token is checked before wrapper initialization and supplied only by the private _wrap_owned_handle factory. Public wrapper types and their factory operations remain declared and mapped; direct raw-pointer adoption and duplicate handle ownership are not product capabilities.",
+      "exportName": "kmipkit.extensions.Discriminator.__init__",
+      "packageId": "python-kmipkit",
+      "reason": "This exact Python native-handle initializer requires KMIPKit's private identity token and is used only by the private factory; it is ownership plumbing, not a product constructor."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-021 and T024 for this exact export path. The mandatory identity token is checked before wrapper initialization and supplied only by the private _wrap_owned_handle factory. Public wrapper types and their factory operations remain declared and mapped; direct raw-pointer adoption and duplicate handle ownership are not product capabilities.",
+      "exportName": "kmipkit.extensions.ExtensionChildRule.__init__",
+      "packageId": "python-kmipkit",
+      "reason": "This exact Python native-handle initializer requires KMIPKit's private identity token and is used only by the private factory; it is ownership plumbing, not a product constructor."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-021 and T024 for this exact export path. The mandatory identity token is checked before wrapper initialization and supplied only by the private _wrap_owned_handle factory. Public wrapper types and their factory operations remain declared and mapped; direct raw-pointer adoption and duplicate handle ownership are not product capabilities.",
+      "exportName": "kmipkit.extensions.ExtensionDefinition.__init__",
+      "packageId": "python-kmipkit",
+      "reason": "This exact Python native-handle initializer requires KMIPKit's private identity token and is used only by the private factory; it is ownership plumbing, not a product constructor."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-021 and T024 for this exact export path. The mandatory identity token is checked before wrapper initialization and supplied only by the private _wrap_owned_handle factory. Public wrapper types and their factory operations remain declared and mapped; direct raw-pointer adoption and duplicate handle ownership are not product capabilities.",
+      "exportName": "kmipkit.extensions.ExtensionIdentity.__init__",
+      "packageId": "python-kmipkit",
+      "reason": "This exact Python native-handle initializer requires KMIPKit's private identity token and is used only by the private factory; it is ownership plumbing, not a product constructor."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-021 and T024 for this exact export path. The mandatory identity token is checked before wrapper initialization and supplied only by the private _wrap_owned_handle factory. Public wrapper types and their factory operations remain declared and mapped; direct raw-pointer adoption and duplicate handle ownership are not product capabilities.",
+      "exportName": "kmipkit.extensions.ExtensionInformation.__init__",
+      "packageId": "python-kmipkit",
+      "reason": "This exact Python native-handle initializer requires KMIPKit's private identity token and is used only by the private factory; it is ownership plumbing, not a product constructor."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-021 and T024 for this exact export path. The mandatory identity token is checked before wrapper initialization and supplied only by the private _wrap_owned_handle factory. Public wrapper types and their factory operations remain declared and mapped; direct raw-pointer adoption and duplicate handle ownership are not product capabilities.",
+      "exportName": "kmipkit.extensions.ExtensionOrderConstraint.__init__",
+      "packageId": "python-kmipkit",
+      "reason": "This exact Python native-handle initializer requires KMIPKit's private identity token and is used only by the private factory; it is ownership plumbing, not a product constructor."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-021 and T024 for this exact export path. The mandatory identity token is checked before wrapper initialization and supplied only by the private _wrap_owned_handle factory. Public wrapper types and their factory operations remain declared and mapped; direct raw-pointer adoption and duplicate handle ownership are not product capabilities.",
+      "exportName": "kmipkit.extensions.ExtensionRecognition.__init__",
+      "packageId": "python-kmipkit",
+      "reason": "This exact Python native-handle initializer requires KMIPKit's private identity token and is used only by the private factory; it is ownership plumbing, not a product constructor."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
       "evidence": "Reviewed against KMIPKIT-0043-FR-021 and the source declaration. The dataclass constructor and semantic fields are inventoried separately; the exclusion applies only to this generated member.",
       "exportName": "kmipkit.extensions.ExtensionRegistryLimits.__dataclass_fields__",
       "packageId": "python-kmipkit",
@@ -1787,6 +1967,66 @@
         "path": "specs/043-public-api-bindings/spec.md",
         "status": "Approved"
       },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-021 and T024 for this exact export path. The mandatory identity token is checked before wrapper initialization and supplied only by the private _wrap_owned_handle factory. Public wrapper types and their factory operations remain declared and mapped; direct raw-pointer adoption and duplicate handle ownership are not product capabilities.",
+      "exportName": "kmipkit.extensions.ExtensionSchema.__init__",
+      "packageId": "python-kmipkit",
+      "reason": "This exact Python native-handle initializer requires KMIPKit's private identity token and is used only by the private factory; it is ownership plumbing, not a product constructor."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-021 and T024 for this exact export path. The mandatory identity token is checked before wrapper initialization and supplied only by the private _wrap_owned_handle factory. Public wrapper types and their factory operations remain declared and mapped; direct raw-pointer adoption and duplicate handle ownership are not product capabilities.",
+      "exportName": "kmipkit.extensions.RegisterRequest.__init__",
+      "packageId": "python-kmipkit",
+      "reason": "This exact Python native-handle initializer requires KMIPKit's private identity token and is used only by the private factory; it is ownership plumbing, not a product constructor."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-021 and T024 for this exact export path. The mandatory identity token is checked before wrapper initialization and supplied only by the private _wrap_owned_handle factory. Public wrapper types and their factory operations remain declared and mapped; direct raw-pointer adoption and duplicate handle ownership are not product capabilities.",
+      "exportName": "kmipkit.extensions.RegisteredExtensionValue.__init__",
+      "packageId": "python-kmipkit",
+      "reason": "This exact Python native-handle initializer requires KMIPKit's private identity token and is used only by the private factory; it is ownership plumbing, not a product constructor."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-021 and T024 for this exact export path. The mandatory identity token is checked before wrapper initialization and supplied only by the private _wrap_owned_handle factory. Public wrapper types and their factory operations remain declared and mapped; direct raw-pointer adoption and duplicate handle ownership are not product capabilities.",
+      "exportName": "kmipkit.extensions.TtlvPath.__init__",
+      "packageId": "python-kmipkit",
+      "reason": "This exact Python native-handle initializer requires KMIPKit's private identity token and is used only by the private factory; it is ownership plumbing, not a product constructor."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-021 and T024 for this exact export path. The mandatory identity token is checked before wrapper initialization and supplied only by the private _wrap_owned_handle factory. Public wrapper types and their factory operations remain declared and mapped; direct raw-pointer adoption and duplicate handle ownership are not product capabilities.",
+      "exportName": "kmipkit.extensions.ValidatedExtensionValue.__init__",
+      "packageId": "python-kmipkit",
+      "reason": "This exact Python native-handle initializer requires KMIPKit's private identity token and is used only by the private factory; it is ownership plumbing, not a product constructor."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
       "evidence": "Reviewed against KMIPKIT-0043-FR-021 and the source declaration. The dataclass constructor and semantic fields are inventoried separately; the exclusion applies only to this generated member.",
       "exportName": "kmipkit.metadata.Version.__dataclass_fields__",
       "packageId": "python-kmipkit",
@@ -1887,6 +2127,114 @@
       "exportName": "kmipkit.metadata.Version.__slots__",
       "packageId": "python-kmipkit",
       "reason": "This exact member is Python dataclass introspection or storage metadata generated from the class declaration, not an independent cross-language product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-021 and T024 for this exact export path. The mandatory identity token is checked before wrapper initialization and supplied only by the private _wrap_owned_handle factory. Public wrapper types and their factory operations remain declared and mapped; direct raw-pointer adoption and duplicate handle ownership are not product capabilities.",
+      "exportName": "kmipkit.ttlv.CodecLimits.__init__",
+      "packageId": "python-kmipkit",
+      "reason": "This exact Python native-handle initializer requires KMIPKit's private identity token and is used only by the private factory; it is ownership plumbing, not a product constructor."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-021 and T024 for this exact export path. The mandatory identity token is checked before wrapper initialization and supplied only by the private _wrap_owned_handle factory. Public wrapper types and their factory operations remain declared and mapped; direct raw-pointer adoption and duplicate handle ownership are not product capabilities.",
+      "exportName": "kmipkit.ttlv.RawTag.__init__",
+      "packageId": "python-kmipkit",
+      "reason": "This exact Python native-handle initializer requires KMIPKit's private identity token and is used only by the private factory; it is ownership plumbing, not a product constructor."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-021 and T024 for this exact export path. The mandatory identity token is checked before wrapper initialization and supplied only by the private _wrap_owned_handle factory. Public wrapper types and their factory operations remain declared and mapped; direct raw-pointer adoption and duplicate handle ownership are not product capabilities.",
+      "exportName": "kmipkit.ttlv.Structure.__init__",
+      "packageId": "python-kmipkit",
+      "reason": "This exact Python native-handle initializer requires KMIPKit's private identity token and is used only by the private factory; it is ownership plumbing, not a product constructor."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-021 and T024 for this exact export path. The mandatory identity token is checked before wrapper initialization and supplied only by the private _wrap_owned_handle factory. Public wrapper types and their factory operations remain declared and mapped; direct raw-pointer adoption and duplicate handle ownership are not product capabilities.",
+      "exportName": "kmipkit.ttlv.Tag.__init__",
+      "packageId": "python-kmipkit",
+      "reason": "This exact Python native-handle initializer requires KMIPKit's private identity token and is used only by the private factory; it is ownership plumbing, not a product constructor."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-021 and T024 for this exact export path. The mandatory identity token is checked before wrapper initialization and supplied only by the private _wrap_owned_handle factory. Public wrapper types and their factory operations remain declared and mapped; direct raw-pointer adoption and duplicate handle ownership are not product capabilities.",
+      "exportName": "kmipkit.ttlv.TtlvItem.__init__",
+      "packageId": "python-kmipkit",
+      "reason": "This exact Python native-handle initializer requires KMIPKit's private identity token and is used only by the private factory; it is ownership plumbing, not a product constructor."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-021 and T024 for this exact export path. The mandatory identity token is checked before wrapper initialization and supplied only by the private _wrap_owned_handle factory. Public wrapper types and their factory operations remain declared and mapped; direct raw-pointer adoption and duplicate handle ownership are not product capabilities.",
+      "exportName": "kmipkit.ttlv.TtlvItemView.__init__",
+      "packageId": "python-kmipkit",
+      "reason": "This exact Python native-handle initializer requires KMIPKit's private identity token and is used only by the private factory; it is ownership plumbing, not a product constructor."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-021 and T024 for this exact export path. The mandatory identity token is checked before wrapper initialization and supplied only by the private _wrap_owned_handle factory. Public wrapper types and their factory operations remain declared and mapped; direct raw-pointer adoption and duplicate handle ownership are not product capabilities.",
+      "exportName": "kmipkit.ttlv.TtlvStructureView.__init__",
+      "packageId": "python-kmipkit",
+      "reason": "This exact Python native-handle initializer requires KMIPKit's private identity token and is used only by the private factory; it is ownership plumbing, not a product constructor."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-021 and T024 for this exact export path. The mandatory identity token is checked before wrapper initialization and supplied only by the private _wrap_owned_handle factory. Public wrapper types and their factory operations remain declared and mapped; direct raw-pointer adoption and duplicate handle ownership are not product capabilities.",
+      "exportName": "kmipkit.ttlv.TtlvValueView.__init__",
+      "packageId": "python-kmipkit",
+      "reason": "This exact Python native-handle initializer requires KMIPKit's private identity token and is used only by the private factory; it is ownership plumbing, not a product constructor."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-021 and T024 for this exact export path. The mandatory identity token is checked before wrapper initialization and supplied only by the private _wrap_owned_handle factory. Public wrapper types and their factory operations remain declared and mapped; direct raw-pointer adoption and duplicate handle ownership are not product capabilities.",
+      "exportName": "kmipkit.ttlv.Value.__init__",
+      "packageId": "python-kmipkit",
+      "reason": "This exact Python native-handle initializer requires KMIPKit's private identity token and is used only by the private factory; it is ownership plumbing, not a product constructor."
     },
     {
       "approvalSource": {
