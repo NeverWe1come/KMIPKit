@@ -718,7 +718,7 @@ fn validated_https_config_accepts_memory_pem_inputs_and_origin_target() {
     let roots = [input(INPUT_MEMORY, ENCODING_PEM, &root_pem)];
     let crl_pem = pem("X509 CRL", &crl_der());
     let crls = [input(INPUT_MEMORY, ENCODING_PEM, &crl_pem)];
-    let config = configuration(
+    let mut config = configuration(
         TRANSPORT_ENDPOINT_HTTPS,
         TRANSPORT_TRUST_CERTIFICATES,
         TRANSPORT_FLAG_TARGET_URI,
@@ -743,6 +743,14 @@ fn validated_https_config_accepts_memory_pem_inputs_and_origin_target() {
         TimeoutLimit::Bounded(std::time::Duration::ZERO)
     );
     assert_eq!(parsed.timeouts().read(), TimeoutLimit::Unbounded);
+
+    // The URI owns the HTTPS authority and explicit port. The separate C
+    // endpoint_port field is reserved for RAW_TLS and must remain zero here.
+    config.endpoint_port = 8_443;
+    assert_eq!(
+        transport_config_from_v1(&config).err(),
+        Some(ERROR_INVALID_INPUT)
+    );
 }
 
 #[test]
@@ -777,12 +785,13 @@ fn validated_file_pem_config_and_platform_trust_are_supported() {
         timeout(0, 0, 0),
     );
 
-    let parsed = transport_config_from_v1(&config);
-    assert!(
-        parsed.is_ok(),
-        "transport parser status: {:?}",
-        parsed.err()
-    );
+    let parsed = transport_config_from_v1(&config)
+        .expect("PEM file inputs with all DEFAULT timeout selectors validate");
+    let defaults = TimeoutPolicy::default();
+    assert_eq!(parsed.timeouts().connect(), defaults.connect());
+    assert_eq!(parsed.timeouts().write(), defaults.write());
+    assert_eq!(parsed.timeouts().read(), defaults.read());
+    assert_eq!(parsed.timeouts().total(), defaults.total());
 
     let first_certificate_path = files.write("certificate-der-1", chain[0]);
     let second_certificate_path = files.write("certificate-der-2", chain[1]);

@@ -449,6 +449,126 @@ class T076ClientMappingTests(unittest.TestCase):
         self.assertEqual("org.kmipkit.extensions.TransportConfiguration.Encoding", mappings["kmipkit_transport_input_v1_t.encoding"][1])
         self.assertEqual("kmipkit.client.CredentialEncoding", mappings["kmipkit_transport_input_v1_t.encoding"][2])
 
+    def test_transport_field_mappings_cover_policy_modes_and_exact_c_carriers(self) -> None:
+        declarations = {
+            (row["packageId"], row["exportName"]): row
+            for row in self.manifest["publicDeclarations"]
+        }
+        exclusions = {
+            (row["packageId"], row["exportName"]): row
+            for row in self.manifest["approvedExclusions"]
+        }
+
+        # A caller-selected CA collection is a TrustSource, not a naked
+        # CertificateInput. The target must name the public constructor that
+        # carries that configuration meaning.
+        trust_field = declarations[("c-kmipkit", "kmipkit_transport_config_v1_t.trust_certificates")]
+        self.assertEqual(
+            "kmipkit_transport::TrustSource::certificate_authorities",
+            trust_field["languageMappings"]["rust"]["name"],
+        )
+
+        # The C timeout discriminant includes DEFAULT, while the adjacent
+        # seconds/nanoseconds fields describe only BOUNDED. Keep that policy
+        # distinction traceable to each facade's default selector.
+        timeout_kind = declarations[("c-kmipkit", "kmipkit_timeout_limit_v1_t.kind")]
+        self.assertEqual("kmipkit_transport::TimeoutPolicy", timeout_kind["languageMappings"]["rust"]["name"])
+        default_selector = declarations[("java-kmipkit", "org.kmipkit.extensions.TransportConfiguration.Timeout.defaultValue")]
+        self.assertEqual("kmipkit_transport::TimeoutPolicy", default_selector["languageMappings"]["rust"]["name"])
+        self.assertEqual("kmipkit.client.TimeoutLimit.default", default_selector["languageMappings"]["python"]["name"])
+
+        # Every supported material mode is represented by existing public
+        # constructors/selectors. CRLs intentionally have memory PEM/DER only.
+        rust_exports = {
+            name
+            for package_id, name in declarations
+            if package_id == "rust-kmipkit-transport"
+        }
+        for kind in ("CertificateInput", "PrivateKeyInput"):
+            for mode in ("from_pem", "from_der", "from_pem_file", "from_der_file"):
+                self.assertIn(f"kmipkit_transport::{kind}::{mode}", rust_exports)
+        for mode in ("from_pem", "from_der"):
+            self.assertIn(f"kmipkit_transport::RevocationListInput::{mode}", rust_exports)
+        self.assertNotIn("kmipkit_transport::RevocationListInput::from_pem_file", rust_exports)
+        self.assertNotIn("kmipkit_transport::RevocationListInput::from_der_file", rust_exports)
+
+        java = (ROOT / "bindings/java/src/main/java/org/kmipkit/extensions/TransportConfiguration.java").read_text(encoding="utf-8")
+        python = (ROOT / "bindings/python/src/kmipkit/client.py").read_text(encoding="utf-8")
+        rust_ffi = (ROOT / "crates/kmipkit-ffi/src/extension_registry/client_abi.rs").read_text(encoding="utf-8")
+        rust_transport = (ROOT / "crates/kmipkit-transport/src/config.rs").read_text(encoding="utf-8")
+        rust_tests = (ROOT / "crates/kmipkit-ffi/tests/support/client_abi_tests.rs").read_text(encoding="utf-8")
+        python_tests = (ROOT / "bindings/python/tests/test_client.py").read_text(encoding="utf-8")
+        for symbol in (
+            "clientIdentityPem", "clientIdentityDer", "clientIdentityFiles",
+            "trustCertificatesPem", "trustCertificatesDer", "trustCertificateFiles",
+            "revocationListsPem", "revocationListsDer",
+        ):
+            self.assertIn(symbol, java)
+        for symbol in (
+            "CredentialEncoding.PEM", "CredentialEncoding.DER",
+            "def memory(", "def file(", "def certificate_authorities(",
+        ):
+            self.assertIn(symbol, python)
+        for symbol in (
+            "TRANSPORT_SOURCE_MEMORY => copy_transport_span",
+            "TRANSPORT_SOURCE_FILE =>",
+            "fn client_certificate_chain(",
+            "fn private_key_input(",
+            "fn revocation_input(",
+            "fn transport_input_encoding(",
+            "fn transport_input_path(",
+            "let defaults = TimeoutPolicy::default();",
+        ):
+            self.assertIn(symbol, rust_ffi)
+        self.assertIn("file_based_revocation_lists_are_rejected_before_reading", rust_tests)
+        self.assertIn("test_transport_config_rejects_file_backed_revocation_lists_without_echoing_path", python_tests)
+        for symbol in ("pub fn from_pem_file(", "pub fn from_der_file(", "pub fn from_pem(", "pub fn from_der("):
+            self.assertIn(symbol, rust_transport)
+
+        # FR-021 inventories the parent data carrier and its nested span
+        # framing separately. `data` is not an independent capability: its
+        # bytes are interpreted through source_kind, encoding, and the parent
+        # configuration field. The generated C layouts still retain both
+        # exact record shapes.
+        c_exclusions = {
+            name: row
+            for (package_id, name), row in exclusions.items()
+            if package_id == "c-kmipkit"
+        }
+        for name in (
+            "kmipkit_transport_config_v1_t.client_certificate_count",
+            "kmipkit_transport_config_v1_t.trust_certificate_count",
+            "kmipkit_transport_config_v1_t.revocation_list_count",
+        ):
+            self.assertIn(name, c_exclusions)
+            self.assertIn("length", c_exclusions[name]["reason"].lower())
+        self.assertNotIn(("c-kmipkit", "kmipkit_transport_input_v1_t.data"), declarations)
+        self.assertIn(("c-kmipkit", "kmipkit_transport_input_v1_t.data"), exclusions)
+        self.assertIn(("c-kmipkit", "kmipkit_byte_span_v1_t.data"), exclusions)
+        self.assertIn(("c-kmipkit", "kmipkit_byte_span_v1_t.length"), exclusions)
+        input_layout = c_exclusions["kmipkit_transport_input_v1_t"]["cType"]["fields"]
+        self.assertEqual(
+            [("source_kind", "uint32_t"), ("encoding", "uint32_t"), ("data", "kmipkit_byte_span_v1_t")],
+            [(field["name"], field["type"]) for field in input_layout],
+        )
+        span_layout = c_exclusions["kmipkit_byte_span_v1_t"]["cType"]["fields"]
+        self.assertEqual(
+            [("data", "const uint8_t *"), ("length", "uint64_t")],
+            [(field["name"], field["type"]) for field in span_layout],
+        )
+
+        # endpoint_port is only the RAW_TLS host's port. HTTPS carries its
+        # authority (including any explicit port) in the absolute endpoint
+        # URI; target_uri is the independent origin-form request path/query.
+        endpoint_port = declarations[("c-kmipkit", "kmipkit_transport_config_v1_t.endpoint_port")]
+        self.assertEqual("kmipkit_transport::Endpoint::raw_tls", endpoint_port["languageMappings"]["rust"]["name"])
+        self.assertIn("TRANSPORT_ENDPOINT_HTTPS if input.endpoint_port == 0", rust_ffi)
+        self.assertIn("endpointPort = 0;", java)
+        self.assertIn("if port != 0 or self.tls_server_name is not None", python)
+        self.assertIn("test_transport_record_supports_https_platform_trust_and_empty_optional_arrays", python_tests)
+        self.assertIn("b\"https://server.kmipkit.test:8443\"", rust_tests)
+        self.assertIn("assert_eq!(parsed.target_uri(), Some(\"/kms/kmip\"));", rust_tests)
+
     def test_endpoint_kind_mapping_names_the_constructor_selection(self) -> None:
         mapping = C_FIELD_TARGETS["kmipkit_transport_config_v1_t.endpoint_kind"]
         self.assertEqual("kmipkit_transport::Endpoint", mapping[0][1])
