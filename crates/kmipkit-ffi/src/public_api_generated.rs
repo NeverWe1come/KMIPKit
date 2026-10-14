@@ -628,6 +628,26 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "kmipkit_transport::CertificateInput::from_pem",
     ),
     (
+        "rust-observed-4146b2eb353140c03982",
+        "rust-kmipkit-transport",
+        "kmipkit_transport::CertificateInput::from_pem_file",
+    ),
+    (
+        "rust-observed-ebb8f0468f56c5ebe649",
+        "rust-kmipkit-transport",
+        "kmipkit_transport::CertificateInput::from_der",
+    ),
+    (
+        "rust-observed-f2e30f3336b417b54eb1",
+        "rust-kmipkit-transport",
+        "kmipkit_transport::CertificateInput::from_der_file",
+    ),
+    (
+        "rust-observed-12626a7b80e9b9ceb70c",
+        "rust-kmipkit-transport",
+        "kmipkit_transport::ClientIdentity",
+    ),
+    (
         "T076:target:rust-kmipkit-transport:kmipkit_transport::ClientIdentity::new",
         "rust-kmipkit-transport",
         "kmipkit_transport::ClientIdentity::new",
@@ -643,9 +663,34 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "kmipkit_transport::Endpoint::raw_tls",
     ),
     (
+        "rust-observed-fd097d50c7ccccb59751",
+        "rust-kmipkit-transport",
+        "kmipkit_transport::Endpoint::https",
+    ),
+    (
         "T076:target:rust-kmipkit-transport:kmipkit_transport::PrivateKeyInput",
         "rust-kmipkit-transport",
         "kmipkit_transport::PrivateKeyInput",
+    ),
+    (
+        "rust-observed-059cb5ebcc982c1a267b",
+        "rust-kmipkit-transport",
+        "kmipkit_transport::PrivateKeyInput::from_pem",
+    ),
+    (
+        "rust-observed-1c46f74775db5491c87b",
+        "rust-kmipkit-transport",
+        "kmipkit_transport::PrivateKeyInput::from_pem_file",
+    ),
+    (
+        "rust-observed-6fcec86d7b91c7ce4b1a",
+        "rust-kmipkit-transport",
+        "kmipkit_transport::PrivateKeyInput::from_der",
+    ),
+    (
+        "rust-observed-9c4cf9e11871957e7754",
+        "rust-kmipkit-transport",
+        "kmipkit_transport::PrivateKeyInput::from_der_file",
     ),
     (
         "T076:target:rust-kmipkit-transport:kmipkit_transport::RevocationListInput",
@@ -658,6 +703,11 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "kmipkit_transport::RevocationListInput::from_pem",
     ),
     (
+        "rust-observed-452594e6d5e9ccda31ad",
+        "rust-kmipkit-transport",
+        "kmipkit_transport::RevocationListInput::from_der",
+    ),
+    (
         "T076:target:rust-kmipkit-transport:kmipkit_transport::TimeoutLimit",
         "rust-kmipkit-transport",
         "kmipkit_transport::TimeoutLimit",
@@ -668,6 +718,11 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "kmipkit_transport::TimeoutLimit::Bounded",
     ),
     (
+        "rust-observed-a4da51e29717cf90c103",
+        "rust-kmipkit-transport",
+        "kmipkit_transport::TimeoutLimit::Unbounded",
+    ),
+    (
         "T076:target:rust-kmipkit-transport:kmipkit_transport::TimeoutPolicy",
         "rust-kmipkit-transport",
         "kmipkit_transport::TimeoutPolicy",
@@ -676,6 +731,11 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "rust-observed-c85663a1dcd544c9e996",
         "rust-kmipkit-transport",
         "kmipkit_transport::TransportConfig",
+    ),
+    (
+        "rust-observed-f81dc75f104cd92cb0ca",
+        "rust-kmipkit-transport",
+        "kmipkit_transport::TransportConfig::builder",
     ),
     (
         "T076:target:rust-kmipkit-transport:kmipkit_transport::TransportConfigBuilder",
@@ -708,14 +768,29 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "kmipkit_transport::TransportConfigBuilder::max_request_bytes",
     ),
     (
+        "rust-observed-4c078bdc61b89984c6ed",
+        "rust-kmipkit-transport",
+        "kmipkit_transport::TransportConfigBuilder::build",
+    ),
+    (
         "T076:target:rust-kmipkit-transport:kmipkit_transport::TrustSource",
         "rust-kmipkit-transport",
         "kmipkit_transport::TrustSource",
     ),
     (
+        "rust-observed-83c5fcf917e9f9721e78",
+        "rust-kmipkit-transport",
+        "kmipkit_transport::TrustSource::Platform",
+    ),
+    (
         "T076:target:rust-kmipkit-transport:kmipkit_transport::TrustSource::certificate_authorities",
         "rust-kmipkit-transport",
         "kmipkit_transport::TrustSource::certificate_authorities",
+    ),
+    (
+        "rust-observed-969c502edfec1016b04c",
+        "rust-kmipkit-transport",
+        "kmipkit_transport::TrustSource::platform",
     ),
     (
         "rust-adr0014-91e7a41f5f7a2bcb",
