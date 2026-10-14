@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import importlib
 import gc
+from dataclasses import replace
 from pathlib import Path
 from typing import get_type_hints
 from types import SimpleNamespace
@@ -2227,9 +2228,9 @@ def test_transport_input_memory_uses_wipeable_owned_storage() -> None:
     assert caller_buffer == b"caller-buffer-remains"
 
 
-@pytest.mark.parametrize("transport_status", [0, 4])
+@pytest.mark.parametrize("transport_status", [0, 4, None])
 def test_client_create_zeroizes_temporary_key_copies_and_keeps_config_reusable(
-    monkeypatch: pytest.MonkeyPatch, transport_status: int
+    monkeypatch: pytest.MonkeyPatch, transport_status: int | None
 ) -> None:
     caller_buffer = bytearray(b"private-key-sentinel")
     key = client.TransportInput.memory(caller_buffer, client.CredentialEncoding.PEM)
@@ -2245,16 +2246,30 @@ def test_client_create_zeroizes_temporary_key_copies_and_keeps_config_reusable(
         return validated
 
     monkeypatch.setattr(client, "_validated_transport_config", capture_validated)
+    captured_secret_owners: list[client._SecretBytes] = []
+    original_wipe = client._wipe_transport_secrets
+
+    def capture_wiped_owners(owners: tuple[object, ...] | list[object]) -> None:
+        captured_secret_owners.extend(
+            owner for owner in owners if isinstance(owner, client._SecretBytes)
+        )
+        original_wipe(owners)  # type: ignore[arg-type]
+
+    monkeypatch.setattr(client, "_wipe_transport_secrets", capture_wiped_owners)
     transport_pointer, _transport_storage = _opaque("kmipkit_transport_config_t")
     client_pointer, _client_storage = _opaque("kmipkit_client_t")
     key_spans: list[tuple[object, int]] = []
+    current_status = [transport_status]
 
     def create_transport(record: object, output: object) -> int:
         key_record = record.client_private_key  # type: ignore[attr-defined]
         key_spans.append((key_record.data.data, int(key_record.data.length)))
-        if transport_status == 0:
+        status = current_status[0]
+        if status is None:
+            raise RuntimeError("simulated native failure")
+        if status == 0:
             output[0] = transport_pointer  # type: ignore[index]
-        return transport_status
+        return status
 
     def create_client(_configuration: object, slot: object, output: object) -> int:
         slot[0] = client.ffi.NULL  # type: ignore[index]
@@ -2276,13 +2291,24 @@ def test_client_create_zeroizes_temporary_key_copies_and_keeps_config_reusable(
         if transport_status == 0:
             created = client.Client.create(extension_configuration, transport_configuration)
             created.close()
+        elif transport_status is None:
+            with pytest.raises(RuntimeError, match="simulated native failure"):
+                client.Client.create(extension_configuration, transport_configuration)
         else:
             with pytest.raises(errors.InvalidInputError):
                 client.Client.create(extension_configuration, transport_configuration)
+        if transport_status != 0:
+            current_status[0] = 0
+            created = client.Client.create(extension_configuration, transport_configuration)
+            created.close()
 
         assert key_spans
+        assert captured_secret_owners
         for pointer, length in key_spans:
             assert bytes(client.ffi.buffer(pointer, length)) == bytes(length)
+        assert all(
+            owner.buffer == bytes(len(owner.buffer)) for owner in captured_secret_owners
+        )
         assert temporary_configs
         for temporary in temporary_configs:
             temporary_key = client._transport_source(temporary.client_private_key)
@@ -2293,3 +2319,52 @@ def test_client_create_zeroizes_temporary_key_copies_and_keeps_config_reusable(
         assert caller_buffer == b"private-key-sentinel"
     finally:
         extension_configuration.close()
+
+
+def test_transport_record_wipes_key_span_when_later_record_validation_fails(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    class UnvalidatedTrust(client.TrustSource):
+        def __post_init__(self) -> None:
+            pass
+
+    key = client.TransportInput.memory(b"private-key-sentinel", client.CredentialEncoding.PEM)
+    certificate = client.TransportInput.memory(
+        b"client-certificate", client.CredentialEncoding.PEM
+    )
+    invalid_trust = UnvalidatedTrust(client.TrustKind.CERTIFICATES, (object(),))
+    transport = _unvalidated_transport_configuration(
+        client_private_key=key,
+        client_certificates=(certificate,),
+        trust=invalid_trust,
+    )
+    captured_secret_owners: list[client._SecretBytes] = []
+    original_wipe = client._wipe_transport_secrets
+
+    def capture_wiped_owners(owners: tuple[object, ...] | list[object]) -> None:
+        captured_secret_owners.extend(
+            owner for owner in owners if isinstance(owner, client._SecretBytes)
+        )
+        original_wipe(owners)
+
+    monkeypatch.setattr(client, "_wipe_transport_secrets", capture_wiped_owners)
+
+    with pytest.raises(errors.InvalidInputError):
+        client._transport_record(transport)
+
+    assert captured_secret_owners
+    assert all(owner.buffer == bytes(len(owner.buffer)) for owner in captured_secret_owners)
+    assert client._transport_source(key).buffer == b"private-key-sentinel"
+    assert client._transport_source(certificate).buffer == b"client-certificate"
+
+
+def test_transport_input_preserves_dataclass_replace_and_hash_behavior() -> None:
+    original = client.TransportInput.memory(
+        b"private-key-sentinel", client.CredentialEncoding.PEM
+    )
+
+    copied = replace(original)
+
+    assert copied == original
+    assert hash(copied) == hash(original)
+    assert {original: "credential"}[copied] == "credential"
