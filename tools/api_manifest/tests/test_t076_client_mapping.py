@@ -893,6 +893,50 @@ class T076ClientMappingTests(unittest.TestCase):
         self.assertIn("thread-local", clear_exclusion["reason"])
         self.assertIn("mechanism", clear_exclusion["reason"])
 
+    def test_python_error_taxonomy_values_map_to_all_four_facades(self) -> None:
+        declarations = {
+            row["exportName"]: row for row in self.manifest["publicDeclarations"]
+        }
+        groups = {
+            "kmipkit.errors.ClientErrorCategory": (
+                "kmipkit_client::ClientError::category",
+                "org.kmipkit.ClientOperationException.categoryCode",
+                (
+                    "VALIDATION", "PROTOCOL", "TRANSPORT", "SERVER_RESULT", "OTHER",
+                ),
+            ),
+            "kmipkit.errors.ClientErrorCause": (
+                "kmipkit_client::ClientError::cause_category",
+                "org.kmipkit.ClientOperationException.causeCode",
+                (
+                    "NONE", "INVALID_INPUT", "PROTOCOL_INVALID_VALUE",
+                    "PROTOCOL_INVALID_ENCODING", "PROTOCOL_OTHER", "TRANSPORT_IO",
+                    "TRANSPORT_TLS", "TRANSPORT_HTTP", "TIMEOUT", "TRANSPORT_OTHER",
+                    "OTHER",
+                ),
+            ),
+            "kmipkit.errors.DeliveryState": (
+                "kmipkit_client::ClientError::delivery_state",
+                "org.kmipkit.ClientOperationException.deliveryStateCode",
+                ("NONE", "NOT_SENT", "POSSIBLY_SENT", "RESPONSE_STARTED"),
+            ),
+        }
+        for python_type, (rust_target, java_target, members) in groups.items():
+            type_row = declarations.get(python_type)
+            self.assertIsNotNone(type_row, f"missing Python taxonomy type {python_type}")
+            for member in members:
+                path = f"{python_type}.{member}"
+                with self.subTest(value=path):
+                    row = declarations.get(path)
+                    self.assertIsNotNone(row, f"missing public taxonomy value {path}")
+                    self.assertEqual("declared", row["declarationState"])
+                    self.assertEqual("client_execution", row["capabilityId"])
+                    self.assertIn("KMIPKIT-0043-FR-013", row["requirementIds"])
+                    self.assertEqual(rust_target, row["languageMappings"]["rust"]["name"])
+                    self.assertEqual("kmipkit_last_error_get", row["languageMappings"]["c"]["name"])
+                    self.assertEqual(java_target, row["languageMappings"]["java"]["name"])
+                    self.assertEqual(path, row["languageMappings"]["python"]["name"])
+
     def test_client_response_byte_spans_document_their_borrowed_lifetime(self) -> None:
         functions = {row["id"]: row for row in self.manifest["functions"]}
         header = generate.render_c_header(self.manifest)
