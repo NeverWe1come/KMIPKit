@@ -194,6 +194,28 @@ class CaseSourceAuditTests(unittest.TestCase):
 
         self.assertEqual(result.returncode, 0, result.stderr)
 
+    def test_duplicate_href_links_are_deduplicated_and_remain_matchable(self) -> None:
+        profile_html = (
+            b"<h4>5.1.3.1 BL-M-1-21</h4>"
+            b'<a href="case.xml">first</a><a href="case.xml">duplicate</a>'
+        )
+        result = self._run_audit(
+            profile_html=profile_html,
+            testcases_html=b"",
+            cases=[
+                self._case(
+                    "P-1", "BL-M-1-21", "KMIPKIT-SRC-profiles", "5.1.3.1",
+                    "profile_test_case", "case.xml",
+                ),
+            ],
+        )
+        evidence = audit_case_sources._parse_case_evidence(profile_html, {"BL-M-1-21"})
+
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual(len(evidence), 1)
+        self.assertEqual(evidence[0].hrefs, {"case.xml"})
+        self.assertIsInstance(evidence[0].hrefs, set)
+
     def test_verifies_catalog_source_sha256_before_parsing(self) -> None:
         result = self._run_audit(
             profile_html=b"<h4>5.1.3.1 BL-M-1-21</h4><a href=\"case.xml\">fixture</a>",
