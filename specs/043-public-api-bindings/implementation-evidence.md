@@ -1121,3 +1121,37 @@ The T076 completion gates remain open: final PR CI, complete four-language
 semantic parity, and independent human semantic/security review. The public
 binding-export inventory is structurally complete at the latest pinned report,
 but it does not prove semantic parity or release readiness.
+
+### T076 public release mappings and selected FFI coverage correction (2026-10-14)
+
+The public API manifest now declares the existing C release functions for
+`ClientConfiguration` and `ClientExtensionRegistry` with exact Rust, C, Java,
+and Python mappings. The deterministic generator refreshed the public C
+header, Java/Python API metadata, and parity fixtures. The C consumer now uses
+the generated public header to exercise client configuration ownership,
+request-option validation, typed execution, and handle release through a local
+TLS 1.3 mTLS peer. Java and Python regression tests cover their equivalent
+release and request-option facade paths.
+
+Investigation of the selected FFI coverage inputs found that the Linux
+collector ran only `tests/c_api_coverage.rs`, leaving the FFI crate's internal
+unit tests out of the measured profile. Those unit tests exercise defensive
+ABI branches that cannot be manufactured through a public C handle. The
+collector now runs all FFI targets and exports both the library unit-test
+executable and the compiled C consumer executable; the coverage thresholds
+remain unchanged. The isolated Linux run reported line coverage of 95.01% for
+`extension_registry.rs` and 90.57% for `extension_registry/client_abi.rs`.
+
+| Phase | Commit | Command | Result |
+|---|---|---|---|
+| Red | `9cfca080` | `python -m unittest scripts.tests.test_workflow.WorkflowContractTests.test_ffi_coverage_collection_runs_unit_and_public_c_consumer_targets -v` | Expected failure: the collector only selected the C integration target and did not include the library unit-test binary. |
+| Green | `35acc859` | `python -m unittest scripts.tests.test_workflow -v`; isolated Linux `bash scripts/collect_ffi_coverage.sh target/t076-ffi-report-2/combined` with `CARGO_TARGET_DIR=target/t076-ffi-target-2` | PASS: workflow contract tests 43/43; FFI unit tests 60/60 and C integration tests 4/4; coverage collection and report normalization succeeded at 95.01% and 90.57% line coverage for the two scoped Rust files. |
+| Red | `1367fdf3` | `python -m unittest tools.api_manifest.tests.test_t076_client_mapping -v` | Expected failure before manifest promotion: both release declarations were still blocked. |
+| Green | `da6cfb09` | T076 manifest tests; `python -B tools/api_manifest/generate.py --check`; focused Java C/JNI tests; focused Python adapter tests; `cargo test --locked -p kmipkit-ffi --test c_api_coverage --all-features` | PASS: manifest tests 34/34; 12 generated outputs current; Java tests 18/18; Python tests 135/135; Windows C ABI integration tests 4/4. |
+| Refactor | This commit | `python -B tools/api_manifest/audit_binding_exports.py --repo-root . --report specs/043-public-api-bindings/reports/binding-export-report-2026-10-12.json --check`; `git diff --check` | PASS: C 272 observed / 242 exact matches, Java 481 / 442, Python 556 / 425; no missing, stale, kind-mismatched, or issue paths. |
+
+T076 remains open. The shared batch fixture still does not demonstrate one
+ordered mixed-result exchange with identical Pending correlation bytes and no
+automatic follow-up through Rust, C, Java, and Python. Final PR-head CI and
+independent human semantic/security review also remain outstanding. This
+checkpoint does not complete T011, T071, T076, or release readiness.
