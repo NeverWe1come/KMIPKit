@@ -20,6 +20,20 @@
     "direct_section_mapping": "Profiles v2.1 §§5.x and 6.1-6.35. HTTPS direct sections are §§3.2, 5.3.1, 6.1, and 6.4. It inherits §3.1 through its Baseline dependency and Profiles §6.1 item 2.",
     "inclusion_edges": [
       {
+        "inclusion_id": "KMIPKIT-INCLUSION-PROF-613-BASIC-SYMMETRIC-CLIENT",
+        "source_clause_id": "KMIPKIT-CLAUSE-PROF-6.13-003",
+        "included_source_id": "KMIPKIT-SRC-profiles",
+        "included_section": "5.7.1",
+        "source_locator": "Profiles v2.1 §6.13 item 3"
+      },
+      {
+        "inclusion_id": "KMIPKIT-INCLUSION-PROF-614-BASIC-SYMMETRIC-CLIENT",
+        "source_clause_id": "KMIPKIT-CLAUSE-PROF-6.14-003",
+        "included_source_id": "KMIPKIT-SRC-profiles",
+        "included_section": "5.7.1",
+        "source_locator": "Profiles v2.1 §6.14 item 3"
+      },
+      {
         "inclusion_id": "KMIPKIT-INCLUSION-PROF-BASELINE-BASIC-AUTH",
         "source_clause_id": "KMIPKIT-CLAUSE-PROF-6.1-002",
         "included_source_id": "KMIPKIT-SRC-profiles",
@@ -19701,7 +19715,11 @@
       "review_note": "Profiles v2.1 §5.7.1 locator 1; source atom 1 assigns actor 'client' and direction 'unspecified'. Profile conditional only; this is not a support claim.",
       "source_obligation_order": 1,
       "source_actor": "client",
-      "source_direction": "unspecified"
+      "source_direction": "unspecified",
+      "inherited_by_profiles": [
+        "KMIPKIT-PROFILE-SYMMETRIC-KEY-FOUNDRY-ADVANCED-CLIENT",
+        "KMIPKIT-PROFILE-SYMMETRIC-KEY-FOUNDRY-INTERMEDIATE-CLIENT"
+      ]
     },
     {
       "requirement_id": "KMIPKIT-REQ-PROF-5.7.1-002",
@@ -19719,7 +19737,11 @@
       "review_note": "Profiles v2.1 §5.7.1 locator 2; source atom 1 assigns actor 'client' and direction 'unspecified'. Profile conditional only; this is not a support claim.",
       "source_obligation_order": 1,
       "source_actor": "client",
-      "source_direction": "unspecified"
+      "source_direction": "unspecified",
+      "inherited_by_profiles": [
+        "KMIPKIT-PROFILE-SYMMETRIC-KEY-FOUNDRY-ADVANCED-CLIENT",
+        "KMIPKIT-PROFILE-SYMMETRIC-KEY-FOUNDRY-INTERMEDIATE-CLIENT"
+      ]
     },
     {
       "requirement_id": "KMIPKIT-REQ-PROF-5.7.1-003",
@@ -19737,7 +19759,11 @@
       "review_note": "Profiles v2.1 §5.7.1 locator 3; source atom 1 assigns actor 'client' and direction 'unspecified'. Profile conditional only; this is not a support claim.",
       "source_obligation_order": 1,
       "source_actor": "client",
-      "source_direction": "unspecified"
+      "source_direction": "unspecified",
+      "inherited_by_profiles": [
+        "KMIPKIT-PROFILE-SYMMETRIC-KEY-FOUNDRY-ADVANCED-CLIENT",
+        "KMIPKIT-PROFILE-SYMMETRIC-KEY-FOUNDRY-INTERMEDIATE-CLIENT"
+      ]
     },
     {
       "requirement_id": "KMIPKIT-REQ-PROF-5.7.2-001",
@@ -47595,8 +47621,9 @@
         "KMIPKIT-CLAUSE-PROF-6.14-005"
       ],
       "normative_inclusion_ids": [
-        "KMIPKIT-INCLUSION-PROF-BASELINE-SPEC",
-        "KMIPKIT-INCLUSION-PROF-BASELINE-BASIC-AUTH"
+        "KMIPKIT-INCLUSION-PROF-614-BASIC-SYMMETRIC-CLIENT",
+        "KMIPKIT-INCLUSION-PROF-BASELINE-BASIC-AUTH",
+        "KMIPKIT-INCLUSION-PROF-BASELINE-SPEC"
       ],
       "source_clause_ids": [
         "KMIPKIT-CLAUSE-PROF-3.1-001",
@@ -47614,6 +47641,9 @@
         "KMIPKIT-CLAUSE-PROF-3.1.3-002",
         "KMIPKIT-CLAUSE-PROF-3.1.3-003",
         "KMIPKIT-CLAUSE-PROF-3.1.4-001",
+        "KMIPKIT-CLAUSE-PROF-5.7.1-001",
+        "KMIPKIT-CLAUSE-PROF-5.7.1-002",
+        "KMIPKIT-CLAUSE-PROF-5.7.1-003",
         "KMIPKIT-CLAUSE-PROF-5.7.3-001",
         "KMIPKIT-CLAUSE-PROF-5.7.3-002",
         "KMIPKIT-CLAUSE-PROF-5.7.3-003",
@@ -48507,6 +48537,9 @@
       "requirement_ids_audited_subset": [
         "KMIPKIT-REQ-PROF-3.1-001",
         "KMIPKIT-REQ-PROF-4.1.2-007",
+        "KMIPKIT-REQ-PROF-5.7.1-001",
+        "KMIPKIT-REQ-PROF-5.7.1-002",
+        "KMIPKIT-REQ-PROF-5.7.1-003",
         "KMIPKIT-REQ-PROF-5.7.3-001",
         "KMIPKIT-REQ-PROF-5.7.3-002",
         "KMIPKIT-REQ-PROF-5.7.3-003",
@@ -48790,6 +48823,9 @@
       "requirement_ids": [
         "KMIPKIT-REQ-PROF-3.1-001",
         "KMIPKIT-REQ-PROF-4.1.2-007",
+        "KMIPKIT-REQ-PROF-5.7.1-001",
+        "KMIPKIT-REQ-PROF-5.7.1-002",
+        "KMIPKIT-REQ-PROF-5.7.1-003",
         "KMIPKIT-REQ-PROF-5.7.3-001",
         "KMIPKIT-REQ-PROF-5.7.3-002",
         "KMIPKIT-REQ-PROF-5.7.3-003",
@@ -49335,7 +49371,38 @@
           "fixture_path": null
         }
       ],
-      "direct_root_exclusions": []
+      "direct_root_exclusions": [
+        {
+          "source_clause_id": "KMIPKIT-CLAUSE-PROF-5.7.1-001",
+          "source_section": "5.7.1",
+          "source_locator": {
+            "ordinal": 1,
+            "block_kind": "list_item"
+          },
+          "expected_disposition": "included_not_direct",
+          "reason": "Profiles v2.1 §6.14 item 3 normatively incorporates Profiles v2.1 §5.7.1; this source clause enters the profile closure through that section inclusion, not as a direct root."
+        },
+        {
+          "source_clause_id": "KMIPKIT-CLAUSE-PROF-5.7.1-002",
+          "source_section": "5.7.1",
+          "source_locator": {
+            "ordinal": 2,
+            "block_kind": "list_item"
+          },
+          "expected_disposition": "included_not_direct",
+          "reason": "Profiles v2.1 §6.14 item 3 normatively incorporates Profiles v2.1 §5.7.1; this source clause enters the profile closure through that section inclusion, not as a direct root."
+        },
+        {
+          "source_clause_id": "KMIPKIT-CLAUSE-PROF-5.7.1-003",
+          "source_section": "5.7.1",
+          "source_locator": {
+            "ordinal": 3,
+            "block_kind": "list_item"
+          },
+          "expected_disposition": "included_not_direct",
+          "reason": "Profiles v2.1 §6.14 item 3 normatively incorporates Profiles v2.1 §5.7.1; this source clause enters the profile closure through that section inclusion, not as a direct root."
+        }
+      ]
     },
     {
       "profile_id": "KMIPKIT-PROFILE-SYMMETRIC-KEY-FOUNDRY-BASIC-CLIENT",
@@ -51135,8 +51202,9 @@
         "KMIPKIT-CLAUSE-PROF-6.13-005"
       ],
       "normative_inclusion_ids": [
-        "KMIPKIT-INCLUSION-PROF-BASELINE-SPEC",
-        "KMIPKIT-INCLUSION-PROF-BASELINE-BASIC-AUTH"
+        "KMIPKIT-INCLUSION-PROF-613-BASIC-SYMMETRIC-CLIENT",
+        "KMIPKIT-INCLUSION-PROF-BASELINE-BASIC-AUTH",
+        "KMIPKIT-INCLUSION-PROF-BASELINE-SPEC"
       ],
       "source_clause_ids": [
         "KMIPKIT-CLAUSE-PROF-3.1-001",
@@ -51154,6 +51222,9 @@
         "KMIPKIT-CLAUSE-PROF-3.1.3-002",
         "KMIPKIT-CLAUSE-PROF-3.1.3-003",
         "KMIPKIT-CLAUSE-PROF-3.1.4-001",
+        "KMIPKIT-CLAUSE-PROF-5.7.1-001",
+        "KMIPKIT-CLAUSE-PROF-5.7.1-002",
+        "KMIPKIT-CLAUSE-PROF-5.7.1-003",
         "KMIPKIT-CLAUSE-PROF-5.7.2-001",
         "KMIPKIT-CLAUSE-PROF-5.7.2-002",
         "KMIPKIT-CLAUSE-PROF-5.7.2-003",
@@ -52047,6 +52118,9 @@
       "requirement_ids_audited_subset": [
         "KMIPKIT-REQ-PROF-3.1-001",
         "KMIPKIT-REQ-PROF-4.1.2-007",
+        "KMIPKIT-REQ-PROF-5.7.1-001",
+        "KMIPKIT-REQ-PROF-5.7.1-002",
+        "KMIPKIT-REQ-PROF-5.7.1-003",
         "KMIPKIT-REQ-PROF-5.7.2-001",
         "KMIPKIT-REQ-PROF-5.7.2-002",
         "KMIPKIT-REQ-PROF-5.7.2-003",
@@ -52330,6 +52404,9 @@
       "requirement_ids": [
         "KMIPKIT-REQ-PROF-3.1-001",
         "KMIPKIT-REQ-PROF-4.1.2-007",
+        "KMIPKIT-REQ-PROF-5.7.1-001",
+        "KMIPKIT-REQ-PROF-5.7.1-002",
+        "KMIPKIT-REQ-PROF-5.7.1-003",
         "KMIPKIT-REQ-PROF-5.7.2-001",
         "KMIPKIT-REQ-PROF-5.7.2-002",
         "KMIPKIT-REQ-PROF-5.7.2-003",
@@ -52875,7 +52952,38 @@
           "fixture_path": null
         }
       ],
-      "direct_root_exclusions": []
+      "direct_root_exclusions": [
+        {
+          "source_clause_id": "KMIPKIT-CLAUSE-PROF-5.7.1-001",
+          "source_section": "5.7.1",
+          "source_locator": {
+            "ordinal": 1,
+            "block_kind": "list_item"
+          },
+          "expected_disposition": "included_not_direct",
+          "reason": "Profiles v2.1 §6.13 item 3 normatively incorporates Profiles v2.1 §5.7.1; this source clause enters the profile closure through that section inclusion, not as a direct root."
+        },
+        {
+          "source_clause_id": "KMIPKIT-CLAUSE-PROF-5.7.1-002",
+          "source_section": "5.7.1",
+          "source_locator": {
+            "ordinal": 2,
+            "block_kind": "list_item"
+          },
+          "expected_disposition": "included_not_direct",
+          "reason": "Profiles v2.1 §6.13 item 3 normatively incorporates Profiles v2.1 §5.7.1; this source clause enters the profile closure through that section inclusion, not as a direct root."
+        },
+        {
+          "source_clause_id": "KMIPKIT-CLAUSE-PROF-5.7.1-003",
+          "source_section": "5.7.1",
+          "source_locator": {
+            "ordinal": 3,
+            "block_kind": "list_item"
+          },
+          "expected_disposition": "included_not_direct",
+          "reason": "Profiles v2.1 §6.13 item 3 normatively incorporates Profiles v2.1 §5.7.1; this source clause enters the profile closure through that section inclusion, not as a direct root."
+        }
+      ]
     },
     {
       "profile_id": "KMIPKIT-PROFILE-SYMMETRIC-KEY-LIFECYCLE-CLIENT",
@@ -61266,6 +61374,10 @@
       "review_note": "Profiles v2.1 §5.7.1; client/profile-conditional source atom. This records source applicability only and does not establish profile support.",
       "source_keywords": [
         "SHALL"
+      ],
+      "inherited_by_profiles": [
+        "KMIPKIT-PROFILE-SYMMETRIC-KEY-FOUNDRY-ADVANCED-CLIENT",
+        "KMIPKIT-PROFILE-SYMMETRIC-KEY-FOUNDRY-INTERMEDIATE-CLIENT"
       ]
     },
     {
@@ -61302,6 +61414,10 @@
       "review_note": "Profiles v2.1 §5.7.1; client/profile-conditional source atom. This records source applicability only and does not establish profile support.",
       "source_keywords": [
         "MAY"
+      ],
+      "inherited_by_profiles": [
+        "KMIPKIT-PROFILE-SYMMETRIC-KEY-FOUNDRY-ADVANCED-CLIENT",
+        "KMIPKIT-PROFILE-SYMMETRIC-KEY-FOUNDRY-INTERMEDIATE-CLIENT"
       ]
     },
     {
@@ -61338,6 +61454,10 @@
       "review_note": "Profiles v2.1 §5.7.1; client/profile-conditional source atom. This records source applicability only and does not establish profile support.",
       "source_keywords": [
         "MAY"
+      ],
+      "inherited_by_profiles": [
+        "KMIPKIT-PROFILE-SYMMETRIC-KEY-FOUNDRY-ADVANCED-CLIENT",
+        "KMIPKIT-PROFILE-SYMMETRIC-KEY-FOUNDRY-INTERMEDIATE-CLIENT"
       ]
     },
     {

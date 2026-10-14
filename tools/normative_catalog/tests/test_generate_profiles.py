@@ -30,6 +30,21 @@ from tools.normative_catalog.validate import load_validated_catalog
 ROOT = Path(__file__).resolve().parents[3]
 
 
+def _mapping_applies_to_profile(
+    mapping: dict[str, object],
+    profile_id: str,
+) -> bool:
+    """Use explicit source-reviewed applicability, including normative inheritance."""
+    applies_to = mapping.get("applies_to")
+    inherited_by_profiles = mapping.get("inherited_by_profiles", [])
+    return (
+        applies_to == "all_client_profiles"
+        or applies_to == profile_id
+        or (isinstance(applies_to, list) and profile_id in applies_to)
+        or (isinstance(inherited_by_profiles, list) and profile_id in inherited_by_profiles)
+    )
+
+
 def closure_catalog() -> dict[str, object]:
     return {
         "source_clauses": [
@@ -126,13 +141,13 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
             (
                 "KMIPKIT-PROFILE-SYMMETRIC-KEY-FOUNDRY-INTERMEDIATE-CLIENT",
                 "KMIPKIT-CLAUSE-PROF-6.13-003",
-                "KMIPKIT-INCLUSION-PROF-6.13-BASIC-SYMMETRIC-CLIENT",
+                "KMIPKIT-INCLUSION-PROF-613-BASIC-SYMMETRIC-CLIENT",
                 "Profiles v2.1 §6.13 item 3",
             ),
             (
                 "KMIPKIT-PROFILE-SYMMETRIC-KEY-FOUNDRY-ADVANCED-CLIENT",
                 "KMIPKIT-CLAUSE-PROF-6.14-003",
-                "KMIPKIT-INCLUSION-PROF-6.14-BASIC-SYMMETRIC-CLIENT",
+                "KMIPKIT-INCLUSION-PROF-614-BASIC-SYMMETRIC-CLIENT",
                 "Profiles v2.1 §6.14 item 3",
             ),
         )
@@ -182,6 +197,32 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
                 self.assertTrue(source_clause_ids.issubset(expected["source_clause_ids"]))
                 self.assertTrue(requirement_ids.issubset(expected["requirement_ids"]))
                 self.assertTrue(requirement_ids.issubset(expected["requirement_ids_audited_subset"]))
+                inherited_ids = sorted(
+                    {
+                        "KMIPKIT-PROFILE-SYMMETRIC-KEY-FOUNDRY-INTERMEDIATE-CLIENT",
+                        "KMIPKIT-PROFILE-SYMMETRIC-KEY-FOUNDRY-ADVANCED-CLIENT",
+                    }
+                )
+                requirement_mappings = {
+                    item["requirement_id"]: item
+                    for item in oracle["requirement_crosswalk"]
+                    if item["requirement_id"] in requirement_ids
+                }
+                source_reviews = {
+                    item["expected_client_requirement_ids"][0]: item
+                    for item in oracle["source_requirement_reviews"]
+                    if item.get("expected_client_requirement_ids")
+                    and item["expected_client_requirement_ids"][0] in requirement_ids
+                }
+                for requirement_id in requirement_ids:
+                    self.assertEqual(
+                        requirement_mappings[requirement_id]["inherited_by_profiles"],
+                        inherited_ids,
+                    )
+                    self.assertEqual(
+                        source_reviews[requirement_id]["inherited_by_profiles"],
+                        inherited_ids,
+                    )
                 self.assertTrue(
                     source_clause_ids.issubset(
                         {
@@ -328,7 +369,7 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
                 mapping["requirement_id"]
                 for mapping in mappings
                 if mapping.get("source_clause_id") in closure_clause_ids
-                and mapping.get("applies_to") in {"all_client_profiles", profile_id}
+                and _mapping_applies_to_profile(mapping, profile_id)
                 and mapping.get("role") in {"client", "both"}
                 and mapping.get("scope_state") == "client_1_0"
             }
@@ -358,7 +399,7 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
                 mapping["requirement_id"]
                 for mapping in mappings
                 if mapping.get("source_clause_id") in closure_clause_ids
-                and mapping.get("applies_to") in {"all_client_profiles", profile_id}
+                and _mapping_applies_to_profile(mapping, profile_id)
                 and mapping.get("role") in {"client", "both"}
                 and mapping.get("scope_state") in applicable_scopes
             }
@@ -409,16 +450,19 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
                     )
                     or (
                         review["source_clause_id"] in source_clause_ids
-                        and applies_to in {"all_client_profiles", profile_id}
+                        and _mapping_applies_to_profile(
+                            {
+                                "applies_to": applies_to,
+                                "inherited_by_profiles": review.get("inherited_by_profiles", []),
+                            },
+                            profile_id,
+                        )
                     )
                 ):
                     expected_requirement_ids.update(review["expected_client_requirement_ids"])
 
             for mapping in oracle["requirement_crosswalk"]:
-                applies_to_profile = mapping.get("applies_to") == "all_client_profiles" or (
-                    mapping.get("scope_state") == "profile_conditional"
-                    and mapping.get("applies_to") == profile_id
-                )
+                applies_to_profile = _mapping_applies_to_profile(mapping, profile_id)
                 global_client_capability = (
                     mapping.get("scope_state") == "profile_conditional"
                     and mapping.get("applies_to") == "all_client_profiles"
@@ -498,7 +542,7 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
                 mapping
                 for mapping in mappings
                 if mapping.get("source_clause_id") in source_clauses
-                and mapping.get("applies_to") in {"all_client_profiles", profile_id}
+                and _mapping_applies_to_profile(mapping, profile_id)
                 and mapping.get("role") in {"client", "both"}
                 and mapping.get("scope_state") == "profile_conditional"
             ]
