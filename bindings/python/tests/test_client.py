@@ -351,6 +351,22 @@ def test_transport_record_forwards_identity_and_trust_source_modes(
     assert owners
 
 
+def test_https_tls_server_name_is_forwarded_separately_from_authority() -> None:
+    configuration = _transport_configuration(
+        endpoint=client.Endpoint.https(
+            "https://192.0.2.10:8443", tls_server_name="kms.example.test", target_uri="/kmip"
+        ),
+    )
+    record, _owners = client._transport_record(configuration)
+
+    assert client.ffi.string(record.endpoint.data, record.endpoint.length) == (
+        b"https://192.0.2.10:8443"
+    )
+    assert client.ffi.string(
+        record.tls_server_name.data, record.tls_server_name.length
+    ) == b"kms.example.test"
+    assert client.ffi.string(record.target_uri.data, record.target_uri.length) == b"/kmip"
+
 def test_transport_record_supports_https_platform_trust_and_empty_optional_arrays() -> None:
     configuration = _transport_configuration(
         endpoint=client.Endpoint.https(
