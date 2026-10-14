@@ -1032,3 +1032,46 @@ additional review and regression coverage beyond the structural scanner.
 | Red | `2d9901ba` | `cargo test -p kmipkit-ffi --lib capability_query_only_reports_c_mapped_nonblocked_capabilities` | Expected failure after updating the assertion: the Rust facade omitted ready capability `client_batch_model` (0 passed, 1 failed). |
 | Green | `f57988ca` | `uv run --offline --no-project --with-requirements tools/api_manifest/requirements-test.txt python -B -m unittest tools.api_manifest.tests.test_t076_client_mapping -v`; `cargo test -p kmipkit-ffi --lib`; `python -B tools/api_manifest/generate.py --check`; `cargo test -p kmipkit-ffi --features coverage-c-consumer --test c_api_coverage -- --nocapture` | PASS: T076 mappings 24/24; FFI unit tests 57/57; all 12 generated outputs current; C ABI coverage consumer 3/3. The generated C header and parity fixtures preserve exact ABI layouts. |
 | Refactor | This commit | `uv run --offline --no-project --with-requirements tools/api_manifest/requirements-test.txt python -B -m unittest tools.api_manifest.tests.test_generate -v`; `python -B tools/api_manifest/audit_binding_exports.py --check --report specs/043-public-api-bindings/reports/binding-export-report-2026-10-12.json`; `python -B tools/api_manifest/generate.py --check`; `cargo fmt --all --check`; `git diff --check` | PASS: generator suite 57 passed, 2 Windows symlink-permission skips; audit exit 0 with C 264 observed/237 matched, Java 469/434, Python 540/418, each `matchesManifest=true` with zero missing, stale, kind-mismatched, or issue paths; all 12 generated outputs verified. T011, T076, T021, and T024 remain open pending remaining parity and CI review; `kmipkit_client_execute_with_error_ttlv_v1` remains blocked. |
+
+### T076 exchange-local options and transport mapping reconciliation (2026-10-14)
+
+The shared `RequestOptions` value adds per-exchange connect, write, read, and
+total timeout overrides through the versioned
+`kmipkit_client_execute_with_options_v1` ABI. The original
+`kmipkit_client_execute` symbol and signature remain unchanged and inherit the
+configured client policy. Timeout kind 0 inherits that policy, kind 1 is
+bounded (including zero as an immediate deadline), and kind 2 is unbounded.
+The generic `kmipkit_client_execute_with_error_ttlv_v1` helper remains blocked.
+
+Transport field mappings now point only at existing public Rust constructors
+and builder types. `encoding` and `source_kind` are exact C ABI discriminant
+exclusions; the shared parent configuration fields represent complete input
+semantics across identity, trust, and revocation contexts. The exact
+`kmipkit_transport_config_v1_t` carrier remains excluded from cross-language
+capability matching while its fixed-width layout is still generated in the C
+header. Java native-adapter tests cover identity and trust PEM/DER from memory
+and selected files, including trust-from-file. Python adapter tests cover the
+same identity/trust source and encoding combinations. CRLs cover in-memory
+PEM/DER only under KMIPKIT-0013-FR-003/004. Existing C consumer assertions
+verify result-reason absent and present values; the metadata capability test
+confirms `production_transport` is in the C-mapped ready set and available in
+the Rust facade.
+
+The export snapshot now inventories C 272 observed paths (242 declarations,
+30 exact exclusions), Java 481 (442, 39), and Python 556 (425, 131). Every
+scanner is complete with `matchesManifest=true` and zero missing, stale,
+kind-mismatched, or issue paths. The Java additions are classified by exact
+path: `NativeExtensionRegistry.clientExecuteWithOptions` is raw-handle JNI
+bridge plumbing, while `RequestOptions.equals`, `hashCode`, and `toString` are
+compiler-generated record methods. This closes the export-inventory gaps
+introduced by RequestOptions; it does not close T076 or the related task gates.
+
+| Phase | Commit | Command | Result |
+|---|---|---|---|
+| Red | `3742f0e2`, `00cb6200`, `fb676794`, `085f7447`, `5c2074c6`, `563ce7e7` | Focused assertions in `tools.api_manifest.tests.test_t076_client_mapping` for exact C targets, aggregate source modes, excluded carrier, canonical mappings, and RequestOptions artifacts | Expected failures identified incorrect/non-exported mode targets, the ready mapping's excluded C carrier, unsorted mappings, and unclassified generated RequestOptions dataclass members. |
+| Green | `9356bbf1` | `uv run --offline --no-project --with-requirements tools/api_manifest/requirements-test.txt python -B -m unittest tools.api_manifest.tests.test_t076_client_mapping -v`; `uv run --offline --no-project --with-requirements tools/api_manifest/requirements-test.txt python -B tools/api_manifest/generate.py --write`; `uv run --offline --no-project --with-requirements tools/api_manifest/requirements-test.txt python -B tools/api_manifest/generate.py --check`; `cargo test -p kmipkit-ffi --lib request_options_v1 -- --nocapture`; `cargo test -p kmipkit-ffi --features coverage-c-consumer --test c_api_coverage -- --nocapture`; `mvn -f bindings/java/pom.xml "-Dtest=ClientFacadeContractTest,ClientFacadeTlsIntegrationTest" test`; `uv run --offline --project bindings/python --frozen pytest -q bindings/python/tests/test_client.py::test_client_execute_with_options_preserves_timeout_kinds_and_consumes_batch bindings/python/tests/test_client.py::test_transport_record_forwards_identity_and_trust_source_modes` | PASS: T076 mappings 32/32; all 12 generated outputs current; FFI RequestOptions 2/2; C ABI coverage consumer 3/3; Java facade suite 14/14 with 0 failures/errors/skips; Python adapter tests 5/5. The C tests assert result-reason absent and present; the production transport capability is present in the C-mapped ready set and available in the Rust facade. The stable execute symbol remains present and the blocked generic helper remains absent from the generated public header. |
+| Red | `b59d9217` | `uv run --offline --no-project --with-requirements tools/api_manifest/requirements-test.txt python -B -m unittest tools.api_manifest.tests.test_t076_client_mapping.T076ClientMappingTests.test_java_request_options_bridge_and_record_artifacts_are_exactly_accounted -v` | Expected failure listed the four exact Java exports missing from the manifest: the new JNI bridge method and three generated RequestOptions record methods. |
+| Green | `b604b984` | Same focused test; `uv run --offline --no-project --with-requirements tools/api_manifest/requirements-test.txt python -B -m unittest tools.api_manifest.tests.test_t076_client_mapping -v`; `uv run --offline --no-project --with-requirements tools/api_manifest/requirements-test.txt python -B tools/api_manifest/generate.py --write`; `uv run --offline --no-project --with-requirements tools/api_manifest/requirements-test.txt python -B tools/api_manifest/generate.py --check`; `uv run --offline --no-project --with-requirements tools/api_manifest/requirements-test.txt python -B -m unittest tools.api_manifest.tests.test_generate -v`; pinned binding-export audit with `--check` | PASS: focused Red regression 1/1; T076 mapping tests 33/33; generator tests 57 passed with 2 Windows symlink-permission skips; all 12 outputs current; audit exit 0 with C 272/242, Java 481/442, Python 556/425, and every package `matchesManifest=true`. |
+| Refactor | This commit | `git diff --check`; inspect the refreshed audit report and evidence against generated outputs | Record the exact partial gate state and clarify that structural export matching does not complete T076, T021, T024, or T011. |
+
+Independent semantic review and the remaining cross-platform/required CI gates are still outstanding. T011, T076, T021, and T024 remain open; no generic error-TTLV API was promoted.

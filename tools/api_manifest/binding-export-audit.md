@@ -111,31 +111,35 @@ evidence of an open gate and does not close T011.
 ## Current reconciliation status (2026-10-14)
 
 The checked-in report was regenerated with the pinned audit tool after the
-final Python export reconciliation (`8aba7d66`). The scanner is complete for
-all three packages, and every observed export has an exact declaration or
-approved exact exclusion:
+per-exchange `RequestOptions` inventory and exact Java artifact classifications.
+The scanner is complete for all three packages, and every observed export has
+an exact declaration or approved exact exclusion:
 
 | Package | Scanner complete | Observed | Manifest declarations | Exact matches | Exact exclusions | Missing | Stale | Kind mismatches | Issues | `matchesManifest` |
 | --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | --- |
-| C | yes | 264 | 237 | 237 | 27 | 0 | 0 | 0 | 0 | yes |
-| Java | yes | 469 | 434 | 434 | 35 | 0 | 0 | 0 | 0 | yes |
-| Python | yes | 540 | 418 | 418 | 122 | 0 | 0 | 0 | 0 | yes |
+| C | yes | 272 | 242 | 242 | 30 | 0 | 0 | 0 | 0 | yes |
+| Java | yes | 481 | 442 | 442 | 39 | 0 | 0 | 0 | 0 | yes |
+| Python | yes | 556 | 425 | 425 | 131 | 0 | 0 | 0 | 0 | yes |
 
-The C inventory's 27 paths outside the 237 declarations and Java's 35 paths
-outside the 434 declarations have exact approved exclusions. Python's 418
-declarations and 122 exact exclusions account for all 540 observed paths. The
-last batch mapped `TrustSource`, `ExtensionRegistryLimits.__init__`, and
-`ClientExecutionError.category`; it exactly excluded six context-manager
-methods, eight exception constructors, and `Version.__init__`. The 29 native
-wrapper initializers remain exact exclusions because a mandatory private
-identity token restricts them to the internal handle factory; wrapper types
-and public factories remain separately reconciled.
+The Java additions are the exact JNI bridge method
+`NativeExtensionRegistry.clientExecuteWithOptions` and the generated record
+methods `RequestOptions.equals`, `hashCode`, and `toString`. The bridge method
+is excluded as minimal raw-handle plumbing; the typed `Client.executeWithOptions`
+capability remains mapped. Record boilerplate exclusions apply only to those
+three exact paths. The 29 Python native-wrapper initializers remain exact
+exclusions because a mandatory private identity token restricts them to the
+internal handle factory; wrapper types and public factories remain separately
+reconciled.
 
-This structural inventory pass does not establish semantic equivalence of all
-shared transport mappings. Review remains open for timeout `DEFAULT`, the
-complete PEM/DER/file coverage of certificate and trust inputs, PEM/DER CRLs,
-the context-dependent `transport_input.data` carrier and encoding/source
-mapping, exact treatment of slice counts, and the RAW_TLS-only condition on
-`endpoint_port`. The export audit now exits 0, but T011, T076, T021, and T024
-remain open until those semantic/parity questions and required CI evidence are
-resolved. Regenerate the report after each reconciliation batch.
+The semantic transport review maps per-exchange timeout `DEFAULT` to the Rust
+default policy while preserving bounded zero and unbounded as distinct values.
+Certificate chains, private keys, and trust certificates cover PEM/DER from
+memory or selected files; CRLs cover PEM/DER from memory only. C `encoding`,
+`source_kind`, nested byte-span `data`, slice counts, and the exact versioned
+configuration carrier are classified as ABI representations while the parent
+configuration fields retain the semantic mappings and generated C layout.
+`endpoint_port` is conditional on RAW_TLS; HTTPS carries its optional port in
+the endpoint URI. The audit is now structurally exact, but T011, T076, T021,
+and T024 remain open pending independent semantic review and the remaining
+required CI/parity evidence. Regenerate the report after each reconciliation
+batch.
