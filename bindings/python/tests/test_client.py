@@ -818,15 +818,27 @@ def test_batch_result_copies_metadata_unknown_outcome_and_optional_spans(
     assert released == ["item", "response"]
 
 
-def test_batch_result_preserves_ordered_mixed_outcomes_ids_and_pending_correlation(
+def test_batch_execute_preserves_ordered_mixed_outcomes_and_uses_one_exchange(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
+    client_pointer, _client_storage = _opaque("kmipkit_client_t")
+    batch_pointer, _batch_storage = _opaque("kmipkit_client_batch_t")
     response_pointer, _response_storage = _opaque("kmipkit_client_batch_response_t")
+    handle = _wrap_owned_handle(client.Client, client_pointer)
+    batch = _wrap_owned_handle(client.Batch, batch_pointer)
+    limits = ttlv.codec_limits_defaults()
     item_storage = [_opaque("kmipkit_client_batch_item_response_t") for _ in range(3)]
     item_pointers = [pointer for pointer, _storage in item_storage]
     identifiers = [client.ffi.new("uint8_t[]", f"item-{index}".encode()) for index in range(3)]
     correlation = client.ffi.new("uint8_t[]", b"\x00\xa1\x7f")
     released: list[str] = []
+    execution_calls: list[bool] = []
+
+    def execute(_client: object, batch_slot: object, _limits: object, output: object) -> int:
+        execution_calls.append(True)
+        batch_slot[0] = client.ffi.NULL  # type: ignore[index]
+        output[0] = response_pointer  # type: ignore[index]
+        return 0
 
     def item_index(item: object) -> int:
         return item_pointers.index(item)
@@ -865,6 +877,9 @@ def test_batch_result_preserves_ordered_mixed_outcomes_ids_and_pending_correlati
         return 0
 
     fake = SimpleNamespace(
+        kmipkit_client_execute=execute,
+        kmipkit_client_release=lambda _ptr: None,
+        kmipkit_client_batch_release=lambda _ptr: None,
         kmipkit_client_batch_response_release=lambda _ptr: released.append("response"),
         kmipkit_client_batch_item_response_release=lambda _ptr: released.append("item"),
         kmipkit_client_batch_response_item_count=lambda _ptr, count: count.__setitem__(0, 3) or 0,
@@ -875,14 +890,23 @@ def test_batch_result_preserves_ordered_mixed_outcomes_ids_and_pending_correlati
     )
     monkeypatch.setattr(client, "lib", fake)
 
-    result = client._batch_result(response_pointer)
+    result = None
+    try:
+        result = handle.execute(batch, limits)
+        assert result.items == (
+            client.BatchItemResult(client.BatchOutcome.COMPLETED, 0, None, b"item-0", None),
+            client.BatchItemResult(client.BatchOutcome.PENDING, 2, None, b"item-1", b"\x00\xa1\x7f"),
+            client.BatchItemResult(client.BatchOutcome.COMPLETED, 1, 1, b"item-2", None),
+        )
+        assert execution_calls == [True]
+        assert batch.closed
+    finally:
+        if result is not None:
+            result.close()
+        limits.close()
+        batch.close()
+        handle.close()
 
-    assert result.items == (
-        client.BatchItemResult(client.BatchOutcome.COMPLETED, 0, None, b"item-0", None),
-        client.BatchItemResult(client.BatchOutcome.PENDING, 2, None, b"item-1", b"\x00\xa1\x7f"),
-        client.BatchItemResult(client.BatchOutcome.COMPLETED, 1, 1, b"item-2", None),
-    )
-    result.close()
     assert released == ["item", "item", "item", "response"]
 
 
