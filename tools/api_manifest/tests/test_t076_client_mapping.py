@@ -225,7 +225,7 @@ C_FIELD_TARGETS = {
         "kmipkit.client.CredentialEncoding",
     ),
     "kmipkit_transport_input_v1_t.source_kind": (
-        ("rust-kmipkit-transport", "kmipkit_transport::CertificateInput"),
+        ("rust-kmipkit-transport", "kmipkit_transport::TransportConfigBuilder"),
         "org.kmipkit.extensions.TransportConfiguration.Builder",
         "kmipkit.client.TransportInput",
     ),

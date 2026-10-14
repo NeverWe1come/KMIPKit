@@ -639,6 +639,91 @@ class BindingExportAuditTests(unittest.TestCase):
         self.assertNotIn("kmipkit.errors._IntEnum", names)
         self.assertTrue(result["complete"])
 
+    def test_internal_bridge_and_dataclass_artifacts_use_exact_exclusions(self):
+        repo_root = Path(__file__).resolve().parents[3]
+        manifest_path = repo_root / "specification/api/public-api.json"
+        manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+        exclusions = {
+            (row["packageId"], row["exportName"]): row
+            for row in manifest["approvedExclusions"]
+        }
+
+        native_members = {
+            "CLIENT", "CLIENT_BATCH", "CLIENT_BATCH_ITEM_RESPONSE",
+            "CLIENT_BATCH_RESPONSE", "CODEC_LIMITS", "TRANSPORT_CONFIGURATION",
+            "clientBatchAddErrorContinuationValue", "clientBatchAddItem",
+            "clientBatchCreate", "clientBatchItemResponseMetadata",
+            "clientBatchItemResponsePendingCorrelationValue",
+            "clientBatchItemResponseUniqueBatchItemId",
+            "clientBatchItemWithUniqueBatchItemId", "clientBatchResponseItemAt",
+            "clientBatchResponseItemCount", "clientBatchSetAsynchronousIndicator",
+            "clientBatchSetClientCorrelationValue", "clientBatchSetOrderOption",
+            "clientBatchSetRequestTimestamp", "clientCreate", "clientExecute",
+            "transportConfigCreate",
+        }
+        expected_native = {
+            ("java-kmipkit", f"org.kmipkit.NativeExtensionRegistry.{member}")
+            for member in native_members
+        }
+        actual_native = {
+            key for key in exclusions
+            if key[0] == "java-kmipkit"
+            and key[1].startswith("org.kmipkit.NativeExtensionRegistry.")
+        }
+        self.assertEqual(expected_native, actual_native)
+        self.assertNotIn(
+            ("java-kmipkit", "org.kmipkit.NativeExtensionRegistry"), exclusions
+        )
+        for key in expected_native:
+            exclusion = exclusions[key]
+            self.assertIn("KMIPKIT-0043-FR-008", exclusion["evidence"])
+            self.assertIn("KMIPKIT-0043-FR-021", exclusion["evidence"])
+            self.assertIn("ffi-and-bindings.md", exclusion["evidence"])
+
+        java_boilerplate = {
+            "org.kmipkit.extensions.BatchOutcomeKind.equals",
+            "org.kmipkit.extensions.BatchOutcomeKind.hashCode",
+            "org.kmipkit.extensions.BatchOutcomeKind.toString",
+            "org.kmipkit.extensions.TransportConfiguration.Timeout.equals",
+            "org.kmipkit.extensions.TransportConfiguration.Timeout.hashCode",
+            "org.kmipkit.extensions.TransportConfiguration.Timeout.toString",
+            "org.kmipkit.extensions.TransportConfiguration.Encoding.valueOf",
+            "org.kmipkit.extensions.TransportConfiguration.Encoding.values",
+        }
+        for path in java_boilerplate:
+            self.assertIn(("java-kmipkit", path), exclusions)
+
+        dataclass_names = (
+            "kmipkit.client.BatchItemResult",
+            "kmipkit.client.Endpoint",
+            "kmipkit.client.TimeoutLimit",
+            "kmipkit.client.TransportConfig",
+            "kmipkit.client.TransportInput",
+            "kmipkit.client.TrustSource",
+            "kmipkit.extensions.ExtensionRegistryLimits",
+            "kmipkit.metadata.Version",
+        )
+        dataclass_artifacts = (
+            "__dataclass_fields__", "__dataclass_params__", "__delattr__",
+            "__eq__", "__hash__", "__match_args__", "__repr__", "__setattr__",
+            "__slots__",
+        )
+        expected_python = {
+            ("python-kmipkit", f"{class_name}.{member}")
+            for class_name in dataclass_names
+            for member in dataclass_artifacts
+        }
+        for key in expected_python:
+            self.assertIn(key, exclusions)
+        for class_name in dataclass_names:
+            self.assertNotIn(
+                ("python-kmipkit", f"{class_name}.__init__"), exclusions
+            )
+        for class_name in dataclass_names:
+            repr_exclusion = exclusions[("python-kmipkit", f"{class_name}.__repr__")]
+            self.assertIn("test_secret_bearing_client_records_redact_repr", repr_exclusion["evidence"])
+
+        self.assertIn(("python-kmipkit", "kmipkit.client"), exclusions)
     def test_checked_in_binding_export_report_reconciles_every_package(self):
         repo_root = Path(__file__).resolve().parents[3]
         report_path = repo_root / "specs/043-public-api-bindings/reports/binding-export-report-2026-10-12.json"
