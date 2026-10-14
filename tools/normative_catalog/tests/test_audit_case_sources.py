@@ -147,6 +147,20 @@ class CaseSourceAuditTests(unittest.TestCase):
         self.assertNotEqual(result.returncode, 0)
         self.assertIn("section, official ID, and exact href do not match", result.stderr)
 
+    def test_rejects_data_href_as_the_case_href_attribute(self) -> None:
+        result = self._run_audit(
+            profile_html=(
+                b'<h4>5.1.3.1 BL-M-1-21</h4><p><a data-href="case.xml">fixture</a></p>'
+            ),
+            testcases_html=b"",
+            cases=[
+                self._case("P-1", "BL-M-1-21", "KMIPKIT-SRC-profiles", "5.1.3.1", "profile_test_case", "case.xml"),
+            ],
+        )
+
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("section, official ID, and exact href do not match", result.stderr)
+
     def test_verifies_catalog_source_sha256_before_parsing(self) -> None:
         result = self._run_audit(
             profile_html=b"<h4>5.1.3.1 BL-M-1-21</h4><a href=\"case.xml\">fixture</a>",
