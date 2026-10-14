@@ -424,21 +424,22 @@ class WorkflowContractTests(unittest.TestCase):
         self.assertIn("name: coverage-ffi", job)
         self.assertIn("path: coverage-ffi/coverage.json", job)
         self.assertIn(
-            "CARGO_TERM_COLOR=never cargo llvm-cov --no-clean -p kmipkit-ffi --test c_api_coverage --all-features --locked",
+            "CARGO_TERM_COLOR=never cargo llvm-cov --no-clean -p kmipkit-ffi --all-targets --all-features --locked",
             collector,
         )
-        self.assertIn("cargo llvm-cov --no-clean -p kmipkit-ffi --test c_api_coverage --all-features --locked", collector)
+        self.assertIn("cargo llvm-cov --no-clean -p kmipkit-ffi --all-targets --all-features --locked", collector)
         self.assertIn('cargo_output="${report_dir}/cargo-llvm-cov.log"', collector)
-        self.assertIn("c_api_coverage\\.rs", collector)
+        self.assertIn(r"Running unittests src\/lib\.rs", collector)
+        self.assertIn(r"Running tests\/c_api_coverage\.rs", collector)
         self.assertIn(
-            'test_binary_name="$(',
+            'mapfile -t test_binary_names < <(',
             collector,
         )
-        self.assertIn("sed -nE '/Running tests", collector)
+        self.assertIn("test_binaries=()", collector)
+        self.assertIn('test_binaries+=("${test_binary}")', collector)
         self.assertIn("c_api_coverage-[[:xdigit:]]+", collector)
-        self.assertIn("| tail -n 1", collector)
-        self.assertIn('test_binary="${llvm_cov_target}/debug/deps/${test_binary_name}"', collector)
-        self.assertNotIn('test_binaries=("${llvm_cov_target}"/debug/deps/c_api_coverage-*)', collector)
+        self.assertIn('for test_binary in "${test_binaries[@]}"', collector)
+        self.assertIn('coverage_objects+=(-object "${test_binary}")', collector)
         self.assertIn('rustc --print sysroot', collector)
         self.assertIn('rustc -vV', collector)
         self.assertIn('"${llvm_cov}" export -format=text', collector)
@@ -466,9 +467,9 @@ class WorkflowContractTests(unittest.TestCase):
             "cargo llvm-cov --no-clean -p kmipkit-ffi --all-targets --all-features --locked",
             collector,
         )
-        self.assertIn("Running unittests src/lib\\.rs", collector)
-        self.assertIn("Running tests/c_api_coverage\\.rs", collector)
-        self.assertIn('test_binaries+=("${llvm_cov_target}/debug/deps/${test_binary_name}")', collector)
+        self.assertIn(r"Running unittests src\/lib\.rs", collector)
+        self.assertIn(r"Running tests\/c_api_coverage\.rs", collector)
+        self.assertIn('test_binaries+=("${test_binary}")', collector)
         self.assertIn('for test_binary in "${test_binaries[@]}"', collector)
 
     def test_coverage_gate_waits_for_platform_and_adapter_reports(self) -> None:
