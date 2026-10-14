@@ -8,9 +8,11 @@ transport-wire verification.
 from __future__ import annotations
 
 import importlib
+import gc
 from pathlib import Path
 from typing import get_type_hints
 from types import SimpleNamespace
+import weakref
 
 import pytest
 
@@ -2201,3 +2203,93 @@ def test_private_python_client_loader_redacts_native_path_failure(
 
     assert path_marker not in str(caught.value)
     importlib.reload(_client_ffi)
+
+
+def test_transport_input_memory_uses_wipeable_owned_storage() -> None:
+    caller_buffer = bytearray(b"private-key-sentinel")
+    item = client.TransportInput.memory(caller_buffer, client.CredentialEncoding.PEM)
+    owner = client._transport_source(item)
+    assert isinstance(owner, client._SecretBytes)
+    owned_buffer = owner.buffer
+    owner_reference = weakref.ref(owner)
+
+    assert type(item.source) is bytes
+    assert item.source == b"private-key-sentinel"
+    assert owned_buffer == b"private-key-sentinel"
+    caller_buffer[:] = b"caller-buffer-remains"
+    assert item.source == b"private-key-sentinel"
+
+    del item, owner
+    gc.collect()
+
+    assert owner_reference() is None
+    assert owned_buffer == bytes(len(owned_buffer))
+    assert caller_buffer == b"caller-buffer-remains"
+
+
+@pytest.mark.parametrize("transport_status", [0, 4])
+def test_client_create_zeroizes_temporary_key_copies_and_keeps_config_reusable(
+    monkeypatch: pytest.MonkeyPatch, transport_status: int
+) -> None:
+    caller_buffer = bytearray(b"private-key-sentinel")
+    key = client.TransportInput.memory(caller_buffer, client.CredentialEncoding.PEM)
+    original_owner = client._transport_source(key)
+    transport_configuration = _transport_configuration(client_private_key=key)
+    extension_configuration = _extension_configuration()
+    temporary_configs: list[client.TransportConfig] = []
+    original_validator = client._validated_transport_config
+
+    def capture_validated(value: client.TransportConfig) -> client.TransportConfig:
+        validated = original_validator(value)
+        temporary_configs.append(validated)
+        return validated
+
+    monkeypatch.setattr(client, "_validated_transport_config", capture_validated)
+    transport_pointer, _transport_storage = _opaque("kmipkit_transport_config_t")
+    client_pointer, _client_storage = _opaque("kmipkit_client_t")
+    key_spans: list[tuple[object, int]] = []
+
+    def create_transport(record: object, output: object) -> int:
+        key_record = record.client_private_key  # type: ignore[attr-defined]
+        key_spans.append((key_record.data.data, int(key_record.data.length)))
+        if transport_status == 0:
+            output[0] = transport_pointer  # type: ignore[index]
+        return transport_status
+
+    def create_client(_configuration: object, slot: object, output: object) -> int:
+        slot[0] = client.ffi.NULL  # type: ignore[index]
+        output[0] = client_pointer  # type: ignore[index]
+        return 0
+
+    monkeypatch.setattr(
+        client,
+        "lib",
+        SimpleNamespace(
+            kmipkit_transport_config_create_v1=create_transport,
+            kmipkit_transport_config_release=lambda _pointer: None,
+            kmipkit_client_create=create_client,
+            kmipkit_client_release=lambda _pointer: None,
+        ),
+    )
+
+    try:
+        if transport_status == 0:
+            created = client.Client.create(extension_configuration, transport_configuration)
+            created.close()
+        else:
+            with pytest.raises(errors.InvalidInputError):
+                client.Client.create(extension_configuration, transport_configuration)
+
+        assert key_spans
+        for pointer, length in key_spans:
+            assert bytes(client.ffi.buffer(pointer, length)) == bytes(length)
+        assert temporary_configs
+        for temporary in temporary_configs:
+            temporary_key = client._transport_source(temporary.client_private_key)
+            assert isinstance(temporary_key, client._SecretBytes)
+            assert temporary_key.buffer == bytes(len(temporary_key.buffer))
+        assert original_owner.buffer == b"private-key-sentinel"
+        assert key.source == b"private-key-sentinel"
+        assert caller_buffer == b"private-key-sentinel"
+    finally:
+        extension_configuration.close()
