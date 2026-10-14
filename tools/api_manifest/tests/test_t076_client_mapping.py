@@ -1574,8 +1574,8 @@ class T076ClientMappingTests(unittest.TestCase):
         self.assertIn("kmipkit_client_execute_with_options_v1", header)
         generic_ttlv = next(
             row
-            for row in self.manifest["functions"]
-            if row["c"]["symbol"] == "kmipkit_client_execute_with_error_ttlv_v1"
+            for row in self.manifest["publicDeclarations"]
+            if row["exportName"] == "kmipkit_client_execute_with_error_ttlv_v1"
         )
         self.assertEqual("blocked", generic_ttlv["declarationState"])
         self.assertNotIn("kmipkit_client_execute_with_error_ttlv_v1(", header)
