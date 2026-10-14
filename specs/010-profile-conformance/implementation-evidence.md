@@ -2441,3 +2441,9 @@ Reconciled 30 object/key-format/material and attribute definition rows whose sou
 
 
 Documentation follow-up — corrected the research inventory summary to reflect the reviewed scope: 55 table-body requirements without formal clause IDs, of which 25 are client 1.0 and 30 are profile-conditional; only the 25 current client 1.0 rows remain in Baseline's stored requirement set. Status counts are 24 verified, 6 scoped-verified, and 25 unassigned. The 25 key-format/material rows remain without an owner; the five attribute rows retain KMIPKIT-0016 ownership.
+
+### KMIPKIT-0010 T002 TDD — pinned official case source audit (2026-10-14)
+
+| Stage | DCO commit and command | Result |
+|---|---|---|
+| Red — require the category-bound, section-local offline case audit | `python -B -m unittest tools.normative_catalog.tests.test_audit_case_sources -v` | Expected Red, observed: exit 1; all 6 focused tests failed because `tools/normative_catalog/audit_case_sources.py` did not exist. The assertions cover category/source binding, exact same-section heading and href matching, digest validation, divergence reporting, and the pinned 203-row audit. |
