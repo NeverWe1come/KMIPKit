@@ -25,6 +25,18 @@ pub const fn runtime_version() -> RuntimeVersion {
     }
 }
 
+/// Returns the local facade levels provided by this library build.
+///
+/// The ordered levels describe the KMIPKit API surface: high-level builders,
+/// typed protocol requests and responses, and generic structurally valid TTLV.
+/// This metadata query does not send a request and is distinct from the KMIP
+/// Discover Versions operation. It reports the API taxonomy only; it does not
+/// assert that every KMIP operation is mapped or complete.
+#[must_use]
+pub const fn api_levels() -> &'static [&'static str] {
+    &["high-level", "typed-protocol", "generic-ttlv"]
+}
+
 /// A stable error returned by local runtime metadata queries.
 #[non_exhaustive]
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
@@ -65,7 +77,8 @@ pub fn capability_is_available(capability_id: &str) -> Result<bool, RuntimeMetad
 
     Ok(matches!(
         capability_id,
-        "client_batch_model"
+        "api_level_discovery"
+            | "client_batch_model"
             | "client_execution"
             | "ffi_runtime_metadata"
             | "generic_ttlv_model"
@@ -99,6 +112,7 @@ pub use kmipkit_transport::{RequestDeliveryState, TransportCauseCategory, Transp
 
 #[cfg(test)]
 mod tests {
+    use super::{api_levels, capability_is_available};
     use serde_json::Value;
 
     #[test]
@@ -121,6 +135,7 @@ mod tests {
             .collect::<Vec<_>>();
 
         assert_eq!(api_levels(), expected);
+        assert_eq!(capability_is_available("api_level_discovery"), Ok(true));
         assert_eq!(case["expectedOutput"]["networkCalls"], 0);
         assert_eq!(
             case["expectedOutput"]["distinctFromKmipOperation"],

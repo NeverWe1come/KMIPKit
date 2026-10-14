@@ -1426,6 +1426,38 @@ pub extern "C" fn kmipkit_capability_is_available(
     })
 }
 
+/// Returns the local API taxonomy through borrowed spans into static strings.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_api_levels_get_v1(
+    out_high_level: *mut crate::kmipkit_byte_span_v1_t,
+    out_typed_protocol: *mut crate::kmipkit_byte_span_v1_t,
+    out_generic_ttlv: *mut crate::kmipkit_byte_span_v1_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        if out_high_level.is_null() || out_typed_protocol.is_null() || out_generic_ttlv.is_null() {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        }
+
+        let levels = kmipkit::api_levels();
+        if levels.len() != 3 {
+            return record_ffi_error(ERROR_INTERNAL);
+        }
+        let span = |level: &str| crate::kmipkit_byte_span_v1_t {
+            data: level.as_ptr(),
+            length: level.len() as u64,
+        };
+
+        // SAFETY: all output pointers were checked non-null and are caller-provided writable
+        // span slots. Each span points to a static string returned by `kmipkit::api_levels()`.
+        unsafe {
+            *out_high_level = span(levels[0]);
+            *out_typed_protocol = span(levels[1]);
+            *out_generic_ttlv = span(levels[2]);
+        }
+        SUCCESS
+    })
+}
+
 /// Copies this thread's last categorized ABI failure without clearing it.
 #[unsafe(no_mangle)]
 pub extern "C" fn kmipkit_last_error_get(

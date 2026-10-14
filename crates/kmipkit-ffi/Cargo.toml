@@ -31,6 +31,7 @@ kmipkit-test-support = { workspace = true, features = ["fixtures"] }
 base64 = "=0.23.1"
 rcgen = { workspace = true, features = ["pem"] }
 rustls.workspace = true
+serde_json.workspace = true
 
 [lints]
 workspace = true

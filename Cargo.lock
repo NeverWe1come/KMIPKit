@@ -362,6 +362,7 @@ dependencies = [
  "kmipkit-ttlv",
  "rcgen",
  "rustls",
+ "serde_json",
  "zeroize",
 ]
 

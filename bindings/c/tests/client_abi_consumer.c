@@ -18,21 +18,28 @@ static int execute_with_options_returns(
     return status == expected_status;
 }
 
-static int api_level_query_matches_shared_fixture_locally(void) {
-    static const char *const expected[] = {
-        "high-level", "typed-protocol", "generic-ttlv"
-    };
-    if (kmipkit_api_level_count_v1() !=
-            (uint32_t)(sizeof(expected) / sizeof(expected[0]))) {
+static int api_level_query_matches_shared_fixture_locally(int argc, char **argv) {
+    if (argc != 4 || argv == 0 || argv[1] == 0 || argv[2] == 0 || argv[3] == 0) {
         return 0;
     }
-    for (uint32_t index = 0; index < (uint32_t)(sizeof(expected) / sizeof(expected[0])); ++index) {
-        const char *actual = kmipkit_api_level_id_v1(index);
-        if (actual == 0 || strcmp(actual, expected[index]) != 0) {
+    const char *const expected[] = {argv[1], argv[2], argv[3]};
+    kmipkit_byte_span_v1_t actual[3] = {{0}};
+    uint8_t available = 0;
+    static const uint8_t capability[] = "api_level_discovery";
+    if (kmipkit_capability_is_available(capability, sizeof(capability) - 1, &available) != 0 ||
+        available != 1) {
+        return 0;
+    }
+    if (kmipkit_api_levels_get_v1(&actual[0], &actual[1], &actual[2]) != 0) {
+        return 0;
+    }
+    for (uint32_t index = 0; index < 3; ++index) {
+        if (actual[index].data == 0 || actual[index].length != strlen(expected[index]) ||
+            memcmp(actual[index].data, expected[index], actual[index].length) != 0) {
             return 0;
         }
     }
-    return kmipkit_api_level_id_v1((uint32_t)(sizeof(expected) / sizeof(expected[0]))) == 0;
+    return 1;
 }
 
 static int execute_public_tls_request(char **argv, kmipkit_codec_limits_t *limits) {
@@ -237,7 +244,7 @@ int kmipkit_client_abi_c_consumer_execute_tls(
 
 int main(int argc, char **argv) {
     kmipkit_client_t *client = 0;
-    if (!api_level_query_matches_shared_fixture_locally()) {
+    if (!api_level_query_matches_shared_fixture_locally(argc, argv)) {
         return 100;
     }
     if (kmipkit_client_create(0, 0, &client) != T076_ERROR_INVALID_INPUT) {
@@ -343,9 +350,8 @@ int main(int argc, char **argv) {
         return 20;
     }
     kmipkit_client_batch_release(batch);
-    if (argc != 1) {
+    if (argc != 4) {
         return 21;
     }
-    (void)argv;
     return 0;
 }

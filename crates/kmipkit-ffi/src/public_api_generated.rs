@@ -2,6 +2,7 @@
 // Mechanical API inventory only; reviewed FFI code owns behavior.
 pub(crate) const PUBLIC_API_FORMAT_VERSION: u32 = 2;
 pub(crate) const C_AVAILABLE_CAPABILITIES: &[&str] = &[
+    "api_level_discovery",
     "client_batch_model",
     "client_execution",
     "discover_versions_request_item",
@@ -1148,4 +1149,5 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "rust-kmipkit-client",
         "kmipkit_client::ClientBatch::empty",
     ),
+    ("api_levels:rust", "rust-kmipkit", "kmipkit::api_levels"),
 ];

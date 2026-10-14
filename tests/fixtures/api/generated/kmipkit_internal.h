@@ -474,6 +474,12 @@ int32_t kmipkit_client_execute(kmipkit_client_t * client, kmipkit_client_batch_t
  */
 /* KMIPKIT-0007-FR-001, KMIPKIT-0007-FR-006, KMIPKIT-0007-FR-008, KMIPKIT-0013-FR-011, KMIPKIT-0043-FR-021 */
 int32_t kmipkit_client_execute_with_options_v1(kmipkit_client_t * client, kmipkit_client_batch_t ** batch, kmipkit_codec_limits_t * limits, const kmipkit_request_options_v1_t * options, kmipkit_client_batch_response_t ** out_response);
+/* Returns the fixed-order local API-level taxonomy as borrowed UTF-8 spans into static strings.
+ * This query makes no network call and is distinct from the KMIP Discover Versions operation.
+ * The result describes the KMIPKit API taxonomy only; it does not assert that every operation is mapped or complete.
+ */
+/* KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-010 */
+int32_t kmipkit_api_levels_get_v1(kmipkit_byte_span_v1_t * out_high_level, kmipkit_byte_span_v1_t * out_typed_protocol, kmipkit_byte_span_v1_t * out_generic_ttlv);
 /* Approved exact C-only exclusion: kmipkit_client_batch_item_response_metadata_v1 */
 int32_t kmipkit_client_batch_item_response_metadata_v1(kmipkit_client_batch_item_response_t * item, kmipkit_client_batch_item_metadata_v1_t * out_metadata);
 /* Approved exact C-only exclusion: kmipkit_transport_config_create_v1 */

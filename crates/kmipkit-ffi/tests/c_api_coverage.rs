@@ -116,9 +116,45 @@ fn existing_c_consumer_exercises_the_exported_abi_in_the_coverage_process() {
 
 #[test]
 fn generated_public_client_abi_consumer_compiles_and_runs() {
+    let fixture: serde_json::Value = serde_json::from_str(include_str!(
+        "../../../tests/fixtures/api/shared-capability-parity.json"
+    ))
+    .expect("the shared API fixture is valid JSON");
+    let case = fixture["cases"]
+        .as_array()
+        .expect("fixture cases are an array")
+        .iter()
+        .find(|case| case["id"] == "api-levels.shared.v1")
+        .expect("the API-level fixture case exists");
+    let expected_output = &case["expectedOutput"];
+    assert_eq!(case["capability"], "api_level_discovery");
+    assert_eq!(expected_output["networkCalls"], 0);
+    assert_eq!(
+        expected_output["distinctFromKmipOperation"],
+        "Discover Versions"
+    );
+    assert_eq!(
+        expected_output["operationMappingCompleteness"],
+        "not-asserted"
+    );
+    let expected_levels = expected_output["apiLevels"]
+        .as_array()
+        .expect("fixture API levels are an array")
+        .iter()
+        .map(|level| {
+            CString::new(level.as_str().expect("API level IDs are strings"))
+                .expect("API level IDs have no NUL byte")
+        })
+        .collect::<Vec<_>>();
+    assert_eq!(expected_levels.len(), 3);
     let executable = CString::new("kmipkit_public_client_consumer")
         .expect("test executable name has no NUL byte");
-    let mut arguments = [executable.as_ptr().cast_mut()];
+    let mut arguments = vec![executable.as_ptr().cast_mut()];
+    arguments.extend(
+        expected_levels
+            .iter()
+            .map(|level| level.as_ptr().cast_mut()),
+    );
     let argument_count = i32::try_from(arguments.len()).expect("argument count fits in i32");
     // SAFETY: the compiled consumer includes the generated public header, receives
     // one live argv string, and releases every created handle before returning.

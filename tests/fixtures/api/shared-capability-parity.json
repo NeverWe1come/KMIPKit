@@ -17,7 +17,13 @@
         "distinctFromKmipOperation": "Discover Versions",
         "operationMappingCompleteness": "not-asserted"
       },
-      "javaObservedOutput": {"available": false, "networkCalls": 0},
+      "javaObservedOutput": {
+        "available": true,
+        "apiLevels": ["high-level", "typed-protocol", "generic-ttlv"],
+        "networkCalls": 0,
+        "distinctFromKmipOperation": "Discover Versions",
+        "operationMappingCompleteness": "not-asserted"
+      },
       "errorCategory": null,
       "cleanup": ["no-handle-or-network-resource-created"],
       "consumerTests": {

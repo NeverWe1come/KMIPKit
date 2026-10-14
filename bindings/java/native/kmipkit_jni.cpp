@@ -2324,6 +2324,54 @@ JNIEXPORT jboolean JNICALL Java_org_kmipkit_RuntimeMetadata_capabilityIsAvailabl
     });
 }
 
+JNIEXPORT jobjectArray JNICALL Java_org_kmipkit_RuntimeMetadata_apiLevelsNative(
+        JNIEnv* env, jclass) {
+    return guarded<jobjectArray>(env, nullptr, [&] {
+        kmipkit_byte_span_v1_t high_level{};
+        kmipkit_byte_span_v1_t typed_protocol{};
+        kmipkit_byte_span_v1_t generic_ttlv{};
+        const int32_t status = kmipkit_api_levels_get_v1(
+                &high_level, &typed_protocol, &generic_ttlv);
+        if (status != 0) {
+            throw_status(env, status);
+            return static_cast<jobjectArray>(nullptr);
+        }
+
+        const std::array<kmipkit_byte_span_v1_t, 3> spans = {
+                high_level, typed_protocol, generic_ttlv};
+        jclass string_class = env->FindClass("java/lang/String");
+        if (string_class == nullptr) {
+            return static_cast<jobjectArray>(nullptr);
+        }
+        jobjectArray result = env->NewObjectArray(3, string_class, nullptr);
+        env->DeleteLocalRef(string_class);
+        if (result == nullptr) {
+            return static_cast<jobjectArray>(nullptr);
+        }
+
+        for (jsize index = 0; index < static_cast<jsize>(spans.size()); ++index) {
+            const auto& span = spans[static_cast<size_t>(index)];
+            if (span.data == nullptr || span.length > static_cast<uint64_t>(INT32_MAX)) {
+                throw_status(env, KMIPKIT_ERROR_INVALID_INPUT);
+                return static_cast<jobjectArray>(nullptr);
+            }
+            const std::string value(
+                    reinterpret_cast<const char*>(span.data),
+                    static_cast<size_t>(span.length));
+            jstring item = env->NewStringUTF(value.c_str());
+            if (item == nullptr) {
+                return static_cast<jobjectArray>(nullptr);
+            }
+            env->SetObjectArrayElement(result, index, item);
+            env->DeleteLocalRef(item);
+            if (env->ExceptionCheck()) {
+                return static_cast<jobjectArray>(nullptr);
+            }
+        }
+        return result;
+    });
+}
+
 JNIEXPORT jobject JNICALL Java_org_kmipkit_RuntimeMetadata_lastErrorSnapshot(
         JNIEnv* env, jclass) {
     return guarded<jobject>(env, nullptr, [&] {

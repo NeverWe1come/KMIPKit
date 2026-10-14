@@ -71,6 +71,7 @@ def test_api_level_query_matches_shared_fixture_locally(monkeypatch: pytest.Monk
     assert expected["networkCalls"] == 0
     assert expected["distinctFromKmipOperation"] == "Discover Versions"
     assert expected["operationMappingCompleteness"] == "not-asserted"
+    assert metadata.capability_is_available(case["capability"])
 
     native_library = metadata.lib
     queried_symbols: list[str] = []
@@ -83,10 +84,7 @@ def test_api_level_query_matches_shared_fixture_locally(monkeypatch: pytest.Monk
     monkeypatch.setattr(metadata, "lib", LocalMetadataApi())
     assert list(metadata.get_api_levels()) == expected["apiLevels"]
     assert queried_symbols == [
-        "kmipkit_api_level_count_v1",
-        "kmipkit_api_level_id_v1",
-        "kmipkit_api_level_id_v1",
-        "kmipkit_api_level_id_v1",
+        "kmipkit_api_levels_get_v1",
     ]
 
 

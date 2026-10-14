@@ -12187,6 +12187,95 @@
         "returnType": "BatchResult"
       },
       "ordering": "not-applicable"
+    },
+    {
+      "id": "api_levels",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-010"
+      ],
+      "rust": {
+        "module": "kmipkit_ffi::extension_registry",
+        "name": "kmipkit_api_levels_get_v1",
+        "owner": "ffi",
+        "requestBoundary": "not-applicable",
+        "parameters": [
+          {
+            "name": "out_high_level",
+            "type": "*mut kmipkit_byte_span_v1_t"
+          },
+          {
+            "name": "out_typed_protocol",
+            "type": "*mut kmipkit_byte_span_v1_t"
+          },
+          {
+            "name": "out_generic_ttlv",
+            "type": "*mut kmipkit_byte_span_v1_t"
+          }
+        ],
+        "returnType": "i32"
+      },
+      "c": {
+        "symbol": "kmipkit_api_levels_get_v1",
+        "parameters": [
+          {
+            "name": "out_high_level",
+            "kind": "output-value-pointer",
+            "type": "kmipkit_byte_span_v1_t *",
+            "valueType": "kmipkit_byte_span_v1_t",
+            "ownership": "none"
+          },
+          {
+            "name": "out_typed_protocol",
+            "kind": "output-value-pointer",
+            "type": "kmipkit_byte_span_v1_t *",
+            "valueType": "kmipkit_byte_span_v1_t",
+            "ownership": "none"
+          },
+          {
+            "name": "out_generic_ttlv",
+            "kind": "output-value-pointer",
+            "type": "kmipkit_byte_span_v1_t *",
+            "valueType": "kmipkit_byte_span_v1_t",
+            "ownership": "none"
+          }
+        ],
+        "returnType": "int32_t",
+        "errorCategories": [
+          "internal",
+          "invalid_input"
+        ],
+        "documentation": [
+          "Returns the fixed-order local API-level taxonomy as borrowed UTF-8 spans into static strings.",
+          "This query makes no network call and is distinct from the KMIP Discover Versions operation.",
+          "The result describes the KMIPKit API taxonomy only; it does not assert that every operation is mapped or complete."
+        ]
+      },
+      "java": {
+        "package": "org.kmipkit",
+        "class": "RuntimeMetadata",
+        "method": "apiLevels",
+        "parameters": [],
+        "jniSymbol": "Java_org_kmipkit_RuntimeMetadata_apiLevelsNative",
+        "errorCategories": [
+          "internal",
+          "invalid_input"
+        ],
+        "returnType": "List<String>"
+      },
+      "python": {
+        "module": "kmipkit.metadata",
+        "function": "get_api_levels",
+        "parameters": [],
+        "cffiSymbol": "kmipkit_api_levels_get_v1",
+        "errorCategories": [
+          "internal",
+          "invalid_input"
+        ],
+        "returnType": "tuple[str, ...]"
+      },
+      "ordering": "not-applicable"
     }
   ],
   "errorCategories": [
@@ -218962,6 +219051,155 @@
           "name": "kmipkit.client.TimeoutLimit"
         }
       }
+    },
+    {
+      "declarationId": "api_levels:c",
+      "packageId": "c-kmipkit",
+      "kind": "c-symbol",
+      "exportName": "kmipkit_api_levels_get_v1",
+      "capabilityId": "api_level_discovery",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-010"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit",
+          "name": "kmipkit::api_levels"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_api_levels_get_v1"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.RuntimeMetadata.apiLevels"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.metadata.get_api_levels"
+        }
+      }
+    },
+    {
+      "declarationId": "api_levels:java",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.RuntimeMetadata.apiLevels",
+      "capabilityId": "api_level_discovery",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit",
+          "name": "kmipkit::api_levels"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_api_levels_get_v1"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.RuntimeMetadata.apiLevels"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.metadata.get_api_levels"
+        }
+      }
+    },
+    {
+      "declarationId": "api_levels:python",
+      "packageId": "python-kmipkit",
+      "kind": "python-export",
+      "exportName": "kmipkit.metadata.get_api_levels",
+      "capabilityId": "api_level_discovery",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit",
+          "name": "kmipkit::api_levels"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_api_levels_get_v1"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.RuntimeMetadata.apiLevels"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.metadata.get_api_levels"
+        }
+      }
+    },
+    {
+      "declarationId": "api_levels:rust",
+      "packageId": "rust-kmipkit",
+      "kind": "function",
+      "exportName": "kmipkit::api_levels",
+      "capabilityId": "api_level_discovery",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit",
+          "name": "kmipkit::api_levels"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_api_levels_get_v1"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.RuntimeMetadata.apiLevels"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.metadata.get_api_levels"
+        }
+      }
     }
   ],
   "approvedExclusions": [
@@ -223801,6 +224039,36 @@
           "kmipkit.client.TrustSource.certificates",
           "kmipkit.client.TrustSource.kind",
           "kmipkit.client.TrustSource.platform"
+        ]
+      }
+    },
+    {
+      "capabilityId": "api_level_discovery",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010"
+      ],
+      "capabilityState": "declared",
+      "parityScope": "four-language",
+      "ownerSpecId": "KMIPKIT-0043",
+      "approvalEvidence": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "mappings": {
+        "rust": [
+          "kmipkit::api_levels"
+        ],
+        "c": [
+          "kmipkit_api_levels_get_v1"
+        ],
+        "java": [
+          "org.kmipkit.RuntimeMetadata.apiLevels"
+        ],
+        "python": [
+          "kmipkit.metadata.get_api_levels"
         ]
       }
     }
