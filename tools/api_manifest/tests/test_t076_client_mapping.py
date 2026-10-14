@@ -848,57 +848,68 @@ class T076ClientMappingTests(unittest.TestCase):
             ("java-kmipkit", "org.kmipkit.extensions.TransportConfiguration.Builder.https"): (
                 "kmipkit_transport::Endpoint::https",
                 "kmipkit_transport_config_v1_t.endpoint_kind",
+                "org.kmipkit.extensions.TransportConfiguration.Builder.https",
                 "kmipkit.client.Endpoint.https",
             ),
             ("java-kmipkit", "org.kmipkit.extensions.TransportConfiguration.Builder.trustCertificatesDer"): (
                 "kmipkit_transport::CertificateInput::from_der",
                 "kmipkit_transport_config_v1_t.trust_certificates",
+                "org.kmipkit.extensions.TransportConfiguration.Builder.trustCertificatesDer",
                 "kmipkit.client.TransportInput.memory",
             ),
             ("java-kmipkit", "org.kmipkit.extensions.TransportConfiguration.Builder.trustCertificateFiles"): (
                 "kmipkit_transport::CertificateInput",
                 "kmipkit_transport_config_v1_t.trust_certificates",
+                "org.kmipkit.extensions.TransportConfiguration.Builder.trustCertificateFiles",
                 "kmipkit.client.TransportInput.file",
             ),
             ("java-kmipkit", "org.kmipkit.extensions.TransportConfiguration.Builder.clientIdentityFiles"): (
                 "kmipkit_transport::ClientIdentity",
                 "kmipkit_transport_config_t",
+                "org.kmipkit.extensions.TransportConfiguration.Builder.clientIdentityFiles",
                 "kmipkit.client.TransportInput.file",
             ),
             ("java-kmipkit", "org.kmipkit.extensions.TransportConfiguration.Builder.revocationListsDer"): (
                 "kmipkit_transport::RevocationListInput::from_der",
                 "kmipkit_transport_config_v1_t.revocation_lists",
+                "org.kmipkit.extensions.TransportConfiguration.Builder.revocationListsDer",
                 "kmipkit.client.TransportConfig.revocation_lists",
             ),
             ("java-kmipkit", "org.kmipkit.extensions.TransportConfiguration.Encoding.DER"): (
                 "kmipkit_transport::CertificateInput::from_der",
                 "kmipkit_transport_input_v1_t.encoding",
+                "org.kmipkit.extensions.TransportConfiguration.Encoding.DER",
                 "kmipkit.client.CredentialEncoding.DER",
             ),
             ("java-kmipkit", "org.kmipkit.extensions.TransportConfiguration.Encoding.PEM"): (
                 "kmipkit_transport::CertificateInput::from_pem",
                 "kmipkit_transport_input_v1_t.encoding",
+                "org.kmipkit.extensions.TransportConfiguration.Encoding.PEM",
                 "kmipkit.client.CredentialEncoding.PEM",
             ),
             ("java-kmipkit", "org.kmipkit.extensions.TransportConfiguration.Timeout.defaultValue"): (
                 "kmipkit_transport::TimeoutPolicy",
                 "kmipkit_timeout_limit_v1_t.kind",
+                "org.kmipkit.extensions.TransportConfiguration.Timeout.defaultValue",
                 "kmipkit.client.TimeoutLimit.default",
             ),
             ("python-kmipkit", "kmipkit.client.Endpoint.kind"): (
                 "kmipkit_transport::Endpoint",
                 "kmipkit_transport_config_v1_t.endpoint_kind",
                 "org.kmipkit.extensions.TransportConfiguration.Builder",
+                "kmipkit.client.Endpoint.kind",
             ),
             ("python-kmipkit", "kmipkit.client.Endpoint.port"): (
                 "kmipkit_transport::Endpoint::raw_tls",
                 "kmipkit_transport_config_v1_t.endpoint_port",
                 "org.kmipkit.extensions.TransportConfiguration.Builder.rawTls",
+                "kmipkit.client.Endpoint.port",
             ),
             ("python-kmipkit", "kmipkit.client.TransportInput.file"): (
                 "kmipkit_transport::TransportConfigBuilder",
                 "kmipkit_transport_input_v1_t.source_kind",
                 "org.kmipkit.extensions.TransportConfiguration.Builder",
+                "kmipkit.client.TransportInput.file",
             ),
         }
         for (package_id, export_name), target_names in expected.items():
@@ -907,7 +918,7 @@ class T076ClientMappingTests(unittest.TestCase):
                 self.assertEqual("production_transport", declaration["capabilityId"])
                 actual = tuple(
                     declaration["languageMappings"][language]["name"]
-                    for language in ("rust", "c", "python")
+                    for language in ("rust", "c", "java", "python")
                 )
                 self.assertEqual(target_names, actual)
 
