@@ -51,6 +51,43 @@ def _load_json(path: Path) -> dict:
 
 
 class SourceGapAdjudicationTests(unittest.TestCase):
+    def test_section_4_21_lowercase_request_reuses_only_the_section_4_26_capability(self) -> None:
+        catalog = _load_json(CATALOG_PATH)
+        oracle = _load_json(ORACLE_PATH)
+        gaps = {row["gap_id"]: row for row in oracle["source_only_requirement_gaps"]}
+        reviews = {row["source_clause_id"]: row for row in oracle["source_requirement_reviews"]}
+        requirements = {row["requirement_id"]: row for row in catalog["requirements"]}
+        requirement_id = "KMIPKIT-REQ-SPEC-4.26-001"
+        gap = gaps["KMIPKIT-SOURCE-GAP-SPEC-4.21-CLIENT-LOWERCASE-MAY"]
+        review = reviews["KMIPKIT-CLAUSE-SPEC-4.21-001"]
+        client_atom, server_atom = review["source_obligations"][4:6]
+        requirement = requirements[requirement_id]
+
+        self.assertEqual(gap["html_line_range"], [13894, 13901])
+        self.assertEqual(gap["source_force"], "lowercase_may_not_formal_keyword")
+        self.assertEqual(gap["candidate_requirement_id"], requirement_id)
+        self.assertIsNone(gap["proposed_requirement_id"])
+        self.assertEqual(review["expected_client_requirement_ids"], [requirement_id])
+        self.assertEqual(client_atom["actor"], "client")
+        self.assertEqual(client_atom["candidate_requirement_id"], requirement_id)
+        self.assertEqual(client_atom["source_keyword"], "may (lowercase; not a §1.2 formal keyword)")
+        self.assertEqual(server_atom["actor"], "server")
+        self.assertEqual(server_atom["source_keyword"], "SHALL")
+        self.assertEqual(server_atom["scope_disposition"], "server_only")
+        self.assertIsNone(server_atom["candidate_requirement_id"])
+        self.assertEqual(
+            requirement["condition"],
+            "Create, Create Key Pair, Create Split Key, Re-key, Re-key Key Pair, or Derive Key.",
+        )
+        self.assertNotIn("Register", requirement["condition"])
+        self.assertEqual(requirement["test_case_ids"], [])
+        self.assertEqual(
+            requirement["verification_refs"],
+            ["crates/kmipkit-protocol/tests/unit/create_tests.rs::request_encodes_raw_key_format_for_server_generated_create"],
+        )
+        self.assertIn("Create only", requirement["review_note"])
+        self.assertIn("does not evidence the other operations", requirement["review_note"])
+
     def test_reviewed_structural_requirements_have_stable_catalog_mappings(self) -> None:
         catalog = _load_json(CATALOG_PATH)
         oracle = _load_json(ORACLE_PATH)
