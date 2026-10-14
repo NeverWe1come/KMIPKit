@@ -2,9 +2,9 @@
   "format": "kmipkit-shared-api-parity-fixtures",
   "formatVersion": 2,
   "releaseLine": "1.0.0",
-  "parityLanguages": ["rust", "c", "java"],
-  "plannedConsumerLanguages": ["rust", "c"],
-  "executableConsumerLanguages": ["java"],
+  "parityLanguages": ["rust", "c", "java", "python"],
+  "plannedConsumerLanguages": [],
+  "executableConsumerLanguages": ["rust", "c", "java", "python"],
   "cases": [
     {
       "id": "api-levels.shared.v1",
