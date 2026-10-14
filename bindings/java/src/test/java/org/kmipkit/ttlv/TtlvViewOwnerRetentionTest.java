@@ -1,9 +1,9 @@
 package org.kmipkit.ttlv;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
 
-import java.lang.ref.WeakReference;
+import java.lang.reflect.Field;
 import java.util.Objects;
 
 import org.junit.jupiter.api.Test;
@@ -12,23 +12,29 @@ final class TtlvViewOwnerRetentionTest {
     private static final int PRIVATE_TAG = 0x420001;
 
     @Test
-    void liveValueViewRetainsEveryOwnerInItsBorrowedViewChain() {
+    void liveValueViewRetainsEveryOwnerInItsBorrowedViewChain() throws ReflectiveOperationException {
         ViewOwnerChain chain = createBorrowedValueView();
 
-        System.gc();
-
-        assertNotNull(chain.structure().get());
-        assertNotNull(chain.structureView().get());
-        assertNotNull(chain.itemView().get());
-        TtlvStructure structure = Objects.requireNonNull(chain.structure().get());
-        TtlvStructureView structureView = Objects.requireNonNull(chain.structureView().get());
-        TtlvItemView itemView = Objects.requireNonNull(chain.itemView().get());
+        TtlvStructure structure = chain.structure();
+        TtlvStructureView structureView = chain.structureView();
+        TtlvItemView itemView = chain.itemView();
         try (structure;
                 structureView;
                 itemView;
                 TtlvValueView valueView = chain.valueView()) {
+            assertSame(structure, retainedOwner(structureView));
+            assertSame(structureView, retainedOwner(itemView));
+            assertSame(itemView, retainedOwner(valueView));
             assertEquals(47, valueView.integer());
         }
+    }
+
+    private static Object retainedOwner(Object view) throws ReflectiveOperationException {
+        Field owner = view.getClass().getDeclaredField("owner");
+        if (!owner.trySetAccessible()) {
+            throw new AssertionError("test must inspect the private view owner contract");
+        }
+        return Objects.requireNonNull(owner.get(view));
     }
 
     private static ViewOwnerChain createBorrowedValueView() {
@@ -45,15 +51,15 @@ final class TtlvViewOwnerRetentionTest {
         TtlvItemView itemView = structureView.itemAt(0);
         TtlvValueView valueView = itemView.value();
         return new ViewOwnerChain(
-                new WeakReference<>(structure),
-                new WeakReference<>(structureView),
-                new WeakReference<>(itemView),
+                structure,
+                structureView,
+                itemView,
                 valueView);
     }
 
     private record ViewOwnerChain(
-            WeakReference<TtlvStructure> structure,
-            WeakReference<TtlvStructureView> structureView,
-            WeakReference<TtlvItemView> itemView,
+            TtlvStructure structure,
+            TtlvStructureView structureView,
+            TtlvItemView itemView,
             TtlvValueView valueView) { }
 }

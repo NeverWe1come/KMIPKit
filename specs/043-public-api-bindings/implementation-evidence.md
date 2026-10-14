@@ -70,6 +70,9 @@ The transfer-site audit found four preflight gaps. `TtlvItem.create` and `TtlvPa
 
 Verification ran on Windows x86-64 with the locally built JNI library. Cargo emitted existing AWS-LC compiler-probe and missing-NASM warnings; JNI built and Maven verification succeeded. Cross-platform CI for the current unpushed head remains a PR-matrix check. The earlier FFI opaque-token follow-up's Linux CI remains separate from this Java ownership acceptance.
 
+Independent review rejected the original single-`System.gc()` owner-retention assertion as nondeterministic. The follow-up replaces it with exact assertions that each private view owner field points to the expected parent, then reads the borrowed value. This verifies the declared strong-reference chain without relying on garbage-collector scheduling.
+The corrected `TtlvViewOwnerRetentionTest` passed locally (1 test, 0 failures/errors), and `git diff --check` passed.
+
 ## T002, T006, T007, and T068 — Release inventory and owner resolution
 
 KMIP 2.1 defines 57 client-initiated operation types. The 1.0 catalog contains 56 `client_1_0` entries; Set Endpoint Role (§6.1.54) remains cataloged as `client_1_1` per the disposition recorded in specification 025. The release manifest and generator validate the 56-operation 1.0 inventory without changing the normative catalog.
