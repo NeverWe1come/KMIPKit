@@ -1537,11 +1537,13 @@ implementation history records behavior commits `c719aaa6` (Red), `81aaaeaf`
 Commit `1eb8c0ec` corrects the deterministic owner-retention test, and
 `ec1c92f1` corrects stale evidence statements in this documentation.
 
-Focused Java ownership/lifecycle checks pass 16 tests. Windows
-`mvn --batch-mode --file bindings/java/pom.xml verify` passes 153 tests with
-zero failures, zero errors, and 3 documented skips. JaCoCo reports 95.43%
-coverage (1,461 covered, 70 missed). Independent review approved the
-deterministic owner-retention test and this documentation correction.
+Focused Java ownership/lifecycle checks pass 16 tests. After deterministic
+test correction `1eb8c0ec`, Windows
+`mvn --batch-mode --file bindings/java/pom.xml verify -q` passed at HEAD
+`867d46dee98851c5a46e480ba126ff8e0f709ca3`: 153 tests, zero failures, zero
+errors, and 3 documented skips. JaCoCo reports 95.43% coverage (1,461
+covered, 70 missed). Independent review approved the deterministic
+owner-retention test and the documentation correction in `ec1c92f1`.
 
 Cross-platform CI on the current final head is still pending. Earlier
 successful run `38556076834` covered only ancestor
