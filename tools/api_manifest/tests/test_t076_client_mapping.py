@@ -706,6 +706,49 @@ class T076ClientMappingTests(unittest.TestCase):
             generate.render_c_header(self.manifest),
         )
 
+    def test_python_batch_item_result_constructor_is_an_exact_record_exclusion(self) -> None:
+        constructor = "kmipkit.client.BatchItemResult.__init__"
+        declarations = {
+            row["exportName"]: row
+            for row in self.manifest["publicDeclarations"]
+            if row["packageId"] == "python-kmipkit"
+        }
+        exclusions = {
+            row["exportName"]: row
+            for row in self.manifest["approvedExclusions"]
+            if row["packageId"] == "python-kmipkit"
+        }
+
+        self.assertNotIn(constructor, declarations)
+        exclusion = exclusions.get(constructor)
+        self.assertIsNotNone(
+            exclusion,
+            "the Python result-record constructor needs an exact mapping or reviewed exclusion",
+        )
+        assert exclusion is not None
+        self.assertIn("record constructor", exclusion["reason"].lower())
+        self.assertIn("copied response metadata", exclusion["reason"].lower())
+        self.assertEqual("specs/043-public-api-bindings/spec.md", exclusion["approvalSource"]["path"])
+        self.assertIn("KMIPKIT-0043-FR-012", exclusion["evidence"])
+        self.assertIn("KMIPKIT-0043-FR-021", exclusion["evidence"])
+
+        result_type = declarations.get("kmipkit.client.BatchItemResult")
+        self.assertIsNotNone(result_type, "the result value type remains a mapped shared API")
+        assert result_type is not None
+        self.assertEqual("declared", result_type["declarationState"])
+        for field in (
+            "outcome",
+            "result_status",
+            "result_reason",
+            "unique_batch_item_id",
+            "pending_correlation_value",
+        ):
+            with self.subTest(field=field):
+                row = declarations.get(f"kmipkit.client.BatchItemResult.{field}")
+                self.assertIsNotNone(row, f"missing mapped result metadata field: {field}")
+                assert row is not None
+                self.assertEqual("declared", row["declarationState"])
+
     def test_transport_handle_adapter_is_backed_by_four_language_configuration_values(self) -> None:
         capability = next(
             row
