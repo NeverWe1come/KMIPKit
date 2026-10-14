@@ -109,6 +109,21 @@ fn token_ids_stop_at_the_last_java_positive_pointer_value() {
     assert_eq!(registry.allocate_id(), Err(super::ERROR_RESOURCE_LIMIT));
 }
 
+#[test]
+fn token_cycle_walking_stops_at_its_configured_limit() {
+    let mut calls = 0;
+    let invalid_token = super::TOKEN_MAX + 1;
+
+    assert_eq!(
+        super::cycle_walk_token(1, |_| {
+            calls += 1;
+            invalid_token
+        }),
+        Err(super::ERROR_RESOURCE_LIMIT)
+    );
+    assert_eq!(calls, super::TOKEN_CYCLE_WALK_LIMIT);
+}
+
 fn forged_tag() -> *mut super::kmipkit_tag_t {
     std::ptr::without_provenance_mut(0x1000)
 }
