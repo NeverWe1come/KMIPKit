@@ -1218,3 +1218,36 @@ coverage thresholds remain unchanged.
 This follow-up does not change production behavior or lower coverage gates. T076
 remains open pending the aggregate coverage result on the updated report, final
 PR-head CI, semantic parity review, and independent human security review.
+
+### T076 consumer-mapping review corrections (2026-10-14)
+
+An independent mapping audit found that the C configuration consumer used a
+different fixture shape from the shared case, the C batch mapping pointed at
+the wrong function, and the Python batch adapter test did not assert one
+execution call. The C registry test now gives each configuration its own
+single definition and verifies counts `[1, 1]` with cross-identity lookups
+absent. The C batch mapping now points to `execute_public_tls_request`, which
+the compiled C consumer harness invokes over TLS 1.3 mTLS. The Python batch
+consumer now calls `Client.execute`, verifies all three ordered outcomes, IDs,
+and Pending correlation bytes, and asserts one FFI execute call.
+
+For schema redaction, the C ABI exposes only numeric status, category, cause,
+and delivery outputs; it has no diagnostic text channel. Its consumer checks
+repeated schema errors remain the same stable category. The parity validator
+checks this numeric-only signature and records `diagnosticSurface: none`, so
+the C mapping makes no unsupported claim about redacting a diagnostic string.
+
+| Phase | Commit | Command | Result |
+|---|---|---|---|
+| Red | `df6caa95` | `cargo test --locked -p kmipkit-ffi --features coverage-c-consumer --test c_api_coverage existing_c_consumer_exercises_the_exported_abi_in_the_coverage_process -- --nocapture` | Expected failure: the changed shared fixture expected one alpha definition, while the C consumer configured two. |
+| Green | `0a1a0d2d` | Same focused C consumer test | PASS: separate one-definition registries match counts and identity isolation for alpha and beta. |
+| Red | `0706d1e1` | `python -B -m unittest tools.api_manifest.tests.test_parity.PublicApiParityTests.test_shared_capability_fixture_maps_executable_consumer_contracts -v` | Expected failure: the newly mapped Python batch consumer function did not yet exist. |
+| Green | `c5a3c307` | `uv run --offline --project bindings/python --frozen pytest -q bindings/python/tests/test_client.py::test_batch_execute_preserves_ordered_mixed_outcomes_and_uses_one_exchange` | PASS: the Python facade copies ordered outcomes, IDs, and exact Pending correlation after exactly one FFI execute call. |
+| Red | `853e71da` | Shared parity mapping contract test | Expected failure: the C schema-redaction mapping was blocked despite the numeric-only ABI and existing invalid-schema category test. |
+| Green | `2b10df1e` | Shared parity mapping contract test; full C consumer suite | PASS: the contract verifies no diagnostic string output in the C last-error signature; the C consumer passed 4/4. |
+| Refactor | This commit | `python -B -m unittest tools.api_manifest.tests.test_parity tools.api_manifest.tests.test_t076_client_mapping -q`; `python -B -m unittest scripts.tests.test_workflow -q`; `python -B tools/api_manifest/generate.py --check`; `cargo fmt --all --check`; `git diff --check` | PASS: contract tests 42/42; workflow tests 43/43; 12 generated API outputs current; formatting and whitespace checks clean. Updated PR-head CI and aggregate changed-code coverage remain pending. |
+
+The remaining explicit shared-fixture blockers are the API-level taxonomy
+assigned to T077 and exact open-enumeration/child-order consumers in Rust, C,
+and Python. T076 therefore remains open; these entries are not counted as
+four-language parity evidence.
