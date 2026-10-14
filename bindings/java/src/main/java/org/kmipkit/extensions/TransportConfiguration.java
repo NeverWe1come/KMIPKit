@@ -155,7 +155,7 @@ public final class TransportConfiguration implements AutoCloseable {
     }
 
     /** Builder for the accepted KMIPKIT-0013 endpoint, trust, identity, and timeout inputs. */
-    public static final class Builder {
+    public static final class Builder implements AutoCloseable {
         private int endpointKind;
         private String endpoint;
         private int endpointPort;
@@ -174,6 +174,19 @@ public final class TransportConfiguration implements AutoCloseable {
         private boolean built;
 
         private Builder() {}
+
+        /** Zeroizes the copied private key and consumes this builder.
+         *
+         * <p>Close a builder that is discarded before {@link #build()}. Building also consumes the
+         * builder and clears its private-key copy, including when validation or native creation fails.
+         */
+        @Override
+        public void close() {
+            if (!built) {
+                built = true;
+                wipeSecretInputReferences();
+            }
+        }
 
         /** Selects a raw TTLV-over-TLS endpoint. */
         public Builder rawTls(String host, int port) {
