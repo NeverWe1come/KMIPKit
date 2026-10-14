@@ -219294,6 +219294,18 @@
     },
     {
       "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.clientExecuteWithOptions",
+      "reason": "This exact public native method is raw-handle JNI bridge plumbing. Java exposes it for native binding dispatch; applications use the typed Client.executeWithOptions facade, which has the shared timeout capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021. The native method transports raw client, batch, and codec handles through the minimal JNI bridge; the typed Client.executeWithOptions method is the supported product entry point."
+    },
+    {
+      "packageId": "java-kmipkit",
       "exportName": "org.kmipkit.NativeExtensionRegistry.transportConfigCreate",
       "reason": "This public static member is a raw-handle JNI bridge entry point. Java exposes it for native binding dispatch; applications are directed to the typed org.kmipkit.extensions and org.kmipkit.ttlv facade. The bridge member has no independent product-level capability.",
       "approvalSource": {
@@ -219411,6 +219423,42 @@
         "evidence": "**Status**: Approved for implementation"
       },
       "evidence": "Reviewed against KMIPKIT-0043-FR-021 and the Java declaration inventory. The corresponding record or enum is mapped as a public facade value; only the compiler-generated method is excluded."
+    },
+    {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.extensions.RequestOptions.equals",
+      "reason": "This exact Java member is compiler-provided record value boilerplate, not a separately specified KMIPKit capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-021 and the Java declaration inventory. RequestOptions remains mapped as the shared timeout value; only this generated record method is excluded."
+    },
+    {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.extensions.RequestOptions.hashCode",
+      "reason": "This exact Java member is compiler-provided record value boilerplate, not a separately specified KMIPKit capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-021 and the Java declaration inventory. RequestOptions remains mapped as the shared timeout value; only this generated record method is excluded."
+    },
+    {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.extensions.RequestOptions.toString",
+      "reason": "This exact Java member is compiler-provided record value boilerplate, not a separately specified KMIPKit capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-021 and the Java declaration inventory. RequestOptions contains timeout limits only, with no credentials or transport bytes; only this generated record method is excluded."
     },
     {
       "packageId": "python-kmipkit",
