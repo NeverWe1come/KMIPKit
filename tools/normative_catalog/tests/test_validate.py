@@ -5209,6 +5209,23 @@ class CatalogValidationTests(unittest.TestCase):
             for gap in oracle.get("source_only_requirement_gaps", [])
             if gap["candidate_requirement_id"] is not None
         )
+        source_table_contract_gap_ids = {
+            contract["gap_id"] for contract in oracle.get("source_table_contracts", [])
+        }
+        source_table_contract_requirement_ids = {
+            record["requirement_id"]
+            for record in catalog["requirements"]
+            if record.get("source_gap_id") in source_table_contract_gap_ids
+        }
+        self.assertEqual(
+            source_table_contract_requirement_ids,
+            {"KMIPKIT-REQ-SPEC-6.1.23-002-001"},
+            "the approved Table 232 contract must remain linked to its existing stable label",
+        )
+        self.assertTrue(
+            source_table_contract_requirement_ids <= reviewed_ids,
+            "source-table contracts must be included in reviewed stable-label dispositions",
+        )
         missing = sorted(catalog_ids - reviewed_ids)
         unknown = sorted(reviewed_ids - catalog_ids)
         self.assertEqual(
