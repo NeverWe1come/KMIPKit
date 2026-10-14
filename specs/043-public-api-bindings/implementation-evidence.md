@@ -56,6 +56,20 @@ API-level discovery and ordered batch outcomes remain blocked in the Java mappin
 
 This closes T020's Java test-writing and executable-mapping scope. It does not close Java facade expansion (T021–T022), Rust/C fixture execution, Python mapping, full four-language parity (T029/T071), or the blocked API-level and ordered-batch capabilities.
 
+## T022 — Java wrapper ownership and pre-JNI input validation
+
+The Java view chain keeps each native owner strongly reachable: `TtlvStructureView` retains its `TtlvStructure`, `TtlvItemView` retains its parent structure view, and `TtlvValueView` retains its item view. `NativeHandle` serializes scoped JNI use with deterministic, idempotent close. A new garbage-collection regression requests collection while a descendant view is live, checks that all three owners remain reachable, and reads the borrowed integer value.
+
+The transfer-site audit found four preflight gaps. `TtlvItem.create` and `TtlvPath.withChildTag` detached the consumed value/path before validating a borrowed tag; `ExtensionDefinition.withInformation` detached the definition before validating its borrowed information handle; and `ExtensionInformation.with_type` detached its handle before dereferencing a nullable type. These paths now reject null arguments with `InvalidInputException`, validate all borrowed owners while holding the shared lifecycle lock, and transfer only after validation succeeds. Regression tests confirm the original owner remains usable after null or closed inputs are rejected. Other transfer sites either validate first, use atomic `transferAll`, or have no second owned input to invalidate.
+
+| Phase | Commit | Command | Result |
+|---|---|---|---|
+| Red | `c719aaa6` | `mvn -f bindings/java/pom.xml '-Dtest=TtlvItemOwnershipTest,WrapperTransferValidationTest' test -q` | Expected failure: 7 tests produced 4 assertion failures and 3 errors. Null inputs reached `NullPointerException`, and closed borrowed inputs left the first owner unusable after the rejection. |
+| Green | `81aaaeaf` | `mvn -f bindings/java/pom.xml '-Dtest=TtlvItemOwnershipTest,TtlvViewOwnerRetentionTest,WrapperTransferValidationTest,NativeHandleTransferTest,PublicWrapperLifecycleCoverageTest' test -q` | PASS: all 16 focused ownership, lifecycle, preflight, and owner-retention tests; 0 failures/errors. |
+| Refactor | `6f796605` | Same focused command; `mvn -f bindings/java/pom.xml verify -q`; `git diff --check` | PASS: focused suite 16/16; full Java suite 153 tests, 0 failures/errors, 3 documented skips; JaCoCo line coverage 95.43% (1,461 covered / 70 missed); Maven verification and whitespace checks passed. The refactor normalized invalid-input exception imports without behavior changes. |
+
+Verification ran on Windows x86-64 with the locally built JNI library. Cargo emitted existing AWS-LC compiler-probe and missing-NASM warnings; JNI built and Maven verification succeeded. Cross-platform CI for the current unpushed head remains a PR-matrix check. The earlier FFI opaque-token follow-up's Linux CI remains separate from this Java ownership acceptance.
+
 ## T002, T006, T007, and T068 — Release inventory and owner resolution
 
 KMIP 2.1 defines 57 client-initiated operation types. The 1.0 catalog contains 56 `client_1_0` entries; Set Endpoint Role (§6.1.54) remains cataloged as `client_1_1` per the disposition recorded in specification 025. The release manifest and generator validate the 56-operation 1.0 inventory without changing the normative catalog.
