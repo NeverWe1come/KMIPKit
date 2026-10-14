@@ -113,8 +113,10 @@ class Endpoint:
         if self.kind is EndpointKind.HTTPS:
             port = _unsigned(self.port, 16)
             object.__setattr__(self, "port", port)
-            if port != 0 or self.tls_server_name is not None:
+            if port != 0:
                 errors.raise_for_status(4)
+            if self.tls_server_name is not None:
+                _nonempty_text(self.tls_server_name)
             if self.target_uri is not None:
                 _nonempty_text(self.target_uri)
             return
@@ -135,9 +137,17 @@ class Endpoint:
         )
 
     @classmethod
-    def https(cls, uri: str, *, target_uri: str | None = None) -> Self:
-        """Create a TTLV-over-HTTPS endpoint."""
-        validated = Endpoint(EndpointKind.HTTPS, uri, target_uri=target_uri)
+    def https(
+        cls,
+        uri: str,
+        *,
+        tls_server_name: str | None = None,
+        target_uri: str | None = None,
+    ) -> Self:
+        """Create a TTLV-over-HTTPS endpoint with an optional IP TLS name."""
+        validated = Endpoint(
+            EndpointKind.HTTPS, uri, tls_server_name=tls_server_name, target_uri=target_uri
+        )
         return cls(
             validated.kind,
             validated.address,

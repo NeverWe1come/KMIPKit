@@ -194,7 +194,7 @@ public final class TransportConfiguration implements AutoCloseable {
             return revocationLists(lists, Encoding.DER);
         }
 
-        /** Sets the TLS server name for raw TLS when it differs from the endpoint host. */
+        /** Sets the certificate verification name for an IP-literal endpoint. */
         public Builder tlsServerName(String value) {
             ensureMutable();
             tlsServerName = requireText(value, "TLS server name");
@@ -325,9 +325,7 @@ public final class TransportConfiguration implements AutoCloseable {
             if (endpointKind == RAW_TLS && targetUri != null) {
                 throw new InvalidInputException("HTTP target URI requires HTTPS");
             }
-            if (endpointKind == HTTPS && tlsServerName != null) {
-                throw new InvalidInputException("TLS server name override requires raw TLS");
-            }
+
             validateText(endpoint, "transport endpoint");
             validateText(tlsServerName, "TLS server name");
             validateText(targetUri, "HTTP target URI");
