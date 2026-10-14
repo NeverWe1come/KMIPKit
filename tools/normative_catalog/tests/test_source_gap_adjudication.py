@@ -66,7 +66,7 @@ class SourceGapAdjudicationTests(unittest.TestCase):
                 self.assertEqual(gap["status"], "source_obligation_covered_by_existing_stable_label")
                 self.assertEqual(requirement["source_gap_id"], gap_id)
                 self.assertEqual(requirement["source_force"], "required_table_body_value")
-                self.assertEqual(requirement["scope_state"], "client_1_0")
+                self.assertEqual(requirement["scope_state"], "profile_conditional")
 
     def test_optional_dsa_q_is_not_misclassified_as_a_required_source_gap(self) -> None:
         oracle = _load_json(ORACLE_PATH)
@@ -157,6 +157,20 @@ class SourceGapAdjudicationTests(unittest.TestCase):
                 self.assertNotIn("remain unassigned", gap["review_note"])
                 self.assertIn(implementation_ref, requirement["implementation_refs"])
                 self.assertIn(verification_ref, requirement["verification_refs"])
+
+    def test_tag_reference_response_mapping_cites_the_decoder(self) -> None:
+        catalog = _load_json(CATALOG_PATH)
+        requirements = {row["requirement_id"]: row for row in catalog["requirements"]}
+        requirement = requirements["KMIPKIT-REQ-SPEC-5.5-005"]
+
+        self.assertIn(
+            "crates/kmipkit-protocol/src/attribute_reference.rs::AttributeReference::try_from_ttlv_item",
+            requirement["implementation_refs"],
+        )
+        self.assertIn(
+            "crates/kmipkit-protocol/tests/unit/get_attribute_list_tests.rs::response_preserves_tag_form_attribute_references",
+            requirement["verification_refs"],
+        )
 
     def test_profile_conditional_structural_rows_are_not_client_profile_requirements(self) -> None:
         catalog = _load_json(CATALOG_PATH)
