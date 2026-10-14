@@ -84,7 +84,41 @@ The Python 3.12 tests validate every currently available Python consumer link in
 | Green | `76841807` | Same focused command; `git diff --check` | PASS: 16 tests. The fixture maps the TTLV case to the new Python consumer; T077 remains blocked. |
 | Refactor | `c4b69988` | Same focused command; `git diff --check` | PASS: 16 tests. Extracted fixture structure construction, made Maturin selection prefer the active project environment, and clarified that the test inspects a built wheel. |
 
-Independent review approved the corrected Red, Green, and Refactor evidence. Root reran the Python 3.12 focused suite after Green and Refactor; both runs passed 16/16. The complete Python test suite then passed 209 tests. This task adds tests and fixture evidence only; it changes no runtime or generated code. T024's broader facade parity remains open.
+Independent review approved the corrected Red, Green, and Refactor evidence. Root reran the Python 3.12 focused suite after Green and Refactor; both runs passed 16/16. The complete Python test suite then passed 209 tests. This task adds tests and fixture evidence only; it changes no runtime or generated code. End-to-end shared API parity is owned by T029/T071.
+
+## T024 — Python 3.12 shared facade mappings
+
+T024 is complete for the approved Python facade scope: the Python package maps
+the shared client construction, transport configuration, typed ordered batch
+execution and results, generic structurally valid TTLV, stable error metadata,
+and explicit wrapper ownership over the C ABI. Public annotations and the
+`py.typed` marker are checked by the Python contract suite. The exact mapping
+and ownership implementation evidence is recorded in the T076 Python mapping,
+native-input, batch-identity, and ordered-outcome sections below; the
+fixture-driven Python contract evidence is recorded under T023 above.
+
+| Acceptance evidence | Command or record | Result |
+|---|---|---|
+| Python behavior, lifecycle, typing, package contents, and fixture consumer | `bindings/python/.venv/Scripts/python.exe -m pytest bindings/python/tests -q` | PASS: 209 tests. |
+| Shared API declaration accounting | `python -B tools/api_manifest/audit_binding_exports.py --repo-root . --report specs/043-public-api-bindings/reports/binding-export-report-2026-10-14.json --check` | PASS: 556 Python paths observed, 425 exact manifest declarations and 131 reviewed exclusions; no missing, stale, kind-mismatched, or issue paths. The generated current report also reconciles C 272 observed / 242 matches and Java 491 observed / 449 matches. |
+| Checked-in generated API artifacts | `python -B tools/api_manifest/generate.py --check` | PASS: all 12 outputs verified. |
+| Mapping implementation TDD and review | `T021/T024 unique batch item identity mapping`; T076 Python transport, ordered-outcome, and client-mapping evidence below | Red/Green/Refactor and independent review are recorded with the implementation work; this T024 closeout adds no runtime changes. |
+
+The current binding-export snapshot also exposed a stale exact-exclusion test
+and a missing architecture-document citation on the `clientExecuteWithOptions`
+JNI bridge exclusion. The follow-up corrects the audit contract and records a
+fresh current report; it changes no runtime behavior.
+
+| Phase | Commit | Command | Result |
+|---|---|---|---|
+| Red | `81ad7141` | `python -B -m unittest tools.api_manifest.tests.test_binding_exports.BindingExportAuditTests.test_internal_bridge_and_dataclass_artifacts_use_exact_exclusions -v` | Expected failure: the current exact JNI exclusion lacked its required architecture-boundary citation. |
+| Green | `bcc9a476` | `python -B tools/api_manifest/generate.py --write`; focused exclusion test; `python -B -m unittest tools.api_manifest.tests.test_binding_exports -v`; generator `--check`; pinned export audit with the 2026-10-14 report and `--check` | PASS: focused exclusion test 1/1, audit suite 43/43, all 12 generated outputs current, and C/Java/Python scans exact with zero discrepancies. |
+| Refactor | Documentation closeout | `python -B -m unittest tools.api_manifest.tests.test_c_api_docs -v`; `git diff --check` | PASS: 3 documentation/report contracts; the current 491/449 Java scan is distinguished from the retained historical 481/442 report. |
+
+This closes the Python facade mapping task only. The complete four-language
+shared-fixture comparison remains T029/T071; offline platform loading remains
+T028/T072; and API-level discovery remains T077. T024 does not claim complete
+operation-level parity or KMIP profile conformance.
 
 ## T002, T006, T007, and T068 — Release inventory and owner resolution
 
