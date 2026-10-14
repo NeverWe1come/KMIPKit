@@ -1508,3 +1508,45 @@ Java bridge finding assigned to T022 has an implementation in local commits
 Java/JNI checks pass. The release security exit gate remains open until the
 updated branch passes cross-platform CI and the full T022 acceptance review.
 PR #104 remains a draft while the other KMIPKIT-0043 tasks continue.
+
+### T021 Java shared facade acceptance (2026-10-14)
+
+The T021 review used the current worktree rather than the earlier checkpoint
+summary. The Java facade constructs a production client from separate
+validated client and transport configurations, accepts only typed batches for
+execution, and exposes ordered common result metadata, raw forward-compatible
+outcome/status values, unique item IDs, and exact Pending correlation bytes.
+It adds no raw request or arbitrary Transport injection and makes no automatic
+retry or follow-up call. Existing generic TTLV wrappers expose structurally
+valid in-memory values through the C ABI. Operation-specific APIs remain
+gated by T031-T069.
+
+All five Java source packages (`org.kmipkit`, `extensions`, `ttlv`,
+`generated`, and `internal`) carry JSpecify `@NullMarked`. Shared native
+wrappers use `AutoCloseable` and the common `NativeHandle` owner; the typed
+mTLS consumer exercises client construction, batch execution, response
+ownership, and close-on-scope-exit. The execution path maps protocol and
+transport failures to stable exception subtypes with status/category/cause/
+delivery codes and sanitized fixed diagnostics. The protocol and transport
+integration regressions verify that their messages omit fixture paths.
+
+The test-only coverage addition is commit `13bc84b8` (`test(java): cover
+shared client lifecycle and nullness`). It explicitly checks the T076 client,
+batch, result, and transport wrapper classes are `AutoCloseable`, and checks
+all five package annotations. No production behavior or generated output
+changed, so this closeout does not claim a new Red/Green/Refactor behavior
+cycle.
+
+| Verification | Command | Result |
+|---|---|---|
+| Focused Java lifecycle/nullness contract | `mvn --batch-mode --file bindings/java/pom.xml -Dtest=JavaFacadeContractTest test` | PASS: 4 tests; JNI bridge compiled. |
+| Java adapter verification | `mvn --batch-mode --file bindings/java/pom.xml verify` | PASS: 145 tests, 0 failures/errors, 3 documented platform skips; JaCoCo gate passed. |
+| Generated API outputs | `python -B tools/api_manifest/generate.py --check` | PASS: all 12 generated outputs current. |
+| Binding export audit | `python -B tools/api_manifest/audit_binding_exports.py --repo-root . --check` | PASS: C 242/242, Java 449/449, Python 425/425 exact declaration matches; observed path exclusions reconcile, with zero issues, missing paths, stale paths, or kind mismatches. |
+
+The Maven native build emitted non-fatal AWS-LC compiler-probe and missing
+NASM warnings in this Windows environment; JNI compilation, tests, example,
+and coverage verification all completed successfully. The current Java source
+surface required no production repair. The remaining T022 child-owner
+retention acceptance work and T029/T071 complete cross-language fixture gate
+remain separate tasks.
