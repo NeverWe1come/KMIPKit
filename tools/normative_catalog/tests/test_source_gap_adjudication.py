@@ -111,6 +111,51 @@ class SourceGapAdjudicationTests(unittest.TestCase):
                 self.assertEqual(gaps[gap_id]["condition"], expected_condition)
                 self.assertEqual(requirements[requirement_id]["condition"], expected_condition)
 
+    def test_attribute_structure_rows_have_scoped_feature_and_test_evidence(self) -> None:
+        catalog = _load_json(CATALOG_PATH)
+        oracle = _load_json(ORACLE_PATH)
+        gaps = {row["gap_id"]: row for row in oracle["source_only_requirement_gaps"]}
+        requirements = {row["requirement_id"]: row for row in catalog["requirements"]}
+        mappings = {
+            "KMIPKIT-REQ-SPEC-5.5-003": (
+                "KMIPKIT-SOURCE-GAP-SPEC-5.5-VENDOR-IDENTIFICATION",
+                "crates/kmipkit-protocol/src/attribute_reference.rs::AttributeReference::to_ttlv_item",
+                "crates/kmipkit-protocol/tests/unit/adjust_attribute_tests.rs::request_preserves_name_reference_order_and_omits_identifier_and_adjustment_value",
+            ),
+            "KMIPKIT-REQ-SPEC-5.5-004": (
+                "KMIPKIT-SOURCE-GAP-SPEC-5.5-ATTRIBUTE-NAME",
+                "crates/kmipkit-protocol/src/attribute_reference.rs::AttributeReference::to_ttlv_item",
+                "crates/kmipkit-protocol/tests/unit/adjust_attribute_tests.rs::request_preserves_name_reference_order_and_omits_identifier_and_adjustment_value",
+            ),
+            "KMIPKIT-REQ-SPEC-5.5-005": (
+                "KMIPKIT-SOURCE-GAP-SPEC-5.5-ATTRIBUTE-REFERENCE-TAG",
+                "crates/kmipkit-protocol/src/attribute_reference.rs::AttributeReference::to_ttlv_item",
+                "crates/kmipkit-protocol/tests/unit/adjust_attribute_tests.rs::request_follows_table_170_field_order_and_preserves_tag_reference_and_parameter",
+            ),
+            "KMIPKIT-REQ-SPEC-5.6-002": (
+                "KMIPKIT-SOURCE-GAP-SPEC-5.6-CURRENT-ATTRIBUTE",
+                "crates/kmipkit-protocol/src/modify_attribute.rs::ModifyAttributeRequest::to_ttlv_payload",
+                "crates/kmipkit-protocol/tests/unit/modify_attribute_tests.rs::request_preserves_exact_current_and_new_items_in_table_265_order",
+            ),
+            "KMIPKIT-REQ-SPEC-5.7-002": (
+                "KMIPKIT-SOURCE-GAP-SPEC-5.7-NEW-ATTRIBUTE",
+                "crates/kmipkit-protocol/src/modify_attribute.rs::ModifyAttributeRequest::to_ttlv_payload",
+                "crates/kmipkit-protocol/tests/unit/modify_attribute_tests.rs::request_preserves_exact_current_and_new_items_in_table_265_order",
+            ),
+        }
+
+        for requirement_id, (gap_id, implementation_ref, verification_ref) in mappings.items():
+            with self.subTest(requirement_id=requirement_id):
+                requirement = requirements[requirement_id]
+                gap = gaps[gap_id]
+                self.assertEqual(requirement["feature_spec"], "KMIPKIT-0016")
+                self.assertEqual(requirement["status"], "scoped_verified")
+                self.assertEqual(requirement["scope_state"], "client_1_0")
+                self.assertEqual(requirement["profile_ids"], [])
+                self.assertEqual(gap["scope_state"], "profile_conditional")
+                self.assertIn(implementation_ref, requirement["implementation_refs"])
+                self.assertIn(verification_ref, requirement["verification_refs"])
+
 
 if __name__ == "__main__":
     unittest.main()
