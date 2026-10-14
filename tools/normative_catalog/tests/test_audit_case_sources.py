@@ -386,11 +386,11 @@ class CaseSourceAuditTests(unittest.TestCase):
     def test_translates_recursion_error_during_catalog_json_load(self) -> None:
         with tempfile.TemporaryDirectory() as temporary_directory:
             repository = Path(temporary_directory)
-            nested_json = "[" * 5_000 + "0" + "]" * 5_000
-            (repository / "catalog.json").write_text(nested_json, encoding="utf-8")
+            (repository / "catalog.json").write_text("{}", encoding="utf-8")
 
-            with self.assertRaises(audit_case_sources.CaseAuditError) as error:
-                audit_case_sources._load_catalog(repository, "catalog.json")
+            with patch.object(audit_case_sources.json, "loads", side_effect=RecursionError):
+                with self.assertRaises(audit_case_sources.CaseAuditError) as error:
+                    audit_case_sources._load_catalog(repository, "catalog.json")
 
             self.assertEqual(str(error.exception), "catalog is unavailable or invalid JSON")
 
