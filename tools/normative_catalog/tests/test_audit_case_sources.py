@@ -20,6 +20,87 @@ SCRIPT = ROOT / "tools" / "normative_catalog" / "audit_case_sources.py"
 
 
 class CaseSourceAuditTests(unittest.TestCase):
+    @staticmethod
+    def _install_pinned_manifest(
+        repository: Path,
+        profile_html: bytes,
+        testcases_html: bytes,
+    ) -> list[dict[str, str]]:
+        oasis_root = repository / "specification" / "oasis" / "kmip-2.1"
+        upstream = oasis_root / "upstream"
+        upstream.mkdir(parents=True)
+        source_definitions = [
+            (
+                "kmip-spec-v2.1-os.html",
+                "Key Management Interoperability Protocol Specification Version 2.1",
+                "OASIS Standard",
+                "14 December 2020",
+                "https://example.invalid/kmip-spec-v2.1-os.html",
+                b"",
+                "KMIPKIT-SRC-spec",
+                "primary_normative",
+            ),
+            (
+                "kmip-profiles-v2.1-os.html",
+                "Key Management Interoperability Protocol Profiles Version 2.1",
+                "OASIS Standard",
+                "14 December 2020",
+                "https://example.invalid/kmip-profiles-v2.1-os.html",
+                profile_html,
+                "KMIPKIT-SRC-profiles",
+                "profile_normative",
+            ),
+            (
+                "kmip-ug-v2.1-cn01.html",
+                "Key Management Interoperability Protocol Usage Guide Version 2.1",
+                "Committee Note 01",
+                "16 November 2020",
+                "https://example.invalid/kmip-ug-v2.1-cn01.html",
+                b"",
+                "KMIPKIT-SRC-usage-guide",
+                "informative",
+            ),
+            (
+                "kmip-testcases-v2.1-cn01.html",
+                "Key Management Interoperability Protocol Test Cases Version 2.1",
+                "Committee Note 01",
+                "16 November 2020",
+                "https://example.invalid/kmip-testcases-v2.1-cn01.html",
+                testcases_html,
+                "KMIPKIT-SRC-testcases",
+                "test_evidence",
+            ),
+        ]
+        inventory_rows = [
+            "| Local file | Work product | Stage | Approval/publication | Canonical URL |",
+            "| --- | --- | --- | --- | --- |",
+        ]
+        checksum_rows: list[str] = []
+        catalog_sources: list[dict[str, str]] = []
+        for filename, title, stage, date, url, raw, source_id, authority in source_definitions:
+            relative_path = f"upstream/{filename}"
+            (upstream / filename).write_bytes(raw)
+            digest = hashlib.sha256(raw).hexdigest()
+            inventory_rows.append(f"| `{relative_path}` | {title} | {stage} | {date} | <{url}> |")
+            checksum_rows.append(f"{digest}  {relative_path}")
+            if source_id in {"KMIPKIT-SRC-profiles", "KMIPKIT-SRC-testcases"}:
+                catalog_sources.append(
+                    {
+                        "source_id": source_id,
+                        "title": title,
+                        "version": "2.1",
+                        "stage": stage,
+                        "publication_date": date,
+                        "local_path": f"specification/oasis/kmip-2.1/{relative_path}",
+                        "canonical_url": url,
+                        "sha256": digest,
+                        "authority_class": authority,
+                    }
+                )
+        (oasis_root / "SOURCES.md").write_text("\n".join(inventory_rows) + "\n", encoding="utf-8")
+        (oasis_root / "CHECKSUMS.sha256").write_text("\n".join(checksum_rows) + "\n", encoding="ascii")
+        return catalog_sources
+
     def _run_audit(
         self,
         *,
@@ -30,26 +111,16 @@ class CaseSourceAuditTests(unittest.TestCase):
     ) -> subprocess.CompletedProcess[str]:
         with tempfile.TemporaryDirectory() as temporary_directory:
             repository = Path(temporary_directory)
-            profile_path = "sources/profiles.html"
-            testcases_path = "sources/testcases.html"
-            (repository / "sources").mkdir()
-            (repository / profile_path).write_bytes(profile_html)
-            (repository / testcases_path).write_bytes(testcases_html)
+            source_records = self._install_pinned_manifest(repository, profile_html, testcases_html)
             catalog = {
-                "sources": [
-                    {
-                        "source_id": "KMIPKIT-SRC-profiles",
-                        "local_path": profile_path,
-                        "sha256": profile_sha256 or hashlib.sha256(profile_html).hexdigest(),
-                    },
-                    {
-                        "source_id": "KMIPKIT-SRC-testcases",
-                        "local_path": testcases_path,
-                        "sha256": hashlib.sha256(testcases_html).hexdigest(),
-                    },
-                ],
+                "sources": source_records,
                 "test_cases": cases,
             }
+            if profile_sha256 is not None:
+                profile_source = next(
+                    source for source in source_records if source["source_id"] == "KMIPKIT-SRC-profiles"
+                )
+                profile_source["sha256"] = profile_sha256
             (repository / "catalog.json").write_text(json.dumps(catalog), encoding="utf-8")
             return subprocess.run(
                 [sys.executable, str(SCRIPT), "--repo-root", str(repository), "--catalog", "catalog.json"],
@@ -216,7 +287,7 @@ class CaseSourceAuditTests(unittest.TestCase):
         self.assertEqual(evidence[0].hrefs, {"case.xml"})
         self.assertIsInstance(evidence[0].hrefs, set)
 
-    def test_verifies_catalog_source_sha256_before_parsing(self) -> None:
+    def test_rejects_catalog_sha256_not_bound_to_pinned_manifest(self) -> None:
         result = self._run_audit(
             profile_html=b"<h4>5.1.3.1 BL-M-1-21</h4><a href=\"case.xml\">fixture</a>",
             testcases_html=b"",
@@ -226,7 +297,7 @@ class CaseSourceAuditTests(unittest.TestCase):
             profile_sha256="0" * 64,
         )
         self.assertNotEqual(result.returncode, 0)
-        self.assertIn("SHA-256 does not match the catalog source record", result.stderr)
+        self.assertIn("catalog source metadata does not match the pinned OASIS source manifest", result.stderr)
 
     def test_translates_safe_io_path_errors_to_redacted_catalog_errors(self) -> None:
         with tempfile.TemporaryDirectory() as temporary_directory:
@@ -326,31 +397,23 @@ class CaseSourceAuditTests(unittest.TestCase):
     def test_rejects_symlinked_pinned_source_without_disclosing_target(self) -> None:
         with tempfile.TemporaryDirectory() as temporary_directory:
             repository = Path(temporary_directory)
-            sources = repository / "sources"
-            sources.mkdir()
             profile_html = b'<h4>5.1.3.1 BL-M-1-21</h4><a href="case.xml">fixture</a>'
             profile_target = repository / "external-profiles.html"
             profile_target.write_bytes(profile_html)
+            catalog_sources = self._install_pinned_manifest(repository, profile_html, b"")
+            profile_path = repository / next(
+                source["local_path"]
+                for source in catalog_sources
+                if source["source_id"] == "KMIPKIT-SRC-profiles"
+            )
+            profile_path.unlink()
             try:
-                (sources / "profiles.html").symlink_to(profile_target)
+                profile_path.symlink_to(profile_target)
             except (OSError, NotImplementedError) as error:
                 self.skipTest(f"symlink creation is unavailable: {error}")
 
-            testcases_html = b""
-            (sources / "testcases.html").write_bytes(testcases_html)
             catalog = {
-                "sources": [
-                    {
-                        "source_id": "KMIPKIT-SRC-profiles",
-                        "local_path": "sources/profiles.html",
-                        "sha256": hashlib.sha256(profile_html).hexdigest(),
-                    },
-                    {
-                        "source_id": "KMIPKIT-SRC-testcases",
-                        "local_path": "sources/testcases.html",
-                        "sha256": hashlib.sha256(testcases_html).hexdigest(),
-                    },
-                ],
+                "sources": catalog_sources,
                 "test_cases": [
                     self._case(
                         "P-1", "BL-M-1-21", "KMIPKIT-SRC-profiles", "5.1.3.1",
@@ -416,23 +479,9 @@ class CaseSourceAuditTests(unittest.TestCase):
 
         with tempfile.TemporaryDirectory() as temporary_directory:
             repository = Path(temporary_directory)
-            sources = repository / "sources"
-            sources.mkdir()
-            (sources / "profiles.html").write_bytes(profile_html)
-            (sources / "testcases.html").write_bytes(testcases_html)
+            source_records = self._install_pinned_manifest(repository, profile_html, testcases_html)
             catalog = {
-                "sources": [
-                    {
-                        "source_id": "KMIPKIT-SRC-profiles",
-                        "local_path": "sources/profiles.html",
-                        "sha256": hashlib.sha256(profile_html).hexdigest(),
-                    },
-                    {
-                        "source_id": "KMIPKIT-SRC-testcases",
-                        "local_path": "sources/testcases.html",
-                        "sha256": hashlib.sha256(testcases_html).hexdigest(),
-                    },
-                ],
+                "sources": source_records,
                 "test_cases": rows,
             }
             parse_case_evidence = audit_case_sources._parse_case_evidence

@@ -14,8 +14,10 @@ from typing import Any
 
 if __package__:
     from .safe_io import PathSecurityError, safe_read_bytes
+    from .validate import _source_manifest
 else:
     from safe_io import PathSecurityError, safe_read_bytes
+    from validate import _source_manifest
 
 MAX_CATALOG_BYTES = 16 * 1024 * 1024
 MAX_SOURCE_BYTES = 16 * 1024 * 1024
@@ -223,6 +225,11 @@ def audit_catalog_cases(repository: Path, catalog: dict[str, Any]) -> tuple[dict
     if not isinstance(sources, list) or not isinstance(cases, list):
         raise CaseAuditError("catalog must contain source and test_cases arrays")
 
+    try:
+        pinned_sources = _source_manifest(repository)
+    except (OSError, ValueError) as error:
+        raise CaseAuditError("pinned OASIS source manifest is unavailable") from error
+
     source_records: dict[str, dict[str, Any]] = {}
     for source in sources:
         if isinstance(source, dict) and isinstance(source.get("source_id"), str):
@@ -250,6 +257,10 @@ def audit_catalog_cases(repository: Path, catalog: dict[str, Any]) -> tuple[dict
         source = source_records.get(source_id)
         if source is None:
             raise CaseAuditError(f"catalog source record is missing: {source_id}")
+        pinned_source = pinned_sources.get(source_id)
+        catalog_metadata = {key: value for key, value in source.items() if key != "source_id"}
+        if not isinstance(pinned_source, dict) or catalog_metadata != pinned_source:
+            raise CaseAuditError("catalog source metadata does not match the pinned OASIS source manifest")
         relative_path = source.get("local_path")
         expected_digest = source.get("sha256")
         if not isinstance(relative_path, str) or not isinstance(expected_digest, str):
@@ -311,7 +322,7 @@ def _load_catalog(repository: Path, relative_path: str) -> dict[str, Any]:
     try:
         raw = safe_read_bytes(repository, relative_path, max_bytes=MAX_CATALOG_BYTES)
         catalog = json.loads(raw.decode("utf-8"))
-    except (OSError, UnicodeDecodeError, json.JSONDecodeError, PathSecurityError) as error:
+    except (OSError, UnicodeDecodeError, json.JSONDecodeError, PathSecurityError, RecursionError) as error:
         raise CaseAuditError("catalog is unavailable or invalid JSON") from error
     if not isinstance(catalog, dict):
         raise CaseAuditError("catalog root must be an object")
