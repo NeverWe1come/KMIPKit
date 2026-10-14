@@ -1310,3 +1310,16 @@ At the time this record was written, GitHub run `38527919451` had 31 successful
 checks and 2 skipped checks; `Coverage / macos` was still running. Independent
 semantic mapping review was in progress. No result is claimed for either pending
 gate.
+
+### T076 HTTPS TLS verification-name parity (2026-10-14)
+
+Java and Python now expose the accepted KMIPKIT-0013 TLS verification-name
+override for HTTPS endpoints with IP literals. The override remains a distinct
+field from the HTTPS URI, so it cannot change the URI authority or HTTP Host.
+Rust remains authoritative for rejecting a name override on a non-IP endpoint.
+
+| Phase | Commit | Command | Result |
+|---|---|---|---|
+| Red | `ef388850` | `uv run --offline --project bindings/python --frozen pytest -q bindings/python/tests/test_client.py::test_https_tls_server_name_is_forwarded_separately_from_authority`; focused Java integration test | Expected failures: Python factory rejected the `tls_server_name` keyword; Java validation rejected the HTTPS override as raw-TLS-only. |
+| Green | `032a10c1` | Same focused Python test; `mvn -q -f bindings/java/pom.xml -Dtest=ClientFacadeTlsIntegrationTest#nativeAdapterAcceptsMemoryAndFileIdentityAndTrustInPemAndDer test` | PASS: Python C record preserves the IP URI, independent TLS name, and target URI; Java builds a validated HTTPS client configuration with an IP endpoint and DNS SAN name. |
+| Refactor | This commit | Re-run both focused tests; `git diff --check` | Clarified the Java/Python API documentation and the integration test name; authority and verification-name fields remain separate. |

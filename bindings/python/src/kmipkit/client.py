@@ -144,7 +144,7 @@ class Endpoint:
         tls_server_name: str | None = None,
         target_uri: str | None = None,
     ) -> Self:
-        """Create a TTLV-over-HTTPS endpoint with an optional IP TLS name."""
+        """Create HTTPS with an optional TLS name for an IP endpoint."""
         validated = Endpoint(
             EndpointKind.HTTPS, uri, tls_server_name=tls_server_name, target_uri=target_uri
         )

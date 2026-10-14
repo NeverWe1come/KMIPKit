@@ -58,7 +58,7 @@ final class ClientFacadeTlsIntegrationTest {
     Path temporaryDirectory;
 
     @Test
-    void nativeAdapterAcceptsMemoryAndFileIdentityAndTrustInPemAndDer() throws Exception {
+    void nativeAdapterAcceptsCredentialModesAndHttpsTlsNameOverride() throws Exception {
         Path keyStorePath = temporaryDirectory.resolve("native-adapter.p12");
         createKeyStore(keyStorePath, "native-adapter");
         KeyStore keyStore = loadKeyStore(keyStorePath);

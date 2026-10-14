@@ -194,7 +194,7 @@ public final class TransportConfiguration implements AutoCloseable {
             return revocationLists(lists, Encoding.DER);
         }
 
-        /** Sets the certificate verification name for an IP-literal endpoint. */
+        /** Sets the TLS verification name for an IP endpoint; the HTTPS authority is unchanged. */
         public Builder tlsServerName(String value) {
             ensureMutable();
             tlsServerName = requireText(value, "TLS server name");
