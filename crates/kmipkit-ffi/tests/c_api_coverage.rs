@@ -122,9 +122,8 @@ fn generated_public_client_abi_consumer_compiles_and_runs() {
     let argument_count = i32::try_from(arguments.len()).expect("argument count fits in i32");
     // SAFETY: the compiled consumer includes the generated public header, receives
     // one live argv string, and releases every created handle before returning.
-    let result = unsafe {
-        kmipkit_client_abi_c_consumer_main(argument_count, arguments.as_mut_ptr())
-    };
+    let result =
+        unsafe { kmipkit_client_abi_c_consumer_main(argument_count, arguments.as_mut_ptr()) };
 
     assert_eq!(
         result, 0,
@@ -142,18 +141,21 @@ fn generated_public_client_abi_consumer_executes_a_typed_batch_over_mtls() {
         pki.client_identity().private_key_der(),
         pki.authority_certificate_der(),
     ]);
-    let listener = TcpListener::bind(("127.0.0.1", 0))
-        .expect("an ephemeral local TCP port is available");
+    let listener =
+        TcpListener::bind(("127.0.0.1", 0)).expect("an ephemeral local TCP port is available");
     let port = listener
         .local_addr()
         .expect("listener has a local address")
         .port();
     let port = CString::new(port.to_string()).expect("port has no NUL byte");
     let server_config = mtls_server_config(&pki);
+    let exchange_count = Arc::new(AtomicU64::new(0));
+    let peer_exchange_count = Arc::clone(&exchange_count);
     let peer = thread::spawn(move || {
         let (stream, _) = listener
             .accept()
             .expect("the public C client connects to the local peer");
+        peer_exchange_count.fetch_add(1, Ordering::Relaxed);
         stream
             .set_read_timeout(Some(std::time::Duration::from_secs(5)))
             .expect("server read timeout is configured");
@@ -165,7 +167,7 @@ fn generated_public_client_abi_consumer_executes_a_typed_batch_over_mtls() {
         let mut tls = StreamOwned::new(connection, stream);
         let request = read_ttlv_frame(&mut tls).expect("bounded request frame arrives");
         assert!(request.starts_with(&[0x42, 0x00, 0x78]));
-        tls.write_all(&single_discover_versions_response())
+        tls.write_all(&mixed_discover_versions_response())
             .expect("the typed KMIP response is written");
         tls.flush().expect("the TLS response is flushed");
         let _ = tls.get_ref().shutdown(Shutdown::Both);
@@ -195,15 +197,14 @@ fn generated_public_client_abi_consumer_executes_a_typed_batch_over_mtls() {
     // retained for the C call, then released by this Rust test harness.
     let status = unsafe { kmipkit_codec_limits_defaults(&raw mut limits) };
     assert_eq!(status, 0, "codec limits defaults must succeed");
-    assert!(!limits.is_null(), "codec limits defaults must return a handle");
+    assert!(
+        !limits.is_null(),
+        "codec limits defaults must return a handle"
+    );
     // SAFETY: all argv entries remain live and NUL terminated for the synchronous
     // C call; the consumer is compiled against the generated public header only.
     let result = unsafe {
-        kmipkit_client_abi_c_consumer_execute_tls(
-            argument_count,
-            arguments.as_mut_ptr(),
-            limits,
-        )
+        kmipkit_client_abi_c_consumer_execute_tls(argument_count, arguments.as_mut_ptr(), limits)
     };
     // SAFETY: the defaults call returned this live handle and the C consumer only
     // borrowed it while synchronously executing the batch.
@@ -212,10 +213,13 @@ fn generated_public_client_abi_consumer_executes_a_typed_batch_over_mtls() {
     }
 
     assert_eq!(
-        result, 0,
-        "generated public C consumer must create a client and execute the typed batch"
+        result,
+        0,
+        "generated public C consumer must create a client and execute the typed batch; server exchanges: {}",
+        exchange_count.load(Ordering::Relaxed)
     );
     peer.join().expect("the loopback TLS peer completes");
+    assert_eq!(exchange_count.load(Ordering::Relaxed), 1);
 }
 
 fn controlled_mtls_peer(
@@ -462,7 +466,7 @@ fn discover_versions_response() -> Vec<u8> {
     structure(0x0042_007B, [header, failed_item, successful_item])
 }
 
-fn single_discover_versions_response() -> Vec<u8> {
+fn mixed_discover_versions_response() -> Vec<u8> {
     let protocol_version = structure(
         0x0042_0069,
         [integer(0x0042_006A, 2), integer(0x0042_006B, 1)],
@@ -472,7 +476,7 @@ fn single_discover_versions_response() -> Vec<u8> {
         [
             protocol_version.clone(),
             date_time(0x0042_0092, 1),
-            integer(0x0042_000D, 1),
+            integer(0x0042_000D, 3),
         ],
     );
     let response_payload = structure(0x0042_007C, [protocol_version]);
@@ -480,11 +484,34 @@ fn single_discover_versions_response() -> Vec<u8> {
         0x0042_000F,
         [
             enumeration(0x0042_005C, 30),
+            ttlv_item(0x0042_0093, 0x08, b"item-0"),
             enumeration(0x0042_007F, 0),
             response_payload,
         ],
     );
-    structure(0x0042_007B, [header, successful_item])
+    let pending_item = structure(
+        0x0042_000F,
+        [
+            enumeration(0x0042_005C, 30),
+            ttlv_item(0x0042_0093, 0x08, b"item-1"),
+            enumeration(0x0042_007F, 2),
+            ttlv_item(0x0042_0006, 0x08, &[0x00, 0xa1, 0x7f]),
+            structure(0x0042_007C, []),
+        ],
+    );
+    let failed_item = structure(
+        0x0042_000F,
+        [
+            enumeration(0x0042_005C, 30),
+            ttlv_item(0x0042_0093, 0x08, b"item-2"),
+            enumeration(0x0042_007F, 1),
+            enumeration(0x0042_007E, 1),
+        ],
+    );
+    structure(
+        0x0042_007B,
+        [header, successful_item, pending_item, failed_item],
+    )
 }
 
 fn mismatched_discover_versions_response() -> Vec<u8> {

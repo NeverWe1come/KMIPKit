@@ -14,6 +14,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.InetAddress;
 import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.KeyStore;
@@ -149,18 +150,11 @@ final class ClientFacadeTlsIntegrationTest {
                     () -> client.executeWithOptions(null, null, null));
             ClientBatch batch = ClientBatch.create();
             batch.asynchronousIndicator(2)
-                    .add(ClientBatchItem.discoverVersions())
-                    .add(ClientBatchItem.discoverVersions())
-                    .add(ClientBatchItem.discoverVersions());
-            ClientBatchResponse batchResponse;
-            try {
-                batchResponse = client.executeWithOptions(
-                        batch, CodecLimits.defaults(), RequestOptions.defaults());
-            } catch (ClientOperationException exception) {
-                throw new AssertionError("Mixed batch exchange failed with status " + exception.statusCode()
-                        + ", category " + exception.categoryCode() + ", cause " + exception.causeCode()
-                        + ", delivery " + exception.deliveryStateCode(), exception);
-            }
+                    .add(ClientBatchItem.discoverVersions().withUniqueBatchItemId("item-0".getBytes(StandardCharsets.US_ASCII)))
+                    .add(ClientBatchItem.discoverVersions().withUniqueBatchItemId("item-1".getBytes(StandardCharsets.US_ASCII)))
+                    .add(ClientBatchItem.discoverVersions().withUniqueBatchItemId("item-2".getBytes(StandardCharsets.US_ASCII)));
+            ClientBatchResponse batchResponse = client.executeWithOptions(
+                    batch, CodecLimits.defaults(), RequestOptions.defaults());
             try (ClientBatchResponse response = batchResponse;
                     ClientBatchItemResult completed = response.itemAt(0);
                     ClientBatchItemResult pending = response.itemAt(1);
@@ -168,14 +162,20 @@ final class ClientFacadeTlsIntegrationTest {
                 assertEquals(3, response.itemCount());
                 assertEquals(0, completed.resultStatus());
                 assertTrue(completed.outcomeKind().isCompleted());
+                assertArrayEquals("item-0".getBytes(StandardCharsets.US_ASCII),
+                        completed.uniqueBatchItemId().orElseThrow());
                 assertTrue(completed.pendingCorrelationValue().isEmpty());
                 assertTrue(completed.resultReason().isEmpty());
                 assertEquals(2, pending.resultStatus());
                 assertTrue(pending.outcomeKind().isPending());
+                assertArrayEquals("item-1".getBytes(StandardCharsets.US_ASCII),
+                        pending.uniqueBatchItemId().orElseThrow());
                 assertArrayEquals(CORRELATION, pending.pendingCorrelationValue().orElseThrow());
                 assertTrue(pending.resultReason().isEmpty());
                 assertEquals(1, failed.resultStatus());
                 assertTrue(failed.outcomeKind().isCompleted());
+                assertArrayEquals("item-2".getBytes(StandardCharsets.US_ASCII),
+                        failed.uniqueBatchItemId().orElseThrow());
                 assertTrue(failed.pendingCorrelationValue().isEmpty());
                 assertEquals(1, failed.resultReason().orElseThrow());
             }
@@ -354,7 +354,7 @@ final class ClientFacadeTlsIntegrationTest {
             socket.startHandshake();
             byte[] request = readFrame(socket.getInputStream());
             OutputStream output = socket.getOutputStream();
-            output.write(responseMessage(true));
+            output.write(mixedResponseMessage());
             output.flush();
             return request;
         }
@@ -401,20 +401,29 @@ final class ClientFacadeTlsIntegrationTest {
         return frame;
     }
 
-    private static byte[] responseMessage(boolean pendingResult) throws Exception {
+    private static byte[] mixedResponseMessage() throws Exception {
         byte[] version = structure(0x420069, item(0x42006a, 2, integer(2)),
                 item(0x42006b, 2, integer(1)));
         byte[] header = structure(0x42007a, version, item(0x420092, 9, longInteger(1)),
-                item(0x42000d, 2, integer(1)));
+                item(0x42000d, 2, integer(3)));
         byte[] responseVersion = structure(0x420069, item(0x42006a, 2, integer(2)),
                 item(0x42006b, 2, integer(1)));
         byte[] responsePayload = structure(0x42007c, responseVersion);
-        byte[] batchResult = pendingResult
-                ? structure(0x42000f, item(0x42005c, 5, integer(30)), item(0x42007f, 5, integer(2)),
-                        item(0x420006, 8, CORRELATION), responsePayload)
-                : structure(0x42000f, item(0x42005c, 5, integer(30)), item(0x42007f, 5, integer(0)),
-                        responsePayload);
-        return structure(0x42007b, header, batchResult);
+        byte[] successfulItem = structure(0x42000f,
+                item(0x42005c, 5, integer(30)),
+                item(0x420093, 8, "item-0".getBytes(StandardCharsets.US_ASCII)),
+                item(0x42007f, 5, integer(0)), responsePayload);
+        byte[] pendingItem = structure(0x42000f,
+                item(0x42005c, 5, integer(30)),
+                item(0x420093, 8, "item-1".getBytes(StandardCharsets.US_ASCII)),
+                item(0x42007f, 5, integer(2)),
+                item(0x420006, 8, CORRELATION), structure(0x42007c));
+        byte[] failedItem = structure(0x42000f,
+                item(0x42005c, 5, integer(30)),
+                item(0x420093, 8, "item-2".getBytes(StandardCharsets.US_ASCII)),
+                item(0x42007f, 5, integer(1)),
+                enumeration(0x42007e, 1));
+        return structure(0x42007b, header, successfulItem, pendingItem, failedItem);
     }
 
     private static byte[] structure(int tag, byte[]... items) throws Exception {
@@ -438,6 +447,10 @@ final class ClientFacadeTlsIntegrationTest {
 
     private static byte[] integer(int value) {
         return ByteBuffer.allocate(Integer.BYTES).putInt(value).array();
+    }
+
+    private static byte[] enumeration(int tag, int value) throws Exception {
+        return item(tag, 5, integer(value));
     }
 
     private static byte[] longInteger(long value) {

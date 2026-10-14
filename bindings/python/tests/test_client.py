@@ -818,6 +818,74 @@ def test_batch_result_copies_metadata_unknown_outcome_and_optional_spans(
     assert released == ["item", "response"]
 
 
+def test_batch_result_preserves_ordered_mixed_outcomes_ids_and_pending_correlation(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    response_pointer, _response_storage = _opaque("kmipkit_client_batch_response_t")
+    item_storage = [_opaque("kmipkit_client_batch_item_response_t") for _ in range(3)]
+    item_pointers = [pointer for pointer, _storage in item_storage]
+    identifiers = [client.ffi.new("uint8_t[]", f"item-{index}".encode()) for index in range(3)]
+    correlation = client.ffi.new("uint8_t[]", b"\x00\xa1\x7f")
+    released: list[str] = []
+
+    def item_index(item: object) -> int:
+        return item_pointers.index(item)
+
+    def metadata(item: object, out: object) -> int:
+        index = item_index(item)
+        out.struct_size = client.ffi.sizeof("kmipkit_client_batch_item_metadata_v1_t")  # type: ignore[attr-defined]
+        out.abi_version = 1  # type: ignore[attr-defined]
+        out.outcome_kind = (1, 2, 1)[index]  # type: ignore[attr-defined]
+        out.result_status = (0, 2, 1)[index]  # type: ignore[attr-defined]
+        out.has_result_reason = int(index == 2)  # type: ignore[attr-defined]
+        if index == 2:
+            out.result_reason = 1  # type: ignore[attr-defined]
+        return 0
+
+    def item_at(_response: object, index: int, out: object) -> int:
+        out[0] = item_pointers[int(index)]  # type: ignore[index]
+        return 0
+
+    def unique_id(item: object, present: object, value: object) -> int:
+        index = item_index(item)
+        present[0] = 1  # type: ignore[index]
+        value.data = identifiers[index]  # type: ignore[attr-defined]
+        value.length = 6  # type: ignore[attr-defined]
+        return 0
+
+    def pending_correlation(item: object, present: object, value: object) -> int:
+        if item_index(item) == 1:
+            present[0] = 1  # type: ignore[index]
+            value.data = correlation  # type: ignore[attr-defined]
+            value.length = 3  # type: ignore[attr-defined]
+        else:
+            present[0] = 0  # type: ignore[index]
+            value.data = client.ffi.NULL  # type: ignore[attr-defined]
+            value.length = 0  # type: ignore[attr-defined]
+        return 0
+
+    fake = SimpleNamespace(
+        kmipkit_client_batch_response_release=lambda _ptr: released.append("response"),
+        kmipkit_client_batch_item_response_release=lambda _ptr: released.append("item"),
+        kmipkit_client_batch_response_item_count=lambda _ptr, count: count.__setitem__(0, 3) or 0,
+        kmipkit_client_batch_response_item_at=item_at,
+        kmipkit_client_batch_item_response_metadata_v1=metadata,
+        kmipkit_client_batch_item_response_unique_batch_item_id=unique_id,
+        kmipkit_client_batch_item_response_pending_correlation_value=pending_correlation,
+    )
+    monkeypatch.setattr(client, "lib", fake)
+
+    result = client._batch_result(response_pointer)
+
+    assert result.items == (
+        client.BatchItemResult(client.BatchOutcome.COMPLETED, 0, None, b"item-0", None),
+        client.BatchItemResult(client.BatchOutcome.PENDING, 2, None, b"item-1", b"\x00\xa1\x7f"),
+        client.BatchItemResult(client.BatchOutcome.COMPLETED, 1, 1, b"item-2", None),
+    )
+    result.close()
+    assert released == ["item", "item", "item", "response"]
+
+
 def test_batch_result_accepts_absent_spans_and_no_result_reason(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:

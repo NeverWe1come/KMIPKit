@@ -21,7 +21,9 @@ use kmipkit_transport::{RequestDeliveryState, Transport, TransportError, Transpo
 use kmipkit_ttlv::codec::CodecLimits;
 
 use crate::ClientErrorCategory;
-use crate::execute::{Client, ClientBatch, ClientBatchItem, ClientRequest, ZeroizationObserver};
+use crate::execute::{
+    Client, ClientBatch, ClientBatchItem, ClientBatchOutcome, ClientRequest, ZeroizationObserver,
+};
 use crate::execute_test_support::{ResponseItemFixture, response_bytes};
 
 const CORRELATION_VALUE: &[u8] = b"KMIP_ASYNC_CORRELATION_SENTINEL_73";
@@ -437,6 +439,58 @@ fn mixed_completed_and_pending_results_preserve_exact_pending_correlation_value(
             .asynchronous_correlation_value(),
         Some(CORRELATION_VALUE)
     );
+}
+
+#[test]
+fn ordered_mixed_batch_outcomes_preserve_ids_and_use_one_exchange() {
+    let ids: [&[u8]; 3] = [b"item-0", b"item-1", b"item-2"];
+    let request = ClientBatch::from_items(ids.map(|id| {
+        ClientBatchItem::new(ClientRequest::discover_versions())
+            .with_unique_batch_item_id(id.to_vec())
+    }))
+    .with_asynchronous_indicator(2);
+    let response = response_bytes(
+        (2, 1),
+        &[
+            ResponseItemFixture::success(Some(ids[0])),
+            ResponseItemFixture::pending(Some(ids[1]), b"\x00\xa1\x7f"),
+            ResponseItemFixture::failure(Some(ids[2])),
+        ],
+    );
+    let (mut client, fake, _) = client_for(
+        ExchangeScript::Success {
+            response,
+            request_write_chunks: Vec::new(),
+        },
+        None,
+    );
+
+    let result = client
+        .execute(request, &CodecLimits::defaults())
+        .expect("one mixed batch response is returned without follow-up exchanges");
+
+    assert_eq!(result.len(), 3);
+    assert_eq!(fake.borrow().exchange_count(), 1);
+    for (index, expected_id) in ids.into_iter().enumerate() {
+        let item = result
+            .get(index)
+            .expect("each request has an ordered result");
+        assert_eq!(item.unique_batch_item_id(), Some(expected_id));
+        assert_eq!(item.outcome().result().status().raw(), [0, 2, 1][index]);
+    }
+    assert!(matches!(
+        result.get(0).expect("success item").outcome(),
+        ClientBatchOutcome::Completed(_)
+    ));
+    let ClientBatchOutcome::Pending(pending) = result.get(1).expect("pending item").outcome()
+    else {
+        panic!("second ordered result is Pending");
+    };
+    assert_eq!(pending.asynchronous_correlation_value(), b"\x00\xa1\x7f");
+    assert!(matches!(
+        result.get(2).expect("failure item").outcome(),
+        ClientBatchOutcome::Completed(_)
+    ));
 }
 
 #[test]

@@ -92,30 +92,54 @@
     },
     {
       "id": "batch.ordered-completed-pending-failed.v1",
-      "capability": "ordered_batch_outcomes",
+      "capability": "client_execution",
       "requirementIds": [
         "KMIPKIT-0043-FR-010",
         "KMIPKIT-0043-FR-012",
         "KMIPKIT-0006-FR-010",
         "KMIPKIT-0007-FR-008"
       ],
-      "input": {"discovery": "ordered-client-batch-outcomes"},
+      "input": {
+        "discovery": "ordered-client-batch-outcomes",
+        "uniqueBatchItemIds": ["6974656d2d30", "6974656d2d31", "6974656d2d32"]
+      },
       "expectedOutput": {
         "itemIndexes": [0, 1, 2],
         "resultStatuses": ["Success", "Operation Pending", "Operation Failed"],
+        "uniqueBatchItemIds": ["6974656d2d30", "6974656d2d31", "6974656d2d32"],
         "pendingCount": 1,
         "correlationValueHex": "00a17f",
         "automaticFollowUp": false,
         "transportExchangeCount": 1
       },
-      "javaObservedOutput": {"available": false, "transportExchangeCount": 0},
+      "javaObservedOutput": {
+        "available": true,
+        "itemIndexes": [0, 1, 2],
+        "resultStatuses": ["Success", "Operation Pending", "Operation Failed"],
+        "uniqueBatchItemIds": ["6974656d2d30", "6974656d2d31", "6974656d2d32"],
+        "pendingCount": 1,
+        "correlationValueHex": "00a17f",
+        "automaticFollowUp": false,
+        "transportExchangeCount": 1
+      },
       "errorCategory": null,
       "cleanup": ["no-batch-or-transport-resource-created"],
       "consumerTests": {
+        "rust": {
+          "status": "available",
+          "test": "execute_lifecycle_tests::ordered_mixed_batch_outcomes_preserve_ids_and_use_one_exchange"
+        },
+        "c": {
+          "status": "available",
+          "test": "generated_public_client_abi_consumer_executes_a_typed_batch_over_mtls"
+        },
         "java": {
-          "status": "blocked",
-          "reason": "The Java facade has no KMIP batch executor or ordered result model.",
-          "test": "org.kmipkit.SharedCapabilityParityFixtureTest#orderedBatchOutcomesRemainUnavailableUntilTheExecutorExists"
+          "status": "available",
+          "test": "org.kmipkit.ClientFacadeTlsIntegrationTest#executionPreservesOrderedMixedOutcomesOverOneMutualTlsExchange"
+        },
+        "python": {
+          "status": "available",
+          "test": "test_batch_result_preserves_ordered_mixed_outcomes_ids_and_pending_correlation"
         }
       }
     },

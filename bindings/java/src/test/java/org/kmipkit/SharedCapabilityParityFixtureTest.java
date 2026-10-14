@@ -78,11 +78,13 @@ final class SharedCapabilityParityFixtureTest {
     }
 
     @Test
-    void orderedBatchOutcomesRemainUnavailableUntilTheExecutorExists() throws IOException {
+    void orderedBatchOutcomesMatchTheSharedFixtureAndUseOneExchange() throws IOException {
         String item = caseById(Files.readString(sharedFixturePath()), BATCH_CASE);
-        assertEquals("ordered_batch_outcomes", stringField(item, "capability"));
-        assertFalse(RuntimeMetadata.capabilityIsAvailable("ordered_batch_outcomes"));
-        assertTrue(item.contains("\"javaObservedOutput\": {\"available\": false, \"transportExchangeCount\": 0}"));
+        assertEquals("client_execution", stringField(item, "capability"));
+        assertTrue(RuntimeMetadata.capabilityIsAvailable("client_execution"));
+        assertTrue(item.contains("\"available\": true"));
+        assertTrue(item.contains("\"correlationValueHex\": \"00a17f\""));
+        assertTrue(item.contains("\"transportExchangeCount\": 1"));
     }
 
     @Test
