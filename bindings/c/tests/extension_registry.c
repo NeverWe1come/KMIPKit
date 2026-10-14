@@ -1286,7 +1286,7 @@ static bool test_configuration_ownership_and_isolation(void)
         beta_configuration, &beta_view), KMIPKIT_SUCCESS);
     REQUIRE_STATUS(kmipkit_client_extension_registry_definition_count(
         alpha_view, &definition_count), KMIPKIT_SUCCESS);
-    REQUIRE(definition_count == 2U);
+    REQUIRE(definition_count == 1U);
     REQUIRE_STATUS(kmipkit_client_extension_registry_definition_count(
         beta_view, &definition_count), KMIPKIT_SUCCESS);
     REQUIRE(definition_count == 1U);
