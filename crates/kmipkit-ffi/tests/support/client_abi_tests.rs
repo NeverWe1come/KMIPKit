@@ -13,7 +13,7 @@ use kmipkit_protocol::{AttributeSet, LocateRequest};
 use kmipkit_test_support::EphemeralPki;
 use kmipkit_transport::{
     CertificateInput, ClientIdentity, Endpoint, PrivateKeyInput, RequestDeliveryState,
-    TimeoutPolicy, TransportConfig, TrustSource,
+    RequestOptions, TimeoutLimit, TimeoutPolicy, TransportConfig, TrustSource,
 };
 use rcgen::{
     BasicConstraints, CertificateParams, CertificateRevocationListParams, IsCa, Issuer,
@@ -59,6 +59,23 @@ fn timeout(kind: u32, seconds: u64, nanoseconds: u32) -> kmipkit_timeout_limit_v
         seconds,
         nanoseconds,
         reserved2: 0,
+    }
+}
+
+fn request_options(
+    connect: kmipkit_timeout_limit_v1_t,
+    write: kmipkit_timeout_limit_v1_t,
+    read: kmipkit_timeout_limit_v1_t,
+    total: kmipkit_timeout_limit_v1_t,
+) -> kmipkit_request_options_v1_t {
+    kmipkit_request_options_v1_t {
+        struct_size: u32::try_from(std::mem::size_of::<kmipkit_request_options_v1_t>())
+            .expect("request options fit the ABI size field"),
+        abi_version: 1,
+        connect_timeout: connect,
+        write_timeout: write,
+        read_timeout: read,
+        total_timeout: total,
     }
 }
 
@@ -703,6 +720,49 @@ fn validated_raw_tls_config_accepts_memory_der_crl_and_every_timeout_kind() {
         parsed.timeouts().total(),
         TimeoutLimit::Bounded(std::time::Duration::from_secs(10))
     );
+}
+
+#[test]
+fn request_options_v1_inherits_defaults_and_preserves_zero_and_unbounded_overrides() {
+    let input = request_options(
+        timeout(0, 0, 0),
+        timeout(TRANSPORT_TIMEOUT_BOUNDED, 0, 0),
+        timeout(TRANSPORT_TIMEOUT_UNBOUNDED, 0, 0),
+        timeout(TRANSPORT_TIMEOUT_BOUNDED, 2, 125_000_000),
+    );
+
+    let parsed = request_options_from_v1(&input).expect("request options validate");
+    let expected = RequestOptions::default()
+        .with_write(TimeoutLimit::Bounded(std::time::Duration::ZERO))
+        .with_read(TimeoutLimit::Unbounded)
+        .with_total(TimeoutLimit::Bounded(std::time::Duration::new(2, 125_000_000)));
+    assert_eq!(parsed, expected);
+
+    let effective = TimeoutPolicy::default().with_overrides(&parsed);
+    assert_eq!(effective.connect(), TimeoutPolicy::default().connect());
+    assert_eq!(effective.write(), TimeoutLimit::Bounded(std::time::Duration::ZERO));
+    assert_eq!(effective.read(), TimeoutLimit::Unbounded);
+    assert_eq!(
+        effective.total(),
+        TimeoutLimit::Bounded(std::time::Duration::new(2, 125_000_000))
+    );
+}
+
+#[test]
+fn request_options_v1_rejects_bad_versions_and_timeout_encodings() {
+    let mut input = request_options(
+        timeout(0, 0, 0),
+        timeout(0, 1, 0),
+        timeout(TRANSPORT_TIMEOUT_BOUNDED, 0, 1_000_000_000),
+        timeout(TRANSPORT_TIMEOUT_UNBOUNDED, 1, 0),
+    );
+    assert_eq!(request_options_from_v1(&input).err(), Some(ERROR_INVALID_INPUT));
+
+    input.write_timeout = timeout(0, 0, 0);
+    input.read_timeout = timeout(0, 0, 0);
+    input.total_timeout = timeout(0, 0, 0);
+    input.abi_version = 2;
+    assert_eq!(request_options_from_v1(&input).err(), Some(ERROR_INVALID_INPUT));
 }
 
 #[test]
