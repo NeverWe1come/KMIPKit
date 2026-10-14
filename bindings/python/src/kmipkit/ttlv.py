@@ -68,6 +68,13 @@ class TtlvValueView(NativeHandle):
     _release_name = "kmipkit_ttlv_value_view_release"
 
 
+def _item_type(value: int) -> ItemType:
+    try:
+        return ItemType(value)
+    except ValueError:
+        errors.raise_for_status(4)
+
+
 def raw_tag_from_raw(raw: int) -> RawTag:
     """Create a raw, not yet validated TTLV tag."""
     handle = _new_handle("kmipkit_raw_tag_t", lib.kmipkit_ttlv_raw_tag_create, raw)
@@ -274,7 +281,7 @@ def ttlv_item_view_tag(view: TtlvItemView) -> Tag:
 
 def ttlv_item_view_type(view: TtlvItemView) -> ItemType:
     value = _scalar("uint8_t", lib.kmipkit_ttlv_item_view_type, view._pointer())
-    return ItemType(value)
+    return _item_type(value)
 
 
 def ttlv_item_view_value(view: TtlvItemView) -> TtlvValueView:
@@ -293,7 +300,7 @@ def ttlv_value_view(value: Value) -> TtlvValueView:
 
 def ttlv_value_view_type(view: TtlvValueView) -> ItemType:
     value = _scalar("uint8_t", lib.kmipkit_ttlv_value_view_type, view._pointer())
-    return ItemType(value)
+    return _item_type(value)
 
 
 def ttlv_value_view_structure(view: TtlvValueView) -> TtlvStructureView:

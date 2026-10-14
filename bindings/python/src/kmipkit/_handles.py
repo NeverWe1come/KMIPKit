@@ -21,6 +21,45 @@ _NATIVE_HANDLE_TOKEN = object()
 _NativeHandleT = TypeVar("_NativeHandleT", bound="NativeHandle")
 
 
+def _integer_range(value: int, minimum: int, maximum: int) -> int:
+    """Return a canonical built-in integer after checking a fixed-width range."""
+    if not isinstance(value, int) or isinstance(value, bool):
+        errors.raise_for_status(4)
+    number = int.__index__(value)
+    if number < minimum or number > maximum:
+        errors.raise_for_status(4)
+    return number
+
+
+def _normalize_integer_arguments(
+    function: Callable[..., int], arguments: tuple[object, ...]
+) -> tuple[object, ...]:
+    """Canonicalize C ABI integer inputs before CFFI conversion or ownership transfer."""
+    try:
+        signature = ffi.typeof(function)
+    except (AttributeError, TypeError):
+        return arguments
+    if signature.kind != "function":
+        return arguments
+
+    normalized = list(arguments)
+    for index, argument_type in enumerate(signature.args[: len(arguments)]):
+        name = argument_type.cname
+        if argument_type.kind != "primitive" or not name.endswith("_t"):
+            continue
+        if name.startswith("uint"):
+            minimum = 0
+            maximum = (1 << (ffi.sizeof(argument_type) * 8)) - 1
+        elif name.startswith("int"):
+            width = ffi.sizeof(argument_type) * 8
+            minimum = -(1 << (width - 1))
+            maximum = (1 << (width - 1)) - 1
+        else:
+            continue
+        normalized[index] = _integer_range(normalized[index], minimum, maximum)
+    return tuple(normalized)
+
+
 def synchronized_native_call(function: Callable[..., Any]) -> Callable[..., Any]:
     """Keep wrapper handles alive while one public operation crosses CFFI."""
 
@@ -166,8 +205,9 @@ def _scalar(
 
 def _invoke(function: Callable[..., int], *arguments: object) -> int:
     """Normalize CFFI argument conversion failures without echoing inputs."""
+    normalized = _normalize_integer_arguments(function, arguments)
     try:
-        return int(function(*arguments))
+        return int(function(*normalized))
     except (OverflowError, TypeError, ValueError):
         raise errors.InvalidInputError() from None
 
@@ -178,6 +218,7 @@ def _invoke_consuming(
     consumed_indices: tuple[int, ...],
 ) -> int:
     """Transfer selected handle arguments and call their consuming C ABI function."""
+    normalized_arguments = _normalize_integer_arguments(function, arguments)
     handles: list[tuple[int, NativeHandle]] = []
     seen: set[int] = set()
     for index in consumed_indices:
@@ -196,7 +237,7 @@ def _invoke_consuming(
         # Check every source before transferring any of them.
         for _, handle in handles:
             handle._pointer()
-        call_arguments = list(arguments)
+        call_arguments = list(normalized_arguments)
         tickets: list[tuple[NativeHandle, Any, object | None]] = []
         for index, handle in handles:
             pointer, owner = handle._take()

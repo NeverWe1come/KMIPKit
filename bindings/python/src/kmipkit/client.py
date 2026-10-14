@@ -23,6 +23,7 @@ from ._client_ffi import ffi, lib
 from ._handles import (
     NativeHandle,
     _NATIVE_CALL_LOCK,
+    _integer_range,
     _owned_bytes,
     _wrap_owned_handle,
 )
@@ -35,17 +36,6 @@ _MAX_TRANSPORT_CONFIG_ITEMS = 4_096
 _MAX_U64 = (1 << 64) - 1
 _MIN_I64 = -(1 << 63)
 _MAX_I64 = (1 << 63) - 1
-
-
-def _integer_range(value: int, minimum: int, maximum: int) -> int:
-    if not isinstance(value, int) or isinstance(value, bool):
-        errors.raise_for_status(4)
-    # Invoke the built-in descriptor to bypass rich-comparison overrides on
-    # int subclasses, then retain only the canonical fixed-width value.
-    number = int.__index__(value)
-    if number < minimum or number > maximum:
-        errors.raise_for_status(4)
-    return number
 
 
 def _unsigned(value: int, bits: int, *, allow_zero: bool = True) -> int:
@@ -703,15 +693,17 @@ class Batch(_ClientHandle):
         if not isinstance(item, extensions.ClientBatchItem):
             errors.raise_for_status(4)
         with _NATIVE_CALL_LOCK:
+            batch_pointer = self._pointer()
             item._acquire_ownership_lock()
             try:
-                original, owner = item._take()
+                original = item._pointer()
                 slot = ffi.new(
                     "kmipkit_client_batch_item_t **",
                     ffi.cast("kmipkit_client_batch_item_t *", original),
                 )
+                original, owner = item._take()
                 try:
-                    status = lib.kmipkit_client_batch_add_item(self._pointer(), slot)
+                    status = lib.kmipkit_client_batch_add_item(batch_pointer, slot)
                 except (OverflowError, TypeError, ValueError):
                     item._restore(original, owner)
                     raise errors.InvalidInputError() from None
@@ -867,13 +859,18 @@ class Client(_ClientHandle):
         with _NATIVE_CALL_LOCK:
             batch._acquire_ownership_lock()
             try:
-                original, owner = batch._take()
+                client_pointer = self._pointer()
+                limits_pointer = ffi.cast(
+                    "kmipkit_codec_limits_t *", limits._pointer()
+                )
+                original = batch._pointer()
                 batch_slot = ffi.new("kmipkit_client_batch_t **", original)
+                original, owner = batch._take()
                 try:
                     status = lib.kmipkit_client_execute(
-                        self._pointer(),
+                        client_pointer,
                         batch_slot,
-                        ffi.cast("kmipkit_codec_limits_t *", limits._pointer()),
+                        limits_pointer,
                         response_output,
                     )
                 except (OverflowError, TypeError, ValueError):
@@ -906,13 +903,18 @@ class Client(_ClientHandle):
         with _NATIVE_CALL_LOCK:
             batch._acquire_ownership_lock()
             try:
-                original, owner = batch._take()
+                client_pointer = self._pointer()
+                limits_pointer = ffi.cast(
+                    "kmipkit_codec_limits_t *", limits._pointer()
+                )
+                original = batch._pointer()
                 batch_slot = ffi.new("kmipkit_client_batch_t **", original)
+                original, owner = batch._take()
                 try:
                     status = lib.kmipkit_client_execute_with_options_v1(
-                        self._pointer(),
+                        client_pointer,
                         batch_slot,
-                        ffi.cast("kmipkit_codec_limits_t *", limits._pointer()),
+                        limits_pointer,
                         request_options,
                         response_output,
                     )
