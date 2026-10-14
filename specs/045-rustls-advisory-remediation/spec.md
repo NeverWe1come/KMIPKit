@@ -38,7 +38,7 @@ KMIPKit maintainers need the 1.0 client to use a Rustls release with published f
 - **FR-001**: KMIPKit MUST pin Rustls to a stable 0.23.x release at or above 0.23.46, the minimum patched release stated by the four RustSec advisories affecting 0.23.45 on 2026-10-14.
 - **FR-002**: The primary Cargo lockfile MUST resolve the exact reviewed Rustls pin, and the update MUST NOT change unrelated package versions.
 - **FR-003**: The dependency-policy check MUST pass for both the root and fuzz workspaces with online advisory refresh and no exception for the identified Rustls advisories.
-- **FR-004**: The update MUST preserve the approved Rustls TLS backend and feature set, TLS 1.3-only/mTLS product policy, and existing public API behavior.
+- **FR-004**: The update MUST preserve the approved Rustls TLS backend and feature set and the TLS 1.3-only mutual TLS policy.
 - **FR-005**: The change MUST include executable regression coverage, requirement traceability, and implementation evidence for the advisory disposition and verification.
 
 ### Key Entities

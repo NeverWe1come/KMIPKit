@@ -2,5 +2,5 @@ requirement_id,configuration_path,implementation_path,test_reference
 FR-001,Cargo.toml,Cargo.toml,scripts/tests/test_rustls_advisory_pin.py::RustlsAdvisoryPinTests.test_workspace_pin_is_exact_stable_patched_release
 FR-002,Cargo.lock,Cargo.lock,scripts/tests/test_rustls_advisory_pin.py::RustlsAdvisoryPinTests.test_lockfile_matches_the_exact_workspace_pin
 FR-003,.cargo/deny.toml,scripts/Test-DependencyPolicy.ps1,specs/045-rustls-advisory-remediation/implementation-evidence.md
-FR-004,Cargo.toml,crates/kmipkit-transport/Cargo.toml,scripts/tests/test_rustls_advisory_pin.py::RustlsAdvisoryPinTests.test_workspace_features_preserve_the_approved_backend
+FR-004,Cargo.toml,crates/kmipkit-transport/Cargo.toml,scripts/tests/test_rustls_advisory_pin.py::RustlsAdvisoryPinTests.test_workspace_features_preserve_the_approved_backend;crates/kmipkit-transport/tests/unit/tls_policy_tests.rs::caller_ca_and_matching_mtls_identity_build_a_tls13_only_config;crates/kmipkit-transport/tests/unit/tls_policy_tests.rs::untrusted_chain_expired_leaf_and_hostname_mismatch_fail_closed
 FR-005,specs/045-rustls-advisory-remediation/spec.md,specs/045-rustls-advisory-remediation/implementation-evidence.md,scripts/tests/test_rustls_advisory_pin.py::RustlsAdvisoryPinTests.test_traceability_covers_every_functional_requirement
