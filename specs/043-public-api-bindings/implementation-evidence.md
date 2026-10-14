@@ -2,9 +2,9 @@
 
 ## T015 — Manifest-backed handle lifecycle and C status contract
 
-This task closes the existing approved C ABI lifecycle implementation against the v2 manifest; it required no production-code change. Opaque handles are represented by one `Arc<Handle>` envelope with a private kind discriminator. Accessors reject null and wrong-kind live handles before reading payloads; views retain their owning handle, so releasing the original owner does not invalidate a child view. Every manifest opaque-handle type declares library ownership and its matching release symbol. Input byte spans carry explicit `uint64_t` byte lengths, apply bounds before dereferencing, and validate UTF-8 before model construction. C status values remain the manifest-declared stable codes, and safe category/cause/delivery snapshots are stored per thread. Java and Python resource wrappers reject operations on closed handles and serialize closure against native use.
+This task closes the existing approved C ABI lifecycle implementation against the v2 manifest. Opaque handles use a private `Arc<Handle>` envelope with a kind discriminator; the T022 follow-up below adds a process-local registry of keyed, non-reused tokens so foreign handle values are checked before payload access. Views retain their owning handle, so releasing the original owner does not invalidate a child view. Every manifest opaque-handle type declares library ownership and its matching release symbol. Input byte spans carry explicit `uint64_t` byte lengths, apply bounds before dereferencing, and validate UTF-8 before model construction. C status values remain the manifest-declared stable codes, and safe category/cause/delivery snapshots are stored per thread. Java and Python resource wrappers reject operations on closed handles and serialize closure against native use.
 
-The C release ABI accepts an opaque pointer by value, so it cannot clear the caller's variable. A caller must set its local variable to `NULL` after release; safe C accessors reject that null sentinel. A caller must not reuse a C pointer after release; use-after-release, dangling, and foreign pointers remain caller-precondition violations and are not dereferenced or claimed to be safely detectable. This preserves the accepted ABI and avoids a process-global handle registry or tombstone allocation scheme. Java/Python wrappers retain local closed state and reject operations after close.
+The C release ABI accepts an opaque pointer by value, so it cannot clear the caller's variable. A caller should set its local variable to `NULL` after release. Before the T022 follow-up, stale, dangling, and foreign handle values were treated as caller-precondition violations; the follow-up replaces that limitation with registry lookup and keyed, non-reused tokens while preserving the C ABI. Java/Python wrappers retain local closed state and reject operations after close.
 
 | Verification | Command or evidence | Result |
 |---|---|---|
@@ -1461,12 +1461,50 @@ existing handle kinds; T076 adds new handle kinds to the same bridge. It is
 recorded under T022 for a Java ownership/bridge hardening follow-up and must be
 closed before 1.0 release. No unauthenticated network path was identified.
 
+### T022 security follow-up (in progress)
+
+- Red commit `01254256` adds an isolated-process FFI regression for forged,
+  wrong-kind, and stale handle values. Before the registry change, the forged
+  `0x1000` token terminated the child process while the parent test reported a
+  failure, keeping the unsafe dereference out of the test runner process.
+- Red commit `6bd59a62` adds a low-token enumeration case. The sequential
+  candidate failed as expected when value `1` reached the live handle.
+- Red commit `9e2ae3a2` adds a deterministic cycle-walk bound test; it failed
+  to compile before the bounded helper and limit were implemented.
+- Green commit `b04d7d70` stores each `Arc<Handle>` in a global
+  mutex-protected table. An AWS-LC-generated HMAC-SHA-256 key drives an
+  eight-round Feistel permutation of a monotonic sequence; cycle walking keeps
+  tokens nonzero and within the positive pointer domain. Each walk performs at
+  most 128 permutations and returns `ERROR_RESOURCE_LIMIT` on exhaustion; the
+  sequence remains consumed. The induced mapping is bijective, so released
+  tokens are never reused without retaining an unbounded tombstone set. Lookups
+  validate liveness and kind without dereferencing token values. Both release
+  and consuming operations remove entries through the same checked path. C
+  signatures and release symbols remain unchanged. Tokens must not be persisted
+  across process restarts or transferred between library images; numeric
+  collisions across independent images remain theoretically possible.
+- Focused Windows checks pass for the cycle-walk limit, keyed-token
+  uniqueness/range, exhaustion, guessed low values, forged access/release,
+  wrong-kind access/release, valid access after rejected wrong-kind release,
+  repeated release, and stale access. `cargo clippy -p kmipkit-ffi
+  --all-targets --all-features -- -D warnings` and
+  `cargo fmt --all --check` pass; `cargo test -p kmipkit-ffi --all-features`
+  passes 64 unit and 4 C consumer tests. `mvn --batch-mode --file
+  bindings/java/pom.xml verify` passes 145 tests (3 documented skips) and the
+  configured JaCoCo gate. The JNI integration test also calls release with a
+  forged positive `long` and completes safely. The independent review found no
+  surviving concrete bypass in the candidate and its bounded-walk concern is
+  addressed. Cross-platform CI and the full parent T022 acceptance review
+  remain pending; the parent task remains unchecked.
+
 GitHub Actions run `38545593697` completed successfully on PR head
 `bd4390023bd24dbf0e245190fdf1f1e6b5013f12`, including the Rust stable/MSRV
 matrix on Linux, Windows, and macOS; selected coverage gates; Java/JNI and C
 consumers; Python bindings and coverage; sanitizers; dependency policy; and
 normative inventory checks. The informational nightly and inactive-release
-schedule checks were skipped by workflow conditions. T076 is complete; the
-Java bridge finding remains explicitly assigned to T022 and blocks the 1.0
-security exit gate until resolved. PR #104 remains a draft while the other
-KMIPKIT-0043 tasks continue.
+schedule checks were skipped by workflow conditions. T076 is complete. The
+Java bridge finding assigned to T022 has an implementation in local commits
+`01254256`, `6bd59a62`, `9e2ae3a2`, and `b04d7d70`; local Windows Rust/C and
+Java/JNI checks pass. The release security exit gate remains open until the
+updated branch passes cross-platform CI and the full T022 acceptance review.
+PR #104 remains a draft while the other KMIPKIT-0043 tasks continue.

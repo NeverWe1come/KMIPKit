@@ -60,6 +60,25 @@ secrets. Snapshots contain no source strings or request payloads.
 - Input memory is borrowed only for the duration of the call.
 - Results are Rust-owned handles or buffers with matching free functions.
 - Callers never use the platform allocator to release Rust memory.
+- Opaque handle pointer values are process-local tokens backed by a Rust
+  live-handle table. A per-library random HMAC-SHA-256 key drives an eight-round
+  Feistel permutation over the pointer-width domain; cycle walking excludes null
+  and high-bit values required to keep handles representable as positive Java
+  `long` values. Each walk is limited to 128 permutation steps and returns
+  `KMIPKIT_ERROR_RESOURCE_LIMIT` if it cannot find an in-range token; the
+  sequence is consumed on that failure. The internal sequence is monotonic, but
+  its tokens are keyed and are never reused, including after release. KMIPKit
+  reads only address bits as table keys and never dereferences a caller-supplied
+  handle. Tokens are opaque identifiers, not an isolation boundary: callers
+  that obtain a valid token can reuse it. Callers must not persist handles over
+  process restarts or transfer them between library images. Independent images
+  use separate registries, but their numeric tokens can theoretically collide.
+- Each lookup validates that the token is live and has the expected handle
+  kind before reading its payload. Accessors and consuming operations return
+  `KMIPKIT_ERROR_INVALID_INPUT` for forged, stale, null, or wrong-kind handles.
+  The void release functions ignore those invalid values and repeated release.
+  The table serializes lookup, consumption, and release; a successful lookup
+  retains an `Arc` owner for the duration of the operation.
 - Text is UTF-8 with an explicit length.
 - Borrowed views with parent-dependent lifetimes are avoided except for the
   zero-copy C spans returned by `ClientBatchItemResponse` accessors. The child
