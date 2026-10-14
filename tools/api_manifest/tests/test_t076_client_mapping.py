@@ -202,7 +202,7 @@ C_FIELD_TARGETS = {
         "kmipkit.client.TransportConfig.total_timeout",
     ),
     "kmipkit_transport_config_v1_t.trust_certificates": (
-        ("rust-kmipkit-transport", "kmipkit_transport::CertificateInput"),
+        ("rust-kmipkit-transport", "kmipkit_transport::TrustSource::certificate_authorities"),
         "org.kmipkit.extensions.TransportConfiguration.Builder",
         "kmipkit.client.TrustSource.certificate_authorities",
     ),
@@ -505,10 +505,15 @@ class T076ClientMappingTests(unittest.TestCase):
         ):
             self.assertIn(symbol, java)
         for symbol in (
-            "CredentialEncoding.PEM", "CredentialEncoding.DER",
+            "class CredentialEncoding(IntEnum):",
             "def memory(", "def file(", "def certificate_authorities(",
         ):
             self.assertIn(symbol, python)
+        for export in (
+            "kmipkit.client.CredentialEncoding.PEM",
+            "kmipkit.client.CredentialEncoding.DER",
+        ):
+            self.assertIn(("python-kmipkit", export), declarations)
         for symbol in (
             "TRANSPORT_SOURCE_MEMORY => copy_transport_span",
             "TRANSPORT_SOURCE_FILE =>",

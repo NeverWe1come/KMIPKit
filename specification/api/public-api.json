@@ -211573,7 +211573,7 @@
       "languageMappings": {
         "rust": {
           "packageId": "rust-kmipkit-transport",
-          "name": "kmipkit_transport::CertificateInput"
+          "name": "kmipkit_transport::TrustSource::certificate_authorities"
         },
         "c": {
           "packageId": "c-kmipkit",
@@ -217615,14 +217615,14 @@
     {
       "packageId": "c-kmipkit",
       "exportName": "kmipkit_transport_input_v1_t.data",
-      "reason": "This exact C byte span is a representation carrier for the parent transport input value, not an independent semantic value.",
+      "reason": "This exact nested C byte span field carries the bytes or file-path text for its parent transport input record; it is not an independently selectable semantic value. Its meaning comes from the parent configuration field together with source_kind and encoding.",
       "approvalSource": {
         "kind": "feature-specification",
         "path": "specs/043-public-api-bindings/spec.md",
         "status": "Approved",
         "evidence": "**Status**: Approved for implementation"
       },
-      "evidence": "KMIPKIT-0043-FR-007 defines the C span representation. The full input value is mapped through its encoding and source-kind selectors plus the parent configuration field; approved PEM/DER and permitted file/memory modes are covered by KMIPKIT-0013-FR-003 and KMIPKIT-0013-FR-004."
+      "evidence": "KMIPKIT-0043-FR-021 inventories this exact parent member as an exclusion while retaining its generated fixed-width layout. KMIPKIT-0043-FR-007 defines the nested kmipkit_byte_span_v1_t carrier; its data pointer and length are separately excluded exact ABI fields. The parent configuration fields identify client certificate chain, private key, trust certificates, or CRLs, and source_kind/encoding select the value mode: certificates and keys support PEM/DER from memory or selected files, trust certificates support PEM/DER from memory or selected files, and CRLs support PEM/DER from memory only (file-backed CRLs are rejected). These source contracts are KMIPKIT-0013-FR-003 and KMIPKIT-0013-FR-004."
     },
     {
       "packageId": "java-kmipkit",
