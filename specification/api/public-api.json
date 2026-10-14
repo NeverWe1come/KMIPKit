@@ -217922,6 +217922,18 @@
     },
     {
       "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.BatchItemResult.__init__",
+      "reason": "This exact Python record constructor is an idiomatic dataclass convenience for instantiating a result DTO from copied response metadata; it does not execute or alter a KMIP operation.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-012 and KMIPKIT-0043-FR-021. The shared result capability remains the read-only ClientBatchResponse traversal and the mapped BatchItemResult type and fields; this exclusion applies only to the exact constructor path."
+    },
+    {
+      "packageId": "python-kmipkit",
       "exportName": "kmipkit.client.BatchItemResult.__delattr__",
       "reason": "This exact member is generated Python dataclass value or frozen-instance machinery, not an independently specified cross-language product capability.",
       "approvalSource": {
