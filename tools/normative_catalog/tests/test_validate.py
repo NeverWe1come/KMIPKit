@@ -5222,11 +5222,13 @@ class CatalogValidationTests(unittest.TestCase):
             {"KMIPKIT-REQ-SPEC-6.1.23-002-001"},
             "the approved Table 232 contract must remain linked to its existing stable label",
         )
-        reviewed_ids.update(source_table_contract_requirement_ids)
-        self.assertTrue(
-            source_table_contract_requirement_ids <= reviewed_ids,
-            "source-table contracts must be included in reviewed stable-label dispositions",
+        unaccounted_before_table_contracts = catalog_ids - reviewed_ids
+        self.assertEqual(
+            unaccounted_before_table_contracts,
+            source_table_contract_requirement_ids,
+            "source-table contracts must account for exactly the remaining stable-label dispositions",
         )
+        reviewed_ids.update(source_table_contract_requirement_ids)
         missing = sorted(catalog_ids - reviewed_ids)
         unknown = sorted(reviewed_ids - catalog_ids)
         self.assertEqual(
