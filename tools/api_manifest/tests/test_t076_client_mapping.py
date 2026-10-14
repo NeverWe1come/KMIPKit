@@ -1273,6 +1273,142 @@ class T076ClientMappingTests(unittest.TestCase):
             {row["exportName"] for row in self.manifest["publicDeclarations"]},
         )
 
+    def test_java_client_outcomes_and_owned_handle_lifecycles_are_accounted(self) -> None:
+        declarations = {
+            (row["packageId"], row["exportName"]): row
+            for row in self.manifest["publicDeclarations"]
+        }
+        exclusions = {
+            (row["packageId"], row["exportName"]): row
+            for row in self.manifest["approvedExclusions"]
+        }
+
+        outcome_mappings = {
+            "org.kmipkit.extensions.BatchOutcomeKind": (
+                "type",
+                "kmipkit_client::ClientBatchItemResponse::outcome",
+                "kmipkit_client_batch_item_metadata_v1_t.outcome_kind",
+                "org.kmipkit.extensions.BatchOutcomeKind",
+                "kmipkit.client.BatchOutcome",
+            ),
+            "org.kmipkit.extensions.BatchOutcomeKind.<init>": (
+                "java-member",
+                "kmipkit_client::ClientBatchItemResponse::outcome",
+                "kmipkit_client_batch_item_metadata_v1_t.outcome_kind",
+                "org.kmipkit.extensions.BatchOutcomeKind.<init>",
+                "kmipkit.client.BatchOutcome",
+            ),
+            "org.kmipkit.extensions.BatchOutcomeKind.raw": (
+                "java-member",
+                "kmipkit_client::ClientBatchItemResponse::outcome",
+                "kmipkit_client_batch_item_metadata_v1_t.outcome_kind",
+                "org.kmipkit.extensions.BatchOutcomeKind.raw",
+                "kmipkit.client.BatchItemResult.outcome",
+            ),
+            "org.kmipkit.extensions.BatchOutcomeKind.COMPLETED_VALUE": (
+                "java-member",
+                "kmipkit_client::ClientBatchItemResponse::outcome",
+                "kmipkit_client_batch_item_metadata_v1_t.outcome_kind",
+                "org.kmipkit.extensions.BatchOutcomeKind.COMPLETED_VALUE",
+                "kmipkit.client.BatchOutcome.COMPLETED",
+            ),
+            "org.kmipkit.extensions.BatchOutcomeKind.PENDING_VALUE": (
+                "java-member",
+                "kmipkit_client::ClientBatchItemResponse::outcome",
+                "kmipkit_client_batch_item_metadata_v1_t.outcome_kind",
+                "org.kmipkit.extensions.BatchOutcomeKind.PENDING_VALUE",
+                "kmipkit.client.BatchOutcome.PENDING",
+            ),
+        }
+        for path, (kind, rust_name, c_name, java_name, python_name) in outcome_mappings.items():
+            with self.subTest(outcome=path):
+                row = declarations.get(("java-kmipkit", path))
+                self.assertIsNotNone(row, f"unaccounted Java outcome export: {path}")
+                self.assertEqual(kind, row["kind"])
+                self.assertEqual("declared", row["declarationState"])
+                self.assertIn("KMIPKIT-0043-FR-012", row["requirementIds"])
+                self.assertEqual(
+                    {
+                        "rust": {"packageId": "rust-kmipkit-client", "name": rust_name},
+                        "c": {"packageId": "c-kmipkit", "name": c_name},
+                        "java": {"packageId": "java-kmipkit", "name": java_name},
+                        "python": {"packageId": "python-kmipkit", "name": python_name},
+                    },
+                    row["languageMappings"],
+                )
+
+        for path in (
+            "org.kmipkit.extensions.BatchOutcomeKind.isCompleted",
+            "org.kmipkit.extensions.BatchOutcomeKind.isPending",
+        ):
+            with self.subTest(convenience=path):
+                exclusion = exclusions.get(("java-kmipkit", path))
+                self.assertIsNotNone(exclusion, f"unclassified Java convenience export: {path}")
+                self.assertIn("predicate", exclusion["reason"].lower())
+                self.assertIn("KMIPKIT-0043-FR-012", exclusion["evidence"])
+                self.assertIn("KMIPKIT-0043-FR-021", exclusion["evidence"])
+
+        lifecycle_mappings = (
+            (
+                "client_execution",
+                "kmipkit_client::Client",
+                "kmipkit_client_release",
+                "org.kmipkit.extensions.Client.close",
+                "kmipkit.client.Client.close",
+            ),
+            (
+                "client_batch_model",
+                "kmipkit_client::ClientBatch",
+                "kmipkit_client_batch_release",
+                "org.kmipkit.extensions.ClientBatch.close",
+                "kmipkit.client.Batch.close",
+            ),
+            (
+                "client_execution",
+                "kmipkit_client::ClientBatchItemResponse",
+                "kmipkit_client_batch_item_response_release",
+                "org.kmipkit.extensions.ClientBatchItemResult.close",
+                "kmipkit.client.BatchItemResult.close",
+            ),
+            (
+                "client_execution",
+                "kmipkit_client::ClientBatchResponse",
+                "kmipkit_client_batch_response_release",
+                "org.kmipkit.extensions.ClientBatchResponse.close",
+                "kmipkit.client.BatchResult.close",
+            ),
+        )
+        for capability, rust_type, c_release, java_close, python_close in lifecycle_mappings:
+            for package_id, path in (
+                ("c-kmipkit", c_release),
+                ("java-kmipkit", java_close),
+                ("python-kmipkit", python_close),
+            ):
+                with self.subTest(lifecycle=path):
+                    row = declarations.get((package_id, path))
+                    self.assertIsNotNone(row, f"unaccounted lifecycle export: {path}")
+                    self.assertEqual("declared", row["declarationState"])
+                    self.assertEqual(capability, row["capabilityId"])
+                    self.assertEqual("native-handle-release", row["mappingSemantics"])
+                    self.assertEqual(
+                        {
+                            "rust": {"packageId": "rust-kmipkit-client", "name": rust_type},
+                            "c": {"packageId": "c-kmipkit", "name": c_release},
+                            "java": {"packageId": "java-kmipkit", "name": java_close},
+                            "python": {"packageId": "python-kmipkit", "name": python_close},
+                        },
+                        row["languageMappings"],
+                    )
+                    self.assertNotIn((package_id, path), exclusions)
+
+        config_close = exclusions.get(
+            ("java-kmipkit", "org.kmipkit.extensions.TransportConfiguration.close")
+        )
+        self.assertIsNotNone(config_close)
+        self.assertIn("transport config release", config_close["reason"].lower())
+        self.assertIn("KMIPKIT-0043-FR-007", config_close["evidence"])
+
+
 
 if __name__ == "__main__":
     unittest.main()
