@@ -101727,7 +101727,7 @@
       "summary": "Include the required Vendor Identification member when its enclosing structure is present.",
       "role": "client",
       "direction": "both",
-      "condition": "The corresponding Attribute Reference name or tag form is used.",
+      "condition": "vendor-name form of Attribute Reference",
       "scope_state": "client_1_0",
       "element_ids": [
         "KMIPKIT-ELEM-STRUCTURE-MEMBER-5-5-VENDOR-IDENTIFICATION"
@@ -101768,7 +101768,7 @@
       "summary": "Include the required Attribute Name member when its enclosing structure is present.",
       "role": "client",
       "direction": "both",
-      "condition": "The corresponding Attribute Reference name or tag form is used.",
+      "condition": "vendor-name form of Attribute Reference",
       "scope_state": "client_1_0",
       "element_ids": [
         "KMIPKIT-ELEM-STRUCTURE-MEMBER-5-5-ATTRIBUTE-NAME"
@@ -101809,7 +101809,7 @@
       "summary": "Include the required Attribute Reference member when its enclosing structure is present.",
       "role": "client",
       "direction": "both",
-      "condition": "The corresponding Attribute Reference name or tag form is used.",
+      "condition": "tag form of Attribute Reference",
       "scope_state": "client_1_0",
       "element_ids": [
         "KMIPKIT-ELEM-STRUCTURE-MEMBER-5-5-ATTRIBUTE-REFERENCE"
