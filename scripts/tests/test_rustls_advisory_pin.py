@@ -7,6 +7,7 @@ import re
 import tomllib
 import unittest
 from pathlib import Path
+from typing import Any
 
 
 REPOSITORY_ROOT = Path(__file__).resolve().parents[2]
@@ -16,31 +17,36 @@ TRACEABILITY = REPOSITORY_ROOT / "specification" / "compliance" / "requirements"
 PATCHED_FLOOR = (0, 23, 46)
 
 
+def workspace_rustls_dependency() -> dict[str, Any]:
+    manifest = tomllib.loads(MANIFEST.read_text(encoding="utf-8"))
+    return manifest["workspace"]["dependencies"]["rustls"]
+
+
+def version_components(version: str) -> tuple[int, ...]:
+    return tuple(int(part) for part in version.removeprefix("=").split("."))
+
+
 class RustlsAdvisoryPinTests(unittest.TestCase):
     def test_workspace_pin_is_exact_stable_patched_release(self) -> None:
-        manifest = tomllib.loads(MANIFEST.read_text(encoding="utf-8"))
-        rustls = manifest["workspace"]["dependencies"]["rustls"]
+        rustls = workspace_rustls_dependency()
         version = rustls["version"]
 
         self.assertRegex(version, r"^=0\.23\.\d+$", "Rustls must remain an exact stable 0.23.x pin.")
-        components = tuple(int(part) for part in version[1:].split("."))
         self.assertGreaterEqual(
-            components,
+            version_components(version),
             PATCHED_FLOOR,
             "Rustls must meet the >=0.23.46 patched floor for RUSTSEC-2026-0346 through -0349.",
         )
 
     def test_lockfile_matches_the_exact_workspace_pin(self) -> None:
-        manifest = tomllib.loads(MANIFEST.read_text(encoding="utf-8"))
         lockfile = tomllib.loads(LOCKFILE.read_text(encoding="utf-8"))
-        expected_version = manifest["workspace"]["dependencies"]["rustls"]["version"][1:]
+        expected_version = workspace_rustls_dependency()["version"].removeprefix("=")
         resolved = [package["version"] for package in lockfile["package"] if package["name"] == "rustls"]
 
         self.assertEqual(resolved, [expected_version], "Cargo.lock must resolve only the exact workspace Rustls pin.")
 
     def test_workspace_features_preserve_the_approved_backend(self) -> None:
-        manifest = tomllib.loads(MANIFEST.read_text(encoding="utf-8"))
-        rustls = manifest["workspace"]["dependencies"]["rustls"]
+        rustls = workspace_rustls_dependency()
 
         self.assertIs(rustls["default-features"], False)
         self.assertEqual(set(rustls["features"]), {"aws_lc_rs", "std"})

@@ -33,7 +33,7 @@
 
 ### Refactor and traceability
 
-- [ ] T007 Add the final advisory/test/policy evidence to `specs/045-rustls-advisory-remediation/implementation-evidence.md`, link FR-001 through FR-005 in `specification/compliance/requirements/KMIPKIT-0045.csv`, and update `docs/security/dependency-policy.md` only if needed to explain the concrete remediation. Keep behavioral and policy code unchanged; commit this documentation and traceability Refactor separately.
+- [x] T007 Refactor the regression contract in `scripts/tests/test_rustls_advisory_pin.py` to share manifest parsing, preserve all four passing assertions, and record Red/Green/policy evidence in `specs/045-rustls-advisory-remediation/implementation-evidence.md`. Keep runtime and policy behavior unchanged; verify `specification/compliance/requirements/KMIPKIT-0045.csv` covers every FR and commit this Refactor separately with DCO sign-off (`refactor(test): share rustls pin parsing`).
 
 ## Phase 4: Polish and independent review
 
