@@ -444,7 +444,16 @@ uv pip install --offline --no-deps --python <smoke-root>/consumer-env/Scripts/py
 python -B ../../tools/native_package_smoke/python_smoke.py --consumer-python <smoke-root>/consumer-env/Scripts/python.exe --wrong-abi-library <smoke-root>/wrong-abi.dll --smoke-root <smoke-root>
 ```
 
-Result: Maturin built the wheel offline; CFFI 1.17.1 and the wheel were installed offline; output was `installed Python wheel load, missing-library, and ABI mismatch probes passed offline` (exit 0). The focused workflow tests assert that this wheel smoke and Java packaged probes are wired to the same three CI OS labels. Remote Ubuntu/macOS results and a fresh final-head three-OS CI run are pending; T028 remains unchecked until that matrix passes.
+Result: Maturin built the wheel offline; CFFI 1.17.1 and the wheel were installed offline; output was `installed Python wheel load, missing-library, and ABI mismatch probes passed offline` (exit 0). The workflow contracts assert that the wheel smoke and Java packaged probes are wired to the same three CI OS labels. Remote Ubuntu/macOS results and a fresh final-head three-OS CI run are pending; T028 remains unchecked until that matrix passes.
+
+### T028 QA correction — retain the Java smoke matrix in the contract
+
+| Phase | Verification | Result |
+|---|---|---|
+| Red | Temporarily remove `macos-latest` from the Java job matrix and run `WorkflowContractTests.test_java_package_loader_smoke_runs_offline_on_every_platform` | Expected failure: the contract reports the required three-platform matrix missing. The workflow file was restored byte-for-byte immediately afterward. |
+| Green | Run the focused Java workflow contract, then `python -m unittest scripts.tests.test_workflow -v` | PASS: focused contract passes against the restored workflow; all 44 workflow contracts pass. |
+
+This guards the Java smoke's Ubuntu, Windows, and macOS coverage against accidental matrix removal. It does not replace final-head remote CI.
 
 ## T011 — CI follow-up for capability, generated C docs, and schema payload safety
 

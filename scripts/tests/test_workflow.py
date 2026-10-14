@@ -336,6 +336,7 @@ class WorkflowContractTests(unittest.TestCase):
     def test_java_package_loader_smoke_runs_offline_on_every_platform(self) -> None:
         contents = self.require_workflow()
         java_job = self.require_job(contents, "language-java")
+        self.assertIn("os: [ubuntu-latest, windows-2022, macos-latest]", java_job)
 
         prime = self.require_named_step(java_job, "Prime Gradle Java compile dependencies")
         self.assertIn("compileJava", prime.group(1))
