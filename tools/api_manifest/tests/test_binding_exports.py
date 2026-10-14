@@ -404,6 +404,41 @@ class BindingExportAuditTests(unittest.TestCase):
         self.assertEqual(constructor["location"], "inherited:kmipkit._handles.NativeHandle:2")
         self.assertTrue(result["complete"])
 
+    def test_python_inventory_excludes_internal_lifecycle_hooks_but_keeps_public_protocol(self):
+        sources = {
+            "kmipkit/_handles.py": textwrap.dedent("""
+                class NativeHandle:
+                    def __init__(self, handle): ...
+                    def __del__(self): ...
+                    def close(self): ...
+                    def __enter__(self): ...
+                    def __exit__(self, *args): ...
+            """),
+            "kmipkit/client.py": textwrap.dedent("""
+                from dataclasses import dataclass
+                from ._handles import NativeHandle
+                __all__ = ["ClientConfig"]
+
+                @dataclass
+                class ClientConfig(NativeHandle):
+                    endpoint: str
+
+                    def __post_init__(self): ...
+            """),
+        }
+        result = AUDIT.inventory_python_sources(sources)
+        names = {row["exportName"] for row in result["declarations"]}
+        public_type = "kmipkit.client.ClientConfig"
+        self.assertTrue({
+            f"{public_type}.__init__",
+            f"{public_type}.close",
+            f"{public_type}.__enter__",
+            f"{public_type}.__exit__",
+        }.issubset(names))
+        self.assertNotIn(f"{public_type}.__post_init__", names)
+        self.assertNotIn(f"{public_type}.__del__", names)
+        self.assertTrue(result["complete"])
+
     def test_python_inventory_includes_public_instance_fields_assigned_in_init(self):
         source = textwrap.dedent("""
             class BatchResult:

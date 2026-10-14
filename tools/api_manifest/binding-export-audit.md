@@ -32,6 +32,33 @@ visible module definitions, imported names, class members, and inherited
 members from private helper bases. Unsupported dynamic export expressions,
 unresolved imports, duplicate paths, or ambiguous overloads remain issues.
 
+For Python dataclasses, the scanner resolves only statically imported
+`dataclasses.dataclass` decorators and literal boolean options. It inventories
+generated constructors, representation/equality/order/hash methods, frozen
+assignment guards, and dataclass metadata fields. It records the constructor
+signature from field annotations and literal defaults without executing class
+code or decorators. A dynamic dataclass option produces an issue instead of a
+partial inventory.
+
+The scanner's class-member boundary is intentionally narrower than Python's
+entire runtime object model. It inventories package-facing constructors,
+ordinary public members, context-manager methods, and the implemented public
+special-method protocols in `_PYTHON_PUBLIC_DUNDER_METHODS`; it does not
+enumerate methods inherited from `object`. The dataclass `__post_init__` hook
+is an initialization-time validation/normalization callback, not a package
+operation. The private handle base's `__del__` is best-effort cleanup; explicit
+`close` and context-manager methods remain the supported lifecycle surface.
+The private handle base's `__repr__` is a handle-state diagnostic, not a
+public value representation; dataclass-generated public value representations
+remain inventoried. Their sensitive inputs are hidden by `repr=False` fields
+and are covered by `bindings/python/tests/test_client.py` tests
+`test_secret_bearing_client_records_redact_repr` and
+`test_endpoint_direct_constructor_enforces_text_shape_and_repr_redaction`.
+Public constructors inherited from package-private bases are still observed
+and must be reconciled. In particular, observing an inherited raw-handle
+constructor does not approve it as a product construction path; it remains a
+separate ownership/security review item until resolved.
+
 The report is deterministic and omits timestamps and temporary paths. Exit code
 0 from `--check` means every package exactly matches the manifest and every
 scanner completed; exit code 1 means a completed report has discrepancies or
@@ -41,11 +68,11 @@ does not satisfy readiness or parity. T011 requires complete scans and exact
 matching; a blocked row cannot compensate for a missing manifest record, stale
 record, kind mismatch, duplicate, unsupported export, or traversal issue.
 
-## Current snapshot
+## Historical snapshot
 
-The current Windows x86-64 snapshot is checked in at
+The earlier Windows x86-64 snapshot is checked in at
 `specs/043-public-api-bindings/reports/binding-export-report-2026-10-12.json`.
-The complete C/Java/Python audit command produced exit code 0:
+The prior C/Java/Python audit command produced exit code 0 at that checkpoint:
 
 | Package | Scanner complete | Observed | Manifest | Exact matches | Missing | Stale | Kind mismatches | Issues |
 | --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
@@ -64,12 +91,24 @@ exclusions apply only to the shared cross-language capability inventory. The pat
 preserving jitterentropy. CI repeats a C-only header/binary/manifest audit on
 Windows, Linux, and macOS using the library already built by the C job.
 
-This snapshot verifies the binding languages only; it does **not** close T011.
-The Rust export crawler and full Rust inventory reconciliation remain open and
-must pass their own exhaustive audit and QA review before T011 is complete.
+This snapshot predates the T076 mapping and expanded Python source inventory.
+It is historical evidence only and is not the current binding-export gate.
+T011 is open while the refreshed report and all current declarations are
+reconciled; the Rust export crawler also requires its own exhaustive audit and
+QA review before T011 is complete.
 
 The scanner does not decide whether an unexpected native export should be
 removed or represented as an API, whether a public declaration needs an
 approved owner, or how overload signatures should be keyed. Those decisions
 must be made under the approved 0043 contract; until reconciled, the report is
 evidence of an open gate and does not close T011.
+
+## Current reconciliation status
+
+The checked-in report is being refreshed after the scanner began accounting for
+dataclass-generated members, constructor signatures, and inherited public
+constructors. Do not use the historical counts above as current results. The
+latest report must be regenerated with the pinned audit tool and reconciled
+against exact manifest paths and kinds before claiming a passing `--check` or
+closing T011. T076 and dependent T021/T024 remain open while shared client
+surface promotion and four-language export reconciliation are incomplete.

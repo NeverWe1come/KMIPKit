@@ -789,3 +789,32 @@ selectors/constructor families, while `client_private_key` maps to the Rust
 |---|---|---|---|
 | Red | `72152b97` | `uv run --offline --no-project --with-requirements tools/api_manifest/requirements-test.txt python -B -m unittest tools.api_manifest.tests.test_t076_client_mapping.T076ClientMappingTests.test_c_transport_and_result_fields_are_semantically_mapped_or_exactly_excluded tools.api_manifest.tests.test_t076_client_mapping.T076ClientMappingTests.test_transport_input_mappings_cover_specified_encodings_and_sources tools.api_manifest.tests.test_t076_client_mapping.T076ClientMappingTests.test_endpoint_kind_mapping_names_the_constructor_selection tools.api_manifest.tests.test_t076_client_mapping.T076ClientMappingTests.test_c_field_targets_are_exact_ready_public_exports -v` | Expected failures: representation fields were still declared, four target types were blocked, and endpoint constructor evidence was absent. |
 | Green | This change | `uv run --offline --no-project --with-requirements tools/api_manifest/requirements-test.txt python -B -m unittest tools.api_manifest.tests.test_t076_client_mapping -v`; `python -B tools/api_manifest/generate.py --write`; `python -B tools/api_manifest/generate.py --check`; `git diff --check` | PASS: all 15 T076 mapping regressions; all 12 generated outputs are current. The generated export audit is refreshed separately and still reports Java/Python inventory gaps, so T011/T076/T021/T024 remain open. |
+
+### T011 Python generated-export inventory — open reconciliation (2026-10-14)
+
+The Python scanner now inventories statically identifiable dataclass-generated
+methods and metadata, records constructor signatures derived from source field
+annotations/defaults, and reports dynamic dataclass options as incomplete. It
+also observes public constructors inherited from package-private bases. It
+does not execute decorators or inventory the whole inherited `object` model.
+`__post_init__` is treated as the dataclass initialization hook, and the
+private handle base's `__del__`/`__repr__` are lifecycle/diagnostic plumbing;
+explicit `close` and context-manager methods remain inventoried. The current
+`Client.__init__` observation comes from the raw-handle base constructor and is
+unresolved ownership/security evidence, not approval to construct `Client`
+from a caller-owned handle. The refreshed export report still requires exact
+reconciliation; this work does not close T011, T076, T021, or T024.
+
+The existing Python representation regression verifies that generated reprs
+do not expose endpoint passwords, certificate/private-key bytes, file paths,
+trust inputs, or pending correlation bytes. In particular,
+`test_secret_bearing_client_records_redact_repr` and
+`test_endpoint_direct_constructor_enforces_text_shape_and_repr_redaction` in
+`bindings/python/tests/test_client.py` remain required evidence for the
+generated `__repr__` inventory.
+
+| Phase | Commit | Command | Result |
+|---|---|---|---|
+| Red | `7562bb7b`, `19a74c10`, `c06053a0`, `f1b597b5`, `5b6e4d77`, `3234862f` | `uv run --offline --no-project --with-requirements tools/api_manifest/requirements-test.txt python -B -m unittest tools.api_manifest.tests.test_binding_exports -v` (at each focused Red checkpoint) | Expected failures successively exposed missing generated dataclass methods, metadata/signatures, dynamic-option handling, hash declarations, and inherited package constructors. |
+| Green | `64c7499d` | `uv run --offline --no-project --with-requirements tools/api_manifest/requirements-test.txt python -B -m unittest tools.api_manifest.tests.test_binding_exports -v` | PASS: 40 tests; dataclass-generated exports, signature capture, fail-closed options, explicit hash declarations, and inherited constructors are inventoried. |
+| Refactor | This commit | `uv run --offline --no-project --with-requirements tools/api_manifest/requirements-test.txt python -B -m unittest tools.api_manifest.tests.test_binding_exports -v`; `uv run --offline --directory bindings/python --with-requirements requirements-coverage.txt --with-editable . python -m pytest tests/test_client.py::test_secret_bearing_client_records_redact_repr tests/test_client.py::test_endpoint_direct_constructor_enforces_text_shape_and_repr_redaction -q`; `git diff --check` | PASS: 41 scanner tests; 2 existing Python repr-redaction tests; whitespace check. Added characterization for lifecycle hooks and clarified current partial audit/task state. |
