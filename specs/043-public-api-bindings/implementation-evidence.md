@@ -794,10 +794,21 @@ assuming that a PEM-memory constructor stands for all inputs:
 
 | C parent field | Rust public API | Java public API | Python public API | Supported C input modes |
 |---|---|---|---|---|
-| `client_certificates` | `CertificateInput` PEM/DER and file constructors | `clientIdentityPem`, `clientIdentityDer`, `clientIdentityFiles` | `TransportConfig.client_certificates` with `TransportInput.memory/file` and `CredentialEncoding` | PEM/DER memory and selected files |
-| `client_private_key` | `PrivateKeyInput` PEM/DER and file constructors | `clientIdentityPem`, `clientIdentityDer`, `clientIdentityFiles` | `TransportConfig.client_private_key` with `TransportInput.memory/file` and `CredentialEncoding` | PEM/DER memory and selected files |
-| `trust_certificates` | `TrustSource::certificate_authorities` over `CertificateInput` PEM/DER and file constructors | `trustCertificatesPem`, `trustCertificatesDer`, `trustCertificateFiles` | `TrustSource.certificate_authorities` over `TransportInput.memory/file` | PEM/DER memory and selected files |
-| `revocation_lists` | `RevocationListInput::from_pem/from_der` | `revocationListsPem`, `revocationListsDer` | `TransportConfig.revocation_lists` with in-memory `TransportInput` | PEM/DER memory only |
+| `client_certificates` | `CertificateInput` PEM/DER and file constructors | `clientIdentity(List<TransportInput>, TransportInput)`; PEM/DER convenience methods remain | `TransportConfig.client_certificates` with `TransportInput.memory/file` and `CredentialEncoding` | Each chain entry independently selects PEM/DER and memory/file |
+| `client_private_key` | `PrivateKeyInput` PEM/DER and file constructors | `clientIdentity(List<TransportInput>, TransportInput)`; PEM/DER convenience methods remain | `TransportConfig.client_private_key` with `TransportInput.memory/file` and `CredentialEncoding` | The key independently selects PEM/DER and memory/file; Java consumes and zeroizes its owned key-input copy |
+| `trust_certificates` | `TrustSource::certificate_authorities` over `CertificateInput` PEM/DER and file constructors | `trustCertificates(List<TransportInput>)`; PEM/DER convenience methods remain | `TrustSource.certificate_authorities` over `TransportInput.memory/file` | Each trust entry independently selects PEM/DER and memory/file |
+| `revocation_lists` | `RevocationListInput::from_pem/from_der` | `revocationLists(List<TransportInput>)`; PEM/DER convenience methods remain | `TransportConfig.revocation_lists` with in-memory `TransportInput` | Each CRL independently selects PEM/DER and remains memory-only |
+
+Java `TransportInput.memory` takes a defensive copy that callers can deterministically zeroize with `close`; `clientIdentity` closes the input used for the private key after taking its protected builder copy. Its `toString` remains redacted. Documentation states that Java runtime copies outside KMIPKit's control cannot be zeroized. The JNI integration test constructs one configuration with a PEM-memory certificate, DER-file private key, PEM-file and DER-memory trust certificates, and PEM/DER in-memory CRLs, then creates a native-backed client from it.
+
+Java mixed-input TDD evidence (all commits are DCO-signed):
+
+| Phase | Commit | Command | Result |
+|---|---|---|---|
+| Red | `9de004b2` | `mvn --batch-mode --file bindings/java/pom.xml -Dtest=ClientFacadeTlsIntegrationTest#nativeAdapterAcceptsCredentialModesAndHttpsTlsNameOverride test` | Expected compile failure: `TransportConfiguration.TransportInput` was not defined for the independent PEM/DER and memory/file selections. |
+| Green | `670f743d` | `mvn --batch-mode --file bindings/java/pom.xml '-Dtest=TransportConfigurationBoundaryTest,ClientFacadeTlsIntegrationTest#nativeAdapterAcceptsCredentialModesAndHttpsTlsNameOverride' test` | PASS: 15 Java/JNI focused tests, including input validation, private-key input consumption, mixed certificate/key/trust source modes, and HTTPS TLS-name override. |
+| Additional CRL evidence | `98c49d34` | `mvn --batch-mode --file bindings/java/pom.xml '-Dtest=ClientFacadeTlsIntegrationTest#nativeAdapterAcceptsCredentialModesAndHttpsTlsNameOverride' test` | PASS: the mixed configuration also crossed JNI with one valid PEM CRL and one valid DER CRL. |
+| Refactor | Pending | Manifest regeneration, traceability updates, API mapping and export-audit tests | Will be recorded after the final refactor checks. |
 
 For each `kmipkit_transport_input_v1_t`, `encoding` selects PEM or DER and
 `source_kind` selects material bytes or a UTF-8 path carried in `data`; the
@@ -1323,3 +1334,35 @@ Rust remains authoritative for rejecting a name override on a non-IP endpoint.
 | Red | `ef388850` | `uv run --offline --project bindings/python --frozen pytest -q bindings/python/tests/test_client.py::test_https_tls_server_name_is_forwarded_separately_from_authority`; focused Java integration test | Expected failures: Python factory rejected the `tls_server_name` keyword; Java validation rejected the HTTPS override as raw-TLS-only. |
 | Green | `032a10c1` | Same focused Python test; `mvn -q -f bindings/java/pom.xml -Dtest=ClientFacadeTlsIntegrationTest#nativeAdapterAcceptsMemoryAndFileIdentityAndTrustInPemAndDer test` | PASS: Python C record preserves the IP URI, independent TLS name, and target URI; Java builds a validated HTTPS client configuration with an IP endpoint and DNS SAN name. |
 | Refactor | This commit | Re-run both focused tests; `git diff --check` | Clarified the Java/Python API documentation and the integration test name; authority and verification-name fields remain separate. |
+
+### T076 Java mixed credential inputs and builder key cleanup (2026-10-14)
+
+Java now supports independent memory/file sources and PEM/DER encoding for
+client certificates, private keys, and trust certificates, plus independent
+PEM/DER memory inputs for revocation lists. The private-key input is consumed
+after its bytes are copied into builder-owned storage. `Builder.close()` now
+zeroizes that owned copy when a builder is abandoned and makes the builder
+terminal; `build()` and successful key replacement retain their existing
+cleanup behavior. Caller-owned arrays are not modified. This is Java-specific
+lifecycle hygiene; runtime copies outside KMIPKit remain outside its guaranteed
+zeroization boundary.
+
+| Phase | Commit | Command | Result |
+|---|---|---|---|
+| Red | `9de004b2` | `mvn --batch-mode --file bindings/java/pom.xml '-Dtest=ClientFacadeTlsIntegrationTest#nativeAdapterAcceptsCredentialModesAndHttpsTlsNameOverride' test` | Expected compile failure: `TransportConfiguration.TransportInput` was not yet available to the integration contract. |
+| Green | `670f743d` | `mvn --batch-mode --file bindings/java/pom.xml '-Dtest=TransportConfigurationBoundaryTest,ClientFacadeTlsIntegrationTest#nativeAdapterAcceptsCredentialModesAndHttpsTlsNameOverride' test` | PASS: 15 tests; mixed selector inputs cross JNI and existing endpoint/credential checks remain intact. |
+| Refactor | `98c49d34` | `mvn --batch-mode --file bindings/java/pom.xml '-Dtest=ClientFacadeTlsIntegrationTest#nativeAdapterAcceptsCredentialModesAndHttpsTlsNameOverride' test` | PASS: valid PEM and DER CRLs are forwarded together through the Java/JNI path. |
+| Red | `16a37241`, `e9018107` | `mvn --batch-mode --file bindings/java/pom.xml '-Dtest=TransportConfigurationBoundaryTest#closingUnbuiltBuilderZeroizesItsOwnedPrivateKeyCopy+closingUnbuiltBuilderZeroizesKeyCopiedFromLegacyPemSetter' test` | Expected compile failure: `Builder.close()` did not exist for the mixed `TransportInput` or legacy PEM path. |
+| Green | `6b87453c` | `mvn --batch-mode --file bindings/java/pom.xml '-Dtest=TransportConfigurationBoundaryTest#closingUnbuiltBuilderZeroizesItsOwnedPrivateKeyCopy+closingUnbuiltBuilderZeroizesKeyCopiedFromLegacyPemSetter' test` | PASS: both owned key copies are zeroized; repeated close is safe; the original caller array is unchanged; closed builders reject build or mutation. |
+| Red | `f2678ec0` | `uv run --offline --no-project --with-requirements tools/api_manifest/requirements-test.txt python -B -m unittest tools.api_manifest.tests.test_t076_client_mapping.T076ClientMappingTests.test_transport_input_facade_exports_are_exactly_reconciled -v` | Expected assertion failure: the new Java `Builder.close` export had no approved exact exclusion. |
+| Green | `7430a42c` | Focused `test_transport_input_facade_exports_are_exactly_reconciled`; `python -B tools/api_manifest/generate.py --write` | PASS: manifest classifies `Builder.close` under accepted `KMIPKIT-0013-FR-005` cleanup evidence and regenerates the checked-in API outputs. |
+| Refactor | `cc07dc10` | Focused Java transport tests; all T076 manifest tests; `python -B tools/api_manifest/generate.py --check`; `mvn --batch-mode --file bindings/java/pom.xml clean verify` | PASS: 17 focused Java tests, 34 manifest tests, 12 generated API outputs current, and full Maven verification with 144 tests (0 failures, 3 skipped); JaCoCo coverage checks passed. Build and close share one private-key cleanup helper. |
+
+The final local binding-export audit observed 272 C, 491 Java, and 556 Python
+paths. It matched all 242 C, 449 Java, and 425 Python declarations exactly, with
+zero missing, unobserved, kind-mismatched, or otherwise problematic entries.
+An independent read-only review of the Java key-cleanup diff found no concrete
+surviving bypass or regression. The review was static and did not inspect JNI
+temporary buffers; this change does not alter that boundary.
+The T076 PR remains a draft pending complete CI on the updated PR head and the
+remaining T076 exit gates.
