@@ -731,6 +731,113 @@ class T076ClientMappingTests(unittest.TestCase):
         self.assertIn("kmipkit_transport_config_create_v1", python)
         self.assertIn("pub fn build(self)", rust)
 
+    def test_transport_input_facade_exports_are_exactly_reconciled(self) -> None:
+        expected_exports = {
+            "java-kmipkit": {
+                "org.kmipkit.extensions.TransportConfiguration.Builder.build",
+                "org.kmipkit.extensions.TransportConfiguration.Builder.clientIdentityDer",
+                "org.kmipkit.extensions.TransportConfiguration.Builder.clientIdentityFiles",
+                "org.kmipkit.extensions.TransportConfiguration.Builder.https",
+                "org.kmipkit.extensions.TransportConfiguration.Builder.revocationListsDer",
+                "org.kmipkit.extensions.TransportConfiguration.Builder.trustCertificateFiles",
+                "org.kmipkit.extensions.TransportConfiguration.Builder.trustCertificatesDer",
+                "org.kmipkit.extensions.TransportConfiguration.Builder.trustPlatform",
+                "org.kmipkit.extensions.TransportConfiguration.Encoding.DER",
+                "org.kmipkit.extensions.TransportConfiguration.Encoding.PEM",
+                "org.kmipkit.extensions.TransportConfiguration.Timeout",
+                "org.kmipkit.extensions.TransportConfiguration.Timeout.<init>",
+                "org.kmipkit.extensions.TransportConfiguration.Timeout.bounded",
+                "org.kmipkit.extensions.TransportConfiguration.Timeout.defaultValue",
+                "org.kmipkit.extensions.TransportConfiguration.Timeout.unbounded",
+                "org.kmipkit.extensions.TransportConfiguration.builder",
+            },
+            "python-kmipkit": {
+                "kmipkit.client.CredentialEncoding.DER",
+                "kmipkit.client.CredentialEncoding.PEM",
+                "kmipkit.client.Endpoint.__init__",
+                "kmipkit.client.Endpoint.address",
+                "kmipkit.client.Endpoint.https",
+                "kmipkit.client.Endpoint.kind",
+                "kmipkit.client.Endpoint.port",
+                "kmipkit.client.EndpointKind",
+                "kmipkit.client.EndpointKind.HTTPS",
+                "kmipkit.client.EndpointKind.RAW_TLS",
+                "kmipkit.client.TimeoutKind",
+                "kmipkit.client.TimeoutKind.BOUNDED",
+                "kmipkit.client.TimeoutKind.DEFAULT",
+                "kmipkit.client.TimeoutKind.UNBOUNDED",
+                "kmipkit.client.TimeoutLimit.__init__",
+                "kmipkit.client.TimeoutLimit.bounded",
+                "kmipkit.client.TimeoutLimit.default",
+                "kmipkit.client.TimeoutLimit.unbounded",
+                "kmipkit.client.TransportConfig.__init__",
+                "kmipkit.client.TransportConfig.endpoint",
+                "kmipkit.client.TransportConfig.trust",
+                "kmipkit.client.TransportInput.__init__",
+                "kmipkit.client.TransportInput.encoding",
+                "kmipkit.client.TransportInput.file",
+                "kmipkit.client.TransportInput.source",
+                "kmipkit.client.TrustKind",
+                "kmipkit.client.TrustKind.CERTIFICATES",
+                "kmipkit.client.TrustKind.PLATFORM",
+                "kmipkit.client.TrustSource.__init__",
+                "kmipkit.client.TrustSource.certificates",
+                "kmipkit.client.TrustSource.platform",
+            },
+        }
+        declarations = {
+            (row["packageId"], row["exportName"]): row
+            for row in self.manifest["publicDeclarations"]
+        }
+        exclusions = {
+            (row["packageId"], row["exportName"])
+            for row in self.manifest["approvedExclusions"]
+        }
+        for package_id, exports in expected_exports.items():
+            for export_name in sorted(exports):
+                with self.subTest(package=package_id, export=export_name):
+                    declaration = declarations.get((package_id, export_name))
+                    self.assertNotIn(
+                        (package_id, export_name),
+                        exclusions,
+                        "approved transport facade inputs must be mapped, not excluded",
+                    )
+                    self.assertIsNotNone(
+                        declaration,
+                        f"missing exact production transport mapping for {export_name}",
+                    )
+                    self.assertEqual("production_transport", declaration["capabilityId"])
+                    self.assertEqual("declared", declaration["declarationState"])
+                    self.assertEqual("four-language", declaration["parityScope"])
+                    self.assertIn("KMIPKIT-0013-FR-001", declaration["requirementIds"])
+                    self.assertIn("KMIPKIT-0013-FR-007", declaration["requirementIds"])
+                    self.assertIn("KMIPKIT-0043-FR-021", declaration["requirementIds"])
+                    for language in ("rust", "c", "java", "python"):
+                        mapping = declaration["languageMappings"][language]
+                        target = declarations.get((mapping["packageId"], mapping["name"]))
+                        self.assertIsNotNone(
+                            target,
+                            f"{export_name} has unresolved {language} target {mapping['name']}",
+                        )
+                        self.assertIn(target["declarationState"], {"declared", "verified"})
+
+        default_timeout = declarations.get(
+            (
+                "java-kmipkit",
+                "org.kmipkit.extensions.TransportConfiguration.Timeout.defaultValue",
+            )
+        )
+        if default_timeout is not None:
+            self.assertEqual(
+                "kmipkit_transport::TimeoutPolicy",
+                default_timeout["languageMappings"]["rust"]["name"],
+                "DEFAULT selects the accepted policy; it is distinct from bounded and unbounded",
+            )
+            self.assertEqual(
+                "kmipkit.client.TimeoutLimit.default",
+                default_timeout["languageMappings"]["python"]["name"],
+            )
+
     def test_client_execution_error_taxonomy_is_public_and_mapped(self) -> None:
         expected = {
             "protocol": (8, "org.kmipkit.ProtocolException"),
