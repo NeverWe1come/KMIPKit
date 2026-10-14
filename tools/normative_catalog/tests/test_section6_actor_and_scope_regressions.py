@@ -226,11 +226,6 @@ class SectionSixActorAndScopeRegressionTests(unittest.TestCase):
                 [25980, 26001],
                 "include the desired Attributes in the Derive Key request",
             ),
-            "KMIPKIT-REQ-SPEC-6.1.23-002-001": (
-                "KMIPKIT-SOURCE-GAP-SPEC-6.1.23-USAGE-LIMITS-COUNT-REQUIRED",
-                [28080, 28097],
-                "include the number of Usage Limits Units to protect in the request",
-            ),
         }
         gaps = {row["gap_id"]: row for row in self.fixture["source_only_requirement_gaps"]}
         for requirement_id, expected_data in expected.items():
@@ -251,6 +246,37 @@ class SectionSixActorAndScopeRegressionTests(unittest.TestCase):
                 self.assertEqual(gap["direction"], direction)
                 self.assertEqual(gap["scope_disposition"], "client_1_0")
                 self.assertEqual(gap["candidate_requirement_id"], requirement_id)
+
+    def test_required_usage_count_table_contract_preserves_client_direction_and_scope(self) -> None:
+        """The moved Table 232 row retains its actor, requiredness, and client scope."""
+        gap_id = "KMIPKIT-SOURCE-GAP-SPEC-6.1.23-USAGE-LIMITS-COUNT-REQUIRED"
+        requirement_id = "KMIPKIT-REQ-SPEC-6.1.23-002-001"
+        contract = next(
+            row for row in self.fixture["source_table_contracts"] if row["gap_id"] == gap_id
+        )
+        requirement = self.requirements[requirement_id]
+
+        self.assertEqual(requirement["source_gap_id"], gap_id)
+        self.assertEqual(requirement["normative_strength"], "mandatory")
+        self.assertEqual(requirement["role"], "client")
+        self.assertEqual(requirement["direction"], "client_to_server")
+        self.assertEqual(requirement["scope_state"], "client_1_0")
+        self.assertIsNone(contract["source_clause_id"])
+        self.assertEqual(contract["source_locator"]["kind"], "table_body_row")
+        self.assertEqual(contract["source_locator"]["html_line_range"], [28080, 28097])
+        self.assertEqual(contract["source_excerpt"], pinned_excerpt([28080, 28097]))
+        self.assertEqual(contract["source_force"], "required_table_body_value")
+        self.assertEqual(contract["actor"], "client")
+        self.assertEqual(
+            contract["direction"], "include Usage Limits Count in the client request"
+        )
+        self.assertEqual(contract["scope_disposition"], "client_1_0")
+        self.assertEqual(contract["condition"], "A Get Usage Allocation request is sent.")
+        self.assertEqual(contract["requiredness"], "Yes")
+        self.assertEqual(contract["contract_kind"], "operation_request_table_field")
+        self.assertEqual(
+            contract["operation_element_id"], "KMIPKIT-ELEM-OP-C2S-GET-USAGE-ALLOCATION"
+        )
 
 
 if __name__ == "__main__":
