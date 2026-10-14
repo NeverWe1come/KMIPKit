@@ -25,6 +25,7 @@ from ._handles import (
     _owned_bytes,
     _scalar,
     synchronize_public_functions,
+    _wrap_owned_handle,
 )
 
 
@@ -86,8 +87,10 @@ class ExtensionIdentity(NativeHandle):
         vendor_identifier: str | None,
         name: str | None,
         version: str | None,
+        *,
+        _token: object,
     ) -> None:
-        super().__init__(handle)
+        super().__init__(handle, _token=_token)
         self.vendor_identifier = vendor_identifier
         self.name = name
         self.version = version
@@ -100,8 +103,8 @@ class Compatibility(NativeHandle):
 class TtlvPath(NativeHandle):
     _release_name = "kmipkit_ttlv_path_release"
 
-    def __init__(self, handle: Any, tags: tuple[int, ...]) -> None:
-        super().__init__(handle)
+    def __init__(self, handle: Any, tags: tuple[int, ...], *, _token: object) -> None:
+        super().__init__(handle, _token=_token)
         self.tags = tags
 
 
@@ -114,8 +117,10 @@ class Discriminator(NativeHandle):
         path: TtlvPath,
         scalar_type: ttlv.ItemType,
         scalar_value: object,
+        *,
+        _token: object,
     ) -> None:
-        super().__init__(handle)
+        super().__init__(handle, _token=_token)
         self.path_tags = path.tags
         self.scalar_type = scalar_type
         self.scalar_value = scalar_value
@@ -146,8 +151,10 @@ class ExtensionInformation(NativeHandle):
         attribute: bool | None = None,
         parent_structure_tag: int | None = None,
         description: str | None = None,
+        *,
+        _token: object,
     ) -> None:
-        super().__init__(handle)
+        super().__init__(handle, _token=_token)
         self.extension_name = extension_name
         self.tag = tag
         self.item_type = item_type
@@ -167,7 +174,7 @@ class ExtensionInformation(NativeHandle):
             "description": self.description,
         }
         values.update(changes)
-        return ExtensionInformation(handle, **values)
+        return _wrap_owned_handle(ExtensionInformation, handle, **values)
 
 
 class ExtensionDefinition(NativeHandle):
@@ -181,9 +188,12 @@ class ExtensionDefinition(NativeHandle):
         information: ExtensionInformation | None = None,
         compatibility: Compatibility | None = None,
         schema: ExtensionSchema | None = None,
+        *,
+        _token: object,
     ) -> None:
         super().__init__(
             handle,
+            _token=_token,
             owner=(identity, discriminator, information, compatibility, schema),
         )
         self.identity = identity
@@ -201,9 +211,11 @@ class ClientExtensionRegistry(NativeHandle):
         handle: Any,
         definitions: Iterable[ExtensionDefinition],
         limits: ExtensionRegistryLimits,
+        *,
+        _token: object,
     ) -> None:
         ordered = tuple(sorted(definitions, key=_identity_key))
-        super().__init__(handle, owner=ordered)
+        super().__init__(handle, _token=_token, owner=ordered)
         self._definitions = ordered
         self.limits = limits
 
@@ -216,8 +228,10 @@ class ClientConfiguration(NativeHandle):
         handle: Any,
         definitions: tuple[ExtensionDefinition, ...],
         limits: ExtensionRegistryLimits,
+        *,
+        _token: object,
     ) -> None:
-        super().__init__(handle, owner=definitions)
+        super().__init__(handle, _token=_token, owner=definitions)
         self._definitions = definitions
         self.limits = limits
 
@@ -230,16 +244,18 @@ class ValidatedExtensionValue(NativeHandle):
         handle: Any,
         identity: ExtensionIdentity | None = None,
         owner: object | None = None,
+        *,
+        _token: object,
     ) -> None:
-        super().__init__(handle, owner=(identity, owner))
+        super().__init__(handle, _token=_token, owner=(identity, owner))
         self.identity = identity
 
 
 class RegisteredExtensionValue(NativeHandle):
     _release_name = "kmipkit_registered_extension_value_release"
 
-    def __init__(self, handle: Any, identity: ExtensionIdentity) -> None:
-        super().__init__(handle, owner=identity)
+    def __init__(self, handle: Any, identity: ExtensionIdentity, *, _token: object) -> None:
+        super().__init__(handle, _token=_token, owner=identity)
         self.identity = identity
 
 
@@ -279,7 +295,7 @@ class RegisterRequest(NativeHandle):
             (object_type, attributes, object),
             consumed_indices=(1, 2),
         )
-        return cls(handle)
+        return _wrap_owned_handle(cls, handle)
 
     def with_opaque_object_context(
         self, context: OpaqueObjectContext
@@ -292,7 +308,7 @@ class RegisterRequest(NativeHandle):
             (self, int(context)),
             consumed_indices=(0,),
         )
-        return RegisterRequest(handle)
+        return _wrap_owned_handle(RegisterRequest, handle)
 
 
 class ExtensionRecognition(NativeHandle):
@@ -304,8 +320,10 @@ class ExtensionRecognition(NativeHandle):
         registry: ClientExtensionRegistry,
         vendor_identifier: str,
         value: ttlv.Structure,
+        *,
+        _token: object,
     ) -> None:
-        super().__init__(handle, owner=(registry, value))
+        super().__init__(handle, _token=_token, owner=(registry, value))
         self._registry = registry
         self._vendor_identifier = vendor_identifier
         self._value = value
@@ -399,7 +417,9 @@ def create_extension_identity(
             len(raw_version),
         ),
     )
-    return ExtensionIdentity(handle, vendor_identifier, name, version)
+    return _wrap_owned_handle(
+        ExtensionIdentity, handle, vendor_identifier, name, version
+    )
 
 
 def create_compatibility(
@@ -426,13 +446,13 @@ def create_compatibility(
             len(maximum),
         ),
     )
-    return Compatibility(handle)
+    return _wrap_owned_handle(Compatibility, handle)
 
 
 def create_ttlv_path(first_tag: ttlv.Tag) -> TtlvPath:
     value = ttlv.tag_value(first_tag)
     handle = _make_handle("kmipkit_ttlv_path_t", "kmipkit_ttlv_path_create", (value,))
-    return TtlvPath(handle, (value,))
+    return _wrap_owned_handle(TtlvPath, handle, (value,))
 
 
 def with_child_tag(path: TtlvPath, tag: ttlv.Tag) -> TtlvPath:
@@ -443,7 +463,7 @@ def with_child_tag(path: TtlvPath, tag: ttlv.Tag) -> TtlvPath:
         (path, value),
         consumed_indices=(0,),
     )
-    return TtlvPath(handle, (*path.tags, value))
+    return _wrap_owned_handle(TtlvPath, handle, (*path.tags, value))
 
 
 def create_discriminator(path: TtlvPath, scalar_value: ttlv.Value) -> Discriminator:
@@ -459,7 +479,9 @@ def create_discriminator(path: TtlvPath, scalar_value: ttlv.Value) -> Discrimina
         (path, scalar_value),
         consumed_indices=(0, 1),
     )
-    return Discriminator(handle, path, scalar_type, scalar_value_copy)
+    return _wrap_owned_handle(
+        Discriminator, handle, path, scalar_type, scalar_value_copy
+    )
 
 
 def scalar_schema(item_type: ttlv.ItemType) -> ExtensionSchema:
@@ -468,7 +490,7 @@ def scalar_schema(item_type: ttlv.ItemType) -> ExtensionSchema:
         "kmipkit_extension_schema_scalar",
         (int(item_type),),
     )
-    return ExtensionSchema(handle)
+    return _wrap_owned_handle(ExtensionSchema, handle)
 
 
 def structure_schema(
@@ -508,7 +530,9 @@ def structure_schema(
             int(preserve_undeclared_children),
         ),
     )
-    return ExtensionSchema(handle, owner=(child_snapshot, order_snapshot))
+    return _wrap_owned_handle(
+        ExtensionSchema, handle, owner=(child_snapshot, order_snapshot)
+    )
 
 
 def _child_rule(
@@ -520,7 +544,7 @@ def _child_rule(
         f"kmipkit_extension_child_rule_{mode}",
         (tag_value, schema._pointer()),
     )
-    return ExtensionChildRule(handle, owner=(tag, schema))
+    return _wrap_owned_handle(ExtensionChildRule, handle, owner=(tag, schema))
 
 
 def required_child_rule(tag: ttlv.Tag, schema: ExtensionSchema) -> ExtensionChildRule:
@@ -543,7 +567,9 @@ def create_extension_order_constraint(
         "kmipkit_extension_order_constraint_create",
         (ttlv.tag_value(before_tag), ttlv.tag_value(after_tag)),
     )
-    return ExtensionOrderConstraint(handle, owner=(before_tag, after_tag))
+    return _wrap_owned_handle(
+        ExtensionOrderConstraint, handle, owner=(before_tag, after_tag)
+    )
 
 
 def _schema_transform(
@@ -555,7 +581,7 @@ def _schema_transform(
         (schema, *values),
         consumed_indices=(0,),
     )
-    return ExtensionSchema(handle)
+    return _wrap_owned_handle(ExtensionSchema, handle)
 
 
 def with_minimum_length(schema: ExtensionSchema, value: int) -> ExtensionSchema:
@@ -614,7 +640,8 @@ def create_extension_definition(
             schema._pointer(),
         ),
     )
-    return ExtensionDefinition(
+    return _wrap_owned_handle(
+        ExtensionDefinition,
         handle, identity, discriminator, compatibility=compatibility, schema=schema
     )
 
@@ -654,7 +681,9 @@ def validate_extension_value(
             (target._pointer(), value._pointer(), limits._pointer()),
             out_index=2,
         )
-        return ValidatedExtensionValue(handle, target.identity, owner=target)
+        return _wrap_owned_handle(
+            ValidatedExtensionValue, handle, target.identity, owner=target
+        )
     if not isinstance(target, ClientExtensionRegistry):
         errors.raise_for_status(4)
     if (
@@ -671,7 +700,7 @@ def validate_extension_value(
         (target._pointer(), identity._pointer(), value._pointer(), limits._pointer()),
         out_index=4,
     )
-    return RegisteredExtensionValue(handle, identity)
+    return _wrap_owned_handle(RegisteredExtensionValue, handle, identity)
 
 
 def create_extension_registry_limits(*values: int) -> ExtensionRegistryLimits:
@@ -736,7 +765,7 @@ def create_client_extension_registry(
         "kmipkit_client_extension_registry_create_v1",
         (definition_array, len(source), _native_limits(limit_values)),
     )
-    return ClientExtensionRegistry(handle, source, limits)
+    return _wrap_owned_handle(ClientExtensionRegistry, handle, source, limits)
 
 
 def create_client_configuration(
@@ -750,7 +779,7 @@ def create_client_configuration(
         (registry,),
         consumed_indices=(0,),
     )
-    return ClientConfiguration(handle, definitions, limits)
+    return _wrap_owned_handle(ClientConfiguration, handle, definitions, limits)
 
 
 def client_configuration_extension_registry(
@@ -761,7 +790,8 @@ def client_configuration_extension_registry(
         "kmipkit_client_configuration_extension_registry",
         (configuration._pointer(),),
     )
-    return ClientExtensionRegistry(
+    return _wrap_owned_handle(
+        ClientExtensionRegistry,
         handle, configuration._definitions, configuration.limits
     )
 
@@ -794,7 +824,8 @@ def definition_at(
     if output[0] == ffi.NULL:
         return None
     metadata = registry._definitions[index]
-    return ExtensionDefinition(
+    return _wrap_owned_handle(
+        ExtensionDefinition,
         output[0],
         metadata.identity,
         metadata.discriminator,
@@ -821,8 +852,9 @@ def definition_for_identity(
     metadata_by_key = {_identity_key(item): item for item in registry._definitions}
     metadata = metadata_by_key.get(_identity_tuple(identity))
     if metadata is None:
-        return ExtensionDefinition(output[0], identity)
-    return ExtensionDefinition(
+        return _wrap_owned_handle(ExtensionDefinition, output[0], identity)
+    return _wrap_owned_handle(
+        ExtensionDefinition,
         output[0],
         metadata.identity,
         metadata.discriminator,
@@ -839,13 +871,15 @@ def extension_definition_identity(definition: ExtensionDefinition) -> ExtensionI
         (definition._pointer(),),
     )
     identity = definition.identity
-    return ExtensionIdentity(
+    return _wrap_owned_handle(
+        ExtensionIdentity,
         handle, identity.vendor_identifier, identity.name, identity.version
     )
 
 
 def _identity_text(identity: ExtensionIdentity, symbol: str) -> str:
-    value = ttlv.Value(
+    value = _wrap_owned_handle(
+        ttlv.Value,
         _make_handle(
             "kmipkit_ttlv_value_t",
             symbol,
@@ -899,8 +933,9 @@ def extension_definition_information(
         return None
     metadata = definition.information
     if metadata is None:
-        return ExtensionInformation(output[0], None)
-    return ExtensionInformation(
+        return _wrap_owned_handle(ExtensionInformation, output[0], None)
+    return _wrap_owned_handle(
+        ExtensionInformation,
         output[0],
         metadata.extension_name,
         metadata.tag,
@@ -919,7 +954,7 @@ def create_extension_information(extension_name: str) -> ExtensionInformation:
         "kmipkit_extension_information_create",
         (data, len(raw)),
     )
-    return ExtensionInformation(handle, extension_name)
+    return _wrap_owned_handle(ExtensionInformation, handle, extension_name)
 
 
 def _with_information(
@@ -1010,7 +1045,7 @@ def extension_information_to_ttlv(information: ExtensionInformation) -> ttlv.Str
         "kmipkit_extension_information_to_ttlv",
         (information._pointer(),),
     )
-    return ttlv.Structure(handle, owner=information)
+    return _wrap_owned_handle(ttlv.Structure, handle, owner=information)
 
 
 def with_extension_information(
@@ -1032,7 +1067,8 @@ def with_extension_information(
                 definition.schema._pointer(),
             ),
         )
-        source = ExtensionDefinition(
+        source = _wrap_owned_handle(
+            ExtensionDefinition,
             cloned_handle,
             definition.identity,
             definition.discriminator,
@@ -1046,7 +1082,8 @@ def with_extension_information(
         (source, information._pointer()),
         consumed_indices=(0,),
     )
-    return ExtensionDefinition(
+    return _wrap_owned_handle(
+        ExtensionDefinition,
         handle,
         definition.identity,
         definition.discriminator,
@@ -1075,7 +1112,9 @@ def inspect_extension(
         ),
         out_index=4,
     )
-    return ExtensionRecognition(handle, registry, vendor_identifier, value)
+    return _wrap_owned_handle(
+        ExtensionRecognition, handle, registry, vendor_identifier, value
+    )
 
 
 def is_recognized(recognition: ExtensionRecognition) -> bool:
@@ -1129,7 +1168,7 @@ def validated_value(
     )
     if output[0] == ffi.NULL:
         return None
-    return ValidatedExtensionValue(output[0], owner=recognition)
+    return _wrap_owned_handle(ValidatedExtensionValue, output[0], owner=recognition)
 
 
 def extension_recognition_generic_value(
@@ -1140,7 +1179,7 @@ def extension_recognition_generic_value(
         "kmipkit_extension_recognition_generic_value",
         (recognition._pointer(),),
     )
-    return ttlv.TtlvStructureView(handle, owner=recognition)
+    return _wrap_owned_handle(ttlv.TtlvStructureView, handle, owner=recognition)
 
 
 def validated_extension_identity(value: ValidatedExtensionValue) -> ExtensionIdentity:
@@ -1149,7 +1188,9 @@ def validated_extension_identity(value: ValidatedExtensionValue) -> ExtensionIde
         "kmipkit_validated_extension_value_identity",
         (value._pointer(),),
     )
-    return _populate_identity_fields(ExtensionIdentity(handle, None, None, None))
+    return _populate_identity_fields(
+        _wrap_owned_handle(ExtensionIdentity, handle, None, None, None)
+    )
 
 
 def validated_extension_value_generic_value(
@@ -1160,7 +1201,7 @@ def validated_extension_value_generic_value(
         "kmipkit_validated_extension_value_generic_value",
         (value._pointer(),),
     )
-    return ttlv.TtlvStructureView(handle, owner=value)
+    return _wrap_owned_handle(ttlv.TtlvStructureView, handle, owner=value)
 
 
 def value_at(value: ValidatedExtensionValue, path: TtlvPath) -> ttlv.TtlvValueView:
@@ -1169,7 +1210,7 @@ def value_at(value: ValidatedExtensionValue, path: TtlvPath) -> ttlv.TtlvValueVi
         "kmipkit_validated_extension_value_value_at",
         (value._pointer(), path._pointer()),
     )
-    return ttlv.TtlvValueView(handle, owner=(value, path))
+    return _wrap_owned_handle(ttlv.TtlvValueView, handle, owner=(value, path))
 
 
 def create_client_request_message_extension(
@@ -1183,7 +1224,7 @@ def create_client_request_message_extension(
         (value, int(criticality_indicator)),
         consumed_indices=(0,),
     )
-    return ClientRequestMessageExtension(handle)
+    return _wrap_owned_handle(ClientRequestMessageExtension, handle)
 
 
 def with_extension(
@@ -1195,7 +1236,7 @@ def with_extension(
         (item, extension),
         consumed_indices=(0, 1),
     )
-    return ClientBatchItem(handle)
+    return _wrap_owned_handle(ClientBatchItem, handle)
 
 
 def with_unique_batch_item_id(
@@ -1213,7 +1254,7 @@ def with_unique_batch_item_id(
         (item, data, len(raw)),
         consumed_indices=(0,),
     )
-    return ClientBatchItem(handle)
+    return _wrap_owned_handle(ClientBatchItem, handle)
 
 
 def client_batch_item_discover_versions() -> ClientBatchItem:
@@ -1223,7 +1264,7 @@ def client_batch_item_discover_versions() -> ClientBatchItem:
         "kmipkit_client_batch_item_discover_versions",
         (),
     )
-    return ClientBatchItem(handle)
+    return _wrap_owned_handle(ClientBatchItem, handle)
 
 
 def client_batch_item_register(request: RegisterRequest) -> ClientBatchItem:
@@ -1234,7 +1275,7 @@ def client_batch_item_register(request: RegisterRequest) -> ClientBatchItem:
         (request,),
         consumed_indices=(0,),
     )
-    return ClientBatchItem(handle)
+    return _wrap_owned_handle(ClientBatchItem, handle)
 
 
 def client_batch_item_extension_count(item: ClientBatchItem) -> int:
@@ -1257,7 +1298,9 @@ def client_batch_item_extension_identity_at(
         "kmipkit_client_batch_item_extension_identity_at",
         (item._pointer(), index),
     )
-    return _populate_identity_fields(ExtensionIdentity(handle, None, None, None))
+    return _populate_identity_fields(
+        _wrap_owned_handle(ExtensionIdentity, handle, None, None, None)
+    )
 
 
 def client_batch_item_extension_criticality_indicator_at(

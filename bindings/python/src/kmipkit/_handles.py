@@ -10,13 +10,15 @@ from collections.abc import Callable
 from functools import wraps
 from threading import RLock
 from types import FunctionType
-from typing import Any, Self
+from typing import Any, Self, TypeVar
 
 from . import errors
 from ._ffi import ffi, lib
 
 
 _NATIVE_CALL_LOCK = RLock()
+_NATIVE_HANDLE_TOKEN = object()
+_NativeHandleT = TypeVar("_NativeHandleT", bound="NativeHandle")
 
 
 def synchronized_native_call(function: Callable[..., Any]) -> Callable[..., Any]:
@@ -44,7 +46,16 @@ class NativeHandle:
     __slots__ = ("__handle", "__lock", "_owner")
     _release_name: str
 
-    def __init__(self, handle: Any, owner: object | None = None) -> None:
+    def __new__(cls, *arguments: object, **keywords: object) -> Self:
+        if keywords.get("_token") is not _NATIVE_HANDLE_TOKEN:
+            errors.raise_for_status(4)
+        return super().__new__(cls)
+
+    def __init__(
+        self, handle: Any, *, _token: object, owner: object | None = None
+    ) -> None:
+        if _token is not _NATIVE_HANDLE_TOKEN:
+            errors.raise_for_status(4)
         if handle == ffi.NULL:
             errors.raise_for_status(4)
         self.__handle = handle
@@ -114,6 +125,13 @@ class NativeHandle:
 
     def __repr__(self) -> str:
         return f"{type(self).__name__}(closed={self.closed})"
+
+
+def _wrap_owned_handle(
+    wrapper: type[_NativeHandleT], *arguments: object, **keywords: object
+) -> _NativeHandleT:
+    """Construct one wrapper for a handle returned by an internal C ABI call."""
+    return wrapper(*arguments, _token=_NATIVE_HANDLE_TOKEN, **keywords)
 
 
 def _new_handle(

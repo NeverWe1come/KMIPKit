@@ -95,7 +95,11 @@ class ConsumedHandleTests(unittest.TestCase):
         handles, native, package_name = _load_adapter()
         try:
             ttlv = _load_ttlv_adapter(package_name)
-            view = ttlv.TtlvStructureView(object())
+            owner = object()
+            view = handles._wrap_owned_handle(
+                ttlv.TtlvStructureView, object(), owner=owner
+            )
+            self.assertIs(view._owner, owner)
             native_call_entered = threading.Event()
             resume_native_call = threading.Event()
             close_started = threading.Event()
@@ -146,7 +150,7 @@ class ConsumedHandleTests(unittest.TestCase):
         handles, native, package_name = _load_adapter()
         try:
             with self.assertRaises(handles.errors.InvalidInputError):
-                handles.NativeHandle(native.ffi.NULL)
+                handles._wrap_owned_handle(handles.NativeHandle, native.ffi.NULL)
             with self.assertRaises(handles.errors.InvalidInputError):
                 handles._owned_bytes("\ud800")
             with self.assertRaises(handles.errors.InvalidInputError):
@@ -177,7 +181,7 @@ class ConsumedHandleTests(unittest.TestCase):
             class ProbeHandle(handles.NativeHandle):
                 _release_name = "release_handle"
 
-            source = ProbeHandle(object())
+            source = handles._wrap_owned_handle(ProbeHandle, object())
             with self.assertRaises(handles.errors.InvalidInputError):
                 source._restore(object(), None)
             with self.assertRaises(handles.errors.InvalidInputError):
@@ -190,7 +194,7 @@ class ConsumedHandleTests(unittest.TestCase):
             source.close()
 
             native.lib.fail_release = True
-            finalizer_probe = ProbeHandle(object())
+            finalizer_probe = handles._wrap_owned_handle(ProbeHandle, object())
             del finalizer_probe
             gc.collect()
             native.lib.fail_release = False
@@ -217,7 +221,7 @@ class ConsumedHandleTests(unittest.TestCase):
                         raise AssertionError("transfer was not resumed")
                     return pointer
 
-            source = PausingProbeHandle(native_handle)
+            source = handles._wrap_owned_handle(PausingProbeHandle, native_handle)
             transferred: list[object] = []
 
             def take() -> None:
@@ -250,11 +254,12 @@ class ConsumedHandleTests(unittest.TestCase):
         handles, native, package_name = _load_adapter()
         try:
             native_handle = object()
-            source = type(
+            probe_type = type(
                 "ProbeHandle",
                 (handles.NativeHandle,),
                 {"_release_name": "release_handle"},
-            )(native_handle)
+            )
+            source = handles._wrap_owned_handle(probe_type, native_handle)
 
             def consume(handle: Any) -> int:
                 self.assertIs(handle, native_handle)
@@ -274,11 +279,12 @@ class ConsumedHandleTests(unittest.TestCase):
         handles, native, package_name = _load_adapter()
         try:
             native_handle = object()
-            source = type(
+            probe_type = type(
                 "ProbeHandle",
                 (handles.NativeHandle,),
                 {"_release_name": "release_handle"},
-            )(native_handle)
+            )
+            source = handles._wrap_owned_handle(probe_type, native_handle)
 
             def reject_before_native_call(_handle: Any) -> int:
                 raise TypeError("argument conversion")

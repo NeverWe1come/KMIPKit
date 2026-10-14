@@ -15,6 +15,7 @@ from types import SimpleNamespace
 import pytest
 
 from kmipkit import client, errors, extensions, ttlv
+from kmipkit._handles import _wrap_owned_handle
 
 
 def test_python_package_advertises_inline_typing_support() -> None:
@@ -172,6 +173,11 @@ def test_public_native_handle_wrappers_reject_direct_cffi_handle_adoption() -> N
             if candidate is not None:
                 object.__setattr__(candidate, "_NativeHandle__handle", client.ffi.NULL)
 
+    with pytest.raises(errors.InvalidInputError):
+        _wrap_owned_handle(client.Batch, client.ffi.NULL)
+    with pytest.raises(errors.InvalidInputError):
+        client.Batch(pointer, _token=object())
+
 
 def test_live_batch_handle_cannot_be_adopted_by_a_second_wrapper() -> None:
     original = client.Batch.create()
@@ -206,7 +212,7 @@ def test_malformed_presence_flag_is_rejected_as_invalid_input(
 ) -> None:
     native = client.ffi.new("uint8_t[]", 1)
     handle = client.ffi.cast("kmipkit_client_batch_item_response_t *", native)
-    item = client._ClientBatchItemResponse(handle)
+    item = _wrap_owned_handle(client._ClientBatchItemResponse, handle)
 
     def malformed_presence(
         _item: object, present: object, value: object
@@ -473,7 +479,7 @@ def test_batch_add_item_restores_ownership_when_native_does_not_consume(
         kmipkit_client_batch_item_release=lambda _pointer: None,
     )
     monkeypatch.setattr(client, "lib", fake)
-    batch = client.Batch(batch_pointer)
+    batch = _wrap_owned_handle(client.Batch, batch_pointer)
     try:
         with pytest.raises(errors.InvalidInputError):
             batch.add_item(batch_item)
@@ -495,7 +501,7 @@ def test_batch_add_item_transfers_ownership_when_native_accepts_it(
         kmipkit_client_batch_item_release=lambda _pointer: None,
     )
     monkeypatch.setattr(client, "lib", fake)
-    batch = client.Batch(batch_pointer)
+    batch = _wrap_owned_handle(client.Batch, batch_pointer)
     batch.add_item(batch_item)
     assert batch_item.closed
     batch.close()
@@ -792,8 +798,8 @@ def test_client_execute_restores_batch_on_ffi_conversion_error(
 ) -> None:
     client_pointer, _client_storage = _opaque("kmipkit_client_t")
     batch_pointer, _batch_storage = _opaque("kmipkit_client_batch_t")
-    handle = client.Client(client_pointer)
-    batch = client.Batch(batch_pointer)
+    handle = _wrap_owned_handle(client.Client, client_pointer)
+    batch = _wrap_owned_handle(client.Batch, batch_pointer)
     limits = ttlv.codec_limits_defaults()
     fake = SimpleNamespace(
         kmipkit_client_execute=lambda *_args: (_ for _ in ()).throw(TypeError("secret")),
@@ -845,8 +851,8 @@ def test_client_execute_maps_failure_delivery_and_restores_unconsumed_batch(
 ) -> None:
     client_pointer, _client_storage = _opaque("kmipkit_client_t")
     batch_pointer, _batch_storage = _opaque("kmipkit_client_batch_t")
-    handle = client.Client(client_pointer)
-    batch = client.Batch(batch_pointer)
+    handle = _wrap_owned_handle(client.Client, client_pointer)
+    batch = _wrap_owned_handle(client.Batch, batch_pointer)
     limits = ttlv.codec_limits_defaults()
 
     def last_error(status: object, category: object, cause: object, delivery: object) -> int:
@@ -888,8 +894,8 @@ def test_client_execute_consumes_batch_and_returns_owned_empty_response(
     client_pointer, _client_storage = _opaque("kmipkit_client_t")
     batch_pointer, _batch_storage = _opaque("kmipkit_client_batch_t")
     response_pointer, _response_storage = _opaque("kmipkit_client_batch_response_t")
-    handle = client.Client(client_pointer)
-    batch = client.Batch(batch_pointer)
+    handle = _wrap_owned_handle(client.Client, client_pointer)
+    batch = _wrap_owned_handle(client.Batch, batch_pointer)
     limits = ttlv.codec_limits_defaults()
 
     def execute(_client: object, batch_slot: object, _limits: object, output: object) -> int:
@@ -923,7 +929,7 @@ def test_response_span_rejects_inconsistent_absence_and_null_nonempty_data(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     pointer, _storage = _opaque("kmipkit_client_batch_item_response_t")
-    item = client._ClientBatchItemResponse(pointer)
+    item = _wrap_owned_handle(client._ClientBatchItemResponse, pointer)
 
     def inconsistent(_item: object, present: object, value: object) -> int:
         present[0] = 0  # type: ignore[index]
@@ -1048,7 +1054,7 @@ def test_batch_add_item_maps_cffi_conversion_error_and_releases_lock(
             kmipkit_client_batch_item_release=lambda _ptr: None,
         ),
     )
-    batch = client.Batch(batch_pointer)
+    batch = _wrap_owned_handle(client.Batch, batch_pointer)
     try:
         with pytest.raises(errors.InvalidInputError) as caught:
             batch.add_item(batch_item)
@@ -1061,7 +1067,7 @@ def test_batch_add_item_maps_cffi_conversion_error_and_releases_lock(
 
 def test_batch_add_item_rejects_untyped_item() -> None:
     pointer, _storage = _opaque("kmipkit_client_batch_t")
-    batch = client.Batch(pointer)
+    batch = _wrap_owned_handle(client.Batch, pointer)
     try:
         with pytest.raises(errors.InvalidInputError):
             batch.add_item(object())  # type: ignore[arg-type]
@@ -1133,15 +1139,15 @@ def test_client_execute_rejects_wrong_facade_types_and_null_response(
 ) -> None:
     client_pointer, _client_storage = _opaque("kmipkit_client_t")
     batch_pointer, _batch_storage = _opaque("kmipkit_client_batch_t")
-    handle = client.Client(client_pointer)
+    handle = _wrap_owned_handle(client.Client, client_pointer)
     limits = ttlv.codec_limits_defaults()
     try:
         with pytest.raises(errors.InvalidInputError):
             handle.execute(object(), limits)  # type: ignore[arg-type]
         with pytest.raises(errors.InvalidInputError):
-            handle.execute(client.Batch(batch_pointer), object())  # type: ignore[arg-type]
+            handle.execute(_wrap_owned_handle(client.Batch, batch_pointer), object())  # type: ignore[arg-type]
         batch_pointer_2, _batch_storage_2 = _opaque("kmipkit_client_batch_t")
-        batch = client.Batch(batch_pointer_2)
+        batch = _wrap_owned_handle(client.Batch, batch_pointer_2)
         monkeypatch.setattr(
             client,
             "lib",
@@ -1299,7 +1305,7 @@ def test_batch_setters_hold_native_call_lock_for_the_full_abi_call(
     lock = TrackingLock()
     monkeypatch.setattr(client, "_NATIVE_CALL_LOCK", lock)
     batch_pointer, _batch_storage = _opaque("kmipkit_client_batch_t")
-    batch = client.Batch(batch_pointer)
+    batch = _wrap_owned_handle(client.Batch, batch_pointer)
     observed: list[bool] = []
 
     def check_lock(*_args: object) -> int:

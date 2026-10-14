@@ -17,7 +17,12 @@ from typing import Any, Self
 
 from . import errors, extensions, ttlv
 from ._client_ffi import ffi, lib
-from ._handles import NativeHandle, _NATIVE_CALL_LOCK, _owned_bytes
+from ._handles import (
+    NativeHandle,
+    _NATIVE_CALL_LOCK,
+    _owned_bytes,
+    _wrap_owned_handle,
+)
 
 
 _MAX_INPUT_BYTES = 16 * 1024 * 1024
@@ -499,7 +504,7 @@ class Batch(_ClientHandle):
         """Create an empty ordered batch builder."""
         output = ffi.new("kmipkit_client_batch_t **")
         _raise_abi_status(lib.kmipkit_client_batch_create(output))
-        return cls(output[0])
+        return _wrap_owned_handle(cls, output[0])
 
     def add_item(self, item: extensions.ClientBatchItem) -> Self:
         """Append one typed item, consuming its wrapper only when accepted."""
@@ -593,8 +598,14 @@ class BatchResult(_ClientHandle):
 
     _release_name = "kmipkit_client_batch_response_release"
 
-    def __init__(self, handle: Any, items: tuple[BatchItemResult, ...]) -> None:
-        super().__init__(handle)
+    def __init__(
+        self,
+        handle: Any,
+        items: tuple[BatchItemResult, ...],
+        *,
+        _token: object,
+    ) -> None:
+        super().__init__(handle, _token=_token)
         self.items = items
 
 
@@ -642,7 +653,7 @@ class Client(_ClientHandle):
             _raise_abi_status(status)
         if client_output[0] == ffi.NULL:
             errors.raise_for_status(7)
-        return cls(client_output[0])
+        return _wrap_owned_handle(cls, client_output[0])
 
     def execute(
         self, batch: Batch, limits: ttlv.CodecLimits
@@ -677,7 +688,7 @@ class Client(_ClientHandle):
 
 
 def _batch_result(handle: Any) -> BatchResult:
-    response = BatchResult(handle, ())
+    response = _wrap_owned_handle(BatchResult, handle, ())
     items: list[BatchItemResult] = []
     try:
         count = ffi.new("uint64_t *")
@@ -695,7 +706,7 @@ def _batch_result(handle: Any) -> BatchResult:
             )
             if item_output[0] == ffi.NULL:
                 errors.raise_for_status(7)
-            item = _ClientBatchItemResponse(item_output[0])
+            item = _wrap_owned_handle(_ClientBatchItemResponse, item_output[0])
             try:
                 metadata = ffi.new("kmipkit_client_batch_item_metadata_v1_t *")
                 metadata.struct_size = ffi.sizeof(
