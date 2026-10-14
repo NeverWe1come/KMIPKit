@@ -4,14 +4,14 @@
     {
       "complete": true,
       "counts": {
-        "exactMatches": 178,
+        "exactMatches": 237,
         "kindMismatches": 0,
-        "manifest": 178,
-        "matched": 178,
+        "manifest": 237,
+        "matched": 237,
         "missingFromManifest": 0,
         "notObserved": 0,
-        "observed": 182,
-        "pathMatches": 178
+        "observed": 264,
+        "pathMatches": 237
       },
       "issues": [],
       "kindMismatches": [],
@@ -23,14 +23,14 @@
     {
       "complete": true,
       "counts": {
-        "exactMatches": 351,
+        "exactMatches": 434,
         "kindMismatches": 0,
-        "manifest": 351,
-        "matched": 351,
+        "manifest": 434,
+        "matched": 434,
         "missingFromManifest": 0,
         "notObserved": 0,
-        "observed": 351,
-        "pathMatches": 351
+        "observed": 469,
+        "pathMatches": 434
       },
       "issues": [],
       "kindMismatches": [],
@@ -42,19 +42,311 @@
     {
       "complete": true,
       "counts": {
-        "exactMatches": 274,
+        "exactMatches": 415,
         "kindMismatches": 0,
-        "manifest": 274,
-        "matched": 274,
-        "missingFromManifest": 0,
+        "manifest": 415,
+        "matched": 415,
+        "missingFromManifest": 48,
         "notObserved": 0,
-        "observed": 274,
-        "pathMatches": 274
+        "observed": 540,
+        "pathMatches": 415
       },
       "issues": [],
       "kindMismatches": [],
-      "matchesManifest": true,
-      "missingFromManifest": [],
+      "matchesManifest": false,
+      "missingFromManifest": [
+        {
+          "exportName": "kmipkit.client.Batch.__enter__",
+          "kind": "python-export",
+          "location": "inherited:kmipkit._handles.NativeHandle:101",
+          "packageId": "python-kmipkit"
+        },
+        {
+          "exportName": "kmipkit.client.Batch.__exit__",
+          "kind": "python-export",
+          "location": "inherited:kmipkit._handles.NativeHandle:105",
+          "packageId": "python-kmipkit"
+        },
+        {
+          "exportName": "kmipkit.client.Batch.__init__",
+          "kind": "python-export",
+          "location": "inherited:kmipkit._handles.NativeHandle:47",
+          "packageId": "python-kmipkit"
+        },
+        {
+          "exportName": "kmipkit.client.BatchItemResult.__init__",
+          "kind": "python-export",
+          "location": "kmipkit.client:581",
+          "packageId": "python-kmipkit",
+          "signature": "(outcome: BatchOutcome | int, result_status: int, result_reason: int | None, unique_batch_item_id: bytes | None, pending_correlation_value: bytes | None) -> None"
+        },
+        {
+          "exportName": "kmipkit.client.BatchResult.__enter__",
+          "kind": "python-export",
+          "location": "inherited:kmipkit._handles.NativeHandle:101",
+          "packageId": "python-kmipkit"
+        },
+        {
+          "exportName": "kmipkit.client.BatchResult.__exit__",
+          "kind": "python-export",
+          "location": "inherited:kmipkit._handles.NativeHandle:105",
+          "packageId": "python-kmipkit"
+        },
+        {
+          "exportName": "kmipkit.client.BatchResult.__init__",
+          "kind": "python-export",
+          "location": "kmipkit.client:596",
+          "packageId": "python-kmipkit"
+        },
+        {
+          "exportName": "kmipkit.client.Client.__enter__",
+          "kind": "python-export",
+          "location": "inherited:kmipkit._handles.NativeHandle:101",
+          "packageId": "python-kmipkit"
+        },
+        {
+          "exportName": "kmipkit.client.Client.__exit__",
+          "kind": "python-export",
+          "location": "inherited:kmipkit._handles.NativeHandle:105",
+          "packageId": "python-kmipkit"
+        },
+        {
+          "exportName": "kmipkit.client.Client.__init__",
+          "kind": "python-export",
+          "location": "inherited:kmipkit._handles.NativeHandle:47",
+          "packageId": "python-kmipkit"
+        },
+        {
+          "exportName": "kmipkit.client.TrustSource",
+          "kind": "type",
+          "location": "kmipkit.client:251",
+          "packageId": "python-kmipkit"
+        },
+        {
+          "exportName": "kmipkit.errors.ClientExecutionError.__init__",
+          "kind": "python-export",
+          "location": "kmipkit.errors:100",
+          "packageId": "python-kmipkit"
+        },
+        {
+          "exportName": "kmipkit.errors.ClientExecutionError.category",
+          "kind": "python-export",
+          "location": "kmipkit.errors:98",
+          "packageId": "python-kmipkit"
+        },
+        {
+          "exportName": "kmipkit.errors.CompatibilityMismatchError.__init__",
+          "kind": "python-export",
+          "location": "inherited:kmipkit.errors.KmipKitError:13",
+          "packageId": "python-kmipkit"
+        },
+        {
+          "exportName": "kmipkit.errors.DuplicateKeyError.__init__",
+          "kind": "python-export",
+          "location": "inherited:kmipkit.errors.KmipKitError:13",
+          "packageId": "python-kmipkit"
+        },
+        {
+          "exportName": "kmipkit.errors.InvalidExtensionSchemaError.__init__",
+          "kind": "python-export",
+          "location": "inherited:kmipkit.errors.KmipKitError:13",
+          "packageId": "python-kmipkit"
+        },
+        {
+          "exportName": "kmipkit.errors.InvalidIdentityError.__init__",
+          "kind": "python-export",
+          "location": "inherited:kmipkit.errors.KmipKitError:13",
+          "packageId": "python-kmipkit"
+        },
+        {
+          "exportName": "kmipkit.errors.InvalidInputError.__init__",
+          "kind": "python-export",
+          "location": "inherited:kmipkit.errors.KmipKitError:13",
+          "packageId": "python-kmipkit"
+        },
+        {
+          "exportName": "kmipkit.errors.KmipKitError.__init__",
+          "kind": "python-export",
+          "location": "kmipkit.errors:13",
+          "packageId": "python-kmipkit"
+        },
+        {
+          "exportName": "kmipkit.errors.ResourceLimitError.__init__",
+          "kind": "python-export",
+          "location": "inherited:kmipkit.errors.KmipKitError:13",
+          "packageId": "python-kmipkit"
+        },
+        {
+          "exportName": "kmipkit.extensions.ClientBatchItem.__init__",
+          "kind": "python-export",
+          "location": "inherited:kmipkit._handles.NativeHandle:47",
+          "packageId": "python-kmipkit"
+        },
+        {
+          "exportName": "kmipkit.extensions.ClientConfiguration.__init__",
+          "kind": "python-export",
+          "location": "kmipkit.extensions:214",
+          "packageId": "python-kmipkit"
+        },
+        {
+          "exportName": "kmipkit.extensions.ClientExtensionRegistry.__init__",
+          "kind": "python-export",
+          "location": "kmipkit.extensions:199",
+          "packageId": "python-kmipkit"
+        },
+        {
+          "exportName": "kmipkit.extensions.ClientRequestMessageExtension.__init__",
+          "kind": "python-export",
+          "location": "inherited:kmipkit._handles.NativeHandle:47",
+          "packageId": "python-kmipkit"
+        },
+        {
+          "exportName": "kmipkit.extensions.Compatibility.__init__",
+          "kind": "python-export",
+          "location": "inherited:kmipkit._handles.NativeHandle:47",
+          "packageId": "python-kmipkit"
+        },
+        {
+          "exportName": "kmipkit.extensions.Discriminator.__init__",
+          "kind": "python-export",
+          "location": "kmipkit.extensions:111",
+          "packageId": "python-kmipkit"
+        },
+        {
+          "exportName": "kmipkit.extensions.ExtensionChildRule.__init__",
+          "kind": "python-export",
+          "location": "inherited:kmipkit._handles.NativeHandle:47",
+          "packageId": "python-kmipkit"
+        },
+        {
+          "exportName": "kmipkit.extensions.ExtensionDefinition.__init__",
+          "kind": "python-export",
+          "location": "kmipkit.extensions:176",
+          "packageId": "python-kmipkit"
+        },
+        {
+          "exportName": "kmipkit.extensions.ExtensionIdentity.__init__",
+          "kind": "python-export",
+          "location": "kmipkit.extensions:83",
+          "packageId": "python-kmipkit"
+        },
+        {
+          "exportName": "kmipkit.extensions.ExtensionInformation.__init__",
+          "kind": "python-export",
+          "location": "kmipkit.extensions:139",
+          "packageId": "python-kmipkit"
+        },
+        {
+          "exportName": "kmipkit.extensions.ExtensionOrderConstraint.__init__",
+          "kind": "python-export",
+          "location": "inherited:kmipkit._handles.NativeHandle:47",
+          "packageId": "python-kmipkit"
+        },
+        {
+          "exportName": "kmipkit.extensions.ExtensionRecognition.__init__",
+          "kind": "python-export",
+          "location": "kmipkit.extensions:301",
+          "packageId": "python-kmipkit"
+        },
+        {
+          "exportName": "kmipkit.extensions.ExtensionRegistryLimits.__init__",
+          "kind": "python-export",
+          "location": "kmipkit.extensions:32",
+          "packageId": "python-kmipkit",
+          "signature": "(max_definitions: int, max_schema_nodes: int, max_child_rules_per_structure: int, max_text_bytes_per_field: int, max_registry_text_bytes: int, max_discriminator_scalar_bytes: int, max_total_discriminator_scalar_bytes: int, max_constraint_members_per_rule: int, max_total_constraint_members: int, max_payload_index_records: int, max_lookup_comparisons: int, max_depth: int) -> None"
+        },
+        {
+          "exportName": "kmipkit.extensions.ExtensionSchema.__init__",
+          "kind": "python-export",
+          "location": "inherited:kmipkit._handles.NativeHandle:47",
+          "packageId": "python-kmipkit"
+        },
+        {
+          "exportName": "kmipkit.extensions.RegisterRequest.__init__",
+          "kind": "python-export",
+          "location": "inherited:kmipkit._handles.NativeHandle:47",
+          "packageId": "python-kmipkit"
+        },
+        {
+          "exportName": "kmipkit.extensions.RegisteredExtensionValue.__init__",
+          "kind": "python-export",
+          "location": "kmipkit.extensions:241",
+          "packageId": "python-kmipkit"
+        },
+        {
+          "exportName": "kmipkit.extensions.TtlvPath.__init__",
+          "kind": "python-export",
+          "location": "kmipkit.extensions:103",
+          "packageId": "python-kmipkit"
+        },
+        {
+          "exportName": "kmipkit.extensions.ValidatedExtensionValue.__init__",
+          "kind": "python-export",
+          "location": "kmipkit.extensions:228",
+          "packageId": "python-kmipkit"
+        },
+        {
+          "exportName": "kmipkit.metadata.Version.__init__",
+          "kind": "python-export",
+          "location": "kmipkit.metadata:53",
+          "packageId": "python-kmipkit",
+          "signature": "(major: int, minor: int, patch: int, abi_version: int) -> None"
+        },
+        {
+          "exportName": "kmipkit.ttlv.CodecLimits.__init__",
+          "kind": "python-export",
+          "location": "inherited:kmipkit._handles.NativeHandle:47",
+          "packageId": "python-kmipkit"
+        },
+        {
+          "exportName": "kmipkit.ttlv.RawTag.__init__",
+          "kind": "python-export",
+          "location": "inherited:kmipkit._handles.NativeHandle:47",
+          "packageId": "python-kmipkit"
+        },
+        {
+          "exportName": "kmipkit.ttlv.Structure.__init__",
+          "kind": "python-export",
+          "location": "inherited:kmipkit._handles.NativeHandle:47",
+          "packageId": "python-kmipkit"
+        },
+        {
+          "exportName": "kmipkit.ttlv.Tag.__init__",
+          "kind": "python-export",
+          "location": "inherited:kmipkit._handles.NativeHandle:47",
+          "packageId": "python-kmipkit"
+        },
+        {
+          "exportName": "kmipkit.ttlv.TtlvItem.__init__",
+          "kind": "python-export",
+          "location": "inherited:kmipkit._handles.NativeHandle:47",
+          "packageId": "python-kmipkit"
+        },
+        {
+          "exportName": "kmipkit.ttlv.TtlvItemView.__init__",
+          "kind": "python-export",
+          "location": "inherited:kmipkit._handles.NativeHandle:47",
+          "packageId": "python-kmipkit"
+        },
+        {
+          "exportName": "kmipkit.ttlv.TtlvStructureView.__init__",
+          "kind": "python-export",
+          "location": "inherited:kmipkit._handles.NativeHandle:47",
+          "packageId": "python-kmipkit"
+        },
+        {
+          "exportName": "kmipkit.ttlv.TtlvValueView.__init__",
+          "kind": "python-export",
+          "location": "inherited:kmipkit._handles.NativeHandle:47",
+          "packageId": "python-kmipkit"
+        },
+        {
+          "exportName": "kmipkit.ttlv.Value.__init__",
+          "kind": "python-export",
+          "location": "inherited:kmipkit._handles.NativeHandle:47",
+          "packageId": "python-kmipkit"
+        }
+      ],
       "notObserved": [],
       "packageId": "python-kmipkit"
     }

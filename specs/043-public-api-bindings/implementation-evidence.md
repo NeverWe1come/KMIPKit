@@ -861,3 +861,33 @@ Java and Python. T011, T076, T021, and T024 remain open; the generic
 | Red | `b61fc89b` | `uv run --offline --no-project --with-requirements tools/api_manifest/requirements-test.txt python -B -m unittest tools.api_manifest.tests.test_t076_client_mapping.T076ClientMappingTests.test_java_client_outcomes_and_owned_handle_lifecycles_are_accounted -v` | Expected failure: 19 unaccounted outcome, exact-exclusion, and owner-release paths. |
 | Green | `898286fb` | `uv run --offline --no-project --with-requirements tools/api_manifest/requirements-test.txt python -B -m unittest tools.api_manifest.tests.test_t076_client_mapping -v`; `python -B tools/api_manifest/generate.py --write`; `python -B tools/api_manifest/generate.py --check`; `uv run --offline --no-project --with-requirements tools/api_manifest/requirements-test.txt python -B -m unittest tools.api_manifest.tests.test_generate -v`; `git diff --check` | PASS: T076 mapping suite 18/18; all 12 generated outputs current; generator suite 57 passed with 2 Windows symlink-permission skips; no whitespace errors. |
 | Refactor | This commit | `python -B tools/api_manifest/generate.py --check`; `git diff --check` | PASS: all 12 generated outputs remain current; checkpoint prose and exact lifecycle ruling/costs are recorded without changing runtime behavior. |
+
+### T076 transport facade export reconciliation — partial checkpoint (2026-10-14)
+
+The transport facade inventory now accounts for all 264 observed C exports
+(237 exact manifest declarations plus 27 exact approved exclusions) and all
+469 observed Java exports (434 declarations plus 35 exact exclusions). Python
+has 540 observed exports: 415 declarations and 77 exact exclusions account for
+492, while 48 remain missing. The current report therefore has
+`matchesManifest=true` for C and Java and `false` for Python. The missing Python
+paths include value/dataclass constructors and members, enum members, error
+constructors/category exports, context methods, and inherited handle
+constructors. Value constructors and native-handle wrapper constructors are
+separate reconciliation groups; wrapper constructors must not allow adoption
+or duplicate ownership of a live native handle. T011, T076, T021, and T024
+remain open.
+
+The four-language transport mappings distinguish endpoint selection and input
+representation: HTTPS versus RAW_TLS endpoint constructors; PEM/DER and
+approved file inputs for certificates, private keys, and trust; in-memory
+PEM/DER for CRLs; `source_kind` versus `encoding`; and timeout `DEFAULT` versus
+bounded/unbounded limits. The endpoint port mapping is conditional on RAW_TLS.
+CRL file input is not added because KMIPKIT-0013 does not approve that mode.
+No runtime behavior or ABI changed in this tranche. The generic
+`kmipkit_client_execute_with_error_ttlv_v1` helper remains blocked.
+
+| Phase | Commit | Command | Result |
+|---|---|---|---|
+| Red | `506b6a15`, `020b99cb`, `4f48758b`, `a0a48084`, `2906c89d` | `python -B -m unittest tools.api_manifest.tests.test_t076_client_mapping` (focused transport assertions at each Red checkpoint) | Expected failures exposed 47 unclassified transport declarations, then the missing `TimeoutLimit` type and six incorrect or incomplete semantic mapping targets. |
+| Green | `d576d04f` | `python -B -m unittest tools.api_manifest.tests.test_t076_client_mapping`; `wsl --exec bash -lc 'cd /mnt/c/Users/ramp1953/.codex/worktrees/0043-t076-client-mapping/KMIPKit && python3 -B -m unittest tools.api_manifest.tests.test_generate'`; `python -B tools/api_manifest/generate.py --check`; `python -B tools/api_manifest/audit_binding_exports.py --repo-root . --report specs/043-public-api-bindings/reports/binding-export-report-2026-10-12.json`; `git diff --check` | PASS: focused T076 suite 20/20; generator suite 57/57; all 12 generated outputs current; C/Java exact and Python 48 missing. |
+| Refactor | This commit | `python -B tools/api_manifest/audit_binding_exports.py --repo-root . --report specs/043-public-api-bindings/reports/binding-export-report-2026-10-12.json --check`; `python -B tools/api_manifest/generate.py --check`; `git diff --check` | The audit command writes the current snapshot and exits 1 because Python has 48 missing paths; C and Java have `matchesManifest=true`. All 12 API generated outputs remain current; the task checkpoints and audit instructions record this partial state without marking tasks complete. |
