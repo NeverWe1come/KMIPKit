@@ -103,12 +103,24 @@ approved owner, or how overload signatures should be keyed. Those decisions
 must be made under the approved 0043 contract; until reconciled, the report is
 evidence of an open gate and does not close T011.
 
-## Current reconciliation status
+## Current reconciliation status (2026-10-14)
 
-The checked-in report is being refreshed after the scanner began accounting for
-dataclass-generated members, constructor signatures, and inherited public
-constructors. Do not use the historical counts above as current results. The
-latest report must be regenerated with the pinned audit tool and reconciled
-against exact manifest paths and kinds before claiming a passing `--check` or
-closing T011. T076 and dependent T021/T024 remain open while shared client
-surface promotion and four-language export reconciliation are incomplete.
+The checked-in report was regenerated with the pinned audit tool after the
+outcome and owner-lifecycle manifest update. The scanner is complete for all
+three packages, but Java and Python still have unclassified observed exports;
+this snapshot is not a passing export gate:
+
+| Package | Scanner complete | Observed | Manifest | Exact matches | Missing | Stale | Kind mismatches | Issues | `matchesManifest` |
+| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | --- |
+| C | yes | 264 | 237 | 237 | 0 | 0 | 0 | 0 | yes |
+| Java | yes | 469 | 418 | 418 | 16 | 0 | 0 | 0 | no |
+| Python | yes | 540 | 383 | 383 | 80 | 0 | 0 | 0 | no |
+
+The C inventory's 27 paths outside the 237 declarations have exact approved
+exclusions. Java's 16 current gaps are transport builder, encoding, and
+timeout exports. Python's 80 gaps include constructors, configuration data,
+exception constructors, and inherited handle constructors; the latter remain
+ownership/security evidence and are not approved product construction paths.
+The report must be regenerated again after each reconciliation batch. T011,
+T076, T021, and T024 remain open until every observed export is mapped or has
+an exact approved exclusion and required parity/CI evidence is complete.

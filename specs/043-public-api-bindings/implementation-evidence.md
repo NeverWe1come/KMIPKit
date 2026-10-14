@@ -818,3 +818,46 @@ generated `__repr__` inventory.
 | Red | `7562bb7b`, `19a74c10`, `c06053a0`, `f1b597b5`, `5b6e4d77`, `3234862f` | `uv run --offline --no-project --with-requirements tools/api_manifest/requirements-test.txt python -B -m unittest tools.api_manifest.tests.test_binding_exports -v` (at each focused Red checkpoint) | Expected failures successively exposed missing generated dataclass methods, metadata/signatures, dynamic-option handling, hash declarations, and inherited package constructors. |
 | Green | `64c7499d` | `uv run --offline --no-project --with-requirements tools/api_manifest/requirements-test.txt python -B -m unittest tools.api_manifest.tests.test_binding_exports -v` | PASS: 40 tests; dataclass-generated exports, signature capture, fail-closed options, explicit hash declarations, and inherited constructors are inventoried. |
 | Refactor | This commit | `uv run --offline --no-project --with-requirements tools/api_manifest/requirements-test.txt python -B -m unittest tools.api_manifest.tests.test_binding_exports -v`; `uv run --offline --directory bindings/python --with-requirements requirements-coverage.txt --with-editable . python -m pytest tests/test_client.py::test_secret_bearing_client_records_redact_repr tests/test_client.py::test_endpoint_direct_constructor_enforces_text_shape_and_repr_redaction -q`; `git diff --check` | PASS: 41 scanner tests; 2 existing Python repr-redaction tests; whitespace check. Added characterization for lifecycle hooks and clarified current partial audit/task state. |
+
+### T076 batch outcome and owner lifecycle mappings — partial promotion (2026-10-14)
+
+The common completed/Pending outcome discriminator is mapped from the Rust
+typed `ClientBatchItemResponse::outcome`, the exact C metadata field, Java's
+forward-compatible `BatchOutcomeKind`, and Python's `BatchOutcome`/numeric
+fallback. Result status and optional result reason remain separately mapped.
+Three owner release paths (`Client`, `ClientBatch`, and
+`ClientBatchResponse`) now have exact C symbols and four-language
+`native-handle-release` mappings to the Java and Python `close` methods and
+Rust owning types. The C child item-response release and transient transport
+configuration release remain explicit exact C ABI exclusions.
+
+After the generated-header promotion, an independent Ubuntu 26.04 run passed
+the complete C ABI coverage integration target (3/3):
+`CARGO_TARGET_DIR=/tmp/kmipkit-t076-linux-target cargo test -p kmipkit-ffi --features coverage-c-consumer --test c_api_coverage -- --nocapture`. This includes the compiled public C consumer. It is local platform evidence and does not close the full parity or required-CI gates.
+
+The exact Java predicates `BatchOutcomeKind.isCompleted` and
+`BatchOutcomeKind.isPending` are excluded as derived conveniences over the
+mapped raw discriminator and constants. `ClientBatchItemResult.close` is an
+exact Java-only child-view lifecycle adapter: Rust owns response items in the
+response value and Python exposes copied item metadata. If early release of a
+child view is later considered a product capability, an approved API contract
+must define matching lifetime semantics across languages; this would change
+when the child storage can be reclaimed. `TransportConfiguration.close` is
+an exact Java-only adapter for the transient native configuration handle;
+Rust and Python expose configuration values and the C release helper stays
+explicit in the inventory. The cost if this distinction is wrong is different
+credential-release timing in Java, which requires review as a security
+lifecycle contract before promotion.
+
+The refreshed Windows export snapshot records C 264 observed paths with 237
+exact declarations and 27 exact exclusions, Java 469 observed paths with 16
+still unclassified, and Python 540 observed paths with 80 still unclassified.
+The audit is therefore partial: `matchesManifest` is true for C and false for
+Java and Python. T011, T076, T021, and T024 remain open; the generic
+`kmipkit_client_execute_with_error_ttlv_v1` helper remains blocked.
+
+| Phase | Commit | Command | Result |
+|---|---|---|---|
+| Red | `b61fc89b` | `uv run --offline --no-project --with-requirements tools/api_manifest/requirements-test.txt python -B -m unittest tools.api_manifest.tests.test_t076_client_mapping.T076ClientMappingTests.test_java_client_outcomes_and_owned_handle_lifecycles_are_accounted -v` | Expected failure: 19 unaccounted outcome, exact-exclusion, and owner-release paths. |
+| Green | `898286fb` | `uv run --offline --no-project --with-requirements tools/api_manifest/requirements-test.txt python -B -m unittest tools.api_manifest.tests.test_t076_client_mapping -v`; `python -B tools/api_manifest/generate.py --write`; `python -B tools/api_manifest/generate.py --check`; `uv run --offline --no-project --with-requirements tools/api_manifest/requirements-test.txt python -B -m unittest tools.api_manifest.tests.test_generate -v`; `git diff --check` | PASS: T076 mapping suite 18/18; all 12 generated outputs current; generator suite 57 passed with 2 Windows symlink-permission skips; no whitespace errors. |
+| Refactor | This commit | `python -B tools/api_manifest/generate.py --check`; `git diff --check` | PASS: all 12 generated outputs remain current; checkpoint prose and exact lifecycle ruling/costs are recorded without changing runtime behavior. |
