@@ -1402,6 +1402,51 @@ class T076ClientMappingTests(unittest.TestCase):
                 rf"\b{rust_category}\s*=\s*{python_category}\b",
             )
 
+    def test_per_exchange_request_options_use_additive_versioned_abi(self) -> None:
+        """Per-exchange timeout overrides must not replace the stable execute ABI."""
+        legacy = next(
+            row for row in self.manifest["functions"] if row["id"] == "client_execute"
+        )
+        options_execute = next(
+            (
+                row
+                for row in self.manifest["functions"]
+                if row["id"] == "client_execute_with_options"
+            ),
+            None,
+        )
+        self.assertIsNotNone(
+            options_execute,
+            "T076 needs an additive versioned C execute path for RequestOptions",
+        )
+
+        self.assertEqual("kmipkit_client_execute", legacy["c"]["symbol"])
+        self.assertEqual(
+            ["client", "batch", "limits", "out_response"],
+            [parameter["name"] for parameter in legacy["c"]["parameters"]],
+        )
+        self.assertEqual(
+            "kmipkit_client_execute_with_options_v1",
+            options_execute["c"]["symbol"],
+        )
+        self.assertEqual(
+            "kmipkit_client::Client::execute_with_options",
+            f"{options_execute['rust']['module']}::{options_execute['rust']['name']}",
+        )
+        self.assertEqual("executeWithOptions", options_execute["java"]["method"])
+        self.assertEqual("Client.execute_with_options", options_execute["python"]["function"])
+
+        header = generate.render_c_header(self.manifest)
+        self.assertIn("kmipkit_request_options_v1_t", header)
+        self.assertIn("kmipkit_client_execute_with_options_v1", header)
+        generic_ttlv = next(
+            row
+            for row in self.manifest["functions"]
+            if row["c"]["symbol"] == "kmipkit_client_execute_with_error_ttlv_v1"
+        )
+        self.assertEqual("blocked", generic_ttlv["declarationState"])
+        self.assertNotIn("kmipkit_client_execute_with_error_ttlv_v1(", header)
+
     def test_last_error_get_is_mapped_to_shared_error_taxonomy(self) -> None:
         declarations = {
             row["exportName"]: row for row in self.manifest["publicDeclarations"]
