@@ -568,9 +568,9 @@ class T076ClientMappingTests(unittest.TestCase):
                 declaration = declarations[key]
                 self.assertEqual("declared", declaration["declarationState"])
                 self.assertEqual(
-                    "kmipkit_transport_config_v1_t",
+                    "kmipkit_transport_config_create_v1",
                     declaration["languageMappings"]["c"]["name"],
-                    "per-input encoding/source discriminants are represented by the parent config",
+                    "mode constructors are represented by the public parent-config factory",
                 )
 
         production = next(
