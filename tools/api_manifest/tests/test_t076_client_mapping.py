@@ -303,6 +303,56 @@ class T076ClientMappingTests(unittest.TestCase):
             }:
                 self.assertEqual(exclusion["exportName"], exclusion["cFunction"]["symbol"])
 
+    def test_transport_input_encoding_and_source_are_exact_abi_discriminants(self) -> None:
+        declarations = {
+            row["exportName"]: row
+            for row in self.manifest["publicDeclarations"]
+            if row["packageId"] == "c-kmipkit"
+        }
+        exclusions = {
+            row["exportName"]: row
+            for row in self.manifest["approvedExclusions"]
+            if row["packageId"] == "c-kmipkit"
+        }
+        for path in (
+            "kmipkit_transport_input_v1_t.encoding",
+            "kmipkit_transport_input_v1_t.source_kind",
+        ):
+            with self.subTest(discriminant=path):
+                self.assertFalse(path in declarations, f"discriminant {path} must be excluded")
+                exclusion = exclusions.get(path)
+                self.assertIsNotNone(exclusion, f"unclassified ABI discriminant: {path}")
+                self.assertIn("discriminant", exclusion["reason"].lower())
+                self.assertIn("KMIPKIT-0043-FR-007", exclusion["evidence"])
+
+        parent_fields = {
+            "kmipkit_transport_config_v1_t.client_certificates": (
+                "kmipkit_transport::CertificateInput",
+                "KMIPKIT-0013-FR-004",
+            ),
+            "kmipkit_transport_config_v1_t.client_private_key": (
+                "kmipkit_transport::PrivateKeyInput",
+                "KMIPKIT-0013-FR-004",
+            ),
+            "kmipkit_transport_config_v1_t.trust_certificates": (
+                "kmipkit_transport::TrustSource::certificate_authorities",
+                "KMIPKIT-0013-FR-003",
+            ),
+            "kmipkit_transport_config_v1_t.revocation_lists": (
+                "kmipkit_transport::RevocationListInput",
+                "KMIPKIT-0013-FR-003",
+            ),
+        }
+        for path, (rust_target, requirement) in parent_fields.items():
+            with self.subTest(parent=path):
+                declaration = declarations[path]
+                self.assertEqual("declared", declaration["declarationState"])
+                self.assertIn(requirement, declaration["requirementIds"])
+                self.assertEqual(
+                    rust_target,
+                    declaration["languageMappings"]["rust"]["name"],
+                )
+
     def test_c_transport_and_result_fields_are_semantically_mapped_or_exactly_excluded(self) -> None:
         declarations = {
             row["exportName"]: row
