@@ -491,6 +491,42 @@ class T076ClientMappingTests(unittest.TestCase):
                     self.assertIsNotNone(target, f"missing exact {language} export target: {path}")
                     self.assertIn(target["declarationState"], {"declared", "verified"})
 
+    def test_client_batch_item_release_is_declared_for_c_error_cleanup(self) -> None:
+        release = next(
+            row
+            for row in self.manifest["publicDeclarations"]
+            if row["packageId"] == "c-kmipkit"
+            and row["exportName"] == "kmipkit_client_batch_item_release"
+        )
+        self.assertEqual("c-symbol", release["kind"])
+        self.assertEqual("declared", release["declarationState"])
+        self.assertEqual(
+            {
+                "rust": {
+                    "packageId": "rust-kmipkit-client",
+                    "name": "kmipkit_client::ClientBatchItem",
+                },
+                "c": {
+                    "packageId": "c-kmipkit",
+                    "name": "kmipkit_client_batch_item_release",
+                },
+                "java": {
+                    "packageId": "java-kmipkit",
+                    "name": "org.kmipkit.extensions.ClientBatchItem.close",
+                },
+                "python": {
+                    "packageId": "python-kmipkit",
+                    "name": "kmipkit.extensions.ClientBatchItem.close",
+                },
+            },
+            release["languageMappings"],
+        )
+        self.assertIn("KMIPKIT-0043-FR-021", release["requirementIds"])
+        header = (ROOT / "bindings/c/include/kmipkit.h").read_text(encoding="utf-8")
+        self.assertRegex(
+            header,
+            r"void\\s+kmipkit_client_batch_item_release\\s*\\(\\s*kmipkit_client_batch_item_t\\s*\\*\\s*handle\\s*\\)\\s*;",
+        )
     def test_ready_function_mappings_resolve_to_real_four_language_apis(self) -> None:
         expected = {
             "client_batch_add_error_continuation_value": (
