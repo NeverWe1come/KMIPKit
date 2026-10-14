@@ -1215,9 +1215,10 @@ coverage thresholds remain unchanged.
 | Green | `f7e7caa7` | Focused fallback tests; full Python coverage suite; `python -B -m unittest tools.api_manifest.tests.test_parity tools.api_manifest.tests.test_t076_client_mapping -q`; mapped Rust client/protocol/extension tests; `cargo test --locked -p kmipkit-ffi --features coverage-c-consumer --test c_api_coverage`; focused Java parity, extension, and client TLS tests | PASS: Python 183/183 at 98.56%; contract tests 42/42; mapped Rust tests passed; C consumer 4/4; Java selected suites passed. Final PR-head aggregate gate remains pending. |
 | Refactor | This commit | `python -B -m unittest scripts.tests.test_workflow -q`; `python -B tools/api_manifest/generate.py --check`; `cargo fmt --all --check`; `git diff --check` | Local checks pass; final PR-head CI and aggregate changed-code gate are pending. |
 
-This follow-up does not change production behavior or lower coverage gates. T076
-remains open pending the aggregate coverage result on the updated report, final
-PR-head CI, semantic parity review, and independent human security review.
+This follow-up does not change production behavior or lower coverage gates.
+At the time of this checkpoint, T076 remained open pending final-head CI and
+coverage plus independent semantic mapping review. The qualified human security
+review remains a 1.0 release gate; it is not represented as completed here.
 
 ### T076 consumer-mapping review corrections (2026-10-14)
 
@@ -1253,9 +1254,10 @@ the C mapping makes no unsupported claim about redacting a diagnostic string.
 | Green | `2b10df1e` | Shared parity mapping contract test; full C consumer suite | PASS: the contract verifies no diagnostic string output in the C last-error signature; the C consumer passed 4/4. |
 | Refactor | This commit | `python -B -m unittest tools.api_manifest.tests.test_parity tools.api_manifest.tests.test_t076_client_mapping -q`; `python -B -m unittest scripts.tests.test_workflow -q`; `python -B tools/api_manifest/generate.py --check`; `cargo fmt --all --check`; `git diff --check` | PASS: contract tests 42/42; workflow tests 43/43; 12 generated API outputs current; formatting and whitespace checks clean. Updated PR-head CI and aggregate changed-code coverage remain pending. |
 
-The remaining explicit shared-fixture blockers are the API-level taxonomy
-assigned to T077 and exact open-enumeration/child-order consumers in Rust, C,
-and Python. T076 therefore remains open; these entries are not counted as
+The shared fixture continues to mark API-level discovery as blocked for T077
+and the exact generic TTLV open-enumeration/child-order case as blocked for the
+Rust, C, and Python consumers. These are downstream parity items owned by T077
+and T029/T071 respectively; they are not T076 exit gates and are not claimed as
 four-language parity evidence.
 
 ### T076 composite batch exchange evidence (2026-10-14)
@@ -1278,5 +1280,33 @@ exchange.
 | Refactor | This commit | `git diff --check`; review fixture labels and implementation evidence against test behavior | Corrected the Python test name and recorded adapter-level versus transport-level evidence without overstating what the fake FFI observes. |
 
 This closes the batch evidence mapping correction only. T076 remains open for
-the previously recorded fixture blockers, final PR-head CI and coverage gates,
-and independent human review requirements.
+its final-head CI/coverage gates and confirmation of all T076-specific semantic
+mappings. The blocked API taxonomy and generic TTLV fixture cases are assigned
+to downstream tasks, not T076.
+
+### T076 export audit and gate-scope reconciliation (2026-10-14)
+
+At head `f2d9a661a5288c22712157ad423fe3d323f4028e`, the pinned binding export
+check completed successfully:
+
+| Package | Observed paths | Exact manifest matches | Missing | Unobserved | Kind mismatches | Issues |
+|---|---:|---:|---:|---:|---:|---:|
+| C | 272 | 242/242 | 0 | 0 | 0 | 0 |
+| Java | 481 | 442/442 | 0 | 0 | 0 | 0 |
+| Python | 556 | 425/425 | 0 | 0 | 0 | 0 |
+
+Command: `python -B tools/api_manifest/audit_binding_exports.py --repo-root . --check`.
+All observed paths outside the manifest are covered by the audit's exact exclusions.
+
+The T076 exit gates are the shared client declarations and their approved
+four-language mappings, compiled public C consumer and mixed-batch evidence,
+complete binding-export audit, semantic review, and required final-head CI.
+`api-levels.shared.v1` is owned by T077. The exact generic TTLV
+open-enumeration/child-order parity case is tracked by T029/T071. Those cases
+remain blocked until their owner work is complete, but they are not T076 exit
+gates.
+
+At the time this record was written, GitHub run `38527919451` had 31 successful
+checks and 2 skipped checks; `Coverage / macos` was still running. Independent
+semantic mapping review was in progress. No result is claimed for either pending
+gate.
