@@ -30,6 +30,56 @@ class CaseAuditError(ValueError):
     """Raised when the catalog and checksum-pinned case evidence disagree."""
 
 
+def _raw_href_value(raw_tag: str) -> str | None:
+    """Return the unmodified value of an actual href attribute in a start tag."""
+    html_whitespace = " \t\n\f\r"
+    if not raw_tag.startswith("<"):
+        return None
+
+    index = 1
+    while index < len(raw_tag) and raw_tag[index] not in html_whitespace + "/>":
+        index += 1
+
+    while index < len(raw_tag):
+        while index < len(raw_tag) and raw_tag[index] in html_whitespace:
+            index += 1
+        if index >= len(raw_tag) or raw_tag[index] in "/>":
+            return None
+
+        name_start = index
+        while index < len(raw_tag) and raw_tag[index] not in html_whitespace + "/>=":
+            index += 1
+        if index == name_start:
+            return None
+        attribute_name = raw_tag[name_start:index].casefold()
+
+        while index < len(raw_tag) and raw_tag[index] in html_whitespace:
+            index += 1
+        value: str | None = None
+        if index < len(raw_tag) and raw_tag[index] == "=":
+            index += 1
+            while index < len(raw_tag) and raw_tag[index] in html_whitespace:
+                index += 1
+            if index < len(raw_tag) and raw_tag[index] in "\"'":
+                quote = raw_tag[index]
+                value_start = index + 1
+                value_end = raw_tag.find(quote, value_start)
+                if value_end < 0:
+                    return None
+                value = raw_tag[value_start:value_end]
+                index = value_end + 1
+            else:
+                value_start = index
+                while index < len(raw_tag) and raw_tag[index] not in html_whitespace + ">":
+                    index += 1
+                value = raw_tag[value_start:index]
+
+        if attribute_name == "href":
+            return value
+
+    return None
+
+
 def _safe_read_bytes(repository: Path, relative_path: str, max_bytes: int) -> bytes:
     """Read a bounded regular file without following repository links."""
     if (
@@ -136,12 +186,7 @@ class _CaseHeadingParser(HTMLParser):
             self.heading_text = []
         elif tag == "a" and self.active_case is not None:
             raw_tag = self.get_starttag_text() or ""
-            href_match = re.search(
-                r"\shref\s*=\s*(?:([\"'])(.*?)\1|([^\s>]+))",
-                raw_tag,
-                re.IGNORECASE,
-            )
-            href = None if href_match is None else (href_match.group(2) or href_match.group(3))
+            href = _raw_href_value(raw_tag) if any(name.casefold() == "href" for name, _ in attrs) else None
             if href is not None:
                 self.active_case.hrefs.append(href)
         self.stack.append(tag)
