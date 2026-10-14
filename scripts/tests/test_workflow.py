@@ -457,6 +457,20 @@ class WorkflowContractTests(unittest.TestCase):
         self.assertIn("coverage", gate)
         self.assertIn("pattern: coverage-*", gate)
 
+    def test_ffi_coverage_collection_runs_unit_and_public_c_consumer_targets(self) -> None:
+        collector = (REPOSITORY_ROOT / "scripts" / "collect_ffi_coverage.sh").read_text(
+            encoding="utf-8"
+        )
+
+        self.assertIn(
+            "cargo llvm-cov --no-clean -p kmipkit-ffi --all-targets --all-features --locked",
+            collector,
+        )
+        self.assertIn("Running unittests src/lib\\.rs", collector)
+        self.assertIn("Running tests/c_api_coverage\\.rs", collector)
+        self.assertIn('test_binaries+=("${llvm_cov_target}/debug/deps/${test_binary_name}")', collector)
+        self.assertIn('for test_binary in "${test_binaries[@]}"', collector)
+
     def test_coverage_gate_waits_for_platform_and_adapter_reports(self) -> None:
         contents = self.require_workflow()
         job = self.require_job(contents, "coverage-gate")
