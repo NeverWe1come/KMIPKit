@@ -1407,5 +1407,6 @@ authority to `InvalidInputError`.
 The aggregate replay used a clean detached worktree at `d010054b` because local
 editable-package test artifacts add generated CFFI wrappers that are not part
 of source control. It used the run's downloaded LLVM/JaCoCo reports and a
-fresh Python report collected after the new test. A new full CI run on the
-updated PR head remains required.
+fresh Python report collected after the new test. Full CI run `38537129710`
+passed on head `53a028e7`. The PR remains a draft pending the remaining T076
+exit gates and review.
