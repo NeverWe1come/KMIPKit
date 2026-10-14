@@ -404,7 +404,7 @@ The following compact inventory gives each remaining oracle gap’s exact sectio
 | `KMIPKIT-SOURCE-GAP-SPEC-3.9-P` | spec, §3.9 9130–9148 | `profile_conditional` | `source_obligation_covered_by_existing_stable_label` | `KMIPKIT-REQ-SPEC-3.9-002` |
 | `KMIPKIT-SOURCE-GAP-SPEC-3.9-G` | spec, §3.9 9168–9186 | `profile_conditional` | `source_obligation_covered_by_existing_stable_label` | `KMIPKIT-REQ-SPEC-3.9-003` |
 | `KMIPKIT-SOURCE-GAP-SPEC-3.9-X` | spec, §3.9 9206–9224 | `profile_conditional` | `source_obligation_covered_by_existing_stable_label` | `KMIPKIT-REQ-SPEC-3.9-004` |
-| `KMIPKIT-SOURCE-GAP-SPEC-4.21-CLIENT-LOWERCASE-MAY` | spec, §4.21 13894–13901 | `client_1_0` | `client_capability_traced_to_existing_stable_label` | `KMIPKIT-REQ-SPEC-4.26-001` |
+| `KMIPKIT-SOURCE-GAP-SPEC-4.21-CLIENT-LOWERCASE-MAY` | spec, §4.21 13896–13897 | `client_1_0` | `source_obligation_covered_by_existing_stable_label` | `KMIPKIT-REQ-SPEC-4.26-001` |
 | `KMIPKIT-SOURCE-GAP-SPEC-4.24-CLIENT-FRESH-INPUT-EXCEPTION` | spec, §4.24 14444–14449 | `unresolved` | `actor-capability-classification-unresolved` | `—` |
 | `KMIPKIT-SOURCE-GAP-SPEC-4.28-001-SERVER-NONMUTATION` | spec, §4.28 15308–15313 | `server_only` | `server_actor_disposition_recorded` | `—` |
 | `KMIPKIT-SOURCE-GAP-SPEC-4.30-CLIENT-LEASE-READ-ONLY` | spec, §4.30 15638–15646 | `client_1_0` | `mapped_to_attribute_policy` | `—` |
@@ -472,7 +472,7 @@ There is one narrow overlap: KMIPKIT-0022 Register US8 explicitly preserves Key 
 
 ### §4.21 lowercase Key Format request atom (2026-10-15)
 
-The pinned KMIP Specification v2.1 paragraph is located at lines 13894–13901. Its client request atom begins at line 13896 and uses lowercase `may`; under §1.2 this is not the formal uppercase `MAY` keyword. The independent source-gap row now points to the existing `KMIPKIT-REQ-SPEC-4.26-001` as a traceability reference only. The formal client capability comes from §4.26 and is limited to Create, Create Key Pair, Create Split Key, Re-key, Re-key Key Pair, or Derive Key. Register is not included. The source review keeps §4.21's following server `SHALL` response as a distinct server-only atom. The only linked local executable test covers Create request serialization; it does not verify the other five operations or a server outcome, and no official OASIS Test Case ID is linked. The existing requirement's source clause remains §4.26 only; this mapping creates no new requirement or §4.21 catalog crosswalk.
+The pinned KMIP Specification v2.1 paragraph is located at lines 13894–13901; the source-gap entry uses the exact narrow span 13896–13897 for the lowercase client request atom. The helper-produced excerpt for that span is exact and ends at `and the`; the separate server `SHALL` begins on line 13898 and remains source obligation 6. The §4.21 source atom points to its source-gap record for traceability only; its `candidate_requirement_id` is null and the review expects no new §4.21 client requirement. The formal client capability comes from §4.26 and is limited to Create, Create Key Pair, Create Split Key, Re-key, Re-key Key Pair, or Derive Key. Register is not included. The existing requirement source clause remains §4.26 only. The only linked local executable test covers Create request serialization; it does not verify the other five operations or a server outcome, and no official OASIS Test Case ID is linked.
 
 ### Remaining T002 blockers and exact dispositions
 
