@@ -184,10 +184,17 @@ class SectionSixActorAndScopeRegressionTests(unittest.TestCase):
 
     def test_validate_feature_scope_does_not_attribute_passive_shall(self) -> None:
         requirement_id = "KMIPKIT-REQ-SPEC-6.1.57-006"
+        clause_id = "KMIPKIT-CLAUSE-SPEC-6.1.57-006"
         requirement = self.requirements[requirement_id]
-        review = self.reviews["KMIPKIT-CLAUSE-SPEC-6.1.57-006"]
+        clause = next(
+            row for row in self.catalog["source_clauses"] if row["clause_id"] == clause_id
+        )
+        review = self.reviews[clause_id]
         atom = review["source_obligations"][0]
 
+        self.assertEqual(clause["role"], "unclear")
+        self.assertEqual(clause["direction"], "client_to_server")
+        self.assertEqual(clause["scope_state"], "client_1_0")
         self.assertEqual(requirement["feature_spec"], "KMIPKIT-0042")
         self.assertEqual(requirement["role"], "unspecified")
         self.assertEqual(requirement["direction"], "client_to_server")
