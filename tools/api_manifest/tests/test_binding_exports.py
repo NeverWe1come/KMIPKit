@@ -387,6 +387,23 @@ class BindingExportAuditTests(unittest.TestCase):
         }.issubset(names))
         self.assertTrue(result["complete"])
 
+    def test_python_inventory_includes_package_constructor_inherited_from_private_base(self):
+        sources = {
+            "kmipkit/_handles.py": "class NativeHandle:\n    def __init__(self, handle): ...\n",
+            "kmipkit/client.py": textwrap.dedent("""
+                from ._handles import NativeHandle
+                __all__ = ["Client"]
+                class Client(NativeHandle):
+                    pass
+            """),
+        }
+        result = AUDIT.inventory_python_sources(sources)
+        declarations = {row["exportName"]: row for row in result["declarations"]}
+        constructor = declarations["kmipkit.client.Client.__init__"]
+        self.assertEqual(constructor["kind"], "python-export")
+        self.assertEqual(constructor["location"], "inherited:kmipkit._handles.NativeHandle:2")
+        self.assertTrue(result["complete"])
+
     def test_python_inventory_includes_public_instance_fields_assigned_in_init(self):
         source = textwrap.dedent("""
             class BatchResult:
