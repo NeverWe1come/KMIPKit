@@ -107,7 +107,6 @@ C_ABI_FIELD_EXCLUSIONS = {
 C_LAYOUT_TYPES = {
     "kmipkit_byte_span_v1_t",
     "kmipkit_client_batch_item_metadata_v1_t",
-    "kmipkit_timeout_limit_v1_t",
     "kmipkit_transport_config_v1_t",
     "kmipkit_transport_input_v1_t",
 }
@@ -1635,6 +1634,55 @@ class T076ClientMappingTests(unittest.TestCase):
                     f"kmipkit.client.RequestOptions.{field}",
                     declaration["languageMappings"]["python"]["name"],
                 )
+
+    def test_timeout_value_carrier_is_mapped_as_a_public_timeout_type(self) -> None:
+        timeout_type = next(
+            (row for row in self.manifest["types"] if row["id"] == "TimeoutLimit"),
+            None,
+        )
+        self.assertIsNotNone(
+            timeout_type,
+            "the request options ABI embeds the public per-field timeout value",
+        )
+        assert timeout_type is not None
+        self.assertEqual("kmipkit_timeout_limit_v1_t", timeout_type["c"]["name"])
+        self.assertEqual("fixed-width-value", timeout_type["c"]["kind"])
+        self.assertEqual(
+            ["kind", "reserved", "seconds", "nanoseconds", "reserved2"],
+            [field["name"] for field in timeout_type["c"]["fields"]],
+        )
+        self.assertEqual("TimeoutLimit", timeout_type["rust"]["name"])
+        self.assertEqual("Timeout", timeout_type["java"]["name"])
+        self.assertEqual("TimeoutLimit", timeout_type["python"]["name"])
+
+        c_type = next(
+            (
+                row
+                for row in self.manifest["publicDeclarations"]
+                if row["packageId"] == "c-kmipkit"
+                and row["exportName"] == "kmipkit_timeout_limit_v1_t"
+            ),
+            None,
+        )
+        self.assertIsNotNone(c_type, "the C timeout record must map to the shared timeout type")
+        self.assertEqual("declared", c_type["declarationState"])
+        self.assertEqual(
+            "kmipkit_transport::TimeoutLimit",
+            c_type["languageMappings"]["rust"]["name"],
+        )
+        self.assertEqual(
+            "org.kmipkit.extensions.TransportConfiguration.Timeout",
+            c_type["languageMappings"]["java"]["name"],
+        )
+        self.assertEqual(
+            "kmipkit.client.TimeoutLimit",
+            c_type["languageMappings"]["python"]["name"],
+        )
+        self.assertNotIn(
+            "kmipkit_timeout_limit_v1_t",
+            {row["exportName"] for row in self.manifest["approvedExclusions"]},
+            "a value used by the public per-exchange options ABI is semantic, not carrier-only",
+        )
 
     def test_last_error_get_is_mapped_to_shared_error_taxonomy(self) -> None:
         declarations = {
