@@ -1,5 +1,6 @@
 package org.kmipkit.extensions;
 
+import org.kmipkit.InvalidInputException;
 import org.kmipkit.NativeExtensionRegistry;
 import org.kmipkit.internal.NativeHandle;
 import org.kmipkit.ttlv.TtlvItemType;
@@ -27,7 +28,7 @@ public final class ExtensionInformation implements AutoCloseable {
 
     public static ExtensionInformation with_type(ExtensionInformation information, TtlvItemType type) {
         if (information == null || type == null) {
-            throw new org.kmipkit.InvalidInputException("extension information type input is invalid");
+            throw new InvalidInputException("extension information type input is invalid");
         }
         NativeExtensionRegistry.ensureLoaded();
         int typeCode = type.code();
@@ -86,7 +87,7 @@ public final class ExtensionInformation implements AutoCloseable {
 
     private static void requireText(String value) {
         if (value == null || value.isEmpty()) {
-            throw new org.kmipkit.InvalidInputException("extension metadata text is invalid");
+            throw new InvalidInputException("extension metadata text is invalid");
         }
         ExtensionText.requireWithinLimit(value, "extension metadata text");
     }

@@ -1,7 +1,7 @@
 package org.kmipkit.ttlv;
 
-import org.kmipkit.NativeExtensionRegistry;
 import org.kmipkit.InvalidInputException;
+import org.kmipkit.NativeExtensionRegistry;
 import org.kmipkit.internal.NativeHandle;
 
 /** An owned tag/value pair for insertion into a generic TTLV Structure. */
