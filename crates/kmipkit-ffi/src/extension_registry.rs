@@ -1,9 +1,12 @@
 //! C ABI implementation for the manifest-backed extension registry API.
 #![allow(clippy::missing_safety_doc, clippy::too_many_arguments)]
 
+use aws_lc_rs::{hmac, rand};
 use std::panic::{AssertUnwindSafe, catch_unwind};
 use std::ptr;
-use std::sync::Arc;
+use std::sync::atomic::{AtomicUsize, Ordering};
+use std::sync::{Arc, Mutex, OnceLock};
+use std::{collections::HashMap, collections::hash_map::Entry};
 use std::{fs, io::Read};
 
 use crate::{
@@ -46,14 +49,14 @@ use std::time::Duration;
 #[path = "../tests/support/metadata_tests.rs"]
 mod metadata_tests;
 #[cfg(test)]
+#[path = "../tests/support/opaque_handle_validation_tests.rs"]
+mod opaque_handle_validation_tests;
+#[cfg(test)]
 #[path = "../tests/support/registry_preflight_tests.rs"]
 mod registry_preflight_tests;
 #[cfg(test)]
 #[path = "../tests/support/view_ownership_tests.rs"]
 mod view_ownership_tests;
-#[cfg(test)]
-#[path = "../tests/support/opaque_handle_validation_tests.rs"]
-mod opaque_handle_validation_tests;
 
 #[cfg(test)]
 thread_local! {
@@ -302,7 +305,7 @@ enum HandleValue {
     RawTag(RawTag),
     Tag(Tag),
     Item(Item),
-    CodecLimits(CodecLimits),
+    CodecLimits(Arc<CodecLimits>),
     StructureView(TtlvView),
     ItemView(TtlvView),
     ValueView(TtlvView),
@@ -639,20 +642,145 @@ fn resolve_value_path<R>(
 
 type FfiResult<T> = Result<T, i32>;
 
-fn make_handle<T>(kind: Kind, value: HandleValue) -> *mut T {
-    Arc::into_raw(Arc::new(Handle { kind, value }))
-        .cast_mut()
-        .cast()
+const TOKEN_HALF_BITS: u32 = usize::BITS / 2;
+const TOKEN_HALF_MASK: usize = (1_usize << TOKEN_HALF_BITS) - 1;
+const TOKEN_MAX: usize = isize::MAX as usize;
+const TOKEN_ROUNDS: u8 = 8;
+const TOKEN_CYCLE_WALK_LIMIT: usize = 128;
+const TOKEN_DOMAIN: &[u8] = b"KMIPKit FFI opaque handle token v1";
+const RIGHT_BYTES_OFFSET: usize = std::mem::size_of::<usize>() - std::mem::size_of::<u32>();
+
+fn cycle_walk_token(mut token: usize, mut permute: impl FnMut(usize) -> usize) -> FfiResult<usize> {
+    for _ in 0..TOKEN_CYCLE_WALK_LIMIT {
+        token = permute(token);
+        if (1..=TOKEN_MAX).contains(&token) {
+            return Ok(token);
+        }
+    }
+    Err(ERROR_RESOURCE_LIMIT)
 }
 
-fn reference_handle<T>(pointer: &*mut T, expected: Kind) -> FfiResult<&Handle> {
+struct HandleRegistry {
+    next_sequence: AtomicUsize,
+    token_key: hmac::Key,
+    handles: Mutex<HashMap<usize, Arc<Handle>>>,
+}
+
+impl HandleRegistry {
+    fn new() -> FfiResult<Self> {
+        let token_key = hmac::Key::generate(hmac::HMAC_SHA256, &rand::SystemRandom::new())
+            .map_err(|_| ERROR_INTERNAL)?;
+        Ok(Self::with_token_key(token_key))
+    }
+
+    fn with_token_key(token_key: hmac::Key) -> Self {
+        Self {
+            next_sequence: AtomicUsize::new(1),
+            token_key,
+            handles: Mutex::new(HashMap::new()),
+        }
+    }
+
+    #[cfg(test)]
+    fn with_test_key(key: &[u8]) -> Self {
+        Self::with_token_key(hmac::Key::new(hmac::HMAC_SHA256, key))
+    }
+
+    fn allocate_id(&self) -> FfiResult<usize> {
+        let mut current = self.next_sequence.load(Ordering::Relaxed);
+        loop {
+            if current == 0 || current > TOKEN_MAX {
+                return Err(ERROR_RESOURCE_LIMIT);
+            }
+            let next = if current == TOKEN_MAX { 0 } else { current + 1 };
+            match self.next_sequence.compare_exchange_weak(
+                current,
+                next,
+                Ordering::Relaxed,
+                Ordering::Relaxed,
+            ) {
+                Ok(_) => return self.token_for_sequence(current),
+                Err(observed) => current = observed,
+            }
+        }
+    }
+
+    fn token_for_sequence(&self, sequence: usize) -> FfiResult<usize> {
+        debug_assert!((1..=TOKEN_MAX).contains(&sequence));
+        cycle_walk_token(sequence, |token| self.permute(token))
+    }
+
+    // A keyed Feistel permutation hides the monotonic sequence while preserving uniqueness.
+    // Bounded cycle walking excludes null and high-bit pointer values without collisions.
+    fn permute(&self, input: usize) -> usize {
+        let mut left = (input >> TOKEN_HALF_BITS) & TOKEN_HALF_MASK;
+        let mut right = input & TOKEN_HALF_MASK;
+
+        for round in 0..TOKEN_ROUNDS {
+            let mut context = hmac::Context::with_key(&self.token_key);
+            context.update(TOKEN_DOMAIN);
+            context.update(&[round]);
+            let right_bytes = right.to_be_bytes();
+            context.update(&right_bytes[RIGHT_BYTES_OFFSET..]);
+            let tag = context.sign();
+            let digest = tag.as_ref();
+            let round_key = u32::from_be_bytes([digest[0], digest[1], digest[2], digest[3]])
+                as usize
+                & TOKEN_HALF_MASK;
+            (left, right) = (right, (left ^ round_key) & TOKEN_HALF_MASK);
+        }
+
+        (left << TOKEN_HALF_BITS) | right
+    }
+}
+
+static HANDLE_REGISTRY: OnceLock<FfiResult<HandleRegistry>> = OnceLock::new();
+
+fn handle_registry() -> FfiResult<&'static HandleRegistry> {
+    HANDLE_REGISTRY
+        .get_or_init(HandleRegistry::new)
+        .as_ref()
+        .map_err(|status| *status)
+}
+
+fn handle_id<T>(pointer: *mut T) -> FfiResult<usize> {
     if pointer.is_null() {
         return Err(ERROR_INVALID_INPUT);
     }
-    // SAFETY: non-null opaque handle pointers must be live KMIPKit handles; dangling and foreign
-    // pointers are documented caller precondition violations. The envelope discriminator is
-    // checked before any payload is accessed.
-    let handle = unsafe { &*(*pointer).cast::<Handle>() };
+    // Opaque tokens have no pointer provenance and are never dereferenced. Their address bits are
+    // used only as keys into the live-handle table.
+    Ok(pointer.addr())
+}
+
+fn try_make_handle<T>(kind: Kind, value: HandleValue) -> FfiResult<*mut T> {
+    let registry = handle_registry()?;
+    let id = registry.allocate_id()?;
+    let handle = Arc::new(Handle { kind, value });
+    let mut handles = registry.handles.lock().map_err(|_| ERROR_INTERNAL)?;
+    match handles.entry(id) {
+        Entry::Vacant(entry) => {
+            entry.insert(handle);
+        }
+        Entry::Occupied(_) => return Err(ERROR_INTERNAL),
+    }
+    Ok(ptr::without_provenance_mut(id))
+}
+
+#[cfg(test)]
+fn make_handle<T>(kind: Kind, value: HandleValue) -> *mut T {
+    match try_make_handle(kind, value) {
+        Ok(handle) => handle,
+        Err(status) => panic!("test handle allocation failed with status {status}"),
+    }
+}
+
+fn reference_handle<T>(pointer: *mut T, expected: Kind) -> FfiResult<Arc<Handle>> {
+    let id = handle_id(pointer)?;
+    let handles = handle_registry()?
+        .handles
+        .lock()
+        .map_err(|_| ERROR_INTERNAL)?;
+    let handle = handles.get(&id).cloned().ok_or(ERROR_INVALID_INPUT)?;
     if handle.kind != expected {
         return Err(ERROR_INVALID_INPUT);
     }
@@ -660,25 +788,19 @@ fn reference_handle<T>(pointer: &*mut T, expected: Kind) -> FfiResult<&Handle> {
 }
 
 fn clone_handle_owner<T>(pointer: *mut T, expected: Kind) -> FfiResult<Arc<Handle>> {
-    if pointer.is_null() {
-        return Err(ERROR_INVALID_INPUT);
-    }
-    let handle = reference_handle(&pointer, expected)?;
-    let _ = handle;
-    // SAFETY: the handle reference was validated above and the C caller keeps its strong reference
-    // live for the duration of this call. Incrementing before reconstructing creates one owned copy.
-    unsafe {
-        Arc::increment_strong_count(pointer.cast::<Handle>());
-    }
-    // SAFETY: the preceding increment produced exactly one strong reference for this Arc.
-    Ok(unsafe { Arc::from_raw(pointer.cast::<Handle>()) })
+    reference_handle(pointer, expected)
 }
 
-fn consume_owner<T>(pointer: *mut T) -> Arc<Handle> {
-    // SAFETY: callers validate that this is a live KMIPKit handle and preflight every handle in
-    // the operation before transferring any consumed handle. Dangling and foreign pointers remain
-    // caller precondition violations.
-    unsafe { Arc::from_raw(pointer.cast::<Handle>()) }
+fn consume_owner<T>(pointer: *mut T, expected: Kind) -> FfiResult<Arc<Handle>> {
+    let id = handle_id(pointer)?;
+    let mut handles = handle_registry()?
+        .handles
+        .lock()
+        .map_err(|_| ERROR_INTERNAL)?;
+    match handles.entry(id) {
+        Entry::Occupied(entry) if entry.get().kind == expected => Ok(entry.remove()),
+        Entry::Occupied(_) | Entry::Vacant(_) => Err(ERROR_INVALID_INPUT),
+    }
 }
 
 fn unwrap_payload(handle: Arc<Handle>) -> FfiResult<HandleValue> {
@@ -692,8 +814,7 @@ fn unwrap_payload(handle: Arc<Handle>) -> FfiResult<HandleValue> {
 }
 
 fn owned_payload<T>(pointer: *mut T, expected: Kind) -> FfiResult<HandleValue> {
-    let _ = reference_handle(&pointer, expected)?;
-    unwrap_payload(consume_owner(pointer))
+    unwrap_payload(consume_owner(pointer, expected)?)
 }
 
 macro_rules! out_slot {
@@ -767,8 +888,8 @@ fn input_handle_array<T, U>(
         .try_reserve_exact(pointers.len())
         .map_err(|_| ERROR_RESOURCE_LIMIT)?;
     for pointer in pointers {
-        let handle = reference_handle(pointer, kind)?;
-        result.push(copy(handle)?);
+        let handle = reference_handle(*pointer, kind)?;
+        result.push(copy(&handle)?);
     }
     Ok(result)
 }
@@ -800,8 +921,8 @@ fn copy_registry_definitions(
     let mut preflight = client_extension::RegistryDefinitionPreflight::new(count, limits)
         .map_err(|error| protocol_status(&error))?;
     for pointer in pointers {
-        let handle = reference_handle(pointer, Kind::Definition)?;
-        let definition = definition_from_handle(handle)?;
+        let handle = reference_handle(*pointer, Kind::Definition)?;
+        let definition = definition_from_handle(&handle)?;
         preflight
             .add_definition(definition)
             .map_err(|error| protocol_status(&error))?;
@@ -815,8 +936,8 @@ fn copy_registry_definitions(
         .try_reserve_exact(pointers.len())
         .map_err(|_| ERROR_RESOURCE_LIMIT)?;
     for pointer in pointers {
-        let handle = reference_handle(pointer, Kind::Definition)?;
-        copied.push(copy(definition_from_handle(handle)?)?);
+        let handle = reference_handle(*pointer, Kind::Definition)?;
+        copied.push(copy(definition_from_handle(&handle)?)?);
     }
     Ok(copied)
 }
@@ -968,9 +1089,9 @@ fn limits_from_versioned(
 
 fn registry_from_handle(
     handle: &Handle,
-) -> FfiResult<&Arc<client_extension::ClientExtensionRegistry>> {
+) -> FfiResult<Arc<client_extension::ClientExtensionRegistry>> {
     match &handle.value {
-        HandleValue::Registry(registry) => Ok(registry),
+        HandleValue::Registry(registry) => Ok(Arc::clone(registry)),
         _ => Err(ERROR_INVALID_INPUT),
     }
 }
@@ -1001,17 +1122,16 @@ fn validated_from_handle(
 }
 
 fn reference_registry(
-    pointer: &*mut kmipkit_client_extension_registry_t,
-) -> FfiResult<&Arc<client_extension::ClientExtensionRegistry>> {
+    pointer: *mut kmipkit_client_extension_registry_t,
+) -> FfiResult<Arc<client_extension::ClientExtensionRegistry>> {
     let handle = reference_handle(pointer, Kind::Registry)?;
-    registry_from_handle(handle)
+    registry_from_handle(&handle)
 }
 
 fn release<T>(pointer: *mut T, kind: Kind) {
-    if reference_handle(&pointer, kind).is_err() {
-        return;
+    if let Ok(handle) = consume_owner(pointer, kind) {
+        drop(handle);
     }
-    drop(consume_owner(pointer));
 }
 
 #[unsafe(no_mangle)]
@@ -1347,7 +1467,7 @@ pub extern "C" fn kmipkit_last_error_clear() -> i32 {
 
 macro_rules! read_handle {
     ($pointer:expr, $kind:ident) => {
-        try_ffi!(reference_handle(&$pointer, Kind::$kind))
+        try_ffi!(reference_handle($pointer, Kind::$kind))
     };
 }
 
@@ -1379,7 +1499,10 @@ pub extern "C" fn kmipkit_extension_identity_create(
         let value = try_ffi!(
             extension::extension_identity(vendor, name, version).map_err(|e| protocol_status(&e))
         );
-        *out = make_handle(Kind::Identity, HandleValue::Identity(value));
+        *out = try_ffi!(try_make_handle(
+            Kind::Identity,
+            HandleValue::Identity(value)
+        ));
         SUCCESS
     })
 }
@@ -1395,10 +1518,10 @@ pub extern "C" fn kmipkit_extension_identity_vendor_identifier(
         let HandleValue::Identity(identity) = &identity.value else {
             return record_ffi_error(ERROR_INVALID_INPUT);
         };
-        *out = make_handle(
+        *out = try_ffi!(try_make_handle(
             Kind::Value,
             HandleValue::Value(Value::text_string(identity.vendor_identifier().to_owned())),
-        );
+        ));
         SUCCESS
     })
 }
@@ -1414,10 +1537,10 @@ pub extern "C" fn kmipkit_extension_identity_name(
         let HandleValue::Identity(identity) = &identity.value else {
             return record_ffi_error(ERROR_INVALID_INPUT);
         };
-        *out = make_handle(
+        *out = try_ffi!(try_make_handle(
             Kind::Value,
             HandleValue::Value(Value::text_string(identity.name().to_owned())),
-        );
+        ));
         SUCCESS
     })
 }
@@ -1433,10 +1556,10 @@ pub extern "C" fn kmipkit_extension_identity_version(
         let HandleValue::Identity(identity) = &identity.value else {
             return record_ffi_error(ERROR_INVALID_INPUT);
         };
-        *out = make_handle(
+        *out = try_ffi!(try_make_handle(
             Kind::Value,
             HandleValue::Value(Value::text_string(identity.version().to_owned())),
-        );
+        ));
         SUCCESS
     })
 }
@@ -1480,10 +1603,10 @@ pub extern "C" fn kmipkit_extension_compatibility_create(
             )
             .map_err(|e| protocol_status(&e))
         );
-        *out = make_handle(
+        *out = try_ffi!(try_make_handle(
             Kind::Compatibility,
             HandleValue::Compatibility(compatibility),
-        );
+        ));
         SUCCESS
     })
 }
@@ -1498,7 +1621,7 @@ pub extern "C" fn kmipkit_ttlv_path_create(
         let tag = try_ffi!(RawTag::new(first_tag).map_err(model_status));
         let tag = try_ffi!(tag.try_checked().map_err(model_status));
         let path = try_ffi!(extension::ttlv_path(tag).map_err(|e| protocol_status(&e)));
-        *out = make_handle(Kind::Path, HandleValue::Path(path));
+        *out = try_ffi!(try_make_handle(Kind::Path, HandleValue::Path(path)));
         SUCCESS
     })
 }
@@ -1518,7 +1641,7 @@ pub extern "C" fn kmipkit_ttlv_path_with_child_tag(
         let tag = try_ffi!(RawTag::new(tag).map_err(model_status));
         let tag = try_ffi!(tag.try_checked().map_err(model_status));
         let path = try_ffi!(extension::with_child_tag(path, tag).map_err(|e| protocol_status(&e)));
-        *out = make_handle(Kind::Path, HandleValue::Path(path));
+        *out = try_ffi!(try_make_handle(Kind::Path, HandleValue::Path(path)));
         SUCCESS
     })
 }
@@ -1533,8 +1656,8 @@ pub extern "C" fn kmipkit_extension_discriminator_create(
         let out = out_slot!(out_discriminator);
         let _ = read_handle!(path, Path);
         let _ = read_handle!(scalar_value, Value);
-        let path = consume_owner(path);
-        let scalar = consume_owner(scalar_value);
+        let path = try_ffi!(consume_owner(path, Kind::Path));
+        let scalar = try_ffi!(consume_owner(scalar_value, Kind::Value));
         let path = try_ffi!(unwrap_payload(path));
         let scalar = try_ffi!(unwrap_payload(scalar));
         let HandleValue::Path(path) = path else {
@@ -1545,10 +1668,10 @@ pub extern "C" fn kmipkit_extension_discriminator_create(
         };
         let discriminator =
             try_ffi!(extension::discriminator(path, scalar).map_err(|e| protocol_status(&e)));
-        *out = make_handle(
+        *out = try_ffi!(try_make_handle(
             Kind::Discriminator,
             HandleValue::Discriminator(discriminator),
-        );
+        ));
         SUCCESS
     })
 }
@@ -1562,7 +1685,7 @@ pub extern "C" fn kmipkit_extension_schema_scalar(
         let out = out_slot!(out_schema);
         let item_type = try_ffi!(item_type_from_u32(item_type));
         let schema = try_ffi!(extension::scalar(item_type).map_err(|e| protocol_status(&e)));
-        *out = make_handle(Kind::Schema, HandleValue::Schema(schema));
+        *out = try_ffi!(try_make_handle(Kind::Schema, HandleValue::Schema(schema)));
         SUCCESS
     })
 }
@@ -1611,7 +1734,10 @@ fn child_rule_export(
     let tag = try_ffi!(RawTag::new(raw_tag).map_err(model_status));
     let tag = try_ffi!(tag.try_checked().map_err(model_status));
     let rule = try_ffi!(build(tag, schema.clone()).map_err(|e| protocol_status(&e)));
-    *out = make_handle(Kind::ChildRule, HandleValue::ChildRule(Box::new(rule)));
+    *out = try_ffi!(try_make_handle(
+        Kind::ChildRule,
+        HandleValue::ChildRule(Box::new(rule))
+    ));
     SUCCESS
 }
 
@@ -1630,10 +1756,10 @@ pub extern "C" fn kmipkit_extension_order_constraint_create(
         let constraint = try_ffi!(
             extension::extension_order_constraint(before, after).map_err(|e| protocol_status(&e))
         );
-        *out = make_handle(
+        *out = try_ffi!(try_make_handle(
             Kind::OrderConstraint,
             HandleValue::OrderConstraint(constraint),
-        );
+        ));
         SUCCESS
     })
 }
@@ -1680,7 +1806,7 @@ pub extern "C" fn kmipkit_extension_schema_structure(
             )
             .map_err(|e| protocol_status(&e))
         );
-        *out = make_handle(Kind::Schema, HandleValue::Schema(schema));
+        *out = try_ffi!(try_make_handle(Kind::Schema, HandleValue::Schema(schema)));
         SUCCESS
     })
 }
@@ -1791,7 +1917,7 @@ fn schema_transform(
         return record_ffi_error(ERROR_INVALID_INPUT);
     };
     let schema = try_ffi!(transform(schema).map_err(|e| protocol_status(&e)));
-    *out = make_handle(Kind::Schema, HandleValue::Schema(schema));
+    *out = try_ffi!(try_make_handle(Kind::Schema, HandleValue::Schema(schema)));
     SUCCESS
 }
 
@@ -1837,10 +1963,10 @@ pub extern "C" fn kmipkit_extension_definition_create(
             )
             .map_err(|e| protocol_status(&e))
         );
-        *out = make_handle(
+        *out = try_ffi!(try_make_handle(
             Kind::Definition,
             HandleValue::Definition(Box::new(definition)),
-        );
+        ));
         SUCCESS
     })
 }
@@ -1910,7 +2036,10 @@ pub extern "C" fn kmipkit_client_extension_registry_create_v1(
             client_extension::client_extension_registry(copied, limits)
                 .map_err(|error| client_status(&error))
         );
-        *out = make_handle(Kind::Registry, HandleValue::Registry(Arc::new(registry)));
+        *out = try_ffi!(try_make_handle(
+            Kind::Registry,
+            HandleValue::Registry(Arc::new(registry))
+        ));
         SUCCESS
     })
 }
@@ -2057,7 +2186,10 @@ pub extern "C" fn kmipkit_client_extension_registry_create(
             client_extension::client_extension_registry(copied, limits)
                 .map_err(|error| client_status(&error))
         );
-        *out = make_handle(Kind::Registry, HandleValue::Registry(Arc::new(registry)));
+        *out = try_ffi!(try_make_handle(
+            Kind::Registry,
+            HandleValue::Registry(Arc::new(registry))
+        ));
         SUCCESS
     })
 }
@@ -2074,10 +2206,10 @@ pub extern "C" fn kmipkit_client_configuration_create(
             return record_ffi_error(ERROR_INVALID_INPUT);
         };
         let configuration = client_extension::ClientConfiguration::from_shared_registry(registry);
-        *out = make_handle(
+        *out = try_ffi!(try_make_handle(
             Kind::Configuration,
             HandleValue::Configuration(configuration),
-        );
+        ));
         SUCCESS
     })
 }
@@ -2094,7 +2226,10 @@ pub extern "C" fn kmipkit_client_configuration_extension_registry(
             return record_ffi_error(ERROR_INVALID_INPUT);
         };
         let registry = configuration.shared_extension_registry();
-        *out = make_handle(Kind::Registry, HandleValue::Registry(registry));
+        *out = try_ffi!(try_make_handle(
+            Kind::Registry,
+            HandleValue::Registry(registry)
+        ));
         SUCCESS
     })
 }
@@ -2106,8 +2241,8 @@ pub extern "C" fn kmipkit_client_extension_registry_definition_count(
 ) -> i32 {
     ffi_entrypoint(|| {
         let count = scalar_out!(out_count);
-        let registry = try_ffi!(reference_registry(&registry));
-        *count = client_extension::definition_count(registry);
+        let registry = try_ffi!(reference_registry(registry));
+        *count = client_extension::definition_count(&registry);
         SUCCESS
     })
 }
@@ -2120,18 +2255,18 @@ pub extern "C" fn kmipkit_client_extension_registry_definition_at(
 ) -> i32 {
     ffi_entrypoint(|| {
         let out = out_slot!(out_definition);
-        let registry = try_ffi!(reference_registry(&registry));
+        let registry = try_ffi!(reference_registry(registry));
         let Some(index) = usize::try_from(index).ok() else {
             return SUCCESS;
         };
-        if client_extension::definition_at(registry, index).is_some() {
-            *out = make_handle(
+        if client_extension::definition_at(&registry, index).is_some() {
+            *out = try_ffi!(try_make_handle(
                 Kind::Definition,
                 HandleValue::DefinitionRef {
-                    registry: Arc::clone(registry),
+                    registry: Arc::clone(&registry),
                     index,
                 },
-            );
+            ));
         }
         SUCCESS
     })
@@ -2145,25 +2280,25 @@ pub extern "C" fn kmipkit_client_extension_registry_definition_for_identity(
 ) -> i32 {
     ffi_entrypoint(|| {
         let out = out_slot!(out_definition);
-        let registry = try_ffi!(reference_registry(&registry));
+        let registry = try_ffi!(reference_registry(registry));
         let identity_handle = read_handle!(identity, Identity);
         let HandleValue::Identity(identity) = &identity_handle.value else {
             return record_ffi_error(ERROR_INVALID_INPUT);
         };
-        let found = (0..client_extension::definition_count(registry)).find(|index| {
+        let found = (0..client_extension::definition_count(&registry)).find(|index| {
             usize::try_from(*index)
                 .ok()
-                .and_then(|position| client_extension::definition_at(registry, position))
+                .and_then(|position| client_extension::definition_at(&registry, position))
                 .is_some_and(|definition| definition.identity_ref() == identity)
         });
         if let Some(index) = found.and_then(|value| usize::try_from(value).ok()) {
-            *out = make_handle(
+            *out = try_ffi!(try_make_handle(
                 Kind::Definition,
                 HandleValue::DefinitionRef {
-                    registry: Arc::clone(registry),
+                    registry: Arc::clone(&registry),
                     index,
                 },
-            );
+            ));
         }
         SUCCESS
     })
@@ -2179,7 +2314,7 @@ pub extern "C" fn kmipkit_client_extension_registry_validate(
 ) -> i32 {
     ffi_entrypoint(|| {
         let out = out_slot!(out_value);
-        let registry = try_ffi!(reference_registry(&registry));
+        let registry = try_ffi!(reference_registry(registry));
         let identity_handle = read_handle!(identity, Identity);
         let structure_handle = read_handle!(value, Structure);
         let limits_handle = read_handle!(limits, CodecLimits);
@@ -2197,10 +2332,13 @@ pub extern "C" fn kmipkit_client_extension_registry_validate(
         };
         let value = try_ffi!(clone_structure(value));
         let registered = try_ffi!(
-            client_extension::validate_extension_value(registry, identity.clone(), value, limits,)
+            client_extension::validate_extension_value(&registry, identity.clone(), value, limits,)
                 .map_err(|error| client_status(&error))
         );
-        *out = make_handle(Kind::Registered, HandleValue::Registered(registered));
+        *out = try_ffi!(try_make_handle(
+            Kind::Registered,
+            HandleValue::Registered(registered)
+        ));
         SUCCESS
     })
 }
@@ -2216,11 +2354,11 @@ pub extern "C" fn kmipkit_client_extension_registry_inspect(
 ) -> i32 {
     ffi_entrypoint(|| {
         let out = out_slot!(out_value);
-        let registry = try_ffi!(reference_registry(&registry));
+        let registry = try_ffi!(reference_registry(registry));
         let vendor = try_ffi!(input_span(
             vendor_identifier_data,
             vendor_identifier_length,
-            client_extension::limits(registry).max_text_bytes_per_field()
+            client_extension::limits(&registry).max_text_bytes_per_field()
         ));
         let vendor = try_ffi!(std::str::from_utf8(vendor).map_err(|_| ERROR_INVALID_INPUT));
         let structure_handle = read_handle!(value, Structure);
@@ -2232,10 +2370,13 @@ pub extern "C" fn kmipkit_client_extension_registry_inspect(
         };
         let value = try_ffi!(clone_structure(value));
         let recognition = try_ffi!(
-            client_extension::inspect(registry, vendor, value, limits)
+            client_extension::inspect(&registry, vendor, value, limits)
                 .map_err(|error| client_status(&error))
         );
-        *out = make_handle(Kind::Recognition, HandleValue::Recognition(recognition));
+        *out = try_ffi!(try_make_handle(
+            Kind::Recognition,
+            HandleValue::Recognition(recognition)
+        ));
         SUCCESS
     })
 }
@@ -2250,7 +2391,7 @@ pub extern "C" fn kmipkit_extension_definition_validate(
     ffi_entrypoint(|| {
         let out = out_slot!(out_value);
         let definition_handle = read_handle!(definition, Definition);
-        let definition = try_ffi!(definition_from_handle(definition_handle));
+        let definition = try_ffi!(definition_from_handle(&definition_handle));
         let value_handle = read_handle!(value, Structure);
         let limits_handle = read_handle!(limits, CodecLimits);
         let (HandleValue::Structure(value), HandleValue::CodecLimits(limits)) =
@@ -2262,7 +2403,10 @@ pub extern "C" fn kmipkit_extension_definition_validate(
         let validated = try_ffi!(
             extension::validate(definition, value, limits).map_err(|error| protocol_status(&error))
         );
-        *out = make_handle(Kind::Validated, HandleValue::Validated(validated));
+        *out = try_ffi!(try_make_handle(
+            Kind::Validated,
+            HandleValue::Validated(validated)
+        ));
         SUCCESS
     })
 }
@@ -2287,10 +2431,10 @@ pub extern "C" fn kmipkit_client_request_message_extension_create(
             client_extension::client_request_message_extension(value, criticality_indicator == 1,)
                 .map_err(|error| client_status(&error))
         );
-        *out = make_handle(
+        *out = try_ffi!(try_make_handle(
             Kind::MessageExtension,
             HandleValue::MessageExtension(extension),
-        );
+        ));
         SUCCESS
     })
 }
@@ -2305,8 +2449,8 @@ pub extern "C" fn kmipkit_client_batch_item_with_extension(
         let out = out_slot!(out_item);
         let _ = read_handle!(item, BatchItem);
         let _ = read_handle!(extension, MessageExtension);
-        let item = consume_owner(item);
-        let extension = consume_owner(extension);
+        let item = try_ffi!(consume_owner(item, Kind::BatchItem));
+        let extension = try_ffi!(consume_owner(extension, Kind::MessageExtension));
         let item = try_ffi!(unwrap_payload(item));
         let extension = try_ffi!(unwrap_payload(extension));
         let (HandleValue::BatchItem(item), HandleValue::MessageExtension(extension)) =
@@ -2314,10 +2458,10 @@ pub extern "C" fn kmipkit_client_batch_item_with_extension(
         else {
             return record_ffi_error(ERROR_INVALID_INPUT);
         };
-        *out = make_handle(
+        *out = try_ffi!(try_make_handle(
             Kind::BatchItem,
             HandleValue::BatchItem(Box::new(item.with_extension(extension))),
-        );
+        ));
         SUCCESS
     })
 }
@@ -2333,15 +2477,15 @@ pub extern "C" fn kmipkit_client_batch_item_with_unique_batch_item_id(
         let out = out_slot!(out_item);
         let _ = read_handle!(item, BatchItem);
         let id = try_ffi!(input_span(id_data, id_length, MAX_FFI_INPUT_BYTES,));
-        let item = consume_owner(item);
+        let item = try_ffi!(consume_owner(item, Kind::BatchItem));
         let item = try_ffi!(unwrap_payload(item));
         let HandleValue::BatchItem(item) = item else {
             return record_ffi_error(ERROR_INVALID_INPUT);
         };
-        *out = make_handle(
+        *out = try_ffi!(try_make_handle(
             Kind::BatchItem,
             HandleValue::BatchItem(Box::new(item.with_unique_batch_item_id(id.to_vec()))),
-        );
+        ));
         SUCCESS
     })
 }
@@ -2352,10 +2496,10 @@ pub extern "C" fn kmipkit_client_batch_item_discover_versions(
 ) -> i32 {
     ffi_entrypoint(|| {
         let out = out_slot!(out_item);
-        *out = make_handle(
+        *out = try_ffi!(try_make_handle(
             Kind::BatchItem,
             HandleValue::BatchItem(Box::new(ClientBatchItem::discover_versions())),
-        );
+        ));
         SUCCESS
     })
 }
@@ -2374,8 +2518,8 @@ pub extern "C" fn kmipkit_register_request_create(
 
         // Transfer both owners before the first fallible unwrap so an error cannot strand the
         // second consumed input in a language binding that has already disarmed both wrappers.
-        let attributes_owner = consume_owner(attributes);
-        let object_owner = consume_owner(object);
+        let attributes_owner = try_ffi!(consume_owner(attributes, Kind::Structure));
+        let object_owner = try_ffi!(consume_owner(object, Kind::Item));
         let attributes = try_ffi!(unwrap_payload(attributes_owner));
         let HandleValue::Structure(attributes) = attributes else {
             return record_ffi_error(ERROR_INVALID_INPUT);
@@ -2399,10 +2543,10 @@ pub extern "C" fn kmipkit_register_request_create(
             Err(_error) => return record_ffi_error(ERROR_INVALID_INPUT),
         };
         let request = RegisterRequest::new(ObjectType::from_raw(object_type), attributes, object);
-        *out = make_handle(
+        *out = try_ffi!(try_make_handle(
             Kind::RegisterRequest,
             HandleValue::RegisterRequest(Box::new(request)),
-        );
+        ));
         SUCCESS
     })
 }
@@ -2425,10 +2569,10 @@ pub extern "C" fn kmipkit_register_request_with_opaque_object_context(
             2 => OpaqueObjectContext::ManagedCryptographicObject,
             _ => return record_ffi_error(ERROR_INVALID_INPUT),
         };
-        *out = make_handle(
+        *out = try_ffi!(try_make_handle(
             Kind::RegisterRequest,
             HandleValue::RegisterRequest(Box::new(request.with_opaque_object_context(context))),
-        );
+        ));
         SUCCESS
     })
 }
@@ -2449,7 +2593,10 @@ pub extern "C" fn kmipkit_client_batch_item_register(
             Ok(item) => item,
             Err(error) => return record_ffi_error(protocol_status(&error)),
         };
-        *out = make_handle(Kind::BatchItem, HandleValue::BatchItem(Box::new(item)));
+        *out = try_ffi!(try_make_handle(
+            Kind::BatchItem,
+            HandleValue::BatchItem(Box::new(item))
+        ));
         SUCCESS
     })
 }
@@ -2488,7 +2635,10 @@ pub extern "C" fn kmipkit_client_batch_item_extension_identity_at(
         let Some(identity) = item.extension_identity_at(index) else {
             return SUCCESS;
         };
-        *out = make_handle(Kind::Identity, HandleValue::Identity(identity));
+        *out = try_ffi!(try_make_handle(
+            Kind::Identity,
+            HandleValue::Identity(identity)
+        ));
         SUCCESS
     })
 }
@@ -2532,7 +2682,10 @@ pub extern "C" fn kmipkit_extension_information_create(
         let name = try_ffi!(std::str::from_utf8(name).map_err(|_| ERROR_INVALID_IDENTITY));
         let information =
             try_ffi!(extension::extension_information(name).map_err(|e| protocol_status(&e)));
-        *out = make_handle(Kind::Information, HandleValue::Information(information));
+        *out = try_ffi!(try_make_handle(
+            Kind::Information,
+            HandleValue::Information(information)
+        ));
         SUCCESS
     })
 }
@@ -2629,7 +2782,10 @@ pub extern "C" fn kmipkit_extension_information_description(
         let information = try_ffi!(
             extension::with_description(source, description).map_err(|e| protocol_status(&e))
         );
-        *out = make_handle(Kind::Information, HandleValue::Information(information));
+        *out = try_ffi!(try_make_handle(
+            Kind::Information,
+            HandleValue::Information(information)
+        ));
         SUCCESS
     })
 }
@@ -2647,7 +2803,10 @@ fn information_transform(
         return record_ffi_error(ERROR_INVALID_INPUT);
     };
     let information = try_ffi!(transform(information));
-    *out = make_handle(Kind::Information, HandleValue::Information(information));
+    *out = try_ffi!(try_make_handle(
+        Kind::Information,
+        HandleValue::Information(information)
+    ));
     SUCCESS
 }
 
@@ -2664,7 +2823,10 @@ pub extern "C" fn kmipkit_extension_information_to_ttlv(
         };
         let structure =
             try_ffi!(extension::to_ttlv(information.clone()).map_err(|e| protocol_status(&e)));
-        *out = make_handle(Kind::Structure, HandleValue::Structure(structure));
+        *out = try_ffi!(try_make_handle(
+            Kind::Structure,
+            HandleValue::Structure(structure)
+        ));
         SUCCESS
     })
 }
@@ -2689,10 +2851,10 @@ pub extern "C" fn kmipkit_extension_definition_with_information(
             extension::with_information(*definition, information.clone())
                 .map_err(|e| protocol_status(&e))
         );
-        *out = make_handle(
+        *out = try_ffi!(try_make_handle(
             Kind::Definition,
             HandleValue::Definition(Box::new(definition)),
-        );
+        ));
         SUCCESS
     })
 }
@@ -2705,11 +2867,11 @@ pub extern "C" fn kmipkit_extension_definition_identity(
     ffi_entrypoint(|| {
         let out = out_slot!(out_identity);
         let definition = read_handle!(definition, Definition);
-        let definition = try_ffi!(definition_from_handle(definition));
-        *out = make_handle(
+        let definition = try_ffi!(definition_from_handle(&definition));
+        *out = try_ffi!(try_make_handle(
             Kind::Identity,
             HandleValue::Identity(extension::identity(definition)),
-        );
+        ));
         SUCCESS
     })
 }
@@ -2722,9 +2884,12 @@ pub extern "C" fn kmipkit_extension_definition_information(
     ffi_entrypoint(|| {
         let out = out_slot!(out_information);
         let definition = read_handle!(definition, Definition);
-        let definition = try_ffi!(definition_from_handle(definition));
+        let definition = try_ffi!(definition_from_handle(&definition));
         if let Some(information) = extension::information(definition) {
-            *out = make_handle(Kind::Information, HandleValue::Information(information));
+            *out = try_ffi!(try_make_handle(
+                Kind::Information,
+                HandleValue::Information(information)
+            ));
         }
         SUCCESS
     })
@@ -2759,7 +2924,10 @@ pub extern "C" fn kmipkit_extension_recognition_validated_value(
         };
         if recognition_value.validated_value().is_some() {
             let owner = try_ffi!(clone_handle_owner(recognition, Kind::Recognition));
-            *out = make_handle(Kind::Validated, HandleValue::ValidatedRef(owner));
+            *out = try_ffi!(try_make_handle(
+                Kind::Validated,
+                HandleValue::ValidatedRef(owner)
+            ));
         }
         SUCCESS
     })
@@ -2778,7 +2946,10 @@ pub extern "C" fn kmipkit_extension_recognition_generic_value(
             return record_ffi_error(ERROR_INVALID_INPUT);
         }
         let view = TtlvView::new(owner, ViewRoot::RecognitionGeneric, ViewTarget::Structure);
-        *out = make_handle(Kind::StructureView, HandleValue::StructureView(view));
+        *out = try_ffi!(try_make_handle(
+            Kind::StructureView,
+            HandleValue::StructureView(view)
+        ));
         SUCCESS
     })
 }
@@ -2791,11 +2962,11 @@ pub extern "C" fn kmipkit_validated_extension_value_identity(
     ffi_entrypoint(|| {
         let out = out_slot!(out_identity);
         let value = read_handle!(value, Validated);
-        let value = try_ffi!(validated_from_handle(value));
-        *out = make_handle(
+        let value = try_ffi!(validated_from_handle(&value));
+        *out = try_ffi!(try_make_handle(
             Kind::Identity,
             HandleValue::Identity(extension::validated_extension_value_identity(value)),
-        );
+        ));
         SUCCESS
     })
 }
@@ -2808,10 +2979,13 @@ pub extern "C" fn kmipkit_validated_extension_value_generic_value(
     ffi_entrypoint(|| {
         let out = out_slot!(out_structure);
         let value_handle = read_handle!(value, Validated);
-        let _ = try_ffi!(validated_from_handle(value_handle));
+        let _ = try_ffi!(validated_from_handle(&value_handle));
         let owner = try_ffi!(clone_handle_owner(value, Kind::Validated));
         let structure = TtlvView::new(owner, ViewRoot::ValidatedGeneric, ViewTarget::Structure);
-        *out = make_handle(Kind::StructureView, HandleValue::StructureView(structure));
+        *out = try_ffi!(try_make_handle(
+            Kind::StructureView,
+            HandleValue::StructureView(structure)
+        ));
         SUCCESS
     })
 }
@@ -2832,7 +3006,10 @@ pub extern "C" fn kmipkit_validated_extension_value_value_at(
         let owner = try_ffi!(clone_handle_owner(value, Kind::Validated));
         let structure = TtlvView::new(owner, ViewRoot::ValidatedGeneric, ViewTarget::Structure);
         let value_view = try_ffi!(structure.value_at_tags(path.tags()));
-        *out = make_handle(Kind::ValueView, HandleValue::ValueView(value_view));
+        *out = try_ffi!(try_make_handle(
+            Kind::ValueView,
+            HandleValue::ValueView(value_view)
+        ));
         SUCCESS
     })
 }
@@ -2923,10 +3100,10 @@ fn check_item_limits(item: &Item, limits: &CodecLimits) -> FfiResult<()> {
     Ok(())
 }
 
-fn codec_limits_from_handle(pointer: &*mut kmipkit_codec_limits_t) -> FfiResult<&CodecLimits> {
+fn codec_limits_from_handle(pointer: *mut kmipkit_codec_limits_t) -> FfiResult<Arc<CodecLimits>> {
     let handle = reference_handle(pointer, Kind::CodecLimits)?;
     match &handle.value {
-        HandleValue::CodecLimits(limits) => Ok(limits),
+        HandleValue::CodecLimits(limits) => Ok(Arc::clone(limits)),
         _ => Err(ERROR_INVALID_INPUT),
     }
 }
@@ -2939,7 +3116,7 @@ pub extern "C" fn kmipkit_ttlv_raw_tag_create(
     ffi_entrypoint(|| {
         let out = out_slot!(out_raw_tag);
         let raw = try_ffi!(RawTag::new(raw).map_err(model_status));
-        *out = make_handle(Kind::RawTag, HandleValue::RawTag(raw));
+        *out = try_ffi!(try_make_handle(Kind::RawTag, HandleValue::RawTag(raw)));
         SUCCESS
     })
 }
@@ -2972,7 +3149,7 @@ pub extern "C" fn kmipkit_ttlv_raw_tag_try_checked(
             return record_ffi_error(ERROR_INVALID_INPUT);
         };
         let tag = try_ffi!(raw_tag.try_checked().map_err(model_status));
-        *out = make_handle(Kind::Tag, HandleValue::Tag(tag));
+        *out = try_ffi!(try_make_handle(Kind::Tag, HandleValue::Tag(tag)));
         SUCCESS
     })
 }
@@ -2996,10 +3173,10 @@ pub extern "C" fn kmipkit_codec_limits_defaults(
 ) -> i32 {
     ffi_entrypoint(|| {
         let out = out_slot!(out_limits);
-        *out = make_handle(
+        *out = try_ffi!(try_make_handle(
             Kind::CodecLimits,
-            HandleValue::CodecLimits(CodecLimits::defaults()),
-        );
+            HandleValue::CodecLimits(Arc::new(CodecLimits::defaults())),
+        ));
         SUCCESS
     })
 }
@@ -3023,7 +3200,10 @@ pub extern "C" fn kmipkit_codec_limits_create(
             CodecLimits::new(max_message_bytes, max_structure_depth, max_elements)
                 .map_err(|_| ERROR_RESOURCE_LIMIT)
         );
-        *out = make_handle(Kind::CodecLimits, HandleValue::CodecLimits(limits));
+        *out = try_ffi!(try_make_handle(
+            Kind::CodecLimits,
+            HandleValue::CodecLimits(Arc::new(limits)),
+        ));
         SUCCESS
     })
 }
@@ -3034,8 +3214,8 @@ fn codec_limit_value(
     selector: fn(&CodecLimits) -> usize,
 ) -> i32 {
     let output = scalar_out!(out_value);
-    let limits = try_ffi!(codec_limits_from_handle(&pointer));
-    *output = try_ffi!(u64::try_from(selector(limits)).map_err(|_| ERROR_RESOURCE_LIMIT));
+    let limits = try_ffi!(codec_limits_from_handle(pointer));
+    *output = try_ffi!(u64::try_from(selector(&limits)).map_err(|_| ERROR_RESOURCE_LIMIT));
     SUCCESS
 }
 
@@ -3076,7 +3256,10 @@ pub extern "C" fn kmipkit_ttlv_value_integer(
 ) -> i32 {
     ffi_entrypoint(|| {
         let out = out_slot!(out_value);
-        *out = make_handle(Kind::Value, HandleValue::Value(Value::integer(value)));
+        *out = try_ffi!(try_make_handle(
+            Kind::Value,
+            HandleValue::Value(Value::integer(value))
+        ));
         SUCCESS
     })
 }
@@ -3088,7 +3271,10 @@ pub extern "C" fn kmipkit_ttlv_value_long_integer(
 ) -> i32 {
     ffi_entrypoint(|| {
         let out = out_slot!(out_value);
-        *out = make_handle(Kind::Value, HandleValue::Value(Value::long_integer(value)));
+        *out = try_ffi!(try_make_handle(
+            Kind::Value,
+            HandleValue::Value(Value::long_integer(value))
+        ));
         SUCCESS
     })
 }
@@ -3100,7 +3286,10 @@ pub extern "C" fn kmipkit_ttlv_value_enumeration(
 ) -> i32 {
     ffi_entrypoint(|| {
         let out = out_slot!(out_value);
-        *out = make_handle(Kind::Value, HandleValue::Value(Value::enumeration(value)));
+        *out = try_ffi!(try_make_handle(
+            Kind::Value,
+            HandleValue::Value(Value::enumeration(value))
+        ));
         SUCCESS
     })
 }
@@ -3115,7 +3304,10 @@ pub extern "C" fn kmipkit_ttlv_value_boolean(
         if value > 1 {
             return record_ffi_error(ERROR_INVALID_INPUT);
         }
-        *out = make_handle(Kind::Value, HandleValue::Value(Value::boolean(value == 1)));
+        *out = try_ffi!(try_make_handle(
+            Kind::Value,
+            HandleValue::Value(Value::boolean(value == 1))
+        ));
         SUCCESS
     })
 }
@@ -3127,7 +3319,10 @@ pub extern "C" fn kmipkit_ttlv_value_date_time(
 ) -> i32 {
     ffi_entrypoint(|| {
         let out = out_slot!(out_value);
-        *out = make_handle(Kind::Value, HandleValue::Value(Value::date_time(value)));
+        *out = try_ffi!(try_make_handle(
+            Kind::Value,
+            HandleValue::Value(Value::date_time(value))
+        ));
         SUCCESS
     })
 }
@@ -3139,7 +3334,10 @@ pub extern "C" fn kmipkit_ttlv_value_interval(
 ) -> i32 {
     ffi_entrypoint(|| {
         let out = out_slot!(out_value);
-        *out = make_handle(Kind::Value, HandleValue::Value(Value::interval(value)));
+        *out = try_ffi!(try_make_handle(
+            Kind::Value,
+            HandleValue::Value(Value::interval(value))
+        ));
         SUCCESS
     })
 }
@@ -3151,10 +3349,10 @@ pub extern "C" fn kmipkit_ttlv_value_date_time_extended(
 ) -> i32 {
     ffi_entrypoint(|| {
         let out = out_slot!(out_value);
-        *out = make_handle(
+        *out = try_ffi!(try_make_handle(
             Kind::Value,
             HandleValue::Value(Value::date_time_extended(value)),
-        );
+        ));
         SUCCESS
     })
 }
@@ -3167,12 +3365,12 @@ fn variable_value(
     build: fn(&[u8]) -> FfiResult<Value>,
 ) -> i32 {
     let out = out_slot!(out_value);
-    let limits = try_ffi!(codec_limits_from_handle(&limits));
+    let limits = try_ffi!(codec_limits_from_handle(limits));
     let maximum =
         try_ffi!(u64::try_from(limits.max_message_bytes()).map_err(|_| ERROR_RESOURCE_LIMIT));
     let bytes = try_ffi!(input_span(value, value_length, maximum));
     let value = try_ffi!(build(bytes));
-    *out = make_handle(Kind::Value, HandleValue::Value(value));
+    *out = try_ffi!(try_make_handle(Kind::Value, HandleValue::Value(value)));
     SUCCESS
 }
 
@@ -3227,13 +3425,16 @@ pub extern "C" fn kmipkit_ttlv_value_structure(
 ) -> i32 {
     ffi_entrypoint(|| {
         let out = out_slot!(out_value);
-        let limits = try_ffi!(codec_limits_from_handle(&limits));
+        let limits = try_ffi!(codec_limits_from_handle(limits));
         let structure = try_ffi!(owned_payload(structure, Kind::Structure));
         let HandleValue::Structure(structure) = structure else {
             return record_ffi_error(ERROR_INVALID_INPUT);
         };
-        try_ffi!(check_structure_limits(&structure, limits));
-        *out = make_handle(Kind::Value, HandleValue::Value(Value::structure(structure)));
+        try_ffi!(check_structure_limits(&structure, &limits));
+        *out = try_ffi!(try_make_handle(
+            Kind::Value,
+            HandleValue::Value(Value::structure(structure))
+        ));
         SUCCESS
     })
 }
@@ -3244,7 +3445,10 @@ pub extern "C" fn kmipkit_ttlv_structure_create(
 ) -> i32 {
     ffi_entrypoint(|| {
         let out = out_slot!(out_structure);
-        *out = make_handle(Kind::Structure, HandleValue::Structure(Structure::new()));
+        *out = try_ffi!(try_make_handle(
+            Kind::Structure,
+            HandleValue::Structure(Structure::new())
+        ));
         SUCCESS
     })
 }
@@ -3262,14 +3466,14 @@ pub extern "C" fn kmipkit_ttlv_item_create(
         let HandleValue::Tag(tag) = &tag_handle.value else {
             return record_ffi_error(ERROR_INVALID_INPUT);
         };
-        let limits = try_ffi!(codec_limits_from_handle(&limits));
+        let limits = try_ffi!(codec_limits_from_handle(limits));
         let value = try_ffi!(owned_payload(value, Kind::Value));
         let HandleValue::Value(value) = value else {
             return record_ffi_error(ERROR_INVALID_INPUT);
         };
         let item = try_ffi!(Item::new(*tag, value).map_err(model_status));
-        try_ffi!(check_item_limits(&item, limits));
-        *out = make_handle(Kind::Item, HandleValue::Item(item));
+        try_ffi!(check_item_limits(&item, &limits));
+        *out = try_ffi!(try_make_handle(Kind::Item, HandleValue::Item(item)));
         SUCCESS
     })
 }
@@ -3283,11 +3487,11 @@ pub extern "C" fn kmipkit_ttlv_structure_with_item(
 ) -> i32 {
     ffi_entrypoint(|| {
         let out = out_slot!(out_structure);
-        let limits = try_ffi!(codec_limits_from_handle(&limits));
+        let limits = try_ffi!(codec_limits_from_handle(limits));
         let _ = read_handle!(structure, Structure);
         let _ = read_handle!(item, Item);
-        let structure = consume_owner(structure);
-        let item = consume_owner(item);
+        let structure = try_ffi!(consume_owner(structure, Kind::Structure));
+        let item = try_ffi!(consume_owner(item, Kind::Item));
         let structure = try_ffi!(unwrap_payload(structure));
         let item = try_ffi!(unwrap_payload(item));
         let (HandleValue::Structure(mut structure), HandleValue::Item(item)) = (structure, item)
@@ -3295,8 +3499,11 @@ pub extern "C" fn kmipkit_ttlv_structure_with_item(
             return record_ffi_error(ERROR_INVALID_INPUT);
         };
         try_ffi!(structure.try_push(item).map_err(model_status));
-        try_ffi!(check_structure_limits(&structure, limits));
-        *out = make_handle(Kind::Structure, HandleValue::Structure(structure));
+        try_ffi!(check_structure_limits(&structure, &limits));
+        *out = try_ffi!(try_make_handle(
+            Kind::Structure,
+            HandleValue::Structure(structure)
+        ));
         SUCCESS
     })
 }
@@ -3311,7 +3518,10 @@ pub extern "C" fn kmipkit_ttlv_structure_view(
         let _ = read_handle!(structure, Structure);
         let owner = try_ffi!(clone_handle_owner(structure, Kind::Structure));
         let view = TtlvView::new(owner, ViewRoot::Structure, ViewTarget::Structure);
-        *out = make_handle(Kind::StructureView, HandleValue::StructureView(view));
+        *out = try_ffi!(try_make_handle(
+            Kind::StructureView,
+            HandleValue::StructureView(view)
+        ));
         SUCCESS
     })
 }
@@ -3347,7 +3557,7 @@ pub extern "C" fn kmipkit_ttlv_structure_view_item_at(
         };
         let index = try_ffi!(usize::try_from(index).map_err(|_| ERROR_INVALID_INPUT));
         let item = try_ffi!(view.item_at(index));
-        *out = make_handle(Kind::ItemView, HandleValue::ItemView(item));
+        *out = try_ffi!(try_make_handle(Kind::ItemView, HandleValue::ItemView(item)));
         SUCCESS
     })
 }
@@ -3364,7 +3574,7 @@ pub extern "C" fn kmipkit_ttlv_item_view_tag(
             return record_ffi_error(ERROR_INVALID_INPUT);
         };
         let tag = try_ffi!(item.with_item(Item::tag));
-        *out = make_handle(Kind::Tag, HandleValue::Tag(tag));
+        *out = try_ffi!(try_make_handle(Kind::Tag, HandleValue::Tag(tag)));
         SUCCESS
     })
 }
@@ -3398,7 +3608,10 @@ pub extern "C" fn kmipkit_ttlv_item_view_value(
             return record_ffi_error(ERROR_INVALID_INPUT);
         };
         let value = try_ffi!(item.item_value());
-        *out = make_handle(Kind::ValueView, HandleValue::ValueView(value));
+        *out = try_ffi!(try_make_handle(
+            Kind::ValueView,
+            HandleValue::ValueView(value)
+        ));
         SUCCESS
     })
 }
@@ -3413,7 +3626,10 @@ pub extern "C" fn kmipkit_ttlv_value_view(
         let _ = read_handle!(value, Value);
         let owner = try_ffi!(clone_handle_owner(value, Kind::Value));
         let view = TtlvView::new(owner, ViewRoot::Value, ViewTarget::Value);
-        *out = make_handle(Kind::ValueView, HandleValue::ValueView(view));
+        *out = try_ffi!(try_make_handle(
+            Kind::ValueView,
+            HandleValue::ValueView(view)
+        ));
         SUCCESS
     })
 }
@@ -3446,7 +3662,10 @@ pub extern "C" fn kmipkit_ttlv_value_view_structure(
             return record_ffi_error(ERROR_INVALID_INPUT);
         };
         let structure = try_ffi!(value.structure_from_value());
-        *out = make_handle(Kind::StructureView, HandleValue::StructureView(structure));
+        *out = try_ffi!(try_make_handle(
+            Kind::StructureView,
+            HandleValue::StructureView(structure)
+        ));
         SUCCESS
     })
 }

@@ -62,10 +62,7 @@ fn arbitrary_wrong_kind_and_stale_handles_are_rejected_in_child_process() {
         );
         let mut replacement_tag = std::ptr::null_mut();
         assert_eq!(
-            super::kmipkit_ttlv_raw_tag_try_checked(
-                replacement_raw,
-                &raw mut replacement_tag
-            ),
+            super::kmipkit_ttlv_raw_tag_try_checked(replacement_raw, &raw mut replacement_tag),
             super::SUCCESS
         );
         assert_ne!(tag, replacement_tag);
@@ -98,13 +95,29 @@ fn arbitrary_wrong_kind_and_stale_handles_are_rejected_in_child_process() {
 }
 
 #[test]
-fn token_ids_stop_at_the_last_java_positive_pointer_value() {
-    let registry = super::HandleRegistry {
-        next_id: std::sync::atomic::AtomicUsize::new(isize::MAX as usize),
-        handles: std::sync::Mutex::new(std::collections::HashMap::new()),
-    };
+fn tokens_are_keyed_nonzero_and_unique_without_reusing_sequences() {
+    let registry = super::HandleRegistry::with_test_key(&[0x5a; 32]);
+    let mut tokens = std::collections::HashSet::new();
 
-    assert_eq!(registry.allocate_id(), Ok(isize::MAX as usize));
+    for sequence in 1..=4096 {
+        let token = registry
+            .token_for_sequence(sequence)
+            .expect("the keyed token should be found within the configured bound");
+        assert_ne!(token, 0);
+        assert!(token <= super::TOKEN_MAX);
+        assert_ne!(token, sequence);
+        assert!(tokens.insert(token));
+    }
+}
+
+#[test]
+fn token_sequence_exhaustion_fails_closed() {
+    let registry = super::HandleRegistry::with_test_key(&[0xa5; 32]);
+    registry
+        .next_sequence
+        .store(super::TOKEN_MAX, std::sync::atomic::Ordering::Relaxed);
+
+    assert!(registry.allocate_id().is_ok());
     assert_eq!(registry.allocate_id(), Err(super::ERROR_RESOURCE_LIMIT));
     assert_eq!(registry.allocate_id(), Err(super::ERROR_RESOURCE_LIMIT));
 }

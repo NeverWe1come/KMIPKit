@@ -151,7 +151,7 @@ fn configuration_and_registry_queries_fail_closed_for_inconsistent_private_envel
     let structure = inconsistent_handle(Kind::Structure);
     let limits = make_handle(
         Kind::CodecLimits,
-        HandleValue::CodecLimits(CodecLimits::defaults()),
+        HandleValue::CodecLimits(Arc::new(CodecLimits::defaults())),
     );
     assert_rejected_handle_output(|out| {
         kmipkit_client_extension_registry_definition_for_identity(registry, identity, out)
@@ -261,7 +261,7 @@ fn tag_accessors_fail_closed_for_inconsistent_private_envelopes() {
 fn owned_ttlv_builders_fail_closed_for_inconsistent_private_envelopes() {
     let limits = make_handle(
         Kind::CodecLimits,
-        HandleValue::CodecLimits(CodecLimits::defaults()),
+        HandleValue::CodecLimits(Arc::new(CodecLimits::defaults())),
     );
     assert_rejected_handle_output(|out| {
         kmipkit_ttlv_value_structure(inconsistent_handle(Kind::Structure), limits, out)

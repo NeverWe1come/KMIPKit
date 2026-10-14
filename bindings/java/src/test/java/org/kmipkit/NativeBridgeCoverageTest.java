@@ -1,6 +1,7 @@
 package org.kmipkit;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
@@ -72,6 +73,11 @@ final class NativeBridgeCoverageTest {
                 () -> NativeExtensionRegistry.clientBatchItemExtensionIdentityAt(0, 0));
         assertThrows(InvalidInputException.class,
                 () -> NativeExtensionRegistry.clientBatchItemExtensionCriticalityIndicatorAt(0, 0));
+    }
+
+    @Test
+    void nativeReleaseIgnoresForgedPositiveJniHandles() {
+        assertDoesNotThrow(() -> NativeExtensionRegistry.release(NativeExtensionRegistry.TAG, 0x1000L));
     }
 
     @Test

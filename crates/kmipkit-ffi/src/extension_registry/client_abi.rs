@@ -527,10 +527,10 @@ pub extern "C" fn kmipkit_transport_config_create_v1(
     ffi_entrypoint(|| {
         let out = out_slot!(out_configuration);
         let configuration = try_ffi!(transport_config_from_v1(configuration));
-        *out = make_handle(
+        *out = try_ffi!(try_make_handle(
             Kind::TransportConfig,
             HandleValue::TransportConfig(configuration),
-        );
+        ));
         SUCCESS
     })
 }
@@ -557,7 +557,7 @@ pub extern "C" fn kmipkit_client_create(
         let HandleValue::Configuration(configuration) = &configuration.value else {
             return record_ffi_error(ERROR_INVALID_INPUT);
         };
-        if let Err(status) = reference_handle(&transport_handle, Kind::TransportConfig) {
+        if let Err(status) = reference_handle(transport_handle, Kind::TransportConfig) {
             return record_ffi_error(status);
         }
         let client_configuration = client_extension::ClientConfiguration::from_shared_registry(
@@ -571,10 +571,10 @@ pub extern "C" fn kmipkit_client_create(
         *transport_slot = ptr::null_mut();
         match Client::new(client_configuration, transport_configuration) {
             Ok(client) => {
-                *out = make_handle(
+                *out = try_ffi!(try_make_handle(
                     Kind::Client,
                     HandleValue::Client(Box::new(std::sync::Mutex::new(client))),
-                );
+                ));
                 SUCCESS
             }
             Err(error) => record_client_error(&error),
@@ -586,10 +586,10 @@ pub extern "C" fn kmipkit_client_create(
 pub extern "C" fn kmipkit_client_batch_create(out_batch: *mut *mut kmipkit_client_batch_t) -> i32 {
     ffi_entrypoint(|| {
         let out = out_slot!(out_batch);
-        *out = make_handle(
+        *out = try_ffi!(try_make_handle(
             Kind::ClientBatch,
             HandleValue::ClientBatch(std::sync::Mutex::new(ClientBatchBuilder::new())),
-        );
+        ));
         SUCCESS
     })
 }
@@ -617,7 +617,7 @@ pub extern "C" fn kmipkit_client_batch_add_item(
         let Ok(mut batch) = batch.lock() else {
             return record_ffi_error(ERROR_INTERNAL);
         };
-        if let Err(status) = reference_handle(&item_handle, Kind::BatchItem) {
+        if let Err(status) = reference_handle(item_handle, Kind::BatchItem) {
             return record_ffi_error(status);
         }
         if batch.items.try_reserve(1).is_err() {
@@ -822,7 +822,7 @@ fn execute_client_batch(
     let HandleValue::CodecLimits(limits) = &limits_handle.value else {
         return record_ffi_error(ERROR_INVALID_INPUT);
     };
-    if let Err(status) = reference_handle(&batch_handle, Kind::ClientBatch) {
+    if let Err(status) = reference_handle(batch_handle, Kind::ClientBatch) {
         return record_ffi_error(status);
     }
     *batch_slot = ptr::null_mut();
@@ -840,10 +840,10 @@ fn execute_client_batch(
     };
     match client.execute_with_options(batch, limits, request_options) {
         Ok(response) => {
-            *out = make_handle(
+            *out = try_ffi!(try_make_handle(
                 Kind::ClientBatchResponse,
                 HandleValue::ClientBatchResponse(Arc::new(response)),
-            );
+            ));
             SUCCESS
         }
         Err(error) => {
@@ -851,7 +851,10 @@ fn execute_client_batch(
             if let Some(output) = out_error {
                 match clone_error_response_ttlv(&error) {
                     Ok(Some(response)) => {
-                        *output = make_handle(Kind::Structure, HandleValue::Structure(response));
+                        *output = try_ffi!(try_make_handle(
+                            Kind::Structure,
+                            HandleValue::Structure(response)
+                        ));
                     }
                     Ok(None) => {}
                     Err(clone_status) => return record_ffi_error(clone_status),
@@ -947,13 +950,13 @@ pub extern "C" fn kmipkit_client_batch_response_item_at(
             return SUCCESS;
         };
         if response.get(index).is_some() {
-            *out = make_handle(
+            *out = try_ffi!(try_make_handle(
                 Kind::ClientBatchItemResponse,
                 HandleValue::ClientBatchItemResponse {
                     response: Arc::clone(response),
                     index,
                 },
-            );
+            ));
         }
         SUCCESS
     })

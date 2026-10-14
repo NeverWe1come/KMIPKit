@@ -350,6 +350,7 @@ dependencies = [
 name = "kmipkit-ffi"
 version = "1.0.0"
 dependencies = [
+ "aws-lc-rs",
  "base64",
  "cc",
  "kmipkit",

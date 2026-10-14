@@ -1250,7 +1250,7 @@ fn empty_client_batch_handle() -> *mut kmipkit_client_batch_t {
 fn default_codec_limits_handle() -> *mut kmipkit_codec_limits_t {
     make_handle(
         Kind::CodecLimits,
-        HandleValue::CodecLimits(CodecLimits::defaults()),
+        HandleValue::CodecLimits(Arc::new(CodecLimits::defaults())),
     )
 }
 
@@ -1400,8 +1400,8 @@ fn ffi_execute_fails_closed_for_poisoned_batch_and_client_locks() {
     let limits = default_codec_limits_handle();
     let mut poisoned_batch = empty_client_batch_handle();
     {
-        // SAFETY: the handle was just allocated above and remains live while its mutex is poisoned.
-        let handle = unsafe { &*poisoned_batch.cast::<Handle>() };
+        let handle = reference_handle(poisoned_batch, Kind::ClientBatch)
+            .expect("fresh client batch handle is registered");
         let HandleValue::ClientBatch(batch) = &handle.value else {
             unreachable!("the constructor created a client batch handle");
         };
@@ -1429,8 +1429,8 @@ fn ffi_execute_fails_closed_for_poisoned_batch_and_client_locks() {
     assert!(error_response.is_null());
 
     {
-        // SAFETY: the handle was just allocated above and remains live while its mutex is poisoned.
-        let handle = unsafe { &*client.cast::<Handle>() };
+        let handle =
+            reference_handle(client, Kind::Client).expect("fresh client handle is registered");
         let HandleValue::Client(client) = &handle.value else {
             unreachable!("the constructor created a client handle");
         };
