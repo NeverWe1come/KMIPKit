@@ -36,3 +36,24 @@ After changing only the exact workspace pin to `=0.23.46` and updating `Cargo.lo
 - Cargo reported only `rustls 0.23.45 -> 0.23.46` in `Cargo.lock`; no other package resolution changed. The manifest's `aws_lc_rs` and `std` feature list and disabled defaults are unchanged.
 
 Full workspace verification, coverage, cross-platform CI, and independent QA/security review remain open; no final readiness claim is made yet.
+
+## Local verification after Refactor
+
+| Check | Result |
+|---|---|
+| `python -m unittest scripts.tests.test_rustls_advisory_pin -v` | 4 passed |
+| `python -B -m unittest discover -s scripts/tests -p 'test_*.py' -q` | 272 passed, 26 skipped |
+| API manifest test suite in an isolated Python 3.12.14 venv with `tools/api_manifest/requirements-test.txt` | 222 passed, 7 skipped |
+| `tools/api_manifest/generate.py --check` | 12 generated outputs verified |
+| CI feature-traceability suite `test_feature_traceability.py` | 15 passed, 1 skipped because Windows denied temporary symlink creation |
+| `tools/normative_catalog/validate.py --repo-root .` | Valid: 4 sources, 1,411 clauses, 4,044 records |
+| `tools/normative_catalog/report.py --check --repo-root .` | Generated coverage report verified |
+| `cargo fmt --all --check` | Passed |
+| `cargo clippy --workspace --all-targets --all-features --locked -- -D warnings` | Passed |
+| `cargo test --workspace --all-features --locked --quiet` | Exit code 0; all reported tests and doctests passed |
+| `cargo llvm-cov --workspace --all-features --locked` | Completed; workspace line coverage 92.92%, above the 90% overall threshold |
+| `cargo doc --workspace --all-features --no-deps --locked` | Passed |
+| `git diff --check` | Passed |
+| `pwsh -NoLogo -NoProfile -File .\scripts\Test-DependencyPolicy.ps1` | Passed for both workspaces with fresh RustSec evidence recorded above |
+
+The full `tools/normative_catalog` test discovery was started but its final result was not retained by the local command session. It is not counted as passed. The CI-specific feature-traceability suite, normative catalog validation, and generated report check above did complete successfully. Local Rust builds emitted non-fatal AWS-LC/NASM environment warnings; the affected test, lint, coverage, and documentation commands still returned success. Cross-platform CI and independent QA/security review remain pending.

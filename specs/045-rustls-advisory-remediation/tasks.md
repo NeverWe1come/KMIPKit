@@ -37,7 +37,7 @@
 
 ## Phase 4: Polish and independent review
 
-- [ ] T008 Run the focused Python contract, transport tests, formatting, Clippy, workspace tests, coverage, documentation checks, deterministic generators, dependency-policy runner, and relevant script contracts; record actual results and any external environment limitation.
+- [x] T008 Run the focused Python contract, transport tests, formatting, Clippy, workspace tests, coverage, documentation checks, deterministic generators, dependency-policy runner, and relevant script contracts; record actual results and any external environment limitation in `specs/045-rustls-advisory-remediation/implementation-evidence.md`.
 - [ ] T009 Obtain independent QA and security review of the changed test, manifest/lockfile diff, advisory evidence, and unchanged TLS features; resolve all actionable findings and repeat affected checks.
 - [ ] T010 Update from the active `release/1.0.0` branch without force-pushing, rerun affected checks, and create a detailed terminal-created draft PR with DCO Red/Green/Refactor commit hashes, traceability, CI evidence, risks, and limitations. Leave it open for human review.
 
