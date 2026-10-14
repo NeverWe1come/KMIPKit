@@ -252,8 +252,9 @@
           "test": "org.kmipkit.SharedCapabilityParityFixtureTest#genericTtlvFixturePreservesOpenEnumerationBytesOrderAndViewLifecycle"
         },
         "python": {
-          "status": "blocked",
-          "reason": "No Python consumer test currently asserts both the open enumeration value and ordered children from this shared case."
+          "status": "available",
+          "testFile": "bindings/python/tests/test_shared_parity_fixtures.py",
+          "test": "test_generic_ttlv_shared_fixture_preserves_open_values_order_and_owner_lifecycle"
         }
       }
     },
