@@ -251,6 +251,78 @@ class CaseSourceAuditTests(unittest.TestCase):
                 max_bytes=audit_case_sources.MAX_CATALOG_BYTES,
             )
 
+    def test_rejects_catalog_source_redirect_with_self_consistent_hash(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary_directory:
+            repository = Path(temporary_directory)
+            profile_html = b'<h4>5.1.3.1 BL-M-1-21</h4><a href="case.xml">fixture</a>'
+            testcases_html = b""
+            profile_digest = hashlib.sha256(profile_html).hexdigest()
+            testcases_digest = hashlib.sha256(testcases_html).hexdigest()
+            catalog = {
+                "sources": [
+                    {
+                        "source_id": "KMIPKIT-SRC-profiles",
+                        "local_path": "attacker/synthetic.html",
+                        "sha256": profile_digest,
+                    },
+                    {
+                        "source_id": "KMIPKIT-SRC-testcases",
+                        "local_path": "canonical/testcases.html",
+                        "sha256": testcases_digest,
+                    },
+                ],
+                "test_cases": [
+                    self._case(
+                        "P-1", "BL-M-1-21", "KMIPKIT-SRC-profiles", "5.1.3.1",
+                        "profile_test_case", "case.xml",
+                    ),
+                ],
+            }
+            manifest = {
+                "KMIPKIT-SRC-profiles": {
+                    "local_path": "canonical/profiles.html",
+                    "sha256": "a" * 64,
+                },
+                "KMIPKIT-SRC-testcases": {
+                    "local_path": "canonical/testcases.html",
+                    "sha256": testcases_digest,
+                },
+            }
+
+            def read_synthetic_source(root: Path, path: str, *, max_bytes: int) -> bytes:
+                del root, max_bytes
+                return profile_html if path == "attacker/synthetic.html" else testcases_html
+
+            with (
+                patch.object(
+                    audit_case_sources,
+                    "_source_manifest",
+                    return_value=manifest,
+                    create=True,
+                ) as source_manifest,
+                patch.object(audit_case_sources, "safe_read_bytes", side_effect=read_synthetic_source) as safe_read,
+            ):
+                with self.assertRaises(audit_case_sources.CaseAuditError) as error:
+                    audit_case_sources.audit_catalog_cases(repository, catalog)
+
+            self.assertEqual(
+                str(error.exception),
+                "catalog source metadata does not match the pinned OASIS source manifest",
+            )
+            source_manifest.assert_called_once_with(repository)
+            safe_read.assert_not_called()
+
+    def test_translates_recursion_error_during_catalog_json_load(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary_directory:
+            repository = Path(temporary_directory)
+            nested_json = "[" * 5_000 + "0" + "]" * 5_000
+            (repository / "catalog.json").write_text(nested_json, encoding="utf-8")
+
+            with self.assertRaises(audit_case_sources.CaseAuditError) as error:
+                audit_case_sources._load_catalog(repository, "catalog.json")
+
+            self.assertEqual(str(error.exception), "catalog is unavailable or invalid JSON")
+
     def test_rejects_symlinked_pinned_source_without_disclosing_target(self) -> None:
         with tempfile.TemporaryDirectory() as temporary_directory:
             repository = Path(temporary_directory)
