@@ -1,0 +1,336 @@
+"""Python 3.12 consumer checks for the shared KMIPKIT-0043 parity cases."""
+
+from __future__ import annotations
+
+import ast
+import gc
+import inspect
+import json
+import shutil
+import subprocess
+import sys
+import zipfile
+from pathlib import Path
+from typing import Any, get_type_hints
+
+import pytest
+
+from kmipkit import client, errors, extensions, metadata, ttlv
+from kmipkit import _handles
+from kmipkit._handles import _wrap_owned_handle
+
+
+ROOT = Path(__file__).resolve().parents[3]
+PARITY_FIXTURE = ROOT / "tests" / "fixtures" / "api" / "shared-capability-parity.json"
+NATIVE_RELEASES = {
+    "kmipkit_client_release",
+    "kmipkit_client_batch_release",
+    "kmipkit_client_batch_response_release",
+    "kmipkit_ttlv_structure_release",
+    "kmipkit_ttlv_structure_view_release",
+}
+
+
+def _parity_cases() -> dict[str, dict[str, Any]]:
+    corpus = json.loads(PARITY_FIXTURE.read_text(encoding="utf-8"))
+    return {case["id"]: case for case in corpus["cases"]}
+
+
+def _available_python_cases() -> list[dict[str, Any]]:
+    return [
+        case
+        for case in _parity_cases().values()
+        if case["consumerTests"].get("python", {}).get("status") == "available"
+    ]
+
+
+@pytest.mark.parametrize(
+    "case", _available_python_cases(), ids=lambda case: case["id"]
+)
+def test_shared_fixture_python_link_names_an_existing_consumer_test(
+    case: dict[str, Any],
+) -> None:
+    consumer = case["consumerTests"]["python"]
+    test_path = ROOT / consumer["testFile"]
+
+    assert test_path.is_file()
+    tree = ast.parse(test_path.read_text(encoding="utf-8"), filename=str(test_path))
+    assert any(
+        isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef))
+        and node.name == consumer["test"]
+        for node in ast.walk(tree)
+    )
+
+
+def test_api_level_fixture_remains_blocked_for_t077() -> None:
+    case = _parity_cases()["api-levels.shared.v1"]
+    consumer = case["consumerTests"]["python"]
+
+    assert consumer["status"] == "blocked"
+    assert "T077" in consumer["reason"]
+
+
+def test_generic_ttlv_shared_fixture_has_an_executable_python_link() -> None:
+    case = _parity_cases()["ttlv.open-values-and-child-order.v1"]
+    python_consumer = case["consumerTests"]["python"]
+    assert python_consumer["status"] == "available"
+    assert python_consumer["testFile"] == "bindings/python/tests/test_shared_parity_fixtures.py"
+    assert python_consumer["test"] == (
+        "test_generic_ttlv_shared_fixture_preserves_open_values_order_and_owner_lifecycle"
+    )
+
+
+def test_generic_ttlv_shared_fixture_preserves_open_values_order_and_owner_lifecycle() -> None:
+    case = _parity_cases()["ttlv.open-values-and-child-order.v1"]
+    structure_input = case["input"]["structure"]
+    expected = case["expectedOutput"]
+    limits = ttlv.codec_limits_defaults()
+    structure = ttlv.ttlv_structure_create()
+    for child in structure_input["children"]:
+        raw_tag = ttlv.raw_tag_from_raw(int(child["tag"], 16))
+        tag = ttlv.raw_tag_try_checked(raw_tag)
+        raw_tag.close()
+        if child["type"] == "Enumeration":
+            value = ttlv.ttlv_value_enumeration(child["value"])
+        elif child["type"] == "ByteString":
+            value = ttlv.ttlv_value_byte_string(
+                bytes.fromhex(child["valueHex"]), limits
+            )
+        else:
+            raise AssertionError(f"unsupported shared TTLV fixture type: {child['type']}")
+        item = ttlv.ttlv_item_create(tag, value, limits)
+        structure = ttlv.ttlv_structure_with_item(structure, item, limits)
+        tag.close()
+
+    released: list[str] = []
+    native_library = _handles.lib
+
+    class ReleaseRecorder:
+        def __getattr__(self, name: str) -> Any:
+            function = getattr(native_library, name)
+            if name not in NATIVE_RELEASES:
+                return function
+
+            def release(handle: object) -> int:
+                released.append(name)
+                return function(handle)
+
+            return release
+
+    _handles.lib = ReleaseRecorder()
+    view = None
+    try:
+        view = ttlv.ttlv_structure_view(structure)
+        del structure
+        gc.collect()
+        assert "kmipkit_ttlv_structure_release" not in released
+
+        observed_tags: list[str] = []
+        observed_values: list[tuple[str, object]] = []
+        for index in range(ttlv.ttlv_structure_view_item_count(view)):
+            item_view = ttlv.ttlv_structure_view_item_at(view, index)
+            tag_view = ttlv.ttlv_item_view_tag(item_view)
+            value_view = ttlv.ttlv_item_view_value(item_view)
+            try:
+                observed_tags.append(f"0x{ttlv.tag_value(tag_view):06x}")
+                item_type = ttlv.ttlv_item_view_type(item_view)
+                if item_type is ttlv.ItemType.Enumeration:
+                    observed_values.append(
+                        ("Enumeration", ttlv.ttlv_value_view_enumeration(value_view))
+                    )
+                elif item_type is ttlv.ItemType.ByteString:
+                    observed_values.append(
+                        (
+                            "ByteString",
+                            bytes(
+                                ttlv.ttlv_value_view_byte_at(value_view, offset)
+                                for offset in range(
+                                    ttlv.ttlv_value_view_byte_length(value_view)
+                                )
+                            ).hex(),
+                        )
+                    )
+                else:
+                    raise AssertionError(f"unexpected shared TTLV item type: {item_type}")
+            finally:
+                tag_view.close()
+                value_view.close()
+                item_view.close()
+
+        assert observed_tags == expected["childTagsInOrder"]
+        assert observed_values == [
+            ("Enumeration", expected["enumerationValue"]),
+            ("ByteString", expected["byteStringHex"]),
+        ]
+
+        view.close()
+        view.close()
+        assert view.closed
+        assert released.count("kmipkit_ttlv_structure_view_release") == 1
+        assert released.count("kmipkit_ttlv_structure_release") == 1
+    finally:
+        if view is not None:
+            view.close()
+        limits.close()
+        _handles.lib = native_library
+
+
+@pytest.mark.parametrize(
+    ("wrapper", "c_type", "release_name"),
+    [
+        (client.Client, "kmipkit_client_t", "kmipkit_client_release"),
+        (client.Batch, "kmipkit_client_batch_t", "kmipkit_client_batch_release"),
+        (
+            client.BatchResult,
+            "kmipkit_client_batch_response_t",
+            "kmipkit_client_batch_response_release",
+        ),
+    ],
+    ids=["client", "batch", "batch-result"],
+)
+@pytest.mark.parametrize("exceptional_exit", [False, True], ids=["normal", "exception"])
+def test_client_batch_and_result_context_exit_closes_once(
+    monkeypatch: pytest.MonkeyPatch,
+    wrapper: type[Any],
+    c_type: str,
+    release_name: str,
+    exceptional_exit: bool,
+) -> None:
+    storage = client.ffi.new("uint8_t[]", 1)
+    pointer = client.ffi.cast(f"{c_type} *", storage)
+    released: list[object] = []
+    monkeypatch.setattr(
+        client,
+        "lib",
+        type("ReleaseLibrary", (), {release_name: lambda _self, handle: released.append(handle)})(),
+    )
+    resource = (
+        _wrap_owned_handle(wrapper, pointer, ())
+        if wrapper is client.BatchResult
+        else _wrap_owned_handle(wrapper, pointer)
+    )
+
+    if exceptional_exit:
+        with pytest.raises(RuntimeError, match="fixture exception"):
+            with resource as entered:
+                assert entered is resource
+                raise RuntimeError("fixture exception")
+    else:
+        with resource as entered:
+            assert entered is resource
+            assert not resource.closed
+
+    resource.close()
+    assert resource.closed
+    assert released == [pointer]
+
+
+def _public_functions_and_classes() -> list[object]:
+    public: list[object] = []
+    for module in (client, errors, extensions, metadata, ttlv):
+        names = getattr(module, "__all__", None)
+        if names is None:
+            names = [
+                name
+                for name, value in vars(module).items()
+                if not name.startswith("_")
+                and getattr(value, "__module__", None) == module.__name__
+                and (inspect.isfunction(value) or inspect.isclass(value))
+            ]
+        public.extend(
+            getattr(module, name)
+            for name in names
+            if inspect.isfunction(getattr(module, name))
+            or inspect.isclass(getattr(module, name))
+        )
+    return public
+
+
+def _missing_annotations(function: object, label: str) -> list[str]:
+    signature = inspect.signature(function)
+    missing = [
+        f"{label}.{parameter.name}"
+        for parameter in signature.parameters.values()
+        if parameter.name not in {"self", "cls"}
+        and parameter.annotation is inspect.Signature.empty
+    ]
+    if signature.return_annotation is inspect.Signature.empty:
+        missing.append(f"{label}.return")
+    get_type_hints(function)
+    return missing
+
+
+def test_complete_public_python_api_has_resolvable_parameter_and_return_annotations() -> None:
+    missing: list[str] = []
+    for public in _public_functions_and_classes():
+        name = getattr(public, "__qualname__", repr(public))
+        if inspect.isfunction(public):
+            missing.extend(_missing_annotations(public, name))
+            continue
+
+        if getattr(public, "__annotations__", None):
+            get_type_hints(public)
+        for owner in public.__mro__:
+            if owner is object or owner.__module__ in {"builtins", "enum"}:
+                continue
+            for member_name, raw_member in vars(owner).items():
+                if member_name.startswith("_") and member_name not in {
+                    "__enter__",
+                    "__exit__",
+                    "__init__",
+                    "__post_init__",
+                }:
+                    continue
+                member = raw_member
+                if isinstance(member, (classmethod, staticmethod)):
+                    member = member.__func__
+                if inspect.isfunction(member):
+                    missing.extend(
+                        _missing_annotations(member, f"{name}.{member_name}")
+                    )
+
+    assert not missing, f"public Python API declarations without complete annotations: {missing}"
+
+
+def test_installed_wheel_contains_py_typed_and_adjacent_native_library(
+    tmp_path: Path,
+) -> None:
+    wheelhouse = tmp_path / "wheelhouse"
+    wheelhouse.mkdir()
+    executable_name = "maturin.exe" if sys.platform == "win32" else "maturin"
+    maturin = shutil.which("maturin") or str(Path(sys.prefix) / "Scripts" / executable_name)
+    if sys.platform != "win32" and not Path(maturin).is_file():
+        maturin = str(Path(sys.prefix) / "bin" / executable_name)
+    assert Path(maturin).is_file(), "the Python package build requires the pinned maturin tool"
+    result = subprocess.run(
+        [
+            maturin,
+            "build",
+            "--offline",
+            "--interpreter",
+            sys.executable,
+            "--out",
+            str(wheelhouse),
+        ],
+        cwd=ROOT / "bindings" / "python",
+        capture_output=True,
+        check=False,
+        encoding="utf-8",
+        errors="replace",
+        text=True,
+    )
+    assert result.returncode == 0, f"Python wheel build failed:\n{result.stdout}\n{result.stderr}"
+
+    wheels = list(wheelhouse.glob("kmipkit-*.whl"))
+    assert len(wheels) == 1
+    with zipfile.ZipFile(wheels[0]) as wheel:
+        members = set(wheel.namelist())
+
+    assert "kmipkit/py.typed" in members
+    native_libraries = {
+        name
+        for name in members
+        if Path(name).parent.as_posix() == "kmipkit/_native_ffi"
+        and Path(name).suffix.lower() in {".dll", ".dylib", ".so"}
+    }
+    assert len(native_libraries) == 1
