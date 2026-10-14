@@ -868,6 +868,50 @@ class T076ClientMappingTests(unittest.TestCase):
             "void kmipkit_client_batch_item_release(kmipkit_client_batch_item_t *handle);",
             header,
         )
+
+    def test_client_configuration_and_registry_releases_are_public_four_language_mappings(self) -> None:
+        expected = {
+            "ClientConfiguration": (
+                "kmipkit_client_configuration_release",
+                "kmipkit_client::extension_registry::ClientConfiguration",
+                "org.kmipkit.extensions.ClientConfiguration.close",
+                "kmipkit.extensions.ClientConfiguration.close",
+            ),
+            "ClientExtensionRegistry": (
+                "kmipkit_client_extension_registry_release",
+                "kmipkit_client::extension_registry::ClientExtensionRegistry",
+                "org.kmipkit.extensions.ClientExtensionRegistry.close",
+                "kmipkit.extensions.ClientExtensionRegistry.close",
+            ),
+        }
+        header = (ROOT / "bindings/c/include/kmipkit.h").read_text(encoding="utf-8")
+        for type_id, (release_symbol, rust_name, java_name, python_name) in expected.items():
+            with self.subTest(type_id=type_id):
+                release = next(
+                    row
+                    for row in self.manifest["publicDeclarations"]
+                    if row["exportName"] == release_symbol
+                )
+                self.assertEqual("declared", release["declarationState"])
+                self.assertEqual("vendor_extension_registry", release["capabilityId"])
+                self.assertEqual("native-handle-release", release["mappingSemantics"])
+                self.assertEqual(
+                    {
+                        "rust": {
+                            "packageId": "rust-kmipkit-client",
+                            "name": rust_name,
+                        },
+                        "c": {"packageId": "c-kmipkit", "name": release_symbol},
+                        "java": {"packageId": "java-kmipkit", "name": java_name},
+                        "python": {
+                            "packageId": "python-kmipkit",
+                            "name": python_name,
+                        },
+                    },
+                    release["languageMappings"],
+                )
+                self.assertIn("KMIPKIT-0043-FR-007", release["requirementIds"])
+                self.assertIn(release_symbol, header)
     def test_ready_function_mappings_resolve_to_real_four_language_apis(self) -> None:
         expected = {
             "client_batch_add_error_continuation_value": (
