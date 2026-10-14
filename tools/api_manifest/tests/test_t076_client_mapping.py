@@ -603,6 +603,7 @@ class T076ClientMappingTests(unittest.TestCase):
             "kmipkit.client.TransportInput.__init__",
             "kmipkit.client.TransportInput.encoding",
             "kmipkit.client.TransportInput.file",
+            "kmipkit.client.TransportInput.memory",
             "kmipkit.client.TransportInput.source",
         ):
             with self.subTest(export=path):
@@ -612,6 +613,17 @@ class T076ClientMappingTests(unittest.TestCase):
                     aggregate_target,
                     declaration["languageMappings"]["rust"]["name"],
                     "generic input modes cover certificates, keys, trust, and CRLs",
+                )
+        for path in (
+            "org.kmipkit.extensions.TransportConfiguration.Encoding.DER",
+            "org.kmipkit.extensions.TransportConfiguration.Encoding.PEM",
+        ):
+            with self.subTest(export=path):
+                declaration = declarations[("java-kmipkit", path)]
+                self.assertEqual(
+                    aggregate_target,
+                    declaration["languageMappings"]["rust"]["name"],
+                    "encoding values select aggregate transport input constructors",
                 )
 
         production = next(
