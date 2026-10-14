@@ -22,6 +22,16 @@ from pathlib import Path
 from typing import Any
 
 
+_PYTHON_PUBLIC_DUNDER_METHODS = {
+    "__init__", "__repr__", "__eq__", "__hash__", "__setattr__", "__delattr__",
+    "__lt__", "__le__", "__gt__", "__ge__", "__enter__", "__exit__",
+}
+_PYTHON_PUBLIC_DUNDER_FIELDS = {
+    "__hash__", "__match_args__", "__slots__", "__dataclass_fields__",
+    "__dataclass_params__",
+}
+
+
 def _record(package: str, name: str, kind: str, location: str) -> dict[str, str]:
     return {"packageId": package, "exportName": name, "kind": kind, "location": location}
 
@@ -388,7 +398,7 @@ def _python_class_members(node: ast.ClassDef) -> list[tuple[str, str, int]]:
     observed_fields: set[str] = set()
     for child in node.body:
         if isinstance(child, (ast.FunctionDef, ast.AsyncFunctionDef)):
-            if not child.name.startswith("_") or child.name in {"__enter__", "__exit__"}:
+            if not child.name.startswith("_") or child.name in _PYTHON_PUBLIC_DUNDER_METHODS:
                 members.append((child.name, "python-export", child.lineno))
             if child.name == "__init__":
                 for statement in ast.walk(child):
@@ -406,12 +416,160 @@ def _python_class_members(node: ast.ClassDef) -> list[tuple[str, str, int]]:
                                 and target.attr not in observed_fields):
                             members.append((target.attr, "field", statement.lineno))
                             observed_fields.add(target.attr)
-        elif isinstance(child, ast.AnnAssign) and isinstance(child.target, ast.Name) and not child.target.id.startswith("_"):
-            members.append((child.target.id, "field", child.lineno))
+        elif isinstance(child, ast.AnnAssign) and isinstance(child.target, ast.Name):
+            if not child.target.id.startswith("_") or child.target.id in _PYTHON_PUBLIC_DUNDER_FIELDS:
+                members.append((child.target.id, "field", child.lineno))
         elif isinstance(child, ast.Assign):
-            members.extend((target.id, "python-export", child.lineno) for target in child.targets
-                           if isinstance(target, ast.Name) and not target.id.startswith("_"))
+            members.extend((target.id, "field" if target.id in _PYTHON_PUBLIC_DUNDER_FIELDS else "python-export", child.lineno)
+                           for target in child.targets if isinstance(target, ast.Name)
+                           and (not target.id.startswith("_") or target.id in _PYTHON_PUBLIC_DUNDER_FIELDS))
     return members
+
+
+def _python_imported_path(
+    expression: ast.expr,
+    module: str,
+    imported: dict[tuple[str, str], tuple[str, str]],
+) -> str | None:
+    """Resolve a dotted expression when its root is an imported package name."""
+    parts: list[str] = []
+    current = expression
+    while isinstance(current, ast.Attribute):
+        parts.append(current.attr)
+        current = current.value
+    if not isinstance(current, ast.Name):
+        return None
+    parts.append(current.id)
+    parts.reverse()
+    imported_target = imported.get((module, parts[0]))
+    if imported_target is None:
+        return None
+    source_module, source_name = imported_target
+    return ".".join(part for part in (source_module, source_name, *parts[1:]) if part)
+
+
+def _python_dataclass_members(
+    node: ast.ClassDef,
+    module: str,
+    imported: dict[tuple[str, str], tuple[str, str]],
+) -> tuple[list[tuple[str, str, int]], str | None, str | None]:
+    """Return source-verifiable public declarations created by stdlib dataclass."""
+    decorator: ast.Call | ast.expr | None = None
+    for candidate in node.decorator_list:
+        target = candidate.func if isinstance(candidate, ast.Call) else candidate
+        if _python_imported_path(target, module, imported) == "dataclasses.dataclass":
+            decorator = candidate
+            break
+    if decorator is None:
+        return [], None, None
+
+    options = {"init": True, "repr": True, "eq": True, "order": False,
+               "frozen": False, "unsafe_hash": False, "match_args": True,
+               "kw_only": False, "slots": False, "weakref_slot": False}
+    if isinstance(decorator, ast.Call):
+        for keyword in decorator.keywords:
+            if keyword.arg not in options:
+                continue
+            if not isinstance(keyword.value, ast.Constant) or not isinstance(keyword.value.value, bool):
+                return [], "dynamic-dataclass-options", None
+            options[keyword.arg] = keyword.value.value
+
+    declared: set[str] = set()
+    for child in node.body:
+        if isinstance(child, (ast.FunctionDef, ast.AsyncFunctionDef)):
+            declared.add(child.name)
+        elif isinstance(child, ast.AnnAssign) and isinstance(child.target, ast.Name):
+            declared.add(child.target.id)
+        elif isinstance(child, ast.Assign):
+            declared.update(target.id for target in child.targets if isinstance(target, ast.Name))
+
+    fields: list[tuple[str, str, bool, str | None, bool]] = []
+    keyword_only_default = options["kw_only"]
+    for child in node.body:
+        if not isinstance(child, ast.AnnAssign) or not isinstance(child.target, ast.Name):
+            continue
+        field_name = child.target.id
+        annotation_path = _python_imported_path(child.annotation, module, imported)
+        if annotation_path == "dataclasses.KW_ONLY":
+            keyword_only_default = True
+            continue
+        if annotation_path in {"typing.ClassVar", "typing_extensions.ClassVar"}:
+            continue
+        init = True
+        kw_only = keyword_only_default
+        default_text: str | None = None
+        has_default = child.value is not None
+        if isinstance(child.value, ast.Call) and _python_imported_path(child.value.func, module, imported) == "dataclasses.field":
+            has_default = False
+            for keyword in child.value.keywords:
+                if keyword.arg in {"init", "kw_only"}:
+                    if not isinstance(keyword.value, ast.Constant) or not isinstance(keyword.value.value, bool):
+                        return [], "dynamic-dataclass-options", None
+                    if keyword.arg == "init":
+                        init = keyword.value.value
+                    else:
+                        kw_only = keyword.value.value
+                elif keyword.arg == "default":
+                    has_default = True
+                    default_text = ast.unparse(keyword.value)
+                elif keyword.arg == "default_factory":
+                    has_default = True
+                    default_text = "<factory>"
+        elif child.value is not None:
+            default_text = ast.unparse(child.value)
+        fields.append((field_name, ast.unparse(child.annotation), init, default_text if has_default else None,
+                       kw_only))
+
+    generated: list[tuple[str, str, int]] = []
+
+    def add_method(name: str) -> None:
+        if name not in declared:
+            generated.append((name, "python-export", node.lineno))
+
+    def add_field(name: str) -> None:
+        if name not in declared:
+            generated.append((name, "field", node.lineno))
+
+    signature: str | None = None
+    if options["init"]:
+        add_method("__init__")
+        if "__init__" not in declared:
+            parameters: list[str] = []
+            keyword_only: list[str] = []
+            for field_name, annotation, init, default, kw_only in fields:
+                if not init:
+                    continue
+                parameter = f"{field_name}: {annotation}"
+                if default is not None:
+                    parameter += f" = {default}"
+                (keyword_only if kw_only else parameters).append(parameter)
+            if keyword_only:
+                parameters.extend(("*", *keyword_only))
+            signature = f"({', '.join(parameters)}) -> None"
+    if options["repr"]:
+        add_method("__repr__")
+    if options["eq"]:
+        add_method("__eq__")
+    if options["order"]:
+        for name in ("__lt__", "__le__", "__gt__", "__ge__"):
+            add_method(name)
+    if options["frozen"]:
+        add_method("__setattr__")
+        add_method("__delattr__")
+    if options["unsafe_hash"] or (options["eq"] and options["frozen"]):
+        add_method("__hash__")
+    elif options["eq"] and not options["frozen"] and "__hash__" not in declared:
+        add_field("__hash__")
+
+    if options["match_args"] and "__match_args__" not in declared:
+        add_field("__match_args__")
+    if options["slots"]:
+        add_field("__slots__")
+    add_field("__dataclass_fields__")
+    add_field("__dataclass_params__")
+    if options["slots"] and options["weakref_slot"]:
+        add_field("__weakref__")
+    return generated, None, signature
 
 
 def inventory_python_sources(sources: dict[str, str], package: str = "python-kmipkit") -> dict[str, Any]:
@@ -446,12 +604,32 @@ def inventory_python_sources(sources: dict[str, str], package: str = "python-kmi
     definitions: dict[tuple[str, str], str] = {}
     imported: dict[tuple[str, str], tuple[str, str]] = {}
     explicit_exports: dict[str, list[str] | None] = {}
+    generated_signatures: dict[str, str] = {}
     classes: dict[str, tuple[str, str, list[ast.expr], list[tuple[str, str, int]]]] = {}
     function_groups: dict[tuple[str, str], list[ast.FunctionDef | ast.AsyncFunctionDef]] = {}
     for module, tree in sorted(parsed.items()):
         for node in tree.body:
             if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
                 function_groups.setdefault((module, node.name), []).append(node)
+            elif isinstance(node, (ast.ImportFrom, ast.Import)):
+                if isinstance(node, ast.ImportFrom) and node.module == "__future__":
+                    continue
+                for alias in node.names:
+                    visible = alias.asname or alias.name
+                    if isinstance(node, ast.ImportFrom):
+                        if node.level == 0:
+                            imported_module = node.module or ""
+                        else:
+                            package_parts = module.split(".") if module in package_modules else module.rsplit(".", 1)[0].split(".")
+                            parent = package_parts[:len(package_parts) - node.level + 1]
+                            imported_module = ".".join(parent + ([node.module] if node.module else []))
+                        child_module = f"{imported_module}.{alias.name}"
+                        if node.module is None and child_module in parsed:
+                            imported[(module, visible)] = (child_module, "")
+                        else:
+                            imported[(module, visible)] = (imported_module, alias.name)
+                    else:
+                        imported[(module, visible)] = (alias.name, "")
 
     def is_overload(node: ast.FunctionDef | ast.AsyncFunctionDef) -> bool:
         return any((decorator.id if isinstance(decorator, ast.Name)
@@ -474,6 +652,15 @@ def inventory_python_sources(sources: dict[str, str], package: str = "python-kmi
         for node in tree.body:
             if isinstance(node, ast.ClassDef):
                 members = _python_class_members(node)
+                generated_members, dataclass_issue, constructor_signature = _python_dataclass_members(
+                    node, module, imported
+                )
+                members.extend(generated_members)
+                if dataclass_issue:
+                    issues.append({"packageId": package, "exportName": f"{module}.{node.name}",
+                                   "reason": dataclass_issue})
+                if constructor_signature is not None:
+                    generated_signatures[f"{module}.{node.name}.__init__"] = constructor_signature
                 classes[f"{module}.{node.name}"] = (module, node.name, list(node.bases), members)
                 # Private helper modules are not emitted, but their class
                 # definitions must remain available for import and inheritance
@@ -481,8 +668,12 @@ def inventory_python_sources(sources: dict[str, str], package: str = "python-kmi
                 definitions[(module, node.name)] = "type"
                 if module in public_modules and not node.name.startswith("_"):
                     records.append(_record(package, f"{module}.{node.name}", "type", f"{module}:{node.lineno}"))
-                    records.extend(_record(package, f"{module}.{node.name}.{member}", kind, f"{module}:{line}")
-                                   for member, kind, line in members)
+                    for member, kind, line in members:
+                        record = _record(package, f"{module}.{node.name}.{member}", kind, f"{module}:{line}")
+                        signature = generated_signatures.get(f"{module}.{node.name}.{member}")
+                        if signature is not None:
+                            record["signature"] = signature
+                        records.append(record)
             elif isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)) and not node.name.startswith("_"):
                 kind = "python-export" if exports is not None else "function"
                 definitions[(module, node.name)] = kind
@@ -508,9 +699,12 @@ def inventory_python_sources(sources: dict[str, str], package: str = "python-kmi
                     if not visible.startswith("_"):
                         definitions[(module, visible)] = "import"
                     if isinstance(node, ast.ImportFrom):
-                        package_parts = module.split(".") if module in package_modules else module.rsplit(".", 1)[0].split(".")
-                        parent = package_parts[:len(package_parts) - node.level + 1]
-                        imported_module = ".".join(parent + ([node.module] if node.module else []))
+                        if node.level == 0:
+                            imported_module = node.module or ""
+                        else:
+                            package_parts = module.split(".") if module in package_modules else module.rsplit(".", 1)[0].split(".")
+                            parent = package_parts[:len(package_parts) - node.level + 1]
+                            imported_module = ".".join(parent + ([node.module] if node.module else []))
                         child_module = f"{imported_module}.{alias.name}"
                         if node.module is None and child_module in parsed:
                             imported[(module, visible)] = (child_module, "")
@@ -576,8 +770,14 @@ def inventory_python_sources(sources: dict[str, str], package: str = "python-kmi
                 continue
             _, _, base_bases, base_members = base_info
             for member, kind, line in base_members:
-                if member not in declared and (not member.startswith("_") or member in {"__enter__", "__exit__"}):
-                    records.append(_record(package, f"{qualified}.{member}", kind, f"inherited:{base_path}:{line}"))
+                if member not in declared and (not member.startswith("_")
+                                               or member in {"__init__", "__enter__", "__exit__"}):
+                    record = _record(package, f"{qualified}.{member}", kind, f"inherited:{base_path}:{line}")
+                    inherited_signature = generated_signatures.get(f"{base_path}.{member}")
+                    if inherited_signature is not None:
+                        generated_signatures[f"{qualified}.{member}"] = inherited_signature
+                        record["signature"] = inherited_signature
+                    records.append(record)
                     declared.add(member)
             pending.extend(base_bases)
 
