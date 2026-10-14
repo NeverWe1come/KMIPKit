@@ -652,6 +652,21 @@ class T076ClientMappingTests(unittest.TestCase):
             }.issubset(rust_targets)
         )
 
+    def test_transport_and_execution_capability_mappings_are_generator_sorted(self) -> None:
+        capabilities = {
+            row["capabilityId"]: row
+            for row in self.manifest["capabilities"]
+            if row["capabilityId"] in {"production_transport", "client_execution"}
+        }
+        for capability_id, capability in capabilities.items():
+            for language, exports in capability["mappings"].items():
+                with self.subTest(capability=capability_id, language=language):
+                    self.assertEqual(
+                        sorted(exports),
+                        exports,
+                        "capability inventory must be canonical for manifest generation",
+                    )
+
     def test_transport_field_mappings_cover_policy_modes_and_exact_c_carriers(self) -> None:
         declarations = {
             (row["packageId"], row["exportName"]): row
