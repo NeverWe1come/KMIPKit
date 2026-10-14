@@ -839,6 +839,78 @@ class T076ClientMappingTests(unittest.TestCase):
                 default_timeout["languageMappings"]["python"]["name"],
             )
 
+    def test_transport_mapping_targets_preserve_endpoint_credential_and_timeout_modes(self) -> None:
+        declarations = {
+            (row["packageId"], row["exportName"]): row
+            for row in self.manifest["publicDeclarations"]
+        }
+        expected = {
+            ("java-kmipkit", "org.kmipkit.extensions.TransportConfiguration.Builder.https"): (
+                "kmipkit_transport::Endpoint::https",
+                "kmipkit_transport_config_v1_t.endpoint_kind",
+                "kmipkit.client.Endpoint.https",
+            ),
+            ("java-kmipkit", "org.kmipkit.extensions.TransportConfiguration.Builder.trustCertificatesDer"): (
+                "kmipkit_transport::CertificateInput::from_der",
+                "kmipkit_transport_config_v1_t.trust_certificates",
+                "kmipkit.client.TransportInput.memory",
+            ),
+            ("java-kmipkit", "org.kmipkit.extensions.TransportConfiguration.Builder.trustCertificateFiles"): (
+                "kmipkit_transport::CertificateInput",
+                "kmipkit_transport_config_v1_t.trust_certificates",
+                "kmipkit.client.TransportInput.file",
+            ),
+            ("java-kmipkit", "org.kmipkit.extensions.TransportConfiguration.Builder.clientIdentityFiles"): (
+                "kmipkit_transport::ClientIdentity",
+                "kmipkit_transport_config_t",
+                "kmipkit.client.TransportInput.file",
+            ),
+            ("java-kmipkit", "org.kmipkit.extensions.TransportConfiguration.Builder.revocationListsDer"): (
+                "kmipkit_transport::RevocationListInput::from_der",
+                "kmipkit_transport_config_v1_t.revocation_lists",
+                "kmipkit.client.TransportConfig.revocation_lists",
+            ),
+            ("java-kmipkit", "org.kmipkit.extensions.TransportConfiguration.Encoding.DER"): (
+                "kmipkit_transport::CertificateInput::from_der",
+                "kmipkit_transport_input_v1_t.encoding",
+                "kmipkit.client.CredentialEncoding.DER",
+            ),
+            ("java-kmipkit", "org.kmipkit.extensions.TransportConfiguration.Encoding.PEM"): (
+                "kmipkit_transport::CertificateInput::from_pem",
+                "kmipkit_transport_input_v1_t.encoding",
+                "kmipkit.client.CredentialEncoding.PEM",
+            ),
+            ("java-kmipkit", "org.kmipkit.extensions.TransportConfiguration.Timeout.defaultValue"): (
+                "kmipkit_transport::TimeoutPolicy",
+                "kmipkit_timeout_limit_v1_t.kind",
+                "kmipkit.client.TimeoutLimit.default",
+            ),
+            ("python-kmipkit", "kmipkit.client.Endpoint.kind"): (
+                "kmipkit_transport::Endpoint",
+                "kmipkit_transport_config_v1_t.endpoint_kind",
+                "org.kmipkit.extensions.TransportConfiguration.Builder",
+            ),
+            ("python-kmipkit", "kmipkit.client.Endpoint.port"): (
+                "kmipkit_transport::Endpoint::raw_tls",
+                "kmipkit_transport_config_v1_t.endpoint_port",
+                "org.kmipkit.extensions.TransportConfiguration.Builder.rawTls",
+            ),
+            ("python-kmipkit", "kmipkit.client.TransportInput.file"): (
+                "kmipkit_transport::TransportConfigBuilder",
+                "kmipkit_transport_input_v1_t.source_kind",
+                "org.kmipkit.extensions.TransportConfiguration.Builder",
+            ),
+        }
+        for (package_id, export_name), target_names in expected.items():
+            with self.subTest(export=export_name):
+                declaration = declarations[(package_id, export_name)]
+                self.assertEqual("production_transport", declaration["capabilityId"])
+                actual = tuple(
+                    declaration["languageMappings"][language]["name"]
+                    for language in ("rust", "c", "python")
+                )
+                self.assertEqual(target_names, actual)
+
     def test_client_execution_error_taxonomy_is_public_and_mapped(self) -> None:
         expected = {
             "protocol": (8, "org.kmipkit.ProtocolException"),
