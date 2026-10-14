@@ -2368,3 +2368,7 @@ def test_transport_input_preserves_dataclass_replace_and_hash_behavior() -> None
     assert copied == original
     assert hash(copied) == hash(original)
     assert {original: "credential"}[copied] == "credential"
+
+    replaced_source = replace(original, source=b"replacement-key")
+    assert replaced_source.source == b"replacement-key"
+    assert original.source == b"private-key-sentinel"

@@ -3,13 +3,14 @@
 This module exposes transport configuration, typed ordered batches, and common
 outcome metadata. Per-operation builders remain owned by their operation
 specifications; callers can add only the typed batch items those specs expose.
-Python-owned copies of credentials and returned correlation values follow the
-runtime's normal memory-management limits and cannot be deterministically
-zeroized by KMIPKit.
+KMIPKit-owned credential inputs use mutable buffers that are wiped before
+release. Copies returned to Python callers and copies retained by Python or
+foreign runtimes remain subject to those runtimes' memory-management limits.
 """
 
 from __future__ import annotations
 
+import hashlib
 import ipaddress
 from dataclasses import dataclass, field
 from enum import IntEnum
@@ -175,15 +176,107 @@ class Endpoint:
         )
 
 
-@dataclass(frozen=True, slots=True)
+class _SecretBytes:
+    """Mutable owned bytes that are wiped before their backing storage is released."""
+
+    __slots__ = ("_buffer", "__weakref__")
+
+    def __init__(self, source: bytes | bytearray | memoryview) -> None:
+        self._buffer = bytearray(source)
+
+    @property
+    def buffer(self) -> bytearray:
+        """Return the privately owned mutable storage for internal FFI borrowing."""
+        return self._buffer
+
+    def clone(self) -> _SecretBytes:
+        return _SecretBytes(self._buffer)
+
+    def to_bytes(self) -> bytes:
+        return bytes(self._buffer)
+
+    def wipe(self) -> None:
+        memoryview(self._buffer)[:] = bytes(len(self._buffer))
+
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, _SecretBytes):
+            return NotImplemented
+        return self._buffer == other._buffer
+
+    def __del__(self) -> None:
+        try:
+            self.wipe()
+        except Exception:
+            # Destructors must not surface failures during interpreter shutdown.
+            pass
+
+
+@dataclass(frozen=True, slots=True, init=False, eq=False)
 class TransportInput:
     """Credential or trust material supplied as bytes or a local file path."""
 
     source: bytes | Path = field(repr=False)
     encoding: CredentialEncoding
 
-    def __post_init__(self) -> None:
+    def __init__(self, source: bytes | Path, encoding: CredentialEncoding) -> None:
+        if not isinstance(encoding, CredentialEncoding):
+            errors.raise_for_status(4)
+        if isinstance(source, bytes):
+            try:
+                view = memoryview(source)
+                if view.nbytes > _MAX_INPUT_BYTES:
+                    errors.raise_for_status(6)
+                owned_source: _SecretBytes | Path = _SecretBytes(view)
+            except (BufferError, TypeError, ValueError):
+                errors.raise_for_status(4)
+        elif isinstance(source, Path):
+            try:
+                path_bytes = _utf8_bytes(str(source))
+            except (TypeError, ValueError, UnicodeEncodeError):
+                errors.raise_for_status(4)
+            if (
+                not path_bytes
+                or b"\x00" in path_bytes
+                or len(path_bytes) > _MAX_TEXT_BYTES
+            ):
+                errors.raise_for_status(4)
+            owned_source = Path(path_bytes.decode("utf-8"))
+        else:
+            errors.raise_for_status(4)
+        object.__setattr__(self, "source", owned_source)
+        object.__setattr__(self, "encoding", encoding)
         _validate_transport_input(self)
+
+    @classmethod
+    def _from_secret(cls, source: _SecretBytes, encoding: CredentialEncoding) -> Self:
+        value = object.__new__(cls)
+        object.__setattr__(value, "source", source)
+        object.__setattr__(value, "encoding", encoding)
+        _validate_transport_input(value)
+        return value
+
+    def __getattribute__(self, name: str) -> Any:
+        if name == "source":
+            source = TransportInput.source.__get__(self, TransportInput)
+            if isinstance(source, _SecretBytes):
+                return source.to_bytes()
+            return source
+        return object.__getattribute__(self, name)
+
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, TransportInput):
+            return NotImplemented
+        return (
+            self.encoding == other.encoding
+            and _transport_source(self) == _transport_source(other)
+        )
+
+    def __hash__(self) -> int:
+        source = _transport_source(self)
+        if isinstance(source, _SecretBytes):
+            digest = hashlib.blake2b(source.buffer, digest_size=16).digest()
+            return hash((digest, self.encoding))
+        return hash((source, self.encoding))
 
     @classmethod
     def memory(
@@ -198,12 +291,11 @@ class TransportInput:
             view = memoryview(data)
             if view.nbytes > _MAX_INPUT_BYTES:
                 errors.raise_for_status(6)
-            raw = view.tobytes()
         except (TypeError, ValueError):
             errors.raise_for_status(4)
-        if not raw:
+        if not view.nbytes:
             errors.raise_for_status(4)
-        return cls(raw, encoding)
+        return cls._from_secret(_SecretBytes(view), encoding)
 
     @classmethod
     def file(cls, path: str | Path, encoding: CredentialEncoding) -> Self:
@@ -226,29 +318,28 @@ def _validate_transport_input(value: TransportInput) -> None:
         errors.raise_for_status(4)
     if not isinstance(value.encoding, CredentialEncoding):
         errors.raise_for_status(4)
-    if isinstance(value.source, bytes):
-        try:
-            view = memoryview(value.source)
-            byte_count = view.nbytes
-        except (BufferError, TypeError, ValueError):
-            errors.raise_for_status(4)
+    source = _transport_source(value)
+    if isinstance(source, _SecretBytes):
+        byte_count = len(source.buffer)
         if byte_count == 0:
             errors.raise_for_status(4)
         if byte_count > _MAX_INPUT_BYTES:
             errors.raise_for_status(6)
-        if type(value.source) is not bytes:
-            object.__setattr__(value, "source", view.tobytes())
         return
-    if not isinstance(value.source, Path):
+    if not isinstance(source, Path):
         errors.raise_for_status(4)
     try:
-        path_text = str(value.source)
+        path_text = str(source)
         path_bytes = _utf8_bytes(path_text)
     except (TypeError, ValueError, UnicodeEncodeError):
         errors.raise_for_status(4)
     if not path_bytes or b"\x00" in path_bytes or len(path_bytes) > _MAX_TEXT_BYTES:
         errors.raise_for_status(4)
-    object.__setattr__(value, "source", Path(path_bytes.decode("utf-8")))
+
+
+def _transport_source(value: TransportInput) -> _SecretBytes | Path:
+    """Read the canonical source slot without producing a public bytes copy."""
+    return TransportInput.source.__get__(value, TransportInput)
 
 
 def _validate_transport_input_group(values: tuple[TransportInput, ...]) -> None:
@@ -259,8 +350,9 @@ def _validate_transport_input_group(values: tuple[TransportInput, ...]) -> None:
         if not isinstance(value, TransportInput):
             errors.raise_for_status(4)
         _validate_transport_input(value)
-        if isinstance(value.source, bytes):
-            total += memoryview(value.source).nbytes
+        source = _transport_source(value)
+        if isinstance(source, _SecretBytes):
+            total += len(source.buffer)
             if total > _MAX_INPUT_BYTES:
                 errors.raise_for_status(6)
 
@@ -468,7 +560,7 @@ class TransportConfig:
         object.__setattr__(self, "revocation_lists", revocation_lists)
         if any(not isinstance(item, TransportInput) for item in self.revocation_lists):
             errors.raise_for_status(4)
-        if any(isinstance(item.source, Path) for item in self.revocation_lists):
+        if any(isinstance(_transport_source(item), Path) for item in self.revocation_lists):
             errors.raise_for_status(4)
         _validate_transport_input_group(self.revocation_lists)
         for timeout in (
@@ -503,10 +595,12 @@ def _snapshot_transport_input(value: TransportInput) -> TransportInput:
         errors.raise_for_status(4)
     # Reconstruct through the base dataclass so its input checks always run.
     try:
-        source = TransportInput.source.__get__(value, TransportInput)
+        source = _transport_source(value)
         encoding = TransportInput.encoding.__get__(value, TransportInput)
     except (AttributeError, TypeError):
         errors.raise_for_status(4)
+    if isinstance(source, _SecretBytes):
+        return TransportInput._from_secret(source.clone(), encoding)
     return TransportInput(source, encoding)
 
 
@@ -722,31 +816,47 @@ class Client(_ClientHandle):
         if not isinstance(transport, TransportConfig):
             errors.raise_for_status(4)
         transport = _validated_transport_config(transport)
-        record, owners = _transport_record(transport)
-        transport_output = ffi.new("kmipkit_transport_config_t **")
-        client_output = ffi.new("kmipkit_client_t **")
-        with _NATIVE_CALL_LOCK:
-            status = lib.kmipkit_transport_config_create_v1(record, transport_output)
-            _raise_abi_status(status)
-            transport_slot = ffi.new(
-                "kmipkit_transport_config_t **", transport_output[0]
-            )
-            try:
-                status = lib.kmipkit_client_create(
-                    ffi.cast(
-                        "kmipkit_client_configuration_t *", configuration._pointer()
-                    ),
-                    transport_slot,
-                    client_output,
+        owners: tuple[object, ...] = ()
+        try:
+            record, owners = _transport_record(transport)
+            transport_output = ffi.new("kmipkit_transport_config_t **")
+            client_output = ffi.new("kmipkit_client_t **")
+            with _NATIVE_CALL_LOCK:
+                try:
+                    status = lib.kmipkit_transport_config_create_v1(
+                        record, transport_output
+                    )
+                finally:
+                    _wipe_transport_secrets(owners)
+                    owners = ()
+                    key_source = _transport_source(transport.client_private_key)
+                    if isinstance(key_source, _SecretBytes):
+                        key_source.wipe()
+                _raise_abi_status(status)
+                transport_slot = ffi.new(
+                    "kmipkit_transport_config_t **", transport_output[0]
                 )
-            except (OverflowError, TypeError, ValueError):
+                try:
+                    status = lib.kmipkit_client_create(
+                        ffi.cast(
+                            "kmipkit_client_configuration_t *",
+                            configuration._pointer(),
+                        ),
+                        transport_slot,
+                        client_output,
+                    )
+                except (OverflowError, TypeError, ValueError):
+                    if transport_slot[0] != ffi.NULL:
+                        lib.kmipkit_transport_config_release(transport_slot[0])
+                    raise errors.InvalidInputError() from None
                 if transport_slot[0] != ffi.NULL:
                     lib.kmipkit_transport_config_release(transport_slot[0])
-                raise errors.InvalidInputError() from None
-            if transport_slot[0] != ffi.NULL:
-                lib.kmipkit_transport_config_release(transport_slot[0])
-            del owners
-            _raise_abi_status(status)
+                _raise_abi_status(status)
+        finally:
+            _wipe_transport_secrets(owners)
+            key_source = _transport_source(transport.client_private_key)
+            if isinstance(key_source, _SecretBytes):
+                key_source.wipe()
         if client_output[0] == ffi.NULL:
             errors.raise_for_status(7)
         return _wrap_owned_handle(cls, client_output[0])
@@ -919,12 +1029,20 @@ def _transport_record(configuration: TransportConfig) -> tuple[Any, tuple[object
     """Build one bounded versioned C record and keep borrowed spans alive for the call."""
     owners: list[object] = []
 
-    def span(value: bytes) -> Any:
-        byte_count = memoryview(value).nbytes
+    def span(value: bytes | _SecretBytes) -> Any:
+        if isinstance(value, _SecretBytes):
+            source = value.clone()
+            byte_count = len(source.buffer)
+            owners.append(source)
+            data = ffi.from_buffer("uint8_t[]", source.buffer)
+            owners.append(data)
+        else:
+            byte_count = memoryview(value).nbytes
+            data = ffi.new("uint8_t[]", value) if byte_count else ffi.NULL
+            if byte_count:
+                owners.append(data)
         if byte_count == 0:
             return ffi.new("kmipkit_byte_span_v1_t *", {"data": ffi.NULL, "length": 0})[0]
-        data = ffi.new("uint8_t[]", value)
-        owners.append(data)
         return ffi.new(
             "kmipkit_byte_span_v1_t *",
             {"data": data, "length": byte_count},
@@ -932,12 +1050,13 @@ def _transport_record(configuration: TransportConfig) -> tuple[Any, tuple[object
 
     def input_record(value: TransportInput) -> Any:
         _validate_transport_input(value)
-        if isinstance(value.source, bytes):
+        source = _transport_source(value)
+        if isinstance(source, _SecretBytes):
             source_kind = 1
-            data = value.source
+            data: bytes | _SecretBytes = source
         else:
             source_kind = 2
-            data = _utf8_bytes(str(value.source))
+            data = _utf8_bytes(str(source))
             if not data or len(data) > _MAX_TEXT_BYTES:
                 errors.raise_for_status(4)
         record = ffi.new("kmipkit_transport_input_v1_t *")
@@ -968,47 +1087,62 @@ def _transport_record(configuration: TransportConfig) -> tuple[Any, tuple[object
             },
         )[0]
 
-    endpoint_bytes = _utf8_bytes(configuration.endpoint.address)
-    endpoint = span(endpoint_bytes)
-    certificates = input_array(configuration.client_certificates)
-    key = input_record(configuration.client_private_key)
-    trust_certificates = input_array(configuration.trust.certificates)
-    revocation_lists = input_array(configuration.revocation_lists)
-    flags = 0
-    server_name = ffi.new("kmipkit_byte_span_v1_t *", {"data": ffi.NULL, "length": 0})[0]
-    if configuration.endpoint.tls_server_name is not None:
-        flags |= 1
-        server_name = span(_utf8_bytes(configuration.endpoint.tls_server_name))
-    target_uri = ffi.new("kmipkit_byte_span_v1_t *", {"data": ffi.NULL, "length": 0})[0]
-    if configuration.endpoint.target_uri is not None:
-        flags |= 2
-        target_uri = span(_utf8_bytes(configuration.endpoint.target_uri))
-    record = ffi.new("kmipkit_transport_config_v1_t *")
-    record.struct_size = ffi.sizeof("kmipkit_transport_config_v1_t")
-    record.abi_version = 1
-    record.endpoint_kind = int(configuration.endpoint.kind)
-    record.trust_kind = int(configuration.trust.kind)
-    record.flags = flags
-    record.reserved = 0
-    record.endpoint = endpoint
-    record.endpoint_port = configuration.endpoint.port
-    record.reserved2 = 0
-    record.client_certificates = certificates
-    record.client_certificate_count = len(configuration.client_certificates)
-    record.client_private_key = key
-    record.trust_certificates = trust_certificates
-    record.trust_certificate_count = len(configuration.trust.certificates)
-    record.revocation_lists = revocation_lists
-    record.revocation_list_count = len(configuration.revocation_lists)
-    record.tls_server_name = server_name
-    record.target_uri = target_uri
-    record.connect_timeout = timeout(configuration.connect_timeout)
-    record.write_timeout = timeout(configuration.write_timeout)
-    record.read_timeout = timeout(configuration.read_timeout)
-    record.total_timeout = timeout(configuration.total_timeout)
-    record.max_request_bytes = configuration.max_request_bytes
-    owners.append(record)
-    return record, tuple(owners)
+    try:
+        endpoint_bytes = _utf8_bytes(configuration.endpoint.address)
+        endpoint = span(endpoint_bytes)
+        certificates = input_array(configuration.client_certificates)
+        key = input_record(configuration.client_private_key)
+        trust_certificates = input_array(configuration.trust.certificates)
+        revocation_lists = input_array(configuration.revocation_lists)
+        flags = 0
+        server_name = ffi.new(
+            "kmipkit_byte_span_v1_t *", {"data": ffi.NULL, "length": 0}
+        )[0]
+        if configuration.endpoint.tls_server_name is not None:
+            flags |= 1
+            server_name = span(_utf8_bytes(configuration.endpoint.tls_server_name))
+        target_uri = ffi.new(
+            "kmipkit_byte_span_v1_t *", {"data": ffi.NULL, "length": 0}
+        )[0]
+        if configuration.endpoint.target_uri is not None:
+            flags |= 2
+            target_uri = span(_utf8_bytes(configuration.endpoint.target_uri))
+        record = ffi.new("kmipkit_transport_config_v1_t *")
+        record.struct_size = ffi.sizeof("kmipkit_transport_config_v1_t")
+        record.abi_version = 1
+        record.endpoint_kind = int(configuration.endpoint.kind)
+        record.trust_kind = int(configuration.trust.kind)
+        record.flags = flags
+        record.reserved = 0
+        record.endpoint = endpoint
+        record.endpoint_port = configuration.endpoint.port
+        record.reserved2 = 0
+        record.client_certificates = certificates
+        record.client_certificate_count = len(configuration.client_certificates)
+        record.client_private_key = key
+        record.trust_certificates = trust_certificates
+        record.trust_certificate_count = len(configuration.trust.certificates)
+        record.revocation_lists = revocation_lists
+        record.revocation_list_count = len(configuration.revocation_lists)
+        record.tls_server_name = server_name
+        record.target_uri = target_uri
+        record.connect_timeout = timeout(configuration.connect_timeout)
+        record.write_timeout = timeout(configuration.write_timeout)
+        record.read_timeout = timeout(configuration.read_timeout)
+        record.total_timeout = timeout(configuration.total_timeout)
+        record.max_request_bytes = configuration.max_request_bytes
+        owners.append(record)
+        return record, tuple(owners)
+    except BaseException:
+        _wipe_transport_secrets(owners)
+        raise
+
+
+def _wipe_transport_secrets(owners: tuple[object, ...] | list[object]) -> None:
+    """Wipe every mutable credential owner borrowed by an ABI record."""
+    for owner in owners:
+        if isinstance(owner, _SecretBytes):
+            owner.wipe()
 
 
 def _read_last_error() -> tuple[int, int, int, int]:
