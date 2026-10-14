@@ -625,6 +625,87 @@ def test_client_create_serializes_transport_and_returns_owned_client(
     configuration.close()
 
 
+@pytest.mark.parametrize(
+    ("source_kind", "encoding"),
+    [
+        ("memory", client.CredentialEncoding.PEM),
+        ("memory", client.CredentialEncoding.DER),
+        ("file", client.CredentialEncoding.PEM),
+        ("file", client.CredentialEncoding.DER),
+    ],
+)
+def test_client_create_forwards_identity_and_trust_modes_to_native_constructor(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    source_kind: str,
+    encoding: client.CredentialEncoding,
+) -> None:
+    extension_limits = extensions.default_extension_registry_limits()
+    registry = extensions.create_client_extension_registry((), extension_limits)
+    extension_configuration = extensions.create_client_configuration(registry)
+    transport_pointer, _transport_storage = _opaque("kmipkit_transport_config_t")
+    client_pointer, _client_storage = _opaque("kmipkit_client_t")
+    observed: list[object] = []
+
+    def value(name: str) -> client.TransportInput:
+        if source_kind == "memory":
+            return client.TransportInput.memory(name.encode(), encoding)
+        return client.TransportInput.file(tmp_path / name, encoding)
+
+    certificate = value("client-cert")
+    private_key = value("client-key")
+    trust_certificate = value("trust-cert")
+    revocation_list = client.TransportInput.memory(b"crl-bytes", encoding)
+    transport_configuration = _transport_configuration(
+        client_certificates=(certificate,),
+        client_private_key=private_key,
+        trust=client.TrustSource.certificate_authorities((trust_certificate,)),
+        revocation_lists=(revocation_list,),
+    )
+
+    def create_transport(record: object, output: object) -> int:
+        # The existing stub checks only this ABI marker; Green adds the mode snapshot.
+        observed.append(int(record.abi_version))  # type: ignore[attr-defined]
+        output[0] = transport_pointer  # type: ignore[index]
+        return 0
+
+    def create_client(_configuration: object, slot: object, output: object) -> int:
+        slot[0] = client.ffi.NULL  # type: ignore[index]
+        output[0] = client_pointer  # type: ignore[index]
+        return 0
+
+    monkeypatch.setattr(
+        client,
+        "lib",
+        SimpleNamespace(
+            kmipkit_transport_config_create_v1=create_transport,
+            kmipkit_transport_config_release=lambda _pointer: None,
+            kmipkit_client_create=create_client,
+            kmipkit_client_release=lambda _pointer: None,
+        ),
+    )
+
+    def expected_input(value: client.TransportInput) -> tuple[int, int, bytes]:
+        source = value.source
+        data = source if isinstance(source, bytes) else str(source).encode("utf-8")
+        return (1 if isinstance(source, bytes) else 2, int(value.encoding), data)
+
+    try:
+        created = client.Client.create(extension_configuration, transport_configuration)
+        assert observed == [
+            {
+                "abi_version": 1,
+                "client_certificates": (expected_input(certificate),),
+                "client_private_key": expected_input(private_key),
+                "trust_certificates": (expected_input(trust_certificate),),
+                "revocation_lists": ((1, int(encoding), b"crl-bytes"),),
+            }
+        ]
+        created.close()
+    finally:
+        extension_configuration.close()
+
+
 def test_client_create_releases_unconsumed_transport_after_client_error(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:

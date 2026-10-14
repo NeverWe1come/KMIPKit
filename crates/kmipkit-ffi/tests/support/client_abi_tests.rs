@@ -778,6 +778,22 @@ fn request_options_v1_rejects_bad_versions_and_timeout_encodings() {
 }
 
 #[test]
+fn execute_with_options_invalid_options_nulls_response_output() {
+    let mut response = std::ptr::NonNull::<kmipkit_client_batch_response_t>::dangling().as_ptr();
+
+    let status = kmipkit_client_execute_with_options_v1(
+        ptr::null_mut(),
+        ptr::null_mut(),
+        ptr::null_mut(),
+        ptr::null(),
+        &raw mut response,
+    );
+
+    assert_eq!(status, ERROR_INVALID_INPUT);
+    assert!(response.is_null(), "error output slots must be initialized to NULL");
+}
+
+#[test]
 fn validated_https_config_accepts_memory_pem_inputs_and_origin_target() {
     let pki = EphemeralPki::generate().expect("ephemeral PKI generation succeeds");
     let chain = pki.client_identity().certificate_chain_der();
