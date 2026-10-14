@@ -35,10 +35,13 @@ fn capability_query_only_reports_c_mapped_nonblocked_capabilities() {
     assert_eq!(
         crate::public_api_generated::C_AVAILABLE_CAPABILITIES,
         &[
+            "client_batch_model",
+            "client_execution",
             "discover_versions_request_item",
             "ffi_runtime_metadata",
             "generic_ttlv_model",
             "opaque_register_context",
+            "production_transport",
             "ttlv_wire_codec",
             "vendor_extension_registry",
         ]
