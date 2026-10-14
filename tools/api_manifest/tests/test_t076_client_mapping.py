@@ -591,6 +591,51 @@ class T076ClientMappingTests(unittest.TestCase):
         self.assertNotIn("kmipkit_transport_input_v1_t.encoding", production["mappings"]["c"])
         self.assertNotIn("kmipkit_transport_input_v1_t.source_kind", production["mappings"]["c"])
 
+    def test_transport_input_modes_map_to_the_aggregate_transport_builder(self) -> None:
+        declarations = {
+            (row["packageId"], row["exportName"]): row
+            for row in self.manifest["publicDeclarations"]
+        }
+        aggregate_target = "kmipkit_transport::TransportConfigBuilder"
+        for path in (
+            "kmipkit.client.CredentialEncoding.DER",
+            "kmipkit.client.CredentialEncoding.PEM",
+            "kmipkit.client.TransportInput.__init__",
+            "kmipkit.client.TransportInput.encoding",
+            "kmipkit.client.TransportInput.file",
+            "kmipkit.client.TransportInput.source",
+        ):
+            with self.subTest(export=path):
+                declaration = declarations[("python-kmipkit", path)]
+                self.assertEqual("declared", declaration["declarationState"])
+                self.assertEqual(
+                    aggregate_target,
+                    declaration["languageMappings"]["rust"]["name"],
+                    "generic input modes cover certificates, keys, trust, and CRLs",
+                )
+
+        production = next(
+            row
+            for row in self.manifest["capabilities"]
+            if row["capabilityId"] == "production_transport"
+        )
+        rust_targets = set(production["mappings"]["rust"])
+        self.assertTrue(
+            {
+                "kmipkit_transport::CertificateInput::from_der",
+                "kmipkit_transport::CertificateInput::from_der_file",
+                "kmipkit_transport::CertificateInput::from_pem",
+                "kmipkit_transport::CertificateInput::from_pem_file",
+                "kmipkit_transport::PrivateKeyInput::from_der",
+                "kmipkit_transport::PrivateKeyInput::from_der_file",
+                "kmipkit_transport::PrivateKeyInput::from_pem",
+                "kmipkit_transport::PrivateKeyInput::from_pem_file",
+                "kmipkit_transport::RevocationListInput::from_der",
+                "kmipkit_transport::RevocationListInput::from_pem",
+                "kmipkit_transport::TrustSource::certificate_authorities",
+            }.issubset(rust_targets)
+        )
+
     def test_transport_field_mappings_cover_policy_modes_and_exact_c_carriers(self) -> None:
         declarations = {
             (row["packageId"], row["exportName"]): row
