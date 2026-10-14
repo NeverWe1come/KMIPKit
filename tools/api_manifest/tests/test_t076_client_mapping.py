@@ -1348,6 +1348,16 @@ class T076ClientMappingTests(unittest.TestCase):
                 self.assertIn("KMIPKIT-0043-FR-012", exclusion["evidence"])
                 self.assertIn("KMIPKIT-0043-FR-021", exclusion["evidence"])
 
+        for path in (
+            "org.kmipkit.extensions.ClientBatchItemResult.close",
+            "org.kmipkit.extensions.TransportConfiguration.close",
+        ):
+            with self.subTest(adapter=path):
+                exclusion = exclusions.get(("java-kmipkit", path))
+                self.assertIsNotNone(exclusion, f"unclassified Java lifecycle adapter: {path}")
+                self.assertTrue(exclusion["reason"])
+                self.assertIn("KMIPKIT-0043-FR-007", exclusion["evidence"])
+
         lifecycle_mappings = (
             (
                 "client_execution",
@@ -1362,13 +1372,6 @@ class T076ClientMappingTests(unittest.TestCase):
                 "kmipkit_client_batch_release",
                 "org.kmipkit.extensions.ClientBatch.close",
                 "kmipkit.client.Batch.close",
-            ),
-            (
-                "client_execution",
-                "kmipkit_client::ClientBatchItemResponse",
-                "kmipkit_client_batch_item_response_release",
-                "org.kmipkit.extensions.ClientBatchItemResult.close",
-                "kmipkit.client.BatchItemResult.close",
             ),
             (
                 "client_execution",
