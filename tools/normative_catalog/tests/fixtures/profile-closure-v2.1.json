@@ -66429,10 +66429,10 @@
           "source_text": "Clients may request via supplying a non-default Key Format Value attribute on operations that create a Managed Object,",
           "source_keyword": "may (lowercase; not a §1.2 formal keyword)",
           "actor": "client",
-          "direction": "request an additional Digest through create/register operation input",
-          "condition": "operation creates a Managed Object and a non-default Key Format Value is supplied",
-          "scope_disposition": "unresolved",
-          "candidate_requirement_id": null
+          "direction": "request a non-default Key Format Type for server-generated key material",
+          "condition": "Create, Create Key Pair, Create Split Key, Re-key, Re-key Key Pair, or Derive Key, as limited by §4.26",
+          "scope_disposition": "client_1_0",
+          "candidate_requirement_id": "KMIPKIT-REQ-SPEC-4.26-001"
         },
         {
           "source_order": 6,
@@ -66456,9 +66456,11 @@
         }
       ],
       "rejected_candidate_mappings": [],
-      "expected_client_requirement_ids": [],
+      "expected_client_requirement_ids": [
+        "KMIPKIT-REQ-SPEC-4.26-001"
+      ],
       "applies_to": "all_client_profiles",
-      "review_note": "The client request sentence uses lowercase “may”, which §1.2 does not define as a formal keyword. Preserve it as an unresolved client-facing capability; the neighboring digest computation and response duties are server-only."
+      "review_note": "Source obligation 5 is a traceability pointer to existing KMIPKIT-REQ-SPEC-4.26-001 only; lowercase “may” remains non-normative under §1.2. The formal client capability and its six eligible operations come from §4.26, and this pointer neither creates a new requirement nor adds Register. Source obligation 6, the following server SHALL response, and the neighboring digest computation/lifecycle duties remain server_only. The linked local test covers only Create request serialization; it does not verify the remaining five operations or a server outcome."
     },
     {
       "source_id": "KMIPKIT-SRC-spec",
@@ -92209,25 +92211,23 @@
         "ordinal": 1,
         "block_kind": "paragraph"
       },
-      "source_locator_description": "§4.21 / paragraph (ordinal 001), client request sentence",
+      "source_locator_description": "§4.21 / paragraph (ordinal 001), client request atom within the full paragraph",
       "html_line_range": [
         13894,
-        13898
+        13901
       ],
-      "source_excerpt": "If this attribute exists, then it SHALL have a mandatory attribute instance computed with the SHA-256 hashing algorithm and the default Key Value Format for this object type and algorithm. Clients may request via supplying a non-default Key Format Value attribute on operations that create a Managed Object, and the server SHALL produce an additional Digest attribute for that Key Value Type.",
-      "source_keywords": [
-        "SHALL"
-      ],
-      "audited_statement": "Client supplies non-default Key Format Value to request an additional Digest; the sentence uses lowercase “may”.",
+      "source_excerpt": "Clients may request via supplying a non-default Key Format Value attribute on operations that create a Managed Object,",
+      "source_keywords": [],
+      "audited_statement": "The client request atom uses lowercase “may”; trace only to the existing §4.26 capability, whose formal operation scope is narrower.",
       "source_force": "lowercase_may_not_formal_keyword",
       "actor": "client",
-      "direction": "create/register request includes non-default Key Format Value",
-      "condition": "operation creates a Managed Object",
-      "scope_disposition": "unresolved",
-      "candidate_requirement_id": null,
+      "direction": "request a non-default Key Format Type for server-generated key material",
+      "condition": "Create, Create Key Pair, Create Split Key, Re-key, Re-key Key Pair, or Derive Key, as limited by §4.26",
+      "scope_disposition": "client_1_0",
+      "candidate_requirement_id": "KMIPKIT-REQ-SPEC-4.26-001",
       "proposed_requirement_id": null,
-      "status": "keyword_force_unresolved",
-      "review_note": "Keep the client-facing capability visible without promoting lowercase may to formal MAY. The server response is separately classified server_only in source_requirement_reviews."
+      "status": "client_capability_traced_to_existing_stable_label",
+      "review_note": "Traceability pointer to KMIPKIT-REQ-SPEC-4.26-001 only. Lowercase “may” is not formal MAY under §1.2; the existing §4.26 capability is limited to Create, Create Key Pair, Create Split Key, Re-key, Re-key Key Pair, or Derive Key. Do not add Register. The following server SHALL response remains server_only in source_requirement_reviews. The linked local test covers Create serialization only, with no evidence for the other five operations or a server outcome; no official OASIS Test Case ID is linked."
     },
     {
       "gap_id": "KMIPKIT-SOURCE-GAP-SPEC-4.24-CLIENT-FRESH-INPUT-EXCEPTION",

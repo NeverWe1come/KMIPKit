@@ -10670,7 +10670,7 @@ class CatalogValidationTests(unittest.TestCase):
         self.assertEqual(oracle["source_closure_status"], "complete")
 
     def test_spec_4_19_through_4_25_source_review_slice_preserves_actor_and_force(self) -> None:
-        """The source audit separates server lifecycle rules and unresolved client wording."""
+        """The source audit separates server duties and the narrow existing client capability."""
         oracle = json.loads(
             (ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json").read_text(encoding="utf-8")
         )
@@ -10700,7 +10700,7 @@ class CatalogValidationTests(unittest.TestCase):
         self.assertEqual(set(reviews), expected_clause_ids)
         self.assertFalse(
             [row for row in oracle["requirement_crosswalk"] if row.get("source_clause_id") in expected_clause_ids],
-            "the only catalog candidate in this slice is a rejected REQUIRED table heading",
+            "the §4.21 capability pointer does not add a source crosswalk to that clause",
         )
         self.assertEqual(
             reviews["KMIPKIT-CLAUSE-SPEC-4.21-002"]["rejected_candidate_mappings"],
@@ -10723,7 +10723,7 @@ class CatalogValidationTests(unittest.TestCase):
                 (2, "SHALL", "server", "server_only"),
                 (3, "MAY", "server", "server_only"),
                 (4, "SHALL", "server", "server_only"),
-                (5, "may (lowercase; not a §1.2 formal keyword)", "client", "unresolved"),
+                (5, "may (lowercase; not a §1.2 formal keyword)", "client", "client_1_0"),
                 (6, "SHALL", "server", "server_only"),
                 (7, "SHALL", "server", "server_only"),
             ],
@@ -10770,11 +10770,15 @@ class CatalogValidationTests(unittest.TestCase):
         gaps = {gap["gap_id"]: gap for gap in oracle["source_only_requirement_gaps"]}
         self.assertEqual(
             gaps["KMIPKIT-SOURCE-GAP-SPEC-4.21-CLIENT-LOWERCASE-MAY"]["scope_disposition"],
-            "unresolved",
+            "client_1_0",
         )
         self.assertEqual(
             gaps["KMIPKIT-SOURCE-GAP-SPEC-4.24-CLIENT-FRESH-INPUT-EXCEPTION"]["scope_disposition"],
             "unresolved",
+        )
+        self.assertEqual(
+            gaps["KMIPKIT-SOURCE-GAP-SPEC-4.21-CLIENT-LOWERCASE-MAY"]["candidate_requirement_id"],
+            "KMIPKIT-REQ-SPEC-4.26-001",
         )
         self.assertIsNone(gaps["KMIPKIT-SOURCE-GAP-SPEC-4.21-CLIENT-LOWERCASE-MAY"]["proposed_requirement_id"])
         self.assertIsNone(gaps["KMIPKIT-SOURCE-GAP-SPEC-4.24-CLIENT-FRESH-INPUT-EXCEPTION"]["proposed_requirement_id"])

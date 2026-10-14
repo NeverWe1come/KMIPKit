@@ -65,7 +65,14 @@ class SourceGapAdjudicationTests(unittest.TestCase):
 
         self.assertEqual(gap["html_line_range"], [13894, 13901])
         self.assertEqual(gap["source_force"], "lowercase_may_not_formal_keyword")
+        self.assertEqual(gap["source_keywords"], [])
+        self.assertEqual(
+            gap["source_excerpt"],
+            "Clients may request via supplying a non-default Key Format Value attribute on operations that create a Managed Object,",
+        )
+        self.assertEqual(gap["scope_disposition"], "client_1_0")
         self.assertEqual(gap["candidate_requirement_id"], requirement_id)
+        self.assertEqual(gap["status"], "client_capability_traced_to_existing_stable_label")
         self.assertIsNone(gap["proposed_requirement_id"])
         self.assertEqual(review["expected_client_requirement_ids"], [requirement_id])
         self.assertEqual(client_atom["actor"], "client")
@@ -79,14 +86,22 @@ class SourceGapAdjudicationTests(unittest.TestCase):
             requirement["condition"],
             "Create, Create Key Pair, Create Split Key, Re-key, Re-key Key Pair, or Derive Key.",
         )
+        self.assertEqual(requirement["source_clause_ids"], ["KMIPKIT-CLAUSE-SPEC-4.26-001"])
         self.assertNotIn("Register", requirement["condition"])
         self.assertEqual(requirement["test_case_ids"], [])
         self.assertEqual(
             requirement["verification_refs"],
             ["crates/kmipkit-protocol/tests/unit/create_tests.rs::request_encodes_raw_key_format_for_server_generated_create"],
         )
-        self.assertIn("Create only", requirement["review_note"])
+        self.assertIn("covers the Create request only", requirement["review_note"])
         self.assertIn("does not evidence the other operations", requirement["review_note"])
+
+        catalog_profiles = [row for row in catalog["profiles"] if row["role"] == "client"]
+        oracle_profiles = [row for row in oracle["profiles"] if row["role"] == "client"]
+        self.assertEqual(len(catalog_profiles), 18)
+        self.assertEqual(len(oracle_profiles), 18)
+        self.assertTrue(all(requirement_id in row["requirement_ids"] for row in catalog_profiles))
+        self.assertTrue(all(requirement_id in row["requirement_ids"] for row in oracle_profiles))
 
     def test_reviewed_structural_requirements_have_stable_catalog_mappings(self) -> None:
         catalog = _load_json(CATALOG_PATH)
