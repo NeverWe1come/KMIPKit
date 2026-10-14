@@ -74,6 +74,6 @@ The following checks ran at branch head `4e8d926a` on 2026-10-14. Subsequent evi
 | `pwsh -NoLogo -NoProfile -File .\scripts\Test-DependencyPolicy.ps1` | Passed for root and fuzz workspaces after online RustSec refresh; database commit `caee11f41fab07d676c0a4655a2a5dd1f94da97c`, timestamp `2026-10-14T15:17:45+02:00`; lockfile hashes unchanged. |
 | Independent QA review | Passed with no remaining findings on implementation through `4eef85dd`; reviewer checklist recorded in `4e8d926a` and its accurate-limitations confirmation in `6e840e8a`. |
 | Independent security review | Passed with no actionable findings on implementation through `4eef85dd`; no TLS policy, feature, secret handling, or dependency exception changes. Checklist recorded in `e537cbe1`; the PR-evidence item remains open until the draft PR exists. |
-| Required GitHub PR CI | Pending; no PR has been opened yet. |
+| Required GitHub PR CI | Pending on draft [PR #105](https://github.com/NeverWe1come/KMIPKit/pull/105); keep the PR in draft until the platform matrix passes. |
 
 The implementation and security reviews examined the same code and dependency diff. Commit `4e8d926a` only records QA checklist results. The draft PR must remain open until required platform CI completes successfully.

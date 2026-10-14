@@ -39,7 +39,7 @@
 
 - [x] T008 Run the focused Python contract, transport tests, formatting, Clippy, workspace tests, coverage, documentation checks, deterministic generators, dependency-policy runner, and relevant script contracts; record actual results and any external environment limitation in `specs/045-rustls-advisory-remediation/implementation-evidence.md`.
 - [x] T009 Obtain independent QA and security review of the changed test, manifest/lockfile diff, advisory evidence, and unchanged TLS features; resolve all actionable findings and repeat affected checks. QA and security reviews passed on implementation through `4eef85dd`; QA traceability findings were corrected and re-reviewed, and no security findings remained.
-- [ ] T010 Update from the active `release/1.0.0` branch without force-pushing, rerun affected checks, and create a detailed terminal-created draft PR with DCO Red/Green/Refactor commit hashes, traceability, CI evidence, risks, and limitations. Leave it open for human review.
+- [x] T010 Confirm the branch is based on the active `release/1.0.0` head, rerun affected local checks, and create a detailed terminal-created draft PR with DCO Red/Green/Refactor commit hashes, traceability, CI evidence, risks, and limitations. Draft PR [#105](https://github.com/NeverWe1come/KMIPKit/pull/105) is open; its required platform CI is pending for human review.
 
 ## Requirement-to-task coverage
 
