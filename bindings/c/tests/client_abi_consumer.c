@@ -18,6 +18,23 @@ static int execute_with_options_returns(
     return status == expected_status;
 }
 
+static int api_level_query_matches_shared_fixture_locally(void) {
+    static const char *const expected[] = {
+        "high-level", "typed-protocol", "generic-ttlv"
+    };
+    if (kmipkit_api_level_count_v1() !=
+            (uint32_t)(sizeof(expected) / sizeof(expected[0]))) {
+        return 0;
+    }
+    for (uint32_t index = 0; index < (uint32_t)(sizeof(expected) / sizeof(expected[0])); ++index) {
+        const char *actual = kmipkit_api_level_id_v1(index);
+        if (actual == 0 || strcmp(actual, expected[index]) != 0) {
+            return 0;
+        }
+    }
+    return kmipkit_api_level_id_v1((uint32_t)(sizeof(expected) / sizeof(expected[0]))) == 0;
+}
+
 static int execute_public_tls_request(char **argv, kmipkit_codec_limits_t *limits) {
     static const uint8_t host[] = "127.0.0.1";
     static const uint8_t server_name[] = "server.kmipkit.test";
@@ -220,6 +237,9 @@ int kmipkit_client_abi_c_consumer_execute_tls(
 
 int main(int argc, char **argv) {
     kmipkit_client_t *client = 0;
+    if (!api_level_query_matches_shared_fixture_locally()) {
+        return 100;
+    }
     if (kmipkit_client_create(0, 0, &client) != T076_ERROR_INVALID_INPUT) {
         return 1;
     }

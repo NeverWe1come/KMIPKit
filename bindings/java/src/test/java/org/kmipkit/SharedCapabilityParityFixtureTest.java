@@ -71,10 +71,16 @@ final class SharedCapabilityParityFixtureTest {
     }
 
     @Test
-    void apiLevelDiscoveryRemainsUnavailableUntilTheFacadeExists() throws IOException {
+    void apiLevelQueryMatchesSharedFixtureLocally() throws IOException {
         String item = caseById(Files.readString(sharedFixturePath()), API_LEVEL_CASE);
         assertEquals("api_level_discovery", stringField(item, "capability"));
-        assertFalse(RuntimeMetadata.capabilityIsAvailable("api_level_discovery"));
+        assertTrue(RuntimeMetadata.capabilityIsAvailable("api_level_discovery"));
+        assertEquals(List.of("high-level", "typed-protocol", "generic-ttlv"),
+                stringArrayField(item, "apiLevels"));
+        assertEquals(stringArrayField(item, "apiLevels"), RuntimeMetadata.apiLevels());
+        assertTrue(item.contains("\"networkCalls\": 0"));
+        assertTrue(item.contains("\"distinctFromKmipOperation\": \"Discover Versions\""));
+        assertTrue(item.contains("\"operationMappingCompleteness\": \"not-asserted\""));
     }
 
     @Test
@@ -208,6 +214,21 @@ final class SharedCapabilityParityFixtureTest {
     private static String stringField(String source, String name) {
         Pattern field = Pattern.compile("\\\"" + Pattern.quote(name) + "\\\"\\s*:\\s*\\\"([^\\\"]*)\\\"");
         return field(field, source, "shared capability fixture is missing " + name);
+    }
+
+    private static List<String> stringArrayField(String source, String name) {
+        Pattern field = Pattern.compile("\\\"" + Pattern.quote(name)
+                + "\\\"\\s*:\\s*\\[([^\\]]*)\\]");
+        Matcher matcher = field.matcher(source);
+        if (!matcher.find()) {
+            throw new AssertionError("shared capability fixture is missing " + name);
+        }
+        Matcher values = Pattern.compile("\\\"([^\\\"]*)\\\"").matcher(matcher.group(1));
+        List<String> result = new ArrayList<>();
+        while (values.find()) {
+            result.add(values.group(1));
+        }
+        return List.copyOf(result);
     }
 
     private static Path sharedFixturePath() {

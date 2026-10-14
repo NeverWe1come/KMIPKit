@@ -13,28 +13,32 @@
       "input": {"discovery": "local-api-levels"},
       "expectedOutput": {
         "apiLevels": ["high-level", "typed-protocol", "generic-ttlv"],
-        "networkCalls": 0
+        "networkCalls": 0,
+        "distinctFromKmipOperation": "Discover Versions",
+        "operationMappingCompleteness": "not-asserted"
       },
       "javaObservedOutput": {"available": false, "networkCalls": 0},
       "errorCategory": null,
       "cleanup": ["no-handle-or-network-resource-created"],
       "consumerTests": {
         "rust": {
-          "status": "blocked",
-          "reason": "The local API-level taxonomy is assigned to KMIPKIT-0043 T077 and is outside this adapter-parity increment."
+          "status": "available",
+          "testFile": "crates/kmipkit/src/lib.rs",
+          "test": "api_levels_match_the_shared_fixture_without_network_calls"
         },
         "c": {
-          "status": "blocked",
-          "reason": "The local API-level taxonomy is assigned to KMIPKIT-0043 T077 and is outside this adapter-parity increment."
+          "status": "available",
+          "testFile": "bindings/c/tests/client_abi_consumer.c",
+          "test": "api_level_query_matches_shared_fixture_locally"
         },
         "java": {
-          "status": "blocked",
-          "reason": "The Java facade has no API-level discovery method or declared capability.",
-          "test": "org.kmipkit.SharedCapabilityParityFixtureTest#apiLevelDiscoveryRemainsUnavailableUntilTheFacadeExists"
+          "status": "available",
+          "test": "org.kmipkit.SharedCapabilityParityFixtureTest#apiLevelQueryMatchesSharedFixtureLocally"
         },
         "python": {
-          "status": "blocked",
-          "reason": "The local API-level taxonomy is assigned to KMIPKIT-0043 T077 and is outside this adapter-parity increment."
+          "status": "available",
+          "testFile": "bindings/python/tests/test_shared_parity_fixtures.py",
+          "test": "test_api_level_query_matches_shared_fixture_locally"
         }
       }
     },

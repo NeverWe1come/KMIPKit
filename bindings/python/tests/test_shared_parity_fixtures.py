@@ -62,12 +62,32 @@ def test_shared_fixture_python_link_names_an_existing_consumer_test(
     )
 
 
-def test_api_level_fixture_remains_blocked_for_t077() -> None:
+def test_api_level_query_matches_shared_fixture_locally(monkeypatch: pytest.MonkeyPatch) -> None:
     case = _parity_cases()["api-levels.shared.v1"]
+    expected = case["expectedOutput"]
     consumer = case["consumerTests"]["python"]
 
-    assert consumer["status"] == "blocked"
-    assert "T077" in consumer["reason"]
+    assert consumer["status"] == "available"
+    assert expected["networkCalls"] == 0
+    assert expected["distinctFromKmipOperation"] == "Discover Versions"
+    assert expected["operationMappingCompleteness"] == "not-asserted"
+
+    native_library = metadata.lib
+    queried_symbols: list[str] = []
+
+    class LocalMetadataApi:
+        def __getattr__(self, name: str) -> Any:
+            queried_symbols.append(name)
+            return getattr(native_library, name)
+
+    monkeypatch.setattr(metadata, "lib", LocalMetadataApi())
+    assert list(metadata.get_api_levels()) == expected["apiLevels"]
+    assert queried_symbols == [
+        "kmipkit_api_level_count_v1",
+        "kmipkit_api_level_id_v1",
+        "kmipkit_api_level_id_v1",
+        "kmipkit_api_level_id_v1",
+    ]
 
 
 def test_generic_ttlv_shared_fixture_has_an_executable_python_link() -> None:

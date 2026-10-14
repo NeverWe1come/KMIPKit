@@ -326,6 +326,7 @@ dependencies = [
  "kmipkit-protocol",
  "kmipkit-transport",
  "kmipkit-ttlv",
+ "serde_json",
 ]
 
 [[package]]
