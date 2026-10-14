@@ -465,6 +465,70 @@ class ExtensionRegistryTests(unittest.TestCase):
             forward.close()
             reverse.close()
 
+    def test_registry_lookup_survives_missing_python_definition_metadata(self) -> None:
+        source = self.definitions["known.alpha"]
+        identity = registry_api.extension_definition_identity(source)
+        registry = registry_api.create_client_extension_registry(
+            [source], registry_api.default_extension_registry_limits()
+        )
+        found = None
+        registry._definitions = ()
+        native_identity = None
+        try:
+            found = registry_api.definition_for_identity(registry, identity)
+            self.assertIsNotNone(found)
+            native_identity = registry_api.extension_definition_identity(found)
+            self.assertEqual(
+                (
+                    registry_api.extension_identity_vendor_identifier(native_identity),
+                    registry_api.extension_identity_name(native_identity),
+                    registry_api.extension_identity_version(native_identity),
+                ),
+                (VENDOR_IDENTIFIER, "alpha", "1"),
+            )
+            self.assertIsNone(found.discriminator)
+        finally:
+            if native_identity is not None:
+                native_identity.close()
+            if found is not None:
+                found.close()
+            registry.close()
+            identity.close()
+
+    def test_definition_information_without_python_metadata_keeps_native_value(self) -> None:
+        information = registry_api.create_extension_information("alpha")
+        tagged_information = registry_api.with_tag(information, 0x00540001)
+        information.close()
+        information = registry_api.with_type(
+            tagged_information, _item_type("TextString")
+        )
+        tagged_information.close()
+        source = self.definitions["known.alpha"]
+        definition = registry_api.with_extension_information(source, information)
+        definition.information = None
+        native_information = None
+        actual_structure = None
+        expected_structure = None
+        try:
+            native_information = registry_api.extension_definition_information(definition)
+            self.assertIsNotNone(native_information)
+            self.assertIsNone(native_information.extension_name)
+            actual_structure = registry_api.extension_information_to_ttlv(native_information)
+            expected_structure = registry_api.extension_information_to_ttlv(information)
+            self.assertEqual(
+                _normalize_structure(ttlv.ttlv_structure_view(actual_structure)),
+                _normalize_structure(ttlv.ttlv_structure_view(expected_structure)),
+            )
+        finally:
+            if actual_structure is not None:
+                actual_structure.close()
+            if expected_structure is not None:
+                expected_structure.close()
+            if native_information is not None:
+                native_information.close()
+            definition.close()
+            information.close()
+
     def test_explicit_criticality_is_preserved_for_ordered_outbound_extensions(self) -> None:
         registry = registry_api.create_client_extension_registry(
             list(self.definitions.values()), registry_api.default_extension_registry_limits()

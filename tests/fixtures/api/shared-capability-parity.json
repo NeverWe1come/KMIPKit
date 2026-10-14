@@ -19,10 +19,22 @@
       "errorCategory": null,
       "cleanup": ["no-handle-or-network-resource-created"],
       "consumerTests": {
+        "rust": {
+          "status": "blocked",
+          "reason": "The local API-level taxonomy is assigned to KMIPKIT-0043 T077 and is outside this adapter-parity increment."
+        },
+        "c": {
+          "status": "blocked",
+          "reason": "The local API-level taxonomy is assigned to KMIPKIT-0043 T077 and is outside this adapter-parity increment."
+        },
         "java": {
           "status": "blocked",
           "reason": "The Java facade has no API-level discovery method or declared capability.",
           "test": "org.kmipkit.SharedCapabilityParityFixtureTest#apiLevelDiscoveryRemainsUnavailableUntilTheFacadeExists"
+        },
+        "python": {
+          "status": "blocked",
+          "reason": "The local API-level taxonomy is assigned to KMIPKIT-0043 T077 and is outside this adapter-parity increment."
         }
       }
     },
@@ -56,9 +68,24 @@
         "release-returned-registry-views-once"
       ],
       "consumerTests": {
+        "rust": {
+          "status": "available",
+          "testFile": "crates/kmipkit-client/tests/extension_registry.rs",
+          "test": "client_configurations_own_isolated_immutable_registries"
+        },
+        "c": {
+          "status": "available",
+          "testFile": "bindings/c/tests/extension_registry.c",
+          "test": "test_configuration_ownership_and_isolation"
+        },
         "java": {
           "status": "available",
           "test": "org.kmipkit.ExtensionRegistryTest#clientConfigurationsOwnImmutableIsolatedRegistrySnapshots"
+        },
+        "python": {
+          "status": "available",
+          "testFile": "bindings/python/tests/test_extension_registry.py",
+          "test": "test_registry_registration_is_immutable_owned_by_configuration_and_isolated"
         }
       }
     },
@@ -84,9 +111,24 @@
       "errorCategory": "invalid_schema",
       "cleanup": ["release-registry-and-payload-owners-once"],
       "consumerTests": {
+        "rust": {
+          "status": "available",
+          "testFile": "crates/kmipkit-protocol/tests/extension_redaction.rs",
+          "test": "schema_error_debug_display_and_source_chain_redact_payload_secrets"
+        },
+        "c": {
+          "status": "available",
+          "testFile": "bindings/c/tests/extension_registry.c",
+          "test": "test_redacted_stable_errors_and_invalid_handles"
+        },
         "java": {
           "status": "available",
           "test": "org.kmipkit.ExtensionRegistryTest#invalidSchemaErrorsAndValidatedValueFormattingRedactPayloadText"
+        },
+        "python": {
+          "status": "available",
+          "testFile": "bindings/python/tests/test_extension_registry.py",
+          "test": "test_failure_and_default_diagnostics_redact_secret_fixture_values"
         }
       }
     },
@@ -127,11 +169,13 @@
       "consumerTests": {
         "rust": {
           "status": "available",
+          "testFile": "crates/kmipkit-client/tests/unit/execute_lifecycle_tests.rs",
           "test": "execute_lifecycle_tests::ordered_mixed_batch_outcomes_preserve_ids_and_use_one_exchange"
         },
         "c": {
           "status": "available",
-          "test": "generated_public_client_abi_consumer_executes_a_typed_batch_over_mtls"
+          "testFile": "bindings/c/tests/client_abi_consumer.c",
+          "test": "main"
         },
         "java": {
           "status": "available",
@@ -139,6 +183,7 @@
         },
         "python": {
           "status": "available",
+          "testFile": "bindings/python/tests/test_client.py",
           "test": "test_batch_result_preserves_ordered_mixed_outcomes_ids_and_pending_correlation"
         }
       }
@@ -175,9 +220,21 @@
       "errorCategory": null,
       "cleanup": ["close-structure-view-once", "retain-structure-owner-independently"],
       "consumerTests": {
+        "rust": {
+          "status": "blocked",
+          "reason": "Rust has separate open-enumeration and child-order tests, but no consumer test currently asserts both values from this exact shared case."
+        },
+        "c": {
+          "status": "blocked",
+          "reason": "No C consumer test currently asserts both the open enumeration value and ordered children from this shared case."
+        },
         "java": {
           "status": "available",
           "test": "org.kmipkit.SharedCapabilityParityFixtureTest#genericTtlvFixturePreservesOpenEnumerationBytesOrderAndViewLifecycle"
+        },
+        "python": {
+          "status": "blocked",
+          "reason": "No Python consumer test currently asserts both the open enumeration value and ordered children from this shared case."
         }
       }
     },
@@ -207,9 +264,24 @@
       "errorCategory": null,
       "cleanup": ["release-registry-recognition-value-and-payload-handles-once"],
       "consumerTests": {
+        "rust": {
+          "status": "available",
+          "testFile": "crates/kmipkit-client/tests/unit/extension_registry_tests.rs",
+          "test": "every_shared_inbound_fixture_matches_internal_outcome_ids_and_preserved_ttlv_in_both_orders"
+        },
+        "c": {
+          "status": "available",
+          "testFile": "bindings/c/tests/extension_registry.c",
+          "test": "test_inbound_inspection_and_generic_preservation"
+        },
         "java": {
           "status": "available",
           "test": "org.kmipkit.ExtensionRegistryTest#everySharedInboundFixtureRunsThroughThePublicJavaAdapterInBothOrders"
+        },
+        "python": {
+          "status": "available",
+          "testFile": "bindings/python/tests/test_extension_registry.py",
+          "test": "test_shared_inbound_fixtures_are_inspected_and_generic_ttlv_is_preserved"
         }
       }
     }

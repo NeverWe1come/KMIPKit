@@ -61,11 +61,6 @@ SHARED_PARITY_CASES = {
     "extensions.recognition-and-generic-preservation.v1",
 }
 SHARED_PARITY_LANGUAGES = ["rust", "c", "java", "python"]
-SHARED_CONSUMER_TESTS = {
-    "rust": ROOT / "crates" / "kmipkit-client" / "tests" / "unit" / "execute_lifecycle_tests.rs",
-    "c": ROOT / "crates" / "kmipkit-ffi" / "tests" / "c_api_coverage.rs",
-    "python": ROOT / "bindings" / "python" / "tests" / "test_client.py",
-}
 JAVA_TEST_ROOT = ROOT / "bindings" / "java" / "src" / "test" / "java"
 JAVA_KEYWORDS = {
     "abstract", "assert", "boolean", "break", "byte", "case", "catch", "char",
@@ -155,19 +150,21 @@ class PublicApiParityTests(unittest.TestCase):
                     set(SHARED_PARITY_LANGUAGES),
                     f"{case['id']} must declare an available or blocked mapping for every parity language",
                 )
-                self.assertIn("java", case["consumerTests"])
                 self.assertTrue(set(case["consumerTests"]).issubset(SHARED_PARITY_LANGUAGES))
                 for language, mapping in case["consumerTests"].items():
                     with self.subTest(fixture=case["id"], language=language):
                         self.assertIn(mapping["status"], {"available", "blocked"})
-                        self.assertTrue(mapping["test"])
                         if mapping["status"] == "available":
                             available_languages.add(language)
+                            self.assertTrue(mapping["test"])
+                            if language != "java":
+                                self.assertTrue(mapping["testFile"])
                         else:
                             self.assertTrue(mapping.get("reason"), case["id"])
 
                         if language == "java":
                             java_mapping = mapping
+                            self.assertTrue(java_mapping["test"])
                             class_name, method_name = java_mapping["test"].split("#", 1)
                             source_path = JAVA_TEST_ROOT / Path(*class_name.split(".")).with_suffix(".java")
                             self.assertTrue(source_path.is_file(), case["id"])
@@ -180,14 +177,23 @@ class PublicApiParityTests(unittest.TestCase):
                             continue
 
                         if mapping["status"] == "available":
-                            source_path = SHARED_CONSUMER_TESTS[language]
+                            source_path = ROOT / mapping["testFile"]
                             self.assertTrue(source_path.is_file(), case["id"])
                             source = source_path.read_text(encoding="utf-8")
-                            test_name = mapping["test"].rsplit("::", 1)[-1]
-                            declaration = "def" if language == "python" else "fn"
+                            test_name = mapping["test"]
+                            if language == "rust":
+                                test_name = test_name.rsplit("::", 1)[-1]
+                                declaration = rf"\bfn\s+{re.escape(test_name)}\s*\("
+                            elif language == "python":
+                                declaration = rf"\bdef\s+{re.escape(test_name)}\s*\("
+                            else:
+                                declaration = (
+                                    rf"\b(?:static\s+)?(?:bool|int|void)\s+"
+                                    rf"{re.escape(test_name)}\s*\("
+                                )
                             self.assertRegex(
                                 source,
-                                rf"\b{declaration}\s+{re.escape(test_name)}\s*\(",
+                                declaration,
                                 f"{case['id']} must map to an executable {language} consumer test",
                             )
 
