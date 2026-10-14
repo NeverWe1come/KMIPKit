@@ -1247,7 +1247,7 @@ static bool test_configuration_ownership_and_isolation(void)
     kmipkit_client_configuration_t *beta_configuration = NULL;
     kmipkit_extension_definition_t *found_definition = NULL;
     kmipkit_extension_registry_limits_v1_t limits;
-    kmipkit_extension_definition_t *alpha_definitions[2];
+    kmipkit_extension_definition_t *alpha_definitions[1];
     kmipkit_extension_definition_t *beta_definitions[1];
     uint64_t definition_count = 0U;
 
@@ -1263,9 +1263,8 @@ static bool test_configuration_ownership_and_isolation(void)
         &beta_identity, &beta_definition));
 
     alpha_definitions[0] = alpha_definition;
-    alpha_definitions[1] = beta_definition;
     beta_definitions[0] = beta_definition;
-    REQUIRE(create_registry(alpha_definitions, 2U, &limits, &alpha_registry));
+    REQUIRE(create_registry(alpha_definitions, 1U, &limits, &alpha_registry));
     REQUIRE(create_registry(beta_definitions, 1U, &limits, &beta_registry));
     REQUIRE_STATUS(kmipkit_client_configuration_create(alpha_registry,
         &alpha_configuration), KMIPKIT_SUCCESS);
@@ -1291,11 +1290,10 @@ static bool test_configuration_ownership_and_isolation(void)
         beta_view, &definition_count), KMIPKIT_SUCCESS);
     REQUIRE(definition_count == 1U);
 
-    /* Alpha and beta definitions do not leak into the other configuration. */
+    /* Each configuration exposes only the definition declared for that case. */
     REQUIRE_STATUS(kmipkit_client_extension_registry_definition_for_identity(
         alpha_view, beta_identity, &found_definition), KMIPKIT_SUCCESS);
-    REQUIRE(found_definition != NULL);
-    kmipkit_extension_definition_release(found_definition);
+    REQUIRE(found_definition == NULL);
     found_definition = NULL;
     REQUIRE_STATUS(kmipkit_client_extension_registry_definition_for_identity(
         alpha_view, alpha_identity, &found_definition), KMIPKIT_SUCCESS);
@@ -1305,6 +1303,11 @@ static bool test_configuration_ownership_and_isolation(void)
     REQUIRE_STATUS(kmipkit_client_extension_registry_definition_for_identity(
         beta_view, alpha_identity, &found_definition), KMIPKIT_SUCCESS);
     REQUIRE(found_definition == NULL);
+    REQUIRE_STATUS(kmipkit_client_extension_registry_definition_for_identity(
+        beta_view, beta_identity, &found_definition), KMIPKIT_SUCCESS);
+    REQUIRE(found_definition != NULL);
+    kmipkit_extension_definition_release(found_definition);
+    found_definition = NULL;
 
     /* Releasing an accessor handle does not mutate or release its owner. */
     kmipkit_client_extension_registry_release(alpha_view);
