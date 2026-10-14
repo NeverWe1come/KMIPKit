@@ -29,7 +29,7 @@
       "consumerTests": {
         "rust": {
           "status": "available",
-          "testFile": "crates/kmipkit/src/lib.rs",
+          "testFile": "crates/kmipkit/tests/api_levels.rs",
           "test": "api_levels_match_the_shared_fixture_without_network_calls"
         },
         "c": {
