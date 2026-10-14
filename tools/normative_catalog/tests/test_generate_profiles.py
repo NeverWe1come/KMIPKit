@@ -106,6 +106,103 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
         self.assertNotIn(inherited_clause_id, profile["direct_source_clause_ids"])
         self.assertIn(inherited_clause_id, profile["source_clause_ids"])
 
+    def test_foundry_intermediate_and_advanced_clients_inherit_basic_conditions(self) -> None:
+        """Profiles v2.1 §§6.13–6.14 item 3 both incorporate §5.7.1 literally."""
+        catalog_path = ROOT / "specification" / "catalog" / "kmip-2.1.json"
+        catalog = json.loads(catalog_path.read_text(encoding="utf-8"))
+        oracle_path = ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json"
+        oracle = json.loads(oracle_path.read_text(encoding="utf-8"))
+        source_clause_ids = {
+            "KMIPKIT-CLAUSE-PROF-5.7.1-001",
+            "KMIPKIT-CLAUSE-PROF-5.7.1-002",
+            "KMIPKIT-CLAUSE-PROF-5.7.1-003",
+        }
+        requirement_ids = {
+            "KMIPKIT-REQ-PROF-5.7.1-001",
+            "KMIPKIT-REQ-PROF-5.7.1-002",
+            "KMIPKIT-REQ-PROF-5.7.1-003",
+        }
+        cases = (
+            (
+                "KMIPKIT-PROFILE-SYMMETRIC-KEY-FOUNDRY-INTERMEDIATE-CLIENT",
+                "KMIPKIT-CLAUSE-PROF-6.13-003",
+                "KMIPKIT-INCLUSION-PROF-6.13-BASIC-SYMMETRIC-CLIENT",
+                "Profiles v2.1 §6.13 item 3",
+            ),
+            (
+                "KMIPKIT-PROFILE-SYMMETRIC-KEY-FOUNDRY-ADVANCED-CLIENT",
+                "KMIPKIT-CLAUSE-PROF-6.14-003",
+                "KMIPKIT-INCLUSION-PROF-6.14-BASIC-SYMMETRIC-CLIENT",
+                "Profiles v2.1 §6.14 item 3",
+            ),
+        )
+        catalog_profiles = {item["profile_id"]: item for item in catalog["profiles"]}
+        oracle_profiles = {item["profile_id"]: item for item in oracle["profiles"]}
+        catalog_requirements = {item["requirement_id"]: item for item in catalog["requirements"]}
+
+        for profile_id, source_clause_id, inclusion_id, source_locator in cases:
+            with self.subTest(profile_id=profile_id):
+                profile = catalog_profiles[profile_id]
+                expected = oracle_profiles[profile_id]
+                inclusion = next(
+                    (item for item in catalog["normative_inclusions"] if item["inclusion_id"] == inclusion_id),
+                    None,
+                )
+                oracle_edge = next(
+                    (
+                        item
+                        for item in oracle["provenance"]["inclusion_edges"]
+                        if item["inclusion_id"] == inclusion_id
+                    ),
+                    None,
+                )
+
+                self.assertIn(source_clause_id, profile["direct_source_clause_ids"])
+                self.assertNotIn("KMIPKIT-CLAUSE-PROF-5.7.1-001", profile["direct_source_clause_ids"])
+                self.assertEqual(
+                    inclusion,
+                    {
+                        "inclusion_id": inclusion_id,
+                        "source_clause_id": source_clause_id,
+                        "included_source_id": "KMIPKIT-SRC-profiles",
+                        "included_section": "5.7.1",
+                    },
+                )
+                self.assertEqual(
+                    oracle_edge,
+                    {
+                        "inclusion_id": inclusion_id,
+                        "source_clause_id": source_clause_id,
+                        "included_source_id": "KMIPKIT-SRC-profiles",
+                        "included_section": "5.7.1",
+                        "source_locator": source_locator,
+                    },
+                )
+                self.assertIn(inclusion_id, expected["normative_inclusion_ids"])
+                self.assertTrue(source_clause_ids.issubset(expected["source_clause_ids"]))
+                self.assertTrue(requirement_ids.issubset(expected["requirement_ids"]))
+                self.assertTrue(requirement_ids.issubset(expected["requirement_ids_audited_subset"]))
+                self.assertTrue(
+                    source_clause_ids.issubset(
+                        {
+                            item["source_clause_id"]
+                            for item in expected["direct_root_exclusions"]
+                            if item["expected_disposition"] == "included_not_direct"
+                        }
+                    )
+                )
+                for requirement_id in requirement_ids:
+                    self.assertIn(profile_id, catalog_requirements[requirement_id]["profile_ids"])
+                    self.assertIn(requirement_id, profile["requirement_ids"])
+
+                closure = compute_profile_closure(
+                    catalog,
+                    profile["direct_source_clause_ids"],
+                    profile_id=profile_id,
+                )
+                self.assertTrue(source_clause_ids.issubset(closure.source_clause_ids))
+                self.assertTrue(requirement_ids.issubset(closure.requirement_ids))
+
     def test_tape_library_includes_normatively_referenced_mandatory_test_cases(self) -> None:
         """Profiles v2.1 §6.28 item 6 incorporates the §5.12.6 test cases."""
         catalog_path = ROOT / "specification" / "catalog" / "kmip-2.1.json"
