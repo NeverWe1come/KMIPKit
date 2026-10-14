@@ -545,32 +545,32 @@ class T076ClientMappingTests(unittest.TestCase):
             for row in self.manifest["publicDeclarations"]
         }
         mode_exports = {
-            ("rust-kmipkit-transport", "kmipkit_transport::CertificateInput::from_der"),
-            ("rust-kmipkit-transport", "kmipkit_transport::CertificateInput::from_der_file"),
-            ("rust-kmipkit-transport", "kmipkit_transport::CertificateInput::from_pem_file"),
-            ("rust-kmipkit-transport", "kmipkit_transport::PrivateKeyInput::from_der_file"),
-            ("rust-kmipkit-transport", "kmipkit_transport::PrivateKeyInput::from_pem_file"),
-            ("java-kmipkit", "org.kmipkit.extensions.TransportConfiguration.Builder.clientIdentityDer"),
-            ("java-kmipkit", "org.kmipkit.extensions.TransportConfiguration.Builder.clientIdentityFiles"),
-            ("java-kmipkit", "org.kmipkit.extensions.TransportConfiguration.Builder.trustCertificateFiles"),
-            ("java-kmipkit", "org.kmipkit.extensions.TransportConfiguration.Builder.trustCertificatesDer"),
-            ("java-kmipkit", "org.kmipkit.extensions.TransportConfiguration.Encoding.DER"),
-            ("java-kmipkit", "org.kmipkit.extensions.TransportConfiguration.Encoding.PEM"),
-            ("python-kmipkit", "kmipkit.client.CredentialEncoding.DER"),
-            ("python-kmipkit", "kmipkit.client.CredentialEncoding.PEM"),
-            ("python-kmipkit", "kmipkit.client.TransportInput.__init__"),
-            ("python-kmipkit", "kmipkit.client.TransportInput.encoding"),
-            ("python-kmipkit", "kmipkit.client.TransportInput.file"),
-            ("python-kmipkit", "kmipkit.client.TransportInput.source"),
+            ("rust-kmipkit-transport", "kmipkit_transport::CertificateInput::from_der"): "kmipkit_transport_config_v1_t.client_certificates",
+            ("rust-kmipkit-transport", "kmipkit_transport::CertificateInput::from_der_file"): "kmipkit_transport_config_v1_t.client_certificates",
+            ("rust-kmipkit-transport", "kmipkit_transport::CertificateInput::from_pem_file"): "kmipkit_transport_config_v1_t.client_certificates",
+            ("rust-kmipkit-transport", "kmipkit_transport::PrivateKeyInput::from_der_file"): "kmipkit_transport_config_v1_t.client_private_key",
+            ("rust-kmipkit-transport", "kmipkit_transport::PrivateKeyInput::from_pem_file"): "kmipkit_transport_config_v1_t.client_private_key",
+            ("java-kmipkit", "org.kmipkit.extensions.TransportConfiguration.Builder.clientIdentityDer"): "kmipkit_transport_config_v1_t.client_certificates",
+            ("java-kmipkit", "org.kmipkit.extensions.TransportConfiguration.Builder.clientIdentityFiles"): "kmipkit_transport_config_v1_t.client_certificates",
+            ("java-kmipkit", "org.kmipkit.extensions.TransportConfiguration.Builder.trustCertificateFiles"): "kmipkit_transport_config_v1_t.trust_certificates",
+            ("java-kmipkit", "org.kmipkit.extensions.TransportConfiguration.Builder.trustCertificatesDer"): "kmipkit_transport_config_v1_t.trust_certificates",
+            ("java-kmipkit", "org.kmipkit.extensions.TransportConfiguration.Encoding.DER"): "kmipkit_transport_config_v1_t.client_certificates",
+            ("java-kmipkit", "org.kmipkit.extensions.TransportConfiguration.Encoding.PEM"): "kmipkit_transport_config_v1_t.client_certificates",
+            ("python-kmipkit", "kmipkit.client.CredentialEncoding.DER"): "kmipkit_transport_config_v1_t.client_certificates",
+            ("python-kmipkit", "kmipkit.client.CredentialEncoding.PEM"): "kmipkit_transport_config_v1_t.client_certificates",
+            ("python-kmipkit", "kmipkit.client.TransportInput.__init__"): "kmipkit_transport_config_v1_t.client_certificates",
+            ("python-kmipkit", "kmipkit.client.TransportInput.encoding"): "kmipkit_transport_config_v1_t.client_certificates",
+            ("python-kmipkit", "kmipkit.client.TransportInput.file"): "kmipkit_transport_config_v1_t.client_certificates",
+            ("python-kmipkit", "kmipkit.client.TransportInput.source"): "kmipkit_transport_config_v1_t.client_certificates",
         }
-        for key in mode_exports:
+        for key, c_target in mode_exports.items():
             with self.subTest(export=key[1]):
                 declaration = declarations[key]
                 self.assertEqual("declared", declaration["declarationState"])
                 self.assertEqual(
-                    "kmipkit_transport_config_create_v1",
+                    c_target,
                     declaration["languageMappings"]["c"]["name"],
-                    "mode constructors are represented by the public parent-config factory",
+                    "mode mappings must resolve to the exact public configuration field",
                 )
 
         production = next(
@@ -579,6 +579,15 @@ class T076ClientMappingTests(unittest.TestCase):
             if row["capabilityId"] == "production_transport"
         )
         self.assertIn("kmipkit_transport_config_v1_t", production["mappings"]["c"])
+        self.assertTrue(
+            {
+                "kmipkit_transport_config_v1_t.client_certificates",
+                "kmipkit_transport_config_v1_t.client_private_key",
+                "kmipkit_transport_config_v1_t.trust_certificates",
+                "kmipkit_transport_config_v1_t.revocation_lists",
+            }.issubset(production["mappings"]["c"])
+        )
+        self.assertNotIn("kmipkit_transport_config_create_v1", production["mappings"]["c"])
         self.assertNotIn("kmipkit_transport_input_v1_t.encoding", production["mappings"]["c"])
         self.assertNotIn("kmipkit_transport_input_v1_t.source_kind", production["mappings"]["c"])
 
