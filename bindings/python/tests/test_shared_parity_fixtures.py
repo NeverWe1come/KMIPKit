@@ -282,6 +282,20 @@ def test_complete_public_python_api_has_resolvable_parameter_and_return_annotati
                 }:
                     continue
                 member = raw_member
+                if isinstance(member, property):
+                    for accessor_name, accessor in (
+                        ("getter", member.fget),
+                        ("setter", member.fset),
+                        ("deleter", member.fdel),
+                    ):
+                        if accessor is not None:
+                            missing.extend(
+                                _missing_annotations(
+                                    accessor,
+                                    f"{name}.{member_name}.{accessor_name}",
+                                )
+                            )
+                    continue
                 if isinstance(member, (classmethod, staticmethod)):
                     member = member.__func__
                 if inspect.isfunction(member):
