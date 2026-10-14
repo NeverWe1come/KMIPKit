@@ -500,6 +500,7 @@ class T076ClientMappingTests(unittest.TestCase):
         )
         self.assertEqual("c-symbol", release["kind"])
         self.assertEqual("declared", release["declarationState"])
+        self.assertEqual("native-handle-release", release["mappingSemantics"])
         self.assertEqual(
             {
                 "rust": {
@@ -523,9 +524,9 @@ class T076ClientMappingTests(unittest.TestCase):
         )
         self.assertIn("KMIPKIT-0043-FR-021", release["requirementIds"])
         header = (ROOT / "bindings/c/include/kmipkit.h").read_text(encoding="utf-8")
-        self.assertRegex(
+        self.assertIn(
+            "void kmipkit_client_batch_item_release(kmipkit_client_batch_item_t *handle);",
             header,
-            r"void\\s+kmipkit_client_batch_item_release\\s*\\(\\s*kmipkit_client_batch_item_t\\s*\\*\\s*handle\\s*\\)\\s*;",
         )
     def test_ready_function_mappings_resolve_to_real_four_language_apis(self) -> None:
         expected = {
