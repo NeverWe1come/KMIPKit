@@ -466,6 +466,11 @@ class BindingExportAuditTests(unittest.TestCase):
 
                     def __hash__(self):
                         return 1
+
+                @dc.dataclass
+                class SuppressedHashRecord:
+                    value: int
+                    __hash__ = None
             """),
         }
         result = AUDIT.inventory_python_sources(sources)
@@ -495,6 +500,11 @@ class BindingExportAuditTests(unittest.TestCase):
         self.assertNotIn(f"{manual}.__slots__", declarations)
         self.assertEqual(declarations["kmipkit.models.MutableRecord.__hash__"]["kind"], "field")
         self.assertEqual(declarations["kmipkit.models.ExplicitHashRecord.__hash__"]["kind"], "python-export")
+        self.assertEqual(declarations["kmipkit.models.SuppressedHashRecord.__hash__"]["kind"], "field")
+        self.assertEqual(
+            sum(name == "kmipkit.models.SuppressedHashRecord.__hash__" for name in declarations),
+            1,
+        )
         self.assertTrue(result["complete"])
 
     def test_python_inventory_fails_closed_for_dynamic_dataclass_options(self):
