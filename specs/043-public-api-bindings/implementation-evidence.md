@@ -1721,3 +1721,41 @@ with a fake object without `typeof`; the normalizer treats that test seam as a
 non-introspectable callable and preserves the existing ownership behavior.
 Ruff is not installed in the project virtual environment, and this binding
 project does not configure it.
+
+## T028 CI corrections after run 38574059436
+
+Run `38574059436` on head `f5c24ec8b94660fa0d110629dc3c36e955f1c35a` exposed
+two independent gate failures. The Ubuntu and macOS Python packaged-consumer
+jobs queried `sysconfig.get_path("purelib")` with Python isolated mode (`-I`),
+which selected the interpreter's global package directory instead of the
+consumer virtual environment. The smoke helper then could not find the
+installed wheel's `_native_ffi` directory. A focused regression test first
+failed against that behavior, then passed after removing `-I` only from this
+configuration query; the actual package probes remain isolated with `-I`.
+
+| Phase | Commit | Command | Result |
+|---|---|---|---|
+| Red | `6581ddcc` | `python -m unittest scripts.tests.test_native_package_smoke -v` before the helper fix | Expected failure: the helper selected the simulated global `purelib`, not the consumer venv path. |
+| Green | `4469d3d5` | `python -m unittest scripts.tests.test_native_package_smoke -v` | PASS: the helper resolves the consumer venv's `site-packages/kmipkit/_native_ffi`. |
+
+The same run's dependency-policy job refreshed RustSec and rejected pinned
+`rustls 0.23.45` for [RUSTSEC-2026-0346](https://github.com/RustSec/advisory-db/blob/main/crates/rustls/RUSTSEC-2026-0346.md)
+and [RUSTSEC-2026-0349](https://github.com/RustSec/advisory-db/blob/main/crates/rustls/RUSTSEC-2026-0349.md).
+The workspace pin and lockfile now use `rustls 0.23.46`, the upstream patched
+release ([release notes](https://github.com/rustls/rustls/releases/tag/v%2F0.23.46));
+the dependency correction is commit `08be9e09`, and no advisory exception was
+added. `pwsh -NoProfile -File
+scripts/Test-DependencyPolicy.ps1` passes with the refreshed advisory database
+and confirms both lockfiles remain unchanged by the policy check itself.
+
+| Verification | Command | Result |
+|---|---|---|
+| Python smoke regression | `python -m unittest scripts.tests.test_native_package_smoke -v` | PASS: 1 test. |
+| Script contract suite | `python -m unittest discover -s scripts/tests -p 'test_*.py' -q` | PASS: 271 tests, 26 skipped. |
+| Rust transport | `cargo +1.94 test --locked -p kmipkit-transport --all-features` | PASS: 136 unit tests, 6 delivery-state tests, 1 dependency-policy test, 88 HTTPS tests, and 5 doctests. |
+| Dependency policy | `pwsh -NoProfile -File scripts/Test-DependencyPolicy.ps1` | PASS: current RustSec database, no new exception, lockfile hashes unchanged. |
+
+The failures and fixes above are recorded as CI evidence; they do not establish
+T028 acceptance. T028 remains open until a new run on the corrected pushed head
+passes the required Ubuntu, Windows, and macOS packaged-consumer jobs and the
+full PR gate.
