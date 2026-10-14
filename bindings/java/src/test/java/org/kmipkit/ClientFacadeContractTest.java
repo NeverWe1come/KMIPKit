@@ -8,10 +8,27 @@ import org.junit.jupiter.api.Test;
 import org.kmipkit.extensions.Client;
 import org.kmipkit.extensions.ClientBatch;
 import org.kmipkit.extensions.ClientBatchItem;
+import org.kmipkit.extensions.RequestOptions;
 import org.kmipkit.extensions.TransportConfiguration;
 
 /** Exercises the shared Java client and ordered batch facade over the native ABI. */
 final class ClientFacadeContractTest {
+    @Test
+    void requestOptionsKeepDefaultZeroAndUnboundedTimeoutsDistinct() {
+        RequestOptions options = new RequestOptions(
+                TransportConfiguration.Timeout.defaultValue(),
+                TransportConfiguration.Timeout.bounded(java.time.Duration.ZERO),
+                TransportConfiguration.Timeout.unbounded(),
+                TransportConfiguration.Timeout.bounded(
+                        java.time.Duration.ofSeconds(2).plusNanos(5)));
+
+        assertEquals(0, options.connectTimeout().kind());
+        assertEquals(1, options.writeTimeout().kind());
+        assertEquals(2, options.readTimeout().kind());
+        assertEquals(2, options.totalTimeout().seconds());
+        assertEquals(5, options.totalTimeout().nanoseconds());
+    }
+
     @Test
     void clientCreationRejectsMissingConfigurationsBeforeLoadingNativeCode() {
         assertThrows(InvalidInputException.class, () -> Client.create(null, null));

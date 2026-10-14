@@ -42,6 +42,7 @@ import org.kmipkit.extensions.ClientBatchResponse;
 import org.kmipkit.extensions.ClientConfiguration;
 import org.kmipkit.extensions.ClientExtensionRegistry;
 import org.kmipkit.extensions.ExtensionRegistryLimits;
+import org.kmipkit.extensions.RequestOptions;
 import org.kmipkit.extensions.TransportConfiguration;
 import org.kmipkit.ttlv.CodecLimits;
 
@@ -94,7 +95,8 @@ final class ClientFacadeTlsIntegrationTest {
             pendingBatch.asynchronousIndicator(2).add(ClientBatchItem.discoverVersions());
             ClientBatchResponse pendingResponse;
             try {
-                pendingResponse = client.execute(pendingBatch, CodecLimits.defaults());
+                pendingResponse = client.executeWithOptions(
+                        pendingBatch, CodecLimits.defaults(), RequestOptions.defaults());
             } catch (ClientOperationException exception) {
                 throw new AssertionError("Pending exchange failed with status " + exception.statusCode()
                         + ", category " + exception.categoryCode() + ", cause " + exception.causeCode()
