@@ -28,7 +28,7 @@
 
 ### Implementation and tests for User Story 1 (TDD Green)
 
-- [ ] T005 Update the exact Rustls workspace pin to `=0.23.46` in `Cargo.toml`, use Cargo to update `Cargo.lock`, and verify no package version other than Rustls changed. Run the focused regression contract and relevant `kmipkit-transport` tests, verify the TLS feature set remains unchanged, then commit the dependency change separately with DCO sign-off.
+- [x] T005 Update the exact Rustls workspace pin to `=0.23.46` in `Cargo.toml`, use Cargo to update `Cargo.lock`, and verify no package version other than Rustls changed. Run the focused regression contract and relevant `kmipkit-transport` tests, verify the TLS feature set remains unchanged, then commit the dependency change separately with DCO sign-off (`feat(deps): update rustls to patched 0.23.46`).
 - [ ] T006 Run `pwsh -File .\scripts\Test-DependencyPolicy.ps1` and require successful online RustSec refresh and passing root/fuzz checks without an exception. Record both workspace database revisions and commit the Green verification evidence separately with DCO sign-off.
 
 ### Refactor and traceability
