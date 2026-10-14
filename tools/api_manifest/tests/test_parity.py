@@ -232,9 +232,11 @@ class PublicApiParityTests(unittest.TestCase):
                                     if "transportExchangeCount" in item.get("assertions", [])
                                 ),
                                 None,
+                            )
+                            self.assertIsNotNone(
+                                support,
                                 f"{language} must map evidence for the shared one-exchange result",
                             )
-                            self.assertIsNotNone(support)
                             assert support is not None
                             self.assertEqual(support["language"], "rust")
                             support_source = (ROOT / support["testFile"]).read_text(
@@ -245,11 +247,14 @@ class PublicApiParityTests(unittest.TestCase):
                                 rf"\bfn\s+{re.escape(support['test'])}\s*\(",
                             )
                             if language == "c":
+                                self.assertIn("expected_statuses[index]", source)
+                                self.assertIn("expected_correlation", source)
                                 self.assertIn(
                                     "assert_eq!(exchange_count.load(Ordering::Relaxed), 1);",
                                     support_source,
                                 )
                             else:
+                                self.assertIn("assert execution_calls == [True]", source)
                                 self.assertIn(
                                     "assert_eq!(fake.borrow().exchange_count(), 1);",
                                     support_source,

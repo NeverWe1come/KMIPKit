@@ -818,7 +818,7 @@ def test_batch_result_copies_metadata_unknown_outcome_and_optional_spans(
     assert released == ["item", "response"]
 
 
-def test_batch_execute_preserves_ordered_mixed_outcomes_and_uses_one_exchange(
+def test_batch_execute_preserves_ordered_mixed_outcomes_and_invokes_native_execute_once(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     client_pointer, _client_storage = _opaque("kmipkit_client_t")
