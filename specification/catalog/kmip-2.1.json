@@ -101740,13 +101740,18 @@
       ],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0016",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/attribute_reference.rs::AttributeReference::to_ttlv_item"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/adjust_attribute_tests.rs::request_preserves_name_reference_order_and_omits_identifier_and_adjustment_value",
+        "crates/kmipkit-protocol/tests/unit/get_attributes_tests.rs::request_follows_table_223_order_and_allows_repeated_reference_fields"
+      ],
       "negative_verification_required": false,
       "decision_id": null,
-      "status": "unassigned",
-      "review_note": "Pinned OASIS KMIP Specification v2.1 table body row records Required=Yes, not a formal RFC keyword. The implementation and positive verification remain unassigned; the pinned OASIS Test Cases inventory has no linked official test case asserted here."
+      "status": "scoped_verified",
+      "review_note": "Pinned OASIS KMIP Specification v2.1 §5.5 Table 161 requires Vendor Identification only in the name form. KMIPKIT-0016 preserves that form and local request tests verify its encoding. This table-body condition is not a formal RFC keyword or a claim that every client profile must use name-form references. No linked official OASIS Test Case is asserted."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-5.5-004",
@@ -101781,13 +101786,18 @@
       ],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0016",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/attribute_reference.rs::AttributeReference::to_ttlv_item"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/adjust_attribute_tests.rs::request_preserves_name_reference_order_and_omits_identifier_and_adjustment_value",
+        "crates/kmipkit-protocol/tests/unit/get_attributes_tests.rs::request_follows_table_223_order_and_allows_repeated_reference_fields"
+      ],
       "negative_verification_required": false,
       "decision_id": null,
-      "status": "unassigned",
-      "review_note": "Pinned OASIS KMIP Specification v2.1 table body row records Required=Yes, not a formal RFC keyword. The implementation and positive verification remain unassigned; the pinned OASIS Test Cases inventory has no linked official test case asserted here."
+      "status": "scoped_verified",
+      "review_note": "Pinned OASIS KMIP Specification v2.1 §5.5 Table 161 requires Attribute Name only in the name form, following Vendor Identification. KMIPKIT-0016 preserves that form and local request tests verify its encoding. This table-body condition is not a formal RFC keyword or a claim that every client profile must use name-form references. No linked official OASIS Test Case is asserted."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-5.5-005",
@@ -101822,13 +101832,19 @@
       ],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0016",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/attribute_reference.rs::AttributeReference::to_ttlv_item"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/adjust_attribute_tests.rs::request_follows_table_170_field_order_and_preserves_tag_reference_and_parameter",
+        "crates/kmipkit-protocol/tests/unit/get_attributes_tests.rs::request_follows_table_223_order_and_allows_repeated_reference_fields",
+        "crates/kmipkit-protocol/tests/unit/get_attribute_list_tests.rs::response_preserves_tag_form_attribute_references"
+      ],
       "negative_verification_required": false,
       "decision_id": null,
-      "status": "unassigned",
-      "review_note": "Pinned OASIS KMIP Specification v2.1 table body row records Required=Yes, not a formal RFC keyword. The implementation and positive verification remain unassigned; the pinned OASIS Test Cases inventory has no linked official test case asserted here."
+      "status": "scoped_verified",
+      "review_note": "Pinned OASIS KMIP Specification v2.1 §5.5 Table 161 requires the Attribute Reference Enumeration only in the tag form. KMIPKIT-0016 preserves tag-form references in requests and responses, with local tests. This table-body condition is not a formal RFC keyword or a claim that every client profile must use tag-form references. No linked official OASIS Test Case is asserted."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-5.6-002",
@@ -101863,13 +101879,19 @@
       ],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0016",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/modify_attribute.rs::ModifyAttributeRequest::to_ttlv_payload",
+        "crates/kmipkit-protocol/src/delete_attribute.rs::DeleteAttributeRequest::to_ttlv_payload"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/modify_attribute_tests.rs::request_preserves_exact_current_and_new_items_in_table_265_order",
+        "crates/kmipkit-protocol/tests/unit/delete_attribute_tests.rs::request_preserves_current_attribute_as_one_direct_item_in_table_202_order"
+      ],
       "negative_verification_required": false,
       "decision_id": null,
-      "status": "unassigned",
-      "review_note": "Pinned OASIS KMIP Specification v2.1 table body row records Required=Yes, not a formal RFC keyword. The implementation and positive verification remain unassigned; the pinned OASIS Test Cases inventory has no linked official test case asserted here."
+      "status": "scoped_verified",
+      "review_note": "Pinned OASIS KMIP Specification v2.1 §5.6 Table 162 requires one §4 Attribute Item when a Current Attribute structure is present. KMIPKIT-0016 preserves that request wrapper in Modify/Delete and local tests verify the direct Item shape. This condition applies only when a request carries Current Attribute; it does not make that optional selector mandatory for a profile. No linked official OASIS Test Case is asserted."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-5.7-002",
@@ -101904,13 +101926,21 @@
       ],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0016",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/add_attribute.rs::AddAttributeRequest::to_ttlv_payload",
+        "crates/kmipkit-protocol/src/modify_attribute.rs::ModifyAttributeRequest::to_ttlv_payload",
+        "crates/kmipkit-protocol/src/set_attribute.rs::SetAttributeRequest::to_ttlv_payload"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/add_attribute_tests.rs::request_encodes_optional_identifier_before_the_exact_new_attribute_value",
+        "crates/kmipkit-protocol/tests/unit/modify_attribute_tests.rs::request_preserves_exact_current_and_new_items_in_table_265_order",
+        "crates/kmipkit-protocol/tests/unit/set_attribute_tests.rs::request_preserves_the_required_new_attribute_direct_item_and_table_322_order"
+      ],
       "negative_verification_required": false,
       "decision_id": null,
-      "status": "unassigned",
-      "review_note": "Pinned OASIS KMIP Specification v2.1 table body row records Required=Yes, not a formal RFC keyword. The implementation and positive verification remain unassigned; the pinned OASIS Test Cases inventory has no linked official test case asserted here."
+      "status": "scoped_verified",
+      "review_note": "Pinned OASIS KMIP Specification v2.1 §5.7 Table 163 requires one §4 Attribute Item when a New Attribute structure is present. KMIPKIT-0016 preserves that request wrapper in Add/Modify/Set and local tests verify the direct Item shape. This condition does not make every operation or profile use New Attribute. No linked official OASIS Test Case is asserted."
     }
   ],
   "policies": [

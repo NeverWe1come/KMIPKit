@@ -152,7 +152,7 @@ class SourceGapAdjudicationTests(unittest.TestCase):
                 self.assertEqual(requirement["status"], "scoped_verified")
                 self.assertEqual(requirement["scope_state"], "client_1_0")
                 self.assertEqual(requirement["profile_ids"], [])
-                self.assertEqual(gap["scope_state"], "profile_conditional")
+                self.assertEqual(gap["scope_disposition"], "profile_conditional")
                 self.assertIn(implementation_ref, requirement["implementation_refs"])
                 self.assertIn(verification_ref, requirement["verification_refs"])
 
