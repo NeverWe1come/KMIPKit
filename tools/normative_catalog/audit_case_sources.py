@@ -137,7 +137,7 @@ class _CaseHeadingParser(HTMLParser):
         elif tag == "a" and self.active_case is not None:
             raw_tag = self.get_starttag_text() or ""
             href_match = re.search(
-                r"\bhref\s*=\s*(?:([\"'])(.*?)\1|([^\s>]+))",
+                r"\shref\s*=\s*(?:([\"'])(.*?)\1|([^\s>]+))",
                 raw_tag,
                 re.IGNORECASE,
             )
