@@ -219746,7 +219746,7 @@
         "status": "Approved",
         "evidence": "**Status**: Approved for implementation"
       },
-      "evidence": "Reviewed against KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021. The native method transports raw client, batch, and codec handles through the minimal JNI bridge; the typed Client.executeWithOptions method is the supported product entry point."
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021. The native method transports raw client, batch, and codec handles through the minimal JNI bridge; the typed Client.executeWithOptions method is the supported product entry point. docs/architecture/ffi-and-bindings.md describes the supported Java-to-C boundary as a minimal JNI bridge."
     },
     {
       "packageId": "java-kmipkit",

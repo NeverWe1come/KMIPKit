@@ -801,7 +801,7 @@
         "path": "specs/043-public-api-bindings/spec.md",
         "status": "Approved"
       },
-      "evidence": "Reviewed against KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021. The native method transports raw client, batch, and codec handles through the minimal JNI bridge; the typed Client.executeWithOptions method is the supported product entry point.",
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021. The native method transports raw client, batch, and codec handles through the minimal JNI bridge; the typed Client.executeWithOptions method is the supported product entry point. docs/architecture/ffi-and-bindings.md describes the supported Java-to-C boundary as a minimal JNI bridge.",
       "exportName": "org.kmipkit.NativeExtensionRegistry.clientExecuteWithOptions",
       "packageId": "java-kmipkit",
       "reason": "This exact public native method is raw-handle JNI bridge plumbing. Java exposes it for native binding dispatch; applications use the typed Client.executeWithOptions facade, which has the shared timeout capability."
