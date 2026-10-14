@@ -10815,6 +10815,7 @@ class CatalogValidationTests(unittest.TestCase):
             "KMIPKIT-REQ-SPEC-4.28-001-002",
             "KMIPKIT-REQ-SPEC-4.28-001-003",
             "KMIPKIT-REQ-SPEC-4.30-001",
+            "KMIPKIT-REQ-SPEC-4.31-002",
             "KMIPKIT-REQ-SPEC-4.32-001",
         }
         rejected_labels = {
@@ -10875,8 +10876,12 @@ class CatalogValidationTests(unittest.TestCase):
         )
         self.assertEqual(
             [atom["scope_disposition"] for atom in reviews["KMIPKIT-CLAUSE-SPEC-4.31-002"]["source_obligations"]],
-            ["unresolved"],
-            "the source MAY describes possible missing Links without assigning a client capability actor",
+            ["client_1_0"],
+            "the formal MAY maps the conditioned absent-Link state to a client capability",
+        )
+        self.assertEqual(
+            reviews["KMIPKIT-CLAUSE-SPEC-4.31-002"]["expected_client_requirement_ids"],
+            ["KMIPKIT-REQ-SPEC-4.31-002"],
         )
         self.assertIn(
             "NOT REQUIRED to be globally unique",
@@ -10921,9 +10926,13 @@ class CatalogValidationTests(unittest.TestCase):
         )
         self.assertEqual(
             gaps["KMIPKIT-SOURCE-GAP-SPEC-4.31-MAY-ABSENT-LINKS"]["scope_disposition"],
-            "unresolved",
+            "client_1_0",
         )
         self.assertIsNone(gaps["KMIPKIT-SOURCE-GAP-SPEC-4.31-MAY-ABSENT-LINKS"]["proposed_requirement_id"])
+        self.assertEqual(
+            gaps["KMIPKIT-SOURCE-GAP-SPEC-4.31-MAY-ABSENT-LINKS"]["candidate_requirement_id"],
+            "KMIPKIT-REQ-SPEC-4.31-002",
+        )
         self.assertEqual(
             gaps["KMIPKIT-SOURCE-GAP-SPEC-4.28-001-SERVER-NONMUTATION"]["scope_disposition"],
             "server_only",

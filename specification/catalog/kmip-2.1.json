@@ -13894,13 +13894,15 @@
       "source_keywords": [
         "MAY"
       ],
-      "disposition": "informative_context",
-      "requirement_ids": [],
-      "exclusion_rationale": "Explains possible absence of links when associated key material is unavailable; no client norm is stated.",
-      "role": "unclear",
-      "direction": "not_applicable",
-      "scope_state": "out_of_scope",
-      "condition": null
+      "disposition": "requirement",
+      "requirement_ids": [
+        "KMIPKIT-REQ-SPEC-4.31-002"
+      ],
+      "exclusion_rationale": null,
+      "role": "client",
+      "direction": "unclear",
+      "scope_state": "client_1_0",
+      "condition": "associated cryptographic key material is unavailable to the server or client"
     },
     {
       "clause_id": "KMIPKIT-CLAUSE-SPEC-4.31-003",
@@ -88998,6 +89000,38 @@
       "review_note": "Pinned KMIP Specification v2.1 source (kmip-spec-v2.1-os.html), §4.31, lines 15887-15903, contains only the table-header candidate “Item Encoding REQUIRED”; it does not state an operative client protocol obligation. No requirement-specific official Test Cases ID is linked in the pinned KMIP Test Cases inventory; implementation and verification are not claimed."
     },
     {
+      "requirement_id": "KMIPKIT-REQ-SPEC-4.31-002",
+      "source_clause_ids": [
+        "KMIPKIT-CLAUSE-SPEC-4.31-002"
+      ],
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "4.31"
+        }
+      ],
+      "source_keyword": "MAY",
+      "normative_strength": "permission_or_optional",
+      "subject": "Absent Link state",
+      "summary": "The client may represent or accept a Managed Object without Link values when associated cryptographic key material is unavailable to the server or client.",
+      "role": "client",
+      "direction": "unclear",
+      "condition": "associated cryptographic key material is unavailable to the server or client",
+      "scope_state": "client_1_0",
+      "element_ids": [
+        "KMIPKIT-ELEM-ATTRIBUTE-LINK"
+      ],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "negative_verification_required": false,
+      "decision_id": null,
+      "status": "unassigned",
+      "review_note": "Pinned KMIP Specification v2.1 §4.31 paragraph 2, lines 15815–15819, states that a Managed Object MAY lack Links when associated key material is unavailable to the server or client. Table 92, lines 15968–16082, says Link is not always present, is initially set by Client or Server, and is modifiable/deletable by a client. The client-visible object state may be inbound or outbound; the source does not assign a message direction. This permission does not make omission valid for every operation or override operation-specific Link requirements. No typed Link behavior implementation, executable test, or official Test Case ID is linked; no conformance claim is made."
+    },
+    {
       "requirement_id": "KMIPKIT-REQ-SPEC-4.32-001",
       "source_clause_ids": [
         "KMIPKIT-CLAUSE-SPEC-4.32-001"
@@ -103012,6 +103046,7 @@
         "KMIPKIT-REQ-SPEC-4.28-001-002",
         "KMIPKIT-REQ-SPEC-4.28-001-003",
         "KMIPKIT-REQ-SPEC-4.30-001",
+        "KMIPKIT-REQ-SPEC-4.31-002",
         "KMIPKIT-REQ-SPEC-4.32-001",
         "KMIPKIT-REQ-SPEC-4.34-001-001",
         "KMIPKIT-REQ-SPEC-4.35-001-001",
@@ -104389,6 +104424,7 @@
         "KMIPKIT-REQ-SPEC-4.28-001-002",
         "KMIPKIT-REQ-SPEC-4.28-001-003",
         "KMIPKIT-REQ-SPEC-4.30-001",
+        "KMIPKIT-REQ-SPEC-4.31-002",
         "KMIPKIT-REQ-SPEC-4.32-001",
         "KMIPKIT-REQ-SPEC-4.34-001-001",
         "KMIPKIT-REQ-SPEC-4.35-001-001",
@@ -105750,6 +105786,7 @@
         "KMIPKIT-REQ-SPEC-4.28-001-002",
         "KMIPKIT-REQ-SPEC-4.28-001-003",
         "KMIPKIT-REQ-SPEC-4.30-001",
+        "KMIPKIT-REQ-SPEC-4.31-002",
         "KMIPKIT-REQ-SPEC-4.32-001",
         "KMIPKIT-REQ-SPEC-4.34-001-001",
         "KMIPKIT-REQ-SPEC-4.35-001-001",
@@ -107440,6 +107477,7 @@
         "KMIPKIT-REQ-SPEC-4.28-001-002",
         "KMIPKIT-REQ-SPEC-4.28-001-003",
         "KMIPKIT-REQ-SPEC-4.30-001",
+        "KMIPKIT-REQ-SPEC-4.31-002",
         "KMIPKIT-REQ-SPEC-4.32-001",
         "KMIPKIT-REQ-SPEC-4.34-001-001",
         "KMIPKIT-REQ-SPEC-4.35-001-001",
@@ -108850,6 +108888,7 @@
         "KMIPKIT-REQ-SPEC-4.28-001-002",
         "KMIPKIT-REQ-SPEC-4.28-001-003",
         "KMIPKIT-REQ-SPEC-4.30-001",
+        "KMIPKIT-REQ-SPEC-4.31-002",
         "KMIPKIT-REQ-SPEC-4.32-001",
         "KMIPKIT-REQ-SPEC-4.34-001-001",
         "KMIPKIT-REQ-SPEC-4.35-001-001",
@@ -110263,6 +110302,7 @@
         "KMIPKIT-REQ-SPEC-4.28-001-002",
         "KMIPKIT-REQ-SPEC-4.28-001-003",
         "KMIPKIT-REQ-SPEC-4.30-001",
+        "KMIPKIT-REQ-SPEC-4.31-002",
         "KMIPKIT-REQ-SPEC-4.32-001",
         "KMIPKIT-REQ-SPEC-4.34-001-001",
         "KMIPKIT-REQ-SPEC-4.35-001-001",
@@ -111674,6 +111714,7 @@
         "KMIPKIT-REQ-SPEC-4.28-001-002",
         "KMIPKIT-REQ-SPEC-4.28-001-003",
         "KMIPKIT-REQ-SPEC-4.30-001",
+        "KMIPKIT-REQ-SPEC-4.31-002",
         "KMIPKIT-REQ-SPEC-4.32-001",
         "KMIPKIT-REQ-SPEC-4.34-001-001",
         "KMIPKIT-REQ-SPEC-4.35-001-001",
@@ -113069,6 +113110,7 @@
         "KMIPKIT-REQ-SPEC-4.28-001-002",
         "KMIPKIT-REQ-SPEC-4.28-001-003",
         "KMIPKIT-REQ-SPEC-4.30-001",
+        "KMIPKIT-REQ-SPEC-4.31-002",
         "KMIPKIT-REQ-SPEC-4.32-001",
         "KMIPKIT-REQ-SPEC-4.34-001-001",
         "KMIPKIT-REQ-SPEC-4.35-001-001",
@@ -114442,6 +114484,7 @@
         "KMIPKIT-REQ-SPEC-4.28-001-002",
         "KMIPKIT-REQ-SPEC-4.28-001-003",
         "KMIPKIT-REQ-SPEC-4.30-001",
+        "KMIPKIT-REQ-SPEC-4.31-002",
         "KMIPKIT-REQ-SPEC-4.32-001",
         "KMIPKIT-REQ-SPEC-4.34-001-001",
         "KMIPKIT-REQ-SPEC-4.35-001-001",
@@ -115824,6 +115867,7 @@
         "KMIPKIT-REQ-SPEC-4.28-001-002",
         "KMIPKIT-REQ-SPEC-4.28-001-003",
         "KMIPKIT-REQ-SPEC-4.30-001",
+        "KMIPKIT-REQ-SPEC-4.31-002",
         "KMIPKIT-REQ-SPEC-4.32-001",
         "KMIPKIT-REQ-SPEC-4.34-001-001",
         "KMIPKIT-REQ-SPEC-4.35-001-001",
@@ -117214,6 +117258,7 @@
         "KMIPKIT-REQ-SPEC-4.28-001-002",
         "KMIPKIT-REQ-SPEC-4.28-001-003",
         "KMIPKIT-REQ-SPEC-4.30-001",
+        "KMIPKIT-REQ-SPEC-4.31-002",
         "KMIPKIT-REQ-SPEC-4.32-001",
         "KMIPKIT-REQ-SPEC-4.34-001-001",
         "KMIPKIT-REQ-SPEC-4.35-001-001",
@@ -118612,6 +118657,7 @@
         "KMIPKIT-REQ-SPEC-4.28-001-002",
         "KMIPKIT-REQ-SPEC-4.28-001-003",
         "KMIPKIT-REQ-SPEC-4.30-001",
+        "KMIPKIT-REQ-SPEC-4.31-002",
         "KMIPKIT-REQ-SPEC-4.32-001",
         "KMIPKIT-REQ-SPEC-4.34-001-001",
         "KMIPKIT-REQ-SPEC-4.35-001-001",
@@ -120000,6 +120046,7 @@
         "KMIPKIT-REQ-SPEC-4.28-001-002",
         "KMIPKIT-REQ-SPEC-4.28-001-003",
         "KMIPKIT-REQ-SPEC-4.30-001",
+        "KMIPKIT-REQ-SPEC-4.31-002",
         "KMIPKIT-REQ-SPEC-4.32-001",
         "KMIPKIT-REQ-SPEC-4.34-001-001",
         "KMIPKIT-REQ-SPEC-4.35-001-001",
@@ -121241,6 +121288,7 @@
         "KMIPKIT-REQ-SPEC-4.28-001-002",
         "KMIPKIT-REQ-SPEC-4.28-001-003",
         "KMIPKIT-REQ-SPEC-4.30-001",
+        "KMIPKIT-REQ-SPEC-4.31-002",
         "KMIPKIT-REQ-SPEC-4.32-001",
         "KMIPKIT-REQ-SPEC-4.34-001-001",
         "KMIPKIT-REQ-SPEC-4.35-001-001",
@@ -122487,6 +122535,7 @@
         "KMIPKIT-REQ-SPEC-4.28-001-002",
         "KMIPKIT-REQ-SPEC-4.28-001-003",
         "KMIPKIT-REQ-SPEC-4.30-001",
+        "KMIPKIT-REQ-SPEC-4.31-002",
         "KMIPKIT-REQ-SPEC-4.32-001",
         "KMIPKIT-REQ-SPEC-4.34-001-001",
         "KMIPKIT-REQ-SPEC-4.35-001-001",
@@ -123888,6 +123937,7 @@
         "KMIPKIT-REQ-SPEC-4.28-001-002",
         "KMIPKIT-REQ-SPEC-4.28-001-003",
         "KMIPKIT-REQ-SPEC-4.30-001",
+        "KMIPKIT-REQ-SPEC-4.31-002",
         "KMIPKIT-REQ-SPEC-4.32-001",
         "KMIPKIT-REQ-SPEC-4.34-001-001",
         "KMIPKIT-REQ-SPEC-4.35-001-001",
@@ -125322,6 +125372,7 @@
         "KMIPKIT-REQ-SPEC-4.28-001-002",
         "KMIPKIT-REQ-SPEC-4.28-001-003",
         "KMIPKIT-REQ-SPEC-4.30-001",
+        "KMIPKIT-REQ-SPEC-4.31-002",
         "KMIPKIT-REQ-SPEC-4.32-001",
         "KMIPKIT-REQ-SPEC-4.34-001-001",
         "KMIPKIT-REQ-SPEC-4.35-001-001",
@@ -126721,6 +126772,7 @@
         "KMIPKIT-REQ-SPEC-4.28-001-002",
         "KMIPKIT-REQ-SPEC-4.28-001-003",
         "KMIPKIT-REQ-SPEC-4.30-001",
+        "KMIPKIT-REQ-SPEC-4.31-002",
         "KMIPKIT-REQ-SPEC-4.32-001",
         "KMIPKIT-REQ-SPEC-4.34-001-001",
         "KMIPKIT-REQ-SPEC-4.35-001-001",

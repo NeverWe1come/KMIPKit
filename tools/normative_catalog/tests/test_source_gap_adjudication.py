@@ -166,7 +166,7 @@ class SourceGapAdjudicationTests(unittest.TestCase):
         self.assertEqual(requirement["verification_refs"], [])
         self.assertEqual(requirement["status"], "unassigned")
         self.assertIn("inbound or outbound", requirement["review_note"])
-        self.assertIn("does not assign message direction", requirement["review_note"])
+        self.assertIn("does not assign a message direction", requirement["review_note"])
         self.assertIn("operation-specific Link requirements", requirement["review_note"])
 
         clause = clauses["KMIPKIT-CLAUSE-SPEC-4.31-002"]
