@@ -172,6 +172,46 @@ class SourceGapAdjudicationTests(unittest.TestCase):
             requirement["verification_refs"],
         )
 
+    def test_data_paragraph_discrepancy_covers_all_matching_single_part_operations(self) -> None:
+        catalog = _load_json(CATALOG_PATH)
+        discrepancy = next(
+            row
+            for row in catalog["discrepancies"]
+            if row["discrepancy_id"] == "KMIPKIT-DISC-045"
+        )
+
+        source_sections = {reference["section"] for reference in discrepancy["source_refs"]}
+        self.assertTrue(
+            {"6.1", "6.1.11", "6.1.17", "6.1.24", "6.1.32", "6.1.55"} <= source_sections,
+            "the general Data rule and every affected operation table must be linked",
+        )
+        affected_elements = set(discrepancy["affected_element_ids"])
+        self.assertTrue(
+            {
+                "KMIPKIT-ELEM-OP-C2S-ENCRYPT",
+                "KMIPKIT-ELEM-OP-C2S-DECRYPT",
+                "KMIPKIT-ELEM-OP-C2S-HASH",
+                "KMIPKIT-ELEM-OP-C2S-MAC",
+                "KMIPKIT-ELEM-OP-C2S-SIGN",
+                "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-8-CORRELATION-VALUE",
+                "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-9-DATA",
+                "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-14-FINAL-INDICATOR",
+                "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-17-INIT-INDICATOR",
+                "KMIPKIT-ELEM-TAG-420107",
+            } <= affected_elements,
+            "all disputed operations and request fields must be recorded",
+        )
+        self.assertNotIn("KMIPKIT-ELEM-OP-C2S-MAC-VERIFY", affected_elements)
+        self.assertNotIn("KMIPKIT-ELEM-OP-C2S-SIGNATURE-VERIFY", affected_elements)
+        self.assertEqual([], discrepancy["affected_requirement_ids"])
+        self.assertEqual("normative_conflict", discrepancy["normative_status"])
+        self.assertEqual("open", discrepancy["state"])
+        conflict_text = " ".join(discrepancy["alternatives"] + [discrepancy["downstream_impact"]])
+        self.assertIn("Table 235", conflict_text)
+        self.assertIn("Table 259", conflict_text)
+        self.assertIn("Table 334", conflict_text)
+        self.assertIn("Digested Data", conflict_text)
+
     def test_profile_conditional_structural_rows_are_not_client_profile_requirements(self) -> None:
         catalog = _load_json(CATALOG_PATH)
         oracle = _load_json(ORACLE_PATH)
