@@ -1568,16 +1568,25 @@ class T076ClientMappingTests(unittest.TestCase):
                         )
                         self.assertIn(target["declarationState"], {"declared", "verified"})
 
+        java_exclusions = {
+            row["exportName"]: row
+            for row in self.manifest["approvedExclusions"]
+            if row["packageId"] == "java-kmipkit"
+        }
         for export_name in (
+            "org.kmipkit.extensions.TransportConfiguration.Builder.close",
             "org.kmipkit.extensions.TransportConfiguration.TransportInput.close",
             "org.kmipkit.extensions.TransportConfiguration.TransportInput.toString",
         ):
-            exclusion = next(
-                row
-                for row in self.manifest["approvedExclusions"]
-                if row["packageId"] == "java-kmipkit" and row["exportName"] == export_name
-            )
+            self.assertTrue(export_name in java_exclusions, f"missing Java API exclusion: {export_name}")
+            exclusion = java_exclusions[export_name]
             self.assertIn("KMIPKIT-0013-FR-005", exclusion["evidence"])
+        self.assertIn(
+            "builder",
+            java_exclusions[
+                "org.kmipkit.extensions.TransportConfiguration.Builder.close"
+            ]["reason"].lower(),
+        )
 
         default_timeout = declarations.get(
             (
