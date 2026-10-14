@@ -26,9 +26,13 @@ public final class ExtensionInformation implements AutoCloseable {
     }
 
     public static ExtensionInformation with_type(ExtensionInformation information, TtlvItemType type) {
+        if (information == null || type == null) {
+            throw new org.kmipkit.InvalidInputException("extension information type input is invalid");
+        }
         NativeExtensionRegistry.ensureLoaded();
+        int typeCode = type.code();
         return new ExtensionInformation(NativeExtensionRegistry.extensionInformationWithType(
-                information.handle.transfer(), type.code()));
+                information.handle.transfer(), typeCode));
     }
 
     public static ExtensionInformation with_enumeration(ExtensionInformation information, int enumeration) {
