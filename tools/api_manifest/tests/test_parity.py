@@ -180,6 +180,12 @@ class PublicApiParityTests(unittest.TestCase):
                             self.assertTrue(mapping["test"])
                             if language != "java":
                                 self.assertTrue(mapping["testFile"])
+                            if case["id"] == "api-levels.shared.v1" and language == "rust":
+                                self.assertEqual(
+                                    mapping["testFile"],
+                                    "crates/kmipkit/tests/api_levels.rs",
+                                    "the Rust API-level fixture must map to an integration test outside production sources",
+                                )
                         else:
                             self.assertTrue(mapping.get("reason"), case["id"])
 
