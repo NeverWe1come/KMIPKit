@@ -3,6 +3,7 @@ package org.kmipkit;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -22,6 +23,7 @@ import java.security.cert.Certificate;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 import java.time.Duration;
+import java.util.Base64;
 import java.util.List;
 import java.util.concurrent.FutureTask;
 import java.util.concurrent.TimeUnit;
@@ -53,6 +55,58 @@ final class ClientFacadeTlsIntegrationTest {
 
     @TempDir
     Path temporaryDirectory;
+
+    @Test
+    void nativeAdapterAcceptsMemoryAndFileIdentityAndTrustInPemAndDer() throws Exception {
+        Path keyStorePath = temporaryDirectory.resolve("native-adapter.p12");
+        createKeyStore(keyStorePath, "native-adapter");
+        KeyStore keyStore = loadKeyStore(keyStorePath);
+        byte[] certificateDer = certificate(keyStore, "native-adapter").getEncoded();
+        byte[] privateKeyDer = ((PrivateKey) keyStore.getKey("native-adapter", STORE_PASSWORD)).getEncoded();
+        byte[] certificatePem = pem("CERTIFICATE", certificateDer);
+        byte[] privateKeyPem = pem("PRIVATE KEY", privateKeyDer);
+        Path certificatePemPath = temporaryDirectory.resolve("native-adapter-cert.pem");
+        Path privateKeyPemPath = temporaryDirectory.resolve("native-adapter-key.pem");
+        Path trustPemPath = temporaryDirectory.resolve("native-adapter-trust.pem");
+        Path certificateDerPath = temporaryDirectory.resolve("native-adapter-cert.der");
+        Path privateKeyDerPath = temporaryDirectory.resolve("native-adapter-key.der");
+        Path trustDerPath = temporaryDirectory.resolve("native-adapter-trust.der");
+        Files.write(certificatePemPath, certificatePem);
+        Files.write(privateKeyPemPath, privateKeyPem);
+        Files.write(trustPemPath, certificatePem);
+        Files.write(certificateDerPath, certificateDer);
+        Files.write(privateKeyDerPath, privateKeyDer);
+        Files.write(trustDerPath, certificateDer);
+
+        try (ClientExtensionRegistry registry = ClientExtensionRegistry.create(
+                        List.of(), ExtensionRegistryLimits.defaults());
+                ClientConfiguration extensions = ClientConfiguration.create(registry)) {
+            List<TransportConfiguration.Builder> configurations = List.of(
+                    TransportConfiguration.builder().rawTls("127.0.0.1", 5696)
+                            .clientIdentityPem(new byte[][] {certificatePem}, privateKeyPem)
+                            .trustCertificatesPem(new byte[][] {certificatePem}),
+                    TransportConfiguration.builder().rawTls("127.0.0.1", 5696)
+                            .clientIdentityDer(new byte[][] {certificateDer}, privateKeyDer)
+                            .trustCertificatesDer(new byte[][] {certificateDer}),
+                    TransportConfiguration.builder().rawTls("127.0.0.1", 5696)
+                            .clientIdentityFiles(List.of(certificatePemPath), privateKeyPemPath,
+                                    TransportConfiguration.Encoding.PEM)
+                            .trustCertificateFiles(List.of(trustPemPath),
+                                    TransportConfiguration.Encoding.PEM),
+                    TransportConfiguration.builder().rawTls("127.0.0.1", 5696)
+                            .clientIdentityFiles(List.of(certificateDerPath), privateKeyDerPath,
+                                    TransportConfiguration.Encoding.DER)
+                            .trustCertificateFiles(List.of(trustDerPath),
+                                    TransportConfiguration.Encoding.DER));
+
+            for (TransportConfiguration.Builder builder : configurations) {
+                try (TransportConfiguration transport = builder.build();
+                        Client client = Client.create(extensions, transport)) {
+                    assertNotNull(client);
+                }
+            }
+        }
+    }
 
     @Test
     void executionPreservesOrderedPendingAndCompletedMetadataOverMutualTls() throws Exception {
@@ -269,6 +323,12 @@ final class ClientFacadeTlsIntegrationTest {
         Certificate value = store.getCertificate(alias);
         return (X509Certificate) CertificateFactory.getInstance("X.509")
                 .generateCertificate(new java.io.ByteArrayInputStream(value.getEncoded()));
+    }
+
+    private static byte[] pem(String label, byte[] der) {
+        String encoded = Base64.getMimeEncoder(64, new byte[] {'\n'}).encodeToString(der);
+        return ("-----BEGIN " + label + "-----\n" + encoded + "\n-----END " + label + "-----\n")
+                .getBytes(java.nio.charset.StandardCharsets.US_ASCII);
     }
 
     private static SSLContext serverContext(KeyStore serverStore, X509Certificate clientCertificate)

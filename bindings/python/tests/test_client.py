@@ -304,6 +304,53 @@ def test_transport_record_serializes_memory_files_and_timeout_fields() -> None:
     assert owners
 
 
+@pytest.mark.parametrize(
+    ("source_kind", "encoding"),
+    [
+        ("memory", client.CredentialEncoding.PEM),
+        ("memory", client.CredentialEncoding.DER),
+        ("file", client.CredentialEncoding.PEM),
+        ("file", client.CredentialEncoding.DER),
+    ],
+)
+def test_transport_record_forwards_identity_and_trust_source_modes(
+    tmp_path: Path, source_kind: str, encoding: client.CredentialEncoding
+) -> None:
+    def value(name: str) -> client.TransportInput:
+        if source_kind == "memory":
+            return client.TransportInput.memory(name.encode(), encoding)
+        return client.TransportInput.file(tmp_path / name, encoding)
+
+    certificate = value("client-cert")
+    private_key = value("client-key")
+    trust_certificate = value("trust-cert")
+    crl = client.TransportInput.memory(b"crl-bytes", encoding)
+    configuration = _transport_configuration(
+        client_certificates=(certificate,),
+        client_private_key=private_key,
+        trust=client.TrustSource.certificate_authorities((trust_certificate,)),
+        revocation_lists=(crl,),
+    )
+
+    record, owners = client._transport_record(configuration)
+    expected_source = 1 if source_kind == "memory" else 2
+    for input_record in (
+        record.client_certificates[0],
+        record.client_private_key,
+        record.trust_certificates[0],
+    ):
+        assert input_record.source_kind == expected_source
+        assert input_record.encoding == int(encoding)
+    assert record.revocation_lists[0].source_kind == 1
+    assert record.revocation_lists[0].encoding == int(encoding)
+    if source_kind == "file":
+        assert client.ffi.string(
+            record.trust_certificates[0].data.data,
+            record.trust_certificates[0].data.length,
+        ).endswith(b"trust-cert")
+    assert owners
+
+
 def test_transport_record_supports_https_platform_trust_and_empty_optional_arrays() -> None:
     configuration = _transport_configuration(
         endpoint=client.Endpoint.https(
