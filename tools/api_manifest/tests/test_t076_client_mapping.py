@@ -1340,6 +1340,34 @@ class T076ClientMappingTests(unittest.TestCase):
             },
         )
 
+    def test_request_options_python_dataclass_artifacts_are_exactly_excluded(self) -> None:
+        expected = {
+            f"kmipkit.client.RequestOptions.{member}"
+            for member in (
+                "__dataclass_fields__",
+                "__dataclass_params__",
+                "__delattr__",
+                "__eq__",
+                "__hash__",
+                "__match_args__",
+                "__repr__",
+                "__setattr__",
+                "__slots__",
+            )
+        }
+        exclusions = {
+            row["exportName"]: row
+            for row in self.manifest["approvedExclusions"]
+            if row["packageId"] == "python-kmipkit"
+            and row["exportName"].startswith("kmipkit.client.RequestOptions.")
+        }
+        self.assertEqual(expected, set(exclusions))
+        for path, exclusion in exclusions.items():
+            with self.subTest(excluded_export=path):
+                self.assertEqual(path, exclusion["exportName"])
+                self.assertIn("dataclass", exclusion["reason"].lower())
+                self.assertIn("KMIPKIT-0043-FR-021", exclusion["evidence"])
+
     def test_transport_handle_adapter_is_backed_by_four_language_configuration_values(self) -> None:
         capability = next(
             row
@@ -1486,20 +1514,20 @@ class T076ClientMappingTests(unittest.TestCase):
                 "kmipkit.client.Endpoint.https",
             ),
             ("java-kmipkit", "org.kmipkit.extensions.TransportConfiguration.Builder.trustCertificatesDer"): (
-                "kmipkit_transport::CertificateInput::from_der",
-                "kmipkit_transport_input_v1_t.encoding",
+                "kmipkit_transport::TrustSource::certificate_authorities",
+                "kmipkit_transport_config_v1_t.trust_certificates",
                 "org.kmipkit.extensions.TransportConfiguration.Builder.trustCertificatesDer",
                 "kmipkit.client.CredentialEncoding.DER",
             ),
             ("java-kmipkit", "org.kmipkit.extensions.TransportConfiguration.Builder.trustCertificateFiles"): (
-                "kmipkit_transport::CertificateInput",
-                "kmipkit_transport_input_v1_t.source_kind",
+                "kmipkit_transport::TrustSource::certificate_authorities",
+                "kmipkit_transport_config_v1_t.trust_certificates",
                 "org.kmipkit.extensions.TransportConfiguration.Builder.trustCertificateFiles",
                 "kmipkit.client.TransportInput.file",
             ),
             ("java-kmipkit", "org.kmipkit.extensions.TransportConfiguration.Builder.clientIdentityFiles"): (
                 "kmipkit_transport::ClientIdentity",
-                "kmipkit_transport_input_v1_t.source_kind",
+                "kmipkit_transport_config_v1_t.client_certificates",
                 "org.kmipkit.extensions.TransportConfiguration.Builder.clientIdentityFiles",
                 "kmipkit.client.TransportInput.file",
             ),
@@ -1510,14 +1538,14 @@ class T076ClientMappingTests(unittest.TestCase):
                 "kmipkit.client.TransportConfig.revocation_lists",
             ),
             ("java-kmipkit", "org.kmipkit.extensions.TransportConfiguration.Encoding.DER"): (
-                "kmipkit_transport::CertificateInput::from_der",
-                "kmipkit_transport_input_v1_t.encoding",
+                "kmipkit_transport::TransportConfigBuilder",
+                "kmipkit_transport_config_v1_t.client_certificates",
                 "org.kmipkit.extensions.TransportConfiguration.Encoding.DER",
                 "kmipkit.client.CredentialEncoding.DER",
             ),
             ("java-kmipkit", "org.kmipkit.extensions.TransportConfiguration.Encoding.PEM"): (
-                "kmipkit_transport::CertificateInput::from_pem",
-                "kmipkit_transport_input_v1_t.encoding",
+                "kmipkit_transport::TransportConfigBuilder",
+                "kmipkit_transport_config_v1_t.client_certificates",
                 "org.kmipkit.extensions.TransportConfiguration.Encoding.PEM",
                 "kmipkit.client.CredentialEncoding.PEM",
             ),
@@ -1541,7 +1569,7 @@ class T076ClientMappingTests(unittest.TestCase):
             ),
             ("python-kmipkit", "kmipkit.client.TransportInput.file"): (
                 "kmipkit_transport::TransportConfigBuilder",
-                "kmipkit_transport_input_v1_t.source_kind",
+                "kmipkit_transport_config_v1_t.client_certificates",
                 "org.kmipkit.extensions.TransportConfiguration.Builder",
                 "kmipkit.client.TransportInput.file",
             ),
