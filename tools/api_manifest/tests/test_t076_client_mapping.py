@@ -870,6 +870,133 @@ class T076ClientMappingTests(unittest.TestCase):
             with self.subTest(blocked_factory=path):
                 self.assertEqual("blocked", declarations[path]["declarationState"])
 
+    def test_remaining_python_exports_are_mapped_or_exactly_excluded(self) -> None:
+        python_root = ROOT / "bindings" / "python" / "src" / "kmipkit"
+        sources = {
+            path.relative_to(python_root.parent).as_posix(): path.read_text(encoding="utf-8")
+            for path in sorted(python_root.rglob("*.py"))
+        }
+        inventory = audit_binding_exports.inventory_python_sources(sources)
+        observed = {row["exportName"] for row in inventory["declarations"]}
+        declarations = {
+            row["exportName"]: row
+            for row in self.manifest["publicDeclarations"]
+            if row["packageId"] == "python-kmipkit"
+        }
+        exclusions = {
+            row["exportName"]: row
+            for row in self.manifest["approvedExclusions"]
+            if row["packageId"] == "python-kmipkit"
+        }
+
+        unclassified = observed - declarations.keys() - exclusions.keys()
+        self.assertEqual(set(), unclassified, "unclassified Python package exports")
+
+        context_manager_exclusions = {
+            f"kmipkit.client.{wrapper}.{member}"
+            for wrapper in ("Batch", "BatchResult", "Client")
+            for member in ("__enter__", "__exit__")
+        }
+        exception_constructor_exclusions = {
+            f"kmipkit.errors.{name}.__init__"
+            for name in (
+                "ClientExecutionError",
+                "CompatibilityMismatchError",
+                "DuplicateKeyError",
+                "InvalidExtensionSchemaError",
+                "InvalidIdentityError",
+                "InvalidInputError",
+                "KmipKitError",
+                "ResourceLimitError",
+            )
+        }
+        exact_exclusions = (
+            context_manager_exclusions
+            | exception_constructor_exclusions
+            | {"kmipkit.metadata.Version.__init__"}
+        )
+        for path in sorted(exact_exclusions):
+            with self.subTest(excluded_export=path):
+                self.assertIn(path, observed)
+                self.assertNotIn(path, declarations)
+                exclusion = exclusions[path]
+                self.assertEqual(path, exclusion["exportName"])
+                self.assertEqual(
+                    "specs/043-public-api-bindings/spec.md",
+                    exclusion["approvalSource"]["path"],
+                )
+                self.assertIn("KMIPKIT-0043-FR-021", exclusion["evidence"])
+                if path in context_manager_exclusions:
+                    self.assertIn("context-manager syntax", exclusion["reason"])
+                    self.assertIn("close lifecycle", exclusion["reason"])
+                elif path in exception_constructor_exclusions:
+                    self.assertIn("exception constructor", exclusion["reason"])
+                    self.assertIn("local", exclusion["reason"])
+                else:
+                    self.assertIn("runtime metadata", exclusion["reason"].lower())
+                    self.assertIn("local value", exclusion["reason"].lower())
+
+        trust_source = declarations["kmipkit.client.TrustSource"]
+        self.assertEqual("type", trust_source["kind"])
+        self.assertEqual("declared", trust_source["declarationState"])
+        self.assertEqual(
+            {
+                "rust": ("rust-kmipkit-transport", "kmipkit_transport::TrustSource"),
+                "c": ("c-kmipkit", "kmipkit_transport_config_v1_t"),
+                "java": (
+                    "java-kmipkit",
+                    "org.kmipkit.extensions.TransportConfiguration.Builder",
+                ),
+                "python": ("python-kmipkit", "kmipkit.client.TrustSource"),
+            },
+            {
+                language: (target["packageId"], target["name"])
+                for language, target in trust_source["languageMappings"].items()
+            },
+        )
+
+        limits_constructor = declarations[
+            "kmipkit.extensions.ExtensionRegistryLimits.__init__"
+        ]
+        self.assertEqual("python-export", limits_constructor["kind"])
+        self.assertEqual("declared", limits_constructor["declarationState"])
+        self.assertEqual(
+            {
+                "rust": ("rust-kmipkit-protocol", "kmipkit_protocol::extension::ExtensionRegistryLimits"),
+                "c": ("c-kmipkit", "kmipkit_extension_registry_limits_v1_t"),
+                "java": ("java-kmipkit", "org.kmipkit.extensions.ExtensionRegistryLimits"),
+                "python": (
+                    "python-kmipkit",
+                    "kmipkit.extensions.ExtensionRegistryLimits.__init__",
+                ),
+            },
+            {
+                language: (target["packageId"], target["name"])
+                for language, target in limits_constructor["languageMappings"].items()
+            },
+        )
+
+        exception_category = declarations[
+            "kmipkit.errors.ClientExecutionError.category"
+        ]
+        self.assertEqual("python-export", exception_category["kind"])
+        self.assertEqual("declared", exception_category["declarationState"])
+        self.assertEqual(
+            {
+                "rust": ("rust-kmipkit-client", "kmipkit_client::ClientError"),
+                "c": ("c-kmipkit", "kmipkit_last_error_get"),
+                "java": ("java-kmipkit", "org.kmipkit.ClientOperationException"),
+                "python": (
+                    "python-kmipkit",
+                    "kmipkit.errors.ClientExecutionError",
+                ),
+            },
+            {
+                language: (target["packageId"], target["name"])
+                for language, target in exception_category["languageMappings"].items()
+            },
+        )
+
     def test_transport_handle_adapter_is_backed_by_four_language_configuration_values(self) -> None:
         capability = next(
             row
