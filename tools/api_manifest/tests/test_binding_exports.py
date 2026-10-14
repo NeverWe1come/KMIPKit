@@ -473,6 +473,26 @@ class BindingExportAuditTests(unittest.TestCase):
         self.assertNotIn(f"{manual}.__slots__", declarations)
         self.assertTrue(result["complete"])
 
+    def test_python_inventory_fails_closed_for_dynamic_dataclass_options(self):
+        source = textwrap.dedent("""
+            from dataclasses import dataclass
+            __all__ = ["DynamicRecord"]
+
+            def slots_enabled():
+                return True
+
+            @dataclass(slots=slots_enabled())
+            class DynamicRecord:
+                value: int
+        """)
+        result = AUDIT.inventory_python_sources({"kmipkit/models.py": source})
+        self.assertFalse(result["complete"])
+        self.assertIn(
+            {"packageId": "python-kmipkit", "exportName": "kmipkit.models.DynamicRecord",
+             "reason": "dynamic-dataclass-options"},
+            result["issues"],
+        )
+
     def test_python_inventory_resolves_private_module_values_and_property_exports(self):
         sources = {
             "kmipkit/_ffi/__init__.py": "ffi = object()\nlib = object()\n",
