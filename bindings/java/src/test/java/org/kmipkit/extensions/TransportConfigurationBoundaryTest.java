@@ -2,11 +2,13 @@ package org.kmipkit.extensions;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.time.Duration;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -114,6 +116,47 @@ final class TransportConfigurationBoundaryTest {
         assertThrows(InvalidInputException.class,
                 () -> builder.revocationListsPem(new byte[][] {new byte[0]}));
         assertThrows(InvalidInputException.class, () -> builder.revocationListsDer(null));
+    }
+
+    @Test
+    void transportInputsValidateSourceAndEncodingAndRedactMaterial() {
+        byte[] marker = "private-material-marker".getBytes(StandardCharsets.UTF_8);
+        TransportConfiguration.TransportInput key = TransportConfiguration.TransportInput.memory(
+                marker, TransportConfiguration.Encoding.PEM);
+        Arrays.fill(marker, (byte) 0);
+
+        assertEquals(TransportConfiguration.Encoding.PEM, key.encoding());
+        assertFalse(key.toString().contains("private-material-marker"));
+        assertThrows(InvalidInputException.class,
+                () -> TransportConfiguration.TransportInput.memory(null, TransportConfiguration.Encoding.PEM));
+        assertThrows(InvalidInputException.class,
+                () -> TransportConfiguration.TransportInput.memory(new byte[0], TransportConfiguration.Encoding.PEM));
+        assertThrows(InvalidInputException.class,
+                () -> TransportConfiguration.TransportInput.memory(new byte[] {1}, null));
+        assertThrows(ResourceLimitException.class,
+                () -> TransportConfiguration.TransportInput.memory(
+                        new byte[MAX_TRANSPORT_INPUT_BYTES + 1], TransportConfiguration.Encoding.PEM));
+        assertThrows(InvalidInputException.class,
+                () -> TransportConfiguration.TransportInput.file(null, TransportConfiguration.Encoding.DER));
+        assertThrows(InvalidInputException.class,
+                () -> TransportConfiguration.TransportInput.file(Path.of("key.der"), null));
+    }
+
+    @Test
+    void clientIdentityConsumesItsPrivateKeyInputAndRevocationListsRemainMemoryOnly() {
+        TransportConfiguration.TransportInput certificate = TransportConfiguration.TransportInput.memory(
+                new byte[] {1}, TransportConfiguration.Encoding.PEM);
+        TransportConfiguration.TransportInput privateKey = TransportConfiguration.TransportInput.memory(
+                new byte[] {2}, TransportConfiguration.Encoding.DER);
+        TransportConfiguration.Builder builder = TransportConfiguration.builder()
+                .clientIdentity(List.of(certificate), privateKey);
+
+        assertThrows(InvalidInputException.class,
+                () -> builder.clientIdentity(List.of(certificate), privateKey));
+
+        TransportConfiguration.TransportInput crlFile = TransportConfiguration.TransportInput.file(
+                Path.of("revocation-list.pem"), TransportConfiguration.Encoding.PEM);
+        assertThrows(InvalidInputException.class, () -> builder.revocationLists(List.of(crlFile)));
     }
 
     @Test
