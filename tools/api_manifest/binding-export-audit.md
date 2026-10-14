@@ -55,9 +55,12 @@ and are covered by `bindings/python/tests/test_client.py` tests
 `test_secret_bearing_client_records_redact_repr` and
 `test_endpoint_direct_constructor_enforces_text_shape_and_repr_redaction`.
 Public constructors inherited from package-private bases are still observed
-and must be reconciled. In particular, observing an inherited raw-handle
-constructor does not approve it as a product construction path; it remains a
-separate ownership/security review item until resolved.
+and must be reconciled. Observing an inherited raw-handle constructor does not
+approve it as a product construction path. At the current T076 checkpoint,
+native wrapper constructors require a private identity token supplied by the
+internal handle factory; calls that try to adopt a raw CFFI handle directly
+fail before the wrapper is initialized. The exact observed constructor paths
+remain part of the export audit and are not hidden by this runtime fix.
 
 The report is deterministic and omits timestamps and temporary paths. Exit code
 0 from `--check` means every package exactly matches the manifest and every

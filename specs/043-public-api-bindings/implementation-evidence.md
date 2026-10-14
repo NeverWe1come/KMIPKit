@@ -912,3 +912,35 @@ T011, T076, T021, and T024 remain open.
 | Red | `6bf532e9` | `python -B -m unittest tools.api_manifest.tests.test_t076_client_mapping.T076ClientMappingTests.test_python_batch_item_result_constructor_is_an_exact_record_exclusion -v` | Expected failure: `BatchItemResult.__init__` had no exact classification; the test also requires its type and five semantic fields to remain declared. |
 | Green | `42e0a036` | Same focused test; `python -B -m unittest tools.api_manifest.tests.test_t076_client_mapping`; `python -B tools/api_manifest/generate.py --write`; `python -B tools/api_manifest/generate.py --check`; `wsl --exec bash -lc 'cd /mnt/c/Users/ramp1953/.codex/worktrees/0043-t076-client-mapping/KMIPKit && python3 -B -m unittest tools.api_manifest.tests.test_generate'`; `git diff --check` | PASS: focused test; T076 mapping suite 21/21; generator suite 57/57; all 12 generated outputs current. |
 | Refactor | This commit | `python -B tools/api_manifest/audit_binding_exports.py --repo-root . --report specs/043-public-api-bindings/reports/binding-export-report-2026-10-12.json --check`; `python -B tools/api_manifest/generate.py --check`; `git diff --check` | The audit command writes the current snapshot and exits 1 because Python still has 47 missing paths; C and Java remain `matchesManifest=true`. The exact exclusion rationale and partial task status are recorded without changing runtime behavior. |
+
+### T024 Python native-wrapper handle ownership — corrected, inventory open (2026-10-14)
+
+The ownership guard now covers all 29 native-handle wrappers sharing the
+private `NativeHandle` base: `Client`, `Batch`, `BatchResult`; nine TTLV
+handles/views; and seventeen extension-registry/request handles. Before this
+change, the inherited constructor accepted an arbitrary CFFI pointer and each
+wrapper later released it, permitting invalid adoption and duplicate release
+of a live handle. Construction now requires an identity-checked private token
+with no default, checked before subclass initialization; only the private
+`_wrap_owned_handle` factory supplies it. Every production callsite that wraps
+a returned C handle uses that factory. Its keyword forwarding preserves
+`_owner` references for views and child handles. Consuming ABI paths continue
+to use the existing `_take`/`_restore` protocol so preflight failures restore
+the original owner and accepted transfers invalidate the source wrapper.
+
+This guard is applied uniformly to all native wrappers because fixing only
+Client/Batch/BatchResult would leave the same raw-pointer and double-release
+path on TTLV and extension handles. The compatibility cost, if this ruling is
+too broad, is source compatibility for consumers that depended on undocumented
+pointer-taking constructors; review wrapper-constructor compatibility before
+1.0. No C ABI or KMIP runtime behavior changed. The scanner still observes
+these `__init__` paths, so they remain subject to exact manifest accounting.
+The Python inventory remains 540 observed, 415 declarations, 78 exact
+exclusions, and 47 missing classifications; C and Java remain exact. T011,
+T076, T021, and T024 remain open.
+
+| Phase | Commit | Command | Result |
+|---|---|---|---|
+| Red | `2218378d` | `uv run --offline --directory bindings/python --with-requirements requirements-coverage.txt --with-editable . python -m pytest tests/test_client.py::test_public_native_handle_wrappers_reject_direct_cffi_handle_adoption tests/test_client.py::test_live_batch_handle_cannot_be_adopted_by_a_second_wrapper -q` | Expected failure: both tests reported `DID NOT RAISE InvalidInputError`, proving public wrapper construction accepted arbitrary and duplicate Batch handles. |
+| Green | `bb081faa` | `uv run --offline --directory bindings/python --with-requirements requirements-coverage.txt --with-editable . python -m pytest tests/test_client.py tests/test_handle_ownership.py -q`; `uv run --offline --directory bindings/python --with-requirements requirements-coverage.txt --with-editable . python -m pytest -q`; `git diff --check` | PASS: focused lifecycle/client tests 100/100; Python package suite 166/166; direct adoption, invalid token/null, duplicate Batch, view-owner retention, and add_item/execute transfer/restore tests pass. |
+| Refactor | This commit | `python -B tools/api_manifest/audit_binding_exports.py --repo-root . --report specs/043-public-api-bindings/reports/binding-export-report-2026-10-12.json --check`; `python -B tools/api_manifest/generate.py --check`; `git diff --check` | The audit writes the refreshed partial snapshot and exits 1 because Python retains 47 missing classifications; C/Java match exactly and all scanner issues/kind mismatches remain zero. The task checkpoint and audit guide describe the fixed ownership guard without marking parity complete. |
