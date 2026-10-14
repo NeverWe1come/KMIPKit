@@ -84,7 +84,7 @@ The Python 3.12 tests validate every currently available Python consumer link in
 | Green | `76841807` | Same focused command; `git diff --check` | PASS: 16 tests. The fixture maps the TTLV case to the new Python consumer; T077 remains blocked. |
 | Refactor | `c4b69988` | Same focused command; `git diff --check` | PASS: 16 tests. Extracted fixture structure construction, made Maturin selection prefer the active project environment, and clarified that the test inspects a built wheel. |
 
-Independent review approved the corrected Red, Green, and Refactor evidence. Root reran the Python 3.12 focused suite after Green and Refactor; both runs passed 16/16. This task adds tests and fixture evidence only; it changes no runtime or generated code. T024's broader facade parity remains open.
+Independent review approved the corrected Red, Green, and Refactor evidence. Root reran the Python 3.12 focused suite after Green and Refactor; both runs passed 16/16. The complete Python test suite then passed 209 tests. This task adds tests and fixture evidence only; it changes no runtime or generated code. T024's broader facade parity remains open.
 
 ## T002, T006, T007, and T068 — Release inventory and owner resolution
 
