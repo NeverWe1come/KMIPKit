@@ -1,6 +1,7 @@
 package org.kmipkit.extensions;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -157,6 +158,29 @@ final class TransportConfigurationBoundaryTest {
         TransportConfiguration.TransportInput crlFile = TransportConfiguration.TransportInput.file(
                 Path.of("revocation-list.pem"), TransportConfiguration.Encoding.PEM);
         assertThrows(InvalidInputException.class, () -> builder.revocationLists(List.of(crlFile)));
+    }
+
+    @Test
+    void closingUnbuiltBuilderZeroizesItsOwnedPrivateKeyCopy() throws Exception {
+        byte[] marker = {0x31, 0x42, 0x53};
+        TransportConfiguration.TransportInput privateKey = TransportConfiguration.TransportInput.memory(
+                marker, TransportConfiguration.Encoding.DER);
+        TransportConfiguration.Builder builder = TransportConfiguration.builder()
+                .clientIdentity(
+                        List.of(TransportConfiguration.TransportInput.memory(
+                                new byte[] {1}, TransportConfiguration.Encoding.PEM)),
+                        privateKey);
+        java.lang.reflect.Field privateKeyField = builder.getClass().getDeclaredField("privateKey");
+        privateKeyField.setAccessible(true);
+        Object ownedInput = privateKeyField.get(builder);
+        java.lang.reflect.Field dataField = ownedInput.getClass().getDeclaredField("data");
+        dataField.setAccessible(true);
+        byte[] ownedCopy = (byte[]) dataField.get(ownedInput);
+
+        assertArrayEquals(marker, ownedCopy);
+        builder.close();
+        assertArrayEquals(new byte[marker.length], ownedCopy);
+        assertThrows(InvalidInputException.class, builder::build);
     }
 
     @Test
