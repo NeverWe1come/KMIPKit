@@ -1725,18 +1725,24 @@ project does not configure it.
 ## T028 CI corrections after run 38574059436
 
 Run `38574059436` on head `f5c24ec8b94660fa0d110629dc3c36e955f1c35a` exposed
-two independent gate failures. The Ubuntu and macOS Python packaged-consumer
-jobs queried `sysconfig.get_path("purelib")` with Python isolated mode (`-I`),
-which selected the interpreter's global package directory instead of the
-consumer virtual environment. The smoke helper then could not find the
-installed wheel's `_native_ffi` directory. A focused regression test first
-failed against that behavior, then passed after removing `-I` only from this
-configuration query; the actual package probes remain isolated with `-I`.
+Python packaged-consumer failures on Ubuntu and macOS. The first diagnosis
+incorrectly attributed the global package path to Python isolated mode. The
+initial test/fix (`6581ddcc`/`4469d3d5`) encoded that mistaken diagnosis by
+removing `-I` from the `sysconfig` query; it did not fix the underlying path
+selection. Run `38576144875` reproduced the Ubuntu failure. Its log showed
+`main()` had first called `Path.resolve()` on the venv's `bin/python` symlink,
+turning it into `/usr/bin/python3.12`; `sysconfig` then correctly returned the
+system interpreter's global package directory. The correction keeps the
+lexical absolute path with `Path.absolute()`, which preserves the virtual
+environment prefix, and restores `-I` for the configuration query and package
+probes.
 
 | Phase | Commit | Command | Result |
 |---|---|---|---|
-| Red | `6581ddcc` | `python -m unittest scripts.tests.test_native_package_smoke -v` before the helper fix | Expected failure: the helper selected the simulated global `purelib`, not the consumer venv path. |
-| Green | `4469d3d5` | `python -m unittest scripts.tests.test_native_package_smoke -v` | PASS: the helper resolves the consumer venv's `site-packages/kmipkit/_native_ffi`. |
+| Initial Red | `6581ddcc` | `python -m unittest scripts.tests.test_native_package_smoke -v` before the first attempted fix | Expected failure for the simulated `-I` behavior; this test did not reproduce symlink resolution and was superseded. |
+| Initial attempted Green | `4469d3d5` | `python -m unittest scripts.tests.test_native_package_smoke -v` | PASS locally, but CI run `38576144875` showed this did not fix the actual symlink-resolution failure. |
+| Symlink Red | `74eb2677` | `python -m unittest scripts.tests.test_native_package_smoke -v` before preserving the path | Expected failure: `main()` passed a simulated system interpreter path instead of the consumer venv executable. |
+| Symlink Green | `2308f3bc` | `python -m unittest scripts.tests.test_native_package_smoke -v` | PASS: `main()` preserves the venv executable path while keeping isolated-mode checks enabled. |
 
 The same run's dependency-policy job refreshed RustSec and rejected pinned
 `rustls 0.23.45` for [RUSTSEC-2026-0346](https://github.com/RustSec/advisory-db/blob/main/crates/rustls/RUSTSEC-2026-0346.md)
@@ -1755,7 +1761,9 @@ and confirms both lockfiles remain unchanged by the policy check itself.
 | Rust transport | `cargo +1.94 test --locked -p kmipkit-transport --all-features` | PASS: 136 unit tests, 6 delivery-state tests, 1 dependency-policy test, 88 HTTPS tests, and 5 doctests. |
 | Dependency policy | `pwsh -NoProfile -File scripts/Test-DependencyPolicy.ps1` | PASS: current RustSec database, no new exception, lockfile hashes unchanged. |
 
-The failures and fixes above are recorded as CI evidence; they do not establish
-T028 acceptance. T028 remains open until a new run on the corrected pushed head
-passes the required Ubuntu, Windows, and macOS packaged-consumer jobs and the
-full PR gate.
+Run `38576144875` passed dependency policy, but failed the Ubuntu Python
+packaged-consumer smoke for the symlink-resolution defect described above; its
+remaining required matrix was still running when this evidence was written.
+These corrections do not establish T028 acceptance. T028 remains open until a
+new run on the corrected pushed head passes the required Ubuntu, Windows, and
+macOS packaged-consumer jobs and the full PR gate.
