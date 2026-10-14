@@ -962,3 +962,24 @@ types and their blocked construction operations remain blocked.
 | Red | `132a3e4f` | `python -B -m unittest tools.api_manifest.tests.test_t076_client_mapping.T076ClientMappingTests.test_python_native_handle_initializers_are_exact_internal_factory_exclusions -v` | Expected failure: all 29 observed native-wrapper `.__init__` paths lacked exact exclusions; the test also protects wrapper type rows and representative public factories from being hidden or promoted. |
 | Green | `cf256253` | `python -B -m unittest tools.api_manifest.tests.test_t076_client_mapping -v`; `python -B tools/api_manifest/generate.py --write`; `python -B tools/api_manifest/generate.py --check`; `wsl --exec bash -lc 'cd /mnt/c/Users/ramp1953/.codex/worktrees/0043-t076-client-mapping/KMIPKit && python3 -B -m unittest tools.api_manifest.tests.test_generate'` | PASS: T076 mapping suite 22/22; generator suite 57/57; generation and check verified all 12 outputs. The manifest records exactly 29 new initializer exclusions; no public factory or blocked TTLV view state changed. |
 | Refactor | This commit | `python -B tools/api_manifest/audit_binding_exports.py --repo-root . --report specs/043-public-api-bindings/reports/binding-export-report-2026-10-12.json --check`; `python -B tools/api_manifest/generate.py --check`; `git diff --check` | The pinned audit refreshed the report and exited 1 as expected: C 264 observed/237 declarations/27 exclusions and Java 469/434/35 both match exactly; Python 540 observed/415 declarations/107 exclusions leaves 18 missing. Scanners are complete with no stale paths, kind mismatches, or issues. The remaining 18 are six inherited context-manager methods, `TrustSource`, nine exception constructors, `ClientExecutionError.category`, `ExtensionRegistryLimits.__init__`, and `Version.__init__`. T011, T076, T021, and T024 remain open. |
+
+### Python final shared-export classification (2026-10-14)
+
+The last 18 observed Python package exports are now classified without changing
+runtime behavior: three declarations map `TrustSource`, the operational
+`ExtensionRegistryLimits` constructor, and the stable
+`ClientExecutionError.category`; exact exclusions cover six context-manager
+syntax methods, eight local exception constructors, and the local
+`Version.__init__` snapshot constructor. Each exclusion has its own exact
+`exportName` and approved rationale. This completes the structural scanner
+inventory only. It does not settle semantic equivalence questions in the C
+transport field mappings, including timeout `DEFAULT`, all allowed PEM/DER/file
+input variants, the reused `transport_input.data` carrier, slice counts, and
+the RAW_TLS-only `endpoint_port` condition. Those remain review gates; no task
+checkbox was changed.
+
+| Phase | Commit | Command | Result |
+|---|---|---|---|
+| Red | `cf358e53` | `python -B -m unittest tools.api_manifest.tests.test_t076_client_mapping.T076ClientMappingTests.test_remaining_python_exports_are_mapped_or_exactly_excluded -v` | Expected failure listed the exact 18 unclassified exports across context-manager methods, `TrustSource`, exception constructors, `ClientExecutionError.category`, and the two dataclass constructors. |
+| Green | `8aba7d66` | `python -B -m unittest tools.api_manifest.tests.test_t076_client_mapping -v`; `wsl --exec bash -lc 'cd /mnt/c/Users/ramp1953/.codex/worktrees/0043-t076-client-mapping/KMIPKit && python3 -B -m unittest tools.api_manifest.tests.test_generate'`; `python -B tools/api_manifest/generate.py --check`; `git diff --check` | PASS: T076 mapping suite 23/23; generator suite 57/57; all 12 generated outputs current. |
+| Refactor | This commit | `python -B tools/api_manifest/audit_binding_exports.py --repo-root . --report specs/043-public-api-bindings/reports/binding-export-report-2026-10-12.json --check`; `python -B tools/api_manifest/generate.py --check`; `git diff --check` | PASS: report refreshed; C 264 observed (237 declarations, 27 exclusions), Java 469 (434, 35), and Python 540 (418, 122) all have `matchesManifest=true`, complete scans, and zero missing/stale/kind-mismatched/issue paths. Semantic field review and required parity/CI remain open, so T011, T076, T021, and T024 remain open. |

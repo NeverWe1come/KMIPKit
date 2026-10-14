@@ -111,28 +111,31 @@ evidence of an open gate and does not close T011.
 ## Current reconciliation status (2026-10-14)
 
 The checked-in report was regenerated with the pinned audit tool after the
-Python native-wrapper initializer reconciliation (`cf256253`). The scanner is complete for all
-three packages. C and Java match the manifest exactly; Python still has
-unclassified exports, so this snapshot is not a passing export gate:
+final Python export reconciliation (`8aba7d66`). The scanner is complete for
+all three packages, and every observed export has an exact declaration or
+approved exact exclusion:
 
 | Package | Scanner complete | Observed | Manifest declarations | Exact matches | Exact exclusions | Missing | Stale | Kind mismatches | Issues | `matchesManifest` |
 | --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | --- |
 | C | yes | 264 | 237 | 237 | 27 | 0 | 0 | 0 | 0 | yes |
 | Java | yes | 469 | 434 | 434 | 35 | 0 | 0 | 0 | 0 | yes |
-| Python | yes | 540 | 415 | 415 | 107 | 18 | 0 | 0 | 0 | no |
+| Python | yes | 540 | 418 | 418 | 122 | 0 | 0 | 0 | 0 | yes |
 
 The C inventory's 27 paths outside the 237 declarations and Java's 35 paths
-outside the 434 declarations have exact approved exclusions. Java's transport
-builder, encoding, and timeout exports now have exact manifest classifications.
-Python's 107 exact exclusions and 415 declarations account for 522 paths; the
-18 remaining gaps are six inherited context-manager methods, `TrustSource`,
-nine exception constructors, `ClientExecutionError.category`, and the
-`ExtensionRegistryLimits` and `Version` dataclass constructors. The 29 native
-wrapper initializers are exact exclusions because a mandatory private identity
-token restricts them to the internal handle factory; wrapper types and public
-factories remain separately reconciled. The audit `--check` command writes the
-current report and exits 1 because Python has 18 missing classifications;
-that is the expected gate result, not a scanner or report-generation failure.
-Regenerate the report after each reconciliation batch. T011, T076, T021, and
-T024 remain open until every observed export is mapped or has an exact approved
-exclusion and required parity/CI evidence is complete.
+outside the 434 declarations have exact approved exclusions. Python's 418
+declarations and 122 exact exclusions account for all 540 observed paths. The
+last batch mapped `TrustSource`, `ExtensionRegistryLimits.__init__`, and
+`ClientExecutionError.category`; it exactly excluded six context-manager
+methods, eight exception constructors, and `Version.__init__`. The 29 native
+wrapper initializers remain exact exclusions because a mandatory private
+identity token restricts them to the internal handle factory; wrapper types
+and public factories remain separately reconciled.
+
+This structural inventory pass does not establish semantic equivalence of all
+shared transport mappings. Review remains open for timeout `DEFAULT`, the
+complete PEM/DER/file coverage of certificate and trust inputs, PEM/DER CRLs,
+the context-dependent `transport_input.data` carrier and encoding/source
+mapping, exact treatment of slice counts, and the RAW_TLS-only condition on
+`endpoint_port`. The export audit now exits 0, but T011, T076, T021, and T024
+remain open until those semantic/parity questions and required CI evidence are
+resolved. Regenerate the report after each reconciliation batch.
