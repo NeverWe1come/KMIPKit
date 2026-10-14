@@ -59,8 +59,10 @@ and must be reconciled. Observing an inherited raw-handle constructor does not
 approve it as a product construction path. At the current T076 checkpoint,
 native wrapper constructors require a private identity token supplied by the
 internal handle factory; calls that try to adopt a raw CFFI handle directly
-fail before the wrapper is initialized. The exact observed constructor paths
-remain part of the export audit and are not hidden by this runtime fix.
+fail before the wrapper is initialized. The 29 exact observed `.__init__`
+paths are individually excluded as internal ownership plumbing; each wrapper
+type and public construction/factory operation remains separately inventoried
+and mapped or explicitly blocked.
 
 The report is deterministic and omits timestamps and temporary paths. Exit code
 0 from `--check` means every package exactly matches the manifest and every
@@ -109,7 +111,7 @@ evidence of an open gate and does not close T011.
 ## Current reconciliation status (2026-10-14)
 
 The checked-in report was regenerated with the pinned audit tool after the
-transport facade mapping update (`d576d04f`). The scanner is complete for all
+Python native-wrapper initializer reconciliation (`cf256253`). The scanner is complete for all
 three packages. C and Java match the manifest exactly; Python still has
 unclassified exports, so this snapshot is not a passing export gate:
 
@@ -117,19 +119,20 @@ unclassified exports, so this snapshot is not a passing export gate:
 | --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | --- |
 | C | yes | 264 | 237 | 237 | 27 | 0 | 0 | 0 | 0 | yes |
 | Java | yes | 469 | 434 | 434 | 35 | 0 | 0 | 0 | 0 | yes |
-| Python | yes | 540 | 415 | 415 | 78 | 47 | 0 | 0 | 0 | no |
+| Python | yes | 540 | 415 | 415 | 107 | 18 | 0 | 0 | 0 | no |
 
 The C inventory's 27 paths outside the 237 declarations and Java's 35 paths
 outside the 434 declarations have exact approved exclusions. Java's transport
 builder, encoding, and timeout exports now have exact manifest classifications.
-Python's 78 exact exclusions and 415 declarations account for 493 paths; the
-47 remaining gaps include value and dataclass constructors/members, enum
-members, error constructors/category exports, context methods, and inherited
-handle constructors. Resolve value construction separately from wrappers that
-could adopt a native handle; the latter must not permit arbitrary or duplicate
-ownership. The audit `--check` command writes the current report and exits 1
-because Python has 47 missing classifications; that is the expected gate
-result, not a scanner or report-generation failure. Regenerate the report after
-each reconciliation batch. T011, T076, T021, and T024 remain open until every
-observed export is mapped or has an exact approved exclusion and required
-parity/CI evidence is complete.
+Python's 107 exact exclusions and 415 declarations account for 522 paths; the
+18 remaining gaps are six inherited context-manager methods, `TrustSource`,
+nine exception constructors, `ClientExecutionError.category`, and the
+`ExtensionRegistryLimits` and `Version` dataclass constructors. The 29 native
+wrapper initializers are exact exclusions because a mandatory private identity
+token restricts them to the internal handle factory; wrapper types and public
+factories remain separately reconciled. The audit `--check` command writes the
+current report and exits 1 because Python has 18 missing classifications;
+that is the expected gate result, not a scanner or report-generation failure.
+Regenerate the report after each reconciliation batch. T011, T076, T021, and
+T024 remain open until every observed export is mapped or has an exact approved
+exclusion and required parity/CI evidence is complete.

@@ -944,3 +944,21 @@ T076, T021, and T024 remain open.
 | Red | `2218378d` | `uv run --offline --directory bindings/python --with-requirements requirements-coverage.txt --with-editable . python -m pytest tests/test_client.py::test_public_native_handle_wrappers_reject_direct_cffi_handle_adoption tests/test_client.py::test_live_batch_handle_cannot_be_adopted_by_a_second_wrapper -q` | Expected failure: both tests reported `DID NOT RAISE InvalidInputError`, proving public wrapper construction accepted arbitrary and duplicate Batch handles. |
 | Green | `bb081faa` | `uv run --offline --directory bindings/python --with-requirements requirements-coverage.txt --with-editable . python -m pytest tests/test_client.py tests/test_handle_ownership.py -q`; `uv run --offline --directory bindings/python --with-requirements requirements-coverage.txt --with-editable . python -m pytest -q`; `git diff --check` | PASS: focused lifecycle/client tests 100/100; Python package suite 166/166; direct adoption, invalid token/null, duplicate Batch, view-owner retention, and add_item/execute transfer/restore tests pass. |
 | Refactor | This commit | `python -B tools/api_manifest/audit_binding_exports.py --repo-root . --report specs/043-public-api-bindings/reports/binding-export-report-2026-10-12.json --check`; `python -B tools/api_manifest/generate.py --check`; `git diff --check` | The audit writes the refreshed partial snapshot and exits 1 because Python retains 47 missing classifications; C/Java match exactly and all scanner issues/kind mismatches remain zero. The task checkpoint and audit guide describe the fixed ownership guard without marking parity complete. |
+
+### T024 Python native-wrapper initializer inventory — exact exclusions (2026-10-14)
+
+The 29 Python `NativeHandle` subclass `.__init__` paths are now classified as
+exact exclusions. Runtime Red/Green evidence above proves that a wrapper
+constructor requires the private identity token, rejects direct raw-handle
+adoption before subclass initialization, and can only be reached through the
+private `_wrap_owned_handle` factory used by production callsites. This
+exclusion covers only each exact initializer path; all wrapper type records
+remain inventoried, and public constructors/factories remain declared and
+mapped or blocked according to their existing readiness. The two TTLV view
+types and their blocked construction operations remain blocked.
+
+| Phase | Commit | Command | Result |
+|---|---|---|---|
+| Red | `132a3e4f` | `python -B -m unittest tools.api_manifest.tests.test_t076_client_mapping.T076ClientMappingTests.test_python_native_handle_initializers_are_exact_internal_factory_exclusions -v` | Expected failure: all 29 observed native-wrapper `.__init__` paths lacked exact exclusions; the test also protects wrapper type rows and representative public factories from being hidden or promoted. |
+| Green | `cf256253` | `python -B -m unittest tools.api_manifest.tests.test_t076_client_mapping -v`; `python -B tools/api_manifest/generate.py --write`; `python -B tools/api_manifest/generate.py --check`; `wsl --exec bash -lc 'cd /mnt/c/Users/ramp1953/.codex/worktrees/0043-t076-client-mapping/KMIPKit && python3 -B -m unittest tools.api_manifest.tests.test_generate'` | PASS: T076 mapping suite 22/22; generator suite 57/57; generation and check verified all 12 outputs. The manifest records exactly 29 new initializer exclusions; no public factory or blocked TTLV view state changed. |
+| Refactor | This commit | `python -B tools/api_manifest/audit_binding_exports.py --repo-root . --report specs/043-public-api-bindings/reports/binding-export-report-2026-10-12.json --check`; `python -B tools/api_manifest/generate.py --check`; `git diff --check` | The pinned audit refreshed the report and exited 1 as expected: C 264 observed/237 declarations/27 exclusions and Java 469/434/35 both match exactly; Python 540 observed/415 declarations/107 exclusions leaves 18 missing. Scanners are complete with no stale paths, kind mismatches, or issues. The remaining 18 are six inherited context-manager methods, `TrustSource`, nine exception constructors, `ClientExecutionError.category`, `ExtensionRegistryLimits.__init__`, and `Version.__init__`. T011, T076, T021, and T024 remain open. |
