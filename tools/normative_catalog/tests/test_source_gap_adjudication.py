@@ -63,20 +63,22 @@ class SourceGapAdjudicationTests(unittest.TestCase):
         client_atom, server_atom = review["source_obligations"][4:6]
         requirement = requirements[requirement_id]
 
-        self.assertEqual(gap["html_line_range"], [13894, 13901])
+        self.assertEqual(gap["html_line_range"], [13896, 13897])
         self.assertEqual(gap["source_force"], "lowercase_may_not_formal_keyword")
         self.assertEqual(gap["source_keywords"], [])
         self.assertEqual(
             gap["source_excerpt"],
-            "Clients may request via supplying a non-default Key Format Value attribute on operations that create a Managed Object,",
+            "object type and algorithm. Clients may request via supplying a non-default Key Format Value attribute on operations that create a Managed Object, and the",
         )
         self.assertEqual(gap["scope_disposition"], "client_1_0")
         self.assertEqual(gap["candidate_requirement_id"], requirement_id)
-        self.assertEqual(gap["status"], "client_capability_traced_to_existing_stable_label")
+        self.assertEqual(gap["reused_requirement_id"], requirement_id)
+        self.assertEqual(gap["status"], "source_obligation_covered_by_existing_stable_label")
         self.assertIsNone(gap["proposed_requirement_id"])
-        self.assertEqual(review["expected_client_requirement_ids"], [requirement_id])
+        self.assertEqual(review["expected_client_requirement_ids"], [])
         self.assertEqual(client_atom["actor"], "client")
-        self.assertEqual(client_atom["candidate_requirement_id"], requirement_id)
+        self.assertIsNone(client_atom["candidate_requirement_id"])
+        self.assertEqual(client_atom["source_gap_id"], gap["gap_id"])
         self.assertEqual(client_atom["source_keyword"], "may (lowercase; not a §1.2 formal keyword)")
         self.assertEqual(server_atom["actor"], "server")
         self.assertEqual(server_atom["source_keyword"], "SHALL")
