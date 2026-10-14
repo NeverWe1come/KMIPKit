@@ -10,10 +10,12 @@ zeroized by KMIPKit.
 
 from __future__ import annotations
 
+import ipaddress
 from dataclasses import dataclass, field
 from enum import IntEnum
 from pathlib import Path
 from typing import Any, Self
+from urllib.parse import urlsplit
 
 from . import errors, extensions, ttlv
 from ._client_ffi import ffi, lib
@@ -90,7 +92,7 @@ class BatchOutcome(IntEnum):
 
 @dataclass(frozen=True, slots=True)
 class Endpoint:
-    """A raw TLS host/port or HTTPS URI, with optional explicit routing values."""
+    """A raw TLS host/port or HTTPS URI, with an optional TLS name for IP hosts."""
 
     kind: EndpointKind
     address: str = field(repr=False)
@@ -107,6 +109,10 @@ class Endpoint:
             object.__setattr__(self, "port", port)
             if self.tls_server_name is not None:
                 _nonempty_text(self.tls_server_name)
+                try:
+                    ipaddress.ip_address(self.address.strip("[]"))
+                except ValueError:
+                    errors.raise_for_status(4)
             if self.target_uri is not None:
                 errors.raise_for_status(4)
             return
@@ -117,6 +123,13 @@ class Endpoint:
                 errors.raise_for_status(4)
             if self.tls_server_name is not None:
                 _nonempty_text(self.tls_server_name)
+                try:
+                    host = urlsplit(self.address).hostname
+                    if host is None:
+                        errors.raise_for_status(4)
+                    ipaddress.ip_address(host.strip("[]"))
+                except ValueError:
+                    errors.raise_for_status(4)
             if self.target_uri is not None:
                 _nonempty_text(self.target_uri)
             return
@@ -126,7 +139,7 @@ class Endpoint:
     def raw_tls(
         cls, host: str, port: int, *, tls_server_name: str | None = None
     ) -> Self:
-        """Create a raw TTLV-over-TLS endpoint."""
+        """Create a raw TLS endpoint, optionally overriding the name for an IP host."""
         validated = Endpoint(EndpointKind.RAW_TLS, host, port, tls_server_name)
         return cls(
             validated.kind,

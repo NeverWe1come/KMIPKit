@@ -1366,3 +1366,22 @@ surviving bypass or regression. The review was static and did not inspect JNI
 temporary buffers; this change does not alter that boundary.
 The T076 PR remains a draft pending complete CI on the updated PR head and the
 remaining T076 exit gates.
+
+### T076 Python TLS-name override validation correction (2026-10-14)
+
+Python endpoint validation now matches the Rust transport contract for an
+explicit TLS verification-name override: the endpoint host must be an IP
+literal. DNS endpoints remain valid without an override, and HTTPS keeps the
+verification name separate from its URI authority. The transport-record
+fixture now checks that absent optional values produce no ABI flags.
+
+| Phase | Commit | Command | Result |
+|---|---|---|---|
+| Red | `89781d20` | `uv run --offline --project bindings/python --frozen pytest -q bindings/python/tests/test_client.py::test_endpoint_rejects_tls_name_override_for_dns_host` | Expected failure in both RAW_TLS and HTTPS cases: Python accepted the DNS override while Rust rejects it. |
+| Green | This commit | `uv run --offline --project bindings/python --frozen pytest -q bindings/python/tests`; `uv run --offline --project bindings/python --frozen --with-requirements bindings/python/requirements-coverage.txt pytest -q bindings/python/tests --cov=kmipkit --cov-config=bindings/python/pyproject.toml --cov-report=term-missing`; `uv run --offline --project bindings/python --frozen python bindings/python/examples/vendor_extension_registry.py` | PASS: 186 Python tests; 98.52% package coverage against the 85% gate; vendor extension example executes. |
+| Refactor | Pending | Pending | Pending. |
+
+GitHub run `38532790231` was still executing against the earlier head
+`6f4f1ffa` while this correction was prepared; its Python jobs failed before
+the fix. The PR stays in draft until CI completes on the corrected head and
+all T076 exit gates are met.

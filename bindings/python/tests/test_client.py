@@ -247,9 +247,7 @@ def _opaque(c_type: str) -> tuple[object, object]:
 
 def _transport_configuration(**overrides: object) -> client.TransportConfig:
     values: dict[str, object] = {
-        "endpoint": client.Endpoint.raw_tls(
-            "kms.example.test", 5696, tls_server_name="kms.example.test"
-        ),
+        "endpoint": client.Endpoint.raw_tls("kms.example.test", 5696),
         "client_certificates": (
             client.TransportInput.memory(b"client-cert", client.CredentialEncoding.PEM),
         ),
@@ -278,7 +276,7 @@ def test_transport_record_serializes_memory_files_and_timeout_fields() -> None:
     assert record.abi_version == 1
     assert record.endpoint_kind == int(client.EndpointKind.RAW_TLS)
     assert record.trust_kind == int(client.TrustKind.CERTIFICATES)
-    assert record.flags == 1
+    assert record.flags == 0
     assert client.ffi.string(record.endpoint.data, record.endpoint.length) == b"kms.example.test"
     assert record.endpoint_port == 5696
     assert record.client_certificate_count == 1
@@ -368,6 +366,15 @@ def test_https_tls_server_name_is_forwarded_separately_from_authority() -> None:
         record.tls_server_name.data, record.tls_server_name.length
     ) == b"kms.example.test"
     assert client.ffi.string(record.target_uri.data, record.target_uri.length) == b"/kmip"
+
+
+def test_raw_tls_ip_accepts_an_explicit_tls_server_name() -> None:
+    endpoint = client.Endpoint.raw_tls(
+        "192.0.2.10", 5696, tls_server_name="kms.example.test"
+    )
+
+    assert endpoint.address == "192.0.2.10"
+    assert endpoint.tls_server_name == "kms.example.test"
 
 
 def test_transport_record_supports_https_platform_trust_and_empty_optional_arrays() -> None:
@@ -1615,7 +1622,7 @@ def test_transport_record_handles_empty_optional_spans_from_absent_file_inputs()
         trust=client.TrustSource.platform(),
     )
     record, _owners = client._transport_record(configuration)
-    assert record.tls_server_name.length > 0
+    assert record.tls_server_name.length == 0
     assert record.target_uri.data == client.ffi.NULL
     assert record.target_uri.length == 0
 
