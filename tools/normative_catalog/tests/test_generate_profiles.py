@@ -146,6 +146,30 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
             "Response Too Large Maximum Response Size has been exceeded",
         )
 
+    def test_response_too_large_table_is_cited_under_section_11_46(self) -> None:
+        """Table 478 belongs to §11.46 Result Reason Enumeration, not §13.1.4."""
+        documents = (
+            ROOT / "specs" / "010-profile-conformance" / "research.md",
+            ROOT / "specs" / "010-profile-conformance" / "implementation-evidence.md",
+        )
+        for path in documents:
+            with self.subTest(path=path.name):
+                document = path.read_text(encoding="utf-8")
+                self.assertIn("§11.46 Table 478", document)
+                self.assertNotIn("§13.1.4 Table 478", document)
+
+        spec_lines = (
+            ROOT / "specification" / "oasis" / "kmip-2.1" / "upstream" / "kmip-spec-v2.1-os.html"
+        ).read_text(encoding="cp1252").splitlines()
+        self.assertEqual(
+            _normalized_html_source_span(spec_lines, [55918, 55920]),
+            "11.46 Result Reason Enumeration",
+        )
+        self.assertEqual(
+            _normalized_html_source_span(spec_lines, [56921, 56921]),
+            "Table 478: Result Reason Encoding Descriptions",
+        )
+
     def test_https_client_inherits_baseline_basic_authentication_root(self) -> None:
         """Profiles v2.1 §§6.4 and 6.1 make §3.1 inherited, not direct."""
         catalog_path = ROOT / "specification" / "catalog" / "kmip-2.1.json"
