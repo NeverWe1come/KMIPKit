@@ -1038,6 +1038,168 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
         locate_007_source = _normalized_html_source_span(spec_lines, [29206, 29210])
         self.assertIn("Linked Object Identifier value is specified without the Link Type value", locate_007_source)
 
+    def test_baseline_message_data_structures_condition_has_exact_reviewed_batch_count_crosswalk(self) -> None:
+        """Batch Count maps to its reviewed §9.5 client rules while item 5 stays pending."""
+        catalog = json.loads((ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8"))
+        oracle = json.loads(
+            (ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json")
+            .read_text(encoding="utf-8")
+        )
+        profiles_path = "specification/oasis/kmip-2.1/upstream/kmip-profiles-v2.1-os.html"
+        spec_path = "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
+        inventory = next(
+            item
+            for item in oracle["provenance"]["profile_condition_inventories"]
+            if item["source_id"] == "KMIPKIT-SRC-profiles" and item["section"] == "5.1.1"
+        )
+        condition = next(
+            item for item in inventory["conditions"] if item["condition_id"] == "KMIPKIT-PROF-COND-5.1.1-005"
+        )
+        expected_requirement_ids = [
+            "KMIPKIT-REQ-SPEC-9.5-001-001",
+            "KMIPKIT-REQ-SPEC-9.5-001-002",
+        ]
+        expected_clause_id = "KMIPKIT-CLAUSE-SPEC-9.5-001"
+        expected_element_id = "KMIPKIT-ELEM-MESSAGE-FIELD-9-5-BATCH-COUNT"
+        expected_mapping = {
+            "item": "Batch Count",
+            "element_id": expected_element_id,
+            "requirement_ids": expected_requirement_ids,
+            "source_clause_ids": [expected_clause_id],
+            "mapping_status": "reviewed",
+        }
+
+        self.assertEqual(condition["item"], 5)
+        self.assertEqual(condition["html_line_range"], [4575, 4613])
+        self.assertEqual(condition["condition_kind"], "mandatory_profile_condition")
+        self.assertEqual(condition["source_text"], "Supports the following Message Data Structures [KMIP-SPEC]")
+        self.assertEqual(
+            condition["supported_items"],
+            [
+                "Asynchronous Indicator",
+                "Batch Count",
+                "Batch Error Continuation Option",
+                "Batch Item",
+                "Batch Order Option",
+                "Maximum Response Size",
+                "Message Extension",
+                "Operation",
+                "Protocol Version",
+                "Result Reason",
+                "Result Status",
+                "Server Correlation Value",
+                "Time Stamp",
+                "Unique Batch Item ID",
+            ],
+        )
+        self.assertEqual(condition.get("supported_item_mappings"), [expected_mapping])
+        self.assertIsNone(condition["requirement_id"])
+        self.assertEqual(condition["scope_disposition"], "profile_conditional")
+        self.assertEqual(condition["mapping_status"], "pending_t002_crosswalk")
+
+        profiles_lines = (ROOT / profiles_path).read_text(encoding="cp1252").splitlines()
+        self.assertEqual(
+            _normalized_html_source_span(profiles_lines, condition["html_line_range"]),
+            "Supports the following Message Data Structures [KMIP-SPEC]: Asynchronous Indicator "
+            "Batch Count Batch Error Continuation Option Batch Item Batch Order Option Maximum "
+            "Response Size Message Extension Operation Protocol Version Result Reason Result Status "
+            "Server Correlation Value Time Stamp Unique Batch Item ID",
+        )
+        spec_lines = (ROOT / spec_path).read_text(encoding="cp1252").splitlines()
+        expected_excerpt = (
+            "This field contains the number of Batch Items in a message and is REQUIRED. If only a single "
+            "operation is being requested, then the batch count SHALL be set to 1. The Message Payload, "
+            "which follows the Message Header, contains one or more batch items."
+        )
+        self.assertEqual(_normalized_html_source_span(spec_lines, [43728, 43731]), expected_excerpt)
+
+        element = next(item for item in catalog["elements"] if item["element_id"] == expected_element_id)
+        self.assertEqual(element["kind"], "message_field")
+        self.assertEqual(element["name"], "Batch Count")
+        self.assertEqual(element["source_refs"], [{"source_id": "KMIPKIT-SRC-spec", "section": "9.5"}])
+        self.assertEqual(element["direction"], "both")
+        self.assertEqual(element["scope_state"], "client_1_0")
+        self.assertEqual(element["requirement_ids"], expected_requirement_ids)
+
+        clause = next(item for item in catalog["source_clauses"] if item["clause_id"] == expected_clause_id)
+        self.assertEqual(clause["source_id"], "KMIPKIT-SRC-spec")
+        self.assertEqual(clause["section"], "9.5")
+        self.assertEqual(clause["locator"], {"ordinal": 1, "block_kind": "paragraph"})
+        self.assertEqual(clause["source_keywords"], ["REQUIRED", "SHALL"])
+        self.assertEqual(clause["disposition"], "requirement")
+        self.assertEqual(clause["requirement_ids"], expected_requirement_ids)
+        self.assertEqual(clause["role"], "client")
+        self.assertEqual(clause["direction"], "client_to_server")
+        self.assertEqual(clause["scope_state"], "client_1_0")
+
+        requirements = {item["requirement_id"]: item for item in catalog["requirements"]}
+        expected_requirements = {
+            "KMIPKIT-REQ-SPEC-9.5-001-001": {
+                "source_keyword": "REQUIRED",
+                "summary": "Set Batch Count to the number of Batch Items in the message.",
+                "condition": None,
+            },
+            "KMIPKIT-REQ-SPEC-9.5-001-002": {
+                "source_keyword": "SHALL",
+                "summary": "Set Batch Count to one for a single requested operation.",
+                "condition": "For one operation.",
+            },
+        }
+        for requirement_id, expected in expected_requirements.items():
+            with self.subTest(requirement_id=requirement_id):
+                requirement = requirements[requirement_id]
+                self.assertEqual(requirement["source_clause_ids"], [expected_clause_id])
+                self.assertEqual(requirement["source_refs"], [{"source_id": "KMIPKIT-SRC-spec", "section": "9.5"}])
+                self.assertEqual(requirement["source_keyword"], expected["source_keyword"])
+                self.assertEqual(requirement["normative_strength"], "mandatory")
+                self.assertEqual(requirement["subject"], "Batch Count")
+                self.assertEqual(requirement["summary"], expected["summary"])
+                self.assertEqual(requirement["role"], "client")
+                self.assertEqual(requirement["direction"], "client_to_server")
+                self.assertEqual(requirement["condition"], expected["condition"])
+                self.assertEqual(requirement["scope_state"], "client_1_0")
+                self.assertEqual(requirement["element_ids"], [
+                    "KMIPKIT-ELEM-MESSAGE-FIELD-8-2-BATCH-COUNT",
+                    "KMIPKIT-ELEM-MESSAGE-FIELD-8-5-BATCH-COUNT",
+                    expected_element_id,
+                ])
+                self.assertEqual(requirement["status"], "verified")
+
+        review = next(
+            item for item in oracle["source_requirement_reviews"] if item["source_clause_id"] == expected_clause_id
+        )
+        self.assertEqual(review["source_path"], spec_path)
+        self.assertEqual(review["source_section"], "9.5")
+        self.assertEqual(review["source_locator"], {"ordinal": 1, "block_kind": "paragraph"})
+        self.assertEqual(review["html_line_range"], [43728, 43731])
+        self.assertEqual(review["source_excerpt"], expected_excerpt)
+        self.assertEqual(review["expected_client_requirement_ids"], expected_requirement_ids)
+        self.assertEqual(
+            review["source_obligations"],
+            [
+                {
+                    "source_order": 1,
+                    "source_text": "This field contains the number of Batch Items in a message and is REQUIRED.",
+                    "source_keyword": "REQUIRED",
+                    "actor": "client",
+                    "direction": "client_to_server",
+                    "condition": "A client request is constructed.",
+                    "scope_disposition": "client_1_0",
+                    "candidate_requirement_id": expected_requirement_ids[0],
+                },
+                {
+                    "source_order": 2,
+                    "source_text": "If only a single operation is being requested, then the batch count SHALL be set to 1.",
+                    "source_keyword": "SHALL",
+                    "actor": "client",
+                    "direction": "client_to_server",
+                    "condition": "Only one operation is requested.",
+                    "scope_disposition": "client_1_0",
+                    "candidate_requirement_id": expected_requirement_ids[1],
+                },
+            ],
+        )
+
     def test_foundry_basic_condition_text_names_its_inheriting_profiles(self) -> None:
         """The catalog and source review describe the same normative inheritance."""
         catalog = json.loads((ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8"))
