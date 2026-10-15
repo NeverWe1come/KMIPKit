@@ -532,7 +532,7 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
                 self.assertEqual(condition["condition_kind"], condition_kind)
                 self.assertIsNone(condition["requirement_id"])
                 self.assertEqual(condition["scope_disposition"], "profile_conditional")
-                expected_mapping_status = "reviewed" if item in (1, 2, 3, 4, 5, 7, 8) else "pending_t002_crosswalk"
+                expected_mapping_status = "reviewed" if item in (1, 2, 3, 4, 5, 6, 7, 8) else "pending_t002_crosswalk"
                 self.assertEqual(condition["mapping_status"], expected_mapping_status)
         self.assertEqual(
             {item["requirement_id"] for item in baseline["conditions"]},
@@ -3236,7 +3236,7 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
         self.assertEqual(condition.get("supported_item_mappings"), expected_mappings)
         self.assertIsNone(condition["requirement_id"])
         self.assertEqual(condition["scope_disposition"], "profile_conditional")
-        self.assertEqual(condition["mapping_status"], "pending_t002_crosswalk")
+        self.assertEqual(condition["mapping_status"], "reviewed")
         server_authentication_clause = next(
             item
             for item in catalog["source_clauses"]
