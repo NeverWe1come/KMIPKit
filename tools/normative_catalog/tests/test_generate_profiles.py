@@ -2,8 +2,8 @@
 
 from __future__ import annotations
 
-import io
 import html
+import io
 import json
 import re
 import shutil
@@ -315,7 +315,6 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
         profiles_html = (
             ROOT / "specification" / "oasis" / "kmip-2.1" / "upstream" / "kmip-profiles-v2.1-os.html"
         ).read_text(encoding="cp1252")
-        normalized_profiles_html = " ".join(profiles_html.split())
         inventory = oracle["provenance"].get("profile_condition_inventories", [])
         baseline = next(
             (
@@ -334,11 +333,12 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
         )
         self.assertEqual(baseline["source_path"], "specification/oasis/kmip-2.1/upstream/kmip-profiles-v2.1-os.html")
         self.assertEqual(baseline["html_line_range"], [4532, 4636])
+        self.assertEqual(baseline["governing_requirement_id"], "KMIPKIT-REQ-PROF-6.1-003")
         self.assertEqual(len(baseline["conditions"]), 8)
 
         expected_conditions = (
-            (1, [4533, 4534], "Supports the conditions required by the KMIP Client Implementation Conformance clauses [KMIP-SPEC]", ()),
-            (2, [4535, 4540], "Supports the following Attribute Data Structures [KMIP-SPEC]", ("Attributes",)),
+            (1, [4533, 4534], "Supports the conditions required by the KMIP Client Implementation Conformance clauses [KMIP-SPEC]", (), "mandatory_profile_condition"),
+            (2, [4535, 4540], "Supports the following Attribute Data Structures [KMIP-SPEC]", ("Attributes",), "mandatory_profile_condition"),
             (
                 3,
                 [4541, 4562],
@@ -347,12 +347,14 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
                     "Activation Date", "Deactivation Date", "Digest", "Initial Date", "Last Change Date",
                     "Object Type", "State", "Unique Identifier",
                 ),
+                "mandatory_profile_condition",
             ),
             (
                 4,
                 [4563, 4574],
                 "Supports the following Client-to-Server Operations [KMIP-SPEC]",
                 ("Get", "Get Attributes", "Locate", "Query"),
+                "mandatory_profile_condition",
             ),
             (
                 5,
@@ -364,19 +366,22 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
                     "Protocol Version", "Result Reason", "Result Status", "Server Correlation Value",
                     "Time Stamp", "Unique Batch Item ID",
                 ),
+                "mandatory_profile_condition",
             ),
             (
                 6,
                 [4614, 4627],
                 "Supports the Message Protocols [KMIP-SPEC]",
                 ("Authentication", "Transport", "TTLV"),
+                "mandatory_profile_condition",
             ),
-            (7, [4628, 4631], "Optionally supports any clause within [KMIP-SPEC] that is not listed above", ()),
+            (7, [4628, 4631], "Optionally supports any clause within [KMIP-SPEC] that is not listed above", (), "optional_profile_capability"),
             (
                 8,
                 [4632, 4635],
-                "Optionally supports extensions outside the scope of this standard that do not contradict any KMIP requirements",
+                "Optionally supports extensions outside the scope of this standard (e.g., vendor extensions, conformance clauses) that do not contradict any KMIP requirements",
                 (),
+                "optional_profile_capability",
             ),
         )
         observed_conditions = tuple(
@@ -385,13 +390,14 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
                 item["html_line_range"],
                 item["source_text"],
                 tuple(item["supported_items"]),
+                item["condition_kind"],
             )
             for item in baseline["conditions"]
         )
         self.assertEqual(observed_conditions, expected_conditions)
 
         source_lines = profiles_html.splitlines()
-        for item, line_range, source_text, supported_items in expected_conditions:
+        for item, line_range, source_text, supported_items, condition_kind in expected_conditions:
             with self.subTest(item=item):
                 condition = baseline["conditions"][item - 1]
                 self.assertEqual(condition["html_line_range"], line_range)
@@ -401,7 +407,7 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
                 for supported_item in supported_items:
                     self.assertIn(supported_item, normalized_span)
                 self.assertEqual(condition["condition_id"], f"KMIPKIT-PROF-COND-5.1.1-{item:03d}")
-                self.assertEqual(condition["governing_requirement_id"], "KMIPKIT-REQ-PROF-6.1-003")
+                self.assertEqual(condition["condition_kind"], condition_kind)
                 self.assertIsNone(condition["requirement_id"])
                 self.assertEqual(condition["scope_disposition"], "profile_conditional")
                 self.assertEqual(condition["mapping_status"], "pending_t002_crosswalk")
