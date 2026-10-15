@@ -90500,7 +90500,7 @@
       },
       "html_line_range": [
         43862,
-        43865
+        43866
       ],
       "source_excerpt": "A Boolean value used in requests where the Batch Count is greater than 1. If True, then batched operations SHALL be executed in the order in which they appear within the request. If False, then the server MAY choose to execute the batched operations in any order. If not specified, then True is assumed.",
       "source_obligations": [
