@@ -42,7 +42,7 @@ final class SharedCapabilityParityFixtureTest {
         assertTrue(fixture.contains("\"executableConsumerLanguages\": [\"rust\", \"c\", \"java\", \"python\"]"));
 
         List<String> ids = caseIds(fixture);
-        assertEquals(6, ids.size());
+        assertEquals(7, ids.size());
         assertEquals(ids.size(), ids.stream().distinct().count());
         for (String id : ids) {
             String item = caseById(fixture, id);

@@ -512,10 +512,13 @@ fn mixed_discover_versions_response() -> Vec<u8> {
         [
             protocol_version.clone(),
             date_time(0x0042_0092, 1),
-            integer(0x0042_000D, 3),
+            integer(0x0042_000D, 4),
         ],
     );
-    let response_payload = structure(0x0042_007C, [protocol_version]);
+    let response_payload = structure(
+        0x0042_007C,
+        [protocol_version.clone(), protocol_version.clone()],
+    );
     let successful_item = structure(
         0x0042_000F,
         [
@@ -544,9 +547,18 @@ fn mixed_discover_versions_response() -> Vec<u8> {
             enumeration(0x0042_007E, 1),
         ],
     );
+    let empty_item = structure(
+        0x0042_000F,
+        [
+            enumeration(0x0042_005C, 30),
+            ttlv_item(0x0042_0093, 0x08, b"item-3"),
+            enumeration(0x0042_007F, 0),
+            structure(0x0042_007C, []),
+        ],
+    );
     structure(
         0x0042_007B,
-        [header, successful_item, pending_item, failed_item],
+        [header, successful_item, pending_item, failed_item, empty_item],
     )
 }
 

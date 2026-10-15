@@ -218,6 +218,66 @@
       }
     },
     {
+      "id": "discover-versions.supported-versions.v1",
+      "capability": "discover_versions_response",
+      "requirementIds": [
+        "KMIPKIT-0007-FR-001",
+        "KMIPKIT-0007-FR-002",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-021"
+      ],
+      "normativeSource": "OASIS KMIP v2.1 §6.1.16, Tables 211–213",
+      "input": {
+        "operation": "Discover Versions",
+        "offeredVersions": [{"major": 2, "minor": 1}]
+      },
+      "expectedOutput": {
+        "supportedVersions": [
+          {"major": 2, "minor": 1},
+          {"major": 2, "minor": 1}
+        ],
+        "preservesSourceOrderAndRepetitions": true,
+        "emptySuccessfulResponseIsPresent": true,
+        "emptySuccessfulResponseVersions": [],
+        "pendingAndFailureHaveNoSupportedVersions": true,
+        "automaticFollowUp": false
+      },
+      "javaObservedOutput": {
+        "supportedVersions": [
+          {"major": 2, "minor": 1},
+          {"major": 2, "minor": 1}
+        ],
+        "preservesSourceOrderAndRepetitions": true,
+        "emptySuccessfulResponseIsPresent": true,
+        "emptySuccessfulResponseVersions": [],
+        "pendingAndFailureHaveNoSupportedVersions": true,
+        "automaticFollowUp": false
+      },
+      "errorCategory": null,
+      "cleanup": ["copy-version-values-before-closing-native-item-handle"],
+      "consumerTests": {
+        "rust": {
+          "status": "available",
+          "testFile": "crates/kmipkit-protocol/tests/unit/discover_versions_tests.rs",
+          "test": "offered_response_versions_are_preserved_in_order_with_repetitions"
+        },
+        "c": {
+          "status": "available",
+          "testFile": "bindings/c/tests/client_abi_consumer.c",
+          "test": "execute_public_tls_request"
+        },
+        "java": {
+          "status": "available",
+          "test": "org.kmipkit.ClientFacadeTlsIntegrationTest#executionPreservesOrderedMixedOutcomesOverOneMutualTlsExchange"
+        },
+        "python": {
+          "status": "available",
+          "testFile": "bindings/python/tests/test_client.py",
+          "test": "test_discover_versions_response_mapping_matches_shared_fixture"
+        }
+      }
+    },
+    {
       "id": "ttlv.open-values-and-child-order.v1",
       "capability": "generic_ttlv_model",
       "requirementIds": [

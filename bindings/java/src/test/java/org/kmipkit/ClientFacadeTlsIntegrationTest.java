@@ -45,6 +45,7 @@ import org.kmipkit.extensions.ClientBatchResponse;
 import org.kmipkit.extensions.ClientConfiguration;
 import org.kmipkit.extensions.ClientExtensionRegistry;
 import org.kmipkit.extensions.ExtensionRegistryLimits;
+import org.kmipkit.extensions.ProtocolVersion;
 import org.kmipkit.extensions.RequestOptions;
 import org.kmipkit.extensions.TransportConfiguration;
 import org.kmipkit.ttlv.CodecLimits;
@@ -174,29 +175,38 @@ final class ClientFacadeTlsIntegrationTest {
             batch.asynchronousIndicator(2)
                     .add(ClientBatchItem.discoverVersions().withUniqueBatchItemId(uniqueBatchItemId(0)))
                     .add(ClientBatchItem.discoverVersions().withUniqueBatchItemId(uniqueBatchItemId(1)))
-                    .add(ClientBatchItem.discoverVersions().withUniqueBatchItemId(uniqueBatchItemId(2)));
+                    .add(ClientBatchItem.discoverVersions().withUniqueBatchItemId(uniqueBatchItemId(2)))
+                    .add(ClientBatchItem.discoverVersions().withUniqueBatchItemId(uniqueBatchItemId(3)));
             ClientBatchResponse batchResponse = client.executeWithOptions(
                     batch, CodecLimits.defaults(), RequestOptions.defaults());
             try (ClientBatchResponse response = batchResponse;
                     ClientBatchItemResult completed = response.itemAt(0);
                     ClientBatchItemResult pending = response.itemAt(1);
-                    ClientBatchItemResult failed = response.itemAt(2)) {
-                assertEquals(3, response.itemCount());
+                    ClientBatchItemResult failed = response.itemAt(2);
+                    ClientBatchItemResult empty = response.itemAt(3)) {
+                assertEquals(4, response.itemCount());
                 assertEquals(0, completed.resultStatus());
                 assertTrue(completed.outcomeKind().isCompleted());
                 assertArrayEquals(uniqueBatchItemId(0), completed.uniqueBatchItemId().orElseThrow());
                 assertTrue(completed.pendingCorrelationValue().isEmpty());
                 assertTrue(completed.resultReason().isEmpty());
+                assertEquals(List.of(new ProtocolVersion(2, 1), new ProtocolVersion(2, 1)),
+                        completed.supportedVersions().orElseThrow());
                 assertEquals(2, pending.resultStatus());
                 assertTrue(pending.outcomeKind().isPending());
                 assertArrayEquals(uniqueBatchItemId(1), pending.uniqueBatchItemId().orElseThrow());
                 assertArrayEquals(CORRELATION, pending.pendingCorrelationValue().orElseThrow());
                 assertTrue(pending.resultReason().isEmpty());
+                assertTrue(pending.supportedVersions().isEmpty());
                 assertEquals(1, failed.resultStatus());
                 assertTrue(failed.outcomeKind().isCompleted());
                 assertArrayEquals(uniqueBatchItemId(2), failed.uniqueBatchItemId().orElseThrow());
                 assertTrue(failed.pendingCorrelationValue().isEmpty());
                 assertEquals(1, failed.resultReason().orElseThrow());
+                assertTrue(failed.supportedVersions().isEmpty());
+                assertEquals(0, empty.resultStatus());
+                assertTrue(empty.supportedVersions().isPresent());
+                assertTrue(empty.supportedVersions().orElseThrow().isEmpty());
             }
             byte[] request = peer.get(12, TimeUnit.SECONDS);
             assertTrue(request.length >= 8);
@@ -434,10 +444,10 @@ final class ClientFacadeTlsIntegrationTest {
         byte[] version = structure(0x420069, item(0x42006a, 2, integer(2)),
                 item(0x42006b, 2, integer(1)));
         byte[] header = structure(0x42007a, version, item(0x420092, 9, longInteger(1)),
-                item(0x42000d, 2, integer(3)));
+                item(0x42000d, 2, integer(4)));
         byte[] responseVersion = structure(0x420069, item(0x42006a, 2, integer(2)),
                 item(0x42006b, 2, integer(1)));
-        byte[] responsePayload = structure(0x42007c, responseVersion);
+        byte[] responsePayload = structure(0x42007c, responseVersion, responseVersion);
         byte[] successfulItem = structure(0x42000f,
                 item(0x42005c, 5, integer(30)),
                 item(0x420093, 8, uniqueBatchItemId(0)),
@@ -452,7 +462,11 @@ final class ClientFacadeTlsIntegrationTest {
                 item(0x420093, 8, uniqueBatchItemId(2)),
                 item(0x42007f, 5, integer(1)),
                 enumeration(0x42007e, 1));
-        return structure(0x42007b, header, successfulItem, pendingItem, failedItem);
+        byte[] emptyItem = structure(0x42000f,
+                item(0x42005c, 5, integer(30)),
+                item(0x420093, 8, uniqueBatchItemId(3)),
+                item(0x42007f, 5, integer(0)), structure(0x42007c));
+        return structure(0x42007b, header, successfulItem, pendingItem, failedItem, emptyItem);
     }
 
     private static byte[] uniqueBatchItemId(int index) {

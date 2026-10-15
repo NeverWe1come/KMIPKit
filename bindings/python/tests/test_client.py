@@ -980,6 +980,68 @@ def test_batch_execute_preserves_ordered_mixed_outcomes_and_invokes_native_execu
     assert released == ["item", "item", "item", "response"]
 
 
+def test_discover_versions_response_mapping_matches_shared_fixture(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    fixture_path = Path(__file__).resolve().parents[3] / "tests/fixtures/api/shared-capability-parity.json"
+    cases = json.loads(fixture_path.read_text(encoding="utf-8"))["cases"]
+    case = next(item for item in cases if item["id"] == "discover-versions.supported-versions.v1")
+    expected = case["expectedOutput"]
+    response_pointer, _response_storage = _opaque("kmipkit_client_batch_response_t")
+    item_storage = [_opaque("kmipkit_client_batch_item_response_t") for _ in range(4)]
+    item_pointers = [pointer for pointer, _storage in item_storage]
+    released: list[str] = []
+
+    def metadata(item: object, out: object) -> int:
+        index = item_pointers.index(item)
+        out.struct_size = client.ffi.sizeof("kmipkit_client_batch_item_metadata_v1_t")  # type: ignore[attr-defined]
+        out.abi_version = 1  # type: ignore[attr-defined]
+        out.outcome_kind = (1, 2, 1, 1)[index]  # type: ignore[attr-defined]
+        out.result_status = (0, 2, 1, 0)[index]  # type: ignore[attr-defined]
+        out.has_result_reason = int(index == 2)  # type: ignore[attr-defined]
+        out.result_reason = 1 if index == 2 else 0  # type: ignore[attr-defined]
+        return 0
+
+    def count_versions(item: object, present: object, count: object) -> int:
+        index = item_pointers.index(item)
+        present[0] = int(index in (0, 3))  # type: ignore[index]
+        count[0] = (2, 0, 0, 0)[index]  # type: ignore[index]
+        return 0
+
+    def version_at(_item: object, index: int, major: object, minor: object) -> int:
+        versions = expected["supportedVersions"]
+        major[0] = versions[int(index)]["major"]  # type: ignore[index]
+        minor[0] = versions[int(index)]["minor"]  # type: ignore[index]
+        return 0
+
+    fake = SimpleNamespace(
+        kmipkit_client_batch_response_release=lambda _ptr: released.append("response"),
+        kmipkit_client_batch_item_response_release=lambda _ptr: released.append("item"),
+        kmipkit_client_batch_response_item_count=lambda _ptr, count: count.__setitem__(0, 4) or 0,
+        kmipkit_client_batch_response_item_at=lambda _ptr, index, out: out.__setitem__(0, item_pointers[int(index)]) or 0,
+        kmipkit_client_batch_item_response_metadata_v1=metadata,
+        kmipkit_client_batch_item_response_unique_batch_item_id=lambda _item, present, value: present.__setitem__(0, 0) or setattr(value, "data", client.ffi.NULL) or setattr(value, "length", 0) or 0,
+        kmipkit_client_batch_item_response_pending_correlation_value=lambda _item, present, value: present.__setitem__(0, 0) or setattr(value, "data", client.ffi.NULL) or setattr(value, "length", 0) or 0,
+        kmipkit_client_batch_item_response_discover_versions_supported_version_count=count_versions,
+        kmipkit_client_batch_item_response_discover_versions_supported_version_at=version_at,
+    )
+    monkeypatch.setattr(client, "lib", fake)
+
+    result = client._batch_result(response_pointer)
+    try:
+        assert result.items[0].supported_versions == tuple(
+            client.ProtocolVersion(item["major"], item["minor"])
+            for item in expected["supportedVersions"]
+        )
+        assert result.items[1].supported_versions is None
+        assert result.items[2].supported_versions is None
+        assert result.items[3].supported_versions == ()
+    finally:
+        result.close()
+
+    assert released == ["item", "item", "item", "item", "response"]
+
+
 def test_batch_result_accepts_absent_spans_and_no_result_reason(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
