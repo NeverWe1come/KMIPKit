@@ -196,8 +196,8 @@ class SourceGapContextResolutionTests(unittest.TestCase):
                 "table_number": 214,
                 "operation_element_id": "KMIPKIT-ELEM-OP-C2S-ENCRYPT",
                 "source_excerpt": (
-                    "Correlation Value No Specifies the stream or by-parts value to be provided "
-                    "in subsequent calls to this operation for performing cryptographic operations."
+                    "Correlation Value No Specifies the existing stream or by-parts "
+                    "cryptographic operation (as returned from a previous call to this operation)."
                 ),
                 "implementation_ref": "crates/kmipkit-protocol/src/encrypt.rs::EncryptRequest::to_ttlv_payload",
                 "verification_refs": [
@@ -213,6 +213,8 @@ class SourceGapContextResolutionTests(unittest.TestCase):
         }
 
         self.assertEqual(set(contracts), set(expected))
+        if set(contracts) != set(expected):
+            return
         elements = {row["element_id"]: row for row in catalog["elements"]}
         for gap_id, reviewed in expected.items():
             contract = contracts[gap_id]
