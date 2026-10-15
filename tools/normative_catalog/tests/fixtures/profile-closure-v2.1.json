@@ -344,6 +344,15 @@
                   "KMIPKIT-CLAUSE-SPEC-9.7-001"
                 ],
                 "mapping_status": "reviewed"
+              },
+              {
+                "item": "Batch Order Option",
+                "element_id": "KMIPKIT-ELEM-MESSAGE-FIELD-9-8-BATCH-ORDER-OPTION",
+                "requirement_ids": [],
+                "source_clause_ids": [
+                  "KMIPKIT-CLAUSE-SPEC-9.8-001"
+                ],
+                "mapping_status": "reviewed"
               }
             ],
             "requirement_id": null,
