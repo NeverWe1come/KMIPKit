@@ -563,11 +563,15 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
         attributes_element = next(
             item for item in catalog["elements"] if item["element_id"] == repeated_attributes_element
         )
-        self.assertIn(repeated_attributes_element, test_case["element_ids"])
-        self.assertIn(test_case["test_id"], attributes_element["test_case_ids"])
+        self.assertNotIn(repeated_attributes_element, test_case["element_ids"])
+        self.assertNotIn(test_case["test_id"], attributes_element["test_case_ids"])
         self.assertTrue(
             repeated_item_ids.union(expected_mapping["requirement_ids"]).isdisjoint(test_case["requirement_ids"])
         )
+        fixture_html_text = _normalized_html_source_span(profiles_lines, [5018, 5021])
+        self.assertIn("BL-M-4-21", fixture_html_text)
+        self.assertIn("test-cases/kmip-v2.1/mandatory/BL-M-4-21.xml", fixture_html_text)
+        self.assertNotIn("Attributes", fixture_html_text)
         fixture_root = ElementTree.parse(ROOT / "specification/oasis/kmip-2.1/fixtures/BL-M-4-21.xml").getroot()
         locate_attributes = [
             attributes
