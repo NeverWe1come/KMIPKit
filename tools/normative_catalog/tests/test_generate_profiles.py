@@ -605,6 +605,17 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
                 "mapping_status": "reviewed",
             },
         ]
+        operation_mappings = expected_mappings[:3]
+        mapped_requirement_ids = {
+            requirement_id
+            for mapping in expected_mappings
+            for requirement_id in mapping["requirement_ids"]
+        }
+        operation_requirement_ids = {
+            requirement_id
+            for mapping in operation_mappings
+            for requirement_id in mapping["requirement_ids"]
+        }
         expected_requirements = {
             "KMIPKIT-REQ-SPEC-6.1.19-002": {
                 "clause_id": "KMIPKIT-CLAUSE-SPEC-6.1.19-002",
@@ -704,23 +715,36 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
             ]
             for clause_id in {details["clause_id"] for details in expected_requirements.values()}
         }
+        expected_element_sections = {
+            "Get": "6.1.19",
+            "Get Attributes": "6.1.20",
+            "Locate": "6.1.28",
+        }
 
-        for mapping in expected_mappings[:3]:
+        for mapping in operation_mappings:
             with self.subTest(item=mapping["item"]):
                 self.assertIn(mapping["item"], profiles_text)
                 element = elements[mapping["element_id"]]
                 self.assertEqual(element["name"], mapping["item"])
-                self.assertEqual(element["source_refs"], [{"source_id": "KMIPKIT-SRC-spec", "section": element["source_refs"][0]["section"]}])
+                self.assertEqual(
+                    element["source_refs"],
+                    [{"source_id": "KMIPKIT-SRC-spec", "section": expected_element_sections[mapping["item"]]}],
+                )
                 self.assertEqual(element["direction"], "client_to_server")
                 self.assertEqual(element["scope_state"], "client_1_0")
                 self.assertTrue(set(mapping["requirement_ids"]).issubset(element["requirement_ids"]))
                 self.assertEqual(
                     mapping["source_clause_ids"],
-                    list(dict.fromkeys(expected_requirements[requirement_id]["clause_id"] for requirement_id in mapping["requirement_ids"])),
+                    list(
+                        dict.fromkeys(
+                            expected_requirements[requirement_id]["clause_id"]
+                            for requirement_id in mapping["requirement_ids"]
+                        )
+                    ),
                 )
 
         for requirement_id, details in expected_requirements.items():
-            if requirement_id not in {rid for mapping in expected_mappings[:3] for rid in mapping["requirement_ids"]}:
+            if requirement_id not in operation_requirement_ids:
                 continue
             with self.subTest(requirement_id=requirement_id):
                 requirement = requirements[requirement_id]
@@ -751,7 +775,7 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
                 self.assertEqual(obligation["actor"], "client")
                 self.assertTrue(obligation["direction"].startswith("client"))
                 self.assertEqual(obligation["scope_disposition"], "client_1_0")
-                self.assertIn(requirement_id, obligation["candidate_requirement_id"])
+                self.assertEqual(obligation["candidate_requirement_id"], requirement_id)
 
         excluded_server_requirements = {
             "KMIPKIT-REQ-SPEC-6.1.20-001-002": "KMIPKIT-CLAUSE-SPEC-6.1.20-001",
@@ -763,7 +787,6 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
             "KMIPKIT-REQ-SPEC-6.1.28-011": "KMIPKIT-CLAUSE-SPEC-6.1.28-011",
             "KMIPKIT-REQ-SPEC-6.1.28-012": "KMIPKIT-CLAUSE-SPEC-6.1.28-012",
         }
-        mapped_requirement_ids = {rid for mapping in expected_mappings for rid in mapping["requirement_ids"]}
         for requirement_id, clause_id in excluded_server_requirements.items():
             with self.subTest(excluded_requirement_id=requirement_id):
                 requirement = requirements[requirement_id]
