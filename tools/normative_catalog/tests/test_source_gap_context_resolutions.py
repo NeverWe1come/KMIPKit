@@ -18,6 +18,7 @@ HASH_MAC_SIGNATURE_TRACEABILITY_PATH = ROOT / "specs/021-hash-mac-signature-oper
 HASH_MAC_SIGNATURE_SPEC_PATH = ROOT / "specs/021-hash-mac-signature-operations/spec.md"
 ENCRYPT_DECRYPT_SPEC_PATH = ROOT / "specs/019-cryptographic-operations/spec.md"
 ENCRYPT_DECRYPT_PAYLOAD_CONTRACT_PATH = ROOT / "specs/019-cryptographic-operations/contracts/operation-payloads.md"
+PROFILE_RESEARCH_PATH = ROOT / "specs/010-profile-conformance/research.md"
 
 # These are the request rows relevant to the five KMIPKIT-0021 operations
 # assigned by the approved traceability. The first two §6.1 contexts cover
@@ -452,6 +453,42 @@ class SourceGapContextResolutionTests(unittest.TestCase):
         lease_time = next(row for row in catalog["elements"] if row["element_id"] == resolution["element_id"])
         self.assertEqual(lease_time["source_modifiable_by_client"], "No")
         self.assertTrue(any("read-only for clients" in row["source_text"] for row in lease_time["source_operation_restrictions"]))
+
+    def test_t002_research_describes_current_paragraph_009_source_force_and_context(self) -> None:
+        oracle = json.loads(ORACLE_PATH.read_text(encoding="utf-8"))
+        gaps = {row["gap_id"]: row for row in oracle["source_only_requirement_gaps"]}
+        research = PROFILE_RESEARCH_PATH.read_text(encoding="utf-8")
+        start = research.index("- **Procedure and generic-parameter context:**")
+        end = research.find("\n- **", start + 1)
+        summary = research[start:end]
+
+        data_rule = gaps["KMIPKIT-SOURCE-GAP-SPEC-6.1-PARAGRAPH-009"]
+        self.assertEqual(data_rule["source_force"], "structural_requirement_statement_lowercase_required")
+        self.assertEqual(data_rule["source_keywords"], [])
+        self.assertIn("lowercase `required`", summary)
+        self.assertIn("not a formal `REQUIRED` keyword", summary)
+        self.assertIn("independent oracle `source_keywords` is empty", summary)
+        self.assertNotIn("its normalized `REQUIRED` hit", summary)
+
+        for number in range(6, 9):
+            gap = gaps[f"KMIPKIT-SOURCE-GAP-SPEC-6.1-PARAGRAPH-{number:03d}"]
+            self.assertEqual(gap["actor"], "client")
+            self.assertEqual(gap["direction"], "client cryptographic-operation request parameters")
+            self.assertEqual(gap["scope_disposition"], "unresolved")
+        self.assertIn("paragraphs `-006` through `-008` record the client actor", summary)
+        self.assertIn("request-parameter direction", summary)
+        self.assertNotIn("actor/direction/scope unclear", summary)
+
+    def test_t002_research_records_already_verified_profile_inclusion_edges(self) -> None:
+        research = PROFILE_RESEARCH_PATH.read_text(encoding="utf-8")
+        start = research.index("- **Profiles §6.13 and §6.14:**")
+        end = research.find("\n- **", start + 1)
+        summary = research[start:end]
+
+        self.assertIn("KMIPKIT-INCLUSION-PROF-613-BASIC-SYMMETRIC-CLIENT", summary)
+        self.assertIn("KMIPKIT-INCLUSION-PROF-614-BASIC-SYMMETRIC-CLIENT", summary)
+        self.assertIn("already encoded in the catalog and independent oracle", summary)
+        self.assertNotIn("edges still need to encode", summary)
 
 
 if __name__ == "__main__":

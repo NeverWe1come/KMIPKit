@@ -2602,3 +2602,11 @@ This is regression-only verification of behavior already present in the client; 
 | Regression tests | `be6efd19cc8f418a315a94b516c936ebe37ee3bb`; `cargo test --locked --offline -p kmipkit-client --lib profile_preflight_tests -- --nocapture` | PASS: all 8 profile-preflight tests, including explicit Query/Discover non-inference, explicit-default preservation, response redaction and delivery-state checks. |
 | Package verification | `cargo test --locked --offline -p kmipkit-client --lib`; `cargo clippy --locked --offline -p kmipkit-client --all-targets --all-features -- -D warnings`; `cargo fmt --all --check`; `git diff --check` | PASS: all 563 client library tests; Clippy, formatting, and whitespace checks passed. AWS-LC printed non-fatal Windows toolchain probe warnings; the Rust build and tests completed successfully. |
 | Scope | Review of `git diff 2a2dc075..be6efd19` | Only client test code changed. No production behavior, generated artifact, catalog mapping, or pinned OASIS source changed. |
+
+### KMIPKIT-0010 T002 source-review summary correction (2026-10-15)
+
+An independent source audit found stale claims in the T002 research summary: the §6.1 paragraph 006–009 actor/direction fields and lowercase force classification did not match the current source-gap oracle, and the §§6.13/6.14 inclusion edges were already present in the catalog, oracle, and generator tests. Red tests now require the research summary to reflect those reviewed artifacts without changing any normative mapping or selecting a side of `KMIPKIT-DISC-045`.
+
+| Stage | DCO-signed commit and command | Result |
+|---|---|---|
+| Red — require research-to-oracle consistency for §6.1 context and the already encoded §6.13/§6.14 edges | Pending Red commit; `py -3 -B -m unittest tools.normative_catalog.tests.test_source_gap_context_resolutions.SourceGapContextResolutionTests.test_t002_research_describes_current_paragraph_009_source_force_and_context tools.normative_catalog.tests.test_source_gap_context_resolutions.SourceGapContextResolutionTests.test_t002_research_records_already_verified_profile_inclusion_edges -v` | Expected Red: both tests fail because the current research text misstates the §6.1 source-force/context details and says the §6.13/§6.14 edges still need encoding. |
