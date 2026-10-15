@@ -110,6 +110,42 @@ def closure_catalog() -> dict[str, object]:
 
 
 class ProfileMetadataGeneratorTests(unittest.TestCase):
+    def test_maximum_response_size_evidence_does_not_claim_general_server_policy(self) -> None:
+        """Keep Query test evidence and the error reason distinct from a general server rule."""
+        research = (ROOT / "specs" / "010-profile-conformance" / "research.md").read_text(encoding="utf-8")
+        implementation_evidence = (
+            ROOT / "specs" / "010-profile-conformance" / "implementation-evidence.md"
+        ).read_text(encoding="utf-8")
+
+        self.assertNotIn(
+            "no numeric default, numeric range, or server behavior when a declared limit is exceeded",
+            research,
+        )
+        self.assertNotIn("server behavior on an exceeded limit", implementation_evidence)
+        for document in (research, implementation_evidence):
+            with self.subTest(document="research" if document is research else "implementation evidence"):
+                self.assertIn("no general server response policy", document)
+                self.assertIn("not a general server SHALL", document)
+
+        profiles_lines = (
+            ROOT / "specification" / "oasis" / "kmip-2.1" / "upstream" / "kmip-profiles-v2.1-os.html"
+        ).read_text(encoding="cp1252").splitlines()
+        self.assertEqual(
+            _normalized_html_source_span(profiles_lines, [5190, 5197]),
+            'name="_Toc27473253"> 5.3.3.1 MSGENC-HTTPS-M-1-21 Perform a Query operation, querying the Operations '
+            "and Objects supported by the server, with a restriction on the Maximum Response Size set in the "
+            "request header. Since the resulting Query response is too big, an error is returned. Increase the "
+            "Maximum Response Size, resubmit the Query request, and get a successful response.",
+        )
+
+        spec_lines = (
+            ROOT / "specification" / "oasis" / "kmip-2.1" / "upstream" / "kmip-spec-v2.1-os.html"
+        ).read_text(encoding="cp1252").splitlines()
+        self.assertEqual(
+            _normalized_html_source_span(spec_lines, [56703, 56713]),
+            "Response Too Large Maximum Response Size has been exceeded",
+        )
+
     def test_https_client_inherits_baseline_basic_authentication_root(self) -> None:
         """Profiles v2.1 §§6.4 and 6.1 make §3.1 inherited, not direct."""
         catalog_path = ROOT / "specification" / "catalog" / "kmip-2.1.json"
