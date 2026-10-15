@@ -413,6 +413,38 @@ class ProfileSectionsThreeAndFourCrosswalkTests(unittest.TestCase):
             self.assertEqual(review["source_excerpt"], pinned_excerpt(expected_lines[clause_id]))
             self.assertEqual(review["source_locator"], self.clauses[clause_id]["locator"])
 
+    def test_explicit_server_profile_requirements_remain_outside_client_crosswalk(self) -> None:
+        expected = {
+            "KMIPKIT-SOURCE-GAP-PROF-3.1.1-4009": [4009, 4014],
+            "KMIPKIT-SOURCE-GAP-PROF-3.1.1-4023": [4023, 4028],
+            "KMIPKIT-SOURCE-GAP-PROF-3.1.2-4060": [4060, 4065],
+            "KMIPKIT-SOURCE-GAP-PROF-3.1.3-4196": [4196, 4198],
+            "KMIPKIT-SOURCE-GAP-PROF-3.1.3-4200": [4200, 4202],
+            "KMIPKIT-SOURCE-GAP-PROF-3.1.3-4204": [4204, 4206],
+            "KMIPKIT-SOURCE-GAP-PROF-3.1.4-4217": [4217, 4218],
+            "KMIPKIT-SOURCE-GAP-PROF-3.2.4-4260": [4260, 4262],
+        }
+        gaps = {
+            row["gap_id"]: row for row in self.fixture["source_only_requirement_gaps"]
+        }
+
+        for gap_id, line_range in expected.items():
+            with self.subTest(gap_id=gap_id):
+                gap = gaps[gap_id]
+                source_excerpt = pinned_excerpt(line_range)
+                self.assertEqual(gap["html_line_range"], line_range)
+                self.assertEqual(gap["source_excerpt"], source_excerpt)
+                self.assertTrue(
+                    "Conformant KMIP servers" in source_excerpt
+                    or "KMIP servers conformant to this profile" in source_excerpt
+                )
+                self.assertEqual(gap.get("actor"), "server")
+                self.assertEqual(gap["scope_disposition"], "server_only")
+                self.assertEqual(gap["status"], "server_actor_disposition_recorded")
+                self.assertIsNone(gap["candidate_requirement_id"])
+                self.assertIsNone(gap["proposed_requirement_id"])
+                self.assertNotIn(gap_id, self.crosswalk)
+
 
 if __name__ == "__main__":
     unittest.main()
