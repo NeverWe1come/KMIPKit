@@ -2890,7 +2890,7 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
             _normalized_html_source_span(spec_lines, [42921, 42935]),
         )
         self.assertIn(
-            "Unique Batch Item ID No Required if present in Request",
+            "Unique Batch Item ID No REQUIRED if present in Request",
             _normalized_html_source_span(spec_lines, [43361, 43377]),
         )
         request_response_definition = _normalized_html_source_span(spec_lines, [45355, 45360])
