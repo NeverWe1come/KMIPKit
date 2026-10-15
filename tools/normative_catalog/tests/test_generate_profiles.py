@@ -900,7 +900,7 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
                 self.assertEqual(tag["parent_element_ids"], ["KMIPKIT-ELEM-ENUMERATION-TAG"])
 
     def test_baseline_query_operation_condition_has_exact_reviewed_client_crosswalk(self) -> None:
-        """Query's item mapping is source-backed while its parent condition stays partial."""
+        """The four item mappings are source-backed; the parent is reviewed only as a crosswalk."""
         catalog = json.loads((ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8"))
         oracle = json.loads(
             (ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json")
@@ -1158,6 +1158,17 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
                 "source_phrase": "Attributes structure MAY be empty",
             },
         }
+        expected_requirement_conditions = {
+            "KMIPKIT-REQ-SPEC-6.1.19-002": "When requesting the server to return an object in a particular format.",
+            "KMIPKIT-REQ-SPEC-6.1.20-001-001": None,
+            "KMIPKIT-REQ-SPEC-6.1.20-004": None,
+            "KMIPKIT-REQ-SPEC-6.1.28-001": None,
+            "KMIPKIT-REQ-SPEC-6.1.28-002": None,
+            "KMIPKIT-REQ-SPEC-6.1.28-004-001": "When the client needs to obtain archived matches.",
+            "KMIPKIT-REQ-SPEC-6.1.28-007": None,
+            "KMIPKIT-REQ-SPEC-6.1.28-013-001": None,
+            "KMIPKIT-REQ-SPEC-6.1.28-013-002": "When requesting an unrestricted match.",
+        }
 
         self.assertEqual(condition["supported_items"], ["Get", "Get Attributes", "Locate", "Query"])
         self.assertEqual(condition.get("supported_item_mappings"), expected_mappings)
@@ -1227,6 +1238,7 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
                 self.assertEqual(requirement["source_clause_ids"], [details["clause_id"]])
                 self.assertEqual(requirement["source_keyword"], details["keyword"])
                 self.assertEqual(requirement["normative_strength"], details["strength"])
+                self.assertEqual(requirement["condition"], expected_requirement_conditions[requirement_id])
                 self.assertEqual(requirement["role"], "client")
                 self.assertEqual(requirement["direction"], "client_to_server")
                 self.assertEqual(requirement["scope_state"], "client_1_0")
