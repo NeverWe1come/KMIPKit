@@ -1169,6 +1169,25 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
             "KMIPKIT-REQ-SPEC-6.1.28-013-001": None,
             "KMIPKIT-REQ-SPEC-6.1.28-013-002": "When requesting an unrestricted match.",
         }
+        expected_source_obligation_conditions = {
+            "KMIPKIT-REQ-SPEC-6.1.19-002": (
+                "When the client requests the server to return an object in a particular format."
+            ),
+            "KMIPKIT-REQ-SPEC-6.1.20-001-001": None,
+            "KMIPKIT-REQ-SPEC-6.1.20-004": None,
+            "KMIPKIT-REQ-SPEC-6.1.28-001": "Maximum Items is included in the Locate request.",
+            "KMIPKIT-REQ-SPEC-6.1.28-002": "Offset Items may be specified; zero is equivalent to omission.",
+            "KMIPKIT-REQ-SPEC-6.1.28-004-001": "The Located objects are archived.",
+            "KMIPKIT-REQ-SPEC-6.1.28-007": (
+                "A structured attribute is specified in the request; not all fields need be supplied."
+            ),
+            "KMIPKIT-REQ-SPEC-6.1.28-013-001": (
+                "Attributes are supplied; their values are required to match a candidate object."
+            ),
+            "KMIPKIT-REQ-SPEC-6.1.28-013-002": (
+                "Client chooses an empty Attributes structure; the lower-case 'should' is not an additional formal keyword."
+            ),
+        }
 
         self.assertEqual(condition["supported_items"], ["Get", "Get Attributes", "Locate", "Query"])
         self.assertEqual(condition.get("supported_item_mappings"), expected_mappings)
@@ -1252,6 +1271,7 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
                 self.assertEqual(review["source_excerpt"], _normalized_html_source_span(spec_lines, review["html_line_range"]))
                 self.assertIn(details["source_phrase"], line_text)
                 self.assertEqual(obligation["source_keyword"], details["keyword"])
+                self.assertEqual(obligation["condition"], expected_source_obligation_conditions[requirement_id])
                 self.assertEqual(obligation["actor"], "client")
                 self.assertTrue(obligation["direction"].startswith("client"))
                 self.assertEqual(obligation["scope_disposition"], "client_1_0")
