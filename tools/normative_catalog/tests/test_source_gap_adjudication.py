@@ -127,6 +127,7 @@ class SourceGapAdjudicationTests(unittest.TestCase):
         self.assertEqual(gap["scope_disposition"], "client_1_0")
         self.assertEqual(gap["candidate_requirement_id"], requirement_id)
         self.assertEqual(gap["reused_requirement_id"], requirement_id)
+        self.assertEqual(gap["reuse_kind"], "contextual_capability")
         self.assertIsNone(gap["proposed_requirement_id"])
         self.assertEqual(gap["status"], "source_obligation_covered_by_existing_stable_label")
         self.assertEqual(review["expected_client_requirement_ids"], [])

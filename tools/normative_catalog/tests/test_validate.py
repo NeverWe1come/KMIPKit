@@ -15860,6 +15860,7 @@ class CatalogValidationTests(unittest.TestCase):
                 "6.1.31": "KMIPKIT-REQ-SPEC-6.1.31-001",
                 "2.3": "KMIPKIT-REQ-SPEC-2.3-003",
                 "4.21": "KMIPKIT-REQ-SPEC-4.26-001",
+                "4.24": "KMIPKIT-REQ-SPEC-6.1-004",
             },
         )
         attributes_required_reuse = next(
