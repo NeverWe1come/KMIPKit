@@ -1099,7 +1099,7 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
         self.assertIn("Linked Object Identifier value is specified without the Link Type value", locate_007_source)
 
     def test_baseline_message_data_structures_condition_has_exact_reviewed_batch_crosswalk(self) -> None:
-        """The eleven reviewed Message Data Structure mappings stay bounded while item 5 remains pending."""
+        """The twelve reviewed Message Data Structure mappings stay bounded while item 5 remains pending."""
         catalog = json.loads((ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8"))
         oracle = json.loads(
             (ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json")
@@ -1227,6 +1227,13 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
             "source_clause_ids": ["KMIPKIT-CLAUSE-SPEC-9.19-001", "KMIPKIT-CLAUSE-SPEC-9.19-002"],
             "mapping_status": "reviewed",
         }
+        expected_server_correlation_value_mapping = {
+            "item": "Server Correlation Value",
+            "element_id": "KMIPKIT-ELEM-MESSAGE-FIELD-9-10-SERVER-CORRELATION-VALUE",
+            "requirement_ids": [],
+            "source_clause_ids": ["KMIPKIT-CLAUSE-SPEC-9.10-001"],
+            "mapping_status": "reviewed",
+        }
         expected_mappings = [
             expected_async_mapping,
             expected_mapping,
@@ -1239,6 +1246,7 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
             expected_protocol_version_mapping,
             expected_result_reason_mapping,
             expected_result_status_mapping,
+            expected_server_correlation_value_mapping,
         ]
 
         self.assertEqual(condition["item"], 5)
@@ -1279,10 +1287,11 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
                 "Protocol Version",
                 "Result Reason",
                 "Result Status",
+                "Server Correlation Value",
             ],
         )
         self.assertEqual(len(condition["supported_items"]), 14)
-        self.assertEqual(len(condition["supported_item_mappings"]), 11)
+        self.assertEqual(len(condition["supported_item_mappings"]), 12)
         unmapped_items = [
             item
             for item in condition["supported_items"]
@@ -1291,7 +1300,6 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
         self.assertEqual(
             unmapped_items,
             [
-                "Server Correlation Value",
                 "Time Stamp",
                 "Unique Batch Item ID",
             ],
@@ -1299,7 +1307,6 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
         self.assertEqual(
             set(condition["supported_items"]) - {mapping["item"] for mapping in condition["supported_item_mappings"]},
             {
-                "Server Correlation Value",
                 "Time Stamp",
                 "Unique Batch Item ID",
             },
@@ -2172,10 +2179,10 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
         self.assertEqual(condition["supported_items"][6:9], ["Message Extension", "Operation", "Protocol Version"])
         self.assertIn("Operation", mapped_items)
         self.assertEqual(len(condition["supported_items"]), 14)
-        self.assertEqual(len(mapped_items), 11)
+        self.assertEqual(len(mapped_items), 12)
         self.assertEqual(
             [item for item in condition["supported_items"] if item not in set(mapped_items)],
-            ["Server Correlation Value", "Time Stamp", "Unique Batch Item ID"],
+            ["Time Stamp", "Unique Batch Item ID"],
         )
         self.assertIsNone(condition["requirement_id"])
         self.assertEqual(condition["scope_disposition"], "profile_conditional")
@@ -2345,7 +2352,7 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
         self.assertIn("Protocol Version", mapped_items)
         self.assertEqual(
             [item for item in condition["supported_items"] if item not in set(mapped_items)],
-            ["Server Correlation Value", "Time Stamp", "Unique Batch Item ID"],
+            ["Time Stamp", "Unique Batch Item ID"],
         )
         self.assertIsNone(condition["requirement_id"])
         self.assertEqual(condition["scope_disposition"], "profile_conditional")
@@ -2598,6 +2605,96 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
         async_spec = (ROOT / "specs" / "009-asynchronous-operations" / "spec.md").read_text(encoding="utf-8")
         self.assertIn("`KMIPKIT-REQ-SPEC-9.19-002`", async_spec)
         self.assertIn("pending_poll_returns_without_repeating_and_zeroizes_request_and_response_copies", async_spec)
+
+    def test_baseline_server_correlation_value_condition_maps_server_response_metadata(self) -> None:
+        """The Server Correlation Value is response metadata for client-initiated operations."""
+        catalog = json.loads((ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8"))
+        oracle = json.loads(
+            (ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json")
+            .read_text(encoding="utf-8")
+        )
+        inventory = next(
+            item
+            for item in oracle["provenance"]["profile_condition_inventories"]
+            if item["source_id"] == "KMIPKIT-SRC-profiles" and item["section"] == "5.1.1"
+        )
+        condition = next(
+            item for item in inventory["conditions"] if item["condition_id"] == "KMIPKIT-PROF-COND-5.1.1-005"
+        )
+        expected_mapping = {
+            "item": "Server Correlation Value",
+            "element_id": "KMIPKIT-ELEM-MESSAGE-FIELD-9-10-SERVER-CORRELATION-VALUE",
+            "requirement_ids": [],
+            "source_clause_ids": ["KMIPKIT-CLAUSE-SPEC-9.10-001"],
+            "mapping_status": "reviewed",
+        }
+
+        self.assertEqual(condition["supported_items"][11], "Server Correlation Value")
+        server_correlation_mapping = next(
+            (item for item in condition["supported_item_mappings"] if item["item"] == "Server Correlation Value"),
+            None,
+        )
+        self.assertEqual(server_correlation_mapping, expected_mapping)
+        self.assertIsNone(condition["requirement_id"])
+        self.assertEqual(condition["scope_disposition"], "profile_conditional")
+        self.assertEqual(condition["mapping_status"], "pending_t002_crosswalk")
+
+        profiles_lines = (
+            ROOT / "specification" / "oasis" / "kmip-2.1" / "upstream" / "kmip-profiles-v2.1-os.html"
+        ).read_text(encoding="cp1252").splitlines()
+        spec_lines = (
+            ROOT / "specification" / "oasis" / "kmip-2.1" / "upstream" / "kmip-spec-v2.1-os.html"
+        ).read_text(encoding="cp1252").splitlines()
+        self.assertEqual(
+            _normalized_html_source_span(profiles_lines, [4605, 4607]),
+            "Server Correlation Value",
+        )
+        server_correlation_definition = _normalized_html_source_span(spec_lines, [43957, 43963])
+        self.assertIn("SHOULD be provided by the server", server_correlation_definition)
+        self.assertIn("SHOULD be globally unique", server_correlation_definition)
+        self.assertIn("SHOULD be logged by the server with each request", server_correlation_definition)
+        self.assertIn(
+            "For client to server operations the Server Correlation Value is provided in the response",
+            server_correlation_definition,
+        )
+        self.assertIn(
+            "For server to client operations, the Server Correlation Value is provided in the request",
+            server_correlation_definition,
+        )
+        self.assertIn("Server Correlation Value Text String", _normalized_html_source_span(spec_lines, [43981, 43991]))
+        self.assertIn("420106", _normalized_html_source_span(spec_lines, [62330, 62340]))
+        self.assertIn("Server Correlation Value No", _normalized_html_source_span(spec_lines, [42648, 42658]))
+        self.assertIn("Server Correlation Value No", _normalized_html_source_span(spec_lines, [43241, 43252]))
+
+        elements = {item["element_id"]: item for item in catalog["elements"]}
+        field = elements[expected_mapping["element_id"]]
+        self.assertEqual(field["source_refs"], [{"source_id": "KMIPKIT-SRC-spec", "section": "9.10"}])
+        self.assertEqual(field["source_encoding"], "Text String")
+        self.assertEqual(field["direction"], "both")
+        self.assertEqual(
+            field["parent_element_ids"],
+            [
+                "KMIPKIT-ELEM-MESSAGE-FIELD-8-2-SERVER-CORRELATION-VALUE",
+                "KMIPKIT-ELEM-MESSAGE-FIELD-8-5-SERVER-CORRELATION-VALUE",
+            ],
+        )
+        self.assertEqual(field["requirement_ids"], [])
+        self.assertEqual(elements["KMIPKIT-ELEM-MESSAGE-FIELD-8-2-SERVER-CORRELATION-VALUE"]["source_requiredness"], "No")
+        self.assertEqual(elements["KMIPKIT-ELEM-MESSAGE-FIELD-8-5-SERVER-CORRELATION-VALUE"]["source_requiredness"], "No")
+
+        clause = next(
+            item for item in catalog["source_clauses"] if item["clause_id"] == "KMIPKIT-CLAUSE-SPEC-9.10-001"
+        )
+        self.assertEqual(clause["disposition"], "server_only")
+        self.assertEqual(clause["scope_state"], "server_only")
+        self.assertEqual(clause["requirement_ids"], [])
+
+        execution_spec = (ROOT / "specs" / "007-client-execution" / "spec.md").read_text(encoding="utf-8")
+        execution_tests = (ROOT / "crates" / "kmipkit-client" / "tests" / "unit" / "execution_tests.rs").read_text(
+            encoding="utf-8"
+        )
+        self.assertIn("KMIPKIT-0007-FR-016", execution_spec)
+        self.assertIn("outgoing_client_request_omits_server_correlation_value", execution_tests)
 
     def test_foundry_basic_condition_text_names_its_inheriting_profiles(self) -> None:
         """The catalog and source review describe the same normative inheritance."""
