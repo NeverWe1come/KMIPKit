@@ -585,6 +585,84 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
         self.assertEqual(requirements["KMIPKIT-REQ-SPEC-5.1-002"]["test_case_ids"], [])
         self.assertEqual(requirements["KMIPKIT-REQ-SPEC-3.2-001"]["test_case_ids"], [])
 
+    def test_baseline_object_attributes_condition_has_exact_element_crosswalk(self) -> None:
+        """Baseline item labels map to elements without assigning unresolved §4 requirements."""
+        catalog = json.loads((ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8"))
+        oracle = json.loads(
+            (ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json")
+            .read_text(encoding="utf-8")
+        )
+        profiles_path = "specification/oasis/kmip-2.1/upstream/kmip-profiles-v2.1-os.html"
+        inventory = next(
+            item
+            for item in oracle["provenance"]["profile_condition_inventories"]
+            if item["source_id"] == "KMIPKIT-SRC-profiles" and item["section"] == "5.1.1"
+        )
+        condition = next(
+            item for item in inventory["conditions"] if item["condition_id"] == "KMIPKIT-PROF-COND-5.1.1-003"
+        )
+        expected_items = [
+            ("Activation Date", "KMIPKIT-ELEM-ATTRIBUTE-ACTIVATION-DATE", "4.1", "Date-Time", "420001"),
+            ("Deactivation Date", "KMIPKIT-ELEM-ATTRIBUTE-DEACTIVATION-DATE", "4.18", "Date-Time", "42002F"),
+            ("Digest", "KMIPKIT-ELEM-ATTRIBUTE-DIGEST", "4.21", "Structure", "420034"),
+            ("Initial Date", "KMIPKIT-ELEM-ATTRIBUTE-INITIAL-DATE", "4.25", "Date-Time", "420039"),
+            ("Last Change Date", "KMIPKIT-ELEM-ATTRIBUTE-LAST-CHANGE-DATE", "4.29", "Date-Time", "420048"),
+            ("Object Type", "KMIPKIT-ELEM-ATTRIBUTE-OBJECT-TYPE", "4.36", "Enumeration", "420057"),
+            ("State", "KMIPKIT-ELEM-ATTRIBUTE-STATE", "4.57", "Enumeration", "42008D"),
+            ("Unique Identifier", "KMIPKIT-ELEM-ATTRIBUTE-UNIQUE-IDENTIFIER", "4.58", "Text String, Enumeration or Integer", "420094"),
+        ]
+        expected_mappings = [
+            {
+                "item": item,
+                "element_id": element_id,
+                "requirement_ids": [],
+                "source_clause_ids": [],
+                "mapping_status": "reviewed",
+            }
+            for item, element_id, _, _, _ in expected_items
+        ]
+
+        self.assertEqual(
+            condition["supported_items"],
+            [item for item, _, _, _, _ in expected_items],
+        )
+        self.assertIsNone(condition["requirement_id"])
+        self.assertEqual(condition["html_line_range"], [4541, 4562])
+        self.assertEqual(condition["scope_disposition"], "profile_conditional")
+        self.assertEqual(condition["mapping_status"], "pending_t002_crosswalk")
+        self.assertEqual(condition.get("supported_item_mappings"), expected_mappings)
+
+        profiles_lines = (ROOT / profiles_path).read_text(encoding="cp1252").splitlines()
+        profiles_text = _normalized_html_source_span(profiles_lines, [4541, 4562])
+        self.assertIn("Supports the following Object Attributes", profiles_text)
+        elements = {item["element_id"]: item for item in catalog["elements"]}
+
+        for item, element_id, section, encoding, wire_value in expected_items:
+            with self.subTest(item=item):
+                self.assertIn(item, profiles_text)
+                element = elements[element_id]
+                tag_id = f"KMIPKIT-ELEM-TAG-{wire_value}"
+                self.assertEqual(element["name"], item)
+                self.assertEqual(element["kind"], "attribute")
+                self.assertEqual(
+                    element["source_refs"],
+                    [
+                        {"source_id": "KMIPKIT-SRC-spec", "section": section},
+                        {"source_id": "KMIPKIT-SRC-spec", "section": "11.56"},
+                    ],
+                )
+                self.assertEqual(element["direction"], "both")
+                self.assertEqual(element["scope_state"], "client_1_0")
+                self.assertEqual(element["source_encoding"], encoding)
+                self.assertEqual(element["parent_element_ids"], [tag_id])
+
+                tag = elements[tag_id]
+                self.assertEqual(tag["kind"], "tag")
+                self.assertEqual(tag["name"], item)
+                self.assertEqual(tag["wire_value"], wire_value)
+                self.assertEqual(tag["source_refs"], [{"source_id": "KMIPKIT-SRC-spec", "section": "11.56"}])
+                self.assertEqual(tag["parent_element_ids"], ["KMIPKIT-ELEM-ENUMERATION-TAG"])
+
     def test_baseline_query_operation_condition_has_exact_reviewed_client_crosswalk(self) -> None:
         """Query's item mapping is source-backed while its parent condition stays partial."""
         catalog = json.loads((ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8"))
