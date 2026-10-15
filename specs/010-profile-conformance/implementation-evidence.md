@@ -2972,3 +2972,19 @@ Independent QA found that the first regression version checked the correlation-v
 | Exact-head GitHub CI run `38738832004` on `fa206ece55d609df1fb934ee179c2e8dc38240ba` | PASS: 34 successful jobs, zero failures, 3 skipped. This matrix includes the QA-refined test. |
 
 The mapping brings the crosswalk to 11 of 14 items; the three remaining values are Server Correlation Value, Time Stamp, and Unique Batch Item ID. This repository crosswalk is not an official OASIS test execution or profile-conformance claim; T002 stays open.
+
+### KMIPKIT-0010 T002 tranche — Baseline Client §5.1.1 item 5 Server Correlation Value (2026-10-15)
+
+The independent oracle now maps the twelfth item to `KMIPKIT-ELEM-MESSAGE-FIELD-9-10-SERVER-CORRELATION-VALUE` and cites `KMIPKIT-CLAUSE-SPEC-9.10-001`, with no KMIP requirement IDs. The source makes the value server-provided metadata in responses to client-initiated operations; the three §9.10 SHOULDs are server duties. The client request and response header placement rows both have `Required=No`. The catalog clause's role/direction metadata mismatch is documented for KMIPKIT-0002. Existing KMIPKIT-0007 FR-016 and an execution test enforce the project boundary that outbound client requests omit this server value. This is distinct from asynchronous correlation for Poll/Cancel.
+
+| Stage | DCO-signed commit and command | Result |
+|---|---|---|
+| Red — assert the twelfth source-ordered mapping, exact §5.1.1/§9.10/header/tag spans, server-only actor, both header placements, and existing client-execution invariant | `88898bbf`; `py -3 -B -m unittest tools.normative_catalog.tests.test_generate_profiles.ProfileMetadataGeneratorTests.test_baseline_message_data_structures_condition_has_exact_reviewed_batch_crosswalk tools.normative_catalog.tests.test_generate_profiles.ProfileMetadataGeneratorTests.test_baseline_server_correlation_value_condition_maps_server_response_metadata -v` | Expected Red: 2 assertion failures / 0 errors. The aggregate lacked the row and the dedicated regression found no mapping. |
+| Green — add only the reviewed structural row to the independent oracle | DCO-signed commit `6621e24c`; same focused command | PASS: 2/2. |
+| Refactor/evidence — record source audit and preserve mapping-count/remainder tests | Refactor/evidence commit pending | Independent QA found no findings; full suite and all serial checks pass. Exact-head CI will run after publishing the commit. |
+
+| Full normative suite: `py -3 -B -m unittest discover -s tools/normative_catalog/tests -p 'test_*.py'` | PASS: 563 tests in 315.107 seconds; 9 skipped. |
+| Catalog validation, profile generation check, coverage report check, immutable-source check, and `git diff --check` | PASS: catalog has 4 sources, 1,411 clauses, and 4,117 records; pinned-source base `eb6be1ec00fb816a758468802a7e094249d2b022`. Catalog validation was rerun serially after an initial safe-directory lock rejection. |
+| Independent read-only QA | PASS: no findings; source mapping, client/server distinction, and pending parent-condition state confirmed. |
+
+The crosswalk covers 12 of 14 values; `Time Stamp` and `Unique Batch Item ID` remain. The parent profile condition remains pending; no conformance claim is made.
