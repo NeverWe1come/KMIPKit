@@ -205,3 +205,8 @@ Task 9: complete (commits 90ff5750..600d8092, review approved with one deferred 
 ## T002 Fresh mapping — exact-head CI complete (2026-10-15)
 - Exact-head CI run [38778563479](https://github.com/NeverWe1come/KMIPKit/actions/runs/38778563479) completed on `925b31febe15d2177bb2beffccc6a5f4fb9a839b`: 34 jobs passed, 0 failed, and 3 scheduled-only jobs skipped. This includes the Windows script-contract job that had been running at the prior snapshot.
 - Evidence is recorded in `specs/010-profile-conformance/implementation-evidence.md`. T002 remains open; its crosswalk still needs all-profile coverage, so CI success does not imply completion or conformance. The PR remains a draft.
+
+## T002 Recover authentication SHOULD disposition (2026-10-15)
+- Source review classifies the §6.1.42 authentication/authorization SHOULD as server-only using a qualified actor inference from §9.4 and the approved KMIPKIT-0018 server-policy boundary. No client requirement was added; the two existing Recover MAY IDs remain the client mapping.
+- DCO Red/Green commits: `dd616991` / `32da4abb`, with assertion wording follow-up `fc434f19`. Focused test passes 1/1; full normative suite passes 570 tests with 9 skipped. Catalog, generated metadata/report, source audit (1,411 candidates), pinned-source immutability, and whitespace checks pass.
+- Independent QA confirmed the mapping and corrected research status counts sum to the 107 source-gap rows. Evidence is recorded in `specs/010-profile-conformance/implementation-evidence.md`; exact-head CI for the pending commits awaits push. T002 remains open and no profile-conformance claim is made.
