@@ -485,7 +485,8 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
                 self.assertEqual(condition["condition_kind"], condition_kind)
                 self.assertIsNone(condition["requirement_id"])
                 self.assertEqual(condition["scope_disposition"], "profile_conditional")
-                self.assertEqual(condition["mapping_status"], "pending_t002_crosswalk")
+                expected_mapping_status = "reviewed" if item == 7 else "pending_t002_crosswalk"
+                self.assertEqual(condition["mapping_status"], expected_mapping_status)
         self.assertEqual(
             {item["requirement_id"] for item in baseline["conditions"]},
             {None},

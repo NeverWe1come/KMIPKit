@@ -593,7 +593,18 @@
             "supported_items": [],
             "requirement_id": null,
             "scope_disposition": "profile_conditional",
-            "mapping_status": "pending_t002_crosswalk"
+            "mapping_status": "reviewed",
+            "source_review": {
+              "disposition": "open_ended_optional_capability",
+              "profiles_source": "Profiles v2.1 §5.1.1 item 7",
+              "profiles_line_range": [
+                4628,
+                4631
+              ],
+              "closure_basis": "Profiles §6.1 item 1 already includes the KMIP Specification v2.1 source for the Baseline Client closure.",
+              "additional_source_clause_ids": [],
+              "additional_requirement_ids": []
+            }
           },
           {
             "condition_id": "KMIPKIT-PROF-COND-5.1.1-008",
