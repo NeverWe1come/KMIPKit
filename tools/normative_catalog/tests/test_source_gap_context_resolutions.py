@@ -479,6 +479,50 @@ class SourceGapContextResolutionTests(unittest.TestCase):
         self.assertIn("request-parameter direction", summary)
         self.assertNotIn("actor/direction/scope unclear", summary)
 
+    def test_t002_research_bounds_procedure_evidence_to_verified_request_contracts(self) -> None:
+        oracle = json.loads(ORACLE_PATH.read_text(encoding="utf-8"))
+        gaps = {row["gap_id"]: row for row in oracle["source_only_requirement_gaps"]}
+        contracts = {row["gap_id"]: row for row in oracle["source_table_contracts"]}
+        catalog = json.loads(CATALOG_PATH.read_text(encoding="utf-8"))
+        requirements = {row["requirement_id"]: row for row in catalog["requirements"]}
+        research = PROFILE_RESEARCH_PATH.read_text(encoding="utf-8")
+        start = research.index("- **Procedure and generic-parameter context:**")
+        end = research.find("\n- **", start + 1)
+        summary = research[start:end]
+
+        request_contract_ids = {
+            "KMIPKIT-SOURCE-GAP-SPEC-6.1.24-CORRELATION-VALUE-OPTIONAL",
+            "KMIPKIT-SOURCE-GAP-SPEC-6.1.32-CORRELATION-VALUE-OPTIONAL",
+            "KMIPKIT-SOURCE-GAP-SPEC-6.1.33-CORRELATION-VALUE-OPTIONAL",
+            "KMIPKIT-SOURCE-GAP-SPEC-6.1.55-CORRELATION-VALUE-OPTIONAL",
+            "KMIPKIT-SOURCE-GAP-SPEC-6.1.56-CORRELATION-VALUE-OPTIONAL",
+        }
+        for number in (12, 14, 16):
+            gap = gaps[f"KMIPKIT-SOURCE-GAP-SPEC-6.1-PROCEDURE-{number:03d}"]
+            resolution = gap["source_resolution"]
+            self.assertEqual(resolution["related_requirement_ids"], ["KMIPKIT-REQ-SPEC-7.8-001"])
+            self.assertEqual(set(resolution["related_source_table_contract_ids"]), request_contract_ids)
+            self.assertIn("do not establish response-to-follow-up correlation round-trip behavior", resolution["review_note"])
+
+        for contract_id in request_contract_ids:
+            self.assertIn(contract_id, contracts)
+        existing_requirement = requirements["KMIPKIT-REQ-SPEC-7.8-001"]
+        self.assertFalse(existing_requirement["implementation_refs"])
+        self.assertFalse(existing_requirement["verification_refs"])
+
+        for number in (13, 15, 18, 20):
+            gap = gaps[f"KMIPKIT-SOURCE-GAP-SPEC-6.1-PROCEDURE-{number:03d}"]
+            resolution = gap["source_resolution"]
+            self.assertEqual(gap["scope_disposition"], "unresolved")
+            self.assertEqual(resolution["related_source_table_contract_ids"], [])
+            self.assertIn("response-field contract and executable test", resolution["review_note"])
+
+        self.assertIn("Five `KMIPKIT-0021` request-table contracts cover Correlation Value fields", summary)
+        self.assertIn("do not establish response-to-follow-up correlation round-trip behavior", summary)
+        self.assertIn("KMIPKIT-0019 Encrypt/Decrypt request Correlation Value rows still lack `source_table_contracts`", summary)
+        self.assertIn("response Data consumption remains unmapped", summary)
+        self.assertNotIn("operation-specific request and response evidence is assigned", summary)
+
     def test_t002_research_records_already_verified_profile_inclusion_edges(self) -> None:
         research = PROFILE_RESEARCH_PATH.read_text(encoding="utf-8")
         lines = research.splitlines()
