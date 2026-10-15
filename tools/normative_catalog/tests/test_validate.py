@@ -10609,7 +10609,7 @@ class CatalogValidationTests(unittest.TestCase):
             ["KMIPKIT-REQ-SPEC-6.1.42-001-001", "KMIPKIT-REQ-SPEC-6.1.42-001-002"],
         )
         self.assertIn("informative", reviews["KMIPKIT-CLAUSE-SPEC-6.1.42-001"]["review_note"].lower())
-        self.assertIn("§9.4", reviews["KMIPKIT-CLAUSE-SPEC-6.1.42-001"]["review_note"])
+        self.assertIn("section 9.4", reviews["KMIPKIT-CLAUSE-SPEC-6.1.42-001"]["review_note"].lower())
         self.assertIn("actor", reviews["KMIPKIT-CLAUSE-SPEC-6.1.42-001"]["review_note"].lower())
 
         request_rows = reviews["KMIPKIT-CLAUSE-SPEC-6.1.42-002"]["source_request_rows"]
@@ -10672,7 +10672,7 @@ class CatalogValidationTests(unittest.TestCase):
         self.assertIsNone(auth_gap["proposed_requirement_id"])
         self.assertEqual(auth_gap["status"], "server_actor_disposition_recorded")
         self.assertIn("informative", auth_gap["review_note"].lower())
-        self.assertIn("§9.4", auth_gap["review_note"])
+        self.assertIn("section 9.4", auth_gap["review_note"].lower())
 
         captions = {
             "request": ([32673, 32674], "Table 288: Recover Request Payload"),
