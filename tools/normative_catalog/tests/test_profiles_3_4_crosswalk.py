@@ -381,6 +381,25 @@ class ProfileSectionsThreeAndFourCrosswalkTests(unittest.TestCase):
         interop_text = pinned_excerpt([4494, 4502]).lower()
         self.assertIn("not expected that production kmip clients will support the interop operation", interop_text)
 
+    def test_profile_variable_items_are_test_context_not_server_only(self) -> None:
+        """Profiles §4.1.1's general test variation includes client-request values."""
+        clause_id = "KMIPKIT-CLAUSE-PROF-4.1.1-001"
+        clause = self.clauses[clause_id]
+        excerpt = pinned_excerpt([4330, 4338])
+        baseline = next(
+            profile
+            for profile in self.catalog["profiles"]
+            if profile["profile_id"] == "KMIPKIT-PROFILE-BASELINE-CLIENT"
+        )
+
+        self.assertIn("An implementation conformant to a Profile MAY vary the following values", excerpt)
+        self.assertIn("Unique Batch Item ID", excerpt)
+        self.assertEqual(clause["disposition"], "informative_context")
+        self.assertEqual((clause["role"], clause["direction"], clause["scope_state"]), ("both", "unclear", "out_of_scope"))
+        self.assertEqual(clause["requirement_ids"], [])
+        self.assertIn("client", clause["exclusion_rationale"].lower())
+        self.assertNotIn(clause_id, baseline["source_clause_ids"])
+
     def test_profile_4_1_2_007_is_may_without_a_false_must_keyword(self) -> None:
         requirement_id = "KMIPKIT-REQ-PROF-4.1.2-007"
         requirement = self.requirements[requirement_id]
