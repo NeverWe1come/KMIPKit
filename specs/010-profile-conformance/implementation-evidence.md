@@ -3309,5 +3309,5 @@ Profiles v2.1 lines 4535–4540 name the nested `Attributes` data structure. Spe
 | Green — generated profile metadata check | `11cba43a`; `py -3 -B tools/normative_catalog/generate_profiles.py --check` | PASS: generated profile metadata verified. |
 | Green — generated coverage report check | `11cba43a`; `py -3 -B tools/normative_catalog/report.py --check` | PASS: coverage report verified. |
 | Green — immutable pinned-source check | `11cba43a`; `py -3 -B tools/normative_catalog/check_immutable_sources.py --repo-root . --base-sha 550a864840c727afa2bdf20b5a5e25aa3e2b9dff` | PASS: pinned OASIS sources match base. |
-| Refactor — record the narrow §5.1 MAY interpretation and open item boundaries | DCO-signed Refactor documentation commit | Research and evidence updated; `KMIPKIT-REQ-SPEC-5.1-002` remains an optional repeated-value capability, conditions 003–006 remain unchanged, and T002 stays open. |
+| Refactor — record the narrow §5.1 MAY interpretation and open item boundaries | `090101dc` | Research and evidence updated; `KMIPKIT-REQ-SPEC-5.1-002` remains an optional repeated-value capability, conditions 003–006 remain unchanged, and T002 stays open. |
 | Green/Refactor — whitespace check | `git diff --check` | PASS: no whitespace errors. |
