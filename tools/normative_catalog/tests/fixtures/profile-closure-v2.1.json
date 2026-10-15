@@ -310,6 +310,20 @@
               "Time Stamp",
               "Unique Batch Item ID"
             ],
+            "supported_item_mappings": [
+              {
+                "item": "Batch Count",
+                "element_id": "KMIPKIT-ELEM-MESSAGE-FIELD-9-5-BATCH-COUNT",
+                "requirement_ids": [
+                  "KMIPKIT-REQ-SPEC-9.5-001-001",
+                  "KMIPKIT-REQ-SPEC-9.5-001-002"
+                ],
+                "source_clause_ids": [
+                  "KMIPKIT-CLAUSE-SPEC-9.5-001"
+                ],
+                "mapping_status": "reviewed"
+              }
+            ],
             "requirement_id": null,
             "scope_disposition": "profile_conditional",
             "mapping_status": "pending_t002_crosswalk"
