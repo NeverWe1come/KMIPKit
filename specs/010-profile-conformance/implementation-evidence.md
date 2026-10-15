@@ -2952,3 +2952,19 @@ Independent QA initially reported one P2 maintainability finding: the dedicated 
 | Exact-head GitHub CI run `38733890903` on `62d16b7e0f68cac37edfa6b1575c46452dd0fa8b` | PASS: 34 successful jobs, zero failures, and 3 scheduled/informational skips. This run validates the Result Reason code and tests at the published head; a subsequent evidence-only commit records it. |
 
 This slice changes the independent test oracle, its regressions, and specification evidence only. It changes no catalog ownership, runtime implementation, generated file, or pinned upstream OASIS source. The item-5 crosswalk now maps 10 of 14 values; Result Status, Server Correlation Value, Time Stamp, and Unique Batch Item ID remain. T002 stays open and no profile-conformance claim is made.
+
+### KMIPKIT-0010 T002 tranche — Baseline Client §5.1.1 item 5 Result Status (2026-10-15)
+
+The independent oracle now maps the eleventh item, Result Status, to `KMIPKIT-ELEM-MESSAGE-FIELD-9-19-RESULT-STATUS`. The map cites both §9.19 clauses and the field-specific conditional client requirement `KMIPKIT-REQ-SPEC-9.19-002`. The parent profile condition remains pending; no catalog ownership, production code, generated output, or pinned source was edited.
+
+The pinned sources support separate actors: §8.6 Table 399 makes Result Status a required response field; §9.19's response-value clause is server-only; and §9.19-002 requires the client to poll and use the asynchronous correlation value only when the received status is Pending. The baseline already includes that requirement, and KMIPKIT-0009 records implementation and a regression test. The KMIPKIT-0006 CSV's `deferred` transfer status remains for later ledger reconciliation. The regression also records the existing §8.6 clause metadata direction inconsistency for KMIPKIT-0002; it does not infer client behavior from that record.
+
+Independent QA found that the first regression version checked the correlation-value SHALL without independently pinning the preceding Operation Pending condition and asynchronous polling procedure. The regression now asserts all three exact phrases from §9.19's pinned source span. The focused Result Status test passes after this correction; the final full normative rerun and exact-head CI remain required.
+
+| Stage | DCO-signed commit and command | Result |
+|---|---|---|
+| Red — assert the eleventh source-ordered mapping, response structure, exact pinned source spans, conditional Pending client obligation, profile membership, and existing implementation evidence | `aaf583ab`; `py -3 -B -m unittest tools.normative_catalog.tests.test_generate_profiles.ProfileMetadataGeneratorTests.test_baseline_message_data_structures_condition_has_exact_reviewed_batch_crosswalk tools.normative_catalog.tests.test_generate_profiles.ProfileMetadataGeneratorTests.test_baseline_result_status_condition_maps_pending_client_duty -v` | Expected Red: 2 assertion failures / 0 errors. The aggregate lacked the new row; the dedicated test found no Result Status mapping. |
+| Green — add only the reviewed row to the independent oracle | DCO-signed commit `8e06241e`; focused aggregate and Result Status tests | PASS: 2/2. |
+| Refactor / evidence — add the source-condition assertions requested by independent QA and document the verified slice | Refactor/evidence commit to be recorded after exact-head CI | QA finding resolved. The Result Status regression passes after asserting `Operation Pending`, asynchronous polling, and the correlation SHALL from one pinned §9.19 span. |
+
+The mapping brings the crosswalk to 11 of 14 items; the three remaining values are Server Correlation Value, Time Stamp, and Unique Batch Item ID. This repository crosswalk is not an official OASIS test execution or profile-conformance claim; T002 stays open.

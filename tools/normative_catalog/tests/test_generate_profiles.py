@@ -2537,7 +2537,12 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
         self.assertIn("Result Status Yes", _normalized_html_source_span(spec_lines, [43380, 43398]))
         result_status_definition = _normalized_html_source_span(spec_lines, [45244, 45258])
         self.assertIn("The following values MAY be set in this field", result_status_definition)
-        self.assertIn("The asynchronous correlation value SHALL be used for the subsequent polling", result_status_definition)
+        self.assertIn("Operation Pending", result_status_definition)
+        self.assertIn("actual result via asynchronous polling", result_status_definition)
+        self.assertIn(
+            "The asynchronous correlation value SHALL be used for the subsequent polling",
+            result_status_definition,
+        )
         self.assertIn(
             "Result Status Enumeration",
             _normalized_html_source_span(spec_lines, [45272, 45303]),
