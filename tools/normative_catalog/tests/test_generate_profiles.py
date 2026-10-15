@@ -532,7 +532,7 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
                 self.assertEqual(condition["condition_kind"], condition_kind)
                 self.assertIsNone(condition["requirement_id"])
                 self.assertEqual(condition["scope_disposition"], "profile_conditional")
-                expected_mapping_status = "reviewed" if item in (1, 7, 8) else "pending_t002_crosswalk"
+                expected_mapping_status = "reviewed" if item in (1, 2, 7, 8) else "pending_t002_crosswalk"
                 self.assertEqual(condition["mapping_status"], expected_mapping_status)
         self.assertEqual(
             {item["requirement_id"] for item in baseline["conditions"]},
@@ -673,7 +673,7 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
         self.assertTrue(set(message_extension["requirement_ids"]).isdisjoint(condition["source_review"]["additional_requirement_ids"]))
 
     def test_baseline_attributes_condition_has_exact_reviewed_capability_crosswalk(self) -> None:
-        """Baseline Attributes maps to its general capability without closing its parent."""
+        """Baseline Attributes closes its structural map without creating a parent REQ."""
         catalog = json.loads((ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8"))
         oracle = json.loads(
             (ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json")
@@ -698,7 +698,6 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
         }
         self.assertEqual(condition["supported_items"], ["Attributes"])
         self.assertIsNone(condition["requirement_id"])
-        self.assertEqual(condition["mapping_status"], "pending_t002_crosswalk")
         self.assertEqual(condition.get("supported_item_mappings"), [expected_mapping])
 
         profiles_lines = (ROOT / profiles_path).read_text(encoding="cp1252").splitlines()
@@ -817,6 +816,7 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
         self.assertEqual(len(repeated_protect_stop_dates), 2)
         self.assertEqual(requirements["KMIPKIT-REQ-SPEC-5.1-002"]["test_case_ids"], [])
         self.assertEqual(requirements["KMIPKIT-REQ-SPEC-3.2-001"]["test_case_ids"], [])
+        self.assertEqual(condition["mapping_status"], "reviewed")
 
     def test_baseline_object_attributes_condition_has_exact_element_crosswalk(self) -> None:
         """Baseline item labels map to elements without assigning unresolved §4 requirements."""
