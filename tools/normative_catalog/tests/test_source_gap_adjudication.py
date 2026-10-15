@@ -334,7 +334,7 @@ class SourceGapAdjudicationTests(unittest.TestCase):
 
         self.assertEqual(len(oracle["source_table_contracts"]), 66)
         self.assertEqual(oracle["counts"]["requirement_crosswalk_records"], 505)
-        self.assertEqual(oracle["counts"]["source_only_requirement_gaps"], 107)
+        self.assertEqual(oracle["counts"]["source_only_requirement_gaps"], 112)
 
     def test_reviewed_structural_requirements_have_stable_catalog_mappings(self) -> None:
         catalog = _load_json(CATALOG_PATH)

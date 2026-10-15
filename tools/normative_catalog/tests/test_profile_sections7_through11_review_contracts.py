@@ -134,7 +134,7 @@ class ProfileSectionsSevenThroughElevenReviewContractTests(unittest.TestCase):
                 "gap_id": "KMIPKIT-SOURCE-GAP-SPEC-8.5-002",
                 "keywords": ["MAY", "REQUIRED"],
                 "conditions": [
-                    "Attestation Type may be repeated",
+                    "MAY be repeated",
                     "client set Attestation Capable Indicator to True",
                 ],
             },
@@ -142,25 +142,25 @@ class ProfileSectionsSevenThroughElevenReviewContractTests(unittest.TestCase):
                 "line_range": [43361, 43379],
                 "gap_id": "KMIPKIT-SOURCE-GAP-SPEC-8.6-002",
                 "keywords": ["REQUIRED"],
-                "conditions": ["if present in Request Batch Item"],
+                "conditions": ["REQUIRED if present in Request Batch Item"],
             },
             "KMIPKIT-CLAUSE-SPEC-8.6-003": {
                 "line_range": [43399, 43419],
                 "gap_id": "KMIPKIT-SOURCE-GAP-SPEC-8.6-003",
                 "keywords": ["REQUIRED", "OPTIONAL"],
-                "conditions": ["if Result Status is Failure", "otherwise OPTIONAL"],
+                "conditions": ["REQUIRED if Result Status is Failure", "otherwise OPTIONAL"],
             },
             "KMIPKIT-CLAUSE-SPEC-8.6-004": {
                 "line_range": [43420, 43439],
                 "gap_id": "KMIPKIT-SOURCE-GAP-SPEC-8.6-004",
                 "keywords": ["OPTIONAL"],
-                "conditions": ["if Result Status is not Pending or Success"],
+                "conditions": ["OPTIONAL if Result Status is not Pending or Success"],
             },
             "KMIPKIT-CLAUSE-SPEC-8.6-005": {
                 "line_range": [43440, 43459],
                 "gap_id": "KMIPKIT-SOURCE-GAP-SPEC-8.6-005",
                 "keywords": ["REQUIRED"],
-                "conditions": ["if Result Status is Pending"],
+                "conditions": ["REQUIRED if Result Status is Pending"],
             },
         }
         clauses = {row["clause_id"]: row for row in self.catalog["source_clauses"]}

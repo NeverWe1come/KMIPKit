@@ -703,8 +703,8 @@
     "profiles": 18,
     "requirement_crosswalk_records": 505,
     "requirement_crosswalk_complete": false,
-    "source_requirement_review_records": 891,
-    "source_only_requirement_gaps": 107,
+    "source_requirement_review_records": 896,
+    "source_only_requirement_gaps": 112,
     "source_only_requirement_gap_proposals": 2,
     "source_table_contracts": 66
   },
@@ -89902,6 +89902,186 @@
     {
       "source_id": "KMIPKIT-SRC-spec",
       "source_path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+      "source_section": "8.5",
+      "source_clause_id": "KMIPKIT-CLAUSE-SPEC-8.5-002",
+      "source_locator": {
+        "ordinal": 2,
+        "block_kind": "table_row"
+      },
+      "html_line_range": [
+        43202,
+        43221
+      ],
+      "source_excerpt": "Attestation Type No, MAY be repeated REQUIRED in Attestation Required error message if client set Attestation Capable Indicator to True in the request",
+      "source_context": "Actor, direction, condition, and client-scope classifications were reviewed against the pinned KMIP Specification v2.1 text independently of profile closure arrays.",
+      "source_obligations": [
+        {
+          "source_order": 1,
+          "source_text": "No, MAY be repeated",
+          "source_keyword": "MAY",
+          "actor": "server",
+          "direction": "server_to_client",
+          "condition": "No, MAY be repeated. In the client-initiated 1.0 scope this response field is produced by the server. Within the approved client-initiated 1.0 request/response scope, the response is produced by the server; the response table caption does not literally name its sender.",
+          "scope_disposition": "server_only",
+          "candidate_requirement_id": null
+        },
+        {
+          "source_order": 2,
+          "source_text": "REQUIRED in Attestation Required error message if client set Attestation Capable Indicator to True in the request",
+          "source_keyword": "REQUIRED",
+          "actor": "server",
+          "direction": "server_to_client",
+          "condition": "REQUIRED in Attestation Required error message if client set Attestation Capable Indicator to True in the request. In the client-initiated 1.0 scope this response field is produced by the server. Within the approved client-initiated 1.0 request/response scope, the response is produced by the server; the response table caption does not literally name its sender.",
+          "scope_disposition": "server_only",
+          "candidate_requirement_id": null
+        }
+      ],
+      "rejected_candidate_mappings": [],
+      "expected_client_requirement_ids": [],
+      "applies_to": "all_client_profiles",
+      "review_note": "Table 398 is the Response Header Structure. Its Attestation Type row describes server response output in the client-initiated 1.0 scope; the caption does not literally name the sender. The client indicator is a condition on server output, not a client response duty. Assign no client requirement ID."
+    },
+    {
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+      "source_section": "8.6",
+      "source_clause_id": "KMIPKIT-CLAUSE-SPEC-8.6-002",
+      "source_locator": {
+        "ordinal": 2,
+        "block_kind": "table_row"
+      },
+      "html_line_range": [
+        43361,
+        43379
+      ],
+      "source_excerpt": "Unique Batch Item ID No REQUIRED if present in Request Batch Item",
+      "source_context": "Actor, direction, condition, and client-scope classifications were reviewed against the pinned KMIP Specification v2.1 text independently of profile closure arrays.",
+      "source_obligations": [
+        {
+          "source_order": 1,
+          "source_text": "REQUIRED if present in Request Batch Item",
+          "source_keyword": "REQUIRED",
+          "actor": "server",
+          "direction": "server_to_client",
+          "condition": "REQUIRED if present in Request Batch Item. The client request-side requirement is separate in §8.3. Within the approved client-initiated 1.0 request/response scope, the response is produced by the server; the response table caption does not literally name its sender.",
+          "scope_disposition": "server_only",
+          "candidate_requirement_id": null
+        }
+      ],
+      "rejected_candidate_mappings": [],
+      "expected_client_requirement_ids": [],
+      "applies_to": "all_client_profiles",
+      "review_note": "Table 399 is the Response Batch Item Structure. This conditional echo is server response output in the client-initiated 1.0 scope; the table caption does not literally name the sender. The client request-side requirement remains separate under §8.3. Assign no client requirement ID for this response row."
+    },
+    {
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+      "source_section": "8.6",
+      "source_clause_id": "KMIPKIT-CLAUSE-SPEC-8.6-003",
+      "source_locator": {
+        "ordinal": 3,
+        "block_kind": "table_row"
+      },
+      "html_line_range": [
+        43399,
+        43419
+      ],
+      "source_excerpt": "Result Reason Yes, if Result Status is Failure REQUIRED if Result Status is Failure, otherwise OPTIONAL",
+      "source_context": "Actor, direction, condition, and client-scope classifications were reviewed against the pinned KMIP Specification v2.1 text independently of profile closure arrays.",
+      "source_obligations": [
+        {
+          "source_order": 1,
+          "source_text": "REQUIRED if Result Status is Failure",
+          "source_keyword": "REQUIRED",
+          "actor": "server",
+          "direction": "server_to_client",
+          "condition": "REQUIRED if Result Status is Failure. Within the approved client-initiated 1.0 request/response scope, the response is produced by the server; the response table caption does not literally name its sender.",
+          "scope_disposition": "server_only",
+          "candidate_requirement_id": null
+        },
+        {
+          "source_order": 2,
+          "source_text": "otherwise OPTIONAL",
+          "source_keyword": "OPTIONAL",
+          "actor": "server",
+          "direction": "server_to_client",
+          "condition": "otherwise OPTIONAL. Within the approved client-initiated 1.0 request/response scope, the response is produced by the server; the response table caption does not literally name its sender.",
+          "scope_disposition": "server_only",
+          "candidate_requirement_id": null
+        }
+      ],
+      "rejected_candidate_mappings": [],
+      "expected_client_requirement_ids": [],
+      "applies_to": "all_client_profiles",
+      "review_note": "Table 399 is the Response Batch Item Structure. The conditional Result Reason requiredness describes server response output in the client-initiated 1.0 scope; the caption does not literally name the sender. This row does not state a client validation duty. Assign no client requirement ID."
+    },
+    {
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+      "source_section": "8.6",
+      "source_clause_id": "KMIPKIT-CLAUSE-SPEC-8.6-004",
+      "source_locator": {
+        "ordinal": 4,
+        "block_kind": "table_row"
+      },
+      "html_line_range": [
+        43420,
+        43439
+      ],
+      "source_excerpt": "Result Message No OPTIONAL if Result Status is not Pending or Success",
+      "source_context": "Actor, direction, condition, and client-scope classifications were reviewed against the pinned KMIP Specification v2.1 text independently of profile closure arrays.",
+      "source_obligations": [
+        {
+          "source_order": 1,
+          "source_text": "OPTIONAL if Result Status is not Pending or Success",
+          "source_keyword": "OPTIONAL",
+          "actor": "server",
+          "direction": "server_to_client",
+          "condition": "OPTIONAL if Result Status is not Pending or Success. Within the approved client-initiated 1.0 request/response scope, the response is produced by the server; the response table caption does not literally name its sender.",
+          "scope_disposition": "server_only",
+          "candidate_requirement_id": null
+        }
+      ],
+      "rejected_candidate_mappings": [],
+      "expected_client_requirement_ids": [],
+      "applies_to": "all_client_profiles",
+      "review_note": "Table 399 is the Response Batch Item Structure. The Result Message option describes server response output in the client-initiated 1.0 scope; the caption does not literally name the sender. Assign no client requirement ID."
+    },
+    {
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+      "source_section": "8.6",
+      "source_clause_id": "KMIPKIT-CLAUSE-SPEC-8.6-005",
+      "source_locator": {
+        "ordinal": 5,
+        "block_kind": "table_row"
+      },
+      "html_line_range": [
+        43440,
+        43459
+      ],
+      "source_excerpt": "Asynchronous Correlation Value No REQUIRED if Result Status is Pending",
+      "source_context": "Actor, direction, condition, and client-scope classifications were reviewed against the pinned KMIP Specification v2.1 text independently of profile closure arrays.",
+      "source_obligations": [
+        {
+          "source_order": 1,
+          "source_text": "REQUIRED if Result Status is Pending",
+          "source_keyword": "REQUIRED",
+          "actor": "server",
+          "direction": "server_to_client",
+          "condition": "REQUIRED if Result Status is Pending. The client's later Poll/Cancel use is separate under §9.1. Within the approved client-initiated 1.0 request/response scope, the response is produced by the server; the response table caption does not literally name its sender.",
+          "scope_disposition": "server_only",
+          "candidate_requirement_id": null
+        }
+      ],
+      "rejected_candidate_mappings": [],
+      "expected_client_requirement_ids": [],
+      "applies_to": "all_client_profiles",
+      "review_note": "Table 399 is the Response Batch Item Structure. The Pending correlation value is server response output in the client-initiated 1.0 scope; the caption does not literally name the sender. The client's later Poll/Cancel use is separately specified in §9.1. Assign no client requirement ID for this response row."
+    },
+    {
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
       "source_section": "9.1",
       "source_clause_id": "KMIPKIT-CLAUSE-SPEC-9.1-001",
       "source_locator": {
@@ -92039,6 +92219,163 @@
       "proposed_requirement_id": null,
       "status": "server_actor_disposition_recorded",
       "review_note": "Table 397 is the Response Message Structure. Within the approved client-initiated 1.0 request/response scope, this is server response output; Table 397 does not literally name the sender, so the actor is a context-bound inference. Server-initiated Notify/Put responses are outside 1.0. No client requirement is assigned, reused, or proposed."
+    },
+    {
+      "gap_id": "KMIPKIT-SOURCE-GAP-SPEC-8.5-002",
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+      "source_section": "8.5",
+      "source_clause_id": "KMIPKIT-CLAUSE-SPEC-8.5-002",
+      "source_locator": {
+        "ordinal": 2,
+        "block_kind": "table_row"
+      },
+      "source_locator_description": "§8.5 / table_row (ordinal 002)",
+      "html_line_range": [
+        43202,
+        43221
+      ],
+      "source_excerpt": "Attestation Type No, MAY be repeated REQUIRED in Attestation Required error message if client set Attestation Capable Indicator to True in the request",
+      "source_keywords": [
+        "MAY",
+        "REQUIRED"
+      ],
+      "source_force": "MAY_and_conditional_REQUIRED",
+      "audited_statement": "Table 398 is the Response Header Structure. Its Attestation Type row describes server response output in the client-initiated 1.0 scope; the caption does not literally name the sender. The client indicator is a condition on server output, not a client response duty. Assign no client requirement ID.",
+      "actor": "server",
+      "direction": "server_to_client",
+      "condition": "No, MAY be repeated. In the client-initiated 1.0 scope this response field is produced by the server. REQUIRED in Attestation Required error message if client set Attestation Capable Indicator to True in the request. In the client-initiated 1.0 scope this response field is produced by the server. Within the approved client-initiated 1.0 request/response scope, the response is produced by the server; the response table caption does not literally name its sender.",
+      "scope_disposition": "server_only",
+      "candidate_requirement_id": null,
+      "reused_requirement_id": null,
+      "proposed_requirement_id": null,
+      "status": "server_actor_disposition_recorded",
+      "review_note": "Table 398 is the Response Header Structure. Its Attestation Type row describes server response output in the client-initiated 1.0 scope; the caption does not literally name the sender. The client indicator is a condition on server output, not a client response duty. Assign no client requirement ID."
+    },
+    {
+      "gap_id": "KMIPKIT-SOURCE-GAP-SPEC-8.6-002",
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+      "source_section": "8.6",
+      "source_clause_id": "KMIPKIT-CLAUSE-SPEC-8.6-002",
+      "source_locator": {
+        "ordinal": 2,
+        "block_kind": "table_row"
+      },
+      "source_locator_description": "§8.6 / table_row (ordinal 002)",
+      "html_line_range": [
+        43361,
+        43379
+      ],
+      "source_excerpt": "Unique Batch Item ID No REQUIRED if present in Request Batch Item",
+      "source_keywords": [
+        "REQUIRED"
+      ],
+      "source_force": "conditional_REQUIRED",
+      "audited_statement": "Table 399 is the Response Batch Item Structure. This conditional echo is server response output in the client-initiated 1.0 scope; the table caption does not literally name the sender. The client request-side requirement remains separate under §8.3. Assign no client requirement ID for this response row.",
+      "actor": "server",
+      "direction": "server_to_client",
+      "condition": "REQUIRED if present in Request Batch Item. The client request-side requirement is separate in §8.3. Within the approved client-initiated 1.0 request/response scope, the response is produced by the server; the response table caption does not literally name its sender.",
+      "scope_disposition": "server_only",
+      "candidate_requirement_id": null,
+      "reused_requirement_id": null,
+      "proposed_requirement_id": null,
+      "status": "server_actor_disposition_recorded",
+      "review_note": "Table 399 is the Response Batch Item Structure. This conditional echo is server response output in the client-initiated 1.0 scope; the table caption does not literally name the sender. The client request-side requirement remains separate under §8.3. Assign no client requirement ID for this response row."
+    },
+    {
+      "gap_id": "KMIPKIT-SOURCE-GAP-SPEC-8.6-003",
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+      "source_section": "8.6",
+      "source_clause_id": "KMIPKIT-CLAUSE-SPEC-8.6-003",
+      "source_locator": {
+        "ordinal": 3,
+        "block_kind": "table_row"
+      },
+      "source_locator_description": "§8.6 / table_row (ordinal 003)",
+      "html_line_range": [
+        43399,
+        43419
+      ],
+      "source_excerpt": "Result Reason Yes, if Result Status is Failure REQUIRED if Result Status is Failure, otherwise OPTIONAL",
+      "source_keywords": [
+        "REQUIRED",
+        "OPTIONAL"
+      ],
+      "source_force": "conditional_REQUIRED_and_OPTIONAL",
+      "audited_statement": "Table 399 is the Response Batch Item Structure. The conditional Result Reason requiredness describes server response output in the client-initiated 1.0 scope; the caption does not literally name the sender. This row does not state a client validation duty. Assign no client requirement ID.",
+      "actor": "server",
+      "direction": "server_to_client",
+      "condition": "REQUIRED if Result Status is Failure. otherwise OPTIONAL. Within the approved client-initiated 1.0 request/response scope, the response is produced by the server; the response table caption does not literally name its sender.",
+      "scope_disposition": "server_only",
+      "candidate_requirement_id": null,
+      "reused_requirement_id": null,
+      "proposed_requirement_id": null,
+      "status": "server_actor_disposition_recorded",
+      "review_note": "Table 399 is the Response Batch Item Structure. The conditional Result Reason requiredness describes server response output in the client-initiated 1.0 scope; the caption does not literally name the sender. This row does not state a client validation duty. Assign no client requirement ID."
+    },
+    {
+      "gap_id": "KMIPKIT-SOURCE-GAP-SPEC-8.6-004",
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+      "source_section": "8.6",
+      "source_clause_id": "KMIPKIT-CLAUSE-SPEC-8.6-004",
+      "source_locator": {
+        "ordinal": 4,
+        "block_kind": "table_row"
+      },
+      "source_locator_description": "§8.6 / table_row (ordinal 004)",
+      "html_line_range": [
+        43420,
+        43439
+      ],
+      "source_excerpt": "Result Message No OPTIONAL if Result Status is not Pending or Success",
+      "source_keywords": [
+        "OPTIONAL"
+      ],
+      "source_force": "OPTIONAL",
+      "audited_statement": "Table 399 is the Response Batch Item Structure. The Result Message option describes server response output in the client-initiated 1.0 scope; the caption does not literally name the sender. Assign no client requirement ID.",
+      "actor": "server",
+      "direction": "server_to_client",
+      "condition": "OPTIONAL if Result Status is not Pending or Success. Within the approved client-initiated 1.0 request/response scope, the response is produced by the server; the response table caption does not literally name its sender.",
+      "scope_disposition": "server_only",
+      "candidate_requirement_id": null,
+      "reused_requirement_id": null,
+      "proposed_requirement_id": null,
+      "status": "server_actor_disposition_recorded",
+      "review_note": "Table 399 is the Response Batch Item Structure. The Result Message option describes server response output in the client-initiated 1.0 scope; the caption does not literally name the sender. Assign no client requirement ID."
+    },
+    {
+      "gap_id": "KMIPKIT-SOURCE-GAP-SPEC-8.6-005",
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+      "source_section": "8.6",
+      "source_clause_id": "KMIPKIT-CLAUSE-SPEC-8.6-005",
+      "source_locator": {
+        "ordinal": 5,
+        "block_kind": "table_row"
+      },
+      "source_locator_description": "§8.6 / table_row (ordinal 005)",
+      "html_line_range": [
+        43440,
+        43459
+      ],
+      "source_excerpt": "Asynchronous Correlation Value No REQUIRED if Result Status is Pending",
+      "source_keywords": [
+        "REQUIRED"
+      ],
+      "source_force": "conditional_REQUIRED",
+      "audited_statement": "Table 399 is the Response Batch Item Structure. The Pending correlation value is server response output in the client-initiated 1.0 scope; the caption does not literally name the sender. The client's later Poll/Cancel use is separately specified in §9.1. Assign no client requirement ID for this response row.",
+      "actor": "server",
+      "direction": "server_to_client",
+      "condition": "REQUIRED if Result Status is Pending. The client's later Poll/Cancel use is separate under §9.1. Within the approved client-initiated 1.0 request/response scope, the response is produced by the server; the response table caption does not literally name its sender.",
+      "scope_disposition": "server_only",
+      "candidate_requirement_id": null,
+      "reused_requirement_id": null,
+      "proposed_requirement_id": null,
+      "status": "server_actor_disposition_recorded",
+      "review_note": "Table 399 is the Response Batch Item Structure. The Pending correlation value is server response output in the client-initiated 1.0 scope; the caption does not literally name the sender. The client's later Poll/Cancel use is separately specified in §9.1. Assign no client requirement ID for this response row."
     },
     {
       "gap_id": "KMIPKIT-SOURCE-GAP-SPEC-9.17-001",
