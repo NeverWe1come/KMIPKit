@@ -332,7 +332,7 @@ class SourceGapAdjudicationTests(unittest.TestCase):
         self.assertEqual(official_case["fixture_availability"], "unavailable")
         self.assertIsNone(official_case["fixture_path"])
 
-        self.assertEqual(len(oracle["source_table_contracts"]), 66)
+        self.assertEqual(len(oracle["source_table_contracts"]), 68)
         self.assertEqual(oracle["counts"]["requirement_crosswalk_records"], 505)
         self.assertEqual(oracle["counts"]["source_only_requirement_gaps"], 112)
 

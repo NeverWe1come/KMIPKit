@@ -73,18 +73,29 @@ EXPECTED_GENERIC_PARAMETER_CONTRACTS = {
     ),
 }
 
-# KMIPKIT-0019 approves both client 1.0 operations, but the profile oracle does
-# not yet have source_table_contracts for these request tables. Their generic
-# client scope is known; operation-specific parameter mapping remains blocked.
-UNMAPPED_GENERIC_CONTEXT_OPERATION_TABLES = {
-    "KMIPKIT-ELEM-OP-C2S-DECRYPT": ("Decrypt", 196),
-    "KMIPKIT-ELEM-OP-C2S-ENCRYPT": ("Encrypt", 214),
+# KMIPKIT-0019 approves both client 1.0 operations. Only their optional
+# Correlation Value request rows are mapped; broader parameter mapping remains open.
+PARTIALLY_MAPPED_GENERIC_CONTEXT_OPERATION_TABLES = {
+    "KMIPKIT-ELEM-OP-C2S-DECRYPT": (
+        "Decrypt",
+        196,
+        "KMIPKIT-SOURCE-GAP-SPEC-6.1.11-CORRELATION-VALUE-OPTIONAL",
+    ),
+    "KMIPKIT-ELEM-OP-C2S-ENCRYPT": (
+        "Encrypt",
+        214,
+        "KMIPKIT-SOURCE-GAP-SPEC-6.1.17-CORRELATION-VALUE-OPTIONAL",
+    ),
 }
 
 EXPECTED_GENERIC_CONTEXT_OPERATIONS = {
     "KMIPKIT-SOURCE-GAP-SPEC-6.1-PARAGRAPH-006": {
-        "KMIPKIT-ELEM-OP-C2S-DECRYPT": None,
-        "KMIPKIT-ELEM-OP-C2S-ENCRYPT": None,
+        "KMIPKIT-ELEM-OP-C2S-DECRYPT": {
+            "KMIPKIT-SOURCE-GAP-SPEC-6.1.11-CORRELATION-VALUE-OPTIONAL"
+        },
+        "KMIPKIT-ELEM-OP-C2S-ENCRYPT": {
+            "KMIPKIT-SOURCE-GAP-SPEC-6.1.17-CORRELATION-VALUE-OPTIONAL"
+        },
         "KMIPKIT-ELEM-OP-C2S-HASH": {
             "KMIPKIT-SOURCE-GAP-SPEC-6.1.24-CRYPTOGRAPHIC-PARAMETERS-REQUIRED"
         },
@@ -94,8 +105,12 @@ EXPECTED_GENERIC_CONTEXT_OPERATIONS = {
         "KMIPKIT-ELEM-OP-C2S-SIGNATURE-VERIFY": set(),
     },
     "KMIPKIT-SOURCE-GAP-SPEC-6.1-PARAGRAPH-007": {
-        "KMIPKIT-ELEM-OP-C2S-DECRYPT": None,
-        "KMIPKIT-ELEM-OP-C2S-ENCRYPT": None,
+        "KMIPKIT-ELEM-OP-C2S-DECRYPT": {
+            "KMIPKIT-SOURCE-GAP-SPEC-6.1.11-CORRELATION-VALUE-OPTIONAL"
+        },
+        "KMIPKIT-ELEM-OP-C2S-ENCRYPT": {
+            "KMIPKIT-SOURCE-GAP-SPEC-6.1.17-CORRELATION-VALUE-OPTIONAL"
+        },
         "KMIPKIT-ELEM-OP-C2S-HASH": {
             "KMIPKIT-SOURCE-GAP-SPEC-6.1.24-CRYPTOGRAPHIC-PARAMETERS-REQUIRED"
         },
@@ -105,8 +120,12 @@ EXPECTED_GENERIC_CONTEXT_OPERATIONS = {
         "KMIPKIT-ELEM-OP-C2S-SIGNATURE-VERIFY": set(),
     },
     "KMIPKIT-SOURCE-GAP-SPEC-6.1-PARAGRAPH-008": {
-        "KMIPKIT-ELEM-OP-C2S-DECRYPT": None,
-        "KMIPKIT-ELEM-OP-C2S-ENCRYPT": None,
+        "KMIPKIT-ELEM-OP-C2S-DECRYPT": {
+            "KMIPKIT-SOURCE-GAP-SPEC-6.1.11-CORRELATION-VALUE-OPTIONAL"
+        },
+        "KMIPKIT-ELEM-OP-C2S-ENCRYPT": {
+            "KMIPKIT-SOURCE-GAP-SPEC-6.1.17-CORRELATION-VALUE-OPTIONAL"
+        },
         "KMIPKIT-ELEM-OP-C2S-HASH": {
             "KMIPKIT-SOURCE-GAP-SPEC-6.1.24-CRYPTOGRAPHIC-PARAMETERS-REQUIRED",
             "KMIPKIT-SOURCE-GAP-SPEC-6.1.24-DATA-REQUIRED",
@@ -386,11 +405,18 @@ class SourceGapContextResolutionTests(unittest.TestCase):
                 if contract_ids is not None
             )
         )
+        correlation_request_contract_ids = {
+            contract_id
+            for _, _, contract_id in PARTIALLY_MAPPED_GENERIC_CONTEXT_OPERATION_TABLES.values()
+        }
 
         self.assertEqual(set(catalog_operations), approved_operation_ids)
-        self.assertEqual(approved_operation_ids_019, set(UNMAPPED_GENERIC_CONTEXT_OPERATION_TABLES))
+        self.assertEqual(
+            approved_operation_ids_019,
+            set(PARTIALLY_MAPPED_GENERIC_CONTEXT_OPERATION_TABLES),
+        )
         self.assertEqual(expected_operation_ids_from_contexts, expected_operation_ids)
-        for operation_id, (operation_name, table_number) in UNMAPPED_GENERIC_CONTEXT_OPERATION_TABLES.items():
+        for operation_id, (operation_name, table_number, _) in PARTIALLY_MAPPED_GENERIC_CONTEXT_OPERATION_TABLES.items():
             with self.subTest(operation_id=operation_id):
                 self.assertIn(operation_id, catalog_operations)
                 self.assertEqual(catalog_operations[operation_id]["feature_spec"], "KMIPKIT-0019")
@@ -403,7 +429,10 @@ class SourceGapContextResolutionTests(unittest.TestCase):
                         if table.get("role") == "request"
                     },
                 )
-        self.assertEqual(expected_mapped_contract_ids, set(EXPECTED_GENERIC_PARAMETER_CONTRACTS))
+        self.assertEqual(
+            expected_mapped_contract_ids,
+            set(EXPECTED_GENERIC_PARAMETER_CONTRACTS) | correlation_request_contract_ids,
+        )
         self.assertTrue(expected_requirement_ids)
         self.assertTrue(expected_requirement_ids <= approved_requirement_ids)
 
@@ -465,8 +494,10 @@ class SourceGapContextResolutionTests(unittest.TestCase):
             self.assertEqual(set(operation_contracts), expected_operation_ids)
             for operation_id, expected_ids in operation_contracts.items():
                 with self.subTest(gap_id=gap_id, operation_id=operation_id):
-                    if expected_ids is None:
-                        operation_name, table_number = UNMAPPED_GENERIC_CONTEXT_OPERATION_TABLES[operation_id]
+                    if operation_id in PARTIALLY_MAPPED_GENERIC_CONTEXT_OPERATION_TABLES:
+                        operation_name, table_number, expected_optional_contract_id = (
+                            PARTIALLY_MAPPED_GENERIC_CONTEXT_OPERATION_TABLES[operation_id]
+                        )
                         request_contracts = {
                             contract_id
                             for contract_id, contract in contracts.items()
@@ -475,26 +506,27 @@ class SourceGapContextResolutionTests(unittest.TestCase):
                         }
                         self.assertEqual(
                             request_contracts,
-                            set(),
-                            f"{gap_id} must keep {operation_name} Table {table_number} unmapped until its source contract is reviewed",
+                            {expected_optional_contract_id},
+                            f"{gap_id} may map only the optional Correlation Value row from {operation_name} Table {table_number}",
                         )
                         note = resolution.get("review_note", "")
                         self.assertEqual(
                             gap["scope_disposition"],
                             "client_1_0",
-                            f"{gap_id} must preserve known client scope while leaving {operation_name} Table {table_number} mapping open",
+                            f"{gap_id} must preserve client scope while broader {operation_name} Table {table_number} parameter mapping stays open",
                         )
                         note_requirements = {
                             "KMIPKIT-0019",
                             operation_name,
                             f"Table {table_number}",
-                            "source_table_contracts",
+                            "optional Correlation Value",
+                            "broader operation-specific parameter mapping remains open",
                         }
                         self.assertTrue(
                             all(term in note for term in note_requirements),
-                            f"{gap_id} needs an explicit blocker for {operation_name} Table {table_number}",
+                            f"{gap_id} needs an explicit remaining-scope note for {operation_name} Table {table_number}",
                         )
-                        self.assertTrue(request_contracts <= linked_contract_ids)
+                        self.assertTrue(expected_ids <= linked_contract_ids)
                         for contract_id in request_contracts:
                             contract = contracts[contract_id]
                             self.assertTrue(contract["implementation_refs"])
@@ -668,6 +700,8 @@ class SourceGapContextResolutionTests(unittest.TestCase):
             "KMIPKIT-SOURCE-GAP-SPEC-6.1.33-CORRELATION-VALUE-OPTIONAL",
             "KMIPKIT-SOURCE-GAP-SPEC-6.1.55-CORRELATION-VALUE-OPTIONAL",
             "KMIPKIT-SOURCE-GAP-SPEC-6.1.56-CORRELATION-VALUE-OPTIONAL",
+            "KMIPKIT-SOURCE-GAP-SPEC-6.1.11-CORRELATION-VALUE-OPTIONAL",
+            "KMIPKIT-SOURCE-GAP-SPEC-6.1.17-CORRELATION-VALUE-OPTIONAL",
         }
         for number in (12, 14, 16):
             gap = gaps[f"KMIPKIT-SOURCE-GAP-SPEC-6.1-PROCEDURE-{number:03d}"]
@@ -689,9 +723,15 @@ class SourceGapContextResolutionTests(unittest.TestCase):
             self.assertEqual(resolution["related_source_table_contract_ids"], [])
             self.assertIn("response-field contract and executable test", resolution["review_note"])
 
-        self.assertIn("Five `KMIPKIT-0021` request-table contracts cover Correlation Value fields", summary)
+        self.assertIn(
+            "Seven Correlation Value request-table contracts are recorded: five `KMIPKIT-0021` contracts plus only the two optional KMIPKIT-0019 Encrypt/Decrypt request rows",
+            summary,
+        )
         self.assertIn("do not establish response-to-follow-up correlation round-trip behavior", summary)
-        self.assertIn("KMIPKIT-0019 Encrypt/Decrypt request Correlation Value rows still lack `source_table_contracts`", summary)
+        self.assertIn(
+            "Encrypt/Decrypt Correlation Value request rows are mapped, while broader operation-specific parameter mapping remains open",
+            summary,
+        )
         self.assertIn("response Data consumption remains unmapped", summary)
         self.assertNotIn("operation-specific request and response evidence is assigned", summary)
 

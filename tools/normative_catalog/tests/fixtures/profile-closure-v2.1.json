@@ -699,7 +699,7 @@
     "source_requirement_review_records": 896,
     "source_only_requirement_gaps": 112,
     "source_only_requirement_gap_proposals": 2,
-    "source_table_contracts": 66
+    "source_table_contracts": 68
   },
   "source_clause_crosswalk": [
     {
@@ -72257,7 +72257,21 @@
       "rejected_candidate_mappings": [],
       "expected_client_requirement_ids": [],
       "applies_to": "all_client_profiles",
-      "review_note": "Item/REQUIRED/Description is a table header, not an actor predicate or client duty."
+      "review_note": "Item/REQUIRED/Description is a table header, not an actor predicate or client duty. The optional Correlation Value request row is mapped through KMIPKIT-0019 FR-004; it does not create a standalone REQ record. Broader operation-specific parameter mapping remains open.",
+      "source_request_rows": [
+        {
+          "row_label": "Correlation Value",
+          "required": "No",
+          "actor": "client",
+          "disposition": "optional_request_table_contract",
+          "html_line_range": [
+            25165,
+            25181
+          ],
+          "source_excerpt": "Correlation Value No Specifies the existing stream or by-parts cryptographic operation (as returned from a previous call to this operation).",
+          "source_gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.11-CORRELATION-VALUE-OPTIONAL"
+        }
+      ]
     },
     {
       "source_id": "KMIPKIT-SRC-spec",
@@ -73689,7 +73703,21 @@
       "rejected_candidate_mappings": [],
       "expected_client_requirement_ids": [],
       "applies_to": "all_client_profiles",
-      "review_note": "Request Payload Item / REQUIRED / Description header only; no actor predicate or independent duty."
+      "review_note": "Request Payload Item / REQUIRED / Description header only; no actor predicate or independent duty. The optional Correlation Value request row is mapped through KMIPKIT-0019 FR-004; it does not create a standalone REQ record. Broader operation-specific parameter mapping remains open.",
+      "source_request_rows": [
+        {
+          "row_label": "Correlation Value",
+          "required": "No",
+          "actor": "client",
+          "disposition": "optional_request_table_contract",
+          "html_line_range": [
+            26590,
+            26606
+          ],
+          "source_excerpt": "Correlation Value No Specifies the existing stream or by-parts cryptographic operation (as returned from a previous call to this operation).",
+          "source_gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.17-CORRELATION-VALUE-OPTIONAL"
+        }
+      ]
     },
     {
       "source_id": "KMIPKIT-SRC-spec",
@@ -91369,20 +91397,22 @@
       "candidate_requirement_id": null,
       "proposed_requirement_id": null,
       "status": "reviewed_procedure_context",
-      "review_note": "Linked to existing KMIPKIT-REQ-SPEC-7.8-001. Five KMIPKIT-0021 Correlation Value request-table contracts provide field-level implementation and test evidence, but do not establish response-to-follow-up correlation round-trip behavior. The catalog requirement remains unassigned with no direct implementation or verification references, and KMIPKIT-0019 Encrypt/Decrypt lack source_table_contracts for their request Correlation Value fields. Keep this procedure context unresolved for full-scope closure; do not infer a formal requirement.",
+      "review_note": "Linked to existing KMIPKIT-REQ-SPEC-7.8-001. Seven request-table contracts provide field-level implementation and test evidence: five KMIPKIT-0021 Correlation Value contracts and only the two optional KMIPKIT-0019 Encrypt/Decrypt request-row contracts. These contracts do not establish response-to-follow-up correlation round-trip behavior. The catalog requirement remains unassigned with no direct implementation or verification references. Keep this procedure context unresolved for full-scope closure; do not infer a formal requirement.",
       "source_resolution": {
         "kind": "procedure_context",
         "context_id": "KMIPKIT-PROC-SPEC-6.1-012",
         "related_requirement_ids": [
           "KMIPKIT-REQ-SPEC-7.8-001"
         ],
-        "review_note": "Linked to existing KMIPKIT-REQ-SPEC-7.8-001. Five KMIPKIT-0021 Correlation Value request-table contracts provide field-level implementation and test evidence, but do not establish response-to-follow-up correlation round-trip behavior. The catalog requirement remains unassigned with no direct implementation or verification references, and KMIPKIT-0019 Encrypt/Decrypt lack source_table_contracts for their request Correlation Value fields. Keep this procedure context unresolved for full-scope closure; do not infer a formal requirement.",
+        "review_note": "Linked to existing KMIPKIT-REQ-SPEC-7.8-001. Seven request-table contracts provide field-level implementation and test evidence: five KMIPKIT-0021 Correlation Value contracts and only the two optional KMIPKIT-0019 Encrypt/Decrypt request-row contracts. These contracts do not establish response-to-follow-up correlation round-trip behavior. The catalog requirement remains unassigned with no direct implementation or verification references. Keep this procedure context unresolved for full-scope closure; do not infer a formal requirement.",
         "related_source_table_contract_ids": [
           "KMIPKIT-SOURCE-GAP-SPEC-6.1.24-CORRELATION-VALUE-OPTIONAL",
           "KMIPKIT-SOURCE-GAP-SPEC-6.1.32-CORRELATION-VALUE-OPTIONAL",
           "KMIPKIT-SOURCE-GAP-SPEC-6.1.33-CORRELATION-VALUE-OPTIONAL",
           "KMIPKIT-SOURCE-GAP-SPEC-6.1.55-CORRELATION-VALUE-OPTIONAL",
-          "KMIPKIT-SOURCE-GAP-SPEC-6.1.56-CORRELATION-VALUE-OPTIONAL"
+          "KMIPKIT-SOURCE-GAP-SPEC-6.1.56-CORRELATION-VALUE-OPTIONAL",
+          "KMIPKIT-SOURCE-GAP-SPEC-6.1.11-CORRELATION-VALUE-OPTIONAL",
+          "KMIPKIT-SOURCE-GAP-SPEC-6.1.17-CORRELATION-VALUE-OPTIONAL"
         ]
       }
     },
@@ -91439,20 +91469,22 @@
       "candidate_requirement_id": null,
       "proposed_requirement_id": null,
       "status": "reviewed_procedure_context",
-      "review_note": "Linked to existing KMIPKIT-REQ-SPEC-7.8-001. Five KMIPKIT-0021 Correlation Value request-table contracts provide field-level implementation and test evidence, but do not establish response-to-follow-up correlation round-trip behavior. The catalog requirement remains unassigned with no direct implementation or verification references, and KMIPKIT-0019 Encrypt/Decrypt lack source_table_contracts for their request Correlation Value fields. Keep this procedure context unresolved for full-scope closure; do not infer a formal requirement.",
+      "review_note": "Linked to existing KMIPKIT-REQ-SPEC-7.8-001. Seven request-table contracts provide field-level implementation and test evidence: five KMIPKIT-0021 Correlation Value contracts and only the two optional KMIPKIT-0019 Encrypt/Decrypt request-row contracts. These contracts do not establish response-to-follow-up correlation round-trip behavior. The catalog requirement remains unassigned with no direct implementation or verification references. Keep this procedure context unresolved for full-scope closure; do not infer a formal requirement.",
       "source_resolution": {
         "kind": "procedure_context",
         "context_id": "KMIPKIT-PROC-SPEC-6.1-014",
         "related_requirement_ids": [
           "KMIPKIT-REQ-SPEC-7.8-001"
         ],
-        "review_note": "Linked to existing KMIPKIT-REQ-SPEC-7.8-001. Five KMIPKIT-0021 Correlation Value request-table contracts provide field-level implementation and test evidence, but do not establish response-to-follow-up correlation round-trip behavior. The catalog requirement remains unassigned with no direct implementation or verification references, and KMIPKIT-0019 Encrypt/Decrypt lack source_table_contracts for their request Correlation Value fields. Keep this procedure context unresolved for full-scope closure; do not infer a formal requirement.",
+        "review_note": "Linked to existing KMIPKIT-REQ-SPEC-7.8-001. Seven request-table contracts provide field-level implementation and test evidence: five KMIPKIT-0021 Correlation Value contracts and only the two optional KMIPKIT-0019 Encrypt/Decrypt request-row contracts. These contracts do not establish response-to-follow-up correlation round-trip behavior. The catalog requirement remains unassigned with no direct implementation or verification references. Keep this procedure context unresolved for full-scope closure; do not infer a formal requirement.",
         "related_source_table_contract_ids": [
           "KMIPKIT-SOURCE-GAP-SPEC-6.1.24-CORRELATION-VALUE-OPTIONAL",
           "KMIPKIT-SOURCE-GAP-SPEC-6.1.32-CORRELATION-VALUE-OPTIONAL",
           "KMIPKIT-SOURCE-GAP-SPEC-6.1.33-CORRELATION-VALUE-OPTIONAL",
           "KMIPKIT-SOURCE-GAP-SPEC-6.1.55-CORRELATION-VALUE-OPTIONAL",
-          "KMIPKIT-SOURCE-GAP-SPEC-6.1.56-CORRELATION-VALUE-OPTIONAL"
+          "KMIPKIT-SOURCE-GAP-SPEC-6.1.56-CORRELATION-VALUE-OPTIONAL",
+          "KMIPKIT-SOURCE-GAP-SPEC-6.1.11-CORRELATION-VALUE-OPTIONAL",
+          "KMIPKIT-SOURCE-GAP-SPEC-6.1.17-CORRELATION-VALUE-OPTIONAL"
         ]
       }
     },
@@ -91509,20 +91541,22 @@
       "candidate_requirement_id": null,
       "proposed_requirement_id": null,
       "status": "reviewed_procedure_context",
-      "review_note": "Linked to existing KMIPKIT-REQ-SPEC-7.8-001. Five KMIPKIT-0021 Correlation Value request-table contracts provide field-level implementation and test evidence, but do not establish response-to-follow-up correlation round-trip behavior. The catalog requirement remains unassigned with no direct implementation or verification references, and KMIPKIT-0019 Encrypt/Decrypt lack source_table_contracts for their request Correlation Value fields. Keep this procedure context unresolved for full-scope closure; do not infer a formal requirement.",
+      "review_note": "Linked to existing KMIPKIT-REQ-SPEC-7.8-001. Seven request-table contracts provide field-level implementation and test evidence: five KMIPKIT-0021 Correlation Value contracts and only the two optional KMIPKIT-0019 Encrypt/Decrypt request-row contracts. These contracts do not establish response-to-follow-up correlation round-trip behavior. The catalog requirement remains unassigned with no direct implementation or verification references. Keep this procedure context unresolved for full-scope closure; do not infer a formal requirement.",
       "source_resolution": {
         "kind": "procedure_context",
         "context_id": "KMIPKIT-PROC-SPEC-6.1-016",
         "related_requirement_ids": [
           "KMIPKIT-REQ-SPEC-7.8-001"
         ],
-        "review_note": "Linked to existing KMIPKIT-REQ-SPEC-7.8-001. Five KMIPKIT-0021 Correlation Value request-table contracts provide field-level implementation and test evidence, but do not establish response-to-follow-up correlation round-trip behavior. The catalog requirement remains unassigned with no direct implementation or verification references, and KMIPKIT-0019 Encrypt/Decrypt lack source_table_contracts for their request Correlation Value fields. Keep this procedure context unresolved for full-scope closure; do not infer a formal requirement.",
+        "review_note": "Linked to existing KMIPKIT-REQ-SPEC-7.8-001. Seven request-table contracts provide field-level implementation and test evidence: five KMIPKIT-0021 Correlation Value contracts and only the two optional KMIPKIT-0019 Encrypt/Decrypt request-row contracts. These contracts do not establish response-to-follow-up correlation round-trip behavior. The catalog requirement remains unassigned with no direct implementation or verification references. Keep this procedure context unresolved for full-scope closure; do not infer a formal requirement.",
         "related_source_table_contract_ids": [
           "KMIPKIT-SOURCE-GAP-SPEC-6.1.24-CORRELATION-VALUE-OPTIONAL",
           "KMIPKIT-SOURCE-GAP-SPEC-6.1.32-CORRELATION-VALUE-OPTIONAL",
           "KMIPKIT-SOURCE-GAP-SPEC-6.1.33-CORRELATION-VALUE-OPTIONAL",
           "KMIPKIT-SOURCE-GAP-SPEC-6.1.55-CORRELATION-VALUE-OPTIONAL",
-          "KMIPKIT-SOURCE-GAP-SPEC-6.1.56-CORRELATION-VALUE-OPTIONAL"
+          "KMIPKIT-SOURCE-GAP-SPEC-6.1.56-CORRELATION-VALUE-OPTIONAL",
+          "KMIPKIT-SOURCE-GAP-SPEC-6.1.11-CORRELATION-VALUE-OPTIONAL",
+          "KMIPKIT-SOURCE-GAP-SPEC-6.1.17-CORRELATION-VALUE-OPTIONAL"
         ]
       }
     },
@@ -92283,15 +92317,17 @@
       "candidate_requirement_id": null,
       "proposed_requirement_id": null,
       "status": "reviewed_generic_parameter_context",
-      "review_note": "This generic procedural context applies to client 1.0 requests: paragraph 006 covers the first request of an optionally supported multipart operation, paragraph 007 covers subsequent requests in that operation, and paragraph 008 covers each single-part request. The phrase 'any other required parameters' defers to each operation's request table; it is not an independent formal requirement and has no standalone client requirement ID. KMIPKIT-0019 Encrypt Table 214 and Decrypt Table 196 do not yet have source_table_contracts, so their operation-specific parameter mappings remain open.",
+      "review_note": "This generic procedural context applies to client 1.0 requests: paragraph 006 covers the first request of an optionally supported multipart operation, paragraph 007 covers subsequent requests in that operation, and paragraph 008 covers each single-part request. The phrase 'any other required parameters' defers to each operation's request table; it is not an independent formal requirement and has no standalone client requirement ID. Only the optional Correlation Value request rows in KMIPKIT-0019 Encrypt Table 214 and Decrypt Table 196 are mapped; broader operation-specific parameter mapping remains open.",
       "source_resolution": {
         "kind": "generic_parameter_context",
         "context_id": "KMIPKIT-CONTEXT-SPEC-6.1-006",
         "related_requirement_ids": [],
         "related_source_table_contract_ids": [
-          "KMIPKIT-SOURCE-GAP-SPEC-6.1.24-CRYPTOGRAPHIC-PARAMETERS-REQUIRED"
+          "KMIPKIT-SOURCE-GAP-SPEC-6.1.24-CRYPTOGRAPHIC-PARAMETERS-REQUIRED",
+          "KMIPKIT-SOURCE-GAP-SPEC-6.1.11-CORRELATION-VALUE-OPTIONAL",
+          "KMIPKIT-SOURCE-GAP-SPEC-6.1.17-CORRELATION-VALUE-OPTIONAL"
         ],
-        "review_note": "This generic procedural context applies to client 1.0 requests: paragraph 006 covers the first request of an optionally supported multipart operation, paragraph 007 covers subsequent requests in that operation, and paragraph 008 covers each single-part request. The phrase 'any other required parameters' defers to each operation's request table; it is not an independent formal requirement and has no standalone client requirement ID. KMIPKIT-0019 Encrypt Table 214 and Decrypt Table 196 do not yet have source_table_contracts, so their operation-specific parameter mappings remain open."
+        "review_note": "This generic procedural context applies to client 1.0 requests: paragraph 006 covers the first request of an optionally supported multipart operation, paragraph 007 covers subsequent requests in that operation, and paragraph 008 covers each single-part request. The phrase 'any other required parameters' defers to each operation's request table; it is not an independent formal requirement and has no standalone client requirement ID. Only the optional Correlation Value request rows in KMIPKIT-0019 Encrypt Table 214 and Decrypt Table 196 are mapped; broader operation-specific parameter mapping remains open."
       }
     },
     {
@@ -92320,15 +92356,17 @@
       "candidate_requirement_id": null,
       "proposed_requirement_id": null,
       "status": "reviewed_generic_parameter_context",
-      "review_note": "This generic procedural context applies to client 1.0 requests: paragraph 006 covers the first request of an optionally supported multipart operation, paragraph 007 covers subsequent requests in that operation, and paragraph 008 covers each single-part request. The phrase 'any other required parameters' defers to each operation's request table; it is not an independent formal requirement and has no standalone client requirement ID. KMIPKIT-0019 Encrypt Table 214 and Decrypt Table 196 do not yet have source_table_contracts, so their operation-specific parameter mappings remain open.",
+      "review_note": "This generic procedural context applies to client 1.0 requests: paragraph 006 covers the first request of an optionally supported multipart operation, paragraph 007 covers subsequent requests in that operation, and paragraph 008 covers each single-part request. The phrase 'any other required parameters' defers to each operation's request table; it is not an independent formal requirement and has no standalone client requirement ID. Only the optional Correlation Value request rows in KMIPKIT-0019 Encrypt Table 214 and Decrypt Table 196 are mapped; broader operation-specific parameter mapping remains open.",
       "source_resolution": {
         "kind": "generic_parameter_context",
         "context_id": "KMIPKIT-CONTEXT-SPEC-6.1-007",
         "related_requirement_ids": [],
         "related_source_table_contract_ids": [
-          "KMIPKIT-SOURCE-GAP-SPEC-6.1.24-CRYPTOGRAPHIC-PARAMETERS-REQUIRED"
+          "KMIPKIT-SOURCE-GAP-SPEC-6.1.24-CRYPTOGRAPHIC-PARAMETERS-REQUIRED",
+          "KMIPKIT-SOURCE-GAP-SPEC-6.1.11-CORRELATION-VALUE-OPTIONAL",
+          "KMIPKIT-SOURCE-GAP-SPEC-6.1.17-CORRELATION-VALUE-OPTIONAL"
         ],
-        "review_note": "This generic procedural context applies to client 1.0 requests: paragraph 006 covers the first request of an optionally supported multipart operation, paragraph 007 covers subsequent requests in that operation, and paragraph 008 covers each single-part request. The phrase 'any other required parameters' defers to each operation's request table; it is not an independent formal requirement and has no standalone client requirement ID. KMIPKIT-0019 Encrypt Table 214 and Decrypt Table 196 do not yet have source_table_contracts, so their operation-specific parameter mappings remain open."
+        "review_note": "This generic procedural context applies to client 1.0 requests: paragraph 006 covers the first request of an optionally supported multipart operation, paragraph 007 covers subsequent requests in that operation, and paragraph 008 covers each single-part request. The phrase 'any other required parameters' defers to each operation's request table; it is not an independent formal requirement and has no standalone client requirement ID. Only the optional Correlation Value request rows in KMIPKIT-0019 Encrypt Table 214 and Decrypt Table 196 are mapped; broader operation-specific parameter mapping remains open."
       }
     },
     {
@@ -92357,7 +92395,7 @@
       "candidate_requirement_id": null,
       "proposed_requirement_id": null,
       "status": "reviewed_generic_parameter_context",
-      "review_note": "This generic procedural context applies to client 1.0 requests: paragraph 006 covers the first request of an optionally supported multipart operation, paragraph 007 covers subsequent requests in that operation, and paragraph 008 covers each single-part request. The phrase 'any other required parameters' defers to each operation's request table; it is not an independent formal requirement and has no standalone client requirement ID. KMIPKIT-0019 Encrypt Table 214 and Decrypt Table 196 do not yet have source_table_contracts, so their operation-specific parameter mappings remain open.",
+      "review_note": "This generic procedural context applies to client 1.0 requests: paragraph 006 covers the first request of an optionally supported multipart operation, paragraph 007 covers subsequent requests in that operation, and paragraph 008 covers each single-part request. The phrase 'any other required parameters' defers to each operation's request table; it is not an independent formal requirement and has no standalone client requirement ID. Only the optional Correlation Value request rows in KMIPKIT-0019 Encrypt Table 214 and Decrypt Table 196 are mapped; broader operation-specific parameter mapping remains open.",
       "source_resolution": {
         "kind": "generic_parameter_context",
         "context_id": "KMIPKIT-CONTEXT-SPEC-6.1-008",
@@ -92369,9 +92407,11 @@
           "KMIPKIT-SOURCE-GAP-SPEC-6.1.33-MAC-DATA-REQUIRED",
           "KMIPKIT-SOURCE-GAP-SPEC-6.1.55-DATA-CONDITIONAL",
           "KMIPKIT-SOURCE-GAP-SPEC-6.1.55-DIGESTED-DATA-OPTIONAL",
-          "KMIPKIT-SOURCE-GAP-SPEC-6.1.56-SIGNATURE-DATA-CONDITIONAL"
+          "KMIPKIT-SOURCE-GAP-SPEC-6.1.56-SIGNATURE-DATA-CONDITIONAL",
+          "KMIPKIT-SOURCE-GAP-SPEC-6.1.11-CORRELATION-VALUE-OPTIONAL",
+          "KMIPKIT-SOURCE-GAP-SPEC-6.1.17-CORRELATION-VALUE-OPTIONAL"
         ],
-        "review_note": "This generic procedural context applies to client 1.0 requests: paragraph 006 covers the first request of an optionally supported multipart operation, paragraph 007 covers subsequent requests in that operation, and paragraph 008 covers each single-part request. The phrase 'any other required parameters' defers to each operation's request table; it is not an independent formal requirement and has no standalone client requirement ID. KMIPKIT-0019 Encrypt Table 214 and Decrypt Table 196 do not yet have source_table_contracts, so their operation-specific parameter mappings remain open."
+        "review_note": "This generic procedural context applies to client 1.0 requests: paragraph 006 covers the first request of an optionally supported multipart operation, paragraph 007 covers subsequent requests in that operation, and paragraph 008 covers each single-part request. The phrase 'any other required parameters' defers to each operation's request table; it is not an independent formal requirement and has no standalone client requirement ID. Only the optional Correlation Value request rows in KMIPKIT-0019 Encrypt Table 214 and Decrypt Table 196 are mapped; broader operation-specific parameter mapping remains open."
       }
     },
     {
@@ -98162,6 +98202,106 @@
       "evidence_disposition": {
         "status": "mapped_to_feature_contract",
         "statement": "The linked protocol and fake-transport tests verify the required Usage Limits Count is encoded as a Long Integer and carried in one Get Usage Allocation request. This source-table contract adds no formal clause crosswalk ID or standalone normative requirement."
+      }
+    },
+    {
+      "gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.11-CORRELATION-VALUE-OPTIONAL",
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+      "source_section": "6.1.11",
+      "source_clause_id": null,
+      "source_locator": {
+        "kind": "table_body_row",
+        "section": "6.1.11",
+        "row_label": "Correlation Value",
+        "table": "request_payload",
+        "html_line_range": [
+          25165,
+          25181
+        ]
+      },
+      "source_locator_description": "§6.1.11 Decrypt request payload body row for Correlation Value (HTML lines 25165–25181)",
+      "html_line_range": [
+        25165,
+        25181
+      ],
+      "source_excerpt": "Correlation Value No Specifies the existing stream or by-parts cryptographic operation (as returned from a previous call to this operation).",
+      "source_keywords": [],
+      "source_force": "optional_table_body_value",
+      "audited_statement": "The Decrypt request payload marks Correlation Value Required=No and describes it as identifying an existing stream or by-parts operation returned from a previous call.",
+      "actor": "client",
+      "direction": "client→server Decrypt request",
+      "condition": "The caller continues an existing stream or by-parts Decrypt operation using a Correlation Value returned by a previous call.",
+      "scope_disposition": "client_1_0",
+      "status": "mapped_to_approved_feature_contract",
+      "review_note": "Source table field contract mapped through KMIPKIT-ELEM-OP-C2S-DECRYPT and KMIPKIT-0019 FR-004; this row does not create a standalone REQ record.",
+      "contract_kind": "operation_request_table_field",
+      "table_number": 196,
+      "requiredness": "No",
+      "operation_element_id": "KMIPKIT-ELEM-OP-C2S-DECRYPT",
+      "functional_requirement_ids": [
+        "FR-004"
+      ],
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/decrypt.rs::DecryptRequest::to_ttlv_payload"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/decrypt_tests.rs::request_emits_present_table_196_members_in_exact_order_and_accepts_decrypt_tag",
+        "crates/kmipkit-client/tests/unit/encrypt_decrypt_multipart_execution_tests.rs::decrypt_caller_reuses_initial_server_correlation_and_keeps_aad_and_tag_initial"
+      ],
+      "evidence_disposition": {
+        "status": "mapped_to_feature_contract",
+        "statement": "Implementation and executable tests are linked through KMIPKIT-ELEM-OP-C2S-DECRYPT and KMIPKIT-0019 FR-004; this table cell does not create a standalone REQ record."
+      }
+    },
+    {
+      "gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.17-CORRELATION-VALUE-OPTIONAL",
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+      "source_section": "6.1.17",
+      "source_clause_id": null,
+      "source_locator": {
+        "kind": "table_body_row",
+        "section": "6.1.17",
+        "row_label": "Correlation Value",
+        "table": "request_payload",
+        "html_line_range": [
+          26590,
+          26606
+        ]
+      },
+      "source_locator_description": "§6.1.17 Encrypt request payload body row for Correlation Value (HTML lines 26590–26606)",
+      "html_line_range": [
+        26590,
+        26606
+      ],
+      "source_excerpt": "Correlation Value No Specifies the existing stream or by-parts cryptographic operation (as returned from a previous call to this operation).",
+      "source_keywords": [],
+      "source_force": "optional_table_body_value",
+      "audited_statement": "The Encrypt request payload marks Correlation Value Required=No and describes it as identifying an existing stream or by-parts operation returned from a previous call.",
+      "actor": "client",
+      "direction": "client→server Encrypt request",
+      "condition": "The caller continues an existing stream or by-parts Encrypt operation using a Correlation Value returned by a previous call.",
+      "scope_disposition": "client_1_0",
+      "status": "mapped_to_approved_feature_contract",
+      "review_note": "Source table field contract mapped through KMIPKIT-ELEM-OP-C2S-ENCRYPT and KMIPKIT-0019 FR-004; this row does not create a standalone REQ record.",
+      "contract_kind": "operation_request_table_field",
+      "table_number": 214,
+      "requiredness": "No",
+      "operation_element_id": "KMIPKIT-ELEM-OP-C2S-ENCRYPT",
+      "functional_requirement_ids": [
+        "FR-004"
+      ],
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/encrypt.rs::EncryptRequest::to_ttlv_payload"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/encrypt_tests.rs::request_emits_present_table_214_members_in_exact_order_and_preserves_values",
+        "crates/kmipkit-client/tests/unit/encrypt_decrypt_multipart_execution_tests.rs::encrypt_caller_reuses_initial_server_correlation_for_middle_and_final_parts"
+      ],
+      "evidence_disposition": {
+        "status": "mapped_to_feature_contract",
+        "statement": "Implementation and executable tests are linked through KMIPKIT-ELEM-OP-C2S-ENCRYPT and KMIPKIT-0019 FR-004; this table cell does not create a standalone REQ record."
       }
     }
   ]
