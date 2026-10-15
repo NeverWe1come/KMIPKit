@@ -3273,3 +3273,12 @@ The remote release branch and PR base both resolved to `550a864840c727afa2bdf20b
 | Protected Actions App key presence | `gh api 'repos/NeverWe1come/KMIPKit/actions/secrets?per_page=100' --jq '[.secrets[].name] | {count:length, profileEvidenceKeyPresent:(index("PROFILE_EVIDENCE_APP_PRIVATE_KEY") != null)}'` | BLOCKED: `count=0`, `profileEvidenceKeyPresent=false`. |
 | Release synchronization and worktree state | `git ls-remote origin refs/heads/release/1.0.0`; `git merge-base --is-ancestor 550a864840c727afa2bdf20b5a5e25aa3e2b9dff HEAD`; `git status --short --branch` | PASS: release equals PR base; it is an ancestor; feature worktree is clean. |
 | PR CI state | `gh pr view 90 --json baseRefOid,headRefOid,statusCheckRollup` | PENDING: latest head has no failures, but 6 checks are in progress and 7 queued. |
+
+### KMIPKIT-0010 T002 tranche — Encrypt/Decrypt Correlation Value request rows
+
+Specification v2.1 Table 196 Decrypt and Table 214 Encrypt both mark the request Correlation Value row `Required=No`. Their exact request-row spans are HTML lines 25165–25181 and 26590–26606. The initial Red test incorrectly associated the adjacent response payload wording with Encrypt; the source-bound correction keeps the request row’s exact text, which says the value identifies an existing stream or by-parts operation returned from a previous call. No response-to-follow-up behavior or DISC-045 Data interpretation is closed by this slice.
+
+| Stage | DCO-signed commit and command | Result |
+|---|---|---|
+| Red — require optional Correlation Value contracts for the exact Table 196 and Table 214 request rows | `82f68073`; `py -3 -B -m unittest tools.normative_catalog.tests.test_source_gap_context_resolutions.SourceGapContextResolutionTests.test_encrypt_decrypt_correlation_request_rows_have_optional_feature_contracts -v` | Expected Red: one assertion failure; both `KMIPKIT-SOURCE-GAP-SPEC-6.1.11-CORRELATION-VALUE-OPTIONAL` and `KMIPKIT-SOURCE-GAP-SPEC-6.1.17-CORRELATION-VALUE-OPTIONAL` were absent. The initial Encrypt excerpt expectation was later corrected after checking the exact table boundary. |
+| Red correction — cite the Table 214 request row and stop on absent contracts | `2bf297ac`; same focused unittest | Expected Red: one assertion failure solely because the two expected source-table contract IDs are absent. The source locator is now Table 214 request lines 26590–26606; no locator or excerpt assertion is reached before the intended missing-contract failure. |
