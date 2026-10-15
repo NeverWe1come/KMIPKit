@@ -64,11 +64,11 @@ This report records inventory coverage and evidence state. It does not claim pro
 | Scope | profile\_conditional | 215 |
 | Scope | server\_only | 42 |
 | Scope | unclear | 76 |
-| Direction | both | 41 |
+| Direction | both | 42 |
 | Direction | client\_to\_server | 382 |
 | Direction | not\_applicable | 63 |
 | Direction | server\_to\_client | 21 |
-| Direction | unclear | 125 |
+| Direction | unclear | 124 |
 
 ## Tag allocation and ranges
 

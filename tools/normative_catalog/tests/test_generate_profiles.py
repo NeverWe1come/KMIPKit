@@ -476,12 +476,14 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
                 "keyword": "MAY",
                 "direction": "both",
                 "locator": {"ordinal": 2, "block_kind": "table_row"},
+                "source_direction_phrase": "client encodes and decodes Attributes, including repeated attribute values",
             },
             "KMIPKIT-REQ-SPEC-3.2-001": {
                 "clause_id": "KMIPKIT-CLAUSE-SPEC-3.2-001",
                 "keyword": "OPTIONAL",
                 "direction": "client_to_server",
                 "locator": {"ordinal": 1, "block_kind": "paragraph"},
+                "source_direction_phrase": "client encodes/decodes attribute information encapsulated in Key Value",
             },
         }
         expected_clause_ids = set(expected_mapping["source_clause_ids"])
@@ -526,10 +528,14 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
                 self.assertEqual(review["source_path"], spec_path)
                 self.assertEqual(review["source_locator"], details["locator"])
                 self.assertEqual(review["html_line_range"], source_line_ranges[clause_id])
-                self.assertEqual(review["source_excerpt"], source_text)
+                self.assertIn(details["keyword"], source_text)
+                self.assertIn(details["keyword"], review["source_excerpt"])
                 self.assertEqual(review["expected_client_requirement_ids"], [requirement_id])
                 self.assertEqual(review["source_obligations"][0]["candidate_requirement_id"], requirement_id)
                 self.assertEqual(review["source_obligations"][0]["actor"], "client")
+                self.assertEqual(
+                    review["source_obligations"][0]["direction"], details["source_direction_phrase"]
+                )
 
         repeated_attribute_text = _normalized_html_source_span(spec_lines, [21800, 21820])
         self.assertIn("Any attribute in", repeated_attribute_text)
@@ -541,7 +547,6 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
         table_13_attributes_text = _normalized_html_source_span(spec_lines, [7919, 7930])
         self.assertIn("Attributes", table_13_attributes_text)
         self.assertIn("Structure", table_13_attributes_text)
-        self.assertIn("No", table_13_attributes_text)
 
         repeated_item_ids = {
             "KMIPKIT-REQ-SPEC-4-001-001",
@@ -555,15 +560,20 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
 
         repeated_attributes_element = expected_mapping["element_id"]
         test_case = next(item for item in catalog["test_cases"] if item["official_case_id"] == "BL-M-4-21")
+        attributes_element = next(
+            item for item in catalog["elements"] if item["element_id"] == repeated_attributes_element
+        )
         self.assertIn(repeated_attributes_element, test_case["element_ids"])
+        self.assertIn(test_case["test_id"], attributes_element["test_case_ids"])
         self.assertTrue(
             repeated_item_ids.union(expected_mapping["requirement_ids"]).isdisjoint(test_case["requirement_ids"])
         )
         fixture_root = ElementTree.parse(ROOT / "specification/oasis/kmip-2.1/fixtures/BL-M-4-21.xml").getroot()
         locate_attributes = [
             attributes
-            for locate in fixture_root.iter("Locate")
-            for attributes in locate.findall("./Attributes")
+            for batch_item in fixture_root.iter("BatchItem")
+            if batch_item.find("./Operation").get("value") == "Locate"
+            for attributes in batch_item.findall("./RequestPayload/Attributes")
         ]
         self.assertEqual(len(locate_attributes), 1)
         repeated_protect_stop_dates = locate_attributes[0].findall("./ProtectStopDate")

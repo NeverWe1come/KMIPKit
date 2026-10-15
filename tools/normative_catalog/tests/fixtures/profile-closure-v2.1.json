@@ -109,7 +109,22 @@
             ],
             "requirement_id": null,
             "scope_disposition": "profile_conditional",
-            "mapping_status": "pending_t002_crosswalk"
+            "mapping_status": "pending_t002_crosswalk",
+            "supported_item_mappings": [
+              {
+                "item": "Attributes",
+                "element_id": "KMIPKIT-ELEM-ATTRIBUTE-STRUCTURE-5-1-ATTRIBUTES",
+                "requirement_ids": [
+                  "KMIPKIT-REQ-SPEC-5.1-002",
+                  "KMIPKIT-REQ-SPEC-3.2-001"
+                ],
+                "source_clause_ids": [
+                  "KMIPKIT-CLAUSE-SPEC-5.1-002",
+                  "KMIPKIT-CLAUSE-SPEC-3.2-001"
+                ],
+                "mapping_status": "reviewed"
+              }
+            ]
           },
           {
             "condition_id": "KMIPKIT-PROF-COND-5.1.1-003",
