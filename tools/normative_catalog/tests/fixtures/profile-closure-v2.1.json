@@ -93083,6 +93083,7 @@
       "candidate_requirement_id": "KMIPKIT-REQ-SPEC-6.1-004",
       "proposed_requirement_id": null,
       "reused_requirement_id": "KMIPKIT-REQ-SPEC-6.1-004",
+      "reuse_kind": "contextual_capability",
       "status": "source_obligation_covered_by_existing_stable_label",
       "review_note": "The pinned §4.24 exception permits Fresh=False only as initial client input in Register or Import; contextually reuse the generic request-attribute MAY in §6.1 (KMIPKIT-REQ-SPEC-6.1-004), without creating a Fresh-specific formal MAY or requirement. Table 76 marks Fresh as not modifiable by the client after initialization. This source classification adds no implementation or executable-test claim."
     },

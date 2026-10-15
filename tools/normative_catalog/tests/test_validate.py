@@ -16268,6 +16268,29 @@ class CatalogValidationTests(unittest.TestCase):
                 ):
                     continue
                 candidate = candidate_requirements.get(reused_id)
+                if gap.get("reuse_kind") == "contextual_capability":
+                    if candidate is None:
+                        violations.append(f"contextual source label is unresolved: {reused_id}")
+                        continue
+                    if reused_id != "KMIPKIT-REQ-SPEC-6.1-004":
+                        violations.append(f"{gap['gap_id']} uses an unapproved contextual capability label")
+                    if candidate.get("role") != "client" or candidate.get("source_keyword") != "MAY":
+                        violations.append(f"{gap['gap_id']} contextual label is not a client MAY capability")
+                    if "KMIPKIT-CLAUSE-SPEC-6.1-004" not in candidate.get("source_clause_ids", []):
+                        violations.append(f"{gap['gap_id']} contextual label lost its generic source owner")
+                    if review["source_clause_id"] in candidate.get("source_clause_ids", []):
+                        violations.append(f"{gap['gap_id']} contextual reuse incorrectly maps the Fresh exception clause")
+                    if gap["candidate_requirement_id"] != reused_id:
+                        violations.append(f"{gap['gap_id']} candidate and contextual reuse IDs differ")
+                    if gap["scope_disposition"] != "client_1_0":
+                        violations.append(f"{gap['gap_id']} contextual capability is outside client 1.0 scope")
+                    if reused_id in review["expected_client_requirement_ids"]:
+                        violations.append(f"{gap['gap_id']} contextual reuse became a formal §4.24 requirement")
+                    if "contextually reuse" not in gap.get("review_note", "").lower():
+                        violations.append(f"{gap['gap_id']} does not document contextual reuse")
+                    if " ".join(gap["source_excerpt"].split()) != " ".join(review["source_excerpt"].split()):
+                        violations.append(f"{gap['gap_id']} does not identify the exact reviewed source locator")
+                    continue
                 if candidate is None:
                     violations.append(f"reused source label is unresolved: {reused_id}")
                     continue
