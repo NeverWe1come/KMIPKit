@@ -1,8 +1,8 @@
 # KMIPKIT-0010 T002 — Protocol Version crosswalk report
 
-Date: 2026-10-15  
-Branch: `feature/KMIPKIT-0010-profile-conformance-t001-t002`  
-Workspace: `C:\Users\ramp1953\.codex\worktrees\0010-profile-refresh\KMIPKit`  
+Date: 2026-10-15
+Branch: `feature/KMIPKIT-0010-profile-conformance-t001-t002`
+Workspace: `C:\Users\ramp1953\.codex\worktrees\0010-profile-refresh\KMIPKit`
 BASE before this slice: `779bfdbcfe39d2b4562a4e7571111485b0032de0`
 
 ## Scope and source decision
@@ -38,4 +38,3 @@ Refactor improved source assertions, checks both placement directions/requiredne
 The first complete run reported 560 tests, 9 skipped, and one failure in the Operation positional assertion. After the test correction, the full suite passed 560 tests with 9 skipped. The aggregate, Operation, and Protocol Version focused tests passed 3/3. Catalog validation, generated profile metadata, coverage report, pinned-source immutability, and `git diff --check` also passed. Two generator/report checks initially returned safe-directory lock errors when started in parallel with the full suite; each passed when rerun serially after the suite, so no source or locking code was changed.
 
 The independent source audit for this slice completed read-only and confirmed the mapping and the unresolved §9.16 clause classification. Independent QA of the implementation diff remains pending before publication to PR #90.
-
