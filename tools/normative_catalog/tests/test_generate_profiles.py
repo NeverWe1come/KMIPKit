@@ -1099,7 +1099,7 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
         self.assertIn("Linked Object Identifier value is specified without the Link Type value", locate_007_source)
 
     def test_baseline_message_data_structures_condition_has_exact_reviewed_batch_crosswalk(self) -> None:
-        """The eight reviewed Message Data Structure mappings stay bounded while item 5 remains pending."""
+        """The nine reviewed Message Data Structure mappings stay bounded while item 5 remains pending."""
         catalog = json.loads((ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8"))
         oracle = json.loads(
             (ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json")
@@ -1206,6 +1206,13 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
             "source_clause_ids": ["KMIPKIT-CLAUSE-SPEC-8.3-001", "KMIPKIT-CLAUSE-SPEC-8.6-001"],
             "mapping_status": "reviewed",
         }
+        expected_protocol_version_mapping = {
+            "item": "Protocol Version",
+            "element_id": "KMIPKIT-ELEM-MESSAGE-FIELD-9-16-PROTOCOL-VERSION",
+            "requirement_ids": [],
+            "source_clause_ids": ["KMIPKIT-CLAUSE-SPEC-9.16-001"],
+            "mapping_status": "reviewed",
+        }
         expected_mappings = [
             expected_async_mapping,
             expected_mapping,
@@ -1215,6 +1222,7 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
             expected_maximum_response_size_mapping,
             expected_message_extension_mapping,
             expected_operation_mapping,
+            expected_protocol_version_mapping,
         ]
 
         self.assertEqual(condition["item"], 5)
@@ -1252,10 +1260,11 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
                 "Maximum Response Size",
                 "Message Extension",
                 "Operation",
+                "Protocol Version",
             ],
         )
         self.assertEqual(len(condition["supported_items"]), 14)
-        self.assertEqual(len(condition["supported_item_mappings"]), 8)
+        self.assertEqual(len(condition["supported_item_mappings"]), 9)
         unmapped_items = [
             item
             for item in condition["supported_items"]
@@ -1264,7 +1273,6 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
         self.assertEqual(
             unmapped_items,
             [
-                "Protocol Version",
                 "Result Reason",
                 "Result Status",
                 "Server Correlation Value",
@@ -1275,7 +1283,6 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
         self.assertEqual(
             set(condition["supported_items"]) - {mapping["item"] for mapping in condition["supported_item_mappings"]},
             {
-                "Protocol Version",
                 "Result Reason",
                 "Result Status",
                 "Server Correlation Value",
@@ -2297,6 +2304,102 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
         )
         feature_spec = (ROOT / "specs" / "010-profile-conformance" / "spec.md").read_text(encoding="utf-8")
         self.assertIn("Profile-required capabilities are minimum requirements, not an allowlist:", feature_spec)
+
+    def test_baseline_protocol_version_condition_preserves_structure_and_unresolved_compatibility(self) -> None:
+        """Protocol Version maps structurally while §9.16 compatibility remains unresolved."""
+        catalog = json.loads((ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8"))
+        oracle = json.loads(
+            (ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json")
+            .read_text(encoding="utf-8")
+        )
+        inventory = next(
+            item
+            for item in oracle["provenance"]["profile_condition_inventories"]
+            if item["source_id"] == "KMIPKIT-SRC-profiles" and item["section"] == "5.1.1"
+        )
+        condition = next(
+            item for item in inventory["conditions"] if item["condition_id"] == "KMIPKIT-PROF-COND-5.1.1-005"
+        )
+        expected_mapping = {
+            "item": "Protocol Version",
+            "element_id": "KMIPKIT-ELEM-MESSAGE-FIELD-9-16-PROTOCOL-VERSION",
+            "requirement_ids": [],
+            "source_clause_ids": ["KMIPKIT-CLAUSE-SPEC-9.16-001"],
+            "mapping_status": "reviewed",
+        }
+        self.assertEqual(condition["supported_item_mappings"][-1], expected_mapping)
+        mapped_items = [item["item"] for item in condition["supported_item_mappings"]]
+        self.assertEqual(condition["supported_items"][8], "Protocol Version")
+        self.assertEqual(mapped_items[-2:], ["Operation", "Protocol Version"])
+        self.assertEqual(
+            [item for item in condition["supported_items"] if item not in set(mapped_items)],
+            ["Result Reason", "Result Status", "Server Correlation Value", "Time Stamp", "Unique Batch Item ID"],
+        )
+        self.assertIsNone(condition["requirement_id"])
+        self.assertEqual(condition["scope_disposition"], "profile_conditional")
+        self.assertEqual(condition["mapping_status"], "pending_t002_crosswalk")
+
+        profiles_path = ROOT / "specification" / "oasis" / "kmip-2.1" / "upstream" / "kmip-profiles-v2.1-os.html"
+        spec_path = ROOT / "specification" / "oasis" / "kmip-2.1" / "upstream" / "kmip-spec-v2.1-os.html"
+        profiles_lines = profiles_path.read_text(encoding="cp1252").splitlines()
+        spec_lines = spec_path.read_text(encoding="cp1252").splitlines()
+        self.assertIn("Protocol Version", _normalized_html_source_span(profiles_lines, [4600, 4600]))
+        self.assertEqual(_normalized_html_source_span(spec_lines, [42592, 42601]), "Protocol Version Yes")
+        self.assertEqual(_normalized_html_source_span(spec_lines, [43128, 43134]), "Protocol Version Yes")
+        protocol_version_definition = _normalized_html_source_span(spec_lines, [45086, 45091])
+        self.assertIn("The version number SHALL be specified in two parts, major and minor.", protocol_version_definition)
+        self.assertIn("SHALL support backward compatibility with versions of the protocol with the same major version.", protocol_version_definition)
+        self.assertIn("Support for backward compatibility with different major versions is OPTIONAL.", protocol_version_definition)
+
+        elements = {item["element_id"]: item for item in catalog["elements"]}
+        request_field = elements["KMIPKIT-ELEM-MESSAGE-FIELD-8-2-PROTOCOL-VERSION"]
+        response_field = elements["KMIPKIT-ELEM-MESSAGE-FIELD-8-5-PROTOCOL-VERSION"]
+        field = elements[expected_mapping["element_id"]]
+        self.assertEqual(request_field["source_requiredness"], "Yes")
+        self.assertEqual(request_field["direction"], "client_to_server")
+        self.assertEqual(request_field["scope_state"], "client_1_0")
+        self.assertEqual(response_field["source_requiredness"], "Yes")
+        self.assertEqual(response_field["direction"], "server_to_client")
+        self.assertEqual(response_field["scope_state"], "client_1_0")
+        self.assertEqual(field["source_refs"], [{"source_id": "KMIPKIT-SRC-spec", "section": "9.16"}])
+        self.assertEqual(field["source_encoding"], "Structure")
+        self.assertEqual(field["direction"], "both")
+        self.assertEqual(field["scope_state"], "client_1_0")
+        self.assertEqual(
+            field["parent_element_ids"],
+            ["KMIPKIT-ELEM-MESSAGE-FIELD-8-2-PROTOCOL-VERSION", "KMIPKIT-ELEM-MESSAGE-FIELD-8-5-PROTOCOL-VERSION"],
+        )
+        for child_id, child_name in (
+            ("KMIPKIT-ELEM-MESSAGE-FIELD-9-16-PROTOCOL-VERSION-MAJOR", "Protocol Version Major"),
+            ("KMIPKIT-ELEM-MESSAGE-FIELD-9-16-PROTOCOL-VERSION-MINOR", "Protocol Version Minor"),
+        ):
+            with self.subTest(protocol_version_child=child_name):
+                child = elements[child_id]
+                self.assertEqual(child["name"], child_name)
+                self.assertEqual(child["source_encoding"], "Integer")
+                self.assertEqual(child["parent_element_ids"], [expected_mapping["element_id"]])
+
+        unresolved_clause_id = "KMIPKIT-CLAUSE-SPEC-9.16-001"
+        clause = next(item for item in catalog["source_clauses"] if item["clause_id"] == unresolved_clause_id)
+        self.assertEqual(clause["disposition"], "source_discrepancy")
+        self.assertEqual(clause["requirement_ids"], [])
+        self.assertEqual(clause["role"], "unclear")
+        self.assertEqual(clause["direction"], "unclear")
+        self.assertEqual(clause["scope_state"], "unclear")
+        self.assertIn("KMIP 2.1-only 1.x boundary", clause["exclusion_rationale"])
+        self.assertFalse(
+            any(
+                review["source_clause_id"] == unresolved_clause_id
+                for review in oracle["source_requirement_reviews"]
+            )
+        )
+        discover_versions_requirement_ids = {
+            "KMIPKIT-REQ-SPEC-6.1.16-001-001",
+            "KMIPKIT-REQ-SPEC-6.1.16-001-002",
+            "KMIPKIT-REQ-SPEC-6.1.16-004",
+        }
+        self.assertTrue(discover_versions_requirement_ids.issubset({item["requirement_id"] for item in catalog["requirements"]}))
+        self.assertTrue(discover_versions_requirement_ids.isdisjoint(expected_mapping["requirement_ids"]))
 
     def test_foundry_basic_condition_text_names_its_inheriting_profiles(self) -> None:
         """The catalog and source review describe the same normative inheritance."""
