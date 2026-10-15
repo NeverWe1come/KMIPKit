@@ -76,7 +76,7 @@ TABLE_BODY_STRENGTH = {
 def _expected_normative_strength(requirement: dict[str, Any]) -> str | None:
     """Return keyword strength, honoring exact source-reviewed negation exceptions."""
     override = SOURCE_REVIEWED_STRENGTH_OVERRIDES.get(requirement.get("requirement_id"))
-    if override is not None and requirement.get("source_clause_ids"):
+    if override is not None and requirement.get("source_clause_ids") == [override[0]]:
         return override[1]
     return KEYWORD_STRENGTH.get(requirement.get("source_keyword"))
 
