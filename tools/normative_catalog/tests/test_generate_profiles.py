@@ -1099,7 +1099,7 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
         self.assertIn("Linked Object Identifier value is specified without the Link Type value", locate_007_source)
 
     def test_baseline_message_data_structures_condition_has_exact_reviewed_batch_crosswalk(self) -> None:
-        """The nine reviewed Message Data Structure mappings stay bounded while item 5 remains pending."""
+        """The ten reviewed Message Data Structure mappings stay bounded while item 5 remains pending."""
         catalog = json.loads((ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8"))
         oracle = json.loads(
             (ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json")
@@ -1213,6 +1213,13 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
             "source_clause_ids": ["KMIPKIT-CLAUSE-SPEC-9.16-001"],
             "mapping_status": "reviewed",
         }
+        expected_result_reason_mapping = {
+            "item": "Result Reason",
+            "element_id": "KMIPKIT-ELEM-MESSAGE-FIELD-9-18-RESULT-REASON",
+            "requirement_ids": [],
+            "source_clause_ids": ["KMIPKIT-CLAUSE-SPEC-9.18-001"],
+            "mapping_status": "reviewed",
+        }
         expected_mappings = [
             expected_async_mapping,
             expected_mapping,
@@ -1223,6 +1230,7 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
             expected_message_extension_mapping,
             expected_operation_mapping,
             expected_protocol_version_mapping,
+            expected_result_reason_mapping,
         ]
 
         self.assertEqual(condition["item"], 5)
@@ -1261,10 +1269,11 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
                 "Message Extension",
                 "Operation",
                 "Protocol Version",
+                "Result Reason",
             ],
         )
         self.assertEqual(len(condition["supported_items"]), 14)
-        self.assertEqual(len(condition["supported_item_mappings"]), 9)
+        self.assertEqual(len(condition["supported_item_mappings"]), 10)
         unmapped_items = [
             item
             for item in condition["supported_items"]
@@ -1273,7 +1282,6 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
         self.assertEqual(
             unmapped_items,
             [
-                "Result Reason",
                 "Result Status",
                 "Server Correlation Value",
                 "Time Stamp",
@@ -1283,7 +1291,6 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
         self.assertEqual(
             set(condition["supported_items"]) - {mapping["item"] for mapping in condition["supported_item_mappings"]},
             {
-                "Result Reason",
                 "Result Status",
                 "Server Correlation Value",
                 "Time Stamp",
@@ -2412,6 +2419,73 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
         catalog_requirement_ids = {item["requirement_id"] for item in catalog["requirements"]}
         self.assertTrue(discover_versions_requirement_ids.issubset(catalog_requirement_ids))
         self.assertTrue(discover_versions_requirement_ids.isdisjoint(expected_mapping["requirement_ids"]))
+
+    def test_baseline_result_reason_condition_preserves_response_structure(self) -> None:
+        """Result Reason maps to its response-only field without inventing a client requirement."""
+        catalog = json.loads((ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8"))
+        oracle = json.loads(
+            (ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json")
+            .read_text(encoding="utf-8")
+        )
+        inventory = next(
+            item
+            for item in oracle["provenance"]["profile_condition_inventories"]
+            if item["source_id"] == "KMIPKIT-SRC-profiles" and item["section"] == "5.1.1"
+        )
+        condition = next(
+            item for item in inventory["conditions"] if item["condition_id"] == "KMIPKIT-PROF-COND-5.1.1-005"
+        )
+        expected_mapping = {
+            "item": "Result Reason",
+            "element_id": "KMIPKIT-ELEM-MESSAGE-FIELD-9-18-RESULT-REASON",
+            "requirement_ids": [],
+            "source_clause_ids": ["KMIPKIT-CLAUSE-SPEC-9.18-001"],
+            "mapping_status": "reviewed",
+        }
+
+        self.assertEqual(condition["supported_items"][9], "Result Reason")
+        self.assertEqual(condition["supported_item_mappings"][-1], expected_mapping)
+        self.assertIsNone(condition["requirement_id"])
+        self.assertEqual(condition["scope_disposition"], "profile_conditional")
+        self.assertEqual(condition["mapping_status"], "pending_t002_crosswalk")
+
+        profiles_lines = (
+            ROOT / "specification" / "oasis" / "kmip-2.1" / "upstream" / "kmip-profiles-v2.1-os.html"
+        ).read_text(encoding="cp1252").splitlines()
+        spec_lines = (
+            ROOT / "specification" / "oasis" / "kmip-2.1" / "upstream" / "kmip-spec-v2.1-os.html"
+        ).read_text(encoding="cp1252").splitlines()
+        self.assertIn("Result Reason", _normalized_html_source_span(profiles_lines, [4602, 4602]))
+        result_reason_definition = _normalized_html_source_span(spec_lines, [45197, 45203])
+        self.assertIn("SHALL be present in responses that return a Result Status of Failure", result_reason_definition)
+        self.assertIn("SHALL NOT be present in any response that returns a Result Status of Success", result_reason_definition)
+        self.assertIn(
+            "Result Reason Yes, if Result Status is Failure",
+            _normalized_html_source_span(spec_lines, [43399, 43418]),
+        )
+
+        elements = {item["element_id"]: item for item in catalog["elements"]}
+        response_placement = elements["KMIPKIT-ELEM-MESSAGE-FIELD-8-6-RESULT-REASON"]
+        self.assertEqual(response_placement["direction"], "server_to_client")
+        self.assertEqual(response_placement["scope_state"], "client_1_0")
+        self.assertEqual(response_placement["source_requiredness"], "Yes, if Result Status is Failure")
+        self.assertEqual(response_placement["source_comment"], "REQUIRED if Result Status is Failure, otherwise OPTIONAL")
+        self.assertEqual(response_placement["requirement_ids"], [])
+
+        field = elements[expected_mapping["element_id"]]
+        self.assertEqual(field["source_refs"], [{"source_id": "KMIPKIT-SRC-spec", "section": "9.18"}])
+        self.assertEqual(field["source_encoding"], "Enumeration")
+        self.assertEqual(field["direction"], "server_to_client")
+        self.assertEqual(field["parent_element_ids"], ["KMIPKIT-ELEM-MESSAGE-FIELD-8-6-RESULT-REASON"])
+        self.assertEqual(field["requirement_ids"], [])
+
+        clause = next(
+            item for item in catalog["source_clauses"] if item["clause_id"] == "KMIPKIT-CLAUSE-SPEC-9.18-001"
+        )
+        self.assertEqual(clause["disposition"], "server_only")
+        self.assertEqual(clause["requirement_ids"], [])
+        self.assertEqual(clause["direction"], "server_to_client")
+        self.assertEqual(clause["scope_state"], "server_only")
 
     def test_foundry_basic_condition_text_names_its_inheriting_profiles(self) -> None:
         """The catalog and source review describe the same normative inheritance."""
