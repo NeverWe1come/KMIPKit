@@ -12,6 +12,7 @@ import tempfile
 import unittest
 from pathlib import Path
 from unittest.mock import call, patch
+from xml.etree import ElementTree
 
 from tools.normative_catalog.generate_profiles import (
     CATALOG_PATH,
@@ -430,6 +431,145 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
             {None},
             "§5.1.1's title-case support statements are profile conditions, not standalone RFC modal REQs",
         )
+
+    def test_baseline_attributes_condition_has_exact_reviewed_capability_crosswalk(self) -> None:
+        """Attributes maps to its general and Key Value capabilities without closing its parent."""
+        catalog = json.loads((ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8"))
+        oracle = json.loads(
+            (ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json")
+            .read_text(encoding="utf-8")
+        )
+        profiles_path = "specification/oasis/kmip-2.1/upstream/kmip-profiles-v2.1-os.html"
+        spec_path = "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
+        inventory = next(
+            item
+            for item in oracle["provenance"]["profile_condition_inventories"]
+            if item["source_id"] == "KMIPKIT-SRC-profiles" and item["section"] == "5.1.1"
+        )
+        condition = next(
+            item for item in inventory["conditions"] if item["condition_id"] == "KMIPKIT-PROF-COND-5.1.1-002"
+        )
+        expected_mapping = {
+            "item": "Attributes",
+            "element_id": "KMIPKIT-ELEM-ATTRIBUTE-STRUCTURE-5-1-ATTRIBUTES",
+            "requirement_ids": ["KMIPKIT-REQ-SPEC-5.1-002", "KMIPKIT-REQ-SPEC-3.2-001"],
+            "source_clause_ids": ["KMIPKIT-CLAUSE-SPEC-5.1-002", "KMIPKIT-CLAUSE-SPEC-3.2-001"],
+            "mapping_status": "reviewed",
+        }
+        self.assertEqual(condition["supported_items"], ["Attributes"])
+        self.assertIsNone(condition["requirement_id"])
+        self.assertEqual(condition["mapping_status"], "pending_t002_crosswalk")
+        self.assertEqual(condition.get("supported_item_mappings"), [expected_mapping])
+
+        profiles_lines = (ROOT / profiles_path).read_text(encoding="cp1252").splitlines()
+        profiles_text = _normalized_html_source_span(profiles_lines, [4535, 4540])
+        self.assertIn("Attribute Data Structures", profiles_text)
+        self.assertIn("Attributes", profiles_text)
+
+        source_line_ranges = {
+            "KMIPKIT-CLAUSE-SPEC-5.1-002": [21800, 21820],
+            "KMIPKIT-CLAUSE-SPEC-3.2-001": [7837, 7845],
+        }
+        expected_requirement_details = {
+            "KMIPKIT-REQ-SPEC-5.1-002": {
+                "clause_id": "KMIPKIT-CLAUSE-SPEC-5.1-002",
+                "keyword": "MAY",
+                "direction": "both",
+                "locator": {"ordinal": 2, "block_kind": "table_row"},
+            },
+            "KMIPKIT-REQ-SPEC-3.2-001": {
+                "clause_id": "KMIPKIT-CLAUSE-SPEC-3.2-001",
+                "keyword": "OPTIONAL",
+                "direction": "client_to_server",
+                "locator": {"ordinal": 1, "block_kind": "paragraph"},
+            },
+        }
+        expected_clause_ids = set(expected_mapping["source_clause_ids"])
+        source_candidates = {
+            item["clause_id"]: item
+            for item in audit_document((ROOT / spec_path).read_bytes(), "KMIPKIT-SRC-spec")
+            if item["clause_id"] in expected_clause_ids
+        }
+        catalog_clauses = {item["clause_id"]: item for item in catalog["source_clauses"]}
+        requirements = {item["requirement_id"]: item for item in catalog["requirements"]}
+        source_reviews = {
+            item["source_clause_id"]: item
+            for item in oracle["source_requirement_reviews"]
+            if item["source_clause_id"] in expected_clause_ids
+        }
+        self.assertEqual(set(source_candidates), expected_clause_ids)
+        self.assertEqual(set(source_reviews), expected_clause_ids)
+
+        spec_lines = (ROOT / spec_path).read_text(encoding="cp1252").splitlines()
+        for requirement_id, details in expected_requirement_details.items():
+            clause_id = details["clause_id"]
+            with self.subTest(requirement_id=requirement_id):
+                requirement = requirements[requirement_id]
+                clause = catalog_clauses[clause_id]
+                candidate = source_candidates[clause_id]
+                review = source_reviews[clause_id]
+                source_text = _normalized_html_source_span(spec_lines, source_line_ranges[clause_id])
+
+                self.assertEqual(requirement["source_clause_ids"], [clause_id])
+                self.assertEqual(requirement["source_keyword"], details["keyword"])
+                self.assertEqual(requirement["normative_strength"], "permission_or_optional")
+                self.assertEqual(requirement["role"], "client")
+                self.assertEqual(requirement["direction"], details["direction"])
+                self.assertEqual(requirement["scope_state"], "client_1_0")
+                self.assertIn(expected_mapping["element_id"], requirement["element_ids"])
+                self.assertEqual(requirement["test_case_ids"], [])
+                self.assertEqual(clause["section"], "5.1" if "5.1-" in clause_id else "3.2")
+                self.assertEqual(clause["requirement_ids"], [requirement_id])
+                self.assertEqual(clause["locator"], details["locator"])
+                self.assertEqual(clause["source_keywords"], [details["keyword"]])
+                self.assertEqual(candidate["locator"], details["locator"])
+                self.assertEqual(review["source_path"], spec_path)
+                self.assertEqual(review["source_locator"], details["locator"])
+                self.assertEqual(review["html_line_range"], source_line_ranges[clause_id])
+                self.assertEqual(review["source_excerpt"], source_text)
+                self.assertEqual(review["expected_client_requirement_ids"], [requirement_id])
+                self.assertEqual(review["source_obligations"][0]["candidate_requirement_id"], requirement_id)
+                self.assertEqual(review["source_obligations"][0]["actor"], "client")
+
+        repeated_attribute_text = _normalized_html_source_span(spec_lines, [21800, 21820])
+        self.assertIn("Any attribute in", repeated_attribute_text)
+        self.assertIn("MAY be repeated", repeated_attribute_text)
+        self.assertIn("No", repeated_attribute_text)
+        key_value_text = _normalized_html_source_span(spec_lines, [7837, 7845])
+        self.assertIn("OPTIONAL attribute information", key_value_text)
+        self.assertIn("differs from the attributes associated with Managed Objects", key_value_text)
+        table_13_attributes_text = _normalized_html_source_span(spec_lines, [7919, 7930])
+        self.assertIn("Attributes", table_13_attributes_text)
+        self.assertIn("Structure", table_13_attributes_text)
+        self.assertIn("No", table_13_attributes_text)
+
+        repeated_item_ids = {
+            "KMIPKIT-REQ-SPEC-4-001-001",
+            "KMIPKIT-REQ-SPEC-4-001-002",
+            "KMIPKIT-REQ-SPEC-4-001-003",
+        }
+        self.assertTrue(repeated_item_ids.isdisjoint(expected_mapping["requirement_ids"]))
+        self.assertNotIn("KMIPKIT-ELEM-OBJECT-STRUCTURE-KEY-VALUE", requirements["KMIPKIT-REQ-SPEC-5.1-002"]["element_ids"])
+        self.assertIn("KMIPKIT-ELEM-OBJECT-STRUCTURE-KEY-VALUE", requirements["KMIPKIT-REQ-SPEC-3.2-001"]["element_ids"])
+        self.assertIn("KMIPKIT-ELEM-OP-C2S-REGISTER", requirements["KMIPKIT-REQ-SPEC-3.2-001"]["element_ids"])
+
+        repeated_attributes_element = expected_mapping["element_id"]
+        test_case = next(item for item in catalog["test_cases"] if item["official_case_id"] == "BL-M-4-21")
+        self.assertIn(repeated_attributes_element, test_case["element_ids"])
+        self.assertTrue(
+            repeated_item_ids.union(expected_mapping["requirement_ids"]).isdisjoint(test_case["requirement_ids"])
+        )
+        fixture_root = ElementTree.parse(ROOT / "specification/oasis/kmip-2.1/fixtures/BL-M-4-21.xml").getroot()
+        locate_attributes = [
+            attributes
+            for locate in fixture_root.iter("Locate")
+            for attributes in locate.findall("./Attributes")
+        ]
+        self.assertEqual(len(locate_attributes), 1)
+        repeated_protect_stop_dates = locate_attributes[0].findall("./ProtectStopDate")
+        self.assertEqual(len(repeated_protect_stop_dates), 2)
+        self.assertEqual(requirements["KMIPKIT-REQ-SPEC-5.1-002"]["test_case_ids"], [])
+        self.assertEqual(requirements["KMIPKIT-REQ-SPEC-3.2-001"]["test_case_ids"], [])
 
     def test_baseline_query_operation_condition_has_exact_reviewed_client_crosswalk(self) -> None:
         """Query's item mapping is source-backed while its parent condition stays partial."""

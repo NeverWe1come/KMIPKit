@@ -17140,6 +17140,22 @@ class CatalogValidationTests(unittest.TestCase):
             f"{requirement_id} must link Import's bounded Secret Data wire representation",
         )
 
+    def test_attributes_repeatability_requirement_element_links_are_symmetric(self) -> None:
+        """The §5.1 repeated-attribute requirement and its Attributes element link both ways."""
+        catalog = json.loads(
+            (ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8")
+        )
+        requirement_id = "KMIPKIT-REQ-SPEC-5.1-002"
+        element_id = "KMIPKIT-ELEM-ATTRIBUTE-STRUCTURE-5-1-ATTRIBUTES"
+        requirement = next(
+            item for item in catalog["requirements"] if item["requirement_id"] == requirement_id
+        )
+        element = next(item for item in catalog["elements"] if item["element_id"] == element_id)
+
+        self.assertIn(element_id, requirement["element_ids"])
+        self.assertIn(requirement_id, element["requirement_ids"])
+        self.assertIn("KMIPKIT-REQ-SPEC-3.2-001", element["requirement_ids"])
+
     def test_optional_attribute_evidence_rows_are_client_to_server_requests(self) -> None:
         """Attribute request permissions remain client-originated catalog evidence."""
         catalog = json.loads(
