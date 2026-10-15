@@ -433,6 +433,48 @@ class SourceGapContextResolutionTests(unittest.TestCase):
                 self.assertEqual(gap["source_excerpt"], extracted)
                 self.assertTrue(extracted.endswith("any other required parameters"))
 
+    def test_paragraph_006_to_008_capture_client_request_sequence_scope(self) -> None:
+        """§6.1 procedure context is client-scoped without inventing formal requirement IDs."""
+        oracle = json.loads(ORACLE_PATH.read_text(encoding="utf-8"))
+        gaps = {row["gap_id"]: row for row in oracle["source_only_requirement_gaps"]}
+        expected = {
+            6: {
+                "condition": "Multipart is optional and applies only to operations with Correlation Value, Init Indicator, and Final Indicator request parameters; this step is for the first request.",
+                "context_ranges": ((22417, 22420), (22425, 22427)),
+                "context_text": ("are optionally supported", "On the first request"),
+            },
+            7: {
+                "condition": "Multipart is optional and applies only to operations with Correlation Value, Init Indicator, and Final Indicator request parameters; this step is for subsequent requests.",
+                "context_ranges": ((22417, 22420), (22445, 22447)),
+                "context_text": ("are optionally supported", "On subsequent requests"),
+            },
+            8: {
+                "condition": "Single-part cryptographic operations; this step applies to each request.",
+                "context_ranges": ((22477, 22483),),
+                "context_text": ("Single-part cryptographic operations", "On each request"),
+            },
+        }
+
+        for number, expected_context in expected.items():
+            gap = gaps[f"KMIPKIT-SOURCE-GAP-SPEC-6.1-PARAGRAPH-{number:03d}"]
+            with self.subTest(gap_id=gap["gap_id"]):
+                context = " ".join(
+                    pinned_source_excerpt(gap["source_path"], list(line_range))
+                    for line_range in expected_context["context_ranges"]
+                )
+                self.assertTrue(all(text in context for text in expected_context["context_text"]))
+                self.assertEqual(gap["actor"], "client")
+                self.assertEqual(gap["direction"], "client cryptographic-operation request parameters")
+                self.assertEqual(gap["condition"], expected_context["condition"])
+                self.assertEqual(gap["scope_disposition"], "client_1_0")
+                self.assertEqual(gap["source_force"], "imperative_procedure_without_formal_modal")
+                self.assertEqual(gap["source_keywords"], [])
+                self.assertEqual(gap["status"], "reviewed_generic_parameter_context")
+                self.assertIsNone(gap["candidate_requirement_id"])
+                self.assertIsNone(gap["proposed_requirement_id"])
+                self.assertEqual(gap["source_resolution"]["kind"], "generic_parameter_context")
+                self.assertEqual(gap["source_resolution"]["related_requirement_ids"], [])
+
     def test_paragraph_data_rule_remains_unresolved_and_lease_policy_maps_to_attribute(self) -> None:
         oracle = json.loads(ORACLE_PATH.read_text(encoding="utf-8"))
         catalog = json.loads(CATALOG_PATH.read_text(encoding="utf-8"))
@@ -474,7 +516,7 @@ class SourceGapContextResolutionTests(unittest.TestCase):
             gap = gaps[f"KMIPKIT-SOURCE-GAP-SPEC-6.1-PARAGRAPH-{number:03d}"]
             self.assertEqual(gap["actor"], "client")
             self.assertEqual(gap["direction"], "client cryptographic-operation request parameters")
-            self.assertEqual(gap["scope_disposition"], "unresolved")
+            self.assertEqual(gap["scope_disposition"], "client_1_0")
         self.assertIn("identify the client actor", summary)
         self.assertIn("request-parameter direction", summary)
         self.assertNotIn("actor/direction/scope unclear", summary)
