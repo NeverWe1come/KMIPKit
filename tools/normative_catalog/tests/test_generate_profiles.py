@@ -1099,7 +1099,7 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
         self.assertIn("Linked Object Identifier value is specified without the Link Type value", locate_007_source)
 
     def test_baseline_message_data_structures_condition_has_exact_reviewed_batch_crosswalk(self) -> None:
-        """The six reviewed Message Data Structure mappings stay bounded while item 5 remains pending."""
+        """The seven reviewed Message Data Structure mappings stay bounded while item 5 remains pending."""
         catalog = json.loads((ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8"))
         oracle = json.loads(
             (ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json")
@@ -1184,6 +1184,21 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
             "source_clause_ids": [expected_maximum_response_size_clause_id],
             "mapping_status": "reviewed",
         }
+        expected_message_extension_mapping = {
+            "item": "Message Extension",
+            "element_id": "KMIPKIT-ELEM-MESSAGE-FIELD-9-13-MESSAGE-EXTENSION",
+            "requirement_ids": [
+                "KMIPKIT-REQ-SPEC-8.3-004",
+                "KMIPKIT-REQ-SPEC-9.13-001-004",
+                "KMIPKIT-REQ-SPEC-9.13-001-005",
+            ],
+            "source_clause_ids": [
+                "KMIPKIT-CLAUSE-SPEC-8.3-004",
+                "KMIPKIT-CLAUSE-SPEC-8.6-004",
+                "KMIPKIT-CLAUSE-SPEC-9.13-001",
+            ],
+            "mapping_status": "reviewed",
+        }
         expected_mappings = [
             expected_async_mapping,
             expected_mapping,
@@ -1191,6 +1206,7 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
             expected_batch_item_mapping,
             expected_batch_order_option_mapping,
             expected_maximum_response_size_mapping,
+            expected_message_extension_mapping,
         ]
 
         self.assertEqual(condition["item"], 5)
@@ -1226,10 +1242,11 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
                 "Batch Item",
                 "Batch Order Option",
                 "Maximum Response Size",
+                "Message Extension",
             ],
         )
         self.assertEqual(len(condition["supported_items"]), 14)
-        self.assertEqual(len(condition["supported_item_mappings"]), 6)
+        self.assertEqual(len(condition["supported_item_mappings"]), 7)
         unmapped_items = [
             item
             for item in condition["supported_items"]
@@ -1238,7 +1255,6 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
         self.assertEqual(
             unmapped_items,
             [
-                "Message Extension",
                 "Operation",
                 "Protocol Version",
                 "Result Reason",
@@ -1251,7 +1267,6 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
         self.assertEqual(
             set(condition["supported_items"]) - {mapping["item"] for mapping in condition["supported_item_mappings"]},
             {
-                "Message Extension",
                 "Operation",
                 "Protocol Version",
                 "Result Reason",
@@ -1858,6 +1873,243 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
             for requirement_id in mapping["requirement_ids"]
         }
         self.assertNotIn("KMIPKIT-REQ-SPEC-6.1.7-002-002", mapped_requirement_ids)
+
+    def test_baseline_message_extension_condition_has_exact_reviewed_client_crosswalk(self) -> None:
+        """Message Extension cites both placements while only reviewed client duties enter the mapping."""
+        catalog = json.loads((ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8"))
+        oracle = json.loads(
+            (ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json")
+            .read_text(encoding="utf-8")
+        )
+        profiles_path = "specification/oasis/kmip-2.1/upstream/kmip-profiles-v2.1-os.html"
+        spec_path = "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
+        inventory = next(
+            item
+            for item in oracle["provenance"]["profile_condition_inventories"]
+            if item["source_id"] == "KMIPKIT-SRC-profiles" and item["section"] == "5.1.1"
+        )
+        condition = next(
+            item for item in inventory["conditions"] if item["condition_id"] == "KMIPKIT-PROF-COND-5.1.1-005"
+        )
+        requirement_ids = [
+            "KMIPKIT-REQ-SPEC-8.3-004",
+            "KMIPKIT-REQ-SPEC-9.13-001-004",
+            "KMIPKIT-REQ-SPEC-9.13-001-005",
+        ]
+        clause_ids = [
+            "KMIPKIT-CLAUSE-SPEC-8.3-004",
+            "KMIPKIT-CLAUSE-SPEC-8.6-004",
+            "KMIPKIT-CLAUSE-SPEC-9.13-001",
+        ]
+        element_id = "KMIPKIT-ELEM-MESSAGE-FIELD-9-13-MESSAGE-EXTENSION"
+        expected_mapping = {
+            "item": "Message Extension",
+            "element_id": element_id,
+            "requirement_ids": requirement_ids,
+            "source_clause_ids": clause_ids,
+            "mapping_status": "reviewed",
+        }
+
+        self.assertEqual(condition["supported_items"][5:7], ["Maximum Response Size", "Message Extension"])
+        self.assertEqual(condition["supported_item_mappings"][-1], expected_mapping)
+        self.assertIsNone(condition["requirement_id"])
+        self.assertEqual(condition["scope_disposition"], "profile_conditional")
+        self.assertEqual(condition["mapping_status"], "pending_t002_crosswalk")
+
+        profiles_lines = (ROOT / profiles_path).read_text(encoding="cp1252").splitlines()
+        profile_item_text = _normalized_html_source_span(profiles_lines, [4594, 4596])
+        self.assertEqual(profile_item_text, "Message Extension")
+
+        spec_lines = (ROOT / spec_path).read_text(encoding="cp1252").splitlines()
+        source_ranges = {
+            "KMIPKIT-CLAUSE-SPEC-8.3-004": [42956, 42974],
+            "KMIPKIT-CLAUSE-SPEC-8.6-004": [43479, 43503],
+            "KMIPKIT-CLAUSE-SPEC-9.13-001": [44858, 44872],
+        }
+        source_candidates = {
+            item["clause_id"]: item
+            for item in audit_document((ROOT / spec_path).read_bytes(), "KMIPKIT-SRC-spec")
+            if item["clause_id"] in clause_ids
+        }
+        catalog_clauses = {item["clause_id"]: item for item in catalog["source_clauses"]}
+        self.assertEqual(set(source_candidates), set(clause_ids))
+        self.assertEqual(set(catalog_clauses) & set(clause_ids), set(clause_ids))
+        for clause_id in clause_ids:
+            with self.subTest(clause_id=clause_id):
+                expected_locator = {
+                    "ordinal": 1 if clause_id.endswith("9.13-001") else 4,
+                    "block_kind": "paragraph" if clause_id.endswith("9.13-001") else "table_row",
+                }
+                self.assertEqual(source_candidates[clause_id]["locator"], expected_locator)
+                self.assertEqual(catalog_clauses[clause_id]["locator"], expected_locator)
+                self.assertEqual(
+                    catalog_clauses[clause_id]["section"], clause_id.split("-SPEC-")[1].split("-")[0]
+                )
+
+        request_review = next(
+            item
+            for item in oracle["source_requirement_reviews"]
+            if item["source_clause_id"] == "KMIPKIT-CLAUSE-SPEC-8.3-004"
+        )
+        self.assertEqual(request_review["html_line_range"], source_ranges["KMIPKIT-CLAUSE-SPEC-8.3-004"])
+        self.assertEqual(request_review["source_locator"], {"ordinal": 4, "block_kind": "table_row"})
+        self.assertEqual(request_review["expected_client_requirement_ids"], [requirement_ids[0]])
+        request_obligation = request_review["source_obligations"][0]
+        self.assertEqual(request_obligation["source_text"], "Message Extension No, MAY be repeated")
+        self.assertEqual(request_obligation["source_keyword"], "MAY")
+        self.assertEqual(request_obligation["actor"], "client")
+        self.assertEqual(request_obligation["direction"], "client_to_server")
+        self.assertEqual(request_obligation["condition"], "A Request Message contains a Batch Item.")
+        self.assertEqual(request_obligation["scope_disposition"], "client_1_0")
+        self.assertEqual(
+            _normalized_html_source_span(spec_lines, source_ranges["KMIPKIT-CLAUSE-SPEC-8.3-004"]),
+            request_review["source_excerpt"],
+        )
+
+        response_clause = catalog_clauses["KMIPKIT-CLAUSE-SPEC-8.6-004"]
+        self.assertEqual(response_clause["disposition"], "server_only")
+        self.assertEqual(response_clause["requirement_ids"], [])
+        response_placement_text = _normalized_html_source_span(
+            spec_lines, source_ranges["KMIPKIT-CLAUSE-SPEC-8.6-004"]
+        )
+        self.assertIn("Message Extension No", response_placement_text)
+        self.assertIn("Table 399: Response Batch Item Structure", response_placement_text)
+
+        extension_review = next(
+            item
+            for item in oracle["source_requirement_reviews"]
+            if item["source_clause_id"] == "KMIPKIT-CLAUSE-SPEC-9.13-001"
+        )
+        extension_text = _normalized_html_source_span(
+            spec_lines, source_ranges["KMIPKIT-CLAUSE-SPEC-9.13-001"]
+        )
+        self.assertEqual(extension_review["html_line_range"], source_ranges["KMIPKIT-CLAUSE-SPEC-9.13-001"])
+        self.assertEqual(extension_review["source_excerpt"], extension_text)
+        self.assertEqual(extension_review["expected_client_requirement_ids"], requirement_ids[1:])
+        obligations = extension_review["source_obligations"]
+        unresolved_shape_ids = {
+            "KMIPKIT-REQ-SPEC-9.13-001-001",
+            "KMIPKIT-REQ-SPEC-9.13-001-002",
+            "KMIPKIT-REQ-SPEC-9.13-001-003",
+        }
+        unresolved_shape_obligations = [
+            item for item in obligations if item["candidate_requirement_id"] in unresolved_shape_ids
+        ]
+        self.assertEqual(
+            {item["candidate_requirement_id"] for item in unresolved_shape_obligations}, unresolved_shape_ids
+        )
+        self.assertTrue(
+            all(
+                item["actor"] == "unspecified"
+                and item["direction"] == "unspecified"
+                and item["scope_disposition"] == "unresolved"
+                for item in unresolved_shape_obligations
+            )
+        )
+        self.assertTrue(unresolved_shape_ids.isdisjoint(expected_mapping["requirement_ids"]))
+
+        receiver_obligations = {
+            item["candidate_requirement_id"]: item
+            for item in obligations
+            if item["candidate_requirement_id"] in requirement_ids[1:]
+        }
+        self.assertEqual(set(receiver_obligations), set(requirement_ids[1:]))
+        expected_receiver_obligations = {
+            requirement_ids[1]: {
+                "source_order": 5,
+                "source_text": "the receiver SHALL reject the entire message.",
+                "source_keyword": "SHALL",
+                "actor": "receiver (client or server)",
+                "direction": "both",
+                "condition": "Receiver does not understand a critical extension.",
+                "scope_disposition": "client_1_0",
+            },
+            requirement_ids[2]: {
+                "source_order": 6,
+                "source_text": "the receiver MAY process the rest of the message as if the extension were not present.",
+                "source_keyword": "MAY",
+                "actor": "receiver (client or server)",
+                "direction": "both",
+                "condition": "Receiver does not understand a non-critical extension.",
+                "scope_disposition": "client_1_0",
+            },
+        }
+        for receiver_requirement_id, expected in expected_receiver_obligations.items():
+            obligation = receiver_obligations[receiver_requirement_id]
+            for field, value in expected.items():
+                self.assertEqual(obligation[field], value)
+
+        requirements = {item["requirement_id"]: item for item in catalog["requirements"]}
+        expected_requirement_details = {
+            requirement_ids[0]: ("MAY", "permission_or_optional", "client", "client_to_server"),
+            requirement_ids[1]: ("SHALL", "mandatory", "both", "both"),
+            requirement_ids[2]: ("MAY", "permission_or_optional", "both", "both"),
+        }
+        for requirement_id, (keyword, strength, role, direction) in expected_requirement_details.items():
+            with self.subTest(requirement_id=requirement_id):
+                requirement = requirements[requirement_id]
+                expected_clause_id = clause_ids[0] if requirement_id == requirement_ids[0] else clause_ids[2]
+                self.assertEqual(requirement["source_clause_ids"], [expected_clause_id])
+                self.assertEqual(requirement["source_keyword"], keyword)
+                self.assertEqual(requirement["normative_strength"], strength)
+                self.assertEqual(requirement["role"], role)
+                self.assertEqual(requirement["direction"], direction)
+                self.assertEqual(requirement["scope_state"], "client_1_0")
+
+        elements = {item["element_id"]: item for item in catalog["elements"]}
+        extension_element = elements[element_id]
+        self.assertEqual(extension_element["kind"], "message_field")
+        self.assertEqual(extension_element["name"], "Message Extension")
+        self.assertEqual(
+            extension_element["source_refs"], [{"source_id": "KMIPKIT-SRC-spec", "section": "9.13"}]
+        )
+        self.assertEqual(extension_element["source_encoding"], "Structure")
+        self.assertEqual(
+            extension_element["parent_element_ids"],
+            [
+                "KMIPKIT-ELEM-MESSAGE-FIELD-8-3-MESSAGE-EXTENSION",
+                "KMIPKIT-ELEM-MESSAGE-FIELD-8-6-MESSAGE-EXTENSION",
+            ],
+        )
+        tag_details = [
+            ("Message Extension", "KMIPKIT-ELEM-TAG-420051", "420051", [59976, 59986]),
+            ("Vendor Identification", "KMIPKIT-ELEM-TAG-42009D", "42009D", [60964, 60974]),
+            ("Criticality Indicator", "KMIPKIT-ELEM-TAG-420026", "420026", [59416, 59427]),
+            ("Vendor Extension", "KMIPKIT-ELEM-TAG-42009C", "42009C", [60950, 60961]),
+        ]
+        for name, tag_id, wire_value, line_range in tag_details:
+            with self.subTest(tag=tag_id):
+                tag = elements[tag_id]
+                self.assertEqual(tag["kind"], "tag")
+                self.assertEqual(tag["name"], name)
+                self.assertEqual(tag["wire_value"], wire_value)
+                self.assertEqual(tag["source_refs"], [{"source_id": "KMIPKIT-SRC-spec", "section": "11.56"}])
+                source_text = _normalized_html_source_span(spec_lines, line_range)
+                self.assertIn(name, source_text)
+                self.assertIn(wire_value, source_text)
+
+        table_418_text = _normalized_html_source_span(spec_lines, [44894, 44944])
+        self.assertIn("Table 418: Message Extension Structure in Batch Item", table_418_text)
+        child_fields = [
+            (
+                "Vendor Identification",
+                "KMIPKIT-ELEM-MESSAGE-FIELD-9-13-VENDOR-IDENTIFICATION",
+                "Text String (with usage limited to alphanumeric, underscore and period – i.e. [A-Za-z0-9_.])",
+            ),
+            ("Criticality Indicator", "KMIPKIT-ELEM-MESSAGE-FIELD-9-13-CRITICALITY-INDICATOR", "Boolean"),
+            ("Vendor Extension", "KMIPKIT-ELEM-MESSAGE-FIELD-9-13-VENDOR-EXTENSION", "Structure"),
+        ]
+        for name, child_id, encoding in child_fields:
+            with self.subTest(child=child_id):
+                child = elements[child_id]
+                self.assertEqual(child["kind"], "message_field")
+                self.assertEqual(child["name"], name)
+                self.assertEqual(child["source_encoding"], encoding)
+                self.assertEqual(child["parent_element_ids"], [element_id])
+                self.assertIn(name, table_418_text)
+                self.assertIn(encoding, table_418_text)
+        self.assertNotIn("default", extension_text.lower())
+        self.assertNotIn("default", table_418_text.lower())
 
     def test_foundry_basic_condition_text_names_its_inheriting_profiles(self) -> None:
         """The catalog and source review describe the same normative inheritance."""
