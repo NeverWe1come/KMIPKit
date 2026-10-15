@@ -595,3 +595,14 @@ Profiles v2.1 §5.1.1 item 3, pinned HTML lines 4541–4562, names eight Object 
 Every mapping has `requirement_ids: []`, `source_clause_ids: []`, and `mapping_status: reviewed`. Here, `reviewed` records only the exact profile-item-to-element relation. The profile list does not adjudicate client ownership of the attributes' §4 rules. Current source reviews leave actor or applicability unresolved for candidate requirements concerning Activation Date, Deactivation Date, Initial Date, State, and Unique Identifier. Digest's digest-setting rule is server-only, and its lowercase “Clients may request” sentence is not a formal modal requirement. These candidates remain excluded; no source review or catalog requirement classification changes in this tranche.
 
 The regression binds the mapping list to the exact pinned Profiles span and checks each element's name, §4 and §11.56 source references, direction, scope, encoding, and parent tag record. Exact ordered-list equality rejects missing, extra, duplicate, reordered, or fabricated mappings and any requirement or clause IDs. The parent condition `KMIPKIT-PROF-COND-5.1.1-003` remains `requirement_id: null` / `pending_t002_crosswalk`. No official case link, profile readiness, or conformance claim is implied.
+
+### Baseline Client §5.1.1 item 5 — Batch Count crosswalk (2026-10-15)
+
+Profiles v2.1 §5.1.1 item 5, pinned HTML lines 4575–4613, lists 14 Message Data Structures; the `Batch Count` list item appears at line 4582. This tranche maps only `Batch Count` to `KMIPKIT-ELEM-MESSAGE-FIELD-9-5-BATCH-COUNT`. Specification v2.1 §9.5, clause `KMIPKIT-CLAUSE-SPEC-9.5-001`, is the paragraph at pinned lines 43728–43731. Its source review assigns two client-to-server, `client_1_0` obligations to the Batch Count element:
+
+| Requirement | Source keyword | Client rule |
+|---|---|---|
+| `KMIPKIT-REQ-SPEC-9.5-001-001` | `REQUIRED` | Set Batch Count to the number of Batch Items in the message. |
+| `KMIPKIT-REQ-SPEC-9.5-001-002` | `SHALL` | Set Batch Count to one for a single requested operation. |
+
+The remaining 13 item-5 values stay unmapped for later source-reviewed slices. The parent condition `KMIPKIT-PROF-COND-5.1.1-005` remains `requirement_id: null` and `mapping_status: pending_t002_crosswalk`; this one-item mapping does not close it. The local regression is not an official OASIS test case and establishes no profile readiness or conformance claim. T002 remains open.
