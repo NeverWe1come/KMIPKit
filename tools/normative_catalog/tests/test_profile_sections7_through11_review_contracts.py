@@ -300,6 +300,22 @@ class ProfileSectionsSevenThroughElevenReviewContractTests(unittest.TestCase):
         for default_fact in ("Table 415", "optional", "SHA-256", "omitted"):
             self.assertIn(default_fact.casefold(), timestamp_review["review_note"].casefold())
 
+    def test_credential_crosswalk_qualifies_inferred_source_actors(self) -> None:
+        crosswalk = {
+            row["requirement_id"]: row
+            for row in self.oracle["requirement_crosswalk"]
+        }
+        for requirement_id in (
+            "KMIPKIT-REQ-SPEC-9.11-004-002",
+            "KMIPKIT-REQ-SPEC-9.11-010-001",
+            "KMIPKIT-REQ-SPEC-9.11-010-002",
+        ):
+            with self.subTest(requirement_id=requirement_id):
+                row = crosswalk[requirement_id]
+                self.assertEqual(row["source_actor"], "unspecified")
+                self.assertIn("KMIPKIT-0008", row["review_note"])
+                self.assertEqual(row["role"], "client")
+
 
 if __name__ == "__main__":
     unittest.main()
