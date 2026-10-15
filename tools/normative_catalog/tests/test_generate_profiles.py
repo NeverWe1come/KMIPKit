@@ -110,6 +110,17 @@ def closure_catalog() -> dict[str, object]:
 
 
 class ProfileMetadataGeneratorTests(unittest.TestCase):
+    def test_current_baseline_condition_summary_matches_reviewed_structural_crosswalks(self) -> None:
+        """The current T002 summary must not describe structurally reviewed items as pending."""
+        research = (ROOT / "specs" / "010-profile-conformance" / "research.md").read_text(encoding="utf-8")
+        summary = research.split("## Normative-reference cross-check for T002", maxsplit=1)[1].split(
+            "## Fixture inventory update", maxsplit=1
+        )[0]
+
+        self.assertIn("Items 1–8 have reviewed inventory/crosswalk dispositions", summary)
+        self.assertIn("item 5 and item 6 statuses are structural-only", summary)
+        self.assertNotIn("Item 6 remains pending crosswalk review", summary)
+
     def test_maximum_response_size_evidence_does_not_claim_general_server_policy(self) -> None:
         """Keep Query test evidence and the error reason distinct from a general server rule."""
         research = (ROOT / "specs" / "010-profile-conformance" / "research.md").read_text(encoding="utf-8")
