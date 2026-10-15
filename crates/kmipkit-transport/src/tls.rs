@@ -35,7 +35,15 @@ const MAX_LOCAL_TICKET_AGE: Duration = Duration::from_hours(1);
 
 /// Selects the AWS-LC provider retained by one validated transport configuration.
 pub(crate) fn aws_lc_crypto_provider() -> Arc<rustls::crypto::CryptoProvider> {
-    Arc::new(aws_lc_rs::default_provider())
+    let mut provider = aws_lc_rs::default_provider();
+    provider.cipher_suites.retain(|suite| {
+        matches!(
+            suite.suite(),
+            rustls::CipherSuite::TLS13_AES_256_GCM_SHA384
+                | rustls::CipherSuite::TLS13_CHACHA20_POLY1305_SHA256
+        )
+    });
+    Arc::new(provider)
 }
 
 /// Monotonic elapsed time used to age cached TLS tickets.
