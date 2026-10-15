@@ -2163,13 +2163,14 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
         )
         self.assertEqual(operation_mapping, expected_mapping)
         self.assertEqual(condition["supported_items"][6:9], ["Message Extension", "Operation", "Protocol Version"])
-        self.assertEqual(mapped_items[-3:], ["Message Extension", "Operation", "Protocol Version"])
+        self.assertEqual(
+            mapped_items[-4:], ["Message Extension", "Operation", "Protocol Version", "Result Reason"]
+        )
         self.assertEqual(len(condition["supported_items"]), 14)
-        self.assertEqual(len(mapped_items), 9)
+        self.assertEqual(len(mapped_items), 10)
         self.assertEqual(
             [item for item in condition["supported_items"] if item not in set(mapped_items)],
             [
-                "Result Reason",
                 "Result Status",
                 "Server Correlation Value",
                 "Time Stamp",
@@ -2335,13 +2336,16 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
             "source_clause_ids": ["KMIPKIT-CLAUSE-SPEC-9.16-001"],
             "mapping_status": "reviewed",
         }
-        self.assertEqual(condition["supported_item_mappings"][-1], expected_mapping)
+        protocol_version_mapping = next(
+            item for item in condition["supported_item_mappings"] if item["item"] == "Protocol Version"
+        )
+        self.assertEqual(protocol_version_mapping, expected_mapping)
         mapped_items = [item["item"] for item in condition["supported_item_mappings"]]
         self.assertEqual(condition["supported_items"][8], "Protocol Version")
-        self.assertEqual(mapped_items[-2:], ["Operation", "Protocol Version"])
+        self.assertEqual(mapped_items[-3:], ["Operation", "Protocol Version", "Result Reason"])
         self.assertEqual(
             [item for item in condition["supported_items"] if item not in set(mapped_items)],
-            ["Result Reason", "Result Status", "Server Correlation Value", "Time Stamp", "Unique Batch Item ID"],
+            ["Result Status", "Server Correlation Value", "Time Stamp", "Unique Batch Item ID"],
         )
         self.assertIsNone(condition["requirement_id"])
         self.assertEqual(condition["scope_disposition"], "profile_conditional")
@@ -2444,7 +2448,10 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
         }
 
         self.assertEqual(condition["supported_items"][9], "Result Reason")
-        self.assertEqual(condition["supported_item_mappings"][-1], expected_mapping)
+        result_reason_mapping = next(
+            item for item in condition["supported_item_mappings"] if item["item"] == "Result Reason"
+        )
+        self.assertEqual(result_reason_mapping, expected_mapping)
         self.assertIsNone(condition["requirement_id"])
         self.assertEqual(condition["scope_disposition"], "profile_conditional")
         self.assertEqual(condition["mapping_status"], "pending_t002_crosswalk")
