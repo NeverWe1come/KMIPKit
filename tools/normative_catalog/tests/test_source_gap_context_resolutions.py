@@ -70,9 +70,9 @@ EXPECTED_GENERIC_PARAMETER_CONTRACTS = {
     ),
 }
 
-# KMIPKIT-0019 approves both operations and request tables, but the profile
-# oracle does not yet have source_table_contracts for these tables. Generic
-# contexts must stay explicitly blocked until those requests are mapped.
+# KMIPKIT-0019 approves both client 1.0 operations, but the profile oracle does
+# not yet have source_table_contracts for these request tables. Their generic
+# client scope is known; operation-specific parameter mapping remains blocked.
 UNMAPPED_GENERIC_CONTEXT_OPERATION_TABLES = {
     "KMIPKIT-ELEM-OP-C2S-DECRYPT": ("Decrypt", 196),
     "KMIPKIT-ELEM-OP-C2S-ENCRYPT": ("Encrypt", 214),
@@ -373,8 +373,8 @@ class SourceGapContextResolutionTests(unittest.TestCase):
                         note = resolution.get("review_note", "")
                         self.assertEqual(
                             gap["scope_disposition"],
-                            "unresolved",
-                            f"{gap_id} closes {operation_name} Table {table_number} without request contracts",
+                            "client_1_0",
+                            f"{gap_id} must preserve known client scope while leaving {operation_name} Table {table_number} mapping open",
                         )
                         note_requirements = {
                             "KMIPKIT-0019",

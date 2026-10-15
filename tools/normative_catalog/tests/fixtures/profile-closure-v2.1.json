@@ -91845,12 +91845,12 @@
       "source_force": "imperative_procedure_without_formal_modal",
       "actor": "client",
       "direction": "client cryptographic-operation request parameters",
-      "condition": "applicable multi-part or single-part cryptographic request",
-      "scope_disposition": "unresolved",
+      "condition": "Multipart is optional and applies only to operations with Correlation Value, Init Indicator, and Final Indicator request parameters; this step is for the first request.",
+      "scope_disposition": "client_1_0",
       "candidate_requirement_id": null,
       "proposed_requirement_id": null,
       "status": "reviewed_generic_parameter_context",
-      "review_note": "KMIPKIT-0019 Encrypt Table 214 and Decrypt Table 196 are approved client 1.0 operations, but their request fields do not yet have source_table_contracts with implementation and executable verification evidence. Keep this generic parameter context unresolved for those operations until their request rows are source-audited and linked; do not infer a formal requirement.",
+      "review_note": "This generic procedural context applies to client 1.0 requests: paragraph 006 covers the first request of an optionally supported multipart operation, paragraph 007 covers subsequent requests in that operation, and paragraph 008 covers each single-part request. The phrase 'any other required parameters' defers to each operation's request table; it is not an independent formal requirement and has no standalone client requirement ID. KMIPKIT-0019 Encrypt Table 214 and Decrypt Table 196 do not yet have source_table_contracts, so their operation-specific parameter mappings remain open.",
       "source_resolution": {
         "kind": "generic_parameter_context",
         "context_id": "KMIPKIT-CONTEXT-SPEC-6.1-006",
@@ -91858,7 +91858,7 @@
         "related_source_table_contract_ids": [
           "KMIPKIT-SOURCE-GAP-SPEC-6.1.24-CRYPTOGRAPHIC-PARAMETERS-REQUIRED"
         ],
-        "review_note": "KMIPKIT-0019 Encrypt Table 214 and Decrypt Table 196 are approved client 1.0 operations, but their request fields do not yet have source_table_contracts with implementation and executable verification evidence. Keep this generic parameter context unresolved for those operations until their request rows are source-audited and linked; do not infer a formal requirement."
+        "review_note": "This generic procedural context applies to client 1.0 requests: paragraph 006 covers the first request of an optionally supported multipart operation, paragraph 007 covers subsequent requests in that operation, and paragraph 008 covers each single-part request. The phrase 'any other required parameters' defers to each operation's request table; it is not an independent formal requirement and has no standalone client requirement ID. KMIPKIT-0019 Encrypt Table 214 and Decrypt Table 196 do not yet have source_table_contracts, so their operation-specific parameter mappings remain open."
       }
     },
     {
@@ -91882,12 +91882,12 @@
       "source_force": "imperative_procedure_without_formal_modal",
       "actor": "client",
       "direction": "client cryptographic-operation request parameters",
-      "condition": "applicable multi-part or single-part cryptographic request",
-      "scope_disposition": "unresolved",
+      "condition": "Multipart is optional and applies only to operations with Correlation Value, Init Indicator, and Final Indicator request parameters; this step is for subsequent requests.",
+      "scope_disposition": "client_1_0",
       "candidate_requirement_id": null,
       "proposed_requirement_id": null,
       "status": "reviewed_generic_parameter_context",
-      "review_note": "KMIPKIT-0019 Encrypt Table 214 and Decrypt Table 196 are approved client 1.0 operations, but their request fields do not yet have source_table_contracts with implementation and executable verification evidence. Keep this generic parameter context unresolved for those operations until their request rows are source-audited and linked; do not infer a formal requirement.",
+      "review_note": "This generic procedural context applies to client 1.0 requests: paragraph 006 covers the first request of an optionally supported multipart operation, paragraph 007 covers subsequent requests in that operation, and paragraph 008 covers each single-part request. The phrase 'any other required parameters' defers to each operation's request table; it is not an independent formal requirement and has no standalone client requirement ID. KMIPKIT-0019 Encrypt Table 214 and Decrypt Table 196 do not yet have source_table_contracts, so their operation-specific parameter mappings remain open.",
       "source_resolution": {
         "kind": "generic_parameter_context",
         "context_id": "KMIPKIT-CONTEXT-SPEC-6.1-007",
@@ -91895,7 +91895,7 @@
         "related_source_table_contract_ids": [
           "KMIPKIT-SOURCE-GAP-SPEC-6.1.24-CRYPTOGRAPHIC-PARAMETERS-REQUIRED"
         ],
-        "review_note": "KMIPKIT-0019 Encrypt Table 214 and Decrypt Table 196 are approved client 1.0 operations, but their request fields do not yet have source_table_contracts with implementation and executable verification evidence. Keep this generic parameter context unresolved for those operations until their request rows are source-audited and linked; do not infer a formal requirement."
+        "review_note": "This generic procedural context applies to client 1.0 requests: paragraph 006 covers the first request of an optionally supported multipart operation, paragraph 007 covers subsequent requests in that operation, and paragraph 008 covers each single-part request. The phrase 'any other required parameters' defers to each operation's request table; it is not an independent formal requirement and has no standalone client requirement ID. KMIPKIT-0019 Encrypt Table 214 and Decrypt Table 196 do not yet have source_table_contracts, so their operation-specific parameter mappings remain open."
       }
     },
     {
@@ -91919,12 +91919,12 @@
       "source_force": "imperative_procedure_without_formal_modal",
       "actor": "client",
       "direction": "client cryptographic-operation request parameters",
-      "condition": "applicable multi-part or single-part cryptographic request",
-      "scope_disposition": "unresolved",
+      "condition": "Single-part cryptographic operations; this step applies to each request.",
+      "scope_disposition": "client_1_0",
       "candidate_requirement_id": null,
       "proposed_requirement_id": null,
       "status": "reviewed_generic_parameter_context",
-      "review_note": "KMIPKIT-0019 Encrypt Table 214 and Decrypt Table 196 are approved client 1.0 operations, but their request fields do not yet have source_table_contracts with implementation and executable verification evidence. Keep this generic parameter context unresolved for those operations until their request rows are source-audited and linked; do not infer a formal requirement.",
+      "review_note": "This generic procedural context applies to client 1.0 requests: paragraph 006 covers the first request of an optionally supported multipart operation, paragraph 007 covers subsequent requests in that operation, and paragraph 008 covers each single-part request. The phrase 'any other required parameters' defers to each operation's request table; it is not an independent formal requirement and has no standalone client requirement ID. KMIPKIT-0019 Encrypt Table 214 and Decrypt Table 196 do not yet have source_table_contracts, so their operation-specific parameter mappings remain open.",
       "source_resolution": {
         "kind": "generic_parameter_context",
         "context_id": "KMIPKIT-CONTEXT-SPEC-6.1-008",
@@ -91938,7 +91938,7 @@
           "KMIPKIT-SOURCE-GAP-SPEC-6.1.55-DIGESTED-DATA-OPTIONAL",
           "KMIPKIT-SOURCE-GAP-SPEC-6.1.56-SIGNATURE-DATA-CONDITIONAL"
         ],
-        "review_note": "KMIPKIT-0019 Encrypt Table 214 and Decrypt Table 196 are approved client 1.0 operations, but their request fields do not yet have source_table_contracts with implementation and executable verification evidence. Keep this generic parameter context unresolved for those operations until their request rows are source-audited and linked; do not infer a formal requirement."
+        "review_note": "This generic procedural context applies to client 1.0 requests: paragraph 006 covers the first request of an optionally supported multipart operation, paragraph 007 covers subsequent requests in that operation, and paragraph 008 covers each single-part request. The phrase 'any other required parameters' defers to each operation's request table; it is not an independent formal requirement and has no standalone client requirement ID. KMIPKIT-0019 Encrypt Table 214 and Decrypt Table 196 do not yet have source_table_contracts, so their operation-specific parameter mappings remain open."
       }
     },
     {
