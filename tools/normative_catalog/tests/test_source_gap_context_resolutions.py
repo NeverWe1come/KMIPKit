@@ -536,8 +536,8 @@ class SourceGapContextResolutionTests(unittest.TestCase):
         for line in research.splitlines():
             if "`KMIPKIT-SOURCE-GAP-SPEC-6.1-PARAGRAPH-" not in line:
                 continue
-            columns = [column.strip() for column in line.strip().strip("|").split("|")]
-            gap_id = columns[0].strip("`")
+            columns = [column.strip().strip("`") for column in line.strip().strip("|").split("|")]
+            gap_id = columns[0]
             rows[gap_id] = columns
 
         for number in range(6, 9):
