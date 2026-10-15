@@ -2989,3 +2989,19 @@ The independent oracle now maps the twelfth item to `KMIPKIT-ELEM-MESSAGE-FIELD-
 | Exact-head GitHub CI run `38744365487` | PASS on `2f27511c4a271275ed91af7986374c5f05d0e053`: 37 successful jobs, zero failures, zero skipped. |
 
 The crosswalk covers 12 of 14 values; `Time Stamp` and `Unique Batch Item ID` remain. The parent profile condition remains pending; no conformance claim is made.
+
+### KMIPKIT-0010 T002 tranche — Baseline Client §5.1.1 item 5 Time Stamp (2026-10-15)
+
+The thirteenth value maps to `KMIPKIT-ELEM-MESSAGE-FIELD-9-20-TIME-STAMP`, with `KMIPKIT-CLAUSE-SPEC-9.20-001` and client capability IDs `KMIPKIT-REQ-SPEC-9.20-001-001` / `-001-002`. The mapping distinguishes the optional client request from the server-only required response and leaves the unresolved MAY atom unassigned. The conditional countdown-timer MAY stays deferred. Catalog actor/element-association inconsistencies are recorded for KMIPKIT-0002; no client send duty is inferred from response `Required=Yes`.
+
+| Stage | DCO-signed commit and command | Result |
+|---|---|---|
+| Red — assert the thirteenth source-ordered mapping and exact client-versus-server requirement closure | `90ed2006`; `py -3 -B -m unittest tools.normative_catalog.tests.test_generate_profiles.ProfileMetadataGeneratorTests.test_baseline_message_data_structures_condition_has_exact_reviewed_batch_crosswalk tools.normative_catalog.tests.test_generate_profiles.ProfileMetadataGeneratorTests.test_baseline_time_stamp_condition_maps_client_capabilities_not_server_duties -v` | Expected Red: 2 assertion failures / 0 errors. Aggregate oracle lacked the mapping; dedicated test found no Time Stamp row. |
+| Green — add the reviewed independent oracle row and update source-order remainder assertions | `fd9ca838`; aggregate, Time Stamp, Operation, Protocol Version, Result Status, and Server Correlation focused command | PASS: 6/6. Initial run exposed a formatted-source span assertion and stale Operation mapping count; both assertions were corrected before the passing rerun. |
+| Refactor/evidence | Pending evidence commit after full-suite validation and independent QA. | Full suite and serial checks pass; QA found no blocking findings. One P3 observation about intentionally unfixed catalog associations is recorded below. |
+
+| Full normative suite: `py -3 -B -m unittest discover -s tools/normative_catalog/tests -p 'test_*.py'` | PASS: 564 tests in 312.671 seconds; 9 skipped. |
+| Catalog validation, profile generation check, coverage report check, immutable-source check, and `git diff --check` | PASS: catalog has 4 sources, 1,411 clauses, and 4,117 records; pinned-source base `0d3926d6d3b0280c19a8f0be873ad2098eb2bbcf`. |
+| Independent read-only QA | PASS: no blocking findings. P3 observation: the regression does not assert catalog `requirement_ids` on response/canonical elements, since those associations are known KMIPKIT-0002 defects and must not be frozen by this slice. |
+
+The crosswalk covers 13 of 14 values; only `Unique Batch Item ID` remains. The parent profile condition remains null / `profile_conditional` / `pending_t002_crosswalk`; no conformance claim is made.
