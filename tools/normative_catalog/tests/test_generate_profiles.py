@@ -1115,6 +1115,16 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
         condition = next(
             item for item in inventory["conditions"] if item["condition_id"] == "KMIPKIT-PROF-COND-5.1.1-005"
         )
+        expected_async_requirement_ids = ["KMIPKIT-REQ-SPEC-8-003-001"]
+        expected_async_clause_ids = ["KMIPKIT-CLAUSE-SPEC-8-003", "KMIPKIT-CLAUSE-SPEC-9.2-001"]
+        expected_async_element_id = "KMIPKIT-ELEM-MESSAGE-FIELD-9-2-ASYNCHRONOUS-INDICATOR"
+        expected_async_mapping = {
+            "item": "Asynchronous Indicator",
+            "element_id": expected_async_element_id,
+            "requirement_ids": expected_async_requirement_ids,
+            "source_clause_ids": expected_async_clause_ids,
+            "mapping_status": "reviewed",
+        }
         expected_requirement_ids = [
             "KMIPKIT-REQ-SPEC-9.5-001-001",
             "KMIPKIT-REQ-SPEC-9.5-001-002",
@@ -1175,6 +1185,7 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
             "mapping_status": "reviewed",
         }
         expected_mappings = [
+            expected_async_mapping,
             expected_mapping,
             expected_error_mapping,
             expected_batch_item_mapping,
@@ -1209,6 +1220,7 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
         self.assertEqual(
             [mapping["item"] for mapping in condition["supported_item_mappings"]],
             [
+                "Asynchronous Indicator",
                 "Batch Count",
                 "Batch Error Continuation Option",
                 "Batch Item",
@@ -1216,10 +1228,29 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
                 "Maximum Response Size",
             ],
         )
+        self.assertEqual(len(condition["supported_items"]), 14)
+        self.assertEqual(len(condition["supported_item_mappings"]), 6)
+        unmapped_items = [
+            item
+            for item in condition["supported_items"]
+            if item not in {mapping["item"] for mapping in condition["supported_item_mappings"]}
+        ]
+        self.assertEqual(
+            unmapped_items,
+            [
+                "Message Extension",
+                "Operation",
+                "Protocol Version",
+                "Result Reason",
+                "Result Status",
+                "Server Correlation Value",
+                "Time Stamp",
+                "Unique Batch Item ID",
+            ],
+        )
         self.assertEqual(
             set(condition["supported_items"]) - {mapping["item"] for mapping in condition["supported_item_mappings"]},
             {
-                "Asynchronous Indicator",
                 "Message Extension",
                 "Operation",
                 "Protocol Version",
@@ -1233,6 +1264,85 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
         self.assertIsNone(condition["requirement_id"])
         self.assertEqual(condition["scope_disposition"], "profile_conditional")
         self.assertEqual(condition["mapping_status"], "pending_t002_crosswalk")
+
+        async_element = next(
+            item for item in catalog["elements"] if item["element_id"] == expected_async_element_id
+        )
+        self.assertEqual(async_element["kind"], "message_field")
+        self.assertEqual(async_element["name"], "Asynchronous Indicator")
+        self.assertEqual(async_element["source_refs"], [{"source_id": "KMIPKIT-SRC-spec", "section": "9.2"}])
+        self.assertEqual(async_element["direction"], "client_to_server")
+        self.assertEqual(async_element["scope_state"], "client_1_0")
+        self.assertEqual(
+            async_element["parent_element_ids"], ["KMIPKIT-ELEM-MESSAGE-FIELD-8-2-ASYNCHRONOUS-INDICATOR"]
+        )
+        self.assertEqual(async_element["source_encoding"], "Enumeration")
+        self.assertEqual(async_element["requirement_ids"], ["KMIPKIT-REQ-SPEC-9.2-001"])
+        self.assertEqual(async_element["profile_ids"], [])
+
+        async_requirement = next(
+            item for item in catalog["requirements"] if item["requirement_id"] == expected_async_requirement_ids[0]
+        )
+        self.assertEqual(async_requirement["source_clause_ids"], ["KMIPKIT-CLAUSE-SPEC-8-003"])
+        self.assertEqual(async_requirement["source_keyword"], "MAY")
+        self.assertEqual(async_requirement["normative_strength"], "permission_or_optional")
+        self.assertEqual(async_requirement["role"], "client")
+        self.assertEqual(async_requirement["direction"], "client_to_server")
+        self.assertEqual(async_requirement["condition"], "Only if the client can accept asynchronous responses.")
+        self.assertEqual(async_requirement["scope_state"], "client_1_0")
+        self.assertEqual(async_requirement["element_ids"], [])
+
+        spec_lines = (ROOT / spec_path).read_text(encoding="cp1252").splitlines()
+        profiles_lines = (ROOT / profiles_path).read_text(encoding="cp1252").splitlines()
+        self.assertIn("Asynchronous Indicator", _normalized_html_source_span(profiles_lines, [4579, 4580]))
+        async_clause_review = next(
+            item
+            for item in oracle["source_requirement_reviews"]
+            if item["source_clause_id"] == "KMIPKIT-CLAUSE-SPEC-8-003"
+        )
+        async_clause_excerpt = (
+            "If the client is capable of accepting asynchronous responses, then it MAY set the Asynchronous "
+            "Indicator in the header of a batched request. The batched responses MAY contain a mixture of "
+            "synchronous and asynchronous responses only if the Asynchronous Indicator is present in the header."
+        )
+        self.assertEqual(async_clause_review["source_path"], spec_path)
+        self.assertEqual(async_clause_review["source_section"], "8")
+        self.assertEqual(async_clause_review["html_line_range"], [42443, 42447])
+        self.assertEqual(async_clause_review["source_excerpt"], async_clause_excerpt)
+        self.assertEqual(_normalized_html_source_span(spec_lines, [42443, 42447]), async_clause_excerpt)
+        self.assertEqual(async_clause_review["expected_client_requirement_ids"], expected_async_requirement_ids)
+        self.assertEqual(async_clause_review["applies_to"], "all_client_profiles")
+        async_client_obligation, mixed_response_obligation = async_clause_review["source_obligations"]
+        self.assertEqual(async_client_obligation["source_keyword"], "MAY")
+        self.assertEqual(async_client_obligation["actor"], "client")
+        self.assertEqual(async_client_obligation["direction"], "client_to_server")
+        self.assertEqual(async_client_obligation["condition"], "The client can accept asynchronous responses.")
+        self.assertEqual(async_client_obligation["scope_disposition"], "client_1_0")
+        self.assertEqual(async_client_obligation["candidate_requirement_id"], expected_async_requirement_ids[0])
+        self.assertEqual(mixed_response_obligation["source_keyword"], "MAY")
+        self.assertEqual(mixed_response_obligation["actor"], "response producer (endpoint not named)")
+        self.assertEqual(mixed_response_obligation["direction"], "server_to_client")
+        self.assertEqual(mixed_response_obligation["scope_disposition"], "unresolved")
+        self.assertEqual(mixed_response_obligation["candidate_requirement_id"], "KMIPKIT-REQ-SPEC-8-003-002")
+        self.assertNotIn("KMIPKIT-REQ-SPEC-8-003-002", expected_async_mapping["requirement_ids"])
+
+        async_field_review = next(
+            item
+            for item in oracle["source_requirement_reviews"]
+            if item["source_clause_id"] == "KMIPKIT-CLAUSE-SPEC-9.2-001"
+        )
+        self.assertEqual(async_field_review["html_line_range"], [43567, 43569])
+        async_field_source = _normalized_html_source_span(spec_lines, [43563, 43569])
+        self.assertIn("If not present in a request, then Prohibited is assumed.", async_field_source)
+        self.assertIn("the server SHALL process the request synchronously", async_field_source)
+        self.assertEqual(async_field_review["expected_client_requirement_ids"], [])
+        self.assertEqual(async_field_review["source_obligations"][0]["actor"], "server")
+        self.assertEqual(async_field_review["source_obligations"][0]["scope_disposition"], "server_only")
+        self.assertNotIn("KMIPKIT-REQ-SPEC-9.2-001", expected_async_mapping["requirement_ids"])
+        self.assertIn(
+            "Asynchronous Indicator 420007",
+            _normalized_html_source_span(spec_lines, [59017, 59023]),
+        )
 
         batch_item_element = next(
             item for item in catalog["elements"] if item["element_id"] == expected_batch_item_element_id
