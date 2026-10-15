@@ -4253,11 +4253,11 @@
       ],
       "disposition": "non_applicable",
       "requirement_ids": [],
-      "exclusion_rationale": "This XML/JSON transport encoding is outside the 1.0 TTLV scope.",
-      "role": "both",
-      "direction": "unclear",
+      "exclusion_rationale": "This conditional client requirement applies when message encoding is XML; XML is outside the 1.0 TTLV-only scope.",
+      "role": "client",
+      "direction": "client_to_server",
       "scope_state": "out_of_scope",
-      "condition": null
+      "condition": "When message encoding is XML."
     },
     {
       "clause_id": "KMIPKIT-CLAUSE-PROF-5.3.1-007",
@@ -4272,11 +4272,11 @@
       ],
       "disposition": "non_applicable",
       "requirement_ids": [],
-      "exclusion_rationale": "This XML/JSON transport encoding is outside the 1.0 TTLV scope.",
-      "role": "both",
-      "direction": "unclear",
+      "exclusion_rationale": "This conditional client requirement applies when message encoding is JSON; JSON is outside the 1.0 TTLV-only scope.",
+      "role": "client",
+      "direction": "client_to_server",
       "scope_state": "out_of_scope",
-      "condition": null
+      "condition": "When message encoding is JSON."
     },
     {
       "clause_id": "KMIPKIT-CLAUSE-PROF-5.3.1-008",
@@ -4355,10 +4355,10 @@
       "disposition": "later_1_1",
       "requirement_ids": [],
       "exclusion_rationale": "This HTTPS client behavior requires responding to server-to-client operations, which KMIPKit plans for 1.1.",
-      "role": "both",
-      "direction": "unclear",
+      "role": "client",
+      "direction": "server_to_client",
       "scope_state": "client_1_1",
-      "condition": null
+      "condition": "When the client supports responding to server-to-client operations."
     },
     {
       "clause_id": "KMIPKIT-CLAUSE-PROF-5.3.2-001",

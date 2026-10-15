@@ -91736,8 +91736,11 @@
       "source_id": "KMIPKIT-SRC-profiles",
       "source_path": "specification/oasis/kmip-2.1/upstream/kmip-profiles-v2.1-os.html",
       "source_section": "5.3.1",
-      "source_clause_id": null,
-      "source_locator": null,
+      "source_clause_id": "KMIPKIT-CLAUSE-PROF-5.3.1-006",
+      "source_locator": {
+        "ordinal": 6,
+        "block_kind": "list_item"
+      },
       "source_locator_description": "§5.3.1 item 6, 5139–5140",
       "html_line_range": [
         5139,
@@ -91759,8 +91762,11 @@
       "source_id": "KMIPKIT-SRC-profiles",
       "source_path": "specification/oasis/kmip-2.1/upstream/kmip-profiles-v2.1-os.html",
       "source_section": "5.3.1",
-      "source_clause_id": null,
-      "source_locator": null,
+      "source_clause_id": "KMIPKIT-CLAUSE-PROF-5.3.1-007",
+      "source_locator": {
+        "ordinal": 7,
+        "block_kind": "list_item"
+      },
       "source_locator_description": "§5.3.1 item 7, 5141–5142",
       "html_line_range": [
         5141,
@@ -91782,8 +91788,11 @@
       "source_id": "KMIPKIT-SRC-profiles",
       "source_path": "specification/oasis/kmip-2.1/upstream/kmip-profiles-v2.1-os.html",
       "source_section": "5.3.1",
-      "source_clause_id": null,
-      "source_locator": null,
+      "source_clause_id": "KMIPKIT-CLAUSE-PROF-5.3.1-011",
+      "source_locator": {
+        "ordinal": 11,
+        "block_kind": "paragraph"
+      },
       "source_locator_description": "§5.3.1 p, 5149–5150",
       "html_line_range": [
         5149,
