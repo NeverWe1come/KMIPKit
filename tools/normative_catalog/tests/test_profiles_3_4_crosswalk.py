@@ -380,17 +380,9 @@ class ProfileSectionsThreeAndFourCrosswalkTests(unittest.TestCase):
         self.assertNotIn("client request", auth_requirement["summary"].lower())
         interop_text = pinned_excerpt([4494, 4502]).lower()
         self.assertIn("not expected that production kmip clients will support the interop operation", interop_text)
-
-    def test_profile_variable_items_are_test_context_not_server_only(self) -> None:
-        """Profiles §4.1.1's general test variation includes client-request values."""
         clause_id = "KMIPKIT-CLAUSE-PROF-4.1.1-001"
         clause = self.clauses[clause_id]
         excerpt = pinned_excerpt([4330, 4338])
-        baseline = next(
-            profile
-            for profile in self.catalog["profiles"]
-            if profile["profile_id"] == "KMIPKIT-PROFILE-BASELINE-CLIENT"
-        )
 
         self.assertIn("An implementation conformant to a Profile MAY vary the following values", excerpt)
         self.assertIn("Unique Batch Item ID", excerpt)
