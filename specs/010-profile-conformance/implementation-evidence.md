@@ -3311,3 +3311,11 @@ Profiles v2.1 lines 4535–4540 name the nested `Attributes` data structure. Spe
 | Green — immutable pinned-source check | `11cba43a`; `py -3 -B tools/normative_catalog/check_immutable_sources.py --repo-root . --base-sha 550a864840c727afa2bdf20b5a5e25aa3e2b9dff` | PASS: pinned OASIS sources match base. |
 | Refactor — record the narrow §5.1 MAY interpretation and open item boundaries | `090101dc` | Research and evidence updated; `KMIPKIT-REQ-SPEC-5.1-002` remains an optional repeated-value capability, conditions 003–006 remain unchanged, and T002 stays open. |
 | Green/Refactor — whitespace check | `git diff --check` | PASS: no whitespace errors. |
+
+### KMIPKIT-0010 T002 QA correction — Attributes source-obligation fields (2026-10-15)
+
+Profiles v2.1 §5.1.1 item 2 (pinned HTML lines 4535–4540) names the `Attributes` data structure. Specification v2.1 §5.1 Table 157 (pinned HTML lines 21800–21820) marks the Any §4 Object Attribute row `MAY be repeated` with `Required=No`. The independent source-review fixture records the obligation as `source_keyword: MAY` and `scope_disposition: client_1_0`; the regression now pins both exact values. The catalog and pinned OASIS files are unchanged, and this correction does not close T002 or make a profile-conformance claim.
+
+| Stage | DCO-signed commit and command | Result |
+|---|---|---|
+| Red — demonstrate sensitivity to each exact source-obligation field | This DCO-signed Red commit; run `py -3 -B -m unittest tools.normative_catalog.tests.test_generate_profiles.ProfileMetadataGeneratorTests.test_baseline_attributes_condition_has_exact_reviewed_capability_crosswalk -v` after temporarily changing only `source_obligations[0].source_keyword` to `SHOULD`, then again after temporarily changing only `source_obligations[0].scope_disposition` to `client_1_1` | Expected Red twice: the first run fails at the `MAY` assertion (`SHOULD != MAY`); the second fails at the `client_1_0` assertion (`client_1_1 != client_1_0`). Each mutation was restored from the original fixture bytes in `finally`; SHA-256 after each restoration matched `9da8ac6e29fc8c574c5dacd56e8584963b61f12188697a0785af52025b46e920`. |

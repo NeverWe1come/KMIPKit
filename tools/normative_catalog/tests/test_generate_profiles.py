@@ -764,6 +764,8 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
                 self.assertIn(details["keyword"], review["source_excerpt"])
                 self.assertEqual(review["expected_client_requirement_ids"], [requirement_id])
                 self.assertEqual(review["source_obligations"][0]["candidate_requirement_id"], requirement_id)
+                self.assertEqual(review["source_obligations"][0]["source_keyword"], "MAY")
+                self.assertEqual(review["source_obligations"][0]["scope_disposition"], "client_1_0")
                 self.assertEqual(review["source_obligations"][0]["actor"], "client")
                 self.assertEqual(
                     review["source_obligations"][0]["direction"], details["source_direction_phrase"]
