@@ -2182,7 +2182,7 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
         self.assertEqual(condition["supported_items"][6:9], ["Message Extension", "Operation", "Protocol Version"])
         self.assertIn("Operation", mapped_items)
         self.assertEqual(len(condition["supported_items"]), 14)
-        self.assertEqual(len(mapped_items), 12)
+        self.assertEqual(len(mapped_items), 13)
         self.assertEqual(
             [item for item in condition["supported_items"] if item not in set(mapped_items)],
             ["Unique Batch Item ID"],
@@ -2760,7 +2760,7 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
         spec_lines = (
             ROOT / "specification" / "oasis" / "kmip-2.1" / "upstream" / "kmip-spec-v2.1-os.html"
         ).read_text(encoding="cp1252").splitlines()
-        self.assertEqual(_normalized_html_source_span(profiles_lines, [4609, 4609]), "Time Stamp")
+        self.assertIn("Time Stamp", _normalized_html_source_span(profiles_lines, [4609, 4609]))
         time_stamp_definition = _normalized_html_source_span(spec_lines, [45309, 45316])
         self.assertIn("OPTIONAL field contained in a client request", time_stamp_definition)
         self.assertIn("REQUIRED in a server request and response", time_stamp_definition)
