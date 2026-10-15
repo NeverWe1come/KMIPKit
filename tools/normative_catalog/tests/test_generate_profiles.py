@@ -1376,7 +1376,7 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
             "item": "Operation",
             "element_id": "KMIPKIT-ELEM-MESSAGE-FIELD-9-15-OPERATION",
             "requirement_ids": [],
-            "source_clause_ids": ["KMIPKIT-CLAUSE-SPEC-8.3-001", "KMIPKIT-CLAUSE-SPEC-8.6-001"],
+            "source_clause_ids": [],
             "mapping_status": "reviewed",
         }
         expected_protocol_version_mapping = {
@@ -2361,7 +2361,7 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
             "item": "Operation",
             "element_id": "KMIPKIT-ELEM-MESSAGE-FIELD-9-15-OPERATION",
             "requirement_ids": [],
-            "source_clause_ids": ["KMIPKIT-CLAUSE-SPEC-8.3-001", "KMIPKIT-CLAUSE-SPEC-8.6-001"],
+            "source_clause_ids": [],
             "mapping_status": "reviewed",
         }
         mapped_items = [item["item"] for item in condition["supported_item_mappings"]]
