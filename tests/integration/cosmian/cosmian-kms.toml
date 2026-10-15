@@ -10,6 +10,10 @@ tls_cert_file = "/certs/server.crt"
 tls_key_file = "/certs/server.key"
 clients_ca_cert_file = "/certs/clients-ca.crt"
 
+[roles]
+crypto_officer_users = ["kmipkit-integration-client"]
+crypto_officer_require_ceremony = false
+
 [socket_server]
 socket_server_start = true
 socket_server_port = 5696

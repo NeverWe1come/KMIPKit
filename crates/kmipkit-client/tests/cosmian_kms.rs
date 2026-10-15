@@ -1,34 +1,41 @@
 //! Opt-in integration tests against a local Cosmian KMS 5.28.0 deployment.
 //!
 //! The tests use `KMIPKit`'s typed Rust client and raw-TLS/mTLS transport for
-//! Discover Versions, Create, Create Key Pair, Create Split Key, and six
-//! supported attribute operations. They exercise selected KMIP 2.1 requests;
-//! they are not a full conformance or profile test.
+//! lifecycle, attribute, query, and cryptographic operations. They exercise
+//! selected KMIP 2.1 requests; they are not a full conformance or profile test.
 
 use std::error::Error;
 use std::path::{Path, PathBuf};
 
 use kmipkit_client::extension_registry::{ClientConfiguration, client_extension_registry};
-use kmipkit_client::{Client, ClientBatch, ClientBatchItem, ClientRequest, ClientResponseView};
+use kmipkit_client::{
+    Client, ClientBatch, ClientBatchItem, ClientError, ClientRequest, ClientResponseView,
+};
 use kmipkit_protocol::extension;
 use kmipkit_protocol::{
-    AddAttributeRequest, AttributeReference, AttributeSet, CreateKeyPairRequest, CreateRequest,
-    CreateSplitKeyRequest, CurrentAttribute, DecryptRequest, DeleteAttributeRequest,
+    ActivateRequest, AddAttributeRequest, AttributeReference, AttributeSet, CreateKeyPairRequest,
+    CreateRequest, CreateSplitKeyRequest, CurrentAttribute, DecryptRequest, DeleteAttributeRequest,
     EncryptRequest, GetAttributeListRequest, GetAttributesRequest, HashRequest, MacRequest,
     MacVerifyRequest, ModifyAttributeRequest, NewAttribute, ObjectType, OperationData,
-    QueryFunction, QueryRequest, SetAttributeRequest, SignRequest, SignatureVerifyRequest,
-    SplitKeyMethod, UniqueIdentifier,
+    QueryFunction, QueryRequest, SecretBytes, SetAttributeRequest, SignRequest,
+    SignatureVerifyRequest, SplitKeyMethod, UniqueIdentifier,
 };
 use kmipkit_transport::{
     CertificateInput, ClientIdentity, Endpoint, PrivateKeyInput, TransportConfig, TrustSource,
 };
 use kmipkit_ttlv::codec::CodecLimits;
-use kmipkit_ttlv::{Item, RawTag, Structure, Value};
+use kmipkit_ttlv::{Item, RawTag, Structure, Value, ValueView};
 
 const COMMENT: u32 = 0x0042_00FD;
 const CRYPTOGRAPHIC_ALGORITHM: u32 = 0x0042_0028;
 const CRYPTOGRAPHIC_LENGTH: u32 = 0x0042_002A;
 const CRYPTOGRAPHIC_USAGE_MASK: u32 = 0x0042_002C;
+const BATCH_ITEM: u32 = 0x0042_000F;
+const OPERATION: u32 = 0x0042_005C;
+const RESPONSE_PAYLOAD: u32 = 0x0042_007C;
+const RESULT_STATUS: u32 = 0x0042_007F;
+const RESULT_REASON: u32 = 0x0042_007E;
+const QUERY_PROTECTION_STORAGE_MASKS: u32 = 0x0042_015F;
 const AES: u32 = 3;
 const RSA: u32 = 4;
 const SYMMETRIC_KEY: u32 = 2;
@@ -36,6 +43,7 @@ const SUCCESS: u32 = 0;
 
 #[test]
 #[ignore = "requires the local Cosmian KMS deployment; see tests/integration/cosmian/README.md"]
+// OASIS KMIP v2.1 §6.1.16, Tables 211–213; Protocol Version: §9.16, Table 421.
 fn cosmian_kms_accepts_kmip_2_1_discover_versions_over_mutual_tls() -> Result<(), Box<dyn Error>> {
     let mut client = client()?;
     execute_one(
@@ -58,6 +66,7 @@ fn cosmian_kms_accepts_kmip_2_1_discover_versions_over_mutual_tls() -> Result<()
 
 #[test]
 #[ignore = "requires the local Cosmian KMS deployment; see tests/integration/cosmian/README.md"]
+// OASIS KMIP v2.1 §6.1.8, Tables 186–188.
 fn cosmian_kms_accepts_kmip_2_1_create_over_mutual_tls() -> Result<(), Box<dyn Error>> {
     let mut client = client()?;
     let identifier = create_symmetric_key(&mut client)?;
@@ -67,6 +76,16 @@ fn cosmian_kms_accepts_kmip_2_1_create_over_mutual_tls() -> Result<(), Box<dyn E
 
 #[test]
 #[ignore = "requires the local Cosmian KMS deployment; see tests/integration/cosmian/README.md"]
+// OASIS KMIP v2.1 §6.1.1, Tables 163–166.
+fn cosmian_kms_accepts_kmip_2_1_activate_over_mutual_tls() -> Result<(), Box<dyn Error>> {
+    let mut client = client()?;
+    let identifier = create_symmetric_key(&mut client)?;
+    activate_key(&mut client, &identifier)
+}
+
+#[test]
+#[ignore = "requires the local Cosmian KMS deployment; see tests/integration/cosmian/README.md"]
+// OASIS KMIP v2.1 §6.1.9, Tables 189–192.
 fn cosmian_kms_accepts_kmip_2_1_create_key_pair_over_mutual_tls() -> Result<(), Box<dyn Error>> {
     let mut client = client()?;
     execute_one(
@@ -98,6 +117,7 @@ fn cosmian_kms_accepts_kmip_2_1_create_key_pair_over_mutual_tls() -> Result<(), 
 
 #[test]
 #[ignore = "requires the local Cosmian KMS deployment; see tests/integration/cosmian/README.md"]
+// OASIS KMIP v2.1 §6.1.10, Tables 193–195; Split Key Method: §11.36, Table 470.
 fn cosmian_kms_accepts_kmip_2_1_create_split_key_over_mutual_tls() -> Result<(), Box<dyn Error>> {
     let mut client = client()?;
     let source_identifier = create_symmetric_key(&mut client)?;
@@ -131,6 +151,7 @@ fn cosmian_kms_accepts_kmip_2_1_create_split_key_over_mutual_tls() -> Result<(),
 
 #[test]
 #[ignore = "requires the local Cosmian KMS deployment; see tests/integration/cosmian/README.md"]
+// OASIS KMIP v2.1 §6.1.2, Tables 167–169.
 fn cosmian_kms_accepts_kmip_2_1_add_attribute_over_mutual_tls() -> Result<(), Box<dyn Error>> {
     let mut client = client()?;
     let identifier = create_rsa_public_key(&mut client)?;
@@ -143,6 +164,7 @@ fn cosmian_kms_accepts_kmip_2_1_add_attribute_over_mutual_tls() -> Result<(), Bo
 
 #[test]
 #[ignore = "requires the local Cosmian KMS deployment; see tests/integration/cosmian/README.md"]
+// OASIS KMIP v2.1 §6.1.13, Tables 202–204.
 fn cosmian_kms_accepts_kmip_2_1_delete_attribute_over_mutual_tls() -> Result<(), Box<dyn Error>> {
     let mut client = client()?;
     let identifier = create_rsa_public_key(&mut client)?;
@@ -172,6 +194,7 @@ fn cosmian_kms_accepts_kmip_2_1_delete_attribute_over_mutual_tls() -> Result<(),
 
 #[test]
 #[ignore = "requires the local Cosmian KMS deployment; see tests/integration/cosmian/README.md"]
+// OASIS KMIP v2.1 §6.1.20, Tables 223–225.
 fn cosmian_kms_accepts_kmip_2_1_get_attributes_over_mutual_tls() -> Result<(), Box<dyn Error>> {
     let mut client = client()?;
     let identifier = create_rsa_public_key(&mut client)?;
@@ -206,6 +229,7 @@ fn cosmian_kms_accepts_kmip_2_1_get_attributes_over_mutual_tls() -> Result<(), B
 
 #[test]
 #[ignore = "requires the local Cosmian KMS deployment; see tests/integration/cosmian/README.md"]
+// OASIS KMIP v2.1 §6.1.21, Tables 226–228.
 fn cosmian_kms_accepts_kmip_2_1_get_attribute_list_over_mutual_tls() -> Result<(), Box<dyn Error>> {
     let mut client = client()?;
     let identifier = create_rsa_public_key(&mut client)?;
@@ -229,6 +253,7 @@ fn cosmian_kms_accepts_kmip_2_1_get_attribute_list_over_mutual_tls() -> Result<(
 
 #[test]
 #[ignore = "requires the local Cosmian KMS deployment; see tests/integration/cosmian/README.md"]
+// OASIS KMIP v2.1 §6.1.34, Tables 265–267.
 fn cosmian_kms_accepts_kmip_2_1_modify_attribute_over_mutual_tls() -> Result<(), Box<dyn Error>> {
     let mut client = client()?;
     let identifier = create_rsa_public_key(&mut client)?;
@@ -260,6 +285,7 @@ fn cosmian_kms_accepts_kmip_2_1_modify_attribute_over_mutual_tls() -> Result<(),
 
 #[test]
 #[ignore = "requires the local Cosmian KMS deployment; see tests/integration/cosmian/README.md"]
+// OASIS KMIP v2.1 §6.1.51, Tables 322–324.
 fn cosmian_kms_accepts_kmip_2_1_set_attribute_over_mutual_tls() -> Result<(), Box<dyn Error>> {
     let mut client = client()?;
     let identifier = create_rsa_public_key(&mut client)?;
@@ -290,60 +316,137 @@ fn cosmian_kms_accepts_kmip_2_1_set_attribute_over_mutual_tls() -> Result<(), Bo
 
 #[test]
 #[ignore = "requires the local Cosmian KMS deployment; see tests/integration/cosmian/README.md"]
-fn cosmian_kms_accepts_kmip_2_1_query_operations_over_mutual_tls() -> Result<(), Box<dyn Error>> {
+// OASIS KMIP v2.1 §6.1.40, Tables 282–284; Protection Storage Masks is required by Table 283.
+fn cosmian_kms_query_response_without_storage_masks_is_reported_over_mutual_tls()
+-> Result<(), Box<dyn Error>> {
     let mut client = client()?;
-    execute_one(
-        &mut client,
-        ClientRequest::query(QueryRequest::new([QueryFunction::OPERATIONS])),
-        "Query Operations",
-        |response| {
-            let query = response
+    let result = client.execute(
+        ClientBatch::new(ClientBatchItem::new(ClientRequest::query(
+            QueryRequest::new([QueryFunction::OPERATIONS]),
+        ))),
+        &CodecLimits::defaults(),
+    );
+    match result {
+        Ok(response) => {
+            let item = response
+                .get(0)
+                .ok_or("Cosmian response has no Query result")?;
+            let outcome = item.outcome();
+            let response_view = outcome.response();
+            let query = response_view
                 .query()
                 .ok_or("KMIPKit did not return a typed Query result")?;
+            assert!(query.operations().next().is_some());
+            Ok(())
+        }
+        Err(error) => {
+            assert_eq!(
+                error.category(),
+                kmipkit_client::ClientErrorCategory::Protocol
+            );
+            let response = error
+                .response_ttlv()
+                .ok_or("Query parse failure retains the complete response TTLV")?;
+            let observation = response.with_ttlv(|root| {
+                let batch = root
+                    .children()
+                    .iter()
+                    .find(|item| item.tag().raw() == BATCH_ITEM)?;
+                batch.with_value(|value| {
+                    let ValueView::Structure(batch_item) = value else {
+                        return None;
+                    };
+                    let status = batch_item.children().iter().find_map(|field| {
+                        (field.tag().raw() == RESULT_STATUS)
+                            .then(|| {
+                                field.with_value(|value| match value {
+                                    ValueView::Enumeration(value) => Some(*value),
+                                    _ => None,
+                                })
+                            })
+                            .flatten()
+                    })?;
+                    let payload = batch_item
+                        .children()
+                        .iter()
+                        .find(|field| field.tag().raw() == RESPONSE_PAYLOAD)?;
+                    payload.with_value(|value| {
+                        let ValueView::Structure(payload) = value else {
+                            return None;
+                        };
+                        let operation_count = payload
+                            .children()
+                            .iter()
+                            .filter(|field| field.tag().raw() == OPERATION)
+                            .count();
+                        let has_protection_storage_masks = payload
+                            .children()
+                            .iter()
+                            .any(|field| field.tag().raw() == QUERY_PROTECTION_STORAGE_MASKS);
+                        Some((status, operation_count, has_protection_storage_masks))
+                    })
+                })
+            });
+            let (status, operation_count, has_masks) =
+                observation.ok_or("Cosmian Query response has no recognizable result payload")?;
+            assert_eq!(status, SUCCESS, "Cosmian reports Query as successful");
+            assert!(operation_count > 0, "Cosmian returns supported Operations");
             assert!(
-                !query.operations().collect::<Vec<_>>().is_empty(),
-                "Cosmian Query Operations reports at least one operation"
+                !has_masks,
+                "the observed structured response omits Protection Storage Masks"
+            );
+            println!(
+                "Cosmian Query interoperability limitation: KMIP result is Success with {operation_count} Operations, but the response omits required Protection Storage Masks and KMIPKit rejects the structured payload."
             );
             Ok(())
-        },
-    )
+        }
+    }
 }
 
 #[test]
 #[ignore = "requires the local Cosmian KMS deployment; see tests/integration/cosmian/README.md"]
-fn cosmian_kms_reports_kmip_2_1_ping_result_over_mutual_tls() -> Result<(), Box<dyn Error>> {
+// OASIS KMIP v2.1 §6.1.36, Tables 271–272.
+fn cosmian_kms_rejects_unsupported_kmip_2_1_ping_over_mutual_tls() -> Result<(), Box<dyn Error>> {
     let mut client = client()?;
     let batch = ClientBatch::new(ClientBatchItem::new(ClientRequest::ping()));
-    let response = client.execute(batch, &CodecLimits::defaults())?;
-    assert_eq!(response.len(), 1, "Cosmian returns one Ping result");
-    let item = response
-        .get(0)
-        .ok_or("Cosmian response has no Ping result")?;
-    let outcome = item.outcome();
-    let response_view = outcome.response();
-    let ping = response_view
-        .ping()
-        .ok_or("KMIPKit did not return a typed Ping result")?;
-    let status = ping.result().status();
-    let reason = ping.result().reason();
-    println!(
-        "Cosmian Ping result: status={} ({}), reason={}",
-        status.raw(),
-        status.known_name().unwrap_or("unknown"),
-        reason.map_or("none", |value| value.known_name().unwrap_or("unknown")),
-    );
-    assert!(
-        status.raw() == SUCCESS || (status.raw() == 1 && reason.is_some()),
-        "Ping is either successful or rejected with a server-reported KMIP failure"
-    );
-    Ok(())
+    match client.execute(batch, &CodecLimits::defaults()) {
+        Ok(response) => {
+            let item = response
+                .get(0)
+                .ok_or("Cosmian response has no Ping result")?;
+            let outcome = item.outcome();
+            let view = outcome.response();
+            let ping = view
+                .ping()
+                .ok_or("KMIPKit did not return a typed Ping result")?;
+            assert_eq!(ping.result().status().raw(), SUCCESS);
+            Ok(())
+        }
+        Err(error) => {
+            assert_eq!(
+                error.category(),
+                kmipkit_client::ClientErrorCategory::Protocol
+            );
+            let (operation, status, reason) = response_result_fields(&error)
+                .ok_or("Cosmian Ping rejection retains a result in its error response")?;
+            assert_eq!(operation, None, "the error response omits Operation");
+            assert_eq!(status, Some(1), "Cosmian reports Operation Failed");
+            assert_eq!(reason, Some(4), "Cosmian reports Invalid Message for Ping");
+            println!(
+                "Cosmian rejects KMIP Ping with Operation Failed / Invalid Message; the error response omits the Batch Item Operation field."
+            );
+            Ok(())
+        }
+    }
 }
 
 #[test]
 #[ignore = "requires the local Cosmian KMS deployment; see tests/integration/cosmian/README.md"]
+// OASIS KMIP v2.1 §6.1.17, Tables 214–216.
 fn cosmian_kms_accepts_kmip_2_1_encrypt_over_mutual_tls() -> Result<(), Box<dyn Error>> {
     let mut client = client()?;
     let identifier = create_symmetric_key(&mut client)?;
+    activate_key(&mut client, &identifier)?;
     let request = EncryptRequest::new(
         Some(UniqueIdentifier::TextString(identifier)),
         Some(OperationData::ByteString(
@@ -371,9 +474,11 @@ fn cosmian_kms_accepts_kmip_2_1_encrypt_over_mutual_tls() -> Result<(), Box<dyn 
 
 #[test]
 #[ignore = "requires the local Cosmian KMS deployment; see tests/integration/cosmian/README.md"]
+// OASIS KMIP v2.1 §6.1.11, Tables 196–198.
 fn cosmian_kms_accepts_kmip_2_1_decrypt_over_mutual_tls() -> Result<(), Box<dyn Error>> {
     let mut client = client()?;
     let identifier = create_symmetric_key(&mut client)?;
+    activate_key(&mut client, &identifier)?;
     let plaintext = b"KMIPKit Cosmian decrypt integration".to_vec();
     let encrypted = execute_one(
         &mut client,
@@ -393,9 +498,7 @@ fn cosmian_kms_accepts_kmip_2_1_decrypt_over_mutual_tls() -> Result<(), Box<dyn 
                 .encrypt()
                 .and_then(|result| result.data())
                 .ok_or("successful Encrypt setup has no ciphertext Data")?;
-            let mut bytes = Vec::new();
-            ciphertext.with_bytes(|value| bytes.extend_from_slice(value));
-            Ok(bytes)
+            Ok(ciphertext.with_bytes(|value| SecretBytes::new(value.to_vec())))
         },
     )?;
     let decrypted = execute_one(
@@ -403,9 +506,7 @@ fn cosmian_kms_accepts_kmip_2_1_decrypt_over_mutual_tls() -> Result<(), Box<dyn 
         ClientRequest::decrypt(
             DecryptRequest::new(
                 Some(UniqueIdentifier::TextString(identifier)),
-                Some(OperationData::ByteString(
-                    kmipkit_protocol::SecretBytes::new(encrypted),
-                )),
+                Some(OperationData::ByteString(encrypted)),
             )
             .with_cryptographic_parameters(cipher_parameters()?)
             .with_iv_counter_nonce(kmipkit_protocol::SecretBytes::new(vec![0x32; 16])),
@@ -416,17 +517,19 @@ fn cosmian_kms_accepts_kmip_2_1_decrypt_over_mutual_tls() -> Result<(), Box<dyn 
                 .decrypt()
                 .and_then(|result| result.data())
                 .ok_or("successful Decrypt response has no plaintext Data")?;
-            let mut bytes = Vec::new();
-            decrypted.with_bytes(|value| bytes.extend_from_slice(value));
-            Ok(bytes)
+            Ok(decrypted.with_bytes(|value| SecretBytes::new(value.to_vec())))
         },
     )?;
-    assert_eq!(decrypted, plaintext, "Decrypt restores the test plaintext");
+    assert!(
+        decrypted.with_bytes(|bytes| bytes == plaintext.as_slice()),
+        "Decrypt restores the test plaintext"
+    );
     Ok(())
 }
 
 #[test]
 #[ignore = "requires the local Cosmian KMS deployment; see tests/integration/cosmian/README.md"]
+// OASIS KMIP v2.1 §6.1.24, Tables 235–237.
 fn cosmian_kms_accepts_kmip_2_1_hash_over_mutual_tls() -> Result<(), Box<dyn Error>> {
     let mut client = client()?;
     let parameters = structure([kmip_item(0x0042_0038, Value::enumeration(6))?])?;
@@ -453,6 +556,7 @@ fn cosmian_kms_accepts_kmip_2_1_hash_over_mutual_tls() -> Result<(), Box<dyn Err
 
 #[test]
 #[ignore = "requires the local Cosmian KMS deployment; see tests/integration/cosmian/README.md"]
+// OASIS KMIP v2.1 §6.1.32, Tables 259–261; MAC Data tag: §11.56, Table 487.
 fn cosmian_kms_accepts_kmip_2_1_mac_over_mutual_tls() -> Result<(), Box<dyn Error>> {
     let mut client = client()?;
     let identifier = create_mac_key(&mut client)?;
@@ -461,9 +565,9 @@ fn cosmian_kms_accepts_kmip_2_1_mac_over_mutual_tls() -> Result<(), Box<dyn Erro
         ClientRequest::mac(
             MacRequest::new()
                 .with_unique_identifier(UniqueIdentifier::TextString(identifier))
-                .with_data(OperationData::ByteString(
-                    kmipkit_protocol::SecretBytes::new(b"KMIPKit MAC integration".to_vec()),
-                )),
+                .with_data(OperationData::ByteString(SecretBytes::new(
+                    b"KMIPKit MAC integration".to_vec(),
+                ))),
         ),
         "MAC",
         |response| {
@@ -479,6 +583,7 @@ fn cosmian_kms_accepts_kmip_2_1_mac_over_mutual_tls() -> Result<(), Box<dyn Erro
 
 #[test]
 #[ignore = "requires the local Cosmian KMS deployment; see tests/integration/cosmian/README.md"]
+// OASIS KMIP v2.1 §6.1.33, Tables 262–264; MAC Data and Validity Indicator tags: §11.56, Table 487.
 fn cosmian_kms_accepts_kmip_2_1_mac_verify_over_mutual_tls() -> Result<(), Box<dyn Error>> {
     let mut client = client()?;
     let identifier = create_mac_key(&mut client)?;
@@ -488,9 +593,7 @@ fn cosmian_kms_accepts_kmip_2_1_mac_verify_over_mutual_tls() -> Result<(), Box<d
         ClientRequest::mac(
             MacRequest::new()
                 .with_unique_identifier(UniqueIdentifier::TextString(identifier.clone()))
-                .with_data(OperationData::ByteString(
-                    kmipkit_protocol::SecretBytes::new(data.clone()),
-                )),
+                .with_data(OperationData::ByteString(SecretBytes::new(data.clone()))),
         ),
         "MAC setup for MAC Verify",
         |response| {
@@ -498,9 +601,7 @@ fn cosmian_kms_accepts_kmip_2_1_mac_verify_over_mutual_tls() -> Result<(), Box<d
                 .mac()
                 .and_then(|result| result.mac_data())
                 .ok_or("successful MAC setup has no MAC Data")?;
-            let mut bytes = Vec::new();
-            mac.with_bytes(|value| bytes.extend_from_slice(value));
-            Ok(bytes)
+            Ok(mac.with_bytes(|bytes| SecretBytes::new(bytes.to_vec())))
         },
     )?;
     execute_one(
@@ -511,7 +612,7 @@ fn cosmian_kms_accepts_kmip_2_1_mac_verify_over_mutual_tls() -> Result<(), Box<d
                 .with_data(OperationData::ByteString(
                     kmipkit_protocol::SecretBytes::new(data),
                 ))
-                .with_mac_data(kmipkit_protocol::SecretBytes::new(mac)),
+                .with_mac_data(mac),
         ),
         "MAC Verify",
         |response| {
@@ -529,17 +630,19 @@ fn cosmian_kms_accepts_kmip_2_1_mac_verify_over_mutual_tls() -> Result<(), Box<d
 
 #[test]
 #[ignore = "requires the local Cosmian KMS deployment; see tests/integration/cosmian/README.md"]
+// OASIS KMIP v2.1 §6.1.55, Tables 334–336; Signature Data tag: §11.56, Table 487.
 fn cosmian_kms_accepts_kmip_2_1_sign_over_mutual_tls() -> Result<(), Box<dyn Error>> {
     let mut client = client()?;
     let (private_identifier, _) = create_rsa_key_pair(&mut client)?;
+    activate_key(&mut client, &private_identifier)?;
     execute_one(
         &mut client,
         ClientRequest::sign(
             SignRequest::new()
                 .with_unique_identifier(UniqueIdentifier::TextString(private_identifier))
-                .with_data(OperationData::ByteString(
-                    kmipkit_protocol::SecretBytes::new(b"KMIPKit signing integration".to_vec()),
-                )),
+                .with_data(OperationData::ByteString(SecretBytes::new(
+                    b"KMIPKit signing integration".to_vec(),
+                ))),
         ),
         "Sign",
         |response| {
@@ -557,18 +660,19 @@ fn cosmian_kms_accepts_kmip_2_1_sign_over_mutual_tls() -> Result<(), Box<dyn Err
 
 #[test]
 #[ignore = "requires the local Cosmian KMS deployment; see tests/integration/cosmian/README.md"]
+// OASIS KMIP v2.1 §6.1.56, Tables 337–339; Signature Data and Validity Indicator tags: §11.56, Table 487.
 fn cosmian_kms_accepts_kmip_2_1_signature_verify_over_mutual_tls() -> Result<(), Box<dyn Error>> {
     let mut client = client()?;
     let (private_identifier, public_identifier) = create_rsa_key_pair(&mut client)?;
+    activate_key(&mut client, &private_identifier)?;
+    activate_key(&mut client, &public_identifier)?;
     let data = b"KMIPKit signature verification integration".to_vec();
     let signature = execute_one(
         &mut client,
         ClientRequest::sign(
             SignRequest::new()
                 .with_unique_identifier(UniqueIdentifier::TextString(private_identifier))
-                .with_data(OperationData::ByteString(
-                    kmipkit_protocol::SecretBytes::new(data.clone()),
-                )),
+                .with_data(OperationData::ByteString(SecretBytes::new(data.clone()))),
         ),
         "Sign setup for Signature Verify",
         |response| {
@@ -576,9 +680,7 @@ fn cosmian_kms_accepts_kmip_2_1_signature_verify_over_mutual_tls() -> Result<(),
                 .sign()
                 .and_then(|result| result.signature_data())
                 .ok_or("successful Sign setup has no Signature Data")?;
-            let mut bytes = Vec::new();
-            signature.with_bytes(|value| bytes.extend_from_slice(value));
-            Ok(bytes)
+            Ok(signature.with_bytes(|bytes| SecretBytes::new(bytes.to_vec())))
         },
     )?;
     execute_one(
@@ -589,7 +691,7 @@ fn cosmian_kms_accepts_kmip_2_1_signature_verify_over_mutual_tls() -> Result<(),
                 .with_data(OperationData::ByteString(
                     kmipkit_protocol::SecretBytes::new(data),
                 ))
-                .with_signature_data(kmipkit_protocol::SecretBytes::new(signature)),
+                .with_signature_data(signature),
         ),
         "Signature Verify",
         |response| {
@@ -655,6 +757,37 @@ fn execute_one<T>(
     validate_response(outcome.response())
 }
 
+fn response_result_fields(error: &ClientError) -> Option<(Option<u32>, Option<u32>, Option<u32>)> {
+    error.response_ttlv()?.with_ttlv(|root| {
+        let batch_item = root
+            .children()
+            .iter()
+            .find(|item| item.tag().raw() == BATCH_ITEM)?;
+        batch_item.with_value(|value| {
+            let ValueView::Structure(batch_item) = value else {
+                return None;
+            };
+            let read_enumeration = |tag| {
+                batch_item.children().iter().find_map(|field| {
+                    (field.tag().raw() == tag)
+                        .then(|| {
+                            field.with_value(|value| match value {
+                                ValueView::Enumeration(value) => Some(*value),
+                                _ => None,
+                            })
+                        })
+                        .flatten()
+                })
+            };
+            Some((
+                read_enumeration(OPERATION),
+                read_enumeration(RESULT_STATUS),
+                read_enumeration(RESULT_REASON),
+            ))
+        })
+    })
+}
+
 fn create_symmetric_key(client: &mut Client) -> Result<String, Box<dyn Error>> {
     let attributes = AttributeSet::try_new([
         kmip_item(CRYPTOGRAPHIC_ALGORITHM, Value::enumeration(AES))?,
@@ -682,9 +815,9 @@ fn create_mac_key(client: &mut Client) -> Result<String, Box<dyn Error>> {
     let attributes = AttributeSet::try_new([
         kmip_item(CRYPTOGRAPHIC_ALGORITHM, Value::enumeration(9))?,
         kmip_item(CRYPTOGRAPHIC_LENGTH, Value::integer(256))?,
-        kmip_item(CRYPTOGRAPHIC_USAGE_MASK, Value::integer(48))?,
+        kmip_item(CRYPTOGRAPHIC_USAGE_MASK, Value::integer(384))?, // MAC Generate + MAC Verify, §12.1 Table 495.
     ])?;
-    execute_one(
+    let identifier = execute_one(
         client,
         ClientRequest::Create(CreateRequest::new(
             ObjectType::from_raw(SYMMETRIC_KEY),
@@ -698,7 +831,9 @@ fn create_mac_key(client: &mut Client) -> Result<String, Box<dyn Error>> {
                 .ok_or("successful Create HMAC key response has no Unique Identifier")?;
             text_identifier(identifier)
         },
-    )
+    )?;
+    activate_key(client, &identifier)?;
+    Ok(identifier)
 }
 
 fn create_rsa_key_pair(client: &mut Client) -> Result<(String, String), Box<dyn Error>> {
@@ -724,15 +859,34 @@ fn create_rsa_key_pair(client: &mut Client) -> Result<(String, String), Box<dyn 
     )
 }
 
+fn activate_key(client: &mut Client, identifier: &str) -> Result<(), Box<dyn Error>> {
+    execute_one(
+        client,
+        ClientRequest::activate(ActivateRequest::new(Some(UniqueIdentifier::TextString(
+            identifier.to_owned(),
+        )))),
+        "Activate test key",
+        |response| {
+            let returned_identifier = response
+                .activate()
+                .and_then(|result| result.unique_identifier())
+                .ok_or("successful Activate response has no Unique Identifier")?;
+            text_identifier(returned_identifier)?;
+            Ok(())
+        },
+    )
+}
+
 fn rsa_key_pair_request() -> Result<CreateKeyPairRequest, Box<dyn Error>> {
     let common_attributes = AttributeSet::try_new([
         kmip_item(CRYPTOGRAPHIC_ALGORITHM, Value::enumeration(RSA))?,
         kmip_item(CRYPTOGRAPHIC_LENGTH, Value::integer(2048))?,
     ])?;
+    // OASIS KMIP v2.1 §12.1, Table 495: Sign is 0x01; Verify is 0x02.
     let private_attributes =
-        AttributeSet::try_new([kmip_item(CRYPTOGRAPHIC_USAGE_MASK, Value::integer(24))?])?;
+        AttributeSet::try_new([kmip_item(CRYPTOGRAPHIC_USAGE_MASK, Value::integer(1))?])?;
     let public_attributes =
-        AttributeSet::try_new([kmip_item(CRYPTOGRAPHIC_USAGE_MASK, Value::integer(36))?])?;
+        AttributeSet::try_new([kmip_item(CRYPTOGRAPHIC_USAGE_MASK, Value::integer(2))?])?;
     Ok(CreateKeyPairRequest::new()
         .with_common_attributes(common_attributes)
         .with_private_key_attributes(private_attributes)
