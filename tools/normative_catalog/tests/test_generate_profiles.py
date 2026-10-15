@@ -1236,16 +1236,20 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
             ],
         )
 
-        self.assertEqual(_normalized_html_source_span(profiles_lines, [4582, 4582]), "Batch Count")
+        self.assertEqual(_normalized_html_source_span(profiles_lines, [4581, 4582]), "Batch Count")
         self.assertEqual(
-            _normalized_html_source_span(profiles_lines, [4584, 4585]),
+            _normalized_html_source_span(profiles_lines, [4583, 4585]),
             "Batch Error Continuation Option",
+        )
+        error_html_span = (
+            "This option SHALL only be present if the Batch Count is greater than 1. This option SHALL have "
+            "one of three values ( Undo , Stop or Continue). If not specified, then Stop is assumed."
         )
         error_excerpt = (
             "This option SHALL only be present if the Batch Count is greater than 1. This option SHALL have "
             "one of three values (Undo, Stop or Continue). If not specified, then Stop is assumed."
         )
-        self.assertEqual(_normalized_html_source_span(spec_lines, [43773, 43775]), error_excerpt)
+        self.assertEqual(_normalized_html_source_span(spec_lines, [43773, 43775]), error_html_span)
 
         error_element = next(
             item for item in catalog["elements"] if item["element_id"] == expected_error_element_id
