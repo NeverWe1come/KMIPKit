@@ -244,6 +244,69 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
                 self.assertTrue(source_clause_ids.issubset(closure.source_clause_ids))
                 self.assertTrue(requirement_ids.issubset(closure.requirement_ids))
 
+    def test_all_client_profiles_inherit_baseline_conditions_from_section_6_1_item_3(self) -> None:
+        """Every profile dependency on Baseline also closes over §5.1.1 conditions."""
+        catalog_path = ROOT / "specification" / "catalog" / "kmip-2.1.json"
+        catalog = json.loads(catalog_path.read_text(encoding="utf-8"))
+        oracle_path = ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json"
+        oracle = json.loads(oracle_path.read_text(encoding="utf-8"))
+        profiles_html = (
+            ROOT / "specification" / "oasis" / "kmip-2.1" / "upstream" / "kmip-profiles-v2.1-os.html"
+        ).read_text(encoding="cp1252")
+        normalized_profiles_html = " ".join(profiles_html.split())
+        inclusion_id = "KMIPKIT-INCLUSION-PROF-BASELINE-CONDITIONS"
+        source_clause_id = "KMIPKIT-CLAUSE-PROF-5.1.1-001"
+        source_clause = "KMIPKIT-CLAUSE-PROF-6.1-003"
+        edge = next(
+            (item for item in catalog["normative_inclusions"] if item["inclusion_id"] == inclusion_id),
+            None,
+        )
+        expected_edge = next(
+            (
+                item
+                for item in oracle["provenance"]["inclusion_edges"]
+                if item["inclusion_id"] == inclusion_id
+            ),
+            None,
+        )
+
+        self.assertIn("SHALL support the Baseline Client conditions (5.1.1)", normalized_profiles_html)
+        self.assertEqual(
+            edge,
+            {
+                "inclusion_id": inclusion_id,
+                "source_clause_id": source_clause,
+                "included_source_id": "KMIPKIT-SRC-profiles",
+                "included_section": "5.1.1",
+            },
+        )
+        self.assertEqual(
+            expected_edge,
+            {
+                "inclusion_id": inclusion_id,
+                "source_clause_id": source_clause,
+                "included_source_id": "KMIPKIT-SRC-profiles",
+                "included_section": "5.1.1",
+                "source_locator": "Profiles v2.1 §6.1 item 3",
+            },
+        )
+
+        catalog_profiles = {item["profile_id"]: item for item in catalog["profiles"] if item["role"] == "client"}
+        oracle_profiles = {item["profile_id"]: item for item in oracle["profiles"] if item["role"] == "client"}
+        self.assertEqual(set(catalog_profiles), set(oracle_profiles))
+        for profile_id in sorted(catalog_profiles):
+            with self.subTest(profile_id=profile_id):
+                profile = catalog_profiles[profile_id]
+                expected = oracle_profiles[profile_id]
+                self.assertIn(inclusion_id, expected["normative_inclusion_ids"])
+                self.assertIn(source_clause_id, expected["source_clause_ids"])
+                self.assertIn(source_clause_id, profile["source_clause_ids"])
+                if profile_id == "KMIPKIT-PROFILE-BASELINE-CLIENT":
+                    self.assertIn(source_clause_id, profile["direct_source_clause_ids"])
+                else:
+                    self.assertNotIn(source_clause_id, profile["direct_source_clause_ids"])
+                self.assertNotIn("KMIPKIT-REQ-PROF-5.1.1-001", expected["requirement_ids"])
+
     def test_foundry_basic_condition_text_names_its_inheriting_profiles(self) -> None:
         """The catalog and source review describe the same normative inheritance."""
         catalog = json.loads((ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8"))

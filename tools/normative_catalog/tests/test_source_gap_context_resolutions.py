@@ -542,6 +542,67 @@ class SourceGapContextResolutionTests(unittest.TestCase):
         self.assertIn("already encoded in the catalog and independent oracle", summary)
         self.assertNotIn("edges still need to encode", summary)
 
+    def test_t002_reconciles_profile_source_gap_actor_and_scope_dispositions(self) -> None:
+        oracle = json.loads(ORACLE_PATH.read_text(encoding="utf-8"))
+        gaps = {row["gap_id"]: row for row in oracle["source_only_requirement_gaps"]}
+        profiles_html = (
+            ROOT / "specification/oasis/kmip-2.1/upstream/kmip-profiles-v2.1-os.html"
+        ).read_text(encoding="cp1252")
+        normalized_profiles_html = re.sub(r"\s+", " ", profiles_html)
+        catalog = json.loads(CATALOG_PATH.read_text(encoding="utf-8"))
+        clauses = {row["clause_id"]: row for row in catalog["source_clauses"]}
+        research = PROFILE_RESEARCH_PATH.read_text(encoding="utf-8")
+
+        tls12 = gaps["KMIPKIT-SOURCE-GAP-PROF-3.1.2-4076"]
+        self.assertRegex(
+            normalized_profiles_html,
+            r"Conformant KMIP clients or servers SHALL support the following cipher suites for TLSv1\.2 if TLSv1\.2 is supported",
+        )
+        self.assertEqual(tls12.get("actor"), "client or server")
+        self.assertEqual(tls12["scope_disposition"], "mixed_server_and_out_of_scope")
+        self.assertIn("client condition false under product's TLS1.3-only boundary", tls12["actor_scope_review"])
+        self.assertIn("server half `server_only`", tls12["actor_scope_review"])
+        tls12_clause = clauses["KMIPKIT-CLAUSE-PROF-3.1.2-003"]
+        self.assertEqual(tls12_clause["role"], "both")
+        self.assertEqual(tls12_clause["scope_state"], "mixed")
+        self.assertEqual(tls12_clause["disposition"], "non_applicable")
+
+        for section, gap_id, clause_id, first_line, last_line, discrepancy_id in (
+            (
+                "6.13",
+                "KMIPKIT-SOURCE-GAP-PROF-6.13-10848",
+                "KMIPKIT-CLAUSE-PROF-6.13-003",
+                10843,
+                10853,
+                "KMIPKIT-DISC-011",
+            ),
+            (
+                "6.14",
+                "KMIPKIT-SOURCE-GAP-PROF-6.14-10867",
+                "KMIPKIT-CLAUSE-PROF-6.14-003",
+                10862,
+                10872,
+                "KMIPKIT-DISC-012",
+            ),
+        ):
+            with self.subTest(section=section):
+                source_excerpt = re.sub(
+                    r"\s+",
+                    " ",
+                    " ".join(profiles_html.splitlines()[first_line - 1 : last_line]),
+                )
+                gap = gaps[gap_id]
+                self.assertIn("KMIP client implementations conformant to this profile", source_excerpt)
+                self.assertIn("Basic Symmetric Key Foundry Client", source_excerpt)
+                self.assertEqual(gap.get("actor"), "client")
+                self.assertEqual(gap["scope_disposition"], "profile_conditional")
+                self.assertIn(discrepancy_id, gap["actor_scope_review"])
+                self.assertIn(discrepancy_id, research)
+                clause = clauses[clause_id]
+                self.assertEqual(clause["role"], "client")
+                self.assertEqual(clause["scope_state"], "profile_conditional")
+                self.assertEqual(clause["disposition"], "source_discrepancy")
+
 
 if __name__ == "__main__":
     unittest.main()
