@@ -536,6 +536,250 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
                 self.assertEqual(review["source_obligations"][0]["candidate_requirement_id"], requirement_id)
                 self.assertEqual(review["source_obligations"][0]["actor"], "client")
 
+    def test_baseline_get_attributes_locate_conditions_have_exact_reviewed_client_crosswalks(self) -> None:
+        """Baseline item labels map only to their reviewed client request clauses."""
+        catalog = json.loads((ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8"))
+        oracle = json.loads(
+            (ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json")
+            .read_text(encoding="utf-8")
+        )
+        profiles_path = "specification/oasis/kmip-2.1/upstream/kmip-profiles-v2.1-os.html"
+        spec_path = "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
+        inventory = next(
+            item
+            for item in oracle["provenance"]["profile_condition_inventories"]
+            if item["source_id"] == "KMIPKIT-SRC-profiles" and item["section"] == "5.1.1"
+        )
+        condition = next(
+            item for item in inventory["conditions"] if item["condition_id"] == "KMIPKIT-PROF-COND-5.1.1-004"
+        )
+        expected_mappings = [
+            {
+                "item": "Get",
+                "element_id": "KMIPKIT-ELEM-OP-C2S-GET",
+                "requirement_ids": ["KMIPKIT-REQ-SPEC-6.1.19-002"],
+                "source_clause_ids": ["KMIPKIT-CLAUSE-SPEC-6.1.19-002"],
+                "mapping_status": "reviewed",
+            },
+            {
+                "item": "Get Attributes",
+                "element_id": "KMIPKIT-ELEM-OP-C2S-GET-ATTRIBUTES",
+                "requirement_ids": [
+                    "KMIPKIT-REQ-SPEC-6.1.20-001-001",
+                    "KMIPKIT-REQ-SPEC-6.1.20-004",
+                ],
+                "source_clause_ids": [
+                    "KMIPKIT-CLAUSE-SPEC-6.1.20-001",
+                    "KMIPKIT-CLAUSE-SPEC-6.1.20-004",
+                ],
+                "mapping_status": "reviewed",
+            },
+            {
+                "item": "Locate",
+                "element_id": "KMIPKIT-ELEM-OP-C2S-LOCATE",
+                "requirement_ids": [
+                    "KMIPKIT-REQ-SPEC-6.1.28-001",
+                    "KMIPKIT-REQ-SPEC-6.1.28-002",
+                    "KMIPKIT-REQ-SPEC-6.1.28-004-001",
+                    "KMIPKIT-REQ-SPEC-6.1.28-007",
+                    "KMIPKIT-REQ-SPEC-6.1.28-013-001",
+                    "KMIPKIT-REQ-SPEC-6.1.28-013-002",
+                ],
+                "source_clause_ids": [
+                    "KMIPKIT-CLAUSE-SPEC-6.1.28-001",
+                    "KMIPKIT-CLAUSE-SPEC-6.1.28-002",
+                    "KMIPKIT-CLAUSE-SPEC-6.1.28-004",
+                    "KMIPKIT-CLAUSE-SPEC-6.1.28-007",
+                    "KMIPKIT-CLAUSE-SPEC-6.1.28-013",
+                ],
+                "mapping_status": "reviewed",
+            },
+            {
+                "item": "Query",
+                "element_id": "KMIPKIT-ELEM-OP-C2S-QUERY",
+                "requirement_ids": ["KMIPKIT-REQ-SPEC-6.1.40-014", "KMIPKIT-REQ-SPEC-6.1.40-016"],
+                "source_clause_ids": ["KMIPKIT-CLAUSE-SPEC-6.1.40-014", "KMIPKIT-CLAUSE-SPEC-6.1.40-016"],
+                "mapping_status": "reviewed",
+            },
+        ]
+        expected_requirements = {
+            "KMIPKIT-REQ-SPEC-6.1.19-002": {
+                "clause_id": "KMIPKIT-CLAUSE-SPEC-6.1.19-002",
+                "line_range": [27135, 27136],
+                "locator": {"ordinal": 2, "block_kind": "paragraph"},
+                "keyword": "SHALL",
+                "strength": "mandatory",
+                "source_phrase": "key format capabilities SHALL be assumed by the client",
+            },
+            "KMIPKIT-REQ-SPEC-6.1.20-001-001": {
+                "clause_id": "KMIPKIT-CLAUSE-SPEC-6.1.20-001",
+                "line_range": [27440, 27447],
+                "locator": {"ordinal": 1, "block_kind": "paragraph"},
+                "keyword": "SHALL NOT",
+                "strength": "prohibited",
+                "source_phrase": "same Attribute Reference SHALL NOT be present more than once",
+            },
+            "KMIPKIT-REQ-SPEC-6.1.20-004": {
+                "clause_id": "KMIPKIT-CLAUSE-SPEC-6.1.20-004",
+                "line_range": [27506, 27515],
+                "locator": {"ordinal": 4, "block_kind": "table_row"},
+                "keyword": "MAY",
+                "strength": "permission_or_optional",
+                "source_phrase": "MAY be repeated",
+            },
+            "KMIPKIT-REQ-SPEC-6.1.28-001": {
+                "clause_id": "KMIPKIT-CLAUSE-SPEC-6.1.28-001",
+                "line_range": [29143, 29148],
+                "locator": {"ordinal": 1, "block_kind": "paragraph"},
+                "keyword": "MAY",
+                "strength": "permission_or_optional",
+                "source_phrase": "request MAY contain a Maximum Items field",
+            },
+            "KMIPKIT-REQ-SPEC-6.1.28-002": {
+                "clause_id": "KMIPKIT-CLAUSE-SPEC-6.1.28-002",
+                "line_range": [29150, 29155],
+                "locator": {"ordinal": 2, "block_kind": "paragraph"},
+                "keyword": "MAY",
+                "strength": "permission_or_optional",
+                "source_phrase": "request MAY contain an Offset Items field",
+            },
+            "KMIPKIT-REQ-SPEC-6.1.28-004-001": {
+                "clause_id": "KMIPKIT-CLAUSE-SPEC-6.1.28-004",
+                "line_range": [29168, 29170],
+                "locator": {"ordinal": 4, "block_kind": "paragraph"},
+                "keyword": "REQUIRED",
+                "strength": "mandatory",
+                "source_phrase": "Recover and Get operations are REQUIRED to be",
+            },
+            "KMIPKIT-REQ-SPEC-6.1.28-007": {
+                "clause_id": "KMIPKIT-CLAUSE-SPEC-6.1.28-007",
+                "line_range": [29206, 29210],
+                "locator": {"ordinal": 7, "block_kind": "paragraph"},
+                "keyword": "REQUIRED",
+                "strength": "permission_or_optional",
+                "source_phrase": "all of the structure fields are not REQUIRED to be specified",
+            },
+            "KMIPKIT-REQ-SPEC-6.1.28-013-001": {
+                "clause_id": "KMIPKIT-CLAUSE-SPEC-6.1.28-013",
+                "line_range": [29341, 29362],
+                "locator": {"ordinal": 13, "block_kind": "table_row"},
+                "keyword": "REQUIRED",
+                "strength": "mandatory",
+                "source_phrase": "REQUIRED to match those in a candidate object",
+            },
+            "KMIPKIT-REQ-SPEC-6.1.28-013-002": {
+                "clause_id": "KMIPKIT-CLAUSE-SPEC-6.1.28-013",
+                "line_range": [29341, 29362],
+                "locator": {"ordinal": 13, "block_kind": "table_row"},
+                "keyword": "MAY",
+                "strength": "permission_or_optional",
+                "source_phrase": "Attributes structure MAY be empty",
+            },
+        }
+
+        self.assertEqual(condition["supported_items"], ["Get", "Get Attributes", "Locate", "Query"])
+        self.assertEqual(condition.get("supported_item_mappings"), expected_mappings)
+        self.assertIsNone(condition["requirement_id"])
+        self.assertEqual(condition["mapping_status"], "pending_t002_crosswalk")
+
+        profiles_lines = (ROOT / profiles_path).read_text(encoding="cp1252").splitlines()
+        profiles_text = _normalized_html_source_span(profiles_lines, [4563, 4574])
+        spec_lines = (ROOT / spec_path).read_text(encoding="cp1252").splitlines()
+        elements = {item["element_id"]: item for item in catalog["elements"]}
+        requirements = {item["requirement_id"]: item for item in catalog["requirements"]}
+        clauses = {item["clause_id"]: item for item in catalog["source_clauses"]}
+        source_reviews = {
+            item["source_clause_id"]: item
+            for item in oracle["source_requirement_reviews"]
+            if item.get("source_clause_id") in {details["clause_id"] for details in expected_requirements.values()}
+        }
+        expected_client_ids_by_clause = {
+            clause_id: [
+                requirement_id
+                for requirement_id, details in expected_requirements.items()
+                if details["clause_id"] == clause_id
+            ]
+            for clause_id in {details["clause_id"] for details in expected_requirements.values()}
+        }
+
+        for mapping in expected_mappings[:3]:
+            with self.subTest(item=mapping["item"]):
+                self.assertIn(mapping["item"], profiles_text)
+                element = elements[mapping["element_id"]]
+                self.assertEqual(element["name"], mapping["item"])
+                self.assertEqual(element["source_refs"], [{"source_id": "KMIPKIT-SRC-spec", "section": element["source_refs"][0]["section"]}])
+                self.assertEqual(element["direction"], "client_to_server")
+                self.assertEqual(element["scope_state"], "client_1_0")
+                self.assertTrue(set(mapping["requirement_ids"]).issubset(element["requirement_ids"]))
+                self.assertEqual(
+                    mapping["source_clause_ids"],
+                    list(dict.fromkeys(expected_requirements[requirement_id]["clause_id"] for requirement_id in mapping["requirement_ids"])),
+                )
+
+        for requirement_id, details in expected_requirements.items():
+            if requirement_id not in {rid for mapping in expected_mappings[:3] for rid in mapping["requirement_ids"]}:
+                continue
+            with self.subTest(requirement_id=requirement_id):
+                requirement = requirements[requirement_id]
+                clause = clauses[details["clause_id"]]
+                review = source_reviews[details["clause_id"]]
+                line_text = _normalized_html_source_span(spec_lines, details["line_range"])
+                obligation = next(
+                    item for item in review["source_obligations"]
+                    if item.get("candidate_requirement_id") == requirement_id
+                )
+
+                self.assertEqual(requirement["source_clause_ids"], [details["clause_id"]])
+                self.assertEqual(requirement["source_keyword"], details["keyword"])
+                self.assertEqual(requirement["normative_strength"], details["strength"])
+                self.assertEqual(requirement["role"], "client")
+                self.assertEqual(requirement["direction"], "client_to_server")
+                self.assertEqual(requirement["scope_state"], "client_1_0")
+                self.assertEqual(clause["source_id"], "KMIPKIT-SRC-spec")
+                self.assertEqual(clause["section"], details["clause_id"].removeprefix("KMIPKIT-CLAUSE-SPEC-").rsplit("-", 1)[0])
+                self.assertEqual(clause["locator"], details["locator"])
+                self.assertIn(details["keyword"], clause["source_keywords"])
+                self.assertEqual(review["source_path"], spec_path)
+                self.assertEqual(review["source_locator"], details["locator"])
+                self.assertEqual(review["expected_client_requirement_ids"], expected_client_ids_by_clause[details["clause_id"]])
+                self.assertEqual(review["source_excerpt"], _normalized_html_source_span(spec_lines, review["html_line_range"]))
+                self.assertIn(details["source_phrase"], line_text)
+                self.assertEqual(obligation["source_keyword"], details["keyword"])
+                self.assertEqual(obligation["actor"], "client")
+                self.assertTrue(obligation["direction"].startswith("client"))
+                self.assertEqual(obligation["scope_disposition"], "client_1_0")
+                self.assertIn(requirement_id, obligation["candidate_requirement_id"])
+
+        excluded_server_requirements = {
+            "KMIPKIT-REQ-SPEC-6.1.20-001-002": "KMIPKIT-CLAUSE-SPEC-6.1.20-001",
+            "KMIPKIT-REQ-SPEC-6.1.28-004-002": "KMIPKIT-CLAUSE-SPEC-6.1.28-004",
+            "KMIPKIT-REQ-SPEC-6.1.28-008-001": "KMIPKIT-CLAUSE-SPEC-6.1.28-008",
+            "KMIPKIT-REQ-SPEC-6.1.28-008-002": "KMIPKIT-CLAUSE-SPEC-6.1.28-008",
+            "KMIPKIT-REQ-SPEC-6.1.28-009-001": "KMIPKIT-CLAUSE-SPEC-6.1.28-009",
+            "KMIPKIT-REQ-SPEC-6.1.28-009-002": "KMIPKIT-CLAUSE-SPEC-6.1.28-009",
+            "KMIPKIT-REQ-SPEC-6.1.28-011": "KMIPKIT-CLAUSE-SPEC-6.1.28-011",
+            "KMIPKIT-REQ-SPEC-6.1.28-012": "KMIPKIT-CLAUSE-SPEC-6.1.28-012",
+        }
+        mapped_requirement_ids = {rid for mapping in expected_mappings for rid in mapping["requirement_ids"]}
+        for requirement_id, clause_id in excluded_server_requirements.items():
+            with self.subTest(excluded_requirement_id=requirement_id):
+                requirement = requirements[requirement_id]
+                review = next(
+                    item for item in oracle["source_requirement_reviews"]
+                    if item.get("source_clause_id") == clause_id
+                )
+                self.assertNotIn(requirement_id, mapped_requirement_ids)
+                self.assertIn(requirement["scope_state"], {"server_only", "out_of_scope"})
+                self.assertNotIn(requirement_id, review["expected_client_requirement_ids"])
+
+        locate_007 = requirements["KMIPKIT-REQ-SPEC-6.1.28-007"]
+        self.assertEqual(locate_007["source_keyword"], "REQUIRED")
+        self.assertEqual(locate_007["normative_strength"], "permission_or_optional")
+        self.assertIn("not REQUIRED to be specified", locate_007["review_note"])
+        self.assertIn("matching behavior belongs to the server", locate_007["review_note"])
+        locate_007_source = _normalized_html_source_span(spec_lines, [29206, 29210])
+        self.assertIn("Linked Object Identifier value is specified without the Link Type value", locate_007_source)
+
     def test_foundry_basic_condition_text_names_its_inheriting_profiles(self) -> None:
         """The catalog and source review describe the same normative inheritance."""
         catalog = json.loads((ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8"))

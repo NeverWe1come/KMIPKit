@@ -2073,6 +2073,26 @@ class CatalogValidationTests(unittest.TestCase):
                 catalog_validate.KEYWORD_STRENGTH[requirement["source_keyword"]],
             )
 
+    def test_negated_locate_required_clause_accepts_only_reviewed_permission_strength(self) -> None:
+        """A source-negated REQUIRED keyword is optional only for its reviewed row."""
+        catalog = json.loads((ROOT / "specification/catalog/kmip-2.1.json").read_text(encoding="utf-8"))
+        locate = next(
+            row for row in catalog["requirements"]
+            if row["requirement_id"] == "KMIPKIT-REQ-SPEC-6.1.28-007"
+        )
+        locate["normative_strength"] = "permission_or_optional"
+
+        self.assertGreater(validate(catalog)["record_count"], 0)
+
+        unreviewed = json.loads((ROOT / "specification/catalog/kmip-2.1.json").read_text(encoding="utf-8"))
+        another_required = next(
+            row for row in unreviewed["requirements"]
+            if row["requirement_id"] == "KMIPKIT-REQ-SPEC-6.1.28-004-001"
+        )
+        another_required["normative_strength"] = "permission_or_optional"
+        with self.assertRaisesRegex(CatalogValidationError, "requirement keyword and normative strength disagree"):
+            validate(unreviewed)
+
     def test_optional_request_evidence_element_ids_are_sorted(self) -> None:
         """Reviewed optional request rows keep relationship IDs deterministic."""
         catalog = json.loads((ROOT / "specification/catalog/kmip-2.1.json").read_text(encoding="utf-8"))
