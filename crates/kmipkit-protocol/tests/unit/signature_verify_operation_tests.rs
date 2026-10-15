@@ -28,7 +28,7 @@ const SIGNATURE_DATA: u32 = 0x0042_00C3; // OASIS KMIP v2.1 §11.56, Table 487.
 const CORRELATION_VALUE: u32 = 0x0042_00D6;
 const INIT_INDICATOR: u32 = 0x0042_00D7;
 const FINAL_INDICATOR: u32 = 0x0042_00D8;
-const VALIDITY_INDICATOR: u32 = 0x0042_0128;
+const VALIDITY_INDICATOR: u32 = 0x0042_009B; // OASIS KMIP v2.1 §11.56, Table 487.
 const UNKNOWN_VENDOR_TAG: u32 = 0x0054_1234;
 
 fn success(payload: kmipkit_ttlv::Structure) -> crate::ResponseMessage {

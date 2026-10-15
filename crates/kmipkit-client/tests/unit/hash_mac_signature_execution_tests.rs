@@ -153,7 +153,7 @@ impl OperationFixture {
                     UNIQUE_IDENTIFIER,
                     Value::text_string("mac-object".to_owned()),
                 ),
-                test_item(0x0042_0128, Value::enumeration(1)),
+                test_item(0x0042_009B, Value::enumeration(1)),
             ],
             SIGN => vec![test_item(
                 UNIQUE_IDENTIFIER,
@@ -164,7 +164,7 @@ impl OperationFixture {
                     UNIQUE_IDENTIFIER,
                     Value::text_string("sign-object".to_owned()),
                 ),
-                test_item(0x0042_0128, Value::enumeration(1)),
+                test_item(0x0042_009B, Value::enumeration(1)),
             ],
             _ => unreachable!("fixture only uses the five assigned operations"),
         };
