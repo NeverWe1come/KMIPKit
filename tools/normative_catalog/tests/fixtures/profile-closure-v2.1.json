@@ -403,6 +403,15 @@
                   "KMIPKIT-CLAUSE-SPEC-8.6-001"
                 ],
                 "mapping_status": "reviewed"
+              },
+              {
+                "item": "Protocol Version",
+                "element_id": "KMIPKIT-ELEM-MESSAGE-FIELD-9-16-PROTOCOL-VERSION",
+                "requirement_ids": [],
+                "source_clause_ids": [
+                  "KMIPKIT-CLAUSE-SPEC-9.16-001"
+                ],
+                "mapping_status": "reviewed"
               }
             ],
             "requirement_id": null,
