@@ -409,13 +409,9 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
                 profile = catalog_profiles[profile_id]
                 expected = oracle_profiles[profile_id]
                 self.assertEqual(set(expected["direct_source_clause_ids"]) & section_clause_ids, {clause_id})
-                self.assertIn(clause_id, expected["direct_source_clause_ids"])
-                self.assertIn(clause_id, expected["source_clause_ids"])
                 self.assertTrue(section_clause_ids.issubset(expected["source_clause_ids"]))
                 self.assertIn(requirement_id, expected["requirement_ids"])
                 self.assertEqual(set(profile["direct_source_clause_ids"]) & section_clause_ids, {clause_id})
-                self.assertIn(clause_id, profile["direct_source_clause_ids"])
-                self.assertIn(clause_id, profile["source_clause_ids"])
                 self.assertTrue(section_clause_ids.issubset(profile["source_clause_ids"]))
                 self.assertIn(requirement_id, profile["requirement_ids"])
 
@@ -424,7 +420,6 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
                     profile["direct_source_clause_ids"],
                     profile_id=profile_id,
                 )
-                self.assertIn(clause_id, closure.source_clause_ids)
                 self.assertTrue(section_clause_ids.issubset(closure.source_clause_ids))
                 self.assertIn(requirement_id, closure.requirement_ids)
 
