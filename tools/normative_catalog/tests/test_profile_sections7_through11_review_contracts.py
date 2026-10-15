@@ -269,6 +269,7 @@ class ProfileSectionsSevenThroughElevenReviewContractTests(unittest.TestCase):
             uniqueness["source_text"],
             "One or a combination of the Device Serial Number, Network Identifier, Machine Identifier, and Media Identifier SHALL be unique.",
         )
+        self.assertEqual(uniqueness["actor"], "unspecified")
         self.assertEqual(minimum["source_text"], "The client SHALL provide at least one field.")
         self.assertEqual(minimum["direction"], "client provides at least one Device Credential field")
         self.assertIn("KMIPKIT-0008", device_review["review_note"])
@@ -281,6 +282,9 @@ class ProfileSectionsSevenThroughElevenReviewContractTests(unittest.TestCase):
         self.assertEqual(
             timestamp_review["source_excerpt"],
             pinned_source_excerpt(SPEC_SOURCE_PATH, [44598, 44602]),
+        )
+        self.assertTrue(
+            all(atom["actor"] == "unspecified" for atom in timestamp_review["source_obligations"])
         )
         self.assertEqual(
             self.clauses[timestamp_clause_id]["condition"],
