@@ -562,7 +562,6 @@ Every row summarizes audited candidate locators by their pinned source section. 
 | KMIPKIT-REQ-PROF-3.1.1-004 | permission\_or\_optional | out\_of\_scope | KMIPKIT-SRC-profiles §3.1.1 |
 | KMIPKIT-REQ-PROF-3.1.1-005 | prohibited | profile\_conditional | KMIPKIT-SRC-profiles §3.1.1 |
 | KMIPKIT-REQ-PROF-3.1.2-002 | mandatory | profile\_conditional | KMIPKIT-SRC-profiles §3.1.2 |
-| KMIPKIT-REQ-PROF-3.1.2-005 | prohibited | profile\_conditional | KMIPKIT-SRC-profiles §3.1.2 |
 | KMIPKIT-REQ-PROF-3.2-001 | mandatory | profile\_conditional | KMIPKIT-SRC-profiles §3.2 |
 | KMIPKIT-REQ-PROF-3.2.1-001 | mandatory | profile\_conditional | KMIPKIT-SRC-profiles §3.2.1 |
 | KMIPKIT-REQ-PROF-3.2.2-001 | mandatory | profile\_conditional | KMIPKIT-SRC-profiles §3.2.2 |
@@ -1002,7 +1001,7 @@ Every row summarizes audited candidate locators by their pinned source section. 
 | KMIPKIT-REQ-PROF-3.1.1-004 | No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources. Profiles v2.1 §3.1.1 paragraph 4 permits optional TLS 1.2 support; ADR-0005 limits KMIPKit 1.0 to TLS 1.3, so this capability is outside the 1.0 client scope. | KMIPKIT-SRC-profiles §3.1.1 |
 | KMIPKIT-REQ-PROF-3.1.1-005 | No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing. | KMIPKIT-SRC-profiles §3.1.1 |
 | KMIPKIT-REQ-PROF-3.1.2-002 | No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing. | KMIPKIT-SRC-profiles §3.1.2 |
-| KMIPKIT-REQ-PROF-3.1.2-005 | No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing. | KMIPKIT-SRC-profiles §3.1.2 |
+| KMIPKIT-REQ-PROF-3.1.2-005 | Profiles v2.1 §3.1.2 lists TLS13-CHACHA20-POLY1305-SHA256 and TLS13-AES-256-GCM-SHA384 for TLS 1.3 and prohibits support for any cipher suite not listed above. The AWS-LC provider excludes TLS13-AES-128-GCM-SHA256, and a negative wire-level test asserts that the ClientHello contains exactly the two listed TLS 1.3 suites. No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources; profile-level readiness still requires the complete typed-rule and evidence closure tracked by T040. | KMIPKIT-SRC-profiles §3.1.2 |
 | KMIPKIT-REQ-PROF-3.2-001 | No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing. | KMIPKIT-SRC-profiles §3.2 |
 | KMIPKIT-REQ-PROF-3.2.1-001 | No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing. | KMIPKIT-SRC-profiles §3.2.1 |
 | KMIPKIT-REQ-PROF-3.2.2-001 | No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing. | KMIPKIT-SRC-profiles §3.2.2 |
@@ -1614,7 +1613,7 @@ Every row summarizes audited candidate locators by their pinned source section. 
 | Requirement | Strength | Negative verification | Status | Source |
 | --- | --- | --- | --- | --- |
 | KMIPKIT-REQ-PROF-3.1.1-005 | prohibited | required | unassigned | KMIPKIT-SRC-profiles §3.1.1 |
-| KMIPKIT-REQ-PROF-3.1.2-005 | prohibited | required | unassigned | KMIPKIT-SRC-profiles §3.1.2 |
+| KMIPKIT-REQ-PROF-3.1.2-005 | prohibited | required | verified | KMIPKIT-SRC-profiles §3.1.2 |
 | KMIPKIT-REQ-PROF-5.12.3-003 | prohibited | required | unassigned | KMIPKIT-SRC-profiles §5.12.3 |
 | KMIPKIT-REQ-SPEC-11-001 | prohibited | required | unassigned | KMIPKIT-SRC-spec §11 |
 | KMIPKIT-REQ-SPEC-3.3-003 | prohibited | required | unassigned | KMIPKIT-SRC-spec §3.3 |
@@ -2680,7 +2679,7 @@ Rows list each distinct requirement found in a client profile closure. Profile m
 | KMIPKIT-REQ-PROF-3.1.1-002 | KMIPKIT-CLAUSE-PROF-3.1.1-002 | SHOULD / RecommendedBehaviorOrDeviation | No typed rule mapping | No category-appropriate rule test | — | — | — | — | — | none catalogued | KMIPKIT-SRC-profiles §3.1.1 |
 | KMIPKIT-REQ-PROF-3.1.1-005 | KMIPKIT-CLAUSE-PROF-3.1.1-005 | SHALL NOT / ProhibitedBehavior | No typed rule mapping | No category-appropriate rule test | — | — | — | — | — | none catalogued | KMIPKIT-SRC-profiles §3.1.1 |
 | KMIPKIT-REQ-PROF-3.1.2-002 | KMIPKIT-CLAUSE-PROF-3.1.2-002 | SHALL / RequiredBehavior | No typed rule mapping | No category-appropriate rule test | — | — | — | — | — | none catalogued | KMIPKIT-SRC-profiles §3.1.2 |
-| KMIPKIT-REQ-PROF-3.1.2-005 | KMIPKIT-CLAUSE-PROF-3.1.2-005 | SHALL NOT / ProhibitedBehavior | No typed rule mapping | No category-appropriate rule test | — | — | — | — | — | none catalogued | KMIPKIT-SRC-profiles §3.1.2 |
+| KMIPKIT-REQ-PROF-3.1.2-005 | KMIPKIT-CLAUSE-PROF-3.1.2-005 | SHALL NOT / ProhibitedBehavior | No typed rule mapping | No category-appropriate rule test | — | — | crates/kmipkit-transport/src/tls.rs::aws\_lc\_crypto\_provider | crates/kmipkit-transport/tests/raw\_tls.rs::raw\_tls\_rejects\_tls12\_server\_hello\_before\_request\_dispatch | — | none catalogued | KMIPKIT-SRC-profiles §3.1.2 |
 | KMIPKIT-REQ-PROF-3.2-001 | KMIPKIT-CLAUSE-PROF-3.2-001 | SHALL / RequiredBehavior | No typed rule mapping | No category-appropriate rule test | — | — | — | — | — | none catalogued | KMIPKIT-SRC-profiles §3.2 |
 | KMIPKIT-REQ-PROF-3.2.1-001 | KMIPKIT-CLAUSE-PROF-3.2.1-001 | SHALL / RequiredBehavior | No typed rule mapping | No category-appropriate rule test | — | — | — | — | — | none catalogued | KMIPKIT-SRC-profiles §3.2.1 |
 | KMIPKIT-REQ-PROF-3.2.2-001 | KMIPKIT-CLAUSE-PROF-3.2.2-001 | SHALL / RequiredBehavior | No typed rule mapping | No category-appropriate rule test | — | — | — | — | — | none catalogued | KMIPKIT-SRC-profiles §3.2.2 |
