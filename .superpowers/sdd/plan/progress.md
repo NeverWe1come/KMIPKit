@@ -1,13 +1,13 @@
 # SDD ledger — plan: specs/010-profile-conformance/plan.md
 
 ## Current authoritative state (refreshed 2026-10-15)
-- Worktree: C:\Users\ramp1953\.codex\worktrees\0010-profile-refresh\KMIPKit; branch feature/KMIPKIT-0010-profile-conformance-t001-t002; clean at start of this continuation.
-- PR #90 is open/draft at remote head 0b1b6e43b96d770a9b8fef92d3cf0b18cbb5dd7a, base release/1.0.0. The worktree branch is clean at that pushed head.
-- CI run 38682221194 completed successfully for current head 0b1b6e43: 34 successful jobs, zero failures, and 3 schedule-only skips. Runs 38677798125 and 38675881824 passed only on their preceding heads.
+- Worktree: `C:\Users\ramp1953\.codex\worktrees\0010-profile-refresh\KMIPKit`; branch `feature/KMIPKIT-0010-profile-conformance-t001-t002`; clean at `e8841b4c9e997393dfbe8bbddb3b7d310ef654c5` before this evidence refresh.
+- PR #90 is open/draft at remote head `e8841b4c9e997393dfbe8bbddb3b7d310ef654c5`, base `release/1.0.0`.
+- Exact-head CI run [38768093897](https://github.com/NeverWe1come/KMIPKit/actions/runs/38768093897) completed successfully for `e8841b4c`: 34 successful jobs, zero failures, and 3 schedule-only skips. The PR description still incorrectly says this run is pending.
 - T001 is complete. T002 is in progress. T003 and later tasks remain incomplete overall.
-- The §5.1.1 profile-condition inventory covers eight conditions and 30 nested values; each parent mapping remains pending until its nested atoms are crosswalked. Query under KMIPKIT-PROF-COND-5.1.1-004 is mapped and independently approved. Get, Get Attributes, and Locate are mapped locally; independent review is pending. The parent remains null/pending.
-- Existing TLS §3.1.2 correction, §6.13/§6.14 normative inclusion resolutions, Query mapping, and Baseline §5.1.1 item 4 crosswalk are pushed in #90. Local normative tests passed 551 tests with 9 skips; current-head CI passed.
-- PR #104 (#0043 shared client mapping) remains open/draft at head a6696836e2eec54f9ee9781b0ccb5b484ad6e4b2, base release/1.0.0. Its T036 profile-validation mapping is explicitly gated on approval and closure of KMIPKIT-0010. The PRs also share seven changed paths, so integration requires updating and revalidating the later branch. Keep this task focused on #90.
+- The §5.1.1 inventory has eight conditions and 30 nested values. Baseline item 4's Query, Get, Get Attributes, and Locate mappings are independently reviewed; its parent remains null/pending until whole-feature/profile closure is done. Item 5 has 14 reviewed value mappings; items 7 and 8 have reviewed optional dispositions.
+- Independent source audit confirms Baseline §6.1 item 4 references the 13 BL-M and 3 SKLC-M test cases as its 16-case candidate set; the normative text requires “one or more,” not every case individually. All 17 other client-profile §6.x clauses incorporate §6.1. These Profiles-defined IDs do not have matching CN01 IDs; no cross-source links are fabricated. The catalog/oracle case ID sets match for all 18 profiles.
+- PR #104 (#0043 shared client mapping) remains open/draft at `a6696836e2eec54f9ee9781b0ccb5b484ad6e4b2`, base `release/1.0.0`. Its profile-validation mapping is gated on KMIPKIT-0010 closure; shared paths will need integration and revalidation. Keep this work focused on #90.
 ## Scoped pre-flight conflict scan
 | Tasks | Shared artifact or interface | Producer/consumer relationship | Finding and ruling |
 |---|---|---|---|
@@ -17,6 +17,11 @@
 
 ## Current task
 Task T002: continue auditing the remaining profile applicability, source ownership, and cross-source test references against the pinned OASIS copies. Do not claim profile conformance. Do not invent owners; use approved feature scope and catalog traceability, then update documentation and evidence in this branch.
+
+## Independent source audit — Baseline mandatory case inheritance (2026-10-15)
+- Profiles v2.1 §6.1 item 4 (pinned HTML lines 10483–10489) refers to both Baseline Mandatory Test Cases in §5.1.3 and Symmetric Key Lifecycle Mandatory Test Cases in §5.6.3. The resulting Baseline candidate set is BL-M-1–13-21 plus SKLC-M-1–3-21; “one or more” does not make each case individually mandatory.
+- All 17 other client-profile conformance clauses explicitly incorporate §6.1, so they inherit that case universe. The source-defined IDs and fixture hrefs are in Profiles; CN01 contains none of these IDs, so no CN01 links are invented. Catalog and independent oracle case-ID sets agree for all 18 profiles.
+- Audit reviewed §§5.1.3.1–.13 (lines 4996–5075), §5.6.3.1–.3 (lines 7164–7180), and all 17 §6.x references to §6.1. This resolves the earlier incorrect assumption that SKLC-M cases belonged only to the Symmetric Key Lifecycle profile; it does not close T002 or prove execution evidence.
 
 ## Fresh current-state verification (2026-10-14)
 - PR #90 head remains `02049fecf352e1cc59b51c6fc1304274fd2c7bc7`; open draft, base `release/1.0.0`.
