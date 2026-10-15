@@ -3193,3 +3193,4 @@ The pinned Profiles v2.1 §5.3.1 clauses 6–7 (HTML lines 5139–5142) are clie
 | Stage | DCO-signed commit and command | Result |
 |---|---|---|
 | Red — pin exact source excerpts, client actor/direction/conditions, out-of-scope dispositions, and clause-11 source-gap linkage | `36e08859`; `py -3 -B -m unittest tools.normative_catalog.tests.test_profile_https_encoding_scope -v` | Expected Red: three subtest failures because all three catalog clauses say `role: both`; the condition, direction, and source-gap linkage assertions were not reached. |
+| Red — require all three out-of-scope HTTPS source gaps to link to their exact catalog clause and locator | `be2a6e53`; `py -3 -B -m unittest tools.normative_catalog.tests.test_profile_https_encoding_scope.HttpsEncodingScopeTests.test_out_of_scope_https_gaps_link_to_their_catalog_clauses -v` | Expected Red: two subtest failures because the XML and JSON Content-Type source gaps have null clause/locator links. |
