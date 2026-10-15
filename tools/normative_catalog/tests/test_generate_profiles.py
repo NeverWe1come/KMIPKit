@@ -2921,6 +2921,175 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
             ],
         )
 
+    def test_baseline_message_protocols_crosswalk_keeps_unresolved_and_server_duties_out(self) -> None:
+        """Baseline Message Protocols links reviewed client duties without inventing protocol elements."""
+        catalog = json.loads((ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8"))
+        oracle = json.loads(
+            (ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json")
+            .read_text(encoding="utf-8")
+        )
+        inventory = next(
+            item
+            for item in oracle["provenance"]["profile_condition_inventories"]
+            if item["source_id"] == "KMIPKIT-SRC-profiles" and item["section"] == "5.1.1"
+        )
+        condition = next(
+            item for item in inventory["conditions"] if item["condition_id"] == "KMIPKIT-PROF-COND-5.1.1-006"
+        )
+        expected_mappings = [
+            {
+                "item": "Authentication",
+                "element_id": None,
+                "requirement_ids": [
+                    "KMIPKIT-REQ-PROF-3.1-001",
+                    "KMIPKIT-REQ-PROF-3.1.1-002",
+                    "KMIPKIT-REQ-PROF-3.1.1-005",
+                    "KMIPKIT-REQ-PROF-3.1.2-002",
+                    "KMIPKIT-REQ-PROF-3.1.2-005",
+                ],
+                "source_clause_ids": [
+                    "KMIPKIT-CLAUSE-PROF-3-002",
+                    "KMIPKIT-CLAUSE-PROF-3-003",
+                    "KMIPKIT-CLAUSE-PROF-3-004",
+                    "KMIPKIT-CLAUSE-PROF-3.1-001",
+                    "KMIPKIT-CLAUSE-PROF-3.1.1-001",
+                    "KMIPKIT-CLAUSE-PROF-3.1.1-002",
+                    "KMIPKIT-CLAUSE-PROF-3.1.1-003",
+                    "KMIPKIT-CLAUSE-PROF-3.1.1-004",
+                    "KMIPKIT-CLAUSE-PROF-3.1.1-005",
+                    "KMIPKIT-CLAUSE-PROF-3.1.2-001",
+                    "KMIPKIT-CLAUSE-PROF-3.1.2-002",
+                    "KMIPKIT-CLAUSE-PROF-3.1.2-003",
+                    "KMIPKIT-CLAUSE-PROF-3.1.2-004",
+                    "KMIPKIT-CLAUSE-PROF-3.1.2-005",
+                    "KMIPKIT-CLAUSE-PROF-3.1.3-001",
+                    "KMIPKIT-CLAUSE-PROF-3.1.3-002",
+                    "KMIPKIT-CLAUSE-PROF-3.1.3-003",
+                    "KMIPKIT-CLAUSE-PROF-3.1.4-001",
+                    "KMIPKIT-CLAUSE-SPEC-10.3-001",
+                ],
+                "mapping_status": "reviewed",
+            },
+            {
+                "item": "Transport",
+                "element_id": None,
+                "requirement_ids": [
+                    "KMIPKIT-REQ-SPEC-10.4-001-001",
+                    "KMIPKIT-REQ-SPEC-10.4-001-002",
+                    "KMIPKIT-REQ-SPEC-10.4-001-003",
+                    "KMIPKIT-REQ-PROF-3.2-001",
+                    "KMIPKIT-REQ-PROF-3.2.1-001",
+                    "KMIPKIT-REQ-PROF-3.2.2-001",
+                    "KMIPKIT-REQ-PROF-3.2.4-002",
+                    "KMIPKIT-REQ-PROF-5.3.1-001",
+                    "KMIPKIT-REQ-PROF-5.3.1-002",
+                    "KMIPKIT-REQ-PROF-5.3.1-003",
+                    "KMIPKIT-REQ-PROF-5.3.1-004",
+                    "KMIPKIT-REQ-PROF-5.3.1-008",
+                    "KMIPKIT-REQ-PROF-5.3.1-009",
+                ],
+                "source_clause_ids": [
+                    "KMIPKIT-CLAUSE-SPEC-10.4-001",
+                    "KMIPKIT-CLAUSE-PROF-3.2-001",
+                    "KMIPKIT-CLAUSE-PROF-3.2.1-001",
+                    "KMIPKIT-CLAUSE-PROF-3.2.2-001",
+                    "KMIPKIT-CLAUSE-PROF-3.2.3-001",
+                    "KMIPKIT-CLAUSE-PROF-3.2.4-002",
+                    "KMIPKIT-CLAUSE-PROF-5.3.1-001",
+                    "KMIPKIT-CLAUSE-PROF-5.3.1-002",
+                    "KMIPKIT-CLAUSE-PROF-5.3.1-003",
+                    "KMIPKIT-CLAUSE-PROF-5.3.1-004",
+                    "KMIPKIT-CLAUSE-PROF-5.3.1-008",
+                    "KMIPKIT-CLAUSE-PROF-5.3.1-009",
+                    "KMIPKIT-CLAUSE-PROF-5.3.1-011",
+                ],
+                "mapping_status": "reviewed",
+            },
+            {
+                "item": "TTLV",
+                "element_id": None,
+                "requirement_ids": [
+                    "KMIPKIT-REQ-PROF-5.3.1-005",
+                    "KMIPKIT-REQ-PROF-5.3.1-010",
+                ],
+                "source_clause_ids": [
+                    "KMIPKIT-CLAUSE-SPEC-10.1.2-001",
+                    "KMIPKIT-CLAUSE-SPEC-10.1.2-002",
+                    "KMIPKIT-CLAUSE-SPEC-10.1.5-001",
+                    "KMIPKIT-CLAUSE-SPEC-10.2-001",
+                    "KMIPKIT-CLAUSE-PROF-5.3.1-005",
+                    "KMIPKIT-CLAUSE-PROF-5.3.1-010",
+                ],
+                "mapping_status": "reviewed",
+            },
+        ]
+
+        self.assertEqual(condition["supported_items"], ["Authentication", "Transport", "TTLV"])
+        self.assertEqual(condition.get("supported_item_mappings"), expected_mappings)
+        self.assertIsNone(condition["requirement_id"])
+        self.assertEqual(condition["scope_disposition"], "profile_conditional")
+        self.assertEqual(condition["mapping_status"], "pending_t002_crosswalk")
+
+        reviews = {item["source_clause_id"]: item for item in oracle["source_requirement_reviews"]}
+        unresolved_auth_ids = {
+            "KMIPKIT-REQ-PROF-3-002",
+            "KMIPKIT-REQ-PROF-3-003",
+            "KMIPKIT-REQ-PROF-3-004",
+        }
+        unresolved_auth_clauses = {
+            "KMIPKIT-CLAUSE-PROF-3-002": "KMIPKIT-REQ-PROF-3-002",
+            "KMIPKIT-CLAUSE-PROF-3-003": "KMIPKIT-REQ-PROF-3-003",
+            "KMIPKIT-CLAUSE-PROF-3-004": "KMIPKIT-REQ-PROF-3-004",
+        }
+        for clause_id, requirement_id in unresolved_auth_clauses.items():
+            review = reviews[clause_id]
+            self.assertEqual(review["expected_client_requirement_ids"], [])
+            self.assertEqual(review["source_obligations"][0]["candidate_requirement_id"], requirement_id)
+            self.assertEqual(review["source_obligations"][0]["actor"], "unresolved")
+            self.assertEqual(review["source_obligations"][0]["direction"], "unresolved")
+
+        requirement_ids = {req_id for mapping in expected_mappings for req_id in mapping["requirement_ids"]}
+        self.assertTrue(unresolved_auth_ids.isdisjoint(requirement_ids))
+        self.assertNotIn("KMIPKIT-REQ-PROF-3.2.3-001", requirement_ids)
+        self.assertNotIn("KMIPKIT-REQ-SPEC-10.1.2-001", requirement_ids)
+        self.assertNotIn("KMIPKIT-REQ-SPEC-10.1.2-002-001", requirement_ids)
+        self.assertNotIn("KMIPKIT-REQ-SPEC-10.1.5-001-001", requirement_ids)
+        self.assertNotIn("KMIPKIT-REQ-PROF-5.3.1-011", requirement_ids)
+
+        profiles_lines = (
+            ROOT / "specification" / "oasis" / "kmip-2.1" / "upstream" / "kmip-profiles-v2.1-os.html"
+        ).read_text(encoding="cp1252").splitlines()
+        spec_lines = (
+            ROOT / "specification" / "oasis" / "kmip-2.1" / "upstream" / "kmip-spec-v2.1-os.html"
+        ).read_text(encoding="cp1252").splitlines()
+        message_protocols = _normalized_html_source_span(profiles_lines, [4614, 4627])
+        for item_name in ("Authentication", "Transport", "TTLV"):
+            self.assertIn(item_name, message_protocols)
+        self.assertIn(
+            "Conformant KMIP clients SHOULD support",
+            _normalized_html_source_span(profiles_lines, [4016, 4022]),
+        )
+        self.assertIn(
+            "at least one of the following cipher suites",
+            _normalized_html_source_span(profiles_lines, [4068, 4074]),
+        )
+        self.assertIn("application/octet-stream", _normalized_html_source_span(profiles_lines, [5137, 5146]))
+        self.assertIn("mandatory TTLV messaging protocol", _normalized_html_source_span(spec_lines, [45793, 45797]))
+
+        for clause_id in (
+            "KMIPKIT-CLAUSE-SPEC-10.1.2-001",
+            "KMIPKIT-CLAUSE-SPEC-10.1.2-002",
+            "KMIPKIT-CLAUSE-SPEC-10.1.5-001",
+        ):
+            self.assertEqual(reviews[clause_id]["expected_client_requirement_ids"], [])
+        informative_ttlv_context = next(
+            item
+            for item in catalog["source_clauses"]
+            if item["clause_id"] == "KMIPKIT-CLAUSE-SPEC-10.2-001"
+        )
+        self.assertEqual(informative_ttlv_context["disposition"], "informative_context")
+        self.assertEqual(informative_ttlv_context["requirement_ids"], [])
+
     def test_foundry_basic_condition_text_names_its_inheriting_profiles(self) -> None:
         """The catalog and source review describe the same normative inheritance."""
         catalog = json.loads((ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8"))
