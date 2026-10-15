@@ -33,6 +33,7 @@ const REQUEST_PAYLOAD_TAG: u32 = 0x0042_0079;
 const RESPONSE_PAYLOAD_TAG: u32 = 0x0042_007C;
 const RESULT_STATUS_TAG: u32 = 0x0042_007F;
 const TIME_STAMP_TAG: u32 = 0x0042_0092;
+const UNIQUE_BATCH_ITEM_ID_TAG: u32 = 0x0042_0093;
 const GET_ATTRIBUTES_OPERATION: u32 = 0x0000_000B;
 const ATTRIBUTES_TAG: u32 = 0x0042_0125;
 const UNIQUE_IDENTIFIER_TAG: u32 = 0x0042_0094;
@@ -160,6 +161,37 @@ fn request_message() -> crate::RequestMessage {
         ),
     ]))
     .expect("test Request Message is valid")
+}
+
+fn request_message_with_unique_batch_item_id(
+    unique_batch_item_id: Option<&[u8]>,
+) -> crate::RequestMessage {
+    let mut batch_item_fields = vec![tagged(OPERATION_TAG, Value::enumeration(0x1E))];
+    if let Some(identifier) = unique_batch_item_id {
+        batch_item_fields.push(tagged(
+            UNIQUE_BATCH_ITEM_ID_TAG,
+            Value::byte_string(identifier.to_vec()),
+        ));
+    }
+    batch_item_fields.push(tagged(
+        REQUEST_PAYLOAD_TAG,
+        Value::structure(Structure::new()),
+    ));
+
+    crate::RequestMessage::try_from_ttlv(structure([
+        tagged(
+            REQUEST_HEADER_TAG,
+            Value::structure(structure([
+                test_protocol_version(),
+                tagged(BATCH_COUNT_TAG, Value::integer(1)),
+            ])),
+        ),
+        tagged(
+            BATCH_ITEM_TAG,
+            Value::structure(structure(batch_item_fields)),
+        ),
+    ]))
+    .expect("test single-item Request Message is valid")
 }
 
 fn request_message_with_operation_payload(
@@ -782,6 +814,46 @@ fn production_discover_versions_rule_accepts_only_kmip_21_offers() {
         discover_versions_payload(&[(2, 1), (3, 0)]),
     );
     assert!(result.validate_request(&mixed_versions).is_err());
+}
+
+#[test]
+fn profile_maps_client_single_item_unique_batch_item_id_as_optional_capability() {
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-PROF-4.1.2-007";
+    const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-PROF-4.1.2-007";
+    const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
+
+    let mapping = TYPED_RULE_MAPPINGS
+        .iter()
+        .find(|mapping| mapping.requirement_id == REQUIREMENT_ID)
+        .expect("single-item Unique Batch Item ID has a typed profile rule");
+    let requirement = CLIENT_REQUIREMENTS
+        .iter()
+        .find(|requirement| requirement.requirement_id == REQUIREMENT_ID)
+        .expect("the optional profile capability resolves to generated metadata");
+    assert_eq!(mapping.source_clause_id, SOURCE_CLAUSE_ID);
+    assert_eq!(
+        mapping.verification_category,
+        GeneratedVerificationCategory::OptionalCapability
+    );
+    validate_mapping(BASELINE_PROFILE_ID, requirement, mapping)
+        .expect("the capability has a category-matched positive test");
+
+    let result = ProfileValidationResult {
+        profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
+        requirement_ids: vec![REQUIREMENT_ID.to_owned()],
+    };
+    for expected_id in [None, Some(b"single-item-id".as_slice())] {
+        let request = request_message_with_unique_batch_item_id(expected_id);
+        let item = request
+            .batch_items()
+            .next()
+            .expect("the test request has one batch item");
+        let actual_id = item.with_unique_batch_item_id(<[u8]>::to_vec);
+        assert_eq!(actual_id, expected_id.map(<[u8]>::to_vec));
+        result
+            .validate_request(&request)
+            .expect("the profile capability allows the ID to be included or omitted");
+    }
 }
 
 #[test]
