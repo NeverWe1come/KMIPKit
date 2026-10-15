@@ -3173,3 +3173,11 @@ The pinned Specification v2.1 identifies Table 398 as Response Header Structure 
 ### QA correction — §8.5–§8.6 response-row regression assertions (2026-10-15)
 
 Independent QA found that the five response-row tests pinned the source keywords and conditions but did not assert the reviewed `source_force` values or the note references keeping request-side §8.3 and later Poll/Cancel §9.1 duties separate. The catalog values were already correct. The regression now pins all five source-force values and both cross-section references; `py -3 -B -m unittest tools.normative_catalog.tests.test_profile_sections7_through11_review_contracts` passes 5/5, and `git diff --check` passes. This test-only correction makes no protocol or catalog change. Exact-head CI remains pending until push.
+
+### KMIPKIT-0010 T002 tranche — credential interpretation boundaries
+
+Approved KMIPKIT-0008 resolves the typed Device credential's conservative minimum-field interpretation while leaving the source's phrase “at least one field” distinct and preserving `KMIPKIT-DISC-042`. It assigns actual identifier uniqueness to the caller but does not define a comparison domain or implement uniqueness verification. Its OD-003 keeps Hashed Password timestamp state ownership, comparison scope, and clock behavior unresolved; it preserves the effective SHA-256 default while keeping the optional Hashing Algorithm field absent when omitted. The new regression pins those source-versus-project boundaries and the exact §9.11 excerpts.
+
+| Stage | DCO-signed commit and command | Result |
+|---|---|---|
+| Red — require source-exact Device wording, approved KMIPKIT-0008/DISC-042 interpretation links, OD-003 limits, and the Hashed Password condition/default evidence | `6101018f`; `py -3 -B -m unittest tools.normative_catalog.tests.test_profile_sections7_through11_review_contracts.ProfileSectionsSevenThroughElevenReviewContractTests.test_credential_reviews_separate_source_rules_from_approved_client_interpretation -v` | Expected Red: one assertion failure because the source review narrows “at least one field” to “Device identifier field”; the remaining approved-decision assertions were not reached. |
