@@ -413,6 +413,60 @@ class ProfileSectionsThreeAndFourCrosswalkTests(unittest.TestCase):
             self.assertEqual(review["source_excerpt"], pinned_excerpt(expected_lines[clause_id]))
             self.assertEqual(review["source_locator"], self.clauses[clause_id]["locator"])
 
+    def test_tls_1_2_cipher_suite_may_has_an_explicit_boundary_review(self) -> None:
+        """Profiles §3.1.2's TLS 1.2 MAY is excluded by the 1.0 TLS boundary."""
+        clause_id = "KMIPKIT-CLAUSE-PROF-3.1.2-004"
+        source_excerpt = pinned_excerpt([4089, 4090])
+        self.assertEqual(
+            source_excerpt,
+            "Conformant KMIP clients or servers MAY support the following cipher suites for TLSv1.2 if TLSv1.2 is supported:",
+        )
+
+        clause = self.clauses[clause_id]
+        self.assertEqual(clause["source_keywords"], ["MAY"])
+        self.assertEqual(clause["disposition"], "non_applicable")
+        self.assertEqual(clause["scope_state"], "out_of_scope")
+        self.assertEqual(clause["requirement_ids"], [])
+
+        gap = next(
+            row
+            for row in self.fixture["source_only_requirement_gaps"]
+            if row["gap_id"] == "KMIPKIT-SOURCE-GAP-PROF-3.1.2-4089"
+        )
+        self.assertEqual(gap["source_clause_id"], clause_id)
+        self.assertEqual(gap["source_locator"], clause["locator"])
+        self.assertEqual(gap["html_line_range"], [4089, 4185])
+        self.assertEqual(gap["scope_disposition"], "mixed_server_and_out_of_scope")
+        self.assertIsNone(gap["candidate_requirement_id"])
+        self.assertIsNone(gap["proposed_requirement_id"])
+
+        reviews = [
+            row
+            for row in self.fixture["source_requirement_reviews"]
+            if row["source_clause_id"] == clause_id
+        ]
+        self.assertEqual(len(reviews), 1)
+        review = reviews[0]
+        self.assertEqual(review["html_line_range"], [4089, 4090])
+        self.assertEqual(review["source_excerpt"], source_excerpt)
+        self.assertEqual(review["expected_client_requirement_ids"], [])
+        self.assertEqual(review["applies_to"], "KMIPKIT-PROFILE-BASELINE-CLIENT")
+        self.assertEqual(
+            review["source_obligations"],
+            [
+                {
+                    "source_order": 1,
+                    "source_text": source_excerpt,
+                    "source_keyword": "MAY",
+                    "actor": "client and server",
+                    "direction": "TLS 1.2 cipher-suite support",
+                    "condition": "Only if TLS 1.2 is supported; the client branch is outside KMIPKit 1.0's TLS 1.3-only boundary and the server branch is outside this client library.",
+                    "scope_disposition": "mixed_server_and_out_of_scope",
+                    "candidate_requirement_id": None,
+                }
+            ],
+        )
+
     def test_explicit_server_profile_requirements_remain_outside_client_crosswalk(self) -> None:
         expected = {
             "KMIPKIT-SOURCE-GAP-PROF-3.1.1-4009": ([4009, 4014], "formal_SHALL", "TLS v1.3", "Server; `server_only`."),
