@@ -618,7 +618,18 @@
             "supported_items": [],
             "requirement_id": null,
             "scope_disposition": "profile_conditional",
-            "mapping_status": "pending_t002_crosswalk"
+            "mapping_status": "reviewed",
+            "source_review": {
+              "disposition": "optional_out_of_standard_extensions_not_selected_for_1_0",
+              "profiles_source": "Profiles v2.1 §5.1.1 item 8",
+              "profiles_line_range": [
+                4632,
+                4635
+              ],
+              "rationale": "No out-of-standard extension or vendor-specific semantics is selected for the 1.0 capability claim. This does not exclude the standard-defined Message Extension structure and client duties in KMIP-SPEC §9.13, which remain crosswalked under Baseline item 5.",
+              "additional_source_clause_ids": [],
+              "additional_requirement_ids": []
+            }
           }
         ]
       }
