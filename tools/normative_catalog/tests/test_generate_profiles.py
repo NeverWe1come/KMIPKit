@@ -390,9 +390,15 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
         normalized_profiles_text = " ".join(re.sub(r"<[^>]+>", " ", html.unescape(profiles_html)).split())
         clause_id = "KMIPKIT-CLAUSE-PROF-4.1.2-007"
         requirement_id = "KMIPKIT-REQ-PROF-4.1.2-007"
+        section_clause_ids = {
+            item["clause_id"]
+            for item in catalog["source_clauses"]
+            if item["source_id"] == "KMIPKIT-SRC-profiles" and item["section"] == "4.1.2"
+        }
 
         self.assertIn("For all profiles in each Batch Item of a client request", normalized_profiles_text)
         self.assertIn("Unique Batch Item ID", normalized_profiles_text)
+        self.assertEqual(len(section_clause_ids), 10)
         catalog_profiles = {item["profile_id"]: item for item in catalog["profiles"] if item["role"] == "client"}
         oracle_profiles = {item["profile_id"]: item for item in oracle["profiles"] if item["role"] == "client"}
         self.assertEqual(set(catalog_profiles), set(oracle_profiles))
@@ -402,11 +408,15 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
             with self.subTest(profile_id=profile_id):
                 profile = catalog_profiles[profile_id]
                 expected = oracle_profiles[profile_id]
+                self.assertEqual(set(expected["direct_source_clause_ids"]) & section_clause_ids, {clause_id})
                 self.assertIn(clause_id, expected["direct_source_clause_ids"])
                 self.assertIn(clause_id, expected["source_clause_ids"])
+                self.assertTrue(section_clause_ids.issubset(expected["source_clause_ids"]))
                 self.assertIn(requirement_id, expected["requirement_ids"])
+                self.assertEqual(set(profile["direct_source_clause_ids"]) & section_clause_ids, {clause_id})
                 self.assertIn(clause_id, profile["direct_source_clause_ids"])
                 self.assertIn(clause_id, profile["source_clause_ids"])
+                self.assertTrue(section_clause_ids.issubset(profile["source_clause_ids"]))
                 self.assertIn(requirement_id, profile["requirement_ids"])
 
                 closure = compute_profile_closure(
@@ -415,6 +425,7 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
                     profile_id=profile_id,
                 )
                 self.assertIn(clause_id, closure.source_clause_ids)
+                self.assertTrue(section_clause_ids.issubset(closure.source_clause_ids))
                 self.assertIn(requirement_id, closure.requirement_ids)
 
     def test_baseline_profile_condition_inventory_covers_the_complete_pinned_section(self) -> None:

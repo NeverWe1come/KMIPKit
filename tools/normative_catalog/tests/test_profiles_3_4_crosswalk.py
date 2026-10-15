@@ -371,7 +371,10 @@ class ProfileSectionsThreeAndFourCrosswalkTests(unittest.TestCase):
             self.assertEqual(review["expected_client_requirement_ids"], [])
             self.assertNotIn(requirement_id, self.crosswalk)
             self.assertNotIn(requirement_id, baseline["requirement_ids"])
-            self.assertNotIn(clause_id, baseline["source_clause_ids"])
+            if clause["section"] == "4.1.2":
+                self.assertIn(clause_id, baseline["source_clause_ids"])
+            else:
+                self.assertNotIn(clause_id, baseline["source_clause_ids"])
 
         auth_requirement = self.requirements["KMIPKIT-REQ-PROF-4.1.2-005"]
         self.assertNotIn("client request", auth_requirement["summary"].lower())
@@ -385,6 +388,7 @@ class ProfileSectionsThreeAndFourCrosswalkTests(unittest.TestCase):
         self.assertIn("KMIPKIT-CLAUSE-PROF-4.1.2-007", self.reviews)
         review = self.reviews["KMIPKIT-CLAUSE-PROF-4.1.2-007"]
         self.assertEqual(requirement["source_keyword"], "MAY")
+        self.assertEqual(requirement["status"], "scoped_verified")
         self.assertIn("MAY", clause["source_keywords"])
         self.assertEqual(review["source_obligations"][0]["source_keyword"], "MAY")
         self.assertEqual(review["html_line_range"], [4488, 4493])

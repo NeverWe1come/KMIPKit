@@ -18199,6 +18199,7 @@ class CatalogValidationTests(unittest.TestCase):
         )
         expected_direct = {
             "KMIPKIT-CLAUSE-PROF-3.1-001",
+            "KMIPKIT-CLAUSE-PROF-4.1.2-007",
             "KMIPKIT-CLAUSE-PROF-5.1.1-001",
             "KMIPKIT-CLAUSE-PROF-6.1-001",
             "KMIPKIT-CLAUSE-PROF-6.1-002",
