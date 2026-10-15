@@ -151,34 +151,44 @@ class ProfileSectionsSevenThroughElevenReviewContractTests(unittest.TestCase):
                 "line_range": [43202, 43221],
                 "gap_id": "KMIPKIT-SOURCE-GAP-SPEC-8.5-002",
                 "keywords": ["MAY", "REQUIRED"],
+                "source_force": "MAY_and_conditional_REQUIRED",
                 "conditions": [
                     "MAY be repeated",
                     "client set Attestation Capable Indicator to True",
                 ],
+                "separate_duty_refs": [],
             },
             "KMIPKIT-CLAUSE-SPEC-8.6-002": {
                 "line_range": [43361, 43379],
                 "gap_id": "KMIPKIT-SOURCE-GAP-SPEC-8.6-002",
                 "keywords": ["REQUIRED"],
+                "source_force": "conditional_REQUIRED",
                 "conditions": ["REQUIRED if present in Request Batch Item"],
+                "separate_duty_refs": ["§8.3"],
             },
             "KMIPKIT-CLAUSE-SPEC-8.6-003": {
                 "line_range": [43399, 43419],
                 "gap_id": "KMIPKIT-SOURCE-GAP-SPEC-8.6-003",
                 "keywords": ["REQUIRED", "OPTIONAL"],
+                "source_force": "conditional_REQUIRED_and_OPTIONAL",
                 "conditions": ["REQUIRED if Result Status is Failure", "otherwise OPTIONAL"],
+                "separate_duty_refs": [],
             },
             "KMIPKIT-CLAUSE-SPEC-8.6-004": {
                 "line_range": [43420, 43439],
                 "gap_id": "KMIPKIT-SOURCE-GAP-SPEC-8.6-004",
                 "keywords": ["OPTIONAL"],
+                "source_force": "OPTIONAL",
                 "conditions": ["OPTIONAL if Result Status is not Pending or Success"],
+                "separate_duty_refs": [],
             },
             "KMIPKIT-CLAUSE-SPEC-8.6-005": {
                 "line_range": [43440, 43459],
                 "gap_id": "KMIPKIT-SOURCE-GAP-SPEC-8.6-005",
                 "keywords": ["REQUIRED"],
+                "source_force": "conditional_REQUIRED",
                 "conditions": ["REQUIRED if Result Status is Pending"],
+                "separate_duty_refs": ["§9.1"],
             },
         }
         self.assertEqual(
@@ -209,6 +219,9 @@ class ProfileSectionsSevenThroughElevenReviewContractTests(unittest.TestCase):
                 gap = self.gaps[expected["gap_id"]]
                 self.assert_server_response_classification(clause_id, review, gap)
                 self.assertEqual(gap["html_line_range"], expected["line_range"])
+                self.assertEqual(gap["source_force"], expected["source_force"])
+                for source_section in expected["separate_duty_refs"]:
+                    self.assertIn(source_section, review["review_note"])
 
     def test_time_stamp_may_atoms_keep_only_explicit_client_actor_mapped(self) -> None:
         review = self.reviews["KMIPKIT-CLAUSE-SPEC-9.20-001"]
