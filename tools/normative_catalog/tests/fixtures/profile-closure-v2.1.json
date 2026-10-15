@@ -312,6 +312,18 @@
             ],
             "supported_item_mappings": [
               {
+                "item": "Asynchronous Indicator",
+                "element_id": "KMIPKIT-ELEM-MESSAGE-FIELD-9-2-ASYNCHRONOUS-INDICATOR",
+                "requirement_ids": [
+                  "KMIPKIT-REQ-SPEC-8-003-001"
+                ],
+                "source_clause_ids": [
+                  "KMIPKIT-CLAUSE-SPEC-8-003",
+                  "KMIPKIT-CLAUSE-SPEC-9.2-001"
+                ],
+                "mapping_status": "reviewed"
+              },
+              {
                 "item": "Batch Count",
                 "element_id": "KMIPKIT-ELEM-MESSAGE-FIELD-9-5-BATCH-COUNT",
                 "requirement_ids": [
