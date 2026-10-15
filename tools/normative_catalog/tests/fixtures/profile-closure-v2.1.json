@@ -171,7 +171,7 @@
             ],
             "requirement_id": null,
             "scope_disposition": "profile_conditional",
-            "mapping_status": "pending_t002_crosswalk",
+            "mapping_status": "reviewed",
             "supported_item_mappings": [
               {
                 "item": "Activation Date",
