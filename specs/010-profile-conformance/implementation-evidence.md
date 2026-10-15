@@ -3041,3 +3041,11 @@ The three protocol categories map in source order as Authentication, Transport, 
 | Exact-head GitHub CI | Run `38760212335` on code-bearing Refactor head `d60a1beff55fac77f05e446d0c4870f185804bb9` | PASS: 34 successful jobs, zero failures, and 3 schedule-only skips. CI for the subsequent evidence-only head is tracked in the PR description. |
 
 The mappings preserve unresolved attribution as open work and make no runtime, generated-code, all-profile, or Baseline conformance claim.
+
+### KMIPKIT-0010 T002 tranche — Baseline Client §5.1.1 item 7 open-ended optional capability (2026-10-15)
+
+Pinned Profiles §5.1.1 item 7 says a Baseline Client optionally supports any KMIP Specification clause not listed above (HTML lines 4628–4631); it does not enumerate a finite capability set. Profiles §6.1 item 1 already includes the KMIP Specification v2.1 source for Baseline closure (lines 10484–10488), so item 7 creates no additional inclusion edge or client requirement ID. Keep `supported_items` empty, preserve the optional/profile-conditional scope, and record the source-reviewed open-ended disposition. Exact-head catalog and oracle each contain 897 Baseline clause IDs and 251 requirement IDs (241 Specification and 10 Profiles); the older 277/278 counts in `research.md` need correction. No selected optional capability is claimed.
+
+| Stage | DCO-signed commit and command | Result |
+|---|---|---|
+| Red — require a reviewed open-ended disposition, exact source locator, empty additional closure, and unchanged optional/profile-conditional semantics | This signed Red commit; `py -3 -B -m unittest tools.normative_catalog.tests.test_generate_profiles.ProfileMetadataGeneratorTests.test_baseline_open_ended_optional_clause_is_reviewed_without_inventing_scope -v` | Expected Red: one assertion failure because item 7 is still marked `pending_t002_crosswalk`; zero errors. |

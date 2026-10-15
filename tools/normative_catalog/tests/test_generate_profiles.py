@@ -492,6 +492,31 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
             "§5.1.1's title-case support statements are profile conditions, not standalone RFC modal REQs",
         )
 
+    def test_baseline_open_ended_optional_clause_is_reviewed_without_inventing_scope(self) -> None:
+        """Baseline item 7 is an open-ended optional capability, not a finite closure edge."""
+        oracle_path = ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json"
+        oracle = json.loads(oracle_path.read_text(encoding="utf-8"))
+        inventories = oracle["provenance"]["profile_condition_inventories"]
+        baseline = next(item for item in inventories if item["section"] == "5.1.1")
+        condition = baseline["conditions"][6]
+
+        self.assertEqual(condition["condition_id"], "KMIPKIT-PROF-COND-5.1.1-007")
+        self.assertEqual(condition["mapping_status"], "reviewed")
+        self.assertEqual(
+            condition["source_review"],
+            {
+                "disposition": "open_ended_optional_capability",
+                "profiles_source": "Profiles v2.1 §5.1.1 item 7",
+                "profiles_line_range": [4628, 4631],
+                "closure_basis": "Profiles §6.1 item 1 already includes the KMIP Specification v2.1 source for the Baseline Client closure.",
+                "additional_source_clause_ids": [],
+                "additional_requirement_ids": [],
+            },
+        )
+        self.assertEqual(condition["supported_items"], [])
+        self.assertIsNone(condition["requirement_id"])
+        self.assertEqual(condition["scope_disposition"], "profile_conditional")
+
     def test_baseline_attributes_condition_has_exact_reviewed_capability_crosswalk(self) -> None:
         """Attributes maps to its general and Key Value capabilities without closing its parent."""
         catalog = json.loads((ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8"))
