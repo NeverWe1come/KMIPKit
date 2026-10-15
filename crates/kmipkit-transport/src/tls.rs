@@ -36,6 +36,7 @@ const MAX_LOCAL_TICKET_AGE: Duration = Duration::from_hours(1);
 /// Selects the AWS-LC provider retained by one validated transport configuration.
 pub(crate) fn aws_lc_crypto_provider() -> Arc<rustls::crypto::CryptoProvider> {
     let mut provider = aws_lc_rs::default_provider();
+    // KMIP Profiles v2.1 §3.1.2 excludes TLS 1.3 suites outside its two-suite list.
     provider.cipher_suites.retain(|suite| {
         matches!(
             suite.suite(),

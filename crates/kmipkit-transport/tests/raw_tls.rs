@@ -1550,6 +1550,18 @@ fn spawn_tls12_only_peer(listener: TcpListener) -> thread::JoinHandle<Tls12PeerO
 }
 
 fn offered_cipher_suites(client_hello: &[u8]) -> Option<Vec<u16>> {
+    let (cipher_suites, _) = client_hello_sections(client_hello)?;
+    Some(
+        cipher_suites
+            .as_chunks::<2>()
+            .0
+            .iter()
+            .map(|suite| u16::from_be_bytes([suite[0], suite[1]]))
+            .collect(),
+    )
+}
+
+fn client_hello_sections(client_hello: &[u8]) -> Option<(&[u8], &[u8])> {
     if client_hello.first().copied()? != 1 {
         return None;
     }
@@ -1574,34 +1586,7 @@ fn offered_cipher_suites(client_hello: &[u8]) -> Option<Vec<u16>> {
         return None;
     }
 
-    Some(
-        cipher_suites
-            .chunks_exact(2)
-            .map(|suite| u16::from_be_bytes([suite[0], suite[1]]))
-            .collect(),
-    )
-}
-
-fn offered_tls_versions(client_hello: &[u8]) -> Option<Vec<u16>> {
-    if client_hello.first().copied()? != 1 {
-        return None;
-    }
-    let message_len = usize::try_from(u32::from_be_bytes([
-        0,
-        *client_hello.get(1)?,
-        *client_hello.get(2)?,
-        *client_hello.get(3)?,
-    ]))
-    .ok()?;
-    if message_len != client_hello.len().checked_sub(4)? {
-        return None;
-    }
-
-    let mut cursor = 4_usize.checked_add(2 + 32)?;
-    let session_id_len = usize::from(*client_hello.get(cursor)?);
-    cursor = cursor.checked_add(1 + session_id_len)?;
-    let cipher_suites_len = read_u16(client_hello, &mut cursor)?;
-    cursor = cursor.checked_add(cipher_suites_len)?;
+    cursor = cipher_suites_end;
     let compression_methods_len = usize::from(*client_hello.get(cursor)?);
     cursor = cursor.checked_add(1 + compression_methods_len)?;
     let all_extensions_len = read_u16(client_hello, &mut cursor)?;
@@ -1610,11 +1595,20 @@ fn offered_tls_versions(client_hello: &[u8]) -> Option<Vec<u16>> {
         return None;
     }
 
+    let extensions = client_hello.get(cursor..all_extensions_end)?;
+    Some((cipher_suites, extensions))
+}
+
+fn offered_tls_versions(client_hello: &[u8]) -> Option<Vec<u16>> {
+    let (_, extensions) = client_hello_sections(client_hello)?;
+    let mut cursor = 0;
+    let all_extensions_end = extensions.len();
+
     while cursor < all_extensions_end {
-        let extension_type = read_u16(client_hello, &mut cursor)?;
-        let one_extension_len = read_u16(client_hello, &mut cursor)?;
+        let extension_type = read_u16(extensions, &mut cursor)?;
+        let one_extension_len = read_u16(extensions, &mut cursor)?;
         let one_extension_end = cursor.checked_add(one_extension_len)?;
-        let extension = client_hello.get(cursor..one_extension_end)?;
+        let extension = extensions.get(cursor..one_extension_end)?;
         if extension_type == 0x002b {
             let versions_len = usize::from(*extension.first()?);
             if versions_len != extension.len().checked_sub(1)? || versions_len % 2 != 0 {
