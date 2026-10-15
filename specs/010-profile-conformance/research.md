@@ -584,7 +584,7 @@ BL-M-4-21 is evidence that the pinned profile fixture contains repeated Attribut
 
 The first Green draft added symmetric catalog links between BL-M-4-21 and the Attributes element because the XML fixture contains the repeated structure. The full normative test suite exposed that this exceeded the source basis: `test_official_cases_link_only_html_explicitly_named_protocol_elements` requires catalog case-element links to match protocol elements explicitly named in the source HTML, and Profiles §5.1.3.4 only says “See” the XML href. The fixture remains useful evidence, but does not justify that catalog relationship. The correction removed both links and keeps the source distinction in the crosswalk regression. No requirement mapping, direction, source interpretation, or other existing profile-item mapping changed.
 
-## Baseline §5.1.1 item 3 — Object Attribute element crosswalk (2026-10-15)
+## Baseline §5.1.1 item 3 — Object Attribute element crosswalk (2026-10-16)
 
 Profiles v2.1 §5.1.1 item 3, pinned HTML lines 4541–4562, names eight Object Attributes. The independent profile-closure fixture now maps each exact name to its existing attribute element:
 
@@ -601,7 +601,7 @@ Profiles v2.1 §5.1.1 item 3, pinned HTML lines 4541–4562, names eight Object 
 
 Every mapping has `requirement_ids: []`, `source_clause_ids: []`, and `mapping_status: reviewed`. Here, `reviewed` records only the exact profile-item-to-element relation. The profile list does not adjudicate client ownership of the attributes' §4 rules. Current source reviews leave actor or applicability unresolved for candidate requirements concerning Activation Date, Deactivation Date, Initial Date, State, and Unique Identifier. Digest's digest-setting rule is server-only, and its lowercase “Clients may request” sentence is not a formal modal requirement. These candidates remain excluded; no source review or catalog requirement classification changes in this tranche.
 
-The regression binds the mapping list to the exact pinned Profiles span and checks each element's name, §4 and §11.56 source references, direction, scope, encoding, and parent tag record. Exact ordered-list equality rejects missing, extra, duplicate, reordered, or fabricated mappings and any requirement or clause IDs. The parent condition `KMIPKIT-PROF-COND-5.1.1-003` remains `requirement_id: null` / `pending_t002_crosswalk`. No official case link, profile readiness, or conformance claim is implied.
+The regression binds the mapping list to the exact pinned Profiles span and checks each element's name, §4 and §11.56 source references, direction, scope, encoding, and parent tag record. Exact ordered-list equality rejects missing, extra, duplicate, reordered, or fabricated mappings and any requirement or clause IDs. The parent condition `KMIPKIT-PROF-COND-5.1.1-003` is now `mapping_status: reviewed` solely for this structural label-to-element crosswalk; it remains `requirement_id: null` and `scope_disposition: profile_conditional`. No unresolved §4 rule is attributed to the client, and this change does not establish semantic rule coverage, profile readiness, or conformance. No official case link is implied.
 
 ### Baseline Client §5.1.1 item 5 — message structure crosswalk (2026-10-15)
 
