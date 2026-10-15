@@ -598,6 +598,16 @@ class SourceGapContextResolutionTests(unittest.TestCase):
                 self.assertEqual(gap["scope_disposition"], "profile_conditional")
                 self.assertIn(discrepancy_id, gap["actor_scope_review"])
                 self.assertIn(discrepancy_id, research)
+                resolution = gap["source_resolution"]
+                self.assertEqual(resolution["kind"], "normative_inclusion")
+                self.assertEqual(resolution["source_clause_id"], clause_id)
+                self.assertEqual(
+                    resolution["inclusion_id"],
+                    f"KMIPKIT-INCLUSION-PROF-{section.replace('.', '')}-BASIC-SYMMETRIC-CLIENT",
+                )
+                self.assertEqual(resolution["included_source_id"], "KMIPKIT-SRC-profiles")
+                self.assertEqual(resolution["included_section"], "5.7.1")
+                self.assertIn("no standalone requirement ID", resolution["review_note"])
                 clause = clauses[clause_id]
                 self.assertEqual(clause["role"], "client")
                 self.assertEqual(clause["scope_state"], "profile_conditional")
