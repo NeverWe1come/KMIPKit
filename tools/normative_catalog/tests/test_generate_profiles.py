@@ -673,7 +673,7 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
         self.assertTrue(set(message_extension["requirement_ids"]).isdisjoint(condition["source_review"]["additional_requirement_ids"]))
 
     def test_baseline_attributes_condition_has_exact_reviewed_capability_crosswalk(self) -> None:
-        """Attributes maps to its general and Key Value capabilities without closing its parent."""
+        """Baseline Attributes maps to its general capability without closing its parent."""
         catalog = json.loads((ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8"))
         oracle = json.loads(
             (ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json")
