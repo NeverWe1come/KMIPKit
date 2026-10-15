@@ -2083,6 +2083,12 @@ class CatalogValidationTests(unittest.TestCase):
         locate["normative_strength"] = "permission_or_optional"
 
         self.assertGreater(validate(catalog)["record_count"], 0)
+        mismatched_clause = {
+            "requirement_id": locate["requirement_id"],
+            "source_clause_ids": ["KMIPKIT-CLAUSE-SPEC-6.1.28-004"],
+            "source_keyword": locate["source_keyword"],
+        }
+        self.assertEqual(catalog_validate._expected_normative_strength(mismatched_clause), "mandatory")
 
         unreviewed = json.loads((ROOT / "specification/catalog/kmip-2.1.json").read_text(encoding="utf-8"))
         another_required = next(
