@@ -2111,6 +2111,35 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
         self.assertNotIn("default", extension_text.lower())
         self.assertNotIn("default", table_418_text.lower())
 
+    def test_baseline_operation_condition_has_exact_reviewed_structural_crosswalk(self) -> None:
+        """Operation maps to its §9.15 field while placements stay provenance, not client REQs."""
+        catalog = json.loads((ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8"))
+        oracle = json.loads(
+            (ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json")
+            .read_text(encoding="utf-8")
+        )
+        inventory = next(
+            item
+            for item in oracle["provenance"]["profile_condition_inventories"]
+            if item["source_id"] == "KMIPKIT-SRC-profiles" and item["section"] == "5.1.1"
+        )
+        condition = next(
+            item for item in inventory["conditions"] if item["condition_id"] == "KMIPKIT-PROF-COND-5.1.1-005"
+        )
+        expected_mapping = {
+            "item": "Operation",
+            "element_id": "KMIPKIT-ELEM-MESSAGE-FIELD-9-15-OPERATION",
+            "requirement_ids": [],
+            "source_clause_ids": ["KMIPKIT-CLAUSE-SPEC-8.3-001", "KMIPKIT-CLAUSE-SPEC-8.6-001"],
+            "mapping_status": "reviewed",
+        }
+
+        operation_mapping = next(
+            (item for item in condition["supported_item_mappings"] if item["item"] == "Operation"),
+            None,
+        )
+        self.assertEqual(operation_mapping, expected_mapping)
+
     def test_foundry_basic_condition_text_names_its_inheriting_profiles(self) -> None:
         """The catalog and source review describe the same normative inheritance."""
         catalog = json.loads((ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8"))
