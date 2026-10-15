@@ -5,13 +5,16 @@ binary TTLV KMIP socket on `127.0.0.1:5696`. It generates a local test CA and
 short-lived mTLS certificates; no public server or account is used.
 
 The ignored Rust integration target contains operation-specific typed test
-cases for ten KMIPKit operations:
+cases for twenty KMIPKit operations:
 Discover Versions, Create, Create Key Pair, Create Split Key, Add Attribute,
-Delete Attribute, Get Attribute List, Get Attributes, Modify Attribute, and
-Set Attribute. Adjust Attribute was probed but is rejected as unsupported by
-the pinned Cosmian 5.28.0 parser. Exact OASIS operation clauses and
-per-operation results are recorded in
-`specs/015-cosmian-kms-integration/traceability.md`. Passing this selected
+Delete Attribute, Get Attribute List, Get Attributes, Modify Attribute, Set
+Attribute, Activate, Query, Ping, Encrypt, Decrypt, Hash, MAC, MAC Verify, Sign,
+and Signature Verify. Eighteen return successful typed results. The Query test
+records Cosmian's missing required Protection Storage Masks response field; the
+Ping test records Cosmian's unsupported-operation rejection. Adjust Attribute
+was probed separately and is also rejected as unsupported by the pinned
+Cosmian 5.28.0 parser. Exact OASIS operation clauses and per-operation results
+are recorded in `specs/015-cosmian-kms-integration/traceability.md`. Passing this selected
 suite does not establish full KMIP 2.1 support, profile conformance, or
 certification.
 
@@ -53,6 +56,14 @@ metadata on their own test objects. All data remains in the container-local
 database, which is removed by `-Action down`. The tests have no retry or server
 fallback. Ordinary test runs skip them because each one is marked ignored.
 
+The extra cryptographic operations use server-generated and activated test
+keys. MAC Data, Signature Data, and Validity Indicator use the OASIS KMIP v2.1
+§11.56, Table 487 tags. The Cosmian run exposed and helped correct those three
+KMIPKit tag assignments. Query's Table 283 response requires Protection
+Storage Masks; Cosmian returned Success and its Operations list but omitted
+that field, so KMIPKit rejects the typed payload. Ping is rejected by this
+Cosmian 5.28.0 deployment as unsupported; its error Batch Item omits Operation.
+
 ## Recorded result
 
 On 2026-10-08, the first live attempt reached Cosmian over verified mTLS and
@@ -75,9 +86,16 @@ Create Split Key. After pinning both Compose images by digest, it passed 10/10
 again on commit `9a6a6341`. The correction is inherited from release and is not
 duplicated in PR #56. Adjust Attribute was probed separately and Cosmian 5.28.0 rejects
 it as unsupported.
-See `specs/015-cosmian-kms-integration/traceability.md` for operation-by-
-operation evidence. These results validate only the tested requests and do
-not establish full KMIP 2.1 conformance or certification.
+On 2026-10-15 the expanded ignored suite reported 20 passed and 0 failed. A
+final rerun after the helper/secret-buffer changes produced the same result.
+This
+means 18 operations returned successful typed responses and the Query/Ping
+limitation probes observed the expected server behavior; it does not mean all
+20 operations interoperated successfully. See
+`specs/015-cosmian-kms-integration/traceability.md` for operation-by-operation
+evidence. These results validate only the tested requests and do not establish
+full KMIP 2.1 conformance or certification. The local deployment was stopped
+after the final run; `-Action status` showed no running services.
 
 ## Stop the server
 

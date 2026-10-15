@@ -1,10 +1,14 @@
 # Tasks: Local Cosmian KMS Integration Tests
 
 **Status**: In progress. The maintainer approved expanded operation coverage on
-2026-10-09. The full local integration suite now passes 10/10 after syncing PR
-#56 with current `release/1.0.0`, which includes the separately reviewed
-KMIPKIT-0014 corrections. Hosted CI and aggregate coverage must pass again on
-the synchronized PR head before review.
+2026-10-09. The original ten-operation suite passed after syncing PR #56 with
+`release/1.0.0`; on 2026-10-15 the scope expanded to twenty operation cases.
+The latest live run passed 20/20 test cases: eighteen successful typed
+operation exchanges and two expected limitation probes (Query and Ping). The
+rerun included final test-helper and secret-buffer changes, and the local
+Cosmian Compose deployment was stopped and verified empty afterward. Local
+workspace lint, tests, and coverage passed; hosted CI for this expanded head
+has not yet run.
 
 **Input**: [spec.md](spec.md), [plan.md](plan.md), [research.md](research.md)
 
@@ -46,6 +50,16 @@ the synchronized PR head before review.
 - [x] T022 Add Add Attribute, Delete Attribute, Modify Attribute, and Set Attribute cases using independent server-generated objects; assert operation success and returned identifiers. Adjust Attribute is excluded after Cosmian rejects it as unsupported.
 - [x] T023 Run the complete ignored Cosmian suite against the pinned local image, record the initial result and the rerun after syncing the separately reviewed KMIPKIT-0014 fixes from `release/1.0.0`. Keep production protocol fixes out of this integration PR.
 - [x] T024 Update `specs/015-cosmian-kms-integration/traceability.md`, `quickstart.md`, `tests/integration/cosmian/README.md`, and bilingual client integration documentation with exact commands, operation clauses, and live outcomes.
-- [x] T025 Run focused client/transport suites, `cargo fmt --all --check`, workspace Clippy, workspace tests, catalog checks, and the required coverage/hosted-platform CI gates; record commands and outcomes. Local client/transport tests, format, Clippy, workspace tests, Compose/syntax checks, immutable-source/audit/catalog/generated-output checks pass. The local single-platform `cargo llvm-cov --workspace --all-features --summary-only` report is 83.80% line coverage; the hosted multi-platform platform/adapter aggregate passed its configured coverage gate on 2026-10-09.
+- [x] T025 Run focused client/transport suites, `cargo fmt --all --check`, workspace Clippy, workspace tests, and local coverage; record commands and outcomes. Local client/transport tests, format, Clippy, workspace tests, Compose/syntax checks, immutable-source/audit/catalog/generated-output checks pass. The 2026-10-15 local `cargo llvm-cov --workspace --all-features --summary-only` report is 92.92% workspace line coverage; `kmipkit-protocol` is 96.17% and `kmipkit-ttlv` is 98.29%.
 - [x] T026 Review every FR and SC against the expanded tests. Hosted coverage and CI gates passed on the earlier PR head; after syncing current release, the full live suite passes 10/10. Keep PR #56 in draft until hosted CI and aggregate coverage pass on this synchronized head.
 - [x] T027 Record the 10/10 Cosmian live result after syncing KMIPKIT-0014 corrections from release and update operation-level traceability and run instructions. Verified on merge head `a1945f4e`, then repeated after immutable image pinning on `9a6a6341` with `scripts/integration/cosmian-kms.ps1 -Action test`: 10 passed, 0 failed on both runs.
+
+## KMIP 2.1 cryptographic and server-query coverage
+
+- [x] T028 Add ignored typed tests for Activate, Query, Ping, Encrypt, Decrypt, Hash, MAC, MAC Verify, Sign, and Signature Verify, with exact OASIS v2.1 clause/table citations and isolated server-generated keys.
+- [x] T029 Add regression tests for the normative MAC Data, Signature Data, and Validity Indicator TTLV tag assignments from OASIS KMIP v2.1 §11.56, Table 487; confirm they fail before changing production constants.
+- [x] T030 Correct the three shared KMIP protocol tag constants and validate the typed cryptographic operations against Cosmian 5.28.0. Keep the implementation correction within the approved KMIPKIT-0021 scope.
+- [x] T031 Record the observed Query and Ping behavior separately from successful interoperability: Query omits the Table 283 required Protection Storage Masks field; Ping is rejected as unsupported and its error Batch Item omits Operation.
+- [x] T032 Rerun the complete 20-case serial Cosmian suite after final test-helper and secret-buffer changes, capture the exact result, and stop/remove the local Cosmian Compose service after the run.
+- [x] T033 Update this task record, plan, specification, traceability, quickstart, and integration README with final run and server teardown evidence; run repository verification and retain distinct Red, Green, and Refactor commits.
+- [ ] T034 Run the hosted multi-platform CI and aggregate coverage gates on the expanded draft PR head before requesting review. The earlier PR head passed these gates on 2026-10-09; that result does not cover this expanded code.

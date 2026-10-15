@@ -2,6 +2,11 @@
 
 This model composes with KMIPKIT-0019's `OperationData`, generic ordered Cryptographic Parameters `Structure`, byte-string ownership, and Correlation/Init/Final field contracts. KMIPKIT-0021 does not introduce duplicate shared types.
 
+Wire tags for the shared cryptographic fields follow OASIS KMIP v2.1 §11.56,
+Table 487: Signature Data is `0x4200C3`, MAC Data is `0x4200C6`, and Validity
+Indicator is `0x42009B`. Tests assert these source values directly so request
+encoding and response parsing cannot agree on the same incorrect local tag.
+
 ## Shared request concepts
 
 | Entity | Model | Rules |

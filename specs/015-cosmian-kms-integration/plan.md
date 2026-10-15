@@ -1,12 +1,12 @@
 # Implementation Plan: Local Cosmian KMS Integration Tests
 
-**Branch**: `feature/KMIPKIT-0015-cosmian-kms-integration` | **Date**: 2026-10-08 | **Spec**: [spec.md](spec.md)
+**Branch**: `feature/KMIPKIT-0015-cosmian-operations` | **Date**: 2026-10-08 (expanded 2026-10-15) | **Spec**: [spec.md](spec.md)
 
 **Input**: [Feature specification](spec.md)
 
 ## Summary
 
-Provide opt-in interoperability tests for the ten KMIP 2.1 operations in `spec.md` against a local, pinned Cosmian KMS 5.28.0 instance. Docker Compose generates disposable mTLS credentials, configures the binary KMIP TTLV socket on loopback, and stores server data only in the disposable container. Retain the raw-TLS Response Message root validation established by the first live run. Exercise each operation through the current typed Rust production client, assert typed response contracts when supported, and record observed blockers without logging secret values.
+Provide opt-in interoperability tests for twenty KMIP 2.1 operation cases in `spec.md` against a local, pinned Cosmian KMS 5.28.0 instance. Docker Compose generates disposable mTLS credentials, configures the binary KMIP TTLV socket on loopback, and stores server data only in the disposable container. Retain the raw-TLS Response Message root validation established by the first live run. Exercise each operation through the current typed Rust production client, assert typed response contracts when supported, and record observed server limitations without logging secret values. Query and Ping are expected-limitation probes; they are not counted as successful interoperability.
 
 ## Technical Context
 
@@ -16,7 +16,7 @@ Provide opt-in interoperability tests for the ten KMIP 2.1 operations in `spec.m
 
 **Storage**: Cosmian SQLite database under the container filesystem, cleared at server startup and removed with the container; generated PKI in ignored `.local/cosmian-kms/certs`.
 
-**Testing**: Opt-in integration target `crates/kmipkit-client/tests/cosmian_kms.rs`; it contains one ignored test per operation. Run only after starting the local pinned Cosmian KMS 5.28.0 deployment.
+**Testing**: Opt-in integration target `crates/kmipkit-client/tests/cosmian_kms.rs`; it contains twenty ignored operation cases. Run only after starting the local pinned Cosmian KMS 5.28.0 deployment.
 
 **Target Platform**: Local Docker Desktop or Docker Engine, with Rust 1.94+ host.
 
@@ -24,12 +24,12 @@ Provide opt-in interoperability tests for the ten KMIP 2.1 operations in `spec.m
 
 **Constraints**: No production API changes; no public demo access; no import or object-destroy operations; test-generated objects and attribute changes stay in container-local storage; port 5696 bound only to 127.0.0.1; no automatic retries; no committed credentials; every live test remains ignored.
 
-**Scale/Scope**: One local server; typed tests for Discover Versions, Create, Create Key Pair, Create Split Key, and six attribute operations. Each test owns its object state and uses one configured KMIPKit client.
+**Scale/Scope**: One local server; typed tests for Discover Versions, Create, Create Key Pair, Create Split Key, six attribute operations, Activate, Query, Ping, Encrypt, Decrypt, Hash, MAC, MAC Verify, Sign, and Signature Verify. Each test owns its object state and uses one configured KMIPKit client. Eighteen exchanges are expected to produce successful typed results; Query and Ping record server interoperability limitations.
 
 ## Constitution Check
 
-- **Specification and traceability**: Pass for this bounded scope. `spec.md` identifies KMIP v2.1 §6.1.16 Tables 211–213 and §9.16 Table 421, and `traceability.md` links the assertions to the test.
-- **Test first and evidence**: The user subsequently authorized the live test. Its first run reached Cosmian over verified mTLS and failed because the response tag check rejected Cosmian's valid `0x42007B` Response Message frame. A focused negative regression test reproduced the defect on the old implementation. After correcting the response tag, all 90 raw-TLS tests passed, all 14 production-client tests passed (with test-support fixtures enabled), and the live test passed (1/1). Keep Red, Green and Refactor evidence in distinct development commits before feature PR review.
+- **Specification and traceability**: Pass for this bounded scope. `spec.md` identifies each exercised KMIP v2.1 section/table and `traceability.md` links the assertions to the test, including the §11.56 Table 487 cryptographic data tags.
+- **Test first and evidence**: The user subsequently authorized the live test. The initial run exposed the Response Message root tag defect, which was fixed in the original integration work. The 2026-10-15 cryptographic probes then exposed three incorrect KMIPKit shared TTLV tags; Red regression commits were recorded before the production constant correction. The live suite passed 20/20 cases: eighteen successful typed exchanges plus the Query and Ping limitation probes. Keep Red, Green and Refactor evidence in distinct development commits before feature PR review.
 - **Core and protocol boundaries**: Pass. The change only calls the existing typed client; no new protocol/API behavior or operation is introduced.
 - **Security**: Pass by design, subject to verification. Test-only certificates are generated locally and ignored; loopback-only bind; no persistent data mount; no request retries; the operation is read-only.
 - **Human-governed workflow**: The user explicitly authorized this feature work to start from the KMIPKIT-0013 continuation branch. It does not push, merge, approve, or release.
@@ -43,7 +43,8 @@ Provide opt-in interoperability tests for the ten KMIP 2.1 operations in `spec.m
 5. Use independently generated server-side RSA public keys for object-dependent attribute tests because Cosmian accepts the attribute operations for those objects. Use Create Key Pair for its own test and send an XOR two-of-two Create Split Key request over a test key. The initial test run exposed a Create Attributes tag defect and an incorrect Create Split Key operation enumeration; both candidate fixes are tracked separately under KMIPKIT-0014.
 6. Retain Response Message root validation as defined by OASIS KMIP v2.1 §8.4, Table 397, and §11.56.
 7. Update the English and Spanish-facing integration documentation and requirement traceability with the exact OASIS section/table and observed result for every operation.
-8. Run the full opt-in suite against the local deployment; record failed KMIP Result Status/Reason without treating server rejection as transport success or weakening typed parsing.
+8. Run the full opt-in suite against the local deployment; record failed KMIP Result Status/Reason without treating server rejection as transport success or weakening typed parsing. Query and Ping must preserve their observed incompatibility diagnostics.
+9. Keep MAC Data, Signature Data, and Validity Indicator tag constants aligned with OASIS KMIP v2.1 §11.56, Table 487. Regression tests must assert the exact standard values before the implementation is accepted.
 
 ## Project Structure
 

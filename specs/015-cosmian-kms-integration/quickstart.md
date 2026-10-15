@@ -1,8 +1,9 @@
 # Quickstart: Local Cosmian KMS Integration Tests
 
 This quickstart deploys Cosmian KMS 5.28.0 locally and provides opt-in typed
-test cases for the ten operation paths in KMIPKIT-0015. It does not claim
-broad protocol conformance.
+test cases for twenty operation paths in KMIPKIT-0015. Eighteen return
+successful typed results; Query and Ping record known Cosmian interoperability
+limitations. This does not claim broad protocol conformance.
 
 ## Prerequisites
 
@@ -33,8 +34,9 @@ run the live test explicitly:
 
 The test target sends typed requests for Discover Versions; Create; Create Key
 Pair; Create Split Key; Add Attribute; Delete Attribute; Get Attributes; Get
-Attribute List; Modify Attribute; and Set Attribute. Start
-with the full ignored integration target:
+Attribute List; Modify Attribute; Set Attribute; Activate; Query; Ping;
+Encrypt; Decrypt; Hash; MAC; MAC Verify; Sign; and Signature Verify. Start with
+the full ignored integration target:
 
 ```powershell
 cargo test -p kmipkit-client --test cosmian_kms -- --ignored --test-threads=1
@@ -46,15 +48,20 @@ To run one operation test, add its exact Rust test name before `-- --ignored --e
 cargo test -p kmipkit-client --test cosmian_kms cosmian_kms_accepts_kmip_2_1_discover_versions_over_mutual_tls -- --ignored --exact --test-threads=1
 ```
 
-The test requests follow OASIS KMIP Specification v2.1 §6.1.16, Tables
+The operation payloads follow OASIS KMIP Specification v2.1 §6.1.16, Tables
 211–213; §6.1.8, Tables 186–188; §6.1.9, Tables 189–192; §6.1.10, Tables
 193–195; §6.1.2, Tables 167–169; §6.1.13, Tables 202–204; §6.1.20, Tables
-223–225; §6.1.21, Tables 226–228; §6.1.34, Tables
-265–267; and §6.1.51, Tables 322–324. Discover Versions must return success
-and include version `(2, 1)` as encoded under §9.16, Table 421. Each other
-operation must return a successful typed response with its required response
-fields. The tests create server-generated objects and test metadata in the
-container-local database; the database is discarded when the container is
+223–225; §6.1.21, Tables 226–228; §6.1.34, Tables 265–267; §6.1.51, Tables
+322–324; §6.1.1, Tables 163–166; §6.1.40, Tables 282–284; §6.1.36, Tables
+271–272; §6.1.17, Tables 214–216; §6.1.11, Tables 196–198; §6.1.24, Tables
+235–237; §6.1.32, Tables 259–261; §6.1.33, Tables 262–264; §6.1.55, Tables
+334–336; and §6.1.56, Tables 337–339. Cryptographic data tags follow §11.56,
+Table 487. Discover Versions must return success and include version `(2, 1)`
+as encoded under §9.16, Table 421. Eighteen tests assert successful typed
+results. Query and Ping assert the observed Cosmian limitations: Query omits
+Protection Storage Masks required by Table 283, and Cosmian rejects Ping as
+unsupported. The tests create server-generated objects and test metadata in
+the container-local database; the database is discarded when the container is
 removed.
 
 ## Recorded result
@@ -76,12 +83,19 @@ including Create and Create Split Key. After pinning both Compose images by
 digest, it passed 10/10 again on commit `9a6a6341`. The corrections are inherited
 from release and are not duplicated in PR #56. Adjust Attribute was probed
 separately and Cosmian 5.28.0 rejects it as unsupported, so it is not included in the
-supported-operation test target. See
+supported-operation test target. On 2026-10-15, the expanded 20-case target
+passed 20/20: 18 successful typed exchanges and two expected-limitation probes
+for Query and Ping. The integration also exposed KMIPKit's incorrect MAC Data,
+Signature Data, and Validity Indicator tags; these were corrected under
+KMIPKIT-0021 using §11.56, Table 487. See
 `specs/015-cosmian-kms-integration/traceability.md` for operation-level
-results. These selected operations are not a broad conformance claim. The
-hosted multi-platform CI and coverage gates passed on 2026-10-09; they must be
-rerun on the synchronized PR head before review. The local raw Windows coverage
-summary is not the platform-aggregated coverage gate.
+results. A final run after the test-helper and `SecretBytes` changes again
+passed 20/20. Cosmian and PKI containers were then removed with `-Action down`,
+and `-Action status` showed no running services. These selected operations are
+not a broad conformance claim. The final local workspace coverage was 92.92%
+line coverage (`kmipkit-protocol` 96.17%; `kmipkit-ttlv` 98.29%). Hosted
+multi-platform CI and aggregate coverage still need to run on the expanded
+draft PR head.
 
 ## Stop and remove the server
 
