@@ -1253,6 +1253,84 @@ fn profile_allows_type_specific_cryptographic_parameters_without_remote_object_i
 }
 
 #[test]
+fn profile_maps_client_optional_cryptographic_parameters_for_encrypt_and_decrypt() {
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-4.16-001-001";
+    const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-4.16-001";
+    const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
+    const ENCRYPT_OPERATION: u32 = 0x0000_001F;
+    const DECRYPT_OPERATION: u32 = 0x0000_0020;
+    const CRYPTOGRAPHIC_PARAMETERS_TAG: u32 = 0x0042_002B;
+
+    let mapping = TYPED_RULE_MAPPINGS
+        .iter()
+        .find(|mapping| mapping.requirement_id == REQUIREMENT_ID)
+        .expect("optional Cryptographic Parameters has a typed profile rule");
+    let requirement = CLIENT_REQUIREMENTS
+        .iter()
+        .find(|requirement| requirement.requirement_id == REQUIREMENT_ID)
+        .expect("the optional fields resolve to generated normative metadata");
+    assert_eq!(mapping.source_clause_id, SOURCE_CLAUSE_ID);
+    assert_eq!(
+        mapping.verification_category,
+        GeneratedVerificationCategory::OptionalCapability
+    );
+    validate_mapping(BASELINE_PROFILE_ID, requirement, mapping)
+        .expect("omission evidence matches the OPTIONAL category");
+
+    let result = ProfileValidationResult {
+        profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
+        requirement_ids: vec![REQUIREMENT_ID.to_owned()],
+    };
+    let requests = [
+        request_message_with_operation_payload(
+            ENCRYPT_OPERATION,
+            crate::EncryptRequest::new(
+                Some(crate::UniqueIdentifier::TextString(
+                    "profile-key-id".to_owned(),
+                )),
+                Some(crate::OperationData::ByteString(crate::SecretBytes::new(
+                    vec![0x41, 0x42],
+                ))),
+            )
+            .to_ttlv_payload()
+            .expect("Encrypt payload retains omitted Cryptographic Parameters"),
+        ),
+        request_message_with_operation_payload(
+            DECRYPT_OPERATION,
+            crate::DecryptRequest::new(
+                Some(crate::UniqueIdentifier::TextString(
+                    "profile-key-id".to_owned(),
+                )),
+                Some(crate::OperationData::ByteString(crate::SecretBytes::new(
+                    vec![0x24, 0x68],
+                ))),
+            )
+            .to_ttlv_payload()
+            .expect("Decrypt payload retains omitted Cryptographic Parameters"),
+        ),
+    ];
+
+    for request in requests {
+        let item = request
+            .batch_items()
+            .next()
+            .expect("the test request contains one batch item");
+        let has_parameters = item
+            .with_request_payload(|payload| {
+                payload
+                    .children()
+                    .iter()
+                    .any(|field| field.tag().raw() == CRYPTOGRAPHIC_PARAMETERS_TAG)
+            })
+            .expect("the test request contains a Request Payload");
+        assert!(!has_parameters);
+        result
+            .validate_request(&request)
+            .expect("profile validation permits caller omission of optional parameters");
+    }
+}
+
+#[test]
 fn profile_maps_client_supplied_create_key_pair_domain_parameters() {
     const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-4.14-001-001";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
