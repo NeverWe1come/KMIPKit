@@ -93,7 +93,33 @@
             "supported_items": [],
             "requirement_id": null,
             "scope_disposition": "profile_conditional",
-            "mapping_status": "pending_t002_crosswalk"
+            "mapping_status": "reviewed",
+            "source_review": {
+              "disposition": "covered_by_baseline_whole_spec_inclusion",
+              "profiles_source": "Profiles v2.1 §5.1.1 item 1",
+              "profiles_line_range": [
+                4533,
+                4534
+              ],
+              "specification_source": "KMIP Specification v2.1 §14.1",
+              "specification_line_ranges": [
+                [
+                  66041,
+                  66042
+                ],
+                [
+                  66044,
+                  66047
+                ]
+              ],
+              "inclusion_id": "KMIPKIT-INCLUSION-PROF-BASELINE-SPEC",
+              "covered_requirement_ids": [
+                "KMIPKIT-REQ-SPEC-14.1-001",
+                "KMIPKIT-REQ-SPEC-14.1-002"
+              ],
+              "additional_source_clause_ids": [],
+              "additional_requirement_ids": []
+            }
           },
           {
             "condition_id": "KMIPKIT-PROF-COND-5.1.1-002",
