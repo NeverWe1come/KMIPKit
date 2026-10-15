@@ -1918,7 +1918,10 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
         }
 
         self.assertEqual(condition["supported_items"][5:7], ["Maximum Response Size", "Message Extension"])
-        self.assertEqual(condition["supported_item_mappings"][-1], expected_mapping)
+        message_extension_mapping = next(
+            mapping for mapping in condition["supported_item_mappings"] if mapping["item"] == "Message Extension"
+        )
+        self.assertEqual(message_extension_mapping, expected_mapping)
         self.assertIsNone(condition["requirement_id"])
         self.assertEqual(condition["scope_disposition"], "profile_conditional")
         self.assertEqual(condition["mapping_status"], "pending_t002_crosswalk")
@@ -2140,12 +2143,154 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
             "source_clause_ids": ["KMIPKIT-CLAUSE-SPEC-8.3-001", "KMIPKIT-CLAUSE-SPEC-8.6-001"],
             "mapping_status": "reviewed",
         }
-
-        operation_mapping = next(
-            (item for item in condition["supported_item_mappings"] if item["item"] == "Operation"),
-            None,
-        )
+        mapped_items = [item["item"] for item in condition["supported_item_mappings"]]
+        operation_mapping = condition["supported_item_mappings"][-1]
         self.assertEqual(operation_mapping, expected_mapping)
+        self.assertEqual(condition["supported_items"][6:9], ["Message Extension", "Operation", "Protocol Version"])
+        self.assertEqual(mapped_items[-2:], ["Message Extension", "Operation"])
+        self.assertEqual(len(condition["supported_items"]), 14)
+        self.assertEqual(len(mapped_items), 8)
+        self.assertEqual(
+            [item for item in condition["supported_items"] if item not in set(mapped_items)],
+            [
+                "Protocol Version",
+                "Result Reason",
+                "Result Status",
+                "Server Correlation Value",
+                "Time Stamp",
+                "Unique Batch Item ID",
+            ],
+        )
+        self.assertIsNone(condition["requirement_id"])
+        self.assertEqual(condition["scope_disposition"], "profile_conditional")
+        self.assertEqual(condition["mapping_status"], "pending_t002_crosswalk")
+
+        profiles_path = ROOT / "specification" / "oasis" / "kmip-2.1" / "upstream" / "kmip-profiles-v2.1-os.html"
+        spec_path = ROOT / "specification" / "oasis" / "kmip-2.1" / "upstream" / "kmip-spec-v2.1-os.html"
+        profiles_lines = profiles_path.read_text(encoding="cp1252").splitlines()
+        spec_lines = spec_path.read_text(encoding="cp1252").splitlines()
+        self.assertEqual(_normalized_html_source_span(profiles_lines, [4597, 4598]), "Operation")
+
+        source_ranges = {
+            "KMIPKIT-CLAUSE-SPEC-8.3-001": [42882, 42890],
+            "KMIPKIT-CLAUSE-SPEC-8.6-001": [43344, 43353],
+        }
+        expected_placements = {
+            "KMIPKIT-CLAUSE-SPEC-8.3-001": "Operation Yes",
+            "KMIPKIT-CLAUSE-SPEC-8.6-001": "Operation Yes, if specified in Request Batch Item",
+        }
+        source_candidates = {
+            item["clause_id"]: item
+            for item in audit_document(spec_path.read_bytes(), "KMIPKIT-SRC-spec")
+            if item["clause_id"] in source_ranges
+        }
+        clauses = {item["clause_id"]: item for item in catalog["source_clauses"]}
+        elements = {item["element_id"]: item for item in catalog["elements"]}
+        self.assertEqual(set(source_candidates), set(source_ranges))
+        self.assertFalse(
+            any(
+                review.get("source_clause_id") in source_ranges
+                for review in oracle["source_requirement_reviews"]
+            )
+        )
+        for clause_id, line_range in source_ranges.items():
+            with self.subTest(clause=clause_id):
+                text = _normalized_html_source_span(spec_lines, line_range)
+                self.assertEqual(text, expected_placements[clause_id])
+                self.assertEqual(source_candidates[clause_id]["section"], clause_id.split("-SPEC-")[1].split("-")[0])
+                self.assertEqual(source_candidates[clause_id]["locator"], {"ordinal": 1, "block_kind": "table_row"})
+                clause = clauses[clause_id]
+                self.assertEqual(clause["locator"], {"ordinal": 1, "block_kind": "table_row"})
+                self.assertEqual(clause["source_keywords"], ["REQUIRED"])
+                self.assertEqual(clause["disposition"], "non_applicable")
+                self.assertEqual(clause["requirement_ids"], [])
+                self.assertEqual(
+                    clause["exclusion_rationale"],
+                    "Heading, enum/table value, or field-name extractor hit rather than independent obligation.",
+                )
+
+        request_field = elements["KMIPKIT-ELEM-MESSAGE-FIELD-8-3-OPERATION"]
+        response_field = elements["KMIPKIT-ELEM-MESSAGE-FIELD-8-6-OPERATION"]
+        self.assertEqual(request_field["source_requiredness"], "Yes")
+        self.assertEqual(response_field["source_requiredness"], "Yes, if specified in Request Batch Item")
+        self.assertEqual(request_field["source_refs"], [{"source_id": "KMIPKIT-SRC-spec", "section": "8.3"}])
+        self.assertEqual(response_field["source_refs"], [{"source_id": "KMIPKIT-SRC-spec", "section": "8.6"}])
+
+        field = elements[expected_mapping["element_id"]]
+        self.assertEqual(field["kind"], "message_field")
+        self.assertEqual(field["name"], "Operation")
+        self.assertEqual(field["source_refs"], [{"source_id": "KMIPKIT-SRC-spec", "section": "9.15"}])
+        self.assertEqual(field["source_encoding"], "Enumeration")
+        self.assertEqual(
+            field["parent_element_ids"],
+            ["KMIPKIT-ELEM-MESSAGE-FIELD-8-3-OPERATION", "KMIPKIT-ELEM-MESSAGE-FIELD-8-6-OPERATION"],
+        )
+        operation_definition = _normalized_html_source_span(spec_lines, [45042, 45080])
+        self.assertIn(
+            "This field indicates the operation being requested or the operation for which the response is being returned.",
+            operation_definition,
+        )
+        self.assertIn("Operation Enumeration", operation_definition)
+        self.assertIn("Table 420: Operation in Batch Item", operation_definition)
+
+        enumeration = elements["KMIPKIT-ELEM-ENUMERATION-OPERATION"]
+        self.assertEqual(enumeration["kind"], "enumeration")
+        self.assertEqual(enumeration["source_refs"], [{"source_id": "KMIPKIT-SRC-spec", "section": "11.36"}])
+        enum_span = "\n".join(spec_lines[52884:53697])
+        enum_rows = re.findall(r"<tr\b[^>]*>(.*?)</tr>", enum_span, re.IGNORECASE | re.DOTALL)
+        source_values = []
+        for row in enum_rows:
+            cells = re.findall(r"<td\b[^>]*>(.*?)</td>", row, re.IGNORECASE | re.DOTALL)
+            if len(cells) == 2:
+                source_values.append(
+                    tuple(
+                        " ".join(html.unescape(re.sub(r"<[^>]+>", " ", cell)).split())
+                        for cell in cells
+                    )
+                )
+        source_values = [value for value in source_values if value[0] != "Name"]
+        catalog_values = [
+            (element["name"], element["wire_value"])
+            for element in catalog["elements"]
+            if element["kind"] == "enumeration_value"
+            and "KMIPKIT-ELEM-ENUMERATION-OPERATION" in element["parent_element_ids"]
+        ]
+        self.assertEqual(len(source_values), 60)
+        self.assertEqual(sorted(catalog_values), sorted(source_values))
+        self.assertTrue(
+            {
+                "Create": "00000001",
+                "Locate": "00000008",
+                "Get": "0000000A",
+                "Get Attributes": "0000000B",
+                "Query": "00000018",
+                "Extensions": "8XXXXXXX",
+            }.items()
+            <= dict(source_values).items()
+        )
+
+        operation_tag = elements["KMIPKIT-ELEM-TAG-42005C"]
+        self.assertEqual(operation_tag["kind"], "tag")
+        self.assertEqual(operation_tag["name"], "Operation")
+        self.assertEqual(operation_tag["wire_value"], "42005C")
+        self.assertEqual(operation_tag["source_refs"], [{"source_id": "KMIPKIT-SRC-spec", "section": "11.56"}])
+        self.assertIn("Operation 42005C", _normalized_html_source_span(spec_lines, [60122, 60128]))
+
+        same_name_ids = {item["element_id"] for item in catalog["elements"] if item["name"] == "Operation"}
+        self.assertEqual(
+            same_name_ids,
+            {
+                "KMIPKIT-ELEM-ENUMERATION-OPERATION",
+                "KMIPKIT-ELEM-MESSAGE-FIELD-8-3-OPERATION",
+                "KMIPKIT-ELEM-MESSAGE-FIELD-8-6-OPERATION",
+                "KMIPKIT-ELEM-MESSAGE-FIELD-9-15-OPERATION",
+                "KMIPKIT-ELEM-STRUCTURE-MEMBER-7-2-OPERATION",
+                "KMIPKIT-ELEM-STRUCTURE-MEMBER-7-25-OPERATION",
+                "KMIPKIT-ELEM-TAG-42005C",
+            },
+        )
+        feature_spec = (ROOT / "specs" / "010-profile-conformance" / "spec.md").read_text(encoding="utf-8")
+        self.assertIn("Profile-required capabilities are minimum requirements, not an allowlist:", feature_spec)
 
     def test_foundry_basic_condition_text_names_its_inheriting_profiles(self) -> None:
         """The catalog and source review describe the same normative inheritance."""
