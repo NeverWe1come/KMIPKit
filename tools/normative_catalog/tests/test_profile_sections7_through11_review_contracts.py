@@ -6,8 +6,11 @@ import json
 import unittest
 from pathlib import Path
 
+from tools.normative_catalog.tests.test_source_gap_context_resolutions import pinned_source_excerpt
+
 
 ROOT = Path(__file__).resolve().parents[3]
+SPEC_SOURCE_PATH = "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
 
 
 class ProfileSectionsSevenThroughElevenReviewContractTests(unittest.TestCase):
@@ -123,6 +126,91 @@ class ProfileSectionsSevenThroughElevenReviewContractTests(unittest.TestCase):
         self.assertEqual([atom["direction"] for atom in error_atoms], ["server_to_client", "unspecified"])
         self.assertEqual([atom["scope_disposition"] for atom in error_atoms], ["server_only", "unresolved"])
         self.assertTrue(all(atom["candidate_requirement_id"] is None for atom in error_atoms))
+
+    def test_response_header_and_batch_rows_are_server_output_only(self) -> None:
+        rows = {
+            "KMIPKIT-CLAUSE-SPEC-8.5-002": {
+                "line_range": [43202, 43221],
+                "gap_id": "KMIPKIT-SOURCE-GAP-SPEC-8.5-002",
+                "keywords": ["MAY", "REQUIRED"],
+                "conditions": [
+                    "Attestation Type may be repeated",
+                    "client set Attestation Capable Indicator to True",
+                ],
+            },
+            "KMIPKIT-CLAUSE-SPEC-8.6-002": {
+                "line_range": [43361, 43379],
+                "gap_id": "KMIPKIT-SOURCE-GAP-SPEC-8.6-002",
+                "keywords": ["REQUIRED"],
+                "conditions": ["if present in Request Batch Item"],
+            },
+            "KMIPKIT-CLAUSE-SPEC-8.6-003": {
+                "line_range": [43399, 43419],
+                "gap_id": "KMIPKIT-SOURCE-GAP-SPEC-8.6-003",
+                "keywords": ["REQUIRED", "OPTIONAL"],
+                "conditions": ["if Result Status is Failure", "otherwise OPTIONAL"],
+            },
+            "KMIPKIT-CLAUSE-SPEC-8.6-004": {
+                "line_range": [43420, 43439],
+                "gap_id": "KMIPKIT-SOURCE-GAP-SPEC-8.6-004",
+                "keywords": ["OPTIONAL"],
+                "conditions": ["if Result Status is not Pending or Success"],
+            },
+            "KMIPKIT-CLAUSE-SPEC-8.6-005": {
+                "line_range": [43440, 43459],
+                "gap_id": "KMIPKIT-SOURCE-GAP-SPEC-8.6-005",
+                "keywords": ["REQUIRED"],
+                "conditions": ["if Result Status is Pending"],
+            },
+        }
+        clauses = {row["clause_id"]: row for row in self.catalog["source_clauses"]}
+        gaps = {row["gap_id"]: row for row in self.oracle["source_only_requirement_gaps"]}
+
+        self.assertEqual(
+            pinned_source_excerpt(SPEC_SOURCE_PATH, [43283, 43284]),
+            "Table 398: Response Header Structure",
+        )
+        self.assertEqual(
+            pinned_source_excerpt(SPEC_SOURCE_PATH, [43502, 43503]),
+            "Table 399: Response Batch Item Structure",
+        )
+
+        for clause_id, expected in rows.items():
+            with self.subTest(clause_id=clause_id):
+                clause = clauses[clause_id]
+                self.assertEqual(clause["disposition"], "server_only")
+                self.assertEqual(clause["scope_state"], "server_only")
+                self.assertEqual(clause["role"], "unclear")
+                self.assertEqual(clause["direction"], "server_to_client")
+                self.assertEqual(clause["requirement_ids"], [])
+
+                review = self.reviews[clause_id]
+                self.assertEqual(review["html_line_range"], expected["line_range"])
+                self.assertEqual(
+                    review["source_excerpt"],
+                    pinned_source_excerpt(SPEC_SOURCE_PATH, expected["line_range"]),
+                )
+                self.assertEqual(review["source_locator"], clause["locator"])
+                self.assertEqual(review["expected_client_requirement_ids"], [])
+                atoms = review["source_obligations"]
+                self.assertEqual([atom["source_keyword"] for atom in atoms], expected["keywords"])
+                self.assertTrue(all(atom["actor"] == "server" for atom in atoms))
+                self.assertTrue(all(atom["direction"] == "server_to_client" for atom in atoms))
+                self.assertTrue(all(atom["scope_disposition"] == "server_only" for atom in atoms))
+                self.assertTrue(all(atom["candidate_requirement_id"] is None for atom in atoms))
+                for condition in expected["conditions"]:
+                    self.assertIn(condition, " ".join(atom["condition"] for atom in atoms))
+
+                gap = gaps[expected["gap_id"]]
+                self.assertEqual(gap["source_clause_id"], clause_id)
+                self.assertEqual(gap["source_locator"], clause["locator"])
+                self.assertEqual(gap["html_line_range"], expected["line_range"])
+                self.assertEqual(gap["actor"], "server")
+                self.assertEqual(gap["direction"], "server_to_client")
+                self.assertEqual(gap["scope_disposition"], "server_only")
+                self.assertEqual(gap["status"], "server_actor_disposition_recorded")
+                self.assertIsNone(gap["candidate_requirement_id"])
+                self.assertIsNone(gap["proposed_requirement_id"])
 
     def test_time_stamp_may_atoms_keep_only_explicit_client_actor_mapped(self) -> None:
         review = self.reviews["KMIPKIT-CLAUSE-SPEC-9.20-001"]
