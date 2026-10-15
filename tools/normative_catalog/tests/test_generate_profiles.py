@@ -1099,7 +1099,7 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
         self.assertIn("Linked Object Identifier value is specified without the Link Type value", locate_007_source)
 
     def test_baseline_message_data_structures_condition_has_exact_reviewed_batch_crosswalk(self) -> None:
-        """The twelve reviewed Message Data Structure mappings stay bounded while item 5 remains pending."""
+        """The thirteen reviewed Message Data Structure mappings stay bounded while item 5 remains pending."""
         catalog = json.loads((ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8"))
         oracle = json.loads(
             (ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json")
@@ -1234,6 +1234,13 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
             "source_clause_ids": ["KMIPKIT-CLAUSE-SPEC-9.10-001"],
             "mapping_status": "reviewed",
         }
+        expected_time_stamp_mapping = {
+            "item": "Time Stamp",
+            "element_id": "KMIPKIT-ELEM-MESSAGE-FIELD-9-20-TIME-STAMP",
+            "requirement_ids": ["KMIPKIT-REQ-SPEC-9.20-001-001", "KMIPKIT-REQ-SPEC-9.20-001-002"],
+            "source_clause_ids": ["KMIPKIT-CLAUSE-SPEC-9.20-001"],
+            "mapping_status": "reviewed",
+        }
         expected_mappings = [
             expected_async_mapping,
             expected_mapping,
@@ -1247,6 +1254,7 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
             expected_result_reason_mapping,
             expected_result_status_mapping,
             expected_server_correlation_value_mapping,
+            expected_time_stamp_mapping,
         ]
 
         self.assertEqual(condition["item"], 5)
@@ -1288,10 +1296,11 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
                 "Result Reason",
                 "Result Status",
                 "Server Correlation Value",
+                "Time Stamp",
             ],
         )
         self.assertEqual(len(condition["supported_items"]), 14)
-        self.assertEqual(len(condition["supported_item_mappings"]), 12)
+        self.assertEqual(len(condition["supported_item_mappings"]), 13)
         unmapped_items = [
             item
             for item in condition["supported_items"]
@@ -1299,17 +1308,11 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
         ]
         self.assertEqual(
             unmapped_items,
-            [
-                "Time Stamp",
-                "Unique Batch Item ID",
-            ],
+            ["Unique Batch Item ID"],
         )
         self.assertEqual(
             set(condition["supported_items"]) - {mapping["item"] for mapping in condition["supported_item_mappings"]},
-            {
-                "Time Stamp",
-                "Unique Batch Item ID",
-            },
+            {"Unique Batch Item ID"},
         )
         self.assertIsNone(condition["requirement_id"])
         self.assertEqual(condition["scope_disposition"], "profile_conditional")
@@ -2182,7 +2185,7 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
         self.assertEqual(len(mapped_items), 12)
         self.assertEqual(
             [item for item in condition["supported_items"] if item not in set(mapped_items)],
-            ["Time Stamp", "Unique Batch Item ID"],
+            ["Unique Batch Item ID"],
         )
         self.assertIsNone(condition["requirement_id"])
         self.assertEqual(condition["scope_disposition"], "profile_conditional")
@@ -2352,7 +2355,7 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
         self.assertIn("Protocol Version", mapped_items)
         self.assertEqual(
             [item for item in condition["supported_items"] if item not in set(mapped_items)],
-            ["Time Stamp", "Unique Batch Item ID"],
+            ["Unique Batch Item ID"],
         )
         self.assertIsNone(condition["requirement_id"])
         self.assertEqual(condition["scope_disposition"], "profile_conditional")
@@ -2695,6 +2698,96 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
         )
         self.assertIn("KMIPKIT-0007-FR-016", execution_spec)
         self.assertIn("outgoing_client_request_omits_server_correlation_value", execution_tests)
+
+    def test_baseline_time_stamp_condition_maps_client_capabilities_not_server_duties(self) -> None:
+        """Time Stamp maps its optional request and conditional client capabilities only."""
+        catalog = json.loads((ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8"))
+        oracle = json.loads(
+            (ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json")
+            .read_text(encoding="utf-8")
+        )
+        inventory = next(
+            item
+            for item in oracle["provenance"]["profile_condition_inventories"]
+            if item["source_id"] == "KMIPKIT-SRC-profiles" and item["section"] == "5.1.1"
+        )
+        condition = next(
+            item for item in inventory["conditions"] if item["condition_id"] == "KMIPKIT-PROF-COND-5.1.1-005"
+        )
+        expected_requirement_ids = ["KMIPKIT-REQ-SPEC-9.20-001-001", "KMIPKIT-REQ-SPEC-9.20-001-002"]
+        expected_mapping = {
+            "item": "Time Stamp",
+            "element_id": "KMIPKIT-ELEM-MESSAGE-FIELD-9-20-TIME-STAMP",
+            "requirement_ids": expected_requirement_ids,
+            "source_clause_ids": ["KMIPKIT-CLAUSE-SPEC-9.20-001"],
+            "mapping_status": "reviewed",
+        }
+
+        self.assertEqual(condition["supported_items"][12], "Time Stamp")
+        time_stamp_mapping = next(
+            (item for item in condition["supported_item_mappings"] if item["item"] == "Time Stamp"),
+            None,
+        )
+        self.assertEqual(time_stamp_mapping, expected_mapping)
+        self.assertIsNone(condition["requirement_id"])
+        self.assertEqual(condition["scope_disposition"], "profile_conditional")
+        self.assertEqual(condition["mapping_status"], "pending_t002_crosswalk")
+
+        review = next(
+            item
+            for item in oracle["source_requirement_reviews"]
+            if item["source_clause_id"] == "KMIPKIT-CLAUSE-SPEC-9.20-001"
+        )
+        self.assertEqual(review["expected_client_requirement_ids"], expected_requirement_ids)
+        obligations = review["source_obligations"]
+        self.assertEqual(
+            [
+                (item["actor"], item["direction"], item["scope_disposition"], item["candidate_requirement_id"])
+                for item in obligations
+            ],
+            [
+                ("client", "client_to_server", "client_1_0", expected_requirement_ids[0]),
+                ("server", "both", "server_only", None),
+                ("unspecified", "unspecified", "unresolved", None),
+                ("server", "server_to_client", "server_only", None),
+                ("client", "client_to_server", "client_1_0", expected_requirement_ids[1]),
+            ],
+        )
+
+        profiles_lines = (
+            ROOT / "specification" / "oasis" / "kmip-2.1" / "upstream" / "kmip-profiles-v2.1-os.html"
+        ).read_text(encoding="cp1252").splitlines()
+        spec_lines = (
+            ROOT / "specification" / "oasis" / "kmip-2.1" / "upstream" / "kmip-spec-v2.1-os.html"
+        ).read_text(encoding="cp1252").splitlines()
+        self.assertEqual(_normalized_html_source_span(profiles_lines, [4609, 4609]), "Time Stamp")
+        time_stamp_definition = _normalized_html_source_span(spec_lines, [45309, 45316])
+        self.assertIn("OPTIONAL field contained in a client request", time_stamp_definition)
+        self.assertIn("REQUIRED in a server request and response", time_stamp_definition)
+        self.assertIn("MAY be used to enforce reasonable time usage at a client", time_stamp_definition)
+        self.assertIn("a server MAY choose to reject a request", time_stamp_definition)
+        self.assertIn("the time stamp MAY be used by a client that has no real-time clock", time_stamp_definition)
+        self.assertIn("Time Stamp No", _normalized_html_source_span(spec_lines, [42780, 42796]))
+        self.assertIn("Time Stamp Yes", _normalized_html_source_span(spec_lines, [43143, 43159]))
+        self.assertIn("Time Stamp Date-Time", _normalized_html_source_span(spec_lines, [45335, 45345]))
+        self.assertIn("420092", _normalized_html_source_span(spec_lines, [60820, 60830]))
+
+        elements = {item["element_id"]: item for item in catalog["elements"]}
+        request_placement = elements["KMIPKIT-ELEM-MESSAGE-FIELD-8-2-TIME-STAMP"]
+        response_placement = elements["KMIPKIT-ELEM-MESSAGE-FIELD-8-5-TIME-STAMP"]
+        self.assertEqual(request_placement["direction"], "client_to_server")
+        self.assertEqual(request_placement["source_requiredness"], "No")
+        self.assertEqual(response_placement["direction"], "server_to_client")
+        self.assertEqual(response_placement["source_requiredness"], "Yes")
+
+        field = elements[expected_mapping["element_id"]]
+        self.assertEqual(field["source_refs"], [{"source_id": "KMIPKIT-SRC-spec", "section": "9.20"}])
+        self.assertEqual(field["source_encoding"], "Date-Time")
+        self.assertEqual(field["direction"], "both")
+        self.assertEqual(
+            field["parent_element_ids"],
+            ["KMIPKIT-ELEM-MESSAGE-FIELD-8-2-TIME-STAMP", "KMIPKIT-ELEM-MESSAGE-FIELD-8-5-TIME-STAMP"],
+        )
 
     def test_foundry_basic_condition_text_names_its_inheriting_profiles(self) -> None:
         """The catalog and source review describe the same normative inheritance."""
