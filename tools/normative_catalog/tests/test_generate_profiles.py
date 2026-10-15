@@ -376,6 +376,47 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
                     self.assertNotIn(source_clause_id, profile["direct_source_clause_ids"])
                 self.assertNotIn("KMIPKIT-REQ-PROF-5.1.1-001", expected["requirement_ids"])
 
+    def test_all_client_profiles_close_over_the_shared_batch_item_id_condition(self) -> None:
+        """The Profiles §4.1.2 item that says 'for all profiles' belongs to every client closure."""
+        catalog = json.loads((ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8"))
+        oracle = json.loads(
+            (ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json").read_text(
+                encoding="utf-8"
+            )
+        )
+        profiles_html = (
+            ROOT / "specification" / "oasis" / "kmip-2.1" / "upstream" / "kmip-profiles-v2.1-os.html"
+        ).read_text(encoding="cp1252")
+        normalized_profiles_text = " ".join(re.sub(r"<[^>]+>", " ", html.unescape(profiles_html)).split())
+        clause_id = "KMIPKIT-CLAUSE-PROF-4.1.2-007"
+        requirement_id = "KMIPKIT-REQ-PROF-4.1.2-007"
+
+        self.assertIn("For all profiles in each Batch Item of a client request", normalized_profiles_text)
+        self.assertIn("Unique Batch Item ID", normalized_profiles_text)
+        catalog_profiles = {item["profile_id"]: item for item in catalog["profiles"] if item["role"] == "client"}
+        oracle_profiles = {item["profile_id"]: item for item in oracle["profiles"] if item["role"] == "client"}
+        self.assertEqual(set(catalog_profiles), set(oracle_profiles))
+        self.assertEqual(len(catalog_profiles), 18)
+
+        for profile_id in sorted(catalog_profiles):
+            with self.subTest(profile_id=profile_id):
+                profile = catalog_profiles[profile_id]
+                expected = oracle_profiles[profile_id]
+                self.assertIn(clause_id, expected["direct_source_clause_ids"])
+                self.assertIn(clause_id, expected["source_clause_ids"])
+                self.assertIn(requirement_id, expected["requirement_ids"])
+                self.assertIn(clause_id, profile["direct_source_clause_ids"])
+                self.assertIn(clause_id, profile["source_clause_ids"])
+                self.assertIn(requirement_id, profile["requirement_ids"])
+
+                closure = compute_profile_closure(
+                    catalog,
+                    profile["direct_source_clause_ids"],
+                    profile_id=profile_id,
+                )
+                self.assertIn(clause_id, closure.source_clause_ids)
+                self.assertIn(requirement_id, closure.requirement_ids)
+
     def test_baseline_profile_condition_inventory_covers_the_complete_pinned_section(self) -> None:
         """The inclusion oracle accounts for every §5.1.1 condition without inventing REQ IDs."""
         oracle_path = ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json"
