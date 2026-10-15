@@ -89856,9 +89856,9 @@
           "source_order": 1,
           "source_text": "Batch Item Structure, MAY be repeated Yes",
           "source_keyword": "MAY",
-          "actor": "unspecified",
+          "actor": "server",
           "direction": "server_to_client",
-          "condition": "The atom is in the Response Message table, establishing server-to-client message direction without naming a conformance actor.",
+          "condition": "This Response Message field MAY be repeated; in the approved client-initiated 1.0 request/response scope the response is produced by the server. Table 397 itself does not name its sender.",
           "scope_disposition": "server_only",
           "candidate_requirement_id": null
         }
@@ -89866,7 +89866,7 @@
       "rejected_candidate_mappings": [],
       "expected_client_requirement_ids": [],
       "applies_to": "all_client_profiles",
-      "review_note": "The table entry is in the Response Message and has server_to_client message direction. Its normative actor is not named; the atom concerns response output and has no client 1.0 scope."
+      "review_note": "Table 397 is the Response Message Structure and its repeatable Batch Item row is server response output in KMIPKit's client-initiated 1.0 scope. The table does not literally name the sender; this is a context-bound server actor inference. Server-initiated Notify/Put responses are outside the approved 1.0 scope. Assign no client requirement ID."
     },
     {
       "source_id": "KMIPKIT-SRC-spec",
@@ -91962,17 +91962,17 @@
       "source_keywords": [
         "MAY"
       ],
-      "audited_statement": "The Response Message field table marks Batch Item as repeatable, but does not name the endpoint that may repeat it.",
+      "audited_statement": "The Response Message field table marks Batch Item as repeatable. In KMIPKit's client-initiated 1.0 request/response scope this is a server-response capability, while Table 397 does not name its sender.",
       "source_force": "MAY",
-      "actor": "unspecified",
+      "actor": "server",
       "direction": "server_to_client",
-      "condition": "The atom is in the Response Message table, establishing server-to-client message direction without naming a conformance actor.",
+      "condition": "This Response Message field MAY be repeated; in the approved client-initiated 1.0 request/response scope the response is produced by the server. Table 397 itself does not name its sender.",
       "scope_disposition": "server_only",
       "candidate_requirement_id": null,
       "reused_requirement_id": null,
       "proposed_requirement_id": null,
-      "status": "scope_unresolved",
-      "review_note": "The response-table row has server_to_client message direction and therefore server-only 1.0 scope. The normative actor is unspecified, and no client requirement label is assigned or reused."
+      "status": "server_actor_disposition_recorded",
+      "review_note": "Table 397 is the Response Message Structure. Within the approved client-initiated 1.0 request/response scope, this is server response output; Table 397 does not literally name the sender, so the actor is a context-bound inference. Server-initiated Notify/Put responses are outside 1.0. No client requirement is assigned, reused, or proposed."
     },
     {
       "gap_id": "KMIPKIT-SOURCE-GAP-SPEC-9.17-001",

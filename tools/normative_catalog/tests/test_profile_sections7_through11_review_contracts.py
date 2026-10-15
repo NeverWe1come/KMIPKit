@@ -114,7 +114,7 @@ class ProfileSectionsSevenThroughElevenReviewContractTests(unittest.TestCase):
         self.assertEqual(response_review["source_obligations"][0]["scope_disposition"], "server_only")
         self.assertIsNone(response_review["source_obligations"][0]["candidate_requirement_id"])
         self.assertIn("client-initiated 1.0", response_review["review_note"])
-        self.assertIn("does not name its sender", response_review["review_note"])
+        self.assertIn("does not literally name the sender", response_review["review_note"])
 
         error_review = self.reviews["KMIPKIT-CLAUSE-SPEC-9.17-001"]
         error_atoms = error_review["source_obligations"]
