@@ -421,6 +421,18 @@
                   "KMIPKIT-CLAUSE-SPEC-9.18-001"
                 ],
                 "mapping_status": "reviewed"
+              },
+              {
+                "item": "Result Status",
+                "element_id": "KMIPKIT-ELEM-MESSAGE-FIELD-9-19-RESULT-STATUS",
+                "requirement_ids": [
+                  "KMIPKIT-REQ-SPEC-9.19-002"
+                ],
+                "source_clause_ids": [
+                  "KMIPKIT-CLAUSE-SPEC-9.19-001",
+                  "KMIPKIT-CLAUSE-SPEC-9.19-002"
+                ],
+                "mapping_status": "reviewed"
               }
             ],
             "requirement_id": null,
