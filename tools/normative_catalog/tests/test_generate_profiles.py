@@ -673,7 +673,7 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
         self.assertTrue(set(message_extension["requirement_ids"]).isdisjoint(condition["source_review"]["additional_requirement_ids"]))
 
     def test_baseline_attributes_condition_has_exact_reviewed_capability_crosswalk(self) -> None:
-        """Baseline Attributes closes its structural map without creating a parent REQ."""
+        """Pin Profiles v2.1 §5.1.1 item 2 to Specification v2.1 §5.1 Table 157."""
         catalog = json.loads((ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8"))
         oracle = json.loads(
             (ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json")
@@ -763,12 +763,13 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
                 self.assertIn(details["keyword"], source_text)
                 self.assertIn(details["keyword"], review["source_excerpt"])
                 self.assertEqual(review["expected_client_requirement_ids"], [requirement_id])
-                self.assertEqual(review["source_obligations"][0]["candidate_requirement_id"], requirement_id)
-                self.assertEqual(review["source_obligations"][0]["source_keyword"], "MAY")
-                self.assertEqual(review["source_obligations"][0]["scope_disposition"], "client_1_0")
-                self.assertEqual(review["source_obligations"][0]["actor"], "client")
+                source_obligation = review["source_obligations"][0]
+                self.assertEqual(source_obligation["candidate_requirement_id"], requirement_id)
+                self.assertEqual(source_obligation["source_keyword"], "MAY")
+                self.assertEqual(source_obligation["scope_disposition"], "client_1_0")
+                self.assertEqual(source_obligation["actor"], "client")
                 self.assertEqual(
-                    review["source_obligations"][0]["direction"], details["source_direction_phrase"]
+                    source_obligation["direction"], details["source_direction_phrase"]
                 )
 
         repeated_attribute_text = _normalized_html_source_span(spec_lines, [21800, 21820])
