@@ -792,6 +792,16 @@ fn client_get_or_export_key_compression_type_is_enumeration(
     })
 }
 
+fn client_may_include_or_omit_unique_batch_item_id(
+    request: Option<&RequestMessage>,
+    _response: Option<(&RequestMessage, &ResponseMessage)>,
+) -> bool {
+    // Profiles §4.1.2 grants a client choice for a single-item request. This
+    // optional-capability rule must not synthesize or require the identifier;
+    // positive evidence checks that both caller-selected forms remain usable.
+    request.is_some()
+}
+
 fn client_response_preserves_x509_optional_values(
     _request: Option<&RequestMessage>,
     response: Option<(&RequestMessage, &ResponseMessage)>,
@@ -1713,6 +1723,23 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
             test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_client_get_attributes_response_x509_values",
             kind: RuleTestKind::OptionalCapabilityUsable,
         }],
+        constraints: &[],
+    },
+    TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-PROF-4.1.2-007",
+        source_clause_id: "KMIPKIT-CLAUSE-PROF-4.1.2-007",
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
+        evaluator: Some(client_may_include_or_omit_unique_batch_item_id),
+        test_evidence: &[
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_client_single_item_unique_batch_item_id_as_optional_capability",
+                kind: RuleTestKind::OptionalCapabilityUsable,
+            },
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-client/tests/unit/execute_lifecycle_tests.rs::single_item_request_may_include_or_omit_unique_batch_item_id",
+                kind: RuleTestKind::OptionalCapabilityUsable,
+            },
+        ],
         constraints: &[],
     },
     TypedRuleMapping {

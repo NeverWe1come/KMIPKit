@@ -80005,15 +80005,17 @@
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0010",
       "implementation_refs": [
+        "crates/kmipkit-protocol/src/profile.rs",
         "crates/kmipkit-client/src/execute.rs"
       ],
       "verification_refs": [
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_client_single_item_unique_batch_item_id_as_optional_capability",
         "crates/kmipkit-client/tests/unit/execute_lifecycle_tests.rs::single_item_request_may_include_or_omit_unique_batch_item_id"
       ],
       "negative_verification_required": false,
       "decision_id": null,
       "status": "verified",
-      "review_note": "Profiles v2.1 §4.1.2, locator 7, permits a client to include or omit Unique Batch Item ID on a single-item request. The client batch builder and request encoder support both forms; the linked fake-transport wire test asserts both TTLV encodings. No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources."
+      "review_note": "Profiles v2.1 §4.1.2, locator 7, permits a client to include or omit Unique Batch Item ID on a single-item request. The typed optional-capability rule does not synthesize or require the ID. The client batch builder and request encoder support both forms; the profile-unit regression and linked fake-transport wire test exercise both typed model forms and assert both TTLV encodings. No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources."
     },
     {
       "requirement_id": "KMIPKIT-REQ-PROF-4.1.2-008",
