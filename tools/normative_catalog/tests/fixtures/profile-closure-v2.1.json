@@ -81231,10 +81231,10 @@
           "source_order": 3,
           "source_text": "Special authentication and authorization SHOULD be enforced to perform this request (see [KMIP-UG]).",
           "source_keyword": "SHOULD",
-          "actor": "unresolved",
-          "direction": "special authentication and authorization enforcement; actor unspecified",
+          "actor": "server",
+          "direction": "server-side authentication and authorization enforcement (actor inferred from §9.4)",
           "condition": "Special authentication and authorization are enforced to perform this request.",
-          "scope_disposition": "unresolved",
+          "scope_disposition": "server_only",
           "candidate_requirement_id": null
         }
       ],
@@ -81244,7 +81244,7 @@
         "KMIPKIT-REQ-SPEC-6.1.42-001-002"
       ],
       "applies_to": "all_client_profiles",
-      "review_note": "The first two MAY atoms describe client Recover and Get capabilities. The KMIP Usage Guide citation is informative and does not resolve the actor for the special authentication and authorization SHOULD; keep that atom unresolved.",
+      "review_note": "The first two MAY atoms describe client Recover and Get capabilities. Section 6.1.42 does not name the actor for the special authentication and authorization SHOULD, and its KMIP Usage Guide citation is informative. Section 9.4 frames authentication as server policy and says servers MAY require it; with the approved KMIPKIT-0018 server-policy boundary, record this SHOULD as server-only. This is a qualified actor inference, not an explicit actor in §6.1.42, and creates no client requirement or implementation claim.",
       "source_request_rows": [],
       "source_payload_rows": []
     },
@@ -94132,14 +94132,14 @@
       ],
       "source_force": "formal_SHOULD_with_actor_unresolved",
       "audited_statement": "Special authentication and authorization SHOULD be enforced to perform this Recover request; the actor is unspecified by the normative text.",
-      "actor": "unresolved",
-      "direction": "special authentication and authorization enforcement; actor unspecified",
+      "actor": "server",
+      "direction": "server-side authentication and authorization enforcement (actor inferred from §9.4)",
       "condition": "To perform this Recover request.",
-      "scope_disposition": "unresolved",
+      "scope_disposition": "server_only",
       "candidate_requirement_id": null,
       "proposed_requirement_id": null,
-      "status": "actor_and_scope_unresolved",
-      "review_note": "The KMIP Usage Guide citation is informative and does not resolve the actor or scope for this formal SHOULD; preserve both as unresolved."
+      "status": "server_actor_disposition_recorded",
+      "review_note": "Section 6.1.42 does not explicitly name the actor, and its KMIP Usage Guide citation is informative. Section 9.4 frames authentication as server policy and says servers MAY require it; the approved KMIPKIT-0018 boundary leaves authorization policy with the remote server. Record a qualified server-only actor inference. Do not add a client requirement or claim server implementation."
     },
     {
       "gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.45-CERTIFICATE-REQUEST-UID-ONLY",
