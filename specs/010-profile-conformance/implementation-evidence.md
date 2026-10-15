@@ -3229,6 +3229,14 @@ Profiles v2.1 §5.3.1 item 11 is a conditional client duty to act as an HTTPS se
 | Refactor — describe the transport test's later server-initiated HTTPS boundary directly | `d0b1a672`; focused Baseline Message Protocols regression; HTTPS scope tests; `git diff --check` | PASS: all 4 tests pass and the test description matches its scope. |
 | Full scoped verification — rerun generator and HTTPS source-scope suites together | code commit `41883a58`; `py -3 -B -m unittest tools.normative_catalog.tests.test_generate_profiles tools.normative_catalog.tests.test_profile_https_encoding_scope` | PASS: 67 tests, 1 platform-conditioned skip. |
 
+### KMIPKIT-0010 T002 tranche — Operation batch-table extractor hits
+
+The `Operation` placements in Specification §§8.3 and 8.6 are structural table values. The extracted `REQUIRED` keyword belongs to the table's `REQUIRED in Message` header row (locator ordinal 1), and both catalog clauses are `non_applicable` with no requirement IDs. The profile item remains structurally linked to the §9.15 Operation field, while the two table-heading hits must not be represented as normative source clauses in that mapping.
+
+| Stage | DCO-signed commit and command | Result |
+|---|---|---|
+| Red — keep non-applicable §8.3/§8.6 table-heading hits out of the Operation profile crosswalk | `299c8a39`; `py -3 -B -m unittest tools.normative_catalog.tests.test_generate_profiles.ProfileMetadataGeneratorTests.test_baseline_message_data_structures_condition_has_exact_reviewed_batch_crosswalk tools.normative_catalog.tests.test_generate_profiles.ProfileMetadataGeneratorTests.test_baseline_operation_condition_has_exact_reviewed_structural_crosswalk -v` | Expected Red: both tests fail because the independent profile-condition fixture maps `KMIPKIT-CLAUSE-SPEC-8.3-001` and `KMIPKIT-CLAUSE-SPEC-8.6-001` despite their non-applicable heading-only classification. |
+
 ### KMIPKIT-0010 T002 tranche — Profiles §4.1.1 test variation scope
 
 Profiles v2.1 §4.1.1 says an implementation conformant to a Profile MAY vary values, and its list explicitly includes Unique Batch Item ID (HTML lines 4330–4338). That context includes client request values, so the paragraph is not server-only. It remains test-conformance context outside production client runtime behavior and does not create a requirement ID.
