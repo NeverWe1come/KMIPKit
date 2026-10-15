@@ -147,7 +147,65 @@
             ],
             "requirement_id": null,
             "scope_disposition": "profile_conditional",
-            "mapping_status": "pending_t002_crosswalk"
+            "mapping_status": "pending_t002_crosswalk",
+            "supported_item_mappings": [
+              {
+                "item": "Activation Date",
+                "element_id": "KMIPKIT-ELEM-ATTRIBUTE-ACTIVATION-DATE",
+                "requirement_ids": [],
+                "source_clause_ids": [],
+                "mapping_status": "reviewed"
+              },
+              {
+                "item": "Deactivation Date",
+                "element_id": "KMIPKIT-ELEM-ATTRIBUTE-DEACTIVATION-DATE",
+                "requirement_ids": [],
+                "source_clause_ids": [],
+                "mapping_status": "reviewed"
+              },
+              {
+                "item": "Digest",
+                "element_id": "KMIPKIT-ELEM-ATTRIBUTE-DIGEST",
+                "requirement_ids": [],
+                "source_clause_ids": [],
+                "mapping_status": "reviewed"
+              },
+              {
+                "item": "Initial Date",
+                "element_id": "KMIPKIT-ELEM-ATTRIBUTE-INITIAL-DATE",
+                "requirement_ids": [],
+                "source_clause_ids": [],
+                "mapping_status": "reviewed"
+              },
+              {
+                "item": "Last Change Date",
+                "element_id": "KMIPKIT-ELEM-ATTRIBUTE-LAST-CHANGE-DATE",
+                "requirement_ids": [],
+                "source_clause_ids": [],
+                "mapping_status": "reviewed"
+              },
+              {
+                "item": "Object Type",
+                "element_id": "KMIPKIT-ELEM-ATTRIBUTE-OBJECT-TYPE",
+                "requirement_ids": [],
+                "source_clause_ids": [],
+                "mapping_status": "reviewed"
+              },
+              {
+                "item": "State",
+                "element_id": "KMIPKIT-ELEM-ATTRIBUTE-STATE",
+                "requirement_ids": [],
+                "source_clause_ids": [],
+                "mapping_status": "reviewed"
+              },
+              {
+                "item": "Unique Identifier",
+                "element_id": "KMIPKIT-ELEM-ATTRIBUTE-UNIQUE-IDENTIFIER",
+                "requirement_ids": [],
+                "source_clause_ids": [],
+                "mapping_status": "reviewed"
+              }
+            ]
           },
           {
             "condition_id": "KMIPKIT-PROF-COND-5.1.1-004",
