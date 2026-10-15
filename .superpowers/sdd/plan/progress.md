@@ -201,3 +201,7 @@ Task 9: complete (commits 90ff5750..600d8092, review approved with one deferred 
 - TDD commits: Red `61605aa0`, Green `73a97edb`, correction Red `4cfc427e`, correction Green `2b449063`. Focused regressions pass 3/3 after the correction. The full normative suite passes 570 tests / 9 skipped in 314.300 seconds.
 - Catalog validation, generated profile/report checks, source-candidate audit, pinned-source immutability, and `git diff --check` pass. Independent source and QA reviewers found no actionable findings. The Python test harness correction `ffbbca5d` passes 159 tests and the example under the CI Python/Rust setup.
 - Refactor/evidence commit and exact-head CI are pending. The PR remains draft and T002 remains open; no profile-conformance claim.
+
+## T002 Fresh mapping — exact-head CI complete (2026-10-15)
+- Exact-head CI run [38778563479](https://github.com/NeverWe1come/KMIPKit/actions/runs/38778563479) completed on `925b31febe15d2177bb2beffccc6a5f4fb9a839b`: 34 jobs passed, 0 failed, and 3 scheduled-only jobs skipped. This includes the Windows script-contract job that had been running at the prior snapshot.
+- Evidence is recorded in `specs/010-profile-conformance/implementation-evidence.md`. T002 remains open; its crosswalk still needs all-profile coverage, so CI success does not imply completion or conformance. The PR remains a draft.

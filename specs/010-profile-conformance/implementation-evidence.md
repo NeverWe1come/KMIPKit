@@ -3095,3 +3095,7 @@ The pinned Specification v2.1 §4.24 paragraph (HTML lines 14444–14449) permit
 ### KMIPKIT-0010 CI correction — Python fabricated-handle test isolation (2026-10-15)
 
 The Windows Python job's access violation was traced to a test constructing a fabricated CFFI handle before replacing the real library release functions. Commit `ffbbca5d` installs the fake library before constructing handles and verifies exactly-once fake release and cleanup. Independent QA found no actionable findings. Using the CI Python 3.12.14 package setup with the Rust 1.94 toolchain, the Python binding suite passed 159/159 and `bindings/python/examples/vendor_extension_registry.py` completed. Earlier exact-head CI run `38772769961` passed on `bc2b2b7476b3f22780e472920475cde96324fc3c`; CI for the newer local commits remains pending until push.
+
+### KMIPKIT-0010 exact-head CI refresh — Fresh contextual-reuse correction (2026-10-15)
+
+The full pull-request workflow completed successfully for head `925b31febe15d2177bb2beffccc6a5f4fb9a839b`. Exact-head run [38778563479](https://github.com/NeverWe1come/KMIPKit/actions/runs/38778563479) passed with 34 successful jobs, zero failures, and 3 skipped scheduled-only jobs. This run includes the TDD correction that keeps the generic §6.1 attribute MAY as contextual reuse rather than formal §4.24 membership, and the Python fabricated-handle fixture correction. This CI result does not close T002: its all-profile crosswalk remains incomplete and no profile-conformance claim is made.
