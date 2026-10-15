@@ -93501,7 +93501,7 @@
         }
       ],
       "source_keyword": "REQUIRED",
-      "normative_strength": "mandatory",
+      "normative_strength": "permission_or_optional",
       "subject": "structured Locate attribute",
       "summary": "A structured attribute may be specified with only fields needed for the intended match.",
       "role": "client",
@@ -93522,7 +93522,7 @@
       "negative_verification_required": false,
       "decision_id": null,
       "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. The local Locate test verifies that a partial structured Link attribute is accepted and retained in the request criteria; it does not test server matching behavior. No official case-level pass is claimed."
+      "review_note": "The source says all fields of a structured attribute are not REQUIRED to be specified, so the client may provide only selected fields. Preserve REQUIRED as the literal source keyword, but classify the negated client obligation as permission_or_optional. The Link example permits Linked Object Identifier without Link Type; matching behavior belongs to the server and creates no client obligation. No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. The local Locate test verifies that a partial structured Link attribute is accepted and retained in request criteria; it does not test server matching behavior. No official case-level pass is claimed."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.28-008-001",

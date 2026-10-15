@@ -2070,7 +2070,7 @@ class CatalogValidationTests(unittest.TestCase):
                 continue
             self.assertEqual(
                 requirement["normative_strength"],
-                catalog_validate.KEYWORD_STRENGTH[requirement["source_keyword"]],
+                catalog_validate._expected_normative_strength(requirement),
             )
 
     def test_negated_locate_required_clause_accepts_only_reviewed_permission_strength(self) -> None:

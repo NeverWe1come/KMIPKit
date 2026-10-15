@@ -61,10 +61,26 @@ KEYWORD_STRENGTH = {
     "MAY": "permission_or_optional",
     "OPTIONAL": "permission_or_optional",
 }
+SOURCE_REVIEWED_STRENGTH_OVERRIDES: dict[str, tuple[str, str]] = {
+    "KMIPKIT-REQ-SPEC-6.1.28-007": (
+        "KMIPKIT-CLAUSE-SPEC-6.1.28-007",
+        "permission_or_optional",
+    ),
+}
 TABLE_BODY_STRENGTH = {
     "required_table_body_value": "mandatory",
     "optional_table_body_value": "permission_or_optional",
 }
+
+
+def _expected_normative_strength(requirement: dict[str, Any]) -> str | None:
+    """Return keyword strength, honoring exact source-reviewed negation exceptions."""
+    override = SOURCE_REVIEWED_STRENGTH_OVERRIDES.get(requirement.get("requirement_id"))
+    if override is not None and requirement.get("source_clause_ids") == [override[0]]:
+        return override[1]
+    return KEYWORD_STRENGTH.get(requirement.get("source_keyword"))
+
+
 # §6.1's general Data rule conflicts with these multipart request-table rows.
 _SHARED_DATA_RULE_CONFLICT_TABLES = frozenset({235, 259, 334})
 SOURCE_AUTHORITY_RANK = {
@@ -1022,10 +1038,11 @@ def _check_semantics(
         else:
             if not source_clause_ids or any(item not in clauses for item in source_clause_ids):
                 _fail("requirement has missing or unresolved source clause references")
+            expected_strength = _expected_normative_strength(requirement)
             if (
                 not isinstance(keyword, str)
                 or keyword not in KEYWORD_STRENGTH
-                or requirement.get("normative_strength") != KEYWORD_STRENGTH.get(keyword)
+                or requirement.get("normative_strength") != expected_strength
             ):
                 _fail("requirement keyword and normative strength disagree")
             if any(

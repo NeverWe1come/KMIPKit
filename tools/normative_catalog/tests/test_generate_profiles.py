@@ -459,7 +459,10 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
         self.assertEqual(condition["supported_items"], ["Get", "Get Attributes", "Locate", "Query"])
         self.assertIsNone(condition["requirement_id"])
         self.assertEqual(condition["mapping_status"], "pending_t002_crosswalk")
-        self.assertEqual(condition.get("supported_item_mappings"), [expected_mapping])
+        self.assertEqual(
+            [mapping for mapping in condition.get("supported_item_mappings", []) if mapping["item"] == "Query"],
+            [expected_mapping],
+        )
 
         profiles_lines = (ROOT / profiles_path).read_text(encoding="cp1252").splitlines()
         profiles_text = _normalized_html_source_span(profiles_lines, [4563, 4574])

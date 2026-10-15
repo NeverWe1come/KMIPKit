@@ -151,6 +151,50 @@
             ],
             "supported_item_mappings": [
               {
+                "item": "Get",
+                "element_id": "KMIPKIT-ELEM-OP-C2S-GET",
+                "requirement_ids": [
+                  "KMIPKIT-REQ-SPEC-6.1.19-002"
+                ],
+                "source_clause_ids": [
+                  "KMIPKIT-CLAUSE-SPEC-6.1.19-002"
+                ],
+                "mapping_status": "reviewed"
+              },
+              {
+                "item": "Get Attributes",
+                "element_id": "KMIPKIT-ELEM-OP-C2S-GET-ATTRIBUTES",
+                "requirement_ids": [
+                  "KMIPKIT-REQ-SPEC-6.1.20-001-001",
+                  "KMIPKIT-REQ-SPEC-6.1.20-004"
+                ],
+                "source_clause_ids": [
+                  "KMIPKIT-CLAUSE-SPEC-6.1.20-001",
+                  "KMIPKIT-CLAUSE-SPEC-6.1.20-004"
+                ],
+                "mapping_status": "reviewed"
+              },
+              {
+                "item": "Locate",
+                "element_id": "KMIPKIT-ELEM-OP-C2S-LOCATE",
+                "requirement_ids": [
+                  "KMIPKIT-REQ-SPEC-6.1.28-001",
+                  "KMIPKIT-REQ-SPEC-6.1.28-002",
+                  "KMIPKIT-REQ-SPEC-6.1.28-004-001",
+                  "KMIPKIT-REQ-SPEC-6.1.28-007",
+                  "KMIPKIT-REQ-SPEC-6.1.28-013-001",
+                  "KMIPKIT-REQ-SPEC-6.1.28-013-002"
+                ],
+                "source_clause_ids": [
+                  "KMIPKIT-CLAUSE-SPEC-6.1.28-001",
+                  "KMIPKIT-CLAUSE-SPEC-6.1.28-002",
+                  "KMIPKIT-CLAUSE-SPEC-6.1.28-004",
+                  "KMIPKIT-CLAUSE-SPEC-6.1.28-007",
+                  "KMIPKIT-CLAUSE-SPEC-6.1.28-013"
+                ],
+                "mapping_status": "reviewed"
+              },
+              {
                 "item": "Query",
                 "element_id": "KMIPKIT-ELEM-OP-C2S-QUERY",
                 "requirement_ids": [

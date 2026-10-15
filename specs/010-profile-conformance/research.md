@@ -542,3 +542,23 @@ T002 remains unchecked. The independent source-case audit still matches 93/93 Pr
 Profiles v2.1 §5.1.1 item 4, pinned HTML lines 4563–4574, lists Get, Get Attributes, Locate, and Query as Baseline Client operations. Query is now independently crosswalked to client operation element `KMIPKIT-ELEM-OP-C2S-QUERY` and exactly two client request requirements from KMIP Specification v2.1 §6.1.40: `KMIPKIT-REQ-SPEC-6.1.40-014` (`SHALL`, clause `KMIPKIT-CLAUSE-SPEC-6.1.40-014`, paragraph locator 14, pinned HTML lines 31992–31993) and `KMIPKIT-REQ-SPEC-6.1.40-016` (`MAY`, clause `KMIPKIT-CLAUSE-SPEC-6.1.40-016`, table-row locator 16, pinned HTML lines 32025–32042). The independent oracle regression verifies these catalog relationships and source locators and rejects non-client or unrelated requirements.
 
 This maps only the Query item. Requirement `KMIPKIT-REQ-SPEC-6.1.40-016` is a `MAY`/optional capability to repeat Query Function; listing it in the item crosswalk preserves that capability's traceability and category, but does not make repetition mandatory to satisfy Baseline item 4. Get, Get Attributes, and Locate remain unmapped, so the parent `KMIPKIT-PROF-COND-5.1.1-004` stays without a standalone requirement ID and retains `pending_t002_crosswalk`. The local regression is repository evidence, not an official OASIS test case; this partial crosswalk does not establish profile readiness or support any conformance claim. T002 remains open.
+
+
+## Baseline §5.1.1 item 4 — Get, Get Attributes, and Locate crosswalk (2026-10-15)
+
+Profiles v2.1 §5.1.1 item 4, pinned HTML lines 4563–4574, identifies the client-to-server operations Get, Get Attributes, Locate, and Query. The independent source inventory now maps the three previously unmapped items alongside the existing reviewed Query mapping:
+
+| Profiles item | Operation element | Exact client requirements |
+|---|---|---|
+| Get | `KMIPKIT-ELEM-OP-C2S-GET` | `KMIPKIT-REQ-SPEC-6.1.19-002` (`SHALL`, Specification §6.1.19, paragraph 2, lines 27135–27136) |
+| Get Attributes | `KMIPKIT-ELEM-OP-C2S-GET-ATTRIBUTES` | `KMIPKIT-REQ-SPEC-6.1.20-001-001` (`SHALL NOT`, §6.1.20 paragraph 1, lines 27440–27447); `KMIPKIT-REQ-SPEC-6.1.20-004` (`MAY`, §6.1.20 table row 4, lines 27506–27515) |
+| Locate | `KMIPKIT-ELEM-OP-C2S-LOCATE` | `KMIPKIT-REQ-SPEC-6.1.28-001` (`MAY`, paragraph 1, lines 29143–29148); `-002` (`MAY`, paragraph 2, lines 29150–29155); `-004-001` (conditional `REQUIRED`, paragraph 4, lines 29168–29170); `-007` (`REQUIRED` source keyword, paragraph 7, lines 29206–29210); `-013-001` (`REQUIRED`, table row 13, lines 29341–29362); `-013-002` (`MAY`, the same row and lines) |
+| Query | `KMIPKIT-ELEM-OP-C2S-QUERY` | Existing reviewed mapping to `KMIPKIT-REQ-SPEC-6.1.40-014` (`SHALL`) and `KMIPKIT-REQ-SPEC-6.1.40-016` (`MAY`), preserved unchanged |
+
+Each mapping links the item label, client-to-server operation element, and only its reviewed client-side requirement IDs. The Get Attributes response predicates are server-only; Locate response, matching, ID Placeholder, and policy obligations remain excluded. The regression checks each requirement's role, request direction, scope, source keyword and strength, source clause locator, source review excerpt and expected client obligation IDs against the pinned Specification HTML. It separately verifies that the reviewed server-only IDs do not enter these client mappings.
+
+### Locate §6.1.28-007 strength adjudication
+
+The exact source says that when a structured attribute is specified, all structure fields are “not REQUIRED to be specified”; the Link example permits Linked Object Identifier without Link Type (Specification v2.1 §6.1.28 paragraph 7, pinned lines 29206–29210). The word `not` negates a client obligation. It therefore describes client permission to supply a partial criterion, classified as `permission_or_optional`, while the literal `source_keyword: REQUIRED` and stable requirement ID remain unchanged. The example's statement about matching candidate objects irrespective of Link Type describes server-side matching behavior and creates no client obligation to omit fields. No new requirement ID is introduced.
+
+The local Locate request regression checks that a partial structured Link criterion is accepted and preserved; it does not establish server matching behavior or an official OASIS test pass. The condition remains `requirement_id: null` and `pending_t002_crosswalk` in this bounded slice. These item crosswalks are traceability evidence only; T002 remains open and no profile readiness or conformance claim is made.
