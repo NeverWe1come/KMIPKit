@@ -2848,7 +2848,7 @@ The saved JSON report is outside the repository at C:\Users\ramp1953\AppData\Loc
 
 ### KMIPKIT-0010 T002 tranche — Baseline Client §5.1.1 item 5 Operation (2026-10-15)
 
-BASE before this slice: `ab55760a152a5dedf9b45942c6912d1f673fc04f`. The independent oracle adds the eighth source-ordered item-5 mapping, `Operation` → `KMIPKIT-ELEM-MESSAGE-FIELD-9-15-OPERATION`, with no requirement IDs and only the two placement-provenance clauses `KMIPKIT-CLAUSE-SPEC-8.3-001` and `KMIPKIT-CLAUSE-SPEC-8.6-001`. Request and response placement requiredness are pinned separately. Those source-clause extractor hits carry `REQUIRED` from a table header but are `non_applicable` and have no requirement IDs; they do not establish a client obligation. The §11.36 Operation enumeration values and §11.56 tag are verified against pinned source. FR-005 remains a minimum-capability rule, not an operation allowlist. The §11.56 generic-tag and profile-direction inconsistencies remain unresolved/deferred to KMIPKIT-0002 and do not inform this mapping. Six values remain unmapped and the parent condition remains null / `profile_conditional` / `pending_t002_crosswalk`.
+BASE before this slice: `ab55760a152a5dedf9b45942c6912d1f673fc04f`. The independent oracle adds the eighth source-ordered item-5 mapping, `Operation` → `KMIPKIT-ELEM-MESSAGE-FIELD-9-15-OPERATION`, with no direct requirement IDs and only the two placement-provenance clauses `KMIPKIT-CLAUSE-SPEC-8.3-001` and `KMIPKIT-CLAUSE-SPEC-8.6-001`. Request and response placement requiredness are pinned separately. The table-header `REQUIRED` extractor hits do not create separate client requirement IDs; the request field remains required (`Operation / Yes`), and the response placement remains conditional (`Yes, if specified in Request Batch Item`). The §11.36 Operation enumeration values and §11.56 tag are verified against pinned source. FR-005 remains a minimum-capability rule, not an operation allowlist. Generic-tag candidate `KMIPKIT-REQ-SPEC-11.56-001` and the profile-direction mismatch for `KMIPKIT-REQ-PROF-6.1-003` remain unresolved/deferred to KMIPKIT-0002 and do not inform this mapping. Six values remain unmapped and the parent condition remains null / `profile_conditional` / `pending_t002_crosswalk`.
 
 | Stage | DCO-signed commit and command | Result |
 |---|---|---|
@@ -2886,3 +2886,14 @@ The first full normative run exposed one expected test fallout from appending a 
 | `git diff --check` | PASS; exact post-documentation output is recorded in the task report. |
 
 The operation slice changes no catalog ownership, runtime behavior, generated output, or pinned upstream source. It makes no Baseline conformance claim and does not close T002.
+
+### Independent QA wording and traceability correction
+
+Review of Refactor/evidence commit `c3e86ec66a1a0c6e4c562dab74761a48b41863d2` found that “the extractor hits do not establish a client obligation” could be misread as making the request field optional. The corrected evidence distinguishes the table-header extractor hit, which does not create a separate requirement ID, from the §8.3 Request Batch Item row, which explicitly keeps `Operation / Yes`; §8.6 remains `Yes, if specified in Request Batch Item`. The regression now also pins request/response directions and `client_1_0` scope for the placement elements, and `both` / `client_1_0` for the canonical §9.15 field. The stale “seven mappings” test docstring now says eight. Generic tag candidate `KMIPKIT-REQ-SPEC-11.56-001` and profile requirement `KMIPKIT-REQ-PROF-6.1-003` are identified separately as deferred inventory issues.
+
+| Command | Result |
+|---|---|
+| `py -3 -B -m unittest tools.normative_catalog.tests.test_generate_profiles.ProfileMetadataGeneratorTests.test_baseline_message_data_structures_condition_has_exact_reviewed_batch_crosswalk tools.normative_catalog.tests.test_generate_profiles.ProfileMetadataGeneratorTests.test_baseline_message_extension_condition_has_exact_reviewed_client_crosswalk tools.normative_catalog.tests.test_generate_profiles.ProfileMetadataGeneratorTests.test_baseline_operation_condition_has_exact_reviewed_structural_crosswalk -v` | PASS: 3 focused regressions. |
+| `git diff --check` | PASS, exit 0; only Git line-ending normalization notices appeared. |
+
+This QA correction changes documentation and assertions only; no protocol behavior, catalog ownership, generated output, or pinned OASIS source changed. Independent re-review is pending for the corrected commit.
