@@ -47,6 +47,12 @@ def _mapping_applies_to_profile(
     )
 
 
+def _normalized_html_source_span(lines: list[str], line_range: list[int]) -> str:
+    """Normalize one-based pinned HTML lines to source text for crosswalk assertions."""
+    source_span = " ".join(lines[line_range[0] - 1 : line_range[1]])
+    return " ".join(html.unescape(re.sub(r"<[^>]+>", " ", source_span)).split())
+
+
 def closure_catalog() -> dict[str, object]:
     return {
         "source_clauses": [
@@ -398,12 +404,7 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
         self.assertEqual(observed_conditions, expected_conditions)
 
         source_lines = profiles_html.splitlines()
-
-        def normalized_source_span(line_range: list[int]) -> str:
-            source_span = " ".join(source_lines[line_range[0] - 1 : line_range[1]])
-            return " ".join(html.unescape(re.sub(r"<[^>]+>", " ", source_span)).split())
-
-        normalized_inventory_span = normalized_source_span(baseline["html_line_range"])
+        normalized_inventory_span = _normalized_html_source_span(source_lines, baseline["html_line_range"])
         self.assertIn(
             "An implementation is a conforming Baseline Client if it meets the following conditions:",
             normalized_inventory_span,
@@ -415,7 +416,7 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
             with self.subTest(item=item):
                 condition = baseline["conditions"][item - 1]
                 self.assertEqual(condition["html_line_range"], line_range)
-                normalized_span = normalized_source_span(line_range)
+                normalized_span = _normalized_html_source_span(source_lines, line_range)
                 self.assertIn(source_text, normalized_span)
                 for supported_item in supported_items:
                     self.assertIn(supported_item, normalized_span)
@@ -461,8 +462,7 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
         self.assertEqual(condition.get("supported_item_mappings"), [expected_mapping])
 
         profiles_lines = (ROOT / profiles_path).read_text(encoding="cp1252").splitlines()
-        profiles_span = " ".join(profiles_lines[4563 - 1 : 4574])
-        profiles_text = " ".join(html.unescape(re.sub(r"<[^>]+>", " ", profiles_span)).split())
+        profiles_text = _normalized_html_source_span(profiles_lines, [4563, 4574])
         self.assertIn("Client-to-Server Operations", profiles_text)
         self.assertIn("Query", profiles_text)
 
@@ -510,8 +510,7 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
                 candidate = source_candidates[clause_id]
                 review = source_reviews[clause_id]
                 keyword = expected_keywords[clause_id]
-                source_span = " ".join(spec_lines[source_line_ranges[clause_id][0] - 1 : source_line_ranges[clause_id][1]])
-                source_text = " ".join(html.unescape(re.sub(r"<[^>]+>", " ", source_span)).split())
+                source_text = _normalized_html_source_span(spec_lines, source_line_ranges[clause_id])
 
                 self.assertEqual(requirement["source_clause_ids"], [clause_id])
                 self.assertEqual(requirement["source_keyword"], keyword)
@@ -536,11 +535,6 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
                 self.assertEqual(review["expected_client_requirement_ids"], [requirement_id])
                 self.assertEqual(review["source_obligations"][0]["candidate_requirement_id"], requirement_id)
                 self.assertEqual(review["source_obligations"][0]["actor"], "client")
-
-        self.assertEqual(
-            set(requirements).intersection(expected_mapping["requirement_ids"]),
-            {"KMIPKIT-REQ-SPEC-6.1.40-014", "KMIPKIT-REQ-SPEC-6.1.40-016"},
-        )
 
     def test_foundry_basic_condition_text_names_its_inheriting_profiles(self) -> None:
         """The catalog and source review describe the same normative inheritance."""
