@@ -3240,6 +3240,14 @@ The `Operation` placements in Specification §§8.3 and 8.6 are structural table
 | Refactor — clarify that §8.3/§8.6 table placements are structural evidence rather than normative source clauses | `b0bd9ed0`; focused Message Data Structures and Operation crosswalk tests; `git diff --check` | PASS: both tests pass and whitespace check passes. |
 | Full scoped verification — rerun the generator test module | code commit `b0bd9ed0`; `py -3 -B -m unittest tools.normative_catalog.tests.test_generate_profiles` | PASS: 64 tests, 1 platform-conditioned skip. |
 
+### KMIPKIT-0010 T002 tranche — server authentication clause mapping
+
+The Baseline Message Protocols `Authentication` item is linked to client authentication requirements in Profiles §3.1. Specification §10.3 is cataloged as `server_only`, so it is retained in normative inventory/profile closure but is not a client authentication mapping for this supported item.
+
+| Stage | DCO-signed commit and command | Result |
+|---|---|---|
+| Red — exclude server-only Specification §10.3 from the Baseline client Authentication mapping | `0c54f9c5`; `py -3 -B -m unittest tools.normative_catalog.tests.test_generate_profiles.ProfileMetadataGeneratorTests.test_baseline_message_protocols_crosswalk_keeps_unresolved_and_server_duties_out -v` | Expected Red: one assertion failure because the fixture includes `KMIPKIT-CLAUSE-SPEC-10.3-001` in the Authentication mapping despite its catalog `server_only` disposition. |
+
 ### KMIPKIT-0010 T002 tranche — Profiles §4.1.1 test variation scope
 
 Profiles v2.1 §4.1.1 says an implementation conformant to a Profile MAY vary values, and its list explicitly includes Unique Batch Item ID (HTML lines 4330–4338). That context includes client request values, so the paragraph is not server-only. It remains test-conformance context outside production client runtime behavior and does not create a requirement ID.
