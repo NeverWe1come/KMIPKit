@@ -3375,3 +3375,13 @@ Profiles v2.1 §5.1.1 item 6 (pinned HTML lines 4614–4627) lists Authenticatio
 | Green — validate the catalog and generated artifacts | `8452a085`; `py -3 -B tools/normative_catalog/validate.py --repo-root .`; `py -3 -B tools/normative_catalog/generate_profiles.py --repo-root . --check`; `py -3 -B tools/normative_catalog/report.py --repo-root . --check` | PASS: catalog valid (4 sources, 1,411 clauses, 4,117 records); generated profile metadata and coverage report current. |
 | Green — verify pinned OASIS source immutability | `8452a085`; `py -3 -B -m tools.normative_catalog.check_immutable_sources --repo-root . --base-sha 550a864840c727afa2bdf20b5a5e25aa3e2b9dff` | PASS: pinned OASIS upstream sources match base `550a864840c727afa2bdf20b5a5e25aa3e2b9dff`. |
 | Refactor/evidence — update the current item-6 research conclusion and T002 progress note; preserve earlier dated snapshots | This DCO-signed Refactor/evidence commit; `git diff --check` | PASS: the current record says `reviewed` only for the structural crosswalk; source limitations and no-claim gates remain explicit; `git diff --check` exits 0. No generated output, production behavior, project catalog, or pinned OASIS source changed. |
+
+### QA correction — reconcile current Baseline T002 status summary (2026-10-16)
+
+After item 6's structural status review, a current inventory summary and the latest item-5 conclusion still described item 6 as pending. A documentation regression was added before correcting those summaries. Dated intermediate crosswalk records remain as historical evidence.
+
+| Stage | DCO-signed commit and exact command | Result |
+|---|---|---|
+| Red — pin the current summary's reviewed item statuses and structural-only limit | `d08bce1c`; `py -3 -B -m unittest tools.normative_catalog.tests.test_generate_profiles.ProfileMetadataGeneratorTests.test_current_baseline_condition_summary_matches_reviewed_structural_crosswalks -v` | Expected Red: the summary says items 1–5 and 7–8 are reviewed and item 6 remains pending; it does not identify the now-reviewed item-6 structural crosswalk. |
+| Green — reconcile the current summary and latest item-5 status note | `5f327382`; the same focused command; `py -3 -B -m unittest tools.normative_catalog.tests.test_generate_profiles` | PASS: focused summary regression 1/1; generator module 65 passed / 1 skipped due to Windows symlink permissions. |
+| Refactor/evidence — record the QA correction | This DCO-signed Refactor/evidence commit; `git diff --check` | PASS: the current summary reports items 1–8 as reviewed at their documented scope, identifies items 5 and 6 as structural-only, and keeps semantic coverage and T002 open. No OASIS, catalog, generated output, or runtime behavior changed. |
