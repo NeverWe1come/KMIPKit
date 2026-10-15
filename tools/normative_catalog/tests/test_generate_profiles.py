@@ -1039,7 +1039,7 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
         self.assertIn("Linked Object Identifier value is specified without the Link Type value", locate_007_source)
 
     def test_baseline_message_data_structures_condition_has_exact_reviewed_batch_crosswalk(self) -> None:
-        """The two reviewed batch fields map in source order while item 5 stays pending."""
+        """The three reviewed batch mappings stay bounded while item 5 remains pending."""
         catalog = json.loads((ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8"))
         oracle = json.loads(
             (ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json")
@@ -1082,7 +1082,16 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
             "source_clause_ids": [expected_error_clause_id],
             "mapping_status": "reviewed",
         }
-        expected_mappings = [expected_mapping, expected_error_mapping]
+        expected_batch_item_clause_id = "KMIPKIT-CLAUSE-SPEC-9.7-001"
+        expected_batch_item_element_id = "KMIPKIT-ELEM-MESSAGE-FIELD-9-7-BATCH-ITEM"
+        expected_batch_item_mapping = {
+            "item": "Batch Item",
+            "element_id": expected_batch_item_element_id,
+            "requirement_ids": [],
+            "source_clause_ids": [expected_batch_item_clause_id],
+            "mapping_status": "reviewed",
+        }
+        expected_mappings = [expected_mapping, expected_error_mapping, expected_batch_item_mapping]
 
         self.assertEqual(condition["item"], 5)
         self.assertEqual(condition["html_line_range"], [4575, 4613])
@@ -1110,13 +1119,12 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
         self.assertEqual(condition.get("supported_item_mappings"), expected_mappings)
         self.assertEqual(
             [mapping["item"] for mapping in condition["supported_item_mappings"]],
-            ["Batch Count", "Batch Error Continuation Option"],
+            ["Batch Count", "Batch Error Continuation Option", "Batch Item"],
         )
         self.assertEqual(
             set(condition["supported_items"]) - {mapping["item"] for mapping in condition["supported_item_mappings"]},
             {
                 "Asynchronous Indicator",
-                "Batch Item",
                 "Batch Order Option",
                 "Maximum Response Size",
                 "Message Extension",
@@ -1132,6 +1140,38 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
         self.assertIsNone(condition["requirement_id"])
         self.assertEqual(condition["scope_disposition"], "profile_conditional")
         self.assertEqual(condition["mapping_status"], "pending_t002_crosswalk")
+
+        batch_item_element = next(
+            item for item in catalog["elements"] if item["element_id"] == expected_batch_item_element_id
+        )
+        self.assertEqual(batch_item_element["kind"], "message_field")
+        self.assertEqual(batch_item_element["name"], "Batch Item")
+        self.assertEqual(
+            batch_item_element["source_refs"], [{"source_id": "KMIPKIT-SRC-spec", "section": "9.7"}]
+        )
+        self.assertEqual(batch_item_element["direction"], "both")
+        self.assertEqual(batch_item_element["scope_state"], "client_1_0")
+        self.assertEqual(batch_item_element["requirement_ids"], [])
+
+        batch_item_clause = next(
+            item for item in catalog["source_clauses"] if item["clause_id"] == expected_batch_item_clause_id
+        )
+        self.assertEqual(batch_item_clause["source_keywords"], ["REQUIRED"])
+        self.assertEqual(batch_item_clause["role"], "unclear")
+        self.assertEqual(batch_item_clause["direction"], "unclear")
+        self.assertEqual(batch_item_clause["scope_state"], "unclear")
+        self.assertEqual(batch_item_clause["requirement_ids"], ["KMIPKIT-REQ-SPEC-9.7-001"])
+
+        batch_item_review = next(
+            item
+            for item in oracle["source_requirement_reviews"]
+            if item["source_clause_id"] == expected_batch_item_clause_id
+        )
+        self.assertEqual(batch_item_review["html_line_range"], [43819, 43821])
+        self.assertEqual(batch_item_review["expected_client_requirement_ids"], [])
+        self.assertEqual(batch_item_review["source_obligations"][0]["actor"], "unspecified")
+        self.assertEqual(batch_item_review["source_obligations"][0]["direction"], "unspecified")
+        self.assertEqual(batch_item_review["source_obligations"][0]["scope_disposition"], "unresolved")
 
         profiles_lines = (ROOT / profiles_path).read_text(encoding="cp1252").splitlines()
         self.assertEqual(
@@ -1241,6 +1281,7 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
             _normalized_html_source_span(profiles_lines, [4583, 4585]),
             "Batch Error Continuation Option",
         )
+        self.assertEqual(_normalized_html_source_span(profiles_lines, [4586, 4587]), "Batch Item")
         error_html_span = (
             "This option SHALL only be present if the Batch Count is greater than 1. This option SHALL have "
             "one of three values ( Undo , Stop or Continue). If not specified, then Stop is assumed."
