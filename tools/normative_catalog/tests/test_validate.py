@@ -10800,7 +10800,15 @@ class CatalogValidationTests(unittest.TestCase):
         )
         self.assertEqual(
             gaps["KMIPKIT-SOURCE-GAP-SPEC-4.24-CLIENT-FRESH-INPUT-EXCEPTION"]["scope_disposition"],
-            "unresolved",
+            "client_1_0",
+        )
+        self.assertEqual(
+            gaps["KMIPKIT-SOURCE-GAP-SPEC-4.24-CLIENT-FRESH-INPUT-EXCEPTION"]["candidate_requirement_id"],
+            "KMIPKIT-REQ-SPEC-6.1-004",
+        )
+        self.assertEqual(
+            gaps["KMIPKIT-SOURCE-GAP-SPEC-4.24-CLIENT-FRESH-INPUT-EXCEPTION"]["reused_requirement_id"],
+            "KMIPKIT-REQ-SPEC-6.1-004",
         )
         self.assertEqual(
             gaps["KMIPKIT-SOURCE-GAP-SPEC-4.21-CLIENT-LOWERCASE-MAY"]["candidate_requirement_id"],

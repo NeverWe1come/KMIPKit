@@ -105,6 +105,46 @@ class SourceGapAdjudicationTests(unittest.TestCase):
         self.assertTrue(all(requirement_id in row["requirement_ids"] for row in catalog_profiles))
         self.assertTrue(all(requirement_id in row["requirement_ids"] for row in oracle_profiles))
 
+    def test_section_4_24_fresh_initial_input_reuses_generic_attribute_may(self) -> None:
+        catalog = _load_json(CATALOG_PATH)
+        oracle = _load_json(ORACLE_PATH)
+        gaps = {row["gap_id"]: row for row in oracle["source_only_requirement_gaps"]}
+        reviews = {row["source_clause_id"]: row for row in oracle["source_requirement_reviews"]}
+        requirements = {row["requirement_id"]: row for row in catalog["requirements"]}
+        gap_id = "KMIPKIT-SOURCE-GAP-SPEC-4.24-CLIENT-FRESH-INPUT-EXCEPTION"
+        requirement_id = "KMIPKIT-REQ-SPEC-6.1-004"
+        gap = gaps[gap_id]
+        review = reviews["KMIPKIT-CLAUSE-SPEC-4.24-001"]
+        client_atom = review["source_obligations"][1]
+        requirement = requirements[requirement_id]
+
+        self.assertEqual(gap["html_line_range"], [14444, 14449])
+        self.assertEqual(gap["source_force"], "client_input_exception_without_formal_modal")
+        self.assertEqual(gap["source_keywords"], ["SHALL"])
+        self.assertEqual(gap["actor"], "client")
+        self.assertEqual(gap["direction"], "Register or Import request supplies Fresh=False")
+        self.assertEqual(gap["condition"], "new object creation through Register or Import")
+        self.assertEqual(gap["scope_disposition"], "client_1_0")
+        self.assertEqual(gap["candidate_requirement_id"], requirement_id)
+        self.assertEqual(gap["reused_requirement_id"], requirement_id)
+        self.assertIsNone(gap["proposed_requirement_id"])
+        self.assertEqual(gap["status"], "source_obligation_covered_by_existing_stable_label")
+        self.assertEqual(review["expected_client_requirement_ids"], [])
+        self.assertEqual(client_atom["source_order"], 2)
+        self.assertEqual(client_atom["actor"], "client")
+        self.assertEqual(client_atom["source_keyword"], "client exception to server SHALL")
+        self.assertEqual(client_atom["scope_disposition"], "client_1_0")
+        self.assertIsNone(client_atom["candidate_requirement_id"])
+        self.assertEqual(client_atom["source_gap_id"], gap_id)
+        self.assertEqual(requirement["source_keyword"], "MAY")
+        self.assertEqual(requirement["source_clause_ids"], ["KMIPKIT-CLAUSE-SPEC-6.1-004"])
+        self.assertEqual(requirement["role"], "client")
+        self.assertEqual(requirement["direction"], "client_to_server")
+        self.assertEqual(requirement["scope_state"], "client_1_0")
+        self.assertIn("Create-only", requirement["review_note"])
+        self.assertIn("Table 76", gap["review_note"])
+        self.assertIn("initial", gap["review_note"].lower())
+
     def test_section_4_31_absent_link_may_is_a_client_capability_without_implementation_evidence(self) -> None:
         catalog = _load_json(CATALOG_PATH)
         oracle = _load_json(ORACLE_PATH)
