@@ -596,13 +596,23 @@ Every mapping has `requirement_ids: []`, `source_clause_ids: []`, and `mapping_s
 
 The regression binds the mapping list to the exact pinned Profiles span and checks each element's name, §4 and §11.56 source references, direction, scope, encoding, and parent tag record. Exact ordered-list equality rejects missing, extra, duplicate, reordered, or fabricated mappings and any requirement or clause IDs. The parent condition `KMIPKIT-PROF-COND-5.1.1-003` remains `requirement_id: null` / `pending_t002_crosswalk`. No official case link, profile readiness, or conformance claim is implied.
 
-### Baseline Client §5.1.1 item 5 — Batch Count crosswalk (2026-10-15)
+### Baseline Client §5.1.1 item 5 — Batch Count and Batch Error Continuation Option crosswalk (2026-10-15)
 
-Profiles v2.1 §5.1.1 item 5, pinned HTML lines 4575–4613, lists 14 Message Data Structures; the `Batch Count` list item appears at line 4582. This tranche maps only `Batch Count` to `KMIPKIT-ELEM-MESSAGE-FIELD-9-5-BATCH-COUNT`. Specification v2.1 §9.5, clause `KMIPKIT-CLAUSE-SPEC-9.5-001`, is the paragraph at pinned lines 43728–43731. Its source review assigns two client-to-server, `client_1_0` obligations to the Batch Count element:
+Profiles v2.1 §5.1.1 item 5, pinned HTML lines 4575–4613, lists 14 Message Data Structures. `Batch Count` is the first mapped item at pinned line 4582; `Batch Error Continuation Option` follows it at lines 4584–4585. The crosswalk maps these two rows, in source order, to `KMIPKIT-ELEM-MESSAGE-FIELD-9-5-BATCH-COUNT` and `KMIPKIT-ELEM-MESSAGE-FIELD-9-6-BATCH-ERROR-CONTINUATION-OPTION`. Specification v2.1 §9.5, clause `KMIPKIT-CLAUSE-SPEC-9.5-001`, is the paragraph at pinned lines 43728–43731. Its source review assigns two client-to-server, `client_1_0` obligations to the Batch Count element:
 
 | Requirement | Source keyword | Client rule |
 |---|---|---|
 | `KMIPKIT-REQ-SPEC-9.5-001-001` | `REQUIRED` | Set Batch Count to the number of Batch Items in the message. |
 | `KMIPKIT-REQ-SPEC-9.5-001-002` | `SHALL` | Set Batch Count to one for a single requested operation. |
 
-The remaining 13 item-5 values stay unmapped for later source-reviewed slices. The parent condition `KMIPKIT-PROF-COND-5.1.1-005` remains `requirement_id: null` and `mapping_status: pending_t002_crosswalk`; this one-item mapping does not close it. The local regression is not an official OASIS test case and establishes no profile readiness or conformance claim. T002 remains open.
+Specification v2.1 §9.6, clause `KMIPKIT-CLAUSE-SPEC-9.6-001`, is the paragraph at pinned lines 43773–43775. The source review assigns three client-to-server, `client_1_0` requirements to the Batch Error Continuation Option element:
+
+| Requirement | Source keyword | Client rule |
+|---|---|---|
+| `KMIPKIT-REQ-SPEC-9.6-001-001` | `SHALL` | Include the option only when Batch Count is greater than one. |
+| `KMIPKIT-REQ-SPEC-9.6-001-002` | `SHALL` | Use Undo, Stop, or Continue as the option value. |
+| `KMIPKIT-REQ-SPEC-9.6-001-003` | `SHALL` | If omitted, the option defaults to Stop. |
+
+The third source anchor includes the preceding SHALL value constraint and the following “Stop is assumed” statement. The default phrase has no independent uppercase modal. The separate `KMIPKIT-REQ-SPEC-6.1.7-002-002` SHOULD is specific to a batch containing Check and is not linked to this general item-5 field mapping.
+
+The remaining 12 item-5 values stay unmapped for later source-reviewed slices. The parent condition `KMIPKIT-PROF-COND-5.1.1-005` remains `requirement_id: null` and `mapping_status: pending_t002_crosswalk`; the two-row crosswalk does not close it. The local regression is not an official OASIS test case and establishes no profile readiness or conformance claim. T002 remains open.
