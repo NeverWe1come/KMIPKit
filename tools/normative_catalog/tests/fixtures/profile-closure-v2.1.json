@@ -25303,9 +25303,9 @@
       "role": "client",
       "scope_state": "client_1_0",
       "applies_to": "all_client_profiles",
-      "review_note": "For Device Credential, supplied identifier field values are unique; Spec v2.1 §9.11 lines 44184–44189.",
+      "review_note": "The source does not name an actor for the Device identifier uniqueness SHALL. KMIPKIT-0008 assigns caller responsibility for uniqueness while preserving the source ambiguity; the client role is the approved requirement-scope mapping, not a source-named actor. Spec v2.1 §9.11 lines 44184–44189.",
       "source_obligation_order": 1,
-      "source_actor": "client"
+      "source_actor": "unspecified"
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-9.11-004-003",
@@ -25371,9 +25371,9 @@
       "role": "client",
       "scope_state": "client_1_0",
       "applies_to": "all_client_profiles",
-      "review_note": "For Hashed Password Credential, timestamp used to produce the hash monotonically increases; Spec v2.1 §9.11 lines 44598–44602.",
+      "review_note": "The source does not name an actor for timestamp monotonicity. KMIPKIT-0008 assigns a caller-supplied timestamp model but leaves state owner, comparison scope, and clock behavior unresolved in OD-003; the client role is the approved requirement-scope mapping, not a source-named actor. Spec v2.1 §9.11 lines 44598–44602.",
       "source_obligation_order": 1,
-      "source_actor": "client"
+      "source_actor": "unspecified"
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-9.11-010-002",
@@ -25388,9 +25388,9 @@
       "role": "client",
       "scope_state": "client_1_0",
       "applies_to": "all_client_profiles",
-      "review_note": "For Hashed Password Credential, Hashing Algorithm defaults to SHA 256; Spec v2.1 §9.11 lines 44600–44602.",
+      "review_note": "The source does not name an actor for the Hashing Algorithm default. KMIPKIT-0008 preserves omission with SHA-256 as the effective default; the client role is the approved requirement-scope mapping, not a source-named actor. Spec v2.1 §9.11 lines 44600–44602.",
       "source_obligation_order": 2,
-      "source_actor": "client"
+      "source_actor": "unspecified"
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-9.12-001-001",
@@ -90164,7 +90164,7 @@
           "source_order": 1,
           "source_text": "One or a combination of the Device Serial Number, Network Identifier, Machine Identifier, and Media Identifier SHALL be unique.",
           "source_keyword": "SHALL",
-          "actor": "client",
+          "actor": "unspecified",
           "direction": "provide unique supplied device identifier field values",
           "condition": "Credential Type is Device",
           "scope_disposition": "client_1_0",
@@ -90195,7 +90195,7 @@
           "source_text": "The client SHALL provide at least one field.",
           "source_keyword": "SHALL",
           "actor": "client",
-          "direction": "provide at least one Device identifier field",
+          "direction": "client provides at least one Device Credential field",
           "condition": "Credential Type is Device",
           "scope_disposition": "client_1_0",
           "candidate_requirement_id": "KMIPKIT-REQ-SPEC-9.11-004-001"
@@ -90208,7 +90208,7 @@
         "KMIPKIT-REQ-SPEC-9.11-004-003"
       ],
       "applies_to": "all_client_profiles",
-      "review_note": "Candidate labels are mapped by reviewed source predicate, not suffix order; the server MAY is a separate server-only atom with no client requirement label."
+      "review_note": "Candidate labels are mapped by reviewed source predicate, not suffix order. The source assigns the minimum-field SHALL to the client but does not name an actor for the identifier uniqueness SHALL; its comparison scope is unspecified. The approved KMIPKIT-0008 typed-model interpretation requires at least one of the four identifier fields so the caller can meet the uniqueness rule; KMIPKIT-DISC-042 preserves the source ambiguity between all six fields and the four named identifiers. The caller remains responsible for actual uniqueness, which KMIPKit does not verify. The client requirement role is a project scope mapping, not a source-named actor. The server MAY to enforce per-field policies is a separate server-only atom with no client requirement label."
     },
     {
       "source_id": "KMIPKIT-SRC-spec",
@@ -90255,13 +90255,13 @@
         44598,
         44602
       ],
-      "source_excerpt": "If the Credential Type in the Credential is Hashed Password, then Credential Value is a structure. The Username field identifies the client. The timestamp is the current timestamp used to produce the hash and SHALL monotonically increase. The Hashing Algorithm SHALL default to SHA 256.",
+      "source_excerpt": "If the Credential Type in the Credential is Hashed Password, then Credential Value is a structure. The Username field identifies the client. The timestamp is the current timestamp used to produce the hash and SHALL monotonically increase. The Hashing Algorithm SHALL default to SHA 256. The Hashed Password is define as",
       "source_obligations": [
         {
           "source_order": 1,
           "source_text": "The timestamp is the current timestamp used to produce the hash and SHALL monotonically increase.",
           "source_keyword": "SHALL",
-          "actor": "client",
+          "actor": "unspecified",
           "direction": "use monotonically increasing hashed-password timestamps",
           "condition": "Credential Type is Hashed Password",
           "scope_disposition": "client_1_0",
@@ -90271,7 +90271,7 @@
           "source_order": 2,
           "source_text": "The Hashing Algorithm SHALL default to SHA 256.",
           "source_keyword": "SHALL",
-          "actor": "client",
+          "actor": "unspecified",
           "direction": "default Hashing Algorithm to SHA-256",
           "condition": "Credential Type is Hashed Password",
           "scope_disposition": "client_1_0",
@@ -90283,7 +90283,8 @@
         "KMIPKIT-REQ-SPEC-9.11-010-001",
         "KMIPKIT-REQ-SPEC-9.11-010-002"
       ],
-      "applies_to": "all_client_profiles"
+      "applies_to": "all_client_profiles",
+      "review_note": "The source does not name an actor for either Hashed Password SHALL. The approved KMIPKIT-0008 caller-supplied timestamp model provides the client-side interpretation; the client requirement role is a project scope mapping. The source does not define the monotonic comparison scope, state owner, or clock behavior; OD-003 remains unresolved, and KMIPKit does not claim local monotonicity enforcement. Table 415 marks Hashing Algorithm optional; KMIPKIT-0008 preserves field absence and uses SHA-256 as its effective default when the field is omitted."
     },
     {
       "source_id": "KMIPKIT-SRC-spec",

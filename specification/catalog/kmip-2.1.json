@@ -27488,7 +27488,7 @@
       "role": "client",
       "direction": "client_to_server",
       "scope_state": "client_1_0",
-      "condition": null
+      "condition": "When Credential Type is Hashed Password."
     },
     {
       "clause_id": "KMIPKIT-CLAUSE-SPEC-9.11-011",
