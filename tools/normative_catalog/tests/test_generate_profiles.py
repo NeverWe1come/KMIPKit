@@ -3095,7 +3095,7 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
         )
 
     def test_baseline_message_protocols_crosswalk_keeps_unresolved_and_server_duties_out(self) -> None:
-        """Baseline Message Protocols links reviewed client duties without inventing protocol elements."""
+        """Baseline Transport excludes the later server-initiated HTTPS duty."""
         catalog = json.loads((ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8"))
         oracle = json.loads(
             (ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json")
