@@ -165,7 +165,7 @@ class ProfileSectionSixCrosswalkTests(unittest.TestCase):
                     self.assertIn("does not name endpoints", review["review_note"])
                     self.assertIn("eligibility interpretation", review["review_note"])
 
-    def test_foundry_source_reference_defects_remain_unresolved_and_unlabelled(self) -> None:
+    def test_foundry_source_reference_defects_keep_literal_conditional_scope_and_no_label(self) -> None:
         fixture = _load_json("tools/normative_catalog/tests/fixtures/profile-closure-v2.1.json")
         expected = {
             "KMIPKIT-SOURCE-GAP-PROF-6.13-10848": (
@@ -193,7 +193,8 @@ class ProfileSectionSixCrosswalkTests(unittest.TestCase):
                 self.assertEqual(gap["source_id"], SOURCE_ID)
                 self.assertEqual(gap["source_section"], section)
                 self.assertEqual(gap["html_line_range"], line_range)
-                self.assertEqual(gap["scope_disposition"], "unresolved")
+                self.assertEqual(gap["actor"], "client")
+                self.assertEqual(gap["scope_disposition"], "profile_conditional")
                 self.assertIsNone(gap["source_clause_id"])
                 self.assertIsNone(gap["candidate_requirement_id"])
                 self.assertIsNone(gap["proposed_requirement_id"])

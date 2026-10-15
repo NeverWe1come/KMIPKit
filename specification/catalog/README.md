@@ -35,11 +35,21 @@ section value includes that section and its dot-delimited subclauses. The
 validator rejects unresolved or duplicate edges, cycles, and stored profile
 closures that differ from their roots and inclusions. Informative references
 are not represented as normative inclusion edges. Baseline Client §6.1 item 1
-includes the whole KMIP Specification v2.1 source, and item 2 includes Profiles
-§3.1. \`profile-targets.json\` selects the product target independently; the
-generated report shows this beside \`claim_state\`. Those catalog links and
+includes the whole KMIP Specification v2.1 source, item 2 includes Profiles
+§3.1, and item 3 includes Profiles §5.1.1. \`profile-targets.json\` selects the
+product target independently; the generated report shows this beside
+\`claim_state\`. Those catalog links and
 target membership do not imply that the profile is runtime-eligible or that
 conformance has been established.
+
+The clause ledger records keyword-bearing candidate units. Some profile
+sections also contain non-modal conformance conditions and enumerated values;
+the independent profile-closure oracle records these in
+`provenance.profile_condition_inventories` with source locators, the governing
+profile requirement, and explicit mapping status. They do not acquire separate
+RFC-style requirement IDs by inference. A pending condition mapping blocks a
+complete profile conformance claim even when the keyword-clause closure is
+current.
 
 `coverage-report.md` is generated from the reviewed catalog by
 `tools/normative_catalog/report.py`. Do not edit the report manually. Empty

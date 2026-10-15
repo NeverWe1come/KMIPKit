@@ -16,7 +16,7 @@
         "audited_source_clause_count": 534
       }
     ],
-    "derivation": "Clause locators and keywords are cross-checked against only the exact pinned normative HTML files. The catalog is permitted as a candidate registry for project-assigned requirement labels at a locator, but no profile roots, profile IDs, requirement closure arrays, or target arrays are used as expected data. For every reviewed source locator, expected membership follows the manually audited source obligation, keyword, actor/direction, condition, and client-scope disposition; candidate labels that do not match a source obligation are recorded as rejected, and missing source obligations receive explicit labels only under the documented project-ID convention. All source dispositions and profile requirement closures are complete; the accepted direct requirement crosswalk remains partial. The fixture includes a detailed source review of Specification §9.8 paragraph 1 as a concrete false-client-requirement regression. Official test IDs and hrefs come from pinned Profiles headings and links. The visible heading is canonical; XML href and anchor display are separate provenance fields.",
+    "derivation": "Clause locators and keywords are cross-checked against only the exact pinned normative HTML files. The catalog is permitted as a candidate registry for project-assigned requirement labels at a locator, but no profile roots, profile IDs, requirement closure arrays, or target arrays are used as expected data. For every reviewed source locator, expected membership follows the manually audited source obligation, keyword, actor/direction, condition, and client-scope disposition; candidate labels that do not match a source obligation are recorded as rejected, and missing source obligations receive explicit labels only under the documented project-ID convention. Keyword-candidate source dispositions and computed clause closures are complete; the accepted direct requirement crosswalk remains partial. Supplemental profile-condition inventories separately retain non-modal profile conditions and expose any pending mappings. The fixture includes a detailed source review of Specification §9.8 paragraph 1 as a concrete false-client-requirement regression. Official test IDs and hrefs come from pinned Profiles headings and links. The visible heading is canonical; XML href and anchor display are separate provenance fields.",
     "direct_section_mapping": "Profiles v2.1 §§5.x and 6.1-6.35. HTTPS direct sections are §§3.2, 5.3.1, 6.1, and 6.4. It inherits §3.1 through its Baseline dependency and Profiles §6.1 item 2.",
     "inclusion_edges": [
       {
@@ -41,6 +41,13 @@
         "source_locator": "Profiles v2.1 §6.1 item 2"
       },
       {
+        "inclusion_id": "KMIPKIT-INCLUSION-PROF-BASELINE-CONDITIONS",
+        "source_clause_id": "KMIPKIT-CLAUSE-PROF-6.1-003",
+        "included_source_id": "KMIPKIT-SRC-profiles",
+        "included_section": "5.1.1",
+        "source_locator": "Profiles v2.1 §6.1 item 3"
+      },
+      {
         "inclusion_id": "KMIPKIT-INCLUSION-PROF-BASELINE-SPEC",
         "source_clause_id": "KMIPKIT-CLAUSE-PROF-6.1-001",
         "included_source_id": "KMIPKIT-SRC-spec",
@@ -62,9 +69,172 @@
         "source_locator": "Profiles v2.1 §6.28 item 6"
       }
     ],
+    "profile_condition_inventories": [
+      {
+        "source_id": "KMIPKIT-SRC-profiles",
+        "source_path": "specification/oasis/kmip-2.1/upstream/kmip-profiles-v2.1-os.html",
+        "section": "5.1.1",
+        "html_line_range": [
+          4532,
+          4636
+        ],
+        "inclusion_id": "KMIPKIT-INCLUSION-PROF-BASELINE-CONDITIONS",
+        "governing_requirement_id": "KMIPKIT-REQ-PROF-6.1-003",
+        "conditions": [
+          {
+            "condition_id": "KMIPKIT-PROF-COND-5.1.1-001",
+            "item": 1,
+            "html_line_range": [
+              4533,
+              4534
+            ],
+            "condition_kind": "mandatory_profile_condition",
+            "source_text": "Supports the conditions required by the KMIP Client Implementation Conformance clauses [KMIP-SPEC]",
+            "supported_items": [],
+            "requirement_id": null,
+            "scope_disposition": "profile_conditional",
+            "mapping_status": "pending_t002_crosswalk"
+          },
+          {
+            "condition_id": "KMIPKIT-PROF-COND-5.1.1-002",
+            "item": 2,
+            "html_line_range": [
+              4535,
+              4540
+            ],
+            "condition_kind": "mandatory_profile_condition",
+            "source_text": "Supports the following Attribute Data Structures [KMIP-SPEC]",
+            "supported_items": [
+              "Attributes"
+            ],
+            "requirement_id": null,
+            "scope_disposition": "profile_conditional",
+            "mapping_status": "pending_t002_crosswalk"
+          },
+          {
+            "condition_id": "KMIPKIT-PROF-COND-5.1.1-003",
+            "item": 3,
+            "html_line_range": [
+              4541,
+              4562
+            ],
+            "condition_kind": "mandatory_profile_condition",
+            "source_text": "Supports the following Object Attributes [KMIP-SPEC]",
+            "supported_items": [
+              "Activation Date",
+              "Deactivation Date",
+              "Digest",
+              "Initial Date",
+              "Last Change Date",
+              "Object Type",
+              "State",
+              "Unique Identifier"
+            ],
+            "requirement_id": null,
+            "scope_disposition": "profile_conditional",
+            "mapping_status": "pending_t002_crosswalk"
+          },
+          {
+            "condition_id": "KMIPKIT-PROF-COND-5.1.1-004",
+            "item": 4,
+            "html_line_range": [
+              4563,
+              4574
+            ],
+            "condition_kind": "mandatory_profile_condition",
+            "source_text": "Supports the following Client-to-Server Operations [KMIP-SPEC]",
+            "supported_items": [
+              "Get",
+              "Get Attributes",
+              "Locate",
+              "Query"
+            ],
+            "requirement_id": null,
+            "scope_disposition": "profile_conditional",
+            "mapping_status": "pending_t002_crosswalk"
+          },
+          {
+            "condition_id": "KMIPKIT-PROF-COND-5.1.1-005",
+            "item": 5,
+            "html_line_range": [
+              4575,
+              4613
+            ],
+            "condition_kind": "mandatory_profile_condition",
+            "source_text": "Supports the following Message Data Structures [KMIP-SPEC]",
+            "supported_items": [
+              "Asynchronous Indicator",
+              "Batch Count",
+              "Batch Error Continuation Option",
+              "Batch Item",
+              "Batch Order Option",
+              "Maximum Response Size",
+              "Message Extension",
+              "Operation",
+              "Protocol Version",
+              "Result Reason",
+              "Result Status",
+              "Server Correlation Value",
+              "Time Stamp",
+              "Unique Batch Item ID"
+            ],
+            "requirement_id": null,
+            "scope_disposition": "profile_conditional",
+            "mapping_status": "pending_t002_crosswalk"
+          },
+          {
+            "condition_id": "KMIPKIT-PROF-COND-5.1.1-006",
+            "item": 6,
+            "html_line_range": [
+              4614,
+              4627
+            ],
+            "condition_kind": "mandatory_profile_condition",
+            "source_text": "Supports the Message Protocols [KMIP-SPEC]",
+            "supported_items": [
+              "Authentication",
+              "Transport",
+              "TTLV"
+            ],
+            "requirement_id": null,
+            "scope_disposition": "profile_conditional",
+            "mapping_status": "pending_t002_crosswalk"
+          },
+          {
+            "condition_id": "KMIPKIT-PROF-COND-5.1.1-007",
+            "item": 7,
+            "html_line_range": [
+              4628,
+              4631
+            ],
+            "condition_kind": "optional_profile_capability",
+            "source_text": "Optionally supports any clause within [KMIP-SPEC] that is not listed above",
+            "supported_items": [],
+            "requirement_id": null,
+            "scope_disposition": "profile_conditional",
+            "mapping_status": "pending_t002_crosswalk"
+          },
+          {
+            "condition_id": "KMIPKIT-PROF-COND-5.1.1-008",
+            "item": 8,
+            "html_line_range": [
+              4632,
+              4635
+            ],
+            "condition_kind": "optional_profile_capability",
+            "source_text": "Optionally supports extensions outside the scope of this standard (e.g., vendor extensions, conformance clauses) that do not contradict any KMIP requirements",
+            "supported_items": [],
+            "requirement_id": null,
+            "scope_disposition": "profile_conditional",
+            "mapping_status": "pending_t002_crosswalk"
+          }
+        ]
+      }
+    ],
     "normative_boundaries": [
       "Usage Guide v2.1 and Test Cases v2.1 add no normative closure clauses.",
       "The full Specification clause closure preserves server-only and out-of-scope dispositions. The accepted direct requirement crosswalk is a separate partial mapping view; complete source dispositions and profile closures do not imply implementation readiness or conformance.",
+      "Supplemental profile-condition inventories account for non-modal section conditions separately from keyword-candidate clause closure. A pending condition-to-requirement or implementation-evidence mapping keeps the affected profile conformance claim incomplete.",
       "The §14.1-002 claim gate appears for all 18 client profile expected subsets per the approved 2026-10-11 research ruling.",
       "JSON, PKCS#11, and XML remain out_of_scope; conditional HTTPS remains distinct from client_1_0.",
       "All exact upstream XML href targets are unavailable in this worktree; hrefs and labels are retained as published.",
@@ -26225,8 +26395,9 @@
         "KMIPKIT-CLAUSE-PROF-6.30-005"
       ],
       "normative_inclusion_ids": [
-        "KMIPKIT-INCLUSION-PROF-BASELINE-SPEC",
-        "KMIPKIT-INCLUSION-PROF-BASELINE-BASIC-AUTH"
+        "KMIPKIT-INCLUSION-PROF-BASELINE-BASIC-AUTH",
+        "KMIPKIT-INCLUSION-PROF-BASELINE-CONDITIONS",
+        "KMIPKIT-INCLUSION-PROF-BASELINE-SPEC"
       ],
       "source_clause_ids": [
         "KMIPKIT-CLAUSE-PROF-3.1-001",
@@ -26244,6 +26415,7 @@
         "KMIPKIT-CLAUSE-PROF-3.1.3-002",
         "KMIPKIT-CLAUSE-PROF-3.1.3-003",
         "KMIPKIT-CLAUSE-PROF-3.1.4-001",
+        "KMIPKIT-CLAUSE-PROF-5.1.1-001",
         "KMIPKIT-CLAUSE-PROF-5.13.1-001",
         "KMIPKIT-CLAUSE-PROF-5.13.1-002",
         "KMIPKIT-CLAUSE-PROF-5.13.1-003",
@@ -27916,8 +28088,9 @@
         "KMIPKIT-CLAUSE-PROF-6.16-005"
       ],
       "normative_inclusion_ids": [
-        "KMIPKIT-INCLUSION-PROF-BASELINE-SPEC",
-        "KMIPKIT-INCLUSION-PROF-BASELINE-BASIC-AUTH"
+        "KMIPKIT-INCLUSION-PROF-BASELINE-BASIC-AUTH",
+        "KMIPKIT-INCLUSION-PROF-BASELINE-CONDITIONS",
+        "KMIPKIT-INCLUSION-PROF-BASELINE-SPEC"
       ],
       "source_clause_ids": [
         "KMIPKIT-CLAUSE-PROF-3.1-001",
@@ -27935,6 +28108,7 @@
         "KMIPKIT-CLAUSE-PROF-3.1.3-002",
         "KMIPKIT-CLAUSE-PROF-3.1.3-003",
         "KMIPKIT-CLAUSE-PROF-3.1.4-001",
+        "KMIPKIT-CLAUSE-PROF-5.1.1-001",
         "KMIPKIT-CLAUSE-PROF-5.8.1-001",
         "KMIPKIT-CLAUSE-PROF-5.8.1-002",
         "KMIPKIT-CLAUSE-PROF-5.8.1-003",
@@ -29625,8 +29799,9 @@
         "KMIPKIT-CLAUSE-PROF-6.1-004"
       ],
       "normative_inclusion_ids": [
-        "KMIPKIT-INCLUSION-PROF-BASELINE-SPEC",
-        "KMIPKIT-INCLUSION-PROF-BASELINE-BASIC-AUTH"
+        "KMIPKIT-INCLUSION-PROF-BASELINE-BASIC-AUTH",
+        "KMIPKIT-INCLUSION-PROF-BASELINE-CONDITIONS",
+        "KMIPKIT-INCLUSION-PROF-BASELINE-SPEC"
       ],
       "source_clause_ids": [
         "KMIPKIT-CLAUSE-PROF-3.1-001",
@@ -31274,8 +31449,9 @@
         "KMIPKIT-CLAUSE-PROF-6.19-005"
       ],
       "normative_inclusion_ids": [
-        "KMIPKIT-INCLUSION-PROF-BASELINE-SPEC",
-        "KMIPKIT-INCLUSION-PROF-BASELINE-BASIC-AUTH"
+        "KMIPKIT-INCLUSION-PROF-BASELINE-BASIC-AUTH",
+        "KMIPKIT-INCLUSION-PROF-BASELINE-CONDITIONS",
+        "KMIPKIT-INCLUSION-PROF-BASELINE-SPEC"
       ],
       "source_clause_ids": [
         "KMIPKIT-CLAUSE-PROF-3.1-001",
@@ -31293,6 +31469,7 @@
         "KMIPKIT-CLAUSE-PROF-3.1.3-002",
         "KMIPKIT-CLAUSE-PROF-3.1.3-003",
         "KMIPKIT-CLAUSE-PROF-3.1.4-001",
+        "KMIPKIT-CLAUSE-PROF-5.1.1-001",
         "KMIPKIT-CLAUSE-PROF-5.9.2-001",
         "KMIPKIT-CLAUSE-PROF-5.9.2-002",
         "KMIPKIT-CLAUSE-PROF-5.9.2-003",
@@ -33177,8 +33354,9 @@
         "KMIPKIT-CLAUSE-PROF-6.18-005"
       ],
       "normative_inclusion_ids": [
-        "KMIPKIT-INCLUSION-PROF-BASELINE-SPEC",
-        "KMIPKIT-INCLUSION-PROF-BASELINE-BASIC-AUTH"
+        "KMIPKIT-INCLUSION-PROF-BASELINE-BASIC-AUTH",
+        "KMIPKIT-INCLUSION-PROF-BASELINE-CONDITIONS",
+        "KMIPKIT-INCLUSION-PROF-BASELINE-SPEC"
       ],
       "source_clause_ids": [
         "KMIPKIT-CLAUSE-PROF-3.1-001",
@@ -33196,6 +33374,7 @@
         "KMIPKIT-CLAUSE-PROF-3.1.3-002",
         "KMIPKIT-CLAUSE-PROF-3.1.3-003",
         "KMIPKIT-CLAUSE-PROF-3.1.4-001",
+        "KMIPKIT-CLAUSE-PROF-5.1.1-001",
         "KMIPKIT-CLAUSE-PROF-5.9.1-001",
         "KMIPKIT-CLAUSE-PROF-5.9.1-002",
         "KMIPKIT-CLAUSE-PROF-5.9.1-003",
@@ -35119,8 +35298,9 @@
         "KMIPKIT-CLAUSE-PROF-6.20-005"
       ],
       "normative_inclusion_ids": [
-        "KMIPKIT-INCLUSION-PROF-BASELINE-SPEC",
-        "KMIPKIT-INCLUSION-PROF-BASELINE-BASIC-AUTH"
+        "KMIPKIT-INCLUSION-PROF-BASELINE-BASIC-AUTH",
+        "KMIPKIT-INCLUSION-PROF-BASELINE-CONDITIONS",
+        "KMIPKIT-INCLUSION-PROF-BASELINE-SPEC"
       ],
       "source_clause_ids": [
         "KMIPKIT-CLAUSE-PROF-3.1-001",
@@ -35138,6 +35318,7 @@
         "KMIPKIT-CLAUSE-PROF-3.1.3-002",
         "KMIPKIT-CLAUSE-PROF-3.1.3-003",
         "KMIPKIT-CLAUSE-PROF-3.1.4-001",
+        "KMIPKIT-CLAUSE-PROF-5.1.1-001",
         "KMIPKIT-CLAUSE-PROF-5.9.3-001",
         "KMIPKIT-CLAUSE-PROF-5.9.3-002",
         "KMIPKIT-CLAUSE-PROF-5.9.3-003",
@@ -36860,8 +37041,9 @@
         "KMIPKIT-CLAUSE-PROF-6.4-005"
       ],
       "normative_inclusion_ids": [
-        "KMIPKIT-INCLUSION-PROF-BASELINE-SPEC",
-        "KMIPKIT-INCLUSION-PROF-BASELINE-BASIC-AUTH"
+        "KMIPKIT-INCLUSION-PROF-BASELINE-BASIC-AUTH",
+        "KMIPKIT-INCLUSION-PROF-BASELINE-CONDITIONS",
+        "KMIPKIT-INCLUSION-PROF-BASELINE-SPEC"
       ],
       "source_clause_ids": [
         "KMIPKIT-CLAUSE-PROF-3.1-001",
@@ -36885,6 +37067,7 @@
         "KMIPKIT-CLAUSE-PROF-3.2.3-001",
         "KMIPKIT-CLAUSE-PROF-3.2.4-001",
         "KMIPKIT-CLAUSE-PROF-3.2.4-002",
+        "KMIPKIT-CLAUSE-PROF-5.1.1-001",
         "KMIPKIT-CLAUSE-PROF-5.3.1-001",
         "KMIPKIT-CLAUSE-PROF-5.3.1-002",
         "KMIPKIT-CLAUSE-PROF-5.3.1-003",
@@ -38584,8 +38767,9 @@
         "KMIPKIT-CLAUSE-PROF-6.8-005"
       ],
       "normative_inclusion_ids": [
-        "KMIPKIT-INCLUSION-PROF-BASELINE-SPEC",
-        "KMIPKIT-INCLUSION-PROF-BASELINE-BASIC-AUTH"
+        "KMIPKIT-INCLUSION-PROF-BASELINE-BASIC-AUTH",
+        "KMIPKIT-INCLUSION-PROF-BASELINE-CONDITIONS",
+        "KMIPKIT-INCLUSION-PROF-BASELINE-SPEC"
       ],
       "source_clause_ids": [
         "KMIPKIT-CLAUSE-PROF-3.1-001",
@@ -38603,6 +38787,7 @@
         "KMIPKIT-CLAUSE-PROF-3.1.3-002",
         "KMIPKIT-CLAUSE-PROF-3.1.3-003",
         "KMIPKIT-CLAUSE-PROF-3.1.4-001",
+        "KMIPKIT-CLAUSE-PROF-5.1.1-001",
         "KMIPKIT-CLAUSE-PROF-5.5.2-001",
         "KMIPKIT-CLAUSE-PROF-5.5.2-002",
         "KMIPKIT-CLAUSE-PROF-5.5.2-003",
@@ -40247,8 +40432,9 @@
         "KMIPKIT-CLAUSE-PROF-6.24-005"
       ],
       "normative_inclusion_ids": [
-        "KMIPKIT-INCLUSION-PROF-BASELINE-SPEC",
-        "KMIPKIT-INCLUSION-PROF-BASELINE-BASIC-AUTH"
+        "KMIPKIT-INCLUSION-PROF-BASELINE-BASIC-AUTH",
+        "KMIPKIT-INCLUSION-PROF-BASELINE-CONDITIONS",
+        "KMIPKIT-INCLUSION-PROF-BASELINE-SPEC"
       ],
       "source_clause_ids": [
         "KMIPKIT-CLAUSE-PROF-3.1-001",
@@ -40266,6 +40452,7 @@
         "KMIPKIT-CLAUSE-PROF-3.1.3-002",
         "KMIPKIT-CLAUSE-PROF-3.1.3-003",
         "KMIPKIT-CLAUSE-PROF-3.1.4-001",
+        "KMIPKIT-CLAUSE-PROF-5.1.1-001",
         "KMIPKIT-CLAUSE-PROF-5.10.1-001",
         "KMIPKIT-CLAUSE-PROF-5.10.1-002",
         "KMIPKIT-CLAUSE-PROF-5.10.1-003",
@@ -41941,6 +42128,7 @@
       ],
       "normative_inclusion_ids": [
         "KMIPKIT-INCLUSION-PROF-BASELINE-BASIC-AUTH",
+        "KMIPKIT-INCLUSION-PROF-BASELINE-CONDITIONS",
         "KMIPKIT-INCLUSION-PROF-BASELINE-SPEC",
         "KMIPKIT-INCLUSION-PROF-PKCS11-ENCODING"
       ],
@@ -41960,6 +42148,7 @@
         "KMIPKIT-CLAUSE-PROF-3.1.3-002",
         "KMIPKIT-CLAUSE-PROF-3.1.3-003",
         "KMIPKIT-CLAUSE-PROF-3.1.4-001",
+        "KMIPKIT-CLAUSE-PROF-5.1.1-001",
         "KMIPKIT-CLAUSE-PROF-5.18.1-001",
         "KMIPKIT-CLAUSE-PROF-5.18.1-002",
         "KMIPKIT-CLAUSE-PROF-5.18.1-003",
@@ -43623,8 +43812,9 @@
         "KMIPKIT-CLAUSE-PROF-6.32-005"
       ],
       "normative_inclusion_ids": [
-        "KMIPKIT-INCLUSION-PROF-BASELINE-SPEC",
-        "KMIPKIT-INCLUSION-PROF-BASELINE-BASIC-AUTH"
+        "KMIPKIT-INCLUSION-PROF-BASELINE-BASIC-AUTH",
+        "KMIPKIT-INCLUSION-PROF-BASELINE-CONDITIONS",
+        "KMIPKIT-INCLUSION-PROF-BASELINE-SPEC"
       ],
       "source_clause_ids": [
         "KMIPKIT-CLAUSE-PROF-3.1-001",
@@ -43642,6 +43832,7 @@
         "KMIPKIT-CLAUSE-PROF-3.1.3-002",
         "KMIPKIT-CLAUSE-PROF-3.1.3-003",
         "KMIPKIT-CLAUSE-PROF-3.1.4-001",
+        "KMIPKIT-CLAUSE-PROF-5.1.1-001",
         "KMIPKIT-CLAUSE-PROF-5.15-001",
         "KMIPKIT-CLAUSE-PROF-5.15-002",
         "KMIPKIT-CLAUSE-PROF-5.15-003",
@@ -45325,8 +45516,9 @@
         "KMIPKIT-CLAUSE-PROF-6.26-005"
       ],
       "normative_inclusion_ids": [
-        "KMIPKIT-INCLUSION-PROF-BASELINE-SPEC",
-        "KMIPKIT-INCLUSION-PROF-BASELINE-BASIC-AUTH"
+        "KMIPKIT-INCLUSION-PROF-BASELINE-BASIC-AUTH",
+        "KMIPKIT-INCLUSION-PROF-BASELINE-CONDITIONS",
+        "KMIPKIT-INCLUSION-PROF-BASELINE-SPEC"
       ],
       "source_clause_ids": [
         "KMIPKIT-CLAUSE-PROF-3.1-001",
@@ -45344,6 +45536,7 @@
         "KMIPKIT-CLAUSE-PROF-3.1.3-002",
         "KMIPKIT-CLAUSE-PROF-3.1.3-003",
         "KMIPKIT-CLAUSE-PROF-3.1.4-001",
+        "KMIPKIT-CLAUSE-PROF-5.1.1-001",
         "KMIPKIT-CLAUSE-PROF-5.11.1-001",
         "KMIPKIT-CLAUSE-PROF-5.11.1-002",
         "KMIPKIT-CLAUSE-PROF-5.11.1-003",
@@ -47034,6 +47227,7 @@
       "normative_inclusion_ids": [
         "KMIPKIT-INCLUSION-PROF-614-BASIC-SYMMETRIC-CLIENT",
         "KMIPKIT-INCLUSION-PROF-BASELINE-BASIC-AUTH",
+        "KMIPKIT-INCLUSION-PROF-BASELINE-CONDITIONS",
         "KMIPKIT-INCLUSION-PROF-BASELINE-SPEC"
       ],
       "source_clause_ids": [
@@ -47052,6 +47246,7 @@
         "KMIPKIT-CLAUSE-PROF-3.1.3-002",
         "KMIPKIT-CLAUSE-PROF-3.1.3-003",
         "KMIPKIT-CLAUSE-PROF-3.1.4-001",
+        "KMIPKIT-CLAUSE-PROF-5.1.1-001",
         "KMIPKIT-CLAUSE-PROF-5.7.1-001",
         "KMIPKIT-CLAUSE-PROF-5.7.1-002",
         "KMIPKIT-CLAUSE-PROF-5.7.1-003",
@@ -48788,8 +48983,9 @@
         "KMIPKIT-CLAUSE-PROF-6.12-005"
       ],
       "normative_inclusion_ids": [
-        "KMIPKIT-INCLUSION-PROF-BASELINE-SPEC",
-        "KMIPKIT-INCLUSION-PROF-BASELINE-BASIC-AUTH"
+        "KMIPKIT-INCLUSION-PROF-BASELINE-BASIC-AUTH",
+        "KMIPKIT-INCLUSION-PROF-BASELINE-CONDITIONS",
+        "KMIPKIT-INCLUSION-PROF-BASELINE-SPEC"
       ],
       "source_clause_ids": [
         "KMIPKIT-CLAUSE-PROF-3.1-001",
@@ -48807,6 +49003,7 @@
         "KMIPKIT-CLAUSE-PROF-3.1.3-002",
         "KMIPKIT-CLAUSE-PROF-3.1.3-003",
         "KMIPKIT-CLAUSE-PROF-3.1.4-001",
+        "KMIPKIT-CLAUSE-PROF-5.1.1-001",
         "KMIPKIT-CLAUSE-PROF-5.7.1-001",
         "KMIPKIT-CLAUSE-PROF-5.7.1-002",
         "KMIPKIT-CLAUSE-PROF-5.7.1-003",
@@ -50507,6 +50704,7 @@
       "normative_inclusion_ids": [
         "KMIPKIT-INCLUSION-PROF-613-BASIC-SYMMETRIC-CLIENT",
         "KMIPKIT-INCLUSION-PROF-BASELINE-BASIC-AUTH",
+        "KMIPKIT-INCLUSION-PROF-BASELINE-CONDITIONS",
         "KMIPKIT-INCLUSION-PROF-BASELINE-SPEC"
       ],
       "source_clause_ids": [
@@ -50525,6 +50723,7 @@
         "KMIPKIT-CLAUSE-PROF-3.1.3-002",
         "KMIPKIT-CLAUSE-PROF-3.1.3-003",
         "KMIPKIT-CLAUSE-PROF-3.1.4-001",
+        "KMIPKIT-CLAUSE-PROF-5.1.1-001",
         "KMIPKIT-CLAUSE-PROF-5.7.1-001",
         "KMIPKIT-CLAUSE-PROF-5.7.1-002",
         "KMIPKIT-CLAUSE-PROF-5.7.1-003",
@@ -52261,8 +52460,9 @@
         "KMIPKIT-CLAUSE-PROF-6.10-005"
       ],
       "normative_inclusion_ids": [
-        "KMIPKIT-INCLUSION-PROF-BASELINE-SPEC",
-        "KMIPKIT-INCLUSION-PROF-BASELINE-BASIC-AUTH"
+        "KMIPKIT-INCLUSION-PROF-BASELINE-BASIC-AUTH",
+        "KMIPKIT-INCLUSION-PROF-BASELINE-CONDITIONS",
+        "KMIPKIT-INCLUSION-PROF-BASELINE-SPEC"
       ],
       "source_clause_ids": [
         "KMIPKIT-CLAUSE-PROF-3.1-001",
@@ -52280,6 +52480,7 @@
         "KMIPKIT-CLAUSE-PROF-3.1.3-002",
         "KMIPKIT-CLAUSE-PROF-3.1.3-003",
         "KMIPKIT-CLAUSE-PROF-3.1.4-001",
+        "KMIPKIT-CLAUSE-PROF-5.1.1-001",
         "KMIPKIT-CLAUSE-PROF-5.6.1-001",
         "KMIPKIT-CLAUSE-PROF-5.6.1-002",
         "KMIPKIT-CLAUSE-PROF-5.6.1-003",
@@ -53958,6 +54159,7 @@
       ],
       "normative_inclusion_ids": [
         "KMIPKIT-INCLUSION-PROF-BASELINE-BASIC-AUTH",
+        "KMIPKIT-INCLUSION-PROF-BASELINE-CONDITIONS",
         "KMIPKIT-INCLUSION-PROF-BASELINE-SPEC",
         "KMIPKIT-INCLUSION-PROF-TAPE-LIBRARY-TEST-CASES"
       ],
@@ -53977,6 +54179,7 @@
         "KMIPKIT-CLAUSE-PROF-3.1.3-002",
         "KMIPKIT-CLAUSE-PROF-3.1.3-003",
         "KMIPKIT-CLAUSE-PROF-3.1.4-001",
+        "KMIPKIT-CLAUSE-PROF-5.1.1-001",
         "KMIPKIT-CLAUSE-PROF-5.12.2-001",
         "KMIPKIT-CLAUSE-PROF-5.12.2-002",
         "KMIPKIT-CLAUSE-PROF-5.12.2-003",
@@ -55874,8 +56077,9 @@
         "KMIPKIT-CLAUSE-PROF-6.6-005"
       ],
       "normative_inclusion_ids": [
-        "KMIPKIT-INCLUSION-PROF-BASELINE-SPEC",
-        "KMIPKIT-INCLUSION-PROF-BASELINE-BASIC-AUTH"
+        "KMIPKIT-INCLUSION-PROF-BASELINE-BASIC-AUTH",
+        "KMIPKIT-INCLUSION-PROF-BASELINE-CONDITIONS",
+        "KMIPKIT-INCLUSION-PROF-BASELINE-SPEC"
       ],
       "source_clause_ids": [
         "KMIPKIT-CLAUSE-PROF-3.1-001",
@@ -55893,6 +56097,7 @@
         "KMIPKIT-CLAUSE-PROF-3.1.3-002",
         "KMIPKIT-CLAUSE-PROF-3.1.3-003",
         "KMIPKIT-CLAUSE-PROF-3.1.4-001",
+        "KMIPKIT-CLAUSE-PROF-5.1.1-001",
         "KMIPKIT-CLAUSE-PROF-5.4.2-001",
         "KMIPKIT-CLAUSE-PROF-5.4.2-002",
         "KMIPKIT-CLAUSE-PROF-5.4.2-003",
@@ -90704,8 +90909,9 @@
         "SHALL"
       ],
       "audited_statement": "Clients or servers SHALL support listed TLS1.2 suites if TLS1.2 supported.",
+      "actor": "client or server",
       "actor_scope_review": "Mixed: client condition false under product's TLS1.3-only boundary, but retain source condition; server half `server_only`.",
-      "scope_disposition": "server_only",
+      "scope_disposition": "mixed_server_and_out_of_scope",
       "candidate_requirement_id": null,
       "proposed_requirement_id": null,
       "status": "unlabeled_source_statement_or_boundary_item"
@@ -91107,8 +91313,9 @@
         "SHALL"
       ],
       "audited_statement": "SHALL support “Basic Symmetric Key Foundry Client” conditions (§5.7.1).",
-      "actor_scope_review": "Client; `unresolved`: under Intermediate conformance but names Basic/§5.7.1. Preserve source; do not silently substitute §5.7.2. KMIPKIT-DISC-011 remains open: preserve the literal Basic Client (§5.7.1) source reference; do not infer a correction to §5.7.2.",
-      "scope_disposition": "unresolved",
+      "actor": "client",
+      "actor_scope_review": "Client; `profile_conditional` only when claiming the Intermediate Symmetric Key Foundry Client profile. Preserve the literal §5.7.1 reference; KMIPKIT-DISC-011 remains open for authorial intent, so do not substitute §5.7.2 or infer a correction.",
+      "scope_disposition": "profile_conditional",
       "candidate_requirement_id": null,
       "proposed_requirement_id": null,
       "status": "unlabeled_source_statement_or_boundary_item"
@@ -91130,8 +91337,9 @@
         "SHALL"
       ],
       "audited_statement": "SHALL support “Basic Symmetric Key Foundry Client” conditions (§5.7.1).",
-      "actor_scope_review": "Client; `unresolved`: under Advanced conformance but names Basic/§5.7.1. Preserve source; do not silently substitute §5.7.3. KMIPKIT-DISC-012 remains open: preserve the literal Basic Client (§5.7.1) source reference; do not infer a correction to §5.7.3.",
-      "scope_disposition": "unresolved",
+      "actor": "client",
+      "actor_scope_review": "Client; `profile_conditional` only when claiming the Advanced Symmetric Key Foundry Client profile. Preserve the literal §5.7.1 reference; KMIPKIT-DISC-012 remains open for authorial intent, so do not substitute §5.7.3 or infer a correction.",
+      "scope_disposition": "profile_conditional",
       "candidate_requirement_id": null,
       "proposed_requirement_id": null,
       "status": "unlabeled_source_statement_or_boundary_item"
