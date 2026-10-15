@@ -335,6 +335,15 @@
                   "KMIPKIT-CLAUSE-SPEC-9.6-001"
                 ],
                 "mapping_status": "reviewed"
+              },
+              {
+                "item": "Batch Item",
+                "element_id": "KMIPKIT-ELEM-MESSAGE-FIELD-9-7-BATCH-ITEM",
+                "requirement_ids": [],
+                "source_clause_ids": [
+                  "KMIPKIT-CLAUSE-SPEC-9.7-001"
+                ],
+                "mapping_status": "reviewed"
               }
             ],
             "requirement_id": null,
