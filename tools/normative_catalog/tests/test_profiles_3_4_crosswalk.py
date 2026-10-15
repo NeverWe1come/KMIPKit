@@ -113,6 +113,13 @@ class ProfileSectionsThreeAndFourCrosswalkTests(unittest.TestCase):
             )
         }
 
+    def assert_review_matches_pinned_source(
+        self, review: dict[str, object], clause_id: str, line_range: list[int]
+    ) -> None:
+        self.assertEqual(review["html_line_range"], line_range)
+        self.assertEqual(review["source_excerpt"], pinned_excerpt(line_range))
+        self.assertEqual(review["source_locator"], self.clauses[clause_id]["locator"])
+
     def test_target_ids_have_audited_source_rows_and_only_client_mappings(self) -> None:
         self.assertEqual(len(ALL_TARGET_IDS), 22)
         self.assertTrue(ALL_TARGET_IDS.issubset(self.requirements))
@@ -412,10 +419,11 @@ class ProfileSectionsThreeAndFourCrosswalkTests(unittest.TestCase):
         self.assertEqual(set(self.reviews), set(expected_lines))
         for requirement_id in ALL_TARGET_IDS:
             clause_id = self.requirements[requirement_id]["source_clause_ids"][0]
-            review = self.reviews[clause_id]
-            self.assertEqual(review["html_line_range"], expected_lines[clause_id])
-            self.assertEqual(review["source_excerpt"], pinned_excerpt(expected_lines[clause_id]))
-            self.assertEqual(review["source_locator"], self.clauses[clause_id]["locator"])
+            self.assertIn(clause_id, expected_lines)
+        for clause_id, line_range in expected_lines.items():
+            self.assert_review_matches_pinned_source(
+                self.reviews[clause_id], clause_id, line_range
+            )
 
     def test_tls_1_2_cipher_suite_may_has_an_explicit_boundary_review(self) -> None:
         """Profiles §3.1.2's TLS 1.2 MAY is excluded by the 1.0 TLS boundary."""
@@ -451,8 +459,7 @@ class ProfileSectionsThreeAndFourCrosswalkTests(unittest.TestCase):
         ]
         self.assertEqual(len(reviews), 1)
         review = reviews[0]
-        self.assertEqual(review["html_line_range"], [4089, 4090])
-        self.assertEqual(review["source_excerpt"], source_excerpt)
+        self.assert_review_matches_pinned_source(review, clause_id, [4089, 4090])
         self.assertEqual(review["expected_client_requirement_ids"], [])
         self.assertEqual(review["applies_to"], "KMIPKIT-PROFILE-BASELINE-CLIENT")
         self.assertEqual(
