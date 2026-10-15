@@ -1984,7 +1984,7 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
             spec_lines, source_ranges["KMIPKIT-CLAUSE-SPEC-9.13-001"]
         )
         self.assertEqual(extension_review["html_line_range"], source_ranges["KMIPKIT-CLAUSE-SPEC-9.13-001"])
-        self.assertEqual(extension_review["source_excerpt"], extension_text)
+        self.assertEqual(re.sub(r"\s+([.,;:])", r"\1", extension_text), extension_review["source_excerpt"])
         self.assertEqual(extension_review["expected_client_requirement_ids"], requirement_ids[1:])
         obligations = extension_review["source_obligations"]
         unresolved_shape_ids = {

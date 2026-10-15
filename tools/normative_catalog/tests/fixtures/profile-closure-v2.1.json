@@ -378,6 +378,21 @@
                   "KMIPKIT-CLAUSE-SPEC-9.12-001"
                 ],
                 "mapping_status": "reviewed"
+              },
+              {
+                "item": "Message Extension",
+                "element_id": "KMIPKIT-ELEM-MESSAGE-FIELD-9-13-MESSAGE-EXTENSION",
+                "requirement_ids": [
+                  "KMIPKIT-REQ-SPEC-8.3-004",
+                  "KMIPKIT-REQ-SPEC-9.13-001-004",
+                  "KMIPKIT-REQ-SPEC-9.13-001-005"
+                ],
+                "source_clause_ids": [
+                  "KMIPKIT-CLAUSE-SPEC-8.3-004",
+                  "KMIPKIT-CLAUSE-SPEC-8.6-004",
+                  "KMIPKIT-CLAUSE-SPEC-9.13-001"
+                ],
+                "mapping_status": "reviewed"
               }
             ],
             "requirement_id": null,
