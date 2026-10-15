@@ -93,9 +93,12 @@ results. A final run after the test-helper and `SecretBytes` changes again
 passed 20/20. Cosmian and PKI containers were then removed with `-Action down`,
 and `-Action status` showed no running services. These selected operations are
 not a broad conformance claim. The final local workspace coverage was 92.92%
-line coverage (`kmipkit-protocol` 96.17%; `kmipkit-ttlv` 98.29%). Hosted
-multi-platform CI and aggregate coverage still need to run on the expanded
-draft PR head.
+line coverage (`kmipkit-protocol` 96.17%; `kmipkit-ttlv` 98.29%). Hosted CI run
+`38809840838` passed the core, bindings, scripts, traceability, inventory,
+sanitizer, and coverage jobs. Its dependency-policy gate failed on newly issued
+RustSec advisories for the existing `rustls 0.23.45`; see
+`traceability.md`. Keep the draft PR open until that separate dependency issue
+is resolved under an approved scope.
 
 ## Stop and remove the server
 

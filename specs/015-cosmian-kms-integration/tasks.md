@@ -8,7 +8,11 @@ operation exchanges and two expected limitation probes (Query and Ping). The
 rerun included final test-helper and secret-buffer changes, and the local
 Cosmian Compose deployment was stopped and verified empty afterward. Local
 workspace lint, tests, and coverage passed; hosted CI for this expanded head
-has not yet run.
+completed on 2026-10-15. All matrix and selected-scope coverage jobs passed;
+the dependency-policy job failed on four newly issued RustSec advisories for
+the existing `rustls 0.23.45` dependency. That dependency remediation is outside
+KMIPKIT-0015 and requires a separately approved scope before the draft PR can
+clear every review gate.
 
 **Input**: [spec.md](spec.md), [plan.md](plan.md), [research.md](research.md)
 
@@ -62,4 +66,4 @@ has not yet run.
 - [x] T031 Record the observed Query and Ping behavior separately from successful interoperability: Query omits the Table 283 required Protection Storage Masks field; Ping is rejected as unsupported and its error Batch Item omits Operation.
 - [x] T032 Rerun the complete 20-case serial Cosmian suite after final test-helper and secret-buffer changes, capture the exact result, and stop/remove the local Cosmian Compose service after the run. Final merged head `5b86ab87`: 20 passed, 0 failed; Compose status was empty afterward.
 - [x] T033 Update this task record, plan, specification, traceability, quickstart, and integration README with final run and server teardown evidence; run repository verification and retain distinct Red, Green, and Refactor commits.
-- [ ] T034 Run the hosted multi-platform CI and aggregate coverage gates on the expanded draft PR head before requesting review. The earlier PR head passed these gates on 2026-10-09; that result does not cover this expanded code.
+- [x] T034 Run the hosted multi-platform CI and aggregate coverage gates on the expanded draft PR head and record the result. Run `38809840838` on `7df810ab`: core, bindings, scripts, traceability, immutable-source inventory, sanitizers, and the selected-scope coverage gate passed. Dependency policy failed because `rustls 0.23.45` has four RustSec advisories without registered exceptions; details and the out-of-scope follow-up are recorded in `traceability.md`. Keep the PR in draft until that gate is addressed under an approved dependency-security scope.

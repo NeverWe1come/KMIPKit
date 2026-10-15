@@ -116,3 +116,19 @@ The local `cargo llvm-cov --workspace --all-features --summary-only` run on
 run. This single-platform raw report is not the project's hosted aggregate;
 the cross-platform coverage workflow collected platform and adapter reports
 and passed the 90% workspace threshold.
+
+Hosted verification for expanded head `7df810ab` completed as CI run
+`38809840838`. All Core platform/toolchain jobs, C/Java/Python bindings,
+script and documentation contracts, immutable-source inventory, fuzz smoke,
+FFI/JNI sanitizers, language coverage, and the selected-scope aggregate
+coverage gate passed. `Dependency policy / pull request` failed because the
+unchanged lockfile resolves `rustls 0.23.45`, which has four RustSec advisories
+issued on 2026-10-14 without registered exceptions: [RUSTSEC-2026-0346](https://rustsec.org/advisories/RUSTSEC-2026-0346.html),
+[RUSTSEC-2026-0347](https://rustsec.org/advisories/RUSTSEC-2026-0347.html),
+[RUSTSEC-2026-0348](https://rustsec.org/advisories/RUSTSEC-2026-0348.html), and
+[RUSTSEC-2026-0349](https://rustsec.org/advisories/RUSTSEC-2026-0349.html).
+RustSec records `>=0.23.46` as patched for these advisories. The integration
+branch does not change `Cargo.toml` or `Cargo.lock`; the dependency update is
+outside KMIPKIT-0015 and needs a separately approved dependency-security scope.
+No advisory waiver was added. The draft PR remains open pending that scope and
+a clean rerun of dependency policy.
