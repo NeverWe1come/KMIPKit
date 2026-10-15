@@ -30,6 +30,35 @@ class ProfileSectionsSevenThroughElevenReviewContractTests(unittest.TestCase):
         cls.requirements = {
             row["requirement_id"]: row for row in cls.catalog["requirements"]
         }
+        cls.clauses = {row["clause_id"]: row for row in cls.catalog["source_clauses"]}
+        cls.gaps = {row["gap_id"]: row for row in cls.oracle["source_only_requirement_gaps"]}
+
+    def assert_server_response_classification(
+        self, clause_id: str, review: dict[str, object], gap: dict[str, object]
+    ) -> None:
+        clause = self.clauses[clause_id]
+        self.assertEqual(clause["disposition"], "server_only")
+        self.assertEqual(clause["scope_state"], "server_only")
+        self.assertEqual(clause["role"], "unclear")
+        self.assertEqual(clause["direction"], "server_to_client")
+        self.assertEqual(clause["requirement_ids"], [])
+
+        self.assertEqual(review["expected_client_requirement_ids"], [])
+        for atom in review["source_obligations"]:
+            self.assertEqual(atom["actor"], "server")
+            self.assertEqual(atom["direction"], "server_to_client")
+            self.assertEqual(atom["scope_disposition"], "server_only")
+            self.assertIsNone(atom["candidate_requirement_id"])
+
+        self.assertEqual(gap["source_clause_id"], clause_id)
+        self.assertEqual(gap["source_locator"], clause["locator"])
+        self.assertEqual(gap["actor"], "server")
+        self.assertEqual(gap["direction"], "server_to_client")
+        self.assertEqual(gap["scope_disposition"], "server_only")
+        self.assertEqual(gap["status"], "server_actor_disposition_recorded")
+        self.assertIsNone(gap["candidate_requirement_id"])
+        self.assertIsNone(gap.get("reused_requirement_id"))
+        self.assertIsNone(gap["proposed_requirement_id"])
 
     def test_titlecase_may_candidates_are_explicitly_rejected_without_client_crosswalk(self) -> None:
         expected = {
@@ -87,35 +116,24 @@ class ProfileSectionsSevenThroughElevenReviewContractTests(unittest.TestCase):
         self.assertEqual(response_atom["scope_disposition"], "unclear")
 
     def test_response_and_error_message_gaps_do_not_invent_client_actors_or_labels(self) -> None:
-        gaps = {row["gap_id"]: row for row in self.oracle["source_only_requirement_gaps"]}
-        response_gap = gaps["KMIPKIT-SOURCE-GAP-SPEC-8.4-002"]
-        error_gap = gaps["KMIPKIT-SOURCE-GAP-SPEC-9.17-001"]
-
-        self.assertEqual(response_gap["actor"], "server")
-        self.assertEqual(response_gap["direction"], "server_to_client")
-        self.assertEqual(response_gap["scope_disposition"], "server_only")
-        self.assertEqual(response_gap["status"], "server_actor_disposition_recorded")
-        self.assertIsNone(response_gap["candidate_requirement_id"])
-        self.assertIsNone(response_gap["proposed_requirement_id"])
+        response_gap = self.gaps["KMIPKIT-SOURCE-GAP-SPEC-8.4-002"]
+        error_gap = self.gaps["KMIPKIT-SOURCE-GAP-SPEC-9.17-001"]
 
         self.assertEqual(error_gap["actor"], "unspecified")
         self.assertEqual(error_gap["direction"], "server_to_client")
         self.assertEqual(error_gap["scope_disposition"], "unresolved")
         self.assertIsNone(error_gap["candidate_requirement_id"])
         self.assertIsNone(error_gap["proposed_requirement_id"])
-        clauses = {row["clause_id"]: row for row in self.catalog["source_clauses"]}
         for clause_id in ("KMIPKIT-CLAUSE-SPEC-8.4-002", "KMIPKIT-CLAUSE-SPEC-9.17-001"):
             with self.subTest(clause_id=clause_id):
-                self.assertEqual(clauses[clause_id]["role"], "unclear")
-                self.assertEqual(clauses[clause_id]["direction"], "server_to_client")
+                self.assertEqual(self.clauses[clause_id]["direction"], "server_to_client")
 
         response_review = self.reviews["KMIPKIT-CLAUSE-SPEC-8.4-002"]
+        self.assert_server_response_classification(
+            "KMIPKIT-CLAUSE-SPEC-8.4-002", response_review, response_gap
+        )
         self.assertEqual(len(response_review["source_obligations"]), 1)
         self.assertEqual(response_review["source_obligations"][0]["source_keyword"], "MAY")
-        self.assertEqual(response_review["source_obligations"][0]["actor"], "server")
-        self.assertEqual(response_review["source_obligations"][0]["direction"], "server_to_client")
-        self.assertEqual(response_review["source_obligations"][0]["scope_disposition"], "server_only")
-        self.assertIsNone(response_review["source_obligations"][0]["candidate_requirement_id"])
         self.assertIn("client-initiated 1.0", response_review["review_note"])
         self.assertIn("does not literally name the sender", response_review["review_note"])
 
@@ -163,9 +181,6 @@ class ProfileSectionsSevenThroughElevenReviewContractTests(unittest.TestCase):
                 "conditions": ["REQUIRED if Result Status is Pending"],
             },
         }
-        clauses = {row["clause_id"]: row for row in self.catalog["source_clauses"]}
-        gaps = {row["gap_id"]: row for row in self.oracle["source_only_requirement_gaps"]}
-
         self.assertEqual(
             pinned_source_excerpt(SPEC_SOURCE_PATH, [43283, 43284]),
             "Table 398: Response Header Structure",
@@ -177,12 +192,7 @@ class ProfileSectionsSevenThroughElevenReviewContractTests(unittest.TestCase):
 
         for clause_id, expected in rows.items():
             with self.subTest(clause_id=clause_id):
-                clause = clauses[clause_id]
-                self.assertEqual(clause["disposition"], "server_only")
-                self.assertEqual(clause["scope_state"], "server_only")
-                self.assertEqual(clause["role"], "unclear")
-                self.assertEqual(clause["direction"], "server_to_client")
-                self.assertEqual(clause["requirement_ids"], [])
+                clause = self.clauses[clause_id]
 
                 review = self.reviews[clause_id]
                 self.assertEqual(review["html_line_range"], expected["line_range"])
@@ -191,26 +201,14 @@ class ProfileSectionsSevenThroughElevenReviewContractTests(unittest.TestCase):
                     pinned_source_excerpt(SPEC_SOURCE_PATH, expected["line_range"]),
                 )
                 self.assertEqual(review["source_locator"], clause["locator"])
-                self.assertEqual(review["expected_client_requirement_ids"], [])
                 atoms = review["source_obligations"]
                 self.assertEqual([atom["source_keyword"] for atom in atoms], expected["keywords"])
-                self.assertTrue(all(atom["actor"] == "server" for atom in atoms))
-                self.assertTrue(all(atom["direction"] == "server_to_client" for atom in atoms))
-                self.assertTrue(all(atom["scope_disposition"] == "server_only" for atom in atoms))
-                self.assertTrue(all(atom["candidate_requirement_id"] is None for atom in atoms))
                 for condition in expected["conditions"]:
                     self.assertIn(condition, " ".join(atom["condition"] for atom in atoms))
 
-                gap = gaps[expected["gap_id"]]
-                self.assertEqual(gap["source_clause_id"], clause_id)
-                self.assertEqual(gap["source_locator"], clause["locator"])
+                gap = self.gaps[expected["gap_id"]]
+                self.assert_server_response_classification(clause_id, review, gap)
                 self.assertEqual(gap["html_line_range"], expected["line_range"])
-                self.assertEqual(gap["actor"], "server")
-                self.assertEqual(gap["direction"], "server_to_client")
-                self.assertEqual(gap["scope_disposition"], "server_only")
-                self.assertEqual(gap["status"], "server_actor_disposition_recorded")
-                self.assertIsNone(gap["candidate_requirement_id"])
-                self.assertIsNone(gap["proposed_requirement_id"])
 
     def test_time_stamp_may_atoms_keep_only_explicit_client_actor_mapped(self) -> None:
         review = self.reviews["KMIPKIT-CLAUSE-SPEC-9.20-001"]
