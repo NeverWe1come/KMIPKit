@@ -2986,5 +2986,6 @@ The independent oracle now maps the twelfth item to `KMIPKIT-ELEM-MESSAGE-FIELD-
 | Full normative suite: `py -3 -B -m unittest discover -s tools/normative_catalog/tests -p 'test_*.py'` | PASS: 563 tests in 315.107 seconds; 9 skipped. |
 | Catalog validation, profile generation check, coverage report check, immutable-source check, and `git diff --check` | PASS: catalog has 4 sources, 1,411 clauses, and 4,117 records; pinned-source base `eb6be1ec00fb816a758468802a7e094249d2b022`. Catalog validation was rerun serially after an initial safe-directory lock rejection. |
 | Independent read-only QA | PASS: no findings; source mapping, client/server distinction, and pending parent-condition state confirmed. |
+| Exact-head GitHub CI run `38744365487` | PASS on `2f27511c4a271275ed91af7986374c5f05d0e053`: 37 successful jobs, zero failures, zero skipped. |
 
 The crosswalk covers 12 of 14 values; `Time Stamp` and `Unique Batch Item ID` remain. The parent profile condition remains pending; no conformance claim is made.

@@ -31,7 +31,7 @@ Added only the reviewed structural row to the independent oracle. The aggregate 
 
 ### Refactor / evidence
 
-The dedicated and aggregate tests pass. The full normative suite, serial catalog validation, profile generation check, coverage report check, pinned-source immutability check, `git diff --check`, and independent read-only QA all pass. QA reported no findings. Exact-head GitHub CI will run after this evidence commit is published.
+The dedicated and aggregate tests pass. The full normative suite, serial catalog validation, profile generation check, coverage report check, pinned-source immutability check, `git diff --check`, independent read-only QA, and exact-head GitHub CI all pass. QA reported no findings.
 
 ## Verification status
 
@@ -44,6 +44,6 @@ The dedicated and aggregate tests pass. The full normative suite, serial catalog
 | Coverage report check | PASS: report is current. |
 | Pinned OASIS source immutability | PASS against base `eb6be1ec00fb816a758468802a7e094249d2b022`. |
 | Independent QA | PASS: no findings. |
-| Exact-head GitHub CI | Will run after publishing the evidence commit. |
+| Exact-head GitHub CI | PASS: run `38744365487` on `2f27511c4a271275ed91af7986374c5f05d0e053`; 37 successful jobs, zero failures, zero skipped. |
 
 The item-5 crosswalk now maps 12/14 values; `Time Stamp` and `Unique Batch Item ID` remain. This partial mapping is not an official OASIS test execution or a profile-conformance claim. T002 stays open.
