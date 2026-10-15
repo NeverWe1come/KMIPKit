@@ -518,6 +518,50 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
         self.assertIsNone(condition["requirement_id"])
         self.assertEqual(condition["scope_disposition"], "profile_conditional")
 
+    def test_baseline_out_of_standard_extensions_are_not_selected_for_1_0(self) -> None:
+        """Optional vendor extensions stay distinct from the standard Message Extension mechanism."""
+        oracle_path = ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json"
+        oracle = json.loads(oracle_path.read_text(encoding="utf-8"))
+        inventories = oracle["provenance"]["profile_condition_inventories"]
+        baseline = next(item for item in inventories if item["section"] == "5.1.1")
+        condition = baseline["conditions"][7]
+        message_data_condition = baseline["conditions"][4]
+        message_extension = next(
+            item for item in message_data_condition["supported_item_mappings"] if item["item"] == "Message Extension"
+        )
+
+        self.assertEqual(condition["condition_id"], "KMIPKIT-PROF-COND-5.1.1-008")
+        self.assertEqual(condition["html_line_range"], [4632, 4635])
+        self.assertEqual(
+            condition["source_text"],
+            "Optionally supports extensions outside the scope of this standard (e.g., vendor extensions, conformance clauses) that do not contradict any KMIP requirements",
+        )
+        self.assertEqual(condition["mapping_status"], "reviewed")
+        self.assertEqual(
+            condition["source_review"],
+            {
+                "disposition": "optional_out_of_standard_extensions_not_selected_for_1_0",
+                "profiles_source": "Profiles v2.1 §5.1.1 item 8",
+                "profiles_line_range": [4632, 4635],
+                "rationale": "No out-of-standard extension or vendor-specific semantics is selected for the 1.0 capability claim. This does not exclude the standard-defined Message Extension structure and client duties in KMIP-SPEC §9.13, which remain crosswalked under Baseline item 5.",
+                "additional_source_clause_ids": [],
+                "additional_requirement_ids": [],
+            },
+        )
+        self.assertEqual(condition["condition_kind"], "optional_profile_capability")
+        self.assertEqual(condition["supported_items"], [])
+        self.assertIsNone(condition["requirement_id"])
+        self.assertEqual(condition["scope_disposition"], "profile_conditional")
+        self.assertEqual(
+            message_extension["requirement_ids"],
+            [
+                "KMIPKIT-REQ-SPEC-8.3-004",
+                "KMIPKIT-REQ-SPEC-9.13-001-004",
+                "KMIPKIT-REQ-SPEC-9.13-001-005",
+            ],
+        )
+        self.assertTrue(set(message_extension["requirement_ids"]).isdisjoint(condition["source_review"]["additional_requirement_ids"]))
+
     def test_baseline_attributes_condition_has_exact_reviewed_capability_crosswalk(self) -> None:
         """Attributes maps to its general and Key Value capabilities without closing its parent."""
         catalog = json.loads((ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8"))
