@@ -278,6 +278,13 @@ fn successful_empty_discover_versions_list_is_preserved() {
         .expect("empty Discover Versions result list is valid");
 
     let outcome = result.get(0).expect("one result").outcome();
+    assert_eq!(
+        result
+            .get(0)
+            .expect("one result")
+            .discover_versions_supported_versions(),
+        Some(&[][..])
+    );
     let response_view = outcome.response();
     assert_eq!(response_view.result(), outcome.result());
     assert_eq!(response_view.supported_versions(), Some(&[][..]));
@@ -329,6 +336,13 @@ fn server_failure_result_is_preserved_as_a_completed_operation_result() {
     );
     assert_eq!(outcome.result().status().raw(), 1);
     assert_eq!(outcome.asynchronous_correlation_value(), None);
+    assert_eq!(
+        result
+            .get(0)
+            .expect("one result")
+            .discover_versions_supported_versions(),
+        None
+    );
     let response_view = outcome.response();
     assert_eq!(response_view.result(), outcome.result());
     assert_eq!(response_view.supported_versions(), None);
@@ -482,11 +496,26 @@ fn ordered_mixed_batch_outcomes_preserve_ids_and_use_one_exchange() {
         result.get(0).expect("success item").outcome(),
         ClientBatchOutcome::Completed(_)
     ));
+    let supported_versions = result
+        .get(0)
+        .expect("success item")
+        .discover_versions_supported_versions()
+        .expect("successful Discover Versions response has a present list");
+    assert_eq!(supported_versions.len(), 1);
+    assert_eq!(supported_versions[0].major(), 2);
+    assert_eq!(supported_versions[0].minor(), 1);
     let ClientBatchOutcome::Pending(pending) = result.get(1).expect("pending item").outcome()
     else {
         panic!("second ordered result is Pending");
     };
     assert_eq!(pending.asynchronous_correlation_value(), b"\x00\xa1\x7f");
+    assert_eq!(
+        result
+            .get(1)
+            .expect("pending item")
+            .discover_versions_supported_versions(),
+        None
+    );
     assert!(matches!(
         result.get(2).expect("failure item").outcome(),
         ClientBatchOutcome::Completed(_)
