@@ -407,6 +407,9 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
             "An implementation is a conforming Baseline Client if it meets the following conditions:",
             normalized_inventory_span,
         )
+        research_text = (ROOT / "specs" / "010-profile-conformance" / "research.md").read_text(encoding="utf-8")
+        self.assertIn("condition inventory covers all eight top-level conditions", research_text)
+        self.assertNotIn("pinned HTML lines 4532–4636", research_text)
         for item, line_range, source_text, supported_items, condition_kind in expected_conditions:
             with self.subTest(item=item):
                 condition = baseline["conditions"][item - 1]
