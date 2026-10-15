@@ -433,6 +433,15 @@
                   "KMIPKIT-CLAUSE-SPEC-9.19-002"
                 ],
                 "mapping_status": "reviewed"
+              },
+              {
+                "item": "Server Correlation Value",
+                "element_id": "KMIPKIT-ELEM-MESSAGE-FIELD-9-10-SERVER-CORRELATION-VALUE",
+                "requirement_ids": [],
+                "source_clause_ids": [
+                  "KMIPKIT-CLAUSE-SPEC-9.10-001"
+                ],
+                "mapping_status": "reviewed"
               }
             ],
             "requirement_id": null,
