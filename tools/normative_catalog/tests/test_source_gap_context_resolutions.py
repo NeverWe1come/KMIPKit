@@ -467,7 +467,7 @@ class SourceGapContextResolutionTests(unittest.TestCase):
         self.assertEqual(data_rule["source_keywords"], [])
         self.assertIn("lowercase `required`", summary)
         self.assertIn("not a formal `REQUIRED` keyword", summary)
-        self.assertIn("independent oracle `source_keywords` is empty", summary)
+        self.assertIn("independent source-gap oracle records `source_keywords: []`", summary)
         self.assertNotIn("its normalized `REQUIRED` hit", summary)
 
         for number in range(6, 9):
@@ -475,15 +475,23 @@ class SourceGapContextResolutionTests(unittest.TestCase):
             self.assertEqual(gap["actor"], "client")
             self.assertEqual(gap["direction"], "client cryptographic-operation request parameters")
             self.assertEqual(gap["scope_disposition"], "unresolved")
-        self.assertIn("paragraphs `-006` through `-008` record the client actor", summary)
+        self.assertIn("identify the client actor", summary)
         self.assertIn("request-parameter direction", summary)
         self.assertNotIn("actor/direction/scope unclear", summary)
 
     def test_t002_research_records_already_verified_profile_inclusion_edges(self) -> None:
         research = PROFILE_RESEARCH_PATH.read_text(encoding="utf-8")
-        start = research.index("- **Profiles §6.13 and §6.14:**")
-        end = research.find("\n- **", start + 1)
-        summary = research[start:end]
+        lines = research.splitlines()
+        start = next(
+            index
+            for index, line in enumerate(lines)
+            if line.startswith("- **Profiles") and "6.13 and" in line and "6.14" in line
+        )
+        end = next(
+            (index for index in range(start + 1, len(lines)) if lines[index].startswith("- **")),
+            len(lines),
+        )
+        summary = "\n".join(lines[start:end])
 
         self.assertIn("KMIPKIT-INCLUSION-PROF-613-BASIC-SYMMETRIC-CLIENT", summary)
         self.assertIn("KMIPKIT-INCLUSION-PROF-614-BASIC-SYMMETRIC-CLIENT", summary)
