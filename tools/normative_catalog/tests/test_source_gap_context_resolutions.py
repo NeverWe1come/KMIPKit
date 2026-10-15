@@ -22,6 +22,8 @@ HASH_MAC_SIGNATURE_SPEC_PATH = ROOT / "specs/021-hash-mac-signature-operations/s
 ENCRYPT_DECRYPT_SPEC_PATH = ROOT / "specs/019-cryptographic-operations/spec.md"
 ENCRYPT_DECRYPT_PAYLOAD_CONTRACT_PATH = ROOT / "specs/019-cryptographic-operations/contracts/operation-payloads.md"
 PROFILE_RESEARCH_PATH = ROOT / "specs/010-profile-conformance/research.md"
+DECRYPT_CORRELATION_CONTRACT_ID = "KMIPKIT-SOURCE-GAP-SPEC-6.1.11-CORRELATION-VALUE-OPTIONAL"
+ENCRYPT_CORRELATION_CONTRACT_ID = "KMIPKIT-SOURCE-GAP-SPEC-6.1.17-CORRELATION-VALUE-OPTIONAL"
 
 # These are the request rows relevant to the five KMIPKIT-0021 operations
 # assigned by the approved traceability. The first two §6.1 contexts cover
@@ -79,22 +81,22 @@ PARTIALLY_MAPPED_GENERIC_CONTEXT_OPERATION_TABLES = {
     "KMIPKIT-ELEM-OP-C2S-DECRYPT": (
         "Decrypt",
         196,
-        "KMIPKIT-SOURCE-GAP-SPEC-6.1.11-CORRELATION-VALUE-OPTIONAL",
+        DECRYPT_CORRELATION_CONTRACT_ID,
     ),
     "KMIPKIT-ELEM-OP-C2S-ENCRYPT": (
         "Encrypt",
         214,
-        "KMIPKIT-SOURCE-GAP-SPEC-6.1.17-CORRELATION-VALUE-OPTIONAL",
+        ENCRYPT_CORRELATION_CONTRACT_ID,
     ),
 }
 
 EXPECTED_GENERIC_CONTEXT_OPERATIONS = {
     "KMIPKIT-SOURCE-GAP-SPEC-6.1-PARAGRAPH-006": {
         "KMIPKIT-ELEM-OP-C2S-DECRYPT": {
-            "KMIPKIT-SOURCE-GAP-SPEC-6.1.11-CORRELATION-VALUE-OPTIONAL"
+            DECRYPT_CORRELATION_CONTRACT_ID
         },
         "KMIPKIT-ELEM-OP-C2S-ENCRYPT": {
-            "KMIPKIT-SOURCE-GAP-SPEC-6.1.17-CORRELATION-VALUE-OPTIONAL"
+            ENCRYPT_CORRELATION_CONTRACT_ID
         },
         "KMIPKIT-ELEM-OP-C2S-HASH": {
             "KMIPKIT-SOURCE-GAP-SPEC-6.1.24-CRYPTOGRAPHIC-PARAMETERS-REQUIRED"
@@ -106,10 +108,10 @@ EXPECTED_GENERIC_CONTEXT_OPERATIONS = {
     },
     "KMIPKIT-SOURCE-GAP-SPEC-6.1-PARAGRAPH-007": {
         "KMIPKIT-ELEM-OP-C2S-DECRYPT": {
-            "KMIPKIT-SOURCE-GAP-SPEC-6.1.11-CORRELATION-VALUE-OPTIONAL"
+            DECRYPT_CORRELATION_CONTRACT_ID
         },
         "KMIPKIT-ELEM-OP-C2S-ENCRYPT": {
-            "KMIPKIT-SOURCE-GAP-SPEC-6.1.17-CORRELATION-VALUE-OPTIONAL"
+            ENCRYPT_CORRELATION_CONTRACT_ID
         },
         "KMIPKIT-ELEM-OP-C2S-HASH": {
             "KMIPKIT-SOURCE-GAP-SPEC-6.1.24-CRYPTOGRAPHIC-PARAMETERS-REQUIRED"
@@ -121,10 +123,10 @@ EXPECTED_GENERIC_CONTEXT_OPERATIONS = {
     },
     "KMIPKIT-SOURCE-GAP-SPEC-6.1-PARAGRAPH-008": {
         "KMIPKIT-ELEM-OP-C2S-DECRYPT": {
-            "KMIPKIT-SOURCE-GAP-SPEC-6.1.11-CORRELATION-VALUE-OPTIONAL"
+            DECRYPT_CORRELATION_CONTRACT_ID
         },
         "KMIPKIT-ELEM-OP-C2S-ENCRYPT": {
-            "KMIPKIT-SOURCE-GAP-SPEC-6.1.17-CORRELATION-VALUE-OPTIONAL"
+            ENCRYPT_CORRELATION_CONTRACT_ID
         },
         "KMIPKIT-ELEM-OP-C2S-HASH": {
             "KMIPKIT-SOURCE-GAP-SPEC-6.1.24-CRYPTOGRAPHIC-PARAMETERS-REQUIRED",
@@ -194,7 +196,7 @@ class SourceGapContextResolutionTests(unittest.TestCase):
         oracle = json.loads(ORACLE_PATH.read_text(encoding="utf-8"))
         catalog = json.loads(CATALOG_PATH.read_text(encoding="utf-8"))
         expected = {
-            "KMIPKIT-SOURCE-GAP-SPEC-6.1.11-CORRELATION-VALUE-OPTIONAL": {
+            DECRYPT_CORRELATION_CONTRACT_ID: {
                 "source_section": "6.1.11",
                 "html_line_range": [25165, 25181],
                 "table_number": 196,
@@ -209,7 +211,7 @@ class SourceGapContextResolutionTests(unittest.TestCase):
                     "crates/kmipkit-client/tests/unit/encrypt_decrypt_multipart_execution_tests.rs::decrypt_caller_reuses_initial_server_correlation_and_keeps_aad_and_tag_initial",
                 ],
             },
-            "KMIPKIT-SOURCE-GAP-SPEC-6.1.17-CORRELATION-VALUE-OPTIONAL": {
+            ENCRYPT_CORRELATION_CONTRACT_ID: {
                 "source_section": "6.1.17",
                 "html_line_range": [26590, 26606],
                 "table_number": 214,
@@ -700,8 +702,8 @@ class SourceGapContextResolutionTests(unittest.TestCase):
             "KMIPKIT-SOURCE-GAP-SPEC-6.1.33-CORRELATION-VALUE-OPTIONAL",
             "KMIPKIT-SOURCE-GAP-SPEC-6.1.55-CORRELATION-VALUE-OPTIONAL",
             "KMIPKIT-SOURCE-GAP-SPEC-6.1.56-CORRELATION-VALUE-OPTIONAL",
-            "KMIPKIT-SOURCE-GAP-SPEC-6.1.11-CORRELATION-VALUE-OPTIONAL",
-            "KMIPKIT-SOURCE-GAP-SPEC-6.1.17-CORRELATION-VALUE-OPTIONAL",
+            DECRYPT_CORRELATION_CONTRACT_ID,
+            ENCRYPT_CORRELATION_CONTRACT_ID,
         }
         for number in (12, 14, 16):
             gap = gaps[f"KMIPKIT-SOURCE-GAP-SPEC-6.1-PROCEDURE-{number:03d}"]
