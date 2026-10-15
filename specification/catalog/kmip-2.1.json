@@ -63690,7 +63690,9 @@
       "parent_element_ids": [
         "KMIPKIT-ELEM-ATTRIBUTE-LINK"
       ],
-      "requirement_ids": [],
+      "requirement_ids": [
+        "KMIPKIT-REQ-SPEC-4.31-004"
+      ],
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": null,
@@ -63714,7 +63716,9 @@
       "parent_element_ids": [
         "KMIPKIT-ELEM-ATTRIBUTE-LINK"
       ],
-      "requirement_ids": [],
+      "requirement_ids": [
+        "KMIPKIT-REQ-SPEC-4.31-005"
+      ],
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": null,
@@ -89032,6 +89036,92 @@
       "review_note": "Pinned KMIP Specification v2.1 §4.31 paragraph 2, lines 15815–15819, states that a Managed Object MAY lack Links when associated key material is unavailable to the server or client. Table 92, lines 15968–16082, says Link is not always present, is initially set by Client or Server, and is modifiable/deletable by a client. The client-visible object state may be inbound or outbound; the source does not assign a message direction. This permission does not make omission valid for every operation or override operation-specific Link requirements. No typed Link behavior implementation, executable test, or official Test Case ID is linked; no conformance claim is made."
     },
     {
+      "requirement_id": "KMIPKIT-REQ-SPEC-4.31-004",
+      "source_clause_ids": [],
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "4.31"
+        }
+      ],
+      "source_keyword": null,
+      "normative_strength": "mandatory",
+      "source_force": "required_table_body_value",
+      "source_gap_id": "KMIPKIT-SOURCE-GAP-SPEC-4.31-LINK-TYPE-REQUIRED",
+      "source_locator": {
+        "kind": "table_body_row",
+        "section": "4.31",
+        "row_label": "Link Type",
+        "html_line_range": [
+          15923,
+          15940
+        ]
+      },
+      "subject": "Link Type structure member",
+      "summary": "A complete Link attribute value represented as object state includes the required Link Type (Enumeration) member.",
+      "role": "client",
+      "direction": "both",
+      "condition": "A complete Link attribute is represented as object state rather than as a structured Locate search criterion.",
+      "scope_state": "client_1_0",
+      "element_ids": [
+        "KMIPKIT-ELEM-STRUCTURE-MEMBER-4-31-LINK-TYPE"
+      ],
+      "profile_ids": [],
+      "test_case_ids": [
+        "KMIPKIT-TEST-CN01-2-66"
+      ],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "negative_verification_required": false,
+      "decision_id": null,
+      "status": "unassigned",
+      "review_note": "Pinned KMIP Specification v2.1 §4.31 Table 91 requires the Link Type member in a complete Link value. This mapping is limited by §6.1.28: partial structured Locate criteria may specify Linked Object Identifier without Link Type, so this requirement does not require complete Link values in Locate filters. The pinned Test Cases CN01 §2.66 entry TC-PGP-1-21 describes registering PGP public and private key blocks and adding links between the Managed Objects, but its fixture is unavailable in the pinned tree. No official execution evidence is claimed. No local typed Link validation or verification evidence is linked."
+    },
+    {
+      "requirement_id": "KMIPKIT-REQ-SPEC-4.31-005",
+      "source_clause_ids": [],
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "4.31"
+        }
+      ],
+      "source_keyword": null,
+      "normative_strength": "mandatory",
+      "source_force": "required_table_body_value",
+      "source_gap_id": "KMIPKIT-SOURCE-GAP-SPEC-4.31-LINKED-OBJECT-IDENTIFIER-REQUIRED",
+      "source_locator": {
+        "kind": "table_body_row",
+        "section": "4.31",
+        "row_label": "Linked Object Identifier",
+        "html_line_range": [
+          15942,
+          15961
+        ]
+      },
+      "subject": "Linked Object Identifier structure member",
+      "summary": "A complete Link attribute value represented as object state includes the required Linked Object Identifier member.",
+      "role": "client",
+      "direction": "both",
+      "condition": "A complete Link attribute is represented as object state rather than as a structured Locate search criterion.",
+      "scope_state": "client_1_0",
+      "element_ids": [
+        "KMIPKIT-ELEM-STRUCTURE-MEMBER-4-31-LINKED-OBJECT-IDENTIFIER"
+      ],
+      "profile_ids": [],
+      "test_case_ids": [
+        "KMIPKIT-TEST-CN01-2-66"
+      ],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "negative_verification_required": false,
+      "decision_id": null,
+      "status": "unassigned",
+      "review_note": "Pinned KMIP Specification v2.1 §4.31 Table 91 requires the Linked Object Identifier member in a complete Link value. This mapping is limited by §6.1.28: partial structured Locate criteria may specify Linked Object Identifier without Link Type, so this requirement does not require complete Link values in Locate filters. The pinned Test Cases CN01 §2.66 entry TC-PGP-1-21 describes registering PGP public and private key blocks and adding links between the Managed Objects, but its fixture is unavailable in the pinned tree. No official execution evidence is claimed. No local typed Link validation or verification evidence is linked."
+    },
+    {
       "requirement_id": "KMIPKIT-REQ-SPEC-4.32-001",
       "source_clause_ids": [
         "KMIPKIT-CLAUSE-SPEC-4.32-001"
@@ -103047,6 +103137,8 @@
         "KMIPKIT-REQ-SPEC-4.28-001-003",
         "KMIPKIT-REQ-SPEC-4.30-001",
         "KMIPKIT-REQ-SPEC-4.31-002",
+        "KMIPKIT-REQ-SPEC-4.31-004",
+        "KMIPKIT-REQ-SPEC-4.31-005",
         "KMIPKIT-REQ-SPEC-4.32-001",
         "KMIPKIT-REQ-SPEC-4.34-001-001",
         "KMIPKIT-REQ-SPEC-4.35-001-001",
@@ -104425,6 +104517,8 @@
         "KMIPKIT-REQ-SPEC-4.28-001-003",
         "KMIPKIT-REQ-SPEC-4.30-001",
         "KMIPKIT-REQ-SPEC-4.31-002",
+        "KMIPKIT-REQ-SPEC-4.31-004",
+        "KMIPKIT-REQ-SPEC-4.31-005",
         "KMIPKIT-REQ-SPEC-4.32-001",
         "KMIPKIT-REQ-SPEC-4.34-001-001",
         "KMIPKIT-REQ-SPEC-4.35-001-001",
@@ -105787,6 +105881,8 @@
         "KMIPKIT-REQ-SPEC-4.28-001-003",
         "KMIPKIT-REQ-SPEC-4.30-001",
         "KMIPKIT-REQ-SPEC-4.31-002",
+        "KMIPKIT-REQ-SPEC-4.31-004",
+        "KMIPKIT-REQ-SPEC-4.31-005",
         "KMIPKIT-REQ-SPEC-4.32-001",
         "KMIPKIT-REQ-SPEC-4.34-001-001",
         "KMIPKIT-REQ-SPEC-4.35-001-001",
@@ -107478,6 +107574,8 @@
         "KMIPKIT-REQ-SPEC-4.28-001-003",
         "KMIPKIT-REQ-SPEC-4.30-001",
         "KMIPKIT-REQ-SPEC-4.31-002",
+        "KMIPKIT-REQ-SPEC-4.31-004",
+        "KMIPKIT-REQ-SPEC-4.31-005",
         "KMIPKIT-REQ-SPEC-4.32-001",
         "KMIPKIT-REQ-SPEC-4.34-001-001",
         "KMIPKIT-REQ-SPEC-4.35-001-001",
@@ -108889,6 +108987,8 @@
         "KMIPKIT-REQ-SPEC-4.28-001-003",
         "KMIPKIT-REQ-SPEC-4.30-001",
         "KMIPKIT-REQ-SPEC-4.31-002",
+        "KMIPKIT-REQ-SPEC-4.31-004",
+        "KMIPKIT-REQ-SPEC-4.31-005",
         "KMIPKIT-REQ-SPEC-4.32-001",
         "KMIPKIT-REQ-SPEC-4.34-001-001",
         "KMIPKIT-REQ-SPEC-4.35-001-001",
@@ -110303,6 +110403,8 @@
         "KMIPKIT-REQ-SPEC-4.28-001-003",
         "KMIPKIT-REQ-SPEC-4.30-001",
         "KMIPKIT-REQ-SPEC-4.31-002",
+        "KMIPKIT-REQ-SPEC-4.31-004",
+        "KMIPKIT-REQ-SPEC-4.31-005",
         "KMIPKIT-REQ-SPEC-4.32-001",
         "KMIPKIT-REQ-SPEC-4.34-001-001",
         "KMIPKIT-REQ-SPEC-4.35-001-001",
@@ -111715,6 +111817,8 @@
         "KMIPKIT-REQ-SPEC-4.28-001-003",
         "KMIPKIT-REQ-SPEC-4.30-001",
         "KMIPKIT-REQ-SPEC-4.31-002",
+        "KMIPKIT-REQ-SPEC-4.31-004",
+        "KMIPKIT-REQ-SPEC-4.31-005",
         "KMIPKIT-REQ-SPEC-4.32-001",
         "KMIPKIT-REQ-SPEC-4.34-001-001",
         "KMIPKIT-REQ-SPEC-4.35-001-001",
@@ -113111,6 +113215,8 @@
         "KMIPKIT-REQ-SPEC-4.28-001-003",
         "KMIPKIT-REQ-SPEC-4.30-001",
         "KMIPKIT-REQ-SPEC-4.31-002",
+        "KMIPKIT-REQ-SPEC-4.31-004",
+        "KMIPKIT-REQ-SPEC-4.31-005",
         "KMIPKIT-REQ-SPEC-4.32-001",
         "KMIPKIT-REQ-SPEC-4.34-001-001",
         "KMIPKIT-REQ-SPEC-4.35-001-001",
@@ -114485,6 +114591,8 @@
         "KMIPKIT-REQ-SPEC-4.28-001-003",
         "KMIPKIT-REQ-SPEC-4.30-001",
         "KMIPKIT-REQ-SPEC-4.31-002",
+        "KMIPKIT-REQ-SPEC-4.31-004",
+        "KMIPKIT-REQ-SPEC-4.31-005",
         "KMIPKIT-REQ-SPEC-4.32-001",
         "KMIPKIT-REQ-SPEC-4.34-001-001",
         "KMIPKIT-REQ-SPEC-4.35-001-001",
@@ -115868,6 +115976,8 @@
         "KMIPKIT-REQ-SPEC-4.28-001-003",
         "KMIPKIT-REQ-SPEC-4.30-001",
         "KMIPKIT-REQ-SPEC-4.31-002",
+        "KMIPKIT-REQ-SPEC-4.31-004",
+        "KMIPKIT-REQ-SPEC-4.31-005",
         "KMIPKIT-REQ-SPEC-4.32-001",
         "KMIPKIT-REQ-SPEC-4.34-001-001",
         "KMIPKIT-REQ-SPEC-4.35-001-001",
@@ -117259,6 +117369,8 @@
         "KMIPKIT-REQ-SPEC-4.28-001-003",
         "KMIPKIT-REQ-SPEC-4.30-001",
         "KMIPKIT-REQ-SPEC-4.31-002",
+        "KMIPKIT-REQ-SPEC-4.31-004",
+        "KMIPKIT-REQ-SPEC-4.31-005",
         "KMIPKIT-REQ-SPEC-4.32-001",
         "KMIPKIT-REQ-SPEC-4.34-001-001",
         "KMIPKIT-REQ-SPEC-4.35-001-001",
@@ -118658,6 +118770,8 @@
         "KMIPKIT-REQ-SPEC-4.28-001-003",
         "KMIPKIT-REQ-SPEC-4.30-001",
         "KMIPKIT-REQ-SPEC-4.31-002",
+        "KMIPKIT-REQ-SPEC-4.31-004",
+        "KMIPKIT-REQ-SPEC-4.31-005",
         "KMIPKIT-REQ-SPEC-4.32-001",
         "KMIPKIT-REQ-SPEC-4.34-001-001",
         "KMIPKIT-REQ-SPEC-4.35-001-001",
@@ -120047,6 +120161,8 @@
         "KMIPKIT-REQ-SPEC-4.28-001-003",
         "KMIPKIT-REQ-SPEC-4.30-001",
         "KMIPKIT-REQ-SPEC-4.31-002",
+        "KMIPKIT-REQ-SPEC-4.31-004",
+        "KMIPKIT-REQ-SPEC-4.31-005",
         "KMIPKIT-REQ-SPEC-4.32-001",
         "KMIPKIT-REQ-SPEC-4.34-001-001",
         "KMIPKIT-REQ-SPEC-4.35-001-001",
@@ -121289,6 +121405,8 @@
         "KMIPKIT-REQ-SPEC-4.28-001-003",
         "KMIPKIT-REQ-SPEC-4.30-001",
         "KMIPKIT-REQ-SPEC-4.31-002",
+        "KMIPKIT-REQ-SPEC-4.31-004",
+        "KMIPKIT-REQ-SPEC-4.31-005",
         "KMIPKIT-REQ-SPEC-4.32-001",
         "KMIPKIT-REQ-SPEC-4.34-001-001",
         "KMIPKIT-REQ-SPEC-4.35-001-001",
@@ -122536,6 +122654,8 @@
         "KMIPKIT-REQ-SPEC-4.28-001-003",
         "KMIPKIT-REQ-SPEC-4.30-001",
         "KMIPKIT-REQ-SPEC-4.31-002",
+        "KMIPKIT-REQ-SPEC-4.31-004",
+        "KMIPKIT-REQ-SPEC-4.31-005",
         "KMIPKIT-REQ-SPEC-4.32-001",
         "KMIPKIT-REQ-SPEC-4.34-001-001",
         "KMIPKIT-REQ-SPEC-4.35-001-001",
@@ -123938,6 +124058,8 @@
         "KMIPKIT-REQ-SPEC-4.28-001-003",
         "KMIPKIT-REQ-SPEC-4.30-001",
         "KMIPKIT-REQ-SPEC-4.31-002",
+        "KMIPKIT-REQ-SPEC-4.31-004",
+        "KMIPKIT-REQ-SPEC-4.31-005",
         "KMIPKIT-REQ-SPEC-4.32-001",
         "KMIPKIT-REQ-SPEC-4.34-001-001",
         "KMIPKIT-REQ-SPEC-4.35-001-001",
@@ -125373,6 +125495,8 @@
         "KMIPKIT-REQ-SPEC-4.28-001-003",
         "KMIPKIT-REQ-SPEC-4.30-001",
         "KMIPKIT-REQ-SPEC-4.31-002",
+        "KMIPKIT-REQ-SPEC-4.31-004",
+        "KMIPKIT-REQ-SPEC-4.31-005",
         "KMIPKIT-REQ-SPEC-4.32-001",
         "KMIPKIT-REQ-SPEC-4.34-001-001",
         "KMIPKIT-REQ-SPEC-4.35-001-001",
@@ -126773,6 +126897,8 @@
         "KMIPKIT-REQ-SPEC-4.28-001-003",
         "KMIPKIT-REQ-SPEC-4.30-001",
         "KMIPKIT-REQ-SPEC-4.31-002",
+        "KMIPKIT-REQ-SPEC-4.31-004",
+        "KMIPKIT-REQ-SPEC-4.31-005",
         "KMIPKIT-REQ-SPEC-4.32-001",
         "KMIPKIT-REQ-SPEC-4.34-001-001",
         "KMIPKIT-REQ-SPEC-4.35-001-001",
@@ -130773,7 +130899,10 @@
       "evidence_category": "official_conformance_test",
       "mandatory_status": "unspecified",
       "profile_ids": [],
-      "requirement_ids": [],
+      "requirement_ids": [
+        "KMIPKIT-REQ-SPEC-4.31-004",
+        "KMIPKIT-REQ-SPEC-4.31-005"
+      ],
       "element_ids": [
         "KMIPKIT-ELEM-ATTRIBUTE-LINK"
       ],
