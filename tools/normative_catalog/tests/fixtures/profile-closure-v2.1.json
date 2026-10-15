@@ -149,6 +149,21 @@
               "Locate",
               "Query"
             ],
+            "supported_item_mappings": [
+              {
+                "item": "Query",
+                "element_id": "KMIPKIT-ELEM-OP-C2S-QUERY",
+                "requirement_ids": [
+                  "KMIPKIT-REQ-SPEC-6.1.40-014",
+                  "KMIPKIT-REQ-SPEC-6.1.40-016"
+                ],
+                "source_clause_ids": [
+                  "KMIPKIT-CLAUSE-SPEC-6.1.40-014",
+                  "KMIPKIT-CLAUSE-SPEC-6.1.40-016"
+                ],
+                "mapping_status": "reviewed"
+              }
+            ],
             "requirement_id": null,
             "scope_disposition": "profile_conditional",
             "mapping_status": "pending_t002_crosswalk"

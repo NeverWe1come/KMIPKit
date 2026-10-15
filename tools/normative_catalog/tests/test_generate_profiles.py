@@ -489,6 +489,10 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
             "KMIPKIT-CLAUSE-SPEC-6.1.40-014": "SHALL",
             "KMIPKIT-CLAUSE-SPEC-6.1.40-016": "MAY",
         }
+        expected_strengths = {
+            "KMIPKIT-REQ-SPEC-6.1.40-014": "mandatory",
+            "KMIPKIT-REQ-SPEC-6.1.40-016": "permission_or_optional",
+        }
         self.assertEqual(set(source_candidates), set(expected_mapping["source_clause_ids"]))
         self.assertEqual(set(source_reviews), set(expected_mapping["source_clause_ids"]))
         self.assertEqual(query_element["name"], "Query")
@@ -511,6 +515,7 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
 
                 self.assertEqual(requirement["source_clause_ids"], [clause_id])
                 self.assertEqual(requirement["source_keyword"], keyword)
+                self.assertEqual(requirement["normative_strength"], expected_strengths[requirement_id])
                 self.assertEqual(requirement["role"], "client")
                 self.assertEqual(requirement["direction"], "client_to_server")
                 self.assertIn(expected_mapping["element_id"], requirement["element_ids"])
