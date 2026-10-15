@@ -692,8 +692,8 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
         expected_mapping = {
             "item": "Attributes",
             "element_id": "KMIPKIT-ELEM-ATTRIBUTE-STRUCTURE-5-1-ATTRIBUTES",
-            "requirement_ids": ["KMIPKIT-REQ-SPEC-5.1-002", "KMIPKIT-REQ-SPEC-3.2-001"],
-            "source_clause_ids": ["KMIPKIT-CLAUSE-SPEC-5.1-002", "KMIPKIT-CLAUSE-SPEC-3.2-001"],
+            "requirement_ids": ["KMIPKIT-REQ-SPEC-5.1-002"],
+            "source_clause_ids": ["KMIPKIT-CLAUSE-SPEC-5.1-002"],
             "mapping_status": "reviewed",
         }
         self.assertEqual(condition["supported_items"], ["Attributes"])
@@ -717,13 +717,6 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
                 "direction": "both",
                 "locator": {"ordinal": 2, "block_kind": "table_row"},
                 "source_direction_phrase": "client encodes and decodes Attributes, including repeated attribute values",
-            },
-            "KMIPKIT-REQ-SPEC-3.2-001": {
-                "clause_id": "KMIPKIT-CLAUSE-SPEC-3.2-001",
-                "keyword": "OPTIONAL",
-                "direction": "client_to_server",
-                "locator": {"ordinal": 1, "block_kind": "paragraph"},
-                "source_direction_phrase": "client encodes/decodes attribute information encapsulated in Key Value",
             },
         }
         expected_clause_ids = set(expected_mapping["source_clause_ids"])
