@@ -1039,7 +1039,7 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
         self.assertIn("Linked Object Identifier value is specified without the Link Type value", locate_007_source)
 
     def test_baseline_message_data_structures_condition_has_exact_reviewed_batch_crosswalk(self) -> None:
-        """The three reviewed batch mappings stay bounded while item 5 remains pending."""
+        """The four reviewed batch mappings stay bounded while item 5 remains pending."""
         catalog = json.loads((ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8"))
         oracle = json.loads(
             (ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json")
@@ -1091,7 +1091,21 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
             "source_clause_ids": [expected_batch_item_clause_id],
             "mapping_status": "reviewed",
         }
-        expected_mappings = [expected_mapping, expected_error_mapping, expected_batch_item_mapping]
+        expected_batch_order_option_clause_id = "KMIPKIT-CLAUSE-SPEC-9.8-001"
+        expected_batch_order_option_element_id = "KMIPKIT-ELEM-MESSAGE-FIELD-9-8-BATCH-ORDER-OPTION"
+        expected_batch_order_option_mapping = {
+            "item": "Batch Order Option",
+            "element_id": expected_batch_order_option_element_id,
+            "requirement_ids": [],
+            "source_clause_ids": [expected_batch_order_option_clause_id],
+            "mapping_status": "reviewed",
+        }
+        expected_mappings = [
+            expected_mapping,
+            expected_error_mapping,
+            expected_batch_item_mapping,
+            expected_batch_order_option_mapping,
+        ]
 
         self.assertEqual(condition["item"], 5)
         self.assertEqual(condition["html_line_range"], [4575, 4613])
@@ -1119,13 +1133,12 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
         self.assertEqual(condition.get("supported_item_mappings"), expected_mappings)
         self.assertEqual(
             [mapping["item"] for mapping in condition["supported_item_mappings"]],
-            ["Batch Count", "Batch Error Continuation Option", "Batch Item"],
+            ["Batch Count", "Batch Error Continuation Option", "Batch Item", "Batch Order Option"],
         )
         self.assertEqual(
             set(condition["supported_items"]) - {mapping["item"] for mapping in condition["supported_item_mappings"]},
             {
                 "Asynchronous Indicator",
-                "Batch Order Option",
                 "Maximum Response Size",
                 "Message Extension",
                 "Operation",
@@ -1195,6 +1208,104 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
         self.assertEqual(batch_item_review["source_obligations"][0]["actor"], "unspecified")
         self.assertEqual(batch_item_review["source_obligations"][0]["direction"], "unspecified")
         self.assertEqual(batch_item_review["source_obligations"][0]["scope_disposition"], "unresolved")
+
+        batch_order_option_element = next(
+            item for item in catalog["elements"] if item["element_id"] == expected_batch_order_option_element_id
+        )
+        self.assertEqual(batch_order_option_element["kind"], "message_field")
+        self.assertEqual(batch_order_option_element["name"], "Batch Order Option")
+        self.assertEqual(
+            batch_order_option_element["source_refs"], [{"source_id": "KMIPKIT-SRC-spec", "section": "9.8"}]
+        )
+        self.assertEqual(batch_order_option_element["direction"], "client_to_server")
+        self.assertEqual(batch_order_option_element["scope_state"], "client_1_0")
+        self.assertEqual(
+            batch_order_option_element["parent_element_ids"], ["KMIPKIT-ELEM-MESSAGE-FIELD-8-2-BATCH-ORDER-OPTION"]
+        )
+        self.assertEqual(
+            batch_order_option_element["requirement_ids"], ["KMIPKIT-REQ-SPEC-9.8-001-001"]
+        )
+
+        batch_order_option_clause = next(
+            item
+            for item in catalog["source_clauses"]
+            if item["clause_id"] == expected_batch_order_option_clause_id
+        )
+        self.assertEqual(batch_order_option_clause["source_keywords"], ["SHALL", "MAY"])
+        self.assertEqual(batch_order_option_clause["role"], "both")
+        self.assertEqual(batch_order_option_clause["direction"], "both")
+        self.assertEqual(batch_order_option_clause["scope_state"], "mixed")
+        self.assertEqual(
+            batch_order_option_clause["requirement_ids"],
+            [
+                "KMIPKIT-REQ-SPEC-9.8-001-001",
+                "KMIPKIT-REQ-SPEC-9.8-001-002",
+                "KMIPKIT-REQ-SPEC-9.8-001-003",
+            ],
+        )
+        batch_order_option_requirements = {
+            item["requirement_id"]: item
+            for item in catalog["requirements"]
+            if item["requirement_id"].startswith("KMIPKIT-REQ-SPEC-9.8-001-")
+        }
+        retired_client_candidate = batch_order_option_requirements["KMIPKIT-REQ-SPEC-9.8-001-001"]
+        self.assertEqual(retired_client_candidate["status"], "retired")
+        self.assertEqual(retired_client_candidate["role"], "not_applicable")
+        self.assertEqual(retired_client_candidate["direction"], "not_applicable")
+        self.assertEqual(retired_client_candidate["scope_state"], "out_of_scope")
+        for requirement_id in (
+            "KMIPKIT-REQ-SPEC-9.8-001-002",
+            "KMIPKIT-REQ-SPEC-9.8-001-003",
+        ):
+            with self.subTest(server_requirement_id=requirement_id):
+                server_requirement = batch_order_option_requirements[requirement_id]
+                self.assertEqual(server_requirement["role"], "server")
+                self.assertEqual(server_requirement["scope_state"], "server_only")
+                self.assertNotIn(requirement_id, expected_batch_order_option_mapping["requirement_ids"])
+
+        batch_order_option_review = next(
+            item
+            for item in oracle["source_requirement_reviews"]
+            if item["source_clause_id"] == expected_batch_order_option_clause_id
+        )
+        self.assertEqual(batch_order_option_review["html_line_range"], [43862, 43865])
+        self.assertEqual(
+            batch_order_option_review["expected_client_requirement_ids"], []
+        )
+        self.assertEqual(
+            batch_order_option_review["rejected_candidate_mappings"][0]["expected_disposition"],
+            "not_a_normative_client_requirement",
+        )
+        self.assertEqual(
+            [obligation["actor"] for obligation in batch_order_option_review["source_obligations"]],
+            ["server", "server"],
+        )
+        self.assertEqual(
+            _normalized_html_source_span(spec_lines, [42762, 42778]),
+            "Batch Order Option No If omitted, then True is assumed",
+        )
+        self.assertEqual(
+            _normalized_html_source_span(spec_lines, [43862, 43866]),
+            "A Boolean value used in requests where the Batch Count is greater than 1. If True, then batched "
+            "operations SHALL be executed in the order in which they appear within the request. If False, then "
+            "the server MAY choose to execute the batched operations in any order. If not specified, then True "
+            "is assumed.",
+        )
+        self.assertEqual(
+            _normalized_html_source_span(spec_lines, [43884, 43901]),
+            "Batch Order Option Boolean Table 407: Batch Order Option in Message Request Header",
+        )
+        check_specific_should = next(
+            item
+            for item in catalog["requirements"]
+            if item["requirement_id"] == "KMIPKIT-REQ-SPEC-6.1.7-002-001"
+        )
+        self.assertEqual(check_specific_should["source_keyword"], "SHOULD")
+        self.assertEqual(check_specific_should["condition"], "When a batch contains Check.")
+        self.assertEqual(check_specific_should["element_ids"], ["KMIPKIT-ELEM-OP-C2S-CHECK"])
+        self.assertNotIn(
+            "KMIPKIT-REQ-SPEC-6.1.7-002-001", expected_batch_order_option_mapping["requirement_ids"]
+        )
 
         profiles_lines = (ROOT / profiles_path).read_text(encoding="cp1252").splitlines()
         self.assertEqual(
