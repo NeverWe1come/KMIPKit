@@ -45,7 +45,7 @@ PASS: 59 tests, 1 skipped. The skipped case requires creating a symlink, which t
 | Pinned OASIS source immutability | PASS against base `ddba006cdba960e765bc3b4bf0e147826544c6cc`. |
 | `git diff --check` | PASS. |
 | Independent QA | PASS: no blocking findings. A P3 assertion pinning `KMIPKIT-CLAUSE-SPEC-8.6-003.requirement_ids` was removed; follow-up QA confirmed the stable server-only check and direct oracle exclusion remain. The full generator module passed again after this test cleanup (59 tests, 1 skipped). |
-| Refactor/evidence commit | Pending final evidence review. |
-| Exact-head GitHub CI | Pending publication of this slice. |
+| Refactor/evidence commit | PASS: DCO-signed commit `98f8c385`; records source review, TDD/full-suite evidence, QA disposition, and progress. |
+| Exact-head GitHub CI | PASS: run `38753179622` on `98f8c38532bc13879e350a7cc646b053d5f0510b`; 37/37 jobs successful, zero failures, zero skipped. |
 
 The parent `KMIPKIT-PROF-COND-5.1.1-005` remains null / `profile_conditional` / `pending_t002_crosswalk`. T002 and PR #90 remain open.

@@ -3019,6 +3019,6 @@ This tranche maps the final source-ordered value, `Unique Batch Item ID`, to the
 | Pinned OASIS source immutability | `py -3 -B tools/normative_catalog/check_immutable_sources.py --repo-root . --base-sha ddba006cdba960e765bc3b4bf0e147826544c6cc` | PASS: pinned upstream source copies match the pre-slice base. |
 | Whitespace validation | `git diff --check` | PASS. |
 | Independent QA | PASS: no blocking findings. The reviewer identified one P3 assertion that froze `KMIPKIT-CLAUSE-SPEC-8.6-003.requirement_ids`; it was removed while retaining the stable `server_only` classification and the direct oracle exclusion of the response echo requirement. Follow-up QA confirmed the P3 is resolved. |
-| Exact-head GitHub CI | Pending. | Publish the evidence refactor and test cleanup, then verify CI on the exact pushed head. |
+| Exact-head GitHub CI | PASS: run `38753179622` on `98f8c38532bc13879e350a7cc646b053d5f0510b`; 37/37 jobs successful, zero failures, zero skipped. |
 
 The source review and full citations are recorded in `research.md`. The parent condition remains null / `profile_conditional` / `pending_t002_crosswalk`; the 14/14 value mapping is not all-profile closure, official test execution, profile eligibility, or a conformance claim.
