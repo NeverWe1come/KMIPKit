@@ -3022,3 +3022,22 @@ This tranche maps the final source-ordered value, `Unique Batch Item ID`, to the
 | Exact-head GitHub CI | PASS: run `38753179622` on `98f8c38532bc13879e350a7cc646b053d5f0510b`; 37/37 jobs successful, zero failures, zero skipped. |
 
 The source review and full citations are recorded in `research.md`. The parent condition remains null / `profile_conditional` / `pending_t002_crosswalk`; the 14/14 value mapping is not all-profile closure, official test execution, profile eligibility, or a conformance claim.
+
+### KMIPKIT-0010 T002 tranche — Baseline Client §5.1.1 item 6 Message Protocols (2026-10-15)
+
+The three protocol categories map in source order as Authentication, Transport, and TTLV, each with `element_id: null` because they are protocol capabilities rather than KMIP message elements. Authentication links the source-reviewed Basic Authentication Suite client IDs. Transport links Specification §10.4 and conditional HTTPS client requirements, including `KMIPKIT-REQ-PROF-3.2.3-001`; its source explicitly says “servers and clients SHALL”, while the source review leaves direction unspecified. The crosswalk does not infer a client action beyond that broad text or import the server-only details of §3.1.3. TTLV links the HTTPS Content-Type and binary-body requirements; generic TTLV source clauses remain provenance only because their source-review actor is unresolved. The §10.2 mandatory-TTLV statement remains informative context, without a fabricated REQ ID. The condition remains null / `profile_conditional` / `pending_t002_crosswalk`; T002 and the Baseline claim gate remain open.
+
+| Stage | DCO-signed commit and command | Result |
+|---|---|---|
+| Red — assert exact item-6 row order, client requirement IDs, source provenance, unresolved/server-only/out-of-scope exclusions, source text, and pending parent state | `59672b81`; `py -3 -B -m unittest tools.normative_catalog.tests.test_generate_profiles.ProfileMetadataGeneratorTests.test_baseline_message_protocols_crosswalk_keeps_unresolved_and_server_duties_out -v` | Expected Red: one assertion failure because the independent oracle had no item-6 mapping. |
+| Green — add only the reviewed three-row mapping to the independent oracle | `f3787dc4`; same focused command | PASS: 1/1. |
+| Correction Red — restore the explicit client half of HTTPS §3.2.3 and assert its conditional scope | `48284913`; same focused command | Expected Red: one assertion failure because `KMIPKIT-REQ-PROF-3.2.3-001` was missing from the Transport mapping. |
+| Correction Green — include the client-eligible §3.2.3 requirement ID | `5a421128`; same focused command | PASS: 1/1. Independent QA's scoped re-review confirmed the explicit joint actor, unspecified direction, and profile-conditional scope; no findings remain. |
+| Refactor regression — assert both source-obligation `scope_disposition` and catalog requirement `scope_state` stay `profile_conditional` | Refactor/evidence commit pending; focused command above | PASS: 1/1 after the QA observation was addressed. |
+| Full normative suite | `py -3 -B -m unittest discover -s tools/normative_catalog/tests -p 'test_*.py'` | PASS: 566 tests in 314.858 seconds; 9 skipped. |
+| Full profile generator module after the final test assertion | `py -3 -B -m unittest tools.normative_catalog.tests.test_generate_profiles` | PASS: 60 tests in 25.721 seconds; 1 skipped (Windows symlink-creation limitation). |
+| Catalog, generated profile metadata, and coverage report checks | `py -3 -B tools/normative_catalog/validate.py --repo-root .`; `py -3 -B tools/normative_catalog/generate_profiles.py --check --repo-root .`; `py -3 -B tools/normative_catalog/report.py --check --repo-root .` | PASS: 4 sources, 1,411 clauses, 4,117 records; generated profile metadata and coverage report are current. |
+| Pinned OASIS source immutability and whitespace | `py -3 -B tools/normative_catalog/check_immutable_sources.py --repo-root . --base-sha b3ead993306d757025be237a1a2e23fa5ea6f122`; `git diff --check` | PASS: all pinned upstream sources match the pre-slice base; whitespace check exits successfully. |
+| Exact-head GitHub CI | Pending Refactor/evidence publication | Do not infer CI status from the prior `b3ead993` run; publish only after the Refactor/evidence commit and verify the exact new head. |
+
+The mappings preserve unresolved attribution as open work and make no runtime, generated-code, all-profile, or Baseline conformance claim.

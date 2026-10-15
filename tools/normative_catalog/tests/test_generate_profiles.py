@@ -3058,7 +3058,17 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
         )
         self.assertEqual(https_authenticity_review["source_obligations"][0]["actor"], "client and server")
         self.assertEqual(https_authenticity_review["source_obligations"][0]["direction"], "unspecified")
+        self.assertEqual(
+            https_authenticity_review["source_obligations"][0]["scope_disposition"],
+            "profile_conditional",
+        )
         self.assertIn("KMIPKIT-REQ-PROF-3.2.3-001", requirement_ids)
+        https_authenticity_requirement = next(
+            item
+            for item in catalog["requirements"]
+            if item["requirement_id"] == "KMIPKIT-REQ-PROF-3.2.3-001"
+        )
+        self.assertEqual(https_authenticity_requirement["scope_state"], "profile_conditional")
         self.assertNotIn("KMIPKIT-REQ-SPEC-10.1.2-001", requirement_ids)
         self.assertNotIn("KMIPKIT-REQ-SPEC-10.1.2-002-001", requirement_ids)
         self.assertNotIn("KMIPKIT-REQ-SPEC-10.1.5-001-001", requirement_ids)
