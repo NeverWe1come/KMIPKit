@@ -65,6 +65,17 @@ class HttpsEncodingScopeTests(unittest.TestCase):
         self.assertIsNone(gap["candidate_requirement_id"])
         self.assertIsNone(gap["proposed_requirement_id"])
 
+    def test_out_of_scope_https_gaps_link_to_their_catalog_clauses(self) -> None:
+        for gap_id, clause_id in (
+            ("KMIPKIT-SOURCE-GAP-PROF-5.3.1-5139", "KMIPKIT-CLAUSE-PROF-5.3.1-006"),
+            ("KMIPKIT-SOURCE-GAP-PROF-5.3.1-5141", "KMIPKIT-CLAUSE-PROF-5.3.1-007"),
+            ("KMIPKIT-SOURCE-GAP-PROF-5.3.1-5149", "KMIPKIT-CLAUSE-PROF-5.3.1-011"),
+        ):
+            with self.subTest(gap_id=gap_id):
+                gap = self.gaps[gap_id]
+                self.assertEqual(gap["source_clause_id"], clause_id)
+                self.assertEqual(gap["source_locator"], self.clauses[clause_id]["locator"])
+
 
 if __name__ == "__main__":
     unittest.main()
