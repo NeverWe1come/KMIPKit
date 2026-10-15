@@ -3296,3 +3296,18 @@ Specification v2.1 Table 196 Decrypt and Table 214 Encrypt both mark the request
 | Final parallel catalog/report attempt | `py -3 -B tools/normative_catalog/validate.py` and `py -3 -B tools/normative_catalog/report.py --check`, launched alongside independent read-only checks | RETRIED: the parallel invocation reported repository-lock safety errors; both commands passed when rerun sequentially. |
 | Final sequential catalog/report rerun | `py -3 -B tools/normative_catalog/validate.py`; then `py -3 -B tools/normative_catalog/report.py --check` | PASS: catalog valid (4 sources, 1,411 clauses, 4,117 records); coverage report verified. |
 | Scope boundary | `856db0ba`, `f941a4cf` | DISC-045 Data ambiguity, broader generic parameter mapping, and response-to-follow-up semantics remain unresolved; T002 remains open and no conformance claim is made. |
+
+### KMIPKIT-0010 T002 tranche — Baseline Client §5.1.1 item 2 Attributes crosswalk
+
+Profiles v2.1 lines 4535–4540 name the nested `Attributes` data structure. Specification v2.1 §5.1 Table 157, lines 21800–21820, maps any §4 Object Attribute to the optional repeated-value capability (`MAY`, `Required=No`). The reviewed parent crosswalk maps only the existing `KMIPKIT-REQ-SPEC-5.1-002` and `KMIPKIT-CLAUSE-SPEC-5.1-002` to the existing Attributes element. The condition stays `requirement_id: null` / `profile_conditional`; no new or broad standalone client requirement is introduced.
+
+| Stage | DCO-signed commit and command | Result |
+|---|---|---|
+| Red — require the exact source-backed item-2 mapping to close its structural crosswalk | `ddb477de`; `py -3 -B -m unittest tools.normative_catalog.tests.test_generate_profiles.ProfileMetadataGeneratorTests.test_baseline_attributes_condition_has_exact_reviewed_capability_crosswalk -v` | Expected Red: all pinned Profiles and Specification spans, element/REQ/clause links, and optionality assertions pass; the final assertion alone fails because the parent status is `pending_t002_crosswalk`, expected `reviewed`. |
+| Green — mark only condition 002's already reviewed Attributes item crosswalk as reviewed | `11cba43a`; `py -3 -B -m unittest tools.normative_catalog.tests.test_generate_profiles` | PASS: 64 tests, 1 skipped. Conditions 003–006 remain pending. |
+| Green — structural catalog validation | `11cba43a`; `py -3 -B tools/normative_catalog/validate.py` | PASS: catalog valid; 4 sources, 1,411 clauses, 4,117 records. |
+| Green — generated profile metadata check | `11cba43a`; `py -3 -B tools/normative_catalog/generate_profiles.py --check` | PASS: generated profile metadata verified. |
+| Green — generated coverage report check | `11cba43a`; `py -3 -B tools/normative_catalog/report.py --check` | PASS: coverage report verified. |
+| Green — immutable pinned-source check | `11cba43a`; `py -3 -B tools/normative_catalog/check_immutable_sources.py --repo-root . --base-sha 550a864840c727afa2bdf20b5a5e25aa3e2b9dff` | PASS: pinned OASIS sources match base. |
+| Refactor — record the narrow §5.1 MAY interpretation and open item boundaries | DCO-signed Refactor documentation commit | Research and evidence updated; `KMIPKIT-REQ-SPEC-5.1-002` remains an optional repeated-value capability, conditions 003–006 remain unchanged, and T002 stays open. |
+| Green/Refactor — whitespace check | `git diff --check` | PASS: no whitespace errors. |
