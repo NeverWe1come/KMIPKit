@@ -91297,7 +91297,7 @@
         "SHOULD"
       ],
       "audited_statement": "Server SHOULD support TLS1.2.",
-      "actor_scope_review": "Server; conditional on TLS1.2; `server_only`.",
+      "actor_scope_review": "Server; `server_only`.",
       "scope_disposition": "server_only",
       "candidate_requirement_id": null,
       "proposed_requirement_id": null,
