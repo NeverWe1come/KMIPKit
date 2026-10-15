@@ -1099,7 +1099,7 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
         self.assertIn("Linked Object Identifier value is specified without the Link Type value", locate_007_source)
 
     def test_baseline_message_data_structures_condition_has_exact_reviewed_batch_crosswalk(self) -> None:
-        """The five reviewed batch mappings stay bounded while item 5 remains pending."""
+        """The six reviewed Message Data Structure mappings stay bounded while item 5 remains pending."""
         catalog = json.loads((ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8"))
         oracle = json.loads(
             (ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json")
