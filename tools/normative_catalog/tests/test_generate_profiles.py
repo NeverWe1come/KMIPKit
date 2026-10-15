@@ -2980,6 +2980,7 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
                     "KMIPKIT-REQ-PROF-3.2-001",
                     "KMIPKIT-REQ-PROF-3.2.1-001",
                     "KMIPKIT-REQ-PROF-3.2.2-001",
+                    "KMIPKIT-REQ-PROF-3.2.3-001",
                     "KMIPKIT-REQ-PROF-3.2.4-002",
                     "KMIPKIT-REQ-PROF-5.3.1-001",
                     "KMIPKIT-REQ-PROF-5.3.1-002",
@@ -3050,7 +3051,14 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
 
         requirement_ids = {req_id for mapping in expected_mappings for req_id in mapping["requirement_ids"]}
         self.assertTrue(unresolved_auth_ids.isdisjoint(requirement_ids))
-        self.assertNotIn("KMIPKIT-REQ-PROF-3.2.3-001", requirement_ids)
+        https_authenticity_review = reviews["KMIPKIT-CLAUSE-PROF-3.2.3-001"]
+        self.assertEqual(
+            https_authenticity_review["expected_client_requirement_ids"],
+            ["KMIPKIT-REQ-PROF-3.2.3-001"],
+        )
+        self.assertEqual(https_authenticity_review["source_obligations"][0]["actor"], "client and server")
+        self.assertEqual(https_authenticity_review["source_obligations"][0]["direction"], "unspecified")
+        self.assertIn("KMIPKIT-REQ-PROF-3.2.3-001", requirement_ids)
         self.assertNotIn("KMIPKIT-REQ-SPEC-10.1.2-001", requirement_ids)
         self.assertNotIn("KMIPKIT-REQ-SPEC-10.1.2-002-001", requirement_ids)
         self.assertNotIn("KMIPKIT-REQ-SPEC-10.1.5-001-001", requirement_ids)
@@ -3072,6 +3080,10 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
         self.assertIn(
             "at least one of the following cipher suites",
             _normalized_html_source_span(profiles_lines, [4068, 4074]),
+        )
+        self.assertIn(
+            "servers and clients SHALL handle client authenticity",
+            _normalized_html_source_span(profiles_lines, [4250, 4253]),
         )
         self.assertIn("application/octet-stream", _normalized_html_source_span(profiles_lines, [5137, 5146]))
         self.assertIn("mandatory TTLV messaging protocol", _normalized_html_source_span(spec_lines, [45793, 45797]))
