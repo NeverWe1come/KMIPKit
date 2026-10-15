@@ -3218,6 +3218,14 @@ Profiles v2.1 §5.1.1 item 2 names the general Attribute Data Structures conditi
 | Green — remove the unrelated §3.2 Key Value capability from the Baseline Attributes condition while retaining its catalog mappings to Key Value and Register | `9fd68892`; focused Baseline Attributes regression; `py -3 -B -m unittest tools.normative_catalog.tests.test_generate_profiles`; `py -3 -B tools/normative_catalog/validate.py --repo-root . --structural-only`; `py -3 -B tools/normative_catalog/generate_profiles.py --repo-root . --check`; `py -3 -B tools/normative_catalog/report.py --repo-root . --check`; pinned-upstream comparison; `git diff --check` | PASS: focused regression passes; generator suite passes 64 tests (1 skipped); catalog valid (4 sources, 1,411 clauses, 4,117 records); generated profile metadata and coverage report current; pinned OASIS sources unchanged; whitespace check passes. |
 | Refactor — clarify that this test covers the Baseline Attributes profile item only | `deef4c55`; focused Baseline Attributes regression; `git diff --check` | PASS: regression passes and the test description reflects the narrowed crosswalk. |
 
+### KMIPKIT-0010 T002 tranche — server-initiated HTTPS transport duty
+
+Profiles v2.1 §5.3.1 item 11 is a conditional client duty to act as an HTTPS server when supporting server-to-client operations. The 1.0 client-only profile transport crosswalk must not attribute that later 1.1 capability to Baseline Transport. The clause remains cataloged as `client_1_1`, with its source-only gap and pinned source locator preserved.
+
+| Stage | DCO-signed commit and command | Result |
+|---|---|---|
+| Red — exclude the server-initiated HTTPS clause from the Baseline 1.0 Transport condition crosswalk | `d1bf20f4`; `py -3 -B -m unittest tools.normative_catalog.tests.test_generate_profiles.ProfileMetadataGeneratorTests.test_baseline_message_protocols_crosswalk_keeps_unresolved_and_server_duties_out -v` | Expected Red: one assertion failure because the fixture includes `KMIPKIT-CLAUSE-PROF-5.3.1-011` in the Baseline Transport mapping even though the clause is a later 1.1 server-to-client duty. |
+
 ### KMIPKIT-0010 T002 tranche — Profiles §4.1.1 test variation scope
 
 Profiles v2.1 §4.1.1 says an implementation conformant to a Profile MAY vary values, and its list explicitly includes Unique Batch Item ID (HTML lines 4330–4338). That context includes client request values, so the paragraph is not server-only. It remains test-conformance context outside production client runtime behavior and does not create a requirement ID.
