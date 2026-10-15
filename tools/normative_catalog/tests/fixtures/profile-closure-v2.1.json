@@ -353,6 +353,19 @@
                   "KMIPKIT-CLAUSE-SPEC-9.8-001"
                 ],
                 "mapping_status": "reviewed"
+              },
+              {
+                "item": "Maximum Response Size",
+                "element_id": "KMIPKIT-ELEM-MESSAGE-FIELD-9-12-MAXIMUM-RESPONSE-SIZE",
+                "requirement_ids": [
+                  "KMIPKIT-REQ-SPEC-9.12-001-001",
+                  "KMIPKIT-REQ-SPEC-9.12-001-002",
+                  "KMIPKIT-REQ-SPEC-9.12-001-003"
+                ],
+                "source_clause_ids": [
+                  "KMIPKIT-CLAUSE-SPEC-9.12-001"
+                ],
+                "mapping_status": "reviewed"
               }
             ],
             "requirement_id": null,
