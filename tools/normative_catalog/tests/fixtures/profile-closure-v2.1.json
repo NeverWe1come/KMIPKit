@@ -489,6 +489,93 @@
               "Transport",
               "TTLV"
             ],
+            "supported_item_mappings": [
+              {
+                "item": "Authentication",
+                "element_id": null,
+                "requirement_ids": [
+                  "KMIPKIT-REQ-PROF-3.1-001",
+                  "KMIPKIT-REQ-PROF-3.1.1-002",
+                  "KMIPKIT-REQ-PROF-3.1.1-005",
+                  "KMIPKIT-REQ-PROF-3.1.2-002",
+                  "KMIPKIT-REQ-PROF-3.1.2-005"
+                ],
+                "source_clause_ids": [
+                  "KMIPKIT-CLAUSE-PROF-3-002",
+                  "KMIPKIT-CLAUSE-PROF-3-003",
+                  "KMIPKIT-CLAUSE-PROF-3-004",
+                  "KMIPKIT-CLAUSE-PROF-3.1-001",
+                  "KMIPKIT-CLAUSE-PROF-3.1.1-001",
+                  "KMIPKIT-CLAUSE-PROF-3.1.1-002",
+                  "KMIPKIT-CLAUSE-PROF-3.1.1-003",
+                  "KMIPKIT-CLAUSE-PROF-3.1.1-004",
+                  "KMIPKIT-CLAUSE-PROF-3.1.1-005",
+                  "KMIPKIT-CLAUSE-PROF-3.1.2-001",
+                  "KMIPKIT-CLAUSE-PROF-3.1.2-002",
+                  "KMIPKIT-CLAUSE-PROF-3.1.2-003",
+                  "KMIPKIT-CLAUSE-PROF-3.1.2-004",
+                  "KMIPKIT-CLAUSE-PROF-3.1.2-005",
+                  "KMIPKIT-CLAUSE-PROF-3.1.3-001",
+                  "KMIPKIT-CLAUSE-PROF-3.1.3-002",
+                  "KMIPKIT-CLAUSE-PROF-3.1.3-003",
+                  "KMIPKIT-CLAUSE-PROF-3.1.4-001",
+                  "KMIPKIT-CLAUSE-SPEC-10.3-001"
+                ],
+                "mapping_status": "reviewed"
+              },
+              {
+                "item": "Transport",
+                "element_id": null,
+                "requirement_ids": [
+                  "KMIPKIT-REQ-SPEC-10.4-001-001",
+                  "KMIPKIT-REQ-SPEC-10.4-001-002",
+                  "KMIPKIT-REQ-SPEC-10.4-001-003",
+                  "KMIPKIT-REQ-PROF-3.2-001",
+                  "KMIPKIT-REQ-PROF-3.2.1-001",
+                  "KMIPKIT-REQ-PROF-3.2.2-001",
+                  "KMIPKIT-REQ-PROF-3.2.4-002",
+                  "KMIPKIT-REQ-PROF-5.3.1-001",
+                  "KMIPKIT-REQ-PROF-5.3.1-002",
+                  "KMIPKIT-REQ-PROF-5.3.1-003",
+                  "KMIPKIT-REQ-PROF-5.3.1-004",
+                  "KMIPKIT-REQ-PROF-5.3.1-008",
+                  "KMIPKIT-REQ-PROF-5.3.1-009"
+                ],
+                "source_clause_ids": [
+                  "KMIPKIT-CLAUSE-SPEC-10.4-001",
+                  "KMIPKIT-CLAUSE-PROF-3.2-001",
+                  "KMIPKIT-CLAUSE-PROF-3.2.1-001",
+                  "KMIPKIT-CLAUSE-PROF-3.2.2-001",
+                  "KMIPKIT-CLAUSE-PROF-3.2.3-001",
+                  "KMIPKIT-CLAUSE-PROF-3.2.4-002",
+                  "KMIPKIT-CLAUSE-PROF-5.3.1-001",
+                  "KMIPKIT-CLAUSE-PROF-5.3.1-002",
+                  "KMIPKIT-CLAUSE-PROF-5.3.1-003",
+                  "KMIPKIT-CLAUSE-PROF-5.3.1-004",
+                  "KMIPKIT-CLAUSE-PROF-5.3.1-008",
+                  "KMIPKIT-CLAUSE-PROF-5.3.1-009",
+                  "KMIPKIT-CLAUSE-PROF-5.3.1-011"
+                ],
+                "mapping_status": "reviewed"
+              },
+              {
+                "item": "TTLV",
+                "element_id": null,
+                "requirement_ids": [
+                  "KMIPKIT-REQ-PROF-5.3.1-005",
+                  "KMIPKIT-REQ-PROF-5.3.1-010"
+                ],
+                "source_clause_ids": [
+                  "KMIPKIT-CLAUSE-SPEC-10.1.2-001",
+                  "KMIPKIT-CLAUSE-SPEC-10.1.2-002",
+                  "KMIPKIT-CLAUSE-SPEC-10.1.5-001",
+                  "KMIPKIT-CLAUSE-SPEC-10.2-001",
+                  "KMIPKIT-CLAUSE-PROF-5.3.1-005",
+                  "KMIPKIT-CLAUSE-PROF-5.3.1-010"
+                ],
+                "mapping_status": "reviewed"
+              }
+            ],
             "requirement_id": null,
             "scope_disposition": "profile_conditional",
             "mapping_status": "pending_t002_crosswalk"
