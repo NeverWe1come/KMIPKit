@@ -141,12 +141,10 @@
                 "item": "Attributes",
                 "element_id": "KMIPKIT-ELEM-ATTRIBUTE-STRUCTURE-5-1-ATTRIBUTES",
                 "requirement_ids": [
-                  "KMIPKIT-REQ-SPEC-5.1-002",
-                  "KMIPKIT-REQ-SPEC-3.2-001"
+                  "KMIPKIT-REQ-SPEC-5.1-002"
                 ],
                 "source_clause_ids": [
-                  "KMIPKIT-CLAUSE-SPEC-5.1-002",
-                  "KMIPKIT-CLAUSE-SPEC-3.2-001"
+                  "KMIPKIT-CLAUSE-SPEC-5.1-002"
                 ],
                 "mapping_status": "reviewed"
               }
