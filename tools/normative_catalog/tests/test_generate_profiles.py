@@ -3175,7 +3175,6 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
                     "KMIPKIT-CLAUSE-PROF-5.3.1-004",
                     "KMIPKIT-CLAUSE-PROF-5.3.1-008",
                     "KMIPKIT-CLAUSE-PROF-5.3.1-009",
-                    "KMIPKIT-CLAUSE-PROF-5.3.1-011",
                 ],
                 "mapping_status": "reviewed",
             },
