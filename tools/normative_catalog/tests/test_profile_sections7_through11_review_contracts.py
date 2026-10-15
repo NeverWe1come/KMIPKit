@@ -248,6 +248,54 @@ class ProfileSectionsSevenThroughElevenReviewContractTests(unittest.TestCase):
         requirement = self.requirements["KMIPKIT-REQ-SPEC-9.20-001-002"]
         self.assertNotIn("enforce reasonable time usage", requirement["summary"])
 
+    def test_credential_reviews_separate_source_rules_from_approved_client_interpretation(self) -> None:
+        device_clause_id = "KMIPKIT-CLAUSE-SPEC-9.11-004"
+        device_review = self.reviews[device_clause_id]
+        device_excerpt = [44184, 44189]
+        self.assertEqual(
+            device_review["source_excerpt"],
+            pinned_source_excerpt(SPEC_SOURCE_PATH, device_excerpt),
+        )
+        device_atoms = device_review["source_obligations"]
+        uniqueness = next(
+            atom for atom in device_atoms
+            if atom["candidate_requirement_id"] == "KMIPKIT-REQ-SPEC-9.11-004-002"
+        )
+        minimum = next(
+            atom for atom in device_atoms
+            if atom["candidate_requirement_id"] == "KMIPKIT-REQ-SPEC-9.11-004-001"
+        )
+        self.assertEqual(
+            uniqueness["source_text"],
+            "One or a combination of the Device Serial Number, Network Identifier, Machine Identifier, and Media Identifier SHALL be unique.",
+        )
+        self.assertEqual(minimum["source_text"], "The client SHALL provide at least one field.")
+        self.assertEqual(minimum["direction"], "client provides at least one Device Credential field")
+        self.assertIn("KMIPKIT-0008", device_review["review_note"])
+        self.assertIn("KMIPKIT-DISC-042", device_review["review_note"])
+        self.assertIn("comparison scope is unspecified", device_review["review_note"])
+        self.assertIn("caller remains responsible for actual uniqueness", device_review["review_note"])
+
+        timestamp_clause_id = "KMIPKIT-CLAUSE-SPEC-9.11-010"
+        timestamp_review = self.reviews[timestamp_clause_id]
+        self.assertEqual(
+            timestamp_review["source_excerpt"],
+            pinned_source_excerpt(SPEC_SOURCE_PATH, [44598, 44602]),
+        )
+        self.assertEqual(
+            self.clauses[timestamp_clause_id]["condition"],
+            "When Credential Type is Hashed Password.",
+        )
+        timestamp_requirement = self.requirements["KMIPKIT-REQ-SPEC-9.11-010-001"]
+        self.assertEqual(timestamp_requirement["condition"], "When Credential Type is Hashed Password.")
+        for unresolved_limit in ("OD-003", "state owner", "comparison scope", "clock behavior"):
+            self.assertIn(unresolved_limit, timestamp_review["review_note"])
+
+        default_requirement = self.requirements["KMIPKIT-REQ-SPEC-9.11-010-002"]
+        self.assertIn("no override", default_requirement["condition"])
+        for default_fact in ("Table 415", "optional", "SHA-256", "omitted"):
+            self.assertIn(default_fact.casefold(), timestamp_review["review_note"].casefold())
+
 
 if __name__ == "__main__":
     unittest.main()
