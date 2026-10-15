@@ -1268,13 +1268,21 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
             for item in oracle["source_requirement_reviews"]
             if item["source_clause_id"] == expected_batch_order_option_clause_id
         )
-        self.assertEqual(batch_order_option_review["html_line_range"], [43862, 43865])
+        self.assertEqual(batch_order_option_review["html_line_range"], [43862, 43866])
+        self.assertEqual(
+            _normalized_html_source_span(spec_lines, batch_order_option_review["html_line_range"]),
+            batch_order_option_review["source_excerpt"],
+        )
         self.assertEqual(
             batch_order_option_review["expected_client_requirement_ids"], []
         )
         self.assertEqual(
             batch_order_option_review["rejected_candidate_mappings"][0]["expected_disposition"],
             "not_a_normative_client_requirement",
+        )
+        self.assertEqual(
+            batch_order_option_review["rejected_candidate_mappings"][0]["requirement_id"],
+            "KMIPKIT-REQ-SPEC-9.8-001-001",
         )
         self.assertEqual(
             [obligation["actor"] for obligation in batch_order_option_review["source_obligations"]],
