@@ -532,7 +532,7 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
                 self.assertEqual(condition["condition_kind"], condition_kind)
                 self.assertIsNone(condition["requirement_id"])
                 self.assertEqual(condition["scope_disposition"], "profile_conditional")
-                expected_mapping_status = "reviewed" if item in (1, 2, 3, 4, 7, 8) else "pending_t002_crosswalk"
+                expected_mapping_status = "reviewed" if item in (1, 2, 3, 4, 5, 7, 8) else "pending_t002_crosswalk"
                 self.assertEqual(condition["mapping_status"], expected_mapping_status)
         self.assertEqual(
             {item["requirement_id"] for item in baseline["conditions"]},
@@ -662,6 +662,7 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
         self.assertEqual(condition["supported_items"], [])
         self.assertIsNone(condition["requirement_id"])
         self.assertEqual(condition["scope_disposition"], "profile_conditional")
+        self.assertEqual(message_data_condition["mapping_status"], "reviewed")
         self.assertEqual(
             message_extension["requirement_ids"],
             [
@@ -1307,7 +1308,7 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
         self.assertIn("Linked Object Identifier value is specified without the Link Type value", locate_007_source)
 
     def test_baseline_message_data_structures_condition_has_exact_reviewed_batch_crosswalk(self) -> None:
-        """The fourteen reviewed Message Data Structure mappings stay bounded while item 5 remains pending."""
+        """The fourteen reviewed Message Data Structure mappings stay structurally bounded."""
         catalog = json.loads((ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8"))
         oracle = json.loads(
             (ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json")
@@ -1541,7 +1542,7 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
         )
         self.assertIsNone(condition["requirement_id"])
         self.assertEqual(condition["scope_disposition"], "profile_conditional")
-        self.assertEqual(condition["mapping_status"], "pending_t002_crosswalk")
+        self.assertEqual(condition["mapping_status"], "reviewed")
 
         async_element = next(
             item for item in catalog["elements"] if item["element_id"] == expected_async_element_id
@@ -2180,7 +2181,7 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
         self.assertEqual(message_extension_mapping, expected_mapping)
         self.assertIsNone(condition["requirement_id"])
         self.assertEqual(condition["scope_disposition"], "profile_conditional")
-        self.assertEqual(condition["mapping_status"], "pending_t002_crosswalk")
+        self.assertEqual(condition["mapping_status"], "reviewed")
 
         profiles_lines = (ROOT / profiles_path).read_text(encoding="cp1252").splitlines()
         profile_item_text = _normalized_html_source_span(profiles_lines, [4594, 4596])
@@ -2414,7 +2415,7 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
         )
         self.assertIsNone(condition["requirement_id"])
         self.assertEqual(condition["scope_disposition"], "profile_conditional")
-        self.assertEqual(condition["mapping_status"], "pending_t002_crosswalk")
+        self.assertEqual(condition["mapping_status"], "reviewed")
 
         profiles_path = ROOT / "specification" / "oasis" / "kmip-2.1" / "upstream" / "kmip-profiles-v2.1-os.html"
         spec_path = ROOT / "specification" / "oasis" / "kmip-2.1" / "upstream" / "kmip-spec-v2.1-os.html"
@@ -2584,7 +2585,7 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
         )
         self.assertIsNone(condition["requirement_id"])
         self.assertEqual(condition["scope_disposition"], "profile_conditional")
-        self.assertEqual(condition["mapping_status"], "pending_t002_crosswalk")
+        self.assertEqual(condition["mapping_status"], "reviewed")
 
         profiles_path = ROOT / "specification" / "oasis" / "kmip-2.1" / "upstream" / "kmip-profiles-v2.1-os.html"
         spec_path = ROOT / "specification" / "oasis" / "kmip-2.1" / "upstream" / "kmip-spec-v2.1-os.html"
@@ -2689,7 +2690,7 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
         self.assertEqual(result_reason_mapping, expected_mapping)
         self.assertIsNone(condition["requirement_id"])
         self.assertEqual(condition["scope_disposition"], "profile_conditional")
-        self.assertEqual(condition["mapping_status"], "pending_t002_crosswalk")
+        self.assertEqual(condition["mapping_status"], "reviewed")
 
         profiles_lines = (
             ROOT / "specification" / "oasis" / "kmip-2.1" / "upstream" / "kmip-profiles-v2.1-os.html"
@@ -2760,7 +2761,7 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
         self.assertEqual(result_status_mapping, expected_mapping)
         self.assertIsNone(condition["requirement_id"])
         self.assertEqual(condition["scope_disposition"], "profile_conditional")
-        self.assertEqual(condition["mapping_status"], "pending_t002_crosswalk")
+        self.assertEqual(condition["mapping_status"], "reviewed")
 
         profiles_lines = (
             ROOT / "specification" / "oasis" / "kmip-2.1" / "upstream" / "kmip-profiles-v2.1-os.html"
@@ -2865,7 +2866,7 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
         self.assertEqual(server_correlation_mapping, expected_mapping)
         self.assertIsNone(condition["requirement_id"])
         self.assertEqual(condition["scope_disposition"], "profile_conditional")
-        self.assertEqual(condition["mapping_status"], "pending_t002_crosswalk")
+        self.assertEqual(condition["mapping_status"], "reviewed")
 
         profiles_lines = (
             ROOT / "specification" / "oasis" / "kmip-2.1" / "upstream" / "kmip-profiles-v2.1-os.html"
@@ -2956,7 +2957,7 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
         self.assertEqual(time_stamp_mapping, expected_mapping)
         self.assertIsNone(condition["requirement_id"])
         self.assertEqual(condition["scope_disposition"], "profile_conditional")
-        self.assertEqual(condition["mapping_status"], "pending_t002_crosswalk")
+        self.assertEqual(condition["mapping_status"], "reviewed")
 
         review = next(
             item
@@ -3054,7 +3055,7 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
         self.assertEqual(unique_batch_mapping, expected_mapping)
         self.assertIsNone(condition["requirement_id"])
         self.assertEqual(condition["scope_disposition"], "profile_conditional")
-        self.assertEqual(condition["mapping_status"], "pending_t002_crosswalk")
+        self.assertEqual(condition["mapping_status"], "reviewed")
 
         reviews = {item["source_clause_id"]: item for item in oracle["source_requirement_reviews"]}
         batch_count_review = reviews["KMIPKIT-CLAUSE-SPEC-8.3-003"]
