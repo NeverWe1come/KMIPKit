@@ -16096,6 +16096,11 @@ class CatalogValidationTests(unittest.TestCase):
             row["requirement_id"]: row for row in catalog["requirements"]
         }
         client_profiles = [row for row in catalog["profiles"] if row["role"] == "client"]
+        source_clauses = {row["clause_id"]: row for row in catalog["source_clauses"]}
+        normative_inclusions = {
+            row["inclusion_id"]: row for row in catalog["normative_inclusions"]
+        }
+        profiles_by_id = {row["profile_id"]: row for row in client_profiles}
         parsed_sources: dict[str, dict[str, dict[str, object]]] = {}
         violations: list[str] = []
         explicit_gaps = {
@@ -16318,6 +16323,7 @@ class CatalogValidationTests(unittest.TestCase):
                         "procedure_context",
                         "generic_parameter_context",
                         "attribute_policy_mapping",
+                        "normative_inclusion",
                     }:
                         violations.append(
                             f"{gap['gap_id']} is in-scope without a requirement ID or reviewed source disposition "
@@ -16334,6 +16340,27 @@ class CatalogValidationTests(unittest.TestCase):
                         )
                         if element is None or element.get(resolution.get("catalog_property")) != "No":
                             violations.append(f"{gap['gap_id']} does not resolve to a read-only client attribute policy")
+                    elif resolution_kind == "normative_inclusion":
+                        source_clause = source_clauses.get(resolution.get("source_clause_id"))
+                        inclusion = normative_inclusions.get(resolution.get("inclusion_id"))
+                        profile = profiles_by_id.get(resolution.get("profile_id"))
+                        if (
+                            source_clause is None
+                            or inclusion is None
+                            or profile is None
+                            or source_clause.get("source_id") != gap["source_id"]
+                            or source_clause.get("section") != gap["source_section"]
+                            or source_clause.get("scope_state") != gap["scope_disposition"]
+                            or source_clause.get("role") != "client"
+                            or source_clause["clause_id"] not in profile["direct_source_clause_ids"]
+                            or inclusion.get("source_clause_id") != source_clause["clause_id"]
+                            or inclusion.get("included_source_id") != resolution.get("included_source_id")
+                            or inclusion.get("included_section") != resolution.get("included_section")
+                            or inclusion.get("included_source_id") != gap["source_id"]
+                        ):
+                            violations.append(
+                                f"{gap['gap_id']} does not resolve to its exact client profile inclusion edge"
+                            )
 
         self.assertEqual(violations, [], "pinned-source requirement review mismatches: " + "; ".join(violations))
 

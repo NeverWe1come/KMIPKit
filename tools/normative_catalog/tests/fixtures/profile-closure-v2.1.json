@@ -91318,7 +91318,16 @@
       "scope_disposition": "profile_conditional",
       "candidate_requirement_id": null,
       "proposed_requirement_id": null,
-      "status": "unlabeled_source_statement_or_boundary_item"
+      "status": "unlabeled_source_statement_or_boundary_item",
+      "source_resolution": {
+        "kind": "normative_inclusion",
+        "source_clause_id": "KMIPKIT-CLAUSE-PROF-6.13-003",
+        "inclusion_id": "KMIPKIT-INCLUSION-PROF-613-BASIC-SYMMETRIC-CLIENT",
+        "included_source_id": "KMIPKIT-SRC-profiles",
+        "included_section": "5.7.1",
+        "profile_id": "KMIPKIT-PROFILE-SYMMETRIC-KEY-FOUNDRY-INTERMEDIATE-CLIENT",
+        "review_note": "Profiles §6.13 item 3 is represented by the literal §5.7.1 normative-inclusion edge. It is a profile inclusion instruction, not a standalone requirement; no standalone requirement ID is assigned. KMIPKIT-DISC-011 remains open for authorial intent."
+      }
     },
     {
       "gap_id": "KMIPKIT-SOURCE-GAP-PROF-6.14-10867",
@@ -91342,7 +91351,16 @@
       "scope_disposition": "profile_conditional",
       "candidate_requirement_id": null,
       "proposed_requirement_id": null,
-      "status": "unlabeled_source_statement_or_boundary_item"
+      "status": "unlabeled_source_statement_or_boundary_item",
+      "source_resolution": {
+        "kind": "normative_inclusion",
+        "source_clause_id": "KMIPKIT-CLAUSE-PROF-6.14-003",
+        "inclusion_id": "KMIPKIT-INCLUSION-PROF-614-BASIC-SYMMETRIC-CLIENT",
+        "included_source_id": "KMIPKIT-SRC-profiles",
+        "included_section": "5.7.1",
+        "profile_id": "KMIPKIT-PROFILE-SYMMETRIC-KEY-FOUNDRY-ADVANCED-CLIENT",
+        "review_note": "Profiles §6.14 item 3 is represented by the literal §5.7.1 normative-inclusion edge. It is a profile inclusion instruction, not a standalone requirement; no standalone requirement ID is assigned. KMIPKIT-DISC-012 remains open for authorial intent."
+      }
     },
     {
       "gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1-PARAGRAPH-006",
