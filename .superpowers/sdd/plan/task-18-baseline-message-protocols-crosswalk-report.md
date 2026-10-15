@@ -25,6 +25,6 @@ The mapping includes only reviewed client-eligible IDs. It leaves Profiles §3-0
 - Generated coverage report check: PASS.
 - Pinned OASIS source immutability against `b3ead993306d757025be237a1a2e23fa5ea6f122`: PASS.
 - `git diff --check`: PASS.
-- Exact-head GitHub CI: pending publication of the Refactor/evidence commit.
+- Exact-head GitHub CI on code-bearing Refactor head `d60a1beff55fac77f05e446d0c4870f185804bb9`: PASS, run `38760212335`, 34 successful jobs / 0 failures / 3 schedule-only skips. CI for the subsequent evidence-only head is tracked in the PR description.
 
 No production behavior, catalog ownership, generated file, or pinned upstream source changed.
