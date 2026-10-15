@@ -195,3 +195,9 @@ Task 9: complete (commits 90ff5750..600d8092, review approved with one deferred 
 - DCO-signed Red / Green commits: `0929d7aa` / `c97ab958`. Red failed as expected while item 8 was pending. Focused tests pass 4/4 and assert the exact source text/locator, empty item-8 mapping, and preservation of Baseline item-5 §9.13 IDs `KMIPKIT-REQ-SPEC-8.3-004`, `...9.13-001-004`, and `...-005`. Independent QA found no actionable findings.
 - Full normative suite passes 568 tests / 9 skipped in 319.101 seconds. Catalog validation, generated profile/report checks, immutable-source comparison against PR base `550a8648`, and `git diff --check` pass. No runtime or generated source changed.
 - DCO-signed Refactor/evidence commit and exact-head CI are pending. T002 remains open; no profile-conformance claim.
+
+## Active T002 tranche — Specification §4.24 Fresh initial-input exception (2026-10-15)
+- The source gap is classified as initial client Fresh=False input for Register or Import. It contextually reuses the generic client request-attribute MAY `KMIPKIT-REQ-SPEC-6.1-004`; §4.24 retains no formal client requirement IDs, and its server SHALL duties remain server-only. Table 76's later client-modification prohibition is preserved. No implementation or conformance claim is made.
+- TDD commits: Red `61605aa0`, Green `73a97edb`, correction Red `4cfc427e`, correction Green `2b449063`. Focused regressions pass 3/3 after the correction. The full normative suite passes 570 tests / 9 skipped in 314.300 seconds.
+- Catalog validation, generated profile/report checks, source-candidate audit, pinned-source immutability, and `git diff --check` pass. Independent source and QA reviewers found no actionable findings. The Python test harness correction `ffbbca5d` passes 159 tests and the example under the CI Python/Rust setup.
+- Refactor/evidence commit and exact-head CI are pending. The PR remains draft and T002 remains open; no profile-conformance claim.
