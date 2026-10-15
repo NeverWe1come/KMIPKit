@@ -272,6 +272,31 @@ class ProfileSectionsThreeAndFourCrosswalkTests(unittest.TestCase):
         self.assertEqual(self.crosswalk[requirement_id]["applies_to"], baseline_profile_id)
         self.assertNotIn(requirement_id, UNRESOLVED_IDS)
 
+    def test_baseline_tls13_cipher_suite_prohibition_has_negative_wire_evidence(self) -> None:
+        requirement_id = "KMIPKIT-REQ-PROF-3.1.2-005"
+        clause_id = "KMIPKIT-CLAUSE-PROF-3.1.2-005"
+        requirement = self.requirements[requirement_id]
+        review = self.reviews[clause_id]
+        allowed_suites = pinned_excerpt([4068, 4074])
+        prohibited_suites = pinned_excerpt([4187, 4188])
+
+        self.assertIn("TLS13-CHACHA20-POLY1305-SHA256", allowed_suites)
+        self.assertIn("TLS13-AES-256-GCM-SHA384", allowed_suites)
+        self.assertIn("SHALL NOT support any cipher suite not listed above", prohibited_suites)
+        self.assertEqual(review["source_obligations"][0]["source_keyword"], "SHALL NOT")
+        self.assertEqual(
+            requirement["implementation_refs"],
+            ["crates/kmipkit-transport/src/tls.rs::aws_lc_crypto_provider"],
+        )
+        self.assertEqual(
+            requirement["verification_refs"],
+            [
+                "crates/kmipkit-transport/tests/raw_tls.rs::raw_tls_rejects_tls12_server_hello_before_request_dispatch"
+            ],
+        )
+        self.assertTrue(requirement["negative_verification_required"])
+        self.assertEqual(requirement["status"], "verified")
+
     def test_tls12_client_may_is_preserved_but_outside_the_10_profile_scope(self) -> None:
         """Profiles §3.1.1's TLS 1.2 permission cannot expand the TLS 1.3-only ADR."""
         requirement_id = "KMIPKIT-REQ-PROF-3.1.1-004"
