@@ -1199,6 +1199,13 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
             ],
             "mapping_status": "reviewed",
         }
+        expected_operation_mapping = {
+            "item": "Operation",
+            "element_id": "KMIPKIT-ELEM-MESSAGE-FIELD-9-15-OPERATION",
+            "requirement_ids": [],
+            "source_clause_ids": ["KMIPKIT-CLAUSE-SPEC-8.3-001", "KMIPKIT-CLAUSE-SPEC-8.6-001"],
+            "mapping_status": "reviewed",
+        }
         expected_mappings = [
             expected_async_mapping,
             expected_mapping,
@@ -1207,6 +1214,7 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
             expected_batch_order_option_mapping,
             expected_maximum_response_size_mapping,
             expected_message_extension_mapping,
+            expected_operation_mapping,
         ]
 
         self.assertEqual(condition["item"], 5)
@@ -1243,10 +1251,11 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
                 "Batch Order Option",
                 "Maximum Response Size",
                 "Message Extension",
+                "Operation",
             ],
         )
         self.assertEqual(len(condition["supported_items"]), 14)
-        self.assertEqual(len(condition["supported_item_mappings"]), 7)
+        self.assertEqual(len(condition["supported_item_mappings"]), 8)
         unmapped_items = [
             item
             for item in condition["supported_items"]
@@ -1255,7 +1264,6 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
         self.assertEqual(
             unmapped_items,
             [
-                "Operation",
                 "Protocol Version",
                 "Result Reason",
                 "Result Status",
@@ -1267,7 +1275,6 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
         self.assertEqual(
             set(condition["supported_items"]) - {mapping["item"] for mapping in condition["supported_item_mappings"]},
             {
-                "Operation",
                 "Protocol Version",
                 "Result Reason",
                 "Result Status",
