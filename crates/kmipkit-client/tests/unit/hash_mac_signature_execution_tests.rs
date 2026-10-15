@@ -41,8 +41,8 @@ const BATCH_ITEM: u32 = 0x0042_000F;
 const UNIQUE_IDENTIFIER: u32 = 0x0042_0094;
 const HASHING_ALGORITHM: u32 = 0x0042_0038;
 const HASH_DATA: u32 = 0x0042_00C2;
-const MAC_DATA: u32 = 0x0042_00C4;
-const SIGNATURE_DATA: u32 = 0x0042_00C7;
+const MAC_DATA: u32 = 0x0042_00C6; // OASIS KMIP v2.1 §11.56, Table 487.
+const SIGNATURE_DATA: u32 = 0x0042_00C3; // OASIS KMIP v2.1 §11.56, Table 487.
 
 #[derive(Clone, Copy)]
 struct OperationFixture {
