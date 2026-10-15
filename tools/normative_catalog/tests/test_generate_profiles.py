@@ -332,7 +332,7 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
             "KMIPKIT-INCLUSION-PROF-BASELINE-CONDITIONS",
         )
         self.assertEqual(baseline["source_path"], "specification/oasis/kmip-2.1/upstream/kmip-profiles-v2.1-os.html")
-        self.assertEqual(baseline["html_line_range"], [4532, 4636])
+        self.assertEqual(baseline["html_line_range"], [4529, 4636])
         self.assertEqual(baseline["governing_requirement_id"], "KMIPKIT-REQ-PROF-6.1-003")
         self.assertEqual(len(baseline["conditions"]), 8)
 
@@ -397,6 +397,12 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
         self.assertEqual(observed_conditions, expected_conditions)
 
         source_lines = profiles_html.splitlines()
+        inventory_span = " ".join(source_lines[baseline["html_line_range"][0] - 1 : baseline["html_line_range"][1]])
+        normalized_inventory_span = " ".join(html.unescape(re.sub(r"<[^>]+>", " ", inventory_span)).split())
+        self.assertIn(
+            "An implementation is a conforming Baseline Client if it meets the following conditions:",
+            normalized_inventory_span,
+        )
         for item, line_range, source_text, supported_items, condition_kind in expected_conditions:
             with self.subTest(item=item):
                 condition = baseline["conditions"][item - 1]
