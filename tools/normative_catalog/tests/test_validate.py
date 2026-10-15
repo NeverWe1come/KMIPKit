@@ -10759,7 +10759,7 @@ class CatalogValidationTests(unittest.TestCase):
                 (atom["source_order"], atom["actor"], atom["scope_disposition"])
                 for atom in reviews["KMIPKIT-CLAUSE-SPEC-4.24-001"]["source_obligations"]
             ],
-            [(1, "server", "server_only"), (2, "client", "unresolved"), (3, "server", "server_only")],
+            [(1, "server", "server_only"), (2, "client", "client_1_0"), (3, "server", "server_only")],
             "the client input exception must remain distinct from server initialization and lifecycle duties",
         )
         self.assertEqual(

@@ -67503,8 +67503,9 @@
           "actor": "client",
           "direction": "supply False Fresh value in Register or Import",
           "condition": "Register or Import operation for a new object",
-          "scope_disposition": "unresolved",
-          "candidate_requirement_id": null
+          "scope_disposition": "client_1_0",
+          "candidate_requirement_id": null,
+          "source_gap_id": "KMIPKIT-SOURCE-GAP-SPEC-4.24-CLIENT-FRESH-INPUT-EXCEPTION"
         },
         {
           "source_order": 3,
@@ -67520,7 +67521,7 @@
       "rejected_candidate_mappings": [],
       "expected_client_requirement_ids": [],
       "applies_to": "all_client_profiles",
-      "review_note": "The source contains a client-input exception but no explicit formal MAY for that client action. Keep that capability unresolved pending classification; the set/change lifecycle duties are server-only."
+      "review_note": "Classify the client's initial Fresh=False input in Register or Import as in-scope client behavior and contextually reuse the generic request-attribute MAY in KMIPKIT-REQ-SPEC-6.1-004; do not create a Fresh-specific formal MAY or requirement ID. Table 76 says Fresh is not modifiable by the client after initialization, so this classification covers only the initial input exception. The set/change lifecycle duties remain server-only."
     },
     {
       "source_id": "KMIPKIT-SRC-spec",
@@ -93078,11 +93079,12 @@
       "actor": "client",
       "direction": "Register or Import request supplies Fresh=False",
       "condition": "new object creation through Register or Import",
-      "scope_disposition": "unresolved",
-      "candidate_requirement_id": null,
+      "scope_disposition": "client_1_0",
+      "candidate_requirement_id": "KMIPKIT-REQ-SPEC-6.1-004",
       "proposed_requirement_id": null,
-      "status": "actor-capability-classification-unresolved",
-      "review_note": "Record this input exception separately from the server SHALL. Do not silently promote it to a formal client MAY."
+      "reused_requirement_id": "KMIPKIT-REQ-SPEC-6.1-004",
+      "status": "source_obligation_covered_by_existing_stable_label",
+      "review_note": "The pinned §4.24 exception permits Fresh=False only as initial client input in Register or Import; contextually reuse the generic request-attribute MAY in §6.1 (KMIPKIT-REQ-SPEC-6.1-004), without creating a Fresh-specific formal MAY or requirement. Table 76 marks Fresh as not modifiable by the client after initialization. This source classification adds no implementation or executable-test claim."
     },
     {
       "gap_id": "KMIPKIT-SOURCE-GAP-SPEC-4.28-001-SERVER-NONMUTATION",
