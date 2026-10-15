@@ -1151,6 +1151,13 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
         )
         self.assertEqual(batch_item_element["direction"], "both")
         self.assertEqual(batch_item_element["scope_state"], "client_1_0")
+        self.assertEqual(
+            batch_item_element["parent_element_ids"],
+            [
+                "KMIPKIT-ELEM-MESSAGE-FIELD-8-1-BATCH-ITEM",
+                "KMIPKIT-ELEM-MESSAGE-FIELD-8-4-BATCH-ITEM",
+            ],
+        )
         self.assertEqual(batch_item_element["requirement_ids"], [])
 
         batch_item_clause = next(
@@ -1162,12 +1169,28 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
         self.assertEqual(batch_item_clause["scope_state"], "unclear")
         self.assertEqual(batch_item_clause["requirement_ids"], ["KMIPKIT-REQ-SPEC-9.7-001"])
 
+        batch_item_requirement = next(
+            item
+            for item in catalog["requirements"]
+            if item["requirement_id"] == "KMIPKIT-REQ-SPEC-9.7-001"
+        )
+        self.assertEqual(batch_item_requirement["role"], "unspecified")
+        self.assertEqual(batch_item_requirement["direction"], "unclear")
+        self.assertEqual(batch_item_requirement["scope_state"], "unclear")
+        self.assertEqual(batch_item_requirement["element_ids"], [])
+
+        spec_lines = (ROOT / spec_path).read_text(encoding="cp1252").splitlines()
         batch_item_review = next(
             item
             for item in oracle["source_requirement_reviews"]
             if item["source_clause_id"] == expected_batch_item_clause_id
         )
         self.assertEqual(batch_item_review["html_line_range"], [43819, 43821])
+        self.assertEqual(
+            _normalized_html_source_span(spec_lines, [43819, 43821]),
+            "This field consists of a structure that holds the individual requests or responses in a batch, "
+            "and is REQUIRED. The contents of the batch items are described in Section 12.",
+        )
         self.assertEqual(batch_item_review["expected_client_requirement_ids"], [])
         self.assertEqual(batch_item_review["source_obligations"][0]["actor"], "unspecified")
         self.assertEqual(batch_item_review["source_obligations"][0]["direction"], "unspecified")
@@ -1181,7 +1204,6 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
             "Response Size Message Extension Operation Protocol Version Result Reason Result Status "
             "Server Correlation Value Time Stamp Unique Batch Item ID",
         )
-        spec_lines = (ROOT / spec_path).read_text(encoding="cp1252").splitlines()
         expected_excerpt = (
             "This field contains the number of Batch Items in a message and is REQUIRED. If only a single "
             "operation is being requested, then the batch count SHALL be set to 1. The Message Payload, "
