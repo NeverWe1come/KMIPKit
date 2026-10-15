@@ -48,6 +48,7 @@ The DCO-signed Refactor/evidence commit will record the independent source audit
 | `py -3 -B tools/normative_catalog/report.py --repo-root . --check` | PASS. |
 | `py -3 -B -m tools.normative_catalog.check_immutable_sources --repo-root . --base-sha 1ff726e713d8ea1c9d99413be900c565e2553e63` | PASS: pinned upstream sources match exact task base. |
 | `git diff --check` | PASS: no whitespace errors; Git emitted only existing CRLF-to-LF normalization notices for the two edited Markdown files. |
+| Exact-head GitHub CI run `38733890903` on `62d16b7e0f68cac37edfa6b1575c46452dd0fa8b` | PASS: 34 successful jobs, zero failures, and 3 scheduled/informational skips. |
 | Independent QA review of the final slice | Initial review found one P2 because the dedicated Result Reason regression selected the final list position. Fixed to select by item; reviewer confirmed the finding resolved. No remaining findings. |
 
 No catalog, runtime, generated output, or upstream source changed. The item-5 parent condition remains pending; T002 and the broader profile-conformance task remain open.
