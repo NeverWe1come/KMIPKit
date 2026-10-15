@@ -3236,6 +3236,9 @@ The `Operation` placements in Specification §§8.3 and 8.6 are structural table
 | Stage | DCO-signed commit and command | Result |
 |---|---|---|
 | Red — keep non-applicable §8.3/§8.6 table-heading hits out of the Operation profile crosswalk | `299c8a39`; `py -3 -B -m unittest tools.normative_catalog.tests.test_generate_profiles.ProfileMetadataGeneratorTests.test_baseline_message_data_structures_condition_has_exact_reviewed_batch_crosswalk tools.normative_catalog.tests.test_generate_profiles.ProfileMetadataGeneratorTests.test_baseline_operation_condition_has_exact_reviewed_structural_crosswalk -v` | Expected Red: both tests fail because the independent profile-condition fixture maps `KMIPKIT-CLAUSE-SPEC-8.3-001` and `KMIPKIT-CLAUSE-SPEC-8.6-001` despite their non-applicable heading-only classification. |
+| Green — retain the §9.15 Operation field link and table placement evidence but remove both non-applicable heading hits from the profile mapping | `d8548d56`; focused Message Data Structures and Operation crosswalk tests | PASS: both crosswalk tests pass; the catalog's §8.3/§8.6 source classification and the separate request/response placement assertions remain unchanged. |
+| Refactor — clarify that §8.3/§8.6 table placements are structural evidence rather than normative source clauses | `b0bd9ed0`; focused Message Data Structures and Operation crosswalk tests; `git diff --check` | PASS: both tests pass and whitespace check passes. |
+| Full scoped verification — rerun the generator test module | code commit `b0bd9ed0`; `py -3 -B -m unittest tools.normative_catalog.tests.test_generate_profiles` | PASS: 64 tests, 1 platform-conditioned skip. |
 
 ### KMIPKIT-0010 T002 tranche — Profiles §4.1.1 test variation scope
 
