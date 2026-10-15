@@ -144,23 +144,7 @@ fn test_protocol_version() -> Item {
 }
 
 fn request_message() -> crate::RequestMessage {
-    crate::RequestMessage::try_from_ttlv(structure([
-        tagged(
-            REQUEST_HEADER_TAG,
-            Value::structure(structure([
-                test_protocol_version(),
-                tagged(BATCH_COUNT_TAG, Value::integer(1)),
-            ])),
-        ),
-        tagged(
-            BATCH_ITEM_TAG,
-            Value::structure(structure([
-                tagged(OPERATION_TAG, Value::enumeration(0x1E)),
-                tagged(REQUEST_PAYLOAD_TAG, Value::structure(Structure::new())),
-            ])),
-        ),
-    ]))
-    .expect("test Request Message is valid")
+    request_message_with_unique_batch_item_id(None)
 }
 
 fn request_message_with_unique_batch_item_id(
