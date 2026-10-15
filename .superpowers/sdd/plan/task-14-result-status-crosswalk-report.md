@@ -35,7 +35,7 @@ Added only the reviewed mapping to the independent oracle. The focused aggregate
 
 ### Refactor / evidence
 
-The source audit, focused regressions, full normative suite, catalog validation, generated metadata check, coverage report check, immutable-source check, and whitespace check are complete. The refactor/evidence commit will record independent QA and exact-head CI after they finish.
+The source audit, focused regressions, full normative suite, catalog validation, generated metadata check, coverage report check, immutable-source check, independent QA, and exact-head CI are complete. The local full suite ran before the assertion-only QA refinement; GitHub CI ran the complete matrix after it.
 
 ## Verification status
 
@@ -49,4 +49,4 @@ The source audit, focused regressions, full normative suite, catalog validation,
 | Pinned OASIS source immutability | PASS: pinned sources match base `413ea3108369f619790039f0541aba787ec50a5a`. |
 | `git diff --check` | PASS. |
 | Independent QA | PASS after one P2 test-precision correction. The regression now pins `Operation Pending`, asynchronous polling, and the correlation SHALL from one §9.19 source span. |
-| Exact-head GitHub CI | Pending. |
+| Exact-head GitHub CI run `38738832004` on `fa206ece55d609df1fb934ee179c2e8dc38240ba` | PASS: 34 successful jobs, zero failures, and 3 skipped jobs. |
