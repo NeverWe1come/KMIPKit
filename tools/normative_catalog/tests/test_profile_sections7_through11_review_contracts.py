@@ -88,15 +88,18 @@ class ProfileSectionsSevenThroughElevenReviewContractTests(unittest.TestCase):
         response_gap = gaps["KMIPKIT-SOURCE-GAP-SPEC-8.4-002"]
         error_gap = gaps["KMIPKIT-SOURCE-GAP-SPEC-9.17-001"]
 
-        for gap in (response_gap, error_gap):
-            with self.subTest(gap_id=gap["gap_id"]):
-                self.assertEqual(gap["actor"], "unspecified")
-                self.assertEqual(gap["direction"], "server_to_client")
-                self.assertIsNone(gap["candidate_requirement_id"])
-                self.assertIsNone(gap["proposed_requirement_id"])
-
+        self.assertEqual(response_gap["actor"], "server")
+        self.assertEqual(response_gap["direction"], "server_to_client")
         self.assertEqual(response_gap["scope_disposition"], "server_only")
+        self.assertEqual(response_gap["status"], "server_actor_disposition_recorded")
+        self.assertIsNone(response_gap["candidate_requirement_id"])
+        self.assertIsNone(response_gap["proposed_requirement_id"])
+
+        self.assertEqual(error_gap["actor"], "unspecified")
+        self.assertEqual(error_gap["direction"], "server_to_client")
         self.assertEqual(error_gap["scope_disposition"], "unresolved")
+        self.assertIsNone(error_gap["candidate_requirement_id"])
+        self.assertIsNone(error_gap["proposed_requirement_id"])
         clauses = {row["clause_id"]: row for row in self.catalog["source_clauses"]}
         for clause_id in ("KMIPKIT-CLAUSE-SPEC-8.4-002", "KMIPKIT-CLAUSE-SPEC-9.17-001"):
             with self.subTest(clause_id=clause_id):
@@ -106,10 +109,12 @@ class ProfileSectionsSevenThroughElevenReviewContractTests(unittest.TestCase):
         response_review = self.reviews["KMIPKIT-CLAUSE-SPEC-8.4-002"]
         self.assertEqual(len(response_review["source_obligations"]), 1)
         self.assertEqual(response_review["source_obligations"][0]["source_keyword"], "MAY")
-        self.assertEqual(response_review["source_obligations"][0]["actor"], "unspecified")
+        self.assertEqual(response_review["source_obligations"][0]["actor"], "server")
         self.assertEqual(response_review["source_obligations"][0]["direction"], "server_to_client")
         self.assertEqual(response_review["source_obligations"][0]["scope_disposition"], "server_only")
         self.assertIsNone(response_review["source_obligations"][0]["candidate_requirement_id"])
+        self.assertIn("client-initiated 1.0", response_review["review_note"])
+        self.assertIn("does not name its sender", response_review["review_note"])
 
         error_review = self.reviews["KMIPKIT-CLAUSE-SPEC-9.17-001"]
         error_atoms = error_review["source_obligations"]
