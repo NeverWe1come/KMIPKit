@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import io
+import html
 import json
 import re
 import shutil
@@ -306,6 +307,109 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
                 else:
                     self.assertNotIn(source_clause_id, profile["direct_source_clause_ids"])
                 self.assertNotIn("KMIPKIT-REQ-PROF-5.1.1-001", expected["requirement_ids"])
+
+    def test_baseline_profile_condition_inventory_covers_the_complete_pinned_section(self) -> None:
+        """The inclusion oracle accounts for every §5.1.1 condition without inventing REQ IDs."""
+        oracle_path = ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json"
+        oracle = json.loads(oracle_path.read_text(encoding="utf-8"))
+        profiles_html = (
+            ROOT / "specification" / "oasis" / "kmip-2.1" / "upstream" / "kmip-profiles-v2.1-os.html"
+        ).read_text(encoding="cp1252")
+        normalized_profiles_html = " ".join(profiles_html.split())
+        inventory = oracle["provenance"].get("profile_condition_inventories", [])
+        baseline = next(
+            (
+                item
+                for item in inventory
+                if item.get("source_id") == "KMIPKIT-SRC-profiles" and item.get("section") == "5.1.1"
+            ),
+            None,
+        )
+
+        self.assertIsNotNone(baseline)
+        assert baseline is not None
+        self.assertEqual(
+            baseline["inclusion_id"],
+            "KMIPKIT-INCLUSION-PROF-BASELINE-CONDITIONS",
+        )
+        self.assertEqual(baseline["source_path"], "specification/oasis/kmip-2.1/upstream/kmip-profiles-v2.1-os.html")
+        self.assertEqual(baseline["html_line_range"], [4532, 4636])
+        self.assertEqual(len(baseline["conditions"]), 8)
+
+        expected_conditions = (
+            (1, [4533, 4534], "Supports the conditions required by the KMIP Client Implementation Conformance clauses [KMIP-SPEC]", ()),
+            (2, [4535, 4540], "Supports the following Attribute Data Structures [KMIP-SPEC]", ("Attributes",)),
+            (
+                3,
+                [4541, 4562],
+                "Supports the following Object Attributes [KMIP-SPEC]",
+                (
+                    "Activation Date", "Deactivation Date", "Digest", "Initial Date", "Last Change Date",
+                    "Object Type", "State", "Unique Identifier",
+                ),
+            ),
+            (
+                4,
+                [4563, 4574],
+                "Supports the following Client-to-Server Operations [KMIP-SPEC]",
+                ("Get", "Get Attributes", "Locate", "Query"),
+            ),
+            (
+                5,
+                [4575, 4613],
+                "Supports the following Message Data Structures [KMIP-SPEC]",
+                (
+                    "Asynchronous Indicator", "Batch Count", "Batch Error Continuation Option", "Batch Item",
+                    "Batch Order Option", "Maximum Response Size", "Message Extension", "Operation",
+                    "Protocol Version", "Result Reason", "Result Status", "Server Correlation Value",
+                    "Time Stamp", "Unique Batch Item ID",
+                ),
+            ),
+            (
+                6,
+                [4614, 4627],
+                "Supports the Message Protocols [KMIP-SPEC]",
+                ("Authentication", "Transport", "TTLV"),
+            ),
+            (7, [4628, 4631], "Optionally supports any clause within [KMIP-SPEC] that is not listed above", ()),
+            (
+                8,
+                [4632, 4635],
+                "Optionally supports extensions outside the scope of this standard that do not contradict any KMIP requirements",
+                (),
+            ),
+        )
+        observed_conditions = tuple(
+            (
+                item["item"],
+                item["html_line_range"],
+                item["source_text"],
+                tuple(item["supported_items"]),
+            )
+            for item in baseline["conditions"]
+        )
+        self.assertEqual(observed_conditions, expected_conditions)
+
+        source_lines = profiles_html.splitlines()
+        for item, line_range, source_text, supported_items in expected_conditions:
+            with self.subTest(item=item):
+                condition = baseline["conditions"][item - 1]
+                self.assertEqual(condition["html_line_range"], line_range)
+                source_span = " ".join(source_lines[line_range[0] - 1 : line_range[1]])
+                normalized_span = " ".join(html.unescape(re.sub(r"<[^>]+>", " ", source_span)).split())
+                self.assertIn(source_text, normalized_span)
+                for supported_item in supported_items:
+                    self.assertIn(supported_item, normalized_span)
+                self.assertEqual(condition["condition_id"], f"KMIPKIT-PROF-COND-5.1.1-{item:03d}")
+                self.assertEqual(condition["governing_requirement_id"], "KMIPKIT-REQ-PROF-6.1-003")
+                self.assertIsNone(condition["requirement_id"])
+                self.assertEqual(condition["scope_disposition"], "profile_conditional")
+                self.assertEqual(condition["mapping_status"], "pending_t002_crosswalk")
+        self.assertEqual(
+            {item["requirement_id"] for item in baseline["conditions"]},
+            {None},
+            "§5.1.1's title-case support statements are profile conditions, not standalone RFC modal REQs",
+        )
 
     def test_foundry_basic_condition_text_names_its_inheriting_profiles(self) -> None:
         """The catalog and source review describe the same normative inheritance."""
