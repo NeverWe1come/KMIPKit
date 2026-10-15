@@ -23,6 +23,24 @@ class HttpsEncodingScopeTests(unittest.TestCase):
         cls.clauses = {row["clause_id"]: row for row in catalog["source_clauses"]}
         cls.gaps = {row["gap_id"]: row for row in fixture["source_only_requirement_gaps"]}
 
+    def assert_clause_scope(
+        self,
+        clause_id: str,
+        *,
+        role: str,
+        direction: str,
+        condition: str,
+        disposition: str,
+        scope_state: str,
+    ) -> None:
+        clause = self.clauses[clause_id]
+        self.assertEqual(clause["role"], role)
+        self.assertEqual(clause["direction"], direction)
+        self.assertEqual(clause["condition"], condition)
+        self.assertEqual(clause["disposition"], disposition)
+        self.assertEqual(clause["scope_state"], scope_state)
+        self.assertEqual(clause["requirement_ids"], [])
+
     def test_content_type_clauses_keep_client_request_scope_and_encoding_conditions(self) -> None:
         cases = (
             ("KMIPKIT-CLAUSE-PROF-5.3.1-006", [5139, 5140], "XML"),
@@ -30,29 +48,28 @@ class HttpsEncodingScopeTests(unittest.TestCase):
         )
         for clause_id, line_range, encoding in cases:
             with self.subTest(clause_id=clause_id):
-                clause = self.clauses[clause_id]
-                self.assertEqual(clause["role"], "client")
-                self.assertEqual(clause["direction"], "client_to_server")
-                self.assertEqual(clause["condition"], f"When message encoding is {encoding}.")
-                self.assertEqual(clause["disposition"], "non_applicable")
-                self.assertEqual(clause["scope_state"], "out_of_scope")
-                self.assertEqual(clause["requirement_ids"], [])
+                self.assert_clause_scope(
+                    clause_id,
+                    role="client",
+                    direction="client_to_server",
+                    condition=f"When message encoding is {encoding}.",
+                    disposition="non_applicable",
+                    scope_state="out_of_scope",
+                )
                 excerpt = pinned_source_excerpt(PROFILES_SOURCE_PATH, line_range)
                 self.assertIn(f"if the message encoding is {encoding}", excerpt)
                 self.assertIn("SHALL specify a Content-Type", excerpt)
 
     def test_server_to_client_https_behavior_keeps_its_conditional_client_actor(self) -> None:
         clause_id = "KMIPKIT-CLAUSE-PROF-5.3.1-011"
-        clause = self.clauses[clause_id]
-        self.assertEqual(clause["role"], "client")
-        self.assertEqual(clause["direction"], "server_to_client")
-        self.assertEqual(
-            clause["condition"],
-            "When the client supports responding to server-to-client operations.",
+        self.assert_clause_scope(
+            clause_id,
+            role="client",
+            direction="server_to_client",
+            condition="When the client supports responding to server-to-client operations.",
+            disposition="later_1_1",
+            scope_state="client_1_1",
         )
-        self.assertEqual(clause["disposition"], "later_1_1")
-        self.assertEqual(clause["scope_state"], "client_1_1")
-        self.assertEqual(clause["requirement_ids"], [])
         self.assertEqual(
             pinned_source_excerpt(PROFILES_SOURCE_PATH, [5149, 5150]),
             "KMIP clients that support responding to server to client operations SHALL behave as a HTTPS server.",
@@ -60,7 +77,7 @@ class HttpsEncodingScopeTests(unittest.TestCase):
 
         gap = self.gaps["KMIPKIT-SOURCE-GAP-PROF-5.3.1-5149"]
         self.assertEqual(gap["source_clause_id"], clause_id)
-        self.assertEqual(gap["source_locator"], clause["locator"])
+        self.assertEqual(gap["source_locator"], self.clauses[clause_id]["locator"])
         self.assertEqual(gap["scope_disposition"], "out_of_scope")
         self.assertIsNone(gap["candidate_requirement_id"])
         self.assertIsNone(gap["proposed_requirement_id"])
