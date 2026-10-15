@@ -3247,6 +3247,9 @@ The Baseline Message Protocols `Authentication` item is linked to client authent
 | Stage | DCO-signed commit and command | Result |
 |---|---|---|
 | Red — exclude server-only Specification §10.3 from the Baseline client Authentication mapping | `0c54f9c5`; `py -3 -B -m unittest tools.normative_catalog.tests.test_generate_profiles.ProfileMetadataGeneratorTests.test_baseline_message_protocols_crosswalk_keeps_unresolved_and_server_duties_out -v` | Expected Red: one assertion failure because the fixture includes `KMIPKIT-CLAUSE-SPEC-10.3-001` in the Authentication mapping despite its catalog `server_only` disposition. |
+| Green — remove §10.3 only from the Authentication item mapping, retaining its server-only catalog and profile-closure records | `48dec46d`; focused Message Protocols crosswalk regression | PASS: crosswalk test passes and confirms §10.3 remains `server_only`. |
+| Refactor — describe the full client-support boundary for Authentication, Transport, and TTLV in the regression | `f3276070`; focused Message Protocols crosswalk regression; `git diff --check` | PASS: regression passes and whitespace check passes. |
+| Full scoped verification — run generator and HTTPS source-scope suites | code commit `f3276070`; `py -3 -B -m unittest tools.normative_catalog.tests.test_generate_profiles tools.normative_catalog.tests.test_profile_https_encoding_scope` | PASS: 67 tests, 1 platform-conditioned skip. |
 
 ### KMIPKIT-0010 T002 tranche — Profiles §4.1.1 test variation scope
 
