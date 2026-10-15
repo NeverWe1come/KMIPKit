@@ -1039,7 +1039,7 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
         self.assertIn("Linked Object Identifier value is specified without the Link Type value", locate_007_source)
 
     def test_baseline_message_data_structures_condition_has_exact_reviewed_batch_crosswalk(self) -> None:
-        """The four reviewed batch mappings stay bounded while item 5 remains pending."""
+        """The five reviewed batch mappings stay bounded while item 5 remains pending."""
         catalog = json.loads((ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8"))
         oracle = json.loads(
             (ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json")
@@ -1100,11 +1100,26 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
             "source_clause_ids": [expected_batch_order_option_clause_id],
             "mapping_status": "reviewed",
         }
+        expected_maximum_response_size_clause_id = "KMIPKIT-CLAUSE-SPEC-9.12-001"
+        expected_maximum_response_size_element_id = "KMIPKIT-ELEM-MESSAGE-FIELD-9-12-MAXIMUM-RESPONSE-SIZE"
+        expected_maximum_response_size_requirement_ids = [
+            "KMIPKIT-REQ-SPEC-9.12-001-001",
+            "KMIPKIT-REQ-SPEC-9.12-001-002",
+            "KMIPKIT-REQ-SPEC-9.12-001-003",
+        ]
+        expected_maximum_response_size_mapping = {
+            "item": "Maximum Response Size",
+            "element_id": expected_maximum_response_size_element_id,
+            "requirement_ids": expected_maximum_response_size_requirement_ids,
+            "source_clause_ids": [expected_maximum_response_size_clause_id],
+            "mapping_status": "reviewed",
+        }
         expected_mappings = [
             expected_mapping,
             expected_error_mapping,
             expected_batch_item_mapping,
             expected_batch_order_option_mapping,
+            expected_maximum_response_size_mapping,
         ]
 
         self.assertEqual(condition["item"], 5)
@@ -1133,13 +1148,18 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
         self.assertEqual(condition.get("supported_item_mappings"), expected_mappings)
         self.assertEqual(
             [mapping["item"] for mapping in condition["supported_item_mappings"]],
-            ["Batch Count", "Batch Error Continuation Option", "Batch Item", "Batch Order Option"],
+            [
+                "Batch Count",
+                "Batch Error Continuation Option",
+                "Batch Item",
+                "Batch Order Option",
+                "Maximum Response Size",
+            ],
         )
         self.assertEqual(
             set(condition["supported_items"]) - {mapping["item"] for mapping in condition["supported_item_mappings"]},
             {
                 "Asynchronous Indicator",
-                "Maximum Response Size",
                 "Message Extension",
                 "Operation",
                 "Protocol Version",
@@ -1313,6 +1333,122 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
         self.assertEqual(check_specific_should["element_ids"], ["KMIPKIT-ELEM-OP-C2S-CHECK"])
         self.assertNotIn(
             "KMIPKIT-REQ-SPEC-6.1.7-002-001", expected_batch_order_option_mapping["requirement_ids"]
+        )
+
+        maximum_response_size_element = next(
+            item
+            for item in catalog["elements"]
+            if item["element_id"] == expected_maximum_response_size_element_id
+        )
+        self.assertEqual(maximum_response_size_element["kind"], "message_field")
+        self.assertEqual(maximum_response_size_element["name"], "Maximum Response Size")
+        self.assertEqual(
+            maximum_response_size_element["source_refs"],
+            [{"source_id": "KMIPKIT-SRC-spec", "section": "9.12"}],
+        )
+        self.assertEqual(maximum_response_size_element["direction"], "client_to_server")
+        self.assertEqual(maximum_response_size_element["scope_state"], "client_1_0")
+        self.assertEqual(
+            maximum_response_size_element["parent_element_ids"],
+            ["KMIPKIT-ELEM-MESSAGE-FIELD-8-2-MAXIMUM-RESPONSE-SIZE"],
+        )
+        self.assertEqual(
+            maximum_response_size_element["requirement_ids"],
+            ["KMIPKIT-REQ-SPEC-9.12-001-001"],
+        )
+        self.assertEqual(maximum_response_size_element["source_encoding"], "Integer")
+
+        maximum_response_size_clause = next(
+            item
+            for item in catalog["source_clauses"]
+            if item["clause_id"] == expected_maximum_response_size_clause_id
+        )
+        self.assertEqual(maximum_response_size_clause["source_keywords"], ["OPTIONAL", "SHALL", "SHOULD"])
+        self.assertEqual(maximum_response_size_clause["role"], "client")
+        self.assertEqual(maximum_response_size_clause["direction"], "client_to_server")
+        self.assertEqual(maximum_response_size_clause["scope_state"], "client_1_0")
+        self.assertEqual(
+            maximum_response_size_clause["requirement_ids"], expected_maximum_response_size_requirement_ids
+        )
+
+        maximum_response_size_requirements = {
+            item["requirement_id"]: item
+            for item in catalog["requirements"]
+            if item["requirement_id"].startswith("KMIPKIT-REQ-SPEC-9.12-001-")
+        }
+        expected_maximum_response_size_ownership = {
+            "KMIPKIT-REQ-SPEC-9.12-001-001": [
+                "KMIPKIT-ELEM-MESSAGE-FIELD-8-2-MAXIMUM-RESPONSE-SIZE",
+                expected_maximum_response_size_element_id,
+            ],
+            "KMIPKIT-REQ-SPEC-9.12-001-002": [],
+            "KMIPKIT-REQ-SPEC-9.12-001-003": [],
+        }
+        expected_maximum_response_size_keywords = {
+            "KMIPKIT-REQ-SPEC-9.12-001-001": "OPTIONAL",
+            "KMIPKIT-REQ-SPEC-9.12-001-002": "SHALL",
+            "KMIPKIT-REQ-SPEC-9.12-001-003": "SHOULD",
+        }
+        for requirement_id, element_ids in expected_maximum_response_size_ownership.items():
+            with self.subTest(maximum_response_size_requirement_id=requirement_id):
+                requirement = maximum_response_size_requirements[requirement_id]
+                self.assertEqual(requirement["source_clause_ids"], [expected_maximum_response_size_clause_id])
+                self.assertEqual(requirement["source_keyword"], expected_maximum_response_size_keywords[requirement_id])
+                self.assertEqual(requirement["role"], "client")
+                self.assertEqual(requirement["direction"], "client_to_server")
+                self.assertEqual(requirement["scope_state"], "client_1_0")
+                self.assertEqual(requirement["element_ids"], element_ids)
+
+        maximum_response_size_review = next(
+            item
+            for item in oracle["source_requirement_reviews"]
+            if item["source_clause_id"] == expected_maximum_response_size_clause_id
+        )
+        maximum_response_size_excerpt = (
+            "This is an OPTIONAL field contained in a request message, and is used to indicate the maximum size "
+            "of a response, in bytes, that the requester SHALL be able to handle. It SHOULD only be sent in "
+            "requests that possibly return large replies."
+        )
+        self.assertEqual(maximum_response_size_review["source_path"], spec_path)
+        self.assertEqual(maximum_response_size_review["source_section"], "9.12")
+        self.assertEqual(maximum_response_size_review["source_locator"], {"ordinal": 1, "block_kind": "paragraph"})
+        self.assertEqual(maximum_response_size_review["html_line_range"], [44811, 44814])
+        self.assertEqual(maximum_response_size_review["source_excerpt"], maximum_response_size_excerpt)
+        self.assertEqual(
+            _normalized_html_source_span(spec_lines, [44811, 44814]), maximum_response_size_excerpt
+        )
+        self.assertEqual(
+            maximum_response_size_review["expected_client_requirement_ids"],
+            expected_maximum_response_size_requirement_ids,
+        )
+        self.assertEqual(
+            [obligation["source_keyword"] for obligation in maximum_response_size_review["source_obligations"]],
+            ["OPTIONAL", "SHALL", "SHOULD"],
+        )
+        self.assertEqual(
+            [obligation["actor"] for obligation in maximum_response_size_review["source_obligations"]],
+            ["requester", "requester", "requester"],
+        )
+        self.assertEqual(
+            [obligation["direction"] for obligation in maximum_response_size_review["source_obligations"]],
+            ["client_to_server", "client_to_server", "client_to_server"],
+        )
+        self.assertEqual(
+            [obligation["scope_disposition"] for obligation in maximum_response_size_review["source_obligations"]],
+            ["client_1_0", "client_1_0", "client_1_0"],
+        )
+        self.assertEqual(
+            [obligation["candidate_requirement_id"] for obligation in maximum_response_size_review["source_obligations"]],
+            expected_maximum_response_size_requirement_ids,
+        )
+        self.assertEqual(
+            _normalized_html_source_span(spec_lines, [42609, 42625]), "Maximum Response Size No"
+        )
+        self.assertEqual(
+            _normalized_html_source_span(spec_lines, [44835, 44842]), "Maximum Response Size Integer"
+        )
+        self.assertEqual(
+            _normalized_html_source_span(spec_lines, [59962, 59973]), "Maximum Response Size 420050"
         )
 
         profiles_lines = (ROOT / profiles_path).read_text(encoding="cp1252").splitlines()
