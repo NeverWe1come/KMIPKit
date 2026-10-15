@@ -355,18 +355,20 @@ Two direct `requirement_crosswalk` entries remain absent, but both source rows h
 
 The following compact inventory gives each remaining oracle gap’s exact section and pinned HTML line range, source-derived scope disposition, review status, and current reused/proposed/candidate ID. Full normalized source excerpts, force, actor, direction, condition, locator kind, and review note remain in the oracle record keyed by the same gap ID. Of 107 records, 18 have a `reused_requirement_id`, 2 have a `proposed_requirement_id`, and 62 have a `candidate_requirement_id`; 18 of the candidate IDs overlap a reused ID, while 43 records have none of these fields. Candidate IDs in the inventory are not approved stable owners. `—` means no reused, proposed, or candidate ID is recorded. This audit leaves unresolved actors and candidates as recorded.
 
+Eight source-only statements in Profiles §§3.1.1–3.1.4 and 3.2.4 explicitly address conformant KMIP servers. Their oracle records now retain the formal force and stated conditions, record `actor: server`, and use `server_actor_disposition_recorded` with `server_only` scope; they do not add client requirement IDs. The TLS 1.2 rows in §3.1.2 remain mixed server/out-of-scope statements because their text names clients or servers conditionally, while KMIPKit's approved client boundary supports TLS 1.3 only. The §3.1.1 server SHOULD to support TLS 1.2 has no additional condition. The 107-row status distribution is 65 covered by stable labels, 12 unlabeled statements/boundaries, 10 procedure contexts, 11 server actor dispositions, 3 generic parameter contexts, and six singleton statuses (force/actor unresolved, stable label missing, unresolved interpretation, scope unresolved, attribute-policy mapping, and proposed label).
+
 | Source-gap ID | Pinned source locator | Scope disposition | Review status | Reused ID / proposal / candidate |
 |---|---|---|---|---|
-| `KMIPKIT-SOURCE-GAP-PROF-3.1.1-4009` | profiles, §3.1.1 4009–4014 | `server_only` | `unlabeled_source_statement_or_boundary_item` | `—` |
-| `KMIPKIT-SOURCE-GAP-PROF-3.1.1-4023` | profiles, §3.1.1 4023–4028 | `server_only` | `unlabeled_source_statement_or_boundary_item` | `—` |
-| `KMIPKIT-SOURCE-GAP-PROF-3.1.2-4060` | profiles, §3.1.2 4060–4065 | `server_only` | `unlabeled_source_statement_or_boundary_item` | `—` |
+| `KMIPKIT-SOURCE-GAP-PROF-3.1.1-4009` | profiles, §3.1.1 4009–4014 | `server_only` | `server_actor_disposition_recorded` | `—` |
+| `KMIPKIT-SOURCE-GAP-PROF-3.1.1-4023` | profiles, §3.1.1 4023–4028 | `server_only` | `server_actor_disposition_recorded` | `—` |
+| `KMIPKIT-SOURCE-GAP-PROF-3.1.2-4060` | profiles, §3.1.2 4060–4065 | `server_only` | `server_actor_disposition_recorded` | `—` |
 | `KMIPKIT-SOURCE-GAP-PROF-3.1.2-4076` | profiles, §3.1.2 4076–4087 | `mixed_server_and_out_of_scope` | `unlabeled_source_statement_or_boundary_item` | `—` |
 | `KMIPKIT-SOURCE-GAP-PROF-3.1.2-4089` | profiles, §3.1.2 4089–4185 | `mixed_server_and_out_of_scope` | `unlabeled_source_statement_or_boundary_item` | `—` |
-| `KMIPKIT-SOURCE-GAP-PROF-3.1.3-4196` | profiles, §3.1.3 4196–4198 | `server_only` | `unlabeled_source_statement_or_boundary_item` | `—` |
-| `KMIPKIT-SOURCE-GAP-PROF-3.1.3-4200` | profiles, §3.1.3 4200–4202 | `server_only` | `unlabeled_source_statement_or_boundary_item` | `—` |
-| `KMIPKIT-SOURCE-GAP-PROF-3.1.3-4204` | profiles, §3.1.3 4204–4206 | `server_only` | `unlabeled_source_statement_or_boundary_item` | `—` |
-| `KMIPKIT-SOURCE-GAP-PROF-3.1.4-4217` | profiles, §3.1.4 4217–4218 | `server_only` | `unlabeled_source_statement_or_boundary_item` | `—` |
-| `KMIPKIT-SOURCE-GAP-PROF-3.2.4-4260` | profiles, §3.2.4 4260–4262 | `server_only` | `unlabeled_source_statement_or_boundary_item` | `—` |
+| `KMIPKIT-SOURCE-GAP-PROF-3.1.3-4196` | profiles, §3.1.3 4196–4198 | `server_only` | `server_actor_disposition_recorded` | `—` |
+| `KMIPKIT-SOURCE-GAP-PROF-3.1.3-4200` | profiles, §3.1.3 4200–4202 | `server_only` | `server_actor_disposition_recorded` | `—` |
+| `KMIPKIT-SOURCE-GAP-PROF-3.1.3-4204` | profiles, §3.1.3 4204–4206 | `server_only` | `server_actor_disposition_recorded` | `—` |
+| `KMIPKIT-SOURCE-GAP-PROF-3.1.4-4217` | profiles, §3.1.4 4217–4218 | `server_only` | `server_actor_disposition_recorded` | `—` |
+| `KMIPKIT-SOURCE-GAP-PROF-3.2.4-4260` | profiles, §3.2.4 4260–4262 | `server_only` | `server_actor_disposition_recorded` | `—` |
 | `KMIPKIT-SOURCE-GAP-PROF-5.12.3-8658` | profiles, §5.12.3 8658–8663 | `server_only` | `unlabeled_source_statement_or_boundary_item` | `—` |
 | `KMIPKIT-SOURCE-GAP-PROF-5.13.1-8990` | profiles, §5.13.1 8990–8991 | `profile_conditional` | `source_obligation_covered_by_existing_stable_label` | `KMIPKIT-REQ-PROF-5.13.1-002` |
 | `KMIPKIT-SOURCE-GAP-PROF-5.18.3-10411` | profiles, §5.18.3 10411–10412 | `out_of_scope` | `stable_requirement_label_missing` | `KMIPKIT-REQ-PROF-5.18.3-004` |
