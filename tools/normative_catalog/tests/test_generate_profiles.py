@@ -3139,7 +3139,6 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
                     "KMIPKIT-CLAUSE-PROF-3.1.3-002",
                     "KMIPKIT-CLAUSE-PROF-3.1.3-003",
                     "KMIPKIT-CLAUSE-PROF-3.1.4-001",
-                    "KMIPKIT-CLAUSE-SPEC-10.3-001",
                 ],
                 "mapping_status": "reviewed",
             },
@@ -3202,6 +3201,13 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
         self.assertIsNone(condition["requirement_id"])
         self.assertEqual(condition["scope_disposition"], "profile_conditional")
         self.assertEqual(condition["mapping_status"], "pending_t002_crosswalk")
+        server_authentication_clause = next(
+            item
+            for item in catalog["source_clauses"]
+            if item["clause_id"] == "KMIPKIT-CLAUSE-SPEC-10.3-001"
+        )
+        self.assertEqual(server_authentication_clause["disposition"], "server_only")
+        self.assertNotIn("KMIPKIT-CLAUSE-SPEC-10.3-001", expected_mappings[0]["source_clause_ids"])
 
         reviews = {item["source_clause_id"]: item for item in oracle["source_requirement_reviews"]}
         unresolved_auth_ids = {
