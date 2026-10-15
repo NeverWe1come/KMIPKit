@@ -96,7 +96,8 @@ observations against the pinned local 5.28.0 image, not broad support claims.
 The final run after narrowing activation setup and keeping copied cryptographic
 outputs in `SecretBytes` used
 `$env:KMIPKIT_COSMIAN_CERT_DIR = (Resolve-Path .local/cosmian-kms/certs).Path; cargo test -p kmipkit-client --test cosmian_kms -- --ignored --nocapture --test-threads=1`.
-It again reported 20 passed, 0 failed. Afterward,
+On the final merged integration head `5b86ab87`, it again reported 20
+passed, 0 failed. Afterward,
 `scripts/integration/cosmian-kms.ps1 -Action down` removed the Cosmian and PKI
 containers and their Compose network; the subsequent `-Action status` listed no
 running services. Generated local certificates remain ignored for the next
