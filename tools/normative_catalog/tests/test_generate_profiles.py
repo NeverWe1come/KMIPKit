@@ -1099,7 +1099,7 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
         self.assertIn("Linked Object Identifier value is specified without the Link Type value", locate_007_source)
 
     def test_baseline_message_data_structures_condition_has_exact_reviewed_batch_crosswalk(self) -> None:
-        """The ten reviewed Message Data Structure mappings stay bounded while item 5 remains pending."""
+        """The eleven reviewed Message Data Structure mappings stay bounded while item 5 remains pending."""
         catalog = json.loads((ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8"))
         oracle = json.loads(
             (ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json")
@@ -1220,6 +1220,13 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
             "source_clause_ids": ["KMIPKIT-CLAUSE-SPEC-9.18-001"],
             "mapping_status": "reviewed",
         }
+        expected_result_status_mapping = {
+            "item": "Result Status",
+            "element_id": "KMIPKIT-ELEM-MESSAGE-FIELD-9-19-RESULT-STATUS",
+            "requirement_ids": ["KMIPKIT-REQ-SPEC-9.19-002"],
+            "source_clause_ids": ["KMIPKIT-CLAUSE-SPEC-9.19-001", "KMIPKIT-CLAUSE-SPEC-9.19-002"],
+            "mapping_status": "reviewed",
+        }
         expected_mappings = [
             expected_async_mapping,
             expected_mapping,
@@ -1231,6 +1238,7 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
             expected_operation_mapping,
             expected_protocol_version_mapping,
             expected_result_reason_mapping,
+            expected_result_status_mapping,
         ]
 
         self.assertEqual(condition["item"], 5)
@@ -1270,10 +1278,11 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
                 "Operation",
                 "Protocol Version",
                 "Result Reason",
+                "Result Status",
             ],
         )
         self.assertEqual(len(condition["supported_items"]), 14)
-        self.assertEqual(len(condition["supported_item_mappings"]), 10)
+        self.assertEqual(len(condition["supported_item_mappings"]), 11)
         unmapped_items = [
             item
             for item in condition["supported_items"]
@@ -1282,7 +1291,6 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
         self.assertEqual(
             unmapped_items,
             [
-                "Result Status",
                 "Server Correlation Value",
                 "Time Stamp",
                 "Unique Batch Item ID",
@@ -1291,7 +1299,6 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
         self.assertEqual(
             set(condition["supported_items"]) - {mapping["item"] for mapping in condition["supported_item_mappings"]},
             {
-                "Result Status",
                 "Server Correlation Value",
                 "Time Stamp",
                 "Unique Batch Item ID",
@@ -2163,19 +2170,12 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
         )
         self.assertEqual(operation_mapping, expected_mapping)
         self.assertEqual(condition["supported_items"][6:9], ["Message Extension", "Operation", "Protocol Version"])
-        self.assertEqual(
-            mapped_items[-4:], ["Message Extension", "Operation", "Protocol Version", "Result Reason"]
-        )
+        self.assertIn("Operation", mapped_items)
         self.assertEqual(len(condition["supported_items"]), 14)
-        self.assertEqual(len(mapped_items), 10)
+        self.assertEqual(len(mapped_items), 11)
         self.assertEqual(
             [item for item in condition["supported_items"] if item not in set(mapped_items)],
-            [
-                "Result Status",
-                "Server Correlation Value",
-                "Time Stamp",
-                "Unique Batch Item ID",
-            ],
+            ["Server Correlation Value", "Time Stamp", "Unique Batch Item ID"],
         )
         self.assertIsNone(condition["requirement_id"])
         self.assertEqual(condition["scope_disposition"], "profile_conditional")
@@ -2342,10 +2342,10 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
         self.assertEqual(protocol_version_mapping, expected_mapping)
         mapped_items = [item["item"] for item in condition["supported_item_mappings"]]
         self.assertEqual(condition["supported_items"][8], "Protocol Version")
-        self.assertEqual(mapped_items[-3:], ["Operation", "Protocol Version", "Result Reason"])
+        self.assertIn("Protocol Version", mapped_items)
         self.assertEqual(
             [item for item in condition["supported_items"] if item not in set(mapped_items)],
-            ["Result Status", "Server Correlation Value", "Time Stamp", "Unique Batch Item ID"],
+            ["Server Correlation Value", "Time Stamp", "Unique Batch Item ID"],
         )
         self.assertIsNone(condition["requirement_id"])
         self.assertEqual(condition["scope_disposition"], "profile_conditional")
@@ -2493,6 +2493,106 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
         self.assertEqual(clause["requirement_ids"], [])
         self.assertEqual(clause["direction"], "server_to_client")
         self.assertEqual(clause["scope_state"], "server_only")
+
+    def test_baseline_result_status_condition_maps_pending_client_duty(self) -> None:
+        """Result Status maps its response structure and conditional Pending client duty."""
+        catalog = json.loads((ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8"))
+        oracle = json.loads(
+            (ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json")
+            .read_text(encoding="utf-8")
+        )
+        inventory = next(
+            item
+            for item in oracle["provenance"]["profile_condition_inventories"]
+            if item["source_id"] == "KMIPKIT-SRC-profiles" and item["section"] == "5.1.1"
+        )
+        condition = next(
+            item for item in inventory["conditions"] if item["condition_id"] == "KMIPKIT-PROF-COND-5.1.1-005"
+        )
+        expected_mapping = {
+            "item": "Result Status",
+            "element_id": "KMIPKIT-ELEM-MESSAGE-FIELD-9-19-RESULT-STATUS",
+            "requirement_ids": ["KMIPKIT-REQ-SPEC-9.19-002"],
+            "source_clause_ids": ["KMIPKIT-CLAUSE-SPEC-9.19-001", "KMIPKIT-CLAUSE-SPEC-9.19-002"],
+            "mapping_status": "reviewed",
+        }
+
+        self.assertEqual(condition["supported_items"][10], "Result Status")
+        result_status_mapping = next(
+            (item for item in condition["supported_item_mappings"] if item["item"] == "Result Status"),
+            None,
+        )
+        self.assertEqual(result_status_mapping, expected_mapping)
+        self.assertIsNone(condition["requirement_id"])
+        self.assertEqual(condition["scope_disposition"], "profile_conditional")
+        self.assertEqual(condition["mapping_status"], "pending_t002_crosswalk")
+
+        profiles_lines = (
+            ROOT / "specification" / "oasis" / "kmip-2.1" / "upstream" / "kmip-profiles-v2.1-os.html"
+        ).read_text(encoding="cp1252").splitlines()
+        spec_lines = (
+            ROOT / "specification" / "oasis" / "kmip-2.1" / "upstream" / "kmip-spec-v2.1-os.html"
+        ).read_text(encoding="cp1252").splitlines()
+        self.assertIn("Result Status", _normalized_html_source_span(profiles_lines, [4604, 4604]))
+        self.assertIn("Result Status Yes", _normalized_html_source_span(spec_lines, [43380, 43398]))
+        result_status_definition = _normalized_html_source_span(spec_lines, [45244, 45258])
+        self.assertIn("The following values MAY be set in this field", result_status_definition)
+        self.assertIn("The asynchronous correlation value SHALL be used for the subsequent polling", result_status_definition)
+        self.assertIn(
+            "Result Status Enumeration",
+            _normalized_html_source_span(spec_lines, [45272, 45303]),
+        )
+
+        elements = {item["element_id"]: item for item in catalog["elements"]}
+        response_placement = elements["KMIPKIT-ELEM-MESSAGE-FIELD-8-6-RESULT-STATUS"]
+        self.assertEqual(response_placement["direction"], "server_to_client")
+        self.assertEqual(response_placement["scope_state"], "client_1_0")
+        self.assertEqual(response_placement["source_requiredness"], "Yes")
+        self.assertEqual(response_placement["requirement_ids"], [])
+
+        field = elements[expected_mapping["element_id"]]
+        self.assertEqual(field["source_refs"], [{"source_id": "KMIPKIT-SRC-spec", "section": "9.19"}])
+        self.assertEqual(field["source_encoding"], "Enumeration")
+        self.assertEqual(field["direction"], "server_to_client")
+        self.assertEqual(field["parent_element_ids"], ["KMIPKIT-ELEM-MESSAGE-FIELD-8-6-RESULT-STATUS"])
+        self.assertEqual(field["requirement_ids"], [])
+
+        clauses = {item["clause_id"]: item for item in catalog["source_clauses"]}
+        server_clause = clauses["KMIPKIT-CLAUSE-SPEC-9.19-001"]
+        self.assertEqual(server_clause["disposition"], "server_only")
+        self.assertEqual(server_clause["requirement_ids"], [])
+        self.assertEqual(server_clause["direction"], "server_to_client")
+        pending_clause = clauses["KMIPKIT-CLAUSE-SPEC-9.19-002"]
+        self.assertEqual(pending_clause["disposition"], "requirement")
+        self.assertEqual(pending_clause["requirement_ids"], ["KMIPKIT-REQ-SPEC-9.19-002"])
+        self.assertEqual(pending_clause["role"], "client")
+        self.assertEqual(pending_clause["direction"], "client_to_server")
+        self.assertEqual(pending_clause["scope_state"], "client_1_0")
+        self.assertEqual(pending_clause["condition"], "When Result Status is Pending.")
+
+        requirement = next(
+            item
+            for item in catalog["requirements"]
+            if item["requirement_id"] == "KMIPKIT-REQ-SPEC-9.19-002"
+        )
+        self.assertEqual(requirement["source_clause_ids"], ["KMIPKIT-CLAUSE-SPEC-9.19-002"])
+        self.assertEqual(requirement["role"], "client")
+        self.assertEqual(requirement["direction"], "client_to_server")
+        self.assertEqual(requirement["scope_state"], "client_1_0")
+        self.assertEqual(requirement["condition"], "When Result Status is Pending.")
+
+        requirement_mapping = next(
+            item for item in oracle["requirement_crosswalk"] if item["requirement_id"] == "KMIPKIT-REQ-SPEC-9.19-002"
+        )
+        self.assertEqual(requirement_mapping["applies_to"], "all_client_profiles")
+        self.assertEqual(requirement_mapping["role"], "client")
+        self.assertEqual(requirement_mapping["scope_state"], "client_1_0")
+        baseline = next(item for item in oracle["profiles"] if item["profile_id"] == "KMIPKIT-PROFILE-BASELINE-CLIENT")
+        self.assertIn("KMIPKIT-REQ-SPEC-9.19-002", baseline["requirement_ids"])
+
+        async_spec = (ROOT / "specs" / "009-asynchronous-operations" / "spec.md").read_text(encoding="utf-8")
+        self.assertIn("`KMIPKIT-REQ-SPEC-9.19-002`", async_spec)
+        self.assertIn("pending_poll_returns_without_repeating_and_zeroizes_request_and_response_copies", async_spec)
 
     def test_foundry_basic_condition_text_names_its_inheriting_profiles(self) -> None:
         """The catalog and source review describe the same normative inheritance."""
