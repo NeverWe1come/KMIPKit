@@ -415,20 +415,20 @@ class ProfileSectionsThreeAndFourCrosswalkTests(unittest.TestCase):
 
     def test_explicit_server_profile_requirements_remain_outside_client_crosswalk(self) -> None:
         expected = {
-            "KMIPKIT-SOURCE-GAP-PROF-3.1.1-4009": [4009, 4014],
-            "KMIPKIT-SOURCE-GAP-PROF-3.1.1-4023": [4023, 4028],
-            "KMIPKIT-SOURCE-GAP-PROF-3.1.2-4060": [4060, 4065],
-            "KMIPKIT-SOURCE-GAP-PROF-3.1.3-4196": [4196, 4198],
-            "KMIPKIT-SOURCE-GAP-PROF-3.1.3-4200": [4200, 4202],
-            "KMIPKIT-SOURCE-GAP-PROF-3.1.3-4204": [4204, 4206],
-            "KMIPKIT-SOURCE-GAP-PROF-3.1.4-4217": [4217, 4218],
-            "KMIPKIT-SOURCE-GAP-PROF-3.2.4-4260": [4260, 4262],
+            "KMIPKIT-SOURCE-GAP-PROF-3.1.1-4009": ([4009, 4014], "formal_SHALL", "TLS v1.3", "Server; `server_only`."),
+            "KMIPKIT-SOURCE-GAP-PROF-3.1.1-4023": ([4023, 4028], "formal_SHOULD", "TLS v1.2", "Server; `server_only`."),
+            "KMIPKIT-SOURCE-GAP-PROF-3.1.2-4060": ([4060, 4065], "formal_SHALL", "TLS v1.3", "Server; `server_only`."),
+            "KMIPKIT-SOURCE-GAP-PROF-3.1.3-4196": ([4196, 4198], "formal_SHALL", "automated client provisioning", "Server; `server_only`. The client presents its certificate, but this clause assigns enforcement to server."),
+            "KMIPKIT-SOURCE-GAP-PROF-3.1.3-4200": ([4200, 4202], "formal_SHALL", "Authentication object is absent", "Server; condition Authentication absent; `server_only`."),
+            "KMIPKIT-SOURCE-GAP-PROF-3.1.3-4204": ([4204, 4206], "formal_SHALL", "Authentication object is present", "Server; condition Authentication present; `server_only`."),
+            "KMIPKIT-SOURCE-GAP-PROF-3.1.4-4217": ([4217, 4218], "formal_SHALL", "TCP port 5696", "Server; `server_only`."),
+            "KMIPKIT-SOURCE-GAP-PROF-3.2.4-4260": ([4260, 4262], "formal_SHOULD", "both HTTPS and non-HTTPS", "Server; dual-support condition; `server_only`."),
         }
         gaps = {
             row["gap_id"]: row for row in self.fixture["source_only_requirement_gaps"]
         }
 
-        for gap_id, line_range in expected.items():
+        for gap_id, (line_range, source_force, condition_fragment, actor_review) in expected.items():
             with self.subTest(gap_id=gap_id):
                 gap = gaps[gap_id]
                 source_excerpt = pinned_excerpt(line_range)
@@ -439,9 +439,13 @@ class ProfileSectionsThreeAndFourCrosswalkTests(unittest.TestCase):
                     or "KMIP servers conformant to this profile" in source_excerpt
                 )
                 self.assertEqual(gap.get("actor"), "server")
+                self.assertEqual(gap["source_force"], source_force)
+                self.assertIn(condition_fragment, gap["condition"])
+                self.assertEqual(gap["actor_scope_review"], actor_review)
                 self.assertEqual(gap["scope_disposition"], "server_only")
                 self.assertEqual(gap["status"], "server_actor_disposition_recorded")
                 self.assertIsNone(gap["candidate_requirement_id"])
+                self.assertIsNone(gap.get("reused_requirement_id"))
                 self.assertIsNone(gap["proposed_requirement_id"])
                 self.assertNotIn(gap_id, self.crosswalk)
 
