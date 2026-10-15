@@ -485,12 +485,75 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
                 self.assertEqual(condition["condition_kind"], condition_kind)
                 self.assertIsNone(condition["requirement_id"])
                 self.assertEqual(condition["scope_disposition"], "profile_conditional")
-                expected_mapping_status = "reviewed" if item in (7, 8) else "pending_t002_crosswalk"
+                expected_mapping_status = "reviewed" if item in (1, 7, 8) else "pending_t002_crosswalk"
                 self.assertEqual(condition["mapping_status"], expected_mapping_status)
         self.assertEqual(
             {item["requirement_id"] for item in baseline["conditions"]},
             {None},
             "§5.1.1's title-case support statements are profile conditions, not standalone RFC modal REQs",
+        )
+
+    def test_baseline_conformance_condition_is_covered_by_whole_spec_inclusion(self) -> None:
+        """Baseline item 1 adds no condition REQ beyond its existing whole-Spec closure."""
+        oracle_path = ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json"
+        oracle = json.loads(oracle_path.read_text(encoding="utf-8"))
+        profiles_html = (
+            ROOT / "specification" / "oasis" / "kmip-2.1" / "upstream" / "kmip-profiles-v2.1-os.html"
+        ).read_text(encoding="cp1252")
+        spec_html = (
+            ROOT / "specification" / "oasis" / "kmip-2.1" / "upstream" / "kmip-spec-v2.1-os.html"
+        ).read_text(encoding="cp1252")
+        inventory = next(item for item in oracle["provenance"]["profile_condition_inventories"] if item["section"] == "5.1.1")
+        condition = inventory["conditions"][0]
+
+        self.assertEqual(condition["condition_id"], "KMIPKIT-PROF-COND-5.1.1-001")
+        self.assertEqual(condition["html_line_range"], [4533, 4534])
+        self.assertEqual(condition["mapping_status"], "reviewed")
+        self.assertEqual(
+            condition["source_review"],
+            {
+                "disposition": "covered_by_baseline_whole_spec_inclusion",
+                "profiles_source": "Profiles v2.1 §5.1.1 item 1",
+                "profiles_line_range": [4533, 4534],
+                "specification_source": "KMIP Specification v2.1 §14.1",
+                "specification_line_ranges": [[66041, 66042], [66044, 66047]],
+                "inclusion_id": "KMIPKIT-INCLUSION-PROF-BASELINE-SPEC",
+                "covered_requirement_ids": ["KMIPKIT-REQ-SPEC-14.1-001", "KMIPKIT-REQ-SPEC-14.1-002"],
+                "additional_source_clause_ids": [],
+                "additional_requirement_ids": [],
+            },
+        )
+        self.assertEqual(condition["supported_items"], [])
+        self.assertIsNone(condition["requirement_id"])
+        self.assertEqual(condition["scope_disposition"], "profile_conditional")
+
+        baseline_profile = next(
+            item for item in oracle["profiles"] if item["profile_id"] == "KMIPKIT-PROFILE-BASELINE-CLIENT"
+        )
+        self.assertTrue(
+            {"KMIPKIT-REQ-SPEC-14.1-001", "KMIPKIT-REQ-SPEC-14.1-002"}.issubset(
+                baseline_profile["requirement_ids"]
+            )
+        )
+        whole_spec_edge = next(
+            item
+            for item in oracle["provenance"]["inclusion_edges"]
+            if item["inclusion_id"] == "KMIPKIT-INCLUSION-PROF-BASELINE-SPEC"
+        )
+        self.assertEqual(whole_spec_edge["source_clause_id"], "KMIPKIT-CLAUSE-PROF-6.1-001")
+        self.assertEqual(whole_spec_edge["included_source_id"], "KMIPKIT-SRC-spec")
+        self.assertIsNone(whole_spec_edge["included_section"])
+
+        profiles_lines = profiles_html.splitlines()
+        self.assertIn(
+            "Supports the conditions required by the KMIP Client Implementation Conformance clauses [KMIP-SPEC]",
+            _normalized_html_source_span(profiles_lines, [4533, 4534]),
+        )
+        spec_lines = spec_html.splitlines()
+        self.assertIn("A KMIP client implementation SHALL be a conforming KMIP Client.", _normalized_html_source_span(spec_lines, [66041, 66042]))
+        self.assertIn(
+            "the implementation SHALL conform to all normative statements within the clauses specified for that profile and for any subclauses to each of those clauses",
+            _normalized_html_source_span(spec_lines, [66044, 66047]),
         )
 
     def test_baseline_open_ended_optional_clause_is_reviewed_without_inventing_scope(self) -> None:
