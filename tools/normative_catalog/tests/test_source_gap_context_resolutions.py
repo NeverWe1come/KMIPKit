@@ -370,6 +370,11 @@ class SourceGapContextResolutionTests(unittest.TestCase):
                             if contract.get("operation_element_id") == operation_id
                             and contract.get("table_number") == table_number
                         }
+                        self.assertEqual(
+                            request_contracts,
+                            set(),
+                            f"{gap_id} must keep {operation_name} Table {table_number} unmapped until its source contract is reviewed",
+                        )
                         note = resolution.get("review_note", "")
                         self.assertEqual(
                             gap["scope_disposition"],
@@ -439,16 +444,19 @@ class SourceGapContextResolutionTests(unittest.TestCase):
         gaps = {row["gap_id"]: row for row in oracle["source_only_requirement_gaps"]}
         expected = {
             6: {
+                "source_range": [22433, 22435],
                 "condition": "Multipart is optional and applies only to operations with Correlation Value, Init Indicator, and Final Indicator request parameters; this step is for the first request.",
                 "context_ranges": ((22417, 22420), (22425, 22427)),
                 "context_text": ("are optionally supported", "On the first request"),
             },
             7: {
+                "source_range": [22453, 22455],
                 "condition": "Multipart is optional and applies only to operations with Correlation Value, Init Indicator, and Final Indicator request parameters; this step is for subsequent requests.",
                 "context_ranges": ((22417, 22420), (22445, 22447)),
                 "context_text": ("are optionally supported", "On subsequent requests"),
             },
             8: {
+                "source_range": [22490, 22492],
                 "condition": "Single-part cryptographic operations; this step applies to each request.",
                 "context_ranges": ((22477, 22483),),
                 "context_text": ("Single-part cryptographic operations", "On each request"),
@@ -458,6 +466,7 @@ class SourceGapContextResolutionTests(unittest.TestCase):
         for number, expected_context in expected.items():
             gap = gaps[f"KMIPKIT-SOURCE-GAP-SPEC-6.1-PARAGRAPH-{number:03d}"]
             with self.subTest(gap_id=gap["gap_id"]):
+                self.assertEqual(gap["html_line_range"], expected_context["source_range"])
                 context = " ".join(
                     pinned_source_excerpt(gap["source_path"], list(line_range))
                     for line_range in expected_context["context_ranges"]
@@ -520,6 +529,24 @@ class SourceGapContextResolutionTests(unittest.TestCase):
         self.assertIn("identify the client actor", summary)
         self.assertIn("request-parameter direction", summary)
         self.assertNotIn("actor/direction/scope unclear", summary)
+
+    def test_research_inventory_table_matches_paragraph_006_to_008_scope(self) -> None:
+        research = PROFILE_RESEARCH_PATH.read_text(encoding="utf-8")
+        rows = {}
+        for line in research.splitlines():
+            if "`KMIPKIT-SOURCE-GAP-SPEC-6.1-PARAGRAPH-" not in line:
+                continue
+            columns = [column.strip() for column in line.strip().strip("|").split("|")]
+            gap_id = columns[0].strip("`")
+            rows[gap_id] = columns
+
+        for number in range(6, 9):
+            gap_id = f"KMIPKIT-SOURCE-GAP-SPEC-6.1-PARAGRAPH-{number:03d}"
+            with self.subTest(gap_id=gap_id):
+                self.assertIn(gap_id, rows)
+                self.assertEqual(rows[gap_id][2], "client_1_0")
+                self.assertEqual(rows[gap_id][3], "reviewed_generic_parameter_context")
+                self.assertEqual(rows[gap_id][4], "—")
 
     def test_t002_research_bounds_procedure_evidence_to_verified_request_contracts(self) -> None:
         oracle = json.loads(ORACLE_PATH.read_text(encoding="utf-8"))
