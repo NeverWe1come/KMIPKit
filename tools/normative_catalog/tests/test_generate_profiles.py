@@ -1038,8 +1038,8 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
         locate_007_source = _normalized_html_source_span(spec_lines, [29206, 29210])
         self.assertIn("Linked Object Identifier value is specified without the Link Type value", locate_007_source)
 
-    def test_baseline_message_data_structures_condition_has_exact_reviewed_batch_count_crosswalk(self) -> None:
-        """Batch Count maps to its reviewed §9.5 client rules while item 5 stays pending."""
+    def test_baseline_message_data_structures_condition_has_exact_reviewed_batch_crosswalk(self) -> None:
+        """The two reviewed batch fields map in source order while item 5 stays pending."""
         catalog = json.loads((ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8"))
         oracle = json.loads(
             (ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json")
@@ -1068,6 +1068,21 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
             "source_clause_ids": [expected_clause_id],
             "mapping_status": "reviewed",
         }
+        expected_error_requirement_ids = [
+            "KMIPKIT-REQ-SPEC-9.6-001-001",
+            "KMIPKIT-REQ-SPEC-9.6-001-002",
+            "KMIPKIT-REQ-SPEC-9.6-001-003",
+        ]
+        expected_error_clause_id = "KMIPKIT-CLAUSE-SPEC-9.6-001"
+        expected_error_element_id = "KMIPKIT-ELEM-MESSAGE-FIELD-9-6-BATCH-ERROR-CONTINUATION-OPTION"
+        expected_error_mapping = {
+            "item": "Batch Error Continuation Option",
+            "element_id": expected_error_element_id,
+            "requirement_ids": expected_error_requirement_ids,
+            "source_clause_ids": [expected_error_clause_id],
+            "mapping_status": "reviewed",
+        }
+        expected_mappings = [expected_mapping, expected_error_mapping]
 
         self.assertEqual(condition["item"], 5)
         self.assertEqual(condition["html_line_range"], [4575, 4613])
@@ -1092,7 +1107,28 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
                 "Unique Batch Item ID",
             ],
         )
-        self.assertEqual(condition.get("supported_item_mappings"), [expected_mapping])
+        self.assertEqual(condition.get("supported_item_mappings"), expected_mappings)
+        self.assertEqual(
+            [mapping["item"] for mapping in condition["supported_item_mappings"]],
+            ["Batch Count", "Batch Error Continuation Option"],
+        )
+        self.assertEqual(
+            set(condition["supported_items"]) - {mapping["item"] for mapping in condition["supported_item_mappings"]},
+            {
+                "Asynchronous Indicator",
+                "Batch Item",
+                "Batch Order Option",
+                "Maximum Response Size",
+                "Message Extension",
+                "Operation",
+                "Protocol Version",
+                "Result Reason",
+                "Result Status",
+                "Server Correlation Value",
+                "Time Stamp",
+                "Unique Batch Item ID",
+            },
+        )
         self.assertIsNone(condition["requirement_id"])
         self.assertEqual(condition["scope_disposition"], "profile_conditional")
         self.assertEqual(condition["mapping_status"], "pending_t002_crosswalk")
@@ -1199,6 +1235,137 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
                 },
             ],
         )
+
+        self.assertEqual(_normalized_html_source_span(profiles_lines, [4582, 4582]), "Batch Count")
+        self.assertEqual(
+            _normalized_html_source_span(profiles_lines, [4584, 4585]),
+            "Batch Error Continuation Option",
+        )
+        error_excerpt = (
+            "This option SHALL only be present if the Batch Count is greater than 1. This option SHALL have "
+            "one of three values (Undo, Stop or Continue). If not specified, then Stop is assumed."
+        )
+        self.assertEqual(_normalized_html_source_span(spec_lines, [43773, 43775]), error_excerpt)
+
+        error_element = next(
+            item for item in catalog["elements"] if item["element_id"] == expected_error_element_id
+        )
+        self.assertEqual(error_element["kind"], "message_field")
+        self.assertEqual(error_element["name"], "Batch Error Continuation Option")
+        self.assertEqual(error_element["source_refs"], [{"source_id": "KMIPKIT-SRC-spec", "section": "9.6"}])
+        self.assertEqual(error_element["direction"], "client_to_server")
+        self.assertEqual(error_element["scope_state"], "client_1_0")
+        self.assertEqual(error_element["requirement_ids"], expected_error_requirement_ids)
+
+        error_clause = next(
+            item for item in catalog["source_clauses"] if item["clause_id"] == expected_error_clause_id
+        )
+        self.assertEqual(error_clause["source_id"], "KMIPKIT-SRC-spec")
+        self.assertEqual(error_clause["section"], "9.6")
+        self.assertEqual(error_clause["locator"], {"ordinal": 1, "block_kind": "paragraph"})
+        self.assertEqual(error_clause["source_keywords"], ["SHALL"])
+        self.assertEqual(error_clause["disposition"], "requirement")
+        self.assertEqual(error_clause["requirement_ids"], expected_error_requirement_ids)
+        self.assertEqual(error_clause["role"], "client")
+        self.assertEqual(error_clause["direction"], "client_to_server")
+        self.assertEqual(error_clause["scope_state"], "client_1_0")
+
+        expected_error_requirements = {
+            "KMIPKIT-REQ-SPEC-9.6-001-001": {
+                "summary": "Include Batch Error Continuation Option only when Batch Count is greater than one.",
+                "condition": "When including the option.",
+            },
+            "KMIPKIT-REQ-SPEC-9.6-001-002": {
+                "summary": "Use Undo, Stop, or Continue as the option value.",
+                "condition": "When the option is present.",
+            },
+            "KMIPKIT-REQ-SPEC-9.6-001-003": {
+                "summary": "If omitted, the option defaults to Stop.",
+                "condition": "When omitted.",
+            },
+        }
+        for requirement_id, expected in expected_error_requirements.items():
+            with self.subTest(requirement_id=requirement_id):
+                requirement = requirements[requirement_id]
+                self.assertEqual(requirement["source_clause_ids"], [expected_error_clause_id])
+                self.assertEqual(requirement["source_refs"], [{"source_id": "KMIPKIT-SRC-spec", "section": "9.6"}])
+                self.assertEqual(requirement["source_keyword"], "SHALL")
+                self.assertEqual(requirement["normative_strength"], "mandatory")
+                self.assertEqual(requirement["subject"], "Batch Error Continuation Option")
+                self.assertEqual(requirement["summary"], expected["summary"])
+                self.assertEqual(requirement["role"], "client")
+                self.assertEqual(requirement["direction"], "client_to_server")
+                self.assertEqual(requirement["condition"], expected["condition"])
+                self.assertEqual(requirement["scope_state"], "client_1_0")
+                self.assertEqual(
+                    requirement["element_ids"],
+                    [
+                        "KMIPKIT-ELEM-MESSAGE-FIELD-8-2-BATCH-ERROR-CONTINUATION-OPTION",
+                        expected_error_element_id,
+                    ],
+                )
+                self.assertEqual(requirement["status"], "verified")
+
+        error_review = next(
+            item
+            for item in oracle["source_requirement_reviews"]
+            if item["source_clause_id"] == expected_error_clause_id
+        )
+        self.assertEqual(error_review["source_path"], spec_path)
+        self.assertEqual(error_review["source_section"], "9.6")
+        self.assertEqual(error_review["source_locator"], {"ordinal": 1, "block_kind": "paragraph"})
+        self.assertEqual(error_review["html_line_range"], [43773, 43775])
+        self.assertEqual(error_review["source_excerpt"], error_excerpt)
+        self.assertEqual(error_review["expected_client_requirement_ids"], expected_error_requirement_ids)
+        self.assertEqual(
+            error_review["source_obligations"],
+            [
+                {
+                    "source_order": 1,
+                    "source_text": "This option SHALL only be present if the Batch Count is greater than 1.",
+                    "source_keyword": "SHALL",
+                    "actor": "client",
+                    "direction": "client_to_server",
+                    "condition": "The client includes Batch Error Continuation Option.",
+                    "scope_disposition": "client_1_0",
+                    "candidate_requirement_id": expected_error_requirement_ids[0],
+                },
+                {
+                    "source_order": 2,
+                    "source_text": "This option SHALL have one of three values (Undo, Stop or Continue).",
+                    "source_keyword": "SHALL",
+                    "actor": "client",
+                    "direction": "client_to_server",
+                    "condition": "The client includes Batch Error Continuation Option.",
+                    "scope_disposition": "client_1_0",
+                    "candidate_requirement_id": expected_error_requirement_ids[1],
+                },
+                {
+                    "source_order": 3,
+                    "source_text": (
+                        "This option SHALL have one of three values (Undo, Stop or Continue). If not specified, "
+                        "then Stop is assumed."
+                    ),
+                    "source_keyword": "SHALL",
+                    "actor": "client",
+                    "direction": "client_to_server",
+                    "condition": "The option is omitted; the source states Stop as the default.",
+                    "scope_disposition": "client_1_0",
+                    "candidate_requirement_id": expected_error_requirement_ids[2],
+                },
+            ],
+        )
+        self.assertEqual(
+            error_review["review_note"],
+            "The third source anchor includes the preceding SHALL value constraint and following source-stated "
+            "Stop default; the default has no independent uppercase modal.",
+        )
+        mapped_requirement_ids = {
+            requirement_id
+            for mapping in condition["supported_item_mappings"]
+            for requirement_id in mapping["requirement_ids"]
+        }
+        self.assertNotIn("KMIPKIT-REQ-SPEC-6.1.7-002-002", mapped_requirement_ids)
 
     def test_foundry_basic_condition_text_names_its_inheriting_profiles(self) -> None:
         """The catalog and source review describe the same normative inheritance."""
