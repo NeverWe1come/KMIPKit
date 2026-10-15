@@ -3208,6 +3208,14 @@ The pinned Profiles v2.1 §4.1.2 item 7 says “For all profiles” when describ
 | Green — include the full same-section closure for all 18 client profiles, keep clause 7 as the only direct §4.1.2 root, and mark its already typed and tested MAY mapping `scoped_verified` | `21157a5f`; `py -3 -B -m unittest tools.normative_catalog.tests.test_generate_profiles`; `test_profiles_3_4_crosswalk`; `test_profile_scope_boundary`; focused readiness and Baseline closure tests; catalog validation; generated profile/report checks; immutable-source check; `git diff --check` | PASS: 64 generator tests (1 skipped), 14 §§3–4 crosswalk tests, 2 profile-scope tests, and 2 focused validator tests; catalog valid (4 sources, 1,411 clauses, 4,117 records); generated Rust and coverage report current; pinned OASIS sources unchanged. The MAY evidence gate no longer reports this already mapped capability as missing. |
 | Refactor — remove redundant clause-presence assertions after checking the exact ten-clause section closure | `56c00012`; `py -3 -B -m unittest tools.normative_catalog.tests.test_generate_profiles.ProfileMetadataGeneratorTests.test_all_client_profiles_close_over_the_shared_batch_item_id_condition -v`; `git diff --check` | PASS: closure regression passes for all 18 client profiles; whitespace check passes. |
 
+### KMIPKIT-0010 T002 tranche — Baseline Attributes condition mapping
+
+Profiles v2.1 §5.1.1 item 2 names the general Attribute Data Structures condition and supports the general Attributes element. Specification §3.2 describes optional attribute information encapsulated in Key Value, which the catalog correctly retains for Key Value and Register; it is not evidence for the broader profile item. The condition remains pending overall T002 adjudication.
+
+| Stage | DCO-signed commit and command | Result |
+|---|---|---|
+| Red — require the Baseline Attributes profile item to map only to the reviewed general Attributes clause | `b67f0b08`; `py -3 -B -m unittest tools.normative_catalog.tests.test_generate_profiles.ProfileMetadataGeneratorTests.test_baseline_attributes_condition_has_exact_reviewed_capability_crosswalk -v` | Expected Red: one assertion failure because the independent profile-condition fixture also maps the Key Value-specific `KMIPKIT-REQ-SPEC-3.2-001` / `KMIPKIT-CLAUSE-SPEC-3.2-001` to the general Attributes item. |
+
 ### KMIPKIT-0010 T002 tranche — Profiles §4.1.1 test variation scope
 
 Profiles v2.1 §4.1.1 says an implementation conformant to a Profile MAY vary values, and its list explicitly includes Unique Batch Item ID (HTML lines 4330–4338). That context includes client request values, so the paragraph is not server-only. It remains test-conformance context outside production client runtime behavior and does not create a requirement ID.
