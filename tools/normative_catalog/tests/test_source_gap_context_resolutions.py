@@ -8,7 +8,10 @@ import unittest
 from html.parser import HTMLParser
 from pathlib import Path
 
-from tools.normative_catalog.validate import _profile_oracle_reference_issue
+from tools.normative_catalog.validate import (
+    _profile_oracle_reference_issue,
+    validate_source_table_contracts,
+)
 
 
 ROOT = Path(__file__).resolve().parents[3]
@@ -167,6 +170,104 @@ def _requiredness_matches(contract: dict[str, object], expected: str) -> bool:
 
 
 class SourceGapContextResolutionTests(unittest.TestCase):
+    def test_encrypt_decrypt_correlation_request_rows_have_optional_feature_contracts(self) -> None:
+        """Tables 196 and 214 map only their optional Correlation Value request rows."""
+        oracle = json.loads(ORACLE_PATH.read_text(encoding="utf-8"))
+        catalog = json.loads(CATALOG_PATH.read_text(encoding="utf-8"))
+        expected = {
+            "KMIPKIT-SOURCE-GAP-SPEC-6.1.11-CORRELATION-VALUE-OPTIONAL": {
+                "source_section": "6.1.11",
+                "html_line_range": [25165, 25181],
+                "table_number": 196,
+                "operation_element_id": "KMIPKIT-ELEM-OP-C2S-DECRYPT",
+                "source_excerpt": (
+                    "Correlation Value No Specifies the existing stream or by-parts "
+                    "cryptographic operation (as returned from a previous call to this operation)."
+                ),
+                "implementation_ref": "crates/kmipkit-protocol/src/decrypt.rs::DecryptRequest::to_ttlv_payload",
+                "verification_refs": [
+                    "crates/kmipkit-protocol/tests/unit/decrypt_tests.rs::request_emits_present_table_196_members_in_exact_order_and_accepts_decrypt_tag",
+                    "crates/kmipkit-client/tests/unit/encrypt_decrypt_multipart_execution_tests.rs::decrypt_caller_reuses_initial_server_correlation_and_keeps_aad_and_tag_initial",
+                ],
+            },
+            "KMIPKIT-SOURCE-GAP-SPEC-6.1.17-CORRELATION-VALUE-OPTIONAL": {
+                "source_section": "6.1.17",
+                "html_line_range": [26590, 26606],
+                "table_number": 214,
+                "operation_element_id": "KMIPKIT-ELEM-OP-C2S-ENCRYPT",
+                "source_excerpt": (
+                    "Correlation Value No Specifies the stream or by-parts value to be provided "
+                    "in subsequent calls to this operation for performing cryptographic operations."
+                ),
+                "implementation_ref": "crates/kmipkit-protocol/src/encrypt.rs::EncryptRequest::to_ttlv_payload",
+                "verification_refs": [
+                    "crates/kmipkit-protocol/tests/unit/encrypt_tests.rs::request_emits_present_table_214_members_in_exact_order_and_preserves_values",
+                    "crates/kmipkit-client/tests/unit/encrypt_decrypt_multipart_execution_tests.rs::encrypt_caller_reuses_initial_server_correlation_for_middle_and_final_parts",
+                ],
+            },
+        }
+        contracts = {
+            row["gap_id"]: row
+            for row in oracle["source_table_contracts"]
+            if row.get("gap_id") in expected
+        }
+
+        self.assertEqual(set(contracts), set(expected))
+        elements = {row["element_id"]: row for row in catalog["elements"]}
+        for gap_id, reviewed in expected.items():
+            contract = contracts[gap_id]
+            with self.subTest(gap_id=gap_id):
+                self.assertEqual(contract["contract_kind"], "operation_request_table_field")
+                self.assertEqual(contract["source_id"], "KMIPKIT-SRC-spec")
+                self.assertEqual(
+                    contract["source_path"],
+                    "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+                )
+                self.assertEqual(contract["source_section"], reviewed["source_section"])
+                self.assertEqual(contract["source_locator"]["kind"], "table_body_row")
+                self.assertEqual(contract["source_locator"]["section"], reviewed["source_section"])
+                self.assertEqual(contract["source_locator"]["row_label"], "Correlation Value")
+                self.assertEqual(contract["source_locator"]["table"], "request_payload")
+                self.assertEqual(contract["html_line_range"], reviewed["html_line_range"])
+                self.assertEqual(contract["source_locator"]["html_line_range"], reviewed["html_line_range"])
+                self.assertEqual(contract["source_excerpt"], reviewed["source_excerpt"])
+                self.assertEqual(
+                    pinned_source_excerpt(contract["source_path"], contract["html_line_range"]),
+                    reviewed["source_excerpt"],
+                )
+                self.assertEqual(contract["source_force"], "optional_table_body_value")
+                self.assertEqual(contract["requiredness"], "No")
+                self.assertEqual(contract["table_number"], reviewed["table_number"])
+                self.assertEqual(contract["operation_element_id"], reviewed["operation_element_id"])
+                self.assertEqual(contract["functional_requirement_ids"], ["FR-004"])
+                self.assertEqual(
+                    contract["implementation_refs"],
+                    [reviewed["implementation_ref"]],
+                )
+                self.assertEqual(contract["verification_refs"], reviewed["verification_refs"])
+                self.assertEqual(contract["actor"], "client")
+                self.assertEqual(contract["direction"], f"client→server {elements[reviewed['operation_element_id']]['name']} request")
+                self.assertEqual(contract["scope_disposition"], "client_1_0")
+                self.assertEqual(contract["status"], "mapped_to_approved_feature_contract")
+                self.assertNotIn("candidate_requirement_id", contract)
+                self.assertNotIn("proposed_requirement_id", contract)
+                self.assertNotIn("requirement_id", contract)
+
+                operation = elements[reviewed["operation_element_id"]]
+                self.assertEqual(operation["feature_spec"], "KMIPKIT-0019")
+                self.assertEqual(operation["direction"], "client_to_server")
+                self.assertEqual(operation["scope_state"], "client_1_0")
+                self.assertIn(
+                    reviewed["table_number"],
+                    {
+                        table["table_number"]
+                        for table in operation["payload_tables"]
+                        if table.get("role") == "request"
+                    },
+                )
+
+        self.assertEqual(validate_source_table_contracts(oracle, ROOT), [])
+
     def test_procedure_steps_and_generic_parameters_are_context_not_modal_reqs(self) -> None:
         oracle = json.loads(ORACLE_PATH.read_text(encoding="utf-8"))
         gaps = {row["gap_id"]: row for row in oracle["source_only_requirement_gaps"]}
