@@ -91274,7 +91274,11 @@
       "scope_disposition": "server_only",
       "candidate_requirement_id": null,
       "proposed_requirement_id": null,
-      "status": "unlabeled_source_statement_or_boundary_item"
+      "status": "server_actor_disposition_recorded",
+      "source_force": "formal_SHALL",
+      "actor": "server",
+      "condition": "Conformant KMIP servers shall support TLS v1.3.",
+      "review_note": "The pinned Profiles text explicitly assigns this obligation to conformant KMIP servers. It is server-only and adds no client requirement; candidate and proposed client IDs remain null."
     },
     {
       "gap_id": "KMIPKIT-SOURCE-GAP-PROF-3.1.1-4023",
@@ -91297,7 +91301,11 @@
       "scope_disposition": "server_only",
       "candidate_requirement_id": null,
       "proposed_requirement_id": null,
-      "status": "unlabeled_source_statement_or_boundary_item"
+      "status": "server_actor_disposition_recorded",
+      "source_force": "formal_SHOULD",
+      "actor": "server",
+      "condition": "Conformant KMIP servers should support TLS v1.2.",
+      "review_note": "The pinned Profiles text explicitly assigns this obligation to conformant KMIP servers. It is server-only and adds no client requirement; candidate and proposed client IDs remain null."
     },
     {
       "gap_id": "KMIPKIT-SOURCE-GAP-PROF-3.1.2-4060",
@@ -91320,7 +91328,11 @@
       "scope_disposition": "server_only",
       "candidate_requirement_id": null,
       "proposed_requirement_id": null,
-      "status": "unlabeled_source_statement_or_boundary_item"
+      "status": "server_actor_disposition_recorded",
+      "source_force": "formal_SHALL",
+      "actor": "server",
+      "condition": "If TLS v1.3 is supported, conformant KMIP servers shall support all listed TLS v1.3 cipher suites.",
+      "review_note": "The pinned Profiles text explicitly assigns this obligation to conformant KMIP servers. It is server-only and adds no client requirement; candidate and proposed client IDs remain null."
     },
     {
       "gap_id": "KMIPKIT-SOURCE-GAP-PROF-3.1.2-4076",
@@ -91390,7 +91402,11 @@
       "scope_disposition": "server_only",
       "candidate_requirement_id": null,
       "proposed_requirement_id": null,
-      "status": "unlabeled_source_statement_or_boundary_item"
+      "status": "server_actor_disposition_recorded",
+      "source_force": "formal_SHALL",
+      "actor": "server",
+      "condition": "Conformant KMIP servers shall require mutual TLS, except for automated client provisioning.",
+      "review_note": "The pinned Profiles text explicitly assigns this obligation to conformant KMIP servers. It is server-only and adds no client requirement; candidate and proposed client IDs remain null."
     },
     {
       "gap_id": "KMIPKIT-SOURCE-GAP-PROF-3.1.3-4200",
@@ -91413,7 +91429,11 @@
       "scope_disposition": "server_only",
       "candidate_requirement_id": null,
       "proposed_requirement_id": null,
-      "status": "unlabeled_source_statement_or_boundary_item"
+      "status": "server_actor_disposition_recorded",
+      "source_force": "formal_SHALL",
+      "actor": "server",
+      "condition": "If the Authentication object is absent, conformant KMIP servers shall determine client identity from mutual TLS identity.",
+      "review_note": "The pinned Profiles text explicitly assigns this obligation to conformant KMIP servers. It is server-only and adds no client requirement; candidate and proposed client IDs remain null."
     },
     {
       "gap_id": "KMIPKIT-SOURCE-GAP-PROF-3.1.3-4204",
@@ -91436,7 +91456,11 @@
       "scope_disposition": "server_only",
       "candidate_requirement_id": null,
       "proposed_requirement_id": null,
-      "status": "unlabeled_source_statement_or_boundary_item"
+      "status": "server_actor_disposition_recorded",
+      "source_force": "formal_SHALL",
+      "actor": "server",
+      "condition": "If the Authentication object is present, conformant KMIP servers shall determine client identity from Credential information.",
+      "review_note": "The pinned Profiles text explicitly assigns this obligation to conformant KMIP servers. It is server-only and adds no client requirement; candidate and proposed client IDs remain null."
     },
     {
       "gap_id": "KMIPKIT-SOURCE-GAP-PROF-3.1.4-4217",
@@ -91459,7 +91483,11 @@
       "scope_disposition": "server_only",
       "candidate_requirement_id": null,
       "proposed_requirement_id": null,
-      "status": "unlabeled_source_statement_or_boundary_item"
+      "status": "server_actor_disposition_recorded",
+      "source_force": "formal_SHALL",
+      "actor": "server",
+      "condition": "Conformant KMIP servers shall use TCP port 5696.",
+      "review_note": "The pinned Profiles text explicitly assigns this obligation to conformant KMIP servers. It is server-only and adds no client requirement; candidate and proposed client IDs remain null."
     },
     {
       "gap_id": "KMIPKIT-SOURCE-GAP-PROF-3.2.4-4260",
@@ -91482,7 +91510,11 @@
       "scope_disposition": "server_only",
       "candidate_requirement_id": null,
       "proposed_requirement_id": null,
-      "status": "unlabeled_source_statement_or_boundary_item"
+      "status": "server_actor_disposition_recorded",
+      "source_force": "formal_SHOULD",
+      "actor": "server",
+      "condition": "If both HTTPS and non-HTTPS encoded messages are supported, conformant KMIP servers should use TCP port 5696.",
+      "review_note": "The pinned Profiles text explicitly assigns this obligation to conformant KMIP servers. It is server-only and adds no client requirement; candidate and proposed client IDs remain null."
     },
     {
       "gap_id": "KMIPKIT-SOURCE-GAP-PROF-5.3.1-5139",
