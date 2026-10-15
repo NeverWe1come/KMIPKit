@@ -397,8 +397,12 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
         self.assertEqual(observed_conditions, expected_conditions)
 
         source_lines = profiles_html.splitlines()
-        inventory_span = " ".join(source_lines[baseline["html_line_range"][0] - 1 : baseline["html_line_range"][1]])
-        normalized_inventory_span = " ".join(html.unescape(re.sub(r"<[^>]+>", " ", inventory_span)).split())
+
+        def normalized_source_span(line_range: list[int]) -> str:
+            source_span = " ".join(source_lines[line_range[0] - 1 : line_range[1]])
+            return " ".join(html.unescape(re.sub(r"<[^>]+>", " ", source_span)).split())
+
+        normalized_inventory_span = normalized_source_span(baseline["html_line_range"])
         self.assertIn(
             "An implementation is a conforming Baseline Client if it meets the following conditions:",
             normalized_inventory_span,
@@ -407,8 +411,7 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
             with self.subTest(item=item):
                 condition = baseline["conditions"][item - 1]
                 self.assertEqual(condition["html_line_range"], line_range)
-                source_span = " ".join(source_lines[line_range[0] - 1 : line_range[1]])
-                normalized_span = " ".join(html.unescape(re.sub(r"<[^>]+>", " ", source_span)).split())
+                normalized_span = normalized_source_span(line_range)
                 self.assertIn(source_text, normalized_span)
                 for supported_item in supported_items:
                     self.assertIn(supported_item, normalized_span)
