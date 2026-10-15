@@ -69,6 +69,7 @@ OUT_OF_SCOPE_IDS = {
     "KMIPKIT-REQ-PROF-4.1.2-009",
 }
 ALL_TARGET_IDS = CLIENT_IDS | UNRESOLVED_IDS | OUT_OF_SCOPE_IDS
+ADDITIONAL_BOUNDARY_REVIEW_IDS = {"KMIPKIT-CLAUSE-PROF-3.1.2-004"}
 
 
 class ProfileSectionsThreeAndFourCrosswalkTests(unittest.TestCase):
@@ -121,7 +122,9 @@ class ProfileSectionsThreeAndFourCrosswalkTests(unittest.TestCase):
         }
         self.assertTrue(target_clause_ids.issubset(self.reviews))
         self.assertEqual(set(self.crosswalk), CLIENT_IDS)
-        self.assertEqual(set(self.reviews), target_clause_ids)
+        self.assertEqual(
+            set(self.reviews), target_clause_ids | ADDITIONAL_BOUNDARY_REVIEW_IDS
+        )
 
     def test_unresolved_and_out_of_scope_rows_are_not_client_obligations(self) -> None:
         self.assertEqual(len(UNRESOLVED_IDS), 6)
@@ -391,6 +394,7 @@ class ProfileSectionsThreeAndFourCrosswalkTests(unittest.TestCase):
             "KMIPKIT-CLAUSE-PROF-3.1.1-004": [4030, 4030],
             "KMIPKIT-CLAUSE-PROF-3.1.1-005": [4037, 4037],
             "KMIPKIT-CLAUSE-PROF-3.1.2-002": [4068, 4069],
+            "KMIPKIT-CLAUSE-PROF-3.1.2-004": [4089, 4090],
             "KMIPKIT-CLAUSE-PROF-3.1.2-005": [4187, 4188],
             "KMIPKIT-CLAUSE-PROF-3.2-001": [4227, 4229],
             "KMIPKIT-CLAUSE-PROF-3.2.1-001": [4236, 4237],
