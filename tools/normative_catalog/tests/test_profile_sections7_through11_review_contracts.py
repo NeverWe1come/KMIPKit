@@ -33,6 +33,9 @@ class ProfileSectionsSevenThroughElevenReviewContractTests(unittest.TestCase):
         cls.clauses = {row["clause_id"]: row for row in cls.catalog["source_clauses"]}
         cls.gaps = {row["gap_id"]: row for row in cls.oracle["source_only_requirement_gaps"]}
 
+    def assert_source_actor_unspecified(self, actor: object) -> None:
+        self.assertEqual(actor, "unspecified")
+
     def assert_server_response_classification(
         self, clause_id: str, review: dict[str, object], gap: dict[str, object]
     ) -> None:
@@ -269,7 +272,7 @@ class ProfileSectionsSevenThroughElevenReviewContractTests(unittest.TestCase):
             uniqueness["source_text"],
             "One or a combination of the Device Serial Number, Network Identifier, Machine Identifier, and Media Identifier SHALL be unique.",
         )
-        self.assertEqual(uniqueness["actor"], "unspecified")
+        self.assert_source_actor_unspecified(uniqueness["actor"])
         self.assertEqual(minimum["source_text"], "The client SHALL provide at least one field.")
         self.assertEqual(minimum["direction"], "client provides at least one Device Credential field")
         self.assertIn("KMIPKIT-0008", device_review["review_note"])
@@ -283,9 +286,8 @@ class ProfileSectionsSevenThroughElevenReviewContractTests(unittest.TestCase):
             timestamp_review["source_excerpt"],
             pinned_source_excerpt(SPEC_SOURCE_PATH, [44598, 44602]),
         )
-        self.assertTrue(
-            all(atom["actor"] == "unspecified" for atom in timestamp_review["source_obligations"])
-        )
+        for atom in timestamp_review["source_obligations"]:
+            self.assert_source_actor_unspecified(atom["actor"])
         self.assertEqual(
             self.clauses[timestamp_clause_id]["condition"],
             "When Credential Type is Hashed Password.",
@@ -312,7 +314,7 @@ class ProfileSectionsSevenThroughElevenReviewContractTests(unittest.TestCase):
         ):
             with self.subTest(requirement_id=requirement_id):
                 row = crosswalk[requirement_id]
-                self.assertEqual(row["source_actor"], "unspecified")
+                self.assert_source_actor_unspecified(row["source_actor"])
                 self.assertIn("KMIPKIT-0008", row["review_note"])
                 self.assertEqual(row["role"], "client")
 
