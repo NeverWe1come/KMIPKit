@@ -307,7 +307,7 @@
             ],
             "requirement_id": null,
             "scope_disposition": "profile_conditional",
-            "mapping_status": "pending_t002_crosswalk"
+            "mapping_status": "reviewed"
           },
           {
             "condition_id": "KMIPKIT-PROF-COND-5.1.1-005",
