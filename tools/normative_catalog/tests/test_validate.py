@@ -10552,7 +10552,7 @@ class CatalogValidationTests(unittest.TestCase):
         )
         self.assertEqual(oracle["source_closure_status"], "complete")
 
-    def test_spec_6_1_42_recover_keeps_client_may_and_unresolved_authentication_should(self) -> None:
+    def test_spec_6_1_42_recover_keeps_client_may_and_server_authentication_should(self) -> None:
         """Specification v2.1 §§6.1.42 and 6.1.42.1 preserve Recover actor and payload boundaries."""
         fixture_path = ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json"
         oracle = json.loads(fixture_path.read_text(encoding="utf-8"))
@@ -10595,7 +10595,7 @@ class CatalogValidationTests(unittest.TestCase):
         expected_atom_dispositions = [
             ("client", "client→server Recover request", "client_1_0", "KMIPKIT-REQ-SPEC-6.1.42-001-001"),
             ("client", "client→server Get request", "client_1_0", "KMIPKIT-REQ-SPEC-6.1.42-001-002"),
-            ("unresolved", "special authentication and authorization enforcement; actor unspecified", "unresolved", None),
+            ("server", "server-side authentication and authorization enforcement (actor inferred from §9.4)", "server_only", None),
         ]
         self.assertEqual(
             [
@@ -10609,6 +10609,7 @@ class CatalogValidationTests(unittest.TestCase):
             ["KMIPKIT-REQ-SPEC-6.1.42-001-001", "KMIPKIT-REQ-SPEC-6.1.42-001-002"],
         )
         self.assertIn("informative", reviews["KMIPKIT-CLAUSE-SPEC-6.1.42-001"]["review_note"].lower())
+        self.assertIn("§9.4", reviews["KMIPKIT-CLAUSE-SPEC-6.1.42-001"]["review_note"])
         self.assertIn("actor", reviews["KMIPKIT-CLAUSE-SPEC-6.1.42-001"]["review_note"].lower())
 
         request_rows = reviews["KMIPKIT-CLAUSE-SPEC-6.1.42-002"]["source_request_rows"]
@@ -10665,12 +10666,13 @@ class CatalogValidationTests(unittest.TestCase):
         self.assertEqual(auth_gap["source_excerpt"], pinned_source_excerpt(source_path, [32613, 32618]))
         self.assertEqual(auth_gap["source_keywords"], ["SHOULD"])
         self.assertEqual(auth_gap["source_force"], "formal_SHOULD_with_actor_unresolved")
-        self.assertEqual(auth_gap["actor"], "unresolved")
-        self.assertEqual(auth_gap["scope_disposition"], "unresolved")
+        self.assertEqual(auth_gap["actor"], "server")
+        self.assertEqual(auth_gap["scope_disposition"], "server_only")
         self.assertIsNone(auth_gap["candidate_requirement_id"])
         self.assertIsNone(auth_gap["proposed_requirement_id"])
-        self.assertEqual(auth_gap["status"], "actor_and_scope_unresolved")
+        self.assertEqual(auth_gap["status"], "server_actor_disposition_recorded")
         self.assertIn("informative", auth_gap["review_note"].lower())
+        self.assertIn("§9.4", auth_gap["review_note"])
 
         captions = {
             "request": ([32673, 32674], "Table 288: Recover Request Payload"),
