@@ -1360,13 +1360,13 @@
       "source_keywords": [
         "MAY"
       ],
-      "disposition": "server_only",
+      "disposition": "informative_context",
       "requirement_ids": [],
-      "exclusion_rationale": "Heading governs variations elaborated as server-selected/server-returned values in 4.1.1.2-14; no client duty.",
+      "exclusion_rationale": "Profiles §4.1.1 allows profile-conformance tests to vary values, including Unique Batch Item ID used in client requests; this test-context permission does not add production runtime behavior.",
       "role": "both",
       "direction": "unclear",
-      "scope_state": "server_only",
-      "condition": null
+      "scope_state": "out_of_scope",
+      "condition": "Profile conformance test variation only; no production client or server behavior is required."
     },
     {
       "clause_id": "KMIPKIT-CLAUSE-PROF-4.1.1-002",
