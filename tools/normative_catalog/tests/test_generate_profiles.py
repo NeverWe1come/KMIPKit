@@ -1099,7 +1099,7 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
         self.assertIn("Linked Object Identifier value is specified without the Link Type value", locate_007_source)
 
     def test_baseline_message_data_structures_condition_has_exact_reviewed_batch_crosswalk(self) -> None:
-        """The thirteen reviewed Message Data Structure mappings stay bounded while item 5 remains pending."""
+        """The fourteen reviewed Message Data Structure mappings stay bounded while item 5 remains pending."""
         catalog = json.loads((ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8"))
         oracle = json.loads(
             (ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json")
@@ -1241,6 +1241,21 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
             "source_clause_ids": ["KMIPKIT-CLAUSE-SPEC-9.20-001"],
             "mapping_status": "reviewed",
         }
+        expected_unique_batch_item_id_mapping = {
+            "item": "Unique Batch Item ID",
+            "element_id": "KMIPKIT-ELEM-MESSAGE-FIELD-9-21-UNIQUE-BATCH-ITEM-ID",
+            "requirement_ids": [
+                "KMIPKIT-REQ-SPEC-8.3-003",
+                "KMIPKIT-REQ-SPEC-9.21-001-001",
+                "KMIPKIT-REQ-PROF-4.1.2-007",
+            ],
+            "source_clause_ids": [
+                "KMIPKIT-CLAUSE-SPEC-8.3-003",
+                "KMIPKIT-CLAUSE-SPEC-9.21-001",
+                "KMIPKIT-CLAUSE-PROF-4.1.2-007",
+            ],
+            "mapping_status": "reviewed",
+        }
         expected_mappings = [
             expected_async_mapping,
             expected_mapping,
@@ -1255,6 +1270,7 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
             expected_result_status_mapping,
             expected_server_correlation_value_mapping,
             expected_time_stamp_mapping,
+            expected_unique_batch_item_id_mapping,
         ]
 
         self.assertEqual(condition["item"], 5)
@@ -1297,10 +1313,11 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
                 "Result Status",
                 "Server Correlation Value",
                 "Time Stamp",
+                "Unique Batch Item ID",
             ],
         )
         self.assertEqual(len(condition["supported_items"]), 14)
-        self.assertEqual(len(condition["supported_item_mappings"]), 13)
+        self.assertEqual(len(condition["supported_item_mappings"]), 14)
         unmapped_items = [
             item
             for item in condition["supported_items"]
@@ -1308,11 +1325,11 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
         ]
         self.assertEqual(
             unmapped_items,
-            ["Unique Batch Item ID"],
+            [],
         )
         self.assertEqual(
             set(condition["supported_items"]) - {mapping["item"] for mapping in condition["supported_item_mappings"]},
-            {"Unique Batch Item ID"},
+            set(),
         )
         self.assertIsNone(condition["requirement_id"])
         self.assertEqual(condition["scope_disposition"], "profile_conditional")
@@ -2182,10 +2199,10 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
         self.assertEqual(condition["supported_items"][6:9], ["Message Extension", "Operation", "Protocol Version"])
         self.assertIn("Operation", mapped_items)
         self.assertEqual(len(condition["supported_items"]), 14)
-        self.assertEqual(len(mapped_items), 13)
+        self.assertEqual(len(mapped_items), 14)
         self.assertEqual(
             [item for item in condition["supported_items"] if item not in set(mapped_items)],
-            ["Unique Batch Item ID"],
+            [],
         )
         self.assertIsNone(condition["requirement_id"])
         self.assertEqual(condition["scope_disposition"], "profile_conditional")
@@ -2355,7 +2372,7 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
         self.assertIn("Protocol Version", mapped_items)
         self.assertEqual(
             [item for item in condition["supported_items"] if item not in set(mapped_items)],
-            ["Unique Batch Item ID"],
+            [],
         )
         self.assertIsNone(condition["requirement_id"])
         self.assertEqual(condition["scope_disposition"], "profile_conditional")
@@ -2787,6 +2804,122 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
         self.assertEqual(
             field["parent_element_ids"],
             ["KMIPKIT-ELEM-MESSAGE-FIELD-8-2-TIME-STAMP", "KMIPKIT-ELEM-MESSAGE-FIELD-8-5-TIME-STAMP"],
+        )
+
+    def test_baseline_unique_batch_item_id_maps_client_batch_requirements_not_server_echo(self) -> None:
+        """Unique Batch Item ID maps conditional client use without a server echo duty."""
+        catalog = json.loads((ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8"))
+        oracle = json.loads(
+            (ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json")
+            .read_text(encoding="utf-8")
+        )
+        inventory = next(
+            item
+            for item in oracle["provenance"]["profile_condition_inventories"]
+            if item["source_id"] == "KMIPKIT-SRC-profiles" and item["section"] == "5.1.1"
+        )
+        condition = next(
+            item for item in inventory["conditions"] if item["condition_id"] == "KMIPKIT-PROF-COND-5.1.1-005"
+        )
+        expected_requirement_ids = [
+            "KMIPKIT-REQ-SPEC-8.3-003",
+            "KMIPKIT-REQ-SPEC-9.21-001-001",
+            "KMIPKIT-REQ-PROF-4.1.2-007",
+        ]
+        expected_mapping = {
+            "item": "Unique Batch Item ID",
+            "element_id": "KMIPKIT-ELEM-MESSAGE-FIELD-9-21-UNIQUE-BATCH-ITEM-ID",
+            "requirement_ids": expected_requirement_ids,
+            "source_clause_ids": [
+                "KMIPKIT-CLAUSE-SPEC-8.3-003",
+                "KMIPKIT-CLAUSE-SPEC-9.21-001",
+                "KMIPKIT-CLAUSE-PROF-4.1.2-007",
+            ],
+            "mapping_status": "reviewed",
+        }
+
+        self.assertEqual(condition["supported_items"][13], "Unique Batch Item ID")
+        unique_batch_mapping = next(
+            (item for item in condition["supported_item_mappings"] if item["item"] == "Unique Batch Item ID"),
+            None,
+        )
+        self.assertEqual(unique_batch_mapping, expected_mapping)
+        self.assertIsNone(condition["requirement_id"])
+        self.assertEqual(condition["scope_disposition"], "profile_conditional")
+        self.assertEqual(condition["mapping_status"], "pending_t002_crosswalk")
+
+        reviews = {item["source_clause_id"]: item for item in oracle["source_requirement_reviews"]}
+        batch_count_review = reviews["KMIPKIT-CLAUSE-SPEC-8.3-003"]
+        self.assertEqual(batch_count_review["expected_client_requirement_ids"], [expected_requirement_ids[0]])
+        self.assertIn("REQUIRED if Batch Count > 1", batch_count_review["source_excerpt"])
+        self.assertEqual(batch_count_review["source_obligations"][0]["actor"], "client")
+        self.assertEqual(batch_count_review["source_obligations"][0]["direction"], "client_to_server")
+        self.assertEqual(batch_count_review["source_obligations"][0]["scope_disposition"], "client_1_0")
+
+        request_optional_review = reviews["KMIPKIT-CLAUSE-SPEC-9.21-001"]
+        self.assertEqual(
+            request_optional_review["expected_client_requirement_ids"],
+            ["KMIPKIT-REQ-SPEC-9.21-001-001"],
+        )
+        self.assertEqual(
+            [item["candidate_requirement_id"] for item in request_optional_review["source_obligations"]],
+            ["KMIPKIT-REQ-SPEC-9.21-001-001", "KMIPKIT-REQ-SPEC-9.21-001-002"],
+        )
+        self.assertEqual(
+            request_optional_review["source_obligations"][1]["actor"],
+            "response producer (endpoint not named)",
+        )
+        self.assertEqual(request_optional_review["source_obligations"][1]["direction"], "server_to_client")
+        self.assertEqual(request_optional_review["source_obligations"][1]["scope_disposition"], "unclear")
+        self.assertNotIn("KMIPKIT-REQ-SPEC-9.21-001-002", unique_batch_mapping["requirement_ids"])
+
+        profile_may_review = reviews["KMIPKIT-CLAUSE-PROF-4.1.2-007"]
+        self.assertEqual(profile_may_review["expected_client_requirement_ids"], [expected_requirement_ids[2]])
+        self.assertIn("MAY be specified", profile_may_review["source_excerpt"])
+
+        profiles_lines = (
+            ROOT / "specification" / "oasis" / "kmip-2.1" / "upstream" / "kmip-profiles-v2.1-os.html"
+        ).read_text(encoding="cp1252").splitlines()
+        spec_lines = (
+            ROOT / "specification" / "oasis" / "kmip-2.1" / "upstream" / "kmip-spec-v2.1-os.html"
+        ).read_text(encoding="cp1252").splitlines()
+        self.assertIn("Unique Batch Item ID", _normalized_html_source_span(profiles_lines, [4611, 4612]))
+        self.assertIn("multiple batch items", _normalized_html_source_span(profiles_lines, [4488, 4493]))
+        self.assertIn(
+            "Unique Batch Item ID No REQUIRED if Batch Count > 1",
+            _normalized_html_source_span(spec_lines, [42921, 42935]),
+        )
+        self.assertIn(
+            "Unique Batch Item ID No Required if present in Request",
+            _normalized_html_source_span(spec_lines, [43361, 43377]),
+        )
+        request_response_definition = _normalized_html_source_span(spec_lines, [45355, 45360])
+        self.assertIn("OPTIONAL field contained in a request", request_response_definition)
+        self.assertIn("responses to that request SHALL have the same Unique Batch Item ID", request_response_definition)
+        self.assertIn("Unique Batch Item ID Byte String", _normalized_html_source_span(spec_lines, [45378, 45395]))
+        self.assertIn("420093", _normalized_html_source_span(spec_lines, [60833, 60844]))
+
+        elements = {item["element_id"]: item for item in catalog["elements"]}
+        request_placement = elements["KMIPKIT-ELEM-MESSAGE-FIELD-8-3-UNIQUE-BATCH-ITEM-ID"]
+        response_placement = elements["KMIPKIT-ELEM-MESSAGE-FIELD-8-6-UNIQUE-BATCH-ITEM-ID"]
+        self.assertEqual(request_placement["direction"], "client_to_server")
+        self.assertEqual(response_placement["direction"], "server_to_client")
+        response_clause = next(
+            item for item in catalog["source_clauses"] if item["clause_id"] == "KMIPKIT-CLAUSE-SPEC-8.6-003"
+        )
+        self.assertEqual(response_clause["disposition"], "server_only")
+        self.assertEqual(response_clause["requirement_ids"], [])
+
+        field = elements[expected_mapping["element_id"]]
+        self.assertEqual(field["source_refs"], [{"source_id": "KMIPKIT-SRC-spec", "section": "9.21"}])
+        self.assertEqual(field["source_encoding"], "Byte String")
+        self.assertEqual(field["direction"], "both")
+        self.assertEqual(
+            field["parent_element_ids"],
+            [
+                "KMIPKIT-ELEM-MESSAGE-FIELD-8-3-UNIQUE-BATCH-ITEM-ID",
+                "KMIPKIT-ELEM-MESSAGE-FIELD-8-6-UNIQUE-BATCH-ITEM-ID",
+            ],
         )
 
     def test_foundry_basic_condition_text_names_its_inheriting_profiles(self) -> None:
