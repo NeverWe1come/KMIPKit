@@ -188,6 +188,113 @@ class SourceGapAdjudicationTests(unittest.TestCase):
         self.assertEqual(header_requirement["scope_state"], "out_of_scope")
         self.assertEqual(header_requirement["source_clause_ids"], ["KMIPKIT-CLAUSE-SPEC-4.31-003"])
 
+    def test_section_4_31_table_91_required_members_have_distinct_client_mappings(self) -> None:
+        catalog = _load_json(CATALOG_PATH)
+        oracle = _load_json(ORACLE_PATH)
+        requirements = {row["requirement_id"]: row for row in catalog["requirements"]}
+        gaps = {row["gap_id"]: row for row in oracle["source_only_requirement_gaps"]}
+        crosswalk = {row["requirement_id"]: row for row in oracle["requirement_crosswalk"]}
+        client_profiles = [row for row in catalog["profiles"] if row["role"] == "client"]
+        oracle_profiles = [row for row in oracle["profiles"] if row["role"] == "client"]
+        condition = (
+            "A complete Link attribute is represented as object state rather than as a structured Locate search criterion."
+        )
+        expected_rows = {
+            "KMIPKIT-SOURCE-GAP-SPEC-4.31-LINK-TYPE-REQUIRED": (
+                "KMIPKIT-REQ-SPEC-4.31-004",
+                "Link Type",
+                "KMIPKIT-ELEM-STRUCTURE-MEMBER-4-31-LINK-TYPE",
+                [15923, 15940],
+                "Link Type Enumeration Yes",
+                "KMIPKIT-TEST-CN01-2-66",
+            ),
+            "KMIPKIT-SOURCE-GAP-SPEC-4.31-LINKED-OBJECT-IDENTIFIER-REQUIRED": (
+                "KMIPKIT-REQ-SPEC-4.31-005",
+                "Linked Object Identifier",
+                "KMIPKIT-ELEM-STRUCTURE-MEMBER-4-31-LINKED-OBJECT-IDENTIFIER",
+                [15942, 15961],
+                "Linked Object Identifier Text String/Enumeration/Integer Yes",
+                "KMIPKIT-TEST-CN01-2-66",
+            ),
+        }
+
+        self.assertEqual(len(client_profiles), 18)
+        self.assertEqual(len(oracle_profiles), 18)
+        for gap_id, (requirement_id, row_label, element_id, line_range, excerpt, test_case_id) in expected_rows.items():
+            with self.subTest(gap_id=gap_id):
+                self.assertTrue(gap_id in gaps, f"Table 91 source row is missing: {gap_id}")
+                self.assertTrue(requirement_id in requirements, f"Table 91 stable requirement ID is missing: {requirement_id}")
+                self.assertTrue(requirement_id in crosswalk, f"Table 91 independent crosswalk entry is missing: {requirement_id}")
+                if gap_id not in gaps or requirement_id not in requirements or requirement_id not in crosswalk:
+                    continue
+                gap = gaps[gap_id]
+                requirement = requirements[requirement_id]
+                mapping = crosswalk[requirement_id]
+
+                self.assertIsNone(gap["source_clause_id"])
+                self.assertEqual(gap["source_section"], "4.31")
+                self.assertEqual(gap["html_line_range"], line_range)
+                self.assertEqual(gap["source_excerpt"], excerpt)
+                self.assertEqual(gap["source_keywords"], [])
+                self.assertEqual(gap["source_force"], "required_table_body_value")
+                self.assertEqual(gap["actor"], "client")
+                self.assertEqual(gap["direction"], "both")
+                self.assertEqual(gap["condition"], condition)
+                self.assertEqual(gap["scope_disposition"], "client_1_0")
+                self.assertEqual(gap["candidate_requirement_id"], requirement_id)
+                self.assertIsNone(gap["proposed_requirement_id"])
+                self.assertEqual(gap["status"], "source_obligation_covered_by_existing_stable_label")
+                self.assertEqual(gap["source_locator"]["kind"], "table_body_row")
+                self.assertEqual(gap["source_locator"]["row_label"], row_label)
+                self.assertEqual(gap["source_locator"]["html_line_range"], line_range)
+
+                self.assertEqual(requirement["source_clause_ids"], [])
+                self.assertEqual(requirement["source_refs"], [{"source_id": "KMIPKIT-SRC-spec", "section": "4.31"}])
+                self.assertIsNone(requirement["source_keyword"])
+                self.assertEqual(requirement["source_force"], "required_table_body_value")
+                self.assertEqual(requirement["source_gap_id"], gap_id)
+                self.assertEqual(requirement["source_locator"], gap["source_locator"])
+                self.assertEqual(requirement["role"], "client")
+                self.assertEqual(requirement["direction"], "both")
+                self.assertEqual(requirement["condition"], condition)
+                self.assertEqual(requirement["scope_state"], "client_1_0")
+                self.assertEqual(requirement["element_ids"], [element_id])
+                self.assertEqual(requirement["profile_ids"], [])
+                self.assertEqual(requirement["test_case_ids"], [test_case_id])
+                self.assertIsNone(requirement["feature_spec"])
+                self.assertEqual(requirement["implementation_refs"], [])
+                self.assertEqual(requirement["verification_refs"], [])
+                self.assertEqual(requirement["status"], "unassigned")
+                self.assertTrue(all(requirement_id in profile["requirement_ids"] for profile in client_profiles))
+                self.assertTrue(all(requirement_id in profile["requirement_ids"] for profile in oracle_profiles))
+
+                self.assertEqual(mapping["source_gap_id"], gap_id)
+                self.assertEqual(mapping["source_id"], "KMIPKIT-SRC-spec")
+                self.assertEqual(mapping["source_section"], "4.31")
+                self.assertEqual(mapping["source_locator"], gap["source_locator"])
+                self.assertEqual(mapping["source_force"], "required_table_body_value")
+                self.assertEqual(mapping["role"], "client")
+                self.assertEqual(mapping["scope_state"], "client_1_0")
+                self.assertEqual(mapping["applies_to"], "all_client_profiles")
+                self.assertEqual(mapping["source_actor"], "client")
+
+                self.assertIn("Table 91", gap["review_note"])
+                self.assertIn("Locate", gap["review_note"])
+                self.assertIn("no local typed Link", gap["review_note"])
+
+        official_case = next(
+            row for row in catalog["test_cases"] if row["test_id"] == "KMIPKIT-TEST-CN01-2-66"
+        )
+        self.assertEqual(official_case["official_case_id"], "TC-PGP-1-21")
+        self.assertEqual(official_case["source_section"], "2.66")
+        self.assertEqual(official_case["requirement_ids"], ["KMIPKIT-REQ-SPEC-4.31-004", "KMIPKIT-REQ-SPEC-4.31-005"])
+        self.assertEqual(official_case["fixture_availability"], "unavailable")
+        self.assertIsNone(official_case["fixture_path"])
+
+        self.assertEqual(len(oracle["source_table_contracts"]), 66)
+        self.assertEqual(oracle["counts"]["requirement_crosswalk_records"], 505)
+        self.assertEqual(oracle["counts"]["source_only_requirement_gaps"], 107)
+
     def test_reviewed_structural_requirements_have_stable_catalog_mappings(self) -> None:
         catalog = _load_json(CATALOG_PATH)
         oracle = _load_json(ORACLE_PATH)
