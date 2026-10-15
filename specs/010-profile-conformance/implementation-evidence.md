@@ -3005,3 +3005,20 @@ The thirteenth value maps to `KMIPKIT-ELEM-MESSAGE-FIELD-9-20-TIME-STAMP`, with 
 | Independent read-only QA | PASS: no blocking findings. P3 observation: the regression does not assert catalog `requirement_ids` on response/canonical elements, since those associations are known KMIPKIT-0002 defects and must not be frozen by this slice. |
 
 The crosswalk covers 13 of 14 values; only `Unique Batch Item ID` remains. The parent profile condition remains null / `profile_conditional` / `pending_t002_crosswalk`; no conformance claim is made.
+
+### KMIPKIT-0010 T002 tranche — Baseline Client §5.1.1 item 5 Unique Batch Item ID (2026-10-15)
+
+This tranche maps the final source-ordered value, `Unique Batch Item ID`, to the canonical §9.21 field. The reviewed client mapping links `KMIPKIT-REQ-SPEC-8.3-003` (required for requests with Batch Count greater than one), `KMIPKIT-REQ-SPEC-9.21-001-001` (optional request field), and `KMIPKIT-REQ-PROF-4.1.2-007` (single-item client MAY). It excludes `KMIPKIT-REQ-SPEC-9.21-001-002`, which describes the response producer echoing a request ID. This closes only the 14-value Baseline §5.1.1 item-5 structural crosswalk; T002's all-profile closure remains open and no conformance claim is made.
+
+| Stage | DCO-signed commit and command | Result |
+|---|---|---|
+| Red — assert the fourteenth source-ordered mapping and distinguish client request duties from server response echo | `375c391a`; `py -3 -B -m unittest tools.normative_catalog.tests.test_generate_profiles.ProfileMetadataGeneratorTests.test_baseline_message_data_structures_condition_has_exact_reviewed_batch_crosswalk tools.normative_catalog.tests.test_generate_profiles.ProfileMetadataGeneratorTests.test_baseline_unique_batch_item_id_maps_client_batch_requirements_not_server_echo -v` | Expected Red: 2 assertion failures, 0 errors. The independent oracle lacked the row and the dedicated test found no mapping. |
+| Green — add the independently reviewed oracle row and update dependent remainder/count assertions | `2e7b8ebc`; `py -3 -B -m unittest tools.normative_catalog.tests.test_generate_profiles -v` | PASS: 59 tests, 1 skipped. The first Green attempt found a case-sensitive mismatch in a pinned-source assertion (`REQUIRED`); the assertion was corrected to match the source and the complete module then passed. The skip is the existing Windows symlink-creation limitation. |
+| Full normative suite | `py -3 -B -m unittest discover -s tools/normative_catalog/tests -p 'test_*.py'` | PASS: 565 tests in 312.640 seconds; 9 skipped. |
+| Catalog and generated-output checks | `py -3 -B tools/normative_catalog/validate.py`; `py -3 -B tools/normative_catalog/generate_profiles.py --check`; `py -3 -B tools/normative_catalog/report.py --check` | PASS: 4 sources, 1,411 clauses, 4,117 records; generated profile metadata and coverage report are current. |
+| Pinned OASIS source immutability | `py -3 -B tools/normative_catalog/check_immutable_sources.py --repo-root . --base-sha ddba006cdba960e765bc3b4bf0e147826544c6cc` | PASS: pinned upstream source copies match the pre-slice base. |
+| Whitespace validation | `git diff --check` | PASS. |
+| Independent QA | PASS: no blocking findings. The reviewer identified one P3 assertion that froze `KMIPKIT-CLAUSE-SPEC-8.6-003.requirement_ids`; it was removed while retaining the stable `server_only` classification and the direct oracle exclusion of the response echo requirement. Follow-up QA confirmed the P3 is resolved. |
+| Exact-head GitHub CI | Pending. | Publish the evidence refactor and test cleanup, then verify CI on the exact pushed head. |
+
+The source review and full citations are recorded in `research.md`. The parent condition remains null / `profile_conditional` / `pending_t002_crosswalk`; the 14/14 value mapping is not all-profile closure, official test execution, profile eligibility, or a conformance claim.

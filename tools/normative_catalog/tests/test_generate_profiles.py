@@ -2908,7 +2908,6 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
             item for item in catalog["source_clauses"] if item["clause_id"] == "KMIPKIT-CLAUSE-SPEC-8.6-003"
         )
         self.assertEqual(response_clause["disposition"], "server_only")
-        self.assertEqual(response_clause["requirement_ids"], [])
 
         field = elements[expected_mapping["element_id"]]
         self.assertEqual(field["source_refs"], [{"source_id": "KMIPKIT-SRC-spec", "section": "9.21"}])
