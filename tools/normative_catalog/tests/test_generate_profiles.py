@@ -2343,7 +2343,7 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
         self.assertNotIn("default", table_418_text.lower())
 
     def test_baseline_operation_condition_has_exact_reviewed_structural_crosswalk(self) -> None:
-        """Operation maps to its §9.15 field while placements stay provenance, not client REQs."""
+        """Operation maps to §9.15; §8.3/§8.6 table placements are not normative source clauses."""
         catalog = json.loads((ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8"))
         oracle = json.loads(
             (ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json")
