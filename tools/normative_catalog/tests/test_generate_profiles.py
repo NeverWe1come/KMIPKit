@@ -2151,16 +2151,17 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
             "mapping_status": "reviewed",
         }
         mapped_items = [item["item"] for item in condition["supported_item_mappings"]]
-        operation_mapping = condition["supported_item_mappings"][-1]
+        operation_mapping = next(
+            item for item in condition["supported_item_mappings"] if item["item"] == "Operation"
+        )
         self.assertEqual(operation_mapping, expected_mapping)
         self.assertEqual(condition["supported_items"][6:9], ["Message Extension", "Operation", "Protocol Version"])
-        self.assertEqual(mapped_items[-2:], ["Message Extension", "Operation"])
+        self.assertEqual(mapped_items[-3:], ["Message Extension", "Operation", "Protocol Version"])
         self.assertEqual(len(condition["supported_items"]), 14)
-        self.assertEqual(len(mapped_items), 8)
+        self.assertEqual(len(mapped_items), 9)
         self.assertEqual(
             [item for item in condition["supported_items"] if item not in set(mapped_items)],
             [
-                "Protocol Version",
                 "Result Reason",
                 "Result Status",
                 "Server Correlation Value",
@@ -2347,9 +2348,17 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
         self.assertIn("Protocol Version Yes", _normalized_html_source_span(spec_lines, [42592, 42601]))
         self.assertIn("Protocol Version Yes", _normalized_html_source_span(spec_lines, [43128, 43134]))
         protocol_version_definition = _normalized_html_source_span(spec_lines, [45086, 45091])
-        self.assertIn("The version number SHALL be specified in two parts, major and minor.", protocol_version_definition)
-        self.assertIn("SHALL support backward compatibility with versions of the protocol with the same major version.", protocol_version_definition)
-        self.assertIn("Support for backward compatibility with different major versions is OPTIONAL.", protocol_version_definition)
+        self.assertIn(
+            "The version number SHALL be specified in two parts, major and minor.", protocol_version_definition
+        )
+        self.assertIn(
+            "SHALL support backward compatibility with versions of the protocol with the same major version.",
+            protocol_version_definition,
+        )
+        self.assertIn(
+            "Support for backward compatibility with different major versions is OPTIONAL.",
+            protocol_version_definition,
+        )
 
         elements = {item["element_id"]: item for item in catalog["elements"]}
         request_field = elements["KMIPKIT-ELEM-MESSAGE-FIELD-8-2-PROTOCOL-VERSION"]
@@ -2358,9 +2367,11 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
         self.assertEqual(request_field["source_requiredness"], "Yes")
         self.assertEqual(request_field["direction"], "client_to_server")
         self.assertEqual(request_field["scope_state"], "client_1_0")
+        self.assertEqual(request_field["source_refs"], [{"source_id": "KMIPKIT-SRC-spec", "section": "8.2"}])
         self.assertEqual(response_field["source_requiredness"], "Yes")
         self.assertEqual(response_field["direction"], "server_to_client")
         self.assertEqual(response_field["scope_state"], "client_1_0")
+        self.assertEqual(response_field["source_refs"], [{"source_id": "KMIPKIT-SRC-spec", "section": "8.5"}])
         self.assertEqual(field["source_refs"], [{"source_id": "KMIPKIT-SRC-spec", "section": "9.16"}])
         self.assertEqual(field["source_encoding"], "Structure")
         self.assertEqual(field["direction"], "both")
@@ -2398,7 +2409,8 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
             "KMIPKIT-REQ-SPEC-6.1.16-001-002",
             "KMIPKIT-REQ-SPEC-6.1.16-004",
         }
-        self.assertTrue(discover_versions_requirement_ids.issubset({item["requirement_id"] for item in catalog["requirements"]}))
+        catalog_requirement_ids = {item["requirement_id"] for item in catalog["requirements"]}
+        self.assertTrue(discover_versions_requirement_ids.issubset(catalog_requirement_ids))
         self.assertTrue(discover_versions_requirement_ids.isdisjoint(expected_mapping["requirement_ids"]))
 
     def test_foundry_basic_condition_text_names_its_inheriting_profiles(self) -> None:

@@ -2897,3 +2897,29 @@ Review of Refactor/evidence commit `c3e86ec66a1a0c6e4c562dab74761a48b41863d2` fo
 | `git diff --check` | PASS, exit 0; only Git line-ending normalization notices appeared. |
 
 This QA correction changes documentation and assertions only; no protocol behavior, catalog ownership, generated output, or pinned OASIS source changed. Independent re-review is pending for the corrected commit.
+
+### KMIPKIT-0010 T002 tranche — Baseline Client §5.1.1 item 5 Protocol Version (2026-10-15)
+
+BASE before this slice: `779bfdbcfe39d2b4562a4e7571111485b0032de0`. This slice adds the ninth source-ordered item-5 mapping, `Protocol Version` → `KMIPKIT-ELEM-MESSAGE-FIELD-9-16-PROTOCOL-VERSION`, with no direct requirement IDs and source provenance `KMIPKIT-CLAUSE-SPEC-9.16-001`. The corresponding Major and Minor child fields are retained as structural evidence. Section 8.2's request field and §8.5's response field are separately verified as required (`Yes`) with their client-to-server and server-to-client directions. Their generic header-row extractor clauses are not treated as field-specific requirements.
+
+Section 9.16's two-part version SHALL and same-major compatibility SHALL conflict with the KMIP 2.1-only 1.x boundary. The existing clause remains `source_discrepancy` with no requirement IDs and unclear role/direction/scope; this structural mapping does not claim its unresolved compatibility behavior. Discover Versions operation/list requirements are not attached to this field. The parent condition remains null / `profile_conditional` / `pending_t002_crosswalk`; five item-5 values remain unmapped. No implementation code, normative catalog ownership, generated output, pinned OASIS source, or profile-conformance claim changed.
+
+| Stage | DCO-signed commit and command | Result |
+|---|---|---|
+| Red — assert the ninth source-ordered mapping, structure, placements, and unresolved §9.16 provenance | `ba2200715ee139324587d4fb55e6f0ebc6037329`; `py -3 -B -m unittest tools.normative_catalog.tests.test_generate_profiles.ProfileMetadataGeneratorTests.test_baseline_message_data_structures_condition_has_exact_reviewed_batch_crosswalk tools.normative_catalog.tests.test_generate_profiles.ProfileMetadataGeneratorTests.test_baseline_protocol_version_condition_preserves_structure_and_unresolved_compatibility -v` | Expected Red: 2 assertion failures / 0 errors. The aggregate lacked the ninth row; the focused test found Operation last instead of the absent Protocol Version mapping. |
+| Green — add the exact Protocol Version structural row to the independent oracle | `f0900989a491b4cf51305dbcd2db96ead155dee6`; same two focused tests | PASS: 2/2 after correcting the row-span assertion to allow pinned HTML style markup while checking the exact field text. |
+| Refactor — pin source details and stabilize Operation test selection after appending Protocol Version | DCO-signed Refactor/evidence commit (this commit); focused command below and full normative suite | PASS: three focused regressions and the final full normative suite passed. The first full run found a stale positional assertion; selecting Operation by `item` fixed it without changing the normative map. |
+
+#### Focused and full-suite verification
+
+| Command | Result |
+|---|---|
+| `py -3 -B -m unittest tools.normative_catalog.tests.test_generate_profiles.ProfileMetadataGeneratorTests.test_baseline_message_data_structures_condition_has_exact_reviewed_batch_crosswalk tools.normative_catalog.tests.test_generate_profiles.ProfileMetadataGeneratorTests.test_baseline_operation_condition_has_exact_reviewed_structural_crosswalk tools.normative_catalog.tests.test_generate_profiles.ProfileMetadataGeneratorTests.test_baseline_protocol_version_condition_preserves_structure_and_unresolved_compatibility -v` | PASS: 3 focused regressions. |
+| `py -3 -B -m unittest discover -s tools/normative_catalog/tests -p 'test_*.py'` | PASS: 560 tests in 311.913 seconds; 9 skipped. The preceding run had one stale Operation positional assertion failure (560 tests, 9 skipped); the corrected focused regression passed before this final run. |
+| `py -3 -B tools/normative_catalog/validate.py --repo-root .` | PASS: `Catalog valid: sources=4 clauses=1411 records=4117`. |
+| `py -3 -B tools/normative_catalog/generate_profiles.py --repo-root . --check` | PASS: generated profile metadata verified. |
+| `py -3 -B tools/normative_catalog/report.py --repo-root . --check` | PASS: coverage report verified. |
+| `py -3 -B -m tools.normative_catalog.check_immutable_sources --repo-root . --base-sha 779bfdbcfe39d2b4562a4e7571111485b0032de0` | PASS: pinned OASIS upstream sources match the task base. |
+| `git diff --check` | PASS, exit 0; Git only reported existing CRLF-to-LF normalization notices. |
+
+The generator and report checks initially encountered safe-directory lock errors when launched concurrently with the full suite. Both passed when rerun serially after the suite; no source changes were made in response to the transient contention. Exact-head GitHub CI and independent QA for this tranche remain pending. The previous exact-head CI on `779bfdbc` passed 37/37 jobs on rerun 2; it does not cover these new commits.
