@@ -92,7 +92,7 @@ class CreationParityManifestTests(unittest.TestCase):
             with self.subTest(symbol=symbol):
                 text = " ".join(documentation).lower()
                 self.assertIn("borrowed", text)
-                self.assertIn("response handle", text)
+                self.assertIn("response item handle", text)
                 self.assertIn("copy", text)
 
 

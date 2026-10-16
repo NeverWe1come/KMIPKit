@@ -540,10 +540,12 @@ int32_t kmipkit_client_batch_item_create_split_key(uint32_t object_type, const k
 /* KMIPKIT-0014-FR-008, KMIPKIT-0014-FR-009, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-012, KMIPKIT-0043-FR-013, KMIPKIT-0043-FR-021 */
 int32_t kmipkit_client_batch_item_response_metadata_v2(kmipkit_client_batch_item_response_t * item, kmipkit_client_batch_item_metadata_v2_t * out_metadata);
 /* Returns Object Type and the original-wire-form Unique Identifier only for successful Create; absent, Pending, and failure results are empty.
+ * Any text_data pointer in out_unique_identifier is borrowed from the response item handle and remains valid only until kmipkit_client_batch_item_response_release(item); copy the text bytes before releasing item if they must outlive it.
  */
 /* KMIPKIT-0014-FR-002, KMIPKIT-0014-FR-007, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021 */
 int32_t kmipkit_client_batch_item_response_create(kmipkit_client_batch_item_response_t * item, uint8_t * out_present, uint32_t * out_object_type, kmipkit_unique_identifier_v1_t * out_unique_identifier);
 /* Returns separate private-key and public-key identifiers in their original wire forms only for successful Create Key Pair.
+ * Any text_data pointer in either output identifier is borrowed from the response item handle and remains valid only until kmipkit_client_batch_item_response_release(item); copy the text bytes before releasing item if they must outlive it.
  */
 /* KMIPKIT-0014-FR-003, KMIPKIT-0014-FR-004, KMIPKIT-0014-FR-007, KMIPKIT-0014-FR-013, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021 */
 int32_t kmipkit_client_batch_item_response_create_key_pair(kmipkit_client_batch_item_response_t * item, uint8_t * out_present, kmipkit_unique_identifier_v1_t * out_private_key_unique_identifier, kmipkit_unique_identifier_v1_t * out_public_key_unique_identifier);
@@ -552,6 +554,7 @@ int32_t kmipkit_client_batch_item_response_create_key_pair(kmipkit_client_batch_
 /* KMIPKIT-0014-FR-005, KMIPKIT-0014-FR-007, KMIPKIT-0014-FR-012, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021 */
 int32_t kmipkit_client_batch_item_response_create_split_key_count(kmipkit_client_batch_item_response_t * item, uint8_t * out_present, uint64_t * out_count);
 /* Copies the caller-selected zero-based response identifier without changing its wire form or response order.
+ * Any text_data pointer in out_identifier is borrowed from the response item handle and remains valid only until kmipkit_client_batch_item_response_release(item); copy the text bytes before releasing item if they must outlive it.
  */
 /* KMIPKIT-0014-FR-005, KMIPKIT-0014-FR-007, KMIPKIT-0014-FR-012, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021 */
 int32_t kmipkit_client_batch_item_response_create_split_key_unique_identifier_at(kmipkit_client_batch_item_response_t * item, uint64_t index, kmipkit_unique_identifier_v1_t * out_identifier);

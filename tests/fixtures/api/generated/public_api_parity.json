@@ -16647,7 +16647,8 @@
     {
       "c": {
         "documentation": [
-          "Returns Object Type and the original-wire-form Unique Identifier only for successful Create; absent, Pending, and failure results are empty."
+          "Returns Object Type and the original-wire-form Unique Identifier only for successful Create; absent, Pending, and failure results are empty.",
+          "Any text_data pointer in out_unique_identifier is borrowed from the response item handle and remains valid only until kmipkit_client_batch_item_response_release(item); copy the text bytes before releasing item if they must outlive it."
         ],
         "errorCategories": [
           "invalid_input",
@@ -16730,7 +16731,8 @@
     {
       "c": {
         "documentation": [
-          "Returns separate private-key and public-key identifiers in their original wire forms only for successful Create Key Pair."
+          "Returns separate private-key and public-key identifiers in their original wire forms only for successful Create Key Pair.",
+          "Any text_data pointer in either output identifier is borrowed from the response item handle and remains valid only until kmipkit_client_batch_item_response_release(item); copy the text bytes before releasing item if they must outlive it."
         ],
         "errorCategories": [
           "invalid_input",
@@ -16892,7 +16894,8 @@
     {
       "c": {
         "documentation": [
-          "Copies the caller-selected zero-based response identifier without changing its wire form or response order."
+          "Copies the caller-selected zero-based response identifier without changing its wire form or response order.",
+          "Any text_data pointer in out_identifier is borrowed from the response item handle and remains valid only until kmipkit_client_batch_item_response_release(item); copy the text bytes before releasing item if they must outlive it."
         ],
         "errorCategories": [
           "invalid_input",
