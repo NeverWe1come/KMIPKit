@@ -4,6 +4,9 @@
 //! lifecycle, attribute, query, and cryptographic operations. They exercise
 //! selected KMIP 2.1 requests; they are not a full conformance or profile test.
 
+#[path = "cosmian_kms/lifecycle.rs"]
+mod lifecycle;
+
 use std::collections::BTreeSet;
 use std::error::Error;
 use std::path::{Path, PathBuf};
