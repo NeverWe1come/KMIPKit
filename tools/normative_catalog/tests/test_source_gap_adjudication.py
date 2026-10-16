@@ -554,6 +554,233 @@ class SourceGapAdjudicationTests(unittest.TestCase):
                     f"{requirement_id} must not appear in the independent client-profile oracle",
                 )
 
+    def test_t002_source_clause_crosswalk_and_baseline_inclusions_are_exact(self) -> None:
+        catalog = _load_json(CATALOG_PATH)
+        oracle = _load_json(ORACLE_PATH)
+        source_clauses = {row["clause_id"]: row for row in oracle["source_clause_crosswalk"]}
+        oracle_profiles = {row["profile_id"]: row for row in oracle["profiles"]}
+        catalog_profiles = {
+            row["profile_id"]: row
+            for row in catalog["profiles"]
+            if row["role"] == "client"
+        }
+
+        self.assertEqual(oracle["counts"]["profiles"], 18)
+        self.assertEqual(len(oracle_profiles), 18)
+        self.assertEqual(set(catalog_profiles), set(oracle_profiles))
+        for profile_id, expected in oracle_profiles.items():
+            profile = catalog_profiles[profile_id]
+            with self.subTest(profile_id=profile_id):
+                self.assertEqual(
+                    profile["direct_source_clause_ids"],
+                    expected["direct_source_clause_ids"],
+                )
+                self.assertEqual(profile["source_clause_ids"], expected["source_clause_ids"])
+                self.assertEqual(profile["requirement_ids"], expected["requirement_ids"])
+                self.assertTrue(
+                    {
+                        source_clauses[clause_id]["section"]
+                        for clause_id in expected["direct_source_clause_ids"]
+                    }.issubset(set(expected["direct_profiles_sections"])),
+                )
+
+        baseline_id = "KMIPKIT-PROFILE-BASELINE-CLIENT"
+        baseline = oracle_profiles[baseline_id]
+        self.assertEqual(
+            baseline["direct_profiles_sections"],
+            ["3.1", "4.1.2", "5.1.1", "6.1"],
+        )
+        self.assertEqual(len(baseline["source_clause_ids"]), 907)
+        self.assertEqual(
+            {
+                source_id: sum(
+                    source_clauses[clause_id]["source_id"] == source_id
+                    for clause_id in baseline["source_clause_ids"]
+                )
+                for source_id in ("KMIPKIT-SRC-spec", "KMIPKIT-SRC-profiles")
+            },
+            {"KMIPKIT-SRC-spec": 877, "KMIPKIT-SRC-profiles": 30},
+        )
+
+        expected_edges = {
+            "KMIPKIT-INCLUSION-PROF-BASELINE-SPEC": (
+                "KMIPKIT-CLAUSE-PROF-6.1-001",
+                "KMIPKIT-SRC-spec",
+                None,
+            ),
+            "KMIPKIT-INCLUSION-PROF-BASELINE-BASIC-AUTH": (
+                "KMIPKIT-CLAUSE-PROF-6.1-002",
+                "KMIPKIT-SRC-profiles",
+                "3.1",
+            ),
+            "KMIPKIT-INCLUSION-PROF-BASELINE-CONDITIONS": (
+                "KMIPKIT-CLAUSE-PROF-6.1-003",
+                "KMIPKIT-SRC-profiles",
+                "5.1.1",
+            ),
+        }
+        actual_edges = {
+            edge["inclusion_id"]: (
+                edge["source_clause_id"],
+                edge["included_source_id"],
+                edge["included_section"],
+            )
+            for edge in catalog["normative_inclusions"]
+            if edge["inclusion_id"] in expected_edges
+        }
+        self.assertEqual(actual_edges, expected_edges)
+
+    def test_t002_resolves_procedure_context_and_preserves_only_three_ambiguous_gaps(self) -> None:
+        oracle = _load_json(ORACLE_PATH)
+        gaps = {row["gap_id"]: row for row in oracle["source_only_requirement_gaps"]}
+        procedure_ranges = {
+            "KMIPKIT-SOURCE-GAP-SPEC-6.1-PROCEDURE-011": [22429, 22431],
+            "KMIPKIT-SOURCE-GAP-SPEC-6.1-PROCEDURE-012": [22437, 22439],
+            "KMIPKIT-SOURCE-GAP-SPEC-6.1-PROCEDURE-013": [22441, 22443],
+            "KMIPKIT-SOURCE-GAP-SPEC-6.1-PROCEDURE-014": [22449, 22451],
+            "KMIPKIT-SOURCE-GAP-SPEC-6.1-PROCEDURE-015": [22457, 22459],
+            "KMIPKIT-SOURCE-GAP-SPEC-6.1-PROCEDURE-016": [22465, 22467],
+            "KMIPKIT-SOURCE-GAP-SPEC-6.1-PROCEDURE-017": [22469, 22471],
+            "KMIPKIT-SOURCE-GAP-SPEC-6.1-PROCEDURE-018": [22473, 22475],
+            "KMIPKIT-SOURCE-GAP-SPEC-6.1-PROCEDURE-019": [22485, 22488],
+            "KMIPKIT-SOURCE-GAP-SPEC-6.1-PROCEDURE-020": [22494, 22496],
+        }
+        for gap_id, line_range in procedure_ranges.items():
+            gap = gaps[gap_id]
+            with self.subTest(gap_id=gap_id):
+                self.assertEqual(gap["html_line_range"], line_range)
+                self.assertEqual(gap["source_force"], "imperative_procedure_without_formal_modal")
+                self.assertEqual(gap["actor"], "client")
+                self.assertEqual(
+                    gap["direction"],
+                    "client multi-part/single-part request and response processing",
+                )
+                self.assertEqual(gap["scope_disposition"], "client_1_0")
+                self.assertEqual(gap["status"], "reviewed_procedure_context")
+                self.assertIsNone(gap["candidate_requirement_id"])
+                self.assertIsNone(gap["proposed_requirement_id"])
+
+        ambiguous_gap_details = {
+            "KMIPKIT-SOURCE-GAP-SPEC-6.1-MULTIPART-OPTIONAL-PREFACE": (
+                [22417, 22420],
+                "force_and_actor_unresolved",
+            ),
+            "KMIPKIT-SOURCE-GAP-SPEC-6.1-PARAGRAPH-009": (
+                [22498, 22499],
+                "unresolved_source_interpretation",
+            ),
+            "KMIPKIT-SOURCE-GAP-SPEC-9.17-001": (
+                [45156, 45158],
+                "scope_unresolved",
+            ),
+        }
+        unresolved_ids = {
+            gap_id
+            for gap_id, gap in gaps.items()
+            if gap["scope_disposition"] == "unresolved"
+        }
+        self.assertEqual(unresolved_ids, set(ambiguous_gap_details))
+        for gap_id, (line_range, status) in ambiguous_gap_details.items():
+            gap = gaps[gap_id]
+            with self.subTest(gap_id=gap_id):
+                self.assertEqual(gap["html_line_range"], line_range)
+                self.assertEqual(gap["scope_disposition"], "unresolved")
+                self.assertEqual(gap["status"], status)
+                self.assertIsNone(gap["candidate_requirement_id"])
+                self.assertIsNone(gap["proposed_requirement_id"])
+
+        outside_scope_ids = {
+            "KMIPKIT-SOURCE-GAP-PROF-3.1.1-4009",
+            "KMIPKIT-SOURCE-GAP-PROF-3.1.1-4023",
+            "KMIPKIT-SOURCE-GAP-PROF-3.1.2-4060",
+            "KMIPKIT-SOURCE-GAP-PROF-3.1.2-4076",
+            "KMIPKIT-SOURCE-GAP-PROF-3.1.2-4089",
+            "KMIPKIT-SOURCE-GAP-PROF-3.1.3-4196",
+            "KMIPKIT-SOURCE-GAP-PROF-3.1.3-4200",
+            "KMIPKIT-SOURCE-GAP-PROF-3.1.3-4204",
+            "KMIPKIT-SOURCE-GAP-PROF-3.1.4-4217",
+            "KMIPKIT-SOURCE-GAP-PROF-3.2.4-4260",
+            "KMIPKIT-SOURCE-GAP-PROF-5.3.1-5139",
+            "KMIPKIT-SOURCE-GAP-PROF-5.3.1-5141",
+            "KMIPKIT-SOURCE-GAP-PROF-5.3.1-5149",
+            "KMIPKIT-SOURCE-GAP-PROF-5.4.2-5980",
+            "KMIPKIT-SOURCE-GAP-PROF-5.5.2-6613",
+            "KMIPKIT-SOURCE-GAP-PROF-5.12.3-8658",
+            "KMIPKIT-SOURCE-GAP-PROF-5.18.3-10411",
+            "KMIPKIT-SOURCE-GAP-PROF-6.6-10708",
+            "KMIPKIT-SOURCE-GAP-PROF-6.8-10746",
+            "KMIPKIT-SOURCE-GAP-SPEC-8.4-002",
+            "KMIPKIT-SOURCE-GAP-SPEC-8.5-002",
+            "KMIPKIT-SOURCE-GAP-SPEC-8.6-002",
+            "KMIPKIT-SOURCE-GAP-SPEC-8.6-003",
+            "KMIPKIT-SOURCE-GAP-SPEC-8.6-004",
+            "KMIPKIT-SOURCE-GAP-SPEC-8.6-005",
+            "KMIPKIT-SOURCE-GAP-SPEC-4.28-001-SERVER-NONMUTATION",
+            "KMIPKIT-SOURCE-GAP-SPEC-6.1.42-RECOVER-AUTHENTICATION-SHOULD-ACTOR-UNRESOLVED",
+            "KMIPKIT-SOURCE-GAP-SPEC-6.1.54-ENDPOINT-ROLE-REQUIRED",
+        }
+        actual_outside_scope_ids = {
+            gap_id
+            for gap_id, gap in gaps.items()
+            if gap["scope_disposition"]
+            in {"server_only", "out_of_scope", "mixed_server_and_out_of_scope", "client_1_1"}
+        }
+        self.assertEqual(actual_outside_scope_ids, outside_scope_ids)
+
+    def test_t002_maps_all_requirements_without_clause_ids_to_exact_table_rows(self) -> None:
+        catalog = _load_json(CATALOG_PATH)
+        oracle = _load_json(ORACLE_PATH)
+        requirements = [row for row in catalog["requirements"] if not row["source_clause_ids"]]
+        gaps = {row["gap_id"]: row for row in oracle["source_only_requirement_gaps"]}
+        contracts = {row["gap_id"]: row for row in oracle["source_table_contracts"]}
+        profile_requirements = {
+            row["profile_id"]: set(row["requirement_ids"])
+            for row in catalog["profiles"]
+            if row["role"] == "client"
+        }
+
+        self.assertEqual(len(requirements), 57)
+        self.assertEqual(
+            {state: sum(row["scope_state"] == state for row in requirements)
+             for state in ("client_1_0", "profile_conditional")},
+            {"client_1_0": 27, "profile_conditional": 30},
+        )
+        self.assertEqual(
+            {status: sum(row["status"] == status for row in requirements)
+             for status in ("verified", "scoped_verified", "unassigned")},
+            {"verified": 24, "scoped_verified": 6, "unassigned": 27},
+        )
+
+        for requirement in requirements:
+            requirement_id = requirement["requirement_id"]
+            gap_id = requirement["source_gap_id"]
+            source_rows = [row for row in (gaps.get(gap_id), contracts.get(gap_id)) if row is not None]
+            with self.subTest(requirement_id=requirement_id):
+                self.assertEqual(len(source_rows), 1)
+                source_row = source_rows[0]
+                self.assertEqual(source_row["source_id"], "KMIPKIT-SRC-spec")
+                self.assertIn({
+                    "source_id": "KMIPKIT-SRC-spec",
+                    "section": source_row["source_section"],
+                }, requirement["source_refs"])
+                self.assertEqual(requirement["source_locator"], source_row["source_locator"])
+                self.assertEqual(requirement["source_locator"]["kind"], "table_body_row")
+                self.assertEqual(requirement["source_clause_ids"], [])
+                if requirement["scope_state"] == "client_1_0":
+                    self.assertTrue(all(requirement_id in ids for ids in profile_requirements.values()))
+                else:
+                    self.assertTrue(all(requirement_id not in ids for ids in profile_requirements.values()))
+
+        table_232_id = "KMIPKIT-REQ-SPEC-6.1.23-002-001"
+        table_232_contract = contracts["KMIPKIT-SOURCE-GAP-SPEC-6.1.23-USAGE-LIMITS-COUNT-REQUIRED"]
+        self.assertNotIn(table_232_contract["gap_id"], gaps)
+        self.assertEqual(table_232_contract["table_number"], 232)
+        self.assertEqual(table_232_contract["source_locator"]["row_label"], "Usage Limits Count")
+        self.assertEqual(
+            next(row for row in requirements if row["requirement_id"] == table_232_id)["source_locator"],
+            table_232_contract["source_locator"],
+        )
+
 
 if __name__ == "__main__":
     unittest.main()
