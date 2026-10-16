@@ -80,7 +80,7 @@ T024 implementation checkpoint: the Python client facade exposes the shared clie
 
 **Purpose**: Bind only operations whose owner specification is marked Approved/Accepted in the active release line and whose canonical Rust implementation exists.
 
-- [ ] T031 [US2] Add C, Java, and Python mappings plus parity fixtures for Discover Versions from approved `specs/007-client-execution/spec.md`; cite §6.1.16.
+- [X] T031 [US2] Add C, Java, and Python mappings plus parity fixtures for Discover Versions from approved `specs/007-client-execution/spec.md`; cite §6.1.16. The typed response preserves source order and repeated versions, distinguishes a successful empty list from absence, Pending, and failure, and does not perform implicit discovery. C exposes a bounded two-call copy API; Java and Python use the already-decoded response and respect caller-configured codec limits. OASIS §6.1.16 Tables 211–213 and KMIPKIT-REQ-SPEC-6.1.16-001-001/-001-002/-004 remain linked in the operation row and fixture. See the T031 Red/Green/Refactor evidence in `implementation-evidence.md`.
 - [ ] T032 [US2] Add mappings and parity fixtures for Create, Create Key Pair, and Create Split Key from accepted `specs/014-server-generated-creation/spec.md`; cite §§6.1.8–6.1.10.
 - [ ] T033 [US2] Add mappings and parity fixtures for Hash, MAC, MAC Verify, Sign, and Signature Verify from approved `specs/021-hash-mac-signature-operations/spec.md`; cite §§6.1.24, 6.1.32–6.1.33, and 6.1.55–6.1.56.
 - [ ] T034 [US2] For T031–T033, use strict Red/Green/Refactor TDD with separate development commits for each phase; update manifest declarations and stable traceability, and preserve ABI compatibility and each owner specification's semantics.

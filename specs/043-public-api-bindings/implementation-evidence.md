@@ -1846,3 +1846,30 @@ the fixture points to `crates/kmipkit/tests/api_levels.rs`.
 
 The corrected fixture and guard require a fresh full CI run before the PR can
 leave draft status.
+
+## T031 — Discover Versions response mapping
+
+The four-language mapping now exposes the successful Discover Versions
+`ProtocolVersion` list from the existing batch result. The API preserves order
+and repeated entries, distinguishes a successful empty list from absent data
+on Pending or failed items, and does not issue an implicit follow-up request.
+The operation row and shared fixture cite OASIS KMIP 2.1 §6.1.16, Tables
+211–213, and the approved owner requirements
+`KMIPKIT-REQ-SPEC-6.1.16-001-001`, `-001-002`, and `-004`.
+
+| Phase | Commit | Verification | Result |
+|---|---|---|---|
+| Red | `a606da8c`, `95288e15` | Rust client response tests and cross-language API mapping tests | Expected failures for the missing typed response mapping and parity fixture. |
+| Red | `e50303ad`, `1d686a22` | Python count-boundary test; `mvn --batch-mode --file bindings/java/pom.xml -Dtest=ClientFacadeTlsIntegrationTest#discoverVersionsResponseCanExceedTheDefaultElementLimitWhenConfigured test` | Expected failure: adapters rejected a valid list of 100,001 versions even when the caller raised the TTLV element limit. |
+| Green | `acee5404`, `20b20f91` | `cargo test -p kmipkit-client --lib discover_versions`; compiled C ABI consumer; Java TLS integration and shared parity tests; Python client, parity, binding-export, and bilingual-doc tests | PASS: typed response and all adapter mappings preserve empty/absent distinctions; Java accepted 100,001 versions over a TLS 1.3 mTLS peer with a raised codec limit; Python accepted the same count at the CFFI boundary. |
+| Refactor | this evidence commit | `cargo fmt --all --check`; `git diff --check`; `python tools/api_manifest/generate.py --check`; `python tools/api_manifest/audit_binding_exports.py --check` | PASS: formatting clean, generated output current, and binding exports reconciled without gaps. |
+
+The Java JNI adapter bounds its flattened `long[]` by the JVM `jsize`
+representation, and Python checks the CFFI allocation representation; neither
+adds a smaller undocumented 100,000-version ceiling than the configured TTLV
+decoder. The full `tools/api_manifest/tests` run still reports eight failures
+that reproduce at the pre-T031 PR head `a6696836`; these concern existing
+inventory snapshots, C declaration classification, and a T076 Rust mapping.
+T031-specific parity, documentation, and exclusion regressions pass at the
+current head. The PR's required CI checks must still run against the pushed
+final head.
