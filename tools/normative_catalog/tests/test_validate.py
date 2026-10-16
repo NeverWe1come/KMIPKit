@@ -4389,16 +4389,32 @@ class CatalogValidationTests(unittest.TestCase):
     def test_result_response_source_clauses_have_server_to_client_direction(self) -> None:
         catalog = json.loads((ROOT / "specification/catalog/kmip-2.1.json").read_text(encoding="utf-8"))
         clauses = {row["clause_id"]: row for row in catalog["source_clauses"]}
-        expected_clause_ids = {
-            "KMIPKIT-CLAUSE-SPEC-9.17-001",
-            "KMIPKIT-CLAUSE-SPEC-9.18-001",
-            "KMIPKIT-CLAUSE-SPEC-9.19-001",
+        expected_clause_directions = {
+            "KMIPKIT-CLAUSE-SPEC-9.17-001": "unclear",
+            "KMIPKIT-CLAUSE-SPEC-9.18-001": "server_to_client",
+            "KMIPKIT-CLAUSE-SPEC-9.19-001": "server_to_client",
         }
 
-        self.assertTrue(expected_clause_ids.issubset(clauses))
-        for clause_id in expected_clause_ids:
+        self.assertTrue(set(expected_clause_directions).issubset(clauses))
+        for clause_id, expected_direction in expected_clause_directions.items():
             with self.subTest(clause_id=clause_id):
-                self.assertEqual(clauses[clause_id]["direction"], "server_to_client")
+                self.assertEqual(clauses[clause_id]["direction"], expected_direction)
+
+    def test_result_message_mixed_scope_has_open_evidence_gap_record(self) -> None:
+        catalog = json.loads((ROOT / "specification/catalog/kmip-2.1.json").read_text(encoding="utf-8"))
+        discrepancy_id = "KMIPKIT-DISC-053"
+        discrepancy = next(
+            (row for row in catalog["discrepancies"] if row["discrepancy_id"] == discrepancy_id),
+            None,
+        )
+
+        self.assertIsNotNone(discrepancy, f"mixed §9.17 source scope requires {discrepancy_id}")
+        self.assertEqual(discrepancy["source_refs"], [{"source_id": "KMIPKIT-SRC-spec", "section": "9.17"}])
+        self.assertEqual(discrepancy["normative_status"], "evidence_gap")
+        self.assertEqual(discrepancy["affected_requirement_ids"], [])
+        self.assertEqual(discrepancy["affected_element_ids"], ["KMIPKIT-ELEM-MESSAGE-FIELD-9-17-RESULT-MESSAGE"])
+        self.assertEqual(discrepancy["state"], "open")
+        self.assertIsNone(discrepancy["decision_id"])
 
     def test_rejects_source_checksum_mismatch(self) -> None:
         document = minimal_catalog()
