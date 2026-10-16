@@ -127,9 +127,16 @@ class ProfileSectionsSevenThroughElevenReviewContractTests(unittest.TestCase):
         self.assertEqual(error_gap["scope_disposition"], "unresolved")
         self.assertIsNone(error_gap["candidate_requirement_id"])
         self.assertIsNone(error_gap["proposed_requirement_id"])
-        for clause_id in ("KMIPKIT-CLAUSE-SPEC-8.4-002", "KMIPKIT-CLAUSE-SPEC-9.17-001"):
-            with self.subTest(clause_id=clause_id):
-                self.assertEqual(self.clauses[clause_id]["direction"], "server_to_client")
+        response_clause = self.clauses["KMIPKIT-CLAUSE-SPEC-8.4-002"]
+        self.assertEqual(response_clause["direction"], "server_to_client")
+
+        error_clause = self.clauses["KMIPKIT-CLAUSE-SPEC-9.17-001"]
+        self.assertEqual(error_clause["disposition"], "source_discrepancy")
+        self.assertEqual(error_clause["scope_state"], "mixed")
+        self.assertEqual(error_clause["role"], "unclear")
+        self.assertEqual(error_clause["direction"], "unclear")
+        self.assertEqual(error_clause["requirement_ids"], [])
+        self.assertIn("without choosing an actor", error_clause["exclusion_rationale"])
 
         response_review = self.reviews["KMIPKIT-CLAUSE-SPEC-8.4-002"]
         self.assert_server_response_classification(
