@@ -26,6 +26,68 @@ NORMATIVE_REQUIREMENTS = {
     "KMIPKIT-REQ-SPEC-6.1.56-001-001",
     "KMIPKIT-REQ-SPEC-6.1.56-002",
 }
+PUBLIC_FUNCTIONS = {
+    "client_batch_item_hash": (
+        "kmipkit_client_batch_item_hash",
+        "ClientBatchItem",
+        "hash",
+        "kmipkit.extensions.client_batch_item_hash",
+    ),
+    "client_batch_item_mac": (
+        "kmipkit_client_batch_item_mac",
+        "ClientBatchItem",
+        "mac",
+        "kmipkit.extensions.client_batch_item_mac",
+    ),
+    "client_batch_item_mac_verify": (
+        "kmipkit_client_batch_item_mac_verify",
+        "ClientBatchItem",
+        "macVerify",
+        "kmipkit.extensions.client_batch_item_mac_verify",
+    ),
+    "client_batch_item_sign": (
+        "kmipkit_client_batch_item_sign",
+        "ClientBatchItem",
+        "sign",
+        "kmipkit.extensions.client_batch_item_sign",
+    ),
+    "client_batch_item_signature_verify": (
+        "kmipkit_client_batch_item_signature_verify",
+        "ClientBatchItem",
+        "signatureVerify",
+        "kmipkit.extensions.client_batch_item_signature_verify",
+    ),
+    "client_batch_item_response_hash": (
+        "kmipkit_client_batch_item_response_hash",
+        "ClientBatchItemResult",
+        "hashResponse",
+        "kmipkit.client.BatchItemResult.hash_response",
+    ),
+    "client_batch_item_response_mac": (
+        "kmipkit_client_batch_item_response_mac",
+        "ClientBatchItemResult",
+        "macResponse",
+        "kmipkit.client.BatchItemResult.mac_response",
+    ),
+    "client_batch_item_response_mac_verify": (
+        "kmipkit_client_batch_item_response_mac_verify",
+        "ClientBatchItemResult",
+        "macVerifyResponse",
+        "kmipkit.client.BatchItemResult.mac_verify_response",
+    ),
+    "client_batch_item_response_sign": (
+        "kmipkit_client_batch_item_response_sign",
+        "ClientBatchItemResult",
+        "signResponse",
+        "kmipkit.client.BatchItemResult.sign_response",
+    ),
+    "client_batch_item_response_signature_verify": (
+        "kmipkit_client_batch_item_response_signature_verify",
+        "ClientBatchItemResult",
+        "signatureVerifyResponse",
+        "kmipkit.client.BatchItemResult.signature_verify_response",
+    ),
+}
 
 
 class HashMacSignatureParityManifestTests(unittest.TestCase):
@@ -96,6 +158,23 @@ class HashMacSignatureParityManifestTests(unittest.TestCase):
             with self.subTest(operation=operation_id):
                 self.assertEqual("declared", generated_operations[operation_id]["apiState"])
                 self.assertEqual(LANGUAGES, set(generated_operations[operation_id]["declarations"]))
+
+    def test_generated_parity_inventory_contains_t033_request_and_response_functions(self) -> None:
+        generated = json.loads(GENERATED_PARITY.read_text(encoding="utf-8"))
+        generated_functions = {
+            row["id"]: row
+            for row in generated["functions"]
+            if row["id"] in PUBLIC_FUNCTIONS
+        }
+
+        self.assertEqual(set(PUBLIC_FUNCTIONS), set(generated_functions))
+        for function_id, (c_symbol, java_class, java_method, python_name) in PUBLIC_FUNCTIONS.items():
+            with self.subTest(function=function_id):
+                row = generated_functions[function_id]
+                self.assertEqual(c_symbol, row["c"]["symbol"])
+                self.assertEqual(java_class, row["java"]["class"])
+                self.assertEqual(java_method, row["java"]["method"])
+                self.assertEqual(python_name, row["python"]["function"])
 
 
 if __name__ == "__main__":
