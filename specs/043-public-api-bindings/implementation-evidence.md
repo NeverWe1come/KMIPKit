@@ -2170,3 +2170,46 @@ per-operation tests without changing its assertions. `cargo fmt --all --check`,
 consumer tests), and `cargo clippy --workspace --all-targets --all-features
 --locked -- -D warnings` now pass locally. The refreshed CI run is pending on
 the follow-up commit.
+
+## T043 — Certify four-language mapping
+
+The approved owner contract for KMIP v2.1 §6.1.6 is `KMIPKIT-0036`, recorded
+in `specs/022-object-lifecycle/spec.md`. The binding adds Certify construction
+and response projection to C, Java/JNI, and Python/CFFI over the canonical Rust
+request and response. The mappings preserve an open 32-bit
+Certificate Request Type, opaque sensitive request bytes, optional request
+structures, response Unique Identifier, absent-versus-present response state,
+and redacted diagnostics. The manifest inventories each language declaration
+and currently keeps the operation in `declared` state pending final CI evidence.
+The owner traceability IDs are `KMIPKIT-REQ-SPEC-6.1.6-001`,
+`KMIPKIT-REQ-SPEC-6.1.6-002-001`, `KMIPKIT-REQ-SPEC-6.1.6-002-002`,
+`KMIPKIT-REQ-SPEC-6.1.6-002-003`, `KMIPKIT-REQ-SPEC-6.1.6-003`, and
+`KMIPKIT-REQ-SPEC-6.1.6-007`; they cite OASIS KMIP 2.1 §6.1.6 and are tested
+in the canonical Rust protocol/client implementation.
+
+| Phase | Commits | Verification | Result |
+|---|---|---|---|
+| Red | `a43fb7f0`, `7c019a86`, `716fa6f4`, `e6589271`, `4ed38672` | Rust/C, Java, Python, and manifest parity tests | Tests specified the request, response, ownership, inventory, and export requirements before implementation. |
+| Green | `0a1c0b88` | FFI unit and compiled C ABI consumer tests; Java/JNI tests; Python suite; generated manifest and platform CI | PASS locally: FFI tests and C consumer tests passed; Java had 184 tests with 3 documented skips; Python had 297 passing tests. The cross-platform run passed C consumers on Linux, macOS, and Windows; Java/JNI integration on all three; Python bindings on all three; Java and Python coverage; documentation traceability; and normative inventory. |
+| Refactor | `34e7be4e` | `cargo fmt --all --check`; full workspace Clippy; `cargo test -p kmipkit-ffi --all-features --locked`; focused Certify Python tests | PASS locally: Clippy and formatting pass, FFI reports 84 unit tests and 4 C ABI consumer tests passing, and the Certify Python tests report 5 passing. The response getter assertions were split into per-operation tests, and the Python span assertion now copies its bytes while the CFFI owner is alive. |
+
+The independent security review reported no product findings. It identified a
+test-only lifetime error in the Python request-span assertion; commit
+`34e7be4e` corrects the assertion to copy bytes synchronously inside the mocked
+ABI call. CI run `38890181494` failed only the Rust Clippy jobs because the
+combined FFI test exceeded `clippy::too_many_lines`; commit `34e7be4e` split the
+test and passes the local Clippy check. Follow-up CI run `38890878860` completed
+with all jobs passing except `Coverage gate / selected scopes`: changed
+production coverage measured 3,961/4,373 lines (90.6 percent), below the
+95-percent requirement. The failed run therefore does not verify T043 or the
+manifest operation state.
+
+Test-only Green commit `d079de8f` adds malformed native-response cases for the
+Java mapping, null-handle JNI checks for all five cryptographic response
+getters, omitted and malformed optional-output cases for the Python response
+parsers, and wrong-kind/invalid-index cases for the Rust FFI getters. Local
+focused checks pass: Java boundary and response-mapping tests (9 tests), Python
+crypto-operation tests (21 tests), the focused Rust FFI invalid-handle test,
+workspace Clippy, and formatting. A new cross-platform coverage run has not yet
+measured this commit. Keep T043 and the manifest operation state open until the
+coverage threshold and remaining required checks pass.
