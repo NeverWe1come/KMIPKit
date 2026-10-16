@@ -70,6 +70,16 @@ _JAVA_METADATA_ONLY_SOURCE_EXCLUSIONS = frozenset(
     }
 )
 
+# Maturin generates these CFFI bridge wrappers at install time. Python coverage
+# explicitly omits them in bindings/python/pyproject.toml because they are not
+# maintained source; their native behavior is exercised by the binding tests.
+_PYTHON_GENERATED_SOURCE_EXCLUSIONS = frozenset(
+    {
+        "bindings/python/src/kmipkit/_native_ffi/__init__.py",
+        "bindings/python/src/kmipkit/_native_ffi/ffi.py",
+    }
+)
+
 
 def _mask_rust_non_code(source: str) -> str:
     """Replace comments and literals with spaces while preserving newlines."""
@@ -227,7 +237,7 @@ def _is_rust_source_tree_path(path: str | Path) -> bool:
 def is_coverage_source_path(path: str | Path) -> bool:
     """Return whether a relative path names an audited production source file."""
     normalized = str(path).replace("\\", "/").lstrip("./")
-    if normalized in _JAVA_METADATA_ONLY_SOURCE_EXCLUSIONS:
+    if normalized in _JAVA_METADATA_ONLY_SOURCE_EXCLUSIONS | _PYTHON_GENERATED_SOURCE_EXCLUSIONS:
         return False
     if _is_rust_source_tree_path(normalized):
         return True
