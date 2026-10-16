@@ -340,7 +340,7 @@ fn failed_cryptographic_item(
 }
 
 #[test]
-fn ffi_cryptographic_response_getters_do_not_report_failed_payloads_as_present() {
+fn ffi_hash_response_getters_do_not_report_failed_payloads_as_present() {
     let mut hash_parameters = Structure::new();
     hash_parameters
         .try_push(
@@ -385,7 +385,10 @@ fn ffi_cryptographic_response_getters_do_not_report_failed_payloads_as_present()
     );
     assert_eq!((present, data_present, correlation_present), (0, 0, 0));
     kmipkit_client_batch_item_response_release(hash);
+}
 
+#[test]
+fn ffi_mac_response_getters_do_not_report_failed_payloads_as_present() {
     let mac = failed_cryptographic_item(
         ClientRequest::Mac(MacRequest::new().with_data(OperationData::ByteString(
             SecretBytes::new(b"failure-test-data".to_vec()),
@@ -419,7 +422,10 @@ fn ffi_cryptographic_response_getters_do_not_report_failed_payloads_as_present()
     );
     assert_eq!((present, data_present, correlation_present), (0, 0, 0));
     kmipkit_client_batch_item_response_release(mac);
+}
 
+#[test]
+fn ffi_mac_verify_response_getters_do_not_report_failed_payloads_as_present() {
     let mac_verify = failed_cryptographic_item(
         ClientRequest::MacVerify(
             MacVerifyRequest::new().with_mac_data(SecretBytes::new(b"failure-test-mac".to_vec())),
@@ -453,7 +459,10 @@ fn ffi_cryptographic_response_getters_do_not_report_failed_payloads_as_present()
         (0, 0, 0, 0)
     );
     kmipkit_client_batch_item_response_release(mac_verify);
+}
 
+#[test]
+fn ffi_sign_response_getters_do_not_report_failed_payloads_as_present() {
     let sign = failed_cryptographic_item(
         ClientRequest::Sign(SignRequest::new().with_data(OperationData::ByteString(
             SecretBytes::new(b"failure-test-data".to_vec()),
@@ -487,7 +496,10 @@ fn ffi_cryptographic_response_getters_do_not_report_failed_payloads_as_present()
     );
     assert_eq!((present, data_present, correlation_present), (0, 0, 0));
     kmipkit_client_batch_item_response_release(sign);
+}
 
+#[test]
+fn ffi_signature_verify_response_getters_do_not_report_failed_payloads_as_present() {
     let signature_verify = failed_cryptographic_item(
         ClientRequest::SignatureVerify(
             SignatureVerifyRequest::new()
