@@ -2288,6 +2288,7 @@ slots are cleared before option validation.
 | Red | `mvn -q '-Dtest=ClientFacadeTlsIntegrationTest#typedResponseShapeFailureRetainsGenericTtlvForDefaultAndOptionsExecution' test` | One TLS integration test reached the typed protocol exception, then errored with `NoSuchMethodException: org.kmipkit.ProtocolException.responseTtlv()`; response retention is not exposed by the Java facade. |
 | Red | `bindings/python/.venv/Scripts/python.exe -m pytest -q --tb=short bindings/python/tests/test_client.py::test_client_execution_error_retains_owned_generic_response_without_disclosing_it` | One test failed at `ClientExecutionError(..., response_ttlv=...)` because the exception constructor does not accept or retain the optional owned structure. |
 | Red | `cargo test -p kmipkit-ffi --all-features ffi_execute_with_options_and_error_ttlv_clears_outputs_before_options_validation` | Compilation failed with E0425 because the options-enabled error-TTLV ABI function is not implemented. |
+| Red refinement | `bindings/python/.venv/Scripts/python.exe -m unittest tools.api_manifest.tests.test_generate.ManifestGeneratorCliTests.test_t081_public_c_header_exposes_retained_generic_response_access -v` | Expected failure: 19 subcases show the generated public C header lacks the response TTLV view/accessor functions and the `TtlvItemView`/`TtlvValueView` handles needed to inspect the returned structure. |
 
 The compiled C consumer now includes a caller for the new versioned symbol; its
 link/build verification remains pending with the Green implementation. No

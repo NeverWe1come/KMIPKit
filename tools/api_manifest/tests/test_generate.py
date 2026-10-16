@@ -305,6 +305,50 @@ class ManifestGeneratorCliTests(unittest.TestCase):
         self.assertIn("typedef struct kmipkit_client_t kmipkit_client_t;", public_header)
         self.assertIn("kmipkit_transport_config_create_v1(", public_header)
 
+    def test_t081_public_c_header_exposes_retained_generic_response_access(self) -> None:
+        manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
+        outputs = generate.render_outputs(manifest)
+        public_header = outputs["bindings/c/include/kmipkit.h"].decode("utf-8")
+
+        required_symbols = {
+            "kmipkit_client_execute_with_error_ttlv_v1",
+            "kmipkit_ttlv_structure_view",
+            "kmipkit_ttlv_structure_view_item_count",
+            "kmipkit_ttlv_structure_view_item_at",
+            "kmipkit_ttlv_item_view_tag",
+            "kmipkit_ttlv_item_view_type",
+            "kmipkit_ttlv_item_view_value",
+            "kmipkit_ttlv_value_view_type",
+            "kmipkit_ttlv_value_view_structure",
+            "kmipkit_ttlv_value_view_boolean",
+            "kmipkit_ttlv_value_view_integer",
+            "kmipkit_ttlv_value_view_long_integer",
+            "kmipkit_ttlv_value_view_enumeration",
+            "kmipkit_ttlv_value_view_date_time",
+            "kmipkit_ttlv_value_view_interval",
+            "kmipkit_ttlv_value_view_date_time_extended",
+            "kmipkit_ttlv_value_view_byte_length",
+            "kmipkit_ttlv_value_view_byte_at",
+        }
+        for symbol in required_symbols:
+            with self.subTest(symbol=symbol):
+                self.assertTrue(
+                    f"{symbol}(" in public_header,
+                    f"generated public C header is missing {symbol}",
+                )
+
+        for handle_type in (
+            "kmipkit_ttlv_structure_t",
+            "kmipkit_ttlv_structure_view_t",
+            "kmipkit_ttlv_item_view_t",
+            "kmipkit_ttlv_value_view_t",
+        ):
+            with self.subTest(handle_type=handle_type):
+                self.assertTrue(
+                    f"typedef struct {handle_type} {handle_type};" in public_header,
+                    f"generated public C header is missing {handle_type}",
+                )
+
     def test_t076_batch_metadata_carrier_is_not_approved_or_public(self) -> None:
         manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
         outputs = generate.render_outputs(manifest)
