@@ -954,6 +954,55 @@ def test_successful_batch_item_maps_only_its_typed_operation_response(
     response.close()
 
 
+def test_successful_mac_batch_item_maps_an_absent_optional_identifier(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    response_pointer, _response_storage = _opaque_client_handle(
+        "kmipkit_client_batch_response_t"
+    )
+    item_pointer, _item_storage = _opaque_client_handle(
+        "kmipkit_client_batch_item_response_t"
+    )
+    owners: list[object] = []
+    getter_calls: list[str] = []
+    fake = _common_result_symbols(
+        item_pointer,
+        operation=0x23,
+        outcome=int(client.BatchOutcome.COMPLETED),
+        status=0,
+        owners=owners,
+    )
+    fake.update(_operation_getter_symbols(owners, getter_calls))
+
+    def mac_response_without_identifier(
+        _item: object,
+        present: object,
+        _identifier: object,
+        mac_present: object,
+        mac_span: object,
+        correlation_present: object,
+        correlation_span: object,
+    ) -> int:
+        getter_calls.append("mac")
+        present[0] = 1  # type: ignore[index]
+        _set_output_span(mac_present, mac_span, b"mac-output-marker", owners)
+        _set_output_span(correlation_present, correlation_span, b"mac-correlation", owners)
+        return 0
+
+    fake["kmipkit_client_batch_item_response_mac"] = mac_response_without_identifier
+    monkeypatch.setattr(client, "lib", SimpleNamespace(**fake))
+
+    response = client._batch_result(response_pointer)
+    item = response.items[0]
+
+    assert getter_calls == ["mac"]
+    assert item.mac_response is not None
+    assert item.mac_response.unique_identifier is None
+    assert item.mac_response.mac_data == b"mac-output-marker"
+    assert item.mac_response.correlation_value == b"mac-correlation"
+    response.close()
+
+
 @pytest.mark.parametrize(
     ("outcome", "status"),
     ((client.BatchOutcome.PENDING, 0), (client.BatchOutcome.COMPLETED, 1)),

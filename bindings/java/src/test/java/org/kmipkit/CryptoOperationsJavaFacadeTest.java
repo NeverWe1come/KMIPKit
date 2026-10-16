@@ -287,6 +287,11 @@ final class CryptoOperationsJavaFacadeTest {
     }
 
     private static void assertSuccessfulOutput(Operation operation, Object response) throws Exception {
+        assertSuccessfulOutput(operation, response, true);
+    }
+
+    private static void assertSuccessfulOutput(
+            Operation operation, Object response, boolean validityIndicatorPresent) throws Exception {
         assertFalse(response.toString().contains(new String(SECRET_MARKER, StandardCharsets.UTF_8)),
                 operation.name() + " response display must redact output bytes");
         if (!operation.name().equals("hash")) {
@@ -307,10 +312,10 @@ final class CryptoOperationsJavaFacadeTest {
                 assertCopiedResponseBytes(response, "correlationValue", new byte[] {0x01, 0x00, (byte) 0xfd});
             }
             case "mac" -> assertCopiedResponseBytes(response, "macData", SECRET_MARKER);
-            case "macVerify" -> assertUnknownValidityIndicator(response);
+            case "macVerify" -> assertValidityIndicatorPresence(response, validityIndicatorPresent);
             case "sign" -> assertCopiedResponseBytes(response, "signatureData", SECRET_MARKER);
             case "signatureVerify" -> {
-                assertUnknownValidityIndicator(response);
+                assertValidityIndicatorPresence(response, validityIndicatorPresent);
                 assertCopiedResponseBytes(response, "recoveredData", SECRET_MARKER);
             }
             default -> throw new AssertionError("unknown crypto response");
@@ -344,6 +349,23 @@ final class CryptoOperationsJavaFacadeTest {
         assertEquals(0xffff_fffeL, unsigned, "unknown Validity Indicator must remain a raw unsigned value");
     }
 
+    private static void assertValidityIndicatorPresence(Object response, boolean expectedPresent) throws Exception {
+        if (expectedPresent) {
+            assertUnknownValidityIndicator(response);
+            return;
+        }
+        Object raw = publicMethod(response.getClass(), "validityIndicatorRaw").invoke(response);
+        if (raw instanceof Optional<?> optional) {
+            assertTrue(optional.isEmpty(), "final multipart response may omit the Validity Indicator");
+        } else if (raw instanceof OptionalInt optional) {
+            assertTrue(optional.isEmpty(), "final multipart response may omit the Validity Indicator");
+        } else if (raw instanceof OptionalLong optional) {
+            assertTrue(optional.isEmpty(), "final multipart response may omit the Validity Indicator");
+        } else {
+            fail("Validity Indicator accessor must preserve optionality");
+        }
+    }
+
     private byte[] mixedOperationResponseMessage() throws Exception {
         byte[] version = ttlvStructure(0x420069,
                 ttlvItem(0x42006a, 2, ttlvInteger(2)),
@@ -374,6 +396,10 @@ final class CryptoOperationsJavaFacadeTest {
     }
 
     private byte[] successResponse(Operation operation, int index) throws Exception {
+        return successResponse(operation, index, true);
+    }
+
+    private byte[] successResponse(Operation operation, int index, boolean includeValidityIndicator) throws Exception {
         List<byte[]> fields = new ArrayList<>();
         if (!operation.name().equals("hash")) {
             fields.add(ttlvItem(0x420094, 7, "response-id-secret".getBytes(StandardCharsets.UTF_8)));
@@ -384,10 +410,12 @@ final class CryptoOperationsJavaFacadeTest {
                 fields.add(ttlvItem(0x4200d6, 8, new byte[] {0x01, 0x00, (byte) 0xfd}));
             }
             case "mac" -> fields.add(ttlvItem(0x4200c4, 8, SECRET_MARKER));
-            case "macVerify" -> fields.add(ttlvEnumeration(0x420128, 0xffff_fffe));
+            case "macVerify" -> {
+                if (includeValidityIndicator) fields.add(ttlvEnumeration(0x420128, 0xffff_fffe));
+            }
             case "sign" -> fields.add(ttlvItem(0x4200c7, 8, SECRET_MARKER));
             case "signatureVerify" -> {
-                fields.add(ttlvEnumeration(0x420128, 0xffff_fffe));
+                if (includeValidityIndicator) fields.add(ttlvEnumeration(0x420128, 0xffff_fffe));
                 fields.add(ttlvItem(0x4200c2, 8, SECRET_MARKER));
             }
             default -> throw new AssertionError("unknown crypto response");

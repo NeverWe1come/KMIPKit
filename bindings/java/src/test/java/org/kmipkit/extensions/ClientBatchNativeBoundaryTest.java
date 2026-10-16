@@ -46,6 +46,14 @@ final class ClientBatchNativeBoundaryTest {
     }
 
     @Test
+    void createJniRejectsObjectTypesOutsideUint32() {
+        assertThrows(InvalidInputException.class,
+                () -> NativeExtensionRegistry.clientBatchItemCreate(-1, 0, 0));
+        assertThrows(InvalidInputException.class,
+                () -> NativeExtensionRegistry.clientBatchItemCreate(0x1_0000_0000L, 0, 0));
+    }
+
+    @Test
     void splitKeyFactoryMarshalsTextAndEnumerationIdentifiers() {
         try (TtlvStructure attributes = TtlvStructure.create();
                 ClientBatchItem textIdentifier = ClientBatchItem.createSplitKey(
@@ -77,11 +85,36 @@ final class ClientBatchNativeBoundaryTest {
                             0x1_0000_0000L, null, attributes, 0));
             assertThrows(InvalidInputException.class,
                     () -> NativeExtensionRegistry.clientBatchItemCreateSplitKey(
+                            7, 2, 2, 1, UniqueIdentifier.Kind.INTEGER.raw(), null,
+                            Integer.MIN_VALUE - 1L, null, attributes, 0));
+            assertThrows(InvalidInputException.class,
+                    () -> NativeExtensionRegistry.clientBatchItemCreateSplitKey(
+                            7, 2, 2, 1, UniqueIdentifier.Kind.INTEGER.raw(), null,
+                            Integer.MAX_VALUE + 1L, null, attributes, 0));
+            assertThrows(InvalidInputException.class,
+                    () -> NativeExtensionRegistry.clientBatchItemCreateSplitKey(
                             7, 2, 2, 1, 4, null, 0, null, attributes, 0));
         } finally {
             if (item != 0) {
                 NativeExtensionRegistry.release(NativeExtensionRegistry.BATCH_ITEM, item);
             }
+            NativeExtensionRegistry.release(NativeExtensionRegistry.TTLV_STRUCTURE, attributes);
+        }
+    }
+
+    @Test
+    void splitKeyJniRejectsMissingTextAndMismatchedIdentifierPayloads() {
+        long attributes = NativeExtensionRegistry.ttlvStructureCreate();
+        try {
+            assertThrows(InvalidInputException.class,
+                    () -> NativeExtensionRegistry.clientBatchItemCreateSplitKey(
+                            7, 2, 2, 1, UniqueIdentifier.Kind.TEXT_STRING.raw(), null,
+                            0, null, attributes, 0));
+            assertThrows(InvalidInputException.class,
+                    () -> NativeExtensionRegistry.clientBatchItemCreateSplitKey(
+                            7, 2, 2, 1, UniqueIdentifier.Kind.ENUMERATION.raw(), new byte[] {1},
+                            1, null, attributes, 0));
+        } finally {
             NativeExtensionRegistry.release(NativeExtensionRegistry.TTLV_STRUCTURE, attributes);
         }
     }
@@ -106,6 +139,8 @@ final class ClientBatchNativeBoundaryTest {
                 () -> NativeExtensionRegistry.clientBatchItemResponseMetadata(0));
         assertThrows(InvalidInputException.class,
                 () -> NativeExtensionRegistry.clientBatchItemResponseMetadataV2(0));
+        assertThrows(InvalidInputException.class,
+                () -> NativeExtensionRegistry.clientBatchItemResponseUniqueBatchItemId(0));
         assertThrows(InvalidInputException.class,
                 () -> NativeExtensionRegistry.clientBatchItemResponsePendingCorrelationValue(0));
         assertThrows(InvalidInputException.class,

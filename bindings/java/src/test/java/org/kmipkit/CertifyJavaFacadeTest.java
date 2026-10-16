@@ -32,4 +32,12 @@ final class CertifyJavaFacadeTest {
             assertNotNull(item);
         }
     }
+
+    @Test
+    void certifyBuilderAcceptsUnsignedIdentifierEnumeration() {
+        try (ClientBatchItem item = ClientBatchItem.certify(
+                UniqueIdentifier.enumeration(0xffff_ffffL), null, null, null, null)) {
+            assertNotNull(item);
+        }
+    }
 }

@@ -50,6 +50,75 @@ fn cryptographic_batch_item_constructors_preserve_operation_kind_and_redact_inpu
     release(parameters, Kind::Structure);
 }
 
+#[test]
+fn copied_byte_string_operation_data_survives_source_value_handle_release() {
+    let source_bytes = b"operation-data-copy";
+    let source = make_handle(
+        Kind::Value,
+        HandleValue::Value(Value::byte_string(source_bytes.to_vec())),
+    );
+
+    let copied = copy_operation_data(source)
+        .expect("valid Byte String operation data copies")
+        .expect("non-null input creates operation data");
+    release(source, Kind::Value);
+
+    let OperationData::ByteString(copied_bytes) = copied else {
+        panic!("Byte String input remains a Byte String");
+    };
+    copied_bytes.with_bytes(|bytes| assert_eq!(bytes, source_bytes));
+}
+
+#[test]
+fn operation_data_copies_integer_and_rejects_wrong_payload_variants() {
+    let integer = make_handle(Kind::Value, HandleValue::Value(Value::integer(-17)));
+    let copied = copy_operation_data(integer)
+        .expect("valid Integer operation data copies")
+        .expect("non-null input creates operation data");
+    assert!(matches!(copied, OperationData::Integer(-17)));
+    release(integer, Kind::Value);
+
+    let boolean = make_handle(Kind::Value, HandleValue::Value(Value::boolean(true)));
+    assert!(matches!(
+        copy_operation_data(boolean),
+        Err(ERROR_INVALID_INPUT)
+    ));
+    release(boolean, Kind::Value);
+
+    let mismatched_payload = make_handle(Kind::Value, HandleValue::Structure(Structure::new()));
+    assert!(matches!(
+        copy_operation_data(mismatched_payload),
+        Err(ERROR_INVALID_INPUT)
+    ));
+    release(mismatched_payload, Kind::Value);
+}
+
+#[test]
+fn mac_constructor_preserves_present_cryptographic_parameters() {
+    let parameters = make_handle(Kind::Structure, HandleValue::Structure(Structure::new()));
+    let mut item = ptr::null_mut();
+    assert_eq!(
+        SUCCESS,
+        kmipkit_client_batch_item_mac(
+            ptr::null(),
+            parameters,
+            ptr::null_mut(),
+            ptr::null(),
+            0,
+            0,
+            &raw mut item,
+        )
+    );
+    assert_operation(item, |request| matches!(request, ClientRequest::Mac(_)));
+    let stored = reference_handle(item, Kind::BatchItem).expect("MAC item is live");
+    let HandleValue::BatchItem(stored) = &stored.value else {
+        panic!("MAC item contains a request");
+    };
+    assert!(format!("{:?}", stored.request()).contains("has_cryptographic_parameters: true"));
+    release(item, Kind::BatchItem);
+    release(parameters, Kind::Structure);
+}
+
 fn assert_hash_constructor(
     parameters: *mut kmipkit_ttlv_structure_t,
     data: *mut kmipkit_ttlv_value_t,
@@ -218,6 +287,47 @@ fn cryptographic_batch_item_constructors_reject_invalid_indicator_codes() {
 }
 
 #[test]
+fn cryptographic_batch_item_constructor_rejects_wrong_kind_operation_data_handle() {
+    let parameters = make_handle(Kind::Structure, HandleValue::Structure(Structure::new()));
+    let wrong_kind: *mut kmipkit_ttlv_structure_t =
+        make_handle(Kind::Structure, HandleValue::Structure(Structure::new()));
+    let mut item = ptr::null_mut();
+
+    assert_eq!(
+        ERROR_INVALID_INPUT,
+        kmipkit_client_batch_item_hash(
+            parameters,
+            wrong_kind.cast(),
+            ptr::null(),
+            0,
+            0,
+            &raw mut item,
+        )
+    );
+    assert!(item.is_null());
+
+    release(wrong_kind, Kind::Structure);
+    release(parameters, Kind::Structure);
+}
+
+#[test]
+fn hash_batch_item_constructor_requires_cryptographic_parameters() {
+    let mut item = ptr::null_mut();
+    assert_eq!(
+        ERROR_INVALID_INPUT,
+        kmipkit_client_batch_item_hash(
+            ptr::null_mut(),
+            ptr::null_mut(),
+            ptr::null(),
+            0,
+            0,
+            &raw mut item,
+        )
+    );
+    assert!(item.is_null());
+}
+
+#[test]
 fn certify_batch_item_constructor_preserves_open_request_type_and_redacts_request_value() {
     let mut secret = *b"certify-request-sentinel";
     let request_value = kmipkit_byte_span_v1_t {
@@ -249,6 +359,32 @@ fn certify_batch_item_constructor_preserves_open_request_type_and_redacts_reques
     assert!(!formatted.contains("certify-request-sentinel"));
 
     secret.fill(0);
+    release(item, Kind::BatchItem);
+}
+
+#[test]
+fn certify_batch_item_constructor_preserves_absent_request_type() {
+    let mut item = ptr::null_mut();
+    assert_eq!(
+        SUCCESS,
+        kmipkit_client_batch_item_certify(
+            ptr::null(),
+            0,
+            0xfedc_ba98,
+            ptr::null(),
+            ptr::null_mut(),
+            ptr::null_mut(),
+            &raw mut item,
+        )
+    );
+    let handle = reference_handle(item, Kind::BatchItem).expect("Certify item is live");
+    let HandleValue::BatchItem(stored) = &handle.value else {
+        panic!("Certify item contains a request");
+    };
+    let ClientRequest::Certify(request) = stored.request() else {
+        panic!("Certify handle contains a Certify request");
+    };
+    assert!(format!("{request:?}").contains("certificate_request_type: None"));
     release(item, Kind::BatchItem);
 }
 
