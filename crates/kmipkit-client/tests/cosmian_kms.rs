@@ -4,6 +4,7 @@
 //! lifecycle, attribute, query, and cryptographic operations. They exercise
 //! selected KMIP 2.1 requests; they are not a full conformance or profile test.
 
+use std::collections::BTreeSet;
 use std::error::Error;
 use std::path::{Path, PathBuf};
 
@@ -40,6 +41,234 @@ const AES: u32 = 3;
 const RSA: u32 = 4;
 const SYMMETRIC_KEY: u32 = 2;
 const SUCCESS: u32 = 0;
+
+// Cosmian 5.28.0 support.md has 34 supported rows: Set Attribute (Modify)
+// names two KMIP paths. Query remains advertised despite its response defect.
+const COSMIAN_SUPPORTED_PATHS: [&str; 35] = [
+    "Activate",
+    "Add Attribute",
+    "Certify",
+    "Check",
+    "Create",
+    "Create Key Pair",
+    "Create Split Key",
+    "Decrypt",
+    "Delete Attribute",
+    "Derive Key",
+    "Destroy",
+    "Discover Versions",
+    "Encrypt",
+    "Export",
+    "Get",
+    "Get Attribute List",
+    "Get Attributes",
+    "Hash",
+    "Import",
+    "Join Split Key",
+    "Locate",
+    "MAC",
+    "MAC Verify",
+    "Modify Attribute",
+    "Query",
+    "RNG Retrieve",
+    "RNG Seed",
+    "Re-key",
+    "Re-key Key Pair",
+    "Register",
+    "Revoke",
+    "Set Attribute",
+    "Sign",
+    "Signature Verify",
+    "Validate",
+];
+
+#[test]
+// Inventory contract: KMIPKIT-0015-FR-011/016, not a server conformance test.
+// Normative operation clauses: OASIS KMIP v2.1 §6.1; individual exact
+// operation/data sections and tables are mandatory in every manifest row.
+fn cosmian_capability_manifest_is_complete() {
+    let manifest: serde_json::Value = serde_json::from_str(include_str!(
+        "../../../tests/integration/cosmian/capability-matrix.json"
+    ))
+    .expect("capability manifest must be valid JSON");
+    let rows = manifest.as_array().expect("manifest root must be an array");
+    let mut case_ids = BTreeSet::new();
+    let mut supported_paths = BTreeSet::new();
+    for row in rows {
+        validate_capability_row(row);
+        let case_id = manifest_text(row, "case_id");
+        assert!(
+            case_ids.insert(case_id),
+            "duplicate matrix case_id: {case_id}"
+        );
+        let operation = manifest_text(row, "operation");
+        let expected = manifest_text(row, "expected_outcome");
+        if COSMIAN_SUPPORTED_PATHS.contains(&operation) {
+            supported_paths.insert(operation);
+            if operation == "Query" {
+                assert_eq!(
+                    expected, "known_response_shape_failure",
+                    "Query must retain its known response-shape failure classification: {case_id}"
+                );
+            }
+        } else {
+            assert!(
+                matches!(operation, "Ping" | "Adjust Attribute" | "Re-certify"),
+                "unclassified operation outside the supported inventory: {case_id}"
+            );
+            assert!(
+                matches!(
+                    expected,
+                    "unsupported_probe"
+                        | "source_documentation_discrepancy"
+                        | "client_blocked"
+                        | "setup_blocked"
+                ),
+                "separate probe must not be classified as supported success: {case_id}"
+            );
+        }
+    }
+    let missing: Vec<_> = COSMIAN_SUPPORTED_PATHS
+        .iter()
+        .filter(|operation| !supported_paths.contains(**operation))
+        .copied()
+        .collect();
+    assert!(
+        missing.is_empty(),
+        "missing supported operation paths/cases (34 support-table rows, 35 paths; Set Attribute and Modify Attribute are separate): {}",
+        missing.join(", ")
+    );
+}
+
+fn validate_capability_row(row: &serde_json::Value) {
+    let fields = [
+        "case_id",
+        "operation",
+        "object_type",
+        "algorithm",
+        "parameters",
+        "key_format",
+        "encoding",
+        "setup",
+        "oasis_source",
+        "cosmian_source",
+        "expected_outcome",
+        "test_family",
+        "observed_result",
+    ];
+    let object = row.as_object().expect("each matrix row must be an object");
+    for field in fields {
+        assert!(
+            object.contains_key(field),
+            "matrix row missing required field: {field}"
+        );
+    }
+    for field in ["case_id", "operation", "expected_outcome", "test_family"] {
+        manifest_text(row, field);
+    }
+    for field in ["object_type", "algorithm", "key_format", "encoding"] {
+        assert!(
+            row[field].is_null()
+                || row[field]
+                    .as_str()
+                    .is_some_and(|value| !value.trim().is_empty()),
+            "{field} must be a nonempty string or null for an inapplicable dimension"
+        );
+    }
+    assert!(
+        row["parameters"].is_null() || row["parameters"].is_object(),
+        "parameters must be an object or null when inapplicable"
+    );
+    let setup = row["setup"]
+        .as_array()
+        .expect("setup must be an array (empty for no dependencies)");
+    assert!(
+        setup
+            .iter()
+            .all(|value| value.as_str().is_some_and(|text| !text.trim().is_empty())),
+        "setup dependencies must be nonempty strings"
+    );
+    assert!(
+        matches!(
+            manifest_text(row, "expected_outcome"),
+            "typed_success"
+                | "known_response_shape_failure"
+                | "documented_but_source_gap"
+                | "source_documentation_discrepancy"
+                | "unsupported_probe"
+                | "client_blocked"
+                | "setup_blocked"
+        ),
+        "invalid expected_outcome"
+    );
+    // Observations remain independent of the expected outcome and never use
+    // null to conflate not-run with a successful or rejected exchange.
+    let observed = &row["observed_result"];
+    assert!(observed.is_object(), "observed_result must be an object");
+    assert!(
+        matches!(
+            manifest_text(observed, "classification"),
+            "not_run"
+                | "typed_success"
+                | "rejected"
+                | "malformed_response"
+                | "unsupported"
+                | "client_blocked"
+                | "setup_blocked"
+        ),
+        "invalid observed_result classification"
+    );
+    let oasis = row["oasis_source"]
+        .as_array()
+        .expect("oasis_source must be an array of exact citations");
+    assert!(
+        !oasis.is_empty(),
+        "oasis_source requires operation/data citations"
+    );
+    for citation in oasis {
+        assert_eq!(
+            manifest_text(citation, "document"),
+            "OASIS KMIP Specification v2.1"
+        );
+        manifest_text(citation, "section");
+        let tables = citation["tables"]
+            .as_array()
+            .expect("OASIS citation tables must be an array");
+        assert!(
+            !tables.is_empty()
+                && tables
+                    .iter()
+                    .all(|table| table.as_u64().is_some_and(|number| number > 0)),
+            "OASIS citations require exact positive table numbers"
+        );
+    }
+    let cosmian = &row["cosmian_source"];
+    assert_eq!(manifest_text(cosmian, "tag"), "5.28.0");
+    assert_eq!(
+        manifest_text(cosmian, "image_digest"),
+        "sha256:7b60fd4484930969906caa5722b727054ff96d49339ce81e3c64ca9e4278540e"
+    );
+    for field in ["documentation", "code"] {
+        let citations = cosmian[field]
+            .as_array()
+            .expect("Cosmian documentation/code citations must be arrays");
+        assert!(
+            !citations.is_empty(),
+            "Cosmian {field} citations cannot be empty"
+        );
+        for citation in citations {
+            manifest_text(citation, "path");
+            manifest_text(citation, if field == "code" { "symbol" } else { "section" });
+        }
+    }
+}
+
+fn manifest_text<'a>(value: &'a serde_json::Value, field: &str) -> &'a str {
+    value[field]
+        .as_str()
+        .filter(|text| !text.trim().is_empty())
+        .unwrap_or_else(|| panic!("manifest field {field} must be a nonempty string"))
+}
 
 #[test]
 #[ignore = "requires the local Cosmian KMS deployment; see tests/integration/cosmian/README.md"]
