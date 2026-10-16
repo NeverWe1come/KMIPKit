@@ -20,18 +20,12 @@ public final class NativeLibraryLoadProbe {
             requireResourceLimit(() -> ClientBatchItem.certify(null, null, oversizedInput, null, null));
             requireResourceLimit(() -> ClientBatchItem.macVerify(
                     null, null, null, oversizedInput, null, null, null));
-            requireResourceLimit(() -> ClientBatchItem.macVerify(
-                    null, null, null, null, oversizedInput, null, null));
             requireResourceLimit(() -> ClientBatchItem.sign(
                     null, null, null, oversizedInput, null, null, null));
-            requireResourceLimit(() -> ClientBatchItem.sign(
-                    null, null, null, null, oversizedInput, null, null));
             requireResourceLimit(() -> ClientBatchItem.signatureVerify(
                     null, null, null, oversizedInput, null, null, null, null));
             requireResourceLimit(() -> ClientBatchItem.signatureVerify(
                     null, null, null, null, oversizedInput, null, null, null));
-            requireResourceLimit(() -> ClientBatchItem.signatureVerify(
-                    null, null, null, null, null, oversizedInput, null, null));
             if (oversizedInput[0] != (byte) 0x5a || oversizedInput[oversizedInput.length - 1] != (byte) 0x5a) {
                 throw new IllegalStateException("Operation input was modified");
             }

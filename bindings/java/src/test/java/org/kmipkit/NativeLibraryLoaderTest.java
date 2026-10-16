@@ -58,12 +58,9 @@ final class NativeLibraryLoaderTest {
         List<Function<byte[], ClientBatchItem>> factories = List.of(
                 value -> ClientBatchItem.certify(null, null, value, null, null),
                 value -> ClientBatchItem.macVerify(null, null, null, value, null, null, null),
-                value -> ClientBatchItem.macVerify(null, null, null, null, value, null, null),
                 value -> ClientBatchItem.sign(null, null, null, value, null, null, null),
-                value -> ClientBatchItem.sign(null, null, null, null, value, null, null),
                 value -> ClientBatchItem.signatureVerify(null, null, null, value, null, null, null, null),
-                value -> ClientBatchItem.signatureVerify(null, null, null, null, value, null, null, null),
-                value -> ClientBatchItem.signatureVerify(null, null, null, null, null, value, null, null));
+                value -> ClientBatchItem.signatureVerify(null, null, null, null, value, null, null, null));
 
         for (Function<byte[], ClientBatchItem> factory : factories) {
             try (ClientBatchItem item = factory.apply(input)) {

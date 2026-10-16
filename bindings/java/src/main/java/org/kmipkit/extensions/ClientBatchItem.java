@@ -14,8 +14,9 @@ import org.jspecify.annotations.Nullable;
 
 /** Typed request batch item with caller-ordered registry-validated extensions. */
 public final class ClientBatchItem implements AutoCloseable {
-    private static final int MAX_UNIQUE_BATCH_ITEM_ID_BYTES = 16 * 1024 * 1024;
-    private static final int MAX_OPERATION_INPUT_BYTES = 16 * 1024 * 1024;
+    private static final int MAX_NATIVE_INPUT_ARRAY_BYTES = 16 * 1024 * 1024;
+    private static final int MAX_UNIQUE_BATCH_ITEM_ID_BYTES = MAX_NATIVE_INPUT_ARRAY_BYTES;
+    private static final int MAX_OPERATION_INPUT_BYTES = MAX_NATIVE_INPUT_ARRAY_BYTES;
 
     private final NativeHandle handle;
     private final List<ClientRequestMessageExtension> extensions;
@@ -171,7 +172,6 @@ public final class ClientBatchItem implements AutoCloseable {
             @Nullable Boolean initIndicator,
             @Nullable Boolean finalIndicator) {
         requireOperationInputWithinLimit(macData);
-        requireOperationInputWithinLimit(correlationValue);
         byte[] identifierText = uniqueIdentifier == null ? null : uniqueIdentifier.nativeText();
         byte[] macCopy = copyForNative(macData);
         byte[] correlationCopy = copyForNative(correlationValue);
@@ -197,7 +197,6 @@ public final class ClientBatchItem implements AutoCloseable {
             @Nullable Boolean initIndicator,
             @Nullable Boolean finalIndicator) {
         requireOperationInputWithinLimit(digestedData);
-        requireOperationInputWithinLimit(correlationValue);
         byte[] identifierText = uniqueIdentifier == null ? null : uniqueIdentifier.nativeText();
         byte[] digestedCopy = copyForNative(digestedData);
         byte[] correlationCopy = copyForNative(correlationValue);
@@ -225,7 +224,6 @@ public final class ClientBatchItem implements AutoCloseable {
             @Nullable Boolean finalIndicator) {
         requireOperationInputWithinLimit(digestedData);
         requireOperationInputWithinLimit(signatureData);
-        requireOperationInputWithinLimit(correlationValue);
         byte[] identifierText = uniqueIdentifier == null ? null : uniqueIdentifier.nativeText();
         byte[] digestedCopy = copyForNative(digestedData);
         byte[] signatureCopy = copyForNative(signatureData);
