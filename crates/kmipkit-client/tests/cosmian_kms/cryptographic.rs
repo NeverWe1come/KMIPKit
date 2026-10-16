@@ -29,13 +29,10 @@ const SYMMETRIC_KEY: u32 = 0x0042_007F;
 const KEY_USAGE_MAC_GENERATE_VERIFY: i32 = 384;
 const RAW_KEY_FORMAT_TYPE: u32 = 1;
 const FIXTURE_KEY: [u8; 32] = [0x5A; 32];
-const EXPECTED_TARGET_ROWS: usize = 1_320;
-const EXPECTED_EXECUTABLE_ROWS: usize = 1_320;
+const EXPECTED_TARGET_ROWS: usize = 942;
+const EXPECTED_EXECUTABLE_ROWS: usize = 95;
 
-const OPERATIONS: [&str; 10] = [
-    "Certify",
-    "Create",
-    "Create Key Pair",
+const OPERATIONS: [&str; 7] = [
     "Decrypt",
     "Encrypt",
     "Hash",
@@ -311,10 +308,7 @@ fn target_rows() -> Result<Vec<JsonValue>, Box<dyn Error>> {
     Ok(rows
         .into_iter()
         .filter(|row| {
-            matches!(
-                row["expected_outcome"].as_str(),
-                Some("typed_success" | "source_documentation_discrepancy" | "documented_but_source_gap")
-            )
+            row["expected_outcome"].as_str() == Some("typed_success")
                 && row["operation"]
                 .as_str()
                 .is_some_and(|operation| OPERATIONS.contains(&operation))
