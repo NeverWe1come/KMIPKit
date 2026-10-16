@@ -104,49 +104,44 @@ public final class ClientBatchItemResult implements AutoCloseable {
     }
 
     static ClientBatchItemMetadataV2 parseMetadataV2(Object[] values) {
-        if (values == null || values.length != 2 || !(values[0] instanceof long[] metadata)) {
+        Object[] tuple = requireTuple(values, 2, "native batch result metadata v2 is invalid");
+        if (!(tuple[0] instanceof long[] metadata)) {
             throw new InvalidInputException("native batch result metadata v2 is invalid");
         }
-        byte[] message = values[1] == null ? null : requireBytes(values[1]);
+        byte[] message = tuple[1] == null ? null : requireBytes(tuple[1]);
         return new ClientBatchItemMetadataV2(metadata, message);
     }
 
     static Optional<CreateResponse> parseCreateResponse(Object[] values) {
-        if (values == null || values.length != 2) {
-            throw new InvalidInputException("native Create response is invalid");
-        }
-        long[] fields = requireLongArray(values[0], 5);
+        Object[] tuple = requireTuple(values, 2, "native Create response is invalid");
+        long[] fields = requireLongArray(tuple[0], 5);
         if (fields[0] == 0) {
             return Optional.empty();
         }
         requirePresent(fields[0]);
-        byte[] text = values[1] == null ? null : requireBytes(values[1]);
+        byte[] text = tuple[1] == null ? null : requireBytes(tuple[1]);
         return Optional.of(new CreateResponse(
                 fields[1], identifier(fields[2], fields[3], fields[4], text)));
     }
 
     static Optional<CreateKeyPairResponse> parseCreateKeyPairResponse(Object[] values) {
-        if (values == null || values.length != 3) {
-            throw new InvalidInputException("native Create Key Pair response is invalid");
-        }
-        long[] fields = requireLongArray(values[0], 1);
+        Object[] tuple = requireTuple(values, 3, "native Create Key Pair response is invalid");
+        long[] fields = requireLongArray(tuple[0], 1);
         if (fields[0] == 0) {
             return Optional.empty();
         }
         requirePresent(fields[0]);
-        return Optional.of(new CreateKeyPairResponse(identifierRecord(values[1]), identifierRecord(values[2])));
+        return Optional.of(new CreateKeyPairResponse(identifierRecord(tuple[1]), identifierRecord(tuple[2])));
     }
 
     static Optional<List<UniqueIdentifier>> parseCreateSplitKeyUniqueIdentifiers(Object[] values) {
-        if (values == null || values.length != 2) {
-            throw new InvalidInputException("native Create Split Key response is invalid");
-        }
-        long[] fields = requireLongArray(values[0], 2);
+        Object[] tuple = requireTuple(values, 2, "native Create Split Key response is invalid");
+        long[] fields = requireLongArray(tuple[0], 2);
         if (fields[0] == 0) {
             return Optional.empty();
         }
         requirePresent(fields[0]);
-        if (fields[1] < 1 || !(values[1] instanceof Object[] identifiers)
+        if (fields[1] < 1 || !(tuple[1] instanceof Object[] identifiers)
                 || identifiers.length != fields[1]) {
             throw new InvalidInputException("native Create Split Key identifiers are invalid");
         }
@@ -175,6 +170,13 @@ public final class ClientBatchItemResult implements AutoCloseable {
     private static long[] requireLongArray(Object value, int length) {
         if (!(value instanceof long[] values) || values.length != length) {
             throw new InvalidInputException("native creation response fields are invalid");
+        }
+        return values;
+    }
+
+    private static Object[] requireTuple(Object[] values, int length, String message) {
+        if (values == null || values.length != length) {
+            throw new InvalidInputException(message);
         }
         return values;
     }
