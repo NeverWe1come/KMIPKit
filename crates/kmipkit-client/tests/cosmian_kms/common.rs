@@ -38,11 +38,14 @@ const KEY_FORMAT_TYPE: u32 = 0x0042_0042;
 const KEY_VALUE: u32 = 0x0042_0045;
 const KEY_MATERIAL: u32 = 0x0042_0043;
 const ACTIVATION_DATE: u32 = 0x0042_0001;
-const STATE: u32 = 0x0042_0091;
+const STATE: u32 = 0x0042_008D;
 const COMMENT: u32 = 0x0042_00FD;
 const OBJECT_TYPE: u32 = 0x0042_0057;
 const OBJECT_NOT_FOUND: u32 = 0x0000_0037;
 const STATUS_SUCCESS: u32 = 0;
+const STATE_PRE_ACTIVE: u32 = 1;
+const STATE_ACTIVE: u32 = 2;
+const STATE_DEACTIVATED: u32 = 3;
 
 struct OwnedObjects {
     primary: String,
@@ -212,12 +215,13 @@ fn run_get_attribute_list(
         ))),
         "Get Attribute List",
         |response| {
-            let references = response
+            let result = response
                 .get_attribute_list()
-                .and_then(|result| result.attribute_references())
-                .ok_or_else(|| {
-                    "successful Get Attribute List has no Attribute References".to_owned()
-                })?;
+                .ok_or_else(|| "successful Get Attribute List has no typed result".to_owned())?;
+            require_text_identifier(result.unique_identifier(), identifier, "Get Attribute List")?;
+            let references = result.attribute_references().ok_or_else(|| {
+                "successful Get Attribute List has no Attribute References".to_owned()
+            })?;
             if references.is_empty() {
                 return Err(
                     "Get Attribute List returned an empty Attribute References list".to_owned(),
@@ -244,9 +248,12 @@ fn run_get_attributes(
         )?),
         "Get Attributes",
         |response| {
-            let attributes = response
+            let result = response
                 .get_attributes()
-                .and_then(|result| result.attributes())
+                .ok_or_else(|| "successful Get Attributes has no typed result".to_owned())?;
+            require_text_identifier(result.unique_identifier(), identifier, "Get Attributes")?;
+            let attributes = result
+                .attributes()
                 .ok_or_else(|| "successful Get Attributes has no Attributes".to_owned())?;
             let comments = attributes
                 .as_items()
@@ -531,14 +538,17 @@ fn cleanup_owned_objects(
 ) -> Result<(), String> {
     let mut failures = Vec::new();
     for identifier in ownership.cleanup_order() {
-        if let Err(error) = cleanup_owned_object_attempts(|action| match action {
+        let state =
+            get_object_state(client, case_id, identifier).map_err(|error| error.to_string());
+        let result = cleanup_owned_object_after_state_result(state, |action| match action {
             CleanupAction::Destroy => {
                 cleanup_destroy(client, case_id, identifier).map(CleanupActionResult::Destroy)
             }
             CleanupAction::Revoke => {
                 cleanup_revoke(client, case_id, identifier).map(|()| CleanupActionResult::Revoke)
             }
-        }) {
+        });
+        if let Err(error) = result {
             failures.push(format!("case-owned object cleanup failed: {error}"));
         }
     }
@@ -549,29 +559,41 @@ fn cleanup_owned_objects(
     }
 }
 
-fn cleanup_owned_object_attempts(
+fn cleanup_owned_object_for_state(
+    state: u32,
     mut perform: impl FnMut(CleanupAction) -> Result<CleanupActionResult, String>,
 ) -> Result<CleanupResult, String> {
-    match perform(CleanupAction::Destroy) {
-        Ok(CleanupActionResult::Destroy(result)) => Ok(result),
-        Ok(CleanupActionResult::Revoke) => Err("cleanup expected a Destroy result".to_owned()),
-        Err(initial_destroy) => {
-            let revoke_result = perform(CleanupAction::Revoke);
-            match perform(CleanupAction::Destroy) {
-                Ok(CleanupActionResult::Destroy(result)) => Ok(result),
-                Ok(CleanupActionResult::Revoke) => {
-                    Err("cleanup expected a Destroy result".to_owned())
+    match state {
+        STATE_PRE_ACTIVE | STATE_DEACTIVATED => perform_cleanup_destroy(&mut perform),
+        STATE_ACTIVE => {
+            match perform(CleanupAction::Revoke)? {
+                CleanupActionResult::Revoke => {}
+                CleanupActionResult::Destroy(_) => {
+                    return Err("cleanup expected a Revoke result".to_owned());
                 }
-                Err(retry_destroy) => Err(format!(
-                    "Destroy {}; Revoke {}; retry Destroy {}",
-                    initial_destroy,
-                    revoke_result
-                        .err()
-                        .unwrap_or_else(|| "succeeded".to_owned()),
-                    retry_destroy
-                )),
             }
+            perform_cleanup_destroy(&mut perform)
         }
+        _ => Err(format!(
+            "KMIP State {state} has no approved cleanup transition; no destructive request was sent"
+        )),
+    }
+}
+
+fn cleanup_owned_object_after_state_result(
+    state: Result<u32, String>,
+    perform: impl FnMut(CleanupAction) -> Result<CleanupActionResult, String>,
+) -> Result<CleanupResult, String> {
+    let state = state.map_err(|error| format!("State preflight failed: {error}"))?;
+    cleanup_owned_object_for_state(state, perform)
+}
+
+fn perform_cleanup_destroy(
+    perform: &mut impl FnMut(CleanupAction) -> Result<CleanupActionResult, String>,
+) -> Result<CleanupResult, String> {
+    match perform(CleanupAction::Destroy)? {
+        CleanupActionResult::Destroy(result) => Ok(result),
+        CleanupActionResult::Revoke => Err("cleanup expected a Destroy result".to_owned()),
     }
 }
 
@@ -748,7 +770,6 @@ fn provision_object(
             let primary = ids.first().cloned().ok_or_else(|| {
                 format!("case {case_id}: Create Split Key returned no identifiers")
             })?;
-            ownership.track(source_id);
             primary
         }
         "Certificate" => {
@@ -1116,9 +1137,16 @@ fn verify_comment(
         )?),
         "Get Attributes Comment verification",
         |response| {
-            let attributes = response
+            let result = response
                 .get_attributes()
-                .and_then(|result| result.attributes())
+                .ok_or_else(|| "Comment verification returned no typed result".to_owned())?;
+            require_text_identifier(
+                result.unique_identifier(),
+                identifier,
+                "Get Attributes Comment verification",
+            )?;
+            let attributes = result
+                .attributes()
                 .ok_or_else(|| "Comment verification returned no Attributes".to_owned())?;
             let comments = attributes
                 .as_items()
@@ -1148,9 +1176,16 @@ fn verify_comment_absent(
         ))),
         "Get Attribute List Comment deletion verification",
         |response| {
-            let references = response
+            let result = response
                 .get_attribute_list()
-                .and_then(|result| result.attribute_references())
+                .ok_or_else(|| "Get Attribute List returned no typed result".to_owned())?;
+            require_text_identifier(
+                result.unique_identifier(),
+                identifier,
+                "Get Attribute List Comment deletion verification",
+            )?;
+            let references = result
+                .attribute_references()
                 .ok_or_else(|| "Get Attribute List returned no Attribute References".to_owned())?;
             if references
                 .iter()
@@ -1177,9 +1212,16 @@ fn get_object_state(
         )?),
         "Get Attributes state preflight",
         |response| {
-            let attributes = response
+            let result = response
                 .get_attributes()
-                .and_then(|result| result.attributes())
+                .ok_or_else(|| "State preflight returned no typed result".to_owned())?;
+            require_text_identifier(
+                result.unique_identifier(),
+                identifier,
+                "Get Attributes state preflight",
+            )?;
+            let attributes = result
+                .attributes()
                 .ok_or_else(|| "State preflight returned no Attributes".to_owned())?;
             let state = attributes
                 .as_items()
@@ -1330,9 +1372,16 @@ fn verify_activation_date(
         )?),
         "Get Attributes Activation Date verification",
         |response| {
-            let attributes = response
-                .get_attributes()
-                .and_then(|result| result.attributes())
+            let result = response.get_attributes().ok_or_else(|| {
+                "Activation Date verification returned no typed result".to_owned()
+            })?;
+            require_text_identifier(
+                result.unique_identifier(),
+                identifier,
+                "Get Attributes Activation Date verification",
+            )?;
+            let attributes = result
+                .attributes()
                 .ok_or_else(|| "Activation Date verification returned no Attributes".to_owned())?;
             let matches = attributes.as_items().iter().any(|item| {
                 item.tag().raw() == ACTIVATION_DATE
@@ -1381,7 +1430,9 @@ fn require_identifier(
     actual
         .filter(|value| identifier_matches(Some(value), expected))
         .ok_or_else(|| {
-            format!("successful {operation} response omitted the case-owned Unique Identifier")
+            format!(
+                "successful {operation} response omitted or mismatched the case-owned Unique Identifier"
+            )
         })
         .map(|_| ())
 }
@@ -1394,7 +1445,9 @@ fn require_text_identifier(
     actual
         .filter(|value| !value.is_empty() && *value == expected)
         .ok_or_else(|| {
-            format!("successful {operation} response omitted the case-owned Unique Identifier")
+            format!(
+                "successful {operation} response omitted or mismatched the case-owned Unique Identifier"
+            )
         })
         .map(|_| ())
 }
@@ -1505,7 +1558,9 @@ struct CaseOwnership {
 
 impl CaseOwnership {
     fn track(&mut self, identifier: String) {
-        self.identifiers.push(identifier);
+        if !self.identifiers.contains(&identifier) {
+            self.identifiers.push(identifier);
+        }
     }
 
     fn cleanup_order(&self) -> impl Iterator<Item = &str> {
@@ -1756,7 +1811,7 @@ mod review_regression_tests {
         ] {
             let destroy_calls = Cell::new(0);
             let revoke_calls = Cell::new(0);
-            let result = cleanup_owned_object_attempts(|action| match action {
+            let result = cleanup_owned_object_for_state(STATE_PRE_ACTIVE, |action| match action {
                 CleanupAction::Destroy => {
                     destroy_calls.set(destroy_calls.get() + 1);
                     if destroy_calls.get() == 1 {
@@ -1774,6 +1829,109 @@ mod review_regression_tests {
             assert_eq!(revoke_calls.get(), 0, "{diagnostic}");
             assert_eq!(result, Err(diagnostic.to_owned()));
         }
+    }
+
+    #[test]
+    fn active_object_is_revoked_once_before_one_destroy() {
+        let mut actions = Vec::new();
+        let result = cleanup_owned_object_for_state(STATE_ACTIVE, |action| {
+            actions.push(action);
+            match action {
+                CleanupAction::Revoke => Ok(CleanupActionResult::Revoke),
+                CleanupAction::Destroy => {
+                    Ok(CleanupActionResult::Destroy(CleanupResult::Destroyed))
+                }
+            }
+        });
+        assert_eq!(result, Ok(CleanupResult::Destroyed));
+        assert_eq!(actions, [CleanupAction::Revoke, CleanupAction::Destroy]);
+    }
+
+    #[test]
+    fn failed_or_ambiguous_revoke_prevents_destroy() {
+        let revoke_calls = Cell::new(0);
+        let destroy_calls = Cell::new(0);
+        let result = cleanup_owned_object_for_state(STATE_ACTIVE, |action| match action {
+            CleanupAction::Revoke => {
+                revoke_calls.set(revoke_calls.get() + 1);
+                Err("Revoke response validation failed: delivery=PossiblySent".to_owned())
+            }
+            CleanupAction::Destroy => {
+                destroy_calls.set(destroy_calls.get() + 1);
+                Ok(CleanupActionResult::Destroy(CleanupResult::Destroyed))
+            }
+        });
+        assert_eq!(
+            result,
+            Err("Revoke response validation failed: delivery=PossiblySent".to_owned())
+        );
+        assert_eq!(revoke_calls.get(), 1);
+        assert_eq!(destroy_calls.get(), 0);
+    }
+
+    #[test]
+    fn deactivated_object_is_destroyed_once_without_revoke() {
+        let mut actions = Vec::new();
+        let result = cleanup_owned_object_for_state(STATE_DEACTIVATED, |action| {
+            actions.push(action);
+            Ok(CleanupActionResult::Destroy(CleanupResult::Destroyed))
+        });
+        assert_eq!(result, Ok(CleanupResult::Destroyed));
+        assert_eq!(actions, [CleanupAction::Destroy]);
+    }
+
+    #[test]
+    fn unknown_state_sends_no_destructive_request() {
+        let actions = Cell::new(0);
+        let result = cleanup_owned_object_for_state(99, |_| {
+            actions.set(actions.get() + 1);
+            Ok(CleanupActionResult::Destroy(CleanupResult::Destroyed))
+        });
+        assert_eq!(actions.get(), 0);
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn failed_state_preflight_sends_no_destructive_request_and_keeps_delivery() {
+        let actions = Cell::new(0);
+        let result = cleanup_owned_object_after_state_result(
+            Err("typed Get Attributes failed: delivery=PossiblySent".to_owned()),
+            |_| {
+                actions.set(actions.get() + 1);
+                Ok(CleanupActionResult::Destroy(CleanupResult::Destroyed))
+            },
+        );
+        assert_eq!(actions.get(), 0);
+        assert_eq!(
+            result,
+            Err(
+                "State preflight failed: typed Get Attributes failed: delivery=PossiblySent"
+                    .to_owned()
+            )
+        );
+    }
+
+    #[test]
+    fn state_preflight_uses_the_allocated_kmip_attribute_tag() {
+        let request = GetAttributesRequest::try_new(
+            Some("case-owned-object".to_owned()),
+            [AttributeReference::tag(STATE)],
+        )
+        .expect("State Attribute Reference");
+        let payload = request
+            .to_ttlv_payload()
+            .expect("State tag must be KMIP allocated");
+        let payload_view = payload.view();
+        let state_reference = payload_view
+            .children()
+            .iter()
+            .find(|item| item.tag().raw() == 0x0042_013B)
+            .expect("Attribute Reference");
+        let referenced_tag = state_reference.with_value(|value| match value {
+            kmipkit_ttlv::ValueView::Enumeration(raw) => Some(*raw),
+            _ => None,
+        });
+        assert_eq!(referenced_tag, Some(0x0042_008D));
     }
 
     #[test]
@@ -1795,6 +1953,7 @@ mod review_regression_tests {
             "Get Attributes",
             "Get Attributes Comment verification",
             "Get Attribute List Comment deletion verification",
+            "Get Attributes state preflight",
             "Get Attributes Activation Date verification",
         ] {
             assert!(
