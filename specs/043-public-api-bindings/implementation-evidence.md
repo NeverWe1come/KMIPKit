@@ -1944,6 +1944,21 @@ environmental failure.
 | Red | this test/evidence commit | `python -B -m unittest tools.api_manifest.tests.test_parity tools.api_manifest.tests.test_t076_client_mapping -v`: reproduced 2 failures among 43 tests. The parity allowlist was updated for the existing failure fixture, and a focused assertion now requires the T032 Python semantic exports to have four-language mappings and exact dataclass exclusions; it fails until the manifest is corrected. |
 | Green | pending | Correct the manifest and regenerate its outputs; rerun the focused contract command and full script-contract matrix. |
 
+The same CI run also failed both macOS Core jobs while compiling the C ABI
+consumer: the test calls `kmipkit_ttlv_structure_release`, but that symbol was
+still blocked in the manifest and omitted from the generated public header.
+The handle already names this release function, and the Rust, Java, and Python
+wrappers already provide their corresponding native-handle lifecycle. The
+follow-up therefore maps the existing lifecycle through the manifest's
+`native-handle-release` semantics; it does not add a new TTLV operation or
+alter a C layout.
+
+| Phase | Commit | Command / result |
+|---|---|---|
+| Red | this test/evidence commit | Three focused manifest tests: 6 expected failures. They identify the missing Python and Java T032 exports, the absent three-language TTLV release classification, and the missing generated C prototype. CI run `38840021567` independently reproduced the C compiler error on both macOS toolchains. |
+| Green | pending | Add exact four-language manifest mappings and regenerate with the pinned tool; rerun the focused tests and macOS C consumer compilation. |
+| Refactor | pending | Update final traceability and record the verified cross-language/script-contract checks. |
+
 ## T031 — Discover Versions response mapping
 
 The four-language mapping now exposes the successful Discover Versions

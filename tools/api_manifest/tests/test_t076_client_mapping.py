@@ -880,6 +880,53 @@ class T076ClientMappingTests(unittest.TestCase):
             header,
         )
 
+    def test_ttlv_structure_release_is_mapped_as_native_handle_lifecycle(self) -> None:
+        expected_mappings = {
+            "rust": {
+                "packageId": "rust-kmipkit-ttlv",
+                "name": "kmipkit_ttlv::Structure",
+            },
+            "c": {
+                "packageId": "c-kmipkit",
+                "name": "kmipkit_ttlv_structure_release",
+            },
+            "java": {
+                "packageId": "java-kmipkit",
+                "name": "org.kmipkit.ttlv.TtlvStructure.close",
+            },
+            "python": {
+                "packageId": "python-kmipkit",
+                "name": "kmipkit.ttlv.Structure.close",
+            },
+        }
+        declarations = {
+            row["exportName"]: row
+            for row in self.manifest["publicDeclarations"]
+            if row["capabilityId"] == "generic_ttlv_model"
+        }
+        for export_name, kind in (
+            ("kmipkit_ttlv_structure_release", "c-symbol"),
+            ("org.kmipkit.ttlv.TtlvStructure.close", "java-member"),
+            ("kmipkit.ttlv.Structure.close", "python-export"),
+        ):
+            with self.subTest(export=export_name):
+                declaration = declarations.get(export_name)
+                self.assertIsNotNone(declaration, f"missing lifecycle mapping: {export_name}")
+                if declaration is None:
+                    continue
+                self.assertEqual(kind, declaration["kind"])
+                self.assertEqual("declared", declaration["declarationState"])
+                self.assertEqual("native-handle-release", declaration["mappingSemantics"])
+                self.assertEqual(expected_mappings, declaration["languageMappings"])
+                self.assertIn("KMIPKIT-0043-FR-021", declaration["requirementIds"])
+
+        header = (ROOT / "bindings/c/include/kmipkit.h").read_text(encoding="utf-8")
+        self.assertTrue(
+            "void kmipkit_ttlv_structure_release(kmipkit_ttlv_structure_t *handle);"
+            in header,
+            "generated C header omits the TtlvStructure lifecycle release symbol",
+        )
+
     def test_client_configuration_and_registry_releases_are_public_four_language_mappings(self) -> None:
         expected = {
             "ClientConfiguration": (
@@ -1334,7 +1381,7 @@ class T076ClientMappingTests(unittest.TestCase):
                     self.assertIn("runtime metadata", exclusion["reason"].lower())
                     self.assertIn("local runtime metadata value", exclusion["reason"].lower())
 
-    def test_creation_result_python_exports_are_classified_exactly(self) -> None:
+    def test_python_export_inventory_and_facade_mappings_are_exactly_classified(self) -> None:
         semantic_exports = {
             "kmipkit.client.BatchItemResult.operation",
             "kmipkit.client.BatchItemResult.result_message",
@@ -1454,6 +1501,29 @@ class T076ClientMappingTests(unittest.TestCase):
                 for language, target in exception_category["languageMappings"].items()
             },
         )
+
+    def test_creation_result_java_convenience_exports_are_classified_exactly(self) -> None:
+        expected_exports = {
+            "org.kmipkit.extensions.ClientBatchItemResult.operation",
+            "org.kmipkit.extensions.ClientBatchItemResult.resultMessage",
+            "org.kmipkit.extensions.UniqueIdentifier.textString",
+            "org.kmipkit.extensions.UniqueIdentifier.enumeration",
+            "org.kmipkit.extensions.UniqueIdentifier.integer",
+        }
+        declarations = {
+            row["exportName"]: row
+            for row in self.manifest["publicDeclarations"]
+            if row["packageId"] == "java-kmipkit"
+        }
+        self.assertTrue(expected_exports.issubset(declarations))
+        for export_name in sorted(expected_exports):
+            with self.subTest(export=export_name):
+                declaration = declarations[export_name]
+                self.assertEqual("declared", declaration["declarationState"])
+                self.assertEqual(
+                    {"rust", "c", "java", "python"},
+                    set(declaration["languageMappings"]),
+                )
 
     def test_request_options_python_dataclass_artifacts_are_exactly_excluded(self) -> None:
         expected = {
