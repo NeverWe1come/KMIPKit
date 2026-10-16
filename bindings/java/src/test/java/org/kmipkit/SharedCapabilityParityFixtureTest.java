@@ -47,7 +47,7 @@ final class SharedCapabilityParityFixtureTest {
                 stringArrayField(fixture, "executableConsumerLanguages"));
 
         List<String> ids = caseIds(fixture);
-        assertEquals(10, ids.size());
+        assertEquals(11, ids.size());
         assertEquals(ids.size(), ids.stream().distinct().count());
         for (String id : ids) {
             String item = caseById(fixture, id);
@@ -101,7 +101,7 @@ final class SharedCapabilityParityFixtureTest {
     void creationCreateMatchesSharedFixture() throws IOException {
         String item = caseById(Files.readString(sharedFixturePath()), "creation.create.request-response.v1");
         assertTrue(item.contains("\"attributesPresent\": true"));
-        assertTrue(item.contains("\"resultMessage\": \"création ✓\""));
+        assertTrue(item.contains("\"resultMessage\": null"));
         try (TtlvStructure attributes = TtlvStructure.create();
                 TtlvStructure masks = TtlvStructure.create();
                 ClientBatchItem request = ClientBatchItem.create(0xffff_ffffL, attributes, masks)) {
@@ -130,6 +130,8 @@ final class SharedCapabilityParityFixtureTest {
         String item = caseById(Files.readString(sharedFixturePath()), "creation.split-key.request-response.v1");
         assertTrue(item.contains("\"splitKeyParts\": -3"));
         assertTrue(item.contains("\"correlationValueHex\": \"00ff80\""));
+        assertTrue(item.contains("\"resultMessage\": null"));
+        assertTrue(item.contains("\"status\": 2"));
         try (TtlvStructure attributes = TtlvStructure.create();
                 TtlvStructure masks = TtlvStructure.create();
                 ClientBatchItem request = ClientBatchItem.createSplitKey(

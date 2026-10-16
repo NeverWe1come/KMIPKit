@@ -114,8 +114,8 @@ def test_version_two_metadata_preserves_unknowns_message_presence_and_redacts_re
         result_reason=0xFFFF_FFFD,
         result_message=message,
     )
-    empty_message = client.BatchItemMetadataV2(40, client.BatchOutcome.COMPLETED, 0, None, "")
-    absent_message = client.BatchItemMetadataV2(40, client.BatchOutcome.COMPLETED, 0, None, None)
+    empty_message = client.BatchItemMetadataV2(40, client.BatchOutcome.COMPLETED, 0xFFFF_FFFE, None, "")
+    absent_message = client.BatchItemMetadataV2(40, client.BatchOutcome.COMPLETED, 0xFFFF_FFFE, None, None)
 
     assert metadata.operation == 0xFFFF_FFFF
     assert metadata.outcome == 99
@@ -292,6 +292,44 @@ def _no_supported_versions(
     present[0] = 0  # type: ignore[index]
     count[0] = 0  # type: ignore[index]
     return 0
+
+
+def _initialize_metadata_v2(out: object) -> None:
+    out.struct_size = client.ffi.sizeof("kmipkit_client_batch_item_metadata_v2_t")  # type: ignore[attr-defined]
+    out.abi_version = 2  # type: ignore[attr-defined]
+    out.operation = 0  # type: ignore[attr-defined]
+    out.outcome_kind = int(client.BatchOutcome.COMPLETED)  # type: ignore[attr-defined]
+    out.result_status = 0  # type: ignore[attr-defined]
+    out.has_result_reason = 0  # type: ignore[attr-defined]
+    out.result_reason = 0  # type: ignore[attr-defined]
+    out.has_result_message = 0  # type: ignore[attr-defined]
+    out.reserved = 0  # type: ignore[attr-defined]
+    out.result_message_data = client.ffi.NULL  # type: ignore[attr-defined]
+    out.result_message_length = 0  # type: ignore[attr-defined]
+
+
+def _no_creation_response_symbols() -> dict[str, object]:
+    def create(_item: object, present: object, object_type: object, _identifier: object) -> int:
+        present[0] = 0  # type: ignore[index]
+        object_type[0] = 0  # type: ignore[index]
+        return 0
+
+    def create_pair(
+        _item: object, present: object, _private_identifier: object, _public_identifier: object
+    ) -> int:
+        present[0] = 0  # type: ignore[index]
+        return 0
+
+    def create_split_key(_item: object, present: object, count: object) -> int:
+        present[0] = 0  # type: ignore[index]
+        count[0] = 0  # type: ignore[index]
+        return 0
+
+    return {
+        "kmipkit_client_batch_item_response_create": create,
+        "kmipkit_client_batch_item_response_create_key_pair": create_pair,
+        "kmipkit_client_batch_item_response_create_split_key_count": create_split_key,
+    }
 
 
 def _transport_configuration(**overrides: object) -> client.TransportConfig:
@@ -898,16 +936,20 @@ def test_batch_result_copies_metadata_unknown_outcome_and_optional_spans(
     response_pointer, _response_storage = _opaque("kmipkit_client_batch_response_t")
     item_pointer, _item_storage = _opaque("kmipkit_client_batch_item_response_t")
     unique_id = client.ffi.new("uint8_t[]", b"uid-1")
-    pending = client.ffi.new("uint8_t[]", b"pending")
+    message_text = "server metadata: création ✓"
+    message = client.ffi.new("uint8_t[]", message_text.encode("utf-8"))
     released: list[str] = []
 
     def metadata(_item: object, out: object) -> int:
-        out.struct_size = client.ffi.sizeof("kmipkit_client_batch_item_metadata_v1_t")  # type: ignore[attr-defined]
-        out.abi_version = 1  # type: ignore[attr-defined]
+        _initialize_metadata_v2(out)
+        out.operation = 0xFFFF_FFFF  # type: ignore[attr-defined]
         out.outcome_kind = 91  # type: ignore[attr-defined]
-        out.result_status = 2  # type: ignore[attr-defined]
+        out.result_status = 1  # type: ignore[attr-defined]
         out.has_result_reason = 1  # type: ignore[attr-defined]
         out.result_reason = 7  # type: ignore[attr-defined]
+        out.has_result_message = 1  # type: ignore[attr-defined]
+        out.result_message_data = message  # type: ignore[attr-defined]
+        out.result_message_length = len(message_text.encode("utf-8"))  # type: ignore[attr-defined]
         return 0
 
     def set_span(data: object, value: object, present: object) -> int:
@@ -916,21 +958,31 @@ def test_batch_result_copies_metadata_unknown_outcome_and_optional_spans(
         value.length = len(client.ffi.string(data))  # type: ignore[attr-defined]
         return 0
 
+    def absent_span(_item: object, present: object, value: object) -> int:
+        present[0] = 0  # type: ignore[index]
+        value.data = client.ffi.NULL  # type: ignore[attr-defined]
+        value.length = 0  # type: ignore[attr-defined]
+        return 0
+
     fake = SimpleNamespace(
         kmipkit_client_batch_response_release=lambda _ptr: released.append("response"),
         kmipkit_client_batch_item_response_release=lambda _ptr: released.append("item"),
         kmipkit_client_batch_response_item_count=lambda _ptr, count: count.__setitem__(0, 1) or 0,
         kmipkit_client_batch_response_item_at=lambda _ptr, _index, out: out.__setitem__(0, item_pointer) or 0,
-        kmipkit_client_batch_item_response_metadata_v1=metadata,
+        kmipkit_client_batch_item_response_metadata_v2=metadata,
         kmipkit_client_batch_item_response_unique_batch_item_id=lambda item, present, value: set_span(unique_id, value, present),
-        kmipkit_client_batch_item_response_pending_correlation_value=lambda item, present, value: set_span(pending, value, present),
+        kmipkit_client_batch_item_response_pending_correlation_value=absent_span,
         kmipkit_client_batch_item_response_discover_versions_supported_versions=_no_supported_versions,
+        **_no_creation_response_symbols(),
     )
     monkeypatch.setattr(client, "lib", fake)
     result = client._batch_result(response_pointer)
     assert result.items == (
-        client.BatchItemResult(91, 2, 7, b"uid-1", b"pending"),
+        client.BatchItemResult(
+            91, 1, 7, b"uid-1", None, None, 0xFFFF_FFFF, message_text
+        ),
     )
+    assert message_text not in repr(result.items[0])
     result.close()
     assert released == ["item", "response"]
 
@@ -962,8 +1014,7 @@ def test_batch_execute_preserves_ordered_mixed_outcomes_and_invokes_native_execu
 
     def metadata(item: object, out: object) -> int:
         index = item_index(item)
-        out.struct_size = client.ffi.sizeof("kmipkit_client_batch_item_metadata_v1_t")  # type: ignore[attr-defined]
-        out.abi_version = 1  # type: ignore[attr-defined]
+        _initialize_metadata_v2(out)
         out.outcome_kind = (1, 2, 1)[index]  # type: ignore[attr-defined]
         out.result_status = (0, 2, 1)[index]  # type: ignore[attr-defined]
         out.has_result_reason = int(index == 2)  # type: ignore[attr-defined]
@@ -1001,10 +1052,11 @@ def test_batch_execute_preserves_ordered_mixed_outcomes_and_invokes_native_execu
         kmipkit_client_batch_item_response_release=lambda _ptr: released.append("item"),
         kmipkit_client_batch_response_item_count=lambda _ptr, count: count.__setitem__(0, 3) or 0,
         kmipkit_client_batch_response_item_at=item_at,
-        kmipkit_client_batch_item_response_metadata_v1=metadata,
+        kmipkit_client_batch_item_response_metadata_v2=metadata,
         kmipkit_client_batch_item_response_unique_batch_item_id=unique_id,
         kmipkit_client_batch_item_response_pending_correlation_value=pending_correlation,
         kmipkit_client_batch_item_response_discover_versions_supported_versions=_no_supported_versions,
+        **_no_creation_response_symbols(),
     )
     monkeypatch.setattr(client, "lib", fake)
 
@@ -1042,8 +1094,7 @@ def test_discover_versions_response_mapping_matches_shared_fixture(
 
     def metadata(item: object, out: object) -> int:
         index = item_pointers.index(item)
-        out.struct_size = client.ffi.sizeof("kmipkit_client_batch_item_metadata_v1_t")  # type: ignore[attr-defined]
-        out.abi_version = 1  # type: ignore[attr-defined]
+        _initialize_metadata_v2(out)
         out.outcome_kind = (1, 2, 1, 1)[index]  # type: ignore[attr-defined]
         out.result_status = (0, 2, 1, 0)[index]  # type: ignore[attr-defined]
         out.has_result_reason = int(index == 2)  # type: ignore[attr-defined]
@@ -1068,10 +1119,11 @@ def test_discover_versions_response_mapping_matches_shared_fixture(
         kmipkit_client_batch_item_response_release=lambda _ptr: released.append("item"),
         kmipkit_client_batch_response_item_count=lambda _ptr, count: count.__setitem__(0, 4) or 0,
         kmipkit_client_batch_response_item_at=lambda _ptr, index, out: out.__setitem__(0, item_pointers[int(index)]) or 0,
-        kmipkit_client_batch_item_response_metadata_v1=metadata,
+        kmipkit_client_batch_item_response_metadata_v2=metadata,
         kmipkit_client_batch_item_response_unique_batch_item_id=lambda _item, present, value: present.__setitem__(0, 0) or setattr(value, "data", client.ffi.NULL) or setattr(value, "length", 0) or 0,
         kmipkit_client_batch_item_response_pending_correlation_value=lambda _item, present, value: present.__setitem__(0, 0) or setattr(value, "data", client.ffi.NULL) or setattr(value, "length", 0) or 0,
         kmipkit_client_batch_item_response_discover_versions_supported_versions=supported_versions,
+        **_no_creation_response_symbols(),
     )
     monkeypatch.setattr(client, "lib", fake)
 
@@ -1097,8 +1149,7 @@ def test_batch_result_accepts_absent_spans_and_no_result_reason(
     item_pointer, _item_storage = _opaque("kmipkit_client_batch_item_response_t")
 
     def metadata(_item: object, out: object) -> int:
-        out.struct_size = client.ffi.sizeof("kmipkit_client_batch_item_metadata_v1_t")  # type: ignore[attr-defined]
-        out.abi_version = 1  # type: ignore[attr-defined]
+        _initialize_metadata_v2(out)
         out.outcome_kind = int(client.BatchOutcome.COMPLETED)  # type: ignore[attr-defined]
         out.result_status = 0  # type: ignore[attr-defined]
         out.has_result_reason = 0  # type: ignore[attr-defined]
@@ -1115,10 +1166,11 @@ def test_batch_result_accepts_absent_spans_and_no_result_reason(
         kmipkit_client_batch_item_response_release=lambda _ptr: None,
         kmipkit_client_batch_response_item_count=lambda _ptr, count: count.__setitem__(0, 1) or 0,
         kmipkit_client_batch_response_item_at=lambda _ptr, _index, out: out.__setitem__(0, item_pointer) or 0,
-        kmipkit_client_batch_item_response_metadata_v1=metadata,
+        kmipkit_client_batch_item_response_metadata_v2=metadata,
         kmipkit_client_batch_item_response_unique_batch_item_id=absent,
         kmipkit_client_batch_item_response_pending_correlation_value=absent,
         kmipkit_client_batch_item_response_discover_versions_supported_versions=_no_supported_versions,
+        **_no_creation_response_symbols(),
     )
     monkeypatch.setattr(client, "lib", fake)
     result = client._batch_result(response_pointer)
@@ -1196,7 +1248,7 @@ def test_batch_result_enforces_count_metadata_and_span_limits_and_releases_handl
         **common,
         kmipkit_client_batch_response_item_count=lambda _ptr, count: count.__setitem__(0, 1) or 0,
         kmipkit_client_batch_response_item_at=lambda _ptr, _index, out: out.__setitem__(0, item_pointer) or 0,
-        kmipkit_client_batch_item_response_metadata_v1=wrong_metadata,
+        kmipkit_client_batch_item_response_metadata_v2=wrong_metadata,
     )
     monkeypatch.setattr(client, "lib", wrong_abi)
     with pytest.raises(errors.InvalidInputError):
@@ -1204,8 +1256,7 @@ def test_batch_result_enforces_count_metadata_and_span_limits_and_releases_handl
     assert released[-2:] == ["item", "response"]
 
     def valid_metadata(_item: object, out: object) -> int:
-        out.struct_size = client.ffi.sizeof("kmipkit_client_batch_item_metadata_v1_t")  # type: ignore[attr-defined]
-        out.abi_version = 1  # type: ignore[attr-defined]
+        _initialize_metadata_v2(out)
         out.outcome_kind = 1  # type: ignore[attr-defined]
         out.result_status = 0  # type: ignore[attr-defined]
         out.has_result_reason = 0  # type: ignore[attr-defined]
@@ -1221,7 +1272,7 @@ def test_batch_result_enforces_count_metadata_and_span_limits_and_releases_handl
         **common,
         kmipkit_client_batch_response_item_count=lambda _ptr, count: count.__setitem__(0, 1) or 0,
         kmipkit_client_batch_response_item_at=lambda _ptr, _index, out: out.__setitem__(0, item_pointer) or 0,
-        kmipkit_client_batch_item_response_metadata_v1=valid_metadata,
+        kmipkit_client_batch_item_response_metadata_v2=valid_metadata,
         kmipkit_client_batch_item_response_unique_batch_item_id=too_large,
     )
     monkeypatch.setattr(client, "lib", oversized)
@@ -2011,8 +2062,7 @@ def test_batch_result_rejects_noncanonical_result_reason_presence_flag(
     released: list[str] = []
 
     def metadata(_item: object, out: object) -> int:
-        out.struct_size = client.ffi.sizeof("kmipkit_client_batch_item_metadata_v1_t")  # type: ignore[attr-defined]
-        out.abi_version = 1  # type: ignore[attr-defined]
+        _initialize_metadata_v2(out)
         out.outcome_kind = int(client.BatchOutcome.COMPLETED)  # type: ignore[attr-defined]
         out.result_status = 1  # type: ignore[attr-defined]
         out.has_result_reason = 2  # type: ignore[attr-defined]
@@ -2030,7 +2080,7 @@ def test_batch_result_rejects_noncanonical_result_reason_presence_flag(
         kmipkit_client_batch_item_response_release=lambda _ptr: released.append("item"),
         kmipkit_client_batch_response_item_count=lambda _ptr, count: count.__setitem__(0, 1) or 0,
         kmipkit_client_batch_response_item_at=lambda _ptr, _index, out: out.__setitem__(0, item_pointer) or 0,
-        kmipkit_client_batch_item_response_metadata_v1=metadata,
+        kmipkit_client_batch_item_response_metadata_v2=metadata,
         kmipkit_client_batch_item_response_unique_batch_item_id=absent_span,
         kmipkit_client_batch_item_response_pending_correlation_value=absent_span,
     )

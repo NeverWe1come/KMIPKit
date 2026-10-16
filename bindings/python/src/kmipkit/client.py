@@ -33,6 +33,7 @@ from ._handles import (
 _MAX_INPUT_BYTES = 16 * 1024 * 1024
 _MAX_TEXT_BYTES = 4_096
 _MAX_BATCH_ITEMS = 4_096
+_MAX_SPLIT_KEY_IDENTIFIERS = 100_000
 _MAX_TRANSPORT_CONFIG_ITEMS = 4_096
 _MAX_U64 = (1 << 64) - 1
 _MIN_I64 = -(1 << 63)
@@ -99,9 +100,48 @@ class ProtocolVersion:
     major: int
     minor: int
 
+
+@dataclass(frozen=True, slots=True, repr=False)
+class BatchItemMetadataV2:
+    """Version 2 metadata with an exact, redacted Result Message field.
+
+    The message is copied into a Python ``str`` before releasing the native
+    response item and is bounded by the response codec limit (16 MiB by
+    default). Python does not guarantee deterministic zeroization of that
+    external copy after it becomes unreachable.
+    """
+
+    operation: int
+    outcome: BatchOutcome | int
+    result_status: int
+    result_reason: int | None
+    result_message: str | None = field(repr=False)
+
+    def __repr__(self) -> str:
+        return (
+            "BatchItemMetadataV2(operation="
+            f"{self.operation}, outcome={self.outcome!r}, result_status={self.result_status}, "
+            f"result_reason={self.result_reason!r}, result_message=redacted)"
+        )
+
     def __post_init__(self) -> None:
-        object.__setattr__(self, "major", _integer_range(self.major, _MIN_I32, _MAX_I32))
-        object.__setattr__(self, "minor", _integer_range(self.minor, _MIN_I32, _MAX_I32))
+        object.__setattr__(self, "operation", _unsigned(self.operation, 32))
+        raw_outcome = _unsigned(self.outcome, 32)
+        try:
+            outcome: BatchOutcome | int = BatchOutcome(raw_outcome)
+        except ValueError:
+            outcome = raw_outcome
+        object.__setattr__(self, "outcome", outcome)
+        object.__setattr__(self, "result_status", _unsigned(self.result_status, 32))
+        if self.result_reason is not None:
+            object.__setattr__(self, "result_reason", _unsigned(self.result_reason, 32))
+        if self.result_message is not None:
+            if not isinstance(self.result_message, str):
+                errors.raise_for_status(4)
+            try:
+                self.result_message.encode("utf-8", errors="strict")
+            except UnicodeEncodeError:
+                errors.raise_for_status(4)
 
 
 @dataclass(frozen=True, slots=True)
@@ -791,6 +831,30 @@ class BatchItemResult:
     unique_batch_item_id: bytes | None = field(repr=False)
     pending_correlation_value: bytes | None = field(repr=False)
     supported_versions: tuple[ProtocolVersion, ...] | None = None
+    operation: int = 0
+    result_message: str | None = field(default=None, repr=False)
+    create_object_type: int | None = None
+    unique_identifier: extensions.UniqueIdentifier | None = field(default=None, repr=False)
+    private_key_unique_identifier: extensions.UniqueIdentifier | None = field(
+        default=None, repr=False
+    )
+    public_key_unique_identifier: extensions.UniqueIdentifier | None = field(
+        default=None, repr=False
+    )
+    split_key_unique_identifiers: tuple[extensions.UniqueIdentifier, ...] | None = field(
+        default=None, repr=False
+    )
+
+    @property
+    def metadata_v2(self) -> BatchItemMetadataV2:
+        """Return the versioned common metadata while preserving exact message presence."""
+        return BatchItemMetadataV2(
+            self.operation,
+            self.outcome,
+            self.result_status,
+            self.result_reason,
+            self.result_message,
+        )
 
 
 class BatchResult(_ClientHandle):
@@ -968,19 +1032,21 @@ def _batch_result(handle: Any) -> BatchResult:
                 errors.raise_for_status(7)
             item = _wrap_owned_handle(_ClientBatchItemResponse, item_output[0])
             try:
-                metadata = ffi.new("kmipkit_client_batch_item_metadata_v1_t *")
+                metadata = ffi.new("kmipkit_client_batch_item_metadata_v2_t *")
                 metadata.struct_size = ffi.sizeof(
-                    "kmipkit_client_batch_item_metadata_v1_t"
+                    "kmipkit_client_batch_item_metadata_v2_t"
                 )
-                metadata.abi_version = 1
+                metadata.abi_version = 2
                 _raise_abi_status(
-                    lib.kmipkit_client_batch_item_response_metadata_v1(
+                    lib.kmipkit_client_batch_item_response_metadata_v2(
                         item._pointer(), metadata
                     )
                 )
-                if metadata.abi_version != 1 or metadata.struct_size != ffi.sizeof(
-                    "kmipkit_client_batch_item_metadata_v1_t"
+                if metadata.abi_version != 2 or metadata.struct_size != ffi.sizeof(
+                    "kmipkit_client_batch_item_metadata_v2_t"
                 ):
+                    errors.raise_for_status(4)
+                if metadata.reserved != 0 or metadata.has_result_message not in (0, 1):
                     errors.raise_for_status(4)
                 try:
                     outcome: BatchOutcome | int = BatchOutcome(metadata.outcome_kind)
@@ -993,6 +1059,13 @@ def _batch_result(handle: Any) -> BatchResult:
                     if metadata.has_result_reason == 1
                     else None
                 )
+                message_bytes = _metadata_result_message(metadata)
+                try:
+                    result_message = (
+                        None if message_bytes is None else message_bytes.decode("utf-8", errors="strict")
+                    )
+                except UnicodeDecodeError:
+                    errors.raise_for_status(4)
                 unique_id = _response_span(
                     item, lib.kmipkit_client_batch_item_response_unique_batch_item_id
                 )
@@ -1001,6 +1074,9 @@ def _batch_result(handle: Any) -> BatchResult:
                     lib.kmipkit_client_batch_item_response_pending_correlation_value,
                 )
                 supported_versions = _discover_versions_supported_versions(item)
+                create_object_type, create_identifier = _create_response(item)
+                private_identifier, public_identifier = _create_key_pair_response(item)
+                split_identifiers = _create_split_key_response(item)
                 items.append(
                     BatchItemResult(
                         outcome,
@@ -1009,6 +1085,13 @@ def _batch_result(handle: Any) -> BatchResult:
                         unique_id,
                         correlation,
                         supported_versions,
+                        int(metadata.operation),
+                        result_message,
+                        create_object_type,
+                        create_identifier,
+                        private_identifier,
+                        public_identifier,
+                        split_identifiers,
                     )
                 )
             finally:
@@ -1022,6 +1105,130 @@ def _batch_result(handle: Any) -> BatchResult:
 
 class _ClientBatchItemResponse(_ClientHandle):
     _release_name = "kmipkit_client_batch_item_response_release"
+
+
+def _metadata_result_message(metadata: Any) -> bytes | None:
+    if metadata.has_result_message == 0:
+        if metadata.result_message_data != ffi.NULL or metadata.result_message_length != 0:
+            errors.raise_for_status(4)
+        return None
+    if metadata.result_message_length > _MAX_INPUT_BYTES:
+        errors.raise_for_status(6)
+    if metadata.result_message_length != 0 and metadata.result_message_data == ffi.NULL:
+        errors.raise_for_status(4)
+    return (
+        bytes(ffi.buffer(metadata.result_message_data, int(metadata.result_message_length)))
+        if metadata.result_message_length
+        else b""
+    )
+
+
+def _initialize_unique_identifier_output() -> Any:
+    output = ffi.new("kmipkit_unique_identifier_v1_t *")
+    output.struct_size = ffi.sizeof("kmipkit_unique_identifier_v1_t")
+    output.abi_version = 1
+    return output
+
+
+def _read_unique_identifier(output: Any) -> extensions.UniqueIdentifier:
+    if (
+        output.struct_size != ffi.sizeof("kmipkit_unique_identifier_v1_t")
+        or output.abi_version != 1
+        or output.reserved != 0
+    ):
+        errors.raise_for_status(4)
+    kind = int(output.kind)
+    if kind == int(extensions.UniqueIdentifierKind.TEXT_STRING):
+        if output.text_length > _MAX_INPUT_BYTES or (
+            output.text_length != 0 and output.text_data == ffi.NULL
+        ):
+            errors.raise_for_status(4)
+        raw = (
+            bytes(ffi.buffer(output.text_data, int(output.text_length)))
+            if output.text_length
+            else b""
+        )
+        try:
+            return extensions.UniqueIdentifier.text_string(raw.decode("utf-8", errors="strict"))
+        except UnicodeDecodeError:
+            errors.raise_for_status(4)
+    if kind == int(extensions.UniqueIdentifierKind.ENUMERATION):
+        if output.text_data != ffi.NULL or output.text_length != 0 or output.integer_value != 0:
+            errors.raise_for_status(4)
+        return extensions.UniqueIdentifier.enumeration(int(output.enumeration_value))
+    if kind == int(extensions.UniqueIdentifierKind.INTEGER):
+        if (
+            output.text_data != ffi.NULL
+            or output.text_length != 0
+            or output.enumeration_value != 0
+        ):
+            errors.raise_for_status(4)
+        return extensions.UniqueIdentifier.integer(int(output.integer_value))
+    errors.raise_for_status(4)
+
+
+def _create_response(
+    item: _ClientBatchItemResponse,
+) -> tuple[int | None, extensions.UniqueIdentifier | None]:
+    present = ffi.new("uint8_t *")
+    object_type = ffi.new("uint32_t *")
+    identifier = _initialize_unique_identifier_output()
+    _raise_abi_status(
+        lib.kmipkit_client_batch_item_response_create(
+            item._pointer(), present, object_type, identifier
+        )
+    )
+    if present[0] == 0:
+        return None, None
+    if present[0] != 1:
+        errors.raise_for_status(4)
+    return int(object_type[0]), _read_unique_identifier(identifier)
+
+
+def _create_key_pair_response(
+    item: _ClientBatchItemResponse,
+) -> tuple[extensions.UniqueIdentifier | None, extensions.UniqueIdentifier | None]:
+    present = ffi.new("uint8_t *")
+    private_identifier = _initialize_unique_identifier_output()
+    public_identifier = _initialize_unique_identifier_output()
+    _raise_abi_status(
+        lib.kmipkit_client_batch_item_response_create_key_pair(
+            item._pointer(), present, private_identifier, public_identifier
+        )
+    )
+    if present[0] == 0:
+        return None, None
+    if present[0] != 1:
+        errors.raise_for_status(4)
+    return _read_unique_identifier(private_identifier), _read_unique_identifier(public_identifier)
+
+
+def _create_split_key_response(
+    item: _ClientBatchItemResponse,
+) -> tuple[extensions.UniqueIdentifier, ...] | None:
+    present = ffi.new("uint8_t *")
+    count = ffi.new("uint64_t *")
+    _raise_abi_status(
+        lib.kmipkit_client_batch_item_response_create_split_key_count(item._pointer(), present, count)
+    )
+    if present[0] == 0:
+        if count[0] != 0:
+            errors.raise_for_status(4)
+        return None
+    if present[0] != 1 or count[0] < 1:
+        errors.raise_for_status(4)
+    if count[0] > _MAX_SPLIT_KEY_IDENTIFIERS:
+        errors.raise_for_status(6)
+    identifiers: list[extensions.UniqueIdentifier] = []
+    for index in range(int(count[0])):
+        output = _initialize_unique_identifier_output()
+        _raise_abi_status(
+            lib.kmipkit_client_batch_item_response_create_split_key_unique_identifier_at(
+                item._pointer(), index, output
+            )
+        )
+        identifiers.append(_read_unique_identifier(output))
+    return tuple(identifiers)
 
 
 def _discover_versions_supported_versions(
@@ -1257,6 +1464,7 @@ def _nonempty_text(value: str) -> str:
 
 __all__ = [
     "Batch",
+    "BatchItemMetadataV2",
     "BatchItemResult",
     "BatchOutcome",
     "BatchResult",

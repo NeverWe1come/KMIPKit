@@ -87,6 +87,7 @@ pub fn capability_is_available(capability_id: &str) -> Result<bool, RuntimeMetad
             | "vendor_extension_registry"
             | "discover_versions_request_item"
             | "opaque_register_context"
+            | "server_generated_creation"
     ))
 }
 

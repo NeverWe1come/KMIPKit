@@ -112,6 +112,13 @@ public final class NativeExtensionRegistry {
             boolean criticalityIndicator);
     public static native long clientBatchItemWithExtension(long item, long requestExtension);
     public static native long clientBatchItemDiscoverVersions();
+    public static native long clientBatchItemCreate(long objectType, long attributes, long protectionStorageMasks);
+    public static native long clientBatchItemCreateKeyPair(long commonAttributes, long privateKeyAttributes,
+            long publicKeyAttributes, long commonProtectionStorageMasks,
+            long privateProtectionStorageMasks, long publicProtectionStorageMasks);
+    public static native long clientBatchItemCreateSplitKey(long objectType, int parts, int threshold,
+            long method, int identifierKind, byte[] identifierText, long identifierNumber,
+            byte[] primeFieldSize, long attributes, long protectionStorageMasks);
     public static native long registerRequestCreate(int objectType, long attributes, long object);
     public static native long registerRequestWithOpaqueObjectContext(long request, int context);
     public static native long clientBatchItemRegister(long request);
@@ -140,10 +147,14 @@ public final class NativeExtensionRegistry {
     public static native long clientBatchResponseItemCount(long response);
     public static native long clientBatchResponseItemAt(long response, long index);
     public static native long[] clientBatchItemResponseMetadata(long itemResponse);
+    public static native Object[] clientBatchItemResponseMetadataV2(long itemResponse);
     public static native @Nullable byte[] clientBatchItemResponseUniqueBatchItemId(long itemResponse);
     public static native @Nullable byte[] clientBatchItemResponsePendingCorrelationValue(long itemResponse);
     public static native @Nullable long[] clientBatchItemResponseDiscoverVersionsSupportedVersions(
             long itemResponse);
+    public static native Object[] clientBatchItemResponseCreate(long itemResponse);
+    public static native Object[] clientBatchItemResponseCreateKeyPair(long itemResponse);
+    public static native Object[] clientBatchItemResponseCreateSplitKey(long itemResponse);
     public static native long extensionInformationCreate(String extensionName);
     public static native long extensionInformationWithTag(long information, int tag);
     public static native long extensionInformationWithType(long information, int type);

@@ -553,7 +553,7 @@
         },
         "resultStatus": 0,
         "resultReason": null,
-        "resultMessage": "création ✓",
+        "resultMessage": null,
         "resultMessagePresencePreserved": true
       },
       "javaObservedOutput": {
@@ -568,7 +568,7 @@
         },
         "resultStatus": 0,
         "resultReason": null,
-        "resultMessage": "création ✓",
+        "resultMessage": null,
         "resultMessagePresencePreserved": true
       },
       "errorCategory": null,
@@ -742,13 +742,13 @@
           {"wireType": "TextString", "text": "part-a"}
         ],
         "resultStatus": 0,
-        "resultMessage": "split pending? no, complete",
+        "resultMessage": null,
         "resultMessagePresencePreserved": true,
         "pendingMetadata": {
           "sourceOperation": 40,
           "status": 2,
           "resultReason": null,
-          "resultMessage": "server still preparing shares",
+          "resultMessage": null,
           "correlationValueHex": "00ff80"
         },
         "automaticFollowUp": false
@@ -772,13 +772,13 @@
           {"wireType": "TextString", "text": "part-a"}
         ],
         "resultStatus": 0,
-        "resultMessage": "split pending? no, complete",
+        "resultMessage": null,
         "resultMessagePresencePreserved": true,
         "pendingMetadata": {
           "sourceOperation": 40,
           "status": 2,
           "resultReason": null,
-          "resultMessage": "server still preparing shares",
+          "resultMessage": null,
           "correlationValueHex": "00ff80"
         },
         "automaticFollowUp": false
@@ -807,6 +807,66 @@
           "status": "available",
           "testFile": "bindings/python/tests/test_shared_parity_fixtures.py",
           "test": "test_creation_split_key_matches_shared_fixture"
+        }
+      }
+    },
+    {
+      "id": "creation.result-message-on-failure.v1",
+      "capability": "client_execution",
+      "requirementIds": [
+        "KMIPKIT-0014-FR-001",
+        "KMIPKIT-0014-FR-002",
+        "KMIPKIT-0043-FR-010"
+      ],
+      "normativeSource": "OASIS KMIP v2.1 §8.6, Table 399; §9.17",
+      "input": {
+        "operation": "Create",
+        "resultStatus": 1,
+        "resultReason": 5,
+        "resultMessage": "création refusée ✓"
+      },
+      "expectedOutput": {
+        "operation": 1,
+        "outcomeKind": 1,
+        "resultStatus": 1,
+        "resultReason": 5,
+        "resultMessage": "création refusée ✓",
+        "resultMessagePresencePreserved": true,
+        "responsePayloadPresent": false
+      },
+      "javaObservedOutput": {
+        "operation": 1,
+        "outcomeKind": 1,
+        "resultStatus": 1,
+        "resultReason": 5,
+        "resultMessage": "création refusée ✓",
+        "resultMessagePresencePreserved": true,
+        "responsePayloadPresent": false
+      },
+      "errorCategory": null,
+      "cleanup": [
+        "copy-result-message-before-closing-result-view",
+        "redact-result-message-from-default-formatting"
+      ],
+      "consumerTests": {
+        "rust": {
+          "status": "available",
+          "testFile": "crates/kmipkit-client/tests/creation_parity_tests.rs",
+          "test": "creation_result_message_fixture_is_limited_to_operation_failure"
+        },
+        "c": {
+          "status": "available",
+          "testFile": "bindings/c/tests/client_abi_consumer.c",
+          "test": "execute_public_tls_request"
+        },
+        "java": {
+          "status": "available",
+          "test": "org.kmipkit.extensions.CreationResultValueTest#failureResultMessageMatchesTheSharedFixture"
+        },
+        "python": {
+          "status": "available",
+          "testFile": "bindings/python/tests/test_shared_parity_fixtures.py",
+          "test": "test_creation_result_message_matches_failure_fixture"
         }
       }
     }

@@ -22,6 +22,7 @@ from ._handles import (
     NativeHandle,
     _invoke,
     _invoke_consuming,
+    _integer_range,
     _owned_bytes,
     _scalar,
     synchronize_public_functions,
@@ -272,6 +273,54 @@ class OpaqueObjectContext(IntEnum):
 
     GENERIC = 1
     MANAGED_CRYPTOGRAPHIC_OBJECT = 2
+
+
+class UniqueIdentifierKind(IntEnum):
+    """Exact TTLV wire type used by a KMIP Unique Identifier."""
+
+    TEXT_STRING = 1
+    ENUMERATION = 2
+    INTEGER = 3
+
+
+@dataclass(frozen=True, slots=True, repr=False)
+class UniqueIdentifier:
+    """Exact KMIP Unique Identifier value with its original wire type."""
+
+    kind: UniqueIdentifierKind
+    text: str | None = None
+    number: int | None = None
+
+    def __post_init__(self) -> None:
+        if not isinstance(self.kind, UniqueIdentifierKind):
+            errors.raise_for_status(4)
+        if self.kind is UniqueIdentifierKind.TEXT_STRING:
+            if self.text is None or self.number is not None:
+                errors.raise_for_status(4)
+            _owned_bytes(self.text, _MAX_UNIQUE_BATCH_ITEM_ID_BYTES)
+        elif self.kind is UniqueIdentifierKind.ENUMERATION:
+            if self.text is not None or self.number is None:
+                errors.raise_for_status(4)
+            _integer_range(self.number, 0, 0xFFFF_FFFF)
+        else:
+            if self.text is not None or self.number is None:
+                errors.raise_for_status(4)
+            _integer_range(self.number, -(1 << 31), (1 << 31) - 1)
+
+    @classmethod
+    def text_string(cls, value: str) -> UniqueIdentifier:
+        return cls(UniqueIdentifierKind.TEXT_STRING, text=value)
+
+    @classmethod
+    def enumeration(cls, value: int) -> UniqueIdentifier:
+        return cls(UniqueIdentifierKind.ENUMERATION, number=value)
+
+    @classmethod
+    def integer(cls, value: int) -> UniqueIdentifier:
+        return cls(UniqueIdentifierKind.INTEGER, number=value)
+
+    def __repr__(self) -> str:
+        return f"UniqueIdentifier(kind={self.kind.name}, value=redacted)"
 
 
 class RegisterRequest(NativeHandle):
@@ -1278,6 +1327,141 @@ def client_batch_item_register(request: RegisterRequest) -> ClientBatchItem:
     return _wrap_owned_handle(ClientBatchItem, handle)
 
 
+def _native_structure(value: ttlv.Structure | None, *, required: bool = False) -> Any:
+    if value is None:
+        if required:
+            errors.raise_for_status(4)
+        return ffi.NULL
+    if not isinstance(value, ttlv.Structure):
+        errors.raise_for_status(4)
+    return value._pointer()
+
+
+def _native_unique_identifier(
+    value: UniqueIdentifier | None,
+) -> tuple[Any, Any]:
+    if value is None:
+        return ffi.NULL, None
+    if not isinstance(value, UniqueIdentifier):
+        errors.raise_for_status(4)
+    record = ffi.new("kmipkit_unique_identifier_v1_t *")
+    record.struct_size = ffi.sizeof("kmipkit_unique_identifier_v1_t")
+    record.abi_version = 1
+    record.kind = int(value.kind)
+    record.reserved = 0
+    record.enumeration_value = 0
+    record.integer_value = 0
+    owner = None
+    if value.kind is UniqueIdentifierKind.TEXT_STRING:
+        raw, owner = _owned_bytes(value.text, _MAX_UNIQUE_BATCH_ITEM_ID_BYTES)
+        data = ffi.new("uint8_t[]", raw) if raw else ffi.NULL
+        record.text_data = data
+        record.text_length = len(raw)
+        owner = (owner, data)
+    else:
+        record.text_data = ffi.NULL
+        record.text_length = 0
+        if value.kind is UniqueIdentifierKind.ENUMERATION:
+            record.enumeration_value = int(value.number)
+        else:
+            record.integer_value = int(value.number)
+    return record, owner
+
+
+def client_batch_item_create(
+    object_type: int,
+    attributes: ttlv.Structure,
+    protection_storage_masks: ttlv.Structure | None = None,
+) -> ClientBatchItem:
+    """Create a Create batch item with required Attributes and optional masks."""
+    raw_object_type = _integer_range(object_type, 0, 0xFFFF_FFFF)
+    handle = _make_handle(
+        "kmipkit_client_batch_item_t",
+        "kmipkit_client_batch_item_create",
+        (
+            raw_object_type,
+            _native_structure(attributes, required=True),
+            _native_structure(protection_storage_masks),
+        ),
+    )
+    return _wrap_owned_handle(ClientBatchItem, handle)
+
+
+def client_batch_item_create_key_pair(
+    common_attributes: ttlv.Structure | None = None,
+    private_key_attributes: ttlv.Structure | None = None,
+    public_key_attributes: ttlv.Structure | None = None,
+    common_protection_storage_masks: ttlv.Structure | None = None,
+    private_protection_storage_masks: ttlv.Structure | None = None,
+    public_protection_storage_masks: ttlv.Structure | None = None,
+) -> ClientBatchItem:
+    """Create a Create Key Pair batch item preserving each optional group separately."""
+    handle = _make_handle(
+        "kmipkit_client_batch_item_t",
+        "kmipkit_client_batch_item_create_key_pair",
+        (
+            _native_structure(common_attributes),
+            _native_structure(private_key_attributes),
+            _native_structure(public_key_attributes),
+            _native_structure(common_protection_storage_masks),
+            _native_structure(private_protection_storage_masks),
+            _native_structure(public_protection_storage_masks),
+        ),
+    )
+    return _wrap_owned_handle(ClientBatchItem, handle)
+
+
+def client_batch_item_create_split_key(
+    object_type: int,
+    split_key_parts: int,
+    split_key_threshold: int,
+    split_key_method: int,
+    attributes: ttlv.Structure,
+    *,
+    unique_identifier: UniqueIdentifier | None = None,
+    prime_field_size: bytes | bytearray | memoryview | None = None,
+    protection_storage_masks: ttlv.Structure | None = None,
+) -> ClientBatchItem:
+    """Create a Create Split Key item with signed fields and explicit optional values."""
+    raw_object_type = _integer_range(object_type, 0, 0xFFFF_FFFF)
+    parts = _integer_range(split_key_parts, -(1 << 31), (1 << 31) - 1)
+    threshold = _integer_range(split_key_threshold, -(1 << 31), (1 << 31) - 1)
+    method = _integer_range(split_key_method, 0, 0xFFFF_FFFF)
+    identifier, identifier_owner = _native_unique_identifier(unique_identifier)
+    if prime_field_size is None:
+        has_prime = 0
+        prime_data = ffi.NULL
+        prime_length = 0
+        prime_owner = None
+    else:
+        if not isinstance(prime_field_size, (bytes, bytearray, memoryview)):
+            errors.raise_for_status(4)
+        raw_prime, prime_owner = _owned_bytes(prime_field_size, _MAX_UNIQUE_BATCH_ITEM_ID_BYTES)
+        prime_data = ffi.new("uint8_t[]", raw_prime) if raw_prime else ffi.NULL
+        has_prime = 1
+        prime_length = len(raw_prime)
+        prime_owner = (prime_owner, prime_data)
+    handle = _make_handle(
+        "kmipkit_client_batch_item_t",
+        "kmipkit_client_batch_item_create_split_key",
+        (
+            raw_object_type,
+            identifier,
+            parts,
+            threshold,
+            method,
+            has_prime,
+            prime_data,
+            prime_length,
+            _native_structure(attributes, required=True),
+            _native_structure(protection_storage_masks),
+        ),
+    )
+    # Keep temporary copied values alive until the synchronous ABI call returns.
+    _ = identifier_owner, prime_owner
+    return _wrap_owned_handle(ClientBatchItem, handle)
+
+
 def client_batch_item_extension_count(item: ClientBatchItem) -> int:
     """Return the number of attached request extensions."""
     return _scalar(
@@ -1341,10 +1525,15 @@ __all__ = [
     "OpaqueObjectContext",
     "RegisteredExtensionValue",
     "RegisterRequest",
+    "UniqueIdentifier",
+    "UniqueIdentifierKind",
     "TtlvPath",
     "ValidatedExtensionValue",
     "client_batch_item_discover_versions",
     "client_batch_item_register",
+    "client_batch_item_create",
+    "client_batch_item_create_key_pair",
+    "client_batch_item_create_split_key",
     "client_batch_item_extension_count",
     "client_batch_item_extension_criticality_indicator_at",
     "client_batch_item_extension_identity_at",

@@ -1525,6 +1525,71 @@ pub enum ClientOperation {
     QueryAsyncRequests,
 }
 
+impl ClientOperation {
+    /// Returns the KMIP 2.1 Operation Enumeration from §11.36, Table 470.
+    #[must_use]
+    pub const fn raw(self) -> u32 {
+        match self {
+            Self::Activate => 0x12,
+            Self::AddAttribute => 0x0d,
+            Self::AdjustAttribute => 0x30,
+            Self::Archive => 0x15,
+            Self::Cancel => 0x19,
+            Self::Certify => 0x06,
+            Self::Check => 0x09,
+            Self::Create => 0x01,
+            Self::CreateKeyPair => 0x02,
+            Self::CreateSplitKey => 0x28,
+            Self::Decrypt => 0x20,
+            Self::DeleteAttribute => 0x0f,
+            Self::DeriveKey => 0x05,
+            Self::Destroy => 0x14,
+            Self::DiscoverVersions => 0x1e,
+            Self::Encrypt => 0x1f,
+            Self::Export => 0x2b,
+            Self::Get => 0x0a,
+            Self::GetAttributeList => 0x0c,
+            Self::GetAttributes => 0x0b,
+            Self::GetConstraints => 0x38,
+            Self::GetUsageAllocation => 0x11,
+            Self::Hash => 0x27,
+            Self::Import => 0x2a,
+            Self::Interop => 0x34,
+            Self::JoinSplitKey => 0x29,
+            Self::Log => 0x2c,
+            Self::Login => 0x2d,
+            Self::Logout => 0x2e,
+            Self::Locate => 0x08,
+            Self::Mac => 0x23,
+            Self::MacVerify => 0x24,
+            Self::ModifyAttribute => 0x0e,
+            Self::ObtainLease => 0x10,
+            Self::Pkcs11 => 0x33,
+            Self::Ping => 0x3b,
+            Self::Poll => 0x1a,
+            Self::Process => 0x3a,
+            Self::Query => 0x18,
+            Self::QueryAsyncRequests => 0x39,
+            Self::Recertify => 0x07,
+            Self::Recover => 0x16,
+            Self::Register => 0x03,
+            Self::Rekey => 0x04,
+            Self::RekeyKeyPair => 0x1d,
+            Self::ReProvision => 0x35,
+            Self::Revoke => 0x13,
+            Self::RngRetrieve => 0x25,
+            Self::RngSeed => 0x26,
+            Self::SetAttribute => 0x31,
+            Self::SetConstraints => 0x37,
+            Self::SetDefaults => 0x36,
+            Self::Sign => 0x21,
+            Self::SignatureVerify => 0x22,
+            Self::Validate => 0x17,
+            Self::DelegatedLogin => 0x2f,
+        }
+    }
+}
+
 /// A completed or Pending asynchronous operation response owned by the client.
 ///
 /// Correlation values stay inside the zeroizing generic response tree and are

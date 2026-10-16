@@ -7,6 +7,7 @@ import org.kmipkit.InvalidInputException;
 import org.kmipkit.NativeExtensionRegistry;
 import org.kmipkit.ResourceLimitException;
 import org.kmipkit.internal.NativeHandle;
+import org.kmipkit.ttlv.TtlvStructure;
 
 /** Typed request batch item with caller-ordered registry-validated extensions. */
 public final class ClientBatchItem implements AutoCloseable {
@@ -34,6 +35,74 @@ public final class ClientBatchItem implements AutoCloseable {
         }
         long consumed = NativeHandle.transferAll(request.nativeHandleOwner())[0];
         return new ClientBatchItem(NativeExtensionRegistry.clientBatchItemRegister(consumed), List.of());
+    }
+
+    /** Creates a Create request while borrowing and copying the supplied TTLV structures. */
+    public static ClientBatchItem create(
+            long objectType, TtlvStructure attributes, TtlvStructure protectionStorageMasks) {
+        NativeExtensionRegistry.ensureLoaded();
+        requireStructure(attributes, "Create Attributes");
+        requireU32(objectType, "Object Type");
+        long value = NativeHandle.withNativeHandles(() -> NativeExtensionRegistry.clientBatchItemCreate(
+                objectType, attributes.handle(), handleOrNull(protectionStorageMasks)));
+        return new ClientBatchItem(value, List.of());
+    }
+
+    /** Creates a Create Key Pair request with distinct, independently ordered attribute groups. */
+    public static ClientBatchItem createKeyPair(
+            TtlvStructure commonAttributes,
+            TtlvStructure privateKeyAttributes,
+            TtlvStructure publicKeyAttributes,
+            TtlvStructure commonProtectionStorageMasks,
+            TtlvStructure privateProtectionStorageMasks,
+            TtlvStructure publicProtectionStorageMasks) {
+        NativeExtensionRegistry.ensureLoaded();
+        long value = NativeHandle.withNativeHandles(() -> NativeExtensionRegistry.clientBatchItemCreateKeyPair(
+                handleOrNull(commonAttributes), handleOrNull(privateKeyAttributes),
+                handleOrNull(publicKeyAttributes), handleOrNull(commonProtectionStorageMasks),
+                handleOrNull(privateProtectionStorageMasks), handleOrNull(publicProtectionStorageMasks)));
+        return new ClientBatchItem(value, List.of());
+    }
+
+    /** Creates a Create Split Key request, preserving signed fields and optional byte strings. */
+    public static ClientBatchItem createSplitKey(
+            long objectType,
+            UniqueIdentifier uniqueIdentifier,
+            int splitKeyParts,
+            int splitKeyThreshold,
+            long splitKeyMethod,
+            byte[] primeFieldSize,
+            TtlvStructure attributes,
+            TtlvStructure protectionStorageMasks) {
+        NativeExtensionRegistry.ensureLoaded();
+        requireU32(objectType, "Object Type");
+        requireU32(splitKeyMethod, "Split Key Method");
+        requireStructure(attributes, "Create Split Key Attributes");
+        byte[] identifierText = uniqueIdentifier == null ? null : uniqueIdentifier.nativeText();
+        int identifierKind = uniqueIdentifier == null ? 0 : uniqueIdentifier.nativeKind();
+        long identifierNumber = uniqueIdentifier == null ? 0 : uniqueIdentifier.nativeNumber();
+        byte[] primeFieldCopy = primeFieldSize == null ? null : primeFieldSize.clone();
+        long value = NativeHandle.withNativeHandles(() -> NativeExtensionRegistry.clientBatchItemCreateSplitKey(
+                objectType, splitKeyParts, splitKeyThreshold, splitKeyMethod, identifierKind,
+                identifierText, identifierNumber, primeFieldCopy, attributes.handle(),
+                handleOrNull(protectionStorageMasks)));
+        return new ClientBatchItem(value, List.of());
+    }
+
+    private static void requireStructure(TtlvStructure structure, String label) {
+        if (structure == null) {
+            throw new InvalidInputException(label + " are required");
+        }
+    }
+
+    private static long handleOrNull(TtlvStructure structure) {
+        return structure == null ? 0 : structure.handle();
+    }
+
+    private static void requireU32(long value, String label) {
+        if (value < 0 || value > 0xffff_ffffL) {
+            throw new InvalidInputException(label + " is outside uint32");
+        }
     }
 
     public ClientBatchItem withExtension(ClientRequestMessageExtension extension) {

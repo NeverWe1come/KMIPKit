@@ -1,8 +1,8 @@
+use kmipkit_client::ClientOperation;
 use kmipkit_protocol::{
     AttributeSet, CreateKeyPairRequest, CreateRequest, CreateSplitKeyRequest, ObjectType,
     SplitKeyMethod, UniqueIdentifier,
 };
-use kmipkit_client::ClientOperation;
 use kmipkit_ttlv::{Item, RawTag, Structure, Value, ValueView};
 use serde_json::Value as JsonValue;
 
@@ -50,7 +50,7 @@ fn payload_tags(payload: &Structure) -> Vec<u32> {
 fn create_request_and_result_match_shared_creation_fixture() {
     let case = fixture_case("creation.create.request-response.v1");
     assert_eq!(case["input"]["attributesPresent"], true);
-    assert_eq!(case["expectedOutput"]["resultMessage"], "création ✓");
+    assert!(case["expectedOutput"]["resultMessage"].is_null());
 
     let payload = CreateRequest::new(ObjectType::from_raw(0xffff_ffff), AttributeSet::new())
         .with_protection_storage_masks(Structure::new())
@@ -122,6 +122,8 @@ fn create_split_key_request_and_result_match_shared_creation_fixture() {
         case["expectedOutput"]["pendingMetadata"]["correlationValueHex"],
         "00ff80"
     );
+    assert!(case["expectedOutput"]["resultMessage"].is_null());
+    assert!(case["expectedOutput"]["pendingMetadata"]["resultMessage"].is_null());
 
     let payload = CreateSplitKeyRequest::new(
         ObjectType::from_raw(0xf000_0000),
@@ -171,5 +173,23 @@ fn creation_result_message_fixture_is_limited_to_operation_failure() {
     let failure = fixture_case("creation.result-message-on-failure.v1");
     assert_eq!(failure["expectedOutput"]["resultStatus"], 1);
     assert_eq!(failure["expectedOutput"]["resultReason"], 5);
-    assert_eq!(failure["expectedOutput"]["resultMessage"], "création refusée ✓");
+    assert_eq!(
+        failure["expectedOutput"]["resultMessage"],
+        "création refusée ✓"
+    );
+    let result = kmipkit_protocol::KmipOperationResult::new(
+        kmipkit_protocol::ResultStatus::from_raw(1),
+        Some(kmipkit_protocol::ResultReason::from_raw(5)),
+        Some(kmipkit_protocol::ResultMessage::new(
+            "création refusée ✓".to_owned(),
+        )),
+    )
+    .expect("an Operation Failed result with a Result Reason is valid");
+    assert_eq!(
+        result
+            .message()
+            .map(kmipkit_protocol::ResultMessage::as_str),
+        Some("création refusée ✓")
+    );
+    assert!(!format!("{result:?}").contains("création refusée"));
 }

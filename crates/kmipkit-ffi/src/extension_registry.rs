@@ -10,31 +10,33 @@ use std::{collections::HashMap, collections::hash_map::Entry};
 use std::{fs, io::Read};
 
 use crate::{
-    kmipkit_client_batch_item_metadata_v1_t, kmipkit_client_batch_item_response_t,
-    kmipkit_client_batch_item_t, kmipkit_client_batch_response_t, kmipkit_client_batch_t,
-    kmipkit_client_configuration_t, kmipkit_client_extension_registry_t,
-    kmipkit_client_request_message_extension_t, kmipkit_client_t, kmipkit_codec_limits_t,
-    kmipkit_extension_child_rule_t, kmipkit_extension_compatibility_t,
-    kmipkit_extension_definition_t, kmipkit_extension_discriminator_t,
-    kmipkit_extension_identity_t, kmipkit_extension_information_t,
-    kmipkit_extension_order_constraint_t, kmipkit_extension_recognition_t,
-    kmipkit_extension_registry_limits_v1_t, kmipkit_extension_schema_t, kmipkit_raw_tag_t,
-    kmipkit_register_request_t, kmipkit_registered_extension_value_t, kmipkit_request_options_v1_t,
-    kmipkit_tag_t, kmipkit_timeout_limit_v1_t, kmipkit_transport_config_t,
-    kmipkit_transport_config_v1_t, kmipkit_transport_input_v1_t, kmipkit_ttlv_item_t,
-    kmipkit_ttlv_item_view_t, kmipkit_ttlv_path_t, kmipkit_ttlv_structure_t,
-    kmipkit_ttlv_structure_view_t, kmipkit_ttlv_value_t, kmipkit_ttlv_value_view_t,
+    kmipkit_client_batch_item_metadata_v1_t, kmipkit_client_batch_item_metadata_v2_t,
+    kmipkit_client_batch_item_response_t, kmipkit_client_batch_item_t,
+    kmipkit_client_batch_response_t, kmipkit_client_batch_t, kmipkit_client_configuration_t,
+    kmipkit_client_extension_registry_t, kmipkit_client_request_message_extension_t,
+    kmipkit_client_t, kmipkit_codec_limits_t, kmipkit_extension_child_rule_t,
+    kmipkit_extension_compatibility_t, kmipkit_extension_definition_t,
+    kmipkit_extension_discriminator_t, kmipkit_extension_identity_t,
+    kmipkit_extension_information_t, kmipkit_extension_order_constraint_t,
+    kmipkit_extension_recognition_t, kmipkit_extension_registry_limits_v1_t,
+    kmipkit_extension_schema_t, kmipkit_raw_tag_t, kmipkit_register_request_t,
+    kmipkit_registered_extension_value_t, kmipkit_request_options_v1_t, kmipkit_tag_t,
+    kmipkit_timeout_limit_v1_t, kmipkit_transport_config_t, kmipkit_transport_config_v1_t,
+    kmipkit_transport_input_v1_t, kmipkit_ttlv_item_t, kmipkit_ttlv_item_view_t,
+    kmipkit_ttlv_path_t, kmipkit_ttlv_structure_t, kmipkit_ttlv_structure_view_t,
+    kmipkit_ttlv_value_t, kmipkit_ttlv_value_view_t, kmipkit_unique_identifier_v1_t,
     kmipkit_validated_extension_value_t,
 };
 use kmipkit_client::extension_registry as client_extension;
 use kmipkit_client::{
     Client, ClientBatch, ClientBatchItem, ClientBatchResponse, ClientCauseCategory, ClientError,
-    ClientErrorCategory,
+    ClientErrorCategory, ClientRequest,
 };
 use kmipkit_protocol::extension;
 use kmipkit_protocol::{
-    AttributeSet, ObjectType, OpaqueObjectContext, ProtocolError, ProtocolErrorKind,
-    RegisterRequest,
+    AttributeSet, CreateKeyPairRequest, CreateRequest, CreateSplitKeyRequest, ObjectType,
+    OpaqueObjectContext, ProtocolError, ProtocolErrorKind, RegisterRequest, SplitKeyMethod,
+    UniqueIdentifier,
 };
 use kmipkit_transport::{
     CertificateInput, ClientIdentity, Endpoint, PrivateKeyInput, RequestDeliveryState,
@@ -2531,6 +2533,248 @@ pub extern "C" fn kmipkit_client_batch_item_discover_versions(
         *out = try_ffi!(try_make_handle(
             Kind::BatchItem,
             HandleValue::BatchItem(Box::new(ClientBatchItem::discover_versions())),
+        ));
+        SUCCESS
+    })
+}
+
+fn copy_structure_handle(
+    structure: *mut kmipkit_ttlv_structure_t,
+    required: bool,
+) -> FfiResult<Option<Structure>> {
+    if structure.is_null() {
+        return if required {
+            Err(ERROR_INVALID_INPUT)
+        } else {
+            Ok(None)
+        };
+    }
+    let handle = reference_handle(structure, Kind::Structure)?;
+    let HandleValue::Structure(source) = &handle.value else {
+        return Err(ERROR_INVALID_INPUT);
+    };
+    source.view().try_clone().map(Some).map_err(model_status)
+}
+
+fn copy_attribute_set_handle(
+    structure: *mut kmipkit_ttlv_structure_t,
+    required: bool,
+) -> FfiResult<Option<AttributeSet>> {
+    if structure.is_null() {
+        return if required {
+            Err(ERROR_INVALID_INPUT)
+        } else {
+            Ok(None)
+        };
+    }
+    let handle = reference_handle(structure, Kind::Structure)?;
+    let HandleValue::Structure(source) = &handle.value else {
+        return Err(ERROR_INVALID_INPUT);
+    };
+    let view = source.view();
+    let children = view.children();
+    let mut items = Vec::new();
+    items
+        .try_reserve_exact(children.len())
+        .map_err(|_| ERROR_RESOURCE_LIMIT)?;
+    for child in children {
+        items.push(child.try_clone().map_err(model_status)?);
+    }
+    AttributeSet::try_new(items)
+        .map(Some)
+        .map_err(|_| ERROR_INVALID_INPUT)
+}
+
+fn copy_unique_identifier(
+    identifier: *const kmipkit_unique_identifier_v1_t,
+) -> FfiResult<Option<UniqueIdentifier>> {
+    if identifier.is_null() {
+        return Ok(None);
+    }
+    // SAFETY: the caller promises a readable versioned input record for this call.
+    let value = unsafe { identifier.read() };
+    if value.struct_size as usize != std::mem::size_of::<kmipkit_unique_identifier_v1_t>()
+        || value.abi_version != 1
+        || value.reserved != 0
+    {
+        return Err(ERROR_INVALID_INPUT);
+    }
+    let identifier = match value.kind {
+        crate::KMIPKIT_UNIQUE_IDENTIFIER_KIND_TEXT_STRING => {
+            let text = input_span(value.text_data, value.text_length, MAX_FFI_INPUT_BYTES)?;
+            let text = std::str::from_utf8(text).map_err(|_| ERROR_INVALID_INPUT)?;
+            let mut owned = String::new();
+            owned
+                .try_reserve_exact(text.len())
+                .map_err(|_| ERROR_RESOURCE_LIMIT)?;
+            owned.push_str(text);
+            UniqueIdentifier::TextString(owned)
+        }
+        crate::KMIPKIT_UNIQUE_IDENTIFIER_KIND_ENUMERATION => {
+            UniqueIdentifier::Enumeration(value.enumeration_value)
+        }
+        crate::KMIPKIT_UNIQUE_IDENTIFIER_KIND_INTEGER => {
+            UniqueIdentifier::Integer(value.integer_value)
+        }
+        _ => return Err(ERROR_INVALID_INPUT),
+    };
+    Ok(Some(identifier))
+}
+
+fn copy_optional_bytes(data: *const u8, length: u64, present: u8) -> FfiResult<Option<Vec<u8>>> {
+    if present == 0 {
+        return if data.is_null() && length == 0 {
+            Ok(None)
+        } else {
+            Err(ERROR_INVALID_INPUT)
+        };
+    }
+    if present != 1 {
+        return Err(ERROR_INVALID_INPUT);
+    }
+    let bytes = input_span(data, length, MAX_FFI_INPUT_BYTES)?;
+    let mut owned = Vec::new();
+    owned
+        .try_reserve_exact(bytes.len())
+        .map_err(|_| ERROR_RESOURCE_LIMIT)?;
+    owned.extend_from_slice(bytes);
+    Ok(Some(owned))
+}
+
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_client_batch_item_create(
+    object_type: u32,
+    attributes: *mut kmipkit_ttlv_structure_t,
+    protection_storage_masks: *mut kmipkit_ttlv_structure_t,
+    out_item: *mut *mut kmipkit_client_batch_item_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = out_slot!(out_item);
+        let attributes = try_ffi!(copy_attribute_set_handle(attributes, true));
+        let Some(attributes) = attributes else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        let masks = try_ffi!(copy_structure_handle(protection_storage_masks, false));
+        let mut request = CreateRequest::new(ObjectType::from_raw(object_type), attributes);
+        if let Some(masks) = masks {
+            request = request.with_protection_storage_masks(masks);
+        }
+        *out = try_ffi!(try_make_handle(
+            Kind::BatchItem,
+            HandleValue::BatchItem(Box::new(ClientBatchItem::new(ClientRequest::Create(
+                request,
+            )))),
+        ));
+        SUCCESS
+    })
+}
+
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_client_batch_item_create_key_pair(
+    common_attributes: *mut kmipkit_ttlv_structure_t,
+    private_key_attributes: *mut kmipkit_ttlv_structure_t,
+    public_key_attributes: *mut kmipkit_ttlv_structure_t,
+    common_protection_storage_masks: *mut kmipkit_ttlv_structure_t,
+    private_protection_storage_masks: *mut kmipkit_ttlv_structure_t,
+    public_protection_storage_masks: *mut kmipkit_ttlv_structure_t,
+    out_item: *mut *mut kmipkit_client_batch_item_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = out_slot!(out_item);
+        let common_attributes = try_ffi!(copy_attribute_set_handle(common_attributes, false));
+        let private_key_attributes =
+            try_ffi!(copy_attribute_set_handle(private_key_attributes, false));
+        let public_key_attributes =
+            try_ffi!(copy_attribute_set_handle(public_key_attributes, false));
+        let common_protection_storage_masks = try_ffi!(copy_structure_handle(
+            common_protection_storage_masks,
+            false
+        ));
+        let private_protection_storage_masks = try_ffi!(copy_structure_handle(
+            private_protection_storage_masks,
+            false
+        ));
+        let public_protection_storage_masks = try_ffi!(copy_structure_handle(
+            public_protection_storage_masks,
+            false
+        ));
+        let mut request = CreateKeyPairRequest::new();
+        if let Some(attributes) = common_attributes {
+            request = request.with_common_attributes(attributes);
+        }
+        if let Some(attributes) = private_key_attributes {
+            request = request.with_private_key_attributes(attributes);
+        }
+        if let Some(attributes) = public_key_attributes {
+            request = request.with_public_key_attributes(attributes);
+        }
+        if let Some(masks) = common_protection_storage_masks {
+            request = request.with_common_protection_storage_masks(masks);
+        }
+        if let Some(masks) = private_protection_storage_masks {
+            request = request.with_private_protection_storage_masks(masks);
+        }
+        if let Some(masks) = public_protection_storage_masks {
+            request = request.with_public_protection_storage_masks(masks);
+        }
+        *out = try_ffi!(try_make_handle(
+            Kind::BatchItem,
+            HandleValue::BatchItem(Box::new(ClientBatchItem::new(
+                ClientRequest::CreateKeyPair(request),
+            ))),
+        ));
+        SUCCESS
+    })
+}
+
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_client_batch_item_create_split_key(
+    object_type: u32,
+    unique_identifier: *const kmipkit_unique_identifier_v1_t,
+    split_key_parts: i32,
+    split_key_threshold: i32,
+    split_key_method: u32,
+    has_prime_field_size: u8,
+    prime_field_size_data: *const u8,
+    prime_field_size_length: u64,
+    attributes: *mut kmipkit_ttlv_structure_t,
+    protection_storage_masks: *mut kmipkit_ttlv_structure_t,
+    out_item: *mut *mut kmipkit_client_batch_item_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = out_slot!(out_item);
+        let attributes = try_ffi!(copy_attribute_set_handle(attributes, true));
+        let Some(attributes) = attributes else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        let identifier = try_ffi!(copy_unique_identifier(unique_identifier));
+        let prime_field_size = try_ffi!(copy_optional_bytes(
+            prime_field_size_data,
+            prime_field_size_length,
+            has_prime_field_size,
+        ));
+        let masks = try_ffi!(copy_structure_handle(protection_storage_masks, false));
+        let mut request = CreateSplitKeyRequest::new(
+            ObjectType::from_raw(object_type),
+            split_key_parts,
+            split_key_threshold,
+            SplitKeyMethod::from_raw(split_key_method),
+            attributes,
+        );
+        if let Some(identifier) = identifier {
+            request = request.with_unique_identifier(identifier);
+        }
+        if let Some(prime_field_size) = prime_field_size {
+            request = request.with_prime_field_size(prime_field_size);
+        }
+        if let Some(masks) = masks {
+            request = request.with_protection_storage_masks(masks);
+        }
+        *out = try_ffi!(try_make_handle(
+            Kind::BatchItem,
+            HandleValue::BatchItem(Box::new(ClientBatchItem::new(
+                ClientRequest::CreateSplitKey(request),
+            ))),
         ));
         SUCCESS
     })

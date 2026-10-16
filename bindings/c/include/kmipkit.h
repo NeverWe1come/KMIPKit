@@ -23,6 +23,11 @@ typedef uint32_t kmipkit_opaque_object_context_t;
 #define KMIPKIT_OPAQUE_OBJECT_CONTEXT_GENERIC ((kmipkit_opaque_object_context_t)1)
 #define KMIPKIT_OPAQUE_OBJECT_CONTEXT_MANAGED_CRYPTOGRAPHIC_OBJECT ((kmipkit_opaque_object_context_t)2)
 
+typedef uint32_t kmipkit_unique_identifier_kind_t;
+#define KMIPKIT_UNIQUE_IDENTIFIER_KIND_TEXT_STRING ((kmipkit_unique_identifier_kind_t)1)
+#define KMIPKIT_UNIQUE_IDENTIFIER_KIND_ENUMERATION ((kmipkit_unique_identifier_kind_t)2)
+#define KMIPKIT_UNIQUE_IDENTIFIER_KIND_INTEGER ((kmipkit_unique_identifier_kind_t)3)
+
 typedef struct kmipkit_extension_identity_t kmipkit_extension_identity_t;
 typedef struct kmipkit_extension_compatibility_t kmipkit_extension_compatibility_t;
 typedef struct kmipkit_ttlv_path_t kmipkit_ttlv_path_t;
@@ -55,6 +60,8 @@ typedef struct kmipkit_register_request_t kmipkit_register_request_t;
 typedef struct kmipkit_request_options_v1_t kmipkit_request_options_v1_t;
 typedef struct kmipkit_timeout_limit_v1_t kmipkit_timeout_limit_v1_t;
 typedef struct kmipkit_protocol_version_v1_t kmipkit_protocol_version_v1_t;
+typedef struct kmipkit_unique_identifier_v1_t kmipkit_unique_identifier_v1_t;
+typedef struct kmipkit_client_batch_item_metadata_v2_t kmipkit_client_batch_item_metadata_v2_t;
 
 typedef struct kmipkit_byte_span_v1_t kmipkit_byte_span_v1_t;
 typedef struct kmipkit_client_batch_item_metadata_v1_t kmipkit_client_batch_item_metadata_v1_t;
@@ -100,6 +107,31 @@ struct kmipkit_request_options_v1_t {
 struct kmipkit_protocol_version_v1_t {
     int32_t major;
     int32_t minor;
+};
+
+struct kmipkit_unique_identifier_v1_t {
+    uint32_t struct_size;
+    uint32_t abi_version;
+    kmipkit_unique_identifier_kind_t kind;
+    uint32_t reserved;
+    const uint8_t * text_data;
+    uint64_t text_length;
+    uint32_t enumeration_value;
+    int32_t integer_value;
+};
+
+struct kmipkit_client_batch_item_metadata_v2_t {
+    uint32_t struct_size;
+    uint32_t abi_version;
+    uint32_t operation;
+    uint32_t outcome_kind;
+    uint32_t result_status;
+    uint32_t has_result_reason;
+    uint32_t result_reason;
+    uint32_t has_result_message;
+    uint32_t reserved;
+    const uint8_t * result_message_data;
+    uint64_t result_message_length;
 };
 
 struct kmipkit_byte_span_v1_t {
@@ -400,6 +432,38 @@ int32_t kmipkit_api_levels_get_v1(kmipkit_byte_span_v1_t * out_high_level, kmipk
  */
 /* KMIPKIT-0007-FR-002, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021 */
 int32_t kmipkit_client_batch_item_response_discover_versions_supported_versions(kmipkit_client_batch_item_response_t * item, uint8_t * out_present, kmipkit_protocol_version_v1_t * out_versions, uint64_t capacity, uint64_t * out_count);
+/* Creates a typed Create request with required Attributes, including an empty Attributes structure. Protection Storage Masks may be NULL. The input TTLV structures are copied without changing order or repeated values.
+ */
+/* KMIPKIT-0014-FR-002, KMIPKIT-0014-FR-006, KMIPKIT-0014-FR-007, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022 */
+int32_t kmipkit_client_batch_item_create(uint32_t object_type, kmipkit_ttlv_structure_t * attributes, kmipkit_ttlv_structure_t * protection_storage_masks, kmipkit_client_batch_item_t ** out_item);
+/* Common, Private Key, and Public Key Attributes and mask groups are copied independently. Each nullable pointer means an absent group; a present empty structure remains distinct. Order and repeated entries are preserved.
+ */
+/* KMIPKIT-0014-FR-003, KMIPKIT-0014-FR-004, KMIPKIT-0014-FR-006, KMIPKIT-0014-FR-007, KMIPKIT-0014-FR-014, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-011, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022 */
+int32_t kmipkit_client_batch_item_create_key_pair(kmipkit_ttlv_structure_t * common_attributes, kmipkit_ttlv_structure_t * private_key_attributes, kmipkit_ttlv_structure_t * public_key_attributes, kmipkit_ttlv_structure_t * common_protection_storage_masks, kmipkit_ttlv_structure_t * private_protection_storage_masks, kmipkit_ttlv_structure_t * public_protection_storage_masks, kmipkit_client_batch_item_t ** out_item);
+/* Creates Create Split Key with optional exact-wire Unique Identifier, signed part/threshold Integers, and open Split Key Method Enumeration. Attributes is required and may be empty. has_prime_field_size distinguishes absence from a present empty byte string; its bounded pointer/length input is checked before dereference.
+ */
+/* KMIPKIT-0014-FR-005, KMIPKIT-0014-FR-006, KMIPKIT-0014-FR-007, KMIPKIT-0014-FR-012, KMIPKIT-0014-FR-014, KMIPKIT-0014-FR-015, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-011, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022 */
+int32_t kmipkit_client_batch_item_create_split_key(uint32_t object_type, const kmipkit_unique_identifier_v1_t * unique_identifier, int32_t split_key_parts, int32_t split_key_threshold, uint32_t split_key_method, uint8_t has_prime_field_size, const uint8_t * prime_field_size_data, uint64_t prime_field_size_length, kmipkit_ttlv_structure_t * attributes, kmipkit_ttlv_structure_t * protection_storage_masks, kmipkit_client_batch_item_t ** out_item);
+/* Initializes additive version 2 metadata while leaving v1 unchanged. operation is the raw KMIP Operation Enumeration. Result Message presence and exact UTF-8 bytes are exposed, including present-empty; the pointer is borrowed while the response-item handle is open and its length is bounded by the response codec limit (16 MiB by default). Copy before releasing the handle. Keep the value out of diagnostics and logs.
+ */
+/* KMIPKIT-0014-FR-008, KMIPKIT-0014-FR-009, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-012, KMIPKIT-0043-FR-013, KMIPKIT-0043-FR-021 */
+int32_t kmipkit_client_batch_item_response_metadata_v2(kmipkit_client_batch_item_response_t * item, kmipkit_client_batch_item_metadata_v2_t * out_metadata);
+/* Returns Object Type and the original-wire-form Unique Identifier only for successful Create; absent, Pending, and failure results are empty.
+ */
+/* KMIPKIT-0014-FR-002, KMIPKIT-0014-FR-007, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021 */
+int32_t kmipkit_client_batch_item_response_create(kmipkit_client_batch_item_response_t * item, uint8_t * out_present, uint32_t * out_object_type, kmipkit_unique_identifier_v1_t * out_unique_identifier);
+/* Returns separate private-key and public-key identifiers in their original wire forms only for successful Create Key Pair.
+ */
+/* KMIPKIT-0014-FR-003, KMIPKIT-0014-FR-004, KMIPKIT-0014-FR-007, KMIPKIT-0014-FR-013, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021 */
+int32_t kmipkit_client_batch_item_response_create_key_pair(kmipkit_client_batch_item_response_t * item, uint8_t * out_present, kmipkit_unique_identifier_v1_t * out_private_key_unique_identifier, kmipkit_unique_identifier_v1_t * out_public_key_unique_identifier);
+/* Queries presence and count; successful Create Split Key responses preserve one-or-more identifiers in wire order, subject to the local response-size limit.
+ */
+/* KMIPKIT-0014-FR-005, KMIPKIT-0014-FR-007, KMIPKIT-0014-FR-012, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021 */
+int32_t kmipkit_client_batch_item_response_create_split_key_count(kmipkit_client_batch_item_response_t * item, uint8_t * out_present, uint64_t * out_count);
+/* Copies the caller-selected zero-based response identifier without changing its wire form or response order.
+ */
+/* KMIPKIT-0014-FR-005, KMIPKIT-0014-FR-007, KMIPKIT-0014-FR-012, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021 */
+int32_t kmipkit_client_batch_item_response_create_split_key_unique_identifier_at(kmipkit_client_batch_item_response_t * item, uint64_t index, kmipkit_unique_identifier_v1_t * out_identifier);
 /* Approved exact C-only exclusion: kmipkit_client_batch_item_response_metadata_v1 */
 int32_t kmipkit_client_batch_item_response_metadata_v1(kmipkit_client_batch_item_response_t * item, kmipkit_client_batch_item_metadata_v1_t * out_metadata);
 /* Approved exact C-only exclusion: kmipkit_transport_config_create_v1 */

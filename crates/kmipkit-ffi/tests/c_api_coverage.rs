@@ -39,6 +39,12 @@ unsafe extern "C" {
 unsafe extern "C" {
     fn kmipkit_codec_limits_defaults(out_limits: *mut *mut kmipkit_codec_limits_t) -> i32;
     fn kmipkit_codec_limits_release(limits: *mut kmipkit_codec_limits_t);
+    fn kmipkit_last_error_get(
+        out_status: *mut i32,
+        out_category: *mut u32,
+        out_cause: *mut u32,
+        out_delivery: *mut u32,
+    ) -> i32;
 }
 
 #[test]
@@ -248,10 +254,24 @@ fn generated_public_client_abi_consumer_executes_a_typed_batch_over_mtls() {
         kmipkit_codec_limits_release(limits);
     }
 
+    let mut last_status = 0;
+    let mut last_category = 0;
+    let mut last_cause = 0;
+    let mut last_delivery = 0;
+    // SAFETY: all four arguments are writable scalar outputs for this call.
+    let metadata_status = unsafe {
+        kmipkit_last_error_get(
+            &raw mut last_status,
+            &raw mut last_category,
+            &raw mut last_cause,
+            &raw mut last_delivery,
+        )
+    };
+    assert_eq!(metadata_status, 0);
     assert_eq!(
         result,
         0,
-        "generated public C consumer must create a client and execute the typed batch; server exchanges: {}",
+        "generated public C consumer failed (status {last_status}, category {last_category}, cause {last_cause}, delivery {last_delivery}); server exchanges: {}",
         exchange_count.load(Ordering::Relaxed)
     );
     peer.join().expect("the loopback TLS peer completes");
@@ -512,7 +532,7 @@ fn mixed_discover_versions_response() -> Vec<u8> {
         [
             protocol_version.clone(),
             date_time(0x0042_0092, 1),
-            integer(0x0042_000D, 4),
+            integer(0x0042_000D, 6),
         ],
     );
     let response_payload = structure(
@@ -556,6 +576,29 @@ fn mixed_discover_versions_response() -> Vec<u8> {
             structure(0x0042_007C, []),
         ],
     );
+    let create_payload = structure(
+        0x0042_007C,
+        [enumeration(0x0042_0057, 7), integer(0x0042_0094, -8)],
+    );
+    let create_item = structure(
+        0x0042_000F,
+        [
+            enumeration(0x0042_005C, 1),
+            ttlv_item(0x0042_0093, 0x08, b"item-4"),
+            enumeration(0x0042_007F, 0),
+            create_payload,
+        ],
+    );
+    let create_failure_item = structure(
+        0x0042_000F,
+        [
+            enumeration(0x0042_005C, 1),
+            ttlv_item(0x0042_0093, 0x08, b"item-5"),
+            enumeration(0x0042_007F, 1),
+            enumeration(0x0042_007E, 5),
+            ttlv_item(0x0042_007D, 0x07, "création refusée ✓".as_bytes()),
+        ],
+    );
     structure(
         0x0042_007B,
         [
@@ -564,6 +607,8 @@ fn mixed_discover_versions_response() -> Vec<u8> {
             pending_item,
             failed_item,
             empty_item,
+            create_item,
+            create_failure_item,
         ],
     )
 }

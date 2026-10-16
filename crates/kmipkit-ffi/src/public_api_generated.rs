@@ -10,6 +10,7 @@ pub(crate) const C_AVAILABLE_CAPABILITIES: &[&str] = &[
     "generic_ttlv_model",
     "opaque_register_context",
     "production_transport",
+    "server_generated_creation",
     "ttlv_wire_codec",
     "vendor_extension_registry",
 ];
@@ -609,6 +610,26 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "kmipkit_protocol::extension::ExtensionRegistryLimits::max_depth",
     ),
     (
+        "rust-observed-c00ef5c54472c3562ec1",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::UniqueIdentifier",
+    ),
+    (
+        "rust-observed-ab4a81d1c990fec0e756",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::UniqueIdentifier::TextString",
+    ),
+    (
+        "rust-observed-08f9f17150a5abfdb1dc",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::UniqueIdentifier::Enumeration",
+    ),
+    (
+        "rust-observed-7c1b5cb5346a0432a812",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::UniqueIdentifier::Integer",
+    ),
+    (
         "rust-observed-8c986e82d844a650b2bd",
         "rust-kmipkit-protocol",
         "kmipkit_protocol::ProtocolVersion",
@@ -622,6 +643,11 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "T076:target:rust-kmipkit-protocol:kmipkit_protocol::KmipOperationResult::reason",
         "rust-kmipkit-protocol",
         "kmipkit_protocol::KmipOperationResult::reason",
+    ),
+    (
+        "rust-observed-47e49ebb139e3d7a9b56",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::KmipOperationResult::message",
     ),
     (
         "T076:target:rust-kmipkit-transport:kmipkit_transport::CertificateInput",
@@ -994,6 +1020,41 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "kmipkit_client::ClientBatchResponse::get",
     ),
     (
+        "rust-observed-e3630e76e3c2013468dd",
+        "rust-kmipkit-client",
+        "kmipkit_client::ClientOperation",
+    ),
+    (
+        "rust-observed-4a65a428867394f69717",
+        "rust-kmipkit-client",
+        "kmipkit_client::ClientOperation",
+    ),
+    (
+        "rust-observed-2b8fb840fb85fbf46974",
+        "rust-kmipkit-client",
+        "kmipkit_client::ClientOperation",
+    ),
+    (
+        "rust-observed-196e29d52e5b3dbb0b9c",
+        "rust-kmipkit-client",
+        "kmipkit_client::ClientOperation",
+    ),
+    (
+        "rust-observed-28ea3c5e010897fa1234",
+        "rust-kmipkit-client",
+        "kmipkit_client::ClientRequest::Create",
+    ),
+    (
+        "rust-observed-1b30e640fafc4537149a",
+        "rust-kmipkit-client",
+        "kmipkit_client::ClientRequest::CreateKeyPair",
+    ),
+    (
+        "rust-observed-c77961a9fef418de9790",
+        "rust-kmipkit-client",
+        "kmipkit_client::ClientRequest::CreateSplitKey",
+    ),
+    (
         "rust-observed-6ed66240b515e2c819ae",
         "rust-kmipkit-client",
         "kmipkit_client::RequestOptions",
@@ -1159,5 +1220,25 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "T031:accessor:rust",
         "rust-kmipkit-client",
         "kmipkit_client::ClientBatchItemResponse::discover_versions_supported_versions",
+    ),
+    (
+        "T032:operation-raw:rust",
+        "rust-kmipkit-client",
+        "kmipkit_client::ClientOperation::raw",
+    ),
+    (
+        "T032:create:response:client_batch_item_response_create:rust",
+        "rust-kmipkit-client",
+        "kmipkit_client::ClientBatchItemResponse::create_response",
+    ),
+    (
+        "T032:create-key-pair:response:client_batch_item_response_create_key_pair:rust",
+        "rust-kmipkit-client",
+        "kmipkit_client::ClientBatchItemResponse::create_key_pair_response",
+    ),
+    (
+        "T032:create-split-key:response:kmipkit_client_batch_item_response_create_split_key_count:rust",
+        "rust-kmipkit-client",
+        "kmipkit_client::ClientBatchItemResponse::create_split_key_response",
     ),
 ];

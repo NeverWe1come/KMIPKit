@@ -102,6 +102,7 @@ def test_generic_ttlv_shared_fixture_has_an_executable_python_link() -> None:
 def test_creation_create_matches_shared_fixture() -> None:
     case = _parity_cases()["creation.create.request-response.v1"]
     assert case["input"]["attributesPresent"] is True
+    assert case["expectedOutput"]["resultMessage"] is None
     assert case["expectedOutput"]["uniqueIdentifier"] == {
         "wireType": "Integer",
         "integer": -8,
@@ -120,6 +121,22 @@ def test_creation_create_matches_shared_fixture() -> None:
             item.close()
         attributes.close()
         masks.close()
+
+
+def test_creation_result_message_matches_failure_fixture() -> None:
+    case = _parity_cases()["creation.result-message-on-failure.v1"]
+    expected = case["expectedOutput"]
+    assert expected["resultStatus"] == 1
+    assert expected["resultReason"] == 5
+    metadata = client.BatchItemMetadataV2(
+        expected["operation"],
+        expected["outcomeKind"],
+        expected["resultStatus"],
+        expected["resultReason"],
+        expected["resultMessage"],
+    )
+    assert metadata.result_message == "création refusée ✓"
+    assert "création refusée" not in repr(metadata)
 
 
 def test_creation_key_pair_matches_shared_fixture() -> None:

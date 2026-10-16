@@ -100,6 +100,31 @@ ffi.cdef(
     } kmipkit_client_batch_item_metadata_v1_t;
 
     typedef struct {
+        uint32_t struct_size;
+        uint32_t abi_version;
+        uint32_t operation;
+        uint32_t outcome_kind;
+        uint32_t result_status;
+        uint32_t has_result_reason;
+        uint32_t result_reason;
+        uint32_t has_result_message;
+        uint32_t reserved;
+        const uint8_t *result_message_data;
+        uint64_t result_message_length;
+    } kmipkit_client_batch_item_metadata_v2_t;
+
+    typedef struct {
+        uint32_t struct_size;
+        uint32_t abi_version;
+        uint32_t kind;
+        uint32_t reserved;
+        const uint8_t *text_data;
+        uint64_t text_length;
+        uint32_t enumeration_value;
+        int32_t integer_value;
+    } kmipkit_unique_identifier_v1_t;
+
+    typedef struct {
         int32_t major;
         int32_t minor;
     } kmipkit_protocol_version_v1_t;
@@ -151,6 +176,9 @@ ffi.cdef(
     int32_t kmipkit_client_batch_item_response_metadata_v1(
         kmipkit_client_batch_item_response_t *item,
         kmipkit_client_batch_item_metadata_v1_t *out_metadata);
+    int32_t kmipkit_client_batch_item_response_metadata_v2(
+        kmipkit_client_batch_item_response_t *item,
+        kmipkit_client_batch_item_metadata_v2_t *out_metadata);
     int32_t kmipkit_client_batch_item_response_unique_batch_item_id(
         kmipkit_client_batch_item_response_t *item,
         uint8_t *out_present,
@@ -165,6 +193,49 @@ ffi.cdef(
         kmipkit_protocol_version_v1_t *out_versions,
         uint64_t capacity,
         uint64_t *out_count);
+    int32_t kmipkit_client_batch_item_response_create(
+        kmipkit_client_batch_item_response_t *item,
+        uint8_t *out_present,
+        uint32_t *out_object_type,
+        kmipkit_unique_identifier_v1_t *out_unique_identifier);
+    int32_t kmipkit_client_batch_item_response_create_key_pair(
+        kmipkit_client_batch_item_response_t *item,
+        uint8_t *out_present,
+        kmipkit_unique_identifier_v1_t *out_private_identifier,
+        kmipkit_unique_identifier_v1_t *out_public_identifier);
+    int32_t kmipkit_client_batch_item_response_create_split_key_count(
+        kmipkit_client_batch_item_response_t *item,
+        uint8_t *out_present,
+        uint64_t *out_count);
+    int32_t kmipkit_client_batch_item_response_create_split_key_unique_identifier_at(
+        kmipkit_client_batch_item_response_t *item,
+        uint64_t index,
+        kmipkit_unique_identifier_v1_t *out_identifier);
+    int32_t kmipkit_client_batch_item_create(
+        uint32_t object_type,
+        kmipkit_ttlv_structure_t *attributes,
+        kmipkit_ttlv_structure_t *protection_storage_masks,
+        kmipkit_client_batch_item_t **out_item);
+    int32_t kmipkit_client_batch_item_create_key_pair(
+        kmipkit_ttlv_structure_t *common_attributes,
+        kmipkit_ttlv_structure_t *private_key_attributes,
+        kmipkit_ttlv_structure_t *public_key_attributes,
+        kmipkit_ttlv_structure_t *common_protection_storage_masks,
+        kmipkit_ttlv_structure_t *private_protection_storage_masks,
+        kmipkit_ttlv_structure_t *public_protection_storage_masks,
+        kmipkit_client_batch_item_t **out_item);
+    int32_t kmipkit_client_batch_item_create_split_key(
+        uint32_t object_type,
+        const kmipkit_unique_identifier_v1_t *unique_identifier,
+        int32_t split_key_parts,
+        int32_t split_key_threshold,
+        uint32_t split_key_method,
+        uint8_t has_prime_field_size,
+        const uint8_t *prime_field_size_data,
+        uint64_t prime_field_size_length,
+        kmipkit_ttlv_structure_t *attributes,
+        kmipkit_ttlv_structure_t *protection_storage_masks,
+        kmipkit_client_batch_item_t **out_item);
     int32_t kmipkit_client_batch_item_discover_versions(
         kmipkit_client_batch_item_t **out_item);
     int32_t kmipkit_register_request_create(
