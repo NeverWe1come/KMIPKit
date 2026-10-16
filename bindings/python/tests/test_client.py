@@ -1092,6 +1092,45 @@ def test_batch_result_accepts_absent_spans_and_no_result_reason(
     result.close()
 
 
+def test_discover_versions_response_accepts_more_than_default_codec_elements(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    item_pointer, _item_storage = _opaque("kmipkit_client_batch_item_response_t")
+    supported_count = 100_001
+
+    def supported_versions(
+        _item: object, present: object, output: object, capacity: int, count: object
+    ) -> int:
+        present[0] = 1  # type: ignore[index]
+        count[0] = supported_count  # type: ignore[index]
+        if capacity:
+            for index in range(capacity):
+                output[index].major = 2  # type: ignore[index,attr-defined]
+                output[index].minor = 1  # type: ignore[index,attr-defined]
+        return 0
+
+    monkeypatch.setattr(
+        client,
+        "lib",
+        SimpleNamespace(
+            kmipkit_client_batch_item_response_release=lambda _item: None,
+            kmipkit_client_batch_item_response_discover_versions_supported_versions=(
+                supported_versions
+            )
+        ),
+    )
+    item = _wrap_owned_handle(client._ClientBatchItemResponse, item_pointer)
+
+    try:
+        versions = client._discover_versions_supported_versions(item)
+        assert versions is not None
+        assert len(versions) == supported_count
+        assert versions[0] == client.ProtocolVersion(2, 1)
+        assert versions[-1] == client.ProtocolVersion(2, 1)
+    finally:
+        item.close()
+
+
 def test_batch_result_enforces_count_metadata_and_span_limits_and_releases_handles(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
