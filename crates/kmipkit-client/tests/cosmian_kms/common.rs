@@ -512,6 +512,18 @@ enum CleanupResult {
     AlreadyAbsent,
 }
 
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+enum CleanupAction {
+    Destroy,
+    Revoke,
+}
+
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+enum CleanupActionResult {
+    Destroy(CleanupResult),
+    Revoke,
+}
+
 fn cleanup_owned_objects(
     client: &mut Client,
     case_id: &str,
@@ -519,26 +531,47 @@ fn cleanup_owned_objects(
 ) -> Result<(), String> {
     let mut failures = Vec::new();
     for identifier in ownership.cleanup_order() {
-        let initial_destroy = cleanup_destroy(client, case_id, identifier);
-        if initial_destroy.is_ok() {
-            continue;
+        if let Err(error) = cleanup_owned_object_attempts(|action| match action {
+            CleanupAction::Destroy => {
+                cleanup_destroy(client, case_id, identifier).map(CleanupActionResult::Destroy)
+            }
+            CleanupAction::Revoke => {
+                cleanup_revoke(client, case_id, identifier).map(|()| CleanupActionResult::Revoke)
+            }
+        }) {
+            failures.push(format!("case-owned object cleanup failed: {error}"));
         }
-        let revoke = cleanup_revoke(client, case_id, identifier);
-        let retry = cleanup_destroy(client, case_id, identifier);
-        if retry.is_ok() {
-            continue;
-        }
-        failures.push(format!(
-            "cleanup failed for case-owned object after Destroy/Revoke/Destroy: initial Destroy {}; Revoke {}; retry Destroy {}",
-            initial_destroy.err().unwrap_or_else(|| "succeeded".to_owned()),
-            revoke.err().unwrap_or_else(|| "succeeded".to_owned()),
-            retry.err().unwrap_or_else(|| "succeeded".to_owned())
-        ));
     }
     if failures.is_empty() {
         Ok(())
     } else {
         Err(format!("case {case_id}: {}", failures.join("; ")))
+    }
+}
+
+fn cleanup_owned_object_attempts(
+    mut perform: impl FnMut(CleanupAction) -> Result<CleanupActionResult, String>,
+) -> Result<CleanupResult, String> {
+    match perform(CleanupAction::Destroy) {
+        Ok(CleanupActionResult::Destroy(result)) => Ok(result),
+        Ok(CleanupActionResult::Revoke) => Err("cleanup expected a Destroy result".to_owned()),
+        Err(initial_destroy) => {
+            let revoke_result = perform(CleanupAction::Revoke);
+            match perform(CleanupAction::Destroy) {
+                Ok(CleanupActionResult::Destroy(result)) => Ok(result),
+                Ok(CleanupActionResult::Revoke) => {
+                    Err("cleanup expected a Destroy result".to_owned())
+                }
+                Err(retry_destroy) => Err(format!(
+                    "Destroy {}; Revoke {}; retry Destroy {}",
+                    initial_destroy,
+                    revoke_result
+                        .err()
+                        .unwrap_or_else(|| "succeeded".to_owned()),
+                    retry_destroy
+                )),
+            }
+        }
     }
 }
 
@@ -1702,6 +1735,48 @@ mod review_regression_tests {
     }
 
     #[test]
+    fn split_key_source_and_parts_keep_one_reverse_creation_order_ledger() {
+        let mut ownership = CaseOwnership::default();
+        ownership.track("split-source".to_owned());
+        ownership.track("split-part-one".to_owned());
+        ownership.track("split-part-two".to_owned());
+        ownership.track("split-source".to_owned());
+        assert_eq!(
+            ownership.cleanup_order().collect::<Vec<_>>(),
+            ["split-part-two", "split-part-one", "split-source"]
+        );
+    }
+
+    #[test]
+    fn ambiguous_destroy_failure_is_not_retried_or_followed_by_revoke() {
+        for diagnostic in [
+            "cleanup transport error delivery=NotSent",
+            "cleanup transport error delivery=PossiblySent",
+            "cleanup response validation failed: Unique Identifier mismatch",
+        ] {
+            let destroy_calls = Cell::new(0);
+            let revoke_calls = Cell::new(0);
+            let result = cleanup_owned_object_attempts(|action| match action {
+                CleanupAction::Destroy => {
+                    destroy_calls.set(destroy_calls.get() + 1);
+                    if destroy_calls.get() == 1 {
+                        Err(diagnostic.to_owned())
+                    } else {
+                        Ok(CleanupActionResult::Destroy(CleanupResult::Destroyed))
+                    }
+                }
+                CleanupAction::Revoke => {
+                    revoke_calls.set(revoke_calls.get() + 1);
+                    Ok(CleanupActionResult::Revoke)
+                }
+            });
+            assert_eq!(destroy_calls.get(), 1, "{diagnostic}");
+            assert_eq!(revoke_calls.get(), 0, "{diagnostic}");
+            assert_eq!(result, Err(diagnostic.to_owned()));
+        }
+    }
+
+    #[test]
     fn lifecycle_response_identifier_must_equal_case_owned_identifier() {
         assert!(identifier_matches(
             Some(&UniqueIdentifier::TextString("case-1".to_owned())),
@@ -1711,6 +1786,22 @@ mod review_regression_tests {
             Some(&UniqueIdentifier::TextString("other-case".to_owned())),
             "case-1"
         ));
+    }
+
+    #[test]
+    fn each_attribute_readback_rejects_a_different_case_identifier() {
+        for operation in [
+            "Get Attribute List",
+            "Get Attributes",
+            "Get Attributes Comment verification",
+            "Get Attribute List Comment deletion verification",
+            "Get Attributes Activation Date verification",
+        ] {
+            assert!(
+                require_text_identifier(Some("another-case"), "case-1", operation).is_err(),
+                "{operation} must reject a response for a different object"
+            );
+        }
     }
 
     #[test]
