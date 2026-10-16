@@ -33,6 +33,11 @@ unsafe extern "C" {
         argv: *mut *mut c_char,
         limits: *mut kmipkit_codec_limits_t,
     ) -> i32;
+    fn kmipkit_client_abi_c_consumer_execute_error_ttlv_tls(
+        argc: i32,
+        argv: *mut *mut c_char,
+        limits: *mut kmipkit_codec_limits_t,
+    ) -> i32;
 }
 
 #[link(name = "kmipkit_ffi")]
@@ -283,6 +288,81 @@ fn generated_public_client_abi_consumer_executes_a_typed_batch_over_mtls() {
     );
     peer.join().expect("the loopback TLS peer completes");
     assert_eq!(exchange_count.load(Ordering::Relaxed), 1);
+}
+
+#[test]
+fn generated_public_c_consumer_traverses_retained_error_ttlv_over_mtls() {
+    let pki = EphemeralPki::generate().expect("ephemeral test PKI is generated");
+    let client_chain = pki.client_identity().certificate_chain_der();
+    let paths = TemporaryCredentialFiles::create([
+        client_chain[0],
+        client_chain[1],
+        pki.client_identity().private_key_der(),
+        pki.authority_certificate_der(),
+    ]);
+    let listener = TcpListener::bind(("127.0.0.1", 0))
+        .expect("an ephemeral local TCP port is available");
+    let port = listener.local_addr().expect("listener has an address").port();
+    let port = CString::new(port.to_string()).expect("port contains no NUL byte");
+    let server_config = mtls_server_config(&pki);
+    let peer = thread::spawn(move || {
+        let (stream, _) = listener.accept().expect("the public C client connects");
+        stream
+            .set_read_timeout(Some(std::time::Duration::from_secs(5)))
+            .expect("server read timeout is configured");
+        stream
+            .set_write_timeout(Some(std::time::Duration::from_secs(5)))
+            .expect("server write timeout is configured");
+        let connection = ServerConnection::new(server_config)
+            .expect("the TLS 1.3 server connection is configured");
+        let mut tls = StreamOwned::new(connection, stream);
+        let request = read_ttlv_frame(&mut tls).expect("bounded request frame arrives");
+        assert!(request.starts_with(&[0x42, 0x00, 0x78]));
+        tls.write_all(&mismatched_discover_versions_response())
+            .expect("the malformed typed response is written");
+        tls.flush().expect("the TLS response is flushed");
+        let _ = tls.get_ref().shutdown(Shutdown::Both);
+    });
+
+    let executable = CString::new("kmipkit_public_client_consumer")
+        .expect("test executable name has no NUL byte");
+    let certificate = CString::new(paths.paths[0].to_string_lossy().as_bytes())
+        .expect("temporary path has no NUL byte");
+    let authority = CString::new(paths.paths[1].to_string_lossy().as_bytes())
+        .expect("temporary path has no NUL byte");
+    let private_key = CString::new(paths.paths[2].to_string_lossy().as_bytes())
+        .expect("temporary path has no NUL byte");
+    let trust_root = CString::new(paths.paths[3].to_string_lossy().as_bytes())
+        .expect("temporary path has no NUL byte");
+    let mut arguments = [
+        executable.as_ptr().cast_mut(),
+        certificate.as_ptr().cast_mut(),
+        authority.as_ptr().cast_mut(),
+        private_key.as_ptr().cast_mut(),
+        trust_root.as_ptr().cast_mut(),
+        port.as_ptr().cast_mut(),
+    ];
+    let argument_count = i32::try_from(arguments.len()).expect("argument count fits in i32");
+    let mut limits = std::ptr::null_mut();
+    // SAFETY: `limits` is a writable output slot for this call.
+    let status = unsafe {
+        kmipkit_codec_limits_create(16 * 1024 * 1024, 64, 400_000, &raw mut limits)
+    };
+    assert_eq!(status, 0, "configured codec limits must succeed");
+    assert!(!limits.is_null(), "configured codec limits return a handle");
+    // SAFETY: argv strings and the limits handle remain live for this synchronous C call.
+    let result = unsafe {
+        kmipkit_client_abi_c_consumer_execute_error_ttlv_tls(
+            argument_count,
+            arguments.as_mut_ptr(),
+            limits,
+        )
+    };
+    // SAFETY: the test created this handle and the C consumer only borrowed it.
+    unsafe { kmipkit_codec_limits_release(limits) };
+
+    assert_eq!(result, 0, "public C consumer must inspect and release retained TTLV");
+    peer.join().expect("the loopback TLS peer completes");
 }
 
 fn controlled_mtls_peer(
@@ -670,12 +750,19 @@ fn mismatched_discover_versions_response() -> Vec<u8> {
         0x0042_000F,
         [
             enumeration(0x0042_005C, 30),
-            ttlv_item(0x0042_0093, 0x08, &[0xbb]),
+            ttlv_item(0x0042_0093, 0x08, &[0xaa]),
             enumeration(0x0042_007F, 0),
-            structure(0x0042_007C, [protocol_version]),
+            structure(0x0042_007C, [ttlv_item(0x0042_0069, 0x08, &[2, 1])]),
         ],
     );
-    structure(0x0042_007B, [header, item])
+    structure(
+        0x0042_007B,
+        [
+            header,
+            item,
+            ttlv_item(0x0054_0001, 0x08, &[0xde, 0xad, 0x00, 0xff]),
+        ],
+    )
 }
 
 fn structure(tag: u32, children: impl IntoIterator<Item = Vec<u8>>) -> Vec<u8> {
