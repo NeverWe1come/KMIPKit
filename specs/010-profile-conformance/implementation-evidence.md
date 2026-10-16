@@ -3414,3 +3414,14 @@ The pinned KMIP Specification v2.1 §9.17 paragraph at HTML lines 45156–45158 
 | Red — require clause-level mixed scope and source discrepancy | `dcc48a5f`; same focused test module | Expected Red: the aggregate clause was `server_only`; the regression requires `source_discrepancy`, `mixed`, unclear role/direction, and no client requirement ID. |
 | Green — correct clause classification and regenerate report | `0f1c2d42`; `py -3 -B -m unittest tools.normative_catalog.tests.test_profile_sections7_through11_review_contracts`; `py -3 -B tools/normative_catalog/validate.py --repo-root .`; `py -3 -B tools/normative_catalog/report.py --repo-root . --check`; `py -3 -B tools/normative_catalog/check_immutable_sources.py --repo-root . --base-sha b4cfa6527b97417cfa1f5acbc00935a9fa4d532f`; `git diff --check` | PASS: 7 focused tests; 4 sources, 1,411 clauses, 4,117 records; report current; pinned OASIS sources unchanged; clean diff check. |
 | Refactor/evidence — record source rationale and TDD evidence | This DCO-signed evidence commit; the same focused tests and generated report check | PASS: research and evidence distinguish the two MAY atoms and preserve the no-inference boundary. T002/T003 remain open; no profile-conformance claim is made. |
+
+
+### KMIPKIT-0010 — keep downstream Result clause traceability aligned (2026-10-16)
+
+After the §9.17 catalog correction, CI run `38840013814` failed `test_result_response_clauses_and_elements_use_server_to_client_direction`: that older contract still required the aggregate §9.17 clause to use the direction of its first MAY atom. The source review and the new T002 regression establish that §9.17 is mixed and has unresolved aggregate direction; §9.18 and §9.19 remain server-to-client, as do the typed Result elements.
+
+| Stage | DCO-signed commit and exact command | Result |
+|---|---|---|
+| Red — observe stale downstream assertion | Existing failing contract at `d4ad40aa`; `py -3 -B -m unittest discover -s tools/normative_catalog/tests -p 'test_feature_traceability.py' -v` | Expected failure: 1 of 17 tests; §9.17 catalog direction `unclear` conflicted with the stale `server_to_client` assertion. CI reproduced this in run `38840013814`. |
+| Green — assert clause-specific directions | `9bbe3098`; the same focused command; `py -3 -B -m unittest scripts.tests.test_requirement_traceability -v` | PASS: feature traceability 17 tests / 1 platform skip; requirement traceability 2 tests. §9.17 expects `unclear`; §§9.18–9.19 and Result elements expect `server_to_client`. |
+| Refactor/evidence — record regression and corrected contract | This DCO-signed evidence commit; `git diff --check` | PASS: the reason for CI failure and exact local commands are recorded; no source or behavior change was needed. |
