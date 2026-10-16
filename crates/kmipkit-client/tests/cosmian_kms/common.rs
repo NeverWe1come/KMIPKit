@@ -47,8 +47,8 @@ const STATE_PRE_ACTIVE: u32 = 1;
 const STATE_ACTIVE: u32 = 2;
 const STATE_DEACTIVATED: u32 = 3;
 
-struct OwnedObjects {
-    primary: String,
+pub(super) struct OwnedObjects {
+    pub(super) primary: String,
 }
 
 /// Executes one manifest case using a fresh mTLS client and fresh server object.
@@ -113,7 +113,7 @@ fn run_lifecycle_operation(
     }
 }
 
-fn run_activate(
+pub(super) fn run_activate(
     client: &mut Client,
     case_id: &str,
     object_type: &str,
@@ -462,7 +462,7 @@ fn run_set_attribute(
     Ok(())
 }
 
-fn execute_case<T>(
+pub(super) fn execute_case<T>(
     client: &mut Client,
     case_id: &str,
     request: ClientRequest,
@@ -508,8 +508,11 @@ fn execute_case<T>(
         )
     });
     if status.raw() != SUCCESS {
+        let message_class = outcome.result().message().map_or("absent", |message| {
+            sanitized_result_message_class(message.as_str())
+        });
         return Err(format!(
-            "case {case_id} {operation}: KMIP Result Status {} ({}) Reason {:?}",
+            "case {case_id} {operation}: KMIP Result Status {} ({}) Reason {:?} message_class={message_class}",
             status.raw(),
             status.known_name().unwrap_or("unknown"),
             reason
@@ -519,6 +522,52 @@ fn execute_case<T>(
     validate(outcome.response()).map_err(|message| -> Box<dyn Error> {
         format!("case {case_id} {operation}: {message}").into()
     })
+}
+
+fn sanitized_result_message_class(message: &str) -> &'static str {
+    let normalized = message.to_ascii_lowercase();
+    if normalized.contains("does not exist or is not accessible") {
+        "wrapping_key_unavailable"
+    } else if normalized.contains("is not active") {
+        "wrapping_key_inactive"
+    } else if normalized.contains("not meant to wrap keys")
+        || normalized.contains("not authorized for wrapkey")
+    {
+        "wrapping_usage_mask_denied"
+    } else if normalized.contains("does not have the permission to wrap") {
+        "wrapping_permission_denied"
+    } else if normalized.contains("key format") && normalized.contains("wrapping") {
+        "wrapping_key_format_unsupported"
+    } else if normalized.contains("wrapping method") && normalized.contains("not supported") {
+        "wrapping_method_unsupported"
+    } else if normalized.contains("algorithm") && normalized.contains("not supported") {
+        "wrapping_algorithm_unsupported"
+    } else if normalized.contains("can't use rsa algorithm for aes wrapping key") {
+        "wrapping_algorithm_mismatch"
+    } else if normalized.contains("wrapping key type not supported")
+        || normalized.contains("unsupported object type")
+    {
+        "wrapping_object_type_unsupported"
+    } else if normalized.contains("cryptographicparameters") && normalized.contains("not supported")
+    {
+        "wrapping_parameters_unsupported"
+    } else if normalized.contains("blockciphermode") && normalized.contains("not supported") {
+        "wrapping_mode_unsupported"
+    } else if normalized.contains("padding method") && normalized.contains("not supported") {
+        "wrapping_padding_unsupported"
+    } else if normalized.contains("wrapping key") && normalized.contains("not supported") {
+        "wrapping_key_unsupported"
+    } else if normalized.contains("unable to wrap") && normalized.contains("not supported") {
+        "wrapping_processing_unsupported"
+    } else if normalized.contains("operation not supported by server") {
+        "server_operation_unsupported"
+    } else if normalized.contains("permission") && normalized.contains("wrap") {
+        "wrapping_permission_denied"
+    } else if normalized.contains("not supported") {
+        "operation_not_supported_detail"
+    } else {
+        "unclassified"
+    }
 }
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
@@ -539,7 +588,7 @@ enum CleanupActionResult {
     Revoke,
 }
 
-fn cleanup_owned_objects(
+pub(super) fn cleanup_owned_objects(
     client: &mut Client,
     case_id: &str,
     ownership: &mut CaseOwnership,
@@ -550,8 +599,11 @@ fn cleanup_owned_objects(
         .map(str::to_owned)
         .collect::<Vec<_>>();
     for identifier in identifiers {
-        let state =
-            get_object_state(client, case_id, &identifier).map_err(|error| error.to_string());
+        let state = match get_object_state(client, case_id, &identifier) {
+            Ok(state) => Ok(state),
+            Err(error) if is_object_not_found_result(&error.to_string()) => continue,
+            Err(error) => Err(error.to_string()),
+        };
         let prior_attempts = ownership.attempted_actions(&identifier);
         let result = cleanup_owned_object_after_state_result_with_attempts(
             state,
@@ -575,6 +627,15 @@ fn cleanup_owned_objects(
     } else {
         Err(format!("case {case_id}: {}", failures.join("; ")))
     }
+}
+
+fn is_object_not_found_result(error: &str) -> bool {
+    error
+        .split("Reason Some((")
+        .skip(1)
+        .filter_map(|fields| fields.split(',').next())
+        .filter_map(|raw| raw.trim().parse::<u32>().ok())
+        .any(|reason| reason == OBJECT_NOT_FOUND)
 }
 
 fn cleanup_owned_object_for_state(
@@ -737,7 +798,10 @@ fn execute_cleanup_request(
         })
 }
 
-fn provision_object(
+// Keep this exhaustive object-type dispatch together so each case has one
+// visible owner and one cleanup ledger entry.
+#[allow(clippy::too_many_lines)]
+pub(super) fn provision_object(
     client: &mut Client,
     object_type: &str,
     case_id: &str,
@@ -746,12 +810,24 @@ fn provision_object(
 ) -> Result<OwnedObjects, Box<dyn Error>> {
     let primary = match object_type {
         "SymmetricKey" => {
-            let attrs = AttributeSet::try_new([
-                kmip_item(CRYPTOGRAPHIC_ALGORITHM, Value::enumeration(AES))?,
-                kmip_item(CRYPTOGRAPHIC_LENGTH, Value::integer(256))?,
-                kmip_item(CRYPTOGRAPHIC_USAGE_MASK, Value::integer(12))?,
+            let algorithm = manifest_enum(row, "cryptographic_algorithm").unwrap_or(AES);
+            let key_bits = manifest_integer(row, "key_bits").unwrap_or(256);
+            let mut items = vec![
+                kmip_item(CRYPTOGRAPHIC_ALGORITHM, Value::enumeration(algorithm))?,
+                kmip_item(CRYPTOGRAPHIC_LENGTH, Value::integer(key_bits))?,
+                kmip_item(
+                    CRYPTOGRAPHIC_USAGE_MASK,
+                    Value::integer(manifest_integer(row, "usage_mask").unwrap_or(12)),
+                )?,
                 name_attribute(case_id)?,
-            ])?;
+            ];
+            if row["parameters"]["activation_date"] == "now" {
+                items.push(kmip_item(
+                    ACTIVATION_DATE,
+                    Value::date_time(now_unix_seconds()?),
+                )?);
+            }
+            let attrs = AttributeSet::try_new(items)?;
             create_result_id(
                 client,
                 case_id,
@@ -761,11 +837,24 @@ fn provision_object(
             )?
         }
         "PrivateKey" | "PublicKey" => {
-            let common = AttributeSet::try_new([
-                kmip_item(CRYPTOGRAPHIC_ALGORITHM, Value::enumeration(RSA))?,
-                kmip_item(CRYPTOGRAPHIC_LENGTH, Value::integer(2048))?,
+            let algorithm = manifest_enum(row, "cryptographic_algorithm").unwrap_or(RSA);
+            let mut common_items = vec![
+                kmip_item(CRYPTOGRAPHIC_ALGORITHM, Value::enumeration(algorithm))?,
                 name_attribute(case_id)?,
-            ])?;
+            ];
+            if let Some(key_bits) = manifest_integer(row, "key_bits") {
+                common_items.push(kmip_item(CRYPTOGRAPHIC_LENGTH, Value::integer(key_bits))?);
+            }
+            if let Some(curve) = manifest_enum(row, "recommended_curve") {
+                common_items.push(kmip_item(
+                    0x0042_0029,
+                    Value::structure(structure([kmip_item(
+                        0x0042_0060,
+                        Value::enumeration(curve),
+                    )?])?),
+                )?);
+            }
+            let common = AttributeSet::try_new(common_items)?;
             let request = CreateKeyPairRequest::new()
                 .with_common_attributes(common)
                 .with_private_key_attributes(AttributeSet::try_new([kmip_item(
@@ -847,7 +936,7 @@ fn split_key_attributes(
     Ok(AttributeSet::try_new(attributes)?)
 }
 
-fn create_result_id(
+pub(super) fn create_result_id(
     client: &mut Client,
     case_id: &str,
     request: ClientRequest,
@@ -866,7 +955,7 @@ fn create_result_id(
     })
 }
 
-fn execute_created_key_pair(
+pub(super) fn execute_created_key_pair(
     client: &mut Client,
     case_id: &str,
     request: CreateKeyPairRequest,
@@ -898,7 +987,7 @@ fn execute_created_key_pair(
     )
 }
 
-fn execute_created_split(
+pub(super) fn execute_created_split(
     client: &mut Client,
     case_id: &str,
     request: CreateSplitKeyRequest,
@@ -965,7 +1054,20 @@ fn register_secret_data(
     case_id: &str,
     ownership: &mut CaseOwnership,
 ) -> Result<String, Box<dyn Error>> {
-    let material = SecretBytes::new(case_id.as_bytes().to_vec());
+    register_secret_data_with_material(
+        client,
+        case_id,
+        SecretBytes::new(case_id.as_bytes().to_vec()),
+        ownership,
+    )
+}
+
+pub(super) fn register_secret_data_with_material(
+    client: &mut Client,
+    case_id: &str,
+    material: SecretBytes,
+    ownership: &mut CaseOwnership,
+) -> Result<String, Box<dyn Error>> {
     let attributes = AttributeSet::try_new([
         kmip_item(CRYPTOGRAPHIC_USAGE_MASK, Value::integer(12))?,
         name_attribute(case_id)?,
@@ -982,7 +1084,7 @@ fn register_secret_data(
                         KEY_VALUE,
                         Value::structure(structure([kmip_item(
                             KEY_MATERIAL,
-                            Value::byte_string(material.with_bytes(<[u8]>::to_vec)),
+                            material.into_ttlv_value(),
                         )?])?),
                     )?,
                 ])?),
@@ -1111,7 +1213,7 @@ fn certificate_structure(der: &[u8]) -> Result<Structure, Box<dyn Error>> {
     ])
 }
 
-fn read_pem_der(path: &std::path::Path) -> Result<Vec<u8>, Box<dyn Error>> {
+pub(super) fn read_pem_der(path: &std::path::Path) -> Result<Vec<u8>, Box<dyn Error>> {
     let pem = std::fs::read_to_string(path)?;
     let mut decoded = Vec::new();
     let mut accumulator = 0_u32;
@@ -1263,7 +1365,7 @@ fn verify_comment_absent(
     )
 }
 
-fn get_object_state(
+pub(super) fn get_object_state(
     client: &mut Client,
     case_id: &str,
     identifier: &str,
@@ -1482,13 +1584,13 @@ fn future_date() -> Result<i64, Box<dyn Error>> {
     Ok(now_unix_seconds()? + 3600)
 }
 
-fn now_unix_seconds() -> Result<i64, Box<dyn Error>> {
+pub(super) fn now_unix_seconds() -> Result<i64, Box<dyn Error>> {
     Ok(i64::try_from(
         SystemTime::now().duration_since(UNIX_EPOCH)?.as_secs(),
     )?)
 }
 
-fn name_attribute(value: &str) -> Result<Item, Box<dyn Error>> {
+pub(super) fn name_attribute(value: &str) -> Result<Item, Box<dyn Error>> {
     let name = structure([
         kmip_item(NAME_VALUE, Value::text_string(value.to_owned()))?,
         kmip_item(NAME_TYPE, Value::enumeration(1))?,
@@ -1634,13 +1736,13 @@ fn validation_chain_plan(row: &serde_json::Value, case_id: &str) -> ValidationCh
 }
 
 #[derive(Default)]
-struct CaseOwnership {
+pub(super) struct CaseOwnership {
     identifiers: Vec<String>,
     attempts: Vec<(String, CleanupAction)>,
 }
 
 impl CaseOwnership {
-    fn track(&mut self, identifier: String) {
+    pub(super) fn track(&mut self, identifier: String) {
         if !self.identifiers.contains(&identifier) {
             self.identifiers.push(identifier);
         }
@@ -1669,7 +1771,7 @@ impl CaseOwnership {
     }
 }
 
-fn finish_operation_with_cleanup<T>(
+pub(super) fn finish_operation_with_cleanup<T>(
     operation: Result<T, String>,
     cleanup: impl FnOnce() -> Result<(), String>,
 ) -> Result<T, String> {
@@ -1695,7 +1797,7 @@ fn comment_value_matches(item: &Item, expected: &str) -> bool {
         })
 }
 
-fn manifest_row(case_id: &str) -> Result<serde_json::Value, Box<dyn Error>> {
+pub(super) fn manifest_row(case_id: &str) -> Result<serde_json::Value, Box<dyn Error>> {
     let manifest: serde_json::Value = serde_json::from_str(include_str!(
         "../../../../tests/integration/cosmian/capability-matrix.json"
     ))?;
@@ -1706,10 +1808,38 @@ fn manifest_row(case_id: &str) -> Result<serde_json::Value, Box<dyn Error>> {
         .ok_or_else(|| format!("case {case_id} was not found in the capability manifest").into())
 }
 
-fn required_text<'a>(row: &'a serde_json::Value, field: &str) -> Result<&'a str, Box<dyn Error>> {
+pub(super) fn required_text<'a>(
+    row: &'a serde_json::Value,
+    field: &str,
+) -> Result<&'a str, Box<dyn Error>> {
     row[field]
         .as_str()
         .ok_or_else(|| format!("manifest case has no textual {field}").into())
+}
+
+pub(super) fn manifest_rows(family: &str) -> Result<Vec<serde_json::Value>, Box<dyn Error>> {
+    let manifest: serde_json::Value = serde_json::from_str(include_str!(
+        "../../../../tests/integration/cosmian/capability-matrix.json"
+    ))?;
+    Ok(manifest["cases"]
+        .as_array()
+        .ok_or("capability manifest has no cases array")?
+        .iter()
+        .filter(|row| row["test_family"] == family)
+        .cloned()
+        .collect())
+}
+
+fn manifest_enum(row: &serde_json::Value, member: &str) -> Option<u32> {
+    row["wire_enum_values"][member]["value"]
+        .as_str()
+        .and_then(|value| u32::from_str_radix(value.trim_start_matches("0x"), 16).ok())
+}
+
+fn manifest_integer(row: &serde_json::Value, member: &str) -> Option<i32> {
+    row["parameters"][member]
+        .as_i64()
+        .and_then(|value| i32::try_from(value).ok())
 }
 
 #[cfg(test)]
@@ -1717,6 +1847,38 @@ mod review_regression_tests {
     use std::cell::Cell;
 
     use super::*;
+
+    #[test]
+    fn result_message_classification_never_returns_server_text_or_identifiers() {
+        assert_eq!(
+            sanitized_result_message_class(
+                "The wrapping key private-test-id does not exist or is not accessible"
+            ),
+            "wrapping_key_unavailable"
+        );
+        assert_eq!(
+            sanitized_result_message_class("The key: secret-test-id is not meant to wrap keys"),
+            "wrapping_usage_mask_denied"
+        );
+        assert_eq!(
+            sanitized_result_message_class("Can't use RSA algorithm for AES wrapping key"),
+            "wrapping_algorithm_mismatch"
+        );
+        assert_eq!(
+            sanitized_result_message_class(
+                "Unable to wrap key with RSA: padding method not supported: OAEP"
+            ),
+            "wrapping_padding_unsupported"
+        );
+        assert_eq!(
+            sanitized_result_message_class("Operation Not Supported"),
+            "operation_not_supported_detail"
+        );
+        assert_eq!(
+            sanitized_result_message_class("sensitive arbitrary server detail"),
+            "unclassified"
+        );
+    }
 
     const LOCATE_CASES: &[(&str, u32)] = &[
         ("cosmian-528-locate-certificate", 1),
@@ -1859,6 +2021,19 @@ mod review_regression_tests {
         let message = combined.expect_err("both errors should be observable");
         assert!(message.contains("primary failure"));
         assert!(message.contains("secondary cleanup failure"));
+    }
+
+    #[test]
+    fn object_not_found_during_cleanup_state_preflight_is_already_clean() {
+        assert!(is_object_not_found_result(
+            "case case-id Get Attributes state preflight: KMIP Result Status 1 Reason Some((55, \"Object Not Found\"))"
+        ));
+        assert!(!is_object_not_found_result(
+            "case case-id Get Attributes state preflight: KMIP Result Status 1 Reason Some((4, \"Invalid Field\"))"
+        ));
+        assert!(!is_object_not_found_result(
+            "case case-id Get Attributes state preflight: client_blocked delivery=NotSent"
+        ));
     }
 
     #[test]

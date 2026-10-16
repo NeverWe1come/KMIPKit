@@ -26,6 +26,10 @@ services:
         source: ./validation-leaf.ext
         target: /scripts/validation-leaf.ext
         read_only: true
+      - type: bind
+        source: ./validation-xdh.ext
+        target: /scripts/validation-xdh.ext
+        read_only: true
 
   cosmian-kms:
     image: ghcr.io/cosmian/kms:5.28.0@sha256:7b60fd4484930969906caa5722b727054ff96d49339ce81e3c64ca9e4278540e

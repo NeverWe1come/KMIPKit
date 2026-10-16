@@ -260,17 +260,15 @@ fn reviewed_inventory_issues(rows: &[serde_json::Value]) -> Vec<String> {
             && p["data_mode"] == "raw"
             && matches!(p["curve"].as_str(), Some("P256" | "SECP256K1"))
             && matches!(p["hash"].as_str(), Some("SHA-384" | "SHA-512"))
-        {
-            if row["expected_outcome"] != "source_documentation_discrepancy"
+            && (row["expected_outcome"] != "source_documentation_discrepancy"
                 || p["source_condition"] != "non-fips"
                 || p["verify_requested_digest_independently"] != true
-                || p["accept_sha256_substitution"] != false
-            {
-                issues.push(format!(
-                    "ECDSA-digest: {} must retain conditional non-fips SHA256 substitution finding",
-                    manifest_text(row, "case_id")
-                ));
-            }
+                || p["accept_sha256_substitution"] != false)
+        {
+            issues.push(format!(
+                "ECDSA-digest: {} must retain conditional non-fips SHA256 substitution finding",
+                manifest_text(row, "case_id")
+            ));
         }
     }
     issues
@@ -288,6 +286,9 @@ fn csr_subject_cannot_sign(row: &serde_json::Value) -> bool {
         ))
 }
 
+// Keep each source-backed capability axis explicit at callsites; bundling them
+// would make finite-case assertions harder to audit against the manifest.
+#[allow(clippy::too_many_arguments)]
 fn demand_review_case(
     rows: &[serde_json::Value],
     operation: &str,
@@ -366,6 +367,8 @@ fn reviewed_pair_variants() -> Vec<(&'static str, serde_json::Value)> {
     variants
 }
 
+// This finite table is deliberately exhaustive over reviewed generation variants.
+#[allow(clippy::too_many_lines)]
 fn review_generation_cases(rows: &[serde_json::Value], issues: &mut Vec<String>) {
     for (algorithm, bits) in reviewed_symmetric_variants() {
         for selection in [None, Some("TransparentSymmetricKey")] {
@@ -557,6 +560,8 @@ fn review_signature_cases(rows: &[serde_json::Value], issues: &mut Vec<String>) 
     }
 }
 
+// This finite table records the reviewed issuer/subject cross-product explicitly.
+#[allow(clippy::too_many_lines)]
 fn review_certify_cases(rows: &[serde_json::Value], issues: &mut Vec<String>) {
     for subject in [
         "csr-pem",
@@ -704,6 +709,8 @@ fn demand_transfer_formats(
     }
 }
 
+// This finite table is the source-backed transfer-format intersection checklist.
+#[allow(clippy::too_many_lines)]
 fn review_transfer_cases(rows: &[serde_json::Value], issues: &mut Vec<String>) {
     for (algorithm, parameters) in reviewed_pair_variants() {
         demand_transfer_formats(
@@ -1099,10 +1106,10 @@ fn review_material_citations(row: &serde_json::Value, issues: &mut Vec<String>) 
         ("PrivateKey", "RSA") => citations.push(("3.7", 21)),
         ("PublicKey", "RSA") => citations.push(("3.8", 22)),
         ("PrivateKey", "EC" | "ECDH" | "ECDSA" | "Ed25519" | "Ed448") => {
-            citations.push(("3.11", 25))
+            citations.push(("3.11", 25));
         }
         ("PublicKey", "EC" | "ECDH" | "ECDSA" | "Ed25519" | "Ed448") => {
-            citations.push(("3.12", 26))
+            citations.push(("3.12", 26));
         }
         _ => {}
     }
@@ -1143,12 +1150,11 @@ fn review_material_citations(row: &serde_json::Value, issues: &mut Vec<String>) 
             ));
         }
     }
-    if p["mgf"] == "MGF1"
+    if (p["mgf"] == "MGF1"
         || !p["mgf_hash"].is_null()
         || p["signature_scheme"] == "RSASSA-PSS"
-        || (row["algorithm"] == "RSA" && matches!(p["padding"].as_str(), Some("OAEP" | "None")))
-    {
-        if !row["oasis_source"]
+        || (row["algorithm"] == "RSA" && matches!(p["padding"].as_str(), Some("OAEP" | "None"))))
+        && !row["oasis_source"]
             .as_array()
             .expect("resolved citations")
             .iter()
@@ -1158,12 +1164,11 @@ fn review_material_citations(row: &serde_json::Value, issues: &mut Vec<String>) 
                     && source["table_title"] == "Mask Generator"
                     && source["numbering"] == "unnumbered"
             })
-        {
-            issues.push(format!(
-                "MGF-citation: {} needs unnumbered 11.30 Mask Generator",
-                manifest_text(row, "case_id")
-            ));
-        }
+    {
+        issues.push(format!(
+            "MGF-citation: {} needs unnumbered 11.30 Mask Generator",
+            manifest_text(row, "case_id")
+        ));
     }
 }
 
@@ -1330,6 +1335,8 @@ fn resolve_capability_sources(manifest: &serde_json::Value) -> Vec<serde_json::V
 // This checks the reviewed finite source inventory, not executable-case parity
 // (Task 7) or observed server support. Integer-valued domains use the explicit
 // branch/boundary representatives described in research.md.
+// This fixed inventory checklist keeps every required finite dimension visible.
+#[allow(clippy::too_many_lines)]
 fn validate_capability_dimensions(rows: &[serde_json::Value]) {
     let objects = [
         "Certificate",
@@ -1495,6 +1502,17 @@ fn require_inventory_case(
 }
 
 fn validate_capability_row(row: &serde_json::Value) {
+    validate_required_capability_fields(row);
+    validate_capability_execution_status(row);
+    validate_capability_dimensions_for_row(row);
+    validate_observed_result(row);
+    validate_oasis_citations(row);
+    validate_cosmian_citations(row);
+    validate_wire_enum_values(row);
+    validate_special_capability_cases(row);
+}
+
+fn validate_required_capability_fields(row: &serde_json::Value) {
     let fields = [
         "case_id",
         "operation",
@@ -1529,45 +1547,55 @@ fn validate_capability_row(row: &serde_json::Value) {
             .any(|value| value == "KMIPKIT-0015-FR-016")
     );
     assert_eq!(manifest_text(row, "encoding"), "binary-TTLV");
+}
+
+fn validate_capability_execution_status(row: &serde_json::Value) {
     // Case families are an explicit plan until Tasks 4–7 implement execution
     // and parity. Source existence must never become an observation.
     if row["expected_outcome"] == "standards_invalid_exclusion" {
-        assert!(csr_subject_cannot_sign(row));
-        assert_eq!(
-            manifest_text(row, "execution_status"),
-            "non_executable_normative_exclusion"
-        );
-        assert_eq!(row["exclusion"]["request_may_be_sent"], false);
-        manifest_text(&row["exclusion"], "reason");
-        assert_eq!(
-            row["exclusion"]["normative_sources"],
-            serde_json::json!([{
-                "document": "RFC 2986",
-                "sections": ["3", "4.2"],
-                "url": "https://www.rfc-editor.org/rfc/rfc2986.html",
-                "referenced_from": "OASIS KMIP Specification v2.1 section 1.3 [PKCS#10]/[RFC2986]; CSR structure section 2.2/Table 3; request types section 11.8/Table 439"
-            }])
-        );
-        assert!(row["setup"].as_array().expect("exclusion setup").is_empty());
-        assert_eq!(row["observed_result"]["classification"], "not_run");
-        assert_eq!(
-            manifest_text(row, "test_family"),
-            "cosmian_kms::cosmian_capability_manifest_is_complete"
-        );
-        assert!(
-            row["oasis_source"]
-                .as_array()
-                .expect("exclusion citations")
-                .iter()
-                .any(|citation| citation["section"] == "2.2"
-                    && citation["tables"] == serde_json::json!([3]))
-        );
+        validate_non_executable_exclusion(row);
     } else {
         assert_eq!(
             manifest_text(row, "execution_status"),
             "planned_for_tasks_4_6"
         );
     }
+}
+
+fn validate_non_executable_exclusion(row: &serde_json::Value) {
+    assert!(csr_subject_cannot_sign(row));
+    assert_eq!(
+        manifest_text(row, "execution_status"),
+        "non_executable_normative_exclusion"
+    );
+    assert_eq!(row["exclusion"]["request_may_be_sent"], false);
+    manifest_text(&row["exclusion"], "reason");
+    assert_eq!(
+        row["exclusion"]["normative_sources"],
+        serde_json::json!([{
+            "document": "RFC 2986",
+            "sections": ["3", "4.2"],
+            "url": "https://www.rfc-editor.org/rfc/rfc2986.html",
+            "referenced_from": "OASIS KMIP Specification v2.1 section 1.3 [PKCS#10]/[RFC2986]; CSR structure section 2.2/Table 3; request types section 11.8/Table 439"
+        }])
+    );
+    assert_eq!(row["setup"].as_array().expect("exclusion setup").len(), 0);
+    assert_eq!(row["observed_result"]["classification"], "not_run");
+    assert_eq!(
+        manifest_text(row, "test_family"),
+        "cosmian_kms::cosmian_capability_manifest_is_complete"
+    );
+    assert!(
+        row["oasis_source"]
+            .as_array()
+            .expect("exclusion citations")
+            .iter()
+            .any(|citation| citation["section"] == "2.2"
+                && citation["tables"] == serde_json::json!([3]))
+    );
+}
+
+fn validate_capability_dimensions_for_row(row: &serde_json::Value) {
     manifest_text(row, "expected_semantics");
     for field in ["object_type", "algorithm", "key_format", "encoding"] {
         assert!(
@@ -1605,16 +1633,52 @@ fn validate_capability_row(row: &serde_json::Value) {
         ),
         "invalid expected_outcome"
     );
+}
+
+#[test]
+fn observed_result_accepts_setup_rejection_before_target_send() {
+    let row = serde_json::json!({
+        "observed_result": {
+            "classification": "setup_rejected",
+            "target_request_sent": false,
+            "setup_request_sent": true,
+            "setup_response_received": true,
+            "reason": "A prerequisite request was rejected; target operation was not sent."
+        }
+    });
+    validate_observed_result(&row);
+}
+
+#[test]
+#[should_panic(expected = "setup_rejected observations must show target_request_sent=false")]
+fn observed_result_rejects_setup_rejection_after_target_send() {
+    let row = serde_json::json!({
+        "observed_result": {
+            "classification": "setup_rejected",
+            "target_request_sent": true,
+            "setup_request_sent": true,
+            "setup_response_received": true,
+            "reason": "A prerequisite request was rejected."
+        }
+    });
+    validate_observed_result(&row);
+}
+
+fn validate_observed_result(row: &serde_json::Value) {
     // Observations remain independent of the expected outcome and never use
     // null to conflate not-run with a successful or rejected exchange.
     let observed = &row["observed_result"];
     assert!(observed.is_object(), "observed_result must be an object");
+    let classification = manifest_text(observed, "classification");
     assert!(
         matches!(
-            manifest_text(observed, "classification"),
+            classification,
             "not_run"
                 | "typed_success"
                 | "rejected"
+                | "setup_rejected"
+                | "fixture_unavailable"
+                | "response_validation_failed"
                 | "malformed_response"
                 | "unsupported"
                 | "client_blocked"
@@ -1622,6 +1686,23 @@ fn validate_capability_row(row: &serde_json::Value) {
         ),
         "invalid observed_result classification"
     );
+    if classification == "setup_rejected" {
+        assert_eq!(
+            observed["target_request_sent"], false,
+            "setup_rejected observations must show target_request_sent=false"
+        );
+        assert_eq!(
+            observed["setup_request_sent"], true,
+            "setup_rejected observations must show setup_request_sent=true"
+        );
+        assert_eq!(
+            observed["setup_response_received"], true,
+            "setup_rejected observations must show setup_response_received=true"
+        );
+    }
+}
+
+fn validate_oasis_citations(row: &serde_json::Value) {
     let oasis = row["oasis_source"]
         .as_array()
         .expect("oasis_source must be an array of exact citations");
@@ -1651,6 +1732,9 @@ fn validate_capability_row(row: &serde_json::Value) {
             "OASIS citations require exact table numbers, or the explicitly unnumbered 11.30 Mask Generator table"
         );
     }
+}
+
+fn validate_cosmian_citations(row: &serde_json::Value) {
     let cosmian = &row["cosmian_source"];
     assert_eq!(manifest_text(cosmian, "tag"), "5.28.0");
     assert_eq!(
@@ -1677,6 +1761,9 @@ fn validate_capability_row(row: &serde_json::Value) {
             }
         }
     }
+}
+
+fn validate_wire_enum_values(row: &serde_json::Value) {
     let enums = row["wire_enum_values"]
         .as_object()
         .expect("numeric wire identities are required");
@@ -1701,6 +1788,9 @@ fn validate_capability_row(row: &serde_json::Value) {
             );
         }
     }
+}
+
+fn validate_special_capability_cases(row: &serde_json::Value) {
     if row["operation"] == "Hash" && row["algorithm"] == "SHA-224" {
         assert_eq!(
             manifest_text(row, "expected_outcome"),

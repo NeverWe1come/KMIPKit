@@ -1,6 +1,6 @@
 # Requirement Traceability: Cosmian KMS Integration
 
-The 2026-10-16 exhaustive matrix amendment is specified but not implemented or run by this documentation task. Historical selected-case results below remain bounded evidence. Planned manifest/module paths are verification targets, not assertions that artifacts or coverage already exist.
+The 2026-10-16 exhaustive matrix amendment is being implemented in scoped family tasks. Task 5 has now measured all transfer and key-management rows; the matrix below is the per-case observation source. The remaining lifecycle, RNG, and cryptographic families and the final all-family verification remain pending. Historical selected-case results below remain separate bounded evidence and are not copied into unmeasured rows.
 
 | Requirement | Source | Implementation | Verification |
 |---|---|---|---|
@@ -34,6 +34,23 @@ The 2026-10-16 exhaustive matrix amendment is specified but not implemented or r
 | `KMIPKIT-0015-SC-007` | FR-014, FR-016 | All applicable variants including source gaps and matching cryptographic pairs; pending |
 | `KMIPKIT-0015-SC-008` | FR-002, FR-005, FR-008, FR-009, FR-015 | Independent unique state/fixtures, tracked linked objects, cleanup and redacted diagnostics; expanded evidence pending |
 | `KMIPKIT-0015-SC-009` | FR-005, FR-015 | Teardown after success/failure and empty status with database removed; historical run did tear down, final exhaustive run pending |
+
+## Task 5: transfer and key-management observations
+
+Task 5 implemented and exercised the complete `cosmian_kms::transfer` and `cosmian_kms::key_management` assignments in `tests/integration/cosmian/capability-matrix.json`. Every recorded case uses the typed KMIPKit client over the pinned local binary TTLV/mTLS deployment. The manifest records each stable case ID, sanitized classification, and whether the target operation request was sent. The counts below include failed interoperation; only a typed response that passed operation-specific postconditions is counted as `typed_success`.
+
+| Family | Measured cases | `typed_success` | Target `rejected` | `setup_rejected` | `fixture_unavailable` |
+|---|---:|---:|---:|---:|---:|
+| Transfer | 4,640 | 2,772 | 866 | 930 | 72 |
+| Key management | 216 | 12 | 201 | 3 | 0 |
+
+The 230-ID transfer correction run superseded initial classifications for fixture and setup attribution. Its provisional response-validation results for four legacy PKCS12 cases were then superseded by the 32-ID PFX run. That final PFX run measured 16 successful unprotected-password cases and 16 password-linked setup rejections. For those 16 cases, Cosmian rejected the standard-shaped PFX Import setup with Result Reason 5 (`Operation Not Supported`); the dependent target Get/Export request was not sent. This is not a target-operation result. Exact final per-case records reside only in the matrix; intermediate run logs are local sanitized audit artifacts.
+
+### PKCS#12 Password Link interoperability discrepancy
+
+OASIS KMIP v2.1 §4.31, Tables 90–92, defines the `PKCS12PasswordLink` as a Link to a `SecretData` object. KMIPKit's typed fixture registers `SecretData` and places its returned Unique Identifier in the Link and the corresponding password selection. It does not send the password text in place of an identifier. In pinned Cosmian 5.28.0 source, `crate/server/src/core/operations/import.rs::process_pkcs12` converts the linked identifier to text and uses it as the PFX password instead of resolving the linked SecretData material; `crate/server/src/core/operations/export_get.rs` reads the outgoing PKCS12 password from the Key Wrapping Specification's Encryption Key Information identifier. This differs from the standard-shaped SecretData UID model. The matrix does not introduce a literal-password workaround. The exact request was rejected during Import setup, leaving the dependent Get/Export target operation untested for those cases.
+
+The unprotected-password PFX rows succeeded. For Certificate-target Get/Export requests selecting PKCS12 or Cosmian legacy PKCS12, the typed response is a `PrivateKey` object containing the package; the response validator checks that object type and the returned Key Format Type. Cosmian normalizes the legacy output format to standard PKCS12 `0x16`. `research.md` contains the pinned source rationale and test limitations.
 
 ## Expanded operation coverage targets (not live results)
 
