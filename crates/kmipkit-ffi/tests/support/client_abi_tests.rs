@@ -339,6 +339,347 @@ fn failed_cryptographic_item(
     item
 }
 
+fn successful_cryptographic_response(
+    operation: u32,
+    unique_id: &[u8],
+    response_fields: Vec<Vec<u8>>,
+) -> Vec<u8> {
+    let protocol_version = ttlv_structure(
+        0x0042_0069,
+        [ttlv_integer(0x0042_006a, 2), ttlv_integer(0x0042_006b, 1)],
+    );
+    let header = ttlv_structure(
+        0x0042_007a,
+        [
+            protocol_version,
+            ttlv_datetime(0x0042_0092, 1),
+            ttlv_integer(0x0042_000d, 1),
+        ],
+    );
+    let response_payload = {
+        let children = response_fields.into_iter().flatten().collect::<Vec<_>>();
+        ttlv_item(0x0042_007c, 0x01, &children)
+    };
+    let response_item = ttlv_structure(
+        0x0042_000f,
+        [
+            ttlv_enumeration(0x0042_005c, operation),
+            ttlv_item(0x0042_0093, 0x08, unique_id),
+            ttlv_enumeration(0x0042_007f, 0),
+            response_payload,
+        ],
+    );
+    ttlv_structure(0x0042_007b, [header, response_item])
+}
+
+fn successful_cryptographic_item(
+    request: ClientRequest,
+    operation: u32,
+    unique_id: &[u8],
+    response_fields: Vec<Vec<u8>>,
+) -> *mut kmipkit_client_batch_item_response_t {
+    let response = execute_single_abi_response(
+        request,
+        unique_id,
+        successful_cryptographic_response(operation, unique_id, response_fields),
+    )
+    .expect("the successful cryptographic response matches its typed request");
+    let response_handle = make_handle(
+        Kind::ClientBatchResponse,
+        HandleValue::ClientBatchResponse(Arc::new(response)),
+    );
+    let mut item = ptr::null_mut();
+    assert_eq!(
+        kmipkit_client_batch_response_item_at(response_handle, 0, &raw mut item),
+        SUCCESS
+    );
+    kmipkit_client_batch_response_release(response_handle);
+    item
+}
+
+fn assert_response_span(span: kmipkit_byte_span_v1_t, expected: &[u8]) {
+    assert_eq!(
+        span.length,
+        u64::try_from(expected.len()).expect("response span length fits u64")
+    );
+    assert!(!span.data.is_null());
+    // SAFETY: the caller keeps the response-item handle alive while checking its borrowed span.
+    assert_eq!(
+        unsafe {
+            std::slice::from_raw_parts(
+                span.data,
+                usize::try_from(span.length).expect("response span fits this test target"),
+            )
+        },
+        expected
+    );
+}
+
+fn assert_response_identifier(identifier: &kmipkit_unique_identifier_v1_t, expected: &[u8]) {
+    assert_eq!(
+        identifier.kind,
+        crate::KMIPKIT_UNIQUE_IDENTIFIER_KIND_TEXT_STRING
+    );
+    assert_eq!(
+        identifier.text_length,
+        u64::try_from(expected.len()).expect("identifier length fits u64")
+    );
+    assert!(!identifier.text_data.is_null());
+    // SAFETY: the caller keeps the response-item handle alive while checking its borrowed text.
+    assert_eq!(
+        unsafe {
+            std::slice::from_raw_parts(
+                identifier.text_data,
+                usize::try_from(identifier.text_length)
+                    .expect("response identifier fits this test target"),
+            )
+        },
+        expected
+    );
+}
+
+#[test]
+fn ffi_successful_cryptographic_response_getters_return_typed_fields() {
+    let correlation = [0x41, 0x00, 0x42];
+    let response_identifier = b"response-id";
+
+    let mut hash_parameters = Structure::new();
+    hash_parameters
+        .try_push(
+            Item::new(
+                RawTag::new(0x0042_0038)
+                    .expect("Hashing Algorithm tag fits the KMIP tag field")
+                    .try_checked()
+                    .expect("Hashing Algorithm is allocated in KMIP 2.1"),
+                Value::enumeration(6),
+            )
+            .expect("valid Hashing Algorithm test item builds"),
+        )
+        .expect("Hashing Algorithm item fits within the test structure limit");
+    let hash = successful_cryptographic_item(
+        ClientRequest::Hash(HashRequest::new(hash_parameters).with_data(
+            OperationData::ByteString(SecretBytes::new(b"request-hash-data".to_vec())),
+        )),
+        0x27,
+        b"hash-success",
+        vec![
+            ttlv_item(0x0042_00c2, 0x08, b"hash-response-data"),
+            ttlv_item(0x0042_00d6, 0x08, &correlation),
+        ],
+    );
+    let mut present = 0;
+    let mut data_present = 0;
+    let mut data = kmipkit_byte_span_v1_t {
+        data: ptr::null(),
+        length: 0,
+    };
+    let mut correlation_present = 0;
+    let mut correlation_value = kmipkit_byte_span_v1_t {
+        data: ptr::null(),
+        length: 0,
+    };
+    assert_eq!(
+        SUCCESS,
+        kmipkit_client_batch_item_response_hash(
+            hash,
+            &raw mut present,
+            &raw mut data_present,
+            &raw mut data,
+            &raw mut correlation_present,
+            &raw mut correlation_value,
+        )
+    );
+    assert_eq!((present, data_present, correlation_present), (1, 1, 1));
+    assert_response_span(data, b"hash-response-data");
+    assert_response_span(correlation_value, &correlation);
+    kmipkit_client_batch_item_response_release(hash);
+
+    let mac = successful_cryptographic_item(
+        ClientRequest::Mac(MacRequest::new().with_data(OperationData::ByteString(
+            SecretBytes::new(b"request-mac-data".to_vec()),
+        ))),
+        0x23,
+        b"mac-success",
+        vec![
+            ttlv_item(0x0042_0094, 0x07, response_identifier),
+            ttlv_item(0x0042_00c4, 0x08, b"mac-response-data"),
+            ttlv_item(0x0042_00d6, 0x08, &correlation),
+        ],
+    );
+    let mut present = 0;
+    let mut identifier = empty_unique_identifier_output_v1();
+    let mut mac_data_present = 0;
+    let mut mac_data = kmipkit_byte_span_v1_t {
+        data: ptr::null(),
+        length: 0,
+    };
+    let mut correlation_present = 0;
+    let mut correlation_value = kmipkit_byte_span_v1_t {
+        data: ptr::null(),
+        length: 0,
+    };
+    assert_eq!(
+        SUCCESS,
+        kmipkit_client_batch_item_response_mac(
+            mac,
+            &raw mut present,
+            &raw mut identifier,
+            &raw mut mac_data_present,
+            &raw mut mac_data,
+            &raw mut correlation_present,
+            &raw mut correlation_value,
+        )
+    );
+    assert_eq!((present, mac_data_present, correlation_present), (1, 1, 1));
+    assert_response_identifier(&identifier, response_identifier);
+    assert_response_span(mac_data, b"mac-response-data");
+    assert_response_span(correlation_value, &correlation);
+    kmipkit_client_batch_item_response_release(mac);
+
+    let mac_verify = successful_cryptographic_item(
+        ClientRequest::MacVerify(
+            MacVerifyRequest::new().with_mac_data(SecretBytes::new(b"request-mac".to_vec())),
+        ),
+        0x24,
+        b"mac-verify-success",
+        vec![
+            ttlv_item(0x0042_0094, 0x07, response_identifier),
+            ttlv_enumeration(0x0042_0128, 0xfedc_ba98),
+            ttlv_item(0x0042_00d6, 0x08, &correlation),
+        ],
+    );
+    let mut present = 0;
+    let mut identifier = empty_unique_identifier_output_v1();
+    let mut validity_present = 0;
+    let mut validity = 0;
+    let mut correlation_present = 0;
+    let mut correlation_value = kmipkit_byte_span_v1_t {
+        data: ptr::null(),
+        length: 0,
+    };
+    assert_eq!(
+        SUCCESS,
+        kmipkit_client_batch_item_response_mac_verify(
+            mac_verify,
+            &raw mut present,
+            &raw mut identifier,
+            &raw mut validity_present,
+            &raw mut validity,
+            &raw mut correlation_present,
+            &raw mut correlation_value,
+        )
+    );
+    assert_eq!(
+        (present, validity_present, validity, correlation_present),
+        (1, 1, 0xfedc_ba98, 1)
+    );
+    assert_response_identifier(&identifier, response_identifier);
+    assert_response_span(correlation_value, &correlation);
+    kmipkit_client_batch_item_response_release(mac_verify);
+
+    let sign = successful_cryptographic_item(
+        ClientRequest::Sign(SignRequest::new().with_data(OperationData::ByteString(
+            SecretBytes::new(b"request-sign-data".to_vec()),
+        ))),
+        0x21,
+        b"sign-success",
+        vec![
+            ttlv_item(0x0042_0094, 0x07, response_identifier),
+            ttlv_item(0x0042_00c7, 0x08, b"signature-response-data"),
+            ttlv_item(0x0042_00d6, 0x08, &correlation),
+        ],
+    );
+    let mut present = 0;
+    let mut identifier = empty_unique_identifier_output_v1();
+    let mut signature_data_present = 0;
+    let mut signature_data = kmipkit_byte_span_v1_t {
+        data: ptr::null(),
+        length: 0,
+    };
+    let mut correlation_present = 0;
+    let mut correlation_value = kmipkit_byte_span_v1_t {
+        data: ptr::null(),
+        length: 0,
+    };
+    assert_eq!(
+        SUCCESS,
+        kmipkit_client_batch_item_response_sign(
+            sign,
+            &raw mut present,
+            &raw mut identifier,
+            &raw mut signature_data_present,
+            &raw mut signature_data,
+            &raw mut correlation_present,
+            &raw mut correlation_value,
+        )
+    );
+    assert_eq!(
+        (present, signature_data_present, correlation_present),
+        (1, 1, 1)
+    );
+    assert_response_identifier(&identifier, response_identifier);
+    assert_response_span(signature_data, b"signature-response-data");
+    assert_response_span(correlation_value, &correlation);
+    kmipkit_client_batch_item_response_release(sign);
+
+    let signature_verify = successful_cryptographic_item(
+        ClientRequest::SignatureVerify(
+            SignatureVerifyRequest::new()
+                .with_signature_data(SecretBytes::new(b"request-signature".to_vec())),
+        ),
+        0x22,
+        b"signature-verify-success",
+        vec![
+            ttlv_item(0x0042_0094, 0x07, response_identifier),
+            ttlv_enumeration(0x0042_0128, 0xfedc_ba98),
+            ttlv_item(0x0042_00c2, 0x08, b"recovered-response-data"),
+            ttlv_item(0x0042_00d6, 0x08, &correlation),
+        ],
+    );
+    let mut present = 0;
+    let mut identifier = empty_unique_identifier_output_v1();
+    let mut validity_present = 0;
+    let mut validity = 0;
+    let mut recovered_present = 0;
+    let mut recovered = kmipkit_byte_span_v1_t {
+        data: ptr::null(),
+        length: 0,
+    };
+    let mut correlation_present = 0;
+    let mut correlation_value = kmipkit_byte_span_v1_t {
+        data: ptr::null(),
+        length: 0,
+    };
+    assert_eq!(
+        SUCCESS,
+        kmipkit_client_batch_item_response_signature_verify(
+            signature_verify,
+            &raw mut present,
+            &raw mut identifier,
+            &raw mut validity_present,
+            &raw mut validity,
+            &raw mut recovered_present,
+            &raw mut recovered,
+            &raw mut correlation_present,
+            &raw mut correlation_value,
+        )
+    );
+    assert_eq!(
+        (
+            present,
+            validity_present,
+            validity,
+            recovered_present,
+            correlation_present
+        ),
+        (1, 1, 0xfedc_ba98, 1, 1)
+    );
+    assert_response_identifier(&identifier, response_identifier);
+    assert_response_span(recovered, b"recovered-response-data");
+    assert_response_span(correlation_value, &correlation);
+    kmipkit_client_batch_item_response_release(signature_verify);
+}
+
 #[test]
 fn ffi_hash_response_getters_do_not_report_failed_payloads_as_present() {
     let mut hash_parameters = Structure::new();
@@ -392,11 +733,7 @@ fn ffi_certify_response_getter_does_not_report_failure_as_a_generated_identifier
     let certify = CertifyRequest::new()
         .with_unique_identifier(UniqueIdentifier::TextString("public-key".to_owned()))
         .with_certificate_request_type(0xfedc_ba98);
-    let item = failed_cryptographic_item(
-        ClientRequest::Certify(certify),
-        0x06,
-        b"certify-failure",
-    );
+    let item = failed_cryptographic_item(ClientRequest::Certify(certify), 0x06, b"certify-failure");
     let mut present = 9;
     let mut identifier = empty_unique_identifier_output_v1();
 
@@ -408,6 +745,74 @@ fn ffi_certify_response_getter_does_not_report_failure_as_a_generated_identifier
     assert_eq!(identifier.kind, 0);
     assert!(identifier.text_data.is_null());
     assert_eq!(identifier.text_length, 0);
+    kmipkit_client_batch_item_response_release(item);
+}
+
+#[test]
+fn ffi_certify_response_getter_returns_successful_generated_identifier() {
+    let response_bytes = ttlv_structure(
+        0x0042_007b,
+        [
+            ttlv_structure(
+                0x0042_007a,
+                [
+                    ttlv_structure(
+                        0x0042_0069,
+                        [ttlv_integer(0x0042_006a, 2), ttlv_integer(0x0042_006b, 1)],
+                    ),
+                    ttlv_datetime(0x0042_0092, 1),
+                    ttlv_integer(0x0042_000d, 1),
+                ],
+            ),
+            ttlv_structure(
+                0x0042_000f,
+                [
+                    ttlv_enumeration(0x0042_005c, 6),
+                    ttlv_item(0x0042_0093, 0x08, b"certify-success"),
+                    ttlv_enumeration(0x0042_007f, 0),
+                    ttlv_structure(
+                        0x0042_007c,
+                        [ttlv_item(0x0042_0094, 0x07, b"issued-certificate")],
+                    ),
+                ],
+            ),
+        ],
+    );
+    let response = execute_single_abi_response(
+        ClientRequest::Certify(
+            CertifyRequest::new()
+                .with_unique_identifier(UniqueIdentifier::TextString("public-key".to_owned()))
+                .with_certificate_request_type(1),
+        ),
+        b"certify-success",
+        response_bytes,
+    )
+    .expect("the successful Certify response matches its request");
+    let response_handle = make_handle(
+        Kind::ClientBatchResponse,
+        HandleValue::ClientBatchResponse(Arc::new(response)),
+    );
+    let mut item = ptr::null_mut();
+    assert_eq!(
+        SUCCESS,
+        kmipkit_client_batch_response_item_at(response_handle, 0, &raw mut item)
+    );
+    kmipkit_client_batch_response_release(response_handle);
+
+    let mut present = 9;
+    let mut identifier = empty_unique_identifier_output_v1();
+    assert_eq!(
+        SUCCESS,
+        kmipkit_client_batch_item_response_certify(item, &raw mut present, &raw mut identifier)
+    );
+    assert_eq!(present, 1);
+    assert_eq!(identifier.kind, 1);
+    assert_eq!(identifier.text_length, 18);
+    assert!(!identifier.text_data.is_null());
+    let identifier_length = usize::try_from(identifier.text_length)
+        .expect("the response identifier length fits this test target");
+    let actual = unsafe { std::slice::from_raw_parts(identifier.text_data, identifier_length) };
+    assert_eq!(actual, b"issued-certificate");
     kmipkit_client_batch_item_response_release(item);
 }
 

@@ -1331,6 +1331,16 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "<kmipkit_client::RequestOptions as core::default::Default>::default",
     ),
     (
+        "rust-observed-33d82d2c459bc6c85f9c",
+        "rust-kmipkit-client",
+        "kmipkit_client::ClientBatchOutcome::certify_response",
+    ),
+    (
+        "rust-observed-9576a7e0dbcd07375fe4",
+        "rust-kmipkit-client",
+        "kmipkit_client::ClientRequest::Certify",
+    ),
+    (
         "rust-observed-08ebb047e2dc8a7d19bc",
         "rust-kmipkit-client",
         "kmipkit_client::RequestOptions::with_connect",
@@ -1349,6 +1359,16 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "rust-observed-c99d843068b468497399",
         "rust-kmipkit-client",
         "kmipkit_client::RequestOptions::with_write",
+    ),
+    (
+        "rust-observed-78a9021054f86abbe4fb",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::CertifyResponse",
+    ),
+    (
+        "rust-observed-56ad3a13e32dcb72173b",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::CertifyResponse::unique_identifier",
     ),
     (
         "rust-observed-5d253f0403ebfd0df573",

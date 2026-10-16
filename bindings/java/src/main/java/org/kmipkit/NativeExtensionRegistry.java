@@ -119,6 +119,9 @@ public final class NativeExtensionRegistry {
     public static native long clientBatchItemCreateSplitKey(long objectType, int parts, int threshold,
             long method, int identifierKind, byte[] identifierText, long identifierNumber,
             byte[] primeFieldSize, long attributes, long protectionStorageMasks);
+    public static native long clientBatchItemCertify(int identifierKind, @Nullable byte[] identifierText,
+            long identifierNumber, boolean hasCertificateRequestType, long certificateRequestType,
+            @Nullable byte[] certificateRequestValue, long attributes, long protectionStorageMasks);
     public static native long clientBatchItemHash(
             long parameters, long data, @Nullable byte[] correlationValue,
             int initIndicator, int finalIndicator);
@@ -172,6 +175,7 @@ public final class NativeExtensionRegistry {
     public static native @Nullable long[] clientBatchItemResponseDiscoverVersionsSupportedVersions(
             long itemResponse);
     public static native Object[] clientBatchItemResponseCreate(long itemResponse);
+    public static native Object[] clientBatchItemResponseCertify(long itemResponse);
     public static native Object[] clientBatchItemResponseCreateKeyPair(long itemResponse);
     public static native Object[] clientBatchItemResponseCreateSplitKey(long itemResponse);
     public static native Object[] clientBatchItemResponseHash(long itemResponse);

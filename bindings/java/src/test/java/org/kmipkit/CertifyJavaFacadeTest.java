@@ -24,4 +24,12 @@ final class CertifyJavaFacadeTest {
 
         assertArrayEquals(original, certificateRequest);
     }
+
+    @Test
+    void certifyBuilderAllowsIdentifierOnlyRequestWithoutRequestType() {
+        try (ClientBatchItem item = ClientBatchItem.certify(
+                UniqueIdentifier.integer(-17), null, null, null, null)) {
+            assertNotNull(item);
+        }
+    }
 }

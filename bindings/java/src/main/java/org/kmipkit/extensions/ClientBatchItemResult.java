@@ -58,6 +58,14 @@ public final class ClientBatchItemResult implements AutoCloseable {
         return parseCreateResponse(values);
     }
 
+    /** Returns the generated certificate identifier only for a successful Certify response. */
+    public Optional<CertifyResponse> certifyResponse() {
+        if (resultStatus() != 0) return Optional.empty();
+        NativeExtensionRegistry.ensureLoaded();
+        Object[] values = handle.withValue(NativeExtensionRegistry::clientBatchItemResponseCertify);
+        return parseCertifyResponse(values);
+    }
+
     /** Returns distinct private and public identifiers for a successful Create Key Pair response. */
     public Optional<CreateKeyPairResponse> createKeyPairResponse() {
         NativeExtensionRegistry.ensureLoaded();
@@ -127,6 +135,19 @@ public final class ClientBatchItemResult implements AutoCloseable {
         public UniqueIdentifier uniqueIdentifier() { return uniqueIdentifier; }
 
         @Override public String toString() { return "CreateResponse[objectType=" + objectType + ", uniqueIdentifier=redacted]"; }
+    }
+
+    /** Successful Certify response. The identifier is redacted from default formatting. */
+    public static final class CertifyResponse {
+        private final UniqueIdentifier uniqueIdentifier;
+
+        private CertifyResponse(UniqueIdentifier uniqueIdentifier) {
+            this.uniqueIdentifier = uniqueIdentifier;
+        }
+
+        public UniqueIdentifier uniqueIdentifier() { return uniqueIdentifier; }
+
+        @Override public String toString() { return "CertifyResponse[uniqueIdentifier=redacted]"; }
     }
 
     /** Successful Create Key Pair response with separate identifiers. */
@@ -398,6 +419,16 @@ public final class ClientBatchItemResult implements AutoCloseable {
         byte[] text = tuple[1] == null ? null : requireBytes(tuple[1]);
         return Optional.of(new CreateResponse(
                 fields[1], identifier(fields[2], fields[3], fields[4], text)));
+    }
+
+    static Optional<CertifyResponse> parseCertifyResponse(Object[] values) {
+        Object[] tuple = requireTuple(values, 2, "native Certify response is invalid");
+        long[] fields = requireLongArray(tuple[0], 1, "native Certify response is invalid");
+        if (!responsePresent(fields)) {
+            requireNoResponseFields(fields, tuple);
+            return Optional.empty();
+        }
+        return Optional.of(new CertifyResponse(identifierRecord(tuple[1])));
     }
 
     static Optional<CreateKeyPairResponse> parseCreateKeyPairResponse(Object[] values) {

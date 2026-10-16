@@ -1491,6 +1491,40 @@ def client_batch_item_create_split_key(
     return _wrap_owned_handle(ClientBatchItem, handle)
 
 
+def client_batch_item_certify(
+    unique_identifier: UniqueIdentifier | None = None,
+    *,
+    certificate_request_type: int | None = None,
+    certificate_request_value: bytes | bytearray | memoryview | None = None,
+    attributes: ttlv.Structure | None = None,
+    protection_storage_masks: ttlv.Structure | None = None,
+) -> ClientBatchItem:
+    """Create one typed Certify item, copying its opaque request value as sensitive input."""
+    identifier, identifier_owner = _native_unique_identifier(unique_identifier)
+    if certificate_request_type is None:
+        has_request_type = 0
+        request_type = 0
+    else:
+        has_request_type = 1
+        request_type = _integer_range(certificate_request_type, 0, 0xFFFF_FFFF)
+    request_value, request_value_owner = _native_optional_span(certificate_request_value)
+    handle = _make_handle(
+        "kmipkit_client_batch_item_t",
+        "kmipkit_client_batch_item_certify",
+        (
+            identifier,
+            has_request_type,
+            request_type,
+            request_value,
+            _native_structure(attributes),
+            _native_structure(protection_storage_masks),
+        ),
+    )
+    # Retain caller-independent temporary input storage through the synchronous ABI call.
+    _ = identifier_owner, request_value_owner
+    return _wrap_owned_handle(ClientBatchItem, handle)
+
+
 def client_batch_item_hash(
     parameters: ttlv.Structure,
     data: ttlv.Value | None = None,
@@ -1717,6 +1751,7 @@ __all__ = [
     "client_batch_item_create",
     "client_batch_item_create_key_pair",
     "client_batch_item_create_split_key",
+    "client_batch_item_certify",
     "client_batch_item_extension_count",
     "client_batch_item_extension_criticality_indicator_at",
     "client_batch_item_extension_identity_at",

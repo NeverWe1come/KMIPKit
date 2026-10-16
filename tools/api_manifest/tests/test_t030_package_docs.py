@@ -142,6 +142,7 @@ class PackageDocumentationContractTests(unittest.TestCase):
         self.assertEqual(
             [operation["name"] for operation in declared_operations],
             [
+                "Certify",
                 "Create",
                 "Create Key Pair",
                 "Create Split Key",

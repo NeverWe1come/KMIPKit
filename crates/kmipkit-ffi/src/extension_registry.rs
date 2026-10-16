@@ -34,10 +34,10 @@ use kmipkit_client::{
 };
 use kmipkit_protocol::extension;
 use kmipkit_protocol::{
-    AttributeSet, CreateKeyPairRequest, CreateRequest, CreateSplitKeyRequest, HashRequest,
-    MacRequest, MacVerifyRequest, ObjectType, OpaqueObjectContext, OperationData, ProtocolError,
-    ProtocolErrorKind, RegisterRequest, SecretBytes, SignRequest, SignatureVerifyRequest,
-    SplitKeyMethod, UniqueIdentifier,
+    AttributeSet, CertifyRequest, CreateKeyPairRequest, CreateRequest, CreateSplitKeyRequest,
+    HashRequest, MacRequest, MacVerifyRequest, ObjectType, OpaqueObjectContext, OperationData,
+    ProtocolError, ProtocolErrorKind, RegisterRequest, SecretBytes, SignRequest,
+    SignatureVerifyRequest, SplitKeyMethod, UniqueIdentifier,
 };
 use kmipkit_transport::{
     CertificateInput, ClientIdentity, Endpoint, PrivateKeyInput, RequestDeliveryState,
@@ -2763,6 +2763,49 @@ fn batch_item_handle(request: ClientRequest) -> FfiResult<*mut kmipkit_client_ba
         Kind::BatchItem,
         HandleValue::BatchItem(Box::new(ClientBatchItem::new(request))),
     )
+}
+
+/// Creates a typed Certify request and copies the certificate request as sensitive bytes.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_client_batch_item_certify(
+    unique_identifier: *const kmipkit_unique_identifier_v1_t,
+    has_certificate_request_type: u8,
+    certificate_request_type: u32,
+    certificate_request_value: *const crate::kmipkit_byte_span_v1_t,
+    attributes: *mut kmipkit_ttlv_structure_t,
+    protection_storage_masks: *mut kmipkit_ttlv_structure_t,
+    out_item: *mut *mut kmipkit_client_batch_item_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = out_slot!(out_item);
+        let identifier = try_ffi!(copy_optional_identifier(unique_identifier));
+        let request_type = match has_certificate_request_type {
+            0 => None,
+            1 => Some(certificate_request_type),
+            _ => return record_ffi_error(ERROR_INVALID_INPUT),
+        };
+        let request_value = try_ffi!(copy_optional_secret_span(certificate_request_value));
+        let attributes = try_ffi!(copy_structure_handle(attributes, false));
+        let masks = try_ffi!(copy_structure_handle(protection_storage_masks, false));
+        let mut request = CertifyRequest::new();
+        if let Some(identifier) = identifier {
+            request = request.with_unique_identifier(identifier);
+        }
+        if let Some(request_type) = request_type {
+            request = request.with_certificate_request_type(request_type);
+        }
+        if let Some(request_value) = request_value {
+            request = request.with_certificate_request_value(request_value);
+        }
+        if let Some(attributes) = attributes {
+            request = request.with_attributes(attributes);
+        }
+        if let Some(masks) = masks {
+            request = request.with_protection_storage_masks(masks);
+        }
+        *out = try_ffi!(batch_item_handle(ClientRequest::Certify(request)));
+        SUCCESS
+    })
 }
 
 #[unsafe(no_mangle)]

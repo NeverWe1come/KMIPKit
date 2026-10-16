@@ -199,6 +199,10 @@ ffi.cdef(
         uint8_t *out_present,
         uint32_t *out_object_type,
         kmipkit_unique_identifier_v1_t *out_unique_identifier);
+    int32_t kmipkit_client_batch_item_response_certify(
+        kmipkit_client_batch_item_response_t *item,
+        uint8_t *out_present,
+        kmipkit_unique_identifier_v1_t *out_unique_identifier);
     int32_t kmipkit_client_batch_item_response_create_key_pair(
         kmipkit_client_batch_item_response_t *item,
         uint8_t *out_present,
@@ -284,6 +288,14 @@ ffi.cdef(
         const kmipkit_byte_span_v1_t *correlation_value,
         uint8_t init_indicator,
         uint8_t final_indicator,
+        kmipkit_client_batch_item_t **out_item);
+    int32_t kmipkit_client_batch_item_certify(
+        const kmipkit_unique_identifier_v1_t *unique_identifier,
+        uint8_t has_certificate_request_type,
+        uint32_t certificate_request_type,
+        const kmipkit_byte_span_v1_t *certificate_request_value,
+        kmipkit_ttlv_structure_t *attributes,
+        kmipkit_ttlv_structure_t *protection_storage_masks,
         kmipkit_client_batch_item_t **out_item);
     int32_t kmipkit_client_batch_item_mac(
         const kmipkit_unique_identifier_v1_t *unique_identifier,

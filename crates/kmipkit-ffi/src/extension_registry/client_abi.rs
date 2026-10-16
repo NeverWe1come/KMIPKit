@@ -1156,6 +1156,41 @@ pub extern "C" fn kmipkit_client_batch_item_response_create(
     })
 }
 
+/// Copies the generated certificate identifier only from a successful Certify result.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_client_batch_item_response_certify(
+    item: *mut kmipkit_client_batch_item_response_t,
+    out_present: *mut u8,
+    out_unique_identifier: *mut kmipkit_unique_identifier_v1_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let present = scalar_out!(out_present);
+        if let Err(status) = write_unique_identifier_v1(out_unique_identifier, None) {
+            return record_ffi_error(status);
+        }
+        *present = 0;
+        let item = read_handle!(item, ClientBatchItemResponse);
+        let HandleValue::ClientBatchItemResponse { response, index } = &item.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        let Some(item) = response.get(*index) else {
+            return record_ffi_error(ERROR_INTERNAL);
+        };
+        if item.outcome().result().status().raw() != 0 {
+            return SUCCESS;
+        }
+        if let Some(certify) = item.outcome().certify_response() {
+            if let Err(status) =
+                write_unique_identifier_v1(out_unique_identifier, certify.unique_identifier())
+            {
+                return record_ffi_error(status);
+            }
+            *present = 1;
+        }
+        SUCCESS
+    })
+}
+
 #[unsafe(no_mangle)]
 pub extern "C" fn kmipkit_client_batch_item_response_create_key_pair(
     item: *mut kmipkit_client_batch_item_response_t,

@@ -195,7 +195,10 @@ final class ClientFacadeTlsIntegrationTest {
                                     3, new byte[] {0, 0, 0, 0, 0, 0, 0, 17}, splitAttributes, null)
                             .withUniqueBatchItemId(uniqueBatchItemId(7)))
                     .add(ClientBatchItem.create(7, createAttributes, null)
-                            .withUniqueBatchItemId(uniqueBatchItemId(8)));
+                            .withUniqueBatchItemId(uniqueBatchItemId(8)))
+                    .add(ClientBatchItem.certify(UniqueIdentifier.textString("public-key"),
+                                    1L, null, null, null)
+                            .withUniqueBatchItemId(uniqueBatchItemId(9)));
             ClientBatchResponse batchResponse = client.executeWithOptions(
                     batch, CodecLimits.defaults(), RequestOptions.defaults());
             try (ClientBatchResponse response = batchResponse;
@@ -207,8 +210,9 @@ final class ClientFacadeTlsIntegrationTest {
                     ClientBatchItemResult creationFailed = response.itemAt(5);
                     ClientBatchItemResult keyPair = response.itemAt(6);
                     ClientBatchItemResult splitKey = response.itemAt(7);
-                    ClientBatchItemResult textCreated = response.itemAt(8)) {
-                assertEquals(9, response.itemCount());
+                    ClientBatchItemResult textCreated = response.itemAt(8);
+                    ClientBatchItemResult certified = response.itemAt(9)) {
+                assertEquals(10, response.itemCount());
                 assertEquals(0, completed.resultStatus());
                 assertTrue(completed.outcomeKind().isCompleted());
                 assertArrayEquals(uniqueBatchItemId(0), completed.uniqueBatchItemId().orElseThrow());
@@ -275,6 +279,13 @@ final class ClientFacadeTlsIntegrationTest {
                 assertEquals(UniqueIdentifier.Kind.TEXT_STRING, textCreateResponse.uniqueIdentifier().kind());
                 assertEquals("create-text-id-secret", textCreateResponse.uniqueIdentifier().text());
                 assertFalse(textCreateResponse.toString().contains("create-text-id-secret"));
+
+                ClientBatchItemResult.CertifyResponse certifyResponse =
+                        certified.certifyResponse().orElseThrow();
+                assertEquals(UniqueIdentifier.Kind.TEXT_STRING,
+                        certifyResponse.uniqueIdentifier().kind());
+                assertEquals("certify-text-id-secret", certifyResponse.uniqueIdentifier().text());
+                assertFalse(certifyResponse.toString().contains("certify-text-id-secret"));
             }
             byte[] request = peer.get(12, TimeUnit.SECONDS);
             assertTrue(request.length >= 8);
@@ -632,7 +643,7 @@ final class ClientFacadeTlsIntegrationTest {
         byte[] version = structure(0x420069, item(0x42006a, 2, integer(2)),
                 item(0x42006b, 2, integer(1)));
         byte[] header = structure(0x42007a, version, item(0x420092, 9, longInteger(1)),
-                item(0x42000d, 2, integer(9)));
+                item(0x42000d, 2, integer(10)));
         byte[] responseVersion = structure(0x420069, item(0x42006a, 2, integer(2)),
                 item(0x42006b, 2, integer(1)));
         byte[] responsePayload = structure(0x42007c, responseVersion, responseVersion);
@@ -683,8 +694,14 @@ final class ClientFacadeTlsIntegrationTest {
         byte[] textCreateItem = structure(0x42000f,
                 enumeration(0x42005c, 1), item(0x420093, 8, uniqueBatchItemId(8)),
                 enumeration(0x42007f, 0), textCreatePayload);
+        byte[] certifyPayload = structure(0x42007c,
+                item(0x420094, 7, "certify-text-id-secret".getBytes(StandardCharsets.UTF_8)));
+        byte[] certifyItem = structure(0x42000f,
+                enumeration(0x42005c, 6), item(0x420093, 8, uniqueBatchItemId(9)),
+                enumeration(0x42007f, 0), certifyPayload);
         return structure(0x42007b, header, successfulItem, pendingItem, failedItem, emptyItem,
-                createItem, createFailure, createKeyPairItem, createSplitKeyItem, textCreateItem);
+                createItem, createFailure, createKeyPairItem, createSplitKeyItem, textCreateItem,
+                certifyItem);
     }
 
     private static byte[] discoverVersionsResponseMessage(int supportedVersionCount) throws Exception {

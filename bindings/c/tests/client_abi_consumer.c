@@ -499,7 +499,7 @@ static int execute_public_tls_request(char **argv, kmipkit_codec_limits_t *limit
     }
     batch = 0; /* consumed by execution */
     if (kmipkit_client_batch_response_item_count(response, &response_count) != 0 ||
-        response_count != 14) {
+        response_count != 8) {
         goto cleanup;
     }
     for (uint64_t index = 0; index < response_count; ++index) {

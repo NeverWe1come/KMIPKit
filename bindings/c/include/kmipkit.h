@@ -508,6 +508,14 @@ int32_t kmipkit_client_batch_item_signature_verify(const kmipkit_unique_identifi
  */
 /* KMIPKIT-0021-FR-001, KMIPKIT-0021-FR-005, KMIPKIT-0021-FR-007, KMIPKIT-0021-FR-009, KMIPKIT-0021-FR-010, KMIPKIT-0021-FR-011, KMIPKIT-0021-FR-012, KMIPKIT-0021-FR-013, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-008, KMIPKIT-0043-FR-009, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022, KMIPKIT-REQ-SPEC-6.1.56-001-001, KMIPKIT-REQ-SPEC-6.1.56-002 */
 int32_t kmipkit_client_batch_item_response_signature_verify(kmipkit_client_batch_item_response_t * item, uint8_t * out_present, kmipkit_unique_identifier_v1_t * out_unique_identifier, uint8_t * out_validity_present, uint32_t * out_validity_indicator, uint8_t * out_recovered_data_present, kmipkit_byte_span_v1_t * out_recovered_data, uint8_t * out_correlation_present, kmipkit_byte_span_v1_t * out_correlation_value);
+/* Creates a typed Certify item; certificate request bytes are copied as sensitive data.
+ */
+/* KMIPKIT-0036-FR-001, KMIPKIT-0036-FR-002, KMIPKIT-0036-FR-003, KMIPKIT-0036-FR-004, KMIPKIT-0036-FR-005, KMIPKIT-0036-FR-006, KMIPKIT-0036-FR-008, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-008, KMIPKIT-0043-FR-009, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-013, KMIPKIT-0043-FR-017, KMIPKIT-0043-FR-018, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022 */
+int32_t kmipkit_client_batch_item_certify(const kmipkit_unique_identifier_v1_t * unique_identifier, uint8_t has_certificate_request_type, uint32_t certificate_request_type, const kmipkit_byte_span_v1_t * certificate_request_value, kmipkit_ttlv_structure_t * attributes, kmipkit_ttlv_structure_t * protection_storage_masks, kmipkit_client_batch_item_t ** out_item);
+/* Returns the generated certificate identifier only for a successful Certify result. Text identifier bytes are borrowed from the response-item handle and remain valid until that handle is released.
+ */
+/* KMIPKIT-0036-FR-001, KMIPKIT-0036-FR-002, KMIPKIT-0036-FR-003, KMIPKIT-0036-FR-004, KMIPKIT-0036-FR-005, KMIPKIT-0036-FR-006, KMIPKIT-0036-FR-008, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-008, KMIPKIT-0043-FR-009, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-013, KMIPKIT-0043-FR-017, KMIPKIT-0043-FR-018, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022 */
+int32_t kmipkit_client_batch_item_response_certify(kmipkit_client_batch_item_response_t * item, uint8_t * out_present, kmipkit_unique_identifier_v1_t * out_unique_identifier);
 /* Approved exact C-only exclusion: kmipkit_client_batch_item_response_metadata_v1 */
 int32_t kmipkit_client_batch_item_response_metadata_v1(kmipkit_client_batch_item_response_t * item, kmipkit_client_batch_item_metadata_v1_t * out_metadata);
 /* Approved exact C-only exclusion: kmipkit_transport_config_create_v1 */

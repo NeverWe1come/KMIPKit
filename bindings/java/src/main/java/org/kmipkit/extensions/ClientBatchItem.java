@@ -92,6 +92,31 @@ public final class ClientBatchItem implements AutoCloseable {
         return new ClientBatchItem(value, List.of());
     }
 
+    /** Creates a Certify request, preserving raw certificate request type and byte values. */
+    public static ClientBatchItem certify(
+            @Nullable UniqueIdentifier uniqueIdentifier,
+            @Nullable Long certificateRequestType,
+            @Nullable byte[] certificateRequestValue,
+            @Nullable TtlvStructure attributes,
+            @Nullable TtlvStructure protectionStorageMasks) {
+        byte[] identifierText = uniqueIdentifier == null ? null : uniqueIdentifier.nativeText();
+        byte[] requestValueCopy = copyForNative(certificateRequestValue);
+        try {
+            long requestType = certificateRequestType == null ? 0 : certificateRequestType;
+            if (certificateRequestType != null) {
+                requireU32(requestType, "Certificate Request Type");
+            }
+            NativeExtensionRegistry.ensureLoaded();
+            long value = NativeHandle.withNativeHandles(() -> NativeExtensionRegistry.clientBatchItemCertify(
+                    identifierKind(uniqueIdentifier), identifierText, identifierNumber(uniqueIdentifier),
+                    certificateRequestType != null, requestType, requestValueCopy,
+                    handleOrNull(attributes), handleOrNull(protectionStorageMasks)));
+            return new ClientBatchItem(value, List.of());
+        } finally {
+            clearNativeCopies(identifierText, requestValueCopy);
+        }
+    }
+
     /** Creates a Hash request with required Cryptographic Parameters and optional Data/framing fields. */
     public static ClientBatchItem hash(
             TtlvStructure parameters,
