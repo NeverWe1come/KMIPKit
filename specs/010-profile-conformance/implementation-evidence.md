@@ -3447,3 +3447,123 @@ The pinned KMIP Specification v2.1 §9.17 paragraph contains separate MAY atoms:
 | Red — require an explicit mixed-scope gap and correct downstream direction assertions | `632d75d8`; `py -3 -B -m unittest tools.normative_catalog.tests.test_profile_sections7_through11_review_contracts tools.normative_catalog.tests.test_validate.CatalogValidationTests.test_result_response_source_clauses_have_server_to_client_direction tools.normative_catalog.tests.test_validate.CatalogValidationTests.test_result_message_mixed_scope_has_open_evidence_gap_record -v` | Expected Red: §9.17 was still classified as server-only, had no explicit discrepancy record, and the downstream direction assertion was stale. |
 | Green — preserve mixed source atoms and downstream contract | `3a3a5c2c`; `py -3 -B -m unittest tools.normative_catalog.tests.test_profile_sections7_through11_review_contracts tools.normative_catalog.tests.test_validate.CatalogValidationTests.test_result_response_source_clauses_have_server_to_client_direction tools.normative_catalog.tests.test_validate.CatalogValidationTests.test_result_message_mixed_scope_has_open_evidence_gap_record -v`; `py -3 -B -m unittest tools.normative_catalog.tests.test_validate -v` | PASS: focused regression contracts pass; full catalog validator suite passes, 279 tests with 1 platform-conditioned skip. |
 | Refactor/evidence — record source rationale and suite result | This DCO-signed evidence commit; `py -3 -B -m tools.normative_catalog.validate --repo-root .`; `py -3 -B tools/normative_catalog/report.py --repo-root . --check`; `git diff --check` | PASS: current validation and generated report checks confirm the discrepancy remains traceable and does not create a client requirement. |
+
+
+### KMIPKIT-0010 T036 — pinned client-profile fixture execution assessment (2026-10-16)
+
+The fixture inventory was audited against the checked-in catalog and local files. OASIS case IDs are defined by the pinned KMIP Profiles v2.1 source in §§5.1.3.1–5.1.3.13 and §5.6.3.1–§5.6.3.3. The catalog has 93 profile-fixture case records: 16 have pinned local XML files and 77 are explicitly unavailable with no local fixture path. The 16 local files are available evidence inputs only; none has been executed as a complete official profile case in this work. There are no official execution results to map to a pass or fail (0/16 executed).
+
+The local code audit found no full client-profile fixture runner or test invoking these profile XML paths. `crates/kmipkit-test-support/src/oasis_crypto_fixtures.rs` is a narrower Encrypt/Decrypt adapter, and its module documentation explicitly says it does not validate complete Test Case flows; the client tests include only separate derived operation examples. `crates/kmipkit-client/tests/unit/interop_execution_tests.rs` exercises typed Interop requests over a fake transport but does not load or execute profile fixtures. A representative available profile XML is a multi-message conversation with Interop Begin/End and variable response values such as `$NOW`; no generic complete-flow parser, documented variable substitution contract, or profile-case runner exists to produce a faithful case result. Running a parser or isolated derived operation test would not count as executing the official case. The separate pinned `TC-*` operation examples are not replacements for the profile case fixtures.
+
+#### Pinned locally, but unexecuted
+
+| Official case ID | Catalog test ID | Pinned fixture | Result |
+| --- | --- | --- | --- |
+| `BL-M-1-21` | `KMIPKIT-TEST-PROF-5-1-3-1` | `specification/oasis/kmip-2.1/fixtures/BL-M-1-21.xml` | Not executed; no full-case runner |
+| `BL-M-10-21` | `KMIPKIT-TEST-PROF-5-1-3-10` | `specification/oasis/kmip-2.1/fixtures/BL-M-10-21.xml` | Not executed; no full-case runner |
+| `BL-M-11-21` | `KMIPKIT-TEST-PROF-5-1-3-11` | `specification/oasis/kmip-2.1/fixtures/BL-M-11-21.xml` | Not executed; no full-case runner |
+| `BL-M-12-21` | `KMIPKIT-TEST-PROF-5-1-3-12` | `specification/oasis/kmip-2.1/fixtures/BL-M-12-21.xml` | Not executed; no full-case runner |
+| `BL-M-13-21` | `KMIPKIT-TEST-PROF-5-1-3-13` | `specification/oasis/kmip-2.1/fixtures/BL-M-13-21.xml` | Not executed; no full-case runner |
+| `BL-M-2-21` | `KMIPKIT-TEST-PROF-5-1-3-2` | `specification/oasis/kmip-2.1/fixtures/BL-M-2-21.xml` | Not executed; no full-case runner |
+| `BL-M-3-21` | `KMIPKIT-TEST-PROF-5-1-3-3` | `specification/oasis/kmip-2.1/fixtures/BL-M-3-21.xml` | Not executed; no full-case runner |
+| `BL-M-4-21` | `KMIPKIT-TEST-PROF-5-1-3-4` | `specification/oasis/kmip-2.1/fixtures/BL-M-4-21.xml` | Not executed; no full-case runner |
+| `BL-M-5-21` | `KMIPKIT-TEST-PROF-5-1-3-5` | `specification/oasis/kmip-2.1/fixtures/BL-M-5-21.xml` | Not executed; no full-case runner |
+| `BL-M-6-21` | `KMIPKIT-TEST-PROF-5-1-3-6` | `specification/oasis/kmip-2.1/fixtures/BL-M-6-21.xml` | Not executed; no full-case runner |
+| `BL-M-7-21` | `KMIPKIT-TEST-PROF-5-1-3-7` | `specification/oasis/kmip-2.1/fixtures/BL-M-7-21.xml` | Not executed; no full-case runner |
+| `BL-M-8-21` | `KMIPKIT-TEST-PROF-5-1-3-8` | `specification/oasis/kmip-2.1/fixtures/BL-M-8-21.xml` | Not executed; no full-case runner |
+| `BL-M-9-21` | `KMIPKIT-TEST-PROF-5-1-3-9` | `specification/oasis/kmip-2.1/fixtures/BL-M-9-21.xml` | Not executed; no full-case runner |
+| `SKLC-M-1-21` | `KMIPKIT-TEST-PROF-5-6-3-1` | `specification/oasis/kmip-2.1/fixtures/SKLC-M-1-21.xml` | Not executed; no full-case runner |
+| `SKLC-M-2-21` | `KMIPKIT-TEST-PROF-5-6-3-2` | `specification/oasis/kmip-2.1/fixtures/SKLC-M-2-21.xml` | Not executed; no full-case runner |
+| `SKLC-M-3-21` | `KMIPKIT-TEST-PROF-5-6-3-3` | `specification/oasis/kmip-2.1/fixtures/SKLC-M-3-21.xml` | Not executed; no full-case runner |
+
+#### Unavailable locally
+
+These catalogued official profile cases have no pinned local fixture (`fixture_availability: unavailable`, `fixture_path: null`). They were not reconstructed or fetched.
+
+| Official case ID | Catalog test ID | Status |
+| --- | --- | --- |
+| `AKLC-M-1-21` | `KMIPKIT-TEST-PROF-5-8-3-1` | Unavailable; no local fixture |
+| `AKLC-M-2-21` | `KMIPKIT-TEST-PROF-5-8-3-2` | Unavailable; no local fixture |
+| `AKLC-M-3-21` | `KMIPKIT-TEST-PROF-5-8-3-3` | Unavailable; no local fixture |
+| `AKLC-O-1-21` | `KMIPKIT-TEST-PROF-5-8-4-1` | Unavailable; no local fixture |
+| `AX-M-1-21` | `KMIPKIT-TEST-PROF-5-13-3-1` | Unavailable; no local fixture |
+| `AX-M-2-21` | `KMIPKIT-TEST-PROF-5-13-3-2` | Unavailable; no local fixture |
+| `CS-AC-M-1-21` | `KMIPKIT-TEST-PROF-5-9-8-1` | Unavailable; no local fixture |
+| `CS-AC-M-2-21` | `KMIPKIT-TEST-PROF-5-9-8-2` | Unavailable; no local fixture |
+| `CS-AC-M-3-21` | `KMIPKIT-TEST-PROF-5-9-8-3` | Unavailable; no local fixture |
+| `CS-AC-M-4-21` | `KMIPKIT-TEST-PROF-5-9-8-4` | Unavailable; no local fixture |
+| `CS-AC-M-5-21` | `KMIPKIT-TEST-PROF-5-9-8-5` | Unavailable; no local fixture |
+| `CS-AC-M-6-21` | `KMIPKIT-TEST-PROF-5-9-8-6` | Unavailable; no local fixture |
+| `CS-AC-M-7-21` | `KMIPKIT-TEST-PROF-5-9-8-7` | Unavailable; no local fixture |
+| `CS-AC-M-8-21` | `KMIPKIT-TEST-PROF-5-9-8-8` | Unavailable; no local fixture |
+| `CS-AC-M-OAEP-1-21` | `KMIPKIT-TEST-PROF-5-9-8-9` | Unavailable; no local fixture |
+| `CS-AC-M-OAEP-10-21` | `KMIPKIT-TEST-PROF-5-9-8-18` | Unavailable; no local fixture |
+| `CS-AC-M-OAEP-2-21` | `KMIPKIT-TEST-PROF-5-9-8-10` | Unavailable; no local fixture |
+| `CS-AC-M-OAEP-3-21` | `KMIPKIT-TEST-PROF-5-9-8-11` | Unavailable; no local fixture |
+| `CS-AC-M-OAEP-4-21` | `KMIPKIT-TEST-PROF-5-9-8-12` | Unavailable; no local fixture |
+| `CS-AC-M-OAEP-5-21` | `KMIPKIT-TEST-PROF-5-9-8-13` | Unavailable; no local fixture |
+| `CS-AC-M-OAEP-6-21` | `KMIPKIT-TEST-PROF-5-9-8-14` | Unavailable; no local fixture |
+| `CS-AC-M-OAEP-7-21` | `KMIPKIT-TEST-PROF-5-9-8-15` | Unavailable; no local fixture |
+| `CS-AC-M-OAEP-8-21` | `KMIPKIT-TEST-PROF-5-9-8-16` | Unavailable; no local fixture |
+| `CS-AC-M-OAEP-9-21` | `KMIPKIT-TEST-PROF-5-9-8-17` | Unavailable; no local fixture |
+| `CS-BC-M-1-21` | `KMIPKIT-TEST-PROF-5-9-7-1` | Unavailable; no local fixture |
+| `CS-BC-M-10-21` | `KMIPKIT-TEST-PROF-5-9-7-10` | Unavailable; no local fixture |
+| `CS-BC-M-11-21` | `KMIPKIT-TEST-PROF-5-9-7-11` | Unavailable; no local fixture |
+| `CS-BC-M-12-21` | `KMIPKIT-TEST-PROF-5-9-7-12` | Unavailable; no local fixture |
+| `CS-BC-M-13-21` | `KMIPKIT-TEST-PROF-5-9-7-13` | Unavailable; no local fixture |
+| `CS-BC-M-14-21` | `KMIPKIT-TEST-PROF-5-9-7-14` | Unavailable; no local fixture |
+| `CS-BC-M-2-21` | `KMIPKIT-TEST-PROF-5-9-7-2` | Unavailable; no local fixture |
+| `CS-BC-M-3-21` | `KMIPKIT-TEST-PROF-5-9-7-3` | Unavailable; no local fixture |
+| `CS-BC-M-4-21` | `KMIPKIT-TEST-PROF-5-9-7-4` | Unavailable; no local fixture |
+| `CS-BC-M-5-21` | `KMIPKIT-TEST-PROF-5-9-7-5` | Unavailable; no local fixture |
+| `CS-BC-M-6-21` | `KMIPKIT-TEST-PROF-5-9-7-6` | Unavailable; no local fixture |
+| `CS-BC-M-7-21` | `KMIPKIT-TEST-PROF-5-9-7-7` | Unavailable; no local fixture |
+| `CS-BC-M-8-21` | `KMIPKIT-TEST-PROF-5-9-7-8` | Unavailable; no local fixture |
+| `CS-BC-M-9-21` | `KMIPKIT-TEST-PROF-5-9-7-9` | Unavailable; no local fixture |
+| `CS-BC-M-CHACHA20-1-21` | `KMIPKIT-TEST-PROF-5-9-7-18` | Unavailable; no local fixture |
+| `CS-BC-M-CHACHA20-2-21` | `KMIPKIT-TEST-PROF-5-9-7-19` | Unavailable; no local fixture |
+| `CS-BC-M-CHACHA20-3-21` | `KMIPKIT-TEST-PROF-5-9-7-20` | Unavailable; no local fixture |
+| `CS-BC-M-CHACHA20POLY1305-1-21` | `KMIPKIT-TEST-PROF-5-9-7-21` | Unavailable; no local fixture |
+| `CS-BC-M-GCM-1-21` | `KMIPKIT-TEST-PROF-5-9-7-15` | Unavailable; no local fixture |
+| `CS-BC-M-GCM-2-21` | `KMIPKIT-TEST-PROF-5-9-7-16` | Unavailable; no local fixture |
+| `CS-BC-M-GCM-3-21` | `KMIPKIT-TEST-PROF-5-9-7-17` | Unavailable; no local fixture |
+| `CS-RNG-M-1-21` | `KMIPKIT-TEST-PROF-5-9-9-1` | Unavailable; no local fixture |
+| `CS-RNG-O-1-21` | `KMIPKIT-TEST-PROF-5-9-10-1` | Unavailable; no local fixture |
+| `CS-RNG-O-2-21` | `KMIPKIT-TEST-PROF-5-9-10-2` | Unavailable; no local fixture |
+| `CS-RNG-O-3-21` | `KMIPKIT-TEST-PROF-5-9-10-3` | Unavailable; no local fixture |
+| `CS-RNG-O-4-21` | `KMIPKIT-TEST-PROF-5-9-10-4` | Unavailable; no local fixture |
+| `MSGENC-HTTPS-M-1-21` | `KMIPKIT-TEST-PROF-5-3-3-1` | Unavailable; no local fixture |
+| `MSGENC-JSON-M-1-21` | `KMIPKIT-TEST-PROF-5-5-4-1` | Unavailable; no local fixture |
+| `MSGENC-XML-M-1-21` | `KMIPKIT-TEST-PROF-5-4-4-1` | Unavailable; no local fixture |
+| `OMOS-M-1-21` | `KMIPKIT-TEST-PROF-5-10-3-1` | Unavailable; no local fixture |
+| `OMOS-O-1-21` | `KMIPKIT-TEST-PROF-5-10-4-1` | Unavailable; no local fixture |
+| `PKCS11-M-1-21` | `KMIPKIT-TEST-PROF-5-18-5-1` | Unavailable; no local fixture |
+| `QS-M-1-12` | `KMIPKIT-TEST-PROF-5-17-1` | Unavailable; no local fixture |
+| `QS-M-2-21` | `KMIPKIT-TEST-PROF-5-17-2` | Unavailable; no local fixture |
+| `SASED-M-1-21` | `KMIPKIT-TEST-PROF-5-11-3-1` | Unavailable; no local fixture |
+| `SASED-M-2-21` | `KMIPKIT-TEST-PROF-5-11-3-2` | Unavailable; no local fixture |
+| `SASED-M-3-21` | `KMIPKIT-TEST-PROF-5-11-3-3` | Unavailable; no local fixture |
+| `SKFF-M-1-21` | `KMIPKIT-TEST-PROF-5-7-5-1` | Unavailable; no local fixture |
+| `SKFF-M-10-21` | `KMIPKIT-TEST-PROF-5-7-7-2` | Unavailable; no local fixture |
+| `SKFF-M-11-21` | `KMIPKIT-TEST-PROF-5-7-7-3` | Unavailable; no local fixture |
+| `SKFF-M-12-21` | `KMIPKIT-TEST-PROF-5-7-7-4` | Unavailable; no local fixture |
+| `SKFF-M-2-21` | `KMIPKIT-TEST-PROF-5-7-5-2` | Unavailable; no local fixture |
+| `SKFF-M-3-21` | `KMIPKIT-TEST-PROF-5-7-5-3` | Unavailable; no local fixture |
+| `SKFF-M-4-21` | `KMIPKIT-TEST-PROF-5-7-5-4` | Unavailable; no local fixture |
+| `SKFF-M-5-21` | `KMIPKIT-TEST-PROF-5-7-6-1` | Unavailable; no local fixture |
+| `SKFF-M-6-21` | `KMIPKIT-TEST-PROF-5-7-6-2` | Unavailable; no local fixture |
+| `SKFF-M-7-21` | `KMIPKIT-TEST-PROF-5-7-6-3` | Unavailable; no local fixture |
+| `SKFF-M-8-21` | `KMIPKIT-TEST-PROF-5-7-6-4` | Unavailable; no local fixture |
+| `SKFF-M-9-21` | `KMIPKIT-TEST-PROF-5-7-7-1` | Unavailable; no local fixture |
+| `SKLC-O-1-21` | `KMIPKIT-TEST-PROF-5-6-4-1` | Unavailable; no local fixture |
+| `TL-M-1-21` | `KMIPKIT-TEST-PROF-5-12-6-1` | Unavailable; no local fixture |
+| `TL-M-2-21` | `KMIPKIT-TEST-PROF-5-12-6-2` | Unavailable; no local fixture |
+| `TL-M-3-21` | `KMIPKIT-TEST-PROF-5-12-6-3` | Unavailable; no local fixture |
+
+#### Audit commands and outcome
+
+- PowerShell here-string piped to `py -3 -`: filtered catalog `test_cases` by `source_id == KMIPKIT-SRC-profiles`, checked each catalog `fixture_path` with `Path.is_file()`, and listed unavailable records. Result: 93 records, 16 locally pinned and present, 77 unavailable; no availability/path mismatches.
+- `rg` search over `crates`, `tools`, and `scripts` for the profile fixture paths and case IDs found no full-profile client fixture runner; matches were source-audit tests and catalog tooling.
+- `rg` search over Rust client/protocol/test-support source and tests for `BL-M-*` and `SKLC-M-*` fixture inclusions found no profile case execution. Existing pinned XML adapters cover other fixture scopes.
+
+No official fixture execution command was run because no faithful execution path exists. This is an execution blocker, not a failed case result. T036 remains open; the fixtures remain available-but-unexecuted or unavailable as listed above, and no profile conformance claim is made.
