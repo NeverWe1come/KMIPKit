@@ -239,6 +239,10 @@ public final class ClientBatchItemResult implements AutoCloseable {
     private long[] metadata() {
         NativeExtensionRegistry.ensureLoaded();
         long[] values = handle.withValue(NativeExtensionRegistry::clientBatchItemResponseMetadata);
+        return parseMetadata(values);
+    }
+
+    static long[] parseMetadata(long[] values) {
         if (values == null || values.length != 4) {
             throw new InvalidInputException("native batch result metadata is invalid");
         }
