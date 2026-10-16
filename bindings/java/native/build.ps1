@@ -11,6 +11,7 @@ $rustLibrary = Join-Path $repositoryRoot 'target\debug\kmipkit_ffi.lib'
 $jniSource = Join-Path $PSScriptRoot 'kmipkit_jni.cpp'
 $zeroizingTestSource = Join-Path $PSScriptRoot 'tests\zeroizing_bytes_test.cpp'
 $clientBatchItemTransferTestSource = Join-Path $PSScriptRoot 'tests\client_batch_item_transfer_test.cpp'
+$responseIdentifierTestSource = Join-Path $PSScriptRoot 'tests\response_identifier_validation_test.cpp'
 $cHeader = Join-Path $repositoryRoot 'bindings\c\include'
 $internalHeader = Join-Path $repositoryRoot 'tests\fixtures\api\generated'
 
@@ -65,6 +66,24 @@ if ($LASTEXITCODE -ne 0) {
 & $clientBatchItemTransferTestExecutable
 if ($LASTEXITCODE -ne 0) {
     throw "JNI client batch item transfer test failed with exit code $LASTEXITCODE."
+}
+
+$responseIdentifierTestObject = Join-Path $nativeOutput 'response_identifier_validation_test.obj'
+$responseIdentifierTestExecutable = Join-Path $nativeOutput 'response_identifier_validation_test.exe'
+$responseIdentifierTestCompiler = 'cl.exe /nologo /std:c++17 /EHsc /MD'
+$responseIdentifierTestCompiler += ' /I' + '"' + $internalHeader + '"'
+$responseIdentifierTestCompiler += ' /Fo' + '"' + $responseIdentifierTestObject + '"'
+$responseIdentifierTestCompiler += ' ' + '"' + $responseIdentifierTestSource + '"'
+$responseIdentifierTestCompiler += ' /Fe:' + '"' + $responseIdentifierTestExecutable + '"'
+$responseIdentifierTestCommand = 'call "' + $devCommand + '" -no_logo -arch=x64 -host_arch=x64 && '
+$responseIdentifierTestCommand += $responseIdentifierTestCompiler
+& $env:ComSpec /d /s /c $responseIdentifierTestCommand
+if ($LASTEXITCODE -ne 0) {
+    throw "JNI response identifier validation test compile failed with exit code $LASTEXITCODE."
+}
+& $responseIdentifierTestExecutable
+if ($LASTEXITCODE -ne 0) {
+    throw "JNI response identifier validation test failed with exit code $LASTEXITCODE."
 }
 
 $jniInclude = Join-Path $javaHome 'include'
