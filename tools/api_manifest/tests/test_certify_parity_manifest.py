@@ -54,6 +54,21 @@ EXPECTED_MAPPINGS = {
         "kmipkit.client.BatchItemResult.certify_response",
     },
 }
+EXPECTED_IMPLEMENTATION_EXCLUSIONS = {
+    "org.kmipkit.NativeExtensionRegistry.clientBatchItemCertify",
+    "org.kmipkit.NativeExtensionRegistry.clientBatchItemResponseCertify",
+    "org.kmipkit.extensions.ClientBatchItemResult.CertifyResponse.toString",
+    "kmipkit.client.CertifyResponse.__dataclass_fields__",
+    "kmipkit.client.CertifyResponse.__dataclass_params__",
+    "kmipkit.client.CertifyResponse.__delattr__",
+    "kmipkit.client.CertifyResponse.__eq__",
+    "kmipkit.client.CertifyResponse.__hash__",
+    "kmipkit.client.CertifyResponse.__init__",
+    "kmipkit.client.CertifyResponse.__match_args__",
+    "kmipkit.client.CertifyResponse.__repr__",
+    "kmipkit.client.CertifyResponse.__setattr__",
+    "kmipkit.client.CertifyResponse.__slots__",
+}
 
 
 class CertifyParityManifestTests(unittest.TestCase):
@@ -115,6 +130,20 @@ class CertifyParityManifestTests(unittest.TestCase):
         operation = operations[0]
         self.assertEqual("declared", operation["apiState"])
         self.assertEqual(LANGUAGES, set(operation["declarations"]))
+
+    def test_certify_bridge_and_generated_helpers_have_exact_exclusions(self) -> None:
+        exclusions = {
+            row["exportName"]: row
+            for row in self.manifest["approvedExclusions"]
+            if row["exportName"] in EXPECTED_IMPLEMENTATION_EXCLUSIONS
+        }
+        self.assertEqual(EXPECTED_IMPLEMENTATION_EXCLUSIONS, set(exclusions))
+        for export_name in EXPECTED_IMPLEMENTATION_EXCLUSIONS:
+            exclusion = exclusions[export_name]
+            self.assertEqual("java-kmipkit" if export_name.startswith("org.") else "python-kmipkit",
+                exclusion["packageId"])
+            self.assertTrue(exclusion["reason"].strip(), export_name)
+            self.assertTrue(exclusion["evidence"].strip(), export_name)
 
 
 if __name__ == "__main__":
