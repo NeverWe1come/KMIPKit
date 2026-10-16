@@ -2012,6 +2012,24 @@ environmental failure.
 | Red | this test/evidence commit | `python -B -m unittest tools.api_manifest.tests.test_parity tools.api_manifest.tests.test_t076_client_mapping -v`: reproduced 2 failures among 43 tests. The parity allowlist was updated for the existing failure fixture, and a focused assertion now requires the T032 Python semantic exports to have four-language mappings and exact dataclass exclusions; it fails until the manifest is corrected. |
 | Green | this Green commit | Updated the shared fixture allowlist for the existing failure case and added exact four-language mappings plus Python dataclass-member exclusions. `python -B -m unittest tools.api_manifest.tests.test_parity tools.api_manifest.tests.test_t076_client_mapping -v`: PASS, 47 tests. `python -B -m unittest discover -s scripts/tests -p 'test_*.py' -v`: PASS, 272 tests (26 skipped). The complete binding audit reports 274/274 C, 487/487 Java, and 459/459 Python declarations exactly matched, with no missing or unobserved exports. `python -B tools/api_manifest/generate.py --check`: PASS, 12 generated outputs current. |
 
+#### T032 QA regression: Create Split Key response cardinality
+
+The owner acceptance criterion `SC-004` and FR-005 require preserving all
+repeated Create Split Key response identifiers in wire order. Decoder element
+limits are configurable; a caller who raises that limit must not encounter a
+second fixed 100,000-identifier ceiling in Java or Python. The added Java test
+uses a real local mutual-TLS exchange, a 400,000-element decoder limit, and
+100,001 ordered Integer identifiers. The Python adapter test supplies the same
+count through the C ABI response accessors and checks cardinality and order;
+Python's current test suite has no TLS test harness, so native TLS boundary
+coverage remains in Rust/C and Java.
+
+| Phase | Commit | Command / result |
+|---|---|---|
+| Red | pending | `mvn --batch-mode --file bindings/java/pom.xml -Dtest=ClientFacadeTlsIntegrationTest#createSplitKeyResponsePreservesMoreThanOneHundredThousandIdentifiersOverTls test`: expected failure at `clientBatchItemResponseCreateSplitKey` with `InvalidInputException` after the TLS response decoded. `uv run --directory bindings/python --with-requirements requirements-coverage.txt -- python -m pytest -q tests/test_client.py::test_create_split_key_response_preserves_more_than_one_hundred_thousand_identifiers`: expected `ResourceLimitError` from `_create_split_key_response`. Both failures identify the second fixed cap, not decoder limits. |
+| Green | pending | Remove the wrapper-only 100,000 response cap while retaining generic JNI/C input limits, Java array-index bounds, Python runtime collection bounds, and caller-configured response decoder limits. |
+| Refactor | pending | Verify cardinality and order across Rust, C ABI, Java TLS, and Python consumers; record all focused and full checks. |
+
 The same CI run also failed both macOS Core jobs while compiling the C ABI
 consumer: the test calls `kmipkit_ttlv_structure_release`, but that symbol was
 still blocked in the manifest and omitted from the generated public header.

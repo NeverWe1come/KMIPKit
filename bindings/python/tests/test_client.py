@@ -1344,6 +1344,53 @@ def test_creation_response_mapping_preserves_wire_identifiers_and_failure_messag
     assert released == ["item", "item", "item", "item", "response"]
 
 
+def test_create_split_key_response_preserves_more_than_one_hundred_thousand_identifiers(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    identifier_count = 100_001
+    item_pointer, _item_storage = _opaque("kmipkit_client_batch_item_response_t")
+    item = _wrap_owned_handle(client._ClientBatchItemResponse, item_pointer)
+    released: list[str] = []
+
+    def split_count(_item: object, present: object, count: object) -> int:
+        present[0] = 1  # type: ignore[index]
+        count[0] = identifier_count  # type: ignore[index]
+        return 0
+
+    def split_identifier(_item: object, index: int, output: object) -> int:
+        output.struct_size = client.ffi.sizeof("kmipkit_unique_identifier_v1_t")  # type: ignore[attr-defined]
+        output.abi_version = 1  # type: ignore[attr-defined]
+        output.kind = int(extensions.UniqueIdentifierKind.INTEGER)  # type: ignore[attr-defined]
+        output.reserved = 0  # type: ignore[attr-defined]
+        output.text_data = client.ffi.NULL  # type: ignore[attr-defined]
+        output.text_length = 0  # type: ignore[attr-defined]
+        output.enumeration_value = 0  # type: ignore[attr-defined]
+        output.integer_value = index  # type: ignore[attr-defined]
+        return 0
+
+    monkeypatch.setattr(
+        client,
+        "lib",
+        SimpleNamespace(
+            kmipkit_client_batch_item_response_release=lambda _item: released.append("item"),
+            kmipkit_client_batch_item_response_create_split_key_count=split_count,
+            kmipkit_client_batch_item_response_create_split_key_unique_identifier_at=(
+                split_identifier
+            ),
+        ),
+    )
+    try:
+        identifiers = client._create_split_key_response(item)
+        assert identifiers is not None
+        assert len(identifiers) == identifier_count
+        assert identifiers[0] == extensions.UniqueIdentifier.integer(0)
+        assert identifiers[50_000] == extensions.UniqueIdentifier.integer(50_000)
+        assert identifiers[-1] == extensions.UniqueIdentifier.integer(identifier_count - 1)
+    finally:
+        item.close()
+    assert released == ["item"]
+
+
 def test_batch_result_accepts_absent_spans_and_no_result_reason(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:

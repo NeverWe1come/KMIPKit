@@ -329,6 +329,66 @@ final class ClientFacadeTlsIntegrationTest {
     }
 
     @Test
+    void createSplitKeyResponsePreservesMoreThanOneHundredThousandIdentifiersOverTls()
+            throws Exception {
+        int identifierCount = 100_001;
+        Path serverStorePath = temporaryDirectory.resolve("large-split-key-server.p12");
+        Path clientStorePath = temporaryDirectory.resolve("large-split-key-client.p12");
+        createKeyStore(serverStorePath, "server");
+        createKeyStore(clientStorePath, "client");
+
+        KeyStore serverStore = loadKeyStore(serverStorePath);
+        KeyStore clientStore = loadKeyStore(clientStorePath);
+        X509Certificate serverCertificate = certificate(serverStore, "server");
+        X509Certificate clientCertificate = certificate(clientStore, "client");
+        PrivateKey clientKey = (PrivateKey) clientStore.getKey("client", STORE_PASSWORD);
+
+        SSLServerSocket listener = (SSLServerSocket) serverContext(serverStore, clientCertificate)
+                .getServerSocketFactory()
+                .createServerSocket(0, 1, InetAddress.getByName("127.0.0.1"));
+        listener.setEnabledProtocols(new String[] {"TLSv1.3"});
+        listener.setNeedClientAuth(true);
+        listener.setSoTimeout(10_000);
+        FutureTask<byte[]> peer = new FutureTask<>(
+                () -> serveOneResponse(listener, createSplitKeyResponseMessage(identifierCount)));
+        Thread peerThread = new Thread(peer, "kmipkit-java-large-split-key-fixture");
+        peerThread.setDaemon(true);
+        peerThread.start();
+
+        CodecLimits limits = CodecLimits.create(16 * 1024 * 1024L, 64, 400_000);
+        try (ClientExtensionRegistry registry = ClientExtensionRegistry.create(
+                        List.of(), ExtensionRegistryLimits.defaults());
+                ClientConfiguration extensions = ClientConfiguration.create(registry);
+                TransportConfiguration transport = TransportConfiguration.builder()
+                        .rawTls("127.0.0.1", listener.getLocalPort())
+                        .clientIdentityDer(new byte[][] {clientCertificate.getEncoded()}, clientKey.getEncoded())
+                        .trustCertificatesDer(new byte[][] {serverCertificate.getEncoded()})
+                        .timeouts(TransportConfiguration.Timeout.bounded(Duration.ofSeconds(5)),
+                                TransportConfiguration.Timeout.bounded(Duration.ofSeconds(5)),
+                                TransportConfiguration.Timeout.bounded(Duration.ofSeconds(5)),
+                                TransportConfiguration.Timeout.bounded(Duration.ofSeconds(8)))
+                        .build();
+                Client client = Client.create(extensions, transport);
+                TtlvStructure attributes = TtlvStructure.create()) {
+            ClientBatch batch = ClientBatch.create();
+            batch.add(ClientBatchItem.createSplitKey(7, null, 2, 2, 1, null, attributes, null));
+            try (ClientBatchResponse response = client.execute(batch, limits);
+                    ClientBatchItemResult result = response.itemAt(0)) {
+                List<UniqueIdentifier> identifiers = result.createSplitKeyUniqueIdentifiers()
+                        .orElseThrow();
+                assertEquals(identifierCount, identifiers.size());
+                assertEquals(UniqueIdentifier.integer(0), identifiers.get(0));
+                assertEquals(UniqueIdentifier.integer(50_000), identifiers.get(50_000));
+                assertEquals(UniqueIdentifier.integer(identifierCount - 1),
+                        identifiers.get(identifiers.size() - 1));
+            }
+            assertTrue(peer.get(12, TimeUnit.SECONDS).length >= 8);
+        } finally {
+            listener.close();
+        }
+    }
+
+    @Test
     void peerClosingAfterRequestSurfacesSanitizedTypedTransportFailure() throws Exception {
         Path serverStorePath = temporaryDirectory.resolve("transport-error-server.p12");
         Path clientStorePath = temporaryDirectory.resolve("transport-error-client.p12");
@@ -620,6 +680,21 @@ final class ClientFacadeTlsIntegrationTest {
         byte[] payload = structure(0x42007c, supportedVersions.toByteArray());
         byte[] responseItem = structure(0x42000f, item(0x42005c, 5, integer(30)),
                 item(0x420093, 8, uniqueBatchItemId(0)), item(0x42007f, 5, integer(0)), payload);
+        return structure(0x42007b, header, responseItem);
+    }
+
+    private static byte[] createSplitKeyResponseMessage(int identifierCount) throws Exception {
+        byte[] version = structure(0x420069, item(0x42006a, 2, integer(2)),
+                item(0x42006b, 2, integer(1)));
+        byte[] header = structure(0x42007a, version, item(0x420092, 9, longInteger(1)),
+                item(0x42000d, 2, integer(1)));
+        ByteArrayOutputStream identifiers = new ByteArrayOutputStream();
+        for (int index = 0; index < identifierCount; index++) {
+            identifiers.write(item(0x420094, 2, integer(index)));
+        }
+        byte[] payload = structure(0x42007c, identifiers.toByteArray());
+        byte[] responseItem = structure(0x42000f, item(0x42005c, 5, integer(40)),
+                item(0x42007f, 5, integer(0)), payload);
         return structure(0x42007b, header, responseItem);
     }
 
