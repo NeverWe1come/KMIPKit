@@ -22,15 +22,6 @@ def _load_adapter() -> tuple[types.ModuleType, types.ModuleType, str]:
     package.__path__ = [str(PACKAGE_PATH)]
     sys.modules[package_name] = package
 
-    errors_spec = importlib.util.spec_from_file_location(
-        f"{package_name}.errors", PACKAGE_PATH / "errors.py"
-    )
-    if errors_spec is None or errors_spec.loader is None:
-        raise AssertionError("could not load Python error categories")
-    errors = importlib.util.module_from_spec(errors_spec)
-    sys.modules[errors_spec.name] = errors
-    errors_spec.loader.exec_module(errors)
-
     class FakeFFI:
         NULL = object()
 
@@ -60,6 +51,15 @@ def _load_adapter() -> tuple[types.ModuleType, types.ModuleType, str]:
     native.ffi = FakeFFI()
     native.lib = FakeLibrary()
     sys.modules[native.__name__] = native
+
+    errors_spec = importlib.util.spec_from_file_location(
+        f"{package_name}.errors", PACKAGE_PATH / "errors.py"
+    )
+    if errors_spec is None or errors_spec.loader is None:
+        raise AssertionError("could not load Python error categories")
+    errors = importlib.util.module_from_spec(errors_spec)
+    sys.modules[errors_spec.name] = errors
+    errors_spec.loader.exec_module(errors)
 
     handles_spec = importlib.util.spec_from_file_location(
         f"{package_name}._handles", PACKAGE_PATH / "_handles.py"
