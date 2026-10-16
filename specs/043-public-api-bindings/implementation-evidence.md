@@ -1205,7 +1205,7 @@ introduced by RequestOptions; it does not close T076 or the related task gates.
 | Green | `b604b984` | Same focused test; `uv run --offline --no-project --with-requirements tools/api_manifest/requirements-test.txt python -B -m unittest tools.api_manifest.tests.test_t076_client_mapping -v`; `uv run --offline --no-project --with-requirements tools/api_manifest/requirements-test.txt python -B tools/api_manifest/generate.py --write`; `uv run --offline --no-project --with-requirements tools/api_manifest/requirements-test.txt python -B tools/api_manifest/generate.py --check`; `uv run --offline --no-project --with-requirements tools/api_manifest/requirements-test.txt python -B -m unittest tools.api_manifest.tests.test_generate -v`; pinned binding-export audit with `--check` | PASS: focused Red regression 1/1; T076 mapping tests 33/33; generator tests 57 passed with 2 Windows symlink-permission skips; all 12 outputs current; audit exit 0 with C 272/242, Java 481/442, Python 556/425, and every package `matchesManifest=true`. |
 | Refactor | This commit | `git diff --check`; inspect the refreshed audit report and evidence against generated outputs | Record the exact partial gate state and clarify that structural export matching does not complete T076, T021, T024, or T011. |
 
-The recorded internal QA review and automated security diff scans are complete for their reviewed ranges; they do not replace the qualified human security review required before release. Required CI on the final PR head and complete four-language semantic parity remain outstanding. T011, T076, T021, and T024 remain open; no generic error-TTLV API was promoted.
+The recorded internal QA review and automated security diff scans are complete for their reviewed ranges; they do not replace the qualified human security review required before release. Required CI on the final PR head and complete four-language semantic parity remain outstanding. At the time of this checkpoint T011, T076, T021, and T024 remained open and no generic error-TTLV API had been promoted; T081 later added only its specifically approved UID-shape error accessor.
 
 ### T076 Python native-constructor input evidence and FFI error output (2026-10-14)
 
@@ -1564,8 +1564,9 @@ The independent read-only T076 QA review found no remaining implementation
 gate in the task. It verified exact shared-client mappings across Rust, C,
 Java, and Python; the typed public C mTLS consumer; ordered mixed Success,
 Pending, and Failure outcomes; exact Pending correlation; no automatic
-follow-up; complete binding-export reconciliation; and preservation of the
-blocked generic error-TTLV helper. The audit totals are C 242/242, Java
+follow-up; complete binding-export reconciliation; and the T076 checkpoint
+state that the generic error-TTLV helper was blocked (T081 later adds a
+separate error-specific path). The audit totals are C 242/242, Java
 449/449, and Python 425/425 declarations, with no missing, stale,
 kind-mismatched, or unobserved paths. The reviewer distinguished T021/T022,
 T024/T025, T029/T071, T077/T078, and KMIPKIT-0010 as separate remaining work.
@@ -2272,16 +2273,17 @@ payloads fail before the JNI library is initialized.
 | Green | `206dd24d` | Same focused Maven command | PASS: 2 tests, 0 failures/errors/skips. Exact 16 MiB payloads constructed without mutating caller arrays; payloads above the limit were rejected before native loading. |
 | Refactor | `ec91ffbc` | Same focused command; `mvn -q verify`; `git diff --check HEAD~3..HEAD` | PASS: final checks cover the five payload byte-array positions only. Root reran `mvn -q verify` successfully on Windows; the implementer reports 192 Java tests, 3 skipped, no failures/errors, and the JaCoCo gate passing. |
 
-## T081 — Retain generic response TTLV on typed response failures
+## T081 — Retain generic response TTLV for approved UID shape errors
 
-The initial failure-first tests use a structurally complete KMIP 2.1
-`ResponseMessage` whose Discover Versions payload has a malformed Protocol
-Version value and an opaque vendor-tagged ByteString sentinel. The request
-reaches the local TLS 1.3 mutual-authentication peer, and typed response
-validation rejects the payload. The tests require an owned generic TTLV handle
-for both default and options-enabled Java execution, an optional owned Python
-error field, and a separate options-enabled C ABI entry point whose output
-slots are cleared before option validation.
+The initial failure-first tests used a structurally complete KMIP 2.1
+`ResponseMessage` whose Discover Versions payload had a malformed Protocol
+Version value and an opaque vendor-tagged ByteString sentinel. That test scope
+was too broad: KMIPKIT-0021-FR-015 permits retained generic access only for a
+missing, repeated, or malformed required Unique Identifier in successful MAC,
+MAC Verify, Sign, and Signature Verify responses. KMIPKIT-0007-FR-013 prohibits
+retaining response contents for other errors. The TLS fixtures and C consumer
+have been narrowed to the approved cases, and the unrelated Discover Versions
+error now explicitly asserts that the C ABI returns no response TTLV.
 
 | Phase | Command | Expected Red result |
 |---|---|---|
@@ -2290,6 +2292,49 @@ slots are cleared before option validation.
 | Red | `cargo test -p kmipkit-ffi --all-features ffi_execute_with_options_and_error_ttlv_clears_outputs_before_options_validation` | Compilation failed with E0425 because the options-enabled error-TTLV ABI function is not implemented. |
 | Red refinement | `bindings/python/.venv/Scripts/python.exe -m unittest tools.api_manifest.tests.test_generate.ManifestGeneratorCliTests.test_t081_public_c_header_exposes_retained_generic_response_access -v` | Expected failure: 21 subcases show the generated public C header lacks the response TTLV view/accessor functions, the `TtlvItemView`/`TtlvValueView` handles, and the item/value view release functions needed to inspect and safely release the returned structure. |
 
-The compiled C consumer now includes a caller for the new versioned symbol; its
-link/build verification remains pending with the Green implementation. No
-production files or generated outputs changed in Red.
+The original T081 Red cases above established the binding API gap. A separate
+scope-correction Red commit adds assertions that malformed Activate and
+non-final MAC Verify/Signature Verify responses do not retain TTLV; the
+malformed Activate assertion failed against the original broad behavior.
+
+| Phase | Commit | Verification | Result |
+|---|---|---|---|
+| Scope Red | `27bde1d1` | `cargo test -p kmipkit-client --lib` | Expected failure: malformed successful Activate retained its full response even though FR-015 does not authorize it. |
+| Scope Green | `46524845` | `cargo test -p kmipkit-client --lib`; `cargo test -p kmipkit-ffi --features coverage-c-consumer --test c_api_coverage`; `bindings/java/./gradlew --no-daemon test --console=plain`; Python `tests/test_client.py` | PASS: 546 Rust client tests, 5 C consumer integration tests, Java Gradle suite, and 189 Python client tests. |
+| Manifest correction | `46524845` | `uv run --with jsonschema==4.26.0 python tools/api_manifest/generate.py --check`; focused manifest suite | PASS: 12 generated outputs verified; 161 passed, 2 skipped, and 3,308 subtests passed. |
+| Refactor | this commit | `cargo fmt --all --check`; `cargo clippy --workspace --all-targets --all-features -- -D warnings`; `cargo test --workspace --all-features`; manifest generator and focused manifest suite | PASS: checks pass; reconciled the owner-spec exception, public API inventory, generated audit reports, and English/Spanish documentation without broadening the accessor scope. |
+
+The corrected manifest records this as the separate `crypto_response_ttlv`
+capability owned by approved KMIPKIT-0021, rather than attaching it to the
+KMIPKIT-0007 client execution capability. The generic accessor returns `None`
+for all other protocol, validation, and transport failures. C, Java, and Python
+continue to own and close retained structures; diagnostics remain redacted.
+
+The Red/Green implementation is followed by the T082 test-only coverage commit
+`52298800`; the separate Refactor and evidence commits are recorded below after
+they are created. Focused security review found no actionable issue and
+confirmed the accessor is reachable only for the successful-operation UID
+shape failures. QA and traceability review found no remaining scope mismatch.
+
+## T082 — Close selected-scope changed-production coverage gap
+
+CI run `38898672071` was the Red evidence: selected changed-production coverage
+was 4,078/4,352 lines (93.70 percent), below the 95-percent gate. The added
+tests exercise valid JNI response conversions and accessors, Rust FFI borrowed
+span and identifier writers, operation-data copying and batch-item handle
+errors, Java empty optional unsigned values, and Python absent-identifier
+responses. Production behavior was not changed solely to raise coverage.
+
+| Phase | Commits | Verification | Result |
+|---|---|---|---|
+| Red | CI run `38898672071` | Selected-scope changed-production coverage gate | Expected failure: 4,078/4,352 lines (93.70 percent), below 95 percent. |
+| Green | `46524845`, `52298800` | `cargo fmt --all --check`; `cargo clippy --workspace --all-targets --all-features -- -D warnings`; `cargo test --workspace --all-features`; selected manifest, Rust FFI/C, Java, Python, and cross-language coverage checks | PASS locally; detailed counts and coverage are recorded below. Follow-up PR CI is pending. |
+| Refactor | this commit | Final documentation, traceability, and evidence reconciliation | Scope and verification evidence are recorded without production behavior changes. |
+
+Fresh local changed-production coverage against base `ff159a8b3fdb92b6ff6174c1c7e5ad2588dc5138` is 35,164/36,564 lines (96.1711 percent), above the 95-percent changed-code gate. Component results are Rust 23,510/24,306 (96.7251 percent), FFI-C 4,767/4,940 (96.498 percent), Java 1,897/1,969 (96.3433 percent), Python 2,327/2,356 (98.7691 percent), and JNI 2,663/2,993 (88.9743 percent), above its 85-percent binding gate. The Linux Rust workspace report is 29,537/30,953 lines (95.4253 percent). The fresh Windows workspace test command, formatting, and full workspace Clippy pass; selected manifest tests report 161 passed, 2 skipped, and 3,308 subtests passed; Java reports 200 tests, 0 failures, 0 errors, and 1 skip; Python reports 354 passing tests; Rust FFI reports 98 passing tests and the compiled C consumer reports 5 passing tests. The cross-language Linux FFI/C coverage run reports 98/98 FFI tests and 5/5 C consumer tests. These local results do not substitute for the pending cross-platform PR CI run.
+
+The independent T082 QA review found the requested coverage cases present and
+the changed-production threshold satisfied. The security review found no new
+security issue in the added test-only coverage. T082 is locally complete; keep
+the parent PR in draft until CI reruns against the pushed commits and all
+required checks pass.
