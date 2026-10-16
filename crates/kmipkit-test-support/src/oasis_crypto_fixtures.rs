@@ -43,6 +43,97 @@ pub struct OasisCryptoFixture {
     operation_pairs: Vec<OasisCryptoOperationPair>,
 }
 
+/// An ordered request/response stream from one pinned KMIP profile XML case.
+///
+/// This is fixture replay input only. It does not assert profile conformance or
+/// server interoperability.
+#[derive(Debug)]
+pub struct OasisProfileFixture {
+    case_id: String,
+    exchanges: Vec<OasisProfileExchange>,
+}
+
+/// One source-ordered exchange in an [`OasisProfileFixture`].
+#[derive(Debug)]
+pub struct OasisProfileExchange {
+    step: usize,
+    operation: u32,
+    request_message: Structure,
+    response_message: Structure,
+}
+
+/// Deterministic substitutions supported by the pinned profile fixtures.
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub struct OasisProfileFixtureBindings {
+    /// Value substituted for the fixture's `$NOW` symbol.
+    pub now: i64,
+    /// Value substituted for the fixture's `$UNIQUE_IDENTIFIER_0` symbol.
+    pub unique_identifier_0: &'static str,
+}
+
+impl Default for OasisProfileFixtureBindings {
+    fn default() -> Self {
+        Self {
+            now: TEST_NOW,
+            unique_identifier_0: TEST_UNIQUE_IDENTIFIER_0,
+        }
+    }
+}
+
+impl OasisProfileFixture {
+    /// Parses one complete profile fixture as strict ordered exchanges.
+    ///
+    /// This API preserves every paired operation and never filters or
+    /// reconstructs missing messages. It supports only the two documented
+    /// fixture substitutions in [`OasisProfileFixtureBindings`].
+    pub fn from_xml(
+        case_id: &str,
+        xml: &str,
+        bindings: OasisProfileFixtureBindings,
+    ) -> Result<Self, OasisCryptoFixtureError> {
+        let _ = (case_id, xml, bindings);
+        Err(OasisCryptoFixtureError::UnsupportedProfileFixture)
+    }
+
+    /// Returns the exact caller-supplied official case identifier.
+    #[must_use]
+    pub fn case_id(&self) -> &str {
+        &self.case_id
+    }
+
+    /// Returns every exchange in source order.
+    #[must_use]
+    pub fn exchanges(&self) -> &[OasisProfileExchange] {
+        &self.exchanges
+    }
+}
+
+impl OasisProfileExchange {
+    /// Zero-based source position of this request/response pair.
+    #[must_use]
+    pub const fn step(&self) -> usize {
+        self.step
+    }
+
+    /// Raw KMIP Operation Enumeration from the fixture.
+    #[must_use]
+    pub const fn operation(&self) -> u32 {
+        self.operation
+    }
+
+    /// Complete generic TTLV request message parsed from the fixture.
+    #[must_use]
+    pub const fn request_message(&self) -> &Structure {
+        &self.request_message
+    }
+
+    /// Complete generic TTLV response message parsed from the fixture.
+    #[must_use]
+    pub const fn response_message(&self) -> &Structure {
+        &self.response_message
+    }
+}
+
 impl OasisCryptoFixture {
     /// Parses a KMIP XML fixture and retains paired Encrypt/Decrypt messages.
     ///
@@ -224,6 +315,8 @@ pub enum OasisCryptoFixtureError {
     TtlvLimit,
     /// The checked-in normative catalog is malformed or ambiguous.
     InvalidCatalog,
+    /// The full profile fixture parser has not accepted this shape.
+    UnsupportedProfileFixture,
 }
 
 impl fmt::Display for OasisCryptoFixtureError {
@@ -244,6 +337,7 @@ impl fmt::Display for OasisCryptoFixtureError {
             Self::InvalidValue => "OASIS fixture selected message contains an invalid TTLV value",
             Self::TtlvLimit => "OASIS fixture selected message exceeds TTLV model limits",
             Self::InvalidCatalog => "KMIPKit normative catalog cannot resolve fixture values",
+            Self::UnsupportedProfileFixture => "OASIS profile fixture shape is unsupported",
         };
         formatter.write_str(message)
     }
