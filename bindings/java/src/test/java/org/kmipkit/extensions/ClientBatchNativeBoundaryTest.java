@@ -95,4 +95,26 @@ final class ClientBatchNativeBoundaryTest {
         assertThrows(InvalidInputException.class,
                 () -> NativeExtensionRegistry.clientBatchAddErrorContinuationValue(batch, 0));
     }
+
+    @Test
+    void responseAccessorsRejectNullNativeHandles() {
+        assertThrows(InvalidInputException.class,
+                () -> NativeExtensionRegistry.clientBatchResponseItemCount(0));
+        assertThrows(InvalidInputException.class,
+                () -> NativeExtensionRegistry.clientBatchResponseItemAt(0, 0));
+        assertThrows(InvalidInputException.class,
+                () -> NativeExtensionRegistry.clientBatchItemResponseMetadata(0));
+        assertThrows(InvalidInputException.class,
+                () -> NativeExtensionRegistry.clientBatchItemResponseMetadataV2(0));
+        assertThrows(InvalidInputException.class,
+                () -> NativeExtensionRegistry.clientBatchItemResponsePendingCorrelationValue(0));
+        assertThrows(InvalidInputException.class,
+                () -> NativeExtensionRegistry.clientBatchItemResponseDiscoverVersionsSupportedVersions(0));
+        assertThrows(InvalidInputException.class,
+                () -> NativeExtensionRegistry.clientBatchItemResponseCreate(0));
+        assertThrows(InvalidInputException.class,
+                () -> NativeExtensionRegistry.clientBatchItemResponseCreateKeyPair(0));
+        assertThrows(InvalidInputException.class,
+                () -> NativeExtensionRegistry.clientBatchItemResponseCreateSplitKey(0));
+    }
 }

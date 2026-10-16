@@ -752,6 +752,157 @@ fn ffi_create_split_key_getters_copy_nonempty_identifiers_and_reject_out_of_rang
     kmipkit_client_batch_response_release(response_handle);
 }
 
+fn assert_creation_result_getters_return_status(
+    item: *mut kmipkit_client_batch_item_response_t,
+    expected_status: i32,
+) {
+    let mut metadata = kmipkit_client_batch_item_metadata_v2_t {
+        struct_size: u32::try_from(std::mem::size_of::<kmipkit_client_batch_item_metadata_v2_t>())
+            .expect("metadata size fits ABI field"),
+        abi_version: 2,
+        operation: 0,
+        outcome_kind: 0,
+        result_status: 0,
+        has_result_reason: 0,
+        result_reason: 0,
+        has_result_message: 0,
+        reserved: 0,
+        result_message_data: ptr::null(),
+        result_message_length: 0,
+    };
+    assert_eq!(
+        kmipkit_client_batch_item_response_metadata_v2(item, &mut metadata),
+        expected_status
+    );
+
+    let mut present = 0;
+    let mut object_type = 0;
+    let mut identifier = empty_unique_identifier_output_v1();
+    assert_eq!(
+        kmipkit_client_batch_item_response_create(
+            item,
+            &mut present,
+            &mut object_type,
+            &mut identifier,
+        ),
+        expected_status
+    );
+
+    let mut private_identifier = empty_unique_identifier_output_v1();
+    let mut public_identifier = empty_unique_identifier_output_v1();
+    assert_eq!(
+        kmipkit_client_batch_item_response_create_key_pair(
+            item,
+            &mut present,
+            &mut private_identifier,
+            &mut public_identifier,
+        ),
+        expected_status
+    );
+
+    let mut count = 0;
+    assert_eq!(
+        kmipkit_client_batch_item_response_create_split_key_count(item, &mut present, &mut count),
+        expected_status
+    );
+
+    let mut split_identifier = empty_unique_identifier_output_v1();
+    assert_eq!(
+        kmipkit_client_batch_item_response_create_split_key_unique_identifier_at(
+            item,
+            0,
+            &mut split_identifier,
+        ),
+        expected_status
+    );
+
+    let mut versions_present = 0;
+    let mut version_count = 0;
+    assert_eq!(
+        kmipkit_client_batch_item_response_discover_versions_supported_versions(
+            item,
+            &mut versions_present,
+            ptr::null_mut(),
+            0,
+            &mut version_count,
+        ),
+        expected_status
+    );
+}
+
+#[test]
+fn ffi_creation_result_getters_reject_inconsistent_response_item_handles() {
+    let response = Arc::new(
+        create_key_pair_success_response()
+            .expect("the valid successful typed response is associated with its request"),
+    );
+
+    let mismatched_item = make_handle(
+        Kind::ClientBatchItemResponse,
+        HandleValue::ClientBatchResponse(Arc::clone(&response)),
+    );
+    assert_creation_result_getters_return_status(mismatched_item, ERROR_INVALID_INPUT);
+    kmipkit_client_batch_item_response_release(mismatched_item);
+
+    let invalid_index_item = make_handle(
+        Kind::ClientBatchItemResponse,
+        HandleValue::ClientBatchItemResponse {
+            response,
+            index: usize::MAX,
+        },
+    );
+    assert_creation_result_getters_return_status(invalid_index_item, ERROR_INTERNAL);
+    kmipkit_client_batch_item_response_release(invalid_index_item);
+}
+
+#[test]
+fn ffi_creation_requests_reject_missing_attributes_and_malformed_structure_handles() {
+    let mut create_item = ptr::null_mut();
+    assert_eq!(
+        kmipkit_client_batch_item_create(1, ptr::null_mut(), ptr::null_mut(), &mut create_item,),
+        ERROR_INVALID_INPUT
+    );
+    assert!(create_item.is_null());
+
+    let mut split_key_item = ptr::null_mut();
+    assert_eq!(
+        kmipkit_client_batch_item_create_split_key(
+            1,
+            ptr::null(),
+            2,
+            2,
+            1,
+            0,
+            ptr::null(),
+            0,
+            ptr::null_mut(),
+            ptr::null_mut(),
+            &mut split_key_item,
+        ),
+        ERROR_INVALID_INPUT
+    );
+    assert!(split_key_item.is_null());
+
+    assert!(matches!(
+        copy_structure_handle(ptr::null_mut(), true),
+        Err(ERROR_INVALID_INPUT)
+    ));
+
+    let malformed_structure = make_handle::<kmipkit_ttlv_structure_t>(
+        Kind::Structure,
+        HandleValue::Value(Value::integer(1)),
+    );
+    assert!(matches!(
+        copy_structure_handle(malformed_structure, false),
+        Err(ERROR_INVALID_INPUT)
+    ));
+    assert!(matches!(
+        copy_attribute_set_handle(malformed_structure, true),
+        Err(ERROR_INVALID_INPUT)
+    ));
+    release(malformed_structure, Kind::Structure);
+}
+
 #[test]
 fn ffi_pending_metadata_preserves_exact_binary_identifier_and_correlation() {
     // KMIP 2.1 §§6.1.28, 8.6, 9.1, 9.2 and 11.3: Locate permits the caller to
