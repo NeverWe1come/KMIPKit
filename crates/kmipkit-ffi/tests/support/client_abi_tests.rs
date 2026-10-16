@@ -439,10 +439,8 @@ fn assert_response_identifier(identifier: &kmipkit_unique_identifier_v1_t, expec
 }
 
 #[test]
-fn ffi_successful_cryptographic_response_getters_return_typed_fields() {
+fn ffi_successful_hash_response_getter_returns_typed_fields() {
     let correlation = [0x41, 0x00, 0x42];
-    let response_identifier = b"response-id";
-
     let mut hash_parameters = Structure::new();
     hash_parameters
         .try_push(
@@ -493,7 +491,12 @@ fn ffi_successful_cryptographic_response_getters_return_typed_fields() {
     assert_response_span(data, b"hash-response-data");
     assert_response_span(correlation_value, &correlation);
     kmipkit_client_batch_item_response_release(hash);
+}
 
+#[test]
+fn ffi_successful_mac_response_getter_returns_typed_fields() {
+    let correlation = [0x41, 0x00, 0x42];
+    let response_identifier = b"response-id";
     let mac = successful_cryptographic_item(
         ClientRequest::Mac(MacRequest::new().with_data(OperationData::ByteString(
             SecretBytes::new(b"request-mac-data".to_vec()),
@@ -535,7 +538,12 @@ fn ffi_successful_cryptographic_response_getters_return_typed_fields() {
     assert_response_span(mac_data, b"mac-response-data");
     assert_response_span(correlation_value, &correlation);
     kmipkit_client_batch_item_response_release(mac);
+}
 
+#[test]
+fn ffi_successful_mac_verify_response_getter_returns_typed_fields() {
+    let correlation = [0x41, 0x00, 0x42];
+    let response_identifier = b"response-id";
     let mac_verify = successful_cryptographic_item(
         ClientRequest::MacVerify(
             MacVerifyRequest::new().with_mac_data(SecretBytes::new(b"request-mac".to_vec())),
@@ -576,7 +584,12 @@ fn ffi_successful_cryptographic_response_getters_return_typed_fields() {
     assert_response_identifier(&identifier, response_identifier);
     assert_response_span(correlation_value, &correlation);
     kmipkit_client_batch_item_response_release(mac_verify);
+}
 
+#[test]
+fn ffi_successful_sign_response_getter_returns_typed_fields() {
+    let correlation = [0x41, 0x00, 0x42];
+    let response_identifier = b"response-id";
     let sign = successful_cryptographic_item(
         ClientRequest::Sign(SignRequest::new().with_data(OperationData::ByteString(
             SecretBytes::new(b"request-sign-data".to_vec()),
@@ -621,7 +634,12 @@ fn ffi_successful_cryptographic_response_getters_return_typed_fields() {
     assert_response_span(signature_data, b"signature-response-data");
     assert_response_span(correlation_value, &correlation);
     kmipkit_client_batch_item_response_release(sign);
+}
 
+#[test]
+fn ffi_successful_signature_verify_response_getter_returns_typed_fields() {
+    let correlation = [0x41, 0x00, 0x42];
+    let response_identifier = b"response-id";
     let signature_verify = successful_cryptographic_item(
         ClientRequest::SignatureVerify(
             SignatureVerifyRequest::new()

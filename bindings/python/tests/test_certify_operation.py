@@ -8,15 +8,17 @@ from kmipkit._client_ffi import ffi
 
 def test_certify_builder_preserves_open_request_type_and_sensitive_bytes(monkeypatch) -> None:
     calls: list[tuple[str, tuple[object, ...]]] = []
+    copied_request_values: list[bytes] = []
+    secret = b"certificate-request-marker"
 
     def make_handle(handle_type: str, symbol: str, arguments: tuple[object, ...]) -> int:
         calls.append((symbol, arguments))
+        span = arguments[3]
+        copied_request_values.append(bytes(ffi.buffer(span.data, len(secret))))
         return 23
 
     monkeypatch.setattr(extensions, "_make_handle", make_handle)
     monkeypatch.setattr(extensions, "_wrap_owned_handle", lambda _kind, value: value)
-    secret = b"certificate-request-marker"
-
     handle = extensions.client_batch_item_certify(
         extensions.UniqueIdentifier.text_string("public-key-7"),
         certificate_request_type=0xFEDC_BA98,
@@ -26,7 +28,7 @@ def test_certify_builder_preserves_open_request_type_and_sensitive_bytes(monkeyp
     assert handle == 23
     assert calls[0][0] == "kmipkit_client_batch_item_certify"
     assert calls[0][1][1:3] == (1, 0xFEDC_BA98)
-    assert bytes(ffi.buffer(calls[0][1][3].data, len(secret))) == secret
+    assert copied_request_values == [secret]
 
 
 def test_certify_builder_allows_identifier_only_request(monkeypatch) -> None:
