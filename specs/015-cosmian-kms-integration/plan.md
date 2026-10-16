@@ -1,82 +1,92 @@
 # Implementation Plan: Local Cosmian KMS Integration Tests
 
-**Branch**: `feature/KMIPKIT-0015-cosmian-operations` | **Date**: 2026-10-08 (expanded 2026-10-15) | **Spec**: [spec.md](spec.md)
+**Branch**: `feature/KMIPKIT-0015-cosmian-operations` | **Date**: 2026-10-08 (exhaustive amendment 2026-10-16) | **Spec**: [spec.md](spec.md)
 
-**Input**: [Feature specification](spec.md)
+**Input**: [Approved matrix design](../../docs/superpowers/specs/2026-10-16-cosmian-exhaustive-matrix-design.md), [specification](spec.md), [execution plan](../../docs/superpowers/plans/2026-10-16-cosmian-exhaustive-matrix.md).
 
 ## Summary
 
-Provide opt-in interoperability tests for twenty KMIP 2.1 operation cases in `spec.md` against a local, pinned Cosmian KMS 5.28.0 instance. Docker Compose generates disposable mTLS credentials, configures the binary KMIP TTLV socket on loopback, and stores server data only in the disposable container. Retain the raw-TLS Response Message root validation established by the first live run. Exercise each operation through the current typed Rust production client, assert typed response contracts when supported, and record observed server limitations without logging secret values. Query and Ping are expected-limitation probes; they are not counted as successful interoperability.
+Expand the opt-in local Cosmian 5.28.0 suite from its historical twenty-case baseline to every source-derived valid intersection for the 35 advertised operation paths (34 published rows, with Set/Modify separate). Cover applicable objects, default/explicit formats, fixture/vendor encodings, algorithms and parameters through the existing typed Rust client. Preserve Query's known response defect and separate Ping, Adjust Attribute and Re-certify discrepancy probes. Every measured result remains individual; a passing finding assertion never becomes interoperability success.
 
 ## Technical Context
 
-**Language/Version**: Rust 2024, MSRV 1.94; PowerShell 7-compatible runner; POSIX shell in the cert-generation container.
+**Language/Version**: Rust 2024, MSRV 1.94; PowerShell 7-compatible local runner; POSIX shell/OpenSSL fixture generator.
 
-**Primary Dependencies**: Existing `kmipkit-client`, `kmipkit-protocol`, `kmipkit-transport`; Docker Compose; `alpine:3.22.2@sha256:4b7ce07002c69e8f3d704a9c5d6fd3053be500b7f1c69fc0d80990c2ad8dd412` with OpenSSL for test PKI; `ghcr.io/cosmian/kms:5.28.0@sha256:7b60fd4484930969906caa5722b727054ff96d49339ce81e3c64ca9e4278540e`.
+**Primary Dependencies**: Existing `kmipkit-client`, `kmipkit-protocol`, `kmipkit-transport`; Docker Compose; `alpine:3.22.2@sha256:4b7ce07002c69e8f3d704a9c5d6fd3053be500b7f1c69fc0d80990c2ad8dd412`; `ghcr.io/cosmian/kms:5.28.0@sha256:7b60fd4484930969906caa5722b727054ff96d49339ce81e3c64ca9e4278540e`. Use the existing workspace-pinned `serde_json` as a dev dependency only if needed.
 
-**Storage**: Cosmian SQLite database under the container filesystem, cleared at server startup and removed with the container; generated PKI in ignored `.local/cosmian-kms/certs`.
+**Source identity**: Cosmian annotated tag object `cec59a003b9cfc4f253ca239fde42925988700fa`, dereferenced commit `4ab3ee65829a903abb71f1298f400657fcee7ec9`. OASIS immutable local sources define normative validity; exact source ledger and disagreements are in `research.md`.
 
-**Testing**: Opt-in integration target `crates/kmipkit-client/tests/cosmian_kms.rs`; it contains twenty ignored operation cases. Run only after starting the local pinned Cosmian KMS 5.28.0 deployment.
+**Storage**: Disposable container SQLite, cleared at startup and removed at teardown; ignored PKI/test fixtures under `.local/cosmian-kms/`.
 
-**Target Platform**: Local Docker Desktop or Docker Engine, with Rust 1.94+ host.
+**Testing**: Retain `cosmian_kms` integration target; split ignored network cases by family. Offline schema, source-inventory completeness and case/test parity checks must not contact Docker or any server.
 
-**Project Type**: Existing Rust workspace plus local integration-test infrastructure.
+**Target Platform**: Local Docker Desktop/Engine and Rust 1.94+ host.
 
-**Constraints**: No production API changes; no public demo access; no import or object-destroy operations; test-generated objects and attribute changes stay in container-local storage; port 5696 bound only to 127.0.0.1; no automatic retries; no committed credentials; every live test remains ignored.
+**Constraints**: Existing raw TTLV/TLS 1.3/mTLS with hostname/chain verification; loopback-only 5696; no automatic retry, external service, production API/protocol change, sensitive output or committed credential. Imports use only test-generated material. Destroy targets only a unique object that case created. Stop/remove all Compose services after any live run, including failure.
 
-**Scale/Scope**: One local server; typed tests for Discover Versions, Create, Create Key Pair, Create Split Key, six attribute operations, Activate, Query, Ping, Encrypt, Decrypt, Hash, MAC, MAC Verify, Sign, and Signature Verify. Each test owns its object state and uses one configured KMIPKit client. Eighteen exchanges are expected to produce successful typed results; Query and Ping record server interoperability limitations.
+**Scale/Scope**: Exact 35-path inventory and all applicable source-derived dimensions from `spec.md`; each case owns setup/linked objects and reports a stable ID. The inventory is a valid intersection, not all mathematical combinations. Documented-but-source-gap rows remain visible; unrepresentable requests become client blockers rather than alternate wire implementations.
 
 ## Constitution Check
 
-- **Specification and traceability**: Pass for this bounded scope. `spec.md` identifies each exercised KMIP v2.1 section/table and `traceability.md` links the assertions to the test, including the §11.56 Table 487 cryptographic data tags.
-- **Test first and evidence**: The user subsequently authorized the live test. The initial run exposed the Response Message root tag defect, which was fixed in the original integration work. The 2026-10-15 cryptographic probes then exposed three incorrect KMIPKit shared TTLV tags; Red regression commits were recorded before the production constant correction. The live suite passed 20/20 cases: eighteen successful typed exchanges plus the Query and Ping limitation probes. Keep Red, Green and Refactor evidence in distinct development commits before feature PR review.
-- **Core and protocol boundaries**: Pass. The change only calls the existing typed client; no new protocol/API behavior or operation is introduced.
-- **Security**: Pass by design, subject to verification. Test-only certificates are generated locally and ignored; loopback-only bind; no persistent data mount; no request retries; the operation is read-only.
-- **Human-governed workflow**: The user explicitly authorized this feature work to start from the KMIPKIT-0013 continuation branch. It does not push, merge, approve, or release.
+- **Specification and traceability**: The amendment defines FR-011 through FR-016 and SC-005 through SC-009, keeps previous identifiers stable, and adds exact OASIS operation/data citations. Concrete matrix rows must refine sources before acceptance.
+- **Test first and evidence**: Keep historical Red/Green/Refactor evidence and measured baseline distinct. The next implementation sequence starts with a failing offline completeness test and empty manifest (Red), builds the complete sourced inventory/cases (Green), then refactors with case parity (Refactor), in separate signed-off commits. No production Rust change belongs to this documentation task.
+- **Core and protocol boundaries**: All 35 paths and probes already have `ClientRequest` variants. No public operation/API expansion is needed. A production defect or representation gap requires separate approved implementation scope.
+- **Security**: Test-generated fixtures and independent state only; no persistent data mount; cleanup/teardown even after failure; no request retry; no secret/raw-body logging. Existing suite is mutating, not read-only.
+- **Human-governed workflow**: Reuse the authorized dedicated worktree/feature branch. Existing authorization permits the expanded local work; only humans approve/merge/release. Retain DCO sign-off and the separate draft-PR review process.
 
-## Design
+## Design and sequencing
 
-1. Keep the version-pinned KMS configuration and Compose manifest in `tests/integration/cosmian/`.
-2. Generate CA/server/client credentials into ignored `.local/cosmian-kms/certs/`; the server certificate carries `DNS:localhost` SAN and `serverAuth`, and the client certificate carries `clientAuth`.
-3. Publish `5696` only on `127.0.0.1`; do not publish the unused HTTP UI or HTTP JSON TTLV port.
-4. Extend the ignored Cargo test target with a shared mTLS client builder, server-generated test-object helper, and one named test per operation. Use the typed KMIPKit request and response APIs; create separate objects for each attribute test and assert operation success plus operation-specific result fields where the server supports the operation.
-5. Use independently generated server-side RSA public keys for object-dependent attribute tests because Cosmian accepts the attribute operations for those objects. Use Create Key Pair for its own test and send an XOR two-of-two Create Split Key request over a test key. The initial test run exposed a Create Attributes tag defect and an incorrect Create Split Key operation enumeration; both candidate fixes are tracked separately under KMIPKIT-0014.
-6. Retain Response Message root validation as defined by OASIS KMIP v2.1 §8.4, Table 397, and §11.56.
-7. Update the English and Spanish-facing integration documentation and requirement traceability with the exact OASIS section/table and observed result for every operation.
-8. Run the full opt-in suite against the local deployment; record failed KMIP Result Status/Reason without treating server rejection as transport success or weakening typed parsing. Query and Ping must preserve their observed incompatibility diagnostics.
-9. Keep MAC Data, Signature Data, and Validity Indicator tag constants aligned with OASIS KMIP v2.1 §11.56, Table 487. Regression tests must assert the exact standard values before the implementation is accepted.
+1. Amend specification, research, plan, tasks, traceability and `docs/development/kmip-interoperability.md` before implementation. Run the actual CI traceability contracts listed below; `docs/development/testing.md` does not document these commands.
+2. Add an offline failing manifest-completeness validator and initially empty JSON array. Assert the exact 35 supported paths, Query's defect classification and separation of probes. Capture failure before adding inventory rows.
+3. Build `tests/integration/cosmian/capability-matrix.json` from pinned vendor sources and exact OASIS clauses. Each row has a stable ID, FR links, operation/object, algorithm/parameters, format/encoding, setup, normative/vendor citations, expected outcome, test/family and observed result. Only inapplicable dimensions use null. An exclusion/disagreement ledger must prevent silent omission.
+4. Cover every valid operation/object intersection, including lifecycle, registration, certificate/CSR and random operations. Inspect each operation's restrictions rather than treating managed-object support as primitive support. Set/Modify remain separate; Query remains defective until successful required-field-complete parsing is measured. Probe Re-certify separately because its dispatcher and support table disagree.
+5. Add Import/Export defaults, explicit formats, ASN.1 PEM/DER paths and source-only conversions, including PrivateKey/PFX. Preserve `formats.md` omissions, source-only legacy/PKCS7 paths and encoding mismatches as evidence. Separate fixture conversion from actual wire bytes; standard enumerations/DER requirements remain authoritative. Generate fixture material locally and track all PFX-linked objects.
+6. Enumerate every applicable documented or source-implemented generation, Certify, encryption, hash, HMAC, signature, derivation and wrapping variant. Inspect delegated helpers, including HMAC/derivation gaps. Include Hash/SHA-224 as a documentation/source discrepancy case. Use matching explicit keys/parameters for round trips and verification. Certify's actual issuer/digest behavior constrains its cases. IV Length is in bits, Tag Length in bytes (§4.16); do not invent a unit defect.
+7. Refactor the large target into family modules sharing only typed-client, independent fixture and sanitized reporting helpers. Validate one-to-one case/test coverage and ordinary-run ignore behavior, without excluding offline validators.
+8. Execute the pinned local suite serially and record every actual case result and blocker with source/test ID and client/server metadata. Always run Compose down and status after the run, including failure. Preserve original failure if cleanup also fails; never count rejection or malformed data as a successful exchange.
+9. Update English/Spanish entry points, run guides and traceability with measured evidence. Keep historical selected cases distinct from exhaustive results. Synchronize with release, complete required checks and leave final integration acceptance to human review.
 
-## Project Structure
+## Planned file layout
 
 ```text
 crates/kmipkit-client/tests/cosmian_kms.rs
+crates/kmipkit-client/tests/cosmian_kms/
+  common.rs
+  lifecycle.rs
+  transfer.rs
+  key_management.rs
+  random.rs
+  cryptographic.rs
 tests/integration/cosmian/
-├── compose.yaml
-├── cosmian-kms.toml
-├── generate-pki.sh
-└── README.md
+  capability-matrix.json
+  compose.yaml
+  cosmian-kms.toml
+  generate-pki.sh
+  README.md
 scripts/integration/cosmian-kms.ps1
-specs/015-cosmian-kms-integration/
-├── plan.md
-├── research.md
-├── quickstart.md
-├── spec.md
-├── tasks.md
-└── traceability.md
+specs/015-cosmian-kms-integration/{spec,research,plan,tasks,traceability,quickstart}.md
+docs/development/kmip-interoperability.md
+docs/user-guide/en/production-transports.md
+docs/user-guide/es/transportes-produccion.md
 ```
+
+`crates/kmipkit-client/Cargo.toml` changes only if a manifest-validation dev dependency is needed. Fixture/report artifacts remain ignored and sanitized. This layout is planned, not a claim that case modules or the manifest already exist.
 
 ## Verification Plan
 
-- Static/configuration-only checks may validate formatting, PowerShell syntax, shell syntax, and `docker compose config`.
-- Focused raw-TLS adapter tests must accept Response Message tag `0x42007B` and reject Request Message tag `0x420078` on the response path.
-- The live run uses `.\scripts\integration\cosmian-kms.ps1 -Action test`, which invokes `cargo test -p kmipkit-client --test cosmian_kms -- --ignored --test-threads=1`; retain per-operation results and the Cosmian image digest as evidence.
-- Run `cargo fmt --all --check`, focused client and transport tests, `cargo clippy --workspace --all-targets --all-features --locked -- -D warnings`, and `cargo test --workspace --all-features --locked --quiet` after synchronization and test changes.
-- Do not claim broader KMIP 2.1 interoperability or profile conformance from the selected operations.
+For this documentation amendment, run the two existing CI contract commands from `.github/workflows/ci.yml`:
 
-## Risks
+```text
+python3 -B -m unittest scripts.tests.test_requirement_traceability -v
+python3 -B -m unittest discover -s tools/normative_catalog/tests -p 'test_feature_traceability.py' -v
+```
 
-- Cosmian may reject an operation because its version, configuration, authorization, or object-specific constraints differ from the supported-operation matrix; retain each observed response precisely and report the limitation.
-- The initial Create request builder used the Attribute tag where KMIP requires the Attributes structure tag, and Create Split Key used Register's operation enumeration. Candidate fixes are in the separate KMIPKIT-0014 branch; do not merge those production changes into this integration-test specification.
-- A typed response parser may expose a defect only when a real server returns a value shape not represented by unit fixtures. Any production behavior fix remains outside this integration-test specification and requires its own approved scope.
-- The local OpenSSL generator and Compose bind mount must be validated on supported developer platforms.
-- Docker registry availability is an external prerequisite; this test is not suitable as an always-on offline workspace test.
+Review every amended FR/SC against the approved design, typed request variants and exact local OASIS clauses; self-review the full diff and run `git diff --check`. These existing suites cover selected repository traceability contracts; they do not prove the new matrix inventory or live coverage before those checks/cases are implemented.
+
+For subsequent implementation, record distinct Red/Green/Refactor evidence. Run offline manifest completeness/parity and existing focused client/transport tests, syntax/Compose checks, ordinary Cargo ignore behavior, and `cargo fmt --all --check`. Run the live target through `scripts/integration/cosmian-kms.ps1 -Action test` (serial ignored tests), followed by `-Action down` and empty `-Action status`, including on failure. Retain exact per-case results and image digest. Complete workspace Clippy, tests, coverage, traceability, immutable-source, generated-output, dependency/security and compatibility gates required by the repository before requesting review; no historical pass substitutes for a current final-head result.
+
+## Evidence and risks
+
+The 2026-10-15 baseline has twenty passing test cases, eighteen successful typed exchanges and two finding probes, with teardown verified. The exhaustive matrix remains pending. Inherited Response Message/Create/Split Key fixes and KMIPKIT-0021 shared-tag corrections are historical production work; do not duplicate or expand them here. Hosted dependency policy previously failed on existing `rustls 0.23.45` advisories, as recorded in `traceability.md`; do not claim that this documentation amendment resolves that gate.
+
+Vendor docs, source and runtime can disagree. Preserve both sources and actual outcome, including source-only formats and documented-but-source-gap algorithms. Missing fixtures, local API representation gaps or service prerequisites are explicit blockers. They do not justify weakening typed parsing, fabricating standard values, discarding valid advertised cases or making profile/certification claims.

@@ -50,9 +50,9 @@
 
 ### Task 1: Amend KMIPKIT-0015 before implementation
 
-**Files:** Modify `specs/015-cosmian-kms-integration/spec.md`, `research.md`, `plan.md`, `tasks.md`, and `traceability.md`.
+**Files:** Modify `specs/015-cosmian-kms-integration/spec.md`, `research.md`, `plan.md`, `tasks.md`, `traceability.md`, and `docs/development/kmip-interoperability.md`.
 
-**Interfaces:** The approved design is the scope input. The operation request/response citations for the sixteen not-yet-tested paths are: Certify §6.1.6 Tables 179–181; Check §6.1.7 Tables 183–185; Derive Key §6.1.14 Tables 205–207; Destroy §6.1.15 Tables 208–210; Export §6.1.18 Tables 217–219; Get §6.1.19 Tables 220–222; Import §6.1.25 Tables 238–240; Join Split Key §6.1.27 Tables 244–246; Locate §6.1.28 Tables 247–249; Re-key §6.1.46 Tables 307–309; Re-key Key Pair §6.1.47 Tables 310–312; Register §6.1.43 Tables 291–294; Revoke §6.1.44 Tables 295–297; RNG Retrieve §6.1.49 Tables 316–318; RNG Seed §6.1.50 Tables 319–321; Validate §6.1.57 Tables 340–342. Existing operation citations remain in the spec. Object, key format, encoding, algorithm, and parameter citations must be copied from the pinned OASIS v2.1 source files before their rows are accepted.
+**Interfaces:** The approved design is the scope input. The operation request/response citations for the sixteen not-yet-tested paths are: Certify §6.1.6 Tables 179–181; Check §6.1.7 Tables 183–185; Derive Key §6.1.14 Tables 205–207; Destroy §6.1.15 Tables 208–210; Export §6.1.18 Tables 217–219; Get §6.1.19 Tables 220–222; Import §6.1.25 Tables 238–240; Join Split Key §6.1.27 Tables 244–246; Locate §6.1.28 Tables 247–249; Re-key §6.1.46 Tables 303–307; Re-key Key Pair §6.1.47 Tables 310–312; Register §6.1.43 Tables 291–294; Revoke §6.1.44 Tables 295–297; RNG Retrieve §6.1.49 Tables 316–318; RNG Seed §6.1.50 Tables 319–321; Validate §6.1.57 Tables 340–342. Existing operation citations remain in the spec. Object, key format, encoding, algorithm, and parameter citations must be copied from the pinned OASIS v2.1 source files before their rows are accepted.
 
 - [ ] Add stable requirements `KMIPKIT-0015-FR-011` through `FR-016`: all advertised operation paths (treat Set and Modify separately and Query as a known response defect); all valid managed-object intersections; all applicable Import/Export formats and encodings including source-confirmed PKCS#12/PFX; all source-confirmed algorithm and parameter variants; isolated per-case setup/cleanup; and complete case-level traceability/reporting.
 - [ ] Replace the old exclusions of Import, Destroy, Get, Locate, and other supported paths. Keep Ping and Adjust Attribute as separately classified probes because the pinned release does not advertise/implement them as supported paths.
@@ -61,7 +61,7 @@
 - [ ] Cite each expanded operation and every new normative data dimension with exact OASIS v2.1 clauses/tables, and assign stable requirement IDs; do not infer normative requirements from Cosmian documentation.
 - [ ] Revise success criteria so they require complete case inventory, typed KMIPKit requests, individually classified live outcomes, all ignored tests, no fake green interoperability claims, and stopped Compose services after the live run.
 - [ ] Cross-check every new FR/SC against the approved matrix design and the existing `ClientRequest` API; do not change public API scope.
-- [ ] Run the repository spec/traceability consistency check documented in `docs/development/testing.md` and inspect the spec diff before any test implementation.
+- [ ] Run the actual CI traceability contract commands from `.github/workflows/ci.yml`: `python3 -B -m unittest scripts.tests.test_requirement_traceability -v` and `python3 -B -m unittest discover -s tools/normative_catalog/tests -p 'test_feature_traceability.py' -v`; inspect the full spec diff before test implementation. `docs/development/testing.md` does not document these checks.
 
 ### Task 2: Add a failing inventory-completeness check (Red)
 

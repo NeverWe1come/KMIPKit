@@ -1,17 +1,48 @@
 # Requirement Traceability: Cosmian KMS Integration
 
+The 2026-10-16 exhaustive matrix amendment is specified but not implemented or run by this documentation task. Historical selected-case results below remain bounded evidence. Planned manifest/module paths are verification targets, not assertions that artifacts or coverage already exist.
+
 | Requirement | Source | Implementation | Verification |
 |---|---|---|---|
 | `KMIPKIT-0015-FR-001` | `spec.md`; Cosmian KMS 5.28.0 configuration; project transport boundary | `tests/integration/cosmian/compose.yaml`, `cosmian-kms.toml` | `docker compose config`; deployment status confirms local service after deployment |
 | `KMIPKIT-0015-FR-002` | `spec.md`; project secret-handling policy (`AGENTS.md` §8) | `tests/integration/cosmian/generate-pki.sh`, `.gitignore` | Shell syntax check; confirm generated path is ignored and private keys are not in the KMS bind mount |
 | `KMIPKIT-0015-FR-003` | OASIS KMIP Specification v2.1 §6.1.16, Tables 211–213; §9.16, Table 421 | `crates/kmipkit-client/tests/cosmian_kms.rs` | Explicit ignored live run; assert success and returned `(2, 1)` |
-| `KMIPKIT-0015-FR-004` | `spec.md`; project default-test isolation policy | `#[ignore]` on all tests in `crates/kmipkit-client/tests/cosmian_kms.rs`; `scripts/integration/cosmian-kms.ps1`; quickstarts | Ordinary Cargo tests skip these; explicit script runs them serially |
-| `KMIPKIT-0015-FR-005` | `spec.md`; KMIPKit no-retry policy (`AGENTS.md` §8) | Server-generated objects and metadata changes stay in container-local SQLite; no import or Destroy request is sent | Source review; compose teardown removes all server-side test data |
+| `KMIPKIT-0015-FR-004` | `spec.md`; project default-test isolation policy | `#[ignore]` on all live tests in `crates/kmipkit-client/tests/cosmian_kms.rs`; `scripts/integration/cosmian-kms.ps1`; quickstarts | Ordinary Cargo tests skip these; explicit script runs them serially |
+| `KMIPKIT-0015-FR-005` | `spec.md`; test ownership and secret/no-retry policy (`AGENTS.md` §8); Import §6.1.25, Tables 238–240; Destroy §6.1.15, Tables 208–210 | Existing disposable SQLite; planned solely test-generated imports and Destroy of unique same-case objects | Source review, per-case ownership/cleanup evidence and final Compose teardown; expanded mutation cases pending |
 | `KMIPKIT-0015-FR-006` | Evidence-backed interoperability reporting policy | This document, `quickstart.md`, and `tests/integration/cosmian/README.md` | Record each pass, unsupported operation, and blocked path separately |
 | `KMIPKIT-0015-FR-007` | OASIS KMIP Specification v2.1 §8.4, Table 397; §11.56 | `crates/kmipkit-transport/src/raw_tls.rs` | Raw-TLS tests accept Response Message `0x42007B` and reject Request Message `0x420078`; live Discover Versions passed |
-| `KMIPKIT-0015-FR-008`, `KMIPKIT-0015-FR-009`, `KMIPKIT-0015-FR-010` | OASIS KMIP Specification v2.1 clauses below; §11.56, Table 487 for cryptographic payload tags | Twenty ignored typed integration tests; each attribute test provisions its own server-generated RSA public key | Explicit serial live run; original ten and eight added operations return successful typed results. Query and Ping are separately classified as observed server interoperability limitations below. |
+| `KMIPKIT-0015-FR-008` | OASIS operation contracts in `spec.md`; §11.56, Table 487 | Existing typed `ClientRequest` API; baseline target and planned family modules | Baseline eighteen successful typed exchanges plus Query/Ping findings; expanded typed cases and API blockers pending |
+| `KMIPKIT-0015-FR-009` | Attribute operation clauses below; project isolation rule | Baseline each attribute case provisions its own RSA public key; expanded cases own separate fixtures | Historical serial run; planned selected-case independence checks |
+| `KMIPKIT-0015-FR-010` | Exact OASIS operation/data registry in `spec.md`; evidence policy | This document and planned per-case manifest/results | Historical baseline below remains separate from pending exhaustive observations |
+| `KMIPKIT-0015-FR-011` | All 35 operation clauses in `spec.md`; Set §6.1.51, Tables 322–324; Modify §6.1.34, Tables 265–267; Query §6.1.40, Tables 282–284; separate probes §6.1.3/§6.1.36/§6.1.45 | Planned manifest and ignored typed family cases; existing variants verified in `execute.rs` | Offline exact-35-path validator and individual live outcomes pending; Query remains a required-field defect |
+| `KMIPKIT-0015-FR-012` | OASIS §2.1, Table 2; §2.3, Table 4; §§2.5–2.9, Tables 6–10, crossed with each scoped operation contract | Planned source-derived object intersections and exclusion/disagreement ledger | Offline source inventory checks, independent object cases and per-case outcomes pending |
+| `KMIPKIT-0015-FR-013` | OASIS §§3.1–3.2, Tables 11–13; §4.26, Tables 79–80; §11.25, Tables 460–461; §2.1, Table 2; §4.39, Tables 107–108; §4.31, Tables 90–92; §11.28, Tables 464–465 | Planned Import/Export formats/encodings and generated PFX fixture; pinned vendor format/implementation sources in `research.md` | Default/explicit format and applicable PEM/DER path inventory, PFX source-omission note, wire/fixture distinction and live outcomes pending |
+| `KMIPKIT-0015-FR-014` | OASIS §§4.13–4.16, Tables 53–60; §11.12, Table 443; §11.45, Table 477; §11.6, Table 436; §11.16, Table 447; §11.21, Table 454; §11.30; §11.37, Table 471; derivation §7.12, Table 364/§11.14, Tables 445–446; wrapping §3.3, Tables 14–17/§7.18, Table 370/§11.18, Tables 449–450/§11.29/§11.62, Tables 493–494 | Planned explicit algorithm/parameter and cryptographic-pair rows; source disagreements retained | Source inventory and per-variant roundtrip/verification results pending, including Hash/SHA-224; IV Length bits/Tag Length bytes follow §4.16 |
+| `KMIPKIT-0015-FR-015` | Project case isolation, ownership, no-retry and teardown policy; applicable operation cleanup contracts | Planned per-case helpers/object tracking and runner teardown on all paths | Selected-case independence, cleanup preserving original error and empty Compose status evidence pending |
+| `KMIPKIT-0015-FR-016` | Project traceability/reporting policy and approved matrix design; exact OASIS per-case clauses | Planned manifest with stable case/FR/source/test/result links and sanitized reports | Offline schema, completeness and case/test parity plus actual per-case live evidence pending |
 
-## OASIS clause-to-test mapping and observed results
+## Success-criterion mapping for the exhaustive amendment
+
+| Success criterion | Requirement links | Verification target and status |
+|---|---|---|
+| `KMIPKIT-0015-SC-001` | FR-001, FR-002 | Existing pinned Compose/start infrastructure; repeat final-head configuration/start check during matrix run |
+| `KMIPKIT-0015-SC-002` | FR-004, FR-008, FR-016 | Ordinary-run ignored live cases plus offline validator and selected/full run commands; expanded checks pending |
+| `KMIPKIT-0015-SC-003` | FR-006, FR-008, FR-011 | Exact 35 paths, separate Set/Modify, known Query defect and separate probes; new inventory/live results pending |
+| `KMIPKIT-0015-SC-004` | FR-006, FR-010, FR-016 | Every row individually measured or explicitly blocked; no fake success from a passing finding assertion; pending |
+| `KMIPKIT-0015-SC-005` | FR-011–FR-014, FR-016 | Manifest source completeness, schema/unique IDs, no omitted dimensions and case/test parity; pending |
+| `KMIPKIT-0015-SC-006` | FR-005, FR-013, FR-016 | Default/explicit Import/Export, applicable PEM/DER, PFX omission note and actual wire/fixture evidence; pending |
+| `KMIPKIT-0015-SC-007` | FR-014, FR-016 | All applicable variants including source gaps and matching cryptographic pairs; pending |
+| `KMIPKIT-0015-SC-008` | FR-002, FR-005, FR-008, FR-009, FR-015 | Independent unique state/fixtures, tracked linked objects, cleanup and redacted diagnostics; expanded evidence pending |
+| `KMIPKIT-0015-SC-009` | FR-005, FR-015 | Teardown after success/failure and empty status with database removed; historical run did tear down, final exhaustive run pending |
+
+## Expanded operation coverage targets (not live results)
+
+The exact new operation clauses and `ClientRequest` variants are in `spec.md`. The following sixteen supported paths have no new live evidence: Certify (§6.1.6, Tables 179–181), Check (§6.1.7, Tables 183–185), Derive Key (§6.1.14, Tables 205–207), Destroy (§6.1.15, Tables 208–210), Export (§6.1.18, Tables 217–219), Get (§6.1.19, Tables 220–222), Import (§6.1.25, Tables 238–240), Join Split Key (§6.1.27, Tables 244–246), Locate (§6.1.28, Tables 247–249), Register (§6.1.43, Tables 291–294), Revoke (§6.1.44, Tables 295–297), Re-key (§6.1.46, Tables 303–307), Re-key Key Pair (§6.1.47, Tables 310–312), RNG Retrieve (§6.1.49, Tables 316–318), RNG Seed (§6.1.50, Tables 319–321), and Validate (§6.1.57, Tables 340–342). Each requires its own stable cases and observed outcomes. Expanded variants of previously tested operations are also pending, not inherited successes.
+
+The 34 published supported rows group Set/Modify into one row; the historical mapping below confirms two separate successful exchanges. Query is the nineteenth advertised path already exercised, with an interoperability defect. Ping is outside the advertised set. Re-certify's dispatch/support-table disagreement is an additional separately classified probe whose live result remains pending. Source disagreements (PFX omission, encoding/format gaps, Hash/SHA-224 and algorithm parameter differences) are recorded in `research.md` and must stay attached to concrete matrix rows.
+
+
+## Historical OASIS clause-to-test mapping and observed results
 
 | OASIS source | Test assertion | Cosmian 5.28.0 live result |
 |---|---|---|
