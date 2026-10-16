@@ -17555,14 +17555,39 @@
       "packageId": "c-kmipkit",
       "kind": "c-symbol",
       "exportName": "kmipkit_ttlv_structure_release",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "generic_ttlv_model",
       "requirementIds": [
+        "KMIPKIT-0012-FR-007",
+        "KMIPKIT-0012-FR-010",
         "KMIPKIT-0043-FR-021"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0012",
-      "blockedReason": "The C release export represents destruction, but Rust Drop has no callable public declaration; parity remains blocked."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/004-generic-ttlv-model/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-ttlv",
+          "name": "kmipkit_ttlv::Structure"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_ttlv_structure_release"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.ttlv.TtlvStructure.close"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.ttlv.Structure.close"
+        }
+      },
+      "mappingSemantics": "native-handle-release"
     },
     {
       "declarationId": "TtlvStructure:java",
@@ -36317,14 +36342,39 @@
       "packageId": "python-kmipkit",
       "kind": "python-export",
       "exportName": "kmipkit.ttlv.Structure.close",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "generic_ttlv_model",
       "requirementIds": [
+        "KMIPKIT-0012-FR-007",
+        "KMIPKIT-0012-FR-010",
         "KMIPKIT-0043-FR-021"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The inherited native-handle lifecycle member is public on this wrapper but lacks a reviewed four-language mapping."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/004-generic-ttlv-model/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-ttlv",
+          "name": "kmipkit_ttlv::Structure"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_ttlv_structure_release"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.ttlv.TtlvStructure.close"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.ttlv.Structure.close"
+        }
+      },
+      "mappingSemantics": "native-handle-release"
     },
     {
       "declarationId": "python-observed-a6e62a1df458908b1dce",
@@ -41804,14 +41854,40 @@
       "packageId": "rust-kmipkit-protocol",
       "kind": "type",
       "exportName": "kmipkit_protocol::CreateResponse",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-CREATE",
       "requirementIds": [
+        "KMIPKIT-0014-FR-002",
+        "KMIPKIT-0014-FR-007",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
         "KMIPKIT-0043-FR-021"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0014",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/014-server-generated-creation/spec.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted for implementation."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::CreateResponse"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_batch_item_response_create"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ClientBatchItemResult.CreateResponse"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.BatchItemResult"
+        }
+      }
     },
     {
       "declarationId": "rust-observed-390780e64dc5de5f3617",
@@ -41846,28 +41922,80 @@
       "packageId": "rust-kmipkit-protocol",
       "kind": "associated-item",
       "exportName": "kmipkit_protocol::CreateResponse::object_type",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-CREATE",
       "requirementIds": [
+        "KMIPKIT-0014-FR-002",
+        "KMIPKIT-0014-FR-007",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
         "KMIPKIT-0043-FR-021"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0014",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/014-server-generated-creation/spec.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted for implementation."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::CreateResponse::object_type"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_batch_item_response_create"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ClientBatchItemResult.CreateResponse.objectType"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.BatchItemResult.create_object_type"
+        }
+      }
     },
     {
       "declarationId": "rust-observed-badb5b772d423ef629eb",
       "packageId": "rust-kmipkit-protocol",
       "kind": "associated-item",
       "exportName": "kmipkit_protocol::CreateResponse::unique_identifier",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-CREATE",
       "requirementIds": [
+        "KMIPKIT-0014-FR-002",
+        "KMIPKIT-0014-FR-007",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
         "KMIPKIT-0043-FR-021"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0014",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/014-server-generated-creation/spec.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted for implementation."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::CreateResponse::unique_identifier"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_batch_item_response_create"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ClientBatchItemResult.CreateResponse.uniqueIdentifier"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.BatchItemResult.unique_identifier"
+        }
+      }
     },
     {
       "declarationId": "rust-observed-c8d3fb7dcebdf13b5e61",
@@ -42336,14 +42464,42 @@
       "packageId": "rust-kmipkit-protocol",
       "kind": "type",
       "exportName": "kmipkit_protocol::CreateKeyPairResponse",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-CREATE-KEY-PAIR",
       "requirementIds": [
+        "KMIPKIT-0014-FR-003",
+        "KMIPKIT-0014-FR-004",
+        "KMIPKIT-0014-FR-007",
+        "KMIPKIT-0014-FR-013",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
         "KMIPKIT-0043-FR-021"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0014",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/014-server-generated-creation/spec.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted for implementation."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::CreateKeyPairResponse"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_batch_item_response_create_key_pair"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ClientBatchItemResult.CreateKeyPairResponse"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.BatchItemResult"
+        }
+      }
     },
     {
       "declarationId": "rust-observed-cf8a4a0e4461af8b0481",
@@ -42378,28 +42534,84 @@
       "packageId": "rust-kmipkit-protocol",
       "kind": "associated-item",
       "exportName": "kmipkit_protocol::CreateKeyPairResponse::private_key_unique_identifier",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-CREATE-KEY-PAIR",
       "requirementIds": [
+        "KMIPKIT-0014-FR-003",
+        "KMIPKIT-0014-FR-004",
+        "KMIPKIT-0014-FR-007",
+        "KMIPKIT-0014-FR-013",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
         "KMIPKIT-0043-FR-021"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0014",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/014-server-generated-creation/spec.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted for implementation."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::CreateKeyPairResponse::private_key_unique_identifier"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_batch_item_response_create_key_pair"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ClientBatchItemResult.CreateKeyPairResponse.privateKeyUniqueIdentifier"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.BatchItemResult.private_key_unique_identifier"
+        }
+      }
     },
     {
       "declarationId": "rust-observed-9a02bef2724c1a7a151c",
       "packageId": "rust-kmipkit-protocol",
       "kind": "associated-item",
       "exportName": "kmipkit_protocol::CreateKeyPairResponse::public_key_unique_identifier",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-CREATE-KEY-PAIR",
       "requirementIds": [
+        "KMIPKIT-0014-FR-003",
+        "KMIPKIT-0014-FR-004",
+        "KMIPKIT-0014-FR-007",
+        "KMIPKIT-0014-FR-013",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
         "KMIPKIT-0043-FR-021"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0014",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/014-server-generated-creation/spec.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted for implementation."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::CreateKeyPairResponse::public_key_unique_identifier"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_batch_item_response_create_key_pair"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ClientBatchItemResult.CreateKeyPairResponse.publicKeyUniqueIdentifier"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.BatchItemResult.public_key_unique_identifier"
+        }
+      }
     },
     {
       "declarationId": "rust-observed-6a2c51d0b10d363b0a02",
@@ -56717,14 +56929,38 @@
       "packageId": "rust-kmipkit-client",
       "kind": "associated-item",
       "exportName": "kmipkit_client::ClientBatchOutcome::operation",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "server_generated_creation",
       "requirementIds": [
+        "KMIPKIT-0014-FR-008",
+        "KMIPKIT-0014-FR-009",
         "KMIPKIT-0043-FR-021"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0007",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/014-server-generated-creation/spec.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted for implementation."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::ClientBatchOutcome::operation"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_batch_item_metadata_v2_t.operation"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ClientBatchItemResult.operation"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.BatchItemResult.operation"
+        }
+      }
     },
     {
       "declarationId": "rust-observed-4992b4bd41a66008f3d6",
@@ -207999,15 +208235,39 @@
       "packageId": "java-kmipkit",
       "kind": "java-member",
       "exportName": "org.kmipkit.ttlv.TtlvStructure.close",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "generic_ttlv_model",
       "requirementIds": [
-        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0012-FR-007",
+        "KMIPKIT-0012-FR-010",
         "KMIPKIT-0043-FR-021"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "This Java AutoCloseable declaration has no reviewed equivalent mapping across the four public languages; it is inventoried without advertising complete parity."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/004-generic-ttlv-model/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-ttlv",
+          "name": "kmipkit_ttlv::Structure"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_ttlv_structure_release"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.ttlv.TtlvStructure.close"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.ttlv.Structure.close"
+        }
+      },
+      "mappingSemantics": "native-handle-release"
     },
     {
       "declarationId": "java-observed-b8fd98112918cce0b82e",
@@ -223893,8 +224153,8 @@
       },
       "languageMappings": {
         "rust": {
-          "packageId": "rust-kmipkit-client",
-          "name": "kmipkit_client::ClientBatchItemResponse::create_response"
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::CreateResponse::object_type"
         },
         "c": {
           "packageId": "c-kmipkit",
@@ -223902,7 +224162,7 @@
         },
         "java": {
           "packageId": "java-kmipkit",
-          "name": "org.kmipkit.extensions.ClientBatchItemResult.createResponse"
+          "name": "org.kmipkit.extensions.ClientBatchItemResult.CreateResponse.objectType"
         },
         "python": {
           "packageId": "python-kmipkit",
@@ -224061,8 +224321,8 @@
       },
       "languageMappings": {
         "rust": {
-          "packageId": "rust-kmipkit-client",
-          "name": "kmipkit_client::ClientBatchItemResponse::create_key_pair_response"
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::CreateKeyPairResponse::private_key_unique_identifier"
         },
         "c": {
           "packageId": "c-kmipkit",
@@ -224070,7 +224330,7 @@
         },
         "java": {
           "packageId": "java-kmipkit",
-          "name": "org.kmipkit.extensions.ClientBatchItemResult.createKeyPairResponse"
+          "name": "org.kmipkit.extensions.ClientBatchItemResult.CreateKeyPairResponse.privateKeyUniqueIdentifier"
         },
         "python": {
           "packageId": "python-kmipkit",
@@ -224406,6 +224666,720 @@
         "python": {
           "packageId": "python-kmipkit",
           "name": "kmipkit.client.BatchItemResult.metadata_v2"
+        }
+      }
+    },
+    {
+      "declarationId": "T032:create:result:type:java",
+      "packageId": "java-kmipkit",
+      "kind": "type",
+      "exportName": "org.kmipkit.extensions.ClientBatchItemResult.CreateResponse",
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-CREATE",
+      "requirementIds": [
+        "KMIPKIT-0014-FR-002",
+        "KMIPKIT-0014-FR-007",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/014-server-generated-creation/spec.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted for implementation."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::CreateResponse"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_batch_item_response_create"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ClientBatchItemResult.CreateResponse"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.BatchItemResult"
+        }
+      }
+    },
+    {
+      "declarationId": "T032:create:result:object-type:java",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.extensions.ClientBatchItemResult.CreateResponse.objectType",
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-CREATE",
+      "requirementIds": [
+        "KMIPKIT-0014-FR-002",
+        "KMIPKIT-0014-FR-007",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/014-server-generated-creation/spec.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted for implementation."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::CreateResponse::object_type"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_batch_item_response_create"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ClientBatchItemResult.CreateResponse.objectType"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.BatchItemResult.create_object_type"
+        }
+      }
+    },
+    {
+      "declarationId": "T032:create:result:unique-identifier:java",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.extensions.ClientBatchItemResult.CreateResponse.uniqueIdentifier",
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-CREATE",
+      "requirementIds": [
+        "KMIPKIT-0014-FR-002",
+        "KMIPKIT-0014-FR-007",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/014-server-generated-creation/spec.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted for implementation."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::CreateResponse::unique_identifier"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_batch_item_response_create"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ClientBatchItemResult.CreateResponse.uniqueIdentifier"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.BatchItemResult.unique_identifier"
+        }
+      }
+    },
+    {
+      "declarationId": "T032:create:result:unique-identifier:python",
+      "packageId": "python-kmipkit",
+      "kind": "field",
+      "exportName": "kmipkit.client.BatchItemResult.unique_identifier",
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-CREATE",
+      "requirementIds": [
+        "KMIPKIT-0014-FR-002",
+        "KMIPKIT-0014-FR-007",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/014-server-generated-creation/spec.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted for implementation."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::CreateResponse::unique_identifier"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_batch_item_response_create"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ClientBatchItemResult.CreateResponse.uniqueIdentifier"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.BatchItemResult.unique_identifier"
+        }
+      }
+    },
+    {
+      "declarationId": "T032:create-key-pair:result:type:java",
+      "packageId": "java-kmipkit",
+      "kind": "type",
+      "exportName": "org.kmipkit.extensions.ClientBatchItemResult.CreateKeyPairResponse",
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-CREATE-KEY-PAIR",
+      "requirementIds": [
+        "KMIPKIT-0014-FR-003",
+        "KMIPKIT-0014-FR-004",
+        "KMIPKIT-0014-FR-007",
+        "KMIPKIT-0014-FR-013",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/014-server-generated-creation/spec.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted for implementation."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::CreateKeyPairResponse"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_batch_item_response_create_key_pair"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ClientBatchItemResult.CreateKeyPairResponse"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.BatchItemResult"
+        }
+      }
+    },
+    {
+      "declarationId": "T032:create-key-pair:result:private-identifier:java",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.extensions.ClientBatchItemResult.CreateKeyPairResponse.privateKeyUniqueIdentifier",
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-CREATE-KEY-PAIR",
+      "requirementIds": [
+        "KMIPKIT-0014-FR-003",
+        "KMIPKIT-0014-FR-004",
+        "KMIPKIT-0014-FR-007",
+        "KMIPKIT-0014-FR-013",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/014-server-generated-creation/spec.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted for implementation."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::CreateKeyPairResponse::private_key_unique_identifier"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_batch_item_response_create_key_pair"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ClientBatchItemResult.CreateKeyPairResponse.privateKeyUniqueIdentifier"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.BatchItemResult.private_key_unique_identifier"
+        }
+      }
+    },
+    {
+      "declarationId": "T032:create-key-pair:result:public-identifier:java",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.extensions.ClientBatchItemResult.CreateKeyPairResponse.publicKeyUniqueIdentifier",
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-CREATE-KEY-PAIR",
+      "requirementIds": [
+        "KMIPKIT-0014-FR-003",
+        "KMIPKIT-0014-FR-004",
+        "KMIPKIT-0014-FR-007",
+        "KMIPKIT-0014-FR-013",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/014-server-generated-creation/spec.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted for implementation."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::CreateKeyPairResponse::public_key_unique_identifier"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_batch_item_response_create_key_pair"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ClientBatchItemResult.CreateKeyPairResponse.publicKeyUniqueIdentifier"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.BatchItemResult.public_key_unique_identifier"
+        }
+      }
+    },
+    {
+      "declarationId": "T032:create-key-pair:result:public-identifier:python",
+      "packageId": "python-kmipkit",
+      "kind": "field",
+      "exportName": "kmipkit.client.BatchItemResult.public_key_unique_identifier",
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-CREATE-KEY-PAIR",
+      "requirementIds": [
+        "KMIPKIT-0014-FR-003",
+        "KMIPKIT-0014-FR-004",
+        "KMIPKIT-0014-FR-007",
+        "KMIPKIT-0014-FR-013",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/014-server-generated-creation/spec.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted for implementation."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::CreateKeyPairResponse::public_key_unique_identifier"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_batch_item_response_create_key_pair"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ClientBatchItemResult.CreateKeyPairResponse.publicKeyUniqueIdentifier"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.BatchItemResult.public_key_unique_identifier"
+        }
+      }
+    },
+    {
+      "declarationId": "T032:result:operation:java",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.extensions.ClientBatchItemResult.operation",
+      "capabilityId": "server_generated_creation",
+      "requirementIds": [
+        "KMIPKIT-0014-FR-008",
+        "KMIPKIT-0014-FR-009",
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/014-server-generated-creation/spec.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted for implementation."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::ClientBatchOutcome::operation"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_batch_item_metadata_v2_t.operation"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ClientBatchItemResult.operation"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.BatchItemResult.operation"
+        }
+      }
+    },
+    {
+      "declarationId": "T032:result:operation:python",
+      "packageId": "python-kmipkit",
+      "kind": "field",
+      "exportName": "kmipkit.client.BatchItemResult.operation",
+      "capabilityId": "server_generated_creation",
+      "requirementIds": [
+        "KMIPKIT-0014-FR-008",
+        "KMIPKIT-0014-FR-009",
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/014-server-generated-creation/spec.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted for implementation."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::ClientBatchOutcome::operation"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_batch_item_metadata_v2_t.operation"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ClientBatchItemResult.operation"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.BatchItemResult.operation"
+        }
+      }
+    },
+    {
+      "declarationId": "T032:result:result-message:java",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.extensions.ClientBatchItemResult.resultMessage",
+      "capabilityId": "server_generated_creation",
+      "requirementIds": [
+        "KMIPKIT-0014-FR-008",
+        "KMIPKIT-0014-FR-009",
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/014-server-generated-creation/spec.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted for implementation."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::KmipOperationResult::message"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_batch_item_metadata_v2_t.result_message_data"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ClientBatchItemResult.resultMessage"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.BatchItemResult.result_message"
+        }
+      }
+    },
+    {
+      "declarationId": "T032:result:result-message:python",
+      "packageId": "python-kmipkit",
+      "kind": "field",
+      "exportName": "kmipkit.client.BatchItemResult.result_message",
+      "capabilityId": "server_generated_creation",
+      "requirementIds": [
+        "KMIPKIT-0014-FR-008",
+        "KMIPKIT-0014-FR-009",
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/014-server-generated-creation/spec.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted for implementation."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::KmipOperationResult::message"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_batch_item_metadata_v2_t.result_message_data"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ClientBatchItemResult.resultMessage"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.BatchItemResult.result_message"
+        }
+      }
+    },
+    {
+      "declarationId": "T032:unique-identifier:factory:text_string:java",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.extensions.UniqueIdentifier.textString",
+      "capabilityId": "server_generated_creation",
+      "requirementIds": [
+        "KMIPKIT-0014-FR-001",
+        "KMIPKIT-0014-FR-002",
+        "KMIPKIT-0014-FR-005",
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/014-server-generated-creation/spec.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted for implementation."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::UniqueIdentifier::TextString"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_unique_identifier_v1_t"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.UniqueIdentifier.textString"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.extensions.UniqueIdentifier.text_string"
+        }
+      }
+    },
+    {
+      "declarationId": "T032:unique-identifier:factory:text_string:python",
+      "packageId": "python-kmipkit",
+      "kind": "python-export",
+      "exportName": "kmipkit.extensions.UniqueIdentifier.text_string",
+      "capabilityId": "server_generated_creation",
+      "requirementIds": [
+        "KMIPKIT-0014-FR-001",
+        "KMIPKIT-0014-FR-002",
+        "KMIPKIT-0014-FR-005",
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/014-server-generated-creation/spec.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted for implementation."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::UniqueIdentifier::TextString"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_unique_identifier_v1_t"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.UniqueIdentifier.textString"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.extensions.UniqueIdentifier.text_string"
+        }
+      }
+    },
+    {
+      "declarationId": "T032:unique-identifier:factory:enumeration:java",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.extensions.UniqueIdentifier.enumeration",
+      "capabilityId": "server_generated_creation",
+      "requirementIds": [
+        "KMIPKIT-0014-FR-001",
+        "KMIPKIT-0014-FR-002",
+        "KMIPKIT-0014-FR-005",
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/014-server-generated-creation/spec.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted for implementation."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::UniqueIdentifier::Enumeration"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_unique_identifier_v1_t"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.UniqueIdentifier.enumeration"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.extensions.UniqueIdentifier.enumeration"
+        }
+      }
+    },
+    {
+      "declarationId": "T032:unique-identifier:factory:enumeration:python",
+      "packageId": "python-kmipkit",
+      "kind": "python-export",
+      "exportName": "kmipkit.extensions.UniqueIdentifier.enumeration",
+      "capabilityId": "server_generated_creation",
+      "requirementIds": [
+        "KMIPKIT-0014-FR-001",
+        "KMIPKIT-0014-FR-002",
+        "KMIPKIT-0014-FR-005",
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/014-server-generated-creation/spec.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted for implementation."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::UniqueIdentifier::Enumeration"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_unique_identifier_v1_t"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.UniqueIdentifier.enumeration"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.extensions.UniqueIdentifier.enumeration"
+        }
+      }
+    },
+    {
+      "declarationId": "T032:unique-identifier:factory:integer:java",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.extensions.UniqueIdentifier.integer",
+      "capabilityId": "server_generated_creation",
+      "requirementIds": [
+        "KMIPKIT-0014-FR-001",
+        "KMIPKIT-0014-FR-002",
+        "KMIPKIT-0014-FR-005",
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/014-server-generated-creation/spec.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted for implementation."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::UniqueIdentifier::Integer"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_unique_identifier_v1_t"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.UniqueIdentifier.integer"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.extensions.UniqueIdentifier.integer"
+        }
+      }
+    },
+    {
+      "declarationId": "T032:unique-identifier:factory:integer:python",
+      "packageId": "python-kmipkit",
+      "kind": "python-export",
+      "exportName": "kmipkit.extensions.UniqueIdentifier.integer",
+      "capabilityId": "server_generated_creation",
+      "requirementIds": [
+        "KMIPKIT-0014-FR-001",
+        "KMIPKIT-0014-FR-002",
+        "KMIPKIT-0014-FR-005",
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/014-server-generated-creation/spec.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted for implementation."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::UniqueIdentifier::Integer"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_unique_identifier_v1_t"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.UniqueIdentifier.integer"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.extensions.UniqueIdentifier.integer"
         }
       }
     }
@@ -227545,6 +228519,402 @@
         "evidence": "**Status**: Approved for implementation"
       },
       "evidence": "KMIPKIT-0043-FR-007 requires versioned structures and stable C ABI layout."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.BatchItemMetadataV2.__dataclass_fields__",
+      "reason": "This exact BatchItemMetadataV2 member is Python dataclass introspection or storage metadata, not an independent cross-language product capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-021; semantic fields and factories are mapped separately. Exact export is covered by the T032 client/parity fixtures for BatchItemMetadataV2."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.BatchItemMetadataV2.__dataclass_params__",
+      "reason": "This exact BatchItemMetadataV2 member is Python dataclass introspection or storage metadata, not an independent cross-language product capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-021; semantic fields and factories are mapped separately. Exact export is covered by the T032 client/parity fixtures for BatchItemMetadataV2."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.BatchItemMetadataV2.__delattr__",
+      "reason": "This exact BatchItemMetadataV2 assignment method is generated Python frozen-record machinery, not an independent KMIPKit facade capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-021; semantic fields and factories are mapped separately. Exact export is covered by the T032 client/parity fixtures for BatchItemMetadataV2."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.BatchItemMetadataV2.__eq__",
+      "reason": "This exact BatchItemMetadataV2 equality or hash method is generated Python value semantics, not an independent cross-language product capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-021; semantic fields and factories are mapped separately. Exact export is covered by the T032 client/parity fixtures for BatchItemMetadataV2."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.BatchItemMetadataV2.__hash__",
+      "reason": "This exact BatchItemMetadataV2 equality or hash method is generated Python value semantics, not an independent cross-language product capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-021; semantic fields and factories are mapped separately. Exact export is covered by the T032 client/parity fixtures for BatchItemMetadataV2."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.BatchItemMetadataV2.__init__",
+      "reason": "This exact BatchItemMetadataV2 constructor is Python record-construction convenience; its semantic fields and explicit wire-kind factories are mapped separately.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-021; semantic fields and factories are mapped separately. Exact export is covered by the T032 client/parity fixtures for BatchItemMetadataV2."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.BatchItemMetadataV2.__match_args__",
+      "reason": "This exact BatchItemMetadataV2 member is Python dataclass introspection or storage metadata, not an independent cross-language product capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-021; semantic fields and factories are mapped separately. Exact export is covered by the T032 client/parity fixtures for BatchItemMetadataV2."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.BatchItemMetadataV2.__repr__",
+      "reason": "This exact BatchItemMetadataV2 representation method is Python presentation behavior, not an independent cross-language capability; sensitive result text or identifier values remain redacted.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-021; semantic fields and factories are mapped separately. Exact export is covered by the T032 client/parity fixtures for BatchItemMetadataV2."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.BatchItemMetadataV2.__setattr__",
+      "reason": "This exact BatchItemMetadataV2 assignment method is generated Python frozen-record machinery, not an independent KMIPKit facade capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-021; semantic fields and factories are mapped separately. Exact export is covered by the T032 client/parity fixtures for BatchItemMetadataV2."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.BatchItemMetadataV2.__slots__",
+      "reason": "This exact BatchItemMetadataV2 member is Python dataclass introspection or storage metadata, not an independent cross-language product capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-021; semantic fields and factories are mapped separately. Exact export is covered by the T032 client/parity fixtures for BatchItemMetadataV2."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.extensions.UniqueIdentifier.__dataclass_fields__",
+      "reason": "This exact UniqueIdentifier member is Python dataclass introspection or storage metadata, not an independent cross-language product capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-021; semantic fields and factories are mapped separately. Exact export is covered by the T032 client/parity fixtures for UniqueIdentifier."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.extensions.UniqueIdentifier.__dataclass_params__",
+      "reason": "This exact UniqueIdentifier member is Python dataclass introspection or storage metadata, not an independent cross-language product capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-021; semantic fields and factories are mapped separately. Exact export is covered by the T032 client/parity fixtures for UniqueIdentifier."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.extensions.UniqueIdentifier.__delattr__",
+      "reason": "This exact UniqueIdentifier assignment method is generated Python frozen-record machinery, not an independent KMIPKit facade capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-021; semantic fields and factories are mapped separately. Exact export is covered by the T032 client/parity fixtures for UniqueIdentifier."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.extensions.UniqueIdentifier.__eq__",
+      "reason": "This exact UniqueIdentifier equality or hash method is generated Python value semantics, not an independent cross-language product capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-021; semantic fields and factories are mapped separately. Exact export is covered by the T032 client/parity fixtures for UniqueIdentifier."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.extensions.UniqueIdentifier.__hash__",
+      "reason": "This exact UniqueIdentifier equality or hash method is generated Python value semantics, not an independent cross-language product capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-021; semantic fields and factories are mapped separately. Exact export is covered by the T032 client/parity fixtures for UniqueIdentifier."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.extensions.UniqueIdentifier.__init__",
+      "reason": "This exact UniqueIdentifier constructor is Python record-construction convenience; its semantic fields and explicit wire-kind factories are mapped separately.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-021; semantic fields and factories are mapped separately. Exact export is covered by the T032 client/parity fixtures for UniqueIdentifier."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.extensions.UniqueIdentifier.__match_args__",
+      "reason": "This exact UniqueIdentifier member is Python dataclass introspection or storage metadata, not an independent cross-language product capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-021; semantic fields and factories are mapped separately. Exact export is covered by the T032 client/parity fixtures for UniqueIdentifier."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.extensions.UniqueIdentifier.__repr__",
+      "reason": "This exact UniqueIdentifier representation method is Python presentation behavior, not an independent cross-language capability; sensitive result text or identifier values remain redacted.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-021; semantic fields and factories are mapped separately. Exact export is covered by the T032 client/parity fixtures for UniqueIdentifier."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.extensions.UniqueIdentifier.__setattr__",
+      "reason": "This exact UniqueIdentifier assignment method is generated Python frozen-record machinery, not an independent KMIPKit facade capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-021; semantic fields and factories are mapped separately. Exact export is covered by the T032 client/parity fixtures for UniqueIdentifier."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.extensions.UniqueIdentifier.__slots__",
+      "reason": "This exact UniqueIdentifier member is Python dataclass introspection or storage metadata, not an independent cross-language product capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-021; semantic fields and factories are mapped separately. Exact export is covered by the T032 client/parity fixtures for UniqueIdentifier."
+    },
+    {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemCreate",
+      "reason": "This public static member is a raw-handle JNI bridge entry point. Java exposes it for native binding dispatch; applications use the typed org.kmipkit.extensions and org.kmipkit.ttlv facade, which already maps the operation capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021. The NativeExtensionRegistry class is the internal JNI bridge, and docs/architecture/ffi-and-bindings.md describes the supported Java-to-C boundary as a minimal JNI bridge. The typed creation operation or response value is independently mapped in the API manifest."
+    },
+    {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemCreateKeyPair",
+      "reason": "This public static member is a raw-handle JNI bridge entry point. Java exposes it for native binding dispatch; applications use the typed org.kmipkit.extensions and org.kmipkit.ttlv facade, which already maps the operation capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021. The NativeExtensionRegistry class is the internal JNI bridge, and docs/architecture/ffi-and-bindings.md describes the supported Java-to-C boundary as a minimal JNI bridge. The typed creation operation or response value is independently mapped in the API manifest."
+    },
+    {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemCreateSplitKey",
+      "reason": "This public static member is a raw-handle JNI bridge entry point. Java exposes it for native binding dispatch; applications use the typed org.kmipkit.extensions and org.kmipkit.ttlv facade, which already maps the operation capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021. The NativeExtensionRegistry class is the internal JNI bridge, and docs/architecture/ffi-and-bindings.md describes the supported Java-to-C boundary as a minimal JNI bridge. The typed creation operation or response value is independently mapped in the API manifest."
+    },
+    {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemResponseCreate",
+      "reason": "This public static member is a raw-handle JNI bridge entry point. Java exposes it for native binding dispatch; applications use the typed org.kmipkit.extensions and org.kmipkit.ttlv facade, which already maps the operation capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021. The NativeExtensionRegistry class is the internal JNI bridge, and docs/architecture/ffi-and-bindings.md describes the supported Java-to-C boundary as a minimal JNI bridge. The typed creation operation or response value is independently mapped in the API manifest."
+    },
+    {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemResponseCreateKeyPair",
+      "reason": "This public static member is a raw-handle JNI bridge entry point. Java exposes it for native binding dispatch; applications use the typed org.kmipkit.extensions and org.kmipkit.ttlv facade, which already maps the operation capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021. The NativeExtensionRegistry class is the internal JNI bridge, and docs/architecture/ffi-and-bindings.md describes the supported Java-to-C boundary as a minimal JNI bridge. The typed creation operation or response value is independently mapped in the API manifest."
+    },
+    {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemResponseCreateSplitKey",
+      "reason": "This public static member is a raw-handle JNI bridge entry point. Java exposes it for native binding dispatch; applications use the typed org.kmipkit.extensions and org.kmipkit.ttlv facade, which already maps the operation capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021. The NativeExtensionRegistry class is the internal JNI bridge, and docs/architecture/ffi-and-bindings.md describes the supported Java-to-C boundary as a minimal JNI bridge. The typed creation operation or response value is independently mapped in the API manifest."
+    },
+    {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemResponseMetadataV2",
+      "reason": "This public static member is a raw-handle JNI bridge entry point. Java exposes it for native binding dispatch; applications use the typed org.kmipkit.extensions and org.kmipkit.ttlv facade, which already maps the operation capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021. The NativeExtensionRegistry class is the internal JNI bridge, and docs/architecture/ffi-and-bindings.md describes the supported Java-to-C boundary as a minimal JNI bridge. The typed creation operation or response value is independently mapped in the API manifest."
+    },
+    {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.extensions.ClientBatchItemMetadataV2.toString",
+      "reason": "This exact Java formatter is a redacted diagnostic representation, not a separate KMIPKit capability; the explicit typed accessors remain mapped and preserve their exact values.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "KMIPKIT-0043-FR-021 requires sensitive values to stay out of diagnostic formatting. The typed public accessors remain separately mapped; only this redacted formatter is excluded."
+    },
+    {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.extensions.ClientBatchItemResult.CreateKeyPairResponse.toString",
+      "reason": "This exact Java formatter is a redacted diagnostic representation, not a separate KMIPKit capability; the explicit typed accessors remain mapped and preserve their exact values.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "KMIPKIT-0043-FR-021 requires sensitive values to stay out of diagnostic formatting. The typed public accessors remain separately mapped; only this redacted formatter is excluded."
+    },
+    {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.extensions.ClientBatchItemResult.CreateResponse.toString",
+      "reason": "This exact Java formatter is a redacted diagnostic representation, not a separate KMIPKit capability; the explicit typed accessors remain mapped and preserve their exact values.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "KMIPKIT-0043-FR-021 requires sensitive values to stay out of diagnostic formatting. The typed public accessors remain separately mapped; only this redacted formatter is excluded."
+    },
+    {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.extensions.UniqueIdentifier.toString",
+      "reason": "This exact Java formatter is a redacted diagnostic representation, not a separate KMIPKit capability; the explicit typed accessors remain mapped and preserve their exact values.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "KMIPKIT-0043-FR-021 requires sensitive values to stay out of diagnostic formatting. The typed public accessors remain separately mapped; only this redacted formatter is excluded."
+    },
+    {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.extensions.UniqueIdentifier.Kind.valueOf",
+      "reason": "This exact Java member is compiler-provided enum boilerplate, not a separately specified KMIPKit capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-021 and the Java declaration inventory. UniqueIdentifier.Kind remains mapped as a public TTLV identifier-kind value; only the compiler-provided enum helper is excluded."
+    },
+    {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.extensions.UniqueIdentifier.Kind.values",
+      "reason": "This exact Java member is compiler-provided enum boilerplate, not a separately specified KMIPKit capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-021 and the Java declaration inventory. UniqueIdentifier.Kind remains mapped as a public TTLV identifier-kind value; only the compiler-provided enum helper is excluded."
     }
   ],
   "apiLevels": [
@@ -227679,7 +229049,11 @@
           "rust-observed-4a65a428867394f69717",
           "rust-observed-c00ef5c54472c3562ec1",
           "rust-observed-29253c56512c12ae406a",
-          "T076:target:rust-kmipkit-client:kmipkit_client::ClientBatchItemResponse::outcome"
+          "T076:target:rust-kmipkit-client:kmipkit_client::ClientBatchItemResponse::outcome",
+          "rust-observed-78f3d99839e03feb5f6a",
+          "rust-observed-2e9dcb88b74ab66b88b0",
+          "rust-observed-630fa7ced630dd90fafc",
+          "rust-observed-badb5b772d423ef629eb"
         ],
         "c": [
           "T032:create:constructor:c",
@@ -227687,7 +229061,10 @@
           "T032:field:kmipkit_client_batch_item_metadata_v2_t.operation:c",
           "T032:unique-identifier:type:c",
           "T032:metadata-v2:type:c",
-          "T032:metadata-v2:accessor:c"
+          "T032:metadata-v2:accessor:c",
+          "T032:field:kmipkit_client_batch_item_metadata_v2_t.has_result_message:c",
+          "T032:field:kmipkit_client_batch_item_metadata_v2_t.result_message_data:c",
+          "T032:field:kmipkit_client_batch_item_metadata_v2_t.result_message_length:c"
         ],
         "java": [
           "T032:create:constructor:java",
@@ -227695,7 +229072,12 @@
           "T032:field:kmipkit_client_batch_item_metadata_v2_t.operation:java",
           "T032:unique-identifier:type:java",
           "T032:metadata-v2:type:java",
-          "T032:metadata-v2:accessor:java"
+          "T032:metadata-v2:accessor:java",
+          "T032:result:operation:java",
+          "T032:result:result-message:java",
+          "T032:create:result:type:java",
+          "T032:create:result:object-type:java",
+          "T032:create:result:unique-identifier:java"
         ],
         "python": [
           "T032:create:constructor:python",
@@ -227703,7 +229085,10 @@
           "T032:field:kmipkit_client_batch_item_metadata_v2_t.operation:python",
           "T032:unique-identifier:type:python",
           "T032:metadata-v2:type:python",
-          "T032:metadata-v2:accessor:python"
+          "T032:metadata-v2:accessor:python",
+          "T032:result:operation:python",
+          "T032:result:result-message:python",
+          "T032:create:result:unique-identifier:python"
         ]
       }
     },
@@ -227731,7 +229116,10 @@
           "rust-observed-2b8fb840fb85fbf46974",
           "rust-observed-c00ef5c54472c3562ec1",
           "rust-observed-29253c56512c12ae406a",
-          "T076:target:rust-kmipkit-client:kmipkit_client::ClientBatchItemResponse::outcome"
+          "T076:target:rust-kmipkit-client:kmipkit_client::ClientBatchItemResponse::outcome",
+          "rust-observed-b662f50efd954843b817",
+          "rust-observed-434a4328e14ae3517d78",
+          "rust-observed-9a02bef2724c1a7a151c"
         ],
         "c": [
           "T032:create-key-pair:constructor:c",
@@ -227739,7 +229127,10 @@
           "T032:field:kmipkit_client_batch_item_metadata_v2_t.operation:c",
           "T032:unique-identifier:type:c",
           "T032:metadata-v2:type:c",
-          "T032:metadata-v2:accessor:c"
+          "T032:metadata-v2:accessor:c",
+          "T032:field:kmipkit_client_batch_item_metadata_v2_t.has_result_message:c",
+          "T032:field:kmipkit_client_batch_item_metadata_v2_t.result_message_data:c",
+          "T032:field:kmipkit_client_batch_item_metadata_v2_t.result_message_length:c"
         ],
         "java": [
           "T032:create-key-pair:constructor:java",
@@ -227747,7 +229138,12 @@
           "T032:field:kmipkit_client_batch_item_metadata_v2_t.operation:java",
           "T032:unique-identifier:type:java",
           "T032:metadata-v2:type:java",
-          "T032:metadata-v2:accessor:java"
+          "T032:metadata-v2:accessor:java",
+          "T032:result:operation:java",
+          "T032:result:result-message:java",
+          "T032:create-key-pair:result:type:java",
+          "T032:create-key-pair:result:private-identifier:java",
+          "T032:create-key-pair:result:public-identifier:java"
         ],
         "python": [
           "T032:create-key-pair:constructor:python",
@@ -227755,7 +229151,10 @@
           "T032:field:kmipkit_client_batch_item_metadata_v2_t.operation:python",
           "T032:unique-identifier:type:python",
           "T032:metadata-v2:type:python",
-          "T032:metadata-v2:accessor:python"
+          "T032:metadata-v2:accessor:python",
+          "T032:result:operation:python",
+          "T032:result:result-message:python",
+          "T032:create-key-pair:result:public-identifier:python"
         ]
       }
     },
@@ -227783,7 +229182,8 @@
           "rust-observed-196e29d52e5b3dbb0b9c",
           "rust-observed-c00ef5c54472c3562ec1",
           "rust-observed-29253c56512c12ae406a",
-          "T076:target:rust-kmipkit-client:kmipkit_client::ClientBatchItemResponse::outcome"
+          "T076:target:rust-kmipkit-client:kmipkit_client::ClientBatchItemResponse::outcome",
+          "rust-observed-78f3d99839e03feb5f6a"
         ],
         "c": [
           "T032:create-split-key:constructor:c",
@@ -227792,7 +229192,10 @@
           "T032:field:kmipkit_client_batch_item_metadata_v2_t.operation:c",
           "T032:unique-identifier:type:c",
           "T032:metadata-v2:type:c",
-          "T032:metadata-v2:accessor:c"
+          "T032:metadata-v2:accessor:c",
+          "T032:field:kmipkit_client_batch_item_metadata_v2_t.has_result_message:c",
+          "T032:field:kmipkit_client_batch_item_metadata_v2_t.result_message_data:c",
+          "T032:field:kmipkit_client_batch_item_metadata_v2_t.result_message_length:c"
         ],
         "java": [
           "T032:create-split-key:constructor:java",
@@ -227800,7 +229203,9 @@
           "T032:field:kmipkit_client_batch_item_metadata_v2_t.operation:java",
           "T032:unique-identifier:type:java",
           "T032:metadata-v2:type:java",
-          "T032:metadata-v2:accessor:java"
+          "T032:metadata-v2:accessor:java",
+          "T032:result:operation:java",
+          "T032:result:result-message:java"
         ],
         "python": [
           "T032:create-split-key:constructor:python",
@@ -227808,7 +229213,9 @@
           "T032:field:kmipkit_client_batch_item_metadata_v2_t.operation:python",
           "T032:unique-identifier:type:python",
           "T032:metadata-v2:type:python",
-          "T032:metadata-v2:accessor:python"
+          "T032:metadata-v2:accessor:python",
+          "T032:result:operation:python",
+          "T032:result:result-message:python"
         ]
       }
     },
@@ -228466,6 +229873,7 @@
           "kmipkit_ttlv_raw_tag_try_checked",
           "kmipkit_ttlv_raw_tag_value",
           "kmipkit_ttlv_structure_create",
+          "kmipkit_ttlv_structure_release",
           "kmipkit_ttlv_structure_t",
           "kmipkit_ttlv_structure_view_release",
           "kmipkit_ttlv_structure_view_t",
@@ -228500,6 +229908,7 @@
           "org.kmipkit.ttlv.TtlvItemType.Structure",
           "org.kmipkit.ttlv.TtlvItemType.TextString",
           "org.kmipkit.ttlv.TtlvStructure",
+          "org.kmipkit.ttlv.TtlvStructure.close",
           "org.kmipkit.ttlv.TtlvStructure.create",
           "org.kmipkit.ttlv.TtlvStructureView",
           "org.kmipkit.ttlv.TtlvStructureView.close",
@@ -228527,6 +229936,7 @@
           "kmipkit.ttlv.ItemType.TextString",
           "kmipkit.ttlv.RawTag",
           "kmipkit.ttlv.Structure",
+          "kmipkit.ttlv.Structure.close",
           "kmipkit.ttlv.Tag",
           "kmipkit.ttlv.TtlvItem",
           "kmipkit.ttlv.TtlvStructureView",
@@ -229706,6 +231116,7 @@
       },
       "mappings": {
         "rust": [
+          "kmipkit_client::ClientBatchOutcome::operation",
           "kmipkit_client::ClientOperation",
           "kmipkit_client::ClientOperation::raw",
           "kmipkit_protocol::KmipOperationResult::message",
@@ -229744,14 +231155,19 @@
           "org.kmipkit.extensions.ClientBatchItemMetadataV2.resultReason",
           "org.kmipkit.extensions.ClientBatchItemMetadataV2.resultStatus",
           "org.kmipkit.extensions.ClientBatchItemResult.metadataV2",
+          "org.kmipkit.extensions.ClientBatchItemResult.operation",
+          "org.kmipkit.extensions.ClientBatchItemResult.resultMessage",
           "org.kmipkit.extensions.UniqueIdentifier",
           "org.kmipkit.extensions.UniqueIdentifier.Kind",
           "org.kmipkit.extensions.UniqueIdentifier.Kind.ENUMERATION",
           "org.kmipkit.extensions.UniqueIdentifier.Kind.INTEGER",
           "org.kmipkit.extensions.UniqueIdentifier.Kind.TEXT_STRING",
+          "org.kmipkit.extensions.UniqueIdentifier.enumeration",
+          "org.kmipkit.extensions.UniqueIdentifier.integer",
           "org.kmipkit.extensions.UniqueIdentifier.kind",
           "org.kmipkit.extensions.UniqueIdentifier.number",
-          "org.kmipkit.extensions.UniqueIdentifier.text"
+          "org.kmipkit.extensions.UniqueIdentifier.text",
+          "org.kmipkit.extensions.UniqueIdentifier.textString"
         ],
         "python": [
           "kmipkit.client.BatchItemMetadataV2",
@@ -229761,10 +231177,15 @@
           "kmipkit.client.BatchItemMetadataV2.result_reason",
           "kmipkit.client.BatchItemMetadataV2.result_status",
           "kmipkit.client.BatchItemResult.metadata_v2",
+          "kmipkit.client.BatchItemResult.operation",
+          "kmipkit.client.BatchItemResult.result_message",
           "kmipkit.extensions.UniqueIdentifier",
+          "kmipkit.extensions.UniqueIdentifier.enumeration",
+          "kmipkit.extensions.UniqueIdentifier.integer",
           "kmipkit.extensions.UniqueIdentifier.kind",
           "kmipkit.extensions.UniqueIdentifier.number",
           "kmipkit.extensions.UniqueIdentifier.text",
+          "kmipkit.extensions.UniqueIdentifier.text_string",
           "kmipkit.extensions.UniqueIdentifierKind",
           "kmipkit.extensions.UniqueIdentifierKind.ENUMERATION",
           "kmipkit.extensions.UniqueIdentifierKind.INTEGER",

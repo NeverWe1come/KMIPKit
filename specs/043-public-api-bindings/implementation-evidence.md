@@ -1942,7 +1942,7 @@ environmental failure.
 | Phase | Commit | Command / result |
 |---|---|---|
 | Red | this test/evidence commit | `python -B -m unittest tools.api_manifest.tests.test_parity tools.api_manifest.tests.test_t076_client_mapping -v`: reproduced 2 failures among 43 tests. The parity allowlist was updated for the existing failure fixture, and a focused assertion now requires the T032 Python semantic exports to have four-language mappings and exact dataclass exclusions; it fails until the manifest is corrected. |
-| Green | pending | Correct the manifest and regenerate its outputs; rerun the focused contract command and full script-contract matrix. |
+| Green | this Green commit | Updated the shared fixture allowlist for the existing failure case and added exact four-language mappings plus Python dataclass-member exclusions. `python -B -m unittest tools.api_manifest.tests.test_parity tools.api_manifest.tests.test_t076_client_mapping -v`: PASS, 47 tests. `python -B -m unittest discover -s scripts/tests -p 'test_*.py' -v`: PASS, 272 tests (26 skipped). The complete binding audit reports 274/274 C, 487/487 Java, and 459/459 Python declarations exactly matched, with no missing or unobserved exports. `python -B tools/api_manifest/generate.py --check`: PASS, 12 generated outputs current. |
 
 The same CI run also failed both macOS Core jobs while compiling the C ABI
 consumer: the test calls `kmipkit_ttlv_structure_release`, but that symbol was
@@ -1956,8 +1956,7 @@ alter a C layout.
 | Phase | Commit | Command / result |
 |---|---|---|
 | Red | this test/evidence commit | Three focused manifest tests: 6 expected failures. They identify the missing Python and Java T032 exports, the absent three-language TTLV release classification, and the missing generated C prototype. CI run `38840021567` independently reproduced the C compiler error on both macOS toolchains. |
-| Green | pending | Add exact four-language manifest mappings and regenerate with the pinned tool; rerun the focused tests and macOS C consumer compilation. |
-| Refactor | pending | Update final traceability and record the verified cross-language/script-contract checks. |
+| Green | this Green commit | Added the C `kmipkit_ttlv_structure_release` lifecycle mapping and regenerated the public header with the pinned generator. The same 47 manifest tests, full binding audit, and generator check pass. `cargo test -p kmipkit-ffi --all-features --locked`: PASS, including `generated_public_client_abi_consumer_compiles_and_runs` and `existing_c_consumer_exercises_the_exported_abi_in_the_coverage_process` (4/4 C consumer tests). |
 
 The full binding export audit then found 13 additional Java declarations not
 classified by the focused tests: seven raw JNI dispatch methods for the new
@@ -1970,7 +1969,7 @@ exception.
 | Phase | Commit | Command / result |
 |---|---|---|
 | Red | this test/evidence commit | `python -B -m unittest tools.api_manifest.tests.test_t076_client_mapping.T076ClientMappingTests.test_creation_java_bridge_and_redacted_formatters_are_exactly_excluded -v`: expected failure listing all 13 absent exact exclusions. `python -B tools/api_manifest/audit_binding_exports.py --repo-root . --check`: C and Python inventories match; Java reports 13 missing classifications. |
-| Green | pending | Add exact bridge/formatter/enum exclusion records and rerun the Java export audit and manifest contract suite. |
+| Green | this Green commit | Added 13 exact Java exclusions limited to the internal raw-handle JNI bridge, redacted formatters, and compiler-provided enum helpers. The focused assertion passes; the full binding audit reports 487/487 Java declarations matched with no missing or unobserved exports. `mvn --batch-mode --file bindings/java/pom.xml test`: PASS, 164 tests (3 skipped); Gradle `compileJava` and offline `nativeJarSmoke`: PASS. |
 
 An additional focused contract test now fixes the intended mappings for
 `BatchItemResult.operation`, `result_message`, `unique_identifier`, and
