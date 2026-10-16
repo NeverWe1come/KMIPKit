@@ -301,6 +301,7 @@ class MultiLanguageCoverageTests(unittest.TestCase):
                 "bindings/python/src/kmipkit/extensions.py",
                 "bindings/python/src/kmipkit/_generated/extension_registry.py",
                 "bindings/java/native/kmipkit_jni.cpp",
+            "bindings/java/native/response_identifier_validation.hpp",
             )
             excluded_paths = (
                 "bindings/java/src/main/java/org/kmipkit/generated/ExtensionRegistryApi.java",
@@ -312,6 +313,7 @@ class MultiLanguageCoverageTests(unittest.TestCase):
                 "bindings/python/tests/test_registry.py",
                 "bindings/python/examples/registry_example.py",
                 "bindings/java/native/test/RegistryTest.cpp",
+            "bindings/java/native/tests/response_identifier_validation_test.cpp",
             )
             for relative in (*expected_paths, *excluded_paths):
                 path = root / relative

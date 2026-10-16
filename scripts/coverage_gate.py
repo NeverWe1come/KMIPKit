@@ -253,7 +253,10 @@ def is_coverage_source_path(path: str | Path) -> bool:
         return normalized.endswith(".java")
     if len(parts) >= 5 and parts[:4] == ("bindings", "python", "src", "kmipkit"):
         return normalized.endswith(".py")
-    return normalized == "bindings/java/native/kmipkit_jni.cpp"
+    return normalized in {
+        "bindings/java/native/kmipkit_jni.cpp",
+        "bindings/java/native/response_identifier_validation.hpp",
+    }
 
 
 def scan_adapter_sources(workspace_root: str | Path) -> dict[str, set[str]]:
@@ -289,9 +292,12 @@ def scan_adapter_sources(workspace_root: str | Path) -> dict[str, set[str]]:
         if walk_errors:
             raise CoverageDataError(f"Adapter source scan is incomplete: {walk_errors[0]}")
 
-    jni_source = root / "bindings/java/native/kmipkit_jni.cpp"
-    if jni_source.is_file():
-        sources["JNI bridge"].add(jni_source.relative_to(root).as_posix())
+    for jni_source in (
+        root / "bindings/java/native/kmipkit_jni.cpp",
+        root / "bindings/java/native/response_identifier_validation.hpp",
+    ):
+        if jni_source.is_file():
+            sources["JNI bridge"].add(jni_source.relative_to(root).as_posix())
     return sources
 
 
