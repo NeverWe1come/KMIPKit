@@ -91,7 +91,8 @@ fn cosmian_capability_manifest_is_complete() {
         "../../../tests/integration/cosmian/capability-matrix.json"
     ))
     .expect("capability manifest must be valid JSON");
-    let rows = manifest.as_array().expect("manifest root must be an array");
+    let resolved = resolve_capability_sources(&manifest);
+    let rows = resolved.as_slice();
     let mut case_ids = BTreeSet::new();
     let mut supported_paths = BTreeSet::new();
     for row in rows {
@@ -138,6 +139,232 @@ fn cosmian_capability_manifest_is_complete() {
         "missing supported operation paths/cases (34 support-table rows, 35 paths; Set Attribute and Modify Attribute are separate): {}",
         missing.join(", ")
     );
+    validate_capability_dimensions(rows);
+}
+
+// The catalog preserves exact per-case citations while storing long source
+// paths only once. Resolve typed references before applying the row contract.
+fn resolve_capability_sources(manifest: &serde_json::Value) -> Vec<serde_json::Value> {
+    assert_eq!(manifest["schema_version"], 2);
+    let target = &manifest["target"];
+    assert_eq!(manifest_text(target, "id"), "cosmian-5.28.0");
+    let catalog = manifest["source_catalog"]
+        .as_object()
+        .expect("source catalog must be an object");
+    let rows = manifest["cases"]
+        .as_array()
+        .expect("manifest cases must be an array");
+    let mut used = BTreeSet::new();
+    let mut resolved = Vec::with_capacity(rows.len());
+    for row in rows {
+        let mut row = row.clone();
+        assert_eq!(
+            manifest_text(&row["cosmian_source"], "target"),
+            "cosmian-5.28.0"
+        );
+        for (field, kind) in [
+            ("oasis_source", "oasis"),
+            ("documentation", "documentation"),
+            ("code", "code"),
+        ] {
+            let references = if field == "oasis_source" {
+                &mut row[field]
+            } else {
+                &mut row["cosmian_source"][field]
+            };
+            let ids = references
+                .as_array()
+                .expect("source references must be an array");
+            let citations: Vec<_> = ids
+                .iter()
+                .map(|id| {
+                    let id = id.as_str().expect("source IDs must be strings");
+                    let citation = catalog.get(id).expect("unresolved source reference");
+                    assert_eq!(
+                        manifest_text(citation, "kind"),
+                        kind,
+                        "wrong source reference kind: {id}"
+                    );
+                    used.insert(id.to_owned());
+                    citation.clone()
+                })
+                .collect();
+            *references = serde_json::Value::Array(citations);
+        }
+        for field in ["tag", "commit", "image_digest"] {
+            row["cosmian_source"][field] = target[field].clone();
+        }
+        resolved.push(row);
+    }
+    assert_eq!(used.len(), catalog.len(), "unreferenced catalog entries");
+    resolved
+}
+
+// This checks the reviewed finite source inventory, not executable-case parity
+// (Task 7) or observed server support. Integer-valued domains use the explicit
+// branch/boundary representatives described in research.md.
+fn validate_capability_dimensions(rows: &[serde_json::Value]) {
+    let objects = [
+        "Certificate",
+        "SymmetricKey",
+        "PublicKey",
+        "PrivateKey",
+        "SplitKey",
+        "SecretData",
+        "OpaqueObject",
+    ];
+    for operation in [
+        "Add Attribute",
+        "Delete Attribute",
+        "Get Attributes",
+        "Get Attribute List",
+        "Modify Attribute",
+        "Set Attribute",
+        "Check",
+        "Locate",
+        "Revoke",
+        "Destroy",
+    ] {
+        for object in objects {
+            require_inventory_case(rows, operation, Some(object), None, None);
+        }
+    }
+    for object in objects
+        .into_iter()
+        .filter(|object| *object != "OpaqueObject")
+    {
+        require_inventory_case(rows, "Activate", Some(object), None, None);
+    }
+    for operation in ["Import", "Register", "Get", "Export"] {
+        for (object, algorithm, format) in [
+            ("Certificate", "RSA", "X.509"),
+            ("SymmetricKey", "AES", "Raw"),
+            ("SymmetricKey", "AES", "TransparentSymmetricKey"),
+            ("PrivateKey", "RSA", "PKCS#1"),
+            ("PrivateKey", "RSA", "PKCS#8"),
+            ("PrivateKey", "RSA", "TransparentRSAPrivateKey"),
+            ("PublicKey", "RSA", "PKCS#1"),
+            ("PublicKey", "RSA", "PKCS#8"),
+            ("PublicKey", "RSA", "TransparentRSAPublicKey"),
+            ("PrivateKey", "EC", "TransparentECPrivateKey"),
+            ("PrivateKey", "EC", "PKCS#8"),
+            ("PrivateKey", "EC", "ECPrivateKey"),
+            ("PublicKey", "EC", "TransparentECPublicKey"),
+            ("PublicKey", "EC", "PKCS#8"),
+            ("PrivateKey", "DSA", "TransparentDSAPrivateKey"),
+            ("PublicKey", "DSA", "TransparentDSAPublicKey"),
+        ] {
+            require_inventory_case(rows, operation, Some(object), Some(algorithm), Some(format));
+        }
+        for object in ["OpaqueObject", "SecretData"] {
+            require_inventory_case(rows, operation, Some(object), None, None);
+        }
+    }
+    let hashes = [
+        "SHA-1", "SHA-224", "SHA-256", "SHA-384", "SHA-512", "SHA3-224", "SHA3-256", "SHA3-384",
+        "SHA3-512",
+    ];
+    for hash in hashes {
+        for operation in ["MAC", "MAC Verify"] {
+            let algorithm = format!("HMAC-{hash}");
+            require_inventory_case(
+                rows,
+                operation,
+                Some("SymmetricKey"),
+                Some(&algorithm),
+                None,
+            );
+        }
+        if hash != "SHA-1" {
+            require_inventory_case(rows, "Hash", None, Some(hash), None);
+        }
+    }
+    for method in ["PBKDF2", "HKDF"] {
+        for hash in hashes.into_iter().take(5) {
+            for input in ["SymmetricKey", "SecretData"] {
+                for output in ["SymmetricKey", "SecretData"] {
+                    assert!(
+                        rows.iter().any(|row| {
+                            row["operation"] == "Derive Key"
+                                && row["object_type"] == input
+                                && row["parameters"]["method"] == method
+                                && row["parameters"]["hash"] == hash
+                                && row["parameters"]["output_object_type"] == output
+                        }),
+                        "missing derivation intersection: {method}/{hash}/{input}/{output}"
+                    );
+                }
+            }
+        }
+    }
+    for password in [false, true] {
+        for chain in [false, true] {
+            assert!(
+                rows.iter().any(|row| {
+                    row["operation"] == "Import"
+                        && row["object_type"] == "PrivateKey"
+                        && row["key_format"] == "PKCS#12"
+                        && row["parameters"]["password_link"] == password
+                        && row["parameters"]["certificate_chain"] == chain
+                        && row["notes"]
+                            .as_str()
+                            .is_some_and(|notes| notes.contains("formats.md omits"))
+                }),
+                "missing PFX import/omission branch: password={password}, chain={chain}"
+            );
+        }
+    }
+    for operation in ["Encrypt", "Decrypt"] {
+        for mode in [
+            "ECB",
+            "CBC",
+            "GCM",
+            "AEAD",
+            "XTS",
+            "AESKeyWrapPadding",
+            "NISTKeyWrap",
+            "GCMSIV",
+        ] {
+            assert!(
+                rows.iter().any(|row| row["operation"] == operation
+                    && row["algorithm"] == "AES"
+                    && row["parameters"]["mode"] == mode),
+                "missing AES branch: {operation}/{mode}"
+            );
+        }
+        for algorithm in [
+            "ChaCha20",
+            "ChaCha20Poly1305",
+            "FPE_FF1",
+            "CoverCrypt",
+            "ConfigurableKEM",
+            "X25519MLKEM768",
+            "X448MLKEM1024",
+        ] {
+            require_inventory_case(rows, operation, None, Some(algorithm), None);
+        }
+    }
+    for operation in ["Ping", "Adjust Attribute", "Re-certify"] {
+        require_inventory_case(rows, operation, None, None, None);
+    }
+}
+
+fn require_inventory_case(
+    rows: &[serde_json::Value],
+    operation: &str,
+    object: Option<&str>,
+    algorithm: Option<&str>,
+    format: Option<&str>,
+) {
+    assert!(
+        rows.iter().any(|row| {
+            row["operation"] == operation
+                && object.is_none_or(|value| row["object_type"] == value)
+                && algorithm.is_none_or(|value| row["algorithm"] == value)
+                && format.is_none_or(|value| row["key_format"] == value)
+        }),
+        "missing source inventory intersection: {operation}/{object:?}/{algorithm:?}/{format:?}"
+    );
 }
 
 fn validate_capability_row(row: &serde_json::Value) {
@@ -166,6 +393,22 @@ fn validate_capability_row(row: &serde_json::Value) {
     for field in ["case_id", "operation", "expected_outcome", "test_family"] {
         manifest_text(row, field);
     }
+    let requirements = row["requirements"]
+        .as_array()
+        .expect("every case must link to functional requirements");
+    assert!(
+        requirements
+            .iter()
+            .any(|value| value == "KMIPKIT-0015-FR-016")
+    );
+    assert_eq!(manifest_text(row, "encoding"), "binary-TTLV");
+    // Case families are an explicit plan until Tasks 4–7 implement execution
+    // and parity. Source existence must never become an observation.
+    assert_eq!(
+        manifest_text(row, "execution_status"),
+        "planned_for_tasks_4_6"
+    );
+    manifest_text(row, "expected_semantics");
     for field in ["object_type", "algorithm", "key_format", "encoding"] {
         assert!(
             row[field].is_null()
@@ -245,6 +488,10 @@ fn validate_capability_row(row: &serde_json::Value) {
     let cosmian = &row["cosmian_source"];
     assert_eq!(manifest_text(cosmian, "tag"), "5.28.0");
     assert_eq!(
+        manifest_text(cosmian, "commit"),
+        "4ab3ee65829a903abb71f1298f400657fcee7ec9"
+    );
+    assert_eq!(
         manifest_text(cosmian, "image_digest"),
         "sha256:7b60fd4484930969906caa5722b727054ff96d49339ce81e3c64ca9e4278540e"
     );
@@ -259,6 +506,63 @@ fn validate_capability_row(row: &serde_json::Value) {
         for citation in citations {
             manifest_text(citation, "path");
             manifest_text(citation, if field == "code" { "symbol" } else { "section" });
+            if field == "code" {
+                assert!(citation["line"].as_u64().is_some_and(|line| line > 0));
+            }
+        }
+    }
+    let enums = row["wire_enum_values"]
+        .as_object()
+        .expect("numeric wire identities are required");
+    for (dimension, enumeration) in enums {
+        let classification = manifest_text(enumeration, "classification");
+        if classification == "not_sent_asn1_oid_only" {
+            assert!(enumeration["value"].is_null());
+            assert_eq!(manifest_text(row, "operation"), "Certify");
+            assert_eq!(manifest_text(row, "object_type"), "CertificateRequest");
+            continue;
+        }
+        assert!(matches!(classification, "standard" | "vendor_extension"));
+        let text = manifest_text(enumeration, "value");
+        let value = u32::from_str_radix(text.trim_start_matches("0x"), 16)
+            .expect("enumeration must record a numeric hexadecimal identity");
+        if classification == "vendor_extension" {
+            assert!((0x8000_0000..=0x8FFF_FFFF).contains(&value));
+        } else if dimension == "cryptographic_algorithm" {
+            assert!(
+                (1..=0x38).contains(&value),
+                "reserved KMIP 2.1 algorithm in a wire row"
+            );
+        }
+    }
+    if row["operation"] == "Hash" && row["algorithm"] == "SHA-224" {
+        assert_eq!(
+            manifest_text(row, "expected_outcome"),
+            "documented_but_source_gap"
+        );
+    }
+    if row["fixture"]["encoding"] == "PEM" && row["operation"] != "Certify" {
+        assert!(manifest_text(&row["fixture"], "normalization").contains("PEM-to-DER"));
+        assert_eq!(
+            manifest_text(&row["fixture"], "wire_representation"),
+            "DER byte string"
+        );
+    }
+    assert_ne!(
+        row["key_format"], "PEM",
+        "PEM is not a KMIP Key Format Type"
+    );
+    if row["operation"] == "Derive Key" && row["parameters"]["method"] == "PBKDF2" {
+        assert!(
+            row["parameters"]["iterations"]
+                .as_u64()
+                .is_some_and(|count| count > 0)
+        );
+        assert_eq!(row["parameters"]["salt"], "present");
+        if row["object_type"] == "SecretData" {
+            assert!(row["parameters"]["derivation_data"].is_null());
+        } else {
+            manifest_text(&row["parameters"], "derivation_data");
         }
     }
 }
