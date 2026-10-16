@@ -1,6 +1,42 @@
 use kmipkit_test_support::oasis_crypto_fixtures::{
     OasisCryptoFixtureError, OasisProfileFixture, OasisProfileFixtureBindings,
 };
+use kmipkit_ttlv::ValueView;
+
+const RESPONSE_HEADER_TAG: u32 = 0x0042_007A;
+const TIME_STAMP_TAG: u32 = 0x0042_0092;
+
+fn parse_first_profile_timestamp(value: &str) -> Result<i64, OasisCryptoFixtureError> {
+    let baseline = include_str!("../../../specification/oasis/kmip-2.1/fixtures/BL-M-1-21.xml");
+    let xml = baseline.replacen("$NOW", value, 1);
+    let fixture =
+        OasisProfileFixture::from_xml("BL-M-1-21", &xml, OasisProfileFixtureBindings::default())?;
+    let response = fixture
+        .exchanges()
+        .first()
+        .expect("the pinned baseline fixture has a first exchange")
+        .response_message();
+    let response_view = response.view();
+    let response_header = response_view
+        .children()
+        .iter()
+        .find(|item| item.tag().raw() == RESPONSE_HEADER_TAG)
+        .expect("the first response has a Response Header");
+    let time_stamp = response_header.with_value(|value| {
+        let ValueView::Structure(header) = value else {
+            return None;
+        };
+        let item = header
+            .children()
+            .iter()
+            .find(|item| item.tag().raw() == TIME_STAMP_TAG)?;
+        item.with_value(|value| match value {
+            ValueView::DateTime(seconds) => Some(*seconds),
+            _ => None,
+        })
+    });
+    Ok(time_stamp.expect("the first response has a DateTime Time Stamp"))
+}
 
 #[test]
 // This oracle table intentionally enumerates every pinned official profile fixture.
@@ -172,4 +208,49 @@ fn rejects_unknown_symbols_operations_malformed_pairs_and_reordered_steps() {
         .err(),
         Some(OasisCryptoFixtureError::InvalidValue)
     );
+}
+
+#[test]
+fn profile_fixture_normalizes_rfc3339_timestamps_to_unix_seconds() {
+    // KMIP Specification v2.1 §9.20 and Table 425 identify Time Stamp as a
+    // DateTime field. These RFC 3339 strings exercise this fixture adapter's
+    // conversion only; they do not assign a date-time syntax to OASIS XML.
+    for (literal, expected_seconds) in [
+        ("2024-02-29T01:30:00+01:30", 1_709_164_800),
+        ("1969-12-31T23:59:59Z", -1),
+        ("1970-01-01T00:30:00-01:00", 5_400),
+        ("2000-04-30T12:00:00Z", 957_096_000),
+        ("1700000000", 1_700_000_000),
+    ] {
+        assert_eq!(
+            parse_first_profile_timestamp(literal)
+                .expect("a valid calendar date and timezone are accepted"),
+            expected_seconds,
+            "{literal}"
+        );
+    }
+}
+
+#[test]
+fn profile_fixture_rejects_invalid_rfc3339_timestamps_without_echoing_values() {
+    for literal in [
+        "2024/02-29T01:30:00Z",
+        "20x4-02-29T01:30:00Z",
+        "2024-0x-29T01:30:00Z",
+        "2024-13-01T01:30:00Z",
+        "1900-02-29T01:30:00Z",
+        "2024-04-31T01:30:00Z",
+        "2024-02-29T24:30:00Z",
+        "2024-02-29T01:30:00+24:00",
+        "2024-02-29T01:30:00+01:60",
+        "2024-02-29T01:30:00+01-30",
+    ] {
+        let error = parse_first_profile_timestamp(literal)
+            .expect_err("invalid date or timezone fields are rejected");
+        assert_eq!(error, OasisCryptoFixtureError::InvalidValue, "{literal}");
+        assert!(
+            !error.to_string().contains(literal),
+            "date-time diagnostics must not echo fixture values"
+        );
+    }
 }
