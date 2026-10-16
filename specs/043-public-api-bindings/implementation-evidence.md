@@ -2107,5 +2107,28 @@ decoder. The full `tools/api_manifest/tests` run still reports eight failures
 that reproduce at the pre-T031 PR head `a6696836`; these concern existing
 inventory snapshots, C declaration classification, and a T076 Rust mapping.
 T031-specific parity, documentation, and exclusion regressions pass at the
-current head. The PR's required CI checks must still run against the pushed
-final head.
+current head.
+
+#### T032 coverage gate and final CI — 2026-10-16
+
+The coverage Red result on head `4c00ba15` was run `38859911244`: 2,517/2,679
+changed production lines (94.0 percent), 29 hits below the 95 percent gate.
+Commit `c1064e08` adds characterization tests for inconsistent FFI response
+handles and Java/JNI null response handles. They exercise existing validation
+paths and do not change production behavior or the coverage policy.
+
+The final cross-platform run `38862964211` on `c1064e08e4ffca51072f27a04659a5ae824b52c6`
+passed all 34 checks; two schedule-only jobs were skipped. The coverage gate
+reports 2,546/2,679 changed production lines (95.04 percent), including 13
+conservative JNI summary-only misses. Other measured scopes also passed:
+TTLV 99.19 percent, protocol 96.98 percent, transport 95.16 percent, FFI
+96.44 percent, Java 97.17 percent, Python 98.60 percent, JNI 89.18 percent,
+and workspace 96.73 percent. The completed matrix covers Rust stable and
+MSRV, C consumers, Java/JNI, Python, sanitizers, traceability, and generated
+normative inventory checks.
+
+T032 is complete: the approved creation mappings preserve optional Result
+Message semantics, the additive C metadata v2 ABI, and 100,001 ordered Create
+Split Key identifiers; the final remote matrix and coverage gate pass. T034
+remains open until the corresponding Red/Green/Refactor and convergence work
+for T033 is complete.
