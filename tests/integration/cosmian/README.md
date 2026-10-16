@@ -33,6 +33,15 @@ are stored under the ignored `.local/cosmian-kms/certs/` directory. Cosmian
 uses SQLite under its container filesystem with `clear_database = true`; no
 database volume is mounted. The HTTP service is not published to the host.
 
+The PKI generator also keeps actual PEM and DER PKCS#10 requests for the
+cryptographic Certify matrix under `.local/cosmian-kms/certs/validation/`.
+It records whether the container's OpenSSL can generate ML-DSA and SLH-DSA
+request fixtures in `cryptographic-fixture-capabilities.txt`; unavailable
+algorithms remain explicit fixture limitations. The files are generated
+inside the `test-pki` container, are ignored by Git, and must never be copied
+into test output or reports. Regeneration uses the `fixture-set-v3` marker so
+an older local fixture set cannot skip the new CSR generation.
+
 ## Run the test explicitly
 
 With the production transport and local server available, run the ignored

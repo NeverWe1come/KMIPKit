@@ -74,6 +74,12 @@ fn parameterized_rng_rows_are_normative_exclusions_without_sending_a_request() {
             }]),
             "{case_id}"
         );
+        assert!(
+            row["oasis_source"]
+                .as_array()
+                .is_some_and(|sources| sources.iter().any(|source| source == "oasis-7.36-t388")),
+            "{case_id}: RNG Parameters definition citation missing"
+        );
         let operation_citation = format!("§{section}, Table {table}");
         let exclusion_reason = row["exclusion"]["reason"]
             .as_str()

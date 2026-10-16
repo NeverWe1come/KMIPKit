@@ -15,7 +15,12 @@ if [ -s /output/ca/ca.crt ] \
     && [ -s /output/validation/private-key-password-chain.p12 ] \
     && [ -s /output/validation/private-key-empty-password-no-chain.p12 ] \
     && [ -s /output/validation/private-key-empty-password-chain.p12 ] \
-    && [ -s /output/validation/fixture-set-v2 ]; then
+    && [ -s /output/validation/rsa-2048-csr-pkcs10.der ] \
+    && [ -s /output/validation/rsa-2048-csr-pem.pem ] \
+    && [ -s /output/validation/ec-P256-csr-pkcs10.der ] \
+    && [ -s /output/validation/ed25519-csr-pkcs10.der ] \
+    && [ -s /output/validation/cryptographic-fixture-capabilities.txt ] \
+    && [ -s /output/validation/fixture-set-v3 ]; then
     exit 0
 fi
 
@@ -155,6 +160,8 @@ generate_key_fixture() {
         X25519|X448) ;;
         *)
             openssl req -new -key "$key" -out "$csr" -subj "/CN=KMIPKit $name fixture"
+            cp "$csr" "/output/validation/$name-csr-pem.pem"
+            openssl req -in "$csr" -outform DER -out "/output/validation/$name-csr-pkcs10.der"
             openssl x509 -req -sha256 -days 30 -in "$csr" \
                 -CA /output/validation/intermediate.crt \
                 -CAkey /output/validation/intermediate.key \
@@ -200,6 +207,27 @@ generate_key_fixture() {
     esac
 }
 
+# Some OpenSSL builds include ML-DSA/SLH-DSA and others do not. Record only
+# capability names, never command output or generated key material. A missing
+# fixture remains a setup limitation for the exact algorithm rows.
+generate_post_quantum_csr_fixture() {
+    fixture_name=$1
+    openssl_algorithm=$2
+    key=/output/validation/$fixture_name-private.key
+    csr=/output/validation/$fixture_name.csr
+    if openssl genpkey -algorithm "$openssl_algorithm" -out "$key" >/dev/null 2>&1 \
+        && openssl req -new -key "$key" -out "$csr" \
+            -subj "/CN=KMIPKit $fixture_name fixture" >/dev/null 2>&1; then
+        cp "$csr" "/output/validation/$fixture_name-csr-pem.pem"
+        openssl req -in "$csr" -outform DER \
+            -out "/output/validation/$fixture_name-csr-pkcs10.der" >/dev/null 2>&1
+        printf '%s=available\n' "$fixture_name" >> /output/validation/cryptographic-fixture-capabilities.txt
+    else
+        printf '%s=unavailable\n' "$fixture_name" >> /output/validation/cryptographic-fixture-capabilities.txt
+    fi
+    rm -f "$key" "$csr"
+}
+
 for bits in 2048 3072 4096; do
     generate_key_fixture rsa-$bits RSA "$bits"
 done
@@ -227,4 +255,16 @@ generate_key_fixture x448 X448 ""
 for bits in 2048 3072; do
     generate_key_fixture dsa-$bits DSA "$bits"
 done
-touch /output/validation/fixture-set-v2
+for algorithm in ML-DSA-44 ML-DSA-65 ML-DSA-87; do
+    generate_post_quantum_csr_fixture "${algorithm}" "$algorithm"
+done
+for algorithm in \
+    SLH-DSA-SHA2-128f SLH-DSA-SHA2-128s \
+    SLH-DSA-SHA2-192f SLH-DSA-SHA2-192s \
+    SLH-DSA-SHA2-256f SLH-DSA-SHA2-256s \
+    SLH-DSA-SHAKE-128f SLH-DSA-SHAKE-128s \
+    SLH-DSA-SHAKE-192f SLH-DSA-SHAKE-192s \
+    SLH-DSA-SHAKE-256f SLH-DSA-SHAKE-256s; do
+    generate_post_quantum_csr_fixture "${algorithm}" "$algorithm"
+done
+touch /output/validation/fixture-set-v3

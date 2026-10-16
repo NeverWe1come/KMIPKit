@@ -1,6 +1,6 @@
 # Requirement Traceability: Cosmian KMS Integration
 
-The 2026-10-16 exhaustive matrix amendment is being implemented in scoped family tasks. Task 5 has now measured all transfer and key-management rows; the matrix below is the per-case observation source. The remaining lifecycle, RNG, and cryptographic families and the final all-family verification remain pending. Historical selected-case results below remain separate bounded evidence and are not copied into unmeasured rows.
+The 2026-10-16 exhaustive matrix amendment is being implemented in scoped family tasks. Task 5 has now measured all transfer and key-management rows; the matrix below is the per-case observation source. Lifecycle and cryptographic live cases, RNG live outcomes, and the final all-family verification remain pending. Historical selected-case results below remain separate bounded evidence and are not copied into unmeasured rows.
 
 | Requirement | Source | Implementation | Verification |
 |---|---|---|---|
@@ -43,6 +43,12 @@ Task 5 implemented and exercised the complete `cosmian_kms::transfer` and `cosmi
 |---|---:|---:|---:|---:|---:|
 | Transfer | 4,640 | 2,772 | 866 | 930 | 72 |
 | Key management | 216 | 12 | 201 | 3 | 0 |
+
+### Task 6 progress: RNG inventory and typed cases
+
+The RNG family now has offline one-to-one case-ID coverage for all twelve matrix rows. Six valid length-only cases are executable: Retrieve lengths 0, 1, 32, and 65,536 bytes; Seed lengths 0 and 32 bytes. Their ignored live runner checks returned byte counts and response fields. Six variants adding `RNG Parameters { RNG Algorithm: Unspecified }` are explicitly excluded without sending a request: §6.1.49/Table 316 defines only Data Length in RNG Retrieve, and §6.1.50/Table 319 defines only Data in RNG Seed; §7.36/Table 388's structure definition does not add it to either payload. Their evidence is linked to `cosmian_kms::random::cosmian_random_case_ids_cover_manifest_and_exclusions`. Live RNG execution remains pending with the remaining lifecycle and cryptographic matrix cases.
+
+The cryptographic-family audit found 942 typed-success rows across Encrypt, Decrypt, Hash, MAC, MAC Verify, Sign and Signature Verify. Existing handwritten smoke tests are not linked to stable matrix IDs and do not establish those rows as covered. A case-ID-driven family runner and independent semantic assertions are still required; no crypto matrix observations were changed based on the audit.
 
 The 230-ID transfer correction run superseded initial classifications for fixture and setup attribution. Its provisional response-validation results for four legacy PKCS12 cases were then superseded by the 32-ID PFX run. That final PFX run measured 16 successful unprotected-password cases and 16 password-linked setup rejections. For those 16 cases, Cosmian rejected the standard-shaped PFX Import setup with Result Reason 5 (`Operation Not Supported`); the dependent target Get/Export request was not sent. This is not a target-operation result. Exact final per-case records reside only in the matrix; intermediate run logs are local sanitized audit artifacts.
 

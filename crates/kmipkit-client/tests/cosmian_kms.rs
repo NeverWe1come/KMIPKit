@@ -8,12 +8,14 @@
 mod common;
 #[path = "cosmian_kms/cryptographic.rs"]
 mod cryptographic;
-#[path = "cosmian_kms/lifecycle.rs"]
-mod lifecycle;
-#[path = "cosmian_kms/transfer.rs"]
-mod transfer;
 #[path = "cosmian_kms/key_management.rs"]
 mod key_management;
+#[path = "cosmian_kms/lifecycle.rs"]
+mod lifecycle;
+#[path = "cosmian_kms/random.rs"]
+mod random;
+#[path = "cosmian_kms/transfer.rs"]
+mod transfer;
 
 use std::collections::BTreeSet;
 use std::error::Error;
@@ -1565,36 +1567,128 @@ fn validate_capability_execution_status(row: &serde_json::Value) {
 }
 
 fn validate_non_executable_exclusion(row: &serde_json::Value) {
-    assert!(csr_subject_cannot_sign(row));
+    assert_eq!(
+        manifest_text(row, "expected_outcome"),
+        "standards_invalid_exclusion"
+    );
+    assert_eq!(
+        manifest_text(row, "capability_basis"),
+        "normative_exclusion"
+    );
     assert_eq!(
         manifest_text(row, "execution_status"),
         "non_executable_normative_exclusion"
     );
     assert_eq!(row["exclusion"]["request_may_be_sent"], false);
     manifest_text(&row["exclusion"], "reason");
-    assert_eq!(
-        row["exclusion"]["normative_sources"],
-        serde_json::json!([{
-            "document": "RFC 2986",
-            "sections": ["3", "4.2"],
-            "url": "https://www.rfc-editor.org/rfc/rfc2986.html",
-            "referenced_from": "OASIS KMIP Specification v2.1 section 1.3 [PKCS#10]/[RFC2986]; CSR structure section 2.2/Table 3; request types section 11.8/Table 439"
-        }])
-    );
     assert_eq!(row["setup"].as_array().expect("exclusion setup").len(), 0);
     assert_eq!(row["observed_result"]["classification"], "not_run");
+    let test_family = manifest_text(row, "test_family");
+    match manifest_text(row, "operation") {
+        "Certify" => {
+            assert!(csr_subject_cannot_sign(row));
+            assert_eq!(
+                test_family,
+                "cosmian_kms::cosmian_capability_manifest_is_complete"
+            );
+            assert_eq!(
+                row["exclusion"]["normative_sources"],
+                serde_json::json!([{
+                    "document": "RFC 2986",
+                    "sections": ["3", "4.2"],
+                    "url": "https://www.rfc-editor.org/rfc/rfc2986.html",
+                    "referenced_from": "OASIS KMIP Specification v2.1 section 1.3 [PKCS#10]/[RFC2986]; CSR structure section 2.2/Table 3; request types section 11.8/Table 439"
+                }])
+            );
+            assert!(
+                row["oasis_source"]
+                    .as_array()
+                    .expect("exclusion citations")
+                    .iter()
+                    .any(|citation| citation["section"] == "2.2"
+                        && citation["tables"] == serde_json::json!([3]))
+            );
+        }
+        "RNG Retrieve" | "RNG Seed" => {
+            assert_eq!(
+                test_family,
+                "cosmian_kms::random::cosmian_random_case_ids_cover_manifest_and_exclusions"
+            );
+            assert_eq!(
+                row["parameters"]["rng_parameters"]["rng_algorithm"],
+                "Unspecified"
+            );
+            let (section, table, referenced_from, length_field) =
+                if row["operation"] == "RNG Retrieve" {
+                    (
+                        "6.1.49",
+                        316,
+                        "Operation request payload schema; only Data Length is listed.",
+                        "data_length_bytes",
+                    )
+                } else {
+                    (
+                        "6.1.50",
+                        319,
+                        "Operation request payload schema; only Data is listed.",
+                        "seed_length_bytes",
+                    )
+                };
+            assert!(row["parameters"][length_field].as_u64().is_some());
+            assert!(
+                row["oasis_source"]
+                    .as_array()
+                    .expect("RNG exclusion citations")
+                    .iter()
+                    .any(|citation| citation["section"] == section
+                        && citation["tables"]
+                            .as_array()
+                            .is_some_and(|tables| tables.contains(&serde_json::json!(table))))
+            );
+            assert!(
+                row["oasis_source"]
+                    .as_array()
+                    .expect("RNG structure citations")
+                    .iter()
+                    .any(|citation| citation["section"] == "7.36"
+                        && citation["tables"] == serde_json::json!([388]))
+            );
+            assert_eq!(
+                row["exclusion"]["normative_sources"],
+                serde_json::json!([{
+                    "document": "OASIS KMIP Specification v2.1",
+                    "sections": [section],
+                    "tables": [table],
+                    "referenced_from": referenced_from
+                }])
+            );
+        }
+        operation => panic!("unsupported normative exclusion operation: {operation}"),
+    }
+}
+
+#[test]
+fn rng_normative_exclusions_are_validated_without_sending() {
+    let manifest: serde_json::Value = serde_json::from_str(include_str!(
+        "../../../tests/integration/cosmian/capability-matrix.json"
+    ))
+    .expect("capability manifest must be valid JSON");
+    let rows = resolve_capability_sources(&manifest);
+    let rng_exclusions = rows
+        .iter()
+        .filter(|row| {
+            row["test_family"]
+                == "cosmian_kms::random::cosmian_random_case_ids_cover_manifest_and_exclusions"
+        })
+        .collect::<Vec<_>>();
     assert_eq!(
-        manifest_text(row, "test_family"),
-        "cosmian_kms::cosmian_capability_manifest_is_complete"
+        rng_exclusions.len(),
+        6,
+        "all invalid RNG parameter rows are explicit"
     );
-    assert!(
-        row["oasis_source"]
-            .as_array()
-            .expect("exclusion citations")
-            .iter()
-            .any(|citation| citation["section"] == "2.2"
-                && citation["tables"] == serde_json::json!([3]))
-    );
+    for row in rng_exclusions {
+        validate_non_executable_exclusion(row);
+    }
 }
 
 fn validate_capability_dimensions_for_row(row: &serde_json::Value) {
