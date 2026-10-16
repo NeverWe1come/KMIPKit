@@ -3425,3 +3425,14 @@ After the §9.17 catalog correction, CI run `38840013814` failed `test_result_re
 | Red — observe stale downstream assertion | Existing failing contract at `d4ad40aa`; `py -3 -B -m unittest discover -s tools/normative_catalog/tests -p 'test_feature_traceability.py' -v` | Expected failure: 1 of 17 tests; §9.17 catalog direction `unclear` conflicted with the stale `server_to_client` assertion. CI reproduced this in run `38840013814`. |
 | Green — assert clause-specific directions | `9bbe3098`; the same focused command; `py -3 -B -m unittest scripts.tests.test_requirement_traceability -v` | PASS: feature traceability 17 tests / 1 platform skip; requirement traceability 2 tests. §9.17 expects `unclear`; §§9.18–9.19 and Result elements expect `server_to_client`. |
 | Refactor/evidence — record regression and corrected contract | This DCO-signed evidence commit; `git diff --check` | PASS: the reason for CI failure and exact local commands are recorded; no source or behavior change was needed. |
+
+
+### KMIPKIT-0010 T003 — preserve out-of-scope TLS 1.2 traceability (2026-10-16)
+
+Profiles v2.1 §3.1.1 clause `KMIPKIT-CLAUSE-PROF-3.1.1-004` contains a TLS 1.2 MAY. ADR-0005 keeps TLS 1.0 limited to TLS 1.3. The source clause therefore remains in Baseline's clause closure and the catalog/oracle retain `KMIPKIT-REQ-PROF-3.1.1-004` with `scope_state: out_of_scope`; it is absent from the effective Baseline requirement closure and generated runtime rule metadata. This satisfies traceability without enabling TLS 1.2. The test also deletes the catalog requirement record and checks that validation names the exact missing stable ID.
+
+| Stage | DCO-signed commit and exact command | Result |
+|---|---|---|
+| Red — require traceability while preserving the TLS boundary, and exact-ID failure on omission | `810af75d`; `py -3 -B -m unittest tools.normative_catalog.tests.test_validate.CatalogValidationTests.test_baseline_tracks_optional_tls12_source_without_claiming_it_in_scope -v` | Expected Red: the source clause rejected the missing requirement record, but its generic diagnostic omitted `KMIPKIT-REQ-PROF-3.1.1-004`. |
+| Green — report stable IDs for unresolved clause references | `d7a1d2a1`; same focused command; `py -3 -B -m unittest tools.normative_catalog.tests.test_validate.CatalogValidationTests.test_checked_in_clause_ledger_covers_all_keyword_strength_mappings -v` | PASS: the requirement remains out of effective scope; deleting it from the catalog fails with its exact stable ID; both focused tests pass. |
+| Refactor/evidence — record the scope distinction and exact validation result | This DCO-signed evidence commit; `git diff --check` | PASS: the evidence distinguishes source-clause closure, retained out-of-scope traceability, and the effective client requirement set. No TLS policy changed. |

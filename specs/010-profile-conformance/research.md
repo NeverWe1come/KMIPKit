@@ -798,3 +798,8 @@ The existing request serializers emit a supplied value in the corresponding tabl
 ### KMIP Specification §9.17 — mixed Result Message scope (2026-10-16)
 
 Pinned §9.17 lines 45156–45158 combines two MAY statements: the Result Message may be returned in a response, while its text may be provided to an end user or used for logging/auditing. Table 422 (lines 45162–45193) identifies it as a Response Batch Item field. The first atom describes a server-to-client response; the second does not name an actor or endpoint. The catalog now records the paragraph aggregate as `source_discrepancy` with `scope_state: mixed`, unclear actor/direction, and no client REQ ID. Its aggregate source-gap direction is `unspecified`. These classifications avoid treating the entire paragraph as server-only or inventing a client duty. The pinned OASIS sources remain unchanged. T002 and T003 remain open.
+
+
+### Baseline §3.1.1 TLS 1.2 MAY traceability (2026-10-16)
+
+Profiles §3.1.1 clause `KMIPKIT-CLAUSE-PROF-3.1.1-004` is retained in Baseline's clause closure. Its MAY requirement `KMIPKIT-REQ-PROF-3.1.1-004` remains catalogued as `out_of_scope` because ADR-0005 restricts KMIPKit 1.0 to TLS 1.3. The independent oracle likewise retains the source clause but excludes this requirement from the effective Baseline requirement IDs. A regression now protects both sides of that boundary and requires a missing catalog requirement record to be reported by exact stable ID. This does not enable TLS 1.2 or mark T003 complete.
