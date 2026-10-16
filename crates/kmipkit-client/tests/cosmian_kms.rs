@@ -140,6 +140,1099 @@ fn cosmian_capability_manifest_is_complete() {
         missing.join(", ")
     );
     validate_capability_dimensions(rows);
+    let issues = reviewed_inventory_issues(rows);
+    let summary = [
+        "finite-case:",
+        "material-citation:",
+        "MGF-citation:",
+        "ECDSA-digest:",
+    ]
+    .into_iter()
+    .filter_map(|kind| {
+        let count = issues
+            .iter()
+            .filter(|issue| issue.starts_with(kind))
+            .count();
+        issues
+            .iter()
+            .find(|issue| issue.starts_with(kind))
+            .map(|example| format!("{kind} {count}; example: {example}"))
+    })
+    .collect::<Vec<_>>()
+    .join("\n");
+    assert!(
+        issues.is_empty(),
+        "reviewed finite inventory contract: {} issues; first findings:\n{}",
+        issues.len(),
+        summary
+    );
+    review_contract_detects_removed_dimensions(rows);
+}
+
+fn review_contract_detects_removed_dimensions(rows: &[serde_json::Value]) {
+    let without_rsa_3072_sign: Vec<_> = rows
+        .iter()
+        .filter(|row| {
+            !(row["operation"] == "Sign"
+                && row["algorithm"] == "RSA"
+                && row["parameters"]["key_bits"] == 3072)
+        })
+        .cloned()
+        .collect();
+    let mut issues = Vec::new();
+    review_signature_cases(&without_rsa_3072_sign, &mut issues);
+    assert_eq!(
+        issues.len(),
+        28,
+        "removing RSA-3072 Sign must expose all 28 missing hash/scheme/data cases"
+    );
+    let without_raw_chacha_export: Vec<_> = rows
+        .iter()
+        .filter(|row| {
+            !(row["operation"] == "Export"
+                && row["object_type"] == "SymmetricKey"
+                && row["algorithm"] == "ChaCha20"
+                && row["key_format"] == "Raw"
+                && row["parameters"]["requested_key_format"] == "Raw"
+                && row["fixture"]["encoding"] == "native")
+        })
+        .cloned()
+        .collect();
+    issues.clear();
+    review_transfer_cases(&without_raw_chacha_export, &mut issues);
+    assert_eq!(
+        issues.len(),
+        1,
+        "a default/KEK row must not mask a missing explicit subject-format case"
+    );
+}
+
+const REVIEW_RSA_BITS: [u64; 3] = [2048, 3072, 4096];
+const REVIEW_EC_CURVES: [&str; 9] = [
+    "P192",
+    "P224",
+    "P256",
+    "P384",
+    "P521",
+    "SECP224K1",
+    "SECP256K1",
+    "CURVE25519",
+    "CURVE448",
+];
+const REVIEW_HASHES: [&str; 9] = [
+    "SHA-1", "SHA-224", "SHA-256", "SHA-384", "SHA-512", "SHA3-224", "SHA3-256", "SHA3-384",
+    "SHA3-512",
+];
+
+// Closed source branches are enumerated independently of case IDs/counts.
+// Missing a single size/curve/hash/format/encoding intersection is an error.
+fn reviewed_inventory_issues(rows: &[serde_json::Value]) -> Vec<String> {
+    let mut issues = Vec::new();
+    review_generation_cases(rows, &mut issues);
+    review_signature_cases(rows, &mut issues);
+    review_certify_cases(rows, &mut issues);
+    review_pqc_subject_containers(rows, &mut issues);
+    review_transfer_cases(rows, &mut issues);
+    review_wrapping_cases(rows, &mut issues);
+    review_additional_wrapping_paths(rows, &mut issues);
+    for row in rows {
+        review_material_citations(row, &mut issues);
+        let p = &row["parameters"];
+        if row["operation"] == "Sign"
+            && row["algorithm"] == "ECDSA"
+            && p["data_mode"] == "raw"
+            && matches!(p["curve"].as_str(), Some("P256" | "SECP256K1"))
+            && matches!(p["hash"].as_str(), Some("SHA-384" | "SHA-512"))
+        {
+            if row["expected_outcome"] != "source_documentation_discrepancy"
+                || p["source_condition"] != "non-fips"
+                || p["verify_requested_digest_independently"] != true
+                || p["accept_sha256_substitution"] != false
+            {
+                issues.push(format!(
+                    "ECDSA-digest: {} must retain conditional non-fips SHA256 substitution finding",
+                    manifest_text(row, "case_id")
+                ));
+            }
+        }
+    }
+    issues
+}
+
+fn demand_review_case(
+    rows: &[serde_json::Value],
+    operation: &str,
+    object: &str,
+    algorithm: Option<&str>,
+    format: Option<&str>,
+    parameters: &serde_json::Value,
+    fixture: Option<&str>,
+    issues: &mut Vec<String>,
+) {
+    let found = rows.iter().any(|row| {
+        row["operation"] == operation
+            && row["object_type"] == object
+            && row["algorithm"].as_str() == algorithm
+            && row["key_format"].as_str() == format
+            && row["fixture"]["encoding"].as_str() == fixture
+            && parameters
+                .as_object()
+                .expect("finite case parameters")
+                .iter()
+                .all(|(key, value)| row["parameters"][key] == *value)
+    });
+    if !found {
+        issues.push(format!(
+            "finite-case: {operation}/{object}/{algorithm:?}/{format:?}/{fixture:?} {parameters}"
+        ));
+    }
+}
+
+fn reviewed_symmetric_variants() -> Vec<(&'static str, u64)> {
+    let mut variants = vec![
+        ("AES", 128),
+        ("AES", 192),
+        ("AES", 256),
+        ("AES", 512),
+        ("ChaCha20", 256),
+        ("ChaCha20Poly1305", 256),
+        ("FPE_FF1", 256),
+        ("3DES", 112),
+        ("3DES", 168),
+    ];
+    for algorithm in [
+        "HMAC-SHA-1",
+        "HMAC-SHA-224",
+        "HMAC-SHA-256",
+        "HMAC-SHA-384",
+        "HMAC-SHA-512",
+        "SHA3-224",
+        "SHA3-256",
+        "SHA3-384",
+        "SHA3-512",
+        "SHAKE-128",
+        "SHAKE-256",
+    ] {
+        variants.push((algorithm, 256));
+    }
+    variants
+}
+
+fn reviewed_pair_variants() -> Vec<(&'static str, serde_json::Value)> {
+    let mut variants = Vec::new();
+    for bits in REVIEW_RSA_BITS {
+        variants.push(("RSA", serde_json::json!({"key_bits":bits})));
+    }
+    for algorithm in ["EC", "ECDH", "ECDSA"] {
+        for curve in REVIEW_EC_CURVES {
+            if algorithm == "ECDSA" && matches!(curve, "CURVE25519" | "CURVE448") {
+                continue;
+            }
+            variants.push((algorithm, serde_json::json!({"curve":curve})));
+        }
+    }
+    for (algorithm, curve) in [("Ed25519", "CURVEED25519"), ("Ed448", "CURVEED448")] {
+        variants.push((algorithm, serde_json::json!({"curve":curve})));
+    }
+    variants
+}
+
+fn review_generation_cases(rows: &[serde_json::Value], issues: &mut Vec<String>) {
+    for (algorithm, bits) in reviewed_symmetric_variants() {
+        for selection in [None, Some("TransparentSymmetricKey")] {
+            for operation in ["Create", "Re-key"] {
+                demand_review_case(
+                    rows,
+                    operation,
+                    "SymmetricKey",
+                    Some(algorithm),
+                    Some("TransparentSymmetricKey"),
+                    &serde_json::json!({"key_bits":bits,"requested_key_format":selection}),
+                    None,
+                    issues,
+                );
+            }
+        }
+    }
+    for bits in [8, 8192] {
+        demand_review_case(
+            rows,
+            "Create",
+            "SymmetricKey",
+            Some("HMAC-SHA-256"),
+            Some("TransparentSymmetricKey"),
+            &serde_json::json!({"key_bits":bits}),
+            None,
+            issues,
+        );
+    }
+    demand_review_case(
+        rows,
+        "Create",
+        "SecretData",
+        None,
+        Some("Raw"),
+        &serde_json::json!({"output_secret_data_type":"Seed","output_bytes":32}),
+        None,
+        issues,
+    );
+    for bits in [2048, 3072] {
+        demand_review_case(
+            rows,
+            "Create",
+            "PrivateKey",
+            Some("DSA"),
+            Some("TransparentDSAPrivateKey"),
+            &serde_json::json!({"key_bits":bits}),
+            None,
+            issues,
+        );
+    }
+    demand_review_case(
+        rows,
+        "Create",
+        "PrivateKey",
+        Some("CoverCrypt"),
+        Some("CoverCryptSecretKey"),
+        &serde_json::json!({"vendor_algorithm_value":"0x88800004"}),
+        None,
+        issues,
+    );
+    for operation in ["Create Key Pair", "Re-key Key Pair"] {
+        for (algorithm, parameters) in reviewed_pair_variants() {
+            demand_review_case(
+                rows,
+                operation,
+                "PrivateKey",
+                Some(algorithm),
+                None,
+                &parameters,
+                None,
+                issues,
+            );
+        }
+        for (algorithm, value) in [
+            ("CoverCrypt", "0x88800004"),
+            ("X25519MLKEM768", "0x88800006"),
+            ("X448MLKEM1024", "0x88800007"),
+        ] {
+            demand_review_case(
+                rows,
+                operation,
+                "PrivateKey",
+                Some(algorithm),
+                None,
+                &serde_json::json!({"vendor_algorithm_value":value}),
+                None,
+                issues,
+            );
+        }
+        for curve in ["P256", "CURVE25519"] {
+            demand_review_case(
+                rows,
+                operation,
+                "PrivateKey",
+                Some("ConfigurableKEM"),
+                None,
+                &serde_json::json!({"pre_quantum":curve,"post_quantum":null}),
+                None,
+                issues,
+            );
+        }
+    }
+}
+
+fn review_signature_cases(rows: &[serde_json::Value], issues: &mut Vec<String>) {
+    for (operation, object) in [
+        ("Sign", "PrivateKey"),
+        ("Signature Verify", "PublicKey"),
+        ("Signature Verify", "PrivateKey"),
+    ] {
+        for bits in REVIEW_RSA_BITS {
+            for hash in [
+                "SHA-1", "SHA-256", "SHA-384", "SHA-512", "SHA3-256", "SHA3-384", "SHA3-512",
+            ] {
+                for scheme in ["RSASSA-PSS", "PKCS1v15"] {
+                    for mode in ["raw", "prehashed"] {
+                        demand_review_case(
+                            rows,
+                            operation,
+                            object,
+                            Some("RSA"),
+                            None,
+                            &serde_json::json!({"key_bits":bits,"hash":hash,"signature_scheme":scheme,"data_mode":mode,
+                                "mgf_hash":if scheme=="RSASSA-PSS" {Some(hash)} else {None},
+                                "salt_length_bytes":if scheme=="RSASSA-PSS" {Some("digest")} else {None}}),
+                            None,
+                            issues,
+                        );
+                    }
+                }
+            }
+        }
+        for curve in REVIEW_EC_CURVES.into_iter().take(7) {
+            for hash in ["SHA-256", "SHA-384", "SHA-512"] {
+                for mode in ["raw", "prehashed"] {
+                    demand_review_case(
+                        rows,
+                        operation,
+                        object,
+                        Some("ECDSA"),
+                        None,
+                        &serde_json::json!({"curve":curve,"hash":hash,"data_mode":mode}),
+                        None,
+                        issues,
+                    );
+                }
+            }
+        }
+        for (algorithm, curve) in [("Ed25519", "CURVEED25519"), ("Ed448", "CURVEED448")] {
+            demand_review_case(
+                rows,
+                operation,
+                object,
+                Some(algorithm),
+                None,
+                &serde_json::json!({"curve":curve,"data_mode":"raw","external_digest":null}),
+                None,
+                issues,
+            );
+        }
+    }
+    for (operation, object) in [("Sign", "PrivateKey"), ("Signature Verify", "PublicKey")] {
+        for salt in [0, 32] {
+            for mgf in ["SHA-256", "SHA-384"] {
+                demand_review_case(
+                    rows,
+                    operation,
+                    object,
+                    Some("RSA"),
+                    None,
+                    &serde_json::json!({"key_bits":2048,"hash":"SHA-256","signature_scheme":"RSASSA-PSS",
+                        "data_mode":"raw","salt_length_bytes":salt,"mgf_hash":mgf}),
+                    None,
+                    issues,
+                );
+            }
+        }
+        demand_review_case(
+            rows,
+            operation,
+            object,
+            Some("RSA"),
+            None,
+            &serde_json::json!({"key_bits":2048,"hash":"SHA-256","signature_scheme":"RSASSA-PSS","data_mode":"init-update-final"}),
+            None,
+            issues,
+        );
+    }
+}
+
+fn review_certify_cases(rows: &[serde_json::Value], issues: &mut Vec<String>) {
+    for subject in [
+        "csr-pem",
+        "csr-pkcs10-der",
+        "existing-public",
+        "renew-certificate",
+        "generated-subject",
+    ] {
+        let object = if subject.starts_with("csr") {
+            "CertificateRequest"
+        } else if subject == "renew-certificate" {
+            "Certificate"
+        } else {
+            "PublicKey"
+        };
+        let fixture = if subject == "csr-pem" {
+            "PEM"
+        } else if subject == "csr-pkcs10-der" {
+            "DER"
+        } else {
+            "native"
+        };
+        for issuer in ["self", "RSA", "EC", "Ed25519", "Ed448"] {
+            demand_review_case(
+                rows,
+                "Certify",
+                object,
+                Some("RSA"),
+                Some("X.509"),
+                &serde_json::json!({"subject_input":subject,"subject_key_bits":2048,"issuer":issuer}),
+                Some(fixture),
+                issues,
+            );
+        }
+    }
+    // CSR proof-of-possession uses signature-capable EC/Ed keys; exchange-only
+    // X25519/X448 have existing-public subject cases, not invented CSR signers.
+    let mut subjects = vec![
+        ("RSA", serde_json::json!({"subject_key_bits":3072})),
+        ("RSA", serde_json::json!({"subject_key_bits":4096})),
+    ];
+    for curve in REVIEW_EC_CURVES.into_iter().take(7) {
+        subjects.push(("EC", serde_json::json!({"curve":curve})));
+    }
+    for (algorithm, curve) in [("Ed25519", "CURVEED25519"), ("Ed448", "CURVEED448")] {
+        subjects.push((algorithm, serde_json::json!({"curve":curve})));
+    }
+    for (algorithm, parameters) in subjects {
+        for (subject, encoding) in [("csr-pem", "PEM"), ("csr-pkcs10-der", "DER")] {
+            for issuer in ["self", "RSA", "EC", "Ed25519", "Ed448"] {
+                let mut p = parameters.clone();
+                p["subject_input"] = subject.into();
+                p["issuer"] = issuer.into();
+                demand_review_case(
+                    rows,
+                    "Certify",
+                    "CertificateRequest",
+                    Some(algorithm),
+                    Some("X.509"),
+                    &p,
+                    Some(encoding),
+                    issues,
+                );
+            }
+        }
+    }
+    for curve in [
+        "P224",
+        "P256",
+        "P384",
+        "P521",
+        "SECP256K1",
+        "CURVE25519",
+        "CURVE448",
+        "CURVEED25519",
+        "CURVEED448",
+    ] {
+        demand_review_case(
+            rows,
+            "Certify",
+            "PublicKey",
+            Some("EC"),
+            Some("X.509"),
+            &serde_json::json!({"subject_input":"existing-public","curve":curve,"issuer":"RSA"}),
+            None,
+            issues,
+        );
+    }
+    for (algorithm, parameters) in reviewed_pair_variants() {
+        if algorithm == "RSA" && parameters["key_bits"] == 2048 {
+            continue;
+        }
+        let mut p = parameters;
+        p["subject_input"] = "generated-subject".into();
+        p["issuer"] = "RSA".into();
+        demand_review_case(
+            rows,
+            "Certify",
+            "PublicKey",
+            Some(algorithm),
+            Some("X.509"),
+            &p,
+            Some("native"),
+            issues,
+        );
+    }
+}
+
+fn demand_transfer_formats(
+    rows: &[serde_json::Value],
+    object: &str,
+    algorithm: Option<&str>,
+    parameters: &serde_json::Value,
+    formats: &[&str],
+    default: &str,
+    issues: &mut Vec<String>,
+) {
+    for operation in ["Import", "Register", "Get", "Export"] {
+        for selection in std::iter::once(None).chain(formats.iter().copied().map(Some)) {
+            if selection.is_none() && matches!(operation, "Import" | "Register") {
+                continue;
+            }
+            let format = selection.unwrap_or(default);
+            let encodings: &[&str] =
+                if matches!(format, "X.509" | "PKCS#1" | "PKCS#8" | "ECPrivateKey") {
+                    &["DER", "PEM"]
+                } else {
+                    &["native"]
+                };
+            for encoding in encodings {
+                let mut p = parameters.clone();
+                p["requested_key_format"] = serde_json::json!(selection);
+                demand_review_case(
+                    rows,
+                    operation,
+                    object,
+                    algorithm,
+                    Some(format),
+                    &p,
+                    Some(encoding),
+                    issues,
+                );
+            }
+        }
+    }
+}
+
+fn review_transfer_cases(rows: &[serde_json::Value], issues: &mut Vec<String>) {
+    for (algorithm, parameters) in reviewed_pair_variants() {
+        demand_transfer_formats(
+            rows,
+            "Certificate",
+            Some(algorithm),
+            &parameters,
+            &["X.509"],
+            "X.509",
+            issues,
+        );
+        for object in ["PrivateKey", "PublicKey"] {
+            let private = object == "PrivateKey";
+            if algorithm == "RSA" {
+                let transparent = if private {
+                    "TransparentRSAPrivateKey"
+                } else {
+                    "TransparentRSAPublicKey"
+                };
+                demand_transfer_formats(
+                    rows,
+                    object,
+                    Some(algorithm),
+                    &parameters,
+                    &["PKCS#1", "PKCS#8", transparent],
+                    "PKCS#1",
+                    issues,
+                );
+            } else {
+                let transparent = if private {
+                    "TransparentECPrivateKey"
+                } else {
+                    "TransparentECPublicKey"
+                };
+                let mut formats = vec![transparent, "PKCS#8"];
+                if private
+                    && REVIEW_EC_CURVES[..7]
+                        .iter()
+                        .any(|curve| parameters["curve"] == *curve)
+                {
+                    formats.push("ECPrivateKey");
+                }
+                demand_transfer_formats(
+                    rows,
+                    object,
+                    Some(algorithm),
+                    &parameters,
+                    &formats,
+                    transparent,
+                    issues,
+                );
+            }
+        }
+    }
+    let mut symmetric = reviewed_symmetric_variants();
+    symmetric.extend([
+        ("HMAC-SHA3-224", 256),
+        ("HMAC-SHA3-256", 256),
+        ("HMAC-SHA3-384", 256),
+        ("HMAC-SHA3-512", 256),
+        ("HMAC-SHA-256", 8),
+        ("HMAC-SHA-256", 8192),
+    ]);
+    for (algorithm, bits) in symmetric {
+        demand_transfer_formats(
+            rows,
+            "SymmetricKey",
+            Some(algorithm),
+            &serde_json::json!({"key_bits":bits}),
+            &["Raw", "TransparentSymmetricKey"],
+            "Raw",
+            issues,
+        );
+    }
+    for object in ["PrivateKey", "PublicKey"] {
+        for bits in [2048, 3072] {
+            let transparent = if object == "PrivateKey" {
+                "TransparentDSAPrivateKey"
+            } else {
+                "TransparentDSAPublicKey"
+            };
+            demand_transfer_formats(
+                rows,
+                object,
+                Some("DSA"),
+                &serde_json::json!({"key_bits":bits}),
+                &[transparent, "PKCS#8"],
+                transparent,
+                issues,
+            );
+        }
+    }
+    demand_transfer_formats(
+        rows,
+        "OpaqueObject",
+        None,
+        &serde_json::json!({}),
+        &["Opaque"],
+        "Opaque",
+        issues,
+    );
+    demand_transfer_formats(
+        rows,
+        "SecretData",
+        None,
+        &serde_json::json!({}),
+        &["Raw", "Opaque"],
+        "Raw",
+        issues,
+    );
+    for operation in ["Get", "Export"] {
+        for selection in [None, Some("Raw")] {
+            demand_review_case(
+                rows,
+                operation,
+                "SplitKey",
+                None,
+                Some("Raw"),
+                &serde_json::json!({"requested_key_format":selection}),
+                Some("native"),
+                issues,
+            );
+        }
+        demand_review_case(
+            rows,
+            operation,
+            "SecretData",
+            None,
+            Some("Opaque"),
+            &serde_json::json!({"requested_key_format":null,"stored_format":"Opaque"}),
+            None,
+            issues,
+        );
+    }
+    review_container_transfers(rows, issues);
+    review_extension_transfers(rows, issues);
+}
+
+fn review_extension_transfers(rows: &[serde_json::Value], issues: &mut Vec<String>) {
+    let mut variants = vec![
+        (
+            "CoverCrypt",
+            serde_json::json!({"vendor_algorithm_value":"0x88800004"}),
+        ),
+        (
+            "X25519MLKEM768",
+            serde_json::json!({"vendor_algorithm_value":"0x88800006"}),
+        ),
+        (
+            "X448MLKEM1024",
+            serde_json::json!({"vendor_algorithm_value":"0x88800007"}),
+        ),
+    ];
+    for curve in ["P256", "CURVE25519"] {
+        variants.push((
+            "ConfigurableKEM",
+            serde_json::json!({"pre_quantum":curve,"post_quantum":null}),
+        ));
+    }
+    for (algorithm, parameters) in variants {
+        for object in ["PrivateKey", "PublicKey"] {
+            for operation in ["Import", "Register", "Get", "Export"] {
+                let format = match (algorithm, object) {
+                    ("CoverCrypt", "PrivateKey") => "CoverCryptSecretKey",
+                    ("CoverCrypt", _) => "CoverCryptPublicKey",
+                    ("ConfigurableKEM", "PrivateKey") => "ConfigurableKEMSecretKey",
+                    ("ConfigurableKEM", _) => "ConfigurableKEMPublicKey",
+                    _ => "Raw",
+                };
+                demand_review_case(
+                    rows,
+                    operation,
+                    object,
+                    Some(algorithm),
+                    Some(format),
+                    &parameters,
+                    None,
+                    issues,
+                );
+            }
+        }
+    }
+    for pre in [None, Some("P256"), Some("CURVE25519")] {
+        for post in ["MLKEM512", "MLKEM768"] {
+            for object in ["PrivateKey", "PublicKey"] {
+                let format = if object == "PrivateKey" {
+                    "ConfigurableKEMSecretKey"
+                } else {
+                    "ConfigurableKEMPublicKey"
+                };
+                for operation in ["Import", "Register", "Get", "Export"] {
+                    let p = serde_json::json!({"opaque_fixture_configuration":{"pre_quantum":pre,"post_quantum":post}});
+                    demand_review_case(
+                        rows,
+                        operation,
+                        object,
+                        Some("ConfigurableKEM"),
+                        Some(format),
+                        &p,
+                        None,
+                        issues,
+                    );
+                }
+                for operation in ["Import", "Register"] {
+                    let p = serde_json::json!({"opaque_fixture_configuration":{"pre_quantum":pre,"post_quantum":post},"wrapping_encoding":"TTLVEncoding","key_wrap_type":"AsRegistered"});
+                    demand_review_case(
+                        rows,
+                        operation,
+                        object,
+                        Some("ConfigurableKEM"),
+                        Some(format),
+                        &p,
+                        None,
+                        issues,
+                    );
+                }
+            }
+        }
+    }
+}
+
+fn review_container_transfers(rows: &[serde_json::Value], issues: &mut Vec<String>) {
+    for operation in ["Import", "Register"] {
+        for password in [false, true] {
+            for chain in [false, true] {
+                demand_review_case(
+                    rows,
+                    operation,
+                    "PrivateKey",
+                    Some("RSA"),
+                    Some("PKCS#12"),
+                    &serde_json::json!({"key_bits":2048,"password_link":password,"certificate_chain":chain}),
+                    Some("DER/PFX"),
+                    issues,
+                );
+            }
+        }
+    }
+    for operation in ["Get", "Export"] {
+        for (object, format) in [
+            ("Certificate", "Cosmian-PKCS7"),
+            ("Certificate", "PKCS#12"),
+            ("PrivateKey", "PKCS#12"),
+            ("Certificate", "Cosmian-Pkcs12Legacy"),
+            ("PrivateKey", "Cosmian-Pkcs12Legacy"),
+        ] {
+            for password in [false, true] {
+                for chain in [false, true] {
+                    if format == "Cosmian-PKCS7" && password {
+                        continue;
+                    }
+                    demand_review_case(
+                        rows,
+                        operation,
+                        object,
+                        Some("RSA"),
+                        Some(format),
+                        &serde_json::json!({"key_bits":2048,"password_link":password,"certificate_chain":chain}),
+                        Some("DER"),
+                        issues,
+                    );
+                }
+            }
+        }
+    }
+    for (algorithm, parameters) in reviewed_pair_variants() {
+        if algorithm == "RSA" && parameters["key_bits"] == 2048 {
+            continue;
+        }
+        for (operation, object, format) in [
+            ("Import", "PrivateKey", "PKCS#12"),
+            ("Register", "PrivateKey", "PKCS#12"),
+            ("Get", "PrivateKey", "PKCS#12"),
+            ("Export", "PrivateKey", "PKCS#12"),
+            ("Get", "Certificate", "PKCS#12"),
+            ("Export", "Certificate", "PKCS#12"),
+            ("Get", "Certificate", "Cosmian-PKCS7"),
+            ("Export", "Certificate", "Cosmian-PKCS7"),
+            ("Get", "PrivateKey", "Cosmian-Pkcs12Legacy"),
+            ("Export", "PrivateKey", "Cosmian-Pkcs12Legacy"),
+        ] {
+            demand_review_case(
+                rows,
+                operation,
+                object,
+                Some(algorithm),
+                Some(format),
+                &parameters,
+                Some("DER/PFX"),
+                issues,
+            );
+        }
+    }
+}
+
+fn review_wrapping_cases(rows: &[serde_json::Value], issues: &mut Vec<String>) {
+    let mut wrappers = Vec::new();
+    for mode in ["NISTKeyWrap", "AESKeyWrapPadding", "GCM"] {
+        for bits in [128, 192, 256] {
+            wrappers.push(("AES", serde_json::json!({"mode":mode,"key_bits":bits})));
+        }
+    }
+    for padding in ["OAEP", "None", "PKCS1v15"] {
+        for bits in REVIEW_RSA_BITS {
+            for hash in REVIEW_HASHES
+                .into_iter()
+                .map(Some)
+                .filter(|hash| padding != "PKCS1v15" || *hash == Some("SHA-256"))
+            {
+                wrappers.push(("RSA",serde_json::json!({"padding":padding,"key_bits":bits,"hash":if padding=="PKCS1v15" {None} else {hash}})));
+            }
+        }
+    }
+    for curve in [
+        "P192",
+        "P224",
+        "P256",
+        "P384",
+        "P521",
+        "CURVE25519",
+        "CURVEED25519",
+    ] {
+        wrappers.push(("EC", serde_json::json!({"curve":curve,"scheme":"ECIES"})));
+    }
+    for (algorithm, parameters) in wrappers {
+        for encoding in ["NoEncoding", "TTLVEncoding"] {
+            for object in ["SymmetricKey", "SecretData", "PrivateKey", "PublicKey"] {
+                if object == "PublicKey"
+                    && encoding == "NoEncoding"
+                    && parameters["mode"] == "NISTKeyWrap"
+                {
+                    continue;
+                }
+                for operation in ["Import", "Register", "Get", "Export"] {
+                    let asymmetric = matches!(object, "PrivateKey" | "PublicKey");
+                    let format = if !asymmetric {
+                        "Raw"
+                    } else if encoding == "NoEncoding" {
+                        "PKCS#8"
+                    } else if object == "PrivateKey" {
+                        "TransparentECPrivateKey"
+                    } else {
+                        "TransparentECPublicKey"
+                    };
+                    let mut p = parameters.clone();
+                    p["wrapping_method"] = "Encrypt".into();
+                    p["wrapping_encoding"] = encoding.into();
+                    p["target_algorithm"] = if object == "SymmetricKey" {
+                        serde_json::json!("AES")
+                    } else if asymmetric {
+                        serde_json::json!("Ed25519")
+                    } else {
+                        serde_json::Value::Null
+                    };
+                    p["wrapping_key_type"] = if algorithm == "AES" {
+                        "SymmetricKey"
+                    } else if matches!(operation, "Get" | "Export") {
+                        "PublicKey"
+                    } else {
+                        "PrivateKey"
+                    }
+                    .into();
+                    demand_review_case(
+                        rows,
+                        operation,
+                        object,
+                        Some(algorithm),
+                        Some(format),
+                        &p,
+                        None,
+                        issues,
+                    );
+                }
+            }
+        }
+    }
+}
+
+fn review_material_citations(row: &serde_json::Value, issues: &mut Vec<String>) {
+    let object = row["object_type"].as_str().unwrap_or("");
+    let p = &row["parameters"];
+    let algorithm = p["target_algorithm"]
+        .as_str()
+        .or_else(|| row["algorithm"].as_str())
+        .unwrap_or("");
+    let mut citations = Vec::new();
+    if object == "SymmetricKey" {
+        citations.push(("3.4", 18));
+    }
+    match (object, algorithm) {
+        ("PrivateKey", "DSA") => citations.push(("3.5", 19)),
+        ("PublicKey", "DSA") => citations.push(("3.6", 20)),
+        ("PrivateKey", "RSA") => citations.push(("3.7", 21)),
+        ("PublicKey", "RSA") => citations.push(("3.8", 22)),
+        ("PrivateKey", "EC" | "ECDH" | "ECDSA" | "Ed25519" | "Ed448") => {
+            citations.push(("3.11", 25))
+        }
+        ("PublicKey", "EC" | "ECDH" | "ECDSA" | "Ed25519" | "Ed448") => {
+            citations.push(("3.12", 26))
+        }
+        _ => {}
+    }
+    match row["key_format"].as_str() {
+        Some("TransparentSymmetricKey") => citations.push(("3.4", 18)),
+        Some("TransparentDSAPrivateKey") => citations.push(("3.5", 19)),
+        Some("TransparentDSAPublicKey") => citations.push(("3.6", 20)),
+        Some("TransparentRSAPrivateKey") => citations.push(("3.7", 21)),
+        Some("TransparentRSAPublicKey") => citations.push(("3.8", 22)),
+        Some("TransparentECPrivateKey") => citations.push(("3.11", 25)),
+        Some("TransparentECPublicKey") => citations.push(("3.12", 26)),
+        _ => {}
+    }
+    if !p["wrapping_method"].is_null() {
+        let unwrap = matches!(row["operation"].as_str(), Some("Import" | "Register"));
+        match row["algorithm"].as_str() {
+            Some("AES" | "ChaCha20Poly1305" | "FPE_FF1") => citations.push(("3.4", 18)),
+            Some("RSA") => citations.push(if unwrap { ("3.7", 21) } else { ("3.8", 22) }),
+            Some("EC") => citations.push(if unwrap { ("3.11", 25) } else { ("3.12", 26) }),
+            _ => {}
+        }
+    }
+    for (section, table) in citations {
+        if !row["oasis_source"]
+            .as_array()
+            .expect("resolved citations")
+            .iter()
+            .any(|source| {
+                source["section"] == section
+                    && source["tables"]
+                        .as_array()
+                        .is_some_and(|tables| tables.contains(&serde_json::json!(table)))
+            })
+        {
+            issues.push(format!(
+                "material-citation: {} needs {section}/Table{table}",
+                manifest_text(row, "case_id")
+            ));
+        }
+    }
+    if p["mgf"] == "MGF1"
+        || !p["mgf_hash"].is_null()
+        || p["signature_scheme"] == "RSASSA-PSS"
+        || (row["algorithm"] == "RSA" && matches!(p["padding"].as_str(), Some("OAEP" | "None")))
+    {
+        if !row["oasis_source"]
+            .as_array()
+            .expect("resolved citations")
+            .iter()
+            .any(|source| source["section"] == "11.30")
+        {
+            issues.push(format!(
+                "MGF-citation: {} needs unnumbered 11.30 Mask Generator",
+                manifest_text(row, "case_id")
+            ));
+        }
+    }
+}
+
+fn review_pqc_subject_containers(rows: &[serde_json::Value], issues: &mut Vec<String>) {
+    let mut names = [
+        "MLKEM_512",
+        "MLKEM_768",
+        "MLKEM_1024",
+        "MLDSA_44",
+        "MLDSA_65",
+        "MLDSA_87",
+    ]
+    .into_iter()
+    .map(str::to_owned)
+    .collect::<Vec<_>>();
+    for hash in ["SHA2", "SHAKE"] {
+        for size in [128, 192, 256] {
+            for speed in ["s", "f"] {
+                names.push(format!("SLHDSA_{hash}_{size}{speed}"));
+            }
+        }
+    }
+    for name in names {
+        for (subject, encoding) in [("csr-pem", "PEM"), ("csr-pkcs10-der", "DER")] {
+            demand_review_case(
+                rows,
+                "Certify",
+                "CertificateRequest",
+                Some(&name),
+                Some("X.509"),
+                &serde_json::json!({"subject_input":subject,"issuer":"RSA"}),
+                Some(encoding),
+                issues,
+            );
+        }
+    }
+}
+
+fn review_additional_wrapping_paths(rows: &[serde_json::Value], issues: &mut Vec<String>) {
+    let mut wrappers = Vec::new();
+    for padding in ["OAEP", "None", "PKCS1v15"] {
+        wrappers.push((
+            "RSA",
+            serde_json::json!({"key_bits":2048,"padding":padding,"hash":"SHA-256"}),
+        ));
+    }
+    for curve in [
+        "P192",
+        "P224",
+        "P256",
+        "P384",
+        "P521",
+        "CURVE25519",
+        "CURVEED25519",
+    ] {
+        wrappers.push(("EC", serde_json::json!({"curve":curve,"scheme":"ECIES"})));
+    }
+    for (algorithm, parameters) in wrappers {
+        for operation in ["Import", "Register", "Get", "Export"] {
+            for encoding in ["NoEncoding", "TTLVEncoding"] {
+                let mut p = parameters.clone();
+                p["wrapping_key_type"] = "Certificate".into();
+                p["wrapping_encoding"] = encoding.into();
+                demand_review_case(
+                    rows,
+                    operation,
+                    "SymmetricKey",
+                    Some(algorithm),
+                    Some("Raw"),
+                    &p,
+                    None,
+                    issues,
+                );
+            }
+        }
+    }
+    let mut gaps = vec![
+        ("AES", serde_json::json!({"mode":"XTS","key_bits":256})),
+        ("AES", serde_json::json!({"mode":"XTS","key_bits":512})),
+        ("AES", serde_json::json!({"mode":"GCMSIV","key_bits":128})),
+        ("AES", serde_json::json!({"mode":"GCMSIV","key_bits":256})),
+        ("ChaCha20Poly1305", serde_json::json!({"key_bits":256})),
+        ("FPE_FF1", serde_json::json!({"key_bits":256})),
+    ];
+    for (algorithm, parameters) in &mut gaps {
+        for operation in ["Import", "Export"] {
+            for encoding in ["NoEncoding", "TTLVEncoding"] {
+                let mut p = parameters.clone();
+                p["wrapping_encoding"] = encoding.into();
+                p["wrapping_method"] = "Encrypt".into();
+                demand_review_case(
+                    rows,
+                    operation,
+                    "SymmetricKey",
+                    Some(*algorithm),
+                    Some("Raw"),
+                    &p,
+                    None,
+                    issues,
+                );
+            }
+        }
+    }
 }
 
 // The catalog preserves exact per-case citations while storing long source
