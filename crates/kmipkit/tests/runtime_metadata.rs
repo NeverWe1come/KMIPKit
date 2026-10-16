@@ -34,6 +34,10 @@ fn capability_query_matches_manifest_ready_capabilities() {
         Ok(true)
     );
     assert_eq!(
+        kmipkit::capability_is_available("server_generated_creation"),
+        Ok(true)
+    );
+    assert_eq!(
         kmipkit::capability_is_available("public_binding_surface"),
         Ok(false)
     );
