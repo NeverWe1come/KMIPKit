@@ -1953,6 +1953,10 @@ fn ffi_creation_requests_reject_missing_attributes_and_malformed_structure_handl
         copy_structure_handle(ptr::null_mut(), true),
         Err(ERROR_INVALID_INPUT)
     ));
+    assert!(matches!(
+        copy_attribute_set_handle(ptr::null_mut(), true),
+        Err(ERROR_INVALID_INPUT)
+    ));
 
     let malformed_structure = make_handle::<kmipkit_ttlv_structure_t>(
         Kind::Structure,
@@ -1967,6 +1971,29 @@ fn ffi_creation_requests_reject_missing_attributes_and_malformed_structure_handl
         Err(ERROR_INVALID_INPUT)
     ));
     release(malformed_structure, Kind::Structure);
+}
+
+#[test]
+fn ffi_attribute_set_copy_preserves_nonempty_unknown_attributes() {
+    let tag = RawTag::new(0x0054_0001)
+        .expect("vendor attribute test tag fits the KMIP tag field")
+        .try_checked()
+        .expect("vendor attribute test tag is allocated");
+    let item = Item::new(tag, Value::byte_string(b"opaque-attribute".to_vec()))
+        .expect("opaque attribute is a valid TTLV item");
+    let mut structure = Structure::new();
+    structure
+        .try_push(item)
+        .expect("opaque attribute fits in the test structure");
+    let handle = make_handle(Kind::Structure, HandleValue::Structure(structure));
+
+    let copied = copy_attribute_set_handle(handle, true)
+        .expect("valid nonempty attribute structure copies")
+        .expect("required structure produces an attribute set");
+
+    assert_eq!(copied.len(), 1);
+    assert_eq!(copied.as_items()[0].tag().raw(), 0x0054_0001);
+    release(handle, Kind::Structure);
 }
 
 #[test]

@@ -1084,6 +1084,31 @@ def changed_code_result(changed_lines: set[tuple[str, int]] | set[int], coverage
     return f"{covered}/{executable} executable changed lines covered ({percent:.2f}%)"
 
 
+def _is_structural_only_source_line(source_line: str) -> bool:
+    """Exclude blank and delimiter-only lines that coverage regions can span."""
+    content = source_line.strip()
+    return not content or all(character in "{};" for character in content)
+
+
+def _is_executable_changed_line(
+    workspace: Path,
+    source: str,
+    line: int,
+    source_lines_cache: dict[str, list[str]],
+) -> bool:
+    if source not in source_lines_cache:
+        try:
+            source_lines_cache[source] = (workspace / PurePosixPath(source)).read_text(
+                encoding="utf-8", errors="strict"
+            ).splitlines()
+        except (OSError, UnicodeError) as error:
+            raise CoverageDataError(f"Changed production source could not be read as UTF-8: {source}") from error
+    source_lines = source_lines_cache[source]
+    if line < 1 or line > len(source_lines):
+        raise CoverageDataError(f"Changed production line is outside its source file: {source}:{line}.")
+    return not _is_structural_only_source_line(source_lines[line - 1])
+
+
 def _run_git_diff(workspace: Path, base: str, merge: str) -> str:
     if not re.fullmatch(r"[0-9a-fA-F]{40,64}", base) or not re.fullmatch(r"[0-9a-fA-F]{40,64}", merge):
         raise CoverageDataError("Base and merge identifiers must be full Git object IDs.")
@@ -1336,11 +1361,13 @@ def _evaluate_coverage(
             for source, count in report.summary_uncovered_excess.items():
                 adapter_summary_excess[source] = adapter_summary_excess.get(source, 0) + count
 
+    changed_source_lines: dict[str, list[str]] = {}
     changed_executable = {
         (source, line)
         for source, line_numbers in changed.items()
         for line in line_numbers
         if (source, line) in production_lines
+        and _is_executable_changed_line(workspace, source, line, changed_source_lines)
     }
     if changed_executable:
         covered = sum(production_lines[item] > 0 for item in changed_executable)
@@ -1596,12 +1623,14 @@ def _evaluate_scoped_coverage(
         source: _coverage_scope_for_source(source, scoped_reports)
         for source in changed
     }
+    changed_source_lines: dict[str, list[str]] = {}
     changed_executable = {
         (source, line)
         for source, line_numbers in changed.items()
         if source_scopes[source] is not None
         for line in line_numbers
         if line in scoped_reports[source_scopes[source]].get(source, {})
+        and _is_executable_changed_line(workspace, source, line, changed_source_lines)
     }
     if changed_executable:
         covered = sum(
